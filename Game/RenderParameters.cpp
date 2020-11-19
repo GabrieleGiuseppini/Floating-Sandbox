@@ -37,6 +37,7 @@ RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 	, ShipFlameRenderMode(ShipFlameRenderModeType::Mode1)
 	, ShowStressedSprings(false)
 	, ShowFrontiers(false)
+	, ShowAABBs(false)
 	, ShipWaterColor(vec4f::zero()) // Calculated
 	, IsShipWaterColorDirty(true)
 	, ShipWaterContrast(0.71875f)

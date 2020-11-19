@@ -5,6 +5,7 @@
 
 set  (SOURCES
 	AABB.h
+	AABBSet.h
 	Algorithms.h
 	BoundedVector.h
 	Buffer.h

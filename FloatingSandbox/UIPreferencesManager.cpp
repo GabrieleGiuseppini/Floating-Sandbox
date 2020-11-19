@@ -393,7 +393,6 @@ void UIPreferencesManager::SavePreferences() const
 {
     picojson::object preferencesRootObject;
 
-
     // Add ship load directories
 
     picojson::array shipLoadDirectories;

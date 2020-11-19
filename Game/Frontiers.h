@@ -70,6 +70,7 @@ public:
         , mEdges(mEdgeCount, 0, Edge())
         , mFrontierEdges(mEdgeCount, 0, FrontierEdge())
         , mFrontiers()
+        , mFrontierIds()
         , mPointColors(pointCount, 0, Render::FrontierColor(vec3f::zero(), 0.0f))
         , mCurrentVisitSequenceNumber()
         , mIsDirtyForRendering(true)
@@ -112,9 +113,27 @@ public:
 
 public:
 
-    ElementCount GetElementCount() const
+    inline ElementCount GetElementCount() const
     {
-        return static_cast<ElementCount>(mFrontiers.size());
+        assert(mFrontiers.size() >= mFrontierIds.size());
+        return static_cast<ElementCount>(mFrontierIds.size());
+    }
+
+    inline auto const & GetFrontierIds() const noexcept
+    {
+        return mFrontierIds;
+    }
+
+    inline Frontier const & GetFrontier(FrontierId frontierId) const noexcept
+    {
+        assert(frontierId < mFrontiers.size());
+        assert(mFrontiers[frontierId].has_value());
+        return *(mFrontiers[frontierId]);
+    }
+
+    inline FrontierEdge const & GetFrontierEdge(ElementIndex frontierEdgeIndex) const noexcept
+    {
+        return mFrontierEdges[frontierEdgeIndex];
     }
 
 private:
@@ -247,9 +266,14 @@ private:
     Buffer<FrontierEdge> mFrontierEdges;
 
     // The frontiers, indexed by frontier indices.
-    // Elements in this vector do not move around.
+    // Elements in this vector do not move around, hence
+    // elements are not contiguous.
     // Cardinality: any.
     std::vector<std::optional<Frontier>> mFrontiers;
+
+    // The indices in the Frontiers vector, all
+    // contiguous and compact
+    std::vector<FrontierId> mFrontierIds;
 
     // Frontier coloring info.
     // Cardinality: points

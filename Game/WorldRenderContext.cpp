@@ -50,6 +50,9 @@ WorldRenderContext::WorldRenderContext(
     , mCrossOfLightVertexBuffer()
     , mCrossOfLightVBO()
     , mCrossOfLightVBOAllocatedVertexSize(0u)
+    , mAABBVertexBuffer()
+    , mAABBVBO()
+    , mAABBVBOAllocatedVertexSize(0u)
     , mStormAmbientDarkening(0.0f)
     , mRainVBO()
     , mRainDensity(0.0)
@@ -65,6 +68,7 @@ WorldRenderContext::WorldRenderContext(
     , mFishVAO()
     , mAMBombPreImplosionVAO()
     , mCrossOfLightVAO()
+    , mAABBVAO()
     , mRainVAO()
     , mWorldBorderVAO()
     // Textures
@@ -91,8 +95,8 @@ WorldRenderContext::WorldRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[10];
-    glGenBuffers(10, vbos);
+    GLuint vbos[11];
+    glGenBuffers(11, vbos);
     mStarVBO = vbos[0];
     mLightningVBO = vbos[1];
     mCloudVBO = vbos[2];
@@ -101,8 +105,9 @@ WorldRenderContext::WorldRenderContext(
     mFishVBO = vbos[5];
     mAMBombPreImplosionVBO = vbos[6];
     mCrossOfLightVBO = vbos[7];
-    mRainVBO = vbos[8];
-    mWorldBorderVBO = vbos[9];
+    mAABBVBO = vbos[8];
+    mRainVBO = vbos[9];
+    mWorldBorderVBO = vbos[10];
 
 
     //
@@ -268,6 +273,28 @@ WorldRenderContext::WorldRenderContext(
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::CrossOfLight1), 4, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightVertex), (void *)0);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::CrossOfLight2));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::CrossOfLight2), 1, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightVertex), (void *)(4 * sizeof(float)));
+    CheckOpenGLError();
+
+    glBindVertexArray(0);
+
+
+    //
+    // Initialize AABB VAO
+    //
+
+    glGenVertexArrays(1, &tmpGLuint);
+    mAABBVAO = tmpGLuint;
+
+    glBindVertexArray(*mAABBVAO);
+    CheckOpenGLError();
+
+    // Describe vertex attributes
+    static_assert(sizeof(AABBVertex) == 6 * sizeof(float));
+    glBindBuffer(GL_ARRAY_BUFFER, *mAABBVBO);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::AABB1));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::AABB1), 4, GL_FLOAT, GL_FALSE, sizeof(AABBVertex), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::AABB2));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::AABB2), 2, GL_FLOAT, GL_FALSE, sizeof(AABBVertex), (void *)(4 * sizeof(float)));
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -616,6 +643,20 @@ void WorldRenderContext::UploadFishesStart(size_t fishCount)
 }
 
 void WorldRenderContext::UploadFishesEnd()
+{
+    // Nop
+}
+
+void WorldRenderContext::UploadAABBsStart(size_t aabbCount)
+{
+    //
+    // AABBs are not sticky: we upload them at each frame
+    //
+
+    mAABBVertexBuffer.reset(8 * aabbCount);
+}
+
+void WorldRenderContext::UploadAABBsEnd()
 {
     // Nop
 }
@@ -1113,6 +1154,45 @@ void WorldRenderContext::RenderDrawRain(RenderParameters const & /*renderParamet
     }
 }
 
+void WorldRenderContext::RenderPrepareAABBs(RenderParameters const & /*renderParameters*/)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, *mAABBVBO);
+
+    if (mAABBVertexBuffer.size() > mAABBVBOAllocatedVertexSize)
+    {
+        // Re-allocate VBO buffer and upload
+        glBufferData(GL_ARRAY_BUFFER, mAABBVertexBuffer.size() * sizeof(AABBVertex), mAABBVertexBuffer.data(), GL_STREAM_DRAW);
+        CheckOpenGLError();
+
+        mAABBVBOAllocatedVertexSize = mAABBVertexBuffer.size();
+    }
+    else
+    {
+        // No size change, just upload VBO buffer
+        glBufferSubData(GL_ARRAY_BUFFER, 0, mAABBVertexBuffer.size() * sizeof(AABBVertex), mAABBVertexBuffer.data());
+        CheckOpenGLError();
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void WorldRenderContext::RenderDrawAABBs(RenderParameters const & /*renderParameters*/)
+{
+    if (mAABBVertexBuffer.size() > 0)
+    {
+        glBindVertexArray(*mAABBVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::AABBs>();
+
+        glLineWidth(2.0f);
+
+        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mAABBVertexBuffer.size()));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+}
+
 void WorldRenderContext::RenderDrawWorldBorder(RenderParameters const & /*renderParameters*/)
 {
     if (mWorldBorderVertexBuffer.size() > 0)
@@ -1176,6 +1256,10 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
 
     mShaderManager.ActivateProgram<ProgramType::CrossOfLight>();
     mShaderManager.SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::AABBs>();
+    mShaderManager.SetProgramParameter<ProgramType::AABBs, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::WorldBorder>();

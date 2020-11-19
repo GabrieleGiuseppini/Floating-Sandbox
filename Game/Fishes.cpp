@@ -54,7 +54,8 @@ void Fishes::Update(
     OceanSurface & oceanSurface,
     OceanFloor const & oceanFloor,
     GameParameters const & gameParameters,
-    VisibleWorld const & visibleWorld)
+    VisibleWorld const & visibleWorld,
+    Geometry::AABBSet const & aabbSet)
 {
     //
     // Update parameters that changed, if any
@@ -112,7 +113,8 @@ void Fishes::Update(
         oceanSurface,
         oceanFloor,
         gameParameters,
-        visibleWorld);
+        visibleWorld,
+        aabbSet);
 
     //
     // Update dynamics
@@ -123,7 +125,8 @@ void Fishes::Update(
         oceanSurface,
         oceanFloor,
         gameParameters,
-        visibleWorld);
+        visibleWorld,
+        aabbSet);
 
     //
     // Update shoaling
@@ -354,7 +357,8 @@ void Fishes::UpdateNumberOfFishes(
     OceanSurface & /*oceanSurface*/,
     OceanFloor const & /*oceanFloor*/,
     GameParameters const & gameParameters,
-    VisibleWorld const & visibleWorld)
+    VisibleWorld const & visibleWorld,
+    Geometry::AABBSet const & aabbSet)
 {
     bool isDirty = false;
 
@@ -506,7 +510,8 @@ void Fishes::UpdateDynamics(
     OceanSurface & oceanSurface,
     OceanFloor const & oceanFloor,
     GameParameters const & gameParameters,
-    VisibleWorld const & visibleWorld)
+    VisibleWorld const & visibleWorld,
+    Geometry::AABBSet const & aabbSet)
 {
     ElementCount const fishCount = static_cast<ElementCount>(mFishes.size());
 

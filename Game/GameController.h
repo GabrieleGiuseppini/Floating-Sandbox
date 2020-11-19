@@ -684,6 +684,9 @@ public:
     bool GetShowShipFrontiers() const override { return mRenderContext->GetShowFrontiers(); }
     void SetShowShipFrontiers(bool value) override { mRenderContext->SetShowFrontiers(value); }
 
+    bool GetShowAABBs() const override { return mRenderContext->GetShowAABBs(); }
+    void SetShowAABBs(bool value) override { mRenderContext->SetShowAABBs(value); }
+
     bool GetDrawHeatOverlay() const override { return mRenderContext->GetDrawHeatOverlay(); }
     void SetDrawHeatOverlay(bool value) override { mRenderContext->SetDrawHeatOverlay(value); }
 

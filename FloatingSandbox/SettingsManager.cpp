@@ -147,6 +147,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(VectorFieldRenderModeType, VectorFieldRenderMode);
     ADD_GC_SETTING(bool, ShowShipStress);
     ADD_GC_SETTING(bool, ShowShipFrontiers);
+    ADD_GC_SETTING(bool, ShowAABBs);
     ADD_GC_SETTING(bool, DrawHeatOverlay);
     ADD_GC_SETTING(float, HeatOverlayTransparency);
     ADD_GC_SETTING(ShipFlameRenderModeType, ShipFlameRenderMode);

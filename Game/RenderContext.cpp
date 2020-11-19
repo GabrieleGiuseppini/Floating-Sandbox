@@ -470,6 +470,8 @@ void RenderContext::Draw()
 
                 mWorldRenderContext->RenderPrepareRain(renderParameters);
 
+                mWorldRenderContext->RenderPrepareAABBs(renderParameters);
+
                 mNotificationRenderContext->RenderPrepare();
 
                 // Update stats
@@ -514,6 +516,8 @@ void RenderContext::Draw()
                 mWorldRenderContext->RenderDrawForegroundLightnings(renderParameters);
 
                 mWorldRenderContext->RenderDrawRain(renderParameters);
+
+                mWorldRenderContext->RenderDrawAABBs(renderParameters);
 
                 mWorldRenderContext->RenderDrawWorldBorder(renderParameters);
 

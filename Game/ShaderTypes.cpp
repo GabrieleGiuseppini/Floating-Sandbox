@@ -15,7 +15,9 @@ namespace Render {
 ProgramType ShaderFilenameToProgramType(std::string const & str)
 {
     std::string lstr = Utils::ToLower(str);
-    if (lstr == "am_bomb_preimplosion")
+    if (lstr == "aabbs")
+        return ProgramType::AABBs;
+    else if (lstr == "am_bomb_preimplosion")
         return ProgramType::AMBombPreImplosion;
     else if (lstr == "clouds")
         return ProgramType::Clouds;
@@ -113,6 +115,8 @@ std::string ProgramTypeToStr(ProgramType program)
 {
     switch (program)
     {
+    case ProgramType::AABBs:
+        return "AABBs";
     case ProgramType::AMBombPreImplosion:
         return "AMBombPreImplosion";
     case ProgramType::Clouds:
@@ -404,6 +408,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::CrossOfLight1;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))
         return VertexAttributeType::CrossOfLight2;
+    else if (Utils::CaseInsensitiveEquals(str, "AABB1"))
+        return VertexAttributeType::AABB1;
+    else if (Utils::CaseInsensitiveEquals(str, "AABB2"))
+        return VertexAttributeType::AABB2;
     else if (Utils::CaseInsensitiveEquals(str, "Rain"))
         return VertexAttributeType::Rain;
     else if (Utils::CaseInsensitiveEquals(str, "FireExtinguisherSpray"))

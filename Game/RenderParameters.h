@@ -69,6 +69,7 @@ struct RenderParameters
 
     bool ShowStressedSprings;
     bool ShowFrontiers;
+    bool ShowAABBs;
 
     vec4f ShipWaterColor; // Calculated
     bool IsShipWaterColorDirty;

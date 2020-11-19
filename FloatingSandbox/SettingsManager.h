@@ -120,6 +120,7 @@ enum class GameSettings : size_t
     VectorFieldRenderMode,
     ShowShipStress,
     ShowShipFrontiers,
+    ShowAABBs,
     DrawHeatOverlay,
     HeatOverlayTransparency,
     ShipFlameRenderMode,

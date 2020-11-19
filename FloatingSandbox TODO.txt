@@ -253,6 +253,9 @@ Render:
 		= Fishes (*)
 			- Changelist
 
+		- 500K download post on GameJolt
+		- How to make a ship tutorial post on GameJolt: https://www.youtube.com/watch?v=7KhRdTv9fTo
+
 		- Check issue with ship having water material that breaks
 		- Fix that bug with vectors/highlights rendering (buffer size mismatch)
 		- See why log diagnostics is not written
@@ -310,6 +313,11 @@ Render:
 			- If not, adjust the one with "three fingers": its tail lasts too long
 
 		- Sign executable and installer (*)
+
+		- Spanish
+			- Add Joadix guy to credits
+				- Full name: ?
+			- Send invite for dev server
 
 		- Release
 
@@ -449,9 +457,13 @@ Render:
 		- Invite to server
 	- Portuguese: Kiko
 		- Add to credits: "Kiko", and change in other sections as well, and also in .shp files
+		- Fallback: The G a z e r W o l f
 	- Polish: MemeMachine
 		- Add to credits:
 		- Invite to server
+	- Spanish (Latin American)
+		- Joadix
+		- Fallback: The G a z e r W o l f
 
 - Ships:
 	# Credit names:
@@ -543,6 +555,8 @@ Render:
 		- Embed GameJolt Widget
 
 - Suggestions to spec:
+	- Fishing log
+		- Players can collect different kinds of fish; click on one they don't have and it goes into like a collectors book
 	- Drain ocean
 	- Speedometer
 	- Shockwave bomb
@@ -654,17 +668,17 @@ Render:
 	= Sign with certificate (*)
 		+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
 		+ https://www.thegeekstuff.com/2010/03/microsoft-digital-signatures/
-		- Reasons:
+		+ Reasons:
 			- Anti-virus complains of saving
-		- Buy certificate
-			- https://www.leaderssl.nl/suppliers/sectigo/products/code_signing
-			- Plan B:
-				- https://comodosslstore.com/code-signing/microsoft-authenticode
-				- https://comodosslstore.com/codesigning.aspx
+		= Buy certificate
+			+ https://www.leaderssl.nl/suppliers/sectigo/products/code_signing
+			+ Plan B:
+				+ https://comodosslstore.com/code-signing/microsoft-authenticode
+				+ https://comodosslstore.com/codesigning.aspx
 			- Print receipt and store in Taxes
-		- Sign exe
-		- Sign MSI
-			- https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603
+		+ Sign exe
+		+ Sign MSI
+			+ https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603
 	= Wine:
 		+ Test checking for the APPLE extension for VAO's: https://developer.apple.com/opengl/OpenGL-Capabilities-Tables.pdf
 			+ "APPLE_vertex_array_object"
@@ -935,6 +949,8 @@ Render:
 
 	- Heat overlay more integrated in game play:
 		- Make switch: "Heat map mode" (now) and "Incandescence mode" (no black), in which shader replaces black with alpha=0
+			- See https://discord.com/channels/559822257275404307/561385532698001419/777597209327566862
+			- If it would also glow in the dark, it'd be awesome!
 
 	- Fog
 
@@ -1292,14 +1308,32 @@ Render:
 						+ Precalc position of head
 						+ Shoaling
 						+ If not needed, nuke whole sort/sortedbyx/etc
-			- AABB around ships' frontiers, so that fish AI's avoid them
-				- World maintains AllShipAABBs (AABBSet class, at Geometry, containing vector and helper methods and helper calculations)
-				- Fishes::Update(.) takes AllShipAABBs
-					- First update of Fishes at World initialization takes empty AABB
+			= AABB around ships' frontiers, so that fish AI's avoid them
+				+ AABBSet class, at Geometry, containing vector and helper methods and helper calculations
+				+ World maintains AllShipAABBs
+				+ Frontiers::FrontierIndices maintenance
+					+ At Add
+					+ At Create
+					+ At Destroy
+					+ VerifyInvariants: all and only Frontier w/value are in FrontierIndices
+				+ Ship::Update(): generate all AABBs					
+					+ AABBSet: Add: commment on from ships only
+					+ Do AABB buildup
+				+ Rendering at World::Render
+					+ Upload to RenderContext -> WorldRenderContext
+					+ SettingsDialog checkbox
+					+ Shader
+				+ Run in debug
+				= Fishes::Update(.) takes AllShipAABBs
+					+ First update of Fishes at World initialization takes empty AABB
+					- AABB collision check:
+						- If cur pos within any AABB (with margin), little panic, and target vel towards: bounce target vel
+							- Basically, just copy BounceOceanFloor
 				- Avoid spawning in AABBs
+					- Also avoid spawning underneath ocean floor
 				- Test "sudden appearance of AABBs" at ship load, which happens _after_ initial Fishes initialization
 					- If really bad, consider nuking initial Fishes initialization
-				+ Also take OceanFloor
+			- Url with version
 		+ Test:
 			+ 0-depth ocean
 			+ All sliders
@@ -1321,6 +1355,11 @@ Render:
 				+ Fish size multiplier
 				+ Do shoaling flag
 				+ Shoal sspacing adjust
+			= Fish scared by some ship sounds:
+				+ Klaxon, Fog horn
+				- With initial delay, and continuous
+					- World::DisturbOcean takes Delay and Duration (wall-clock time)
+					- Fishes::DisturbStateMachine: vector
 			- Calibration: do fish only on machines that are powerful enough
 				- Unless Dell can make it
 				- See "calibration" work item

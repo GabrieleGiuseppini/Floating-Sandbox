@@ -202,6 +202,7 @@ private:
     SliderControl<float> * mSpringDampingSlider;
     wxRadioBox * mDebugShipRenderModeRadioBox;
     wxCheckBox * mShowFrontiersCheckBox;
+    wxCheckBox * mShowAABBsCheckBox;
     wxRadioBox * mVectorFieldRenderModeRadioBox;
 
     // Settings Management

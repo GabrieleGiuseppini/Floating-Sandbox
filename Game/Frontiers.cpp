@@ -23,16 +23,13 @@ void Frontiers::AddFrontier(
     assert(edgeIndices.size() > 0);
 
     //
-    // Add frontier head
+    // Create frontier
     //
 
-    FrontierId const frontierIndex = static_cast<FrontierId>(mFrontiers.size());
-
-    mFrontiers.emplace_back(
-        Frontier(
-            type,
-            edgeIndices[0],
-            static_cast<ElementIndex>(edgeIndices.size())));
+    FrontierId const frontierIndex = CreateNewFrontier(
+        type,
+        edgeIndices[0],
+        static_cast<ElementCount>(edgeIndices.size()));
 
     //
     // Concatenate all edges
@@ -698,6 +695,9 @@ FrontierId Frontiers::CreateNewFrontier(
         startingEdgeIndex,
         size);
 
+    // Add to frontier indices
+    mFrontierIds.emplace_back(newFrontierId);
+
     return newFrontierId;
 }
 
@@ -708,6 +708,17 @@ void Frontiers::DestroyFrontier(
     assert(mFrontiers[frontierId]->Size == 0);
 
     mFrontiers[frontierId].reset();
+
+    // Remove from frontier indices
+
+    auto const indexIt = std::find(
+        mFrontierIds.cbegin(),
+        mFrontierIds.cend(),
+        frontierId);
+
+    assert(indexIt != mFrontierIds.cend());
+
+    mFrontierIds.erase(indexIt);
 }
 
 FrontierId Frontiers::SplitIntoNewFrontier(
@@ -899,6 +910,7 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
     // Springs are consistent
     assert(springs.GetSuperTriangles(edgeIn).size() == 0); // edgeIn has a frontier made of this triangle, which according to the springs is already gone
     assert(springs.GetSuperTriangles(edgeOut).size() == 0); // edgeOut has a frontier made of this triangle, which according to the springs is already gone
+    (void)springs;
 
     //
     // Check the four different cases
@@ -1534,8 +1546,6 @@ bool Frontiers::IsCounterClockwiseFrontier(
     //  - If it's negative the curve is counter-clockwise
     //
 
-    LogMessage("TODOHERE: IsCounterClockwiseFrontier(", startEdgeIndex, ",", endEdgeIndex, "):");
-
     // end->start once, followed by start->...->end
 
     ElementIndex edgeIndex1 = endEdgeIndex;
@@ -1549,9 +1559,6 @@ bool Frontiers::IsCounterClockwiseFrontier(
     {
         totalArea += (pos2.x - pos1.x) * (pos2.y + pos1.y);
 
-        LogMessage("TODOHERE:   e1=", edgeIndex1, " pt1=", mFrontierEdges[edgeIndex1].PointAIndex, " (", pos1.toString(), ")",
-            " e2=", edgeIndex2, " pt2=", mFrontierEdges[edgeIndex2].PointAIndex, " (", pos2.toString(), ") => area=", totalArea);
-
         if (edgeIndex2 == endEdgeIndex)
             break;
 
@@ -1561,8 +1568,6 @@ bool Frontiers::IsCounterClockwiseFrontier(
         edgeIndex2 = mFrontierEdges[edgeIndex2].NextEdgeIndex;
         pos2 = points.GetPosition(mFrontierEdges[edgeIndex2].PointAIndex);
     }
-
-    LogMessage("TODOHERE: IsCounterClockwiseFrontier(", startEdgeIndex, ",", endEdgeIndex, "): ", totalArea);
 
     return totalArea < 0.0f;
 }
@@ -1675,7 +1680,32 @@ void Frontiers::VerifyInvariants(
             }
 
             Verify(frontierLen == frontier->Size);
+
+            Verify(
+                std::find(
+                    mFrontierIds.cbegin(),
+                    mFrontierIds.cend(),
+                    frontierIndex) != mFrontierIds.cend());
         }
+        else
+        {
+            Verify(
+                std::find(
+                    mFrontierIds.cbegin(),
+                    mFrontierIds.cend(),
+                    frontierIndex) == mFrontierIds.cend());
+        }
+    }
+
+    //
+    // Frontier IDs
+    //
+
+    for (auto frontierId : mFrontierIds)
+    {
+        Verify(frontierId < mFrontiers.size());
+
+        Verify(mFrontiers[frontierId].has_value());
     }
 
     //

@@ -13,6 +13,7 @@
 #include "RenderContext.h"
 #include "ShipDefinition.h"
 
+#include <GameCore/AABBSet.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/RunningAverage.h>
 #include <GameCore/TaskThreadPool.h>
@@ -71,7 +72,8 @@ public:
         float currentSimulationTime,
 		Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters,
-        Render::RenderContext const & renderContext);
+        Render::RenderContext const & renderContext,
+        Geometry::AABBSet & aabbSet);
 
     void RenderUpload(
         GameParameters const & gameParameters,
@@ -251,7 +253,8 @@ private:
 
     void ApplyWorldForces(
         Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters);
+        GameParameters const & gameParameters,
+        Geometry::AABBSet & aabbSet);
 
     void ApplySpringsForces_ByPoints(GameParameters const & gameParameters);
 

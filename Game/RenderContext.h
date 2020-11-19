@@ -25,6 +25,7 @@
 
 #include <Game/GameParameters.h>
 
+#include <GameCore/AABB.h>
 #include <GameCore/BoundedVector.h>
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
@@ -400,6 +401,17 @@ public:
         // No need to set dirty, this is picked up at each cycle anway
     }
 
+    bool GetShowAABBs() const
+    {
+        return mRenderParameters.ShowAABBs;
+    }
+
+    void SetShowAABBs(bool showAABBs)
+    {
+        mRenderParameters.ShowAABBs = showAABBs;
+        // No need to set dirty, this is picked up at each cycle anway
+    }
+
     rgbColor const & GetShipDefaultWaterColor() const
     {
         return mShipDefaultWaterColor;
@@ -737,6 +749,25 @@ public:
             centerPosition,
             progress,
             mRenderParameters);
+    }
+
+    inline void UploadAABBsStart(size_t aabbCount)
+    {
+        mWorldRenderContext->UploadAABBsStart(aabbCount);
+    }
+
+    inline void UploadAABB(
+        Geometry::AABB const & aabb,
+        vec4f const & color)
+    {
+        mWorldRenderContext->UploadAABB(
+            aabb,
+            color);
+    }
+
+    inline void UploadAABBsEnd()
+    {
+        mWorldRenderContext->UploadAABBsEnd();
     }
 
     inline void UploadHeatBlasterFlame(

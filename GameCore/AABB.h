@@ -15,6 +15,7 @@ namespace Geometry {
 class AABB
 {
 public:
+
     vec2f TopRight;
     vec2f BottomLeft;
 

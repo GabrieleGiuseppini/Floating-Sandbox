@@ -4044,6 +4044,21 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                             extrasSizer->Add(mShowFrontiersCheckBox, 0, wxALIGN_LEFT, 0);
                         }
 
+                        {
+                            mShowAABBsCheckBox = new wxCheckBox(extrasBox, wxID_ANY,
+                                _("Show AABBs"), wxDefaultPosition, wxDefaultSize);
+                            mShowAABBsCheckBox->SetToolTip(_("Enables or disables visualization of the AABBs (Axis-Aligned Bounding Boxes)."));
+                            mShowAABBsCheckBox->Bind(
+                                wxEVT_COMMAND_CHECKBOX_CLICKED,
+                                [this](wxCommandEvent & event)
+                                {
+                                    mLiveSettings.SetValue(GameSettings::ShowAABBs, event.IsChecked());
+                                    OnLiveSettingsChanged();
+                                });
+
+                            extrasSizer->Add(mShowAABBsCheckBox, 0, wxALIGN_LEFT, 0);
+                        }
+
                         extrasBoxSizer->Add(extrasSizer, 0, wxALL, StaticBoxInsetMargin);
                     }
 
@@ -4635,6 +4650,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     }
 
     mShowFrontiersCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipFrontiers));
+
+    mShowAABBsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowAABBs));
 
     auto vectorFieldRenderMode = settings.GetValue<VectorFieldRenderModeType>(GameSettings::VectorFieldRenderMode);
     switch (vectorFieldRenderMode)

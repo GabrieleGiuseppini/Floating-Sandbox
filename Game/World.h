@@ -18,7 +18,7 @@
 #include "ShipTexturizer.h"
 #include "VisibleWorld.h"
 
-#include <GameCore/AABB.h>
+#include <GameCore/AABBSet.h>
 #include <GameCore/GameChronometer.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/TaskThreadPool.h>
@@ -355,6 +355,10 @@ private:
     OceanSurface mOceanSurface;
     OceanFloor mOceanFloor;
     Fishes mFishes;
+
+    // The set of all AABB's in the world, updated at each
+    // simulation cycle
+    Geometry::AABBSet mAllAABBs;
 };
 
 }

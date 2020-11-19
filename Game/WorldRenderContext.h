@@ -18,6 +18,7 @@
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
 
+#include <GameCore/AABB.h>
 #include <GameCore/BoundedVector.h>
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
@@ -538,6 +539,47 @@ public:
             progress);
     }
 
+    void UploadAABBsStart(size_t aabbCount);
+
+    inline void UploadAABB(
+        Geometry::AABB const & aabb,
+        vec4f const & color)
+    {
+        // TopLeft -> TopRight
+        mAABBVertexBuffer.emplace_back(
+            color,
+            aabb.BottomLeft.x, aabb.TopRight.y);
+        mAABBVertexBuffer.emplace_back(
+            color,
+            aabb.TopRight.x, aabb.TopRight.y);
+
+        // TopRight -> BottomRight
+        mAABBVertexBuffer.emplace_back(
+            color,
+            aabb.TopRight.x, aabb.TopRight.y);
+        mAABBVertexBuffer.emplace_back(
+            color,
+            aabb.TopRight.x, aabb.BottomLeft.y);
+
+        // BottomRight -> BottomLeft
+        mAABBVertexBuffer.emplace_back(
+            color,
+            aabb.TopRight.x, aabb.BottomLeft.y);
+        mAABBVertexBuffer.emplace_back(
+            color,
+            aabb.BottomLeft.x, aabb.BottomLeft.y);
+
+        // BottomLeft -> TopLeft
+        mAABBVertexBuffer.emplace_back(
+            color,
+            aabb.BottomLeft.x, aabb.BottomLeft.y);
+        mAABBVertexBuffer.emplace_back(
+            color,
+            aabb.BottomLeft.x, aabb.TopRight.y);
+    }
+
+    void UploadAABBsEnd();
+
     void UploadEnd();
 
     void ProcessParameterChanges(RenderParameters const & renderParameters);
@@ -568,6 +610,9 @@ public:
 
     void RenderPrepareRain(RenderParameters const & renderParameters);
     void RenderDrawRain(RenderParameters const & renderParameters);
+
+    void RenderPrepareAABBs(RenderParameters const & renderParameters);
+    void RenderDrawAABBs(RenderParameters const & renderParameters);
 
     void RenderDrawWorldBorder(RenderParameters const & renderParameters);
 
@@ -832,6 +877,22 @@ private:
         {}
     };
 
+    struct AABBVertex
+    {
+        vec4f color;
+        float x;
+        float y;
+
+        AABBVertex(
+            vec4f const & _color,
+            float _x,
+            float _y)
+            : color(_color)
+            , x(_x)
+            , y(_y)
+        {}
+    };
+
     struct RainVertex
     {
         float ndcX;
@@ -905,6 +966,10 @@ private:
     GameOpenGLVBO mCrossOfLightVBO;
     size_t mCrossOfLightVBOAllocatedVertexSize;
 
+    BoundedVector<AABBVertex> mAABBVertexBuffer;
+    GameOpenGLVBO mAABBVBO;
+    size_t mAABBVBOAllocatedVertexSize;
+
     float mStormAmbientDarkening;
 
     GameOpenGLVBO mRainVBO;
@@ -926,6 +991,7 @@ private:
     GameOpenGLVAO mFishVAO;
     GameOpenGLVAO mAMBombPreImplosionVAO;
     GameOpenGLVAO mCrossOfLightVAO;
+    GameOpenGLVAO mAABBVAO;
     GameOpenGLVAO mRainVAO;
     GameOpenGLVAO mWorldBorderVAO;
 

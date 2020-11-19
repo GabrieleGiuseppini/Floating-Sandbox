@@ -153,7 +153,8 @@ void Ship::Update(
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters,
-    Render::RenderContext const & renderContext)
+    Render::RenderContext const & renderContext,
+    Geometry::AABBSet & aabbSet)
 {
     std::vector<TaskThreadPool::Task> parallelTasks;
 
@@ -196,7 +197,6 @@ void Ship::Update(
 
     mWindSpeedMagnitudeToRender = mParentWorld.GetCurrentWindSpeed().x;
 
-
     ///////////////////////////////////////////////////////////////////
     // Update state machines
     ///////////////////////////////////////////////////////////////////
@@ -220,7 +220,6 @@ void Ship::Update(
             gameParameters);
     }
 
-
     //
     // Recalculate current masses and everything else that derives from them, once and for all
     //
@@ -229,13 +228,12 @@ void Ship::Update(
     // - Outputs: Mass
     mPoints.UpdateMasses(gameParameters);
 
-
     //
     // Update non-spring forces
     //
 
     // Apply world forces
-    ApplyWorldForces(stormParameters, gameParameters);
+    ApplyWorldForces(stormParameters, gameParameters, aabbSet);
 
     //
     // Run spring relaxation iterations
@@ -276,7 +274,6 @@ void Ship::Update(
     // - Outputs: NonSpringForce
     mPoints.ResetNonSpringForces();
 
-
     //
     // Trim for world bounds
     //
@@ -300,7 +297,6 @@ void Ship::Update(
         stormParameters,
         gameParameters);
 
-
     ///////////////////////////////////////////////////////////////////
     // Update strain for all springs; might cause springs to break
     // (which would flag our structure as dirty)
@@ -312,7 +308,6 @@ void Ship::Update(
     mSprings.UpdateForStrains(
         gameParameters,
         mPoints);
-
 
     /////////////////////////////////////////////////////////////////
     // Update water dynamics - may generate ephemeral particles
@@ -336,7 +331,6 @@ void Ship::Update(
     // Notify intaken water
     mGameEventHandler->OnWaterTaken(waterTakenInStep);
 
-
     //
     // Diffuse water
     //
@@ -349,7 +343,6 @@ void Ship::Update(
 
     // Notify
     mGameEventHandler->OnWaterSplashed(waterSplashedInStep);
-
 
     //
     // Run sink/unsink detection
@@ -386,7 +379,6 @@ void Ship::Update(
         mCurrentElectricalVisitSequenceNumber,
         mPoints,
         gameParameters);
-
 
     //
     // 3. Update sinks
@@ -726,8 +718,13 @@ void Ship::Finalize()
 
 void Ship::ApplyWorldForces(
     Storm::Parameters const & stormParameters,
-    GameParameters const & gameParameters)
+    GameParameters const & gameParameters,
+    Geometry::AABBSet & aabbSet)
 {
+    ///////////////////////////////////////////////////////////////////////////////////////
+    // Apply per-particle forces
+    ///////////////////////////////////////////////////////////////////////////////////////
+
     float const effectiveAirTemperature =
         gameParameters.AirTemperature
         + stormParameters.AirTemperatureDelta;
@@ -842,6 +839,42 @@ void Ship::ApplyWorldForces(
                 windForce
                 * mPoints.GetMaterialWindReceptivity(pointIndex);
         }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+    // Apply per-surface forces
+    ///////////////////////////////////////////////////////////////////////////////////////
+
+    for (FrontierId frontierId : mFrontiers.GetFrontierIds())
+    {
+        auto const & frontier = mFrontiers.GetFrontier(frontierId);
+
+        Geometry::AABB aabb;
+
+        //
+        // Visit all edges of this frontier
+        //
+
+        for (ElementIndex frontierEdgeIndex = frontier.StartingEdgeIndex; ; )
+        {
+            auto const & frontierEdge = mFrontiers.GetFrontierEdge(frontierEdgeIndex);
+
+            if (frontier.Type == FrontierType::External)
+            {
+                // Update AABB
+                aabb.ExtendTo(mPoints.GetPosition(frontierEdge.PointAIndex));
+            }
+
+            // Advance
+            frontierEdgeIndex = frontierEdge.NextEdgeIndex;
+
+            // See if we're done
+            if (frontierEdgeIndex == frontier.StartingEdgeIndex)
+                break;
+        }
+
+        // Store AABB
+        aabbSet.Add(std::move(aabb));
     }
 }
 

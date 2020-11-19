@@ -12,6 +12,7 @@
 #include "RenderTypes.h"
 #include "VisibleWorld.h"
 
+#include <GameCore/AABBSet.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/Vectors.h>
 
@@ -36,7 +37,8 @@ public:
         OceanSurface & oceanSurface,
         OceanFloor const & oceanFloor,
         GameParameters const & gameParameters,
-        VisibleWorld const & visibleWorld);
+        VisibleWorld const & visibleWorld,
+        Geometry::AABBSet const & aabbSet);
 
     void Upload(Render::RenderContext & renderContext) const;
 
@@ -186,14 +188,16 @@ private:
         OceanSurface & oceanSurface,
         OceanFloor const & oceanFloor,
         GameParameters const & gameParameters,
-        VisibleWorld const & visibleWorld);
+        VisibleWorld const & visibleWorld,
+        Geometry::AABBSet const & aabbSet);
 
     void UpdateDynamics(
         float currentSimulationTime,
         OceanSurface & oceanSurface,
         OceanFloor const & oceanFloor,
         GameParameters const & gameParameters,
-        VisibleWorld const & visibleWorld);
+        VisibleWorld const & visibleWorld,
+        Geometry::AABBSet const & aabbSet);
 
     void UpdateShoaling(
         float currentSimulationTime,
