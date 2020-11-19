@@ -512,7 +512,9 @@ Render:
 	- New ships:
 		- Check out e-mailed ships:
 			- From Kazindel texture designer on Nov 15, to floating.sandbox.g2
-		- Check out Architect Creations from FS server
+		- Check out from FS server:
+			- You can find the best ships in the #architect-creations channel
+			- Theres some really good ones in #creation-sharing as well so dont forget about that
 		- Ships:
 			- HMS Victoria: make yourself w/texture from ShipBucket or else
 				- Needs to sink vertically!
@@ -1326,9 +1328,9 @@ Render:
 				+ Run in debug
 				= Fishes::Update(.) takes AllShipAABBs
 					+ First update of Fishes at World initialization takes empty AABB
-					- AABB collision check:
-						- If cur pos within any AABB (with margin), little panic, and target vel towards: bounce target vel
-							- Basically, just copy BounceOceanFloor
+					= AABB collision check:
+						+ If cur pos within any AABB (with margin), and target vel towards: bounce target vel
+							+ Basically, just copy BounceOceanFloor
 				- Avoid spawning in AABBs
 					- Also avoid spawning underneath ocean floor
 				- Test "sudden appearance of AABBs" at ship load, which happens _after_ initial Fishes initialization
@@ -1355,6 +1357,7 @@ Render:
 				+ Fish size multiplier
 				+ Do shoaling flag
 				+ Shoal sspacing adjust
+			- See if can improve fish swimming above ocean surface
 			= Fish scared by some ship sounds:
 				+ Klaxon, Fog horn
 				- With initial delay, and continuous

@@ -17,12 +17,26 @@ class AABBSet
 {
 public:
 
+    struct ExtendedAABB : public AABB
+    {
+        vec2f Center;
+
+        ExtendedAABB(AABB && aabb)
+            : AABB(std::move(aabb))
+            , Center(
+                (TopRight.x + BottomLeft.x) / 2.0f,
+                (TopRight.y + BottomLeft.y) / 2.0f)
+        {}
+    };
+
+public:
+
     inline size_t GetCount() const noexcept
     {
         return mAABBs.size();
     }
 
-    inline std::vector<AABB> const & GetItems() const noexcept
+    inline std::vector<ExtendedAABB> const & GetItems() const noexcept
     {
         return mAABBs;
     }
@@ -32,7 +46,7 @@ public:
     // if and when that is not the case anymore, then we will change the signature
     inline void Add(AABB && aabb) noexcept
     {
-        mAABBs.emplace_back(aabb);
+        mAABBs.emplace_back(std::move(aabb));
     }
 
     void Clear()
@@ -42,7 +56,7 @@ public:
 
 private:
 
-    std::vector<AABB> mAABBs;
+    std::vector<ExtendedAABB> mAABBs;
 };
 
 }

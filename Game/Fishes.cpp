@@ -235,7 +235,9 @@ void Fishes::DisturbAt(
                 fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
 
                 // Converge directions really fast
-                fish.CurrentDirectionSmoothingConvergenceRate = 0.5f;
+                fish.CurrentDirectionSmoothingConvergenceRate = std::max(
+                    0.5f,
+                    fish.CurrentDirectionSmoothingConvergenceRate);
 
                 // Stop u-turn, if any
                 fish.CruiseSteeringState.reset();
@@ -304,7 +306,9 @@ void Fishes::AttractAt(
                 fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
 
                 // Converge directions at this rate
-                fish.CurrentDirectionSmoothingConvergenceRate = 0.1f;
+                fish.CurrentDirectionSmoothingConvergenceRate = std::max(
+                    0.1f,
+                    fish.CurrentDirectionSmoothingConvergenceRate);
 
                 // Stop u-turn, if any
                 fish.CruiseSteeringState.reset();
@@ -342,7 +346,9 @@ void Fishes::TriggerWidespreadPanic(GameParameters const & gameParameters)
             fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
 
             // Converge directions at this rate
-            fish.CurrentDirectionSmoothingConvergenceRate = 0.15f;
+            fish.CurrentDirectionSmoothingConvergenceRate = std::max(
+                0.15f,
+                fish.CurrentDirectionSmoothingConvergenceRate);
 
             // Stop u-turn, if any
             fish.CruiseSteeringState.reset();
@@ -653,7 +659,9 @@ void Fishes::UpdateDynamics(
             fish.TargetVelocity =
                 fish.CurrentVelocity.normalise(currentVelocityMagnitude)
                 * Clamp(currentVelocityMagnitude, 0.0f, MaxVelocityMagnitude);
-            fish.CurrentDirectionSmoothingConvergenceRate = 0.05f; // Converge to dragged velocity at this rate
+
+            // Converge to dragged velocity at this rate, overriding current rate
+            fish.CurrentDirectionSmoothingConvergenceRate = 0.05f;
 
             // Note: no need to change render vector, velocity direction has not changed
 
@@ -710,7 +718,7 @@ void Fishes::UpdateDynamics(
                 newVelocityY);
             fish.CurrentVelocity = fish.TargetVelocity; // Converge immediately
 
-            // Converge at this rate
+            // Converge at this rate, overriding current convergence rate
             fish.CurrentDirectionSmoothingConvergenceRate = 0.06f;
 
             // Update position: add velocity
@@ -820,7 +828,9 @@ void Fishes::UpdateDynamics(
             }
             else
             {    // Converge direction change at this rate
-                fish.CurrentDirectionSmoothingConvergenceRate = 0.15f;
+                fish.CurrentDirectionSmoothingConvergenceRate = std::max(
+                    0.15f,
+                    fish.CurrentDirectionSmoothingConvergenceRate);
             }
         }
         // Check whether this fish has reached the end of panic mode
@@ -853,12 +863,14 @@ void Fishes::UpdateDynamics(
             }
             else
             {    // Converge direction change at this rate
-                fish.CurrentDirectionSmoothingConvergenceRate = 0.08f;
+                fish.CurrentDirectionSmoothingConvergenceRate = std::max(
+                    0.08f,
+                    fish.CurrentDirectionSmoothingConvergenceRate);
             }
         }
 
         //
-        // 5) Check ocean boundaries
+        // 5) Check ocean and AABB boundaries
         //
 
         // Calculate position of head
@@ -883,7 +895,9 @@ void Fishes::UpdateDynamics(
             fish.TargetVelocity = MakeCuisingVelocity(bounceDirection, species, fish.PersonalitySeed, gameParameters);
 
             // Converge direction change at this rate
-            fish.CurrentDirectionSmoothingConvergenceRate = 0.05f * (1.0f + fish.PanicCharge);
+            fish.CurrentDirectionSmoothingConvergenceRate = std::max(
+                0.05f * (1.0f + fish.PanicCharge),
+                fish.CurrentDirectionSmoothingConvergenceRate);
         }
 
         // Check ocean floor collision
@@ -916,7 +930,38 @@ void Fishes::UpdateDynamics(
                     - seaFloorNormal * 2.0f * targetVelocityAlongNormal;
 
                 // Converge direction change at this rate
-                fish.CurrentDirectionSmoothingConvergenceRate = 0.15f;
+                fish.CurrentDirectionSmoothingConvergenceRate = std::max(
+                    0.15f,
+                    fish.CurrentDirectionSmoothingConvergenceRate);
+            }
+        }
+
+        // Check AABB collisions
+        for (auto const & aabb : aabbSet.GetItems())
+        {
+            if (aabb.Contains(fishHeadPosition, 2.0f)) // Plus some margin
+            {
+                // Make sure the fish is directed towards the center of the AABB
+                vec2f const fishToCenterDirection = (aabb.Center - fishHeadPosition).normalise();
+                float const targetVelocityAlongDirection = fish.TargetVelocity.dot(fishToCenterDirection);
+                if (targetVelocityAlongDirection >= 0.0f)
+                {
+                    // Bounce target velocity around direction to center:
+                    // R = V − 2(V⋅N^)N^
+                    fish.TargetVelocity =
+                        fish.TargetVelocity
+                        - fishToCenterDirection * 2.0f * targetVelocityAlongDirection;
+
+                    // Panic a bit
+                    fish.PanicCharge = std::max(
+                        0.65f,
+                        fish.PanicCharge);
+
+                    // Converge direction change at a fast rate
+                    fish.CurrentDirectionSmoothingConvergenceRate = std::max(
+                        0.15f, // TODOHERE
+                        fish.CurrentDirectionSmoothingConvergenceRate);
+                }
             }
         }
     }
