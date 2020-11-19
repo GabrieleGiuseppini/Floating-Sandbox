@@ -519,6 +519,8 @@ void Fishes::UpdateDynamics(
     VisibleWorld const & visibleWorld,
     Geometry::AABBSet const & aabbSet)
 {
+    float constexpr OceanSurfaceLowWatermark = 4.0f;
+
     ElementCount const fishCount = static_cast<ElementCount>(mFishes.size());
 
     for (ElementIndex f = 0; f < fishCount; ++f)
@@ -636,9 +638,12 @@ void Fishes::UpdateDynamics(
 
         // Run freefall state machine
         if (!fish.IsInFreefall
-            && fish.CurrentPosition.y > oceanY + 2.0f) // Higher watermark, so that jump is more pronounced
+            && fish.CurrentPosition.y > oceanY)
         {
+            //
             // Enter freefall
+            //
+
             fish.IsInFreefall = true;
 
             // Stop u-turn, in case we were across it
@@ -648,9 +653,12 @@ void Fishes::UpdateDynamics(
             oceanSurface.DisplaceAt(fish.CurrentPosition.x, OceanSurfaceDisturbance);
         }
         else if (fish.IsInFreefall
-            && fish.CurrentPosition.y <= oceanY - 2.0f)
+            && fish.CurrentPosition.y <= oceanY - OceanSurfaceLowWatermark)  // Lower level for re-entry, so that jump is more pronounced
         {
-            // Leave freefall
+            //
+            // Leave freefall (re-entry!)
+            //
+
             fish.IsInFreefall = false;
 
             // Drag velocity down
@@ -880,7 +888,7 @@ void Fishes::UpdateDynamics(
 
         // Check whether we're too close to the water surface (idealized as being horizontal) - but only if fish is not in too much panic
         if (float const depth = oceanY - fish.CurrentPosition.y;
-            depth < 4.0f
+            depth < 2.0f + OceanSurfaceLowWatermark
             && fish.PanicCharge <= 0.3f
             && fish.TargetVelocity.y >= 0.0f) // Bounce away only if we're really going into it
         {
