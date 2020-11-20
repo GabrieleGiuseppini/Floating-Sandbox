@@ -1377,11 +1377,26 @@ void ElectricalElements::UpdateSinks(
                             switch (mMaterialBuffer[sinkElementIndex]->ShipSoundType)
                             {
                                 case ElectricalMaterial::ShipSoundElementType::Horn1:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(50));
+                                    break;
+                                }
+
                                 case ElectricalMaterial::ShipSoundElementType::Horn2:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(600));
+                                    break;
+                                }
+
                                 case ElectricalMaterial::ShipSoundElementType::Horn3:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(500));
+                                    break;
+                                }
+
                                 case ElectricalMaterial::ShipSoundElementType::Klaxon1:
                                 {
-                                    mParentWorld.DisturbOcean(gameParameters);
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(80));
                                     break;
                                 }
 

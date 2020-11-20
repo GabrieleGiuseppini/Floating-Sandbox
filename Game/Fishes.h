@@ -14,9 +14,11 @@
 
 #include <GameCore/AABBSet.h>
 #include <GameCore/GameTypes.h>
+#include <GameCore/GameWallClock.h>
 #include <GameCore/Vectors.h>
 
-#include <memory.h>
+#include <chrono>
+#include <memory>
 #include <optional>
 #include <vector>
 
@@ -47,14 +49,14 @@ public:
     void DisturbAt(
         vec2f const & worldCoordinates,
         float worldRadius,
-        GameParameters const & gameParameters);
+        std::chrono::milliseconds delay);
 
     void AttractAt(
         vec2f const & worldCoordinates,
         float worldRadius,
-        GameParameters const & gameParameters);
+        std::chrono::milliseconds delay);
 
-    void TriggerWidespreadPanic(GameParameters const & gameParameters);
+    void TriggerWidespreadPanic(std::chrono::milliseconds delay);
 
 private:
 
@@ -181,6 +183,41 @@ private:
         {}
     };
 
+    struct Interaction
+    {
+        enum class InteractionType
+        {
+            Attraction,
+            Disturbance
+        };
+
+        struct AreaSpecification
+        {
+            vec2f Position;
+            float Radius;
+
+            AreaSpecification(
+                vec2f const & position,
+                float radius)
+                : Position(position)
+                , Radius(radius)
+            {}
+        };
+
+        InteractionType Type;
+        std::optional<AreaSpecification> Area;
+        typename GameWallClock::time_point StartTime;
+
+        Interaction(
+            InteractionType type,
+            std::optional<AreaSpecification> area,
+            typename GameWallClock::time_point startTime)
+            : Type(type)
+            , Area(area)
+            , StartTime(startTime)
+        {}
+    };
+
 private:
 
     void UpdateNumberOfFishes(
@@ -190,6 +227,8 @@ private:
         Geometry::AABBSet const & aabbSet,
         GameParameters const & gameParameters,
         VisibleWorld const & visibleWorld);
+
+    void UpdateInteractions(GameParameters const & gameParameters);
 
     void UpdateDynamics(
         float currentSimulationTime,
@@ -205,6 +244,18 @@ private:
         VisibleWorld const & visibleWorld);
 
     void CreateNewFishShoalBatch(ElementIndex startFishIndex);
+
+    void EnactDisturbance(
+        vec2f const & worldCoordinates,
+        float worldRadius,
+        GameParameters const & gameParameters);
+
+    void EnactAttraction(
+        vec2f const & worldCoordinates,
+        float worldRadius,
+        GameParameters const & gameParameters);
+
+    void EnactWidespreadPanic(GameParameters const & gameParameters);
 
     inline static vec2f ChoosePosition(
         vec2f const & averagePosition,
@@ -244,6 +295,9 @@ private:
 
     // The...fishes
     std::vector<Fish> mFishes;
+
+    // Delayed interactions
+    std::vector<Interaction> mInteractions;
 
     // Parameters that the calculated values are current with
     float mCurrentFishSizeMultiplier;

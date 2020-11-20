@@ -244,16 +244,16 @@ Render:
 
 	= 1.16.0
 
-		= Frontier (*)
-			- Changelist
-
-		= Clouds in perspective (*)
-			- Changelist
+		+ Clouds in perspective (*)
+			+ Changelist
 
 		= Fishes (*)
 			- Changelist
 
-		- 500K download post on GameJolt
+		= Frontier (*)
+			- Changelist
+
+		+ 500K download post on GameJolt
 		- How to make a ship tutorial post on GameJolt: https://www.youtube.com/watch?v=7KhRdTv9fTo
 
 		- Check issue with ship having water material that breaks
@@ -447,8 +447,20 @@ Render:
 		- Update current version in FAQ
 
 - Localization:
+	- Italian:
+		+ 1.15.2
+		- 1.16.0
 	- Russian: DioxCode
 		+ 1.15.2
+		- 1.16.0
+
+	- Spanish (Latin American)
+		- Joadix
+		- Fallback: The G a z e r W o l f
+	- Portuguese: Kiko
+		- Add to credits: "Kiko", and change in other sections as well, and also in .shp files
+		- Fallback: The G a z e r W o l f
+
 	- Indonesian: Adli
 		= Doing HTMLs
 		- Add to credits:
@@ -457,15 +469,9 @@ Render:
 		= Doing HTMLs
 		- Add to credits:
 		- Invite to server
-	- Portuguese: Kiko
-		- Add to credits: "Kiko", and change in other sections as well, and also in .shp files
-		- Fallback: The G a z e r W o l f
 	- Polish: MemeMachine
 		- Add to credits:
 		- Invite to server
-	- Spanish (Latin American)
-		- Joadix
-		- Fallback: The G a z e r W o l f
 
 - Ships:
 	# Credit names:
@@ -924,28 +930,6 @@ Render:
 
 	- Decide whether auto-zoom considering position would be a good idea or not
 
-	= Clouds in perspective (*): should relay perspective when moving camera up and down
-		+ Distribute Z layers
-		+ Do Y strata
-			+ 3 strata, from NDCy=0.3 to NDCy=0.9
-		+ Storm clouds
-			+ z = 0
-			+ random y
-			+ test
-		+ Cloud dynamics
-			+ Redo explosion atlas
-			+ Assign initial phases
-			+ Growth progress needs to be incremental (or else wind speed changes are visible)
-			+ Adjust velocity (slower) and make it depend on cloud speed
-			+ Test using separate texture
-		+ Textures:
-			+ Clouds 2 and 9 are dupes
-			+ Cloud 3 is truncated @ left
-			+ New clouds
-		= Test:
-			+ Mariana's Trench
-			- Dell perf
-
 	- Intro screen: the game's title falling into the sea and floating back up - interactive to a smaller extent, e.g.
 	  by just punching holes
 
@@ -1061,7 +1045,7 @@ Render:
 		! Spec:
 			! Textures: https://oceana.org/marine-life
 			! Ideas (Wreno): https://docs.google.com/document/d/1RHF9BC2L19Dcx9YzkBSQ1hdz8Pnxz0vC8R6tj03txr8/edit
-		= Impl:
+		+ Impl:
 			+ Base
 				+ ViewModel: nuke mVisibleXXX and replace with WorldFocus
 				+ WorldRenderContext: param for fish size adjust (much like ship flames)
@@ -1312,7 +1296,7 @@ Render:
 						+ Precalc position of head
 						+ Shoaling
 						+ If not needed, nuke whole sort/sortedbyx/etc
-			= AABB around ships' frontiers, so that fish AI's avoid them
+			+ AABB around ships' frontiers, so that fish AI's avoid them
 				+ AABBSet class, at Geometry, containing vector and helper methods and helper calculations
 				+ World maintains AllShipAABBs
 				+ Frontiers::FrontierIndices maintenance
@@ -1336,9 +1320,8 @@ Render:
 				+ Avoid spawning in AABBs
 					+ Split: ChoosePosition and FindPosition
 					+ Also avoid spawning underneath ocean floor
-				- Test "sudden appearance of AABBs" at ship load, which happens _after_ initial Fishes initialization
-					- If really bad, consider nuking initial Fishes initialization
-			- Url with version
+				+ Test "sudden appearance of AABBs" at ship load, which happens _after_ initial Fishes initialization
+					+ If really bad, consider nuking initial Fishes initialization			
 		+ Test:
 			+ 0-depth ocean
 			+ All sliders
@@ -1361,12 +1344,20 @@ Render:
 				+ Do shoaling flag
 				+ Shoal sspacing adjust
 			+ See if can improve fish swimming above ocean surface
-			- Optimize shoaling by only looping through fish's shoal, rather than all fishes
-			= Fish scared by some ship sounds:
+			+ Optimize shoaling by only looping through fish's shoal, rather than all fishes
+				+ Start: 38/39ms
+				+ End: 3ms
+			+ Fish scared by some ship sounds:
 				+ Klaxon, Fog horn
-				- With initial delay, and continuous
-					- World::DisturbOcean takes Delay and Duration (wall-clock time)
-					- Fishes::DisturbStateMachine: vector
+				+ With initial delay
+					+ World::DisturbOcean takes Delay (wall-clock time)
+					+ Fishes::Interactions: vector
+				+ Test:
+					+ Manual x 2
+					+ Bomb
+					+ Tsunami
+					+ Destroy
+					+ Thanos
 			- Calibration: do fish only on machines that are powerful enough
 				- Unless Dell can make it
 				- See "calibration" work item
@@ -3721,6 +3712,26 @@ IF WX:
 			+ By invoking glFlush() and SwapBuffers() in MainFrame, before Render()
 	+ Test using gl_TexCoord to pass texture coords from vertex to fragment
 	+ Selector to change color of (intaken) water
+	+ Clouds in perspective (*): should relay perspective when moving camera up and down
+		+ Distribute Z layers
+		+ Do Y strata
+			+ 3 strata, from NDCy=0.3 to NDCy=0.9
+		+ Storm clouds
+			+ z = 0
+			+ random y
+			+ test
+		+ Cloud dynamics
+			+ Redo explosion atlas
+			+ Assign initial phases
+			+ Growth progress needs to be incremental (or else wind speed changes are visible)
+			+ Adjust velocity (slower) and make it depend on cloud speed
+			+ Test using separate texture
+		+ Textures:
+			+ Clouds 2 and 9 are dupes
+			+ Cloud 3 is truncated @ left
+			+ New clouds
+		+ Test:
+			+ Mariana's Trench
 
 + Gfx Optimizations:
 	+ Try without buffer population:

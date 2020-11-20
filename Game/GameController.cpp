@@ -682,7 +682,8 @@ void GameController::NotifySoundMuted(bool isSoundMuted)
 
 void GameController::ScareFish(
     vec2f const & screenCoordinates,
-    float radius)
+    float radius,
+    std::chrono::milliseconds delay)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -691,12 +692,13 @@ void GameController::ScareFish(
     mWorld->ScareFish(
         worldCoordinates,
         radius,
-        mGameParameters);
+        delay);
 }
 
 void GameController::AttractFish(
     vec2f const & screenCoordinates,
-    float radius)
+    float radius,
+    std::chrono::milliseconds delay)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -705,7 +707,7 @@ void GameController::AttractFish(
     mWorld->AttractFish(
         worldCoordinates,
         radius,
-        mGameParameters);
+        delay);
 }
 
 void GameController::PickObjectToMove(
@@ -1160,7 +1162,7 @@ void GameController::QueryNearestPointAt(vec2f const & screenCoordinates) const
 void GameController::TriggerTsunami()
 {
     assert(!!mWorld);
-    mWorld->TriggerTsunami(mGameParameters);
+    mWorld->TriggerTsunami();
 }
 
 void GameController::TriggerRogueWave()

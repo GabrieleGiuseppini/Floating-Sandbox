@@ -165,8 +165,8 @@ public:
     // Interactions
     //
 
-    void ScareFish(vec2f const & screenCoordinates, float radius) override;
-    void AttractFish(vec2f const & screenCoordinates, float radius) override;
+    void ScareFish(vec2f const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
+    void AttractFish(vec2f const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
 
     void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ElementId> & elementId) override;
     void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ShipId> & shipId) override;

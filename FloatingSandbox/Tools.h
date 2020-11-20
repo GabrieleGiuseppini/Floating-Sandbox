@@ -2287,7 +2287,8 @@ public:
                 {
                     mGameController->AttractFish(
                         inputState.MousePosition,
-                        2.0f); // Radius
+                        2.0f, // Radius
+                        std::chrono::milliseconds(0)); // Delay
 
                     break;
                 }
@@ -2296,7 +2297,8 @@ public:
                 {
                     mGameController->ScareFish(
                         inputState.MousePosition,
-                        1.5f); // Radius
+                        1.5f, // Radius
+                        std::chrono::milliseconds(0)); // Delay
 
                     break;
                 }

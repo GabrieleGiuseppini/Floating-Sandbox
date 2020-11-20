@@ -24,6 +24,7 @@
 #include <GameCore/TaskThreadPool.h>
 #include <GameCore/Vectors.h>
 
+#include <chrono>
 #include <cstdint>
 #include <memory>
 #include <set>
@@ -103,17 +104,17 @@ public:
     inline void DisturbOceanAt(
         vec2f const & position,
         float fishScareRadius,
-        GameParameters const & gameParameters)
+        std::chrono::milliseconds delay)
     {
         mFishes.DisturbAt(
             position,
             fishScareRadius,
-            gameParameters);
+            delay);
     }
 
-    inline void DisturbOcean(GameParameters const & gameParameters)
+    inline void DisturbOcean(std::chrono::milliseconds delay)
     {
-        mFishes.TriggerWidespreadPanic(gameParameters);
+        mFishes.TriggerWidespreadPanic(delay);
     }
 
     inline vec2f const & GetCurrentWindSpeed() const
@@ -139,12 +140,12 @@ public:
     void ScareFish(
         vec2f const & position,
         float radius,
-        GameParameters const & gameParameters);
+        std::chrono::milliseconds delay);
 
     void AttractFish(
         vec2f const & position,
         float radius,
-        GameParameters const & gameParameters);
+        std::chrono::milliseconds delay);
 
     void PickPointToMove(
         vec2f const & pickPosition,
@@ -293,7 +294,7 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-    void TriggerTsunami(GameParameters const & gameParameters);
+    void TriggerTsunami();
 
     void TriggerRogueWave();
 

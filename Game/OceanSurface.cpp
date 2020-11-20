@@ -154,7 +154,7 @@ void OceanSurface::Update(
                 gameParameters.TsunamiRate);
 
             // Tell world
-            mParentWorld.DisturbOcean(gameParameters);
+            mParentWorld.DisturbOcean(std::chrono::milliseconds(0));
         }
     }
 

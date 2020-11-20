@@ -107,7 +107,7 @@ bool Ship::UpdateExplosionStateMachine(
         mParentWorld.DisturbOceanAt(
             centerPosition,
             blastRadius * 5.0f,
-            gameParameters);
+            std::chrono::milliseconds(0));
 
         //
         // Check if blast is over

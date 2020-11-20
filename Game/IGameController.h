@@ -16,6 +16,7 @@
 #include <GameCore/UniqueBuffer.h>
 #include <GameCore/Vectors.h>
 
+#include <chrono>
 #include <filesystem>
 #include <functional>
 #include <optional>
@@ -86,8 +87,8 @@ struct IGameController
     // Interactions
     //
 
-    virtual void ScareFish(vec2f const & screenCoordinates, float radius) = 0;
-    virtual void AttractFish(vec2f const & screenCoordinates, float radius) = 0;
+    virtual void ScareFish(vec2f const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
+    virtual void AttractFish(vec2f const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
 
     virtual void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ElementId> & elementId) = 0;
     virtual void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ShipId> & shipId) = 0;

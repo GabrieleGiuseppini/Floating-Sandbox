@@ -143,17 +143,17 @@ bool World::IsUnderwater(ElementId elementId) const
 void World::ScareFish(
     vec2f const & position,
     float radius,
-    GameParameters const & gameParameters)
+    std::chrono::milliseconds delay)
 {
-    mFishes.DisturbAt(position, radius, gameParameters);
+    mFishes.DisturbAt(position, radius, delay);
 }
 
 void World::AttractFish(
     vec2f const & position,
     float radius,
-    GameParameters const & gameParameters)
+    std::chrono::milliseconds delay)
 {
-    mFishes.AttractAt(position, radius, gameParameters);
+    mFishes.AttractAt(position, radius, delay);
 }
 
 void World::PickPointToMove(
@@ -290,7 +290,7 @@ void World::DestroyAt(
     }
 
     // Also scare fishes at bit
-    mFishes.DisturbAt(targetPos, 0.3f, gameParameters);
+    mFishes.DisturbAt(targetPos, 0.3f, std::chrono::milliseconds(0));
 }
 
 void World::RepairAt(
@@ -606,15 +606,18 @@ void World::ApplyThanosSnap(
     mOceanSurface.ApplyThanosSnap(leftFrontX, rightFrontX);
 
     // Apply to fishes
+
     float constexpr DisturbanceRadius = 2.0f;
+
     mFishes.DisturbAt(
         vec2f(leftFrontX, 0.0f),
         DisturbanceRadius,
-        gameParameters);
+        std::chrono::milliseconds(0));
+
     mFishes.DisturbAt(
         vec2f(rightFrontX, 0.0f),
         DisturbanceRadius,
-        gameParameters);
+        std::chrono::milliseconds(0));
 }
 
 std::optional<ElementId> World::GetNearestPointAt(
@@ -678,10 +681,10 @@ void World::ApplyLightning(
     }
 }
 
-void World::TriggerTsunami(GameParameters const & gameParameters)
+void World::TriggerTsunami()
 {
     mOceanSurface.TriggerTsunami(mCurrentSimulationTime);
-    DisturbOcean(gameParameters);
+    DisturbOcean(std::chrono::milliseconds(0));
 }
 
 void World::TriggerStorm()

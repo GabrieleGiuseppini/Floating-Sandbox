@@ -1,3 +1,6 @@
+1.16.0.1
+- Improved clouds
+
 1.15.6.1
 - Fixed rare crash at startup
 	- Thanks to CallMeWilliam and Remu Kanava
