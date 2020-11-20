@@ -963,6 +963,7 @@ void Fishes::UpdateDynamics(
 
             for (auto const & aabb : aabbSet.GetItems())
             {
+                // TODO: optimize: move boundary calc's here and use it instead of Contains
                 if (aabb.Contains(fishHeadPosition, AABBMargin))
                 {
                     float const lBoundary = aabb.BottomLeft.x - AABBMargin;
@@ -971,6 +972,7 @@ void Fishes::UpdateDynamics(
                     float const bBoundary = aabb.BottomLeft.y - AABBMargin;
 
                     // Find which axes we are currently closest with, and bounce on it
+                    vec2f normal = vec2f::zero();
                     bool hasBounced = false;
                     if (std::min(fishHeadPosition.x - lBoundary, rBoundary - fishHeadPosition.x)
                         < std::min(fishHeadPosition.y - bBoundary, tBoundary - fishHeadPosition.y))
@@ -979,18 +981,20 @@ void Fishes::UpdateDynamics(
                         if (fishHeadPosition.x - lBoundary < rBoundary - fishHeadPosition.x)
                         {
                             // Left
-                            if (fish.TargetVelocity.x > 0.0f)
+                            //if (fish.TargetVelocity.x > 0.0f)
                             {
-                                fish.TargetVelocity.x *= -1.0f;
+                                normal = vec2f(-1.0f, 0.0f);
+                                //fish.TargetVelocity.x *= -1.0f;
                                 hasBounced = true;
                             }
                         }
                         else
                         {
                             // Right
-                            if (fish.TargetVelocity.x < 0.0f)
+                            //if (fish.TargetVelocity.x < 0.0f)
                             {
-                                fish.TargetVelocity.x *= -1.0f;
+                                normal = vec2f(1.0f, 0.0f);
+                                //fish.TargetVelocity.x *= -1.0f;
                                 hasBounced = true;
                             }
                         }
@@ -1001,18 +1005,20 @@ void Fishes::UpdateDynamics(
                         if (fishHeadPosition.y - bBoundary < tBoundary - fishHeadPosition.y)
                         {
                             // Bottom
-                            if (fish.TargetVelocity.y > 0.0f)
+                            //if (fish.TargetVelocity.y > 0.0f)
                             {
-                                fish.TargetVelocity.y *= -1.0f;
+                                normal = vec2f(0.0f, -1.0f);
+                                //fish.TargetVelocity.y *= -1.0f;
                                 hasBounced = true;
                             }
                         }
                         else
                         {
                             // Top
-                            if (fish.TargetVelocity.y < 0.0f)
+                            //if (fish.TargetVelocity.y < 0.0f)
                             {
-                                fish.TargetVelocity.y *= -1.0f;
+                                normal = vec2f(0.0f, 1.0f);
+                                //fish.TargetVelocity.y *= -1.0f;
                                 hasBounced = true;
                             }
                         }
@@ -1020,8 +1026,12 @@ void Fishes::UpdateDynamics(
 
                     // Panic a bit
                     fish.PanicCharge = std::max(
-                        0.65f,
+                        0.5f,
                         fish.PanicCharge);
+
+                    fish.TargetVelocity =
+                        (fish.TargetVelocity.normalise() + normal * 2.0f).normalise()
+                        * fish.TargetVelocity.length();
 
                     // Converge direction change at a fast rate
                     fish.CurrentDirectionSmoothingConvergenceRate = std::max(
