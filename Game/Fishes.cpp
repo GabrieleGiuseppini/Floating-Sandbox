@@ -963,80 +963,47 @@ void Fishes::UpdateDynamics(
 
             for (auto const & aabb : aabbSet.GetItems())
             {
-                // TODO: optimize: move boundary calc's here and use it instead of Contains
-                if (aabb.Contains(fishHeadPosition, AABBMargin))
-                {
-                    float const lBoundary = aabb.BottomLeft.x - AABBMargin;
-                    float const rBoundary = aabb.TopRight.x + AABBMargin;
-                    float const tBoundary = aabb.TopRight.y + AABBMargin;
-                    float const bBoundary = aabb.BottomLeft.y - AABBMargin;
+                float const lMargin = fishHeadPosition.x - (aabb.BottomLeft.x - AABBMargin);
+                float const rMargin = (aabb.TopRight.x + AABBMargin) - fishHeadPosition.x;
+                float const tMargin = (aabb.TopRight.y + AABBMargin) - fishHeadPosition.y;
+                float const bMargin = fishHeadPosition.y - (aabb.BottomLeft.y - AABBMargin);
 
-                    // Find which axes we are currently closest with, and bounce on it
-                    vec2f normal = vec2f::zero();
-                    bool hasBounced = false;
-                    if (std::min(fishHeadPosition.x - lBoundary, rBoundary - fishHeadPosition.x)
-                        < std::min(fishHeadPosition.y - bBoundary, tBoundary - fishHeadPosition.y))
+                if (lMargin >= 0.0f && rMargin >= 0.0f && tMargin >= 0.0f && bMargin >= 0.0f)
+                {
+                    // Fish head is in AABB (plus margin)...
+                    // ...find to which side of the AABB it's closest
+
+                    vec2f outwardNormal;
+                    if (std::min(lMargin, rMargin) < std::min(bMargin, tMargin))
                     {
-                        // We are closest to the vertical axes
-                        if (fishHeadPosition.x - lBoundary < rBoundary - fishHeadPosition.x)
-                        {
-                            // Left
-                            //if (fish.TargetVelocity.x > 0.0f)
-                            {
-                                normal = vec2f(-1.0f, 0.0f);
-                                //fish.TargetVelocity.x *= -1.0f;
-                                hasBounced = true;
-                            }
-                        }
-                        else
-                        {
-                            // Right
-                            //if (fish.TargetVelocity.x < 0.0f)
-                            {
-                                normal = vec2f(1.0f, 0.0f);
-                                //fish.TargetVelocity.x *= -1.0f;
-                                hasBounced = true;
-                            }
-                        }
+                        // Vertical axes
+                        outwardNormal = vec2f(
+                            lMargin < rMargin ? -1.0f : 1.0f,
+                            0.0f);
                     }
                     else
                     {
-                        // We are closest to the horizontal axes
-                        if (fishHeadPosition.y - bBoundary < tBoundary - fishHeadPosition.y)
-                        {
-                            // Bottom
-                            //if (fish.TargetVelocity.y > 0.0f)
-                            {
-                                normal = vec2f(0.0f, -1.0f);
-                                //fish.TargetVelocity.y *= -1.0f;
-                                hasBounced = true;
-                            }
-                        }
-                        else
-                        {
-                            // Top
-                            //if (fish.TargetVelocity.y < 0.0f)
-                            {
-                                normal = vec2f(0.0f, 1.0f);
-                                //fish.TargetVelocity.y *= -1.0f;
-                                hasBounced = true;
-                            }
-                        }
+                        // Horizontal axes
+                        outwardNormal = vec2f(
+                            0.0f,
+                            bMargin < tMargin ? -1.0f : 1.0f);
                     }
+
+                    // Rotate target velocity towards normal
+                    float const targetVelocityMagnitude = fish.TargetVelocity.length();
+                    fish.TargetVelocity =
+                        (fish.TargetVelocity.normalise(targetVelocityMagnitude) + outwardNormal * 2.0f).normalise()
+                        * targetVelocityMagnitude;
+
+                    // Converge direction change at a fast rate
+                    fish.CurrentDirectionSmoothingConvergenceRate = std::max(
+                        0.15f,
+                        fish.CurrentDirectionSmoothingConvergenceRate);
 
                     // Panic a bit
                     fish.PanicCharge = std::max(
                         0.5f,
                         fish.PanicCharge);
-
-                    fish.TargetVelocity =
-                        (fish.TargetVelocity.normalise() + normal * 2.0f).normalise()
-                        * fish.TargetVelocity.length();
-
-                    // Converge direction change at a fast rate
-                    fish.CurrentDirectionSmoothingConvergenceRate = std::max(
-                        0.15f, // TODOHERE
-                        fish.CurrentDirectionSmoothingConvergenceRate);
 
                     // Stop steering, if we're steering
                     fish.CruiseSteeringState.reset();
