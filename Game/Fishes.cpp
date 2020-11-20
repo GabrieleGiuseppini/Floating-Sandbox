@@ -457,10 +457,12 @@ void Fishes::UpdateNumberOfFishes(
                     visibleWorld.Width * PositionXVarianceFactor
                     * 3.0f * static_cast<float>(1 + mFishes.size() / mShoalBatchSize);
 
-                mFishShoals[currentShoalSearchIndex].InitialPosition = ChoosePosition(
+                mFishShoals[currentShoalSearchIndex].InitialPosition = FindPosition(
                     vec2f(visibleWorld.Center.x, species.OceanDepth),
                     xVariance,
-                    PositionYVariance * 0.5f);
+                    PositionYVariance * 0.5f,
+                    oceanFloor,
+                    aabbSet);
 
                 mFishShoals[currentShoalSearchIndex].InitialPosition.x = mFishShoals[currentShoalSearchIndex].InitialDirection.x < 0.0f
                     ? std::abs(mFishShoals[currentShoalSearchIndex].InitialPosition.x)

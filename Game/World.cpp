@@ -20,7 +20,7 @@ World::World(
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     std::shared_ptr<TaskThreadPool> taskThreadPool,
     GameParameters const & gameParameters,
-    VisibleWorld const & visibleWorld)
+    VisibleWorld const & /*visibleWorld*/)
     : mCurrentSimulationTime(0.0f)
     //
     , mGameEventHandler(std::move(gameEventDispatcher))
@@ -38,14 +38,13 @@ World::World(
     //
     , mAllAABBs()
 {
-    // Initialize world pieces
+    // Initialize world pieces that need to be initialized now
     mStars.Update(gameParameters);
     mStorm.Update(mCurrentSimulationTime, gameParameters);
     mWind.Update(mStorm.GetParameters(), gameParameters);
     mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
     mOceanFloor.Update(gameParameters);
-    mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, gameParameters, visibleWorld, mAllAABBs);
 }
 
 std::tuple<ShipId, RgbaImageData> World::AddShip(
