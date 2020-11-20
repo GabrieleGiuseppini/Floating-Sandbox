@@ -264,6 +264,8 @@ Render:
 
 		- New rain: https://www.shadertoy.com/view/wsKcWw
 
+		- Try with improved generation of random sparkles at slice: https://mathworld.wolfram.com/SpherePointPicking.html
+
 		- ShipRenderContext: see if may turn off Z-depth check @ triangles
 			- Check first on Dell if it improves perf
 
@@ -1326,13 +1328,14 @@ Render:
 					+ SettingsDialog checkbox
 					+ Shader
 				+ Run in debug
-				= Fishes::Update(.) takes AllShipAABBs
+				+ Fishes::Update(.) takes AllShipAABBs
 					+ First update of Fishes at World initialization takes empty AABB
-					= AABB collision check:
+					+ AABB collision check:
 						+ If cur pos within any AABB (with margin), and target vel towards: bounce target vel
 							+ Basically, just copy BounceOceanFloor
-				- Avoid spawning in AABBs
-					- Also avoid spawning underneath ocean floor
+				+ Avoid spawning in AABBs
+					+ Split: ChoosePosition and FindPosition
+					+ Also avoid spawning underneath ocean floor
 				- Test "sudden appearance of AABBs" at ship load, which happens _after_ initial Fishes initialization
 					- If really bad, consider nuking initial Fishes initialization
 			- Url with version
@@ -1357,7 +1360,8 @@ Render:
 				+ Fish size multiplier
 				+ Do shoaling flag
 				+ Shoal sspacing adjust
-			- See if can improve fish swimming above ocean surface
+			+ See if can improve fish swimming above ocean surface
+			- Optimize shoaling by only looping through fish's shoal, rather than all fishes
 			= Fish scared by some ship sounds:
 				+ Klaxon, Fog horn
 				- With initial delay, and continuous

@@ -187,17 +187,17 @@ private:
         float currentSimulationTime,
         OceanSurface & oceanSurface,
         OceanFloor const & oceanFloor,
+        Geometry::AABBSet const & aabbSet,
         GameParameters const & gameParameters,
-        VisibleWorld const & visibleWorld,
-        Geometry::AABBSet const & aabbSet);
+        VisibleWorld const & visibleWorld);
 
     void UpdateDynamics(
         float currentSimulationTime,
         OceanSurface & oceanSurface,
         OceanFloor const & oceanFloor,
+        Geometry::AABBSet const & aabbSet,
         GameParameters const & gameParameters,
-        VisibleWorld const & visibleWorld,
-        Geometry::AABBSet const & aabbSet);
+        VisibleWorld const & visibleWorld);
 
     void UpdateShoaling(
         float currentSimulationTime,
@@ -210,6 +210,13 @@ private:
         vec2f const & averagePosition,
         float xVariance,
         float yVariance);
+
+    inline static vec2f FindPosition(
+        vec2f const & averagePosition,
+        float xVariance,
+        float yVariance,
+        OceanFloor const & oceanFloor,
+        Geometry::AABBSet const & aabbSet);
 
     inline static vec2f FindNewCruisingTargetPosition(
         vec2f const & currentPosition,

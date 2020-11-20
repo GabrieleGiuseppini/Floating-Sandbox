@@ -8,6 +8,7 @@
 #include "AABB.h"
 #include "Vectors.h"
 
+#include <algorithm>
 #include <vector>
 
 namespace Geometry {
@@ -39,6 +40,30 @@ public:
     inline std::vector<ExtendedAABB> const & GetItems() const noexcept
     {
         return mAABBs;
+    }
+
+    inline bool Contains(vec2f const & point) const noexcept
+    {
+        return std::any_of(
+            mAABBs.cbegin(),
+            mAABBs.cend(),
+            [&point](auto const & aabb)
+            {
+                return aabb.Contains(point);
+            });
+    }
+
+    inline bool Contains(
+        vec2f const & point,
+        float margin) const noexcept
+    {
+        return std::any_of(
+            mAABBs.cbegin(),
+            mAABBs.cend(),
+            [&point, &margin](auto const & aabb)
+            {
+                return aabb.Contains(point, margin);
+            });
     }
 
     // Note: at this moment we assume that we don't need to track AABBs back to

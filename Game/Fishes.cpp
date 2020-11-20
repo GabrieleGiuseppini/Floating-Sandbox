@@ -21,6 +21,8 @@ namespace /*anonymous*/ {
 float constexpr PositionXVarianceFactor = 1.0f / 4.0f;
 float constexpr PositionYVariance = 10.0f;
 
+float constexpr AABBMargin = 4.0f;
+
 size_t GetShoalBatchSize(FishSpeciesDatabase const & fishSpeciesDatabase)
 {
     return std::accumulate(
@@ -112,9 +114,9 @@ void Fishes::Update(
         currentSimulationTime,
         oceanSurface,
         oceanFloor,
+        aabbSet,
         gameParameters,
-        visibleWorld,
-        aabbSet);
+        visibleWorld);
 
     //
     // Update dynamics
@@ -124,9 +126,9 @@ void Fishes::Update(
         currentSimulationTime,
         oceanSurface,
         oceanFloor,
+        aabbSet,
         gameParameters,
-        visibleWorld,
-        aabbSet);
+        visibleWorld);
 
     //
     // Update shoaling
@@ -361,10 +363,10 @@ void Fishes::TriggerWidespreadPanic(GameParameters const & gameParameters)
 void Fishes::UpdateNumberOfFishes(
     float /*currentSimulationTime*/,
     OceanSurface & /*oceanSurface*/,
-    OceanFloor const & /*oceanFloor*/,
+    OceanFloor const & oceanFloor,
+    Geometry::AABBSet const & aabbSet,
     GameParameters const & gameParameters,
-    VisibleWorld const & visibleWorld,
-    Geometry::AABBSet const & aabbSet)
+    VisibleWorld const & visibleWorld)
 {
     bool isDirty = false;
 
@@ -469,10 +471,12 @@ void Fishes::UpdateNumberOfFishes(
             // 2) Create fish in this shoal
             //
 
-            vec2f const initialPosition = ChoosePosition(
+            vec2f const initialPosition = FindPosition(
                 mFishShoals[currentShoalSearchIndex].InitialPosition,
                 10.0f,
-                4.0f);
+                4.0f,
+                oceanFloor,
+                aabbSet);
 
             vec2f const targetPosition = FindNewCruisingTargetPosition(
                 initialPosition,
@@ -515,9 +519,9 @@ void Fishes::UpdateDynamics(
     float currentSimulationTime,
     OceanSurface & oceanSurface,
     OceanFloor const & oceanFloor,
+    Geometry::AABBSet const & aabbSet,
     GameParameters const & gameParameters,
-    VisibleWorld const & visibleWorld,
-    Geometry::AABBSet const & aabbSet)
+    VisibleWorld const & visibleWorld)
 {
     float constexpr OceanSurfaceLowWatermark = 4.0f;
 
@@ -957,10 +961,9 @@ void Fishes::UpdateDynamics(
         // 6) Check AABB boundaries
         ///////////////////////////////////////////////////////////////////
 
-        if (fish.PanicCharge <= 0.3f) // Only if we're not in panic
+        //if (fish.PanicCharge <= 0.3f) // Only if we're not in panic
+        if (fish.PanicCharge <= 0.1f) // Only if we're not in panic
         {
-            float constexpr AABBMargin = 4.0f;
-
             for (auto const & aabb : aabbSet.GetItems())
             {
                 float const lMargin = fishHeadPosition.x - (aabb.BottomLeft.x - AABBMargin);
@@ -1234,6 +1237,34 @@ vec2f Fishes::ChoosePosition(
         - std::fabs(GameRandomEngine::GetInstance().GenerateNormalReal(averagePosition.y, yVariance));
 
     return vec2f(positionX, positionY);
+}
+
+vec2f Fishes::FindPosition(
+    vec2f const & averagePosition,
+    float xVariance,
+    float yVariance,
+    OceanFloor const & oceanFloor,
+    Geometry::AABBSet const & aabbSet)
+{
+    vec2f position;
+
+    // Try a few times without hitting boundaries
+    for (int i = 0; i < 10; ++i)
+    {
+        position = ChoosePosition(averagePosition, xVariance, yVariance);
+
+        assert(position.x >= -GameParameters::HalfMaxWorldWidth
+                && position.x <= GameParameters::HalfMaxWorldWidth);
+
+        if (!aabbSet.Contains(position, AABBMargin)
+            && oceanFloor.GetHeightAt(position.x) < position.y)
+        {
+            // Passes all tests
+            break;
+        }
+    }
+
+    return position;
 }
 
 vec2f Fishes::FindNewCruisingTargetPosition(
