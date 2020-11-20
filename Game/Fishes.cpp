@@ -529,9 +529,9 @@ void Fishes::UpdateDynamics(
 
         FishSpecies const & species = mFishShoals[fish.ShoalId].Species;
 
-        //
+        ///////////////////////////////////////////////////////////////////
         // 1) Steer or auto-smooth direction
-        //
+        ///////////////////////////////////////////////////////////////////
 
         if (fish.CruiseSteeringState.has_value())
         {
@@ -627,16 +627,19 @@ void Fishes::UpdateDynamics(
                 + (fish.CurrentDirectionSmoothingConvergenceRate - Fish::IdealDirectionSmoothingConvergenceRate) * 0.98f;
         }
 
-        //
+        ///////////////////////////////////////////////////////////////////
         // 2) Update dynamics
-        //
+        ///////////////////////////////////////////////////////////////////
 
         float constexpr OceanSurfaceDisturbance = 1.0f; // Magic number
 
         // Get water surface level at this fish
         float const oceanY = oceanSurface.GetHeightAt(fish.CurrentPosition.x);
 
+        //
         // Run freefall state machine
+        //
+
         if (!fish.IsInFreefall
             && fish.CurrentPosition.y > oceanY)
         {
@@ -682,7 +685,10 @@ void Fishes::UpdateDynamics(
             oceanSurface.DisplaceAt(fish.CurrentPosition.x, OceanSurfaceDisturbance);
         }
 
+        //
         // Dynamics update
+        //
+
         if (!fish.IsInFreefall)
         {
             //
@@ -744,9 +750,9 @@ void Fishes::UpdateDynamics(
         // Decay attraction timer
         fish.AttractionDecayTimer *= 0.75f;
 
-        //
+        ///////////////////////////////////////////////////////////////////
         // 3) World boundaries check
-        //
+        ///////////////////////////////////////////////////////////////////
 
         bool hasBouncedAgainstWorldBoundaries = false;
 
@@ -777,15 +783,18 @@ void Fishes::UpdateDynamics(
 
         if (hasBouncedAgainstWorldBoundaries)
         {
-            // Find a position away
+            // Find a new target position away
             fish.TargetPosition = FindNewCruisingTargetPosition(
                 fish.CurrentPosition,
                 fish.TargetVelocity.normalise(),
                 species,
                 visibleWorld);
 
-            // Stop cruising
+            // Stop cruising, in case we were cruising
             fish.CruiseSteeringState.reset();
+
+            // Skip everything else
+            continue;
         }
 
         assert(fish.CurrentPosition.x >= -GameParameters::HalfMaxWorldWidth
@@ -798,9 +807,9 @@ void Fishes::UpdateDynamics(
             continue;
         }
 
-        //
+        ///////////////////////////////////////////////////////////////////
         // 4) Check state machine transitions
-        //
+        ///////////////////////////////////////////////////////////////////
 
         // Check whether this fish has reached its target
         if (std::abs(fish.CurrentPosition.x - fish.TargetPosition.x) < 7.0f
@@ -877,9 +886,9 @@ void Fishes::UpdateDynamics(
             }
         }
 
-        //
-        // 5) Check ocean and AABB boundaries
-        //
+        ///////////////////////////////////////////////////////////////////
+        // 5) Check ocean boundaries
+        ///////////////////////////////////////////////////////////////////
 
         // Calculate position of head
         vec2f const fishHeadPosition =
@@ -889,7 +898,7 @@ void Fishes::UpdateDynamics(
         // Check whether we're too close to the water surface (idealized as being horizontal) - but only if fish is not in too much panic
         if (float const depth = oceanY - fish.CurrentPosition.y;
             depth < 2.0f + OceanSurfaceLowWatermark
-            && fish.PanicCharge <= 0.3f
+            && fish.PanicCharge <= 0.3f // Not too much panig
             && fish.TargetVelocity.y >= 0.0f) // Bounce away only if we're really going into it
         {
             //
@@ -944,21 +953,70 @@ void Fishes::UpdateDynamics(
             }
         }
 
-        // Check AABB collisions
-        for (auto const & aabb : aabbSet.GetItems())
+        ///////////////////////////////////////////////////////////////////
+        // 6) Check AABB boundaries
+        ///////////////////////////////////////////////////////////////////
+
+        if (fish.PanicCharge <= 0.3f) // Only if we're not in panic
         {
-            if (aabb.Contains(fishHeadPosition, 2.0f)) // Plus some margin
+            float constexpr AABBMargin = 4.0f;
+
+            for (auto const & aabb : aabbSet.GetItems())
             {
-                // Make sure the fish is directed towards the center of the AABB
-                vec2f const fishToCenterDirection = (aabb.Center - fishHeadPosition).normalise();
-                float const targetVelocityAlongDirection = fish.TargetVelocity.dot(fishToCenterDirection);
-                if (targetVelocityAlongDirection >= 0.0f)
+                if (aabb.Contains(fishHeadPosition, AABBMargin))
                 {
-                    // Bounce target velocity around direction to center:
-                    // R = V − 2(V⋅N^)N^
-                    fish.TargetVelocity =
-                        fish.TargetVelocity
-                        - fishToCenterDirection * 2.0f * targetVelocityAlongDirection;
+                    float const lBoundary = aabb.BottomLeft.x - AABBMargin;
+                    float const rBoundary = aabb.TopRight.x + AABBMargin;
+                    float const tBoundary = aabb.TopRight.y + AABBMargin;
+                    float const bBoundary = aabb.BottomLeft.y - AABBMargin;
+
+                    // Find which axes we are currently closest with, and bounce on it
+                    bool hasBounced = false;
+                    if (std::min(fishHeadPosition.x - lBoundary, rBoundary - fishHeadPosition.x)
+                        < std::min(fishHeadPosition.y - bBoundary, tBoundary - fishHeadPosition.y))
+                    {
+                        // We are closest to the vertical axes
+                        if (fishHeadPosition.x - lBoundary < rBoundary - fishHeadPosition.x)
+                        {
+                            // Left
+                            if (fish.TargetVelocity.x > 0.0f)
+                            {
+                                fish.TargetVelocity.x *= -1.0f;
+                                hasBounced = true;
+                            }
+                        }
+                        else
+                        {
+                            // Right
+                            if (fish.TargetVelocity.x < 0.0f)
+                            {
+                                fish.TargetVelocity.x *= -1.0f;
+                                hasBounced = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // We are closest to the horizontal axes
+                        if (fishHeadPosition.y - bBoundary < tBoundary - fishHeadPosition.y)
+                        {
+                            // Bottom
+                            if (fish.TargetVelocity.y > 0.0f)
+                            {
+                                fish.TargetVelocity.y *= -1.0f;
+                                hasBounced = true;
+                            }
+                        }
+                        else
+                        {
+                            // Top
+                            if (fish.TargetVelocity.y < 0.0f)
+                            {
+                                fish.TargetVelocity.y *= -1.0f;
+                                hasBounced = true;
+                            }
+                        }
+                    }
 
                     // Panic a bit
                     fish.PanicCharge = std::max(
@@ -969,6 +1027,9 @@ void Fishes::UpdateDynamics(
                     fish.CurrentDirectionSmoothingConvergenceRate = std::max(
                         0.15f, // TODOHERE
                         fish.CurrentDirectionSmoothingConvergenceRate);
+
+                    // Stop steering, if we're steering
+                    fish.CruiseSteeringState.reset();
                 }
             }
         }
