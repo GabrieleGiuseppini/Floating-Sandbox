@@ -62,7 +62,7 @@ private:
     {
         FishSpecies const & Species;
 
-        size_t CurrentMemberCount;
+        ElementCount CurrentMemberCount;
         ElementIndex StartFishIndex;
 
         vec2f InitialPosition;

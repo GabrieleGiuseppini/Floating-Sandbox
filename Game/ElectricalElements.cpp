@@ -1373,6 +1373,25 @@ void ElectricalElements::UpdateSinks(
                                 true,
                                 mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkElementIndex))));
 
+                            // Disturb ocean, depending on sound
+                            switch (mMaterialBuffer[sinkElementIndex]->ShipSoundType)
+                            {
+                                case ElectricalMaterial::ShipSoundElementType::Horn1:
+                                case ElectricalMaterial::ShipSoundElementType::Horn2:
+                                case ElectricalMaterial::ShipSoundElementType::Horn3:
+                                case ElectricalMaterial::ShipSoundElementType::Klaxon1:
+                                {
+                                    mParentWorld.DisturbOcean(gameParameters);
+                                    break;
+                                }
+
+                                default:
+                                {
+                                    // Do not disturb
+                                    break;
+                                }
+                            }
+
                             // Show notifications
                             if (gameParameters.DoShowElectricalNotifications)
                             {
