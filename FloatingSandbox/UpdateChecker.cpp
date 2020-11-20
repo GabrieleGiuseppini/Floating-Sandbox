@@ -106,6 +106,7 @@ void UpdateChecker::WorkerThread()
         sf::Http http;
         http.setHost(UpdateHost);
         sf::Http::Request request(UpdateUrl);
+        request.setField("Referer", Version::CurrentVersion().ToString());
 
         // Send the request and check the response
         sf::Http::Response response = http.sendRequest(request, sf::seconds(5.0f));
