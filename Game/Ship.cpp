@@ -767,7 +767,7 @@ void Ship::ApplyWorldForces(
             * mPoints.GetMass(pointIndex); // Material + Augmentation + Water
 
         //
-        // Add buoyancy
+        // Add water/air buoyancy
         //
 
         // Calculate upward push of water/air mass
@@ -825,10 +825,12 @@ void Ship::ApplyWorldForces(
             ////    mPoints.GetVelocity(pointIndex).square()
             ////    * (-waterDragCoefficient);
 
+            /* TODOTEST
             // Linear law:
             mPoints.GetNonSpringForce(pointIndex) +=
                 mPoints.GetVelocity(pointIndex)
                 * (-waterDragCoefficient);
+            */
         }
         else
         {
@@ -875,6 +877,71 @@ void Ship::ApplyWorldForces(
 
         // Store AABB
         aabbSet.Add(std::move(aabb));
+
+        //
+        // TODOHERE: surface pressure
+        //
+
+        assert(frontier.Size >= 3);
+
+        ElementIndex startEdgeIndex = frontier.StartingEdgeIndex;
+
+        auto const & frontierEdge1 = mFrontiers.GetFrontierEdge(startEdgeIndex);
+        vec2f pos1 = mPoints.GetPosition(frontierEdge1.PointAIndex);
+        startEdgeIndex = frontierEdge1.NextEdgeIndex;
+
+        auto const & frontierEdge2 = mFrontiers.GetFrontierEdge(startEdgeIndex);
+        ElementIndex point2Index = frontierEdge2.PointAIndex;
+        vec2f pos2 = mPoints.GetPosition(point2Index);
+        startEdgeIndex = frontierEdge2.NextEdgeIndex;
+
+        for (ElementIndex edgeIndex = startEdgeIndex; ;)
+        {
+            // Get next edge and point
+            auto const & frontierEdge = mFrontiers.GetFrontierEdge(edgeIndex);
+            ElementIndex const point3Index = frontierEdge.PointAIndex;
+            vec2f pos3 = mPoints.GetPosition(point3Index);
+
+            // Check if p2 is underwater
+            float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(pos2.x);
+            if (pos2.y <= waterHeightAtThisPoint)
+            {
+                //
+                // Calculate drag force
+                //
+
+                // Normal to surface - calculated between p1 and p3
+                vec2f const normal = (pos3 - pos1).normalise().to_perpendicular();
+
+                // Projection of p2's velocity along this normal, which
+                // contributes to drag
+                float const usefulVelocityAlongNormal = std::max(
+                    mPoints.GetVelocity(point2Index).dot(normal),
+                    0.0f);
+
+                // Drag force
+                vec2f const dragForce =
+                    normal
+                    * usefulVelocityAlongNormal * usefulVelocityAlongNormal
+                    * (-waterDragCoefficient)
+                    * 100.0f; // TODOTEST
+
+                // Apply drag force
+                mPoints.GetNonSpringForce(point2Index) += dragForce;
+            }
+
+            //
+            // Advance
+            //
+
+            edgeIndex = frontierEdge.NextEdgeIndex;
+            if (edgeIndex == startEdgeIndex)
+                break;
+
+            pos1 = pos2;
+            pos2 = pos3;
+            point2Index = point3Index;
+        }
     }
 }
 
