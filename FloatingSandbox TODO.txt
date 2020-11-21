@@ -246,11 +246,13 @@ Render:
 
 		+ Clouds in perspective (*)
 			+ Changelist
+		+ Frontier (*)
+			+ Changelist
 
 		= Fishes (*)
 			- Changelist
 
-		= Frontier (*)
+		= Spanish translation
 			- Changelist
 
 		+ 500K download post on GameJolt
@@ -457,6 +459,7 @@ Render:
 	- Spanish (Latin American)
 		- Joadix
 		- Fallback: The G a z e r W o l f
+		- Add to credits
 	- Portuguese: Kiko
 		- Add to credits: "Kiko", and change in other sections as well, and also in .shp files
 		- Fallback: The G a z e r W o l f
@@ -1597,157 +1600,6 @@ Render:
 				- Or negligibly smaller?
 			- With stiffness going marginally up
 		- Shader?
-
-	= Frontier (*):
-		! Only for non-rope points - rope points never take part in frontier
-		+ Preliminaries:
-			+ Make sure endpoints in triangle are always in CW order
-				+ From ShipBuilder
-		+ Plan:
-			+ Data structures
-			+ Initial frontiers at ShipBuilder
-			+ Render frontiers:
-				+ New render setting
-				+ New ship upload
-				+ New shader
-			+ Maintain at destroy
-			+ Maintain at repair
-		+ Impl:
-			+ Data structures
-				+ GameTypes:
-					+ FrontierIndex + None
-					+ FrontierType enum (External, Internal)
-				+ Frontiers class
-					! Kinda like 'Points' but for frontiers only; contains data structures (merged in one) and logic
-						! Including update and rendering logic
-					! Logic that requires points/springs/triangles takes those as args
-					+ Owned and maintained by Ship
-					+ Structs:
-						+ FrontierEdge: contains edge metadata only needed for physics
-							+ Cardinality: Edge
-							+ NextEdge(..Element...Index?) (index of edges)
-							+ Point indices in frontier order
-						+ Frontier:
-							+ Cardinality: any
-							+ StartingEdge(...Element...Index?)
-							+ FrontierType
-					+ Cctor takes point_count, Springs, Triangles
-					+ AddFrontier()
-						+ Invoked by ShipBuilder
-			+ ShipBuilder: jumpstart algo:
-				+	5	6	7
-					4	*	0
-					3	2	1
-				+ For each scan line:
-					+ For each flip point (0->1 or 1->0) from left p0 such that p0 does not belong to any frontiers:
-						- fId = new frontier ID
-						- p = p0; k = 4|0 (depending on flip type)
-						- do:
-							- Find p' from k+1 to k-1 (CW, %8)
-								- If not found: it's an isolated point, go to next flip
-							- Lookup <p, p'> in edge map
-								- edge map is a purpose-built map, with <p, p'> being a lexicographically ordered key
-								- assert is found, unless this is a "pure spring"
-							- Make edge belong to frontier fId
-							- if p' == p0: break
-						- continue to next flip point on same scan line
-				+ Fix bug
-				+ Tests:
-					+ Scan line finds first a chain point, then a triangle
-					+ Scan line ends on a triangle vertex followed by a chain point
-				+ Cleanup
-					+ Remove unused args
-				+ Remove ContainsEndpoints are replace with edge map earlier on
-					+ EdgeMap gets added to each time we add to springInfos1
-				+ Add timings for whole ShipBuilding and for FrontierBuilding alone
-				+ Test perf on Dell
-			+ Rendering:
-				+ Decide whether we want to announce frontier edge size
-				+ SettingsDialog flag
-					+ Expose via GameController
-				+ Frontiers::Upload
-				+ ShipRenderContext:
-					+ At Prepare() (or wherever we do others), set progress parameter
-				+ Shader
-				+ Adjust color shift speed w/release build
-				+ Do color march differently - by playing with local progress:
-				+ Move SettingsDialog checkbox to Debug rendering settings
-			+ Maintenance at destroy:
-				+ Ship's triangle destroy handler invokes new Frontier::HandleTriangleDestroy
-				+ Marks mIsDirtyForRendering
-				+ Triangles: points A,B,C indices also (mainly) avail as array
-				+ FrontierEdge: also PrevEdge
-				+ Debug window
-				+ Cases:
-					+ 0 frontiers
-						+ Test in debug
-					+ 1 frontier
-						+ Test in debug
-							+ Also internal frontier
-					+ 2, 3 frontiers
-						+ Ext, Ext
-						+ Ext, Int
-						+ Int, Ext
-						+ Int, Int
-							+ Same frontier ID, not connected
-								+ Frontier type (flood) check
-									+ This is done with visiting points, flagging springs (edges)
-										+ Make sure that by the time Frontiers::HandleTriangleDestroy is invoked, springs
-										  are already consistent with the triangle being gone
-											+ Move MaintainFrontier invocation by Ship::HandleTriangleDestroy after springs have been made consistent
-											! Destroy dynamics:
-												* DestroyPoint
-													=> DestroySpring
-														=> DestroyTriangles
-															=> MaintainFrontier
-												* DestroySpring
-													=> DestroyTriangles
-														=> MaintainFrontier
-									+ Test all cases
-							+ Different frontier ID
-							+ Fix bug wrt "traverse springs"
-								+ See implications of not populating traverse springs; check all uses of:
-									+ Springs::SuperTriangles
-									+ Triangles::SubSprings
-				+ Things to remember:
-					+ Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
-					+ Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
-				+ Tests:
-					+ Thanos' Snap
-					+ 1 triangle with 3 lobes
-			+ See if it makes sense to clear and restore Triangles' SubSprings - might just leave FactorySubSprings?
-				+ If so, do like endpoints (3-array, etc.), respecting CW order
-				+ Get rid of Frontiers::Triangles::Edges
-				+ Test:
-					+ Destroy
-					+ Repair (without frontier maintenance)
-			+ Maintenance at repair:
-				+ Ship's triangle restore handler invokes new Frontier::HandleTriangleRestore
-				+ Preliminary work:
-					+ Cusp search needs to be done by searching triangles or edges connected to cusp Point
-						+ Make do with existing structures @ Springs that track octants
-				+ Cases:
-					+ Case 3 frontiers
-					+ Case 2 frontiers
-					+ Case 0/1 frontiers
-						+ Propagate 1 frontier
-						+ Process cusps
-							+ Ext1 != Ext2
-							+ Ext1 == Ext2
-						+ Handle pathological isolated triangle case
-				+ Things to remember:
-					+ Marks mIsDirtyForRendering
-					+ Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
-		+ Optimizations:
-			+ Frontiers::RegeneratePointColors(): only for frontiers marked as dirtyForRendering
-				+ Clear frontiers' dirtyForRendering flags afterwards
-			+ See if FrontierEdge::PointBIndex is really needed
-		= Cleanup:
-			+ Nuke HasRegionFrontierOfType and subst with IsFrontierCW
-				+ Test
-				+ Remove unused args
-			- Cleanup log lines at Frontiers
-			+ Finalize speed for rendered frontier's march
 
 	- Pressure implosions / pressure crush (*)
 		! Requires frontier
@@ -7400,6 +7252,156 @@ IF WX:
 				+ Restore
 			+ Add new type to Materials Guide
 			+ Redo electrical materials template
+	+ Frontier (*):
+		! Only for non-rope points - rope points never take part in frontier
+		+ Preliminaries:
+			+ Make sure endpoints in triangle are always in CW order
+				+ From ShipBuilder
+		+ Plan:
+			+ Data structures
+			+ Initial frontiers at ShipBuilder
+			+ Render frontiers:
+				+ New render setting
+				+ New ship upload
+				+ New shader
+			+ Maintain at destroy
+			+ Maintain at repair
+		+ Impl:
+			+ Data structures
+				+ GameTypes:
+					+ FrontierIndex + None
+					+ FrontierType enum (External, Internal)
+				+ Frontiers class
+					! Kinda like 'Points' but for frontiers only; contains data structures (merged in one) and logic
+						! Including update and rendering logic
+					! Logic that requires points/springs/triangles takes those as args
+					+ Owned and maintained by Ship
+					+ Structs:
+						+ FrontierEdge: contains edge metadata only needed for physics
+							+ Cardinality: Edge
+							+ NextEdge(..Element...Index?) (index of edges)
+							+ Point indices in frontier order
+						+ Frontier:
+							+ Cardinality: any
+							+ StartingEdge(...Element...Index?)
+							+ FrontierType
+					+ Cctor takes point_count, Springs, Triangles
+					+ AddFrontier()
+						+ Invoked by ShipBuilder
+			+ ShipBuilder: jumpstart algo:
+				+	5	6	7
+					4	*	0
+					3	2	1
+				+ For each scan line:
+					+ For each flip point (0->1 or 1->0) from left p0 such that p0 does not belong to any frontiers:
+						- fId = new frontier ID
+						- p = p0; k = 4|0 (depending on flip type)
+						- do:
+							- Find p' from k+1 to k-1 (CW, %8)
+								- If not found: it's an isolated point, go to next flip
+							- Lookup <p, p'> in edge map
+								- edge map is a purpose-built map, with <p, p'> being a lexicographically ordered key
+								- assert is found, unless this is a "pure spring"
+							- Make edge belong to frontier fId
+							- if p' == p0: break
+						- continue to next flip point on same scan line
+				+ Fix bug
+				+ Tests:
+					+ Scan line finds first a chain point, then a triangle
+					+ Scan line ends on a triangle vertex followed by a chain point
+				+ Cleanup
+					+ Remove unused args
+				+ Remove ContainsEndpoints are replace with edge map earlier on
+					+ EdgeMap gets added to each time we add to springInfos1
+				+ Add timings for whole ShipBuilding and for FrontierBuilding alone
+				+ Test perf on Dell
+			+ Rendering:
+				+ Decide whether we want to announce frontier edge size
+				+ SettingsDialog flag
+					+ Expose via GameController
+				+ Frontiers::Upload
+				+ ShipRenderContext:
+					+ At Prepare() (or wherever we do others), set progress parameter
+				+ Shader
+				+ Adjust color shift speed w/release build
+				+ Do color march differently - by playing with local progress:
+				+ Move SettingsDialog checkbox to Debug rendering settings
+			+ Maintenance at destroy:
+				+ Ship's triangle destroy handler invokes new Frontier::HandleTriangleDestroy
+				+ Marks mIsDirtyForRendering
+				+ Triangles: points A,B,C indices also (mainly) avail as array
+				+ FrontierEdge: also PrevEdge
+				+ Debug window
+				+ Cases:
+					+ 0 frontiers
+						+ Test in debug
+					+ 1 frontier
+						+ Test in debug
+							+ Also internal frontier
+					+ 2, 3 frontiers
+						+ Ext, Ext
+						+ Ext, Int
+						+ Int, Ext
+						+ Int, Int
+							+ Same frontier ID, not connected
+								+ Frontier type (flood) check
+									+ This is done with visiting points, flagging springs (edges)
+										+ Make sure that by the time Frontiers::HandleTriangleDestroy is invoked, springs
+										  are already consistent with the triangle being gone
+											+ Move MaintainFrontier invocation by Ship::HandleTriangleDestroy after springs have been made consistent
+											! Destroy dynamics:
+												* DestroyPoint
+													=> DestroySpring
+														=> DestroyTriangles
+															=> MaintainFrontier
+												* DestroySpring
+													=> DestroyTriangles
+														=> MaintainFrontier
+									+ Test all cases
+							+ Different frontier ID
+							+ Fix bug wrt "traverse springs"
+								+ See implications of not populating traverse springs; check all uses of:
+									+ Springs::SuperTriangles
+									+ Triangles::SubSprings
+				+ Things to remember:
+					+ Every frontier that is changed/created is also flagged as dirty (new flag at Frontier)
+					+ Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
+				+ Tests:
+					+ Thanos' Snap
+					+ 1 triangle with 3 lobes
+			+ See if it makes sense to clear and restore Triangles' SubSprings - might just leave FactorySubSprings?
+				+ If so, do like endpoints (3-array, etc.), respecting CW order
+				+ Get rid of Frontiers::Triangles::Edges
+				+ Test:
+					+ Destroy
+					+ Repair (without frontier maintenance)
+			+ Maintenance at repair:
+				+ Ship's triangle restore handler invokes new Frontier::HandleTriangleRestore
+				+ Preliminary work:
+					+ Cusp search needs to be done by searching triangles or edges connected to cusp Point
+						+ Make do with existing structures @ Springs that track octants
+				+ Cases:
+					+ Case 3 frontiers
+					+ Case 2 frontiers
+					+ Case 0/1 frontiers
+						+ Propagate 1 frontier
+						+ Process cusps
+							+ Ext1 != Ext2
+							+ Ext1 == Ext2
+						+ Handle pathological isolated triangle case
+				+ Things to remember:
+					+ Marks mIsDirtyForRendering
+					+ Each time we change an edge's frontier ID, also make sure we don't screw head - so set it there anyway
+		+ Optimizations:
+			+ Frontiers::RegeneratePointColors(): only for frontiers marked as dirtyForRendering
+				+ Clear frontiers' dirtyForRendering flags afterwards
+			+ See if FrontierEdge::PointBIndex is really needed
+		+ Cleanup:
+			+ Nuke HasRegionFrontierOfType and subst with IsFrontierCW
+				+ Test
+				+ Remove unused args
+			+ Cleanup log lines at Frontiers
+			+ Finalize speed for rendered frontier's march
 
 
 

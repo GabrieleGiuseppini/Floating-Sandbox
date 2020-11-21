@@ -112,8 +112,6 @@ void Frontiers::HandleTriangleDestroy(
     // Check cases
     if (edgesWithFrontierCount == 0)
     {
-        LogMessage("TODOTEST: DESTROY: CASE 0 (t_idx=", triangleElementIndex, ")");
-
         //
         // None of the edges has a frontier...
         // hence each edge of the triangle is connected to two triangles...
@@ -153,8 +151,6 @@ void Frontiers::HandleTriangleDestroy(
     }
     else if (edgesWithFrontierCount == 1)
     {
-        LogMessage("TODOTEST: DESTROY: CASE 1 (t_idx=", triangleElementIndex, ")");
-
         //
         // Only one edge has a frontier...
         // ...hence the other two edges are each connected to two triangles...
@@ -243,8 +239,6 @@ void Frontiers::HandleTriangleDestroy(
 
         if (cuspCount == 1)
         {
-            LogMessage("TODOTEST: DESTROY: CASE 2/3 (t_idx=", triangleElementIndex, "): cuspCount == 1");
-
             //
             // There is one and only one non-frontier edge
             //
@@ -275,8 +269,6 @@ void Frontiers::HandleTriangleDestroy(
         }
         else
         {
-            LogMessage("TODOTEST: DESTROY: CASE 2/3 (t_idx=", triangleElementIndex, "): cuspCount == 3");
-
             //
             // There are no non-frontier edges
             //
@@ -347,8 +339,6 @@ void Frontiers::HandleTriangleRestore(
     // Check cases
     if (edgesWithFrontierCount == 3)
     {
-        LogMessage("TODOTEST: RESTORE: CASE 3 (t_idx=", triangleElementIndex, ")");
-
         //
         // This triangle is going to be restored onto a "hole" whose 3 edges
         // have frontiers...
@@ -380,8 +370,6 @@ void Frontiers::HandleTriangleRestore(
     }
     else if (edgesWithFrontierCount == 2)
     {
-        LogMessage("TODOTEST: RESTORE: CASE 2 (t_idx=", triangleElementIndex, ")");
-
         //
         // Two edges have a frontier and one doesn't...
         //
@@ -443,8 +431,6 @@ void Frontiers::HandleTriangleRestore(
     else
     {
         assert(edgesWithFrontierCount == 0 || edgesWithFrontierCount == 1);
-
-        LogMessage("TODOTEST: RESTORE: CASE 0/1 (t_idx=", triangleElementIndex, ")");
 
         //
         // 1) Propagate (eventual) frontier on one edge to whole triangle
@@ -567,8 +553,6 @@ void Frontiers::HandleTriangleRestore(
         if (cuspCount == 0
             && edgesWithFrontierCount == 0)
         {
-            LogMessage("TODOTEST: RESTORE: CASE 0/1 (t_idx=", triangleElementIndex, "): TRIVIAL ISOLATED");
-
             //
             // This triangle will generate a new external frontier: A->B->C
             //
@@ -1176,8 +1160,6 @@ inline std::tuple<ElementIndex, ElementIndex> Frontiers::FindTriangleCuspOpposit
     auto const edgeInOctant = springs.GetFactoryEndpointOctant(edgeIn, cuspPointIndex);
     auto const edgeOutOctant = springs.GetFactoryEndpointOctant(edgeOut, cuspPointIndex);
 
-    LogMessage("TODOTEST: FindCusp: ", edgeIn, " (", edgeInOctant, ") ---> ", cuspPointIndex, " --> ", edgeOut, " (", edgeOutOctant, ")");
-
     //
     // Among all the (frontier) springs connected to the cusp point, find the two closest
     // to the in and out edges, which are contained in the in^out sector
@@ -1217,9 +1199,6 @@ inline std::tuple<ElementIndex, ElementIndex> Frontiers::FindTriangleCuspOpposit
 
             if (octant > edgeInOctant && octant < edgeOutOctant + octantDelta)
             {
-                LogMessage("    TODOTEST: spring: ", cs.SpringIndex, " (", springs.GetFactoryEndpointOctant(cs.SpringIndex, cuspPointIndex),
-                    "==", octant, "): INSIDE SECTOR");
-
                 if (octant < bestNextEdgeInOctant)
                 {
                     bestNextEdgeInOctant = octant;
@@ -1231,11 +1210,6 @@ inline std::tuple<ElementIndex, ElementIndex> Frontiers::FindTriangleCuspOpposit
                     bestNextEdgeOutOctant = octant;
                     bestNextEdgeOut = cs.SpringIndex;
                 }
-            }
-            else
-            {
-                LogMessage("    TODOTEST: spring: ", cs.SpringIndex, " (", springs.GetFactoryEndpointOctant(cs.SpringIndex, cuspPointIndex),
-                    "==", octant, "): OUTSIDE SECTOR");
             }
         }
     }
@@ -1321,8 +1295,6 @@ inline bool Frontiers::ProcessTriangleCuspRestore(
         // ...propagate opposite frontier to triangle
         //
 
-        LogMessage("TODOTEST: ProcessTriangleCuspRestore: No Triangle Frontier => PROPAGATE OPPOSITE FRONTIER");
-
         int constexpr CuspEdgeMidOrdinal = (CuspEdgeOutOrdinal <= 1)
             ? CuspEdgeOutOrdinal + 1
             : 0;
@@ -1389,8 +1361,6 @@ inline bool Frontiers::ProcessTriangleCuspRestore(
                 // ...the cusp joining separates that into *two* internal frontiers
                 //
 
-                LogMessage("TODOTEST: ProcessTriangleCuspRestore: Internal->Internal => Internal1 + Internal2");
-
                 SplitIntoNewFrontier(
                     edgeInOpposite,
                     edgeIn,
@@ -1408,8 +1378,6 @@ inline bool Frontiers::ProcessTriangleCuspRestore(
                 //
 
                 assert(mFrontiers[oppositeFrontierId]->Type == FrontierType::External);
-
-                LogMessage("TODOTEST: ProcessTriangleCuspRestore: Internal->External => Internal");
 
                 ReplaceAndJoinFrontier(
                     edgeIn,
@@ -1512,8 +1480,6 @@ inline bool Frontiers::ProcessTriangleCuspRestore(
                 // frontier of a ball in that hole)...
                 // ...the external frontier of the ball gets fagocitated by the internal frontier
                 //
-
-                LogMessage("TODOTEST: ProcessTriangleCuspRestore: External->Internal => Internal");
 
                 ReplaceAndJoinFrontier(
                     edgeOutOpposite,

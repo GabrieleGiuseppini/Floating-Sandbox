@@ -1,4 +1,6 @@
 1.16.0.1
+- Completed "Frontier Maintenance" sub-system
+	- With this new sub-system the simulator is now constantly aware of the edges of a ship, enabling implementation of a plethora of new features
 - Improved clouds
 
 1.15.6.1
