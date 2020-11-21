@@ -726,7 +726,8 @@ private:
         std::unique_ptr<PerfStats> perfStats,
         FishSpeciesDatabase && fishSpeciesDatabase,
         MaterialDatabase && materialDatabase,
-        ResourceLocator const & resourceLocator);
+        ResourceLocator const & resourceLocator,
+        ProgressCallback const & progressCallback);
 
     void Reset(std::unique_ptr<Physics::World> newWorld);
 

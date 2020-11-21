@@ -249,6 +249,8 @@ Render:
 		+ Frontier (*)
 			+ Changelist
 
+		- Log not being created with close button, only with File->Quit
+
 		= Fishes (*)
 			- Changelist
 
@@ -456,10 +458,14 @@ Render:
 		+ 1.15.2
 		- 1.16.0
 
-	- Spanish (Latin American)
-		- Joadix
-		- Fallback: The G a z e r W o l f
+	- Spanish (Latin American): Joadix (Fallback: The G a z e r W o l f)
+		= 1.15.2
+		- 1.16.0
+		- asked .po
 		- Add to credits
+			= Asked name
+		- Assign role in server and welcome, and send rules
+
 	- Portuguese: Kiko
 		- Add to credits: "Kiko", and change in other sections as well, and also in .shp files
 		- Fallback: The G a z e r W o l f
@@ -570,6 +576,7 @@ Render:
 - Suggestions to spec:
 	- Fishing log
 		- Players can collect different kinds of fish; click on one they don't have and it goes into like a collectors book
+		- Could have a "fishing rod" tool
 	- Drain ocean
 	- Speedometer
 	- Shockwave bomb
@@ -717,15 +724,20 @@ Render:
 
 - Simulation Optimizations:
 
-	- Computer calibration
-		- Executed by GameController
-			- After RenderingContext initialized (for OpenGL capabilities)
-			- OpenGL: based off capabilities
-			- CPU: based off loops
-		- Produces CalibrationScore
-			- GameController::TuneParameters(CalibrationScore const &, GameParameters &, RenderContext &)
+	= Computer calibration
+		= Executed by GameController
+			+ After RenderingContext initialized (for OpenGL capabilities)
+			= OpenGL: based off capabilities
+			= CPU: based off loops
+			= Ask testers for help
+				- DKuz: i7-9750H, 2.60 GHz, Intel(R) UHD Graphics 630, FPS 64 | CPU Calibration: iterationCount=124 score=1; Graphics Calibration: score=1
+				- Oxurus: i5-6400, 2.70 GHz, NVIDIA GeForce GTX 960/PCIe/SSE2, FPS 55-57 | CPU Calibration: iterationCount=96 score=0.995328; Graphics Calibration: score=1
+
+		= Produces CalibrationScore
+			= ComputerCalibrator::TuneParameters(CalibrationScore const &, GameParameters &, RenderContext &)
 				- Sets GameParameters and RenderContext's parameters
-				- Happens before SettingsManager samples defaults, so these are the new defaults
+				= Happens before SettingsManager samples defaults, so these are the new defaults
+					- Verify this is indeed the case
 
 	- See if additional springs (e.g. between i and i+2) help
 

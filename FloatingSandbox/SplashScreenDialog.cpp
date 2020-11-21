@@ -123,6 +123,7 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
         mProgressStrings.Add(_("Loading sounds..."));
         mProgressStrings.Add(_("Loading music..."));
         mProgressStrings.Add(_("Loading electrical panel..."));
+        mProgressStrings.Add(_("Calibrating game on the computer..."));
         mProgressStrings.Add(_("Ready!"));
 
         assert(mProgressStrings.GetCount() == static_cast<size_t>(ProgressMessageType::_Last) + 1);

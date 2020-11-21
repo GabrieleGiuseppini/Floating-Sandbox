@@ -16,6 +16,7 @@ int GameOpenGL::MaxViewportWidth = 0;
 int GameOpenGL::MaxViewportHeight = 0;
 int GameOpenGL::MaxTextureSize = 0;
 int GameOpenGL::MaxRenderbufferSize = 0;
+int GameOpenGL::MaxOpenGLVersionMajor = 0;
 
 bool GameOpenGL::AvoidGlFinish = false;
 
@@ -89,6 +90,12 @@ void GameOpenGL::InitOpenGL()
     MaxRenderbufferSize = tmpConstant;
     LogMessage("GL_MAX_RENDERBUFFER_SIZE=", MaxRenderbufferSize);
 
+    glGetIntegerv(GL_MAJOR_VERSION, &tmpConstant);
+    if (tmpConstant != GL_INVALID_ENUM)
+        MaxOpenGLVersionMajor = tmpConstant;
+    else
+        MaxOpenGLVersionMajor = MinOpenGLVersionMaj;
+    LogMessage("GL_MAJOR_VERSION=", MaxOpenGLVersionMajor);
 
     //
     // Initialize switches

@@ -124,7 +124,7 @@ void UpdateChecker::WorkerThread()
             mOutcome = std::make_unique<Outcome>(ParseChangeList(changesFileContent));
 
             if (mOutcome->OutcomeType == UpdateCheckOutcomeType::HasVersion)
-                LogMessage("UpdateChecker: Version=" + mOutcome->LatestVersion->ToString());
+                LogMessage("UpdateChecker: LatestVersion=" + mOutcome->LatestVersion->ToString());
         }
     }
     catch (...)
