@@ -242,6 +242,9 @@ Render:
 
 - Roadmap:
 
+	+ 1.15.x
+		+ Fix that bug with vectors/highlights rendering (buffer size mismatch)
+
 	= 1.16.0
 
 		+ Clouds in perspective (*)
@@ -249,10 +252,22 @@ Render:
 		+ Frontier (*)
 			+ Changelist
 
-		- Log not being created with close button, only with File->Quit
+		- Things pending (all *)
+			- Fishes:
+				+ Fix sharks in shallow water
+				- Calibration:
+					- Test on Dell
+					- Get all responses
+					- Give lower score to guy that gets ~50FPS
 
 		= Fishes (*)
+			- See at *: calibration
 			- Changelist
+
+		= Directional water drag (*)
+
+		- Log not being created with close button, only with File->Quit
+
 
 		= Spanish translation
 			- Changelist
@@ -260,10 +275,9 @@ Render:
 		+ 500K download post on GameJolt
 		- How to make a ship tutorial post on GameJolt: https://www.youtube.com/watch?v=7KhRdTv9fTo
 
-		- Check issue with ship having water material that breaks
-		- Fix that bug with vectors/highlights rendering (buffer size mismatch)
+		- Check issue with ship having water material that breaks		
 		- See why log diagnostics is not written
-			- Missing folder?
+			- Different "Close" events: X button vs. File->Quit
 		- Calibrate flying burning cardboard
 
 		- New rain: https://www.shadertoy.com/view/wsKcWw
@@ -271,15 +285,17 @@ Render:
 		- Try with improved generation of random sparkles at slice: https://mathworld.wolfram.com/SpherePointPicking.html
 
 		- ShipRenderContext: see if may turn off Z-depth check @ triangles
-			- Check first on Dell if it improves perf
+			- Check first on Dell if doing so would improve perf
+			- Check then if there are any artifacts when doing so
 
-		- Frontier-enabled features:
-			- Directional water drag (*)
+		- Frontier-enabled features:			
 			- Pressure implosions / pressure crush (*)
 			- Waves from ship (*)
 			- Punch tool (*)
 
-		- Lower speed of (sin) waves - now that we run faster?
+		- Cached quantities (*)
+
+		- Lower speed of (sin) ocean waves - now that we run faster?
 
 		- Flames: make sampling resolution independent from dimensions
 			- Need to pass width and height of flame quad, and divide texture coords by these
@@ -385,8 +401,6 @@ Render:
 			- Do cleanup tasks
 
 		- Attempt to use total point masses for springs (*)
-
-		- Cached quantities (*)
 
 		- Add more background music:
 			- Music:
@@ -769,6 +783,14 @@ Render:
 					- Points::UpdateCombustionHighFrequency
 					- Points::UpdateEphemeralParticles (AirBubbles)
 						- Need to do vortex with forces, though
+				- Change sequence of steps at Ship::Update so that position changes come late, and thus we may re-use depth, calculated early, for as long as possible:
+					- [Interactive position changes]
+						- Need to make sure these clamp to world boundaries if accessing OceanSurface or OceanFloor
+					- START
+					- WorldBoundaries
+					- TODOHERE					
+					- Spring + Integration [just move this one]
+					- END
 
 	- 2** Try with SpringRelaxation updating only positions **2 (*)
 		- RelaxSprings() updates position directly, no forces involved
@@ -1376,6 +1398,7 @@ Render:
 			- Calibration: do fish only on machines that are powerful enough
 				- Unless Dell can make it
 				- See "calibration" work item
+			- Remove fish update time @ notification layer
 
 	- Ropes 2 layer
 		- json only allows one ropes layer
@@ -1477,18 +1500,34 @@ Render:
 			- Any devices should only be connected in 4 direction (sides only)
 		- Option C: multiple electrical layers
 
-	- Directional water drag (*)
+	= Directional water drag (*)
 		! After frontier work
-		- Calc force depending on projection of particle's velocity along normal
-			- Try to re-instate square velocity drag
-				- Goal: falling ship should break upon impact with water
-				- Need to clamp drag force
-					- So better done after spring/nonspring forces rearc, so expense is minimized
+		! Separate into friction and pressure drags: https://en.wikipedia.org/wiki/Drag_coefficient#Concept
+		= Calc force depending on projection of particle's velocity along normal
+			= Try to re-instate square velocity drag
+				! Two water drags:
+					+ Point-based == friction drag
+					+ Surface-based == pressure drag
+				= Find right coefficients for both
+				+ Need to clamp pressure force
+					+ So better done after spring/nonspring forces rearc, so expense is minimized				
+			- Split water drag adjustments
+				- Allow zero for both
+				- Test maxima for both, adjust if needed
+			- See if friction drag is needed after all
+			- Final tests/Goals:
+				- Lifeboat running fast and capsizing
+				- Stern should glide
+				- Ship falling from sky should break upon impact with water
+		- Optimize:
+			+ Optimize frontier visit: merge two loops
+			- Optimize point depth calculation
+				- To be done w/"Cached Quantities" work
 		- Increase the amount of drag adjustment users may do
 			- Goal: water should become lava with high drag
-		- See if worth separating into friction and pressure drags: https://en.wikipedia.org/wiki/Drag_coefficient#Concept
-		- Bonus: should also consider normal to surface of ocean, so if two surfaces intersect, we get
+		- Bonus: should also consider normal to surface of ocean, so if the two surfaces intersect, we get
 		  momentum from waves to ship
+		
 
 	= Ocean floor deforming upon impact (*)
 		! Better done after frontier work, so that may calculate pointness

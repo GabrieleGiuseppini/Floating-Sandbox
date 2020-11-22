@@ -1077,6 +1077,9 @@ public:
      * The integration factor is the quantity which, when multiplied with the force on the point,
      * yields the change in position that occurs during a time interval equal to the dynamics simulation step.
      *
+     * It basically is:
+     *      dt^2 / mass
+     *
      * Only valid after a call to UpdateMasses() and when
      * neither water quantities nor masses have changed since then.
      */
@@ -1111,6 +1114,18 @@ public:
         mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = CalculateIntegrationFactorTimeCoefficient(
             mCurrentNumMechanicalDynamicsIterations,
             mFrozenCoefficientBuffer[pointElementIndex]);
+    }
+
+    void ResetForceRenderBuffer()
+    {
+        mForceRenderBuffer.fill(vec2f::zero());
+    }
+
+    void SetForceRenderVector(
+        ElementIndex pointElementIndex,
+        vec2f const & force) noexcept
+    {
+        mForceRenderBuffer[pointElementIndex] = force;
     }
 
     //
@@ -1682,7 +1697,6 @@ public:
     {
         mIsWholeColorBufferDirty = true;
     }
-
 
     //
     // Temporary buffer

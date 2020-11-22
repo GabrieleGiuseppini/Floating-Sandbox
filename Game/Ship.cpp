@@ -749,11 +749,9 @@ void Ship::ApplyWorldForces(
         * 0.5f
         * GameParameters::AirMass;
 
-    // Underwater points feel this amount of water drag
-    //
-    // The higher the value, the more viscous the water looks when a body moves through it
-    float const waterDragCoefficient =
-        GameParameters::WaterDragLinearCoefficient
+    // Underwater points feel this amount of water drag, due to friction
+    float const waterFrictionDragCoefficient =
+        GameParameters::WaterFrictionDragCoefficient
         * gameParameters.WaterDragAdjustment;
 
     for (auto pointIndex : mPoints)
@@ -799,38 +797,19 @@ void Ship::ApplyWorldForces(
         //
         // Apply water drag - if under water - or wind force - if above water
         //
-        // FUTURE: should replace with directional water drag, which acts on frontier points only,
-        // proportional to angle between velocity and normal to surface at this point;
-        // this would ensure that masses would also have a horizontal velocity component when sinking,
-        // providing a "gliding" effect
-        //
 
         if (mPoints.GetPosition(pointIndex).y <= waterHeightAtThisPoint)
         {
             //
-            // Note: we would have liked to use the square law:
-            //
-            //  Drag force = -C * (|V|^2*Vn)
-            //
-            // But when V >= m / (C * dt) (and also when V = 0), the drag force overcomes
-            // the current velocity and thus it accelerates it, resulting in an unstable system.
-            // The maximum force is thus -m^2/(C*dt^2).
+            // We use a linear law for simplicity
             //
             // With a linear law, we know that the force will never accelerate the current velocity
             // as long as m > (C * dt) / 2 (~=0.0002), which is a mass we won't have in our system (air is 1.2754).
             //
 
-            // Square law:
-            ////mPoints.GetForce(pointIndex) +=
-            ////    mPoints.GetVelocity(pointIndex).square()
-            ////    * (-waterDragCoefficient);
-
-            /* TODOTEST
-            // Linear law:
             mPoints.GetNonSpringForce(pointIndex) +=
                 mPoints.GetVelocity(pointIndex)
-                * (-waterDragCoefficient);
-            */
+                * (-waterFrictionDragCoefficient);
         }
         else
         {
@@ -847,101 +826,155 @@ void Ship::ApplyWorldForces(
     // Apply per-surface forces
     ///////////////////////////////////////////////////////////////////////////////////////
 
+    // Underwater points feel this amount of water drag, due to pressure
+    float const waterPressureDragCoefficient =
+        GameParameters::WaterPressureDragCoefficient
+        * gameParameters.WaterDragAdjustment;
+
+    // Pre-calculated factors for the maximum drag force applicable to
+    // a particle; read below for explanations, but this is:
+    //      Fmax = - m^2 / (C * dt^2) * Nn
+    float const maxForceFactor =
+        1.0f
+        / (waterPressureDragCoefficient * gameParameters.MechanicalSimulationStepTimeDuration<float>() * gameParameters.MechanicalSimulationStepTimeDuration<float>());
+
+    //
+    // Visit all frontiers
+    //
+
     for (FrontierId frontierId : mFrontiers.GetFrontierIds())
     {
         auto const & frontier = mFrontiers.GetFrontier(frontierId);
 
+        assert(frontier.Size >= 3);
+
+        ElementIndex startEdgeIndex = frontier.StartingEdgeIndex;
+
+        // Take previous point
+        auto const & previousFrontierEdge = mFrontiers.GetFrontierEdge(startEdgeIndex);
+        vec2f previousPointPosition = mPoints.GetPosition(previousFrontierEdge.PointAIndex);
+        startEdgeIndex = previousFrontierEdge.NextEdgeIndex;
+
+        // Take this point
+        auto const & frontierEdge = mFrontiers.GetFrontierEdge(startEdgeIndex);
+        ElementIndex pointIndex = frontierEdge.PointAIndex;
+        vec2f pointPosition = mPoints.GetPosition(pointIndex);
+        startEdgeIndex = frontierEdge.NextEdgeIndex;
+
+        // Initialize AABB
         Geometry::AABB aabb;
 
         //
         // Visit all edges of this frontier
         //
 
-        for (ElementIndex frontierEdgeIndex = frontier.StartingEdgeIndex; ; )
+#ifdef _DEBUG
+        size_t visitedPoints = 0;
+#endif
+
+        for (ElementIndex nextEdgeIndex = startEdgeIndex; ;)
         {
-            auto const & frontierEdge = mFrontiers.GetFrontierEdge(frontierEdgeIndex);
+
+#ifdef _DEBUG
+            ++visitedPoints;
+#endif
+
+            //
+            // Update AABB with this point
+            //
 
             if (frontier.Type == FrontierType::External)
             {
-                // Update AABB
-                aabb.ExtendTo(mPoints.GetPosition(frontierEdge.PointAIndex));
+                aabb.ExtendTo(pointPosition);
             }
 
-            // Advance
-            frontierEdgeIndex = frontierEdge.NextEdgeIndex;
+            //
+            // Apply water pressure drag
+            //
 
-            // See if we're done
-            if (frontierEdgeIndex == frontier.StartingEdgeIndex)
-                break;
-        }
-
-        // Store AABB
-        aabbSet.Add(std::move(aabb));
-
-        //
-        // TODOHERE: surface pressure
-        //
-
-        assert(frontier.Size >= 3);
-
-        ElementIndex startEdgeIndex = frontier.StartingEdgeIndex;
-
-        auto const & frontierEdge1 = mFrontiers.GetFrontierEdge(startEdgeIndex);
-        vec2f pos1 = mPoints.GetPosition(frontierEdge1.PointAIndex);
-        startEdgeIndex = frontierEdge1.NextEdgeIndex;
-
-        auto const & frontierEdge2 = mFrontiers.GetFrontierEdge(startEdgeIndex);
-        ElementIndex point2Index = frontierEdge2.PointAIndex;
-        vec2f pos2 = mPoints.GetPosition(point2Index);
-        startEdgeIndex = frontierEdge2.NextEdgeIndex;
-
-        for (ElementIndex edgeIndex = startEdgeIndex; ;)
-        {
             // Get next edge and point
-            auto const & frontierEdge = mFrontiers.GetFrontierEdge(edgeIndex);
-            ElementIndex const point3Index = frontierEdge.PointAIndex;
-            vec2f pos3 = mPoints.GetPosition(point3Index);
+            auto const & nextFrontierEdge = mFrontiers.GetFrontierEdge(nextEdgeIndex);
+            ElementIndex const nextPointIndex = nextFrontierEdge.PointAIndex;
+            vec2f nextPointPosition = mPoints.GetPosition(nextPointIndex);
 
-            // Check if p2 is underwater
-            float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(pos2.x);
-            if (pos2.y <= waterHeightAtThisPoint)
+            // Check if this point is underwater
+            float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(pointPosition.x);
+            if (pointPosition.y <= waterHeightAtThisPoint)
             {
                 //
-                // Calculate drag force
+                // Calculate drag force:
+                //
+                // F = - C * |V|^2 * (Vn dot Nn)^2 * Nn
+                //
+                //      Vn dot Nn == cos(angle between velocity and surface normal)
                 //
 
                 // Normal to surface - calculated between p1 and p3
-                vec2f const normal = (pos3 - pos1).normalise().to_perpendicular();
+                vec2f const normal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
 
-                // Projection of p2's velocity along this normal, which
-                // contributes to drag
+                // Projection of p2's velocity along this normal;
+                // no pressure drag when velocity is opposite to normal
                 float const usefulVelocityAlongNormal = std::max(
-                    mPoints.GetVelocity(point2Index).dot(normal),
+                    mPoints.GetVelocity(pointIndex).dot(normal),
                     0.0f);
 
-                // Drag force
-                vec2f const dragForce =
-                    normal
-                    * usefulVelocityAlongNormal * usefulVelocityAlongNormal
-                    * (-waterDragCoefficient)
-                    * 100.0f; // TODOTEST
+                //
+                // Now apply capping: we want to make sure that the drag force never overcomes the
+                // velocity, resulting in an acceleration of the particle in the _opposite_ direction.
+                //
+                // To this end, we want to enforce that, along the normal to the surface, the
+                // following holds:
+                //
+                //      V_along_n + F_along_n * dt / m >= 0
+                //
+                // After some simplifications we obtain:
+                //
+                //      C * dt / m * |V| cos(alpha) <= 1
+                //
+                // An upper bound is when cos(alpha) == 1, at which point the maximum velocity magnitude
+                // after which the particle accelerates in the opposite direction is:
+                //
+                //      |V| <= m / (C * dt)
+                //
+                // The maximum force is then:
+                //
+                //      Fmax = - m^2 / (C * dt^2) * Nn
+                //
+
+                float const maxDragForceMagnitude =
+                    mPoints.GetMass(pointIndex) * mPoints.GetMass(pointIndex) // Material + Augmentation + Water
+                    * maxForceFactor;
+
+                float const dragForceMagnitude = std::min(
+                    usefulVelocityAlongNormal * usefulVelocityAlongNormal * waterPressureDragCoefficient,
+                    maxDragForceMagnitude);
+
+                // Drag force - in the direction of the normal
+                vec2f const dragForce = normal * dragForceMagnitude;
 
                 // Apply drag force
-                mPoints.GetNonSpringForce(point2Index) += dragForce;
+                mPoints.GetNonSpringForce(pointIndex) -= dragForce;
             }
 
             //
             // Advance
             //
 
-            edgeIndex = frontierEdge.NextEdgeIndex;
-            if (edgeIndex == startEdgeIndex)
+            nextEdgeIndex = nextFrontierEdge.NextEdgeIndex;
+            if (nextEdgeIndex == startEdgeIndex)
                 break;
 
-            pos1 = pos2;
-            pos2 = pos3;
-            point2Index = point3Index;
+            previousPointPosition = pointPosition;
+            pointPosition = nextPointPosition;
+            pointIndex = nextPointIndex;
         }
+
+#ifdef _DEBUG
+        assert(visitedPoints == frontier.Size);
+#endif
+
+        // Store AABB
+        aabbSet.Add(std::move(aabb));
     }
 }
 
