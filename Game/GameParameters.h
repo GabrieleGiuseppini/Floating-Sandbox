@@ -127,12 +127,17 @@ struct GameParameters
     static float constexpr MinWaterDensityAdjustment = 0.0f;
     static float constexpr MaxWaterDensityAdjustment = 4.0f;
 
-    static float constexpr WaterFrictionDragCoefficient = 0.018f;
+    static float constexpr WaterFrictionDragCoefficient = 0.1f;
+
+    float WaterFrictionDragAdjustment;
+    static float constexpr MinWaterFrictionDragAdjustment = 0.0f;
+    static float constexpr MaxWaterFrictionDragAdjustment = 1000.0f; // Safe to avoid drag instability (2 * m / (dt * C) at minimal mass, 1Kg)
+
     static float constexpr WaterPressureDragCoefficient = 1000.0f;
 
-    float WaterDragAdjustment;
-    static float constexpr MinWaterDragAdjustment = 0.0f;
-    static float constexpr MaxWaterDragAdjustment = 1000.0f; // Safe to avoid drag instability (2 * m / (dt * C) at minimal mass, 1Kg)
+    float WaterPressureDragAdjustment;
+    static float constexpr MinWaterPressureDragAdjustment = 0.0f;
+    static float constexpr MaxWaterPressureDragAdjustment = 1000.0f;
 
     float WaterIntakeAdjustment;
     static float constexpr MinWaterIntakeAdjustment = 0.001f;

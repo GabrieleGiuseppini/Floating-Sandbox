@@ -1,7 +1,7 @@
 {
 	"structure_image":"flood_test.png.dat",
 	"ship_name":"Flood Test",
-	"offset":{"x":0.0, "y":-120.0},
+	"offset":{"x":0.0, "y":-80.0},
 	"description":
 		"The 'Flood Test' is a simple test to find out if flooding works in the game or not. But it seems like they do so go ahead and do whatever you want with this thing!"
 }

@@ -47,8 +47,11 @@ struct IGameControllerSettingsOptions
     virtual float GetMinWaterDensityAdjustment() const = 0;
     virtual float GetMaxWaterDensityAdjustment() const = 0;
 
-    virtual float GetMinWaterDragAdjustment() const = 0;
-    virtual float GetMaxWaterDragAdjustment() const = 0;
+    virtual float GetMinWaterFrictionDragAdjustment() const = 0;
+    virtual float GetMaxWaterFrictionDragAdjustment() const = 0;
+
+    virtual float GetMinWaterPressureDragAdjustment() const = 0;
+    virtual float GetMaxWaterPressureDragAdjustment() const = 0;
 
     virtual float GetMinWaterIntakeAdjustment() const = 0;
     virtual float GetMaxWaterIntakeAdjustment() const = 0;

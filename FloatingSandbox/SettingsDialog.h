@@ -88,7 +88,8 @@ private:
     SliderControl<float> * mGlobalDampingAdjustmentSlider;
     SliderControl<float> * mRotAcceler8rSlider;
     SliderControl<float> * mWaterDensitySlider;
-    SliderControl<float> * mWaterDragSlider;
+    SliderControl<float> * mWaterFrictionDragSlider;
+    SliderControl<float> * mWaterPressureDragSlider;
     SliderControl<float> * mWaterIntakeSlider;
     SliderControl<float> * mWaterCrazynessSlider;
     SliderControl<float> * mWaterDiffusionSpeedSlider;

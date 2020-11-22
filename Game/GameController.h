@@ -295,10 +295,15 @@ public:
     float GetMinWaterDensityAdjustment() const override { return GameParameters::MinWaterDensityAdjustment; }
     float GetMaxWaterDensityAdjustment() const override { return GameParameters::MaxWaterDensityAdjustment; }
 
-    float GetWaterDragAdjustment() const override { return mGameParameters.WaterDragAdjustment; }
-    void SetWaterDragAdjustment(float value) override { mGameParameters.WaterDragAdjustment = value; }
-    float GetMinWaterDragAdjustment() const override { return GameParameters::MinWaterDragAdjustment; }
-    float GetMaxWaterDragAdjustment() const override { return GameParameters::MaxWaterDragAdjustment; }
+    float GetWaterFrictionDragAdjustment() const override { return mGameParameters.WaterFrictionDragAdjustment; }
+    void SetWaterFrictionDragAdjustment(float value) override { mGameParameters.WaterFrictionDragAdjustment = value; }
+    float GetMinWaterFrictionDragAdjustment() const override { return GameParameters::MinWaterFrictionDragAdjustment; }
+    float GetMaxWaterFrictionDragAdjustment() const override { return GameParameters::MaxWaterFrictionDragAdjustment; }
+
+    float GetWaterPressureDragAdjustment() const override { return mGameParameters.WaterPressureDragAdjustment; }
+    void SetWaterPressureDragAdjustment(float value) override { mGameParameters.WaterPressureDragAdjustment = value; }
+    float GetMinWaterPressureDragAdjustment() const override { return GameParameters::MinWaterPressureDragAdjustment; }
+    float GetMaxWaterPressureDragAdjustment() const override { return GameParameters::MaxWaterPressureDragAdjustment; }
 
     float GetWaterIntakeAdjustment() const override { return mGameParameters.WaterIntakeAdjustment; }
     void SetWaterIntakeAdjustment(float value) override { mGameParameters.WaterIntakeAdjustment = value; }

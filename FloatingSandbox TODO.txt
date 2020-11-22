@@ -1508,26 +1508,30 @@ Render:
 				! Two water drags:
 					+ Point-based == friction drag
 					+ Surface-based == pressure drag
-				= Find right coefficients for both
+				+ Split water drag adjustments
+				+ Find right coefficients for both
 				+ Need to clamp pressure force
 					+ So better done after spring/nonspring forces rearc, so expense is minimized				
-			- Split water drag adjustments
-				- Allow zero for both
-				- Test maxima for both, adjust if needed
-			- See if friction drag is needed after all
+				- Test Titanic Before and After
+			- Water drag adjustments:
+				+ Allow zero for both
+				- Test maxima for both, adjust if needed to avoid instabilities
+					- Frictional: see below, lava
+			+ See if friction drag is needed after all
 			- Final tests/Goals:
 				- Lifeboat running fast and capsizing
 				- Stern should glide
 				- Ship falling from sky should break upon impact with water
+				- Water should become lava with high drag
+					- Increase amount of frictional drag user may do
+				- Lava settings
 		- Optimize:
 			+ Optimize frontier visit: merge two loops
 			- Optimize point depth calculation
 				- To be done w/"Cached Quantities" work
-		- Increase the amount of drag adjustment users may do
-			- Goal: water should become lava with high drag
-		- Bonus: should also consider normal to surface of ocean, so if the two surfaces intersect, we get
-		  momentum from waves to ship
-		
+				
+	- Transfer momentum from waves to ship
+		- When ship surface intersects water surface
 
 	= Ocean floor deforming upon impact (*)
 		! Better done after frontier work, so that may calculate pointness

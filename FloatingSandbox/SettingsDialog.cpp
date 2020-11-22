@@ -1106,27 +1106,53 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     CellBorder);
             }
 
-            // Water Drag
+            // Water Friction Drag
             {
-                mWaterDragSlider = new SliderControl<float>(
+                mWaterFrictionDragSlider = new SliderControl<float>(
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
-                    _("Water Drag Adjust"),
-                    _("Adjusts the drag force exerted by sea water on physical bodies."),
+                    _("Water Friction Drag Adjust"),
+                    _("Adjusts the friction drag force exerted by sea water on physical bodies."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::WaterDragAdjustment, value);
+                        this->mLiveSettings.SetValue(GameSettings::WaterFrictionDragAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions->GetMinWaterDragAdjustment(),
+                        mGameControllerSettingsOptions->GetMinWaterFrictionDragAdjustment(),
                         1.0f,
-                        mGameControllerSettingsOptions->GetMaxWaterDragAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxWaterFrictionDragAdjustment()));
 
                 fluidsSizer->Add(
-                    mWaterDragSlider,
+                    mWaterFrictionDragSlider,
                     wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Water Pressure Drag
+            {
+                mWaterPressureDragSlider = new SliderControl<float>(
+                    fluidsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Water Pressure Drag Adjust"),
+                    _("Adjusts the pressure drag force exerted by sea water on physical bodies."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterPressureDragAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinWaterPressureDragAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxWaterPressureDragAdjustment()));
+
+                fluidsSizer->Add(
+                    mWaterPressureDragSlider,
+                    wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -1152,7 +1178,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
                 fluidsSizer->Add(
                     mWaterIntakeSlider,
-                    wxGBPosition(0, 2),
+                    wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -1177,7 +1203,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
                 fluidsSizer->Add(
                     mWaterCrazynessSlider,
-                    wxGBPosition(0, 3),
+                    wxGBPosition(0, 4),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -1202,7 +1228,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
                 fluidsSizer->Add(
                     mWaterDiffusionSpeedSlider,
-                    wxGBPosition(0, 4),
+                    wxGBPosition(0, 5),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -1219,7 +1245,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
         gridSizer->Add(
             fluidsBox,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 5),
+            wxGBSpan(1, 6),
             wxEXPAND | wxALL,
             CellBorder);
     }
@@ -4348,7 +4374,9 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mWaterDensitySlider->SetValue(settings.GetValue<float>(GameSettings::WaterDensityAdjustment));
 
-    mWaterDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDragAdjustment));
+    mWaterFrictionDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterFrictionDragAdjustment));
+
+    mWaterPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterPressureDragAdjustment));
 
     mWaterIntakeSlider->SetValue(settings.GetValue<float>(GameSettings::WaterIntakeAdjustment));
 

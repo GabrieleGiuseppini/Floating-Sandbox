@@ -752,7 +752,7 @@ void Ship::ApplyWorldForces(
     // Underwater points feel this amount of water drag, due to friction
     float const waterFrictionDragCoefficient =
         GameParameters::WaterFrictionDragCoefficient
-        * gameParameters.WaterDragAdjustment;
+        * gameParameters.WaterFrictionDragAdjustment;
 
     for (auto pointIndex : mPoints)
     {
@@ -795,7 +795,7 @@ void Ship::ApplyWorldForces(
 
 
         //
-        // Apply water drag - if under water - or wind force - if above water
+        // Apply water friction drag - if under water - or wind force - if above water
         //
 
         if (mPoints.GetPosition(pointIndex).y <= waterHeightAtThisPoint)
@@ -829,7 +829,7 @@ void Ship::ApplyWorldForces(
     // Underwater points feel this amount of water drag, due to pressure
     float const waterPressureDragCoefficient =
         GameParameters::WaterPressureDragCoefficient
-        * gameParameters.WaterDragAdjustment;
+        * gameParameters.WaterPressureDragAdjustment;
 
     // Pre-calculated factors for the maximum drag force applicable to
     // a particle; read below for explanations, but this is:
