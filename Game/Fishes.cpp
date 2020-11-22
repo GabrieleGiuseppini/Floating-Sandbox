@@ -87,6 +87,11 @@ void Fishes::Update(
             fish.HeadOffset *= sizeFactor;
         }
 
+        for (auto & fishShoal : mFishShoals)
+        {
+            fishShoal.MaxWorldDimension *= sizeFactor;
+        }
+
         // Update parameters
         mCurrentFishSizeMultiplier = gameParameters.FishSizeMultiplier;
         mCurrentFishSpeedAdjustment = gameParameters.FishSpeedAdjustment;
@@ -447,8 +452,8 @@ void Fishes::UpdateDynamics(
     for (ElementIndex f = 0; f < fishCount; ++f)
     {
         Fish & fish = mFishes[f];
-
-        FishSpecies const & species = mFishShoals[fish.ShoalId].Species;
+        FishShoal const & fishShoal = mFishShoals[fish.ShoalId];
+        FishSpecies const & fishSpecies = fishShoal.Species;
 
         ///////////////////////////////////////////////////////////////////
         // 1) Steer or auto-smooth direction
@@ -625,7 +630,7 @@ void Fishes::UpdateDynamics(
                 * speedMultiplier;
 
             // Update tail progress phase: add basal speed
-            fish.CurrentTailProgressPhase += species.TailSpeed * speedMultiplier * gameParameters.FishSpeedAdjustment;
+            fish.CurrentTailProgressPhase += fishSpecies.TailSpeed * speedMultiplier * gameParameters.FishSpeedAdjustment;
 
             // Update position: superimpose a small sin component, unless we're steering
             if (!fish.CruiseSteeringState.has_value())
@@ -662,7 +667,7 @@ void Fishes::UpdateDynamics(
                 * GameParameters::SimulationStepTimeDuration<float>;
 
             // Update tail progress phase: add extra speed (fish flapping its tail)
-            fish.CurrentTailProgressPhase += species.TailSpeed * 20.0f;
+            fish.CurrentTailProgressPhase += fishSpecies.TailSpeed * 20.0f;
         }
 
         // Decay panic charge
@@ -708,7 +713,7 @@ void Fishes::UpdateDynamics(
             fish.TargetPosition = FindNewCruisingTargetPosition(
                 fish.CurrentPosition,
                 fish.TargetVelocity.normalise(),
-                species,
+                fishSpecies,
                 visibleWorld);
 
             // Stop cruising, in case we were cruising
@@ -744,11 +749,11 @@ void Fishes::UpdateDynamics(
             fish.TargetPosition = FindNewCruisingTargetPosition(
                 fish.CurrentPosition,
                 -fish.CurrentVelocity.normalise(),
-                species,
+                fishSpecies,
                 visibleWorld);
 
             // Calculate new target velocity
-            fish.TargetVelocity = MakeCuisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, fish.PersonalitySeed, gameParameters);
+            fish.TargetVelocity = MakeCuisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), fishSpecies, fish.PersonalitySeed, gameParameters);
 
             // Setup steering, depending on whether we're turning or not
             if (fish.TargetVelocity.x * fish.CurrentVelocity.x < 0.0f
@@ -783,7 +788,7 @@ void Fishes::UpdateDynamics(
             // Continue to current target
 
             // Calculate new target velocity
-            fish.TargetVelocity = MakeCuisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), species, fish.PersonalitySeed, gameParameters);
+            fish.TargetVelocity = MakeCuisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), fishSpecies, fish.PersonalitySeed, gameParameters);
 
             // Setup steering, depending on whether we're turning or not
             if (fish.TargetVelocity.x * fish.CurrentVelocity.x < 0.0f
@@ -816,9 +821,11 @@ void Fishes::UpdateDynamics(
             fish.CurrentPosition
             + fish.CurrentRenderVector * fish.HeadOffset;
 
+        // Calculate depth of fish head
+        float const fishHeadDepth = oceanY - fishHeadPosition.y;
+
         // Check whether we're too close to the water surface (idealized as being horizontal) - but only if fish is not in too much panic
-        if (float const depth = oceanY - fish.CurrentPosition.y;
-            depth < 2.0f + OceanSurfaceLowWatermark
+        if (fishHeadDepth < 2.0f + OceanSurfaceLowWatermark
             && fish.PanicCharge <= 0.3f // Not too much panig
             && fish.TargetVelocity.y >= 0.0f) // Bounce away only if we're really going into it
         {
@@ -830,7 +837,7 @@ void Fishes::UpdateDynamics(
             vec2f const bounceDirection = vec2f(fish.TargetVelocity.x, -fish.TargetVelocity.y).normalise();
 
             // Calculate new target velocity - away from disturbance point
-            fish.TargetVelocity = MakeCuisingVelocity(bounceDirection, species, fish.PersonalitySeed, gameParameters);
+            fish.TargetVelocity = MakeCuisingVelocity(bounceDirection, fishSpecies, fish.PersonalitySeed, gameParameters);
 
             // Converge direction change at this rate
             fish.CurrentDirectionSmoothingConvergenceRate = std::max(
@@ -841,7 +848,8 @@ void Fishes::UpdateDynamics(
         // Check ocean floor collision
         float const clampedX = Clamp(fishHeadPosition.x, -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth);
         float const oceanFloorHeight = oceanFloor.GetHeightAt(clampedX);
-        if (fishHeadPosition.y <= oceanFloorHeight)
+        if (fishHeadPosition.y <= oceanFloorHeight
+            && fishHeadDepth > fishShoal.MaxWorldDimension * 2.0f)
         {
             //
             // Ocean floor collision
@@ -945,8 +953,7 @@ void Fishes::UpdateShoaling(
         float const shoalRadius =
             fishShoal.Species.ShoalRadius
             * gameParameters.FishShoalRadiusAdjustment
-            * fishShoal.MaxWorldDimension
-            * gameParameters.FishSizeMultiplier;
+            * fishShoal.MaxWorldDimension; // Inclusive of FishSizeMultiplier
 
         // Visit all fishes in this shoal
         ElementIndex const endFishIndex = fishShoal.StartFishIndex + fishShoal.CurrentMemberCount;
@@ -1139,7 +1146,7 @@ void Fishes::CreateNewFishShoalBatch(ElementIndex startFishIndex)
         mFishShoals.emplace_back(
             species,
             startFishIndex,
-            species.WorldSize.x >= species.WorldSize.y ? species.WorldSize.x : species.WorldSize.y);
+            (species.WorldSize.x >= species.WorldSize.y ? species.WorldSize.x : species.WorldSize.y) * mCurrentFishSizeMultiplier);
 
         startFishIndex += static_cast<ElementCount>(species.ShoalSize);
     }

@@ -70,7 +70,7 @@ private:
         vec2f InitialPosition;
         vec2f InitialDirection;
 
-        float MaxWorldDimension;
+        float MaxWorldDimension; // Inclusive of SizeMultiplier
 
         FishShoal(
             FishSpecies const & species,
