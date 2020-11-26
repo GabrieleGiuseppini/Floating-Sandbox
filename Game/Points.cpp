@@ -33,6 +33,7 @@ void Points::Add(
     mIsRopeBuffer.emplace_back(isRope);
 
     mPositionBuffer.emplace_back(position);
+    mFactoryPositionBuffer.emplace_back(position);
     mVelocityBuffer.emplace_back(vec2f::zero());
     mSpringForceBuffer.emplace_back(vec2f::zero());
     mNonSpringForceBuffer.emplace_back(vec2f::zero());

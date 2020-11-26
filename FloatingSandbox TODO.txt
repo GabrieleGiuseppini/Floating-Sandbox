@@ -252,6 +252,13 @@ Render:
 		+ Frontier (*)
 			+ Changelist
 
+		+ 500K download post on GameJolt
+		+ How to make a ship tutorial post on GameJolt: https://www.youtube.com/watch?v=7KhRdTv9fTo
+		+ Frontier bug:
+			+ 2 sides with frontier; both external frontiers, but different IDs
+				+ Do factory positions
+				+ Verify bug is due to discordant IsClockwise
+
 		- Things pending (all *)
 			- Fishes:
 				+ Fix sharks in shallow water
@@ -268,17 +275,50 @@ Render:
 
 		- Log not being created with close button, only with File->Quit
 
-
 		= Spanish translation
+			- Add Joadix guy to credits
+				- Full name: ?
 			- Changelist
 
-		+ 500K download post on GameJolt
-		- How to make a ship tutorial post on GameJolt: https://www.youtube.com/watch?v=7KhRdTv9fTo
+
 
 		- Check issue with ship having water material that breaks		
 		- See why log diagnostics is not written
 			- Different "Close" events: X button vs. File->Quit
 		- Calibrate flying burning cardboard
+
+		- New ships
+
+		- Localization of new strings
+
+		- Release
+
+		----------------------------------------------------------------------------------------
+
+		- Reload last-loaded ship (the one that the game was closed with)
+			- Saved at UIPreferencesManager
+			- Manu item only enabled if there is indeed a ship and it's not the default
+				- "Reload Previous Ship"
+
+		- Repair improvement:
+			- 1) Debug test case (w/default_ship)
+				- Need ability to highlight point by its index
+					- Use SecretTypingDebugConsole
+			- 2) See if it's due to triangle forming folded
+				- Add log when we calc a point's destination, if that point repair wuold result in a new triangle
+				  that is NOT clockwise wrt current point positions
+			- Old:
+			- AA) Try with force-based adjusting
+				- Gives a chance to springs to prevent flips
+			- A)
+				- If, after attaching a point, that point is a vertex of a flipped (i.e. CCW) triangle:
+					- Move the point to the other side (rendering the triangle CW)
+			- OR: B)
+				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
+
+		- See vector normalization optimization with mult's with 1/len
+
+		- Cached quantities (*)
 
 		- New rain: https://www.shadertoy.com/view/wsKcWw
 
@@ -292,8 +332,6 @@ Render:
 			- Pressure implosions / pressure crush (*)
 			- Waves from ship (*)
 			- Punch tool (*)
-
-		- Cached quantities (*)
 
 		- Lower speed of (sin) ocean waves - now that we run faster?
 
@@ -334,13 +372,6 @@ Render:
 			- If cool, replace the one with "three fingers"
 			- If not, adjust the one with "three fingers": its tail lasts too long
 
-		- Sign executable and installer (*)
-
-		- Spanish
-			- Add Joadix guy to credits
-				- Full name: ?
-			- Send invite for dev server
-
 		- Release
 
 		----------------------------------------------------------------------------------------
@@ -351,8 +382,6 @@ Render:
 
 		- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
 			- If it works: do "reshader" type of work (*)
-
-		- Figure out how to select gfx card
 
 		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
 
@@ -366,22 +395,6 @@ Render:
 
 		- Test: re-try cache layout optimizations
 			- See current optimization's impact first with NOP optimization
-
-		- Repair improvement:
-			- AAA) Debug test case (w/default_ship)
-				- Need ability to highlight point by its index
-					- Use SecretTypingDebugConsole
-			- AA) Try with force-based adjusting
-				- Gives a chance to springs to prevent flips
-			- A)
-				- Make triangle's vertices CW
-					! Have to do it anyway for frontier
-					- Add to invariant checks
-						- Debug.h => Triangles::RunInvariantChecks(.)
-				- If, after attaching a point, that point is a vertex of a flipped (i.e. CCW) triangle:
-					- Move the point to the other side (rendering the triangle CW)
-			- OR: B)
-				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
 
 		- Splash for bombs
 			- Option A) Ephemeral particles with own shader:
@@ -746,10 +759,14 @@ Render:
 			= Ask testers for help
 				- DKuz: i7-9750H, 2.60 GHz, Intel(R) UHD Graphics 630, FPS 64 | CPU Calibration: iterationCount=124 score=1; Graphics Calibration: score=1
 				- Oxurus: i5-6400, 2.70 GHz, NVIDIA GeForce GTX 960/PCIe/SSE2, FPS 55-57 | CPU Calibration: iterationCount=96 score=0.995328; Graphics Calibration: score=1
-
+					- Give lower score
+				- Get all responses
+				- Get also numbers from Dell					
+					
 		= Produces CalibrationScore
 			= ComputerCalibrator::TuneParameters(CalibrationScore const &, GameParameters &, RenderContext &)
 				- Sets GameParameters and RenderContext's parameters
+					- #Flames, #Explosions
 				= Happens before SettingsManager samples defaults, so these are the new defaults
 					- Verify this is indeed the case
 
@@ -1399,6 +1416,7 @@ Render:
 				- Unless Dell can make it
 				- See "calibration" work item
 			- Remove fish update time @ notification layer
+			- Initial placement of fish in a shoal should obey shoaling spacing
 
 	- Ropes 2 layer
 		- json only allows one ropes layer
@@ -1504,20 +1522,31 @@ Render:
 		! After frontier work
 		! Separate into friction and pressure drags: https://en.wikipedia.org/wiki/Drag_coefficient#Concept
 		= Calc force depending on projection of particle's velocity along normal
-			= Try to re-instate square velocity drag
+			+ Try to re-instate square velocity drag
 				! Two water drags:
 					+ Point-based == friction drag
 					+ Surface-based == pressure drag
 				+ Split water drag adjustments
 				+ Find right coefficients for both
 				+ Need to clamp pressure force
-					+ So better done after spring/nonspring forces rearc, so expense is minimized				
-				- Test Titanic Before and After
+					+ So better done after spring/nonspring forces rearc, so expense is minimized		
+				+ Test Titanic Before and After
+			+ Add new test shape: long
+			= See if should do back-pressure as well
+				+ See gliding deifference between with-and without-back-pressure
+					+ It does make a difference
+				= Do it right
+				
+			- See if should halve/lower pressure drag
+			- See if friction drag is needed after all
+				+ It seems it's not
+				- See impact on debris, ropes, spring chains
+				- Try lifeboat, stern
+
 			- Water drag adjustments:
 				+ Allow zero for both
 				- Test maxima for both, adjust if needed to avoid instabilities
 					- Frictional: see below, lava
-			+ See if friction drag is needed after all
 			- Final tests/Goals:
 				- Lifeboat running fast and capsizing
 				- Stern should glide
@@ -1525,10 +1554,13 @@ Render:
 				- Water should become lava with high drag
 					- Increase amount of frictional drag user may do
 				- Lava settings
+					- See if need to change drag adjustment setting name
+				- Submarine 3000 with anti-matter bomb on tail
+			- Cleanup force rendering x 3
 		- Optimize:
 			+ Optimize frontier visit: merge two loops
 			- Optimize point depth calculation
-				- To be done w/"Cached Quantities" work
+				- To be done w/"Cached Quantities" work, add to TODO list for next version
 				
 	- Transfer momentum from waves to ship
 		- When ship surface intersects water surface

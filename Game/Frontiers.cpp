@@ -1498,7 +1498,7 @@ inline bool Frontiers::ProcessTriangleCuspRestore(
 bool Frontiers::IsCounterClockwiseFrontier(
     ElementIndex startEdgeIndex,
     ElementIndex endEdgeIndex,
-    Points const & points)
+    Points const & points) const
 {
     // Start and End belong to the same frontier
     // (but are *not* necessarily connected)
@@ -1511,13 +1511,16 @@ bool Frontiers::IsCounterClockwiseFrontier(
     //  - If the result is positive the curve is clockwise
     //  - If it's negative the curve is counter-clockwise
     //
+    // Note how we use factory positions, as triangles
+    // might get folded during the simulation
+    //
 
     // end->start once, followed by start->...->end
 
     ElementIndex edgeIndex1 = endEdgeIndex;
-    vec2f pos1 = points.GetPosition(mFrontierEdges[edgeIndex1].PointAIndex);
+    vec2f pos1 = points.GetFactoryPosition(mFrontierEdges[edgeIndex1].PointAIndex);
     ElementIndex edgeIndex2 = startEdgeIndex;
-    vec2f pos2 = points.GetPosition(mFrontierEdges[edgeIndex2].PointAIndex);
+    vec2f pos2 = points.GetFactoryPosition(mFrontierEdges[edgeIndex2].PointAIndex);
 
     float totalArea = 0.0f;
 
@@ -1532,7 +1535,7 @@ bool Frontiers::IsCounterClockwiseFrontier(
         edgeIndex1 = edgeIndex2;
         pos1 = pos2;
         edgeIndex2 = mFrontierEdges[edgeIndex2].NextEdgeIndex;
-        pos2 = points.GetPosition(mFrontierEdges[edgeIndex2].PointAIndex);
+        pos2 = points.GetFactoryPosition(mFrontierEdges[edgeIndex2].PointAIndex);
     }
 
     return totalArea < 0.0f;
@@ -1593,6 +1596,7 @@ void Frontiers::RegeneratePointColors()
 
 #ifdef _DEBUG
 void Frontiers::VerifyInvariants(
+    Points const & points,
     Springs const & springs,
     Triangles const & triangles) const
 {
@@ -1652,6 +1656,25 @@ void Frontiers::VerifyInvariants(
                     mFrontierIds.cbegin(),
                     mFrontierIds.cend(),
                     frontierIndex) != mFrontierIds.cend());
+
+            if (frontier->Type == FrontierType::External)
+            {
+                Verify(
+                    !IsCounterClockwiseFrontier(
+                        frontier->StartingEdgeIndex,
+                        mFrontierEdges[frontier->StartingEdgeIndex].PrevEdgeIndex,
+                        points));
+            }
+            else
+            {
+                assert(frontier->Type == FrontierType::Internal);
+
+                Verify(
+                    IsCounterClockwiseFrontier(
+                        frontier->StartingEdgeIndex,
+                        mFrontierEdges[frontier->StartingEdgeIndex].PrevEdgeIndex,
+                        points));
+            }
         }
         else
         {

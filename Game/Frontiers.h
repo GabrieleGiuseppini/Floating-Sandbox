@@ -107,6 +107,7 @@ public:
 
 #ifdef _DEBUG
     void VerifyInvariants(
+        Points const & points,
         Springs const & springs,
         Triangles const & triangles) const;
 #endif
@@ -247,7 +248,7 @@ private:
     bool IsCounterClockwiseFrontier(
         ElementIndex startEdgeIndex,
         ElementIndex endEdgeIndex,
-        Points const & points);
+        Points const & points) const;
 
     void RegeneratePointColors();
 

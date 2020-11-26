@@ -530,6 +530,7 @@ public:
         , mIsRopeBuffer(mBufferElementCount, shipPointCount, false)
         // Mechanical dynamics
         , mPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mFactoryPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mSpringForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mNonSpringForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -921,6 +922,11 @@ public:
         vec2f const & position) noexcept
     {
         mPositionBuffer[pointElementIndex] = position;
+    }
+
+    vec2f const & GetFactoryPosition(ElementIndex pointElementIndex) const noexcept
+    {
+        return mFactoryPositionBuffer[pointElementIndex];
     }
 
     vec2f const & GetVelocity(ElementIndex pointElementIndex) const noexcept
@@ -1797,6 +1803,7 @@ private:
     //
 
     Buffer<vec2f> mPositionBuffer;
+    Buffer<vec2f> mFactoryPositionBuffer;
     Buffer<vec2f> mVelocityBuffer;
     Buffer<vec2f> mSpringForceBuffer;
     Buffer<vec2f> mNonSpringForceBuffer;
