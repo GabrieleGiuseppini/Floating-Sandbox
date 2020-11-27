@@ -267,7 +267,8 @@ void Ship::Update(
     // Check whether we need to save the non-spring force buffer before we zero it out
     if (VectorFieldRenderModeType::PointForce == renderContext.GetVectorFieldRenderMode())
     {
-        mPoints.CopyNonSpringForceBufferToForceRenderBuffer();
+        // TODOTEST
+        //mPoints.CopyNonSpringForceBufferToForceRenderBuffer();
     }
 
     // Zero-out non-spring forces
@@ -842,6 +843,9 @@ void Ship::ApplyWorldForces(
     // Visit all frontiers
     //
 
+    // TODOTEST
+    mPoints.ResetForceRenderBuffer();
+
     for (FrontierId frontierId : mFrontiers.GetFrontierIds())
     {
         auto const & frontier = mFrontiers.GetFrontier(frontierId);
@@ -902,21 +906,29 @@ void Ship::ApplyWorldForces(
             if (pointPosition.y <= waterHeightAtThisPoint)
             {
                 //
-                // Calculate drag force:
+                // Calculate drag force, which, completely out of my hat, is:
                 //
-                // F = - C * |V|^2 * (Vn dot Nn)^2 * Nn
+                // F = - C * |V|^2 * cos(a) * Nn
                 //
-                //      Vn dot Nn == cos(angle between velocity and surface normal)
+                //      cos(a) == cos(angle between velocity and surface normal) == Vn dot Nn
                 //
 
                 // Normal to surface - calculated between p1 and p3
                 vec2f const normal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
 
-                // Projection of p2's velocity along this normal;
-                // no pressure drag when velocity is opposite to normal
-                float const usefulVelocityAlongNormal = std::max(
-                    mPoints.GetVelocity(pointIndex).dot(normal),
-                    0.0f);
+                // Velocity magnitude
+                vec2f const pointVelocity = mPoints.GetVelocity(pointIndex);
+                float const velocityMagnitude = pointVelocity.length();
+
+                // Magnitude of drag force (opposite sign)
+                //  - C * |V|^2 * cos(a) == - C * |V| * (V dot Nn)
+                //
+                // To avoid suction force (i.e. drag force attracting surface facing
+                // opposite of velocity), we clamp the angle to >= 0
+                float const dragForceMagnitude =
+                    waterPressureDragCoefficient
+                    * velocityMagnitude
+                    * std::max(pointVelocity.dot(normal), 0.0f);
 
                 //
                 // Now apply capping: we want to make sure that the drag force never overcomes the
@@ -929,10 +941,10 @@ void Ship::ApplyWorldForces(
                 //
                 // After some simplifications we obtain:
                 //
-                //      C * dt / m * |V| cos(alpha) <= 1
+                //      C * dt / m * |V|  <= 1
                 //
-                // An upper bound is when cos(alpha) == 1, at which point the maximum velocity magnitude
-                // after which the particle accelerates in the opposite direction is:
+                // Thus the maximum velocity magnitude after which the particle accelerates in the
+                // opposite direction is:
                 //
                 //      |V| <= m / (C * dt)
                 //
@@ -941,19 +953,20 @@ void Ship::ApplyWorldForces(
                 //      Fmax = - m^2 / (C * dt^2) * Nn
                 //
 
+                // m^2 / (C * dt^2) (opposite sign)
                 float const maxDragForceMagnitude =
                     mPoints.GetMass(pointIndex) * mPoints.GetMass(pointIndex) // Material + Augmentation + Water
                     * maxForceFactor;
 
-                float const dragForceMagnitude = std::min(
-                    usefulVelocityAlongNormal * usefulVelocityAlongNormal * waterPressureDragCoefficient,
-                    maxDragForceMagnitude);
-
-                // Drag force - in the direction of the normal
-                vec2f const dragForce = normal * dragForceMagnitude;
+                // Final drag force - in the direction of the normal
+                // (opposite)
+                vec2f const dragForce = normal * std::min(dragForceMagnitude, maxDragForceMagnitude);
 
                 // Apply drag force
                 mPoints.GetNonSpringForce(pointIndex) -= dragForce;
+
+                // TODOTEST
+                mPoints.SetForceRenderVector(pointIndex, -dragForce);
             }
 
             //
@@ -1047,19 +1060,21 @@ void Ship::ApplySpringsForces_ByPoints(GameParameters const & gameParameters)
     float const * const restrict pointIntegrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
 
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
+
     float const globalDamping = 1.0f -
-        pow((1.0f - GameParameters::GlobalDamping),
-            12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
+        pow((1.0f - GameParameters::GlobalDamping), 12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
+
     // Incorporate adjustment
     float const globalDampingCoefficient = 1.0f -
         (
             gameParameters.GlobalDampingAdjustment <= 1.0f
             ? globalDamping * (1.0f - (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f))
             : globalDamping +
-            (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f)
-            / ((gameParameters.MaxGlobalDampingAdjustment - 1.0f) * (gameParameters.MaxGlobalDampingAdjustment - 1.0f))
-            * (1.0f - globalDamping)
-            );
+                (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f)
+                / ((gameParameters.MaxGlobalDampingAdjustment - 1.0f) * (gameParameters.MaxGlobalDampingAdjustment - 1.0f))
+                * (1.0f - globalDamping)
+        );
+
     float const velocityFactor = globalDampingCoefficient / dt;
 
     float const * restrict const restLengthBuffer = mSprings.GetRestLengthBuffer();
@@ -3169,6 +3184,7 @@ void Ship::VerifyInvariants()
     //
 
     mFrontiers.VerifyInvariants(
+        mPoints,
         mSprings,
         mTriangles);
 }

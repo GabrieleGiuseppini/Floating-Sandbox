@@ -1532,21 +1532,22 @@ Render:
 					+ So better done after spring/nonspring forces rearc, so expense is minimized		
 				+ Test Titanic Before and After
 			+ Add new test shape: long
-			= See if should do back-pressure as well
+			+ See if should do back-pressure as well
 				+ See gliding deifference between with-and without-back-pressure
 					+ It does make a difference
-				= Do it right
-				
-			- See if should halve/lower pressure drag
-			- See if friction drag is needed after all
-				+ It seems it's not
-				- See impact on debris, ropes, spring chains
-				- Try lifeboat, stern
+				+ Do it right				
+			+ See if should halve/lower pressure drag
+			+ See if friction drag is needed after all
+				+ Useful for impact
 
 			- Water drag adjustments:
 				+ Allow zero for both
-				- Test maxima for both, adjust if needed to avoid instabilities
+				- Maximum for friction: higher?
 					- Frictional: see below, lava
+					- Adjust if needed to avoid instabilities
+				- Maximum for pressure
+					- Adjust if needed to avoid instabilities
+					
 			- Final tests/Goals:
 				- Lifeboat running fast and capsizing
 				- Stern should glide
@@ -1561,7 +1562,11 @@ Render:
 			+ Optimize frontier visit: merge two loops
 			- Optimize point depth calculation
 				- To be done w/"Cached Quantities" work, add to TODO list for next version
-				
+	= See if we still need the high global damp - it affects the parabole traveled by slinged ships, they fall vertically at the end
+		- Recalc everything so that world feels like with adj==0.5
+
+
+
 	- Transfer momentum from waves to ship
 		- When ship surface intersects water surface
 
@@ -1656,9 +1661,6 @@ Render:
 		- Rendered (via option):
 			- Texture is distorted depending on force field
 			- TBD: see moleskine
-
-	- See if we still need the high global damp - it affects the parabole traveled by slinged ships, they fall vertically
-	  at the end
 
 	- Attempt to use total point masses for springs (*)
 		- Do first a pass to recalc coefficients, once per simulation step
