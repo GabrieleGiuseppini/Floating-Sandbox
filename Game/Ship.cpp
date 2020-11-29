@@ -804,8 +804,9 @@ void Ship::ApplyWorldForces(
             //
             // We use a linear law for simplicity
             //
-            // With a linear law, we know that the force will never accelerate the current velocity
-            // as long as m > (C * dt) / 2 (~=0.0002), which is a mass we won't have in our system (air is 1.2754).
+            // With a linear law, we know that the force will never overcome the current velocity
+            // as long as m > (C * dt) (~=0.0015), which is a mass we won't have in our system (air is 1.2754);
+            // hence we don't care here about capping the force to prevent overcoming accelerations.
             //
 
             mPoints.GetNonSpringForce(pointIndex) +=
@@ -835,6 +836,7 @@ void Ship::ApplyWorldForces(
     // Pre-calculated factors for the maximum drag force applicable to
     // a particle; read below for explanations, but this is:
     //      Fmax = - m^2 / (C * dt^2) * Nn
+    // TODOHERE
     float const maxForceFactor =
         1.0f
         / (waterPressureDragCoefficient * gameParameters.MechanicalSimulationStepTimeDuration<float>() * gameParameters.MechanicalSimulationStepTimeDuration<float>());
@@ -845,6 +847,9 @@ void Ship::ApplyWorldForces(
 
     // TODOTEST
     mPoints.ResetForceRenderBuffer();
+
+    // TODOTEST
+    static float maxForceMagnitudeEver = 0.0f;
 
     for (FrontierId frontierId : mFrontiers.GetFrontierIds())
     {
@@ -876,6 +881,9 @@ void Ship::ApplyWorldForces(
         size_t visitedPoints = 0;
 #endif
 
+        // TODOTEST
+        float maxForceMagnitudeInFrontier = 0.0f;
+
         for (ElementIndex nextEdgeIndex = startEdgeIndex; ;)
         {
 
@@ -899,18 +907,29 @@ void Ship::ApplyWorldForces(
             // Get next edge and point
             auto const & nextFrontierEdge = mFrontiers.GetFrontierEdge(nextEdgeIndex);
             ElementIndex const nextPointIndex = nextFrontierEdge.PointAIndex;
-            vec2f nextPointPosition = mPoints.GetPosition(nextPointIndex);
+            vec2f const nextPointPosition = mPoints.GetPosition(nextPointIndex);
 
             // Check if this point is underwater
             float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(pointPosition.x);
             if (pointPosition.y <= waterHeightAtThisPoint)
             {
                 //
-                // Calculate drag force, which, completely out of my hat, is:
+                // Calculate drag force
                 //
-                // F = - C * |V|^2 * cos(a) * Nn
+                // We would like to use a square law (i.e. drag force proportional to square
+                // of velocity), but then particles at high velocities become subject to
+                // enormous forces, which, for small masses - such as cloth - means astronomical
+                // accelerations.
+                //
+                // We have to recourse then, again, to a linear law:
+                //
+                // F = - C * |V| * cos(a) * Nn
                 //
                 //      cos(a) == cos(angle between velocity and surface normal) == Vn dot Nn
+                //
+                // With this law, a particle's velocity is overcome by the drag force when its
+                // mass is <= C * dt, i.e. ~78Kg. Since this mass we do have in our sytem, we have
+                // to cap the force to prevent velocity overcome
                 //
 
                 // Normal to surface - calculated between p1 and p3
@@ -921,14 +940,40 @@ void Ship::ApplyWorldForces(
                 float const velocityMagnitude = pointVelocity.length();
 
                 // Magnitude of drag force (opposite sign)
-                //  - C * |V|^2 * cos(a) == - C * |V| * (V dot Nn)
+                //  - C * |V| * cos(a) == - C * |V| * (Vn dot Nn) == -C * (V dot Nn)
                 //
                 // To avoid suction force (i.e. drag force attracting surface facing
                 // opposite of velocity), we clamp the angle to >= 0
                 float const dragForceMagnitude =
                     waterPressureDragCoefficient
-                    * velocityMagnitude
-                    * std::max(pointVelocity.dot(normal), 0.0f);
+                    * std::max(
+                        pointVelocity.dot(normal),
+                        0.0f);
+
+                // Max drag force magnitude: m * |V| / dt
+                float const maxDragForceMagnitude =
+                    mPoints.GetMass(pointIndex) * velocityMagnitude
+                    / gameParameters.SimulationStepTimeDuration<float>; // TODO: make coeff
+
+                // Final drag force - in the (opposite) direction of the normal
+                vec2f const dragForce = normal * std::min(dragForceMagnitude, maxDragForceMagnitude);
+
+                // Apply drag force
+                mPoints.GetNonSpringForce(pointIndex) -= dragForce;
+
+                // TODOTEST
+                mPoints.SetForceRenderVector(pointIndex, -dragForce);
+
+                // TODOOLD
+                /*
+                ////float const dragForceMagnitude =
+                ////    waterPressureDragCoefficient
+                ////    * velocityMagnitude
+                ////    * std::max(pointVelocity.dot(normal), 0.0f);
+                ////float const dragForceMagnitude =
+                ////    waterPressureDragCoefficient
+                ////    * velocityMagnitude
+                ////    * std::max(pointVelocity.normalise(velocityMagnitude).dot(normal), 0.0f);
 
                 //
                 // Now apply capping: we want to make sure that the drag force never overcomes the
@@ -958,15 +1003,58 @@ void Ship::ApplyWorldForces(
                     mPoints.GetMass(pointIndex) * mPoints.GetMass(pointIndex) // Material + Augmentation + Water
                     * maxForceFactor;
 
+                // TODOTEST
+                float const maxDragForceMagnitude2 =
+                    mPoints.GetMass(pointIndex) * velocityMagnitude
+                    / gameParameters.MechanicalSimulationStepTimeDuration<float>();
+                float const maxDragForceMagnitude3 =
+                    mPoints.GetMass(pointIndex) * velocityMagnitude
+                    / gameParameters.SimulationStepTimeDuration<float>;
+                float const maxDragForceMagnitude4 =
+                    mPoints.GetMass(pointIndex) * velocityMagnitude
+                    / gameParameters.SimulationStepTimeDuration<float>;
+
                 // Final drag force - in the direction of the normal
                 // (opposite)
-                vec2f const dragForce = normal * std::min(dragForceMagnitude, maxDragForceMagnitude);
+                // TODOTEST
+                //vec2f const dragForce = normal * std::min(dragForceMagnitude, maxDragForceMagnitude);
+                //vec2f const dragForce = normal * std::min(dragForceMagnitude, maxDragForceMagnitude2);
+                //vec2f const dragForce = normal * std::min(dragForceMagnitude, maxDragForceMagnitude3);
+                vec2f const dragForce = normal * std::min(dragForceMagnitude, maxDragForceMagnitude4);
 
                 // Apply drag force
                 mPoints.GetNonSpringForce(pointIndex) -= dragForce;
 
                 // TODOTEST
                 mPoints.SetForceRenderVector(pointIndex, -dragForce);
+
+                vec2f newVelocity2 = mPoints.GetVelocity(pointIndex);
+                for (int i = 0; i < gameParameters.NumMechanicalDynamicsIterations<int>(); ++i)
+                {
+                    newVelocity2 = newVelocity2 - dragForce / mPoints.GetMass(pointIndex) * gameParameters.MechanicalSimulationStepTimeDuration<float>();
+                }
+                if (newVelocity2.dot(mPoints.GetVelocity(pointIndex)) < 0.0f
+                    && pointIndex == 1)
+                {
+                    LogMessage("TODOTEST: NEWVEL2 OVERCOME BY DOT!");
+                }
+
+                // TODOTEST
+                if (newVelocity2.length() > pointVelocity.length()
+                    && pointIndex == 1)
+                {
+                    LogMessage("TODOTEST: NEWVEL2 OVERCOME BY MODULO!");
+                }
+
+                // TODOTEST
+                maxForceMagnitudeInFrontier = std::max(dragForce.length(), maxForceMagnitudeInFrontier);
+
+                // TODOTEST
+                if (dragForce.length() > 500000.0f)
+                {
+                    LogMessage("TODOTEST: Large force!!!!!");
+                }
+                */
             }
 
             //
@@ -981,6 +1069,10 @@ void Ship::ApplyWorldForces(
             pointPosition = nextPointPosition;
             pointIndex = nextPointIndex;
         }
+
+        // TODOTEST
+        maxForceMagnitudeEver = std::max(maxForceMagnitudeInFrontier, maxForceMagnitudeEver);
+        //LogMessage("TODO: Frontier ", frontierId, " MaxForce=", maxForceMagnitudeInFrontier, " Ever=", maxForceMagnitudeEver);
 
 #ifdef _DEBUG
         assert(visitedPoints == frontier.Size);

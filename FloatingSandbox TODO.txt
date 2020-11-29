@@ -1412,6 +1412,12 @@ Render:
 					+ Tsunami
 					+ Destroy
 					+ Thanos
+			- Other scares:
+				- Lightning strike
+				- AM bomb pre-implostion
+			- Recalibrate Mako
+				- Swimming speed
+				- TailX and swing
 			- Calibration: do fish only on machines that are powerful enough
 				- Unless Dell can make it
 				- See "calibration" work item
@@ -1540,6 +1546,20 @@ Render:
 			+ See if friction drag is needed after all
 				+ Useful for impact
 
+			= Global drag change below
+			= Cloth explosion issue:
+				+ Magnitude investigation:
+					+ Default ship: max drag force mag=236,799
+					+ Cloth: max force=18,910,600
+				- Issue is due to cloth's small mass, which makes force generate an enormous acceleration
+					- Test 1: linear force
+
+					- Shouldn't max force become smaller when mass is smaller?
+					- Options:
+						- 1: scale drag force with mass
+
+			- Weaker titanic bottom
+				- Copy to TitanicWithPower
 			- Water drag adjustments:
 				+ Allow zero for both
 				- Maximum for friction: higher?
@@ -1548,9 +1568,13 @@ Render:
 				- Maximum for pressure
 					- Adjust if needed to avoid instabilities
 					
+			- SettingsDialog tooltip: mention "hydrodynamics" at pressure drag
 			- Final tests/Goals:
+				- Titanic
+					- Breakup
+					- Stern should glide
+				- Find video with real shapes sinking
 				- Lifeboat running fast and capsizing
-				- Stern should glide
 				- Ship falling from sky should break upon impact with water
 				- Water should become lava with high drag
 					- Increase amount of frictional drag user may do
@@ -1558,12 +1582,19 @@ Render:
 					- See if need to change drag adjustment setting name
 				- Submarine 3000 with anti-matter bomb on tail
 			- Cleanup force rendering x 3
+			- Video:
+				- Find video with real shapes
 		- Optimize:
 			+ Optimize frontier visit: merge two loops
 			- Optimize point depth calculation
 				- To be done w/"Cached Quantities" work, add to TODO list for next version
+
 	= See if we still need the high global damp - it affects the parabole traveled by slinged ships, they fall vertically at the end
-		- Recalc everything so that world feels like with adj==0.5
+		- See with adj==0.5
+			- See if splinter springs dance for too long
+			+ If ok: recalc everything so that world feels like with adj==0.5
+			- Cleanup GameParameters.cpp
+			+ Cleanup extra logging at Ship
 
 
 
