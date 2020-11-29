@@ -1545,20 +1545,14 @@ Render:
 			+ See if should halve/lower pressure drag
 			+ See if friction drag is needed after all
 				+ Useful for impact
-
-			= Global drag change below
-			= Cloth explosion issue:
+			+ Global drag change below
+			+ Cloth explosion issue:
 				+ Magnitude investigation:
 					+ Default ship: max drag force mag=236,799
 					+ Cloth: max force=18,910,600
-				- Issue is due to cloth's small mass, which makes force generate an enormous acceleration
-					- Test 1: linear force
-
-					- Shouldn't max force become smaller when mass is smaller?
-					- Options:
-						- 1: scale drag force with mass
-
-			- Weaker titanic bottom
+				+ Issue is due to cloth's small mass, which makes force generate an enormous acceleration
+					+ Try with linear force
+			= Weaker titanic bottom
 				- Copy to TitanicWithPower
 			- Water drag adjustments:
 				+ Allow zero for both
@@ -1581,7 +1575,7 @@ Render:
 				- Lava settings
 					- See if need to change drag adjustment setting name
 				- Submarine 3000 with anti-matter bomb on tail
-			- Cleanup force rendering x 3
+			+ Cleanup force rendering x 3
 			- Video:
 				- Find video with real shapes
 		- Optimize:
@@ -1589,11 +1583,11 @@ Render:
 			- Optimize point depth calculation
 				- To be done w/"Cached Quantities" work, add to TODO list for next version
 
-	= See if we still need the high global damp - it affects the parabole traveled by slinged ships, they fall vertically at the end
-		- See with adj==0.5
-			- See if splinter springs dance for too long
+	+ See if we still need the high global damp - it affects the parabole traveled by slinged ships, they fall vertically at the end
+		+ See with adj==0.5
+			+ See if splinter springs dance for too long
 			+ If ok: recalc everything so that world feels like with adj==0.5
-			- Cleanup GameParameters.cpp
+			+ Cleanup GameParameters.cpp
 			+ Cleanup extra logging at Ship
 
 

@@ -111,9 +111,7 @@ struct GameParameters
     static float constexpr MinSpringStrengthAdjustment = 0.01f;
     static float constexpr MaxSpringStrengthAdjustment = 50.0f;
 
-    // TODOTEST
-    //static float constexpr GlobalDamping = 0.0004f; // // We've shipped 1.7.5 with 0.0003, but splinter springs used to dance for too long
-    static float constexpr GlobalDamping = 0.000300009f;
+    static float constexpr GlobalDamping = 0.000300009f; // 1.15 was 0.0004; now splinter springs and debris dance forever when WaterIntake is at its minimum
 
     float GlobalDampingAdjustment;
     static float constexpr MinGlobalDampingAdjustment = 0.0f;
