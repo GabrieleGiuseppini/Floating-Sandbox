@@ -259,37 +259,28 @@ Render:
 				+ Do factory positions
 				+ Verify bug is due to discordant IsClockwise
 
-		- Things pending (all *)
-			- Fishes:
-				+ Fix sharks in shallow water
-				- Calibration:
-					- Test on Dell
-					- Get all responses
-					- Give lower score to guy that gets ~50FPS
-
 		= Fishes (*)
-			- See at *: calibration
 			- Changelist
 
 		= Directional water drag (*)
+			- Changelist
 
 		- Log not being created with close button, only with File->Quit
+			- Different "Close" events: X button vs. File->Quit
 
 		= Spanish translation
 			- Add Joadix guy to credits
 				- Full name: ?
 			- Changelist
 
-
-
-		- Check issue with ship having water material that breaks		
-		- See why log diagnostics is not written
-			- Different "Close" events: X button vs. File->Quit
 		- Calibrate flying burning cardboard
 
 		- New ships
 
 		- Localization of new strings
+			- IT
+			- RU
+			- ES
 
 		- Release
 
@@ -319,6 +310,8 @@ Render:
 		- See vector normalization optimization with mult's with 1/len
 
 		- Cached quantities (*)
+
+		- Check issue with ship having water material that breaks		
 
 		- New rain: https://www.shadertoy.com/view/wsKcWw
 
@@ -759,10 +752,10 @@ Render:
 			= Ask testers for help
 				- DKuz: i7-9750H, 2.60 GHz, Intel(R) UHD Graphics 630, FPS 64 | CPU Calibration: iterationCount=124 score=1; Graphics Calibration: score=1
 				- Oxurus: i5-6400, 2.70 GHz, NVIDIA GeForce GTX 960/PCIe/SSE2, FPS 55-57 | CPU Calibration: iterationCount=96 score=0.995328; Graphics Calibration: score=1
-					- Give lower score
+					- Give lower score to this
 				- Get all responses
 				- Get also numbers from Dell					
-					
+
 		= Produces CalibrationScore
 			= ComputerCalibrator::TuneParameters(CalibrationScore const &, GameParameters &, RenderContext &)
 				- Sets GameParameters and RenderContext's parameters
@@ -794,6 +787,10 @@ Render:
 				- Valid as long as points don't move
 					- Do DEBUG work above
 				- Used by:
+					- ApplyWorldForces:
+						- Per-point
+							- Note: now we check twice (buoyancyl then drag); should also unify per-point visit to have single underwater check applying buoyancy + drag
+						- Per-frontier (water pressure drag)
 					- UpdateWaterIntake (for leaking points only)
 					- Heat dissipation
 					- Breaking materials for pressure
@@ -1575,10 +1572,8 @@ Render:
 				+ pressure
 				+ check lava again
 			+ Cleanup force rendering x 3
-		- Optimize:
-			+ Optimize frontier visit: merge two loops
-			- Optimize point depth calculation
-				- To be done w/"Cached Quantities" work, add to TODO list for next version
+		- Video
+			- Side-by-side
 		- Changelist
 			- Also add "recalibrated all drag forces"
 
@@ -1588,6 +1583,9 @@ Render:
 			+ If ok: recalc everything so that world feels like with adj==0.5
 			+ Cleanup GameParameters.cpp
 			+ Cleanup extra logging at Ship
+
+
+
 
 
 
