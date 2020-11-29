@@ -830,7 +830,8 @@ void Ship::ApplyWorldForces(
     // Underwater points feel this amount of water drag, due to pressure
     float const waterPressureDragCoefficient =
         GameParameters::WaterPressureDragCoefficient
-        * gameParameters.WaterPressureDragAdjustment;
+        * gameParameters.WaterPressureDragAdjustment
+        * (effectiveWaterDensity / GameParameters::WaterMass);
 
     //
     // Visit all frontiers

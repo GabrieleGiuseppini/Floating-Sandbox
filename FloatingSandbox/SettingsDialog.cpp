@@ -1113,7 +1113,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     _("Water Friction Drag Adjust"),
-                    _("Adjusts the friction drag force exerted by sea water on physical bodies."),
+                    _("Adjusts the frictional drag force (or 'skin' drag) exerted by sea water on physical bodies."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterFrictionDragAdjustment, value);
@@ -1139,7 +1139,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     _("Water Pressure Drag Adjust"),
-                    _("Adjusts the pressure drag force exerted by sea water on physical bodies."),
+                    _("Adjusts the pressure drag force (or 'form' drag) exerted by sea water on physical bodies."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterPressureDragAdjustment, value);

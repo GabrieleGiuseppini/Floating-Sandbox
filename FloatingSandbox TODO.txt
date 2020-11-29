@@ -1552,36 +1552,35 @@ Render:
 					+ Cloth: max force=18,910,600
 				+ Issue is due to cloth's small mass, which makes force generate an enormous acceleration
 					+ Try with linear force
-			= Weaker titanic bottom
-				- Copy to TitanicWithPower
-			- Water drag adjustments:
+			+ Weaker titanic bottom
+				+ Copy to TitanicWithPower
+			+ Water drag adjustments:
 				+ Allow zero for both
-				- Maximum for friction: higher?
-					- Frictional: see below, lava
-					- Adjust if needed to avoid instabilities
-				- Maximum for pressure
-					- Adjust if needed to avoid instabilities
-					
-			- SettingsDialog tooltip: mention "hydrodynamics" at pressure drag
-			- Final tests/Goals:
-				- Titanic
-					- Breakup
-					- Stern should glide
-				- Find video with real shapes sinking
-				- Lifeboat running fast and capsizing
-				- Ship falling from sky should break upon impact with water
-				- Water should become lava with high drag
-					- Increase amount of frictional drag user may do
-				- Lava settings
-					- See if need to change drag adjustment setting name
-				- Submarine 3000 with anti-matter bomb on tail
+				+ Maximum for friction
+					+ Frictional: see below, lava
+					+ Adjust if needed to avoid instabilities
+				+ Maximum for pressure
+					+ Adjust if needed to avoid instabilities					
+			+ Final tests/Goals:
+				+ Titanic
+					+ Breakup
+					+ Stern should glide				
+				+ Lifeboat running fast and capsizing
+				+ Hydrodynamics test
+				X Ship falling from sky should break upon impact with water				
+				+ Lava settings
+					+ See if need to change drag adjustment setting name
+				+ Submarine 3000 with anti-matter bomb on tail
+			+ Incorporate water density in  drag
+				+ pressure
+				+ check lava again
 			+ Cleanup force rendering x 3
-			- Video:
-				- Find video with real shapes
 		- Optimize:
 			+ Optimize frontier visit: merge two loops
 			- Optimize point depth calculation
 				- To be done w/"Cached Quantities" work, add to TODO list for next version
+		- Changelist
+			- Also add "recalibrated all drag forces"
 
 	+ See if we still need the high global damp - it affects the parabole traveled by slinged ships, they fall vertically at the end
 		+ See with adj==0.5
@@ -1589,6 +1588,7 @@ Render:
 			+ If ok: recalc everything so that world feels like with adj==0.5
 			+ Cleanup GameParameters.cpp
 			+ Cleanup extra logging at Ship
+
 
 
 
