@@ -258,22 +258,22 @@ Render:
 			+ 2 sides with frontier; both external frontiers, but different IDs
 				+ Do factory positions
 				+ Verify bug is due to discordant IsClockwise
+		+ Directional water drag (*)
+			+ Changelist
 
 		= Fishes (*)
-			- Changelist
-
-		= Directional water drag (*)
 			- Changelist
 
 		- Log not being created with close button, only with File->Quit
 			- Different "Close" events: X button vs. File->Quit
 
 		= Spanish translation
-			- Add Joadix guy to credits
-				- Full name: ?
+			+ Add Joadix guy to credits
 			- Changelist
 
 		- Calibrate flying burning cardboard
+
+		- Add styrofoam
 
 		- New ships
 
@@ -314,6 +314,8 @@ Render:
 		- Check issue with ship having water material that breaks		
 
 		- New rain: https://www.shadertoy.com/view/wsKcWw
+
+		- Aerodynamics, as well
 
 		- Try with improved generation of random sparkles at slice: https://mathworld.wolfram.com/SpherePointPicking.html
 
@@ -559,6 +561,7 @@ Render:
 		= Fernando:
 			= "An 12", "Boeing DreamLifter": asked for latest files
 		- To test:
+			- The two SS Dix (The Mateusz, Discord)
 			- HMS_M_33.rar (TopHat lemon)
 			- An-225_Mria (Roman Kakshin)
 			- Klickitat (Matthew Anderson 707)
@@ -750,11 +753,13 @@ Render:
 			= OpenGL: based off capabilities
 			= CPU: based off loops
 			= Ask testers for help
-				- DKuz: i7-9750H, 2.60 GHz, Intel(R) UHD Graphics 630, FPS 64 | CPU Calibration: iterationCount=124 score=1; Graphics Calibration: score=1
-				- Oxurus: i5-6400, 2.70 GHz, NVIDIA GeForce GTX 960/PCIe/SSE2, FPS 55-57 | CPU Calibration: iterationCount=96 score=0.995328; Graphics Calibration: score=1
-					- Give lower score to this
+				- Me: TODO
+				- DKuz: i7-9750H, (12 HW threads), 2.60 GHz, Intel(R) UHD Graphics 630, FPS 64 | CPU Calibration: iterationCount=124 score=1; Graphics Calibration: score=1
+				- Oxurus: i5-6400 (4 HW threads), 2.70 GHz, NVIDIA GeForce GTX 960/PCIe/SSE2, FPS 55-57 | CPU Calibration: iterationCount=96 score=0.995328; Graphics Calibration: score=1
+				- DioxCode: TODO (8 HW threads), TODO GHz, NVIDIA GeForce GTX 1650/PCIe/SSE2, FPS TODO | CPU Calibration: iterationCount=89 score=0.966362; Graphics Calibration: score=1
+				- m2: i7-4790k (8 HW threads), 4 GHz, NVIDIA GeForce GTX 960 , FPS 58 | CPU Calibration: iterationCount=114 score=1; Graphics Calibration: score=1
+				- Dell: TODO
 				- Get all responses
-				- Get also numbers from Dell					
 
 		= Produces CalibrationScore
 			= ComputerCalibrator::TuneParameters(CalibrationScore const &, GameParameters &, RenderContext &)
@@ -1520,75 +1525,6 @@ Render:
 			- Only the cables should be able to make 8 connections (sides + diagonals)
 			- Any devices should only be connected in 4 direction (sides only)
 		- Option C: multiple electrical layers
-
-	= Directional water drag (*)
-		! After frontier work
-		! Separate into friction and pressure drags: https://en.wikipedia.org/wiki/Drag_coefficient#Concept
-		= Calc force depending on projection of particle's velocity along normal
-			+ Try to re-instate square velocity drag
-				! Two water drags:
-					+ Point-based == friction drag
-					+ Surface-based == pressure drag
-				+ Split water drag adjustments
-				+ Find right coefficients for both
-				+ Need to clamp pressure force
-					+ So better done after spring/nonspring forces rearc, so expense is minimized		
-				+ Test Titanic Before and After
-			+ Add new test shape: long
-			+ See if should do back-pressure as well
-				+ See gliding deifference between with-and without-back-pressure
-					+ It does make a difference
-				+ Do it right				
-			+ See if should halve/lower pressure drag
-			+ See if friction drag is needed after all
-				+ Useful for impact
-			+ Global drag change below
-			+ Cloth explosion issue:
-				+ Magnitude investigation:
-					+ Default ship: max drag force mag=236,799
-					+ Cloth: max force=18,910,600
-				+ Issue is due to cloth's small mass, which makes force generate an enormous acceleration
-					+ Try with linear force
-			+ Weaker titanic bottom
-				+ Copy to TitanicWithPower
-			+ Water drag adjustments:
-				+ Allow zero for both
-				+ Maximum for friction
-					+ Frictional: see below, lava
-					+ Adjust if needed to avoid instabilities
-				+ Maximum for pressure
-					+ Adjust if needed to avoid instabilities					
-			+ Final tests/Goals:
-				+ Titanic
-					+ Breakup
-					+ Stern should glide				
-				+ Lifeboat running fast and capsizing
-				+ Hydrodynamics test
-				X Ship falling from sky should break upon impact with water				
-				+ Lava settings
-					+ See if need to change drag adjustment setting name
-				+ Submarine 3000 with anti-matter bomb on tail
-			+ Incorporate water density in  drag
-				+ pressure
-				+ check lava again
-			+ Cleanup force rendering x 3
-		- Video
-			- Side-by-side
-		- Changelist
-			- Also add "recalibrated all drag forces"
-
-	+ See if we still need the high global damp - it affects the parabole traveled by slinged ships, they fall vertically at the end
-		+ See with adj==0.5
-			+ See if splinter springs dance for too long
-			+ If ok: recalc everything so that world feels like with adj==0.5
-			+ Cleanup GameParameters.cpp
-			+ Cleanup extra logging at Ship
-
-
-
-
-
-
 
 	- Transfer momentum from waves to ship
 		- When ship surface intersects water surface
@@ -7514,6 +7450,69 @@ IF WX:
 				+ Remove unused args
 			+ Cleanup log lines at Frontiers
 			+ Finalize speed for rendered frontier's march
+	+ Directional water drag (*)
+		! After frontier work
+		! Separate into friction and pressure drags: https://en.wikipedia.org/wiki/Drag_coefficient#Concept
+		+ Calc force depending on projection of particle's velocity along normal
+			+ Try to re-instate square velocity drag
+				! Two water drags:
+					+ Point-based == friction drag
+					+ Surface-based == pressure drag
+				+ Split water drag adjustments
+				+ Find right coefficients for both
+				+ Need to clamp pressure force
+					+ So better done after spring/nonspring forces rearc, so expense is minimized		
+				+ Test Titanic Before and After
+			+ Add new test shape: long
+			+ See if should do back-pressure as well
+				+ See gliding deifference between with-and without-back-pressure
+					+ It does make a difference
+				+ Do it right				
+			+ See if should halve/lower pressure drag
+			+ See if friction drag is needed after all
+				+ Useful for impact
+			+ Global drag change below
+			+ Cloth explosion issue:
+				+ Magnitude investigation:
+					+ Default ship: max drag force mag=236,799
+					+ Cloth: max force=18,910,600
+				+ Issue is due to cloth's small mass, which makes force generate an enormous acceleration
+					+ Try with linear force
+			+ Weaker titanic bottom
+				+ Copy to TitanicWithPower
+			+ Water drag adjustments:
+				+ Allow zero for both
+				+ Maximum for friction
+					+ Frictional: see below, lava
+					+ Adjust if needed to avoid instabilities
+				+ Maximum for pressure
+					+ Adjust if needed to avoid instabilities					
+			+ Final tests/Goals:
+				+ Titanic
+					+ Breakup
+					+ Stern should glide				
+				+ Lifeboat running fast and capsizing
+				+ Hydrodynamics test
+				X Ship falling from sky should break upon impact with water				
+				+ Lava settings
+					+ See if need to change drag adjustment setting name
+				+ Submarine 3000 with anti-matter bomb on tail
+			+ Incorporate water density in  drag
+				+ pressure
+				+ check lava again
+			+ Cleanup force rendering x 3
+		+ Video
+			+ Side-by-side
+			+ Titanic, possibly 2X
+			+ "A glimpse of hydrodynamics"
+		+ Changelist
+			+ Also add "recalibrated all drag forces"
+	+ See if we still need the high global damp - it affects the parabole traveled by slinged ships, they fall vertically at the end
+		+ See with adj==0.5
+			+ See if splinter springs dance for too long
+			+ If ok: recalc everything so that world feels like with adj==0.5
+			+ Cleanup GameParameters.cpp
+			+ Cleanup extra logging at Ship
 
 
 
