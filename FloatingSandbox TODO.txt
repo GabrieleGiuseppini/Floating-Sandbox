@@ -244,9 +244,7 @@ Render:
 
 	+ 1.15.x
 		+ Fix that bug with vectors/highlights rendering (buffer size mismatch)
-
 	= 1.16.0
-
 		+ Clouds in perspective (*)
 			+ Changelist
 		+ Frontier (*)
@@ -260,15 +258,13 @@ Render:
 				+ Verify bug is due to discordant IsClockwise
 		+ Directional water drag (*)
 			+ Changelist
+		+ Log not being created with close button, only with File->Quit
+			+ Different "Close" events: X button vs. File->Quit
+		+ Spanish translation
+			+ Add Joadix guy to credits
+			+ Changelist
 
 		= Fishes (*)
-			- Changelist
-
-		- Log not being created with close button, only with File->Quit
-			- Different "Close" events: X button vs. File->Quit
-
-		= Spanish translation
-			+ Add Joadix guy to credits
 			- Changelist
 
 		- Calibrate flying burning cardboard

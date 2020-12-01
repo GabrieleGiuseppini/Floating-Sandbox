@@ -2,10 +2,12 @@
 - Completed "Frontier Maintenance" sub-system
 	- With this new sub-system the simulator is now constantly aware of the edges of a ship, enabling implementation of a plethora of new features
 - Added first implementation of hydrodynamics
-	- Water drag is now calculated separately as friction drag and pressure drag
+	- Water drag is now calculated separately as friction drag and pressure (aka "directional") drag
 	- Re-calibrated all drag forces in the simulation
 - Improved clouds
 	- Thanks to Dario Bazzichetto for the ideas!
+- Added Spanish localization
+	- Thanks to Joaquin Olivera (Joadix100)!
 
 1.15.6.1
 - Fixed rare crash at startup

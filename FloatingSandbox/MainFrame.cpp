@@ -1016,21 +1016,24 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
 {
     if (!!mGameTimer)
+    {
         mGameTimer->Stop();
+    }
 
     if (!!mLowFrequencyTimer)
+    {
         mLowFrequencyTimer->Stop();
+    }
 
     // Save last-modified settings, if enabled
     if (!!mUIPreferencesManager && mUIPreferencesManager->GetSaveSettingsOnExit())
+    {
         if (!!mSettingsManager)
+        {
             mSettingsManager->SaveLastModifiedSettings();
+        }
+    }
 
-    Destroy();
-}
-
-void MainFrame::OnQuit(wxCommandEvent & /*event*/)
-{
     // Flush log
     try
     {
@@ -1041,6 +1044,12 @@ void MainFrame::OnQuit(wxCommandEvent & /*event*/)
     { /* ignore */
     }
 
+    // Destroy the frame!
+    Destroy();
+}
+
+void MainFrame::OnQuit(wxCommandEvent & /*event*/)
+{
     // Close frame
     Close();
 }
