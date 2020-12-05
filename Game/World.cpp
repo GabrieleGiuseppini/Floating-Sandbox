@@ -679,11 +679,18 @@ void World::ApplyLightning(
     {
         ship->ApplyLightning(targetPos, currentSimulationTime, gameParameters);
     }
+
+    // Apply to fishes
+    DisturbOceanAt(
+        targetPos,
+        30.0f,
+        std::chrono::milliseconds(0));
 }
 
 void World::TriggerTsunami()
 {
     mOceanSurface.TriggerTsunami(mCurrentSimulationTime);
+
     DisturbOcean(std::chrono::milliseconds(0));
 }
 

@@ -1471,9 +1471,10 @@ Render:
 				+ Lower gravity multiply, and
 				+ Use velocity multiplier when in freefall
 				+ See also if need to lower low watermark (smaller freefall band)
-			- Other scares:
-				- Lightning strike
-				- AM bomb pre-implosion, explosion
+			+ Other scares:
+				+ Lightning strike
+				+ AM bomb pre-implosion
+				+ AM bomb explosion
 			- Recalibrate Mako
 				- Swimming speed
 				- TailX and swing

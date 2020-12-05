@@ -1373,7 +1373,7 @@ void ElectricalElements::UpdateSinks(
                                 true,
                                 mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkElementIndex))));
 
-                            // Disturb ocean, depending on sound
+                            // Disturb ocean, with delays depending on sound
                             switch (mMaterialBuffer[sinkElementIndex]->ShipSoundType)
                             {
                                 case ElectricalMaterial::ShipSoundElementType::Horn1:
