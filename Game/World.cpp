@@ -683,7 +683,7 @@ void World::ApplyLightning(
     // Apply to fishes
     DisturbOceanAt(
         targetPos,
-        30.0f,
+        500.0f,
         std::chrono::milliseconds(0));
 }
 

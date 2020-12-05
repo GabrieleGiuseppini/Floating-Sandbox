@@ -106,7 +106,7 @@ bool Ship::UpdateExplosionStateMachine(
 
         mParentWorld.DisturbOceanAt(
             centerPosition,
-            blastRadius * 5.0f,
+            blastRadius * 125.0f,
             std::chrono::milliseconds(0));
 
         //

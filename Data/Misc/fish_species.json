@@ -36,8 +36,8 @@
     {
         "name": "Mako",
 
-	"world_size_x": 2.0,
-	"world_size_y": 1.0,
+	"world_size_x": 1.5,
+	"world_size_y": 0.75,
 
 	"shoal_size": 1,
 	"shoal_radius": 7.0,

@@ -614,7 +614,10 @@ Render:
 			- Xmas Titanic
 				- texture
 				- structure
+					- trees
 				- with lights
+					- in trees
+					- in ropes
 				- as default ship in December
 			- checkout the few new ones
 			- Credits (CreditsPanel - and .shp?): 
@@ -626,6 +629,8 @@ Render:
 					+ Engines: many, low-power
 					- Sound:
 						- Make alarm sound
+							- Loop: 149035, 3379.48
+							- End: 211520, 4796.37
 			+ Fix USS Monitor
 			+ Fix Italia
 			+ Titanic-Izuku_deku_midoriya
@@ -1478,6 +1483,15 @@ Render:
 			+ Recalibrate Mako
 				+ Swimming speed
 				+ TailX and swing
+			+ Fix disturbance and attraction radius
+				+ Disturbance
+					+ Re-check all radii
+						+ Lightning
+						+ Bomb
+						+ Tool
+				+ Attraction
+					+ Re-check all radii
+						+ Tool
 			- Calibration: do fish only on machines that are powerful enough
 				- Unless Dell can make it
 				- See "calibration" work item

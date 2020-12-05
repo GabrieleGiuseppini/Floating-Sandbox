@@ -1162,7 +1162,6 @@ void Fishes::EnactDisturbance(
 {
     float const effectiveRadius =
         worldRadius
-        * gameParameters.FishSizeMultiplier
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     for (auto & fish : mFishes)
@@ -1174,7 +1173,7 @@ void Fishes::EnactDisturbance(
             // Calculate position of head
             vec2f const fishHeadPosition =
                 fish.CurrentPosition
-                + fish.CurrentRenderVector.normalise() * species.WorldSize.x * gameParameters.FishSizeMultiplier * (species.HeadOffsetX - 0.5f);
+                + fish.CurrentRenderVector.normalise() * fish.HeadOffset;
 
             // Calculate distance from disturbance
             float const distance = (fishHeadPosition - worldCoordinates).length();
@@ -1231,7 +1230,6 @@ void Fishes::EnactAttraction(
 {
     float const effectiveRadius =
         worldRadius
-        * gameParameters.FishSizeMultiplier
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     for (auto & fish : mFishes)
@@ -1244,7 +1242,7 @@ void Fishes::EnactAttraction(
             // Calculate position of head
             vec2f const fishHeadPosition =
                 fish.CurrentPosition
-                + fish.CurrentRenderVector.normalise() * species.WorldSize.x * gameParameters.FishSizeMultiplier * (species.HeadOffsetX - 0.5f);
+                + fish.CurrentRenderVector.normalise() * fish.HeadOffset;
 
             // Calculate distance from attraction
             float const distance = (worldCoordinates - fishHeadPosition).length();
