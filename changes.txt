@@ -8,6 +8,9 @@
 	- Thanks to Dario Bazzichetto for the ideas!
 - Added Spanish localization
 	- Thanks to Joaquin Olivera (Joadix100)!
+- Added 6 new ships
+- ...and a few more small improvements here and there!
+- Musical theme for this release: A-Ha, Lifelines (2002)
 
 1.15.6.1
 - Fixed rare crash at startup

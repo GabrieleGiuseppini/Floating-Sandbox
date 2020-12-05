@@ -264,29 +264,43 @@ Render:
 			+ Add Joadix guy to credits
 			+ Changelist
 
-		= Fishes (*)
-			- Changelist
-
-		- Calibrate flying burning cardboard
-
-		- Add styrofoam
-
-		- New ships
+		= New ships
+			- changelist
 
 		- Localization of new strings
 			- IT
 			- RU
 			- ES
 
+		= Fishes (*)
+			- Changelist
+
+		- ShipDB cache/last_modified: != instead of >
+		- Calibrate flying burning cardboard
+
+		- Add styrofoam
+
+		- Merge
+
 		- Release
 
 		----------------------------------------------------------------------------------------
 
 		- Reload last-loaded ship (the one that the game was closed with)
-			- Saved at UIPreferencesManager
-			- Manu item only enabled if there is indeed a ship and it's not the default
-				- "Reload Previous Ship"
-
+			- Menu item: "Reload Previous Ship"
+				- Initialized as disabled
+			- Renamed "current" reload as "Reload Current Ship"
+			- Move whole management of "Reload Last Ship" and default ship loading to MainFrame
+				- GameController initialization must not do ships; initial ship loading must be explicit
+				- Also default ship choice moves to MainFrame
+				- mCurrentShipFilePath: set each time we've successfully loaded a ship
+					- ...and also stored at UIPreferencesManager as LastShipLoaded, for next time
+						- Saved at exit if set
+				- mPreviousShipFilePath: set to mCurrentShipFilePath each time we've successfully loaded a *different* ship
+					- ...and enables "Reload Previous Ship" menu item
+			- New UI preferences flag: Reload last ship at startup, default=false
+			- changelist
+				
 		- Repair improvement:
 			- 1) Debug test case (w/default_ship)
 				- Need ability to highlight point by its index
@@ -303,9 +317,31 @@ Render:
 			- OR: B)
 				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
 
+		- Dynamic Sources of Light
+			- See if there's a * below
+			- Add to fireworks
+			- Spec:
+				- Ship owns SourcesOfLight, just container of point index, material params, calcd params
+					- A part of it is fixed, the other comes and goes
+				- Add/Removed to by:
+					- ElectricalElements: added @ init & kept forever
+							- Populated initially by ship
+							- AddStableSource
+					- Firework state machine: added & removed as needed
+						- AddEphemeralSource
+				- Used by lighting algorithm
+
 		- See vector normalization optimization with mult's with 1/len
 
 		- Cached quantities (*)
+
+		- Frontier-enabled features:			
+			- Pressure implosions / pressure crush (*)
+			- Waves from ship (*)
+			- Transfer of momentum from waves
+			- Aerodynamics
+				! Have to maintain, though, global damp for springs and orphaned particles
+			- Punch tool (*)
 
 		- Check issue with ship having water material that breaks		
 
@@ -318,11 +354,6 @@ Render:
 		- ShipRenderContext: see if may turn off Z-depth check @ triangles
 			- Check first on Dell if doing so would improve perf
 			- Check then if there are any artifacts when doing so
-
-		- Frontier-enabled features:			
-			- Pressure implosions / pressure crush (*)
-			- Waves from ship (*)
-			- Punch tool (*)
 
 		- Lower speed of (sin) ocean waves - now that we run faster?
 
@@ -545,25 +576,17 @@ Render:
 			- Test
 			- Meta: <asked>
 	- New ships:
-		- Check out e-mailed ships:
-			- From Kazindel texture designer on Nov 15, to floating.sandbox.g2
 		- Check out from FS server:
 			- You can find the best ships in the #architect-creations channel
 			- Theres some really good ones in #creation-sharing as well so dont forget about that
-		- Ships:
+		- Ships to make:
 			- HMS Victoria: make yourself w/texture from ShipBucket or else
 				- Needs to sink vertically!
-		- Next ship made: "Turbentiy Banalniy"
+			- Next ship made: "Turbentiy Banalniy"
 		= Fernando:
 			= "An 12", "Boeing DreamLifter": asked for latest files
 		- To test:
-			- The two SS Dix (The Mateusz, Discord)
-			- HMS_M_33.rar (TopHat lemon)
-			- An-225_Mria (Roman Kakshin)
-			- Klickitat (Matthew Anderson 707)
-			- Titanic-Izuku_deku_midoriya
-				- Credits for textures: Titanic HG
-				- Credits for ship: DennisDanielGrimaldo
+			- Architect Creations
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
 			- Graza's from awesomeyorkie
@@ -571,13 +594,31 @@ Render:
 				- Fix Antonia vs Antonio
 				- Require .shp to limit initial sink
 			- Pac0master's Structures
-			- Death stars (Nomadavid)
-				- He'll fix
 		- S.S. Triatic
 			- Do ropes however
-		- SpaceX ships from KazindelProductions (asked on GameJolt)
-		= TITANIC packs by DeadlyproYT-20200809T174924Z-001 (in Contrib's folder)
-			- Asked whether he has permission
+		- SpaceX ships from KazindelProductions
+			- In FS e-mail, asked for latest
+		- TODO:
+			- Xmas Titanic
+				- texture
+				- structure
+				- with lights
+				- as default ship
+			- checkout the few new ones
+			- Credits (CreditsPanel - and .shp?): 
+				+ "blue_funnel"
+				- arkstar: asking, making friends now
+			= Floating nuclear reactor				
+				= Add electrical layer:
+					+ Engines: many, low-power
+					- Sound:
+						- Make alarm sound
+			+ Fix USS Monitor
+			+ Fix Italia
+			+ Titanic-Izuku_deku_midoriya
+				+ Fix ropes & mast
+				+ Credits (.shp and CreditsPanel)
+			- Test all with script
 
 
 - Marketing:
@@ -624,6 +665,7 @@ Render:
 	- Meteorites
 	- Earthquake
 	- Add circular zones around bombs when placing showing what the expected blast radius should be. The circle should change in size when settings are tweaked. Much better than crunching numbers to figure out what's gonna happen.
+	- Air friction: e.g. you throw a ball and it catches fire
 
 	- Update Idea: When we get collision detection AND the ability to spawn multiple ships can you make a "Magnet" colour for eletrical ships, where you can push a switch and it activates a magnet, and if two ships have close magnets, they connected? that would be amazing! We could have aircraft carriers acutally carry helicopters/planes, and tugboats rescuing ships!
 
@@ -752,7 +794,8 @@ Render:
 				- Me: TODO
 				- DKuz: i7-9750H, (12 HW threads), 2.60 GHz, Intel(R) UHD Graphics 630, FPS 64 | CPU Calibration: iterationCount=124 score=1; Graphics Calibration: score=1
 				- Oxurus: i5-6400 (4 HW threads), 2.70 GHz, NVIDIA GeForce GTX 960/PCIe/SSE2, FPS 55-57 | CPU Calibration: iterationCount=96 score=0.995328; Graphics Calibration: score=1
-				- DioxCode: TODO (8 HW threads), TODO GHz, NVIDIA GeForce GTX 1650/PCIe/SSE2, FPS TODO | CPU Calibration: iterationCount=89 score=0.966362; Graphics Calibration: score=1
+				- DioxCode:  i7-870 (8 HW threads), 2.93 GHz, NVIDIA GeForce GTX 1650/PCIe/SSE2, FPS 60 | CPU Calibration: iterationCount=89 score=0.966362; Graphics Calibration: score=1
+					- Bad upload perf?
 				- m2: i7-4790k (8 HW threads), 4 GHz, NVIDIA GeForce GTX 960 , FPS 58 | CPU Calibration: iterationCount=114 score=1; Graphics Calibration: score=1
 				- Dell: TODO
 				- Get all responses
@@ -1410,6 +1453,10 @@ Render:
 					+ Tsunami
 					+ Destroy
 					+ Thanos
+			- Freefall:
+				- Lower gravity multiply, and
+				- Use velocity multiplier when in freefall
+				- See also if need to lower low watermark (smaller freefall band)
 			- Other scares:
 				- Lightning strike
 				- AM bomb pre-implostion
@@ -1706,7 +1753,14 @@ Render:
 	- Also "clock time since last reload" would be helpful
 		- Add two Game Preferences checkboxes to select each
 
-	- ShipLoadDialog: display also folders
+	- ShipLoadDialog: 
+		- Display also folders
+		- Filters for these properties:
+			1) Size (small, medium, large)
+			2) HD vs non-HD
+			3) Electrical vs non-Electrical
+			4) Used recently vs All
+		- Sort: Alphabetically (like now), Most Recent (the new one)
 
 	- Localization:
 		- Keyboard shortcuts
@@ -1723,9 +1777,6 @@ Render:
 	- Customizable key bindings for settings
 
 	- Ship descriptions: use Mike's drawings
-
-	- ShipLoadDialog: move most used ships at top
-		- Need "view selector": Alphabetically (like now), Most Recent (the new one)
 
 - Sounds:
 

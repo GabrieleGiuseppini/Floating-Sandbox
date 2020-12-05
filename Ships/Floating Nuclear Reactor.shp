@@ -1,0 +1,22 @@
+{
+	"structure_image":"floating_nuclear_reactor_structure.png.dat",
+	"electrical_image":"floating_nuclear_reactor_electrical.png.dat",
+	"offset":{"x":0.0, "y":0.0},
+	"ship_name":"Floating Nuclear Reactor",
+	"created_by":"Officer TimCan",
+	"description":"This ship is a floating nuclear reactor, carried around by five powerful engines. What could go wrong with this concept? Make it run at full speed for a couple of minutes and you'll see...",
+	"electrical_panel":{
+
+		"0": {"panel_x":0, "panel_y":0, "label":"Engine 1", "is_hidden":true },
+		"2": {"panel_x":0, "panel_y":0, "label":"Engine 2", "is_hidden":true },
+		"4": {"panel_x":0, "panel_y":0, "label":"Engine 3", "is_hidden":true },
+		"6": {"panel_x":0, "panel_y":0, "label":"Engine 4", "is_hidden":true },
+		"8": {"panel_x":0, "panel_y":0, "label":"Engine 4", "is_hidden":true },
+
+		"1": {"panel_x":-2, "panel_y":0, "label":"Engine 1" },
+		"3": {"panel_x":-1, "panel_y":0, "label":"Engine 2" },
+		"5": {"panel_x":0, "panel_y":0, "label":"Engine 3" },
+		"7": {"panel_x":1, "panel_y":0, "label":"Engine 4" },
+		"9": {"panel_x":2, "panel_y":0, "label":"Engine 5" }
+	}
+}

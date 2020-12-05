@@ -107,8 +107,10 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {2, wxS("Pac0master   CorbinPasta93   Yorkie   Bluefox   KikoTheBoatBuilder"), 0},
         {2, wxS("Albert Windsor   Takara   Rockabilly Rebel   McShooter2018   sinking_feeling"), 0},
         {2, wxS("Dumbphones   NotTelling   Hugo_2503   _ASTYuu_   Serhiiiihres   Floeddy"), 0},
-        {2, wxS("Pandadude12345   John Smith   Dkuz   Loree   Daewoom   Aqua   Matthew Anderson"), 0},
+        {2, wxS("Pandadude12345   John Smith   Dkuz   Loree   Daewoom   Aqua"), 0},
         {2, wxS("MasterGarfield   Aur\xe9lien WOLFF   Alex di Roma   2017 Leonardo"), 0},
+        {2, wxS("Matthew Anderson   DennisDanielGrimaldo   blue_funnel"), 0},
+
         {2, wxS("Michael Bozarth (https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw)"), 0},
         {2, wxS("JackTheBrickfilmMaker (https://www.youtube.com/channel/UCshPbiTqFuwpNNh7BlpffhQ)"), 0},
         {2, wxS("HummeL (https://www.youtube.com/c/HummeL_Prog)"), 0},
