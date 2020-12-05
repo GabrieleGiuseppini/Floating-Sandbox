@@ -445,7 +445,7 @@ void Fishes::UpdateDynamics(
     GameParameters const & gameParameters,
     VisibleWorld const & visibleWorld)
 {
-    float constexpr OceanSurfaceLowWatermark = 4.0f;
+    float constexpr OceanSurfaceLowWatermark = 3.0f;
 
     ElementCount const fishCount = static_cast<ElementCount>(mFishes.size());
 
@@ -648,9 +648,9 @@ void Fishes::UpdateDynamics(
             // Free-falling
             //
 
-            // Update velocity with gravity, amplified for better scenics
+            // Update velocity with gravity
             float const newVelocityY = fish.CurrentVelocity.y
-                - 10.0f // Amplification factor
+                - 2.0f // Magnification factor
                 * GameParameters::GravityMagnitude
                 * GameParameters::SimulationStepTimeDuration<float>;
             fish.TargetVelocity = vec2f(
@@ -664,7 +664,8 @@ void Fishes::UpdateDynamics(
             // Update position: add velocity
             fish.CurrentPosition +=
                 fish.CurrentVelocity
-                * GameParameters::SimulationStepTimeDuration<float>;
+                * GameParameters::SimulationStepTimeDuration<float>
+                * 5.0f; // Out-of-water amplification
 
             // Update tail progress phase: add extra speed (fish flapping its tail)
             fish.CurrentTailProgressPhase += fishSpecies.TailSpeed * 20.0f;

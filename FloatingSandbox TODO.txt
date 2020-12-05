@@ -1467,10 +1467,10 @@ Render:
 					+ Tsunami
 					+ Destroy
 					+ Thanos
-			- Freefall:
-				- Lower gravity multiply, and
-				- Use velocity multiplier when in freefall
-				- See also if need to lower low watermark (smaller freefall band)
+			+ Freefall:
+				+ Lower gravity multiply, and
+				+ Use velocity multiplier when in freefall
+				+ See also if need to lower low watermark (smaller freefall band)
 			- Other scares:
 				- Lightning strike
 				- AM bomb pre-implosion, explosion
