@@ -264,19 +264,21 @@ Render:
 			+ Add Joadix guy to credits
 			+ Changelist
 
-		= New ships
-			- changelist
-
-		- Localization of new strings
-			- IT
-			- RU
-			- ES
-
 		= Fishes (*)
 			- Changelist
 
+		= Localization of new strings
+			+ IT
+			- RU
+			+ ES
+
+		= New ships
+			- changelist
+
+		- "Floating Sendbox x.y" @ beginning of log file
 		- ShipDB cache/last_modified: != instead of >
 		- Calibrate flying burning cardboard
+		- Flag for velocity display
 
 		- Add styrofoam
 
@@ -285,6 +287,10 @@ Render:
 		- Release
 
 		----------------------------------------------------------------------------------------
+
+		- Check proposed luminiscence settings (from @Carter_JL on GameJolt)
+			- Luminiscence Adjust: 0.5
+			- Light Spread Adjust: 0.5
 
 		- Reload last-loaded ship (the one that the game was closed with)
 			- Menu item: "Reload Previous Ship"
@@ -339,6 +345,12 @@ Render:
 			- Pressure implosions / pressure crush (*)
 			- Waves from ship (*)
 			- Transfer of momentum from waves
+				- Option A: by point visit; all points which were not underwater in previous step and are now (via double buffer for "Cached Underwater"), receive force
+				  proportional to OceanSurface::VelocityVector
+					- OceanSurface::VelocityVector: direction=normal, magnitude=velocity. With two options:
+						- A) SWE + Waves (i.e. full samples)
+						- B) Just SWE
+				- Option B: by point visit; all points in tiny band from depth 0
 			- Aerodynamics
 				! Have to maintain, though, global damp for springs and orphaned particles
 			- Punch tool (*)
@@ -603,11 +615,12 @@ Render:
 				- texture
 				- structure
 				- with lights
-				- as default ship
+				- as default ship in December
 			- checkout the few new ones
 			- Credits (CreditsPanel - and .shp?): 
 				+ "blue_funnel"
-				- arkstar: asking, making friends now
+				- arkstar: "arkstar_"
+				- "Charles Calvin" [asked, waiting for reply]
 			= Floating nuclear reactor				
 				= Add electrical layer:
 					+ Engines: many, low-power
@@ -797,6 +810,7 @@ Render:
 				- DioxCode:  i7-870 (8 HW threads), 2.93 GHz, NVIDIA GeForce GTX 1650/PCIe/SSE2, FPS 60 | CPU Calibration: iterationCount=89 score=0.966362; Graphics Calibration: score=1
 					- Bad upload perf?
 				- m2: i7-4790k (8 HW threads), 4 GHz, NVIDIA GeForce GTX 960 , FPS 58 | CPU Calibration: iterationCount=114 score=1; Graphics Calibration: score=1
+				- Joadix's brother: AMD A6 3400M with Ryzen HD 6520G
 				- Dell: TODO
 				- Get all responses
 
@@ -1459,7 +1473,7 @@ Render:
 				- See also if need to lower low watermark (smaller freefall band)
 			- Other scares:
 				- Lightning strike
-				- AM bomb pre-implostion
+				- AM bomb pre-implosion, explosion
 			- Recalibrate Mako
 				- Swimming speed
 				- TailX and swing
