@@ -555,6 +555,9 @@ void WorldRenderContext::UploadStart()
 
     // Reset crosses of light, they are uploaded as needed
     mCrossOfLightVertexBuffer.clear();
+
+    // Reset AABBs, they are uploaded as needed
+    mAABBVertexBuffer.clear();
 }
 
 void WorldRenderContext::UploadStarsStart(size_t starCount)
@@ -1156,29 +1159,32 @@ void WorldRenderContext::RenderDrawRain(RenderParameters const & /*renderParamet
 
 void WorldRenderContext::RenderPrepareAABBs(RenderParameters const & /*renderParameters*/)
 {
-    glBindBuffer(GL_ARRAY_BUFFER, *mAABBVBO);
-
-    if (mAABBVertexBuffer.size() > mAABBVBOAllocatedVertexSize)
+    if (!mAABBVertexBuffer.empty())
     {
-        // Re-allocate VBO buffer and upload
-        glBufferData(GL_ARRAY_BUFFER, mAABBVertexBuffer.size() * sizeof(AABBVertex), mAABBVertexBuffer.data(), GL_STREAM_DRAW);
-        CheckOpenGLError();
+        glBindBuffer(GL_ARRAY_BUFFER, *mAABBVBO);
 
-        mAABBVBOAllocatedVertexSize = mAABBVertexBuffer.size();
-    }
-    else
-    {
-        // No size change, just upload VBO buffer
-        glBufferSubData(GL_ARRAY_BUFFER, 0, mAABBVertexBuffer.size() * sizeof(AABBVertex), mAABBVertexBuffer.data());
-        CheckOpenGLError();
-    }
+        if (mAABBVertexBuffer.size() > mAABBVBOAllocatedVertexSize)
+        {
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ARRAY_BUFFER, mAABBVertexBuffer.size() * sizeof(AABBVertex), mAABBVertexBuffer.data(), GL_STREAM_DRAW);
+            CheckOpenGLError();
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+            mAABBVBOAllocatedVertexSize = mAABBVertexBuffer.size();
+        }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mAABBVertexBuffer.size() * sizeof(AABBVertex), mAABBVertexBuffer.data());
+            CheckOpenGLError();
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
 }
 
 void WorldRenderContext::RenderDrawAABBs(RenderParameters const & /*renderParameters*/)
 {
-    if (mAABBVertexBuffer.size() > 0)
+    if (!mAABBVertexBuffer.empty())
     {
         glBindVertexArray(*mAABBVAO);
 
