@@ -42,10 +42,10 @@
 	"shoal_size": 1,
 	"shoal_radius": 7.0,
 	"ocean_depth": 150.0,
-	"basal_speed": 0.68608,
-	"tail_x": 0.77,
+	"basal_speed": 0.3,
+	"tail_x": 0.9,
 	"tail_speed": 0.04,
-	"tail_swing_width": 0.2,
+	"tail_swing_width": 0.15,
 	"head_offset_x": 0.921875,
 	"texture_indices": [3]
     },

@@ -1475,14 +1475,15 @@ Render:
 				+ Lightning strike
 				+ AM bomb pre-implosion
 				+ AM bomb explosion
-			- Recalibrate Mako
-				- Swimming speed
-				- TailX and swing
+			+ Recalibrate Mako
+				+ Swimming speed
+				+ TailX and swing
 			- Calibration: do fish only on machines that are powerful enough
 				- Unless Dell can make it
 				- See "calibration" work item
 			- Remove fish update time @ notification layer
-			- Initial placement of fish in a shoal should obey shoaling spacing
+				- If it's negligible on Dell
+			+ Initial placement of fish in a shoal should obey shoaling spacing
 
 	- Ropes 2 layer
 		- json only allows one ropes layer

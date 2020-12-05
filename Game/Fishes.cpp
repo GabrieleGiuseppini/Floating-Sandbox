@@ -340,10 +340,12 @@ void Fishes::UpdateNumberOfFishes(
             // 2) Create fish in this shoal
             //
 
+            float const shoalSizeVarianceFactor = species.ShoalRadius * gameParameters.FishShoalRadiusAdjustment * mCurrentFishSizeMultiplier / 2.0f;
+
             vec2f const initialPosition = FindPosition(
                 mFishShoals[currentShoalSearchIndex].InitialPosition,
-                10.0f,
-                4.0f,
+                species.WorldSize.x * shoalSizeVarianceFactor,
+                species.WorldSize.y * shoalSizeVarianceFactor,
                 oceanFloor,
                 aabbSet);
 
