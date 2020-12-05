@@ -2993,7 +2993,7 @@ void Ship::DoAntiMatterBombPreimplosion(
     mParentWorld.DisturbOceanAt(
         centerPosition,
         radius,
-        std::chrono::milliseconds(0));
+        std::chrono::milliseconds(100));
 }
 
 void Ship::DoAntiMatterBombImplosion(
@@ -3037,7 +3037,7 @@ void Ship::DoAntiMatterBombExplosion(
         mParentWorld.DisturbOceanAt(
             centerPosition,
             50.0f,
-            std::chrono::milliseconds(0));
+            std::chrono::milliseconds(200));
     }
 }
 
