@@ -666,9 +666,8 @@ SoundController::SoundController(
                     }
                     else
                     {
-                        // TODOHERE
-                        loopStartSample = 0.904989f;
-                        loopEndSample = loopStartSample + 0.704739f;
+                        loopStartSample = 3.6507f;
+                        loopEndSample = loopStartSample + 1.27698f;
                     }
 
                     break;
