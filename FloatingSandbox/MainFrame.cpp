@@ -79,6 +79,7 @@ long const ID_WAVEMAKER_MENUITEM = wxNewId();
 long const ID_ADJUSTTERRAIN_MENUITEM = wxNewId();
 long const ID_REPAIRSTRUCTURE_MENUITEM = wxNewId();
 long const ID_SCRUB_MENUITEM = wxNewId();
+long const ID_SCAREFISH_MENUTEIM = wxNewId();
 long const ID_RCBOMBDETONATE_MENUITEM = wxNewId();
 long const ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
 long const ID_TRIGGERTSUNAMI_MENUITEM = wxNewId();
@@ -210,7 +211,7 @@ MainFrame::MainFrame(
 
     fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
 
-    wxMenuItem* quitMenuItem = new wxMenuItem(fileMenu, ID_QUIT_MENUITEM, _("Quit") + wxS("\tAlt-F4"), _("Quit the game"), wxITEM_NORMAL);
+    wxMenuItem * quitMenuItem = new wxMenuItem(fileMenu, ID_QUIT_MENUITEM, _("Quit") + wxS("\tAlt-F4"), _("Quit the game"), wxITEM_NORMAL);
     fileMenu->Append(quitMenuItem);
     Connect(ID_QUIT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnQuit);
 
@@ -346,6 +347,11 @@ MainFrame::MainFrame(
     mToolsMenu->Append(scrubMenuItem);
     Connect(ID_SCRUB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnScrubMenuItemSelected);
 
+    mScareFishMenuItem = new wxMenuItem(mToolsMenu, ID_SCAREFISH_MENUTEIM, _("Scare/Allure Fishes") + wxS("\tZ"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(mScareFishMenuItem);
+    Connect(ID_SCAREFISH_MENUTEIM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnScareFishMenuItemSelected);
+    mScareFishMenuItem->Enable(false);
+
     mToolsMenu->Append(new wxMenuItem(mToolsMenu, wxID_SEPARATOR));
 
     mRCBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_RCBOMBDETONATE_MENUITEM, _("Detonate RC Bombs") + wxS("\tD"), wxEmptyString, wxITEM_NORMAL);
@@ -368,7 +374,7 @@ MainFrame::MainFrame(
 
     mTriggerStormMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERSTORM_MENUITEM, _("Trigger Storm"), wxEmptyString, wxITEM_NORMAL);
     mToolsMenu->Append(mTriggerStormMenuItem);
-    Connect(ID_TRIGGERSTORM_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)& MainFrame::OnTriggerStormMenuItemSelected);
+    Connect(ID_TRIGGERSTORM_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerStormMenuItemSelected);
     mTriggerStormMenuItem->Enable(true);
 
     wxMenuItem * triggerLightningMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERLIGHTNING_MENUITEM, _("Trigger Lightning") + wxS("\tALT+L"), wxEmptyString, wxITEM_NORMAL);
@@ -388,7 +394,7 @@ MainFrame::MainFrame(
 
     mReloadLastModifiedSettingsMenuItem = new wxMenuItem(optionsMenu, ID_RELOAD_LAST_MODIFIED_SETTINGS_MENUITEM, _("Reload Last-Modified Simulation Settings") + wxS("\tCtrl+D"), wxEmptyString, wxITEM_NORMAL);
     optionsMenu->Append(mReloadLastModifiedSettingsMenuItem);
-    Connect(ID_RELOAD_LAST_MODIFIED_SETTINGS_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)& MainFrame::OnReloadLastModifiedSettingsMenuItem);
+    Connect(ID_RELOAD_LAST_MODIFIED_SETTINGS_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadLastModifiedSettingsMenuItem);
 
     wxMenuItem * openPreferencesWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_PREFERENCES_WINDOW_MENUITEM, _("Game Preferences...") + wxS("\tCtrl+F"), wxEmptyString, wxITEM_NORMAL);
     optionsMenu->Append(openPreferencesWindowMenuItem);
@@ -648,7 +654,15 @@ bool MainFrame::ProcessKeyUp(
 
 void MainFrame::OnSecretTypingOpenDebugWindow()
 {
-    LogMessage("MainFrame::OnSecretTypingOpenDebugWindow");
+    if (!mDebugDialog)
+    {
+        mDebugDialog = std::make_unique<DebugDialog>(
+            this,
+            mGameController,
+            mSoundController);
+    }
+
+    mDebugDialog->Open();
 }
 
 void MainFrame::OnSecretTypingLoadFallbackShip()
@@ -851,10 +865,10 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             mMainPanel->Layout();
         },
         mGameController,
-        mSoundController,
-        mUIPreferencesManager,
-        *mResourceLocator,
-        [&splash, this](float progress, ProgressMessageType message)
+            mSoundController,
+            mUIPreferencesManager,
+            *mResourceLocator,
+            [&splash, this](float progress, ProgressMessageType message)
         {
             // 0.83 -> 1.0
             splash->UpdateProgress(0.83f + progress / 6.0f, message);
@@ -899,6 +913,10 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     //
     // Register game event handlers
     //
+
+    // Tiny hack: synthetically fire first events that would have reached us
+    // if we had already registered
+    this->OnFishCountUpdated(mGameController->GetNumberOfFishes());
 
     this->RegisterEventHandler(*mGameController);
     mProbePanel->RegisterEventHandler(*mGameController);
@@ -998,21 +1016,24 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
 {
     if (!!mGameTimer)
+    {
         mGameTimer->Stop();
+    }
 
     if (!!mLowFrequencyTimer)
+    {
         mLowFrequencyTimer->Stop();
+    }
 
     // Save last-modified settings, if enabled
     if (!!mUIPreferencesManager && mUIPreferencesManager->GetSaveSettingsOnExit())
+    {
         if (!!mSettingsManager)
+        {
             mSettingsManager->SaveLastModifiedSettings();
+        }
+    }
 
-    Destroy();
-}
-
-void MainFrame::OnQuit(wxCommandEvent & /*event*/)
-{
     // Flush log
     try
     {
@@ -1020,8 +1041,15 @@ void MainFrame::OnQuit(wxCommandEvent & /*event*/)
         Logger::Instance.FlushToFile(diagnosticsFolderPath, "last_run");
     }
     catch (...)
-    { /* ignore */ }
+    { /* ignore */
+    }
 
+    // Destroy the frame!
+    Destroy();
+}
+
+void MainFrame::OnQuit(wxCommandEvent & /*event*/)
+{
     // Close frame
     Close();
 }
@@ -1665,6 +1693,12 @@ void MainFrame::OnScrubMenuItemSelected(wxCommandEvent & /*event*/)
     mToolController->SetTool(ToolType::Scrub);
 }
 
+void MainFrame::OnScareFishMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::ScareFish);
+}
+
 void MainFrame::OnRCBombDetonateMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
@@ -1892,6 +1926,7 @@ void MainFrame::ResetState()
     assert(!!mMusicController);
     mMusicController->Reset();
 
+    mScareFishMenuItem->Enable(false);
     mRCBombsDetonateMenuItem->Enable(false);
     mAntiMatterBombsDetonateMenuItem->Enable(false);
     mTriggerStormMenuItem->Enable(true);

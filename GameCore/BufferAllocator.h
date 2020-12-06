@@ -24,7 +24,7 @@ public:
     {
     }
 
-    BufferAllocator(BufferAllocator && other)
+    BufferAllocator(BufferAllocator && other) noexcept
         : mBufferSize(other.mBufferSize)
         , mPool(std::move(other.mPool))
         , mLock() // We make our own, new lock - assuming we're not moving synchronization state here

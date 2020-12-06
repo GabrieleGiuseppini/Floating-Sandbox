@@ -18,6 +18,7 @@
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
 
+#include <GameCore/AABB.h>
 #include <GameCore/BoundedVector.h>
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
@@ -48,6 +49,8 @@ public:
     void InitializeCloudTextures(ResourceLocator const & resourceLocator);
 
     void InitializeWorldTextures(ResourceLocator const & resourceLocator);
+
+    void InitializeFishTextures(ResourceLocator const & resourceLocator);
 
     inline std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const
     {
@@ -168,34 +171,29 @@ public:
 
     inline void UploadCloud(
         uint32_t cloudId,
-        float virtualX,     // [-1.5, +1.5]
-        float virtualY,     // [-0.5, +0.5]
+        float virtualX,         // [-1.5, +1.5]
+        float virtualY,         // [0.0, +1.0]
+        float virtualZ,         // [0.0, +1.0]
         float scale,
-        float darkening,    // 0.0:dark, 1.0:light
+        float darkening,        // 0.0:dark, 1.0:light
+        float growthProgress,   // [0.0, +1.0]
         RenderParameters const & renderParameters)
     {
         //
         // We use Normalized Device Coordinates here
         //
 
-        //
-        // Map input slice [-0.5, +0.5], [-0.5, +0.5] into NDC [-1.0, +1.0], [-1.0, +1.0]
-        //
+        // Calculate NDC x: map input slice [-0.5, +0.5] into NDC [-1.0, +1.0]
+        float const ndcX = virtualX * 2.0f;
 
-        float const mappedX = virtualX * 2.0f;
-        float const mappedY = virtualY * 2.0f;
-
-        // TEST CODE: this code fits everything in the visible window
-        ////float const mappedX = virtualX / 1.5f;
-        ////float const mappedY = virtualY / 1.5f;
-        ////scale /= 1.5f;
-
+        // Calculate NDC y: apply perspective transform
+        float constexpr zMin = GameParameters::HalfMaxWorldHeight;
+        float constexpr zMax = 20.0f * zMin; // Magic number: at this (furthest) Z, clouds at virtualY=1.0 appear slightly above the horizon
+        float const ndcY = (virtualY * GameParameters::HalfMaxWorldHeight - renderParameters.View.GetCameraWorldPosition().y) / (zMin + virtualZ * (zMax - zMin));
 
         //
         // Populate quad in buffer
         //
-
-        float const aspectRatio = renderParameters.View.GetAspectRatio();
 
         size_t const cloudTextureIndex = static_cast<size_t>(cloudId) % mCloudTextureAtlasMetadata->GetFrameMetadata().size();
 
@@ -203,58 +201,60 @@ public:
             CloudTextureGroups::Cloud,
             static_cast<TextureFrameIndex>(cloudTextureIndex));
 
-        float leftX = mappedX - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX;
-        float rightX = mappedX + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldWidth - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldX);
-        float topY = mappedY + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldHeight - cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY) * aspectRatio;
-        float bottomY = mappedY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorWorldY * aspectRatio;
+        float const aspectRatio = renderParameters.View.GetAspectRatio();
+
+        float const leftX = ndcX - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.x;
+        float const rightX = ndcX + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldWidth - cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.x);
+        float const topY = ndcY + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldHeight - cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.y) * aspectRatio;
+        float const bottomY = ndcY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.y * aspectRatio;
 
         // top-left
         mCloudVertexBuffer.emplace_back(
-            leftX,
-            topY,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y,
-            darkening);
+            vec2f(leftX, topY),
+            vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
+            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            darkening,
+            growthProgress);
 
         // bottom-left
         mCloudVertexBuffer.emplace_back(
-            leftX,
-            bottomY,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y,
-            darkening);
+            vec2f(leftX, bottomY),
+            vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
+            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            darkening,
+            growthProgress);
 
         // top-right
         mCloudVertexBuffer.emplace_back(
-            rightX,
-            topY,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y,
-            darkening);
+            vec2f(rightX, topY),
+            vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
+            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            darkening,
+            growthProgress);
 
         // bottom-left
         mCloudVertexBuffer.emplace_back(
-            leftX,
-            bottomY,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y,
-            darkening);
+            vec2f(leftX, bottomY),
+            vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
+            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            darkening,
+            growthProgress);
 
         // top-right
         mCloudVertexBuffer.emplace_back(
-            rightX,
-            topY,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y,
-            darkening);
+            vec2f(rightX, topY),
+            vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
+            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            darkening,
+            growthProgress);
 
         // bottom-right
         mCloudVertexBuffer.emplace_back(
-            rightX,
-            bottomY,
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x,
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y,
-            darkening);
+            vec2f(rightX, bottomY),
+            vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
+            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            darkening,
+            growthProgress);
     }
 
     void UploadCloudsEnd();
@@ -266,7 +266,7 @@ public:
         float yLand,
         RenderParameters const & renderParameters)
     {
-        float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorldBottomRight().y;
+        float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorld().BottomRight.y;
 
         //
         // Store Land element
@@ -295,7 +295,7 @@ public:
         float oceanDepth,
         RenderParameters const & renderParameters)
     {
-        float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorldBottomRight().y;
+        float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorld().BottomRight.y;
 
         //
         // Store ocean element
@@ -313,39 +313,132 @@ public:
 
         switch (renderParameters.OceanRenderMode)
         {
-            case OceanRenderModeType::Texture:
-            {
-                // Texture sample Y levels: anchor texture at top of wave,
-                // and set bottom at total visible height (after all, ocean texture repeats)
-                oceanSegment.value1 = 0.0f; // This is at yOcean
-                oceanSegment.value2 = yOcean - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
+        case OceanRenderModeType::Texture:
+        {
+            // Texture sample Y levels: anchor texture at top of wave,
+            // and set bottom at total visible height (after all, ocean texture repeats)
+            oceanSegment.value1 = 0.0f; // This is at yOcean
+            oceanSegment.value2 = yOcean - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
 
-                break;
-            }
+            break;
+        }
 
-            case OceanRenderModeType::Depth:
-            {
-                // Depth: top=0.0, bottom=height as fraction of ocean depth
-                oceanSegment.value1 = 0.0f;
-                oceanSegment.value2 = oceanDepth != 0.0f
-                    ? std::fabs(oceanSegmentY2 - oceanSegmentY1) / oceanDepth
-                    : 0.0f;
+        case OceanRenderModeType::Depth:
+        {
+            // Depth: top=0.0, bottom=height as fraction of ocean depth
+            oceanSegment.value1 = 0.0f;
+            oceanSegment.value2 = oceanDepth != 0.0f
+                ? std::fabs(oceanSegmentY2 - oceanSegmentY1) / oceanDepth
+                : 0.0f;
 
-                break;
-            }
+            break;
+        }
 
-            case OceanRenderModeType::Flat:
-            {
-                // Nop, but be nice
-                oceanSegment.value1 = 0.0f;
-                oceanSegment.value2 = 0.0f;
+        case OceanRenderModeType::Flat:
+        {
+            // Nop, but be nice
+            oceanSegment.value1 = 0.0f;
+            oceanSegment.value2 = 0.0f;
 
-                break;
-            }
+            break;
+        }
         }
     }
 
     void UploadOceanEnd();
+
+    void UploadFishesStart(size_t fishCount);
+
+    inline void UploadFish(
+        TextureFrameId<FishTextureGroups> const & textureFrameId,
+        vec2f const & position, // position of center
+        vec2f const & worldSize,
+        float angleCw,
+        float horizontalScale,
+        float tailX,
+        float tailSwing,
+        float tailProgress)
+    {
+        auto const & frame = mFishTextureAtlasMetadata->GetFrameMetadata(textureFrameId);
+
+        // Calculate bounding box, assuming textures are anchored in the center
+        float const offsetX = worldSize.x / 2.0f * horizontalScale;
+        float const offsetY = worldSize.y / 2.0f;
+
+        // top-left
+        mFishVertexBuffer.emplace_back(
+            position,
+            vec2f(-offsetX, offsetY),
+            frame.TextureCoordinatesBottomLeft,
+            frame.TextureCoordinatesTopRight,
+            vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
+            angleCw,
+            tailX,
+            tailSwing,
+            tailProgress);
+
+        // bottom-left
+        mFishVertexBuffer.emplace_back(
+            position,
+            vec2f(-offsetX, -offsetY),
+            frame.TextureCoordinatesBottomLeft,
+            frame.TextureCoordinatesTopRight,
+            vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesBottomLeft.y),
+            angleCw,
+            tailX,
+            tailSwing,
+            tailProgress);
+
+        // top-right
+        mFishVertexBuffer.emplace_back(
+            position,
+            vec2f(offsetX, offsetY),
+            frame.TextureCoordinatesBottomLeft,
+            frame.TextureCoordinatesTopRight,
+            vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesTopRight.y),
+            angleCw,
+            tailX,
+            tailSwing,
+            tailProgress);
+
+        // bottom-left
+        mFishVertexBuffer.emplace_back(
+            position,
+            vec2f(-offsetX, -offsetY),
+            frame.TextureCoordinatesBottomLeft,
+            frame.TextureCoordinatesTopRight,
+            vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesBottomLeft.y),
+            angleCw,
+            tailX,
+            tailSwing,
+            tailProgress);
+
+        // top-right
+        mFishVertexBuffer.emplace_back(
+            position,
+            vec2f(offsetX, offsetY),
+            frame.TextureCoordinatesBottomLeft,
+            frame.TextureCoordinatesTopRight,
+            vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesTopRight.y),
+            angleCw,
+            tailX,
+            tailSwing,
+            tailProgress);
+
+        // bottom-right
+        mFishVertexBuffer.emplace_back(
+            position,
+            vec2f(offsetX, -offsetY),
+            frame.TextureCoordinatesBottomLeft,
+            frame.TextureCoordinatesTopRight,
+            vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
+            angleCw,
+            tailX,
+            tailSwing,
+            tailProgress);
+    }
+
+    void UploadFishesEnd();
 
     inline void UploadAMBombPreImplosion(
         vec2f const & centerPosition,
@@ -414,37 +507,78 @@ public:
         // Triangle 1
 
         mCrossOfLightVertexBuffer.emplace_back(
-            vec2f(viewModel.GetVisibleWorldTopLeft().x, viewModel.GetVisibleWorldBottomRight().y), // left, bottom
+            vec2f(viewModel.GetVisibleWorld().TopLeft.x, viewModel.GetVisibleWorld().BottomRight.y), // left, bottom
             centerPosition,
             progress);
 
         mCrossOfLightVertexBuffer.emplace_back(
-            viewModel.GetVisibleWorldTopLeft(), // left, top
+            viewModel.GetVisibleWorld().TopLeft, // left, top
             centerPosition,
             progress);
 
         mCrossOfLightVertexBuffer.emplace_back(
-            viewModel.GetVisibleWorldBottomRight(), // right, bottom
+            viewModel.GetVisibleWorld().BottomRight, // right, bottom
             centerPosition,
             progress);
 
         // Triangle 2
 
         mCrossOfLightVertexBuffer.emplace_back(
-            viewModel.GetVisibleWorldTopLeft(), // left, top
+            viewModel.GetVisibleWorld().TopLeft, // left, top
             centerPosition,
             progress);
 
         mCrossOfLightVertexBuffer.emplace_back(
-            viewModel.GetVisibleWorldBottomRight(), // right, bottom
+            viewModel.GetVisibleWorld().BottomRight, // right, bottom
             centerPosition,
             progress);
 
         mCrossOfLightVertexBuffer.emplace_back(
-            vec2f(viewModel.GetVisibleWorldBottomRight().x, viewModel.GetVisibleWorldTopLeft().y),  // right, top
+            vec2f(viewModel.GetVisibleWorld().BottomRight.x, viewModel.GetVisibleWorld().TopLeft.y),  // right, top
             centerPosition,
             progress);
     }
+
+    void UploadAABBsStart(size_t aabbCount);
+
+    inline void UploadAABB(
+        Geometry::AABB const & aabb,
+        vec4f const & color)
+    {
+        // TopLeft -> TopRight
+        mAABBVertexBuffer.emplace_back(
+            color,
+            aabb.BottomLeft.x, aabb.TopRight.y);
+        mAABBVertexBuffer.emplace_back(
+            color,
+            aabb.TopRight.x, aabb.TopRight.y);
+
+        // TopRight -> BottomRight
+        mAABBVertexBuffer.emplace_back(
+            color,
+            aabb.TopRight.x, aabb.TopRight.y);
+        mAABBVertexBuffer.emplace_back(
+            color,
+            aabb.TopRight.x, aabb.BottomLeft.y);
+
+        // BottomRight -> BottomLeft
+        mAABBVertexBuffer.emplace_back(
+            color,
+            aabb.TopRight.x, aabb.BottomLeft.y);
+        mAABBVertexBuffer.emplace_back(
+            color,
+            aabb.BottomLeft.x, aabb.BottomLeft.y);
+
+        // BottomLeft -> TopLeft
+        mAABBVertexBuffer.emplace_back(
+            color,
+            aabb.BottomLeft.x, aabb.BottomLeft.y);
+        mAABBVertexBuffer.emplace_back(
+            color,
+            aabb.BottomLeft.x, aabb.TopRight.y);
+    }
+
+    void UploadAABBsEnd();
 
     void UploadEnd();
 
@@ -463,6 +597,9 @@ public:
     void RenderPrepareOceanFloor(RenderParameters const & renderParameters);
     void RenderDrawOceanFloor(RenderParameters const & renderParameters);
 
+    void RenderPrepareFishes(RenderParameters const & renderParameters);
+    void RenderDrawFishes(RenderParameters const & renderParameters);
+
     void RenderPrepareAMBombPreImplosions(RenderParameters const & renderParameters);
     void RenderDrawAMBombPreImplosions(RenderParameters const & renderParameters);
 
@@ -473,6 +610,9 @@ public:
 
     void RenderPrepareRain(RenderParameters const & renderParameters);
     void RenderDrawRain(RenderParameters const & renderParameters);
+
+    void RenderPrepareAABBs(RenderParameters const & renderParameters);
+    void RenderDrawAABBs(RenderParameters const & renderParameters);
 
     void RenderDrawWorldBorder(RenderParameters const & renderParameters);
 
@@ -627,23 +767,23 @@ private:
 
     struct CloudVertex
     {
-        float ndcX;
-        float ndcY;
-        float ndcTextureX;
-        float ndcTextureY;
+        vec2f ndcPosition;
+        vec2f texturePos;
+        vec2f textureCenter;
         float darkness;
+        float growthProgress;
 
         CloudVertex(
-            float _ndcX,
-            float _ndcY,
-            float _ndcTextureX,
-            float _ndcTextureY,
-            float _darkness)
-            : ndcX(_ndcX)
-            , ndcY(_ndcY)
-            , ndcTextureX(_ndcTextureX)
-            , ndcTextureY(_ndcTextureY)
+            vec2f _ndcPosition,
+            vec2f _texturePos,
+            vec2f _textureCenter,
+            float _darkness,
+            float _growthProgress)
+            : ndcPosition(_ndcPosition)
+            , texturePos(_texturePos)
+            , textureCenter(_textureCenter)
             , darkness(_darkness)
+            , growthProgress(_growthProgress)
         {}
     };
 
@@ -666,6 +806,40 @@ private:
         float x2;
         float y2;
         float value2;
+    };
+
+    struct FishVertex
+    {
+        vec2f centerPosition;
+        vec2f vertexOffset;
+        vec2f textureSpaceLefBottom;
+        vec2f textureSpaceRightTop;
+        vec2f textureCoordinate;
+        float angleCw;
+        float tailX;
+        float tailSwing;
+        float tailProgress;
+
+        FishVertex(
+            vec2f _centerPosition,
+            vec2f _vertexOffset,
+            vec2f _textureSpaceLefBottom,
+            vec2f _textureSpaceRightTop,
+            vec2f _textureCoordinate,
+            float _angleCw,
+            float _tailX,
+            float _tailSwing,
+            float _tailProgress)
+            : centerPosition(_centerPosition)
+            , vertexOffset(_vertexOffset)
+            , textureSpaceLefBottom(_textureSpaceLefBottom)
+            , textureSpaceRightTop(_textureSpaceRightTop)
+            , textureCoordinate(_textureCoordinate)
+            , angleCw(_angleCw)
+            , tailX(_tailX)
+            , tailSwing(_tailSwing)
+            , tailProgress(_tailProgress)
+        {}
     };
 
     struct AMBombPreImplosionVertex
@@ -700,6 +874,22 @@ private:
             : vertex(_vertex)
             , centerPosition(_centerPosition)
             , progress(_progress)
+        {}
+    };
+
+    struct AABBVertex
+    {
+        vec4f color;
+        float x;
+        float y;
+
+        AABBVertex(
+            vec4f const & _color,
+            float _x,
+            float _y)
+            : color(_color)
+            , x(_x)
+            , y(_y)
         {}
     };
 
@@ -764,6 +954,10 @@ private:
     GameOpenGLVBO mOceanSegmentVBO;
     size_t mOceanSegmentVBOAllocatedVertexSize;
 
+    BoundedVector<FishVertex> mFishVertexBuffer;
+    GameOpenGLVBO mFishVBO;
+    size_t mFishVBOAllocatedVertexSize;
+
     std::vector<AMBombPreImplosionVertex> mAMBombPreImplosionVertexBuffer;
     GameOpenGLVBO mAMBombPreImplosionVBO;
     size_t mAMBombPreImplosionVBOAllocatedVertexSize;
@@ -771,6 +965,10 @@ private:
     std::vector<CrossOfLightVertex> mCrossOfLightVertexBuffer;
     GameOpenGLVBO mCrossOfLightVBO;
     size_t mCrossOfLightVBOAllocatedVertexSize;
+
+    BoundedVector<AABBVertex> mAABBVertexBuffer;
+    GameOpenGLVBO mAABBVBO;
+    size_t mAABBVBOAllocatedVertexSize;
 
     float mStormAmbientDarkening;
 
@@ -790,8 +988,10 @@ private:
     GameOpenGLVAO mCloudVAO;
     GameOpenGLVAO mLandVAO;
     GameOpenGLVAO mOceanVAO;
+    GameOpenGLVAO mFishVAO;
     GameOpenGLVAO mAMBombPreImplosionVAO;
     GameOpenGLVAO mCrossOfLightVAO;
+    GameOpenGLVAO mAABBVAO;
     GameOpenGLVAO mRainVAO;
     GameOpenGLVAO mWorldBorderVAO;
 
@@ -810,6 +1010,9 @@ private:
     std::vector<TextureFrameSpecification<WorldTextureGroups>> mLandTextureFrameSpecifications;
     GameOpenGLTexture mLandTextureOpenGLHandle;
 
+    std::unique_ptr<TextureAtlasMetadata<FishTextureGroups>> mFishTextureAtlasMetadata;
+    GameOpenGLTexture mFishTextureAtlasOpenGLHandle;
+
     TextureAtlasMetadata<GenericLinearTextureGroups> const & mGenericLinearTextureAtlasMetadata;
 
 private:
@@ -820,6 +1023,10 @@ private:
     // Thumbnails
     std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;
     std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
+
+    //
+    // Externally-controlled calculated parameters
+    //
 };
 
 }

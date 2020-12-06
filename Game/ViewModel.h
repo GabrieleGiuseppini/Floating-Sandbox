@@ -6,6 +6,7 @@
 #pragma once
 
 #include "GameParameters.h"
+#include "VisibleWorld.h"
 
 #include <GameCore/GameMath.h>
 #include <GameCore/Vectors.h>
@@ -139,14 +140,14 @@ public:
     {
         vec2f clampedPos = pos;
 
-        float newVisibleWorldLeft = clampedPos.x - mVisibleWorldWidth / 2.0f;
+        float newVisibleWorldLeft = clampedPos.x - mVisibleWorld.Width / 2.0f;
         clampedPos.x += std::max(0.0f, -GameParameters::MaxWorldWidth / 2.0f - newVisibleWorldLeft);
-        float newVisibleWorldRight = clampedPos.x + mVisibleWorldWidth / 2.0f;
+        float newVisibleWorldRight = clampedPos.x + mVisibleWorld.Width / 2.0f;
         clampedPos.x += std::min(0.0f, GameParameters::MaxWorldWidth / 2.0f - newVisibleWorldRight);
 
-        float newVisibleWorldTop = clampedPos.y + mVisibleWorldHeight / 2.0f; // Top<->Positive
+        float newVisibleWorldTop = clampedPos.y + mVisibleWorld.Height / 2.0f; // Top<->Positive
         clampedPos.y += std::min(0.0f, GameParameters::MaxWorldHeight / 2.0f - newVisibleWorldTop);
-        float newVisibleWorldBottom = clampedPos.y - mVisibleWorldHeight / 2.0f;
+        float newVisibleWorldBottom = clampedPos.y - mVisibleWorld.Height / 2.0f;
         clampedPos.y += std::max(0.0f, -GameParameters::MaxWorldHeight / 2.0f - newVisibleWorldBottom);
 
         return clampedPos;
@@ -161,6 +162,11 @@ public:
         RecalculateAttributes();
 
         return mCam;
+    }
+
+    VisibleWorld const & GetVisibleWorld() const
+    {
+        return mVisibleWorld;
     }
 
     int GetCanvasWidth() const
@@ -205,26 +211,6 @@ public:
         RecalculateAttributes();
     }
 
-    float GetVisibleWorldWidth() const
-    {
-        return mVisibleWorldWidth;
-    }
-
-    float GetVisibleWorldHeight() const
-    {
-        return mVisibleWorldHeight;
-    }
-
-    vec2f const & GetVisibleWorldTopLeft() const
-    {
-        return mVisibleWorldTopLeft;
-    }
-
-    vec2f const & GetVisibleWorldBottomRight() const
-    {
-        return mVisibleWorldBottomRight;
-    }
-
     float GetCanvasToVisibleWorldHeightRatio() const
     {
         return mCanvasToVisibleWorldHeightRatio;
@@ -253,11 +239,11 @@ public:
     {
         return vec2f(
             Clamp(
-                (screenCoordinates.x / static_cast<float>(mCanvasWidth) - 0.5f) * mVisibleWorldWidth + mCam.x,
+                (screenCoordinates.x / static_cast<float>(mCanvasWidth) - 0.5f) * mVisibleWorld.Width + mCam.x,
                 -GameParameters::HalfMaxWorldWidth,
                 GameParameters::HalfMaxWorldWidth),
             Clamp(
-                (screenCoordinates.y / static_cast<float>(mCanvasHeight) - 0.5f) * -mVisibleWorldHeight + mCam.y,
+                (screenCoordinates.y / static_cast<float>(mCanvasHeight) - 0.5f) * -mVisibleWorld.Height + mCam.y,
                 -GameParameters::HalfMaxWorldHeight,
                 GameParameters::HalfMaxWorldHeight));
     }
@@ -265,8 +251,8 @@ public:
     inline vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset) const
     {
         return vec2f(
-            screenOffset.x / static_cast<float>(mCanvasWidth) * mVisibleWorldWidth,
-            -screenOffset.y / static_cast<float>(mCanvasHeight) * mVisibleWorldHeight);
+            screenOffset.x / static_cast<float>(mCanvasWidth) * mVisibleWorld.Width,
+            -screenOffset.y / static_cast<float>(mCanvasHeight) * mVisibleWorld.Height);
     }
 
     inline float PixelWidthToWorldWidth(float pixelWidth) const
@@ -275,7 +261,7 @@ public:
         float const ndcW = 2.0f * pixelWidth / static_cast<float>(mCanvasWidth);
 
         // An NDC width of 2 is the entire visible world width
-        return (ndcW / 2.0f) * mVisibleWorldWidth;
+        return (ndcW / 2.0f) * mVisibleWorld.Width;
     }
 
     inline float PixelHeightToWorldHeight(float pixelHeight) const
@@ -284,7 +270,7 @@ public:
         float const ndcH = 2.0f * pixelHeight / static_cast<float>(mCanvasHeight);
 
         // An NDC height of 2 is the entire visible world height
-        return (ndcH / 2.0f) * mVisibleWorldHeight;
+        return (ndcH / 2.0f) * mVisibleWorld.Height;
     }
 
     /*
@@ -399,24 +385,26 @@ private:
 
     void RecalculateAttributes()
     {
-        mVisibleWorldWidth = CalculateVisibleWorldWidth(mZoom);
-        mVisibleWorldHeight = CalculateVisibleWorldHeight(mZoom);
+        mVisibleWorld.Center = mCam;
 
-        mVisibleWorldTopLeft = vec2f(
-            mCam.x - (mVisibleWorldWidth / 2.0f),
-            mCam.y + (mVisibleWorldHeight / 2.0f));
-        mVisibleWorldBottomRight = vec2f(
-            mCam.x + (mVisibleWorldWidth /2.0f),
-            mCam.y - (mVisibleWorldHeight / 2.0f));
+        mVisibleWorld.Width = CalculateVisibleWorldWidth(mZoom);
+        mVisibleWorld.Height = CalculateVisibleWorldHeight(mZoom);
 
-        mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasHeight) / mVisibleWorldHeight;
+        mVisibleWorld.TopLeft = vec2f(
+            mCam.x - (mVisibleWorld.Width / 2.0f),
+            mCam.y + (mVisibleWorld.Height / 2.0f));
+        mVisibleWorld.BottomRight = vec2f(
+            mCam.x + (mVisibleWorld.Width /2.0f),
+            mCam.y - (mVisibleWorld.Height / 2.0f));
+
+        mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasHeight) / mVisibleWorld.Height;
         mCanvasWidthToHeightRatio = static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight);
 
         // Recalculate kernel Ortho Matrix cells
-        mKernelOrthoMatrix[0][0] = 2.0f / mVisibleWorldWidth;
-        mKernelOrthoMatrix[1][1] = 2.0f / mVisibleWorldHeight;
-        mKernelOrthoMatrix[3][0] = -2.0f * (mCam.x + PixelWidthToWorldWidth(mPixelOffsetX)) / mVisibleWorldWidth;
-        mKernelOrthoMatrix[3][1] = -2.0f * (mCam.y + PixelHeightToWorldHeight(mPixelOffsetY)) / mVisibleWorldHeight;
+        mKernelOrthoMatrix[0][0] = 2.0f / mVisibleWorld.Width;
+        mKernelOrthoMatrix[1][1] = 2.0f / mVisibleWorld.Height;
+        mKernelOrthoMatrix[3][0] = -2.0f * (mCam.x + PixelWidthToWorldWidth(mPixelOffsetX)) / mVisibleWorld.Width;
+        mKernelOrthoMatrix[3][1] = -2.0f * (mCam.y + PixelHeightToWorldHeight(mPixelOffsetY)) / mVisibleWorld.Height;
     }
 
 private:
@@ -434,10 +422,7 @@ private:
     float mPixelOffsetY;
 
     // Calculated attributes
-    float mVisibleWorldWidth;
-    float mVisibleWorldHeight;
-    vec2f mVisibleWorldTopLeft;
-    vec2f mVisibleWorldBottomRight;
+    VisibleWorld mVisibleWorld;
     float mCanvasToVisibleWorldHeightRatio;
     float mCanvasWidthToHeightRatio;
     ProjectionMatrix mKernelOrthoMatrix; // Common subset of all ortho matrices

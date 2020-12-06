@@ -66,17 +66,20 @@ Ship::Ship(
     Points && points,
     Springs && springs,
     Triangles && triangles,
-    ElectricalElements && electricalElements)
+    ElectricalElements && electricalElements,
+    Frontiers && frontiers)
     : mId(id)
     , mParentWorld(parentWorld)
     , mMaterialDatabase(materialDatabase)
     , mGameEventHandler(std::move(gameEventDispatcher))
     , mTaskThreadPool(std::move(taskThreadPool))
+    , mEventRecorder(nullptr)
     , mSize(points.GetAABB().GetSize())
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
+    , mFrontiers(std::move(frontiers))
     , mPinnedPoints(
         mParentWorld,
         mGameEventHandler,
@@ -123,16 +126,35 @@ void Ship::Announce()
     mElectricalElements.AnnounceInstancedElements();
 }
 
-bool Ship::IsUnderwater(ElementIndex pointElementIndex) const
+void Ship::SetEventRecorder(EventRecorder * eventRecorder)
 {
-    return mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex));
+    mEventRecorder = eventRecorder;
+}
+
+bool Ship::ReplayRecordedEvent(
+    RecordedEvent const & event,
+    GameParameters const & gameParameters)
+{
+    if (event.GetType() == RecordedEvent::RecordedEventType::PointDetachForDestroy)
+    {
+        RecordedPointDetachForDestroyEvent const & detachEvent = static_cast<RecordedPointDetachForDestroyEvent const &>(event);
+
+        DetachPointForDestroy(
+            detachEvent.GetPointIndex(),
+            detachEvent.GetDetachVelocity(),
+            detachEvent.GetSimulationTime(),
+            gameParameters);
+    }
+
+    return false;
 }
 
 void Ship::Update(
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters,
-    Render::RenderContext const & renderContext)
+    Render::RenderContext const & renderContext,
+    Geometry::AABBSet & aabbSet)
 {
     std::vector<TaskThreadPool::Task> parallelTasks;
 
@@ -175,7 +197,6 @@ void Ship::Update(
 
     mWindSpeedMagnitudeToRender = mParentWorld.GetCurrentWindSpeed().x;
 
-
     ///////////////////////////////////////////////////////////////////
     // Update state machines
     ///////////////////////////////////////////////////////////////////
@@ -199,7 +220,6 @@ void Ship::Update(
             gameParameters);
     }
 
-
     //
     // Recalculate current masses and everything else that derives from them, once and for all
     //
@@ -208,13 +228,12 @@ void Ship::Update(
     // - Outputs: Mass
     mPoints.UpdateMasses(gameParameters);
 
-
     //
     // Update non-spring forces
     //
 
     // Apply world forces
-    ApplyWorldForces(stormParameters, gameParameters);
+    ApplyWorldForces(stormParameters, gameParameters, aabbSet);
 
     //
     // Run spring relaxation iterations
@@ -255,7 +274,6 @@ void Ship::Update(
     // - Outputs: NonSpringForce
     mPoints.ResetNonSpringForces();
 
-
     //
     // Trim for world bounds
     //
@@ -279,7 +297,6 @@ void Ship::Update(
         stormParameters,
         gameParameters);
 
-
     ///////////////////////////////////////////////////////////////////
     // Update strain for all springs; might cause springs to break
     // (which would flag our structure as dirty)
@@ -291,7 +308,6 @@ void Ship::Update(
     mSprings.UpdateForStrains(
         gameParameters,
         mPoints);
-
 
     /////////////////////////////////////////////////////////////////
     // Update water dynamics - may generate ephemeral particles
@@ -315,7 +331,6 @@ void Ship::Update(
     // Notify intaken water
     mGameEventHandler->OnWaterTaken(waterTakenInStep);
 
-
     //
     // Diffuse water
     //
@@ -328,7 +343,6 @@ void Ship::Update(
 
     // Notify
     mGameEventHandler->OnWaterSplashed(waterSplashedInStep);
-
 
     //
     // Run sink/unsink detection
@@ -365,7 +379,6 @@ void Ship::Update(
         mCurrentElectricalVisitSequenceNumber,
         mPoints,
         gameParameters);
-
 
     //
     // 3. Update sinks
@@ -498,6 +511,10 @@ void Ship::RenderUpload(
     //
     // Run connectivity visit, if there have been any deletions
     //
+    // Note: we have to do this here, at render time rathern than
+    // at update time, because the structure might have been dirtied
+    // by an interactive tool while the game is paused
+    //
 
     if (mIsStructureDirty)
     {
@@ -590,6 +607,14 @@ void Ship::RenderUpload(
     }
 
     renderContext.UploadShipElementStressedSpringsEnd(mId);
+
+    //
+    // Upload frontiers
+    //
+
+    mFrontiers.Upload(
+        mId,
+        renderContext);
 
     //
     // Upload flames
@@ -693,8 +718,13 @@ void Ship::Finalize()
 
 void Ship::ApplyWorldForces(
     Storm::Parameters const & stormParameters,
-    GameParameters const & gameParameters)
+    GameParameters const & gameParameters,
+    Geometry::AABBSet & aabbSet)
 {
+    ///////////////////////////////////////////////////////////////////////////////////////
+    // Apply per-particle forces
+    ///////////////////////////////////////////////////////////////////////////////////////
+
     float const effectiveAirTemperature =
         gameParameters.AirTemperature
         + stormParameters.AirTemperatureDelta;
@@ -719,12 +749,10 @@ void Ship::ApplyWorldForces(
         * 0.5f
         * GameParameters::AirMass;
 
-    // Underwater points feel this amount of water drag
-    //
-    // The higher the value, the more viscous the water looks when a body moves through it
-    float const waterDragCoefficient =
-        GameParameters::WaterDragLinearCoefficient
-        * gameParameters.WaterDragAdjustment;
+    // Underwater points feel this amount of water drag, due to friction
+    float const waterFrictionDragCoefficient =
+        GameParameters::WaterFrictionDragCoefficient
+        * gameParameters.WaterFrictionDragAdjustment;
 
     for (auto pointIndex : mPoints)
     {
@@ -737,7 +765,7 @@ void Ship::ApplyWorldForces(
             * mPoints.GetMass(pointIndex); // Material + Augmentation + Water
 
         //
-        // Add buoyancy
+        // Add water/air buoyancy
         //
 
         // Calculate upward push of water/air mass
@@ -750,7 +778,7 @@ void Ship::ApplyWorldForces(
         float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x);
 
         // Check whether we are above or below water
-        if (mPoints.GetPosition(pointIndex).y <= waterHeightAtThisPoint)
+        if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
         {
             // Water
             mPoints.GetNonSpringForce(pointIndex).y +=
@@ -767,38 +795,22 @@ void Ship::ApplyWorldForces(
 
 
         //
-        // Apply water drag - if under water - or wind force - if above water
-        //
-        // FUTURE: should replace with directional water drag, which acts on frontier points only,
-        // proportional to angle between velocity and normal to surface at this point;
-        // this would ensure that masses would also have a horizontal velocity component when sinking,
-        // providing a "gliding" effect
+        // Apply water friction drag - if under water - or wind force - if above water
         //
 
         if (mPoints.GetPosition(pointIndex).y <= waterHeightAtThisPoint)
         {
             //
-            // Note: we would have liked to use the square law:
+            // We use a linear law for simplicity
             //
-            //  Drag force = -C * (|V|^2*Vn)
-            //
-            // But when V >= m / (C * dt) (and also when V = 0), the drag force overcomes
-            // the current velocity and thus it accelerates it, resulting in an unstable system.
-            // The maximum force is thus -m^2/(C*dt^2).
-            //
-            // With a linear law, we know that the force will never accelerate the current velocity
-            // as long as m > (C * dt) / 2 (~=0.0002), which is a mass we won't have in our system (air is 1.2754).
+            // With a linear law, we know that the force will never overcome the current velocity
+            // as long as m > (C * dt) (~=0.0015), which is a mass we won't have in our system (air is 1.2754);
+            // hence we don't care here about capping the force to prevent overcoming accelerations.
             //
 
-            // Square law:
-            ////mPoints.GetForce(pointIndex) +=
-            ////    mPoints.GetVelocity(pointIndex).square()
-            ////    * (-waterDragCoefficient);
-
-            // Linear law:
             mPoints.GetNonSpringForce(pointIndex) +=
                 mPoints.GetVelocity(pointIndex)
-                * (-waterDragCoefficient);
+                * (-waterFrictionDragCoefficient);
         }
         else
         {
@@ -809,6 +821,146 @@ void Ship::ApplyWorldForces(
                 windForce
                 * mPoints.GetMaterialWindReceptivity(pointIndex);
         }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+    // Apply per-surface forces
+    ///////////////////////////////////////////////////////////////////////////////////////
+
+    // Underwater points feel this amount of water drag, due to pressure
+    float const waterPressureDragCoefficient =
+        GameParameters::WaterPressureDragCoefficient
+        * gameParameters.WaterPressureDragAdjustment
+        * (effectiveWaterDensity / GameParameters::WaterMass);
+
+    //
+    // Visit all frontiers
+    //
+
+    for (FrontierId frontierId : mFrontiers.GetFrontierIds())
+    {
+        auto const & frontier = mFrontiers.GetFrontier(frontierId);
+
+        assert(frontier.Size >= 3);
+
+        ElementIndex startEdgeIndex = frontier.StartingEdgeIndex;
+
+        // Take previous point
+        auto const & previousFrontierEdge = mFrontiers.GetFrontierEdge(startEdgeIndex);
+        vec2f previousPointPosition = mPoints.GetPosition(previousFrontierEdge.PointAIndex);
+        startEdgeIndex = previousFrontierEdge.NextEdgeIndex;
+
+        // Take this point
+        auto const & frontierEdge = mFrontiers.GetFrontierEdge(startEdgeIndex);
+        ElementIndex pointIndex = frontierEdge.PointAIndex;
+        vec2f pointPosition = mPoints.GetPosition(pointIndex);
+        startEdgeIndex = frontierEdge.NextEdgeIndex;
+
+        // Initialize AABB
+        Geometry::AABB aabb;
+
+        //
+        // Visit all edges of this frontier
+        //
+
+#ifdef _DEBUG
+        size_t visitedPoints = 0;
+#endif
+
+        for (ElementIndex nextEdgeIndex = startEdgeIndex; ;)
+        {
+
+#ifdef _DEBUG
+            ++visitedPoints;
+#endif
+
+            //
+            // Update AABB with this point
+            //
+
+            if (frontier.Type == FrontierType::External)
+            {
+                aabb.ExtendTo(pointPosition);
+            }
+
+            //
+            // Apply water pressure drag
+            //
+
+            // Get next edge and point
+            auto const & nextFrontierEdge = mFrontiers.GetFrontierEdge(nextEdgeIndex);
+            ElementIndex const nextPointIndex = nextFrontierEdge.PointAIndex;
+            vec2f const nextPointPosition = mPoints.GetPosition(nextPointIndex);
+
+            // Check if this point is underwater
+            float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(pointPosition.x);
+            if (pointPosition.y <= waterHeightAtThisPoint)
+            {
+                //
+                // Calculate drag force
+                //
+                // We would like to use a square law (i.e. drag force proportional to square
+                // of velocity), but then particles at high velocities become subject to
+                // enormous forces, which, for small masses - such as cloth - means astronomical
+                // accelerations.
+                //
+                // We have to recourse then, again, to a linear law:
+                //
+                // F = - C * |V| * cos(a) * Nn
+                //
+                //      cos(a) == cos(angle between velocity and surface normal) == Vn dot Nn
+                //
+                // With this law, a particle's velocity is overcome by the drag force when its
+                // mass is <= C * dt, i.e. ~78Kg. Since this mass we do have in our sytem, we have
+                // to cap the force to prevent velocity overcome
+                //
+
+                // Normal to surface - calculated between p1 and p3
+                vec2f const normal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
+
+                // Velocity along normal - capped to the same direction as it to avoid suction force
+                // (i.e. drag force attracting surface facing opposite of velocity)
+                float const velocityMagnitudeAlongNormal = std::max(
+                    mPoints.GetVelocity(pointIndex).dot(normal),
+                    0.0f);
+
+                // Magnitude of drag force (opposite sign)
+                //  - C * |V| * cos(a) == - C * |V| * (Vn dot Nn) == -C * (V dot Nn)
+                float const dragForceMagnitude =
+                    waterPressureDragCoefficient
+                    * velocityMagnitudeAlongNormal;
+
+                // Max drag force magnitude: m * (V dot Nn) / dt
+                float const maxDragForceMagnitude =
+                    mPoints.GetMass(pointIndex) * velocityMagnitudeAlongNormal
+                    / gameParameters.SimulationStepTimeDuration<float>;
+
+                // Final drag force - in the (opposite) direction of the normal
+                vec2f const dragForce = normal * std::min(dragForceMagnitude, maxDragForceMagnitude);
+
+                // Apply drag force
+                mPoints.GetNonSpringForce(pointIndex) -= dragForce;
+            }
+
+            //
+            // Advance
+            //
+
+            nextEdgeIndex = nextFrontierEdge.NextEdgeIndex;
+            if (nextEdgeIndex == startEdgeIndex)
+                break;
+
+            previousPointPosition = pointPosition;
+            pointPosition = nextPointPosition;
+            pointIndex = nextPointIndex;
+        }
+
+#ifdef _DEBUG
+        assert(visitedPoints == frontier.Size);
+#endif
+
+        // Store AABB
+        aabbSet.Add(std::move(aabb));
     }
 }
 
@@ -881,19 +1033,21 @@ void Ship::ApplySpringsForces_ByPoints(GameParameters const & gameParameters)
     float const * const restrict pointIntegrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
 
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
+
     float const globalDamping = 1.0f -
-        pow((1.0f - GameParameters::GlobalDamping),
-            12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
+        pow((1.0f - GameParameters::GlobalDamping), 12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
+
     // Incorporate adjustment
     float const globalDampingCoefficient = 1.0f -
         (
             gameParameters.GlobalDampingAdjustment <= 1.0f
             ? globalDamping * (1.0f - (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f))
             : globalDamping +
-            (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f)
-            / ((gameParameters.MaxGlobalDampingAdjustment - 1.0f) * (gameParameters.MaxGlobalDampingAdjustment - 1.0f))
-            * (1.0f - globalDamping)
-            );
+                (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f)
+                / ((gameParameters.MaxGlobalDampingAdjustment - 1.0f) * (gameParameters.MaxGlobalDampingAdjustment - 1.0f))
+                * (1.0f - globalDamping)
+        );
+
     float const velocityFactor = globalDampingCoefficient / dt;
 
     float const * restrict const restLengthBuffer = mSprings.GetRestLengthBuffer();
@@ -1081,12 +1235,13 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
 
             // Calculate sea floor anti-normal
             // (optimized) (positive points down)
+            float constexpr Dx = 0.01f;
             ////////vec2f const seaFloorAntiNormal = -vec2f(
             ////////    floorHeight - mParentWorld.GetOceanFloorHeightAt(clampedX + 0.01f),
             ////////    0.01f).normalise(); // Points below
             vec2f const seaFloorAntiNormal = vec2f(
-                mParentWorld.GetOceanFloorHeightAt(clampedX + 0.01f) - floorHeight,
-                -0.01f).normalise(); // Points below
+                mParentWorld.GetOceanFloorHeightAt(clampedX + Dx) - floorHeight,
+                -Dx).normalise(); // Points below
 
             // Calculate the component of the point's velocity along the anti-normal,
             // i.e. towards the interior of the floor...
@@ -2508,12 +2663,6 @@ void Ship::HandleSpringDestroy(
     // Remove spring from other elements
     //
 
-    // Remove spring from set of sub springs at each super-triangle
-    for (auto superTriangleIndex : mSprings.GetSuperTriangles(springElementIndex))
-    {
-        mTriangles.RemoveSubSpring(superTriangleIndex, springElementIndex);
-    }
-
     // Remove the spring from its endpoints
     mPoints.DisconnectSpring(pointAIndex, springElementIndex, pointBIndex);
     mPoints.DisconnectSpring(pointBIndex, springElementIndex, pointAIndex);
@@ -2523,14 +2672,6 @@ void Ship::HandleSpringDestroy(
         mPoints.OnOrphaned(pointAIndex);
     if (mPoints.GetConnectedSprings(pointBIndex).ConnectedSprings.empty())
         mPoints.OnOrphaned(pointBIndex);
-
-
-    //
-    // Remove other elements from self
-    //
-
-    mSprings.ClearSuperTriangles(springElementIndex);
-
 
     /////////////////////////////////////////////////
 
@@ -2623,12 +2764,6 @@ void Ship::HandleSpringRestore(
     mPoints.ConnectSpring(pointAIndex, springElementIndex, pointBIndex);
     mPoints.ConnectSpring(pointBIndex, springElementIndex, pointAIndex);
 
-    // Add spring to set of sub springs at each super-triangle
-    for (auto superTriangleIndex : mSprings.GetSuperTriangles(springElementIndex))
-    {
-        mTriangles.AddSubSpring(superTriangleIndex, springElementIndex);
-    }
-
     //
     // If both endpoints are electrical elements, and neither is deleted,
     // then connect them - i.e. add them to each other's set of connected electrical elements
@@ -2682,8 +2817,8 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
     // Remove triangle from other elements
     //
 
-    // Remove triangle from set of super triangles of its sub springs
-    for (ElementIndex subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex))
+    // Remove triangle from sets of super triangles of its non-deleted sub springs
+    for (ElementIndex const subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex).SpringIndices)
     {
         mSprings.RemoveSuperTriangle(subSpringIndex, triangleElementIndex);
     }
@@ -2694,11 +2829,19 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
     mPoints.DisconnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
 
     //
-    // Remove other elements from self
+    // Maintain frontier
+    //
+    // Must be invoked here, and not earlier, as the springs are expected to be
+    // already consistent with the removal of the triangle.
     //
 
-    mTriangles.ClearSubSprings(triangleElementIndex);
+    mFrontiers.HandleTriangleDestroy(
+        triangleElementIndex,
+        mPoints,
+        mSprings,
+        mTriangles);
 
+    /////////////////////////////////////////////////////////
 
     // Remember our structure is now dirty
     mIsStructureDirty = true;
@@ -2710,12 +2853,14 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
 void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
 {
     //
-    // Add others to self
+    // Maintain frontier
     //
 
-    // Restore factory subsprings
-    mTriangles.RestoreFactorySubSprings(triangleElementIndex);
-
+    mFrontiers.HandleTriangleRestore(
+        triangleElementIndex,
+        mPoints,
+        mSprings,
+        mTriangles);
 
     //
     // Add self to others
@@ -2726,12 +2871,14 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
     mPoints.ConnectTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
     mPoints.ConnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
 
-    // Add triangle to set of super triangles of its sub springs
-    assert(!mTriangles.GetSubSprings(triangleElementIndex).empty());
-    for (ElementIndex subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex))
+    // Add triangle to set of super triangles of each of its sub springs
+    assert(mTriangles.GetSubSprings(triangleElementIndex).SpringIndices.size() == 3);
+    for (ElementIndex subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex).SpringIndices)
     {
         mSprings.AddSuperTriangle(subSpringIndex, triangleElementIndex);
     }
+
+    /////////////////////////////////////////////////////////
 
     // Fire event - using point A's properties (quite arbitrarily)
     mGameEventHandler->OnTriangleRepaired(
@@ -2841,6 +2988,12 @@ void Ship::DoAntiMatterBombPreimplosion(
         radius,
         10.0f, // Thickness of radius, magic number
         strength);
+
+    // Scare fishes
+    mParentWorld.DisturbOceanAt(
+        centerPosition,
+        radius,
+        std::chrono::milliseconds(0));
 }
 
 void Ship::DoAntiMatterBombImplosion(
@@ -2879,6 +3032,12 @@ void Ship::DoAntiMatterBombExplosion(
         ApplyRadialExplosionForceField(
             centerPosition,
             strength);
+
+        // Scare fishes
+        mParentWorld.DisturbOceanAt(
+            centerPosition,
+            300.0f, // Magic radius
+            std::chrono::milliseconds(0));
     }
 }
 
@@ -2972,7 +3131,10 @@ void Ship::VerifyInvariants()
 
             for (auto superTriangle : mSprings.GetSuperTriangles(s))
             {
-                Verify(mTriangles.GetSubSprings(superTriangle).contains(s));
+                Verify(
+                    mTriangles.GetSubSprings(superTriangle).SpringIndices[0] == s
+                    || mTriangles.GetSubSprings(superTriangle).SpringIndices[1] == s
+                    || mTriangles.GetSubSprings(superTriangle).SpringIndices[2] == s);
             }
         }
         else
@@ -2983,13 +3145,33 @@ void Ship::VerifyInvariants()
 
     for (auto t : mTriangles)
     {
-        Verify(mTriangles.GetSubSprings(t).size() <= 4);
+        Verify(mTriangles.GetSubSprings(t).SpringIndices.size() == 3);
 
-        for (auto subSpring : mTriangles.GetSubSprings(t))
+        if (!mTriangles.IsDeleted(t))
         {
-            Verify(mSprings.GetSuperTriangles(subSpring).contains(t));
+            for (auto subSpring : mTriangles.GetSubSprings(t).SpringIndices)
+            {
+                Verify(mSprings.GetSuperTriangles(subSpring).contains(t));
+            }
+        }
+        else
+        {
+            for (auto subSpring : mTriangles.GetSubSprings(t).SpringIndices)
+            {
+                Verify(!mSprings.GetSuperTriangles(subSpring).contains(t));
+            }
         }
     }
+
+
+    //
+    // Frontiers
+    //
+
+    mFrontiers.VerifyInvariants(
+        mPoints,
+        mSprings,
+        mTriangles);
 }
 #endif
 }

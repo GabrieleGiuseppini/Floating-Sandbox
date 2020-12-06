@@ -13,6 +13,7 @@
 #include <GameCore/FixedSizeVector.h>
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <functional>
 
@@ -24,25 +25,36 @@ class Triangles : public ElementContainer
 private:
 
     /*
-    * The endpoints of a triangle.
-    */
+     * The endpoints of a triangle, in CW order.
+     */
     struct Endpoints
     {
-        ElementIndex PointAIndex;
-        ElementIndex PointBIndex;
-        ElementIndex PointCIndex;
+        // A, B, C
+        std::array<ElementIndex, 3u> PointIndices;
 
         Endpoints(
             ElementIndex pointAIndex,
             ElementIndex pointBIndex,
             ElementIndex pointCIndex)
-            : PointAIndex(pointAIndex)
-            , PointBIndex(pointBIndex)
-            , PointCIndex(pointCIndex)
+            : PointIndices({ pointAIndex, pointBIndex, pointCIndex })
         {}
     };
 
-    using SubSpringsVector = FixedSizeVector<ElementIndex, 4u>;
+    /*
+     * The springs along the edges of a triangle, in CW order.
+     */
+    struct SubSprings
+    {
+        // A, B, C
+        std::array<ElementIndex, 3u> SpringIndices;
+
+        SubSprings(
+            ElementIndex subSpringAIndex,
+            ElementIndex subSpringBIndex,
+            ElementIndex subSpringCIndex)
+            : SpringIndices({ subSpringAIndex, subSpringBIndex, subSpringCIndex })
+        {}
+    };
 
 public:
 
@@ -55,8 +67,7 @@ public:
         // Endpoints
         , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex, NoneElementIndex))
         // Sub springs
-        , mSubSpringsBuffer(mBufferElementCount, mElementCount, SubSpringsVector())
-        , mFactorySubSpringsBuffer(mBufferElementCount, mElementCount, SubSpringsVector())
+        , mSubSpringsBuffer(mBufferElementCount, mElementCount, SubSprings(NoneElementIndex, NoneElementIndex, NoneElementIndex))
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -75,7 +86,9 @@ public:
         ElementIndex pointAIndex,
         ElementIndex pointBIndex,
         ElementIndex pointCIndex,
-        SubSpringsVector const & subSprings);
+        ElementIndex subSpringAIndex,
+        ElementIndex subSpringBIndex,
+        ElementIndex subSpringCIndex);
 
     void Destroy(ElementIndex triangleElementIndex);
 
@@ -137,19 +150,34 @@ public:
     // Endpoints
     //
 
+    inline auto const & GetPointIndices(ElementIndex triangleElementIndex) const
+    {
+        return mEndpointsBuffer[triangleElementIndex].PointIndices;
+    }
+
     inline ElementIndex GetPointAIndex(ElementIndex triangleElementIndex) const
     {
-        return mEndpointsBuffer[triangleElementIndex].PointAIndex;
+        return mEndpointsBuffer[triangleElementIndex].PointIndices[0];
     }
 
     inline ElementIndex GetPointBIndex(ElementIndex triangleElementIndex) const
     {
-        return mEndpointsBuffer[triangleElementIndex].PointBIndex;
+        return mEndpointsBuffer[triangleElementIndex].PointIndices[1];
     }
 
     inline ElementIndex GetPointCIndex(ElementIndex triangleElementIndex) const
     {
-        return mEndpointsBuffer[triangleElementIndex].PointCIndex;
+        return mEndpointsBuffer[triangleElementIndex].PointIndices[2];
+    }
+
+    inline bool ArePointsInCwOrder(
+        ElementIndex triangleElementIndex,
+        ElementIndex point1Index,
+        ElementIndex point2Index) const
+    {
+        return (GetPointAIndex(triangleElementIndex) == point1Index && GetPointBIndex(triangleElementIndex) == point2Index)
+            || (GetPointBIndex(triangleElementIndex) == point1Index && GetPointCIndex(triangleElementIndex) == point2Index)
+            || (GetPointCIndex(triangleElementIndex) == point1Index && GetPointAIndex(triangleElementIndex) == point2Index);
     }
 
     //
@@ -161,47 +189,19 @@ public:
         return mSubSpringsBuffer[triangleElementIndex];
     }
 
-    inline void AddSubSpring(
-        ElementIndex triangleElementIndex,
-        ElementIndex subSpringElementIndex)
+    inline ElementIndex GetSubSpringAIndex(ElementIndex triangleElementIndex) const
     {
-        assert(mFactorySubSpringsBuffer[triangleElementIndex].contains(
-            [subSpringElementIndex](auto ss)
-            {
-                return ss = subSpringElementIndex;
-            }));
-
-        mSubSpringsBuffer[triangleElementIndex].push_back(subSpringElementIndex);
+        return mSubSpringsBuffer[triangleElementIndex].SpringIndices[0];
     }
 
-    inline void RemoveSubSpring(
-        ElementIndex triangleElementIndex,
-        ElementIndex subSpringElementIndex)
+    inline ElementIndex GetSubSpringBIndex(ElementIndex triangleElementIndex) const
     {
-        bool found = mSubSpringsBuffer[triangleElementIndex].erase_first(subSpringElementIndex);
-
-        assert(found);
-        (void)found;
+        return mSubSpringsBuffer[triangleElementIndex].SpringIndices[1];
     }
 
-    void ClearSubSprings(ElementIndex triangleElementIndex)
+    inline ElementIndex GetSubSpringCIndex(ElementIndex triangleElementIndex) const
     {
-        mSubSpringsBuffer[triangleElementIndex].clear();
-    }
-
-    auto const & GetFactorySubSprings(ElementIndex triangleElementIndex) const
-    {
-        return mFactorySubSpringsBuffer[triangleElementIndex];
-    }
-
-    void RestoreFactorySubSprings(ElementIndex triangleElementIndex)
-    {
-        assert(mSubSpringsBuffer[triangleElementIndex].empty());
-
-        for (auto s : mFactorySubSpringsBuffer[triangleElementIndex])
-        {
-            mSubSpringsBuffer[triangleElementIndex].push_back(s);
-        }
+        return mSubSpringsBuffer[triangleElementIndex].SpringIndices[2];
     }
 
 private:
@@ -217,10 +217,7 @@ private:
     Buffer<Endpoints> mEndpointsBuffer;
 
     // Sub springs - the springs that have this triangle among their super-triangles.
-    // This is the three springs along the edges, plus the eventual "traverse" spring (i.e. the non-edge diagonal
-    // in a two-triangle square)
-    Buffer<SubSpringsVector> mSubSpringsBuffer;
-    Buffer<SubSpringsVector> mFactorySubSpringsBuffer;
+    Buffer<SubSprings> mSubSpringsBuffer;
 
     //////////////////////////////////////////////////////////
     // Container

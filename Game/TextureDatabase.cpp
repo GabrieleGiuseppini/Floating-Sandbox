@@ -22,10 +22,15 @@ void TextureFrameMetadata<TextureGroups>::Serialize(picojson::object & root) con
 
     root["has_own_ambient_light"] = picojson::value(HasOwnAmbientLight);
 
-    picojson::object anchorWorld;
-    anchorWorld["x"] = picojson::value(static_cast<double>(AnchorWorldX));
-    anchorWorld["y"] = picojson::value(static_cast<double>(AnchorWorldY));
-    root["anchor_world"] = picojson::value(anchorWorld);
+    picojson::object anchorCenter;
+    anchorCenter["x"] = picojson::value(static_cast<int64_t>(AnchorCenter.X));
+    anchorCenter["y"] = picojson::value(static_cast<int64_t>(AnchorCenter.Y));
+    root["anchor_center"] = picojson::value(anchorCenter);
+
+    picojson::object anchorCenterWorld;
+    anchorCenterWorld["x"] = picojson::value(static_cast<double>(AnchorCenterWorld.x));
+    anchorCenterWorld["y"] = picojson::value(static_cast<double>(AnchorCenterWorld.y));
+    root["anchor_center_world"] = picojson::value(anchorCenterWorld);
 
     picojson::object frameId;
     frameId["group"] = picojson::value(static_cast<int64_t>(FrameId.Group));
@@ -49,9 +54,15 @@ TextureFrameMetadata<TextureGroups> TextureFrameMetadata<TextureGroups>::Deseria
 
     bool hasOwnAmbientLight = root.at("has_own_ambient_light").get<bool>();
 
-    picojson::object const & anchorWorldJson = root.at("anchor_world").get<picojson::object>();
-    float anchorWorldX = static_cast<float>(anchorWorldJson.at("x").get<double>());
-    float anchorWorldY = static_cast<float>(anchorWorldJson.at("y").get<double>());
+    picojson::object const & anchorCenterJson = root.at("anchor_center").get<picojson::object>();
+    IntegralPoint anchorCenter(
+        static_cast<int>(anchorCenterJson.at("x").get<int64_t>()),
+        static_cast<int>(anchorCenterJson.at("y").get<int64_t>()));
+
+    picojson::object const & anchorCenterWorldJson = root.at("anchor_center_world").get<picojson::object>();
+    vec2f anchorCenterWorld(
+        static_cast<float>(anchorCenterWorldJson.at("x").get<double>()),
+        static_cast<float>(anchorCenterWorldJson.at("y").get<double>()));
 
     picojson::object const & frameIdJson = root.at("id").get<picojson::object>();
     TextureGroups group = static_cast<TextureGroups>(frameIdJson.at("group").get<std::int64_t>());
@@ -64,8 +75,8 @@ TextureFrameMetadata<TextureGroups> TextureFrameMetadata<TextureGroups>::Deseria
         worldWidth,
         worldHeight,
         hasOwnAmbientLight,
-        anchorWorldX,
-        anchorWorldY,
+        anchorCenter,
+        anchorCenterWorld,
         TextureFrameId<TextureGroups>(group, frameIndex),
         name);
 }
@@ -295,8 +306,12 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                                 worldWidth,
                                 worldHeight,
                                 hasOwnAmbientLight,
-                                anchorWorldX,
-                                anchorWorldY,
+                                IntegralPoint(
+                                    anchorX,
+                                    anchorY),
+                                vec2f(
+                                    anchorWorldX,
+                                    anchorWorldY),
                                 TextureFrameId<TextureGroups>(group, frameIndex),
                                 name),
                             fileData.Path));
@@ -395,6 +410,7 @@ template struct Render::TextureFrameMetadata<Render::NoiseTextureGroups>;
 template struct Render::TextureFrameMetadata<Render::GenericLinearTextureGroups>;
 template struct Render::TextureFrameMetadata<Render::GenericMipMappedTextureGroups>;
 template struct Render::TextureFrameMetadata<Render::ExplosionTextureGroups>;
+template struct Render::TextureFrameMetadata<Render::FishTextureGroups>;
 
 template class Render::TextureDatabase<Render::CloudTextureDatabaseTraits>;
 template class Render::TextureDatabase<Render::WorldTextureDatabaseTraits>;
@@ -402,3 +418,4 @@ template class Render::TextureDatabase<Render::NoiseTextureDatabaseTraits>;
 template class Render::TextureDatabase<Render::GenericLinearTextureTextureDatabaseTraits>;
 template class Render::TextureDatabase<Render::GenericMipMappedTextureTextureDatabaseTraits>;
 template class Render::TextureDatabase<Render::ExplosionTextureDatabaseTraits>;
+template class Render::TextureDatabase<Render::FishTextureDatabaseTraits>;

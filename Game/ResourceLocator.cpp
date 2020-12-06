@@ -200,6 +200,12 @@ std::filesystem::path ResourceLocator::GetDefaultOceanFloorTerrainFilePath() con
     return std::filesystem::absolute(localPath);
 }
 
+std::filesystem::path ResourceLocator::GetFishSpeciesDatabaseFilePath() const
+{
+    std::filesystem::path localPath = std::filesystem::path("Data") / "Misc" / "fish_species.json";
+    return std::filesystem::absolute(localPath);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Help
 ////////////////////////////////////////////////////////////////////////////////////////////

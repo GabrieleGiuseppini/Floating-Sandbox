@@ -102,7 +102,7 @@ public:
         float minValue,
         float maxValue)
     {
-        return minValue + mRandomUniformDistribution(mRandomEngine) * (maxValue - minValue);
+        return minValue + GenerateNormalizedUniformReal() * (maxValue - minValue);
     }
 
     inline vec2f GenerateUniformRadialVector(
@@ -143,6 +143,17 @@ public:
     inline float GenerateNormalizedNormalReal()
     {
         return mNormalDistribution(mRandomEngine);
+    }
+
+    /*
+     * Generates a random number between -INF and +INF, distributed
+     * according to a Gaussian with mean zero and stdev 1.
+     */
+    inline float GenerateNormalReal(
+        float mean,
+        float stdev)
+    {
+        return mean + mNormalDistribution(mRandomEngine) * stdev;
     }
 
 private:

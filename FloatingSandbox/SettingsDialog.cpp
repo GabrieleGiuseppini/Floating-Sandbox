@@ -38,31 +38,31 @@ static int constexpr CellBorder = 8;
 
 namespace /* anonymous */ {
 
-    struct PersistedSettingsComparer
+struct PersistedSettingsComparer
+{
+    bool operator()(PersistedSettingsMetadata const & m1, PersistedSettingsMetadata const & m2)
     {
-        bool operator()(PersistedSettingsMetadata const & m1, PersistedSettingsMetadata const & m2)
-        {
-            // m1 < m2
-            // Rules:
-            // - All user first, system next
-            // - Among user, LastModified is last
+        // m1 < m2
+        // Rules:
+        // - All user first, system next
+        // - Among user, LastModified is last
 
-            if (m1.Key.StorageType != m2.Key.StorageType)
-                return m2.Key.StorageType == PersistedSettingsStorageTypes::System;
+        if (m1.Key.StorageType != m2.Key.StorageType)
+            return m2.Key.StorageType == PersistedSettingsStorageTypes::System;
 
-            assert(m1.Key.StorageType == m2.Key.StorageType);
+        assert(m1.Key.StorageType == m2.Key.StorageType);
 
-            if (m1.Key == PersistedSettingsKey::MakeLastModifiedSettingsKey() || m2.Key == PersistedSettingsKey::MakeLastModifiedSettingsKey())
-                return m2.Key == PersistedSettingsKey::MakeLastModifiedSettingsKey();
+        if (m1.Key == PersistedSettingsKey::MakeLastModifiedSettingsKey() || m2.Key == PersistedSettingsKey::MakeLastModifiedSettingsKey())
+            return m2.Key == PersistedSettingsKey::MakeLastModifiedSettingsKey();
 
-            return m1.Key.Name < m2.Key.Name;
-        }
-    };
+        return m1.Key.Name < m2.Key.Name;
+    }
+};
 
 }
 
 SettingsDialog::SettingsDialog(
-    wxWindow* parent,
+    wxWindow * parent,
     std::shared_ptr<SettingsManager> settingsManager,
     std::shared_ptr<IGameControllerSettingsOptions> gameControllerSettingsOptions,
     ResourceLocator const & resourceLocator)
@@ -81,7 +81,7 @@ SettingsDialog::SettingsDialog(
         wxDefaultPosition,
         wxSize(400, 200),
         wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_NO_TASKBAR
-            | /* wxFRAME_FLOAT_ON_PARENT */ wxSTAY_ON_TOP, // See https://trac.wxwidgets.org/ticket/18535
+        | /* wxFRAME_FLOAT_ON_PARENT */ wxSTAY_ON_TOP, // See https://trac.wxwidgets.org/ticket/18535
         wxS("Settings Window"));
 
     this->Bind(wxEVT_CLOSE_WINDOW, &SettingsDialog::OnCloseButton, this);
@@ -165,11 +165,11 @@ SettingsDialog::SettingsDialog(
     // Wind and Waves
     //
 
-    wxPanel * windAndWavesPanel = new wxPanel(notebook);
+    wxPanel * windAndWavesAndFishesPanel = new wxPanel(notebook);
 
-    PopulateWindAndWavesPanel(windAndWavesPanel);
+    PopulateWindAndWavesAndFishesPanel(windAndWavesAndFishesPanel);
 
-    notebook->AddPage(windAndWavesPanel, _("Wind and Waves"));
+    notebook->AddPage(windAndWavesAndFishesPanel, _("Wind, Waves, and Fishes"));
 
 
     //
@@ -487,7 +487,7 @@ void SettingsDialog::OnDebugShipRenderModeRadioBox(wxCommandEvent & /*event*/)
     {
         mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::EdgeSprings);
     }
-    else if(5 == selectedDebugShipRenderMode)
+    else if (5 == selectedDebugShipRenderMode)
     {
         mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Decay);
     }
@@ -505,36 +505,36 @@ void SettingsDialog::OnVectorFieldRenderModeRadioBox(wxCommandEvent & /*event*/)
     auto selectedVectorFieldRenderMode = mVectorFieldRenderModeRadioBox->GetSelection();
     switch (selectedVectorFieldRenderMode)
     {
-        case 0:
-        {
-            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::None);
-            break;
-        }
+    case 0:
+    {
+        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::None);
+        break;
+    }
 
-        case 1:
-        {
-            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointVelocity);
-            break;
-        }
+    case 1:
+    {
+        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointVelocity);
+        break;
+    }
 
-        case 2:
-        {
-            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointForce);
-            break;
-        }
+    case 2:
+    {
+        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointForce);
+        break;
+    }
 
-        case 3:
-        {
-            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterVelocity);
-            break;
-        }
+    case 3:
+    {
+        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterVelocity);
+        break;
+    }
 
-        default:
-        {
-            assert(4 == selectedVectorFieldRenderMode);
-            mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterMomentum);
-            break;
-        }
+    default:
+    {
+        assert(4 == selectedVectorFieldRenderMode);
+        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterMomentum);
+        break;
+    }
     }
 
     OnLiveSettingsChanged();
@@ -750,7 +750,7 @@ void SettingsDialog::OnSaveSettingsButton(wxCommandEvent & /*event*/)
     ReconciliateSavePersistedSettings();
 }
 
-void SettingsDialog::OnRevertToDefaultsButton(wxCommandEvent& /*event*/)
+void SettingsDialog::OnRevertToDefaultsButton(wxCommandEvent & /*event*/)
 {
     //
     // Enforce default settings
@@ -890,7 +890,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                         0.5f,
                         mGameControllerSettingsOptions->GetMinNumMechanicalDynamicsIterationsAdjustment(),
                         mGameControllerSettingsOptions->GetMaxNumMechanicalDynamicsIterationsAdjustment()),
-                    mWarningIcon.get());
+                        mWarningIcon.get());
 
                 mechanicsSizer->Add(
                     mMechanicalQualitySlider,
@@ -1106,27 +1106,53 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
                     CellBorder);
             }
 
-            // Water Drag
+            // Water Friction Drag
             {
-                mWaterDragSlider = new SliderControl<float>(
+                mWaterFrictionDragSlider = new SliderControl<float>(
                     fluidsBox,
                     SliderWidth,
                     SliderHeight,
-                    _("Water Drag Adjust"),
-                    _("Adjusts the drag force exerted by sea water on physical bodies."),
+                    _("Water Friction Drag Adjust"),
+                    _("Adjusts the frictional drag force (or 'skin' drag) exerted by sea water on physical bodies."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::WaterDragAdjustment, value);
+                        this->mLiveSettings.SetValue(GameSettings::WaterFrictionDragAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions->GetMinWaterDragAdjustment(),
+                        mGameControllerSettingsOptions->GetMinWaterFrictionDragAdjustment(),
                         1.0f,
-                        mGameControllerSettingsOptions->GetMaxWaterDragAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxWaterFrictionDragAdjustment()));
 
                 fluidsSizer->Add(
-                    mWaterDragSlider,
+                    mWaterFrictionDragSlider,
                     wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Water Pressure Drag
+            {
+                mWaterPressureDragSlider = new SliderControl<float>(
+                    fluidsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Water Pressure Drag Adjust"),
+                    _("Adjusts the pressure drag force (or 'form' drag) exerted by sea water on physical bodies."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterPressureDragAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinWaterPressureDragAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxWaterPressureDragAdjustment()));
+
+                fluidsSizer->Add(
+                    mWaterPressureDragSlider,
+                    wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -1152,7 +1178,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
                 fluidsSizer->Add(
                     mWaterIntakeSlider,
-                    wxGBPosition(0, 2),
+                    wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -1177,7 +1203,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
                 fluidsSizer->Add(
                     mWaterCrazynessSlider,
-                    wxGBPosition(0, 3),
+                    wxGBPosition(0, 4),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -1202,7 +1228,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
 
                 fluidsSizer->Add(
                     mWaterDiffusionSpeedSlider,
-                    wxGBPosition(0, 4),
+                    wxGBPosition(0, 5),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -1219,7 +1245,7 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
         gridSizer->Add(
             fluidsBox,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 5),
+            wxGBSpan(1, 6),
             wxEXPAND | wxALL,
             CellBorder);
     }
@@ -1637,7 +1663,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
                         mGameControllerSettingsOptions->GetMinMaxBurningParticles(),
                         mGameControllerSettingsOptions->GetMaxMaxBurningParticles()),
-                    mWarningIcon.get());
+                        mWarningIcon.get());
 
                 fireSizer->Add(
                     mMaxBurningParticlesSlider,
@@ -1668,7 +1694,7 @@ void SettingsDialog::PopulateHeatPanel(wxPanel * panel)
 
 void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
 {
-    wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
     //
     // Row 1
@@ -1968,7 +1994,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
 
             // Do rain with storm
             {
-                mDoRainWithStormCheckBox = new wxCheckBox(stormBox, wxID_ANY, 
+                mDoRainWithStormCheckBox = new wxCheckBox(stormBox, wxID_ANY,
                     _("Spawn Rain"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
                 mDoRainWithStormCheckBox->SetToolTip(_("Enables or disables generation of rain during a storm."));
                 mDoRainWithStormCheckBox->Bind(
@@ -2171,7 +2197,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                 mDayLightCycleDurationSlider = new SliderControl<std::chrono::minutes::rep>(
                     skyBox,
                     SliderWidth,
-                    SliderHeight,
+                    -1,
                     _("Daylight Cycle Duration"),
                     _("The duration of a full daylight cycle (minutes)."),
                     [this](std::chrono::minutes::rep value)
@@ -2209,9 +2235,9 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
     panel->SetSizerAndFit(gridSizer);
 }
 
-void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
+void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
 {
-    wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
     //
     // Wind
@@ -2410,7 +2436,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
         gridSizer->Add(
             basalWavesBox,
             wxGBPosition(0, 1),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 3),
             wxEXPAND | wxALL,
             CellBorder);
     }
@@ -2491,7 +2517,155 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             CellBorder);
     }
 
+    //
+    // Fishes
+    //
 
+    {
+        wxStaticBox * fishesBox = new wxStaticBox(panel, wxID_ANY, _("Fishes"));
+
+        wxBoxSizer * fishesBoxSizer = new wxBoxSizer(wxVERTICAL);
+        fishesBoxSizer->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * fishesSizer = new wxGridBagSizer(0, 0);
+
+            // Number of Fishes
+            {
+                mNumberOfFishesSlider = new SliderControl<unsigned int>(
+                    fishesBox,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Number of Fishes"),
+                    _("The number of fishes in the ocean."),
+                    [this](unsigned int value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::NumberOfFishes, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<unsigned int>>(
+                        mGameControllerSettingsOptions->GetMinNumberOfFishes(),
+                        mGameControllerSettingsOptions->GetMaxNumberOfFishes()));
+
+                fishesSizer->Add(
+                    mNumberOfFishesSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Fish Size Multiplier
+            {
+                mFishSizeMultiplierSlider = new SliderControl<float>(
+                    fishesBox,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Fish Size Multiplier"),
+                    _("Magnifies or minimizes the physical size of fishes."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::FishSizeMultiplier, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinFishSizeMultiplier(),
+                        mGameControllerSettingsOptions->GetMaxFishSizeMultiplier()));
+
+                fishesSizer->Add(
+                    mFishSizeMultiplierSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Fish Speed Adjustment
+            {
+                mFishSpeedAdjustmentSlider = new SliderControl<float>(
+                    fishesBox,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Fish Speed Adjust"),
+                    _("Adjusts the speed of fishes."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::FishSpeedAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinFishSpeedAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxFishSpeedAdjustment()));
+
+                fishesSizer->Add(
+                    mFishSpeedAdjustmentSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Do shoaling
+            {
+                mDoFishShoalingCheckBox = new wxCheckBox(fishesBox, wxID_ANY,
+                    _("Enable Shoaling"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
+                mDoFishShoalingCheckBox->SetToolTip(_("Enables or disables shoaling behavior in fishes."));
+                mDoFishShoalingCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue<bool>(GameSettings::DoFishShoaling, event.IsChecked());
+                        OnLiveSettingsChanged();
+
+                        mFishShoalRadiusAdjustmentSlider->Enable(event.IsChecked());
+                    });
+
+                fishesSizer->Add(
+                    mDoFishShoalingCheckBox,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 3),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Shoal Radius Adjustment
+            {
+                mFishShoalRadiusAdjustmentSlider = new SliderControl<float>(
+                    fishesBox,
+                    SliderWidth,
+                    -1,
+                    _("Shoal Radius Adjust"),
+                    _("Adjusts the radius of the neighborhood tracked by fishes in a shoal."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::FishShoalRadiusAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinFishShoalRadiusAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxFishShoalRadiusAdjustment()));
+
+                fishesSizer->Add(
+                    mFishShoalRadiusAdjustmentSlider,
+                    wxGBPosition(1, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            fishesBoxSizer->Add(fishesSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        fishesBox->SetSizerAndFit(fishesBoxSizer);
+
+        gridSizer->Add(
+            fishesBox,
+            wxGBPosition(1, 1),
+            wxGBSpan(1, 4),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
 
     // Finalize panel
 
@@ -2500,7 +2674,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
 void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
 {
-    wxGridBagSizer* gridSizer = new wxGridBagSizer(0, 0);
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
     //
     // Tools
@@ -3155,7 +3329,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                 oceanSizer->Add(
                     mOceanDarkeningRateSlider,
-                    wxGBPosition(0,2),
+                    wxGBPosition(0, 2),
                     wxGBSpan(2, 1),
                     wxALL,
                     CellBorder);
@@ -3192,7 +3366,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 landRenderModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
 
                 {
-                    wxGridBagSizer* landRenderModeBoxSizer2 = new wxGridBagSizer(5, 5);
+                    wxGridBagSizer * landRenderModeBoxSizer2 = new wxGridBagSizer(5, 5);
 
                     mTextureLandRenderModeRadioButton = new wxRadioButton(landRenderModeBox, wxID_ANY, _("Texture"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
@@ -3369,7 +3543,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 fireRenderModeBoxSizer1->AddSpacer(3);
 
                 {
-                    wxFlexGridSizer* fireRenderModeBoxSizer2 = new wxFlexGridSizer(1, 5, 5);
+                    wxFlexGridSizer * fireRenderModeBoxSizer2 = new wxFlexGridSizer(1, 5, 5);
                     fireRenderModeBoxSizer2->SetFlexibleDirection(wxHORIZONTAL);
 
                     mMode1ShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, _("Mode 1"),
@@ -3697,10 +3871,10 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
 
             // Checkboxes
             {
-                wxStaticBoxSizer* checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, soundBox);
+                wxStaticBoxSizer * checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, soundBox);
 
                 {
-                    mPlayBreakSoundsCheckBox = new wxCheckBox(soundBox, wxID_ANY, 
+                    mPlayBreakSoundsCheckBox = new wxCheckBox(soundBox, wxID_ANY,
                         _("Play Break Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
                     mPlayBreakSoundsCheckBox->SetToolTip(_("Enables or disables the generation of sounds when materials break."));
                     mPlayBreakSoundsCheckBox->Bind(
@@ -3730,7 +3904,7 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                 }
 
                 {
-                    mPlayWindSoundCheckBox = new wxCheckBox(soundBox, wxID_ANY, 
+                    mPlayWindSoundCheckBox = new wxCheckBox(soundBox, wxID_ANY,
                         _("Play Wind Sounds"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator);
                     mPlayWindSoundCheckBox->SetToolTip(_("Enables or disables the generation of wind sounds."));
                     mPlayWindSoundCheckBox->Bind(
@@ -3798,7 +3972,7 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                     SliderHeight,
                     _("Spring Stiffness Adjust"),
                     _("This setting is for testing physical instability of the mass-spring network with high stiffness values;"
-                    " it is not meant for improving the rigidity of physical bodies."),
+                        " it is not meant for improving the rigidity of physical bodies."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::SpringStiffnessAdjustment, value);
@@ -3825,7 +3999,7 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                     SliderHeight,
                     _("Spring Damping Adjust"),
                     _("This setting is for testing physical instability of the mass-spring network with different damping values;"
-                    " it is not meant for improving the rigidity of physical bodies."),
+                        " it is not meant for improving the rigidity of physical bodies."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::SpringDampingAdjustment, value);
@@ -3846,7 +4020,7 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
 
             // Checkboxes
             {
-                wxStaticBoxSizer* checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, advancedBox);
+                wxStaticBoxSizer * checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, advancedBox);
 
                 {
                     wxString debugShipRenderModeChoices[] =
@@ -3865,9 +4039,63 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                     Connect(mDebugShipRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnDebugShipRenderModeRadioBox);
 
                     checkboxesSizer->Add(
-                        mDebugShipRenderModeRadioBox, 
-                        0, 
-                        wxEXPAND | wxALL, 
+                        mDebugShipRenderModeRadioBox,
+                        0,
+                        wxEXPAND | wxALL,
+                        5);
+                }
+
+                {
+                    wxStaticBox * extrasBox = new wxStaticBox(advancedBox, wxID_ANY, _("Ship Extra Draw Options"));
+
+                    wxBoxSizer * extrasBoxSizer = new wxBoxSizer(wxVERTICAL);
+                    extrasBoxSizer->AddSpacer(StaticBoxTopMargin);
+                    extrasBoxSizer->AddSpacer(3);
+
+                    {
+                        wxBoxSizer * extrasSizer = new wxBoxSizer(wxVERTICAL);
+
+                        {
+                            mShowFrontiersCheckBox = new wxCheckBox(extrasBox, wxID_ANY,
+                                _("Show Frontiers"), wxDefaultPosition, wxDefaultSize);
+                            mShowFrontiersCheckBox->SetToolTip(_("Enables or disables visualization of the frontiers of the ship."));
+                            mShowFrontiersCheckBox->Bind(
+                                wxEVT_COMMAND_CHECKBOX_CLICKED,
+                                [this](wxCommandEvent & event)
+                                {
+                                    mLiveSettings.SetValue(GameSettings::ShowShipFrontiers, event.IsChecked());
+                                    OnLiveSettingsChanged();
+                                });
+
+                            extrasSizer->Add(mShowFrontiersCheckBox, 0, wxALIGN_LEFT, 0);
+                        }
+
+                        extrasSizer->AddSpacer(3);
+
+                        {
+                            mShowAABBsCheckBox = new wxCheckBox(extrasBox, wxID_ANY,
+                                _("Show AABBs"), wxDefaultPosition, wxDefaultSize);
+                            mShowAABBsCheckBox->SetToolTip(_("Enables or disables visualization of the AABBs (Axis-Aligned Bounding Boxes)."));
+                            mShowAABBsCheckBox->Bind(
+                                wxEVT_COMMAND_CHECKBOX_CLICKED,
+                                [this](wxCommandEvent & event)
+                                {
+                                    mLiveSettings.SetValue(GameSettings::ShowAABBs, event.IsChecked());
+                                    OnLiveSettingsChanged();
+                                });
+
+                            extrasSizer->Add(mShowAABBsCheckBox, 0, wxALIGN_LEFT, 0);
+                        }
+
+                        extrasBoxSizer->Add(extrasSizer, 0, wxALL, StaticBoxInsetMargin);
+                    }
+
+                    extrasBox->SetSizerAndFit(extrasBoxSizer);
+
+                    checkboxesSizer->Add(
+                        extrasBox,
+                        0,
+                        wxEXPAND | wxALL,
                         5);
                 }
 
@@ -3887,9 +4115,9 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                     Connect(mVectorFieldRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnVectorFieldRenderModeRadioBox);
 
                     checkboxesSizer->Add(
-                        mVectorFieldRenderModeRadioBox, 
-                        0, 
-                        wxEXPAND | wxALL, 
+                        mVectorFieldRenderModeRadioBox,
+                        0,
+                        wxEXPAND | wxALL,
                         5);
                 }
 
@@ -4061,10 +4289,10 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
                     wxTextValidator validator(wxFILTER_INCLUDE_CHAR_LIST);
                     validator.SetCharIncludes(
                         wxS("abcdefghijklmnopqrstuvwxyz"
-                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                        "0123456789"
-                        " "
-                        "_-"));
+                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                            "0123456789"
+                            " "
+                            "_-"));
                     validator.SuppressBellOnError();
 
                     mSaveSettingsNameTextCtrl = new wxTextCtrl(
@@ -4146,7 +4374,9 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mWaterDensitySlider->SetValue(settings.GetValue<float>(GameSettings::WaterDensityAdjustment));
 
-    mWaterDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDragAdjustment));
+    mWaterFrictionDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterFrictionDragAdjustment));
+
+    mWaterPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterPressureDragAdjustment));
 
     mWaterIntakeSlider->SetValue(settings.GetValue<float>(GameSettings::WaterIntakeAdjustment));
 
@@ -4208,24 +4438,25 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDayLightCycleDurationSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::DayLightCycleDuration).count());
     mDayLightCycleDurationSlider->Enable(settings.GetValue<bool>(GameSettings::DoDayLightCycle));
 
-    // Wind and Waves
+    // Wind, Waves, and Fishes
 
     mWindSpeedBaseSlider->SetValue(settings.GetValue<float>(GameSettings::WindSpeedBase));
-
     mModulateWindCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoModulateWind));
-
     mWindGustAmplitudeSlider->SetValue(settings.GetValue<float>(GameSettings::WindSpeedMaxFactor));
     mWindGustAmplitudeSlider->Enable(settings.GetValue<bool>(GameSettings::DoModulateWind));
 
     mBasalWaveHeightAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BasalWaveHeightAdjustment));
-
     mBasalWaveLengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BasalWaveLengthAdjustment));
-
     mBasalWaveSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BasalWaveSpeedAdjustment));
-
     mTsunamiRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::TsunamiRate).count());
-
     mRogueWaveRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::RogueWaveRate).count());
+
+    mNumberOfFishesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfFishes));
+    mFishSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::FishSizeMultiplier));
+    mFishSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishSpeedAdjustment));
+    mDoFishShoalingCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoFishShoaling));
+    mFishShoalRadiusAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishShoalRadiusAdjustment));
+    mFishShoalRadiusAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoFishShoaling));
 
     // Interactions
 
@@ -4270,23 +4501,23 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     auto oceanRenderMode = settings.GetValue<OceanRenderModeType>(GameSettings::OceanRenderMode);
     switch (oceanRenderMode)
     {
-        case OceanRenderModeType::Texture:
-        {
-            mTextureOceanRenderModeRadioButton->SetValue(true);
-            break;
-        }
+    case OceanRenderModeType::Texture:
+    {
+        mTextureOceanRenderModeRadioButton->SetValue(true);
+        break;
+    }
 
-        case OceanRenderModeType::Depth:
-        {
-            mDepthOceanRenderModeRadioButton->SetValue(true);
-            break;
-        }
+    case OceanRenderModeType::Depth:
+    {
+        mDepthOceanRenderModeRadioButton->SetValue(true);
+        break;
+    }
 
-        case OceanRenderModeType::Flat:
-        {
-            mFlatOceanRenderModeRadioButton->SetValue(true);
-            break;
-        }
+    case OceanRenderModeType::Flat:
+    {
+        mFlatOceanRenderModeRadioButton->SetValue(true);
+        break;
+    }
     }
 
     mTextureOceanComboBox->Select(static_cast<int>(settings.GetValue<size_t>(GameSettings::TextureOceanTextureIndex)));
@@ -4311,17 +4542,17 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     auto landRenderMode = settings.GetValue<LandRenderModeType>(GameSettings::LandRenderMode);
     switch (landRenderMode)
     {
-        case LandRenderModeType::Texture:
-        {
-            mTextureLandRenderModeRadioButton->SetValue(true);
-            break;
-        }
+    case LandRenderModeType::Texture:
+    {
+        mTextureLandRenderModeRadioButton->SetValue(true);
+        break;
+    }
 
-        case LandRenderModeType::Flat:
-        {
-            mFlatLandRenderModeRadioButton->SetValue(true);
-            break;
-        }
+    case LandRenderModeType::Flat:
+    {
+        mFlatLandRenderModeRadioButton->SetValue(true);
+        break;
+    }
     }
 
     mTextureLandComboBox->Select(static_cast<int>(settings.GetValue<size_t>(GameSettings::TextureLandTextureIndex)));
@@ -4353,29 +4584,29 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     auto shipFlameRenderMode = settings.GetValue<ShipFlameRenderModeType>(GameSettings::ShipFlameRenderMode);
     switch (shipFlameRenderMode)
     {
-        case ShipFlameRenderModeType::Mode1:
-        {
-            mMode1ShipFlameRenderModeRadioButton->SetValue(true);
-            break;
-        }
+    case ShipFlameRenderModeType::Mode1:
+    {
+        mMode1ShipFlameRenderModeRadioButton->SetValue(true);
+        break;
+    }
 
-        case ShipFlameRenderModeType::Mode2:
-        {
-            mMode2ShipFlameRenderModeRadioButton->SetValue(true);
-            break;
-        }
+    case ShipFlameRenderModeType::Mode2:
+    {
+        mMode2ShipFlameRenderModeRadioButton->SetValue(true);
+        break;
+    }
 
-        case ShipFlameRenderModeType::Mode3:
-        {
-            mMode3ShipFlameRenderModeRadioButton->SetValue(true);
-            break;
-        }
+    case ShipFlameRenderModeType::Mode3:
+    {
+        mMode3ShipFlameRenderModeRadioButton->SetValue(true);
+        break;
+    }
 
-        case ShipFlameRenderModeType::NoDraw:
-        {
-            mNoDrawShipFlameRenderModeRadioButton->SetValue(true);
-            break;
-        }
+    case ShipFlameRenderModeType::NoDraw:
+    {
+        mNoDrawShipFlameRenderModeRadioButton->SetValue(true);
+        break;
+    }
     }
 
     mDrawHeatBlasterFlameCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DrawHeatBlasterFlame));
@@ -4405,81 +4636,85 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     auto debugShipRenderMode = settings.GetValue<DebugShipRenderModeType>(GameSettings::DebugShipRenderMode);
     switch (debugShipRenderMode)
     {
-        case DebugShipRenderModeType::None:
-        {
-            mDebugShipRenderModeRadioBox->SetSelection(0);
-            break;
-        }
-
-        case DebugShipRenderModeType::Wireframe:
-        {
-            mDebugShipRenderModeRadioBox->SetSelection(1);
-            break;
-        }
-
-        case DebugShipRenderModeType::Points:
-        {
-            mDebugShipRenderModeRadioBox->SetSelection(2);
-            break;
-        }
-
-        case DebugShipRenderModeType::Springs:
-        {
-            mDebugShipRenderModeRadioBox->SetSelection(3);
-            break;
-        }
-
-        case DebugShipRenderModeType::EdgeSprings:
-        {
-            mDebugShipRenderModeRadioBox->SetSelection(4);
-            break;
-        }
-
-        case DebugShipRenderModeType::Decay:
-        {
-            mDebugShipRenderModeRadioBox->SetSelection(5);
-            break;
-        }
-
-        case DebugShipRenderModeType::Structure:
-        {
-            mDebugShipRenderModeRadioBox->SetSelection(6);
-            break;
-        }
+    case DebugShipRenderModeType::None:
+    {
+        mDebugShipRenderModeRadioBox->SetSelection(0);
+        break;
     }
+
+    case DebugShipRenderModeType::Wireframe:
+    {
+        mDebugShipRenderModeRadioBox->SetSelection(1);
+        break;
+    }
+
+    case DebugShipRenderModeType::Points:
+    {
+        mDebugShipRenderModeRadioBox->SetSelection(2);
+        break;
+    }
+
+    case DebugShipRenderModeType::Springs:
+    {
+        mDebugShipRenderModeRadioBox->SetSelection(3);
+        break;
+    }
+
+    case DebugShipRenderModeType::EdgeSprings:
+    {
+        mDebugShipRenderModeRadioBox->SetSelection(4);
+        break;
+    }
+
+    case DebugShipRenderModeType::Decay:
+    {
+        mDebugShipRenderModeRadioBox->SetSelection(5);
+        break;
+    }
+
+    case DebugShipRenderModeType::Structure:
+    {
+        mDebugShipRenderModeRadioBox->SetSelection(6);
+        break;
+    }
+    }
+
+    mShowFrontiersCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipFrontiers));
+
+    mShowAABBsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowAABBs));
 
     auto vectorFieldRenderMode = settings.GetValue<VectorFieldRenderModeType>(GameSettings::VectorFieldRenderMode);
     switch (vectorFieldRenderMode)
     {
-        case VectorFieldRenderModeType::None:
-        {
-            mVectorFieldRenderModeRadioBox->SetSelection(0);
-            break;
-        }
+    case VectorFieldRenderModeType::None:
+    {
+        mVectorFieldRenderModeRadioBox->SetSelection(0);
+        break;
+    }
 
-        case VectorFieldRenderModeType::PointVelocity:
-        {
-            mVectorFieldRenderModeRadioBox->SetSelection(1);
-            break;
-        }
+    case VectorFieldRenderModeType::PointVelocity:
+    {
+        mVectorFieldRenderModeRadioBox->SetSelection(1);
+        break;
+    }
 
-        case VectorFieldRenderModeType::PointForce:
-        {
-            mVectorFieldRenderModeRadioBox->SetSelection(2);
-            break;
-        }
+    case VectorFieldRenderModeType::PointForce:
+    {
+        mVectorFieldRenderModeRadioBox->SetSelection(2);
+        break;
+    }
 
-        case VectorFieldRenderModeType::PointWaterVelocity:
-        {
-            mVectorFieldRenderModeRadioBox->SetSelection(3);
-            break;
-        }
+    case VectorFieldRenderModeType::PointWaterVelocity:
+    {
+        mVectorFieldRenderModeRadioBox->SetSelection(3);
+        break;
+    }
 
-        case VectorFieldRenderModeType::PointWaterMomentum:
-        {
-            mVectorFieldRenderModeRadioBox->SetSelection(4);
-            break;
-        }
+    case VectorFieldRenderModeType::PointWaterMomentum:
+    {
+        mVectorFieldRenderModeRadioBox->SetSelection(4);
+        break;
+    }
     }
 }
 

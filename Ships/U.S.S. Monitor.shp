@@ -1,0 +1,14 @@
+{
+	"structure_image":"uss_monitor_structure.png.dat",
+        "electrical_image":"uss_monitor_electrical.png.dat",
+	"ship_name":"U.S.S. Monitor",
+	"created_by":"TopHatLemons",
+	"year_built":"1862",
+	"electrical_panel":{
+
+		"0": {"panel_x":-1, "panel_y":0, "label":"Engine" },
+		"1": {"panel_x":0, "panel_y":0, "label":"Engine" },
+
+		"6": {"panel_x":1, "panel_y":0, "label":"Smoke" }
+	}
+}

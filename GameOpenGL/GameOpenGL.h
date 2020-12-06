@@ -193,6 +193,7 @@ public:
     static int MaxViewportHeight;
     static int MaxTextureSize;
     static int MaxRenderbufferSize;
+    static int MaxOpenGLVersionMajor;
 
     static bool AvoidGlFinish;
 

@@ -39,10 +39,8 @@ public:
 
     enum class DetachOptions
     {
-        DoNotGenerateDebris = 0,
+        None = 0,
         GenerateDebris = 1,
-
-        DoNotFireDestroyEvent = 0,
         FireDestroyEvent = 2,
     };
 
@@ -532,6 +530,7 @@ public:
         , mIsRopeBuffer(mBufferElementCount, shipPointCount, false)
         // Mechanical dynamics
         , mPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mFactoryPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mSpringForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mNonSpringForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -807,6 +806,12 @@ public:
 
     void Query(ElementIndex pointElementIndex) const;
 
+    // For debugging
+    void ColorPoint(
+        ElementIndex pointIndex,
+        rgbaColor const & color);
+
+    // For experiments
     Geometry::AABB GetAABB() const
     {
         Geometry::AABB box;
@@ -917,6 +922,11 @@ public:
         vec2f const & position) noexcept
     {
         mPositionBuffer[pointElementIndex] = position;
+    }
+
+    vec2f const & GetFactoryPosition(ElementIndex pointElementIndex) const noexcept
+    {
+        return mFactoryPositionBuffer[pointElementIndex];
     }
 
     vec2f const & GetVelocity(ElementIndex pointElementIndex) const noexcept
@@ -1073,6 +1083,9 @@ public:
      * The integration factor is the quantity which, when multiplied with the force on the point,
      * yields the change in position that occurs during a time interval equal to the dynamics simulation step.
      *
+     * It basically is:
+     *      dt^2 / mass
+     *
      * Only valid after a call to UpdateMasses() and when
      * neither water quantities nor masses have changed since then.
      */
@@ -1107,6 +1120,18 @@ public:
         mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = CalculateIntegrationFactorTimeCoefficient(
             mCurrentNumMechanicalDynamicsIterations,
             mFrozenCoefficientBuffer[pointElementIndex]);
+    }
+
+    void ResetForceRenderBuffer()
+    {
+        mForceRenderBuffer.fill(vec2f::zero());
+    }
+
+    void SetForceRenderVector(
+        ElementIndex pointElementIndex,
+        vec2f const & force) noexcept
+    {
+        mForceRenderBuffer[pointElementIndex] = force;
     }
 
     //
@@ -1679,7 +1704,6 @@ public:
         mIsWholeColorBufferDirty = true;
     }
 
-
     //
     // Temporary buffer
     //
@@ -1779,6 +1803,7 @@ private:
     //
 
     Buffer<vec2f> mPositionBuffer;
+    Buffer<vec2f> mFactoryPositionBuffer;
     Buffer<vec2f> mVelocityBuffer;
     Buffer<vec2f> mSpringForceBuffer;
     Buffer<vec2f> mNonSpringForceBuffer;

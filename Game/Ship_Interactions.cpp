@@ -308,12 +308,14 @@ void Ship::Pull(
                 highlightStrength)));
 }
 
-void Ship::DestroyAt(
+bool Ship::DestroyAt(
     vec2f const & targetPos,
     float radiusFraction,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
+    bool hasDestroyed = false;
+
     //
     // Destroy points probabilistically - probability is one at
     // distance = 0 and zero at distance = radius
@@ -359,22 +361,33 @@ void Ship::DestroyAt(
                         GameParameters::MaxDebrisParticlesVelocity);
 
                     // Detach
-                    mPoints.Detach(
+                    DetachPointForDestroy(
                         pointIndex,
                         detachVelocity,
-                        Points::DetachOptions::GenerateDebris
-                        | Points::DetachOptions::FireDestroyEvent,
                         currentSimulationTime,
                         gameParameters);
+
+                    // Record event, if requested to
+                    if (mEventRecorder != nullptr)
+                        mEventRecorder->RecordEvent<RecordedPointDetachForDestroyEvent>(
+                            pointIndex,
+                            detachVelocity,
+                            currentSimulationTime);
+
+                    hasDestroyed = true;
                 }
             }
             else if (Points::EphemeralType::AirBubble == mPoints.GetEphemeralType(pointIndex))
             {
                 // Destroy
                 mPoints.DestroyEphemeralParticle(pointIndex);
+
+                hasDestroyed = true;
             }
         }
     }
+
+    return hasDestroyed;
 }
 
 void Ship::RepairAt(
@@ -787,8 +800,8 @@ void Ship::RepairAt(
                 {
                     // Check if eligible
                     bool hasDeletedSubsprings = false;
-                    for (auto fss : mTriangles.GetFactorySubSprings(fct))
-                        hasDeletedSubsprings |= mSprings.IsDeleted(fss);
+                    for (auto ss : mTriangles.GetSubSprings(fct).SpringIndices)
+                        hasDeletedSubsprings |= mSprings.IsDeleted(ss);
 
                     if (!hasDeletedSubsprings)
                     {
@@ -1233,8 +1246,7 @@ void Ship::ApplyThanosSnap(
             mPoints.Detach(
                 pointIndex,
                 mPoints.GetVelocity(pointIndex) + detachVelocity,
-                Points::DetachOptions::DoNotGenerateDebris
-                | Points::DetachOptions::DoNotFireDestroyEvent,
+                Points::DetachOptions::None,
                 currentSimulationTime,
                 gameParameters);
 
@@ -1281,12 +1293,18 @@ bool Ship::QueryNearestPointAt(
     vec2f const & targetPos,
     float radius) const
 {
+    //
+    // Find point
+    //
+
+    bool pointWasFound = false;
+
     float const squareRadius = radius * radius;
 
     ElementIndex bestPointIndex = NoneElementIndex;
     float bestSquareDistance = std::numeric_limits<float>::max();
 
-    for (auto pointIndex : mPoints)
+    for (auto const pointIndex : mPoints)
     {
         if (mPoints.IsActive(pointIndex))
         {
@@ -1302,10 +1320,37 @@ bool Ship::QueryNearestPointAt(
     if (NoneElementIndex != bestPointIndex)
     {
         mPoints.Query(bestPointIndex);
-        return true;
+        pointWasFound = true;
     }
 
-    return false;
+
+    //
+    // Find triangle enclosing target - if any
+    //
+
+    ElementIndex enclosingTriangleIndex = NoneElementIndex;
+    for (auto const triangleIndex : mTriangles)
+    {
+        if ((mPoints.GetPosition(mTriangles.GetPointBIndex(triangleIndex)) - mPoints.GetPosition(mTriangles.GetPointAIndex(triangleIndex)))
+            .cross(targetPos - mPoints.GetPosition(mTriangles.GetPointAIndex(triangleIndex))) < 0
+            &&
+            (mPoints.GetPosition(mTriangles.GetPointCIndex(triangleIndex)) - mPoints.GetPosition(mTriangles.GetPointBIndex(triangleIndex)))
+            .cross(targetPos - mPoints.GetPosition(mTriangles.GetPointBIndex(triangleIndex))) < 0
+            &&
+            (mPoints.GetPosition(mTriangles.GetPointAIndex(triangleIndex)) - mPoints.GetPosition(mTriangles.GetPointCIndex(triangleIndex)))
+            .cross(targetPos - mPoints.GetPosition(mTriangles.GetPointCIndex(triangleIndex))) < 0)
+        {
+            enclosingTriangleIndex = triangleIndex;
+            break;
+        }
+    }
+
+    if (NoneElementIndex != enclosingTriangleIndex)
+    {
+        LogMessage("TriangleIndex: ", enclosingTriangleIndex);
+    }
+
+    return pointWasFound;
 }
 
 std::optional<vec2f> Ship::FindSuitableLightningTarget() const
@@ -1496,6 +1541,34 @@ void Ship::SetEngineControllerState(
         electricalElementId,
         telegraphValue,
         gameParameters);
+}
+
+bool Ship::DestroyTriangle(ElementIndex triangleIndex)
+{
+    if (triangleIndex < mTriangles.GetElementCount()
+        && !mTriangles.IsDeleted(triangleIndex))
+    {
+        mTriangles.Destroy(triangleIndex);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool Ship::RestoreTriangle(ElementIndex triangleIndex)
+{
+    if (triangleIndex < mTriangles.GetElementCount()
+        && mTriangles.IsDeleted(triangleIndex))
+    {
+        mTriangles.Restore(triangleIndex);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 }

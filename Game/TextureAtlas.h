@@ -42,14 +42,15 @@ struct TextureAtlasFrameMetadata
 {
 public:
 
-    float TextureSpaceWidth;
-    float TextureSpaceHeight;
+    float TextureSpaceWidth; // Width in [0.0, 1.0] space (where 1.0 is the atlas' width)
+    float TextureSpaceHeight; // Height in [0.0, 1.0] space (where 1.0 is the atlas' height)
 
-    vec2f TextureCoordinatesBottomLeft;
-    vec2f TextureCoordinatesTopRight;
+    vec2f TextureCoordinatesBottomLeft; // In [0.0, 1.0] space
+    vec2f TextureCoordinatesAnchorCenter; // In [0.0, 1.0] space
+    vec2f TextureCoordinatesTopRight; // In [0.0, 1.0] space
 
-    int FrameLeftX;
-    int FrameBottomY;
+    int FrameLeftX; // In pixel-coordinate space
+    int FrameBottomY; // In pixel-coordinate space
 
     TextureFrameMetadata<TextureGroups> FrameMetadata;
 
@@ -57,12 +58,14 @@ public:
         float textureSpaceWidth,
         float textureSpaceHeight,
         vec2f textureCoordinatesBottomLeft,
+        vec2f textureCoordinatesAnchorCenter,
         vec2f textureCoordinatesTopRight,
         int frameLeftX,
         int frameBottomY,
         TextureFrameMetadata<TextureGroups> frameMetadata)
         : TextureSpaceWidth(textureSpaceWidth)
         , TextureSpaceHeight(textureSpaceHeight)
+        , TextureCoordinatesAnchorCenter(textureCoordinatesAnchorCenter)
         , TextureCoordinatesBottomLeft(textureCoordinatesBottomLeft)
         , TextureCoordinatesTopRight(textureCoordinatesTopRight)
         , FrameLeftX(frameLeftX)

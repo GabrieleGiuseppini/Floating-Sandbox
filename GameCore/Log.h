@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Utils.h"
+#include "Version.h"
 
 #include <cassert>
 #include <chrono>
@@ -58,6 +59,8 @@ public:
 		, mStoredMessages()
         , mMutex()
 	{
+        // Log current version
+        Log(APPLICATION_NAME_WITH_LONG_VERSION);
 	}
 
 	Logger(Logger const &) = delete;
@@ -65,8 +68,7 @@ public:
 	Logger & operator=(Logger const &) = delete;
 	Logger & operator=(Logger &&) = delete;
 
-	void RegisterListener(
-		std::function<void(std::string const & message)> listener)
+	void RegisterListener(std::function<void(std::string const & message)> listener)
 	{
 		assert(!mCurrentListener);
 
@@ -84,11 +86,12 @@ public:
 
 	void UnregisterListener()
 	{
-		assert(!!mCurrentListener);
+        if (!!mCurrentListener)
+        {
+            std::scoped_lock lock(mMutex);
 
-        std::scoped_lock lock(mMutex);
-
-		mCurrentListener = {};
+            mCurrentListener = {};
+        }
 	}
 
 	template<typename...TArgs>

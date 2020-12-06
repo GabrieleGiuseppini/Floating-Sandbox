@@ -351,7 +351,7 @@ private:
             return PanelToThreadMessage(MessageType::Exit, std::filesystem::path());
         }
 
-        PanelToThreadMessage(PanelToThreadMessage && other)
+        PanelToThreadMessage(PanelToThreadMessage && other) noexcept
             : mMessageType(other.mMessageType)
             , mDirectoryPath(std::move(other.mDirectoryPath))
         {}
@@ -376,7 +376,7 @@ private:
         {}
 
         MessageType const mMessageType;
-        std::filesystem::path const mDirectoryPath;
+        std::filesystem::path mDirectoryPath;
     };
 
     // Single message holder - thread only cares about last message
@@ -518,6 +518,6 @@ private:
 
     // Scan interrupted ack
     bool mThreadToPanelScanInterruptAck;
-    std::mutex mThreadToPanelScanInterruptAckMutex;    
+    std::mutex mThreadToPanelScanInterruptAckMutex;
     std::condition_variable mThreadToPanelScanInterruptAckEvent;
 };

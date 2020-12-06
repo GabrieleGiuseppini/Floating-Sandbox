@@ -377,7 +377,7 @@ public:
         assert(mFactorySuperTrianglesBuffer[springElementIndex].contains(
             [superTriangleElementIndex](auto st)
             {
-                return st = superTriangleElementIndex;
+                return st == superTriangleElementIndex;
             }));
 
         mSuperTrianglesBuffer[springElementIndex].push_back(superTriangleElementIndex);

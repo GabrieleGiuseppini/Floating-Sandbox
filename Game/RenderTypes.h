@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include <GameCore/Vectors.h>
+
 #include <cstdint>
 
 namespace Render {
@@ -87,6 +89,24 @@ struct RenderStatistics
 //
 // Misc
 //
+
+/*
+ * Frontier coloring metadata.
+ */
+#pragma pack(push, 1)
+struct FrontierColor
+{
+    vec3f frontierBaseColor;
+    float positionalProgress;
+
+    FrontierColor(
+        vec3f _frontierBaseColor,
+        float _positionalProgress)
+        : frontierBaseColor(_frontierBaseColor)
+        , positionalProgress(_positionalProgress)
+    {}
+};
+#pragma pack(pop)
 
 /*
  * The positions at which UI elements may be anchored.

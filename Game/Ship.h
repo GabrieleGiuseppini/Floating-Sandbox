@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include "EventRecorder.h"
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
 #include "MaterialDatabase.h"
@@ -12,6 +13,7 @@
 #include "RenderContext.h"
 #include "ShipDefinition.h"
 
+#include <GameCore/AABBSet.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/RunningAverage.h>
 #include <GameCore/TaskThreadPool.h>
@@ -38,7 +40,8 @@ public:
         Points && points,
         Springs && springs,
         Triangles && triangles,
-        ElectricalElements && electricalElements);
+        ElectricalElements && electricalElements,
+        Frontiers && frontiers);
 
     void Announce();
 
@@ -54,13 +57,23 @@ public:
     inline auto const & GetPoints() const { return mPoints; }
     inline auto & GetPoints() { return mPoints; }
 
-    bool IsUnderwater(ElementIndex pointElementIndex) const;
+    bool IsUnderwater(ElementIndex pointElementIndex) const
+    {
+        return mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex));
+    }
+
+    void SetEventRecorder(EventRecorder * eventRecorder);
+
+    bool ReplayRecordedEvent(
+        RecordedEvent const & event,
+        GameParameters const & gameParameters);
 
     void Update(
         float currentSimulationTime,
 		Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters,
-        Render::RenderContext const & renderContext);
+        Render::RenderContext const & renderContext,
+        Geometry::AABBSet & aabbSet);
 
     void RenderUpload(
         GameParameters const & gameParameters,
@@ -111,7 +124,7 @@ public:
         vec2f const & target,
         GameParameters const & gameParameters);
 
-    void DestroyAt(
+    bool DestroyAt(
         vec2f const & targetPos,
         float radiusFraction,
         float currentSimulationTime,
@@ -226,6 +239,10 @@ public:
         int telegraphValue,
         GameParameters const & gameParameters);
 
+    bool DestroyTriangle(ElementIndex triangleIndex);
+
+    bool RestoreTriangle(ElementIndex triangleIndex);
+
 private:
 
     /////////////////////////////////////////////////////////////////////////
@@ -236,7 +253,8 @@ private:
 
     void ApplyWorldForces(
         Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters);
+        GameParameters const & gameParameters,
+        Geometry::AABBSet & aabbSet);
 
     void ApplySpringsForces_ByPoints(GameParameters const & gameParameters);
 
@@ -371,6 +389,21 @@ private:
         return mConnectedComponentSizes[static_cast<size_t>(connCompId)];
     }
 
+    inline void DetachPointForDestroy(
+        ElementIndex pointIndex,
+        vec2f const & detachVelocity,
+        float currentSimulationTime,
+        GameParameters const & gameParameters)
+    {
+        mPoints.Detach(
+            pointIndex,
+            detachVelocity,
+            Points::DetachOptions::GenerateDebris
+            | Points::DetachOptions::FireDestroyEvent,
+            currentSimulationTime,
+            gameParameters);
+    }
+
 private:
 
     /////////////////////////////////////////////////////////////////////////
@@ -489,6 +522,7 @@ private:
     MaterialDatabase const & mMaterialDatabase;
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
     std::shared_ptr<TaskThreadPool> mTaskThreadPool;
+    EventRecorder * mEventRecorder;
 
     // The (initial) world size of  the ship
     vec2f const mSize;
@@ -498,6 +532,7 @@ private:
     Springs mSprings;
     Triangles mTriangles;
     ElectricalElements mElectricalElements;
+    Frontiers mFrontiers;
 
     // Pinned points
     PinnedPoints mPinnedPoints;

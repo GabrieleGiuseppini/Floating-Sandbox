@@ -8,6 +8,7 @@
 #include "GameParameters.h"
 #include "RenderContext.h"
 
+#include <GameCore/GameMath.h>
 #include <GameCore/GameRandomEngine.h>
 
 #include <memory>
@@ -43,8 +44,10 @@ public:
                 cloud->Id,
                 cloud->X,
                 cloud->Y,
+                cloud->Z,
                 cloud->Scale,
-                cloud->Darkening);
+                cloud->Darkening,
+                cloud->GrowthProgress);
         }
 
         for (auto const & cloud : mStormClouds)
@@ -53,8 +56,10 @@ public:
                 cloud->Id,
                 cloud->X,
                 cloud->Y,
+                cloud->Z,
                 cloud->Scale,
-                cloud->Darkening);
+                cloud->Darkening,
+                cloud->GrowthProgress);
         }
 
         renderContext.UploadCloudsEnd();
@@ -66,43 +71,52 @@ private:
     {
     public:
 
-        uint32_t const Id; // Not consecutive, only guaranteed to be sticky and unique across all clouds
+        uint32_t const Id; // Not consecutive, only guaranteed to be sticky and unique across all clouds (used as texture frame index)
         float X;
-        float const Y;
+        float const Y; // 0.0 -> 1.0 (above horizon)
+        float const Z; // 0.0 -> 1.0
         float Scale;
         float Darkening; // 0.0: dark, 1.0: light
+        float GrowthProgress;
 
         Cloud(
             uint32_t id,
             float initialX,
             float y,
+            float z,
             float scale,
-            float darkening)
+            float darkening,
+            float linearSpeedX,
+            float initialGrowthProgressPhase)
             : Id(id)
             , X(initialX)
             , Y(y)
+            , Z(z)
             , Scale(scale)
             , Darkening(darkening)
-            , mLinearSpeedX(GameRandomEngine::GetInstance().GenerateUniformReal(0.003f, 0.007f))
-            , mPeriodicSpeedXAmp(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.00006f)
-            , mPeriodicSpeedXPeriod(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() * 0.01f)
+            , GrowthProgress(0.0f)
+            , mLinearSpeedX(linearSpeedX)
+            , mGrowthProgressPhase(initialGrowthProgressPhase)
         {
         }
 
-        inline void Update(
-            float currentSimulationTime,
-            float cloudSpeed)
+        inline void Update(float globalCloudSpeed)
         {
-            float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
+            X += mLinearSpeedX * globalCloudSpeed * GameParameters::SimulationStepTimeDuration<float>;
 
-            X += (mLinearSpeedX * cloudSpeed * dt) + (mPeriodicSpeedXAmp * sinf(mPeriodicSpeedXPeriod * cloudSpeed * currentSimulationTime));
+            float const growthProgressSpeed =
+                (1.0f / 45.0f) // Basal velocity
+                + std::fabsf(globalCloudSpeed) / (400.0f);
+
+            mGrowthProgressPhase += growthProgressSpeed * GameParameters::SimulationStepTimeDuration<float>;
+
+            GrowthProgress = 0.3f + (1.0f + std::sinf(mGrowthProgressPhase * Pi<float> * 2.0f)) * 0.7f / 2.0f;
         }
 
     private:
 
         float const mLinearSpeedX;
-        float const mPeriodicSpeedXAmp;
-        float const mPeriodicSpeedXPeriod;
+        float mGrowthProgressPhase;
     };
 
     uint32_t mLastCloudId;

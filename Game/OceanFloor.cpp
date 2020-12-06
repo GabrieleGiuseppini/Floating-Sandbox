@@ -77,12 +77,12 @@ void OceanFloor::Upload(
     //
 
     // Find index of leftmost sample, and its corresponding world X
-    auto const sampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorldLeft() + GameParameters::HalfMaxWorldWidth) / Dx);
+    auto const sampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorld().TopLeft.x + GameParameters::HalfMaxWorldWidth) / Dx);
     float sampleIndexX = -GameParameters::HalfMaxWorldWidth + (Dx * sampleIndex);
 
     // Calculate number of samples required to cover screen from leftmost sample
     // up to the visible world right (included)
-    float const coverageWidth = renderContext.GetVisibleWorldRight() - sampleIndexX;
+    float const coverageWidth = renderContext.GetVisibleWorld().BottomRight.x - sampleIndexX;
     size_t const numberOfSamplesToRender = static_cast<size_t>(ceil(coverageWidth / Dx));
 
     if (numberOfSamplesToRender >= RenderSlices<size_t>)

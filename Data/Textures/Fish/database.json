@@ -1,0 +1,29 @@
+[
+
+{
+	"groupName": "Fish",
+	"worldScaling": 1.0,
+	"frames":[
+		{				
+			"filename": "gilthead_bream_\\d+"
+		}
+		,
+		{	
+			"filename": "barracuda_\\d+"
+		}
+		,
+		{	
+			"filename": "mako_\\d+"
+		}
+		,
+		{	
+			"filename": "queen_snapper_\\d+"
+		}
+		,
+		{	
+			"filename": "tuna_\\d+"
+		}
+	]
+}
+
+]

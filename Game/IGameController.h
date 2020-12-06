@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "EventRecorder.h"
 #include "IGameEventHandlers.h"
 #include "ResourceLocator.h"
 #include "ShipMetadata.h"
@@ -15,7 +16,9 @@
 #include <GameCore/UniqueBuffer.h>
 #include <GameCore/Vectors.h>
 
+#include <chrono>
 #include <filesystem>
+#include <functional>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,7 +36,7 @@ struct IGameController
     virtual void RegisterWavePhenomenaEventHandler(IWavePhenomenaGameEventHandler * handler) = 0;
     virtual void RegisterCombustionEventHandler(ICombustionGameEventHandler * handler) = 0;
     virtual void RegisterStatisticsEventHandler(IStatisticsGameEventHandler * handler) = 0;
-	virtual void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler * handler) = 0;
+    virtual void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler * handler) = 0;
     virtual void RegisterElectricalElementEventHandler(IElectricalElementGameEventHandler * handler) = 0;
     virtual void RegisterGenericEventHandler(IGenericGameEventHandler * handler) = 0;
 
@@ -51,6 +54,10 @@ struct IGameController
 
     virtual void PulseUpdateAtNextGameIteration() = 0;
 
+    virtual void StartRecordingEvents(std::function<void(uint32_t, RecordedEvent const &)> onEventCallback) = 0;
+    virtual RecordedEvents StopRecordingEvents() = 0;
+    virtual void ReplayRecordedEvent(RecordedEvent const & event) = 0;
+
 
     //
     // Game Control and notifications
@@ -58,12 +65,12 @@ struct IGameController
 
     virtual void SetPaused(bool isPaused) = 0;
     virtual void SetMoveToolEngaged(bool isEngaged) = 0;
-	virtual void DisplaySettingsLoadedNotification() = 0;
+    virtual void DisplaySettingsLoadedNotification() = 0;
 
-	virtual bool GetShowStatusText() const = 0;
+    virtual bool GetShowStatusText() const = 0;
     virtual void SetShowStatusText(bool value) = 0;
-	virtual bool GetShowExtendedStatusText() const = 0;
-	virtual void SetShowExtendedStatusText(bool value) = 0;
+    virtual bool GetShowExtendedStatusText() const = 0;
+    virtual void SetShowExtendedStatusText(bool value) = 0;
 
     virtual void NotifySoundMuted(bool isSoundMuted) = 0;
 
@@ -79,6 +86,9 @@ struct IGameController
     //
     // Interactions
     //
+
+    virtual void ScareFish(vec2f const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
+    virtual void AttractFish(vec2f const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
 
     virtual void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ElementId> & elementId) = 0;
     virtual void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ShipId> & shipId) = 0;
@@ -114,7 +124,7 @@ struct IGameController
     virtual void TriggerTsunami() = 0;
     virtual void TriggerRogueWave() = 0;
     virtual void TriggerStorm() = 0;
-	virtual void TriggerLightning() = 0;
+    virtual void TriggerLightning() = 0;
 
     virtual void HighlightElectricalElement(ElectricalElementId electricalElementId) = 0;
 
@@ -125,6 +135,9 @@ struct IGameController
     virtual void SetEngineControllerState(
         ElectricalElementId electricalElementId,
         int telegraphValue) = 0;
+
+    virtual bool DestroyTriangle(ElementId triangleId) = 0;
+    virtual bool RestoreTriangle(ElementId triangleId) = 0;
 
     //
     // Rendering controls

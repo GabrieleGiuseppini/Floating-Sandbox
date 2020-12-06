@@ -1,0 +1,87 @@
+[
+    {
+        "name": "Gilt-head Bream",
+
+	"world_size_x": 0.3,
+	"world_size_y": 0.15,
+
+	"shoal_size": 16,
+	"shoal_radius": 3.0,
+	"ocean_depth": 30.0,
+	"basal_speed": 0.1536,
+	"tail_x": 0.7,
+	"tail_speed": 0.048,
+	"tail_swing_width": 0.5,
+	"head_offset_x": 0.875,
+	"texture_indices": [0, 1]
+    },
+
+    {
+        "name": "Barracuda",
+
+	"world_size_x": 0.6,
+	"world_size_y": 0.15,
+
+	"shoal_size": 4,
+	"shoal_radius": 3.5,
+	"ocean_depth": 50.0,
+	"basal_speed": 0.1536,
+	"tail_x": 0.7,
+	"tail_speed": 0.048,
+	"tail_swing_width": 0.35,
+	"head_offset_x": 0.86328125,
+	"texture_indices": [2, 6]
+    },
+
+    {
+        "name": "Mako",
+
+	"world_size_x": 1.5,
+	"world_size_y": 0.75,
+
+	"shoal_size": 1,
+	"shoal_radius": 7.0,
+	"ocean_depth": 150.0,
+	"basal_speed": 0.3,
+	"tail_x": 0.9,
+	"tail_speed": 0.04,
+	"tail_swing_width": 0.15,
+	"head_offset_x": 0.921875,
+	"texture_indices": [3]
+    },
+
+    {
+        "name": "Queen Snapper",
+
+	"world_size_x": 0.2,
+	"world_size_y": 0.1,
+
+	"shoal_size": 32,
+	"shoal_radius": 3.5,
+	"ocean_depth": 15.0,
+	"basal_speed": 0.1536,
+	"tail_x": 0.7,
+	"tail_speed": 0.048,
+	"tail_swing_width": 0.8,
+	"head_offset_x": 0.8984375,
+	"texture_indices": [4, 5]
+    },
+
+    {
+        "name": "Tuna",
+
+	"world_size_x": 0.4,
+	"world_size_y": 0.2,
+
+	"shoal_size": 16,
+	"shoal_radius": 3.5,
+	"ocean_depth": 65.0,
+	"basal_speed": 0.31,
+	"tail_x": 0.7,
+	"tail_speed": 0.048,
+	"tail_swing_width": 0.5,
+	"head_offset_x": 0.8984375,
+	"texture_indices": [7, 8, 9]
+    }
+
+]

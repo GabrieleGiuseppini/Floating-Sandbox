@@ -50,8 +50,11 @@ struct IGameControllerSettings
     virtual float GetWaterDensityAdjustment() const = 0;
     virtual void SetWaterDensityAdjustment(float value) = 0;
 
-    virtual float GetWaterDragAdjustment() const = 0;
-    virtual void SetWaterDragAdjustment(float value) = 0;
+    virtual float GetWaterFrictionDragAdjustment() const = 0;
+    virtual void SetWaterFrictionDragAdjustment(float value) = 0;
+
+    virtual float GetWaterPressureDragAdjustment() const = 0;
+    virtual void SetWaterPressureDragAdjustment(float value) = 0;
 
     virtual float GetWaterIntakeAdjustment() const = 0;
     virtual void SetWaterIntakeAdjustment(float value) = 0;
@@ -162,6 +165,23 @@ struct IGameControllerSettings
 
     virtual float GetWaterPumpPowerAdjustment() const = 0;
     virtual void SetWaterPumpPowerAdjustment(float value) = 0;
+
+    // Fishes
+
+    virtual unsigned int GetNumberOfFishes() const = 0;
+    virtual void SetNumberOfFishes(unsigned int value) = 0;
+
+    virtual float GetFishSizeMultiplier() const = 0;
+    virtual void SetFishSizeMultiplier(float value) = 0;
+
+    virtual float GetFishSpeedAdjustment() const = 0;
+    virtual void SetFishSpeedAdjustment(float value) = 0;
+
+    virtual bool GetDoFishShoaling() const = 0;
+    virtual void SetDoFishShoaling(bool value) = 0;
+
+    virtual float GetFishShoalRadiusAdjustment() const = 0;
+    virtual void SetFishShoalRadiusAdjustment(float value) = 0;
 
     // Misc
 
@@ -308,6 +328,12 @@ struct IGameControllerSettings
 
     virtual bool GetShowShipStress() const = 0;
     virtual void SetShowShipStress(bool value) = 0;
+
+    virtual bool GetShowShipFrontiers() const = 0;
+    virtual void SetShowShipFrontiers(bool value) = 0;
+
+    virtual bool GetShowAABBs() const = 0;
+    virtual void SetShowAABBs(bool value) = 0;
 
     virtual bool GetDrawHeatOverlay() const = 0;
     virtual void SetDrawHeatOverlay(bool value) = 0;

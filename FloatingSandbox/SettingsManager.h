@@ -22,12 +22,13 @@ enum class GameSettings : size_t
 
     // Water
     WaterDensityAdjustment,
-    WaterDragAdjustment,
+    WaterFrictionDragAdjustment,
+    WaterPressureDragAdjustment,
     WaterIntakeAdjustment,
     WaterCrazyness,
     WaterDiffusionSpeedAdjustment,
 
-    BasalWaveHeightAdjustment,	// 10
+    BasalWaveHeightAdjustment,
     BasalWaveLengthAdjustment,
     BasalWaveSpeedAdjustment,
     TsunamiRate,
@@ -46,7 +47,7 @@ enum class GameSettings : size_t
     // Heat
     AirTemperature,
     WaterTemperature,
-    MaxBurningParticles, // 20
+    MaxBurningParticles,
     ThermalConductivityAdjustment,
     HeatDissipationAdjustment,
     IgnitionTemperatureAdjustment,
@@ -63,8 +64,15 @@ enum class GameSettings : size_t
     EngineThrustAdjustment,
     WaterPumpPowerAdjustment,
 
+    // Fishes
+    NumberOfFishes,
+    FishSizeMultiplier,
+    FishSpeedAdjustment,
+    DoFishShoaling,
+    FishShoalRadiusAdjustment,
+
     // Misc
-    OceanFloorTerrain, // 30
+    OceanFloorTerrain,
     SeaDepth,
     OceanFloorBumpiness,
     OceanFloorDetailAmplification,
@@ -112,6 +120,8 @@ enum class GameSettings : size_t
     FlatLandColor,
     VectorFieldRenderMode,
     ShowShipStress,
+    ShowShipFrontiers,
+    ShowAABBs,
     DrawHeatOverlay,
     HeatOverlayTransparency,
     ShipFlameRenderMode,

@@ -15,7 +15,9 @@ namespace Render {
 ProgramType ShaderFilenameToProgramType(std::string const & str)
 {
     std::string lstr = Utils::ToLower(str);
-    if (lstr == "am_bomb_preimplosion")
+    if (lstr == "aabbs")
+        return ProgramType::AABBs;
+    else if (lstr == "am_bomb_preimplosion")
         return ProgramType::AMBombPreImplosion;
     else if (lstr == "clouds")
         return ProgramType::Clouds;
@@ -23,6 +25,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::CrossOfLight;
     else if (lstr == "fire_extinguisher_spray")
         return ProgramType::FireExtinguisherSpray;
+    else if (lstr == "fishes")
+        return ProgramType::Fishes;
     else if (lstr == "heat_blaster_flame_cool")
         return ProgramType::HeatBlasterFlameCool;
     else if (lstr == "heat_blaster_flame_heat")
@@ -31,16 +35,16 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::LandFlat;
     else if (lstr == "land_texture")
         return ProgramType::LandTexture;
-	else if (lstr == "lightning")
-		return ProgramType::Lightning;
+    else if (lstr == "lightning")
+        return ProgramType::Lightning;
     else if (lstr == "ocean_depth")
         return ProgramType::OceanDepth;
     else if (lstr == "ocean_flat")
         return ProgramType::OceanFlat;
     else if (lstr == "ocean_texture")
         return ProgramType::OceanTexture;
-	else if (lstr == "rain")
-		return ProgramType::Rain;
+    else if (lstr == "rain")
+        return ProgramType::Rain;
     else if (lstr == "ship_circle_highlights")
         return ProgramType::ShipCircleHighlights;
     else if (lstr == "ship_electrical_element_highlights")
@@ -59,6 +63,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipFlamesForeground2;
     else if (lstr == "ship_flames_foreground_3")
         return ProgramType::ShipFlamesForeground3;
+    else if (lstr == "ship_frontier_edges")
+        return ProgramType::ShipFrontierEdges;
     else if (lstr == "ship_generic_mipmapped_textures")
         return ProgramType::ShipGenericMipMappedTextures;
     else if (lstr == "ship_points_color")
@@ -109,6 +115,8 @@ std::string ProgramTypeToStr(ProgramType program)
 {
     switch (program)
     {
+    case ProgramType::AABBs:
+        return "AABBs";
     case ProgramType::AMBombPreImplosion:
         return "AMBombPreImplosion";
     case ProgramType::Clouds:
@@ -117,6 +125,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "CrossOfLight";
     case ProgramType::FireExtinguisherSpray:
         return "FireExtinguisherSpray";
+    case ProgramType::Fishes:
+        return "Fishes";
     case ProgramType::HeatBlasterFlameCool:
         return "HeatBlasterFlameCool";
     case ProgramType::HeatBlasterFlameHeat:
@@ -125,16 +135,16 @@ std::string ProgramTypeToStr(ProgramType program)
         return "LandFlat";
     case ProgramType::LandTexture:
         return "LandTexture";
-	case ProgramType::Lightning:
-		return "Lightning";
+    case ProgramType::Lightning:
+        return "Lightning";
     case ProgramType::OceanDepth:
         return "OceanDepth";
     case ProgramType::OceanFlat:
         return "OceanFlat";
     case ProgramType::OceanTexture:
         return "OceanTexture";
-	case ProgramType::Rain:
-		return "Rain";
+    case ProgramType::Rain:
+        return "Rain";
     case ProgramType::ShipCircleHighlights:
         return "ShipCircleHighlights";
     case ProgramType::ShipElectricalElementHighlights:
@@ -153,6 +163,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipFlamesForeground2";
     case ProgramType::ShipFlamesForeground3:
         return "ShipFlamesForeground3";
+    case ProgramType::ShipFrontierEdges:
+        return "ShipFrontierEdges";
     case ProgramType::ShipGenericMipMappedTextures:
         return "ShipGenericMipMappedTextures";
     case ProgramType::ShipPointsColor:
@@ -235,8 +247,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::OceanFlatColor;
     else if (str == "OrthoMatrix")
         return ProgramParameterType::OrthoMatrix;
-	else if (str == "RainDensity")
-		return ProgramParameterType::RainDensity;
+    else if (str == "RainDensity")
+        return ProgramParameterType::RainDensity;
     else if (str == "StarTransparency")
         return ProgramParameterType::StarTransparency;
     else if (str == "TextLighteningStrength")
@@ -262,6 +274,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::CloudsAtlasTexture;
     else if (str == "ExplosionsAtlasTexture")
         return ProgramParameterType::ExplosionsAtlasTexture;
+    else if (str == "FishesAtlasTexture")
+        return ProgramParameterType::FishesAtlasTexture;
     else if (str == "GenericLinearTexturesAtlasTexture")
         return ProgramParameterType::GenericLinearTexturesAtlasTexture;
     else if (str == "GenericMipMappedTexturesAtlasTexture")
@@ -314,8 +328,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "OceanFlatColor";
     case ProgramParameterType::OrthoMatrix:
         return "OrthoMatrix";
-	case ProgramParameterType::RainDensity:
-		return "RainDensity";
+    case ProgramParameterType::RainDensity:
+        return "RainDensity";
     case ProgramParameterType::StarTransparency:
         return "StarTransparency";
     case ProgramParameterType::TextLighteningStrength:
@@ -334,11 +348,13 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "WaterContrast";
     case ProgramParameterType::WaterLevelThreshold:
         return "WaterLevelThreshold";
-    // Textures
+        // Textures
     case ProgramParameterType::SharedTexture:
         return "SharedTexture";
     case ProgramParameterType::CloudsAtlasTexture:
         return "CloudsAtlasTexture";
+    case ProgramParameterType::FishesAtlasTexture:
+        return "FishesAtlasTexture";
     case ProgramParameterType::ExplosionsAtlasTexture:
         return "ExplosionsAtlasTexture";
     case ProgramParameterType::GenericLinearTexturesAtlasTexture:
@@ -364,10 +380,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
     // World
     if (Utils::CaseInsensitiveEquals(str, "Star"))
         return VertexAttributeType::Star;
-	else if (Utils::CaseInsensitiveEquals(str, "Lightning1"))
-		return VertexAttributeType::Lightning1;
-	else if (Utils::CaseInsensitiveEquals(str, "Lightning2"))
-		return VertexAttributeType::Lightning2;
+    else if (Utils::CaseInsensitiveEquals(str, "Lightning1"))
+        return VertexAttributeType::Lightning1;
+    else if (Utils::CaseInsensitiveEquals(str, "Lightning2"))
+        return VertexAttributeType::Lightning2;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud1"))
         return VertexAttributeType::Cloud1;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud2"))
@@ -376,6 +392,14 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Land;
     else if (Utils::CaseInsensitiveEquals(str, "Ocean"))
         return VertexAttributeType::Ocean;
+    else if (Utils::CaseInsensitiveEquals(str, "Fish1"))
+        return VertexAttributeType::Fish1;
+    else if (Utils::CaseInsensitiveEquals(str, "Fish2"))
+        return VertexAttributeType::Fish2;
+    else if (Utils::CaseInsensitiveEquals(str, "Fish3"))
+        return VertexAttributeType::Fish3;
+    else if (Utils::CaseInsensitiveEquals(str, "Fish4"))
+        return VertexAttributeType::Fish4;
     else if (Utils::CaseInsensitiveEquals(str, "AMBombPreImplosion1"))
         return VertexAttributeType::AMBombPreImplosion1;
     else if (Utils::CaseInsensitiveEquals(str, "AMBombPreImplosion2"))
@@ -384,8 +408,12 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::CrossOfLight1;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))
         return VertexAttributeType::CrossOfLight2;
-	else if (Utils::CaseInsensitiveEquals(str, "Rain"))
-		return VertexAttributeType::Rain;
+    else if (Utils::CaseInsensitiveEquals(str, "AABB1"))
+        return VertexAttributeType::AABB1;
+    else if (Utils::CaseInsensitiveEquals(str, "AABB2"))
+        return VertexAttributeType::AABB2;
+    else if (Utils::CaseInsensitiveEquals(str, "Rain"))
+        return VertexAttributeType::Rain;
     else if (Utils::CaseInsensitiveEquals(str, "FireExtinguisherSpray"))
         return VertexAttributeType::FireExtinguisherSpray;
     else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterFlame"))
@@ -401,6 +429,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointColor;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointTemperature"))
         return VertexAttributeType::ShipPointTemperature;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipPointFrontierColor"))
+        return VertexAttributeType::ShipPointFrontierColor;
     else if (Utils::CaseInsensitiveEquals(str, "Explosion1"))
         return VertexAttributeType::Explosion1;
     else if (Utils::CaseInsensitiveEquals(str, "Explosion2"))

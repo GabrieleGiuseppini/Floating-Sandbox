@@ -120,6 +120,14 @@ RenderContext::RenderContext(
             mWorldRenderContext->InitializeCloudTextures(resourceLocator);
         });
 
+    progressCallback(0.65f, ProgressMessageType::LoadingFishTextureAtlas);
+
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            mWorldRenderContext->InitializeFishTextures(resourceLocator);
+        });
+
     progressCallback(0.7f, ProgressMessageType::LoadingWorldTextures);
 
     mRenderThread.RunSynchronously(
@@ -454,11 +462,15 @@ void RenderContext::Draw()
 
                 mWorldRenderContext->RenderPrepareOceanFloor(renderParameters);
 
+                mWorldRenderContext->RenderPrepareFishes(renderParameters);
+
                 mWorldRenderContext->RenderPrepareAMBombPreImplosions(renderParameters);
 
                 mWorldRenderContext->RenderPrepareCrossesOfLight(renderParameters);
 
                 mWorldRenderContext->RenderPrepareRain(renderParameters);
+
+                mWorldRenderContext->RenderPrepareAABBs(renderParameters);
 
                 mNotificationRenderContext->RenderPrepare();
 
@@ -487,13 +499,15 @@ void RenderContext::Draw()
 
                 glDisable(GL_DEPTH_TEST);
 
-                // Render ocean transparently, over ship, unless disabled
+                mWorldRenderContext->RenderDrawOceanFloor(renderParameters);
+
+                mWorldRenderContext->RenderDrawFishes(renderParameters);
+
+                // Render ocean transparently, over the rest of the world, unless disabled
                 if (!renderParameters.ShowShipThroughOcean)
                 {
                     mWorldRenderContext->RenderDrawOcean(false, renderParameters);
                 }
-
-                mWorldRenderContext->RenderDrawOceanFloor(renderParameters);
 
                 mWorldRenderContext->RenderDrawAMBombPreImplosions(renderParameters);
 
@@ -502,6 +516,8 @@ void RenderContext::Draw()
                 mWorldRenderContext->RenderDrawForegroundLightnings(renderParameters);
 
                 mWorldRenderContext->RenderDrawRain(renderParameters);
+
+                mWorldRenderContext->RenderDrawAABBs(renderParameters);
 
                 mWorldRenderContext->RenderDrawWorldBorder(renderParameters);
 

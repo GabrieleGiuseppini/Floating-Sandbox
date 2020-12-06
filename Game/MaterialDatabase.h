@@ -38,6 +38,7 @@ public:
     MaterialDatabase(MaterialDatabase const & other) = delete;
     MaterialDatabase(MaterialDatabase && other) = default;
     MaterialDatabase & operator=(MaterialDatabase const & other) = delete;
+    MaterialDatabase & operator=(MaterialDatabase && other) = default;
 
     static MaterialDatabase Load(ResourceLocator const & resourceLocator)
     {

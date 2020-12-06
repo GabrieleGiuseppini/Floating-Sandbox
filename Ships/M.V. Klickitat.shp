@@ -1,0 +1,59 @@
+{
+	"structure_image":"mv_klickitat_structure.png.dat",
+	"texture_image":"mv_klickitat_texture.png.dat",
+	"electrical_image":"mv_klickitat_electrical.png.dat",
+	"ship_name":"M.V. Klickitat - Washington State Ferries",
+	"offset":{"x":0.0, "y":-5},
+	"created_by":"Matthew Anderson",
+	"year_built":"1927",
+"description":
+	"The M.V. ''Stockton'' was constructed in 1927 for the Southern Pacific Transportation Company at the Bethlehem Shipbuilding Union Yard in San Francisco, California.
+''Stockton'' and her five sisters, the ''Redwood Empire'', ''Mendocino'', ''Santa Rosa'', ''Lake Tahoe'' and ''Fresno'' were known as the Steel Electric class ferries. The name was given to them to avoid
+confusion with an earlier class of ferries already in service with wooden hulls known as the Wood Electric class. ''Stockton'' entered service on the San Francisco to Oakland route.
+Following the construction of the Golden Gate Bridge and Oakland Bay Bridge, Southern Pacific began scaling back ferry operations on San Francisco Bay.
+In 1940 the Steel Electric class was retired from service and put up for sale. A company based in Brazil put up a maximum bid of $330,000 for all six ships.
+Alexander Peabody, owner of the Puget Sound Navigation Company (Black Ball Line) offered a price of $330,001, adding the extra dollar as Peabody knew the Brazilian company couldn't afford a higher bid.
+Through this cheeky move, the six ferries were towed up to Washington state, where four of the ferries were repainted and renamed on teh spot. ''Stockton'', ''Mendocino'', ''Lake Tahoe'' and ''Redwood Empire''
+became ''Klickitat'', ''Nisqually'', ''Illahee'' and ''Quinault'', respectively. Both ''Santa Rosa'' and ''Fresno'' were heavily rebuilt into single ended ferries and re-engined into direct drive vessels with
+Busch Sulzer engines, a fully rebuilt passenger cabin and the addition of a Texas deck. Later in 1940, both ferries entered service as the ''Enetai'' and ''Willapa'' respectively. ''Klickitat'' was mainly used on the
+Edmonds to Port Ludlow run via Kingston until 1941, when she was transferred to the Lofall to South Point run. In 1951, Black Ball sold most of its operations and vessels to the state of Washington and ''Klickitat'',
+along with her sisters, were now operated by Washington State Ferries and painted green. ''Klickitat'' went to work in the San Juan islands where she continued to work until 1965. In the mid-1950s,
+the ''Klickitat's'' car deck windows were replaced by smaller portholes. During a refit in the late 1950s, ''Klickitat'' and three of her sisters had their hulls widened by 8 feet beam-wise,
+the wood railings were replaced wih steel railings and the passenger cabin was heavily refurbished. Although ''Willapa'' and ''Enetai'' were replaced in 1967, the remaining four Steel Electrics continued to serve
+with Washington state for several more decades. In 1977, the four remaining Steel Electrics had a gold band added on their smokestacks to mark over 50 years of reliable service. During the early 1980s,
+''Klickitat'' was removed from service and heavily rebuilt, with everything above the car deck being removed from the ferry and replaced with an entirely new, more modern and utilitarian looking superstructure.
+The popular observation rooms on both sides of the vessel were replaced by a tiny shelter deck and crew quarters, which became an unpopular feature. When she re-entered service, ''Klickitat'' looked nothing like the
+ferry that she had once been, above the waterline. Mistakes made during the ''Klickitat's'' refit were not repeated when the ''Illahee'', ''Quinault'' and ''Nisqually'' were rebuilt, all three of those ferries retaining
+their well loved observation rooms and crew quarters layouts as well as being fitted with elevators to accomodate the Americans with Disabilities Act of 1977. ''Klickitat'' served on the Anacortes to Sidney, British Columbia for a short
+period before being moved to the Keystone to Port Townsend route, where she would spend the last 20 years of her life. Despite her advancing age, ''Klickitat'' continued operating into the 21st Century and became
+a common item of negative publicity along with her sisters. Although the engines of the ferries were still in excellent condition and the frames and keel showed little signs of corrosion, public pressure and the press
+pushed hard to have the Steel Electrics retired. In 2007, cracks were discovered in the ''Klickitat's'' hull and she, along with her sisters were pulled from service. Inspections found that the damage was mostly
+in the hull plating and in order for the vessels to return to service, the steel plating would need to be removed and replaced. Possibly due to public pressure, Washington State Ferries decided against the idea of
+replacing the shell plating on the 80 year old ferries, which would have been the smarter decision as millions were already spent in repairs earlier that year. The state announced that new ferries would be eventually constructed
+and the Steel Electric class was temporarily replaced by the less safe and uncertified loaned ferry, the ''Steilacoom II'' until the new ''Kwa-Di-Tabil'' class could be constructed to replace the Steel Electrics.
+It wouldn't be until 2010 when the ''Chetzemoka'', the first of the new Kwa-Di-Tabil class, would mark the return of a dedicated ferry to the Port Townsend to Keystone run. Critics argue that the Steel Electrics should have been
+temporarily repaired and continued serving the route until the new ferries were ready. In 2011, the ''Klickitat'', along with the rest of her class, were sold for scrap and towed to Ensenada, Mexico, where the four ferries,
+after over 80 years of reliable service, were finally torn apart. Ship history buffs will always remember the ''Klick'', as she was affectionately called, and her sisters fondly.",
+	"electrical_panel":{
+
+		"0": {"panel_x":-12, "panel_y":0, "label":"Side 1 Motor" },
+		"1": {"panel_x":-11, "panel_y":0, "label":"Side 1 Motor Control" },
+		"5": {"panel_x":-10, "panel_y":0, "label":"Side 1 Horn" },
+		"7": {"panel_x":-9, "panel_y":0, "label":"Side 1 Bell" },
+		"10": {"panel_x":-8, "panel_y":0, "label":"Engine On/Off" },
+		"12": {"panel_x":-7, "panel_y":0, "label":"Smokestack On/Off" },
+		"9": {"panel_x":-6, "panel_y":0, "label":"Lights On/Off" },
+		"11": {"panel_x":-5, "panel_y":0, "label":"Watertight Doors Up/Down" },
+		"13": {"panel_x":-4, "panel_y":0, "label":"Watertight Door Indicator" },
+		"6": {"panel_x":-3, "panel_y":0, "label":"Side 2 Horn" },
+		"8": {"panel_x":-2, "panel_y":0, "label":"Side 2 Bell" },
+		"3": {"panel_x":-1, "panel_y":0, "label":"Side 2 Motor" },
+		"4": {"panel_x":0, "panel_y":0, "label":"Side 2 Motor Control" },
+		"2": {"panel_x":1, "panel_y":0, "label":"Watertight Door 1", "is_hidden": true },
+		"19": {"panel_x":2, "panel_y":0, "label":"Watertight Door 2", "is_hidden": true },
+		"18": {"panel_x":3, "panel_y":0, "label":"Watertight Door 3", "is_hidden": true },
+		"14": {"panel_x":4, "panel_y":0, "label":"Watertight Door 4", "is_hidden": true },
+		"15": {"panel_x":5, "panel_y":0, "label":"Watertight Door 5", "is_hidden": true },
+		"17": {"panel_x":6, "panel_y":0, "label":"Watertight Door 6", "is_hidden": true }
+	}
+}

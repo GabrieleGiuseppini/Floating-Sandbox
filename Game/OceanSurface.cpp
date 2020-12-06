@@ -19,8 +19,11 @@ namespace Physics {
 template<typename T>
 T constexpr RenderSlices = 500;
 
-OceanSurface::OceanSurface(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
-    : mGameEventHandler(std::move(gameEventDispatcher))
+OceanSurface::OceanSurface(
+    World & parentWorld,
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
+    : mParentWorld(parentWorld)
+    , mGameEventHandler(std::move(gameEventDispatcher))
     , mSamples(new Sample[SamplesCount + 1]) // One extra sample for the rightmost X
     ////////
     , mBasalWaveAmplitude1(0.0f)
@@ -98,7 +101,7 @@ void OceanSurface::Update(
     //
 
     // Interactive
-    if (!!mSWEInteractiveWaveStateMachine)
+    if (mSWEInteractiveWaveStateMachine.has_value())
     {
         auto heightValue = mSWEInteractiveWaveStateMachine->Update(currentSimulationTime);
         if (!heightValue)
@@ -116,7 +119,7 @@ void OceanSurface::Update(
     }
 
     // Tsunami
-    if (!!mSWETsunamiWaveStateMachine)
+    if (mSWETsunamiWaveStateMachine.has_value())
     {
         auto heightValue = mSWETsunamiWaveStateMachine->Update(currentSimulationTime);
         if (!heightValue)
@@ -149,11 +152,14 @@ void OceanSurface::Update(
             mNextTsunamiTimestamp = CalculateNextAbnormalWaveTimestamp(
                 now,
                 gameParameters.TsunamiRate);
+
+            // Tell world
+            mParentWorld.DisturbOcean(std::chrono::milliseconds(0));
         }
     }
 
     // Rogue Wave
-    if (!!mSWERogueWaveWaveStateMachine)
+    if (mSWERogueWaveWaveStateMachine.has_value())
     {
         auto heightValue = mSWERogueWaveWaveStateMachine->Update(currentSimulationTime);
         if (!heightValue)
@@ -227,12 +233,12 @@ void OceanSurface::Upload(
     //
 
     // Find index of leftmost sample, and its corresponding world X
-    auto const sampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorldLeft() + GameParameters::HalfMaxWorldWidth) / Dx);
+    auto const sampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorld().TopLeft.x + GameParameters::HalfMaxWorldWidth) / Dx);
     float sampleIndexX = -GameParameters::HalfMaxWorldWidth + (Dx * sampleIndex);
 
     // Calculate number of samples required to cover screen from leftmost sample
     // up to the visible world right (included)
-    float const coverageWidth = renderContext.GetVisibleWorldRight() - sampleIndexX;
+    float const coverageWidth = renderContext.GetVisibleWorld().BottomRight.x - sampleIndexX;
     auto const numberOfSamplesToRender = static_cast<size_t>(ceil(coverageWidth / Dx));
 
     if (numberOfSamplesToRender >= RenderSlices<size_t>)

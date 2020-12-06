@@ -6,7 +6,7 @@
 #include "GameParameters.h"
 
 GameParameters::GameParameters()
-    // Dynamics
+// Dynamics
     : NumMechanicalDynamicsIterationsAdjustment(1.0f)
     , SpringStiffnessAdjustment(1.0f)
     , SpringDampingAdjustment(1.0f)
@@ -15,7 +15,8 @@ GameParameters::GameParameters()
     , RotAcceler8r(1.0f)
     // Water
     , WaterDensityAdjustment(1.0f)
-    , WaterDragAdjustment(1.0f)
+    , WaterFrictionDragAdjustment(1.0f)
+    , WaterPressureDragAdjustment(1.0f)
     , WaterIntakeAdjustment(1.0f)
     , WaterDiffusionSpeedAdjustment(1.0f)
     , WaterCrazyness(1.0f)
@@ -40,12 +41,12 @@ GameParameters::GameParameters()
     , TsunamiRate(12)
     , RogueWaveRate(2)
     // Storm
-	, StormRate(60)
+    , StormRate(60)
     , StormDuration(60 * 4) // 4 minutes
-	, StormStrengthAdjustment(1.0f)
-	, LightningBlastRadius(8.0f)
-	, LightningBlastHeat(4000.0f)
-	, DoRainWithStorm(true)
+    , StormStrengthAdjustment(1.0f)
+    , LightningBlastRadius(8.0f)
+    , LightningBlastHeat(4000.0f)
+    , DoRainWithStorm(true)
     , RainFloodAdjustment(10000.0f) // Partially visible after 4 minutes
     // Heat and combustion
     , AirTemperature(298.15f) // 25C
@@ -66,6 +67,12 @@ GameParameters::GameParameters()
     , DoShowElectricalNotifications(true)
     , EngineThrustAdjustment(1.0f)
     , WaterPumpPowerAdjustment(1.0f)
+    // Fishes
+    , NumberOfFishes(76)
+    , FishSizeMultiplier(25.0f)
+    , FishSpeedAdjustment(1.0f)
+    , DoFishShoaling(true)
+    , FishShoalRadiusAdjustment(1.0f)
     // Misc
     , SeaDepth(300.0f)
     , OceanFloorBumpiness(1.0f)

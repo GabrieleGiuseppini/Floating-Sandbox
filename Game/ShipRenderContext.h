@@ -112,6 +112,8 @@ public:
         size_t startDst,
         size_t count);
 
+    void UploadPointFrontierColors(FrontierColor const * colors);
+
     //
     // Elements
     //
@@ -182,6 +184,23 @@ public:
     }
 
     void UploadElementStressedSpringsEnd();
+
+    //
+    // Frontiers
+    //
+
+    void UploadElementFrontierEdgesStart(size_t edgesCount);
+
+    inline void UploadElementFrontierEdge(
+        int pointIndex1,
+        int pointIndex2)
+    {
+        mFrontierEdgeElementBuffer.emplace_back(
+            pointIndex1,
+            pointIndex2);
+    }
+
+    void UploadElementFrontierEdgesEnd();
 
     //
     // Flames
@@ -768,10 +787,10 @@ private:
         TextureAtlasFrameMetadata<GenericMipMappedTextureGroups> const & frame =
             mGenericMipMappedTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
 
-        float const leftX = -frame.FrameMetadata.AnchorWorldX;
-        float const rightX = frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorWorldX;
-        float const topY = frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorWorldY;
-        float const bottomY = -frame.FrameMetadata.AnchorWorldY;
+        float const leftX = -frame.FrameMetadata.AnchorCenterWorld.x;
+        float const rightX = frame.FrameMetadata.WorldWidth - frame.FrameMetadata.AnchorCenterWorld.x;
+        float const topY = frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y;
+        float const bottomY = -frame.FrameMetadata.AnchorCenterWorld.y;
 
         float const lightSensitivity =
             frame.FrameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
@@ -1079,9 +1098,16 @@ private:
 
     GameOpenGLVBO mPointTemperatureVBO;
 
+    GameOpenGLVBO mPointFrontierColorVBO;
+
     std::vector<LineElement> mStressedSpringElementBuffer;
     GameOpenGLVBO mStressedSpringElementVBO;
     size_t mStressedSpringElementVBOAllocatedElementSize;
+
+    BoundedVector<LineElement> mFrontierEdgeElementBuffer;
+    bool mIsFrontierEdgeElementBufferDirty;
+    GameOpenGLVBO mFrontierEdgeElementVBO;
+    size_t mFrontierEdgeElementVBOAllocatedElementSize;
 
     BoundedVector<FlameVertex> mFlameVertexBuffer;
     size_t mFlameBackgroundCount;

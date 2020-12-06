@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "GameController.h"
 
+#include "ComputerCalibration.h"
+
 #include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
 
@@ -19,6 +21,9 @@ std::unique_ptr<GameController> GameController::Create(
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
 {
+    // Load fish species
+    FishSpeciesDatabase fishSpeciesDatabase = FishSpeciesDatabase::Load(resourceLocator);
+
     // Load materials
     MaterialDatabase materialDatabase = MaterialDatabase::Load(resourceLocator);
 
@@ -49,16 +54,20 @@ std::unique_ptr<GameController> GameController::Create(
             std::move(renderContext),
             std::move(gameEventDispatcher),
             std::move(perfStats),
+            std::move(fishSpeciesDatabase),
             std::move(materialDatabase),
-            resourceLocator));
+            resourceLocator,
+            progressCallback));
 }
 
 GameController::GameController(
     std::unique_ptr<Render::RenderContext> renderContext,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     std::unique_ptr<PerfStats> perfStats,
-    MaterialDatabase materialDatabase,
-    ResourceLocator const & resourceLocator)
+    FishSpeciesDatabase && fishSpeciesDatabase,
+    MaterialDatabase && materialDatabase,
+    ResourceLocator const & resourceLocator,
+    ProgressCallback const & progressCallback)
     // State machines
     : mTsunamiNotificationStateMachine()
     , mThanosSnapStateMachines()
@@ -77,16 +86,20 @@ GameController::GameController(
     , mRenderContext(std::move(renderContext))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
     , mNotificationLayer(
-        mGameParameters.IsUltraViolentMode, 
-        false /*loaded value will come later*/, 
+        mGameParameters.IsUltraViolentMode,
+        false /*loaded value will come later*/,
         mGameParameters.DoDayLightCycle)
     , mShipTexturizer(resourceLocator)
+    // World
+    , mFishSpeciesDatabase(std::move(fishSpeciesDatabase))
+    , mMaterialDatabase(std::move(materialDatabase))
     , mWorld(new Physics::World(
         OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilePath()),
+        mFishSpeciesDatabase,
         mGameEventDispatcher,
         std::make_shared<TaskThreadPool>(),
-        mGameParameters))
-    , mMaterialDatabase(std::move(materialDatabase))
+        mGameParameters,
+        mRenderContext->GetVisibleWorld()))
     // Smoothing
     , mFloatParameterSmoothers()
     , mZoomParameterSmoother()
@@ -198,6 +211,18 @@ GameController::GameController(
         },
         ParameterSmoothingTrajectoryTime);
 
+    assert(mFloatParameterSmoothers.size() == FishSizeMultiplierParameterSmoother);
+    mFloatParameterSmoothers.emplace_back(
+        [this]() -> float const &
+        {
+            return this->mGameParameters.FishSizeMultiplier;
+        },
+        [this](float const & value)
+        {
+            this->mGameParameters.FishSizeMultiplier = value;
+        },
+        ParameterSmoothingTrajectoryTime);
+
     // ---------------------------------
 
     std::chrono::milliseconds constexpr ControlParameterSmoothingTrajectoryTime = std::chrono::milliseconds(500);
@@ -231,6 +256,16 @@ GameController::GameController(
             return this->mRenderContext->ClampCameraWorldPosition(value);
         },
         ControlParameterSmoothingTrajectoryTime);
+
+    //
+    // Calibrate game
+    //
+
+    progressCallback(1.0f, ProgressMessageType::Calibrating);
+
+    auto const & score = ComputerCalibrator::Calibrate();
+
+    ComputerCalibrator::TuneGame(score, mGameParameters, *mRenderContext);
 }
 
 void GameController::RebindOpenGLContext(std::function<void()> rebindContextFunction)
@@ -263,9 +298,11 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
         OceanFloorTerrain(mWorld->GetOceanFloorTerrain()),
+        mFishSpeciesDatabase,
         mGameEventDispatcher,
         std::make_shared<TaskThreadPool>(),
-        mGameParameters);
+        mGameParameters,
+        mRenderContext->GetVisibleWorld());
 
     // Add ship to new world
     auto [shipId, textureImage] = newWorld->AddShip(
@@ -368,9 +405,11 @@ void GameController::ReloadLastShip()
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
         OceanFloorTerrain(mWorld->GetOceanFloorTerrain()),
+        mFishSpeciesDatabase,
         mGameEventDispatcher,
         std::make_shared<TaskThreadPool>(),
-        mGameParameters);
+        mGameParameters,
+        mRenderContext->GetVisibleWorld());
 
     // Load ship into new world
     auto [shipId, textureImage] = newWorld->AddShip(
@@ -460,6 +499,7 @@ void GameController::RunGameIteration()
         assert(!!mWorld);
         mWorld->Update(
             mGameParameters,
+            mRenderContext->GetVisibleWorld(),
             *mRenderContext,
             *mTotalPerfStats);
 
@@ -580,6 +620,32 @@ void GameController::LowFrequencyUpdate()
     mLastPublishedTotalFrameCount = mTotalFrameCount;
 }
 
+void GameController::StartRecordingEvents(std::function<void(uint32_t, RecordedEvent const &)> onEventCallback)
+{
+    mEventRecorder = std::make_unique<EventRecorder>(onEventCallback);
+
+    mWorld->SetEventRecorder(mEventRecorder.get());
+}
+
+RecordedEvents GameController::StopRecordingEvents()
+{
+    assert(!!mEventRecorder);
+
+    mWorld->SetEventRecorder(nullptr);
+
+    auto recordedEvents = mEventRecorder->StopRecording();
+    mEventRecorder.reset();
+
+    return recordedEvents;
+}
+
+void GameController::ReplayRecordedEvent(RecordedEvent const & event)
+{
+    mWorld->ReplayRecordedEvent(
+        event,
+        mGameParameters); // NOTE: using now's game parameters...but we don't want to capture these in the recorded event (at least at this moment)
+}
+
 /////////////////////////////////////////////////////////////
 // Interactions
 /////////////////////////////////////////////////////////////
@@ -626,6 +692,36 @@ void GameController::SetShowExtendedStatusText(bool value)
 void GameController::NotifySoundMuted(bool isSoundMuted)
 {
     mNotificationLayer.SetSoundMuteIndicator(isSoundMuted);
+}
+
+void GameController::ScareFish(
+    vec2f const & screenCoordinates,
+    float radius,
+    std::chrono::milliseconds delay)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->ScareFish(
+        worldCoordinates,
+        radius,
+        delay);
+}
+
+void GameController::AttractFish(
+    vec2f const & screenCoordinates,
+    float radius,
+    std::chrono::milliseconds delay)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->AttractFish(
+        worldCoordinates,
+        radius,
+        delay);
 }
 
 void GameController::PickObjectToMove(
@@ -675,8 +771,8 @@ void GameController::PickObjectToMove(
 
     // Apply action
     assert(!!mWorld);
-    auto elementIndex = mWorld->GetNearestPointAt(worldCoordinates, 1.0f);
-    if (!!elementIndex)
+    auto const elementIndex = mWorld->GetNearestPointAt(worldCoordinates, 1.0f);
+    if (elementIndex.has_value())
         shipId = elementIndex->GetShipId();
     else
         shipId = std::nullopt;
@@ -1129,6 +1225,18 @@ void GameController::SetEngineControllerState(
         mGameParameters);
 }
 
+bool GameController::DestroyTriangle(ElementId triangleId)
+{
+    assert(!!mWorld);
+    return mWorld->DestroyTriangle(triangleId);
+}
+
+bool GameController::RestoreTriangle(ElementId triangleId)
+{
+    assert(!!mWorld);
+    return mWorld->RestoreTriangle(triangleId);
+}
+
 //
 // Render controls
 //
@@ -1239,6 +1347,9 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
     assert(!!mWorld);
     mWorld = std::move(newWorld);
 
+    // Set event recorder (if any)
+    mWorld->SetEventRecorder(mEventRecorder.get());
+
     // Reset state machines
     ResetStateMachines();
 
@@ -1255,9 +1366,9 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
 
 void GameController::OnShipAdded(
     ShipId shipId,
-    RgbaImageData&& textureImage,
-    ShipMetadata const& shipMetadata,
-    std::filesystem::path const& shipDefinitionFilepath,
+    RgbaImageData && textureImage,
+    ShipMetadata const & shipMetadata,
+    std::filesystem::path const & shipDefinitionFilepath,
     bool doAutoZoom)
 {
     // Auto-zoom (if requested)

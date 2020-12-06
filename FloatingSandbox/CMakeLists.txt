@@ -4,22 +4,12 @@
 #
 
 set  (FLOATING_SANDBOX_SOURCES
-	AboutDialog.cpp
-	AboutDialog.h
 	AudioController.h
-	CheckForUpdatesDialog.cpp
-	CheckForUpdatesDialog.h
-	CreditsPanel.cpp
-	CreditsPanel.h
 	EventTickerPanel.cpp
 	EventTickerPanel.h
 	GLCanvas.h
-	HelpDialog.cpp
-	HelpDialog.h
 	LocalizationManager.cpp
 	LocalizationManager.h
-	LoggingDialog.cpp
-	LoggingDialog.h
 	MainApp.cpp
 	MainFrame.cpp
 	MainFrame.h
@@ -27,32 +17,16 @@ set  (FLOATING_SANDBOX_SOURCES
 	Music.h
 	MusicController.cpp
 	MusicController.h
-	NewVersionDisplayDialog.cpp
-	NewVersionDisplayDialog.h
-	PreferencesDialog.cpp
-	PreferencesDialog.h
 	ProbePanel.cpp
 	ProbePanel.h
-	SettingsDialog.cpp
-	SettingsDialog.h
 	SettingsManager.cpp
 	SettingsManager.h
-	ShipDescriptionDialog.cpp
-	ShipDescriptionDialog.h
-	ShipLoadDialog.cpp
-	ShipLoadDialog.h
-	ShipPreviewWindow.cpp
-	ShipPreviewWindow.h
 	SoundController.cpp
 	SoundController.h
 	Sounds.cpp
 	Sounds.h
-	SplashScreenDialog.cpp
-	SplashScreenDialog.h
 	StandardSystemPaths.cpp
 	StandardSystemPaths.h
-	StartupTipDialog.cpp
-	StartupTipDialog.h
 	SwitchboardPanel.cpp
 	SwitchboardPanel.h
 	ToolController.cpp
@@ -69,7 +43,39 @@ set  (FLOATING_SANDBOX_SOURCES
 	WxHelpers.h
 )
 
+set  (DIALOGS_SOURCES
+	AboutDialog.cpp
+	AboutDialog.h
+	CheckForUpdatesDialog.cpp
+	CheckForUpdatesDialog.h
+	CreditsPanel.cpp
+	CreditsPanel.h
+	DebugDialog.cpp
+	DebugDialog.h
+	HelpDialog.cpp
+	HelpDialog.h
+	LoggingDialog.cpp
+	LoggingDialog.h
+	NewVersionDisplayDialog.cpp
+	NewVersionDisplayDialog.h
+	PreferencesDialog.cpp
+	PreferencesDialog.h
+	SettingsDialog.cpp
+	SettingsDialog.h
+	ShipDescriptionDialog.cpp
+	ShipDescriptionDialog.h
+	ShipLoadDialog.cpp
+	ShipLoadDialog.h
+	ShipPreviewWindow.cpp
+	ShipPreviewWindow.h
+	SplashScreenDialog.cpp
+	SplashScreenDialog.h
+	StartupTipDialog.cpp
+	StartupTipDialog.h
+)
+
 source_group(" " FILES ${FLOATING_SANDBOX_SOURCES})
+source_group("Dialogs" FILES ${DIALOGS_SOURCES})
 
 set(RESOURCE_FILES "")
 if (MSVC)
@@ -85,7 +91,7 @@ endif (MSVC)
 
 source_group("Resources" FILES ${RESOURCE_FILES})
 
-add_executable (FloatingSandbox ${FLOATING_SANDBOX_SOURCES} ${RESOURCE_FILES})
+add_executable (FloatingSandbox ${FLOATING_SANDBOX_SOURCES} ${DIALOGS_SOURCES} ${RESOURCE_FILES})
 
 target_include_directories(FloatingSandbox PRIVATE .)
 target_include_directories(FloatingSandbox PRIVATE ${wxWidgets_INCLUDE_DIRS})

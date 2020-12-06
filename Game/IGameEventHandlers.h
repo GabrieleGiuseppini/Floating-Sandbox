@@ -123,46 +123,46 @@ struct IStatisticsGameEventHandler
 
 struct IAtmosphereGameEventHandler
 {
-	virtual void OnStormBegin()
-	{
-		// Default-implemented
-	}
+    virtual void OnStormBegin()
+    {
+        // Default-implemented
+    }
 
-	virtual void OnStormEnd()
-	{
-		// Default-implemented
-	}
+    virtual void OnStormEnd()
+    {
+        // Default-implemented
+    }
 
-	virtual void OnWindSpeedUpdated(
-		float const /*zeroSpeedMagnitude*/,
-		float const /*baseSpeedMagnitude*/,
-		float const /*baseAndStormSpeedMagnitude*/,
-		float const /*preMaxSpeedMagnitude*/,
-		float const /*maxSpeedMagnitude*/,
-		vec2f const& /*windSpeed*/)
-	{
-		// Default-implemented
-	}
+    virtual void OnWindSpeedUpdated(
+        float const /*zeroSpeedMagnitude*/,
+        float const /*baseSpeedMagnitude*/,
+        float const /*baseAndStormSpeedMagnitude*/,
+        float const /*preMaxSpeedMagnitude*/,
+        float const /*maxSpeedMagnitude*/,
+        vec2f const & /*windSpeed*/)
+    {
+        // Default-implemented
+    }
 
-	virtual void OnRainUpdated(float const /*density*/)
-	{
-		// Default-implemented
-	}
+    virtual void OnRainUpdated(float const /*density*/)
+    {
+        // Default-implemented
+    }
 
-	virtual void OnThunder()
-	{
-		// Default-implemented
-	}
+    virtual void OnThunder()
+    {
+        // Default-implemented
+    }
 
-	virtual void OnLightning()
-	{
-		// Default-implemented
-	}
+    virtual void OnLightning()
+    {
+        // Default-implemented
+    }
 
-	virtual void OnLightningHit(StructuralMaterial const & /*structuralMaterial*/)
-	{
-		// Default-implemented
-	}
+    virtual void OnLightningHit(StructuralMaterial const & /*structuralMaterial*/)
+    {
+        // Default-implemented
+    }
 };
 
 struct IElectricalElementGameEventHandler
@@ -471,6 +471,8 @@ struct IGenericGameEventHandler
         // Default-implemented
     }
 
+    // Misc
+
     virtual void OnWatertightDoorOpened(
         bool /*isUnderwater*/,
         unsigned int /*size*/)
@@ -481,6 +483,11 @@ struct IGenericGameEventHandler
     virtual void OnWatertightDoorClosed(
         bool /*isUnderwater*/,
         unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnFishCountUpdated(size_t /*count*/)
     {
         // Default-implemented
     }

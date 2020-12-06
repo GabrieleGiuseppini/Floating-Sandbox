@@ -203,7 +203,18 @@ namespace Utils
         std::string const & memberName)
     {
         return static_cast<int>(
-            Utils::GetMandatoryJsonMember<std::uint64_t>(
+            Utils::GetMandatoryJsonMember<std::int64_t>(
+                obj,
+                memberName));
+    }
+
+    template<>
+    inline size_t GetMandatoryJsonMember<size_t>(
+        picojson::object const & obj,
+        std::string const & memberName)
+    {
+        return static_cast<size_t>(
+            Utils::GetMandatoryJsonMember<std::int64_t>(
                 obj,
                 memberName));
     }
@@ -447,15 +458,20 @@ namespace Utils
         std::filesystem::path const & filepath)
     {
         auto const directoryPath = filepath.parent_path();
+
         if (!std::filesystem::exists(directoryPath))
             std::filesystem::create_directories(directoryPath);
 
         std::ofstream file(filepath.string(), std::ios::out);
+
         if (!file.is_open())
         {
             throw GameException("Cannot open file \"" + filepath.string() + "\"");
         }
 
         file << content;
+
+        file.flush();
+        file.close();
     }
 };

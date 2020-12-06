@@ -1,0 +1,88 @@
+<html>
+<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /></head>
+<body bgcolor="#87CCFA">
+
+<table cellpadding="3" cellspacing="0" width="100%">
+  <tr>
+    <td bgcolor="#FFFFFF" height="2"/
+  </tr>
+  <tr>
+    <td bgcolor="#101010" valign="middle" align="center">
+    <font size=+2 color="#FFFFFF"><b>Vista General</b></font>
+    </td>
+  </tr>
+  <tr>
+    <td bgcolor="#FFFFFF" height="2"/
+  </tr>
+
+<tr>
+<td bgcolor="#87CCFA">
+<p/>
+Este juego es un realista bi-dimensional red de masa-resorte, que simula cuerpos fisicos (Por ejemplo Barcos) flotando en el agua. Tu puedes hacerle agujeros a los objetos, cortarlos, aplicar fuerzas a este, y romperlo con explosiones de bombas. Cuando el agua comienza a entrar al objeto, comenzara a hundirse y, si eres lo suficientemente suertudo, comenzara a romperse!
+<p/>
+Nuestra filosofia en la creacion de este juego es simular el mundo real de la manera mas precisa. Cada nueva version añade nuevas maneras en las cuales las particulas inceractuan entre ellas y con el entorno; piensa en la gravedad, flotabilidad, calor, y viento, pero tambien rebotando al estrellarse contra el suelo, y sientiendo el arrastre cuando se mueve rapidamente bajo el agua.
+<p/>
+Tu puedes crear tus propios objetos fisicos dibujando imagenes usando los colores que corresponden a los materiales en la libreria del juego. Cada material tiene sus propias caracteristicas fisicas, como la masa, fuerza, rigidez, permeabilidad, caracteristicas sonoras, electricas, etcetera. Si quieres, puedes tambien aplicar una imagen de alta resolucion para ser usada como una textura mas realista para el objeto. Una vez que cargas el objeto, miralo flotar y descubre como soporta el estres! Lee la guia de "Como construir un barco" en al directorio de "Guias" para una explicacion detallada de como construir tus propios objetos.
+<p/>
+El juego contiene objetos de ejemplo - Mayormente Barcos. Puedes encontrarlos en el directorio de "Barcos"
+<p/>
+</td>
+</tr>
+
+  <tr>
+    <td bgcolor="#FFFFFF" height="2"/
+  </tr>
+  <tr>
+    <td bgcolor="#101010" valign="middle" align="center">
+    <font size=+2 color="#FFFFFF"><b>Herramientas</b></font>
+    </td>
+  </tr>
+  <tr>
+    <td bgcolor="#FFFFFF" height="2"/
+  </tr>
+
+<tr>
+<td bgcolor="#87CCFA">
+<p/>
+Una vez que cargas un barco, puedes hacer muchas cosas con el.<br/>
+En primer lugar, puedes usar la herramienta <b>Smash</b> <img src="../../Resources/smash_cursor_down.png"/> para hacer agujeros en el. Cuanto mas tiempo mantienes el boton del mouse presionado, Mas grande el agujero que perforaras! Luego, tenemos la herramienta de <b>Slice</b> <img src="../../Resources/chainsaw_cursor_up.png"/> , con la cual cortaras el barco.<br/>
+La herramienta de <b>Attract</b> <img src="../../Resources/drag_cursor_up_plus.png"/> y la de <b>Swirl</b> <img src="../../Resources/swirl_cursor_up_cw.png"/> Aplican fuerzas radiales y tangentes respectivamente. Tambien con estas herramientas, cuanto mas tiempo mantienes el boton del mouse presionado, mas fuertes se volveran las fuerzas que aplican. Puedes invertir las fuerzas usando la tecla <img src="../../Help/ks_shift.png"/> .<br/>
+La herramienta <b>Pin</b> <img src="../../Resources/pin_cursor.png"/> Te permite "Congelar" cualquier parte del barco: una vez que el punto esta congelado,su velocidad se vuelve cero y su pocision nunca cambia. Es preferible incrementar la fuerza del barco mediente <i>Simulator Settings</i> ventana cuando uses esta herramienta, de no ser asi, el punto congelado se rompera bajo el enorme estress causado por los puntos que lo rodean. un pin puede ser removido usando la herramienta soble el pin ya colocado.<br/>
+Con la herramienta de <b>Move</b> <img src="../../Resources/move_cursor_up.png"/> puedes mover (o rotar, si presionas la tecla <img src="../../Help/ks_shift.png"/> ) las partes del barco, mientras que con la herramienta de <b>Move All</b> <img src="../../Resources/move_all_cursor_up.png"/> te permite mover (o rotar) un barco <i>entire</i>.<br/>
+Con la herramienta de <b>Pick'n'Pull</b> <img src="../../Resources/pliers_cursor_up.png"/> tu puedes agarrar una particula y moverla - Pero ten cuidado, si lo haces muy rapido se rompera!<br/>
+La herramienta de <b>Flood</b> <img src="../../Resources/flood_cursor_up.png"/> te permite inundar el barco con agua, o bombearla fuera presionando la tecla <img src="../../Help/ks_shift.png"/> <br/>
+La herramienta de <b>HeatBlaster</b> <img src="../../Resources/heat_blaster_heat_cursor_up.png"/> se utiliza para calentar partes del barco, enviandolos peligrosamente cerca de su punto de ignicion; presionando la tecla <img src="../../Help/ks_shift.png"/> hace que la hheramienta <i>remove</i> calor.<br/>
+Luego de que un barco se hay hundido o quemado, su estructura comienza a oxidarse y corroerse; puedes usar la herramienta de <b>Scrub</b> <img src="../../Resources/scrub_cursor_up.png"/> para quitar la tierra.<br/>
+La herramienta de <b>WaveMaker</b> <img src="../../Resources/wave_maker_cursor_up.png"/> puede ser utulizada para generar olas manualmente , mientras que la herramienta de <b>Adjust Terrain</b> <img src="../../Resources/terrain_adjust_cursor_up.png"/> te permite personalizar el fondo marino , creando islas o abismos a gusto propio.
+<p/>
+Finalmente, para los tipos Agresivos-Pasivos, la destruccion maxima puede ser alcanzada con bombas.<br/>
+<b>Timer Bombs</b> <img src="../../Resources/timer_bomb_cursor.png"/> Explotan automaticamente luego de ser colocadas, mientras que <b>Remote Controlled Bombs</b> <img src="../../Resources/rc_bomb_cursor.png"/> y las <b>Anti-Matter Bombs</b> <img src="../../Resources/am_bomb_cursor.png"/> esperan a que las detones manualmente usando las teclas <img src="../../Help/ks_d.png"/> y <img src="../../Help/ks_n.png"/> respectivamente. <b>Impact Bombs</b> <img src="../../Resources/impact_bomb_cursor.png"/> simplemente explotan...en un impacto.
+<p/>
+Si sientes remordimiento por el daño que has causado, puedes probar la herramienta de <b>Repair Structure</b> <img src="../../Resources/repair_structure_cursor_up.png"/> en las partes rotas del barco, si tienes la suficiente habilidad, seras capaz de restaurar la estructura del barco a su condicion original.
+<p/>
+</td>
+</tr>
+
+  <tr>
+    <td bgcolor="#FFFFFF" height="2"/
+  </tr>
+  <tr>
+    <td bgcolor="#101010" valign="middle" align="center">
+    <font size=+2 color="#FFFFFF"><b>Control de Vision</b></font>
+    </td>
+  </tr>
+  <tr>
+    <td bgcolor="#FFFFFF" height="2"/
+  </tr>
+
+<tr>
+<td bgcolor="#87CCFA">
+<p/>
+Puedes hacer zoom con las teclas <img src="../../Help/ks_plus.png"/> and <img src="../../Help/ks_minus.png"/> o con la rueda del mouse, mientras puede desplazarze por la vista con las teclas <img src="../../Help/ks_left.png"/> <img src="../../Help/ks_up.png"/> <img src="../../Help/ks_right.png"/> <img src="../../Help/ks_down.png"/> . Si te pierdes, la tecla de <img src="../../Help/ks_home.png"/> restaura la vista a sus coordenadas originales.<br/>
+La oscuridad y claridad pueden ser modificadas con las teclas <img src="../../Help/ks_pgup.png"/> and <img src="../../Help/ks_pgdown.png"/> .
+</td>
+</tr>
+</table>
+
+</body>
+</html>

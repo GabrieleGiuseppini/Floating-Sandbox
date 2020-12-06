@@ -226,7 +226,7 @@ public:
         float const baseAndStormSpeedMagnitude,
         float const preMaxSpeedMagnitude,
         float const maxSpeedMagnitude,
-        vec2f const& windSpeed) override
+        vec2f const & windSpeed) override
     {
         for (auto sink : mAtmosphereSinks)
         {
@@ -703,6 +703,14 @@ public:
         mWatertightDoorClosedEvents[std::make_tuple(isUnderwater)] += size;
     }
 
+    virtual void OnFishCountUpdated(size_t count) override
+    {
+        for (auto sink : mGenericSinks)
+        {
+            sink->OnFishCountUpdated(count);
+        }
+    }
+
 public:
 
     /*
@@ -838,7 +846,7 @@ public:
         mStatisticsSinks.push_back(sink);
     }
 
-    void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler* sink)
+    void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler * sink)
     {
         mAtmosphereSinks.push_back(sink);
     }

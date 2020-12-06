@@ -99,6 +99,8 @@ enum class SoundType : uint32_t
     RepairStructure,
     ThanosSnap,
     WaveMaker,
+    FishScream,
+    FishShaker,
 
     // UI
     Error

@@ -149,6 +149,10 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::ThanosSnap;
     else if (Utils::CaseInsensitiveEquals(str, "WaveMaker"))
         return SoundType::WaveMaker;
+    else if (Utils::CaseInsensitiveEquals(str, "FishScream"))
+        return SoundType::FishScream;
+    else if (Utils::CaseInsensitiveEquals(str, "FishShaker"))
+        return SoundType::FishShaker;
     else if (Utils::CaseInsensitiveEquals(str, "Error"))
         return SoundType::Error;
     else

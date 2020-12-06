@@ -5,21 +5,26 @@
  ***************************************************************************************/
 #pragma once
 
+#include "EventRecorder.h"
+#include "FishSpeciesDatabase.h"
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
 #include "MaterialDatabase.h"
 #include "PerfStats.h"
 #include "Physics.h"
 #include "RenderContext.h"
+#include "ResourceLocator.h"
 #include "ShipDefinition.h"
 #include "ShipTexturizer.h"
+#include "VisibleWorld.h"
 
-#include <GameCore/AABB.h>
+#include <GameCore/AABBSet.h>
 #include <GameCore/GameChronometer.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/TaskThreadPool.h>
 #include <GameCore/Vectors.h>
 
+#include <chrono>
 #include <cstdint>
 #include <memory>
 #include <set>
@@ -34,9 +39,11 @@ public:
 
     World(
         OceanFloorTerrain && oceanFloorTerrain,
+        FishSpeciesDatabase const & fishSpeciesDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         std::shared_ptr<TaskThreadPool> taskThreadPool,
-        GameParameters const & gameParameters);
+        GameParameters const & gameParameters,
+        VisibleWorld const & visibleWorld);
 
     std::tuple<ShipId, RgbaImageData> AddShip(
         ShipDefinition && shipDefinition,
@@ -45,6 +52,12 @@ public:
         GameParameters const & gameParameters);
 
     void Announce();
+
+    void SetEventRecorder(EventRecorder * eventRecorder);
+
+    void ReplayRecordedEvent(
+        RecordedEvent const & event,
+        GameParameters const & gameParameters);
 
     float GetCurrentSimulationTime() const
     {
@@ -62,19 +75,19 @@ public:
         return mOceanSurface.GetHeightAt(x);
     }
 
-    inline void DisplaceOceanSurfaceAt(
-        float x,
-        float yOffset)
-    {
-        mOceanSurface.DisplaceAt(x, yOffset);
-    }
-
     inline bool IsUnderwater(vec2f const & position) const
     {
         return position.y < GetOceanSurfaceHeightAt(position.x);
     }
 
     bool IsUnderwater(ElementId elementId) const;
+
+    inline void DisplaceOceanSurfaceAt(
+        float x,
+        float yOffset)
+    {
+        mOceanSurface.DisplaceAt(x, yOffset);
+    }
 
     inline float GetOceanFloorHeightAt(float x) const
     {
@@ -86,6 +99,22 @@ public:
         float yOffset)
     {
         mOceanFloor.DisplaceAt(x, yOffset);
+    }
+
+    inline void DisturbOceanAt(
+        vec2f const & position,
+        float fishScareRadius,
+        std::chrono::milliseconds delay)
+    {
+        mFishes.DisturbAt(
+            position,
+            fishScareRadius,
+            delay);
+    }
+
+    inline void DisturbOcean(std::chrono::milliseconds delay)
+    {
+        mFishes.TriggerWidespreadPanic(delay);
     }
 
     inline vec2f const & GetCurrentWindSpeed() const
@@ -107,6 +136,16 @@ public:
     //
     // Interactions
     //
+
+    void ScareFish(
+        vec2f const & position,
+        float radius,
+        std::chrono::milliseconds delay);
+
+    void AttractFish(
+        vec2f const & position,
+        float radius,
+        std::chrono::milliseconds delay);
 
     void PickPointToMove(
         vec2f const & pickPosition,
@@ -277,10 +316,15 @@ public:
 
     void SetSilence(float silenceAmount);
 
+    bool DestroyTriangle(ElementId triangleId);
+
+    bool RestoreTriangle(ElementId triangleId);
+
 public:
 
     void Update(
         GameParameters const & gameParameters,
+        VisibleWorld const & visibleWorld,
         Render::RenderContext & renderContext,
         PerfStats & perfStats);
 
@@ -294,6 +338,15 @@ private:
     // The current simulation time
     float mCurrentSimulationTime;
 
+    // The game event handler
+    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
+
+    // The current event recorder (if any)
+    EventRecorder * mEventRecorder;
+
+    // The task thread pool that we use for concurrency
+    std::shared_ptr<TaskThreadPool> mTaskThreadPool;
+
     // Repository
     std::vector<std::unique_ptr<Ship>> mAllShips;
     Stars mStars;
@@ -302,12 +355,11 @@ private:
     Clouds mClouds;
     OceanSurface mOceanSurface;
     OceanFloor mOceanFloor;
+    Fishes mFishes;
 
-    // The game event handler
-    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
-
-    // The task thread pool that we use for concurrency
-    std::shared_ptr<TaskThreadPool> mTaskThreadPool;
+    // The set of all AABB's in the world, updated at each
+    // simulation cycle
+    Geometry::AABBSet mAllAABBs;
 };
 
 }

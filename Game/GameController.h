@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "FishSpeciesDatabase.h"
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
 #include "IGameController.h"
@@ -95,7 +96,7 @@ public:
         mGameEventDispatcher->RegisterStatisticsEventHandler(handler);
     }
 
-    void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler* handler) override
+    void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler * handler) override
     {
         assert(!!mGameEventDispatcher);
         mGameEventDispatcher->RegisterAtmosphereEventHandler(handler);
@@ -132,6 +133,10 @@ public:
         mIsPulseUpdateSet = true;
     }
 
+    void StartRecordingEvents(std::function<void(uint32_t, RecordedEvent const &)> onEventCallback) override;
+    RecordedEvents StopRecordingEvents() override;
+    void ReplayRecordedEvent(RecordedEvent const & event) override;
+
     //
     // Game Control and notifications
     //
@@ -159,6 +164,9 @@ public:
     //
     // Interactions
     //
+
+    void ScareFish(vec2f const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
+    void AttractFish(vec2f const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
 
     void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ElementId> & elementId) override;
     void PickObjectToMove(vec2f const & screenCoordinates, std::optional<ShipId> & shipId) override;
@@ -205,6 +213,9 @@ public:
     void SetEngineControllerState(
         ElectricalElementId electricalElementId,
         int telegraphValue) override;
+
+    bool DestroyTriangle(ElementId triangleId) override;
+    bool RestoreTriangle(ElementId triangleId) override;
 
     //
     // Render controls
@@ -266,7 +277,7 @@ public:
 
     float GetSpringStrengthAdjustment() const override { return mFloatParameterSmoothers[SpringStrengthAdjustmentParameterSmoother].GetValue(); }
     void SetSpringStrengthAdjustment(float value) override { mFloatParameterSmoothers[SpringStrengthAdjustmentParameterSmoother].SetValue(value); }
-    float GetMinSpringStrengthAdjustment() const override { return GameParameters::MinSpringStrengthAdjustment;  }
+    float GetMinSpringStrengthAdjustment() const override { return GameParameters::MinSpringStrengthAdjustment; }
     float GetMaxSpringStrengthAdjustment() const override { return GameParameters::MaxSpringStrengthAdjustment; }
 
     float GetGlobalDampingAdjustment() const override { return mGameParameters.GlobalDampingAdjustment; }
@@ -284,10 +295,15 @@ public:
     float GetMinWaterDensityAdjustment() const override { return GameParameters::MinWaterDensityAdjustment; }
     float GetMaxWaterDensityAdjustment() const override { return GameParameters::MaxWaterDensityAdjustment; }
 
-    float GetWaterDragAdjustment() const override { return mGameParameters.WaterDragAdjustment; }
-    void SetWaterDragAdjustment(float value) override { mGameParameters.WaterDragAdjustment = value; }
-    float GetMinWaterDragAdjustment() const override { return GameParameters::MinWaterDragAdjustment; }
-    float GetMaxWaterDragAdjustment() const override { return GameParameters::MaxWaterDragAdjustment; }
+    float GetWaterFrictionDragAdjustment() const override { return mGameParameters.WaterFrictionDragAdjustment; }
+    void SetWaterFrictionDragAdjustment(float value) override { mGameParameters.WaterFrictionDragAdjustment = value; }
+    float GetMinWaterFrictionDragAdjustment() const override { return GameParameters::MinWaterFrictionDragAdjustment; }
+    float GetMaxWaterFrictionDragAdjustment() const override { return GameParameters::MaxWaterFrictionDragAdjustment; }
+
+    float GetWaterPressureDragAdjustment() const override { return mGameParameters.WaterPressureDragAdjustment; }
+    void SetWaterPressureDragAdjustment(float value) override { mGameParameters.WaterPressureDragAdjustment = value; }
+    float GetMinWaterPressureDragAdjustment() const override { return GameParameters::MinWaterPressureDragAdjustment; }
+    float GetMaxWaterPressureDragAdjustment() const override { return GameParameters::MaxWaterPressureDragAdjustment; }
 
     float GetWaterIntakeAdjustment() const override { return mGameParameters.WaterIntakeAdjustment; }
     void SetWaterIntakeAdjustment(float value) override { mGameParameters.WaterIntakeAdjustment = value; }
@@ -439,6 +455,41 @@ public:
     float GetMinElectricalElementHeatProducedAdjustment() const override { return GameParameters::MinElectricalElementHeatProducedAdjustment; }
     float GetMaxElectricalElementHeatProducedAdjustment() const override { return GameParameters::MaxElectricalElementHeatProducedAdjustment; }
 
+    float GetEngineThrustAdjustment() const override { return mGameParameters.EngineThrustAdjustment; }
+    void SetEngineThrustAdjustment(float value) override { mGameParameters.EngineThrustAdjustment = value; }
+    float GetMinEngineThrustAdjustment() const override { return GameParameters::MinEngineThrustAdjustment; }
+    float GetMaxEngineThrustAdjustment() const override { return GameParameters::MaxEngineThrustAdjustment; }
+
+    float GetWaterPumpPowerAdjustment() const override { return mGameParameters.WaterPumpPowerAdjustment; }
+    void SetWaterPumpPowerAdjustment(float value) override { mGameParameters.WaterPumpPowerAdjustment = value; }
+    float GetMinWaterPumpPowerAdjustment() const override { return GameParameters::MinWaterPumpPowerAdjustment; }
+    float GetMaxWaterPumpPowerAdjustment() const override { return GameParameters::MaxWaterPumpPowerAdjustment; }
+
+    // Fishes
+
+    unsigned int GetNumberOfFishes() const override { return mGameParameters.NumberOfFishes; }
+    void SetNumberOfFishes(unsigned int value) override { mGameParameters.NumberOfFishes = value; }
+    unsigned int GetMinNumberOfFishes() const override { return GameParameters::MinNumberOfFishes; }
+    unsigned int GetMaxNumberOfFishes() const override { return GameParameters::MaxNumberOfFishes; }
+
+    float GetFishSizeMultiplier() const override { return mFloatParameterSmoothers[FishSizeMultiplierParameterSmoother].GetValue(); }
+    void SetFishSizeMultiplier(float value) override { mFloatParameterSmoothers[FishSizeMultiplierParameterSmoother].SetValue(value); }
+    float GetMinFishSizeMultiplier() const override { return GameParameters::MinFishSizeMultiplier; }
+    float GetMaxFishSizeMultiplier() const override { return GameParameters::MaxFishSizeMultiplier; }
+
+    float GetFishSpeedAdjustment() const override { return mGameParameters.FishSpeedAdjustment; }
+    void SetFishSpeedAdjustment(float value) override { mGameParameters.FishSpeedAdjustment = value; }
+    float GetMinFishSpeedAdjustment() const override { return GameParameters::MinFishSpeedAdjustment; }
+    float GetMaxFishSpeedAdjustment() const override { return GameParameters::MaxFishSpeedAdjustment; }
+
+    bool GetDoFishShoaling() const override { return mGameParameters.DoFishShoaling; }
+    void SetDoFishShoaling(bool value) override { mGameParameters.DoFishShoaling = value; }
+
+    float GetFishShoalRadiusAdjustment() const override { return mGameParameters.FishShoalRadiusAdjustment; }
+    void SetFishShoalRadiusAdjustment(float value) override { mGameParameters.FishShoalRadiusAdjustment = value; }
+    float GetMinFishShoalRadiusAdjustment() const override { return GameParameters::MinFishShoalRadiusAdjustment; }
+    float GetMaxFishShoalRadiusAdjustment() const override { return GameParameters::MaxFishShoalRadiusAdjustment; }
+
     // Misc
 
     OceanFloorTerrain const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorTerrain(); }
@@ -541,7 +592,7 @@ public:
     float GetAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - mGameParameters.CumulatedIntakenWaterThresholdForAirBubbles; }
     void SetAirBubblesDensity(float value) override { mGameParameters.CumulatedIntakenWaterThresholdForAirBubbles = GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - value; }
     float GetMinAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles; }
-    float GetMaxAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles -  GameParameters::MinCumulatedIntakenWaterThresholdForAirBubbles; }
+    float GetMaxAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - GameParameters::MinCumulatedIntakenWaterThresholdForAirBubbles; }
 
     bool GetDoDisplaceOceanSurfaceAtAirBubblesSurfacing() const override { return mGameParameters.DoDisplaceOceanSurfaceAtAirBubblesSurfacing; }
     void SetDoDisplaceOceanSurfaceAtAirBubblesSurfacing(bool value) override { mGameParameters.DoDisplaceOceanSurfaceAtAirBubblesSurfacing = value; }
@@ -566,16 +617,6 @@ public:
     void SetDayLightCycleDuration(std::chrono::minutes value) override { mGameParameters.DayLightCycleDuration = value; }
     std::chrono::minutes GetMinDayLightCycleDuration() const override { return GameParameters::MinDayLightCycleDuration; }
     std::chrono::minutes GetMaxDayLightCycleDuration() const override { return GameParameters::MaxDayLightCycleDuration; }
-
-    float GetEngineThrustAdjustment() const override { return mGameParameters.EngineThrustAdjustment; }
-    void SetEngineThrustAdjustment(float value) override { mGameParameters.EngineThrustAdjustment = value; }
-    float GetMinEngineThrustAdjustment() const override { return GameParameters::MinEngineThrustAdjustment; }
-    float GetMaxEngineThrustAdjustment() const override { return GameParameters::MaxEngineThrustAdjustment; }
-
-    float GetWaterPumpPowerAdjustment() const override { return mGameParameters.WaterPumpPowerAdjustment; }
-    void SetWaterPumpPowerAdjustment(float value) override { mGameParameters.WaterPumpPowerAdjustment = value; }
-    float GetMinWaterPumpPowerAdjustment() const override { return GameParameters::MinWaterPumpPowerAdjustment; }
-    float GetMaxWaterPumpPowerAdjustment() const override { return GameParameters::MaxWaterPumpPowerAdjustment; }
 
     //
     // Render parameters
@@ -645,6 +686,12 @@ public:
     bool GetShowShipStress() const override { return mRenderContext->GetShowStressedSprings(); }
     void SetShowShipStress(bool value) override { mRenderContext->SetShowStressedSprings(value); }
 
+    bool GetShowShipFrontiers() const override { return mRenderContext->GetShowFrontiers(); }
+    void SetShowShipFrontiers(bool value) override { mRenderContext->SetShowFrontiers(value); }
+
+    bool GetShowAABBs() const override { return mRenderContext->GetShowAABBs(); }
+    void SetShowAABBs(bool value) override { mRenderContext->SetShowAABBs(value); }
+
     bool GetDrawHeatOverlay() const override { return mRenderContext->GetDrawHeatOverlay(); }
     void SetDrawHeatOverlay(bool value) override { mRenderContext->SetDrawHeatOverlay(value); }
 
@@ -682,8 +729,10 @@ private:
         std::unique_ptr<Render::RenderContext> renderContext,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         std::unique_ptr<PerfStats> perfStats,
-        MaterialDatabase materialDatabase,
-        ResourceLocator const & resourceLocator);
+        FishSpeciesDatabase && fishSpeciesDatabase,
+        MaterialDatabase && materialDatabase,
+        ResourceLocator const & resourceLocator,
+        ProgressCallback const & progressCallback);
 
     void Reset(std::unique_ptr<Physics::World> newWorld);
 
@@ -758,14 +807,17 @@ private:
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
     NotificationLayer mNotificationLayer;
     ShipTexturizer mShipTexturizer;
+    std::unique_ptr<EventRecorder> mEventRecorder;
 
 
     //
     // The world
     //
 
-    std::unique_ptr<Physics::World> mWorld;
+    FishSpeciesDatabase mFishSpeciesDatabase;
     MaterialDatabase mMaterialDatabase;
+
+    std::unique_ptr<Physics::World> mWorld;
 
 
     //
@@ -779,6 +831,7 @@ private:
     static constexpr size_t OceanFloorDetailAmplificationParameterSmoother = 4;
     static constexpr size_t FlameSizeAdjustmentParameterSmoother = 5;
     static constexpr size_t BasalWaveHeightAdjustmentParameterSmoother = 6;
+    static constexpr size_t FishSizeMultiplierParameterSmoother = 7;
     std::vector<ParameterSmoother<float>> mFloatParameterSmoothers;
 
     std::unique_ptr<ParameterSmoother<float>> mZoomParameterSmoother;

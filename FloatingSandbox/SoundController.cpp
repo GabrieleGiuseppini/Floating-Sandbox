@@ -64,6 +64,8 @@ SoundController::SoundController(
     , mFloodHoseSound()
     , mRepairStructureSound()
     , mWaveMakerSound()
+    , mFishScareSound()
+    , mFishFoodSound()
     , mWaterRushSound()
     , mWaterSplashSound()
     , mAirBubblesSurfacingSound(0.23f, 0.12f)
@@ -245,6 +247,22 @@ SoundController::SoundController(
                 mMasterToolsMuted,
                 std::chrono::milliseconds(2500),
                 std::chrono::milliseconds(5000));
+        }
+        else if (soundType == SoundType::FishScream)
+        {
+            mFishScareSound.Initialize(
+                std::move(soundBuffer),
+                100.0f,
+                mMasterToolsVolume,
+                mMasterToolsMuted);
+        }
+        else if (soundType == SoundType::FishShaker)
+        {
+            mFishFoodSound.Initialize(
+                std::move(soundBuffer),
+                40.0f,
+                mMasterToolsVolume,
+                mMasterToolsMuted);
         }
         else if (soundType == SoundType::WaterRush)
         {
@@ -835,6 +853,8 @@ void SoundController::SetMasterToolsVolume(float volume)
     mFloodHoseSound.SetMasterVolume(mMasterToolsVolume);
     mRepairStructureSound.SetMasterVolume(mMasterToolsVolume);
     mWaveMakerSound.SetMasterVolume(mMasterToolsVolume);
+    mFishScareSound.SetMasterVolume(mMasterToolsVolume);
+    mFishFoodSound.SetMasterVolume(mMasterToolsVolume);
 }
 
 void SoundController::SetMasterToolsMuted(bool isMuted)
@@ -873,6 +893,8 @@ void SoundController::SetMasterToolsMuted(bool isMuted)
     mFloodHoseSound.SetMuted(mMasterToolsMuted);
     mRepairStructureSound.SetMuted(mMasterToolsMuted);
     mWaveMakerSound.SetMuted(mMasterToolsMuted);
+    mFishScareSound.SetMuted(mMasterToolsMuted);
+    mFishFoodSound.SetMuted(mMasterToolsMuted);
 }
 
 void SoundController::SetPlayBreakSounds(bool playBreakSounds)
@@ -1111,6 +1133,26 @@ void SoundController::PlayPliersSound(bool isUnderwater)
         true);
 }
 
+void SoundController::PlayFishScareSound()
+{
+    mFishScareSound.Start();
+}
+
+void SoundController::StopFishScareSound()
+{
+    mFishScareSound.Stop();
+}
+
+void SoundController::PlayFishFoodSound()
+{
+    mFishFoodSound.Start();
+}
+
+void SoundController::StopFishFoodSound()
+{
+    mFishFoodSound.Stop();
+}
+
 void SoundController::PlaySnapshotSound()
 {
     PlayOneShotMultipleChoiceSound(
@@ -1200,6 +1242,8 @@ void SoundController::Reset()
     mFloodHoseSound.Reset();
     mRepairStructureSound.Reset();
     mWaveMakerSound.Reset();
+    mFishScareSound.Reset();
+    mFishFoodSound.Reset();
 
     mWaterRushSound.Reset();
     mWaterSplashSound.Reset();

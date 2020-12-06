@@ -49,7 +49,8 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
 
     // Water
     ADD_GC_SETTING(float, WaterDensityAdjustment);
-    ADD_GC_SETTING(float, WaterDragAdjustment);
+    ADD_GC_SETTING(float, WaterFrictionDragAdjustment);
+    ADD_GC_SETTING(float, WaterPressureDragAdjustment);
     ADD_GC_SETTING(float, WaterIntakeAdjustment);
     ADD_GC_SETTING(float, WaterCrazyness);
     ADD_GC_SETTING(float, WaterDiffusionSpeedAdjustment);
@@ -89,6 +90,13 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, ElectricalElementHeatProducedAdjustment);
     ADD_GC_SETTING(float, EngineThrustAdjustment);
     ADD_GC_SETTING(float, WaterPumpPowerAdjustment);
+
+    // Fishes
+    ADD_GC_SETTING(unsigned int, NumberOfFishes);
+    ADD_GC_SETTING(float, FishSizeMultiplier);
+    ADD_GC_SETTING(float, FishSpeedAdjustment);
+    ADD_GC_SETTING(bool, DoFishShoaling);
+    ADD_GC_SETTING(float, FishShoalRadiusAdjustment);
 
     // Misc
     ADD_GC_SETTING(OceanFloorTerrain, OceanFloorTerrain);
@@ -139,6 +147,8 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(rgbColor, FlatLandColor);
     ADD_GC_SETTING(VectorFieldRenderModeType, VectorFieldRenderMode);
     ADD_GC_SETTING(bool, ShowShipStress);
+    ADD_GC_SETTING(bool, ShowShipFrontiers);
+    ADD_GC_SETTING(bool, ShowAABBs);
     ADD_GC_SETTING(bool, DrawHeatOverlay);
     ADD_GC_SETTING(float, HeatOverlayTransparency);
     ADD_GC_SETTING(ShipFlameRenderModeType, ShipFlameRenderMode);
@@ -151,7 +161,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_SC_SETTING(bool, PlayBreakSounds);
     ADD_SC_SETTING(bool, PlayStressSounds);
     ADD_SC_SETTING(bool, PlayWindSound);
-    ADD_SC_SETTING(bool, PlayAirBubbleSurfaceSound);    
+    ADD_SC_SETTING(bool, PlayAirBubbleSurfaceSound);
 
     return factory;
 }

@@ -80,6 +80,8 @@ void TextureAtlasFrameMetadata<TextureGroups>::Serialize(picojson::object & root
     picojson::object textureCoordinates;
     textureCoordinates["left"] = picojson::value(static_cast<double>(TextureCoordinatesBottomLeft.x));
     textureCoordinates["bottom"] = picojson::value(static_cast<double>(TextureCoordinatesBottomLeft.y));
+    textureCoordinates["anchorCenterX"] = picojson::value(static_cast<double>(TextureCoordinatesAnchorCenter.x));
+    textureCoordinates["anchorCenterY"] = picojson::value(static_cast<double>(TextureCoordinatesAnchorCenter.y));
     textureCoordinates["right"] = picojson::value(static_cast<double>(TextureCoordinatesTopRight.x));
     textureCoordinates["top"] = picojson::value(static_cast<double>(TextureCoordinatesTopRight.y));
     root["texture_coordinates"] = picojson::value(std::move(textureCoordinates));
@@ -105,6 +107,9 @@ TextureAtlasFrameMetadata<TextureGroups> TextureAtlasFrameMetadata<TextureGroups
     vec2f textureCoordinatesBottomLeft(
         static_cast<float>(textureCoordinatesJson.at("left").get<double>()),
         static_cast<float>(textureCoordinatesJson.at("bottom").get<double>()));
+    vec2f textureCoordinatesAnchorCenter(
+        static_cast<float>(textureCoordinatesJson.at("anchorCenterX").get<double>()),
+        static_cast<float>(textureCoordinatesJson.at("anchorCenterY").get<double>()));
     vec2f textureCoordinatesTopRight(
         static_cast<float>(textureCoordinatesJson.at("right").get<double>()),
         static_cast<float>(textureCoordinatesJson.at("top").get<double>()));
@@ -119,6 +124,7 @@ TextureAtlasFrameMetadata<TextureGroups> TextureAtlasFrameMetadata<TextureGroups
     return TextureAtlasFrameMetadata<TextureGroups>(
         textureSpaceWidth,
         textureSpaceHeight,
+        textureCoordinatesAnchorCenter,
         textureCoordinatesBottomLeft,
         textureCoordinatesTopRight,
         frameLeftX,
@@ -654,6 +660,10 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
             vec2f(
                 dx + static_cast<float>(texturePosition.FrameLeftX) / static_cast<float>(specification.AtlasSize.Width),
                 dy + static_cast<float>(texturePosition.FrameBottomY) / static_cast<float>(specification.AtlasSize.Height)),
+            // Anchor center
+            vec2f(
+                dx + static_cast<float>(texturePosition.FrameLeftX + textureFrame.Metadata.AnchorCenter.X) / static_cast<float>(specification.AtlasSize.Width),
+                dy + static_cast<float>(texturePosition.FrameBottomY + textureFrame.Metadata.AnchorCenter.Y) / static_cast<float>(specification.AtlasSize.Height)),
             // Top-right
             vec2f(
                 static_cast<float>(texturePosition.FrameLeftX + textureFrame.TextureData.Size.Width) / static_cast<float>(specification.AtlasSize.Width) - dx,
@@ -718,13 +728,16 @@ template struct Render::TextureAtlasMetadata<Render::CloudTextureGroups>;
 template struct Render::TextureAtlasMetadata<Render::GenericLinearTextureGroups>;
 template struct Render::TextureAtlasMetadata<Render::GenericMipMappedTextureGroups>;
 template struct Render::TextureAtlasMetadata<Render::ExplosionTextureGroups>;
+template struct Render::TextureAtlasMetadata<Render::FishTextureGroups>;
 
 template struct Render::TextureAtlas<Render::CloudTextureGroups>;
 template struct Render::TextureAtlas<Render::GenericLinearTextureGroups>;
 template struct Render::TextureAtlas<Render::GenericMipMappedTextureGroups>;
 template struct Render::TextureAtlas<Render::ExplosionTextureGroups>;
+template struct Render::TextureAtlas<Render::FishTextureGroups>;
 
 template class Render::TextureAtlasBuilder<Render::CloudTextureGroups>;
 template class Render::TextureAtlasBuilder<Render::GenericLinearTextureGroups>;
 template class Render::TextureAtlasBuilder<Render::GenericMipMappedTextureGroups>;
 template class Render::TextureAtlasBuilder<Render::ExplosionTextureGroups>;
+template class Render::TextureAtlasBuilder<Render::FishTextureGroups>;

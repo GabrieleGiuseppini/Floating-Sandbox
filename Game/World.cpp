@@ -16,21 +16,29 @@ namespace Physics {
 
 World::World(
     OceanFloorTerrain && oceanFloorTerrain,
+    FishSpeciesDatabase const & fishSpeciesDatabase,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     std::shared_ptr<TaskThreadPool> taskThreadPool,
-    GameParameters const & gameParameters)
+    GameParameters const & gameParameters,
+    VisibleWorld const & /*visibleWorld*/)
     : mCurrentSimulationTime(0.0f)
+    //
+    , mGameEventHandler(std::move(gameEventDispatcher))
+    , mEventRecorder(nullptr)
+    , mTaskThreadPool(std::move(taskThreadPool))
+    //
     , mAllShips()
     , mStars()
-    , mStorm(*this, gameEventDispatcher)
-    , mWind(gameEventDispatcher)
+    , mStorm(*this, mGameEventHandler)
+    , mWind(mGameEventHandler)
     , mClouds()
-    , mOceanSurface(gameEventDispatcher)
+    , mOceanSurface(*this, mGameEventHandler)
     , mOceanFloor(std::move(oceanFloorTerrain))
-    , mGameEventHandler(std::move(gameEventDispatcher))
-    , mTaskThreadPool(std::move(taskThreadPool))
+    , mFishes(fishSpeciesDatabase, mGameEventHandler)
+    //
+    , mAllAABBs()
 {
-    // Initialize world pieces
+    // Initialize world pieces that need to be initialized now
     mStars.Update(gameParameters);
     mStorm.Update(mCurrentSimulationTime, gameParameters);
     mWind.Update(mStorm.GetParameters(), gameParameters);
@@ -58,6 +66,9 @@ std::tuple<ShipId, RgbaImageData> World::AddShip(
         shipTexturizer,
         gameParameters);
 
+    // Set event recorder in new ship (if any)
+    ship->SetEventRecorder(mEventRecorder);
+
     // Store ship
     mAllShips.push_back(std::move(ship));
 
@@ -71,6 +82,30 @@ void World::Announce()
     for (auto & ship : mAllShips)
     {
         ship->Announce();
+    }
+}
+
+void World::SetEventRecorder(EventRecorder * eventRecorder)
+{
+    mEventRecorder = eventRecorder;
+
+    // Set in all ships
+    for (auto & ship : mAllShips)
+    {
+        ship->SetEventRecorder(eventRecorder);
+    }
+}
+
+void World::ReplayRecordedEvent(
+    RecordedEvent const & event,
+    GameParameters const & gameParameters)
+{
+    for (auto & ship : mAllShips)
+    {
+        if (ship->ReplayRecordedEvent(event, gameParameters))
+        {
+            break;
+        }
     }
 }
 
@@ -104,6 +139,22 @@ bool World::IsUnderwater(ElementId elementId) const
 //////////////////////////////////////////////////////////////////////////////
 // Interactions
 //////////////////////////////////////////////////////////////////////////////
+
+void World::ScareFish(
+    vec2f const & position,
+    float radius,
+    std::chrono::milliseconds delay)
+{
+    mFishes.DisturbAt(position, radius, delay);
+}
+
+void World::AttractFish(
+    vec2f const & position,
+    float radius,
+    std::chrono::milliseconds delay)
+{
+    mFishes.AttractAt(position, radius, delay);
+}
 
 void World::PickPointToMove(
     vec2f const & pickPosition,
@@ -237,6 +288,9 @@ void World::DestroyAt(
             mCurrentSimulationTime,
             gameParameters);
     }
+
+    // Also scare fishes at bit
+    mFishes.DisturbAt(targetPos, 0.3f, std::chrono::milliseconds(0));
 }
 
 void World::RepairAt(
@@ -550,6 +604,20 @@ void World::ApplyThanosSnap(
 
     // Apply to ocean surface
     mOceanSurface.ApplyThanosSnap(leftFrontX, rightFrontX);
+
+    // Apply to fishes
+
+    float constexpr DisturbanceRadius = 2.0f;
+
+    mFishes.DisturbAt(
+        vec2f(leftFrontX, 0.0f),
+        DisturbanceRadius,
+        std::chrono::milliseconds(0));
+
+    mFishes.DisturbAt(
+        vec2f(rightFrontX, 0.0f),
+        DisturbanceRadius,
+        std::chrono::milliseconds(0));
 }
 
 std::optional<ElementId> World::GetNearestPointAt(
@@ -611,11 +679,19 @@ void World::ApplyLightning(
     {
         ship->ApplyLightning(targetPos, currentSimulationTime, gameParameters);
     }
+
+    // Apply to fishes
+    DisturbOceanAt(
+        targetPos,
+        500.0f,
+        std::chrono::milliseconds(0));
 }
 
 void World::TriggerTsunami()
 {
     mOceanSurface.TriggerTsunami(mCurrentSimulationTime);
+
+    DisturbOcean(std::chrono::milliseconds(0));
 }
 
 void World::TriggerStorm()
@@ -676,17 +752,41 @@ void World::SetSilence(float silenceAmount)
     mWind.SetSilence(silenceAmount);
 }
 
+bool World::DestroyTriangle(ElementId triangleId)
+{
+    auto const shipId = triangleId.GetShipId();
+    assert(shipId >= 0 && shipId < mAllShips.size());
+
+    return mAllShips[shipId]->DestroyTriangle(triangleId.GetLocalObjectId());
+}
+
+bool World::RestoreTriangle(ElementId triangleId)
+{
+    auto const shipId = triangleId.GetShipId();
+    assert(shipId >= 0 && shipId < mAllShips.size());
+
+    return mAllShips[shipId]->RestoreTriangle(triangleId.GetLocalObjectId());
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // Simulation
 //////////////////////////////////////////////////////////////////////////////
 
 void World::Update(
     GameParameters const & gameParameters,
+    VisibleWorld const & visibleWorld,
     Render::RenderContext & renderContext,
-    PerfStats & /*perfStats*/)
+    PerfStats & perfStats)
 {
     // Update current time
     mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
+
+    // Prepare all AABBs
+    mAllAABBs.Clear();
+
+    //
+    // Update all subsystems
+    //
 
     mStars.Update(gameParameters);
 
@@ -706,7 +806,16 @@ void World::Update(
             mCurrentSimulationTime,
             mStorm.GetParameters(),
             gameParameters,
-            renderContext);
+            renderContext,
+            mAllAABBs);
+    }
+
+    {
+        auto const startTime = std::chrono::steady_clock::now();
+
+        mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, gameParameters, visibleWorld, mAllAABBs);
+
+        perfStats.TotalFishUpdateDuration.Update(std::chrono::steady_clock::now() - startTime);
     }
 }
 
@@ -725,6 +834,8 @@ void World::RenderUpload(
 
     mOceanSurface.Upload(gameParameters, renderContext);
 
+    mFishes.Upload(renderContext);
+
     // Ships
     {
         renderContext.UploadShipsStart();
@@ -737,6 +848,23 @@ void World::RenderUpload(
         }
 
         renderContext.UploadShipsEnd();
+    }
+
+    // AABBs
+    if (renderContext.GetShowAABBs())
+    {
+        renderContext.UploadAABBsStart(mAllAABBs.GetCount());
+
+        auto constexpr color = rgbaColor(18, 8, 255, 255).toVec4f();
+
+        for (auto const & aabb : mAllAABBs.GetItems())
+        {
+            renderContext.UploadAABB(
+                aabb,
+                color);
+        }
+
+        renderContext.UploadAABBsEnd();
     }
 }
 

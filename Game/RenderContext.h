@@ -25,6 +25,7 @@
 
 #include <Game/GameParameters.h>
 
+#include <GameCore/AABB.h>
 #include <GameCore/BoundedVector.h>
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
@@ -47,7 +48,7 @@ namespace Render {
 /*
  * This class is the entry point of the entire rendering subsystem, providing
  * the API for rendering, which is agnostic about the render platform implementation.
- * 
+ *
  * This class is in turn a coordinator of a number of child contextes, each focusing
  * on a different subset of the rendering universe (world, ships, UI); this class
  * dispatches all externally-invoked API calls to the child contexts implementing
@@ -109,6 +110,11 @@ public:
         return newCameraWorldPosition;
     }
 
+    VisibleWorld const & GetVisibleWorld() const
+    {
+        return mRenderParameters.View.GetVisibleWorld();
+    }
+
     int GetCanvasWidth() const
     {
         return mRenderParameters.View.GetCanvasWidth();
@@ -136,36 +142,6 @@ public:
     {
         mRenderParameters.View.ResetPixelOffset();
         mRenderParameters.IsViewDirty = true;
-    }
-
-    float GetVisibleWorldWidth() const
-    {
-        return mRenderParameters.View.GetVisibleWorldWidth();
-    }
-
-    float GetVisibleWorldHeight() const
-    {
-        return mRenderParameters.View.GetVisibleWorldHeight();
-    }
-
-    float GetVisibleWorldLeft() const
-    {
-        return mRenderParameters.View.GetVisibleWorldTopLeft().x;
-    }
-
-    float GetVisibleWorldRight() const
-    {
-        return mRenderParameters.View.GetVisibleWorldBottomRight().x;
-    }
-
-    float GetVisibleWorldTop() const
-    {
-        return mRenderParameters.View.GetVisibleWorldTopLeft().y;
-    }
-
-    float GetVisibleWorldBottom() const
-    {
-        return mRenderParameters.View.GetVisibleWorldBottomRight().y;
     }
 
     float CalculateZoomForWorldWidth(float worldWidth) const
@@ -214,7 +190,7 @@ public:
     {
         mRenderParameters.FlatSkyColor = color;
         // No need to set dirty, this is picked up at each cycle anyway
-    }    
+    }
 
     float GetOceanTransparency() const
     {
@@ -222,7 +198,7 @@ public:
     }
 
     void SetOceanTransparency(float transparency)
-    {        
+    {
         mRenderParameters.OceanTransparency = transparency;
         // No need to set dirty, this is picked up at each cycle anway
     }
@@ -414,6 +390,28 @@ public:
         // No need to set dirty, this is picked up at each cycle anway
     }
 
+    bool GetShowFrontiers() const
+    {
+        return mRenderParameters.ShowFrontiers;
+    }
+
+    void SetShowFrontiers(bool showFrontiers)
+    {
+        mRenderParameters.ShowFrontiers = showFrontiers;
+        // No need to set dirty, this is picked up at each cycle anway
+    }
+
+    bool GetShowAABBs() const
+    {
+        return mRenderParameters.ShowAABBs;
+    }
+
+    void SetShowAABBs(bool showAABBs)
+    {
+        mRenderParameters.ShowAABBs = showAABBs;
+        // No need to set dirty, this is picked up at each cycle anway
+    }
+
     rgbColor const & GetShipDefaultWaterColor() const
     {
         return mShipDefaultWaterColor;
@@ -575,13 +573,13 @@ public:
     }
 
     inline void UploadStormAmbientDarkening(float darkening)
-    {        
+    {
         if (mWorldRenderContext->UploadStormAmbientDarkening(darkening))
         {
             mRenderParameters.EffectiveAmbientLightIntensity = CalculateEffectiveAmbientLightIntensity(
                 mAmbientLightIntensity,
                 mWorldRenderContext->GetStormAmbientDarkening());
-            
+
             mRenderParameters.IsEffectiveAmbientLightIntensityDirty = true;
         }
     }
@@ -636,19 +634,22 @@ public:
 
     inline void UploadCloud(
         uint32_t cloudId,
-        float virtualX,     // [-1.5, +1.5]
-        float virtualY,     // [-0.5, +0.5]
+        float virtualX,         // [-1.5, +1.5]
+        float virtualY,         // [0.0, +1.0]
+        float virtualZ,         // [0.0, +1.0]
         float scale,
-        float darkening)    // 0.0:dark, 1.0:light
+        float darkening,        // 0.0:dark, 1.0:light
+        float growthProgress)   // [0.0, +1.0]
     {
         mWorldRenderContext->UploadCloud(
             cloudId,
             virtualX,
             virtualY,
+            virtualZ,
             scale,
             darkening,
+            growthProgress,
             mRenderParameters);
-        //
     }
 
     inline void UploadCloudsEnd()
@@ -698,6 +699,37 @@ public:
         mWorldRenderContext->UploadOceanEnd();
     }
 
+    inline void UploadFishesStart(size_t fishCount)
+    {
+        mWorldRenderContext->UploadFishesStart(fishCount);
+    }
+
+    inline void UploadFish(
+        TextureFrameId<FishTextureGroups> const & textureFrameId,
+        vec2f const & position,
+        vec2f const & worldSize,
+        float angleCw,
+        float horizontalScale,
+        float tailX,
+        float tailSwing,
+        float tailProgress)
+    {
+        mWorldRenderContext->UploadFish(
+            textureFrameId,
+            position,
+            worldSize,
+            angleCw,
+            horizontalScale,
+            tailX,
+            tailSwing,
+            tailProgress);
+    }
+
+    inline void UploadFishesEnd()
+    {
+        mWorldRenderContext->UploadFishesEnd();
+    }
+
     inline void UploadAMBombPreImplosion(
         vec2f const & centerPosition,
         float progress,
@@ -717,6 +749,25 @@ public:
             centerPosition,
             progress,
             mRenderParameters);
+    }
+
+    inline void UploadAABBsStart(size_t aabbCount)
+    {
+        mWorldRenderContext->UploadAABBsStart(aabbCount);
+    }
+
+    inline void UploadAABB(
+        Geometry::AABB const & aabb,
+        vec4f const & color)
+    {
+        mWorldRenderContext->UploadAABB(
+            aabb,
+            color);
+    }
+
+    inline void UploadAABBsEnd()
+    {
+        mWorldRenderContext->UploadAABBsEnd();
     }
 
     inline void UploadHeatBlasterFlame(
@@ -862,6 +913,23 @@ public:
             });
     }
 
+    // Upload is Asynchronous - buffer may not be used until the
+    // next UpdateStart
+    inline void UploadShipPointFrontierColors(
+        ShipId shipId,
+        FrontierColor const * colors)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        // Run upload asynchronously
+        mRenderThread.QueueTask(
+            [=]()
+            {
+                mShips[shipId]->UploadPointFrontierColors(colors);
+            });
+    }
+
+
     inline void UploadShipElementsStart(ShipId shipId)
     {
         assert(shipId >= 0 && shipId < mShips.size());
@@ -966,6 +1034,34 @@ public:
         assert(shipId >= 0 && shipId < mShips.size());
 
         mShips[shipId]->UploadElementStressedSpringsEnd();
+    }
+
+    inline void UploadShipElementFrontierEdgesStart(
+        ShipId shipId,
+        size_t edgesCount)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadElementFrontierEdgesStart(edgesCount);
+    }
+
+    inline void UploadShipElementFrontierEdge(
+        ShipId shipId,
+        int shipPointIndex1,
+        int shipPointIndex2)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadElementFrontierEdge(
+            shipPointIndex1,
+            shipPointIndex2);
+    }
+
+    inline void UploadShipElementFrontierEdgesEnd(ShipId shipId)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadElementFrontierEdgesEnd();
     }
 
     inline void UploadShipFlamesStart(
@@ -1265,9 +1361,9 @@ public:
     void RenderEnd();
 
 private:
-    
-    void ProcessParameterChanges(RenderParameters const & renderParameters);    
-    
+
+    void ProcessParameterChanges(RenderParameters const & renderParameters);
+
     void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
 
     void ApplyDebugShipRenderModeChanges(RenderParameters const & renderParameters);
@@ -1304,13 +1400,13 @@ private:
 
     std::unique_ptr<GlobalRenderContext> mGlobalRenderContext;
     std::unique_ptr<WorldRenderContext> mWorldRenderContext;
-    std::vector<std::unique_ptr<ShipRenderContext>> mShips;    
-    std::unique_ptr<NotificationRenderContext> mNotificationRenderContext;  
+    std::vector<std::unique_ptr<ShipRenderContext>> mShips;
+    std::unique_ptr<NotificationRenderContext> mNotificationRenderContext;
 
     //
     // Externally-controlled parameters that only affect Upload (i.e. that do
     // not affect rendering directly), or that purely serve as input to calculated
-    // render parameters, or that only need storage here (e.g. being used in other 
+    // render parameters, or that only need storage here (e.g. being used in other
     // contexts to control upload's)
     //
 

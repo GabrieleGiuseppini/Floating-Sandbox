@@ -181,6 +181,13 @@ ToolController::ToolController(
             soundController,
             resourceLocator));
 
+    mAllTools.emplace_back(
+        std::make_unique<ScareFishTool>(
+            *this,
+            gameController,
+            soundController,
+            resourceLocator));
+
     // Prepare own cursor(s)
     mPanCursor = WxHelpers::LoadCursor("pan_cursor", 15, 15, resourceLocator);
 

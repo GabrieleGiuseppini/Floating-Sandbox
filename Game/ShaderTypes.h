@@ -18,19 +18,21 @@ namespace Render {
 
 enum class ProgramType
 {
-    AMBombPreImplosion = 0,
+    AABBs = 0,
+    AMBombPreImplosion,
     Clouds,
     CrossOfLight,
     FireExtinguisherSpray,
+    Fishes,
     HeatBlasterFlameCool,
     HeatBlasterFlameHeat,
     LandFlat,
     LandTexture,
-	Lightning,
+    Lightning,
     OceanDepth,
     OceanFlat,
     OceanTexture,
-	Rain,
+    Rain,
     ShipCircleHighlights,
     ShipElectricalElementHighlights,
     ShipExplosions,
@@ -40,6 +42,7 @@ enum class ProgramType
     ShipFlamesForeground1,
     ShipFlamesForeground2,
     ShipFlamesForeground3,
+    ShipFrontierEdges,
     ShipGenericMipMappedTextures,
     ShipPointsColor,
     ShipPointsColorWithTemperature,
@@ -87,7 +90,7 @@ enum class ProgramParameterType : uint8_t
     OceanDepthColorEnd,
     OceanFlatColor,
     OrthoMatrix,
-	RainDensity,
+    RainDensity,
     StarTransparency,
     TextLighteningStrength,
     TextureLighteningStrength,
@@ -102,12 +105,13 @@ enum class ProgramParameterType : uint8_t
     SharedTexture,                          // 0, for programs that don't use a dedicated unit and hence will keep binding different textures
     CloudsAtlasTexture,                     // 1
     ExplosionsAtlasTexture,                 // 2
-    GenericLinearTexturesAtlasTexture,      // 3
-    GenericMipMappedTexturesAtlasTexture,   // 4
-    LandTexture,                            // 5
-    NoiseTexture1,                          // 6
-    NoiseTexture2,                          // 7
-    OceanTexture,                           // 8
+    FishesAtlasTexture,                     // 3
+    GenericLinearTexturesAtlasTexture,      // 4
+    GenericMipMappedTexturesAtlasTexture,   // 5
+    LandTexture,                            // 6
+    NoiseTexture1,                          // 7
+    NoiseTexture2,                          // 8
+    OceanTexture,                           // 9
 
     _FirstTexture = SharedTexture,
     _LastTexture = OceanTexture
@@ -128,8 +132,8 @@ enum class VertexAttributeType : GLuint
 
     Star = 0,
 
-	Lightning1 = 0,
-	Lightning2 = 1,
+    Lightning1 = 0,
+    Lightning2 = 1,
 
     Cloud1 = 0,
     Cloud2 = 1,
@@ -138,13 +142,21 @@ enum class VertexAttributeType : GLuint
 
     Ocean = 0,
 
+    Fish1 = 0,
+    Fish2 = 1,
+    Fish3 = 2,
+    Fish4 = 3,
+
     AMBombPreImplosion1 = 0,
-    AMBombPreImplosion2 =1,
+    AMBombPreImplosion2 = 1,
 
     CrossOfLight1 = 0,
     CrossOfLight2 = 1,
 
-	Rain = 0,
+    AABB1 = 0,
+    AABB2 = 1,
+
+    Rain = 0,
 
     FireExtinguisherSpray = 0,
 
@@ -160,6 +172,7 @@ enum class VertexAttributeType : GLuint
     ShipPointAttributeGroup2 = 1,   // Light, Water, PlaneId, Decay
     ShipPointColor = 2,
     ShipPointTemperature = 3,
+    ShipPointFrontierColor = 4,
 
     Explosion1 = 0,
     Explosion2 = 1,

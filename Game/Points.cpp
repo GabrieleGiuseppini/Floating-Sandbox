@@ -33,6 +33,7 @@ void Points::Add(
     mIsRopeBuffer.emplace_back(isRope);
 
     mPositionBuffer.emplace_back(position);
+    mFactoryPositionBuffer.emplace_back(position);
     mVelocityBuffer.emplace_back(vec2f::zero());
     mSpringForceBuffer.emplace_back(vec2f::zero());
     mNonSpringForceBuffer.emplace_back(vec2f::zero());
@@ -1506,6 +1507,14 @@ void Points::Query(ElementIndex pointElementIndex) const
     LogMessage("W=", mWaterBuffer[pointElementIndex], " L=", mLightBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex], " Decay=", mDecayBuffer[pointElementIndex]);
     //LogMessage("Springs: ", mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.size(), " (factory: ", mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.size(), ")");
     LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex], " ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
+}
+
+void Points::ColorPoint(
+    ElementIndex pointIndex,
+    rgbaColor const & color)
+{
+    mColorBuffer[pointIndex] = color.toVec4f();
+    mIsWholeColorBufferDirty = true;
 }
 
 void Points::UploadAttributes(

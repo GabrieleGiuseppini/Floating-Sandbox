@@ -12,9 +12,10 @@
 namespace Geometry {
 
 // Axis-Aligned Bounding Box
-class AABB
+struct AABB
 {
 public:
+
     vec2f TopRight;
     vec2f BottomLeft;
 
@@ -78,12 +79,22 @@ public:
             BottomLeft.y = other.BottomLeft.y;
     }
 
-    inline bool Contains(vec2f const & point) const
+    inline bool Contains(vec2f const & point) const noexcept
     {
         return point.x >= BottomLeft.x
             && point.x <= TopRight.x
             && point.y >= BottomLeft.y
             && point.y <= TopRight.y;
+    }
+
+    inline bool Contains(
+        vec2f const & point,
+        float margin) const noexcept
+    {
+        return point.x >= BottomLeft.x - margin
+            && point.x <= TopRight.x + margin
+            && point.y >= BottomLeft.y - margin
+            && point.y <= TopRight.y + margin;
     }
 };
 
