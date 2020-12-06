@@ -234,7 +234,7 @@ public:
 
 inline void _CheckOpenGLError(char const * file, int line)
 {
-    GLenum errorCode = glGetError();
+    GLenum const errorCode = glGetError();
     if (errorCode != GL_NO_ERROR)
     {
         std::string errorCodeString;

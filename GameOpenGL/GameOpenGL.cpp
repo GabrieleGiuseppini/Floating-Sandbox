@@ -23,6 +23,8 @@ bool GameOpenGL::AvoidGlFinish = false;
 
 void GameOpenGL::InitOpenGL()
 {
+    GLenum errorCode;
+
     int status = gladLoadGL();
     if (!status)
     {
@@ -96,10 +98,11 @@ void GameOpenGL::InitOpenGL()
     LogMessage("GL_MAX_RENDERBUFFER_SIZE=", MaxRenderbufferSize);
 
     glGetIntegerv(GL_MAJOR_VERSION, &tmpConstant);
-    if (tmpConstant != GL_INVALID_ENUM)
+    errorCode = glGetError();
+    if (errorCode != GL_NO_ERROR)
         MaxOpenGLVersionMajor = tmpConstant;
     else
-        MaxOpenGLVersionMajor = MinOpenGLVersionMaj;
+        MaxOpenGLVersionMajor = MinOpenGLVersionMaj; // Use the one we requested
     LogMessage("GL_MAJOR_VERSION=", MaxOpenGLVersionMajor);
 
     //
