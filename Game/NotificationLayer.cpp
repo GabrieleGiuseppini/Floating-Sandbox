@@ -95,14 +95,11 @@ void NotificationLayer::SetStatusTexts(
 		{
 			ss.fill('0');
 
-			auto const fishUpdateDuration = lastDeltaPerfStats.TotalFishUpdateDuration.ToRatio<std::chrono::milliseconds>();
-
 			ss << std::fixed
 				<< std::setprecision(2)
 				<< "UPD:" << totalPerfStats.TotalUpdateDuration.ToRatio<std::chrono::milliseconds>() << "MS"
 				<< " (W=" << lastDeltaPerfStats.TotalWaitForRenderUploadDuration.ToRatio<std::chrono::milliseconds>() << "MS +"
-				<< " FSH=" << fishUpdateDuration << "MS +"
-				<< " " << (lastDeltaPerfStats.TotalNetUpdateDuration.ToRatio<std::chrono::milliseconds>() - fishUpdateDuration) << "MS)"
+				<< " " << lastDeltaPerfStats.TotalNetUpdateDuration.ToRatio<std::chrono::milliseconds>() << "MS)"
 				<< " UPL:(W=" << lastDeltaPerfStats.TotalWaitForRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS +"
 				<< " " << lastDeltaPerfStats.TotalNetRenderUploadDuration.ToRatio<std::chrono::milliseconds>() << "MS)"
 				;

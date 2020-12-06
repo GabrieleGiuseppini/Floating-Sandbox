@@ -4,6 +4,7 @@
 - Added first implementation of hydrodynamics
 	- Water drag is now calculated separately as friction drag and pressure (aka "directional") drag
 	- Re-calibrated all drag forces in the simulation
+- Added a new "surprise" feature, will be publicized in a week or so to maintain anticipation!
 - Improved clouds
 	- Thanks to Dario Bazzichetto for the ideas!
 - Added Spanish localization

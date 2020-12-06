@@ -607,7 +607,7 @@ void World::ApplyThanosSnap(
 
     // Apply to fishes
 
-    float constexpr DisturbanceRadius = 2.0f;
+    float constexpr DisturbanceRadius = 100.0f;
 
     mFishes.DisturbAt(
         vec2f(leftFrontX, 0.0f),
