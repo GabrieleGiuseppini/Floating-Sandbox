@@ -15,6 +15,7 @@ int GameOpenGL::MaxVertexAttributes = 0;
 int GameOpenGL::MaxViewportWidth = 0;
 int GameOpenGL::MaxViewportHeight = 0;
 int GameOpenGL::MaxTextureSize = 0;
+int GameOpenGL::MaxTextureUnits = 0;
 int GameOpenGL::MaxRenderbufferSize = 0;
 int GameOpenGL::MaxOpenGLVersionMajor = 0;
 
@@ -85,6 +86,10 @@ void GameOpenGL::InitOpenGL()
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &tmpConstant);
     MaxTextureSize = tmpConstant;
     LogMessage("GL_MAX_TEXTURE_SIZE=", MaxTextureSize);
+
+    glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &tmpConstant);
+    MaxTextureUnits = tmpConstant;
+    LogMessage("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS=", MaxTextureUnits);
 
     glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &tmpConstant);
     MaxRenderbufferSize = tmpConstant;

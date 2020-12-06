@@ -823,6 +823,8 @@ Render:
 				- m2: i7-4790k (8 HW threads), 4 GHz, NVIDIA GeForce GTX 960 , FPS 58 | CPU Calibration: iterationCount=114 score=1; Graphics Calibration: score=1
 				- Joadix's brother: AMD A6 3400M with Ryzen HD 6520G
 				- Dell: TODO
+				- HP:
+				- Samsung:
 				- Get all responses
 
 		= Produces CalibrationScore
