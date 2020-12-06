@@ -211,7 +211,8 @@ public:
         Horn1,
         Horn2,
         Horn3,
-        Klaxon1
+        Klaxon1,
+        NuclearAlarm1
     };
 
 public:

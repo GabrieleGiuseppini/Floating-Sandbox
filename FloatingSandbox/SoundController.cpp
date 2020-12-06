@@ -524,7 +524,8 @@ SoundController::SoundController(
                 || soundType == SoundType::ShipHorn1
                 || soundType == SoundType::ShipHorn2
                 || soundType == SoundType::ShipHorn3
-                || soundType == SoundType::ShipKlaxon1)
+                || soundType == SoundType::ShipKlaxon1
+                || soundType == SoundType::ShipNuclearAlarm1)
         {
             //
             // Looped U sound
@@ -649,6 +650,23 @@ SoundController::SoundController(
                     }
                     else
                     {
+                        loopStartSample = 0.904989f;
+                        loopEndSample = loopStartSample + 0.704739f;
+                    }
+
+                    break;
+                }
+
+                case SoundType::ShipNuclearAlarm1:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 3.37948f;
+                        loopEndSample = loopStartSample + 1.41689f;
+                    }
+                    else
+                    {
+                        // TODOHERE
                         loopStartSample = 0.904989f;
                         loopEndSample = loopStartSample + 0.704739f;
                     }
@@ -1741,6 +1759,12 @@ void SoundController::OnShipSoundUpdated(
             case ElectricalMaterial::ShipSoundElementType::Klaxon1:
             {
                 soundType = SoundType::ShipKlaxon1;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::NuclearAlarm1:
+            {
+                soundType = SoundType::ShipNuclearAlarm1;
                 break;
             }
         }

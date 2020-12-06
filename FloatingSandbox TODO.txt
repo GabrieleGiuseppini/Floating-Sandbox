@@ -265,6 +265,7 @@ Render:
 		+ "Floating Sendbox x.y" @ beginning of log file
 		+ ShipDB cache/last_modified: != instead of >
 		+ Merge to master
+		+ Clang build
 
 		= Fishes (*)
 			- Changelist
@@ -627,10 +628,15 @@ Render:
 			= Floating nuclear reactor				
 				= Add electrical layer:
 					+ Engines: many, low-power
-					- Sound:
-						- Make alarm sound
-							- Loop: 149035, 3379.48
-							- End: 211520, 4796.37
+					= Sound:
+						= Make alarm sound
+							+ Loop: 149035, 3379.48
+							+ End: 211520, 4796.37
+						- Underwater version
+							- Loop points
+						+ Material
+						+ Material template
+						
 			+ Fix USS Monitor
 			+ Fix Italia
 			+ Titanic-Izuku_deku_midoriya

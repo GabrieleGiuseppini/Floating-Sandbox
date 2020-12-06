@@ -830,6 +830,22 @@
         }
     },
 
+	{
+        "color_key": "#40C000",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Klaxon 1", 
+	"ship_sound_type": "NuclearAlarm1",
+        "template": {
+            "column": 6, 
+            "row": "15|Nuclear Alarm"
+        }
+    },
 
     {
         "color_key": "#FC2020",

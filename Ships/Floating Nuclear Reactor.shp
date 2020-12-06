@@ -17,6 +17,7 @@
 		"3": {"panel_x":-1, "panel_y":0, "label":"Engine 2" },
 		"5": {"panel_x":0, "panel_y":0, "label":"Engine 3" },
 		"7": {"panel_x":1, "panel_y":0, "label":"Engine 4" },
-		"9": {"panel_x":2, "panel_y":0, "label":"Engine 5" }
+		"9": {"panel_x":2, "panel_y":0, "label":"Engine 5" },
+		"10": {"panel_x":4, "panel_y":0, "label":"Alarm" }
 	}
 }
