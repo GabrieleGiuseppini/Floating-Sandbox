@@ -247,24 +247,24 @@ std::optional<RgbaImageData> PersistedShipPreviewImageDatabase::TryGetPreviewIma
     std::filesystem::path const & previewImageFilename,
     std::filesystem::file_time_type lastModifiedTime)
 {
-    // See if may serve from cache
-    auto const it = mIndex.find(previewImageFilename);
-    if (it != mIndex.end()
-        && lastModifiedTime <= it->second.LastModified)
+    // See if may serve this file from the cache
+    auto const cachedFileIt = mIndex.find(previewImageFilename);
+    if (cachedFileIt != mIndex.end()
+        && lastModifiedTime == cachedFileIt->second.LastModified)
     {
         //
         // Load preview from DB
         //
 
-        // Position
+        // Position to the preview
         assert(!!mDatabaseFileStream);
-        mDatabaseFileStream->seekg(it->second.Position);
+        mDatabaseFileStream->seekg(cachedFileIt->second.Position);
 
-        // Read
+        // Read preview
         return DeserializePreviewImage(
             *mDatabaseFileStream,
-            it->second.Size,
-            it->second.Dimensions);
+            cachedFileIt->second.Size,
+            cachedFileIt->second.Dimensions);
     }
 
     // No luck
@@ -481,7 +481,7 @@ bool NewShipPreviewImageDatabase::Commit(
         if (newDbIt == mIndex.cend()
             || oldDbIt == oldDatabase.mIndex.cend())
         {
-            // No more reason to continue here; may jump to streaming 
+            // No more reason to continue here; may jump to streaming
             // new and/or saving index
             break;
         }

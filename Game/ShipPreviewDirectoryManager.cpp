@@ -84,6 +84,10 @@ RgbaImageData ShipPreviewDirectoryManager::LoadPreviewImage(
     auto oldDbPreviewImage = mOldDatabase.TryGetPreviewImage(previewImageFilename, previewImageFileLastModified);
     if (oldDbPreviewImage.has_value())
     {
+        //
+        // Served by DB
+        //
+
         // Tell new DB that this preview comes from old DB
         mNewDatabase.Add(
             previewImageFilename,
@@ -94,6 +98,10 @@ RgbaImageData ShipPreviewDirectoryManager::LoadPreviewImage(
     }
     else
     {
+        //
+        // Not served by DB
+        //
+
         // Needs to be loaded from scratch
         LogMessage("ShipPreviewDirectoryManager::LoadPreviewImage(): can't serve '", previewImageFilename.string(), "' from persisted DB; loading...");
 

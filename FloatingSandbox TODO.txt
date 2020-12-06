@@ -249,7 +249,6 @@ Render:
 			+ Changelist
 		+ Frontier (*)
 			+ Changelist
-
 		+ 500K download post on GameJolt
 		+ How to make a ship tutorial post on GameJolt: https://www.youtube.com/watch?v=7KhRdTv9fTo
 		+ Frontier bug:
@@ -261,32 +260,33 @@ Render:
 		+ Log not being created with close button, only with File->Quit
 			+ Different "Close" events: X button vs. File->Quit
 		+ Spanish translation
-			+ Add Joadix guy to credits
+			+ Add Joadix to credits
 			+ Changelist
+		+ "Floating Sendbox x.y" @ beginning of log file
+		+ ShipDB cache/last_modified: != instead of >
 
 		= Fishes (*)
 			- Changelist
 
 		= Localization of new strings
 			+ IT
-			- RU
+			= RU
 			+ ES
 
 		= New ships
 			- changelist
 
-		- "Floating Sendbox x.y" @ beginning of log file
-		- ShipDB cache/last_modified: != instead of >
-		- Calibrate flying burning cardboard
-		- Flag for velocity display
+		- Merge to master
 
+		- Calibrate flying burning cardboard		
 		- Add styrofoam
-
-		- Merge
-
+		
 		- Release
 
 		----------------------------------------------------------------------------------------
+
+		- Flag for velocity display
+			- At UIPreferencesManager & Dialog, saved and all
 
 		- Check proposed luminiscence settings (from @Carter_JL on GameJolt)
 			- Luminiscence Adjust: 0.5
@@ -826,6 +826,9 @@ Render:
 				= Happens before SettingsManager samples defaults, so these are the new defaults
 					- Verify this is indeed the case
 
+		- Things to calibrate:
+			- Max # burning particles
+
 	- See if additional springs (e.g. between i and i+2) help
 
 	- Cached quantities (*)
@@ -1154,6 +1157,16 @@ Render:
 	- Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool.
 
 - Dynamics:
+
+	- Internal pressure (*)
+		- TO BE EXPANDED BASED ON RESEARCH
+		- Basic ideas:
+			- Pressure is a new particle quantity, unrelated to water
+			- Pressure expands to adjacent particles along springs, kinda like water but without gravity nor momentum
+			- Pressure also expands to hull particles
+				- Required to allow external pressure to be compared with internal pressure along hull of any thickness
+				- Note: won't be able to model different tight compartments then - the whole ship is one single compartment
+					- BIG PROBLEM!
 
 	= Fishes (*)
 		! Spec:
@@ -1489,6 +1502,7 @@ Render:
 						+ Lightning
 						+ Bomb
 						+ Tool
+						- Thanos
 				+ Attraction
 					+ Re-check all radii
 						+ Tool
@@ -1725,6 +1739,7 @@ Render:
 	- Pressure implosions / pressure crush (*)
 		! Requires frontier
 		- Better done after cached quantities - underwater depth (*)
+		- This is an alternative to the "Internal Pressure (*)" idea
 		- Idea:
 			- For each point on frontier (ext and int) that is not leaking:
 				- Calc pressure delta between current water at point and external Y
