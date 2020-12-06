@@ -264,6 +264,7 @@ Render:
 			+ Changelist
 		+ "Floating Sendbox x.y" @ beginning of log file
 		+ ShipDB cache/last_modified: != instead of >
+		+ Merge to master
 
 		= Fishes (*)
 			- Changelist
@@ -276,7 +277,6 @@ Render:
 		= New ships
 			- changelist
 
-		- Merge to master
 
 		- Calibrate flying burning cardboard		
 		- Add styrofoam
