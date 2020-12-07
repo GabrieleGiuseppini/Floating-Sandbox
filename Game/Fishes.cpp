@@ -508,16 +508,18 @@ void Fishes::UpdateDynamics(
                 // RenderVector Y:
                 // - smooth towards zero during an initial interval
                 // - smooth towards target during a second interval
-                if (elapsedSteeringDurationFraction <= 0.40f)
+                if (elapsedSteeringDurationFraction <= 0.5f)
                 {
                     fish.CurrentRenderVector.y =
-                        fish.CruiseSteeringState->StartRenderVector.y * (1.0f - SmoothStep(0.0f, 0.40f, elapsedSteeringDurationFraction));
+                        fish.CruiseSteeringState->StartRenderVector.y
+                        * (1.0f - 2.0f * SmoothStep(0.0f, 1.0f, elapsedSteeringDurationFraction));
                 }
-                else if (elapsedSteeringDurationFraction >= 0.60f)
+                else
                 {
 
                     fish.CurrentRenderVector.y =
-                        targetRenderVector.y * SmoothStep(0.60f, 1.0f, elapsedSteeringDurationFraction);
+                        targetRenderVector.y
+                        * (1.0f - 2.0f * SmoothStep(0.0f, 1.0f, 1.0f - elapsedSteeringDurationFraction));
                 }
 
                 // RenderVector X:
