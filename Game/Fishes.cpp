@@ -523,16 +523,19 @@ void Fishes::UpdateDynamics(
                 // RenderVector X:
                 // - smooth towards target during a central interval (actual turning around),
                 //   without crossing zero
-                float constexpr TurnLimit = 0.05f;
+                float constexpr TimeMargin = 0.15f; // Time of start of the turn
+                float constexpr TurnLimit = 0.05f; // Minimum multiplier of render vector X - not going to zero
                 if (elapsedSteeringDurationFraction <= 0.5f)
                 {
                     fish.CurrentRenderVector.x =
-                        fish.CruiseSteeringState->StartRenderVector.x * (1.0f - (1.0f - TurnLimit) * SmoothStep(0.15f, 0.5f, elapsedSteeringDurationFraction));
+                        fish.CruiseSteeringState->StartRenderVector.x
+                        * (1.0f - (1.0f - TurnLimit) * 2.0f * SmoothStep(TimeMargin, 1.0f - TimeMargin, elapsedSteeringDurationFraction));
                 }
                 else
                 {
                     fish.CurrentRenderVector.x =
-                        targetRenderVector.x * (TurnLimit + (1.0f - TurnLimit) * SmoothStep(0.5f, 0.85f, elapsedSteeringDurationFraction));
+                        targetRenderVector.x
+                        * (1.0f - (1.0f - TurnLimit) * 2.0f * SmoothStep(TimeMargin, 1.0f - TimeMargin, 1.0f - elapsedSteeringDurationFraction));
                 }
             }
         }
