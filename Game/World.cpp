@@ -290,7 +290,10 @@ void World::DestroyAt(
     }
 
     // Also scare fishes at bit
-    mFishes.DisturbAt(targetPos, 0.3f, std::chrono::milliseconds(0));
+    mFishes.DisturbAt(
+        targetPos,
+        7.5f,
+        std::chrono::milliseconds(0));
 }
 
 void World::RepairAt(

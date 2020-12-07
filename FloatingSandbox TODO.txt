@@ -268,6 +268,27 @@ Render:
 		+ Clang build
 		+ Fishes (*)
 			+ Changelist
+		+ Calibrate flying burning cardboard	
+			+ Check also paper
+			+ Changelist
+		+ Fish turn improvement
+			+ Y
+			+ X
+		+ Fish/smash radius
+
+		- Re-think issue with burnt out materials increasing temperature
+			- Makes for flying light material, like paper and cardboard
+			- Should burn-out materials clamp their temperature to their burning point?
+				- By multiplying heat given to neighbors by burning particles by (1-neighbor.decay)
+			- Re-check:
+				- Cardboard
+				- Paper
+				- Hydrogen
+					- Calibrate if needed
+
+		- Check proposed luminiscence settings (from @Carter_JL on GameJolt)
+			- Luminiscence Adjust: 0.5
+			- Light Spread Adjust: 0.5
 
 		= Localization of new strings
 			+ IT
@@ -277,8 +298,6 @@ Render:
 		= New ships
 			- changelist
 
-
-		- Calibrate flying burning cardboard		
 		- Add styrofoam
 		
 		- Release
@@ -287,6 +306,8 @@ Render:
 
 		- Credits:
 			- "Programmed in Amsterdam, the Netherlands"
+
+		- Optimize that decay process at Points::CombustionUpdateLowFrequency
 
 		- Flag for velocity display
 			- At UIPreferencesManager & Dialog, saved and all
@@ -306,11 +327,7 @@ Render:
 			- New UI preferences flag: Reload last ship at startup, default=false
 			- changelist
 
-		- Lights:
-			- Check proposed luminiscence settings (from @Carter_JL on GameJolt)
-				- Luminiscence Adjust: 0.5
-				- Light Spread Adjust: 0.5
-			- Light improvements (*)
+		- Light improvements (*)
 				
 		- Repair improvement:
 			- 1) Debug test case (w/default_ship)
@@ -334,13 +351,17 @@ Render:
 			- Spec:
 				- Ship owns SourcesOfLight, just container of point index, material params, calcd params
 					- A part of it is fixed, the other comes and goes
+						- ElectricalElements go to fixed part
+						- All others to dynamic part
+					- Buffer aligned
+					- Params are shader-friendly, as we'll upload them with Lights Improvements work (*)
 				- Add/Removed to by:
 					- ElectricalElements: added @ init & kept forever
 							- Populated initially by ship
-							- AddStableSource
+							- SourcesOfLight::AddStableSource (or AddStaticSource?)
 					- Firework state machine: added & removed as needed
-						- AddEphemeralSource
-				- Used by lighting algorithm
+						- SourcesOfLight::AddDynamicSource
+				- Used by lighting algorithm OR by shader (after Lights Improvements work (*))
 
 		- See vector normalization optimization with mult's with 1/len
 
@@ -1040,26 +1061,25 @@ Render:
 			- Do stars once and for all
 			- Spec gfx niceties such as reflections and after-effect
 
-	- Lights improvements (*)
+	- Lights improvement options (*)
 		- "Static light":
-			- Pixels that are sources of light are also themselves rendered as yellow without ambient light effect
-				- Ain't that the same as now?
+			- Pixels that are sources of light should be rendered as constant yellow, without ambient light effect
+				- How to do without triangle interpolation?
 		- Lights' glows as textures:
 			- Shader adapts the texture to the varying light parameters
 			- Then a quad is drawn for each source of light, with size depending on aperture
 				- TODO: z-depth issue? Lights will be drawn _after_ ship parts
 					- Try to just draw textures at their Z, with Z test enabled
 					- Need to be drawn *last* as they are transparent
-
-	- Lights on the GPU with instanced drawing
-		- We begin with doing light at vertex (Gouraud)
-		- Lamp coords, spread, and luminiscence in uniform array
-		- Loop as many times as necessary to avoid going beyond uniform limit of the GPU
-			- Figure out max (for right shader: v or f) at OpenGLInit
-		- Test 1: simply instance TrianglesTexture
-		- Test 2: also instance others
-		- At end:
-			- Try with light at fragment (Phong)
+		- Lights on the GPU with instanced drawing
+			- We begin with doing light at vertex (Gouraud)
+			- Lamp coords, spread, and luminiscence in uniform array
+			- Loop drawing ship as many times as necessary to avoid going beyond uniform limit of the GPU
+				- Figure out max (for right shader: v or f) at OpenGLInit
+			- Test 1: simply instance TrianglesTexture
+			- Test 2: also instance others
+			- At end:
+				- Try with light at fragment (Phong)
 
 	- Air bubbles with instanced drawing (even though we can only do ~100 at a time, but then might do nBubbles/100 vertices)
 
@@ -1210,13 +1230,6 @@ Render:
 
 	- Rework explosion dynamics: they are too inconsistent at this moment
 
-	- New structural materials:
-		- Helium: ~like Hydrogen, but not combusting
-		- Sodium: explodes when particle's water > threshold
-			- At points' low-freq combustion update
-		- "Lightning rod" material
-			- Has precedence when looking for candidates @ Lightning strike
-
 	- Generalized light emission
 		- Option 1:
 			- Points gets struct with:
@@ -1247,6 +1260,13 @@ Render:
 				- ElectricalElements::Lamps (like now)
 				- Points::LightEmittingParticles
 					- The latter builds vector of indices at its various Update()'s that contribute to lights, e.g. combustion low freq and/or ephemeral update
+
+	- New structural materials:
+		- Helium: ~like Hydrogen, but not combusting
+		- Sodium: explodes when particle's water > threshold
+			- At points' low-freq combustion update
+		- "Lightning rod" material
+			- Has precedence when looking for candidates @ Lightning strike
 
 	- New electrical materials:
 		- Non-Instanced Water Tight Doors (see if possible)

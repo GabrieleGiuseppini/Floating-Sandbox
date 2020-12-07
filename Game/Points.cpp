@@ -741,6 +741,9 @@ void Points::UpdateCombustionLowFrequency(
                 //   but a very small mass shouldn't burn in too short of a time
                 //
 
+                // TODO: see if can optimize these two pow's away, seems to me we
+                // may use a simple decay process here
+
                 float const massMultiplier = pow(
                     mMaterialsBuffer[pointIndex].Structural->GetMass() / 750.0f,
                     0.15f); // Magic number: one tenth of the mass is 0.70 times the number of steps
@@ -968,11 +971,13 @@ void Points::UpdateCombustionHighFrequency(
             // - neighbors: 100Kw * C, scaled by directional alpha
             //
 
+            // This point
             mTemperatureBuffer[pointIndex] =
                 mMaterialIgnitionTemperatureBuffer[pointIndex]
                 * gameParameters.IgnitionTemperatureAdjustment
                 * 1.1f;
 
+            // Neighbors
             for (auto const s : GetConnectedSprings(pointIndex).ConnectedSprings)
             {
                 auto const otherEndpointIndex = s.OtherEndpointIndex;
