@@ -12,6 +12,7 @@
 	- Recalibrated paper and cardboard materials
 - Added Spanish localization
 	- Thanks to Joaquin Olivera (Joadix100)!
+- Fixed issue with completely burnt materials becoming super-heated when close to flames
 - Added 6 new ships
 - ...and a few more small improvements here and there!
 - Musical theme for this release: A-Ha, Lifelines (2002)
