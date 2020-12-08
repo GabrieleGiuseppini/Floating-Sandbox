@@ -798,7 +798,7 @@ void Ship::ApplyWorldForces(
         // Apply water friction drag - if under water - or wind force - if above water
         //
 
-        if (mPoints.GetPosition(pointIndex).y <= waterHeightAtThisPoint)
+        if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
         {
             //
             // We use a linear law for simplicity
@@ -894,7 +894,7 @@ void Ship::ApplyWorldForces(
 
             // Check if this point is underwater
             float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(pointPosition.x);
-            if (pointPosition.y <= waterHeightAtThisPoint)
+            if (pointPosition.y < waterHeightAtThisPoint)
             {
                 //
                 // Calculate drag force

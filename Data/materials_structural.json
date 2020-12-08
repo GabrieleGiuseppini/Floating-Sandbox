@@ -1119,8 +1119,8 @@
         "ignition_temperature": 491.15,
         "is_hull": true,
         "mass": {
-            "density": 0.07,
-            "nominal_mass": 689
+            "density": 0.0935,
+            "nominal_mass": 50
         },
         "melting_temperature": 1000000.0,
         "name": "Cardboard Hull",
@@ -1136,7 +1136,7 @@
         },
 	"texture_name":"cardboard_1",
         "thermal_conductivity": 0.05,
-	"thermal_expansion_coefficient": 0.0010,
+	"thermal_expansion_coefficient": 0.0043,
         "water_diffusion_speed": 0.5,
         "water_retention": 0.2,
         "buoyancy_volume_fill": 0.0
@@ -1147,8 +1147,8 @@
         "ignition_temperature": 491.15,
         "is_hull": false,
         "mass": {
-            "density": 0.007,
-            "nominal_mass": 689
+            "density": 0.0935,
+            "nominal_mass": 25
         },
         "melting_temperature": 1000000.0,
         "name": "Cardboard",
@@ -1164,10 +1164,10 @@
         },
 	"texture_name":"cardboard_1",
         "thermal_conductivity": 0.05,
-	"thermal_expansion_coefficient": 0.006,
+	"thermal_expansion_coefficient": 0.00434,
         "water_diffusion_speed": 0.55,
         "water_retention": 0.75,
-        "buoyancy_volume_fill": 0.7
+        "buoyancy_volume_fill": 0.9
     },
 
 
@@ -1194,7 +1194,7 @@
         },
 	"texture_name":"paper_2",
         "thermal_conductivity": 0.05,
-	"thermal_expansion_coefficient": 0.003,
+	"thermal_expansion_coefficient": 0.00434,
         "water_diffusion_speed": 0.65,
         "water_retention": 0.85,
         "buoyancy_volume_fill": 0.0,
@@ -1224,7 +1224,7 @@
         },
 	"texture_name":"paper_1",
         "thermal_conductivity": 0.05,
-	"thermal_expansion_coefficient": 0.00075,
+	"thermal_expansion_coefficient": 0.00434,
         "water_diffusion_speed": 0.65,
         "water_retention": 0.85,
         "buoyancy_volume_fill": 0.3,

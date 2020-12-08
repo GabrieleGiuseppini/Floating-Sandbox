@@ -275,20 +275,26 @@ Render:
 			+ Y
 			+ X
 		+ Fish/smash radius
+		+ Re-think issue with burnt out materials increasing temperature
+			+ Makes for flying light material, like paper and cardboard
+			+ Should burn-out materials clamp their temperature to their burning point?
+				+ By multiplying heat given to neighbors by burning particles by neighbor.decay
+			+ Re-check:
+				+ Cardboard
+				+ Paper
+				+ Hydrogen
 
-		- Re-think issue with burnt out materials increasing temperature
-			- Makes for flying light material, like paper and cardboard
-			- Should burn-out materials clamp their temperature to their burning point?
-				- By multiplying heat given to neighbors by burning particles by (1-neighbor.decay)
-			- Re-check:
-				- Cardboard
-				- Paper
-				- Hydrogen
-					- Calibrate if needed
+		- See instability issue with Ark (& light materials on flat ocean)
+			! Was there at least since 1.14
+			- See with "depth softening" for each water-surface interface
+			- See if better with water pressure drag adjust = 0.25
 
 		- Check proposed luminiscence settings (from @Carter_JL on GameJolt)
 			- Luminiscence Adjust: 0.5
 			- Light Spread Adjust: 0.5
+
+		- Send for final testing
+			- Bump up version
 
 		= Localization of new strings
 			+ IT
@@ -306,6 +312,8 @@ Render:
 
 		- Credits:
 			- "Programmed in Amsterdam, the Netherlands"
+
+		- Smaller destroy radius?
 
 		- Optimize that decay process at Points::CombustionUpdateLowFrequency
 

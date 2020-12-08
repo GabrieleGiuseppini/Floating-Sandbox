@@ -989,11 +989,12 @@ void Points::UpdateCombustionHighFrequency(
                     (0.9f + 1.0f * (1.0f - springDir.dot(GameParameters::GravityNormalized)));
                 // No normalization: when using normalization flame does not propagate along rope
 
-                // Add heat to point
+                // Add heat to the neighbor, diminishing with the neighbor's decay
                 mTemperatureBuffer[otherEndpointIndex] +=
                     effectiveCombustionHeat
                     * dirAlpha
-                    * mMaterialHeatCapacityReciprocalBuffer[otherEndpointIndex];
+                    * mMaterialHeatCapacityReciprocalBuffer[otherEndpointIndex]
+                    * mDecayBuffer[otherEndpointIndex];
             }
         }
 
