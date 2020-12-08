@@ -284,9 +284,9 @@ Render:
 				+ Paper
 				+ Hydrogen
 
-		- See instability issue with Ark (& light materials on flat ocean)
+		= See instability issue with Ark (& light materials on flat ocean)
 			! Was there at least since 1.14
-			- See with "depth softening" for each water-surface interface
+			= See with "depth softening" for each water-surface interface
 				+ See if these are both needed:
 					+ @ Buoyancy
 					+ @ Water pressure drag
@@ -294,7 +294,7 @@ Render:
 					
 				- See if also needed for ocean floor collisions
 					- Though it could be that ocean floor collisions already produce forces proportional to depth
-			- changelist
+			+ changelist
 
 		- See if better with water pressure drag adjust = 0.5
 			- Hydrodynamics test
