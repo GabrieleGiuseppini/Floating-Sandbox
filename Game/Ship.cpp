@@ -778,16 +778,18 @@ void Ship::ApplyWorldForces(
         float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x);
 
         // Check whether we are above or below water
-        if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
+        float const pointDepth = waterHeightAtThisPoint - mPoints.GetPosition(pointIndex).y;
+        if (pointDepth > 0.0f)
         {
-            // Water
+            // Water buoyancy
             mPoints.GetNonSpringForce(pointIndex).y +=
                 buoyancyPush
-                * effectiveWaterDensity;
+                * effectiveWaterDensity
+                * std::min(pointDepth, 1.0f); // Soft lead-in: avoids discontinuities in buoyancy force close to the air-water interface
         }
         else
         {
-            // Air
+            // Air buoyancy
             mPoints.GetNonSpringForce(pointIndex).y +=
                 buoyancyPush
                 * effectiveAirDensity;
@@ -798,7 +800,7 @@ void Ship::ApplyWorldForces(
         // Apply water friction drag - if under water - or wind force - if above water
         //
 
-        if (mPoints.GetPosition(pointIndex).y < waterHeightAtThisPoint)
+        if (pointDepth > 0.0f)
         {
             //
             // We use a linear law for simplicity
@@ -894,7 +896,8 @@ void Ship::ApplyWorldForces(
 
             // Check if this point is underwater
             float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(pointPosition.x);
-            if (pointPosition.y < waterHeightAtThisPoint)
+            float const pointDepth = waterHeightAtThisPoint - pointPosition.y;
+            if (pointDepth > 0.0f)
             {
                 //
                 // Calculate drag force
@@ -928,14 +931,15 @@ void Ship::ApplyWorldForces(
                 //  - C * |V| * cos(a) == - C * |V| * (Vn dot Nn) == -C * (V dot Nn)
                 float const dragForceMagnitude =
                     waterPressureDragCoefficient
-                    * velocityMagnitudeAlongNormal;
+                    * velocityMagnitudeAlongNormal
+                    * std::min(pointDepth, 1.0f); // Soft lead-in: avoids discontinuities in drag force close to the air-water interface
 
                 // Max drag force magnitude: m * (V dot Nn) / dt
                 float const maxDragForceMagnitude =
                     mPoints.GetMass(pointIndex) * velocityMagnitudeAlongNormal
                     / gameParameters.SimulationStepTimeDuration<float>;
 
-                // Final drag force - in the (opposite) direction of the normal
+                // Final drag force - at this moment in the (opposite) direction of the normal
                 vec2f const dragForce = normal * std::min(dragForceMagnitude, maxDragForceMagnitude);
 
                 // Apply drag force

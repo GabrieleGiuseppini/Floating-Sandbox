@@ -287,7 +287,18 @@ Render:
 		- See instability issue with Ark (& light materials on flat ocean)
 			! Was there at least since 1.14
 			- See with "depth softening" for each water-surface interface
-			- See if better with water pressure drag adjust = 0.25
+				+ See if these are both needed:
+					+ @ Buoyancy
+					+ @ Water pressure drag
+						! Doesn't seem to affect cardboards too much
+					
+				- See if also needed for ocean floor collisions
+					- Though it could be that ocean floor collisions already produce forces proportional to depth
+			- changelist
+
+		- See if better with water pressure drag adjust = 0.5
+			- Hydrodynamics test
+			- Titanic
 
 		- Check proposed luminiscence settings (from @Carter_JL on GameJolt)
 			- Luminiscence Adjust: 0.5
@@ -892,8 +903,11 @@ Render:
 		- Candidates:
 			- Spring length, spring dir
 				- Valid as long as points don't move
-					- In DEBUG, mark mPoints.mArePositionsDirty, and expose mPoints.Diagnostic_ClearDirtyPositions() which is
+					- In DEBUG, mark mPoints.mArePositionsDirty on each position change, and expose mPoints.Diagnostic_ClearDirtyPositions() which is
 					  invoked when Springs' cached lengths are re-calculated
+						- Force position changes to go through setters
+							- Except for buffered ones, follow these manually
+							- Verify assembly for SetPosition(GetPosition.x, GetPosition.y + foo)
 				- Used by: water update, heat update, Springs::UpdateStrains
 					- Also use instead of factory rest lengths at:
 						- Water
@@ -910,15 +924,20 @@ Render:
 					- Heat dissipation
 					- Breaking materials for pressure
 					- Points::UpdateCombustionHighFrequency
-					- Points::UpdateEphemeralParticles (AirBubbles)
-						- Need to do vortex with forces, though
+					- Points::UpdateEphemeralParticles (AirBubbles - and others?)
+						- Need to do vortex with forces, though, rather than positions
 				- Change sequence of steps at Ship::Update so that position changes come late, and thus we may re-use depth, calculated early, for as long as possible:
 					- [Interactive position changes]
-						- Need to make sure these clamp to world boundaries if accessing OceanSurface or OceanFloor
+						- Need to make sure these clamp to world boundaries since we'll likely be accessing OceanSurface or OceanFloor during other interactions
 					- START
 					- WorldBoundaries
+					- ApplyWorldForces
+						- Per-Particle
+							- Calculate and store depths here
+						- Per-Frontier
 					- TODOHERE					
-					- Spring + Integration [just move this one]
+					- Spring + Integration [just move this one at bottom, here]
+					- UpdateForSpringStrains [just move this one at bottom, here]
 					- END
 
 	- 2** Try with SpringRelaxation updating only positions **2 (*)
