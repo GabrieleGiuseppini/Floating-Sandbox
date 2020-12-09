@@ -283,29 +283,27 @@ Render:
 				+ Cardboard
 				+ Paper
 				+ Hydrogen
-
-		= See instability issue with Ark (& light materials on flat ocean)
+		+ See instability issue with Ark (& light materials on flat ocean)
 			! Was there at least since 1.14
-			= See with "depth softening" for each water-surface interface
+			+ See with "depth softening" for each water-surface interface
 				+ See if these are both needed:
 					+ @ Buoyancy
 					+ @ Water pressure drag
-						! Doesn't seem to affect cardboards too much
-					
-				- See if also needed for ocean floor collisions
-					- Though it could be that ocean floor collisions already produce forces proportional to depth
+						! Doesn't seem to affect cardboards too much					
+				X See if also needed for ocean floor collisions
+					+ Though it could be that ocean floor collisions already produce forces proportional to depth
 			+ changelist
 
-		- See if better with water pressure drag adjust = 0.5
-			- Hydrodynamics test
-			- Titanic
+		+ See if better with water pressure drag adjust = 0.5
+			+ Hydrodynamics test
+			+ Titanic
 
 		- Check proposed luminiscence settings (from @Carter_JL on GameJolt)
 			- Luminiscence Adjust: 0.5
 			- Light Spread Adjust: 0.5
 
 		- Send for final testing
-			- Bump up version
+			- Bump up version afterwards
 
 		= Localization of new strings
 			+ IT
@@ -327,6 +325,11 @@ Render:
 		- Smaller destroy radius?
 
 		- Optimize that decay process at Points::CombustionUpdateLowFrequency
+
+		- Optimization: OceanSurface and OceanTerrain ::GetDerivativeAt(x)
+			- Optimized: no second sampling needed!
+			- Track down all usages
+				- See of OceanSurface really needed
 
 		- Flag for velocity display
 			- At UIPreferencesManager & Dialog, saved and all
@@ -926,11 +929,22 @@ Render:
 					- Points::UpdateCombustionHighFrequency
 					- Points::UpdateEphemeralParticles (AirBubbles - and others?)
 						- Need to do vortex with forces, though, rather than positions
+						- Make sure no other ephemeral types change positions
 				- Change sequence of steps at Ship::Update so that position changes come late, and thus we may re-use depth, calculated early, for as long as possible:
+					- TODO: need to catch - or set depth at - creation of ephemeral particles
+						- Creation happens at:
+							- Interactions
+							- Breakages at UpdateForSpringStrains
+							- Anywhere else?
+						- Some ephemeral particle creations have depth already (e.g. bubbles), some will be created before
+						  we assign depth (e.g. debris & sparkles during interactions), some others will however happen afterwards
+					- [WorldBoundaries apply]
 					- [Interactive position changes]
-						- Need to make sure these clamp to world boundaries since we'll likely be accessing OceanSurface or OceanFloor during other interactions
+						- These take a world in boundaries, and leave the world in boundaries
+							- Since we'll likely be accessing OceanSurface or OceanFloor during interactions
+						- Need to make sure these clamp to world boundaries then
 					- START
-					- WorldBoundaries
+					- [WorldBoundaries apply]
 					- ApplyWorldForces
 						- Per-Particle
 							- Calculate and store depths here
@@ -938,6 +952,8 @@ Render:
 					- TODOHERE					
 					- Spring + Integration [just move this one at bottom, here]
 					- UpdateForSpringStrains [just move this one at bottom, here]
+					- WorldBoundaries [just move this one at bottom, here]
+					- [WorldBoundaries apply]
 					- END
 
 	- 2** Try with SpringRelaxation updating only positions **2 (*)
