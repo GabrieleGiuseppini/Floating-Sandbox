@@ -2,17 +2,17 @@
 - Completed "Frontier Maintenance" sub-system
 	- With this new sub-system the simulator is now constantly aware of the edges of a ship, enabling implementation of a plethora of new features
 - Added first implementation of hydrodynamics
-	- Water drag is now calculated separately as friction drag and pressure (aka "directional") drag
+	- Water drag is now calculated as separate friction and pressure (aka "directional") drags
 	- Re-calibrated all drag forces in the simulation
 - Added a new "surprise" feature, will be publicized in a week or so to maintain anticipation!
 - Improved clouds
 	- Thanks to Dario Bazzichetto for the ideas!
 - Improved materials database:
-	- Added new "Nuclear Alarm" ship sound
+	- Added new "Nuclear Alarm" ship sound - check it out in the new "Floating Nuclear Reactor" ship!
 	- Recalibrated paper and cardboard materials
 - Added Spanish localization
 	- Thanks to Joaquin Olivera (Joadix100)!
-- Reduced buoyancy instabilities close to the air-water interface
+- Reduced mechanical oscillations due to buoyancy discontinuities close to the air-water interface
 	- "Nature abhors discontinuities"
 - Fixed issue with completely burnt materials becoming super-heated when close to flames
 	- No more burnt cardboard flying up in the air

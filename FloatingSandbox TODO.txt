@@ -293,31 +293,46 @@ Render:
 				X See if also needed for ocean floor collisions
 					+ Though it could be that ocean floor collisions already produce forces proportional to depth
 			+ changelist
-
 		+ See if better with water pressure drag adjust = 0.5
 			+ Hydrodynamics test
 			+ Titanic
-
-		- Check proposed luminiscence settings (from @Carter_JL on GameJolt)
-			- Luminiscence Adjust: 0.5
-			- Light Spread Adjust: 0.5
-
-		- Send for final testing
-			- Bump up version afterwards
-
-		= Localization of new strings
+		+ Localization of new strings
 			+ IT
-			= RU
+			+ RU
 			+ ES
+		+ Send for final testing
+			+ Bump up version afterwards
+
+		- Final perf test on Dell
 
 		= New ships
 			- changelist
-
-		- Add styrofoam
 		
 		- Release
 
+		- FS Discord Server invite:
+
+Greetings all!
+
+I am Wreno, owner of the Floating Sandbox Discord server. We have recently had a major server rework and I am writing this to let you all know about our server. 
+
+We have lots to offer and do, such as:
+- An open community to discuss Floating Sandbox, history, other games, art and more
+- Sharing your own ships and finding other people's creations
+- Public tutorials explaining and helping you with any of your Floating Sandbox queries
+- Contests to exercise your artistic talent for rewards (such as a winning piece being featured in the game)
+- Game nights to relax with the community and make friends
+- Opportunities to talk to the dev team
+- Having an impact on game development by helping test new builds and suggesting new ideas
+
+Come and be a part of the awesome Floating Sandbox community! https://discord.gg/E3FemDtHRE
+
 		----------------------------------------------------------------------------------------
+
+		- Add styrofoam
+			- Density: 50 kg/m³
+			- Melts at 513K
+			- https://en.wikipedia.org/wiki/Polystyrene
 
 		- Credits:
 			- "Programmed in Amsterdam, the Netherlands"
@@ -326,7 +341,7 @@ Render:
 
 		- Optimize that decay process at Points::CombustionUpdateLowFrequency
 
-		- Optimization: OceanSurface and OceanTerrain ::GetDerivativeAt(x)
+		- Optimization: OceanSurface and OceanTerrain ::GetNormalAt(x)
 			- Optimized: no second sampling needed!
 			- Track down all usages
 				- See of OceanSurface really needed
@@ -562,18 +577,13 @@ Render:
 - Localization:
 	- Italian:
 		+ 1.15.2
-		- 1.16.0
+		+ 1.16.0
 	- Russian: DioxCode
 		+ 1.15.2
-		- 1.16.0
-
+		+ 1.16.0
 	- Spanish (Latin American): Joadix (Fallback: The G a z e r W o l f)
-		= 1.15.2
-		- 1.16.0
-		- asked .po
-		- Add to credits
-			= Asked name
-		- Assign role in server and welcome, and send rules
+		+ 1.15.2
+		+ 1.16.0
 
 	- Portuguese: Kiko
 		- Add to credits: "Kiko", and change in other sections as well, and also in .shp files
@@ -659,15 +669,8 @@ Render:
 		- SpaceX ships from KazindelProductions
 			- In FS e-mail, asked for latest
 		- TODO:
-			- Check Ryanair's planes
-				- Old A-320: he removes tripods
-				- New A-320: I make instructions, he sends text
-					- Two textures here
-						- Plain
-						- SAS
-				- Fokker: he makes one without tripods and holes
-				- Embraer: he makes one without tripods and more rigid
-				- Credits: "Raynair"
+			- Check FS Logo 
+				- If OK: add for April 1
 			- Xmas Titanic
 				- texture
 				- structure
@@ -676,6 +679,28 @@ Render:
 					- in trees
 					- in ropes
 				- as default ship in December
+
+			- Check Hesleden
+			- Check Ryanair's planes
+				- Old A-320: he removes tripods
+				- New A-320: I make instructions, he sends text
+					- Two textures here
+						- Plain
+						- SAS
+
+					Rules for Fokker and A320 old structure
+					There is A320, if you dont need gears cut them, also you can open doors (cut them), all planes have that functions, btw while in water better dont open rear door. CANT be placed on the ground.
+					Also all planes have "Black boxes" which can be cutted off if they survived impact.
+					ah settings i forget
+
+					Also like a small recomindation you can use this settings: simulation qualtity 2.000000/1.500000 and force ~3.000000
+					this is for new structure
+					for old:
+					Also like a small recomindation you can use this settings: simulation qualtity 2.000000/1.500000 and force ~10.000000
+
+				- Fokker: he makes one without tripods and holes
+				- Embraer: he makes one without tripods and more rigid
+				- Credits: "Raynair"
 			- checkout the few new ones
 			- Credits (CreditsPanel - and .shp?): 
 				+ "blue_funnel"
@@ -1099,6 +1124,10 @@ Render:
 
 - Gfx optimizations:
 
+	- Limit FPS for refresh
+		- "some screens can fail or even die (led burning) if you refresh too fast, like sending 70FPS to a 60FPS screen, if not protected the screen can die"
+		- Search it out
+
 	- See impact of drawing onto texture and then quad'ing the texture onto the screen (w/no filtering) (*)
 		- If fine:
 			- Do stars once and for all
@@ -1115,14 +1144,16 @@ Render:
 					- Try to just draw textures at their Z, with Z test enabled
 					- Need to be drawn *last* as they are transparent
 		- Lights on the GPU with instanced drawing
-			- We begin with doing light at vertex (Gouraud)
-			- Lamp coords, spread, and luminiscence in uniform array
+			- Light at fragment (Phong)
+				- Lamp coords, spread, and luminiscence in uniform array
 			- Loop drawing ship as many times as necessary to avoid going beyond uniform limit of the GPU
-				- Figure out max (for right shader: v or f) at OpenGLInit
+				- Figure out max at OpenGLInit
 			- Test 1: simply instance TrianglesTexture
 			- Test 2: also instance others
-			- At end:
-				- Try with light at fragment (Phong)
+			- Test on Dell
+		- Check proposed luminiscence settings (from @Carter_JL on GameJolt)
+			- Luminiscence Adjust: 0.5
+			- Light Spread Adjust: 0.5
 
 	- Air bubbles with instanced drawing (even though we can only do ~100 at a time, but then might do nBubbles/100 vertices)
 

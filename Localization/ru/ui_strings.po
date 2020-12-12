@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-12-05 20:10+0300\n"
+"PO-Revision-Date: 2020-12-06 19:32+0300\n"
 "Last-Translator: Joadix100\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -1663,7 +1663,7 @@ msgstr "Параметры Чертежа Отладки Корабля"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4049
 msgid "Ship Extra Draw Options"
-msgstr "Варианты дополнительного отрисовки корабля"
+msgstr "Доп. Варианты отрисовки корабля"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:83
 msgid "Ships"
