@@ -1,0 +1,15 @@
+{
+	"structure_image":"ms_breadmaster_structure.png.dat",
+	"electrical_image":"ms_breadmaster_electrical.png.dat",
+        "ship_name":"M.S. Breadmaster",
+	"created_by":"Floeddy",
+	"electrical_panel":{
+
+		"0": {"panel_x":-4, "panel_y":0, "label":"Mains" },
+
+		"1": {"panel_x":-2, "panel_y":0, "label":"Engine" },
+		"5": {"panel_x":-1, "panel_y":0, "label":"Engine" },
+
+		"125": {"panel_x":1, "panel_y":0, "label":"Horn" }
+	}
+}

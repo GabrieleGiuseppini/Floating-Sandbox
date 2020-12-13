@@ -418,7 +418,9 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 				! Have to maintain, though, global damp for springs and orphaned particles
 			- Punch tool (*)
 
-		- Check issue with ship having water material that breaks		
+		- Check issue with ship having water material that breaks (my_ship_structure-water_air_issue.png on Desktop)	
+			- Air material appears to break with water jumping often, possibly because of high jumps in mass
+				- See if converging masses to target slowly (rather than immediately like now) helps
 
 		- New rain: https://www.shadertoy.com/view/wsKcWw
 
@@ -652,10 +654,9 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 		- Ships to make:
 			- HMS Victoria: make yourself w/texture from ShipBucket or else
 				- Needs to sink vertically!
-			- Next ship made: "Turbentiy Banalniy"
-		= Fernando:
-			= "An 12", "Boeing DreamLifter": asked for latest files
-		- To test:
+			- Next ship made: "Turbentiy Banalniy"		
+		- To test and choose from:
+			- FER ZCL aircraft and ship pack
 			- Architect Creations
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
@@ -667,9 +668,15 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 		- S.S. Triatic
 			- Do ropes however
 		- SpaceX ships from KazindelProductions
-			- In FS e-mail, asked for latest
+			- In FS e-mail, got latest
 		- TODO:
-			- Check Hesleden
+			- Credits (CreditsPanel - and .shp?): 
+				+ "blue_funnel"
+				+ arkstar: "arkstar_"
+				+ Charles Calvin: "Charles Calvin"
+				+ Fernando: "FER ZCL"
+					+ Then at An-12
+			- All the _TO TAKE's from Fernando
 			- Check Ryanair's planes
 				- Old A-320: he removes tripods
 				- New A-320: I make instructions, he sends text
@@ -690,28 +697,7 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 				- Fokker: he makes one without tripods and holes
 				- Embraer: he makes one without tripods and more rigid
 				- Credits: "Raynair"
-			- checkout the few new ones
-			- Credits (CreditsPanel - and .shp?): 
-				+ "blue_funnel"
-				- arkstar: "arkstar_"
-				- Charles Calvin: "Charles Calvin"
-			+ Floating nuclear reactor				
-				+ Add electrical layer:
-					+ Engines: many, low-power
-					+ Sound:
-						+ Make alarm sound
-							+ Loop: 149035, 3379.48
-							+ End: 211520, 4796.37
-						+ Underwater version
-							+ Loop points
-						+ Material
-						+ Material template
-						
-			+ Fix USS Monitor
-			+ Fix Italia
-			+ Titanic-Izuku_deku_midoriya
-				+ Fix ropes & mast
-				+ Credits (.shp and CreditsPanel)
+			- Hesleden: asked if removing "better" from name is OK
 			- Test all with script
 
 

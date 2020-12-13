@@ -1,0 +1,9 @@
+{
+	"structure_image":"an_12_structure.png.dat",
+	"electrical_image" : "an_12_electrical.png.dat",
+	"texture_image":"an_12_texture.png.dat",
+	"offset":{"x":0.0, "y":-8.0},
+	"ship_name":"An-12",
+	"created_by":"FER ZCL",
+	"year_built":"1957"
+}
