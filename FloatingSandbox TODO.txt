@@ -669,15 +669,22 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 		- SpaceX ships from KazindelProductions
 			- In FS e-mail, asked for latest
 		- TODO:
-			- Check FS Logo 
-				- If OK: add for April 1
-			- Xmas Titanic
-				- texture
-				- structure
-					- trees
-				- with lights
-					- in trees
-					- in ropes
+			= Check FS Logo 
+				+ Take it!
+				- Add for April 1
+					- New subfolder under Data for ships, including Fallback Ship
+			+ Xmas Titanic
+				+ texture
+				+ structure
+					+ trees
+				+ with lights
+					+ in trees
+					+ in ropes
+				+ "xmas" => "holidays"
+				+ credits
+					+ Asked name: "Floeddy"
+					+ ship
+					+ Credits Panel
 				- as default ship in December
 
 			- Check Hesleden

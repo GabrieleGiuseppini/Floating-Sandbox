@@ -109,7 +109,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {2, wxS("Dumbphones   NotTelling   Hugo_2503   _ASTYuu_   Serhiiiihres   Floeddy"), 0},
         {2, wxS("Pandadude12345   John Smith   Dkuz   Loree   Daewoom   Aqua"), 0},
         {2, wxS("MasterGarfield   Aur\xe9lien WOLFF   Alex di Roma   2017 Leonardo"), 0},
-        {2, wxS("Matthew Anderson   DennisDanielGrimaldo   blue_funnel"), 0},
+        {2, wxS("Matthew Anderson   DennisDanielGrimaldo   blue_funnel   Floeddy"), 0},
 
         {2, wxS("Michael Bozarth (https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw)"), 0},
         {2, wxS("JackTheBrickfilmMaker (https://www.youtube.com/channel/UCshPbiTqFuwpNNh7BlpffhQ)"), 0},

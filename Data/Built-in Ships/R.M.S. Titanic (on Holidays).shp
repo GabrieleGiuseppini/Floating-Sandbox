@@ -1,0 +1,16 @@
+{
+	"structure_image":"rms_titanic_holidays_structure.png.dat",
+	"texture_image":"rms_titanic_holidays_texture.png.dat",
+	"electrical_image":"rms_titanic_holidays_electrical.png.dat",
+	"ropes_image":"rms_titanic_holidays_ropes.png.dat",
+	"offset":{"x":0.0, "y":-8.0},
+	"ship_name":"R.M.S. Titanic (on Holidays)",
+	"created_by":"Gabriele Giuseppini;Floeddy",
+	"year_built":"1912",
+	"electrical_panel":{
+
+		"0": {"panel_x":-1, "panel_y":0, "label":"Generator" },
+		"1": {"panel_x":0, "panel_y":0, "label":"Let The Holidays Begin!" }
+
+	}	
+}

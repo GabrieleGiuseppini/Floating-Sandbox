@@ -642,7 +642,9 @@ void ShipBuilder::AppendRopes(
             throw GameException(
                 std::string("Only one rope endpoint found with color key <")
                 + Utils::RgbColor2Hex(ropeSegmentEntry.first)
-                + ">");
+                + "> (at "
+                + (pointInfos1[ropeSegment.PointAIndex1].OriginalDefinitionCoordinates.has_value() ? pointInfos1[ropeSegment.PointAIndex1].OriginalDefinitionCoordinates->ToString() : "?")
+                +")");
         }
 
         // No need to lay a rope if the points are adjacent - as there will be a rope anyway
