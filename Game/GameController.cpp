@@ -274,13 +274,6 @@ void GameController::RebindOpenGLContext(std::function<void()> rebindContextFunc
     mRenderContext->RebindContext(std::move(rebindContextFunction));
 }
 
-ShipMetadata GameController::ResetAndLoadFallbackShip(ResourceLocator const & resourceLocator)
-{
-    std::filesystem::path const shipDefinitionFilePath = resourceLocator.GetFallbackShipDefinitionFilePath();
-
-    return ResetAndLoadShip(shipDefinitionFilePath);
-}
-
 ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)
 {
     assert(!!mWorld);
@@ -329,23 +322,23 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
 
 ShipMetadata GameController::AddDefaultShip(ResourceLocator const & resourceLocator)
 {
+    //
+    // Decide default ship based on day
+    //
+
+    std::filesystem::path shipDefinitionFilePath;
+
     auto now = std::chrono::system_clock::now();
     std::time_t now_c = std::chrono::system_clock::to_time_t(now);
     auto const tm = std::localtime(&now_c);
-    bool const isSpecialDay =
-        (tm->tm_mon == 0 && tm->tm_mday == 17)  // Jan 17: Floating Sandbox's birthday
-        ;
-
-    std::filesystem::path const shipDefinitionFilePath = isSpecialDay
-        ? resourceLocator.GetFallbackShipDefinitionFilePath()
-        : resourceLocator.GetDefaultShipDefinitionFilePath();
-
-    return AddShip(shipDefinitionFilePath);
-}
-
-ShipMetadata GameController::AddFallbackShip(ResourceLocator const & resourceLocator)
-{
-    std::filesystem::path const shipDefinitionFilePath = resourceLocator.GetFallbackShipDefinitionFilePath();
+    if (tm->tm_mon == 0 && tm->tm_mday == 17)  // Jan 17: Floating Sandbox's birthday
+        shipDefinitionFilePath = resourceLocator.GetFallbackShipDefinitionFilePath();
+    else if (tm->tm_mon == 3 && tm->tm_mday == 1)  // April 1
+        shipDefinitionFilePath = resourceLocator.GetApril1stShipDefinitionFilePath();
+    else if (tm->tm_mon == 11 && tm->tm_mday >= 24) // Winter holidays
+        shipDefinitionFilePath = resourceLocator.GetHolidaysShipDefinitionFilePath();
+    else
+        shipDefinitionFilePath = resourceLocator.GetDefaultShipDefinitionFilePath();
 
     return AddShip(shipDefinitionFilePath);
 }

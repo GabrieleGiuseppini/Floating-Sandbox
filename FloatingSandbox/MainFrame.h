@@ -71,7 +71,7 @@ public:
 
     void OnSecretTypingOpenDebugWindow();
 
-    void OnSecretTypingLoadFallbackShip();
+    void OnSecretTypingLoadBuiltInShip(int ship);
 
 private:
 

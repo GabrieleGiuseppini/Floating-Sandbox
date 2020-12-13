@@ -38,7 +38,17 @@ std::filesystem::path ResourceLocator::GetDefaultShipDefinitionFilePath() const
 
 std::filesystem::path ResourceLocator::GetFallbackShipDefinitionFilePath() const
 {
-    return std::filesystem::path("Data") / "Misc" / "fallback_ship.png";
+    return std::filesystem::path("Data") / "Built-in Ships" / "fallback_ship.png";
+}
+
+std::filesystem::path ResourceLocator::GetApril1stShipDefinitionFilePath() const
+{
+    return std::filesystem::path("Data") / "Built-in Ships" / "Floating Sandbox Logo.shp";
+}
+
+std::filesystem::path ResourceLocator::GetHolidaysShipDefinitionFilePath() const
+{
+    return std::filesystem::path("Data") / "Built-in Ships" / "R.M.S. Titanic (on Holidays).shp";
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

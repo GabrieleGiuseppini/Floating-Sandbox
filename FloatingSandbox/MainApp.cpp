@@ -185,7 +185,9 @@ bool MainApp::OnInit()
         //
 
         mSecretTypingMappings.emplace_back("DEBUG", std::bind(&MainFrame::OnSecretTypingOpenDebugWindow, mMainFrame));
-        mSecretTypingMappings.emplace_back("FALLBACK", std::bind(&MainFrame::OnSecretTypingLoadFallbackShip, mMainFrame));
+        mSecretTypingMappings.emplace_back("BUILTINSHIP1", std::bind(&MainFrame::OnSecretTypingLoadBuiltInShip, mMainFrame, 1));
+        mSecretTypingMappings.emplace_back("BUILTINSHIP2", std::bind(&MainFrame::OnSecretTypingLoadBuiltInShip, mMainFrame, 2));
+        mSecretTypingMappings.emplace_back("BUILTINSHIP3", std::bind(&MainFrame::OnSecretTypingLoadBuiltInShip, mMainFrame, 3));
 
         //
         // Run

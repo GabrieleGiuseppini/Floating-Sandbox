@@ -27,6 +27,10 @@ public:
 
     std::filesystem::path GetFallbackShipDefinitionFilePath() const;
 
+    std::filesystem::path GetApril1stShipDefinitionFilePath() const;
+
+    std::filesystem::path GetHolidaysShipDefinitionFilePath() const;
+
 
     //
     // Textures

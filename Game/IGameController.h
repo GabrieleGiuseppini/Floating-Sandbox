@@ -40,10 +40,8 @@ struct IGameController
     virtual void RegisterElectricalElementEventHandler(IElectricalElementGameEventHandler * handler) = 0;
     virtual void RegisterGenericEventHandler(IGenericGameEventHandler * handler) = 0;
 
-    virtual ShipMetadata ResetAndLoadFallbackShip(ResourceLocator const & resourceLocator) = 0;
     virtual ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) = 0;
     virtual ShipMetadata AddDefaultShip(ResourceLocator const & resourceLocator) = 0;
-    virtual ShipMetadata AddFallbackShip(ResourceLocator const & resourceLocator) = 0;
     virtual ShipMetadata AddShip(std::filesystem::path const & shipDefinitionFilepath) = 0;
     virtual void ReloadLastShip() = 0;
 

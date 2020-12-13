@@ -116,10 +116,8 @@ public:
 
     void RebindOpenGLContext(std::function<void()> rebindContextFunction);
 
-    ShipMetadata ResetAndLoadFallbackShip(ResourceLocator const & resourceLocator) override;
     ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) override;
     ShipMetadata AddDefaultShip(ResourceLocator const & resourceLocator) override;
-    ShipMetadata AddFallbackShip(ResourceLocator const & resourceLocator) override;
     ShipMetadata AddShip(std::filesystem::path const & shipDefinitionFilepath) override;
     void ReloadLastShip() override;
 

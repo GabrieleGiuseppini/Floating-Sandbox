@@ -665,10 +665,19 @@ void MainFrame::OnSecretTypingOpenDebugWindow()
     mDebugDialog->Open();
 }
 
-void MainFrame::OnSecretTypingLoadFallbackShip()
+void MainFrame::OnSecretTypingLoadBuiltInShip(int ship)
 {
     ResetState();
-    mGameController->ResetAndLoadFallbackShip(*mResourceLocator);
+
+    std::filesystem::path builtInShipFilePath;
+    if (ship == 2)
+        builtInShipFilePath = mResourceLocator->GetApril1stShipDefinitionFilePath();
+    else if (ship ==3)
+        builtInShipFilePath = mResourceLocator->GetHolidaysShipDefinitionFilePath();
+    else
+        builtInShipFilePath = mResourceLocator->GetFallbackShipDefinitionFilePath();
+
+    mGameController->ResetAndLoadShip(builtInShipFilePath);
 }
 
 //
@@ -940,7 +949,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         LogMessage("Error locating default ship: ", exc.what());
 
         // Try fallback ship now
-        mGameController->AddFallbackShip(*mResourceLocator);
+        mGameController->AddShip(mResourceLocator->GetFallbackShipDefinitionFilePath());
     }
 
     splash->UpdateProgress(1.0f, ProgressMessageType::Ready);
