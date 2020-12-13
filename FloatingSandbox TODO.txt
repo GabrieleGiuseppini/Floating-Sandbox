@@ -308,7 +308,27 @@ Render:
 		= New ships
 			- changelist
 		
-		- Release
+		- Release:
+			- MSI variables
+			- 32-bit MSI
+				- Build Install
+				- Make MSI
+				- Test
+				- Test on Discord
+			- 64-bit MSI
+				- Build Install
+				- Make MSI
+				- Test
+				- Test on Discord
+			- Cut tag on github
+			- Upload packages to GameJolt
+				- Package instructions:
+					Floating Sandbox comes as a standalone installer which will setup and/or upgrade the game on your computer. Please note that the Game Jolt client does *not* support the Floating Sandbox installer, so avoid using the Game Jolt client altogether, and download the installer directly instead, choosing either the 64-bit installer or the 32-bit installer (by clicking on the 3 dots) depending on your Windows installation. Once the download has completed, run the installer, wait until it has finished setting up the game, and then launch Floating Sandbox either from the shortcut on your desktop or from the Windows "Start" menu.
+				- Post w/FS Discord Server invite below
+			- www.floatingsandbox.com:
+				- Upload changes.txt
+					- Test w/old FS
+				- Update current version in FAQ
 
 		- FS Discord Server invite:
 
@@ -329,6 +349,11 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 
 		----------------------------------------------------------------------------------------
 
+		- Bump up version
+		- Branch
+
+		- TODO: move up "dangerous" features to we get more testing
+
 		- Add styrofoam
 			- Density: 50 kg/m³
 			- Melts at 513K
@@ -338,6 +363,8 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 			- "Programmed in Amsterdam, the Netherlands"
 
 		- Smaller destroy radius?
+
+		- Volume slider for engine sounds
 
 		- Optimize that decay process at Points::CombustionUpdateLowFrequency
 
@@ -364,6 +391,14 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 			- New UI preferences flag: Reload last ship at startup, default=false
 			- changelist
 
+		- Sinking speed:
+			- Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 5m/s
+			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
+				- Remove global damp at integration loop
+				- Point-by-point: 
+					- Underwater: incorporate old global damp in friction drag, if needed
+					- !Underwater: convert old global damp to new air damp
+
 		- Light improvements (*)
 				
 		- Repair improvement:
@@ -382,23 +417,27 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 			- OR: B)
 				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
 
-		- Dynamic Sources of Light
+		- Sources of Light
 			- See if there's a * below
-			- Add to fireworks
+			- Add to fireworks as precondition
 			- Spec:
-				- Ship owns SourcesOfLight, just container of point index, material params, calcd params
+				- Ship owns LightSource instance, just container of point index, material params, calcd params
 					- A part of it is fixed, the other comes and goes
 						- ElectricalElements go to fixed part
 						- All others to dynamic part
-					- Buffer aligned
+					- Buffer-aligned
 					- Params are shader-friendly, as we'll upload them with Lights Improvements work (*)
 				- Add/Removed to by:
 					- ElectricalElements: added @ init & kept forever
-							- Populated initially by ship
-							- SourcesOfLight::AddStableSource (or AddStaticSource?)
+						- Populated initially by ship invoking ElectricalElements::PopulateLightSources(LightSource &)
+						- LightSource::AddStaticSource -> LightSourceIndex
+						- Lamp state @ ElectricalElements stores the index in LightSource, which is needed for setting params, etc.
 					- Firework state machine: added & removed as needed
-						- SourcesOfLight::AddDynamicSource
-				- Used by lighting algorithm OR by shader (after Lights Improvements work (*))
+						- LightSource::Add/RemoveDynamicSource
+						- Ephemeral particle state @ Point stores the index in LightSource, which is needed for setting params, removing, etc.
+				- Used by lighting algorithm AND by shader (after Lights Improvements work (*))
+
+		- Incandescence layer (*)
 
 		- See vector normalization optimization with mult's with 1/len
 
@@ -471,8 +510,6 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 			- If cool, replace the one with "three fingers"
 			- If not, adjust the one with "three fingers": its tail lasts too long
 
-		- Release
-
 		----------------------------------------------------------------------------------------
 
 		- Move PhysicsSimulation::UpdateWaterVelocities (8%) to separate thread
@@ -502,9 +539,6 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 			- Option B) Same as A, but instead of one single texture, a (small) set of frames
 			- Option C) Fully "movie" (not ephemeral particles), just like explosions
 			- Consider using ParentWorld.DisturbOcean with new arg on top of fishes' radius
-
-		- Particle-zation
-			- Just destroy all springs, with no other side-effects
 
 		= See if fire may emit Heavy smoke
 			- Smoke should be drawn behind flames, hence GenericTexture's should be in an earlier layer than flames.
@@ -668,14 +702,9 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 		- S.S. Triatic
 			- Do ropes however
 		- SpaceX ships from KazindelProductions
-			- In FS e-mail, got latest
-		- TODO:
-			- Credits (CreditsPanel - and .shp?): 
-				+ "blue_funnel"
-				+ arkstar: "arkstar_"
-				+ Charles Calvin: "Charles Calvin"
-				+ Fernando: "FER ZCL"
-					+ Then at An-12
+			- In own folder
+			- Credits: "Kazindel"
+		- TODO 1.16:
 			- All the _TO TAKE's from Fernando
 			- Check Ryanair's planes
 				- Old A-320: he removes tripods
@@ -697,8 +726,7 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 				- Fokker: he makes one without tripods and holes
 				- Embraer: he makes one without tripods and more rigid
 				- Credits: "Raynair"
-			- Hesleden: asked if removing "better" from name is OK
-			- Test all with script
+			= Test all with script
 
 
 - Marketing:
@@ -1258,6 +1286,10 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 
 - Dynamics:
 
+	- Air bubbles with proper vortices, due to water moving fast around it
+		- Like at https://youtu.be/KPsnUPIHZuM
+		- Kinda as if the originating ship particle's velocity at the moment of generation has a (decaying) impact on the air bubble particle, making it move like an orbit
+
 	- Internal pressure (*)
 		- TO BE EXPANDED BASED ON RESEARCH
 		- Basic ideas:
@@ -1280,6 +1312,7 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 	- Rework explosion dynamics: they are too inconsistent at this moment
 
 	- Generalized light emission
+		- TODO: obsolete due to "Light Sources" work above
 		- Option 1:
 			- Points gets struct with:
 				- Luminiscence (scalar float) (aka Available Light)
@@ -1334,7 +1367,13 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 			- Sound: clock
 
 	- Fireworks
-		- Both options below
+		- Implementation:
+			- Triggers: both options below
+			- Once triggered:
+				- Rocket flying is one ephemeral particle;
+				- Upon expiration invokes IShipPhysicsHandler::ExplodeFirework, which generates new ephemeral particles
+			- These various ephemeral particles are also (ephemeral/dynamic) light sources
+		- TODOHERE: triggers are both options below
 		- Option 1: it's a gadget like bombs
 			- "Bombs" become "Gadgets", as well as "IBomb"
 			- "Firework" is new gadget
@@ -1361,7 +1400,14 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 	- Superheated pulverization
 		- In small neighborhood of very high threshold - say, 100K degrees, not material-specific - rotting skyrockets
 
-	- Circuit issue simplification:
+	- Multiple electrical layers:
+		- Implemented by array of ElectricalElements at Ship
+			- Points has also an array of ElectricalElementId, one for each layer
+		- Interaction with Sources of light:
+			- If a particle is a source of light on multiple layers at the same time, then the particle will appear in Source of light multiple times
+				- Points (ephemeral points): these always implicitly live on layer 0, so on first ElectricalElements
+				- Lamps (electrical element): these are by definition per-layer (duh)
+		- OLD:
 		- Option A: H and V electrical cables
 		- Option B:
 			- Only the cables should be able to make 8 connections (sides + diagonals)
@@ -1384,7 +1430,10 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 			- Increase resolution of ocean floor - shouldn't impact perf other than for cache misses
 
 	- Waves from ship (*):
-		- Generate wave (change height) when frontier (points) touch water for the first time OR when frontier (points) move, while being above a certain depth
+		- For each underwater frontier point:
+			- Ocean surface disturbation proportional to:
+				a) Velocity of point (vertical component only)
+				b) Depth of point 
 
 	- Gases:
 		- Spec:
@@ -1495,13 +1544,9 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 		! Requires frontier
 		- Better done after cached quantities - underwater depth (*)
 		- This is an alternative to the "Internal Pressure (*)" idea
-		- Idea:
-			- For each point on frontier (ext and int) that is not leaking:
-				- Calc pressure delta between current water at point and external Y
-				- Do force (inward or outward) proportional to delta
-		- How to deal with counter-pressure from inside though?
-			- One idea: each connected component remembers whether it's leaking, and only CC's without
-			  any leaking would be subject to pressure
+		- Plan A: simple: inward forces on (ext and int) (non-leaking) frontier points based on external pressure (density*depth*g) at that point
+			- Con: does not consider internal pressure/water
+			- Watch out: might generate phantom forces
 
 	- Punch tool (*): interacts with frontier, just like a punch
 		- Requires frontier work first
@@ -1529,7 +1574,10 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 
 - Game Interactions and Controls:
 
-	- .shp file allows for overriding/addition of materials
+	- Ship carries with it:
+		- Overriding/addition of materials
+		- Sounds (Ship Custom Sounds (*))
+		- Changes to settings
 
 	- Interior layer (multiple textures):
 		- NOTE: not really useful as normally different textures require different structures
@@ -1582,10 +1630,11 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 
 	- Separate slider for engine volumes
 
-	- Ship may come with custom sound(s) for horns et al
+	- Ship Custom Sounds (*)
+		- Ship may come with custom sound(s) for horns et al 
 		- New electrical material: "Custom sound switch"; first one plays sound #1, second one play sound #2, etc.
 		- Need to find way for ship-loading process to communicate sound file (buffer) to SoundController
-			- At Electrical announcement! passing buffer as MemoryStream
+			- At Electrical announcement! passing buffer as MemoryStream, or filename
 		- Might be better done after ship builder, so that we may package sounds better in .shp2 files
 
 	- Sounds that play before ship starts sinking
