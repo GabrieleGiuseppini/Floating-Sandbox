@@ -1,0 +1,21 @@
+- Architecture:
+	- Main Frame, toolboxes, etc.
+		- Very thin, calls into Controller for each interaction
+	- Controller
+		- Main Frame calls into Controller for each user interaction
+			- TODO: Controller->Main Frame callbacks?
+		- Maintains interaction state
+		- Maintains Undo stack
+		- Modifies Model
+	- Model
+		- All data
+		- Modified by Controller
+	- View
+		- Rendering of ship, all layers
+		- Fully OpenGL
+
+
+- Main UI:
+
+- Ship file format:
+	- Min FS version (.shp, shp2)

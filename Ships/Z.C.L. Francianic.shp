@@ -1,0 +1,30 @@
+{
+	"structure_image":"zcl_francianic_structure.png.dat",
+	"electrical_image" : "zcl_francianic_electrical.png.dat",
+	"texture_image":"zcl_francianic_texture.png.dat",
+	"offset":{"x":0.0, "y":-8.0},
+	"ship_name":"Z.C.L. Francianic",
+	"created_by":"FER ZCL",
+	"year_built":"2041",
+	"electrical_panel":{
+	
+		"0": {"panel_x":-6, "panel_y":0, "label":"Generator", "is_hidden": true },
+		
+		"1": {"panel_x":-5, "panel_y":0, "label":"Engine #1" },
+		"2": {"panel_x":-4, "panel_y":0, "label":"Engine #2" },
+
+		"3": {"panel_x":-5, "panel_y":0, "label":"Engine #1", "is_hidden": true },
+		"4": {"panel_x":-4, "panel_y":0, "label":"Engine #2", "is_hidden": true },
+
+		"10": {"panel_x":-2, "panel_y":0, "label":"Smoke Aft" },
+		"11": {"panel_x":-1, "panel_y":0, "label":"Smoke Fore" },
+		
+		"12": {"panel_x":1, "panel_y":0, "label":"Horn" },
+		"16": {"panel_x":2, "panel_y":0, "label":"Bell" },
+		
+		"31": {"panel_x":4, "panel_y":0, "label":"Pumps" },
+		"20": {"panel_x":5, "panel_y":0, "label":"Pump #1" },
+		"21": {"panel_x":6, "panel_y":0, "label":"Pump #2" },
+		"22": {"panel_x":7, "panel_y":0, "label":"Pump #3" }
+	}	
+}

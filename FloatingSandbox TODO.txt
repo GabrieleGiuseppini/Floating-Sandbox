@@ -303,10 +303,8 @@ Render:
 		+ Send for final testing
 			+ Bump up version afterwards
 
-		- Final perf test on Dell
-
 		= New ships
-			- changelist
+			= changelist
 		
 		- Release:
 			- MSI variables
@@ -352,7 +350,58 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 		- Bump up version
 		- Branch
 
-		- TODO: move up "dangerous" features to we get more testing
+		- Take perf numbers
+			- Dell old
+			- Samsung
+			- HP
+			- Dell new
+
+
+		- TODO: move up "dangerous" features so we get more testing
+
+
+
+		- Optimize that decay process at Points::CombustionUpdateLowFrequency
+
+		- Optimization: OceanSurface and OceanTerrain ::GetNormalAt(x)
+			- Optimized: no second sampling needed!
+			- Track down all usages
+				- See of OceanSurface really needed
+
+		- Sinking speed:
+			- Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 5m/s
+			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
+				- Remove global damp at integration loop
+				- Point-by-point: 
+					- Underwater: incorporate old global damp in friction drag, if needed
+					- !Underwater: convert old global damp to new air damp
+
+		- Smaller destroy radius?
+
+		- Volume slider for engine sounds
+			- Or SoundController adjusts volume of subsequent instances:
+				- 1st = whatever it is now
+				- 2nd = a bit less
+					- And lowers volume of first (half each?)
+				- ...
+				- Need to keep count of total instances currently playing
+			- Or number of engines used as divisor
+				- Announced by ElectricalElement, received by SoundController
+					- SoundsController: reset count to 0 at each Reset()
+
+		- Incandescence layer (*)
+
+		- See vector normalization optimization with mult's with 1/len
+
+		- Cached quantities (*)
+
+
+
+
+
+
+
+
 
 		- Add styrofoam
 			- Density: 50 kg/m³
@@ -361,17 +410,6 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 
 		- Credits:
 			- "Programmed in Amsterdam, the Netherlands"
-
-		- Smaller destroy radius?
-
-		- Volume slider for engine sounds
-
-		- Optimize that decay process at Points::CombustionUpdateLowFrequency
-
-		- Optimization: OceanSurface and OceanTerrain ::GetNormalAt(x)
-			- Optimized: no second sampling needed!
-			- Track down all usages
-				- See of OceanSurface really needed
 
 		- Flag for velocity display
 			- At UIPreferencesManager & Dialog, saved and all
@@ -390,14 +428,6 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 					- ...and enables "Reload Previous Ship" menu item
 			- New UI preferences flag: Reload last ship at startup, default=false
 			- changelist
-
-		- Sinking speed:
-			- Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 5m/s
-			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
-				- Remove global damp at integration loop
-				- Point-by-point: 
-					- Underwater: incorporate old global damp in friction drag, if needed
-					- !Underwater: convert old global damp to new air damp
 
 		- Light improvements (*)
 				
@@ -436,12 +466,6 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 						- LightSource::Add/RemoveDynamicSource
 						- Ephemeral particle state @ Point stores the index in LightSource, which is needed for setting params, removing, etc.
 				- Used by lighting algorithm AND by shader (after Lights Improvements work (*))
-
-		- Incandescence layer (*)
-
-		- See vector normalization optimization with mult's with 1/len
-
-		- Cached quantities (*)
 
 		- Frontier-enabled features:			
 			- Pressure implosions / pressure crush (*)
@@ -689,8 +713,8 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 			- HMS Victoria: make yourself w/texture from ShipBucket or else
 				- Needs to sink vertically!
 			- Next ship made: "Turbentiy Banalniy"		
-		- To test and choose from:
-			- FER ZCL aircraft and ship pack
+		- To test and to choose from:
+			- FER ZCL ships
 			- Architect Creations
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
@@ -699,14 +723,15 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 				- Fix Antonia vs Antonio
 				- Require .shp to limit initial sink
 			- Pac0master's Structures
+		- Savannah (Officer's)
+			- Add electricals
 		- S.S. Triatic
 			- Do ropes however
 		- SpaceX ships from KazindelProductions
 			- In own folder
 			- Credits: "Kazindel"
 		- TODO 1.16:
-			- All the _TO TAKE's from Fernando
-			- Check Ryanair's planes
+			- Ryanair's planes
 				- Old A-320: he removes tripods
 				- New A-320: I make instructions, he sends text
 					- Two textures here
@@ -723,7 +748,7 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 					for old:
 					Also like a small recomindation you can use this settings: simulation qualtity 2.000000/1.500000 and force ~10.000000
 
-				- Fokker: he makes one without tripods and holes
+				+ Fokker: he makes one without tripods and holes
 				- Embraer: he makes one without tripods and more rigid
 				- Credits: "Raynair"
 			= Test all with script
@@ -1180,8 +1205,9 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 
 	- Background ships: just any of the other ships, that would sail in the background
 
-	- Heat overlay more integrated in game play:
+	- Incandescence: Heat overlay more integrated in game play (*):
 		- Make switch: "Heat map mode" (now) and "Incandescence mode" (no black), in which shader replaces black with alpha=0
+			- "Black blending"?
 			- See https://discord.com/channels/559822257275404307/561385532698001419/777597209327566862
 			- If it would also glow in the dark, it'd be awesome!
 
