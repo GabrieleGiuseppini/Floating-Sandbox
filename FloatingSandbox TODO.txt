@@ -356,17 +356,15 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 			- HP
 			- Dell new
 
-
-		- TODO: move up "dangerous" features so we get more testing
-
-
+		- TODO: move up "dangerous" features so we get more testing:
+			- Cached quantities!
 
 		- Optimize that decay process at Points::CombustionUpdateLowFrequency
 
 		- Optimization: OceanSurface and OceanTerrain ::GetNormalAt(x)
 			- Optimized: no second sampling needed!
 			- Track down all usages
-				- See of OceanSurface really needed
+				- See if OceanSurface really needed
 
 		- Sinking speed:
 			- Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 5m/s
@@ -374,6 +372,7 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 				- Remove global damp at integration loop
 				- Point-by-point: 
 					- Underwater: incorporate old global damp in friction drag, if needed
+						- Try first without: see falling debris, also with friction adjust = 0.0
 					- !Underwater: convert old global damp to new air damp
 
 		- Smaller destroy radius?
@@ -386,8 +385,8 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 				- ...
 				- Need to keep count of total instances currently playing
 			- Or number of engines used as divisor
-				- Announced by ElectricalElement, received by SoundController
-					- SoundsController: reset count to 0 at each Reset()
+				- Announced by ElectricalElement, received by SoundController which updates mCurrentCount
+					- SoundsController: reset mCurrentCount to 0 at each Reset()
 
 		- Incandescence layer (*)
 

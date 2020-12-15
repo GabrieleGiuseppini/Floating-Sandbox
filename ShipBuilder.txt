@@ -19,3 +19,4 @@
 
 - Ship file format:
 	- Min FS version (.shp, shp2)
+		- Ideally it should be a "set" of versions, including the Materials' DB versions which live in the json so to be easily editable manually
