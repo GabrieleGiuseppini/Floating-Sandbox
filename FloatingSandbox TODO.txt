@@ -359,6 +359,12 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 		- TODO: move up "dangerous" features so we get more testing:
 			- Cached quantities!
 
+		- UpdateMasses: convergely _slowly_ towards target
+			- Try to repro issues with flooded zones breaking
+
+		- Lower rotting speed:
+			- 1.16: Titanic @ 12m is at 0.34 - let's shoot for 0.5
+
 		- Optimize that decay process at Points::CombustionUpdateLowFrequency
 
 		- Optimization: OceanSurface and OceanTerrain ::GetNormalAt(x)
