@@ -98,7 +98,7 @@ void Frontiers::HandleTriangleDestroy(
     size_t edgesWithFrontierCount = 0;
     ElementIndex lastEdgeWithFrontier = NoneElementIndex;
     int lastEdgeOrdinalWithFrontier = -1; // index (0..2) of the edge in the triangles's array
-    for (int eOrd = 0; eOrd < triangles.GetSubSprings(triangleElementIndex).SpringIndices.size(); ++eOrd)
+    for (int eOrd = 0; eOrd < static_cast<int>(triangles.GetSubSprings(triangleElementIndex).SpringIndices.size()); ++eOrd)
     {
         ElementIndex edgeIndex = triangles.GetSubSprings(triangleElementIndex).SpringIndices[eOrd];
         if (mEdges[edgeIndex].FrontierIndex != NoneFrontierId)
@@ -314,7 +314,7 @@ void Frontiers::HandleTriangleRestore(
     int lastEdgeOrdinalWithFrontier = -1; // index (0..2) of the edge in the triangles's array
     ElementIndex lastEdgeWithoutFrontier = NoneElementIndex;
     int lastEdgeOrdinalWithoutFrontier = -1; // index (0..2) of the edge in the triangles's array
-    for (int eOrd = 0; eOrd < triangles.GetSubSprings(triangleElementIndex).SpringIndices.size(); ++eOrd)
+    for (int eOrd = 0; eOrd < static_cast<int>(triangles.GetSubSprings(triangleElementIndex).SpringIndices.size()); ++eOrd)
     {
         ElementIndex const edgeIndex = triangles.GetSubSprings(triangleElementIndex).SpringIndices[eOrd];
         if (mEdges[edgeIndex].FrontierIndex != NoneFrontierId)

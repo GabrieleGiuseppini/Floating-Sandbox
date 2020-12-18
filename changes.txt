@@ -1,4 +1,4 @@
-1.16.0.1
+1.16.0.7
 - Completed "Frontier Maintenance" sub-system
 	- With this new sub-system the simulator is now constantly aware of the edges of a ship, enabling implementation of a plethora of new features
 - Added first implementation of hydrodynamics

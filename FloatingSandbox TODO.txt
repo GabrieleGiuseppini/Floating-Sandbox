@@ -302,19 +302,17 @@ Render:
 			+ ES
 		+ Send for final testing
 			+ Bump up version afterwards
-
-		= New ships
-			= changelist
 		
 		- Release:
-			- MSI variables
+			+ MSI variables
+			- Commit & push
 			- 32-bit MSI
-				- Build Install
+				+ Build Install
 				- Make MSI
 				- Test
 				- Test on Discord
 			- 64-bit MSI
-				- Build Install
+				+ Build Install
 				- Make MSI
 				- Test
 				- Test on Discord
@@ -355,6 +353,13 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 			- Samsung
 			- HP
 			- Dell new
+
+		- New ships
+			- changelist
+
+		- Update changes.txt w/fishes
+			- changes.txt
+			- www.floatingsandbox.com
 
 		- TODO: move up "dangerous" features so we get more testing:
 			- Cached quantities!
@@ -415,6 +420,7 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 
 		- Credits:
 			- "Programmed in Amsterdam, the Netherlands"
+			- ShipBucket
 
 		- Flag for velocity display
 			- At UIPreferencesManager & Dialog, saved and all
@@ -619,6 +625,7 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 
 - Release template:
 	- MSI variables
+	- Commit & push
 	- 32-bit MSI
 		- Build Install
 		- Make MSI
@@ -756,7 +763,7 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 				+ Fokker: he makes one without tripods and holes
 				- Embraer: he makes one without tripods and more rigid
 				- Credits: "Raynair"
-			= Test all with script
+				- Test all with script
 
 
 - Marketing:
@@ -1397,7 +1404,69 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 			- Gfx: Clock dial (normalized on duration), new ElectricalControl
 			- Sound: clock
 
-	- Fireworks
+	- Fireworks (*)
+		- Spec:
+			- 2 triggers: toggable thing like bombs, and electrical element that launches when powered
+			- State machine of detonated firework owned by ephemeral particles in conjunction with IShipPhysicsHandler
+			- 3 initial types:
+				- Flair
+				- Rose: sparkles radiating immediately from explosion point
+				- MultiRose: sparkles radiating with delay from (invisible) sparkles radiating from explostion point
+		- Impl:
+			- New GameTypes enum: Firework(Kind)Type: Flair, Rose, MultiRose
+			- New electrical material: FireworkLauncher X each kind
+				- Type: FireworkLauncher
+				- Firework(Kind/Type): enum
+			- New structural materials:
+				- FireworkVector: ~wood
+				- FireworkSparkles: ~paper
+			- "Bombs" become "Gadget"
+				- Need base Bomb for bomb-common things?
+				- Gadgets::Trigger[RCs,...,FWs]
+					- Visits all IGadgets and invokes IGadget::Trigger[RC,...,FW]
+			- Points::CreateFirework[Vector|Sparkle]EphemeralParticle:
+				- Args:
+					- Firework(Kind/Type)
+					- Pos, Vel
+				- Based on FW type:
+					- Alpha, color
+				- If needed adds to LightSources
+					- ...which is arg to Points::Create...()
+			- EphemeralParticle state machine:
+				- Vector: on expiry, remove from LightSources 
+					- ...which is arg to Points::UpdateEphemeralPoints...()
+			- IShipPhysicsHandler:
+				- LaunchFirework(fwType, pos, direction)
+					- Invoked by: interactive firework detonation, gadget auto-trigger @Gadgets::Upadte() (e.g. because of temperature), 
+					  ElectricalElements::Update (sink)
+					- Does: sound, Points::CreateFireworkVectorEphemeralParticle
+				- BlastFireworkSparkles(fwType, pos)
+					- Invoked by: EphemeralParticle state machine (end of vector)
+					- Does: sound, N X Points::CreateFireworkSparkleEphemeralParticle
+			- Tool
+				- Icon: rocket on tube, out & in
+			- Texture + specific shader for Gadget
+			- MainFrame & Place/Remove events for menu enabling
+			- Sounds
+			- ElectricalElements state machine
+			- Retrofit a ship
+			- Use this chance to expose ShipRenderContext from RenderContext
+				- Nuke all RenderContext forwards to ShipRenderContext
+			- GFX (Shaders & Primitives):
+				- FireworkVector
+					- Params:
+						- Vector: direction & magnitude used for quad
+						- Scale: world size of square side perpendicular to vector; also side parallel to vector when |vector|==1
+							- Used for quad
+						- Color: used @ shader
+						- [Texture]SpaceCoords: calc'd at quad and used @ shader
+						- Halo: 0.0->Halo: hi-brilliant; Halo->1.0: no brilliant going to zero
+							- Use narrow SmoothStep for narrow halo transition
+							- Used @ shader
+				- FireworkSparkle
+					-
+
+
 		- Implementation:
 			- Triggers: both options below
 			- Once triggered:
@@ -1496,9 +1565,27 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 
 	- EMP tool
 		! Better after electrical "expansion"
-		- Better after frontier
-		- Visualization:
-			- N electric arcs between N pairs of (far apart) frontier points, moving along frontier
+		! Better after frontier
+		- Spec:
+			- Turns off generators in radius
+			- Visualization:
+				- N electric arcs between N pairs of (far apart) frontier points, moving along frontier
+				- State machine for visualization @ GameController
+		- Impl:
+			- Expanding circle:
+				- Tool: progress 0->1 as long as mouse doesn't move
+				- GameController: 
+					- Calc progress=>radius transformation
+					- Invoke Ship::interaction(radius)
+					- Radius -> Trivial state machine -> render
+				- ShipInteraction(center, radius):
+					- For each non-destroyed generator that is in radius && !(generator.state.EMPEndTimestamp):
+						- generator.state.EMPEndTimestamp = now + small random variation
+				- ElectricalElements::Update: generators:
+					- If now > generator.state.EMPEndTimestamp: generator.state.EMPEndTimestamp.reset()
+				- ElectricalElements::ConnectivityVisit:
+					- Generator is off if !!(generator.state.EMPEndTimestamp)
+			- Sounds: electric buzz (kinda like Nemo) @ trigger; short; x2-4
 
 	- Lights/materials breaking under pressure (*)
 		! Unrelated to pressure crush (*) with frontier
