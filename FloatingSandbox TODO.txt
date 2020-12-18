@@ -309,12 +309,12 @@ Render:
 			- 32-bit MSI
 				+ Build Install
 				- Make MSI
-				- Test
+				- Test clean install
 				- Test on Discord
 			- 64-bit MSI
 				+ Build Install
 				- Make MSI
-				- Test
+				- Test upgrade from previous version
 				- Test on Discord
 			- Cut tag on github
 			- Upload packages to GameJolt
@@ -354,10 +354,12 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 			- HP
 			- Dell new
 
-		- New ships
-			- changelist
+		- Re-build wxWidgets:
+			- 64: no incremental linking, no jpg
+			- 32: no incremental linking
+			- Update Readme.md with wxWidgets version and png+unicode
 
-		- Update changes.txt w/fishes
+		- Update changes.txt w/fishes 7 days later (TODO)
 			- changes.txt
 			- www.floatingsandbox.com
 
@@ -376,6 +378,9 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 			- Optimized: no second sampling needed!
 			- Track down all usages
 				- See if OceanSurface really needed
+
+		- New ships
+			- changelist
 
 		- Sinking speed:
 			- Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 5m/s
@@ -626,15 +631,15 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 - Release template:
 	- MSI variables
 	- Commit & push
-	- 32-bit MSI
-		- Build Install
-		- Make MSI
-		- Test
-		- Test on Discord
 	- 64-bit MSI
 		- Build Install
 		- Make MSI
-		- Test
+		- Test upgrade from previous version
+		- Test on Discord
+	- 32-bit MSI
+		- Build Install
+		- Make MSI
+		- Test clean install
 		- Test on Discord
 	- Cut tag on github
 	- Upload packages to GameJolt
