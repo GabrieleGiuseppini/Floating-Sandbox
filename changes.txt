@@ -10,7 +10,7 @@
 - Improved materials database:
 	- Added new "Nuclear Alarm" ship sound - check it out in the new "Floating Nuclear Reactor" ship!
 	- Recalibrated paper and cardboard materials
-- Added Spanish localization
+- Added Spanish translation
 	- Thanks to Joaquin Olivera (Joadix100)!
 - Reduced mechanical oscillations due to buoyancy discontinuities close to the air-water interface
 	- "Nature abhors discontinuities"
