@@ -242,119 +242,18 @@ Render:
 
 - Roadmap:
 
-	+ 1.15.x
-		+ Fix that bug with vectors/highlights rendering (buffer size mismatch)
-	= 1.16.0
-		+ Clouds in perspective (*)
-			+ Changelist
-		+ Frontier (*)
-			+ Changelist
-		+ 500K download post on GameJolt
-		+ How to make a ship tutorial post on GameJolt: https://www.youtube.com/watch?v=7KhRdTv9fTo
-		+ Frontier bug:
-			+ 2 sides with frontier; both external frontiers, but different IDs
-				+ Do factory positions
-				+ Verify bug is due to discordant IsClockwise
-		+ Directional water drag (*)
-			+ Changelist
-		+ Log not being created with close button, only with File->Quit
-			+ Different "Close" events: X button vs. File->Quit
-		+ Spanish translation
-			+ Add Joadix to credits
-			+ Changelist
-		+ "Floating Sendbox x.y" @ beginning of log file
-		+ ShipDB cache/last_modified: != instead of >
-		+ Merge to master
-		+ Clang build
-		+ Fishes (*)
-			+ Changelist
-		+ Calibrate flying burning cardboard	
-			+ Check also paper
-			+ Changelist
-		+ Fish turn improvement
-			+ Y
-			+ X
-		+ Fish/smash radius
-		+ Re-think issue with burnt out materials increasing temperature
-			+ Makes for flying light material, like paper and cardboard
-			+ Should burn-out materials clamp their temperature to their burning point?
-				+ By multiplying heat given to neighbors by burning particles by neighbor.decay
-			+ Re-check:
-				+ Cardboard
-				+ Paper
-				+ Hydrogen
-		+ See instability issue with Ark (& light materials on flat ocean)
-			! Was there at least since 1.14
-			+ See with "depth softening" for each water-surface interface
-				+ See if these are both needed:
-					+ @ Buoyancy
-					+ @ Water pressure drag
-						! Doesn't seem to affect cardboards too much					
-				X See if also needed for ocean floor collisions
-					+ Though it could be that ocean floor collisions already produce forces proportional to depth
-			+ changelist
-		+ See if better with water pressure drag adjust = 0.5
-			+ Hydrodynamics test
-			+ Titanic
-		+ Localization of new strings
-			+ IT
-			+ RU
-			+ ES
-		+ Send for final testing
-			+ Bump up version afterwards
-		
-		= Release:
-			+ MSI variables
-			+ Commit & push
-			= 32-bit MSI
-				+ Build Install
-				+ Make MSI
-				+ Rename MSI
-				+ Test clean install
-				- Test on Discord
-			+ 64-bit MSI
-				+ Build Install
-				+ Make MSI
-				+ Rename MSI
-				+ Test upgrade from previous version
-				+ Test on Discord
-			- Cut tag on github
-			- Upload packages to GameJolt
-				- Package instructions:
-					Floating Sandbox comes as a standalone installer which will setup and/or upgrade the game on your computer. Please note that the Game Jolt client does *not* support the Floating Sandbox installer, so avoid using the Game Jolt client altogether, and download the installer directly instead, choosing either the 64-bit installer or the 32-bit installer (by clicking on the 3 dots) depending on your Windows installation. Once the download has completed, run the installer, wait until it has finished setting up the game, and then launch Floating Sandbox either from the shortcut on your desktop or from the Windows "Start" menu.
-				- Post w/FS Discord Server invite below
-			- www.floatingsandbox.com:
-				- Upload changes.txt
-					- Test w/old FS
-				- Update current version in FAQ
-
-		- FS Discord Server invite:
-
-Greetings all!
-
-I am Wreno, owner of the Floating Sandbox Discord server. We have recently had a major server rework and I am writing this to let you all know about our server. 
-
-We have lots to offer and do, such as:
-- An open community to discuss Floating Sandbox, history, other games, art and more
-- Sharing your own ships and finding other people's creations
-- Public tutorials explaining and helping you with any of your Floating Sandbox queries
-- Contests to exercise your artistic talent for rewards (such as a winning piece being featured in the game)
-- Game nights to relax with the community and make friends
-- Opportunities to talk to the dev team
-- Having an impact on game development by helping test new builds and suggesting new ideas
-
-Come and be a part of the awesome Floating Sandbox community! https://discord.gg/E3FemDtHRE
-
 		----------------------------------------------------------------------------------------
 
-		- Bump up version
-		- Branch
+		+ Bump up version
+		- Commit, push, and branch
 
 		- Take perf numbers
 			- Dell old
 			- Samsung
 			- HP
 			- Dell new
+
+		- Redo GameJolt's main header with Titanic
 
 		- Re-build wxWidgets:
 			- 64: no incremental linking, no jpg
@@ -646,6 +545,7 @@ Come and be a part of the awesome Floating Sandbox community! https://discord.gg
 	- Upload packages to GameJolt
 		- Package instructions:
 			Floating Sandbox comes as a standalone installer which will setup and/or upgrade the game on your computer. Please note that the Game Jolt client does *not* support the Floating Sandbox installer, so avoid using the Game Jolt client altogether, and download the installer directly instead, choosing either the 64-bit installer or the 32-bit installer (by clicking on the 3 dots) depending on your Windows installation. Once the download has completed, run the installer, wait until it has finished setting up the game, and then launch Floating Sandbox either from the shortcut on your desktop or from the Windows "Start" menu.
+		- Report file as safe (https://gamejolt.com/privacy)
 		- Post
 	- www.floatingsandbox.com:
 		- Upload changes.txt
@@ -11115,5 +11015,65 @@ IF WX:
 				+ Test
 				+ Test on Discord
 			+ Upload packages to www.floatingsandbox.com
+	+ 1.15.x
+		+ Fix that bug with vectors/highlights rendering (buffer size mismatch)
+	+ 1.16.0
+		+ Clouds in perspective (*)
+			+ Changelist
+		+ Frontier (*)
+			+ Changelist
+		+ 500K download post on GameJolt
+		+ How to make a ship tutorial post on GameJolt: https://www.youtube.com/watch?v=7KhRdTv9fTo
+		+ Frontier bug:
+			+ 2 sides with frontier; both external frontiers, but different IDs
+				+ Do factory positions
+				+ Verify bug is due to discordant IsClockwise
+		+ Directional water drag (*)
+			+ Changelist
+		+ Log not being created with close button, only with File->Quit
+			+ Different "Close" events: X button vs. File->Quit
+		+ Spanish translation
+			+ Add Joadix to credits
+			+ Changelist
+		+ "Floating Sendbox x.y" @ beginning of log file
+		+ ShipDB cache/last_modified: != instead of >
+		+ Merge to master
+		+ Clang build
+		+ Fishes (*)
+			+ Changelist
+		+ Calibrate flying burning cardboard	
+			+ Check also paper
+			+ Changelist
+		+ Fish turn improvement
+			+ Y
+			+ X
+		+ Fish/smash radius
+		+ Re-think issue with burnt out materials increasing temperature
+			+ Makes for flying light material, like paper and cardboard
+			+ Should burn-out materials clamp their temperature to their burning point?
+				+ By multiplying heat given to neighbors by burning particles by neighbor.decay
+			+ Re-check:
+				+ Cardboard
+				+ Paper
+				+ Hydrogen
+		+ See instability issue with Ark (& light materials on flat ocean)
+			! Was there at least since 1.14
+			+ See with "depth softening" for each water-surface interface
+				+ See if these are both needed:
+					+ @ Buoyancy
+					+ @ Water pressure drag
+						! Doesn't seem to affect cardboards too much					
+				X See if also needed for ocean floor collisions
+					+ Though it could be that ocean floor collisions already produce forces proportional to depth
+			+ changelist
+		+ See if better with water pressure drag adjust = 0.5
+			+ Hydrodynamics test
+			+ Titanic
+		+ Localization of new strings
+			+ IT
+			+ RU
+			+ ES
+		+ Send for final testing
+			+ Bump up version afterwards
 
 
