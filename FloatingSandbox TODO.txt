@@ -264,8 +264,17 @@ Render:
 			+ New UI preferences flag: Reload last ship at startup, default=false
 				+ Used at initialization
 			+ changelist
+		+ Credits:
+			+ "Programmed in Amsterdam, the Netherlands"
+			+ ShipBucket
 
 		= Smaller destroy radius - like at 5.0
+			- If no destroy but there was a closest point - within radius + 50% - then destroy (just) that
+
+		- See fishes flying with large size
+		- Exclude hidden files (.whatever) from TextureDatabase, ShaderDatabase, and everywhere we enumerate files
+			- Either use Utils::IsHiddenFilename(.) or another Util method to enumerate all but hidden filenames
+			- Alternatively: when enumerating, only look for expected extensions - making sure as well that we find everything we're looking for
 
 		- UpdateMasses: converge _slowly_ towards target
 			- Try to repro issue with ship having water material that breaks (my_ship_structure-water_air_issue.png on Desktop)	
@@ -331,10 +340,6 @@ Render:
 			- Density: 50 kg/m³
 			- Melts at 513K
 			- https://en.wikipedia.org/wiki/Polystyrene
-
-		- Credits:
-			- "Programmed in Amsterdam, the Netherlands"
-			- ShipBucket
 
 		- Flag for velocity display
 			- At UIPreferencesManager & Dialog, saved and all
