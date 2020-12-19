@@ -179,9 +179,6 @@ install(TARGETS FloatingSandbox
 
 # Runtime libraries
 if (WIN32)
-	# Devil
-	install(FILES ${DEVIL_RUNTIME_LIBRARIES}
-		DESTINATION .)
 	# SFML
 	install(FILES ${SFML_RUNTIME_RELEASE_LIBRARIES}
 		DESTINATION .)
