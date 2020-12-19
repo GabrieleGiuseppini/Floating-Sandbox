@@ -74,7 +74,6 @@ GameController::GameController(
     , mDayLightCycleStateMachine()
     // State
     , mGameParameters()
-    , mLastShipLoadedFilepath()
     , mIsPaused(false)
     , mIsPulseUpdateSet(false)
     , mIsMoveToolEngaged(false)
@@ -314,33 +313,9 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
         shipId,
         std::move(textureImage),
         shipMetadata,
-        shipDefinitionFilepath,
         mDoAutoZoomOnShipLoad);
 
     return shipMetadata;
-}
-
-ShipMetadata GameController::AddDefaultShip(ResourceLocator const & resourceLocator)
-{
-    //
-    // Decide default ship based on day
-    //
-
-    std::filesystem::path shipDefinitionFilePath;
-
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
-    auto const tm = std::localtime(&now_c);
-    if (tm->tm_mon == 0 && tm->tm_mday == 17)  // Jan 17: Floating Sandbox's birthday
-        shipDefinitionFilePath = resourceLocator.GetFallbackShipDefinitionFilePath();
-    else if (tm->tm_mon == 3 && tm->tm_mday == 1)  // April 1
-        shipDefinitionFilePath = resourceLocator.GetApril1stShipDefinitionFilePath();
-    else if (tm->tm_mon == 11 && tm->tm_mday >= 24) // Winter holidays
-        shipDefinitionFilePath = resourceLocator.GetHolidaysShipDefinitionFilePath();
-    else
-        shipDefinitionFilePath = resourceLocator.GetDefaultShipDefinitionFilePath();
-
-    return AddShip(shipDefinitionFilePath);
 }
 
 ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitionFilepath)
@@ -370,59 +345,9 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
         shipId,
         std::move(textureImage),
         shipMetadata,
-        shipDefinitionFilepath,
         false);
 
     return shipMetadata;
-}
-
-void GameController::ReloadLastShip()
-{
-    assert(!!mWorld);
-
-    if (mLastShipLoadedFilepath.empty())
-    {
-        throw std::runtime_error("No ship has been loaded yet");
-    }
-
-    // Load ship definition
-    auto shipDefinition = ShipDefinition::Load(mLastShipLoadedFilepath);
-
-    // Pre-validate ship's texture
-    if (shipDefinition.TextureLayerImage.has_value())
-        mRenderContext->ValidateShipTexture(*shipDefinition.TextureLayerImage);
-
-    // Remember metadata
-    ShipMetadata shipMetadata(shipDefinition.Metadata);
-
-    // Create a new world
-    auto newWorld = std::make_unique<Physics::World>(
-        OceanFloorTerrain(mWorld->GetOceanFloorTerrain()),
-        mFishSpeciesDatabase,
-        mGameEventDispatcher,
-        std::make_shared<TaskThreadPool>(),
-        mGameParameters,
-        mRenderContext->GetVisibleWorld());
-
-    // Load ship into new world
-    auto [shipId, textureImage] = newWorld->AddShip(
-        std::move(shipDefinition),
-        mMaterialDatabase,
-        mShipTexturizer,
-        mGameParameters);
-
-    //
-    // No errors, so we may continue
-    //
-
-    Reset(std::move(newWorld));
-
-    OnShipAdded(
-        shipId,
-        std::move(textureImage),
-        shipMetadata,
-        mLastShipLoadedFilepath,
-        false);
 }
 
 RgbImageData GameController::TakeScreenshot()
@@ -1361,7 +1286,6 @@ void GameController::OnShipAdded(
     ShipId shipId,
     RgbaImageData && textureImage,
     ShipMetadata const & shipMetadata,
-    std::filesystem::path const & shipDefinitionFilepath,
     bool doAutoZoom)
 {
     // Auto-zoom (if requested)
@@ -1400,9 +1324,6 @@ void GameController::OnShipAdded(
 
     // Announce
     mWorld->Announce();
-
-    // Remember last loaded ship
-    mLastShipLoadedFilepath = shipDefinitionFilepath;
 }
 
 void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)

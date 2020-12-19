@@ -89,6 +89,7 @@ private:
     //
 
     wxBoxSizer * mMainPanelSizer;
+    wxMenuItem * mReloadPreviousShipMenuItem;
     wxMenuItem * mPauseMenuItem;
     wxMenuItem * mStepMenuItem;
     wxMenu * mToolsMenu;
@@ -166,7 +167,8 @@ private:
     void OnStepMenuItemSelected(wxCommandEvent & event);
     void OnResetViewMenuItemSelected(wxCommandEvent & event);
     void OnLoadShipMenuItemSelected(wxCommandEvent & event);
-    void OnReloadLastShipMenuItemSelected(wxCommandEvent & event);
+    void OnReloadCurrentShipMenuItemSelected(wxCommandEvent & event);
+    void OnReloadPreviousShipMenuItemSelected(wxCommandEvent & event);
     void OnSaveScreenshotMenuItemSelected(wxCommandEvent & event);
 
     void OnMoveMenuItemSelected(wxCommandEvent & event);
@@ -329,6 +331,10 @@ private:
 
     void ReconcileWithUIPreferences();
 
+    static std::filesystem::path ChooseDefaultShip(ResourceLocator const & resourceLocator);
+
+    void OnShipLoaded(std::filesystem::path shipFilePath);
+
 private:
 
     wxApp * const mMainApp;
@@ -351,6 +357,9 @@ private:
     //
     // State
     //
+
+    std::filesystem::path mCurrentShipFilePath;
+    std::filesystem::path mPreviousShipFilePath;
 
     bool mHasWindowBeenShown;
     bool mHasStartupTipBeenChecked;

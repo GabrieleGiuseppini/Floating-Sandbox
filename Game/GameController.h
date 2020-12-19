@@ -117,9 +117,7 @@ public:
     void RebindOpenGLContext(std::function<void()> rebindContextFunction);
 
     ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) override;
-    ShipMetadata AddDefaultShip(ResourceLocator const & resourceLocator) override;
     ShipMetadata AddShip(std::filesystem::path const & shipDefinitionFilepath) override;
-    void ReloadLastShip() override;
 
     RgbImageData TakeScreenshot() override;
 
@@ -738,7 +736,6 @@ private:
         ShipId shipId,
         RgbaImageData && textureImage,
         ShipMetadata const & shipMetadata,
-        std::filesystem::path const & shipDefinitionFilepath,
         bool doAutoZoom);
 
     void PublishStats(std::chrono::steady_clock::time_point nowReal);
@@ -782,7 +779,6 @@ private:
     //
 
     GameParameters mGameParameters;
-    std::filesystem::path mLastShipLoadedFilepath;
     bool mIsPaused;
     bool mIsPulseUpdateSet;
     bool mIsMoveToolEngaged;

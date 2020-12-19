@@ -72,6 +72,16 @@ public:
         }
     }
 
+    std::filesystem::path const & GetLastShipLoadedFilePath() const
+    {
+        return mLastShipLoadedFilePath;
+    }
+
+    void SetLastShipLoadedFilePath(std::filesystem::path lastShipLoadedFilePath)
+    {
+        mLastShipLoadedFilePath = std::move(lastShipLoadedFilePath);
+    }
+
     std::filesystem::path const & GetScreenshotsFolderPath() const
     {
         return mScreenshotsFolderPath;
@@ -355,7 +365,7 @@ private:
 
     void LoadPreferences();
 
-    void SavePreferences() const;    
+    void SavePreferences() const;
 
 private:
 
@@ -371,6 +381,7 @@ private:
     //
 
     std::vector<std::filesystem::path> mShipLoadDirectories;
+    std::filesystem::path mLastShipLoadedFilePath;
 
     std::filesystem::path mScreenshotsFolderPath;
 

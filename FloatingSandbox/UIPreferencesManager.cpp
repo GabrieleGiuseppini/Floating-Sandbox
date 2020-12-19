@@ -26,6 +26,7 @@ UIPreferencesManager::UIPreferencesManager(
     //
 
     mShipLoadDirectories.push_back(mDefaultShipLoadDirectory);
+    mLastShipLoadedFilePath.clear();
 
     mScreenshotsFolderPath = StandardSystemPaths::GetInstance().GetUserPicturesGameFolderPath();
 
@@ -143,6 +144,16 @@ void UIPreferencesManager::LoadPreferences()
                     }
                 }
             }
+        }
+
+        //
+        // Last ship loaded file path
+        //
+
+        if (auto lastShipLoadedFilePathIt = preferencesRootObject->find("last_ship_loaded_file_path");
+            lastShipLoadedFilePathIt != preferencesRootObject->end() && lastShipLoadedFilePathIt->second.is<std::string>())
+        {
+            mLastShipLoadedFilePath = lastShipLoadedFilePathIt->second.get<std::string>();
         }
 
         //
@@ -402,6 +413,10 @@ void UIPreferencesManager::SavePreferences() const
     }
 
     preferencesRootObject["ship_load_directories"] = picojson::value(shipLoadDirectories);
+
+    // Add last ship loaded file path
+    if (!mLastShipLoadedFilePath.empty())
+        preferencesRootObject["last_ship_loaded_file_path"] = picojson::value(mLastShipLoadedFilePath.string());
 
     // Add screenshots folder path
     preferencesRootObject["screenshots_folder_path"] = picojson::value(mScreenshotsFolderPath.string());

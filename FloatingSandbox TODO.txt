@@ -260,19 +260,21 @@ Render:
 
 		- Smaller destroy radius - like at 5.0
 
-		- Reload last-loaded ship (the one that the game was closed with)
-			- Menu item: "Reload Previous Ship"
-				- Initialized as disabled
-			- Renamed "current" reload as "Reload Current Ship"
-			- Move whole management of "Reload Last Ship" and default ship loading to MainFrame
-				- GameController initialization must not do ships; initial ship loading must be explicit
-				- Also default ship choice moves to MainFrame
-				- mCurrentShipFilePath: set each time we've successfully loaded a ship
-					- ...and also stored at UIPreferencesManager as LastShipLoaded, for next time
-						- Saved at exit if set
-				- mPreviousShipFilePath: set to mCurrentShipFilePath each time we've successfully loaded a *different* ship
-					- ...and enables "Reload Previous Ship" menu item
+		= Reload last-loaded ship (the one that the game was closed with)
+			+ Menu item: "Reload Previous Ship"
+				+ Initialized as disabled
+			+ Renamed "current" reload as "Reload Current Ship"
+			+ Move whole management of "Reload Last Ship" and default ship loading to MainFrame
+				+ GameController initialization must not do ships; initial ship loading must be explicit
+				+ Also default ship choice moves to MainFrame
+				+ mCurrentShipFilePath: set each time we've successfully loaded a ship
+					+ ...and also stored at UIPreferencesManager as LastShipLoaded, for next time
+						+ Saved at exit if set
+				+ mPreviousShipFilePath: set to mCurrentShipFilePath each time we've successfully loaded a *different* ship
+					+ ...and enables "Reload Previous Ship" menu item
+				+ Enable menu item after UIPreferencesManager loaded, when LastShipLoaded is not empty
 			- New UI preferences flag: Reload last ship at startup, default=false
+				- Used at initialization
 			- changelist
 
 		- TODO: move up "dangerous" features so we get more testing:

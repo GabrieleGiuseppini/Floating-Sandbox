@@ -45,7 +45,8 @@
 long const ID_MAIN_CANVAS = wxNewId();
 
 long const ID_LOAD_SHIP_MENUITEM = wxNewId();
-long const ID_RELOAD_LAST_SHIP_MENUITEM = wxNewId();
+long const ID_RELOAD_CURRENT_SHIP_MENUITEM = wxNewId();
+long const ID_RELOAD_PREVIOUS_SHIP_MENUITEM = wxNewId();
 long const ID_MORE_SHIPS_MENUITEM = wxNewId();
 long const ID_SAVE_SCREENSHOT_MENUITEM = wxNewId();
 long const ID_QUIT_MENUITEM = wxNewId();
@@ -123,6 +124,9 @@ MainFrame::MainFrame(
     , mToolController()
     , mSettingsManager()
     , mUIPreferencesManager()
+    // State
+    , mCurrentShipFilePath()
+    , mPreviousShipFilePath()
     , mHasWindowBeenShown(false)
     , mHasStartupTipBeenChecked(false)
     , mPauseCount(0)
@@ -193,9 +197,14 @@ MainFrame::MainFrame(
     fileMenu->Append(loadShipMenuItem);
     Connect(ID_LOAD_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnLoadShipMenuItemSelected);
 
-    wxMenuItem * reloadLastShipMenuItem = new wxMenuItem(fileMenu, ID_RELOAD_LAST_SHIP_MENUITEM, _("Reload Ship") + wxS("\tCtrl+R"), wxEmptyString, wxITEM_NORMAL);
-    fileMenu->Append(reloadLastShipMenuItem);
-    Connect(ID_RELOAD_LAST_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadLastShipMenuItemSelected);
+    wxMenuItem * reloadCurrentShipMenuItem = new wxMenuItem(fileMenu, ID_RELOAD_CURRENT_SHIP_MENUITEM, _("Reload Current Ship") + wxS("\tCtrl+R"), wxEmptyString, wxITEM_NORMAL);
+    fileMenu->Append(reloadCurrentShipMenuItem);
+    Connect(ID_RELOAD_CURRENT_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadCurrentShipMenuItemSelected);
+
+    mReloadPreviousShipMenuItem = new wxMenuItem(fileMenu, ID_RELOAD_PREVIOUS_SHIP_MENUITEM, _("Reload Previous Ship") + wxS("\tCtrl+V"), wxEmptyString, wxITEM_NORMAL);
+    mReloadPreviousShipMenuItem->Enable(false);
+    fileMenu->Append(mReloadPreviousShipMenuItem);
+    Connect(ID_RELOAD_PREVIOUS_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadPreviousShipMenuItemSelected);
 
     fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
 
@@ -678,6 +687,9 @@ void MainFrame::OnSecretTypingLoadBuiltInShip(int ship)
         builtInShipFilePath = mResourceLocator->GetFallbackShipDefinitionFilePath();
 
     mGameController->ResetAndLoadShip(builtInShipFilePath);
+
+    // Succeeded
+    OnShipLoaded(builtInShipFilePath);
 }
 
 //
@@ -942,14 +954,22 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     try
     {
         // Try default ship first
-        mGameController->AddDefaultShip(*mResourceLocator);
+        auto const defaultShipFilePath = ChooseDefaultShip(*mResourceLocator);
+        mGameController->AddShip(defaultShipFilePath);
+
+        // Succeeded
+        OnShipLoaded(defaultShipFilePath);
     }
     catch (std::exception const & exc)
     {
         LogMessage("Error locating default ship: ", exc.what());
 
         // Try fallback ship now
-        mGameController->AddShip(mResourceLocator->GetFallbackShipDefinitionFilePath());
+        auto const fallbackShipFilePath = mResourceLocator->GetFallbackShipDefinitionFilePath();
+        mGameController->AddShip(fallbackShipFilePath);
+
+        // Succeeded
+        OnShipLoaded(fallbackShipFilePath);
     }
 
     splash->UpdateProgress(1.0f, ProgressMessageType::Ready);
@@ -1395,7 +1415,11 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
         assert(!!mGameController);
         try
         {
-            auto shipMetadata = mGameController->ResetAndLoadShip(mShipLoadDialog->GetChosenShipFilepath());
+            auto const chosenShipFilePath = mShipLoadDialog->GetChosenShipFilepath();
+            auto shipMetadata = mGameController->ResetAndLoadShip(chosenShipFilePath);
+
+            // Succeeded
+            OnShipLoaded(chosenShipFilePath);
 
             // Open description, if a description exists and the user allows
             if (!!shipMetadata.Description
@@ -1420,14 +1444,37 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
     SetPaused(false);
 }
 
-void MainFrame::OnReloadLastShipMenuItemSelected(wxCommandEvent & /*event*/)
+void MainFrame::OnReloadCurrentShipMenuItemSelected(wxCommandEvent & /*event*/)
 {
+    assert(!mCurrentShipFilePath.empty());
+
     ResetState();
 
-    assert(!!mGameController);
     try
     {
-        mGameController->ReloadLastShip();
+        mGameController->ResetAndLoadShip(mCurrentShipFilePath);
+
+        // Succeeded
+        OnShipLoaded(mCurrentShipFilePath);
+    }
+    catch (std::exception const & ex)
+    {
+        OnError(ex.what(), false);
+    }
+}
+
+void MainFrame::OnReloadPreviousShipMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!mPreviousShipFilePath.empty()); // Or else we wouldn't be here
+
+    ResetState();
+
+    try
+    {
+        mGameController->ResetAndLoadShip(mPreviousShipFilePath);
+
+        // Succeeded
+        OnShipLoaded(mPreviousShipFilePath);
     }
     catch (std::exception const & ex)
     {
@@ -2076,7 +2123,53 @@ void MainFrame::SetPaused(bool isPaused)
 
 void MainFrame::ReconcileWithUIPreferences()
 {
+    mPreviousShipFilePath = mUIPreferencesManager->GetLastShipLoadedFilePath();
+    mReloadPreviousShipMenuItem->Enable(!mPreviousShipFilePath.empty());
+
     mShowStatusTextMenuItem->Check(mUIPreferencesManager->GetShowStatusText());
     mShowExtendedStatusTextMenuItem->Check(mUIPreferencesManager->GetShowExtendedStatusText());
     mMuteMenuItem->Check(mUIPreferencesManager->GetGlobalMute());
+}
+
+std::filesystem::path MainFrame::ChooseDefaultShip(ResourceLocator const & resourceLocator)
+{
+    //
+    // Decide default ship based on day
+    //
+
+    std::time_t now_c = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    auto const tm = std::localtime(&now_c);
+
+    if (tm->tm_mon == 0 && tm->tm_mday == 17)  // Jan 17: Floating Sandbox's birthday
+        return resourceLocator.GetFallbackShipDefinitionFilePath();
+    else if (tm->tm_mon == 3 && tm->tm_mday == 1)  // April 1
+        return resourceLocator.GetApril1stShipDefinitionFilePath();
+    else if (tm->tm_mon == 11 && tm->tm_mday >= 24) // Winter holidays
+        return resourceLocator.GetHolidaysShipDefinitionFilePath();
+    else
+        return resourceLocator.GetDefaultShipDefinitionFilePath(); // Just default
+}
+
+void MainFrame::OnShipLoaded(std::filesystem::path shipFilePath)
+{
+    //
+    // Check whether the current ship may become the "previous" ship
+    //
+
+    if (!mCurrentShipFilePath.empty()
+        && shipFilePath != mCurrentShipFilePath)
+    {
+        mPreviousShipFilePath = mCurrentShipFilePath;
+
+        mReloadPreviousShipMenuItem->Enable(true);
+    }
+
+    //
+    // Remember the current ship file path
+    //
+
+    mCurrentShipFilePath = shipFilePath;
+
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetLastShipLoadedFilePath(mCurrentShipFilePath);
 }
