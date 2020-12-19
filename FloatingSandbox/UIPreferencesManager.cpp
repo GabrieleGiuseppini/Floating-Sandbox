@@ -27,6 +27,7 @@ UIPreferencesManager::UIPreferencesManager(
 
     mShipLoadDirectories.push_back(mDefaultShipLoadDirectory);
     mLastShipLoadedFilePath.clear();
+    mReloadLastLoadedShipOnStartup = false;
 
     mScreenshotsFolderPath = StandardSystemPaths::GetInstance().GetUserPicturesGameFolderPath();
 
@@ -154,6 +155,16 @@ void UIPreferencesManager::LoadPreferences()
             lastShipLoadedFilePathIt != preferencesRootObject->end() && lastShipLoadedFilePathIt->second.is<std::string>())
         {
             mLastShipLoadedFilePath = lastShipLoadedFilePathIt->second.get<std::string>();
+        }
+
+        //
+        // Reload last loaded ship on startup
+        //
+
+        if (auto reloadLastLoadedShipOnStartupIt = preferencesRootObject->find("reload_last_loaded_ship_on_startup");
+            reloadLastLoadedShipOnStartupIt != preferencesRootObject->end() && reloadLastLoadedShipOnStartupIt->second.is<bool>())
+        {
+            mReloadLastLoadedShipOnStartup = reloadLastLoadedShipOnStartupIt->second.get<bool>();
         }
 
         //
@@ -417,6 +428,9 @@ void UIPreferencesManager::SavePreferences() const
     // Add last ship loaded file path
     if (!mLastShipLoadedFilePath.empty())
         preferencesRootObject["last_ship_loaded_file_path"] = picojson::value(mLastShipLoadedFilePath.string());
+
+    // Add reload last loaded ship on startup
+    preferencesRootObject["reload_last_loaded_ship_on_startup"] = picojson::value(mReloadLastLoadedShipOnStartup);
 
     // Add screenshots folder path
     preferencesRootObject["screenshots_folder_path"] = picojson::value(mScreenshotsFolderPath.string());

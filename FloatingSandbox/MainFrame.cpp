@@ -953,12 +953,30 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     try
     {
-        // Try default ship first
-        auto const defaultShipFilePath = ChooseDefaultShip(*mResourceLocator);
-        mGameController->AddShip(defaultShipFilePath);
+        // See if the last loaded ship is applicable
+        std::filesystem::path startupShipFilePath;
+        if (mUIPreferencesManager->GetReloadLastLoadedShipOnStartup())
+        {
+            startupShipFilePath = mUIPreferencesManager->GetLastShipLoadedFilePath();
+
+            // Make sure it still exists
+            if (!startupShipFilePath.empty()
+                && !std::filesystem::exists(startupShipFilePath))
+            {
+                startupShipFilePath.clear();
+            }
+        }
+
+        if (startupShipFilePath.empty())
+        {
+            // Use default ship
+            startupShipFilePath = ChooseDefaultShip(*mResourceLocator);
+        }
+
+        mGameController->AddShip(startupShipFilePath);
 
         // Succeeded
-        OnShipLoaded(defaultShipFilePath);
+        OnShipLoaded(startupShipFilePath);
     }
     catch (std::exception const & exc)
     {

@@ -82,6 +82,16 @@ public:
         mLastShipLoadedFilePath = std::move(lastShipLoadedFilePath);
     }
 
+    bool GetReloadLastLoadedShipOnStartup() const
+    {
+        return mReloadLastLoadedShipOnStartup;
+    }
+
+    void SetReloadLastLoadedShipOnStartup(bool value)
+    {
+        mReloadLastLoadedShipOnStartup = value;
+    }
+
     std::filesystem::path const & GetScreenshotsFolderPath() const
     {
         return mScreenshotsFolderPath;
@@ -382,6 +392,7 @@ private:
 
     std::vector<std::filesystem::path> mShipLoadDirectories;
     std::filesystem::path mLastShipLoadedFilePath;
+    bool mReloadLastLoadedShipOnStartup;
 
     std::filesystem::path mScreenshotsFolderPath;
 

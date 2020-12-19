@@ -23,7 +23,7 @@ class PreferencesDialog : public wxDialog
 public:
 
     PreferencesDialog(
-        wxWindow * parent,        
+        wxWindow * parent,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
         std::function<void()> onChangeCallback);
 
@@ -33,6 +33,7 @@ public:
 
 private:
 
+    void OnReloadLastLoadedShipOnStartupCheckBoxClicked(wxCommandEvent & event);
     void OnScreenshotDirPickerChanged(wxCommandEvent & event);
     void OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & event);
     void OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent & event);
@@ -53,7 +54,7 @@ private:
 
     void OnGlobalMuteCheckBoxClicked(wxCommandEvent & event);
     void OnPlayBackgroundMusicCheckBoxClicked(wxCommandEvent & event);
-    void OnPlaySinkingMusicCheckBoxClicked(wxCommandEvent & event);    
+    void OnPlaySinkingMusicCheckBoxClicked(wxCommandEvent & event);
 
     void OnOkButton(wxCommandEvent & event);
 
@@ -79,6 +80,7 @@ private:
 private:
 
     // Game panel
+    wxCheckBox * mReloadLastLoadedShipOnStartupCheckBox;
     wxDirPickerCtrl * mScreenshotDirPickerCtrl;
     wxCheckBox * mShowTipOnStartupCheckBox;
     wxCheckBox * mCheckForUpdatesAtStartupCheckBox;
@@ -107,7 +109,7 @@ private:
     wxCheckBox * mPlayBackgroundMusicCheckBox;
     SliderControl<float> * mSinkingMusicVolumeSlider;
     wxCheckBox * mPlaySinkingMusicCheckBox;
-   
+
     // Buttons
     wxButton * mOkButton;
 
