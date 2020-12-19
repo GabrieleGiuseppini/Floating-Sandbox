@@ -131,9 +131,10 @@ void SmashTool::ApplyTool(
 
     static constexpr float MinFraction = 0.1f;
 
-    float millisecondsElapsed = static_cast<float>(
+    float const millisecondsElapsed = static_cast<float>(
         std::chrono::duration_cast<std::chrono::milliseconds>(cumulatedTime).count());
-    float radiusFraction = MinFraction + (1.0f - MinFraction) * std::min(1.0f, millisecondsElapsed / 5000.0f);
+
+    float const radiusFraction = MinFraction + (1.0f - MinFraction) * std::min(1.0f, millisecondsElapsed / 5000.0f);
 
     // Modulate down cursor
     mToolCursorManager.SetToolCursor(mDownCursorImage, radiusFraction);
@@ -141,7 +142,7 @@ void SmashTool::ApplyTool(
     // Destroy
     mGameController->DestroyAt(
         inputState.MousePosition,
-        radiusFraction);
+        radiusFraction * 10.0f);
 }
 
 ////////////////////////////////////////////////////////////////////////

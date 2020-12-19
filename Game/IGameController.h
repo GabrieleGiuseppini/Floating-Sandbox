@@ -94,7 +94,7 @@ struct IGameController
     virtual void RotateBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter, float intertialScreenDeltaY) = 0;
     virtual std::optional<ElementId> PickObjectForPickAndPull(vec2f const & screenCoordinates) = 0;
     virtual void Pull(ElementId elementId, vec2f const & screenTarget) = 0;
-    virtual void DestroyAt(vec2f const & screenCoordinates, float radiusFraction) = 0;
+    virtual void DestroyAt(vec2f const & screenCoordinates, float radiusMultiplier) = 0;
     virtual void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier, RepairSessionId sessionId, RepairSessionStepId sessionStepId) = 0;
     virtual void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) = 0;
     virtual bool ApplyHeatBlasterAt(vec2f const & screenCoordinates, HeatBlasterActionType action) = 0;

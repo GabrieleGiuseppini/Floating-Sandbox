@@ -172,7 +172,7 @@ public:
     void RotateBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter, float intertialScreenDeltaY) override;
     std::optional<ElementId> PickObjectForPickAndPull(vec2f const & screenCoordinates) override;
     void Pull(ElementId elementId, vec2f const & screenTarget) override;
-    void DestroyAt(vec2f const & screenCoordinates, float radiusFraction) override;
+    void DestroyAt(vec2f const & screenCoordinates, float radiusMultiplier) override;
     void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier, RepairSessionId sessionId, RepairSessionStepId sessionStepId) override;
     void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) override;
     bool ApplyHeatBlasterAt(vec2f const & screenCoordinates, HeatBlasterActionType action) override;

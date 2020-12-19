@@ -310,11 +310,36 @@ void Ship::Pull(
 
 bool Ship::DestroyAt(
     vec2f const & targetPos,
-    float radiusFraction,
+    float radiusMultiplier,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     bool hasDestroyed = false;
+
+    auto const doDestroyPoint =
+        [&](ElementIndex pointIndex)
+        {
+            // Choose a detach velocity - using the same distribution as Debris
+            vec2f const detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
+                GameParameters::MinDebrisParticlesVelocity,
+                GameParameters::MaxDebrisParticlesVelocity);
+
+            // Detach
+            DetachPointForDestroy(
+                pointIndex,
+                detachVelocity,
+                currentSimulationTime,
+                gameParameters);
+
+            // Record event, if requested to
+            if (mEventRecorder != nullptr)
+            {
+                mEventRecorder->RecordEvent<RecordedPointDetachForDestroyEvent>(
+                    pointIndex,
+                    detachVelocity,
+                    currentSimulationTime);
+            }
+        };
 
     //
     // Destroy points probabilistically - probability is one at
@@ -323,10 +348,12 @@ bool Ship::DestroyAt(
 
     float const radius =
         gameParameters.DestroyRadius
-        * radiusFraction
+        * radiusMultiplier
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     float const squareRadius = radius * radius;
+
+    ElementIndex lastPointInRadiusIndex = NoneElementIndex;
 
     // Detach/destroy all active, attached points within the radius
     for (auto pointIndex : mPoints)
@@ -355,24 +382,7 @@ bool Ship::DestroyAt(
 
                 if (GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() <= destroyProbability)
                 {
-                    // Choose a detach velocity - using the same distribution as Debris
-                    vec2f detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
-                        GameParameters::MinDebrisParticlesVelocity,
-                        GameParameters::MaxDebrisParticlesVelocity);
-
-                    // Detach
-                    DetachPointForDestroy(
-                        pointIndex,
-                        detachVelocity,
-                        currentSimulationTime,
-                        gameParameters);
-
-                    // Record event, if requested to
-                    if (mEventRecorder != nullptr)
-                        mEventRecorder->RecordEvent<RecordedPointDetachForDestroyEvent>(
-                            pointIndex,
-                            detachVelocity,
-                            currentSimulationTime);
+                    doDestroyPoint(pointIndex);
 
                     hasDestroyed = true;
                 }
@@ -384,7 +394,17 @@ bool Ship::DestroyAt(
 
                 hasDestroyed = true;
             }
+
+            lastPointInRadiusIndex = pointIndex;
         }
+    }
+
+    // Make sure we always destroy something, if we had a particle in-radius
+    if (!hasDestroyed && NoneElementIndex != lastPointInRadiusIndex)
+    {
+        doDestroyPoint(lastPointInRadiusIndex);
+
+        hasDestroyed = true;
     }
 
     return hasDestroyed;

@@ -277,14 +277,14 @@ void World::Pull(
 
 void World::DestroyAt(
     vec2f const & targetPos,
-    float radiusFraction,
+    float radiusMultiplier,
     GameParameters const & gameParameters)
 {
     for (auto & ship : mAllShips)
     {
         ship->DestroyAt(
             targetPos,
-            radiusFraction,
+            radiusMultiplier,
             mCurrentSimulationTime,
             gameParameters);
     }
@@ -292,7 +292,7 @@ void World::DestroyAt(
     // Also scare fishes at bit
     mFishes.DisturbAt(
         targetPos,
-        7.5f,
+        6.5f + radiusMultiplier,
         std::chrono::milliseconds(0));
 }
 

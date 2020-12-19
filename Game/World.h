@@ -189,7 +189,7 @@ public:
 
     void DestroyAt(
         vec2f const & targetPos,
-        float radiusFraction,
+        float radiusMultiplier,
         GameParameters const & gameParameters);
 
     void RepairAt(
