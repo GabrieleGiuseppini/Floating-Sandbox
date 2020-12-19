@@ -74,14 +74,14 @@ find_package(wxWidgets REQUIRED base gl core html media)
 find_package(DevIL REQUIRED)
 
 if (WIN32)
-
-	# Record runtime DevIL libraries that we need to install
-
-	get_filename_component(DEVIL_LIB_DIR ${IL_LIBRARIES} DIRECTORY)
-
-	file(GLOB DEVIL_RUNTIME_LIBRARIES
-		${DEVIL_LIB_DIR}/*.dll)
-
+	if(MSVC_USE_STATIC_LINKING)
+		# If we use static linking, we expect to have built DevIL 
+		# as static libs, and we expect to _use_ it as static libs,
+		# so tell the DevIL include files that DevIL is used as static libs.
+		# Note: in this cse we also expect the DevIL libs to be statically-linked
+		# with the png and zlib static libs
+		add_compile_definitions("IL_STATIC_LIB")
+	endif(MSVC_USE_STATIC_LINKING)
 endif()
 
 #

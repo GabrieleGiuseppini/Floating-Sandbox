@@ -243,8 +243,8 @@ Render:
 - Roadmap:
 
 		+ Bump up version
-
-		- Commit, push, and branch
+		+ Commit, push, and branch
+		+ Re-build DevIL as static lib (*)
 
 		- Take perf numbers
 			- Dell old
@@ -253,11 +253,6 @@ Render:
 			- Dell new
 
 		- Redo GameJolt's main header with Titanic
-
-		- Re-build wxWidgets:
-			- 64: no incremental linking, no jpg
-			- 32: no incremental linking
-			- Update Readme.md with wxWidgets version and png+unicode
 
 		- UpdateMasses: converge _slowly_ towards target
 			- Try to repro issue with ship having water material that breaks (my_ship_structure-water_air_issue.png on Desktop)	
@@ -798,17 +793,17 @@ Render:
 	+ Translations
 		+ Make localizable
 	+ SSL cert: https://www.sslforfree.com/
-	= Sign with certificate (*)
+	+ Sign with certificate (*)
 		+ https://blogs.msdn.microsoft.com/ieinternals/2011/03/22/everything-you-need-to-know-about-authenticode-code-signing/
 		+ https://www.thegeekstuff.com/2010/03/microsoft-digital-signatures/
 		+ Reasons:
 			- Anti-virus complains of saving
-		= Buy certificate
+		+ Buy certificate
 			+ https://www.leaderssl.nl/suppliers/sectigo/products/code_signing
 			+ Plan B:
 				+ https://comodosslstore.com/code-signing/microsoft-authenticode
 				+ https://comodosslstore.com/codesigning.aspx
-			- Print receipt and store in Taxes
+			+ Print receipt and store in Taxes
 		+ Sign exe
 		+ Sign MSI
 			+ https://stackoverflow.com/questions/17589754/wix-installer-msi-publisher-unknown/17591603
@@ -825,9 +820,8 @@ Render:
 				  2 0x000000007bc91c13 call_thread_func+0xd2() in ntdll (0x000000000f0bffd0)
 	- See if may upgrade to wx 3.1.3
 		- wxEVT_KEY_DOWN and/or wxEVT_CHAR: do evt.Skip()
-	- Get rid of DevIL
-		- Need to take libpng and zlib from SDK
-		- Need to code own image manipulations
+	+ Build DevIL as a static lib (*)
+		+ Redo zlib and libpng SDKs
 	- See if may upgrade SFML to master (~2.6) with OPUS support
 		- Then make all music OPUS
 	- Looped sounds (engines, bells, horns, etc.): make them OGG with built-in loop points (see https://rpgmaker.net/tutorials/1341/)
@@ -1125,6 +1119,7 @@ Render:
 	- Background ships: just any of the other ships, that would sail in the background
 
 	- Incandescence: Heat overlay more integrated in game play (*):
+		- On by default if calibration says it's ok
 		- Make switch: "Heat map mode" (now) and "Incandescence mode" (no black), in which shader replaces black with alpha=0
 			- "Black blending"?
 			- See https://discord.com/channels/559822257275404307/561385532698001419/777597209327566862
