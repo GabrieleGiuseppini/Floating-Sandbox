@@ -2,7 +2,10 @@
 Current perf:
 =================================================
 1.16
-- DELL (default_ship): FPS=28.8, UPD=21.16ms, RND=13.23ms
+- DELL new (default_ship): FPS=62.9 UPD=4.8ms RND=4.3ms
+- DELL old (default_ship): FPS=30.2 UPD=20.5ms, RND=13.0ms
+- HP (default_ship): FPS=20.2 UPD=48.5ms RND=14.1ms
+- Samsung (default_ship): FPS=22.5, UPD=44.5ms, RND=8.9ms 
 
 =================================================
 1.14
@@ -246,14 +249,6 @@ Render:
 		+ Commit, push, and branch
 		+ Re-build DevIL as static lib (*)
 
-		- Take perf numbers
-			- Dell old
-			- Samsung
-			- HP
-			- Dell new
-
-		- Redo GameJolt's main header with Titanic
-
 		- UpdateMasses: converge _slowly_ towards target
 			- Try to repro issue with ship having water material that breaks (my_ship_structure-water_air_issue.png on Desktop)	
 				- Air material appears to break with water jumping often, possibly because of high jumps in mass
@@ -263,7 +258,22 @@ Render:
 
 		- Optimize that decay process at Points::CombustionUpdateLowFrequency
 
-		- Smaller destroy radius?
+		- Smaller destroy radius - like at 5.0
+
+		- Reload last-loaded ship (the one that the game was closed with)
+			- Menu item: "Reload Previous Ship"
+				- Initialized as disabled
+			- Renamed "current" reload as "Reload Current Ship"
+			- Move whole management of "Reload Last Ship" and default ship loading to MainFrame
+				- GameController initialization must not do ships; initial ship loading must be explicit
+				- Also default ship choice moves to MainFrame
+				- mCurrentShipFilePath: set each time we've successfully loaded a ship
+					- ...and also stored at UIPreferencesManager as LastShipLoaded, for next time
+						- Saved at exit if set
+				- mPreviousShipFilePath: set to mCurrentShipFilePath each time we've successfully loaded a *different* ship
+					- ...and enables "Reload Previous Ship" menu item
+			- New UI preferences flag: Reload last ship at startup, default=false
+			- changelist
 
 		- TODO: move up "dangerous" features so we get more testing:
 			- Cached quantities!
@@ -327,21 +337,6 @@ Render:
 
 		- Flag for velocity display
 			- At UIPreferencesManager & Dialog, saved and all
-
-		- Reload last-loaded ship (the one that the game was closed with)
-			- Menu item: "Reload Previous Ship"
-				- Initialized as disabled
-			- Renamed "current" reload as "Reload Current Ship"
-			- Move whole management of "Reload Last Ship" and default ship loading to MainFrame
-				- GameController initialization must not do ships; initial ship loading must be explicit
-				- Also default ship choice moves to MainFrame
-				- mCurrentShipFilePath: set each time we've successfully loaded a ship
-					- ...and also stored at UIPreferencesManager as LastShipLoaded, for next time
-						- Saved at exit if set
-				- mPreviousShipFilePath: set to mCurrentShipFilePath each time we've successfully loaded a *different* ship
-					- ...and enables "Reload Previous Ship" menu item
-			- New UI preferences flag: Reload last ship at startup, default=false
-			- changelist
 
 		- Light improvements (*)
 				
