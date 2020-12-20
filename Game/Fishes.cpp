@@ -834,7 +834,7 @@ void Fishes::UpdateDynamics(
 
         // Check whether we're too close to the water surface (idealized as being horizontal) - but only if fish is not in too much panic
         if (fishHeadDepth < 2.0f + OceanSurfaceLowWatermark
-            && fish.PanicCharge <= 0.3f // Not too much panig
+            && fish.PanicCharge <= 0.3f // Not too much panic
             && fish.TargetVelocity.y >= 0.0f) // Bounce away only if we're really going into it
         {
             //
@@ -844,7 +844,7 @@ void Fishes::UpdateDynamics(
             // Bounce direction, opposite of target
             vec2f const bounceDirection = vec2f(fish.TargetVelocity.x, -fish.TargetVelocity.y).normalise();
 
-            // Calculate new target velocity - away from disturbance point
+            // Calculate new target velocity - along bounce direction
             fish.TargetVelocity = MakeCuisingVelocity(bounceDirection, fishSpecies, fish.PersonalitySeed, gameParameters);
 
             // Converge direction change at this rate
