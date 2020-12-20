@@ -2082,15 +2082,20 @@ void Ship::RotPoints(
     //
     //  ZeroDecay = Af ^ Nf
     //
+    // A = Alpha: the smaller alpha, the faster we rot.
+    //
 
-    // After 15 mins: on the surface=>0.75, flooded=>0.25
+    float constexpr ZeroDecay = 1e-10f;
+
+    // After 15 mins @ 50fps: on the surface=>0.75, flooded=>0.25
     float constexpr Nf =
         15.0f * 60.0f * 50.0f / static_cast<float>(LowFrequencyPeriod)
         * 10.0f; // Upping up a bit to fight against initial steep curve
 
-    // Alpha: the smaller, the faster we rot
+    // AlphaMax is the extreme (minimum) value of alpha when rotting conditions
+    // are at their best (underwater, etc.)
     float const alphaMax = gameParameters.RotAcceler8r != 0.0f
-        ? powf(1e-10f, gameParameters.RotAcceler8r / Nf)
+        ? powf(ZeroDecay, gameParameters.RotAcceler8r / Nf) // Af = ZeroDecay ^ (1/Nf)
         : 1.0f;
 
     // Leaking points rot faster - they are directly in contact with water after all!
@@ -2114,10 +2119,10 @@ void Ship::RotPoints(
         // Adjust with material's rust receptivity
         waterEquivalent *= mPoints.GetMaterialRustReceptivity(p);
 
-        // Clamp
+        // Clamp to [0.0, 1.0]
         waterEquivalent = std::min(waterEquivalent, 1.0f);
 
-        // Interpolate alpha
+        // Interpolate alpha: waterEquivalent => [1.0f, (leaking)alphaMax]
         float const alpha = Mix(
             1.0f,
             (mPoints.GetLeakingComposite(p).LeakingSources.StructuralLeak != 0.0f ? leakingAlphaMax : alphaMax),
