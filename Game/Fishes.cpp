@@ -548,9 +548,12 @@ void Fishes::UpdateDynamics(
             // Automated direction smoothing
             //
 
-            // Smooth velocity towards target + shoaling
-            fish.CurrentVelocity +=
-                ((fish.TargetVelocity + fish.ShoalingVelocity) - fish.CurrentVelocity) * fish.CurrentDirectionSmoothingConvergenceRate;
+            if (!fish.IsInFreefall) // If we're free-falling, current velocity has already converged towards target velocity
+            {
+                // Smooth velocity towards target + shoaling
+                fish.CurrentVelocity +=
+                    ((fish.TargetVelocity + fish.ShoalingVelocity) - fish.CurrentVelocity) * fish.CurrentDirectionSmoothingConvergenceRate;
+            }
 
             // Make RenderVector match current velocity
             fish.CurrentRenderVector = fish.CurrentVelocity.normalise();
@@ -661,12 +664,14 @@ void Fishes::UpdateDynamics(
                 - 2.0f // Magnification factor
                 * GameParameters::GravityMagnitude
                 * GameParameters::SimulationStepTimeDuration<float>;
+
             fish.TargetVelocity = vec2f(
                 fish.CurrentVelocity.x,
                 newVelocityY);
+
             fish.CurrentVelocity = fish.TargetVelocity; // Converge immediately
 
-            // Converge at this rate, overriding current convergence rate
+            // Converge direction at this rate, overriding current convergence rate
             fish.CurrentDirectionSmoothingConvergenceRate = 0.06f;
 
             // Update position: add velocity
