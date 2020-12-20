@@ -353,14 +353,20 @@ bool Ship::DestroyAt(
 
     float const squareRadius = radius * radius;
 
-    ElementIndex lastPointInRadiusIndex = NoneElementIndex;
+    // Nearest point in a radius that guarantees the presence of a particle
+    float constexpr FallbackSquareRadius = 0.75f;
+    ElementIndex nearestFallbackPointInRadiusIndex = NoneElementIndex;
+    float nearestFallbackPointRadius = std::numeric_limits<float>::max();
+
+    float const largerSearchSquareRadius = std::max(squareRadius, FallbackSquareRadius);
 
     // Detach/destroy all active, attached points within the radius
     for (auto pointIndex : mPoints)
     {
         float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+
         if (mPoints.IsActive(pointIndex)
-            && pointSquareDistance < squareRadius)
+            && pointSquareDistance < largerSearchSquareRadius)
         {
             //
             // - Air bubble ephemeral points: destroy
@@ -370,39 +376,47 @@ bool Ship::DestroyAt(
             if (Points::EphemeralType::None == mPoints.GetEphemeralType(pointIndex)
                 && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0)
             {
-                //
-                // Calculate probability: 1.0 at distance = 0.0 and 0.0 at distance = radius;
-                // however, we always destroy if we're in a very small fraction of the radius
-                //
-
-                float destroyProbability =
-                    (squareRadius < 1.0f)
-                    ? 1.0f
-                    : (1.0f - (pointSquareDistance / squareRadius)) * (1.0f - (pointSquareDistance / squareRadius));
-
-                if (GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() <= destroyProbability)
+                if (pointSquareDistance < squareRadius)
                 {
-                    doDestroyPoint(pointIndex);
+                    //
+                    // Calculate probability: 1.0 at distance = 0.0 and 0.0 at distance = radius;
+                    // however, we always destroy if we're in a very small fraction of the radius
+                    //
 
-                    hasDestroyed = true;
+                    float destroyProbability =
+                        (pointSquareDistance < 1.0f)
+                        ? 1.0f
+                        : (1.0f - (pointSquareDistance / squareRadius)) * (1.0f - (pointSquareDistance / squareRadius));
+
+                    if (GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() <= destroyProbability)
+                    {
+                        doDestroyPoint(pointIndex);
+
+                        hasDestroyed = true;
+                    }
+                }
+
+                if (pointSquareDistance < nearestFallbackPointRadius)
+                {
+                    nearestFallbackPointInRadiusIndex = pointIndex;
+                    nearestFallbackPointRadius = pointSquareDistance;
                 }
             }
-            else if (Points::EphemeralType::AirBubble == mPoints.GetEphemeralType(pointIndex))
+            else if (Points::EphemeralType::AirBubble == mPoints.GetEphemeralType(pointIndex)
+                && pointSquareDistance < squareRadius)
             {
                 // Destroy
                 mPoints.DestroyEphemeralParticle(pointIndex);
 
                 hasDestroyed = true;
             }
-
-            lastPointInRadiusIndex = pointIndex;
         }
     }
 
     // Make sure we always destroy something, if we had a particle in-radius
-    if (!hasDestroyed && NoneElementIndex != lastPointInRadiusIndex)
+    if (!hasDestroyed && NoneElementIndex != nearestFallbackPointInRadiusIndex)
     {
-        doDestroyPoint(lastPointInRadiusIndex);
+        doDestroyPoint(nearestFallbackPointInRadiusIndex);
 
         hasDestroyed = true;
     }

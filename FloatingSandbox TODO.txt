@@ -267,11 +267,11 @@ Render:
 		+ Credits:
 			+ "Programmed in Amsterdam, the Netherlands"
 			+ ShipBucket
-
-		= Smaller destroy radius - like at 5.0
-			- If no destroy but there was a closest point - within radius + 50% - then destroy (just) that
+		+ Smaller destroy radius - like at 5.0
+			+ If no destroy but there was a closest point - within radius + 50% - then destroy (just) that
 
 		- See fishes flying with large size
+
 		- Exclude hidden files (.whatever) from TextureDatabase, ShaderDatabase, and everywhere we enumerate files
 			- Either use Utils::IsHiddenFilename(.) or another Util method to enumerate all but hidden filenames
 			- Alternatively: when enumerating, only look for expected extensions - making sure as well that we find everything we're looking for
@@ -284,6 +284,17 @@ Render:
 			- 1.16: Titanic @ 12m is at 0.34 - let's shoot for 0.5
 
 		- Optimize that decay process at Points::CombustionUpdateLowFrequency
+
+		- Volume slider for engine sounds
+			- Or SoundController adjusts volume of subsequent instances:
+				- 1st = whatever it is now
+				- 2nd = a bit less
+					- And lowers volume of first (half each?)
+				- ...
+				- Need to keep count of total instances currently playing
+			- Or number of engines used as divisor
+				- Announced by ElectricalElement, received by SoundController which updates mCurrentCount
+					- SoundsController: reset mCurrentCount to 0 at each Reset()
 
 		- TODO: move up "dangerous" features so we get more testing:
 			- Cached quantities!
@@ -310,17 +321,6 @@ Render:
 					- Underwater: incorporate old global damp in friction drag, if needed
 						- Try first without: see falling debris, also with friction adjust = 0.0
 					- !Underwater: convert old global damp to new air damp
-
-		- Volume slider for engine sounds
-			- Or SoundController adjusts volume of subsequent instances:
-				- 1st = whatever it is now
-				- 2nd = a bit less
-					- And lowers volume of first (half each?)
-				- ...
-				- Need to keep count of total instances currently playing
-			- Or number of engines used as divisor
-				- Announced by ElectricalElement, received by SoundController which updates mCurrentCount
-					- SoundsController: reset mCurrentCount to 0 at each Reset()
 
 		- Incandescence layer (*)
 
