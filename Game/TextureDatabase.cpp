@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "TextureDatabase.h"
 
+#include <GameCore/Log.h>
+
 namespace Render {
 
 template <typename TextureGroups>
@@ -110,11 +112,19 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
         if (std::filesystem::is_regular_file(entryIt.path())
             && entryIt.path().extension().string() != ".json")
         {
-            std::string const stem = entryIt.path().filename().stem().string();
+            // We only expect png's
+            if (entryIt.path().extension().string() == ".png")
+            {
+                std::string const stem = entryIt.path().filename().stem().string();
 
-            allTextureFiles.emplace_back(
-                entryIt.path(),
-                stem);
+                allTextureFiles.emplace_back(
+                    entryIt.path(),
+                    stem);
+            }
+            else
+            {
+                LogMessage("WARNING: found file \"" + entryIt.path().string() + "\" with unexpected extension while loading a texture database");
+            }
         }
     }
 

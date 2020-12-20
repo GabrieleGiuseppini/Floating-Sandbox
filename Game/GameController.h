@@ -117,9 +117,7 @@ public:
     void RebindOpenGLContext(std::function<void()> rebindContextFunction);
 
     ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) override;
-    ShipMetadata AddDefaultShip(ResourceLocator const & resourceLocator) override;
     ShipMetadata AddShip(std::filesystem::path const & shipDefinitionFilepath) override;
-    void ReloadLastShip() override;
 
     RgbImageData TakeScreenshot() override;
 
@@ -174,7 +172,7 @@ public:
     void RotateBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter, float intertialScreenDeltaY) override;
     std::optional<ElementId> PickObjectForPickAndPull(vec2f const & screenCoordinates) override;
     void Pull(ElementId elementId, vec2f const & screenTarget) override;
-    void DestroyAt(vec2f const & screenCoordinates, float radiusFraction) override;
+    void DestroyAt(vec2f const & screenCoordinates, float radiusMultiplier) override;
     void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier, RepairSessionId sessionId, RepairSessionStepId sessionStepId) override;
     void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) override;
     bool ApplyHeatBlasterAt(vec2f const & screenCoordinates, HeatBlasterActionType action) override;
@@ -231,6 +229,9 @@ public:
     //
     // Interaction parameters
     //
+
+    bool GetDoShowTossVelocityNotifications() const override { return mDoShowTossVelocityNotifications; }
+    void SetDoShowTossVelocityNotifications(bool value) override { mDoShowTossVelocityNotifications = value; }
 
     bool GetDoShowTsunamiNotifications() const override { return mDoShowTsunamiNotifications; }
     void SetDoShowTsunamiNotifications(bool value) override { mDoShowTsunamiNotifications = value; }
@@ -738,12 +739,11 @@ private:
         ShipId shipId,
         RgbaImageData && textureImage,
         ShipMetadata const & shipMetadata,
-        std::filesystem::path const & shipDefinitionFilepath,
         bool doAutoZoom);
 
     void PublishStats(std::chrono::steady_clock::time_point nowReal);
 
-    void DisplayInertialVelocity(float inertialVelocityMagnitude);
+    void DisplayTossVelocity(float inertialVelocityMagnitude);
 
 private:
 
@@ -782,7 +782,6 @@ private:
     //
 
     GameParameters mGameParameters;
-    std::filesystem::path mLastShipLoadedFilepath;
     bool mIsPaused;
     bool mIsPulseUpdateSet;
     bool mIsMoveToolEngaged;
@@ -792,6 +791,7 @@ private:
     // The parameters that we own
     //
 
+    bool mDoShowTossVelocityNotifications;
     bool mDoShowTsunamiNotifications;
     bool mDoDrawHeatBlasterFlame;
     bool mDoAutoZoomOnShipLoad;

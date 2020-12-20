@@ -72,6 +72,26 @@ public:
         }
     }
 
+    std::filesystem::path const & GetLastShipLoadedFilePath() const
+    {
+        return mLastShipLoadedFilePath;
+    }
+
+    void SetLastShipLoadedFilePath(std::filesystem::path lastShipLoadedFilePath)
+    {
+        mLastShipLoadedFilePath = std::move(lastShipLoadedFilePath);
+    }
+
+    bool GetReloadLastLoadedShipOnStartup() const
+    {
+        return mReloadLastLoadedShipOnStartup;
+    }
+
+    void SetReloadLastLoadedShipOnStartup(bool value)
+    {
+        mReloadLastLoadedShipOnStartup = value;
+    }
+
     std::filesystem::path const & GetScreenshotsFolderPath() const
     {
         return mScreenshotsFolderPath;
@@ -188,6 +208,16 @@ public:
     void SetDoAutoZoomAtShipLoad(bool value)
     {
         mGameController->SetDoAutoZoomOnShipLoad(value);
+    }
+
+    bool GetDoShowTossVelocityNotifications() const
+    {
+        return mGameController->GetDoShowTossVelocityNotifications();
+    }
+
+    void SetDoShowTossVelocityNotifications(bool value)
+    {
+        mGameController->SetDoShowTossVelocityNotifications(value);
     }
 
     bool GetDoShowTsunamiNotifications() const
@@ -355,7 +385,7 @@ private:
 
     void LoadPreferences();
 
-    void SavePreferences() const;    
+    void SavePreferences() const;
 
 private:
 
@@ -371,6 +401,8 @@ private:
     //
 
     std::vector<std::filesystem::path> mShipLoadDirectories;
+    std::filesystem::path mLastShipLoadedFilePath;
+    bool mReloadLastLoadedShipOnStartup;
 
     std::filesystem::path mScreenshotsFolderPath;
 

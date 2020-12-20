@@ -48,19 +48,3 @@ if (MSVC)
                 PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD_DEBUG TRUE)
 
 endif (MSVC)
-
-
-#
-# Copy files
-#
-
-message (STATUS "Copying DevIL runtime files...")
-
-if (WIN32)
-        #file(COPY ${DEVIL_RUNTIME_LIBRARIES}
-        #        DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Debug")
-        file(COPY ${DEVIL_RUNTIME_LIBRARIES}
-                DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Release")
-        file(COPY ${DEVIL_RUNTIME_LIBRARIES}
-                DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo")
-endif (WIN32)

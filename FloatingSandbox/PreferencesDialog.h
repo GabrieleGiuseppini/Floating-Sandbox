@@ -23,7 +23,7 @@ class PreferencesDialog : public wxDialog
 public:
 
     PreferencesDialog(
-        wxWindow * parent,        
+        wxWindow * parent,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
         std::function<void()> onChangeCallback);
 
@@ -37,6 +37,7 @@ private:
     void OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & event);
     void OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent & event);
     void OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & event);
+    void OnShowTossVelocityNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnZoomIncrementSpinCtrl(wxSpinEvent & event);
     void OnPanIncrementSpinCtrl(wxSpinEvent & event);
@@ -44,6 +45,7 @@ private:
     void OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent & event);
     void OnLanguagesListBoxSelected(wxCommandEvent & event);
 
+    void OnReloadLastLoadedShipOnStartupCheckBoxClicked(wxCommandEvent & event);
     void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
     void OnAutoZoomAtShipLoadCheckBoxClicked(wxCommandEvent & event);
     void OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & event);
@@ -53,7 +55,7 @@ private:
 
     void OnGlobalMuteCheckBoxClicked(wxCommandEvent & event);
     void OnPlayBackgroundMusicCheckBoxClicked(wxCommandEvent & event);
-    void OnPlaySinkingMusicCheckBoxClicked(wxCommandEvent & event);    
+    void OnPlaySinkingMusicCheckBoxClicked(wxCommandEvent & event);
 
     void OnOkButton(wxCommandEvent & event);
 
@@ -83,6 +85,7 @@ private:
     wxCheckBox * mShowTipOnStartupCheckBox;
     wxCheckBox * mCheckForUpdatesAtStartupCheckBox;
     wxCheckBox * mSaveSettingsOnExitCheckBox;
+    wxCheckBox * mShowTossVelocityNotificationsCheckBox;
     wxCheckBox * mShowTsunamiNotificationsCheckBox;
     wxSpinCtrl * mZoomIncrementSpinCtrl;
     wxSpinCtrl * mPanIncrementSpinCtrl;
@@ -91,6 +94,7 @@ private:
     wxListBox * mLanguagesListBox;
 
     // Ships panel
+    wxCheckBox * mReloadLastLoadedShipOnStartupCheckBox;
     wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;
     wxCheckBox * mAutoZoomAtShipLoadCheckBox;
     wxCheckBox * mAutoShowSwitchboardCheckBox;
@@ -107,7 +111,7 @@ private:
     wxCheckBox * mPlayBackgroundMusicCheckBox;
     SliderControl<float> * mSinkingMusicVolumeSlider;
     wxCheckBox * mPlaySinkingMusicCheckBox;
-   
+
     // Buttons
     wxButton * mOkButton;
 

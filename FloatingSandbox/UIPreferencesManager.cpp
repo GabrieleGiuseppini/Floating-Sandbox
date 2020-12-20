@@ -26,6 +26,8 @@ UIPreferencesManager::UIPreferencesManager(
     //
 
     mShipLoadDirectories.push_back(mDefaultShipLoadDirectory);
+    mLastShipLoadedFilePath.clear();
+    mReloadLastLoadedShipOnStartup = false;
 
     mScreenshotsFolderPath = StandardSystemPaths::GetInstance().GetUserPicturesGameFolderPath();
 
@@ -146,6 +148,26 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
+        // Last ship loaded file path
+        //
+
+        if (auto lastShipLoadedFilePathIt = preferencesRootObject->find("last_ship_loaded_file_path");
+            lastShipLoadedFilePathIt != preferencesRootObject->end() && lastShipLoadedFilePathIt->second.is<std::string>())
+        {
+            mLastShipLoadedFilePath = lastShipLoadedFilePathIt->second.get<std::string>();
+        }
+
+        //
+        // Reload last loaded ship on startup
+        //
+
+        if (auto reloadLastLoadedShipOnStartupIt = preferencesRootObject->find("reload_last_loaded_ship_on_startup");
+            reloadLastLoadedShipOnStartupIt != preferencesRootObject->end() && reloadLastLoadedShipOnStartupIt->second.is<bool>())
+        {
+            mReloadLastLoadedShipOnStartup = reloadLastLoadedShipOnStartupIt->second.get<bool>();
+        }
+
+        //
         // Screenshots folder path
         //
 
@@ -220,6 +242,16 @@ void UIPreferencesManager::LoadPreferences()
             showShipDescriptionAtShipLoadIt != preferencesRootObject->end() && showShipDescriptionAtShipLoadIt->second.is<bool>())
         {
             mShowShipDescriptionsAtShipLoad = showShipDescriptionAtShipLoadIt->second.get<bool>();
+        }
+
+        //
+        // Show toss velocity notifications
+        //
+
+        if (auto showTossVelocityNotificationsIt = preferencesRootObject->find("show_toss_velocity_notifications");
+            showTossVelocityNotificationsIt != preferencesRootObject->end() && showTossVelocityNotificationsIt->second.is<bool>())
+        {
+            mGameController->SetDoShowTossVelocityNotifications(showTossVelocityNotificationsIt->second.get<bool>());
         }
 
         //
@@ -403,6 +435,13 @@ void UIPreferencesManager::SavePreferences() const
 
     preferencesRootObject["ship_load_directories"] = picojson::value(shipLoadDirectories);
 
+    // Add last ship loaded file path
+    if (!mLastShipLoadedFilePath.empty())
+        preferencesRootObject["last_ship_loaded_file_path"] = picojson::value(mLastShipLoadedFilePath.string());
+
+    // Add reload last loaded ship on startup
+    preferencesRootObject["reload_last_loaded_ship_on_startup"] = picojson::value(mReloadLastLoadedShipOnStartup);
+
     // Add screenshots folder path
     preferencesRootObject["screenshots_folder_path"] = picojson::value(mScreenshotsFolderPath.string());
 
@@ -427,6 +466,9 @@ void UIPreferencesManager::SavePreferences() const
 
     // Add show ship descriptions at ship load
     preferencesRootObject["show_ship_descriptions_at_ship_load"] = picojson::value(mShowShipDescriptionsAtShipLoad);
+
+    // Add show toss velocity notification
+    preferencesRootObject["show_toss_velocity_notifications"] = picojson::value(mGameController->GetDoShowTossVelocityNotifications());
 
     // Add show tsunami notification
     preferencesRootObject["show_tsunami_notifications"] = picojson::value(mGameController->GetDoShowTsunamiNotifications());

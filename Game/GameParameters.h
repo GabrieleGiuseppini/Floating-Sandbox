@@ -366,7 +366,7 @@ struct GameParameters
 
     float FishSpeedAdjustment;
     static constexpr float MinFishSpeedAdjustment = 0.1f;
-    static constexpr float MaxFishSpeedAdjustment = 20.0f;
+    static constexpr float MaxFishSpeedAdjustment = 10.0f;
 
     bool DoFishShoaling;
 
@@ -420,8 +420,8 @@ struct GameParameters
     float ToolSearchRadius;
 
     float DestroyRadius;
-    static float constexpr MinDestroyRadius = 5.0f;
-    static float constexpr MaxDestroyRadius = 100.0f;
+    static float constexpr MinDestroyRadius = 0.5f;
+    static float constexpr MaxDestroyRadius = 50.0f;
 
     float RepairRadius;
     static float constexpr MinRepairRadius = 0.1f;

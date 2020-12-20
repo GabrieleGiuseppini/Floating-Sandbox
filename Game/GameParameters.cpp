@@ -85,7 +85,7 @@ GameParameters::GameParameters()
     , DayLightCycleDuration(std::chrono::minutes(4))
     // Interactions
     , ToolSearchRadius(2.0f)
-    , DestroyRadius(8.0f)
+    , DestroyRadius(0.5f)
     , RepairRadius(2.0f)
     , RepairSpeedAdjustment(1.0f)
     , BombBlastRadius(1.5f)

@@ -1,3 +1,7 @@
+TODO
+- Added options to reload the previous ship, and to reload on startup the ship that had been loaded when the game was last played
+- ...and a few more small improvements here and there!
+
 1.16.0.7
 - Completed "Frontier Maintenance" sub-system
 	- With this new sub-system the simulator is now constantly aware of the edges of a ship, enabling implementation of a plethora of new features

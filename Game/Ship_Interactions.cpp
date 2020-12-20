@@ -310,11 +310,36 @@ void Ship::Pull(
 
 bool Ship::DestroyAt(
     vec2f const & targetPos,
-    float radiusFraction,
+    float radiusMultiplier,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     bool hasDestroyed = false;
+
+    auto const doDestroyPoint =
+        [&](ElementIndex pointIndex)
+        {
+            // Choose a detach velocity - using the same distribution as Debris
+            vec2f const detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
+                GameParameters::MinDebrisParticlesVelocity,
+                GameParameters::MaxDebrisParticlesVelocity);
+
+            // Detach
+            DetachPointForDestroy(
+                pointIndex,
+                detachVelocity,
+                currentSimulationTime,
+                gameParameters);
+
+            // Record event, if requested to
+            if (mEventRecorder != nullptr)
+            {
+                mEventRecorder->RecordEvent<RecordedPointDetachForDestroyEvent>(
+                    pointIndex,
+                    detachVelocity,
+                    currentSimulationTime);
+            }
+        };
 
     //
     // Destroy points probabilistically - probability is one at
@@ -323,17 +348,25 @@ bool Ship::DestroyAt(
 
     float const radius =
         gameParameters.DestroyRadius
-        * radiusFraction
+        * radiusMultiplier
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     float const squareRadius = radius * radius;
+
+    // Nearest point in a radius that guarantees the presence of a particle
+    float constexpr FallbackSquareRadius = 0.75f;
+    ElementIndex nearestFallbackPointInRadiusIndex = NoneElementIndex;
+    float nearestFallbackPointRadius = std::numeric_limits<float>::max();
+
+    float const largerSearchSquareRadius = std::max(squareRadius, FallbackSquareRadius);
 
     // Detach/destroy all active, attached points within the radius
     for (auto pointIndex : mPoints)
     {
         float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+
         if (mPoints.IsActive(pointIndex)
-            && pointSquareDistance < squareRadius)
+            && pointSquareDistance < largerSearchSquareRadius)
         {
             //
             // - Air bubble ephemeral points: destroy
@@ -343,41 +376,34 @@ bool Ship::DestroyAt(
             if (Points::EphemeralType::None == mPoints.GetEphemeralType(pointIndex)
                 && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0)
             {
-                //
-                // Calculate probability: 1.0 at distance = 0.0 and 0.0 at distance = radius;
-                // however, we always destroy if we're in a very small fraction of the radius
-                //
-
-                float destroyProbability =
-                    (squareRadius < 1.0f)
-                    ? 1.0f
-                    : (1.0f - (pointSquareDistance / squareRadius)) * (1.0f - (pointSquareDistance / squareRadius));
-
-                if (GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() <= destroyProbability)
+                if (pointSquareDistance < squareRadius)
                 {
-                    // Choose a detach velocity - using the same distribution as Debris
-                    vec2f detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
-                        GameParameters::MinDebrisParticlesVelocity,
-                        GameParameters::MaxDebrisParticlesVelocity);
+                    //
+                    // Calculate probability: 1.0 at distance = 0.0 and 0.0 at distance = radius;
+                    // however, we always destroy if we're in a very small fraction of the radius
+                    //
 
-                    // Detach
-                    DetachPointForDestroy(
-                        pointIndex,
-                        detachVelocity,
-                        currentSimulationTime,
-                        gameParameters);
+                    float destroyProbability =
+                        (pointSquareDistance < 1.0f)
+                        ? 1.0f
+                        : (1.0f - (pointSquareDistance / squareRadius)) * (1.0f - (pointSquareDistance / squareRadius));
 
-                    // Record event, if requested to
-                    if (mEventRecorder != nullptr)
-                        mEventRecorder->RecordEvent<RecordedPointDetachForDestroyEvent>(
-                            pointIndex,
-                            detachVelocity,
-                            currentSimulationTime);
+                    if (GameRandomEngine::GetInstance().GenerateNormalizedUniformReal() <= destroyProbability)
+                    {
+                        doDestroyPoint(pointIndex);
 
-                    hasDestroyed = true;
+                        hasDestroyed = true;
+                    }
+                }
+
+                if (pointSquareDistance < nearestFallbackPointRadius)
+                {
+                    nearestFallbackPointInRadiusIndex = pointIndex;
+                    nearestFallbackPointRadius = pointSquareDistance;
                 }
             }
-            else if (Points::EphemeralType::AirBubble == mPoints.GetEphemeralType(pointIndex))
+            else if (Points::EphemeralType::AirBubble == mPoints.GetEphemeralType(pointIndex)
+                && pointSquareDistance < squareRadius)
             {
                 // Destroy
                 mPoints.DestroyEphemeralParticle(pointIndex);
@@ -385,6 +411,14 @@ bool Ship::DestroyAt(
                 hasDestroyed = true;
             }
         }
+    }
+
+    // Make sure we always destroy something, if we had a particle in-radius
+    if (!hasDestroyed && NoneElementIndex != nearestFallbackPointInRadiusIndex)
+    {
+        doDestroyPoint(nearestFallbackPointInRadiusIndex);
+
+        hasDestroyed = true;
     }
 
     return hasDestroyed;

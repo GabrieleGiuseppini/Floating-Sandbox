@@ -103,16 +103,16 @@ This said, in the current implementation, what matters the most is CPU speed - t
 Rendering is a different story. At the time of writing, I'm moving all the rendering code to a separate thread, allowing simulation updates and rendering to run in parallel. Obviously, only multi-core boxes will benefit from parallel rendering, and boxes with very slow or emulated graphics hardware will benefit the most. In any case, at this moment rendering requires a fraction of the time needed for updating the simulation, so CPU speed still dominates the performance you get, compared to GPU speed. The 4-core box I mentioned earlier got a ~10% perf improvement, while another 2-core box - with a faster clock - showed a ~25% perf improvement.
 
 # Building the Game
-I build this game with Visual Studio 2019 (thus full C++ 17 support).
+I build this game with Visual Studio 2019 (thus with full C++ 17 support).
 I tried to do my best to craft the CMake files in a platform-independent way, but I'm working on this exclusively in Visual Studio, hence I'm sure some unportable features have slipped in. Feel free to send pull requests for CMake edits for other platforms.
 
 In order to build the game, you will need the following dependencies:
-- <a href="https://www.wxwidgets.org/">WxWidgets</a> (cross-platform GUI library)*
+- <a href="https://www.wxwidgets.org/">WxWidgets</a> v3.1.4 (cross-platform GUI library)*
 - <a href="http://openil.sourceforge.net/">DevIL</a> (cross-platform image manipulation library)*
 - <a href="https://www.sfml-dev.org/index.php">SFML</a> (cross-platform multimedia library)*
 - <a href="https://github.com/kazuho/picojson">picojson</a> (header-only JSON parser and serializer)
 - <a href="https://github.com/google/benchmark">Google Benchmark</a>
-- <a href="https://github.com/google/googletest/">Google Test</a> (I'm building out of the _release-1.10.0_ tag)
+- <a href="https://github.com/google/googletest/">Google Test</a> release-1.10.0
 
 Dependencies marked with * may be statically linked by using the `MSVC_USE_STATIC_LINKING` option.
 

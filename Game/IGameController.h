@@ -41,9 +41,7 @@ struct IGameController
     virtual void RegisterGenericEventHandler(IGenericGameEventHandler * handler) = 0;
 
     virtual ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) = 0;
-    virtual ShipMetadata AddDefaultShip(ResourceLocator const & resourceLocator) = 0;
     virtual ShipMetadata AddShip(std::filesystem::path const & shipDefinitionFilepath) = 0;
-    virtual void ReloadLastShip() = 0;
 
     virtual RgbImageData TakeScreenshot() = 0;
 
@@ -96,7 +94,7 @@ struct IGameController
     virtual void RotateBy(ShipId shipId, float screenDeltaY, vec2f const & screenCenter, float intertialScreenDeltaY) = 0;
     virtual std::optional<ElementId> PickObjectForPickAndPull(vec2f const & screenCoordinates) = 0;
     virtual void Pull(ElementId elementId, vec2f const & screenTarget) = 0;
-    virtual void DestroyAt(vec2f const & screenCoordinates, float radiusFraction) = 0;
+    virtual void DestroyAt(vec2f const & screenCoordinates, float radiusMultiplier) = 0;
     virtual void RepairAt(vec2f const & screenCoordinates, float radiusMultiplier, RepairSessionId sessionId, RepairSessionStepId sessionStepId) = 0;
     virtual void SawThrough(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates) = 0;
     virtual bool ApplyHeatBlasterAt(vec2f const & screenCoordinates, HeatBlasterActionType action) = 0;
@@ -151,8 +149,11 @@ struct IGameController
     virtual vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset) const = 0;
 
     //
-    // Interaction parameters
+    // UI parameters
     //
+
+    virtual bool GetDoShowTossVelocityNotifications() const = 0;
+    virtual void SetDoShowTossVelocityNotifications(bool value) = 0;
 
     virtual bool GetDoShowTsunamiNotifications() const = 0;
     virtual void SetDoShowTsunamiNotifications(bool value) = 0;
