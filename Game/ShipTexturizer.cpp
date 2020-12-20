@@ -205,10 +205,18 @@ std::unordered_map<std::string, std::filesystem::path> ShipTexturizer::MakeMater
     {
         if (std::filesystem::is_regular_file(entryIt.path()))
         {
-            std::string const textureName = entryIt.path().stem().string();
+            // We only expect png's
+            if (entryIt.path().extension().string() == ".png")
+            {
+                std::string const textureName = entryIt.path().stem().string();
 
-            assert(materialTextureNameToTextureFilePath.count(textureName) == 0);
-            materialTextureNameToTextureFilePath[textureName] = entryIt.path();
+                assert(materialTextureNameToTextureFilePath.count(textureName) == 0);
+                materialTextureNameToTextureFilePath[textureName] = entryIt.path();
+            }
+            else
+            {
+                LogMessage("WARNING: found file \"" + entryIt.path().string() + "\" with unexpected extension while loading material textures");
+            }
         }
     }
 

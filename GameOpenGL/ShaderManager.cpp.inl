@@ -45,16 +45,22 @@ ShaderManager<Traits>::ShaderManager(
     for (auto const & entryIt : std::filesystem::directory_iterator(shadersRoot))
     {
         if (std::filesystem::is_regular_file(entryIt.path())
-            && (entryIt.path().extension() == ".glsl" || entryIt.path().extension() == ".glslinc")
             && entryIt.path().stem() != StaticParametersFilenameStem)
         {
-            std::string shaderFilename = entryIt.path().filename().string();
+            if (entryIt.path().extension() == ".glsl" || entryIt.path().extension() == ".glslinc")
+            {
+                std::string shaderFilename = entryIt.path().filename().string();
 
-            assert(shaderSources.count(shaderFilename) == 0); // Guaranteed by file system
+                assert(shaderSources.count(shaderFilename) == 0); // Guaranteed by file system
 
-            shaderSources[shaderFilename] = std::make_pair<bool, std::string>(
-                entryIt.path().extension() == ".glsl",
-                Utils::LoadTextFile(entryIt.path()));
+                shaderSources[shaderFilename] = std::make_pair<bool, std::string>(
+                    entryIt.path().extension() == ".glsl",
+                    Utils::LoadTextFile(entryIt.path()));
+            }
+            else
+            {
+                LogMessage("WARNING: found file \"" + entryIt.path().string() + "\" with unexpected extension while loading shaders");
+            }
         }
     }
 

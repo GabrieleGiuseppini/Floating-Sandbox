@@ -272,10 +272,10 @@ Render:
 		+ Move UIPreferencesManager::ReloadLastShipOnStartup to Ships tab
 		+ Flag for velocity display
 			+ At UIPreferencesManager & Dialog, saved and all
-
-		- Exclude hidden files (.whatever) from TextureDatabase, ShaderDatabase, and everywhere we enumerate files
-			- Either use Utils::IsHiddenFilename(.) or another Util method to enumerate all but hidden filenames
-			- Alternatively: when enumerating, only look for expected extensions - making sure as well that we find everything we're looking for
+		+ Exclude hidden files (.whatever) from TextureDatabase, ShaderDatabase, and everywhere we enumerate files
+			+ When enumerating, only look for expected extensions - making sure as well that we find everything we're looking for
+				+ TextureDatabase
+				+ Others
 
 		- Merge into master
 
