@@ -276,12 +276,10 @@ Render:
 			+ When enumerating, only look for expected extensions - making sure as well that we find everything we're looking for
 				+ TextureDatabase
 				+ Others
-
-		- Merge into master
-
-		- UpdateMasses: converge _slowly_ towards target
-			- Try to repro issue with ship having water material that breaks (my_ship_structure-water_air_issue.png on Desktop)	
-				- Air material appears to break with water jumping often, possibly because of high jumps in mass
+		+ Merge into master
+		+ UpdateMasses: converge _slowly_ towards target
+			+ Try to repro issue with ship having water material that breaks (my_ship_structure-water_air_issue.png on Desktop)	
+				+ Air material appears to break with water jumping often, possibly because of high jumps in mass
 
 		- Lower rotting speed:
 			- 1.16: Titanic @ 12m is at 0.34 - let's shoot for 0.5

@@ -1921,8 +1921,8 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
 {
     //
     // Update:
-    //  - CurrentMass: augmented material mass + point's water mass
-    //  - Integration factor: integration factor time coefficient / total mass
+    //  - Current mass: augmented material mass + point's water mass, slowly converging to avoid discontinuities
+    //  - Integration factor: integration factor time coefficient / current mass
     //
 
     float const densityAdjustedWaterMass = GameParameters::WaterMass * gameParameters.WaterDensityAdjustment;
@@ -1937,16 +1937,21 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
     size_t const count = GetBufferElementCount();
     for (size_t i = 0; i < count; ++i)
     {
-        float const mass =
+        // The mass we want
+        float const targetMass =
             augmentedMaterialMassBuffer[i]
             + std::min(waterBuffer[i], materialBuoyancyVolumeFillBuffer[i]) * densityAdjustedWaterMass;
 
-        assert(mass > 0.0f);
+        // The mass we get: current mass slowly converging towards the mass we want
+        // (nature abhors discontinuities)
+        float const newMass = massBuffer[i] + (targetMass - massBuffer[i]) * 0.12f;
 
-        massBuffer[i] = mass;
+        assert(newMass > 0.0f);
 
-        integrationFactorBuffer[i * 2] = integrationFactorTimeCoefficientBuffer[i] / mass;
-        integrationFactorBuffer[i * 2 + 1] = integrationFactorTimeCoefficientBuffer[i] / mass;
+        massBuffer[i] = newMass;
+
+        integrationFactorBuffer[i * 2] = integrationFactorTimeCoefficientBuffer[i] / newMass;
+        integrationFactorBuffer[i * 2 + 1] = integrationFactorTimeCoefficientBuffer[i] / newMass;
     }
 }
 
