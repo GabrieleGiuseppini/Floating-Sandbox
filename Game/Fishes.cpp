@@ -449,8 +449,9 @@ void Fishes::UpdateDynamics(
 {
     float constexpr OceanSurfaceLowWatermark = 3.0f;
 
-    ElementCount const fishCount = static_cast<ElementCount>(mFishes.size());
+    float const outOfWaterVelocityAmplification = (1.0f + std::max(5.0f - mCurrentFishSpeedAdjustment, 0.0f)); // 5 at adj==1
 
+    ElementCount const fishCount = static_cast<ElementCount>(mFishes.size());
     for (ElementIndex f = 0; f < fishCount; ++f)
     {
         Fish & fish = mFishes[f];
@@ -672,7 +673,7 @@ void Fishes::UpdateDynamics(
             fish.CurrentPosition +=
                 fish.CurrentVelocity
                 * GameParameters::SimulationStepTimeDuration<float>
-                * 5.0f; // Out-of-water amplification
+                * outOfWaterVelocityAmplification;
 
             // Update tail progress phase: add extra speed (fish flapping its tail)
             fish.CurrentTailProgressPhase += fishSpecies.TailSpeed * 20.0f;

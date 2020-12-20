@@ -366,7 +366,7 @@ struct GameParameters
 
     float FishSpeedAdjustment;
     static constexpr float MinFishSpeedAdjustment = 0.1f;
-    static constexpr float MaxFishSpeedAdjustment = 20.0f;
+    static constexpr float MaxFishSpeedAdjustment = 10.0f;
 
     bool DoFishShoaling;
 
