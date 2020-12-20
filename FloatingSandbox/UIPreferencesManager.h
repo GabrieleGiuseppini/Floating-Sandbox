@@ -210,6 +210,16 @@ public:
         mGameController->SetDoAutoZoomOnShipLoad(value);
     }
 
+    bool GetDoShowTossVelocityNotifications() const
+    {
+        return mGameController->GetDoShowTossVelocityNotifications();
+    }
+
+    void SetDoShowTossVelocityNotifications(bool value)
+    {
+        mGameController->SetDoShowTossVelocityNotifications(value);
+    }
+
     bool GetDoShowTsunamiNotifications() const
     {
         return mGameController->GetDoShowTsunamiNotifications();

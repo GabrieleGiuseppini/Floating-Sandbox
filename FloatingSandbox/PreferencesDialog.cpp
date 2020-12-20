@@ -140,14 +140,6 @@ void PreferencesDialog::Open()
     this->Show();
 }
 
-void PreferencesDialog::OnReloadLastLoadedShipOnStartupCheckBoxClicked(wxCommandEvent & /*event*/)
-{
-    assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetReloadLastLoadedShipOnStartup(mReloadLastLoadedShipOnStartupCheckBox->GetValue());
-
-    mOnChangeCallback();
-}
-
 void PreferencesDialog::OnScreenshotDirPickerChanged(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
@@ -181,6 +173,14 @@ void PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & /*e
 {
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetSaveSettingsOnExit(mSaveSettingsOnExitCheckBox->GetValue());
+
+    mOnChangeCallback();
+}
+
+void PreferencesDialog::OnShowTossVelocityNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetDoShowTossVelocityNotifications(mShowTossVelocityNotificationsCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -259,6 +259,14 @@ void PreferencesDialog::OnLanguagesListBoxSelected(wxCommandEvent & /*event*/)
 
         mUIPreferencesManager->SetDesiredLanguage(desiredLanguageIdentifier);
     }
+
+    mOnChangeCallback();
+}
+
+void PreferencesDialog::OnReloadLastLoadedShipOnStartupCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetReloadLastLoadedShipOnStartup(mReloadLastLoadedShipOnStartupCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -385,13 +393,13 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             //
 
             {
-                mReloadLastLoadedShipOnStartupCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
-                    _("Reload Previous Ship on Startup"), wxDefaultPosition, wxDefaultSize, 0);
-                mReloadLastLoadedShipOnStartupCheckBox->SetToolTip(_("When checked, the game starts with the ship that had been loaded when the game was last played."));
-                mReloadLastLoadedShipOnStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnReloadLastLoadedShipOnStartupCheckBoxClicked, this);
+                mShowTipOnStartupCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
+                    _("Show Tips on Startup"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowTipOnStartupCheckBox->SetToolTip(_("Enables or disables the tips shown when the game starts."));
+                mShowTipOnStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTipOnStartupCheckBoxClicked, this);
 
                 userInterfaceSizer->Add(
-                    mReloadLastLoadedShipOnStartupCheckBox,
+                    mShowTipOnStartupCheckBox,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
@@ -430,13 +438,13 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             //
 
             {
-                mShowTipOnStartupCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
-                    _("Show Tips on Startup"), wxDefaultPosition, wxDefaultSize, 0);
-                mShowTipOnStartupCheckBox->SetToolTip(_("Enables or disables the tips shown when the game starts."));
-                mShowTipOnStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTipOnStartupCheckBoxClicked, this);
+                mCheckForUpdatesAtStartupCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
+                    _("Check for Updates on Startup"), wxDefaultPosition, wxDefaultSize, 0);
+                mCheckForUpdatesAtStartupCheckBox->SetToolTip(_("Enables or disables checking for new versions when the game starts."));
+                mCheckForUpdatesAtStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked, this);
 
                 userInterfaceSizer->Add(
-                    mShowTipOnStartupCheckBox,
+                    mCheckForUpdatesAtStartupCheckBox,
                     wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
@@ -475,13 +483,13 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             //
 
             {
-                mCheckForUpdatesAtStartupCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
-                    _("Check for Updates on Startup"), wxDefaultPosition, wxDefaultSize, 0);
-                mCheckForUpdatesAtStartupCheckBox->SetToolTip(_("Enables or disables checking for new versions when the game starts."));
-                mCheckForUpdatesAtStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked, this);
+                mSaveSettingsOnExitCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
+                    _("Save Settings on Exit"), wxDefaultPosition, wxDefaultSize, 0);
+                mSaveSettingsOnExitCheckBox->SetToolTip(_("Enables or disables saving the last-modified settings when exiting the game."));
+                mSaveSettingsOnExitCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked, this);
 
                 userInterfaceSizer->Add(
-                    mCheckForUpdatesAtStartupCheckBox,
+                    mSaveSettingsOnExitCheckBox,
                     wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
@@ -507,13 +515,13 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             //
 
             {
-                mSaveSettingsOnExitCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
-                    _("Save Settings on Exit"), wxDefaultPosition, wxDefaultSize, 0);
-                mSaveSettingsOnExitCheckBox->SetToolTip(_("Enables or disables saving the last-modified settings when exiting the game."));
-                mSaveSettingsOnExitCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked, this);
+                mShowTossVelocityNotificationsCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
+                    _("Show Velocity Notifications"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowTossVelocityNotificationsCheckBox->SetToolTip(_("Enables or disables notifications showing the speed of objects when they're tossed."));
+                mShowTossVelocityNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTossVelocityNotificationsCheckBoxClicked, this);
 
                 userInterfaceSizer->Add(
-                    mSaveSettingsOnExitCheckBox,
+                    mShowTossVelocityNotificationsCheckBox,
                     wxGBPosition(3, 0),
                     wxGBSpan(1, 1),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
@@ -810,6 +818,21 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
         {
             wxGridBagSizer * miscSizer = new wxGridBagSizer(0, 0);
 
+            // Reload last loaded ship on startup
+            {
+                mReloadLastLoadedShipOnStartupCheckBox = new wxCheckBox(miscBox, wxID_ANY,
+                    _("Reload Previous Ship on Startup"), wxDefaultPosition, wxDefaultSize, 0);
+                mReloadLastLoadedShipOnStartupCheckBox->SetToolTip(_("When checked, the game starts with the ship that had been loaded when the game was last played."));
+                mReloadLastLoadedShipOnStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnReloadLastLoadedShipOnStartupCheckBoxClicked, this);
+
+                miscSizer->Add(
+                    mReloadLastLoadedShipOnStartupCheckBox,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
             // Show Ship Description at Ship Load
             {
                 mShowShipDescriptionAtShipLoadCheckBox = new wxCheckBox(miscBox, wxID_ANY,
@@ -819,7 +842,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
                 miscSizer->Add(
                     mShowShipDescriptionAtShipLoadCheckBox,
-                    wxGBPosition(0, 0),
+                    wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -834,7 +857,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
                 miscSizer->Add(
                     mAutoZoomAtShipLoadCheckBox,
-                    wxGBPosition(1, 0),
+                    wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -849,7 +872,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
                 miscSizer->Add(
                     mAutoShowSwitchboardCheckBox,
-                    wxGBPosition(2, 0),
+                    wxGBPosition(3, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -864,7 +887,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
                 miscSizer->Add(
                     mShowElectricalNotificationsCheckBox,
-                    wxGBPosition(3, 0),
+                    wxGBPosition(4, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
@@ -1064,16 +1087,17 @@ void PreferencesDialog::ReadSettings()
 
     mScreenshotDirPickerCtrl->SetPath(mUIPreferencesManager->GetScreenshotsFolderPath().string());
 
-    mReloadLastLoadedShipOnStartupCheckBox->SetValue(mUIPreferencesManager->GetReloadLastLoadedShipOnStartup());
     mShowTipOnStartupCheckBox->SetValue(mUIPreferencesManager->GetShowStartupTip());
     mCheckForUpdatesAtStartupCheckBox->SetValue(mUIPreferencesManager->GetCheckUpdatesAtStartup());
     mSaveSettingsOnExitCheckBox->SetValue(mUIPreferencesManager->GetSaveSettingsOnExit());
+    mShowTossVelocityNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowTossVelocityNotifications());
     mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowTsunamiNotifications());
     mZoomIncrementSpinCtrl->SetValue(ZoomIncrementToZoomIncrementSpin(mUIPreferencesManager->GetZoomIncrement()));
     mPanIncrementSpinCtrl->SetValue(PanIncrementToPanIncrementSpin(mUIPreferencesManager->GetPanIncrement()));
     mShowStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowStatusText());
     mShowExtendedStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowExtendedStatusText());
 
+    mReloadLastLoadedShipOnStartupCheckBox->SetValue(mUIPreferencesManager->GetReloadLastLoadedShipOnStartup());
     mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad());
     mAutoZoomAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetDoAutoZoomAtShipLoad());
     mAutoShowSwitchboardCheckBox->SetValue(mUIPreferencesManager->GetAutoShowSwitchboard());

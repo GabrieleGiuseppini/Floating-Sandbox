@@ -149,8 +149,11 @@ struct IGameController
     virtual vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset) const = 0;
 
     //
-    // Interaction parameters
+    // UI parameters
     //
+
+    virtual bool GetDoShowTossVelocityNotifications() const = 0;
+    virtual void SetDoShowTossVelocityNotifications(bool value) = 0;
 
     virtual bool GetDoShowTsunamiNotifications() const = 0;
     virtual void SetDoShowTsunamiNotifications(bool value) = 0;

@@ -78,6 +78,7 @@ GameController::GameController(
     , mIsPulseUpdateSet(false)
     , mIsMoveToolEngaged(false)
     // Parameters that we own
+    , mDoShowTossVelocityNotifications(true)
     , mDoShowTsunamiNotifications(true)
     , mDoDrawHeatBlasterFlame(true)
     , mDoAutoZoomOnShipLoad(true)
@@ -715,7 +716,7 @@ void GameController::MoveBy(
     // Eventually display inertial velocity
     if (worldOffset.length() == 0.0f)
     {
-        DisplayInertialVelocity(inertialVelocity.length());
+        DisplayTossVelocity(inertialVelocity.length());
     }
 }
 
@@ -738,7 +739,7 @@ void GameController::MoveBy(
     // Eventually display velocity
     if (worldOffset.length() == 0.0f)
     {
-        DisplayInertialVelocity(inertialVelocity.length());
+        DisplayTossVelocity(inertialVelocity.length());
     }
 }
 
@@ -1367,9 +1368,10 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         mRenderContext->GetStatistics());
 }
 
-void GameController::DisplayInertialVelocity(float inertialVelocityMagnitude)
+void GameController::DisplayTossVelocity(float inertialVelocityMagnitude)
 {
-    if (inertialVelocityMagnitude >= 5.0f)
+    if (mDoShowTossVelocityNotifications
+        && inertialVelocityMagnitude >= 5.0f)
     {
         std::stringstream ss;
         ss << std::fixed << std::setprecision(2)

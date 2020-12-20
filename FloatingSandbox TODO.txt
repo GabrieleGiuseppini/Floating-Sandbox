@@ -6,7 +6,6 @@ Current perf:
 - DELL old (default_ship): FPS=30.2 UPD=20.5ms, RND=13.0ms
 - HP (default_ship): FPS=20.2 UPD=48.5ms RND=14.1ms
 - Samsung (default_ship): FPS=22.5, UPD=44.5ms, RND=8.9ms 
-
 =================================================
 1.14
 - After forces rearc and iterations=30: FPS=30.16, Ums=22.5
@@ -270,8 +269,9 @@ Render:
 		+ Smaller destroy radius - like at 5.0
 			+ If no destroy but there was a closest point - within radius + 50% - then destroy (just) that
 		+ See fishes flying with large size
-
-		- Move UIPreferencesManager::ReloadLastShipOnStartup to Ships tab
+		+ Move UIPreferencesManager::ReloadLastShipOnStartup to Ships tab
+		+ Flag for velocity display
+			+ At UIPreferencesManager & Dialog, saved and all
 
 		- Exclude hidden files (.whatever) from TextureDatabase, ShaderDatabase, and everywhere we enumerate files
 			- Either use Utils::IsHiddenFilename(.) or another Util method to enumerate all but hidden filenames
@@ -343,9 +343,6 @@ Render:
 			- Density: 50 kg/m³
 			- Melts at 513K
 			- https://en.wikipedia.org/wiki/Polystyrene
-
-		- Flag for velocity display
-			- At UIPreferencesManager & Dialog, saved and all
 
 		- Light improvements (*)
 				
