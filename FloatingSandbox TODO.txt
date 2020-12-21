@@ -280,10 +280,9 @@ Render:
 		+ UpdateMasses: converge _slowly_ towards target
 			+ Try to repro issue with ship having water material that breaks (my_ship_structure-water_air_issue.png on Desktop)	
 				+ Air material appears to break with water jumping often, possibly because of high jumps in mass
-
-		= Lower rotting speed:
-			- 1.16: Titanic @ 12m is at 0.34 - let's shoot for 0.5
-			- changelist
+		+ Lower rotting speed:
+			+ 1.16: Titanic @ 12m is at 0.34 - let's shoot for 0.5
+			+ changelist
 
 		- Optimize that decay process at Points::CombustionUpdateLowFrequency
 
@@ -302,7 +301,7 @@ Render:
 		- Bump up version
 
 		- Sinking speed:
-			- Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 5m/s
+			- Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s
 			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
 				- Remove global damp at integration loop
 				- Point-by-point: 

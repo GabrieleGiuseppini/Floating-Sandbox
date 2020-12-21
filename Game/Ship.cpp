@@ -2084,51 +2084,54 @@ void Ship::RotPoints(
     //  ZeroDecay = Af ^ Nf
     //
 
-    float constexpr ZeroDecay = 1e-10f;
+    //
+    // We want to calculate alpha(x) as 1 - b*x, with x depending on the particle's state:
+    //      underwater not flooded: x_uw
+    //      not underwater flooded: x_fl == 1.0 (so that we can use particle's water, clamped)
+    //      underwater and flooded: x_uw_fl
+    //
+    // Constraints: after 20 minutes @ 64FPS (Ns steps) we want the following decays:
+    //      underwater not flooded: a_uw ^ Ns = 0.75 (little rusting)
+    //      underwater and flooded: a_uw_fl ^ Ns = 0.25 (severe rusting)
+    //
+    // Which leads to the following formulation for the constraints:
+    //      alpha(x_uw) = a_uw (~= 0.99981643)
+    //      alpha(x_uw_fl) = a_uw_fl (~- 0.999115711)
+    //      alpha(0) = 1.0
+    //
+    // After some kung-fu we obtain:
+    //      beta = (1-alpha(x_uw)) / x_uw
+    //      x_uw = (1-a_uw)/(a_uw - a_uw_fl)
+    //
 
-    // Goals: after 20 minutes @ 64FPS:
-    //  - underwater not flooded: decay=0.75
-    //  - fully flooded: decay=0.25
+    float constexpr Ns = 20.0f * 60.0f * 64.0f / static_cast<float>(LowFrequencyPeriod);
 
-    float constexpr Nf = 20.0f * 60.0f * 64.0f / static_cast<float>(LowFrequencyPeriod);
-
-    // TODOHERE
-
-    // AlphaMax is the extreme (minimum) value of alpha when rotting conditions
-    // are at their best (underwater, etc.)
-    float const alphaMax = gameParameters.RotAcceler8r != 0.0f
-        ? powf(ZeroDecay, gameParameters.RotAcceler8r / Nf) // Af = ZeroDecay ^ (1/Nf)
+    float const a_uw = gameParameters.RotAcceler8r != 0.0f
+        ? powf(0.75f, gameParameters.RotAcceler8r / Ns) // a_uw = 0.75 ^ (1/Ns)
         : 1.0f;
 
-    // Leaking points rot faster - they are directly in contact with water after all!
-    float const leakingAlphaMax = gameParameters.RotAcceler8r != 0.0f
-        ? alphaMax * 0.995f
+    float const a_uw_fl = gameParameters.RotAcceler8r != 0.0f
+        ? powf(0.25f, gameParameters.RotAcceler8r / Ns) // a_uw = 0.25 ^ (1/Ns)
         : 1.0f;
 
-    // Underwater points have this extra amount of equivalent water
-    float const extraEquivalentWaterForUnderwaterPoints = gameParameters.RotAcceler8r != 0.0f
-        ? 0.175f
-        : 0.0f;
+    float const x_uw = (1.0f - a_uw) / (a_uw - a_uw_fl);
+    float const beta = (1.0f - a_uw) / x_uw;
 
     // Process all non-ephemeral points - no real reason to exclude ephemerals, other
     // than they're not expected to rot
     for (auto p : mPoints.RawShipPoints())
     {
-        float waterEquivalent =
-            mPoints.GetWater(p)
-            + (mParentWorld.IsUnderwater(mPoints.GetPosition(p)) ? extraEquivalentWaterForUnderwaterPoints : 0.0f); // Also rust a bit underwater points, even hull ones
+        float x =
+            (mParentWorld.IsUnderwater(mPoints.GetPosition(p)) ? x_uw : 0.0f) // x_uw
+            + std::min(mPoints.GetWater(p), 1.0f); // x_fl
 
         // Adjust with material's rust receptivity
-        waterEquivalent *= mPoints.GetMaterialRustReceptivity(p);
+        x *= mPoints.GetMaterialRustReceptivity(p);
 
-        // Clamp to [0.0, 1.0]
-        waterEquivalent = std::min(waterEquivalent, 1.0f);
-
-        // Interpolate alpha: waterEquivalent => [1.0f, (leaking)alphaMax]
-        float const alpha = Mix(
-            1.0f,
-            (mPoints.GetLeakingComposite(p).LeakingSources.StructuralLeak != 0.0f ? leakingAlphaMax : alphaMax),
-            waterEquivalent);
+        // Calculate alpha
+        float const alpha =
+            (1.0f - beta * x)
+            * (mPoints.GetLeakingComposite(p).LeakingSources.StructuralLeak != 0.0f ? 0.995f : 1.0f);  // Adjust with leaking: if leaking, rusts faster
 
         // Decay
         mPoints.SetDecay(p, mPoints.GetDecay(p) * alpha);
