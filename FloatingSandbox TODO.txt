@@ -283,6 +283,7 @@ Render:
 
 		= Lower rotting speed:
 			- 1.16: Titanic @ 12m is at 0.34 - let's shoot for 0.5
+			- changelist
 
 		- Optimize that decay process at Points::CombustionUpdateLowFrequency
 
@@ -296,6 +297,19 @@ Render:
 			- Or number of engines used as divisor
 				- Announced by ElectricalElement, received by SoundController which updates mCurrentCount
 					- SoundsController: reset mCurrentCount to 0 at each Reset()
+
+		- Send to John Smith
+		- Bump up version
+
+		- Sinking speed:
+			- Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 5m/s
+			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
+				- Remove global damp at integration loop
+				- Point-by-point: 
+					- Underwater: incorporate old global damp in friction drag, if needed
+						- Try first without: see falling debris, also with friction adjust = 0.0
+					- !Underwater: convert old global damp to new air damp
+
 
 		- TODO: move up "dangerous" features so we get more testing:
 			- Cached quantities!
@@ -314,23 +328,11 @@ Render:
 		- New ships
 			- changelist
 
-		- Sinking speed:
-			- Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 5m/s
-			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
-				- Remove global damp at integration loop
-				- Point-by-point: 
-					- Underwater: incorporate old global damp in friction drag, if needed
-						- Try first without: see falling debris, also with friction adjust = 0.0
-					- !Underwater: convert old global damp to new air damp
-
 		- Incandescence layer (*)
 
 		- See vector normalization optimization with mult's with 1/len
 
 		- Cached quantities (*)
-
-
-
 
 
 

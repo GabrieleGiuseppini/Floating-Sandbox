@@ -2075,22 +2075,24 @@ void Ship::RotPoints(
     //  decay(0) = 1.0
     //  decay(n) = A * decay(n-1), with 0 < A < 1
     //
+    // A (alpha): the smaller the alpha, the faster we rot.
+    //
     // This converges to:
     //  decay(n) = A^n
     //
-    // We want full decay (decay=1e-10) after Nf steps when flooded (Nf => 15 minutes @ 50fps):
-    //
+    // We want full decay (decay=1e-10) after Nf steps:
     //  ZeroDecay = Af ^ Nf
-    //
-    // A = Alpha: the smaller alpha, the faster we rot.
     //
 
     float constexpr ZeroDecay = 1e-10f;
 
-    // After 15 mins @ 50fps: on the surface=>0.75, flooded=>0.25
-    float constexpr Nf =
-        15.0f * 60.0f * 50.0f / static_cast<float>(LowFrequencyPeriod)
-        * 10.0f; // Upping up a bit to fight against initial steep curve
+    // Goals: after 20 minutes @ 64FPS:
+    //  - underwater not flooded: decay=0.75
+    //  - fully flooded: decay=0.25
+
+    float constexpr Nf = 20.0f * 60.0f * 64.0f / static_cast<float>(LowFrequencyPeriod);
+
+    // TODOHERE
 
     // AlphaMax is the extreme (minimum) value of alpha when rotting conditions
     // are at their best (underwater, etc.)
