@@ -285,8 +285,7 @@ Render:
 			+ changelist
 		+ Optimize that decay process at Points::CombustionUpdateLowFrequency
 			+ Test adjustment
-
-		- Air bubbles smaller at very beginning 
+		+ Air bubbles smaller at very beginning 
 
 		- Volume adjustment for engine sounds
 			- Option 1: number of engines used as divisor
@@ -298,7 +297,6 @@ Render:
 					- And lowers volume of first (half each?)
 				- ...
 				- Need to keep count of total instances currently playing
-
 		- Send to John Smith
 		- Bump up version
 

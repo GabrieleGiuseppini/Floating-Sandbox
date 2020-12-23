@@ -2390,8 +2390,8 @@ void Ship::GenerateAirBubbles(
     float const vortexAmplitude = GameRandomEngine::GetInstance().GenerateUniformReal(
         -MaxAirBubblesVortexAmplitude, MaxAirBubblesVortexAmplitude);
 
-    float constexpr MinAirBubblesVortexPeriod = 3.0f; // seconds
-    float constexpr MaxAirBubblesVortexPeriod = 7.5f; // seconds
+    float constexpr MinAirBubblesVortexPeriod = 1.5f; // seconds
+    float constexpr MaxAirBubblesVortexPeriod = 4.5f; // seconds
     float const vortexPeriod = GameRandomEngine::GetInstance().GenerateUniformReal(
         MinAirBubblesVortexPeriod, MaxAirBubblesVortexPeriod);
 

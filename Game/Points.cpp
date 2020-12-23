@@ -1289,33 +1289,33 @@ void Points::UpdateEphemeralParticles(
                         else
                         {
                             //
-                            // Update progress based off y
+                            // Update state
                             //
 
                             auto & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.AirBubble;
 
+                            // DeltaY
+
                             state.CurrentDeltaY = deltaY;
-                            state.Progress = // 0.00..001 (@ way below surface) -> 1.0 (@ surface)
-                                -1.0f
-                                / (-1.0f + std::min(GetPosition(pointIndex).y, 0.0f));
+
+                            // Simulation lifetime
+
+                            auto const simulationLifetime =
+                                currentSimulationTime
+                                - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
+
+                            state.SimulationLifetime = simulationLifetime;
 
                             //
                             // Update vortex
                             //
-
-                            float const simulationLifetime =
-                                currentSimulationTime
-                                - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
 
                             float const vortexValue =
                                 state.VortexAmplitude
                                 * PrecalcLoFreqSin.GetNearestPeriodic(
                                     state.NormalizedVortexAngularVelocity * simulationLifetime);
 
-                            //
                             // Apply vortex to bubble
-                            //
-
                             mNonSpringForceBuffer[pointIndex] += vec2f(
                                 vortexValue,
                                 0.0f);
@@ -1782,10 +1782,14 @@ void Points::UploadEphemeralParticles(
             {
                 auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.AirBubble;
 
+                // Calculate scale:
+                //  - Depth: deep bubbles are smaller
+                //  - Lifetime: bubbles start out very small
                 float constexpr ScaleMax = 0.275f;
                 float constexpr ScaleMin = 0.1f;
                 float const scale =
-                    ScaleMin + (ScaleMax - ScaleMin) * (1.0f - LinearStep(80.0f, 400.0f, state.CurrentDeltaY));
+                    (ScaleMin + (ScaleMax - ScaleMin) * (1.0f - LinearStep(80.0f, 400.0f, state.CurrentDeltaY)))
+                    * std::min(state.SimulationLifetime, 2.0f) / 2.0f; // Grow from 0 to 1 in 2 seconds
 
                 renderContext.UploadShipAirBubble(
                     shipId,
