@@ -658,31 +658,42 @@ void Points::UpdateCombustionLowFrequency(
     // We want to model the decay alpha as a linear law on the burning
     // particle's mass m: alpha = C + A * m
     //
-    // Constraints:
-    //      An iron hull mass (750Kg, m1) decays halfway in t1 (simulation) seconds == n1 steps
-    //      A cloth mass (0.645Kg, m2) decays completely in t2 (simulation) seconds == n2 steps
+    // (Ideal) xonstraints:
+    //      An iron hull mass (750Kg, m1) decays in t1 (simulation) seconds == n1 steps
+    //      A cloth mass (0.645Kg, m2) decays in t2 (simulation) seconds == n2 steps
     //
     // alpha_i ^ n_i = 0.5
     //
 
-    // TODO: consider neighbors, so it's up to 8 times the decay
+    auto const defineAlphaFunction =
+        [&gameParameters, &dt](float m1, float t1, float m2, float t2, float targetAlpha)
+        {
+            // Convert times to number of steps
+            float const n1 = t1 / (gameParameters.CombustionSpeedAdjustment * dt);
+            float const n2 = t2 / (gameParameters.CombustionSpeedAdjustment * dt);
 
-    float constexpr m1 = 750.0f;
-    float constexpr t1 = 15.0f;
-    float constexpr m2 = 0.645f;
-    float constexpr t2 = 6.0f;
+            // Calculate target alphas
+            float const alpha1 = std::pow(targetAlpha, 1.0f / n1);
+            float const alpha2 = std::pow(targetAlpha, 1.0f / n2);
 
-    // Convert times to number of steps
-    float const n1 = t1 / (gameParameters.CombustionSpeedAdjustment * dt);
-    float const n2 = t2 / (gameParameters.CombustionSpeedAdjustment * dt);
+            // Calculate alpha function parameters
+            float const decayAlphaFunctionA = (alpha2 - alpha1) / (m2 - m1);
+            float const decayAlphaFunctionC = alpha1 - decayAlphaFunctionA * m1;
 
-    // Calculate alphas
-    float const alpha1 = std::pow(0.5f, 1.0f / n1);
-    float const alpha2 = std::pow(0.5f, 1.0f / n2);
+            return std::tuple(decayAlphaFunctionA, decayAlphaFunctionC);
+        };
 
-    // Calculate alpha function parameters
-    float const decayAlphaFunctionA = (alpha2 - alpha1) / (m2 - m1);
-    float const decayAlphaFunctionC = alpha1 - decayAlphaFunctionA * m1;
+    // Alpha function for burning point
+    auto [decayAlphaFunctionA, decayAlphaFunctionC] = defineAlphaFunction(
+        100.0f, 30.0f, // Iron
+        0.6f, 6.0f,  //Cloth
+        0.5f);
+
+    // Alpha function for neighbors
+    auto [decayAlphaNeighborFunctionA, decayAlphaNeighborFunctionC] = defineAlphaFunction(
+        100.0f, 30.0f, // Iron
+        0.6f, 6.0f,  // Paper
+        0.5f);
 
     //
     // Visit all points
@@ -769,7 +780,6 @@ void Points::UpdateCombustionLowFrequency(
                 // 1. Decay burning point
                 //
 
-                // Calculate alpha
                 float const decayAlpha =
                     decayAlphaFunctionC
                     + mMaterialsBuffer[pointIndex].Structural->GetMass() * decayAlphaFunctionA;
@@ -805,9 +815,13 @@ void Points::UpdateCombustionLowFrequency(
                 // 2. Decay neighbors
                 //
 
+                float const decayAlphaNeighbor =
+                    decayAlphaNeighborFunctionC
+                    + mMaterialsBuffer[pointIndex].Structural->GetMass() * decayAlphaNeighborFunctionA;
+
                 for (auto const s : GetConnectedSprings(pointIndex).ConnectedSprings)
                 {
-                    mDecayBuffer[s.OtherEndpointIndex] *= decayAlpha;
+                    mDecayBuffer[s.OtherEndpointIndex] *= decayAlphaNeighbor;
                 }
             }
         }
@@ -1551,8 +1565,7 @@ void Points::Query(ElementIndex pointElementIndex) const
 {
     LogMessage("PointIndex: ", pointElementIndex, (nullptr != mMaterialsBuffer[pointElementIndex].Structural) ? (" (" + mMaterialsBuffer[pointElementIndex].Structural->Name) + ")" : "");
     LogMessage("P=", mPositionBuffer[pointElementIndex].toString(), " V=", mVelocityBuffer[pointElementIndex].toString());
-    LogMessage("W=", mWaterBuffer[pointElementIndex], " L=", mLightBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex], " Decay=", mDecayBuffer[pointElementIndex]);
-    //LogMessage("Springs: ", mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.size(), " (factory: ", mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.size(), ")");
+    LogMessage("M=", mMassBuffer[pointElementIndex],   "W=", mWaterBuffer[pointElementIndex], " L=", mLightBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex], " Decay=", mDecayBuffer[pointElementIndex]);
     LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex], " ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }
 
