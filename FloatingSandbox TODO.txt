@@ -309,6 +309,7 @@ Render:
 			- Jacoh2 20/12/2020: fixing the boiler area on the small fleutzgrampher and akagi Maru crash the game
 
 		- Add new background music
+			- "Shadowlands 4 - Breath" - Kevin MacLeod (incompetech.com)
 
 		= Send/complete localization
 			+ IT
@@ -501,13 +502,9 @@ Render:
 			  that smoke at plane ID P shows the ship behind it, even though there are flames at plane IDs < P
 			- Do cleanup tasks
 
-		- Attempt to use total point masses for springs (*)
-
 		- Add more background music:
-			- Music:
-				+ "Symmetry" - Kevin MacLeod (incompetech.com)
-				- "Shadowlands 4 - Breath" - Kevin MacLeod (incompetech.com)
-				- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
+			+ "Symmetry" - Kevin MacLeod (incompetech.com)			
+			- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
 
 		- Multi-threading, phase II:
 			- Springs: each iteration done in parallel with NThreads partitions
@@ -1552,9 +1549,6 @@ Render:
 		- Rendered (via option):
 			- Texture is distorted depending on force field
 			- TBD: see moleskine
-
-	- Attempt to use total point masses for springs (*)
-		- Do first a pass to recalc coefficients, once per simulation step
 
 	- Shooting stars
 		- Star "parks" always an extra star at (-1, -1)

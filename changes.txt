@@ -1,7 +1,7 @@
 1.16.1.TODO
 - Added options to reload the previous ship, and to reload on startup the ship that had been loaded when the game was last played
 - Recalibrated and optimized decay processes (rotting, combustion)
-- Fixed sporadic issue occurring when extraneous files are placed in the game data directories
+- Fixed sporadic error message occurring when extraneous files are placed under the game data directories
 - ...and a few more small improvements here and there!
 
 1.16.0.7
