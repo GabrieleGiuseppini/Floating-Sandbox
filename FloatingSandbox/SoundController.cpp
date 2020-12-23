@@ -43,6 +43,7 @@ SoundController::SoundController(
     , mCurrentWaterSplashedTrigger(WaveSplashTriggerSize)
     , mLastWindSpeedAbsoluteMagnitude(0.0f)
     , mWindVolumeRunningAverage()
+    , mShipEnginesCount(0.0f)
     // One-shot sounds
     , mMSUOneShotMultipleChoiceSounds()
     , mMOneShotMultipleChoiceSounds()
@@ -1281,6 +1282,7 @@ void SoundController::Reset()
     mCurrentWaterSplashedTrigger = WaveSplashTriggerSize;
     mLastWindSpeedAbsoluteMagnitude = 0.0f;
     mWindVolumeRunningAverage.Reset();
+    mShipEnginesCount = 0.0f;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -1624,6 +1626,9 @@ void SoundController::OnEngineMonitorCreated(
             mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineSteam2);
         }
     }
+
+    // Update count of engines
+    mShipEnginesCount += 1.0f;
 }
 
 void SoundController::OnWaterPumpCreated(
@@ -1670,6 +1675,12 @@ void SoundController::OnEngineMonitorUpdated(
         switch (mLoopedSounds.GetSoundTypeForInstanceId(electricalElementId))
         {
             case SoundType::EngineDiesel1:
+            {
+                volume = 40.0f;
+                pitch = rpm;
+                break;
+            }
+
             case SoundType::EngineOutboard1:
             {
                 volume = 50.0f;
@@ -1679,26 +1690,36 @@ void SoundController::OnEngineMonitorUpdated(
 
             case SoundType::EngineSteam1:
             {
-                volume = 50.0f;
+                volume = 30.0f;
                 pitch = SmoothStep(0.0f, 1.0f, rpm) / 0.156f;  // rpm=0.25 => pitch=1; rpm=1.0 => pitch=6.4
                 break;
             }
 
             case SoundType::EngineSteam2:
             {
-                volume = 45.0f;
+                volume = 30.0f;
                 pitch = SmoothStep(0.0f, 1.0f, rpm) / 0.334f;  // rpm=0.25 => pitch=0.47; rpm=1.0 => pitch=3.3
                 break;
             }
 
             default:
             {
+                // Not expecting to be here
                 assert(false);
                 volume = 100.0f;
                 pitch = 1.0;
                 break;
             }
         }
+
+        // Scale volume with total number of engines in the ship
+        //
+        // Scaling function constraints:
+        //      1  engine : 1.0f
+        //      10 engines: 0.2f
+        assert(mShipEnginesCount > 0.0f);
+        float constexpr volumeScalingSlope = (1.0f - 0.2f) / (1.0f - 10.0f);
+        volume *= (1.0f - volumeScalingSlope) + volumeScalingSlope * mShipEnginesCount;
 
         // Make sure sound is running
         if (!mLoopedSounds.IsPlaying(electricalElementId))
