@@ -80,7 +80,7 @@ void main()
     // Get noise for this fragment and time
     //
 
-    #define NoiseResolution 0.6
+    #define NoiseResolution 0.4
     vec2 noiseUv = uv * NoiseResolution + noiseOffset;
     float fragmentNoise = texture2D(paramNoiseTexture1, noiseUv).r * 0.5 + 0.25; // -> (0.25, 0.75)
     
@@ -125,9 +125,11 @@ void main()
     // Sample alpha
     //
 
+    #define AlphaResolution 2. // When >= 2, we're guaranteed to fall within the atlas tile's boundaries
+
     vec2 alphaVirtualTextureCoords = vec2(
-        ((uv.x + 1.0) / 2.0 + noiseOffset.x) / 2.0, // For alpha sampling we halve x
-        (uv.y + 1.0) / 2.0);
+            ((uv.x + 1.0) + noiseOffset.x) / AlphaResolution,
+            (uv.y + 1.0) / 2.0); // y has to fit perfectly 0..1 range
 
     vec2 alphaSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * alphaVirtualTextureCoords;
     vec4 sampledAlpha = texture2D(paramGenericLinearTexturesAtlasTexture, alphaSampleCoords);
@@ -136,11 +138,12 @@ void main()
 	// Sample color
     //
 
+    #define ColorResolution 5.
+
     vec2 colorVirtualTextureCoords = fract(
         vec2(
-            uv.x + 1.0,
-            (uv.y - paramFlameSpeed * 4.0) / 2.0 // For color sampling we halve y and wrap
-            + noiseOffset.x)); // Randomize Y displacement per-flame
+            uv.x / ColorResolution,
+            (uv.y / ColorResolution - paramFlameSpeed * 2.0) + noiseOffset.x)); // For color sampling we halve y and wrap, then randomize Y displacement per-flame
 
     // Clamp in order to fight against linear filtering - though no idea why dx works and dx/2.0 does not work
     colorVirtualTextureCoords.y = clamp(colorVirtualTextureCoords.y, paramAtlasTile1Dx.y, 1.0 - paramAtlasTile1Dx.y);
