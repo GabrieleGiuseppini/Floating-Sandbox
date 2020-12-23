@@ -638,25 +638,59 @@ void Points::UpdateCombustionLowFrequency(
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
-    //
+    /////////////////////////////////////////////////////////////////////////////
     // Take care of following:
     // - NotBurning->Developing transition (Ignition)
     // - Burning->Decay, Extinguishing transition
-    //
+    /////////////////////////////////////////////////////////////////////////////
 
     // Prepare candidates for ignition and explosion; we'll pick the top N ones
     // based on the ignition temperature delta
     mCombustionIgnitionCandidates.clear();
     mCombustionExplosionCandidates.clear();
 
-    // Decay rate - the higher this value, the slower fire consumes materials
-    float const effectiveCombustionDecayRate = (90.0f / (gameParameters.CombustionSpeedAdjustment * dt));
-
     // The cdf for rain: we stop burning with a probability equal to this
     float const rainExtinguishCdf = FastPow(stormParameters.RainDensity, 0.5f);
 
+    //
+    // Combustion decay is proportional to mass
+    //
+    // We want to model the decay alpha as a linear law on the burning
+    // particle's mass m: alpha = C + A * m
+    //
+    // Constraints:
+    //      An iron hull mass (750Kg, m1) decays halfway in t1 (simulation) seconds == n1 steps
+    //      A cloth mass (0.645Kg, m2) decays completely in t2 (simulation) seconds == n2 steps
+    //
+    // alpha_i ^ n_i = 0.5
+    //
+
+    // TODO: consider neighbors, so it's up to 8 times the decay
+
+    float constexpr m1 = 750.0f;
+    float constexpr t1 = 15.0f;
+    float constexpr m2 = 0.645f;
+    float constexpr t2 = 6.0f;
+
+    // Convert times to number of steps
+    float const n1 = t1 / (gameParameters.CombustionSpeedAdjustment * dt);
+    float const n2 = t2 / (gameParameters.CombustionSpeedAdjustment * dt);
+
+    // Calculate alphas
+    float const alpha1 = std::pow(0.5f, 1.0f / n1);
+    float const alpha2 = std::pow(0.5f, 1.0f / n2);
+
+    // Calculate alpha function parameters
+    float const decayAlphaFunctionA = (alpha2 - alpha1) / (m2 - m1);
+    float const decayAlphaFunctionC = alpha1 - decayAlphaFunctionA * m1;
+
+    //
+    // Visit all points
+    //
     // No real reason not to do ephemeral points as well, other than they're
     // currently not expected to burn
+    //
+
     for (ElementIndex pointIndex = pointOffset; pointIndex < mRawShipPointCount; pointIndex += pointStride)
     {
         auto const currentState = mCombustionStateBuffer[pointIndex].State;
@@ -732,8 +766,15 @@ void Points::UpdateCombustionLowFrequency(
                 // Apply effects of burning
 
                 //
-                // 1. Decay - proportionally to mass
+                // 1. Decay burning point
                 //
+
+                // Calculate alpha
+                float const decayAlpha =
+                    decayAlphaFunctionC
+                    + mMaterialsBuffer[pointIndex].Structural->GetMass() * decayAlphaFunctionA;
+
+                /* TODOOLD
                 // Our goal:
                 // - An iron hull mass (750Kg) decays completely (goes to 0.01)
                 //   in 30 (simulated) seconds
@@ -755,10 +796,10 @@ void Points::UpdateCombustionLowFrequency(
                 // decay(@ step i) = alpha^i
                 // decay(@ step T) = min_decay => alpha^T = min_decay => alpha = min_decay^(1/T)
                 float const decayAlpha = pow(0.01f, 1.0f / totalDecaySteps);
+                */
 
                 // Decay point
                 mDecayBuffer[pointIndex] *= decayAlpha;
-
 
                 //
                 // 2. Decay neighbors
