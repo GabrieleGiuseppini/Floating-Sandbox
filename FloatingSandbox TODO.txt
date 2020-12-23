@@ -302,8 +302,20 @@ Render:
 				- ...
 				- Need to keep count of total instances currently playing
 			- Update changelist
-
 		+ Bump up version
+
+		= Flames: 
+			- See if may have AlphaResolution > 2 (not <); if not, nuke it
+			- See if still makes sense to have flames 2 and 3
+			- Regardless of above: see if flames 1 still needs background + foreground
+				- See if there's a difference in shader, and see if commenting out background changes anything
+			- Alpha:
+				= Add movement to alpha sampling - removes those still spots?
+				- See if fragment shader may test for Z
+				- If so: make alpha zero at bottom
+			- Check on old Dell, before and after
+			- Make GameJolt poll
+				- Side-by-side video
 
 		- Bug:
 			- Jacoh2 20/12/2020: fixing the boiler area on the small fleutzgrampher and akagi Maru crash the game
@@ -320,6 +332,10 @@ Render:
 		- Release 1.16.1
 			- Send to testers
 
+		----------------------------------------------------------------------------------------
+
+		1,184 - 70
+
 		- Sinking speed:
 			- Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s
 			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
@@ -332,15 +348,7 @@ Render:
 
 		- TODO: move up "dangerous" features so we get more testing:
 			- Cached quantities!
-
-		----------------------------------------------------------------------------------------
-
-		1,184 - 70
-
-		- Update changes.txt w/fishes 7 days later (TODO)
-			- changes.txt
-			- www.floatingsandbox.com
-
+	
 		- Optimization: OceanSurface and OceanTerrain ::GetNormalAt(x)
 			- Optimized: no second sampling needed!
 			- Track down all usages
@@ -428,9 +436,6 @@ Render:
 			- Check then if there are any artifacts when doing so
 
 		- Lower speed of (sin) ocean waves - now that we run faster?
-
-		- Flames: make sampling resolution independent from dimensions
-			- Need to pass width and height of flame quad, and divide texture coords by these
 
 		- Night vision (*)
 
@@ -1124,12 +1129,13 @@ Render:
 
 	- In Windows' "high contrast mode", the names of the ships in the Ship Load Dialog disappear
 
+	- Flames: make sampling resolution independent from dimensions
+		- Need to pass width and height of flame quad, and divide texture coords by these
+
 	- Night vision (*): ship is just not affected by ambient light
 		- RenderSettings & SettingsDialog
 		- ShipRenderContext:
 			- Upon Effective?/AmbientLightIntensity change *AND* upon change of this new render setting: set effective ambient light intensity
-
-	- Decide whether auto-zoom considering position would be a good idea or not
 
 	- Intro screen: the game's title falling into the sea and floating back up - interactive to a smaller extent, e.g.
 	  by just punching holes
@@ -1149,13 +1155,18 @@ Render:
 		- Vision: once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
 		- Spec:
 			- Orchestrated by GameController by taking "optimal" AABB from World (which takes union of "optimal" AABB's from each ship)
-			  and giving it to RenderContext, which adjusts ViewModel based on it
+			  and giving it to RenderContext, which adjusts ViewModel based on it				
 				- At each simulation step
 			- Preferences setting for auto-focus (default is on)
 				- Also toggable at "Controls" menu
 			- Also works as "auto-focus at load"
 		- Algo:
 			- Option 1:
+				- "Optimal" AABB is union of all AABBs
+				- ViewModel adjustment:
+					- First: position: adjust based on center of AABB, but only if it's off by more than 1/2th of screen W/H from center
+					- Second: zoom: TODO
+			- Option 2:
 				- Connected component i has AABBi
 				- Ship "optimal" AABB == Union(AABBi) for i belonging to B
 					- B is set of connected components such that sum(their #points) > 3/4 TotPoints, in optimal order (from larger to smaller)
@@ -1179,7 +1190,7 @@ Render:
 							- Use insertion sort to end up with list sorted by #points, desc
 					- Option 2:
 						- Recalculated at low-freq step (same as above)
-			- Option 2:
+			- Option 3:
 				- Low-freq step calculates AABB
 
 	- Different backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.

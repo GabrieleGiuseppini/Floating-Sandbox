@@ -2,6 +2,7 @@
 - Added options to reload the previous ship, and to reload on startup the ship that had been loaded when the game was last played
 - Recalibrated and optimized decay processes (rotting, combustion)
 - Fixed sporadic error message occurring when extraneous files are placed under the game data directories
+- Improved behavior of fishes at high speed
 - ...and a few more small improvements here and there!
 
 1.16.0.7
@@ -10,7 +11,7 @@
 - Added first implementation of hydrodynamics
 	- Water drag is now calculated as separate friction and pressure (aka "directional") drags
 	- Re-calibrated all drag forces in the simulation
-- Added a new "surprise" feature, will be publicized in a week or so to maintain anticipation!
+- Added fishes, complete with (optional) shoaling behavior
 - Improved clouds
 	- Thanks to Dario Bazzichetto for the ideas!
 - Improved materials database:

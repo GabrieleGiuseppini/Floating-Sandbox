@@ -132,8 +132,12 @@ void main()
             (uv.y + 1.0) / 2.0); // y has to fit perfectly 0..1 range
 
     vec2 alphaSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * alphaVirtualTextureCoords;
-    vec4 sampledAlpha = texture2D(paramGenericLinearTexturesAtlasTexture, alphaSampleCoords);
+    vec4 sampledAlphaSample = texture2D(paramGenericLinearTexturesAtlasTexture, alphaSampleCoords);
 
+    // We only want sampled alpha to affect the top part of the flame; the bottom
+    // part should stay put at 1.0
+    float sampledAlpha = mix(1.0, sampledAlphaSample.w, flameSpacePosition.y);
+    
     //
 	// Sample color
     //
@@ -157,7 +161,7 @@ void main()
     //
 
     // Calculate final alpha
-    float finalAlpha = sampledAlpha.w * implicitAlpha;
+    float finalAlpha = sampledAlpha * implicitAlpha;
     
     if (finalAlpha < 0.75) // For Z test
         discard;
