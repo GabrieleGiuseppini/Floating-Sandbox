@@ -1700,13 +1700,31 @@ void ElectricalElements::UpdateSinks(
 
             // Update current values to match targets (via responsiveness)
 
-            engineState.CurrentRpm =
-                engineState.CurrentRpm
-                + (engineState.TargetRpm * targetDamping - engineState.CurrentRpm) * engineState.Responsiveness;
+            {
+                float const effectiveTargetRpm = engineState.TargetRpm * targetDamping;
 
-            engineState.CurrentThrustMagnitude =
-                engineState.CurrentThrustMagnitude
-                + (engineState.TargetThrustMagnitude * targetDamping - engineState.CurrentThrustMagnitude) * engineState.Responsiveness;
+                engineState.CurrentRpm =
+                    engineState.CurrentRpm
+                    + (effectiveTargetRpm - engineState.CurrentRpm) * engineState.Responsiveness;
+
+                if (std::abs(effectiveTargetRpm - engineState.CurrentRpm) < 0.001f)
+                {
+                    engineState.CurrentRpm = effectiveTargetRpm;
+                }
+            }
+
+            {
+                float const effectiveTargetThrustMagnitude = engineState.TargetThrustMagnitude * targetDamping;
+
+                engineState.CurrentThrustMagnitude =
+                    engineState.CurrentThrustMagnitude
+                    + (effectiveTargetThrustMagnitude - engineState.CurrentThrustMagnitude) * engineState.Responsiveness;
+
+                if (std::abs(effectiveTargetThrustMagnitude - engineState.CurrentThrustMagnitude) < 0.001f)
+                {
+                    engineState.CurrentThrustMagnitude = effectiveTargetThrustMagnitude;
+                }
+            }
 
             // Calculate force vector
             vec2f const thrustForce =
