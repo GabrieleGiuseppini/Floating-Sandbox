@@ -283,19 +283,21 @@ Render:
 		+ Lower rotting speed:
 			+ 1.16: Titanic @ 12m is at 0.34 - let's shoot for 0.5
 			+ changelist
+		+ Optimize that decay process at Points::CombustionUpdateLowFrequency
+			+ Test adjustment
 
-		- Optimize that decay process at Points::CombustionUpdateLowFrequency
+		- Air bubbles smaller at very beginning 
 
-		- Volume slider for engine sounds
-			- Or SoundController adjusts volume of subsequent instances:
+		- Volume adjustment for engine sounds
+			- Option 1: number of engines used as divisor
+				- Announced by ElectricalElement (already), received by SoundController which updates mCurrentCount
+					- SoundsController: reset mCurrentCount to 0 at each Reset()
+			- Option 2: SoundController adjusts volume of subsequent instances:
 				- 1st = whatever it is now
 				- 2nd = a bit less
 					- And lowers volume of first (half each?)
 				- ...
 				- Need to keep count of total instances currently playing
-			- Or number of engines used as divisor
-				- Announced by ElectricalElement, received by SoundController which updates mCurrentCount
-					- SoundsController: reset mCurrentCount to 0 at each Reset()
 
 		- Send to John Smith
 		- Bump up version
@@ -314,6 +316,8 @@ Render:
 			- Cached quantities!
 
 		----------------------------------------------------------------------------------------
+
+		1,184 - 70
 
 		- Update changes.txt w/fishes 7 days later (TODO)
 			- changes.txt

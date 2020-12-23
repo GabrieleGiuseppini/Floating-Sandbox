@@ -658,42 +658,32 @@ void Points::UpdateCombustionLowFrequency(
     // We want to model the decay alpha as a linear law on the burning
     // particle's mass m: alpha = C + A * m
     //
-    // (Ideal) xonstraints:
+    // (Ideal) constraints:
     //      An iron hull mass (750Kg, m1) decays in t1 (simulation) seconds == n1 steps
     //      A cloth mass (0.645Kg, m2) decays in t2 (simulation) seconds == n2 steps
     //
     // alpha_i ^ n_i = 0.5
     //
+    // Note that in reality times will be much shorter due to neighbor decaying.
+    //
 
-    auto const defineAlphaFunction =
-        [&gameParameters, &dt](float m1, float t1, float m2, float t2, float targetAlpha)
-        {
-            // Convert times to number of steps
-            float const n1 = t1 / (gameParameters.CombustionSpeedAdjustment * dt);
-            float const n2 = t2 / (gameParameters.CombustionSpeedAdjustment * dt);
+    float constexpr m1 = 100.0f; // ~Iron
+    float constexpr t1 = 60.0f;
 
-            // Calculate target alphas
-            float const alpha1 = std::pow(targetAlpha, 1.0f / n1);
-            float const alpha2 = std::pow(targetAlpha, 1.0f / n2);
+    float constexpr m2 = 0.6f; // ~Paper
+    float constexpr t2 = 12.0f;
 
-            // Calculate alpha function parameters
-            float const decayAlphaFunctionA = (alpha2 - alpha1) / (m2 - m1);
-            float const decayAlphaFunctionC = alpha1 - decayAlphaFunctionA * m1;
+    // Convert times to number of steps
+    float const n1 = t1 / (gameParameters.CombustionSpeedAdjustment * dt);
+    float const n2 = t2 / (gameParameters.CombustionSpeedAdjustment * dt);
 
-            return std::tuple(decayAlphaFunctionA, decayAlphaFunctionC);
-        };
+    // Calculate target alphas
+    float const alpha1 = std::pow(0.5f, 1.0f / n1);
+    float const alpha2 = std::pow(0.5f, 1.0f / n2);
 
-    // Alpha function for burning point
-    auto [decayAlphaFunctionA, decayAlphaFunctionC] = defineAlphaFunction(
-        100.0f, 60.0f, // Iron
-        0.6f, 12.0f,  //Cloth
-        0.5f);
-
-    // Alpha function for neighbors
-    auto [decayAlphaNeighborFunctionA, decayAlphaNeighborFunctionC] = defineAlphaFunction(
-        100.0f, 60.0f, // Iron
-        0.6f, 12.0f,  // Paper
-        0.5f);
+    // Calculate alpha function parameters
+    float const decayAlphaFunctionA = (alpha2 - alpha1) / (m2 - m1);
+    float const decayAlphaFunctionC = alpha1 - decayAlphaFunctionA * m1;
 
     //
     // Visit all points
@@ -784,30 +774,6 @@ void Points::UpdateCombustionLowFrequency(
                     decayAlphaFunctionC
                     + mMaterialsBuffer[pointIndex].Structural->GetMass() * decayAlphaFunctionA;
 
-                /* TODOOLD
-                // Our goal:
-                // - An iron hull mass (750Kg) decays completely (goes to 0.01)
-                //   in 30 (simulated) seconds
-                // - A smaller (larger) mass decays in shorter (longer) time,
-                //   but a very small mass shouldn't burn in too short of a time
-                //
-
-                // TODO: see if can optimize these two pow's away, seems to me we
-                // may use a simple decay process here
-
-                float const massMultiplier = pow(
-                    mMaterialsBuffer[pointIndex].Structural->GetMass() / 750.0f,
-                    0.15f); // Magic number: one tenth of the mass is 0.70 times the number of steps
-
-                float const totalDecaySteps =
-                    effectiveCombustionDecayRate
-                    * massMultiplier;
-
-                // decay(@ step i) = alpha^i
-                // decay(@ step T) = min_decay => alpha^T = min_decay => alpha = min_decay^(1/T)
-                float const decayAlpha = pow(0.01f, 1.0f / totalDecaySteps);
-                */
-
                 // Decay point
                 mDecayBuffer[pointIndex] *= decayAlpha;
 
@@ -815,13 +781,9 @@ void Points::UpdateCombustionLowFrequency(
                 // 2. Decay neighbors
                 //
 
-                float const decayAlphaNeighbor =
-                    decayAlphaNeighborFunctionC
-                    + mMaterialsBuffer[pointIndex].Structural->GetMass() * decayAlphaNeighborFunctionA;
-
                 for (auto const s : GetConnectedSprings(pointIndex).ConnectedSprings)
                 {
-                    mDecayBuffer[s.OtherEndpointIndex] *= decayAlphaNeighbor;
+                    mDecayBuffer[s.OtherEndpointIndex] *= decayAlpha;
                 }
             }
         }
