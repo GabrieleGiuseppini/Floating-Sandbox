@@ -856,8 +856,7 @@ void Points::UpdateCombustionLowFrequency(
                     pointIndex,
                     [this](auto p1, auto p2)
                     {
-                        // TODOTEST
-                        //return this->mPlaneIdBuffer[p1] < mPlaneIdBuffer[p2];
+                        // Sort by plane and then by vertical position, so bottommost flames cover uppermost ones
                         return this->mPlaneIdBuffer[p1] < mPlaneIdBuffer[p2]
                             || (this->mPlaneIdBuffer[p1] == mPlaneIdBuffer[p2] && this->mPositionBuffer[p1].y < this->mPositionBuffer[p2].y);
                     }),
@@ -1247,8 +1246,7 @@ void Points::ReorderBurningPointsForDepth()
         mBurningPoints.end(),
         [this](auto p1, auto p2)
         {
-            // TODOTEST
-            //return this->mPlaneIdBuffer[p1] < this->mPlaneIdBuffer[p2];
+            // Sort by plane and then by vertical position, so bottommost flames cover uppermost ones
             return this->mPlaneIdBuffer[p1] < mPlaneIdBuffer[p2]
                 || (this->mPlaneIdBuffer[p1] == mPlaneIdBuffer[p2] && this->mPositionBuffer[p1].y < this->mPositionBuffer[p2].y);
         });
