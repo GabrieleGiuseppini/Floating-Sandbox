@@ -287,18 +287,36 @@ Render:
 			+ Test adjustment
 		+ Air bubbles smaller at very beginning 
 
-		- Volume adjustment for engine sounds
-			- Option 1: number of engines used as divisor
-				- Announced by ElectricalElement (already), received by SoundController which updates mCurrentCount
-					- SoundsController: reset mCurrentCount to 0 at each Reset()
+		= Volume adjustment for engine sounds
+			! Tests:
+				! 1: S.S. Lurline
+				! 10: S.S. Hesleden
+			+ Option 1: number of engines used as divisor
+				+ Announced by ElectricalElement (already), received by SoundController which updates mCurrentCount
+					+ SoundsController: reset mCurrentCount to 0 at each Reset()
+			= Send to John Smith
 			- Option 2: SoundController adjusts volume of subsequent instances:
 				- 1st = whatever it is now
 				- 2nd = a bit less
 					- And lowers volume of first (half each?)
 				- ...
 				- Need to keep count of total instances currently playing
-		- Send to John Smith
-		- Bump up version
+			- Update changelist
+
+		+ Bump up version
+
+		- Bug:
+			- Jacoh2 20/12/2020: fixing the boiler area on the small fleutzgrampher and akagi Maru crash the game
+
+		- Add new background music
+
+		= Send/complete localization
+			+ IT
+			- ES
+			- RU
+
+		- Release 1.16.1
+			- Send to testers
 
 		- Sinking speed:
 			- Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s
