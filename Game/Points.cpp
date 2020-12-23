@@ -685,14 +685,14 @@ void Points::UpdateCombustionLowFrequency(
 
     // Alpha function for burning point
     auto [decayAlphaFunctionA, decayAlphaFunctionC] = defineAlphaFunction(
-        100.0f, 30.0f, // Iron
-        0.6f, 6.0f,  //Cloth
+        100.0f, 60.0f, // Iron
+        0.6f, 12.0f,  //Cloth
         0.5f);
 
     // Alpha function for neighbors
     auto [decayAlphaNeighborFunctionA, decayAlphaNeighborFunctionC] = defineAlphaFunction(
-        100.0f, 30.0f, // Iron
-        0.6f, 6.0f,  // Paper
+        100.0f, 60.0f, // Iron
+        0.6f, 12.0f,  // Paper
         0.5f);
 
     //
