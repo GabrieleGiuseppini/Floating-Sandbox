@@ -312,9 +312,10 @@ Render:
 
 		= Send/complete localization
 			+ IT
-			- ES
+			+ ES
 			- RU
 
+		- Merge to master
 		- Release 1.16.1
 			- Send to testers
 

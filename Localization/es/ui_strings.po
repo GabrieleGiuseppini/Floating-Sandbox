@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.4\n"
+"X-Generator: Poedit 2.4.2\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ..\FloatingSandbox\MainFrame.cpp:266
@@ -726,13 +726,12 @@ msgstr ""
 "estrés y cerca de la ruptura."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:520
-#, fuzzy
 msgid ""
 "Enables or disables notifications showing the speed of objects when they're "
 "tossed."
 msgstr ""
-"Habilita o Deshabilita las notificaciones cuando un tsunami esta siendo "
-"generado."
+"Habilita o Deshabilita las notificaciones mostrando la velocidad de los "
+"objetos cuando son lanzados."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:552
 msgid "Enables or disables notifications when a tsunami is being spawned."
@@ -1441,7 +1440,7 @@ msgstr ""
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:178
 msgid "Programmed in Amsterdam, the Netherlands"
-msgstr ""
+msgstr "Programado en Ámsterdam, Paises Bajos"
 
 #: ..\FloatingSandbox\MainFrame.cpp:223
 msgid "Quit"
@@ -1468,24 +1467,20 @@ msgid "Recent directories:"
 msgstr "Directorios Recientes:"
 
 #: ..\FloatingSandbox\MainFrame.cpp:200
-#, fuzzy
-#| msgid "Reload Ship"
 msgid "Reload Current Ship"
-msgstr "Recargar Barco"
+msgstr "Recargar Barco actual"
 
 #: ..\FloatingSandbox\MainFrame.cpp:404
 msgid "Reload Last-Modified Simulation Settings"
 msgstr "Recargar las ultimas configuraciones de simulación"
 
 #: ..\FloatingSandbox\MainFrame.cpp:204
-#, fuzzy
-#| msgid "Reload Ship"
 msgid "Reload Previous Ship"
-msgstr "Recargar Barco"
+msgstr "Recargar Barco previo"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:824
 msgid "Reload Previous Ship on Startup"
-msgstr ""
+msgstr "Recargar barco previo al iniciar"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:194
 msgid "Rendering"
@@ -1761,10 +1756,8 @@ msgid "Show Tsunami Notifications"
 msgstr "Mostrar notificaciones de tsunami"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:519
-#, fuzzy
-#| msgid "Show Electrical Notifications"
 msgid "Show Velocity Notifications"
-msgstr "Mostrar notificaciones electricas"
+msgstr "Mostrar notificaciones de velocidad"
 
 #: ..\FloatingSandbox\MainFrame.cpp:466
 msgid "Show credits and other I'vedunnit stuff"
@@ -2234,6 +2227,8 @@ msgid ""
 "When checked, the game starts with the ship that had been loaded when the "
 "game was last played."
 msgstr ""
+"Si habilitado, el juego inicia con e barco que fue cargado la ultima vez que "
+"se jugo."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2247
 msgid "Wind"
