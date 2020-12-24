@@ -306,13 +306,16 @@ Render:
 
 		= Flames: 
 			+ Fix bottom issue with additional Y sorting
-			- Rearchitect way we push foreground flames into vector, so to maintain ordering
+			+ Rearchitect way we push foreground flames into vector, so to maintain ordering
+				+ Points::UploadFlames does two passes
 			+ Fix alpha spots by only using sampled alpha at the top
-			- Check on old Dell, before and after
+			- Check perf on old Dell, before and after
 			- Make GameJolt poll
 				- Side-by-side video
-			- See if still makes sense to have flames 2 and 3
+			- See if it still makes sense to have flames 2 and 3
 				- If removed: add checkbox at SettingsDialog-Advanced for drawing flames (default=true)
+		
+		- Ship uploads take ShipRenderContext (*)
 
 		- Bug:
 			- Jacoh2 20/12/2020: fixing the boiler area on the small fleutzgrampher and akagi Maru crash the game

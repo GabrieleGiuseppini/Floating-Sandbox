@@ -1074,24 +1074,41 @@ public:
         mShips[shipId]->UploadFlamesStart(count, windSpeedMagnitude);
     }
 
-    inline void UploadShipFlame(
+    inline void UploadShipBackgroundFlame(
         ShipId shipId,
         PlaneId planeId,
         vec2f const & baseCenterPosition,
         vec2f const & flameVector,
         float scale,
-        float flamePersonalitySeed,
-        bool isOnChain)
+        float flamePersonalitySeed)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
-        mShips[shipId]->UploadFlame(
+        mShips[shipId]->UploadBackgroundFlame(
             planeId,
             baseCenterPosition,
             flameVector,
             scale,
             flamePersonalitySeed,
-            isOnChain,
+            mRenderParameters);
+    }
+
+    inline void UploadShipForegroundFlame(
+        ShipId shipId,
+        PlaneId planeId,
+        vec2f const & baseCenterPosition,
+        vec2f const & flameVector,
+        float scale,
+        float flamePersonalitySeed)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        mShips[shipId]->UploadForegroundFlame(
+            planeId,
+            baseCenterPosition,
+            flameVector,
+            scale,
+            flamePersonalitySeed,
             mRenderParameters);
     }
 

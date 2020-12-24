@@ -211,133 +211,53 @@ public:
         float windSpeedMagnitude);
 
     /*
-     * Note: assumption is that upload happens in plane ID order (for depth sorting).
+     * Assumptions:
+     *  - upload happens in depth order (for depth sorting)
+     *  - all background flames are uploaded before all foreground flames
      */
-    inline void UploadFlame(
+    inline void UploadBackgroundFlame(
         PlaneId planeId,
         vec2f const & baseCenterPosition,
         vec2f const & flameVector,
         float scale,
         float flamePersonalitySeed,
-        bool isOnChain,
         RenderParameters const & renderParameters)
     {
-        //
-        // Calculate flame quad - encloses the flame vector
-        //
+        assert(mFlameForegroundCount == 0);
 
-        //
-        // C-------D
-        // |       |
-        // |       |
-        // |       |
-        // |       |
-        // |       |
-        // |---P---|
-        // |       |
-        // A-------B
-        //
-
-        // Y offset to focus bottom of flame at specified position; depends mostly on shader
-        float const yOffset = (renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
-            ? 0.066666f
-            : 0.013333f;
-
-        // Qn = normalized flame vector
-        // Qnp = perpendicular to Qn (i.e. Q's normal)
-        float Ql = flameVector.length();
-        vec2f const Qn = flameVector.normalise(Ql);
-        vec2f const Qnp = Qn.to_perpendicular(); // rotated by PI/2, i.e. oriented to the left (wrt rest vector)
-
-        // P' = point P lowered by yOffset
-        vec2f const Pp = baseCenterPosition - Qn * yOffset * mFlameQuadHeight * scale;
-        // P'' = opposite of P' on top
-        vec2f const Ppp = Pp + flameVector * mFlameQuadHeight * scale;
-
-        // Qhw = vector delineating one half of the quad width, the one to the left;
-        // its length is not affected by velocity, only its direction
-        vec2f const Qhw = Qnp * mHalfFlameQuadWidth * scale
-            * ((renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1) ? 1.5f : 1.0f);
-
-        // A, B = left-bottom, right-bottom
-        vec2f const A = Pp + Qhw;
-        vec2f const B = Pp - Qhw;
-        // C, D = left-top, right-top
-        vec2f const C = Ppp + Qhw;
-        vec2f const D = Ppp - Qhw;
-
-        //
-        // Store quad vertices
-        //
-
-        size_t vertexIndex;
-        if (isOnChain)
-        {
-            // Background flame
-            vertexIndex = mFlameBackgroundCount * 6u;
-            ++mFlameBackgroundCount;
-        }
-        else
-        {
-            // Foreground flame
-            // - Note: this is against Z order
-            ++mFlameForegroundCount;
-            vertexIndex = mFlameVertexBuffer.size() - mFlameForegroundCount * 6u;
-        }
-
-        assert(vertexIndex < mFlameVertexBuffer.size());
-
-        // Triangle 1
-
-        // Top-left
-        mFlameVertexBuffer.emplace_at(
-            vertexIndex++,
-            vec2f(C.x, C.y),
-            static_cast<float>(planeId),
+        StoreFlameQuad(
+            planeId,
+            baseCenterPosition,
+            flameVector,
+            scale,
             flamePersonalitySeed,
-            vec2f(-1.0f, 1.0f));
+            renderParameters);
 
-        // Top-right
-        mFlameVertexBuffer.emplace_at(
-            vertexIndex++,
-            vec2f(D.x, D.y),
-            static_cast<float>(planeId),
+        ++mFlameBackgroundCount;
+    }
+
+    /*
+     * Assumptions:
+     *  - upload happens in depth order (for depth sorting)
+     *  - all background flames are uploaded before all foreground flames
+     */
+    inline void UploadForegroundFlame(
+        PlaneId planeId,
+        vec2f const & baseCenterPosition,
+        vec2f const & flameVector,
+        float scale,
+        float flamePersonalitySeed,
+        RenderParameters const & renderParameters)
+    {
+        StoreFlameQuad(
+            planeId,
+            baseCenterPosition,
+            flameVector,
+            scale,
             flamePersonalitySeed,
-            vec2f(1.0f, 1.0f));
+            renderParameters);
 
-        // Bottom-left
-        mFlameVertexBuffer.emplace_at(
-            vertexIndex++,
-            vec2f(A.x, A.y),
-            static_cast<float>(planeId),
-            flamePersonalitySeed,
-            vec2f(-1.0f, 0.0f));
-
-        // Triangle 2
-
-        // Top-Right
-        mFlameVertexBuffer.emplace_at(
-            vertexIndex++,
-            vec2f(D.x, D.y),
-            static_cast<float>(planeId),
-            flamePersonalitySeed,
-            vec2f(1.0f, 1.0f));
-
-        // Bottom-left
-        mFlameVertexBuffer.emplace_at(
-            vertexIndex++,
-            vec2f(A.x, A.y),
-            static_cast<float>(planeId),
-            flamePersonalitySeed,
-            vec2f(-1.0f, 0.0f));
-
-        // Bottom-right
-        mFlameVertexBuffer.emplace_at(
-            vertexIndex++,
-            vec2f(B.x, B.y),
-            static_cast<float>(planeId),
-            flamePersonalitySeed,
-            vec2f(1.0f, 0.0f));
+        ++mFlameForegroundCount;
     }
 
     void UploadFlamesEnd();
@@ -769,6 +689,109 @@ public:
         RenderStatistics & renderStats);
 
 private:
+
+    inline void StoreFlameQuad(
+        PlaneId planeId,
+        vec2f const & baseCenterPosition,
+        vec2f const & flameVector,
+        float scale,
+        float flamePersonalitySeed,
+        RenderParameters const & renderParameters)
+    {
+        //
+        // Calculate flame quad - encloses the flame vector
+        //
+
+        //
+        // C-------D
+        // |       |
+        // |       |
+        // |       |
+        // |       |
+        // |       |
+        // |---P---|
+        // |       |
+        // A-------B
+        //
+
+        // Y offset to focus bottom of flame at specified position; depends mostly on shader
+        float const yOffset = (renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
+            ? 0.066666f
+            : 0.013333f;
+
+        // Qn = normalized flame vector
+        // Qnp = perpendicular to Qn (i.e. Q's normal)
+        float Ql = flameVector.length();
+        vec2f const Qn = flameVector.normalise(Ql);
+        vec2f const Qnp = Qn.to_perpendicular(); // rotated by PI/2, i.e. oriented to the left (wrt rest vector)
+
+        // P' = point P lowered by yOffset
+        vec2f const Pp = baseCenterPosition - Qn * yOffset * mFlameQuadHeight * scale;
+        // P'' = opposite of P' on top
+        vec2f const Ppp = Pp + flameVector * mFlameQuadHeight * scale;
+
+        // Qhw = vector delineating one half of the quad width, the one to the left;
+        // its length is not affected by velocity, only its direction
+        vec2f const Qhw = Qnp * mHalfFlameQuadWidth * scale
+            * ((renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1) ? 1.5f : 1.0f);
+
+        // A, B = left-bottom, right-bottom
+        vec2f const A = Pp + Qhw;
+        vec2f const B = Pp - Qhw;
+        // C, D = left-top, right-top
+        vec2f const C = Ppp + Qhw;
+        vec2f const D = Ppp - Qhw;
+
+        //
+        // Store quad vertices
+        //
+
+        // Triangle 1
+
+        // Top-left
+        mFlameVertexBuffer.emplace_back(
+            vec2f(C.x, C.y),
+            static_cast<float>(planeId),
+            flamePersonalitySeed,
+            vec2f(-1.0f, 1.0f));
+
+        // Top-right
+        mFlameVertexBuffer.emplace_back(
+            vec2f(D.x, D.y),
+            static_cast<float>(planeId),
+            flamePersonalitySeed,
+            vec2f(1.0f, 1.0f));
+
+        // Bottom-left
+        mFlameVertexBuffer.emplace_back(
+            vec2f(A.x, A.y),
+            static_cast<float>(planeId),
+            flamePersonalitySeed,
+            vec2f(-1.0f, 0.0f));
+
+        // Triangle 2
+
+        // Top-Right
+        mFlameVertexBuffer.emplace_back(
+            vec2f(D.x, D.y),
+            static_cast<float>(planeId),
+            flamePersonalitySeed,
+            vec2f(1.0f, 1.0f));
+
+        // Bottom-left
+        mFlameVertexBuffer.emplace_back(
+            vec2f(A.x, A.y),
+            static_cast<float>(planeId),
+            flamePersonalitySeed,
+            vec2f(-1.0f, 0.0f));
+
+        // Bottom-right
+        mFlameVertexBuffer.emplace_back(
+            vec2f(B.x, B.y),
+            static_cast<float>(planeId),
+            flamePersonalitySeed,
+            vec2f(1.0f, 0.0f));
+    }
 
     template<typename TVertexBuffer>
     inline void StoreGenericMipMappedTextureRenderSpecification(

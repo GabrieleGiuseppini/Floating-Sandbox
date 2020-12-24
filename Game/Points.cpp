@@ -1687,21 +1687,46 @@ void Points::UploadFlames(
     float windSpeedMagnitude,
     Render::RenderContext & renderContext) const
 {
+    //
+    // Flames are uploaded in this order:
+    //  - Z order (guaranteed by internal sorting of mBurningPoints)
+    //  - Background flames first (i.e. flames on ropes/springs) followed
+    //    by foreground flames
+    //
+    // We use # of triangles as a heuristic for the point being on a chain,
+    // and we use the *factory* ones to avoid sudden depth jumps when triangles are destroyed by fire
+    //
+
     renderContext.UploadShipFlamesStart(shipId, mBurningPoints.size(), windSpeedMagnitude);
 
-    // Upload flames, in order of plane ID
+    // Background
     for (auto const pointIndex : mBurningPoints)
     {
-        renderContext.UploadShipFlame(
-            shipId,
-            GetPlaneId(pointIndex),
-            GetPosition(pointIndex),
-            mCombustionStateBuffer[pointIndex].FlameVector,
-            mCombustionStateBuffer[pointIndex].FlameDevelopment, // scale
-            mRandomNormalizedUniformFloatBuffer[pointIndex],
-            // IsOnChain: we use # of triangles as a heuristic for the point being on a chain,
-            // and we use the *factory* ones to avoid sudden depth jumps when triangles are destroyed by fire
-            mFactoryConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty());
+        if (mFactoryConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty())
+        {
+            renderContext.UploadShipBackgroundFlame(
+                shipId,
+                GetPlaneId(pointIndex),
+                GetPosition(pointIndex),
+                mCombustionStateBuffer[pointIndex].FlameVector,
+                mCombustionStateBuffer[pointIndex].FlameDevelopment, // scale
+                mRandomNormalizedUniformFloatBuffer[pointIndex]);
+        }
+    }
+
+    // Foreground
+    for (auto const pointIndex : mBurningPoints)
+    {
+        if (!mFactoryConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty())
+        {
+            renderContext.UploadShipForegroundFlame(
+                shipId,
+                GetPlaneId(pointIndex),
+                GetPosition(pointIndex),
+                mCombustionStateBuffer[pointIndex].FlameVector,
+                mCombustionStateBuffer[pointIndex].FlameDevelopment, // scale
+                mRandomNormalizedUniformFloatBuffer[pointIndex]);
+        }
     }
 
     renderContext.UploadShipFlamesEnd(shipId);

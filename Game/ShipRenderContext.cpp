@@ -769,7 +769,7 @@ void ShipRenderContext::UploadFlamesStart(
     // though they will be empty most of the time
     //
 
-    mFlameVertexBuffer.reset_fill(6 * count);
+    mFlameVertexBuffer.reset(6 * count);
 
     mFlameBackgroundCount = 0;
     mFlameForegroundCount = 0;
