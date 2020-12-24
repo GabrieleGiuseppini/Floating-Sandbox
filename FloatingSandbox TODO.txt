@@ -309,6 +309,7 @@ Render:
 			+ Rearchitect way we push foreground flames into vector, so to maintain ordering
 				+ Points::UploadFlames does two passes
 			+ Fix alpha spots by only using sampled alpha at the top
+			- Fix color Y range
 			- Check perf on old Dell, before and after
 			- Make GameJolt poll
 				- Side-by-side video

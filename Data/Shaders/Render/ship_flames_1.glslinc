@@ -129,7 +129,7 @@ void main()
 
     vec2 alphaVirtualTextureCoords = vec2(
             ((uv.x + 1.0) + noiseOffset.x) / AlphaResolution,
-            (uv.y + 1.0) / 2.1); // y has to fit perfectly 0..1 range, somehow we need to squash it a little bit more
+            (uv.y + 1.0) / 2.01); // y has to fit perfectly 0..1 range, squashing a little bit more to ensure we get to dead center
 
     vec2 alphaSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * alphaVirtualTextureCoords;
     vec4 sampledAlphaSample = texture2D(paramGenericLinearTexturesAtlasTexture, alphaSampleCoords);
@@ -142,19 +142,18 @@ void main()
 	// Sample color
     //
 
-    #define ColorResolution 8.
+    #define ColorResolution 7.
 
     vec2 colorVirtualTextureCoords = fract(
         vec2(
             uv.x / ColorResolution,
             (uv.y / ColorResolution - paramFlameSpeed * 1.5) + noiseOffset.x)); // For color sampling we halve y and wrap, then randomize Y displacement per-flame
 
-    // Clamp in order to fight against linear filtering - though no idea why dx works and dx/2.0 does not work
+    // Clamp to dead center pixels
     colorVirtualTextureCoords.y = clamp(colorVirtualTextureCoords.y, paramAtlasTile1Dx.y, 1.0 - paramAtlasTile1Dx.y);
 
     vec2 colorSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * colorVirtualTextureCoords;
     vec4 sampledColor = texture2D(paramGenericLinearTexturesAtlasTexture, colorSampleCoords);
-
 
     //
     // Emit
