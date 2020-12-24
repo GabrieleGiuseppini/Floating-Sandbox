@@ -1101,10 +1101,7 @@ void Points::UpdateCombustionHighFrequency(
                 //
 
                 // FlameDevelopment is now in the (MFD + epsilon, MFD) range
-                auto extraFlameDevelopment = pointCombustionState.FlameDevelopment - pointCombustionState.MaxFlameDevelopment;
-                extraFlameDevelopment =
-                    extraFlameDevelopment
-                    - 0.2f * extraFlameDevelopment;
+                auto const extraFlameDevelopment = 0.8f * (pointCombustionState.FlameDevelopment - pointCombustionState.MaxFlameDevelopment);
 
                 pointCombustionState.FlameDevelopment =
                     pointCombustionState.MaxFlameDevelopment + extraFlameDevelopment;
