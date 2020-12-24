@@ -145,12 +145,12 @@ void main()
 	// Sample color
     //
 
-    #define ColorResolution 7.
+    #define ColorResolution 8.
 
     vec2 colorVirtualTextureCoords = fract(
         vec2(
             uv.x / ColorResolution,
-            (uv.y / ColorResolution - paramFlameSpeed * 1.5) + noiseOffset.x)); // For color sampling we halve y and wrap, then randomize Y displacement per-flame
+            uv.y / ColorResolution - paramFlameSpeed * 1.5 + noiseOffset.x)); // Adding some per-flame random Y displacement
 
     // Clamp to dead center pixels
     colorVirtualTextureCoords.y = clamp(colorVirtualTextureCoords.y, paramAtlasTile1Dx.y, 1.0 - paramAtlasTile1Dx.y);
