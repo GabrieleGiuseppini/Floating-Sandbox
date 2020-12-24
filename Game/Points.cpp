@@ -1073,7 +1073,7 @@ void Points::UpdateCombustionHighFrequency(
             case CombustionState::StateType::Developing_1:
             {
                 //
-                // Develop
+                // Develop up
                 //
                 // f(n-1) + 0.04*f(n-1): when starting from 0.1, after 61 steps (~1s) it's 1.1
                 // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:0.1,%22valid%22:true}]&expression=f(n-1)%20+%200.105*f(n-1)&target=0&endTarget=25&range=true
@@ -1094,17 +1094,11 @@ void Points::UpdateCombustionHighFrequency(
             case CombustionState::StateType::Developing_2:
             {
                 //
-                // Develop
-                //
-                // f(n-1) - 0.2*f(n-1): when starting from 0.2, after 10 steps (0.2s) it's below 0.02
-                // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:0.2,%22valid%22:true}]&expression=f(n-1)%20-%200.2*f(n-1)&target=0&endTarget=25&range=true
+                // Develop down
                 //
 
                 // FlameDevelopment is now in the (MFD + epsilon, MFD) range
-                auto const extraFlameDevelopment = 0.8f * (pointCombustionState.FlameDevelopment - pointCombustionState.MaxFlameDevelopment);
-
-                pointCombustionState.FlameDevelopment =
-                    pointCombustionState.MaxFlameDevelopment + extraFlameDevelopment;
+                auto const extraFlameDevelopment = pointCombustionState.FlameDevelopment - pointCombustionState.MaxFlameDevelopment;
 
                 // Check whether it's time to transition to burning
                 if (extraFlameDevelopment < 0.02f)
@@ -1112,6 +1106,12 @@ void Points::UpdateCombustionHighFrequency(
                     pointCombustionState.State = CombustionState::StateType::Burning;
                     pointCombustionState.FlameDevelopment = pointCombustionState.MaxFlameDevelopment;
                 }
+                else
+                {
+                    // Keep converging to goal
+                    pointCombustionState.FlameDevelopment -= 0.35f * extraFlameDevelopment;
+                }
+
 
                 break;
             }
