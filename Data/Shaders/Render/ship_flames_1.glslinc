@@ -61,7 +61,10 @@ mat2 GetRotationMatrix(float angle)
 
 // -----------------------------------------------
 void main()
-{    
+{   
+    // Fragments with alpha lower than this are discarded
+    #define MinAlpha 0.2
+
     //
     // Apply wind
     //
@@ -118,7 +121,7 @@ void main()
     // Calculate implicit alpha
     float implicitAlpha = smoothstep(0.7, 1.2, thickness);
 
-    if (implicitAlpha < 0.75) // For perf
+    if (implicitAlpha < MinAlpha) // For perf
         discard;   
    
     //
@@ -162,7 +165,7 @@ void main()
     // Calculate final alpha
     float finalAlpha = sampledAlpha * implicitAlpha;
     
-    if (finalAlpha < 0.75) // For Z test
+    if (finalAlpha < MinAlpha) // For Z test
         discard;
 
     // Make final color
