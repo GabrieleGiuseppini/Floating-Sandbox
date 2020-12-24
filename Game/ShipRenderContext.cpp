@@ -25,7 +25,8 @@ ShipRenderContext::ShipRenderContext(
     ShaderManager<ShaderManagerTraits> & shaderManager,
     GlobalRenderContext const & globalRenderContext,
     RenderParameters const & renderParameters,
-    float shipFlameSizeAdjustment)
+    float shipFlameSizeAdjustment,
+    float vectorFieldLengthMultiplier)
     : mShipId(shipId)
     , mPointCount(pointCount)
     , mShipCount(shipCount)
@@ -111,9 +112,10 @@ ShipRenderContext::ShipRenderContext(
     , mGenericMipMappedTextureAtlasMetadata(globalRenderContext.GetGenericMipMappedTextureAtlasMetadata())
     // Managers
     , mShaderManager(shaderManager)
-    // Non-render parameters
-    , mHalfFlameQuadWidth(0.0f) // Will be calculated
-    , mFlameQuadHeight(0.0f) // Will be calculated
+    // Non-render parameters - all of these will be calculated later
+    , mHalfFlameQuadWidth(0.0f)
+    , mFlameQuadHeight(0.0f)
+    , mVectorFieldLengthMultiplier(0.0f)
 {
     GLuint tmpGLuint;
 
@@ -468,6 +470,7 @@ ShipRenderContext::ShipRenderContext(
     //
 
     SetShipFlameSizeAdjustment(shipFlameSizeAdjustment);
+    SetVectorFieldLengthMultiplier(vectorFieldLengthMultiplier);
 
 
     //
@@ -825,6 +828,8 @@ void ShipRenderContext::UploadVectors(
     static vec2f const XMatrixRight = vec2f(CosAlphaLeftRight, SinAlphaRight);
     static vec2f const YMatrixRight = vec2f(-SinAlphaRight, CosAlphaLeftRight);
 
+    float const effectiveVectorLength = lengthAdjustment * mVectorFieldLengthMultiplier;
+
     //
     // Create buffer with endpoint positions of each segment of each arrow
     //
@@ -834,7 +839,7 @@ void ShipRenderContext::UploadVectors(
     for (size_t i = 0; i < count; ++i)
     {
         // Stem
-        vec2f stemEndpoint = position[i] + vector[i] * lengthAdjustment;
+        vec2f stemEndpoint = position[i] + vector[i] * effectiveVectorLength;
         mVectorArrowVertexBuffer.emplace_back(position[i], planeId[i]);
         mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeId[i]);
 

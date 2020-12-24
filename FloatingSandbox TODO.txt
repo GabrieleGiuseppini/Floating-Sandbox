@@ -310,11 +310,13 @@ Render:
 				+ Points::UploadFlames does two passes
 			+ Fix alpha spots by only using sampled alpha at the top
 			+ Fix color Y range
+			- Nuke flame render modes 2 and 3
+				- Nuke shaders
+				- Replace RenderContext setting with booleam "DoDrawFlames" (default=true)
+				- Nuke from SettingsDialog, and add checkbox at SettingsDialog-Advanced
 			- Check perf on old Dell, before and after
 			- Make GameJolt poll
 				- Side-by-side video
-			- See if it still makes sense to have flames 2 and 3
-				- If removed: add checkbox at SettingsDialog-Advanced for drawing flames (default=true)
 		
 		- Ship uploads take ShipRenderContext (*)
 

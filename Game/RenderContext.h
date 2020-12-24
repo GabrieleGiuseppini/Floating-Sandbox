@@ -480,6 +480,11 @@ public:
     void SetVectorFieldRenderMode(VectorFieldRenderModeType vectorFieldRenderMode)
     {
         mVectorFieldRenderMode = vectorFieldRenderMode;
+
+        for (auto & s : mShips)
+        {
+            s->SetVectorFieldLengthMultiplier(mVectorFieldLengthMultiplier);
+        }
     }
 
     float GetVectorFieldLengthMultiplier() const

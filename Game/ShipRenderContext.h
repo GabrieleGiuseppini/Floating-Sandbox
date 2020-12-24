@@ -53,7 +53,8 @@ public:
         ShaderManager<ShaderManagerTraits> & shaderManager,
         GlobalRenderContext const & globalRenderContext,
         RenderParameters const & renderParameters,
-        float shipFlameSizeAdjustment);
+        float shipFlameSizeAdjustment,
+        float vectorFieldLengthMultiplier);
 
     ~ShipRenderContext();
 
@@ -70,6 +71,11 @@ public:
         // Recalculate quad dimensions
         mHalfFlameQuadWidth = BasisHalfFlameQuadWidth * shipFlameSizeAdjustment;
         mFlameQuadHeight = BasisFlameQuadHeight * shipFlameSizeAdjustment;
+    }
+
+    void SetVectorFieldLengthMultiplier(float vectorFieldLengthMultiplier)
+    {
+        mVectorFieldLengthMultiplier = vectorFieldLengthMultiplier;
     }
 
 public:
@@ -1231,6 +1237,7 @@ private:
 
     float mHalfFlameQuadWidth;
     float mFlameQuadHeight;
+    float mVectorFieldLengthMultiplier;
 };
 
 }
