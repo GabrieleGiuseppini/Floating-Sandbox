@@ -697,8 +697,8 @@ public:
     float GetHeatOverlayTransparency() const override { return mRenderContext->GetHeatOverlayTransparency(); }
     void SetHeatOverlayTransparency(float value) override { mRenderContext->SetHeatOverlayTransparency(value); }
 
-    ShipFlameRenderModeType GetShipFlameRenderMode() const override { return mRenderContext->GetShipFlameRenderMode(); }
-    void SetShipFlameRenderMode(ShipFlameRenderModeType shipFlameRenderMode) override { mRenderContext->SetShipFlameRenderMode(shipFlameRenderMode); }
+    bool GetDrawFlames() const override { return mRenderContext->GetDrawFlames(); }
+    void SetDrawFlames(bool value) override { mRenderContext->SetDrawFlames(value); }
 
     float GetShipFlameSizeAdjustment() const override { return mFloatParameterSmoothers[FlameSizeAdjustmentParameterSmoother].GetValue(); }
     void SetShipFlameSizeAdjustment(float value) override { mFloatParameterSmoothers[FlameSizeAdjustmentParameterSmoother].SetValue(value); }

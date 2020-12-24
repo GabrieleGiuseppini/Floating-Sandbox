@@ -350,14 +350,14 @@ public:
         mRenderParameters.IsFlatLampLightColorDirty = true;
     }
 
-    ShipFlameRenderModeType GetShipFlameRenderMode() const
+    bool GetDrawFlames() const
     {
-        return mRenderParameters.ShipFlameRenderMode;
+        return mRenderParameters.DrawFlames;
     }
 
-    void SetShipFlameRenderMode(ShipFlameRenderModeType shipFlameRenderMode)
+    void SetDrawFlames(bool drawFlames)
     {
-        mRenderParameters.ShipFlameRenderMode = shipFlameRenderMode;
+        mRenderParameters.DrawFlames = drawFlames;
         // No need to set dirty, this is picked up at each cycle anway
     }
 
@@ -1094,8 +1094,7 @@ public:
             baseCenterPosition,
             flameVector,
             scale,
-            flamePersonalitySeed,
-            mRenderParameters);
+            flamePersonalitySeed);
     }
 
     inline void UploadShipForegroundFlame(
@@ -1113,8 +1112,7 @@ public:
             baseCenterPosition,
             flameVector,
             scale,
-            flamePersonalitySeed,
-            mRenderParameters);
+            flamePersonalitySeed);
     }
 
     inline void UploadShipFlamesEnd(ShipId shipId)

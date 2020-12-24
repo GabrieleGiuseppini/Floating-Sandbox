@@ -65,7 +65,7 @@ struct RenderParameters
     rgbColor FlatLampLightColor;
     bool IsFlatLampLightColorDirty;
 
-    ShipFlameRenderModeType ShipFlameRenderMode;
+    bool DrawFlames;
 
     bool ShowStressedSprings;
     bool ShowFrontiers;

@@ -226,8 +226,7 @@ public:
         vec2f const & baseCenterPosition,
         vec2f const & flameVector,
         float scale,
-        float flamePersonalitySeed,
-        RenderParameters const & renderParameters)
+        float flamePersonalitySeed)
     {
         assert(mFlameForegroundCount == 0);
 
@@ -236,8 +235,7 @@ public:
             baseCenterPosition,
             flameVector,
             scale,
-            flamePersonalitySeed,
-            renderParameters);
+            flamePersonalitySeed);
 
         ++mFlameBackgroundCount;
     }
@@ -252,16 +250,14 @@ public:
         vec2f const & baseCenterPosition,
         vec2f const & flameVector,
         float scale,
-        float flamePersonalitySeed,
-        RenderParameters const & renderParameters)
+        float flamePersonalitySeed)
     {
         StoreFlameQuad(
             planeId,
             baseCenterPosition,
             flameVector,
             scale,
-            flamePersonalitySeed,
-            renderParameters);
+            flamePersonalitySeed);
 
         ++mFlameForegroundCount;
     }
@@ -701,8 +697,7 @@ private:
         vec2f const & baseCenterPosition,
         vec2f const & flameVector,
         float scale,
-        float flamePersonalitySeed,
-        RenderParameters const & renderParameters)
+        float flamePersonalitySeed)
     {
         //
         // Calculate flame quad - encloses the flame vector
@@ -721,9 +716,7 @@ private:
         //
 
         // Y offset to focus bottom of flame at specified position; depends mostly on shader
-        float const yOffset = (renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
-            ? 0.066666f
-            : 0.013333f;
+        float constexpr YOffset = 0.066666f;
 
         // Qn = normalized flame vector
         // Qnp = perpendicular to Qn (i.e. Q's normal)
@@ -732,14 +725,13 @@ private:
         vec2f const Qnp = Qn.to_perpendicular(); // rotated by PI/2, i.e. oriented to the left (wrt rest vector)
 
         // P' = point P lowered by yOffset
-        vec2f const Pp = baseCenterPosition - Qn * yOffset * mFlameQuadHeight * scale;
+        vec2f const Pp = baseCenterPosition - Qn * YOffset * mFlameQuadHeight * scale;
         // P'' = opposite of P' on top
         vec2f const Ppp = Pp + flameVector * mFlameQuadHeight * scale;
 
         // Qhw = vector delineating one half of the quad width, the one to the left;
         // its length is not affected by velocity, only its direction
-        vec2f const Qhw = Qnp * mHalfFlameQuadWidth * scale
-            * ((renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1) ? 1.5f : 1.0f);
+        vec2f const Qhw = Qnp * mHalfFlameQuadWidth * scale * 1.5f;
 
         // A, B = left-bottom, right-bottom
         vec2f const A = Pp + Qhw;
@@ -899,13 +891,12 @@ private:
 
 private:
 
-    void RenderPrepareFlames(RenderParameters const & renderParameters);
+    void RenderPrepareFlames();
 
-    template<ProgramType ShaderProgram>
+    template<ProgramType FlameShaderType>
     void RenderDrawFlames(
         size_t startFlameIndex,
         size_t flameCount,
-        RenderParameters const & renderParameters,
         RenderStatistics & renderStats);
 
     void RenderPrepareSparkles(RenderParameters const & renderParameters);

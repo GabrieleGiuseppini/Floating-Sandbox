@@ -441,29 +441,6 @@ void SettingsDialog::OnDefaultWaterColorChanged(wxColourPickerEvent & event)
     OnLiveSettingsChanged();
 }
 
-void SettingsDialog::OnShipFlameRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
-{
-    if (mMode1ShipFlameRenderModeRadioButton->GetValue())
-    {
-        mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderModeType::Mode1);
-    }
-    else if (mMode2ShipFlameRenderModeRadioButton->GetValue())
-    {
-        mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderModeType::Mode2);
-    }
-    else if (mMode3ShipFlameRenderModeRadioButton->GetValue())
-    {
-        mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderModeType::Mode3);
-    }
-    else
-    {
-        assert(mNoDrawShipFlameRenderModeRadioButton->GetValue());
-        mLiveSettings.SetValue(GameSettings::ShipFlameRenderMode, ShipFlameRenderModeType::NoDraw);
-    }
-
-    OnLiveSettingsChanged();
-}
-
 void SettingsDialog::OnDebugShipRenderModeRadioBox(wxCommandEvent & /*event*/)
 {
     auto selectedDebugShipRenderMode = mDebugShipRenderModeRadioBox->GetSelection();
@@ -3534,55 +3511,6 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorder);
             }
 
-            // Fire Render Mode
-            {
-                wxStaticBox * fireRenderModeBox = new wxStaticBox(heatBox, wxID_ANY, _("Fire Draw Mode"));
-
-                wxBoxSizer * fireRenderModeBoxSizer1 = new wxBoxSizer(wxVERTICAL);
-                fireRenderModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
-                fireRenderModeBoxSizer1->AddSpacer(3);
-
-                {
-                    wxFlexGridSizer * fireRenderModeBoxSizer2 = new wxFlexGridSizer(1, 5, 5);
-                    fireRenderModeBoxSizer2->SetFlexibleDirection(wxHORIZONTAL);
-
-                    mMode1ShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, _("Mode 1"),
-                        wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-                    mMode1ShipFlameRenderModeRadioButton->SetToolTip(_("Changes the way flames are drawn."));
-                    mMode1ShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipFlameRenderModeRadioButtonClick, this);
-                    fireRenderModeBoxSizer2->Add(mMode1ShipFlameRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
-
-                    mMode2ShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, _("Mode 2"),
-                        wxDefaultPosition, wxDefaultSize);
-                    mMode2ShipFlameRenderModeRadioButton->SetToolTip(_("Changes the way flames are drawn."));
-                    mMode2ShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipFlameRenderModeRadioButtonClick, this);
-                    fireRenderModeBoxSizer2->Add(mMode2ShipFlameRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
-
-                    mMode3ShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, _("Mode 3"),
-                        wxDefaultPosition, wxDefaultSize);
-                    mMode3ShipFlameRenderModeRadioButton->SetToolTip(_("Changes the way flames are drawn."));
-                    mMode3ShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipFlameRenderModeRadioButtonClick, this);
-                    fireRenderModeBoxSizer2->Add(mMode3ShipFlameRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
-
-                    mNoDrawShipFlameRenderModeRadioButton = new wxRadioButton(fireRenderModeBox, wxID_ANY, _("Not Drawn"),
-                        wxDefaultPosition, wxDefaultSize);
-                    mNoDrawShipFlameRenderModeRadioButton->SetToolTip(_("Changes the way flames are drawn."));
-                    mNoDrawShipFlameRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnShipFlameRenderModeRadioButtonClick, this);
-                    fireRenderModeBoxSizer2->Add(mNoDrawShipFlameRenderModeRadioButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 0);
-
-                    fireRenderModeBoxSizer1->Add(fireRenderModeBoxSizer2, 0, wxALL, StaticBoxInsetMargin);
-                }
-
-                fireRenderModeBox->SetSizerAndFit(fireRenderModeBoxSizer1);
-
-                renderSizer->Add(
-                    fireRenderModeBox,
-                    wxGBPosition(1, 0),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorder);
-            }
-
             // Heat blaster flame
             {
                 mDrawHeatBlasterFlameCheckBox = new wxCheckBox(heatBox, wxID_ANY,
@@ -3598,6 +3526,31 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                 renderSizer->Add(
                     mDrawHeatBlasterFlameCheckBox,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
+            // Flame size adjustment
+            {
+                mShipFlameSizeAdjustmentSlider = new SliderControl<float>(
+                    heatBox,
+                    SliderWidth,
+                    -1,
+                    _("Flame Size Adjust"),
+                    _("Adjusts the size of flames."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ShipFlameSizeAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinShipFlameSizeAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxShipFlameSizeAdjustment()));
+
+                renderSizer->Add(
+                    mShipFlameSizeAdjustmentSlider,
                     wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     wxALL,
@@ -3626,31 +3579,6 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     wxGBPosition(0, 1),
                     wxGBSpan(3, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
-            }
-
-            // Flame size adjustment
-            {
-                mShipFlameSizeAdjustmentSlider = new SliderControl<float>(
-                    heatBox,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Flame Size Adjust"),
-                    _("Adjusts the size of flames."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::ShipFlameSizeAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions->GetMinShipFlameSizeAdjustment(),
-                        mGameControllerSettingsOptions->GetMaxShipFlameSizeAdjustment()));
-
-                renderSizer->Add(
-                    mShipFlameSizeAdjustmentSlider,
-                    wxGBPosition(0, 2),
-                    wxGBSpan(3, 1),
-                    wxALL,
                     CellBorder);
             }
 
@@ -4054,6 +3982,23 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
 
                     {
                         wxBoxSizer * extrasSizer = new wxBoxSizer(wxVERTICAL);
+
+                        {
+                            mDrawFlamesCheckBox = new wxCheckBox(extrasBox, wxID_ANY,
+                                _("Draw Flames"), wxDefaultPosition, wxDefaultSize);
+                            mDrawFlamesCheckBox->SetToolTip(_("Enables or disables rendering of flames."));
+                            mDrawFlamesCheckBox->Bind(
+                                wxEVT_COMMAND_CHECKBOX_CLICKED,
+                                [this](wxCommandEvent & event)
+                                {
+                                    mLiveSettings.SetValue(GameSettings::DrawFlames, event.IsChecked());
+                                    OnLiveSettingsChanged();
+                                });
+
+                            extrasSizer->Add(mDrawFlamesCheckBox, 0, wxALIGN_LEFT, 0);
+                        }
+
+                        extrasSizer->AddSpacer(3);
 
                         {
                             mShowFrontiersCheckBox = new wxCheckBox(extrasBox, wxID_ANY,
@@ -4581,34 +4526,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mHeatOverlayTransparencySlider->SetValue(settings.GetValue<float>(GameSettings::HeatOverlayTransparency));
 
-    auto shipFlameRenderMode = settings.GetValue<ShipFlameRenderModeType>(GameSettings::ShipFlameRenderMode);
-    switch (shipFlameRenderMode)
-    {
-    case ShipFlameRenderModeType::Mode1:
-    {
-        mMode1ShipFlameRenderModeRadioButton->SetValue(true);
-        break;
-    }
-
-    case ShipFlameRenderModeType::Mode2:
-    {
-        mMode2ShipFlameRenderModeRadioButton->SetValue(true);
-        break;
-    }
-
-    case ShipFlameRenderModeType::Mode3:
-    {
-        mMode3ShipFlameRenderModeRadioButton->SetValue(true);
-        break;
-    }
-
-    case ShipFlameRenderModeType::NoDraw:
-    {
-        mNoDrawShipFlameRenderModeRadioButton->SetValue(true);
-        break;
-    }
-    }
-
     mDrawHeatBlasterFlameCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DrawHeatBlasterFlame));
 
     mShipFlameSizeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipFlameSizeAdjustment));
@@ -4636,48 +4553,50 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     auto debugShipRenderMode = settings.GetValue<DebugShipRenderModeType>(GameSettings::DebugShipRenderMode);
     switch (debugShipRenderMode)
     {
-    case DebugShipRenderModeType::None:
-    {
-        mDebugShipRenderModeRadioBox->SetSelection(0);
-        break;
+        case DebugShipRenderModeType::None:
+        {
+            mDebugShipRenderModeRadioBox->SetSelection(0);
+            break;
+        }
+
+        case DebugShipRenderModeType::Wireframe:
+        {
+            mDebugShipRenderModeRadioBox->SetSelection(1);
+            break;
+        }
+
+        case DebugShipRenderModeType::Points:
+        {
+            mDebugShipRenderModeRadioBox->SetSelection(2);
+            break;
+        }
+
+        case DebugShipRenderModeType::Springs:
+        {
+            mDebugShipRenderModeRadioBox->SetSelection(3);
+            break;
+        }
+
+        case DebugShipRenderModeType::EdgeSprings:
+        {
+            mDebugShipRenderModeRadioBox->SetSelection(4);
+            break;
+        }
+
+        case DebugShipRenderModeType::Decay:
+        {
+            mDebugShipRenderModeRadioBox->SetSelection(5);
+            break;
+        }
+
+        case DebugShipRenderModeType::Structure:
+        {
+            mDebugShipRenderModeRadioBox->SetSelection(6);
+            break;
+        }
     }
 
-    case DebugShipRenderModeType::Wireframe:
-    {
-        mDebugShipRenderModeRadioBox->SetSelection(1);
-        break;
-    }
-
-    case DebugShipRenderModeType::Points:
-    {
-        mDebugShipRenderModeRadioBox->SetSelection(2);
-        break;
-    }
-
-    case DebugShipRenderModeType::Springs:
-    {
-        mDebugShipRenderModeRadioBox->SetSelection(3);
-        break;
-    }
-
-    case DebugShipRenderModeType::EdgeSprings:
-    {
-        mDebugShipRenderModeRadioBox->SetSelection(4);
-        break;
-    }
-
-    case DebugShipRenderModeType::Decay:
-    {
-        mDebugShipRenderModeRadioBox->SetSelection(5);
-        break;
-    }
-
-    case DebugShipRenderModeType::Structure:
-    {
-        mDebugShipRenderModeRadioBox->SetSelection(6);
-        break;
-    }
-    }
+    mDrawFlamesCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DrawFlames));
 
     mShowFrontiersCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipFrontiers));
 

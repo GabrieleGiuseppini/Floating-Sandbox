@@ -310,15 +310,18 @@ Render:
 				+ Points::UploadFlames does two passes
 			+ Fix alpha spots by only using sampled alpha at the top
 			+ Fix color Y range
-			- Nuke flame render modes 2 and 3
-				- Nuke shaders
-				- Replace RenderContext setting with booleam "DoDrawFlames" (default=true)
-				- Nuke from SettingsDialog, and add checkbox at SettingsDialog-Advanced
+			+ Nuke flame render modes 2 and 3
+				+ Nuke shaders
+				+ Replace RenderContext setting with booleam "DoDrawFlames" (default=true)
+				+ GameController interface
+				+ SettingsDialog: remove radio's and add checkbox under advanced
 			- Check perf on old Dell, before and after
 			- Make GameJolt poll
 				- Side-by-side video
+			- changelist
 		
-		- Ship uploads take ShipRenderContext (*)
+		- Ship uploads take ShipRenderContext
+			- Yet, RenderContext still exposes "Async" versions of buffer uploads
 
 		- Bug:
 			- Jacoh2 20/12/2020: fixing the boiler area on the small fleutzgrampher and akagi Maru crash the game
@@ -327,9 +330,12 @@ Render:
 			- "Shadowlands 4 - Breath" - Kevin MacLeod (incompetech.com)
 
 		= Send/complete localization
-			+ IT
-			+ ES
-			- RU
+			+ IT1
+			+ ES1
+			- IT2
+			- ES2
+			- RU1
+			- RU2
 
 		- Merge to master
 		- Release 1.16.1
@@ -366,10 +372,7 @@ Render:
 
 		- Cached quantities (*)
 
-
-
-
-
+		- Better waves' gfx
 
 		- Add styrofoam
 			- Density: 50 kg/m³
@@ -1384,8 +1387,6 @@ Render:
 			- Sounds
 			- ElectricalElements state machine
 			- Retrofit a ship
-			- Use this chance to expose ShipRenderContext from RenderContext
-				- Nuke all RenderContext forwards to ShipRenderContext
 			- GFX (Shaders & Primitives):
 				- FireworkVector
 					- Params:

@@ -151,7 +151,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(bool, ShowAABBs);
     ADD_GC_SETTING(bool, DrawHeatOverlay);
     ADD_GC_SETTING(float, HeatOverlayTransparency);
-    ADD_GC_SETTING(ShipFlameRenderModeType, ShipFlameRenderMode);
+    ADD_GC_SETTING(bool, DrawFlames);
     ADD_GC_SETTING(float, ShipFlameSizeAdjustment);
     ADD_GC_SETTING(bool, DrawHeatBlasterFlame);
 

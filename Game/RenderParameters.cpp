@@ -34,7 +34,7 @@ RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 	// Ship
 	, FlatLampLightColor(0xff, 0xff, 0xbf)
 	, IsFlatLampLightColorDirty(true)
-	, ShipFlameRenderMode(ShipFlameRenderModeType::Mode1)
+	, DrawFlames(true)
 	, ShowStressedSprings(false)
 	, ShowFrontiers(false)
 	, ShowAABBs(false)

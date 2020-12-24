@@ -56,7 +56,6 @@ private:
     void OnFlatOceanColorChanged(wxColourPickerEvent & event);
     void OnFlatLampLightColorChanged(wxColourPickerEvent & event);
 
-    void OnShipFlameRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnDebugShipRenderModeRadioBox(wxCommandEvent & event);
     void OnVectorFieldRenderModeRadioBox(wxCommandEvent & event);
 
@@ -185,10 +184,6 @@ private:
     SliderControl<float> * mWaterLevelOfDetailSlider;
     wxCheckBox * mDrawHeatOverlayCheckBox;
     SliderControl<float> * mHeatOverlayTransparencySlider;
-    wxRadioButton * mMode1ShipFlameRenderModeRadioButton;
-    wxRadioButton * mMode2ShipFlameRenderModeRadioButton;
-    wxRadioButton * mMode3ShipFlameRenderModeRadioButton;
-    wxRadioButton * mNoDrawShipFlameRenderModeRadioButton;
     wxCheckBox * mDrawHeatBlasterFlameCheckBox;
     SliderControl<float> * mShipFlameSizeAdjustmentSlider;
 
@@ -202,6 +197,7 @@ private:
     SliderControl<float> * mSpringStiffnessSlider;
     SliderControl<float> * mSpringDampingSlider;
     wxRadioBox * mDebugShipRenderModeRadioBox;
+    wxCheckBox * mDrawFlamesCheckBox;
     wxCheckBox * mShowFrontiersCheckBox;
     wxCheckBox * mShowAABBsCheckBox;
     wxRadioBox * mVectorFieldRenderModeRadioBox;

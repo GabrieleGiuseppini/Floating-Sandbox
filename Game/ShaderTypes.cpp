@@ -51,18 +51,10 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipElectricalElementHighlights;
     else if (lstr == "ship_explosions")
         return ProgramType::ShipExplosions;
-    else if (lstr == "ship_flames_background_1")
-        return ProgramType::ShipFlamesBackground1;
-    else if (lstr == "ship_flames_background_2")
-        return ProgramType::ShipFlamesBackground2;
-    else if (lstr == "ship_flames_background_3")
-        return ProgramType::ShipFlamesBackground3;
-    else if (lstr == "ship_flames_foreground_1")
-        return ProgramType::ShipFlamesForeground1;
-    else if (lstr == "ship_flames_foreground_2")
-        return ProgramType::ShipFlamesForeground2;
-    else if (lstr == "ship_flames_foreground_3")
-        return ProgramType::ShipFlamesForeground3;
+    else if (lstr == "ship_flames_background")
+        return ProgramType::ShipFlamesBackground;
+    else if (lstr == "ship_flames_foreground")
+        return ProgramType::ShipFlamesForeground;
     else if (lstr == "ship_frontier_edges")
         return ProgramType::ShipFrontierEdges;
     else if (lstr == "ship_generic_mipmapped_textures")
@@ -151,18 +143,10 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipElectricalElementHighlights";
     case ProgramType::ShipExplosions:
         return "ShipExplosions";
-    case ProgramType::ShipFlamesBackground1:
-        return "ShipFlamesBackground1";
-    case ProgramType::ShipFlamesBackground2:
-        return "ShipFlamesBackground2";
-    case ProgramType::ShipFlamesBackground3:
-        return "ShipFlamesBackground3";
-    case ProgramType::ShipFlamesForeground1:
-        return "ShipFlamesForeground1";
-    case ProgramType::ShipFlamesForeground2:
-        return "ShipFlamesForeground2";
-    case ProgramType::ShipFlamesForeground3:
-        return "ShipFlamesForeground3";
+    case ProgramType::ShipFlamesBackground:
+        return "ShipFlamesBackground";
+    case ProgramType::ShipFlamesForeground:
+        return "ShipFlamesForeground";
     case ProgramType::ShipFrontierEdges:
         return "ShipFrontierEdges";
     case ProgramType::ShipGenericMipMappedTextures:

@@ -1006,7 +1006,7 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
     // Prepare flames
     //
 
-    RenderPrepareFlames(renderParameters);
+    RenderPrepareFlames();
 
     //
     // Prepare stressed springs
@@ -1122,28 +1122,11 @@ void ShipRenderContext::RenderDraw(
     // Render background flames
     //
 
-    if (renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
+    if (renderParameters.DrawFlames)
     {
-        RenderDrawFlames<ProgramType::ShipFlamesBackground1>(
+        RenderDrawFlames<ProgramType::ShipFlamesBackground>(
             0,
             mFlameBackgroundCount,
-            renderParameters,
-            renderStats);
-    }
-    else if (renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode2)
-    {
-        RenderDrawFlames<ProgramType::ShipFlamesBackground2>(
-            0,
-            mFlameBackgroundCount,
-            renderParameters,
-            renderStats);
-    }
-    else if (renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode3)
-    {
-        RenderDrawFlames<ProgramType::ShipFlamesBackground3>(
-            0,
-            mFlameBackgroundCount,
-            renderParameters,
             renderStats);
     }
 
@@ -1390,28 +1373,11 @@ void ShipRenderContext::RenderDraw(
     // Render foreground flames
     //
 
-    if (renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
+    if (renderParameters.DrawFlames)
     {
-        RenderDrawFlames<ProgramType::ShipFlamesForeground1>(
+        RenderDrawFlames<ProgramType::ShipFlamesForeground>(
             mFlameBackgroundCount,
             mFlameForegroundCount,
-            renderParameters,
-            renderStats);
-    }
-    else if (renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode2)
-    {
-        RenderDrawFlames<ProgramType::ShipFlamesForeground2>(
-            mFlameBackgroundCount,
-            mFlameForegroundCount,
-            renderParameters,
-            renderStats);
-    }
-    else if (renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode3)
-    {
-        RenderDrawFlames<ProgramType::ShipFlamesForeground3>(
-            mFlameBackgroundCount,
-            mFlameForegroundCount,
-            renderParameters,
             renderStats);
     }
 
@@ -1454,7 +1420,7 @@ void ShipRenderContext::RenderDraw(
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void ShipRenderContext::RenderPrepareFlames(RenderParameters const & renderParameters)
+void ShipRenderContext::RenderPrepareFlames()
 {
     //
     // Pickup wind speed magnitude, if it has changed
@@ -1467,52 +1433,13 @@ void ShipRenderContext::RenderPrepareFlames(RenderParameters const & renderParam
             0.5f * SmoothStep(0.0f, 100.0f, std::abs(mFlameWindSpeedMagnitudeAverage)),
             -mFlameWindSpeedMagnitudeAverage);
 
-        switch (renderParameters.ShipFlameRenderMode)
-        {
-            case ShipFlameRenderModeType::Mode1:
-            {
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground1>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground1, ProgramParameterType::FlameWindRotationAngle>(
-                    windRotationAngle);
+        mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
+        mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::FlameWindRotationAngle>(
+            windRotationAngle);
 
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground1>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground1, ProgramParameterType::FlameWindRotationAngle>(
-                    windRotationAngle);
-
-                break;
-            }
-
-            case ShipFlameRenderModeType::Mode2:
-            {
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground2>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground2, ProgramParameterType::FlameWindRotationAngle>(
-                    windRotationAngle);
-
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground2>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground2, ProgramParameterType::FlameWindRotationAngle>(
-                    windRotationAngle);
-
-                break;
-            }
-
-            case ShipFlameRenderModeType::Mode3:
-            {
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground3>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground3, ProgramParameterType::FlameWindRotationAngle>(
-                    windRotationAngle);
-
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground3>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground3, ProgramParameterType::FlameWindRotationAngle>(
-                    windRotationAngle);
-
-                break;
-            }
-
-            case ShipFlameRenderModeType::NoDraw:
-            {
-                break;
-            }
-        }
+        mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
+        mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::FlameWindRotationAngle>(
+            windRotationAngle);
 
         mIsFlameWindSpeedMagnitudeAverageDirty = true;
     }
@@ -1551,54 +1478,18 @@ void ShipRenderContext::RenderPrepareFlames(RenderParameters const & renderParam
     {
         float const flameSpeed = GameWallClock::GetInstance().NowAsFloat() * 0.345f;
 
-        switch (renderParameters.ShipFlameRenderMode)
-        {
-            case ShipFlameRenderModeType::Mode1:
-            {
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground1>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground1, ProgramParameterType::FlameSpeed>(flameSpeed);
+        mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
+        mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::FlameSpeed>(flameSpeed);
 
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground1>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground1, ProgramParameterType::FlameSpeed>(flameSpeed);
-
-                break;
-            }
-
-            case ShipFlameRenderModeType::Mode2:
-            {
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground2>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground2, ProgramParameterType::FlameSpeed>(flameSpeed);
-
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground2>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground2, ProgramParameterType::FlameSpeed>(flameSpeed);
-
-                break;
-            }
-
-            case ShipFlameRenderModeType::Mode3:
-            {
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground3>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground3, ProgramParameterType::FlameSpeed>(flameSpeed);
-
-                mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground3>();
-                mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground3, ProgramParameterType::FlameSpeed>(flameSpeed);
-
-                break;
-            }
-
-            case ShipFlameRenderModeType::NoDraw:
-            {
-                break;
-            }
-        }
+        mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
+        mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::FlameSpeed>(flameSpeed);
     }
 }
 
-template<ProgramType ShaderProgram>
+template<ProgramType FlameShaderType>
 void ShipRenderContext::RenderDrawFlames(
     size_t startFlameIndex,
     size_t flameCount,
-    RenderParameters const & renderParameters,
     RenderStatistics & renderStats)
 {
     assert(renderParameters.ShipFlameRenderMode != ShipFlameRenderModeType::NoDraw);
@@ -1607,24 +1498,12 @@ void ShipRenderContext::RenderDrawFlames(
     {
         glBindVertexArray(*mFlameVAO);
 
-        mShaderManager.ActivateProgram<ShaderProgram>();
+        mShaderManager.ActivateProgram<FlameShaderType>();
 
-        // Render
-        if (renderParameters.ShipFlameRenderMode == ShipFlameRenderModeType::Mode1)
-        {
-            glDrawArrays(
-                GL_TRIANGLES,
-                static_cast<GLint>(startFlameIndex * 6u),
-                static_cast<GLint>(flameCount * 6u));
-        }
-        else
-        {
-            glDrawArraysInstanced(
-                GL_TRIANGLES,
-                static_cast<GLint>(startFlameIndex * 6u),
-                static_cast<GLint>(flameCount * 6u),
-                2); // Without border, with border
-        }
+        glDrawArrays(
+            GL_TRIANGLES,
+            static_cast<GLint>(startFlameIndex * 6u),
+            static_cast<GLint>(flameCount * 6u));
 
         glBindVertexArray(0);
 
@@ -2011,18 +1890,9 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground1>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground1, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground2>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground2, ProgramParameterType::OrthoMatrix>(
-        shipOrthoMatrix);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground3>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground3, ProgramParameterType::OrthoMatrix>(
-        shipOrthoMatrix);
-
 
     //
     // Layer 2: Springs
@@ -2146,16 +2016,8 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground1>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground1, ProgramParameterType::OrthoMatrix>(
-        shipOrthoMatrix);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground2>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground2, ProgramParameterType::OrthoMatrix>(
-        shipOrthoMatrix);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground3>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground3, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //

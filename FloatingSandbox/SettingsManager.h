@@ -124,7 +124,7 @@ enum class GameSettings : size_t
     ShowAABBs,
     DrawHeatOverlay,
     HeatOverlayTransparency,
-    ShipFlameRenderMode,
+    DrawFlames,
     ShipFlameSizeAdjustment,
     DrawHeatBlasterFlame,
 

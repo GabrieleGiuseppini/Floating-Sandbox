@@ -484,17 +484,6 @@ enum class VectorFieldRenderModeType
 };
 
 /*
- * The different ways of rendering ship flames.
- */
-enum class ShipFlameRenderModeType
-{
-    Mode1,
-    Mode2,
-    Mode3,
-    NoDraw
-};
-
-/*
  * The index of a single texture frame in a group of textures.
  */
 using TextureFrameIndex = std::uint16_t;
