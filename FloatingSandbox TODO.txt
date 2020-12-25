@@ -307,8 +307,11 @@ Render:
 				+ Replace RenderContext setting with booleam "DoDrawFlames" (default=true)
 				+ GameController interface
 				+ SettingsDialog: remove radio's and add checkbox under advanced
-			- Test with finer resolution, now that we have alpha
-			- Check perf of many flames on old Dell, before and after
+			+ Test with finer resolution, now that we have alpha
+			+ Check perf of many flames on old Dell, before and after
+				! 96 max burning particles, Ark
+				+ 1.15.4: start=30 end=17.7 upd=20.5 rnd=30-33
+				+ 1.16.1: start=OK end=23.7 upd=20.6 rnd=21.4
 			- Make GameJolt poll
 				- Side-by-side video
 			- changelist
@@ -328,9 +331,9 @@ Render:
 				- Change IT and ES
 			+ IT1
 			+ ES1
+			+ RU1
 			- IT2
 			- ES2
-			- RU1
 			- RU2
 
 		- Merge to master

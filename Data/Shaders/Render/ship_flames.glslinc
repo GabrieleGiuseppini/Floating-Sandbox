@@ -145,7 +145,7 @@ void main()
 	// Sample color
     //
 
-    #define ColorResolution 8.
+    #define ColorResolution 7.
 
     vec2 colorVirtualTextureCoords = fract(
         vec2(
