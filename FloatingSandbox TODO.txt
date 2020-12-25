@@ -286,8 +286,7 @@ Render:
 		+ Optimize that decay process at Points::CombustionUpdateLowFrequency
 			+ Test adjustment
 		+ Air bubbles smaller at very beginning 
-
-		= Volume adjustment for engine sounds
+		+ Volume adjustment for engine sounds
 			! Tests:
 				! 1: S.S. Lurline
 				! 10: S.S. Hesleden
@@ -295,7 +294,6 @@ Render:
 				+ Announced by ElectricalElement (already), received by SoundController which updates mCurrentCount
 					+ SoundsController: reset mCurrentCount to 0 at each Reset()
 			+ Send to John Smith
-			- Update changelist
 		+ Bump up version
 
 		= Flames: 
@@ -309,15 +307,12 @@ Render:
 				+ Replace RenderContext setting with booleam "DoDrawFlames" (default=true)
 				+ GameController interface
 				+ SettingsDialog: remove radio's and add checkbox under advanced
+			- Test with finer resolution, now that we have alpha
 			- Check perf of many flames on old Dell, before and after
 			- Make GameJolt poll
 				- Side-by-side video
 			- changelist
 
-		- Check Hesleden FPS between 1.16 and now
-			- Release vs RelWithDebInfo?
-
-		- Credits
 		- Ship uploads take ShipRenderContext
 			- Yet, RenderContext still exposes "Async" versions of buffer uploads
 
