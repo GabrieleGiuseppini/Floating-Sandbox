@@ -1220,6 +1220,13 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         // Show startup tip - unless user has decided not to
         if (mUIPreferencesManager->GetShowStartupTip())
         {
+            // Set canvas' background color to sky color
+            {
+                auto const skyColor = mGameController->GetFlatSkyColor();
+                mMainGLCanvas->SetBackgroundColour(wxColor(skyColor.r, skyColor.g, skyColor.b));
+                mMainGLCanvas->ClearBackground();
+            }
+
             StartupTipDialog startupTipDialog(
                 this,
                 mUIPreferencesManager,
