@@ -2070,6 +2070,12 @@ void Ship::RotPoints(
     float /*currentSimulationTime*/,
     GameParameters const & gameParameters)
 {
+    if (gameParameters.RotAcceler8r == 0.0f)
+    {
+        // Disable rotting altogether
+        return;
+    }
+
     //
     // Rotting is done with a recursive equation:
     //  decay(0) = 1.0

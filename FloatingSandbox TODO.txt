@@ -294,13 +294,7 @@ Render:
 			+ Option 1: number of engines used as divisor
 				+ Announced by ElectricalElement (already), received by SoundController which updates mCurrentCount
 					+ SoundsController: reset mCurrentCount to 0 at each Reset()
-			= Send to John Smith
-			- Option 2: SoundController adjusts volume of subsequent instances:
-				- 1st = whatever it is now
-				- 2nd = a bit less
-					- And lowers volume of first (half each?)
-				- ...
-				- Need to keep count of total instances currently playing
+			+ Send to John Smith
 			- Update changelist
 		+ Bump up version
 
@@ -315,11 +309,15 @@ Render:
 				+ Replace RenderContext setting with booleam "DoDrawFlames" (default=true)
 				+ GameController interface
 				+ SettingsDialog: remove radio's and add checkbox under advanced
-			- Check perf on old Dell, before and after
+			- Check perf of many flames on old Dell, before and after
 			- Make GameJolt poll
 				- Side-by-side video
 			- changelist
-		
+
+		- Check Hesleden FPS between 1.16 and now
+			- Release vs RelWithDebInfo?
+
+		- Credits
 		- Ship uploads take ShipRenderContext
 			- Yet, RenderContext still exposes "Async" versions of buffer uploads
 
@@ -330,6 +328,9 @@ Render:
 			- "Shadowlands 4 - Breath" - Kevin MacLeod (incompetech.com)
 
 		= Send/complete localization
+			- Change copyright year
+				- Also at license.txt
+				- Change IT and ES
 			+ IT1
 			+ ES1
 			- IT2
