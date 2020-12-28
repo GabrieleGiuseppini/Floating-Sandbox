@@ -312,9 +312,15 @@ Render:
 				! 96 max burning particles, Ark
 				+ 1.15.4: start=30 end=17.7 upd=20.5 rnd=30-33
 				+ 1.16.1: start=OK end=23.7 upd=20.6 rnd=21.4
-			- Make GameJolt poll
-				- Side-by-side video
+			+ Make GameJolt poll
+				+ Side-by-side video
+			- Test with wind
 			- changelist
+
+		- Water surface improvement:
+			- Split shaders for all ocean types: "xxx_sq" and "xxx_hq"
+			- RenderContext setting ("OceanRenderQuality", enum: StandardQuality, HighQuality), on by default
+				- TODOHERE
 
 		- Ship uploads take ShipRenderContext
 			- Yet, RenderContext still exposes "Async" versions of buffer uploads
@@ -326,13 +332,14 @@ Render:
 			- "Shadowlands 4 - Breath" - Kevin MacLeod (incompetech.com)
 
 		= Send/complete localization
-			- Change copyright year
-				- Also at license.txt
-				- Change IT and ES
+			+ Change copyright year
+				+ License.txt
+				+ EN (in-code)
+				+ All .po files
 			+ IT1
 			+ ES1
 			+ RU1
-			- IT2
+			+ IT2
 			- ES2
 			- RU2
 

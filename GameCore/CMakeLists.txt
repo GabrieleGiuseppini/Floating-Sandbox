@@ -50,6 +50,7 @@ set  (SOURCES
 	RunningAverage.h
 	Settings.cpp
 	Settings.h
+	StrongTypeDef.h
 	SysSpecifics.cpp
 	SysSpecifics.h
 	TaskThread.cpp
