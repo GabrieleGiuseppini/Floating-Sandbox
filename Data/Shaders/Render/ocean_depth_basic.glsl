@@ -6,7 +6,7 @@
 #define out varying
 
 // Inputs
-in vec3 inOcean;	// Position (vec2), Depth (float)
+in vec3 inOceanBasic;	// Position (vec2), Depth (float)
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
@@ -16,8 +16,8 @@ out vec3 oceanCoord;
 
 void main()
 {
-    gl_Position = paramOrthoMatrix * vec4(inOcean.xy, -1.0, 1.0);
-    oceanCoord = inOcean;
+    gl_Position = paramOrthoMatrix * vec4(inOceanBasic.xy, -1.0, 1.0);
+    oceanCoord = inOceanBasic;
 }
 
 

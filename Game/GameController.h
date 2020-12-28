@@ -669,6 +669,9 @@ public:
     rgbColor const & GetFlatOceanColor() const override { return mRenderContext->GetFlatOceanColor(); }
     void SetFlatOceanColor(rgbColor const & color) override { mRenderContext->SetFlatOceanColor(color); }
 
+    OceanRenderDetailType GetOceanRenderDetail() const override { return mRenderContext->GetOceanRenderDetail(); }
+    void SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail) override { mRenderContext->SetOceanRenderDetail(oceanRenderDetail); }
+
     LandRenderModeType GetLandRenderMode() const override { return mRenderContext->GetLandRenderMode(); }
     void SetLandRenderMode(LandRenderModeType landRenderMode) override { mRenderContext->SetLandRenderMode(landRenderMode); }
 

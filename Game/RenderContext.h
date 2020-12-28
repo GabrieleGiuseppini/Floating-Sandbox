@@ -222,7 +222,7 @@ public:
     void SetOceanRenderMode(OceanRenderModeType oceanRenderMode)
     {
         mRenderParameters.OceanRenderMode = oceanRenderMode;
-        mRenderParameters.AreOceanRenderParametersDirty = true;
+        mRenderParameters.AreOceanRenderModeParametersDirty = true;
 
         mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
         mRenderParameters.IsShipWaterColorDirty = true;
@@ -236,7 +236,7 @@ public:
     void SetDepthOceanColorStart(rgbColor const & color)
     {
         mRenderParameters.DepthOceanColorStart = color;
-        mRenderParameters.AreOceanRenderParametersDirty = true;
+        mRenderParameters.AreOceanRenderModeParametersDirty = true;
 
         mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
         mRenderParameters.IsShipWaterColorDirty = true;
@@ -250,7 +250,7 @@ public:
     void SetDepthOceanColorEnd(rgbColor const & color)
     {
         mRenderParameters.DepthOceanColorEnd = color;
-        mRenderParameters.AreOceanRenderParametersDirty = true;
+        mRenderParameters.AreOceanRenderModeParametersDirty = true;
 
         mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
         mRenderParameters.IsShipWaterColorDirty = true;
@@ -264,7 +264,7 @@ public:
     void SetFlatOceanColor(rgbColor const & color)
     {
         mRenderParameters.FlatOceanColor = color;
-        mRenderParameters.AreOceanRenderParametersDirty = true;
+        mRenderParameters.AreOceanRenderModeParametersDirty = true;
 
         mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
         mRenderParameters.IsShipWaterColorDirty = true;
@@ -284,6 +284,17 @@ public:
     {
         mRenderParameters.OceanTextureIndex = index;
         mRenderParameters.IsOceanTextureIndexDirty = true;
+    }
+
+    OceanRenderDetailType GetOceanRenderDetail() const
+    {
+        return mRenderParameters.OceanRenderDetail;
+    }
+
+    void SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail)
+    {
+        mRenderParameters.OceanRenderDetail = oceanRenderDetail;
+        // No need to set dirty, this is picked up at each cycle anway
     }
 
     bool GetShowShipThroughOcean() const
@@ -682,26 +693,26 @@ public:
         mWorldRenderContext->UploadLandEnd();
     }
 
-    inline void UploadOceanStart(size_t slices)
+    inline void UploadOceanBasicStart(size_t slices)
     {
-        mWorldRenderContext->UploadOceanStart(slices);
+        mWorldRenderContext->UploadOceanBasicStart(slices);
     }
 
-    inline void UploadOcean(
+    inline void UploadOceanBasic(
         float x,
         float yOcean,
         float oceanDepth)
     {
-        mWorldRenderContext->UploadOcean(
+        mWorldRenderContext->UploadOceanBasic(
             x,
             yOcean,
             oceanDepth,
             mRenderParameters);
     }
 
-    inline void UploadOceanEnd()
+    inline void UploadOceanBasicEnd()
     {
-        mWorldRenderContext->UploadOceanEnd();
+        mWorldRenderContext->UploadOceanBasicEnd();
     }
 
     inline void UploadFishesStart(size_t fishCount)

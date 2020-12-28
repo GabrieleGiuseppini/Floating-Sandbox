@@ -317,10 +317,22 @@ Render:
 			- Test with wind
 			- changelist
 
-		- Water surface improvement:
-			- Split shaders for all ocean types: "xxx_sq" and "xxx_hq"
-			- RenderContext setting ("OceanRenderQuality", enum: StandardQuality, HighQuality), on by default
-				- TODOHERE
+		+ Water surface improvement:
+			+ Split shaders for all ocean types: "xxx_sq" and "xxx_hq"
+			+ RenderContext setting, "detailed" by default
+				+ Double members
+				+ RenderStartBasic/Detailed: zero out just that buffer
+				+ RenderPrepare: switch
+				+ RenderDraw: switch
+			+ Expose setting via GameController
+			- SettingsDialog: checkbox next to OceanRenderMode
+			- OceanSurface::Upload: inspect setting and invoke private templated function
+			- Verify switch works
+				- Debug build as well
+			- Do Detailed Shaders
+				- With parameter for back plane
+			- Do OceanSurface::Upload detailed
+			- 
 
 		- Ship uploads take ShipRenderContext
 			- Yet, RenderContext still exposes "Async" versions of buffer uploads

@@ -29,9 +29,12 @@ enum class ProgramType
     LandFlat,
     LandTexture,
     Lightning,
-    OceanDepth,
-    OceanFlat,
-    OceanTexture,
+    OceanDepthBasic,
+    OceanDepthDetailed,
+    OceanFlatBasic,
+    OceanFlatDetailed,
+    OceanTextureBasic,
+    OceanTextureDetailed,
     Rain,
     ShipCircleHighlights,
     ShipElectricalElementHighlights,
@@ -136,7 +139,9 @@ enum class VertexAttributeType : GLuint
 
     Land = 0,
 
-    Ocean = 0,
+    OceanBasic = 0,
+
+    OceanDetailed = 0,
 
     Fish1 = 0,
     Fish2 = 1,

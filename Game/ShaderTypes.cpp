@@ -37,12 +37,18 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::LandTexture;
     else if (lstr == "lightning")
         return ProgramType::Lightning;
-    else if (lstr == "ocean_depth")
-        return ProgramType::OceanDepth;
-    else if (lstr == "ocean_flat")
-        return ProgramType::OceanFlat;
-    else if (lstr == "ocean_texture")
-        return ProgramType::OceanTexture;
+    else if (lstr == "ocean_depth_basic")
+        return ProgramType::OceanDepthBasic;
+    else if (lstr == "ocean_depth_detailed")
+        return ProgramType::OceanDepthDetailed;
+    else if (lstr == "ocean_flat_basic")
+        return ProgramType::OceanFlatBasic;
+    else if (lstr == "ocean_flat_detailed")
+        return ProgramType::OceanFlatDetailed;
+    else if (lstr == "ocean_texture_basic")
+        return ProgramType::OceanTextureBasic;
+    else if (lstr == "ocean_texture_detailed")
+        return ProgramType::OceanTextureDetailed;
     else if (lstr == "rain")
         return ProgramType::Rain;
     else if (lstr == "ship_circle_highlights")
@@ -129,12 +135,18 @@ std::string ProgramTypeToStr(ProgramType program)
         return "LandTexture";
     case ProgramType::Lightning:
         return "Lightning";
-    case ProgramType::OceanDepth:
-        return "OceanDepth";
-    case ProgramType::OceanFlat:
-        return "OceanFlat";
-    case ProgramType::OceanTexture:
-        return "OceanTexture";
+    case ProgramType::OceanDepthBasic:
+        return "OceanDepthBasic";
+    case ProgramType::OceanDepthDetailed:
+        return "OceanDepthDetailed";
+    case ProgramType::OceanFlatBasic:
+        return "OceanFlatBasic";
+    case ProgramType::OceanFlatDetailed:
+        return "OceanFlatDetailed";
+    case ProgramType::OceanTextureBasic:
+        return "OceanTextureBasic";
+    case ProgramType::OceanTextureDetailed:
+        return "OceanTextureDetailed";
     case ProgramType::Rain:
         return "Rain";
     case ProgramType::ShipCircleHighlights:
@@ -374,8 +386,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Cloud2;
     else if (Utils::CaseInsensitiveEquals(str, "Land"))
         return VertexAttributeType::Land;
-    else if (Utils::CaseInsensitiveEquals(str, "Ocean"))
-        return VertexAttributeType::Ocean;
+    else if (Utils::CaseInsensitiveEquals(str, "OceanBasic"))
+        return VertexAttributeType::OceanBasic;
+    else if (Utils::CaseInsensitiveEquals(str, "OceanDetailed"))
+        return VertexAttributeType::OceanDetailed;
     else if (Utils::CaseInsensitiveEquals(str, "Fish1"))
         return VertexAttributeType::Fish1;
     else if (Utils::CaseInsensitiveEquals(str, "Fish2"))

@@ -44,10 +44,12 @@ struct RenderParameters
     rgbColor DepthOceanColorStart;
     rgbColor DepthOceanColorEnd;
     rgbColor FlatOceanColor;
-    bool AreOceanRenderParametersDirty; // Tracks all of the above as a whole, for convenience
+    bool AreOceanRenderModeParametersDirty; // Tracks all of the above as a whole, for convenience
 
     size_t OceanTextureIndex;
     bool IsOceanTextureIndexDirty;
+
+    OceanRenderDetailType OceanRenderDetail;
 
     bool ShowShipThroughOcean;
 

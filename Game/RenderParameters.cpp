@@ -21,10 +21,11 @@ RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 	, OceanRenderMode(OceanRenderModeType::Texture)
 	, DepthOceanColorStart(0x4a, 0x84, 0x9f)
 	, DepthOceanColorEnd(0x00, 0x00, 0x00)
-	, FlatOceanColor(0x00, 0x3d, 0x99)
-	, AreOceanRenderParametersDirty(true)
+	, FlatOceanColor(0x7d, 0xe2, 0xee)
+	, AreOceanRenderModeParametersDirty(true)
 	, OceanTextureIndex(0) // Wavy Clear Thin
 	, IsOceanTextureIndexDirty(true)
+	, OceanRenderDetail(OceanRenderDetailType::Basic)
 	, ShowShipThroughOcean(false)
 	, LandRenderMode(LandRenderModeType::Texture)
 	, FlatLandColor(0x72, 0x46, 0x05)
@@ -62,7 +63,7 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	IsCanvasSizeDirty = false;
 	IsEffectiveAmbientLightIntensityDirty = false;
 	IsOceanDarkeningRateDirty = false;
-	AreOceanRenderParametersDirty = false;
+	AreOceanRenderModeParametersDirty = false;
 	IsOceanTextureIndexDirty = false;
 	AreLandRenderParametersDirty = false;
 	IsLandTextureIndexDirty = false;

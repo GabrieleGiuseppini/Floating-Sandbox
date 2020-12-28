@@ -247,7 +247,7 @@ void OceanSurface::Upload(
         // Have to take more than 1 sample per slice
         //
 
-        renderContext.UploadOceanStart(RenderSlices<int>);
+        renderContext.UploadOceanBasicStart(RenderSlices<int>);
 
         // Calculate dx between each pair of slices with want to upload
         float const sliceDx = coverageWidth / RenderSlices<float>;
@@ -256,7 +256,7 @@ void OceanSurface::Upload(
         // quad side must be at the end of the width
         for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexX += sliceDx)
         {
-            renderContext.UploadOcean(
+            renderContext.UploadOceanBasic(
                 sampleIndexX,
                 GetHeightAt(sampleIndexX),
                 gameParameters.SeaDepth);
@@ -270,20 +270,20 @@ void OceanSurface::Upload(
         // interpolate on our behalf
         //
 
-        renderContext.UploadOceanStart(numberOfSamplesToRender);
+        renderContext.UploadOceanBasicStart(numberOfSamplesToRender);
 
         // We do one extra iteration as the number of slices is the number of quads, and the last vertical
         // quad side must be at the end of the width
         for (size_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexX += Dx)
         {
-            renderContext.UploadOcean(
+            renderContext.UploadOceanBasic(
                 sampleIndexX,
                 mSamples[s + sampleIndex].SampleValue,
                 gameParameters.SeaDepth);
         }
     }
 
-    renderContext.UploadOceanEnd();
+    renderContext.UploadOceanBasicEnd();
 }
 
 void OceanSurface::AdjustTo(

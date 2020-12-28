@@ -463,6 +463,15 @@ enum class OceanRenderModeType
 };
 
 /*
+ * The different levels of detail with which the ocean may be rendered.
+ */
+enum class OceanRenderDetailType
+{
+    Basic,
+    Detailed
+};
+
+/*
  * The different ways in which the ocean floor may be rendered.
  */
 enum class LandRenderModeType

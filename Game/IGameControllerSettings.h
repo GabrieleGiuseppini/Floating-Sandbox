@@ -314,6 +314,9 @@ struct IGameControllerSettings
     virtual rgbColor const & GetFlatOceanColor() const = 0;
     virtual void SetFlatOceanColor(rgbColor const & color) = 0;
 
+    virtual OceanRenderDetailType GetOceanRenderDetail() const = 0;
+    virtual void SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail) = 0;
+
     virtual LandRenderModeType GetLandRenderMode() const = 0;
     virtual void SetLandRenderMode(LandRenderModeType landRenderMode) = 0;
 
