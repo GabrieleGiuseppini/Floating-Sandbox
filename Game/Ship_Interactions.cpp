@@ -100,7 +100,11 @@ void Ship::MoveBy(
             if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
             {
                 mPoints.GetPosition(p) += offset;
-                mPoints.SetVelocity(p, actualInertialVelocity);
+
+                if (!mPoints.IsPinned(p))
+                {
+                    mPoints.SetVelocity(p, actualInertialVelocity);
+                }
             }
         }
 
@@ -158,11 +162,14 @@ void Ship::RotateBy(
             {
                 vec2f const centeredPos = mPoints.GetPosition(p) - center;
 
-                mPoints.SetVelocity(
-                    p,
-                    (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude);
-
                 mPoints.GetPosition(p) = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
+
+                if (!mPoints.IsPinned(p))
+                {
+                    mPoints.SetVelocity(
+                        p,
+                        (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude);
+                }
             }
         }
 
@@ -193,10 +200,9 @@ void Ship::RotateBy(
     {
         vec2f const centeredPos = positionBuffer[p] - center;
 
+        positionBuffer[p] = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
         velocityBuffer[p] =
             (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
-
-        positionBuffer[p] = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
     }
 
     TrimForWorldBounds(gameParameters);
@@ -221,7 +227,8 @@ std::optional<ElementIndex> Ship::PickObjectForPickAndPull(
         float const squareDistance = (mPoints.GetPosition(p) - pickPosition).squareLength();
         if (squareDistance < SquareSearchRadius
             && squareDistance < bestSquareDistance
-            && mPoints.IsActive(p))
+            && mPoints.IsActive(p)
+            && !mPoints.IsPinned(p))
         {
             bestSquareDistance = squareDistance;
             bestPoint = p;
@@ -283,7 +290,7 @@ void Ship::Pull(
 
     //
     // Zero velocity: this it a bit unpolite, but it prevents the "classic"
-    // Hooken force/Euler instability; also, prevents orbit forming which would
+    // Hookean force/Euler instability; also, prevents orbit forming which would
     // occur if we were to dump velocities along the point->target direction only
     //
 

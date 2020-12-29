@@ -346,12 +346,11 @@ Render:
 			+ Verify switch works
 				+ Debug build as well
 			- Do Detailed Shaders
-				- With parameter for back plane
+				- Exercise first on ShaderToy with parameter for back plane
+				- Do shaders
 			- Do OceanSurface::Upload detailed
 			- Default is ON, but set at Calibration anyway
-		
-		- Pinnedpoints & moving
-
+	
 		- Bug:
 			- Jacoh2 20/12/2020: fixing the boiler area on the small fleutzgrampher and akagi Maru crash the game
 
