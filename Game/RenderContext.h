@@ -707,13 +707,11 @@ public:
 
     inline void UploadOceanBasic(
         float x,
-        float yOcean,
-        float oceanDepth)
+        float yOcean)
     {
         mWorldRenderContext->UploadOceanBasic(
             x,
             yOcean,
-            oceanDepth,
             mRenderParameters);
     }
 
@@ -729,13 +727,15 @@ public:
 
     inline void UploadOceanDetailed(
         float x,
-        float yOcean,
-        float oceanDepth)
+        float yBack,
+        float yMid,
+        float yFront)
     {
         mWorldRenderContext->UploadOceanDetailed(
             x,
-            yOcean,
-            oceanDepth,
+            yBack,
+            yMid,
+            yFront,
             mRenderParameters);
     }
 

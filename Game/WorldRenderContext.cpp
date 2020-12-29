@@ -207,10 +207,10 @@ WorldRenderContext::WorldRenderContext(
     CheckOpenGLError();
 
     // Describe vertex attributes
+    static_assert(sizeof(OceanBasicSegment) == 3 * 2 * sizeof(float));
     glBindBuffer(GL_ARRAY_BUFFER, *mOceanBasicSegmentVBO);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::OceanBasic));
-    static_assert(sizeof(OceanBasicSegment) == 3 * 2 * sizeof(float));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::OceanBasic), (2 + 1), GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void *)0);
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::OceanBasic), (2 + 1), GL_FLOAT, GL_FALSE, sizeof(OceanBasicSegment) / 2, (void *)0);
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -227,10 +227,12 @@ WorldRenderContext::WorldRenderContext(
     CheckOpenGLError();
 
     // Describe vertex attributes
+    static_assert(sizeof(OceanDetailedSegment) == 6 * 2 * sizeof(float));
     glBindBuffer(GL_ARRAY_BUFFER, *mOceanDetailedSegmentVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::OceanDetailed));
-    static_assert(sizeof(OceanDetailedSegment) == 3 * 2 * sizeof(float));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::OceanDetailed), (2 + 1), GL_FLOAT, GL_FALSE, (2 + 1) * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::OceanDetailed1));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::OceanDetailed1), 4, GL_FLOAT, GL_FALSE, sizeof(OceanDetailedSegment) / 2, (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::OceanDetailed2));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::OceanDetailed2), 2, GL_FLOAT, GL_FALSE, sizeof(OceanDetailedSegment) / 2, (void *)(4 * sizeof(float)));
     CheckOpenGLError();
 
     glBindVertexArray(0);

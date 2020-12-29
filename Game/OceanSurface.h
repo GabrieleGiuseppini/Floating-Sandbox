@@ -32,9 +32,7 @@ public:
         Wind const & wind,
         GameParameters const & gameParameters);
 
-    void Upload(
-        GameParameters const & gameParameters,
-        Render::RenderContext & renderContext) const;
+    void Upload(Render::RenderContext & renderContext) const;
 public:
 
     /*
@@ -116,9 +114,7 @@ public:
 private:
 
     template<OceanRenderDetailType DetailType>
-    void InternalUpload(
-        GameParameters const & gameParameters,
-        Render::RenderContext & renderContext) const;
+    void InternalUpload(Render::RenderContext & renderContext) const;
 
     static inline auto ToSampleIndex(float x)
     {

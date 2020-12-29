@@ -292,7 +292,6 @@ public:
     inline void UploadOceanBasic(
         float x,
         float yOcean,
-        float oceanDepth,
         RenderParameters const & renderParameters)
     {
         float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorld().BottomRight.y;
@@ -304,12 +303,10 @@ public:
         OceanBasicSegment & oceanSegment = mOceanBasicSegmentBuffer.emplace_back();
 
         oceanSegment.x1 = x;
-        float const oceanSegmentY1 = yOcean;
-        oceanSegment.y1 = oceanSegmentY1;
+        oceanSegment.y1 = yOcean;
 
         oceanSegment.x2 = x;
-        float const oceanSegmentY2 = yVisibleWorldBottom;
-        oceanSegment.y2 = oceanSegmentY2;
+        oceanSegment.y2 = yVisibleWorldBottom;
 
         switch (renderParameters.OceanRenderMode)
         {
@@ -317,19 +314,17 @@ public:
             {
                 // Texture sample Y levels: anchor texture at top of wave,
                 // and set bottom at total visible height (after all, ocean texture repeats)
-                oceanSegment.value1 = 0.0f; // This is at yOcean
-                oceanSegment.value2 = yOcean - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
+                oceanSegment.yWater1 = 0.0f; // This is at yOcean
+                oceanSegment.yWater2 = yOcean - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
 
                 break;
             }
 
             case OceanRenderModeType::Depth:
             {
-                // Depth: top=0.0, bottom=height as fraction of ocean depth
-                oceanSegment.value1 = 0.0f;
-                oceanSegment.value2 = oceanDepth != 0.0f
-                    ? std::fabs(oceanSegmentY2 - oceanSegmentY1) / oceanDepth
-                    : 0.0f;
+                // Nop, but be nice
+                oceanSegment.yWater1 = 0.0f;
+                oceanSegment.yWater2 = 0.0f;
 
                 break;
             }
@@ -337,8 +332,8 @@ public:
             case OceanRenderModeType::Flat:
             {
                 // Nop, but be nice
-                oceanSegment.value1 = 0.0f;
-                oceanSegment.value2 = 0.0f;
+                oceanSegment.yWater1 = 0.0f;
+                oceanSegment.yWater2 = 0.0f;
 
                 break;
             }
@@ -351,10 +346,18 @@ public:
 
     inline void UploadOceanDetailed(
         float x,
-        float yOcean,
-        float oceanDepth,
+        float yBack,
+        float yMid,
+        float yFront,
         RenderParameters const & renderParameters)
     {
+        float const yTop = std::max(yBack, std::max(yMid, yFront));
+
+        // Anchor back/mid/front to 0 at top
+        float const yWaterBack = yTop - yBack;
+        float const yWaterMid = yTop - yMid;
+        float const yWaterFront = yTop - yFront;
+
         float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorld().BottomRight.y;
 
         //
@@ -364,41 +367,41 @@ public:
         OceanDetailedSegment & oceanSegment = mOceanDetailedSegmentBuffer.emplace_back();
 
         oceanSegment.x1 = x;
-        float const oceanSegmentY1 = yOcean;
-        oceanSegment.y1 = oceanSegmentY1;
+        oceanSegment.y1 = yTop;
+        oceanSegment.yWaterBack1 = yWaterBack;
+        oceanSegment.yWaterMid1 = yWaterMid;
+        oceanSegment.yWaterFront1 = yWaterFront;
 
         oceanSegment.x2 = x;
-        float const oceanSegmentY2 = yVisibleWorldBottom;
-        oceanSegment.y2 = oceanSegmentY2;
+        oceanSegment.y2 = yVisibleWorldBottom;
+        oceanSegment.yWaterBack2 = yWaterBack;
+        oceanSegment.yWaterMid2 = yWaterMid;
+        oceanSegment.yWaterFront2 = yWaterFront;
 
         switch (renderParameters.OceanRenderMode)
         {
             case OceanRenderModeType::Texture:
             {
-                // Texture sample Y levels: anchor texture at top of wave,
-                // and set bottom at total visible height (after all, ocean texture repeats)
-                oceanSegment.value1 = 0.0f; // This is at yOcean
-                oceanSegment.value2 = yOcean - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
+                // yWater serves as both yWorld (0 @ top -> +foo @ bottom) and as texture sample Y levels:
+                // anchor texture at top of wave, and set bottom at total visible height (after all, ocean texture repeats)
+                oceanSegment.yWater1 = 0.0f; // This is at yTop
+                oceanSegment.yWater2 = yTop - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
 
                 break;
             }
 
             case OceanRenderModeType::Depth:
             {
-                // Depth: top=0.0, bottom=height as fraction of ocean depth
-                oceanSegment.value1 = 0.0f;
-                oceanSegment.value2 = oceanDepth != 0.0f
-                    ? std::fabs(oceanSegmentY2 - oceanSegmentY1) / oceanDepth
-                    : 0.0f;
+                oceanSegment.yWater1 = 0.0f; // This is at yTop
+                oceanSegment.yWater2 = yTop - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
 
                 break;
             }
 
             case OceanRenderModeType::Flat:
             {
-                // Nop, but be nice
-                oceanSegment.value1 = 0.0f;
-                oceanSegment.value2 = 0.0f;
+                oceanSegment.yWater1 = 0.0f; // This is at yTop
+                oceanSegment.yWater2 = yTop - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
 
                 break;
             }
@@ -861,22 +864,28 @@ private:
     {
         float x1;
         float y1;
-        float value1;
+        float yWater1;
 
         float x2;
         float y2;
-        float value2;
+        float yWater2;
     };
 
     struct OceanDetailedSegment
     {
         float x1;
         float y1;
-        float value1;
+        float yWater1;
+        float yWaterBack1;
+        float yWaterMid1;
+        float yWaterFront1;
 
         float x2;
         float y2;
-        float value2;
+        float yWater2;
+        float yWaterBack2;
+        float yWaterMid2;
+        float yWaterFront2;
     };
 
     struct FishVertex

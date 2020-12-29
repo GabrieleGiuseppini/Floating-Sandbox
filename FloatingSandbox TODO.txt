@@ -345,10 +345,16 @@ Render:
 				+ For now, just same upload
 			+ Verify switch works
 				+ Debug build as well
+			+ See if WorldRenderContext::UploadWater(x2) Depth mode really needs yWater
+				+ If not: remove oceanDepth arg
 			- Do Detailed Shaders
-				- Exercise first on ShaderToy with parameter for back plane
+				+ Exercise first on ShaderToy with parameter for back plane
 				- Do shaders
+			+ Do WorldRenderContext machinery
 			- Do OceanSurface::Upload detailed
+			- Test
+				- 3 render modes
+					- Also with ocean depth = 0
 			- Default is ON, but set at Calibration anyway
 	
 		- Bug:

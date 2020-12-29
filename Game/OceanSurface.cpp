@@ -224,26 +224,20 @@ void OceanSurface::Update(
         gameParameters);
 }
 
-void OceanSurface::Upload(
-    GameParameters const & gameParameters,
-    Render::RenderContext & renderContext) const
+void OceanSurface::Upload(Render::RenderContext & renderContext) const
 {
     switch (renderContext.GetOceanRenderDetail())
     {
         case OceanRenderDetailType::Basic:
         {
-            InternalUpload<OceanRenderDetailType::Basic>(
-                gameParameters,
-                renderContext);
+            InternalUpload<OceanRenderDetailType::Basic>(renderContext);
 
             break;
         }
 
         case OceanRenderDetailType::Detailed:
         {
-            InternalUpload<OceanRenderDetailType::Detailed>(
-                gameParameters,
-                renderContext);
+            InternalUpload<OceanRenderDetailType::Detailed>(renderContext);
 
             break;
         }
@@ -392,11 +386,11 @@ void OceanSurface::TriggerRogueWave(
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 template<OceanRenderDetailType DetailType>
-void OceanSurface::InternalUpload(
-    GameParameters const & gameParameters,
-    Render::RenderContext & renderContext) const
+void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
 {
     static_assert(DetailType == OceanRenderDetailType::Basic || DetailType == OceanRenderDetailType::Detailed);
+
+    float constexpr DetailXOffset = 1.0f;
 
     //
     // We want to upload at most RenderSlices slices
@@ -433,13 +427,14 @@ void OceanSurface::InternalUpload(
             if constexpr (DetailType == OceanRenderDetailType::Basic)
                 renderContext.UploadOceanBasic(
                     sampleIndexX,
-                    GetHeightAt(sampleIndexX),
-                    gameParameters.SeaDepth);
+                    GetHeightAt(sampleIndexX));
             else
                 renderContext.UploadOceanDetailed(
                     sampleIndexX,
+                    // TODOTEST
                     GetHeightAt(sampleIndexX),
-                    gameParameters.SeaDepth);
+                    GetHeightAt(sampleIndexX),
+                    GetHeightAt(sampleIndexX));
         }
     }
     else
@@ -463,13 +458,14 @@ void OceanSurface::InternalUpload(
             if constexpr (DetailType == OceanRenderDetailType::Basic)
                 renderContext.UploadOceanBasic(
                     sampleIndexX,
-                    mSamples[s + sampleIndex].SampleValue,
-                    gameParameters.SeaDepth);
+                    mSamples[s + sampleIndex].SampleValue);
             else
                 renderContext.UploadOceanDetailed(
                     sampleIndexX,
+                    // TODOTEST
                     mSamples[s + sampleIndex].SampleValue,
-                    gameParameters.SeaDepth);
+                    mSamples[s + sampleIndex].SampleValue,
+                    mSamples[s + sampleIndex].SampleValue);
         }
     }
 
