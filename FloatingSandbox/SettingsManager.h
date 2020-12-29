@@ -115,6 +115,7 @@ enum class GameSettings : size_t
     DepthOceanColorStart,
     DepthOceanColorEnd,
     FlatOceanColor,
+    OceanRenderDetail,
     LandRenderMode,
     TextureLandTextureIndex,
     FlatLandColor,

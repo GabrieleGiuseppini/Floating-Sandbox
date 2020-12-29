@@ -169,6 +169,7 @@ private:
     wxColourPickerCtrl * mDepthOceanColorEndPicker;
     wxRadioButton * mFlatOceanRenderModeRadioButton;
     wxColourPickerCtrl * mFlatOceanColorPicker;
+    wxCheckBox * mOceanRenderDetailModeDetailedCheckBox;
     wxCheckBox * mSeeShipThroughOceanCheckBox;
     SliderControl<float> * mOceanTransparencySlider;
     SliderControl<float> * mOceanDarkeningRateSlider;

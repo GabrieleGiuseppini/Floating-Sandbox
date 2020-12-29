@@ -692,9 +692,9 @@ void GameController::PickObjectToMove(
     assert(!!mWorld);
     auto const elementIndex = mWorld->GetNearestPointAt(worldCoordinates, 1.0f);
     if (elementIndex.has_value())
-        shipId = elementIndex->GetShipId();
+        shipId = std::optional<ShipId>(elementIndex->GetShipId());
     else
-        shipId = std::nullopt;
+        shipId = std::optional<ShipId>(std::nullopt);
 }
 
 void GameController::MoveBy(

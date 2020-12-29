@@ -3241,6 +3241,26 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorder);
             }
 
+            // High-Quality Rendering
+            {
+                mOceanRenderDetailModeDetailedCheckBox = new wxCheckBox(oceanBox, wxID_ANY,
+                    _("High-Quality Rendering"), wxDefaultPosition, wxDefaultSize);
+                mOceanRenderDetailModeDetailedCheckBox->SetToolTip(_("Renders the ocean with additional details. Requires more computational resources."));
+                mOceanRenderDetailModeDetailedCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::OceanRenderDetail, event.IsChecked() ? OceanRenderDetailType::Detailed : OceanRenderDetailType::Basic);
+                        OnLiveSettingsChanged();
+                    });
+
+                oceanSizer->Add(
+                    mOceanRenderDetailModeDetailedCheckBox,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorder);
+            }
+
             // See Ship Through Water
             {
                 mSeeShipThroughOceanCheckBox = new wxCheckBox(oceanBox, wxID_ANY,
@@ -3255,7 +3275,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                 oceanSizer->Add(
                     mSeeShipThroughOceanCheckBox,
-                    wxGBPosition(1, 0),
+                    wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     wxALL,
                     CellBorder);
@@ -3281,7 +3301,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 oceanSizer->Add(
                     mOceanTransparencySlider,
                     wxGBPosition(0, 1),
-                    wxGBSpan(2, 1),
+                    wxGBSpan(3, 1),
                     wxALL,
                     CellBorder);
             }
@@ -3307,7 +3327,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 oceanSizer->Add(
                     mOceanDarkeningRateSlider,
                     wxGBPosition(0, 2),
-                    wxGBSpan(2, 1),
+                    wxGBSpan(3, 1),
                     wxALL,
                     CellBorder);
             }
@@ -4477,6 +4497,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mFlatOceanColorPicker->SetColour(wxColor(flatOceanColor.r, flatOceanColor.g, flatOceanColor.b));
 
     ReconciliateOceanRenderModeSettings();
+
+    mOceanRenderDetailModeDetailedCheckBox->SetValue(settings.GetValue<OceanRenderDetailType>(GameSettings::OceanRenderDetail) == OceanRenderDetailType::Detailed);
 
     mSeeShipThroughOceanCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipThroughOcean));
 

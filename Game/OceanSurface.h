@@ -11,6 +11,7 @@
 #include <GameCore/GameMath.h>
 #include <GameCore/PrecalculatedFunction.h>
 #include <GameCore/RunningAverage.h>
+#include <GameCore/StrongTypeDef.h>
 
 #include <memory>
 #include <optional>
@@ -113,6 +114,11 @@ public:
         Wind const & wind);
 
 private:
+
+    template<OceanRenderDetailType DetailType>
+    void InternalUpload(
+        GameParameters const & gameParameters,
+        Render::RenderContext & renderContext) const;
 
     static inline auto ToSampleIndex(float x)
     {

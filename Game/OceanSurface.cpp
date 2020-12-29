@@ -228,62 +228,26 @@ void OceanSurface::Upload(
     GameParameters const & gameParameters,
     Render::RenderContext & renderContext) const
 {
-    //
-    // We want to upload at most RenderSlices slices
-    //
-
-    // Find index of leftmost sample, and its corresponding world X
-    auto const sampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorld().TopLeft.x + GameParameters::HalfMaxWorldWidth) / Dx);
-    float sampleIndexX = -GameParameters::HalfMaxWorldWidth + (Dx * sampleIndex);
-
-    // Calculate number of samples required to cover screen from leftmost sample
-    // up to the visible world right (included)
-    float const coverageWidth = renderContext.GetVisibleWorld().BottomRight.x - sampleIndexX;
-    auto const numberOfSamplesToRender = static_cast<size_t>(ceil(coverageWidth / Dx));
-
-    if (numberOfSamplesToRender >= RenderSlices<size_t>)
+    switch (renderContext.GetOceanRenderDetail())
     {
-        //
-        // Have to take more than 1 sample per slice
-        //
-
-        renderContext.UploadOceanBasicStart(RenderSlices<int>);
-
-        // Calculate dx between each pair of slices with want to upload
-        float const sliceDx = coverageWidth / RenderSlices<float>;
-
-        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
-        // quad side must be at the end of the width
-        for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexX += sliceDx)
+        case OceanRenderDetailType::Basic:
         {
-            renderContext.UploadOceanBasic(
-                sampleIndexX,
-                GetHeightAt(sampleIndexX),
-                gameParameters.SeaDepth);
+            InternalUpload<OceanRenderDetailType::Basic>(
+                gameParameters,
+                renderContext);
+
+            break;
+        }
+
+        case OceanRenderDetailType::Detailed:
+        {
+            InternalUpload<OceanRenderDetailType::Detailed>(
+                gameParameters,
+                renderContext);
+
+            break;
         }
     }
-    else
-    {
-        //
-        // We just upload the required number of samples, which is less than
-        // the max number of slices we're prepared to upload, and we let OpenGL
-        // interpolate on our behalf
-        //
-
-        renderContext.UploadOceanBasicStart(numberOfSamplesToRender);
-
-        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
-        // quad side must be at the end of the width
-        for (size_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexX += Dx)
-        {
-            renderContext.UploadOceanBasic(
-                sampleIndexX,
-                mSamples[s + sampleIndex].SampleValue,
-                gameParameters.SeaDepth);
-        }
-    }
-
-    renderContext.UploadOceanBasicEnd();
 }
 
 void OceanSurface::AdjustTo(
@@ -426,6 +390,92 @@ void OceanSurface::TriggerRogueWave(
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
+
+template<OceanRenderDetailType DetailType>
+void OceanSurface::InternalUpload(
+    GameParameters const & gameParameters,
+    Render::RenderContext & renderContext) const
+{
+    static_assert(DetailType == OceanRenderDetailType::Basic || DetailType == OceanRenderDetailType::Detailed);
+
+    //
+    // We want to upload at most RenderSlices slices
+    //
+
+    // Find index of leftmost sample, and its corresponding world X
+    auto const sampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorld().TopLeft.x + GameParameters::HalfMaxWorldWidth) / Dx);
+    float sampleIndexX = -GameParameters::HalfMaxWorldWidth + (Dx * sampleIndex);
+
+    // Calculate number of samples required to cover screen from leftmost sample
+    // up to the visible world right (included)
+    float const coverageWidth = renderContext.GetVisibleWorld().BottomRight.x - sampleIndexX;
+    auto const numberOfSamplesToRender = static_cast<size_t>(ceil(coverageWidth / Dx));
+
+    if (numberOfSamplesToRender >= RenderSlices<size_t>)
+    {
+        //
+        // Have to take more than 1 sample per slice
+        //
+
+        if constexpr(DetailType == OceanRenderDetailType::Basic)
+            renderContext.UploadOceanBasicStart(RenderSlices<int>);
+        else
+            renderContext.UploadOceanDetailedStart(RenderSlices<int>);
+
+        // Calculate dx between each pair of slices with want to upload
+        float const sliceDx = coverageWidth / RenderSlices<float>;
+
+        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
+        // quad side must be at the end of the width
+        for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexX += sliceDx)
+        {
+            if constexpr (DetailType == OceanRenderDetailType::Basic)
+                renderContext.UploadOceanBasic(
+                    sampleIndexX,
+                    GetHeightAt(sampleIndexX),
+                    gameParameters.SeaDepth);
+            else
+                renderContext.UploadOceanDetailed(
+                    sampleIndexX,
+                    GetHeightAt(sampleIndexX),
+                    gameParameters.SeaDepth);
+        }
+    }
+    else
+    {
+        //
+        // We just upload the required number of samples, which is less than
+        // the max number of slices we're prepared to upload, and we let OpenGL
+        // interpolate on our behalf
+        //
+
+        if constexpr (DetailType == OceanRenderDetailType::Basic)
+            renderContext.UploadOceanBasicStart(numberOfSamplesToRender);
+        else
+            renderContext.UploadOceanDetailedStart(numberOfSamplesToRender);
+
+        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
+        // quad side must be at the end of the width
+        for (size_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexX += Dx)
+        {
+            if constexpr (DetailType == OceanRenderDetailType::Basic)
+                renderContext.UploadOceanBasic(
+                    sampleIndexX,
+                    mSamples[s + sampleIndex].SampleValue,
+                    gameParameters.SeaDepth);
+            else
+                renderContext.UploadOceanDetailed(
+                    sampleIndexX,
+                    mSamples[s + sampleIndex].SampleValue,
+                    gameParameters.SeaDepth);
+        }
+    }
+
+    if constexpr (DetailType == OceanRenderDetailType::Basic)
+        renderContext.UploadOceanBasicEnd();
+    else
+        renderContext.UploadOceanDetailedEnd();
+}
 
 void OceanSurface::SetSWEWaveHeight(
     size_t centerIndex,

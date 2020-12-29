@@ -715,6 +715,28 @@ public:
         mWorldRenderContext->UploadOceanBasicEnd();
     }
 
+    inline void UploadOceanDetailedStart(size_t slices)
+    {
+        mWorldRenderContext->UploadOceanDetailedStart(slices);
+    }
+
+    inline void UploadOceanDetailed(
+        float x,
+        float yOcean,
+        float oceanDepth)
+    {
+        mWorldRenderContext->UploadOceanDetailed(
+            x,
+            yOcean,
+            oceanDepth,
+            mRenderParameters);
+    }
+
+    inline void UploadOceanDetailedEnd()
+    {
+        mWorldRenderContext->UploadOceanDetailedEnd();
+    }
+
     inline void UploadFishesStart(size_t fishCount)
     {
         mWorldRenderContext->UploadFishesStart(fishCount);

@@ -1492,8 +1492,6 @@ void ShipRenderContext::RenderDrawFlames(
     size_t flameCount,
     RenderStatistics & renderStats)
 {
-    assert(renderParameters.ShipFlameRenderMode != ShipFlameRenderModeType::NoDraw);
-
     if (flameCount > 0)
     {
         glBindVertexArray(*mFlameVAO);
