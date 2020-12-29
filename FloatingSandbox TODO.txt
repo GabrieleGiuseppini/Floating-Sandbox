@@ -295,6 +295,8 @@ Render:
 					+ SoundsController: reset mCurrentCount to 0 at each Reset()
 			+ Send to John Smith
 		+ Bump up version
+		+ Add new background music
+			+ "Shadowlands 4 - Breath" - Kevin MacLeod (incompetech.com)
 
 		= Flames: 
 			+ Fix bottom issue with additional Y sorting
@@ -314,10 +316,10 @@ Render:
 				+ 1.16.1: start=OK end=23.7 upd=20.6 rnd=21.4
 			+ Make GameJolt poll
 				+ Side-by-side video
-			- Test with wind
+			- Test with high wind
 			- changelist
 
-		+ Water surface improvement:
+		= Water surface improvement:
 			+ Split shaders for all ocean types: "xxx_sq" and "xxx_hq"
 			+ RenderContext setting, "detailed" by default
 				+ Double members
@@ -341,9 +343,6 @@ Render:
 
 		- Bug:
 			- Jacoh2 20/12/2020: fixing the boiler area on the small fleutzgrampher and akagi Maru crash the game
-
-		- Add new background music
-			- "Shadowlands 4 - Breath" - Kevin MacLeod (incompetech.com)
 
 		= Send/complete localization
 			+ Change copyright year

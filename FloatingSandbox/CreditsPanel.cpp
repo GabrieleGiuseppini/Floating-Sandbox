@@ -138,6 +138,10 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {3, wxS("Kevin MacLeod (https://incompetech.com)"), 0},
         {2, _("Licensed under Creative Commons: By Attribution 4.0 License"), VMargin},
 
+        {1, wxS("\"Shadowlands 4 - Breath\""), 0},
+        {3, wxS("Kevin MacLeod (https://incompetech.com)"), 0},
+        {2, _("Licensed under Creative Commons: By Attribution 4.0 License"), VMargin},
+
         {1, wxS("\"Untitled #1\""), 0},
         {3, wxS("Michael Bozarth; Stuart's Piano World (https://stuartspianoworld.com/)"), VMargin},
 
