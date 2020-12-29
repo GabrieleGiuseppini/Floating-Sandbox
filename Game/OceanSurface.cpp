@@ -414,7 +414,8 @@ void OceanSurface::InternalUpload(
     if (numberOfSamplesToRender >= RenderSlices<size_t>)
     {
         //
-        // Have to take more than 1 sample per slice
+        // Zoom out from afar: each slice encompasses more than 1 sample;
+        // we upload then RenderSlices slices, interpolating Y at each slice boundary
         //
 
         if constexpr(DetailType == OceanRenderDetailType::Basic)
@@ -444,7 +445,8 @@ void OceanSurface::InternalUpload(
     else
     {
         //
-        // We just upload the required number of samples, which is less than
+        // Zoom in: each sample encompasses multiple slices;
+        // we upload then just the required number of samples, which is less than
         // the max number of slices we're prepared to upload, and we let OpenGL
         // interpolate on our behalf
         //

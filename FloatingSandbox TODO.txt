@@ -328,7 +328,7 @@ Render:
 				+ 1.16.1: start=OK end=23.7 upd=20.6 rnd=21.4
 			+ Make GameJolt poll
 				+ Side-by-side video
-			- Test with high wind
+			+ Test with high wind
 			- changelist
 
 		= Water surface improvement:
