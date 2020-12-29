@@ -108,11 +108,13 @@ public:
      */
     template<typename TIndices>
     void UploadElements(
-        TIndices & planeIndices,
         ShipId shipId,
+        TIndices & planeIndices,
         Points const & points,
         Render::RenderContext & renderContext) const
     {
+        auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
         for (ElementIndex i : *this)
         {
             if (!mIsDeletedBuffer[i])
@@ -122,8 +124,7 @@ public:
 
                 // Send triangle to its index
                 assert(planeId < planeIndices.size());
-                renderContext.UploadShipElementTriangle(
-                    shipId,
+                shipRenderContext.UploadElementTriangle(
                     planeIndices[planeId],
                     GetPointAIndex(i),
                     GetPointBIndex(i),

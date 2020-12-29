@@ -1544,12 +1544,12 @@ void Points::UploadAttributes(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
     // Upload immutable attributes, if we haven't uploaded them yet
     if (mIsTextureCoordinatesBufferDirty)
     {
-        renderContext.UploadShipPointImmutableAttributes(
-            shipId,
-            mTextureCoordinatesBuffer.data());
+        shipRenderContext.UploadPointImmutableAttributes(mTextureCoordinatesBuffer.data());
 
         mIsTextureCoordinatesBufferDirty = false;
     }
@@ -1557,7 +1557,7 @@ void Points::UploadAttributes(
     // Upload colors, if dirty
     if (mIsWholeColorBufferDirty)
     {
-        renderContext.UploadShipPointColors(
+        renderContext.UploadShipPointColorsAsync(
             shipId,
             mColorBuffer.data(),
             0,
@@ -1569,7 +1569,7 @@ void Points::UploadAttributes(
     else if (mIsEphemeralColorBufferDirty)
     {
         // Only upload ephemeral particle portion
-        renderContext.UploadShipPointColors(
+        renderContext.UploadShipPointColorsAsync(
             shipId,
             &(mColorBuffer.data()[mAlignedShipPointCount]),
             mAlignedShipPointCount,
@@ -1587,10 +1587,9 @@ void Points::UploadAttributes(
     // for some buffers we only need to upload non-ephemeral points
     size_t const partialPointCount = mHaveWholeBuffersBeenUploadedOnce ? mRawShipPointCount : mAllPointCount;
 
-    renderContext.UploadShipPointMutableAttributesStart(shipId);
+    shipRenderContext.UploadPointMutableAttributesStart();
 
-    renderContext.UploadShipPointMutableAttributes(
-        shipId,
+    shipRenderContext.UploadPointMutableAttributes(
         mPositionBuffer.data(),
         mLightBuffer.data(),
         mWaterBuffer.data(),
@@ -1602,8 +1601,7 @@ void Points::UploadAttributes(
         {
             // Whole
 
-            renderContext.UploadShipPointMutableAttributesPlaneId(
-                shipId,
+            shipRenderContext.UploadPointMutableAttributesPlaneId(
                 mPlaneIdFloatBuffer.data(),
                 0,
                 mAllPointCount);
@@ -1614,8 +1612,7 @@ void Points::UploadAttributes(
         {
             // Just non-ephemeral portion
 
-            renderContext.UploadShipPointMutableAttributesPlaneId(
-                shipId,
+            shipRenderContext.UploadPointMutableAttributesPlaneId(
                 mPlaneIdFloatBuffer.data(),
                 0,
                 mRawShipPointCount);
@@ -1627,8 +1624,7 @@ void Points::UploadAttributes(
     {
         // Just ephemeral portion
 
-        renderContext.UploadShipPointMutableAttributesPlaneId(
-            shipId,
+        shipRenderContext.UploadPointMutableAttributesPlaneId(
             &(mPlaneIdFloatBuffer.data()[mAlignedShipPointCount]),
             mAlignedShipPointCount,
             mEphemeralPointCount);
@@ -1638,8 +1634,7 @@ void Points::UploadAttributes(
 
     if (mIsDecayBufferDirty)
     {
-        renderContext.UploadShipPointMutableAttributesDecay(
-            shipId,
+        shipRenderContext.UploadPointMutableAttributesDecay(
             mDecayBuffer.data(),
             0,
             partialPointCount);
@@ -1649,14 +1644,14 @@ void Points::UploadAttributes(
 
     if (renderContext.GetDrawHeatOverlay())
     {
-        renderContext.UploadShipPointTemperature(
+        renderContext.UploadShipPointTemperatureAsync(
             shipId,
             mTemperatureBuffer.data(),
             0,
             partialPointCount);
     }
 
-    renderContext.UploadShipPointMutableAttributesEnd(shipId);
+    shipRenderContext.UploadPointMutableAttributesEnd();
 
     mHaveWholeBuffersBeenUploadedOnce = true;
 }
@@ -1667,14 +1662,14 @@ void Points::UploadNonEphemeralPointElements(
 {
     bool const doUploadAllPoints = (DebugShipRenderModeType::Points == renderContext.GetDebugShipRenderMode());
 
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
     for (ElementIndex pointIndex : RawShipPoints())
     {
         if (doUploadAllPoints
             || mConnectedSpringsBuffer[pointIndex].ConnectedSprings.empty()) // orphaned
         {
-            renderContext.UploadShipElementPoint(
-                shipId,
-                pointIndex);
+            shipRenderContext.UploadElementPoint(pointIndex);
         }
     }
 }
@@ -1694,15 +1689,16 @@ void Points::UploadFlames(
     // and we use the *factory* ones to avoid sudden depth jumps when triangles are destroyed by fire
     //
 
-    renderContext.UploadShipFlamesStart(shipId, mBurningPoints.size(), windSpeedMagnitude);
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
+    shipRenderContext.UploadFlamesStart(mBurningPoints.size(), windSpeedMagnitude);
 
     // Background
     for (auto const pointIndex : mBurningPoints)
     {
         if (mFactoryConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty())
         {
-            renderContext.UploadShipBackgroundFlame(
-                shipId,
+            shipRenderContext.UploadBackgroundFlame(
                 GetPlaneId(pointIndex),
                 GetPosition(pointIndex),
                 mCombustionStateBuffer[pointIndex].FlameVector,
@@ -1716,8 +1712,7 @@ void Points::UploadFlames(
     {
         if (!mFactoryConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty())
         {
-            renderContext.UploadShipForegroundFlame(
-                shipId,
+            shipRenderContext.UploadForegroundFlame(
                 GetPlaneId(pointIndex),
                 GetPosition(pointIndex),
                 mCombustionStateBuffer[pointIndex].FlameVector,
@@ -1726,19 +1721,20 @@ void Points::UploadFlames(
         }
     }
 
-    renderContext.UploadShipFlamesEnd(shipId);
+    shipRenderContext.UploadFlamesEnd();
 }
 
 void Points::UploadVectors(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
     if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderModeType::PointVelocity)
     {
         static vec4f constexpr VectorColor(0.203f, 0.552f, 0.219f, 1.0f);
 
-        renderContext.UploadShipVectors(
-            shipId,
+        shipRenderContext.UploadVectors(
             mElementCount,
             mPositionBuffer.data(),
             mPlaneIdFloatBuffer.data(),
@@ -1750,8 +1746,7 @@ void Points::UploadVectors(
     {
         static vec4f constexpr VectorColor(0.5f, 0.1f, 0.f, 1.0f);
 
-        renderContext.UploadShipVectors(
-            shipId,
+        shipRenderContext.UploadVectors(
             mElementCount,
             mPositionBuffer.data(),
             mPlaneIdFloatBuffer.data(),
@@ -1763,8 +1758,7 @@ void Points::UploadVectors(
     {
         static vec4f constexpr VectorColor(0.094f, 0.509f, 0.925f, 1.0f);
 
-        renderContext.UploadShipVectors(
-            shipId,
+        shipRenderContext.UploadVectors(
             mElementCount,
             mPositionBuffer.data(),
             mPlaneIdFloatBuffer.data(),
@@ -1776,8 +1770,7 @@ void Points::UploadVectors(
     {
         static vec4f constexpr VectorColor(0.054f, 0.066f, 0.443f, 1.0f);
 
-        renderContext.UploadShipVectors(
-            shipId,
+        shipRenderContext.UploadVectors(
             mElementCount,
             mPositionBuffer.data(),
             mPlaneIdFloatBuffer.data(),
@@ -1795,9 +1788,11 @@ void Points::UploadEphemeralParticles(
     // Upload points and/or textures
     //
 
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
     if (mAreEphemeralPointsDirtyForRendering)
     {
-        renderContext.UploadShipElementEphemeralPointsStart(shipId);
+        shipRenderContext.UploadElementEphemeralPointsStart();
     }
 
     for (ElementIndex pointIndex : this->EphemeralPoints())
@@ -1817,8 +1812,7 @@ void Points::UploadEphemeralParticles(
                     (ScaleMin + (ScaleMax - ScaleMin) * (1.0f - LinearStep(80.0f, 400.0f, state.CurrentDeltaY)))
                     * std::min(state.SimulationLifetime, 2.0f) / 2.0f; // Grow from 0 to 1 in 2 seconds
 
-                renderContext.UploadShipAirBubble(
-                    shipId,
+                shipRenderContext.UploadAirBubble(
                     GetPlaneId(pointIndex),
                     GetPosition(pointIndex),
                     scale,
@@ -1832,9 +1826,7 @@ void Points::UploadEphemeralParticles(
                 // Don't upload point unless there's been a change
                 if (mAreEphemeralPointsDirtyForRendering)
                 {
-                    renderContext.UploadShipElementEphemeralPoint(
-                        shipId,
-                        pointIndex);
+                    shipRenderContext.UploadElementEphemeralPoint(pointIndex);
                 }
 
                 break;
@@ -1854,8 +1846,7 @@ void Points::UploadEphemeralParticles(
                     - SmoothStep(0.7f, 1.0f, lifetimeProgress);
 
                 // Upload smoke
-                renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                    shipId,
+                shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                     GetPlaneId(pointIndex),
                     state.PersonalitySeed,
                     state.TextureGroup,
@@ -1872,8 +1863,7 @@ void Points::UploadEphemeralParticles(
                     -GetVelocity(pointIndex)
                     / GameParameters::MaxSparkleParticlesForCutVelocity; // We use the cut sparkles arbitrarily
 
-                renderContext.UploadShipSparkle(
-                    shipId,
+                shipRenderContext.UploadSparkle(
                     GetPlaneId(pointIndex),
                     GetPosition(pointIndex),
                     velocityVector,
@@ -1886,8 +1876,7 @@ void Points::UploadEphemeralParticles(
             {
                 auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.WakeBubble;
 
-                renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                    shipId,
+                shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                     GetPlaneId(pointIndex),
                     TextureFrameId(Render::GenericMipMappedTextureGroups::EngineWake, 0),
                     GetPosition(pointIndex),
@@ -1909,7 +1898,7 @@ void Points::UploadEphemeralParticles(
 
     if (mAreEphemeralPointsDirtyForRendering)
     {
-        renderContext.UploadShipElementEphemeralPointsEnd(shipId);
+        shipRenderContext.UploadElementEphemeralPointsEnd();
 
         // Not dirty anymore
         mAreEphemeralPointsDirtyForRendering = false;
@@ -1920,10 +1909,11 @@ void Points::UploadHighlights(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
     for (auto const & h : mElectricalElementHighlightedPoints)
     {
-        renderContext.UploadShipHighlight(
-            shipId,
+        shipRenderContext.UploadHighlight(
             HighlightModeType::ElectricalElement,
             GetPlaneId(h.PointIndex),
             GetPosition(h.PointIndex),
@@ -1934,8 +1924,7 @@ void Points::UploadHighlights(
 
     for (auto const & h : mCircleHighlightedPoints)
     {
-        renderContext.UploadShipHighlight(
-            shipId,
+        shipRenderContext.UploadHighlight(
             HighlightModeType::Circle,
             GetPlaneId(h.PointIndex),
             GetPosition(h.PointIndex),

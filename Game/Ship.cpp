@@ -504,9 +504,7 @@ void Ship::Update(
 #endif
 }
 
-void Ship::RenderUpload(
-    GameParameters const & /*gameParameters*/,
-    Render::RenderContext & renderContext)
+void Ship::RenderUpload(Render::RenderContext & renderContext)
 {
     //
     // Run connectivity visit, if there have been any deletions
@@ -525,9 +523,9 @@ void Ship::RenderUpload(
     // Initialize upload
     //
 
-    renderContext.UploadShipStart(
-        mId,
-        mMaxMaxPlaneId);
+    auto & shipRenderContext = renderContext.GetShipRenderContext(mId);
+
+    shipRenderContext.UploadStart(mMaxMaxPlaneId);
 
     //
     // Upload points's immutable and mutable attributes
@@ -545,7 +543,7 @@ void Ship::RenderUpload(
         || !mLastUploadedDebugShipRenderMode
         || *mLastUploadedDebugShipRenderMode != renderContext.GetDebugShipRenderMode())
     {
-        renderContext.UploadShipElementsStart(mId);
+        shipRenderContext.UploadElementsStart();
 
         //
         // Upload point elements (either orphaned only or all, depending
@@ -574,20 +572,18 @@ void Ship::RenderUpload(
         {
             assert(mPlaneTriangleIndicesToRender.size() >= 1);
 
-            renderContext.UploadShipElementTrianglesStart(
-                mId,
-                mPlaneTriangleIndicesToRender.back());
+            shipRenderContext.UploadElementTrianglesStart(mPlaneTriangleIndicesToRender.back());
 
             mTriangles.UploadElements(
-                mPlaneTriangleIndicesToRender,
                 mId,
+                mPlaneTriangleIndicesToRender,
                 mPoints,
                 renderContext);
 
-            renderContext.UploadShipElementTrianglesEnd(mId);
+            shipRenderContext.UploadElementTrianglesEnd();
         }
 
-        renderContext.UploadShipElementsEnd(mId);
+        shipRenderContext.UploadElementsEnd();
     }
 
     //
@@ -597,7 +593,7 @@ void Ship::RenderUpload(
     // as the set of stressed springs is bound to change from frame to frame
     //
 
-    renderContext.UploadShipElementStressedSpringsStart(mId);
+    shipRenderContext.UploadElementStressedSpringsStart();
 
     if (renderContext.GetShowStressedSprings())
     {
@@ -606,7 +602,7 @@ void Ship::RenderUpload(
             renderContext);
     }
 
-    renderContext.UploadShipElementStressedSpringsEnd(mId);
+    shipRenderContext.UploadElementStressedSpringsEnd();
 
     //
     // Upload frontiers
@@ -676,7 +672,7 @@ void Ship::RenderUpload(
     // Finalize upload
     //
 
-    renderContext.UploadShipEnd(mId);
+    shipRenderContext.UploadEnd();
 
     //
     // Reset render state

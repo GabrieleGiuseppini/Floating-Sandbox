@@ -131,13 +131,14 @@ void ImpactBomb::Upload(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
     switch (mState)
     {
         case State::Idle:
         case State::TriggeringExplosion:
         {
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::ImpactBomb, 0),
                 GetPosition(),
@@ -156,8 +157,7 @@ void ImpactBomb::Upload(
                 static_cast<float>(mExplosionFadeoutCounter + 1)
                 / static_cast<float>(ExplosionFadeoutStepsCount);
 
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::ImpactBomb, 0),
                 GetPosition(),

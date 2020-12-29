@@ -258,14 +258,15 @@ void TimerBomb::Upload(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
     switch (mState)
     {
         case State::SlowFuseBurning:
         case State::FastFuseBurning:
         {
             // Render bomb
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
@@ -275,8 +276,7 @@ void TimerBomb::Upload(
                 1.0f);
 
             // Render fuse
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::TimerBombFuse, mFuseFlameFrameIndex),
                 GetPosition(),
@@ -298,8 +298,7 @@ void TimerBomb::Upload(
                     : vec2f(ShakeOffset, 0.0f));
 
             // Render bomb
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::TimerBomb, FuseLengthStepCount),
                 shakenPosition,
@@ -314,8 +313,7 @@ void TimerBomb::Upload(
         case State::Defusing:
         {
             // Render bomb
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
@@ -330,8 +328,7 @@ void TimerBomb::Upload(
         case State::Defused:
         {
             // Render inert bomb
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
@@ -351,8 +348,7 @@ void TimerBomb::Upload(
                 / static_cast<float>(ExplosionFadeoutStepsCount);
 
             // Render disappearing bomb
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),

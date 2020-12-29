@@ -605,11 +605,13 @@ void Frontiers::Upload(
         RegeneratePointColors();
 
         // Upload point colors
-        renderContext.UploadShipPointFrontierColors(shipId, mPointColors.data());
+        renderContext.UploadShipPointFrontierColorsAsync(shipId, mPointColors.data());
 
         //
         // Upload frontier point indices
         //
+
+        auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
         size_t const totalSize = std::accumulate(
             mFrontiers.cbegin(),
@@ -620,7 +622,7 @@ void Frontiers::Upload(
                 return total + (f.has_value() ? f->Size : 0);
             });
 
-        renderContext.UploadShipElementFrontierEdgesStart(shipId, totalSize);
+        shipRenderContext.UploadElementFrontierEdgesStart(totalSize);
 
         for (auto const & frontier : mFrontiers)
         {
@@ -636,8 +638,7 @@ void Frontiers::Upload(
                     auto const nextEdgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;
 
                     // Upload
-                    renderContext.UploadShipElementFrontierEdge(
-                        shipId,
+                    shipRenderContext.UploadElementFrontierEdge(
                         mFrontierEdges[edgeIndex].PointAIndex,
                         mFrontierEdges[nextEdgeIndex].PointAIndex);
 
@@ -648,7 +649,7 @@ void Frontiers::Upload(
             }
         }
 
-        renderContext.UploadShipElementFrontierEdgesEnd(shipId);
+        shipRenderContext.UploadElementFrontierEdgesEnd();
 
         // We are not dirty anymore
         mIsDirtyForRendering = false;

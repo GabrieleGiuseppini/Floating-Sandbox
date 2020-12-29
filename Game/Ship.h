@@ -75,9 +75,7 @@ public:
         Render::RenderContext const & renderContext,
         Geometry::AABBSet & aabbSet);
 
-    void RenderUpload(
-        GameParameters const & gameParameters,
-        Render::RenderContext & renderContext);
+    void RenderUpload(Render::RenderContext & renderContext);
 
 public:
 

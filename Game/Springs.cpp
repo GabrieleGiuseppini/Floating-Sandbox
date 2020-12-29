@@ -216,6 +216,8 @@ void Springs::UploadElements(
         DebugShipRenderModeType::Springs == renderContext.GetDebugShipRenderMode()
         || DebugShipRenderModeType::EdgeSprings == renderContext.GetDebugShipRenderMode());
 
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
     for (ElementIndex i : *this)
     {
         // Only upload non-deleted springs that are not covered by two super-triangles, unless
@@ -224,8 +226,7 @@ void Springs::UploadElements(
         {
             if (IsRope(i) && !doUploadRopesAsSprings)
             {
-                renderContext.UploadShipElementRope(
-                    shipId,
+                shipRenderContext.UploadElementRope(
                     GetEndpointAIndex(i),
                     GetEndpointBIndex(i));
             }
@@ -234,8 +235,7 @@ void Springs::UploadElements(
                 || doUploadAllSprings
                 || IsRope(i))
             {
-                renderContext.UploadShipElementSpring(
-                    shipId,
+                shipRenderContext.UploadElementSpring(
                     GetEndpointAIndex(i),
                     GetEndpointBIndex(i));
             }
@@ -247,14 +247,15 @@ void Springs::UploadStressedSpringElements(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
     for (ElementIndex i : *this)
     {
         if (!mIsDeletedBuffer[i])
         {
             if (mIsStressedBuffer[i])
             {
-                renderContext.UploadShipElementStressedSpring(
-                    shipId,
+                shipRenderContext.UploadElementStressedSpring(
                     GetEndpointAIndex(i),
                     GetEndpointBIndex(i));
             }
