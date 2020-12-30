@@ -347,25 +347,32 @@ Render:
 				+ Debug build as well
 			+ See if WorldRenderContext::UploadWater(x2) Depth mode really needs yWater
 				+ If not: remove oceanDepth arg
-			- Do Detailed Shaders
+			= Do Detailed Shaders
 				+ Exercise first on ShaderToy with parameter for back plane
 				+ Texture
-				= Flat
-				- Depth
-				- Do BackToggle parameter
-				- Adjust border thickness with zoom, to ensure thickness is independent from zoom
+				+ Flat
+				+ Depth
+				- Do BackToggle parameter at two draw's
+				- Adjust border thickness with zoom (parameter), to ensure thickness is independent from zoom
 			+ Do WorldRenderContext machinery
 			- Do OceanSurface::Upload detailed
+				+ Basic
 				- Optimize w/whole samples
 			- Test
 				- 3 render modes
 					- Also with ocean depth = 0
 				- Old Dell
 			- See GLSL optimizations
+				- Beginning: RNDms=TODO
+				- No function but inline
 				- With assembly as well, https://gamedev.stackexchange.com/questions/65695/aquire-disassembly-of-shader-code
+				- End: RNDms=TODO
 			- Default is ON, but set at Calibration anyway
-			- SWE review (*)
 	
+		- Look back at SWE's
+			- Try re-instating skipped steps - just redo original implementation (two buffers, etc.)
+			- See damping; if good, consider two SWE fields: one for abnormals (undamped) and one for interactive (damped)
+
 		- Bug:
 			- Jacoh2 20/12/2020: fixing the boiler area on the small fleutzgrampher and akagi Maru crash the game
 
@@ -531,9 +538,6 @@ Render:
 			- If it works: do "reshader" type of work (*)
 
 		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
-
-		- Look back at SWE's
-			- Try re-instating skipped steps
 
 		- See if may put smoke emitters behind triangles and springs
 			- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;
