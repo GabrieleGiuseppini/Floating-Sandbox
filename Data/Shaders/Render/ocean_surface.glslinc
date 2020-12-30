@@ -1,4 +1,4 @@
-vec4 CalculateOceanPlaneColor(vec3 baseColor, float yWater, float yBack, float yMid, float yFront, float backPlaneToggle)
+vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWater, float yBack, float yMid, float yFront, float backPlaneToggle)
 {
     #define BorderWidth 0.6
             
@@ -41,7 +41,7 @@ vec4 CalculateOceanPlaneColor(vec3 baseColor, float yWater, float yBack, float y
     // Combine
     
     vec4 finalColor = mix(
-        vec4(baseColor, baseColorAlpha),
+        vec4(baseColor.xyz, baseColorAlpha * baseColor.w),
         vec4(1.), // Border color
         borderAlpha);
 

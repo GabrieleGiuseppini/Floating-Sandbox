@@ -52,6 +52,5 @@ uniform float paramOceanSurfaceBackPlaneToggle;
 
 void main()
 {
-    vec4 color = CalculateOceanPlaneColor(oceanColor.xyz, yWaters.x, yWaters.y, yWaters.z, yWaters.w, paramOceanSurfaceBackPlaneToggle);
-    gl_FragColor = vec4(color.xyz, color.w * oceanColor.w);
+    gl_FragColor = CalculateOceanPlaneColor(oceanColor, yWaters.x, yWaters.y, yWaters.z, yWaters.w, paramOceanSurfaceBackPlaneToggle);
 } 

@@ -57,8 +57,8 @@ void main()
         pow(darkMix, 3.0));
 
     // Apply detail
-    vec4 color = CalculateOceanPlaneColor(textureColor, yWaters.x, yWaters.y, yWaters.z, yWaters.w, paramOceanSurfaceBackPlaneToggle);
+    vec4 color = CalculateOceanPlaneColor(vec4(textureColor, (1.0 - paramOceanTransparency)), yWaters.x, yWaters.y, yWaters.z, yWaters.w, paramOceanSurfaceBackPlaneToggle);
 
     // Combine
-    gl_FragColor = vec4(color.xyz * paramEffectiveAmbientLightIntensity, color.w * (1.0 - paramOceanTransparency));
+    gl_FragColor = vec4(color.xyz * paramEffectiveAmbientLightIntensity, color.w);
 } 

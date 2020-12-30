@@ -353,7 +353,7 @@ Render:
 				+ Flat
 				+ Depth
 				+ Do BackToggle parameter at two draw's
-				- Adjust border thickness with zoom (parameter), to ensure thickness is independent from zoom
+				- Adjust border thickness: redo vertex attributes so that yBack/Mid/Front are world, and texture is passed separately based off yMid
 			+ Do WorldRenderContext machinery
 			- Do OceanSurface::Upload detailed
 				+ Basic

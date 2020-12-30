@@ -392,7 +392,7 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
 
     float constexpr DetailXOffset = 1.2f;
     float constexpr BackPlaneDamp = 0.9f;
-    float constexpr FrontPlaneDamp = 0.95f;
+    float constexpr FrontPlaneDamp = 0.35f;
 
     //
     // We want to upload at most RenderSlices slices
