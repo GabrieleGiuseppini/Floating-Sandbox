@@ -47,8 +47,11 @@ void main()
 in vec4 oceanColor;
 in vec4 yWaters;
 
+// Parameters
+uniform float paramOceanSurfaceBackPlaneToggle;
+
 void main()
 {
-    vec4 color = CalculateOceanPlaneColor(oceanColor.xyz, yWaters.x, yWaters.y, yWaters.z, yWaters.w, 1.);
+    vec4 color = CalculateOceanPlaneColor(oceanColor.xyz, yWaters.x, yWaters.y, yWaters.z, yWaters.w, paramOceanSurfaceBackPlaneToggle);
     gl_FragColor = vec4(color.xyz, color.w * oceanColor.w);
 } 

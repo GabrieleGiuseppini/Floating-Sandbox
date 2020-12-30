@@ -352,7 +352,7 @@ Render:
 				+ Texture
 				+ Flat
 				+ Depth
-				- Do BackToggle parameter at two draw's
+				+ Do BackToggle parameter at two draw's
 				- Adjust border thickness with zoom (parameter), to ensure thickness is independent from zoom
 			+ Do WorldRenderContext machinery
 			- Do OceanSurface::Upload detailed

@@ -1013,6 +1013,9 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
 
         case OceanRenderDetailType::Detailed:
         {
+            // Turn on back plane iff drawing opaquely
+            float backPlaneToggle = (opaquely) ? 1.0f : 0.0f;
+
             glBindVertexArray(*mOceanDetailedVAO);
 
             switch (renderParameters.OceanRenderMode)
@@ -1020,15 +1023,18 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
                 case OceanRenderModeType::Depth:
                 {
                     mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailed>();
+                    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailed, ProgramParameterType::OceanSurfaceBackPlaneToggle>(
+                        backPlaneToggle);
                     mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailed, ProgramParameterType::OceanTransparency>(
                         transparency);
-
                     break;
                 }
 
                 case OceanRenderModeType::Flat:
                 {
                     mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailed>();
+                    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailed, ProgramParameterType::OceanSurfaceBackPlaneToggle>(
+                        backPlaneToggle);
                     mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailed, ProgramParameterType::OceanTransparency>(
                         transparency);
 
@@ -1038,6 +1044,8 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
                 case OceanRenderModeType::Texture:
                 {
                     mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailed>();
+                    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailed, ProgramParameterType::OceanSurfaceBackPlaneToggle>(
+                        backPlaneToggle);
                     mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailed, ProgramParameterType::OceanTransparency>(
                         transparency);
 

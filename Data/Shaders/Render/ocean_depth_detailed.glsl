@@ -42,6 +42,7 @@ uniform float paramOceanTransparency;
 uniform vec3 paramOceanDepthColorStart;
 uniform vec3 paramOceanDepthColorEnd;
 uniform float paramOceanDarkeningRate;
+uniform float paramOceanSurfaceBackPlaneToggle;
 
 void main()
 {
@@ -53,7 +54,7 @@ void main()
         pow(darkMix, 3.0));
 
     // Apply detail
-    vec4 color = CalculateOceanPlaneColor(depthColor, yWaters.x, yWaters.y, yWaters.z, yWaters.w, 1.);
+    vec4 color = CalculateOceanPlaneColor(depthColor, yWaters.x, yWaters.y, yWaters.z, yWaters.w, paramOceanSurfaceBackPlaneToggle);
 
     // Combine
     gl_FragColor = vec4(color.xyz * paramEffectiveAmbientLightIntensity, color.w * (1.0 - paramOceanTransparency));
