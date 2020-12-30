@@ -6,8 +6,8 @@
 #define out varying
 
 // Inputs
-in vec4 inOceanDetailed1;	// TODO: Position (vec2), IGNORED (float)
-in vec2 inOceanDetailed2;	// TODO
+in vec2 inOceanDetailed1;	// Position (vec2)
+in vec4 inOceanDetailed2;	// yWater, yBack, yMid, yFront (float: 0.0 at top, +foo at bottom)
 
 // Parameters
 uniform float paramEffectiveAmbientLightIntensity;
@@ -17,6 +17,7 @@ uniform mat4 paramOrthoMatrix;
 
 // Outputs
 out vec4 oceanColor;
+out vec4 yWaters;
 
 void main()
 {
@@ -27,7 +28,10 @@ void main()
     oceanColor = oceanColor * paramEffectiveAmbientLightIntensity;
 
     // Calculate position
-    gl_Position = paramOrthoMatrix * vec4(inOceanDetailed1.xy, -1.0, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inOceanDetailed1, -1.0, 1.0);
+
+    // Pass y values to fragment shader
+    yWaters = inOceanDetailed2;
 }
 
 
@@ -35,12 +39,16 @@ void main()
 
 #version 120
 
+#include "ocean_surface.glslinc"
+
 #define in varying
 
 // Inputs from previous shader
 in vec4 oceanColor;
+in vec4 yWaters;
 
 void main()
 {
-    gl_FragColor = oceanColor;
+    vec4 color = CalculateOceanPlaneColor(oceanColor.xyz, yWaters.x, yWaters.y, yWaters.z, yWaters.w, 1.);
+    gl_FragColor = vec4(color.xyz, color.w * oceanColor.w);
 } 

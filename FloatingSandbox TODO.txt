@@ -349,13 +349,22 @@ Render:
 				+ If not: remove oceanDepth arg
 			- Do Detailed Shaders
 				+ Exercise first on ShaderToy with parameter for back plane
-				- Do shaders
+				+ Texture
+				= Flat
+				- Depth
+				- Do BackToggle parameter
+				- Adjust border thickness with zoom, to ensure thickness is independent from zoom
 			+ Do WorldRenderContext machinery
 			- Do OceanSurface::Upload detailed
+				- Optimize w/whole samples
 			- Test
 				- 3 render modes
 					- Also with ocean depth = 0
+				- Old Dell
+			- See GLSL optimizations
+				- With assembly as well, https://gamedev.stackexchange.com/questions/65695/aquire-disassembly-of-shader-code
 			- Default is ON, but set at Calibration anyway
+			- SWE review (*)
 	
 		- Bug:
 			- Jacoh2 20/12/2020: fixing the boiler area on the small fleutzgrampher and akagi Maru crash the game

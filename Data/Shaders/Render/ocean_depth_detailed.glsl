@@ -6,18 +6,20 @@
 #define out varying
 
 // Inputs
-in vec4 inOceanDetailed1;	// TODO: Position (vec2), Depth (float)
-in vec2 inOceanDetailed2;	// TODO
+in vec2 inOceanDetailed1;	// Position (vec2)
+in vec4 inOceanDetailed2;	// yWater, yBack, yMid, yFront (float: 0.0 at top, +foo at bottom)
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
 
 // Outputs
+out vec4 yWaters;
 out float oceanWorldY;
 
 void main()
 {
-    gl_Position = paramOrthoMatrix * vec4(inOceanDetailed1.xy, -1.0, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inOceanDetailed1, -1.0, 1.0);
+    yWaters = inOceanDetailed2;
     oceanWorldY = inOceanDetailed1.y;
 }
 
@@ -26,9 +28,12 @@ void main()
 
 #version 120
 
+#include "ocean_surface.glslinc"
+
 #define in varying
 
 // Inputs from previous shader
+in vec4 yWaters;
 in float oceanWorldY;
 
 // Parameters

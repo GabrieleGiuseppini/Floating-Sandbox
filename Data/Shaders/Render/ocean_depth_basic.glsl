@@ -6,7 +6,7 @@
 #define out varying
 
 // Inputs
-in vec3 inOceanBasic;	// Position (vec2), Depth (float)
+in vec3 inOceanBasic;	// Position (vec2), IGNORED (float)
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
