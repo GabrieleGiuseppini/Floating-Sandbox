@@ -20,7 +20,7 @@ void main()
 {
     gl_Position = paramOrthoMatrix * vec4(inOceanDetailed1, -1.0, 1.0);
     worldCoords = inOceanDetailed1;
-    yVector = inOceanDetailed2;    
+    yVector = inOceanDetailed2;
 }
 
 
@@ -39,7 +39,7 @@ in vec4 yVector;
 // The texture
 uniform sampler2D paramOceanTexture;
 
-// Parameters        
+// Parameters
 uniform float paramEffectiveAmbientLightIntensity;
 uniform float paramOceanTransparency;
 uniform vec2 paramTextureScaling;
@@ -53,16 +53,16 @@ void main()
     float darkMix = 1.0 - exp(min(0.0, worldCoords.y) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
     vec3 textureColor = mix(
         texture2D(paramOceanTexture, textureCoord2 * paramTextureScaling).xyz,
-        vec3(0.), 
-        pow(darkMix, 3.0));
+        vec3(0.),
+        darkMix * darkMix * darkMix);
 
     // Apply detail
     vec4 color = CalculateOceanPlaneColor(
-        vec4(textureColor, (1.0 - paramOceanTransparency)), 
+        vec4(textureColor, (1.0 - paramOceanTransparency)),
         worldCoords.y,
-        yVector.y, yVector.z, yVector.w, 
+        yVector.y, yVector.z, yVector.w,
         paramOceanSurfaceBackPlaneToggle);
 
     // Combine
     gl_FragColor = vec4(color.xyz * paramEffectiveAmbientLightIntensity, color.w);
-} 
+}

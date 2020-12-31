@@ -1,60 +1,60 @@
 vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWorld, float yBackWorld, float yMidWorld, float yFrontWorld, float backPlaneToggle)
 {
     #define BorderWidthHalf 0.1
-    
+
     // Enlarge borders for steep vertical edges and for world dimensions
     float worldDimensionsAdjustment = abs(dFdy(yWorld)) * 1.5;
     float borderWidthHalfBack = BorderWidthHalf + abs(dFdx(yBackWorld)) + worldDimensionsAdjustment;
     float borderWidthHalfMid = BorderWidthHalf + abs(dFdx(yMidWorld)) + worldDimensionsAdjustment;
     float borderWidthHalfFront = BorderWidthHalf + abs(dFdx(yFrontWorld)) + worldDimensionsAdjustment;
-            
+
     // Color
-    
+
     // 1 when yWorld is below middle of the border, 0 otherwise
     float baseColorBack = step(yWorld, yBackWorld - borderWidthHalfBack);
     float baseColorMid = step(yWorld, yMidWorld - borderWidthHalfMid);
     float baseColorFront = step(yWorld, yFrontWorld - borderWidthHalfFront);
-        
+
     float baseColorAlpha =
         max(
             1. * baseColorFront,
             max(
                 .6 * baseColorMid * backPlaneToggle,
                 .5 * baseColorBack * backPlaneToggle));
-    
+
     //return vec4(baseColor, baseColorAlpha);
-    
+
     // Border
-            
+
     float borderBack =
         1. - smoothstep(0., borderWidthHalfBack, abs(yWorld - (yBackWorld - borderWidthHalfBack)));
-            
-    float borderMid = 
+
+    float borderMid =
         1. - smoothstep(0., borderWidthHalfMid, abs(yWorld - (yMidWorld - borderWidthHalfMid)));
-            
-    float borderFront = 
+
+    float borderFront =
         1. - smoothstep(0., borderWidthHalfFront, abs(yWorld - (yFrontWorld - borderWidthHalfFront)));
-    
+
     // epsilon when front is visible, 1 otherwise
     #define FrontObscuredAlpha 0.4
     float borderFrontOpaqueness = (1. - baseColorFront) * (1. - FrontObscuredAlpha) + FrontObscuredAlpha;
-    
+
     // epsilon when mid is visible, 1 otherwise
     #define MidObscuredAlpha 0.4
     float borderMidOpaqueness = (1. - baseColorMid) * (1. - MidObscuredAlpha) + MidObscuredAlpha;
-    
+
     float borderAlpha =
         max(
             1. * borderFront,
             max(
                 .9 * borderMid * borderFrontOpaqueness * backPlaneToggle,
                 .7 * borderBack * borderFrontOpaqueness * borderMidOpaqueness * backPlaneToggle));
-         
+
     //return vec4(1., 1., 1., borderAlpha);
-    
-    
+
+
     // Combine
-    
+
     vec4 finalColor = mix(
         vec4(baseColor.xyz, baseColorAlpha * baseColor.w),
         vec4(1.), // Border color

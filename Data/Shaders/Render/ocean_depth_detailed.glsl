@@ -47,16 +47,16 @@ void main()
     float darkMix = 1.0 - exp(min(0.0, yVector.x) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
     vec3 depthColor = mix(
         paramOceanDepthColorStart,
-        paramOceanDepthColorEnd, 
-        pow(darkMix, 3.0));
+        paramOceanDepthColorEnd,
+        darkMix * darkMix * darkMix);
 
     // Apply detail
     vec4 color = CalculateOceanPlaneColor(
         vec4(depthColor, (1.0 - paramOceanTransparency)),
-        yVector.x, 
-        yVector.y, yVector.z, yVector.w, 
+        yVector.x,
+        yVector.y, yVector.z, yVector.w,
         paramOceanSurfaceBackPlaneToggle);
 
     // Combine
     gl_FragColor = vec4(color.xyz * paramEffectiveAmbientLightIntensity, color.w);
-} 
+}
