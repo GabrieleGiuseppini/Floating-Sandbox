@@ -52,7 +52,6 @@ vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWorld, float yBackWorld, fl
 
     //return vec4(1., 1., 1., borderAlpha);
 
-
     // Combine
 
     vec4 finalColor = mix(

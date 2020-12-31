@@ -50,6 +50,14 @@ public:
     }
 
     template <typename Traits::ProgramType Program>
+    inline auto GetProgramOpenGLHandle()
+    {
+        uint32_t constexpr programIndex = static_cast<uint32_t>(Program);
+
+        return *(mPrograms[programIndex].OpenGLHandle);
+    }
+
+    template <typename Traits::ProgramType Program>
     inline void SetTextureParameters()
     {
         size_t programIndex = static_cast<size_t>(Program);
@@ -190,7 +198,6 @@ public:
 
         CheckOpenGLError();
     }
-
 
     // At any given moment, only one texture (unit) may be active
     template <typename Traits::ProgramParameterType Parameter>

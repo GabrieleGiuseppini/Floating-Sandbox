@@ -356,17 +356,24 @@ Render:
 				+ Adjust border thickness: redo vertex attributes so that yBack/Mid/Front are world, and texture is passed separately based off yMid
 				+ Also adjust border thickness with zoom parameter
 			+ Do WorldRenderContext machinery	
-			- Do OceanSurface::Upload detailed
+			= Do OceanSurface::Upload
 				+ Basic
+				- Decide which of the three planes is going to be the "at" plane
 				- Optimize w/whole samples
+					- Pre: UPDms=TODO
+					-
+					- POST: UPDms=TODO
 			- Test
 				- All 3 render modes
 					- Also with ocean depth = 0
 				- Old Dell
 			- See GLSL optimizations
-				- Beginning: RNDms=TODO
-				- No function but inline
-				- With assembly as well, https://gamedev.stackexchange.com/questions/65695/aquire-disassembly-of-shader-code
+				+ Beginning: RNDms=7.44
+				+ Less smoothsteps: 6.4/6.7
+				- Less fDxf calls
+				- Trimmed down shader with second pass
+					- Using #define's and #ifdef's
+						- Make sure ShaderManager supports global #define's: in SplitSource, just duplicate everything above first ###VERTEX into both portions
 				- End: RNDms=TODO
 			- Default is ON, but set at Calibration anyway
 				- From gfx properties & CPU properties
@@ -375,7 +382,7 @@ Render:
 
 		- Look back at SWE's
 			- Try re-instating skipped steps - just redo original implementation (two buffers, etc.)
-			- See damping; if good, consider two SWE fields: one for abnormals (undamped) and one for interactive (damped)
+			- See if may damp tiny oscillations; if good, consider two SWE fields: one for abnormals (undamped) and one for interactive (damped)
 
 		- Bug:
 			- Jacoh2 20/12/2020: fixing the boiler area on the small fleutzgrampher and akagi Maru crash the game
