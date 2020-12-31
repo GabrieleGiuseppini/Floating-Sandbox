@@ -309,8 +309,7 @@ Render:
 				+ Frontiers
 				+ Vector field length multiplier
 				+ Highlights
-
-		= Flames: 
+		+ Flames: 
 			+ Fix bottom issue with additional Y sorting
 			+ Rearchitect way we push foreground flames into vector, so to maintain ordering
 				+ Points::UploadFlames does two passes
@@ -329,7 +328,7 @@ Render:
 			+ Make GameJolt poll
 				+ Side-by-side video
 			+ Test with high wind
-			- changelist
+			+ changelist
 
 		= Water surface improvement:
 			+ Split shaders for all ocean types: "xxx_sq" and "xxx_hq"
@@ -378,7 +377,7 @@ Render:
 			- Default is ON, but set at Calibration anyway
 				- From gfx properties & CPU properties
 	
-		- Re-design little waves with wind gusts
+		+ Re-design little waves with wind gusts
 
 		- Look back at SWE's
 			- Try re-instating skipped steps - just redo original implementation (two buffers, etc.)
