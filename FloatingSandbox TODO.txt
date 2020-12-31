@@ -347,14 +347,14 @@ Render:
 				+ Debug build as well
 			+ See if WorldRenderContext::UploadWater(x2) Depth mode really needs yWater
 				+ If not: remove oceanDepth arg
-			= Do Detailed Shaders
+			+ Do Detailed Shaders
 				+ Exercise first on ShaderToy with parameter for back plane
 				+ Texture
 				+ Flat
 				+ Depth
 				+ Do BackToggle parameter at two draw's
 				+ Adjust border thickness: redo vertex attributes so that yBack/Mid/Front are world, and texture is passed separately based off yMid
-				- Also adjust border thickness with zoom parameter
+				+ Also adjust border thickness with zoom parameter
 			+ Do WorldRenderContext machinery
 			- Do OceanSurface::Upload detailed
 				+ Basic

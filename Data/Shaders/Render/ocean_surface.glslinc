@@ -1,10 +1,12 @@
 vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWorld, float yBackWorld, float yMidWorld, float yFrontWorld, float backPlaneToggle)
 {
-    #define BorderWidth 0.6
+    #define BorderWidth 0.2
     
-    float borderWidthBack = BorderWidth + abs(dFdx(yBackWorld)) * 2.;
-    float borderWidthMid = BorderWidth + abs(dFdx(yMidWorld)) * 2.;
-    float borderWidthFront = BorderWidth + abs(dFdx(yFrontWorld)) * 2.;
+    // Enlarge borders for steep vertical edges and for world dimensions
+    float worldDimensionsAdjustment = abs(dFdy(yWorld)) * 3.;
+    float borderWidthBack = BorderWidth + abs(dFdx(yBackWorld)) * 2. + worldDimensionsAdjustment;
+    float borderWidthMid = BorderWidth + abs(dFdx(yMidWorld)) * 2. + worldDimensionsAdjustment;
+    float borderWidthFront = BorderWidth + abs(dFdx(yFrontWorld)) * 2. + worldDimensionsAdjustment;
             
     // Color
     
