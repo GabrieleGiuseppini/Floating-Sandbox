@@ -391,8 +391,8 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
     static_assert(DetailType == OceanRenderDetailType::Basic || DetailType == OceanRenderDetailType::Detailed);
 
     float constexpr DetailXOffset = 1.2f;
-    float constexpr BackPlaneDamp = 0.9f;
-    float constexpr FrontPlaneDamp = 0.35f;
+    float constexpr MidPlaneDamp = 0.7f;
+    float constexpr BackPlaneDamp = 0.35f;
 
     //
     // We want to upload at most RenderSlices slices
@@ -435,8 +435,8 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
                     sampleIndexX,
                     // TODOTEST
                     GetHeightAt(std::max(sampleIndexX - DetailXOffset, -GameParameters::HalfMaxWorldWidth)) * BackPlaneDamp,
-                    GetHeightAt(sampleIndexX),
-                    GetHeightAt(std::min(sampleIndexX + DetailXOffset, GameParameters::HalfMaxWorldWidth)) * FrontPlaneDamp);
+                    GetHeightAt(sampleIndexX) * MidPlaneDamp,
+                    GetHeightAt(std::min(sampleIndexX + DetailXOffset, GameParameters::HalfMaxWorldWidth)));
         }
     }
     else
@@ -466,8 +466,8 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
                     sampleIndexX,
                     // TODOTEST
                     GetHeightAt(std::max(sampleIndexX - DetailXOffset, -GameParameters::HalfMaxWorldWidth)) * BackPlaneDamp,
-                    mSamples[s + sampleIndex].SampleValue,
-                    GetHeightAt(std::min(sampleIndexX + DetailXOffset, GameParameters::HalfMaxWorldWidth)) * FrontPlaneDamp);
+                    mSamples[s + sampleIndex].SampleValue * MidPlaneDamp,
+                    GetHeightAt(std::min(sampleIndexX + DetailXOffset, GameParameters::HalfMaxWorldWidth)));
         }
     }
 

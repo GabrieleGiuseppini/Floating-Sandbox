@@ -21,7 +21,7 @@ vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWorld, float yBackWorld, fl
         max(
             1. * baseColorFront,
             max(
-                .6 * baseColorMid,
+                .6 * baseColorMid * backPlaneToggle,
                 .5 * baseColorBack * backPlaneToggle));
     
     //return vec4(baseColor, baseColorAlpha);
@@ -52,7 +52,7 @@ vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWorld, float yBackWorld, fl
         max(
             1. * borderFront,
             max(
-                .9 * borderMid * borderFrontOpaqueness,
+                .9 * borderMid * borderFrontOpaqueness * backPlaneToggle,
                 .7 * borderBack * borderFrontOpaqueness * borderMidOpaqueness * backPlaneToggle));
          
     //return vec4(1., 1., 1., borderAlpha);
