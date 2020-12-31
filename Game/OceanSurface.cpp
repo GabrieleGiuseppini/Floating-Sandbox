@@ -391,7 +391,7 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
     static_assert(DetailType == OceanRenderDetailType::Basic || DetailType == OceanRenderDetailType::Detailed);
 
     // TODOHERE
-    float constexpr DetailXOffset = 2.0f * Dx;
+    float constexpr DetailXOffset = 1.0f * Dx;
 
     float constexpr MidPlaneDamp = 0.7f;
     float constexpr BackPlaneDamp = 0.35f;
@@ -435,6 +435,7 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
             else
                 renderContext.UploadOceanDetailed(
                     sampleIndexX,
+                    // TODOHERE
                     GetHeightAt(std::max(sampleIndexX - DetailXOffset * 2.0f, -GameParameters::HalfMaxWorldWidth)) * BackPlaneDamp,
                     GetHeightAt(std::max(sampleIndexX - DetailXOffset, -GameParameters::HalfMaxWorldWidth)) * MidPlaneDamp,
                     GetHeightAt(sampleIndexX));
@@ -465,7 +466,7 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
             else
                 renderContext.UploadOceanDetailed(
                     sampleIndexX,
-                    // TODOTEST
+                    // TODOHERE
                     GetHeightAt(std::max(sampleIndexX - DetailXOffset * 2.0f, -GameParameters::HalfMaxWorldWidth)) * BackPlaneDamp,
                     GetHeightAt(std::max(sampleIndexX - DetailXOffset, -GameParameters::HalfMaxWorldWidth)) * MidPlaneDamp,
                     mSamples[s + sampleIndex].SampleValue);
