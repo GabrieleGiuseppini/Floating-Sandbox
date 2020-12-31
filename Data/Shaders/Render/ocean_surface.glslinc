@@ -21,24 +21,21 @@ vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWorld, float yBackWorld, fl
         max(
             1. * baseColorFront,
             max(
-                .6 * baseColorMid * backPlaneToggle,
+                .6 * baseColorMid,
                 .5 * baseColorBack * backPlaneToggle));
     
     //return vec4(baseColor, baseColorAlpha);
     
     // Border
             
-    float borderBack = 
-        smoothstep(yBackWorld - borderWidthBack, yBackWorld - borderWidthBack / 2., yWorld)
-        - smoothstep(yBackWorld - borderWidthBack / 2., yBackWorld, yWorld);
+    float borderBack =
+        1. - smoothstep(0., borderWidthBack / 2., abs(yWorld - (yBackWorld - borderWidthBack / 2.)));
             
     float borderMid = 
-        smoothstep(yMidWorld - borderWidthMid, yMidWorld - borderWidthMid / 2., yWorld)
-        - smoothstep(yMidWorld - borderWidthMid / 2., yMidWorld, yWorld);
+        1. - smoothstep(0., borderWidthMid / 2., abs(yWorld - (yMidWorld - borderWidthMid / 2.)));
             
     float borderFront = 
-        smoothstep(yFrontWorld - borderWidthFront, yFrontWorld - borderWidthFront / 2., yWorld)
-        - smoothstep(yFrontWorld - borderWidthFront / 2., yFrontWorld, yWorld);
+        1. - smoothstep(0., borderWidthFront / 2., abs(yWorld - (yFrontWorld - borderWidthFront / 2.)));
     
     // epsilon when front is visible, 1 otherwise
     #define FrontObscuredAlpha 0.4
@@ -52,13 +49,14 @@ vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWorld, float yBackWorld, fl
         max(
             1. * borderFront,
             max(
-                .9 * borderMid * borderFrontOpaqueness * backPlaneToggle,
+                .9 * borderMid * borderFrontOpaqueness,
                 .7 * borderBack * borderFrontOpaqueness * borderMidOpaqueness * backPlaneToggle));
          
     //return vec4(1., 1., 1., borderAlpha);
     
     
     // Combine
+    
     vec4 finalColor = mix(
         vec4(baseColor.xyz, baseColorAlpha * baseColor.w),
         vec4(1.), // Border color
