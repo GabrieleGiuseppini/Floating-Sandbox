@@ -435,10 +435,9 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
             else
                 renderContext.UploadOceanDetailed(
                     sampleIndexX,
-                    // TODOTEST
-                    GetHeightAt(std::max(sampleIndexX - DetailXOffset, -GameParameters::HalfMaxWorldWidth)) * BackPlaneDamp,
-                    GetHeightAt(sampleIndexX) * MidPlaneDamp,
-                    GetHeightAt(std::min(sampleIndexX + DetailXOffset, GameParameters::HalfMaxWorldWidth)));
+                    GetHeightAt(std::max(sampleIndexX - DetailXOffset * 2.0f, -GameParameters::HalfMaxWorldWidth)) * BackPlaneDamp,
+                    GetHeightAt(std::max(sampleIndexX - DetailXOffset, -GameParameters::HalfMaxWorldWidth)) * MidPlaneDamp,
+                    GetHeightAt(sampleIndexX));
         }
     }
     else
@@ -467,9 +466,9 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
                 renderContext.UploadOceanDetailed(
                     sampleIndexX,
                     // TODOTEST
-                    GetHeightAt(std::max(sampleIndexX - DetailXOffset, -GameParameters::HalfMaxWorldWidth)) * BackPlaneDamp,
-                    mSamples[s + sampleIndex].SampleValue * MidPlaneDamp,
-                    GetHeightAt(std::min(sampleIndexX + DetailXOffset, GameParameters::HalfMaxWorldWidth)));
+                    GetHeightAt(std::max(sampleIndexX - DetailXOffset * 2.0f, -GameParameters::HalfMaxWorldWidth)) * BackPlaneDamp,
+                    GetHeightAt(std::max(sampleIndexX - DetailXOffset, -GameParameters::HalfMaxWorldWidth)) * MidPlaneDamp,
+                    mSamples[s + sampleIndex].SampleValue);
         }
     }
 
