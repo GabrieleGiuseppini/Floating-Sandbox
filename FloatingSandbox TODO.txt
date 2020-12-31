@@ -355,18 +355,15 @@ Render:
 				+ Adjust border thickness: redo vertex attributes so that yBack/Mid/Front are world, and texture is passed separately based off yMid
 				+ Also adjust border thickness with zoom parameter
 			+ Do WorldRenderContext machinery	
-			= Do OceanSurface::Upload
+			+ Do OceanSurface::Upload
 				+ Basic
 				+ Decide which of the three planes is going to be the "at" plane
-				- Optimize w/whole samples
-					- Pre: UPDms=TODO
-					-
-					- POST: UPDms=TODO
-			- Test
-				- All 3 render modes
-					- Also with ocean depth = 0
-				- Old Dell
-			- See GLSL optimizations
+				+ Optimize w/whole samples
+					+ Pre: UPDms=6.6
+					+ Do
+					+ POST: UPDms=6.5
+				+ Test with Debug build
+			= See GLSL optimizations
 				+ Beginning: RNDms=7.44
 				+ Less smoothsteps: 6.4/6.7
 				- Less fDxf calls
@@ -374,12 +371,19 @@ Render:
 					- Using #define's and #ifdef's
 						- Make sure ShaderManager supports global #define's: in SplitSource, just duplicate everything above first ###VERTEX into both portions
 				- End: RNDms=TODO
+			- Test
+				- All 3 render modes
+					- Also with ocean depth = 0
+				- Old Dell
 			- Default is ON, but set at Calibration anyway
 				- From gfx properties & CPU properties
 	
 		+ Re-design little waves with wind gusts
 
 		- Look back at SWE's
+			- Interactive state machine: 
+				- Fall from high might be a bit slower
+				- See if may simplify whole process, for example with decay processes
 			- Try re-instating skipped steps - just redo original implementation (two buffers, etc.)
 			- See if may damp tiny oscillations; if good, consider two SWE fields: one for abnormals (undamped) and one for interactive (damped)
 

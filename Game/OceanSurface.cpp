@@ -390,8 +390,7 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
 {
     static_assert(DetailType == OceanRenderDetailType::Basic || DetailType == OceanRenderDetailType::Detailed);
 
-    // TODOHERE
-    float constexpr DetailXOffset = 1.0f * Dx;
+    int64_t constexpr DetailXOffsetSamples = 1; // # of (whole) samples that the detailed planes are offset by
 
     float constexpr MidPlaneDamp = 0.7f;
     float constexpr BackPlaneDamp = 0.35f;
@@ -401,8 +400,8 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
     //
 
     // Find index of leftmost sample, and its corresponding world X
-    auto const sampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorld().TopLeft.x + GameParameters::HalfMaxWorldWidth) / Dx);
-    float sampleIndexX = -GameParameters::HalfMaxWorldWidth + (Dx * sampleIndex);
+    auto const leftmostSampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorld().TopLeft.x + GameParameters::HalfMaxWorldWidth) / Dx);
+    float sampleIndexX = -GameParameters::HalfMaxWorldWidth + (Dx * leftmostSampleIndex);
 
     // Calculate number of samples required to cover screen from leftmost sample
     // up to the visible world right (included)
@@ -428,17 +427,67 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
         // quad side must be at the end of the width
         for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexX += sliceDx)
         {
+            //
+            // Split sample index X into index in sample array and fractional part
+            // between that sample and the next
+            //
+
+            assert(sampleIndexX >= -GameParameters::HalfMaxWorldWidth
+                && sampleIndexX <= GameParameters::HalfMaxWorldWidth);
+
+            // Fractional index in the sample array
+            float const sampleIndexF = (sampleIndexX + GameParameters::HalfMaxWorldWidth) / Dx;
+
+            // Integral part
+            auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+
+            // Fractional part within sample index and the next sample index
+            float const sampleIndexDx = sampleIndexF - sampleIndexI;
+
+            assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+            assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
+
+            //
+            // Interpolate sample at sampleIndexX
+            //
+
+            float const sample =
+                mSamples[sampleIndexI].SampleValue
+                + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+
+            //
+            // Upload slice
+            //
+
             if constexpr (DetailType == OceanRenderDetailType::Basic)
+            {
                 renderContext.UploadOceanBasic(
                     sampleIndexX,
-                    GetHeightAt(sampleIndexX));
+                    sample);
+            }
             else
+            {
+                //
+                // Interpolate samples at sampleIndeX minus offsets,
+                // re-using the fractional part that we've already calculated for sampleIndexX
+                //
+
+                auto const indexBack = std::max(sampleIndexI - DetailXOffsetSamples * 2, int64_t(0));
+                float const sampleBack =
+                    mSamples[indexBack].SampleValue
+                    + mSamples[indexBack].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+
+                auto const indexMid = std::max(sampleIndexI - DetailXOffsetSamples, int64_t(0));
+                float const sampleMid =
+                    mSamples[indexMid].SampleValue
+                    + mSamples[indexMid].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+
                 renderContext.UploadOceanDetailed(
                     sampleIndexX,
-                    // TODOHERE
-                    GetHeightAt(std::max(sampleIndexX - DetailXOffset * 2.0f, -GameParameters::HalfMaxWorldWidth)) * BackPlaneDamp,
-                    GetHeightAt(std::max(sampleIndexX - DetailXOffset, -GameParameters::HalfMaxWorldWidth)) * MidPlaneDamp,
-                    GetHeightAt(sampleIndexX));
+                    sampleBack * BackPlaneDamp,
+                    sampleMid * MidPlaneDamp,
+                    sample);
+            }
         }
     }
     else
@@ -460,16 +509,19 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
         for (size_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexX += Dx)
         {
             if constexpr (DetailType == OceanRenderDetailType::Basic)
+            {
                 renderContext.UploadOceanBasic(
                     sampleIndexX,
-                    mSamples[s + sampleIndex].SampleValue);
+                    mSamples[leftmostSampleIndex + static_cast<int64_t>(s)].SampleValue);
+            }
             else
+            {
                 renderContext.UploadOceanDetailed(
                     sampleIndexX,
-                    // TODOHERE
-                    GetHeightAt(std::max(sampleIndexX - DetailXOffset * 2.0f, -GameParameters::HalfMaxWorldWidth)) * BackPlaneDamp,
-                    GetHeightAt(std::max(sampleIndexX - DetailXOffset, -GameParameters::HalfMaxWorldWidth)) * MidPlaneDamp,
-                    mSamples[s + sampleIndex].SampleValue);
+                    mSamples[std::max(leftmostSampleIndex + static_cast<int64_t>(s) - DetailXOffsetSamples * 2, int64_t(0))].SampleValue * BackPlaneDamp,
+                    mSamples[std::max(leftmostSampleIndex + static_cast<int64_t>(s) - DetailXOffsetSamples, int64_t(0))].SampleValue * MidPlaneDamp,
+                    mSamples[leftmostSampleIndex + static_cast<int64_t>(s)].SampleValue);
+            }
         }
     }
 
