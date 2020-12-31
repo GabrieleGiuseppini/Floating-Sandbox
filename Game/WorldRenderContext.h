@@ -352,12 +352,6 @@ public:
         RenderParameters const & renderParameters)
     {
         float const yTop = std::max(yBack, std::max(yMid, yFront));
-
-        // Anchor back/mid/front to 0 at top
-        float const yWaterBack = yTop - yBack;
-        float const yWaterMid = yTop - yMid;
-        float const yWaterFront = yTop - yFront;
-
         float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorld().BottomRight.y;
 
         //
@@ -368,40 +362,41 @@ public:
 
         oceanSegment.x1 = x;
         oceanSegment.y1 = yTop;
-        oceanSegment.yWaterBack1 = yWaterBack;
-        oceanSegment.yWaterMid1 = yWaterMid;
-        oceanSegment.yWaterFront1 = yWaterFront;
+        oceanSegment.yBack1 = yBack;
+        oceanSegment.yMid1 = yMid;
+        oceanSegment.yFront1 = yFront;
 
         oceanSegment.x2 = x;
         oceanSegment.y2 = yVisibleWorldBottom;
-        oceanSegment.yWaterBack2 = yWaterBack;
-        oceanSegment.yWaterMid2 = yWaterMid;
-        oceanSegment.yWaterFront2 = yWaterFront;
+        oceanSegment.yBack2 = yBack;
+        oceanSegment.yMid2 = yMid;
+        oceanSegment.yFront2 = yFront;
 
         switch (renderParameters.OceanRenderMode)
         {
             case OceanRenderModeType::Texture:
             {
-                // yWater serves as both yWorld (0 @ top -> +foo @ bottom) and as texture sample Y levels:
-                // anchor texture at top of wave, and set bottom at total visible height (after all, ocean texture repeats)
-                oceanSegment.yWater1 = 0.0f; // This is at yTop
-                oceanSegment.yWater2 = yTop - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
+                // Anchor textureY at 0.0 at top
+                oceanSegment.yTexture1 = 0.0f;
+                oceanSegment.yTexture2 = yMid - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
 
                 break;
             }
 
             case OceanRenderModeType::Depth:
             {
-                oceanSegment.yWater1 = 0.0f; // This is at yTop
-                oceanSegment.yWater2 = yTop - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
+                // Nop, but be nice
+                oceanSegment.yTexture1 = 0.0f;
+                oceanSegment.yTexture2 = 0.0f;
 
                 break;
             }
 
             case OceanRenderModeType::Flat:
             {
-                oceanSegment.yWater1 = 0.0f; // This is at yTop
-                oceanSegment.yWater2 = yTop - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
+                // Nop, but be nice
+                oceanSegment.yTexture1 = 0.0f;
+                oceanSegment.yTexture2 = 0.0f;
 
                 break;
             }
@@ -875,17 +870,17 @@ private:
     {
         float x1;
         float y1;
-        float yWater1;
-        float yWaterBack1;
-        float yWaterMid1;
-        float yWaterFront1;
+        float yTexture1;
+        float yBack1;
+        float yMid1;
+        float yFront1;
 
         float x2;
         float y2;
-        float yWater2;
-        float yWaterBack2;
-        float yWaterMid2;
-        float yWaterFront2;
+        float yTexture2;
+        float yBack2;
+        float yMid2;
+        float yFront2;
     };
 
     struct FishVertex

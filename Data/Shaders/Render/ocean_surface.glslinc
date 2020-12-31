@@ -1,45 +1,62 @@
-vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWater, float yBack, float yMid, float yFront, float backPlaneToggle)
+vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWorld, float yBackWorld, float yMidWorld, float yFrontWorld, float backPlaneToggle)
 {
     #define BorderWidth 0.6
+    
+    float borderWidthBack = BorderWidth + abs(dFdx(yBackWorld)) * 2.;
+    float borderWidthMid = BorderWidth + abs(dFdx(yMidWorld)) * 2.;
+    float borderWidthFront = BorderWidth + abs(dFdx(yFrontWorld)) * 2.;
             
-    float baseColorBack = step(yBack + BorderWidth/2., yWater);
-    float baseColorMid = step(yMid + BorderWidth/2., yWater);
-    float baseColorFront = step(yFront + BorderWidth/2., yWater);
+    // Color
+    
+    float baseColorBack = step(yWorld, yBackWorld - borderWidthBack / 2.);
+    float baseColorMid = step(yWorld, yMidWorld - borderWidthMid / 2.);
+    float baseColorFront = step(yWorld, yFrontWorld - borderWidthFront / 2.);
         
-    float baseColorFrontOpaqueness = (1. - step(yFront, yWater) * .7);
-    float baseColorMidOpaqueness = (1. - step(yMid, yWater) * .5);
+    float baseColorFrontOpaqueness = step(yFrontWorld, yWorld);
+    float baseColorMidOpaqueness = step(yMidWorld, yWorld);
     
     float baseColorAlpha =
         max(
             1. * baseColorFront,
             max(
-                .85 * baseColorMid * baseColorFrontOpaqueness,
-                .45 * baseColorBack * baseColorFrontOpaqueness * baseColorMidOpaqueness * backPlaneToggle));
-                
-    // Border
-          
-    float borderBack = 
-        smoothstep(yBack, yBack + BorderWidth / 2., yWater)
-        - smoothstep(yBack + BorderWidth / 2., yBack + BorderWidth, yWater);
-    float borderMid = 
-        smoothstep(yMid, yMid + BorderWidth / 2., yWater)
-        - smoothstep(yMid + BorderWidth / 2., yMid + BorderWidth, yWater);
-    float borderFront = 
-        smoothstep(yFront, yFront + BorderWidth / 2., yWater)
-        - smoothstep(yFront + BorderWidth / 2., yFront + BorderWidth, yWater);
+                .6 * baseColorMid,
+                .5 * baseColorBack * backPlaneToggle));
     
-    float borderFrontOpaqueness = (1. - step(yFront, yWater) * 1.);
-    float borderMidOpaqueness = (1. - step(yMid, yWater) * .5);
+    //return vec4(baseColor, baseColorAlpha);
+    
+    // Border
+            
+    float borderBack = 
+        smoothstep(yBackWorld - borderWidthBack, yBackWorld - borderWidthBack / 2., yWorld)
+        - smoothstep(yBackWorld - borderWidthBack / 2., yBackWorld, yWorld);
+            
+    float borderMid = 
+        smoothstep(yMidWorld - borderWidthMid, yMidWorld - borderWidthMid / 2., yWorld)
+        - smoothstep(yMidWorld - borderWidthMid / 2., yMidWorld, yWorld);
+            
+    float borderFront = 
+        smoothstep(yFrontWorld - borderWidthFront, yFrontWorld - borderWidthFront / 2., yWorld)
+        - smoothstep(yFrontWorld - borderWidthFront / 2., yFrontWorld, yWorld);
+    
+    // epsilon when front is visible, 1 otherwise
+    #define FrontObscuredAlpha 0.4
+    float borderFrontOpaqueness = (1. - baseColorFront) * (1. - FrontObscuredAlpha) + FrontObscuredAlpha;
+    
+    // epsilon when mid is visible, 1 otherwise
+    #define MidObscuredAlpha 0.4
+    float borderMidOpaqueness = (1. - baseColorMid) * (1. - MidObscuredAlpha) + MidObscuredAlpha;
     
     float borderAlpha =
         max(
             1. * borderFront,
             max(
-                .75 * borderMid * borderFrontOpaqueness,
-                .55 * borderBack * borderFrontOpaqueness * borderMidOpaqueness * backPlaneToggle));
-                    
-    // Combine
+                .9 * borderMid * borderFrontOpaqueness,
+                .7 * borderBack * borderFrontOpaqueness * borderMidOpaqueness * backPlaneToggle));
+         
+    //return vec4(1., 1., 1., borderAlpha);
     
+    
+    // Combine
     vec4 finalColor = mix(
         vec4(baseColor.xyz, baseColorAlpha * baseColor.w),
         vec4(1.), // Border color
