@@ -1,27 +1,25 @@
 vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWorld, float yBackWorld, float yMidWorld, float yFrontWorld, float backPlaneToggle)
 {
-    #define BorderWidth 0.2
+    #define BorderWidthHalf 0.1
     
     // Enlarge borders for steep vertical edges and for world dimensions
-    float worldDimensionsAdjustment = abs(dFdy(yWorld)) * 3.;
-    float borderWidthBack = BorderWidth + abs(dFdx(yBackWorld)) * 2. + worldDimensionsAdjustment;
-    float borderWidthMid = BorderWidth + abs(dFdx(yMidWorld)) * 2. + worldDimensionsAdjustment;
-    float borderWidthFront = BorderWidth + abs(dFdx(yFrontWorld)) * 2. + worldDimensionsAdjustment;
+    float worldDimensionsAdjustment = abs(dFdy(yWorld)) * 1.5;
+    float borderWidthHalfBack = BorderWidthHalf + abs(dFdx(yBackWorld)) + worldDimensionsAdjustment;
+    float borderWidthHalfMid = BorderWidthHalf + abs(dFdx(yMidWorld)) + worldDimensionsAdjustment;
+    float borderWidthHalfFront = BorderWidthHalf + abs(dFdx(yFrontWorld)) + worldDimensionsAdjustment;
             
     // Color
     
-    float baseColorBack = step(yWorld, yBackWorld - borderWidthBack / 2.);
-    float baseColorMid = step(yWorld, yMidWorld - borderWidthMid / 2.);
-    float baseColorFront = step(yWorld, yFrontWorld - borderWidthFront / 2.);
+    // 1 when yWorld is below middle of the border, 0 otherwise
+    float baseColorBack = step(yWorld, yBackWorld - borderWidthHalfBack);
+    float baseColorMid = step(yWorld, yMidWorld - borderWidthHalfMid);
+    float baseColorFront = step(yWorld, yFrontWorld - borderWidthHalfFront);
         
-    float baseColorFrontOpaqueness = step(yFrontWorld, yWorld);
-    float baseColorMidOpaqueness = step(yMidWorld, yWorld);
-    
     float baseColorAlpha =
         max(
             1. * baseColorFront,
             max(
-                .6 * baseColorMid,
+                .6 * baseColorMid * backPlaneToggle,
                 .5 * baseColorBack * backPlaneToggle));
     
     //return vec4(baseColor, baseColorAlpha);
@@ -29,13 +27,13 @@ vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWorld, float yBackWorld, fl
     // Border
             
     float borderBack =
-        1. - smoothstep(0., borderWidthBack / 2., abs(yWorld - (yBackWorld - borderWidthBack / 2.)));
+        1. - smoothstep(0., borderWidthHalfBack, abs(yWorld - (yBackWorld - borderWidthHalfBack)));
             
     float borderMid = 
-        1. - smoothstep(0., borderWidthMid / 2., abs(yWorld - (yMidWorld - borderWidthMid / 2.)));
+        1. - smoothstep(0., borderWidthHalfMid, abs(yWorld - (yMidWorld - borderWidthHalfMid)));
             
     float borderFront = 
-        1. - smoothstep(0., borderWidthFront / 2., abs(yWorld - (yFrontWorld - borderWidthFront / 2.)));
+        1. - smoothstep(0., borderWidthHalfFront, abs(yWorld - (yFrontWorld - borderWidthHalfFront)));
     
     // epsilon when front is visible, 1 otherwise
     #define FrontObscuredAlpha 0.4
@@ -49,7 +47,7 @@ vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWorld, float yBackWorld, fl
         max(
             1. * borderFront,
             max(
-                .9 * borderMid * borderFrontOpaqueness,
+                .9 * borderMid * borderFrontOpaqueness * backPlaneToggle,
                 .7 * borderBack * borderFrontOpaqueness * borderMidOpaqueness * backPlaneToggle));
          
     //return vec4(1., 1., 1., borderAlpha);
