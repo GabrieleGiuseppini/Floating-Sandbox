@@ -390,7 +390,8 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
 {
     static_assert(DetailType == OceanRenderDetailType::Basic || DetailType == OceanRenderDetailType::Detailed);
 
-    float constexpr DetailXOffset = 1.2f;
+    float constexpr DetailXOffset = 2.0f * Dx;
+
     float constexpr MidPlaneDamp = 0.7f;
     float constexpr BackPlaneDamp = 0.35f;
 
