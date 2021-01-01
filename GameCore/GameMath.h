@@ -170,7 +170,7 @@ inline float LinearStep(
     float rEdge,
     float x) noexcept
 {
-    assert(lEdge <= rEdge);
+    assert(lEdge < rEdge);
 
     return Clamp((x - lEdge) / (rEdge - lEdge), 0.0f, 1.0f);
 }
@@ -180,7 +180,7 @@ inline float SmoothStep(
     float rEdge,
     float x) noexcept
 {
-    assert(lEdge <= rEdge);
+    assert(lEdge < rEdge);
 
     x = Clamp((x - lEdge) / (rEdge - lEdge), 0.0f, 1.0f);
 

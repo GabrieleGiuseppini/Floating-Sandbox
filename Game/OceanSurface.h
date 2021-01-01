@@ -326,13 +326,15 @@ private:
 
     private:
 
-        float CalculateCurrentPhaseDuration();
-
         enum class WavePhaseType
         {
             Rise,
             Fall
         };
+
+        static float CalculatePhaseDuration(
+            WavePhaseType wavePhase,
+            float deltaHeight);
 
         size_t const mCenterIndex;
         float const mLowHeight;

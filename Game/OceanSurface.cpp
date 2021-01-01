@@ -953,28 +953,71 @@ OceanSurface::SWEInteractiveWaveStateMachine::SWEInteractiveWaveStateMachine(
     , mCurrentHeight(startHeight)
     , mStartSimulationTime(currentSimulationTime)
     , mCurrentWavePhase(WavePhaseType::Rise)
-    , mCurrentPhaseDuration(CalculateCurrentPhaseDuration())
+    , mCurrentPhaseDuration(CalculatePhaseDuration(WavePhaseType::Rise, targetHeight - startHeight))
 {}
 
 void OceanSurface::SWEInteractiveWaveStateMachine::Restart(
     float restartHeight,
     float currentSimulationTime)
 {
-    LogMessage("TODOTEST: Restart: cur=", mCurrentHeight, " new=", restartHeight);
+    if (mCurrentWavePhase == WavePhaseType::Rise)
+    {
+        // Restart during rise...
 
-    // Rise in any case, and our new target is the restart height
-    mCurrentPhaseStartHeight = mCurrentHeight;
-    mCurrentPhaseTargetHeight = restartHeight;
-    mStartSimulationTime = currentSimulationTime;
-    mCurrentWavePhase = WavePhaseType::Rise;
+        // ...extend the current smoothing, keeping the following invariants:
+        // - The current value
+        // - The current time
+        // - The "slope" at the current time
 
-    mCurrentPhaseDuration = CalculateCurrentPhaseDuration();
+        // Calculate current timestamp as fraction of duration
+        //
+        // We need to make sure we're not too close to 1.0f, or else
+        // values start diverging too much.
+        // We may safely clamp down to 0.9 as the value will stay and the slope
+        // will only change marginally.
+        float const elapsed = currentSimulationTime - mStartSimulationTime;
+        float const progressFraction = std::min(
+            elapsed / mCurrentPhaseDuration,
+            0.9f);
+
+        // Calculate new duration which would be required to go
+        // from where we are at now to our target
+        float const newDuration = CalculatePhaseDuration(WavePhaseType::Rise, restartHeight - mCurrentHeight);
+
+        // Calculate fictitious start timestamp so that current elapsed is
+        // to old duration like new elapsed would be to new duration
+        mStartSimulationTime = currentSimulationTime - newDuration * progressFraction;
+
+        // Our new target is the restart target
+        mCurrentPhaseTargetHeight = restartHeight;
+
+        // Calculate fictitious start value so that calculated current value
+        // at current timestamp matches current value:
+        //  newStartValue = currentValue - f(newEndValue - newStartValue)
+        float const valueFraction = SmoothStep(0.0f, 1.0f, progressFraction);
+        mCurrentPhaseStartHeight =
+            (mCurrentHeight - mCurrentPhaseTargetHeight * valueFraction)
+            / (1.0f - valueFraction);
+
+        // Store new duration
+        mCurrentPhaseDuration = newDuration;
+    }
+    else
+    {
+        // Restart during fall...
+
+        // ...start from scratch
+        mCurrentPhaseStartHeight = mCurrentHeight;
+        mCurrentPhaseTargetHeight = restartHeight;
+        mStartSimulationTime = currentSimulationTime;
+        mCurrentWavePhase = WavePhaseType::Rise;
+
+        mCurrentPhaseDuration = CalculatePhaseDuration(WavePhaseType::Rise, mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight);
+    }
 }
 
 void OceanSurface::SWEInteractiveWaveStateMachine::Release(float currentSimulationTime)
 {
-    LogMessage("TODOTEST: Release: cur=", mCurrentHeight, " new=", mLowHeight);
-
     assert(mCurrentWavePhase == WavePhaseType::Rise);
 
     // Start falling
@@ -983,22 +1026,13 @@ void OceanSurface::SWEInteractiveWaveStateMachine::Release(float currentSimulati
     mStartSimulationTime = currentSimulationTime;
     mCurrentWavePhase = WavePhaseType::Fall;
 
-    mCurrentPhaseDuration = CalculateCurrentPhaseDuration();
+    mCurrentPhaseDuration = CalculatePhaseDuration(WavePhaseType::Fall, mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight);
 }
 
 std::optional<float> OceanSurface::SWEInteractiveWaveStateMachine::Update(
     float currentSimulationTime)
 {
     float const elapsed = currentSimulationTime - mStartSimulationTime;
-
-    /* TODOTEST
-    // Calculate sinusoidal progress
-    float const sinProgress = sin(Pi<float> / 2.0f * std::min(mCurrentProgress, 1.0f));
-
-    // Calculate new height value
-    mCurrentHeight =
-        mCurrentPhaseStartHeight + (mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight) * sinProgress;
-    */
 
     // Calculate smooth progress
     float const smoothProgress = SmoothStep(
@@ -1014,7 +1048,6 @@ std::optional<float> OceanSurface::SWEInteractiveWaveStateMachine::Update(
     if (elapsed >= mCurrentPhaseDuration
         && WavePhaseType::Fall == mCurrentWavePhase)
     {
-        LogMessage("TODOTEST: Done");
         // We're done
         return std::nullopt;
     }
@@ -1022,67 +1055,18 @@ std::optional<float> OceanSurface::SWEInteractiveWaveStateMachine::Update(
     return mCurrentHeight;
 }
 
-float OceanSurface::SWEInteractiveWaveStateMachine::CalculateCurrentPhaseDuration()
+float OceanSurface::SWEInteractiveWaveStateMachine::CalculatePhaseDuration(
+    WavePhaseType wavePhase,
+    float deltaHeight)
 {
-    float maxDurationSimulationSeconds;
-
-    if (mCurrentWavePhase == WavePhaseType::Rise) // If falling up, we want a slower fall
-    {
-        maxDurationSimulationSeconds = 3.0f;
-    }
-    else
-    {
-        maxDurationSimulationSeconds = 0.75f;
-    }
+    float maxDurationSimulationSeconds = (wavePhase == WavePhaseType::Rise)
+        ? 3.0f
+        : 0.65f;
 
     // Duration is "smoothly proportional" to delta height
-    maxDurationSimulationSeconds *= SmoothStep(0.0f, 0.1f, std::abs(mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight));
-
-    LogMessage("TODOHERE: maxDurationSim=", maxDurationSimulationSeconds, " d=", std::abs(mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight));
+    maxDurationSimulationSeconds *= SmoothStep(0.0f, 0.1f, std::abs(deltaHeight));
 
     return maxDurationSimulationSeconds;
-
-    /* TODOOLD
-    float const deltaH = std::min(
-        std::abs(mCurrentPhaseTargetHeight - mCurrentHeight),
-        SWEHeightFieldOffset / 5.0f);
-
-    float delayTicks;
-    if (mCurrentWavePhase == WavePhaseType::Rise
-        || mCurrentPhaseStartHeight < mCurrentPhaseTargetHeight) // If falling up, we want a slower fall
-    {
-        //
-        // Number of ticks must fit:
-        //  DeltaH=0.0  => Ticks=0.0
-        //  DeltaH=0.2  => Ticks=8.0
-        //  DeltaH=2.0  => Ticks=150.0
-        //  DeltaH=4.0  => Ticks=200.0
-        //  DeltaH>4.0  => Ticks~=200.0
-        // y = -19.88881 - (-147.403/0.6126081)*(1 - e^(-0.6126081*x))
-        delayTicks =
-            -19.88881f
-            + (147.403f / 0.6126081f) * (1.0f - exp(-0.6126081f * deltaH));
-    }
-    else
-    {
-        //
-        // Number of ticks must fit:
-        //  DeltaH=0.1  => Ticks=2.0
-        //  DeltaH=0.25 => Ticks=3.0
-        //  DeltaH=1.0  => Ticks=7.0
-        //  DeltaH=2.0  => Ticks=10.0
-        // y = 1.220013 - (-7.8394/0.6485749)*(1 - e^(-0.6485749*x))
-        delayTicks =
-            1.220013f
-            + (7.8394f / 0.6485749f) * (1.0f - exp(-0.6485749f * deltaH));
-    }
-
-    float const delay =
-        std::max(delayTicks, 1.0f)
-        * GameParameters::SimulationStepTimeDuration<float>;
-
-    return delay;
-    */
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
