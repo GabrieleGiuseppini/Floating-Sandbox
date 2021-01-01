@@ -366,7 +366,7 @@ Render:
 			= See GLSL optimizations
 				+ Beginning: RNDms=7.44
 				+ Less smoothsteps: 6.4/6.7
-				- Less fDxf calls
+				- Less fDxf calls?
 				- Trimmed down shader with second pass
 					- Using #define's and #ifdef's
 						- Make sure ShaderManager supports global #define's: in SplitSource, just duplicate everything above first ###VERTEX into both portions
@@ -381,11 +381,15 @@ Render:
 		+ Re-design little waves with wind gusts
 
 		- Look back at SWE's
-			- Interactive state machine: 
+			- Interactive state machine: 				
+				= Use smoothstep process
+					+ Time to end of phase should be proportional to deltaH
+						+ Try all the way
+				- Try with decay process
 				- Fall from high might be a bit slower
-				- See if may simplify whole process, for example with decay processes
 			- Try re-instating skipped steps - just redo original implementation (two buffers, etc.)
 			- See if may damp tiny oscillations; if good, consider two SWE fields: one for abnormals (undamped) and one for interactive (damped)
+				- Actually, just two velocity fields, always used in sum, but one is damped and the other is not
 
 		- Bug:
 			- Jacoh2 20/12/2020: fixing the boiler area on the small fleutzgrampher and akagi Maru crash the game

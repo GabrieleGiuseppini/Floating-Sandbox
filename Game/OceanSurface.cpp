@@ -951,62 +951,70 @@ OceanSurface::SWEInteractiveWaveStateMachine::SWEInteractiveWaveStateMachine(
     , mCurrentPhaseStartHeight(startHeight)
     , mCurrentPhaseTargetHeight(targetHeight)
     , mCurrentHeight(startHeight)
-    , mCurrentProgress(0.0f)
     , mStartSimulationTime(currentSimulationTime)
     , mCurrentWavePhase(WavePhaseType::Rise)
-    , mCurrentSmoothingDelay(CalculateSmoothingDelay())
+    , mCurrentPhaseDuration(CalculateCurrentPhaseDuration())
 {}
 
 void OceanSurface::SWEInteractiveWaveStateMachine::Restart(
     float restartHeight,
     float currentSimulationTime)
 {
+    LogMessage("TODOTEST: Restart: cur=", mCurrentHeight, " new=", restartHeight);
+
     // Rise in any case, and our new target is the restart height
     mCurrentPhaseStartHeight = mCurrentHeight;
     mCurrentPhaseTargetHeight = restartHeight;
-    mCurrentProgress = 0.0f;
     mStartSimulationTime = currentSimulationTime;
     mCurrentWavePhase = WavePhaseType::Rise;
 
-    // Recalculate delay
-    mCurrentSmoothingDelay = CalculateSmoothingDelay();
+    mCurrentPhaseDuration = CalculateCurrentPhaseDuration();
 }
 
 void OceanSurface::SWEInteractiveWaveStateMachine::Release(float currentSimulationTime)
 {
+    LogMessage("TODOTEST: Release: cur=", mCurrentHeight, " new=", mLowHeight);
+
     assert(mCurrentWavePhase == WavePhaseType::Rise);
 
     // Start falling
     mCurrentPhaseStartHeight = mCurrentHeight;
     mCurrentPhaseTargetHeight = mLowHeight;
-    mCurrentProgress = 0.0f;
     mStartSimulationTime = currentSimulationTime;
     mCurrentWavePhase = WavePhaseType::Fall;
-    mCurrentSmoothingDelay = CalculateSmoothingDelay();
+
+    mCurrentPhaseDuration = CalculateCurrentPhaseDuration();
 }
 
 std::optional<float> OceanSurface::SWEInteractiveWaveStateMachine::Update(
     float currentSimulationTime)
 {
-    // Advance iff we are not done yet
-    if (mCurrentProgress < 1.0f)
-    {
-        mCurrentProgress =
-            (currentSimulationTime - mStartSimulationTime)
-            / mCurrentSmoothingDelay;
-    }
+    float const elapsed = currentSimulationTime - mStartSimulationTime;
 
+    /* TODOTEST
     // Calculate sinusoidal progress
     float const sinProgress = sin(Pi<float> / 2.0f * std::min(mCurrentProgress, 1.0f));
 
     // Calculate new height value
     mCurrentHeight =
         mCurrentPhaseStartHeight + (mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight) * sinProgress;
+    */
+
+    // Calculate smooth progress
+    float const smoothProgress = SmoothStep(
+        0.0f,
+        mCurrentPhaseDuration,
+        elapsed);
+
+    // Calculate new height value
+    mCurrentHeight =
+        mCurrentPhaseStartHeight + (mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight) * smoothProgress;
 
     // Check whether it's time to shut down
-    if (mCurrentProgress >= 1.0f
+    if (elapsed >= mCurrentPhaseDuration
         && WavePhaseType::Fall == mCurrentWavePhase)
     {
+        LogMessage("TODOTEST: Done");
         // We're done
         return std::nullopt;
     }
@@ -1014,8 +1022,27 @@ std::optional<float> OceanSurface::SWEInteractiveWaveStateMachine::Update(
     return mCurrentHeight;
 }
 
-float OceanSurface::SWEInteractiveWaveStateMachine::CalculateSmoothingDelay()
+float OceanSurface::SWEInteractiveWaveStateMachine::CalculateCurrentPhaseDuration()
 {
+    float maxDurationSimulationSeconds;
+
+    if (mCurrentWavePhase == WavePhaseType::Rise) // If falling up, we want a slower fall
+    {
+        maxDurationSimulationSeconds = 3.0f;
+    }
+    else
+    {
+        maxDurationSimulationSeconds = 0.75f;
+    }
+
+    // Duration is "smoothly proportional" to delta height
+    maxDurationSimulationSeconds *= SmoothStep(0.0f, 0.1f, std::abs(mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight));
+
+    LogMessage("TODOHERE: maxDurationSim=", maxDurationSimulationSeconds, " d=", std::abs(mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight));
+
+    return maxDurationSimulationSeconds;
+
+    /* TODOOLD
     float const deltaH = std::min(
         std::abs(mCurrentPhaseTargetHeight - mCurrentHeight),
         SWEHeightFieldOffset / 5.0f);
@@ -1055,6 +1082,7 @@ float OceanSurface::SWEInteractiveWaveStateMachine::CalculateSmoothingDelay()
         * GameParameters::SimulationStepTimeDuration<float>;
 
     return delay;
+    */
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

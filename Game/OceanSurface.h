@@ -326,7 +326,7 @@ private:
 
     private:
 
-        float CalculateSmoothingDelay();
+        float CalculateCurrentPhaseDuration();
 
         enum class WavePhaseType
         {
@@ -339,10 +339,10 @@ private:
         float mCurrentPhaseStartHeight;
         float mCurrentPhaseTargetHeight;
         float mCurrentHeight;
-        float mCurrentProgress; // Between 0 and 1, regardless of direction
         float mStartSimulationTime;
         WavePhaseType mCurrentWavePhase;
-        float mCurrentSmoothingDelay;
+
+        float mCurrentPhaseDuration;
     };
 
     std::optional<SWEInteractiveWaveStateMachine> mSWEInteractiveWaveStateMachine;
