@@ -99,8 +99,7 @@ bbb
 
 TEST_F(ShaderManagerTests, SplitsShaders)
 {
-    std::string source = R"(
-    ###VERTEX
+    std::string source = R"(###VERTEX
 vfoo
     ###FRAGMENT
  fbar
@@ -112,10 +111,26 @@ vfoo
     EXPECT_EQ(" fbar\n", fragmentSource);
 }
 
+TEST_F(ShaderManagerTests, SplitsShaders_DuplicatesCommonSectionToVertexAndFragment)
+{
+    std::string source = R"(  #define foo bar this is common
+
+another define
+    ###VERTEX
+vfoo
+    ###FRAGMENT
+ fbar
+)";
+
+    auto [vertexSource, fragmentSource] = TestShaderManager::SplitSource(source);
+
+    EXPECT_EQ("  #define foo bar this is common\n\nanother define\nvfoo\n", vertexSource);
+    EXPECT_EQ("  #define foo bar this is common\n\nanother define\n fbar\n", fragmentSource);
+}
+
 TEST_F(ShaderManagerTests, SplitsShaders_ErrorsOnMissingVertexSection)
 {
-    std::string source = R"(
-vfoo
+    std::string source = R"(vfoo
 ###FRAGMENT
 fbar
     )";
@@ -136,8 +151,7 @@ TEST_F(ShaderManagerTests, SplitsShaders_ErrorsOnMissingVertexSection_EmptyFile)
 
 TEST_F(ShaderManagerTests, SplitsShaders_ErrorsOnMissingFragmentSection)
 {
-    std::string source = R"(
-###VERTEX
+    std::string source = R"(###VERTEX
 vfoo
 fbar
     )";

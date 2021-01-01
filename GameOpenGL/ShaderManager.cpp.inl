@@ -286,29 +286,29 @@ std::tuple<std::string, std::string> ShaderManager<Traits>::SplitSource(std::str
     std::string line;
 
     //
-    // Vertex shader
+    // Common code
     //
 
-    // Eat blank lines
+    std::stringstream commonCode;
+
     while (true)
     {
         if (!std::getline(sSource, line))
-        {
             throw GameException("Cannot find ***VERTEX declaration");
-        }
 
-        if (!line.empty())
-        {
-            if (!std::regex_match(line, VertexHeaderRegex))
-            {
-                throw GameException("Cannot find ***VERTEX declaration");
-            }
-
+        if (std::regex_match(line, VertexHeaderRegex))
             break;
-        }
+
+        commonCode << line << sSource.widen('\n');
     }
 
+    //
+    // Vertex shader
+    //
+
     std::stringstream vertexShader;
+
+    vertexShader << commonCode.str();
 
     while (true)
     {
@@ -328,13 +328,17 @@ std::tuple<std::string, std::string> ShaderManager<Traits>::SplitSource(std::str
 
     std::stringstream fragmentShader;
 
+    fragmentShader << commonCode.str();
+
     while (std::getline(sSource, line))
     {
         fragmentShader << line << sSource.widen('\n');
     }
 
 
-    return std::make_tuple(vertexShader.str(), fragmentShader.str());
+    return std::make_tuple(
+        vertexShader.str(),
+        fragmentShader.str());
 }
 
 template<typename Traits>

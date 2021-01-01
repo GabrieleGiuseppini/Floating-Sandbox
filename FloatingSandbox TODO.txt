@@ -371,7 +371,7 @@ Render:
 				+ Less smoothsteps: 6.4/6.7				
 				- Trimmed down shader with second pass
 					- Using #define's and #ifdef's
-						- Make sure ShaderManager supports global #define's: in SplitSource, just duplicate everything above first ###VERTEX into both portions
+						+ Make sure ShaderManager supports global #define's: in SplitSource, just duplicate everything above first ###VERTEX into both portions
 				- Less fDxf calls?
 				- End: RNDms=TODO
 			- Test
