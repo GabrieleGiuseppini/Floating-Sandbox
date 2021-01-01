@@ -1477,7 +1477,7 @@ void MainFrame::OnReloadCurrentShipMenuItemSelected(wxCommandEvent & /*event*/)
 
     try
     {
-        mGameController->ResetAndLoadShip(mCurrentShipFilePath);
+        mGameController->ResetAndReloadShip(mCurrentShipFilePath);
 
         // Succeeded
         OnShipLoaded(mCurrentShipFilePath);
@@ -1496,7 +1496,7 @@ void MainFrame::OnReloadPreviousShipMenuItemSelected(wxCommandEvent & /*event*/)
 
     try
     {
-        mGameController->ResetAndLoadShip(mPreviousShipFilePath);
+        mGameController->ResetAndReloadShip(mPreviousShipFilePath);
 
         // Succeeded
         OnShipLoaded(mPreviousShipFilePath);

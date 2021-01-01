@@ -384,9 +384,12 @@ Render:
 			= Interactive state machine: 				
 				+ Use smoothstep process
 					+ Time to end of phase should be proportional to deltaH
-						+ Try all the way				
+						+ Try all the way
+						+ Still, mid-deltaH is too slow
 				+ Try restart with same algo as ParamSmoother
-				- Try with decay process
+				+ Make duration based on delta between target and baseline, rather than delta between target and now
+				- Try with decay process on fall
+
 				- changelist: "Improved physics of interactive waves"
 			- Try re-instating skipped steps - just redo original implementation (two buffers, etc.)
 			- See if may damp tiny oscillations; if good, consider two SWE fields: one for abnormals (undamped) and one for interactive (damped)

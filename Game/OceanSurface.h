@@ -337,7 +337,7 @@ private:
             float deltaHeight);
 
         size_t const mCenterIndex;
-        float const mLowHeight;
+        float const mOriginalHeight;
         float mCurrentPhaseStartHeight;
         float mCurrentPhaseTargetHeight;
         float mCurrentHeight;

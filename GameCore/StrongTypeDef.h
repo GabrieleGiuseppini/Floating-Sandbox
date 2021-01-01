@@ -3,6 +3,7 @@
  * Created:				2020-12-28
  * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
+#pragma once
 
 #include <istream>
 #include <ostream>
@@ -113,5 +114,8 @@ inline std::istream & operator>>(std::istream & stream, StrongTypeDef<TValue, TT
 template<typename TTag>
 using StrongTypedBool = StrongTypeDef<bool, TTag>;
 
-template<typename TTag> constexpr StrongTypedBool<TTag> StrongTypedTrue(true);
-template<typename TTag> constexpr StrongTypedBool<TTag> StrongTypedFalse(false);
+template<typename TTag>
+constexpr StrongTypedBool<TTag> StrongTypedTrue(true);
+
+template<typename TTag>
+constexpr StrongTypedBool<TTag> StrongTypedFalse(false);

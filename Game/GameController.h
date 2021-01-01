@@ -29,6 +29,7 @@
 #include <GameCore/ImageSize.h>
 #include <GameCore/ParameterSmoother.h>
 #include <GameCore/ProgressCallback.h>
+#include <GameCore/StrongTypeDef.h>
 #include <GameCore/Vectors.h>
 
 #include <algorithm>
@@ -117,6 +118,7 @@ public:
     void RebindOpenGLContext(std::function<void()> rebindContextFunction);
 
     ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) override;
+    ShipMetadata ResetAndReloadShip(std::filesystem::path const & shipDefinitionFilepath) override;
     ShipMetadata AddShip(std::filesystem::path const & shipDefinitionFilepath) override;
 
     RgbImageData TakeScreenshot() override;
@@ -736,13 +738,17 @@ private:
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 
+    ShipMetadata ResetAndLoadShip(
+        std::filesystem::path const & shipDefinitionFilepath,
+        StrongTypedBool<struct DoAutoZoom> doAutoZoom);
+
     void Reset(std::unique_ptr<Physics::World> newWorld);
 
     void OnShipAdded(
         ShipId shipId,
         RgbaImageData && textureImage,
         ShipMetadata const & shipMetadata,
-        bool doAutoZoom);
+        StrongTypedBool<struct DoAutoZoom> doAutoZoom);
 
     void PublishStats(std::chrono::steady_clock::time_point nowReal);
 

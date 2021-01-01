@@ -41,6 +41,7 @@ struct IGameController
     virtual void RegisterGenericEventHandler(IGenericGameEventHandler * handler) = 0;
 
     virtual ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) = 0;
+    virtual ShipMetadata ResetAndReloadShip(std::filesystem::path const & shipDefinitionFilepath) = 0;
     virtual ShipMetadata AddShip(std::filesystem::path const & shipDefinitionFilepath) = 0;
 
     virtual RgbImageData TakeScreenshot() = 0;
