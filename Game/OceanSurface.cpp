@@ -953,7 +953,8 @@ OceanSurface::SWEInteractiveWaveStateMachine::SWEInteractiveWaveStateMachine(
     , mCurrentHeight(startHeight)
     , mStartSimulationTime(currentSimulationTime)
     , mCurrentWavePhase(WavePhaseType::Rise)
-    , mCurrentPhaseDuration(CalculatePhaseDuration(WavePhaseType::Rise, targetHeight - mOriginalHeight))
+    , mRisingPhaseDuration(CalculateRisingPhaseDuration(targetHeight - mOriginalHeight))
+    , mFallingPhaseDecayCoefficient(0.0f) // Will be calculated when needed
 {
 }
 
@@ -978,12 +979,12 @@ void OceanSurface::SWEInteractiveWaveStateMachine::Restart(
         // will only change marginally.
         float const elapsed = currentSimulationTime - mStartSimulationTime;
         float const progressFraction = std::min(
-            elapsed / mCurrentPhaseDuration,
+            elapsed / mRisingPhaseDuration,
             0.9f);
 
         // Calculate new duration which would be required to go
         // from where we started from, up to our new target
-        float const newDuration = CalculatePhaseDuration(WavePhaseType::Rise, restartHeight - mOriginalHeight);
+        float const newDuration = CalculateRisingPhaseDuration(restartHeight - mOriginalHeight);
 
         // Calculate fictitious start timestamp so that current elapsed is
         // to old duration like new elapsed would be to new duration
@@ -1001,19 +1002,19 @@ void OceanSurface::SWEInteractiveWaveStateMachine::Restart(
             / (1.0f - valueFraction);
 
         // Store new duration
-        mCurrentPhaseDuration = newDuration;
+        mRisingPhaseDuration = newDuration;
     }
     else
     {
         // Restart during fall...
 
-        // ...start from scratch
+        // ...start rising from scratch
         mCurrentPhaseStartHeight = mCurrentHeight;
         mCurrentPhaseTargetHeight = restartHeight;
         mStartSimulationTime = currentSimulationTime;
         mCurrentWavePhase = WavePhaseType::Rise;
 
-        mCurrentPhaseDuration = CalculatePhaseDuration(WavePhaseType::Rise, restartHeight - mOriginalHeight);
+        mRisingPhaseDuration = CalculateRisingPhaseDuration(restartHeight - mOriginalHeight);
     }
 }
 
@@ -1027,79 +1028,69 @@ void OceanSurface::SWEInteractiveWaveStateMachine::Release(float currentSimulati
     mStartSimulationTime = currentSimulationTime;
     mCurrentWavePhase = WavePhaseType::Fall;
 
-    mCurrentPhaseDuration = CalculatePhaseDuration(WavePhaseType::Fall, mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight);
+    // Calculate decay coefficient based on delta to fall
+    mFallingPhaseDecayCoefficient = CalculateFallingPhaseDecayCoefficient(mCurrentHeight - mOriginalHeight);
 }
 
 std::optional<float> OceanSurface::SWEInteractiveWaveStateMachine::Update(
     float currentSimulationTime)
 {
-    // TODOHERE: smoothstep vs decay process
-
-    ///*
-
-    float const elapsed = currentSimulationTime - mStartSimulationTime;
-
-    // Calculate height as f(elapsed)
-
-    float const smoothFactor = SmoothStep(
-        0.0f,
-        mCurrentPhaseDuration,
-        elapsed);
-
-    mCurrentHeight =
-        mCurrentPhaseStartHeight + (mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight) * smoothFactor;
-
-    // Check whether it's time to shut down
-    if (elapsed >= mCurrentPhaseDuration
-        && WavePhaseType::Fall == mCurrentWavePhase)
+    if (mCurrentWavePhase == WavePhaseType::Rise)
     {
-        // We're done
-        return std::nullopt;
-    }
+        float const elapsed = currentSimulationTime - mStartSimulationTime;
 
-    return mCurrentHeight;
+        // Calculate height as f(elapsed)
 
-    //*/
+        float const smoothFactor = SmoothStep(
+            0.0f,
+            mRisingPhaseDuration,
+            elapsed);
 
-    /*
-    float const coeff = 0.05f  - 0.025f * SmoothStep(0.0f, 0.1f, std::abs(mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight));
+        mCurrentHeight =
+            mCurrentPhaseStartHeight + (mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight) * smoothFactor;
 
-    mCurrentHeight += (mCurrentPhaseTargetHeight - mCurrentHeight) * coeff;
-
-    if (std::abs(mCurrentPhaseTargetHeight - mCurrentHeight) < 0.01f)
-        return std::nullopt;
-
-    return mCurrentHeight;
-    */
-}
-
-float OceanSurface::SWEInteractiveWaveStateMachine::CalculatePhaseDuration(
-    WavePhaseType wavePhase,
-    float deltaHeight)
-{
-    float duration;
-
-    if (wavePhase == WavePhaseType::Rise)
-    {
-        // We want very little rises to be quick, so they generate nice ripples on the surface.
-        // We want large rises to be small, so that we don't generate height slopes that are
-        // too steep.
-        //
-        // From empirical observations, we want the following fixed points:
-        //  deltaH = 0.01:  duration = 0.13
-        //  deltaH =  0.1:  duration ~= 1.5
-        //  deltaH =  0.5:  duration = 3.0
-
-        // y = 3.102948 - 3.18416*e^(-6.86344*x)
-        duration = std::max(3.102948f - 3.18416f * std::exp(-6.86344f * std::abs(deltaHeight)), 0.0f);
+        return mCurrentHeight;
     }
     else
     {
-        // TODO: try same here
-        duration = 0.65f * SmoothStep(0.0f, 0.1f, std::abs(deltaHeight));
-    }
+        assert(mCurrentWavePhase == WavePhaseType::Fall);
 
-    return duration;
+        // Calculate height with decay process
+
+
+        mCurrentHeight += (mCurrentPhaseTargetHeight - mCurrentHeight) * mFallingPhaseDecayCoefficient;
+
+        // Check whether it's time to shut down
+        if (std::abs(mCurrentPhaseTargetHeight - mCurrentHeight) < 0.001f)
+        {
+            return std::nullopt;
+        }
+
+        return mCurrentHeight;
+    }
+}
+
+float OceanSurface::SWEInteractiveWaveStateMachine::CalculateRisingPhaseDuration(float deltaHeight)
+{
+    // We want very little rises to be quick, so they generate nice ripples on the surface.
+    // We want large rises to be small, so that we don't generate height slopes that are
+    // too steep.
+    //
+    // From empirical observations, we want the following fixed points:
+    //  deltaH = 0.01:  duration = 0.13
+    //  deltaH =  0.1:  duration ~= 1.5
+    //  deltaH =  0.5:  duration = 3.0
+
+    // y = 3.102948 - 3.18416*e^(-6.86344*x)
+    return std::max(3.102948f - 3.18416f * std::exp(-6.86344f * std::abs(deltaHeight)), 0.0f);
+}
+
+float OceanSurface::SWEInteractiveWaveStateMachine::CalculateFallingPhaseDecayCoefficient(float deltaHeight)
+{
+    // When delta is very small, we want to converge very fast - but not too much
+    // or else spiky ripples occur;
+    // when delta is wide enough, we're fine with 0.025.
+    return 0.65f - (0.65f - 0.025f) * SmoothStep(0.0f, 0.1f, std::abs(deltaHeight));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

@@ -2,6 +2,7 @@
 - Added options to reload the previous ship, and to reload on startup the ship that had been loaded when the game was last played
 - Recalibrated and optimized decay processes (rotting, combustion)
 - Fixed sporadic error message occurring when extraneous files are placed under the game data directories
+- Improved physics of interactive waves
 - Improved behavior of fishes at high speed
 - Improved flames
 - Added new background music track, "Shadowlands 4 - Breath" - by Kevin MacLeod (incompetech.com)

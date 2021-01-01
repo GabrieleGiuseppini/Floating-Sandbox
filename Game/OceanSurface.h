@@ -332,9 +332,9 @@ private:
             Fall
         };
 
-        static float CalculatePhaseDuration(
-            WavePhaseType wavePhase,
-            float deltaHeight);
+        static float CalculateRisingPhaseDuration(float deltaHeight);
+
+        static float CalculateFallingPhaseDecayCoefficient(float deltaHeight);
 
         size_t const mCenterIndex;
         float const mOriginalHeight;
@@ -344,7 +344,8 @@ private:
         float mStartSimulationTime;
         WavePhaseType mCurrentWavePhase;
 
-        float mCurrentPhaseDuration;
+        float mRisingPhaseDuration;
+        float mFallingPhaseDecayCoefficient;
     };
 
     std::optional<SWEInteractiveWaveStateMachine> mSWEInteractiveWaveStateMachine;

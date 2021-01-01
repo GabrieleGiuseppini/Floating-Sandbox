@@ -329,6 +329,9 @@ Render:
 				+ Side-by-side video
 			+ Test with high wind
 			+ changelist
+		+ Stop reset resetting zoom
+			+ New GameController method: ResetAndReloadShip(...)
+				+ Invokes internal helper that takes additional StronglyTypedBool
 
 		= Water surface improvement:
 			+ Split shaders for all ocean types: "xxx_sq" and "xxx_hq"
@@ -365,11 +368,11 @@ Render:
 				+ Test with Debug build
 			= See GLSL optimizations
 				+ Beginning: RNDms=7.44
-				+ Less smoothsteps: 6.4/6.7
-				- Less fDxf calls?
+				+ Less smoothsteps: 6.4/6.7				
 				- Trimmed down shader with second pass
 					- Using #define's and #ifdef's
 						- Make sure ShaderManager supports global #define's: in SplitSource, just duplicate everything above first ###VERTEX into both portions
+				- Less fDxf calls?
 				- End: RNDms=TODO
 			- Test
 				- All 3 render modes
@@ -381,23 +384,18 @@ Render:
 		+ Re-design little waves with wind gusts
 
 		- Look back at SWE's
-			= Interactive state machine: 				
+			+ Interactive state machine: 				
 				+ Use smoothstep process
 					+ Time to end of phase should be proportional to deltaH
 						+ Try all the way
 						+ Still, mid-deltaH is too slow
 				+ Try restart with same algo as ParamSmoother
 				+ Make duration based on delta between target and baseline, rather than delta between target and now
-				- Try with decay process on fall
-
-				- changelist: "Improved physics of interactive waves"
+				+ Try with decay process on fall
+				+ changelist
 			- Try re-instating skipped steps - just redo original implementation (two buffers, etc.)
-			- See if may damp tiny oscillations; if good, consider two SWE fields: one for abnormals (undamped) and one for interactive (damped)
+			- See if need to, and may damp tiny oscillations; if good, consider two SWE fields: one for abnormals (undamped) and one for interactive (damped)
 				- Actually, just two velocity fields, always used in sum, but one is damped and the other is not
-
-		- Stop reset resetting zoom
-			- New GameController method: ResetAndReloadShip(...)
-				- Invokes internal helper that takes additiona StronglyTypedPool
 
 		- Bug:
 			- Jacoh2 20/12/2020: fixing the boiler area on the small fleutzgrampher and akagi Maru crash the game
