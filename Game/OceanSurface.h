@@ -33,6 +33,7 @@ public:
         GameParameters const & gameParameters);
 
     void Upload(Render::RenderContext & renderContext) const;
+
 public:
 
     /*
@@ -67,7 +68,7 @@ public:
         std::optional<vec2f> const & worldCoordinates,
         float currentSimulationTime);
 
-    inline void DisplaceAt(
+    inline void DisplaceSmallScaleAt(
         float const x,
         float const yOffset)
     {
