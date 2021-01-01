@@ -254,7 +254,7 @@ void OceanSurface::AdjustTo(
         float constexpr MaxRelativeHeight = 4.0f; // Carefully selected; 4.5 makes waves unstable (velocities oscillating around 0.5 and diverging) after a while
         float constexpr MinRelativeHeight = -2.0f;
         float targetHeight =
-            std::max(MinRelativeHeight, std::min(MaxRelativeHeight, (worldCoordinates->y / SWEHeightFieldAmplification)))
+            Clamp(worldCoordinates->y / SWEHeightFieldAmplification, MinRelativeHeight, MaxRelativeHeight)
             + SWEHeightFieldOffset;
 
         // Check whether we are already advancing an interactive wave
