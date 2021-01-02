@@ -257,8 +257,10 @@ void OceanSurface::AdjustTo(
             Clamp(worldCoordinates->y / SWEHeightFieldAmplification, MinRelativeHeight, MaxRelativeHeight)
             + SWEHeightFieldOffset;
 
-        // Check whether we are already advancing an interactive wave
-        if (!mSWEInteractiveWaveStateMachine)
+        // Check whether we are already advancing an interactive wave, or whether
+        // we may smother the almost-complete existing one
+        if (!mSWEInteractiveWaveStateMachine
+            || mSWEInteractiveWaveStateMachine->MayBeOverridden())
         {
             //
             // Start advancing a new interactive wave
@@ -1070,6 +1072,12 @@ std::optional<float> OceanSurface::SWEInteractiveWaveStateMachine::Update(
     }
 }
 
+bool OceanSurface::SWEInteractiveWaveStateMachine::MayBeOverridden() const
+{
+    return mCurrentWavePhase == WavePhaseType::Fall
+        && std::abs(mCurrentPhaseTargetHeight - mCurrentHeight) < 0.2f;
+}
+
 float OceanSurface::SWEInteractiveWaveStateMachine::CalculateRisingPhaseDuration(float deltaHeight)
 {
     // We want very little rises to be quick, so they generate nice ripples on the surface.
@@ -1077,12 +1085,13 @@ float OceanSurface::SWEInteractiveWaveStateMachine::CalculateRisingPhaseDuration
     // too steep.
     //
     // From empirical observations, we want the following fixed points:
+    //  deltaH = 0.00:  duration = 0.00
     //  deltaH = 0.01:  duration = 0.13
     //  deltaH =  0.1:  duration ~= 1.5
-    //  deltaH =  0.5:  duration = 3.0
+    //  deltaH =  0.5:  duration = 2.5
 
-    // y = 3.102948 - 3.18416*e^(-6.86344*x)
-    return std::max(3.102948f - 3.18416f * std::exp(-6.86344f * std::abs(deltaHeight)), 0.0f);
+    // y = 2.53079 - 2.572298*e^(-9.031207*x)
+    return std::max(2.53079f - 2.572298f * std::exp(-9.031207f * std::abs(deltaHeight)), 0.0f);
 }
 
 float OceanSurface::SWEInteractiveWaveStateMachine::CalculateFallingPhaseDecayCoefficient(float deltaHeight)

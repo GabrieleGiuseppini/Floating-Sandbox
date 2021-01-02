@@ -325,6 +325,8 @@ private:
         std::optional<float> Update(
             float currentSimulationTime);
 
+        bool MayBeOverridden() const;
+
     private:
 
         enum class WavePhaseType
