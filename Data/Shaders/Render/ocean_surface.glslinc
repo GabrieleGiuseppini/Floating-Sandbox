@@ -1,40 +1,61 @@
-vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWorld, float yBackWorld, float yMidWorld, float yFrontWorld, float backPlaneToggle)
+vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWorld, float yBackWorld, float yMidWorld, float yFrontWorld)
 {
     #define BorderWidthHalf 0.05
 
+    //
     // Enlarge borders for steep vertical edges and for world dimensions
+    //
     float worldDimensionsAdjustment = abs(dFdy(yWorld)) * 1.5;
+
+#ifdef RENDER_ALL_PLANES
     float borderWidthHalfBack = BorderWidthHalf + abs(dFdx(yBackWorld)) + worldDimensionsAdjustment;
     float borderWidthHalfMid = BorderWidthHalf + abs(dFdx(yMidWorld)) + worldDimensionsAdjustment;
+#endif
+
     float borderWidthHalfFront = BorderWidthHalf + abs(dFdx(yFrontWorld)) + worldDimensionsAdjustment;
 
+    //
     // Color
+    //
 
     // 1 when yWorld is below middle of the border, 0 otherwise
+
+#ifdef RENDER_ALL_PLANES
     float baseColorBack = step(yWorld, yBackWorld - borderWidthHalfBack);
     float baseColorMid = step(yWorld, yMidWorld - borderWidthHalfMid);
+#endif
+
     float baseColorFront = step(yWorld, yFrontWorld - borderWidthHalfFront);
 
+#ifdef RENDER_ALL_PLANES
     float baseColorAlpha =
         max(
             1. * baseColorFront,
             max(
-                .6 * baseColorMid * backPlaneToggle,
-                .5 * baseColorBack * backPlaneToggle));
+                .6 * baseColorMid,
+                .5 * baseColorBack));
+#else
+    float baseColorAlpha = 1. * baseColorFront;
+#endif
 
     //return vec4(baseColor, baseColorAlpha);
 
+    //
     // Border
+    //
 
+#ifdef RENDER_ALL_PLANES
     float borderBack =
         1. - smoothstep(0., borderWidthHalfBack, abs(yWorld - (yBackWorld - borderWidthHalfBack)));
 
     float borderMid =
         1. - smoothstep(0., borderWidthHalfMid, abs(yWorld - (yMidWorld - borderWidthHalfMid)));
+#endif
 
     float borderFront =
         1. - smoothstep(0., borderWidthHalfFront, abs(yWorld - (yFrontWorld - borderWidthHalfFront)));
 
+#ifdef RENDER_ALL_PLANES
     // epsilon when front is visible, 1 otherwise
     #define FrontObscuredAlpha 0.4
     float borderFrontOpaqueness = (1. - baseColorFront) * (1. - FrontObscuredAlpha) + FrontObscuredAlpha;
@@ -42,13 +63,18 @@ vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWorld, float yBackWorld, fl
     // epsilon when mid is visible, 1 otherwise
     #define MidObscuredAlpha 0.4
     float borderMidOpaqueness = (1. - baseColorMid) * (1. - MidObscuredAlpha) + MidObscuredAlpha;
+#endif
 
+#ifdef RENDER_ALL_PLANES
     float borderAlpha =
         max(
             1. * borderFront,
             max(
-                .9 * borderMid * borderFrontOpaqueness * backPlaneToggle,
-                .7 * borderBack * borderFrontOpaqueness * borderMidOpaqueness * backPlaneToggle));
+                .9 * borderMid * borderFrontOpaqueness,
+                .7 * borderBack * borderFrontOpaqueness * borderMidOpaqueness));
+#else
+    float borderAlpha = 1. * borderFront;
+#endif
 
     //return vec4(1., 1., 1., borderAlpha);
 

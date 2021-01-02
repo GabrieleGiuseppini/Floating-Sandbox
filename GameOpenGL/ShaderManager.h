@@ -286,6 +286,7 @@ private:
 
     friend class ShaderManagerTests_SplitsShaders_Test;
     friend class ShaderManagerTests_SplitsShaders_DuplicatesCommonSectionToVertexAndFragment_Test;
+    friend class ShaderManagerTests_SplitsShaders_ErrorsOnMalformedVertexSection_Test;
     friend class ShaderManagerTests_SplitsShaders_ErrorsOnMissingVertexSection_Test;
     friend class ShaderManagerTests_SplitsShaders_ErrorsOnMissingVertexSection_EmptyFile_Test;
     friend class ShaderManagerTests_SplitsShaders_ErrorsOnMissingFragmentSection_Test;

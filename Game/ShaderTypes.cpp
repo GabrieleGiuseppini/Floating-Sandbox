@@ -39,16 +39,22 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::Lightning;
     else if (lstr == "ocean_depth_basic")
         return ProgramType::OceanDepthBasic;
-    else if (lstr == "ocean_depth_detailed")
-        return ProgramType::OceanDepthDetailed;
+    else if (lstr == "ocean_depth_detailed_background")
+        return ProgramType::OceanDepthDetailedBackground;
+    else if (lstr == "ocean_depth_detailed_foreground")
+        return ProgramType::OceanDepthDetailedForeground;
     else if (lstr == "ocean_flat_basic")
         return ProgramType::OceanFlatBasic;
-    else if (lstr == "ocean_flat_detailed")
-        return ProgramType::OceanFlatDetailed;
+    else if (lstr == "ocean_flat_detailed_background")
+        return ProgramType::OceanFlatDetailedBackground;
+    else if (lstr == "ocean_flat_detailed_foreground")
+        return ProgramType::OceanFlatDetailedForeground;
     else if (lstr == "ocean_texture_basic")
         return ProgramType::OceanTextureBasic;
-    else if (lstr == "ocean_texture_detailed")
-        return ProgramType::OceanTextureDetailed;
+    else if (lstr == "ocean_texture_detailed_background")
+        return ProgramType::OceanTextureDetailedBackground;
+    else if (lstr == "ocean_texture_detailed_foreground")
+        return ProgramType::OceanTextureDetailedForeground;
     else if (lstr == "rain")
         return ProgramType::Rain;
     else if (lstr == "ship_circle_highlights")
@@ -137,16 +143,22 @@ std::string ProgramTypeToStr(ProgramType program)
         return "Lightning";
     case ProgramType::OceanDepthBasic:
         return "OceanDepthBasic";
-    case ProgramType::OceanDepthDetailed:
-        return "OceanDepthDetailed";
+    case ProgramType::OceanDepthDetailedBackground:
+        return "OceanDepthDetailedBackground";
+    case ProgramType::OceanDepthDetailedForeground:
+        return "OceanDepthDetailedForeground";
     case ProgramType::OceanFlatBasic:
         return "OceanFlatBasic";
-    case ProgramType::OceanFlatDetailed:
-        return "OceanFlatDetailed";
+    case ProgramType::OceanFlatDetailedBackground:
+        return "OceanFlatDetailedBackground";
+    case ProgramType::OceanFlatDetailedForeground:
+        return "OceanFlatDetailedForeground";
     case ProgramType::OceanTextureBasic:
         return "OceanTextureBasic";
-    case ProgramType::OceanTextureDetailed:
-        return "OceanTextureDetailed";
+    case ProgramType::OceanTextureDetailedBackground:
+        return "OceanTextureDetailedBackground";
+    case ProgramType::OceanTextureDetailedForeground:
+        return "OceanTextureDetailedForeground";
     case ProgramType::Rain:
         return "Rain";
     case ProgramType::ShipCircleHighlights:
@@ -231,8 +243,6 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::LandFlatColor;
     else if (str == "MatteColor")
         return ProgramParameterType::MatteColor;
-    else if (str == "OceanSurfaceBackPlaneToggle")
-        return ProgramParameterType::OceanSurfaceBackPlaneToggle;
     else if (str == "OceanTransparency")
         return ProgramParameterType::OceanTransparency;
     else if (str == "OceanDarkeningRate")
@@ -314,8 +324,6 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "LandFlatColor";
     case ProgramParameterType::MatteColor:
         return "MatteColor";
-    case ProgramParameterType::OceanSurfaceBackPlaneToggle:
-        return "OceanSurfaceBackPlaneToggle";
     case ProgramParameterType::OceanTransparency:
         return "OceanTransparency";
     case ProgramParameterType::OceanDarkeningRate:

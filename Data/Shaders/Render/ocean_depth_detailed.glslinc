@@ -1,6 +1,4 @@
-###VERTEX
-
-#version 120
+###VERTEX-120
 
 #define in attribute
 #define out varying
@@ -22,13 +20,11 @@ void main()
 }
 
 
-###FRAGMENT
-
-#version 120
-
-#include "ocean_surface.glslinc"
+###FRAGMENT-120
 
 #define in varying
+
+#include "ocean_surface.glslinc"
 
 // Inputs from previous shader
 in vec4 yVector;
@@ -39,7 +35,6 @@ uniform float paramOceanTransparency;
 uniform vec3 paramOceanDepthColorStart;
 uniform vec3 paramOceanDepthColorEnd;
 uniform float paramOceanDarkeningRate;
-uniform float paramOceanSurfaceBackPlaneToggle;
 
 void main()
 {
@@ -54,8 +49,7 @@ void main()
     vec4 color = CalculateOceanPlaneColor(
         vec4(depthColor, (1.0 - paramOceanTransparency)),
         yVector.x,
-        yVector.y, yVector.z, yVector.w,
-        paramOceanSurfaceBackPlaneToggle);
+        yVector.y, yVector.z, yVector.w);
 
     // Combine
     gl_FragColor = vec4(color.xyz * paramEffectiveAmbientLightIntensity, color.w);

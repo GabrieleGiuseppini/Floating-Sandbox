@@ -1013,8 +1013,7 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
 
         case OceanRenderDetailType::Detailed:
         {
-            // Turn on back plane iff drawing opaquely
-            float backPlaneToggle = (opaquely) ? 1.0f : 0.0f;
+            // Draw background if drawing opaquely, else foreground
 
             glBindVertexArray(*mOceanDetailedVAO);
 
@@ -1022,20 +1021,23 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
             {
                 case OceanRenderModeType::Depth:
                 {
-                    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailed>();
-                    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailed, ProgramParameterType::OceanSurfaceBackPlaneToggle>(
-                        backPlaneToggle);
-                    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailed, ProgramParameterType::OceanTransparency>(
+                    ProgramType const oceanShader = opaquely ? ProgramType::OceanDepthDetailedBackground : ProgramType::OceanDepthDetailedForeground;
+
+                    mShaderManager.ActivateProgram(oceanShader);
+                    mShaderManager.SetProgramParameter<ProgramParameterType::OceanTransparency>(
+                        oceanShader,
                         transparency);
+
                     break;
                 }
 
                 case OceanRenderModeType::Flat:
                 {
-                    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailed>();
-                    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailed, ProgramParameterType::OceanSurfaceBackPlaneToggle>(
-                        backPlaneToggle);
-                    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailed, ProgramParameterType::OceanTransparency>(
+                    ProgramType const oceanShader = opaquely ? ProgramType::OceanFlatDetailedBackground : ProgramType::OceanFlatDetailedForeground;
+
+                    mShaderManager.ActivateProgram(oceanShader);
+                    mShaderManager.SetProgramParameter<ProgramParameterType::OceanTransparency>(
+                        oceanShader,
                         transparency);
 
                     break;
@@ -1043,10 +1045,11 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
 
                 case OceanRenderModeType::Texture:
                 {
-                    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailed>();
-                    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailed, ProgramParameterType::OceanSurfaceBackPlaneToggle>(
-                        backPlaneToggle);
-                    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailed, ProgramParameterType::OceanTransparency>(
+                    ProgramType const oceanShader = opaquely ? ProgramType::OceanTextureDetailedBackground : ProgramType::OceanTextureDetailedForeground;
+
+                    mShaderManager.ActivateProgram(oceanShader);
+                    mShaderManager.SetProgramParameter<ProgramParameterType::OceanTransparency>(
+                        oceanShader,
                         transparency);
 
                     break;
@@ -1375,24 +1378,36 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
     mShaderManager.SetProgramParameter<ProgramType::OceanDepthBasic, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailed>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailed, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedBackground, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedForeground, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::OceanFlatBasic>();
     mShaderManager.SetProgramParameter<ProgramType::OceanFlatBasic, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailed>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailed, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedBackground, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedForeground, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::OceanTextureBasic>();
     mShaderManager.SetProgramParameter<ProgramType::OceanTextureBasic, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailed>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailed, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedBackground, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedForeground, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::Fishes>();
@@ -1461,24 +1476,36 @@ void WorldRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParame
     mShaderManager.SetProgramParameter<ProgramType::OceanDepthBasic, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailed>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailed, ProgramParameterType::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedBackground, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        renderParameters.EffectiveAmbientLightIntensity);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedForeground, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::OceanFlatBasic>();
     mShaderManager.SetProgramParameter<ProgramType::OceanFlatBasic, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailed>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailed, ProgramParameterType::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedBackground, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        renderParameters.EffectiveAmbientLightIntensity);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedForeground, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::OceanTextureBasic>();
     mShaderManager.SetProgramParameter<ProgramType::OceanTextureBasic, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailed>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailed, ProgramParameterType::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedBackground, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        renderParameters.EffectiveAmbientLightIntensity);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedForeground, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::Fishes>();
@@ -1508,16 +1535,24 @@ void WorldRenderContext::ApplyOceanDarkeningRateChanges(RenderParameters const &
     mShaderManager.SetProgramParameter<ProgramType::OceanDepthBasic, ProgramParameterType::OceanDarkeningRate>(
         rate);
 
-    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailed>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailed, ProgramParameterType::OceanDarkeningRate>(
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedBackground, ProgramParameterType::OceanDarkeningRate>(
+        rate);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedForeground, ProgramParameterType::OceanDarkeningRate>(
         rate);
 
     mShaderManager.ActivateProgram<ProgramType::OceanTextureBasic>();
     mShaderManager.SetProgramParameter<ProgramType::OceanTextureBasic, ProgramParameterType::OceanDarkeningRate>(
         rate);
 
-    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailed>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailed, ProgramParameterType::OceanDarkeningRate>(
+    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedBackground, ProgramParameterType::OceanDarkeningRate>(
+        rate);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedForeground, ProgramParameterType::OceanDarkeningRate>(
         rate);
 
     mShaderManager.ActivateProgram<ProgramType::Fishes>();
@@ -1535,8 +1570,13 @@ void WorldRenderContext::ApplyOceanRenderModeParametersChanges(RenderParameters 
         depthColorStart.x,
         depthColorStart.y,
         depthColorStart.z);
-    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailed>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailed, ProgramParameterType::OceanDepthColorStart>(
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedBackground, ProgramParameterType::OceanDepthColorStart>(
+        depthColorStart.x,
+        depthColorStart.y,
+        depthColorStart.z);
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedForeground, ProgramParameterType::OceanDepthColorStart>(
         depthColorStart.x,
         depthColorStart.y,
         depthColorStart.z);
@@ -1547,8 +1587,13 @@ void WorldRenderContext::ApplyOceanRenderModeParametersChanges(RenderParameters 
         depthColorEnd.x,
         depthColorEnd.y,
         depthColorEnd.z);
-    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailed>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailed, ProgramParameterType::OceanDepthColorEnd>(
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedBackground, ProgramParameterType::OceanDepthColorEnd>(
+        depthColorEnd.x,
+        depthColorEnd.y,
+        depthColorEnd.z);
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedForeground, ProgramParameterType::OceanDepthColorEnd>(
         depthColorEnd.x,
         depthColorEnd.y,
         depthColorEnd.z);
@@ -1559,8 +1604,13 @@ void WorldRenderContext::ApplyOceanRenderModeParametersChanges(RenderParameters 
         flatColor.x,
         flatColor.y,
         flatColor.z);
-    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailed>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailed, ProgramParameterType::OceanFlatColor>(
+    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedBackground, ProgramParameterType::OceanFlatColor>(
+        flatColor.x,
+        flatColor.y,
+        flatColor.z);
+    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedForeground, ProgramParameterType::OceanFlatColor>(
         flatColor.x,
         flatColor.y,
         flatColor.z);
@@ -1614,11 +1664,17 @@ void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & 
         1.0f / oceanTextureFrame.Metadata.WorldHeight);
     mShaderManager.SetTextureParameters<ProgramType::OceanTextureBasic>();
 
-    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailed>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailed, ProgramParameterType::TextureScaling>(
+    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedBackground, ProgramParameterType::TextureScaling>(
         1.0f / oceanTextureFrame.Metadata.WorldWidth,
         1.0f / oceanTextureFrame.Metadata.WorldHeight);
-    mShaderManager.SetTextureParameters<ProgramType::OceanTextureDetailed>();
+    mShaderManager.SetTextureParameters<ProgramType::OceanTextureDetailedBackground>();
+
+    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedForeground, ProgramParameterType::TextureScaling>(
+        1.0f / oceanTextureFrame.Metadata.WorldWidth,
+        1.0f / oceanTextureFrame.Metadata.WorldHeight);
+    mShaderManager.SetTextureParameters<ProgramType::OceanTextureDetailedForeground>();
 }
 
 void WorldRenderContext::ApplyLandRenderParametersChanges(RenderParameters const & renderParameters)

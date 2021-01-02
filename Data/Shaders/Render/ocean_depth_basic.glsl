@@ -1,6 +1,4 @@
-###VERTEX
-
-#version 120
+###VERTEX-120
 
 #define in attribute
 #define out varying
@@ -21,9 +19,7 @@ void main()
 }
 
 
-###FRAGMENT
-
-#version 120
+###FRAGMENT-120
 
 #define in varying
 

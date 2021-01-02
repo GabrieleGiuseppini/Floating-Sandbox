@@ -109,11 +109,6 @@ void ShaderManager<Traits>::CompileShader(
         typename Traits::ProgramType const program = Traits::ShaderFilenameToProgramType(shaderFilenamePath.stem().string());
         std::string const programName = Traits::ProgramTypeToStr(program);
 
-        // Resolve includes
-        std::string preprocessedShaderSource = ResolveIncludes(
-            shaderSource,
-            shaderSources);
-
         // Make sure we have room for it
         size_t programIndex = static_cast<size_t>(program);
         if (programIndex + 1 > mPrograms.size())
@@ -123,6 +118,11 @@ void ShaderManager<Traits>::CompileShader(
 
         // First time we see it (guaranteed by file system)
         assert(!(mPrograms[programIndex].OpenGLHandle));
+
+        // Resolve includes
+        std::string preprocessedShaderSource = ResolveIncludes(
+            shaderSource,
+            shaderSources);
 
         // Split the source file
         auto [vertexShaderSource, fragmentShaderSource] = SplitSource(preprocessedShaderSource);
@@ -278,67 +278,86 @@ std::string ShaderManager<Traits>::ResolveIncludes(
 template<typename Traits>
 std::tuple<std::string, std::string> ShaderManager<Traits>::SplitSource(std::string const & source)
 {
-    static std::regex VertexHeaderRegex(R"!(\s*###VERTEX\s*)!");
-    static std::regex FragmentHeaderRegex(R"!(\s*###FRAGMENT\s*)!");
+    static std::regex VertexHeaderRegex(R"!(\s*###VERTEX-(\d{3})\s*)!");
+    static std::regex FragmentHeaderRegex(R"!(\s*###FRAGMENT-(\d{3})\s*)!");
 
     std::stringstream sSource(source);
 
     std::string line;
 
+    std::stringstream commonCode;
+    std::stringstream vertexShaderCode;
+    std::stringstream fragmentShaderCode;
+
     //
     // Common code
     //
 
-    std::stringstream commonCode;
-
     while (true)
     {
         if (!std::getline(sSource, line))
-            throw GameException("Cannot find ***VERTEX declaration");
+            throw GameException("Cannot find ###VERTEX declaration");
 
-        if (std::regex_match(line, VertexHeaderRegex))
+        std::smatch match;
+        if (std::regex_search(line, match, VertexHeaderRegex))
+        {
+            // Found beginning of vertex shader
+
+            // Initialize vertex shader GLSL version
+            vertexShaderCode << "#version " << match[1].str() << sSource.widen('\n');
+
+            // Initialize vertex shader with common code
+            vertexShaderCode << commonCode.str();
+
             break;
-
-        commonCode << line << sSource.widen('\n');
+        }
+        else
+        {
+            commonCode << line << sSource.widen('\n');
+        }
     }
 
     //
     // Vertex shader
     //
 
-    std::stringstream vertexShader;
-
-    vertexShader << commonCode.str();
-
     while (true)
     {
         if (!std::getline(sSource, line))
-            throw GameException("Cannot find ***FRAGMENT declaration");
+            throw GameException("Cannot find ###FRAGMENT declaration");
 
-        if (std::regex_match(line, FragmentHeaderRegex))
+        std::smatch match;
+        if (std::regex_search(line, match, FragmentHeaderRegex))
+        {
+            // Found beginning of fragment shader
+
+            // Initialize fragment shader GLSL version
+            fragmentShaderCode << "#version " << match[1].str() << sSource.widen('\n');
+
+            // Initialize fragment shader with common code
+            fragmentShaderCode << commonCode.str();
+
             break;
-
-        vertexShader << line << sSource.widen('\n');
+        }
+        else
+        {
+            vertexShaderCode << line << sSource.widen('\n');
+        }
     }
-
 
     //
     // Fragment shader
     //
 
-    std::stringstream fragmentShader;
-
-    fragmentShader << commonCode.str();
-
     while (std::getline(sSource, line))
     {
-        fragmentShader << line << sSource.widen('\n');
+        fragmentShaderCode << line << sSource.widen('\n');
     }
 
 
     return std::make_tuple(
-        vertexShader.str(),
-        fragmentShader.str());
+        vertexShaderCode.str(),
+        fragmentShaderCode.str());
 }
 
 template<typename Traits>

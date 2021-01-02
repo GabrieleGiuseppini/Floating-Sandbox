@@ -1,8 +1,8 @@
-###VERTEX
+###VERTEX-120
 
 #include "heat_blaster_flame_vertex.glslinc"
 
-###FRAGMENT
+###FRAGMENT-120
 
 #include "heat_blaster_flame_fragment.glslinc"
 
