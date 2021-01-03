@@ -1,12 +1,15 @@
-1.16.1.TODO
+1.16.2
+- Improved physics of interactive waves
+- Improved flames
 - Added options to reload the previous ship, and to reload on startup the ship that had been loaded when the game was last played
 - Recalibrated and optimized decay processes (rotting, combustion)
 - Fixed sporadic error message occurring when extraneous files are placed under the game data directories
-- Improved physics of interactive waves
-- Improved behavior of fishes at high speed
-- Improved flames
 - Added new background music track, "Shadowlands 4 - Breath" - by Kevin MacLeod (incompetech.com)
-- ...and a few more small improvements here and there!
+- ...and a few more small improvements here and there, among which:
+	- Improved air bubbles
+	- Improved behavior of fishes at high speed
+	- Better equalization of engine sound volumes
+	- Removed nonlinearities when masses are flooded instantaneously
 
 1.16.0.7
 - Completed "Frontier Maintenance" sub-system

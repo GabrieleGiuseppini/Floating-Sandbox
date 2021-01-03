@@ -47,7 +47,7 @@ ComputerCalibrationScore ComputerCalibrator::Calibrate()
 
     float const normalizedGraphicsScore =
         SmoothStep(0.0f, 16384.0f, static_cast<float>(GameOpenGL::MaxRenderbufferSize))
-        * SmoothStep(0.0f, 4.0f, static_cast<float>(GameOpenGL::MaxOpenGLVersionMajor));
+        * SmoothStep(0.0f, 4.0f, static_cast<float>(GameOpenGL::MaxSupportedOpenGLVersionMajor));
 
     LogMessage("Graphics Calibration: score=", normalizedGraphicsScore);
 
@@ -64,7 +64,14 @@ void ComputerCalibrator::TuneGame(
     // performance
     //
 
-    // TODOHERE
+    if (score.NormalizedCPUScore < 0.65f
+        || score.NormalizedGfxScore < 0.1f)
+    {
+        renderContext.SetOceanRenderDetail(OceanRenderDetailType::Basic);
+    }
+
+    LogMessage("ComputerCalibration: "
+        "OceanRenderDetail=", renderContext.GetOceanRenderDetail() == OceanRenderDetailType::Basic ? "Basic" : "Advanced");
 }
 
 float ComputerCalibrator::RunComputation()

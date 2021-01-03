@@ -194,7 +194,8 @@ public:
     static int MaxTextureSize;
     static int MaxTextureUnits;
     static int MaxRenderbufferSize;
-    static int MaxOpenGLVersionMajor;
+    static int MaxSupportedOpenGLVersionMajor;
+    static int MaxSupportedOpenGLVersionMinor;
 
     static bool AvoidGlFinish;
 

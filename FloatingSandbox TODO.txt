@@ -1,9 +1,9 @@
 =================================================
 Current perf:
 =================================================
-1.16
+1.16.0
 - DELL new (default_ship): FPS=62.9 UPD=4.8ms RND=4.3ms
-- DELL old (default_ship): FPS=29.8/30.2 UPD=20.5ms, RND=12.6ms/13.0ms
+- DELL old (default_ship): FPS=29.8/30.0 UPD=20.4ms, RND=12.6ms/12.9ms
 - HP (default_ship): FPS=20.2 UPD=48.5ms RND=14.1ms
 - Samsung (default_ship): FPS=22.5, UPD=44.5ms, RND=8.9ms 
 =================================================
@@ -377,13 +377,13 @@ Render:
 							+ Review HeatBlaster
 				- Less fDxf calls?
 				- End: RNDms=TODO
-			- Test
+			+ Test
 				+ Tsunami
-				- All 3 render modes
-					- Also with ocean depth = 0
+				+ All 3 render modes
+					+ Also with ocean depth = 0
 				+ Old Dell
-			- Default is ON, but set at Calibration anyway
-				- From gfx properties & CPU properties
+			+ Default is ON, but set at Calibration anyway
+				+ From gfx properties & CPU properties
 	
 		+ Re-design little waves with wind gusts
 		+ Interactive SWE state machine: 				
@@ -395,6 +395,7 @@ Render:
 			+ Make duration based on delta between target and baseline, rather than delta between target and now
 			+ Try with decay process on fall
 			+ changelist
+		+ Send to testers
 
 		= Send/complete localization
 			+ Change copyright year
@@ -405,12 +406,19 @@ Render:
 			+ ES1
 			+ RU1
 			+ IT2
-			- ES2
-			- RU2
+			= IT2
+			= ES2
+			= RU2
+
+		- Test:
+			! Flames, water surface, calibration
+			- Dell
+			- Samsung
+			- HP
 
 		- Merge to master
 		- Release 1.16.1
-			- Send to testers
+			
 
 		----------------------------------------------------------------------------------------
 		1,184 - 70

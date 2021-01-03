@@ -25,7 +25,7 @@ RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
 	, AreOceanRenderModeParametersDirty(true)
 	, OceanTextureIndex(0) // Wavy Clear Thin
 	, IsOceanTextureIndexDirty(true)
-	, OceanRenderDetail(OceanRenderDetailType::Basic)
+	, OceanRenderDetail(OceanRenderDetailType::Detailed)
 	, ShowShipThroughOcean(false)
 	, LandRenderMode(LandRenderModeType::Texture)
 	, FlatLandColor(0x72, 0x46, 0x05)
