@@ -1012,7 +1012,7 @@ msgstr "Guida"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3247
 msgid "High-Quality Rendering"
-msgstr ""
+msgstr "Visualizzazione in alta qualità"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:860
 msgid ""
@@ -1470,6 +1470,8 @@ msgid ""
 "Renders the ocean with additional details. Requires more computational "
 "resources."
 msgstr ""
+"Visualizza l'oceano con ulteriori dettagli. Richiede maggiori tempi di "
+"calcolo."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2836
 msgid "Repair Radius"

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-01-03 01:41+0100\n"
+"PO-Revision-Date: 2021-01-05 00:34+0100\n"
 "Last-Translator: Joadix100\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -35,8 +35,6 @@ msgid "&Tools"
 msgstr "&Инструменты"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:73
-#, fuzzy
-#| msgid "(c) Gabriele Giuseppini 2018-2020"
 msgid "(c) Gabriele Giuseppini 2018-2021"
 msgstr "(c) Gabriele Giuseppini 2018-2021"
 
@@ -575,13 +573,11 @@ msgstr "Готово"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3981
 msgid "Draw Decay"
-msgstr "Показывать Распад"
+msgstr "Показывать распад"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4008
-#, fuzzy
-#| msgid "Draw HeatBlaster Flame"
 msgid "Draw Flames"
-msgstr "Показывать Огонь от Огнемета"
+msgstr "Показывать Огонь"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3516
 msgid "Draw Heat Overlay"
@@ -743,10 +739,8 @@ msgstr ""
 "начинает тонуть."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4009
-#, fuzzy
-#| msgid "Enables or disables rendering of vector fields."
 msgid "Enables or disables rendering of flames."
-msgstr "Включает или отключает отрисовку векторных полей."
+msgstr "Включает или отключает рендеринг пламени."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4079
 msgid "Enables or disables rendering of vector fields."
@@ -1019,7 +1013,7 @@ msgstr "Помощь"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3247
 msgid "High-Quality Rendering"
-msgstr ""
+msgstr "Качественный рендеринг"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:860
 msgid ""
@@ -1478,6 +1472,8 @@ msgid ""
 "Renders the ocean with additional details. Requires more computational "
 "resources."
 msgstr ""
+"Отображает океан с дополнительными деталями. (Требуется больше "
+"вычислительных ресурсов)."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2836
 msgid "Repair Radius"

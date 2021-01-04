@@ -405,8 +405,7 @@ Render:
 			+ Test ship with those settings
 			+ Test adjustment
 			+ Test normal rotting
-
-		= Send/complete localization
+		+ Send/complete localization
 			+ Change copyright year
 				+ License.txt
 				+ EN (in-code)
@@ -415,9 +414,13 @@ Render:
 			+ ES1
 			+ RU1
 			+ IT2
-			= IT2
-			= ES2
-			= RU2
+			+ IT2
+			+ ES2
+			+ RU2
+
+		- Taureau_class_Lemons.rar
+			- Replace Vardenaux
+			- Take treaureax
 
 		- Test:
 			! Flames, water surface, calibration

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.4\n"
+"X-Generator: Poedit 2.4.2\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ..\FloatingSandbox\MainFrame.cpp:266
@@ -574,10 +574,8 @@ msgid "Draw Decay"
 msgstr "Dibujar Decaimiento"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4008
-#, fuzzy
-#| msgid "Draw HeatBlaster Flame"
 msgid "Draw Flames"
-msgstr "Dibujar Llama del Lanzallamas"
+msgstr "Dibujar Llamas"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3516
 msgid "Draw Heat Overlay"
@@ -745,10 +743,8 @@ msgstr ""
 "comienza a hundirse."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4009
-#, fuzzy
-#| msgid "Enables or disables rendering of vector fields."
 msgid "Enables or disables rendering of flames."
-msgstr "Habilita o Deshabilita la renderización de los campos vectoriales."
+msgstr "Habilita o Deshabilita la renderización de las llamas."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4079
 msgid "Enables or disables rendering of vector fields."
@@ -1025,7 +1021,7 @@ msgstr "Ayuda"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3247
 msgid "High-Quality Rendering"
-msgstr ""
+msgstr "Renderización de Alta Calidad"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:860
 msgid ""
@@ -1489,6 +1485,8 @@ msgid ""
 "Renders the ocean with additional details. Requires more computational "
 "resources."
 msgstr ""
+"Renderiza el océano con detalles adicionales. Requiere mas recursos "
+"computacionales."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2836
 msgid "Repair Radius"
