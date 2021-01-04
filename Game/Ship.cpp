@@ -28,10 +28,8 @@
 //
 // While most physics updates run for every simulation step (i.e. for each frame), a few
 // more expensive ones run only every nth step. In order to improve omogeneity of runtime,
-// we distribute all of these low-frequency updates in an interval of S steps (frames).
+// we distribute all of these low-frequency updates across the low-frequency period.
 //
-
-static constexpr int LowFrequencyPeriod = 7 * 7; // Number of simulation steps
 
 static constexpr int UpdateSinkingPeriodStep = 6;
 static constexpr int CombustionStateMachineSlowPeriodStep1 = 13;
@@ -40,6 +38,8 @@ static constexpr int CombustionStateMachineSlowPeriodStep2 = 27;
 static constexpr int SpringDecayAndTemperaturePeriodStep = 34;
 static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
 static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
+
+static_assert(CombustionStateMachineSlowPeriodStep4 < GameParameters::ParticleUpdateLowFrequencyPeriod);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -178,7 +178,7 @@ void Ship::Update(
     mPoints.UpdateForGameParameters(
         gameParameters);
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(SpringDecayAndTemperaturePeriodStep, LowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(SpringDecayAndTemperaturePeriodStep, GameParameters::ParticleUpdateLowFrequencyPeriod))
     {
         mSprings.UpdateForDecayAndTemperatureAndGameParameters(
             gameParameters,
@@ -211,7 +211,7 @@ void Ship::Update(
     // Rot points
     //
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsPeriodStep, LowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsPeriodStep, GameParameters::ParticleUpdateLowFrequencyPeriod))
     {
         // - Inputs: Position, Water, IsLeaking
         // - Output: Decay
@@ -348,7 +348,7 @@ void Ship::Update(
     // Run sink/unsink detection
     //
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateSinkingPeriodStep, LowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateSinkingPeriodStep, GameParameters::ParticleUpdateLowFrequencyPeriod))
     {
         UpdateSinking();
     }
@@ -419,43 +419,39 @@ void Ship::Update(
             // Update slow combustion state machine
             //
 
-            if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep1, LowFrequencyPeriod))
+            if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep1, GameParameters::ParticleUpdateLowFrequencyPeriod))
             {
                 mPoints.UpdateCombustionLowFrequency(
                     0,
                     4,
                     currentSimulationTime,
-                    GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
                     stormParameters,
                     gameParameters);
             }
-            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep2, LowFrequencyPeriod))
+            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep2, GameParameters::ParticleUpdateLowFrequencyPeriod))
             {
                 mPoints.UpdateCombustionLowFrequency(
                     1,
                     4,
                     currentSimulationTime,
-                    GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
                     stormParameters,
                     gameParameters);
             }
-            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep3, LowFrequencyPeriod))
+            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep3, GameParameters::ParticleUpdateLowFrequencyPeriod))
             {
                 mPoints.UpdateCombustionLowFrequency(
                     2,
                     4,
                     currentSimulationTime,
-                    GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
                     stormParameters,
                     gameParameters);
             }
-            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep4, LowFrequencyPeriod))
+            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep4, GameParameters::ParticleUpdateLowFrequencyPeriod))
             {
                 mPoints.UpdateCombustionLowFrequency(
                     3,
                     4,
                     currentSimulationTime,
-                    GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
                     stormParameters,
                     gameParameters);
             }
@@ -2106,7 +2102,7 @@ void Ship::RotPoints(
     //      x_uw = (1-a_uw)/(a_uw - a_uw_fl)
     //
 
-    float constexpr Ns = 20.0f * 60.0f * 64.0f / static_cast<float>(LowFrequencyPeriod);
+    float constexpr Ns = 20.0f * 60.0f / GameParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
     float const a_uw = gameParameters.RotAcceler8r != 0.0f
         ? powf(0.75f, gameParameters.RotAcceler8r / Ns) // a_uw = 0.75 ^ (1/Ns)

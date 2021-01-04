@@ -396,8 +396,15 @@ Render:
 			+ Try with decay process on fall
 			+ changelist
 		+ Send to testers
-
-		- Fix issue with I.J.N.Yamato burning & new decay
+		+ Fix issue with I.J.N.Yamato burning & new decay
+			+ Calc parameters at Points cctor
+				+ Move Ship::LowFrequencyPeriod to GameParameters as ParticleUpdateLowFrequencyPeriod
+			+ Calc parameters at param changes
+			+ Optimize application of params
+			+ Test paper, wood, and iron decay
+			+ Test ship with those settings
+			+ Test adjustment
+			+ Test normal rotting
 
 		= Send/complete localization
 			+ Change copyright year

@@ -65,6 +65,8 @@ public:
             throw GameException("Structural materials definition is not a JSON array");
         }
 
+        float largestMass = 0.0f;
+
         picojson::array const & structuralMaterialsRootArray = structuralMaterialsRoot.get<picojson::array>();
         for (auto const & materialElem : structuralMaterialsRootArray)
         {
@@ -75,10 +77,10 @@ public:
 
             picojson::object const & materialObject = materialElem.get<picojson::object>();
 
-            ColorKey colorKey = Utils::Hex2RgbColor(
+            ColorKey const colorKey = Utils::Hex2RgbColor(
                 Utils::GetMandatoryJsonMember<std::string>(materialObject, "color_key"));
 
-            StructuralMaterial material = StructuralMaterial::Create(materialObject);
+            StructuralMaterial const material = StructuralMaterial::Create(materialObject);
 
             // Make sure there are no dupes
             if (structuralMaterialsMap.count(colorKey) != 0)
@@ -93,7 +95,7 @@ public:
                     material));
 
             // Check if it's unique, and if so, check for dupes and store it
-            if (!!material.UniqueType)
+            if (material.UniqueType.has_value())
             {
                 size_t uniqueTypeIndex = static_cast<size_t>(*(material.UniqueType));
                 if (nullptr != uniqueStructuralMaterials[uniqueTypeIndex].second)
@@ -105,6 +107,9 @@ public:
                     colorKey,
                     &(storedEntry.first->second));
             }
+
+            // Update largest mass
+            largestMass = std::max(material.GetMass(), largestMass);
         }
 
         // Make sure we did find all the unique materials
@@ -153,10 +158,10 @@ public:
 
             picojson::object const & materialObject = materialElem.get<picojson::object>();
 
-            ColorKey colorKey = Utils::Hex2RgbColor(
+            ColorKey const colorKey = Utils::Hex2RgbColor(
                 Utils::GetMandatoryJsonMember<std::string>(materialObject, "color_key"));
 
-            ElectricalMaterial material = ElectricalMaterial::Create(materialObject);
+            ElectricalMaterial const material = ElectricalMaterial::Create(materialObject);
 
             // Make sure there are no dupes
             if (nonInstancedElectricalMaterialsMap.count(colorKey) != 0
@@ -167,15 +172,19 @@ public:
 
             // Store
             if (material.IsInstanced)
+            {
                 instancedElectricalMaterialsMap.emplace(
                     std::make_pair(
                         colorKey,
                         material));
+            }
             else
+            {
                 nonInstancedElectricalMaterialsMap.emplace(
                     std::make_pair(
                         colorKey,
                         material));
+            }
         }
 
 
@@ -201,7 +210,8 @@ public:
             std::move(structuralMaterialsMap),
             std::move(nonInstancedElectricalMaterialsMap),
             std::move(instancedElectricalMaterialsMap),
-            uniqueStructuralMaterials);
+            uniqueStructuralMaterials,
+            largestMass);
     }
 
     StructuralMaterial const * FindStructuralMaterial(ColorKey const & colorKey) const
@@ -273,6 +283,11 @@ public:
         return static_cast<ElectricalElementInstanceIndex>(colorKey.b);
     }
 
+    float GetLargestMass() const
+    {
+        return mLargestMass;
+    }
+
 private:
 
     struct NonInstancedColorKeyComparer
@@ -296,11 +311,13 @@ private:
         std::map<ColorKey, StructuralMaterial> structuralMaterialMap,
         std::map<ColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> nonInstancedElectricalMaterialMap,
         std::map<ColorKey, ElectricalMaterial, InstancedColorKeyComparer> instancedElectricalMaterialMap,
-        UniqueStructuralMaterialsArray uniqueStructuralMaterials)
+        UniqueStructuralMaterialsArray uniqueStructuralMaterials,
+        float largestMass)
         : mStructuralMaterialMap(std::move(structuralMaterialMap))
         , mNonInstancedElectricalMaterialMap(std::move(nonInstancedElectricalMaterialMap))
         , mInstancedElectricalMaterialMap(std::move(instancedElectricalMaterialMap))
         , mUniqueStructuralMaterials(uniqueStructuralMaterials)
+        , mLargestMass(largestMass)
     {
     }
 
@@ -309,4 +326,6 @@ private:
     std::map<ColorKey, ElectricalMaterial, InstancedColorKeyComparer> mInstancedElectricalMaterialMap;
 
     UniqueStructuralMaterialsArray mUniqueStructuralMaterials;
+
+    float mLargestMass;
 };

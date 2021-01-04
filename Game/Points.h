@@ -613,6 +613,7 @@ public:
         , mHaveWholeBuffersBeenUploadedOnce(false)
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
         , mCurrentCumulatedIntakenWaterThresholdForAirBubbles(gameParameters.CumulatedIntakenWaterThresholdForAirBubbles)
+        , mCurrentCombustionSpeedAdjustment(gameParameters.CombustionSpeedAdjustment)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
         , mCombustionIgnitionCandidates(mRawShipPointCount)
@@ -622,6 +623,7 @@ public:
         , mFreeEphemeralParticleSearchStartIndex(mAlignedShipPointCount)
         , mAreEphemeralPointsDirtyForRendering(false)
     {
+        CalculateCombustionDecayParameters(mCurrentCombustionSpeedAdjustment, GameParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>);
     }
 
     Points(Points && other) = default;
@@ -787,7 +789,6 @@ public:
         ElementIndex pointOffset,
         ElementIndex pointStride,
         float currentSimulationTime,
-        float dt,
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
@@ -1720,6 +1721,10 @@ public:
 
 private:
 
+    void CalculateCombustionDecayParameters(
+        float combustionSpeedAdjustment,
+        float dt);
+
     static inline float CalculateIntegrationFactorTimeCoefficient(
         float numMechanicalDynamicsIterations,
         float frozenCoefficient)
@@ -1968,6 +1973,7 @@ private:
     // of pre-calculated coefficients
     float mCurrentNumMechanicalDynamicsIterations;
     float mCurrentCumulatedIntakenWaterThresholdForAirBubbles;
+    float mCurrentCombustionSpeedAdjustment;
 
     // Allocators for work buffers
     BufferAllocator<float> mFloatBufferAllocator;
@@ -1995,6 +2001,11 @@ private:
     // of ephemeral types that are uploaded as ephemeral points
     // (thus no AirBubbles nor Sparkles, which are both uploaded specially)
     bool mutable mAreEphemeralPointsDirtyForRendering;
+
+    // Calculated constants for combustion decay
+    float mCombustionDecayAlphaFunctionA;
+    float mCombustionDecayAlphaFunctionB;
+    float mCombustionDecayAlphaFunctionC;
 };
 
 }
