@@ -366,7 +366,7 @@ Render:
 					+ Do
 					+ POST: UPDms=6.5
 				+ Test with Debug build
-			= See GLSL optimizations
+			+ See GLSL optimizations
 				+ Beginning: RNDms=7.44
 				+ Less smoothsteps: 6.4/6.7				
 				+ Trimmed down shader with second pass: 5.5/5.6
@@ -375,8 +375,10 @@ Render:
 						+ Issue with "#version 120"'s: 
 							+ Option 0: ###VERTEX-120
 							+ Review HeatBlaster
-				- Less fDxf calls?
-				- End: RNDms=TODO
+				X Less fDxf calls? 5.47ms => 0_calls: 5.07ms == 0.4ms 1+1_calls: 5.26ms
+				+ End: RNDms=5.4/5.6
+			+ Use max for border widths
+			- See whether main plane should be mid
 			+ Test
 				+ Tsunami
 				+ All 3 render modes
@@ -397,6 +399,8 @@ Render:
 			+ changelist
 		+ Send to testers
 
+		- Fix issue with I.J.N.Yamato burning & new decay
+
 		= Send/complete localization
 			+ Change copyright year
 				+ License.txt
@@ -412,38 +416,37 @@ Render:
 
 		- Test:
 			! Flames, water surface, calibration
-			- Dell
-			- Samsung
-			- HP
+			- Old Dell
+			- Samsung - take perf as well
+			- HP - take perf as well
 
 		- Merge to master
 		- Release 1.16.1
 			
 
 		----------------------------------------------------------------------------------------
-		1,184 - 70
 
 		- Lantern fish at big depth
-
-		- After wxWidgetd upgrade to wx 3.1.4:
-			- wxEVT_KEY_DOWN and/or wxEVT_CHAR: do evt.Skip()
-
-		- Bug:
-			- Jacoh2 20/12/2020: fixing the boiler area on the small fleutzgrampher and akagi Maru crash the game
 
 		- Sinking speed:
 			- Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s
 			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
+				- Copy old exe first
 				- Remove global damp at integration loop
 				- Point-by-point: 
 					- Underwater: incorporate old global damp in friction drag, if needed
 						- Try first without: see falling debris, also with friction adjust = 0.0
 					- !Underwater: convert old global damp to new air damp
 
+		- Add styrofoam
+			- Density: 50 kg/m³
+			- Melts at 513K
+			- https://en.wikipedia.org/wiki/Polystyrene
 
-		- TODO: move up "dangerous" features so we get more testing:
-			- Cached quantities!
+		- Cached quantities (*)
 	
+		- New rain: https://www.shadertoy.com/view/wsKcWw
+
 		- Optimization: OceanSurface and OceanTerrain ::GetNormalAt(x)
 			- Optimized: no second sampling needed!
 			- Track down all usages
@@ -456,15 +459,11 @@ Render:
 
 		- See vector normalization optimization with mult's with 1/len
 
-		- Cached quantities (*)
-
-		- Add styrofoam
-			- Density: 50 kg/m³
-			- Melts at 513K
-			- https://en.wikipedia.org/wiki/Polystyrene
-
 		- Light improvements (*)
 				
+		- Bug:
+			- Jacoh2 20/12/2020: fixing the boiler area on the small fleutzgrampher and akagi Maru crash the game
+
 		- Repair improvement:
 			- 1) Debug test case (w/default_ship)
 				- Need ability to highlight point by its index
@@ -513,9 +512,7 @@ Render:
 				- Option B: by point visit; all points in tiny band from depth 0
 			- Aerodynamics
 				! Have to maintain, though, global damp for springs and orphaned particles
-			- Punch tool (*)
-
-		- New rain: https://www.shadertoy.com/view/wsKcWw
+			- Punch tool (*)		
 
 		- Aerodynamics, as well
 
