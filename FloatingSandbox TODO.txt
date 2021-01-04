@@ -332,8 +332,7 @@ Render:
 		+ Stop reset resetting zoom
 			+ New GameController method: ResetAndReloadShip(...)
 				+ Invokes internal helper that takes additional StronglyTypedBool
-
-		= Water surface improvement:
+		+ Water surface improvement:
 			+ Split shaders for all ocean types: "xxx_sq" and "xxx_hq"
 			+ RenderContext setting, "detailed" by default
 				+ Double members
@@ -378,15 +377,14 @@ Render:
 				X Less fDxf calls? 5.47ms => 0_calls: 5.07ms == 0.4ms 1+1_calls: 5.26ms
 				+ End: RNDms=5.4/5.6
 			+ Use max for border widths
-			- See whether main plane should be mid
+			X See whether main plane should be mid
 			+ Test
 				+ Tsunami
 				+ All 3 render modes
 					+ Also with ocean depth = 0
 				+ Old Dell
 			+ Default is ON, but set at Calibration anyway
-				+ From gfx properties & CPU properties
-	
+				+ From gfx properties & CPU properties	
 		+ Re-design little waves with wind gusts
 		+ Interactive SWE state machine: 				
 			+ Use smoothstep process

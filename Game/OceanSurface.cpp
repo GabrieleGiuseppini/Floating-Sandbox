@@ -392,10 +392,10 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
 {
     static_assert(DetailType == OceanRenderDetailType::Basic || DetailType == OceanRenderDetailType::Detailed);
 
-    int64_t constexpr DetailXOffsetSamples = 1; // # of (whole) samples that the detailed planes are offset by
+    int64_t constexpr DetailXOffsetSamples = 2; // # of (whole) samples that the detailed planes are offset by
 
-    float constexpr MidPlaneDamp = 0.7f;
-    float constexpr BackPlaneDamp = 0.35f;
+    float constexpr MidPlaneDamp = 0.8f;
+    float constexpr BackPlaneDamp = 0.45f;
 
     //
     // We want to upload at most RenderSlices slices
