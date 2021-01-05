@@ -6,7 +6,7 @@
 - Added options to reload the previous ship, and to reload on startup the ship that had been loaded when the game was last played
 - Fixed sporadic error message occurring when extraneous files are placed under the game data directories
 - Added new background music track, "Shadowlands 4 - Breath" - by Kevin MacLeod (incompetech.com)
-- Added 8 new ships
+- Added 10 new ships
 - ...and a few more small improvements here and there, among which:
 	- Improved air bubbles
 	- Better equalization of engine sound volumes

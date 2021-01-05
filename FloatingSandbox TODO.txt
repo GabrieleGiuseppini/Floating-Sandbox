@@ -428,7 +428,7 @@ Render:
 			! Flames, water surface, calibration:
 				- Old Dell
 				- Samsung - take perf as well
-				- HP - take perf as well
+				= HP - take perf as well
 
 		- Merge to master
 		- Release 1.16.1
