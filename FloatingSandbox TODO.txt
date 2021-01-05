@@ -419,10 +419,12 @@ Render:
 			+ RU2
 
 		- Taureau_class_Lemons.rar
-			- Replace Vardenaux
-			- Take treaureax
+			+ Replace Vardenaux
+			+ Take treaureax
+			= Asked if both Teaureaux's
 
 		- Test:
+			- Localizations x 3
 			! Flames, water surface, calibration
 			- Old Dell
 			- Samsung - take perf as well
