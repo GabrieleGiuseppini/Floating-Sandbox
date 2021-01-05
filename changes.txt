@@ -3,6 +3,7 @@
 - Improved flames
 - Various improvements in fish behaviors
 - Recalibrated and optimized decay processes (rotting, combustion)
+- Added new "Styrofoam" material
 - Added options to reload the previous ship, and to reload on startup the ship that had been loaded when the game was last played
 - Fixed sporadic error message occurring when extraneous files are placed under the game data directories
 - Added new background music track, "Shadowlands 4 - Breath" - by Kevin MacLeod (incompetech.com)

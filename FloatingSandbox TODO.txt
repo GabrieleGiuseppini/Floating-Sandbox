@@ -4,7 +4,7 @@ Current perf:
 1.16.0
 - DELL new (default_ship): FPS=62.9 UPD=4.8ms RND=4.3ms
 - DELL old (default_ship): FPS=29.8/30.0 UPD=20.4ms, RND=12.6ms/12.9ms
-- HP (default_ship): FPS=20.2 UPD=48.5ms RND=14.1ms
+- HP (default_ship): FPS=20.4 UPD=48.05ms RND=14.2ms
 - Samsung (default_ship): FPS=22.5, UPD=44.5ms, RND=8.9ms 
 =================================================
 1.14
@@ -422,13 +422,23 @@ Render:
 			+ Take treaureax
 			+ Asked if both Teaureaux's
 			+ changelist
+		+ Add styrofoam
+			+ Density: 50 kg/m³
+			+ Melts at 513K
+			+ https://en.wikipedia.org/wiki/Polystyrene
+			+ Make new template
+
+		- Fix leaking-rust bug
+
+		- Send to Mike
+			- Ask if he needs colors
 
 		- Test:
 			+ Localizations x 3
 			! Flames, water surface, calibration:
 				- Old Dell
 				- Samsung - take perf as well
-				= HP - take perf as well
+				+ HP - take perf as well
 
 		- Merge to master
 		- Release 1.16.1
@@ -447,11 +457,6 @@ Render:
 					- Underwater: incorporate old global damp in friction drag, if needed
 						- Try first without: see falling debris, also with friction adjust = 0.0
 					- !Underwater: convert old global damp to new air damp
-
-		- Add styrofoam
-			- Density: 50 kg/m³
-			- Melts at 513K
-			- https://en.wikipedia.org/wiki/Polystyrene
 
 		- Cached quantities (*)
 	
