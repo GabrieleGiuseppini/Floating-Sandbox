@@ -428,8 +428,6 @@ Render:
 			+ https://en.wikipedia.org/wiki/Polystyrene
 			+ Make new template
 
-		- Fix leaking-rust bug
-
 		- Send to Mike
 			- Ask if he needs colors
 
@@ -460,7 +458,7 @@ Render:
 
 		- Cached quantities (*)
 	
-		- New rain: https://www.shadertoy.com/view/wsKcWw
+		= New rain: https://www.shadertoy.com/view/wsKcWw
 
 		- Optimization: OceanSurface and OceanTerrain ::GetNormalAt(x)
 			- Optimized: no second sampling needed!
