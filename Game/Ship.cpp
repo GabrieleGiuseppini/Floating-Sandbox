@@ -2083,12 +2083,12 @@ void Ship::RotPoints(
     //
 
     //
-    // We want to calculate alpha(x) as 1 - b*x, with x depending on the particle's state:
+    // We want to calculate alpha(x) as 1 - beta*x, with x depending on the particle's state:
     //      underwater not flooded: x_uw
     //      not underwater flooded: x_fl == 1.0 (so that we can use particle's water, clamped)
     //      underwater and flooded: x_uw_fl
     //
-    // Constraints: after 20 minutes @ 64FPS (Ns steps) we want the following decays:
+    // Constraints: after 20 minutes (Ns rot steps) we want the following decays:
     //      underwater not flooded: a_uw ^ Ns = 0.75 (little rusting)
     //      underwater and flooded: a_uw_fl ^ Ns = 0.25 (severe rusting)
     //
@@ -2123,13 +2123,14 @@ void Ship::RotPoints(
             (mParentWorld.IsUnderwater(mPoints.GetPosition(p)) ? x_uw : 0.0f) // x_uw
             + std::min(mPoints.GetWater(p), 1.0f); // x_fl
 
+        // Adjust with leaking: if leaking and subject to rusting, then rusts faster
+        x += mPoints.GetLeakingComposite(p).LeakingSources.StructuralLeak * x * x_uw;
+
         // Adjust with material's rust receptivity
         x *= mPoints.GetMaterialRustReceptivity(p);
 
         // Calculate alpha
-        float const alpha =
-            (1.0f - beta * x)
-            * (mPoints.GetLeakingComposite(p).LeakingSources.StructuralLeak != 0.0f ? 0.995f : 1.0f);  // Adjust with leaking: if leaking, rusts faster
+        float const alpha = std::max(1.0f - beta * x, 0.0f);
 
         // Decay
         mPoints.SetDecay(p, mPoints.GetDecay(p) * alpha);
