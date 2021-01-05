@@ -417,18 +417,18 @@ Render:
 			+ IT2
 			+ ES2
 			+ RU2
-
-		- Taureau_class_Lemons.rar
+		+ Taureau_class
 			+ Replace Vardenaux
 			+ Take treaureax
-			= Asked if both Teaureaux's
+			+ Asked if both Teaureaux's
+			+ changelist
 
 		- Test:
-			- Localizations x 3
-			! Flames, water surface, calibration
-			- Old Dell
-			- Samsung - take perf as well
-			- HP - take perf as well
+			+ Localizations x 3
+			! Flames, water surface, calibration:
+				- Old Dell
+				- Samsung - take perf as well
+				- HP - take perf as well
 
 		- Merge to master
 		- Release 1.16.1
@@ -746,6 +746,7 @@ Render:
 			- Next ship made: "Turbentiy Banalniy"		
 		- To test and to choose from:
 			- FER ZCL ships
+				- Costa Concordia: just do electrical panel
 			- Architect Creations
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
@@ -754,6 +755,7 @@ Render:
 				- Fix Antonia vs Antonio
 				- Require .shp to limit initial sink
 			- Pac0master's Structures
+			- Ryanair's planes
 		- Savannah (Officer's)
 			- Add electricals
 		- S.S. Triatic
@@ -761,29 +763,6 @@ Render:
 		- SpaceX ships from KazindelProductions
 			- In own folder
 			- Credits: "Kazindel"
-		- TODO 1.16:
-			- Ryanair's planes
-				- Old A-320: he removes tripods
-				- New A-320: I make instructions, he sends text
-					- Two textures here
-						- Plain
-						- SAS
-
-					Rules for Fokker and A320 old structure
-					There is A320, if you dont need gears cut them, also you can open doors (cut them), all planes have that functions, btw while in water better dont open rear door. CANT be placed on the ground.
-					Also all planes have "Black boxes" which can be cutted off if they survived impact.
-					ah settings i forget
-
-					Also like a small recomindation you can use this settings: simulation qualtity 2.000000/1.500000 and force ~3.000000
-					this is for new structure
-					for old:
-					Also like a small recomindation you can use this settings: simulation qualtity 2.000000/1.500000 and force ~10.000000
-
-				+ Fokker: he makes one without tripods and holes
-				- Embraer: he makes one without tripods and more rigid
-				- Credits: "Raynair"
-				- Test all with script
-
 
 - Marketing:
 	- Make new "demo" video

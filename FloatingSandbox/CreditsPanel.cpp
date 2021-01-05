@@ -104,7 +104,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
 
         {0, _("SHIP ENGINEERING"), 0},
         {2, wxS("TopHatLemons    Truce#3326    RetroGraczzPL    Nomadavid    Wreno    CPM"), 0},
-        {2, wxS("Pac0master    CorbinPasta93    Yorkie    Bluefox    KikoTheBoatBuilder"), 0},
+        {2, wxS("Pac0master    CorbinPasta93    Yorkie    Bluefox    KikoTheBoatBuilder    Raynair"), 0},
         {2, wxS("Albert Windsor    Takara    Rockabilly Rebel    McShooter2018    sinking_feeling"), 0},
         {2, wxS("Dumbphones    NotTelling    Hugo_2503    _ASTYuu_    Serhiiiihres    Floeddy"), 0},
         {2, wxS("Pandadude12345    John Smith    Dkuz    Loree    Daewoom    Aqua    Arkstar_"), 0},
