@@ -67,6 +67,7 @@ def check_file_valid(ship_folder_path, ship_file_name, ship_definition, field_na
 
 def main():
 
+    # Defaults
     ships_path = "../Ships";
 
     if len(sys.argv) == 2:
@@ -87,6 +88,7 @@ def main():
     invalid_files = 0
     mismatched_ship_names = 0
     orphan_dat_files = 0
+    invalid_created_by = 0
 
 
     # 
@@ -149,6 +151,14 @@ def main():
                 print("ERROR: {}: ship name '{}' does not match file name '{}'".format(file_name, ship_name, file_name_root))
                 mismatched_ship_names += 1
 
+        ### Check created_by
+        if "created_by" in ship_definition:
+            created_by = ship_definition["created_by"]
+            created_by_parts = created_by.split(';')
+            if len(created_by_parts) > 2:
+                print("ERROR: {}: created_by '{}' has too many separators".format(file_name, created_by))
+                invalid_created_by += 1
+
 
     #
     # Make sure all dat files are referenced
@@ -173,5 +183,6 @@ def main():
     print("  invalid_files            : {}".format(invalid_files))
     print("  mismatched_ship_names    : {}".format(mismatched_ship_names))
     print("  orphan_dat_files         : {}".format(orphan_dat_files))
+    print("  invalid_created_by       : {}".format(invalid_created_by))
 
 main()

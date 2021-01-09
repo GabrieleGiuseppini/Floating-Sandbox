@@ -146,7 +146,9 @@ public:
     static int constexpr DescriptionLabel1Height = 7;
     static int constexpr DescriptionLabel1BottomMargin = 6;
     static int constexpr DescriptionLabel2Height = 7;
-    static int constexpr DescriptionLabel2BottomMargin = 12;
+    static int constexpr DescriptionLabel2BottomMargin = 6;
+    static int constexpr DescriptionLabel3Height = 7;
+    static int constexpr DescriptionLabel3BottomMargin = 12;
     static int constexpr FilenameLabelHeight = 7;
     static int constexpr FilenameLabelBottomMargin = 0;
 
@@ -164,6 +166,8 @@ public:
         + DescriptionLabel1BottomMargin
         + DescriptionLabel2Height
         + DescriptionLabel2BottomMargin
+        + DescriptionLabel3Height
+        + DescriptionLabel3BottomMargin
         + FilenameLabelHeight
         + FilenameLabelBottomMargin
         + InfoTileInset;
@@ -270,12 +274,15 @@ private:
         bool HasElectricals;
         std::string OriginalDescription1;
         std::string OriginalDescription2;
+        std::string OriginalDescription3;
         std::filesystem::path ShipFilepath;
 
         wxString Description1;
         std::optional<wxSize> Description1Size;
         wxString Description2;
         std::optional<wxSize> Description2Size;
+        wxString Description3;
+        std::optional<wxSize> Description3Size;
         wxString Filename;
         std::optional<wxSize> FilenameSize;
 
@@ -289,16 +296,13 @@ private:
 
         InfoTile(
             wxBitmap bitmap,
-            bool isHD,
-            bool hasElectricals,
-            std::string const & description1,
-            std::string const & description2,
             std::filesystem::path const & shipFilepath)
             : Bitmap(bitmap)
-            , IsHD(isHD)
-            , HasElectricals(hasElectricals)
-            , OriginalDescription1(description1)
-            , OriginalDescription2(description2)
+            , IsHD(false)
+            , HasElectricals(false)
+            , OriginalDescription1()
+            , OriginalDescription2()
+            , OriginalDescription3()
             , ShipFilepath(shipFilepath)
         {}
     };

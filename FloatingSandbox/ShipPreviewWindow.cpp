@@ -367,10 +367,6 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 {
                     mInfoTiles.emplace_back(
                         mWaitBitmap,
-                        false,
-                        false,
-                        "",
-                        "",
                         message->GetScannedShipFilepaths()[s]);
 
                     // Add ship filename to search map
@@ -409,22 +405,26 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 infoTile.HasElectricals = message->GetShipPreview().HasElectricals;
 
                 std::string descriptionLabelText1 = message->GetShipPreview().Metadata.ShipName;
-                if (!!message->GetShipPreview().Metadata.YearBuilt)
+                if (message->GetShipPreview().Metadata.YearBuilt.has_value())
                     descriptionLabelText1 += " (" + *(message->GetShipPreview().Metadata.YearBuilt) + ")";
                 infoTile.OriginalDescription1 = std::move(descriptionLabelText1);
                 infoTile.Description1Size.reset();
 
-                int metres = message->GetShipPreview().OriginalSize.Width;
-                int feet = static_cast<int>(round(3.28f * metres));
+                int const metres = message->GetShipPreview().OriginalSize.Width;
+                int const feet = static_cast<int>(std::round(3.28f * metres));
                 std::string descriptionLabelText2 =
                     std::to_string(metres)
                     + "m/"
                     + std::to_string(feet)
                     + "ft";
-                if (!!message->GetShipPreview().Metadata.Author)
+                if (message->GetShipPreview().Metadata.Author.has_value())
                     descriptionLabelText2 += " - by " + *(message->GetShipPreview().Metadata.Author);
                 infoTile.OriginalDescription2 = std::move(descriptionLabelText2);
                 infoTile.Description2Size.reset();
+
+                if (message->GetShipPreview().Metadata.ArtCredits.has_value())
+                    infoTile.OriginalDescription3 = "Art by " + *(message->GetShipPreview().Metadata.ArtCredits);
+                infoTile.Description3Size.reset();
 
                 infoTile.Metadata.emplace(message->GetShipPreview().Metadata);
 
@@ -434,15 +434,23 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                         message->GetShipPreview().Metadata.ShipName));
 
                 // Add author to search map
-                if (!!message->GetShipPreview().Metadata.Author)
+                if (message->GetShipPreview().Metadata.Author.has_value())
                 {
                     infoTile.SearchStrings.push_back(
                         Utils::ToLower(
                             *(message->GetShipPreview().Metadata.Author)));
                 }
 
+                // Add art credits to search map
+                if (message->GetShipPreview().Metadata.ArtCredits.has_value())
+                {
+                    infoTile.SearchStrings.push_back(
+                        Utils::ToLower(
+                            *(message->GetShipPreview().Metadata.ArtCredits)));
+                }
+
                 // Add ship year to search map
-                if (!!message->GetShipPreview().Metadata.YearBuilt)
+                if (message->GetShipPreview().Metadata.YearBuilt.has_value())
                 {
                     infoTile.SearchStrings.push_back(
                         Utils::ToLower(
@@ -581,6 +589,7 @@ void ShipPreviewWindow::RecalculateGeometry(
     {
         mInfoTiles[i].Description1Size.reset();
         mInfoTiles[i].Description2Size.reset();
+        mInfoTiles[i].Description3Size.reset();
         mInfoTiles[i].FilenameSize.reset();
 
         mInfoTiles[i].Col = static_cast<int>(i % mCols);
@@ -772,8 +781,31 @@ void ShipPreviewWindow::Render(wxDC & dc)
                         - originVirtual.x,
                     infoTile.RectVirtual.GetTop() + InfoTileInset
                         + PreviewImageHeight + PreviewImageBottomMargin
-                            + DescriptionLabel1Height + DescriptionLabel1BottomMargin
+                        + DescriptionLabel1Height + DescriptionLabel1BottomMargin
                         + DescriptionLabel2Height - infoTile.Description2Size->GetHeight()
+                        - originVirtual.y);
+
+                //
+                // Description 3
+                //
+
+                if (!infoTile.Description3Size)
+                {
+                    auto [descr, size] = CalculateTextSizeWithCurrentFont(dc, infoTile.OriginalDescription3);
+                    infoTile.Description3 = descr;
+                    infoTile.Description3Size = size;
+                }
+
+                dc.DrawText(
+                    infoTile.Description3,
+                    infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
+                        + PreviewImageWidth / 2 - infoTile.Description3Size->GetWidth() / 2
+                        - originVirtual.x,
+                    infoTile.RectVirtual.GetTop() + InfoTileInset
+                        + PreviewImageHeight + PreviewImageBottomMargin
+                        + DescriptionLabel1Height + DescriptionLabel1BottomMargin
+                        + DescriptionLabel2Height + DescriptionLabel2BottomMargin
+                        + DescriptionLabel3Height - infoTile.Description3Size->GetHeight()
                         - originVirtual.y);
 
                 //
@@ -798,6 +830,7 @@ void ShipPreviewWindow::Render(wxDC & dc)
                         + PreviewImageHeight + PreviewImageBottomMargin
                             + DescriptionLabel1Height + DescriptionLabel1BottomMargin
                             + DescriptionLabel2Height + DescriptionLabel2BottomMargin
+                            + DescriptionLabel3Height + DescriptionLabel3BottomMargin
                         + FilenameLabelHeight - infoTile.FilenameSize->GetHeight()
                             - originVirtual.y);
 

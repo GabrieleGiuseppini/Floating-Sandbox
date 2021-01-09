@@ -57,18 +57,20 @@ ShipLoadDialog::ShipLoadDialog(
 
             LogMessage("ShipLoadDialog::cctor(): creating wxGenericDirCtrl...");
 
+            auto const minSize = wxSize(MinDirCtrlWidth, 680);
+
             mDirCtrl = new wxGenericDirCtrl(
                 this,
                 wxID_ANY,
                 mUIPreferencesManager->GetShipLoadDirectories().front().string(),
                 wxDefaultPosition,
-                wxSize(MinDirCtrlWidth, 500),
+                minSize,
                 wxDIRCTRL_DIR_ONLY);
 
             LogMessage("ShipLoadDialog::cctor(): ...wxGenericDirCtrl created.");
 
             mDirCtrl->ShowHidden(true); // When installing per-user, the Ships folder is under AppData, which is hidden
-            mDirCtrl->SetMinSize(wxSize(MinDirCtrlWidth, 500));
+            mDirCtrl->SetMinSize(minSize);
             mDirCtrl->Bind(wxEVT_DIRCTRL_SELECTIONCHANGED, (wxObjectEventFunction)&ShipLoadDialog::OnDirCtrlDirSelected, this);
 
             hSizer1->Add(mDirCtrl, 0, wxEXPAND | wxALIGN_TOP);

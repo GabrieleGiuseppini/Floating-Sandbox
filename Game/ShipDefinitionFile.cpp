@@ -79,9 +79,35 @@ ShipDefinitionFile ShipDefinitionFile::Load(std::filesystem::path definitionFile
             "ship_name",
             definitionFilePath.stem().string());
 
-        std::optional<std::string> const author = Utils::GetOptionalJsonMember<std::string>(
+        std::optional<std::string> author = Utils::GetOptionalJsonMember<std::string>(
             definitionJson,
             "created_by");
+
+        std::optional<std::string> artCredits = Utils::GetOptionalJsonMember<std::string>(
+            definitionJson,
+            "art_credits");
+
+        if (!artCredits.has_value())
+        {
+            // See if may populate art credits from author (legacy mode)
+            if (author.has_value())
+            {
+                // Split at ';'
+                auto const separator = author->find(';');
+                if (separator != std::string::npos)
+                {
+                    // ArtCredits
+                    if (separator < author->length() - 1)
+                        artCredits = Utils::Trim(author->substr(separator + 1));
+
+                    // Cleanse Author
+                    if (separator > 0)
+                        author = author->substr(0, separator);
+                    else
+                        author.reset();
+                }
+            }
+        }
 
         std::optional<std::string> const yearBuilt = Utils::GetOptionalJsonMember<std::string>(
             definitionJson,
@@ -151,6 +177,7 @@ ShipDefinitionFile ShipDefinitionFile::Load(std::filesystem::path definitionFile
             ShipMetadata(
                 shipName,
                 author,
+                artCredits,
                 yearBuilt,
                 description,
                 offset,

@@ -3,9 +3,9 @@ Current perf:
 =================================================
 1.16.0
 - DELL new (default_ship): FPS=62.9 UPD=4.8ms RND=4.3ms
-- DELL old (default_ship): FPS=29.8/30.0 UPD=20.4ms, RND=12.6ms/12.9ms
-- HP (default_ship): FPS=20.4 UPD=48.05ms RND=14.2ms
-- Samsung (default_ship): FPS=22.5, UPD=44.5ms, RND=8.9ms 
+- DELL old (default_ship, basic ocean): FPS=29.8/30.0 UPD=20.4ms, RND=12.6ms/12.9ms
+- HP (default_ship, basic ocean): FPS=20.4 UPD=48.05ms RND=14.2ms
+- Samsung (default_ship, basic ocean): FPS=23.4, UPD=42.3ms, RND=7.8ms 
 =================================================
 1.14
 - After forces rearc and iterations=30: FPS=30.16, Ums=22.5
@@ -427,31 +427,29 @@ Render:
 			+ Melts at 513K
 			+ https://en.wikipedia.org/wiki/Polystyrene
 			+ Make new template
-
-		= Test:
+		+ Test:
 			+ Localizations x 3
 			! Flames, water surface, calibration:
-				- Old Dell
-				- Samsung - take perf as well
+				+ Samsung - take perf as well
 				+ HP - take perf as well
 
 		+ Merge to master
 		= Release 1.16.1
 			+ Branch is merged into master (if applicable)
 			+ MSI variables
-			- Commit & push
-			- 64-bit MSI
-				- Build Install
-				- Make MSI
-				- Rename MSI
-				- Test upgrade from previous version
-				- Test on Discord
-			- 32-bit MSI
-				- Build Install
-				- Make MSI
-				- Rename MSI
-				- Test clean install
-				- Test on Discord
+			+ Commit & push
+			+ 64-bit MSI
+				+ Build Install
+				+ Make MSI
+				+ Rename MSI
+				+ Test upgrade from previous version
+			+ 32-bit MSI
+				+ Build Install
+				+ Make MSI
+				+ Rename MSI
+				X Test clean install
+			- Send both installers for testing
+			- Wait for test results
 			- Cut tag on github
 			- Upload packages to GameJolt
 				- Report file as safe (https://gamejolt.com/privacy)
@@ -464,14 +462,17 @@ Render:
 
 		----------------------------------------------------------------------------------------
 
+		+ Branch to new branch
+
 		- ShipBucket:
 			- Split author by ';', put remainder on next line prefixed with "art by:"
-				- Do split at metadata load time, exposing "ArtCredits"
-				- Add check to verify_ships.py to make sure author contains 0 or 1 ';'
-					- Run on all
-				- Change dialog
+				+ Do split at metadata load time, exposing "ArtCredits"
+				+ Add check to verify_ships.py to make sure author contains 0 or 1 ';'
+					+ Run on all
+				= Change dialog
 			- I also like a warning not to repost the work on youtube, though i'm sure people will ignore this (we cant control everything unfortunately :wink: )
 			- Ask Fernando for his ships
+			- Thank Mike
 
 		- Lantern fish at big depth
 
@@ -680,13 +681,13 @@ Render:
 		- Make MSI
 		- Rename MSI
 		- Test upgrade from previous version
-		- Test on Discord
 	- 32-bit MSI
 		- Build Install
 		- Make MSI
 		- Rename MSI
 		- Test clean install
-		- Test on Discord
+	- Get both installers tested on dev server
+	- Wait for test results
 	- Cut tag on github
 	- Upload packages to GameJolt
 		- Report file as safe (https://gamejolt.com/privacy)
