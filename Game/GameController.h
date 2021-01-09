@@ -29,6 +29,7 @@
 #include <GameCore/ImageSize.h>
 #include <GameCore/ParameterSmoother.h>
 #include <GameCore/ProgressCallback.h>
+#include <GameCore/StrongTypeDef.h>
 #include <GameCore/Vectors.h>
 
 #include <algorithm>
@@ -117,6 +118,7 @@ public:
     void RebindOpenGLContext(std::function<void()> rebindContextFunction);
 
     ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) override;
+    ShipMetadata ResetAndReloadShip(std::filesystem::path const & shipDefinitionFilepath) override;
     ShipMetadata AddShip(std::filesystem::path const & shipDefinitionFilepath) override;
 
     RgbImageData TakeScreenshot() override;
@@ -669,6 +671,9 @@ public:
     rgbColor const & GetFlatOceanColor() const override { return mRenderContext->GetFlatOceanColor(); }
     void SetFlatOceanColor(rgbColor const & color) override { mRenderContext->SetFlatOceanColor(color); }
 
+    OceanRenderDetailType GetOceanRenderDetail() const override { return mRenderContext->GetOceanRenderDetail(); }
+    void SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail) override { mRenderContext->SetOceanRenderDetail(oceanRenderDetail); }
+
     LandRenderModeType GetLandRenderMode() const override { return mRenderContext->GetLandRenderMode(); }
     void SetLandRenderMode(LandRenderModeType landRenderMode) override { mRenderContext->SetLandRenderMode(landRenderMode); }
 
@@ -697,8 +702,8 @@ public:
     float GetHeatOverlayTransparency() const override { return mRenderContext->GetHeatOverlayTransparency(); }
     void SetHeatOverlayTransparency(float value) override { mRenderContext->SetHeatOverlayTransparency(value); }
 
-    ShipFlameRenderModeType GetShipFlameRenderMode() const override { return mRenderContext->GetShipFlameRenderMode(); }
-    void SetShipFlameRenderMode(ShipFlameRenderModeType shipFlameRenderMode) override { mRenderContext->SetShipFlameRenderMode(shipFlameRenderMode); }
+    bool GetDrawFlames() const override { return mRenderContext->GetDrawFlames(); }
+    void SetDrawFlames(bool value) override { mRenderContext->SetDrawFlames(value); }
 
     float GetShipFlameSizeAdjustment() const override { return mFloatParameterSmoothers[FlameSizeAdjustmentParameterSmoother].GetValue(); }
     void SetShipFlameSizeAdjustment(float value) override { mFloatParameterSmoothers[FlameSizeAdjustmentParameterSmoother].SetValue(value); }
@@ -733,13 +738,17 @@ private:
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 
+    ShipMetadata ResetAndLoadShip(
+        std::filesystem::path const & shipDefinitionFilepath,
+        StrongTypedBool<struct DoAutoZoom> doAutoZoom);
+
     void Reset(std::unique_ptr<Physics::World> newWorld);
 
     void OnShipAdded(
         ShipId shipId,
         RgbaImageData && textureImage,
         ShipMetadata const & shipMetadata,
-        bool doAutoZoom);
+        StrongTypedBool<struct DoAutoZoom> doAutoZoom);
 
     void PublishStats(std::chrono::steady_clock::time_point nowReal);
 

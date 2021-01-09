@@ -463,6 +463,15 @@ enum class OceanRenderModeType
 };
 
 /*
+ * The different levels of detail with which the ocean may be rendered.
+ */
+enum class OceanRenderDetailType
+{
+    Basic,
+    Detailed
+};
+
+/*
  * The different ways in which the ocean floor may be rendered.
  */
 enum class LandRenderModeType
@@ -481,17 +490,6 @@ enum class VectorFieldRenderModeType
     PointForce,
     PointWaterVelocity,
     PointWaterMomentum
-};
-
-/*
- * The different ways of rendering ship flames.
- */
-enum class ShipFlameRenderModeType
-{
-    Mode1,
-    Mode2,
-    Mode3,
-    NoDraw
 };
 
 /*

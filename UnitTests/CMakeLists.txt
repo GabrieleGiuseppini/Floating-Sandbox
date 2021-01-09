@@ -37,6 +37,7 @@ set (UNIT_TEST_SOURCES
 	ShaderManagerTests.cpp
 	ShipPreviewDirectoryManagerTests.cpp
 	SliderCoreTests.cpp
+	StrongTypeDefTests.cpp
 	SysSpecificsTests.cpp
 	TaskThreadTests.cpp
 	TaskThreadPoolTests.cpp

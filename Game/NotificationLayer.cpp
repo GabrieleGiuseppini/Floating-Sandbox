@@ -404,6 +404,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 				default:
 				{
 					// Do not upload
+					break;
 				}
 			}
 		}

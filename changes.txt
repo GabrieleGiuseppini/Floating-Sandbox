@@ -1,6 +1,17 @@
-TODO
+1.16.1
+- Improved physics of interactive waves and of the WaveMaker tool 
+- Improved flames
+- Various improvements in fish behaviors
+- Recalibrated and optimized decay processes (rotting, combustion)
+- Added new "Styrofoam" material
 - Added options to reload the previous ship, and to reload on startup the ship that had been loaded when the game was last played
-- ...and a few more small improvements here and there!
+- Fixed sporadic error message occurring when extraneous files are placed under the game data directories
+- Added new background music track, "Shadowlands 4 - Breath" - by Kevin MacLeod (incompetech.com)
+- Added 10 new ships
+- ...and a few more small improvements here and there, among which:
+	- Improved air bubbles
+	- Better equalization of engine sound volumes
+	- Removed nonlinearities when masses are flooded instantaneously
 
 1.16.0.7
 - Completed "Frontier Maintenance" sub-system
@@ -8,7 +19,7 @@ TODO
 - Added first implementation of hydrodynamics
 	- Water drag is now calculated as separate friction and pressure (aka "directional") drags
 	- Re-calibrated all drag forces in the simulation
-- Added a new "surprise" feature, will be publicized in a week or so to maintain anticipation!
+- Added fishes, complete with (optional) shoaling behavior
 - Improved clouds
 	- Thanks to Dario Bazzichetto for the ideas!
 - Improved materials database:

@@ -1194,7 +1194,7 @@
         },
 	"texture_name":"paper_2",
         "thermal_conductivity": 0.05,
-	"thermal_expansion_coefficient": 0.00434,
+	"thermal_expansion_coefficient": 0.0035,
         "water_diffusion_speed": 0.65,
         "water_retention": 0.85,
         "buoyancy_volume_fill": 0.0,
@@ -1224,7 +1224,7 @@
         },
 	"texture_name":"paper_1",
         "thermal_conductivity": 0.05,
-	"thermal_expansion_coefficient": 0.00434,
+	"thermal_expansion_coefficient": 0.0035,
         "water_diffusion_speed": 0.65,
         "water_retention": 0.85,
         "buoyancy_volume_fill": 0.3,
@@ -4428,6 +4428,69 @@
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
     },
+
+
+
+    {
+        "color_key": "#E6E6E6",
+        "combustion_type": "Combustion",
+        "ignition_temperature": 1000000.0,
+        "is_hull": true,
+        "mass": {
+            "density": 1.0,
+            "nominal_mass": 50
+        },
+        "melting_temperature": 513.0,
+        "name": "Styrofoam Hull White",
+        "render_color": "#E6E6E6",
+	"rust_receptivity": 0.0,
+        "sound_type": "Wood",
+        "specific_heat": 1131.0,
+        "stiffness": 1.0,
+        "strength": 0.05,
+        "template": {
+            "column": 10,
+            "row": "30|Styrofoam Hull"
+        },
+	"texture_name":"styrofoam_1",
+        "thermal_conductivity": 0.033,
+	"thermal_expansion_coefficient": 0.00001,
+        "water_diffusion_speed": 0.5,
+        "water_retention": 0.1,
+	"wind_receptivity": 0.5,
+        "buoyancy_volume_fill": 0.0
+    },
+
+    {
+        "color_key": "#EDEDED",
+        "combustion_type": "Combustion",
+        "ignition_temperature": 1000000.0,
+        "is_hull": false,
+        "mass": {
+            "density": 0.25,
+            "nominal_mass": 50
+        },
+        "melting_temperature": 513.0,
+        "name": "Styrofoam White",
+        "render_color": "#EDEDED",
+	"rust_receptivity": 0.0,
+        "sound_type": "Wood",
+        "specific_heat": 1131.0,
+        "stiffness": 1.0,
+        "strength": 0.05,
+        "template": {
+            "column": 10,
+            "row": "31|Styrofoam"
+        },
+	"texture_name":"styrofoam_1",
+        "thermal_conductivity": 0.033,
+	"thermal_expansion_coefficient": 0.00001,
+        "water_diffusion_speed": 0.5,
+        "water_retention": 0.1,
+	"wind_receptivity": 0.5,
+        "buoyancy_volume_fill": 1.0
+    },
+
 
     {
         "color_key": "#FFFF00",

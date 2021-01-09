@@ -115,6 +115,7 @@ enum class GameSettings : size_t
     DepthOceanColorStart,
     DepthOceanColorEnd,
     FlatOceanColor,
+    OceanRenderDetail,
     LandRenderMode,
     TextureLandTextureIndex,
     FlatLandColor,
@@ -124,7 +125,7 @@ enum class GameSettings : size_t
     ShowAABBs,
     DrawHeatOverlay,
     HeatOverlayTransparency,
-    ShipFlameRenderMode,
+    DrawFlames,
     ShipFlameSizeAdjustment,
     DrawHeatBlasterFlame,
 

@@ -276,47 +276,12 @@ void GameController::RebindOpenGLContext(std::function<void()> rebindContextFunc
 
 ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)
 {
-    assert(!!mWorld);
+    return ResetAndLoadShip(shipDefinitionFilepath, StrongTypedTrue<DoAutoZoom>);
+}
 
-    // Load ship definition
-    auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
-
-    // Pre-validate ship's texture
-    if (shipDefinition.TextureLayerImage.has_value())
-        mRenderContext->ValidateShipTexture(*shipDefinition.TextureLayerImage);
-
-    // Save metadata
-    ShipMetadata shipMetadata(shipDefinition.Metadata);
-
-    // Create a new world
-    auto newWorld = std::make_unique<Physics::World>(
-        OceanFloorTerrain(mWorld->GetOceanFloorTerrain()),
-        mFishSpeciesDatabase,
-        mGameEventDispatcher,
-        std::make_shared<TaskThreadPool>(),
-        mGameParameters,
-        mRenderContext->GetVisibleWorld());
-
-    // Add ship to new world
-    auto [shipId, textureImage] = newWorld->AddShip(
-        std::move(shipDefinition),
-        mMaterialDatabase,
-        mShipTexturizer,
-        mGameParameters);
-
-    //
-    // No errors, so we may continue
-    //
-
-    Reset(std::move(newWorld));
-
-    OnShipAdded(
-        shipId,
-        std::move(textureImage),
-        shipMetadata,
-        mDoAutoZoomOnShipLoad);
-
-    return shipMetadata;
+ShipMetadata GameController::ResetAndReloadShip(std::filesystem::path const & shipDefinitionFilepath)
+{
+    return ResetAndLoadShip(shipDefinitionFilepath, StrongTypedFalse<DoAutoZoom>);
 }
 
 ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitionFilepath)
@@ -346,7 +311,7 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
         shipId,
         std::move(textureImage),
         shipMetadata,
-        false);
+        StrongTypedFalse<struct DoAutoZoom>);
 
     return shipMetadata;
 }
@@ -692,9 +657,9 @@ void GameController::PickObjectToMove(
     assert(!!mWorld);
     auto const elementIndex = mWorld->GetNearestPointAt(worldCoordinates, 1.0f);
     if (elementIndex.has_value())
-        shipId = elementIndex->GetShipId();
+        shipId = std::optional<ShipId>(elementIndex->GetShipId());
     else
-        shipId = std::nullopt;
+        shipId = std::optional<ShipId>(std::nullopt);
 }
 
 void GameController::MoveBy(
@@ -1260,6 +1225,53 @@ void GameController::OnShipRepaired(ShipId /*shipId*/)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
+ShipMetadata GameController::ResetAndLoadShip(
+    std::filesystem::path const & shipDefinitionFilepath,
+    StrongTypedBool<struct DoAutoZoom> doAutoZoom)
+{
+    assert(!!mWorld);
+
+    // Load ship definition
+    auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
+
+    // Pre-validate ship's texture
+    if (shipDefinition.TextureLayerImage.has_value())
+        mRenderContext->ValidateShipTexture(*shipDefinition.TextureLayerImage);
+
+    // Save metadata
+    ShipMetadata shipMetadata(shipDefinition.Metadata);
+
+    // Create a new world
+    auto newWorld = std::make_unique<Physics::World>(
+        OceanFloorTerrain(mWorld->GetOceanFloorTerrain()),
+        mFishSpeciesDatabase,
+        mGameEventDispatcher,
+        std::make_shared<TaskThreadPool>(),
+        mGameParameters,
+        mRenderContext->GetVisibleWorld());
+
+    // Add ship to new world
+    auto [shipId, textureImage] = newWorld->AddShip(
+        std::move(shipDefinition),
+        mMaterialDatabase,
+        mShipTexturizer,
+        mGameParameters);
+
+    //
+    // No errors, so we may continue
+    //
+
+    Reset(std::move(newWorld));
+
+    OnShipAdded(
+        shipId,
+        std::move(textureImage),
+        shipMetadata,
+        doAutoZoom);
+
+    return shipMetadata;
+}
+
 void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
 {
     // Reset world
@@ -1287,10 +1299,10 @@ void GameController::OnShipAdded(
     ShipId shipId,
     RgbaImageData && textureImage,
     ShipMetadata const & shipMetadata,
-    bool doAutoZoom)
+    StrongTypedBool<struct DoAutoZoom> doAutoZoom)
 {
     // Auto-zoom (if requested)
-    if (doAutoZoom)
+    if (doAutoZoom && mDoAutoZoomOnShipLoad)
     {
         // Calculate zoom to fit width and height (plus a nicely-looking margin)
         vec2f const shipSize = mWorld->GetShipSize(shipId);

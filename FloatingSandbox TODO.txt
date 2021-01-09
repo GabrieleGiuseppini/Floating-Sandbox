@@ -1,10 +1,10 @@
 =================================================
 Current perf:
 =================================================
-1.16
+1.16.0
 - DELL new (default_ship): FPS=62.9 UPD=4.8ms RND=4.3ms
-- DELL old (default_ship): FPS=30.2 UPD=20.5ms, RND=13.0ms
-- HP (default_ship): FPS=20.2 UPD=48.5ms RND=14.1ms
+- DELL old (default_ship): FPS=29.8/30.0 UPD=20.4ms, RND=12.6ms/12.9ms
+- HP (default_ship): FPS=20.4 UPD=48.05ms RND=14.2ms
 - Samsung (default_ship): FPS=22.5, UPD=44.5ms, RND=8.9ms 
 =================================================
 1.14
@@ -276,37 +276,218 @@ Render:
 			+ When enumerating, only look for expected extensions - making sure as well that we find everything we're looking for
 				+ TextureDatabase
 				+ Others
+		+ Merge into master
+		+ UpdateMasses: converge _slowly_ towards target
+			+ Try to repro issue with ship having water material that breaks (my_ship_structure-water_air_issue.png on Desktop)	
+				+ Air material appears to break with water jumping often, possibly because of high jumps in mass
+		+ Lower rotting speed:
+			+ 1.16: Titanic @ 12m is at 0.34 - let's shoot for 0.5
+			+ changelist
+		+ Optimize that decay process at Points::CombustionUpdateLowFrequency
+			+ Test adjustment
+		+ Air bubbles smaller at very beginning 
+		+ Volume adjustment for engine sounds
+			! Tests:
+				! 1: S.S. Lurline
+				! 10: S.S. Hesleden
+			+ Option 1: number of engines used as divisor
+				+ Announced by ElectricalElement (already), received by SoundController which updates mCurrentCount
+					+ SoundsController: reset mCurrentCount to 0 at each Reset()
+			+ Send to John Smith
+		+ Bump up version
+		+ Add new background music
+			+ "Shadowlands 4 - Breath" - Kevin MacLeod (incompetech.com)
+		+ Ship uploads take ShipRenderContext
+			! Yet, RenderContext still exposes "Async" versions of buffer uploads
+			+ RenderContext.h
+			+ Ships::Upload and below
+				+ Keep invoking those 3 "async" versions on RenderContext, however						
+			+ Tests:
+				+ Bombs
+				+ PinnedPoints
+				+ Temperature
+				+ Frontiers
+				+ Vector field length multiplier
+				+ Highlights
+		+ Flames: 
+			+ Fix bottom issue with additional Y sorting
+			+ Rearchitect way we push foreground flames into vector, so to maintain ordering
+				+ Points::UploadFlames does two passes
+			+ Fix alpha spots by only using sampled alpha at the top
+			+ Fix color Y range
+			+ Nuke flame render modes 2 and 3
+				+ Nuke shaders
+				+ Replace RenderContext setting with booleam "DoDrawFlames" (default=true)
+				+ GameController interface
+				+ SettingsDialog: remove radio's and add checkbox under advanced
+			+ Test with finer resolution, now that we have alpha
+			+ Check perf of many flames on old Dell, before and after
+				! 96 max burning particles, Ark
+				+ 1.15.4: start=30 end=17.7 upd=20.5 rnd=30-33
+				+ 1.16.1: start=OK end=23.7 upd=20.6 rnd=21.4
+			+ Make GameJolt poll
+				+ Side-by-side video
+			+ Test with high wind
+			+ changelist
+		+ Stop reset resetting zoom
+			+ New GameController method: ResetAndReloadShip(...)
+				+ Invokes internal helper that takes additional StronglyTypedBool
+		+ Water surface improvement:
+			+ Split shaders for all ocean types: "xxx_sq" and "xxx_hq"
+			+ RenderContext setting, "detailed" by default
+				+ Double members
+				+ RenderStartBasic/Detailed: zero out just that buffer
+				+ RenderPrepare: switch
+				+ RenderDraw: switch
+			+ Expose setting via GameController
+			+ SettingsDialog: checkbox next to OceanRenderMode
+				+ "... Requires more computational resources."
+			+ OceanSurface::Upload: inspect setting and invoke private templated function
+				+ For now, just same upload
+			+ Verify switch works
+				+ Debug build as well
+			+ See if WorldRenderContext::UploadWater(x2) Depth mode really needs yWater
+				+ If not: remove oceanDepth arg
+			+ Do Detailed Shaders
+				+ Exercise first on ShaderToy with parameter for back plane
+				+ Texture
+				+ Flat
+				+ Depth
+				+ Do BackToggle parameter at two draw's
+				+ Adjust border thickness: redo vertex attributes so that yBack/Mid/Front are world, and texture is passed separately based off yMid
+				+ Also adjust border thickness with zoom parameter
+			+ Do WorldRenderContext machinery	
+			+ Do OceanSurface::Upload
+				+ Basic
+				+ Decide which of the three planes is going to be the "at" plane
+				+ Optimize w/whole samples
+					+ Pre: UPDms=6.6
+					+ Do
+					+ POST: UPDms=6.5
+				+ Test with Debug build
+			+ See GLSL optimizations
+				+ Beginning: RNDms=7.44
+				+ Less smoothsteps: 6.4/6.7				
+				+ Trimmed down shader with second pass: 5.5/5.6
+					+ Using #define's and #ifdef's
+						+ Make sure ShaderManager supports global #define's: in SplitSource, just duplicate everything above first ###VERTEX-120 into both portions
+						+ Issue with "#version 120"'s: 
+							+ Option 0: ###VERTEX-120
+							+ Review HeatBlaster
+				X Less fDxf calls? 5.47ms => 0_calls: 5.07ms == 0.4ms 1+1_calls: 5.26ms
+				+ End: RNDms=5.4/5.6
+			+ Use max for border widths
+			X See whether main plane should be mid
+			+ Test
+				+ Tsunami
+				+ All 3 render modes
+					+ Also with ocean depth = 0
+				+ Old Dell
+			+ Default is ON, but set at Calibration anyway
+				+ From gfx properties & CPU properties	
+		+ Re-design little waves with wind gusts
+		+ Interactive SWE state machine: 				
+			+ Use smoothstep process
+				+ Time to end of phase should be proportional to deltaH
+					+ Try all the way
+					+ Still, mid-deltaH is too slow
+			+ Try restart with same algo as ParamSmoother
+			+ Make duration based on delta between target and baseline, rather than delta between target and now
+			+ Try with decay process on fall
+			+ changelist
+		+ Send to testers
+		+ Fix issue with I.J.N.Yamato burning & new decay
+			+ Calc parameters at Points cctor
+				+ Move Ship::LowFrequencyPeriod to GameParameters as ParticleUpdateLowFrequencyPeriod
+			+ Calc parameters at param changes
+			+ Optimize application of params
+			+ Test paper, wood, and iron decay
+			+ Test ship with those settings
+			+ Test adjustment
+			+ Test normal rotting
+		+ Send/complete localization
+			+ Change copyright year
+				+ License.txt
+				+ EN (in-code)
+				+ All .po files
+			+ IT1
+			+ ES1
+			+ RU1
+			+ IT2
+			+ IT2
+			+ ES2
+			+ RU2
+		+ Taureau_class
+			+ Replace Vardenaux
+			+ Take treaureax
+			+ Asked if both Teaureaux's
+			+ changelist
+		+ Add styrofoam
+			+ Density: 50 kg/m³
+			+ Melts at 513K
+			+ https://en.wikipedia.org/wiki/Polystyrene
+			+ Make new template
 
-		- Merge into master
+		= Test:
+			+ Localizations x 3
+			! Flames, water surface, calibration:
+				- Old Dell
+				- Samsung - take perf as well
+				+ HP - take perf as well
 
-		- UpdateMasses: converge _slowly_ towards target
-			- Try to repro issue with ship having water material that breaks (my_ship_structure-water_air_issue.png on Desktop)	
-				- Air material appears to break with water jumping often, possibly because of high jumps in mass
-
-		- Lower rotting speed:
-			- 1.16: Titanic @ 12m is at 0.34 - let's shoot for 0.5
-
-		- Optimize that decay process at Points::CombustionUpdateLowFrequency
-
-		- Volume slider for engine sounds
-			- Or SoundController adjusts volume of subsequent instances:
-				- 1st = whatever it is now
-				- 2nd = a bit less
-					- And lowers volume of first (half each?)
-				- ...
-				- Need to keep count of total instances currently playing
-			- Or number of engines used as divisor
-				- Announced by ElectricalElement, received by SoundController which updates mCurrentCount
-					- SoundsController: reset mCurrentCount to 0 at each Reset()
-
-		- TODO: move up "dangerous" features so we get more testing:
-			- Cached quantities!
+		- Merge to master
+		- Release 1.16.1
+			- Branch is merged into master (if applicable)
+			- MSI variables
+			- Commit & push
+			- 64-bit MSI
+				- Build Install
+				- Make MSI
+				- Rename MSI
+				- Test upgrade from previous version
+				- Test on Discord
+			- 32-bit MSI
+				- Build Install
+				- Make MSI
+				- Rename MSI
+				- Test clean install
+				- Test on Discord
+			- Cut tag on github
+			- Upload packages to GameJolt
+				- Report file as safe (https://gamejolt.com/privacy)
+				- Post
+			- www.floatingsandbox.com:
+				- Upload changes.txt
+					- Test w/old FS
+				- Update current version in FAQ
+			
 
 		----------------------------------------------------------------------------------------
 
-		- Update changes.txt w/fishes 7 days later (TODO)
-			- changes.txt
-			- www.floatingsandbox.com
+		- ShipBucket:
+			- Split author by ';', put remainder on next line prefixed with "art by:"
+				- Do split at metadata load time, exposing "ArtCredits"
+				- Add check to verify_ships.py to make sure author contains 0 or 1 ';'
+					- Run on all
+				- Change dialog
+			- I also like a warning not to repost the work on youtube, though i'm sure people will ignore this (we cant control everything unfortunately :wink: )
+			- Ask Fernando for his ships
+
+		- Lantern fish at big depth
+
+		- Sinking speed:
+			- Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s
+			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
+				- Copy old exe first
+				- Remove global damp at integration loop
+				- Point-by-point: 
+					- Underwater: incorporate old global damp in friction drag, if needed
+						- Try first without: see falling debris, also with friction adjust = 0.0
+					- !Underwater: convert old global damp to new air damp
+
+		- Cached quantities (*)
+	
+		= New rain: https://www.shadertoy.com/view/wsKcWw
 
 		- Optimization: OceanSurface and OceanTerrain ::GetNormalAt(x)
 			- Optimized: no second sampling needed!
@@ -316,36 +497,15 @@ Render:
 		- New ships
 			- changelist
 
-		- Sinking speed:
-			- Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 5m/s
-			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
-				- Remove global damp at integration loop
-				- Point-by-point: 
-					- Underwater: incorporate old global damp in friction drag, if needed
-						- Try first without: see falling debris, also with friction adjust = 0.0
-					- !Underwater: convert old global damp to new air damp
-
 		- Incandescence layer (*)
 
 		- See vector normalization optimization with mult's with 1/len
 
-		- Cached quantities (*)
-
-
-
-
-
-
-
-
-
-		- Add styrofoam
-			- Density: 50 kg/m³
-			- Melts at 513K
-			- https://en.wikipedia.org/wiki/Polystyrene
-
 		- Light improvements (*)
 				
+		- Bug:
+			- Jacoh2 20/12/2020: fixing the boiler area on the small fleutzgrampher and akagi Maru crash the game
+
 		- Repair improvement:
 			- 1) Debug test case (w/default_ship)
 				- Need ability to highlight point by its index
@@ -394,9 +554,7 @@ Render:
 				- Option B: by point visit; all points in tiny band from depth 0
 			- Aerodynamics
 				! Have to maintain, though, global damp for springs and orphaned particles
-			- Punch tool (*)
-
-		- New rain: https://www.shadertoy.com/view/wsKcWw
+			- Punch tool (*)		
 
 		- Aerodynamics, as well
 
@@ -407,9 +565,6 @@ Render:
 			- Check then if there are any artifacts when doing so
 
 		- Lower speed of (sin) ocean waves - now that we run faster?
-
-		- Flames: make sampling resolution independent from dimensions
-			- Need to pass width and height of flame quad, and divide texture coords by these
 
 		- Night vision (*)
 
@@ -456,9 +611,6 @@ Render:
 
 		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
 
-		- Look back at SWE's
-			- Try re-instating skipped steps
-
 		- See if may put smoke emitters behind triangles and springs
 			- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;
 			  need to have a way to change layer, which would however require a different rendering batch (because
@@ -481,13 +633,9 @@ Render:
 			  that smoke at plane ID P shows the ship behind it, even though there are flames at plane IDs < P
 			- Do cleanup tasks
 
-		- Attempt to use total point masses for springs (*)
-
 		- Add more background music:
-			- Music:
-				+ "Symmetry" - Kevin MacLeod (incompetech.com)
-				- "Shadowlands 4 - Breath" - Kevin MacLeod (incompetech.com)
-				- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
+			+ "Symmetry" - Kevin MacLeod (incompetech.com)			
+			- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
 
 		- Multi-threading, phase II:
 			- Springs: each iteration done in parallel with NThreads partitions
@@ -524,6 +672,7 @@ Render:
 		- Continuous Auto-focus (*)
 
 - Release template:
+	- Branch is merged into master (if applicable)
 	- MSI variables
 	- Commit & push
 	- 64-bit MSI
@@ -540,8 +689,6 @@ Render:
 		- Test on Discord
 	- Cut tag on github
 	- Upload packages to GameJolt
-		- Package instructions:
-			Floating Sandbox comes as a standalone installer which will setup and/or upgrade the game on your computer. Please note that the Game Jolt client does *not* support the Floating Sandbox installer, so avoid using the Game Jolt client altogether, and download the installer directly instead, choosing either the 64-bit installer or the 32-bit installer (by clicking on the 3 dots) depending on your Windows installation. Once the download has completed, run the installer, wait until it has finished setting up the game, and then launch Floating Sandbox either from the shortcut on your desktop or from the Windows "Start" menu.
 		- Report file as safe (https://gamejolt.com/privacy)
 		- Post
 	- www.floatingsandbox.com:
@@ -630,6 +777,7 @@ Render:
 			- Next ship made: "Turbentiy Banalniy"		
 		- To test and to choose from:
 			- FER ZCL ships
+				- Costa Concordia: just do electrical panel
 			- Architect Creations
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
@@ -638,6 +786,7 @@ Render:
 				- Fix Antonia vs Antonio
 				- Require .shp to limit initial sink
 			- Pac0master's Structures
+			- Ryanair's planes
 		- Savannah (Officer's)
 			- Add electricals
 		- S.S. Triatic
@@ -645,29 +794,6 @@ Render:
 		- SpaceX ships from KazindelProductions
 			- In own folder
 			- Credits: "Kazindel"
-		- TODO 1.16:
-			- Ryanair's planes
-				- Old A-320: he removes tripods
-				- New A-320: I make instructions, he sends text
-					- Two textures here
-						- Plain
-						- SAS
-
-					Rules for Fokker and A320 old structure
-					There is A320, if you dont need gears cut them, also you can open doors (cut them), all planes have that functions, btw while in water better dont open rear door. CANT be placed on the ground.
-					Also all planes have "Black boxes" which can be cutted off if they survived impact.
-					ah settings i forget
-
-					Also like a small recomindation you can use this settings: simulation qualtity 2.000000/1.500000 and force ~3.000000
-					this is for new structure
-					for old:
-					Also like a small recomindation you can use this settings: simulation qualtity 2.000000/1.500000 and force ~10.000000
-
-				+ Fokker: he makes one without tripods and holes
-				- Embraer: he makes one without tripods and more rigid
-				- Credits: "Raynair"
-				- Test all with script
-
 
 - Marketing:
 	- Make new "demo" video
@@ -819,8 +945,6 @@ Render:
 				=>0 0x0000000000237742 EntryPoint+0xf96a() in sfml-system-2 (0x000000000f0bffd0)
 				  1 0x000000000022e526 EntryPoint+0x674d() in sfml-system-2 (0x000000000f0bffd0)
 				  2 0x000000007bc91c13 call_thread_func+0xd2() in ntdll (0x000000000f0bffd0)
-	- See if may upgrade to wx 3.1.3
-		- wxEVT_KEY_DOWN and/or wxEVT_CHAR: do evt.Skip()
 	+ Build DevIL as a static lib (*)
 		+ Redo zlib and libpng SDKs
 	- See if may upgrade SFML to master (~2.6) with OPUS support
@@ -1107,12 +1231,13 @@ Render:
 
 	- In Windows' "high contrast mode", the names of the ships in the Ship Load Dialog disappear
 
+	- Flames: make sampling resolution independent from dimensions
+		- Need to pass width and height of flame quad, and divide texture coords by these
+
 	- Night vision (*): ship is just not affected by ambient light
 		- RenderSettings & SettingsDialog
 		- ShipRenderContext:
 			- Upon Effective?/AmbientLightIntensity change *AND* upon change of this new render setting: set effective ambient light intensity
-
-	- Decide whether auto-zoom considering position would be a good idea or not
 
 	- Intro screen: the game's title falling into the sea and floating back up - interactive to a smaller extent, e.g.
 	  by just punching holes
@@ -1132,13 +1257,18 @@ Render:
 		- Vision: once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
 		- Spec:
 			- Orchestrated by GameController by taking "optimal" AABB from World (which takes union of "optimal" AABB's from each ship)
-			  and giving it to RenderContext, which adjusts ViewModel based on it
+			  and giving it to RenderContext, which adjusts ViewModel based on it				
 				- At each simulation step
 			- Preferences setting for auto-focus (default is on)
 				- Also toggable at "Controls" menu
 			- Also works as "auto-focus at load"
 		- Algo:
 			- Option 1:
+				- "Optimal" AABB is union of all AABBs
+				- ViewModel adjustment:
+					- First: position: adjust based on center of AABB, but only if it's off by more than 1/2th of screen W/H from center
+					- Second: zoom: TODO
+			- Option 2:
 				- Connected component i has AABBi
 				- Ship "optimal" AABB == Union(AABBi) for i belonging to B
 					- B is set of connected components such that sum(their #points) > 3/4 TotPoints, in optimal order (from larger to smaller)
@@ -1162,7 +1292,7 @@ Render:
 							- Use insertion sort to end up with list sorted by #points, desc
 					- Option 2:
 						- Recalculated at low-freq step (same as above)
-			- Option 2:
+			- Option 3:
 				- Low-freq step calculates AABB
 
 	- Different backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
@@ -1353,8 +1483,6 @@ Render:
 			- Sounds
 			- ElectricalElements state machine
 			- Retrofit a ship
-			- Use this chance to expose ShipRenderContext from RenderContext
-				- Nuke all RenderContext forwards to ShipRenderContext
 			- GFX (Shaders & Primitives):
 				- FireworkVector
 					- Params:
@@ -1533,9 +1661,6 @@ Render:
 			- Texture is distorted depending on force field
 			- TBD: see moleskine
 
-	- Attempt to use total point masses for springs (*)
-		- Do first a pass to recalc coefficients, once per simulation step
-
 	- Shooting stars
 		- Star "parks" always an extra star at (-1, -1)
 
@@ -1590,8 +1715,12 @@ Render:
 	- Ripple: "basically you click and hold somewhere on the ship, and when you let go, it sends a ripple into the ship, weak points might tear,
 	  or start getting damaged, etc."
 
-	- Ocean waves:
-		- Add somehow waves to SWE height field, rather than "fake" superimposition of sins over SWE's height field
+	- Look back at SWE's
+		- Try re-instating skipped steps - just redo original implementation (two buffers, etc.)
+		- See if need to, and may damp tiny oscillations; if good, consider two SWE fields: one for abnormals (undamped) and one for interactive (damped)
+			- Actually, just two velocity fields, always used in sum, but one is damped and the other is not
+		- Ocean waves:
+			- Add somehow waves to SWE height field, rather than "fake" superimposition of sins over SWE's height field
 
 - Game Interactions and Controls:
 

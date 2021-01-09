@@ -1,0 +1,7 @@
+{
+	"structure_image":"a320_sas_structural.png.dat",
+	"texture_image":"a320_sas_texture.png.dat",
+	"ship_name":"A320 (SAS)",
+	"created_by":"Ryanair",
+	"description": "Here is the Airbus A320. If you don't need gears, you may cut them. You may also open doors (cutting them), but while in water it'd be better not to open the rear door. There is also a black-box that may be cut off if the plane has survived the impact.<br/><br/>A small recommendation on the settings: set 'Simulation Quality' to 2 or 1.5, and set 'Strength Adjust' to 3.0."
+}

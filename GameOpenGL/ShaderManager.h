@@ -50,6 +50,14 @@ public:
     }
 
     template <typename Traits::ProgramType Program>
+    inline auto GetProgramOpenGLHandle()
+    {
+        uint32_t constexpr programIndex = static_cast<uint32_t>(Program);
+
+        return *(mPrograms[programIndex].OpenGLHandle);
+    }
+
+    template <typename Traits::ProgramType Program>
     inline void SetTextureParameters()
     {
         size_t programIndex = static_cast<size_t>(Program);
@@ -191,7 +199,6 @@ public:
         CheckOpenGLError();
     }
 
-
     // At any given moment, only one texture (unit) may be active
     template <typename Traits::ProgramParameterType Parameter>
     inline void ActivateTexture()
@@ -278,6 +285,8 @@ private:
     friend class ShaderManagerTests_ProcessesIncludes_ComplainsWhenIncludeNotFound_Test;
 
     friend class ShaderManagerTests_SplitsShaders_Test;
+    friend class ShaderManagerTests_SplitsShaders_DuplicatesCommonSectionToVertexAndFragment_Test;
+    friend class ShaderManagerTests_SplitsShaders_ErrorsOnMalformedVertexSection_Test;
     friend class ShaderManagerTests_SplitsShaders_ErrorsOnMissingVertexSection_Test;
     friend class ShaderManagerTests_SplitsShaders_ErrorsOnMissingVertexSection_EmptyFile_Test;
     friend class ShaderManagerTests_SplitsShaders_ErrorsOnMissingFragmentSection_Test;

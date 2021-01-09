@@ -99,23 +99,51 @@ bbb
 
 TEST_F(ShaderManagerTests, SplitsShaders)
 {
-    std::string source = R"(
-    ###VERTEX
+    std::string source = R"(###VERTEX-120
 vfoo
-    ###FRAGMENT
+    ###FRAGMENT-999
  fbar
 )";
 
     auto [vertexSource, fragmentSource] = TestShaderManager::SplitSource(source);
 
-    EXPECT_EQ("vfoo\n", vertexSource);
-    EXPECT_EQ(" fbar\n", fragmentSource);
+    EXPECT_EQ("#version 120\nvfoo\n", vertexSource);
+    EXPECT_EQ("#version 999\n fbar\n", fragmentSource);
+}
+
+TEST_F(ShaderManagerTests, SplitsShaders_DuplicatesCommonSectionToVertexAndFragment)
+{
+    std::string source = R"(  #define foo bar this is common
+
+another define
+    ###VERTEX-120
+vfoo
+    ###FRAGMENT-120
+ fbar
+)";
+
+    auto [vertexSource, fragmentSource] = TestShaderManager::SplitSource(source);
+
+    EXPECT_EQ("#version 120\n  #define foo bar this is common\n\nanother define\nvfoo\n", vertexSource);
+    EXPECT_EQ("#version 120\n  #define foo bar this is common\n\nanother define\n fbar\n", fragmentSource);
+}
+
+TEST_F(ShaderManagerTests, SplitsShaders_ErrorsOnMalformedVertexSection)
+{
+    std::string source = R"(###VERTEX-1a0
+vfoo
+    ###FRAGMENT-999
+ fbar
+)";
+
+    EXPECT_THROW(
+        TestShaderManager::SplitSource(source),
+        GameException);
 }
 
 TEST_F(ShaderManagerTests, SplitsShaders_ErrorsOnMissingVertexSection)
 {
-    std::string source = R"(
-vfoo
+    std::string source = R"(vfoo
 ###FRAGMENT
 fbar
     )";
@@ -136,8 +164,7 @@ TEST_F(ShaderManagerTests, SplitsShaders_ErrorsOnMissingVertexSection_EmptyFile)
 
 TEST_F(ShaderManagerTests, SplitsShaders_ErrorsOnMissingFragmentSection)
 {
-    std::string source = R"(
-###VERTEX
+    std::string source = R"(###VERTEX
 vfoo
 fbar
     )";

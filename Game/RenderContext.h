@@ -222,7 +222,7 @@ public:
     void SetOceanRenderMode(OceanRenderModeType oceanRenderMode)
     {
         mRenderParameters.OceanRenderMode = oceanRenderMode;
-        mRenderParameters.AreOceanRenderParametersDirty = true;
+        mRenderParameters.AreOceanRenderModeParametersDirty = true;
 
         mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
         mRenderParameters.IsShipWaterColorDirty = true;
@@ -236,7 +236,7 @@ public:
     void SetDepthOceanColorStart(rgbColor const & color)
     {
         mRenderParameters.DepthOceanColorStart = color;
-        mRenderParameters.AreOceanRenderParametersDirty = true;
+        mRenderParameters.AreOceanRenderModeParametersDirty = true;
 
         mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
         mRenderParameters.IsShipWaterColorDirty = true;
@@ -250,7 +250,7 @@ public:
     void SetDepthOceanColorEnd(rgbColor const & color)
     {
         mRenderParameters.DepthOceanColorEnd = color;
-        mRenderParameters.AreOceanRenderParametersDirty = true;
+        mRenderParameters.AreOceanRenderModeParametersDirty = true;
 
         mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
         mRenderParameters.IsShipWaterColorDirty = true;
@@ -264,7 +264,7 @@ public:
     void SetFlatOceanColor(rgbColor const & color)
     {
         mRenderParameters.FlatOceanColor = color;
-        mRenderParameters.AreOceanRenderParametersDirty = true;
+        mRenderParameters.AreOceanRenderModeParametersDirty = true;
 
         mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
         mRenderParameters.IsShipWaterColorDirty = true;
@@ -284,6 +284,17 @@ public:
     {
         mRenderParameters.OceanTextureIndex = index;
         mRenderParameters.IsOceanTextureIndexDirty = true;
+    }
+
+    OceanRenderDetailType GetOceanRenderDetail() const
+    {
+        return mRenderParameters.OceanRenderDetail;
+    }
+
+    void SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail)
+    {
+        mRenderParameters.OceanRenderDetail = oceanRenderDetail;
+        // No need to set dirty, this is picked up at each cycle anway
     }
 
     bool GetShowShipThroughOcean() const
@@ -350,14 +361,14 @@ public:
         mRenderParameters.IsFlatLampLightColorDirty = true;
     }
 
-    ShipFlameRenderModeType GetShipFlameRenderMode() const
+    bool GetDrawFlames() const
     {
-        return mRenderParameters.ShipFlameRenderMode;
+        return mRenderParameters.DrawFlames;
     }
 
-    void SetShipFlameRenderMode(ShipFlameRenderModeType shipFlameRenderMode)
+    void SetDrawFlames(bool drawFlames)
     {
-        mRenderParameters.ShipFlameRenderMode = shipFlameRenderMode;
+        mRenderParameters.DrawFlames = drawFlames;
         // No need to set dirty, this is picked up at each cycle anway
     }
 
@@ -480,6 +491,11 @@ public:
     void SetVectorFieldRenderMode(VectorFieldRenderModeType vectorFieldRenderMode)
     {
         mVectorFieldRenderMode = vectorFieldRenderMode;
+
+        for (auto & s : mShips)
+        {
+            s->SetVectorFieldLengthMultiplier(mVectorFieldLengthMultiplier);
+        }
     }
 
     float GetVectorFieldLengthMultiplier() const
@@ -538,6 +554,13 @@ public:
         ShipId shipId,
         size_t pointCount,
         RgbaImageData texture);
+
+    ShipRenderContext & GetShipRenderContext(ShipId shipId) const
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        return *(mShips[shipId]);
+    }
 
     RgbImageData TakeScreenshot();
 
@@ -677,26 +700,48 @@ public:
         mWorldRenderContext->UploadLandEnd();
     }
 
-    inline void UploadOceanStart(size_t slices)
+    inline void UploadOceanBasicStart(size_t slices)
     {
-        mWorldRenderContext->UploadOceanStart(slices);
+        mWorldRenderContext->UploadOceanBasicStart(slices);
     }
 
-    inline void UploadOcean(
+    inline void UploadOceanBasic(
         float x,
-        float yOcean,
-        float oceanDepth)
+        float yOcean)
     {
-        mWorldRenderContext->UploadOcean(
+        mWorldRenderContext->UploadOceanBasic(
             x,
             yOcean,
-            oceanDepth,
             mRenderParameters);
     }
 
-    inline void UploadOceanEnd()
+    inline void UploadOceanBasicEnd()
     {
-        mWorldRenderContext->UploadOceanEnd();
+        mWorldRenderContext->UploadOceanBasicEnd();
+    }
+
+    inline void UploadOceanDetailedStart(size_t slices)
+    {
+        mWorldRenderContext->UploadOceanDetailedStart(slices);
+    }
+
+    inline void UploadOceanDetailed(
+        float x,
+        float yBack,
+        float yMid,
+        float yFront)
+    {
+        mWorldRenderContext->UploadOceanDetailed(
+            x,
+            yBack,
+            yMid,
+            yFront,
+            mRenderParameters);
+    }
+
+    inline void UploadOceanDetailedEnd()
+    {
+        mWorldRenderContext->UploadOceanDetailedEnd();
     }
 
     inline void UploadFishesStart(size_t fishCount)
@@ -795,85 +840,9 @@ public:
         // Nop
     }
 
-    inline void UploadShipStart(
-        ShipId shipId,
-        PlaneId maxMaxPlaneId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadStart(maxMaxPlaneId);
-    }
-
-    inline void UploadShipPointImmutableAttributes(
-        ShipId shipId,
-        vec2f const * textureCoordinates)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadPointImmutableAttributes(textureCoordinates);
-    }
-
-    inline void UploadShipPointMutableAttributesStart(ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadPointMutableAttributesStart();
-    }
-
-    inline void UploadShipPointMutableAttributes(
-        ShipId shipId,
-        vec2f const * position,
-        float const * light,
-        float const * water,
-        size_t lightAndWaterCount)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadPointMutableAttributes(
-            position,
-            light,
-            water,
-            lightAndWaterCount);
-    }
-
-    inline void UploadShipPointMutableAttributesPlaneId(
-        ShipId shipId,
-        float const * planeId,
-        size_t startDst,
-        size_t count)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadPointMutableAttributesPlaneId(
-            planeId,
-            startDst,
-            count);
-    }
-
-    inline void UploadShipPointMutableAttributesDecay(
-        ShipId shipId,
-        float const * decay,
-        size_t startDst,
-        size_t count)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadPointMutableAttributesDecay(
-            decay,
-            startDst,
-            count);
-    }
-
-    inline void UploadShipPointMutableAttributesEnd(ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadPointMutableAttributesEnd();
-    }
-
     // Upload is Asynchronous - buffer may not be used until the
     // next UpdateStart
-    inline void UploadShipPointColors(
+    inline void UploadShipPointColorsAsync(
         ShipId shipId,
         vec4f const * color,
         size_t startDst,
@@ -894,7 +863,7 @@ public:
 
     // Upload is Asynchronous - buffer may not be used until the
     // next UpdateStart
-    inline void UploadShipPointTemperature(
+    inline void UploadShipPointTemperatureAsync(
         ShipId shipId,
         float const * temperature,
         size_t startDst,
@@ -915,7 +884,7 @@ public:
 
     // Upload is Asynchronous - buffer may not be used until the
     // next UpdateStart
-    inline void UploadShipPointFrontierColors(
+    inline void UploadShipPointFrontierColorsAsync(
         ShipId shipId,
         FrontierColor const * colors)
     {
@@ -927,378 +896,6 @@ public:
             {
                 mShips[shipId]->UploadPointFrontierColors(colors);
             });
-    }
-
-
-    inline void UploadShipElementsStart(ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementsStart();
-    }
-
-    inline void UploadShipElementPoint(
-        ShipId shipId,
-        int shipPointIndex)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementPoint(shipPointIndex);
-    }
-
-    inline void UploadShipElementSpring(
-        ShipId shipId,
-        int shipPointIndex1,
-        int shipPointIndex2)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementSpring(
-            shipPointIndex1,
-            shipPointIndex2);
-    }
-
-    inline void UploadShipElementRope(
-        ShipId shipId,
-        int shipPointIndex1,
-        int shipPointIndex2)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementRope(
-            shipPointIndex1,
-            shipPointIndex2);
-    }
-
-    inline void UploadShipElementTrianglesStart(
-        ShipId shipId,
-        size_t trianglesCount)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementTrianglesStart(trianglesCount);
-    }
-
-    inline void UploadShipElementTriangle(
-        ShipId shipId,
-        size_t triangleIndex,
-        int shipPointIndex1,
-        int shipPointIndex2,
-        int shipPointIndex3)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementTriangle(
-            triangleIndex,
-            shipPointIndex1,
-            shipPointIndex2,
-            shipPointIndex3);
-    }
-
-    inline void UploadShipElementTrianglesEnd(
-        ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementTrianglesEnd();
-    }
-
-    inline void UploadShipElementsEnd(ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementsEnd();
-    }
-
-    inline void UploadShipElementStressedSpringsStart(ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementStressedSpringsStart();
-    }
-
-    inline void UploadShipElementStressedSpring(
-        ShipId shipId,
-        int shipPointIndex1,
-        int shipPointIndex2)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementStressedSpring(
-            shipPointIndex1,
-            shipPointIndex2);
-    }
-
-    inline void UploadShipElementStressedSpringsEnd(ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementStressedSpringsEnd();
-    }
-
-    inline void UploadShipElementFrontierEdgesStart(
-        ShipId shipId,
-        size_t edgesCount)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementFrontierEdgesStart(edgesCount);
-    }
-
-    inline void UploadShipElementFrontierEdge(
-        ShipId shipId,
-        int shipPointIndex1,
-        int shipPointIndex2)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementFrontierEdge(
-            shipPointIndex1,
-            shipPointIndex2);
-    }
-
-    inline void UploadShipElementFrontierEdgesEnd(ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementFrontierEdgesEnd();
-    }
-
-    inline void UploadShipFlamesStart(
-        ShipId shipId,
-        size_t count,
-        float windSpeedMagnitude)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadFlamesStart(count, windSpeedMagnitude);
-    }
-
-    inline void UploadShipFlame(
-        ShipId shipId,
-        PlaneId planeId,
-        vec2f const & baseCenterPosition,
-        vec2f const & flameVector,
-        float scale,
-        float flamePersonalitySeed,
-        bool isOnChain)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadFlame(
-            planeId,
-            baseCenterPosition,
-            flameVector,
-            scale,
-            flamePersonalitySeed,
-            isOnChain,
-            mRenderParameters);
-    }
-
-    inline void UploadShipFlamesEnd(ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadFlamesEnd();
-    }
-
-    inline void UploadShipExplosion(
-        ShipId shipId,
-        PlaneId planeId,
-        vec2f const & centerPosition,
-        float halfQuadSize,
-        ExplosionType explosionType,
-        float personalitySeed,
-        float progress)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadExplosion(
-            planeId,
-            centerPosition,
-            halfQuadSize,
-            explosionType,
-            personalitySeed,
-            progress);
-    }
-
-    inline void UploadShipSparkle(
-        ShipId shipId,
-        PlaneId planeId,
-        vec2f const & position,
-        vec2f const & velocityVector,
-        float progress)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadSparkle(
-            planeId,
-            position,
-            velocityVector,
-            progress);
-    }
-
-    inline void UploadShipAirBubble(
-        ShipId shipId,
-        PlaneId planeId,
-        vec2f const & position,
-        float scale,
-        float alpha)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadAirBubble(
-            planeId,
-            position,
-            scale,
-            alpha);
-    }
-
-    inline void UploadShipGenericMipMappedTextureRenderSpecification(
-        ShipId shipId,
-        PlaneId planeId,
-        TextureFrameId<GenericMipMappedTextureGroups> const & textureFrameId,
-        vec2f const & position)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadGenericMipMappedTextureRenderSpecification(
-            planeId,
-            textureFrameId,
-            position);
-    }
-
-    inline void UploadShipGenericMipMappedTextureRenderSpecification(
-        ShipId shipId,
-        PlaneId planeId,
-        TextureFrameId<GenericMipMappedTextureGroups> const & textureFrameId,
-        vec2f const & position,
-        float scale,
-        vec2f const & rotationBase,
-        vec2f const & rotationOffset,
-        float alpha)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadGenericMipMappedTextureRenderSpecification(
-            planeId,
-            textureFrameId,
-            position,
-            scale,
-            rotationBase,
-            rotationOffset,
-            alpha);
-    }
-
-    inline void UploadShipGenericMipMappedTextureRenderSpecification(
-        ShipId shipId,
-        PlaneId planeId,
-        TextureFrameId<GenericMipMappedTextureGroups> const & textureFrameId,
-        vec2f const & position,
-        float scale,
-        float angle,
-        float alpha)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadGenericMipMappedTextureRenderSpecification(
-            planeId,
-            textureFrameId,
-            position,
-            scale,
-            angle,
-            alpha);
-    }
-
-    inline void UploadShipGenericMipMappedTextureRenderSpecification(
-        ShipId shipId,
-        PlaneId planeId,
-        float personalitySeed,
-        GenericMipMappedTextureGroups textureGroup,
-        vec2f const & position,
-        float scale,
-        float alpha)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadGenericMipMappedTextureRenderSpecification(
-            planeId,
-            personalitySeed,
-            textureGroup,
-            position,
-            scale,
-            alpha);
-    }
-
-    inline void UploadShipElementEphemeralPointsStart(ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementEphemeralPointsStart();
-    }
-
-    inline void UploadShipElementEphemeralPoint(
-        ShipId shipId,
-        int pointIndex)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementEphemeralPoint(
-            pointIndex);
-    }
-
-    inline void UploadShipElementEphemeralPointsEnd(ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadElementEphemeralPointsEnd();
-    }
-
-    inline void UploadShipHighlight(
-        ShipId shipId,
-        HighlightModeType highlightMode,
-        PlaneId planeId,
-        vec2f const & centerPosition,
-        float halfQuadSize,
-        rgbColor color,
-        float progress)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadHighlight(
-            highlightMode,
-            planeId,
-            centerPosition,
-            halfQuadSize,
-            color,
-            progress);
-    }
-
-    inline void UploadShipVectors(
-        ShipId shipId,
-        size_t count,
-        vec2f const * position,
-        float const * planeId,
-        vec2f const * vector,
-        float lengthAdjustment,
-        vec4f const & color)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadVectors(
-            count,
-            position,
-            planeId,
-            vector,
-            lengthAdjustment * mVectorFieldLengthMultiplier,
-            color);
-    }
-
-    inline void UploadShipEnd(ShipId shipId)
-    {
-        assert(shipId >= 0 && shipId < mShips.size());
-
-        mShips[shipId]->UploadEnd();
     }
 
     inline void UploadShipsEnd()
@@ -1404,17 +1001,17 @@ private:
     std::unique_ptr<NotificationRenderContext> mNotificationRenderContext;
 
     //
-    // Externally-controlled parameters that only affect Upload (i.e. that do
-    // not affect rendering directly), or that purely serve as input to calculated
-    // render parameters, or that only need storage here (e.g. being used in other
-    // contexts to control upload's)
+    // Storage for externally-controlled parameters that only affect Upload (i.e.
+    // that do not affect rendering directly), or that purely serve as input to
+    // calculated render parameters, or that only need storage here (e.g. being used
+    // in other contexts to control upload's)
     //
 
     float mAmbientLightIntensity;
     float mShipFlameSizeAdjustment;
     rgbColor mShipDefaultWaterColor;
     VectorFieldRenderModeType mVectorFieldRenderMode;
-    float mVectorFieldLengthMultiplier;
+    float mVectorFieldLengthMultiplier; // Storage
 
 
     //

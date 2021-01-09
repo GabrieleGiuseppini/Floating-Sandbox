@@ -1,12 +1,10 @@
-###VERTEX
-
-#version 120
+###VERTEX-120
 
 #define in attribute
 #define out varying
 
 // Inputs
-in vec3 inOcean;	// Position (vec2), Texture coordinate Y (float) (0 at top, +X at bottom)
+in vec3 inOceanBasic;	// Position (vec2), Texture coordinate Y (float) (0 at top, +X at bottom)
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
@@ -16,14 +14,12 @@ out vec3 textureCoord;
 
 void main()
 {
-    gl_Position = paramOrthoMatrix * vec4(inOcean.xy, -1.0, 1.0);
-    textureCoord = inOcean;
+    gl_Position = paramOrthoMatrix * vec4(inOceanBasic.xy, -1.0, 1.0);
+    textureCoord = inOceanBasic;
 }
 
 
-###FRAGMENT
-
-#version 120
+###FRAGMENT-120
 
 #define in varying
 

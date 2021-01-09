@@ -835,7 +835,7 @@ void World::RenderUpload(
 
     mOceanFloor.Upload(gameParameters, renderContext);
 
-    mOceanSurface.Upload(gameParameters, renderContext);
+    mOceanSurface.Upload(renderContext);
 
     mFishes.Upload(renderContext);
 
@@ -845,9 +845,7 @@ void World::RenderUpload(
 
         for (auto const & ship : mAllShips)
         {
-            ship->RenderUpload(
-                gameParameters,
-                renderContext);
+            ship->RenderUpload(renderContext);
         }
 
         renderContext.UploadShipsEnd();

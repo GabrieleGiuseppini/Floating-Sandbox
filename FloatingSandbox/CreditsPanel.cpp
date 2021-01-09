@@ -70,7 +70,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {0, mApplication, 0},
         {1, mBuildInfo, panelSize.GetHeight() / 2},
 
-        {1, _("(c) Gabriele Giuseppini 2018-2020"), 0},
+        {1, _("(c) Gabriele Giuseppini 2018-2021"), 0},
         {2, _("Original concept (c) Luke Wren, Francis Racicot (Pac0master) 2013"), VMargin},
 
         {1, _("This software is licensed to Mattia, Elia, and all the others kids in the world!"), panelSize.GetHeight() / 2},
@@ -104,7 +104,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
 
         {0, _("SHIP ENGINEERING"), 0},
         {2, wxS("TopHatLemons    Truce#3326    RetroGraczzPL    Nomadavid    Wreno    CPM"), 0},
-        {2, wxS("Pac0master    CorbinPasta93    Yorkie    Bluefox    KikoTheBoatBuilder"), 0},
+        {2, wxS("Pac0master    CorbinPasta93    Yorkie    Bluefox    KikoTheBoatBuilder    Raynair"), 0},
         {2, wxS("Albert Windsor    Takara    Rockabilly Rebel    McShooter2018    sinking_feeling"), 0},
         {2, wxS("Dumbphones    NotTelling    Hugo_2503    _ASTYuu_    Serhiiiihres    Floeddy"), 0},
         {2, wxS("Pandadude12345    John Smith    Dkuz    Loree    Daewoom    Aqua    Arkstar_"), 0},
@@ -135,6 +135,10 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {2, _("Licensed under Creative Commons: By Attribution 4.0 License"), VMargin},
 
         {1, wxS("\"Symmetry\""), 0},
+        {3, wxS("Kevin MacLeod (https://incompetech.com)"), 0},
+        {2, _("Licensed under Creative Commons: By Attribution 4.0 License"), VMargin},
+
+        {1, wxS("\"Shadowlands 4 - Breath\""), 0},
         {3, wxS("Kevin MacLeod (https://incompetech.com)"), 0},
         {2, _("Licensed under Creative Commons: By Attribution 4.0 License"), VMargin},
 

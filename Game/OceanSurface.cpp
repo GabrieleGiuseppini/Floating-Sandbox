@@ -224,66 +224,24 @@ void OceanSurface::Update(
         gameParameters);
 }
 
-void OceanSurface::Upload(
-    GameParameters const & gameParameters,
-    Render::RenderContext & renderContext) const
+void OceanSurface::Upload(Render::RenderContext & renderContext) const
 {
-    //
-    // We want to upload at most RenderSlices slices
-    //
-
-    // Find index of leftmost sample, and its corresponding world X
-    auto const sampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorld().TopLeft.x + GameParameters::HalfMaxWorldWidth) / Dx);
-    float sampleIndexX = -GameParameters::HalfMaxWorldWidth + (Dx * sampleIndex);
-
-    // Calculate number of samples required to cover screen from leftmost sample
-    // up to the visible world right (included)
-    float const coverageWidth = renderContext.GetVisibleWorld().BottomRight.x - sampleIndexX;
-    auto const numberOfSamplesToRender = static_cast<size_t>(ceil(coverageWidth / Dx));
-
-    if (numberOfSamplesToRender >= RenderSlices<size_t>)
+    switch (renderContext.GetOceanRenderDetail())
     {
-        //
-        // Have to take more than 1 sample per slice
-        //
-
-        renderContext.UploadOceanStart(RenderSlices<int>);
-
-        // Calculate dx between each pair of slices with want to upload
-        float const sliceDx = coverageWidth / RenderSlices<float>;
-
-        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
-        // quad side must be at the end of the width
-        for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexX += sliceDx)
+        case OceanRenderDetailType::Basic:
         {
-            renderContext.UploadOcean(
-                sampleIndexX,
-                GetHeightAt(sampleIndexX),
-                gameParameters.SeaDepth);
+            InternalUpload<OceanRenderDetailType::Basic>(renderContext);
+
+            break;
+        }
+
+        case OceanRenderDetailType::Detailed:
+        {
+            InternalUpload<OceanRenderDetailType::Detailed>(renderContext);
+
+            break;
         }
     }
-    else
-    {
-        //
-        // We just upload the required number of samples, which is less than
-        // the max number of slices we're prepared to upload, and we let OpenGL
-        // interpolate on our behalf
-        //
-
-        renderContext.UploadOceanStart(numberOfSamplesToRender);
-
-        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
-        // quad side must be at the end of the width
-        for (size_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexX += Dx)
-        {
-            renderContext.UploadOcean(
-                sampleIndexX,
-                mSamples[s + sampleIndex].SampleValue,
-                gameParameters.SeaDepth);
-        }
-    }
-
-    renderContext.UploadOceanEnd();
 }
 
 void OceanSurface::AdjustTo(
@@ -296,11 +254,13 @@ void OceanSurface::AdjustTo(
         float constexpr MaxRelativeHeight = 4.0f; // Carefully selected; 4.5 makes waves unstable (velocities oscillating around 0.5 and diverging) after a while
         float constexpr MinRelativeHeight = -2.0f;
         float targetHeight =
-            std::max(MinRelativeHeight, std::min(MaxRelativeHeight, (worldCoordinates->y / SWEHeightFieldAmplification)))
+            Clamp(worldCoordinates->y / SWEHeightFieldAmplification, MinRelativeHeight, MaxRelativeHeight)
             + SWEHeightFieldOffset;
 
-        // Check whether we are already advancing an interactive wave
-        if (!mSWEInteractiveWaveStateMachine)
+        // Check whether we are already advancing an interactive wave, or whether
+        // we may smother the almost-complete existing one
+        if (!mSWEInteractiveWaveStateMachine
+            || mSWEInteractiveWaveStateMachine->MayBeOverridden())
         {
             //
             // Start advancing a new interactive wave
@@ -426,6 +386,152 @@ void OceanSurface::TriggerRogueWave(
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
+
+template<OceanRenderDetailType DetailType>
+void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
+{
+    static_assert(DetailType == OceanRenderDetailType::Basic || DetailType == OceanRenderDetailType::Detailed);
+
+    int64_t constexpr DetailXOffsetSamples = 2; // # of (whole) samples that the detailed planes are offset by
+
+    float constexpr MidPlaneDamp = 0.8f;
+    float constexpr BackPlaneDamp = 0.45f;
+
+    //
+    // We want to upload at most RenderSlices slices
+    //
+
+    // Find index of leftmost sample, and its corresponding world X
+    auto const leftmostSampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorld().TopLeft.x + GameParameters::HalfMaxWorldWidth) / Dx);
+    float sampleIndexX = -GameParameters::HalfMaxWorldWidth + (Dx * leftmostSampleIndex);
+
+    // Calculate number of samples required to cover screen from leftmost sample
+    // up to the visible world right (included)
+    float const coverageWidth = renderContext.GetVisibleWorld().BottomRight.x - sampleIndexX;
+    auto const numberOfSamplesToRender = static_cast<size_t>(ceil(coverageWidth / Dx));
+
+    if (numberOfSamplesToRender >= RenderSlices<size_t>)
+    {
+        //
+        // Zoom out from afar: each slice encompasses more than 1 sample;
+        // we upload then RenderSlices slices, interpolating Y at each slice boundary
+        //
+
+        if constexpr(DetailType == OceanRenderDetailType::Basic)
+            renderContext.UploadOceanBasicStart(RenderSlices<int>);
+        else
+            renderContext.UploadOceanDetailedStart(RenderSlices<int>);
+
+        // Calculate dx between each pair of slices with want to upload
+        float const sliceDx = coverageWidth / RenderSlices<float>;
+
+        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
+        // quad side must be at the end of the width
+        for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexX += sliceDx)
+        {
+            //
+            // Split sample index X into index in sample array and fractional part
+            // between that sample and the next
+            //
+
+            assert(sampleIndexX >= -GameParameters::HalfMaxWorldWidth
+                && sampleIndexX <= GameParameters::HalfMaxWorldWidth);
+
+            // Fractional index in the sample array
+            float const sampleIndexF = (sampleIndexX + GameParameters::HalfMaxWorldWidth) / Dx;
+
+            // Integral part
+            auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+
+            // Fractional part within sample index and the next sample index
+            float const sampleIndexDx = sampleIndexF - sampleIndexI;
+
+            assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+            assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
+
+            //
+            // Interpolate sample at sampleIndexX
+            //
+
+            float const sample =
+                mSamples[sampleIndexI].SampleValue
+                + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+
+            //
+            // Upload slice
+            //
+
+            if constexpr (DetailType == OceanRenderDetailType::Basic)
+            {
+                renderContext.UploadOceanBasic(
+                    sampleIndexX,
+                    sample);
+            }
+            else
+            {
+                //
+                // Interpolate samples at sampleIndeX minus offsets,
+                // re-using the fractional part that we've already calculated for sampleIndexX
+                //
+
+                auto const indexBack = std::max(sampleIndexI - DetailXOffsetSamples * 2, int64_t(0));
+                float const sampleBack =
+                    mSamples[indexBack].SampleValue
+                    + mSamples[indexBack].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+
+                auto const indexMid = std::max(sampleIndexI - DetailXOffsetSamples, int64_t(0));
+                float const sampleMid =
+                    mSamples[indexMid].SampleValue
+                    + mSamples[indexMid].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+
+                renderContext.UploadOceanDetailed(
+                    sampleIndexX,
+                    sampleBack * BackPlaneDamp,
+                    sampleMid * MidPlaneDamp,
+                    sample);
+            }
+        }
+    }
+    else
+    {
+        //
+        // Zoom in: each sample encompasses multiple slices;
+        // we upload then just the required number of samples, which is less than
+        // the max number of slices we're prepared to upload, and we let OpenGL
+        // interpolate on our behalf
+        //
+
+        if constexpr (DetailType == OceanRenderDetailType::Basic)
+            renderContext.UploadOceanBasicStart(numberOfSamplesToRender);
+        else
+            renderContext.UploadOceanDetailedStart(numberOfSamplesToRender);
+
+        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
+        // quad side must be at the end of the width
+        for (size_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexX += Dx)
+        {
+            if constexpr (DetailType == OceanRenderDetailType::Basic)
+            {
+                renderContext.UploadOceanBasic(
+                    sampleIndexX,
+                    mSamples[leftmostSampleIndex + static_cast<int64_t>(s)].SampleValue);
+            }
+            else
+            {
+                renderContext.UploadOceanDetailed(
+                    sampleIndexX,
+                    mSamples[std::max(leftmostSampleIndex + static_cast<int64_t>(s) - DetailXOffsetSamples * 2, int64_t(0))].SampleValue * BackPlaneDamp,
+                    mSamples[std::max(leftmostSampleIndex + static_cast<int64_t>(s) - DetailXOffsetSamples, int64_t(0))].SampleValue * MidPlaneDamp,
+                    mSamples[leftmostSampleIndex + static_cast<int64_t>(s)].SampleValue);
+            }
+        }
+    }
+
+    if constexpr (DetailType == OceanRenderDetailType::Basic)
+        renderContext.UploadOceanBasicEnd();
+    else
+        renderContext.UploadOceanDetailedEnd();
+}
 
 void OceanSurface::SetSWEWaveHeight(
     size_t centerIndex,
@@ -723,8 +829,8 @@ void OceanSurface::GenerateSamples(
     // Wind gust ripples
     //
 
-    float constexpr WindRippleWaveNumber = 5.0f; // # waves per unit of length
-    float constexpr WindRippleWaveHeight = 0.25f;
+    float constexpr WindRippleWaveNumber = 2.0f; // # waves per unit of length
+    float constexpr WindRippleWaveHeight = 0.125f;
 
     float const windSpeedAbsoluteMagnitude = wind.GetCurrentWindSpeed().length();
     float const windSpeedGustRelativeAmplitude = wind.GetMaxSpeedMagnitude() - wind.GetBaseAndStormSpeedMagnitude();
@@ -843,114 +949,157 @@ OceanSurface::SWEInteractiveWaveStateMachine::SWEInteractiveWaveStateMachine(
     float targetHeight,
     float currentSimulationTime)
     : mCenterIndex(centerIndex)
-    , mLowHeight(startHeight)
+    , mOriginalHeight(startHeight)
     , mCurrentPhaseStartHeight(startHeight)
     , mCurrentPhaseTargetHeight(targetHeight)
     , mCurrentHeight(startHeight)
-    , mCurrentProgress(0.0f)
     , mStartSimulationTime(currentSimulationTime)
     , mCurrentWavePhase(WavePhaseType::Rise)
-    , mCurrentSmoothingDelay(CalculateSmoothingDelay())
-{}
+    , mRisingPhaseDuration(CalculateRisingPhaseDuration(targetHeight - mOriginalHeight))
+    , mFallingPhaseDecayCoefficient(0.0f) // Will be calculated when needed
+{
+}
 
 void OceanSurface::SWEInteractiveWaveStateMachine::Restart(
     float restartHeight,
     float currentSimulationTime)
 {
-    // Rise in any case, and our new target is the restart height
-    mCurrentPhaseStartHeight = mCurrentHeight;
-    mCurrentPhaseTargetHeight = restartHeight;
-    mCurrentProgress = 0.0f;
-    mStartSimulationTime = currentSimulationTime;
-    mCurrentWavePhase = WavePhaseType::Rise;
+    if (mCurrentWavePhase == WavePhaseType::Rise)
+    {
+        // Restart during rise...
 
-    // Recalculate delay
-    mCurrentSmoothingDelay = CalculateSmoothingDelay();
+        // ...extend the current smoothing, keeping the following invariants:
+        // - The current value
+        // - The current time
+        // - The "slope" at the current time
+
+        // Calculate current timestamp as fraction of duration
+        //
+        // We need to make sure we're not too close to 1.0f, or else
+        // values start diverging too much.
+        // We may safely clamp down to 0.9 as the value will stay and the slope
+        // will only change marginally.
+        float const elapsed = currentSimulationTime - mStartSimulationTime;
+        float const progressFraction = std::min(
+            elapsed / mRisingPhaseDuration,
+            0.9f);
+
+        // Calculate new duration which would be required to go
+        // from where we started from, up to our new target
+        float const newDuration = CalculateRisingPhaseDuration(restartHeight - mOriginalHeight);
+
+        // Calculate fictitious start timestamp so that current elapsed is
+        // to old duration like new elapsed would be to new duration
+        mStartSimulationTime = currentSimulationTime - newDuration * progressFraction;
+
+        // Our new target is the restart target
+        mCurrentPhaseTargetHeight = restartHeight;
+
+        // Calculate fictitious start value so that calculated current value
+        // at current timestamp matches current value:
+        //  newStartValue = currentValue - f(newEndValue - newStartValue)
+        float const valueFraction = SmoothStep(0.0f, 1.0f, progressFraction);
+        mCurrentPhaseStartHeight =
+            (mCurrentHeight - mCurrentPhaseTargetHeight * valueFraction)
+            / (1.0f - valueFraction);
+
+        // Store new duration
+        mRisingPhaseDuration = newDuration;
+    }
+    else
+    {
+        // Restart during fall...
+
+        // ...start rising from scratch
+        mCurrentPhaseStartHeight = mCurrentHeight;
+        mCurrentPhaseTargetHeight = restartHeight;
+        mStartSimulationTime = currentSimulationTime;
+        mCurrentWavePhase = WavePhaseType::Rise;
+
+        mRisingPhaseDuration = CalculateRisingPhaseDuration(restartHeight - mOriginalHeight);
+    }
 }
 
 void OceanSurface::SWEInteractiveWaveStateMachine::Release(float currentSimulationTime)
 {
     assert(mCurrentWavePhase == WavePhaseType::Rise);
 
-    // Start falling
+    // Start falling back to original height
     mCurrentPhaseStartHeight = mCurrentHeight;
-    mCurrentPhaseTargetHeight = mLowHeight;
-    mCurrentProgress = 0.0f;
+    mCurrentPhaseTargetHeight = mOriginalHeight;
     mStartSimulationTime = currentSimulationTime;
     mCurrentWavePhase = WavePhaseType::Fall;
-    mCurrentSmoothingDelay = CalculateSmoothingDelay();
+
+    // Calculate decay coefficient based on delta to fall
+    mFallingPhaseDecayCoefficient = CalculateFallingPhaseDecayCoefficient(mCurrentHeight - mOriginalHeight);
 }
 
 std::optional<float> OceanSurface::SWEInteractiveWaveStateMachine::Update(
     float currentSimulationTime)
 {
-    // Advance iff we are not done yet
-    if (mCurrentProgress < 1.0f)
+    if (mCurrentWavePhase == WavePhaseType::Rise)
     {
-        mCurrentProgress =
-            (currentSimulationTime - mStartSimulationTime)
-            / mCurrentSmoothingDelay;
-    }
+        float const elapsed = currentSimulationTime - mStartSimulationTime;
 
-    // Calculate sinusoidal progress
-    float const sinProgress = sin(Pi<float> / 2.0f * std::min(mCurrentProgress, 1.0f));
+        // Calculate height as f(elapsed)
 
-    // Calculate new height value
-    mCurrentHeight =
-        mCurrentPhaseStartHeight + (mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight) * sinProgress;
+        float const smoothFactor = SmoothStep(
+            0.0f,
+            mRisingPhaseDuration,
+            elapsed);
 
-    // Check whether it's time to shut down
-    if (mCurrentProgress >= 1.0f
-        && WavePhaseType::Fall == mCurrentWavePhase)
-    {
-        // We're done
-        return std::nullopt;
-    }
+        mCurrentHeight =
+            mCurrentPhaseStartHeight + (mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight) * smoothFactor;
 
-    return mCurrentHeight;
-}
-
-float OceanSurface::SWEInteractiveWaveStateMachine::CalculateSmoothingDelay()
-{
-    float const deltaH = std::min(
-        std::abs(mCurrentPhaseTargetHeight - mCurrentHeight),
-        SWEHeightFieldOffset / 5.0f);
-
-    float delayTicks;
-    if (mCurrentWavePhase == WavePhaseType::Rise
-        || mCurrentPhaseStartHeight < mCurrentPhaseTargetHeight) // If falling up, we want a slower fall
-    {
-        //
-        // Number of ticks must fit:
-        //  DeltaH=0.0  => Ticks=0.0
-        //  DeltaH=0.2  => Ticks=8.0
-        //  DeltaH=2.0  => Ticks=150.0
-        //  DeltaH=4.0  => Ticks=200.0
-        //  DeltaH>4.0  => Ticks~=200.0
-        // y = -19.88881 - (-147.403/0.6126081)*(1 - e^(-0.6126081*x))
-        delayTicks =
-            -19.88881f
-            + (147.403f / 0.6126081f) * (1.0f - exp(-0.6126081f * deltaH));
+        return mCurrentHeight;
     }
     else
     {
-        //
-        // Number of ticks must fit:
-        //  DeltaH=0.1  => Ticks=2.0
-        //  DeltaH=0.25 => Ticks=3.0
-        //  DeltaH=1.0  => Ticks=7.0
-        //  DeltaH=2.0  => Ticks=10.0
-        // y = 1.220013 - (-7.8394/0.6485749)*(1 - e^(-0.6485749*x))
-        delayTicks =
-            1.220013f
-            + (7.8394f / 0.6485749f) * (1.0f - exp(-0.6485749f * deltaH));
+        assert(mCurrentWavePhase == WavePhaseType::Fall);
+
+        // Calculate height with decay process
+
+
+        mCurrentHeight += (mCurrentPhaseTargetHeight - mCurrentHeight) * mFallingPhaseDecayCoefficient;
+
+        // Check whether it's time to shut down
+        if (std::abs(mCurrentPhaseTargetHeight - mCurrentHeight) < 0.001f)
+        {
+            return std::nullopt;
+        }
+
+        return mCurrentHeight;
     }
+}
 
-    float const delay =
-        std::max(delayTicks, 1.0f)
-        * GameParameters::SimulationStepTimeDuration<float>;
+bool OceanSurface::SWEInteractiveWaveStateMachine::MayBeOverridden() const
+{
+    return mCurrentWavePhase == WavePhaseType::Fall
+        && std::abs(mCurrentPhaseTargetHeight - mCurrentHeight) < 0.2f;
+}
 
-    return delay;
+float OceanSurface::SWEInteractiveWaveStateMachine::CalculateRisingPhaseDuration(float deltaHeight)
+{
+    // We want very little rises to be quick, so they generate nice ripples on the surface.
+    // We want large rises to be small, so that we don't generate height slopes that are
+    // too steep.
+    //
+    // From empirical observations, we want the following fixed points:
+    //  deltaH = 0.00:  duration = 0.00
+    //  deltaH = 0.01:  duration = 0.13
+    //  deltaH =  0.1:  duration ~= 1.5
+    //  deltaH =  0.5:  duration = 2.5
+
+    // y = 2.53079 - 2.572298*e^(-9.031207*x)
+    return std::max(2.53079f - 2.572298f * std::exp(-9.031207f * std::abs(deltaHeight)), 0.0f);
+}
+
+float OceanSurface::SWEInteractiveWaveStateMachine::CalculateFallingPhaseDecayCoefficient(float deltaHeight)
+{
+    // When delta is very small, we want to converge very fast - but not too much
+    // or else spiky ripples occur;
+    // when delta is wide enough, we're fine with 0.025.
+    return 0.65f - (0.65f - 0.025f) * SmoothStep(0.0f, 0.1f, std::abs(deltaHeight));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

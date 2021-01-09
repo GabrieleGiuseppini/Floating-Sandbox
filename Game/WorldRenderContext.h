@@ -287,12 +287,11 @@ public:
 
     void UploadLandEnd();
 
-    void UploadOceanStart(size_t slices);
+    void UploadOceanBasicStart(size_t slices);
 
-    inline void UploadOcean(
+    inline void UploadOceanBasic(
         float x,
         float yOcean,
-        float oceanDepth,
         RenderParameters const & renderParameters)
     {
         float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorld().BottomRight.y;
@@ -301,51 +300,110 @@ public:
         // Store ocean element
         //
 
-        OceanSegment & oceanSegment = mOceanSegmentBuffer.emplace_back();
+        OceanBasicSegment & oceanSegment = mOceanBasicSegmentBuffer.emplace_back();
 
         oceanSegment.x1 = x;
-        float const oceanSegmentY1 = yOcean;
-        oceanSegment.y1 = oceanSegmentY1;
+        oceanSegment.y1 = yOcean;
 
         oceanSegment.x2 = x;
-        float const oceanSegmentY2 = yVisibleWorldBottom;
-        oceanSegment.y2 = oceanSegmentY2;
+        oceanSegment.y2 = yVisibleWorldBottom;
 
         switch (renderParameters.OceanRenderMode)
         {
-        case OceanRenderModeType::Texture:
-        {
-            // Texture sample Y levels: anchor texture at top of wave,
-            // and set bottom at total visible height (after all, ocean texture repeats)
-            oceanSegment.value1 = 0.0f; // This is at yOcean
-            oceanSegment.value2 = yOcean - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
+            case OceanRenderModeType::Texture:
+            {
+                // Texture sample Y levels: anchor texture at top of wave,
+                // and set bottom at total visible height (after all, ocean texture repeats)
+                oceanSegment.yWater1 = 0.0f; // This is at yOcean
+                oceanSegment.yWater2 = yOcean - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
 
-            break;
-        }
+                break;
+            }
 
-        case OceanRenderModeType::Depth:
-        {
-            // Depth: top=0.0, bottom=height as fraction of ocean depth
-            oceanSegment.value1 = 0.0f;
-            oceanSegment.value2 = oceanDepth != 0.0f
-                ? std::fabs(oceanSegmentY2 - oceanSegmentY1) / oceanDepth
-                : 0.0f;
+            case OceanRenderModeType::Depth:
+            {
+                // Nop, but be nice
+                oceanSegment.yWater1 = 0.0f;
+                oceanSegment.yWater2 = 0.0f;
 
-            break;
-        }
+                break;
+            }
 
-        case OceanRenderModeType::Flat:
-        {
-            // Nop, but be nice
-            oceanSegment.value1 = 0.0f;
-            oceanSegment.value2 = 0.0f;
+            case OceanRenderModeType::Flat:
+            {
+                // Nop, but be nice
+                oceanSegment.yWater1 = 0.0f;
+                oceanSegment.yWater2 = 0.0f;
 
-            break;
-        }
+                break;
+            }
         }
     }
 
-    void UploadOceanEnd();
+    void UploadOceanBasicEnd();
+
+    void UploadOceanDetailedStart(size_t slices);
+
+    inline void UploadOceanDetailed(
+        float x,
+        float yBack,
+        float yMid,
+        float yFront,
+        RenderParameters const & renderParameters)
+    {
+        float const yTop = std::max(yBack, std::max(yMid, yFront));
+        float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorld().BottomRight.y;
+
+        //
+        // Store ocean element
+        //
+
+        OceanDetailedSegment & oceanSegment = mOceanDetailedSegmentBuffer.emplace_back();
+
+        oceanSegment.x1 = x;
+        oceanSegment.y1 = yTop;
+        oceanSegment.yBack1 = yBack;
+        oceanSegment.yMid1 = yMid;
+        oceanSegment.yFront1 = yFront;
+
+        oceanSegment.x2 = x;
+        oceanSegment.y2 = yVisibleWorldBottom;
+        oceanSegment.yBack2 = yBack;
+        oceanSegment.yMid2 = yMid;
+        oceanSegment.yFront2 = yFront;
+
+        switch (renderParameters.OceanRenderMode)
+        {
+            case OceanRenderModeType::Texture:
+            {
+                // Anchor textureY at 0.0 at top
+                oceanSegment.yTexture1 = 0.0f;
+                oceanSegment.yTexture2 = yMid - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
+
+                break;
+            }
+
+            case OceanRenderModeType::Depth:
+            {
+                // Nop, but be nice
+                oceanSegment.yTexture1 = 0.0f;
+                oceanSegment.yTexture2 = 0.0f;
+
+                break;
+            }
+
+            case OceanRenderModeType::Flat:
+            {
+                // Nop, but be nice
+                oceanSegment.yTexture1 = 0.0f;
+                oceanSegment.yTexture2 = 0.0f;
+
+                break;
+            }
+        }
+    }
+
+    void UploadOceanDetailedEnd();
 
     void UploadFishesStart(size_t fishCount);
 
@@ -709,7 +767,7 @@ private:
     void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
     void ApplyOceanDarkeningRateChanges(RenderParameters const & renderParameters);
-    void ApplyOceanRenderParametersChanges(RenderParameters const & renderParameters);
+    void ApplyOceanRenderModeParametersChanges(RenderParameters const & renderParameters);
     void ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters);
     void ApplyLandRenderParametersChanges(RenderParameters const & renderParameters);
     void ApplyLandTextureIndexChanges(RenderParameters const & renderParameters);
@@ -797,15 +855,32 @@ private:
         float depth2;
     };
 
-    struct OceanSegment
+    struct OceanBasicSegment
     {
         float x1;
         float y1;
-        float value1;
+        float yWater1;
 
         float x2;
         float y2;
-        float value2;
+        float yWater2;
+    };
+
+    struct OceanDetailedSegment
+    {
+        float x1;
+        float y1;
+        float yTexture1;
+        float yBack1;
+        float yMid1;
+        float yFront1;
+
+        float x2;
+        float y2;
+        float yTexture2;
+        float yBack2;
+        float yMid2;
+        float yFront2;
     };
 
     struct FishVertex
@@ -950,9 +1025,13 @@ private:
     GameOpenGLVBO mLandSegmentVBO;
     size_t mLandSegmentVBOAllocatedVertexSize;
 
-    BoundedVector<OceanSegment> mOceanSegmentBuffer;
-    GameOpenGLVBO mOceanSegmentVBO;
-    size_t mOceanSegmentVBOAllocatedVertexSize;
+    BoundedVector<OceanBasicSegment> mOceanBasicSegmentBuffer;
+    GameOpenGLVBO mOceanBasicSegmentVBO;
+    size_t mOceanBasicSegmentVBOAllocatedVertexSize;
+
+    BoundedVector<OceanDetailedSegment> mOceanDetailedSegmentBuffer;
+    GameOpenGLVBO mOceanDetailedSegmentVBO;
+    size_t mOceanDetailedSegmentVBOAllocatedVertexSize;
 
     BoundedVector<FishVertex> mFishVertexBuffer;
     GameOpenGLVBO mFishVBO;
@@ -987,7 +1066,8 @@ private:
     GameOpenGLVAO mLightningVAO;
     GameOpenGLVAO mCloudVAO;
     GameOpenGLVAO mLandVAO;
-    GameOpenGLVAO mOceanVAO;
+    GameOpenGLVAO mOceanBasicVAO;
+    GameOpenGLVAO mOceanDetailedVAO;
     GameOpenGLVAO mFishVAO;
     GameOpenGLVAO mAMBombPreImplosionVAO;
     GameOpenGLVAO mCrossOfLightVAO;

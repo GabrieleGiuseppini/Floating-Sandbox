@@ -1,6 +1,4 @@
-###VERTEX
-
-#version 120
+###VERTEX-120
 
 #define in attribute
 #define out varying
@@ -31,13 +29,11 @@ void main()
     gl_Position = paramOrthoMatrix * vec4(inShipPointAttributeGroup1.xy, inShipPointAttributeGroup2.z, 1.0);
 }
 
-###FRAGMENT
-
-#version 120
-
-#include "heat_overlay.glslinc"
+###FRAGMENT-120
 
 #define in varying
+
+#include "heat_overlay.glslinc"
 
 // Inputs from previous shader        
 in float vertexLight;

@@ -38,11 +38,13 @@ struct GameParameters
 
 
     //
-    // The low-frequency update dt
+    // Low-frequency updates
     //
 
+    static constexpr int ParticleUpdateLowFrequencyPeriod = 7 * 7; // Number of simulation steps for low-frequency particle updates
+
     template <typename T>
-    static constexpr T LowFrequencySimulationStepTimeDuration = 1.0f;
+    static constexpr T ParticleUpdateLowFrequencyStepTimeDuration = SimulationStepTimeDuration<T> * static_cast<T>(ParticleUpdateLowFrequencyPeriod);
 
 
     //
@@ -62,7 +64,6 @@ struct GameParameters
 
     // Temperature at which all the constants are taken at
     static float constexpr Temperature0 = 298.15f; // 25C
-
 
 
     //

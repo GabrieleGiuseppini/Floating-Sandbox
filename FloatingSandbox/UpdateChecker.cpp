@@ -92,32 +92,33 @@ void UpdateChecker::WorkerThread()
         std::string changesFileContent;
 
         {
-            // TEST
             /*
             std::this_thread::sleep_for(std::chrono::seconds(2));
             std::ifstream f("C:\\Users\\Neurodancer\\source\\repos\\Floating-Sandbox\\changes.txt");
 
-            std::unique_ptr<char[]> buf(new char[ReadBufferSize]);
-            f.read(buf.get(), ReadBufferSize);
+            std::unique_ptr<char[]> buf(new char[16384]);
+            f.read(buf.get(), 16384);
             changesFileContent = std::string(buf.get(), f.gcount());
             */
         }
 
-        sf::Http http;
-        http.setHost(UpdateHost);
-        sf::Http::Request request(UpdateUrl);
-        request.setField("Referer", Version::CurrentVersion().ToString());
-
-        // Send the request and check the response
-        sf::Http::Response response = http.sendRequest(request, sf::seconds(5.0f));
-        sf::Http::Response::Status status = response.getStatus();
-        LogMessage("UpdateChecker: StatusCode=" + std::to_string(status));
-        if (status != sf::Http::Response::Ok)
         {
-            throw std::runtime_error("Status code is " + std::to_string(status));
-        }
+            sf::Http http;
+            http.setHost(UpdateHost);
+            sf::Http::Request request(UpdateUrl);
+            request.setField("Referer", Version::CurrentVersion().ToString());
 
-        changesFileContent = response.getBody();
+            // Send the request and check the response
+            sf::Http::Response response = http.sendRequest(request, sf::seconds(5.0f));
+            sf::Http::Response::Status status = response.getStatus();
+            LogMessage("UpdateChecker: StatusCode=" + std::to_string(status));
+            if (status != sf::Http::Response::Ok)
+            {
+                throw std::runtime_error("Status code is " + std::to_string(status));
+            }
+
+            changesFileContent = response.getBody();
+        }
 
         {
             std::lock_guard<std::mutex> lock(mOutcomeMutex);

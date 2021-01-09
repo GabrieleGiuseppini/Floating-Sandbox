@@ -628,35 +628,46 @@ void Points::UpdateForGameParameters(GameParameters const & gameParameters)
         // Remember the new value
         mCurrentCumulatedIntakenWaterThresholdForAirBubbles = cumulatedIntakenWaterThresholdForAirBubbles;
     }
+
+    float const combustionSpeedAdjustment = gameParameters.CombustionSpeedAdjustment;
+    if (combustionSpeedAdjustment != mCurrentCombustionSpeedAdjustment)
+    {
+        // Recalc combustion decay parameters
+        CalculateCombustionDecayParameters(combustionSpeedAdjustment, GameParameters::GameParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>);
+
+        // Remember the new value
+        mCurrentCombustionSpeedAdjustment = combustionSpeedAdjustment;
+    }
 }
 
 void Points::UpdateCombustionLowFrequency(
     ElementIndex pointOffset,
     ElementIndex pointStride,
     float currentSimulationTime,
-    float dt,
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
-    //
+    /////////////////////////////////////////////////////////////////////////////
     // Take care of following:
     // - NotBurning->Developing transition (Ignition)
     // - Burning->Decay, Extinguishing transition
-    //
+    /////////////////////////////////////////////////////////////////////////////
 
     // Prepare candidates for ignition and explosion; we'll pick the top N ones
     // based on the ignition temperature delta
     mCombustionIgnitionCandidates.clear();
     mCombustionExplosionCandidates.clear();
 
-    // Decay rate - the higher this value, the slower fire consumes materials
-    float const effectiveCombustionDecayRate = (90.0f / (gameParameters.CombustionSpeedAdjustment * dt));
-
     // The cdf for rain: we stop burning with a probability equal to this
     float const rainExtinguishCdf = FastPow(stormParameters.RainDensity, 0.5f);
 
+    //
+    // Visit all points
+    //
     // No real reason not to do ephemeral points as well, other than they're
     // currently not expected to burn
+    //
+
     for (ElementIndex pointIndex = pointOffset; pointIndex < mRawShipPointCount; pointIndex += pointStride)
     {
         auto const currentState = mCombustionStateBuffer[pointIndex].State;
@@ -732,33 +743,19 @@ void Points::UpdateCombustionLowFrequency(
                 // Apply effects of burning
 
                 //
-                // 1. Decay - proportionally to mass
-                //
-                // Our goal:
-                // - An iron hull mass (750Kg) decays completely (goes to 0.01)
-                //   in 30 (simulated) seconds
-                // - A smaller (larger) mass decays in shorter (longer) time,
-                //   but a very small mass shouldn't burn in too short of a time
+                // 1. Decay burning point
                 //
 
-                // TODO: see if can optimize these two pow's away, seems to me we
-                // may use a simple decay process here
+                auto const pointMass = mMaterialsBuffer[pointIndex].Structural->GetMass();
 
-                float const massMultiplier = pow(
-                    mMaterialsBuffer[pointIndex].Structural->GetMass() / 750.0f,
-                    0.15f); // Magic number: one tenth of the mass is 0.70 times the number of steps
+                float const decayAlpha =
+                    (mCombustionDecayAlphaFunctionA * pointMass + mCombustionDecayAlphaFunctionB) * pointMass
+                    + mCombustionDecayAlphaFunctionC;
 
-                float const totalDecaySteps =
-                    effectiveCombustionDecayRate
-                    * massMultiplier;
-
-                // decay(@ step i) = alpha^i
-                // decay(@ step T) = min_decay => alpha^T = min_decay => alpha = min_decay^(1/T)
-                float const decayAlpha = pow(0.01f, 1.0f / totalDecaySteps);
+                assert(decayAlpha <= 1.0f); // We can't allow decay to grow
 
                 // Decay point
                 mDecayBuffer[pointIndex] *= decayAlpha;
-
 
                 //
                 // 2. Decay neighbors
@@ -839,7 +836,9 @@ void Points::UpdateCombustionLowFrequency(
                     pointIndex,
                     [this](auto p1, auto p2)
                     {
-                        return this->mPlaneIdBuffer[p1] < mPlaneIdBuffer[p2];
+                        // Sort by plane and then by vertical position, so bottommost flames cover uppermost ones
+                        return mPlaneIdBuffer[p1] < mPlaneIdBuffer[p2]
+                            || (mPlaneIdBuffer[p1] == mPlaneIdBuffer[p2] && mPositionBuffer[p1].y > mPositionBuffer[p2].y);
                     }),
                 pointIndex);
 
@@ -873,7 +872,7 @@ void Points::UpdateCombustionLowFrequency(
         float const blastHeat =
             GameParameters::CombustionHeat
             * 1.5f // Arbitrary multiplier
-            * dt
+            * GameParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>
             * gameParameters.CombustionHeatAdjustment
             * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
@@ -1054,7 +1053,7 @@ void Points::UpdateCombustionHighFrequency(
             case CombustionState::StateType::Developing_1:
             {
                 //
-                // Develop
+                // Develop up
                 //
                 // f(n-1) + 0.04*f(n-1): when starting from 0.1, after 61 steps (~1s) it's 1.1
                 // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:0.1,%22valid%22:true}]&expression=f(n-1)%20+%200.105*f(n-1)&target=0&endTarget=25&range=true
@@ -1075,20 +1074,11 @@ void Points::UpdateCombustionHighFrequency(
             case CombustionState::StateType::Developing_2:
             {
                 //
-                // Develop
-                //
-                // f(n-1) - 0.2*f(n-1): when starting from 0.2, after 10 steps (0.2s) it's below 0.02
-                // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:0.2,%22valid%22:true}]&expression=f(n-1)%20-%200.2*f(n-1)&target=0&endTarget=25&range=true
+                // Develop down
                 //
 
                 // FlameDevelopment is now in the (MFD + epsilon, MFD) range
-                auto extraFlameDevelopment = pointCombustionState.FlameDevelopment - pointCombustionState.MaxFlameDevelopment;
-                extraFlameDevelopment =
-                    extraFlameDevelopment
-                    - 0.2f * extraFlameDevelopment;
-
-                pointCombustionState.FlameDevelopment =
-                    pointCombustionState.MaxFlameDevelopment + extraFlameDevelopment;
+                auto const extraFlameDevelopment = pointCombustionState.FlameDevelopment - pointCombustionState.MaxFlameDevelopment;
 
                 // Check whether it's time to transition to burning
                 if (extraFlameDevelopment < 0.02f)
@@ -1096,6 +1086,12 @@ void Points::UpdateCombustionHighFrequency(
                     pointCombustionState.State = CombustionState::StateType::Burning;
                     pointCombustionState.FlameDevelopment = pointCombustionState.MaxFlameDevelopment;
                 }
+                else
+                {
+                    // Keep converging to goal
+                    pointCombustionState.FlameDevelopment -= 0.35f * extraFlameDevelopment;
+                }
+
 
                 break;
             }
@@ -1227,7 +1223,9 @@ void Points::ReorderBurningPointsForDepth()
         mBurningPoints.end(),
         [this](auto p1, auto p2)
         {
-            return this->mPlaneIdBuffer[p1] < this->mPlaneIdBuffer[p2];
+            // Sort by plane and then by vertical position, so bottommost flames cover uppermost ones
+            return mPlaneIdBuffer[p1] < mPlaneIdBuffer[p2]
+                || (mPlaneIdBuffer[p1] == mPlaneIdBuffer[p2] && mPositionBuffer[p1].y > mPositionBuffer[p2].y);
         });
 }
 
@@ -1272,33 +1270,33 @@ void Points::UpdateEphemeralParticles(
                         else
                         {
                             //
-                            // Update progress based off y
+                            // Update state
                             //
 
                             auto & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.AirBubble;
 
+                            // DeltaY
+
                             state.CurrentDeltaY = deltaY;
-                            state.Progress = // 0.00..001 (@ way below surface) -> 1.0 (@ surface)
-                                -1.0f
-                                / (-1.0f + std::min(GetPosition(pointIndex).y, 0.0f));
+
+                            // Simulation lifetime
+
+                            auto const simulationLifetime =
+                                currentSimulationTime
+                                - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
+
+                            state.SimulationLifetime = simulationLifetime;
 
                             //
                             // Update vortex
                             //
-
-                            float const simulationLifetime =
-                                currentSimulationTime
-                                - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
 
                             float const vortexValue =
                                 state.VortexAmplitude
                                 * PrecalcLoFreqSin.GetNearestPeriodic(
                                     state.NormalizedVortexAngularVelocity * simulationLifetime);
 
-                            //
                             // Apply vortex to bubble
-                            //
-
                             mNonSpringForceBuffer[pointIndex] += vec2f(
                                 vortexValue,
                                 0.0f);
@@ -1309,7 +1307,7 @@ void Points::UpdateEphemeralParticles(
 
                             if (deltaY < oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset)
                             {
-                                mParentWorld.DisplaceOceanSurfaceAt(
+                                mParentWorld.DisplaceSmallScaleOceanSurfaceAt(
                                     mPositionBuffer[pointIndex].x,
                                     (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - deltaY) / 8.0f); // Magic number
 
@@ -1510,8 +1508,7 @@ void Points::Query(ElementIndex pointElementIndex) const
 {
     LogMessage("PointIndex: ", pointElementIndex, (nullptr != mMaterialsBuffer[pointElementIndex].Structural) ? (" (" + mMaterialsBuffer[pointElementIndex].Structural->Name) + ")" : "");
     LogMessage("P=", mPositionBuffer[pointElementIndex].toString(), " V=", mVelocityBuffer[pointElementIndex].toString());
-    LogMessage("W=", mWaterBuffer[pointElementIndex], " L=", mLightBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex], " Decay=", mDecayBuffer[pointElementIndex]);
-    //LogMessage("Springs: ", mConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.size(), " (factory: ", mFactoryConnectedSpringsBuffer[pointElementIndex].ConnectedSprings.size(), ")");
+    LogMessage("M=", mMassBuffer[pointElementIndex], " W=", mWaterBuffer[pointElementIndex], " L=", mLightBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex], " Decay=", mDecayBuffer[pointElementIndex]);
     LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex], " ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }
 
@@ -1527,12 +1524,12 @@ void Points::UploadAttributes(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
     // Upload immutable attributes, if we haven't uploaded them yet
     if (mIsTextureCoordinatesBufferDirty)
     {
-        renderContext.UploadShipPointImmutableAttributes(
-            shipId,
-            mTextureCoordinatesBuffer.data());
+        shipRenderContext.UploadPointImmutableAttributes(mTextureCoordinatesBuffer.data());
 
         mIsTextureCoordinatesBufferDirty = false;
     }
@@ -1540,7 +1537,7 @@ void Points::UploadAttributes(
     // Upload colors, if dirty
     if (mIsWholeColorBufferDirty)
     {
-        renderContext.UploadShipPointColors(
+        renderContext.UploadShipPointColorsAsync(
             shipId,
             mColorBuffer.data(),
             0,
@@ -1552,7 +1549,7 @@ void Points::UploadAttributes(
     else if (mIsEphemeralColorBufferDirty)
     {
         // Only upload ephemeral particle portion
-        renderContext.UploadShipPointColors(
+        renderContext.UploadShipPointColorsAsync(
             shipId,
             &(mColorBuffer.data()[mAlignedShipPointCount]),
             mAlignedShipPointCount,
@@ -1570,10 +1567,9 @@ void Points::UploadAttributes(
     // for some buffers we only need to upload non-ephemeral points
     size_t const partialPointCount = mHaveWholeBuffersBeenUploadedOnce ? mRawShipPointCount : mAllPointCount;
 
-    renderContext.UploadShipPointMutableAttributesStart(shipId);
+    shipRenderContext.UploadPointMutableAttributesStart();
 
-    renderContext.UploadShipPointMutableAttributes(
-        shipId,
+    shipRenderContext.UploadPointMutableAttributes(
         mPositionBuffer.data(),
         mLightBuffer.data(),
         mWaterBuffer.data(),
@@ -1585,8 +1581,7 @@ void Points::UploadAttributes(
         {
             // Whole
 
-            renderContext.UploadShipPointMutableAttributesPlaneId(
-                shipId,
+            shipRenderContext.UploadPointMutableAttributesPlaneId(
                 mPlaneIdFloatBuffer.data(),
                 0,
                 mAllPointCount);
@@ -1597,8 +1592,7 @@ void Points::UploadAttributes(
         {
             // Just non-ephemeral portion
 
-            renderContext.UploadShipPointMutableAttributesPlaneId(
-                shipId,
+            shipRenderContext.UploadPointMutableAttributesPlaneId(
                 mPlaneIdFloatBuffer.data(),
                 0,
                 mRawShipPointCount);
@@ -1610,8 +1604,7 @@ void Points::UploadAttributes(
     {
         // Just ephemeral portion
 
-        renderContext.UploadShipPointMutableAttributesPlaneId(
-            shipId,
+        shipRenderContext.UploadPointMutableAttributesPlaneId(
             &(mPlaneIdFloatBuffer.data()[mAlignedShipPointCount]),
             mAlignedShipPointCount,
             mEphemeralPointCount);
@@ -1621,8 +1614,7 @@ void Points::UploadAttributes(
 
     if (mIsDecayBufferDirty)
     {
-        renderContext.UploadShipPointMutableAttributesDecay(
-            shipId,
+        shipRenderContext.UploadPointMutableAttributesDecay(
             mDecayBuffer.data(),
             0,
             partialPointCount);
@@ -1632,14 +1624,14 @@ void Points::UploadAttributes(
 
     if (renderContext.GetDrawHeatOverlay())
     {
-        renderContext.UploadShipPointTemperature(
+        renderContext.UploadShipPointTemperatureAsync(
             shipId,
             mTemperatureBuffer.data(),
             0,
             partialPointCount);
     }
 
-    renderContext.UploadShipPointMutableAttributesEnd(shipId);
+    shipRenderContext.UploadPointMutableAttributesEnd();
 
     mHaveWholeBuffersBeenUploadedOnce = true;
 }
@@ -1650,14 +1642,14 @@ void Points::UploadNonEphemeralPointElements(
 {
     bool const doUploadAllPoints = (DebugShipRenderModeType::Points == renderContext.GetDebugShipRenderMode());
 
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
     for (ElementIndex pointIndex : RawShipPoints())
     {
         if (doUploadAllPoints
             || mConnectedSpringsBuffer[pointIndex].ConnectedSprings.empty()) // orphaned
         {
-            renderContext.UploadShipElementPoint(
-                shipId,
-                pointIndex);
+            shipRenderContext.UploadElementPoint(pointIndex);
         }
     }
 }
@@ -1667,36 +1659,62 @@ void Points::UploadFlames(
     float windSpeedMagnitude,
     Render::RenderContext & renderContext) const
 {
-    renderContext.UploadShipFlamesStart(shipId, mBurningPoints.size(), windSpeedMagnitude);
+    //
+    // Flames are uploaded in this order:
+    //  - Z order (guaranteed by internal sorting of mBurningPoints)
+    //  - Background flames first (i.e. flames on ropes/springs) followed
+    //    by foreground flames
+    //
+    // We use # of triangles as a heuristic for the point being on a chain,
+    // and we use the *factory* ones to avoid sudden depth jumps when triangles are destroyed by fire
+    //
 
-    // Upload flames, in order of plane ID
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
+    shipRenderContext.UploadFlamesStart(mBurningPoints.size(), windSpeedMagnitude);
+
+    // Background
     for (auto const pointIndex : mBurningPoints)
     {
-        renderContext.UploadShipFlame(
-            shipId,
-            GetPlaneId(pointIndex),
-            GetPosition(pointIndex),
-            mCombustionStateBuffer[pointIndex].FlameVector,
-            mCombustionStateBuffer[pointIndex].FlameDevelopment, // scale
-            mRandomNormalizedUniformFloatBuffer[pointIndex],
-            // IsOnChain: we use # of triangles as a heuristic for the point being on a chain,
-            // and we use the *factory* ones to avoid sudden depth jumps when triangles are destroyed by fire
-            mFactoryConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty());
+        if (mFactoryConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty())
+        {
+            shipRenderContext.UploadBackgroundFlame(
+                GetPlaneId(pointIndex),
+                GetPosition(pointIndex),
+                mCombustionStateBuffer[pointIndex].FlameVector,
+                mCombustionStateBuffer[pointIndex].FlameDevelopment, // scale
+                mRandomNormalizedUniformFloatBuffer[pointIndex]);
+        }
     }
 
-    renderContext.UploadShipFlamesEnd(shipId);
+    // Foreground
+    for (auto const pointIndex : mBurningPoints)
+    {
+        if (!mFactoryConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty())
+        {
+            shipRenderContext.UploadForegroundFlame(
+                GetPlaneId(pointIndex),
+                GetPosition(pointIndex),
+                mCombustionStateBuffer[pointIndex].FlameVector,
+                mCombustionStateBuffer[pointIndex].FlameDevelopment, // scale
+                mRandomNormalizedUniformFloatBuffer[pointIndex]);
+        }
+    }
+
+    shipRenderContext.UploadFlamesEnd();
 }
 
 void Points::UploadVectors(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
     if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderModeType::PointVelocity)
     {
         static vec4f constexpr VectorColor(0.203f, 0.552f, 0.219f, 1.0f);
 
-        renderContext.UploadShipVectors(
-            shipId,
+        shipRenderContext.UploadVectors(
             mElementCount,
             mPositionBuffer.data(),
             mPlaneIdFloatBuffer.data(),
@@ -1708,8 +1726,7 @@ void Points::UploadVectors(
     {
         static vec4f constexpr VectorColor(0.5f, 0.1f, 0.f, 1.0f);
 
-        renderContext.UploadShipVectors(
-            shipId,
+        shipRenderContext.UploadVectors(
             mElementCount,
             mPositionBuffer.data(),
             mPlaneIdFloatBuffer.data(),
@@ -1721,8 +1738,7 @@ void Points::UploadVectors(
     {
         static vec4f constexpr VectorColor(0.094f, 0.509f, 0.925f, 1.0f);
 
-        renderContext.UploadShipVectors(
-            shipId,
+        shipRenderContext.UploadVectors(
             mElementCount,
             mPositionBuffer.data(),
             mPlaneIdFloatBuffer.data(),
@@ -1734,8 +1750,7 @@ void Points::UploadVectors(
     {
         static vec4f constexpr VectorColor(0.054f, 0.066f, 0.443f, 1.0f);
 
-        renderContext.UploadShipVectors(
-            shipId,
+        shipRenderContext.UploadVectors(
             mElementCount,
             mPositionBuffer.data(),
             mPlaneIdFloatBuffer.data(),
@@ -1753,9 +1768,11 @@ void Points::UploadEphemeralParticles(
     // Upload points and/or textures
     //
 
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
     if (mAreEphemeralPointsDirtyForRendering)
     {
-        renderContext.UploadShipElementEphemeralPointsStart(shipId);
+        shipRenderContext.UploadElementEphemeralPointsStart();
     }
 
     for (ElementIndex pointIndex : this->EphemeralPoints())
@@ -1766,17 +1783,20 @@ void Points::UploadEphemeralParticles(
             {
                 auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.AirBubble;
 
+                // Calculate scale:
+                //  - Depth: deep bubbles are smaller
+                //  - Lifetime: bubbles start out very small
                 float constexpr ScaleMax = 0.275f;
                 float constexpr ScaleMin = 0.1f;
                 float const scale =
-                    ScaleMin + (ScaleMax - ScaleMin) * (1.0f - LinearStep(80.0f, 400.0f, state.CurrentDeltaY));
+                    (ScaleMin + (ScaleMax - ScaleMin) * (1.0f - LinearStep(80.0f, 400.0f, state.CurrentDeltaY)))
+                    * std::min(state.SimulationLifetime, 2.0f) / 2.0f; // Grow from 0 to 1 in 2 seconds
 
-                renderContext.UploadShipAirBubble(
-                    shipId,
+                shipRenderContext.UploadAirBubble(
                     GetPlaneId(pointIndex),
                     GetPosition(pointIndex),
                     scale,
-                    std::min(1.0f, state.CurrentDeltaY)); // Alpha
+                    std::min(0.6f, state.CurrentDeltaY)); // Alpha
 
                 break;
             }
@@ -1786,9 +1806,7 @@ void Points::UploadEphemeralParticles(
                 // Don't upload point unless there's been a change
                 if (mAreEphemeralPointsDirtyForRendering)
                 {
-                    renderContext.UploadShipElementEphemeralPoint(
-                        shipId,
-                        pointIndex);
+                    shipRenderContext.UploadElementEphemeralPoint(pointIndex);
                 }
 
                 break;
@@ -1808,8 +1826,7 @@ void Points::UploadEphemeralParticles(
                     - SmoothStep(0.7f, 1.0f, lifetimeProgress);
 
                 // Upload smoke
-                renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                    shipId,
+                shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                     GetPlaneId(pointIndex),
                     state.PersonalitySeed,
                     state.TextureGroup,
@@ -1826,8 +1843,7 @@ void Points::UploadEphemeralParticles(
                     -GetVelocity(pointIndex)
                     / GameParameters::MaxSparkleParticlesForCutVelocity; // We use the cut sparkles arbitrarily
 
-                renderContext.UploadShipSparkle(
-                    shipId,
+                shipRenderContext.UploadSparkle(
                     GetPlaneId(pointIndex),
                     GetPosition(pointIndex),
                     velocityVector,
@@ -1840,8 +1856,7 @@ void Points::UploadEphemeralParticles(
             {
                 auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.WakeBubble;
 
-                renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                    shipId,
+                shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                     GetPlaneId(pointIndex),
                     TextureFrameId(Render::GenericMipMappedTextureGroups::EngineWake, 0),
                     GetPosition(pointIndex),
@@ -1863,7 +1878,7 @@ void Points::UploadEphemeralParticles(
 
     if (mAreEphemeralPointsDirtyForRendering)
     {
-        renderContext.UploadShipElementEphemeralPointsEnd(shipId);
+        shipRenderContext.UploadElementEphemeralPointsEnd();
 
         // Not dirty anymore
         mAreEphemeralPointsDirtyForRendering = false;
@@ -1874,10 +1889,11 @@ void Points::UploadHighlights(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
     for (auto const & h : mElectricalElementHighlightedPoints)
     {
-        renderContext.UploadShipHighlight(
-            shipId,
+        shipRenderContext.UploadHighlight(
             HighlightModeType::ElectricalElement,
             GetPlaneId(h.PointIndex),
             GetPosition(h.PointIndex),
@@ -1888,8 +1904,7 @@ void Points::UploadHighlights(
 
     for (auto const & h : mCircleHighlightedPoints)
     {
-        renderContext.UploadShipHighlight(
-            shipId,
+        shipRenderContext.UploadHighlight(
             HighlightModeType::Circle,
             GetPlaneId(h.PointIndex),
             GetPosition(h.PointIndex),
@@ -1921,8 +1936,8 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
 {
     //
     // Update:
-    //  - CurrentMass: augmented material mass + point's water mass
-    //  - Integration factor: integration factor time coefficient / total mass
+    //  - Current mass: augmented material mass + point's water mass, slowly converging to avoid discontinuities
+    //  - Integration factor: integration factor time coefficient / current mass
     //
 
     float const densityAdjustedWaterMass = GameParameters::WaterMass * gameParameters.WaterDensityAdjustment;
@@ -1937,20 +1952,77 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
     size_t const count = GetBufferElementCount();
     for (size_t i = 0; i < count; ++i)
     {
-        float const mass =
+        // The mass we want
+        float const targetMass =
             augmentedMaterialMassBuffer[i]
             + std::min(waterBuffer[i], materialBuoyancyVolumeFillBuffer[i]) * densityAdjustedWaterMass;
 
-        assert(mass > 0.0f);
+        // The mass we get: current mass slowly converging towards the mass we want
+        // (nature abhors discontinuities)
+        float const newMass = massBuffer[i] + (targetMass - massBuffer[i]) * 0.12f;
 
-        massBuffer[i] = mass;
+        assert(newMass > 0.0f);
 
-        integrationFactorBuffer[i * 2] = integrationFactorTimeCoefficientBuffer[i] / mass;
-        integrationFactorBuffer[i * 2 + 1] = integrationFactorTimeCoefficientBuffer[i] / mass;
+        massBuffer[i] = newMass;
+
+        integrationFactorBuffer[i * 2] = integrationFactorTimeCoefficientBuffer[i] / newMass;
+        integrationFactorBuffer[i * 2 + 1] = integrationFactorTimeCoefficientBuffer[i] / newMass;
     }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
+
+void Points::CalculateCombustionDecayParameters(
+    float combustionSpeedAdjustment,
+    float dt)
+{
+    //
+    // Combustion decay - we want it proportional to mass.
+    //
+    // We want to model the decay alpha as a quadratic law on the burning
+    // particle's mass m: alpha = a * m^2 + b * m + c
+    //
+    // (Ideal) constraints:
+    //
+    //  * A cloth mass (0.6Kg) decays (reaches 0.5) in t=12 (simulation) seconds
+    //  * An ~iron mass (800Kg) decays (reaches 0.5) in > 60 (simulation) seconds => alpha = 0.980194129
+    //  * The largest mass (2400Kg) decays (reaches 0.5) in a ton of (simulation) seconds => alpha = 0.9998
+    //
+    // The constraints above are expressed with the following formulas:
+    //  n = t / (gameParameters.CombustionSpeedAdjustment * dt)
+    //  alpha_i ^ n_i = 0.5
+    //
+
+    assert(mMaterialDatabase.GetLargestMass() == 2400.0f);
+
+    float constexpr m1 = 0.6f;
+    float constexpr t1 = 12.0f;
+    float const n1 = t1 / (combustionSpeedAdjustment * dt);
+    float const alpha1 = std::pow(0.5f, 1.0f / n1); // 0.956739426
+
+    float constexpr m2 = 800.0f;
+    float constexpr t2 = 26.5284f;
+    float const n2 = t2 / (combustionSpeedAdjustment * dt);
+    float const alpha2 = std::pow(0.5f, 1.0f / n2); // 0.980194151
+
+    float constexpr m3 = 2400.0f;
+    float constexpr t3 = 2653.19f;
+    float const n3 = t3 / (combustionSpeedAdjustment * dt);
+    float const alpha3 = std::pow(0.5f, 1.0f / n3); // 0.9998
+
+    // den = (x1−x2)(x1−x3)(x2−x3)
+    // a = x3(y2−y1)+x2(y1−y3)+x1(y3−y2) / den
+    // b = x^21(y2−y3)+x^23(y1−y2)+x^22(y3−y1) / den
+    // c = x^22(x3y1−x1y3)+x2(x^21y3−x^23y1)+x1x3(x3−x1)y2
+    float const den = (m1 - m2) * (m1 - m3) * (m2 - m3);
+    float const a_num = m3 * (alpha2 - alpha1) + m2 * (alpha1 - alpha3) + m1 * (alpha3 - alpha2);
+    float const b_num = m1 * m1 * (alpha2 - alpha3) + m3 * m3 * (alpha1 - alpha2) + m2 * m2 * (alpha3 - alpha1);
+    float const c_num = m2 * m2 * (m3 * alpha1 - m1 * alpha3) + m2 * (m1 * m1 * alpha3 - m3 * m3 * alpha1) + m1 * m3 * (m3 - m1) * alpha2;
+
+    mCombustionDecayAlphaFunctionA = a_num / den;
+    mCombustionDecayAlphaFunctionB = b_num / den;
+    mCombustionDecayAlphaFunctionC = c_num / den;
+}
 
 vec2f Points::CalculateIdealFlameVector(
     vec2f const & pointVelocity,

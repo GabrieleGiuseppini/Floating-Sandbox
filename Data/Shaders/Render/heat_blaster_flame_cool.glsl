@@ -1,10 +1,4 @@
-###VERTEX
-
-#include "heat_blaster_flame_vertex.glslinc"
-
-###FRAGMENT
-
-#include "heat_blaster_flame_fragment.glslinc"
+#include "heat_blaster_flame.glslinc"
 
 void main()
 {         

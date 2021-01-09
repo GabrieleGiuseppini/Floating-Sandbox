@@ -28,10 +28,8 @@
 //
 // While most physics updates run for every simulation step (i.e. for each frame), a few
 // more expensive ones run only every nth step. In order to improve omogeneity of runtime,
-// we distribute all of these low-frequency updates in an interval of S steps (frames).
+// we distribute all of these low-frequency updates across the low-frequency period.
 //
-
-static constexpr int LowFrequencyPeriod = 7 * 7; // Number of simulation steps
 
 static constexpr int UpdateSinkingPeriodStep = 6;
 static constexpr int CombustionStateMachineSlowPeriodStep1 = 13;
@@ -40,6 +38,8 @@ static constexpr int CombustionStateMachineSlowPeriodStep2 = 27;
 static constexpr int SpringDecayAndTemperaturePeriodStep = 34;
 static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
 static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
+
+static_assert(CombustionStateMachineSlowPeriodStep4 < GameParameters::ParticleUpdateLowFrequencyPeriod);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -178,7 +178,7 @@ void Ship::Update(
     mPoints.UpdateForGameParameters(
         gameParameters);
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(SpringDecayAndTemperaturePeriodStep, LowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(SpringDecayAndTemperaturePeriodStep, GameParameters::ParticleUpdateLowFrequencyPeriod))
     {
         mSprings.UpdateForDecayAndTemperatureAndGameParameters(
             gameParameters,
@@ -211,7 +211,7 @@ void Ship::Update(
     // Rot points
     //
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsPeriodStep, LowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsPeriodStep, GameParameters::ParticleUpdateLowFrequencyPeriod))
     {
         // - Inputs: Position, Water, IsLeaking
         // - Output: Decay
@@ -348,7 +348,7 @@ void Ship::Update(
     // Run sink/unsink detection
     //
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateSinkingPeriodStep, LowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateSinkingPeriodStep, GameParameters::ParticleUpdateLowFrequencyPeriod))
     {
         UpdateSinking();
     }
@@ -419,43 +419,39 @@ void Ship::Update(
             // Update slow combustion state machine
             //
 
-            if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep1, LowFrequencyPeriod))
+            if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep1, GameParameters::ParticleUpdateLowFrequencyPeriod))
             {
                 mPoints.UpdateCombustionLowFrequency(
                     0,
                     4,
                     currentSimulationTime,
-                    GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
                     stormParameters,
                     gameParameters);
             }
-            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep2, LowFrequencyPeriod))
+            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep2, GameParameters::ParticleUpdateLowFrequencyPeriod))
             {
                 mPoints.UpdateCombustionLowFrequency(
                     1,
                     4,
                     currentSimulationTime,
-                    GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
                     stormParameters,
                     gameParameters);
             }
-            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep3, LowFrequencyPeriod))
+            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep3, GameParameters::ParticleUpdateLowFrequencyPeriod))
             {
                 mPoints.UpdateCombustionLowFrequency(
                     2,
                     4,
                     currentSimulationTime,
-                    GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
                     stormParameters,
                     gameParameters);
             }
-            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep4, LowFrequencyPeriod))
+            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowPeriodStep4, GameParameters::ParticleUpdateLowFrequencyPeriod))
             {
                 mPoints.UpdateCombustionLowFrequency(
                     3,
                     4,
                     currentSimulationTime,
-                    GameParameters::SimulationStepTimeDuration<float> * static_cast<float>(LowFrequencyPeriod),
                     stormParameters,
                     gameParameters);
             }
@@ -504,9 +500,7 @@ void Ship::Update(
 #endif
 }
 
-void Ship::RenderUpload(
-    GameParameters const & /*gameParameters*/,
-    Render::RenderContext & renderContext)
+void Ship::RenderUpload(Render::RenderContext & renderContext)
 {
     //
     // Run connectivity visit, if there have been any deletions
@@ -525,9 +519,9 @@ void Ship::RenderUpload(
     // Initialize upload
     //
 
-    renderContext.UploadShipStart(
-        mId,
-        mMaxMaxPlaneId);
+    auto & shipRenderContext = renderContext.GetShipRenderContext(mId);
+
+    shipRenderContext.UploadStart(mMaxMaxPlaneId);
 
     //
     // Upload points's immutable and mutable attributes
@@ -545,7 +539,7 @@ void Ship::RenderUpload(
         || !mLastUploadedDebugShipRenderMode
         || *mLastUploadedDebugShipRenderMode != renderContext.GetDebugShipRenderMode())
     {
-        renderContext.UploadShipElementsStart(mId);
+        shipRenderContext.UploadElementsStart();
 
         //
         // Upload point elements (either orphaned only or all, depending
@@ -574,20 +568,18 @@ void Ship::RenderUpload(
         {
             assert(mPlaneTriangleIndicesToRender.size() >= 1);
 
-            renderContext.UploadShipElementTrianglesStart(
-                mId,
-                mPlaneTriangleIndicesToRender.back());
+            shipRenderContext.UploadElementTrianglesStart(mPlaneTriangleIndicesToRender.back());
 
             mTriangles.UploadElements(
-                mPlaneTriangleIndicesToRender,
                 mId,
+                mPlaneTriangleIndicesToRender,
                 mPoints,
                 renderContext);
 
-            renderContext.UploadShipElementTrianglesEnd(mId);
+            shipRenderContext.UploadElementTrianglesEnd();
         }
 
-        renderContext.UploadShipElementsEnd(mId);
+        shipRenderContext.UploadElementsEnd();
     }
 
     //
@@ -597,7 +589,7 @@ void Ship::RenderUpload(
     // as the set of stressed springs is bound to change from frame to frame
     //
 
-    renderContext.UploadShipElementStressedSpringsStart(mId);
+    shipRenderContext.UploadElementStressedSpringsStart();
 
     if (renderContext.GetShowStressedSprings())
     {
@@ -606,7 +598,7 @@ void Ship::RenderUpload(
             renderContext);
     }
 
-    renderContext.UploadShipElementStressedSpringsEnd(mId);
+    shipRenderContext.UploadElementStressedSpringsEnd();
 
     //
     // Upload frontiers
@@ -676,7 +668,7 @@ void Ship::RenderUpload(
     // Finalize upload
     //
 
-    renderContext.UploadShipEnd(mId);
+    shipRenderContext.UploadEnd();
 
     //
     // Reset render state
@@ -2070,58 +2062,75 @@ void Ship::RotPoints(
     float /*currentSimulationTime*/,
     GameParameters const & gameParameters)
 {
+    if (gameParameters.RotAcceler8r == 0.0f)
+    {
+        // Disable rotting altogether
+        return;
+    }
+
     //
     // Rotting is done with a recursive equation:
     //  decay(0) = 1.0
     //  decay(n) = A * decay(n-1), with 0 < A < 1
     //
+    // A (alpha): the smaller the alpha, the faster we rot.
+    //
     // This converges to:
     //  decay(n) = A^n
     //
-    // We want full decay (decay=1e-10) after Nf steps when flooded (Nf => 15 minutes @ 50fps):
-    //
+    // We want full decay (decay=1e-10) after Nf steps:
     //  ZeroDecay = Af ^ Nf
     //
 
-    // After 15 mins: on the surface=>0.75, flooded=>0.25
-    float constexpr Nf =
-        15.0f * 60.0f * 50.0f / static_cast<float>(LowFrequencyPeriod)
-        * 10.0f; // Upping up a bit to fight against initial steep curve
+    //
+    // We want to calculate alpha(x) as 1 - beta*x, with x depending on the particle's state:
+    //      underwater not flooded: x_uw
+    //      not underwater flooded: x_fl == 1.0 (so that we can use particle's water, clamped)
+    //      underwater and flooded: x_uw_fl
+    //
+    // Constraints: after 20 minutes (Ns rot steps) we want the following decays:
+    //      underwater not flooded: a_uw ^ Ns = 0.75 (little rusting)
+    //      underwater and flooded: a_uw_fl ^ Ns = 0.25 (severe rusting)
+    //
+    // Which leads to the following formulation for the constraints:
+    //      alpha(x_uw) = a_uw (~= 0.99981643)
+    //      alpha(x_uw_fl) = a_uw_fl (~- 0.999115711)
+    //      alpha(0) = 1.0
+    //
+    // After some kung-fu we obtain:
+    //      beta = (1-alpha(x_uw)) / x_uw
+    //      x_uw = (1-a_uw)/(a_uw - a_uw_fl)
+    //
 
-    // Alpha: the smaller, the faster we rot
-    float const alphaMax = gameParameters.RotAcceler8r != 0.0f
-        ? powf(1e-10f, gameParameters.RotAcceler8r / Nf)
+    float constexpr Ns = 20.0f * 60.0f / GameParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+
+    float const a_uw = gameParameters.RotAcceler8r != 0.0f
+        ? powf(0.75f, gameParameters.RotAcceler8r / Ns) // a_uw = 0.75 ^ (1/Ns)
         : 1.0f;
 
-    // Leaking points rot faster - they are directly in contact with water after all!
-    float const leakingAlphaMax = gameParameters.RotAcceler8r != 0.0f
-        ? alphaMax * 0.995f
+    float const a_uw_fl = gameParameters.RotAcceler8r != 0.0f
+        ? powf(0.25f, gameParameters.RotAcceler8r / Ns) // a_uw = 0.25 ^ (1/Ns)
         : 1.0f;
 
-    // Underwater points have this extra amount of equivalent water
-    float const extraEquivalentWaterForUnderwaterPoints = gameParameters.RotAcceler8r != 0.0f
-        ? 0.175f
-        : 0.0f;
+    float const x_uw = (1.0f - a_uw) / (a_uw - a_uw_fl);
+    float const beta = (1.0f - a_uw) / x_uw;
 
     // Process all non-ephemeral points - no real reason to exclude ephemerals, other
     // than they're not expected to rot
     for (auto p : mPoints.RawShipPoints())
     {
-        float waterEquivalent =
-            mPoints.GetWater(p)
-            + (mParentWorld.IsUnderwater(mPoints.GetPosition(p)) ? extraEquivalentWaterForUnderwaterPoints : 0.0f); // Also rust a bit underwater points, even hull ones
+        float x =
+            (mParentWorld.IsUnderwater(mPoints.GetPosition(p)) ? x_uw : 0.0f) // x_uw
+            + std::min(mPoints.GetWater(p), 1.0f); // x_fl
+
+        // Adjust with leaking: if leaking and subject to rusting, then rusts faster
+        x += mPoints.GetLeakingComposite(p).LeakingSources.StructuralLeak * x * x_uw;
 
         // Adjust with material's rust receptivity
-        waterEquivalent *= mPoints.GetMaterialRustReceptivity(p);
+        x *= mPoints.GetMaterialRustReceptivity(p);
 
-        // Clamp
-        waterEquivalent = std::min(waterEquivalent, 1.0f);
-
-        // Interpolate alpha
-        float const alpha = Mix(
-            1.0f,
-            (mPoints.GetLeakingComposite(p).LeakingSources.StructuralLeak != 0.0f ? leakingAlphaMax : alphaMax),
-            waterEquivalent);
+        // Calculate alpha
+        float const alpha = std::max(1.0f - beta * x, 0.0f);
 
         // Decay
         mPoints.SetDecay(p, mPoints.GetDecay(p) * alpha);
@@ -2380,8 +2389,8 @@ void Ship::GenerateAirBubbles(
     float const vortexAmplitude = GameRandomEngine::GetInstance().GenerateUniformReal(
         -MaxAirBubblesVortexAmplitude, MaxAirBubblesVortexAmplitude);
 
-    float constexpr MinAirBubblesVortexPeriod = 3.0f; // seconds
-    float constexpr MaxAirBubblesVortexPeriod = 7.5f; // seconds
+    float constexpr MinAirBubblesVortexPeriod = 1.5f; // seconds
+    float constexpr MaxAirBubblesVortexPeriod = 4.5f; // seconds
     float const vortexPeriod = GameRandomEngine::GetInstance().GenerateUniformReal(
         MinAirBubblesVortexPeriod, MaxAirBubblesVortexPeriod);
 

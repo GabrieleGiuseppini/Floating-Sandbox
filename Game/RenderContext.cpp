@@ -295,7 +295,8 @@ void RenderContext::AddShip(
                     *mShaderManager,
                     *mGlobalRenderContext,
                     mRenderParameters,
-                    mShipFlameSizeAdjustment));
+                    mShipFlameSizeAdjustment,
+                    mVectorFieldLengthMultiplier));
         });
 }
 

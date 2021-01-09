@@ -142,6 +142,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(rgbColor, DepthOceanColorStart);
     ADD_GC_SETTING(rgbColor, DepthOceanColorEnd);
     ADD_GC_SETTING(rgbColor, FlatOceanColor);
+    ADD_GC_SETTING(OceanRenderDetailType, OceanRenderDetail);
     ADD_GC_SETTING(LandRenderModeType, LandRenderMode);
     ADD_GC_SETTING(size_t, TextureLandTextureIndex);
     ADD_GC_SETTING(rgbColor, FlatLandColor);
@@ -151,7 +152,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(bool, ShowAABBs);
     ADD_GC_SETTING(bool, DrawHeatOverlay);
     ADD_GC_SETTING(float, HeatOverlayTransparency);
-    ADD_GC_SETTING(ShipFlameRenderModeType, ShipFlameRenderMode);
+    ADD_GC_SETTING(bool, DrawFlames);
     ADD_GC_SETTING(float, ShipFlameSizeAdjustment);
     ADD_GC_SETTING(bool, DrawHeatBlasterFlame);
 

@@ -11,6 +11,7 @@
 #include <GameCore/GameMath.h>
 #include <GameCore/PrecalculatedFunction.h>
 #include <GameCore/RunningAverage.h>
+#include <GameCore/StrongTypeDef.h>
 
 #include <memory>
 #include <optional>
@@ -31,9 +32,8 @@ public:
         Wind const & wind,
         GameParameters const & gameParameters);
 
-    void Upload(
-        GameParameters const & gameParameters,
-        Render::RenderContext & renderContext) const;
+    void Upload(Render::RenderContext & renderContext) const;
+
 public:
 
     /*
@@ -68,7 +68,7 @@ public:
         std::optional<vec2f> const & worldCoordinates,
         float currentSimulationTime);
 
-    inline void DisplaceAt(
+    inline void DisplaceSmallScaleAt(
         float const x,
         float const yOffset)
     {
@@ -113,6 +113,9 @@ public:
         Wind const & wind);
 
 private:
+
+    template<OceanRenderDetailType DetailType>
+    void InternalUpload(Render::RenderContext & renderContext) const;
 
     static inline auto ToSampleIndex(float x)
     {
@@ -322,9 +325,9 @@ private:
         std::optional<float> Update(
             float currentSimulationTime);
 
-    private:
+        bool MayBeOverridden() const;
 
-        float CalculateSmoothingDelay();
+    private:
 
         enum class WavePhaseType
         {
@@ -332,15 +335,20 @@ private:
             Fall
         };
 
+        static float CalculateRisingPhaseDuration(float deltaHeight);
+
+        static float CalculateFallingPhaseDecayCoefficient(float deltaHeight);
+
         size_t const mCenterIndex;
-        float const mLowHeight;
+        float const mOriginalHeight;
         float mCurrentPhaseStartHeight;
         float mCurrentPhaseTargetHeight;
         float mCurrentHeight;
-        float mCurrentProgress; // Between 0 and 1, regardless of direction
         float mStartSimulationTime;
         WavePhaseType mCurrentWavePhase;
-        float mCurrentSmoothingDelay;
+
+        float mRisingPhaseDuration;
+        float mFallingPhaseDecayCoefficient;
     };
 
     std::optional<SWEInteractiveWaveStateMachine> mSWEInteractiveWaveStateMachine;

@@ -435,8 +435,7 @@ private:
     float mCurrentWaterSplashedTrigger;
     float mLastWindSpeedAbsoluteMagnitude;
     RunningAverage<70> mWindVolumeRunningAverage;
-
-
+    float mShipEnginesCount;
 
     //
     // One-Shot sounds

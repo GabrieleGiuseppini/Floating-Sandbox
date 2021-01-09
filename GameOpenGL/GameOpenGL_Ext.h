@@ -18,13 +18,13 @@
  * Our OpenGL extensions loaded into global functions and enumerants.
  */
 
-//////////////////////////////////////////////////////////////////////////
-// Framebuffer
-//////////////////////////////////////////////////////////////////////////
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+//////////////////////////////////////////////////////////////////////////
+// Framebuffer
+//////////////////////////////////////////////////////////////////////////
 
 typedef GLboolean(APIENTRYP PFNGLISRENDERBUFFERPROC)(GLuint renderbuffer);
 GLAPI PFNGLISRENDERBUFFERPROC glIsRenderbuffer;
@@ -131,8 +131,6 @@ GLAPI PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC glGetFramebufferAttachmentPar
 #define GL_RENDERBUFFER_STENCIL_SIZE 0x8D55
 #define GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE 0x8D56
 
-
-
 //////////////////////////////////////////////////////////////////////////
 // Draw Instanced
 //////////////////////////////////////////////////////////////////////////
@@ -146,7 +144,6 @@ GLAPI PFNGLDRAWARRAYSINSTANCEDPROC glDrawArraysInstanced;
 
 typedef void (APIENTRYP PFNGLDRAWELEMENTSINSTANCEDPROC)(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount);
 GLAPI PFNGLDRAWELEMENTSINSTANCEDPROC glDrawElementsInstanced;
-
 
 //////////////////////////////////////////////////////////////////////////
 // VAO
@@ -186,6 +183,17 @@ GLAPI PFNGLISVERTEXARRAYPROC glIsVertexArray;
 #define GL_RGB32F 0x8815
 #define GL_RGBA16F 0x881a
 #define GL_RGB16F 0x881b
+
+//////////////////////////////////////////////////////////////////////////
+// Misc
+//////////////////////////////////////////////////////////////////////////
+
+//
+// Functions
+//
+
+typedef void (APIENTRYP PFNGLGETPROGRAMBINARYPROC)(GLuint program, GLsizei bufSize, GLsizei * length, GLenum * binaryFormat, void * binary);
+GLAPI PFNGLGETPROGRAMBINARYPROC glGetProgramBinary;
 
 #ifdef __cplusplus
 }

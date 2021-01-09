@@ -185,6 +185,35 @@ void InitOpenGLExt_TextureFloat(GLADloadproc /*load*/)
 }
 
 //////////////////////////////////////////////////////////////////////////
+// Misc
+//////////////////////////////////////////////////////////////////////////
+
+PFNGLGETPROGRAMBINARYPROC glGetProgramBinary = NULL;
+
+void InitOpenGLExt_Misc(GLADloadproc load)
+{
+    if (GLVersion.major > 4 // Core in 4.1
+        || (GLVersion.major == 4 && GLVersion.minor >= 1))
+    {
+        // Core
+
+        LoadAndVerify("glGetProgramBinary", glGetProgramBinary, load);
+    }
+    else if (HasExt("GL_ARB_get_program_binary"))
+    {
+        LoadAndVerify("glGetProgramBinaryARB", glGetProgramBinary, load);
+    }
+    else if (HasExt("GL_EXT_get_program_binary"))
+    {
+        LoadAndVerify("glGetProgramBinaryEXT", glGetProgramBinary, load);
+    }
+    else
+    {
+        // Ignore
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
 // Init
 //////////////////////////////////////////////////////////////////////////
 
@@ -203,6 +232,8 @@ void InitOpenGLExt()
                 InitOpenGLExt_VertexArray(&get_proc);
 
                 InitOpenGLExt_TextureFloat(&get_proc);
+
+                InitOpenGLExt_Misc(&get_proc);
 
                 free_exts();
             }

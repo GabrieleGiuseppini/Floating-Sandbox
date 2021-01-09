@@ -184,12 +184,13 @@ void RCBomb::Upload(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
     switch (mState)
     {
         case State::IdlePingOff:
         {
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::RcBomb, 0),
                 GetPosition(),
@@ -203,8 +204,7 @@ void RCBomb::Upload(
 
         case State::IdlePingOn:
         {
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::RcBomb, 0),
                 GetPosition(),
@@ -213,8 +213,7 @@ void RCBomb::Upload(
                 GetRotationOffsetAxis(),
                 1.0f);
 
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
@@ -228,8 +227,7 @@ void RCBomb::Upload(
 
         case State::DetonationLeadIn:
         {
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::RcBomb, 0),
                 GetPosition(),
@@ -238,8 +236,7 @@ void RCBomb::Upload(
                 GetRotationOffsetAxis(),
                 1.0f);
 
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
@@ -258,8 +255,7 @@ void RCBomb::Upload(
                 static_cast<float>(mExplosionFadeoutCounter + 1)
                 / static_cast<float>(ExplosionFadeoutStepsCount);
 
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::RcBomb, 0),
                 GetPosition(),

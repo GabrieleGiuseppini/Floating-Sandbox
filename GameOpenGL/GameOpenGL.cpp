@@ -17,7 +17,8 @@ int GameOpenGL::MaxViewportHeight = 0;
 int GameOpenGL::MaxTextureSize = 0;
 int GameOpenGL::MaxTextureUnits = 0;
 int GameOpenGL::MaxRenderbufferSize = 0;
-int GameOpenGL::MaxOpenGLVersionMajor = 0;
+int GameOpenGL::MaxSupportedOpenGLVersionMajor = 0;
+int GameOpenGL::MaxSupportedOpenGLVersionMinor = 0;
 
 bool GameOpenGL::AvoidGlFinish = false;
 
@@ -100,10 +101,12 @@ void GameOpenGL::InitOpenGL()
     glGetIntegerv(GL_MAJOR_VERSION, &tmpConstant);
     errorCode = glGetError();
     if (errorCode != GL_NO_ERROR)
-        MaxOpenGLVersionMajor = tmpConstant;
-    else
-        MaxOpenGLVersionMajor = MinOpenGLVersionMaj; // Use the one we requested
-    LogMessage("GL_MAJOR_VERSION=", MaxOpenGLVersionMajor);
+    {
+        LogMessage("GL_MAJOR_VERSION=", tmpConstant);
+    }
+
+    MaxSupportedOpenGLVersionMajor = GLVersion.major;
+    MaxSupportedOpenGLVersionMinor = GLVersion.minor;
 
     //
     // Initialize switches

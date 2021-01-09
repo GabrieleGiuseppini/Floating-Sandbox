@@ -1220,6 +1220,13 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         // Show startup tip - unless user has decided not to
         if (mUIPreferencesManager->GetShowStartupTip())
         {
+            // Set canvas' background color to sky color
+            {
+                auto const skyColor = mGameController->GetFlatSkyColor();
+                mMainGLCanvas->SetBackgroundColour(wxColor(skyColor.r, skyColor.g, skyColor.b));
+                mMainGLCanvas->ClearBackground();
+            }
+
             StartupTipDialog startupTipDialog(
                 this,
                 mUIPreferencesManager,
@@ -1470,7 +1477,7 @@ void MainFrame::OnReloadCurrentShipMenuItemSelected(wxCommandEvent & /*event*/)
 
     try
     {
-        mGameController->ResetAndLoadShip(mCurrentShipFilePath);
+        mGameController->ResetAndReloadShip(mCurrentShipFilePath);
 
         // Succeeded
         OnShipLoaded(mCurrentShipFilePath);
@@ -1489,7 +1496,7 @@ void MainFrame::OnReloadPreviousShipMenuItemSelected(wxCommandEvent & /*event*/)
 
     try
     {
-        mGameController->ResetAndLoadShip(mPreviousShipFilePath);
+        mGameController->ResetAndReloadShip(mPreviousShipFilePath);
 
         // Succeeded
         OnShipLoaded(mPreviousShipFilePath);

@@ -37,12 +37,24 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::LandTexture;
     else if (lstr == "lightning")
         return ProgramType::Lightning;
-    else if (lstr == "ocean_depth")
-        return ProgramType::OceanDepth;
-    else if (lstr == "ocean_flat")
-        return ProgramType::OceanFlat;
-    else if (lstr == "ocean_texture")
-        return ProgramType::OceanTexture;
+    else if (lstr == "ocean_depth_basic")
+        return ProgramType::OceanDepthBasic;
+    else if (lstr == "ocean_depth_detailed_background")
+        return ProgramType::OceanDepthDetailedBackground;
+    else if (lstr == "ocean_depth_detailed_foreground")
+        return ProgramType::OceanDepthDetailedForeground;
+    else if (lstr == "ocean_flat_basic")
+        return ProgramType::OceanFlatBasic;
+    else if (lstr == "ocean_flat_detailed_background")
+        return ProgramType::OceanFlatDetailedBackground;
+    else if (lstr == "ocean_flat_detailed_foreground")
+        return ProgramType::OceanFlatDetailedForeground;
+    else if (lstr == "ocean_texture_basic")
+        return ProgramType::OceanTextureBasic;
+    else if (lstr == "ocean_texture_detailed_background")
+        return ProgramType::OceanTextureDetailedBackground;
+    else if (lstr == "ocean_texture_detailed_foreground")
+        return ProgramType::OceanTextureDetailedForeground;
     else if (lstr == "rain")
         return ProgramType::Rain;
     else if (lstr == "ship_circle_highlights")
@@ -51,18 +63,10 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipElectricalElementHighlights;
     else if (lstr == "ship_explosions")
         return ProgramType::ShipExplosions;
-    else if (lstr == "ship_flames_background_1")
-        return ProgramType::ShipFlamesBackground1;
-    else if (lstr == "ship_flames_background_2")
-        return ProgramType::ShipFlamesBackground2;
-    else if (lstr == "ship_flames_background_3")
-        return ProgramType::ShipFlamesBackground3;
-    else if (lstr == "ship_flames_foreground_1")
-        return ProgramType::ShipFlamesForeground1;
-    else if (lstr == "ship_flames_foreground_2")
-        return ProgramType::ShipFlamesForeground2;
-    else if (lstr == "ship_flames_foreground_3")
-        return ProgramType::ShipFlamesForeground3;
+    else if (lstr == "ship_flames_background")
+        return ProgramType::ShipFlamesBackground;
+    else if (lstr == "ship_flames_foreground")
+        return ProgramType::ShipFlamesForeground;
     else if (lstr == "ship_frontier_edges")
         return ProgramType::ShipFrontierEdges;
     else if (lstr == "ship_generic_mipmapped_textures")
@@ -137,12 +141,24 @@ std::string ProgramTypeToStr(ProgramType program)
         return "LandTexture";
     case ProgramType::Lightning:
         return "Lightning";
-    case ProgramType::OceanDepth:
-        return "OceanDepth";
-    case ProgramType::OceanFlat:
-        return "OceanFlat";
-    case ProgramType::OceanTexture:
-        return "OceanTexture";
+    case ProgramType::OceanDepthBasic:
+        return "OceanDepthBasic";
+    case ProgramType::OceanDepthDetailedBackground:
+        return "OceanDepthDetailedBackground";
+    case ProgramType::OceanDepthDetailedForeground:
+        return "OceanDepthDetailedForeground";
+    case ProgramType::OceanFlatBasic:
+        return "OceanFlatBasic";
+    case ProgramType::OceanFlatDetailedBackground:
+        return "OceanFlatDetailedBackground";
+    case ProgramType::OceanFlatDetailedForeground:
+        return "OceanFlatDetailedForeground";
+    case ProgramType::OceanTextureBasic:
+        return "OceanTextureBasic";
+    case ProgramType::OceanTextureDetailedBackground:
+        return "OceanTextureDetailedBackground";
+    case ProgramType::OceanTextureDetailedForeground:
+        return "OceanTextureDetailedForeground";
     case ProgramType::Rain:
         return "Rain";
     case ProgramType::ShipCircleHighlights:
@@ -151,18 +167,10 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipElectricalElementHighlights";
     case ProgramType::ShipExplosions:
         return "ShipExplosions";
-    case ProgramType::ShipFlamesBackground1:
-        return "ShipFlamesBackground1";
-    case ProgramType::ShipFlamesBackground2:
-        return "ShipFlamesBackground2";
-    case ProgramType::ShipFlamesBackground3:
-        return "ShipFlamesBackground3";
-    case ProgramType::ShipFlamesForeground1:
-        return "ShipFlamesForeground1";
-    case ProgramType::ShipFlamesForeground2:
-        return "ShipFlamesForeground2";
-    case ProgramType::ShipFlamesForeground3:
-        return "ShipFlamesForeground3";
+    case ProgramType::ShipFlamesBackground:
+        return "ShipFlamesBackground";
+    case ProgramType::ShipFlamesForeground:
+        return "ShipFlamesForeground";
     case ProgramType::ShipFrontierEdges:
         return "ShipFrontierEdges";
     case ProgramType::ShipGenericMipMappedTextures:
@@ -390,8 +398,12 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Cloud2;
     else if (Utils::CaseInsensitiveEquals(str, "Land"))
         return VertexAttributeType::Land;
-    else if (Utils::CaseInsensitiveEquals(str, "Ocean"))
-        return VertexAttributeType::Ocean;
+    else if (Utils::CaseInsensitiveEquals(str, "OceanBasic"))
+        return VertexAttributeType::OceanBasic;
+    else if (Utils::CaseInsensitiveEquals(str, "OceanDetailed1"))
+        return VertexAttributeType::OceanDetailed1;
+    else if (Utils::CaseInsensitiveEquals(str, "OceanDetailed2"))
+        return VertexAttributeType::OceanDetailed2;
     else if (Utils::CaseInsensitiveEquals(str, "Fish1"))
         return VertexAttributeType::Fish1;
     else if (Utils::CaseInsensitiveEquals(str, "Fish2"))

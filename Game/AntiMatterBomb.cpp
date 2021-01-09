@@ -324,14 +324,15 @@ void AntiMatterBomb::Upload(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
+    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
     switch (mState)
     {
         case State::Contained_1:
         case State::TriggeringPreImploding_2:
         {
             // Armor
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::AntiMatterBombArmor, 0),
                 GetPosition(),
@@ -341,8 +342,7 @@ void AntiMatterBomb::Upload(
                 1.0f);
 
             // Sphere
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::AntiMatterBombSphere, 0),
                 GetPosition(),
@@ -352,8 +352,7 @@ void AntiMatterBomb::Upload(
                 1.0f);
 
             // Rotating cloud
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::AntiMatterBombSphereCloud, 0),
                 GetPosition(),
@@ -367,8 +366,7 @@ void AntiMatterBomb::Upload(
         case State::PreImploding_3:
         {
             // Armor
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::AntiMatterBombArmor, 0),
                 GetPosition(),
@@ -378,8 +376,7 @@ void AntiMatterBomb::Upload(
                 1.0f);
 
             // Sphere
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::AntiMatterBombSphere, 0),
                 GetPosition(),
@@ -389,8 +386,7 @@ void AntiMatterBomb::Upload(
                 1.0f);
 
             // Rotating cloud
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::AntiMatterBombSphereCloud, 0),
                 GetPosition(),
@@ -411,8 +407,7 @@ void AntiMatterBomb::Upload(
         case State::Imploding_5:
         {
             // Armor
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::AntiMatterBombArmor, 0),
                 GetPosition(),
@@ -422,8 +417,7 @@ void AntiMatterBomb::Upload(
                 1.0f);
 
             // Sphere
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::AntiMatterBombSphere, 0),
                 GetPosition(),
@@ -433,8 +427,7 @@ void AntiMatterBomb::Upload(
                 1.0f);
 
             // Rotating cloud
-            renderContext.UploadShipGenericMipMappedTextureRenderSpecification(
-                shipId,
+            shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::AntiMatterBombSphereCloud, 0),
                 GetPosition(),

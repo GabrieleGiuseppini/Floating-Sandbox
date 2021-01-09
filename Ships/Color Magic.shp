@@ -1,0 +1,25 @@
+{               
+	"structure_image":"color_magic_structural.png.dat",
+	"electrical_image":"color_magic_electrical.png.dat",    
+        "texture_image":"color_magic_texture.png.dat",
+	"ship_name":"Color Magic",
+	"created_by":"FER ZCL",
+	"year_built":"2007",
+	"offset":{"x":0.0, "y":-12.0},
+	"electrical_panel":{
+
+		"0": {"panel_x":-5, "panel_y":0, "label":"Mains" },
+
+		"1": {"panel_x":-3, "panel_y":0, "label":"Engine #1" },
+		"2": {"panel_x":-2, "panel_y":0, "label":"Engine #1" },
+		"5": {"panel_x":-1, "panel_y":0, "label":"Smoke" },
+
+		"3": {"panel_x":1, "panel_y":0, "label":"Pumps" },
+		"6": {"panel_x":2, "panel_y":0, "label":"Pump #1" },
+		"7": {"panel_x":3, "panel_y":0, "label":"Pump #2" },
+		"8": {"panel_x":4, "panel_y":0, "label":"Pump #3" },
+		"9": {"panel_x":5, "panel_y":0, "label":"Pump #4" },
+
+		"10": {"panel_x":7, "panel_y":0, "label":"Horn" }
+	}
+}

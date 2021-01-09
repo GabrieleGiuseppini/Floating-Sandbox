@@ -129,8 +129,9 @@ void Ship::UploadExplosionStateMachine(
     ExplosionStateMachine const & explosionStateMachine,
     Render::RenderContext & renderContext)
 {
-    renderContext.UploadShipExplosion(
-        mId,
+    auto & shipRenderContext = renderContext.GetShipRenderContext(mId);
+
+    shipRenderContext.UploadExplosion(
         explosionStateMachine.Plane,
         explosionStateMachine.CenterPosition,
         explosionStateMachine.BlastRadius,

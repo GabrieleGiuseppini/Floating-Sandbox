@@ -1,0 +1,22 @@
+{
+	"structure_image":"superyacht_galaxy_structural.png.dat",
+	"electrical_image" : "superyacht_galaxy_electrical.png.dat",
+	"offset":{"x":0.0, "y":-8.0},
+	"ship_name":"Superyacht Galaxy",
+	"created_by":"FER ZCL",
+	"year_built":"2015",
+	"electrical_panel":{
+
+		"5": {"panel_x":-7, "panel_y":0, "label":"Tender Mains" },
+		"6": {"panel_x":-6, "panel_y":0, "label":"Tender Engine" },
+		"7": {"panel_x":-5, "panel_y":0, "label":"Tender Engine" },
+
+		"0": {"panel_x":-1, "panel_y":0, "label":"Mains" },
+		"1": {"panel_x":0, "panel_y":0, "label":"Engines" },
+		"2": {"panel_x":1, "panel_y":0, "label":"Engine #1" },
+		"3": {"panel_x":2, "panel_y":0, "label":"Engine #2" },
+
+		"10": {"panel_x":4, "panel_y":0, "label":"Lights" },
+		"4": {"panel_x":5, "panel_y":0, "label":"Horn" }
+	}
+}
