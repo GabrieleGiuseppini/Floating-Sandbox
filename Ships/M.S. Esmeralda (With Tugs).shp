@@ -3,7 +3,7 @@
 	"electrical_image":"ms_esmeralda_with_tugs_electrical.png.dat",
 	"ship_name":"M.S. Esmeralda (With Tugs)",
 	"offset":{"x":0.0, "y":-16.0},
-	"created_by":"Takara; Gabriele Giuseppini",
+	"created_by":"Takara & Gabriele Giuseppini",
 	"year_built":"1966",
 
 	"electrical_panel":{
