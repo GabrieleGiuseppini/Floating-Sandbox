@@ -464,21 +464,26 @@ Render:
 
 		+ Branch to new branch
 
-		- ShipBucket:
-			- Split author by ';', put remainder on next line prefixed with "art by:"
+		= ShipBucket:
+			+ Split author by ';', put remainder on next line prefixed with "art by:"
 				+ Do split at metadata load time, exposing "ArtCredits"
 				+ Add check to verify_ships.py to make sure author contains 0 or 1 ';'
 					+ Run on all
-				= Change dialog
-			- I also like a warning not to repost the work on youtube, though i'm sure people will ignore this (we cant control everything unfortunately :wink: )
-			- Ask Fernando for his ships
-			- Thank Mike
+				+ Change dialog
+			= I also like a warning not to repost the work on youtube, though i'm sure people will ignore this (we cant control everything unfortunately :wink: )
+				- Double-check with them
+			= Ask Fernando for his ships
+			+ Thank Mike
 
-		- Lantern fish at big depth
+		= Lantern fish at big depth
+			- Do selective spawning
+				- Redo fish<->shoal assignment algo @ spawn
 
 		- Sinking speed:
-			- Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s
+			X Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s
 			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
+				- Add velocity probe gadget
+					- Requires Gadget Rearc (*) first
 				- Copy old exe first
 				- Remove global damp at integration loop
 				- Point-by-point: 

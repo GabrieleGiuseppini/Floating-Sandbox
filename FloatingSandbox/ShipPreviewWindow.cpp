@@ -812,6 +812,8 @@ void ShipPreviewWindow::Render(wxDC & dc)
                 // Filename
                 //
 
+                /* Removed in 1.16.2 for aestethic reasons, after adding description line 3 for art credits
+
                 dc.SetFont(mFilenameFont);
 
                 if (!infoTile.FilenameSize)
@@ -833,6 +835,7 @@ void ShipPreviewWindow::Render(wxDC & dc)
                             + DescriptionLabel3Height + DescriptionLabel3BottomMargin
                         + FilenameLabelHeight - infoTile.FilenameSize->GetHeight()
                         - originVirtual.y);
+                */
 
                 //
                 // Selection
