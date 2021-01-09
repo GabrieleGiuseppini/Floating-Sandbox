@@ -1,5 +1,5 @@
 1.16.1
-- Improved physics of interactive waves and of the WaveMaker tool 
+- Improved physics of interactive waves and of WaveMaker tool 
 - Improved flames
 - Various improvements in fish behaviors
 - Recalibrated and optimized decay processes (rotting, combustion)

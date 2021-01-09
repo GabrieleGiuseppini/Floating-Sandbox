@@ -435,10 +435,10 @@ Render:
 				- Samsung - take perf as well
 				+ HP - take perf as well
 
-		- Merge to master
-		- Release 1.16.1
-			- Branch is merged into master (if applicable)
-			- MSI variables
+		+ Merge to master
+		= Release 1.16.1
+			+ Branch is merged into master (if applicable)
+			+ MSI variables
 			- Commit & push
 			- 64-bit MSI
 				- Build Install
