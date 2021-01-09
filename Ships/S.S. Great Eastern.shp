@@ -4,6 +4,6 @@
         "texture_image":"ss_great_eastern_texture.png.dat",
 	"offset":{"x":0.0, "y":-8.0},
 	"ship_name":"S.S. Great Eastern",
-	"created_by":"FER ZCL",
+	"created_by":"FER ZCL; ALVAMA (Shipbucket.com)",
 	"year_built":"1860"
 }

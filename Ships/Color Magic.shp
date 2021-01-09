@@ -3,7 +3,7 @@
 	"electrical_image":"color_magic_electrical.png.dat",    
         "texture_image":"color_magic_texture.png.dat",
 	"ship_name":"Color Magic",
-	"created_by":"FER ZCL",
+	"created_by":"FER ZCL; jesper97",
 	"year_built":"2007",
 	"offset":{"x":0.0, "y":-12.0},
 	"electrical_panel":{

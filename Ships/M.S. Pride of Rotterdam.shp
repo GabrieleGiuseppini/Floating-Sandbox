@@ -4,7 +4,7 @@
 	"texture_image":"ms_pride_of_rotterdam_texture.png.dat",
 	"offset":{"x":0.0, "y":-8.0},
 	"ship_name":"M.S. Pride of Rotterdam",
-	"created_by":"FER ZCL",
+	"created_by":"FER ZCL; Charybdis (Shipbucket.com)",
 	"year_built":"2001",
 	"electrical_panel":{
 
