@@ -428,10 +428,7 @@ Render:
 			+ https://en.wikipedia.org/wiki/Polystyrene
 			+ Make new template
 
-		- Send to Mike
-			- Ask if he needs colors
-
-		- Test:
+		= Test:
 			+ Localizations x 3
 			! Flames, water surface, calibration:
 				- Old Dell
@@ -440,9 +437,41 @@ Render:
 
 		- Merge to master
 		- Release 1.16.1
+			- Branch is merged into master (if applicable)
+			- MSI variables
+			- Commit & push
+			- 64-bit MSI
+				- Build Install
+				- Make MSI
+				- Rename MSI
+				- Test upgrade from previous version
+				- Test on Discord
+			- 32-bit MSI
+				- Build Install
+				- Make MSI
+				- Rename MSI
+				- Test clean install
+				- Test on Discord
+			- Cut tag on github
+			- Upload packages to GameJolt
+				- Report file as safe (https://gamejolt.com/privacy)
+				- Post
+			- www.floatingsandbox.com:
+				- Upload changes.txt
+					- Test w/old FS
+				- Update current version in FAQ
 			
 
 		----------------------------------------------------------------------------------------
+
+		- ShipBucket:
+			- Split author by ';', put remainder on next line prefixed with "art by:"
+				- Do split at metadata load time, exposing "ArtCredits"
+				- Add check to verify_ships.py to make sure author contains 0 or 1 ';'
+					- Run on all
+				- Change dialog
+			- I also like a warning not to repost the work on youtube, though i'm sure people will ignore this (we cant control everything unfortunately :wink: )
+			- Ask Fernando for his ships
 
 		- Lantern fish at big depth
 
@@ -643,6 +672,7 @@ Render:
 		- Continuous Auto-focus (*)
 
 - Release template:
+	- Branch is merged into master (if applicable)
 	- MSI variables
 	- Commit & push
 	- 64-bit MSI
@@ -659,8 +689,6 @@ Render:
 		- Test on Discord
 	- Cut tag on github
 	- Upload packages to GameJolt
-		- Package instructions:
-			Floating Sandbox comes as a standalone installer which will setup and/or upgrade the game on your computer. Please note that the Game Jolt client does *not* support the Floating Sandbox installer, so avoid using the Game Jolt client altogether, and download the installer directly instead, choosing either the 64-bit installer or the 32-bit installer (by clicking on the 3 dots) depending on your Windows installation. Once the download has completed, run the installer, wait until it has finished setting up the game, and then launch Floating Sandbox either from the shortcut on your desktop or from the Windows "Start" menu.
 		- Report file as safe (https://gamejolt.com/privacy)
 		- Post
 	- www.floatingsandbox.com:
