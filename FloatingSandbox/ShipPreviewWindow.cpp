@@ -832,7 +832,7 @@ void ShipPreviewWindow::Render(wxDC & dc)
                             + DescriptionLabel2Height + DescriptionLabel2BottomMargin
                             + DescriptionLabel3Height + DescriptionLabel3BottomMargin
                         + FilenameLabelHeight - infoTile.FilenameSize->GetHeight()
-                            - originVirtual.y);
+                        - originVirtual.y);
 
                 //
                 // Selection
