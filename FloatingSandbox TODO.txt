@@ -247,6 +247,12 @@ Render:
 		----------------------------------------------------------------------------------------
 
 		+ Branch to new branch
+		+ Lantern fish at big depth
+			+ Do selective spawning
+				+ Redo fish<->shoal assignment algo @ spawn
+				+ Test:
+					+ Lantern fish with and without OK depth
+					+ Decrease & re-increase # of fishes
 
 		= ShipBucket:
 			+ Split author by ';', put remainder on next line prefixed with "art by:"
@@ -259,11 +265,9 @@ Render:
 			+ Ask Fernando for his ships
 			+ Thank Mike
 
-		= Lantern fish at big depth
-			- Do selective spawning
-				- Redo fish<->shoal assignment algo @ spawn
-
 		- NewVersionDialog & other: display short version (i.e. no Build)
+
+		- Post for The Mateusz pack
 
 		- Sinking speed:
 			X Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s
@@ -566,11 +570,10 @@ Render:
 		- Captain Nobinson
 			- Test
 			- Meta: <asked>
-		- The_Mateuszs_Small_Steamships_Ship_Pack
+		+ The_Mateuszs_Small_Steamships_Ship_Pack
 			+ No Shipbucket
 			+ Test
-			- Meta: The package includes 11 ships. The name of this pack is: The Mateusz's Small Steamship ShipPack. Author: "The Mateusz"
-				- Asked for Description
+			+ Meta: The package includes 11 ships. The name of this pack is: The Mateusz's Small Steamship ShipPack. Author: "The Mateusz"
 	- New ships:
 		- Check out from FS server:
 			- You can find the best ships in the #architect-creations channel

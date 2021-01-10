@@ -7,7 +7,7 @@
 
 #include <GameCore/Utils.h>
 
-#include <algorithm>
+#include <set>
 
 FishSpeciesDatabase FishSpeciesDatabase::Load(std::filesystem::path fishSpeciesDatabaseFilePath)
 {
@@ -19,6 +19,8 @@ FishSpeciesDatabase FishSpeciesDatabase::Load(std::filesystem::path fishSpeciesD
     }
 
     std::vector<FishSpecies> fishSpecies;
+
+    std::set<std::string> uniqueFishSpeciesNames;
 
     picojson::array const & speciesArray = root.get<picojson::array>();
     for (auto const & fishSpeciesElem : speciesArray)
@@ -34,6 +36,12 @@ FishSpeciesDatabase FishSpeciesDatabase::Load(std::filesystem::path fishSpeciesD
 
         try
         {
+            // Make sure name is unique
+            if (!uniqueFishSpeciesNames.insert(name).second)
+            {
+                throw GameException("Species name is not unique");
+            }
+
             vec2f const worldSize = vec2f(
                 Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "world_size_x"),
                 Utils::GetMandatoryJsonMember<float>(fishSpeciesObject, "world_size_y"));

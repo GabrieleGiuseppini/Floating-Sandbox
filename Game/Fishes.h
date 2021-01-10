@@ -286,10 +286,6 @@ private:
     FishSpeciesDatabase const & mFishSpeciesDatabase;
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
-    // A shoal batch is a set of shoals, one for each species;
-    // this is the total number of fishes in one such batch
-    size_t const mShoalBatchSize;
-
     // Shoals never move around in this vector
     std::vector<FishShoal> mFishShoals;
 

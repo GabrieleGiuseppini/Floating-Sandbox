@@ -10,6 +10,8 @@
 #include <GameCore/GameTypes.h>
 #include <GameCore/Vectors.h>
 
+#include <algorithm>
+#include <cassert>
 #include <string>
 #include <vector>
 
@@ -83,6 +85,21 @@ public:
     std::vector<FishSpecies> const & GetFishSpecies() const
     {
         return mFishSpecies;
+    }
+
+    size_t GetFishSpeciesIndex(FishSpecies const & species) const
+    {
+        auto const findIt = std::find_if(
+            mFishSpecies.cbegin(),
+            mFishSpecies.cend(),
+            [&species](auto const & fs)
+            {
+                return fs.Name == species.Name;
+            });
+
+        assert(findIt != mFishSpecies.cend());
+
+        return std::distance(mFishSpecies.cbegin(), findIt);
     }
 
 private:

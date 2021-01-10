@@ -23,18 +23,6 @@ float constexpr PositionYVariance = 10.0f;
 
 float constexpr AABBMargin = 4.0f;
 
-size_t GetShoalBatchSize(FishSpeciesDatabase const & fishSpeciesDatabase)
-{
-    return std::accumulate(
-        fishSpeciesDatabase.GetFishSpecies().cbegin(),
-        fishSpeciesDatabase.GetFishSpecies().cend(),
-        size_t(0),
-        [](size_t const & total, auto const & speciesIt)
-        {
-            return total + speciesIt.ShoalSize;
-        });
-}
-
 }
 
 Fishes::Fishes(
@@ -42,7 +30,6 @@ Fishes::Fishes(
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
     : mFishSpeciesDatabase(fishSpeciesDatabase)
     , mGameEventHandler(std::move(gameEventDispatcher))
-    , mShoalBatchSize(GetShoalBatchSize(mFishSpeciesDatabase))
     , mFishShoals()
     , mFishes()
     , mInteractions()
@@ -256,6 +243,15 @@ void Fishes::UpdateNumberOfFishes(
             mFishes.begin() + gameParameters.NumberOfFishes,
             mFishes.end());
 
+        // Trim empty shoals
+        while (!mFishShoals.empty())
+        {
+            if (mFishShoals.back().CurrentMemberCount == 0)
+                mFishShoals.pop_back();
+            else
+                break;
+        }
+
         isDirty = true;
     }
     else if (mFishes.size() < gameParameters.NumberOfFishes)
@@ -264,6 +260,139 @@ void Fishes::UpdateNumberOfFishes(
         // Add new fishes
         //
 
+        size_t freeShoalIndex = 0;
+
+        for (size_t f = mFishes.size(); f < gameParameters.NumberOfFishes; ++f)
+        {
+            //
+            // 1) Find a shoal for this new fish
+            //
+
+            // Find next incomplete shoal
+            for (freeShoalIndex; freeShoalIndex < mFishShoals.size(); ++freeShoalIndex)
+            {
+                if (mFishShoals[freeShoalIndex].CurrentMemberCount < mFishShoals[freeShoalIndex].Species.ShoalSize)
+                {
+                    // Found a free spot!
+                    break;
+                }
+            }
+
+            if (freeShoalIndex == mFishShoals.size())
+            {
+                // Make a new shoal altogether
+
+                // Pick a new species - start from the last one used
+                assert(mFishSpeciesDatabase.GetFishSpeciesCount() > 0);
+                size_t fishSpeciesCandidateIndex = (mFishShoals.empty())
+                    ? 0
+                    : mFishSpeciesDatabase.GetFishSpeciesIndex(mFishShoals.back().Species) + 1;
+
+                // Loop around the species database until a species is found
+                for (;; ++fishSpeciesCandidateIndex)
+                {
+                    fishSpeciesCandidateIndex = fishSpeciesCandidateIndex % mFishSpeciesDatabase.GetFishSpeciesCount();
+
+                    // Make sure ocean depth is good
+                    auto const speciesDepth = mFishSpeciesDatabase.GetFishSpecies()[fishSpeciesCandidateIndex].OceanDepth;
+                    if (speciesDepth <= 300
+                        || gameParameters.SeaDepth >= speciesDepth + PositionYVariance)
+                    {
+                        // Found!
+                        break;
+                    }
+                }
+
+                //
+                // Create new shoal
+                //
+
+                auto const & species = mFishSpeciesDatabase.GetFishSpecies()[fishSpeciesCandidateIndex];
+                auto & newShoal = mFishShoals.emplace_back(
+                    species,
+                    static_cast<ElementIndex>(f), // startFishIndex
+                    (species.WorldSize.x >= species.WorldSize.y ? species.WorldSize.x : species.WorldSize.y) * mCurrentFishSizeMultiplier);
+
+                assert(freeShoalIndex == mFishShoals.size() - 1);
+
+                // Decide an initial direction for the shoal
+
+                if (freeShoalIndex > 0)
+                    newShoal.InitialDirection = -mFishShoals[freeShoalIndex - 1].InitialDirection; // Opposite of previous shoal's
+                else
+                    newShoal.InitialDirection = vec2f(
+                        GameRandomEngine::GetInstance().Choose(2) == 1 ? -1.0f : 1.0f, // Random left or right
+                        0.0f);
+
+                // Decide an initial position for the shoal
+
+                // The x variance grows with the number of shoals
+                float const xVariance =
+                    visibleWorld.Width * PositionXVarianceFactor
+                    * 3.0f * (1.0f + static_cast<float>(mFishShoals.size()) / static_cast<float>(mFishSpeciesDatabase.GetFishSpeciesCount()));
+
+                newShoal.InitialPosition = FindPosition(
+                    vec2f(visibleWorld.Center.x, species.OceanDepth),
+                    xVariance,
+                    PositionYVariance * 0.5f,
+                    oceanFloor,
+                    aabbSet);
+
+                newShoal.InitialPosition.x = newShoal.InitialDirection.x < 0.0f
+                    ? std::abs(newShoal.InitialPosition.x)
+                    : -std::abs(newShoal.InitialPosition.x);
+            }
+
+            assert(mFishShoals.size() > 0 && mFishShoals.back().CurrentMemberCount < mFishShoals.back().Species.ShoalSize);
+
+            //
+            // 2) Create fish in this shoal
+            //
+
+            auto & shoal = mFishShoals[freeShoalIndex];
+            auto const & species = shoal.Species;
+
+            // TODOTEST
+            LogMessage("TODOTEST: Creating fish for species ", species.Name);
+
+            float const shoalSizeVarianceFactor = species.ShoalRadius * gameParameters.FishShoalRadiusAdjustment * mCurrentFishSizeMultiplier / 2.0f;
+
+            vec2f const initialPosition = FindPosition(
+                shoal.InitialPosition,
+                species.WorldSize.x * shoalSizeVarianceFactor,
+                species.WorldSize.y * shoalSizeVarianceFactor,
+                oceanFloor,
+                aabbSet);
+
+            vec2f const targetPosition = FindNewCruisingTargetPosition(
+                initialPosition,
+                shoal.InitialDirection,
+                species,
+                visibleWorld);
+
+            float const headOffset = species.WorldSize.x * mCurrentFishSizeMultiplier * (species.HeadOffsetX - 0.5f);
+
+            float const personalitySeed = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
+
+            TextureFrameIndex const renderTextureFrameIndex = static_cast<TextureFrameIndex>(
+                GameRandomEngine::GetInstance().Choose(species.RenderTextureFrameIndices.size()));
+
+            mFishes.emplace_back(
+                freeShoalIndex,
+                personalitySeed,
+                initialPosition,
+                targetPosition,
+                MakeCuisingVelocity((targetPosition - initialPosition).normalise(), species, personalitySeed, gameParameters),
+                headOffset,
+                GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>), // initial progress phase
+                TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, species.RenderTextureFrameIndices[renderTextureFrameIndex]));
+
+            // Update shoal
+            ++(shoal.CurrentMemberCount);
+        }
+
+        // TODOOLD
+        /*
         // The index in the shoals at which we start searching for free shoals; this
         // points to the beginning of the first incomplete shoal batch
         size_t shoalSearchStartIndex = (mFishes.size() / mShoalBatchSize) * mFishSpeciesDatabase.GetFishSpeciesCount();
@@ -375,6 +504,7 @@ void Fishes::UpdateNumberOfFishes(
             // Update shoal
             ++(mFishShoals[currentShoalSearchIndex].CurrentMemberCount);
         }
+        */
 
         isDirty = true;
     }
@@ -1153,6 +1283,7 @@ void Fishes::UpdateShoaling(
     }
 }
 
+// TODOHERE: nuke or keep?
 void Fishes::CreateNewFishShoalBatch(ElementIndex startFishIndex)
 {
     for (auto const & species : mFishSpeciesDatabase.GetFishSpecies())
