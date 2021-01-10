@@ -529,8 +529,11 @@ Render:
 		# JackMellon: JackTheBrickfilmMaker (Discord, https://drive.google.com/drive/folders/1isy3QiRzMfyu69v5M0gwD5tvBnYZMWXx)
 	- Ship Packs:
 		- Kiko's pack
-			- Screenshots and description in PM
+			+ Screenshots and description in PM
 			+ I keep donations
+			+ Test
+			- Asked: name & author
+				- Zip
 		- HummeL:
 			- Meta: <asked>
 		+ Waallrus: have all
@@ -565,9 +568,9 @@ Render:
 			- Meta: <asked>
 		- The_Mateuszs_Small_Steamships_Ship_Pack
 			+ No Shipbucket
-			- Test
-			- Asked for name
-			- Meta: The package includes 11 ships. The name of this pack is: The Mateusz's Small Steamship ShipPack. 
+			+ Test
+			- Meta: The package includes 11 ships. The name of this pack is: The Mateusz's Small Steamship ShipPack. Author: "The Mateusz"
+				- Asked for Description
 	- New ships:
 		- Check out from FS server:
 			- You can find the best ships in the #architect-creations channel
