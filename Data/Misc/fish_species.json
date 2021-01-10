@@ -82,6 +82,23 @@
 	"tail_swing_width": 0.5,
 	"head_offset_x": 0.8984375,
 	"texture_indices": [7, 8, 9]
+    },
+
+    {
+        "name": "Deep-Sea Angler",
+
+	"world_size_x": 0.4,
+	"world_size_y": 0.2,
+
+	"shoal_size": 1,
+	"shoal_radius": 3.5,
+	"ocean_depth": 1000.0,
+	"basal_speed": 0.12,
+	"tail_x": 0.7,
+	"tail_speed": 0.036,
+	"tail_swing_width": 0.5,
+	"head_offset_x": 0.863,
+	"texture_indices": [10]
     }
 
 ]

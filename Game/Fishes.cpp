@@ -319,7 +319,7 @@ void Fishes::UpdateNumberOfFishes(
                 // Decide an initial position for the shoal
                 //
 
-                // The x variance grows with the number of fishes
+                // The x variance grows with the number of fishes (of shoal batches)
                 float const xVariance =
                     visibleWorld.Width * PositionXVarianceFactor
                     * 3.0f * static_cast<float>(1 + mFishes.size() / mShoalBatchSize);
