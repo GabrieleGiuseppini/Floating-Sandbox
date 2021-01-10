@@ -263,7 +263,7 @@ Render:
 			- Do selective spawning
 				- Redo fish<->shoal assignment algo @ spawn
 
-		- NewVersionDialog: display short version (i.e. no Build)
+		- NewVersionDialog & other: display short version (i.e. no Build)
 
 		- Sinking speed:
 			X Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s
