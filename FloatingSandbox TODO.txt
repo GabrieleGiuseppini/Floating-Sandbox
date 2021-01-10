@@ -492,12 +492,15 @@ Render:
 	- Italian:
 		+ 1.15.2
 		+ 1.16.0
+		+ 1.16.1
 	- Russian: DioxCode
 		+ 1.15.2
 		+ 1.16.0
+		+ 1.16.1
 	- Spanish (Latin American): Joadix (Fallback: The G a z e r W o l f)
 		+ 1.15.2
 		+ 1.16.0
+		+ 1.16.1
 
 	- Portuguese: Kiko
 		- Add to credits: "Kiko", and change in other sections as well, and also in .shp files
@@ -551,6 +554,7 @@ Render:
 			- Release:
 				+ Vol. I
 				- Vol. II
+					- Asked ShipBucket
 			+ No PayPal
 		- Space ship pack: [free]
 			- JohnSmith: gave permission for his
@@ -559,6 +563,11 @@ Render:
 		- Captain Nobinson
 			- Test
 			- Meta: <asked>
+		- The_Mateuszs_Small_Steamships_Ship_Pack
+			+ No Shipbucket
+			- Test
+			- Asked for name
+			- Meta: The package includes 11 ships. The name of this pack is: The Mateusz's Small Steamship ShipPack. 
 	- New ships:
 		- Check out from FS server:
 			- You can find the best ships in the #architect-creations channel
