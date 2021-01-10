@@ -154,8 +154,8 @@ void CheckForUpdatesDialog::OnCheckCompletionTimer(wxTimerEvent & /*event*/)
                         message.Printf(_(
                             "The latest available version is %s, and you are running version %s;"
                             " there are no new updates..."),
-                            outcome->LatestVersion->ToString().c_str(),
-                            Version::CurrentVersion().ToString().c_str());
+                            outcome->LatestVersion->ToMajorMinorPatchString().c_str(),
+                            Version::CurrentVersion().ToMajorMinorPatchString().c_str());
 
                         ShowNoUpdateMessage(message);
                     }

@@ -92,7 +92,7 @@ std::string NewVersionDisplayDialog::MakeHtml(
     <td align="center">
     <font size=+1><b>Version )";
 
-    ss << version.ToString();
+    ss << version.ToMajorMinorPatchString();
 
     ss << R"( is now available!</b></font>
     </td>

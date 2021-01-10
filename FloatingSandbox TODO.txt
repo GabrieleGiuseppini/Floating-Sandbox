@@ -253,6 +253,7 @@ Render:
 				+ Test:
 					+ Lantern fish with and without OK depth
 					+ Decrease & re-increase # of fishes
+		+ NewVersionDialog & other: display short version (i.e. no Build)
 
 		= ShipBucket:
 			+ Split author by ';', put remainder on next line prefixed with "art by:"
@@ -264,8 +265,6 @@ Render:
 				- Double-check with them
 			+ Ask Fernando for his ships
 			+ Thank Mike
-
-		- NewVersionDialog & other: display short version (i.e. no Build)
 
 		- Post for The Mateusz pack
 
