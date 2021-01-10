@@ -201,11 +201,7 @@ void InitOpenGLExt_Misc(GLADloadproc load)
     }
     else if (HasExt("GL_ARB_get_program_binary"))
     {
-        LoadAndVerify("glGetProgramBinaryARB", glGetProgramBinary, load);
-    }
-    else if (HasExt("GL_EXT_get_program_binary"))
-    {
-        LoadAndVerify("glGetProgramBinaryEXT", glGetProgramBinary, load);
+        LoadAndVerify("glGetProgramBinary", glGetProgramBinary, load);
     }
     else
     {
