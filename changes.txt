@@ -1,4 +1,4 @@
-1.16.1
+1.16.2
 - Improved physics of interactive waves and of WaveMaker tool 
 - Improved flames
 - Various improvements in fish behaviors
