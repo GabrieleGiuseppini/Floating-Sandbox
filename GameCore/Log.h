@@ -60,7 +60,7 @@ public:
         , mMutex()
 	{
         // Log current version
-        Log(APPLICATION_NAME_WITH_LONG_VERSION);
+        Log(APPLICATION_NAME_WITH_LONG_VERSION, " ", Utils::MakeTodayDateString());
 	}
 
 	Logger(Logger const &) = delete;
