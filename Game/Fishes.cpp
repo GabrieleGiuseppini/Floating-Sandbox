@@ -352,9 +352,6 @@ void Fishes::UpdateNumberOfFishes(
             auto & shoal = mFishShoals[freeShoalIndex];
             auto const & species = shoal.Species;
 
-            // TODOTEST
-            LogMessage("TODOTEST: Creating fish for species ", species.Name);
-
             float const shoalSizeVarianceFactor = species.ShoalRadius * gameParameters.FishShoalRadiusAdjustment * mCurrentFishSizeMultiplier / 2.0f;
 
             vec2f const initialPosition = FindPosition(
@@ -1280,20 +1277,6 @@ void Fishes::UpdateShoaling(
             // Decay shoaling cycle
             fish.ShoalingTimer -= GameParameters::SimulationStepTimeDuration<float>;
         }
-    }
-}
-
-// TODOHERE: nuke or keep?
-void Fishes::CreateNewFishShoalBatch(ElementIndex startFishIndex)
-{
-    for (auto const & species : mFishSpeciesDatabase.GetFishSpecies())
-    {
-        mFishShoals.emplace_back(
-            species,
-            startFishIndex,
-            (species.WorldSize.x >= species.WorldSize.y ? species.WorldSize.x : species.WorldSize.y) * mCurrentFishSizeMultiplier);
-
-        startFishIndex += static_cast<ElementCount>(species.ShoalSize);
     }
 }
 

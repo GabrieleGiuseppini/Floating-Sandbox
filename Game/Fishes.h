@@ -243,8 +243,6 @@ private:
         GameParameters const & gameParameters,
         VisibleWorld const & visibleWorld);
 
-    void CreateNewFishShoalBatch(ElementIndex startFishIndex);
-
     void EnactDisturbance(
         vec2f const & worldCoordinates,
         float worldRadius,
