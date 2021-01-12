@@ -10,10 +10,12 @@
 #include <wx/statline.h>
 #include <wx/stattext.h>
 
+#include <filesystem>
+
 BootSettingsDialog::BootSettingsDialog(
     wxWindow * parent,
     ResourceLocator const & resourceLocator)
-    : wxDialog(parent, wxID_ANY, _("Boot Settings"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX | wxSTAY_ON_TOP)
+    : wxDialog(parent, wxID_ANY, _("Boot Settings"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxSTAY_ON_TOP)
     , mResourceLocator(resourceLocator)
 {
     wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
@@ -58,10 +60,10 @@ BootSettingsDialog::BootSettingsDialog(
         }
 
         {
-            wxButton * saveButton = new wxButton(this, wxID_ANY, _("Save"));
-            saveButton->Bind(wxEVT_BUTTON, &BootSettingsDialog::OnSaveButton, this);
+            wxButton * saveAndQuitButton = new wxButton(this, wxID_OK, _("Save and Quit"));
+            saveAndQuitButton->Bind(wxEVT_BUTTON, &BootSettingsDialog::OnSaveAndQuitButton, this);
 
-            hSizer->Add(saveButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
+            hSizer->Add(saveAndQuitButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
         }
 
         vSizer->Add(hSizer, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 10);
@@ -95,13 +97,31 @@ void BootSettingsDialog::OnRevertToDefaultsButton(wxCommandEvent & /*event*/)
     PopulateCheckboxes(settings);
 }
 
-void BootSettingsDialog::OnSaveButton(wxCommandEvent & /*event*/)
+void BootSettingsDialog::OnSaveAndQuitButton(wxCommandEvent & /*event*/)
 {
     BootSettings settings(
         mDoForceNoGlFinishCheckBox->GetValue(),
         mDoForceNoMultithrededRenderingCheckBox->GetValue());
 
-    BootSettings::Save(
-        settings,
-        mResourceLocator.GetBootSettingsFilePath());
+    BootSettings defaultSettings;
+
+    if (!(settings == defaultSettings))
+    {
+        BootSettings::Save(
+            settings,
+            mResourceLocator.GetBootSettingsFilePath());
+    }
+    else
+    {
+        try
+        {
+            std::filesystem::remove(mResourceLocator.GetBootSettingsFilePath());
+        }
+        catch (...)
+        {
+            // Ignore
+        }
+    }
+
+    EndModal(wxID_OK);
 }

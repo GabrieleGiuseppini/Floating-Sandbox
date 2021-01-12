@@ -27,6 +27,12 @@ public:
         , DoForceNoMultithreadedRendering(doForceNoMultithreadedRendering)
     {}
 
+    bool operator==(BootSettings const & rhs) const
+    {
+        return this->DoForceNoGlFinish == rhs.DoForceNoGlFinish
+            && this->DoForceNoMultithreadedRendering == rhs.DoForceNoMultithreadedRendering;
+    }
+
 public:
 
     static BootSettings Load(std::filesystem::path const & filePath);

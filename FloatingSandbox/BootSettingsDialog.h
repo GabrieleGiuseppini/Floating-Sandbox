@@ -27,7 +27,7 @@ private:
     void PopulateCheckboxes(BootSettings const & settings);
 
     void OnRevertToDefaultsButton(wxCommandEvent & event);
-    void OnSaveButton(wxCommandEvent & event);
+    void OnSaveAndQuitButton(wxCommandEvent & event);
 
     wxCheckBox * mDoForceNoGlFinishCheckBox;
     wxCheckBox * mDoForceNoMultithrededRenderingCheckBox;

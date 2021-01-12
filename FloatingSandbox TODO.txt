@@ -255,19 +255,7 @@ Render:
 					+ Decrease & re-increase # of fishes
 		+ NewVersionDialog & other: display short version (i.e. no Build)
 		+ Log date at startup
-
-		= ShipBucket:
-			+ Split author by ';', put remainder on next line prefixed with "art by:"
-				+ Do split at metadata load time, exposing "ArtCredits"
-				+ Add check to verify_ships.py to make sure author contains 0 or 1 ';'
-					+ Run on all
-				+ Change dialog
-			= I also like a warning not to repost the work on youtube, though i'm sure people will ignore this (we cant control everything unfortunately :wink: )
-				- Double-check with them
-			+ Ask Fernando for his ships
-
-
-		= Way to enable single-threaded rendering, one-shot
+		+ Way to enable single-threaded rendering, one-shot
 			+ Class GameCore::BootSettings
 				+ bool DoForceNoGlFinish
 				+ bool DoForceNoMultithrededRendering
@@ -281,16 +269,28 @@ Render:
 						+ Cooks own mDoInvokeGlFinish
 					+ RenderContext uses it for MT rendering
 						+ Passes to thread
-			= Alt-D bootsettings:
+			+ Alt-D bootsettings:
 				+ Opens window, w/large disclaimer on top
-				= Window also loads its own copy of settings
-				= Save: deletes if identical to defaults
+				+ Window also loads its own copy of settings
+				+ Save: deletes if identical to defaults
 					+ BootSettings default cctor is the defaults
 						+ Used also to populate at BootSettings::Load
-					- Populates default one with checkboxes and then checks == with default-constructed BootSettings
-				= Revert to Defaults
-					= Populate checkboxes with defaults from default-constructed BootSettings
+					+ Populates default one with checkboxes and then checks == with default-constructed BootSettings
+				+ Revert to Defaults
+					+ Populate checkboxes with defaults from default-constructed BootSettings
 				+ Then saves upon "Save" button
+
+		= ShipBucket:
+			+ Split author by ';', put remainder on next line prefixed with "art by:"
+				+ Do split at metadata load time, exposing "ArtCredits"
+				+ Add check to verify_ships.py to make sure author contains 0 or 1 ';'
+					+ Run on all
+				+ Change dialog
+			= I also like a warning not to repost the work on youtube, though i'm sure people will ignore this (we cant control everything unfortunately :wink: )
+				- Double-check with them
+			+ Ask Fernando for his ships
+
+
 		
 		- See that glApiTrace issue with fragment shader recompiled on ship load
 
