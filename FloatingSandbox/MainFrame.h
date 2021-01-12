@@ -69,8 +69,8 @@ public:
         int keyCode,
         int keyModifiers);
 
-    void OnSecretTypingOpenDebugWindow();
-
+    void OnSecretTypingBootSettings();
+    void OnSecretTypingDebug();
     void OnSecretTypingLoadBuiltInShip(int ship);
 
 private:
@@ -344,7 +344,7 @@ private:
     //
 
     LocalizationManager & mLocalizationManager;
-    std::shared_ptr<ResourceLocator> mResourceLocator;
+    ResourceLocator mResourceLocator;
     std::shared_ptr<GameController> mGameController;
     std::shared_ptr<SoundController> mSoundController;
     std::shared_ptr<MusicController> mMusicController;

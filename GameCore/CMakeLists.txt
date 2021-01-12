@@ -7,6 +7,8 @@ set  (SOURCES
 	AABB.h
 	AABBSet.h
 	Algorithms.h
+	BootSettings.cpp
+	BootSettings.h
 	BoundedVector.h
 	Buffer.h
 	BufferAllocator.h

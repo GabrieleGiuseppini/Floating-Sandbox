@@ -131,4 +131,11 @@ public:
     //
 
     static std::filesystem::path GetLanguagesRootPath();
+
+
+    //
+    // Boot settings
+    //
+
+    std::filesystem::path GetBootSettingsFilePath() const;
 };

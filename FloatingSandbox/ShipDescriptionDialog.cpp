@@ -16,9 +16,9 @@ ShipDescriptionDialog::ShipDescriptionDialog(
     wxWindow* parent,
     ShipMetadata const & shipMetadata,
     bool isAutomatic,
-    std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-    ResourceLocator & resourceLocator)
-    : mUIPreferencesManager(std::move(uiPreferencesManager))
+    UIPreferencesManager & uiPreferencesManager,
+    ResourceLocator const & resourceLocator)
+    : mUIPreferencesManager(uiPreferencesManager)
 {
     Create(
         parent,
@@ -63,7 +63,12 @@ ShipDescriptionDialog::ShipDescriptionDialog(
         dontChk->SetForegroundColour(wxColour(79, 63, 49));
         dontChk->SetToolTip(_("Prevents ship descriptions from being shown each time a ship is loaded. You can always change this setting later from the \"Game Preferences\" window."));
         dontChk->SetValue(false);
-        dontChk->Bind(wxEVT_CHECKBOX, &ShipDescriptionDialog::OnDontShowOnShipLoadheckboxChanged, this);
+        dontChk->Bind(
+            wxEVT_CHECKBOX,
+            [this](wxCommandEvent & event)
+            {
+                mUIPreferencesManager.SetShowShipDescriptionsAtShipLoad(!event.IsChecked());
+            });
 
         topSizer->Add(dontChk, 0, wxLEFT | wxRIGHT | wxALIGN_LEFT, 10);
     }
@@ -85,11 +90,6 @@ ShipDescriptionDialog::ShipDescriptionDialog(
 
 ShipDescriptionDialog::~ShipDescriptionDialog()
 {
-}
-
-void ShipDescriptionDialog::OnDontShowOnShipLoadheckboxChanged(wxCommandEvent & event)
-{
-    mUIPreferencesManager->SetShowShipDescriptionsAtShipLoad(!event.IsChecked());
 }
 
 std::string ShipDescriptionDialog::MakeHtml(ShipMetadata const & shipMetadata)

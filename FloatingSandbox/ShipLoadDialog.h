@@ -16,7 +16,6 @@
 #include <wx/srchctrl.h>
 
 #include <filesystem>
-#include <memory>
 #include <optional>
 #include <string>
 
@@ -26,8 +25,8 @@ public:
 
     ShipLoadDialog(
         wxWindow* parent,
-        std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-        std::shared_ptr<ResourceLocator> const & resourceLocator);
+        UIPreferencesManager & uiPreferencesManager,
+        ResourceLocator const & resourceLocator);
 
 	virtual ~ShipLoadDialog();
 
@@ -68,8 +67,8 @@ private:
 private:
 
 	wxWindow * const mParent;
-    std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
-    std::shared_ptr<ResourceLocator> mResourceLocator;
+    UIPreferencesManager & mUIPreferencesManager;
+    ResourceLocator const & mResourceLocator;
 
     wxGenericDirCtrl * mDirCtrl;
     ShipPreviewWindow * mShipPreviewWindow;

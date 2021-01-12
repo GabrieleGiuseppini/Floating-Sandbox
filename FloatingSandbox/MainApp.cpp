@@ -184,7 +184,8 @@ bool MainApp::OnInit()
         // Initialize secret typing mappings
         //
 
-        mSecretTypingMappings.emplace_back("DEBUG", std::bind(&MainFrame::OnSecretTypingOpenDebugWindow, mMainFrame));
+        mSecretTypingMappings.emplace_back("BOOTSETTINGS", std::bind(&MainFrame::OnSecretTypingBootSettings, mMainFrame));
+        mSecretTypingMappings.emplace_back("DEBUG", std::bind(&MainFrame::OnSecretTypingDebug, mMainFrame));
         mSecretTypingMappings.emplace_back("BUILTINSHIP1", std::bind(&MainFrame::OnSecretTypingLoadBuiltInShip, mMainFrame, 1));
         mSecretTypingMappings.emplace_back("BUILTINSHIP2", std::bind(&MainFrame::OnSecretTypingLoadBuiltInShip, mMainFrame, 2));
         mSecretTypingMappings.emplace_back("BUILTINSHIP3", std::bind(&MainFrame::OnSecretTypingLoadBuiltInShip, mMainFrame, 3));

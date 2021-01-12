@@ -17,13 +17,16 @@ namespace Render {
 
 RenderContext::RenderContext(
     ImageSize const & initialCanvasSize,
+    bool doForceNoGlFinish,
+    bool doForceNoMultithreadedRendering,
     std::function<void()> makeRenderContextCurrentFunction,
     std::function<void()> swapRenderBuffersFunction,
     PerfStats & perfStats,
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
+    : mDoInvokeGlFinish(!doForceNoGlFinish)
     // Thread
-    : mRenderThread()
+    , mRenderThread(doForceNoMultithreadedRendering)
     , mLastRenderUploadEndCompletionIndicator()
     , mLastRenderDrawCompletionIndicator()
     // Child contextes
@@ -61,6 +64,11 @@ RenderContext::RenderContext(
 
             // Initialize OpenGL
             GameOpenGL::InitOpenGL();
+
+            if (GameOpenGL::AvoidGlFinish)
+                mDoInvokeGlFinish = false;
+
+            LogMessage("RenderContext: DoInvokeGlFinish=", mDoInvokeGlFinish);
 
             // Initialize the shared texture unit once and for all
             mShaderManager->ActivateTexture<ProgramParameterType::SharedTexture>();
@@ -200,11 +208,14 @@ RenderContext::RenderContext(
             }
 
 
-            //
-            // Flush all pending operations
-            //
+            if (mDoInvokeGlFinish)
+            {
+                //
+                // Flush all pending operations
+                //
 
-            glFinish();
+                glFinish();
+            }
         });
 
     progressCallback(1.0f, ProgressMessageType::InitializingGraphics);
@@ -529,7 +540,7 @@ void RenderContext::Draw()
             // Wrap up
             //
 
-            if (!GameOpenGL::AvoidGlFinish)
+            if (mDoInvokeGlFinish)
             {
                 // Flush all pending operations
                 glFinish();

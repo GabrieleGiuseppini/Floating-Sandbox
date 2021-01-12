@@ -8,13 +8,16 @@
 #include "FloatingPoint.h"
 #include "Log.h"
 
-TaskThread::TaskThread()
+TaskThread::TaskThread(bool doForceNoMultiThreading)
     : mIsStop(false)
 {
     // Only use a real thread on multi-core boxes; on single-core
     // boxes, we'll just emulate multi-threading by running all
     // tasks directly - and synchronously - on the caller's thread
     mHasThread = std::thread::hardware_concurrency() > 1;
+
+    if (doForceNoMultiThreading)
+        mHasThread = false;
 
     if (mHasThread)
     {

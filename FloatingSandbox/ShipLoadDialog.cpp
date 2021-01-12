@@ -16,11 +16,11 @@ constexpr int MaxDirComboWidth = 650;
 
 ShipLoadDialog::ShipLoadDialog(
     wxWindow * parent,
-    std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-    std::shared_ptr<ResourceLocator> const & resourceLocator)
+    UIPreferencesManager & uiPreferencesManager,
+    ResourceLocator const & resourceLocator)
 	: mParent(parent)
-    , mUIPreferencesManager(std::move(uiPreferencesManager))
-    , mResourceLocator(std::move(resourceLocator))
+    , mUIPreferencesManager(uiPreferencesManager)
+    , mResourceLocator(resourceLocator)
 {
 	Create(
 		mParent,
@@ -53,7 +53,7 @@ ShipLoadDialog::ShipLoadDialog(
 
         // Directory tree
         {
-            assert(!mUIPreferencesManager->GetShipLoadDirectories().empty());
+            assert(!mUIPreferencesManager.GetShipLoadDirectories().empty());
 
             LogMessage("ShipLoadDialog::cctor(): creating wxGenericDirCtrl...");
 
@@ -62,7 +62,7 @@ ShipLoadDialog::ShipLoadDialog(
             mDirCtrl = new wxGenericDirCtrl(
                 this,
                 wxID_ANY,
-                mUIPreferencesManager->GetShipLoadDirectories().front().string(),
+                mUIPreferencesManager.GetShipLoadDirectories().front().string(),
                 wxDefaultPosition,
                 minSize,
                 wxDIRCTRL_DIR_ONLY);
@@ -79,7 +79,7 @@ ShipLoadDialog::ShipLoadDialog(
 
         // Preview
         {
-            mShipPreviewWindow = new ShipPreviewWindow(this, *mResourceLocator);
+            mShipPreviewWindow = new ShipPreviewWindow(this, mResourceLocator);
 
             mShipPreviewWindow->SetMinSize(wxSize(ShipPreviewWindow::CalculateMinWidthForColumns(3) + 40, -1));
             mShipPreviewWindow->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
@@ -160,7 +160,7 @@ ShipLoadDialog::ShipLoadDialog(
             // HomeDir button
 
             wxButton * homeDirButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
-            wxBitmap homeBitmap(mResourceLocator->GetIconFilePath("home").string(), wxBITMAP_TYPE_PNG);
+            wxBitmap homeBitmap(mResourceLocator.GetIconFilePath("home").string(), wxBITMAP_TYPE_PNG);
             homeDirButton->SetBitmap(homeBitmap);
             homeDirButton->SetToolTip(_("Go to the default Ships folder"));
             homeDirButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnHomeDirButtonClicked, this);
@@ -195,7 +195,7 @@ ShipLoadDialog::ShipLoadDialog(
 			// Search button
 
             mSearchNextButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, 24));
-            wxBitmap searchNextBitmap(mResourceLocator->GetIconFilePath("right_arrow").string(), wxBITMAP_TYPE_PNG);
+            wxBitmap searchNextBitmap(mResourceLocator.GetIconFilePath("right_arrow").string(), wxBITMAP_TYPE_PNG);
             mSearchNextButton->SetBitmap(searchNextBitmap);
             mSearchNextButton->SetToolTip(_("Go to the next search result"));
             mSearchNextButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnSearchNextButtonClicked, this);
@@ -225,7 +225,7 @@ ShipLoadDialog::ShipLoadDialog(
         buttonsSizer->AddSpacer(10);
 
         mInfoButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
-        wxBitmap infoBitmap(mResourceLocator->GetIconFilePath("info").string(), wxBITMAP_TYPE_PNG);
+        wxBitmap infoBitmap(mResourceLocator.GetIconFilePath("info").string(), wxBITMAP_TYPE_PNG);
         mInfoButton->SetBitmap(infoBitmap);
         mInfoButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnInfoButtonClicked, this);
         buttonsSizer->Add(mInfoButton, 0);
@@ -376,7 +376,7 @@ void ShipLoadDialog::OnSearchNextButtonClicked(wxCommandEvent & /*event*/)
 
 void ShipLoadDialog::OnHomeDirButtonClicked(wxCommandEvent & /*event*/)
 {
-    assert(mUIPreferencesManager->GetShipLoadDirectories().size() >= 1);
+    assert(mUIPreferencesManager.GetShipLoadDirectories().size() >= 1);
 
     // Change combo
     mRecentDirectoriesComboBox->Select(0);
@@ -396,7 +396,7 @@ void ShipLoadDialog::OnInfoButtonClicked(wxCommandEvent & /*event*/)
             *mSelectedShipMetadata,
             false,
             mUIPreferencesManager,
-            *mResourceLocator);
+            mResourceLocator);
 
         shipDescriptionDialog.ShowModal();
     }
@@ -446,7 +446,7 @@ void ShipLoadDialog::OnShipFileChosen(std::filesystem::path shipFilepath)
 
     // Store directory in preferences
     auto dir = shipFilepath.parent_path();
-    mUIPreferencesManager->AddShipLoadDirectory(dir);
+    mUIPreferencesManager.AddShipLoadDirectory(dir);
 
     // Re-populate combo box
     RepopulateRecentDirectoriesComboBox();
@@ -487,10 +487,10 @@ void ShipLoadDialog::StartShipSearch()
 
 void ShipLoadDialog::RepopulateRecentDirectoriesComboBox()
 {
-    assert(!mUIPreferencesManager->GetShipLoadDirectories().empty());
+    assert(!mUIPreferencesManager.GetShipLoadDirectories().empty());
 
     mRecentDirectoriesComboBox->Clear();
-    for (auto dir : mUIPreferencesManager->GetShipLoadDirectories())
+    for (auto dir : mUIPreferencesManager.GetShipLoadDirectories())
     {
         if (std::filesystem::exists(dir))
         {

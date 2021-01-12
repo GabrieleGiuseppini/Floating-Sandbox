@@ -102,7 +102,7 @@ public:
 
 public:
 
-    TaskThread();
+    TaskThread(bool doForceNoMultiThreading);
 
     ~TaskThread();
 
@@ -134,7 +134,7 @@ public:
                 std::move(task),
                 taskCompletionIndicator);
 
-            mThreadSignal.notify_one();            
+            mThreadSignal.notify_one();
         }
         else
         {

@@ -60,6 +60,8 @@ public:
 
     RenderContext(
         ImageSize const & initialCanvasSize,
+        bool doForceNoGlFinish,
+        bool doForceNoMultithrededRendering,
         std::function<void()> makeRenderContextCurrentFunction,
         std::function<void()> swapRenderBuffersFunction,
         PerfStats & perfStats,
@@ -972,6 +974,12 @@ private:
     vec4f CalculateShipWaterColor() const;
 
 private:
+
+    //
+    // Boot settings
+    //
+
+    bool mDoInvokeGlFinish;
 
     //
     // Render Thread

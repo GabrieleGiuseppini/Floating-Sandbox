@@ -56,6 +56,8 @@ public:
 
     static std::unique_ptr<GameController> Create(
         ImageSize const & initialCanvasSize,
+        bool doForceNoGlFinish,
+        bool doForceNoMultithreadedRendering,
         std::function<void()> makeRenderContextCurrentFunction,
         std::function<void()> swapRenderBuffersFunction,
         ResourceLocator const & resourceLocator,

@@ -46,6 +46,8 @@ set  (FLOATING_SANDBOX_SOURCES
 set  (DIALOGS_SOURCES
 	AboutDialog.cpp
 	AboutDialog.h
+	BootSettingsDialog.cpp
+	BootSettingsDialog.h
 	CheckForUpdatesDialog.cpp
 	CheckForUpdatesDialog.h
 	CreditsPanel.cpp

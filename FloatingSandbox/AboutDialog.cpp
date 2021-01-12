@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "AboutDialog.h"
 
+#include "CreditsPanel.h"
+
 #include <GameCore/SysSpecifics.h>
 #include <GameCore/Version.h>
 
@@ -74,6 +76,10 @@ AboutDialog::AboutDialog(wxWindow * parent)
     }
 
     SetSizer(mainSizer);
-        
+
     Centre(wxCENTER_ON_SCREEN | wxBOTH);
+}
+
+AboutDialog::~AboutDialog()
+{
 }

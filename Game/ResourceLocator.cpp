@@ -281,3 +281,13 @@ std::filesystem::path ResourceLocator::GetLanguagesRootPath()
     std::filesystem::path localPath = std::filesystem::path("Data") / "Languages";
     return std::filesystem::absolute(localPath);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// Boot settings
+////////////////////////////////////////////////////////////////////////////////////////////
+
+std::filesystem::path ResourceLocator::GetBootSettingsFilePath() const
+{
+    std::filesystem::path localPath = "boot_settings.json";
+    return std::filesystem::absolute(localPath);
+}

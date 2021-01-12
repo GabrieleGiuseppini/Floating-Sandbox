@@ -12,8 +12,6 @@
 #include <wx/custombgwin.h>
 #include <wx/dialog.h>
 
-#include <memory>
-
 class ShipDescriptionDialog : public wxCustomBackgroundWindow<wxDialog>
 {
 public:
@@ -22,14 +20,10 @@ public:
         wxWindow* parent,
         ShipMetadata const & shipMetadata,
         bool isAutomatic,
-        std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-        ResourceLocator & resourceLocator);
+        UIPreferencesManager & uiPreferencesManager,
+        ResourceLocator const & resourceLocator);
 
     virtual ~ShipDescriptionDialog();
-
-private:
-
-    void OnDontShowOnShipLoadheckboxChanged(wxCommandEvent & event);
 
 private:
 
@@ -37,5 +31,5 @@ private:
 
 private:
 
-    std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
+    UIPreferencesManager & mUIPreferencesManager;
 };

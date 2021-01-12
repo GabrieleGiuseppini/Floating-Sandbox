@@ -5,8 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "CreditsPanel.h"
-
 #include <wx/dialog.h>
 
 class AboutDialog : public wxDialog
@@ -14,4 +12,6 @@ class AboutDialog : public wxDialog
 public:
 
     AboutDialog(wxWindow * parent);
+
+    virtual ~AboutDialog();
 };

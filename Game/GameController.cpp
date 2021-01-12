@@ -16,6 +16,8 @@
 
 std::unique_ptr<GameController> GameController::Create(
     ImageSize const & initialCanvasSize,
+    bool doForceNoGlFinish,
+    bool doForceNoMultithreadedRendering,
     std::function<void()> makeRenderContextCurrentFunction,
     std::function<void()> swapRenderBuffersFunction,
     ResourceLocator const & resourceLocator,
@@ -36,6 +38,8 @@ std::unique_ptr<GameController> GameController::Create(
     // Create render context
     std::unique_ptr<Render::RenderContext> renderContext = std::make_unique<Render::RenderContext>(
         initialCanvasSize,
+        doForceNoGlFinish,
+        doForceNoMultithreadedRendering,
         std::move(makeRenderContextCurrentFunction),
         std::move(swapRenderBuffersFunction),
         *perfStats,
