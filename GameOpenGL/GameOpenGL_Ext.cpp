@@ -189,6 +189,7 @@ void InitOpenGLExt_TextureFloat(GLADloadproc /*load*/)
 //////////////////////////////////////////////////////////////////////////
 
 PFNGLGETPROGRAMBINARYPROC glGetProgramBinary = NULL;
+PFNGLDEBUGMESSAGECALLBACKARB glDebugMessageCallback = NULL;
 
 void InitOpenGLExt_Misc(GLADloadproc load)
 {
@@ -206,6 +207,11 @@ void InitOpenGLExt_Misc(GLADloadproc load)
     else
     {
         // Ignore
+    }
+
+    if (HasExt("GL_ARB_debug_output"))
+    {
+        LoadAndVerify("glDebugMessageCallbackARB", glDebugMessageCallback, load);
     }
 }
 

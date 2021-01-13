@@ -22,6 +22,13 @@ int GameOpenGL::MaxSupportedOpenGLVersionMinor = 0;
 
 bool GameOpenGL::AvoidGlFinish = false;
 
+static void APIENTRY OpenGLDebugCallback(
+    GLenum source, GLenum type, GLuint /*id*/, GLenum severity,
+    GLsizei /*length*/, const GLchar * message, const void * /*user*/)
+{
+    LogMessage("OpenGLDebug: Source=", source, " Type=", type, " Severity=", severity, " Msg=", std::string(message));
+}
+
 void GameOpenGL::InitOpenGL()
 {
     GLenum errorCode;
@@ -108,6 +115,7 @@ void GameOpenGL::InitOpenGL()
     MaxSupportedOpenGLVersionMajor = GLVersion.major;
     MaxSupportedOpenGLVersionMinor = GLVersion.minor;
 
+
     //
     // Initialize switches
     //
@@ -126,6 +134,19 @@ void GameOpenGL::InitOpenGL()
     }
 
     LogMessage("AvoidGlFinish=", AvoidGlFinish);
+
+
+    //
+    // Initialize debugging
+    //
+
+#ifdef _DEBUG
+    if (glDebugMessageCallback != nullptr)
+    {
+        glDebugMessageCallback(OpenGLDebugCallback, NULL);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    }
+#endif
 }
 
 void GameOpenGL::CompileShader(

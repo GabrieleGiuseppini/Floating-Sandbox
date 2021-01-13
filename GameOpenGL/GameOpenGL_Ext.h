@@ -195,6 +195,16 @@ GLAPI PFNGLISVERTEXARRAYPROC glIsVertexArray;
 typedef void (APIENTRYP PFNGLGETPROGRAMBINARYPROC)(GLuint program, GLsizei bufSize, GLsizei * length, GLenum * binaryFormat, void * binary);
 GLAPI PFNGLGETPROGRAMBINARYPROC glGetProgramBinary;
 
+typedef void (APIENTRY * DEBUGPROCARB)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar * message, const void * userParam);
+typedef void (APIENTRYP PFNGLDEBUGMESSAGECALLBACKARB)(DEBUGPROCARB callback, const void * userParam);
+GLAPI PFNGLDEBUGMESSAGECALLBACKARB glDebugMessageCallback;
+
+//
+// Enumerants
+//
+
+#define GL_DEBUG_OUTPUT_SYNCHRONOUS 0x8242
+
 #ifdef __cplusplus
 }
 #endif
