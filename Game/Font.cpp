@@ -108,11 +108,12 @@ Font Font::Load(std::filesystem::path const & filepath)
         throw GameException("Font file \"" + filepath.string() + "\" is not a BFF font file");
     }
 
+    // Read header
     std::unique_ptr<uint8_t[]> header = std::make_unique<uint8_t[]>(HeaderSize);
     file.read(reinterpret_cast<char*>(header.get()), HeaderSize);
 
+    // Read texture image
     assert(0 == ((fileSize - HeaderSize) % sizeof(rgbaColor)));
-
     std::unique_ptr<rgbaColor[]> textureData = std::make_unique<rgbaColor[]>((fileSize - HeaderSize) / sizeof(rgbaColor));
     file.read(reinterpret_cast<char*>(textureData.get()), fileSize - HeaderSize);
 
@@ -139,7 +140,7 @@ Font Font::Load(std::filesystem::path const & filepath)
         throw GameException("File \"" + filepath.string() + "\" is not a supported BFF font file: unexpected base character");
     }
 
-    // Read image size
+    // Read texture image size
     int width = *(reinterpret_cast<int *>(header.get() + 2));
     int height = *(reinterpret_cast<int *>(header.get() + 6));
     ImageSize textureSize(width, height);
