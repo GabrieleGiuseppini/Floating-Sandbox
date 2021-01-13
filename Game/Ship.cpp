@@ -84,7 +84,7 @@ Ship::Ship(
         mParentWorld,
         mGameEventHandler,
         mPoints)
-    , mBombs(
+    , mGadgets(
         mParentWorld,
         mId,
         mGameEventHandler,
@@ -283,7 +283,7 @@ void Ship::Update(
     TrimForWorldBounds(gameParameters);
 
     /////////////////////////////////////////////////////////////////
-    // Update bombs
+    // Update gadgets
     /////////////////////////////////////////////////////////////////
 
     //
@@ -291,7 +291,7 @@ void Ship::Update(
     // (which would flag our structure as dirty)
     //
 
-    mBombs.Update(
+    mGadgets.Update(
         currentWallClockTime,
         currentSimulationTime,
         stormParameters,
@@ -618,10 +618,10 @@ void Ship::RenderUpload(Render::RenderContext & renderContext)
         renderContext);
 
     //
-    // Upload bombs
+    // Upload gadgets
     //
 
-    mBombs.Upload(
+    mGadgets.Upload(
         mId,
         renderContext);
 
@@ -2600,8 +2600,8 @@ void Ship::HandlePointDetach(
 
     if (hasAnythingBeenDestroyed)
     {
-        // Notify bombs
-        mBombs.OnPointDetached(pointElementIndex);
+        // Notify gadgets
+        mGadgets.OnPointDetached(pointElementIndex);
 
         if (generateDebris)
         {
@@ -2745,8 +2745,8 @@ void Ship::HandleSpringDestroy(
     // Misc
     //
 
-    // Notify bombs
-    mBombs.OnSpringDestroyed(springElementIndex);
+    // Notify gadgets
+    mGadgets.OnSpringDestroyed(springElementIndex);
 
     // Remember our structure is now dirty
     mIsStructureDirty = true;

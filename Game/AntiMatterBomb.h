@@ -16,20 +16,25 @@ namespace Physics
 {
 
 /*
- * Bomb specialization for spectacular anti-matter bombs.
+ * Gadget specialization for spectacular anti-matter bombs.
  */
-class AntiMatterBomb final : public Bomb
+class AntiMatterBomb final : public Gadget
 {
 public:
 
     AntiMatterBomb(
-        BombId id,
+        GadgetId id,
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings);
+
+    virtual float GetMass() const override
+    {
+        return GameParameters::BombMass;
+    }
 
     virtual bool Update(
         GameWallClock::time_point currentWallClockTime,
@@ -43,7 +48,7 @@ public:
         return (State::Contained_1 == mState);
     }
 
-    virtual void OnBombRemoved() override
+    virtual void OnRemoved() override
     {
         // Stop containment if it's in containment
         if (State::Contained_1 == mState)
@@ -52,9 +57,9 @@ public:
         }
 
         // Notify removal
-        mGameEventHandler->OnBombRemoved(
+        mGameEventHandler->OnGadgetRemoved(
             mId,
-            BombType::AntiMatterBomb,
+            GadgetType::AntiMatterBomb,
             mParentWorld.IsUnderwater(
                 GetPosition()));
 

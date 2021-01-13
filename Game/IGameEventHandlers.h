@@ -406,27 +406,27 @@ struct IGenericGameEventHandler
     }
 
     //
-    // Bombs
+    // Gadgets
     //
 
-    virtual void OnBombPlaced(
-        BombId /*bombId*/,
-        BombType /*bombType*/,
+    virtual void OnGadgetPlaced(
+        GadgetId /*gadgetId*/,
+        GadgetType /*gadgetType*/,
         bool /*isUnderwater*/)
     {
         // Default-implemented
     }
 
-    virtual void OnBombRemoved(
-        BombId /*bombId*/,
-        BombType /*bombType*/,
+    virtual void OnGadgetRemoved(
+        GadgetId /*gadgetId*/,
+        GadgetType /*gadgetType*/,
         std::optional<bool> /*isUnderwater*/)
     {
         // Default-implemented
     }
 
     virtual void OnBombExplosion(
-        BombType /*bombType*/,
+        GadgetType /*gadgetType*/,
         bool /*isUnderwater*/,
         unsigned int /*size*/)
     {
@@ -441,7 +441,7 @@ struct IGenericGameEventHandler
     }
 
     virtual void OnTimerBombFuse(
-        BombId /*bombId*/,
+        GadgetId /*gadgetId*/,
         std::optional<bool> /*isFast*/)
     {
         // Default-implemented
@@ -455,7 +455,7 @@ struct IGenericGameEventHandler
     }
 
     virtual void OnAntiMatterBombContained(
-        BombId /*bombId*/,
+        GadgetId /*gadgetId*/,
         bool /*isContained*/)
     {
         // Default-implemented

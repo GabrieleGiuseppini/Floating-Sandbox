@@ -21,17 +21,18 @@ namespace Physics
 {
 
 /*
- * This class manages a set of bombs.
+ * This class manages a set of gadgets, i.e. "thinghies" that the user may attach
+ * to a ship and which perform various things.
  *
  * All game events are taken care of by this class.
  *
- * The explosion handler can be used to modify the world due to the explosion.
+ * The physics handler can be used to feed-back actions to the world.
  */
-class Bombs final
+class Gadgets final
 {
 public:
 
-    Bombs(
+    Gadgets(
         World & parentWorld,
         ShipId shipId,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
@@ -44,8 +45,8 @@ public:
         , mShipPhysicsHandler(shipPhysicsHandler)
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
-        , mCurrentBombs()
-        , mNextLocalBombId(0)
+        , mCurrentGadgets()
+        , mNextLocalGadgetId(0)
     {
     }
 
@@ -63,7 +64,7 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters)
     {
-        return ToggleBombAt<AntiMatterBomb>(
+        return ToggleGadgetAt<AntiMatterBomb>(
             targetPos,
             gameParameters);
     }
@@ -72,7 +73,7 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters)
     {
-        return ToggleBombAt<ImpactBomb>(
+        return ToggleGadgetAt<ImpactBomb>(
             targetPos,
             gameParameters);
     }
@@ -81,7 +82,7 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters)
     {
-        return ToggleBombAt<RCBomb>(
+        return ToggleGadgetAt<RCBomb>(
             targetPos,
             gameParameters);
     }
@@ -90,7 +91,7 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters)
     {
-        return ToggleBombAt<TimerBomb>(
+        return ToggleGadgetAt<TimerBomb>(
             targetPos,
             gameParameters);
     }
@@ -109,33 +110,33 @@ public:
 
 private:
 
-    template <typename TBomb>
-    bool ToggleBombAt(
+    template <typename TGadget>
+    bool ToggleGadgetAt(
         vec2f const & targetPos,
         GameParameters const & gameParameters)
     {
         float const squareSearchRadius = gameParameters.ToolSearchRadius * gameParameters.ToolSearchRadius;
 
         //
-        // See first if there's a bomb within the search radius, most recent first;
+        // See first if there's a gadget within the search radius, most recent first;
         // if so - and it allows us to remove it - then we remove it and we're done
         //
 
-        for (auto it = mCurrentBombs.begin(); it != mCurrentBombs.end(); ++it)
+        for (auto it = mCurrentGadgets.begin(); it != mCurrentGadgets.end(); ++it)
         {
             float squareDistance = ((*it)->GetPosition() - targetPos).squareLength();
             if (squareDistance < squareSearchRadius)
             {
-                // Found a bomb
+                // Found a gadget
 
                 // Check whether it's ok with being removed
                 if ((*it)->MayBeRemoved())
                 {
                     // Tell it we're removing it
-                    (*it)->OnBombRemoved();
+                    (*it)->OnRemoved();
 
-                    // Remove from set of bombs - forget about it
-                    mCurrentBombs.erase(it);
+                    // Remove from set of gadgets - forget about it
+                    mCurrentGadgets.erase(it);
                 }
 
                 // We're done
@@ -145,17 +146,17 @@ private:
 
 
         //
-        // No bombs in radius...
-        // ...so find closest spring with no attached bomb within the search radius, and
-        // if found, attach bomb to it it
+        // No gadgetss in radius...
+        // ...so find closest spring with no attached gadget within the search radius, and
+        // if found, attach gadget to it it
         //
 
-        ElementIndex nearestUnarmedSpringIndex = NoneElementIndex;
-        float nearestUnarmedSpringDistance = std::numeric_limits<float>::max();
+        ElementIndex nearestCandidateSpringIndex = NoneElementIndex;
+        float nearestCandidateSpringDistance = std::numeric_limits<float>::max();
 
         for (auto springIndex : mShipSprings)
         {
-            if (!mShipSprings.IsDeleted(springIndex) && !mShipSprings.IsBombAttached(springIndex))
+            if (!mShipSprings.IsDeleted(springIndex) && !mShipSprings.IsGadgetAttached(springIndex))
             {
                 float squareDistance = (mShipSprings.GetMidpointPosition(springIndex, mShipPoints) - targetPos).squareLength();
                 if (squareDistance < squareSearchRadius)
@@ -163,51 +164,51 @@ private:
                     // This spring is within the search radius
 
                     // Keep the nearest
-                    if (squareDistance < squareSearchRadius && squareDistance < nearestUnarmedSpringDistance)
+                    if (squareDistance < squareSearchRadius && squareDistance < nearestCandidateSpringDistance)
                     {
-                        nearestUnarmedSpringIndex = springIndex;
-                        nearestUnarmedSpringDistance = squareDistance;
+                        nearestCandidateSpringIndex = springIndex;
+                        nearestCandidateSpringDistance = squareDistance;
                     }
                 }
             }
         }
 
-        if (NoneElementIndex != nearestUnarmedSpringIndex)
+        if (NoneElementIndex != nearestCandidateSpringIndex)
         {
-            // We have a nearest, unarmed spring
+            // We have a nearest candidate spring
 
-            // Create bomb
-            std::unique_ptr<Bomb> bomb(
-                new TBomb(
-                    BombId(mShipId, mNextLocalBombId++),
-                    nearestUnarmedSpringIndex,
+            // Create gadget
+            std::unique_ptr<Gadget> gadget(
+                new TGadget(
+                    GadgetId(mShipId, mNextLocalGadgetId++),
+                    nearestCandidateSpringIndex,
                     mParentWorld,
                     mGameEventHandler,
                     mShipPhysicsHandler,
                     mShipPoints,
                     mShipSprings));
 
-            // Attach bomb to the spring
-            mShipSprings.AttachBomb(
-                nearestUnarmedSpringIndex,
-                mShipPoints,
-                gameParameters);
+            // Attach gadget to the spring
+            mShipSprings.AttachGadget(
+                nearestCandidateSpringIndex,
+                gadget->GetMass(),
+                mShipPoints);
 
             // Notify
-            mGameEventHandler->OnBombPlaced(
-                bomb->GetId(),
-                bomb->GetType(),
+            mGameEventHandler->OnGadgetPlaced(
+                gadget->GetId(),
+                gadget->GetType(),
                 mParentWorld.IsUnderwater(
-                    bomb->GetPosition()));
+                    gadget->GetPosition()));
 
-            // Add new bomb to set of bombs, removing eventual bombs that might get purged
-            mCurrentBombs.emplace(
-                [](std::unique_ptr<Bomb> const & purgedBomb)
+            // Add new gadget to set of gadgetss, removing eventual gadgets that might get purged
+            mCurrentGadgets.emplace(
+                [](std::unique_ptr<Gadget> const & purgedGadget)
                 {
                     // Tell it we're removing it
-                    purgedBomb->OnBombRemoved();
+                    purgedGadget->OnRemoved();
                 },
-                std::move(bomb));
+                std::move(gadget));
 
             // We're done
             return true;
@@ -216,6 +217,10 @@ private:
         // No spring found on this ship
         return false;
     }
+
+private:
+
+    static float constexpr NeighborhoodRadius = 3.5f; // Magic number
 
 private:
 
@@ -237,11 +242,11 @@ private:
     // The container of all the ship's springs
     Springs & mShipSprings;
 
-    // The current set of bombs
-    CircularList<std::unique_ptr<Bomb>, GameParameters::MaxBombs> mCurrentBombs;
+    // The current set of gadgets
+    CircularList<std::unique_ptr<Gadget>, GameParameters::MaxGadgets> mCurrentGadgets;
 
-    // The next bomb ID value
-    LocalBombId mNextLocalBombId;
+    // The next gadget ID value
+    LocalGadgetId mNextLocalGadgetId;
 };
 
 }

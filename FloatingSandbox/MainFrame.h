@@ -257,35 +257,35 @@ private:
         mTriggerStormMenuItem->Enable(true);
     }
 
-    virtual void OnBombPlaced(
-        BombId /*bombId*/,
-        BombType bombType,
+    virtual void OnGadgetPlaced(
+        GadgetId /*gadgetId*/,
+        GadgetType gadgetType,
         bool /*isUnderwater*/) override
     {
-        if (BombType::RCBomb == bombType)
+        if (GadgetType::RCBomb == gadgetType)
         {
             ++mCurrentRCBombCount;
             mRCBombsDetonateMenuItem->Enable(mCurrentRCBombCount > 0);
         }
-        else if (BombType::AntiMatterBomb == bombType)
+        else if (GadgetType::AntiMatterBomb == gadgetType)
         {
             ++mCurrentAntiMatterBombCount;
             mAntiMatterBombsDetonateMenuItem->Enable(mCurrentAntiMatterBombCount > 0);
         }
     }
 
-    virtual void OnBombRemoved(
-        BombId /*bombId*/,
-        BombType bombType,
+    virtual void OnGadgetRemoved(
+        GadgetId /*gadgetId*/,
+        GadgetType gadgetType,
         std::optional<bool> /*isUnderwater*/) override
     {
-        if (BombType::RCBomb == bombType)
+        if (GadgetType::RCBomb == gadgetType)
         {
             assert(mCurrentRCBombCount > 0u);
             --mCurrentRCBombCount;
             mRCBombsDetonateMenuItem->Enable(mCurrentRCBombCount > 0);
         }
-        else if (BombType::AntiMatterBomb == bombType)
+        else if (GadgetType::AntiMatterBomb == gadgetType)
         {
             assert(mCurrentAntiMatterBombCount > 0u);
             --mCurrentAntiMatterBombCount;

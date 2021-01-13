@@ -206,57 +206,84 @@ void EventTickerPanel::OnPowerProbeToggled(
     AppendFutureTickerText(ss.str());
 }
 
-void EventTickerPanel::OnBombPlaced(
-    BombId /*bombId*/,
-    BombType bombType,
+void EventTickerPanel::OnGadgetPlaced(
+    GadgetId /*gadgetId*/,
+    GadgetType gadgetType,
     bool /*isUnderwater*/)
 {
     std::stringstream ss;
-    switch (bombType)
+    switch (gadgetType)
     {
-        case BombType::AntiMatterBomb:
+        case GadgetType::AntiMatterBomb:
         {
-            ss << "Anti-matter";
+            ss << "Anti-matter bomb";
             break;
         }
 
-        case BombType::ImpactBomb:
+        case GadgetType::ImpactBomb:
         {
-            ss << "Impact";
+            ss << "Impact bomb";
             break;
         }
 
-        case BombType::RCBomb:
+        case GadgetType::RCBomb:
         {
-            ss << "Remote-controlled";
+            ss << "Remote-controlled bomb";
             break;
         }
 
-        case BombType::TimerBomb:
+        case GadgetType::TimerBomb:
         {
-            ss << "Timer";
+            ss << "Timer bomb";
             break;
         }
     }
 
-    ss << " bomb placed!";
+    ss << " placed!";
 
     AppendFutureTickerText(ss.str());
 }
 
-void EventTickerPanel::OnBombRemoved(
-    BombId /*bombId*/,
-    BombType bombType,
+void EventTickerPanel::OnGadgetRemoved(
+    GadgetId /*gadgetId*/,
+    GadgetType gadgetType,
     std::optional<bool> /*isUnderwater*/)
 {
     std::stringstream ss;
-    ss << (BombType::RCBomb == bombType ? "Remote-controlled" : "Timer") << " bomb removed";
+    switch (gadgetType)
+    {
+        case GadgetType::AntiMatterBomb:
+        {
+            ss << "Anti-matter bomb";
+            break;
+        }
+
+        case GadgetType::ImpactBomb:
+        {
+            ss << "Impact bomb";
+            break;
+        }
+
+        case GadgetType::RCBomb:
+        {
+            ss << "Remote-controlled bomb";
+            break;
+        }
+
+        case GadgetType::TimerBomb:
+        {
+            ss << "Timer bomb";
+            break;
+        }
+    }
+
+    ss << " removed!";
 
     AppendFutureTickerText(ss.str());
 }
 
 void EventTickerPanel::OnBombExplosion(
-    BombType /*bombType*/,
+    GadgetType /*gadgetType*/,
     bool /*isUnderwater*/,
     unsigned int size)
 {

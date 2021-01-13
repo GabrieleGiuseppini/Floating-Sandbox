@@ -10,16 +10,16 @@
 namespace Physics {
 
 RCBomb::RCBomb(
-    BombId id,
+    GadgetId id,
     ElementIndex springIndex,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
-    : Bomb(
+    : Gadget(
         id,
-        BombType::RCBomb,
+        GadgetType::RCBomb,
         springIndex,
         parentWorld,
         std::move(gameEventDispatcher),
@@ -138,7 +138,7 @@ bool RCBomb::Update(
 
                 // Notify explosion
                 mGameEventHandler->OnBombExplosion(
-                    BombType::RCBomb,
+                    GadgetType::RCBomb,
                     mParentWorld.IsUnderwater(GetPosition()),
                     1);
 

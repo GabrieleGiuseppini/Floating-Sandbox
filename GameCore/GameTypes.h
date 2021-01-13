@@ -122,13 +122,13 @@ static constexpr FrontierId NoneFrontierId = std::numeric_limits<FrontierId>::ma
 /*
  * Various other identifiers.
  */
-using LocalBombId = std::uint32_t;
+using LocalGadgetId = std::uint32_t;
 
 /*
  * Object ID's, identifying objects of ships across ships.
  *
  * An ObjectId is unique only in the context in which it's used; for example,
- * a bomb might have the same object ID as a switch. That's where the type tag
+ * a gadget might have the same object ID as a switch. That's where the type tag
  * comes from.
  *
  * Not comparable, not ordered.
@@ -208,8 +208,8 @@ namespace std {
 // Generic ID for generic elements (points, springs, etc.)
 using ElementId = ObjectId<ElementIndex, struct ElementTypeTag>;
 
-// ID for a bomb
-using BombId = ObjectId<LocalBombId, struct BombTypeTag>;
+// ID for a gadget
+using GadgetId = ObjectId<LocalGadgetId, struct GadgetTypeTag>;
 
 // ID for electrical elements (switches, probes, etc.)
 using ElectricalElementId = ObjectId<ElementIndex, struct ElectricalElementTypeTag>;
@@ -281,9 +281,9 @@ enum class FrontierType
 };
 
 /*
- * Types of bombs.
+ * Types of gadgets.
  */
-enum class BombType
+enum class GadgetType
 {
     AntiMatterBomb,
     ImpactBomb,

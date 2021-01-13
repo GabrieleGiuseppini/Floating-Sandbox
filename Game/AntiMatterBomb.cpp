@@ -10,16 +10,16 @@
 namespace Physics {
 
 AntiMatterBomb::AntiMatterBomb(
-    BombId id,
+    GadgetId id,
     ElementIndex springIndex,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
-    : Bomb(
+    : Gadget(
         id,
-        BombType::AntiMatterBomb,
+        GadgetType::AntiMatterBomb,
         springIndex,
         parentWorld,
         std::move(gameEventDispatcher),
@@ -252,7 +252,7 @@ bool AntiMatterBomb::Update(
 
                 // Notify explosion
                 mGameEventHandler->OnBombExplosion(
-                    BombType::AntiMatterBomb,
+                    GadgetType::AntiMatterBomb,
                     mParentWorld.IsUnderwater(GetPosition()),
                     1);
 

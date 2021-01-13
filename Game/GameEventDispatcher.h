@@ -599,40 +599,40 @@ public:
         }
     }
 
-    virtual void OnBombPlaced(
-        BombId bombId,
-        BombType bombType,
+    virtual void OnGadgetPlaced(
+        GadgetId gadgetId,
+        GadgetType gadgetType,
         bool isUnderwater) override
     {
         for (auto sink : mGenericSinks)
         {
-            sink->OnBombPlaced(
-                bombId,
-                bombType,
+            sink->OnGadgetPlaced(
+                gadgetId,
+                gadgetType,
                 isUnderwater);
         }
     }
 
-    virtual void OnBombRemoved(
-        BombId bombId,
-        BombType bombType,
+    virtual void OnGadgetRemoved(
+        GadgetId gadgetId,
+        GadgetType gadgetType,
         std::optional<bool> isUnderwater) override
     {
         for (auto sink : mGenericSinks)
         {
-            sink->OnBombRemoved(
-                bombId,
-                bombType,
+            sink->OnGadgetRemoved(
+                gadgetId,
+                gadgetType,
                 isUnderwater);
         }
     }
 
     virtual void OnBombExplosion(
-        BombType bombType,
+        GadgetType gadgetType,
         bool isUnderwater,
         unsigned int size) override
     {
-        mBombExplosionEvents[std::make_tuple(bombType, isUnderwater)] += size;
+        mBombExplosionEvents[std::make_tuple(gadgetType, isUnderwater)] += size;
     }
 
     virtual void OnRCBombPing(
@@ -643,13 +643,13 @@ public:
     }
 
     virtual void OnTimerBombFuse(
-        BombId bombId,
+        GadgetId gadgetId,
         std::optional<bool> isFast) override
     {
         for (auto sink : mGenericSinks)
         {
             sink->OnTimerBombFuse(
-                bombId,
+                gadgetId,
                 isFast);
         }
     }
@@ -662,13 +662,13 @@ public:
     }
 
     virtual void OnAntiMatterBombContained(
-        BombId bombId,
+        GadgetId gadgetId,
         bool isContained) override
     {
         for (auto sink : mGenericSinks)
         {
             sink->OnAntiMatterBombContained(
-                bombId,
+                gadgetId,
                 isContained);
         }
     }
@@ -872,7 +872,7 @@ private:
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mSpringRepairedEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mTriangleRepairedEvents;
     unsigned int mAirBubbleSurfacedEvents;
-    unordered_tuple_map<std::tuple<BombType, bool>, unsigned int> mBombExplosionEvents;
+    unordered_tuple_map<std::tuple<GadgetType, bool>, unsigned int> mBombExplosionEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mRCBombPingEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mTimerBombDefusedEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mWatertightDoorOpenedEvents;

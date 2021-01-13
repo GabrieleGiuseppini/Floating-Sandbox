@@ -290,6 +290,9 @@ Render:
 				- Double-check with them
 			+ Ask Fernando for his ships
 
+		- MSI error repro:
+			- Test 1: clean install 1.15.6 -> 1.16.0 -> 1.16.2 on Win 7
+			- Test 2: clean install 1.15.6 -> 1.16.0 + extraneous file -> 1.16.2
 
 		
 		- See that glApiTrace issue with fragment shader recompiled on ship load
@@ -298,7 +301,10 @@ Render:
 			X Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s
 			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
 				- Add velocity probe gadget
-					- Requires Gadget Rearc (*) first
+					+ Requires Gadget Rearc (*) first
+					- Font texture rearc
+						- See first sizes of both font textures
+					- Texture for background + normal text (font 2) at right position?
 				- Copy old exe first
 				- Remove global damp at integration loop
 				- Point-by-point: 
@@ -1280,6 +1286,7 @@ Render:
 				- Rose: sparkles radiating immediately from explosion point
 				- MultiRose: sparkles radiating with delay from (invisible) sparkles radiating from explostion point
 		- Impl:
+			- New GadgetType
 			- New GameTypes enum: Firework(Kind)Type: Flair, Rose, MultiRose
 			- New electrical material: FireworkLauncher X each kind
 				- Type: FireworkLauncher
@@ -1287,10 +1294,12 @@ Render:
 			- New structural materials:
 				- FireworkVector: ~wood
 				- FireworkSparkles: ~paper
-			- "Bombs" become "Gadget"
-				- Need base Bomb for bomb-common things?
-				- Gadgets::Trigger[RCs,...,FWs]
-					- Visits all IGadgets and invokes IGadget::Trigger[RC,...,FW]
+			+ "Bombs" become "Gadget"
+				+ Gadgets::Trigger[RCs,...,FWs]
+					+ Visits all IGadgets, and switches on GetType() to invoke specialization-specific Trigger[RC,...,FW]
+				+ Event handlers as well
+				+ Test all 4 bombs
+					+ Place, Remove, Trigger, Explode
 			- Points::CreateFirework[Vector|Sparkle]EphemeralParticle:
 				- Args:
 					- Firework(Kind/Type)

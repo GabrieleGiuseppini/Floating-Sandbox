@@ -1821,47 +1821,88 @@ void SoundController::OnWaterPumpUpdated(
     }
 }
 
-void SoundController::OnBombPlaced(
-    BombId /*bombId*/,
-    BombType /*bombType*/,
+void SoundController::OnGadgetPlaced(
+    GadgetId /*gadgetId*/,
+    GadgetType gadgetType,
     bool isUnderwater)
 {
-    PlayUOneShotMultipleChoiceSound(
-        SoundType::BombAttached,
-        isUnderwater,
-        100.0f,
-        true);
+    switch (gadgetType)
+    {
+        case GadgetType::AntiMatterBomb:
+        case GadgetType::ImpactBomb:
+        case GadgetType::RCBomb:
+        case GadgetType::TimerBomb:
+        {
+            PlayUOneShotMultipleChoiceSound(
+                SoundType::BombAttached,
+                isUnderwater,
+                100.0f,
+                true);
+
+            break;
+        }
+    }
 }
 
-void SoundController::OnBombRemoved(
-    BombId /*bombId*/,
-    BombType /*bombType*/,
+void SoundController::OnGadgetRemoved(
+    GadgetId /*gadgetId*/,
+    GadgetType gadgetType,
     std::optional<bool> isUnderwater)
 {
-    if (!!isUnderwater)
+    switch (gadgetType)
     {
-        PlayUOneShotMultipleChoiceSound(
-            SoundType::BombDetached,
-            *isUnderwater,
-            100.0f,
-            true);
+        case GadgetType::AntiMatterBomb:
+        case GadgetType::ImpactBomb:
+        case GadgetType::RCBomb:
+        case GadgetType::TimerBomb:
+        {
+            if (!!isUnderwater)
+            {
+                PlayUOneShotMultipleChoiceSound(
+                    SoundType::BombDetached,
+                    *isUnderwater,
+                    100.0f,
+                    true);
+            }
+
+            break;
+        }
     }
 }
 
 void SoundController::OnBombExplosion(
-    BombType bombType,
+    GadgetType gadgetType,
     bool isUnderwater,
     unsigned int size)
 {
-    PlayUOneShotMultipleChoiceSound(
-        BombType::AntiMatterBomb == bombType
-            ? SoundType::AntiMatterBombExplosion
-            : SoundType::BombExplosion,
-        isUnderwater,
-        std::max(
-            100.0f,
-            50.0f * size),
-        true);
+    switch (gadgetType)
+    {
+        case GadgetType::AntiMatterBomb:
+        {
+            PlayUOneShotMultipleChoiceSound(
+                SoundType::AntiMatterBombExplosion,
+                isUnderwater,
+                std::max(
+                    100.0f,
+                    50.0f * size),
+                true);
+
+            break;
+        }
+
+        case GadgetType::ImpactBomb:
+        case GadgetType::RCBomb:
+        case GadgetType::TimerBomb:
+        {
+            PlayUOneShotMultipleChoiceSound(
+                SoundType::BombExplosion,
+                isUnderwater,
+                std::max(
+                    100.0f,
+                    50.0f * size),
+                true);
+        }
+    }
 }
 
 void SoundController::OnRCBombPing(
@@ -1878,7 +1919,7 @@ void SoundController::OnRCBombPing(
 }
 
 void SoundController::OnTimerBombFuse(
-    BombId bombId,
+    GadgetId gadgetId,
     std::optional<bool> isFast)
 {
     if (!!isFast)
@@ -1889,10 +1930,10 @@ void SoundController::OnTimerBombFuse(
 
             // See if this bomb is emitting a slow fuse sound; if so, remove it
             // and update slow fuse sound
-            mTimerBombSlowFuseSound.StopSoundForObject(bombId);
+            mTimerBombSlowFuseSound.StopSoundForObject(gadgetId);
 
             // Start fast fuse sound
-            mTimerBombFastFuseSound.StartSoundForObject(bombId);
+            mTimerBombFastFuseSound.StartSoundForObject(gadgetId);
         }
         else
         {
@@ -1900,17 +1941,17 @@ void SoundController::OnTimerBombFuse(
 
             // See if this bomb is emitting a fast fuse sound; if so, remove it
             // and update fast fuse sound
-            mTimerBombFastFuseSound.StopSoundForObject(bombId);
+            mTimerBombFastFuseSound.StopSoundForObject(gadgetId);
 
             // Start slow fuse sound
-            mTimerBombSlowFuseSound.StartSoundForObject(bombId);
+            mTimerBombSlowFuseSound.StartSoundForObject(gadgetId);
         }
     }
     else
     {
         // Stop the sound, whichever it is
-        mTimerBombSlowFuseSound.StopSoundForObject(bombId);
-        mTimerBombFastFuseSound.StopSoundForObject(bombId);
+        mTimerBombSlowFuseSound.StopSoundForObject(gadgetId);
+        mTimerBombFastFuseSound.StopSoundForObject(gadgetId);
     }
 }
 
@@ -1928,18 +1969,18 @@ void SoundController::OnTimerBombDefused(
 }
 
 void SoundController::OnAntiMatterBombContained(
-    BombId bombId,
+    GadgetId gadgetId,
     bool isContained)
 {
     if (isContained)
     {
         // Start sound
-        mAntiMatterBombContainedSounds.StartSoundAlternativeForObject(bombId);
+        mAntiMatterBombContainedSounds.StartSoundAlternativeForObject(gadgetId);
     }
     else
     {
         // Stop sound
-        mAntiMatterBombContainedSounds.StopSoundAlternativeForObject(bombId);
+        mAntiMatterBombContainedSounds.StopSoundAlternativeForObject(gadgetId);
     }
 }
 

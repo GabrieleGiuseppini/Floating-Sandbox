@@ -452,13 +452,11 @@ struct GameParameters
     static float constexpr MinAntiMatterBombImplosionStrength = 0.1f;
     static float constexpr MaxAntiMatterBombImplosionStrength = 10.0f;
 
-    static float constexpr BombNeighborhoodRadius = 3.5f;
-
     static float constexpr BombsTemperatureTrigger = 373.15f; // 100C
 
     std::chrono::seconds TimerBombInterval;
 
-    float BombMass;
+    static float constexpr BombMass = 5000.0f; // Quite some fat bomb!
 
     float FloodRadius;
     static float constexpr MinFloodRadius = 0.1f;
@@ -489,7 +487,7 @@ struct GameParameters
     static_assert(HalfMaxWorldHeight >= MaxSeaDepth); // Make sure deepest bottom of the ocean is visible
 
 
-    static size_t constexpr MaxBombs = 64u;
+    static size_t constexpr MaxGadgets = 64u;
     static size_t constexpr MaxPinnedPoints = 64u;
     static size_t constexpr MaxThanosSnaps = 8u;
 

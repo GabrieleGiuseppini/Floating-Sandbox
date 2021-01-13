@@ -76,7 +76,7 @@ void Springs::Add(
 
     mIsStressedBuffer.emplace_back(false);
 
-    mIsBombAttachedBuffer.emplace_back(false);
+    mIsGadgetAttachedBuffer.emplace_back(false);
 
     // Calculate parameters for this spring
     UpdateForDecayAndTemperatureAndGameParameters(
@@ -273,10 +273,10 @@ void Springs::UpdateForStrains(
     // Visit all springs
     for (ElementIndex s : *this)
     {
-        // Avoid breaking deleted springs and springs with attached bombs
-        // (we want to avoid orphanizing bombs)
+        // Avoid breaking deleted springs and springs with attached gadgets
+        // (we want to avoid orphanizing gadgets)
         if (!mIsDeletedBuffer[s]
-            && !mIsBombAttachedBuffer[s])
+            && !mIsGadgetAttachedBuffer[s])
         {
             // Calculate strain length
             float const strain = fabs(GetLength(s, points) - mRestLengthBuffer[s]);

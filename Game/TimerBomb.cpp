@@ -10,16 +10,16 @@
 namespace Physics {
 
 TimerBomb::TimerBomb(
-    BombId id,
+    GadgetId id,
     ElementIndex springIndex,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
-    : Bomb(
+    : Gadget(
         id,
-        BombType::TimerBomb,
+        GadgetType::TimerBomb,
         springIndex,
         parentWorld,
         std::move(gameEventDispatcher),
@@ -173,7 +173,7 @@ bool TimerBomb::Update(
 
                 // Notify explosion
                 mGameEventHandler->OnBombExplosion(
-                    BombType::TimerBomb,
+                    GadgetType::TimerBomb,
                     mParentWorld.IsUnderwater(GetPosition()),
                     1);
 

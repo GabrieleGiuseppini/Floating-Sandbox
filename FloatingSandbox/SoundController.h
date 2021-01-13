@@ -300,18 +300,18 @@ public:
         ElectricalElementId electricalElementId,
         float normalizedForce) override;
 
-    virtual void OnBombPlaced(
-        BombId bombId,
-        BombType bombType,
+    virtual void OnGadgetPlaced(
+        GadgetId gadgetId,
+        GadgetType gadgetType,
         bool isUnderwater) override;
 
-    virtual void OnBombRemoved(
-        BombId bombId,
-        BombType bombType,
+    virtual void OnGadgetRemoved(
+        GadgetId gadgetId,
+        GadgetType gadgetType,
         std::optional<bool> isUnderwater) override;
 
     virtual void OnBombExplosion(
-        BombType bombType,
+        GadgetType gadgetType,
         bool isUnderwater,
         unsigned int size) override;
 
@@ -320,7 +320,7 @@ public:
         unsigned int size) override;
 
     virtual void OnTimerBombFuse(
-        BombId bombId,
+        GadgetId gadgetId,
         std::optional<bool> isFast) override;
 
     virtual void OnTimerBombDefused(
@@ -328,7 +328,7 @@ public:
         unsigned int size) override;
 
     virtual void OnAntiMatterBombContained(
-        BombId bombId,
+        GadgetId gadgetId,
         bool isContained) override;
 
     virtual void OnAntiMatterBombPreImploding() override;
@@ -539,9 +539,9 @@ private:
 	ContinuousSingleChoiceSound mRainSound;
     ContinuousSingleChoiceSound mFireBurningSound;
 
-    ContinuousSingleChoiceAggregateSound<BombId> mTimerBombSlowFuseSound;
-    ContinuousSingleChoiceAggregateSound<BombId> mTimerBombFastFuseSound;
-    ContinuousMultipleChoiceAggregateSound<BombId> mAntiMatterBombContainedSounds;
+    ContinuousSingleChoiceAggregateSound<GadgetId> mTimerBombSlowFuseSound;
+    ContinuousSingleChoiceAggregateSound<GadgetId> mTimerBombFastFuseSound;
+    ContinuousMultipleChoiceAggregateSound<GadgetId> mAntiMatterBombContainedSounds;
 
     MultiInstanceLoopedSounds<ElectricalElementId> mLoopedSounds;
 };

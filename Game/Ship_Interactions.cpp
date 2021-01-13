@@ -1130,7 +1130,7 @@ bool Ship::ToggleAntiMatterBombAt(
     vec2f const & targetPos,
     GameParameters const & gameParameters)
 {
-    return mBombs.ToggleAntiMatterBombAt(
+    return mGadgets.ToggleAntiMatterBombAt(
         targetPos,
         gameParameters);
 }
@@ -1139,7 +1139,7 @@ bool Ship::ToggleImpactBombAt(
     vec2f const & targetPos,
     GameParameters const & gameParameters)
 {
-    return mBombs.ToggleImpactBombAt(
+    return mGadgets.ToggleImpactBombAt(
         targetPos,
         gameParameters);
 }
@@ -1148,7 +1148,7 @@ bool Ship::ToggleRCBombAt(
     vec2f const & targetPos,
     GameParameters const & gameParameters)
 {
-    return mBombs.ToggleRCBombAt(
+    return mGadgets.ToggleRCBombAt(
         targetPos,
         gameParameters);
 }
@@ -1157,19 +1157,19 @@ bool Ship::ToggleTimerBombAt(
     vec2f const & targetPos,
     GameParameters const & gameParameters)
 {
-    return mBombs.ToggleTimerBombAt(
+    return mGadgets.ToggleTimerBombAt(
         targetPos,
         gameParameters);
 }
 
 void Ship::DetonateRCBombs()
 {
-    mBombs.DetonateRCBombs();
+    mGadgets.DetonateRCBombs();
 }
 
 void Ship::DetonateAntiMatterBombs()
 {
-    mBombs.DetonateAntiMatterBombs();
+    mGadgets.DetonateAntiMatterBombs();
 }
 
 bool Ship::ScrubThrough(

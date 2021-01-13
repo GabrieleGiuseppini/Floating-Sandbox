@@ -52,9 +52,6 @@ set  (GAME_SOURCES
 set  (PHYSICS_SOURCES
 	AntiMatterBomb.h
 	AntiMatterBomb.cpp
-	Bomb.h
-	Bombs.cpp
-	Bombs.h
 	Clouds.cpp
 	Clouds.h
 	ElectricalElements.cpp
@@ -63,6 +60,9 @@ set  (PHYSICS_SOURCES
 	Fishes.h
 	Frontiers.cpp
 	Frontiers.h
+	Gadget.h
+	Gadgets.cpp
+	Gadgets.h
 	ImpactBomb.cpp
 	ImpactBomb.h
 	IShipPhysicsHandler.h

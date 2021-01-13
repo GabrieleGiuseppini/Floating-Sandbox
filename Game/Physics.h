@@ -7,11 +7,11 @@
 
 namespace Physics
 {
-    class Bombs;
     class Clouds;
     class ElectricalElements;
     class Fishes;
     class Frontiers;
+    class Gadgets;
     class OceanFloor;
     class OceanSurface;
     class PinnedPoints;
@@ -45,12 +45,12 @@ namespace Physics
 #include "Wind.h"
 #include "World.h"
 
-#include "Bomb.h"
+#include "Gadget.h"
 #include "AntiMatterBomb.h"
 #include "ImpactBomb.h"
 #include "RCBomb.h"
 #include "TimerBomb.h"
-#include "Bombs.h"
+#include "Gadgets.h"
 
 #include "PinnedPoints.h"
 

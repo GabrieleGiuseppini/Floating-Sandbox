@@ -19,20 +19,25 @@ namespace Physics
 {
 
 /*
- * Bomb specialization for bombs that explode after a time interval.
+ * Gadget specialization for bombs that explode after a time interval.
  */
-class TimerBomb final : public Bomb
+class TimerBomb final : public Gadget
 {
 public:
 
     TimerBomb(
-        BombId id,
+        GadgetId id,
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings);
+
+    virtual float GetMass() const override
+    {
+        return GameParameters::BombMass;
+    }
 
     virtual bool Update(
         GameWallClock::time_point currentWallClockTime,
@@ -46,7 +51,7 @@ public:
         return true;
     }
 
-    virtual void OnBombRemoved() override
+    virtual void OnRemoved() override
     {
         // Stop fuse if it's burning
         if (State::SlowFuseBurning == mState
@@ -56,9 +61,9 @@ public:
         }
 
         // Notify removal
-        mGameEventHandler->OnBombRemoved(
+        mGameEventHandler->OnGadgetRemoved(
             mId,
-            BombType::TimerBomb,
+            GadgetType::TimerBomb,
             mParentWorld.IsUnderwater(
                 GetPosition()));
 

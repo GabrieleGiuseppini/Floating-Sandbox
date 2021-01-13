@@ -94,18 +94,18 @@ public:
         ElectricalElementId electricalElementId,
         ElectricalState newState) override;
 
-    virtual void OnBombPlaced(
-        BombId bombId,
-        BombType bombType,
+    virtual void OnGadgetPlaced(
+        GadgetId gadgetId,
+        GadgetType gadgetType,
         bool isUnderwater) override;
 
-    virtual void OnBombRemoved(
-        BombId bombId,
-        BombType bombType,
+    virtual void OnGadgetRemoved(
+        GadgetId gadgetId,
+        GadgetType gadgetType,
         std::optional<bool> isUnderwater) override;
 
     virtual void OnBombExplosion(
-        BombType bombType,
+        GadgetType gadgetType,
         bool isUnderwater,
         unsigned int size) override;
 

@@ -535,8 +535,8 @@ private:
     // Pinned points
     PinnedPoints mPinnedPoints;
 
-    // Bombs
-    Bombs mBombs;
+    // Gadgets
+    Gadgets mGadgets;
 
     // The current simulation sequence number
     SequenceNumber mCurrentSimulationSequenceNumber;

@@ -16,20 +16,25 @@ namespace Physics
 {
 
 /*
- * Bomb specialization for bombs that explode on impact.
+ * Gadget specialization for bombs that explode on impact.
  */
-class ImpactBomb final : public Bomb
+class ImpactBomb final : public Gadget
 {
 public:
 
     ImpactBomb(
-        BombId id,
+        GadgetId id,
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings);
+
+    virtual float GetMass() const override
+    {
+        return GameParameters::BombMass;
+    }
 
     virtual bool Update(
         GameWallClock::time_point currentWallClockTime,
@@ -43,12 +48,12 @@ public:
         return true;
     }
 
-    virtual void OnBombRemoved() override
+    virtual void OnRemoved() override
     {
         // Notify removal
-        mGameEventHandler->OnBombRemoved(
+        mGameEventHandler->OnGadgetRemoved(
             mId,
-            BombType::ImpactBomb,
+            GadgetType::ImpactBomb,
             mParentWorld.IsUnderwater(
                 GetPosition()));
 

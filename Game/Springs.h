@@ -129,8 +129,8 @@ public:
         , mMaterialMeltingTemperatureBuffer(mBufferElementCount, mElementCount, 0.0f)
         // Stress
         , mIsStressedBuffer(mBufferElementCount, mElementCount, false)
-        // Bombs
-        , mIsBombAttachedBuffer(mBufferElementCount, mElementCount, false)
+        // Gadgets
+        , mIsGadgetAttachedBuffer(mBufferElementCount, mElementCount, false)
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -516,45 +516,44 @@ public:
     }
 
     //
-    // Bombs
+    // Gadgets
     //
 
-    bool IsBombAttached(ElementIndex springElementIndex) const
+    bool IsGadgetAttached(ElementIndex springElementIndex) const
     {
-        return mIsBombAttachedBuffer[springElementIndex];
+        return mIsGadgetAttachedBuffer[springElementIndex];
     }
 
-    void AttachBomb(
+    void AttachGadget(
         ElementIndex springElementIndex,
-        Points & points,
-        GameParameters const & gameParameters)
+        float mass,
+        Points & points)
     {
         assert(false == mIsDeletedBuffer[springElementIndex]);
-        assert(false == mIsBombAttachedBuffer[springElementIndex]);
+        assert(false == mIsGadgetAttachedBuffer[springElementIndex]);
 
-        mIsBombAttachedBuffer[springElementIndex] = true;
+        mIsGadgetAttachedBuffer[springElementIndex] = true;
 
-        // Augment mass of endpoints due to bomb
-
+        // Augment mass of endpoints due to gadget
         points.AugmentMaterialMass(
             mEndpointsBuffer[springElementIndex].PointAIndex,
-            gameParameters.BombMass,
+            mass,
             *this);
 
         points.AugmentMaterialMass(
             mEndpointsBuffer[springElementIndex].PointBIndex,
-            gameParameters.BombMass,
+            mass,
             *this);
     }
 
-    void DetachBomb(
+    void DetachGadget(
         ElementIndex springElementIndex,
         Points & points)
     {
         assert(false == mIsDeletedBuffer[springElementIndex]);
-        assert(true == mIsBombAttachedBuffer[springElementIndex]);
+        assert(true == mIsGadgetAttachedBuffer[springElementIndex]);
 
-        mIsBombAttachedBuffer[springElementIndex] = false;
+        mIsGadgetAttachedBuffer[springElementIndex] = false;
 
         // Reset mass of endpoints
 
@@ -697,10 +696,10 @@ private:
     Buffer<bool> mIsStressedBuffer;
 
     //
-    // Bombs
+    // Gadgets
     //
 
-    Buffer<bool> mIsBombAttachedBuffer;
+    Buffer<bool> mIsGadgetAttachedBuffer;
 
     //////////////////////////////////////////////////////////
     // Container

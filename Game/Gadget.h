@@ -23,20 +23,41 @@ namespace Physics
 {
 
 /*
- * Base class of all bombs. Each bomb type has a specialization that takes care
+ * Base class of all gadgets. Each gadget type has a specialization that takes care
  * of its own state machine.
  */
-class Bomb
+class Gadget
 {
 public:
 
-    virtual ~Bomb()
+    virtual ~Gadget()
     {}
 
     /*
-     * Updates the bomb's state machine.
+     * Returns the ID of this gadget.
+     */
+    GadgetId GetId() const
+    {
+        return mId;
+    }
+
+    /*
+     * Returns the type of this gadget.
+     */
+    GadgetType GetType() const
+    {
+        return mType;
+    }
+
+    /*
+     * Returns the mass of this gadget.
+     */
+    virtual float GetMass() const = 0;
+
+    /*
+     * Updates the gadget's state machine.
      *
-     * Returns false when the bomb has "expired" and thus can be deleted.
+     * Returns false when the gadget has "expired" and thus can be deleted.
      */
     virtual bool Update(
         GameWallClock::time_point currentWallClockTime,
@@ -45,18 +66,18 @@ public:
         GameParameters const & gameParameters) = 0;
 
     /*
-     * Checks whether the bomb is in a state that allows it to be removed.
+     * Checks whether the gadget is in a state that allows it to be removed.
      */
     virtual bool MayBeRemoved() const = 0;
 
     /*
-     * Invoked when the bomb is removed by the user.
+     * Invoked when the gadget is removed by the user.
      */
-    virtual void OnBombRemoved() = 0;
+    virtual void OnRemoved() = 0;
 
     /*
      * Invoked when the neighborhood of the spring has been disturbed;
-     * includes the spring that the bomb is attached to.
+     * includes the spring that the gadget is attached to.
      */
     virtual void OnNeighborhoodDisturbed() = 0;
 
@@ -68,18 +89,18 @@ public:
         Render::RenderContext & renderContext) const = 0;
 
     /*
-     * If the bomb is attached, saves its current position and detaches itself from the Springs container;
+     * If the gadget is attached, saves its current position and detaches itself from the Springs container;
      * otherwise, it's a nop.
      */
     void DetachIfAttached()
     {
         if (!!mSpringIndex)
         {
-            // Detach bomb
+            // Detach gadget
 
-            assert(mShipSprings.IsBombAttached(*mSpringIndex));
+            assert(mShipSprings.IsGadgetAttached(*mSpringIndex));
 
-            mShipSprings.DetachBomb(
+            mShipSprings.DetachGadget(
                 *mSpringIndex,
                 mShipPoints);
 
@@ -105,23 +126,7 @@ public:
     }
 
     /*
-     * Returns the ID of this bomb.
-     */
-    BombId GetId() const
-    {
-        return mId;
-    }
-
-    /*
-     * Returns the type of this bomb.
-     */
-    BombType GetType() const
-    {
-        return mType;
-    }
-
-    /*
-     * Gets the spring that the bomb is attached to, or none if the bomb is not
+     * Gets the spring that the gadget is attached to, or none if the gadget is not
      * attached to any springs.
      */
     std::optional<ElementIndex> GetAttachedSpringIndex() const
@@ -130,7 +135,7 @@ public:
     }
 
     /*
-     * Returns the midpoint position of the spring to which this bomb is attached.
+     * Returns the midpoint position of the spring to which this gadget is attached.
      */
     vec2f const GetPosition() const
     {
@@ -146,7 +151,7 @@ public:
     }
 
     /*
-     * Returns the rotation axis of the spring to which this bomb is attached.
+     * Returns the rotation axis of the spring to which this gadget is attached.
      */
     vec2f const GetRotationOffsetAxis() const
     {
@@ -163,7 +168,7 @@ public:
     }
 
     /*
-     * Returns the ID of the plane of this bomb.
+     * Returns the ID of the plane of this gadget.
      */
     PlaneId GetPlaneId() const
     {
@@ -179,7 +184,7 @@ public:
     }
 
     /*
-     * Returns the personality seed of this bomb, i.e.
+     * Returns the personality seed of this gadget, i.e.
      * a uniform normalized random value.
      */
     float GetPersonalitySeed() const
@@ -189,9 +194,9 @@ public:
 
 protected:
 
-    Bomb(
-        BombId id,
-        BombType type,
+    Gadget(
+        GadgetId id,
+        GadgetType type,
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
@@ -215,7 +220,7 @@ protected:
     }
 
     // Our ID
-    BombId const mId;
+    GadgetId const mId;
 
     // Our parent world
     World & mParentWorld;
@@ -237,22 +242,22 @@ protected:
 
 private:
 
-    // The type of this bomb
-    BombType const mType;
+    // The type of this gadget
+    GadgetType const mType;
 
     // The index of the spring that we're attached to, or none
-    // when the bomb has been detached
+    // when the gadget has been detached
     std::optional<ElementIndex> mSpringIndex;
 
-    // The position of the midpoint of the spring of this bomb, if the bomb has been detached from its spring;
+    // The position of the midpoint of the spring of this gadget, if the gadget has been detached from its spring;
     // otherwise, none
     std::optional<vec2f> mFrozenMidpointPosition;
 
-    // The last rotation axis of the spring of this bomb, if the bomb has been detached from its spring;
+    // The last rotation axis of the spring of this gadget, if the gadget has been detached from its spring;
     // otherwise, none
     std::optional<vec2f> mFrozenRotationOffsetAxis;
 
-    // The plane ID of this bomb, if the bomb has been detached from its spring; otherwise, none
+    // The plane ID of this gadget, if the gadget has been detached from its spring; otherwise, none
     std::optional<PlaneId> mFrozenPlaneId;
 
     // The random personality seed

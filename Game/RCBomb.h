@@ -16,20 +16,25 @@ namespace Physics
 {
 
 /*
- * Bomb specialization for bombs that explode when a remote control is triggered.
+ * Gadget specialization for bombs that explode when a remote control is triggered.
  */
-class RCBomb final : public Bomb
+class RCBomb final : public Gadget
 {
 public:
 
     RCBomb(
-        BombId id,
+        GadgetId id,
         ElementIndex springIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings);
+
+    virtual float GetMass() const override
+    {
+        return GameParameters::BombMass;
+    }
 
     virtual bool Update(
         GameWallClock::time_point currentWallClockTime,
@@ -43,12 +48,12 @@ public:
         return true;
     }
 
-    virtual void OnBombRemoved() override
+    virtual void OnRemoved() override
     {
         // Notify removal
-        mGameEventHandler->OnBombRemoved(
+        mGameEventHandler->OnGadgetRemoved(
             mId,
-            BombType::RCBomb,
+            GadgetType::RCBomb,
             mParentWorld.IsUnderwater(
                 GetPosition()));
 
