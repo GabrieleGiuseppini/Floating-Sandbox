@@ -72,6 +72,25 @@ RenderContext::RenderContext(
 
             // Initialize the shared texture unit once and for all
             mShaderManager->ActivateTexture<ProgramParameterType::SharedTexture>();
+
+            //
+            // Initialize global OpenGL settings
+            //
+
+            // Set anti-aliasing for lines
+            glEnable(GL_LINE_SMOOTH);
+            glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+
+            // Enable blend for alpha transparency
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+            // Disable depth test
+            glDisable(GL_DEPTH_TEST);
+
+            // Set depth test parameters for when we'll need them
+            glDepthMask(GL_TRUE);
+            glDepthFunc(GL_LEQUAL);
         });
 
     progressCallback(0.05f, ProgressMessageType::LoadingShaders);
@@ -164,26 +183,6 @@ RenderContext::RenderContext(
     mRenderThread.RunSynchronously(
         [&]()
         {
-            //
-            // Initialize global OpenGL settings
-            //
-
-            // Set anti-aliasing for lines
-            glEnable(GL_LINE_SMOOTH);
-            glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-
-            // Enable blend for alpha transparency
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-            // Disable depth test
-            glDisable(GL_DEPTH_TEST);
-
-            // Set depth test parameters for when we'll need them
-            glDepthMask(GL_TRUE);
-            glDepthFunc(GL_LEQUAL);
-
-
             //
             // Set initial values of non-render parameters from which
             // other parameters are calculated
