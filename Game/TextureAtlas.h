@@ -269,6 +269,43 @@ public:
     }
 
     /*
+     * Builds an atlas with the specified textures.
+     */
+    static TextureAtlas<TextureGroups> BuildAtlas(
+        std::vector<TextureFrame<TextureGroups>> textureFrames,
+        AtlasOptions options)
+    {
+        // Build TextureInfo's
+        std::vector<TextureInfo> textureInfos;
+        for (size_t t = 0; t < textureFrames.size(); ++t)
+        {
+            textureInfos.emplace_back(
+                textureFrames[t].Metadata.FrameId,
+                textureFrames[t].Metadata.Size);
+        }
+
+        // Build specification
+        auto const specification = BuildAtlasSpecification(textureInfos);
+
+        // Build atlas
+        return BuildAtlas(
+            specification,
+            options,
+            [&textureFrames](TextureFrameId<TextureGroups> const & frameId)
+            {
+                for (size_t t = 0; t < textureFrames.size(); t++)
+                {
+                    if (frameId == textureFrames[t].Metadata.FrameId)
+                        return std::move(textureFrames[t]);
+                }
+
+                assert(false);
+                throw GameException("Cannot find texture frame");
+            },
+            [](float, ProgressMessageType) {});
+    }
+
+    /*
      * Builds an atlas with the entire content of the specified database, assuming that each
      * frame's side size is a power of two.
      */

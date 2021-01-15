@@ -729,15 +729,18 @@ template struct Render::TextureAtlasMetadata<Render::GenericLinearTextureGroups>
 template struct Render::TextureAtlasMetadata<Render::GenericMipMappedTextureGroups>;
 template struct Render::TextureAtlasMetadata<Render::ExplosionTextureGroups>;
 template struct Render::TextureAtlasMetadata<Render::FishTextureGroups>;
+template struct Render::TextureAtlasMetadata<Render::FontTextureGroups>;
 
 template struct Render::TextureAtlas<Render::CloudTextureGroups>;
 template struct Render::TextureAtlas<Render::GenericLinearTextureGroups>;
 template struct Render::TextureAtlas<Render::GenericMipMappedTextureGroups>;
 template struct Render::TextureAtlas<Render::ExplosionTextureGroups>;
 template struct Render::TextureAtlas<Render::FishTextureGroups>;
+template struct Render::TextureAtlas<Render::FontTextureGroups>;
 
 template class Render::TextureAtlasBuilder<Render::CloudTextureGroups>;
 template class Render::TextureAtlasBuilder<Render::GenericLinearTextureGroups>;
 template class Render::TextureAtlasBuilder<Render::GenericMipMappedTextureGroups>;
 template class Render::TextureAtlasBuilder<Render::ExplosionTextureGroups>;
 template class Render::TextureAtlasBuilder<Render::FishTextureGroups>;
+template class Render::TextureAtlasBuilder<Render::FontTextureGroups>;

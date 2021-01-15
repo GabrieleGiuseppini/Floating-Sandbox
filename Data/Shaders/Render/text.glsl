@@ -8,8 +8,8 @@
 //
 
 // Inputs
-in vec4 inTextNotification1;  // Position (vec2), TextureCoordinates (vec2)
-in float inTextNotification2; // Alpha
+in vec4 inText1;  // Position (vec2), TextureCoordinates (vec2)
+in float inText2; // Alpha
 
 // Outputs
 out vec2 vertexTextureCoordinates;
@@ -17,9 +17,9 @@ out float vertexAlpha;
 
 void main()
 {
-    vertexTextureCoordinates = inTextNotification1.zw; 
-    vertexAlpha = inTextNotification2;
-    gl_Position = vec4(inTextNotification1.xy, -1.0, 1.0);
+    vertexTextureCoordinates = inText1.zw; 
+    vertexAlpha = inText2;
+    gl_Position = vec4(inText1.xy, -1.0, 1.0);
 }
 
 

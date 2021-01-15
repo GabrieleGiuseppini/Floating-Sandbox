@@ -17,7 +17,6 @@
 
 #include <GameCore/GameTypes.h>
 
-#include <algorithm>
 #include <array>
 #include <memory>
 #include <optional>
@@ -50,42 +49,52 @@ public:
 
 	void UploadStart();
 
-	inline void UploadTextNotificationStart(FontType fontType)
+	inline void UploadStatusTextStart()
 	{
-		//
-		// Text notifications are sticky: we upload them once in a while and
-		// continue drawing the same buffer
-		//
-
-		// Cleanup line buffers for this font
-		auto & fontRenderContext = mFontRenderContexts[static_cast<size_t>(fontType)];
-		fontRenderContext.GetTextLines().clear();
-		fontRenderContext.SetLineDataDirty(true);
+		UploadTextStart(TextNotificationType::StatusText);
 	}
 
-	inline void UploadTextNotificationLine(
-		FontType font,
+	inline void UploadStatusTextLine(
 		std::string const & text,
 		AnchorPositionType anchor,
 		vec2f const & screenOffset, // In font cell-size fraction (0.0 -> 1.0)
 		float alpha)
 	{
-		//
-		// Store line data
-		//
-
-		auto & fontRenderContext = mFontRenderContexts[static_cast<size_t>(font)];
-
-		fontRenderContext.GetTextLines().emplace_back(
+		UploadTextLine(
+			TextNotificationType::StatusText,
 			text,
 			anchor,
 			screenOffset,
 			alpha);
 	}
 
-	inline void UploadTextNotificationEnd(FontType /*fontType*/)
+	inline void UploadStatusTextEnd()
 	{
-		// Nop
+		UploadTextEnd(TextNotificationType::StatusText);
+	}
+
+	inline void UploadNotificationTextStart()
+	{
+		UploadTextStart(TextNotificationType::NotificationText);
+	}
+
+	inline void UploadNotificationTextLine(
+		std::string const & text,
+		AnchorPositionType anchor,
+		vec2f const & screenOffset, // In font cell-size fraction (0.0 -> 1.0)
+		float alpha)
+	{
+		UploadTextLine(
+			TextNotificationType::NotificationText,
+			text,
+			anchor,
+			screenOffset,
+			alpha);
+	}
+
+	inline void UploadNotificationTextEnd()
+	{
+		UploadTextEnd(TextNotificationType::NotificationText);
 	}
 
 	inline void UploadTextureNotificationStart()
@@ -233,7 +242,7 @@ public:
 private:
 
 	void ApplyViewModelChanges(RenderParameters const & renderParameters);
-	void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);	
+	void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
 	void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
 
 	void RenderPrepareTextNotifications();
@@ -248,8 +257,49 @@ private:
 	void RenderPrepareFireExtinguisherSpray();
 	void RenderDrawFireExtinguisherSpray();
 
-	class FontRenderContext;
-	void GenerateTextVertices(FontRenderContext & context);
+	enum class TextNotificationType;
+
+	inline void UploadTextStart(TextNotificationType textNotificationType)
+	{
+		//
+		// Text notifications are sticky: we upload them once in a while and
+		// continue drawing the same buffer
+		//
+
+		// Cleanup line buffers for this text type
+		auto & textContext = mTextNotificationContexts[static_cast<size_t>(textNotificationType)];
+		textContext.TextLines.clear();
+		textContext.AreTextLinesDirty = true;
+	}
+
+	inline void UploadTextLine(
+		TextNotificationType textNotificationType,
+		std::string const & text,
+		AnchorPositionType anchor,
+		vec2f const & screenOffset, // In font cell-size fraction (0.0 -> 1.0)
+		float alpha)
+	{
+		//
+		// Store line into its context
+		//
+
+		auto & textContext = mTextNotificationContexts[static_cast<size_t>(textNotificationType)];
+
+		textContext.TextLines.emplace_back(
+			text,
+			anchor,
+			screenOffset,
+			alpha);
+	}
+
+	inline void UploadTextEnd(TextNotificationType /*textNotificationType*/)
+	{
+		// Nop
+	}
+
+	struct TextNotificationContext;
+
+	void GenerateTextVertices(TextNotificationContext & context);
 
 	void GenerateTextureNotificationVertices();
 
@@ -304,11 +354,21 @@ private:
 
 #pragma pack(pop)
 
-
     //
-    // Text machinery
+    // Text notifications
     //
 
+	enum class TextNotificationType
+	{
+		StatusText = 0,
+		NotificationText = 1,
+
+		_Last = NotificationText
+	};
+
+	/*
+	 * State per-line-of-text.
+	 */
 	struct TextLine
 	{
 		std::string Text;
@@ -328,6 +388,42 @@ private:
 		{}
 	};
 
+	/*
+	 * State per-text-notification-type.
+	 */
+	struct TextNotificationContext
+	{
+		FontMetadata const & NotificationFontMetadata;
+		TextureAtlasFrameMetadata<FontTextureGroups> const & FontTextureAtlasFrameMetadata;
+
+		std::vector<TextLine> TextLines;
+		bool AreTextLinesDirty; // When dirty, we'll re-build the quads for this notification type
+		std::vector<TextQuadVertex> TextQuadVertexBuffer;
+
+		TextNotificationContext(
+			FontMetadata const & notificationFontMetadata,
+			TextureAtlasFrameMetadata<FontTextureGroups> const & fontTextureAtlasFrameMetadata)
+			: NotificationFontMetadata(notificationFontMetadata)
+			, FontTextureAtlasFrameMetadata(fontTextureAtlasFrameMetadata)
+			, TextLines()
+			, AreTextLinesDirty(false)
+			, TextQuadVertexBuffer()
+		{}
+	};
+
+	std::vector<TextNotificationContext> mTextNotificationContexts;
+
+	GameOpenGLVAO mTextVAO;
+	size_t mAllocatedTextQuadVertexBufferSize; // Number of elements (vertices)
+	GameOpenGLVBO mTextVBO;
+
+	// Fonts
+	std::vector<Font> mFonts; // Purely storage
+	std::unique_ptr<TextureAtlasMetadata<FontTextureGroups>> mFontTextureAtlasMetadata; // Purely storage
+	GameOpenGLTexture mFontAtlasTextureHandle;
+
+	// TODOOLD
+	/*
     // Render state, grouped by font.
 	//
 	// This is ultimately where all the primitive-level and render-level
@@ -417,6 +513,7 @@ private:
     };
 
     std::vector<FontRenderContext> mFontRenderContexts;
+	*/
 
 	//
 	// Texture notifications

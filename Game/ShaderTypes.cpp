@@ -105,8 +105,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipVectors;
     else if (lstr == "stars")
         return ProgramType::Stars;
-    else if (lstr == "text_notifications")
-        return ProgramType::TextNotifications;
+    else if (lstr == "text")
+        return ProgramType::Text;
     else if (lstr == "texture_notifications")
         return ProgramType::TextureNotifications;
     else if (lstr == "world_border")
@@ -209,8 +209,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipVectors";
     case ProgramType::Stars:
         return "Stars";
-    case ProgramType::TextNotifications:
-        return "TextNotifications";
+    case ProgramType::Text:
+        return "Text";
     case ProgramType::TextureNotifications:
         return "TextureNotifications";
     case ProgramType::WorldBorder:
@@ -472,10 +472,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
     else if (Utils::CaseInsensitiveEquals(str, "VectorArrow"))
         return VertexAttributeType::VectorArrow;
     // Notifications
-    else if (Utils::CaseInsensitiveEquals(str, "TextNotification1"))
-        return VertexAttributeType::TextNotification1;
-    else if (Utils::CaseInsensitiveEquals(str, "TextNotification2"))
-        return VertexAttributeType::TextNotification2;
+    else if (Utils::CaseInsensitiveEquals(str, "Text1"))
+        return VertexAttributeType::Text1;
+    else if (Utils::CaseInsensitiveEquals(str, "Text2"))
+        return VertexAttributeType::Text2;
     else if (Utils::CaseInsensitiveEquals(str, "TextureNotification1"))
         return VertexAttributeType::TextureNotification1;
     else if (Utils::CaseInsensitiveEquals(str, "TextureNotification2"))

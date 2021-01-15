@@ -236,4 +236,13 @@ struct FishTextureDatabaseTraits
     }
 };
 
+// Font
+
+enum class FontTextureGroups : uint16_t
+{
+    Font = 0,
+
+    _Last = Font
+};
+
 }

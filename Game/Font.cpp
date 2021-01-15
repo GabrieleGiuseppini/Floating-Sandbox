@@ -68,11 +68,14 @@ std::vector<Render::Font> Font::LoadAll(
     // Load fonts
     //
 
-    std::vector<Render::Font> fonts;
+    std::vector<Font> fonts;
 
-    for (auto const & filepath : filepaths)
+    for (size_t f = 0; f < filepaths.size(); ++f)
     {
-        fonts.emplace_back(Render::Font::Load(filepath));
+        fonts.emplace_back(
+            Font::Load(
+                static_cast<FontType>(f),
+                filepaths[f]));
 
         progressCallback(
             static_cast<float>(fonts.size()) / static_cast<float>(filepaths.size()),
@@ -83,7 +86,9 @@ std::vector<Render::Font> Font::LoadAll(
 
 }
 
-Font Font::Load(std::filesystem::path const & filepath)
+Font Font::Load(
+    FontType type,
+    std::filesystem::path const & filepath)
 {
     //
     // Read file
@@ -158,6 +163,7 @@ Font Font::Load(std::filesystem::path const & filepath)
 
     // Return font
     return Font(
+        type,
         FontMetadata(
             cellSize,
             glyphWidths,

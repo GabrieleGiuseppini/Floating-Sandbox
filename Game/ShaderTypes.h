@@ -63,7 +63,7 @@ enum class ProgramType
     ShipTrianglesTextureWithTemperature,
     ShipVectors,
     Stars,
-    TextNotifications,
+    Text,
     TextureNotifications,
     WorldBorder,
 
@@ -203,8 +203,8 @@ enum class VertexAttributeType : GLuint
     // Notifications
     //
 
-    TextNotification1 = 0,
-    TextNotification2 = 1,
+    Text1 = 0,
+    Text2 = 1,
 
     TextureNotification1 = 0,
     TextureNotification2 = 1

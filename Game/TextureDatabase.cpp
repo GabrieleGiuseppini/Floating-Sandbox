@@ -421,6 +421,7 @@ template struct Render::TextureFrameMetadata<Render::GenericLinearTextureGroups>
 template struct Render::TextureFrameMetadata<Render::GenericMipMappedTextureGroups>;
 template struct Render::TextureFrameMetadata<Render::ExplosionTextureGroups>;
 template struct Render::TextureFrameMetadata<Render::FishTextureGroups>;
+template struct Render::TextureFrameMetadata<Render::FontTextureGroups>;
 
 template class Render::TextureDatabase<Render::CloudTextureDatabaseTraits>;
 template class Render::TextureDatabase<Render::WorldTextureDatabaseTraits>;

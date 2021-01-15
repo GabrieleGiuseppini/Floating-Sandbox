@@ -164,22 +164,28 @@ private:
 
 struct Font
 {
+    FontType Type;
+
     FontMetadata Metadata;
 
     RgbaImageData Texture;
 
-    static std::vector<Render::Font> LoadAll(
+    static std::vector<Font> LoadAll(
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 
 private:
 
-    static Font Load(std::filesystem::path const & filepath);
+    static Font Load(
+        FontType type,
+        std::filesystem::path const & filepath);
 
     Font(
+        FontType type,
         FontMetadata metadata,
         RgbaImageData texture)
-        : Metadata(std::move(metadata))
+        : Type(type)
+        , Metadata(std::move(metadata))
         , Texture(std::move(texture))
     {}
 };

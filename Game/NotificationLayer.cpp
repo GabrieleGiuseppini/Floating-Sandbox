@@ -316,7 +316,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 
 	if (mIsStatusTextDirty)
 	{
-		renderContext.UploadTextNotificationStart(Render::FontType::StatusText);
+		renderContext.UploadStatusTextStart();
 
 		int effectiveOrdinal = 0;
 
@@ -327,7 +327,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 			UploadStatusTextLine(mStatusTextLines[i], mIsExtendedStatusTextEnabled, effectiveOrdinal, renderContext);
 		}
 
-		renderContext.UploadTextNotificationEnd(Render::FontType::StatusText);
+		renderContext.UploadStatusTextEnd();
 
 		mIsStatusTextDirty = false;
 	}
@@ -338,7 +338,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 
 	if (mIsGameTextDirty)
 	{
-		renderContext.UploadTextNotificationStart(Render::FontType::GameText);
+		renderContext.UploadNotificationTextStart();
 
 		vec2f screenOffset = vec2f::zero(); // Cumulative vertical offset
 		for (auto const & etl : mEphemeralTextLines)
@@ -348,8 +348,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 				case EphemeralTextLine::StateType::FadingIn:
 				{
 					// Upload text
-					renderContext.UploadTextNotificationLine(
-						Render::FontType::GameText,
+					renderContext.UploadNotificationTextLine(
 						etl.Text,
 						Render::AnchorPositionType::TopRight,
 						screenOffset,
@@ -364,8 +363,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 				case EphemeralTextLine::StateType::Displaying:
 				{
 					// Upload text
-					renderContext.UploadTextNotificationLine(
-						Render::FontType::GameText,
+					renderContext.UploadNotificationTextLine(
 						etl.Text,
 						Render::AnchorPositionType::TopRight,
 						screenOffset,
@@ -380,8 +378,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 				case EphemeralTextLine::StateType::FadingOut:
 				{
 					// Upload text
-					renderContext.UploadTextNotificationLine(
-						Render::FontType::GameText,
+					renderContext.UploadNotificationTextLine(
 						etl.Text,
 						Render::AnchorPositionType::TopRight,
 						screenOffset,
@@ -409,7 +406,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 			}
 		}
 
-		renderContext.UploadTextNotificationEnd(Render::FontType::GameText);
+		renderContext.UploadNotificationTextEnd();
 
 		mIsGameTextDirty = false;
 	}
@@ -494,8 +491,7 @@ void NotificationLayer::UploadStatusTextLine(
 			0.0f,
 			static_cast<float>(effectiveOrdinal++));
 
-		renderContext.UploadTextNotificationLine(
-			Render::FontType::StatusText,
+		renderContext.UploadStatusTextLine(
 			line,
 			Render::AnchorPositionType::TopLeft,
 			screenOffset,

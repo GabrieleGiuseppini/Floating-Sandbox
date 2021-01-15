@@ -905,29 +905,50 @@ public:
         // Nop
     }
 
-    inline void UploadTextNotificationStart(FontType fontType)
+    inline void UploadStatusTextStart()
     {
-        mNotificationRenderContext->UploadTextNotificationStart(fontType);
+        mNotificationRenderContext->UploadStatusTextStart();
     }
 
-    inline void UploadTextNotificationLine(
-        FontType font,
+    inline void UploadStatusTextLine(
         std::string const & text,
         AnchorPositionType anchor,
         vec2f const & screenOffset,
         float alpha)
     {
-        mNotificationRenderContext->UploadTextNotificationLine(
-            font,
+        mNotificationRenderContext->UploadStatusTextLine(
             text,
             anchor,
             screenOffset,
             alpha);
     }
 
-    inline void UploadTextNotificationEnd(FontType fontType)
+    inline void UploadStatusTextEnd()
     {
-        mNotificationRenderContext->UploadTextNotificationEnd(fontType);
+        mNotificationRenderContext->UploadStatusTextEnd();
+    }
+
+    inline void UploadNotificationTextStart()
+    {
+        mNotificationRenderContext->UploadNotificationTextStart();
+    }
+
+    inline void UploadNotificationTextLine(
+        std::string const & text,
+        AnchorPositionType anchor,
+        vec2f const & screenOffset,
+        float alpha)
+    {
+        mNotificationRenderContext->UploadNotificationTextLine(
+            text,
+            anchor,
+            screenOffset,
+            alpha);
+    }
+
+    inline void UploadNotificationTextEnd()
+    {
+        mNotificationRenderContext->UploadNotificationTextEnd();
     }
 
     inline void UploadTextureNotificationStart()

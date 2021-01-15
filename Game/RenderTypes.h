@@ -16,15 +16,14 @@ namespace Render {
 //
 
 /*
- * The different fonts available.
+ * The different types of fonts.
  */
 enum class FontType
 {
-    // Indices must match suffix of filename
-    StatusText = 0,
-    GameText = 1,
+    Font0 = 0,
+    Font1 = 1,
 
-    _Last = GameText
+    _Last = Font1
 };
 
 /*
@@ -53,7 +52,6 @@ struct TextQuadVertex
     {}
 };
 #pragma pack(pop)
-
 
 //
 // Statistics
