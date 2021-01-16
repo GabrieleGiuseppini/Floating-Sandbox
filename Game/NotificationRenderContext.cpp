@@ -25,6 +25,7 @@ NotificationRenderContext::NotificationRenderContext(
     , mFontTextureAtlasMetadata()
     , mTextNotificationTypeContexts()
     , mTextVAO()
+    , mCurrentTextQuadVertexBufferSize(0)
     , mAllocatedTextQuadVertexBufferSize(0)
     , mTextVBO()
     , mFontAtlasTextureHandle()
@@ -430,7 +431,7 @@ void NotificationRenderContext::RenderPrepareTextNotifications()
         glBindBuffer(GL_ARRAY_BUFFER, *mTextVBO);
 
         // Calculate total buffer size
-        mAllocatedTextQuadVertexBufferSize = std::accumulate(
+        mCurrentTextQuadVertexBufferSize = std::accumulate(
             mTextNotificationTypeContexts.cbegin(),
             mTextNotificationTypeContexts.cend(),
             size_t(0),
@@ -439,13 +440,18 @@ void NotificationRenderContext::RenderPrepareTextNotifications()
                 return total + tntc.TextQuadVertexBuffer.size();
             });
 
-        // Allocate buffer
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            mAllocatedTextQuadVertexBufferSize * sizeof(TextQuadVertex),
-            nullptr,
-            GL_DYNAMIC_DRAW);
-        CheckOpenGLError();
+        if (mCurrentTextQuadVertexBufferSize > mAllocatedTextQuadVertexBufferSize)
+        {
+            // Allocate buffer
+            glBufferData(
+                GL_ARRAY_BUFFER,
+                mCurrentTextQuadVertexBufferSize * sizeof(TextQuadVertex),
+                nullptr,
+                GL_DYNAMIC_DRAW);
+            CheckOpenGLError();
+
+            mAllocatedTextQuadVertexBufferSize = mCurrentTextQuadVertexBufferSize;
+        }
 
         // Upload buffer in chunks
         size_t start = 0;
@@ -461,7 +467,7 @@ void NotificationRenderContext::RenderPrepareTextNotifications()
             start += textNotificationTypeContext.TextQuadVertexBuffer.size();
         }
 
-        assert(start == mAllocatedTextQuadVertexBufferSize);
+        assert(start == mCurrentTextQuadVertexBufferSize);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
@@ -469,7 +475,7 @@ void NotificationRenderContext::RenderPrepareTextNotifications()
 
 void NotificationRenderContext::RenderDrawTextNotifications()
 {
-    if (mAllocatedTextQuadVertexBufferSize > 0)
+    if (mCurrentTextQuadVertexBufferSize > 0)
     {
         glBindVertexArray(*mTextVAO);
 
@@ -484,7 +490,7 @@ void NotificationRenderContext::RenderDrawTextNotifications()
         mShaderManager.ActivateProgram<ProgramType::Text>();
 
         // Draw vertices
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mAllocatedTextQuadVertexBufferSize));
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mCurrentTextQuadVertexBufferSize));
         CheckOpenGLError();
 
         glBindVertexArray(0);

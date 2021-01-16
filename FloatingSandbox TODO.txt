@@ -290,47 +290,44 @@ Render:
 				- Double-check with them
 			+ Ask Fernando for his ships
 
-		- MSI error repro:
-			- Test 1: clean install 1.15.6 -> 1.16.0 -> 1.16.2 on Win 7
-			- Test 2: clean install 1.15.6 -> 1.16.0 + extraneous file -> 1.16.2
-
-		
-		= See that glApiTrace issue with fragment shader recompiled on ship load
-
-		- Sinking speed:
+		= Sinking speed:
 			X Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s
+			= Add velocity probe gadget
+				+ Requires Gadget Rearc (*) first
+				+ Font rearc
+					+ See first sizes of both font textures: 256x256
+					+ TextureTypes: font groups w/one group only
+					+ Move RenderTypes::TextType to private of NotificationRenderContext
+						+ Specialize RenderContext/NotificationRenderContext methods, which simply fw to helper w/enum value
+					+ TextNotificationContext carries FontMetadata & and atlas frame metadata & of own font
+					+ Init: of all fonts, make one single texture (linear atlas)+vao+vbo
+					+ Lines: per-type of text notification, rather than per-font
+					+ Uploads:
+						+ Mark individual TextNotificationContext's dirty flag 
+					+ RenderPrepareTextNotifications:
+						+ If any TextNotificationContext has dirty text:
+							+ Regenerate its quad vertex buffer
+							+ Clear TextNotificationContext dirty text flag
+							+ Remember to re-upload whole vertex buffer
+						+ If need to re-upload whole vertex buffer:
+							+ Upload whole vertex buffer via multiple sub-uploads
+					+ Font::Metadata rearc:
+						+ Font::Fontmetadata is basic straight from font (integers, etc.), and no EmitQuadVertices
+						+ A new struct in NotificationRenderContext ("FontTextureAtlasMetadata") contains the atlas/texture-scaled version
+						+ A new EmitQuadVertices() method in NotificationRenderContext contains the code that was from Fontmetadata
+						+ mFonts goes and store instead vector of FontMetadata
+						+ Make allocation sticky
+					+ Draw: make one single call
+				- New gadget
+					- Enum
+					- Methods
+				- New NotificationRenderContext notification type: PhysicsProbe
+					- Texture for background of panel
+						- Speed
+						- Temperature
+					- 7-segment font (including - and .)
+
 			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
-				- Add velocity probe gadget
-					+ Requires Gadget Rearc (*) first
-					= Font rearc
-						+ See first sizes of both font textures: 256x256
-						+ TextureTypes: font groups w/one group only
-						+ Move RenderTypes::TextType to private of NotificationRenderContext
-							+ Specialize RenderContext/NotificationRenderContext methods, which simply fw to helper w/enum value
-						+ TextNotificationContext carries FontMetadata & and atlas frame metadata & of own font
-						+ Init: of all fonts, make one single texture (linear atlas)+vao+vbo
-						+ Lines: per-type of text notification, rather than per-font
-						+ Uploads:
-							+ Mark individual TextNotificationContext's dirty flag 
-						+ RenderPrepareTextNotifications:
-							+ If any TextNotificationContext has dirty text:
-								+ Regenerate its quad vertex buffer
-								+ Clear TextNotificationContext dirty text flag
-								+ Remember to re-upload whole vertex buffer
-							+ If need to re-upload whole vertex buffer:
-								+ Upload whole vertex buffer via multiple sub-uploads
-						= Font::Metadata rearc:
-							+ Font::Fontmetadata is basic straight from font (integers, etc.), and no EmitQuadVertices
-							+ A new struct in NotificationRenderContext ("FontTextureAtlasMetadata") contains the atlas/texture-scaled version
-							+ A new EmitQuadVertices() method in NotificationRenderContext contains the code that was from Fontmetadata
-							+ mFonts goes and store instead vector of FontMetadata
-							- Make allocation sticky
-								- Requires member to remember actual size of uploaded vertex buffers, vs. allocated
-						+ Draw: make one single call
-					- New gadget
-						- Enum
-						- Methods
-					- Texture for background + normal text (font 2) at right position?
 				- Copy old exe first
 				- Remove global damp at integration loop
 				- Point-by-point: 

@@ -439,6 +439,7 @@ private:
 	std::vector<TextNotificationTypeContext> mTextNotificationTypeContexts;
 
 	GameOpenGLVAO mTextVAO;
+	size_t mCurrentTextQuadVertexBufferSize; // Number of elements (vertices)
 	size_t mAllocatedTextQuadVertexBufferSize; // Number of elements (vertices)
 	GameOpenGLVBO mTextVBO;
 
