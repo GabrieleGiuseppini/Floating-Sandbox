@@ -38,6 +38,17 @@ namespace Render
  */
 class NotificationRenderContext
 {
+
+private:
+
+	enum class TextNotificationType
+	{
+		StatusText = 0,
+		NotificationText = 1,
+
+		_Last = NotificationText
+	};
+
 public:
 
 	NotificationRenderContext(
@@ -257,7 +268,10 @@ private:
 	void RenderPrepareFireExtinguisherSpray();
 	void RenderDrawFireExtinguisherSpray();
 
-	enum class TextNotificationType;
+private:
+
+	struct FontTextureAtlasMetadata;
+	struct TextNotificationTypeContext;
 
 	inline void UploadTextStart(TextNotificationType textNotificationType)
 	{
@@ -266,8 +280,8 @@ private:
 		// continue drawing the same buffer
 		//
 
-		// Cleanup line buffers for this text type
-		auto & textContext = mTextNotificationContexts[static_cast<size_t>(textNotificationType)];
+		// Cleanup line buffers for this notification type
+		auto & textContext = mTextNotificationTypeContexts[static_cast<size_t>(textNotificationType)];
 		textContext.TextLines.clear();
 		textContext.AreTextLinesDirty = true;
 	}
@@ -280,12 +294,12 @@ private:
 		float alpha)
 	{
 		//
-		// Store line into its context
+		// Store line into the context for this notification type
 		//
 
-		auto & textContext = mTextNotificationContexts[static_cast<size_t>(textNotificationType)];
+		auto & textNotificationContext = mTextNotificationTypeContexts[static_cast<size_t>(textNotificationType)];
 
-		textContext.TextLines.emplace_back(
+		textNotificationContext.TextLines.emplace_back(
 			text,
 			anchor,
 			screenOffset,
@@ -297,9 +311,7 @@ private:
 		// Nop
 	}
 
-	struct TextNotificationContext;
-
-	void GenerateTextVertices(TextNotificationContext & context);
+	void GenerateTextVertices(TextNotificationTypeContext & context) const;
 
 	void GenerateTextureNotificationVertices();
 
@@ -358,13 +370,30 @@ private:
     // Text notifications
     //
 
-	enum class TextNotificationType
+	/*
+	 * Metadata for each font in the single font atlas.
+	 */
+	struct FontTextureAtlasMetadata
 	{
-		StatusText = 0,
-		NotificationText = 1,
+		vec2f CellTextureAtlasSize; // Size of one cell of the font, in texture atlas space coordinates
+		std::array<vec2f, 256> GlyphTextureAtlasOrigins; // Bottom-left of each glyph, in texture atlas space coordinates
+		std::array<vec2f, 256> GlyphTextureAtlasSizes; // Dimensions of each glyph, in texture atlas space coordinates
+		FontMetadata OriginalFontMetadata;
 
-		_Last = NotificationText
+		FontTextureAtlasMetadata(
+			vec2f cellTextureAtlasSize,
+			std::array<vec2f, 256> glyphTextureAtlasOrigins,
+			std::array<vec2f, 256> glyphTextureAtlasSizes,
+			FontMetadata originalFontMetadata)
+			: CellTextureAtlasSize(cellTextureAtlasSize)
+			, GlyphTextureAtlasOrigins(std::move(glyphTextureAtlasOrigins))
+			, GlyphTextureAtlasSizes(std::move(glyphTextureAtlasSizes))
+			, OriginalFontMetadata(originalFontMetadata)
+		{}
+
 	};
+
+	std::vector<FontTextureAtlasMetadata> mFontTextureAtlasMetadata; // This vector is storage, allowing for N:1 between contextes and fonts
 
 	/*
 	 * State per-line-of-text.
@@ -391,129 +420,30 @@ private:
 	/*
 	 * State per-text-notification-type.
 	 */
-	struct TextNotificationContext
+	struct TextNotificationTypeContext
 	{
-		FontMetadata const & NotificationFontMetadata;
-		TextureAtlasFrameMetadata<FontTextureGroups> const & FontTextureAtlasFrameMetadata;
+		FontTextureAtlasMetadata const & NotificationFontTextureAtlasMetadata; // The metadata of the font to be used for this notification type
 
 		std::vector<TextLine> TextLines;
 		bool AreTextLinesDirty; // When dirty, we'll re-build the quads for this notification type
 		std::vector<TextQuadVertex> TextQuadVertexBuffer;
 
-		TextNotificationContext(
-			FontMetadata const & notificationFontMetadata,
-			TextureAtlasFrameMetadata<FontTextureGroups> const & fontTextureAtlasFrameMetadata)
-			: NotificationFontMetadata(notificationFontMetadata)
-			, FontTextureAtlasFrameMetadata(fontTextureAtlasFrameMetadata)
+		explicit TextNotificationTypeContext(FontTextureAtlasMetadata const & notificationFontTextureAtlasMetadata)
+			: NotificationFontTextureAtlasMetadata(notificationFontTextureAtlasMetadata)
 			, TextLines()
 			, AreTextLinesDirty(false)
 			, TextQuadVertexBuffer()
 		{}
 	};
 
-	std::vector<TextNotificationContext> mTextNotificationContexts;
+	std::vector<TextNotificationTypeContext> mTextNotificationTypeContexts;
 
 	GameOpenGLVAO mTextVAO;
 	size_t mAllocatedTextQuadVertexBufferSize; // Number of elements (vertices)
 	GameOpenGLVBO mTextVBO;
 
 	// Fonts
-	std::vector<Font> mFonts; // Purely storage
-	std::unique_ptr<TextureAtlasMetadata<FontTextureGroups>> mFontTextureAtlasMetadata; // Purely storage
 	GameOpenGLTexture mFontAtlasTextureHandle;
-
-	// TODOOLD
-	/*
-    // Render state, grouped by font.
-	//
-	// This is ultimately where all the primitive-level and render-level
-	// information - grouped by font - is stored.
-    class FontRenderContext
-    {
-    public:
-
-		FontRenderContext(
-            FontMetadata fontMetadata,
-            GLuint fontTextureHandle,
-            GLuint vertexBufferVBOHandle,
-            GLuint vaoHandle)
-            : mFontMetadata(std::move(fontMetadata))
-            , mFontTextureHandle(fontTextureHandle)
-            , mVertexBufferVBOHandle(vertexBufferVBOHandle)
-            , mVAOHandle(vaoHandle)
-			, mTextLines()
-			, mVertexBuffer()
-			, mIsLineDataDirty(false)
-        {}
-
-        inline FontMetadata const & GetFontMetadata() const
-        {
-            return mFontMetadata;
-        }
-
-        inline GLuint GetFontTextureHandle() const
-        {
-            return *mFontTextureHandle;
-        }
-
-        inline GLuint GetVerticesVBOHandle() const
-        {
-            return *mVertexBufferVBOHandle;
-        }
-
-        inline GLuint GetVAOHandle() const
-        {
-            return *mVAOHandle;
-        }
-
-		inline std::vector<TextLine> const & GetTextLines() const
-		{
-			return mTextLines;
-		}
-
-		inline std::vector<TextLine> & GetTextLines()
-		{
-			return mTextLines;
-		}
-
-        inline std::vector<TextQuadVertex> const & GetVertexBuffer() const
-        {
-            return mVertexBuffer;
-        }
-
-        inline std::vector<TextQuadVertex> & GetVertexBuffer()
-        {
-            return mVertexBuffer;
-        }
-
-		bool IsLineDataDirty() const
-		{
-			return mIsLineDataDirty;
-		}
-
-		void SetLineDataDirty(bool isDirty)
-		{
-			mIsLineDataDirty = isDirty;
-		}
-
-    private:
-
-        FontMetadata mFontMetadata;
-        GameOpenGLTexture mFontTextureHandle;
-        GameOpenGLVBO mVertexBufferVBOHandle;
-        GameOpenGLVAO mVAOHandle;
-
-		std::vector<TextLine> mTextLines;
-        std::vector<TextQuadVertex> mVertexBuffer;
-
-		// Flag tracking whether or not this font's line
-		// data is dirty; when it is, we'll re-build and
-		// re-upload the vertex data
-		bool mIsLineDataDirty;
-    };
-
-    std::vector<FontRenderContext> mFontRenderContexts;
-	*/
 
 	//
 	// Texture notifications

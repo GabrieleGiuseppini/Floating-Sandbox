@@ -319,11 +319,13 @@ Render:
 								+ Remember to re-upload whole vertex buffer
 							+ If need to re-upload whole vertex buffer:
 								+ Upload whole vertex buffer via multiple sub-uploads
-						- Font::Metadata rearc:
-							- Font::Fontmetadata is basic straight from font (integers, etc.), and no EmitQuadVertices
-							- A new struct in NotificationRenderContext ("FontTextureAtlasMetadata") contains the atlas/texture-scaled version
-							- A new EmitQuadVertices() method in NotificationRenderContext contains the code that was from Fontmetadata
-							- mFonts goes and vector of fonts becomes local again
+						= Font::Metadata rearc:
+							+ Font::Fontmetadata is basic straight from font (integers, etc.), and no EmitQuadVertices
+							+ A new struct in NotificationRenderContext ("FontTextureAtlasMetadata") contains the atlas/texture-scaled version
+							+ A new EmitQuadVertices() method in NotificationRenderContext contains the code that was from Fontmetadata
+							+ mFonts goes and store instead vector of FontMetadata
+							- Make allocation sticky
+								- Requires member to remember actual size of uploaded vertex buffers, vs. allocated
 						+ Draw: make one single call
 					- New gadget
 						- Enum

@@ -22,12 +22,11 @@ NotificationRenderContext::NotificationRenderContext(
     , mScreenToNdcX(0.0f) // Will be recalculated
     , mScreenToNdcY(0.0f) // Will be recalculated
 	// Text
-    , mTextNotificationContexts()
+    , mFontTextureAtlasMetadata()
+    , mTextNotificationTypeContexts()
     , mTextVAO()
     , mAllocatedTextQuadVertexBufferSize(0)
     , mTextVBO()
-    , mFonts()
-    , mFontTextureAtlasMetadata()
     , mFontAtlasTextureHandle()
     // Texture notifications
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
@@ -50,21 +49,22 @@ NotificationRenderContext::NotificationRenderContext(
     // Load fonts
     //
 
-    mFonts = Font::LoadAll(
+    std::vector<Font> fonts = Font::LoadAll(
         resourceLocator,
         [](float, ProgressMessageType) {});
 
     //
-    // Initialize font texture atlas
+    // Build font texture atlas
     //
 
     std::vector<TextureFrame<FontTextureGroups>> fontTextures;
-    for (size_t f = 0; f < mFonts.size(); ++f)
+
+    for (size_t f = 0; f < fonts.size(); ++f)
     {
         TextureFrameMetadata<FontTextureGroups> frameMetadata = TextureFrameMetadata<FontTextureGroups>(
-            mFonts[f].Texture.Size,
-            static_cast<float>(mFonts[f].Texture.Size.Width),
-            static_cast<float>(mFonts[f].Texture.Size.Height),
+            fonts[f].Texture.Size,
+            static_cast<float>(fonts[f].Texture.Size.Width),
+            static_cast<float>(fonts[f].Texture.Size.Height),
             false,
             IntegralPoint(0, 0),
             vec2f::zero(),
@@ -75,7 +75,7 @@ NotificationRenderContext::NotificationRenderContext(
 
         fontTextures.emplace_back(
             frameMetadata,
-            std::move(mFonts[f].Texture));
+            std::move(fonts[f].Texture));
     }
 
     auto fontTextureAtlas = TextureAtlasBuilder<FontTextureGroups>::BuildAtlas(
@@ -100,14 +100,11 @@ NotificationRenderContext::NotificationRenderContext(
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     CheckOpenGLError();
 
-    // Upload texture data
+    // Upload texture atlas
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontTextureAtlas.AtlasData.Size.Width, fontTextureAtlas.AtlasData.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontTextureAtlas.AtlasData.Data.get());
     CheckOpenGLError();
 
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Store atlas metadata
-    mFontTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<FontTextureGroups>>(fontTextureAtlas.Metadata);
 
     //
     // Initialize text notifications
@@ -139,17 +136,62 @@ NotificationRenderContext::NotificationRenderContext(
 
     glBindVertexArray(0);
 
-    // Initialize text notification contexts
+    // Initialize font texture atlas metadata
+    for (size_t f = 0; f < fonts.size(); ++f)
+    {
+        auto const & fontTextureFrameMetadata = fontTextureAtlas.Metadata.GetFrameMetadata(
+            TextureFrameId<FontTextureGroups>(
+                FontTextureGroups::Font,
+                static_cast<TextureFrameIndex>(f)));
 
-    // Status text
-    mTextNotificationContexts.emplace_back(
-        mFonts[static_cast<size_t>(FontType::Font0)].Metadata,
-        fontTextureAtlas.Metadata.GetFrameMetadata(TextureFrameId<FontTextureGroups>(FontTextureGroups::Font, 0)));
+        // Dimensions of a cell of this font, in the atlas' texture space coordinates
+        float const fontCellWidthAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetCellScreenWidth()) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Width);
+        float const fontCellHeightAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetCellScreenHeight()) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Height);
 
-    // Notification text
-    mTextNotificationContexts.emplace_back(
-        mFonts[static_cast<size_t>(FontType::Font1)].Metadata,
-        fontTextureAtlas.Metadata.GetFrameMetadata(TextureFrameId<FontTextureGroups>(FontTextureGroups::Font, 1)));
+        // Origins and sizes for each character
+        std::array<vec2f, 256> GlyphTextureOrigins;
+        std::array<vec2f, 256> GlyphTextureSizes;
+        for (int c = 0; c < 256; ++c)
+        {
+            // Texture-space origin x
+            int const glyphTextureCol = (c - FontMetadata::BaseCharacter) % fonts[f].Metadata.GetGlyphsPerTextureRow();
+            float const glyphOriginLeftAtlasTextureSpace =
+                fontTextureFrameMetadata.TextureCoordinatesBottomLeft.x // Includes dead-center dx already
+                + static_cast<float>(glyphTextureCol) * fontCellWidthAtlasTextureSpace;
+
+            // Texture-space origin y
+            // Note: font texture is flipped vertically (top of character is at lower V coordinates)
+            int const glyphTextureRow = (c - FontMetadata::BaseCharacter) / fonts[f].Metadata.GetGlyphsPerTextureRow();
+            float const glyphOriginBottomAtlasTextureSpace =
+                fontTextureFrameMetadata.TextureCoordinatesBottomLeft.y // Includes dead-center dx already
+                + static_cast<float>(glyphTextureRow + 1) * fontCellHeightAtlasTextureSpace;
+
+            // Texture-space size
+            float const glyphWidthAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetGlyphScreenWidth(c)) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Width);
+            float const glyphHeightAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetGlyphScreenHeight(c)) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Height);
+
+            GlyphTextureOrigins[c] = vec2f(glyphOriginLeftAtlasTextureSpace, glyphOriginBottomAtlasTextureSpace);
+            GlyphTextureSizes[c] = vec2f(glyphWidthAtlasTextureSpace, glyphHeightAtlasTextureSpace);
+        }
+
+        // Store
+        mFontTextureAtlasMetadata.emplace_back(
+            vec2f(fontCellWidthAtlasTextureSpace, fontCellHeightAtlasTextureSpace),
+            GlyphTextureOrigins,
+            GlyphTextureSizes,
+            fonts[f].Metadata);
+    }
+
+    // Initialize text notification contexts for each type of notification
+    {
+        // Status text
+        static_assert(static_cast<size_t>(TextNotificationType::StatusText) == 0);
+        mTextNotificationTypeContexts.emplace_back(mFontTextureAtlasMetadata[static_cast<size_t>(FontType::Font0)]);
+
+        // Notification text
+        static_assert(static_cast<size_t>(TextNotificationType::NotificationText) == 1);
+        mTextNotificationTypeContexts.emplace_back(mFontTextureAtlasMetadata[static_cast<size_t>(FontType::Font1)]);
+    }
 
     //
     // Initialize texture notifications
@@ -334,9 +376,9 @@ void NotificationRenderContext::ApplyCanvasSizeChanges(RenderParameters const & 
 
     // Make sure we re-calculate (and re-upload) all text vertices
     // at the next iteration
-    for (auto & tnc : mTextNotificationContexts)
+    for (auto & tntc : mTextNotificationTypeContexts)
     {
-        tnc.AreTextLinesDirty = true;
+        tntc.AreTextLinesDirty = true;
     }
 
     // Make sure we re-calculate (and re-upload) all texture notification vertices
@@ -359,19 +401,20 @@ void NotificationRenderContext::ApplyEffectiveAmbientLightIntensityChanges(Rende
 
 void NotificationRenderContext::RenderPrepareTextNotifications()
 {
+    //
+    // Check whether we need to re-generate - and thus re-upload - quad vertex buffers
+    //
+
     bool doNeedToUploadQuadVertexBuffers = false;
 
-    for (auto & textNotificationContext : mTextNotificationContexts)
+    for (auto & textNotificationTypeContext : mTextNotificationTypeContexts)
     {
-        //
-        // Re-generate vertex buffer if dirty
-        //
-
-        if (textNotificationContext.AreTextLinesDirty)
+        if (textNotificationTypeContext.AreTextLinesDirty)
         {
-            GenerateTextVertices(textNotificationContext);
+            // Re-generated quad vertices for this notification type
+            GenerateTextVertices(textNotificationTypeContext);
 
-            textNotificationContext.AreTextLinesDirty = false;
+            textNotificationTypeContext.AreTextLinesDirty = false;
 
             // We need to re-upload the vertex buffers
             doNeedToUploadQuadVertexBuffers = true;
@@ -381,20 +424,22 @@ void NotificationRenderContext::RenderPrepareTextNotifications()
     if (doNeedToUploadQuadVertexBuffers)
     {
         //
-        // Upload buffers
+        // Re-upload whole buffer
         //
 
         glBindBuffer(GL_ARRAY_BUFFER, *mTextVBO);
 
+        // Calculate total buffer size
         mAllocatedTextQuadVertexBufferSize = std::accumulate(
-            mTextNotificationContexts.cbegin(),
-            mTextNotificationContexts.cend(),
+            mTextNotificationTypeContexts.cbegin(),
+            mTextNotificationTypeContexts.cend(),
             size_t(0),
-            [](size_t total, auto const & tnc) -> size_t
+            [](size_t total, auto const & tntc) -> size_t
             {
-                return total + tnc.TextQuadVertexBuffer.size();
+                return total + tntc.TextQuadVertexBuffer.size();
             });
 
+        // Allocate buffer
         glBufferData(
             GL_ARRAY_BUFFER,
             mAllocatedTextQuadVertexBufferSize * sizeof(TextQuadVertex),
@@ -402,17 +447,18 @@ void NotificationRenderContext::RenderPrepareTextNotifications()
             GL_DYNAMIC_DRAW);
         CheckOpenGLError();
 
+        // Upload buffer in chunks
         size_t start = 0;
-        for (auto const & textNotificationContext : mTextNotificationContexts)
+        for (auto const & textNotificationTypeContext : mTextNotificationTypeContexts)
         {
             glBufferSubData(
                 GL_ARRAY_BUFFER,
                 start * sizeof(TextQuadVertex),
-                textNotificationContext.TextQuadVertexBuffer.size() * sizeof(TextQuadVertex),
-                textNotificationContext.TextQuadVertexBuffer.data());
+                textNotificationTypeContext.TextQuadVertexBuffer.size() * sizeof(TextQuadVertex),
+                textNotificationTypeContext.TextQuadVertexBuffer.data());
             CheckOpenGLError();
 
-            start += textNotificationContext.TextQuadVertexBuffer.size();
+            start += textNotificationTypeContext.TextQuadVertexBuffer.size();
         }
 
         assert(start == mAllocatedTextQuadVertexBufferSize);
@@ -430,12 +476,12 @@ void NotificationRenderContext::RenderDrawTextNotifications()
         // Activate texture unit
         mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
 
-        // Activate program
-        mShaderManager.ActivateProgram<ProgramType::Text>();
-
-        // Bind font texture
+        // Bind font atlas texture
         glBindTexture(GL_TEXTURE_2D, *mFontAtlasTextureHandle);
         CheckOpenGLError();
+
+        // Activate program
+        mShaderManager.ActivateProgram<ProgramType::Text>();
 
         // Draw vertices
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mAllocatedTextQuadVertexBufferSize));
@@ -566,11 +612,20 @@ void NotificationRenderContext::RenderDrawFireExtinguisherSpray()
     }
 }
 
-void NotificationRenderContext::GenerateTextVertices(TextNotificationContext & context)
+void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext & context) const
 {
-    FontMetadata const & fontMetadata = context.NotificationFontMetadata;
+    FontTextureAtlasMetadata const & fontTextureAtlasMetadata = context.NotificationFontTextureAtlasMetadata;
+    FontMetadata const & fontMetadata = fontTextureAtlasMetadata.OriginalFontMetadata;
+
+    //
+    // Reset quad vertices
+    //
 
     context.TextQuadVertexBuffer.clear();
+
+    //
+    // Rebuild quad vertices
+    //
 
     for (auto const & textLine : context.TextLines)
     {
@@ -578,9 +633,9 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationContext & c
         // Calculate line position in NDC coordinates
         //
 
-        vec2f linePositionNdc( // Top-left of quads; start with offset
-            textLine.ScreenOffset.x * static_cast<float>(fontMetadata.GetCharScreenWidth()) * mScreenToNdcX,
-            -textLine.ScreenOffset.y * static_cast<float>(fontMetadata.GetLineScreenHeight()) * mScreenToNdcY);
+        vec2f linePositionNdc( // Top-left of quads; start with line's offset
+            textLine.ScreenOffset.x * static_cast<float>(fontMetadata.GetCellScreenWidth()) * mScreenToNdcX,
+            -textLine.ScreenOffset.y * static_cast<float>(fontMetadata.GetCellScreenHeight()) * mScreenToNdcY);
 
         switch (textLine.Anchor)
         {
@@ -588,7 +643,7 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationContext & c
             {
                 linePositionNdc += vec2f(
                     -1.f + MarginScreen * mScreenToNdcX,
-                    -1.f + (MarginScreen + static_cast<float>(fontMetadata.GetLineScreenHeight())) * mScreenToNdcY);
+                    -1.f + (MarginScreen + static_cast<float>(fontMetadata.GetCellScreenHeight())) * mScreenToNdcY);
 
                 break;
             }
@@ -633,15 +688,71 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationContext & c
         // Emit quads for this line
         //
 
-        fontMetadata.EmitQuadVertices(
-            textLine.Text.c_str(),
-            textLine.Text.length(),
-            linePositionNdc,
-            textLine.Alpha,
-            mScreenToNdcX,
-            mScreenToNdcY,
-            // TODOHERE: pass from atlas: ndc origin and ndc width/height
-            context.TextQuadVertexBuffer);
+        float const alpha = textLine.Alpha;
+        auto & vertices = context.TextQuadVertexBuffer;
+
+        for (char _ch : textLine.Text)
+        {
+            unsigned char ch = static_cast<unsigned char>(_ch);
+
+            float const glyphWidthNdc = static_cast<float>(fontTextureAtlasMetadata.OriginalFontMetadata.GetGlyphScreenWidth(ch)) * mScreenToNdcX;
+            float const glyphHeightNdc = static_cast<float>(fontTextureAtlasMetadata.OriginalFontMetadata.GetGlyphScreenHeight(ch)) * mScreenToNdcY;
+
+            float const textureULeft = fontTextureAtlasMetadata.GlyphTextureAtlasOrigins[ch].x;
+            float const textureURight = textureULeft + fontTextureAtlasMetadata.GlyphTextureAtlasSizes[ch].x;
+            float const textureVBottom = fontTextureAtlasMetadata.GlyphTextureAtlasOrigins[ch].y;
+            float const textureVTop = textureVBottom - fontTextureAtlasMetadata.GlyphTextureAtlasSizes[ch].y;
+
+            // Top-left
+            vertices.emplace_back(
+                linePositionNdc.x,
+                linePositionNdc.y + glyphHeightNdc,
+                textureULeft,
+                textureVTop,
+                alpha);
+
+            // Bottom-left
+            vertices.emplace_back(
+                linePositionNdc.x,
+                linePositionNdc.y,
+                textureULeft,
+                textureVBottom,
+                alpha);
+
+            // Top-right
+            vertices.emplace_back(
+                linePositionNdc.x + glyphWidthNdc,
+                linePositionNdc.y + glyphHeightNdc,
+                textureURight,
+                textureVTop,
+                alpha);
+
+            // Bottom-left
+            vertices.emplace_back(
+                linePositionNdc.x,
+                linePositionNdc.y,
+                textureULeft,
+                textureVBottom,
+                alpha);
+
+            // Top-right
+            vertices.emplace_back(
+                linePositionNdc.x + glyphWidthNdc,
+                linePositionNdc.y + glyphHeightNdc,
+                textureURight,
+                textureVTop,
+                alpha);
+
+            // Bottom-right
+            vertices.emplace_back(
+                linePositionNdc.x + glyphWidthNdc,
+                linePositionNdc.y,
+                textureURight,
+                textureVBottom,
+                alpha);
+
+            linePositionNdc.x += glyphWidthNdc;
+        }
     }
 }
 
