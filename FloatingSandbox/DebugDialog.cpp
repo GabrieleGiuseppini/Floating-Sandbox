@@ -7,6 +7,7 @@
 
 #include <wx/gbsizer.h>
 #include <wx/notebook.h>
+#include <wx/settings.h>
 #include <wx/statbox.h>
 
 #include <cassert>

@@ -323,6 +323,7 @@ Render:
 					- Methods
 				- New NotificationRenderContext notification type: PhysicsProbe
 					- Texture for background of panel
+						- 200x100
 						- Speed
 						- Temperature
 					- 7-segment font (including - and .)

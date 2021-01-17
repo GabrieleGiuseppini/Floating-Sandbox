@@ -26,6 +26,9 @@ public:
 
     static ShipPreview Load(std::filesystem::path const & filepath);
 
+    ShipPreview (ShipPreview && other) = default;
+    ShipPreview & operator=(ShipPreview && other) = default;
+
     RgbaImageData LoadPreviewImage(ImageSize const & maxSize) const;
 
 private:

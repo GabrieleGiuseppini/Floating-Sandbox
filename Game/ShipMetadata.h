@@ -64,4 +64,7 @@ public:
 
     ShipMetadata(ShipMetadata const & other) = default;
     ShipMetadata(ShipMetadata && other) = default;
+
+    ShipMetadata & operator=(ShipMetadata const & other) = default;
+    ShipMetadata & operator=(ShipMetadata && other) = default;
 };

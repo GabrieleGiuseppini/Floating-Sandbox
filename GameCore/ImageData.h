@@ -47,6 +47,12 @@ public:
     {
     }
 
+    ImageData & operator=(ImageData && other) noexcept
+    {
+        Size = other.Size;
+        Data = std::move(other.Data);
+    }
+
     size_t GetByteSize() const
     {
         return static_cast<size_t>(Size.GetPixelCount()) * sizeof(color_type);
