@@ -190,60 +190,60 @@ public:
         gameController.RegisterGenericEventHandler(this);
     }
 
-    virtual void OnTsunamiNotification(float x) override;
+    void OnTsunamiNotification(float x) override;
 
-    virtual void OnPointCombustionBegin() override;
+    void OnPointCombustionBegin() override;
 
-    virtual void OnPointCombustionEnd() override;
+    void OnPointCombustionEnd() override;
 
-    virtual void OnCombustionSmothered() override;
+    void OnCombustionSmothered() override;
 
-    virtual void OnCombustionExplosion(
+    void OnCombustionExplosion(
         bool isUnderwater,
         unsigned int size) override;
 
-    virtual void OnStress(
+    void OnStress(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override;
 
-    virtual void OnBreak(
+    void OnBreak(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override;
 
-    virtual void OnDestroy(
+    void OnDestroy(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override;
 
-	virtual void OnLightningHit(StructuralMaterial const & structuralMaterial) override;
+	void OnLightningHit(StructuralMaterial const & structuralMaterial) override;
 
-    virtual void OnSpringRepaired(
+    void OnSpringRepaired(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override;
 
-    virtual void OnTriangleRepaired(
+    void OnTriangleRepaired(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override;
 
-    virtual void OnSawed(
+    void OnSawed(
         bool isMetal,
         unsigned int size) override;
 
-    virtual void OnPinToggled(
+    void OnPinToggled(
         bool isPinned,
         bool isUnderwater) override;
 
-    virtual void OnWaterTaken(float waterTaken) override;
+    void OnWaterTaken(float waterTaken) override;
 
-    virtual void OnWaterSplashed(float waterSplashed) override;
+    void OnWaterSplashed(float waterSplashed) override;
 
-    virtual void OnAirBubbleSurfaced(unsigned int size) override;
+    void OnAirBubbleSurfaced(unsigned int size) override;
 
-    virtual void OnWindSpeedUpdated(
+    void OnWindSpeedUpdated(
         float const zeroSpeedMagnitude,
         float const baseSpeedMagnitude,
         float const baseAndStormSpeedMagnitude,
@@ -251,18 +251,18 @@ public:
         float const maxSpeedMagnitude,
         vec2f const & windSpeed) override;
 
-	virtual void OnRainUpdated(float density) override;
+	void OnRainUpdated(float density) override;
 
-	virtual void OnThunder() override;
+	void OnThunder() override;
 
-	virtual void OnLightning() override;
+	void OnLightning() override;
 
-    virtual void OnLightFlicker(
+    void OnLightFlicker(
         DurationShortLongType duration,
         bool isUnderwater,
         unsigned int size) override;
 
-    virtual void OnEngineMonitorCreated(
+    void OnEngineMonitorCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         ElectricalMaterial const & electricalMaterial,
@@ -270,78 +270,82 @@ public:
         float rpm,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
-    virtual void OnWaterPumpCreated(
+    void OnWaterPumpCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         ElectricalMaterial const & electricalMaterial,
         float normalizedForce,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
-    virtual void OnSwitchToggled(
+    void OnSwitchToggled(
         ElectricalElementId electricalElementId,
         ElectricalState newState) override;
 
-    virtual void OnEngineControllerUpdated(
+    void OnEngineControllerUpdated(
         ElectricalElementId electricalElementId,
         int telegraphValue) override;
 
-    virtual void OnEngineMonitorUpdated(
+    void OnEngineMonitorUpdated(
         ElectricalElementId electricalElementId,
         float thrustMagnitude,
         float rpm) override;
 
-    virtual void OnShipSoundUpdated(
+    void OnShipSoundUpdated(
         ElectricalElementId electricalElementId,
         ElectricalMaterial const & electricalMaterial,
         bool isPlaying,
         bool isUnderwater) override;
 
-    virtual void OnWaterPumpUpdated(
+    void OnWaterPumpUpdated(
         ElectricalElementId electricalElementId,
         float normalizedForce) override;
 
-    virtual void OnGadgetPlaced(
+    void OnGadgetPlaced(
         GadgetId gadgetId,
         GadgetType gadgetType,
         bool isUnderwater) override;
 
-    virtual void OnGadgetRemoved(
+    void OnGadgetRemoved(
         GadgetId gadgetId,
         GadgetType gadgetType,
         std::optional<bool> isUnderwater) override;
 
-    virtual void OnBombExplosion(
+    void OnBombExplosion(
         GadgetType gadgetType,
         bool isUnderwater,
         unsigned int size) override;
 
-    virtual void OnRCBombPing(
+    void OnRCBombPing(
         bool isUnderwater,
         unsigned int size) override;
 
-    virtual void OnTimerBombFuse(
+    void OnTimerBombFuse(
         GadgetId gadgetId,
         std::optional<bool> isFast) override;
 
-    virtual void OnTimerBombDefused(
+    void OnTimerBombDefused(
         bool isUnderwater,
         unsigned int size) override;
 
-    virtual void OnAntiMatterBombContained(
+    void OnAntiMatterBombContained(
         GadgetId gadgetId,
         bool isContained) override;
 
-    virtual void OnAntiMatterBombPreImploding() override;
+    void OnAntiMatterBombPreImploding() override;
 
-    virtual void OnAntiMatterBombImploding() override;
+    void OnAntiMatterBombImploding() override;
 
-    virtual void OnWatertightDoorOpened(
+    void OnWatertightDoorOpened(
         bool isUnderwater,
         unsigned int size) override;
 
-    virtual void OnWatertightDoorClosed(
+    void OnWatertightDoorClosed(
         bool isUnderwater,
         unsigned int size) override;
+
+    void OnPhysicsProbePanelOpened() override;
+
+    void OnPhysicsProbePanelClosed() override;
 
 private:
 

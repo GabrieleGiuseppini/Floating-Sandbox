@@ -157,6 +157,20 @@ void NotificationLayer::AddEphemeralTextLine(
 	mIsGameTextDirty = true;
 }
 
+void NotificationLayer::SetPhysicsProbePanelOpen(float open)
+{
+	// TODOHERE
+	LogMessage("NotificationLayer::SetPhysicsProbePanelOpen(", open, ")");
+}
+
+void NotificationLayer::SetPhysicsProbeReading(
+	vec2f const & velocity,
+	float temperature)
+{
+	// TODOHERE
+	LogMessage("NotificationLayer::SetPhysicsProbeReading(", velocity.length(), ", ", temperature, ")");
+}
+
 void NotificationLayer::SetUltraViolentModeIndicator(bool isUltraViolentMode)
 {
 	mIsUltraViolentModeIndicatorOn = isUltraViolentMode;

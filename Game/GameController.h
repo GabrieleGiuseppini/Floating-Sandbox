@@ -769,12 +769,14 @@ private:
 
     void StartTsunamiNotificationStateMachine(float x);
 
+
     struct ThanosSnapStateMachine;
     struct ThanosSnapStateMachineDeleter { void operator()(ThanosSnapStateMachine *) const; };
     std::vector<std::unique_ptr<ThanosSnapStateMachine, ThanosSnapStateMachineDeleter>> mThanosSnapStateMachines;
 
     void StartThanosSnapStateMachine(float x, float currentSimulationTime);
     bool UpdateThanosSnapStateMachine(ThanosSnapStateMachine & stateMachine, float currentSimulationTime);
+
 
     struct DayLightCycleStateMachine;
     struct DayLightCycleStateMachineDeleter { void operator()(DayLightCycleStateMachine *) const; };
@@ -783,6 +785,15 @@ private:
     void StartDayLightCycleStateMachine();
     void StopDayLightCycleStateMachine();
     bool UpdateDayLightCycleStateMachine(DayLightCycleStateMachine & stateMachine, float currentSimulationTime);
+
+
+    struct PhysicsProbePanelStateMachine;
+    struct PhysicsProbePanelStateMachineDeleter { void operator()(PhysicsProbePanelStateMachine *) const; };
+    std::unique_ptr<PhysicsProbePanelStateMachine, PhysicsProbePanelStateMachineDeleter> mPhysicsProbePanelStateMachine;
+
+    void InitializePhysicsProbePanelStateMachine();
+    void SetPhysicsProbePanelStateMachineTarget(float targetOpen);
+
 
     void ResetStateMachines();
     void UpdateStateMachines(float currentSimulationTime);

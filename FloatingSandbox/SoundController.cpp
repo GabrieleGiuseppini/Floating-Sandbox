@@ -2024,6 +2024,18 @@ void SoundController::OnWatertightDoorClosed(
         true);
 }
 
+void SoundController::OnPhysicsProbePanelOpened()
+{
+    // TODOHERE
+    LogMessage("TODOHERE: SoundController::OnPhysicsProbePanelOpened");
+}
+
+void SoundController::OnPhysicsProbePanelClosed()
+{
+    // TODOHERE
+    LogMessage("TODOHERE: SoundController::OnPhysicsProbePanelClosed");
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 void SoundController::PlayMSUOneShotMultipleChoiceSound(

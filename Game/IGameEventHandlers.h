@@ -26,7 +26,7 @@ struct ILifecycleGameEventHandler
     }
 
     virtual void OnShipLoaded(
-        unsigned int /*id*/,
+        ShipId /*id*/,
         std::string const & /*name*/,
         std::optional<std::string> const & /*author*/)
     {
@@ -398,6 +398,13 @@ struct IGenericGameEventHandler
         // Default-implemented
     }
 
+    virtual void OnPhysicsProbeReading(
+        vec2f const & /*velocity*/,
+        float const /*temperature*/)
+    {
+        // Default-implemented
+    }
+
     virtual void OnCustomProbe(
         std::string const & /*name*/,
         float /*value*/)
@@ -488,6 +495,16 @@ struct IGenericGameEventHandler
     }
 
     virtual void OnFishCountUpdated(size_t /*count*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnPhysicsProbePanelOpened()
+    {
+        // Default-implemented
+    }
+
+    virtual void OnPhysicsProbePanelClosed()
     {
         // Default-implemented
     }

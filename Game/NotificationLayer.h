@@ -47,6 +47,12 @@ public:
 		std::string const & text,
 		std::chrono::duration<float> lifetime = std::chrono::duration<float>(1.0f));
 
+	void SetPhysicsProbePanelOpen(float open);
+
+	void SetPhysicsProbeReading(
+		vec2f const & velocity,
+		float temperature);
+
 	void SetUltraViolentModeIndicator(bool isUltraViolentMode);
 
 	void SetSoundMuteIndicator(bool isSoundMuted);

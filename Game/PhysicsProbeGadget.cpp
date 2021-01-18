@@ -51,6 +51,15 @@ bool PhysicsProbeGadget::Update(
 
                 // Schedule next transition
                 mNextStateTransitionTimePoint = currentWallClockTime + PingOnInterval;
+
+                // Emit reading
+
+                assert(GetAttachedSpringIndex().has_value());
+                auto const pointIndex = mShipSprings.GetEndpointAIndex(*GetAttachedSpringIndex());
+
+                mGameEventHandler->OnPhysicsProbeReading(
+                    mShipPoints.GetVelocity(pointIndex),
+                    mShipPoints.GetTemperature(pointIndex));
             }
 
             return true;

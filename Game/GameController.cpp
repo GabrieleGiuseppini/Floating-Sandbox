@@ -76,6 +76,7 @@ GameController::GameController(
     : mTsunamiNotificationStateMachine()
     , mThanosSnapStateMachines()
     , mDayLightCycleStateMachine()
+    , mPhysicsProbePanelStateMachine()
     // State
     , mGameParameters()
     , mIsPaused(false)
@@ -124,6 +125,9 @@ GameController::GameController(
     // Register ourselves as event handler for the events we care about
     mGameEventDispatcher->RegisterLifecycleEventHandler(this);
     mGameEventDispatcher->RegisterWavePhenomenaEventHandler(this);
+
+    // Initialize state machines
+    InitializePhysicsProbePanelStateMachine();
 
     //
     // Initialize parameter smoothers
@@ -969,9 +973,13 @@ void GameController::TogglePhysicsProbeAt(vec2f const & screenCoordinates)
 
     // Apply action
     assert(!!mWorld);
-    mWorld->TogglePhysicsProbeAt(
+    auto const toggleResult = mWorld->TogglePhysicsProbeAt(
         worldCoordinates,
         mGameParameters);
+
+    // Tell physics probe panel whether we've removed or added a probe
+    if (toggleResult.has_value())
+        SetPhysicsProbePanelStateMachineTarget(*toggleResult);
 }
 
 void GameController::ToggleRCBombAt(vec2f const & screenCoordinates)

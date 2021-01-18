@@ -58,7 +58,7 @@ public:
     // Lifecycle
     //
 
-    virtual void OnGameReset() override
+    void OnGameReset() override
     {
         for (auto sink : mLifecycleSinks)
         {
@@ -66,8 +66,8 @@ public:
         }
     }
 
-    virtual void OnShipLoaded(
-        unsigned int id,
+    void OnShipLoaded(
+        ShipId id,
         std::string const & name,
         std::optional<std::string> const & author) override
     {
@@ -77,7 +77,7 @@ public:
         }
     }
 
-    virtual void OnSinkingBegin(ShipId shipId) override
+    void OnSinkingBegin(ShipId shipId) override
     {
         for (auto sink : mLifecycleSinks)
         {
@@ -85,7 +85,7 @@ public:
         }
     }
 
-    virtual void OnSinkingEnd(ShipId shipId) override
+    void OnSinkingEnd(ShipId shipId) override
     {
         for (auto sink : mLifecycleSinks)
         {
@@ -93,7 +93,7 @@ public:
         }
     }
 
-    virtual void OnShipRepaired(ShipId shipId) override
+    void OnShipRepaired(ShipId shipId) override
     {
         for (auto sink : mLifecycleSinks)
         {
@@ -105,7 +105,7 @@ public:
     // Structural
     //
 
-    virtual void OnStress(
+    void OnStress(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override
@@ -113,7 +113,7 @@ public:
         mStressEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += size;
     }
 
-    virtual void OnBreak(
+    void OnBreak(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override
@@ -125,7 +125,7 @@ public:
     // Wave phenomena
     //
 
-    virtual void OnTsunami(float x) override
+    void OnTsunami(float x) override
     {
         for (auto sink : mWavePhenomenaSinks)
         {
@@ -133,7 +133,7 @@ public:
         }
     }
 
-    virtual void OnTsunamiNotification(float x) override
+    void OnTsunamiNotification(float x) override
     {
         for (auto sink : mWavePhenomenaSinks)
         {
@@ -145,7 +145,7 @@ public:
     // Combustion
     //
 
-    virtual void OnPointCombustionBegin() override
+    void OnPointCombustionBegin() override
     {
         for (auto sink : mCombustionSinks)
         {
@@ -153,7 +153,7 @@ public:
         }
     }
 
-    virtual void OnPointCombustionEnd() override
+    void OnPointCombustionEnd() override
     {
         for (auto sink : mCombustionSinks)
         {
@@ -161,7 +161,7 @@ public:
         }
     }
 
-    virtual void OnCombustionSmothered() override
+    void OnCombustionSmothered() override
     {
         for (auto sink : mCombustionSinks)
         {
@@ -169,7 +169,7 @@ public:
         }
     }
 
-    virtual void OnCombustionExplosion(
+    void OnCombustionExplosion(
         bool isUnderwater,
         unsigned int size) override
     {
@@ -180,7 +180,7 @@ public:
     // Statistics
     //
 
-    virtual void OnFrameRateUpdated(
+    void OnFrameRateUpdated(
         float immediateFps,
         float averageFps) override
     {
@@ -192,7 +192,7 @@ public:
         }
     }
 
-    virtual void OnCurrentUpdateDurationUpdated(float currentUpdateDuration) override
+    void OnCurrentUpdateDurationUpdated(float currentUpdateDuration) override
     {
         for (auto sink : mStatisticsSinks)
         {
@@ -204,7 +204,7 @@ public:
     // Atmosphere
     //
 
-    virtual void OnStormBegin() override
+    void OnStormBegin() override
     {
         for (auto sink : mAtmosphereSinks)
         {
@@ -212,7 +212,7 @@ public:
         }
     }
 
-    virtual void OnStormEnd() override
+    void OnStormEnd() override
     {
         for (auto sink : mAtmosphereSinks)
         {
@@ -220,7 +220,7 @@ public:
         }
     }
 
-    virtual void OnWindSpeedUpdated(
+    void OnWindSpeedUpdated(
         float const zeroSpeedMagnitude,
         float const baseSpeedMagnitude,
         float const baseAndStormSpeedMagnitude,
@@ -240,7 +240,7 @@ public:
         }
     }
 
-    virtual void OnRainUpdated(float const density) override
+    void OnRainUpdated(float const density) override
     {
         for (auto sink : mAtmosphereSinks)
         {
@@ -248,7 +248,7 @@ public:
         }
     }
 
-    virtual void OnThunder() override
+    void OnThunder() override
     {
         for (auto sink : mAtmosphereSinks)
         {
@@ -256,7 +256,7 @@ public:
         }
     }
 
-    virtual void OnLightning() override
+    void OnLightning() override
     {
         for (auto sink : mAtmosphereSinks)
         {
@@ -264,7 +264,7 @@ public:
         }
     }
 
-    virtual void OnLightningHit(StructuralMaterial const & structuralMaterial) override
+    void OnLightningHit(StructuralMaterial const & structuralMaterial) override
     {
         mLightningHitEvents[std::make_tuple(&structuralMaterial)] += 1;
     }
@@ -273,7 +273,7 @@ public:
     // Electrical elements
     //
 
-    virtual void OnLightFlicker(
+    void OnLightFlicker(
         DurationShortLongType duration,
         bool isUnderwater,
         unsigned int size) override
@@ -281,7 +281,7 @@ public:
         mLightFlickerEvents[std::make_tuple(duration, isUnderwater)] += size;
     }
 
-    virtual void OnElectricalElementAnnouncementsBegin() override
+    void OnElectricalElementAnnouncementsBegin() override
     {
         for (auto sink : mElectricalElementSinks)
         {
@@ -289,7 +289,7 @@ public:
         }
     }
 
-    virtual void OnSwitchCreated(
+    void OnSwitchCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         SwitchType type,
@@ -304,7 +304,7 @@ public:
         }
     }
 
-    virtual void OnPowerProbeCreated(
+    void OnPowerProbeCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         PowerProbeType type,
@@ -319,7 +319,7 @@ public:
         }
     }
 
-    virtual void OnEngineControllerCreated(
+    void OnEngineControllerCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
@@ -332,7 +332,7 @@ public:
         }
     }
 
-    virtual void OnEngineMonitorCreated(
+    void OnEngineMonitorCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         ElectricalMaterial const & electricalMaterial,
@@ -348,7 +348,7 @@ public:
         }
     }
 
-    virtual void OnWaterPumpCreated(
+    void OnWaterPumpCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         ElectricalMaterial const & electricalMaterial,
@@ -363,7 +363,7 @@ public:
         }
     }
 
-    virtual void OnWatertightDoorCreated(
+    void OnWatertightDoorCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         ElectricalMaterial const & electricalMaterial,
@@ -378,7 +378,7 @@ public:
         }
     }
 
-    virtual void OnElectricalElementAnnouncementsEnd() override
+    void OnElectricalElementAnnouncementsEnd() override
     {
         for (auto sink : mElectricalElementSinks)
         {
@@ -386,7 +386,7 @@ public:
         }
     }
 
-    virtual void OnSwitchEnabled(
+    void OnSwitchEnabled(
         ElectricalElementId electricalElementId,
         bool isEnabled) override
     {
@@ -396,7 +396,7 @@ public:
         }
     }
 
-    virtual void OnSwitchToggled(
+    void OnSwitchToggled(
         ElectricalElementId electricalElementId,
         ElectricalState newState) override
     {
@@ -406,7 +406,7 @@ public:
         }
     }
 
-    virtual void OnPowerProbeToggled(
+    void OnPowerProbeToggled(
         ElectricalElementId electricalElementId,
         ElectricalState newState) override
     {
@@ -416,7 +416,7 @@ public:
         }
     }
 
-    virtual void OnEngineControllerEnabled(
+    void OnEngineControllerEnabled(
         ElectricalElementId electricalElementId,
         bool isEnabled) override
     {
@@ -426,7 +426,7 @@ public:
         }
     }
 
-    virtual void OnEngineControllerUpdated(
+    void OnEngineControllerUpdated(
         ElectricalElementId electricalElementId,
         int telegraphValue) override
     {
@@ -436,7 +436,7 @@ public:
         }
     }
 
-    virtual void OnEngineMonitorUpdated(
+    void OnEngineMonitorUpdated(
         ElectricalElementId electricalElementId,
         float thrustMagnitude,
         float rpm) override
@@ -447,7 +447,7 @@ public:
         }
     }
 
-    virtual void OnShipSoundUpdated(
+    void OnShipSoundUpdated(
         ElectricalElementId electricalElementId,
         ElectricalMaterial const & electricalMaterial,
         bool isPlaying,
@@ -459,7 +459,7 @@ public:
         }
     }
 
-    virtual void OnWaterPumpEnabled(
+    void OnWaterPumpEnabled(
         ElectricalElementId electricalElementId,
         bool isEnabled) override
     {
@@ -469,7 +469,7 @@ public:
         }
     }
 
-    virtual void OnWaterPumpUpdated(
+    void OnWaterPumpUpdated(
         ElectricalElementId electricalElementId,
         float normalizedForce) override
     {
@@ -479,7 +479,7 @@ public:
         }
     }
 
-    virtual void OnWatertightDoorEnabled(
+    void OnWatertightDoorEnabled(
         ElectricalElementId electricalElementId,
         bool isEnabled) override
     {
@@ -489,7 +489,7 @@ public:
         }
     }
 
-    virtual void OnWatertightDoorUpdated(
+    void OnWatertightDoorUpdated(
         ElectricalElementId electricalElementId,
         bool isOpen) override
     {
@@ -503,7 +503,7 @@ public:
     // Generic
     //
 
-    virtual void OnDestroy(
+    void OnDestroy(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override
@@ -514,7 +514,7 @@ public:
         }
     }
 
-    virtual void OnSpringRepaired(
+    void OnSpringRepaired(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override
@@ -522,7 +522,7 @@ public:
         mSpringRepairedEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += size;
     }
 
-    virtual void OnTriangleRepaired(
+    void OnTriangleRepaired(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
         unsigned int size) override
@@ -530,7 +530,7 @@ public:
         mTriangleRepairedEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += size;
     }
 
-    virtual void OnSawed(
+    void OnSawed(
         bool isMetal,
         unsigned int size) override
     {
@@ -540,7 +540,7 @@ public:
         }
     }
 
-    virtual void OnPinToggled(
+    void OnPinToggled(
         bool isPinned,
         bool isUnderwater) override
     {
@@ -550,7 +550,7 @@ public:
         }
     }
 
-    virtual void OnWaterTaken(float waterTaken) override
+    void OnWaterTaken(float waterTaken) override
     {
         for (auto sink : mGenericSinks)
         {
@@ -558,7 +558,7 @@ public:
         }
     }
 
-    virtual void OnWaterSplashed(float waterSplashed) override
+    void OnWaterSplashed(float waterSplashed) override
     {
         for (auto sink : mGenericSinks)
         {
@@ -566,12 +566,12 @@ public:
         }
     }
 
-    virtual void OnAirBubbleSurfaced(unsigned int size) override
+    void OnAirBubbleSurfaced(unsigned int size) override
     {
         mAirBubbleSurfacedEvents += size;
     }
 
-    virtual void OnSilenceStarted() override
+    void OnSilenceStarted() override
     {
         for (auto sink : mGenericSinks)
         {
@@ -579,7 +579,7 @@ public:
         }
     }
 
-    virtual void OnSilenceLifted() override
+    void OnSilenceLifted() override
     {
         for (auto sink : mGenericSinks)
         {
@@ -587,7 +587,19 @@ public:
         }
     }
 
-    virtual void OnCustomProbe(
+    void OnPhysicsProbeReading(
+        vec2f const & velocity,
+        float const temperature)
+    {
+        for (auto sink : mGenericSinks)
+        {
+            sink->OnPhysicsProbeReading(
+                velocity,
+                temperature);
+        }
+    }
+
+    void OnCustomProbe(
         std::string const & name,
         float value) override
     {
@@ -599,7 +611,7 @@ public:
         }
     }
 
-    virtual void OnGadgetPlaced(
+    void OnGadgetPlaced(
         GadgetId gadgetId,
         GadgetType gadgetType,
         bool isUnderwater) override
@@ -613,7 +625,7 @@ public:
         }
     }
 
-    virtual void OnGadgetRemoved(
+    void OnGadgetRemoved(
         GadgetId gadgetId,
         GadgetType gadgetType,
         std::optional<bool> isUnderwater) override
@@ -627,7 +639,7 @@ public:
         }
     }
 
-    virtual void OnBombExplosion(
+    void OnBombExplosion(
         GadgetType gadgetType,
         bool isUnderwater,
         unsigned int size) override
@@ -635,14 +647,14 @@ public:
         mBombExplosionEvents[std::make_tuple(gadgetType, isUnderwater)] += size;
     }
 
-    virtual void OnRCBombPing(
+    void OnRCBombPing(
         bool isUnderwater,
         unsigned int size) override
     {
         mRCBombPingEvents[std::make_tuple(isUnderwater)] += size;
     }
 
-    virtual void OnTimerBombFuse(
+    void OnTimerBombFuse(
         GadgetId gadgetId,
         std::optional<bool> isFast) override
     {
@@ -654,14 +666,14 @@ public:
         }
     }
 
-    virtual void OnTimerBombDefused(
+    void OnTimerBombDefused(
         bool isUnderwater,
         unsigned int size) override
     {
         mTimerBombDefusedEvents[std::make_tuple(isUnderwater)] += size;
     }
 
-    virtual void OnAntiMatterBombContained(
+    void OnAntiMatterBombContained(
         GadgetId gadgetId,
         bool isContained) override
     {
@@ -673,7 +685,7 @@ public:
         }
     }
 
-    virtual void OnAntiMatterBombPreImploding() override
+    void OnAntiMatterBombPreImploding() override
     {
         for (auto sink : mGenericSinks)
         {
@@ -681,7 +693,7 @@ public:
         }
     }
 
-    virtual void OnAntiMatterBombImploding() override
+    void OnAntiMatterBombImploding() override
     {
         for (auto sink : mGenericSinks)
         {
@@ -689,25 +701,41 @@ public:
         }
     }
 
-    virtual void OnWatertightDoorOpened(
+    void OnWatertightDoorOpened(
         bool isUnderwater,
         unsigned int size) override
     {
         mWatertightDoorOpenedEvents[std::make_tuple(isUnderwater)] += size;
     }
 
-    virtual void OnWatertightDoorClosed(
+    void OnWatertightDoorClosed(
         bool isUnderwater,
         unsigned int size) override
     {
         mWatertightDoorClosedEvents[std::make_tuple(isUnderwater)] += size;
     }
 
-    virtual void OnFishCountUpdated(size_t count) override
+    void OnFishCountUpdated(size_t count) override
     {
         for (auto sink : mGenericSinks)
         {
             sink->OnFishCountUpdated(count);
+        }
+    }
+
+    void OnPhysicsProbePanelOpened() override
+    {
+        for (auto sink : mGenericSinks)
+        {
+            sink->OnPhysicsProbePanelOpened();
+        }
+    }
+
+    void OnPhysicsProbePanelClosed() override
+    {
+        for (auto sink : mGenericSinks)
+        {
+            sink->OnPhysicsProbePanelClosed();
         }
     }
 

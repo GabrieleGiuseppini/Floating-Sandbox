@@ -337,7 +337,7 @@ void GameController::DayLightCycleStateMachine::Update()
     mSkipCounter = 0;
 
     // We are stateless wrt ambient light intensity: we check each time where
-    // we are at and compute the next step, based exclusively on the current 
+    // we are at and compute the next step, based exclusively on the current
     // rising/setting state. This allows the user to change the current
     // ambient light intensity concurrently to this state machine.
     //
@@ -347,7 +347,7 @@ void GameController::DayLightCycleStateMachine::Update()
     // that has elapsed since the previous time.
 
     float timeOfDay = InverseSmoothStep(mRenderContext->GetAmbientLightIntensity());
-    
+
     // Calculate fraction of half-cycle elapsed since last time
     auto const now = GameWallClock::GetInstance().NowAsFloat();
     auto const elapsedFraction = GameWallClock::Progress(
@@ -389,47 +389,6 @@ void GameController::DayLightCycleStateMachine::Update()
 
     // Update last change timestamp
     mLastChangeTimestamp = now;
-
-
-    /* TODOOLD
-    // Calculate fraction of half-cycle elapsed since last time
-    auto const now = GameWallClock::GetInstance().NowAsFloat();
-    auto const elapsedFraction = GameWallClock::Progress(
-        now,
-        mLastChangeTimestamp,
-        mGameParameters.DayLightCycleDuration)
-        * 2.0f;
-    
-    // Update ambient light
-    float ambientLightIntensity = mRenderContext->GetAmbientLightIntensity();
-    if (StateType::SunRising == mCurrentState)
-    {
-        ambientLightIntensity += elapsedFraction;
-        if (ambientLightIntensity >= 1.0f)
-        {
-            // Climax
-            ambientLightIntensity = 1.0f;
-            mCurrentState = StateType::SunSetting;
-        }
-    }
-    else
-    {
-        assert(StateType::SunSetting == mCurrentState);
-
-        ambientLightIntensity -= elapsedFraction;
-        if (ambientLightIntensity <= 0.0f)
-        {
-            // Anticlimax
-            ambientLightIntensity = 0.0f;
-            mCurrentState = StateType::SunRising;
-        }
-    }
-
-    mRenderContext->SetAmbientLightIntensity(ambientLightIntensity);
-
-    // Update last change timestamp
-    mLastChangeTimestamp = now;
-    */
 }
 
 void GameController::StartDayLightCycleStateMachine()
@@ -454,6 +413,174 @@ void GameController::StopDayLightCycleStateMachine()
 
         mNotificationLayer.SetDayLightCycleIndicator(false);
     }
+}
+
+////////////////////////////////////////////////////////////////////////
+// Physics Probe Panel
+////////////////////////////////////////////////////////////////////////
+
+struct GameController::PhysicsProbePanelStateMachine final : public IGenericGameEventHandler
+{
+    PhysicsProbePanelStateMachine(
+        GameEventDispatcher & gameEventDispatcher,
+        NotificationLayer & notificationLayer)
+        : mGameEventDispatcher(gameEventDispatcher)
+        , mNotificationLayer(notificationLayer)
+    {
+        Reset();
+    }
+
+    void SetTargetOpen(float targetOpen);
+
+    void Update();
+
+    void Reset();
+
+public:
+
+    //
+    // IGenericGameEventHandler
+    //
+
+    void OnPhysicsProbeReading(
+        vec2f const & velocity,
+        float const temperature) override;
+
+private:
+
+    GameEventDispatcher & mGameEventDispatcher;
+    NotificationLayer & mNotificationLayer;
+
+    //
+    // State
+    //
+
+    static std::chrono::duration<float> constexpr OpenDelayDuration = std::chrono::duration<float>(0.25f);
+    static std::chrono::duration<float> constexpr TransitionDuration = std::chrono::duration<float>(1.0f); // After open delay
+
+    float mCurrentOpen;
+    float mTargetOpen;
+    float mCurrentStateStartTime;
+};
+
+void GameController::PhysicsProbePanelStateMachineDeleter::operator()(PhysicsProbePanelStateMachine * ptr) const
+{
+    delete ptr;
+}
+
+void GameController::PhysicsProbePanelStateMachine::SetTargetOpen(float targetOpen)
+{
+    if (targetOpen != mTargetOpen)
+    {
+        //
+        // Change of target
+        //
+
+        // Calculate new start time
+        float const now = GameWallClock::GetInstance().NowAsFloat();
+        if (mTargetOpen == 1.0f)
+        {
+            // We were opening
+            mCurrentStateStartTime = now - (1.0f - mCurrentOpen) * TransitionDuration.count();
+        }
+        else
+        {
+            // We were closing
+            assert(mTargetOpen == 0.0f);
+            mCurrentStateStartTime = now - mCurrentOpen * TransitionDuration.count();
+        }
+
+        // Store new target
+        mTargetOpen = targetOpen;
+    }
+}
+
+void GameController::PhysicsProbePanelStateMachine::Update()
+{
+    float elapsed = GameWallClock::GetInstance().NowAsFloat() - mCurrentStateStartTime;
+
+    if (mCurrentOpen < mTargetOpen)
+    {
+        //
+        // Opening
+        //
+
+        // Discount initial delay
+        elapsed -= OpenDelayDuration.count();
+
+        if (elapsed < 0.0f)
+        {
+            // Still in initial delay
+            assert(mCurrentOpen == 0.0f);
+            return;
+        }
+
+        if (mCurrentOpen == 0.0f)
+        {
+            // First update for opening...
+            // ...emit event then
+            mGameEventDispatcher.OnPhysicsProbePanelOpened();
+        }
+
+        // Calculate new open
+        mCurrentOpen = std::min(elapsed / TransitionDuration.count(), 1.0f);
+
+        // Update notification layer
+        mNotificationLayer.SetPhysicsProbePanelOpen(mCurrentOpen);
+    }
+    else if (mCurrentOpen > mTargetOpen)
+    {
+        //
+        // Closing
+        //
+
+        if (mCurrentOpen == 1.0f)
+        {
+            // First update for closing...
+            // ...emit event then
+            mGameEventDispatcher.OnPhysicsProbePanelClosed();
+        }
+
+        // Calculate new open
+        mCurrentOpen = 1.0f - std::min(elapsed / TransitionDuration.count(), 1.0f);
+
+        // Update notification layer
+        mNotificationLayer.SetPhysicsProbePanelOpen(mCurrentOpen);
+    }
+}
+
+void GameController::PhysicsProbePanelStateMachine::Reset()
+{
+    mCurrentOpen = 0.0f;
+    mTargetOpen = 0.0f;
+    mCurrentStateStartTime = 0.0f;
+}
+
+void GameController::PhysicsProbePanelStateMachine::OnPhysicsProbeReading(
+    vec2f const & velocity,
+    float const temperature)
+{
+    // Only pass through if we're currently fully open
+    if (mCurrentOpen == 1.0f)
+    {
+        mNotificationLayer.SetPhysicsProbeReading(
+            velocity,
+            temperature);
+    }
+}
+
+void GameController::InitializePhysicsProbePanelStateMachine()
+{
+    mPhysicsProbePanelStateMachine.reset(
+        new PhysicsProbePanelStateMachine(
+            *mGameEventDispatcher,
+            mNotificationLayer));
+}
+
+void GameController::SetPhysicsProbePanelStateMachineTarget(float targetOpen)
+{
+    assert(!!mPhysicsProbePanelStateMachine);
+    mPhysicsProbePanelStateMachine->SetTargetOpen(targetOpen);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -495,6 +622,10 @@ void GameController::UpdateStateMachines(float currentSimulationTime)
     {
         mDayLightCycleStateMachine->Update();
     }
+
+    // Physics probe panel
+    assert(!!mPhysicsProbePanelStateMachine);
+    mPhysicsProbePanelStateMachine->Update();
 }
 
 void GameController::ResetStateMachines()
@@ -504,4 +635,6 @@ void GameController::ResetStateMachines()
     mThanosSnapStateMachines.clear();
 
     // Nothing to do for daylight cycle state machine
+
+    mPhysicsProbePanelStateMachine->Reset();
 }

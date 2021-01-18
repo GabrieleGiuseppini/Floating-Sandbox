@@ -135,6 +135,7 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
         {
             // We have a probe but it's far from here...
             // ...can't do anything
+            // TODO: wanna remove it in all cases?
             return std::nullopt;
         }
     }
