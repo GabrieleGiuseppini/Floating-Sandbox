@@ -15,6 +15,7 @@ void Gadgets::Update(
 {
     // Run through all gadgets and invoke Update() on each;
     // remove those gadgets that have expired
+
     for (auto it = mCurrentGadgets.begin(); it != mCurrentGadgets.end(); /* incremented in loop */)
     {
         bool const isActive = (*it)->Update(
@@ -45,6 +46,18 @@ void Gadgets::Update(
         {
             ++it;
         }
+    }
+
+    if (!!mCurrentPhysicsProbeGadget)
+    {
+        bool const isActive = mCurrentPhysicsProbeGadget->Update(
+            currentWallClockTime,
+            currentSimulationTime,
+            stormParameters,
+            gameParameters);
+
+        assert(isActive); // Guy never expires
+        (void)isActive;
     }
 }
 
@@ -92,13 +105,126 @@ void Gadgets::OnSpringDestroyed(ElementIndex springElementIndex)
     }
 }
 
+std::optional<bool> Gadgets::TogglePhysicsProbeAt(
+    vec2f const & targetPos,
+    GameParameters const & gameParameters)
+{
+    float const squareSearchRadius = gameParameters.ToolSearchRadius * gameParameters.ToolSearchRadius;
+
+    if (!!mCurrentPhysicsProbeGadget)
+    {
+        //
+        // We already have a physics probe...
+        // ...see if it's in radius, and if so, remove it
+        //
+
+        if ((mCurrentPhysicsProbeGadget->GetPosition() - targetPos).squareLength() < squareSearchRadius)
+        {
+            assert(mCurrentPhysicsProbeGadget->MayBeRemoved());
+
+            // Tell it we're removing it
+            mCurrentPhysicsProbeGadget->OnRemoved();
+
+            // Remove it
+            mCurrentPhysicsProbeGadget.reset();
+
+            // We've removed a physics probe gadget
+            return false;
+        }
+        else
+        {
+            // We have a probe but it's far from here...
+            // ...can't do anything
+            return std::nullopt;
+        }
+    }
+
+
+    //
+    // No physics probe in ship...
+    // ...find closest spring with no gadgets attached within the search radius, and
+    // if found, attach probe to it
+    //
+
+    ElementIndex nearestCandidateSpringIndex = NoneElementIndex;
+    float nearestCandidateSpringDistance = std::numeric_limits<float>::max();
+
+    for (auto springIndex : mShipSprings)
+    {
+        if (!mShipSprings.IsDeleted(springIndex) && !mShipSprings.IsGadgetAttached(springIndex))
+        {
+            float const squareDistance = (mShipSprings.GetMidpointPosition(springIndex, mShipPoints) - targetPos).squareLength();
+            if (squareDistance < squareSearchRadius)
+            {
+                // This spring is within the search radius
+
+                // Keep the nearest
+                if (squareDistance < squareSearchRadius && squareDistance < nearestCandidateSpringDistance)
+                {
+                    nearestCandidateSpringIndex = springIndex;
+                    nearestCandidateSpringDistance = squareDistance;
+                }
+            }
+        }
+    }
+
+    if (NoneElementIndex != nearestCandidateSpringIndex)
+    {
+        // We have a nearest candidate spring
+
+        // Create gadget
+        assert(!mCurrentPhysicsProbeGadget);
+        mCurrentPhysicsProbeGadget = std::make_unique<PhysicsProbeGadget>(
+            GadgetId(mShipId, mNextLocalGadgetId++),
+            nearestCandidateSpringIndex,
+            mParentWorld,
+            mGameEventHandler,
+            mShipPhysicsHandler,
+            mShipPoints,
+            mShipSprings);
+
+        // Attach gadget to the spring
+        mShipSprings.AttachGadget(
+            nearestCandidateSpringIndex,
+            mCurrentPhysicsProbeGadget->GetMass(),
+            mShipPoints);
+
+        // Notify
+        mGameEventHandler->OnGadgetPlaced(
+            mCurrentPhysicsProbeGadget->GetId(),
+            mCurrentPhysicsProbeGadget->GetType(),
+            mParentWorld.IsUnderwater(
+                mCurrentPhysicsProbeGadget->GetPosition()));
+
+        // We've placed a physic probe gadget
+        return true;
+    }
+
+    // Can't do anything
+    return std::nullopt;
+}
+
+void Gadgets::RemovePhysicsProbe()
+{
+    if (!!mCurrentPhysicsProbeGadget)
+    {
+        assert(mCurrentPhysicsProbeGadget->MayBeRemoved());
+
+        // Tell it we're removing it
+        mCurrentPhysicsProbeGadget->OnRemoved();
+
+        // Remove it
+        mCurrentPhysicsProbeGadget.reset();
+    }
+}
+
 void Gadgets::DetonateRCBombs()
 {
     for (auto & gadget : mCurrentGadgets)
     {
         if (GadgetType::RCBomb == gadget->GetType())
         {
-            RCBomb * rcb = dynamic_cast<RCBomb *>(gadget.get());
+            RCBombGadget * rcb = dynamic_cast<RCBombGadget *>(gadget.get());
             rcb->Detonate();
         }
     }
@@ -110,7 +236,7 @@ void Gadgets::DetonateAntiMatterBombs()
     {
         if (GadgetType::AntiMatterBomb == gadget->GetType())
         {
-            AntiMatterBomb * amb = dynamic_cast<AntiMatterBomb *>(gadget.get());
+            AntiMatterBombGadget * amb = dynamic_cast<AntiMatterBombGadget *>(gadget.get());
             amb->Detonate();
         }
     }
@@ -123,6 +249,11 @@ void Gadgets::Upload(
     for (auto & gadget : mCurrentGadgets)
     {
         gadget->Upload(shipId, renderContext);
+    }
+
+    if (mCurrentPhysicsProbeGadget)
+    {
+        mCurrentPhysicsProbeGadget->Upload(shipId, renderContext);
     }
 }
 

@@ -18,11 +18,11 @@ namespace Physics
 /*
  * Gadget specialization for spectacular anti-matter bombs.
  */
-class AntiMatterBomb final : public Gadget
+class AntiMatterBombGadget final : public Gadget
 {
 public:
 
-    AntiMatterBomb(
+    AntiMatterBombGadget(
         GadgetId id,
         ElementIndex springIndex,
         World & parentWorld,

@@ -9,7 +9,7 @@
 
 namespace Physics {
 
-ImpactBomb::ImpactBomb(
+ImpactBombGadget::ImpactBombGadget(
     GadgetId id,
     ElementIndex springIndex,
     World & parentWorld,
@@ -31,7 +31,7 @@ ImpactBomb::ImpactBomb(
 {
 }
 
-bool ImpactBomb::Update(
+bool ImpactBombGadget::Update(
     GameWallClock::time_point /*currentWallClockTime*/,
     float currentSimulationTime,
     Storm::Parameters const & /*stormParameters*/,
@@ -127,7 +127,7 @@ bool ImpactBomb::Update(
     }
 }
 
-void ImpactBomb::Upload(
+void ImpactBombGadget::Upload(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {

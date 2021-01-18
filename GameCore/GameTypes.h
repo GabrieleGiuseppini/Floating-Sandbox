@@ -287,6 +287,7 @@ enum class GadgetType
 {
     AntiMatterBomb,
     ImpactBomb,
+    PhysicsProbe,
     RCBomb,
     TimerBomb
 };

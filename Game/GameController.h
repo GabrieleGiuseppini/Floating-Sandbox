@@ -188,6 +188,7 @@ public:
     bool FloodAt(vec2f const & screenCoordinates, float waterQuantityMultiplier) override;
     void ToggleAntiMatterBombAt(vec2f const & screenCoordinates) override;
     void ToggleImpactBombAt(vec2f const & screenCoordinates) override;
+    void TogglePhysicsProbeAt(vec2f const & screenCoordinates) override;
     void ToggleRCBombAt(vec2f const & screenCoordinates) override;
     void ToggleTimerBombAt(vec2f const & screenCoordinates) override;
     void DetonateRCBombs() override;

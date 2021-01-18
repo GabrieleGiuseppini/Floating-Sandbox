@@ -21,11 +21,11 @@ namespace Physics
 /*
  * Gadget specialization for bombs that explode after a time interval.
  */
-class TimerBomb final : public Gadget
+class TimerBombGadget final : public Gadget
 {
 public:
 
-    TimerBomb(
+    TimerBombGadget(
         GadgetId id,
         ElementIndex springIndex,
         World & parentWorld,

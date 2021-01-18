@@ -8,6 +8,10 @@
 #include "FloatingPoint.h"
 #include "Log.h"
 
+TaskThread::TaskThread()
+    : TaskThread(false)
+{}
+
 TaskThread::TaskThread(bool doForceNoMultiThreading)
     : mIsStop(false)
 {

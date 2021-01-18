@@ -85,6 +85,7 @@ long const ID_SCRUB_MENUITEM = wxNewId();
 long const ID_SCAREFISH_MENUTEIM = wxNewId();
 long const ID_RCBOMBDETONATE_MENUITEM = wxNewId();
 long const ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
+long const ID_PHYSICSPROBE_MENUITEM = wxNewId();
 long const ID_TRIGGERTSUNAMI_MENUITEM = wxNewId();
 long const ID_TRIGGERROGUEWAVE_MENUITEM = wxNewId();
 long const ID_TRIGGERSTORM_MENUITEM = wxNewId();
@@ -337,6 +338,10 @@ MainFrame::MainFrame(
     wxMenuItem * antiMatterBombMenuItem = new wxMenuItem(mToolsMenu, ID_ANTIMATTERBOMB_MENUITEM, _("Toggle Anti-Matter Bomb") + wxS("\tA"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(antiMatterBombMenuItem);
     Connect(ID_ANTIMATTERBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombMenuItemSelected);
+
+    wxMenuItem * physicsProbeMenuItem = new wxMenuItem(mToolsMenu, ID_PHYSICSPROBE_MENUITEM, _("Toggle Physics Probe"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(physicsProbeMenuItem);
+    Connect(ID_PHYSICSPROBE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPhysicsProbeMenuItemSelected);
 
     wxMenuItem * thanosSnapMenuItem = new wxMenuItem(mToolsMenu, ID_THANOSSNAP_MENUITEM, _("Thanos' Snap") + wxS("\tQ"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(thanosSnapMenuItem);
@@ -1810,6 +1815,12 @@ void MainFrame::OnAntiMatterBombMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::AntiMatterBomb);
+}
+
+void MainFrame::OnPhysicsProbeMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::PhysicsProbe);
 }
 
 void MainFrame::OnThanosSnapMenuItemSelected(wxCommandEvent & /*event*/)

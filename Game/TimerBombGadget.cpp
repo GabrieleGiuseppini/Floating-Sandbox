@@ -9,7 +9,7 @@
 
 namespace Physics {
 
-TimerBomb::TimerBomb(
+TimerBombGadget::TimerBombGadget(
     GadgetId id,
     ElementIndex springIndex,
     World & parentWorld,
@@ -40,7 +40,7 @@ TimerBomb::TimerBomb(
         false);
 }
 
-bool TimerBomb::Update(
+bool TimerBombGadget::Update(
     GameWallClock::time_point currentWallClockTime,
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
@@ -241,7 +241,7 @@ bool TimerBomb::Update(
     }
 }
 
-void TimerBomb::OnNeighborhoodDisturbed()
+void TimerBombGadget::OnNeighborhoodDisturbed()
 {
     if (State::SlowFuseBurning == mState
         || State::Defused == mState)
@@ -254,7 +254,7 @@ void TimerBomb::OnNeighborhoodDisturbed()
     }
 }
 
-void TimerBomb::Upload(
+void TimerBombGadget::Upload(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
@@ -368,7 +368,7 @@ void TimerBomb::Upload(
     }
 }
 
-void TimerBomb::TransitionToFastFusing(GameWallClock::time_point currentWallClockTime)
+void TimerBombGadget::TransitionToFastFusing(GameWallClock::time_point currentWallClockTime)
 {
     mState = State::FastFuseBurning;
 

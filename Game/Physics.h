@@ -46,10 +46,11 @@ namespace Physics
 #include "World.h"
 
 #include "Gadget.h"
-#include "AntiMatterBomb.h"
-#include "ImpactBomb.h"
-#include "RCBomb.h"
-#include "TimerBomb.h"
+#include "AntiMatterBombGadget.h"
+#include "ImpactBombGadget.h"
+#include "PhysicsProbeGadget.h"
+#include "RCBombGadget.h"
+#include "TimerBombGadget.h"
 #include "Gadgets.h"
 
 #include "PinnedPoints.h"

@@ -1,6 +1,6 @@
 /***************************************************************************************
 * Original Author:      Gabriele Giuseppini
-* Created:              2018-05-23
+* Created:              2018-12-07
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #pragma once
@@ -16,13 +16,13 @@ namespace Physics
 {
 
 /*
- * Gadget specialization for bombs that explode when a remote control is triggered.
+ * Gadget specialization for bombs that explode on impact.
  */
-class RCBomb final : public Gadget
+class ImpactBombGadget final : public Gadget
 {
 public:
 
-    RCBomb(
+    ImpactBombGadget(
         GadgetId id,
         ElementIndex springIndex,
         World & parentWorld,
@@ -53,7 +53,7 @@ public:
         // Notify removal
         mGameEventHandler->OnGadgetRemoved(
             mId,
-            GadgetType::RCBomb,
+            GadgetType::ImpactBomb,
             mParentWorld.IsUnderwater(
                 GetPosition()));
 
@@ -63,14 +63,16 @@ public:
 
     virtual void OnNeighborhoodDisturbed() override
     {
-        Detonate();
+        if (State::Idle == mState)
+        {
+            // Transition to trigger-explosion
+            mState = State::TriggeringExplosion;
+        }
     }
 
     virtual void Upload(
         ShipId shipId,
         Render::RenderContext & renderContext) const override;
-
-    void Detonate();
 
 private:
 
@@ -80,15 +82,11 @@ private:
 
     enum class State
     {
-        // In these states we wait for remote detonation or disturbance,
-        // and ping regularly at long intervals, transitioning between
-        // on and off
-        IdlePingOff,
-        IdlePingOn,
+        // In this state we are just idle
+        Idle,
 
-        // In this state we are about to explode; we wait a little time
-        // before exploding, and ping regularly at short intervals
-        DetonationLeadIn,
+        // Dummy state, just starts explosion
+        TriggeringExplosion,
 
         // We are exploding (only used for rendering purposes)
         Exploding,
@@ -99,35 +97,8 @@ private:
 
     State mState;
 
-    static constexpr auto SlowPingOffInterval = 750ms;
-    static constexpr auto SlowPingOnInterval = 250ms;
-    static constexpr auto FastPingInterval = 100ms;
-    static constexpr auto DetonationLeadInToExplosionInterval = 1500ms;
-    static constexpr int PingFramesCount = 4;
     static constexpr int ExplosionFadeoutStepsCount = 8;
 
-    inline void TransitionToDetonationLeadIn(GameWallClock::time_point currentWallClockTime)
-    {
-        mState = State::DetonationLeadIn;
-
-        ++mPingOnStepCounter;
-
-        mGameEventHandler->OnRCBombPing(
-            mParentWorld.IsUnderwater(GetPosition()),
-            1);
-
-        // Schedule next transition
-        mNextStateTransitionTimePoint = currentWallClockTime + FastPingInterval;
-    }
-
-    // The next timestamp at which we'll automatically transition state
-    GameWallClock::time_point mNextStateTransitionTimePoint;
-
-    // The timestamp at which we'll explode while in detonation lead-in
-    GameWallClock::time_point mExplosionIgnitionTimestamp;
-
-    // The counters for the various states. Fine to rollover!
-    uint8_t mPingOnStepCounter; // Set to one upon entering
     uint8_t mExplosionFadeoutCounter; // Betewen 0 and ExplosionFadeoutStepsCount (excluded)
 };
 

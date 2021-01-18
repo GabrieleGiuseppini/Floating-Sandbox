@@ -185,6 +185,12 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 
+    std::optional<bool> TogglePhysicsProbeAt(
+        vec2f const & targetPos,
+        GameParameters const & gameParameters);
+
+    void RemovePhysicsProbe();
+
     bool ToggleRCBombAt(
         vec2f const & targetPos,
         GameParameters const & gameParameters);

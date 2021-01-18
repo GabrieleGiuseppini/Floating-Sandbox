@@ -25,6 +25,18 @@
 },
 
 {
+	"groupName": "PhysicsProbePanel",
+	"hasOwnAmbientLight": true,
+	"frames":[
+		{	
+			"worldWidth": 1.0,
+			"worldHeight": 1.0,
+			"filename": "physics_probe_panel_\\d+"
+		}
+	]
+},
+
+{
 	"groupName": "SoundMuteNotification",
 	"hasOwnAmbientLight": true,
 	"frames":[

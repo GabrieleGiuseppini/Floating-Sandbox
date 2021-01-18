@@ -497,6 +497,43 @@ void World::ToggleImpactBombAt(
     }
 }
 
+std::optional<bool> World::TogglePhysicsProbeAt(
+    vec2f const & targetPos,
+    GameParameters const & gameParameters)
+{
+    // Stop at first ship that successfully places or removes a probe
+    size_t iShip = mAllShips.size();
+    do
+    {
+        --iShip;
+
+        auto result = mAllShips[iShip]->TogglePhysicsProbeAt(targetPos, gameParameters);
+        if (result.has_value())
+        {
+            // The probe has been placed or removed on this ship
+
+            if (*result)
+            {
+                // The probe has been placed on this ship, remove it from all others
+                for (size_t iShip2 = 0; iShip2 < mAllShips.size(); ++iShip2)
+                {
+                    if (iShip2 != iShip)
+                    {
+                        mAllShips[iShip2]->RemovePhysicsProbe();
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        // No luck...
+        // ...continue with other ships
+    } while(iShip > 0);
+
+    return std::nullopt;
+}
+
 void World::ToggleRCBombAt(
     vec2f const & targetPos,
     GameParameters const & gameParameters)

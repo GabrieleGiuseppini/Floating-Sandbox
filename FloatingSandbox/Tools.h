@@ -48,7 +48,8 @@ enum class ToolType
     Scrub,
     RepairStructure,
     ThanosSnap,
-    ScareFish
+    ScareFish,
+    PhysicsProbe
 };
 
 struct InputState
@@ -2449,4 +2450,35 @@ private:
 
     // The current counter for the down cursors
     uint8_t mDownCursorCounter;
+};
+
+class PhysicsProbeTool final : public OneShotTool
+{
+public:
+
+    PhysicsProbeTool(
+        IToolCursorManager & toolCursorManager,
+        std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLocator & resourceLocator);
+
+public:
+
+    virtual void Initialize(InputState const & /*inputState*/) override
+    {
+        // Reset cursor
+        mToolCursorManager.SetToolCursor(mCursorImage);
+    }
+
+    virtual void OnLeftMouseDown(InputState const & inputState) override
+    {
+        // Toggle probe
+        mGameController->TogglePhysicsProbeAt(inputState.MousePosition);
+    }
+
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+
+private:
+
+    wxImage const mCursorImage;
 };

@@ -75,6 +75,34 @@
 },
 
 {
+	"groupName": "PhysicsProbe",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 12.0,
+			"worldHeight": 12.0,
+			"anchorOffsetX": -2,
+			"anchorOffsetY": 2,
+			"filename": "physics_probe_\\d+"
+		}
+	]
+},
+
+{
+	"groupName": "PhysicsProbePing",
+	"hasOwnAmbientLight": true,
+	"frames":[
+		{	
+			"worldWidth": 12.0,
+			"worldHeight": 12.0,
+			"anchorOffsetX": -2,
+			"anchorOffsetY": 2,
+			"filename": "physics_probe_ping_\\d+"
+		}
+	]
+},
+
+{
 	"groupName": "PinnedPoint",
 	"hasOwnAmbientLight": false,
 	"frames":[

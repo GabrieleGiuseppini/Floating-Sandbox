@@ -9,7 +9,7 @@
 
 namespace Physics {
 
-AntiMatterBomb::AntiMatterBomb(
+AntiMatterBombGadget::AntiMatterBombGadget(
     GadgetId id,
     ElementIndex springIndex,
     World & parentWorld,
@@ -37,7 +37,7 @@ AntiMatterBomb::AntiMatterBomb(
     mGameEventHandler->OnAntiMatterBombContained(mId, true);
 }
 
-bool AntiMatterBomb::Update(
+bool AntiMatterBombGadget::Update(
     GameWallClock::time_point currentWallClockTime,
     float /*currentSimulationTime*/,
     Storm::Parameters const & /*stormParameters*/,
@@ -320,7 +320,7 @@ bool AntiMatterBomb::Update(
     }
 }
 
-void AntiMatterBomb::Upload(
+void AntiMatterBombGadget::Upload(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
@@ -458,7 +458,7 @@ void AntiMatterBomb::Upload(
     }
 }
 
-void AntiMatterBomb::Detonate()
+void AntiMatterBombGadget::Detonate()
 {
     if (State::Contained_1 == mState)
     {

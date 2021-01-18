@@ -318,16 +318,40 @@ Render:
 						+ mFonts goes and store instead vector of FontMetadata
 						+ Make allocation sticky
 					+ Draw: make one single call
-				- New gadget
-					- Enum
-					- Methods
-				- New NotificationRenderContext notification type: PhysicsProbe
-					- Texture for background of panel
-						- 200x100
-						- Speed
-						- Temperature
+				- GameController logic:
+					- Always-present state machine 
+						- Implements driving of NotificationLayer's PhysicsProbePlanel
+							- NotificationLayer uploads to NotificationRenderContext at next Upload()
+								- TODO: needs dirty flag?
+						- Does panel sounds
+						- Exposes boolean to allow GameController to check to pass probe IEventHandler event through to NotificationLayer
+				- NotificationRenderContext:
+					- New NotificationRenderContext notification type: PhysicsProbe
+						- Upload is sticky: when uploaded, creates vertices and sets dirty flag
+						- RenderPrepare: upload if dirty
+							- And clear dirty flag
+						- RenderDraw: draw if vertices not empty
+					+ Texture for background of panel
+						+ 200x100
+						+ Speed
+						+ Temperature
 					- 7-segment font (including - and .)
-
+				= New gadget & tool
+					+ Enum
+					+ MainFrame menu entry - no keyboard shortcut
+					+ Tool
+					+ IGameController::TogglePhysicsProbeAt
+					+ Gadgets:
+						+ TogglePhysicsProbeAt
+						+ RemovePhysicsProbe
+					+ Cursor: physics_probe_cursor
+					- Place/Removal Sound
+						- Also underwater
+				
+				- Panel open/close sound, time-syncd with panel
+				- Nuke velocity notification
+					- GameController et al
+					- UI preferences
 			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
 				- Copy old exe first
 				- Remove global damp at integration loop

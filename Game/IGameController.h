@@ -107,6 +107,7 @@ struct IGameController
     virtual bool FloodAt(vec2f const & screenCoordinates, float waterQuantityMultiplier) = 0;
     virtual void ToggleAntiMatterBombAt(vec2f const & screenCoordinates) = 0;
     virtual void ToggleImpactBombAt(vec2f const & screenCoordinates) = 0;
+    virtual void TogglePhysicsProbeAt(vec2f const & screenCoordinates) = 0;
     virtual void ToggleRCBombAt(vec2f const & screenCoordinates) = 0;
     virtual void ToggleTimerBombAt(vec2f const & screenCoordinates) = 0;
     virtual void DetonateRCBombs() = 0;

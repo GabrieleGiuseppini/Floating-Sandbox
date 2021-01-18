@@ -46,6 +46,7 @@ public:
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
         , mCurrentGadgets()
+        , mCurrentPhysicsProbeGadget()
         , mNextLocalGadgetId(0)
     {
     }
@@ -64,7 +65,7 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters)
     {
-        return ToggleGadgetAt<AntiMatterBomb>(
+        return ToggleGadgetAt<AntiMatterBombGadget>(
             targetPos,
             gameParameters);
     }
@@ -73,16 +74,22 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters)
     {
-        return ToggleGadgetAt<ImpactBomb>(
+        return ToggleGadgetAt<ImpactBombGadget>(
             targetPos,
             gameParameters);
     }
+
+    std::optional<bool> TogglePhysicsProbeAt(
+        vec2f const & targetPos,
+        GameParameters const & gameParameters);
+
+    void RemovePhysicsProbe();
 
     bool ToggleRCBombAt(
         vec2f const & targetPos,
         GameParameters const & gameParameters)
     {
-        return ToggleGadgetAt<RCBomb>(
+        return ToggleGadgetAt<RCBombGadget>(
             targetPos,
             gameParameters);
     }
@@ -91,7 +98,7 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters)
     {
-        return ToggleGadgetAt<TimerBomb>(
+        return ToggleGadgetAt<TimerBombGadget>(
             targetPos,
             gameParameters);
     }
@@ -146,9 +153,9 @@ private:
 
 
         //
-        // No gadgetss in radius...
+        // No gadgets in radius...
         // ...so find closest spring with no attached gadget within the search radius, and
-        // if found, attach gadget to it it
+        // if found, attach gadget to it
         //
 
         ElementIndex nearestCandidateSpringIndex = NoneElementIndex;
@@ -242,8 +249,11 @@ private:
     // The container of all the ship's springs
     Springs & mShipSprings;
 
-    // The current set of gadgets
+    // The current set of gadgets, excluding physics probe gadget
     CircularList<std::unique_ptr<Gadget>, GameParameters::MaxGadgets> mCurrentGadgets;
+
+    // The current physics probe gadget
+    std::unique_ptr<Gadget> mCurrentPhysicsProbeGadget;
 
     // The next gadget ID value
     LocalGadgetId mNextLocalGadgetId;

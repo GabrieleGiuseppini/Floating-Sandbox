@@ -1144,6 +1144,20 @@ bool Ship::ToggleImpactBombAt(
         gameParameters);
 }
 
+std::optional<bool> Ship::TogglePhysicsProbeAt(
+    vec2f const & targetPos,
+    GameParameters const & gameParameters)
+{
+    return mGadgets.TogglePhysicsProbeAt(
+        targetPos,
+        gameParameters);
+}
+
+void Ship::RemovePhysicsProbe()
+{
+    return mGadgets.RemovePhysicsProbe();
+}
+
 bool Ship::ToggleRCBombAt(
     vec2f const & targetPos,
     GameParameters const & gameParameters)

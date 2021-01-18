@@ -269,7 +269,7 @@ void Fishes::UpdateNumberOfFishes(
             //
 
             // Find next incomplete shoal
-            for (freeShoalIndex; freeShoalIndex < mFishShoals.size(); ++freeShoalIndex)
+            for (; freeShoalIndex < mFishShoals.size(); ++freeShoalIndex)
             {
                 if (mFishShoals[freeShoalIndex].CurrentMemberCount < mFishShoals[freeShoalIndex].Species.ShoalSize)
                 {

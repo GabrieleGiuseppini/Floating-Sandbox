@@ -963,6 +963,17 @@ void GameController::ToggleImpactBombAt(vec2f const & screenCoordinates)
         mGameParameters);
 }
 
+void GameController::TogglePhysicsProbeAt(vec2f const & screenCoordinates)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->TogglePhysicsProbeAt(
+        worldCoordinates,
+        mGameParameters);
+}
+
 void GameController::ToggleRCBombAt(vec2f const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);

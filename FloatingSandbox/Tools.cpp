@@ -575,3 +575,21 @@ ScareFishTool::ScareFishTool(
     , mDownCursorCounter(0)
 {
 }
+
+////////////////////////////////////////////////////////////////////////
+// PhysicsProbe
+////////////////////////////////////////////////////////////////////////
+
+PhysicsProbeTool::PhysicsProbeTool(
+    IToolCursorManager & toolCursorManager,
+    std::shared_ptr<IGameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLocator & resourceLocator)
+    : OneShotTool(
+        ToolType::PhysicsProbe,
+        toolCursorManager,
+        std::move(gameController),
+        std::move(soundController))
+    , mCursorImage(WxHelpers::LoadCursorImage("physics_probe_cursor", 6, 29, resourceLocator))
+{
+}

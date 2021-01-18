@@ -9,7 +9,7 @@
 
 namespace Physics {
 
-RCBomb::RCBomb(
+RCBombGadget::RCBombGadget(
     GadgetId id,
     ElementIndex springIndex,
     World & parentWorld,
@@ -34,7 +34,7 @@ RCBomb::RCBomb(
 {
 }
 
-bool RCBomb::Update(
+bool RCBombGadget::Update(
     GameWallClock::time_point currentWallClockTime,
     float currentSimulationTime,
     Storm::Parameters const & /*stormParameters*/,
@@ -180,7 +180,7 @@ bool RCBomb::Update(
     }
 }
 
-void RCBomb::Upload(
+void RCBombGadget::Upload(
     ShipId shipId,
     Render::RenderContext & renderContext) const
 {
@@ -275,7 +275,7 @@ void RCBomb::Upload(
     }
 }
 
-void RCBomb::Detonate()
+void RCBombGadget::Detonate()
 {
     if (State::IdlePingOff == mState
         || State::IdlePingOn == mState)

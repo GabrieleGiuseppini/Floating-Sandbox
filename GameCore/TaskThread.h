@@ -102,7 +102,8 @@ public:
 
 public:
 
-    TaskThread(bool doForceNoMultiThreading);
+    TaskThread();
+    explicit TaskThread(bool doForceNoMultiThreading);
 
     ~TaskThread();
 

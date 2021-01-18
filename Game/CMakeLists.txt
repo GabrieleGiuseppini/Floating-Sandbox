@@ -50,8 +50,8 @@ set  (GAME_SOURCES
 	VisibleWorld.h)
 
 set  (PHYSICS_SOURCES
-	AntiMatterBomb.h
-	AntiMatterBomb.cpp
+	AntiMatterBombGadget.h
+	AntiMatterBombGadget.cpp
 	Clouds.cpp
 	Clouds.h
 	ElectricalElements.cpp
@@ -63,20 +63,22 @@ set  (PHYSICS_SOURCES
 	Gadget.h
 	Gadgets.cpp
 	Gadgets.h
-	ImpactBomb.cpp
-	ImpactBomb.h
+	ImpactBombGadget.cpp
+	ImpactBombGadget.h
 	IShipPhysicsHandler.h
 	OceanFloor.cpp
 	OceanFloor.h
 	OceanSurface.cpp
 	OceanSurface.h
 	Physics.h
+	PhysicsProbeGadget.cpp
+	PhysicsProbeGadget.h
 	PinnedPoints.cpp
 	PinnedPoints.h
 	Points.cpp
 	Points.h
-	RCBomb.cpp
-	RCBomb.h
+	RCBombGadget.cpp
+	RCBombGadget.h
 	Ship.cpp
 	Ship_ForceFields.cpp
 	Ship_Interactions.cpp
@@ -89,8 +91,8 @@ set  (PHYSICS_SOURCES
 	Stars.h
 	Storm.cpp
 	Storm.h
-	TimerBomb.cpp
-	TimerBomb.h
+	TimerBombGadget.cpp
+	TimerBombGadget.h
 	Triangles.cpp
 	Triangles.h
 	Wind.cpp

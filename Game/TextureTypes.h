@@ -102,6 +102,8 @@ enum class GenericMipMappedTextureGroups : uint16_t
     AntiMatterBombSphereCloud,
     EngineWake,
     ImpactBomb,
+    PhysicsProbe,
+    PhysicsProbePing,
     PinnedPoint,
     RcBomb,
     RcBombPing,
@@ -133,6 +135,10 @@ struct GenericMipMappedTextureTextureDatabaseTraits
             return TextureGroups::EngineWake;
         else if (Utils::CaseInsensitiveEquals(str, "ImpactBomb"))
             return TextureGroups::ImpactBomb;
+        else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbe"))
+            return TextureGroups::PhysicsProbe;
+        else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbePing"))
+            return TextureGroups::PhysicsProbePing;
         else if (Utils::CaseInsensitiveEquals(str, "PinnedPoint"))
             return TextureGroups::PinnedPoint;
         else if (Utils::CaseInsensitiveEquals(str, "RCBomb"))
@@ -158,6 +164,7 @@ enum class GenericLinearTextureGroups : uint16_t
 {
     DayLightCycleNotification,
     Fire,
+    PhysicsProbePanel,
     SoundMuteNotification,
     UVModeNotification,
     WorldBorder,
@@ -177,6 +184,8 @@ struct GenericLinearTextureTextureDatabaseTraits
             return TextureGroups::DayLightCycleNotification;
         else if (Utils::CaseInsensitiveEquals(str, "Fire"))
             return TextureGroups::Fire;
+        else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbePanel"))
+            return TextureGroups::PhysicsProbePanel;
         else if (Utils::CaseInsensitiveEquals(str, "SoundMuteNotification"))
             return TextureGroups::SoundMuteNotification;
         else if (Utils::CaseInsensitiveEquals(str, "UVModeNotification"))
