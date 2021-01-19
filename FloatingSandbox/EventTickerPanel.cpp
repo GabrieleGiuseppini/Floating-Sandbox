@@ -226,6 +226,12 @@ void EventTickerPanel::OnGadgetPlaced(
             break;
         }
 
+        case GadgetType::PhysicsProbe:
+        {
+            ss << "Physics probe";
+            break;
+        }
+
         case GadgetType::RCBomb:
         {
             ss << "Remote-controlled bomb";
@@ -261,6 +267,12 @@ void EventTickerPanel::OnGadgetRemoved(
         case GadgetType::ImpactBomb:
         {
             ss << "Impact bomb";
+            break;
+        }
+
+        case GadgetType::PhysicsProbe:
+        {
+            ss << "Physics probe";
             break;
         }
 
