@@ -18,7 +18,7 @@
 #if defined(FS_OS_LINUX)
 #pragma message ("OS:FS_OS_LINUX")
 #elif defined(FS_OS_MACOS)
-#pragma message ("OS:FS_OS_LINUX")
+#pragma message ("OS:FS_OS_MACOS")
 #elif defined(FS_OS_WINDOWS)
 #pragma message ("OS:FS_OS_WINDOWS")
 #else
