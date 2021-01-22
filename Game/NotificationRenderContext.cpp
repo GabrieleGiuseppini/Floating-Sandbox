@@ -36,6 +36,12 @@ NotificationRenderContext::NotificationRenderContext(
     , mTextureNotificationVAO()
     , mTextureNotificationVertexBuffer()
     , mTextureNotificationVBO()
+    // Physics probe panel
+    , mPhysicsProbePanelVAO()
+    , mPhysicsProbePanelVertexBuffer()
+    , mIsPhysicsProbePanelVertexBufferDirty(false)
+    , mPhysicsProbePanelVBO()
+    , mPhysicsProbePanelNdcDimensions(vec2f::zero()) // Will be recalculated
     // Tool notifications
     , mHeatBlasterFlameVAO()
     , mHeatBlasterFlameVBO()
@@ -224,6 +230,38 @@ NotificationRenderContext::NotificationRenderContext(
     }
 
     //
+    // Initialize Physics probe panel
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mPhysicsProbePanelVAO = tmpGLuint;
+
+        glBindVertexArray(*mPhysicsProbePanelVAO);
+        CheckOpenGLError();
+
+        glGenBuffers(1, &tmpGLuint);
+        mPhysicsProbePanelVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mPhysicsProbePanelVBO);
+        static_assert(sizeof(PhysicsProbePanelVertex) == 6 * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::PhysicsProbePanel1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::PhysicsProbePanel1), 4, GL_FLOAT, GL_FALSE, sizeof(PhysicsProbePanelVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::PhysicsProbePanel2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::PhysicsProbePanel2), 2, GL_FLOAT, GL_FALSE, sizeof(PhysicsProbePanelVertex), (void *)(4 * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+
+        // Set noise in shader
+        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture2>();
+        glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetNoiseTextureOpenGLHandle(1));
+        mShaderManager.ActivateProgram<ProgramType::PhysicsProbePanel>();
+        mShaderManager.SetTextureParameters<ProgramType::PhysicsProbePanel>();
+    }
+
+    //
     // Initialize HeatBlaster flame
     //
 
@@ -324,6 +362,8 @@ void NotificationRenderContext::RenderPrepare()
 
     RenderPrepareTextureNotifications();
 
+    RenderPreparePhysicsProbePanel();
+
     RenderPrepareHeatBlasterFlame();
 
     RenderPrepareFireExtinguisherSpray();
@@ -334,6 +374,8 @@ void NotificationRenderContext::RenderDraw()
     RenderDrawTextNotifications();
 
     RenderDrawTextureNotifications();
+
+    RenderDrawPhysicsProbePanel();
 
     RenderDrawHeatBlasterFlame();
 
@@ -385,6 +427,17 @@ void NotificationRenderContext::ApplyCanvasSizeChanges(RenderParameters const & 
     // Make sure we re-calculate (and re-upload) all texture notification vertices
     // at the next iteration
     mIsTextureNotificationDataDirty = true;
+
+    // Recalculate NDC dimensions of physics probe panel
+    auto const & atlasFrame = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GenericLinearTextureGroups>(GenericLinearTextureGroups::PhysicsProbePanel, 0));
+    mPhysicsProbePanelNdcDimensions = vec2f(
+        static_cast<float>(atlasFrame.FrameMetadata.Size.Width) * mScreenToNdcX,
+        static_cast<float>(atlasFrame.FrameMetadata.Size.Height) * mScreenToNdcY);
+
+    // Set parameters
+    mShaderManager.ActivateProgram<ProgramType::PhysicsProbePanel>();
+    mShaderManager.SetProgramParameter<ProgramType::PhysicsProbePanel, ProgramParameterType::WidthNdc>(
+        mPhysicsProbePanelNdcDimensions.x);
 }
 
 void NotificationRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters)
@@ -540,6 +593,39 @@ void NotificationRenderContext::RenderDrawTextureNotifications()
 
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mTextureNotificationVertexBuffer.size()));
         CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+}
+
+void NotificationRenderContext::RenderPreparePhysicsProbePanel()
+{
+    if (mIsPhysicsProbePanelVertexBufferDirty)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mPhysicsProbePanelVBO);
+
+        glBufferData(GL_ARRAY_BUFFER,
+            sizeof(PhysicsProbePanelVertex) * mPhysicsProbePanelVertexBuffer.size(),
+            mPhysicsProbePanelVertexBuffer.data(),
+            GL_DYNAMIC_DRAW);
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        mIsPhysicsProbePanelVertexBufferDirty = false;
+    }
+}
+
+void NotificationRenderContext::RenderDrawPhysicsProbePanel()
+{
+    if (mPhysicsProbePanelVertexBuffer.size() > 0)
+    {
+        glBindVertexArray(*mPhysicsProbePanelVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::PhysicsProbePanel>();
+
+        assert((mPhysicsProbePanelVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mPhysicsProbePanelVertexBuffer.size()));
 
         glBindVertexArray(0);
     }
@@ -834,7 +920,7 @@ void NotificationRenderContext::GenerateTextureNotificationVertices()
             vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesTopRight.y),
             textureNotification.Alpha);
 
-        // Top-Right
+        // Top-right
         mTextureNotificationVertexBuffer.emplace_back(
             vec2f(quadBottomRight.x, quadTopLeft.y),
             frame.TextureCoordinatesTopRight,
@@ -848,7 +934,7 @@ void NotificationRenderContext::GenerateTextureNotificationVertices()
 
         // Triangle 2
 
-        // Top-Right
+        // Top-right
         mTextureNotificationVertexBuffer.emplace_back(
             vec2f(quadBottomRight.x, quadTopLeft.y),
             frame.TextureCoordinatesTopRight,

@@ -106,9 +106,10 @@ private:
     bool mIsStatusTextEnabled;
     bool mIsExtendedStatusTextEnabled;
 	std::array<std::string, 4> mStatusTextLines;
+	bool mIsStatusTextDirty;
 
 	//
-	// Ephemeral text
+	// Notification text
 	//
 
 	struct EphemeralTextLine
@@ -145,13 +146,23 @@ private:
 
 	std::deque<EphemeralTextLine> mEphemeralTextLines; // Ordered from top to bottom
 
+	bool mIsNotificationTextDirty;
+
 	//
-	// Indicators
+	// Texture notifications
 	//
 
 	bool mIsUltraViolentModeIndicatorOn;
 	bool mIsSoundMuteIndicatorOn;
 	bool mIsDayLightCycleOn;
+	bool mAreTextureNotificationsDirty;
+
+	//
+	// Physics probe
+	//
+
+	float mPhysicsProbePanelOpen;
+	bool mIsPhysicsProbePanelDirty;
 
 	//
 	// Interactions
@@ -193,12 +204,4 @@ private:
 	// When set, will be uploaded to display the fire extinguisher spray
 	// - and then reset (one-time use, it's a special case as it's really UI)
 	std::optional<FireExtinguisherSpray> mFireExtinguisherSprayToRender;
-
-	//
-	// State
-	//
-
-	bool mIsStatusTextDirty;
-	bool mIsGameTextDirty;
-	bool mAreTextureNotificationsDirty;
 };

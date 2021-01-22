@@ -974,6 +974,11 @@ public:
         mNotificationRenderContext->UploadTextureNotificationEnd();
     }
 
+    inline void UploadPhysicsProbePanel(float open)
+    {
+        mNotificationRenderContext->UploadPhysicsProbePanel(open);
+    }
+
     void UploadEnd();
 
     void Draw();

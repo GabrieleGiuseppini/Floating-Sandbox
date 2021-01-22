@@ -1841,6 +1841,17 @@ void SoundController::OnGadgetPlaced(
 
             break;
         }
+
+        case GadgetType::PhysicsProbe:
+        {
+            PlayUOneShotMultipleChoiceSound(
+                SoundType::PhysicsProbeAttached,
+                isUnderwater,
+                100.0f,
+                true);
+
+            break;
+        }
     }
 }
 
@@ -1860,6 +1871,20 @@ void SoundController::OnGadgetRemoved(
             {
                 PlayUOneShotMultipleChoiceSound(
                     SoundType::BombDetached,
+                    *isUnderwater,
+                    100.0f,
+                    true);
+            }
+
+            break;
+        }
+
+        case GadgetType::PhysicsProbe:
+        {
+            if (!!isUnderwater)
+            {
+                PlayUOneShotMultipleChoiceSound(
+                    SoundType::PhysicsProbeDetached,
                     *isUnderwater,
                     100.0f,
                     true);
@@ -1901,6 +1926,12 @@ void SoundController::OnBombExplosion(
                     100.0f,
                     50.0f * size),
                 true);
+        }
+
+        case GadgetType::PhysicsProbe:
+        {
+            // Never explodes
+            assert(false);
         }
     }
 }

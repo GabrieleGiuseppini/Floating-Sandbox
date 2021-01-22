@@ -55,6 +55,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::OceanTextureDetailedBackground;
     else if (lstr == "ocean_texture_detailed_foreground")
         return ProgramType::OceanTextureDetailedForeground;
+    else if (lstr == "physics_probe_panel")
+        return ProgramType::PhysicsProbePanel;
     else if (lstr == "rain")
         return ProgramType::Rain;
     else if (lstr == "ship_circle_highlights")
@@ -159,6 +161,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "OceanTextureDetailedBackground";
     case ProgramType::OceanTextureDetailedForeground:
         return "OceanTextureDetailedForeground";
+    case ProgramType::PhysicsProbePanel:
+        return "PhysicsProbePanel";
     case ProgramType::Rain:
         return "Rain";
     case ProgramType::ShipCircleHighlights:
@@ -215,10 +219,10 @@ std::string ProgramTypeToStr(ProgramType program)
         return "TextureNotifications";
     case ProgramType::WorldBorder:
         return "WorldBorder";
-    default:
-        assert(false);
-        throw GameException("Unsupported ProgramType");
     }
+
+    assert(false);
+    throw GameException("Unsupported ProgramType");
 }
 
 ProgramParameterType StrToProgramParameterType(std::string const & str)
@@ -275,6 +279,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::WaterContrast;
     else if (str == "WaterLevelThreshold")
         return ProgramParameterType::WaterLevelThreshold;
+    else if (str == "WidthNdc")
+        return ProgramParameterType::WidthNdc;
     // Textures
     else if (str == "SharedTexture")
         return ProgramParameterType::SharedTexture;
@@ -356,6 +362,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "WaterContrast";
     case ProgramParameterType::WaterLevelThreshold:
         return "WaterLevelThreshold";
+    case ProgramParameterType::WidthNdc:
+        return "WidthNdc";
         // Textures
     case ProgramParameterType::SharedTexture:
         return "SharedTexture";
@@ -377,10 +385,10 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "NoiseTexture2";
     case ProgramParameterType::OceanTexture:
         return "OceanTexture";
-    default:
-        assert(false);
-        throw GameException("Unsupported ProgramParameterType");
     }
+
+    assert(false);
+    throw GameException("Unsupported ProgramParameterType");
 }
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str)
@@ -426,10 +434,6 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::AABB2;
     else if (Utils::CaseInsensitiveEquals(str, "Rain"))
         return VertexAttributeType::Rain;
-    else if (Utils::CaseInsensitiveEquals(str, "FireExtinguisherSpray"))
-        return VertexAttributeType::FireExtinguisherSpray;
-    else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterFlame"))
-        return VertexAttributeType::HeatBlasterFlame;
     else if (Utils::CaseInsensitiveEquals(str, "WorldBorder"))
         return VertexAttributeType::WorldBorder;
     // Ship
@@ -480,6 +484,14 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::TextureNotification1;
     else if (Utils::CaseInsensitiveEquals(str, "TextureNotification2"))
         return VertexAttributeType::TextureNotification2;
+    else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbePanel1"))
+        return VertexAttributeType::PhysicsProbePanel1;
+    else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbePanel2"))
+        return VertexAttributeType::PhysicsProbePanel2;
+    else if (Utils::CaseInsensitiveEquals(str, "FireExtinguisherSpray"))
+        return VertexAttributeType::FireExtinguisherSpray;
+    else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterFlame"))
+        return VertexAttributeType::HeatBlasterFlame;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }

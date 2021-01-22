@@ -164,7 +164,7 @@ if (MSVC)
 		if(${flag_var} MATCHES "/W3")
 			string(REGEX REPLACE "/W3" "" ${flag_var} "${${flag_var}}")
 		endif(${flag_var} MATCHES "/W3")
-		set(${flag_var} "${${flag_var}} /W4")
+		set(${flag_var} "${${flag_var}} /W4 /w44062")
 	endforeach(flag_var)
 
 	# Make RelWithDebInfo use aggressive inlining

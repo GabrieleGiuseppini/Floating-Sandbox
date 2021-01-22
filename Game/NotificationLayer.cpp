@@ -21,16 +21,18 @@ NotificationLayer::NotificationLayer(
 	  mIsStatusTextEnabled(true)
 	, mIsExtendedStatusTextEnabled(false)
     , mStatusTextLines()
-	// Ephemeral text
+	, mIsStatusTextDirty(true)
+	// Notification text
 	, mEphemeralTextLines()
-	// Indicators
+	, mIsNotificationTextDirty(true)
+	// Texture notifications
 	, mIsUltraViolentModeIndicatorOn(isUltraViolentMode)
 	, mIsSoundMuteIndicatorOn(isSoundMuted)
 	, mIsDayLightCycleOn(isDayLightCycleOn)
-	// State
-	, mIsStatusTextDirty(true)
-	, mIsGameTextDirty(true)
 	, mAreTextureNotificationsDirty(true)
+	// Physics probe
+	, mPhysicsProbePanelOpen(0.0f)
+	, mIsPhysicsProbePanelDirty(true)
 {
 }
 
@@ -154,13 +156,19 @@ void NotificationLayer::AddEphemeralTextLine(
 	mEphemeralTextLines.emplace_back(text, lifetime);
 
 	// Text needs to be re-uploaded
-	mIsGameTextDirty = true;
+	mIsNotificationTextDirty = true;
 }
 
 void NotificationLayer::SetPhysicsProbePanelOpen(float open)
 {
-	// TODOHERE
+	// TODOTEST
 	LogMessage("NotificationLayer::SetPhysicsProbePanelOpen(", open, ")");
+
+	// Store open
+	mPhysicsProbePanelOpen = open;
+
+	// Physics panel needs to be re-uploaded
+	mIsPhysicsProbePanelDirty = true;
 }
 
 void NotificationLayer::SetPhysicsProbeReading(
@@ -197,17 +205,17 @@ void NotificationLayer::SetDayLightCycleIndicator(bool isDayLightCycleOn)
 
 void NotificationLayer::Reset()
 {
-	// Nuke all ephemeral lines
+	// Nuke notification text
 	mEphemeralTextLines.clear();
-	mIsGameTextDirty = true;
+	mIsNotificationTextDirty = true;
+
+	// Reset physics probe
+	mPhysicsProbePanelOpen = 0.0f;
+	mIsPhysicsProbePanelDirty = true;
 }
 
 void NotificationLayer::Update(float now)
 {
-	// This method is invoked after guaranteeing that there is
-	// no pending RenderUpload, hence all the NotificationRenderContext
-	// CPU buffers are now safe to be changed
-
 	//
 	// Update ephemeral lines
 	//
@@ -219,7 +227,7 @@ void NotificationLayer::Update(float now)
 			mEphemeralTextLines.pop_front();
 
 			// Text needs to be re-uploaded
-			mIsGameTextDirty = true;
+			mIsNotificationTextDirty = true;
 		}
 
 		// 2) Update state of remaining ones
@@ -251,7 +259,7 @@ void NotificationLayer::Update(float now)
 					}
 
 					// Text needs to be re-uploaded (for alpha)
-					mIsGameTextDirty = true;
+					mIsNotificationTextDirty = true;
 
 					break;
 				}
@@ -284,7 +292,7 @@ void NotificationLayer::Update(float now)
 					}
 
 					// Text needs to be re-uploaded (for alpha)
-					mIsGameTextDirty = true;
+					mIsNotificationTextDirty = true;
 
 					break;
 				}
@@ -300,7 +308,7 @@ void NotificationLayer::Update(float now)
 					}
 
 					// Text needs to be re-uploaded (for vertical offset)
-					mIsGameTextDirty = true;
+					mIsNotificationTextDirty = true;
 
 					break;
 				}
@@ -312,7 +320,7 @@ void NotificationLayer::Update(float now)
 				it = mEphemeralTextLines.erase(it);
 
 				// Text needs to be re-uploaded
-				mIsGameTextDirty = true;
+				mIsNotificationTextDirty = true;
 			}
 			else
 			{
@@ -347,10 +355,10 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 	}
 
 	//
-	// Upload ephemeral lines, if needed
+	// Upload notification text, if needed
 	//
 
-	if (mIsGameTextDirty)
+	if (mIsNotificationTextDirty)
 	{
 		renderContext.UploadNotificationTextStart();
 
@@ -422,11 +430,11 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 
 		renderContext.UploadNotificationTextEnd();
 
-		mIsGameTextDirty = false;
+		mIsNotificationTextDirty = false;
 	}
 
 	//
-	// Upload indicators, when needed
+	// Upload texture notifications, when needed
 	//
 
 	if (mAreTextureNotificationsDirty)
@@ -466,6 +474,17 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 	}
 
 	//
+	// Upload physics probe, if needed
+	//
+
+	if (mIsPhysicsProbePanelDirty)
+	{
+		renderContext.UploadPhysicsProbePanel(mPhysicsProbePanelOpen);
+
+		mIsPhysicsProbePanelDirty = false;
+	}
+
+	//
 	// Upload interactions, if needed
 	//
 
@@ -488,6 +507,8 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 		mFireExtinguisherSprayToRender.reset();
 	}
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void NotificationLayer::UploadStatusTextLine(
 	std::string & line,

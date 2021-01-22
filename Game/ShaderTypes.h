@@ -38,6 +38,7 @@ enum class ProgramType
     OceanTextureBasic,
     OceanTextureDetailedBackground,
     OceanTextureDetailedForeground,
+    PhysicsProbePanel,
     Rain,
     ShipCircleHighlights,
     ShipElectricalElementHighlights,
@@ -102,6 +103,7 @@ enum class ProgramParameterType : uint8_t
     WaterColor,
     WaterContrast,
     WaterLevelThreshold,
+    WidthNdc,
 
     // Textures
     SharedTexture,                          // 0, for programs that don't use a dedicated unit and hence will keep binding different textures
@@ -163,10 +165,6 @@ enum class VertexAttributeType : GLuint
 
     Rain = 0,
 
-    FireExtinguisherSpray = 0,
-
-    HeatBlasterFlame = 0,
-
     WorldBorder = 0,
 
     //
@@ -207,7 +205,14 @@ enum class VertexAttributeType : GLuint
     Text2 = 1,
 
     TextureNotification1 = 0,
-    TextureNotification2 = 1
+    TextureNotification2 = 1,
+
+    PhysicsProbePanel1 = 0,
+    PhysicsProbePanel2 = 1,
+
+    FireExtinguisherSpray = 0,
+
+    HeatBlasterFlame = 0
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);

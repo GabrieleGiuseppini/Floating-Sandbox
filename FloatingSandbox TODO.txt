@@ -318,27 +318,35 @@ Render:
 						+ mFonts goes and store instead vector of FontMetadata
 						+ Make allocation sticky
 					+ Draw: make one single call
-				+ GameController logic:
-					+ Always-present state machine 
-						+ Implements driving of NotificationLayer's PhysicsProbePanel
-						+ Emits panel sound events
-						+ Implements event handler and decides when to pass probe reading event through to NotificationLayer
-				- NotificationLayer:
-					- Uploads to NotificationRenderContext at next Upload()
-						- Needs dirty flag
-					- Tells NotificationRenderContext to remove all text when SetOpened called with != 0.0f
-				- NotificationRenderContext:
-					- New NotificationRenderContext notification type: PhysicsProbe
-						- Upload is sticky: when uploaded, creates vertices and sets dirty flag
-						- RenderPrepare: upload if dirty
-							- And clear dirty flag
-						- RenderDraw: draw if vertices not empty
-					+ Texture for background of panel
-						+ 200x100
-						+ Speed
-						+ Temperature
-					- 7-segment font (including - and .)
-				= New gadget & tool
+				= GameController logic: always-present state machine 
+					+ Implements driving of NotificationLayer's PhysicsProbePanel
+					+ Emits panel sound events
+					+ Implements event handler and decides when to pass probe reading event through to NotificationLayer
+					- Tells NotificationLayer when text should disappear (i.e. whet opened transitions from 1.0 to != 1.0)
+					- Initial delay before publishing sound event
+				= NotificationLayer:
+					+ Uploads panel's opened to NotificationRenderContext at next Upload()
+						+ Needs dirty flag
+					- Uploads probe text/clear (empty string) to NotificationRenderContext at next Upload()
+						- Needs dirty flag? see others
+				= NotificationRenderContext:
+					= New NotificationRenderContext notification "type": PhysicsProbePanel
+						+ Upload is sticky: when uploaded, clears buffers, creates vertices, and sets dirty flag
+							+ When opened==0.0, clears the buffer and stops
+						+ RenderPrepare: upload if dirty
+							+ Alloc if size > allocated
+							+ And clear dirty flag
+						+ RenderDraw: draw if vertices not empty
+						+ Texture for background of panel
+							+ 200x100
+							+ Speed
+							+ Temperature
+						- See right noise texture (we want the "rough" one, i.e. small)
+					- New NotificationRenderContext text notification type: PhysicsProbeReading
+						- Single string
+						- Empty string means "clear"
+						- 7-segment font (including - and .)
+				+ New gadget & tool
 					+ Enum
 					+ MainFrame menu entry - no keyboard shortcut
 					+ Tool
@@ -347,15 +355,22 @@ Render:
 						+ TogglePhysicsProbeAt
 						+ RemovePhysicsProbe
 					+ Cursor: physics_probe_cursor
-					- Place/Removal Sound
+					+ Place/Removal Sound
 						+ Event publishing
-						- Also underwater sound
-					- Improve gadget texture
+						+ Also underwater sound					
 					+ Physics publishing at Update()
 				- Panel open/close sound, time-syncd with panel
 					- Event publishing
 					- Sound
 				- Cleanup:
+					- Make RenderContext expose GetNoficationRenderContext() and nuke all forwards
+					- See if can move state machine from GameController into NotificationLayer
+						- NotificationLayer gets EventDispatcher at cctor
+							- See if can register directly for other events, bypassing GameController
+					- Improve gadget texture
+						- Antennas on top
+						- Cable below
+					- Cursor: slightly thicker stroke
 					- See if we want to *replace* existing probe even when not in radius
 				- Nuke velocity notification
 					- GameController et al
@@ -367,6 +382,10 @@ Render:
 					- Underwater: incorporate old global damp in friction drag, if needed
 						- Try first without: see falling debris, also with friction adjust = 0.0
 					- !Underwater: convert old global damp to new air damp
+
+		- Boot settings:
+			- 3-valued optional's
+			- Consumers use flag exclusively if set
 
 		- Cached quantities (*)
 	

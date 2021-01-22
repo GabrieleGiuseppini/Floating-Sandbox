@@ -142,6 +142,76 @@ public:
 		// Nop
 	}
 
+	inline void UploadPhysicsProbePanel(float open)
+	{
+		// Clear vertex buffers
+		mPhysicsProbePanelVertexBuffer.clear();
+
+		if (open != 0.0f)
+		{
+			//
+			// Generate quad
+			//
+
+			auto const & atlasFrame = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GenericLinearTextureGroups>(GenericLinearTextureGroups::PhysicsProbePanel, 0));
+
+			vec2f const quadTopLeft = vec2f(
+				-1.0f,
+				-1.f + mPhysicsProbePanelNdcDimensions.y);
+
+			vec2f const quadBottomRight = vec2f(
+				-1.0f + mPhysicsProbePanelNdcDimensions.x,
+				-1.f);
+
+			vec2f const xLimits = vec2f(
+				quadTopLeft.x + mPhysicsProbePanelNdcDimensions.x / 2.0f * (1.0f - open),
+				quadBottomRight.x - mPhysicsProbePanelNdcDimensions.y / 2.0f * (1.0f - open));
+
+			// Triangle 1
+
+			// Top-left
+			mPhysicsProbePanelVertexBuffer.emplace_back(
+				quadTopLeft,
+				vec2f(atlasFrame.TextureCoordinatesBottomLeft.x, atlasFrame.TextureCoordinatesTopRight.y),
+				xLimits);
+
+			// Top-right
+			mPhysicsProbePanelVertexBuffer.emplace_back(
+				vec2f(quadBottomRight.x, quadTopLeft.y),
+				atlasFrame.TextureCoordinatesTopRight,
+				xLimits);
+
+			// Bottom-left
+			mPhysicsProbePanelVertexBuffer.emplace_back(
+				vec2f(quadTopLeft.x, quadBottomRight.y),
+				atlasFrame.TextureCoordinatesBottomLeft,
+				xLimits);
+
+			// Triangle 2
+
+			// Top-right
+			mPhysicsProbePanelVertexBuffer.emplace_back(
+				vec2f(quadBottomRight.x, quadTopLeft.y),
+				atlasFrame.TextureCoordinatesTopRight,
+				xLimits);
+
+			// Bottom-left
+			mPhysicsProbePanelVertexBuffer.emplace_back(
+				vec2f(quadTopLeft.x, quadBottomRight.y),
+				atlasFrame.TextureCoordinatesBottomLeft,
+				xLimits);
+
+			// Bottom-right
+			mPhysicsProbePanelVertexBuffer.emplace_back(
+				quadBottomRight,
+				vec2f(atlasFrame.TextureCoordinatesTopRight.x, atlasFrame.TextureCoordinatesBottomLeft.y),
+				xLimits);
+		}
+
+		// Remember quad vertex buffer is dirty
+		mIsPhysicsProbePanelVertexBufferDirty = true;
+	}
+
 	inline void UploadHeatBlasterFlame(
 		vec2f const & centerPosition,
 		float radius,
@@ -262,6 +332,9 @@ private:
 	void RenderPrepareTextureNotifications();
 	void RenderDrawTextureNotifications();
 
+	void RenderPreparePhysicsProbePanel();
+	void RenderDrawPhysicsProbePanel();
+
 	void RenderPrepareHeatBlasterFlame();
 	void RenderDrawHeatBlasterFlame();
 
@@ -343,6 +416,22 @@ private:
 			: vertexPositionNDC(_vertexPositionNDC)
 			, textureCoordinate(_textureCoordinate)
 			, alpha(_alpha)
+		{}
+	};
+
+	struct PhysicsProbePanelVertex
+	{
+		vec2f vertexPositionNDC;
+		vec2f textureCoordinate;
+		vec2f xLimitsNDC;
+
+		PhysicsProbePanelVertex(
+			vec2f const & _vertexPositionNDC,
+			vec2f const & _textureCoordinate,
+			vec2f const & _xLimitsNDC)
+			: vertexPositionNDC(_vertexPositionNDC)
+			, textureCoordinate(_textureCoordinate)
+			, xLimitsNDC(_xLimitsNDC)
 		{}
 	};
 
@@ -477,6 +566,16 @@ private:
 	GameOpenGLVAO mTextureNotificationVAO;
 	std::vector<TextureNotificationVertex> mTextureNotificationVertexBuffer;
 	GameOpenGLVBO mTextureNotificationVBO;
+
+	//
+	// Physics probe panel
+	//
+
+	GameOpenGLVAO mPhysicsProbePanelVAO;
+	std::vector<PhysicsProbePanelVertex> mPhysicsProbePanelVertexBuffer;
+	bool mIsPhysicsProbePanelVertexBufferDirty;
+	GameOpenGLVBO mPhysicsProbePanelVBO;
+	vec2f mPhysicsProbePanelNdcDimensions;
 
 	//
 	// Tool notifications
