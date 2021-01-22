@@ -63,7 +63,7 @@ void main()
     float midXNdc = xLimitsNdc.x + currentWidth / 2.;
     float widthFraction = currentWidth / paramWidthNdc;
     
-    float noise = GetNoise(vertexCoordinatesNdc.y, .2 * step(midXNdc, vertexCoordinatesNdc.x), widthFraction / 8.);
+    float noise = GetNoise(vertexCoordinatesNdc.y / paramWidthNdc * 2., .2 * step(midXNdc, vertexCoordinatesNdc.x), widthFraction / 8.);
     
     float flangeLength = (0.05 + noise * .4) * paramWidthNdc;
     
@@ -85,6 +85,9 @@ void main()
     //
     // Final color
     //
-    
-    gl_FragColor = vec4(cTexture.xyz, cTexture.w * frontierDepth);
+
+    gl_FragColor = mix(
+        cTexture,
+        vec4(1., 1., 1., step(xLimitsNdc.x, vertexCoordinatesNdc.x) * step(vertexCoordinatesNdc.x, xLimitsNdc.y)),
+        1. - frontierDepth);
 } 
