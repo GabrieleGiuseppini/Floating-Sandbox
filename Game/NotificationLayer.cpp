@@ -479,7 +479,8 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 
 	if (mIsPhysicsProbePanelDirty)
 	{
-		renderContext.UploadPhysicsProbePanel(mPhysicsProbePanelOpen);
+		// TODOHERE: opening
+		renderContext.UploadPhysicsProbePanel(mPhysicsProbePanelOpen, true);
 
 		mIsPhysicsProbePanelDirty = false;
 	}

@@ -142,7 +142,7 @@ public:
 		// Nop
 	}
 
-	inline void UploadPhysicsProbePanel(float open)
+	inline void UploadPhysicsProbePanel(float open, bool isOpening)
 	{
 		// Clear vertex buffers
 		mPhysicsProbePanelVertexBuffer.clear();
@@ -167,25 +167,30 @@ public:
 				quadTopLeft.x + mPhysicsProbePanelNdcDimensions.x / 2.0f * (1.0f - open),
 				quadBottomRight.x - mPhysicsProbePanelNdcDimensions.y / 2.0f * (1.0f - open));
 
+			float opening = isOpening ? 1.0f : 0.0f;
+
 			// Triangle 1
 
 			// Top-left
 			mPhysicsProbePanelVertexBuffer.emplace_back(
 				quadTopLeft,
 				vec2f(atlasFrame.TextureCoordinatesBottomLeft.x, atlasFrame.TextureCoordinatesTopRight.y),
-				xLimits);
+				xLimits,
+				opening);
 
 			// Top-right
 			mPhysicsProbePanelVertexBuffer.emplace_back(
 				vec2f(quadBottomRight.x, quadTopLeft.y),
 				atlasFrame.TextureCoordinatesTopRight,
-				xLimits);
+				xLimits,
+				opening);
 
 			// Bottom-left
 			mPhysicsProbePanelVertexBuffer.emplace_back(
 				vec2f(quadTopLeft.x, quadBottomRight.y),
 				atlasFrame.TextureCoordinatesBottomLeft,
-				xLimits);
+				xLimits,
+				opening);
 
 			// Triangle 2
 
@@ -193,19 +198,22 @@ public:
 			mPhysicsProbePanelVertexBuffer.emplace_back(
 				vec2f(quadBottomRight.x, quadTopLeft.y),
 				atlasFrame.TextureCoordinatesTopRight,
-				xLimits);
+				xLimits,
+				opening);
 
 			// Bottom-left
 			mPhysicsProbePanelVertexBuffer.emplace_back(
 				vec2f(quadTopLeft.x, quadBottomRight.y),
 				atlasFrame.TextureCoordinatesBottomLeft,
-				xLimits);
+				xLimits,
+				opening);
 
 			// Bottom-right
 			mPhysicsProbePanelVertexBuffer.emplace_back(
 				quadBottomRight,
 				vec2f(atlasFrame.TextureCoordinatesTopRight.x, atlasFrame.TextureCoordinatesBottomLeft.y),
-				xLimits);
+				xLimits,
+				opening);
 		}
 
 		// Remember quad vertex buffer is dirty
@@ -424,14 +432,17 @@ private:
 		vec2f vertexPositionNDC;
 		vec2f textureCoordinate;
 		vec2f xLimitsNDC;
+		float vertexIsOpening;
 
 		PhysicsProbePanelVertex(
 			vec2f const & _vertexPositionNDC,
 			vec2f const & _textureCoordinate,
-			vec2f const & _xLimitsNDC)
+			vec2f const & _xLimitsNDC,
+			float _vertexIsOpening)
 			: vertexPositionNDC(_vertexPositionNDC)
 			, textureCoordinate(_textureCoordinate)
 			, xLimitsNDC(_xLimitsNDC)
+			, vertexIsOpening(_vertexIsOpening)
 		{}
 	};
 

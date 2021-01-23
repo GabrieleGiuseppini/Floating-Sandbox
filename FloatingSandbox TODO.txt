@@ -341,7 +341,8 @@ Render:
 							+ 200x100
 							+ Speed
 							+ Temperature
-						- See right noise texture (we want the "rough" one, i.e. small)
+						+ See right noise texture (we want the "rough" one, i.e. small)
+						- Panel grows vertically first
 					- New NotificationRenderContext text notification type: PhysicsProbeReading
 						- Single string
 						- Empty string means "clear"
@@ -367,10 +368,10 @@ Render:
 					- See if can move state machine from GameController into NotificationLayer
 						- NotificationLayer gets EventDispatcher at cctor
 							- See if can register directly for other events, bypassing GameController
-					- Improve gadget texture
-						- Antennas on top
-						- Cable below
+					= Improve gadget texture
+						+ Antennas on top
 					- Cursor: slightly thicker stroke
+						- Or different altogether
 					- See if we want to *replace* existing probe even when not in radius
 				- Nuke velocity notification
 					- GameController et al

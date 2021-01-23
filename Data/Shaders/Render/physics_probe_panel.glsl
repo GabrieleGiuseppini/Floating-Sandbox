@@ -9,18 +9,20 @@
 
 // Inputs
 in vec4 inPhysicsProbePanel1; // Position (vec2), TextureCoordinates (vec2)
-in vec2 inPhysicsProbePanel2; // XLimits (vec2)
+in vec3 inPhysicsProbePanel2; // XLimits (vec2), Opening (float)
 
 // Outputs
 out vec2 vertexCoordinatesNdc;
 out vec2 vertexTextureCoordinates;
 out vec2 xLimitsNdc;
+out float vertexIsOpening;
 
 void main()
 {
     vertexCoordinatesNdc = inPhysicsProbePanel1.xy;
     vertexTextureCoordinates = inPhysicsProbePanel1.zw; 
-    xLimitsNdc = inPhysicsProbePanel2;
+    xLimitsNdc = inPhysicsProbePanel2.xy;
+    vertexIsOpening = inPhysicsProbePanel2.z;
     gl_Position = vec4(inPhysicsProbePanel1.xy, -1.0, 1.0);
 }
 
@@ -32,6 +34,7 @@ void main()
 in vec2 vertexCoordinatesNdc;
 in vec2 vertexTextureCoordinates;
 in vec2 xLimitsNdc;
+in float vertexIsOpening;
 
 // Textures
 uniform sampler2D paramGenericLinearTexturesAtlasTexture;
@@ -42,7 +45,7 @@ uniform float paramWidthNdc;
 
 float GetNoise(float y, float seed, float time) // -> (0.0, 1.0)
 {
-    #define NOISE_RESOLUTION .5
+    #define NOISE_RESOLUTION 0.25
     float s1 = texture2D(paramNoiseTexture2, vec2(NOISE_RESOLUTION * y + time, seed)).r;
     float s2 = texture2D(paramNoiseTexture2, vec2(NOISE_RESOLUTION * y - time, seed)).r;
     
@@ -50,44 +53,61 @@ float GetNoise(float y, float seed, float time) // -> (0.0, 1.0)
     s1 = (clamp(s1, NOISE_THRESHOLD, 1.) - NOISE_THRESHOLD) * 1. / (1. - NOISE_THRESHOLD);
     s2 = (clamp(s2, NOISE_THRESHOLD, 1.) - NOISE_THRESHOLD) * 1. / (1. - NOISE_THRESHOLD);
     
-    return (s1 + s2) / 2.;
+    return max(s1, s2);
 }
 
 void main()
 {
     //
-    // Frontier
+    // Flanges
     //
     
-    float currentWidth = xLimitsNdc.y - xLimitsNdc.x; // 0.0 -> 2.0
-    float midXNdc = xLimitsNdc.x + currentWidth / 2.;
-    float widthFraction = currentWidth / paramWidthNdc;
+    float currentWidthNdc = xLimitsNdc.y - xLimitsNdc.x; // 0.0 -> 0.5
+    float midXNdc = xLimitsNdc.x + currentWidthNdc / 2.;
+    float widthFraction = currentWidthNdc / paramWidthNdc;
     
-    float noise = GetNoise(vertexCoordinatesNdc.y / paramWidthNdc * 2., .2 * step(midXNdc, vertexCoordinatesNdc.x), widthFraction / 8.);
+    float noise = GetNoise(
+        vertexCoordinatesNdc.y / (.4 * paramWidthNdc * .5), 
+        .2 * step(midXNdc, vertexCoordinatesNdc.x), 
+        widthFraction / 5.);
     
-    float flangeLength = (0.05 + noise * .4) * paramWidthNdc;
+    float flangeLengthNdc = (0.25 + noise * .4) * paramWidthNdc / 2.;
     
-    // Flatten flange when too small or almost fully open
-    flangeLength *= (smoothstep(.0, .46, widthFraction) - smoothstep(.85, 1., widthFraction));
+    // Flatten flange when panel is too small or almost fully open
+    flangeLengthNdc *= (smoothstep(.0, .46, widthFraction) - smoothstep(.54, 1., widthFraction));
     
-    float frontierDepth = min(
-        smoothstep(0.0, flangeLength, vertexCoordinatesNdc.x - xLimitsNdc.x),
-        smoothstep(0.0, flangeLength, xLimitsNdc.y - vertexCoordinatesNdc.x));
-                
+    // Make flanges close to x Limits, either external or internal
+    // depending on whether we're closing or opening
+    float leftFlange = 
+        vertexIsOpening * smoothstep(0.0, flangeLengthNdc, vertexCoordinatesNdc.x - xLimitsNdc.x)
+        + (1. - vertexIsOpening) * (1. - smoothstep(0.0, flangeLengthNdc, xLimitsNdc.x - vertexCoordinatesNdc.x));
+    float rightFlange = 
+        vertexIsOpening * smoothstep(0.0, flangeLengthNdc, xLimitsNdc.y - vertexCoordinatesNdc.x)
+        + (1. - vertexIsOpening) * (1. - smoothstep(0.0, flangeLengthNdc, vertexCoordinatesNdc.x - xLimitsNdc.y));
         
+    float panelDepth = 
+        step(vertexCoordinatesNdc.x, midXNdc) * leftFlange
+        + step(midXNdc, vertexCoordinatesNdc.x) * rightFlange;
+                
+    float inPanelQuad = step(xLimitsNdc.x, vertexCoordinatesNdc.x) * step(vertexCoordinatesNdc.x, xLimitsNdc.y);
+                     
     //
     // Texture
     //
     
-    vec4 cTexture = texture2D(paramGenericLinearTexturesAtlasTexture, vertexTextureCoordinates);    
-           
+    vec4 cTexture = texture2D(paramGenericLinearTexturesAtlasTexture, vertexTextureCoordinates);
+    
            
     //
     // Final color
     //
-
+            
+    vec4 color = vec4(cTexture.xyz, panelDepth);
+    
+    // Add white contour
+    float panelBorderDepth = abs(inPanelQuad - panelDepth);
     gl_FragColor = mix(
-        cTexture,
-        vec4(1., 1., 1., step(xLimitsNdc.x, vertexCoordinatesNdc.x) * step(vertexCoordinatesNdc.x, xLimitsNdc.y)),
-        1. - frontierDepth);
+        color,
+        vec4(1.),
+        panelBorderDepth);
 } 

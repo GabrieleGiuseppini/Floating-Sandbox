@@ -245,11 +245,11 @@ NotificationRenderContext::NotificationRenderContext(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mPhysicsProbePanelVBO);
-        static_assert(sizeof(PhysicsProbePanelVertex) == 6 * sizeof(float));
+        static_assert(sizeof(PhysicsProbePanelVertex) == 7 * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::PhysicsProbePanel1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::PhysicsProbePanel1), 4, GL_FLOAT, GL_FALSE, sizeof(PhysicsProbePanelVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::PhysicsProbePanel2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::PhysicsProbePanel2), 2, GL_FLOAT, GL_FALSE, sizeof(PhysicsProbePanelVertex), (void *)(4 * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::PhysicsProbePanel2), 3, GL_FLOAT, GL_FALSE, sizeof(PhysicsProbePanelVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
