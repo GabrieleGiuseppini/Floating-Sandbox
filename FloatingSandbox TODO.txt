@@ -324,7 +324,7 @@ Render:
 					+ Implements event handler and decides when to pass probe reading event through to NotificationLayer					
 				= Move state machine from from GameController into NotificationLayer
 					+ NotificationLayer gets EventDispatcher at cctor
-					- Initial delay before starting panel
+					+ Initial delay before starting panel
 					- Tells NotificationLayer when text should disappear (i.e. whet opened transitions from 1.0 to != 1.0)
 				= NotificationLayer:
 					+ Uploads panel's opened to NotificationRenderContext at next Upload()
@@ -332,7 +332,7 @@ Render:
 					- Uploads probe text/clear (empty string) to NotificationRenderContext at next Upload()
 						- Needs dirty flag? see others
 				= NotificationRenderContext:
-					= New NotificationRenderContext notification "type": PhysicsProbePanel
+					+ New NotificationRenderContext notification "type": PhysicsProbePanel
 						+ Upload is sticky: when uploaded, clears buffers, creates vertices, and sets dirty flag
 							+ When opened==0.0, clears the buffer and stops
 						+ RenderPrepare: upload if dirty
@@ -344,7 +344,7 @@ Render:
 							+ Speed
 							+ Temperature
 						+ See right noise texture (we want the "rough" one, i.e. small)
-						- Panel grows vertically first
+						+ Panel grows vertically first
 					- New NotificationRenderContext text notification type: PhysicsProbeReading
 						- Single string
 						- Empty string means "clear"

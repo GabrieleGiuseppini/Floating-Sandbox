@@ -155,17 +155,34 @@ public:
 
 			auto const & atlasFrame = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GenericLinearTextureGroups>(GenericLinearTextureGroups::PhysicsProbePanel, 0));
 
+			// First 1/3rd of open: grow vertically
+			// Last 2/3rds of open: grow horizontally
+
+			float constexpr VerticalOpenFraction = 0.3333f;
+
+			float const verticalOpen = (open < VerticalOpenFraction)
+				? open / VerticalOpenFraction
+				: 1.0f;
+
+			float const MinHorizontalOpen = 0.01f;
+
+			float const horizontalOpen = (open < VerticalOpenFraction)
+				? MinHorizontalOpen
+				: MinHorizontalOpen + (1.0f - MinHorizontalOpen) * (open - VerticalOpenFraction) / (1.0f - VerticalOpenFraction);
+
+			float const midYNdc = -1.f + mPhysicsProbePanelNdcDimensions.y / 2.0f;
+
 			vec2f const quadTopLeft = vec2f(
 				-1.0f,
-				-1.f + mPhysicsProbePanelNdcDimensions.y);
+				midYNdc + verticalOpen * (mPhysicsProbePanelNdcDimensions.y / 2.0f));
 
 			vec2f const quadBottomRight = vec2f(
 				-1.0f + mPhysicsProbePanelNdcDimensions.x,
-				-1.f);
+				midYNdc - verticalOpen * (mPhysicsProbePanelNdcDimensions.y / 2.0f));
 
 			vec2f const xLimits = vec2f(
-				quadTopLeft.x + mPhysicsProbePanelNdcDimensions.x / 2.0f * (1.0f - open),
-				quadBottomRight.x - mPhysicsProbePanelNdcDimensions.y / 2.0f * (1.0f - open));
+				quadTopLeft.x + mPhysicsProbePanelNdcDimensions.x / 2.0f * (1.0f - horizontalOpen),
+				quadBottomRight.x - mPhysicsProbePanelNdcDimensions.x / 2.0f * (1.0f - horizontalOpen));
 
 			float opening = isOpening ? 1.0f : 0.0f;
 

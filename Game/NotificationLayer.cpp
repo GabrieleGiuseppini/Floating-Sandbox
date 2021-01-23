@@ -164,9 +164,6 @@ void NotificationLayer::AddEphemeralTextLine(
 
 void NotificationLayer::SetPhysicsProbePanelState(float open)
 {
-	// TODOTEST
-	LogMessage("NotificationLayer::SetPhysicsProbePanelState(", open, ")");
-
 	if (open != mPhysicProbeState.TargetOpen)
 	{
 		//
@@ -177,12 +174,12 @@ void NotificationLayer::SetPhysicsProbePanelState(float open)
 		float const now = GameWallClock::GetInstance().NowAsFloat();
 		if (mPhysicProbeState.TargetOpen == 1.0f)
 		{
-			// We were opening
+			// We were opening - and now we're closing
 			mPhysicProbeState.CurrentStateStartTime = now - (1.0f - mPhysicProbeState.CurrentOpen) * PhysicProbeState::TransitionDuration.count();
 		}
 		else
 		{
-			// We were closing
+			// We were closing - and now we're opening
 			assert(mPhysicProbeState.TargetOpen == 0.0f);
 			mPhysicProbeState.CurrentStateStartTime = now - mPhysicProbeState.CurrentOpen * PhysicProbeState::TransitionDuration.count();
 		}
