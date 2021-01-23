@@ -590,6 +590,6 @@ PhysicsProbeTool::PhysicsProbeTool(
         toolCursorManager,
         std::move(gameController),
         std::move(soundController))
-    , mCursorImage(WxHelpers::LoadCursorImage("physics_probe_cursor", 6, 29, resourceLocator))
+    , mCursorImage(WxHelpers::LoadCursorImage("physics_probe_cursor", 0, 19, resourceLocator))
 {
 }

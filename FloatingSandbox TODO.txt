@@ -369,9 +369,10 @@ Render:
 					- Make RenderContext expose GetNoficationRenderContext() and nuke all forwards
 					+ Improve gadget texture
 						+ Antennas on top
-					- Cursor: slightly thicker stroke
-						- Or different altogether
-					- See if we want to *replace* existing probe even when not in radius
+					+ Cursor: slightly thicker stroke
+						+ Or different altogether
+						+ Adjust anchor
+					- Interactive ToggleProbe: see if we want to always *replace* existing probe on a ship even when not in radius
 				- Nuke intertial velocity notification
 					- GameController et al
 					- UI preferences
