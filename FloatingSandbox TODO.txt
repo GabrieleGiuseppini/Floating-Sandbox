@@ -318,12 +318,14 @@ Render:
 						+ mFonts goes and store instead vector of FontMetadata
 						+ Make allocation sticky
 					+ Draw: make one single call
-				= GameController logic: always-present state machine 
+				+ GameController logic: always-present state machine 
 					+ Implements driving of NotificationLayer's PhysicsProbePanel
 					+ Emits panel sound events
-					+ Implements event handler and decides when to pass probe reading event through to NotificationLayer
+					+ Implements event handler and decides when to pass probe reading event through to NotificationLayer					
+				= Move state machine from from GameController into NotificationLayer
+					+ NotificationLayer gets EventDispatcher at cctor
+					- Initial delay before starting panel
 					- Tells NotificationLayer when text should disappear (i.e. whet opened transitions from 1.0 to != 1.0)
-					- Initial delay before publishing sound event
 				= NotificationLayer:
 					+ Uploads panel's opened to NotificationRenderContext at next Upload()
 						+ Needs dirty flag
@@ -365,10 +367,7 @@ Render:
 					- Sound
 				- Cleanup:
 					- Make RenderContext expose GetNoficationRenderContext() and nuke all forwards
-					- See if can move state machine from GameController into NotificationLayer
-						- NotificationLayer gets EventDispatcher at cctor
-							- See if can register directly for other events, bypassing GameController
-					= Improve gadget texture
+					+ Improve gadget texture
 						+ Antennas on top
 					- Cursor: slightly thicker stroke
 						- Or different altogether

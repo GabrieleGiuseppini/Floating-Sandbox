@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameEventDispatcher.h"
 #include "PerfStats.h"
 #include "RenderContext.h"
 
@@ -17,14 +18,15 @@
 #include <string>
 #include <vector>
 
-class NotificationLayer
+class NotificationLayer final : private IGenericGameEventHandler
 {
 public:
 
 	NotificationLayer(
 		bool isUltraViolentMode,
 		bool isSoundMuted,
-		bool isDayLightCycleOn);
+		bool isDayLightCycleOn,
+		std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
 
 	bool IsStatusTextEnabled() const { return mIsStatusTextEnabled; }
 	void SetStatusTextEnabled(bool isEnabled);
@@ -47,17 +49,13 @@ public:
 		std::string const & text,
 		std::chrono::duration<float> lifetime = std::chrono::duration<float>(1.0f));
 
-	void SetPhysicsProbePanelOpen(float open);
-
-	void SetPhysicsProbeReading(
-		vec2f const & velocity,
-		float temperature);
-
 	void SetUltraViolentModeIndicator(bool isUltraViolentMode);
 
 	void SetSoundMuteIndicator(bool isSoundMuted);
 
 	void SetDayLightCycleIndicator(bool isDayLightCycleOn);
+
+	void SetPhysicsProbePanelState(float targetOpen);
 
 	// One frame only; after RenderUpload() it's gone
 	// (special case as this is really UI)
@@ -91,6 +89,16 @@ public:
 
 private:
 
+	//
+	// IGenericGameEventHandler
+	//
+
+	void OnPhysicsProbeReading(
+		vec2f const & velocity,
+		float const temperature) override;
+
+private:
+
 	void UploadStatusTextLine(
 		std::string & line,
 		bool isEnabled,
@@ -98,6 +106,8 @@ private:
 		Render::RenderContext & renderContext);
 
 private:
+
+	std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
 
 	//
 	// Status text
@@ -161,7 +171,29 @@ private:
 	// Physics probe
 	//
 
-	float mPhysicsProbePanelOpen;
+	struct PhysicProbeState
+	{
+		static std::chrono::duration<float> constexpr OpenDelayDuration = std::chrono::duration<float>(0.25f);
+		static std::chrono::duration<float> constexpr TransitionDuration = std::chrono::duration<float>(1.0f); // After open delay
+
+		float CurrentOpen;
+		float TargetOpen;
+		float CurrentStateStartTime;
+
+		PhysicProbeState()
+		{
+			Reset();
+		}
+
+		void Reset()
+		{
+			CurrentOpen = 0.0f;
+			TargetOpen = 0.0f;
+			CurrentStateStartTime = 0.0f;
+		}
+	};
+
+	PhysicProbeState mPhysicProbeState;
 	bool mIsPhysicsProbePanelDirty;
 
 	//

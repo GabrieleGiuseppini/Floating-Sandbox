@@ -787,14 +787,6 @@ private:
     bool UpdateDayLightCycleStateMachine(DayLightCycleStateMachine & stateMachine, float currentSimulationTime);
 
 
-    struct PhysicsProbePanelStateMachine;
-    struct PhysicsProbePanelStateMachineDeleter { void operator()(PhysicsProbePanelStateMachine *) const; };
-    std::unique_ptr<PhysicsProbePanelStateMachine, PhysicsProbePanelStateMachineDeleter> mPhysicsProbePanelStateMachine;
-
-    void InitializePhysicsProbePanelStateMachine();
-    void SetPhysicsProbePanelStateMachineTarget(float targetOpen);
-
-
     void ResetStateMachines();
     void UpdateStateMachines(float currentSimulationTime);
 

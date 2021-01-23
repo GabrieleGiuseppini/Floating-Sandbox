@@ -76,7 +76,6 @@ GameController::GameController(
     : mTsunamiNotificationStateMachine()
     , mThanosSnapStateMachines()
     , mDayLightCycleStateMachine()
-    , mPhysicsProbePanelStateMachine()
     // State
     , mGameParameters()
     , mIsPaused(false)
@@ -93,7 +92,8 @@ GameController::GameController(
     , mNotificationLayer(
         mGameParameters.IsUltraViolentMode,
         false /*loaded value will come later*/,
-        mGameParameters.DoDayLightCycle)
+        mGameParameters.DoDayLightCycle,
+        mGameEventDispatcher)
     , mShipTexturizer(resourceLocator)
     // World
     , mFishSpeciesDatabase(std::move(fishSpeciesDatabase))
@@ -125,9 +125,6 @@ GameController::GameController(
     // Register ourselves as event handler for the events we care about
     mGameEventDispatcher->RegisterLifecycleEventHandler(this);
     mGameEventDispatcher->RegisterWavePhenomenaEventHandler(this);
-
-    // Initialize state machines
-    InitializePhysicsProbePanelStateMachine();
 
     //
     // Initialize parameter smoothers
@@ -979,7 +976,9 @@ void GameController::TogglePhysicsProbeAt(vec2f const & screenCoordinates)
 
     // Tell physics probe panel whether we've removed or added a probe
     if (toggleResult.has_value())
-        SetPhysicsProbePanelStateMachineTarget(*toggleResult);
+    {
+        mNotificationLayer.SetPhysicsProbePanelState(*toggleResult);
+    }
 }
 
 void GameController::ToggleRCBombAt(vec2f const & screenCoordinates)

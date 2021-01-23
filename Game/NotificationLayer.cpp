@@ -16,9 +16,11 @@ using namespace std::literals::chrono_literals;
 NotificationLayer::NotificationLayer(
 	bool isUltraViolentMode,
 	bool isSoundMuted,
-	bool isDayLightCycleOn)
-    : // StatusText
-	  mIsStatusTextEnabled(true)
+	bool isDayLightCycleOn,
+	std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
+    : mGameEventDispatcher(std::move(gameEventDispatcher))
+	// StatusText
+	, mIsStatusTextEnabled(true)
 	, mIsExtendedStatusTextEnabled(false)
     , mStatusTextLines()
 	, mIsStatusTextDirty(true)
@@ -31,9 +33,10 @@ NotificationLayer::NotificationLayer(
 	, mIsDayLightCycleOn(isDayLightCycleOn)
 	, mAreTextureNotificationsDirty(true)
 	// Physics probe
-	, mPhysicsProbePanelOpen(0.0f)
+	, mPhysicProbeState()
 	, mIsPhysicsProbePanelDirty(true)
 {
+	mGameEventDispatcher->RegisterGenericEventHandler(this);
 }
 
 void NotificationLayer::SetStatusTextEnabled(bool isEnabled)
@@ -159,24 +162,34 @@ void NotificationLayer::AddEphemeralTextLine(
 	mIsNotificationTextDirty = true;
 }
 
-void NotificationLayer::SetPhysicsProbePanelOpen(float open)
+void NotificationLayer::SetPhysicsProbePanelState(float open)
 {
 	// TODOTEST
-	LogMessage("NotificationLayer::SetPhysicsProbePanelOpen(", open, ")");
+	LogMessage("NotificationLayer::SetPhysicsProbePanelState(", open, ")");
 
-	// Store open
-	mPhysicsProbePanelOpen = open;
+	if (open != mPhysicProbeState.TargetOpen)
+	{
+		//
+		// Change of target
+		//
 
-	// Physics panel needs to be re-uploaded
-	mIsPhysicsProbePanelDirty = true;
-}
+		// Calculate new start time
+		float const now = GameWallClock::GetInstance().NowAsFloat();
+		if (mPhysicProbeState.TargetOpen == 1.0f)
+		{
+			// We were opening
+			mPhysicProbeState.CurrentStateStartTime = now - (1.0f - mPhysicProbeState.CurrentOpen) * PhysicProbeState::TransitionDuration.count();
+		}
+		else
+		{
+			// We were closing
+			assert(mPhysicProbeState.TargetOpen == 0.0f);
+			mPhysicProbeState.CurrentStateStartTime = now - mPhysicProbeState.CurrentOpen * PhysicProbeState::TransitionDuration.count();
+		}
 
-void NotificationLayer::SetPhysicsProbeReading(
-	vec2f const & velocity,
-	float temperature)
-{
-	// TODOHERE
-	LogMessage("NotificationLayer::SetPhysicsProbeReading(", velocity.length(), ", ", temperature, ")");
+		// Store new target
+		mPhysicProbeState.TargetOpen = open;
+	}
 }
 
 void NotificationLayer::SetUltraViolentModeIndicator(bool isUltraViolentMode)
@@ -210,7 +223,7 @@ void NotificationLayer::Reset()
 	mIsNotificationTextDirty = true;
 
 	// Reset physics probe
-	mPhysicsProbePanelOpen = 0.0f;
+	mPhysicProbeState.Reset();
 	mIsPhysicsProbePanelDirty = true;
 }
 
@@ -326,6 +339,63 @@ void NotificationLayer::Update(float now)
 			{
 				++it;
 			}
+		}
+	}
+
+	//
+	// Update physics probe panel
+	//
+
+	{
+		float elapsed = now - mPhysicProbeState.CurrentStateStartTime;
+
+		if (mPhysicProbeState.CurrentOpen < mPhysicProbeState.TargetOpen)
+		{
+			//
+			// Opening
+			//
+
+			// Discount initial delay
+			elapsed -= PhysicProbeState::OpenDelayDuration.count();
+
+			if (elapsed < 0.0f)
+			{
+				// Still in initial delay
+				assert(mPhysicProbeState.CurrentOpen == 0.0f);
+				return;
+			}
+
+			if (mPhysicProbeState.CurrentOpen == 0.0f)
+			{
+				// First update for opening...
+				// ...emit event then
+				mGameEventDispatcher->OnPhysicsProbePanelOpened();
+			}
+
+			// Calculate new open
+			mPhysicProbeState.CurrentOpen = std::min(elapsed / PhysicProbeState::TransitionDuration.count(), 1.0f);
+
+			// Physics panel needs to be re-uploaded
+			mIsPhysicsProbePanelDirty = true;
+		}
+		else if (mPhysicProbeState.CurrentOpen > mPhysicProbeState.TargetOpen)
+		{
+			//
+			// Closing
+			//
+
+			if (mPhysicProbeState.CurrentOpen == 1.0f)
+			{
+				// First update for closing...
+				// ...emit event then
+				mGameEventDispatcher->OnPhysicsProbePanelClosed();
+			}
+
+			// Calculate new open
+			mPhysicProbeState.CurrentOpen = 1.0f - std::min(elapsed / PhysicProbeState::TransitionDuration.count(), 1.0f);
+
+			// Physics panel needs to be re-uploaded
+			mIsPhysicsProbePanelDirty = true;
 		}
 	}
 }
@@ -479,8 +549,9 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 
 	if (mIsPhysicsProbePanelDirty)
 	{
-		// TODOHERE: opening
-		renderContext.UploadPhysicsProbePanel(mPhysicsProbePanelOpen, true);
+		renderContext.UploadPhysicsProbePanel(
+			mPhysicProbeState.CurrentOpen,
+			mPhysicProbeState.TargetOpen > mPhysicProbeState.CurrentOpen); // is opening
 
 		mIsPhysicsProbePanelDirty = false;
 	}
@@ -510,6 +581,18 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void NotificationLayer::OnPhysicsProbeReading(
+	vec2f const & velocity,
+	float const temperature)
+{
+	// Only pass through if the panel is currently fully open
+	if (mPhysicProbeState.CurrentOpen  == 1.0f)
+	{
+		// TODOHERE
+		LogMessage("NotificationLayer: passing physics probre reading: ", velocity.length(), ", ", temperature);
+	}
+}
 
 void NotificationLayer::UploadStatusTextLine(
 	std::string & line,
