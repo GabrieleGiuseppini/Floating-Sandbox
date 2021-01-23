@@ -102,7 +102,7 @@ void main()
     // Final color
     //
             
-    vec4 color = vec4(cTexture.xyz, panelDepth);
+    vec4 color = vec4(cTexture.xyz, panelDepth * cTexture.w);
     
     // Add white contour
     float panelBorderDepth = max(

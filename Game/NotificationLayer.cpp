@@ -33,8 +33,10 @@ NotificationLayer::NotificationLayer(
 	, mIsDayLightCycleOn(isDayLightCycleOn)
 	, mAreTextureNotificationsDirty(true)
 	// Physics probe
-	, mPhysicProbeState()
+	, mPhysicsProbePanelState()
 	, mIsPhysicsProbePanelDirty(true)
+	, mPhysicsProbeReading()
+	, mIsPhysicsProbeReadingDirty(true)
 {
 	mGameEventDispatcher->RegisterGenericEventHandler(this);
 }
@@ -164,7 +166,7 @@ void NotificationLayer::AddEphemeralTextLine(
 
 void NotificationLayer::SetPhysicsProbePanelState(float open)
 {
-	if (open != mPhysicProbeState.TargetOpen)
+	if (open != mPhysicsProbePanelState.TargetOpen)
 	{
 		//
 		// Change of target
@@ -172,20 +174,20 @@ void NotificationLayer::SetPhysicsProbePanelState(float open)
 
 		// Calculate new start time
 		float const now = GameWallClock::GetInstance().NowAsFloat();
-		if (mPhysicProbeState.TargetOpen == 1.0f)
+		if (mPhysicsProbePanelState.TargetOpen == 1.0f)
 		{
 			// We were opening - and now we're closing
-			mPhysicProbeState.CurrentStateStartTime = now - (1.0f - mPhysicProbeState.CurrentOpen) * PhysicProbeState::TransitionDuration.count();
+			mPhysicsProbePanelState.CurrentStateStartTime = now - (1.0f - mPhysicsProbePanelState.CurrentOpen) * PhysicsProbePanelState::TransitionDuration.count();
 		}
 		else
 		{
 			// We were closing - and now we're opening
-			assert(mPhysicProbeState.TargetOpen == 0.0f);
-			mPhysicProbeState.CurrentStateStartTime = now - mPhysicProbeState.CurrentOpen * PhysicProbeState::TransitionDuration.count();
+			assert(mPhysicsProbePanelState.TargetOpen == 0.0f);
+			mPhysicsProbePanelState.CurrentStateStartTime = now - mPhysicsProbePanelState.CurrentOpen * PhysicsProbePanelState::TransitionDuration.count();
 		}
 
 		// Store new target
-		mPhysicProbeState.TargetOpen = open;
+		mPhysicsProbePanelState.TargetOpen = open;
 	}
 }
 
@@ -220,8 +222,10 @@ void NotificationLayer::Reset()
 	mIsNotificationTextDirty = true;
 
 	// Reset physics probe
-	mPhysicProbeState.Reset();
+	mPhysicsProbePanelState.Reset();
 	mIsPhysicsProbePanelDirty = true;
+	mPhysicsProbeReading.reset();
+	mIsPhysicsProbeReadingDirty = true;
 }
 
 void NotificationLayer::Update(float now)
@@ -344,25 +348,25 @@ void NotificationLayer::Update(float now)
 	//
 
 	{
-		float elapsed = now - mPhysicProbeState.CurrentStateStartTime;
+		float elapsed = now - mPhysicsProbePanelState.CurrentStateStartTime;
 
-		if (mPhysicProbeState.CurrentOpen < mPhysicProbeState.TargetOpen)
+		if (mPhysicsProbePanelState.CurrentOpen < mPhysicsProbePanelState.TargetOpen)
 		{
 			//
 			// Opening
 			//
 
 			// Discount initial delay
-			elapsed -= PhysicProbeState::OpenDelayDuration.count();
+			elapsed -= PhysicsProbePanelState::OpenDelayDuration.count();
 
 			if (elapsed < 0.0f)
 			{
 				// Still in initial delay
-				assert(mPhysicProbeState.CurrentOpen == 0.0f);
+				assert(mPhysicsProbePanelState.CurrentOpen == 0.0f);
 				return;
 			}
 
-			if (mPhysicProbeState.CurrentOpen == 0.0f)
+			if (mPhysicsProbePanelState.CurrentOpen == 0.0f)
 			{
 				// First update for opening...
 				// ...emit event then
@@ -370,26 +374,31 @@ void NotificationLayer::Update(float now)
 			}
 
 			// Calculate new open
-			mPhysicProbeState.CurrentOpen = std::min(elapsed / PhysicProbeState::TransitionDuration.count(), 1.0f);
+			mPhysicsProbePanelState.CurrentOpen = std::min(elapsed / PhysicsProbePanelState::TransitionDuration.count(), 1.0f);
 
 			// Physics panel needs to be re-uploaded
 			mIsPhysicsProbePanelDirty = true;
 		}
-		else if (mPhysicProbeState.CurrentOpen > mPhysicProbeState.TargetOpen)
+		else if (mPhysicsProbePanelState.CurrentOpen > mPhysicsProbePanelState.TargetOpen)
 		{
 			//
 			// Closing
 			//
 
-			if (mPhysicProbeState.CurrentOpen == 1.0f)
+			if (mPhysicsProbePanelState.CurrentOpen == 1.0f)
 			{
 				// First update for closing...
-				// ...emit event then
+
+				// ...clear reading
+				mPhysicsProbeReading.reset();
+				mIsPhysicsProbeReadingDirty = true;
+
+				// ...emit panel closed event
 				mGameEventDispatcher->OnPhysicsProbePanelClosed();
 			}
 
 			// Calculate new open
-			mPhysicProbeState.CurrentOpen = 1.0f - std::min(elapsed / PhysicProbeState::TransitionDuration.count(), 1.0f);
+			mPhysicsProbePanelState.CurrentOpen = 1.0f - std::min(elapsed / PhysicsProbePanelState::TransitionDuration.count(), 1.0f);
 
 			// Physics panel needs to be re-uploaded
 			mIsPhysicsProbePanelDirty = true;
@@ -547,10 +556,29 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 	if (mIsPhysicsProbePanelDirty)
 	{
 		renderContext.UploadPhysicsProbePanel(
-			mPhysicProbeState.CurrentOpen,
-			mPhysicProbeState.TargetOpen > mPhysicProbeState.CurrentOpen); // is opening
+			mPhysicsProbePanelState.CurrentOpen,
+			mPhysicsProbePanelState.TargetOpen > mPhysicsProbePanelState.CurrentOpen); // is opening
 
 		mIsPhysicsProbePanelDirty = false;
+	}
+
+	if (mIsPhysicsProbeReadingDirty)
+	{
+		if (mPhysicsProbeReading.has_value())
+		{
+			// Upload reading
+			renderContext.UploadPhysicsProbeReading(mPhysicsProbeReading->Speed, mPhysicsProbeReading->Temperature);
+		}
+		else
+		{
+			// TODOTEST
+			LogMessage("ReadingClear()");
+
+			// Clear reading
+			renderContext.UploadPhysicsProbeReadingClear();
+		}
+
+		mIsPhysicsProbeReadingDirty = false;
 	}
 
 	//
@@ -584,10 +612,32 @@ void NotificationLayer::OnPhysicsProbeReading(
 	float const temperature)
 {
 	// Only pass through if the panel is currently fully open
-	if (mPhysicProbeState.CurrentOpen  == 1.0f)
+	if (mPhysicsProbePanelState.CurrentOpen == 1.0f)
 	{
-		// TODOHERE
-		LogMessage("NotificationLayer: passing physics probre reading: ", velocity.length(), ", ", temperature);
+		// Create reading strings
+
+		std::ostringstream ss;
+
+		{
+			ss.fill('0');
+			ss << std::fixed << std::setprecision(1) << velocity.length();
+		}
+
+		std::string const speedStr = ss.str();
+
+		ss.str("");
+
+		{
+			ss.fill('0');
+			ss << std::fixed << std::setprecision(1) << temperature;
+		}
+
+		std::string const temperatureStr = ss.str();
+
+		mPhysicsProbeReading.emplace(speedStr, temperatureStr);
+
+		// Reading has to be uploaded
+		mIsPhysicsProbeReadingDirty = true;
 	}
 }
 

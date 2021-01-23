@@ -22,8 +22,9 @@ enum class FontType
 {
     Font0 = 0,
     Font1 = 1,
+    Font2 = 2, // 7-segment
 
-    _Last = Font1
+    _Last = Font2
 };
 
 /*

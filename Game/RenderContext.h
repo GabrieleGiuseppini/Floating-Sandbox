@@ -979,6 +979,20 @@ public:
         mNotificationRenderContext->UploadPhysicsProbePanel(open, isOpening);
     }
 
+    inline void UploadPhysicsProbeReading(
+        std::string const & speed,
+        std::string const & temperature)
+    {
+        mNotificationRenderContext->UploadPhysicsProbeReading(
+            speed,
+            temperature);
+    }
+
+    inline void UploadPhysicsProbeReadingClear()
+    {
+        mNotificationRenderContext->UploadPhysicsProbeReadingClear();
+    }
+
     void UploadEnd();
 
     void Draw();

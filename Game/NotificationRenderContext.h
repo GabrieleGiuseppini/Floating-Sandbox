@@ -45,8 +45,19 @@ private:
 	{
 		StatusText = 0,
 		NotificationText = 1,
+		PhysicsProbeReading = 2,
 
-		_Last = NotificationText
+		_Last = PhysicsProbeReading
+	};
+
+	enum class NotificationAnchorPositionType
+	{
+		TopLeft,
+		TopRight,
+		BottomLeft,
+		BottomRight,
+		PhysicsProbeReadingSpeed,
+		PhysicsProbeReadingTemperature
 	};
 
 public:
@@ -71,17 +82,18 @@ public:
 		vec2f const & screenOffset, // In font cell-size fraction (0.0 -> 1.0)
 		float alpha)
 	{
-		UploadTextLine(
-			TextNotificationType::StatusText,
+		auto & textNotificationContext = mTextNotificationTypeContexts[static_cast<size_t>(TextNotificationType::StatusText)];
+
+		textNotificationContext.TextLines.emplace_back(
 			text,
-			anchor,
+			TranslateAnchorPosition(anchor),
 			screenOffset,
 			alpha);
 	}
 
 	inline void UploadStatusTextEnd()
 	{
-		UploadTextEnd(TextNotificationType::StatusText);
+		// Nop
 	}
 
 	inline void UploadNotificationTextStart()
@@ -95,17 +107,18 @@ public:
 		vec2f const & screenOffset, // In font cell-size fraction (0.0 -> 1.0)
 		float alpha)
 	{
-		UploadTextLine(
-			TextNotificationType::NotificationText,
+		auto & textNotificationContext = mTextNotificationTypeContexts[static_cast<size_t>(TextNotificationType::NotificationText)];
+
+		textNotificationContext.TextLines.emplace_back(
 			text,
-			anchor,
+			TranslateAnchorPosition(anchor),
 			screenOffset,
 			alpha);
 	}
 
 	inline void UploadNotificationTextEnd()
 	{
-		UploadTextEnd(TextNotificationType::NotificationText);
+		// Nop
 	}
 
 	inline void UploadTextureNotificationStart()
@@ -120,7 +133,7 @@ public:
 		mIsTextureNotificationDataDirty = true;
 	}
 
-	void UploadTextureNotification(
+	inline void UploadTextureNotification(
 		TextureFrameId<GenericLinearTextureGroups> const & textureFrameId,
 		AnchorPositionType anchor,
 		vec2f const & screenOffset, // In texture-size fraction (0.0 -> 1.0)
@@ -235,6 +248,37 @@ public:
 
 		// Remember quad vertex buffer is dirty
 		mIsPhysicsProbePanelVertexBufferDirty = true;
+	}
+
+	inline void UploadPhysicsProbeReading(
+		std::string const & speed,
+		std::string const & temperature)
+	{
+		auto & textNotificationContext = mTextNotificationTypeContexts[static_cast<size_t>(TextNotificationType::PhysicsProbeReading)];
+
+		textNotificationContext.TextLines.clear();
+
+		textNotificationContext.TextLines.emplace_back(
+			speed,
+			NotificationAnchorPositionType::PhysicsProbeReadingSpeed,
+			vec2f::zero(),
+			1.0f);
+
+		textNotificationContext.TextLines.emplace_back(
+			temperature,
+			NotificationAnchorPositionType::PhysicsProbeReadingTemperature,
+			vec2f::zero(),
+			1.0f);
+
+		textNotificationContext.AreTextLinesDirty = true;
+	}
+
+	inline void UploadPhysicsProbeReadingClear()
+	{
+		auto & textNotificationContext = mTextNotificationTypeContexts[static_cast<size_t>(TextNotificationType::PhysicsProbeReading)];
+
+		textNotificationContext.TextLines.clear();
+		textNotificationContext.AreTextLinesDirty = true;
 	}
 
 	inline void UploadHeatBlasterFlame(
@@ -368,6 +412,24 @@ private:
 
 private:
 
+	static inline constexpr NotificationAnchorPositionType TranslateAnchorPosition(AnchorPositionType anchor)
+	{
+		switch (anchor)
+		{
+			case Render::AnchorPositionType::TopLeft:
+				return NotificationAnchorPositionType::TopLeft;
+			case Render::AnchorPositionType::TopRight:
+				return NotificationAnchorPositionType::TopRight;
+			case Render::AnchorPositionType::BottomLeft:
+				return NotificationAnchorPositionType::BottomLeft;
+			case Render::AnchorPositionType::BottomRight:
+				return NotificationAnchorPositionType::BottomRight;
+		}
+
+		assert(false);
+		return NotificationAnchorPositionType::BottomLeft;
+	}
+
 	struct FontTextureAtlasMetadata;
 	struct TextNotificationTypeContext;
 
@@ -382,31 +444,6 @@ private:
 		auto & textContext = mTextNotificationTypeContexts[static_cast<size_t>(textNotificationType)];
 		textContext.TextLines.clear();
 		textContext.AreTextLinesDirty = true;
-	}
-
-	inline void UploadTextLine(
-		TextNotificationType textNotificationType,
-		std::string const & text,
-		AnchorPositionType anchor,
-		vec2f const & screenOffset, // In font cell-size fraction (0.0 -> 1.0)
-		float alpha)
-	{
-		//
-		// Store line into the context for this notification type
-		//
-
-		auto & textNotificationContext = mTextNotificationTypeContexts[static_cast<size_t>(textNotificationType)];
-
-		textNotificationContext.TextLines.emplace_back(
-			text,
-			anchor,
-			screenOffset,
-			alpha);
-	}
-
-	inline void UploadTextEnd(TextNotificationType /*textNotificationType*/)
-	{
-		// Nop
 	}
 
 	void GenerateTextVertices(TextNotificationTypeContext & context) const;
@@ -518,13 +555,13 @@ private:
 	struct TextLine
 	{
 		std::string Text;
-		AnchorPositionType Anchor;
+		NotificationAnchorPositionType Anchor;
 		vec2f ScreenOffset; // In font cell-size fraction (0.0 -> 1.0)
 		float Alpha;
 
 		TextLine(
 			std::string const & text,
-			AnchorPositionType anchor,
+			NotificationAnchorPositionType anchor,
 			vec2f const & screenOffset,
 			float alpha)
 			: Text(text)

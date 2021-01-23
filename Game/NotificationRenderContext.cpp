@@ -198,6 +198,10 @@ NotificationRenderContext::NotificationRenderContext(
         // Notification text
         static_assert(static_cast<size_t>(TextNotificationType::NotificationText) == 1);
         mTextNotificationTypeContexts.emplace_back(mFontTextureAtlasMetadata[static_cast<size_t>(FontType::Font1)]);
+
+        // Physics probe reading
+        static_assert(static_cast<size_t>(TextNotificationType::PhysicsProbeReading) == 2);
+        mTextNotificationTypeContexts.emplace_back(mFontTextureAtlasMetadata[static_cast<size_t>(FontType::Font2)]);
     }
 
     //
@@ -371,11 +375,11 @@ void NotificationRenderContext::RenderPrepare()
 
 void NotificationRenderContext::RenderDraw()
 {
+    RenderDrawPhysicsProbePanel(); // Draw panel first
+
     RenderDrawTextNotifications();
 
     RenderDrawTextureNotifications();
-
-    RenderDrawPhysicsProbePanel();
 
     RenderDrawHeatBlasterFlame();
 
@@ -719,6 +723,11 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
     // Rebuild quad vertices
     //
 
+    // Hardcoded pixel offsets of readings in physics probe panel,
+    // relative to bottom-right corner
+    vec2f constexpr PhysicsProbePanelSpeedBottomRight(97.0f, 7.0f);
+    vec2f constexpr PhysicsProbePanelTemperatureBottomRight(210.0f, 7.0f);
+
     for (auto const & textLine : context.TextLines)
     {
         //
@@ -731,7 +740,7 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
 
         switch (textLine.Anchor)
         {
-            case AnchorPositionType::BottomLeft:
+            case NotificationAnchorPositionType::BottomLeft:
             {
                 linePositionNdc += vec2f(
                     -1.f + MarginScreen * mScreenToNdcX,
@@ -740,7 +749,7 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
                 break;
             }
 
-            case AnchorPositionType::BottomRight:
+            case NotificationAnchorPositionType::BottomRight:
             {
                 auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
                     textLine.Text.c_str(),
@@ -753,7 +762,7 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
                 break;
             }
 
-            case AnchorPositionType::TopLeft:
+            case NotificationAnchorPositionType::TopLeft:
             {
                 linePositionNdc += vec2f(
                     -1.f + MarginScreen * mScreenToNdcX,
@@ -762,7 +771,7 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
                 break;
             }
 
-            case AnchorPositionType::TopRight:
+            case NotificationAnchorPositionType::TopRight:
             {
                 auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
                     textLine.Text.c_str(),
@@ -771,6 +780,32 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
                 linePositionNdc += vec2f(
                     1.f - (MarginScreen + static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
                     1.f - MarginTopScreen * mScreenToNdcY);
+
+                break;
+            }
+
+            case NotificationAnchorPositionType::PhysicsProbeReadingSpeed:
+            {
+                auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
+                    textLine.Text.c_str(),
+                    textLine.Text.length());
+
+                linePositionNdc += vec2f(
+                    -1.f + (PhysicsProbePanelSpeedBottomRight.x - static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
+                    -1.f + PhysicsProbePanelSpeedBottomRight.y * mScreenToNdcY);
+
+                break;
+            }
+
+            case NotificationAnchorPositionType::PhysicsProbeReadingTemperature:
+            {
+                auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
+                    textLine.Text.c_str(),
+                    textLine.Text.length());
+
+                linePositionNdc += vec2f(
+                    -1.f + (PhysicsProbePanelTemperatureBottomRight.x - static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
+                    -1.f + PhysicsProbePanelTemperatureBottomRight.y * mScreenToNdcY);
 
                 break;
             }

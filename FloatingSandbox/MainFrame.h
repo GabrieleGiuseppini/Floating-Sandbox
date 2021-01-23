@@ -193,13 +193,13 @@ private:
     void OnRepairStructureMenuItemSelected(wxCommandEvent & event);
     void OnScrubMenuItemSelected(wxCommandEvent & event);
     void OnScareFishMenuItemSelected(wxCommandEvent & event);
+    void OnTriggerLightningMenuItemSelected(wxCommandEvent & event);
     void OnRCBombDetonateMenuItemSelected(wxCommandEvent & event);
     void OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent & event);
-    void OnPhysicsProbeMenuItemSelected(wxCommandEvent & event);
     void OnTriggerTsunamiMenuItemSelected(wxCommandEvent & event);
     void OnTriggerRogueWaveMenuItemSelected(wxCommandEvent & event);
     void OnTriggerStormMenuItemSelected(wxCommandEvent & event);
-    void OnTriggerLightningMenuItemSelected(wxCommandEvent & event);
+    void OnPhysicsProbeMenuItemSelected(wxCommandEvent & event);
 
     void OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & event);
     void OnReloadLastModifiedSettingsMenuItem(wxCommandEvent & event);

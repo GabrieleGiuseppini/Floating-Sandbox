@@ -322,15 +322,15 @@ Render:
 					+ Implements driving of NotificationLayer's PhysicsProbePanel
 					+ Emits panel sound events
 					+ Implements event handler and decides when to pass probe reading event through to NotificationLayer					
-				= Move state machine from from GameController into NotificationLayer
+				+ Move state machine from GameController into NotificationLayer
 					+ NotificationLayer gets EventDispatcher at cctor
 					+ Initial delay before starting panel
-					- Tells NotificationLayer when text should disappear (i.e. whet opened transitions from 1.0 to != 1.0)
-				= NotificationLayer:
+					+ Tells NotificationRenderContext when text should disappear (i.e. whet opened transitions from 1.0 to != 1.0)
+				+ NotificationLayer:
 					+ Uploads panel's opened to NotificationRenderContext at next Upload()
 						+ Needs dirty flag
-					- Uploads probe text/clear (empty string) to NotificationRenderContext at next Upload()
-						- Needs dirty flag? see others
+					+ Uploads reading and/or clear to NotificationRenderContext at next Upload()						
+						+ mIsPhysicsProbeReadingDirty flag (like others)
 				= NotificationRenderContext:
 					+ New NotificationRenderContext notification "type": PhysicsProbePanel
 						+ Upload is sticky: when uploaded, clears buffers, creates vertices, and sets dirty flag
@@ -345,10 +345,15 @@ Render:
 							+ Temperature
 						+ See right noise texture (we want the "rough" one, i.e. small)
 						+ Panel grows vertically first
-					- New NotificationRenderContext text notification type: PhysicsProbeReading
-						- Single string
-						- Empty string means "clear"
-						- 7-segment font (including - and .)
+					= New NotificationRenderContext text notification type: PhysicsProbeReading
+						+ UploadPhysicsProbeReading
+							+ Emit vertices with two new anchor types
+						+ ClearPhysicsProbeReading
+						= 7-segment font (including - and .)
+						- Nail down font color
+						- Adjust panel: 
+							- Larger backdrop for reading (eventually larger panel altogether)
+							- See if need darker and/or smoother backdrop for better contrast
 				+ New gadget & tool
 					+ Enum
 					+ MainFrame menu entry - no keyboard shortcut
@@ -366,6 +371,9 @@ Render:
 					+ Event publishing
 					+ Sound
 				- Cleanup:
+					- Gadgets: PhysicsProbeGadget must take action in Spring destroy
+						- Not in point destroyed, add comment
+						- Should collapse to tracking a single particle
 					- Make RenderContext expose GetNoficationRenderContext() and nuke all forwards
 					+ Improve gadget texture
 						+ Antennas on top
@@ -373,6 +381,7 @@ Render:
 						+ Or different altogether
 						+ Adjust anchor
 					- Interactive ToggleProbe: see if we want to always *replace* existing probe on a ship even when not in radius
+					- Run in Debug
 				- Nuke intertial velocity notification
 					- GameController et al
 					- UI preferences

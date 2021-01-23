@@ -66,6 +66,11 @@ std::vector<Render::Font> Font::LoadAll(
             ProgressMessageType::LoadingFonts);
     }
 
+    if (fonts.size() != static_cast<size_t>(FontType::_Last) + 1)
+    {
+        throw GameException("The number of loaded fonts does not match the number of expected fonts");
+    }
+
     return fonts;
 
 }

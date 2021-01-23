@@ -339,10 +339,6 @@ MainFrame::MainFrame(
     mToolsMenu->Append(antiMatterBombMenuItem);
     Connect(ID_ANTIMATTERBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombMenuItemSelected);
 
-    wxMenuItem * physicsProbeMenuItem = new wxMenuItem(mToolsMenu, ID_PHYSICSPROBE_MENUITEM, _("Toggle Physics Probe"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(physicsProbeMenuItem);
-    Connect(ID_PHYSICSPROBE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPhysicsProbeMenuItemSelected);
-
     wxMenuItem * thanosSnapMenuItem = new wxMenuItem(mToolsMenu, ID_THANOSSNAP_MENUITEM, _("Thanos' Snap") + wxS("\tQ"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(thanosSnapMenuItem);
     Connect(ID_THANOSSNAP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnThanosSnapMenuItemSelected);
@@ -367,6 +363,10 @@ MainFrame::MainFrame(
     mToolsMenu->Append(mScareFishMenuItem);
     Connect(ID_SCAREFISH_MENUTEIM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnScareFishMenuItemSelected);
     mScareFishMenuItem->Enable(false);
+
+    wxMenuItem * physicsProbeMenuItem = new wxMenuItem(mToolsMenu, ID_PHYSICSPROBE_MENUITEM, _("Toggle Physics Probe"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(physicsProbeMenuItem);
+    Connect(ID_PHYSICSPROBE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPhysicsProbeMenuItemSelected);
 
     mToolsMenu->Append(new wxMenuItem(mToolsMenu, wxID_SEPARATOR));
 
@@ -396,6 +396,7 @@ MainFrame::MainFrame(
     wxMenuItem * triggerLightningMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERLIGHTNING_MENUITEM, _("Trigger Lightning") + wxS("\tALT+L"), wxEmptyString, wxITEM_NORMAL);
     mToolsMenu->Append(triggerLightningMenuItem);
     Connect(ID_TRIGGERLIGHTNING_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerLightningMenuItemSelected);
+
 
     mainMenuBar->Append(mToolsMenu, _("&Tools"));
 
@@ -1805,6 +1806,12 @@ void MainFrame::OnScareFishMenuItemSelected(wxCommandEvent & /*event*/)
     mToolController->SetTool(ToolType::ScareFish);
 }
 
+void MainFrame::OnTriggerLightningMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->TriggerLightning();
+}
+
 void MainFrame::OnRCBombDetonateMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
@@ -1815,12 +1822,6 @@ void MainFrame::OnAntiMatterBombMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::AntiMatterBomb);
-}
-
-void MainFrame::OnPhysicsProbeMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::PhysicsProbe);
 }
 
 void MainFrame::OnThanosSnapMenuItemSelected(wxCommandEvent & /*event*/)
@@ -1847,10 +1848,10 @@ void MainFrame::OnTriggerStormMenuItemSelected(wxCommandEvent & /*event*/)
     mGameController->TriggerStorm();
 }
 
-void MainFrame::OnTriggerLightningMenuItemSelected(wxCommandEvent & /*event*/)
+void MainFrame::OnPhysicsProbeMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    assert(!!mGameController);
-    mGameController->TriggerLightning();
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::PhysicsProbe);
 }
 
 //////////

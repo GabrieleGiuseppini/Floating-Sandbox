@@ -26,7 +26,7 @@ struct IntegralPoint
     int X;
     int Y;
 
-    IntegralPoint(
+    constexpr IntegralPoint(
         int x,
         int y)
         : X(x)

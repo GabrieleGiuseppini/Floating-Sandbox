@@ -155,7 +155,6 @@ private:
 	};
 
 	std::deque<EphemeralTextLine> mEphemeralTextLines; // Ordered from top to bottom
-
 	bool mIsNotificationTextDirty;
 
 	//
@@ -171,16 +170,16 @@ private:
 	// Physics probe
 	//
 
-	struct PhysicProbeState
+	struct PhysicsProbePanelState
 	{
-		static std::chrono::duration<float> constexpr OpenDelayDuration = std::chrono::duration<float>(0.75f);
+		static std::chrono::duration<float> constexpr OpenDelayDuration = std::chrono::duration<float>(0.5f);
 		static std::chrono::duration<float> constexpr TransitionDuration = std::chrono::duration<float>(2.1f); // After open delay
 
 		float CurrentOpen;
 		float TargetOpen;
 		float CurrentStateStartTime;
 
-		PhysicProbeState()
+		PhysicsProbePanelState()
 		{
 			Reset();
 		}
@@ -193,8 +192,24 @@ private:
 		}
 	};
 
-	PhysicProbeState mPhysicProbeState;
+	PhysicsProbePanelState mPhysicsProbePanelState;
 	bool mIsPhysicsProbePanelDirty;
+
+	struct PhysicsProbeReading
+	{
+		std::string Speed;
+		std::string Temperature;
+
+		PhysicsProbeReading(
+			std::string speed,
+			std::string temperature)
+			: Speed(speed)
+			, Temperature(temperature)
+		{}
+	};
+
+	std::optional<PhysicsProbeReading> mPhysicsProbeReading;
+	bool mIsPhysicsProbeReadingDirty;
 
 	//
 	// Interactions
