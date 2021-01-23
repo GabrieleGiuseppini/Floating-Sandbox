@@ -164,7 +164,7 @@ public:
 				? open / VerticalOpenFraction
 				: 1.0f;
 
-			float const MinHorizontalOpen = 0.01f;
+			float const MinHorizontalOpen = 0.025f;
 
 			float const horizontalOpen = (open < VerticalOpenFraction)
 				? MinHorizontalOpen

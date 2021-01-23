@@ -95,6 +95,8 @@ enum class SoundType : uint32_t
     AntiMatterBombExplosion,
     PhysicsProbeAttached,
     PhysicsProbeDetached,
+    PhysicsProbePanelOpen,
+    PhysicsProbePanelClose,
     Pliers,
     Snapshot,
     TerrainAdjust,

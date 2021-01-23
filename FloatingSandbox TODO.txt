@@ -362,9 +362,9 @@ Render:
 						+ Event publishing
 						+ Also underwater sound					
 					+ Physics publishing at Update()
-				- Panel open/close sound, time-syncd with panel
-					- Event publishing
-					- Sound
+				+ Panel open/close sound, time-syncd with panel
+					+ Event publishing
+					+ Sound
 				- Cleanup:
 					- Make RenderContext expose GetNoficationRenderContext() and nuke all forwards
 					+ Improve gadget texture
@@ -372,9 +372,10 @@ Render:
 					- Cursor: slightly thicker stroke
 						- Or different altogether
 					- See if we want to *replace* existing probe even when not in radius
-				- Nuke velocity notification
+				- Nuke intertial velocity notification
 					- GameController et al
 					- UI preferences
+				- Test perf of panel opening on old Dell
 			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
 				- Copy old exe first
 				- Remove global damp at integration loop

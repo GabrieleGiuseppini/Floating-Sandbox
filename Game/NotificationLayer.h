@@ -173,8 +173,8 @@ private:
 
 	struct PhysicProbeState
 	{
-		static std::chrono::duration<float> constexpr OpenDelayDuration = std::chrono::duration<float>(1.0f);
-		static std::chrono::duration<float> constexpr TransitionDuration = std::chrono::duration<float>(1.5f); // After open delay
+		static std::chrono::duration<float> constexpr OpenDelayDuration = std::chrono::duration<float>(0.75f);
+		static std::chrono::duration<float> constexpr TransitionDuration = std::chrono::duration<float>(2.1f); // After open delay
 
 		float CurrentOpen;
 		float TargetOpen;

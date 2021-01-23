@@ -473,7 +473,9 @@ SoundController::SoundController(
                 || soundType == SoundType::EngineTelegraph
                 || soundType == SoundType::WatertightDoorClosed
                 || soundType == SoundType::WatertightDoorOpened
-                || soundType == SoundType::Error)
+                || soundType == SoundType::Error
+                || soundType == SoundType::PhysicsProbePanelOpen
+                || soundType == SoundType::PhysicsProbePanelClose)
         {
             //
             // - one-shot sound
@@ -2057,14 +2059,18 @@ void SoundController::OnWatertightDoorClosed(
 
 void SoundController::OnPhysicsProbePanelOpened()
 {
-    // TODOHERE
-    LogMessage("TODOHERE: SoundController::OnPhysicsProbePanelOpened");
+    PlayOneShotMultipleChoiceSound(
+        SoundType::PhysicsProbePanelOpen,
+        100.0f,
+        true);
 }
 
 void SoundController::OnPhysicsProbePanelClosed()
 {
-    // TODOHERE
-    LogMessage("TODOHERE: SoundController::OnPhysicsProbePanelClosed");
+    PlayOneShotMultipleChoiceSound(
+        SoundType::PhysicsProbePanelClose,
+        100.0f,
+        true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////

@@ -105,7 +105,9 @@ void main()
     vec4 color = vec4(cTexture.xyz, panelDepth);
     
     // Add white contour
-    float panelBorderDepth = abs(inPanelQuad - panelDepth);
+    float panelBorderDepth = max(
+        abs(inPanelQuad - panelDepth),
+        1.0 - smoothstep(0.0, 0.005, min(abs(vertexCoordinatesNdc.x - xLimitsNdc.x), abs(vertexCoordinatesNdc.x - xLimitsNdc.y))));
     gl_FragColor = mix(
         color,
         vec4(1.),

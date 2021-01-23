@@ -141,6 +141,10 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::PhysicsProbeAttached;
     else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbeDetached"))
         return SoundType::PhysicsProbeDetached;
+    else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbePanelOpen"))
+        return SoundType::PhysicsProbePanelOpen;
+    else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbePanelClose"))
+        return SoundType::PhysicsProbePanelClose;
     else if (Utils::CaseInsensitiveEquals(str, "Pliers"))
         return SoundType::Pliers;
     else if (Utils::CaseInsensitiveEquals(str, "Snapshot"))
