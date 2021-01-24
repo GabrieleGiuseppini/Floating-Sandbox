@@ -170,7 +170,7 @@ inline float LinearStep(
     float rEdge,
     float x) noexcept
 {
-    assert(lEdge < rEdge);
+    assert(lEdge <= rEdge);
 
     return Clamp((x - lEdge) / (rEdge - lEdge), 0.0f, 1.0f);
 }
@@ -180,7 +180,7 @@ inline float SmoothStep(
     float rEdge,
     float x) noexcept
 {
-    assert(lEdge < rEdge);
+    assert(lEdge <= rEdge);
 
     x = Clamp((x - lEdge) / (rEdge - lEdge), 0.0f, 1.0f);
 
@@ -204,7 +204,7 @@ inline float MixPiecewiseLinear(
 	float maxX,
 	float x) noexcept
 {
-	assert((minOutput < oneOutput) && (oneOutput < maxOutput));
+	assert((minOutput <= oneOutput) && (oneOutput <= maxOutput));
 	assert(minX <= x && x <= maxX);
 	assert(minX < 1.0 && 1.0 < maxX);
 
