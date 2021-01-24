@@ -331,7 +331,7 @@ Render:
 						+ Needs dirty flag
 					+ Uploads reading and/or clear to NotificationRenderContext at next Upload()						
 						+ mIsPhysicsProbeReadingDirty flag (like others)
-				= NotificationRenderContext:
+				+ NotificationRenderContext:
 					+ New NotificationRenderContext notification "type": PhysicsProbePanel
 						+ Upload is sticky: when uploaded, clears buffers, creates vertices, and sets dirty flag
 							+ When opened==0.0, clears the buffer and stops
@@ -345,12 +345,13 @@ Render:
 							+ Temperature
 						+ See right noise texture (we want the "rough" one, i.e. small)
 						+ Panel grows vertically first
-					= New NotificationRenderContext text notification type: PhysicsProbeReading
+					+ New NotificationRenderContext text notification type: PhysicsProbeReading
 						+ UploadPhysicsProbeReading
 							+ Emit vertices with two new anchor types
 						+ ClearPhysicsProbeReading
 						+ 7-segment font (including - and .)
 							+ DSEG7 Modern-Regular, bold, 16 [18x18, adjust .], normal AL, (242, 255, 0)
+							+ Color?
 						+ Adjust panel: 
 							+ Larger backdrop for reading (eventually larger panel altogether)
 							+ See if need darker and/or smoother backdrop for better contrast
@@ -370,7 +371,7 @@ Render:
 				+ Panel open/close sound, time-syncd with panel
 					+ Event publishing
 					+ Sound
-				- Cleanup:
+				= Cleanup:
 					- Gadgets: 
 						- Plan A: restructure gadgets: attach to point but remember spring for rotation
 							- First off, verify gadgets currently freeze when their spring is destroyed - which we'll fix with this change
