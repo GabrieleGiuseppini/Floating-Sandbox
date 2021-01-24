@@ -24,7 +24,7 @@ public:
 
     AntiMatterBombGadget(
         GadgetId id,
-        ElementIndex springIndex,
+        ElementIndex pointIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
@@ -48,7 +48,7 @@ public:
         return (State::Contained_1 == mState);
     }
 
-    virtual void OnRemoved() override
+    virtual void OnExternallyRemoved() override
     {
         // Stop containment if it's in containment
         if (State::Contained_1 == mState)
@@ -62,9 +62,6 @@ public:
             GadgetType::AntiMatterBomb,
             mParentWorld.IsUnderwater(
                 GetPosition()));
-
-        // Detach ourselves, if we're attached
-        DetachIfAttached();
     }
 
     virtual void OnNeighborhoodDisturbed() override
@@ -135,6 +132,9 @@ private:
 
     // The current cloud rotation angle
     float mCurrentCloudRotationAngle;
+
+    // The position at which the explosion has started
+    vec2f mExplosionPosition;
 };
 
 }

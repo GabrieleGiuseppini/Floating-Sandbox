@@ -11,7 +11,7 @@ namespace Physics {
 
 ImpactBombGadget::ImpactBombGadget(
     GadgetId id,
-    ElementIndex springIndex,
+    ElementIndex pointIndex,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
@@ -20,7 +20,7 @@ ImpactBombGadget::ImpactBombGadget(
     : Gadget(
         id,
         GadgetType::ImpactBomb,
-        springIndex,
+        pointIndex,
         parentWorld,
         std::move(gameEventDispatcher),
         shipPhysicsHandler,
@@ -28,6 +28,7 @@ ImpactBombGadget::ImpactBombGadget(
         shipSprings)
     , mState(State::Idle)
     , mExplosionFadeoutCounter(0u)
+    , mExplosionPosition(vec2f::zero())
 {
 }
 
@@ -41,16 +42,11 @@ bool ImpactBombGadget::Update(
     {
         case State::Idle:
         {
-            // Check if any of the spring endpoints has reached the trigger temperature
-            auto springIndex = GetAttachedSpringIndex();
-            if (!!springIndex)
+            // Check if our particle has reached the trigger temperature
+            if (mShipPoints.GetTemperature(mPointIndex) > GameParameters::BombsTemperatureTrigger)
             {
-                if (mShipPoints.GetTemperature(mShipSprings.GetEndpointAIndex(*springIndex)) > GameParameters::BombsTemperatureTrigger
-                    || mShipPoints.GetTemperature(mShipSprings.GetEndpointBIndex(*springIndex)) > GameParameters::BombsTemperatureTrigger)
-                {
-                    // Triggered...
-                    mState = State::TriggeringExplosion;
-                }
+                // Triggered...
+                mState = State::TriggeringExplosion;
             }
 
             return true;
@@ -62,9 +58,9 @@ bool ImpactBombGadget::Update(
             // Explode
             //
 
-            // Detach self (or else explosion will move along with ship performing
-            // its blast)
-            DetachIfAttached();
+            // Freeze explosion position (or else explosion will move
+            // along with ship performing its blast)
+            mExplosionPosition = GetPosition();
 
             // Blast radius
             float const blastRadius =
@@ -85,7 +81,7 @@ bool ImpactBombGadget::Update(
             mShipPhysicsHandler.StartExplosion(
                 currentSimulationTime,
                 GetPlaneId(),
-                GetPosition(),
+                mExplosionPosition,
                 blastRadius,
                 blastStrength,
                 blastHeat,
@@ -95,7 +91,7 @@ bool ImpactBombGadget::Update(
             // Notify explosion
             mGameEventHandler->OnBombExplosion(
                 GadgetType::ImpactBomb,
-                mParentWorld.IsUnderwater(GetPosition()),
+                mParentWorld.IsUnderwater(mExplosionPosition),
                 1);
 
             //
@@ -143,7 +139,7 @@ void ImpactBombGadget::Upload(
                 TextureFrameId(Render::GenericMipMappedTextureGroups::ImpactBomb, 0),
                 GetPosition(),
                 1.0,
-                mRotationBaseAxis,
+                GetRotationBaseAxis(),
                 GetRotationOffsetAxis(),
                 1.0f);
 
@@ -160,9 +156,9 @@ void ImpactBombGadget::Upload(
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::ImpactBomb, 0),
-                GetPosition(),
+                mExplosionPosition,
                 1.0f, // Scale
-                mRotationBaseAxis,
+                GetRotationBaseAxis(),
                 GetRotationOffsetAxis(),
                 1.0f - progress);  // Alpha
 

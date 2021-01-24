@@ -129,8 +129,6 @@ public:
         , mMaterialMeltingTemperatureBuffer(mBufferElementCount, mElementCount, 0.0f)
         // Stress
         , mIsStressedBuffer(mBufferElementCount, mElementCount, false)
-        // Gadgets
-        , mIsGadgetAttachedBuffer(mBufferElementCount, mElementCount, false)
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -516,59 +514,6 @@ public:
     }
 
     //
-    // Gadgets
-    //
-
-    bool IsGadgetAttached(ElementIndex springElementIndex) const
-    {
-        return mIsGadgetAttachedBuffer[springElementIndex];
-    }
-
-    void AttachGadget(
-        ElementIndex springElementIndex,
-        float mass,
-        Points & points)
-    {
-        assert(false == mIsDeletedBuffer[springElementIndex]);
-        assert(false == mIsGadgetAttachedBuffer[springElementIndex]);
-
-        mIsGadgetAttachedBuffer[springElementIndex] = true;
-
-        // Augment mass of endpoints due to gadget
-        points.AugmentMaterialMass(
-            mEndpointsBuffer[springElementIndex].PointAIndex,
-            mass,
-            *this);
-
-        points.AugmentMaterialMass(
-            mEndpointsBuffer[springElementIndex].PointBIndex,
-            mass,
-            *this);
-    }
-
-    void DetachGadget(
-        ElementIndex springElementIndex,
-        Points & points)
-    {
-        assert(false == mIsDeletedBuffer[springElementIndex]);
-        assert(true == mIsGadgetAttachedBuffer[springElementIndex]);
-
-        mIsGadgetAttachedBuffer[springElementIndex] = false;
-
-        // Reset mass of endpoints
-
-        points.AugmentMaterialMass(
-            mEndpointsBuffer[springElementIndex].PointAIndex,
-            0.0f,
-            *this);
-
-        points.AugmentMaterialMass(
-            mEndpointsBuffer[springElementIndex].PointBIndex,
-            0.0f,
-            *this);
-    }
-
-    //
     // Temporary buffer
     //
 
@@ -694,12 +639,6 @@ private:
 
     // State variable that tracks when we enter and exit the stressed state
     Buffer<bool> mIsStressedBuffer;
-
-    //
-    // Gadgets
-    //
-
-    Buffer<bool> mIsGadgetAttachedBuffer;
 
     //////////////////////////////////////////////////////////
     // Container

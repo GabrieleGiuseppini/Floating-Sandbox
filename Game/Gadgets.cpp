@@ -13,9 +13,12 @@ void Gadgets::Update(
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
+    //
+    // Gadgets
+    //
+
     // Run through all gadgets and invoke Update() on each;
     // remove those gadgets that have expired
-
     for (auto it = mCurrentGadgets.begin(); it != mCurrentGadgets.end(); /* incremented in loop */)
     {
         bool const isActive = (*it)->Update(
@@ -31,7 +34,8 @@ void Gadgets::Update(
             //
 
             // Gadget has detached itself already
-            assert(!(*it)->GetAttachedSpringIndex());
+            // (our rule, to allow gadgets' state machines to detach themselves at will)
+            assert(mShipPoints.IsGadgetAttached((*it)->GetPointIndex()));
 
             // Notify (soundless) removal
             mGameEventHandler->OnGadgetRemoved(
@@ -47,6 +51,10 @@ void Gadgets::Update(
             ++it;
         }
     }
+
+    //
+    // Physics probe gadget
+    //
 
     if (!!mCurrentPhysicsProbeGadget)
     {
@@ -67,6 +75,10 @@ void Gadgets::OnPointDetached(ElementIndex pointElementIndex)
 
     auto neighborhoodCenter = mShipPoints.GetPosition(pointElementIndex);
 
+    //
+    // Gadgets
+    //
+
     for (auto & gadget : mCurrentGadgets)
     {
         // Check if the gadget is within the neighborhood of the disturbed point
@@ -77,6 +89,8 @@ void Gadgets::OnPointDetached(ElementIndex pointElementIndex)
             gadget->OnNeighborhoodDisturbed();
         }
     }
+
+    // No need to check Physics probe gadget
 }
 
 void Gadgets::OnSpringDestroyed(ElementIndex springElementIndex)
@@ -85,14 +99,18 @@ void Gadgets::OnSpringDestroyed(ElementIndex springElementIndex)
 
     auto neighborhoodCenter = mShipSprings.GetMidpointPosition(springElementIndex, mShipPoints);
 
+    //
+    // Gadgets
+    //
+
     for (auto & gadget : mCurrentGadgets)
     {
-        // Check if the gadget is attached to this spring
-        auto gadgetSpring = gadget->GetAttachedSpringIndex();
-        if (!!gadgetSpring && *gadgetSpring == springElementIndex)
+        // Check if the gadget is tracking this spring
+        auto trackedSpring = gadget->GetTrackedSpringIndex();
+        if (trackedSpring.has_value() && *trackedSpring == springElementIndex)
         {
-            // Detach gadget
-            gadget->DetachIfAttached();
+            // Tell gadget
+            gadget->OnTrackedSpringDestroyed();
         }
 
         // Check if the gadget is within the neighborhood of the disturbed center
@@ -101,6 +119,21 @@ void Gadgets::OnSpringDestroyed(ElementIndex springElementIndex)
         {
             // Tel the gadget that its neighborhood has been disturbed
             gadget->OnNeighborhoodDisturbed();
+        }
+    }
+
+    //
+    // Physics probe gadget
+    //
+
+    if (!!mCurrentPhysicsProbeGadget)
+    {
+        // Check if the gadget is tracking this spring
+        auto trackedSpring = mCurrentPhysicsProbeGadget->GetTrackedSpringIndex();
+        if (trackedSpring.has_value() && *trackedSpring == springElementIndex)
+        {
+            // Tell gadget
+            mCurrentPhysicsProbeGadget->OnTrackedSpringDestroyed();
         }
     }
 }
@@ -122,8 +155,18 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
         {
             assert(mCurrentPhysicsProbeGadget->MayBeRemoved());
 
+            //
+            // Remove gadget
+            //
+
             // Tell it we're removing it
-            mCurrentPhysicsProbeGadget->OnRemoved();
+            mCurrentPhysicsProbeGadget->OnExternallyRemoved();
+
+            // Detach gadget from its particle
+            assert(mShipPoints.IsGadgetAttached(mCurrentPhysicsProbeGadget->GetPointIndex()));
+            mShipPoints.DetachGadget(
+                mCurrentPhysicsProbeGadget->GetPointIndex(),
+                mShipSprings);
 
             // Remove it
             mCurrentPhysicsProbeGadget.reset();
@@ -143,52 +186,54 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
 
     //
     // No physics probe in ship...
-    // ...find closest spring with no gadgets attached within the search radius, and
+    // ...find closest particle with at least one spring and with no gadgets attached within the search radius, and
     // if found, attach probe to it
     //
 
-    ElementIndex nearestCandidateSpringIndex = NoneElementIndex;
-    float nearestCandidateSpringDistance = std::numeric_limits<float>::max();
+    ElementIndex nearestCandidatePointIndex = NoneElementIndex;
+    float nearestCandidatePointDistance = std::numeric_limits<float>::max();
 
-    for (auto springIndex : mShipSprings)
+    for (auto pointIndex : mShipPoints.RawShipPoints())
     {
-        if (!mShipSprings.IsDeleted(springIndex) && !mShipSprings.IsGadgetAttached(springIndex))
+        if (!mShipPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty()
+            && !mShipPoints.IsGadgetAttached(pointIndex))
         {
-            float const squareDistance = (mShipSprings.GetMidpointPosition(springIndex, mShipPoints) - targetPos).squareLength();
+            float const squareDistance = (mShipPoints.GetPosition(pointIndex) - targetPos).squareLength();
             if (squareDistance < squareSearchRadius)
             {
                 // This spring is within the search radius
 
                 // Keep the nearest
-                if (squareDistance < squareSearchRadius && squareDistance < nearestCandidateSpringDistance)
+                if (squareDistance < squareSearchRadius && squareDistance < nearestCandidatePointDistance)
                 {
-                    nearestCandidateSpringIndex = springIndex;
-                    nearestCandidateSpringDistance = squareDistance;
+                    nearestCandidatePointIndex = pointIndex;
+                    nearestCandidatePointDistance = squareDistance;
                 }
             }
         }
     }
 
-    if (NoneElementIndex != nearestCandidateSpringIndex)
+    if (NoneElementIndex != nearestCandidatePointIndex)
     {
-        // We have a nearest candidate spring
+        // We have a nearest candidate particle
 
         // Create gadget
         assert(!mCurrentPhysicsProbeGadget);
         mCurrentPhysicsProbeGadget = std::make_unique<PhysicsProbeGadget>(
             GadgetId(mShipId, mNextLocalGadgetId++),
-            nearestCandidateSpringIndex,
+            nearestCandidatePointIndex,
             mParentWorld,
             mGameEventHandler,
             mShipPhysicsHandler,
             mShipPoints,
             mShipSprings);
 
-        // Attach gadget to the spring
-        mShipSprings.AttachGadget(
-            nearestCandidateSpringIndex,
+        // Attach gadget to the particle
+        assert(!mShipPoints.IsGadgetAttached(nearestCandidatePointIndex));
+        mShipPoints.AttachGadget(
+            nearestCandidatePointIndex,
             mCurrentPhysicsProbeGadget->GetMass(),
-            mShipPoints);
+            mShipSprings);
 
         // Notify
         mGameEventHandler->OnGadgetPlaced(
@@ -212,7 +257,7 @@ void Gadgets::RemovePhysicsProbe()
         assert(mCurrentPhysicsProbeGadget->MayBeRemoved());
 
         // Tell it we're removing it
-        mCurrentPhysicsProbeGadget->OnRemoved();
+        mCurrentPhysicsProbeGadget->OnExternallyRemoved();
 
         // Remove it
         mCurrentPhysicsProbeGadget.reset();

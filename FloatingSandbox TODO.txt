@@ -374,23 +374,51 @@ Render:
 					+ Event publishing
 					+ Sound
 				= Cleanup:
-					- Gadgets: 
-						- Plan A: restructure gadgets: attach to point but remember spring for rotation
-							- First off, verify gadgets currently freeze when their spring is destroyed - which we'll fix with this change
-							- Move "IsGadgetAttached" shebang from Springs to Points
-							- Gadget base remembers spring index for giving back rotation angle
-								- On spring destroy: do same trick as now, crystallize angle
-						- Plan B: PhysicsProbeGadget must take action in Spring destroy
-							- Not in point destroyed, add comment
-							- Should collapse to tracking a single particle
+					= Gadgets spring->point rearc: 
+						+ First off, verify gadgets currently freeze when their spring is destroyed - which we'll fix with this change
+						+ Move "IsGadgetAttached" shebang from Springs to Points
+						+ See if can move detachment from point (i.e. for mass) completely to Gadgets, just like
+						  attachment is
+						+ Overall: Gadget attachment: to ship points (no ephemeral) which are attached to at least one spring and which
+						  have no other gadgets attached
+							+ Gadget base remembers point's first spring index for giving back rotation angle
+								+ "TrackedSpringIndex"
+							+ On spring destroy: do same trick as now, crystallize angle
+						= PhysicsProbe final tasks:
+							+ Gadgets::OnSpringDestroyed: also deal with PhysicsProbe
+							- Toggle algo:
+								- If there's a probe in radius: remove it and done
+									- Publish event: removal makes sound
+									- return false
+								- Else if found good candidate particle:
+									- If there's already a probe on the ship: remove it (basically we move it)
+										- No event: (we're moving it) (no removal sound)
+									- Create new probe
+										- If we are not moving: publish event (sound)
+									- return true if we are not moving, else nullopt
+								- Else:
+									- return nullopt
+						= Test:
+							+ Basic
+						- Cleanup:
+							- Gadgets: see if may unify ToggleGadget<T>/TogglePhysicsProbeGadget
+							- See if may move mGameEventHandler->OnGadgetRemoved(.) call from each gadget's OnExternallyRemoved() to where we invoke
+							  OnExternallyRemoved in Gadgets
+							+ See if IGadget::GetPosition is really needed
+								+ If it's needed, then also add GetPlaneId()
+							- Rendering: it seems order of gadgets and explosions is screwed
+								- You can see the gadget's "hole" when it disappears on an explosion
+						- Tests:
+							- Run all scenarios in debug, for all gadgets
+							- Freezing of rotation axis @ spring destroy
+							- Detachment at bomb explosions: make sure explosion does not move
 					+ Make RenderContext expose GetNoficationRenderContext() and nuke all forwards
 					+ Improve gadget texture
 						+ Antennas on top
 					+ Cursor: slightly thicker stroke
 						+ Or different altogether
 						+ Adjust anchor
-					- Interactive ToggleProbe: see if we want to always *replace* existing probe on a ship even when not in radius
-					- Run in Debug
+					- Run panel open/close in Debug
 				- Nuke inertial velocity notification
 					- GameController et al
 					- UI preferences
@@ -410,7 +438,13 @@ Render:
 				- b) Physical pixels are never scaled, on any platform, and must be used when drawing graphics elements to ensure that the best possible resolution is used. 
 				     For example, all operations on wxGLCanvas use physical pixels. To convert between logical and physical pixels, you can use wxWindow::GetContentScaleFactor(): 
 				     this is a value greater than or equal to 1, so a value in logical pixels needs to be multiplied by it in order to obtain the value in physical pixels.
+				+ Tests:
+					+ With plist (i.e. full screen): ContentScaleFactor=1 DPIScaleFactor=1 100x100dip=100x100px
+					+ Without plist (i.e. 1/4th of screen): ContentScaleFactor=2 DPIScaleFactor=2 100x100dip=100x100px
+				- TODO:
+					- GetContentScaleFactor: 
 			- Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
+			- Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
 
 
 		- Boot settings:

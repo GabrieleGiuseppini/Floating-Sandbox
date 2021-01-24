@@ -71,13 +71,12 @@ public:
     virtual bool MayBeRemoved() const = 0;
 
     /*
-     * Invoked when the gadget is removed by the user.
+     * Invoked when the gadget is removed from outside (not by own state machine).
      */
-    virtual void OnRemoved() = 0;
+    virtual void OnExternallyRemoved() = 0;
 
     /*
-     * Invoked when the neighborhood of the spring has been disturbed;
-     * includes the spring that the gadget is attached to.
+     * Invoked when the neighborhood of the gadget has been disturbed.
      */
     virtual void OnNeighborhoodDisturbed() = 0;
 
@@ -89,107 +88,44 @@ public:
         Render::RenderContext & renderContext) const = 0;
 
     /*
-     * If the gadget is attached, saves its current position and detaches itself from the Springs container;
-     * otherwise, it's a nop.
+     * Invoked when the spring tracked by the gadget is destroyed.
      */
-    void DetachIfAttached()
+    void OnTrackedSpringDestroyed()
     {
-        if (!!mSpringIndex)
-        {
-            // Detach gadget
+        assert(mTrackedSpringIndex.has_value());
 
-            assert(mShipSprings.IsGadgetAttached(*mSpringIndex));
+        // Freeze current rotation offset
+        mFrozenRotationOffsetAxis =
+            mShipSprings.GetEndpointBPosition(*mTrackedSpringIndex, mShipPoints)
+            - mShipSprings.GetEndpointAPosition(*mTrackedSpringIndex, mShipPoints);
 
-            mShipSprings.DetachGadget(
-                *mSpringIndex,
-                mShipPoints);
-
-            // Freeze current midpoint position, rotation offset, and plane ID
-
-            mFrozenMidpointPosition = mShipSprings.GetMidpointPosition(*mSpringIndex, mShipPoints);
-
-            mFrozenRotationOffsetAxis = mShipSprings.GetEndpointBPosition(*mSpringIndex, mShipPoints)
-                - mShipSprings.GetEndpointAPosition(*mSpringIndex, mShipPoints);
-
-            mFrozenPlaneId = mShipSprings.GetPlaneId(*mSpringIndex, mShipPoints);
-
-            // Remember we don't have a spring index anymore
-
-            mSpringIndex.reset();
-        }
-        else
-        {
-            assert(!!mFrozenMidpointPosition);
-            assert(!!mFrozenRotationOffsetAxis);
-            assert(!!mFrozenPlaneId);
-        }
+        // Remember we are not tracking a spring anymore
+        mTrackedSpringIndex.reset();
     }
 
     /*
-     * Gets the spring that the gadget is attached to, or none if the gadget is not
-     * attached to any springs.
+     * Gets the point that the gadget is attached to.
      */
-    std::optional<ElementIndex> GetAttachedSpringIndex() const
+    inline ElementIndex GetPointIndex() const
     {
-        return mSpringIndex;
+        return mPointIndex;
     }
 
     /*
-     * Returns the midpoint position of the spring to which this gadget is attached.
+     * Gets the spring that the gadget is tracking, or none if the gadget is not
+     * ttacking any springs.
      */
-    vec2f const GetPosition() const
+    inline std::optional<ElementIndex> GetTrackedSpringIndex() const
     {
-        if (!!mFrozenMidpointPosition)
-        {
-            return *mFrozenMidpointPosition;
-        }
-        else
-        {
-            assert(!!mSpringIndex);
-            return mShipSprings.GetMidpointPosition(*mSpringIndex, mShipPoints);
-        }
+        return mTrackedSpringIndex;
     }
 
     /*
-     * Returns the rotation axis of the spring to which this gadget is attached.
+     * Returns the position of this gadget.
      */
-    vec2f const GetRotationOffsetAxis() const
+    inline vec2f const GetPosition() const
     {
-        if (!!mFrozenRotationOffsetAxis)
-        {
-            return *mFrozenRotationOffsetAxis;
-        }
-        else
-        {
-            assert(!!mSpringIndex);
-            return mShipSprings.GetEndpointBPosition(*mSpringIndex, mShipPoints)
-                - mShipSprings.GetEndpointAPosition(*mSpringIndex, mShipPoints);
-        }
-    }
-
-    /*
-     * Returns the ID of the plane of this gadget.
-     */
-    PlaneId GetPlaneId() const
-    {
-        if (!!mFrozenPlaneId)
-        {
-            return *mFrozenPlaneId;
-        }
-        else
-        {
-            assert(!!mSpringIndex);
-            return mShipSprings.GetPlaneId(*mSpringIndex, mShipPoints);
-        }
-    }
-
-    /*
-     * Returns the personality seed of this gadget, i.e.
-     * a uniform normalized random value.
-     */
-    float GetPersonalitySeed() const
-    {
-        return mPersonalitySeed;
+        return mShipPoints.GetPosition(mPointIndex);
     }
 
 protected:
@@ -197,30 +133,88 @@ protected:
     Gadget(
         GadgetId id,
         GadgetType type,
-        ElementIndex springIndex,
+        ElementIndex pointIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings)
         : mId(id)
+        , mType(type)
+        , mPointIndex(pointIndex)
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventDispatcher))
         , mShipPhysicsHandler(shipPhysicsHandler)
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
-        , mRotationBaseAxis(shipSprings.GetEndpointBPosition(springIndex, shipPoints) - shipSprings.GetEndpointAPosition(springIndex, shipPoints))
-        , mType(type)
-        , mSpringIndex(springIndex)
-        , mFrozenMidpointPosition(std::nullopt)
+        //
+        , mTrackedSpringIndex(GetTrackedSpringIndex(pointIndex, shipPoints))
+        , mRotationBaseAxis(shipSprings.GetEndpointBPosition(*mTrackedSpringIndex, shipPoints) - shipSprings.GetEndpointAPosition(*mTrackedSpringIndex, shipPoints))
         , mFrozenRotationOffsetAxis(std::nullopt)
-        , mFrozenPlaneId(std::nullopt)
         , mPersonalitySeed(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())
     {
     }
 
+    static inline ElementIndex GetTrackedSpringIndex(
+        ElementIndex pointIndex,
+        Points const & shipPoints)
+    {
+        assert(!shipPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty());
+        return shipPoints.GetConnectedSprings(pointIndex).ConnectedSprings[0].SpringIndex;
+    }
+
+    /*
+     * Returns the base rotation axis.
+     */
+    inline vec2f const & GetRotationBaseAxis() const
+    {
+        return mRotationBaseAxis;
+    }
+
+    /*
+     * Returns the rotation axis of this gadget.
+     */
+    inline vec2f const GetRotationOffsetAxis() const
+    {
+        if (mFrozenRotationOffsetAxis.has_value())
+        {
+            return *mFrozenRotationOffsetAxis;
+        }
+        else
+        {
+            assert(mTrackedSpringIndex.has_value());
+            return mShipSprings.GetEndpointBPosition(*mTrackedSpringIndex, mShipPoints)
+                - mShipSprings.GetEndpointAPosition(*mTrackedSpringIndex, mShipPoints);
+        }
+    }
+
+    /*
+     * Returns the plane ID of this gadget.
+     */
+    inline PlaneId const GetPlaneId() const
+    {
+        return mShipPoints.GetPlaneId(mPointIndex);
+    }
+
+    /*
+     * Returns the personality seed of this gadget, i.e.
+     * a uniform normalized random value.
+     */
+    inline float GetPersonalitySeed() const
+    {
+        return mPersonalitySeed;
+    }
+
+protected:
+
     // Our ID
     GadgetId const mId;
+
+    // The type of this gadget
+    GadgetType const mType;
+
+    // The index of the particle that we're attached to
+    ElementIndex const mPointIndex;
 
     // Our parent world
     World & mParentWorld;
@@ -237,28 +231,18 @@ protected:
     // The container of all the ship's springs
     Springs & mShipSprings;
 
+private:
+
+    // The index of the spring that we're tracking, or none
+    // when the gadget has stopped tracking a spring
+    std::optional<ElementIndex> mTrackedSpringIndex;
+
     // The basis orientation axis
     vec2f const mRotationBaseAxis;
 
-private:
-
-    // The type of this gadget
-    GadgetType const mType;
-
-    // The index of the spring that we're attached to, or none
-    // when the gadget has been detached
-    std::optional<ElementIndex> mSpringIndex;
-
-    // The position of the midpoint of the spring of this gadget, if the gadget has been detached from its spring;
-    // otherwise, none
-    std::optional<vec2f> mFrozenMidpointPosition;
-
-    // The last rotation axis of the spring of this gadget, if the gadget has been detached from its spring;
-    // otherwise, none
+    // The last rotation axis of the spring tracked by this gadget,
+    // if the gadget has stopped tracking a spring; otherwise, none
     std::optional<vec2f> mFrozenRotationOffsetAxis;
-
-    // The plane ID of this gadget, if the gadget has been detached from its spring; otherwise, none
-    std::optional<PlaneId> mFrozenPlaneId;
 
     // The random personality seed
     float const mPersonalitySeed;

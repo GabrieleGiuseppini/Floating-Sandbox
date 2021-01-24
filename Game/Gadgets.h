@@ -21,10 +21,8 @@ namespace Physics
 {
 
 /*
- * This class manages a set of gadgets, i.e. "thinghies" that the user may attach
- * to a ship and which perform various things.
- *
- * All game events are taken care of by this class.
+ * Container of gadgets, i.e. "thinghies" that the user may attach
+ * to particles of a ship and which perform various actions.
  *
  * The physics handler can be used to feed-back actions to the world.
  */
@@ -139,11 +137,21 @@ private:
                 // Check whether it's ok with being removed
                 if ((*it)->MayBeRemoved())
                 {
+                    //
+                    // Remove gadget
+                    //
+
                     // Tell it we're removing it
-                    (*it)->OnRemoved();
+                    (*it)->OnExternallyRemoved();
+
+                    // Detach gadget from its particle
+                    assert(mShipPoints.IsGadgetAttached((*it)->GetPointIndex()));
+                    mShipPoints.DetachGadget(
+                        (*it)->GetPointIndex(),
+                        mShipSprings);
 
                     // Remove from set of gadgets - forget about it
-                    mCurrentGadgets.erase(it);
+                    mCurrentGadgets.erase(it); // Safe to invalidate iterators, we're leaving anyway
                 }
 
                 // We're done
@@ -151,55 +159,56 @@ private:
             }
         }
 
-
         //
-        // No gadgets in radius...
-        // ...so find closest spring with no attached gadget within the search radius, and
+        // No gadget in radius...
+        // ...so find closest particle with at least one spring and no attached gadget within the search radius, and
         // if found, attach gadget to it
         //
 
-        ElementIndex nearestCandidateSpringIndex = NoneElementIndex;
-        float nearestCandidateSpringDistance = std::numeric_limits<float>::max();
+        ElementIndex nearestCandidatePointIndex = NoneElementIndex;
+        float nearestCandidatePointDistance = std::numeric_limits<float>::max();
 
-        for (auto springIndex : mShipSprings)
+        for (auto pointIndex : mShipPoints.RawShipPoints())
         {
-            if (!mShipSprings.IsDeleted(springIndex) && !mShipSprings.IsGadgetAttached(springIndex))
+            if (!mShipPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty()
+                && !mShipPoints.IsGadgetAttached(pointIndex))
             {
-                float squareDistance = (mShipSprings.GetMidpointPosition(springIndex, mShipPoints) - targetPos).squareLength();
+                float squareDistance = (mShipPoints.GetPosition(pointIndex) - targetPos).squareLength();
                 if (squareDistance < squareSearchRadius)
                 {
-                    // This spring is within the search radius
+                    // This particle is within the search radius
 
                     // Keep the nearest
-                    if (squareDistance < squareSearchRadius && squareDistance < nearestCandidateSpringDistance)
+                    if (squareDistance < squareSearchRadius && squareDistance < nearestCandidatePointDistance)
                     {
-                        nearestCandidateSpringIndex = springIndex;
-                        nearestCandidateSpringDistance = squareDistance;
+                        nearestCandidatePointIndex = pointIndex;
+                        nearestCandidatePointDistance = squareDistance;
                     }
                 }
             }
         }
 
-        if (NoneElementIndex != nearestCandidateSpringIndex)
+        if (NoneElementIndex != nearestCandidatePointIndex)
         {
-            // We have a nearest candidate spring
+            // We have a nearest candidate particle
 
             // Create gadget
             std::unique_ptr<Gadget> gadget(
                 new TGadget(
                     GadgetId(mShipId, mNextLocalGadgetId++),
-                    nearestCandidateSpringIndex,
+                    nearestCandidatePointIndex,
                     mParentWorld,
                     mGameEventHandler,
                     mShipPhysicsHandler,
                     mShipPoints,
                     mShipSprings));
 
-            // Attach gadget to the spring
-            mShipSprings.AttachGadget(
-                nearestCandidateSpringIndex,
+            // Attach gadget to the particle
+            assert(!mShipPoints.IsGadgetAttached(nearestCandidatePointIndex));
+            mShipPoints.AttachGadget(
+                nearestCandidatePointIndex,
                 gadget->GetMass(),
-                mShipPoints);
+                mShipSprings);
 
             // Notify
             mGameEventHandler->OnGadgetPlaced(
@@ -208,12 +217,12 @@ private:
                 mParentWorld.IsUnderwater(
                     gadget->GetPosition()));
 
-            // Add new gadget to set of gadgetss, removing eventual gadgets that might get purged
+            // Add new gadget to set of gadgets, removing eventual gadgets that might get purged
             mCurrentGadgets.emplace(
                 [](std::unique_ptr<Gadget> const & purgedGadget)
                 {
                     // Tell it we're removing it
-                    purgedGadget->OnRemoved();
+                    purgedGadget->OnExternallyRemoved();
                 },
                 std::move(gadget));
 

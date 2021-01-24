@@ -24,7 +24,7 @@ public:
 
     RCBombGadget(
         GadgetId id,
-        ElementIndex springIndex,
+        ElementIndex pointIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
@@ -48,7 +48,7 @@ public:
         return true;
     }
 
-    virtual void OnRemoved() override
+    virtual void OnExternallyRemoved() override
     {
         // Notify removal
         mGameEventHandler->OnGadgetRemoved(
@@ -56,9 +56,6 @@ public:
             GadgetType::RCBomb,
             mParentWorld.IsUnderwater(
                 GetPosition()));
-
-        // Detach ourselves, if we're attached
-        DetachIfAttached();
     }
 
     virtual void OnNeighborhoodDisturbed() override
@@ -129,6 +126,9 @@ private:
     // The counters for the various states. Fine to rollover!
     uint8_t mPingOnStepCounter; // Set to one upon entering
     uint8_t mExplosionFadeoutCounter; // Betewen 0 and ExplosionFadeoutStepsCount (excluded)
+
+    // The position at which the explosion has started
+    vec2f mExplosionPosition;
 };
 
 }

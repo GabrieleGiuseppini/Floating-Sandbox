@@ -590,6 +590,8 @@ public:
         // Highlights
         , mElectricalElementHighlightedPoints()
         , mCircleHighlightedPoints()
+        // Gadgets
+        , mIsGadgetAttachedBuffer(mBufferElementCount, mElementCount, false)
         // Randomness
         , mRandomNormalizedUniformFloatBuffer(mBufferElementCount, shipPointCount, [](size_t){ return GameRandomEngine::GetInstance().GenerateNormalizedUniformReal(); })
         // Immutable render attributes
@@ -1691,6 +1693,47 @@ public:
     }
 
     //
+    // Gadgets
+    //
+
+    bool IsGadgetAttached(ElementIndex pointElementIndex) const
+    {
+        return mIsGadgetAttachedBuffer[pointElementIndex];
+    }
+
+    void AttachGadget(
+        ElementIndex pointElementIndex,
+        float mass,
+        Springs & springs)
+    {
+        assert(false == mIsGadgetAttachedBuffer[pointElementIndex]);
+
+        mIsGadgetAttachedBuffer[pointElementIndex] = true;
+
+        // Augment mass due to gadget
+        AugmentMaterialMass(
+            pointElementIndex,
+            mass,
+            springs);
+    }
+
+    void DetachGadget(
+        ElementIndex pointElementIndex,
+        Springs & springs)
+    {
+        assert(true == mIsGadgetAttachedBuffer[pointElementIndex]);
+
+        mIsGadgetAttachedBuffer[pointElementIndex] = false;
+
+        // Reset mass of endpoints
+
+        AugmentMaterialMass(
+            pointElementIndex,
+            0.0f,
+            springs);
+    }
+
+    //
     // Immutable attributes
     //
 
@@ -1926,6 +1969,12 @@ private:
 
     std::vector<ElectricalElementHighlightState> mElectricalElementHighlightedPoints;
     std::vector<CircleHighlightState> mCircleHighlightedPoints;
+
+    //
+    // Gadgets
+    //
+
+    Buffer<bool> mIsGadgetAttachedBuffer;
 
     //
     // Randomness

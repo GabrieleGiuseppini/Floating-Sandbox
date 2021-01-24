@@ -11,7 +11,7 @@ namespace Physics {
 
 PhysicsProbeGadget::PhysicsProbeGadget(
     GadgetId id,
-    ElementIndex springIndex,
+    ElementIndex pointIndex,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
@@ -20,7 +20,7 @@ PhysicsProbeGadget::PhysicsProbeGadget(
     : Gadget(
         id,
         GadgetType::PhysicsProbe,
-        springIndex,
+        pointIndex,
         parentWorld,
         std::move(gameEventDispatcher),
         shipPhysicsHandler,
@@ -53,13 +53,9 @@ bool PhysicsProbeGadget::Update(
                 mNextStateTransitionTimePoint = currentWallClockTime + PingOnInterval;
 
                 // Emit reading
-
-                assert(GetAttachedSpringIndex().has_value());
-                auto const pointIndex = mShipSprings.GetEndpointAIndex(*GetAttachedSpringIndex());
-
                 mGameEventHandler->OnPhysicsProbeReading(
-                    mShipPoints.GetVelocity(pointIndex),
-                    mShipPoints.GetTemperature(pointIndex));
+                    mShipPoints.GetVelocity(mPointIndex),
+                    mShipPoints.GetTemperature(mPointIndex));
             }
 
             return true;
@@ -102,7 +98,7 @@ void PhysicsProbeGadget::Upload(
                 TextureFrameId(Render::GenericMipMappedTextureGroups::PhysicsProbe, 0),
                 GetPosition(),
                 1.0,
-                mRotationBaseAxis,
+                GetRotationBaseAxis(),
                 GetRotationOffsetAxis(),
                 1.0f);
 
@@ -116,7 +112,7 @@ void PhysicsProbeGadget::Upload(
                 TextureFrameId(Render::GenericMipMappedTextureGroups::PhysicsProbe, 0),
                 GetPosition(),
                 1.0,
-                mRotationBaseAxis,
+                GetRotationBaseAxis(),
                 GetRotationOffsetAxis(),
                 1.0f);
 
@@ -125,7 +121,7 @@ void PhysicsProbeGadget::Upload(
                 TextureFrameId(Render::GenericMipMappedTextureGroups::PhysicsProbePing, 0),
                 GetPosition(),
                 1.0,
-                mRotationBaseAxis,
+                GetRotationBaseAxis(),
                 GetRotationOffsetAxis(),
                 1.0f);
 

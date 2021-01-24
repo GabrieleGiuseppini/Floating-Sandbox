@@ -27,7 +27,7 @@ public:
 
     TimerBombGadget(
         GadgetId id,
-        ElementIndex springIndex,
+        ElementIndex pointIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
@@ -51,7 +51,7 @@ public:
         return true;
     }
 
-    virtual void OnRemoved() override
+    virtual void OnExternallyRemoved() override
     {
         // Stop fuse if it's burning
         if (State::SlowFuseBurning == mState
@@ -66,9 +66,6 @@ public:
             GadgetType::TimerBomb,
             mParentWorld.IsUnderwater(
                 GetPosition()));
-
-        // Detach ourselves, if we're attached
-        DetachIfAttached();
     }
 
     virtual void OnNeighborhoodDisturbed() override;
@@ -136,6 +133,9 @@ private:
     uint8_t mDefuseStepCounter;
     uint8_t mDetonationLeadInShapeFrameCounter;
     uint8_t mExplosionFadeoutCounter; // Betewen 0 and ExplosionFadeoutStepsCount (excluded)
+
+    // The position at which the explosion has started
+    vec2f mExplosionPosition;
 };
 
 }

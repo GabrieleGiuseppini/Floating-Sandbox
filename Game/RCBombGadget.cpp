@@ -11,7 +11,7 @@ namespace Physics {
 
 RCBombGadget::RCBombGadget(
     GadgetId id,
-    ElementIndex springIndex,
+    ElementIndex pointIndex,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
@@ -20,7 +20,7 @@ RCBombGadget::RCBombGadget(
     : Gadget(
         id,
         GadgetType::RCBomb,
-        springIndex,
+        pointIndex,
         parentWorld,
         std::move(gameEventDispatcher),
         shipPhysicsHandler,
@@ -31,6 +31,7 @@ RCBombGadget::RCBombGadget(
     , mExplosionIgnitionTimestamp(GameWallClock::time_point::min())
     , mPingOnStepCounter(0u)
     , mExplosionFadeoutCounter(0u)
+    , mExplosionPosition(vec2f::zero())
 {
 }
 
@@ -81,16 +82,10 @@ bool RCBombGadget::Update(
             else
             {
                 // Check if any of the spring endpoints has reached the trigger temperature
-                auto springIndex = GetAttachedSpringIndex();
-                if (!!springIndex)
+                if (mShipPoints.GetTemperature(mPointIndex) > GameParameters::BombsTemperatureTrigger)
                 {
-                    if (mShipPoints.GetTemperature(mShipSprings.GetEndpointAIndex(*springIndex)) > GameParameters::BombsTemperatureTrigger
-                        || mShipPoints.GetTemperature(mShipSprings.GetEndpointBIndex(*springIndex)) > GameParameters::BombsTemperatureTrigger)
-                    {
-                        // Triggered!
-
-                        Detonate();
-                    }
+                    // Triggered!
+                    Detonate();
                 }
             }
 
@@ -106,9 +101,9 @@ bool RCBombGadget::Update(
                 // Explode
                 //
 
-                // Detach self (or else explosion will move along with ship performing
-                // its blast)
-                DetachIfAttached();
+                // Freeze explosion position (or else explosion will move
+                // along with ship performing its blast)
+                mExplosionPosition = GetPosition();
 
                 // Blast radius
                 float const blastRadius =
@@ -129,7 +124,7 @@ bool RCBombGadget::Update(
                 mShipPhysicsHandler.StartExplosion(
                     currentSimulationTime,
                     GetPlaneId(),
-                    GetPosition(),
+                    mExplosionPosition,
                     blastRadius,
                     blastStrength,
                     blastHeat,
@@ -139,7 +134,7 @@ bool RCBombGadget::Update(
                 // Notify explosion
                 mGameEventHandler->OnBombExplosion(
                     GadgetType::RCBomb,
-                    mParentWorld.IsUnderwater(GetPosition()),
+                    mParentWorld.IsUnderwater(mExplosionPosition),
                     1);
 
                 //
@@ -195,7 +190,7 @@ void RCBombGadget::Upload(
                 TextureFrameId(Render::GenericMipMappedTextureGroups::RcBomb, 0),
                 GetPosition(),
                 1.0,
-                mRotationBaseAxis,
+                GetRotationBaseAxis(),
                 GetRotationOffsetAxis(),
                 1.0f);
 
@@ -209,7 +204,7 @@ void RCBombGadget::Upload(
                 TextureFrameId(Render::GenericMipMappedTextureGroups::RcBomb, 0),
                 GetPosition(),
                 1.0,
-                mRotationBaseAxis,
+                GetRotationBaseAxis(),
                 GetRotationOffsetAxis(),
                 1.0f);
 
@@ -218,7 +213,7 @@ void RCBombGadget::Upload(
                 TextureFrameId(Render::GenericMipMappedTextureGroups::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
                 1.0,
-                mRotationBaseAxis,
+                GetRotationBaseAxis(),
                 GetRotationOffsetAxis(),
                 1.0f);
 
@@ -232,7 +227,7 @@ void RCBombGadget::Upload(
                 TextureFrameId(Render::GenericMipMappedTextureGroups::RcBomb, 0),
                 GetPosition(),
                 1.0,
-                mRotationBaseAxis,
+                GetRotationBaseAxis(),
                 GetRotationOffsetAxis(),
                 1.0f);
 
@@ -241,7 +236,7 @@ void RCBombGadget::Upload(
                 TextureFrameId(Render::GenericMipMappedTextureGroups::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
                 1.0,
-                mRotationBaseAxis,
+                GetRotationBaseAxis(),
                 GetRotationOffsetAxis(),
                 1.0f);
 
@@ -258,9 +253,9 @@ void RCBombGadget::Upload(
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
                 TextureFrameId(Render::GenericMipMappedTextureGroups::RcBomb, 0),
-                GetPosition(),
+                mExplosionPosition,
                 1.0f, // Scale
-                mRotationBaseAxis,
+                GetRotationBaseAxis(),
                 GetRotationOffsetAxis(),
                 1.0f - progress);  // Alpha
 

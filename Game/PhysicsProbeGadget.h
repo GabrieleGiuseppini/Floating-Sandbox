@@ -24,7 +24,7 @@ public:
 
     PhysicsProbeGadget(
         GadgetId id,
-        ElementIndex springIndex,
+        ElementIndex pointIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
@@ -49,7 +49,7 @@ public:
         return true;
     }
 
-    virtual void OnRemoved() override
+    virtual void OnExternallyRemoved() override
     {
         // Notify removal
         mGameEventHandler->OnGadgetRemoved(
@@ -57,9 +57,6 @@ public:
             GadgetType::PhysicsProbe,
             mParentWorld.IsUnderwater(
                 GetPosition()));
-
-        // Detach ourselves, if we're attached
-        DetachIfAttached();
     }
 
     virtual void OnNeighborhoodDisturbed() override

@@ -103,6 +103,9 @@ void Points::Add(
     // Repair state
     mRepairStateBuffer.emplace_back();
 
+    // Gadgets
+    mIsGadgetAttachedBuffer.emplace_back(false);
+
     // Randomness
     mRandomNormalizedUniformFloatBuffer.emplace_back(randomNormalizedUniformFloat);
 
