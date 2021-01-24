@@ -154,6 +154,7 @@ NotificationRenderContext::NotificationRenderContext(
         // Dimensions of a cell of this font, in the atlas' texture space coordinates
         float const fontCellWidthAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetCellScreenWidth()) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Width);
         float const fontCellHeightAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetCellScreenHeight()) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Height);
+        float const fontCellHeightAtlasTextureSpaceMinusOne = static_cast<float>(fonts[f].Metadata.GetCellScreenHeight() - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Height);
 
         // Origins and sizes for each character
         std::array<vec2f, 256> GlyphTextureOrigins;
@@ -171,7 +172,7 @@ NotificationRenderContext::NotificationRenderContext(
             int const glyphTextureRow = (c - FontMetadata::BaseCharacter) / fonts[f].Metadata.GetGlyphsPerTextureRow();
             float const glyphOriginBottomAtlasTextureSpace =
                 fontTextureFrameMetadata.TextureCoordinatesBottomLeft.y // Includes dead-center dx already
-                + static_cast<float>(glyphTextureRow + 1) * fontCellHeightAtlasTextureSpace;
+                + static_cast<float>(glyphTextureRow) * fontCellHeightAtlasTextureSpace + fontCellHeightAtlasTextureSpaceMinusOne;
 
             // Texture-space size
             float const glyphWidthAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetGlyphScreenWidth(c)) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Width);
@@ -725,8 +726,8 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
 
     // Hardcoded pixel offsets of readings in physics probe panel,
     // relative to bottom-right corner
-    vec2f constexpr PhysicsProbePanelSpeedBottomRight(97.0f, 7.0f);
-    vec2f constexpr PhysicsProbePanelTemperatureBottomRight(210.0f, 7.0f);
+    vec2f constexpr PhysicsProbePanelSpeedBottomRight(137.0f, 12.0f);
+    vec2f constexpr PhysicsProbePanelTemperatureBottomRight(295.0f, 12.0f);
 
     for (auto const & textLine : context.TextLines)
     {

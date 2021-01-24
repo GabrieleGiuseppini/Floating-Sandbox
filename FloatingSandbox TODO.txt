@@ -349,11 +349,11 @@ Render:
 						+ UploadPhysicsProbeReading
 							+ Emit vertices with two new anchor types
 						+ ClearPhysicsProbeReading
-						= 7-segment font (including - and .)
-						- Nail down font color
-						- Adjust panel: 
-							- Larger backdrop for reading (eventually larger panel altogether)
-							- See if need darker and/or smoother backdrop for better contrast
+						+ 7-segment font (including - and .)
+							+ DSEG7 Modern-Regular, bold, 16 [18x18, adjust .], normal AL, (242, 255, 0)
+						+ Adjust panel: 
+							+ Larger backdrop for reading (eventually larger panel altogether)
+							+ See if need darker and/or smoother backdrop for better contrast
 				+ New gadget & tool
 					+ Enum
 					+ MainFrame menu entry - no keyboard shortcut
@@ -371,9 +371,15 @@ Render:
 					+ Event publishing
 					+ Sound
 				- Cleanup:
-					- Gadgets: PhysicsProbeGadget must take action in Spring destroy
-						- Not in point destroyed, add comment
-						- Should collapse to tracking a single particle
+					- Gadgets: 
+						- Plan A: restructure gadgets: attach to point but remember spring for rotation
+							- First off, verify gadgets currently freeze when their spring is destroyed - which we'll fix with this change
+							- Move "IsGadgetAttached" shebang from Springs to Points
+							- Gadget base remembers spring index for giving back rotation angle
+								- On spring destroy: do same trick as now, crystallize angle
+						- Plan B: PhysicsProbeGadget must take action in Spring destroy
+							- Not in point destroyed, add comment
+							- Should collapse to tracking a single particle
 					- Make RenderContext expose GetNoficationRenderContext() and nuke all forwards
 					+ Improve gadget texture
 						+ Antennas on top
