@@ -289,6 +289,8 @@ Render:
 			= I also like a warning not to repost the work on youtube, though i'm sure people will ignore this (we cant control everything unfortunately :wink: )
 				- Double-check with them
 			+ Ask Fernando for his ships
+			- Tell CPM/Wreno rules for using ShipBucket
+				- Credits format
 
 		= Sinking speed:
 			X Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s
@@ -408,6 +410,7 @@ Render:
 				- b) Physical pixels are never scaled, on any platform, and must be used when drawing graphics elements to ensure that the best possible resolution is used. 
 				     For example, all operations on wxGLCanvas use physical pixels. To convert between logical and physical pixels, you can use wxWindow::GetContentScaleFactor(): 
 				     this is a value greater than or equal to 1, so a value in logical pixels needs to be multiplied by it in order to obtain the value in physical pixels.
+			- Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
 
 
 		- Boot settings:
