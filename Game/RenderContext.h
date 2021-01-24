@@ -557,11 +557,18 @@ public:
         size_t pointCount,
         RgbaImageData texture);
 
-    ShipRenderContext & GetShipRenderContext(ShipId shipId) const
+    inline ShipRenderContext & GetShipRenderContext(ShipId shipId) const
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
         return *(mShips[shipId]);
+    }
+
+    inline NotificationRenderContext & GetNoficationRenderContext() const
+    {
+        assert(!!mNotificationRenderContext);
+
+        return *mNotificationRenderContext;
     }
 
     RgbImageData TakeScreenshot();
@@ -817,26 +824,6 @@ public:
         mWorldRenderContext->UploadAABBsEnd();
     }
 
-    inline void UploadHeatBlasterFlame(
-        vec2f const & centerPosition,
-        float radius,
-        HeatBlasterActionType action)
-    {
-        mNotificationRenderContext->UploadHeatBlasterFlame(
-            centerPosition,
-            radius,
-            action);
-    }
-
-    inline void UploadFireExtinguisherSpray(
-        vec2f const & centerPosition,
-        float radius)
-    {
-        mNotificationRenderContext->UploadFireExtinguisherSpray(
-            centerPosition,
-            radius);
-    }
-
     inline void UploadShipsStart()
     {
         // Nop
@@ -903,94 +890,6 @@ public:
     inline void UploadShipsEnd()
     {
         // Nop
-    }
-
-    inline void UploadStatusTextStart()
-    {
-        mNotificationRenderContext->UploadStatusTextStart();
-    }
-
-    inline void UploadStatusTextLine(
-        std::string const & text,
-        AnchorPositionType anchor,
-        vec2f const & screenOffset,
-        float alpha)
-    {
-        mNotificationRenderContext->UploadStatusTextLine(
-            text,
-            anchor,
-            screenOffset,
-            alpha);
-    }
-
-    inline void UploadStatusTextEnd()
-    {
-        mNotificationRenderContext->UploadStatusTextEnd();
-    }
-
-    inline void UploadNotificationTextStart()
-    {
-        mNotificationRenderContext->UploadNotificationTextStart();
-    }
-
-    inline void UploadNotificationTextLine(
-        std::string const & text,
-        AnchorPositionType anchor,
-        vec2f const & screenOffset,
-        float alpha)
-    {
-        mNotificationRenderContext->UploadNotificationTextLine(
-            text,
-            anchor,
-            screenOffset,
-            alpha);
-    }
-
-    inline void UploadNotificationTextEnd()
-    {
-        mNotificationRenderContext->UploadNotificationTextEnd();
-    }
-
-    inline void UploadTextureNotificationStart()
-    {
-        mNotificationRenderContext->UploadTextureNotificationStart();
-    }
-
-    inline void UploadTextureNotification(
-        TextureFrameId<GenericLinearTextureGroups> const & textureFrameId,
-        AnchorPositionType anchor,
-        vec2f const & screenOffset, // In texture-size fraction (0.0 -> 1.0)
-        float alpha)
-    {
-        mNotificationRenderContext->UploadTextureNotification(
-            textureFrameId,
-            anchor,
-            screenOffset,
-            alpha);
-    }
-
-    inline void UploadTextureNotificationEnd()
-    {
-        mNotificationRenderContext->UploadTextureNotificationEnd();
-    }
-
-    inline void UploadPhysicsProbePanel(float open, bool isOpening)
-    {
-        mNotificationRenderContext->UploadPhysicsProbePanel(open, isOpening);
-    }
-
-    inline void UploadPhysicsProbeReading(
-        std::string const & speed,
-        std::string const & temperature)
-    {
-        mNotificationRenderContext->UploadPhysicsProbeReading(
-            speed,
-            temperature);
-    }
-
-    inline void UploadPhysicsProbeReadingClear()
-    {
-        mNotificationRenderContext->UploadPhysicsProbeReadingClear();
     }
 
     void UploadEnd();

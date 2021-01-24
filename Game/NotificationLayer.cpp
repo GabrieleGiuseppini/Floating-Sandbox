@@ -408,24 +408,26 @@ void NotificationLayer::Update(float now)
 
 void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 {
+	auto & notificationRenderContext = renderContext.GetNoficationRenderContext();
+
 	//
 	// Upload status text, if needed
 	//
 
 	if (mIsStatusTextDirty)
 	{
-		renderContext.UploadStatusTextStart();
+		notificationRenderContext.UploadStatusTextStart();
 
 		int effectiveOrdinal = 0;
 
-		UploadStatusTextLine(mStatusTextLines[0], mIsStatusTextEnabled, effectiveOrdinal, renderContext);
+		UploadStatusTextLine(mStatusTextLines[0], mIsStatusTextEnabled, effectiveOrdinal, notificationRenderContext);
 
 		for (size_t i = 1; i < mStatusTextLines.size(); ++i)
 		{
-			UploadStatusTextLine(mStatusTextLines[i], mIsExtendedStatusTextEnabled, effectiveOrdinal, renderContext);
+			UploadStatusTextLine(mStatusTextLines[i], mIsExtendedStatusTextEnabled, effectiveOrdinal, notificationRenderContext);
 		}
 
-		renderContext.UploadStatusTextEnd();
+		notificationRenderContext.UploadStatusTextEnd();
 
 		mIsStatusTextDirty = false;
 	}
@@ -436,7 +438,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 
 	if (mIsNotificationTextDirty)
 	{
-		renderContext.UploadNotificationTextStart();
+		notificationRenderContext.UploadNotificationTextStart();
 
 		vec2f screenOffset = vec2f::zero(); // Cumulative vertical offset
 		for (auto const & etl : mEphemeralTextLines)
@@ -446,7 +448,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 				case EphemeralTextLine::StateType::FadingIn:
 				{
 					// Upload text
-					renderContext.UploadNotificationTextLine(
+					notificationRenderContext.UploadNotificationTextLine(
 						etl.Text,
 						Render::AnchorPositionType::TopRight,
 						screenOffset,
@@ -461,7 +463,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 				case EphemeralTextLine::StateType::Displaying:
 				{
 					// Upload text
-					renderContext.UploadNotificationTextLine(
+					notificationRenderContext.UploadNotificationTextLine(
 						etl.Text,
 						Render::AnchorPositionType::TopRight,
 						screenOffset,
@@ -476,7 +478,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 				case EphemeralTextLine::StateType::FadingOut:
 				{
 					// Upload text
-					renderContext.UploadNotificationTextLine(
+					notificationRenderContext.UploadNotificationTextLine(
 						etl.Text,
 						Render::AnchorPositionType::TopRight,
 						screenOffset,
@@ -504,7 +506,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 			}
 		}
 
-		renderContext.UploadNotificationTextEnd();
+		notificationRenderContext.UploadNotificationTextEnd();
 
 		mIsNotificationTextDirty = false;
 	}
@@ -515,11 +517,11 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 
 	if (mAreTextureNotificationsDirty)
 	{
-		renderContext.UploadTextureNotificationStart();
+		notificationRenderContext.UploadTextureNotificationStart();
 
 		if (mIsUltraViolentModeIndicatorOn)
 		{
-			renderContext.UploadTextureNotification(
+			notificationRenderContext.UploadTextureNotification(
 				TextureFrameId(Render::GenericLinearTextureGroups::UVModeNotification, 0),
 				Render::AnchorPositionType::BottomRight,
 				vec2f(0.0f, 0.0f),
@@ -528,7 +530,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 
 		if (mIsSoundMuteIndicatorOn)
 		{
-			renderContext.UploadTextureNotification(
+			notificationRenderContext.UploadTextureNotification(
 				TextureFrameId(Render::GenericLinearTextureGroups::SoundMuteNotification, 0),
 				Render::AnchorPositionType::BottomRight,
 				vec2f(-1.5f, 0.0f),
@@ -537,14 +539,14 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 
 		if (mIsDayLightCycleOn)
 		{
-			renderContext.UploadTextureNotification(
+			notificationRenderContext.UploadTextureNotification(
 				TextureFrameId(Render::GenericLinearTextureGroups::DayLightCycleNotification, 0),
 				Render::AnchorPositionType::BottomRight,
 				vec2f(-3.0f, 0.0f),
 				1.0f);
 		}
 
-		renderContext.UploadTextureNotificationEnd();
+		notificationRenderContext.UploadTextureNotificationEnd();
 
 		mAreTextureNotificationsDirty = false;
 	}
@@ -555,7 +557,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 
 	if (mIsPhysicsProbePanelDirty)
 	{
-		renderContext.UploadPhysicsProbePanel(
+		notificationRenderContext.UploadPhysicsProbePanel(
 			mPhysicsProbePanelState.CurrentOpen,
 			mPhysicsProbePanelState.TargetOpen > mPhysicsProbePanelState.CurrentOpen); // is opening
 
@@ -567,12 +569,12 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 		if (mPhysicsProbeReading.has_value())
 		{
 			// Upload reading
-			renderContext.UploadPhysicsProbeReading(mPhysicsProbeReading->Speed, mPhysicsProbeReading->Temperature);
+			notificationRenderContext.UploadPhysicsProbeReading(mPhysicsProbeReading->Speed, mPhysicsProbeReading->Temperature);
 		}
 		else
 		{
 			// Clear reading
-			renderContext.UploadPhysicsProbeReadingClear();
+			notificationRenderContext.UploadPhysicsProbeReadingClear();
 		}
 
 		mIsPhysicsProbeReadingDirty = false;
@@ -584,7 +586,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 
 	if (!!mHeatBlasterFlameToRender)
 	{
-		renderContext.UploadHeatBlasterFlame(
+		notificationRenderContext.UploadHeatBlasterFlame(
 			mHeatBlasterFlameToRender->WorldCoordinates,
 			mHeatBlasterFlameToRender->Radius,
 			mHeatBlasterFlameToRender->Action);
@@ -594,7 +596,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 
 	if (!!mFireExtinguisherSprayToRender)
 	{
-		renderContext.UploadFireExtinguisherSpray(
+		notificationRenderContext.UploadFireExtinguisherSpray(
 			mFireExtinguisherSprayToRender->WorldCoordinates,
 			mFireExtinguisherSprayToRender->Radius);
 
@@ -642,7 +644,7 @@ void NotificationLayer::UploadStatusTextLine(
 	std::string & line,
 	bool isEnabled,
 	int & effectiveOrdinal,
-	Render::RenderContext & renderContext)
+	Render::NotificationRenderContext & notificationRenderContext)
 {
 	if (isEnabled)
 	{
@@ -654,7 +656,7 @@ void NotificationLayer::UploadStatusTextLine(
 			0.0f,
 			static_cast<float>(effectiveOrdinal++));
 
-		renderContext.UploadStatusTextLine(
+		notificationRenderContext.UploadStatusTextLine(
 			line,
 			Render::AnchorPositionType::TopLeft,
 			screenOffset,

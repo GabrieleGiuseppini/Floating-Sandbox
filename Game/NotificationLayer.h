@@ -103,7 +103,7 @@ private:
 		std::string & line,
 		bool isEnabled,
 		int & effectiveOrdinal,
-		Render::RenderContext & renderContext);
+		Render::NotificationRenderContext & notificationRenderContext);
 
 private:
 

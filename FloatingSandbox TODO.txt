@@ -383,7 +383,7 @@ Render:
 						- Plan B: PhysicsProbeGadget must take action in Spring destroy
 							- Not in point destroyed, add comment
 							- Should collapse to tracking a single particle
-					- Make RenderContext expose GetNoficationRenderContext() and nuke all forwards
+					+ Make RenderContext expose GetNoficationRenderContext() and nuke all forwards
 					+ Improve gadget texture
 						+ Antennas on top
 					+ Cursor: slightly thicker stroke
@@ -391,7 +391,7 @@ Render:
 						+ Adjust anchor
 					- Interactive ToggleProbe: see if we want to always *replace* existing probe on a ship even when not in radius
 					- Run in Debug
-				- Nuke intertial velocity notification
+				- Nuke inertial velocity notification
 					- GameController et al
 					- UI preferences
 				- Test perf of panel opening on old Dell
