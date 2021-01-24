@@ -401,6 +401,15 @@ Render:
 						- Try first without: see falling debris, also with friction adjust = 0.0
 					- !Underwater: convert old global damp to new air damp
 
+		- MAC:
+			- Full high-DPI path:
+				- a) Window scaling: on a 2X DPI, a wxWindow of size (500, 500) would be (1000, 1000) on Mac and (500, 500) on Windows. To overcome this, use wxFrame->FromDIP:
+					- myFrame->SetClientSize(wxSize(400, 300));   -->   myFrame->SetClientSize(myFrame->FromDIP(wxSize(400, 300)));
+				- b) Physical pixels are never scaled, on any platform, and must be used when drawing graphics elements to ensure that the best possible resolution is used. 
+				     For example, all operations on wxGLCanvas use physical pixels. To convert between logical and physical pixels, you can use wxWindow::GetContentScaleFactor(): 
+				     this is a value greater than or equal to 1, so a value in logical pixels needs to be multiplied by it in order to obtain the value in physical pixels.
+
+
 		- Boot settings:
 			- 3-valued optional's
 			- Consumers use flag exclusively if set
