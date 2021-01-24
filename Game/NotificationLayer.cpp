@@ -571,9 +571,6 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 		}
 		else
 		{
-			// TODOTEST
-			LogMessage("ReadingClear()");
-
 			// Clear reading
 			renderContext.UploadPhysicsProbeReadingClear();
 		}

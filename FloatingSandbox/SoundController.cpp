@@ -1928,6 +1928,8 @@ void SoundController::OnBombExplosion(
                     100.0f,
                     50.0f * size),
                 true);
+
+            break;
         }
 
         case GadgetType::PhysicsProbe:
