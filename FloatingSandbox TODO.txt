@@ -279,6 +279,137 @@ Render:
 				+ Revert to Defaults
 					+ Populate checkboxes with defaults from default-constructed BootSettings
 				+ Then saves upon "Save" button
+		+ Add velocity probe gadget
+			+ Requires Gadget Rearc (*) first
+			+ Font rearc
+				+ See first sizes of both font textures: 256x256
+				+ TextureTypes: font groups w/one group only
+				+ Move RenderTypes::TextType to private of NotificationRenderContext
+					+ Specialize RenderContext/NotificationRenderContext methods, which simply fw to helper w/enum value
+				+ TextNotificationContext carries FontMetadata & and atlas frame metadata & of own font
+				+ Init: of all fonts, make one single texture (linear atlas)+vao+vbo
+				+ Lines: per-type of text notification, rather than per-font
+				+ Uploads:
+					+ Mark individual TextNotificationContext's dirty flag 
+				+ RenderPrepareTextNotifications:
+					+ If any TextNotificationContext has dirty text:
+						+ Regenerate its quad vertex buffer
+						+ Clear TextNotificationContext dirty text flag
+						+ Remember to re-upload whole vertex buffer
+					+ If need to re-upload whole vertex buffer:
+						+ Upload whole vertex buffer via multiple sub-uploads
+				+ Font::Metadata rearc:
+					+ Font::Fontmetadata is basic straight from font (integers, etc.), and no EmitQuadVertices
+					+ A new struct in NotificationRenderContext ("FontTextureAtlasMetadata") contains the atlas/texture-scaled version
+					+ A new EmitQuadVertices() method in NotificationRenderContext contains the code that was from Fontmetadata
+					+ mFonts goes and store instead vector of FontMetadata
+					+ Make allocation sticky
+				+ Draw: make one single call
+			+ GameController logic: always-present state machine 
+				+ Implements driving of NotificationLayer's PhysicsProbePanel
+				+ Emits panel sound events
+				+ Implements event handler and decides when to pass probe reading event through to NotificationLayer					
+			+ Move state machine from GameController into NotificationLayer
+				+ NotificationLayer gets EventDispatcher at cctor
+				+ Initial delay before starting panel
+				+ Tells NotificationRenderContext when text should disappear (i.e. whet opened transitions from 1.0 to != 1.0)
+			+ NotificationLayer:
+				+ Uploads panel's opened to NotificationRenderContext at next Upload()
+					+ Needs dirty flag
+				+ Uploads reading and/or clear to NotificationRenderContext at next Upload()						
+					+ mIsPhysicsProbeReadingDirty flag (like others)
+			+ NotificationRenderContext:
+				+ New NotificationRenderContext notification "type": PhysicsProbePanel
+					+ Upload is sticky: when uploaded, clears buffers, creates vertices, and sets dirty flag
+						+ When opened==0.0, clears the buffer and stops
+					+ RenderPrepare: upload if dirty
+						+ Alloc if size > allocated
+						+ And clear dirty flag
+					+ RenderDraw: draw if vertices not empty
+					+ Texture for background of panel
+						+ 200x100
+						+ Speed
+						+ Temperature
+					+ See right noise texture (we want the "rough" one, i.e. small)
+					+ Panel grows vertically first
+				+ New NotificationRenderContext text notification type: PhysicsProbeReading
+					+ UploadPhysicsProbeReading
+						+ Emit vertices with two new anchor types
+					+ ClearPhysicsProbeReading
+					+ 7-segment font (including - and .)
+						+ DSEG7 Modern-Regular, bold, 16 [18x18, adjust .], normal AL, (242, 255, 0)
+						+ Color?
+					+ Adjust panel: 
+						+ Larger backdrop for reading (eventually larger panel altogether)
+						+ See if need darker and/or smoother backdrop for better contrast
+			+ New gadget & tool
+				+ Enum
+				+ MainFrame menu entry - no keyboard shortcut
+				+ Tool
+				+ IGameController::TogglePhysicsProbeAt
+				+ Gadgets:
+					+ TogglePhysicsProbeAt
+					+ RemovePhysicsProbe
+				+ Cursor: physics_probe_cursor
+				+ Place/Removal Sound
+					+ Event publishing
+					+ Also underwater sound					
+				+ Physics publishing at Update()
+			+ Panel open/close sound, time-syncd with panel
+				+ Event publishing
+				+ Sound
+			+ Cleanup:
+				+ Gadgets spring->point rearc: 
+					+ First off, verify gadgets currently freeze when their spring is destroyed - which we'll fix with this change
+					+ Move "IsGadgetAttached" shebang from Springs to Points
+					+ See if can move detachment from point (i.e. for mass) completely to Gadgets, just like
+					  attachment is
+					+ Overall: Gadget attachment: to ship points (no ephemeral) which are attached to at least one spring and which
+					  have no other gadgets attached
+						+ Gadget base remembers point's first spring index for giving back rotation angle
+							+ "TrackedSpringIndex"
+						+ On spring destroy: do same trick as now, crystallize angle
+					+ PhysicsProbe final tasks:
+						+ Gadgets::OnSpringDestroyed: also deal with PhysicsProbe
+						+ Toggle algo:
+							+ If there's a probe in radius: remove it and done
+								+ Publish event: removal makes sound
+								+ return false
+							+ Else if found good candidate particle:
+								+ If there's already a probe on the ship: remove it (basically we move it)
+									+ No event: (we're moving it) (no removal sound)
+								+ Create new probe
+									+ If we are not moving: publish event (sound)
+								+ return true if we are not moving, else nullopt
+							+ Else:
+								+ return nullopt
+						+ See if may move mGameEventHandler->OnGadgetRemoved(.) call from each gadget's OnExternallyRemoved() to where we invoke
+						  OnExternallyRemoved in Gadgets
+						+ Merge removal code in Toggle() and RemovePhysicsProbe()
+					+ Cleanup:
+						+ Gadgets: see if may unify ToggleGadget<T>/TogglePhysicsProbeGadget
+							+ Or at least use same procedures when adding and removing a gadget														  
+						+ See if IGadget::GetPosition is really needed
+							+ If it's needed, then also add GetPlaneId()
+						+ Rendering: it seems order of gadgets and explosions is screwed
+							+ It's a problem with the bomb being detached upon explosion and thus taking a new Z plane; freeze plane ID as well
+					+ Tests:
+						+ Run all scenarios in debug, for all gadgets
+						+ Freezing of rotation axis @ spring destroy
+						+ Detachment at bomb explosions: make sure explosion does not move
+				+ Make RenderContext expose GetNoficationRenderContext() and nuke all forwards
+				+ Improve gadget texture
+					+ Antennas on top
+				+ Cursor: slightly thicker stroke
+					+ Or different altogether
+					+ Adjust anchor
+				+ Run panel open/close in Debug
+				+ changelist: re-architected "bombs" as generic "gadgets"...
+			+ Nuke inertial velocity notification
+				+ GameController et al
+				+ UI preferences
+				+ Preferences dialog
+			+ Test perf of panel opening on old Dell
 
 		= ShipBucket:
 			+ Split author by ';', put remainder on next line prefixed with "art by:"
@@ -293,138 +424,7 @@ Render:
 				- Credits format
 
 		= Sinking speed:
-			X Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s
-			= Add velocity probe gadget
-				+ Requires Gadget Rearc (*) first
-				+ Font rearc
-					+ See first sizes of both font textures: 256x256
-					+ TextureTypes: font groups w/one group only
-					+ Move RenderTypes::TextType to private of NotificationRenderContext
-						+ Specialize RenderContext/NotificationRenderContext methods, which simply fw to helper w/enum value
-					+ TextNotificationContext carries FontMetadata & and atlas frame metadata & of own font
-					+ Init: of all fonts, make one single texture (linear atlas)+vao+vbo
-					+ Lines: per-type of text notification, rather than per-font
-					+ Uploads:
-						+ Mark individual TextNotificationContext's dirty flag 
-					+ RenderPrepareTextNotifications:
-						+ If any TextNotificationContext has dirty text:
-							+ Regenerate its quad vertex buffer
-							+ Clear TextNotificationContext dirty text flag
-							+ Remember to re-upload whole vertex buffer
-						+ If need to re-upload whole vertex buffer:
-							+ Upload whole vertex buffer via multiple sub-uploads
-					+ Font::Metadata rearc:
-						+ Font::Fontmetadata is basic straight from font (integers, etc.), and no EmitQuadVertices
-						+ A new struct in NotificationRenderContext ("FontTextureAtlasMetadata") contains the atlas/texture-scaled version
-						+ A new EmitQuadVertices() method in NotificationRenderContext contains the code that was from Fontmetadata
-						+ mFonts goes and store instead vector of FontMetadata
-						+ Make allocation sticky
-					+ Draw: make one single call
-				+ GameController logic: always-present state machine 
-					+ Implements driving of NotificationLayer's PhysicsProbePanel
-					+ Emits panel sound events
-					+ Implements event handler and decides when to pass probe reading event through to NotificationLayer					
-				+ Move state machine from GameController into NotificationLayer
-					+ NotificationLayer gets EventDispatcher at cctor
-					+ Initial delay before starting panel
-					+ Tells NotificationRenderContext when text should disappear (i.e. whet opened transitions from 1.0 to != 1.0)
-				+ NotificationLayer:
-					+ Uploads panel's opened to NotificationRenderContext at next Upload()
-						+ Needs dirty flag
-					+ Uploads reading and/or clear to NotificationRenderContext at next Upload()						
-						+ mIsPhysicsProbeReadingDirty flag (like others)
-				+ NotificationRenderContext:
-					+ New NotificationRenderContext notification "type": PhysicsProbePanel
-						+ Upload is sticky: when uploaded, clears buffers, creates vertices, and sets dirty flag
-							+ When opened==0.0, clears the buffer and stops
-						+ RenderPrepare: upload if dirty
-							+ Alloc if size > allocated
-							+ And clear dirty flag
-						+ RenderDraw: draw if vertices not empty
-						+ Texture for background of panel
-							+ 200x100
-							+ Speed
-							+ Temperature
-						+ See right noise texture (we want the "rough" one, i.e. small)
-						+ Panel grows vertically first
-					+ New NotificationRenderContext text notification type: PhysicsProbeReading
-						+ UploadPhysicsProbeReading
-							+ Emit vertices with two new anchor types
-						+ ClearPhysicsProbeReading
-						+ 7-segment font (including - and .)
-							+ DSEG7 Modern-Regular, bold, 16 [18x18, adjust .], normal AL, (242, 255, 0)
-							+ Color?
-						+ Adjust panel: 
-							+ Larger backdrop for reading (eventually larger panel altogether)
-							+ See if need darker and/or smoother backdrop for better contrast
-				+ New gadget & tool
-					+ Enum
-					+ MainFrame menu entry - no keyboard shortcut
-					+ Tool
-					+ IGameController::TogglePhysicsProbeAt
-					+ Gadgets:
-						+ TogglePhysicsProbeAt
-						+ RemovePhysicsProbe
-					+ Cursor: physics_probe_cursor
-					+ Place/Removal Sound
-						+ Event publishing
-						+ Also underwater sound					
-					+ Physics publishing at Update()
-				+ Panel open/close sound, time-syncd with panel
-					+ Event publishing
-					+ Sound
-				+ Cleanup:
-					+ Gadgets spring->point rearc: 
-						+ First off, verify gadgets currently freeze when their spring is destroyed - which we'll fix with this change
-						+ Move "IsGadgetAttached" shebang from Springs to Points
-						+ See if can move detachment from point (i.e. for mass) completely to Gadgets, just like
-						  attachment is
-						+ Overall: Gadget attachment: to ship points (no ephemeral) which are attached to at least one spring and which
-						  have no other gadgets attached
-							+ Gadget base remembers point's first spring index for giving back rotation angle
-								+ "TrackedSpringIndex"
-							+ On spring destroy: do same trick as now, crystallize angle
-						+ PhysicsProbe final tasks:
-							+ Gadgets::OnSpringDestroyed: also deal with PhysicsProbe
-							+ Toggle algo:
-								+ If there's a probe in radius: remove it and done
-									+ Publish event: removal makes sound
-									+ return false
-								+ Else if found good candidate particle:
-									+ If there's already a probe on the ship: remove it (basically we move it)
-										+ No event: (we're moving it) (no removal sound)
-									+ Create new probe
-										+ If we are not moving: publish event (sound)
-									+ return true if we are not moving, else nullopt
-								+ Else:
-									+ return nullopt
-							+ See if may move mGameEventHandler->OnGadgetRemoved(.) call from each gadget's OnExternallyRemoved() to where we invoke
-							  OnExternallyRemoved in Gadgets
-							+ Merge removal code in Toggle() and RemovePhysicsProbe()
-						+ Cleanup:
-							+ Gadgets: see if may unify ToggleGadget<T>/TogglePhysicsProbeGadget
-								+ Or at least use same procedures when adding and removing a gadget														  
-							+ See if IGadget::GetPosition is really needed
-								+ If it's needed, then also add GetPlaneId()
-							+ Rendering: it seems order of gadgets and explosions is screwed
-								+ It's a problem with the bomb being detached upon explosion and thus taking a new Z plane; freeze plane ID as well
-						+ Tests:
-							+ Run all scenarios in debug, for all gadgets
-							+ Freezing of rotation axis @ spring destroy
-							+ Detachment at bomb explosions: make sure explosion does not move
-					+ Make RenderContext expose GetNoficationRenderContext() and nuke all forwards
-					+ Improve gadget texture
-						+ Antennas on top
-					+ Cursor: slightly thicker stroke
-						+ Or different altogether
-						+ Adjust anchor
-					+ Run panel open/close in Debug
-					+ changelist: re-architected "bombs" as generic "gadgets"...
-				- Nuke inertial velocity notification
-					- GameController et al
-					- UI preferences
-				- Test perf of panel opening on old Dell
-				
+			X Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s				
 			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
 				- Copy old exe first
 				- Take speeds with old:
@@ -1457,7 +1457,7 @@ Render:
 					- ...which is arg to Points::UpdateEphemeralPoints...()
 			- IShipPhysicsHandler:
 				- LaunchFirework(fwType, pos, direction)
-					- Invoked by: interactive firework detonation, gadget auto-trigger @Gadgets::Upadte() (e.g. because of temperature), 
+					- Invoked by: interactive firework detonation, gadget auto-trigger @Gadgets::Update() (e.g. because of temperature), 
 					  ElectricalElements::Update (sink)
 					- Does: sound, Points::CreateFireworkVectorEphemeralParticle
 				- BlastFireworkSparkles(fwType, pos)

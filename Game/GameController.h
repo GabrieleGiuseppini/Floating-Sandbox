@@ -235,9 +235,6 @@ public:
     // Interaction parameters
     //
 
-    bool GetDoShowTossVelocityNotifications() const override { return mDoShowTossVelocityNotifications; }
-    void SetDoShowTossVelocityNotifications(bool value) override { mDoShowTossVelocityNotifications = value; }
-
     bool GetDoShowTsunamiNotifications() const override { return mDoShowTsunamiNotifications; }
     void SetDoShowTsunamiNotifications(bool value) override { mDoShowTsunamiNotifications = value; }
 
@@ -755,8 +752,6 @@ private:
 
     void PublishStats(std::chrono::steady_clock::time_point nowReal);
 
-    void DisplayTossVelocity(float inertialVelocityMagnitude);
-
 private:
 
     //
@@ -806,7 +801,6 @@ private:
     // The parameters that we own
     //
 
-    bool mDoShowTossVelocityNotifications;
     bool mDoShowTsunamiNotifications;
     bool mDoDrawHeatBlasterFlame;
     bool mDoAutoZoomOnShipLoad;

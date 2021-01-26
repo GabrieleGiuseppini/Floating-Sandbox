@@ -177,14 +177,6 @@ void PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & /*e
     mOnChangeCallback();
 }
 
-void PreferencesDialog::OnShowTossVelocityNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
-{
-    assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetDoShowTossVelocityNotifications(mShowTossVelocityNotificationsCheckBox->GetValue());
-
-    mOnChangeCallback();
-}
-
 void PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
@@ -515,13 +507,13 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             //
 
             {
-                mShowTossVelocityNotificationsCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
-                    _("Show Velocity Notifications"), wxDefaultPosition, wxDefaultSize, 0);
-                mShowTossVelocityNotificationsCheckBox->SetToolTip(_("Enables or disables notifications showing the speed of objects when they're tossed."));
-                mShowTossVelocityNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTossVelocityNotificationsCheckBoxClicked, this);
+                mShowTsunamiNotificationsCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
+                    _("Show Tsunami Notifications"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowTsunamiNotificationsCheckBox->SetToolTip(_("Enables or disables notifications when a tsunami is being spawned."));
+                mShowTsunamiNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked, this);
 
                 userInterfaceSizer->Add(
-                    mShowTossVelocityNotificationsCheckBox,
+                    mShowTsunamiNotificationsCheckBox,
                     wxGBPosition(3, 0),
                     wxGBSpan(1, 1),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
@@ -547,36 +539,18 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             //
 
             {
-                mShowTsunamiNotificationsCheckBox = new wxCheckBox(userInterfaceBox, wxID_ANY,
-                    _("Show Tsunami Notifications"), wxDefaultPosition, wxDefaultSize, 0);
-                mShowTsunamiNotificationsCheckBox->SetToolTip(_("Enables or disables notifications when a tsunami is being spawned."));
-                mShowTsunamiNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked, this);
-
-                userInterfaceSizer->Add(
-                    mShowTsunamiNotificationsCheckBox,
-                    wxGBPosition(4, 0),
-                    wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
-                    UserInterfaceBorder);
-            }
-
-            //
-            // Row 6
-            //
-
-            {
                 wxStaticText * screenshotDirStaticText = new wxStaticText(userInterfaceBox, wxID_ANY, _("Screenshot directory:"));
 
                 userInterfaceSizer->Add(
                     screenshotDirStaticText,
-                    wxGBPosition(5, 0),
+                    wxGBPosition(4, 0),
                     wxGBSpan(1, 4),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM | wxRIGHT,
                     UserInterfaceBorder);
             }
 
             //
-            // Row 7
+            // Row 6
             //
 
             {
@@ -593,7 +567,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
                 userInterfaceSizer->Add(
                     mScreenshotDirPickerCtrl,
-                    wxGBPosition(6, 0),
+                    wxGBPosition(5, 0),
                     wxGBSpan(1, 4),
                     wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
                     UserInterfaceBorder);
@@ -601,7 +575,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
             // Add spacer column
             {
-                gridSizer->Add(1, 1, wxGBPosition(1, 0), wxGBSpan(7, 1), wxEXPAND);
+                gridSizer->Add(1, 1, wxGBPosition(1, 0), wxGBSpan(6, 1), wxEXPAND);
                 userInterfaceSizer->AddGrowableCol(1, 1);
             }
 
@@ -1090,7 +1064,6 @@ void PreferencesDialog::ReadSettings()
     mShowTipOnStartupCheckBox->SetValue(mUIPreferencesManager->GetShowStartupTip());
     mCheckForUpdatesAtStartupCheckBox->SetValue(mUIPreferencesManager->GetCheckUpdatesAtStartup());
     mSaveSettingsOnExitCheckBox->SetValue(mUIPreferencesManager->GetSaveSettingsOnExit());
-    mShowTossVelocityNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowTossVelocityNotifications());
     mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowTsunamiNotifications());
     mZoomIncrementSpinCtrl->SetValue(ZoomIncrementToZoomIncrementSpin(mUIPreferencesManager->GetZoomIncrement()));
     mPanIncrementSpinCtrl->SetValue(PanIncrementToPanIncrementSpin(mUIPreferencesManager->GetPanIncrement()));

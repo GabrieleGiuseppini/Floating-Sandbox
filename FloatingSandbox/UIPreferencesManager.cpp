@@ -245,16 +245,6 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
-        // Show toss velocity notifications
-        //
-
-        if (auto showTossVelocityNotificationsIt = preferencesRootObject->find("show_toss_velocity_notifications");
-            showTossVelocityNotificationsIt != preferencesRootObject->end() && showTossVelocityNotificationsIt->second.is<bool>())
-        {
-            mGameController->SetDoShowTossVelocityNotifications(showTossVelocityNotificationsIt->second.get<bool>());
-        }
-
-        //
         // Show tsunami notifications
         //
 
@@ -466,9 +456,6 @@ void UIPreferencesManager::SavePreferences() const
 
     // Add show ship descriptions at ship load
     preferencesRootObject["show_ship_descriptions_at_ship_load"] = picojson::value(mShowShipDescriptionsAtShipLoad);
-
-    // Add show toss velocity notification
-    preferencesRootObject["show_toss_velocity_notifications"] = picojson::value(mGameController->GetDoShowTossVelocityNotifications());
 
     // Add show tsunami notification
     preferencesRootObject["show_tsunami_notifications"] = picojson::value(mGameController->GetDoShowTsunamiNotifications());

@@ -530,18 +530,18 @@ private:
 	struct FontTextureAtlasMetadata
 	{
 		vec2f CellTextureAtlasSize; // Size of one cell of the font, in texture atlas space coordinates
-		std::array<vec2f, 256> GlyphTextureAtlasOrigins; // Bottom-left of each glyph, in texture atlas space coordinates
-		std::array<vec2f, 256> GlyphTextureAtlasSizes; // Dimensions of each glyph, in texture atlas space coordinates
+		std::array<vec2f, 256> GlyphTextureAtlasBottomLefts; // Bottom-left of each glyph, in texture atlas space coordinates
+		std::array<vec2f, 256> GlyphTextureAtlasTopRights; // Top-right of each glyph, in texture atlas space coordinates
 		FontMetadata OriginalFontMetadata;
 
 		FontTextureAtlasMetadata(
 			vec2f cellTextureAtlasSize,
-			std::array<vec2f, 256> glyphTextureAtlasOrigins,
-			std::array<vec2f, 256> glyphTextureAtlasSizes,
+			std::array<vec2f, 256> glyphTextureAtlasBottomLefts,
+			std::array<vec2f, 256> glyphTextureAtlasTopRights,
 			FontMetadata originalFontMetadata)
 			: CellTextureAtlasSize(cellTextureAtlasSize)
-			, GlyphTextureAtlasOrigins(std::move(glyphTextureAtlasOrigins))
-			, GlyphTextureAtlasSizes(std::move(glyphTextureAtlasSizes))
+			, GlyphTextureAtlasBottomLefts(std::move(glyphTextureAtlasBottomLefts))
+			, GlyphTextureAtlasTopRights(std::move(glyphTextureAtlasTopRights))
 			, OriginalFontMetadata(originalFontMetadata)
 		{}
 

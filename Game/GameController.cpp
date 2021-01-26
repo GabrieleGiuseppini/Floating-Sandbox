@@ -82,7 +82,6 @@ GameController::GameController(
     , mIsPulseUpdateSet(false)
     , mIsMoveToolEngaged(false)
     // Parameters that we own
-    , mDoShowTossVelocityNotifications(true)
     , mDoShowTsunamiNotifications(true)
     , mDoDrawHeatBlasterFlame(true)
     , mDoAutoZoomOnShipLoad(true)
@@ -682,12 +681,6 @@ void GameController::MoveBy(
         worldOffset,
         inertialVelocity,
         mGameParameters);
-
-    // Eventually display inertial velocity
-    if (worldOffset.length() == 0.0f)
-    {
-        DisplayTossVelocity(inertialVelocity.length());
-    }
 }
 
 void GameController::MoveBy(
@@ -705,12 +698,6 @@ void GameController::MoveBy(
         worldOffset,
         inertialVelocity,
         mGameParameters);
-
-    // Eventually display velocity
-    if (worldOffset.length() == 0.0f)
-    {
-        DisplayTossVelocity(inertialVelocity.length());
-    }
 }
 
 void GameController::RotateBy(
@@ -1400,18 +1387,4 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         mRenderContext->GetZoom(),
         mRenderContext->GetCameraWorldPosition(),
         mRenderContext->GetStatistics());
-}
-
-void GameController::DisplayTossVelocity(float inertialVelocityMagnitude)
-{
-    if (mDoShowTossVelocityNotifications
-        && inertialVelocityMagnitude >= 5.0f)
-    {
-        std::stringstream ss;
-        ss << std::fixed << std::setprecision(2)
-            << inertialVelocityMagnitude
-            << " M/SEC";
-
-        mNotificationLayer.AddEphemeralTextLine(ss.str());
-    }
 }

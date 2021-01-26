@@ -89,6 +89,8 @@ NotificationRenderContext::NotificationRenderContext(
         std::move(fontTextures),
         AtlasOptions::None);
 
+    LogMessage("Font texture atlas size: ", fontTextureAtlas.AtlasData.Size.ToString());
+
     mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
 
     glGenTextures(1, &tmpGLuint);
@@ -154,39 +156,43 @@ NotificationRenderContext::NotificationRenderContext(
         // Dimensions of a cell of this font, in the atlas' texture space coordinates
         float const fontCellWidthAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetCellScreenWidth()) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Width);
         float const fontCellHeightAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetCellScreenHeight()) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Height);
-        float const fontCellHeightAtlasTextureSpaceMinusOne = static_cast<float>(fonts[f].Metadata.GetCellScreenHeight() - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Height);
 
-        // Origins and sizes for each character
-        std::array<vec2f, 256> GlyphTextureOrigins;
-        std::array<vec2f, 256> GlyphTextureSizes;
+        // Coordinates for each character
+        std::array<vec2f, 256> GlyphTextureBottomLefts;
+        std::array<vec2f, 256> GlyphTextureTopRights;
         for (int c = 0; c < 256; ++c)
         {
-            // Texture-space origin x
+            // Texture-space left x
             int const glyphTextureCol = (c - FontMetadata::BaseCharacter) % fonts[f].Metadata.GetGlyphsPerTextureRow();
-            float const glyphOriginLeftAtlasTextureSpace =
+            float const glyphLeftAtlasTextureSpace =
                 fontTextureFrameMetadata.TextureCoordinatesBottomLeft.x // Includes dead-center dx already
                 + static_cast<float>(glyphTextureCol) * fontCellWidthAtlasTextureSpace;
 
-            // Texture-space origin y
+            // Texture-space right x
+            float const glyphRightAtlasTextureSpace =
+                glyphLeftAtlasTextureSpace
+                + static_cast<float>(fonts[f].Metadata.GetGlyphScreenWidth(c) - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Width);
+
+            // Texture-space top y
             // Note: font texture is flipped vertically (top of character is at lower V coordinates)
             int const glyphTextureRow = (c - FontMetadata::BaseCharacter) / fonts[f].Metadata.GetGlyphsPerTextureRow();
-            float const glyphOriginBottomAtlasTextureSpace =
+            float const glyphTopAtlasTextureSpace =
                 fontTextureFrameMetadata.TextureCoordinatesBottomLeft.y // Includes dead-center dx already
-                + static_cast<float>(glyphTextureRow) * fontCellHeightAtlasTextureSpace + fontCellHeightAtlasTextureSpaceMinusOne;
+                + static_cast<float>(glyphTextureRow) * fontCellHeightAtlasTextureSpace;
 
-            // Texture-space size
-            float const glyphWidthAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetGlyphScreenWidth(c)) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Width);
-            float const glyphHeightAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetGlyphScreenHeight(c)) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Height);
+            float const glyphBottomAtlasTextureSpace =
+                glyphTopAtlasTextureSpace
+                + static_cast<float>(fonts[f].Metadata.GetGlyphScreenHeight(c) - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Height);
 
-            GlyphTextureOrigins[c] = vec2f(glyphOriginLeftAtlasTextureSpace, glyphOriginBottomAtlasTextureSpace);
-            GlyphTextureSizes[c] = vec2f(glyphWidthAtlasTextureSpace, glyphHeightAtlasTextureSpace);
+            GlyphTextureBottomLefts[c] = vec2f(glyphLeftAtlasTextureSpace, glyphBottomAtlasTextureSpace);
+            GlyphTextureTopRights[c] = vec2f(glyphRightAtlasTextureSpace, glyphTopAtlasTextureSpace);
         }
 
         // Store
         mFontTextureAtlasMetadata.emplace_back(
             vec2f(fontCellWidthAtlasTextureSpace, fontCellHeightAtlasTextureSpace),
-            GlyphTextureOrigins,
-            GlyphTextureSizes,
+            GlyphTextureBottomLefts,
+            GlyphTextureTopRights,
             fonts[f].Metadata);
     }
 
@@ -821,15 +827,15 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
 
         for (char _ch : textLine.Text)
         {
-            unsigned char ch = static_cast<unsigned char>(_ch);
+            unsigned char const ch = static_cast<unsigned char>(_ch);
 
             float const glyphWidthNdc = static_cast<float>(fontTextureAtlasMetadata.OriginalFontMetadata.GetGlyphScreenWidth(ch)) * mScreenToNdcX;
             float const glyphHeightNdc = static_cast<float>(fontTextureAtlasMetadata.OriginalFontMetadata.GetGlyphScreenHeight(ch)) * mScreenToNdcY;
 
-            float const textureULeft = fontTextureAtlasMetadata.GlyphTextureAtlasOrigins[ch].x;
-            float const textureURight = textureULeft + fontTextureAtlasMetadata.GlyphTextureAtlasSizes[ch].x;
-            float const textureVBottom = fontTextureAtlasMetadata.GlyphTextureAtlasOrigins[ch].y;
-            float const textureVTop = textureVBottom - fontTextureAtlasMetadata.GlyphTextureAtlasSizes[ch].y;
+            float const textureULeft = fontTextureAtlasMetadata.GlyphTextureAtlasBottomLefts[ch].x;
+            float const textureURight = fontTextureAtlasMetadata.GlyphTextureAtlasTopRights[ch].x;
+            float const textureVBottom = fontTextureAtlasMetadata.GlyphTextureAtlasBottomLefts[ch].y;
+            float const textureVTop = fontTextureAtlasMetadata.GlyphTextureAtlasTopRights[ch].y;
 
             // Top-left
             vertices.emplace_back(

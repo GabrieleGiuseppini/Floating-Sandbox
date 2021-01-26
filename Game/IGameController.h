@@ -154,9 +154,6 @@ struct IGameController
     // UI parameters
     //
 
-    virtual bool GetDoShowTossVelocityNotifications() const = 0;
-    virtual void SetDoShowTossVelocityNotifications(bool value) = 0;
-
     virtual bool GetDoShowTsunamiNotifications() const = 0;
     virtual void SetDoShowTsunamiNotifications(bool value) = 0;
 

@@ -37,7 +37,6 @@ private:
     void OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & event);
     void OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent & event);
     void OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & event);
-    void OnShowTossVelocityNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnZoomIncrementSpinCtrl(wxSpinEvent & event);
     void OnPanIncrementSpinCtrl(wxSpinEvent & event);
@@ -85,7 +84,6 @@ private:
     wxCheckBox * mShowTipOnStartupCheckBox;
     wxCheckBox * mCheckForUpdatesAtStartupCheckBox;
     wxCheckBox * mSaveSettingsOnExitCheckBox;
-    wxCheckBox * mShowTossVelocityNotificationsCheckBox;
     wxCheckBox * mShowTsunamiNotificationsCheckBox;
     wxSpinCtrl * mZoomIncrementSpinCtrl;
     wxSpinCtrl * mPanIncrementSpinCtrl;
