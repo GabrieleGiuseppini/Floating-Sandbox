@@ -153,11 +153,11 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
 
         if ((mCurrentPhysicsProbeGadget->GetPosition() - targetPos).squareLength() < squareSearchRadius)
         {
-            assert(mCurrentPhysicsProbeGadget->MayBeRemoved());
+            //
+            // Remove physics probe gadget
+            //
 
-            //
-            // Remove gadget
-            //
+            assert(mCurrentPhysicsProbeGadget->MayBeRemoved()); // Physics probes may always be removed
 
             // Tell it we're removing it
             mCurrentPhysicsProbeGadget->OnExternallyRemoved();
@@ -174,15 +174,7 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
             // We've removed a physics probe gadget
             return false;
         }
-        else
-        {
-            // We have a probe but it's far from here...
-            // ...can't do anything
-            // TODO: wanna remove it in all cases?
-            return std::nullopt;
-        }
     }
-
 
     //
     // No physics probe in ship...
@@ -201,7 +193,7 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
             float const squareDistance = (mShipPoints.GetPosition(pointIndex) - targetPos).squareLength();
             if (squareDistance < squareSearchRadius)
             {
-                // This spring is within the search radius
+                // This particle is within the search radius
 
                 // Keep the nearest
                 if (squareDistance < squareSearchRadius && squareDistance < nearestCandidatePointDistance)
@@ -213,9 +205,40 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
         }
     }
 
+    // TODOHERE
+
     if (NoneElementIndex != nearestCandidatePointIndex)
     {
-        // We have a nearest candidate particle
+        //
+        // We have a nearest candidate particle...
+        // ...attach probe it it
+        //
+
+        // ...before attaching the probe, however, remove the already existing one
+        bool isMovingProbe = false;
+        if (!!mCurrentPhysicsProbeGadget)
+        {
+            assert(mCurrentPhysicsProbeGadget->MayBeRemoved()); // Physics probes may always be removed
+
+            // Tell it we're removing it
+            // TODOHERE: no: we want this to be soundless - if later
+            // we move event publishing out of OnExternallyRemoved, then this call
+            // may stay. Otherwise, it needs to take a boolean of something
+            mCurrentPhysicsProbeGadget->OnExternallyRemoved();
+
+            // Detach gadget from its particle
+            assert(mShipPoints.IsGadgetAttached(mCurrentPhysicsProbeGadget->GetPointIndex()));
+            mShipPoints.DetachGadget(
+                mCurrentPhysicsProbeGadget->GetPointIndex(),
+                mShipSprings);
+
+            // Remove it
+            mCurrentPhysicsProbeGadget.reset();
+
+            // Remember that we're not simply adding a probe,
+            // but in reality we're moving the existing one
+            isMovingProbe = true;
+        }
 
         // Create gadget
         assert(!mCurrentPhysicsProbeGadget);
@@ -235,15 +258,23 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
             mCurrentPhysicsProbeGadget->GetMass(),
             mShipSprings);
 
-        // Notify
-        mGameEventHandler->OnGadgetPlaced(
-            mCurrentPhysicsProbeGadget->GetId(),
-            mCurrentPhysicsProbeGadget->GetType(),
-            mParentWorld.IsUnderwater(
-                mCurrentPhysicsProbeGadget->GetPosition()));
+        // Notify - but only of we're not simply moving it
+        if (!isMovingProbe)
+        {
+            mGameEventHandler->OnGadgetPlaced(
+                mCurrentPhysicsProbeGadget->GetId(),
+                mCurrentPhysicsProbeGadget->GetType(),
+                mParentWorld.IsUnderwater(
+                    mCurrentPhysicsProbeGadget->GetPosition()));
 
-        // We've placed a physic probe gadget
-        return true;
+            // Tell caller that we've placed a physic probe gadget
+            return true;
+        }
+        else
+        {
+            // Just moved, hence in the eyes of the caller, nothing has happened
+            return std::nullopt;
+        }
     }
 
     // Can't do anything
@@ -258,6 +289,12 @@ void Gadgets::RemovePhysicsProbe()
 
         // Tell it we're removing it
         mCurrentPhysicsProbeGadget->OnExternallyRemoved();
+
+        // Detach gadget from its particle
+        assert(mShipPoints.IsGadgetAttached(mCurrentPhysicsProbeGadget->GetPointIndex()));
+        mShipPoints.DetachGadget(
+            mCurrentPhysicsProbeGadget->GetPointIndex(),
+            mShipSprings);
 
         // Remove it
         mCurrentPhysicsProbeGadget.reset();

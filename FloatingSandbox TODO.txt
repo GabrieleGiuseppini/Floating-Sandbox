@@ -386,28 +386,30 @@ Render:
 							+ On spring destroy: do same trick as now, crystallize angle
 						= PhysicsProbe final tasks:
 							+ Gadgets::OnSpringDestroyed: also deal with PhysicsProbe
-							- Toggle algo:
-								- If there's a probe in radius: remove it and done
-									- Publish event: removal makes sound
-									- return false
-								- Else if found good candidate particle:
-									- If there's already a probe on the ship: remove it (basically we move it)
-										- No event: (we're moving it) (no removal sound)
-									- Create new probe
-										- If we are not moving: publish event (sound)
-									- return true if we are not moving, else nullopt
-								- Else:
-									- return nullopt
-						= Test:
-							+ Basic
-						- Cleanup:
-							- Gadgets: see if may unify ToggleGadget<T>/TogglePhysicsProbeGadget
+							= Toggle algo:
+								= If there's a probe in radius: remove it and done
+									+ Publish event: removal makes sound
+									+ return false
+								= Else if found good candidate particle:
+									= If there's already a probe on the ship: remove it (basically we move it)
+										+ No event: (we're moving it) (no removal sound)
+									= Create new probe
+										+ If we are not moving: publish event (sound)
+									= return true if we are not moving, else nullopt
+								= Else:
+									= return nullopt
 							- See if may move mGameEventHandler->OnGadgetRemoved(.) call from each gadget's OnExternallyRemoved() to where we invoke
 							  OnExternallyRemoved in Gadgets
+							- Merge removal code in Toggle() and RemovePhysicsProbe()
+						= Test:
+							- Basic
+						- Cleanup:
+							- Gadgets: see if may unify ToggleGadget<T>/TogglePhysicsProbeGadget
+								- Or at least use same procedures when adding and removing a gadget														  
 							+ See if IGadget::GetPosition is really needed
 								+ If it's needed, then also add GetPlaneId()
 							- Rendering: it seems order of gadgets and explosions is screwed
-								- You can see the gadget's "hole" when it disappears on an explosion
+								- You can see the gadget's "hole" when it disappears on an explosion, which means gadget is Z-closer than explosion but drawn earlier
 						- Tests:
 							- Run all scenarios in debug, for all gadgets
 							- Freezing of rotation axis @ spring destroy
@@ -423,13 +425,19 @@ Render:
 					- GameController et al
 					- UI preferences
 				- Test perf of panel opening on old Dell
+				= changelist: re-architected "bombs" as generic "gadgets"...
 			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
 				- Copy old exe first
+				- Take speeds with old:
+					- Titanic sinking:
+					- Plane falling:
 				- Remove global damp at integration loop
 				- Point-by-point: 
 					- Underwater: incorporate old global damp in friction drag, if needed
 						- Try first without: see falling debris, also with friction adjust = 0.0
 					- !Underwater: convert old global damp to new air damp
+
+		- Scrub/Rot tool (*)
 
 		- MAC:
 			- Full high-DPI path:
@@ -1541,10 +1549,30 @@ Render:
 			- Increase resolution of ocean floor - shouldn't impact perf other than for cache misses
 
 	- Waves from ship (*):
-		- For each underwater frontier point:
-			- Ocean surface disturbation proportional to:
-				a) Velocity of point (vertical component only)
-				b) Depth of point 
+		- Spec:
+			- Physics:
+				- For each underwater frontier point:
+					- Ocean surface disturbation proportional to:
+						a) Velocity of point (its vertical component only)
+						b) Depth of point 
+						c) May be: normal of frontier at the point
+			- Computation:
+				- Done at frontier visit in ship, but simply accumulating delta's in OceanSurface
+				- These delta's will then be materialized into real surface y's at the next OceanSurface::Update (after being smoothed via a low-pass filter)
+					- Yes, this generates a lag between the ship entering the water, and the surface moving for it, but we hope it won't be noticeable
+					- With this deferred scheme though, we have the following pro's:
+						- Not having to recalculate cached point depths
+						- Not having to materialize ocean surface delta's at each ship's Update() (we can do it once for all ships, and at OceanSurface::Update() which is more adept)
+						- All frontiers in all ships still get to see the original surface, and thus there's no risk of one affecting the next
+							- However, we might not want delta's to be cumulative. For example, if CC 1 sees y=0 and makes delta=-3, and CC2 sees y=0 and makes delta=-2, we might not
+							  want to end up with delta=-5. See if should use a "max" thing instead
+		- Impl:
+			- OceanSurface:
+				- mHeightFieldDeltas buffer
+					- Simply a buffer of samples
+					- Materialized into samples during Update(), after smoothing
+					- Then zeroed out at end of Update(), so it's ready for the next cycle
+				- Method to populate deltas (from ship): TODO naming, clearly distinct from the "local" one used for fishes and bubbles, and from eventual others
 
 	- Gases:
 		- Spec:
