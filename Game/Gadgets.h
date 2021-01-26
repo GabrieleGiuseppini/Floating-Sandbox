@@ -12,6 +12,7 @@
 
 #include <GameCore/CircularList.h>
 #include <GameCore/GameTypes.h>
+#include <GameCore/StrongTypeDef.h>
 #include <GameCore/Vectors.h>
 
 #include <functional>
@@ -116,6 +117,65 @@ public:
 private:
 
     template <typename TGadget>
+    std::unique_ptr<Gadget> InternalCreateGadget(
+        ElementIndex pointIndex,
+        StrongTypedBool<struct DoNotify> doNotify)
+    {
+        // Create gadget
+        std::unique_ptr<Gadget> gadget(
+            new TGadget(
+                GadgetId(mShipId, mNextLocalGadgetId++),
+                pointIndex,
+                mParentWorld,
+                mGameEventHandler,
+                mShipPhysicsHandler,
+                mShipPoints,
+                mShipSprings));
+
+        // Attach gadget to the particle
+        assert(!mShipPoints.IsGadgetAttached(pointIndex));
+        mShipPoints.AttachGadget(
+            pointIndex,
+            gadget->GetMass(),
+            mShipSprings);
+
+        if (doNotify)
+        {
+            // Notify
+            mGameEventHandler->OnGadgetPlaced(
+                gadget->GetId(),
+                gadget->GetType(),
+                mParentWorld.IsUnderwater(
+                    gadget->GetPosition()));
+        }
+
+        return gadget;
+    }
+
+    void InternalPreGadgetRemoval(
+        Gadget & gadget,
+        StrongTypedBool<struct DoNotify> doNotify)
+    {
+        // Tell gadget we're removing it
+        gadget.OnExternallyRemoved();
+
+        // Detach gadget from its particle
+        assert(mShipPoints.IsGadgetAttached(gadget.GetPointIndex()));
+        mShipPoints.DetachGadget(
+            gadget.GetPointIndex(),
+            mShipSprings);
+
+        if (doNotify)
+        {
+            // Notify removal
+            mGameEventHandler->OnGadgetRemoved(
+                gadget.GetId(),
+                gadget.GetType(),
+                mParentWorld.IsUnderwater(gadget.GetPosition()));
+        }
+    }
+
+    template <typename TGadget>
     bool ToggleGadgetAt(
         vec2f const & targetPos,
         GameParameters const & gameParameters)
@@ -141,22 +201,10 @@ private:
                     // Remove gadget
                     //
 
-                    // Tell it we're removing it
-                    (*it)->OnExternallyRemoved();
+                    InternalPreGadgetRemoval(
+                        *(*it),
+                        StrongTypedTrue<DoNotify>);
 
-                    // Detach gadget from its particle
-                    assert(mShipPoints.IsGadgetAttached((*it)->GetPointIndex()));
-                    mShipPoints.DetachGadget(
-                        (*it)->GetPointIndex(),
-                        mShipSprings);
-
-                    // Notify removal
-                    mGameEventHandler->OnGadgetRemoved(
-                        (*it)->GetId(),
-                        (*it)->GetType(),
-                        mParentWorld.IsUnderwater((*it)->GetPosition()));
-
-                    // Remove from set of gadgets - forget about it
                     mCurrentGadgets.erase(it); // Safe to invalidate iterators, we're leaving anyway
                 }
 
@@ -199,42 +247,17 @@ private:
             // We have a nearest candidate particle
 
             // Create gadget
-            std::unique_ptr<Gadget> gadget(
-                new TGadget(
-                    GadgetId(mShipId, mNextLocalGadgetId++),
-                    nearestCandidatePointIndex,
-                    mParentWorld,
-                    mGameEventHandler,
-                    mShipPhysicsHandler,
-                    mShipPoints,
-                    mShipSprings));
-
-            // Attach gadget to the particle
-            assert(!mShipPoints.IsGadgetAttached(nearestCandidatePointIndex));
-            mShipPoints.AttachGadget(
+            auto gadget = InternalCreateGadget<TGadget>(
                 nearestCandidatePointIndex,
-                gadget->GetMass(),
-                mShipSprings);
-
-            // Notify
-            mGameEventHandler->OnGadgetPlaced(
-                gadget->GetId(),
-                gadget->GetType(),
-                mParentWorld.IsUnderwater(
-                    gadget->GetPosition()));
+                StrongTypedTrue<DoNotify>);
 
             // Add new gadget to set of gadgets, removing eventual gadgets that might get purged
             mCurrentGadgets.emplace(
                 [this](std::unique_ptr<Gadget> const & purgedGadget)
                 {
-                    // Tell it we're removing it
-                    purgedGadget->OnExternallyRemoved();
-
-                    // Notify removal
-                    mGameEventHandler->OnGadgetRemoved(
-                        purgedGadget->GetId(),
-                        purgedGadget->GetType(),
-                        mParentWorld.IsUnderwater(purgedGadget->GetPosition()));
+                    InternalPreGadgetRemoval(
+                        *purgedGadget,
+                        StrongTypedTrue<DoNotify>);
                 },
                 std::move(gadget));
 

@@ -384,7 +384,7 @@ Render:
 							+ Gadget base remembers point's first spring index for giving back rotation angle
 								+ "TrackedSpringIndex"
 							+ On spring destroy: do same trick as now, crystallize angle
-						= PhysicsProbe final tasks:
+						+ PhysicsProbe final tasks:
 							+ Gadgets::OnSpringDestroyed: also deal with PhysicsProbe
 							+ Toggle algo:
 								+ If there's a probe in radius: remove it and done
@@ -400,12 +400,10 @@ Render:
 									+ return nullopt
 							+ See if may move mGameEventHandler->OnGadgetRemoved(.) call from each gadget's OnExternallyRemoved() to where we invoke
 							  OnExternallyRemoved in Gadgets
-							- Merge removal code in Toggle() and RemovePhysicsProbe()
-						= Test:
-							- Basic
-						- Cleanup:
-							- Gadgets: see if may unify ToggleGadget<T>/TogglePhysicsProbeGadget
-								- Or at least use same procedures when adding and removing a gadget														  
+							+ Merge removal code in Toggle() and RemovePhysicsProbe()
+						= Cleanup:
+							+ Gadgets: see if may unify ToggleGadget<T>/TogglePhysicsProbeGadget
+								+ Or at least use same procedures when adding and removing a gadget														  
 							+ See if IGadget::GetPosition is really needed
 								+ If it's needed, then also add GetPlaneId()
 							- Rendering: it seems order of gadgets and explosions is screwed

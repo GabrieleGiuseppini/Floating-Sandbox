@@ -159,20 +159,9 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
 
             assert(mCurrentPhysicsProbeGadget->MayBeRemoved()); // Physics probes may always be removed
 
-            // Tell it we're removing it
-            mCurrentPhysicsProbeGadget->OnExternallyRemoved();
-
-            // Detach gadget from its particle
-            assert(mShipPoints.IsGadgetAttached(mCurrentPhysicsProbeGadget->GetPointIndex()));
-            mShipPoints.DetachGadget(
-                mCurrentPhysicsProbeGadget->GetPointIndex(),
-                mShipSprings);
-
-            // Notify removal
-            mGameEventHandler->OnGadgetRemoved(
-                mCurrentPhysicsProbeGadget->GetId(),
-                mCurrentPhysicsProbeGadget->GetType(),
-                mParentWorld.IsUnderwater(mCurrentPhysicsProbeGadget->GetPosition()));
+            InternalPreGadgetRemoval(
+                *mCurrentPhysicsProbeGadget,
+                StrongTypedTrue<DoNotify>);
 
             // Remove it
             mCurrentPhysicsProbeGadget.reset();
@@ -211,8 +200,6 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
         }
     }
 
-    // TODOHERE
-
     if (NoneElementIndex != nearestCandidatePointIndex)
     {
         //
@@ -226,19 +213,10 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
         {
             assert(mCurrentPhysicsProbeGadget->MayBeRemoved()); // Physics probes may always be removed
 
-            // Tell it we're removing it
-            mCurrentPhysicsProbeGadget->OnExternallyRemoved();
+            InternalPreGadgetRemoval(
+                *mCurrentPhysicsProbeGadget,
+                StrongTypedFalse<DoNotify>); // We don't want to notify for the removal, as we're simply moving the gadget, not removing it
 
-            // Detach gadget from its particle
-            assert(mShipPoints.IsGadgetAttached(mCurrentPhysicsProbeGadget->GetPointIndex()));
-            mShipPoints.DetachGadget(
-                mCurrentPhysicsProbeGadget->GetPointIndex(),
-                mShipSprings);
-
-            // We don't want to notify for the removal, as we're
-            // simply moving the gadget, not removing it
-
-            // Remove it
             mCurrentPhysicsProbeGadget.reset();
 
             // Remember that we're not simply adding a probe,
@@ -248,31 +226,12 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
 
         // Create gadget
         assert(!mCurrentPhysicsProbeGadget);
-        mCurrentPhysicsProbeGadget = std::make_unique<PhysicsProbeGadget>(
-            GadgetId(mShipId, mNextLocalGadgetId++),
+        mCurrentPhysicsProbeGadget = InternalCreateGadget<PhysicsProbeGadget>(
             nearestCandidatePointIndex,
-            mParentWorld,
-            mGameEventHandler,
-            mShipPhysicsHandler,
-            mShipPoints,
-            mShipSprings);
+            !isMovingProbe ? StrongTypedTrue<DoNotify> : StrongTypedFalse<DoNotify>); // Notify - but only if we're not simply moving it
 
-        // Attach gadget to the particle
-        assert(!mShipPoints.IsGadgetAttached(nearestCandidatePointIndex));
-        mShipPoints.AttachGadget(
-            nearestCandidatePointIndex,
-            mCurrentPhysicsProbeGadget->GetMass(),
-            mShipSprings);
-
-        // Notify - but only if we're not simply moving it
         if (!isMovingProbe)
         {
-            mGameEventHandler->OnGadgetPlaced(
-                mCurrentPhysicsProbeGadget->GetId(),
-                mCurrentPhysicsProbeGadget->GetType(),
-                mParentWorld.IsUnderwater(
-                    mCurrentPhysicsProbeGadget->GetPosition()));
-
             // Tell caller that we've placed a physic probe gadget
             return true;
         }
@@ -291,24 +250,12 @@ void Gadgets::RemovePhysicsProbe()
 {
     if (!!mCurrentPhysicsProbeGadget)
     {
-        assert(mCurrentPhysicsProbeGadget->MayBeRemoved());
+        assert(mCurrentPhysicsProbeGadget->MayBeRemoved()); // Physics probe may always be removed
 
-        // Tell it we're removing it
-        mCurrentPhysicsProbeGadget->OnExternallyRemoved();
+        InternalPreGadgetRemoval(
+            *mCurrentPhysicsProbeGadget,
+            StrongTypedTrue<DoNotify>);
 
-        // Detach gadget from its particle
-        assert(mShipPoints.IsGadgetAttached(mCurrentPhysicsProbeGadget->GetPointIndex()));
-        mShipPoints.DetachGadget(
-            mCurrentPhysicsProbeGadget->GetPointIndex(),
-            mShipSprings);
-
-        // Notify removal
-        mGameEventHandler->OnGadgetRemoved(
-            mCurrentPhysicsProbeGadget->GetId(),
-            mCurrentPhysicsProbeGadget->GetType(),
-            mParentWorld.IsUnderwater(mCurrentPhysicsProbeGadget->GetPosition()));
-
-        // Remove it
         mCurrentPhysicsProbeGadget.reset();
     }
 }
