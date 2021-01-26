@@ -1829,13 +1829,13 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     //
     // Each plane Z segment is divided into a number of layers, one for each type of rendering we do for a ship:
     //      - 0: Ropes (always behind)
-    //      - 1: Flames - background
+    //      - 1: Flames (background, i.e. flames that are on ropes)
     //      - 2: Springs
     //      - 3: Triangles
     //          - Triangles are always drawn temporally before ropes and springs though, to avoid anti-aliasing issues
     //      - 4: Stressed springs, Frontier edges (temporally after)
     //      - 5: Points
-    //      - 6: Flames - foreground
+    //      - 6: Flames (foreground)
     //      - 7: Sparkles
     //      - 8: Generic textures
     //      - 9: Explosions

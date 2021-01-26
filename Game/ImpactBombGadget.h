@@ -92,8 +92,9 @@ private:
 
     uint8_t mExplosionFadeoutCounter; // Betewen 0 and ExplosionFadeoutStepsCount (excluded)
 
-    // The position at which the explosion has started
+    // The position and plane ID at which the explosion has started
     vec2f mExplosionPosition;
+    PlaneId mExplosionPlaneId;
 };
 
 }

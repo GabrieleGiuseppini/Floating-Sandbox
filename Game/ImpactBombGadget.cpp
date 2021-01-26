@@ -29,6 +29,7 @@ ImpactBombGadget::ImpactBombGadget(
     , mState(State::Idle)
     , mExplosionFadeoutCounter(0u)
     , mExplosionPosition(vec2f::zero())
+    , mExplosionPlaneId(NonePlaneId)
 {
 }
 
@@ -58,9 +59,10 @@ bool ImpactBombGadget::Update(
             // Explode
             //
 
-            // Freeze explosion position (or else explosion will move
+            // Freeze explosion position and plane (or else explosion will move
             // along with ship performing its blast)
             mExplosionPosition = GetPosition();
+            mExplosionPlaneId = GetPlaneId();
 
             // Blast radius
             float const blastRadius =
@@ -80,7 +82,7 @@ bool ImpactBombGadget::Update(
             // Start explosion
             mShipPhysicsHandler.StartExplosion(
                 currentSimulationTime,
-                GetPlaneId(),
+                mExplosionPlaneId,
                 mExplosionPosition,
                 blastRadius,
                 blastStrength,
@@ -154,7 +156,7 @@ void ImpactBombGadget::Upload(
                 / static_cast<float>(ExplosionFadeoutStepsCount);
 
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
-                GetPlaneId(),
+                mExplosionPlaneId,
                 TextureFrameId(Render::GenericMipMappedTextureGroups::ImpactBomb, 0),
                 mExplosionPosition,
                 1.0f, // Scale

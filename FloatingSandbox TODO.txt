@@ -373,8 +373,8 @@ Render:
 				+ Panel open/close sound, time-syncd with panel
 					+ Event publishing
 					+ Sound
-				= Cleanup:
-					= Gadgets spring->point rearc: 
+				+ Cleanup:
+					+ Gadgets spring->point rearc: 
 						+ First off, verify gadgets currently freeze when their spring is destroyed - which we'll fix with this change
 						+ Move "IsGadgetAttached" shebang from Springs to Points
 						+ See if can move detachment from point (i.e. for mass) completely to Gadgets, just like
@@ -401,29 +401,30 @@ Render:
 							+ See if may move mGameEventHandler->OnGadgetRemoved(.) call from each gadget's OnExternallyRemoved() to where we invoke
 							  OnExternallyRemoved in Gadgets
 							+ Merge removal code in Toggle() and RemovePhysicsProbe()
-						= Cleanup:
+						+ Cleanup:
 							+ Gadgets: see if may unify ToggleGadget<T>/TogglePhysicsProbeGadget
 								+ Or at least use same procedures when adding and removing a gadget														  
 							+ See if IGadget::GetPosition is really needed
 								+ If it's needed, then also add GetPlaneId()
-							- Rendering: it seems order of gadgets and explosions is screwed
-								- You can see the gadget's "hole" when it disappears on an explosion, which means gadget is Z-closer than explosion but drawn earlier
-						- Tests:
-							- Run all scenarios in debug, for all gadgets
-							- Freezing of rotation axis @ spring destroy
-							- Detachment at bomb explosions: make sure explosion does not move
+							+ Rendering: it seems order of gadgets and explosions is screwed
+								+ It's a problem with the bomb being detached upon explosion and thus taking a new Z plane; freeze plane ID as well
+						+ Tests:
+							+ Run all scenarios in debug, for all gadgets
+							+ Freezing of rotation axis @ spring destroy
+							+ Detachment at bomb explosions: make sure explosion does not move
 					+ Make RenderContext expose GetNoficationRenderContext() and nuke all forwards
 					+ Improve gadget texture
 						+ Antennas on top
 					+ Cursor: slightly thicker stroke
 						+ Or different altogether
 						+ Adjust anchor
-					- Run panel open/close in Debug
+					+ Run panel open/close in Debug
+					+ changelist: re-architected "bombs" as generic "gadgets"...
 				- Nuke inertial velocity notification
 					- GameController et al
 					- UI preferences
 				- Test perf of panel opening on old Dell
-				= changelist: re-architected "bombs" as generic "gadgets"...
+				
 			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
 				- Copy old exe first
 				- Take speeds with old:

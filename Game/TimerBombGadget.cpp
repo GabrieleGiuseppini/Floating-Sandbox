@@ -34,6 +34,7 @@ TimerBombGadget::TimerBombGadget(
     , mDetonationLeadInShapeFrameCounter(0)
     , mExplosionFadeoutCounter(0u)
     , mExplosionPosition(vec2f::zero())
+    , mExplosionPlaneId(NonePlaneId)
 {
     // Notify start slow fuse
     mGameEventHandler->OnTimerBombFuse(
@@ -137,9 +138,10 @@ bool TimerBombGadget::Update(
                 // Explode
                 //
 
-                // Freeze explosion position (or else explosion will move
+                // Freeze explosion position and plane (or else explosion will move
                 // along with ship performing its blast)
                 mExplosionPosition = GetPosition();
+                mExplosionPlaneId = GetPlaneId();
 
                 // Blast radius
                 float const blastRadius =
@@ -159,7 +161,7 @@ bool TimerBombGadget::Update(
                 // Start explosion
                 mShipPhysicsHandler.StartExplosion(
                     currentSimulationTime,
-                    GetPlaneId(),
+                    mExplosionPlaneId,
                     mExplosionPosition,
                     blastRadius,
                     blastStrength,
@@ -345,7 +347,7 @@ void TimerBombGadget::Upload(
 
             // Render disappearing bomb
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
-                GetPlaneId(),
+                mExplosionPlaneId,
                 TextureFrameId(Render::GenericMipMappedTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 mExplosionPosition,
                 1.0f, // Scale
