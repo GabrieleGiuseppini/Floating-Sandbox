@@ -386,19 +386,19 @@ Render:
 							+ On spring destroy: do same trick as now, crystallize angle
 						= PhysicsProbe final tasks:
 							+ Gadgets::OnSpringDestroyed: also deal with PhysicsProbe
-							= Toggle algo:
-								= If there's a probe in radius: remove it and done
+							+ Toggle algo:
+								+ If there's a probe in radius: remove it and done
 									+ Publish event: removal makes sound
 									+ return false
-								= Else if found good candidate particle:
-									= If there's already a probe on the ship: remove it (basically we move it)
+								+ Else if found good candidate particle:
+									+ If there's already a probe on the ship: remove it (basically we move it)
 										+ No event: (we're moving it) (no removal sound)
-									= Create new probe
+									+ Create new probe
 										+ If we are not moving: publish event (sound)
-									= return true if we are not moving, else nullopt
-								= Else:
-									= return nullopt
-							- See if may move mGameEventHandler->OnGadgetRemoved(.) call from each gadget's OnExternallyRemoved() to where we invoke
+									+ return true if we are not moving, else nullopt
+								+ Else:
+									+ return nullopt
+							+ See if may move mGameEventHandler->OnGadgetRemoved(.) call from each gadget's OnExternallyRemoved() to where we invoke
 							  OnExternallyRemoved in Gadgets
 							- Merge removal code in Toggle() and RemovePhysicsProbe()
 						= Test:

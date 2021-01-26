@@ -168,6 +168,12 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
                 mCurrentPhysicsProbeGadget->GetPointIndex(),
                 mShipSprings);
 
+            // Notify removal
+            mGameEventHandler->OnGadgetRemoved(
+                mCurrentPhysicsProbeGadget->GetId(),
+                mCurrentPhysicsProbeGadget->GetType(),
+                mParentWorld.IsUnderwater(mCurrentPhysicsProbeGadget->GetPosition()));
+
             // Remove it
             mCurrentPhysicsProbeGadget.reset();
 
@@ -221,9 +227,6 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
             assert(mCurrentPhysicsProbeGadget->MayBeRemoved()); // Physics probes may always be removed
 
             // Tell it we're removing it
-            // TODOHERE: no: we want this to be soundless - if later
-            // we move event publishing out of OnExternallyRemoved, then this call
-            // may stay. Otherwise, it needs to take a boolean of something
             mCurrentPhysicsProbeGadget->OnExternallyRemoved();
 
             // Detach gadget from its particle
@@ -231,6 +234,9 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
             mShipPoints.DetachGadget(
                 mCurrentPhysicsProbeGadget->GetPointIndex(),
                 mShipSprings);
+
+            // We don't want to notify for the removal, as we're
+            // simply moving the gadget, not removing it
 
             // Remove it
             mCurrentPhysicsProbeGadget.reset();
@@ -258,7 +264,7 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
             mCurrentPhysicsProbeGadget->GetMass(),
             mShipSprings);
 
-        // Notify - but only of we're not simply moving it
+        // Notify - but only if we're not simply moving it
         if (!isMovingProbe)
         {
             mGameEventHandler->OnGadgetPlaced(
@@ -295,6 +301,12 @@ void Gadgets::RemovePhysicsProbe()
         mShipPoints.DetachGadget(
             mCurrentPhysicsProbeGadget->GetPointIndex(),
             mShipSprings);
+
+        // Notify removal
+        mGameEventHandler->OnGadgetRemoved(
+            mCurrentPhysicsProbeGadget->GetId(),
+            mCurrentPhysicsProbeGadget->GetType(),
+            mParentWorld.IsUnderwater(mCurrentPhysicsProbeGadget->GetPosition()));
 
         // Remove it
         mCurrentPhysicsProbeGadget.reset();

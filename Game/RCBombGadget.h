@@ -50,12 +50,6 @@ public:
 
     virtual void OnExternallyRemoved() override
     {
-        // Notify removal
-        mGameEventHandler->OnGadgetRemoved(
-            mId,
-            GadgetType::RCBomb,
-            mParentWorld.IsUnderwater(
-                GetPosition()));
     }
 
     virtual void OnNeighborhoodDisturbed() override

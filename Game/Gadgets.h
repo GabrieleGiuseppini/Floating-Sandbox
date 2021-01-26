@@ -150,6 +150,12 @@ private:
                         (*it)->GetPointIndex(),
                         mShipSprings);
 
+                    // Notify removal
+                    mGameEventHandler->OnGadgetRemoved(
+                        (*it)->GetId(),
+                        (*it)->GetType(),
+                        mParentWorld.IsUnderwater((*it)->GetPosition()));
+
                     // Remove from set of gadgets - forget about it
                     mCurrentGadgets.erase(it); // Safe to invalidate iterators, we're leaving anyway
                 }
@@ -219,10 +225,16 @@ private:
 
             // Add new gadget to set of gadgets, removing eventual gadgets that might get purged
             mCurrentGadgets.emplace(
-                [](std::unique_ptr<Gadget> const & purgedGadget)
+                [this](std::unique_ptr<Gadget> const & purgedGadget)
                 {
                     // Tell it we're removing it
                     purgedGadget->OnExternallyRemoved();
+
+                    // Notify removal
+                    mGameEventHandler->OnGadgetRemoved(
+                        purgedGadget->GetId(),
+                        purgedGadget->GetType(),
+                        mParentWorld.IsUnderwater(purgedGadget->GetPosition()));
                 },
                 std::move(gadget));
 

@@ -59,13 +59,6 @@ public:
         {
             mGameEventHandler->OnTimerBombFuse(mId, std::nullopt);
         }
-
-        // Notify removal
-        mGameEventHandler->OnGadgetRemoved(
-            mId,
-            GadgetType::TimerBomb,
-            mParentWorld.IsUnderwater(
-                GetPosition()));
     }
 
     virtual void OnNeighborhoodDisturbed() override;

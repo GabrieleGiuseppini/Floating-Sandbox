@@ -55,13 +55,6 @@ public:
         {
             mGameEventHandler->OnAntiMatterBombContained(mId, false);
         }
-
-        // Notify removal
-        mGameEventHandler->OnGadgetRemoved(
-            mId,
-            GadgetType::AntiMatterBomb,
-            mParentWorld.IsUnderwater(
-                GetPosition()));
     }
 
     virtual void OnNeighborhoodDisturbed() override
