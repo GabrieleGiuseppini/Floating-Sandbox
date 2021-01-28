@@ -425,11 +425,16 @@ Render:
 
 		= Sinking speed:
 			X Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s				
-			- We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
-				- Copy old exe first
+			= We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
+				+ Copy old exe first
 				- Take speeds with old:
 					- Titanic sinking:
 					- Plane falling:
+				- Test with following global damps, looking at explosions, debris, etc. in *air*
+					- 0: 
+					- min==?:
+					- 0.08:
+				- TODOHERE
 				- Remove global damp at integration loop
 				- Point-by-point: 
 					- Underwater: incorporate old global damp in friction drag, if needed
