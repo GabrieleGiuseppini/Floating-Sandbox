@@ -137,7 +137,7 @@ void SmashTool::ApplyTool(
     float const radiusFraction = MinFraction + (1.0f - MinFraction) * std::min(1.0f, millisecondsElapsed / 5000.0f);
 
     // Modulate down cursor
-    mToolCursorManager.SetToolCursor(mDownCursorImage, radiusFraction);
+    InternalSetToolCursor(mDownCursorImage, radiusFraction);
 
     // Destroy
     mGameController->DestroyAt(
@@ -248,7 +248,7 @@ void GrabTool::ApplyTool(
     float strengthFraction = MinFraction + (1.0f - MinFraction) * std::min(1.0f, millisecondsElapsed / 5000.0f);
 
     // Modulate down cursor
-    mToolCursorManager.SetToolCursor(
+    InternalSetToolCursor(
         inputState.IsShiftKeyDown ? mDownMinusCursorImage : mDownPlusCursorImage,
         strengthFraction);
 
@@ -297,7 +297,7 @@ void SwirlTool::ApplyTool(
     float strengthFraction = MinFraction + (1.0f - MinFraction) * std::min(1.0f, millisecondsElapsed / 5000.0f);
 
     // Modulate down cursor
-    mToolCursorManager.SetToolCursor(
+    InternalSetToolCursor(
         inputState.IsShiftKeyDown ? mDownMinusCursorImage : mDownPlusCursorImage,
         strengthFraction);
 

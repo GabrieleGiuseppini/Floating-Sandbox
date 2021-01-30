@@ -161,6 +161,10 @@ public:
         mPreviousMousePosition = inputState.MousePosition;
         mPreviousTimestamp = std::chrono::steady_clock::now();
         mCumulatedTime = std::chrono::microseconds(0);
+
+        // Initialize the cursor state
+        mLastCursor = nullptr;
+        mLastQuantizedCursorStrength.reset();
     }
 
     virtual void UpdateSimulation(InputState const & inputState) override;
@@ -193,11 +197,31 @@ protected:
         , mPreviousMousePosition()
         , mPreviousTimestamp(std::chrono::steady_clock::now())
         , mCumulatedTime(0)
+        , mLastCursor()
+        , mLastQuantizedCursorStrength()
     {}
 
     virtual void ApplyTool(
         std::chrono::microseconds const & cumulatedTime,
         InputState const & inputState) = 0;
+
+    void InternalSetToolCursor(wxImage const & basisImage, float strength)
+    {
+        // Suppresss redundant calls to change cursor
+
+        int const quantizedCursorStrength = static_cast<int>(strength * 64.0f);
+
+        if (!mLastCursor.IsSameAs(basisImage)
+            || !mLastQuantizedCursorStrength.has_value()
+            || *mLastQuantizedCursorStrength != quantizedCursorStrength)
+        {
+            mToolCursorManager.SetToolCursor(basisImage, strength);
+
+            // Remember current cursor
+            mLastCursor = basisImage;
+            mLastQuantizedCursorStrength = quantizedCursorStrength;
+        }
+    }
 
 private:
 
@@ -211,6 +235,11 @@ private:
 
     // The total accumulated press time - the proxy for the strength of the tool
     std::chrono::microseconds mCumulatedTime;
+
+    // The last cursor (image and strength) which we've set; used to suppress
+    // redundant, identical calls to SetCursor
+    wxImage mLastCursor;
+    std::optional<int> mLastQuantizedCursorStrength;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
