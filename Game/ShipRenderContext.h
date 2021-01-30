@@ -497,9 +497,9 @@ public:
             planeId,
             textureFrameId,
             position,
-            1.0f,
-            0.0f,
-            1.0f);
+            1.0f, // Scale
+            0.0f, // Angle
+            1.0f); // Alpha
     }
 
     inline void UploadGenericMipMappedTextureRenderSpecification(
@@ -516,7 +516,7 @@ public:
             textureFrameId,
             position,
             scale,
-            rotationBase.angleCw(rotationOffset),
+            rotationOffset.angleCw(rotationBase),
             alpha);
     }
 
