@@ -1744,6 +1744,20 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
                     CellBorder);
             }
 
+            // Restore Ocean Floor Terrain
+            {
+                wxButton * restoreDefaultTerrainButton = new wxButton(oceanBox, wxID_ANY, _("Restore Default Terrain"));
+                restoreDefaultTerrainButton->SetToolTip(_("Reverts the user-drawn ocean floor terrain to the default terrain."));
+                restoreDefaultTerrainButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnRestoreDefaultTerrainButton, this);
+
+                oceanSizer->Add(
+                    restoreDefaultTerrainButton,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxRIGHT,
+                    CellBorder);
+            }
+
             // Ocean Floor Detail Amplification
             {
                 mOceanFloorDetailAmplificationSlider = new SliderControl<float>(
@@ -1764,23 +1778,9 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
 
                 oceanSizer->Add(
                     mOceanFloorDetailAmplificationSlider,
-                    wxGBPosition(0, 2),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorder);
-            }
-
-            // Restore Ocean Floor Terrain
-            {
-                wxButton * restoreDefaultTerrainButton = new wxButton(oceanBox, wxID_ANY, _("Restore Default Terrain"));
-                restoreDefaultTerrainButton->SetToolTip(_("Reverts the user-drawn ocean floor terrain to the default terrain."));
-                restoreDefaultTerrainButton->Bind(wxEVT_BUTTON, &SettingsDialog::OnRestoreDefaultTerrainButton, this);
-
-                oceanSizer->Add(
-                    restoreDefaultTerrainButton,
                     wxGBPosition(1, 2),
                     wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
                     CellBorder);
             }
 
@@ -2230,6 +2230,8 @@ void SettingsDialog::PopulateWindWavesFishesLightsPanel(wxPanel * panel)
         {
             wxGridBagSizer * windSizer = new wxGridBagSizer(0, 0);
 
+            windSizer->AddGrowableRow(1, 1);
+
             // Wind Speed Base
             {
                 // Zero wind
@@ -2249,7 +2251,7 @@ void SettingsDialog::PopulateWindWavesFishesLightsPanel(wxPanel * panel)
                         button,
                         wxGBPosition(0, 0),
                         wxGBSpan(1, 1),
-                        wxEXPAND | wxALL,
+                        wxEXPAND | wxLEFT | wxRIGHT,
                         CellBorder);
                 }
 
@@ -2274,7 +2276,7 @@ void SettingsDialog::PopulateWindWavesFishesLightsPanel(wxPanel * panel)
                         mWindSpeedBaseSlider,
                         wxGBPosition(1, 0),
                         wxGBSpan(1, 1),
-                        wxEXPAND | wxALL,
+                        wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
                         CellBorder);
                 }
             }
@@ -2299,7 +2301,7 @@ void SettingsDialog::PopulateWindWavesFishesLightsPanel(wxPanel * panel)
                         mModulateWindCheckBox,
                         wxGBPosition(0, 1),
                         wxGBSpan(1, 1),
-                        wxEXPAND | wxALL,
+                        wxEXPAND | wxLEFT | wxRIGHT,
                         CellBorder);
                 }
 
@@ -2324,12 +2326,12 @@ void SettingsDialog::PopulateWindWavesFishesLightsPanel(wxPanel * panel)
                         mWindGustAmplitudeSlider,
                         wxGBPosition(1, 1),
                         wxGBSpan(1, 1),
-                        wxEXPAND | wxALL,
+                        wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
                         CellBorder);
                 }
             }
 
-            windBoxSizer->Add(windSizer, 0, wxALL, StaticBoxInsetMargin);
+            windBoxSizer->Add(windSizer, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
         }
 
         windBox->SetSizerAndFit(windBoxSizer);
