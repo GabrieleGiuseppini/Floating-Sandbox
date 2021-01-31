@@ -260,8 +260,6 @@ private:
         GameParameters const & gameParameters,
         Geometry::AABBSet & aabbSet);
 
-    void ApplySpringsForces_ByPoints(GameParameters const & gameParameters);
-
     void ApplySpringsForces_BySprings(GameParameters const & gameParameters);
 
     void IntegrateAndResetSpringForces(GameParameters const & gameParameters);

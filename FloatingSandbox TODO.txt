@@ -464,7 +464,7 @@ Render:
 						- Airplane falling
 						- Blimps					
 					+ Zero-wind button
-					- Finalization:
+					= Finalization:
 						= Interpolations for discontinuities
 							+ Do all @ Ship::ApplyWorldForces
 								+ Have a single multiplier used for all forces
@@ -475,7 +475,7 @@ Render:
 							+ Set coeffs accordingly
 							+ Nail down adjustment ranges
 						- Re-adjust Titanic split (X2) - if needed
-						- Nuke Ship::ByPoints
+						+ Nuke Ship::ByPoints
 			- changelist
 
 		+ Cursor change rate
