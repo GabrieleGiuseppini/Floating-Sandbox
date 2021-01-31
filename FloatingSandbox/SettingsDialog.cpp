@@ -2232,33 +2232,55 @@ void SettingsDialog::PopulateWindWavesFishesLightsPanel(wxPanel * panel)
 
             // Wind Speed Base
             {
-                mWindSpeedBaseSlider = new SliderControl<float>(
-                    windBox,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Wind Speed Base"),
-                    _("The base speed of wind (Km/h), before modulation takes place. Wind speed in turn determines ocean wave characteristics such as their height, speed, and width."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::WindSpeedBase, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions->GetMinWindSpeedBase(),
-                        mGameControllerSettingsOptions->GetMaxWindSpeedBase()));
+                // Zero wind
+                {
+                    auto button = new wxButton(windBox, wxID_ANY, _T("Zero"), wxDefaultPosition, wxDefaultSize);
+                    button->SetToolTip(_("Set wind speed to zero."));
+                    button->Bind(
+                        wxEVT_BUTTON,
+                        [this](wxCommandEvent & /*event*/)
+                        {
+                            this->mLiveSettings.SetValue(GameSettings::WindSpeedBase, 0.0f);
+                            mWindSpeedBaseSlider->SetValue(0.0f);
+                            this->OnLiveSettingsChanged();
+                        });
 
-                windSizer->Add(
-                    mWindSpeedBaseSlider,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorder);
+                    windSizer->Add(
+                        button,
+                        wxGBPosition(0, 0),
+                        wxGBSpan(1, 1),
+                        wxEXPAND | wxALL,
+                        CellBorder);
+                }
+
+                // Wind Speed Base
+                {
+                    mWindSpeedBaseSlider = new SliderControl<float>(
+                        windBox,
+                        SliderWidth,
+                        -1,
+                        _("Wind Speed Base"),
+                        _("The base speed of wind (Km/h), before modulation takes place. Wind speed in turn determines ocean wave characteristics such as their height, speed, and width."),
+                        [this](float value)
+                        {
+                            this->mLiveSettings.SetValue(GameSettings::WindSpeedBase, value);
+                            this->OnLiveSettingsChanged();
+                        },
+                        std::make_unique<LinearSliderCore>(
+                            mGameControllerSettingsOptions->GetMinWindSpeedBase(),
+                            mGameControllerSettingsOptions->GetMaxWindSpeedBase()));
+
+                    windSizer->Add(
+                        mWindSpeedBaseSlider,
+                        wxGBPosition(1, 0),
+                        wxGBSpan(1, 1),
+                        wxEXPAND | wxALL,
+                        CellBorder);
+                }
             }
 
             // Wind modulation
             {
-                wxBoxSizer * windModulationBoxSizer = new wxBoxSizer(wxVERTICAL);
-
                 // Modulate Wind
                 {
                     mModulateWindCheckBox = new wxCheckBox(windBox, wxID_ANY, _("Modulate Wind"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxEmptyString);
@@ -2273,7 +2295,12 @@ void SettingsDialog::PopulateWindWavesFishesLightsPanel(wxPanel * panel)
                             mWindGustAmplitudeSlider->Enable(mModulateWindCheckBox->IsChecked());
                         });
 
-                    windModulationBoxSizer->Add(mModulateWindCheckBox, 0, wxALIGN_LEFT, 0);
+                    windSizer->Add(
+                        mModulateWindCheckBox,
+                        wxGBPosition(0, 1),
+                        wxGBSpan(1, 1),
+                        wxEXPAND | wxALL,
+                        CellBorder);
                 }
 
                 // Wind Gust Amplitude
@@ -2293,15 +2320,13 @@ void SettingsDialog::PopulateWindWavesFishesLightsPanel(wxPanel * panel)
                             mGameControllerSettingsOptions->GetMinWindSpeedMaxFactor(),
                             mGameControllerSettingsOptions->GetMaxWindSpeedMaxFactor()));
 
-                    windModulationBoxSizer->Add(mWindGustAmplitudeSlider, 1, wxEXPAND, 0);
+                    windSizer->Add(
+                        mWindGustAmplitudeSlider,
+                        wxGBPosition(1, 1),
+                        wxGBSpan(1, 1),
+                        wxEXPAND | wxALL,
+                        CellBorder);
                 }
-
-                windSizer->Add(
-                    windModulationBoxSizer,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorder);
             }
 
             windBoxSizer->Add(windSizer, 0, wxALL, StaticBoxInsetMargin);
