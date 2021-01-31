@@ -129,14 +129,14 @@ SettingsDialog::SettingsDialog(
 
 
     //
-    // Mechanics, fluids, lights
+    // Mechanics, Air, Fluids
     //
 
-    wxPanel * mechanicsFluidsLightsPanel = new wxPanel(notebook);
+    wxPanel * mechanicsAirFluidsPanel = new wxPanel(notebook);
 
-    PopulateMechanicsFluidsLightsPanel(mechanicsFluidsLightsPanel);
+    PopulateMechanicsAirFluidsPanel(mechanicsAirFluidsPanel);
 
-    notebook->AddPage(mechanicsFluidsLightsPanel, _("Mechanics, Fluids, and Lights"));
+    notebook->AddPage(mechanicsAirFluidsPanel, _("Mechanics, Air, and Fluids"));
 
 
     //
@@ -151,25 +151,25 @@ SettingsDialog::SettingsDialog(
 
 
     //
-    // Ocean, Smoke, and Sky
+    // Ocean, Smoke, Sky
     //
 
-    wxPanel * oceanAndSkyPanel = new wxPanel(notebook);
+    wxPanel * oceanSmokeSkyPanel = new wxPanel(notebook);
 
-    PopulateOceanSmokeSkyPanel(oceanAndSkyPanel);
+    PopulateOceanSmokeSkyPanel(oceanSmokeSkyPanel);
 
-    notebook->AddPage(oceanAndSkyPanel, _("Ocean, Smoke, and Sky"));
+    notebook->AddPage(oceanSmokeSkyPanel, _("Ocean, Smoke, and Sky"));
 
 
     //
-    // Wind and Waves
+    // Wind, Waves, Fishes, Lights
     //
 
-    wxPanel * windAndWavesAndFishesPanel = new wxPanel(notebook);
+    wxPanel * windWavesFishesLightsPanel = new wxPanel(notebook);
 
-    PopulateWindAndWavesAndFishesPanel(windAndWavesAndFishesPanel);
+    PopulateWindWavesFishesLightsPanel(windWavesFishesLightsPanel);
 
-    notebook->AddPage(windAndWavesAndFishesPanel, _("Wind, Waves, and Fishes"));
+    notebook->AddPage(windWavesFishesLightsPanel, _("Wind, Waves, Fishes, and Lights"));
 
 
     //
@@ -833,7 +833,7 @@ void SettingsDialog::DoClose()
     this->Hide();
 }
 
-void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
+void SettingsDialog::PopulateMechanicsAirFluidsPanel(wxPanel * panel)
 {
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
@@ -969,76 +969,77 @@ void SettingsDialog::PopulateMechanicsFluidsLightsPanel(wxPanel * panel)
     }
 
     //
-    // Lights
+    // Air
     //
 
     {
-        wxStaticBox * lightsBox = new wxStaticBox(panel, wxID_ANY, _("Lights"));
+        wxStaticBox * airBox = new wxStaticBox(panel, wxID_ANY, _("Air"));
 
-        wxBoxSizer * lightsBoxSizer = new wxBoxSizer(wxVERTICAL);
-        lightsBoxSizer->AddSpacer(StaticBoxTopMargin);
+        wxBoxSizer * airBoxSizer = new wxBoxSizer(wxVERTICAL);
+        airBoxSizer->AddSpacer(StaticBoxTopMargin);
 
         {
-            wxGridBagSizer * lightsSizer = new wxGridBagSizer(0, 0);
+            wxGridBagSizer * airSizer = new wxGridBagSizer(0, 0);
 
-            // Luminiscence
+            // Air Friction Drag
             {
-                mLuminiscenceSlider = new SliderControl<float>(
-                    lightsBox,
+                mAirFrictionDragSlider = new SliderControl<float>(
+                    airBox,
                     SliderWidth,
                     SliderHeight,
-                    _("Luminiscence Adjust"),
-                    _("Adjusts the quantity of light emitted by luminiscent materials."),
+                    _("Air Friction Drag Adjust"),
+                    _("Adjusts the frictional drag force (or 'skin' drag) exerted by air on physical bodies."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::LuminiscenceAdjustment, value);
+                        this->mLiveSettings.SetValue(GameSettings::AirFrictionDragAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions->GetMinLuminiscenceAdjustment(),
+                        mGameControllerSettingsOptions->GetMinAirFrictionDragAdjustment(),
                         1.0f,
-                        mGameControllerSettingsOptions->GetMaxLuminiscenceAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxAirFrictionDragAdjustment()));
 
-                lightsSizer->Add(
-                    mLuminiscenceSlider,
+                airSizer->Add(
+                    mAirFrictionDragSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
             }
 
-            // Light Spread
+            // Air Pressure Drag
             {
-                mLightSpreadSlider = new SliderControl<float>(
-                    lightsBox,
+                mAirPressureDragSlider = new SliderControl<float>(
+                    airBox,
                     SliderWidth,
                     SliderHeight,
-                    _("Light Spread Adjust"),
-                    _("Adjusts how wide light emitted by luminiscent materials spreads out."),
+                    _("Air Pressure Drag Adjust"),
+                    _("Adjusts the pressure drag force (or 'form' drag) exerted by air on physical bodies."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::LightSpreadAdjustment, value);
+                        this->mLiveSettings.SetValue(GameSettings::AirPressureDragAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions->GetMinLightSpreadAdjustment(),
-                        mGameControllerSettingsOptions->GetMaxLightSpreadAdjustment()));
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinAirPressureDragAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxAirPressureDragAdjustment()));
 
-                lightsSizer->Add(
-                    mLightSpreadSlider,
+                airSizer->Add(
+                    mAirPressureDragSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorder);
             }
 
-            lightsBoxSizer->Add(lightsSizer, 0, wxALL, StaticBoxInsetMargin);
+            airBoxSizer->Add(airSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
-        lightsBox->SetSizerAndFit(lightsBoxSizer);
+        airBox->SetSizerAndFit(airBoxSizer);
 
         gridSizer->Add(
-            lightsBox,
+            airBox,
             wxGBPosition(0, 4),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL,
@@ -2212,7 +2213,7 @@ void SettingsDialog::PopulateOceanSmokeSkyPanel(wxPanel * panel)
     panel->SetSizerAndFit(gridSizer);
 }
 
-void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
+void SettingsDialog::PopulateWindWavesFishesLightsPanel(wxPanel * panel)
 {
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
@@ -2311,7 +2312,7 @@ void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
         gridSizer->Add(
             windBox,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorder);
     }
@@ -2412,7 +2413,7 @@ void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
 
         gridSizer->Add(
             basalWavesBox,
-            wxGBPosition(0, 1),
+            wxGBPosition(0, 2),
             wxGBSpan(1, 3),
             wxEXPAND | wxALL,
             CellBorder);
@@ -2488,8 +2489,8 @@ void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
 
         gridSizer->Add(
             abnormalWavesBox,
-            wxGBPosition(1, 0),
-            wxGBSpan(1, 1),
+            wxGBPosition(0, 5),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorder);
     }
@@ -2638,8 +2639,85 @@ void SettingsDialog::PopulateWindAndWavesAndFishesPanel(wxPanel * panel)
 
         gridSizer->Add(
             fishesBox,
-            wxGBPosition(1, 1),
+            wxGBPosition(1, 0),
             wxGBSpan(1, 4),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
+
+    //
+    // Lights
+    //
+
+    {
+        wxStaticBox * lightsBox = new wxStaticBox(panel, wxID_ANY, _("Lights"));
+
+        wxBoxSizer * lightsBoxSizer = new wxBoxSizer(wxVERTICAL);
+        lightsBoxSizer->AddSpacer(StaticBoxTopMargin);
+
+        {
+            wxGridBagSizer * lightsSizer = new wxGridBagSizer(0, 0);
+
+            // Luminiscence
+            {
+                mLuminiscenceSlider = new SliderControl<float>(
+                    lightsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Luminiscence Adjust"),
+                    _("Adjusts the quantity of light emitted by luminiscent materials."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::LuminiscenceAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinLuminiscenceAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxLuminiscenceAdjustment()));
+
+                lightsSizer->Add(
+                    mLuminiscenceSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Light Spread
+            {
+                mLightSpreadSlider = new SliderControl<float>(
+                    lightsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Light Spread Adjust"),
+                    _("Adjusts how wide light emitted by luminiscent materials spreads out."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::LightSpreadAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinLightSpreadAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxLightSpreadAdjustment()));
+
+                lightsSizer->Add(
+                    mLightSpreadSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            lightsBoxSizer->Add(lightsSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        lightsBox->SetSizerAndFit(lightsBoxSizer);
+
+        gridSizer->Add(
+            lightsBox,
+            wxGBPosition(1, 4),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorder);
     }
@@ -4327,7 +4405,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 
 void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & settings)
 {
-    // Mechanics, Fluids, Lights
+    // Mechanics, Air, and Fluids
 
     mMechanicalQualitySlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
 
@@ -4336,6 +4414,10 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mGlobalDampingAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::GlobalDampingAdjustment));
 
     mRotAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RotAcceler8r));
+
+    mAirFrictionDragSlider->SetValue(settings.GetValue<float>(GameSettings::AirFrictionDragAdjustment));
+
+    mAirPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::AirPressureDragAdjustment));
 
     mWaterDensitySlider->SetValue(settings.GetValue<float>(GameSettings::WaterDensityAdjustment));
 
@@ -4348,10 +4430,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mWaterCrazynessSlider->SetValue(settings.GetValue<float>(GameSettings::WaterCrazyness));
 
     mWaterDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDiffusionSpeedAdjustment));
-
-    mLuminiscenceSlider->SetValue(settings.GetValue<float>(GameSettings::LuminiscenceAdjustment));
-
-    mLightSpreadSlider->SetValue(settings.GetValue<float>(GameSettings::LightSpreadAdjustment));
 
     // Heat
 
@@ -4403,7 +4481,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDayLightCycleDurationSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::DayLightCycleDuration).count());
     mDayLightCycleDurationSlider->Enable(settings.GetValue<bool>(GameSettings::DoDayLightCycle));
 
-    // Wind, Waves, and Fishes
+    // Wind, Waves, Fishes, and Lights
 
     mWindSpeedBaseSlider->SetValue(settings.GetValue<float>(GameSettings::WindSpeedBase));
     mModulateWindCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoModulateWind));
@@ -4422,6 +4500,9 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDoFishShoalingCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoFishShoaling));
     mFishShoalRadiusAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishShoalRadiusAdjustment));
     mFishShoalRadiusAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoFishShoaling));
+
+    mLuminiscenceSlider->SetValue(settings.GetValue<float>(GameSettings::LuminiscenceAdjustment));
+    mLightSpreadSlider->SetValue(settings.GetValue<float>(GameSettings::LightSpreadAdjustment));
 
     // Interactions
 

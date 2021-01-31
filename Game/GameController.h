@@ -291,6 +291,16 @@ public:
     float GetMinRotAcceler8r() const override { return GameParameters::MinRotAcceler8r; }
     float GetMaxRotAcceler8r() const override { return GameParameters::MaxRotAcceler8r; }
 
+    float GetAirFrictionDragAdjustment() const override { return mGameParameters.AirFrictionDragAdjustment; }
+    void SetAirFrictionDragAdjustment(float value) override { mGameParameters.AirFrictionDragAdjustment = value; }
+    float GetMinAirFrictionDragAdjustment() const override { return GameParameters::MinAirFrictionDragAdjustment; }
+    float GetMaxAirFrictionDragAdjustment() const override { return GameParameters::MaxAirFrictionDragAdjustment; }
+
+    float GetAirPressureDragAdjustment() const override { return mGameParameters.AirPressureDragAdjustment; }
+    void SetAirPressureDragAdjustment(float value) override { mGameParameters.AirPressureDragAdjustment = value; }
+    float GetMinAirPressureDragAdjustment() const override { return GameParameters::MinAirPressureDragAdjustment; }
+    float GetMaxAirPressureDragAdjustment() const override { return GameParameters::MaxAirPressureDragAdjustment; }
+
     float GetWaterDensityAdjustment() const override { return mGameParameters.WaterDensityAdjustment; }
     void SetWaterDensityAdjustment(float value) override { mGameParameters.WaterDensityAdjustment = value; }
     float GetMinWaterDensityAdjustment() const override { return GameParameters::MinWaterDensityAdjustment; }

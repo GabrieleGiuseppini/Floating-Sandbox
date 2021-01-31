@@ -427,34 +427,72 @@ Render:
 			X Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s				
 			= We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
 				+ Copy old exe first
-				- Take speeds with old:
-					- Titanic sinking:
-					- Plane falling:
-				- Test with following global damps, looking at explosions, debris, etc. in *air*
-					- 0: 
-					- min==?:
-					- 0.08:
-				- TODOHERE
-				- Remove global damp at integration loop
-				- Point-by-point: 
-					- Underwater: incorporate old global damp in friction drag, if needed
-						- Try first without: see falling debris, also with friction adjust = 0.0
-					- !Underwater: convert old global damp to new air damp
+				+ Take speeds with old:
+					+ Titanic sinking: 6.4m/s (@ GlobalDampAdjust==0.00: 36.7)
+					+ Plane falling: touchdown is at 41m/s (@ GlobalDampAdjust==0.00: 97m/s)
+				+ Test with following global damps, looking at explosions, debris, etc. in *air*
+					+ 1: with water intake at minimum, particles/springs dance for a very long time
+					+ 0: some violent ejections of springs, but nothing broken
+					+ 0: with water intake at minimum, particles/springs accelerate
+				+ Old math:
+					+ Verify global damp == 0 means no vel damping at Ship::IntegratePoints(.)
+					+ globalDampingCoefficient=0.99988; velocityBuffer[i] = deltaPos / dt * globalDampingCoefficient;
+					+ 30 iterations
+					+ vN = (d^N)*v0; // d^N = 0.99640
+				= Impl:
+					+ Global damp adjust=0.0f - for now
+					+ Point-by-point: 
+						+ !Underwater: add same drags (friction and pressure) as water, but different magnitude
+						+ Pressure drag: interpolate coefficient close to interface, and thus nuke if/else (air/water is now in coefficient)
+					+ First finalization:
+						+ Parallel GameParameters settings for air drags
+						+ SettingsDialog
+							+ Mechanics, Air, and Fluids
+								+ Move lights to Wind, Waves, Fishes, and Light
+					- Tests with water pressure drag adjust=3: 
+						- Debris, with and without WaterIntake=0
+							- Now that the only brake to debris is friction, see if we need more friction
+								- Air
+								- Water
+						- Cardboard tower
+							- With air pressure drag = 100, there's oscillations
+						- Cardboard ships
+						- Air/Water ship
+						- Hydrodynamics test
+							- Above water: with air pressure drag = 20, there's little but noticeable impact
+						- Titanic
+						- Airplane falling
+						- Blimps
+					- Finalization:
+						= Interpolations for discontinuities
+							+ Do all @ Ship::ApplyWorldForces
+								+ Have a single multiplier used for all forces
+							- See to optimize Mix with 1 mult only
+								- Check assembly
+							- Test perf on old Dell
+						- Finalize good settings, reset all adjustments to 1.0
+							- Set coeffs accordingly
+							- Nail down adjustment ranges
+						- Re-adjust Titanic split (X2) - if needed
+
+		+ Cursor change rate
 
 		- Scrub/Rot tool (*)
 
 		- MAC:
 			- Full high-DPI path:
-				- a) Window scaling: on a 2X DPI, a wxWindow of size (500, 500) would be (1000, 1000) on Mac and (500, 500) on Windows. To overcome this, use wxFrame->FromDIP:
-					- myFrame->SetClientSize(wxSize(400, 300));   -->   myFrame->SetClientSize(myFrame->FromDIP(wxSize(400, 300)));
-				- b) Physical pixels are never scaled, on any platform, and must be used when drawing graphics elements to ensure that the best possible resolution is used. 
+				! a) Window scaling: on a 2X DPI, a wxWindow of size (500, 500) would be (1000, 1000) on Mac and (500, 500) on Windows. To overcome this, use wxFrame->FromDIP:
+					  myFrame->SetClientSize(wxSize(400, 300));   -->   myFrame->SetClientSize(myFrame->FromDIP(wxSize(400, 300)));
+				! b) Physical pixels are never scaled, on any platform, and must be used when drawing graphics elements to ensure that the best possible resolution is used. 
 				     For example, all operations on wxGLCanvas use physical pixels. To convert between logical and physical pixels, you can use wxWindow::GetContentScaleFactor(): 
 				     this is a value greater than or equal to 1, so a value in logical pixels needs to be multiplied by it in order to obtain the value in physical pixels.
 				+ Tests:
 					+ With plist (i.e. full screen): ContentScaleFactor=1 DPIScaleFactor=1 100x100dip=100x100px
 					+ Without plist (i.e. 1/4th of screen): ContentScaleFactor=2 DPIScaleFactor=2 100x100dip=100x100px
-				- TODO:
-					- GetContentScaleFactor: 
+					= See mouse coords: are they scaled or not scaled?
+						- Remove TODOTEST @ MainFrame.cpp
+				- Fix:
+					- TODO
 			- Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
 			- Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
 

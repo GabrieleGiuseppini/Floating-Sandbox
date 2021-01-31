@@ -47,6 +47,10 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, GlobalDampingAdjustment);
     ADD_GC_SETTING(float, RotAcceler8r);
 
+    // Air
+    ADD_GC_SETTING(float, AirFrictionDragAdjustment);
+    ADD_GC_SETTING(float, AirPressureDragAdjustment);
+
     // Water
     ADD_GC_SETTING(float, WaterDensityAdjustment);
     ADD_GC_SETTING(float, WaterFrictionDragAdjustment);

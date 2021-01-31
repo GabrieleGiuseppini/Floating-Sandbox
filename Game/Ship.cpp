@@ -741,6 +741,11 @@ void Ship::ApplyWorldForces(
         * 0.5f
         * GameParameters::AirMass;
 
+    // Abovewater points feel this amount of air drag, due to friction
+    float const airFrictionDragCoefficient =
+        GameParameters::AirFrictionDragCoefficient
+        * gameParameters.AirFrictionDragAdjustment;
+
     // Underwater points feel this amount of water drag, due to friction
     float const waterFrictionDragCoefficient =
         GameParameters::WaterFrictionDragCoefficient
@@ -757,6 +762,18 @@ void Ship::ApplyWorldForces(
             * mPoints.GetMass(pointIndex); // Material + Augmentation + Water
 
         //
+        // Calculate above/under-water coefficient
+        //
+        // 0.0: above water
+        // 1.0: under water
+        // in-between: for smooth air-water interface (nature abhors discontinuities)
+        //
+
+        float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x);
+        float const pointDepth = waterHeightAtThisPoint - mPoints.GetPosition(pointIndex).y;
+        float const uwCoefficient = Clamp(pointDepth, 0.0f, 1.0f);
+
+        //
         // Add water/air buoyancy
         //
 
@@ -766,9 +783,8 @@ void Ship::ApplyWorldForces(
             buoyancyCoefficients.Coefficient1
             + buoyancyCoefficients.Coefficient2 * mPoints.GetTemperature(pointIndex);
 
-        // Get height of water at this point
-        float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x);
-
+        /* TODOOLD
+        // TODO: interpolate here as well
         // Check whether we are above or below water
         float const pointDepth = waterHeightAtThisPoint - mPoints.GetPosition(pointIndex).y;
         if (pointDepth > 0.0f)
@@ -786,28 +802,60 @@ void Ship::ApplyWorldForces(
                 buoyancyPush
                 * effectiveAirDensity;
         }
+        */
+
+        // Apply buoyancy
+        mPoints.GetNonSpringForce(pointIndex).y +=
+            buoyancyPush
+            * Mix(effectiveAirDensity, effectiveWaterDensity, uwCoefficient);
 
 
         //
-        // Apply water friction drag - if under water - or wind force - if above water
+        // Apply friction drag
+        //
+        // We use a linear law for simplicity
+        //
+        // With a linear law, we know that the force will never overcome the current velocity
+        // as long as m > (C * dt) TODOTEST: RECALC: (~=0.0015 for water drag), which is a mass we won't have in our system (air is 1.2754);
+        // hence we don't care here about capping the force to prevent overcoming accelerations.
         //
 
+        /* TODOOLD
         if (pointDepth > 0.0f)
         {
+            //
+            // Water
+            //
+
+            // Water drag
             //
             // We use a linear law for simplicity
             //
             // With a linear law, we know that the force will never overcome the current velocity
             // as long as m > (C * dt) (~=0.0015), which is a mass we won't have in our system (air is 1.2754);
             // hence we don't care here about capping the force to prevent overcoming accelerations.
-            //
-
             mPoints.GetNonSpringForce(pointIndex) +=
                 mPoints.GetVelocity(pointIndex)
                 * (-waterFrictionDragCoefficient);
         }
         else
         {
+            //
+            // Air
+            //
+
+            // Air drag
+            //
+            // We use a linear law for simplicity
+            //
+            // With a linear law, we know that the force will never overcome the current velocity
+            // as long as m > (C * dt) (~=TODOHERE), which is a mass we won't have in our system (air is 1.2754);
+            // hence we don't care here about capping the force to prevent overcoming accelerations.
+            //
+            mPoints.GetNonSpringForce(pointIndex) +=
+                mPoints.GetVelocity(pointIndex)
+                * (-airFrictionDragCoefficient);
+
             // Wind force
             //
             // Note: should be based on relative velocity, but we simplify here for performance reasons
@@ -815,11 +863,32 @@ void Ship::ApplyWorldForces(
                 windForce
                 * mPoints.GetMaterialWindReceptivity(pointIndex);
         }
+        */
+
+        mPoints.GetNonSpringForce(pointIndex) -=
+            mPoints.GetVelocity(pointIndex)
+            * Mix(airFrictionDragCoefficient, waterFrictionDragCoefficient, uwCoefficient);
+
+        //
+        // Wind force
+        //
+
+        // Note: should be based on relative velocity, but we simplify here for performance reasons
+        mPoints.GetNonSpringForce(pointIndex) +=
+            windForce
+            * mPoints.GetMaterialWindReceptivity(pointIndex)
+            * (1.0f - uwCoefficient);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////
     // Apply per-surface forces
     ///////////////////////////////////////////////////////////////////////////////////////
+
+    // Abovewater points feel this amount of air drag, due to pressure
+    float const airPressureDragCoefficient =
+        GameParameters::AirPressureDragCoefficient
+        * gameParameters.AirPressureDragAdjustment
+        * (effectiveAirDensity / GameParameters::AirMass);
 
     // Underwater points feel this amount of water drag, due to pressure
     float const waterPressureDragCoefficient =
@@ -877,66 +946,63 @@ void Ship::ApplyWorldForces(
                 aabb.ExtendTo(pointPosition);
             }
 
-            //
-            // Apply water pressure drag
-            //
-
             // Get next edge and point
             auto const & nextFrontierEdge = mFrontiers.GetFrontierEdge(nextEdgeIndex);
             ElementIndex const nextPointIndex = nextFrontierEdge.PointAIndex;
             vec2f const nextPointPosition = mPoints.GetPosition(nextPointIndex);
 
-            // Check if this point is underwater
+            //
+            // Calculate drag force
+            //
+            // We would like to use a square law (i.e. drag force proportional to square
+            // of velocity), but then particles at high velocities become subject to
+            // enormous forces, which, for small masses - such as cloth - means astronomical
+            // accelerations.
+            //
+            // We have to recourse then, again, to a linear law:
+            //
+            // F = - C * |V| * cos(a) * Nn
+            //
+            //      cos(a) == cos(angle between velocity and surface normal) == Vn dot Nn
+            //
+            // With this law, a particle's velocity is overcome by the drag force when its
+            // mass is <= C * dt, i.e. ~78Kg with water drag. Since this mass we do have in our sytem,
+            // we have to cap the force to prevent velocity overcome.
+            //
+
+            // Normal to surface - calculated between p1 and p3
+            vec2f const normal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
+
+            // Velocity along normal - capped to the same direction as it to avoid suction force
+            // (i.e. drag force attracting surface facing opposite of velocity)
+            float const velocityMagnitudeAlongNormal = std::max(
+                mPoints.GetVelocity(pointIndex).dot(normal),
+                0.0f);
+
+            // Max drag force magnitude: m * (V dot Nn) / dt
+            float const maxDragForceMagnitude =
+                mPoints.GetMass(pointIndex) * velocityMagnitudeAlongNormal
+                / gameParameters.SimulationStepTimeDuration<float>;
+
+            // Get point depth
             float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(pointPosition.x);
             float const pointDepth = waterHeightAtThisPoint - pointPosition.y;
-            if (pointDepth > 0.0f)
-            {
-                //
-                // Calculate drag force
-                //
-                // We would like to use a square law (i.e. drag force proportional to square
-                // of velocity), but then particles at high velocities become subject to
-                // enormous forces, which, for small masses - such as cloth - means astronomical
-                // accelerations.
-                //
-                // We have to recourse then, again, to a linear law:
-                //
-                // F = - C * |V| * cos(a) * Nn
-                //
-                //      cos(a) == cos(angle between velocity and surface normal) == Vn dot Nn
-                //
-                // With this law, a particle's velocity is overcome by the drag force when its
-                // mass is <= C * dt, i.e. ~78Kg. Since this mass we do have in our sytem, we have
-                // to cap the force to prevent velocity overcome
-                //
 
-                // Normal to surface - calculated between p1 and p3
-                vec2f const normal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
+            // Calculate drag coefficient: air or water, with soft transition
+            // to avoid discontinuities in drag force close to the air-water interface
+            float const dragCoefficient = Mix(airPressureDragCoefficient, waterPressureDragCoefficient, Clamp(pointDepth, 0.0f, 1.0f));
 
-                // Velocity along normal - capped to the same direction as it to avoid suction force
-                // (i.e. drag force attracting surface facing opposite of velocity)
-                float const velocityMagnitudeAlongNormal = std::max(
-                    mPoints.GetVelocity(pointIndex).dot(normal),
-                    0.0f);
+            // Calculate magnitude of drag force (opposite sign)
+            //  - C * |V| * cos(a) == - C * |V| * (Vn dot Nn) == -C * (V dot Nn)
+            float const dragForceMagnitude =
+                dragCoefficient
+                * velocityMagnitudeAlongNormal;
 
-                // Magnitude of drag force (opposite sign)
-                //  - C * |V| * cos(a) == - C * |V| * (Vn dot Nn) == -C * (V dot Nn)
-                float const dragForceMagnitude =
-                    waterPressureDragCoefficient
-                    * velocityMagnitudeAlongNormal
-                    * std::min(pointDepth, 1.0f); // Soft lead-in: avoids discontinuities in drag force close to the air-water interface
+            // Final drag force - at this moment in the (opposite) direction of the normal
+            vec2f const dragForce = normal * std::min(dragForceMagnitude, maxDragForceMagnitude);
 
-                // Max drag force magnitude: m * (V dot Nn) / dt
-                float const maxDragForceMagnitude =
-                    mPoints.GetMass(pointIndex) * velocityMagnitudeAlongNormal
-                    / gameParameters.SimulationStepTimeDuration<float>;
-
-                // Final drag force - at this moment in the (opposite) direction of the normal
-                vec2f const dragForce = normal * std::min(dragForceMagnitude, maxDragForceMagnitude);
-
-                // Apply drag force
-                mPoints.GetNonSpringForce(pointIndex) -= dragForce;
-            }
+            // Apply drag force
+            mPoints.GetNonSpringForce(pointIndex) -= dragForce;
 
             //
             // Advance

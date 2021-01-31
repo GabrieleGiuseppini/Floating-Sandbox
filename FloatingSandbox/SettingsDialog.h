@@ -81,19 +81,19 @@ private:
     // Control tabs
     //////////////////////////////////////////////////////
 
-    // Mechanics, Fluids, and Light
+    // Mechanics, Air, and Fluids
     SliderControl<float> * mMechanicalQualitySlider;
     SliderControl<float> * mStrengthSlider;
     SliderControl<float> * mGlobalDampingAdjustmentSlider;
     SliderControl<float> * mRotAcceler8rSlider;
+    SliderControl<float> * mAirFrictionDragSlider;
+    SliderControl<float> * mAirPressureDragSlider;
     SliderControl<float> * mWaterDensitySlider;
     SliderControl<float> * mWaterFrictionDragSlider;
     SliderControl<float> * mWaterPressureDragSlider;
     SliderControl<float> * mWaterIntakeSlider;
     SliderControl<float> * mWaterCrazynessSlider;
     SliderControl<float> * mWaterDiffusionSpeedSlider;
-    SliderControl<float> * mLuminiscenceSlider;
-    SliderControl<float> * mLightSpreadSlider;
 
     // Heat and Combustion
     SliderControl<float> * mThermalConductivityAdjustmentSlider;
@@ -127,7 +127,7 @@ private:
     wxCheckBox * mDoDayLightCycleCheckBox;
     SliderControl<std::chrono::minutes::rep> * mDayLightCycleDurationSlider;
 
-    // Wind, Waves, and Fishes
+    // Wind, Waves, Fishes, and Lights
     SliderControl<float> * mWindSpeedBaseSlider;
     wxCheckBox * mModulateWindCheckBox;
     SliderControl<float> * mWindGustAmplitudeSlider;
@@ -141,6 +141,8 @@ private:
     SliderControl<float> * mFishSpeedAdjustmentSlider;
     wxCheckBox * mDoFishShoalingCheckBox;
     SliderControl<float> * mFishShoalRadiusAdjustmentSlider;
+    SliderControl<float> * mLuminiscenceSlider;
+    SliderControl<float> * mLightSpreadSlider;
 
     // Interactions
     SliderControl<float> * mDestroyRadiusSlider;
@@ -230,10 +232,10 @@ private:
     void DoCancel();
     void DoClose();
 
-    void PopulateMechanicsFluidsLightsPanel(wxPanel * panel);
+    void PopulateMechanicsAirFluidsPanel(wxPanel * panel);
     void PopulateHeatPanel(wxPanel * panel);
     void PopulateOceanSmokeSkyPanel(wxPanel * panel);
-    void PopulateWindAndWavesAndFishesPanel(wxPanel * panel);
+    void PopulateWindWavesFishesLightsPanel(wxPanel * panel);
     void PopulateInteractionsPanel(wxPanel * panel);
     void PopulateRenderingPanel(wxPanel * panel);
     void PopulateSoundAndAdvancedPanel(wxPanel * panel);

@@ -122,6 +122,20 @@ struct GameParameters
     static float constexpr MinRotAcceler8r = 0.0f;
     static float constexpr MaxRotAcceler8r = 1000.0f;
 
+    // Air
+
+    static float constexpr AirFrictionDragCoefficient = 0.01f; // TODO
+
+    float AirFrictionDragAdjustment;
+    static float constexpr MinAirFrictionDragAdjustment = 0.0f;
+    static float constexpr MaxAirFrictionDragAdjustment = 10000.0f; // TODO: validate this: Safe to avoid drag instability (m / (dt * C) at minimal mass, 1Kg)
+
+    static float constexpr AirPressureDragCoefficient = 20.0f; // TODO
+
+    float AirPressureDragAdjustment;
+    static float constexpr MinAirPressureDragAdjustment = 0.0f;
+    static float constexpr MaxAirPressureDragAdjustment = 1000.0f;
+
     // Water
 
     float WaterDensityAdjustment;
@@ -132,7 +146,7 @@ struct GameParameters
 
     float WaterFrictionDragAdjustment;
     static float constexpr MinWaterFrictionDragAdjustment = 0.0f;
-    static float constexpr MaxWaterFrictionDragAdjustment = 1000.0f; // Safe to avoid drag instability (m / (dt * C) at minimal mass, 1Kg)
+    static float constexpr MaxWaterFrictionDragAdjustment = 10000.0f; // TODO: re-validate this: Safe to avoid drag instability (m / (dt * C) at minimal mass, 1Kg)
 
     static float constexpr WaterPressureDragCoefficient = 1030.0f; // Empirical
 

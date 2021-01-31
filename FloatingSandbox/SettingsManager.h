@@ -20,6 +20,10 @@ enum class GameSettings : size_t
     GlobalDampingAdjustment,
     RotAcceler8r,
 
+    // Air
+    AirFrictionDragAdjustment,
+    AirPressureDragAdjustment,
+
     // Water
     WaterDensityAdjustment,
     WaterFrictionDragAdjustment,
