@@ -155,7 +155,8 @@ inline T Mix(
     T val2,
     float x) noexcept
 {
-    return val1 * (1.0f - x) + val2 * x;
+    //return val1 * (1.0f - x) + val2 * x; // Original form; our form saves one subtraction
+    return val1 + (val2 - val1) * x;
 }
 
 inline float Step(

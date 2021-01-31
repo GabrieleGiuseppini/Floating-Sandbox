@@ -11,18 +11,14 @@ GameParameters::GameParameters()
     , SpringStiffnessAdjustment(1.0f)
     , SpringDampingAdjustment(1.0f)
     , SpringStrengthAdjustment(1.0f)
-    // TODOTEST
-    //, GlobalDampingAdjustment(1.0f)
-    , GlobalDampingAdjustment(0.2f)
+    , GlobalDampingAdjustment(1.0f)
     , RotAcceler8r(1.0f)
     // Air
-    , AirFrictionDragAdjustment(0.3f)
+    , AirFrictionDragAdjustment(1.0f)
     , AirPressureDragAdjustment(1.0f)
     // Water
     , WaterDensityAdjustment(1.0f)
-    , WaterFrictionDragAdjustment(5.0f)
-    // TODOTEST
-    //, WaterPressureDragAdjustment(1.0f)
+    , WaterFrictionDragAdjustment(1.0f)
     , WaterPressureDragAdjustment(1.0f)
     , WaterIntakeAdjustment(1.0f)
     , WaterDiffusionSpeedAdjustment(1.0f)

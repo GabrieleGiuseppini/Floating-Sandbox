@@ -112,7 +112,9 @@ struct GameParameters
     static float constexpr MinSpringStrengthAdjustment = 0.01f;
     static float constexpr MaxSpringStrengthAdjustment = 50.0f;
 
-    static float constexpr GlobalDamping = 0.000300009f; // 1.15 was 0.0004; now splinter springs and debris dance forever when WaterIntake is at its minimum
+    // 1.15 was 0.0004; now splinter springs and debris dance forever when WaterIntake is at its minimum
+    // 1.16 was 0.000300009
+    static float constexpr GlobalDamping = 0.00010749653315f;
 
     float GlobalDampingAdjustment;
     static float constexpr MinGlobalDampingAdjustment = 0.0f;
@@ -124,13 +126,13 @@ struct GameParameters
 
     // Air
 
-    static float constexpr AirFrictionDragCoefficient = 0.01f; // TODO
+    static float constexpr AirFrictionDragCoefficient = 0.003f;
 
     float AirFrictionDragAdjustment;
     static float constexpr MinAirFrictionDragAdjustment = 0.0f;
-    static float constexpr MaxAirFrictionDragAdjustment = 10000.0f; // TODO: validate this: Safe to avoid drag instability (m / (dt * C) at minimal mass, 1Kg)
+    static float constexpr MaxAirFrictionDragAdjustment = 100000.0f;
 
-    static float constexpr AirPressureDragCoefficient = 20.0f; // TODO
+    static float constexpr AirPressureDragCoefficient = 20.0f; // Empirical, based on balance between lightweight structure instabilities, and noticeable aerodynamics
 
     float AirPressureDragAdjustment;
     static float constexpr MinAirPressureDragAdjustment = 0.0f;
@@ -142,11 +144,11 @@ struct GameParameters
     static float constexpr MinWaterDensityAdjustment = 0.0f;
     static float constexpr MaxWaterDensityAdjustment = 4.0f;
 
-    static float constexpr WaterFrictionDragCoefficient = 0.1f;
+    static float constexpr WaterFrictionDragCoefficient = 0.5f;
 
     float WaterFrictionDragAdjustment;
     static float constexpr MinWaterFrictionDragAdjustment = 0.0f;
-    static float constexpr MaxWaterFrictionDragAdjustment = 10000.0f; // TODO: re-validate this: Safe to avoid drag instability (m / (dt * C) at minimal mass, 1Kg)
+    static float constexpr MaxWaterFrictionDragAdjustment = 10000.0f;
 
     static float constexpr WaterPressureDragCoefficient = 1030.0f; // Empirical
 

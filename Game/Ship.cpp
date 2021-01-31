@@ -739,7 +739,7 @@ void Ship::ApplyWorldForces(
         mParentWorld.GetCurrentWindSpeed().square()
         * (WindVelocityConversionFactor * WindVelocityConversionFactor)
         * 0.5f
-        * GameParameters::AirMass;
+        * effectiveAirDensity;
 
     // Abovewater points feel this amount of air drag, due to friction
     float const airFrictionDragCoefficient =
@@ -754,7 +754,7 @@ void Ship::ApplyWorldForces(
     for (auto pointIndex : mPoints)
     {
         //
-        // Add gravity
+        // Apply gravity
         //
 
         mPoints.GetNonSpringForce(pointIndex) +=
@@ -766,15 +766,14 @@ void Ship::ApplyWorldForces(
         //
         // 0.0: above water
         // 1.0: under water
-        // in-between: for smooth air-water interface (nature abhors discontinuities)
+        // in-between: smooth air-water interface (nature abhors discontinuities)
         //
 
         float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x);
-        float const pointDepth = waterHeightAtThisPoint - mPoints.GetPosition(pointIndex).y;
-        float const uwCoefficient = Clamp(pointDepth, 0.0f, 1.0f);
+        float const uwCoefficient = Clamp(waterHeightAtThisPoint - mPoints.GetPosition(pointIndex).y, 0.0f, 1.0f);
 
         //
-        // Add water/air buoyancy
+        // Apply water/air buoyancy
         //
 
         // Calculate upward push of water/air mass
@@ -783,87 +782,20 @@ void Ship::ApplyWorldForces(
             buoyancyCoefficients.Coefficient1
             + buoyancyCoefficients.Coefficient2 * mPoints.GetTemperature(pointIndex);
 
-        /* TODOOLD
-        // TODO: interpolate here as well
-        // Check whether we are above or below water
-        float const pointDepth = waterHeightAtThisPoint - mPoints.GetPosition(pointIndex).y;
-        if (pointDepth > 0.0f)
-        {
-            // Water buoyancy
-            mPoints.GetNonSpringForce(pointIndex).y +=
-                buoyancyPush
-                * effectiveWaterDensity
-                * std::min(pointDepth, 1.0f); // Soft lead-in: avoids discontinuities in buoyancy force close to the air-water interface
-        }
-        else
-        {
-            // Air buoyancy
-            mPoints.GetNonSpringForce(pointIndex).y +=
-                buoyancyPush
-                * effectiveAirDensity;
-        }
-        */
-
         // Apply buoyancy
         mPoints.GetNonSpringForce(pointIndex).y +=
             buoyancyPush
             * Mix(effectiveAirDensity, effectiveWaterDensity, uwCoefficient);
 
-
         //
         // Apply friction drag
         //
-        // We use a linear law for simplicity
+        // We use a linear law for simplicity.
         //
         // With a linear law, we know that the force will never overcome the current velocity
-        // as long as m > (C * dt) TODOTEST: RECALC: (~=0.0015 for water drag), which is a mass we won't have in our system (air is 1.2754);
+        // as long as m > (C * dt) (~=0.0016 for water drag), which is a mass we won't have in our system (air is 1.2754);
         // hence we don't care here about capping the force to prevent overcoming accelerations.
         //
-
-        /* TODOOLD
-        if (pointDepth > 0.0f)
-        {
-            //
-            // Water
-            //
-
-            // Water drag
-            //
-            // We use a linear law for simplicity
-            //
-            // With a linear law, we know that the force will never overcome the current velocity
-            // as long as m > (C * dt) (~=0.0015), which is a mass we won't have in our system (air is 1.2754);
-            // hence we don't care here about capping the force to prevent overcoming accelerations.
-            mPoints.GetNonSpringForce(pointIndex) +=
-                mPoints.GetVelocity(pointIndex)
-                * (-waterFrictionDragCoefficient);
-        }
-        else
-        {
-            //
-            // Air
-            //
-
-            // Air drag
-            //
-            // We use a linear law for simplicity
-            //
-            // With a linear law, we know that the force will never overcome the current velocity
-            // as long as m > (C * dt) (~=TODOHERE), which is a mass we won't have in our system (air is 1.2754);
-            // hence we don't care here about capping the force to prevent overcoming accelerations.
-            //
-            mPoints.GetNonSpringForce(pointIndex) +=
-                mPoints.GetVelocity(pointIndex)
-                * (-airFrictionDragCoefficient);
-
-            // Wind force
-            //
-            // Note: should be based on relative velocity, but we simplify here for performance reasons
-            mPoints.GetNonSpringForce(pointIndex) +=
-                windForce
-                * mPoints.GetMaterialWindReceptivity(pointIndex);
-        }
-        */
 
         mPoints.GetNonSpringForce(pointIndex) -=
             mPoints.GetVelocity(pointIndex)

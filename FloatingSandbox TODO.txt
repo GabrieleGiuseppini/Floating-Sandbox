@@ -462,18 +462,21 @@ Render:
 							- Above water: with air pressure drag = 20, there's little but noticeable impact
 						- Titanic
 						- Airplane falling
-						- Blimps
+						- Blimps					
+					+ Zero-wind button
 					- Finalization:
 						= Interpolations for discontinuities
 							+ Do all @ Ship::ApplyWorldForces
 								+ Have a single multiplier used for all forces
-							- See to optimize Mix with 1 mult only
-								- Check assembly
+							+ See to optimize Mix with 1 mult only
+								+ Check assembly
 							- Test perf on old Dell
-						- Finalize good settings, reset all adjustments to 1.0
-							- Set coeffs accordingly
-							- Nail down adjustment ranges
+						+ Finalize good settings, reset all adjustments to 1.0
+							+ Set coeffs accordingly
+							+ Nail down adjustment ranges
 						- Re-adjust Titanic split (X2) - if needed
+						- Nuke Ship::ByPoints
+			- changelist
 
 		+ Cursor change rate
 
