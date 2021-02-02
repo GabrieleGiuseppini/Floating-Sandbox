@@ -9,7 +9,7 @@
 
 #include <GameCore/BootSettings.h>
 
-#include <wx/checkbox.h>
+#include <wx/radiobut.h>
 #include <wx/dialog.h>
 
 class BootSettingsDialog : public wxDialog
@@ -29,8 +29,12 @@ private:
     void OnRevertToDefaultsButton(wxCommandEvent & event);
     void OnSaveAndQuitButton(wxCommandEvent & event);
 
-    wxCheckBox * mDoForceNoGlFinishCheckBox;
-    wxCheckBox * mDoForceNoMultithrededRenderingCheckBox;
+    wxRadioButton * mDoForceNoGlFinish_UnsetRadioButton;
+    wxRadioButton * mDoForceNoGlFinish_TrueRadioButton;
+    wxRadioButton * mDoForceNoGlFinish_FalseRadioButton;
+    wxRadioButton * mDoForceNoMultithreadedRendering_UnsetRadioButton;
+    wxRadioButton * mDoForceNoMultithreadedRendering_TrueRadioButton;
+    wxRadioButton * mDoForceNoMultithreadedRendering_FalseRadioButton;
 
 private:
 

@@ -732,7 +732,7 @@ void Ship::ApplyWorldForces(
         / (1.0f + GameParameters::WaterThermalExpansionCoefficient * (gameParameters.WaterTemperature - GameParameters::Temperature0) )
         * gameParameters.WaterDensityAdjustment;
 
-    // Calculate wind force:
+    // Wind force:
     //  Km/h -> Newton: F = 1/2 rho v**2 A
     float constexpr WindVelocityConversionFactor = 1000.0f / 3600.0f;
     vec2f const windForce =

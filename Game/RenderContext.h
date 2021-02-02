@@ -24,6 +24,7 @@
 #include <GameOpenGL/ShaderManager.h>
 
 #include <Game/GameParameters.h>
+#include <Game/RenderDeviceProperties.h>
 
 #include <GameCore/AABB.h>
 #include <GameCore/BoundedVector.h>
@@ -59,11 +60,7 @@ class RenderContext
 public:
 
     RenderContext(
-        ImageSize const & initialCanvasSize,
-        bool doForceNoGlFinish,
-        bool doForceNoMultithrededRendering,
-        std::function<void()> makeRenderContextCurrentFunction,
-        std::function<void()> swapRenderBuffersFunction,
+        RenderDeviceProperties const & renderDeviceProperties,
         PerfStats & perfStats,
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);

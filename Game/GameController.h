@@ -17,6 +17,7 @@
 #include "PerfStats.h"
 #include "Physics.h"
 #include "RenderContext.h"
+#include "RenderDeviceProperties.h"
 #include "ResourceLocator.h"
 #include "ShipMetadata.h"
 #include "ShipTexturizer.h"
@@ -55,11 +56,7 @@ class GameController final
 public:
 
     static std::unique_ptr<GameController> Create(
-        ImageSize const & initialCanvasSize,
-        bool doForceNoGlFinish,
-        bool doForceNoMultithreadedRendering,
-        std::function<void()> makeRenderContextCurrentFunction,
-        std::function<void()> swapRenderBuffersFunction,
+        RenderDeviceProperties const & renderDeviceProperties,
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 

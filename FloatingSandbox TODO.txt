@@ -410,6 +410,16 @@ Render:
 				+ UI preferences
 				+ Preferences dialog
 			+ Test perf of panel opening on old Dell
+		+ Boot settings:
+			+ 3-valued optional's
+			+ Consumers use flag exclusively if set
+			+ Test
+				+ glFinish
+					+ Now
+					+ Simulate Intel HD
+				+ MultiThreaded:	
+					+ Now
+					+ Simulate Mac
 
 		= ShipBucket:
 			+ Split author by ';', put remainder on next line prefixed with "art by:"
@@ -449,6 +459,10 @@ Render:
 						+ SettingsDialog
 							+ Mechanics, Air, and Fluids
 								+ Move lights to Wind, Waves, Fishes, and Light
+					- Lower apd
+					= Optimize Mix
+						X No need for by-point
+						- See if needed for by-frontier
 					- Tests with water pressure drag adjust=3: 
 						- Debris, with and without WaterIntake=0
 							- Now that the only brake to debris is friction, see if we need more friction
@@ -478,9 +492,9 @@ Render:
 						+ Nuke Ship::ByPoints
 			- changelist
 
-		+ Cursor change rate
+		- Aerodynamics, as well
 
-		- Scrub/Rot tool (*)
+		+ Cursor change rate
 
 		- MAC:
 			- Full high-DPI path:
@@ -495,14 +509,13 @@ Render:
 					= See mouse coords: are they scaled or not scaled?
 						- Remove TODOTEST @ MainFrame.cpp
 				- Fix:
-					- TODO
+					- RenderDeviceProperties:
+						- Stores all render-specific GameController cctor args
 			- Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
 			- Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
 
 
-		- Boot settings:
-			- 3-valued optional's
-			- Consumers use flag exclusively if set
+		- Scrub/Rot tool (*)
 
 		- Cached quantities (*)
 	
@@ -574,8 +587,6 @@ Render:
 			- Aerodynamics
 				! Have to maintain, though, global damp for springs and orphaned particles
 			- Punch tool (*)		
-
-		- Aerodynamics, as well
 
 		- Try with improved generation of random sparkles at slice: https://mathworld.wolfram.com/SpherePointPicking.html
 

@@ -6,23 +6,23 @@
 #pragma once
 
 #include <filesystem>
+#include <optional>
 
 struct BootSettings
 {
 public:
 
-    bool DoForceNoGlFinish;
-    bool DoForceNoMultithreadedRendering;
+    std::optional<bool> DoForceNoGlFinish;
+    std::optional<bool> DoForceNoMultithreadedRendering;
 
-    // Defaults are here
     BootSettings()
-        : DoForceNoGlFinish(false)
-        , DoForceNoMultithreadedRendering(false)
+        : DoForceNoGlFinish()
+        , DoForceNoMultithreadedRendering()
     {}
 
     BootSettings(
-        bool doForceNoGlFinish,
-        bool doForceNoMultithreadedRendering)
+        std::optional<bool> doForceNoGlFinish,
+        std::optional<bool> doForceNoMultithreadedRendering)
         : DoForceNoGlFinish(doForceNoGlFinish)
         , DoForceNoMultithreadedRendering(doForceNoMultithreadedRendering)
     {}

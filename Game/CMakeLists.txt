@@ -29,6 +29,7 @@ set  (GAME_SOURCES
 	OceanFloorTerrain.cpp
 	OceanFloorTerrain.h
 	PerfStats.h
+	RenderDeviceProperties.h
 	ResourceLocator.cpp
 	ResourceLocator.h
 	ShipBuilder.cpp

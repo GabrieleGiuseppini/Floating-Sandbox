@@ -6,11 +6,19 @@
 #include "BootSettingsDialog.h"
 
 #include <wx/button.h>
+#include <wx/gbsizer.h>
 #include <wx/sizer.h>
+#include <wx/statbox.h>
 #include <wx/statline.h>
 #include <wx/stattext.h>
 
 #include <filesystem>
+
+static int constexpr InternalWindowMargin = 10;
+static int constexpr StaticBoxTopMargin = 20;
+static int constexpr StaticBoxInsetMargin = 10;
+static int constexpr RadioButtonMargin = 4;
+static int constexpr InterRadioBoxMargin = 0;
 
 BootSettingsDialog::BootSettingsDialog(
     wxWindow * parent,
@@ -34,19 +42,99 @@ BootSettingsDialog::BootSettingsDialog(
     }
 
     {
-        mDoForceNoGlFinishCheckBox = new wxCheckBox(this, wxID_ANY, _("Force no glFinish()"));
+        wxBoxSizer * optionsSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        vSizer->Add(mDoForceNoGlFinishCheckBox, 0, wxUP | wxLEFT | wxRIGHT | wxALIGN_LEFT, 14);
-    }
+        {
+            wxStaticBox * forceNoGlFinishBox = new wxStaticBox(this, wxID_ANY, _("Force no glFinish()"));
 
-    {
-        vSizer->AddSpacer(8);
-    }
+            {
+                wxBoxSizer * forceNoGlFinishBoxSizer = new wxBoxSizer(wxVERTICAL);
 
-    {
-        mDoForceNoMultithrededRenderingCheckBox = new wxCheckBox(this, wxID_ANY, _("Force no multithreaded rendering"));
+                forceNoGlFinishBoxSizer->AddSpacer(StaticBoxTopMargin);
 
-        vSizer->Add(mDoForceNoMultithrededRenderingCheckBox, 0, wxDOWN | wxLEFT | wxRIGHT | wxALIGN_LEFT, 14);
+                mDoForceNoGlFinish_UnsetRadioButton = new wxRadioButton(forceNoGlFinishBox, wxID_ANY, _("Default"),
+                    wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+
+                forceNoGlFinishBoxSizer->Add(
+                    mDoForceNoGlFinish_UnsetRadioButton,
+                    0,
+                    wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM,
+                    RadioButtonMargin);
+
+                forceNoGlFinishBoxSizer->AddSpacer(InterRadioBoxMargin);
+
+                mDoForceNoGlFinish_TrueRadioButton = new wxRadioButton(forceNoGlFinishBox, wxID_ANY, _("True"),
+                    wxDefaultPosition, wxDefaultSize);
+
+                forceNoGlFinishBoxSizer->Add(
+                    mDoForceNoGlFinish_TrueRadioButton,
+                    0,
+                    wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM,
+                    RadioButtonMargin);
+
+                forceNoGlFinishBoxSizer->AddSpacer(InterRadioBoxMargin);
+
+                mDoForceNoGlFinish_FalseRadioButton = new wxRadioButton(forceNoGlFinishBox, wxID_ANY, _("False"),
+                    wxDefaultPosition, wxDefaultSize);
+
+                forceNoGlFinishBoxSizer->Add(
+                    mDoForceNoGlFinish_FalseRadioButton,
+                    0,
+                    wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM,
+                    RadioButtonMargin);
+
+                forceNoGlFinishBox->SetSizer(forceNoGlFinishBoxSizer);
+            }
+
+            optionsSizer->Add(forceNoGlFinishBox, 0, wxALIGN_CENTER_VERTICAL | wxALL, InternalWindowMargin);
+        }
+
+        {
+            wxStaticBox * forceNoMultithreadedRenderingBox = new wxStaticBox(this, wxID_ANY, _("Force no multithreaded rendering"));
+
+            {
+                wxBoxSizer * forceNoMultithreadedRenderingBoxSizer = new wxBoxSizer(wxVERTICAL);
+
+                forceNoMultithreadedRenderingBoxSizer->AddSpacer(StaticBoxTopMargin);
+
+                mDoForceNoMultithreadedRendering_UnsetRadioButton = new wxRadioButton(forceNoMultithreadedRenderingBox, wxID_ANY, _("Default"),
+                    wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+
+                forceNoMultithreadedRenderingBoxSizer->Add(
+                    mDoForceNoMultithreadedRendering_UnsetRadioButton,
+                    0,
+                    wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM,
+                    RadioButtonMargin);
+
+                forceNoMultithreadedRenderingBoxSizer->AddSpacer(InterRadioBoxMargin);
+
+                mDoForceNoMultithreadedRendering_TrueRadioButton = new wxRadioButton(forceNoMultithreadedRenderingBox, wxID_ANY, _("True"),
+                    wxDefaultPosition, wxDefaultSize);
+
+                forceNoMultithreadedRenderingBoxSizer->Add(
+                    mDoForceNoMultithreadedRendering_TrueRadioButton,
+                    0,
+                    wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM,
+                    RadioButtonMargin);
+
+                forceNoMultithreadedRenderingBoxSizer->AddSpacer(InterRadioBoxMargin);
+
+                mDoForceNoMultithreadedRendering_FalseRadioButton = new wxRadioButton(forceNoMultithreadedRenderingBox, wxID_ANY, _("False"),
+                    wxDefaultPosition, wxDefaultSize);
+
+                forceNoMultithreadedRenderingBoxSizer->Add(
+                    mDoForceNoMultithreadedRendering_FalseRadioButton,
+                    0,
+                    wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM,
+                    RadioButtonMargin);
+
+                forceNoMultithreadedRenderingBox->SetSizer(forceNoMultithreadedRenderingBoxSizer);
+            }
+
+            optionsSizer->Add(forceNoMultithreadedRenderingBox, 0, wxALIGN_CENTER_VERTICAL | wxALL, InternalWindowMargin);
+        }
+
+        vSizer->Add(optionsSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, InternalWindowMargin);
     }
 
     {
@@ -86,8 +174,25 @@ BootSettingsDialog::~BootSettingsDialog()
 
 void BootSettingsDialog::PopulateCheckboxes(BootSettings const & settings)
 {
-    mDoForceNoGlFinishCheckBox->SetValue(settings.DoForceNoGlFinish);
-    mDoForceNoMultithrededRenderingCheckBox->SetValue(settings.DoForceNoMultithreadedRendering);
+    if (!settings.DoForceNoGlFinish.has_value())
+        mDoForceNoGlFinish_UnsetRadioButton->SetValue(true);
+    else
+    {
+        if (*(settings.DoForceNoGlFinish))
+            mDoForceNoGlFinish_TrueRadioButton->SetValue(true);
+        else
+            mDoForceNoGlFinish_FalseRadioButton->SetValue(true);
+    }
+
+    if (!settings.DoForceNoMultithreadedRendering.has_value())
+        mDoForceNoMultithreadedRendering_UnsetRadioButton->SetValue(true);
+    else
+    {
+        if (*(settings.DoForceNoMultithreadedRendering))
+            mDoForceNoMultithreadedRendering_TrueRadioButton->SetValue(true);
+        else
+            mDoForceNoMultithreadedRendering_FalseRadioButton->SetValue(true);
+    }
 }
 
 void BootSettingsDialog::OnRevertToDefaultsButton(wxCommandEvent & /*event*/)
@@ -99,9 +204,21 @@ void BootSettingsDialog::OnRevertToDefaultsButton(wxCommandEvent & /*event*/)
 
 void BootSettingsDialog::OnSaveAndQuitButton(wxCommandEvent & /*event*/)
 {
+    std::optional<bool> doForceNoGlFinish;
+    if (mDoForceNoGlFinish_TrueRadioButton->GetValue())
+        doForceNoGlFinish = true;
+    else if (mDoForceNoGlFinish_FalseRadioButton->GetValue())
+        doForceNoGlFinish = false;
+
+    std::optional<bool> doForceNoMultithrededRendering;
+    if (mDoForceNoMultithreadedRendering_TrueRadioButton->GetValue())
+        doForceNoMultithrededRendering = true;
+    else if (mDoForceNoMultithreadedRendering_FalseRadioButton->GetValue())
+        doForceNoMultithrededRendering = false;
+
     BootSettings settings(
-        mDoForceNoGlFinishCheckBox->GetValue(),
-        mDoForceNoMultithrededRenderingCheckBox->GetValue());
+        doForceNoGlFinish,
+        doForceNoMultithrededRendering);
 
     BootSettings defaultSettings;
 

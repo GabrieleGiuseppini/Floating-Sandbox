@@ -17,6 +17,7 @@
 #include <wx/intl.h>
 #include <wx/notebook.h>
 #include <wx/sizer.h>
+#include <wx/statbox.h>
 #include <wx/stattext.h>
 #include <wx/string.h>
 

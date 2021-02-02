@@ -10,23 +10,54 @@
 #include <GameCore/GameChronometer.h>
 #include <GameCore/GameException.h>
 #include <GameCore/Log.h>
+#include <GameCore/SysSpecifics.h>
 
 #include <cstring>
 
 namespace Render {
 
+namespace /*anonymous*/ {
+
+    bool CalculateDoInvokeGlFinish(std::optional<bool> doForceNoGlFinish)
+    {
+        if (doForceNoGlFinish.has_value())
+        {
+            // Use override as-is
+            return !(*doForceNoGlFinish);
+        }
+        else
+        {
+            return !GameOpenGL::AvoidGlFinish;
+        }
+    }
+
+    bool CalculateDoForceNoMultithreadedRendering(std::optional<bool> override)
+    {
+        if (override.has_value())
+        {
+            // Use override as-is
+            return *override;
+        }
+        else
+        {
+            // Do not use multi-threaded rendering on MacOS
+#if defined(FS_OS_MACOS)
+            return true;
+#else
+            return false;
+#endif
+        }
+    }
+}
+
 RenderContext::RenderContext(
-    ImageSize const & initialCanvasSize,
-    bool doForceNoGlFinish,
-    bool doForceNoMultithreadedRendering,
-    std::function<void()> makeRenderContextCurrentFunction,
-    std::function<void()> swapRenderBuffersFunction,
+    RenderDeviceProperties const & renderDeviceProperties,
     PerfStats & perfStats,
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
-    : mDoInvokeGlFinish(!doForceNoGlFinish)
+    : mDoInvokeGlFinish(false) // Will be recalculated
     // Thread
-    , mRenderThread(doForceNoMultithreadedRendering)
+    , mRenderThread(CalculateDoForceNoMultithreadedRendering(renderDeviceProperties.DoForceNoMultithreadedRendering))
     , mLastRenderUploadEndCompletionIndicator()
     , mLastRenderDrawCompletionIndicator()
     // Child contextes
@@ -41,11 +72,11 @@ RenderContext::RenderContext(
     , mVectorFieldRenderMode(VectorFieldRenderModeType::None)
     , mVectorFieldLengthMultiplier(1.0f)
     // Rendering externals
-    , mSwapRenderBuffersFunction(swapRenderBuffersFunction)
+    , mSwapRenderBuffersFunction(renderDeviceProperties.SwapRenderBuffersFunction)
     // Shader manager
     , mShaderManager()
     // Render parameters
-    , mRenderParameters(initialCanvasSize)
+    , mRenderParameters(renderDeviceProperties.InitialCanvasSize)
     // Statistics
     , mPerfStats(perfStats)
     , mRenderStats()
@@ -53,21 +84,19 @@ RenderContext::RenderContext(
     progressCallback(0.0f, ProgressMessageType::InitializingOpenGL);
 
     mRenderThread.RunSynchronously(
-        [&]()
+        [&, doForceNoGlFinish = renderDeviceProperties.DoForceNoGlFinish]()
         {
             //
             // Initialize OpenGL
             //
 
-            // Make render context current
-            makeRenderContextCurrentFunction();
+            // Make render context current - invoke from this thread
+            renderDeviceProperties.MakeRenderContextCurrentFunction();
 
             // Initialize OpenGL
             GameOpenGL::InitOpenGL();
 
-            if (GameOpenGL::AvoidGlFinish)
-                mDoInvokeGlFinish = false;
-
+            mDoInvokeGlFinish = CalculateDoInvokeGlFinish(doForceNoGlFinish);
             LogMessage("RenderContext: DoInvokeGlFinish=", mDoInvokeGlFinish);
 
             // Initialize the shared texture unit once and for all
