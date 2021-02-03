@@ -1364,9 +1364,6 @@ void MainFrame::OnMainGLCanvasLeftDown(wxMouseEvent & /*event*/)
         mMainGLCanvas->SetFocus();
     }
 
-    // TODOTEST
-    LogMessage("TODOTEST: (", mToolController->GetMouseScreenCoordinates().x, ", ", mToolController->GetMouseScreenCoordinates().y, ")");
-
     // Tell tool controller
     assert(!!mToolController);
     mToolController->OnLeftMouseDown();

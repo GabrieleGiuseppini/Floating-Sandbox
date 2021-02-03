@@ -922,7 +922,10 @@ void Ship::ApplyWorldForces(
 
             // Calculate drag coefficient: air or water, with soft transition
             // to avoid discontinuities in drag force close to the air-water interface
-            float const dragCoefficient = Mix(airPressureDragCoefficient, waterPressureDragCoefficient, Clamp(pointDepth, 0.0f, 1.0f));
+            float const dragCoefficient = Mix(
+                airPressureDragCoefficient,
+                waterPressureDragCoefficient,
+                Clamp(pointDepth, 0.0f, 1.0f));
 
             // Calculate magnitude of drag force (opposite sign)
             //  - C * |V| * cos(a) == - C * |V| * (Vn dot Nn) == -C * (V dot Nn)

@@ -460,9 +460,9 @@ Render:
 							+ Mechanics, Air, and Fluids
 								+ Move lights to Wind, Waves, Fishes, and Light
 					- Lower apd
-					= Optimize Mix
+					+ Optimize Mix
 						X No need for by-point
-						- See if needed for by-frontier
+						+ See if needed for by-frontier
 					- Tests with water pressure drag adjust=3: 
 						- Debris, with and without WaterIntake=0
 							- Now that the only brake to debris is friction, see if we need more friction
@@ -506,12 +506,13 @@ Render:
 				+ Tests:
 					+ With plist (i.e. full screen): ContentScaleFactor=1 DPIScaleFactor=1 100x100dip=100x100px
 					+ Without plist (i.e. 1/4th of screen): ContentScaleFactor=2 DPIScaleFactor=2 100x100dip=100x100px
-					= See mouse coords: are they scaled or not scaled?
-						- Remove TODOTEST @ MainFrame.cpp
+					+ See mouse coords: are they scaled or not scaled?
+						! Max is 1900, i.e. scaled
+						+ Remove TODOTEST @ MainFrame.cpp
 				- Fix:
-					- RenderDeviceProperties:
-						- Stores all render-specific GameController cctor args
-			- Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
+					- Multiply canvas sizes in MainFrame.cpp by ContentScaleFactor before giving to GameController (@cctor and @SetCanvasSize)
+						- Change to using private MainFrame::CalculatePixelCanvasSize(wxSize)
+			+ Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
 			- Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
 
 

@@ -90,7 +90,7 @@ struct RenderParameters
     DebugShipRenderModeType DebugShipRenderMode;
     bool IsDebugShipRenderModeDirty;
 
-    RenderParameters(ImageSize const & initialCanvasSize);
+    explicit RenderParameters(ImageSize const & initialCanvasSize);
 
     RenderParameters TakeSnapshotAndClear();
 };
