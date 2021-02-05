@@ -905,7 +905,7 @@ void Ship::ApplyWorldForces(
             // Normal to surface - calculated between p1 and p3
             vec2f const normal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
 
-            // Velocity along normal - capped to the same direction as it to avoid suction force
+            // Velocity along normal - capped to the same direction as velocity, to avoid suction force
             // (i.e. drag force attracting surface facing opposite of velocity)
             float const velocityMagnitudeAlongNormal = std::max(
                 mPoints.GetVelocity(pointIndex).dot(normal),

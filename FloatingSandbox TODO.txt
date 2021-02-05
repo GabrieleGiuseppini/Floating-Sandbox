@@ -459,11 +459,12 @@ Render:
 						+ SettingsDialog
 							+ Mechanics, Air, and Fluids
 								+ Move lights to Wind, Waves, Fishes, and Light
-					- Lower apd
+					+ Lower apd
+						+ 0.5: barely visible on hydrodynamics test, but cardboard tower ok
 					+ Optimize Mix
 						X No need for by-point
 						+ See if needed for by-frontier
-					- Tests with water pressure drag adjust=3: 
+					- Tests: 
 						- Debris, with and without WaterIntake=0
 							- Now that the only brake to debris is friction, see if we need more friction
 								- Air
@@ -473,18 +474,17 @@ Render:
 						- Cardboard ships
 						- Air/Water ship
 						- Hydrodynamics test
-							- Above water: with air pressure drag = 20, there's little but noticeable impact
-						- Titanic
+						- Titanic splitting
 						- Airplane falling
 						- Blimps					
 					+ Zero-wind button
 					= Finalization:
-						= Interpolations for discontinuities
+						+ Interpolations for discontinuities
 							+ Do all @ Ship::ApplyWorldForces
 								+ Have a single multiplier used for all forces
 							+ See to optimize Mix with 1 mult only
 								+ Check assembly
-							- Test perf on old Dell
+						- Test perf on old Dell
 						+ Finalize good settings, reset all adjustments to 1.0
 							+ Set coeffs accordingly
 							+ Nail down adjustment ranges
@@ -492,7 +492,8 @@ Render:
 						+ Nuke Ship::ByPoints
 			- changelist
 
-		- Aerodynamics, as well
+		= Aerodynamics, as well
+			- changelist
 
 		+ Cursor change rate
 
@@ -530,18 +531,24 @@ Render:
 						+ Shaders: cross of light, interactive, texture notifications
 						+ Screenshot
 				- MAC tests:
-					- ScreenToOffset:
-						- Move
-						- Rotate
-						- Smash
+					- Tools:
+						- Move tool
+						- Rotate tool 
+						- Smash tool
 					- Shaders:
-						- Cross of Light
-						- HeatBlaster
-						- Mute notification
-						- PhysicsProbe
-					- Screenshot
+						- Cross of Light (i.e. in the AM bomb, the "halo" expanding at the beginning, and the final "cross" of light when the bomb explodes)
+						- HeatBlaster (make sure the flame is drawn at the right position)
+						- Mute notification (appears when you set sounds to mute in FS itself, make sure it appears on the bottom-righ side)
+							- Please send me a screenshot of this one
+						- PhysicsProbe (new tool, you'll find it under Tools) - should open a "panel" on the bottom-left side
+							- Please send me a screenshot of this one
+					- Screenshot (take a screenshot in-game and verify it's correct)
+						- Please send it to me together with an *external* screenshot
 					- Ship preview window
+						- Please send me a screenshot of this one
 					- Credits
+						- Please send me a screenshot of this one
+
 
 			+ Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
 			- Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
@@ -1674,10 +1681,10 @@ Render:
 		- Emitter materials, like smoke (and a new "jet engine" one), should impart an opposite force on the emitter
 		- Jet engine: need a way to render flames/particles coming out
 
-	- Air drag
-		- Thinner moving up, @ MaxWorldHeight it's open space
 
 	- Aerodynamic heating https://en.wikipedia.org/wiki/Atmospheric_entry, something like friction from the air
+
+	- Air drag is thinner moving up, @ MaxWorldHeight it's open space
 
 	- Lightning tool that summons lightning wherever it has been clicked
 		- Lightning pointer: basically instead of lightning at random, you click and lightning strikes where you click
@@ -1768,7 +1775,6 @@ Render:
 
 	- Breaking waves (Muller's paper)
 
-
 	- Test:
 		- Self-adjustment of kSpring and kDamp based off paper's formula (H and L bounds)
 		- Debug to see if bounds ever exceeded
@@ -1816,6 +1822,11 @@ Render:
 			- Actually, just two velocity fields, always used in sum, but one is damped and the other is not
 		- Ocean waves:
 			- Add somehow waves to SWE height field, rather than "fake" superimposition of sins over SWE's height field
+
+	- Sediment on ocean floor
+		- Things basically bury a bit
+		- Could be adjusted to where players could see through it or not, to show how much is under the mud
+		- Sediment could also preserve anything that is buried under it
 
 - Game Interactions and Controls:
 
