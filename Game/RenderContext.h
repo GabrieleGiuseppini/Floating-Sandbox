@@ -114,19 +114,19 @@ public:
         return mRenderParameters.View.GetVisibleWorld();
     }
 
-    int GetCanvasWidth() const
+    LogicalPixelSize const & GetCanvasLogicalPixelSize() const
     {
-        return mRenderParameters.View.GetCanvasWidth();
+        return mRenderParameters.View.GetCanvasLogicalPixelSize();
     }
 
-    int GetCanvasHeight() const
+    PhysicalPixelSize const & GetCanvasPhysicalPixelSize() const
     {
-        return mRenderParameters.View.GetCanvasHeight();
+        return mRenderParameters.View.GetCanvasPhysicalPixelSize();
     }
 
-    void SetCanvasSize(int width, int height)
+    void SetCanvasLogicalPixelSize(LogicalPixelSize const & canvasSize)
     {
-        mRenderParameters.View.SetCanvasSize(width, height);
+        mRenderParameters.View.SetCanvasLogicalPixelSize(canvasSize);
         mRenderParameters.IsViewDirty = true;
         mRenderParameters.IsCanvasSizeDirty = true;
     }
@@ -522,12 +522,12 @@ public:
     // Screen <-> World transformations
     //
 
-    inline vec2f ScreenToWorld(vec2f const & screenCoordinates) const
+    inline vec2f ScreenToWorld(LogicalPixelCoordinates const & screenCoordinates) const
     {
         return mRenderParameters.View.ScreenToWorld(screenCoordinates);
     }
 
-    inline vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset) const
+    inline vec2f ScreenOffsetToWorldOffset(LogicalPixelSize const & screenOffset) const
     {
         return mRenderParameters.View.ScreenOffsetToWorldOffset(screenOffset);
     }

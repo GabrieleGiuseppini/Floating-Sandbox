@@ -7,8 +7,10 @@
 
 namespace Render {
 
-RenderParameters::RenderParameters(ImageSize const & initialCanvasSize)
-	: View(1.0f, vec2f::zero(), initialCanvasSize.Width, initialCanvasSize.Height)
+RenderParameters::RenderParameters(
+	LogicalPixelSize const & initialCanvasSize,
+	int logicalToPhysicalPixelFactor)
+	: View(1.0f, vec2f::zero(), initialCanvasSize, logicalToPhysicalPixelFactor)
 	, IsViewDirty(true)
 	, IsCanvasSizeDirty(true)
 	, EffectiveAmbientLightIntensity(1.0f) // Calculated

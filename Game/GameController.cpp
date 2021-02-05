@@ -575,7 +575,7 @@ void GameController::NotifySoundMuted(bool isSoundMuted)
 }
 
 void GameController::ScareFish(
-    vec2f const & screenCoordinates,
+    LogicalPixelCoordinates const & screenCoordinates,
     float radius,
     std::chrono::milliseconds delay)
 {
@@ -590,7 +590,7 @@ void GameController::ScareFish(
 }
 
 void GameController::AttractFish(
-    vec2f const & screenCoordinates,
+    LogicalPixelCoordinates const & screenCoordinates,
     float radius,
     std::chrono::milliseconds delay)
 {
@@ -605,7 +605,7 @@ void GameController::AttractFish(
 }
 
 void GameController::PickObjectToMove(
-    vec2f const & screenCoordinates,
+    LogicalPixelCoordinates const & screenCoordinates,
     std::optional<ElementId> & elementId)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -618,7 +618,7 @@ void GameController::PickObjectToMove(
         mGameParameters);
 }
 
-std::optional<ElementId> GameController::PickObjectForPickAndPull(vec2f const & screenCoordinates)
+std::optional<ElementId> GameController::PickObjectForPickAndPull(LogicalPixelCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -631,7 +631,7 @@ std::optional<ElementId> GameController::PickObjectForPickAndPull(vec2f const & 
 
 void GameController::Pull(
     ElementId elementId,
-    vec2f const & screenTarget)
+    LogicalPixelCoordinates const & screenTarget)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenTarget);
 
@@ -644,7 +644,7 @@ void GameController::Pull(
 }
 
 void GameController::PickObjectToMove(
-    vec2f const & screenCoordinates,
+    LogicalPixelCoordinates const & screenCoordinates,
     std::optional<ShipId> & shipId)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -660,8 +660,8 @@ void GameController::PickObjectToMove(
 
 void GameController::MoveBy(
     ElementId elementId,
-    vec2f const & screenOffset,
-    vec2f const & inertialScreenOffset)
+    LogicalPixelSize const & screenOffset,
+    LogicalPixelSize const & inertialScreenOffset)
 {
     vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
     vec2f const inertialVelocity = mRenderContext->ScreenOffsetToWorldOffset(inertialScreenOffset);
@@ -677,8 +677,8 @@ void GameController::MoveBy(
 
 void GameController::MoveBy(
     ShipId shipId,
-    vec2f const & screenOffset,
-    vec2f const & inertialScreenOffset)
+    LogicalPixelSize const & screenOffset,
+    LogicalPixelSize const & inertialScreenOffset)
 {
     vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
     vec2f const inertialVelocity = mRenderContext->ScreenOffsetToWorldOffset(inertialScreenOffset);
@@ -695,12 +695,12 @@ void GameController::MoveBy(
 void GameController::RotateBy(
     ElementId elementId,
     float screenDeltaY,
-    vec2f const & screenCenter,
+    LogicalPixelCoordinates const & screenCenter,
     float inertialScreenDeltaY)
 {
     float const angle =
         2.0f * Pi<float>
-        / static_cast<float>(mRenderContext->GetCanvasHeight())
+        / static_cast<float>(mRenderContext->GetCanvasLogicalPixelSize().height)
         * screenDeltaY
         * 1.5f; // More responsive
 
@@ -708,7 +708,7 @@ void GameController::RotateBy(
 
     float const inertialAngle =
         2.0f * Pi<float>
-        / static_cast<float>(mRenderContext->GetCanvasHeight())
+        / static_cast<float>(mRenderContext->GetCanvasLogicalPixelSize().height)
         * inertialScreenDeltaY;
 
     // Apply action
@@ -724,19 +724,19 @@ void GameController::RotateBy(
 void GameController::RotateBy(
     ShipId shipId,
     float screenDeltaY,
-    vec2f const & screenCenter,
+    LogicalPixelCoordinates const & screenCenter,
     float inertialScreenDeltaY)
 {
     float const angle =
         2.0f * Pi<float>
-        / static_cast<float>(mRenderContext->GetCanvasHeight())
+        / static_cast<float>(mRenderContext->GetCanvasLogicalPixelSize().height)
         * screenDeltaY;
 
     vec2f const worldCenter = mRenderContext->ScreenToWorld(screenCenter);
 
     float const inertialAngle =
         2.0f * Pi<float>
-        / static_cast<float>(mRenderContext->GetCanvasHeight())
+        / static_cast<float>(mRenderContext->GetCanvasLogicalPixelSize().height)
         * inertialScreenDeltaY;
 
     // Apply action
@@ -750,7 +750,7 @@ void GameController::RotateBy(
 }
 
 void GameController::DestroyAt(
-    vec2f const & screenCoordinates,
+    LogicalPixelCoordinates const & screenCoordinates,
     float radiusMultiplier)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -764,7 +764,7 @@ void GameController::DestroyAt(
 }
 
 void GameController::RepairAt(
-    vec2f const & screenCoordinates,
+    LogicalPixelCoordinates const & screenCoordinates,
     float radiusMultiplier,
     RepairSessionId sessionId,
     RepairSessionStepId sessionStepId)
@@ -782,8 +782,8 @@ void GameController::RepairAt(
 }
 
 void GameController::SawThrough(
-    vec2f const & startScreenCoordinates,
-    vec2f const & endScreenCoordinates)
+    LogicalPixelCoordinates const & startScreenCoordinates,
+    LogicalPixelCoordinates const & endScreenCoordinates)
 {
     vec2f const startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
     vec2f const endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
@@ -797,7 +797,7 @@ void GameController::SawThrough(
 }
 
 bool GameController::ApplyHeatBlasterAt(
-    vec2f const & screenCoordinates,
+    LogicalPixelCoordinates const & screenCoordinates,
     HeatBlasterActionType action)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -830,7 +830,7 @@ bool GameController::ApplyHeatBlasterAt(
     return isApplied;
 }
 
-bool GameController::ExtinguishFireAt(vec2f const & screenCoordinates)
+bool GameController::ExtinguishFireAt(LogicalPixelCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -858,7 +858,7 @@ bool GameController::ExtinguishFireAt(vec2f const & screenCoordinates)
 }
 
 void GameController::DrawTo(
-    vec2f const & screenCoordinates,
+    LogicalPixelCoordinates const & screenCoordinates,
     float strengthFraction)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -872,7 +872,7 @@ void GameController::DrawTo(
 }
 
 void GameController::SwirlAt(
-    vec2f const & screenCoordinates,
+    LogicalPixelCoordinates const & screenCoordinates,
     float strengthFraction)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -885,7 +885,7 @@ void GameController::SwirlAt(
         mGameParameters);
 }
 
-void GameController::TogglePinAt(vec2f const & screenCoordinates)
+void GameController::TogglePinAt(LogicalPixelCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -896,7 +896,7 @@ void GameController::TogglePinAt(vec2f const & screenCoordinates)
         mGameParameters);
 }
 
-bool GameController::InjectBubblesAt(vec2f const & screenCoordinates)
+bool GameController::InjectBubblesAt(LogicalPixelCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -908,7 +908,7 @@ bool GameController::InjectBubblesAt(vec2f const & screenCoordinates)
 }
 
 bool GameController::FloodAt(
-    vec2f const & screenCoordinates,
+    LogicalPixelCoordinates const & screenCoordinates,
     float waterQuantityMultiplier)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -921,7 +921,7 @@ bool GameController::FloodAt(
         mGameParameters);
 }
 
-void GameController::ToggleAntiMatterBombAt(vec2f const & screenCoordinates)
+void GameController::ToggleAntiMatterBombAt(LogicalPixelCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -932,7 +932,7 @@ void GameController::ToggleAntiMatterBombAt(vec2f const & screenCoordinates)
         mGameParameters);
 }
 
-void GameController::ToggleImpactBombAt(vec2f const & screenCoordinates)
+void GameController::ToggleImpactBombAt(LogicalPixelCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -943,7 +943,7 @@ void GameController::ToggleImpactBombAt(vec2f const & screenCoordinates)
         mGameParameters);
 }
 
-void GameController::TogglePhysicsProbeAt(vec2f const & screenCoordinates)
+void GameController::TogglePhysicsProbeAt(LogicalPixelCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -960,7 +960,7 @@ void GameController::TogglePhysicsProbeAt(vec2f const & screenCoordinates)
     }
 }
 
-void GameController::ToggleRCBombAt(vec2f const & screenCoordinates)
+void GameController::ToggleRCBombAt(LogicalPixelCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -971,7 +971,7 @@ void GameController::ToggleRCBombAt(vec2f const & screenCoordinates)
         mGameParameters);
 }
 
-void GameController::ToggleTimerBombAt(vec2f const & screenCoordinates)
+void GameController::ToggleTimerBombAt(LogicalPixelCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -996,7 +996,7 @@ void GameController::DetonateAntiMatterBombs()
     mWorld->DetonateAntiMatterBombs();
 }
 
-void GameController::AdjustOceanSurfaceTo(std::optional<vec2f> const & screenCoordinates)
+void GameController::AdjustOceanSurfaceTo(std::optional<LogicalPixelCoordinates> const & screenCoordinates)
 {
     std::optional<vec2f> const worldCoordinates = !!screenCoordinates
         ? mRenderContext->ScreenToWorld(*screenCoordinates)
@@ -1007,7 +1007,9 @@ void GameController::AdjustOceanSurfaceTo(std::optional<vec2f> const & screenCoo
     mWorld->AdjustOceanSurfaceTo(worldCoordinates);
 }
 
-std::optional<bool> GameController::AdjustOceanFloorTo(vec2f const & startScreenCoordinates, vec2f const & endScreenCoordinates)
+std::optional<bool> GameController::AdjustOceanFloorTo(
+    LogicalPixelCoordinates const & startScreenCoordinates,
+    LogicalPixelCoordinates const & endScreenCoordinates)
 {
     vec2f const startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
     vec2f const endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
@@ -1021,8 +1023,8 @@ std::optional<bool> GameController::AdjustOceanFloorTo(vec2f const & startScreen
 }
 
 bool GameController::ScrubThrough(
-    vec2f const & startScreenCoordinates,
-    vec2f const & endScreenCoordinates)
+    LogicalPixelCoordinates const & startScreenCoordinates,
+    LogicalPixelCoordinates const & endScreenCoordinates)
 {
     vec2f const startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
     vec2f const endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
@@ -1035,14 +1037,14 @@ bool GameController::ScrubThrough(
         mGameParameters);
 }
 
-void GameController::ApplyThanosSnapAt(vec2f const & screenCoordinates)
+void GameController::ApplyThanosSnapAt(LogicalPixelCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     StartThanosSnapStateMachine(worldCoordinates.x, mWorld->GetCurrentSimulationTime());
 }
 
-std::optional<ElementId> GameController::GetNearestPointAt(vec2f const & screenCoordinates) const
+std::optional<ElementId> GameController::GetNearestPointAt(LogicalPixelCoordinates const & screenCoordinates) const
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -1050,7 +1052,7 @@ std::optional<ElementId> GameController::GetNearestPointAt(vec2f const & screenC
     return mWorld->GetNearestPointAt(worldCoordinates, 1.0f);
 }
 
-void GameController::QueryNearestPointAt(vec2f const & screenCoordinates) const
+void GameController::QueryNearestPointAt(LogicalPixelCoordinates const & screenCoordinates) const
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -1126,17 +1128,17 @@ bool GameController::RestoreTriangle(ElementId triangleId)
 // Render controls
 //
 
-void GameController::SetCanvasSize(int width, int height)
+void GameController::SetCanvasSize(LogicalPixelSize const & canvasSize)
 {
     // Tell RenderContext
-    mRenderContext->SetCanvasSize(width, height);
+    mRenderContext->SetCanvasLogicalPixelSize(canvasSize);
 
     // Pickup eventual changes to view model properties
     mZoomParameterSmoother->SetValueImmediate(mRenderContext->GetZoom());
     mCameraWorldPositionParameterSmoother->SetValueImmediate(mRenderContext->GetCameraWorldPosition());
 }
 
-void GameController::Pan(vec2f const & screenOffset)
+void GameController::Pan(LogicalPixelSize const & screenOffset)
 {
     vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
 
@@ -1149,7 +1151,7 @@ void GameController::Pan(vec2f const & screenOffset)
         GameWallClock::GetInstance().ContinuousNowAsFloat());
 }
 
-void GameController::PanImmediate(vec2f const & screenOffset)
+void GameController::PanImmediate(LogicalPixelSize const & screenOffset)
 {
     vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
 
@@ -1183,12 +1185,12 @@ void GameController::ResetZoom()
     mZoomParameterSmoother->SetValueImmediate(newTargetZoom);
 }
 
-vec2f GameController::ScreenToWorld(vec2f const & screenCoordinates) const
+vec2f GameController::ScreenToWorld(LogicalPixelCoordinates const & screenCoordinates) const
 {
     return mRenderContext->ScreenToWorld(screenCoordinates);
 }
 
-vec2f GameController::ScreenOffsetToWorldOffset(vec2f const & screenOffset) const
+vec2f GameController::ScreenOffsetToWorldOffset(LogicalPixelSize const & screenOffset) const
 {
     return mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
 }

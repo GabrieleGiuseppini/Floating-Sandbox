@@ -9,6 +9,7 @@
 #include "VisibleWorld.h"
 
 #include <GameCore/GameMath.h>
+#include <GameCore/GameTypes.h>
 #include <GameCore/Vectors.h>
 
 #include <algorithm>
@@ -30,12 +31,15 @@ public:
     ViewModel(
         float zoom,
         vec2f cameraWorldPosition,
-        int canvasWidth,
-        int canvasHeight)
+        LogicalPixelSize const & logicalCanvasSize,
+        int logicalToPhysicalPixelFactor)
         : mZoom(zoom)
         , mCam(cameraWorldPosition)
-        , mCanvasWidth(canvasWidth)
-        , mCanvasHeight(canvasHeight)
+        , mCanvasLogicalPixelSize(logicalCanvasSize)
+        , mCanvasPhysicalPixelSize(
+            logicalCanvasSize.width * logicalToPhysicalPixelFactor,
+            logicalCanvasSize.height * logicalToPhysicalPixelFactor)
+        , mLogicalToPhysicalPixelFactor(logicalToPhysicalPixelFactor)
         , mPixelOffsetX(0.0f)
         , mPixelOffsetY(0.0f)
     {
@@ -169,25 +173,26 @@ public:
         return mVisibleWorld;
     }
 
-    int GetCanvasWidth() const
+    LogicalPixelSize const & GetCanvasLogicalPixelSize() const
     {
-        return mCanvasWidth;
+        return mCanvasLogicalPixelSize;
     }
 
-    int GetCanvasHeight() const
+    PhysicalPixelSize const & GetCanvasPhysicalPixelSize() const
     {
-        return mCanvasHeight;
+        return mCanvasPhysicalPixelSize;
     }
 
     float GetAspectRatio() const
     {
-        return static_cast<float>(GetCanvasWidth()) / static_cast<float>(GetCanvasHeight());
+        return static_cast<float>(mCanvasPhysicalPixelSize.width) / static_cast<float>(mCanvasPhysicalPixelSize.height);
     }
 
-    void SetCanvasSize(int width, int height)
+    void SetCanvasLogicalPixelSize(LogicalPixelSize const & canvasSize)
     {
-        mCanvasWidth = width;
-        mCanvasHeight = height;
+        mCanvasPhysicalPixelSize = PhysicalPixelSize(
+            canvasSize.width * mLogicalToPhysicalPixelFactor,
+            canvasSize.height * mLogicalToPhysicalPixelFactor);
 
         // Adjust zoom so that the new visible world dimensions are contained within the maximum
         SetZoom(mZoom);
@@ -235,30 +240,30 @@ public:
             worldCoordinates.y * mKernelOrthoMatrix[1][1] + mKernelOrthoMatrix[3][1]);
     }
 
-    inline vec2f ScreenToWorld(vec2f const & screenCoordinates) const
+    inline vec2f ScreenToWorld(LogicalPixelCoordinates const & screenCoordinates) const
     {
         return vec2f(
             Clamp(
-                (screenCoordinates.x / static_cast<float>(mCanvasWidth) - 0.5f) * mVisibleWorld.Width + mCam.x,
+                (static_cast<float>(screenCoordinates.x * mLogicalToPhysicalPixelFactor) / static_cast<float>(mCanvasPhysicalPixelSize.width) - 0.5f) * mVisibleWorld.Width + mCam.x,
                 -GameParameters::HalfMaxWorldWidth,
                 GameParameters::HalfMaxWorldWidth),
             Clamp(
-                (screenCoordinates.y / static_cast<float>(mCanvasHeight) - 0.5f) * -mVisibleWorld.Height + mCam.y,
+                (static_cast<float>(screenCoordinates.y * mLogicalToPhysicalPixelFactor) / static_cast<float>(mCanvasPhysicalPixelSize.height) - 0.5f) * -mVisibleWorld.Height + mCam.y,
                 -GameParameters::HalfMaxWorldHeight,
                 GameParameters::HalfMaxWorldHeight));
     }
 
-    inline vec2f ScreenOffsetToWorldOffset(vec2f const & screenOffset) const
+    inline vec2f ScreenOffsetToWorldOffset(LogicalPixelSize const & screenOffset) const
     {
         return vec2f(
-            screenOffset.x / static_cast<float>(mCanvasWidth) * mVisibleWorld.Width,
-            -screenOffset.y / static_cast<float>(mCanvasHeight) * mVisibleWorld.Height);
+            static_cast<float>(screenOffset.width * mLogicalToPhysicalPixelFactor) / static_cast<float>(mCanvasPhysicalPixelSize.width) * mVisibleWorld.Width,
+            static_cast<float>(-screenOffset.height * mLogicalToPhysicalPixelFactor) / static_cast<float>(mCanvasPhysicalPixelSize.height) * mVisibleWorld.Height);
     }
 
     inline float PixelWidthToWorldWidth(float pixelWidth) const
     {
         // Width in NDC coordinates (between 0 and 2.0)
-        float const ndcW = 2.0f * pixelWidth / static_cast<float>(mCanvasWidth);
+        float const ndcW = 2.0f * pixelWidth / static_cast<float>(mCanvasPhysicalPixelSize.width);
 
         // An NDC width of 2 is the entire visible world width
         return (ndcW / 2.0f) * mVisibleWorld.Width;
@@ -267,7 +272,7 @@ public:
     inline float PixelHeightToWorldHeight(float pixelHeight) const
     {
         // Height in NDC coordinates (between 0 and 2.0)
-        float const ndcH = 2.0f * pixelHeight / static_cast<float>(mCanvasHeight);
+        float const ndcH = 2.0f * pixelHeight / static_cast<float>(mCanvasPhysicalPixelSize.height);
 
         // An NDC height of 2 is the entire visible world height
         return (ndcH / 2.0f) * mVisibleWorld.Height;
@@ -397,8 +402,8 @@ private:
             mCam.x + (mVisibleWorld.Width /2.0f),
             mCam.y - (mVisibleWorld.Height / 2.0f));
 
-        mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasHeight) / mVisibleWorld.Height;
-        mCanvasWidthToHeightRatio = static_cast<float>(mCanvasWidth) / static_cast<float>(mCanvasHeight);
+        mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasPhysicalPixelSize.height) / mVisibleWorld.Height;
+        mCanvasWidthToHeightRatio = static_cast<float>(mCanvasPhysicalPixelSize.width) / static_cast<float>(mCanvasPhysicalPixelSize.height);
 
         // Recalculate kernel Ortho Matrix cells
         mKernelOrthoMatrix[0][0] = 2.0f / mVisibleWorld.Width;
@@ -415,9 +420,10 @@ private:
 
     // Primary inputs
     float mZoom;
-    vec2f mCam;
-    int mCanvasWidth;
-    int mCanvasHeight;
+    vec2f mCam; // World coordinates
+    LogicalPixelSize mCanvasLogicalPixelSize;
+    PhysicalPixelSize mCanvasPhysicalPixelSize;
+    int mLogicalToPhysicalPixelFactor;
     float mPixelOffsetX;
     float mPixelOffsetY;
 

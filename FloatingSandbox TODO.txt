@@ -496,8 +496,8 @@ Render:
 
 		+ Cursor change rate
 
-		- MAC:
-			- Full high-DPI path:
+		= MAC:
+			= Full high-DPI path:
 				! a) Window scaling: on a 2X DPI, a wxWindow of size (500, 500) would be (1000, 1000) on Mac and (500, 500) on Windows. To overcome this, use wxFrame->FromDIP:
 					  myFrame->SetClientSize(wxSize(400, 300));   -->   myFrame->SetClientSize(myFrame->FromDIP(wxSize(400, 300)));
 				! b) Physical pixels are never scaled, on any platform, and must be used when drawing graphics elements to ensure that the best possible resolution is used. 
@@ -509,12 +509,42 @@ Render:
 					+ See mouse coords: are they scaled or not scaled?
 						! Max is 1900, i.e. scaled
 						+ Remove TODOTEST @ MainFrame.cpp
-				- Fix:
-					- Multiply canvas sizes in MainFrame.cpp by ContentScaleFactor before giving to GameController (@cctor and @SetCanvasSize)
-						- Change to using private MainFrame::CalculatePixelCanvasSize(wxSize)
+				+ Changes:
+					+ _PixelCoordinates and _PixelSize ("logical" and "physical" versions via usings & tag template param)
+						+ @ GameTypes, "Rendering" section
+					+ GameController::cctor / IGameController: all interface methods take/return coords of correct type (i.e. always the "window" ("logical") type)
+					+ RenderContext / ... / ViewModel: all methods take/return coords of correct type
+					+ RenderDeviceParameters: takes LogicalToPhysicalPixelFactor, passed down to ViewModel
+					+ ViewModel:
+						+ Stores LogicalToPhysicalPixelFactor for returning (and taking) "logical" types
+						+ Precalcs canvas width/height as "physical"
+					+ ToolController: mouse position in MouseState is in LogicalPixelCoordinates
+					+ Tools
+						+ _PixelXXX::From/ToFloat
+					+ MainFrame: pass ContentScaleFactor to RenderDeviceParameters
+					+ Tests:
+						+ Pan & increment from settings
+						+ Tools:
+							+ Rotation
+							+ MoveBy
+						+ Shaders: cross of light, interactive, texture notifications
+						+ Screenshot
+				- MAC tests:
+					- ScreenToOffset:
+						- Move
+						- Rotate
+						- Smash
+					- Shaders:
+						- Cross of Light
+						- HeatBlaster
+						- Mute notification
+						- PhysicsProbe
+					- Screenshot
+					- Ship preview window
+					- Credits
+
 			+ Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
 			- Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
-
 
 		- Scrub/Rot tool (*)
 

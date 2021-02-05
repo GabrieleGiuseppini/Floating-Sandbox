@@ -573,7 +573,7 @@ bool MainFrame::ProcessKeyDown(
         if (!!mGameController && !!mUIPreferencesManager)
         {
             // Left
-            mGameController->Pan(vec2f(-mUIPreferencesManager->GetPanIncrement(), 0.0f));
+            mGameController->Pan(LogicalPixelSize(-mUIPreferencesManager->GetPanIncrement(), 0));
             return true;
         }
     }
@@ -582,7 +582,7 @@ bool MainFrame::ProcessKeyDown(
         if (!!mGameController && !!mUIPreferencesManager)
         {
             // Up
-            mGameController->Pan(vec2f(00.0f, -mUIPreferencesManager->GetPanIncrement()));
+            mGameController->Pan(LogicalPixelSize(0, -mUIPreferencesManager->GetPanIncrement()));
             return true;
         }
     }
@@ -591,7 +591,7 @@ bool MainFrame::ProcessKeyDown(
         if (!!mGameController && !!mUIPreferencesManager)
         {
             // Right
-            mGameController->Pan(vec2f(mUIPreferencesManager->GetPanIncrement(), 0.0f));
+            mGameController->Pan(LogicalPixelSize(mUIPreferencesManager->GetPanIncrement(), 0));
             return true;
         }
     }
@@ -600,7 +600,7 @@ bool MainFrame::ProcessKeyDown(
         if (!!mGameController && !!mUIPreferencesManager)
         {
             // Down
-            mGameController->Pan(vec2f(0.0f, mUIPreferencesManager->GetPanIncrement()));
+            mGameController->Pan(LogicalPixelSize(0, mUIPreferencesManager->GetPanIncrement()));
             return true;
         }
     }
@@ -622,7 +622,7 @@ bool MainFrame::ProcessKeyDown(
         {
             // Query
 
-            vec2f screenCoords = mToolController->GetMouseScreenCoordinates();
+            auto const screenCoords = mToolController->GetMouseScreenCoordinates();
             vec2f worldCoords = mGameController->ScreenToWorld(screenCoords);
 
             LogMessage("@ ", worldCoords.toString(), ":");
@@ -765,9 +765,10 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     {
         mGameController = GameController::Create(
             RenderDeviceProperties(
-                ImageSize(
+                LogicalPixelSize(
                     mMainGLCanvas->GetSize().GetWidth(),
                     mMainGLCanvas->GetSize().GetHeight()),
+                mMainGLCanvas->GetContentScaleFactor(),
                 bootSettings.DoForceNoGlFinish,
                 bootSettings.DoForceNoMultithreadedRendering,
                 [this, splash]() // Allow deferred execution, capturing splash dialog by value
@@ -1348,8 +1349,9 @@ void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
         && event.GetSize().GetY() > 0)
     {
         mGameController->SetCanvasSize(
-            event.GetSize().GetX(),
-            event.GetSize().GetY());
+            LogicalPixelSize(
+                event.GetSize().GetX(),
+                event.GetSize().GetY()));
     }
 
     event.Skip();
@@ -1418,7 +1420,10 @@ void MainFrame::OnMainGLCanvasRightUp(wxMouseEvent & /*event*/)
 void MainFrame::OnMainGLCanvasMouseMove(wxMouseEvent & event)
 {
     assert(!!mToolController);
-    mToolController->OnMouseMove(event.GetX(), event.GetY());
+    mToolController->OnMouseMove(
+        LogicalPixelCoordinates(
+            event.GetX(),
+            event.GetY()));
 }
 
 void MainFrame::OnMainGLCanvasMouseWheel(wxMouseEvent & event)

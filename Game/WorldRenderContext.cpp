@@ -1444,8 +1444,8 @@ void WorldRenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderP
     // Set shader parameters
     mShaderManager.ActivateProgram<ProgramType::CrossOfLight>();
     mShaderManager.SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::ViewportSize>(
-        static_cast<float>(view.GetCanvasWidth()),
-        static_cast<float>(view.GetCanvasHeight()));
+        static_cast<float>(view.GetCanvasPhysicalPixelSize().width),
+        static_cast<float>(view.GetCanvasPhysicalPixelSize().height));
 }
 
 void WorldRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters)

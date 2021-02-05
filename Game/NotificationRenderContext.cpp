@@ -425,8 +425,8 @@ void NotificationRenderContext::ApplyCanvasSizeChanges(RenderParameters const & 
     auto const & view = renderParameters.View;
 
     // Recalculate screen -> NDC conversion factors
-    mScreenToNdcX = 2.0f / static_cast<float>(view.GetCanvasWidth());
-    mScreenToNdcY = 2.0f / static_cast<float>(view.GetCanvasHeight());
+    mScreenToNdcX = 2.0f / static_cast<float>(view.GetCanvasPhysicalPixelSize().width);
+    mScreenToNdcY = 2.0f / static_cast<float>(view.GetCanvasPhysicalPixelSize().height);
 
     // Make sure we re-calculate (and re-upload) all text vertices
     // at the next iteration

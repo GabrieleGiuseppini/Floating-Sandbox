@@ -5,9 +5,12 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Vectors.h"
+
 #include <picojson.h>
 
 #include <cassert>
+#include <cmath>
 #include <cstdint>
 #include <limits>
 #include <optional>
@@ -395,6 +398,87 @@ enum class HeatBlasterActionType
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Rendering
 ////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename TTag>
+struct _PixelSize
+{
+    int width;
+    int height;
+
+    _PixelSize(
+        int _width,
+        int _height)
+        : width(_width)
+        , height(_height)
+    {}
+
+    static _PixelSize<TTag> FromFloat(vec2f const & vec)
+    {
+        return _PixelSize<TTag>(
+            static_cast<int>(std::round(vec.x)),
+            static_cast<int>(std::round(vec.y)));
+    }
+
+    inline bool operator==(_PixelSize<TTag> const & other) const
+    {
+        return this->width == other.width
+            && this->height == other.height;
+    }
+
+    vec2f ToFloat() const
+    {
+        return vec2f(
+            static_cast<float>(width),
+            static_cast<float>(height));
+    }
+};
+
+using LogicalPixelSize = _PixelSize<struct LogicalCoordinatesTag>;
+using PhysicalPixelSize = _PixelSize<struct PhysicalCoordinatesTag>;
+
+template<typename TTag>
+struct _PixelCoordinates
+{
+    int x;
+    int y;
+
+    _PixelCoordinates(
+        int _x,
+        int _y)
+        : x(_x)
+        , y(_y)
+    {}
+
+    static _PixelCoordinates<TTag> FromFloat(vec2f const & vec)
+    {
+        return _PixelCoordinates<TTag>(
+            static_cast<int>(std::round(vec.x)),
+            static_cast<int>(std::round(vec.y)));
+    }
+
+    inline bool operator==(_PixelCoordinates<TTag> const & other) const
+    {
+        return this->x == other.x
+            && this->y == other.y;
+    }
+
+    inline _PixelSize<TTag> operator-(_PixelCoordinates<TTag> const & other) const
+    {
+        return _PixelSize<TTag>(
+            this->x - other.x,
+            this->y - other.y);
+    }
+
+    vec2f ToFloat() const
+    {
+        return vec2f(
+            static_cast<float>(x),
+            static_cast<float>(y));
+    }
+};
+
+using LogicalPixelCoordinates = _PixelCoordinates<struct LogicalCoordinatesTag>;
+using PhysicalPixelCoordinates = _PixelCoordinates<struct PhysicalCoordinatesTag>;
 
 /*
  * The different auto-texturization modes for ships that don't have a texture layer.

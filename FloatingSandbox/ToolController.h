@@ -11,6 +11,8 @@
 #include <Game/IGameController.h>
 #include <Game/ResourceLocator.h>
 
+#include <GameCore/GameTypes.h>
+
 #include <wx/frame.h>
 #include <wx/image.h>
 
@@ -78,7 +80,7 @@ public:
     // Getters
     //
 
-    vec2f const & GetMouseScreenCoordinates() const
+    LogicalPixelCoordinates const & GetMouseScreenCoordinates() const
     {
         return mInputState.MousePosition;
     }
@@ -87,9 +89,7 @@ public:
     // External event handlers
     //
 
-    void OnMouseMove(
-        int x,
-        int y);
+    void OnMouseMove(LogicalPixelCoordinates const & mouseScreenPosition);
 
     void OnLeftMouseDown();
 
@@ -112,7 +112,7 @@ public:
 private:
 
     static float CalculateCursorBrightness(float effectiveAmbientLightIntensity);
-    
+
     void InternalSetCurrentToolCursor();
 
 private:

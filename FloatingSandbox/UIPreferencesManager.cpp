@@ -40,7 +40,7 @@ UIPreferencesManager::UIPreferencesManager(
     mSwitchboardBackgroundBitmapIndex = 0;
 
     mZoomIncrement = 1.05f;
-    mPanIncrement = 20.0f;
+    mPanIncrement = 20;
 
 
     //
@@ -331,9 +331,9 @@ void UIPreferencesManager::LoadPreferences()
         //
 
         if (auto panIncrementIt = preferencesRootObject->find("pan_increment");
-            panIncrementIt != preferencesRootObject->end() && panIncrementIt->second.is<double>())
+            panIncrementIt != preferencesRootObject->end() && panIncrementIt->second.is<std::int64_t>())
         {
-            mPanIncrement = static_cast<float>(panIncrementIt->second.get<double>());
+            mPanIncrement = static_cast<int>(panIncrementIt->second.get<std::int64_t>());
         }
 
         //
@@ -483,7 +483,7 @@ void UIPreferencesManager::SavePreferences() const
     preferencesRootObject["zoom_increment"] = picojson::value(static_cast<double>(mZoomIncrement));
 
     // Add pan increment
-    preferencesRootObject["pan_increment"] = picojson::value(static_cast<double>(mPanIncrement));
+    preferencesRootObject["pan_increment"] = picojson::value(static_cast<std::int64_t>(mPanIncrement));
 
     // Add show status text
     preferencesRootObject["show_status_text"] = picojson::value(mGameController->GetShowStatusText());

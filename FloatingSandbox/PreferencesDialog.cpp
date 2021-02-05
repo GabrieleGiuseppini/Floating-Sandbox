@@ -1114,14 +1114,14 @@ int PreferencesDialog::ZoomIncrementToZoomIncrementSpin(float zoomIncrement)
     return static_cast<int>(std::round((zoomIncrement - 1.0f) * static_cast<float>(MaxZoomIncrementPosition) / 2.0f));
 }
 
-float PreferencesDialog::PanIncrementSpinToPanIncrement(int spinPosition)
+int PreferencesDialog::PanIncrementSpinToPanIncrement(int spinPosition)
 {
-    return static_cast<float>(spinPosition);
+    return spinPosition;
 }
 
-int PreferencesDialog::PanIncrementToPanIncrementSpin(float panIncrement)
+int PreferencesDialog::PanIncrementToPanIncrementSpin(int panIncrement)
 {
-    return static_cast<int>(panIncrement);
+    return panIncrement;
 }
 
 void PreferencesDialog::ReconciliateShipAutoTexturizationModeSettings()

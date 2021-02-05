@@ -76,7 +76,9 @@ RenderContext::RenderContext(
     // Shader manager
     , mShaderManager()
     // Render parameters
-    , mRenderParameters(renderDeviceProperties.InitialCanvasSize)
+    , mRenderParameters(
+        renderDeviceProperties.InitialCanvasSize,
+        renderDeviceProperties.LogicalToPhysicalPixelFactor)
     // Statistics
     , mPerfStats(perfStats)
     , mRenderStats()
@@ -345,10 +347,9 @@ RgbImageData RenderContext::TakeScreenshot()
     // Allocate buffer
     //
 
-    int const canvasWidth = mRenderParameters.View.GetCanvasWidth();
-    int const canvasHeight = mRenderParameters.View.GetCanvasHeight();
+    auto const canvasPhysicalPixelSize = mRenderParameters.View.GetCanvasPhysicalPixelSize();
 
-    auto pixelBuffer = std::make_unique<rgbColor[]>(canvasWidth * canvasHeight);
+    auto pixelBuffer = std::make_unique<rgbColor[]>(canvasPhysicalPixelSize.width * canvasPhysicalPixelSize.height);
 
     //
     // Take screnshot - synchronously
@@ -370,12 +371,12 @@ RgbImageData RenderContext::TakeScreenshot()
             CheckOpenGLError();
 
             // Read
-            glReadPixels(0, 0, canvasWidth, canvasHeight, GL_RGB, GL_UNSIGNED_BYTE, pixelBuffer.get());
+            glReadPixels(0, 0, canvasPhysicalPixelSize.width, canvasPhysicalPixelSize.height, GL_RGB, GL_UNSIGNED_BYTE, pixelBuffer.get());
             CheckOpenGLError();
         });
 
     return RgbImageData(
-        ImageSize(canvasWidth, canvasHeight),
+        ImageSize(canvasPhysicalPixelSize.width, canvasPhysicalPixelSize.height),
         std::move(pixelBuffer));
 }
 
@@ -608,7 +609,7 @@ void RenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParame
     auto const & view = renderParameters.View;
 
     // Set viewport
-    glViewport(0, 0, view.GetCanvasWidth(), view.GetCanvasHeight());
+    glViewport(0, 0, view.GetCanvasPhysicalPixelSize().width, view.GetCanvasPhysicalPixelSize().height);
 }
 
 void RenderContext::ApplyDebugShipRenderModeChanges(RenderParameters const & renderParameters)

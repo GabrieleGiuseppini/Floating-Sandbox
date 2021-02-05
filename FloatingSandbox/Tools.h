@@ -10,6 +10,8 @@
 #include <Game/IGameController.h>
 #include <Game/ResourceLocator.h>
 
+#include <GameCore/GameTypes.h>
+
 #include <wx/image.h>
 #include <wx/window.h>
 
@@ -57,15 +59,15 @@ struct InputState
     bool IsLeftMouseDown;
     bool IsRightMouseDown;
     bool IsShiftKeyDown;
-    vec2f MousePosition;
-    vec2f PreviousMousePosition;
+    LogicalPixelCoordinates MousePosition;
+    LogicalPixelCoordinates PreviousMousePosition;
 
     InputState()
         : IsLeftMouseDown(false)
         , IsRightMouseDown(false)
         , IsShiftKeyDown(false)
-        , MousePosition()
-        , PreviousMousePosition()
+        , MousePosition(0, 0)
+        , PreviousMousePosition(0, 0)
     {
     }
 };
@@ -163,7 +165,7 @@ public:
         mCumulatedTime = std::chrono::microseconds(0);
 
         // Initialize the cursor state
-        mLastCursor = nullptr;
+        mLastCursor = wxImage();
         mLastQuantizedCursorStrength.reset();
     }
 
@@ -194,7 +196,7 @@ protected:
             toolCursorManager,
             std::move(gameController),
             std::move(soundController))
-        , mPreviousMousePosition()
+        , mPreviousMousePosition(0, 0)
         , mPreviousTimestamp(std::chrono::steady_clock::now())
         , mCumulatedTime(0)
         , mLastCursor()
@@ -230,7 +232,7 @@ private:
     //
 
     // Previous mouse position and time when we looked at it
-    vec2f mPreviousMousePosition;
+    LogicalPixelCoordinates mPreviousMousePosition;
     std::chrono::steady_clock::time_point mPreviousTimestamp;
 
     // The total accumulated press time - the proxy for the strength of the tool
@@ -302,8 +304,8 @@ public:
                 // Move
                 mGameController->MoveBy(
                     mCurrentTrajectory->EngagedMovableObjectId,
-                    newCurrentPosition - mCurrentTrajectory->CurrentPosition,
-                    newCurrentPosition - mCurrentTrajectory->CurrentPosition);
+                    LogicalPixelSize::FromFloat(newCurrentPosition - mCurrentTrajectory->CurrentPosition),
+                    LogicalPixelSize::FromFloat(newCurrentPosition - mCurrentTrajectory->CurrentPosition));
             }
             else
             {
@@ -311,7 +313,7 @@ public:
                 mGameController->RotateBy(
                     mCurrentTrajectory->EngagedMovableObjectId,
                     newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y,
-                    *mCurrentTrajectory->RotationCenter,
+                    LogicalPixelCoordinates::FromFloat(*mCurrentTrajectory->RotationCenter),
                     newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y);
             }
 
@@ -333,8 +335,8 @@ public:
                         // Move to stop
                         mGameController->MoveBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
-                            vec2f::zero(),
-                            vec2f::zero());
+                            LogicalPixelSize(0, 0),
+                            LogicalPixelSize(0, 0));
                     }
                     else
                     {
@@ -342,7 +344,7 @@ public:
                         mGameController->RotateBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
                             0.0f,
-                            *mCurrentTrajectory->RotationCenter,
+                            LogicalPixelCoordinates::FromFloat(*mCurrentTrajectory->RotationCenter),
                             0.0f);
                     }
                 }
@@ -384,13 +386,13 @@ public:
 
                 mCurrentTrajectory = Trajectory(*mEngagedMovableObjectId);
                 mCurrentTrajectory->RotationCenter = mRotationCenter;
-                mCurrentTrajectory->StartPosition = inputState.PreviousMousePosition;
+                mCurrentTrajectory->StartPosition = inputState.PreviousMousePosition.ToFloat();
                 mCurrentTrajectory->CurrentPosition = mCurrentTrajectory->StartPosition;
                 mCurrentTrajectory->StartTimestamp = now;
                 mCurrentTrajectory->EndTimestamp = mCurrentTrajectory->StartTimestamp + TrajectoryLag;
             }
 
-            mCurrentTrajectory->EndPosition = inputState.MousePosition;
+            mCurrentTrajectory->EndPosition = inputState.MousePosition.ToFloat();
         }
     }
 
@@ -499,8 +501,8 @@ private:
                     {
                         mGameController->MoveBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
-                            vec2f::zero(),
-                            mCurrentTrajectory->EndPosition - mCurrentTrajectory->CurrentPosition);
+                            LogicalPixelSize(0, 0),
+                            LogicalPixelSize::FromFloat(mCurrentTrajectory->EndPosition - mCurrentTrajectory->CurrentPosition));
                     }
                     else
                     {
@@ -508,7 +510,7 @@ private:
                         mGameController->RotateBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
                             0.0f,
-                            *mCurrentTrajectory->RotationCenter,
+                            LogicalPixelCoordinates::FromFloat(*mCurrentTrajectory->RotationCenter),
                             mCurrentTrajectory->EndPosition.y - mCurrentTrajectory->CurrentPosition.y);
                     }
 
@@ -534,7 +536,7 @@ private:
                 assert(inputState.IsLeftMouseDown);
 
                 // Start rotation mode
-                mRotationCenter = inputState.MousePosition;
+                mRotationCenter = inputState.MousePosition.ToFloat();
             }
         }
         else
@@ -685,7 +687,7 @@ public:
 
                     mCurrentEngagementState.emplace(
                         *elementId,
-                        inputState.MousePosition);
+                        inputState.MousePosition.ToFloat());
 
                     // Play sound
                     mSoundController->PlayPliersSound(mGameController->IsUnderwater(*elementId));
@@ -698,12 +700,12 @@ public:
                 //
 
                 // 1. Update target position
-                mCurrentEngagementState->TargetScreenPosition = inputState.MousePosition;
+                mCurrentEngagementState->TargetScreenPosition = inputState.MousePosition.ToFloat();
 
                 // 2. Calculate convergence speed based on speed of mouse move
 
-                vec2f const mouseMovementStride = inputState.MousePosition - mCurrentEngagementState->LastScreenPosition;
-                float const worldStride = mGameController->ScreenOffsetToWorldOffset(mouseMovementStride).length();
+                vec2f const mouseMovementStride = inputState.MousePosition.ToFloat() - mCurrentEngagementState->LastScreenPosition;
+                float const worldStride = mGameController->ScreenOffsetToWorldOffset(LogicalPixelSize::FromFloat(mouseMovementStride)).length();
 
                 // New convergence rate:
                 // - Stride < 2.0: 0.03 (76 steps to 0.9 of target)
@@ -724,7 +726,7 @@ public:
                     newSpeedAlpha);
 
                 // Update last mouse position
-                mCurrentEngagementState->LastScreenPosition = inputState.MousePosition;
+                mCurrentEngagementState->LastScreenPosition = inputState.MousePosition.ToFloat();
 
                 // 3. Converge towards target position
                 mCurrentEngagementState->CurrentScreenPosition +=
@@ -734,7 +736,7 @@ public:
                 // 4. Apply force towards current position
                 mGameController->Pull(
                     mCurrentEngagementState->PickedParticle,
-                    mCurrentEngagementState->CurrentScreenPosition);
+                    LogicalPixelCoordinates::FromFloat(mCurrentEngagementState->CurrentScreenPosition));
             }
         }
         else
@@ -987,7 +989,7 @@ private:
     //
 
     // The previous mouse position; when set, we have a segment and can saw
-    std::optional<vec2f> mPreviousMousePos;
+    std::optional<LogicalPixelCoordinates> mPreviousMousePos;
 
     // The current counter for the down cursors
     uint8_t mDownCursorCounter;
@@ -1945,7 +1947,7 @@ private:
     }
 
     // Our state
-    std::optional<vec2f> mCurrentTrajectoryPreviousPosition; // When set, indicates it's engaged
+    std::optional<LogicalPixelCoordinates> mCurrentTrajectoryPreviousPosition; // When set, indicates it's engaged
 
     // The cursors
     wxImage const * mCurrentCursor; // To track cursor changes
@@ -2005,7 +2007,7 @@ public:
                 // See if we should emit a sound
                 if (hasScrubbed)
                 {
-                    vec2f const newScrub = inputState.MousePosition - *mPreviousMousePos;
+                    vec2f const newScrub = (inputState.MousePosition - *mPreviousMousePos).ToFloat();
                     if (newScrub.length() > 1.0f)
                     {
                         auto const now = std::chrono::steady_clock::now();
@@ -2077,7 +2079,7 @@ private:
     //
 
     // The previous mouse position; when set, we have a segment and can scrub
-    std::optional<vec2f> mPreviousMousePos;
+    std::optional<LogicalPixelCoordinates> mPreviousMousePos;
 
     // The previous scrub vector, which we want to remember in order to
     // detect directions changes for the scrubbing sound

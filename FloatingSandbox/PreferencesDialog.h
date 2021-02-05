@@ -69,8 +69,8 @@ private:
     static float ZoomIncrementSpinToZoomIncrement(int spinPosition);
     static int ZoomIncrementToZoomIncrementSpin(float zoomIncrement);
 
-    static float PanIncrementSpinToPanIncrement(int spinPosition);
-    static int PanIncrementToPanIncrementSpin(float panIncrement);
+    static int PanIncrementSpinToPanIncrement(int spinPosition);
+    static int PanIncrementToPanIncrementSpin(int panIncrement);
 
     void ReconciliateShipAutoTexturizationModeSettings();
     void ReconcileSoundSettings();

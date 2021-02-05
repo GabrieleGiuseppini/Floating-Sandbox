@@ -260,12 +260,12 @@ public:
         mZoomIncrement = value;
     }
 
-    float GetPanIncrement() const
+    int GetPanIncrement() const
     {
         return mPanIncrement;
     }
 
-    void SetPanIncrement(float value)
+    void SetPanIncrement(int value)
     {
         mPanIncrement = value;
     }
@@ -405,5 +405,5 @@ private:
     int mSwitchboardBackgroundBitmapIndex;
 
     float mZoomIncrement;
-    float mPanIncrement;
+    int mPanIncrement;
 };

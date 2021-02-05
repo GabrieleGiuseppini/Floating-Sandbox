@@ -56,7 +56,7 @@ ComputerCalibrationScore ComputerCalibrator::Calibrate()
 
 void ComputerCalibrator::TuneGame(
     ComputerCalibrationScore const & score,
-    GameParameters & gameParameters,
+    GameParameters & /*gameParameters*/,
     Render::RenderContext & renderContext)
 {
     //
