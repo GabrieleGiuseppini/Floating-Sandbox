@@ -12,6 +12,8 @@
 #include <GameCore/GameTypes.h>
 #include <GameCore/Vectors.h>
 
+#include <GameCore/Log.h>
+
 #include <algorithm>
 
 namespace Render
@@ -43,6 +45,9 @@ public:
         , mPixelOffsetX(0.0f)
         , mPixelOffsetY(0.0f)
     {
+        // TODOTEST
+        LogMessage("TODOTEST: Physical canvas size: ", mCanvasPhysicalPixelSize.width, "x", mCanvasPhysicalPixelSize.height);
+
         //
         // Initialize kernel ortho matrix
         //
