@@ -130,13 +130,13 @@ struct GameParameters
 
     float AirFrictionDragAdjustment;
     static float constexpr MinAirFrictionDragAdjustment = 0.0f;
-    static float constexpr MaxAirFrictionDragAdjustment = 100000.0f;
+    static float constexpr MaxAirFrictionDragAdjustment = 1000.0f;
 
     static float constexpr AirPressureDragCoefficient = 5.0f; // Empirical, based on balance between lightweight structure instabilities, and noticeable aerodynamics
 
     float AirPressureDragAdjustment;
     static float constexpr MinAirPressureDragAdjustment = 0.0f;
-    static float constexpr MaxAirPressureDragAdjustment = 1000.0f;
+    static float constexpr MaxAirPressureDragAdjustment = 10.0f;
 
     // Water
 
@@ -144,7 +144,7 @@ struct GameParameters
     static float constexpr MinWaterDensityAdjustment = 0.0f;
     static float constexpr MaxWaterDensityAdjustment = 4.0f;
 
-    static float constexpr WaterFrictionDragCoefficient = 0.5f;
+    static float constexpr WaterFrictionDragCoefficient = 0.75f;
 
     float WaterFrictionDragAdjustment;
     static float constexpr MinWaterFrictionDragAdjustment = 0.0f;

@@ -466,19 +466,21 @@ Render:
 					+ Optimize Mix
 						X No need for by-point
 						+ See if needed for by-frontier
-					- Tests: 
-						- Debris, with and without WaterIntake=0
-							- Now that the only brake to debris is friction, see if we need more friction
-								- Air
-								- Water
-						- Cardboard tower
-							- With air pressure drag = 100, there's oscillations
-						- Cardboard ships
-						- Air/Water ship
-						- Hydrodynamics test
-						- Titanic splitting
-						- Airplane falling
-						- Blimps					
+					+ Tests: 
+						+ Debris, with and without WaterIntake=0
+							+ Now that the only brake to debris is friction, see if we need more friction
+								+ Air
+								+ Water - can't increase too much, or else air bubbles freeze
+						+ Cardboard tower
+							x With air pressure drag = 100, there's oscillations
+							+ With air pressure drag = 10, there's no oscillations
+						+ Cardboard ships
+						+ Air/Water ship
+						+ Hydrodynamics test
+						+ Airplane falling
+						+ Blimps
+						+ Trellis
+						+ Titanic splitting + sinking
 					+ Zero-wind button
 					= Finalization:
 						+ Interpolations for discontinuities
@@ -490,12 +492,17 @@ Render:
 						+ Finalize good settings, reset all adjustments to 1.0
 							+ Set coeffs accordingly
 							+ Nail down adjustment ranges
-						- Re-adjust Titanic split (X2) - if needed
 						+ Nuke Ship::ByPoints
-			- changelist
+			- changelist (drags only)
+		
 
 		= Aerodynamics, as well
 			- changelist
+			- video
+
+		- 0.8 water crazyness
+		- Investigate missing pin/gadget sounds when paused
+			- It's due to game clock stopping and time used @ StartedTimestamp/duration
 
 		+ Cursor change rate
 
