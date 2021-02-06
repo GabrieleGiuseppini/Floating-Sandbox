@@ -22,7 +22,7 @@ GameParameters::GameParameters()
     , WaterPressureDragAdjustment(1.0f)
     , WaterIntakeAdjustment(1.0f)
     , WaterDiffusionSpeedAdjustment(1.0f)
-    , WaterCrazyness(1.0f)
+    , WaterCrazyness(0.8125f)
     // Ephemeral particles
     , DoGenerateDebris(true)
     , SmokeEmissionDensityAdjustment(1.0f)
