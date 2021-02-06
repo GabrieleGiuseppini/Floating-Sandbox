@@ -420,6 +420,8 @@ Render:
 				+ MultiThreaded:	
 					+ Now
 					+ Simulate Mac
+		+ Scrub/Rot tool (*)
+			+ Changelist
 
 		= ShipBucket:
 			+ Split author by ';', put remainder on next line prefixed with "art by:"
@@ -552,9 +554,6 @@ Render:
 
 			+ Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
 			- Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
-
-		= Scrub/Rot tool (*)
-			- Changelist
 
 		- Cached quantities (*)
 	
@@ -1735,17 +1734,6 @@ Render:
 
 	- Tool to break enough to let water enter, but not to make a hole all the way to the other side
 		- Just sets points as leaking
-
-	= Rot tool: rots without having to flood it
-		+ Then merge scrub tool into this one, with SHIFT
-		+ Icon:
-			X https://cdn0.iconfinder.com/data/icons/poison-symbol/66/22-512.png
-		= Sound
-			- Shorter sounds?
-		+ Dynamics:
-			+ Abovewater should rot less
-		+ Test:
-			+ With no effect volume
 
 	- Randomize decay
 		- Perlin noise on ship, created at ShipBuilder, stored as Points::WeakNoise
@@ -8014,6 +8002,16 @@ IF WX:
 			+ Remove fish update time @ notification layer
 				+ If it's negligible on Dell
 			+ Initial placement of fish in a shoal should obey shoaling spacing
+	+ Rot tool: rots without having to flood it
+		+ Then merge scrub tool into this one, with SHIFT
+		+ Icon:
+			X https://cdn0.iconfinder.com/data/icons/poison-symbol/66/22-512.png
+		+ Sound
+			+ More immediate start
+		+ Dynamics:
+			+ Abovewater should rot less
+		+ Test:
+			+ With no effect volume
 
 
 

@@ -1,5 +1,7 @@
 TODO
-- Refactored bombs as instances of generic "Gadgets", opening the possibility for creating new "thinghs" that may be attached to a ship
+- Added "Rot" tool - allows player to rot parts of a ship interactively
+	- Accessed by holding down the SHIFT key while using the "Scrub" tool
+- Refactored bombs as instances of generic "Gadgets", opening the possibility for creating new "thinghies" that may be attached to a ship
 	- Added first non-bomb gadget: a "physics probe" that continuously displays a particle's velocity and temperature
 
 1.16.2
