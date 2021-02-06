@@ -3,6 +3,7 @@ TODO
 	- Accessed by holding down the SHIFT key while using the "Scrub" tool
 - Refactored bombs as instances of generic "Gadgets", opening the possibility for creating new "thinghies" that may be attached to a ship
 	- Added first non-bomb gadget: a "physics probe" that continuously displays a particle's velocity and temperature
+- ...and a few more small improvements here and there!
 
 1.16.2
 - Improved physics of interactive waves and of WaveMaker tool 
