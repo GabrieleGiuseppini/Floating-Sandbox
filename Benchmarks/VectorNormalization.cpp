@@ -10,7 +10,7 @@
 
 static constexpr size_t SampleSize = 20000000;
 
-static void VectorNormalization_Naive_NoLength(benchmark::State& state)
+static void VectorNormalization_Naive_NoLengthStorage(benchmark::State& state)
 {
     auto const size = MakeSize(SampleSize);
 
@@ -36,9 +36,9 @@ static void VectorNormalization_Naive_NoLength(benchmark::State& state)
 
     benchmark::DoNotOptimize(results);
 }
-BENCHMARK(VectorNormalization_Naive_NoLength);
+BENCHMARK(VectorNormalization_Naive_NoLengthStorage);
 
-static void VectorNormalization_Naive_NoLength_RestrictPointers(benchmark::State& state)
+static void VectorNormalization_Naive_NoLengthStorage_RestrictPointers(benchmark::State& state)
 {
     auto const size = MakeSize(SampleSize);
 
@@ -68,9 +68,9 @@ static void VectorNormalization_Naive_NoLength_RestrictPointers(benchmark::State
 
     benchmark::DoNotOptimize(results);
 }
-BENCHMARK(VectorNormalization_Naive_NoLength_RestrictPointers);
+BENCHMARK(VectorNormalization_Naive_NoLengthStorage_RestrictPointers);
 
-static void VectorNormalization_Naive_AndLength_RestrictPointers(benchmark::State& state)
+static void VectorNormalization_Naive_AndLengthStorage_RestrictPointers(benchmark::State& state)
 {
     auto const size = MakeSize(SampleSize);
 
@@ -107,13 +107,13 @@ static void VectorNormalization_Naive_AndLength_RestrictPointers(benchmark::Stat
     benchmark::DoNotOptimize(results);
     benchmark::DoNotOptimize(lengths);
 }
-BENCHMARK(VectorNormalization_Naive_AndLength_RestrictPointers);
+BENCHMARK(VectorNormalization_Naive_AndLengthStorage_RestrictPointers);
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
 
-static void VectorNormalization_Vectorized_AndLength_FullInstrinsics(benchmark::State& state)
+static void VectorNormalization_Vectorized_AndLengthStorage_FullInstrinsics(benchmark::State& state)
 {
     auto const size = MakeSize(SampleSize);
 
@@ -188,13 +188,13 @@ static void VectorNormalization_Vectorized_AndLength_FullInstrinsics(benchmark::
     benchmark::DoNotOptimize(results);
     benchmark::DoNotOptimize(lengths);
 }
-BENCHMARK(VectorNormalization_Vectorized_AndLength_FullInstrinsics);
+BENCHMARK(VectorNormalization_Vectorized_AndLengthStorage_FullInstrinsics);
 
 #endif
 
 #if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
 
-static void VectorNormalization_Vectorized_AndLength_Reciprocal_FullInstrinsics(benchmark::State & state)
+static void VectorNormalization_Vectorized_AndLengthStorage_Reciprocal_FullInstrinsics(benchmark::State & state)
 {
     auto const size = MakeSize(SampleSize);
 
@@ -267,7 +267,7 @@ static void VectorNormalization_Vectorized_AndLength_Reciprocal_FullInstrinsics(
     benchmark::DoNotOptimize(results);
     benchmark::DoNotOptimize(lengths);
 }
-BENCHMARK(VectorNormalization_Vectorized_AndLength_Reciprocal_FullInstrinsics);
+BENCHMARK(VectorNormalization_Vectorized_AndLengthStorage_Reciprocal_FullInstrinsics);
 
 #endif
 
@@ -339,7 +339,7 @@ static void VectorNormalization_TwoPass_Naive(benchmark::State & state)
         //
 
         for (size_t s = 0; s < size; ++s)
-        { 
+        {
             xBuffer[s] = points[springs[s].PointBIndex].x - points[springs[s].PointAIndex].x;
             yBuffer[s] = points[springs[s].PointBIndex].y - points[springs[s].PointAIndex].y;
         }

@@ -9,8 +9,10 @@
 #include <algorithm>
 #include <limits>
 
-static constexpr size_t SampleSize = 20000;
+static constexpr size_t SampleSize = 100000;
 
+/* TODOTEST
+*
 inline vec2f normalise_naive(vec2f const & v) noexcept
 {
     float const squareLength = v.x * v.x + v.y * v.y;
@@ -278,7 +280,7 @@ BENCHMARK(SingleVectorNormalization_Naive_NoLength_ResultStored);
 
 #if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
 
-static void SingleVectorNormalization_SSEX1_NoLength_ResultStored(benchmark::State& state)
+static void SingleVectorNormalization_SSEX1_NoLength_Algorithms_ResultStored(benchmark::State& state)
 {
     auto vectors = MakeVectors(SampleSize);
 
@@ -297,6 +299,239 @@ static void SingleVectorNormalization_SSEX1_NoLength_ResultStored(benchmark::Sta
 
     benchmark::DoNotOptimize(results);
 }
-BENCHMARK(SingleVectorNormalization_SSEX1_NoLength_ResultStored);
+BENCHMARK(SingleVectorNormalization_SSEX1_NoLength_Algorithms_ResultStored);
+
+#endif
+*/
+
+/////////////////////////////////////////////////////////////////////////
+
+static void SingleVectorNormalization_Simple_Original(benchmark::State & state)
+{
+    auto const size = MakeSize(SampleSize);
+
+    std::vector<vec2f> points;
+    std::vector<SpringEndpoints> springs;
+    MakeGraph(size, points, springs);
+
+    std::vector<vec2f> results;
+    results.resize(size);
+
+    for (auto _ : state)
+    {
+        for (size_t i = 0; i < size; ++i)
+        {
+            vec2f const posA = points[springs[i].PointAIndex];
+            vec2f const posB = points[springs[i].PointBIndex];
+            vec2f v(posB - posA);
+            vec2f const normalizedVector = v.normalise();
+
+            results[i] = normalizedVector;
+        }
+    }
+
+    benchmark::DoNotOptimize(results);
+}
+BENCHMARK(SingleVectorNormalization_Simple_Original);
+
+inline vec2f normalise_with_mul(vec2f v) noexcept
+{
+    float const squareLength = v.x * v.x + v.y * v.y;
+    if (squareLength != 0)
+    {
+        // Note: this is also how the "original" normalise gets compiled by MSVC2019...
+        return v * (1.0f / std::sqrt(squareLength));
+    }
+    else
+    {
+        return vec2f(0.0f, 0.0f);
+    }
+}
+
+static void SingleVectorNormalization_Simple_MulInsteadOfDiv(benchmark::State & state)
+{
+    auto const size = MakeSize(SampleSize);
+
+    std::vector<vec2f> points;
+    std::vector<SpringEndpoints> springs;
+    MakeGraph(size, points, springs);
+
+    std::vector<vec2f> results;
+    results.resize(size);
+
+    for (auto _ : state)
+    {
+        for (size_t i = 0; i < size; ++i)
+        {
+            vec2f const posA = points[springs[i].PointAIndex];
+            vec2f const posB = points[springs[i].PointBIndex];
+            vec2f v(posB - posA);
+            vec2f const normalizedVector = normalise_with_mul(v);
+
+            results[i] = normalizedVector;
+        }
+    }
+
+    benchmark::DoNotOptimize(results);
+}
+BENCHMARK(SingleVectorNormalization_Simple_MulInsteadOfDiv);
+
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+
+inline vec2f NormalizeVector_SSE_1_Precise(vec2f const & v) noexcept
+{
+    __m128 const Zero = _mm_setzero_ps();
+    __m128 const One = _mm_set_ss(1.0f);
+
+    __m128 x = _mm_load_ss(&(v.x));
+    __m128 y = _mm_load_ss(&(v.y));
+
+    __m128 len = _mm_sqrt_ss(
+        _mm_add_ss(
+            _mm_mul_ss(x, x),
+            _mm_mul_ss(y, y)));
+
+    __m128 invLen = _mm_div_ss(One, len);
+    __m128 validMask = _mm_cmpneq_ss(invLen, Zero);
+    invLen = _mm_and_ps(invLen, validMask);
+
+    x = _mm_mul_ss(x, invLen);
+    y = _mm_mul_ss(y, invLen);
+
+    return vec2f(_mm_cvtss_f32(x), _mm_cvtss_f32(y));
+}
+
+static void SingleVectorNormalization_SSE_1_Precise(benchmark::State & state)
+{
+    auto const size = MakeSize(SampleSize);
+
+    std::vector<vec2f> points;
+    std::vector<SpringEndpoints> springs;
+    MakeGraph(size, points, springs);
+
+    std::vector<vec2f> results;
+    results.resize(size);
+
+    for (auto _ : state)
+    {
+        for (size_t i = 0; i < size; ++i)
+        {
+            vec2f const posA = points[springs[i].PointAIndex];
+            vec2f const posB = points[springs[i].PointBIndex];
+            vec2f v(posB - posA);
+            vec2f const normalizedVector = NormalizeVector_SSE_1_Precise(v);
+
+            results[i] = normalizedVector;
+        }
+    }
+
+    benchmark::DoNotOptimize(results);
+}
+BENCHMARK(SingleVectorNormalization_SSE_1_Precise);
+
+#endif
+
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+
+inline vec2f NormalizeVector_SSE_2_Approx(vec2f const & v) noexcept
+{
+    __m128 x = _mm_load_ss(&(v.x));
+    __m128 y = _mm_load_ss(&(v.y));
+
+    __m128 const sqrArg = _mm_add_ss(
+        _mm_mul_ss(x, x),
+        _mm_mul_ss(y, y));
+
+    __m128 const validMask = _mm_cmpneq_ss(sqrArg, _mm_setzero_ps());
+
+    __m128 const invLen_or_zero = _mm_and_ps(
+        _mm_rsqrt_ss(sqrArg),
+        validMask);
+
+    x = _mm_mul_ss(x, invLen_or_zero);
+    y = _mm_mul_ss(y, invLen_or_zero);
+
+    return vec2f(_mm_cvtss_f32(x), _mm_cvtss_f32(y));
+}
+
+static void SingleVectorNormalization_SSE_2_Approx(benchmark::State & state)
+{
+    auto const size = MakeSize(SampleSize);
+
+    std::vector<vec2f> points;
+    std::vector<SpringEndpoints> springs;
+    MakeGraph(size, points, springs);
+
+    std::vector<vec2f> results;
+    results.resize(size);
+
+    for (auto _ : state)
+    {
+        for (size_t i = 0; i < size; ++i)
+        {
+            vec2f const posA = points[springs[i].PointAIndex];
+            vec2f const posB = points[springs[i].PointBIndex];
+            vec2f v(posB - posA);
+            vec2f const normalizedVector = NormalizeVector_SSE_2_Approx(v);
+
+            results[i] = normalizedVector;
+        }
+    }
+
+    benchmark::DoNotOptimize(results);
+}
+BENCHMARK(SingleVectorNormalization_SSE_2_Approx);
+
+#endif
+
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+
+inline vec2f NormalizeVector_SSE_3_Packed(vec2f const & v) noexcept
+{
+    __m128 xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const *>(&(v.x))));
+    __m128 xy2 = _mm_mul_ps(xy, xy);
+
+    __m128 const sqrArg = _mm_hadd_ps(xy2, xy2);
+
+    __m128 const validMask = _mm_cmpneq_ss(sqrArg, _mm_setzero_ps());
+
+    __m128 const invLen_or_zero = _mm_and_ps(
+        _mm_rsqrt_ss(sqrArg),
+        validMask);
+
+    __m128 const invLen_or_zero2 = _mm_moveldup_ps(invLen_or_zero);
+    xy = _mm_mul_ps(xy, invLen_or_zero2);
+
+    vec2f result;
+    _mm_store_sd(reinterpret_cast<double *>(&(result.x)), _mm_castps_pd(xy));
+    return result;
+}
+
+static void SingleVectorNormalization_SSE_3_Packed(benchmark::State & state)
+{
+    auto const size = MakeSize(SampleSize);
+
+    std::vector<vec2f> points;
+    std::vector<SpringEndpoints> springs;
+    MakeGraph(size, points, springs);
+
+    std::vector<vec2f> results;
+    results.resize(size);
+
+    for (auto _ : state)
+    {
+        for (size_t i = 0; i < size; ++i)
+        {
+            vec2f const posA = points[springs[i].PointAIndex];
+            vec2f const posB = points[springs[i].PointBIndex];
+            vec2f v(posB - posA);
+            vec2f const normalizedVector = NormalizeVector_SSE_3_Packed(v);
+            results[i] = normalizedVector;
+        }
+    }
+
+    benchmark::DoNotOptimize(results);
+}
+BENCHMARK(SingleVectorNormalization_SSE_3_Packed);
 
 #endif

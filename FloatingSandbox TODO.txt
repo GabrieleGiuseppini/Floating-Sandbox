@@ -486,6 +486,9 @@ Render:
 							+ Nail down adjustment ranges
 						+ Nuke Ship::ByPoints
 			+ changelist
+		+ Aerodynamics, as well
+			+ changelist, together w/drag
+			+ video & post
 		+ Optimization: OceanSurface and OceanFloor ::GetNormalAt(x)
 			! Optimized: no second sampling needed!
 			+ Track down all usages
@@ -507,10 +510,6 @@ Render:
 			+ Ask Fernando for his ships
 			- Tell CPM/Wreno rules for using ShipBucket
 				- Credits format		
-
-		= Aerodynamics, as well
-			+ changelist, together w/drag
-			= video & post
 
 		= MAC:
 			= Full high-DPI path:
@@ -567,6 +566,19 @@ Render:
 
 			+ Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
 			- Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
+			- Packaging:
+				- wxWidgets so's
+					- See if may statically link
+
+		- Send for testing
+
+		= See vector normalization optimization with mult's with 1/len
+			X It's already assembled like that
+			+ SSE version 2
+			- SSE version 3: do on packed (though it's two only)
+			- Unit tests
+			- Use
+				- Test on Dell
 
 		- Waves from ship (*)
 
@@ -580,7 +592,6 @@ Render:
 
 		- Incandescence layer (*)
 
-		- See vector normalization optimization with mult's with 1/len
 
 		- Light improvements (*)
 				
