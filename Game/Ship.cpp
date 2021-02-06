@@ -1116,14 +1116,8 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
             vec2f const pointVelocity = mPoints.GetVelocity(pointIndex);
 
             // Calculate sea floor anti-normal
-            // (optimized) (positive points down)
-            float constexpr Dx = 0.01f;
-            ////////vec2f const seaFloorAntiNormal = -vec2f(
-            ////////    floorHeight - mParentWorld.GetOceanFloorHeightAt(clampedX + 0.01f),
-            ////////    0.01f).normalise(); // Points below
-            vec2f const seaFloorAntiNormal = vec2f(
-                mParentWorld.GetOceanFloorHeightAt(clampedX + Dx) - floorHeight,
-                -Dx).normalise(); // Points below
+            // (positive points down)
+            vec2f const seaFloorAntiNormal = -mParentWorld.GetOceanFloorNormalAt(clampedX);
 
             // Calculate the component of the point's velocity along the anti-normal,
             // i.e. towards the interior of the floor...
@@ -1259,8 +1253,8 @@ void Ship::UpdateWaterInflow(
             // - If point is above water surface: external water height is due to rain
             float const externalWaterHeight = std::max(
                 mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x)
-                + 0.1f // Magic number to force flotsam to take some water in and eventually sink
-                - mPoints.GetPosition(pointIndex).y,
+                    + 0.1f // Magic number to force flotsam to take some water in and eventually sink
+                    - mPoints.GetPosition(pointIndex).y,
                 rainEquivalentWaterHeight); // At most is one meter, so does not interfere with underwater pressure
 
             // Internal water height (~=internal pressure)

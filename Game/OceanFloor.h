@@ -53,10 +53,9 @@ public:
     /*
      * Assumption: x is in world boundaries.
      */
-    float GetHeightAt(float x) const noexcept
+    inline float GetHeightAt(float x) const noexcept
     {
-        assert(x >= -GameParameters::HalfMaxWorldWidth
-            && x <= GameParameters::HalfMaxWorldWidth + 0.01f); // Allow for derivative taking
+        assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
 
         //
         // Find sample index and interpolate in-between that sample and the next
@@ -76,6 +75,30 @@ public:
 
         return mSamples[sampleIndexI].SampleValue
             + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+    }
+
+    /*
+     * Assumption: x is in world boundaries.
+     */
+    inline vec2f GetNormalAt(float x) const noexcept
+    {
+        assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
+
+        //
+        // Find sample index and use delta from next sample
+        //
+
+        // Fractional index in the sample array
+        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+
+        // Integral part
+        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+
+        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+
+        return vec2f(
+            -mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue,
+            Dx).normalise();
     }
 
 private:

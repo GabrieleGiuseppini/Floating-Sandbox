@@ -89,9 +89,14 @@ public:
         mOceanSurface.DisplaceSmallScaleAt(x, yOffset);
     }
 
-    inline float GetOceanFloorHeightAt(float x) const
+    inline float GetOceanFloorHeightAt(float x) const noexcept
     {
         return mOceanFloor.GetHeightAt(x);
+    }
+
+    inline vec2f GetOceanFloorNormalAt(float x) const noexcept
+    {
+        return mOceanFloor.GetNormalAt(x);
     }
 
     inline void DisplaceOceanFloorAt(

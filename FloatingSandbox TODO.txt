@@ -426,22 +426,10 @@ Render:
 			+ It's due to game clock stopping and time used @ StartedTimestamp/duration
 			+ Migrate SoundController away from GameClock
 		+ Cursor change rate
-
-		= ShipBucket:
-			+ Split author by ';', put remainder on next line prefixed with "art by:"
-				+ Do split at metadata load time, exposing "ArtCredits"
-				+ Add check to verify_ships.py to make sure author contains 0 or 1 ';'
-					+ Run on all
-				+ Change dialog
-			= I also like a warning not to repost the work on youtube, though i'm sure people will ignore this (we cant control everything unfortunately :wink: )
-				- Double-check with them
-			+ Ask Fernando for his ships
-			- Tell CPM/Wreno rules for using ShipBucket
-				- Credits format
-
-		= Sinking speed:
-			X Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s				
-			= We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
+		+ 0.8 water crazyness
+		+ Sinking speed:
+			! Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s				
+			+ We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
 				+ Copy old exe first
 				+ Take speeds with old:
 					+ Titanic sinking: 6.4m/s (@ GlobalDampAdjust==0.00: 36.7)
@@ -455,7 +443,7 @@ Render:
 					+ globalDampingCoefficient=0.99988; velocityBuffer[i] = deltaPos / dt * globalDampingCoefficient;
 					+ 30 iterations
 					+ vN = (d^N)*v0; // d^N = 0.99640
-				= Impl:
+				+ Impl:
 					+ Global damp adjust=0.0f - for now
 					+ Point-by-point: 
 						+ !Underwater: add same drags (friction and pressure) as water, but different magnitude
@@ -486,25 +474,43 @@ Render:
 						+ Trellis
 						+ Titanic splitting + sinking
 					+ Zero-wind button
-					= Finalization:
+					+ Finalization:
 						+ Interpolations for discontinuities
 							+ Do all @ Ship::ApplyWorldForces
 								+ Have a single multiplier used for all forces
 							+ See to optimize Mix with 1 mult only
 								+ Check assembly
-						- Test perf on old Dell
+						+ Test perf on old Dell
 						+ Finalize good settings, reset all adjustments to 1.0
 							+ Set coeffs accordingly
 							+ Nail down adjustment ranges
 						+ Nuke Ship::ByPoints
-			- changelist (drags only)
-		
+			+ changelist
+		+ Optimization: OceanSurface and OceanFloor ::GetNormalAt(x)
+			! Optimized: no second sampling needed!
+			+ Track down all usages
+				+ See if OceanSurface really needed: no
+				+ Do OceanFloor
+				+ Track usages of OceanFloor::GetHeightAt and make sure always in boundaries
+					+ Then remove "allow for derivative taking"
+					+ Also at OceanSurface
+			+ Test in debug
+
+		= ShipBucket:
+			+ Split author by ';', put remainder on next line prefixed with "art by:"
+				+ Do split at metadata load time, exposing "ArtCredits"
+				+ Add check to verify_ships.py to make sure author contains 0 or 1 ';'
+					+ Run on all
+				+ Change dialog
+			= I also like a warning not to repost the work on youtube, though i'm sure people will ignore this (we cant control everything unfortunately :wink: )
+				- Double-check with them
+			+ Ask Fernando for his ships
+			- Tell CPM/Wreno rules for using ShipBucket
+				- Credits format		
 
 		= Aerodynamics, as well
-			- changelist
-			- video
-
-		- 0.8 water crazyness
+			+ changelist, together w/drag
+			= video & post
 
 		= MAC:
 			= Full high-DPI path:
@@ -562,15 +568,13 @@ Render:
 			+ Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
 			- Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
 
+		- Waves from ship (*)
+
+		- New rain: https://www.shadertoy.com/view/tttyDB
+			- Test perf drop on Dell
+		
 		- Cached quantities (*)
 	
-		= New rain: https://www.shadertoy.com/view/wsKcWw
-
-		- Optimization: OceanSurface and OceanTerrain ::GetNormalAt(x)
-			- Optimized: no second sampling needed!
-			- Track down all usages
-				- See if OceanSurface really needed
-
 		- New ships
 			- changelist
 
@@ -580,9 +584,6 @@ Render:
 
 		- Light improvements (*)
 				
-		- Bug:
-			- Jacoh2 20/12/2020: fixing the boiler area on the small fleutzgrampher and akagi Maru crash the game
-
 		- Repair improvement:
 			- 1) Debug test case (w/default_ship)
 				- Need ability to highlight point by its index
@@ -621,7 +622,6 @@ Render:
 
 		- Frontier-enabled features:			
 			- Pressure implosions / pressure crush (*)
-			- Waves from ship (*)
 			- Transfer of momentum from waves
 				- Option A: by point visit; all points which were not underwater in previous step and are now (via double buffer for "Cached Underwater"), receive force
 				  proportional to OceanSurface::VelocityVector
@@ -629,8 +629,6 @@ Render:
 						- A) SWE + Waves (i.e. full samples)
 						- B) Just SWE
 				- Option B: by point visit; all points in tiny band from depth 0
-			- Aerodynamics
-				! Have to maintain, though, global damp for springs and orphaned particles
 			- Punch tool (*)		
 
 		- Try with improved generation of random sparkles at slice: https://mathworld.wolfram.com/SpherePointPicking.html

@@ -881,12 +881,8 @@ void Fishes::UpdateDynamics(
             // Ocean floor collision
             //
 
-            // Calculate sea floor normal (positive points out), via
-            // the derivative of the ocean floor at this X
-            float constexpr Dx = 0.01f;
-            vec2f const seaFloorNormal = vec2f(
-                oceanFloorHeight - oceanFloor.GetHeightAt(clampedX + 0.01f),
-                Dx).normalise(); // Points below
+            // Calculate sea floor normal (positive points up, out)
+            vec2f const seaFloorNormal = oceanFloor.GetNormalAt(clampedX);
 
             // Calculate the component of the fish's target velocity along the normal,
             // i.e. towards the outside of the floor...

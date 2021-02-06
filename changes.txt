@@ -1,4 +1,8 @@
 TODO
+- Added first implementation of aerodynamics
+	- ...finally reconciling the underwater world with the above-water world
+- Re-recalibrated drag forces
+	- The Titanic bow now sinks at a speed between 10m/s and 12m/s, which is way more realistic than the 6m/s speed in the previous versions of the simulator
 - Added "Rot" tool - allows player to rot parts of a ship interactively
 	- Accessed by holding down the SHIFT key while using the "Scrub" tool
 - Refactored bombs as instances of generic "Gadgets", opening the possibility for creating new "thinghies" that may be attached to a ship

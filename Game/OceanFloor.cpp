@@ -17,11 +17,14 @@ static constexpr T RenderSlices = 500;
 OceanFloor::OceanFloor(OceanFloorTerrain && terrain)
     : mBumpProfile(SamplesCount)
     , mTerrain(std::move(terrain))
-    , mSamples(new Sample[SamplesCount + 1])
+    , mSamples(new Sample[SamplesCount + 1]) // One extra sample for the rightmost X
     , mCurrentSeaDepth(0.0f)
     , mCurrentOceanFloorBumpiness(0.0f)
     , mCurrentOceanFloorDetailAmplification(0.0f)
 {
+    // Initialize constant sample values
+    mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f;
+
     // Calculate bump profile
     CalculateBumpProfile();
 
@@ -321,8 +324,10 @@ void OceanFloor::CalculateResultantSampleValues()
     mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = 0.0f;
 
     // Populate extra sample - same value as last sample
-    mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
-    mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Accessed only for derivative at x=MaxWorldWidth
+    assert(previousSampleValue == mSamples[SamplesCount - 1].SampleValue);
+    mSamples[SamplesCount].SampleValue = previousSampleValue;
+
+    assert(mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue == 0.0f);
 }
 
 }
