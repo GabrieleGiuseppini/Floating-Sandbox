@@ -193,6 +193,7 @@ public:
     void AdjustOceanSurfaceTo(std::optional<LogicalPixelCoordinates> const & screenCoordinates) override;
     std::optional<bool> AdjustOceanFloorTo(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates) override;
     bool ScrubThrough(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates) override;
+    bool RotThrough(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates) override;
     void ApplyThanosSnapAt(LogicalPixelCoordinates const & screenCoordinates) override;
     std::optional<ElementId> GetNearestPointAt(LogicalPixelCoordinates const & screenCoordinates) const override;
     void QueryNearestPointAt(LogicalPixelCoordinates const & screenCoordinates) const override;

@@ -463,6 +463,7 @@ SoundController::SoundController(
                 || soundType == SoundType::TerrainAdjust
                 || soundType == SoundType::ThanosSnap
                 || soundType == SoundType::Scrub
+                || soundType == SoundType::Rot
                 || soundType == SoundType::InteractiveSwitchOn
                 || soundType == SoundType::InteractiveSwitchOff
                 || soundType == SoundType::ElectricalPanelClose
@@ -1140,6 +1141,14 @@ void SoundController::PlayScrubSound()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::Scrub,
+        100.0f,
+        true);
+}
+
+void SoundController::PlayRotSound()
+{
+    PlayOneShotMultipleChoiceSound(
+        SoundType::Rot,
         100.0f,
         true);
 }

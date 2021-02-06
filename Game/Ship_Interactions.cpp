@@ -368,7 +368,7 @@ bool Ship::DestroyAt(
     float const largerSearchSquareRadius = std::max(squareRadius, FallbackSquareRadius);
 
     // Detach/destroy all active, attached points within the radius
-    for (auto pointIndex : mPoints)
+    for (auto const pointIndex : mPoints)
     {
         float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
 
@@ -463,7 +463,7 @@ void Ship::RepairAt(
     float const squareSearchRadius = searchRadius * searchRadius;
 
     // Visit all non-ephemeral points
-    for (auto pointIndex : mPoints.RawShipPoints())
+    for (auto const pointIndex : mPoints.RawShipPoints())
     {
         // Attempt to restore this point's springs if the point meets all these conditions:
         // - The point is in radius
@@ -938,7 +938,7 @@ bool Ship::ApplyHeatBlasterAt(
     //
     // We also do ephemeral points in order to change buoyancy of air bubbles
     bool atLeastOnePointFound = false;
-    for (auto pointIndex : mPoints)
+    for (auto const pointIndex : mPoints)
     {
         float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
         if (pointSquareDistance < squareRadius
@@ -987,7 +987,7 @@ bool Ship::ExtinguishFireAt(
     // No real reason to ignore ephemeral points, other than they're currently
     // not expected to burn
     bool atLeastOnePointFound = false;
-    for (auto pointIndex : mPoints.RawShipPoints())
+    for (auto const pointIndex : mPoints.RawShipPoints())
     {
         float const pointSquareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
         if (pointSquareDistance < squareRadius)
@@ -1106,7 +1106,7 @@ bool Ship::FloodAt(
     float const searchSquareRadius = searchRadius * searchRadius;
 
     bool anyHasFlooded = false;
-    for (auto pointIndex : mPoints.RawShipPoints())
+    for (auto const pointIndex : mPoints.RawShipPoints())
     {
         if (!mPoints.GetIsHull(pointIndex))
         {
@@ -1211,7 +1211,7 @@ bool Ship::ScrubThrough(
     // Visit all points (excluding ephemerals, they don't rot and
     // thus we don't need to scrub them!)
     bool hasScrubbed = false;
-    for (auto pointIndex : mPoints.RawShipPoints())
+    for (auto const pointIndex : mPoints.RawShipPoints())
     {
         auto const & pointPosition = mPoints.GetPosition(pointIndex);
 
@@ -1228,7 +1228,7 @@ bool Ship::ScrubThrough(
                 // Scrub this point, with magnitude dependent from distance
                 //
 
-                float newDecay =
+                float const newDecay =
                     mPoints.GetDecay(pointIndex)
                     + 0.5f * (1.0f - mPoints.GetDecay(pointIndex)) * (scrubRadius - distance) / scrubRadius;
 
@@ -1247,6 +1247,74 @@ bool Ship::ScrubThrough(
     }
 
     return hasScrubbed;
+}
+
+bool Ship::RotThrough(
+    vec2f const & startPos,
+    vec2f const & endPos,
+    GameParameters const & gameParameters)
+{
+    float const rotRadius = gameParameters.ScrubRadius; // Yes, using the same for symmetry
+
+    //
+    // Find all points in the radius of the segment
+    //
+
+    // Calculate normal to the segment (doesn't really matter which orientation)
+    vec2f normalizedSegment = (endPos - startPos).normalise();
+    vec2f segmentNormal = vec2f(-normalizedSegment.y, normalizedSegment.x);
+
+    // Calculate bounding box for segment *and* search radius
+    Geometry::AABB boundingBox(
+        std::min(startPos.x, endPos.x) - rotRadius,   // Left
+        std::max(startPos.x, endPos.x) + rotRadius,   // Right
+        std::max(startPos.y, endPos.y) + rotRadius,   // Top
+        std::min(startPos.y, endPos.y) - rotRadius);  // Bottom
+
+    // Visit all points (excluding ephemerals, they don't rot and
+    // thus we don't need to rot them!)
+    bool hasRotted = false;
+    for (auto const pointIndex : mPoints.RawShipPoints())
+    {
+        auto const & pointPosition = mPoints.GetPosition(pointIndex);
+
+        // First check whether the point is in the bounding box
+        if (boundingBox.Contains(pointPosition))
+        {
+            // Distance = projection of (start->point) vector on segment normal
+            float const distance = std::abs((pointPosition - startPos).dot(segmentNormal));
+
+            // Check whether this point is in the radius
+            if (distance <= rotRadius)
+            {
+                //
+                // Rot this point, with magnitude dependent from distance,
+                // and more pronounced when the point is underwater or has water
+                //
+
+                float const decayCoeff = (mParentWorld.IsUnderwater(pointPosition) || mPoints.GetWater(pointIndex) >= 1.0f)
+                    ? 0.015f
+                    : 0.005f;
+
+                float const newDecay =
+                    mPoints.GetDecay(pointIndex)
+                    * (1.0f - decayCoeff * (rotRadius - distance) / rotRadius);
+
+                mPoints.SetDecay(pointIndex, newDecay);
+
+                // Remember at least one point has been rotted
+                hasRotted |= true;
+            }
+        }
+    }
+
+    if (hasRotted)
+    {
+        // Make sure the decay buffer gets uploaded again
+        mPoints.MarkDecayBufferAsDirty();
+    }
+
+    return hasRotted;
 }
 
 void Ship::ApplyThanosSnap(
@@ -1281,7 +1349,7 @@ void Ship::ApplyThanosSnap(
 
     // Visit all points (excluding ephemerals, there's nothing to detach there)
     bool atLeastOneDetached = false;
-    for (auto pointIndex : mPoints.RawShipPoints())
+    for (auto const pointIndex : mPoints.RawShipPoints())
     {
         auto const x = mPoints.GetPosition(pointIndex).x;
         if (leftX <= x
@@ -1328,7 +1396,7 @@ ElementIndex Ship::GetNearestPointAt(
     ElementIndex bestPointIndex = NoneElementIndex;
     float bestSquareDistance = std::numeric_limits<float>::max();
 
-    for (auto pointIndex : mPoints)
+    for (auto const pointIndex : mPoints)
     {
         if (mPoints.IsActive(pointIndex))
         {
@@ -1419,7 +1487,7 @@ std::optional<vec2f> Ship::FindSuitableLightningTarget() const
     // Sorted by y, largest first
     std::vector<vec2f> candidatePositions;
 
-    for (auto pointIndex : mPoints.RawShipPoints())
+    for (auto const pointIndex : mPoints.RawShipPoints())
     {
         // Non-deleted, non-orphaned point
         if (mPoints.IsActive(pointIndex)
@@ -1485,7 +1553,7 @@ void Ship::ApplyLightning(
     float const searchSquareRadiusBlast = searchSquareRadius / 2.0f;
     float const searchSquareRadiusHeat = searchSquareRadius;
 
-    for (auto pointIndex : mPoints.RawShipPoints())
+    for (auto const pointIndex : mPoints.RawShipPoints())
     {
         float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
 

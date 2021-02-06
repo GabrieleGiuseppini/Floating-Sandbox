@@ -1037,6 +1037,21 @@ bool GameController::ScrubThrough(
         mGameParameters);
 }
 
+bool GameController::RotThrough(
+    LogicalPixelCoordinates const & startScreenCoordinates,
+    LogicalPixelCoordinates const & endScreenCoordinates)
+{
+    vec2f const startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
+    vec2f const endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    return mWorld->RotThrough(
+        startWorldCoordinates,
+        endWorldCoordinates,
+        mGameParameters);
+}
+
 void GameController::ApplyThanosSnapAt(LogicalPixelCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);

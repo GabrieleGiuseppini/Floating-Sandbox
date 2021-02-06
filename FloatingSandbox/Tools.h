@@ -1981,9 +1981,9 @@ public:
             mPreviousMousePos = std::nullopt;
         }
 
-        // Reset scrub detection
-        mPreviousScrub.reset();
-        mPreviousScrubTimestamp = std::chrono::steady_clock::time_point::min();
+        // Reset strike detection
+        mPreviousStrikeVector.reset();
+        mPreviousSoundTimestamp = std::chrono::steady_clock::time_point::min();
 
         // Set cursor
         SetCurrentCursor(inputState);
@@ -1999,28 +1999,41 @@ public:
         {
             if (!!mPreviousMousePos)
             {
-                // Do a scrub strike
-                bool hasScrubbed = mGameController->ScrubThrough(
-                    *mPreviousMousePos,
-                    inputState.MousePosition);
+                // Do a strike
+                bool hasStriked;
+                if (inputState.IsShiftKeyDown)
+                {
+                    hasStriked = mGameController->RotThrough(
+                        *mPreviousMousePos,
+                        inputState.MousePosition);
+                }
+                else
+                {
+                    hasStriked = mGameController->ScrubThrough(
+                        *mPreviousMousePos,
+                        inputState.MousePosition);
+                }
 
                 // See if we should emit a sound
-                if (hasScrubbed)
+                if (hasStriked)
                 {
-                    vec2f const newScrub = (inputState.MousePosition - *mPreviousMousePos).ToFloat();
-                    if (newScrub.length() > 1.0f)
+                    vec2f const newStrikeVector = (inputState.MousePosition - *mPreviousMousePos).ToFloat();
+                    if (newStrikeVector.length() > 1.0f)
                     {
                         auto const now = std::chrono::steady_clock::now();
 
-                        if (!mPreviousScrub
-                            || std::abs(mPreviousScrub->angleCw(newScrub)) > Pi<float> / 2.0f    // Direction change
-                            || (now - mPreviousScrubTimestamp) > std::chrono::milliseconds(250))
+                        if (!mPreviousStrikeVector
+                            || std::abs(mPreviousStrikeVector->angleCw(newStrikeVector)) > Pi<float> / 2.0f    // Direction change
+                            || (now - mPreviousSoundTimestamp) > std::chrono::milliseconds(250))
                         {
                             // Play sound
-                            mSoundController->PlayScrubSound();
+                            if (inputState.IsShiftKeyDown)
+                                mSoundController->PlayRotSound();
+                            else
+                                mSoundController->PlayScrubSound();
 
-                            mPreviousScrub = newScrub;
-                            mPreviousScrubTimestamp = now;
+                            mPreviousStrikeVector = newStrikeVector;
+                            mPreviousSoundTimestamp = now;
                         }
                     }
                 }
@@ -2035,8 +2048,8 @@ public:
     {
         // Initialize state
         mPreviousMousePos = inputState.MousePosition;
-        mPreviousScrub.reset();
-        mPreviousScrubTimestamp = std::chrono::steady_clock::time_point::min();
+        mPreviousStrikeVector.reset();
+        mPreviousSoundTimestamp = std::chrono::steady_clock::time_point::min();
 
         // Set cursor
         SetCurrentCursor(inputState);
@@ -2051,8 +2064,17 @@ public:
         SetCurrentCursor(inputState);
     }
 
-    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyDown(InputState const & inputState) override
+    {
+        // Set cursor
+        SetCurrentCursor(inputState);
+    }
+
+    virtual void OnShiftKeyUp(InputState const & inputState) override
+    {
+        // Set cursor
+        SetCurrentCursor(inputState);
+    }
 
 private:
 
@@ -2061,32 +2083,48 @@ private:
         if (inputState.IsLeftMouseDown)
         {
             // Set current cursor to the down cursor
-            mToolCursorManager.SetToolCursor(mDownCursorImage);
+            if (inputState.IsShiftKeyDown)
+            {
+                mToolCursorManager.SetToolCursor(mRotDownCursorImage);
+            }
+            else
+            {
+                mToolCursorManager.SetToolCursor(mScrubDownCursorImage);
+            }
         }
         else
         {
             // Set current cursor to the up cursor
-            mToolCursorManager.SetToolCursor(mUpCursorImage);
+            if (inputState.IsShiftKeyDown)
+            {
+                mToolCursorManager.SetToolCursor(mRotUpCursorImage);
+            }
+            else
+            {
+                mToolCursorManager.SetToolCursor(mScrubUpCursorImage);
+            }
         }
     }
 
     // Our cursors
-    wxImage const mUpCursorImage;
-    wxImage const mDownCursorImage;
+    wxImage const mScrubUpCursorImage;
+    wxImage const mScrubDownCursorImage;
+    wxImage const mRotUpCursorImage;
+    wxImage const mRotDownCursorImage;
 
     //
     // State
     //
 
-    // The previous mouse position; when set, we have a segment and can scrub
+    // The previous mouse position; when set, we have a segment and can strike
     std::optional<LogicalPixelCoordinates> mPreviousMousePos;
 
-    // The previous scrub vector, which we want to remember in order to
-    // detect directions changes for the scrubbing sound
-    std::optional<vec2f> mPreviousScrub;
+    // The previous strike vector, which we want to remember in order to
+    // detect directions changes for the scrubbing/rotting sound
+    std::optional<vec2f> mPreviousStrikeVector;
 
-    // The time at which we have last played a scrub sound
-    std::chrono::steady_clock::time_point mPreviousScrubTimestamp;
+    // The time at which we have last played a sound
+    std::chrono::steady_clock::time_point mPreviousSoundTimestamp;
 };
 
 class RepairStructureTool final : public Tool

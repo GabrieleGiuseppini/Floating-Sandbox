@@ -553,7 +553,8 @@ Render:
 			+ Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
 			- Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
 
-		- Scrub/Rot tool (*)
+		= Scrub/Rot tool (*)
+			- Changelist
 
 		- Cached quantities (*)
 	
@@ -958,7 +959,6 @@ Render:
 		-selectable backgrounds
 		-lifeboat layer
 		-Volcanoes
-		-rot tool for abave water deteriation
 		-NPCs
 		-time travel
 		-torpedoes
@@ -1736,10 +1736,16 @@ Render:
 	- Tool to break enough to let water enter, but not to make a hole all the way to the other side
 		- Just sets points as leaking
 
-	- Rot tool: rots without having to flood it
-		- Then merge scrub tool into this one, with SHIFT
-		- Icon:
-			- https://cdn0.iconfinder.com/data/icons/poison-symbol/66/22-512.png
+	= Rot tool: rots without having to flood it
+		+ Then merge scrub tool into this one, with SHIFT
+		+ Icon:
+			X https://cdn0.iconfinder.com/data/icons/poison-symbol/66/22-512.png
+		= Sound
+			- Shorter sounds?
+		+ Dynamics:
+			+ Abovewater should rot less
+		+ Test:
+			+ With no effect volume
 
 	- Randomize decay
 		- Perlin noise on ship, created at ShipBuilder, stored as Points::WeakNoise

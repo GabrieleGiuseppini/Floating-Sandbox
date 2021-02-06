@@ -275,6 +275,11 @@ public:
         vec2f const & endPos,
         GameParameters const & gameParameters);
 
+    bool RotThrough(
+        vec2f const & startPos,
+        vec2f const & endPos,
+        GameParameters const & gameParameters);
+
     void ApplyThanosSnap(
         float centerX,
         float radius,

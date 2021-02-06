@@ -153,6 +153,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::TerrainAdjust;
     else if (Utils::CaseInsensitiveEquals(str, "Scrub"))
         return SoundType::Scrub;
+    else if (Utils::CaseInsensitiveEquals(str, "Rot"))
+        return SoundType::Rot;
     else if (Utils::CaseInsensitiveEquals(str, "RepairStructure"))
         return SoundType::RepairStructure;
     else if (Utils::CaseInsensitiveEquals(str, "ThanosSnap"))

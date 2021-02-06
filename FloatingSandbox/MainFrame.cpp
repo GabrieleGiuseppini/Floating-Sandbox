@@ -355,7 +355,7 @@ MainFrame::MainFrame(
     mToolsMenu->Append(repairStructureMenuItem);
     Connect(ID_REPAIRSTRUCTURE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRepairStructureMenuItemSelected);
 
-    wxMenuItem * scrubMenuItem = new wxMenuItem(mToolsMenu, ID_SCRUB_MENUITEM, _("Scrub") + wxS("\tU"), wxEmptyString, wxITEM_RADIO);
+    wxMenuItem * scrubMenuItem = new wxMenuItem(mToolsMenu, ID_SCRUB_MENUITEM, _("Scrub/Rot") + wxS("\tU"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(scrubMenuItem);
     Connect(ID_SCRUB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnScrubMenuItemSelected);
 

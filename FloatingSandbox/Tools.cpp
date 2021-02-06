@@ -496,11 +496,13 @@ ScrubTool::ScrubTool(
         toolCursorManager,
         std::move(gameController),
         std::move(soundController))
-    , mUpCursorImage(WxHelpers::LoadCursorImage("scrub_cursor_up", 15, 15, resourceLocator))
-    , mDownCursorImage(WxHelpers::LoadCursorImage("scrub_cursor_down", 15, 15, resourceLocator))
+    , mScrubUpCursorImage(WxHelpers::LoadCursorImage("scrub_cursor_up", 15, 15, resourceLocator))
+    , mScrubDownCursorImage(WxHelpers::LoadCursorImage("scrub_cursor_down", 15, 15, resourceLocator))
+    , mRotUpCursorImage(WxHelpers::LoadCursorImage("rot_cursor_up", 8, 24, resourceLocator))
+    , mRotDownCursorImage(WxHelpers::LoadCursorImage("rot_cursor_down", 8, 24, resourceLocator))
     , mPreviousMousePos()
-    , mPreviousScrub()
-    , mPreviousScrubTimestamp(std::chrono::steady_clock::time_point::min())
+    , mPreviousStrikeVector()
+    , mPreviousSoundTimestamp(std::chrono::steady_clock::time_point::min())
 {
 }
 
