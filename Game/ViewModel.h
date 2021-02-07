@@ -10,6 +10,7 @@
 
 #include <GameCore/GameMath.h>
 #include <GameCore/GameTypes.h>
+#include <GameCore/Log.h>
 #include <GameCore/Vectors.h>
 
 #include <algorithm>
@@ -242,7 +243,7 @@ public:
 
     inline vec2f ScreenToWorld(LogicalPixelCoordinates const & screenCoordinates) const
     {
-        return vec2f(
+        vec2f const worldCoordinates = vec2f(
             Clamp(
                 (static_cast<float>(screenCoordinates.x * mLogicalToPhysicalPixelFactor) / static_cast<float>(mCanvasPhysicalPixelSize.width) - 0.5f) * mVisibleWorld.Width + mCam.x,
                 -GameParameters::HalfMaxWorldWidth,
@@ -251,6 +252,11 @@ public:
                 (static_cast<float>(screenCoordinates.y * mLogicalToPhysicalPixelFactor) / static_cast<float>(mCanvasPhysicalPixelSize.height) - 0.5f) * -mVisibleWorld.Height + mCam.y,
                 -GameParameters::HalfMaxWorldHeight,
                 GameParameters::HalfMaxWorldHeight));
+
+        LogMessage("TODOTEST: ScreenToWorld(", screenCoordinates.x, ",", screenCoordinates.y, "): ", worldCoordinates.toString(), " (LogToPhys:", mLogicalToPhysicalPixelFactor, " CanvasPhys:(",
+            mCanvasPhysicalPixelSize.width, ",", mCanvasPhysicalPixelSize.height, ") Zoom:", mZoom, " Cam: ", mCam.toString());
+
+        return worldCoordinates;
     }
 
     inline vec2f ScreenOffsetToWorldOffset(LogicalPixelSize const & screenOffset) const

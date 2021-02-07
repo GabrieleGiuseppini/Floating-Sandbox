@@ -544,8 +544,9 @@ Render:
 							+ MoveBy
 						+ Shaders: cross of light, interactive, texture notifications
 						+ Screenshot
-				- ScreenToOffset with electrical panel
-					- Add logging
+				= ScreenToOffset with electrical panel
+					+ Add logging
+					- Remove TODOTEST logging
 				- MAC tests:
 					- Tools:
 						- Move tool
@@ -571,8 +572,6 @@ Render:
 					- See if may statically link
 
 		+ Send for testing
-
-		= Two crashes from Sam (asserts)
 
 		= See vector normalization optimization with mult's with 1/len
 			X It's already assembled like that
