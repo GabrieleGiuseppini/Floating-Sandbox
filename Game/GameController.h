@@ -576,6 +576,11 @@ public:
     float GetMinFloodQuantity() const override { return GameParameters::MinFloodQuantity; }
     float GetMaxFloodQuantity() const override { return GameParameters::MaxFloodQuantity; }
 
+    float GetScrubRotRadius() const override { return mGameParameters.ScrubRotRadius; }
+    void SetScrubRotRadius(float value) override { mGameParameters.ScrubRotRadius = value; }
+    float GetMinScrubRotRadius() const override { return GameParameters::MinScrubRotRadius; }
+    float GetMaxScrubRotRadius() const override { return GameParameters::MaxScrubRotRadius; }
+
     float GetLuminiscenceAdjustment() const override { return mGameParameters.LuminiscenceAdjustment; }
     void SetLuminiscenceAdjustment(float value) override { mGameParameters.LuminiscenceAdjustment = value; }
     float GetMinLuminiscenceAdjustment() const override { return GameParameters::MinLuminiscenceAdjustment; }

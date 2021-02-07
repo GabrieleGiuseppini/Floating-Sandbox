@@ -223,6 +223,9 @@ struct IGameControllerSettingsOptions
     virtual float GetMinFloodQuantity() const = 0;
     virtual float GetMaxFloodQuantity() const = 0;
 
+    virtual float GetMinScrubRotRadius() const = 0;
+    virtual float GetMaxScrubRotRadius() const = 0;
+
     virtual float GetMinAirBubblesDensity() const = 0;
     virtual float GetMaxAirBubblesDensity() const = 0;
 

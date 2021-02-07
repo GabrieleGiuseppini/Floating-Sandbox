@@ -2879,6 +2879,31 @@ void SettingsDialog::PopulateInteractionsPanel(wxPanel * panel)
                     CellBorder);
             }
 
+            // Scrub/Root Radius
+            {
+                mScrubRotRadiusSlider = new SliderControl<float>(
+                    toolsBox,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Scrub/Rot Radius"),
+                    _("How wide an area is affected by the scrub/rot tool (m)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ScrubRotRadius, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinScrubRotRadius(),
+                        mGameControllerSettingsOptions->GetMaxScrubRotRadius()));
+
+                toolsSizer->Add(
+                    mScrubRotRadiusSlider,
+                    wxGBPosition(0, 4),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
             //
             // Row 3
             //
@@ -4541,6 +4566,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mBombBlastHeatSlider->SetValue(settings.GetValue<float>(GameSettings::BombBlastHeat));
 
     mAntiMatterBombImplosionStrengthSlider->SetValue(settings.GetValue<float>(GameSettings::AntiMatterBombImplosionStrength));
+
+    mScrubRotRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::ScrubRotRadius));
 
     mFloodRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::FloodRadius));
 

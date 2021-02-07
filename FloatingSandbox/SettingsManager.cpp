@@ -117,6 +117,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, AntiMatterBombImplosionStrength);
     ADD_GC_SETTING(float, FloodRadius);
     ADD_GC_SETTING(float, FloodQuantity);
+    ADD_GC_SETTING(float, ScrubRotRadius);
     ADD_GC_SETTING(bool, UltraViolentMode);
     ADD_GC_SETTING(bool, DoGenerateDebris);
     ADD_GC_SETTING(float, SmokeEmissionDensityAdjustment);

@@ -3,6 +3,7 @@ Current perf:
 =================================================
 - After initial 1.16.3 perf optimizations:
 - default_ship, 40s, in [6s, 49s]
+	- Old dell: 30.20 (RelWithDebInfo)
 - GameController::RunGameIteration: 86.94%
 	- World::Update: 86.17%
 		- Ship::Update: 84.40%
@@ -522,6 +523,28 @@ Render:
 		+ HandleCollisionsWithSeaFloor optimization:
 			+ Fast check: go away if y > max of two samples's y's
 				+ 8.98%%: if (y > mSamples[sampleIndexI].SampleValue && y > mSamples[sampleIndexI + 1].SampleValue)
+		+ See vector normalization optimization with mult's with 1/len
+			X It's already assembled like that
+			+ SSE version 2
+			+ SSE version 2 with length
+			+ Unit tests:
+				+ normalize_approx()
+				+ normalize_approx(len)
+			x Use normalize_approx(len) at spring iteratations (w/profiling)
+				+ Get assembly before & after
+				+ Before: Ship::ApplySpringForces_BySprings: 54.87%, UPD=4.90ms (@20s)
+				+ After: Ship::ApplySpringForces_BySprings: 54.73%, UPD=4.89ms (@20s)
+			+ Use normalize_approx() at water dynamics (w/profiling)
+				+ Before: 8.98%
+				+ After: 7.95%
+				+ Test
+			+ Test perf on Dell
+			+ Redo profiling above
+		+ Rot tool:
+			+ An option for the radius (also for scrub)
+				+ SettingsDialog
+			+ Faster rotting
+		+ Send for testing
 
 		= ShipBucket:
 			+ Split author by ';', put remainder on next line prefixed with "art by:"
@@ -529,8 +552,7 @@ Render:
 				+ Add check to verify_ships.py to make sure author contains 0 or 1 ';'
 					+ Run on all
 				+ Change dialog
-			= I also like a warning not to repost the work on youtube, though i'm sure people will ignore this (we cant control everything unfortunately :wink: )
-				- Double-check with them
+			+ I also like a warning not to repost the work on youtube, though i'm sure people will ignore this (we cant control everything unfortunately :wink: )
 			+ Ask Fernando for his ships
 			- Tell CPM/Wreno rules for using ShipBucket
 				- Credits format		
@@ -595,28 +617,9 @@ Render:
 				- wxWidgets so's
 					- See if may statically link		
 
-		= See vector normalization optimization with mult's with 1/len
-			X It's already assembled like that
-			+ SSE version 2
-			+ SSE version 2 with length
-			+ Unit tests:
-				+ normalize_approx()
-				+ normalize_approx(len)
-			x Use normalize_approx(len) at spring iteratations (w/profiling)
-				+ Get assembly before & after
-				+ Before: Ship::ApplySpringForces_BySprings: 54.87%, UPD=4.90ms (@20s)
-				+ After: Ship::ApplySpringForces_BySprings: 54.73%, UPD=4.89ms (@20s)
-			= Use normalize_approx() at water dynamics (w/profiling)
-				+ Before: 8.98%
-				+ After: 7.95%
-				+ Test
-				- Test on Dell
-			- Redo profiling above
-
-		- Rot tool:
-			- An option for the radius (also for scrub), and just faster
-
 		- Waves from ship (*)
+
+		- Post for rot tool w/link to TimCan: https://youtu.be/Xf2CcIAVH4c
 
 		- New rain: https://www.shadertoy.com/view/tttyDB
 			- Test perf drop on Dell

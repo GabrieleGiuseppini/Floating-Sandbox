@@ -1191,7 +1191,7 @@ bool Ship::ScrubThrough(
     vec2f const & endPos,
     GameParameters const & gameParameters)
 {
-    float const scrubRadius = gameParameters.ScrubRadius;
+    float const scrubRadius = gameParameters.ScrubRotRadius;
 
     //
     // Find all points in the radius of the segment
@@ -1254,7 +1254,7 @@ bool Ship::RotThrough(
     vec2f const & endPos,
     GameParameters const & gameParameters)
 {
-    float const rotRadius = gameParameters.ScrubRadius; // Yes, using the same for symmetry
+    float const rotRadius = gameParameters.ScrubRotRadius; // Yes, using the same for symmetry
 
     //
     // Find all points in the radius of the segment
@@ -1293,8 +1293,8 @@ bool Ship::RotThrough(
                 //
 
                 float const decayCoeff = (mParentWorld.IsUnderwater(pointPosition) || mPoints.GetWater(pointIndex) >= 1.0f)
-                    ? 0.015f
-                    : 0.005f;
+                    ? 0.0175f
+                    : 0.010f;
 
                 float const newDecay =
                     mPoints.GetDecay(pointIndex)

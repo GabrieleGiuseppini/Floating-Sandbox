@@ -484,7 +484,9 @@ struct GameParameters
 
     float FireExtinguisherRadius;
 
-    float ScrubRadius;
+    float ScrubRotRadius;
+    static float constexpr MinScrubRotRadius = 1.0f;
+    static float constexpr MaxScrubRotRadius = 20.0f;
 
     bool IsUltraViolentMode;
 

@@ -240,6 +240,9 @@ struct IGameControllerSettings
     virtual float GetFloodQuantity() const = 0;
     virtual void SetFloodQuantity(float value) = 0;
 
+    virtual float GetScrubRotRadius() const = 0;
+    virtual void SetScrubRotRadius(float value) = 0;
+
     virtual bool GetUltraViolentMode() const = 0;
     virtual void SetUltraViolentMode(bool value) = 0;
 
