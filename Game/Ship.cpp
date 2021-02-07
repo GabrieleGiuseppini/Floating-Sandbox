@@ -1455,7 +1455,7 @@ void Ship::UpdateWaterVelocities(
             auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
 
             // Normalized spring vector, oriented point -> other endpoint
-            vec2f const springNormalizedVector = (mPoints.GetPosition(cs.OtherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
+            vec2f const springNormalizedVector = (mPoints.GetPosition(cs.OtherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise_approx();
 
             // Component of the point's own water velocity along the spring
             float const pointWaterVelocityAlongSpring =
@@ -1587,7 +1587,7 @@ void Ship::UpdateWaterVelocities(
                 //
 
                 // FUTURE: get rid of this re-calculation once we pre-calculate all spring normalized vectors
-                vec2f const springNormalizedVector = (mPoints.GetPosition(cs.OtherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
+                vec2f const springNormalizedVector = (mPoints.GetPosition(cs.OtherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise_approx();
 
                 float ma = springOutboundQuantityOfWater;
                 float va = springOutboundWaterVelocities[s].length();

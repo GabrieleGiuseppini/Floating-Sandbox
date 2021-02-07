@@ -1,24 +1,24 @@
 =================================================
 Current perf:
 =================================================
-- TODO
-- default_ship, 38s, in [5s, 37s]
-- GameController::RunGameIteration: 86.22%
-	- World::Update: 85.47%
-		- Ship::Update: 83.68%
-			- Ship::ApplySpringForces_BySprings: 54.87%
-			- Ship::HandleCollisionsWithSeaFloor: 10.60%
-			- Ship::UpdateWaterVelocities: 8.81%
-			- Ship::IntegrateAndResetSpringForces: 3.65%
-			- Ship::PropagateHeat: 2.22%
-			- Ship::ApplyWorldForces: 1.44%
-			- Springs::UpdateForStrains: 1.00%
+- After initial 1.16.3 perf optimizations:
+- default_ship, 40s, in [6s, 49s]
+- GameController::RunGameIteration: 86.94%
+	- World::Update: 86.17%
+		- Ship::Update: 84.40%
+			- Ship::ApplySpringForces_BySprings: 56.69%
+			- Ship::HandleCollisionsWithSeaFloor: 9.00%
+			- Ship::UpdateWaterVelocities: 8.45%
+			- Ship::IntegrateAndResetSpringForces: 4.01%
+			- Ship::PropagateHeat: 2.29%
+			- Ship::ApplyWorldForces: 1.61%
+			- Springs::UpdateForStrains: 1.08%
 			- Points::UpdateMasses: 0.41%
 			- Ship::DiffuseLight: 0.37%
-			- Ship::TrimForWorldBounds: 0.19%
-			- Ship::UpdateWaterInflow: 0.11%
-		- OceanSurface::GenerateSamples: 1.21%
-		- OceanSurface::Update: 0.36%
+			- Ship::TrimForWorldBounds: 0.25%
+			- Ship::UpdateWaterInflow: 0.10%
+		- OceanSurface::GenerateSamples: 1.20%
+		- OceanSurface::Update: 0.30%
 
 =================================================
 1.16.0
@@ -518,6 +518,10 @@ Render:
 					+ Then remove "allow for derivative taking"
 					+ Also at OceanSurface
 			+ Test in debug
+		+ Send for testing
+		+ HandleCollisionsWithSeaFloor optimization:
+			+ Fast check: go away if y > max of two samples's y's
+				+ 8.98%%: if (y > mSamples[sampleIndexI].SampleValue && y > mSamples[sampleIndexI + 1].SampleValue)
 
 		= ShipBucket:
 			+ Split author by ';', put remainder on next line prefixed with "art by:"
@@ -589,9 +593,7 @@ Render:
 			- Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
 			- Packaging:
 				- wxWidgets so's
-					- See if may statically link
-
-		+ Send for testing
+					- See if may statically link		
 
 		= See vector normalization optimization with mult's with 1/len
 			X It's already assembled like that
@@ -604,17 +606,12 @@ Render:
 				+ Get assembly before & after
 				+ Before: Ship::ApplySpringForces_BySprings: 54.87%, UPD=4.90ms (@20s)
 				+ After: Ship::ApplySpringForces_BySprings: 54.73%, UPD=4.89ms (@20s)
-			- Use normalize_approx() at water dynamics (w/profiling)
-				- Before:
-				- After:
+			= Use normalize_approx() at water dynamics (w/profiling)
+				+ Before: 8.98%
+				+ After: 7.95%
+				+ Test
 				- Test on Dell
-			- See lighting SSE code if really vectorized	
-			
-		= HandleCollisionsWithSeaFloor optimization:
-			= Fast check: go away if y > max of two samples's y's
-				+ 8.98%%: if (y > mSamples[sampleIndexI].SampleValue && y > mSamples[sampleIndexI + 1].SampleValue)
-				- TODO: other try
-
+			- Redo profiling above
 
 		- Rot tool:
 			- An option for the radius (also for scrub), and just faster

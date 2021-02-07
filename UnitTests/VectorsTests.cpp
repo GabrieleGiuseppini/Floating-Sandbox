@@ -44,7 +44,8 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple(vec2f{ 1.0f, 0.0f }, vec2f{ 1.0f, 0.0f }),
         std::make_tuple(vec2f{ 1.0f, 1.0f }, vec2f{ 1.0f / std::sqrt(2.0f), 1.0f / std::sqrt(2.0f) }),
         std::make_tuple(vec2f{ 3.0f, 4.0f }, vec2f{ 3.0f / 5.0f, 4.0f / 5.0f}),
-        std::make_tuple(vec2f{ 0.0f, 0.0f }, vec2f{ 0.0f, 0.0f })
+        std::make_tuple(vec2f{ 0.0f, 0.0f }, vec2f{ 0.0f, 0.0f }),
+        std::make_tuple(vec2f{ 3000.0f, 4000.0f }, vec2f{ 3.0f / 5.0f, 4.0f / 5.0f })
     ));
 
 TEST_P(Normalization2fTest, Normalization2fTest)

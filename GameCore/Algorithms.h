@@ -129,6 +129,7 @@ inline void CalculateVectorDirsAndReciprocalLengths_SSE(
 
 #endif
 
+// Currently unused - just by benchmarks
 template<typename TVector>
 inline void DiffuseLight_Naive(
     TVector const * pointPositions,
