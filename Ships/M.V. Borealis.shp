@@ -1,0 +1,22 @@
+{
+	"structure_image":"mv_borealis_structure.png.dat",
+        "electrical_image":"mv_borealis_electrical.png.dat",
+	"offset":{"x":0.0, "y":-11.0},
+	"ship_name":"M.V. Borealis",
+	"created_by":"TopHat",
+	"year_built":"1997",
+	"electrical_panel":{
+		"20": {"panel_x":-7, "panel_y":0, "label":"Engine 1" },
+		"68": {"panel_x":-6, "panel_y":0, "label":"Engine 1" },
+		"29": {"panel_x":-5, "panel_y":0, "label":"Engines 2, 3" },
+		"2": {"panel_x":-4, "panel_y":0, "label":"Engine 2" },
+		"6": {"panel_x":-3, "panel_y":0, "label":"Engine 3" },
+
+		"8": {"panel_x":-1, "panel_y":0, "label":"Lights Aft" },
+		"11": {"panel_x":0, "panel_y":0, "label":"Smoke Aft" },
+		"19": {"panel_x":1, "panel_y":0, "label":"Lights Fore" },
+		"9": {"panel_x":2, "panel_y":0, "label":"Smoke Fore" },
+
+		"57": {"panel_x":4, "panel_y":0, "label":"Horn" }
+	}
+}
