@@ -65,14 +65,17 @@ LoggingDialog::~LoggingDialog()
 
 void LoggingDialog::Open()
 {
-	Logger::Instance.RegisterListener(
-		[this, windowId = this->GetId()](std::string const & message)
-		{
+    if (!this->IsShown())
+    {
+        Logger::Instance.RegisterListener(
+            [this, windowId = this->GetId()](std::string const & message)
+        {
             fsLogMessageEvent * event = new fsLogMessageEvent(fsEVT_LOG_MESSAGE, windowId, message);
             QueueEvent(event);
-		});
+        });
 
-	this->Show();
+        this->Show();
+    }
 }
 
 void LoggingDialog::OnKeyDown(wxKeyEvent& event)

@@ -70,6 +70,8 @@ public:
 
 	void RegisterListener(std::function<void(std::string const & message)> listener)
 	{
+        // At this moment we don't expect to (and thus don't support) having more than one listener at
+        // any given moment in time, so we're catching ill-conceived attempts here
 		assert(!mCurrentListener);
 
         std::scoped_lock lock(mMutex);

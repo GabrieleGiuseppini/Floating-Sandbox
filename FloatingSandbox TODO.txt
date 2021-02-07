@@ -572,7 +572,7 @@ Render:
 
 		+ Send for testing
 
-		- Two crashes from Sam (asserts)
+		= Two crashes from Sam (asserts)
 
 		= See vector normalization optimization with mult's with 1/len
 			X It's already assembled like that
@@ -582,6 +582,7 @@ Render:
 				+ normalize_approx()
 				+ normalize_approx(len)
 			- Use normalize_approx(len) at spring iteratations (w/profiling)
+				- Get assembly before & after
 				- Before:
 				- After:
 				- Test on Dell
@@ -589,6 +590,7 @@ Render:
 				- Before:
 				- After:
 				- Test on Dell
+			- See lighting SSE code if really vectorized				
 
 		- Rot tool:
 			- An option for the radius (also for scrub), and just faster
