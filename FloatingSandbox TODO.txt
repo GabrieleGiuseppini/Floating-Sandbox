@@ -1727,6 +1727,7 @@ Render:
 						- Then zeroed out at end of Update(), so it's ready for the next cycle
 					- Method to populate deltas (from ship): TODO naming, clearly distinct from the "local" one used for fishes and bubbles, and from eventual others
 			- Cleanup:
+				- See if can get rid of "small scale" code and use delta-buffer instead
 
 	- Gases:
 		- Spec:
