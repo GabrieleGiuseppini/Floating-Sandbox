@@ -2469,13 +2469,15 @@ void Ship::HandlePointDetach(
     auto const electricalElementIndex = mPoints.GetElectricalElement(pointElementIndex);
     if (NoneElementIndex != electricalElementIndex)
     {
-        assert(!mElectricalElements.IsDeleted(electricalElementIndex));
-        assert(mElectricalElements.GetConnectedElectricalElements(electricalElementIndex).empty());
-        assert(mElectricalElements.GetConductingConnectedElectricalElements(electricalElementIndex).empty());
+        if (!mElectricalElements.IsDeleted(electricalElementIndex))
+        {
+            assert(mElectricalElements.GetConnectedElectricalElements(electricalElementIndex).empty());
+            assert(mElectricalElements.GetConductingConnectedElectricalElements(electricalElementIndex).empty());
 
-        mElectricalElements.Destroy(electricalElementIndex);
+            mElectricalElements.Destroy(electricalElementIndex);
 
-        hasAnythingBeenDestroyed = true;
+            hasAnythingBeenDestroyed = true;
+        }
     }
 
     if (hasAnythingBeenDestroyed)
