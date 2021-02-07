@@ -1,6 +1,26 @@
 =================================================
 Current perf:
 =================================================
+- TODO
+- default_ship, 38s, in [5s, 37s]
+- GameController::RunGameIteration: 86.22%
+	- World::Update: 85.47%
+		- Ship::Update: 83.68%
+			- Ship::ApplySpringForces_BySprings: 54.87%
+			- Ship::HandleCollisionsWithSeaFloor: 10.60%
+			- Ship::UpdateWaterVelocities: 8.81%
+			- Ship::IntegrateAndResetSpringForces: 3.65%
+			- Ship::PropagateHeat: 2.22%
+			- Ship::ApplyWorldForces: 1.44%
+			- Springs::UpdateForStrains: 1.00%
+			- Points::UpdateMasses: 0.41%
+			- Ship::DiffuseLight: 0.37%
+			- Ship::TrimForWorldBounds: 0.19%
+			- Ship::UpdateWaterInflow: 0.11%
+		- OceanSurface::GenerateSamples: 1.21%
+		- OceanSurface::Update: 0.36%
+
+=================================================
 1.16.0
 - DELL new (default_ship): FPS=62.9 UPD=4.8ms RND=4.3ms
 - DELL old (default_ship, basic ocean): FPS=29.8/30.0 UPD=20.4ms, RND=12.6ms/12.9ms
@@ -1670,6 +1690,7 @@ Render:
 				- massiveness = point's connected component size
 		- WATCH OUT: might be ugly with peaks (very vertical slope)
 			- Increase resolution of ocean floor - shouldn't impact perf other than for cache misses
+		- Richter reading upon impact (see https://www.quora.com/How-fast-did-the-Titanic-sink-to-the-bottom-and-did-it-make-a-noise-when-it-hit)
 
 	- Waves from ship (*):
 		- Spec:
