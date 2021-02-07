@@ -94,6 +94,11 @@ public:
         return mOceanFloor.GetHeightAt(x);
     }
 
+    inline bool IsUnderOceanFloor(float x, float y) const noexcept
+    {
+        return mOceanFloor.IsUnderOceanFloor(x, y);
+    }
+
     inline vec2f GetOceanFloorNormalAt(float x) const noexcept
     {
         return mOceanFloor.GetNormalAt(x);

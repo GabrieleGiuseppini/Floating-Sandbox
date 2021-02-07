@@ -600,16 +600,21 @@ Render:
 			+ Unit tests:
 				+ normalize_approx()
 				+ normalize_approx(len)
-			- Use normalize_approx(len) at spring iteratations (w/profiling)
-				- Get assembly before & after
-				- Before:
-				- After:
-				- Test on Dell
+			x Use normalize_approx(len) at spring iteratations (w/profiling)
+				+ Get assembly before & after
+				+ Before: Ship::ApplySpringForces_BySprings: 54.87%, UPD=4.90ms (@20s)
+				+ After: Ship::ApplySpringForces_BySprings: 54.73%, UPD=4.89ms (@20s)
 			- Use normalize_approx() at water dynamics (w/profiling)
 				- Before:
 				- After:
 				- Test on Dell
-			- See lighting SSE code if really vectorized				
+			- See lighting SSE code if really vectorized	
+			
+		= HandleCollisionsWithSeaFloor optimization:
+			= Fast check: go away if y > max of two samples's y's
+				+ 8.98%%: if (y > mSamples[sampleIndexI].SampleValue && y > mSamples[sampleIndexI + 1].SampleValue)
+				- TODO: other try
+
 
 		- Rot tool:
 			- An option for the radius (also for scrub), and just faster

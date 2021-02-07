@@ -1104,8 +1104,7 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
         // At this moment the point might be outside of world boundaries,
         // so better clamp its x before sampling ocean floor height
         float const clampedX = Clamp(position.x, -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth);
-        float const floorHeight = mParentWorld.GetOceanFloorHeightAt(clampedX);
-        if (position.y <= floorHeight)
+        if (mParentWorld.IsUnderOceanFloor(clampedX, position.y))
         {
             // Collision!
 

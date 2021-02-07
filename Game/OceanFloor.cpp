@@ -17,13 +17,20 @@ static constexpr T RenderSlices = 500;
 OceanFloor::OceanFloor(OceanFloorTerrain && terrain)
     : mBumpProfile(SamplesCount)
     , mTerrain(std::move(terrain))
-    , mSamples(new Sample[SamplesCount + 1]) // One extra sample for the rightmost X
+    // Regarding the number of samples:
+    //  - The sample index for x==max (HalfMaxWorldWidth) is SamplesCount, and its sample value is == the previous one (sample[SamplesCount].SampleValue == sample[SamplesCount - 1].SampleValue)
+    //  - To allow for interpolation at x==max, we need an addressable value for sample[SamplesCount].SampleValuePlusOneMinusSampleValue (and it's flat there)
+    //  - To allow for rough check at x==max, we need an addressable value for sample[SamplesCount + 1].SampleValue
+    // So the total number of samples we need is SamplesCount + 2
+    , mSamples(new Sample[SamplesCount + 2])
     , mCurrentSeaDepth(0.0f)
     , mCurrentOceanFloorBumpiness(0.0f)
     , mCurrentOceanFloorDetailAmplification(0.0f)
 {
     // Initialize constant sample values
-    mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f;
+    mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = 0.0f; // Because mSamples[SamplesCount].SampleValue is == mSamples[SamplesCount - 1].SampleValue
+    mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Because mSamples[SamplesCount + 1].SampleValue is == mSamples[SamplesCount].SampleValue
+    mSamples[SamplesCount + 1].SampleValuePlusOneMinusSampleValue = 0.0f; // Just because (won't ever be accessed)
 
     // Calculate bump profile
     CalculateBumpProfile();
@@ -276,10 +283,13 @@ void OceanFloor::SetTerrainHeight(
         // and no point in updating delta of last sample, as it's always zero
         mSamples[sampleIndex].SampleValuePlusOneMinusSampleValue = mSamples[sampleIndex + 1].SampleValue - newSampleValue;
     }
-    else if (sampleIndex == SamplesCount - 1)
+    else
     {
-        // Make sure the final extra sample has the same value as the last sample
+        assert(sampleIndex == SamplesCount - 1);
+
+        // Make sure the final extra samples have the same value as the last sample
         mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
+        mSamples[SamplesCount + 1].SampleValue = mSamples[SamplesCount - 1].SampleValue;
     }
 }
 
@@ -320,14 +330,17 @@ void OceanFloor::CalculateResultantSampleValues()
         previousSampleValue = sampleValue;
     }
 
-    // Populate last delta (extra sample has same value as this sample)
-    mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = 0.0f;
-
-    // Populate extra sample - same value as last sample
+    // Sample[SampleCount - 1] == Sample[SampleCount]
+    assert(mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue == 0.0f);
     assert(previousSampleValue == mSamples[SamplesCount - 1].SampleValue);
     mSamples[SamplesCount].SampleValue = previousSampleValue;
 
+    // Sample[SampleCount] == Sample[SampleCount + 1]
     assert(mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue == 0.0f);
+    mSamples[SamplesCount + 1].SampleValue = previousSampleValue;
+
+    // Just because (won't ever be accessed)
+    assert(mSamples[SamplesCount + 1].SampleValuePlusOneMinusSampleValue == 0.0f);
 }
 
 }
