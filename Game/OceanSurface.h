@@ -125,6 +125,35 @@ public:
             sampleIndexDx * yOffset / SWEHeightFieldAmplification);
     }
 
+    inline void DisplaceTODOTESTAt(
+        float const x,
+        float const yOffset)
+    {
+        assert(x >= -GameParameters::HalfMaxWorldWidth
+            && x <= GameParameters::HalfMaxWorldWidth);
+
+        //
+        // Find sample index and interpolate in-between that sample and the next
+        //
+
+        // Fractional index in the sample array
+        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+
+        // Integral part
+        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+
+        // Fractional part within sample index and the next sample index
+        float const sampleIndexDx = sampleIndexF - sampleIndexI;
+
+        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+        assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
+
+        // Distribute the displacement offset among the two samples
+        // TODOTEST: there's no guarantee we may access SWEOuterLayerSamples + sampleIndexI + 1
+        mHeightField[SWEOuterLayerSamples + sampleIndexI] += (1.0f - sampleIndexDx) * yOffset / SWEHeightFieldAmplification;
+        mHeightField[SWEOuterLayerSamples + sampleIndexI + 1] += sampleIndexDx * yOffset / SWEHeightFieldAmplification;
+    }
+
     void ApplyThanosSnap(
         float leftFrontX,
         float rightFrontX);

@@ -1715,13 +1715,18 @@ Render:
 						- All frontiers in all ships still get to see the original surface, and thus there's no risk of one affecting the next
 							- However, we might not want delta's to be cumulative. For example, if CC 1 sees y=0 and makes delta=-3, and CC2 sees y=0 and makes delta=-2, we might not
 							  want to end up with delta=-5. See if should use a "max" thing instead
-		- Impl:
-			- OceanSurface:
-				- mHeightFieldDeltas buffer
-					- Simply a buffer of samples
-					- Materialized into samples during Update(), after smoothing
-					- Then zeroed out at end of Update(), so it's ready for the next cycle
-				- Method to populate deltas (from ship): TODO naming, clearly distinct from the "local" one used for fishes and bubbles, and from eventual others
+		= Impl:
+			= Step 1: basic
+				- Simple, immediate adjustment of surface height
+					- Requires temporary method from OceanSurface (& world)
+			- Most correct:
+				- OceanSurface:
+					- mHeightFieldDeltas buffer
+						- Simply a buffer of samples
+						- Materialized into samples during Update(), after smoothing
+						- Then zeroed out at end of Update(), so it's ready for the next cycle
+					- Method to populate deltas (from ship): TODO naming, clearly distinct from the "local" one used for fishes and bubbles, and from eventual others
+			- Cleanup:
 
 	- Gases:
 		- Spec:

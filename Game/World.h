@@ -89,6 +89,13 @@ public:
         mOceanSurface.DisplaceSmallScaleAt(x, yOffset);
     }
 
+    inline void DisplaceTODOTESTOceanSurfaceAt(
+        float x,
+        float yOffset)
+    {
+        mOceanSurface.DisplaceTODOTESTAt(x, yOffset);
+    }
+
     inline float GetOceanFloorHeightAt(float x) const noexcept
     {
         return mOceanFloor.GetHeightAt(x);

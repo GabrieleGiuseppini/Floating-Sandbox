@@ -862,7 +862,7 @@ void Ship::ApplyWorldForces(
         size_t visitedPoints = 0;
 #endif
 
-        for (ElementIndex nextEdgeIndex = startEdgeIndex; ;)
+        for (ElementIndex nextEdgeIndex = startEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
         {
 
 #ifdef _DEBUG
@@ -884,7 +884,7 @@ void Ship::ApplyWorldForces(
             vec2f const nextPointPosition = mPoints.GetPosition(nextPointIndex);
 
             //
-            // Calculate drag force
+            // Drag force
             //
             // We would like to use a square law (i.e. drag force proportional to square
             // of velocity), but then particles at high velocities become subject to
@@ -939,8 +939,37 @@ void Ship::ApplyWorldForces(
             // Apply drag force
             mPoints.GetNonSpringForce(pointIndex) -= dragForce;
 
+            ///////////////////////////////////////////////////////////////////////////
+            // TODOTEST - START - EXPERIMENTAL
+
             //
-            // Advance
+            // Ocean surface displacement
+            //
+            // Surface displacement:
+            // - Direction: in the direction of the point's vertical velocity
+            // - Magnitude: proportional to vertical velocity and depth, within a [0, MaxDepth] band
+            // - MaxDepth: proportional to vertical velocity
+            //
+
+            float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
+
+            float const maxDepth =
+                10.0f
+                * SmoothStep(0.0f, 20.0f, std::abs(verticalVelocity));
+
+            float const displacement =
+                (verticalVelocity < 0.0f ? 1.0f : -1.0f)
+                * Clamp(verticalVelocity, -10.0f, 10.0f) / 75.0f
+                * (SmoothStep(0.0f, maxDepth / 2.0f, pointDepth) - SmoothStep(maxDepth / 2.0f, maxDepth, pointDepth));
+
+            mParentWorld.DisplaceTODOTESTOceanSurfaceAt(pointPosition.x, displacement);
+
+            // TODOTEST - END - EXPERIMENTAL
+            ///////////////////////////////////////////////////////////////////////////
+
+
+            //
+            // Advance edge in the frontier
             //
 
             nextEdgeIndex = nextFrontierEdge.NextEdgeIndex;
