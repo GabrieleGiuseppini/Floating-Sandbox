@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <iterator>
 
 namespace Algorithms {
@@ -221,7 +222,7 @@ inline void DiffuseLight_Vectorized(
         //
 
         for (ElementIndex l = 0; l < lampCount; ++l)
-        {         
+        {
             // Calculate distances
             std::array<float, 4> tmpPointDistances;
             for (ElementIndex p2 = 0; p2 < 4; ++p2)
@@ -243,7 +244,7 @@ inline void DiffuseLight_Vectorized(
                     batchOutLightBuffer[p2]);
             }
         }
-        
+
         //
         // Cap output lights
         //

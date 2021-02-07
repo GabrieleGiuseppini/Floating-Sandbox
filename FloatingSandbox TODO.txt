@@ -544,6 +544,8 @@ Render:
 							+ MoveBy
 						+ Shaders: cross of light, interactive, texture notifications
 						+ Screenshot
+				- ScreenToOffset with electrical panel
+					- Add logging
 				- MAC tests:
 					- Tools:
 						- Move tool
@@ -562,23 +564,34 @@ Render:
 						- Please send me a screenshot of this one
 					- Credits
 						- Please send me a screenshot of this one
-
-
 			+ Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
 			- Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
 			- Packaging:
 				- wxWidgets so's
 					- See if may statically link
 
-		- Send for testing
+		+ Send for testing
+
+		- Two crashes from Sam (asserts)
 
 		= See vector normalization optimization with mult's with 1/len
 			X It's already assembled like that
 			+ SSE version 2
-			- SSE version 3: do on packed (though it's two only)
-			- Unit tests
-			- Use
+			+ SSE version 2 with length
+			+ Unit tests:
+				+ normalize_approx()
+				+ normalize_approx(len)
+			- Use normalize_approx(len) at spring iteratations (w/profiling)
+				- Before:
+				- After:
 				- Test on Dell
+			- Use normalize_approx() at water dynamics (w/profiling)
+				- Before:
+				- After:
+				- Test on Dell
+
+		- Rot tool:
+			- An option for the radius (also for scrub), and just faster
 
 		- Waves from ship (*)
 

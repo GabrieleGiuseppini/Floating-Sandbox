@@ -52,12 +52,39 @@ TEST_P(Normalization2fTest, Normalization2fTest)
     vec2f input = std::get<0>(GetParam());
     vec2f expected = std::get<1>(GetParam());
 
-    vec2f calcd1 = input.normalise();
-    EXPECT_TRUE(ApproxEquals(calcd1.x, expected.x, 0.0001f));
-    EXPECT_TRUE(ApproxEquals(calcd1.y, expected.y, 0.0001f));
+    vec2f calcd = input.normalise();
+    EXPECT_TRUE(ApproxEquals(calcd.x, expected.x, 0.0001f));
+    EXPECT_TRUE(ApproxEquals(calcd.y, expected.y, 0.0001f));
+}
+
+TEST_P(Normalization2fTest, NormalizationWithLength2fTest)
+{
+    vec2f input = std::get<0>(GetParam());
+    vec2f expected = std::get<1>(GetParam());
 
     float len = input.length();
-    vec2f calcd2 = input.normalise(len);
-    EXPECT_TRUE(ApproxEquals(calcd2.x, expected.x, 0.0001f));
-    EXPECT_TRUE(ApproxEquals(calcd2.y, expected.y, 0.0001f));
+    vec2f calcd = input.normalise(len);
+    EXPECT_TRUE(ApproxEquals(calcd.x, expected.x, 0.0001f));
+    EXPECT_TRUE(ApproxEquals(calcd.y, expected.y, 0.0001f));
+}
+
+TEST_P(Normalization2fTest, NormalizationApprox2fTest)
+{
+    vec2f input = std::get<0>(GetParam());
+    vec2f expected = std::get<1>(GetParam());
+
+    vec2f calcd = input.normalise_approx();
+    EXPECT_TRUE(ApproxEquals(calcd.x, expected.x, 0.001f));
+    EXPECT_TRUE(ApproxEquals(calcd.y, expected.y, 0.001f));
+}
+
+TEST_P(Normalization2fTest, NormalizationApproxWithLength2fTest)
+{
+    vec2f input = std::get<0>(GetParam());
+    vec2f expected = std::get<1>(GetParam());
+
+    float len = input.length();
+    vec2f calcd = input.normalise_approx(len);
+    EXPECT_TRUE(ApproxEquals(calcd.x, expected.x, 0.001f));
+    EXPECT_TRUE(ApproxEquals(calcd.y, expected.y, 0.001f));
 }
