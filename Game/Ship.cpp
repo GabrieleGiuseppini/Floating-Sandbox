@@ -953,12 +953,16 @@ void Ship::ApplyWorldForces(
 
             float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
 
-            float const maxDepth =
-                10.0f
-                * SmoothStep(0.0f, 20.0f, std::abs(verticalVelocity));
+            float const maxDepth = (verticalVelocity < 0.0f) ?
+                10.0f * SmoothStep(0.0f, 20.0f, -verticalVelocity)
+                : 4.0f * SmoothStep(0.0f, 20.0f, verticalVelocity);
+
+            float const displacementMagnitude = (verticalVelocity < 0.0f) ?
+                Clamp(verticalVelocity, -10.0f, 10.0f) / 55.0f
+                : Clamp(verticalVelocity, -10.0f, 10.0f) / 100.0f;
 
             float const displacement =
-                Clamp(verticalVelocity, -10.0f, 10.0f) / 75.0f
+                displacementMagnitude
                 * (SmoothStep(0.0f, maxDepth / 2.0f, pointDepth) - SmoothStep(maxDepth / 2.0f, maxDepth, pointDepth));
 
             mParentWorld.DisplaceTODOTESTOceanSurfaceAt(pointPosition.x, displacement);

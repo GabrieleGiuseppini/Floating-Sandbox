@@ -1737,8 +1737,8 @@ Render:
 					- Materialized into samples during UpdateFields()
 					- Then zeroed out at end of UpdateFields(), so it's ready for the next cycle
 						- Or zeroed out *during* UpdateFields()
-				- Wave generation:
-					- pointDepth (capped) * (1 - Smoothstep(0, maxDepth, depth)) // no velocity here, velocity influences maxDepth already
+				+ Wave generation:
+					+ pointDepth (capped) * (1 - Smoothstep(0, maxDepth, depth)) // no velocity here, velocity influences maxDepth already
 			- Step 3: see if needs smoothing
 				- constexpr constant gives width of smoothing, so we may experiment
 					- Make delta buffer size==SamplesCount + 2 * (DeltaSmoothingWidth/2) // or just +(DeltaSmoothingWidth/2), depends on whether we need right part or not
