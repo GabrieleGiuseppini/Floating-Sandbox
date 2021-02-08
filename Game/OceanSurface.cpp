@@ -45,6 +45,7 @@ OceanSurface::OceanSurface(
     ////////
     , mHeightField(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
     , mVelocityField(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
+    , mDeltaHeightBuffer()
     ////////
     , mSWEInteractiveWaveStateMachine()
     , mSWETsunamiWaveStateMachine()
@@ -62,6 +63,8 @@ OceanSurface::OceanSurface(
         mHeightField[i] = SWEHeightFieldOffset;
         mVelocityField[i] = 0.0f;
     }
+
+    mDeltaHeightBuffer.fill(0.0f);
 
     //
     // Initialize constant sample values

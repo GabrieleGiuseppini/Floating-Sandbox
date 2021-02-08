@@ -617,7 +617,14 @@ Render:
 				- wxWidgets so's
 					- See if may statically link		
 
+		- DKUZ bug with yellow dots @ rotting
+
 		- Waves from ship (*)
+
+		- Whole OceanSurface: use FixedSizeBuffer's instead of std::unique_ptr<float[]>'s
+			- Perf measurements:
+				- Before
+				- After
 
 		- Post for rot tool w/link to TimCan: https://youtu.be/Xf2CcIAVH4c
 
@@ -1716,18 +1723,34 @@ Render:
 							- However, we might not want delta's to be cumulative. For example, if CC 1 sees y=0 and makes delta=-3, and CC2 sees y=0 and makes delta=-2, we might not
 							  want to end up with delta=-5. See if should use a "max" thing instead
 		= Impl:
-			= Step 1: basic
-				- Simple, immediate adjustment of surface height
-					- Requires temporary method from OceanSurface (& world)
-			- Most correct:
-				- OceanSurface:
-					- mHeightFieldDeltas buffer
-						- Simply a buffer of samples
-						- Materialized into samples during Update(), after smoothing
-						- Then zeroed out at end of Update(), so it's ready for the next cycle
-					- Method to populate deltas (from ship): TODO naming, clearly distinct from the "local" one used for fishes and bubbles, and from eventual others
-			- Cleanup:
-				- See if can get rid of "small scale" code and use delta-buffer instead
+			+ Step 1: basic
+				+ Simple, immediate adjustment of surface height
+					+ Requires temporary method from OceanSurface (& world)
+			= Step 2: delta's incorporated at next update
+				= OceanSurface: mHeightFieldDeltas buffer
+					+ Simply a buffer of samples
+						+ Make it part of SWE
+							+ Make it a FixedBuffer
+								+ Clear it in cctor with fill()
+									+ Verify assembly
+							+ Make its size==SamplesCount+1
+					- Materialized into samples during UpdateFields()
+					- Then zeroed out at end of UpdateFields(), so it's ready for the next cycle
+						- Or zeroed out *during* UpdateFields()
+				- Wave generation:
+					- pointDepth (capped) * (1 - Smoothstep(0, maxDepth, depth)) // no velocity here, velocity influences maxDepth already
+			- Step 3: see if needs smoothing
+				- constexpr constant gives width of smoothing, so we may experiment
+					- Make delta buffer size==SamplesCount + 2 * (DeltaSmoothingWidth/2) // or just +(DeltaSmoothingWidth/2), depends on whether we need right part or not
+				- How to not break vectorization of SWE field update:
+					- Option a) Update HeightFields first, together with smoothing (& clearing) pass
+			- Cleanup:				
+				- See if can get rid of "displace small scale" function, and use delta-buffer instead
+				- Method to populate deltas (from ship): TODO naming, clearly distinct from the "local" one used for fishes and bubbles, and from others
+			- Final test:
+				- Test in Debug build
+					- Displacement at middle
+					- Displacement close to both ends of the world
 
 	- Gases:
 		- Spec:

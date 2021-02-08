@@ -8,6 +8,7 @@
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
 
+#include <GameCore/FixedSizeVector.h>
 #include <GameCore/GameMath.h>
 #include <GameCore/PrecalculatedFunction.h>
 #include <GameCore/RunningAverage.h>
@@ -132,6 +133,8 @@ public:
         assert(x >= -GameParameters::HalfMaxWorldWidth
             && x <= GameParameters::HalfMaxWorldWidth);
 
+        /* TODOTEST: now trying with delta's
+        */
         //
         // Find sample index and interpolate in-between that sample and the next
         //
@@ -152,6 +155,21 @@ public:
         // TODOTEST: there's no guarantee we may access SWEOuterLayerSamples + sampleIndexI + 1
         mHeightField[SWEOuterLayerSamples + sampleIndexI] += (1.0f - sampleIndexDx) * yOffset / SWEHeightFieldAmplification;
         mHeightField[SWEOuterLayerSamples + sampleIndexI + 1] += sampleIndexDx * yOffset / SWEHeightFieldAmplification;
+        /*/
+
+        // TODOTEST
+        /*
+        // Fractional index in the sample array - smack in the center
+        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth + Dx / 2.0f) / Dx;
+
+        // Integral part
+        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+
+        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+
+        // Store
+        mDeltaBuffer[sampleIndexI] += yOffset;
+        */
     }
 
     void ApplyThanosSnap(
@@ -342,6 +360,10 @@ private:
     // Velocity field
     // - Velocity values are at the edges of the staggered grid cells
     std::unique_ptr<float[]> mVelocityField;
+
+    // Delta height buffer
+    // - Contains interactive surface height delta's that are taken into account during update step
+    FixedSizeVector<float, SamplesCount + 1> mDeltaHeightBuffer; // One extra sample for the rightmost X
 
 private:
 
