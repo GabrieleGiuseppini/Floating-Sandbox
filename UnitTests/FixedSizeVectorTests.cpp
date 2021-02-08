@@ -455,6 +455,31 @@ TEST(FixedSizeVectorTests, Back)
     EXPECT_EQ(6, vec.back());
 }
 
+TEST(FixedSizeVectorTests, Clear)
+{
+    FixedSizeVector<int, 6> vec;
+
+    vec.push_back(4);
+
+    ASSERT_FALSE(vec.empty());
+    ASSERT_EQ(1u, vec.size());
+
+    vec.clear();
+
+    EXPECT_TRUE(vec.empty());
+    EXPECT_EQ(0u, vec.size());
+}
+
+TEST(FixedSizeVectorTests, Fill)
+{
+    FixedSizeVector<int, 6> vec;
+
+    vec.fill(242);
+
+    EXPECT_EQ(242, vec[0]);
+    EXPECT_EQ(242, vec[5]);
+}
+
 TEST(FixedSizeVectorTests, Sort)
 {
     FixedSizeVector<std::tuple<ElementIndex, float>, 6> vec;

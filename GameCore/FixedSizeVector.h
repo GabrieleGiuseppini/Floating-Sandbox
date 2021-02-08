@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "SysSpecifics.h"
+
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -313,6 +315,13 @@ public:
     void clear() noexcept
     {
         mCurrentSize = 0u;
+    }
+
+    void fill(TElement value)
+    {
+        TElement * restrict const ptr = mArray.data();
+        for (size_t i = 0; i < MaxSize; ++i)
+            ptr[i] = value;
     }
 
     template <typename TCompare>
