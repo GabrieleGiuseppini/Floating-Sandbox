@@ -956,17 +956,21 @@ void Ship::ApplyWorldForces(
 
             float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
 
+            float constexpr MaxVel = 40.0f;
+
             float const maxDepth = ((verticalVelocity < 0.0f) ?
-                6.0f * SmoothStep(0.0f, 20.0f, -verticalVelocity)
-                : 3.0f * SmoothStep(0.0f, 20.0f, verticalVelocity));
+                12.0f * SmoothStep(0.0f, MaxVel, -verticalVelocity)
+                : 3.0f * SmoothStep(0.0f, MaxVel, verticalVelocity));
+
+            // TODO: exponential
 
             // TODOTEST
             ////float const displacementMagnitude = (verticalVelocity < 0.0f) ?
             ////    Clamp(verticalVelocity, -10.0f, 10.0f) / 55.0f
             ////    : Clamp(verticalVelocity, -10.0f, 10.0f) / 100.0f;
-            float const displacementMagnitude = (verticalVelocity < 0.0f) ?
-                Clamp(verticalVelocity, -10.0f, 10.0f) / 10.0f
-                : Clamp(verticalVelocity, -10.0f, 10.0f) / 15.0f;
+            float const displacementMagnitude =
+                0.025f
+                * Clamp(verticalVelocity, -MaxVel, MaxVel);
 
             // TODOTEST
             ////float const displacement =
@@ -974,20 +978,17 @@ void Ship::ApplyWorldForces(
             ////    * 0.75f
             ////    * (SmoothStep(0.0f, maxDepth / 2.0f, pointDepth) - SmoothStep(maxDepth / 2.0f, maxDepth, pointDepth));
             float const displacement =
-                // TODOTEST
                 displacementMagnitude
                 //(verticalVelocity <= 0.0f ? -1.0f : 1.0f)
-                * 0.25f
                 * (pointDepth >= 0.0f ? 1.0f : 0.0f)
-                //TODOTEST
                 //* (1.0f - SmoothStep(0.0f, maxDepth, pointDepth));
                 * (1.0f - LinearStep(-0.0001f, maxDepth, pointDepth)); // Tapers down contribution the deeper the point is
 
             mParentWorld.DisplaceTODOTESTOceanSurfaceAt(pointPosition.x, displacement);
 
-            // TODOTEST
-            if (pointDepth >= 0)
-                LogMessage(pointPosition.x, ", D=", pointDepth, " V=", verticalVelocity, ": ", displacement);
+            ////// TODOTEST
+            ////if (pointDepth >= 0)
+            ////    LogMessage(pointPosition.x, ", D=", pointDepth, " V=", verticalVelocity, ": ", displacement);
 
             // TODOTEST - END - EXPERIMENTAL
             ///////////////////////////////////////////////////////////////////////////
