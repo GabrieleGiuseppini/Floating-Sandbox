@@ -958,16 +958,13 @@ void Ship::ApplyWorldForces(
 
             float constexpr MaxVel = 40.0f;
 
+            // Depth at which the point stops contributing
             float const maxDepth = ((verticalVelocity < 0.0f) ?
                 12.0f * SmoothStep(0.0f, MaxVel, -verticalVelocity)
                 : 3.0f * SmoothStep(0.0f, MaxVel, verticalVelocity));
 
             // TODO: exponential
 
-            // TODOTEST
-            ////float const displacementMagnitude = (verticalVelocity < 0.0f) ?
-            ////    Clamp(verticalVelocity, -10.0f, 10.0f) / 55.0f
-            ////    : Clamp(verticalVelocity, -10.0f, 10.0f) / 100.0f;
             float const displacementMagnitude =
                 0.025f
                 * Clamp(verticalVelocity, -MaxVel, MaxVel);
