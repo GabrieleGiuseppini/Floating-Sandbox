@@ -322,6 +322,8 @@ public:
         TElement * restrict const ptr = mArray.data();
         for (size_t i = 0; i < MaxSize; ++i)
             ptr[i] = value;
+
+        mCurrentSize = MaxSize;
     }
 
     template <typename TCompare>

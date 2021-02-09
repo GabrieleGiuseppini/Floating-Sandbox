@@ -474,7 +474,12 @@ TEST(FixedSizeVectorTests, Fill)
 {
     FixedSizeVector<int, 6> vec;
 
+    ASSERT_TRUE(vec.empty());
+
     vec.fill(242);
+
+    EXPECT_FALSE(vec.empty());
+    EXPECT_EQ(6u, vec.size());
 
     EXPECT_EQ(242, vec[0]);
     EXPECT_EQ(242, vec[5]);
