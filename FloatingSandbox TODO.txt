@@ -1743,18 +1743,24 @@ Render:
 					+ Then zeroed out at end of UpdateFields(), so it's ready for the next cycle
 				+ Wave generation:
 					+ pointDepth (capped) * (1 - Smoothstep(0, maxDepth, depth)) // no velocity here, velocity influences maxDepth already
-			- Step 3: add smoothing
+			+ Step 3: add smoothing
 				! Smoothing is needed: it removes little spikes (exactly the same spikes we used to get with bubbles)
-				- constexpr constant gives width of smoothing, so we may experiment
-					- Make delta buffer size==SamplesCount + 2 * (DeltaSmoothingWidth/2) // or just +(DeltaSmoothingWidth/2), depends on whether we need right part or not
-				- How to not break vectorization of SWE field update:
-					- Option a) Update HeightFields first with (smoothed) DeltaHeight
-			- Step 4: nail down displacement calculation
-				- Temporarily alter UpdateFields() to use DeltaHeight buffer directly, without SWE and with/without smoothing
+				+ constexpr constant gives width of smoothing, so we may experiment
+					+ Make delta buffer size==SamplesCount + 2 * (DeltaSmoothingWidth/2) // or just +(DeltaSmoothingWidth/2), depends on whether we need right part or not
+			= Step 4: nail down displacement calculation
+				+ Temporarily alter UpdateFields() to use DeltaHeight buffer directly, without SWE and with/without smoothing
+				- At high velocities, displacement should be greater
+					- And at lower, displacement should be smaller
+					- Should go back to Smoothstep for displacement?
 			- Cleanup:				
 				- See if can get rid of "displace small scale" function, and use delta-buffer instead
 					- Already verified that small spikes caused by single-sample displacement go away when distributing the displacement among the two adjacent samples
 				- Method to populate deltas (from ship): TODO naming, clearly distinct from the "local" one used for fishes and bubbles, and from others
+				- Optimizations:
+					- Smoothing:
+						- restrict ptr
+					- How to not break vectorization of SWE field update:
+						- Option a) Update HeightFields first with (smoothed) DeltaHeight
 			- Final test:
 				- Test in Debug build
 					- Displacement at middle

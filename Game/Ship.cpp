@@ -965,9 +965,13 @@ void Ship::ApplyWorldForces(
 
             // TODO: exponential
 
+            ////float const displacementMagnitude =
+            ////    0.025f
+            ////    * Clamp(verticalVelocity, -MaxVel, MaxVel);
             float const displacementMagnitude =
-                0.025f
-                * Clamp(verticalVelocity, -MaxVel, MaxVel);
+                1.5f
+                * (verticalVelocity < 0.0f ? -1.0f : 1.0f)
+                * 2.0f * (SmoothStep(-MaxVel, MaxVel, std::abs(verticalVelocity)) - 0.5f);
 
             // TODOTEST
             ////float const displacement =
