@@ -787,8 +787,51 @@ void OceanSurface::ApplyDampingBoundaryConditions()
 
 void OceanSurface::UpdateFields()
 {
+    //
+    // 1. Incorporate delta-height into height field, after smoothing
+    //
+    // We use a two-pass average on a window of width DeltaHeightSmoothing,
+    // centered on the sample
+    //
+
+    // TODOTEST: we got a field clear when using i <= SamplesCount
+    for (size_t i = 0; i < SamplesCount; ++i)
+    {
+        // Central samples
+        float accumulatedHeight = mDeltaHeightBuffer[i] * static_cast<float>((DeltaHeightSmoothing / 2) + 1);
+
+        // Lateral samples - l is offset from central
+        for (size_t l = 1; l <= DeltaHeightSmoothing / 2; ++l)
+        {
+            float const lateralWeight = static_cast<float>((DeltaHeightSmoothing / 2) + 1 - l);
+
+            accumulatedHeight +=
+                mDeltaHeightBuffer[i - l] * lateralWeight
+                + mDeltaHeightBuffer[i + l] * lateralWeight;
+        }
+
+        // Update height field
+        mHeightField[SWEOuterLayerSamples + i] +=
+            (1.0f / static_cast<float>(DeltaHeightSmoothing))
+            * (1.0f / static_cast<float>(DeltaHeightSmoothing))
+            * accumulatedHeight;
+
+        // TODOTEST : sets height field equal to delta-height
+        //mHeightField[SWEOuterLayerSamples + i] = SWEHeightFieldOffset + mDeltaHeightBuffer[i];
+
+        // TODOTEST : sets height field equal to smoothed delta-height
+        ////mHeightField[SWEOuterLayerSamples + i] = SWEHeightFieldOffset +
+        ////    (1.0f / static_cast<float>(DeltaHeightSmoothing))
+        ////    * (1.0f / static_cast<float>(DeltaHeightSmoothing))
+        ////    * accumulatedHeight;
+    }
+
+    //
+    // 2. SWE Update
+    //
     // Height field  : from 0 to SWETotalSamples
     // Velocity field: from 1 to SWETotalSamples
+    //
 
     // We will divide deltaField by Dx (spatial derivatives) and
     // then multiply by dt (because we are integrating over time)
@@ -811,6 +854,12 @@ void OceanSurface::UpdateFields()
             (mHeightField[i - 1] - mHeightField[i])
             * FactorV;
     }
+
+    //
+    // 3. Clear delta-height buffer
+    //
+
+    mDeltaHeightBuffer.fill(0.0f);
 }
 
 void OceanSurface::GenerateSamples(

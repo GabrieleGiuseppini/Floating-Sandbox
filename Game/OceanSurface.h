@@ -134,7 +134,6 @@ public:
             && x <= GameParameters::HalfMaxWorldWidth);
 
         /* TODOTEST: now trying with delta's
-        */
         //
         // Find sample index and interpolate in-between that sample and the next
         //
@@ -152,13 +151,11 @@ public:
         assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
 
         // Distribute the displacement offset among the two samples
-        // TODOTEST: there's no guarantee we may access SWEOuterLayerSamples + sampleIndexI + 1
+        // TODOHERE: there's no guarantee we may access SWEOuterLayerSamples + sampleIndexI + 1
         mHeightField[SWEOuterLayerSamples + sampleIndexI] += (1.0f - sampleIndexDx) * yOffset / SWEHeightFieldAmplification;
         mHeightField[SWEOuterLayerSamples + sampleIndexI + 1] += sampleIndexDx * yOffset / SWEHeightFieldAmplification;
-        /*/
+        */
 
-        // TODOTEST
-        /*
         // Fractional index in the sample array - smack in the center
         float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth + Dx / 2.0f) / Dx;
 
@@ -167,8 +164,20 @@ public:
 
         assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
 
+        // TODOTEST
+
+        // This makes tiny spikes
         // Store
-        mDeltaBuffer[sampleIndexI] += yOffset;
+        mDeltaHeightBuffer[(DeltaHeightSmoothing / 2) + sampleIndexI] += yOffset / SWEHeightFieldAmplification;
+
+        /* This smooths
+        float const sampleIndexDx = sampleIndexF - sampleIndexI;
+
+        assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
+
+        // Distribute the displacement offset among the two samples
+        mDeltaHeightBuffer[sampleIndexI] += (1.0f - sampleIndexDx) * yOffset / SWEHeightFieldAmplification;
+        mDeltaHeightBuffer[sampleIndexI + 1] += sampleIndexDx * yOffset / SWEHeightFieldAmplification;
         */
     }
 
@@ -326,6 +335,10 @@ private:
         + SamplesCount
         + SWEOuterLayerSamples;
 
+    // The width of the delta-height smoothing
+    static size_t constexpr DeltaHeightSmoothing = 7;
+    static_assert((DeltaHeightSmoothing % 2) == 1);
+
     //
     // Calculated coefficients
     //
@@ -363,7 +376,7 @@ private:
 
     // Delta height buffer
     // - Contains interactive surface height delta's that are taken into account during update step
-    FixedSizeVector<float, SamplesCount + 1> mDeltaHeightBuffer; // One extra sample for the rightmost X
+    FixedSizeVector<float, (DeltaHeightSmoothing / 2) + (SamplesCount + 1) + (DeltaHeightSmoothing / 2)> mDeltaHeightBuffer; // One extra sample for the rightmost X
 
 private:
 
