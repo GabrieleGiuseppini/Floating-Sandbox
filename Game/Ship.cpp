@@ -964,7 +964,7 @@ void Ship::ApplyWorldForces(
                 : 3.0f * SmoothStep(-6.0f, MaxVel, verticalVelocity));
 
             float const displacementMagnitude =
-                0.2f * (verticalVelocity < 0.0f ? -1.0f : 0.5f)
+                0.05f * (verticalVelocity < 0.0f ? -1.0f : 0.5f)
                 +
                 1.5f
                 * (verticalVelocity < 0.0f ? -1.0f : 0.5f)
