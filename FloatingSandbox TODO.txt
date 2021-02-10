@@ -621,6 +621,8 @@ Render:
 
 		= Waves from ship (*)
 
+		- Water temperature goes down with depth
+
 		- Whole OceanSurface: use FixedSizeBuffer's instead of std::unique_ptr<float[]>'s
 			- Perf measurements:
 				- Before

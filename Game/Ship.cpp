@@ -960,36 +960,38 @@ void Ship::ApplyWorldForces(
 
             // Depth at which the point stops contributing
             float const maxDepth = ((verticalVelocity < 0.0f) ?
-                12.0f * SmoothStep(0.0f, MaxVel, -verticalVelocity)
-                : 3.0f * SmoothStep(0.0f, MaxVel, verticalVelocity));
+                12.0f * SmoothStep(-4.0f, MaxVel, -verticalVelocity)
+                : 3.0f * SmoothStep(-4.0f, MaxVel, verticalVelocity));
 
-            // TODO: exponential
 
-            ////float const displacementMagnitude =
-            ////    0.025f
-            ////    * Clamp(verticalVelocity, -MaxVel, MaxVel);
+            //TODOTEST: works fine, but should be steeper at low velocity
             float const displacementMagnitude =
                 1.5f
                 * (verticalVelocity < 0.0f ? -1.0f : 1.0f)
                 * 2.0f * (SmoothStep(-MaxVel, MaxVel, std::abs(verticalVelocity)) - 0.5f);
+            // TODOTEST: very steep: fine at low velocity, but too much at higher velocities
+            ////float const displacementMagnitude = (verticalVelocity < 0.0f)
+            ////    ? (50.0f * -1.5f + 1.0f / (0.01f * std::abs(verticalVelocity) + 0.012f)) / 50.0f - ((50.0f * -1.5f + 1.0f / 0.012f) / 50.0f)
+            ////    : (50.0f * 1.5f - 1.0f / (0.01f * std::abs(verticalVelocity) + 0.012f)) / 50.0f - ((50.0f * 1.5f - 1.0f / 0.012f) / 50.0f);
 
             // TODOTEST
             ////float const displacement =
             ////    displacementMagnitude
             ////    * 0.75f
             ////    * (SmoothStep(0.0f, maxDepth / 2.0f, pointDepth) - SmoothStep(maxDepth / 2.0f, maxDepth, pointDepth));
+            float const depthAttenuation = (1.0f - LinearStep(-0.0001f, maxDepth, pointDepth)); // Tapers down contribution the deeper the point is
             float const displacement =
                 displacementMagnitude
                 //(verticalVelocity <= 0.0f ? -1.0f : 1.0f)
                 * (pointDepth >= 0.0f ? 1.0f : 0.0f)
                 //* (1.0f - SmoothStep(0.0f, maxDepth, pointDepth));
-                * (1.0f - LinearStep(-0.0001f, maxDepth, pointDepth)); // Tapers down contribution the deeper the point is
+                * depthAttenuation;
 
             mParentWorld.DisplaceTODOTESTOceanSurfaceAt(pointPosition.x, displacement);
 
-            ////// TODOTEST
-            ////if (pointDepth >= 0)
-            ////    LogMessage(pointPosition.x, ", D=", pointDepth, " V=", verticalVelocity, ": ", displacement);
+            // TODOTEST
+            if (pointDepth >= 0)
+                LogMessage(pointPosition.x, ", D=", pointDepth, " V=", verticalVelocity, ": MaxDepth=", maxDepth, " DispMag=", displacementMagnitude, " DepthAttenuation=", depthAttenuation, " ResultDisplacement=", displacement);
 
             // TODOTEST - END - EXPERIMENTAL
             ///////////////////////////////////////////////////////////////////////////
