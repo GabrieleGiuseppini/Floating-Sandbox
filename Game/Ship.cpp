@@ -968,14 +968,12 @@ void Ship::ApplyWorldForces(
                 +
                 1.5f
                 * (verticalVelocity <= 0.0f ? -1.0f : 0.5f)
-                * 2.0f * (SmoothStep(-MaxVel, MaxVel, std::abs(verticalVelocity)) - 0.5f);
+                * 2.0f * (SmoothStep(-MaxVel - 1.0f, MaxVel, std::abs(verticalVelocity)) - 0.5f);
 
-            // TODOTEST
-            ////float const displacement =
-            ////    displacementMagnitude
-            ////    * 0.75f
-            ////    * (SmoothStep(0.0f, maxDepth / 2.0f, pointDepth) - SmoothStep(maxDepth / 2.0f, maxDepth, pointDepth));
-            float const depthAttenuation = (1.0f - LinearStep(-0.0001f, maxDepth, pointDepth)); // Tapers down contribution the deeper the point is
+            //float const depthAttenuation = (1.0f - LinearStep(-0.0001f, maxDepth, pointDepth)); // Tapers down contribution the deeper the point is
+            // 2nd part of SmoothStep (faster taper down) - doesn't change much
+            float const depthAttenuation = (1.0f - 2.0f * (SmoothStep(-maxDepth - 0.0001f, maxDepth, pointDepth) - 0.5f)); // Tapers down contribution the deeper the point is
+
             float const displacement =
                 displacementMagnitude
                 //(verticalVelocity <= 0.0f ? -1.0f : 1.0f)
