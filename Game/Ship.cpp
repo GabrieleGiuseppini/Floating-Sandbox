@@ -965,8 +965,9 @@ void Ship::ApplyWorldForces(
 
             //TODOTEST: works fine, but should be steeper at low velocity
             float const displacementMagnitude =
+                0.2f +
                 1.5f
-                * (verticalVelocity < 0.0f ? -1.0f : 1.0f)
+                * (verticalVelocity < 0.0f ? -1.0f : 0.5f)
                 * 2.0f * (SmoothStep(-MaxVel, MaxVel, std::abs(verticalVelocity)) - 0.5f);
 
             // TODOTEST
