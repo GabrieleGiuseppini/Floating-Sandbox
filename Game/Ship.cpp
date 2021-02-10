@@ -960,19 +960,14 @@ void Ship::ApplyWorldForces(
 
             // Depth at which the point stops contributing
             float const maxDepth = ((verticalVelocity < 0.0f) ?
-                12.0f * SmoothStep(-4.0f, MaxVel, -verticalVelocity)
-                : 3.0f * SmoothStep(-4.0f, MaxVel, verticalVelocity));
-
+                12.0f * SmoothStep(-6.0f, MaxVel, -verticalVelocity)
+                : 3.0f * SmoothStep(-6.0f, MaxVel, verticalVelocity));
 
             //TODOTEST: works fine, but should be steeper at low velocity
             float const displacementMagnitude =
                 1.5f
                 * (verticalVelocity < 0.0f ? -1.0f : 1.0f)
                 * 2.0f * (SmoothStep(-MaxVel, MaxVel, std::abs(verticalVelocity)) - 0.5f);
-            // TODOTEST: very steep: fine at low velocity, but too much at higher velocities
-            ////float const displacementMagnitude = (verticalVelocity < 0.0f)
-            ////    ? (50.0f * -1.5f + 1.0f / (0.01f * std::abs(verticalVelocity) + 0.012f)) / 50.0f - ((50.0f * -1.5f + 1.0f / 0.012f) / 50.0f)
-            ////    : (50.0f * 1.5f - 1.0f / (0.01f * std::abs(verticalVelocity) + 0.012f)) / 50.0f - ((50.0f * 1.5f - 1.0f / 0.012f) / 50.0f);
 
             // TODOTEST
             ////float const displacement =
