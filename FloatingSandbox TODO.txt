@@ -1755,6 +1755,7 @@ Render:
 					- Plot displacement by velocity
 					- Find curve
 			- Cleanup:	
+				- Check disappearing field issue
 				- Make y offset the same between two Titanic's
 				- See if can get rid of "displace small scale" function, and use delta-buffer instead
 					- Already verified that small spikes caused by single-sample displacement go away when distributing the displacement among the two adjacent samples
