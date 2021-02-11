@@ -987,7 +987,13 @@ void Ship::ApplyWorldForces(
             */
 
             float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
-            float const displacementMagnitude = verticalVelocity * GameParameters::SimulationStepTimeDuration<float>;
+            float displacementMagnitude = verticalVelocity * GameParameters::SimulationStepTimeDuration<float>;
+            // TODOHERE: boost small velocities
+            ////if (std::abs(displacementMagnitude) < 1.0f)
+            ////    displacementMagnitude = sqrt(std::abs(displacementMagnitude))
+            ////    * (verticalVelocity <= 0.0f ? -1.0f : 0.5f);
+            displacementMagnitude *=
+                1.0f + (3.0f - 1.0f) * (1.0f - SmoothStep(0.0f, 0.15f, std::abs(displacementMagnitude)));
 
             // Depth at which the point stops contributing
             //float constexpr MaxVel = 40.0f;
