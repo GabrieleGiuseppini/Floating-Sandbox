@@ -989,7 +989,6 @@ void Ship::ApplyWorldForces(
             float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
 
             float const displacementBoost =
-                //1.0f + (3.5f - 1.0f) * (1.0f - SmoothStep(0.0f, 6.0f, std::abs(verticalVelocity)));
                 1.0f + (3.5f - 1.0f) * (1.0f - LinearStep(0.0f, 10.0f, std::abs(verticalVelocity)));
 
             float const displacementMagnitude =
@@ -997,11 +996,8 @@ void Ship::ApplyWorldForces(
                 * displacementBoost;
 
             // Depth at which the point stops contributing
-            //float constexpr MaxVel = 40.0f;
             float constexpr MaxVel = 40.0f;
             float const maxDepth = ((verticalVelocity <= 0.0f) ?
-                ///*12.0f * SmoothStep(-12.0f, MaxVel, -verticalVelocity)
-                //: 12.0f * SmoothStep(-12.0f, MaxVel, verticalVelocity));*/
                 12.0f * SmoothStep(-MaxVel, MaxVel, -verticalVelocity)
                 : 3.0f * SmoothStep(-MaxVel, MaxVel, verticalVelocity));
 
@@ -1013,8 +1009,7 @@ void Ship::ApplyWorldForces(
                 displacementMagnitude
                 * (pointDepth >= 0.0f ? 1.0f : 0.0f)
                 * depthAttenuation
-                //* 2.5f; // Magic amplifier for SWEs
-                * 1.5f;
+                * 1.5f; // Magic amplifier for SWEs
 
             mParentWorld.DisplaceTODOTESTOceanSurfaceAt(pointPosition.x, displacement);
 
