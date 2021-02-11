@@ -987,13 +987,14 @@ void Ship::ApplyWorldForces(
             */
 
             float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
-            float displacementMagnitude = verticalVelocity * GameParameters::SimulationStepTimeDuration<float>;
-            // TODOHERE: boost small velocities
-            ////if (std::abs(displacementMagnitude) < 1.0f)
-            ////    displacementMagnitude = sqrt(std::abs(displacementMagnitude))
-            ////    * (verticalVelocity <= 0.0f ? -1.0f : 0.5f);
-            displacementMagnitude *=
-                1.0f + (3.5f - 1.0f) * (1.0f - SmoothStep(0.0f, 0.1f, std::abs(displacementMagnitude)));
+
+            float const displacementBoost =
+                //1.0f + (3.5f - 1.0f) * (1.0f - SmoothStep(0.0f, 6.0f, std::abs(verticalVelocity)));
+                1.0f + (3.5f - 1.0f) * (1.0f - LinearStep(0.0f, 10.0f, std::abs(verticalVelocity)));
+
+            float const displacementMagnitude =
+                verticalVelocity * GameParameters::SimulationStepTimeDuration<float>
+                * displacementBoost;
 
             // Depth at which the point stops contributing
             //float constexpr MaxVel = 40.0f;
@@ -1018,7 +1019,7 @@ void Ship::ApplyWorldForces(
             mParentWorld.DisplaceTODOTESTOceanSurfaceAt(pointPosition.x, displacement);
 
             if (pointDepth >= 0.0f)
-                LogMessage(pointPosition.x, ", D=", pointDepth, " V=", verticalVelocity, ": DispMag=", displacementMagnitude, " MaxDepth=", maxDepth, " DepthAttenuation=", depthAttenuation, " ResultDisplacement=", displacement);
+                LogMessage(pointPosition.x, ", D=", pointDepth, " V=", verticalVelocity, ": DispMag=", displacementMagnitude, " DispBoost=", displacementBoost, " MaxDepth=", maxDepth, " DepthAttenuation=", depthAttenuation, " ResultDisplacement=", displacement);
 
 
             // TODOTEST - END - EXPERIMENTAL
