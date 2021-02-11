@@ -1,7 +1,7 @@
 {
 	"structure_image":"rms_titanic_structure.png.dat",
 	"texture_image":"rms_titanic_texture.png.dat",
-	"offset":{"x":0.0, "y":-8.0},
+	"offset":{"x":0.0, "y":-6.0},
 	"ship_name":"R.M.S. Titanic",
 	"created_by":"Gabriele Giuseppini",
 	"year_built":"1912",

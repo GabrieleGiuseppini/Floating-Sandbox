@@ -945,6 +945,7 @@ void Ship::ApplyWorldForces(
             ///////////////////////////////////////////////////////////////////////////
             // TODOTEST - START - EXPERIMENTAL
 
+            /* APPROACH 1
             //
             // Ocean surface displacement
             //
@@ -983,6 +984,36 @@ void Ship::ApplyWorldForces(
             // TODOTEST
             if (pointDepth >= 0)
                 LogMessage(pointPosition.x, ", D=", pointDepth, " V=", verticalVelocity, ": MaxDepth=", maxDepth, " DispMag=", displacementMagnitude, " DepthAttenuation=", depthAttenuation, " ResultDisplacement=", displacement);
+            */
+
+            float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
+            float const displacementMagnitude = verticalVelocity * GameParameters::SimulationStepTimeDuration<float>;
+
+            // Depth at which the point stops contributing
+            //float constexpr MaxVel = 40.0f;
+            float constexpr MaxVel = 40.0f;
+            float const maxDepth = ((verticalVelocity <= 0.0f) ?
+                ///*12.0f * SmoothStep(-12.0f, MaxVel, -verticalVelocity)
+                //: 12.0f * SmoothStep(-12.0f, MaxVel, verticalVelocity));*/
+                12.0f * SmoothStep(-MaxVel, MaxVel, -verticalVelocity)
+                : 3.0f * SmoothStep(-MaxVel, MaxVel, verticalVelocity));
+
+            //float const depthAttenuation = (1.0f - 2.0f * (SmoothStep(-maxDepth - 0.0001f, maxDepth, pointDepth) - 0.5f)); // Tapers down contribution the deeper the point is
+            float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, pointDepth); // Tapers down contribution the deeper the point is
+            //float const depthAttenuation = 1.0f - Step(maxDepth, pointDepth);
+
+            float const displacement =
+                displacementMagnitude
+                * (pointDepth >= 0.0f ? 1.0f : 0.0f)
+                * depthAttenuation
+                //* 2.5f; // Magic amplifier for SWEs
+                * 1.8f;
+
+            mParentWorld.DisplaceTODOTESTOceanSurfaceAt(pointPosition.x, displacement);
+
+            if (pointDepth >= 0.0f)
+                LogMessage(pointPosition.x, ", D=", pointDepth, " V=", verticalVelocity, ": DispMag=", displacementMagnitude, " MaxDepth=", maxDepth, " DepthAttenuation=", depthAttenuation, " ResultDisplacement=", displacement);
+
 
             // TODOTEST - END - EXPERIMENTAL
             ///////////////////////////////////////////////////////////////////////////
