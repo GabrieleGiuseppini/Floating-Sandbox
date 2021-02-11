@@ -1751,9 +1751,9 @@ Render:
 					+ Make delta buffer size==SamplesCount + 2 * (DeltaSmoothingWidth/2) // or just +(DeltaSmoothingWidth/2), depends on whether we need right part or not
 			= Step 4: nail down displacement calculation
 				+ Temporarily alter UpdateFields() to use DeltaHeight buffer directly, without SWE and with/without smoothing
-				- At high velocities, displacement should be greater
-					- And at lower, displacement should be smaller
-					- Should go back to Smoothstep for displacement?
+				- At small velocities, displacement should be greater
+					- Plot displacement by velocity
+					- Find curve
 			- Cleanup:				
 				- See if can get rid of "displace small scale" function, and use delta-buffer instead
 					- Already verified that small spikes caused by single-sample displacement go away when distributing the displacement among the two adjacent samples

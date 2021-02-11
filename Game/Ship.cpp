@@ -970,15 +970,12 @@ void Ship::ApplyWorldForces(
                 * (verticalVelocity <= 0.0f ? -1.0f : 0.5f)
                 * 2.0f * (SmoothStep(-MaxVel - 1.0f, MaxVel, std::abs(verticalVelocity)) - 0.5f);
 
-            //float const depthAttenuation = (1.0f - LinearStep(-0.0001f, maxDepth, pointDepth)); // Tapers down contribution the deeper the point is
-            // 2nd part of SmoothStep (faster taper down) - doesn't change much
+            // 2nd part of SmoothStep (faster taper down)
             float const depthAttenuation = (1.0f - 2.0f * (SmoothStep(-maxDepth - 0.0001f, maxDepth, pointDepth) - 0.5f)); // Tapers down contribution the deeper the point is
 
             float const displacement =
                 displacementMagnitude
-                //(verticalVelocity <= 0.0f ? -1.0f : 1.0f)
                 * (pointDepth >= 0.0f ? 1.0f : 0.0f)
-                //* (1.0f - SmoothStep(0.0f, maxDepth, pointDepth));
                 * depthAttenuation;
 
             mParentWorld.DisplaceTODOTESTOceanSurfaceAt(pointPosition.x, displacement);
