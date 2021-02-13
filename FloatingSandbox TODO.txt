@@ -1748,14 +1748,14 @@ Render:
 				! Smoothing is needed: it removes little spikes (exactly the same spikes we used to get with bubbles)
 				+ constexpr constant gives width of smoothing, so we may experiment
 					+ Make delta buffer size==SamplesCount + 2 * (DeltaSmoothingWidth/2) // or just +(DeltaSmoothingWidth/2), depends on whether we need right part or not
-			= Step 4: nail down displacement calculation
+			+ Step 4: nail down displacement calculation
 				+ Temporarily alter UpdateFields() to use DeltaHeight buffer directly, without SWE and with/without smoothing
 				+ At small velocities, displacement should be greater
 					+ Plot displacement by velocity
 					+ Find curve
 						+ Piecewise quadratic + linear
-				= Incorporate mass, so that light wooden ball doesn't create as many waves
-					- smaller masses should have slightly more impact
+				+ Incorporate mass, so that light wooden ball doesn't create as many waves
+					+ Smaller masses should have slightly more impact
 			- Run in debug
 			- Perf:
 				- See abs vs intrinsics
