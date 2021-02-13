@@ -1757,6 +1757,9 @@ Render:
 				= Incorporate mass, so that light wooden ball doesn't create as many waves
 					- smaller masses should have slightly more impact
 			- Run in debug
+			- Perf:
+				- See abs vs intrinsics
+				- See assembly difference between using step's vs. ?:
 			- Cleanup:
 				- Check disappearing field issue
 				- Make y offset the same between two Titanic's

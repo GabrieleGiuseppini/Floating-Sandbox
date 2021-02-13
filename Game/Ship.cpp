@@ -993,7 +993,8 @@ void Ship::ApplyWorldForces(
 
             float const displacement =
                 (absVerticalVelocity < x0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
-                * std::sqrt(mPoints.GetMass(pointIndex))
+                //* std::sqrt(mPoints.GetMass(pointIndex))
+                * (10.0f + (std::sqrt(mPoints.GetMass(pointIndex)) - 4.2f) * 26.0f / (36.0f - 4.2f))
                 * depthAttenuation
                 * (verticalVelocity < 0.0f ? -1.0f : 1.0f) // Displacement has same sign as vertical velocity
                 * (pointDepth >= 0.0f ? 1.0f : 0.0f) // No displacement for above-water points
