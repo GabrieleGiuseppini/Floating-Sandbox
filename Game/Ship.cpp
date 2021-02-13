@@ -1115,7 +1115,7 @@ void Ship::ApplyWorldForces(
                 ((absVerticalVelocity < x0)
                     ? bumpedDisplacementMagnitude
                     : linearDisplacementMagnitude)
-                * std::sqrt(mPoints.GetMass(pointIndex)) * 0.0275f
+                * std::sqrt(mPoints.GetMass(pointIndex)) * 0.02f
                 * (verticalVelocity < 0.0f ? -1.0f : 1.0f)
                 * (pointDepth >= 0.0f ? 1.0f : 0.0f)
                 * depthAttenuation;
