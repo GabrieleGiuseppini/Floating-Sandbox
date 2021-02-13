@@ -1760,6 +1760,12 @@ Render:
 			- Perf:
 				- See abs vs intrinsics
 				- See assembly difference between using step's vs. ?:
+				- Optimize
+					- Do baseline plots first
+			- Settings:
+				- Flag to turn on or off
+					- Turn off at calibration on slow computers
+				- Displacement Wave amplitude adjust
 			- Cleanup:
 				- Check disappearing field issue
 				- Make y offset the same between two Titanic's

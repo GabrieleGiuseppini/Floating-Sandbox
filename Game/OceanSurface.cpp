@@ -798,7 +798,7 @@ void OceanSurface::UpdateFields()
     for (size_t i = 0; i < SamplesCount; ++i)
     {
         // Central samples
-        float accumulatedHeight = mDeltaHeightBuffer[i] * static_cast<float>((DeltaHeightSmoothing / 2) + 1);
+        float accumulatedHeight = mDeltaHeightBuffer[(DeltaHeightSmoothing / 2) + i] * static_cast<float>((DeltaHeightSmoothing / 2) + 1);
 
         // Lateral samples - l is offset from central
         for (size_t l = 1; l <= DeltaHeightSmoothing / 2; ++l)
@@ -806,8 +806,8 @@ void OceanSurface::UpdateFields()
             float const lateralWeight = static_cast<float>((DeltaHeightSmoothing / 2) + 1 - l);
 
             accumulatedHeight +=
-                mDeltaHeightBuffer[i - l] * lateralWeight
-                + mDeltaHeightBuffer[i + l] * lateralWeight;
+                mDeltaHeightBuffer[(DeltaHeightSmoothing / 2) + i - l] * lateralWeight
+                + mDeltaHeightBuffer[(DeltaHeightSmoothing / 2) + i + l] * lateralWeight;
         }
 
         // Update height field
@@ -815,15 +815,6 @@ void OceanSurface::UpdateFields()
             (1.0f / static_cast<float>(DeltaHeightSmoothing))
             * (1.0f / static_cast<float>(DeltaHeightSmoothing))
             * accumulatedHeight;
-
-        // TODOTEST : sets height field equal to delta-height
-        //mHeightField[SWEOuterLayerSamples + i] = SWEHeightFieldOffset + mDeltaHeightBuffer[i];
-
-        // TODOTEST : sets height field equal to smoothed delta-height
-        ////mHeightField[SWEOuterLayerSamples + i] = SWEHeightFieldOffset +
-        ////    (1.0f / static_cast<float>(DeltaHeightSmoothing))
-        ////    * (1.0f / static_cast<float>(DeltaHeightSmoothing))
-        ////    * accumulatedHeight;
     }
 
     //
