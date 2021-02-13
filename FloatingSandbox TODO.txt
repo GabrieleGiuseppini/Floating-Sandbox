@@ -1750,10 +1750,11 @@ Render:
 					+ Make delta buffer size==SamplesCount + 2 * (DeltaSmoothingWidth/2) // or just +(DeltaSmoothingWidth/2), depends on whether we need right part or not
 			= Step 4: nail down displacement calculation
 				+ Temporarily alter UpdateFields() to use DeltaHeight buffer directly, without SWE and with/without smoothing
-				- At small velocities, displacement should be greater
-					- Plot displacement by velocity
-					- Find curve
-				- Incorporate mass, so that light wooden ball doesn't create as many waves
+				+ At small velocities, displacement should be greater
+					+ Plot displacement by velocity
+					+ Find curve
+						+ Piecewise quadratic + linear
+				= Incorporate mass, so that light wooden ball doesn't create as many waves
 			- Cleanup:	
 				- Check disappearing field issue
 				- Make y offset the same between two Titanic's

@@ -1085,22 +1085,24 @@ void Ship::ApplyWorldForces(
                 LogMessage("X=", pointPosition.x, ", D=", pointDepth, " V=", verticalVelocity, ": DispMag=", displacementMagnitude, " MaxDepth=", maxDepth, " DepthAttenuation=", depthAttenuation, " ResultDisplacement=", displacement);
             */
 
+            float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
+
             float constexpr slope = 1.0f / 64.0f; // dt
 
-            float constexpr x0 = 3.0f; // Velocity
-            float constexpr y0 = 0.25f; // Vertical displacement at x0
+            float constexpr x0 = 2.4f; // Velocity
+            float constexpr y0 = 0.3f; // Vertical displacement at x0
 
             float constexpr a = -(slope * x0 + y0) / (x0 * x0);
             float constexpr b = slope + 2.0f * y0 / x0;
 
-            float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
+            //float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
             float const absVerticalVelocity = std::abs(verticalVelocity);
 
             float const bumpedDisplacementMagnitude = a * absVerticalVelocity * absVerticalVelocity + b * absVerticalVelocity;
             float const linearDisplacementMagnitude = y0 + slope * (absVerticalVelocity - x0);
 
             // Depth at which the point stops contributing
-            float constexpr MaxVel = 40.0f;
+            float constexpr MaxVel = 30.0f;
             float const maxDepth = ((verticalVelocity <= 0.0f) ?
                 12.0f * SmoothStep(-MaxVel, MaxVel, -verticalVelocity)
                 : 3.0f * SmoothStep(-MaxVel, MaxVel, verticalVelocity));
