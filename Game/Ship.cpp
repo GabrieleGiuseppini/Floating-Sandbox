@@ -953,55 +953,53 @@ void Ship::ApplyWorldForces(
             //
 
             float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
+            float const absVerticalVelocity = std::abs(verticalVelocity);
 
             //
             // Displacement magnitude calculation
             //
 
+            float constexpr x0 = 2.4f; // Velocity of transition from quadratic to linear
+            float constexpr y0 = 0.3f; // Displacement magnitude at x0
+
             // Linear portion
             float constexpr linearSlope = GameParameters::SimulationStepTimeDuration<float>;
+            float const linearDisplacementMagnitude = y0 + linearSlope * (absVerticalVelocity - x0);
 
             // Quadratic portion: y = ax^2 + bx, with constraints:
             //  y(0) = 0
             //  y'(x0) = slope
             //  y(x0) = y0
-            float constexpr x0 = 2.4f; // Velocity of transition to linear
-            float constexpr y0 = 0.3f; // Displacement magnitude at x0
             float constexpr a = -(linearSlope * x0 + y0) / (x0 * x0);
             float constexpr b = linearSlope + 2.0f * y0 / x0;
+            float const quadraticDisplacementMagnitude = a * absVerticalVelocity * absVerticalVelocity + b * absVerticalVelocity;
 
-            float const absVerticalVelocity = std::abs(verticalVelocity);
+            //
+            // Depth attenuation: tapers down displacement the deeper the point is
+            //
 
-            float const bumpedDisplacementMagnitude = a * absVerticalVelocity * absVerticalVelocity + b * absVerticalVelocity;
-            float const linearDisplacementMagnitude = y0 + linearSlope * (absVerticalVelocity - x0);
-
-            // Depth at which the point stops contributing
+            // Depth at which the point stops contributing: asymptotic and asymmetric wrt sinking or rising
             float constexpr MaxVel = 30.0f;
-            float const maxDepth = ((verticalVelocity <= 0.0f) ?
-                12.0f * SmoothStep(-MaxVel, MaxVel, -verticalVelocity)
-                : 3.0f * SmoothStep(-MaxVel, MaxVel, verticalVelocity));
+            float const maxDepth =
+                SmoothStep(-MaxVel, MaxVel, absVerticalVelocity)
+                * (verticalVelocity <= 0.0f ? 12.0f : 3.0f);
 
-            //float const depthAttenuation = (1.0f - 2.0f * (SmoothStep(-maxDepth - 0.0001f, maxDepth, pointDepth) - 0.5f)); // Tapers down contribution the deeper the point is
+            // Linear attenuation
             float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, pointDepth); // Tapers down contribution the deeper the point is
-            //float const depthAttenuation = 1.0f - Step(maxDepth, pointDepth);
+
+            //
+            // Displacement
+            //
 
             float const displacement =
-                ((absVerticalVelocity < x0)
-                    ? bumpedDisplacementMagnitude
-                    : linearDisplacementMagnitude)
-                * std::sqrt(mPoints.GetMass(pointIndex)) * 0.02f
-                * (verticalVelocity < 0.0f ? -1.0f : 1.0f)
-                * (pointDepth >= 0.0f ? 1.0f : 0.0f)
-                * depthAttenuation;
+                (absVerticalVelocity < x0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
+                * std::sqrt(mPoints.GetMass(pointIndex))
+                * depthAttenuation
+                * (verticalVelocity < 0.0f ? -1.0f : 1.0f) // Displacement has same sign as vertical velocity
+                * (pointDepth >= 0.0f ? 1.0f : 0.0f) // No displacement for above-water points
+                * 0.02f; // Magic number
 
             mParentWorld.DisplaceTODOTESTOceanSurfaceAt(pointPosition.x, displacement);
-
-            if (pointDepth >= 0.0f)
-                LogMessage("X=", pointPosition.x, ", D=", pointDepth, " V=", verticalVelocity, " MaxDepth=", maxDepth, " DepthAttenuation=", depthAttenuation, " ResultDisplacement=", displacement);
-
-            // TODOTEST - END - EXPERIMENTAL
-            ///////////////////////////////////////////////////////////////////////////
-
 
             //
             // Advance edge in the frontier
