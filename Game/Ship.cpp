@@ -1087,7 +1087,7 @@ void Ship::ApplyWorldForces(
 
             float constexpr slope = 1.0f / 64.0f; // dt
 
-            float constexpr x0 = 3.6f; // Velocity
+            float constexpr x0 = 3.0f; // Velocity
             float constexpr y0 = 0.25f; // Vertical displacement at x0
 
             float constexpr a = -(slope * x0 + y0) / (x0 * x0);
@@ -1113,12 +1113,15 @@ void Ship::ApplyWorldForces(
                 ((absVerticalVelocity < x0)
                     ? bumpedDisplacementMagnitude
                     : linearDisplacementMagnitude)
-                * std::sqrt(mPoints.GetMass(pointIndex)) * 0.025f
+                * std::sqrt(mPoints.GetMass(pointIndex)) * 0.0275f
                 * (verticalVelocity < 0.0f ? -1.0f : 1.0f)
                 * (pointDepth >= 0.0f ? 1.0f : 0.0f)
                 * depthAttenuation;
 
             mParentWorld.DisplaceTODOTESTOceanSurfaceAt(pointPosition.x, displacement);
+
+            if (pointDepth >= 0.0f)
+                LogMessage("X=", pointPosition.x, ", D=", pointDepth, " V=", verticalVelocity, " MaxDepth=", maxDepth, " DepthAttenuation=", depthAttenuation, " ResultDisplacement=", displacement);
 
             // TODOTEST - END - EXPERIMENTAL
             ///////////////////////////////////////////////////////////////////////////
