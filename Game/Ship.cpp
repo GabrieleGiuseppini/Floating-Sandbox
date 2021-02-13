@@ -832,9 +832,6 @@ void Ship::ApplyWorldForces(
     // Visit all frontiers
     //
 
-    // TODOTEST
-    LogMessage("--------------------------TODOTEST");
-
     for (FrontierId frontierId : mFrontiers.GetFrontierIds())
     {
         auto const & frontier = mFrontiers.GetFrontier(frontierId);
@@ -942,164 +939,41 @@ void Ship::ApplyWorldForces(
             // Apply drag force
             mPoints.GetNonSpringForce(pointIndex) -= dragForce;
 
-            ///////////////////////////////////////////////////////////////////////////
-            // TODOTEST - START - EXPERIMENTAL
-
-            /* APPROACH 1
             //
-            // Ocean surface displacement
+            // Water displacement
             //
-            // Surface displacement:
-            // - Direction: in the direction of the point's vertical velocity
-            // - Magnitude: proportional to vertical velocity and depth, within a [0, MaxDepth] band
-            // - MaxDepth: proportional to vertical velocity
+            // * The magnitude of water displacement is proportional to the square root of
+            //   the kinetic energy of the particle, thus it is proportional to the square
+            //   root of the particle mass, and to the particle's velocity
+            //      * However, in order to generate visible waves also for very small velocities,
+            //        we want the contribution of small velocities to be more than linear wrt
+            //        the contribution of higher velocities, and so we'll be using a piecewise
+            //        function: quadratic for small velocities, and linear for higher
+            // * The deeper the particle is, the less it contributes to displacement
             //
 
             float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
 
-            float constexpr MaxVel = 40.0f;
+            //
+            // Displacement magnitude calculation
+            //
 
-            // Depth at which the point stops contributing
-            float const maxDepth = ((verticalVelocity <= 0.0f) ?
-                12.0f * SmoothStep(-6.0f, MaxVel, -verticalVelocity)
-                : 3.0f * SmoothStep(-6.0f, MaxVel, verticalVelocity));
+            // Linear portion
+            float constexpr linearSlope = GameParameters::SimulationStepTimeDuration<float>;
 
-            float const displacementMagnitude =
-                0.05f * (verticalVelocity <= 0.0f ? -1.0f : 0.5f)
-                +
-                1.5f
-                * (verticalVelocity <= 0.0f ? -1.0f : 0.5f)
-                * 2.0f * (SmoothStep(-MaxVel - 1.0f, MaxVel, std::abs(verticalVelocity)) - 0.5f);
+            // Quadratic portion: y = ax^2 + bx, with constraints:
+            //  y(0) = 0
+            //  y'(x0) = slope
+            //  y(x0) = y0
+            float constexpr x0 = 2.4f; // Velocity of transition to linear
+            float constexpr y0 = 0.3f; // Displacement magnitude at x0
+            float constexpr a = -(linearSlope * x0 + y0) / (x0 * x0);
+            float constexpr b = linearSlope + 2.0f * y0 / x0;
 
-            // 2nd part of SmoothStep (faster taper down)
-            float const depthAttenuation = (1.0f - 2.0f * (SmoothStep(-maxDepth - 0.0001f, maxDepth, pointDepth) - 0.5f)); // Tapers down contribution the deeper the point is
-
-            float const displacement =
-                displacementMagnitude
-                * (pointDepth >= 0.0f ? 1.0f : 0.0f)
-                * depthAttenuation;
-
-            mParentWorld.DisplaceTODOTESTOceanSurfaceAt(pointPosition.x, displacement);
-
-            // TODOTEST
-            if (pointDepth >= 0)
-                LogMessage(pointPosition.x, ", D=", pointDepth, " V=", verticalVelocity, ": MaxDepth=", maxDepth, " DispMag=", displacementMagnitude, " DepthAttenuation=", depthAttenuation, " ResultDisplacement=", displacement);
-            */
-
-            /* APPROACH 2 - displacement linearly proportional to velocity
-            float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
-
-            float const displacementBoost =
-                1.0f + (3.5f - 1.0f) * (1.0f - LinearStep(0.0f, 10.0f, std::abs(verticalVelocity)));
-
-            float const displacementMagnitude =
-                verticalVelocity * GameParameters::SimulationStepTimeDuration<float>
-                * displacementBoost;
-
-            // Depth at which the point stops contributing
-            float constexpr MaxVel = 40.0f;
-            float const maxDepth = ((verticalVelocity <= 0.0f) ?
-                12.0f * SmoothStep(-MaxVel, MaxVel, -verticalVelocity)
-                : 3.0f * SmoothStep(-MaxVel, MaxVel, verticalVelocity));
-
-            //float const depthAttenuation = (1.0f - 2.0f * (SmoothStep(-maxDepth - 0.0001f, maxDepth, pointDepth) - 0.5f)); // Tapers down contribution the deeper the point is
-            float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, pointDepth); // Tapers down contribution the deeper the point is
-            //float const depthAttenuation = 1.0f - Step(maxDepth, pointDepth);
-
-            float const displacement =
-                displacementMagnitude
-                * (pointDepth >= 0.0f ? 1.0f : 0.0f)
-                * depthAttenuation
-                * 1.5f; // Magic amplifier for SWEs
-
-            mParentWorld.DisplaceTODOTESTOceanSurfaceAt(pointPosition.x, displacement);
-
-            if (pointDepth >= 0.0f)
-                LogMessage(pointPosition.x, ", D=", pointDepth, " V=", verticalVelocity, ": DispMag=", displacementMagnitude, " DispBoost=", displacementBoost, " MaxDepth=", maxDepth, " DepthAttenuation=", depthAttenuation, " ResultDisplacement=", displacement);
-            */
-
-            /* APPROACH 3 - PIECEWISE FUNCTION
-            float constexpr slope = 1.0f / 64.0f; // dt
-
-            float constexpr x0 = 3.6f; // Velocity
-            //float constexpr y0 = 0.3f; // Vertical displacement at x0
-            float constexpr y0 = 0.25f; // Vertical displacement at x0
-
-            float constexpr a = -(slope * x0 + y0) / (x0 * x0);
-            float constexpr b = slope + 2.0f * y0 / x0;
-
-            float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
             float const absVerticalVelocity = std::abs(verticalVelocity);
 
             float const bumpedDisplacementMagnitude = a * absVerticalVelocity * absVerticalVelocity + b * absVerticalVelocity;
-            float const linearDisplacementMagnitude = y0 + slope * (absVerticalVelocity - x0);
-
-            // Depth at which the point stops contributing
-            float constexpr MaxVel = 40.0f;
-            float const maxDepth = ((verticalVelocity <= 0.0f) ?
-                12.0f * SmoothStep(-MaxVel, MaxVel, -verticalVelocity)
-                : 3.0f * SmoothStep(-MaxVel, MaxVel, verticalVelocity));
-
-            //float const depthAttenuation = (1.0f - 2.0f * (SmoothStep(-maxDepth - 0.0001f, maxDepth, pointDepth) - 0.5f)); // Tapers down contribution the deeper the point is
-            float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, pointDepth); // Tapers down contribution the deeper the point is
-            //float const depthAttenuation = 1.0f - Step(maxDepth, pointDepth);
-
-            float const displacement =
-                ((absVerticalVelocity < x0)
-                    ? bumpedDisplacementMagnitude
-                    : linearDisplacementMagnitude)
-                * (verticalVelocity < 0.0f ? -1.0f : 1.0f)
-                * (pointDepth >= 0.0f ? 1.0f : 0.0f)
-                * depthAttenuation;
-
-            mParentWorld.DisplaceTODOTESTOceanSurfaceAt(pointPosition.x, displacement);
-            */
-
-            /*
-            float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
-
-            float const displacementMagnitude =
-                std::sqrt(mPoints.GetMass(pointIndex))
-                * verticalVelocity * GameParameters::SimulationStepTimeDuration<float>
-                * 0.1f;
-
-            // Depth at which the point stops contributing
-            float constexpr MaxVel = 40.0f;
-            float const maxDepth = ((verticalVelocity <= 0.0f) ?
-                12.0f * SmoothStep(-MaxVel, MaxVel, -verticalVelocity)
-                : 3.0f * SmoothStep(-MaxVel, MaxVel, verticalVelocity));
-
-            //float const depthAttenuation = (1.0f - 2.0f * (SmoothStep(-maxDepth - 0.0001f, maxDepth, pointDepth) - 0.5f)); // Tapers down contribution the deeper the point is
-            float const depthAttenuation = (1.0f - 2.0f * SmoothStep(-0.0001f, maxDepth * 2.0f, std::min(pointDepth, maxDepth))); // Tapers down contribution the deeper the point is
-            //float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, pointDepth); // Tapers down contribution the deeper the point is
-            //float const depthAttenuation = 1.0f - Step(maxDepth, pointDepth);
-
-            float const displacement =
-                displacementMagnitude
-                * (pointDepth >= 0.0f ? 1.0f : 0.0f)
-                * depthAttenuation;
-
-            mParentWorld.DisplaceTODOTESTOceanSurfaceAt(pointPosition.x, displacement);
-
-            if (pointDepth >= 0.0f)
-                LogMessage("X=", pointPosition.x, ", D=", pointDepth, " V=", verticalVelocity, ": DispMag=", displacementMagnitude, " MaxDepth=", maxDepth, " DepthAttenuation=", depthAttenuation, " ResultDisplacement=", displacement);
-            */
-
-            float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
-
-            float constexpr slope = 1.0f / 64.0f; // dt
-
-            float constexpr x0 = 2.4f; // Velocity
-            float constexpr y0 = 0.3f; // Vertical displacement at x0
-
-            float constexpr a = -(slope * x0 + y0) / (x0 * x0);
-            float constexpr b = slope + 2.0f * y0 / x0;
-
-            //float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
-            float const absVerticalVelocity = std::abs(verticalVelocity);
-
-            float const bumpedDisplacementMagnitude = a * absVerticalVelocity * absVerticalVelocity + b * absVerticalVelocity;
-            float const linearDisplacementMagnitude = y0 + slope * (absVerticalVelocity - x0);
+            float const linearDisplacementMagnitude = y0 + linearSlope * (absVerticalVelocity - x0);
 
             // Depth at which the point stops contributing
             float constexpr MaxVel = 30.0f;
