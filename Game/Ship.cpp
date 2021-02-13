@@ -1064,17 +1064,21 @@ void Ship::ApplyWorldForces(
 
             float const displacementMagnitude =
                 std::sqrt(mPoints.GetMass(pointIndex))
+                //mPoints.GetMass(pointIndex) / 10.0f
                 * verticalVelocity * GameParameters::SimulationStepTimeDuration<float>
-                * 0.12f;
+                //* 0.12f;
+                * 0.1f;
+                //* 0.035f;
 
             // Depth at which the point stops contributing
             float constexpr MaxVel = 40.0f;
             float const maxDepth = ((verticalVelocity <= 0.0f) ?
-                6.0f * SmoothStep(-MaxVel, MaxVel, -verticalVelocity)
+                12.0f * SmoothStep(-MaxVel, MaxVel, -verticalVelocity)
                 : 3.0f * SmoothStep(-MaxVel, MaxVel, verticalVelocity));
 
             //float const depthAttenuation = (1.0f - 2.0f * (SmoothStep(-maxDepth - 0.0001f, maxDepth, pointDepth) - 0.5f)); // Tapers down contribution the deeper the point is
-            float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, pointDepth); // Tapers down contribution the deeper the point is
+            float const depthAttenuation = (1.0f - 2.0f * SmoothStep(-0.0001f, maxDepth * 2.0f, std::min(pointDepth, maxDepth))); // Tapers down contribution the deeper the point is
+            //float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, pointDepth); // Tapers down contribution the deeper the point is
             //float const depthAttenuation = 1.0f - Step(maxDepth, pointDepth);
 
             float const displacement =
