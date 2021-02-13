@@ -545,8 +545,7 @@ Render:
 				+ SettingsDialog
 			+ Faster rotting
 		+ Send for testing
-
-		= ShipBucket:
+		+ ShipBucket:
 			+ Split author by ';', put remainder on next line prefixed with "art by:"
 				+ Do split at metadata load time, exposing "ArtCredits"
 				+ Add check to verify_ships.py to make sure author contains 0 or 1 ';'
@@ -554,8 +553,8 @@ Render:
 				+ Change dialog
 			+ I also like a warning not to repost the work on youtube, though i'm sure people will ignore this (we cant control everything unfortunately :wink: )
 			+ Ask Fernando for his ships
-			- Tell CPM/Wreno rules for using ShipBucket
-				- Credits format		
+			+ Tell CPM/Wreno rules for using ShipBucket
+				+ Credits format		
 
 		= MAC:
 			= Full high-DPI path:
@@ -1711,7 +1710,7 @@ Render:
 			- Increase resolution of ocean floor - shouldn't impact perf other than for cache misses
 		- Richter reading upon impact (see https://www.quora.com/How-fast-did-the-Titanic-sink-to-the-bottom-and-did-it-make-a-noise-when-it-hit)
 
-	- Waves from ship (*):
+	= Waves from ship (*):
 		- Spec:
 			- Physics:
 				- For each underwater frontier point:
@@ -1754,9 +1753,10 @@ Render:
 				- At small velocities, displacement should be greater
 					- Plot displacement by velocity
 					- Find curve
+				- Incorporate mass, so that light wooden ball doesn't create as many waves
 			- Cleanup:	
 				- Check disappearing field issue
-				- Make y offset the same between two Titanic's
+				- Make ship y offset the same between two Titanic's
 				- See if can get rid of "displace small scale" function, and use delta-buffer instead
 					- Already verified that small spikes caused by single-sample displacement go away when distributing the displacement among the two adjacent samples
 				- Method to populate deltas (from ship): TODO naming, clearly distinct from the "local" one used for fishes and bubbles, and from others
