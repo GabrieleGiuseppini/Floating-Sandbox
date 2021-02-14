@@ -985,7 +985,7 @@ void Ship::ApplyWorldForces(
             float const clampedAbsVerticalVelocity = std::min(absVerticalVelocity, MaxVel);
             float const maxDepth =
                 (a2 * clampedAbsVerticalVelocity * clampedAbsVerticalVelocity + b2 * clampedAbsVerticalVelocity + 0.5f)
-                * (verticalVelocity <= 0.0f ? 12.0f : 3.0f);
+                * (verticalVelocity <= 0.0f ? 12.0f : 6.0f);
 
             // Linear attenuation up to maxDepth
             float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, pointDepth); // Tapers down contribution the deeper the point is
