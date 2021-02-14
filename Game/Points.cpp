@@ -1310,9 +1310,9 @@ void Points::UpdateEphemeralParticles(
 
                             if (deltaY < oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset)
                             {
-                                mParentWorld.DisplaceSmallScaleOceanSurfaceAt(
+                                mParentWorld.DisplaceOceanSurfaceAt(
                                     mPositionBuffer[pointIndex].x,
-                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - deltaY) / 8.0f); // Magic number
+                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - deltaY) / 4.0f); // Magic number
 
                                 mGameEventHandler->OnAirBubbleSurfaced(1);
                             }

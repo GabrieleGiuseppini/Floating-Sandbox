@@ -1018,7 +1018,7 @@ void Ship::ApplyWorldForces(
                 * (pointDepth >= 0.0f ? 1.0f : 0.0f) // No displacement for above-water points
                 * 0.02f; // Magic number
 
-            mParentWorld.DisplaceTODOTESTOceanSurfaceAt(pointPosition.x, displacement);
+            mParentWorld.DisplaceOceanSurfaceAt(pointPosition.x, displacement);
 
             //
             // Advance edge in the frontier

@@ -92,69 +92,12 @@ public:
         std::optional<vec2f> const & worldCoordinates,
         float currentSimulationTime);
 
-    inline void DisplaceSmallScaleAt(
+    inline void DisplaceAt(
         float const x,
         float const yOffset)
     {
         assert(x >= -GameParameters::HalfMaxWorldWidth
             && x <= GameParameters::HalfMaxWorldWidth);
-
-        //
-        // Find sample index and interpolate in-between that sample and the next
-        //
-
-        // Fractional index in the sample array
-        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
-
-        // Integral part
-        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
-
-        // Fractional part within sample index and the next sample index
-        float const sampleIndexDx = sampleIndexF - sampleIndexI;
-
-        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
-        assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
-
-        // Distribute the displacement offset among the two samples
-
-        ChangeHeightSmooth(
-            SWEOuterLayerSamples + sampleIndexI,
-            (1.0f - sampleIndexDx) * yOffset / SWEHeightFieldAmplification);
-
-        ChangeHeightSmooth(
-            SWEOuterLayerSamples + sampleIndexI + 1,
-            sampleIndexDx * yOffset / SWEHeightFieldAmplification);
-    }
-
-    inline void DisplaceTODOTESTAt(
-        float const x,
-        float const yOffset)
-    {
-        assert(x >= -GameParameters::HalfMaxWorldWidth
-            && x <= GameParameters::HalfMaxWorldWidth);
-
-        /* TODOTEST: now trying with delta's
-        //
-        // Find sample index and interpolate in-between that sample and the next
-        //
-
-        // Fractional index in the sample array
-        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
-
-        // Integral part
-        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
-
-        // Fractional part within sample index and the next sample index
-        float const sampleIndexDx = sampleIndexF - sampleIndexI;
-
-        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
-        assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
-
-        // Distribute the displacement offset among the two samples
-        // TODOHERE: there's no guarantee we may access SWEOuterLayerSamples + sampleIndexI + 1
-        mHeightField[SWEOuterLayerSamples + sampleIndexI] += (1.0f - sampleIndexDx) * yOffset / SWEHeightFieldAmplification;
-        mHeightField[SWEOuterLayerSamples + sampleIndexI + 1] += sampleIndexDx * yOffset / SWEHeightFieldAmplification;
-        */
 
         // Fractional index in the sample array - smack in the center
         float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth + Dx / 2.0f) / Dx;
@@ -164,21 +107,8 @@ public:
 
         assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
 
-        // TODOTEST
-
-        // This makes tiny spikes
         // Store
         mDeltaHeightBuffer[(DeltaHeightSmoothing / 2) + sampleIndexI] += yOffset / SWEHeightFieldAmplification;
-
-        /* This smooths
-        float const sampleIndexDx = sampleIndexF - sampleIndexI;
-
-        assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
-
-        // Distribute the displacement offset among the two samples
-        mDeltaHeightBuffer[sampleIndexI] += (1.0f - sampleIndexDx) * yOffset / SWEHeightFieldAmplification;
-        mDeltaHeightBuffer[sampleIndexI + 1] += sampleIndexDx * yOffset / SWEHeightFieldAmplification;
-        */
     }
 
     void ApplyThanosSnap(
@@ -204,49 +134,6 @@ private:
         assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
 
         return sampleIndexI;
-    }
-
-    // Adds to a height field sample, ensuring we don't excdeed
-    // a maximum slope to keep surface perturbations "smooth"
-    inline void ChangeHeightSmooth(
-        size_t heightFieldIndex,
-        float delta)
-    {
-        // The index is within the "workable" mid-section of the height field
-        assert(heightFieldIndex >= SWEOuterLayerSamples && heightFieldIndex <= SWEOuterLayerSamples + SamplesCount + 1);
-
-        // This is the maximum derivative we allow,
-        // based on empirical observations of (hf[i] - hf[i+/-1]) / Dx
-        float constexpr MaxDerivative = 0.01f;
-
-        if (delta >= 0.0f)
-        {
-            float const leftMin = std::min(
-                mHeightField[heightFieldIndex] + delta,
-                mHeightField[heightFieldIndex - 1] + MaxDerivative * Dx);
-
-            float const rightMin = std::min(
-                mHeightField[heightFieldIndex] + delta,
-                mHeightField[heightFieldIndex + 1] + MaxDerivative * Dx);
-
-            mHeightField[heightFieldIndex] = std::max( // We don't want to lower the current height
-                mHeightField[heightFieldIndex],
-                std::min(leftMin, rightMin));
-        }
-        else
-        {
-            float const leftMax = std::max(
-                mHeightField[heightFieldIndex] + delta,
-                mHeightField[heightFieldIndex - 1] - MaxDerivative * Dx);
-
-            float const rightMax = std::max(
-                mHeightField[heightFieldIndex] + delta,
-                mHeightField[heightFieldIndex + 1] - MaxDerivative * Dx);
-
-            mHeightField[heightFieldIndex] = std::min( // We don't want to raise the current height
-                mHeightField[heightFieldIndex],
-                std::max(leftMax, rightMax));
-        }
     }
 
     void SetSWEWaveHeight(
@@ -336,7 +223,7 @@ private:
         + SWEOuterLayerSamples;
 
     // The width of the delta-height smoothing
-    static size_t constexpr DeltaHeightSmoothing = 5;
+    static size_t constexpr DeltaHeightSmoothing = 3;
     static_assert((DeltaHeightSmoothing % 2) == 1);
 
     //

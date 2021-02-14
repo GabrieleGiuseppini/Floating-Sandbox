@@ -1785,19 +1785,21 @@ Render:
 				+ Post:
 					+ ApplyWorldForces: 1.60%
 					+ OceanSurface::Update: 0.53% (UpdateFields: 0.51%)
-			- Settings:
-				- Displacement Wave amplitude adjust
-				- SettingsDialog
-			- Cleanup:
-				- See if can get rid of "displace small scale" function, and use delta-buffer instead
-					- Already verified that small spikes caused by single-sample displacement go away when distributing the displacement among the two adjacent samples
-				- Method to populate deltas (from ship): TODO naming, clearly distinct from the "local" one used for fishes and bubbles, and from others
-				- Make y offset the same between two Titanic's
+			+ Cleanup:
+				+ See if can get rid of "displace small scale" function, and use delta-buffer instead
+					+ Already verified that small spikes caused by single-sample displacement go away when distributing the displacement among the two adjacent samples
+					+ @ Fishes x 2 (entering freefall, leaving freefall)
+					+ @ AirBubble surfacing
+				+ Name of method to populate deltas
+				+ Make y offset the same between two Titanic's
 			- Final test:
 				- Check disappearing field issue
 				- Test in Debug build
 					- Displacement at middle of world
 					- Displacement close to both ends of the world
+			- Settings:
+				- Displacement Wave amplitude adjust
+				- SettingsDialog
 
 	- Gases:
 		- Spec:

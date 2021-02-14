@@ -82,18 +82,11 @@ public:
 
     bool IsUnderwater(ElementId elementId) const;
 
-    inline void DisplaceSmallScaleOceanSurfaceAt(
+    inline void DisplaceOceanSurfaceAt(
         float x,
         float yOffset)
     {
-        mOceanSurface.DisplaceSmallScaleAt(x, yOffset);
-    }
-
-    inline void DisplaceTODOTESTOceanSurfaceAt(
-        float x,
-        float yOffset)
-    {
-        mOceanSurface.DisplaceTODOTESTAt(x, yOffset);
+        mOceanSurface.DisplaceAt(x, yOffset);
     }
 
     inline float GetOceanFloorHeightAt(float x) const noexcept

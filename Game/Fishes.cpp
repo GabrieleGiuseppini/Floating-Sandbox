@@ -602,7 +602,7 @@ void Fishes::UpdateDynamics(
             fish.CruiseSteeringState.reset();
 
             // Create a little disturbance in the ocean surface
-            oceanSurface.DisplaceSmallScaleAt(fish.CurrentPosition.x, OceanSurfaceDisturbance);
+            oceanSurface.DisplaceAt(fish.CurrentPosition.x, OceanSurfaceDisturbance);
         }
         else if (fish.IsInFreefall
             && fish.CurrentPosition.y <= oceanY - OceanSurfaceLowWatermark)  // Lower level for re-entry, so that jump is more pronounced
@@ -631,7 +631,7 @@ void Fishes::UpdateDynamics(
             fish.PanicCharge = 0.03f;
 
             // Create a little disturbance in the ocean surface
-            oceanSurface.DisplaceSmallScaleAt(fish.CurrentPosition.x, OceanSurfaceDisturbance);
+            oceanSurface.DisplaceAt(fish.CurrentPosition.x, OceanSurfaceDisturbance);
         }
 
         //

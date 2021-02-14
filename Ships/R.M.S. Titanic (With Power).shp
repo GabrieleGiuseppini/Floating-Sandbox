@@ -2,7 +2,7 @@
 	"structure_image":"rms_titanic_with_power_structure.png.dat",
 	"electrical_image":"rms_titanic_with_power_electrical.png.dat",
 	"texture_image":"rms_titanic_with_power_texture.png.dat",
-	"offset":{"x":0.0, "y":-8.0},
+	"offset":{"x":0.0, "y":-6.0},
 	"ship_name":"R.M.S. Titanic (With Power)",
 	"created_by":"Gabriele Giuseppini & Michael Bozarth",
 	"year_built":"1912",
