@@ -794,24 +794,26 @@ void OceanSurface::UpdateFields()
     // centered on the sample
     //
 
-    // TODOTEST: we got a field clear when using i <= SamplesCount
+    float const * restrict const deltaHeightBuffer = mDeltaHeightBuffer.data() + (DeltaHeightSmoothing / 2);
+    float * restrict const heightFieldBuffer = mHeightField.get() + SWEOuterLayerSamples;
+
     for (size_t i = 0; i < SamplesCount; ++i)
     {
-        // Central samples
-        float accumulatedHeight = mDeltaHeightBuffer[(DeltaHeightSmoothing / 2) + i] * static_cast<float>((DeltaHeightSmoothing / 2) + 1);
+        // Central sample
+        float accumulatedHeight = deltaHeightBuffer[i] * static_cast<float>((DeltaHeightSmoothing / 2) + 1);
 
-        // Lateral samples - l is offset from central
+        // Lateral samples; l is offset from central
         for (size_t l = 1; l <= DeltaHeightSmoothing / 2; ++l)
         {
             float const lateralWeight = static_cast<float>((DeltaHeightSmoothing / 2) + 1 - l);
 
             accumulatedHeight +=
-                mDeltaHeightBuffer[(DeltaHeightSmoothing / 2) + i - l] * lateralWeight
-                + mDeltaHeightBuffer[(DeltaHeightSmoothing / 2) + i + l] * lateralWeight;
+                deltaHeightBuffer[i - l] * lateralWeight
+                + deltaHeightBuffer[i + l] * lateralWeight;
         }
 
         // Update height field
-        mHeightField[SWEOuterLayerSamples + i] +=
+        heightFieldBuffer[i] +=
             (1.0f / static_cast<float>(DeltaHeightSmoothing))
             * (1.0f / static_cast<float>(DeltaHeightSmoothing))
             * accumulatedHeight;

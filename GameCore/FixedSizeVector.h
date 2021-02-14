@@ -189,6 +189,16 @@ public:
         return false;
     }
 
+    TElement const * data() const
+    {
+        return mArray.data();
+    }
+
+    TElement * data()
+    {
+        return mArray.data();
+    }
+
     //
     // Modifiers
     //
