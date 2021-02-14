@@ -989,10 +989,22 @@ void Ship::ApplyWorldForces(
 
             //
             // Mass impact
-            // * Adjusted linear slope
+            // - The impact of mass should follow a square root law, but for performance we approximate it
+            //   with a linear law as follows:
+            //      - Mass=  18: impact=10.03
+            //      -[Mass= 743: impact=28.85] -> 26.56
+            //      - Mass=1000: impact=32.42
             //
 
-            float const massImpact = 10.0f + (std::sqrt(mPoints.GetMass(pointIndex)) - 4.2f) * 26.0f / (36.0f - 4.2f);
+            float constexpr Mass1 = 18.0f;
+            float constexpr Impact1 = 10.03f;
+            float constexpr Mass2 = 1000.0f;
+            float constexpr Impact2 = 32.42f;
+
+            //float const massImpact = 10.0f + (std::sqrt(mPoints.GetMass(pointIndex)) - 4.2f) * 26.0f / (36.0f - 4.2f);
+            float const massImpact = Impact1 + (mPoints.GetMass(pointIndex) - Mass1) * (Impact2 - Impact1) / (Mass2 - Mass1);
+
+
             //
             // Displacement
             //
