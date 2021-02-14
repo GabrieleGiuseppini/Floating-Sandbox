@@ -623,6 +623,8 @@ Render:
 		- Water temperature goes down with depth
 
 		- Larger world
+			- See if OceanSurface::UpdateFields() becomes too heavy
+				- If so, resuscitate idea of vectorizing DeltaHeightBuffer smoothing
 			- New Dell profiling percentages:
 				- Before:
 				- After:
@@ -1763,22 +1765,19 @@ Render:
 					+ Find curve
 						+ Piecewise quadratic + linear
 				+ Incorporate mass, so that light wooden ball doesn't create as many waves
-					+ Smaller masses should have slightly more impact
-			- Run in debug
-			- Perf:
+					+ Smaller masses should have slightly more impact			
+			= Perf:
 				! Do not optimize mass calculations, are we only need to calc for those points that are
 				  in frontier - as opposed to *all* points if we were doing it at UpdateMasses()
 				 + Pre (20s. +10->):
 					+ ApplyWorldForces: 1.67%
 					+ OceanSurface::Update: 0.55% (UpdateFields: 0.51%)
 				+ See abs vs intrinsics
-				= OceanSurface: DeltaBuffer smoothing:
-					= Vectorize
+				+ OceanSurface: DeltaBuffer smoothing:
+					+ Vectorize
 						+ Attempt 1: by compiler, with restrict
 							+ OceanSurface::Update: 0.52%
-						- Attempt 2: manually, at Algorithms
-							- Unit tests
-				- Ship: Displacement:
+				= Ship: Displacement:
 					- Formulas optimization:
 						- Try replacing sqrt(mass) with linear law
 					- See assembly difference between using step's vs. ?:

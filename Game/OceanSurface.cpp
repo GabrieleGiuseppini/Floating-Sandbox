@@ -793,11 +793,17 @@ void OceanSurface::UpdateFields()
     // We use a two-pass average on a window of width DeltaHeightSmoothing,
     // centered on the sample
     //
+    // Note: this algorithm may be vectorized, by noticing that the accumulation
+    // for samples [i, i+1, i+2, i+3] requires samples [j, j+1, j+2, j+3].
+    // However, this function nowadays takes 0.51% of the runtime, and a vectorization
+    // of the loop would require careful alignment of the buffers, so for the time
+    // being we think that it's not worth spending too much time here.
+    //
 
     float const * restrict const deltaHeightBuffer = mDeltaHeightBuffer.data() + (DeltaHeightSmoothing / 2);
     float * restrict const heightFieldBuffer = mHeightField.get() + SWEOuterLayerSamples;
 
-    for (size_t i = 0; i < SamplesCount; ++i)
+    for (size_t i = 0; i <= SamplesCount; ++i)
     {
         // Central sample
         float accumulatedHeight = deltaHeightBuffer[i] * static_cast<float>((DeltaHeightSmoothing / 2) + 1);
