@@ -1778,9 +1778,10 @@ Render:
 						+ Attempt 1: by compiler, with restrict
 							+ OceanSurface::Update: 0.52%
 				= Ship: Displacement:
-					- Formulas optimization:
-						- Try replacing sqrt(mass) with linear law
-					- See assembly difference between using step's vs. ?:
+					- See assembly difference between using step's vs. ifs
+					= Formulas optimization:
+						+ Try replacing sqrt(mass) with linear law
+						- Others, with PlotLab					
 			- Settings:
 				- Displacement Wave amplitude adjust
 				- SettingsDialog
@@ -1790,12 +1791,6 @@ Render:
 				- See if can get rid of "displace small scale" function, and use delta-buffer instead
 					- Already verified that small spikes caused by single-sample displacement go away when distributing the displacement among the two adjacent samples
 				- Method to populate deltas (from ship): TODO naming, clearly distinct from the "local" one used for fishes and bubbles, and from others
-				- Optimizations:
-					- OceanSurface:
-						- Smoothing:
-							- restrict ptr
-						- How to not break vectorization of SWE field update:
-							- Option a) Update HeightFields first with (smoothed) DeltaHeight
 			- Final test:
 				- Test in Debug build
 					- Displacement at middle of world
