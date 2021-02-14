@@ -1778,7 +1778,7 @@ Render:
 						+ Attempt 1: by compiler, with restrict
 							+ OceanSurface::Update: 0.52%
 				= Ship: Displacement:
-					- See assembly difference between using step's vs. ifs
+					+ Do benchmarks for various Heaviside "if" steps
 					= Formulas optimization:
 						+ Try replacing sqrt(mass) with linear law
 						- Others, with PlotLab					

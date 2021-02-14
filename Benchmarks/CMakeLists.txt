@@ -5,6 +5,7 @@ set (BENCHMARK_SOURCES
         Logarithm.cpp
         PrecalculatedFunction.cpp
         SingleVectorNormalization.cpp
+	Step.cpp
         TopN.cpp
         UpdateSpringForces.cpp
         Utils.cpp

@@ -978,13 +978,16 @@ void Ship::ApplyWorldForces(
             // Depth attenuation: tapers down displacement the deeper the point is
             //
 
-            // Depth at which the point stops contributing: asymptotic and asymmetric wrt sinking or rising
+            // Depth at which the point stops contributing: rises quadratically, asymptotically, and asymmetric wrt sinking or rising
             float constexpr MaxVel = 30.0f;
+            float constexpr a2 = -0.5f / (MaxVel * MaxVel);
+            float constexpr b2 = 1.0f / MaxVel;
+            float const clampedAbsVerticalVelocity = std::min(absVerticalVelocity, MaxVel);
             float const maxDepth =
-                SmoothStep(-MaxVel, MaxVel, absVerticalVelocity)
+                (a2 * clampedAbsVerticalVelocity * clampedAbsVerticalVelocity + b2 * clampedAbsVerticalVelocity + 0.5f)
                 * (verticalVelocity <= 0.0f ? 12.0f : 3.0f);
 
-            // Linear attenuation
+            // Linear attenuation up to maxDepth
             float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, pointDepth); // Tapers down contribution the deeper the point is
 
             //
