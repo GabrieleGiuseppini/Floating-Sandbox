@@ -101,6 +101,46 @@ bool Ship::UpdateExplosionStateMachine(
         }
 
         //
+        // Blast ocean surface displacement
+        //
+
+        {
+
+            float constexpr MaxDepth = 15.0f; // No effect when abs depth greater than this
+            float constexpr MaxDisplacement = 6.0f; // Max displacement
+
+            // Explostion depth (positive when underwater)
+            float const explosionDepth = mParentWorld.GetOceanSurfaceHeightAt(centerPosition.x) - centerPosition.y;
+            float const absExplosionDepth = std::abs(explosionDepth);
+
+            // Calculate width: depends on depth (abs)
+            float constexpr MinWidth = 1.0f;
+            float const maxWidth = 2.0f * blastRadius;
+            float const width = maxWidth + (absExplosionDepth / MaxDepth * (MinWidth - maxWidth));
+
+            // Calculate displacement: depends on depth
+            //  displacement =  - (1 / (x + a)) + b
+            //  f(MaxDepth) = 0
+            //  f(0) = MaxDisplacement
+            float constexpr a = (-MaxDepth + CompileTimeSqrt(MaxDepth * MaxDepth + 4 * MaxDepth / MaxDisplacement)) / 2.0f;
+            float constexpr b = 1.0f / (MaxDisplacement + a);
+            float const displacement =
+                -1.0f / (absExplosionDepth + a) + b
+                * (absExplosionDepth > MaxDepth ? 0.0f : 1.0f) // Turn off at far-away depths
+                * (explosionDepth <= 0.0f ? 1.0f : -1.0f); // Follow depth sign
+
+            // TODOTEST
+            LogMessage("|D|=", absExplosionDepth, " W=", width, "D=", displacement);
+
+            // Displace
+            // TODO: loop for half, taper down at extremes
+            for (float x = centerPosition.x - width / 2.0f; x < centerPosition.x + width / 2.0f; x += 0.5f)
+            {
+                mParentWorld.DisplaceOceanSurfaceAt(x, displacement);
+            }
+        }
+
+        //
         // Scare fishes
         //
 

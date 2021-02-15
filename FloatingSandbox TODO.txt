@@ -622,6 +622,14 @@ Render:
 
 		- Water temperature goes down with depth
 
+		- ShipLoadDialog: toolbar above preview window
+			- Flip H and V (toggle buttons)
+			- Info button (move from below)
+			- Sort "button" w/drop-down
+				- By: Name, HD/Elec, Elec/HD, Size, Date added
+					- Date added: see after install if file creation dates are still originala
+				- Asc/desc
+
 		- Larger world
 			- See if OceanSurface::UpdateFields() becomes too heavy
 				- If so, resuscitate idea of vectorizing DeltaHeightBuffer smoothing
@@ -1791,15 +1799,20 @@ Render:
 					+ @ Fishes x 2 (entering freefall, leaving freefall)
 					+ @ AirBubble surfacing
 				+ Name of method to populate deltas
-				+ Make y offset the same between two Titanic's
-			- Final test:
+				+ Make y offset the same between two Titanic's			
+			- Other wave generations:
+				- Ship::Explosion state machine (above or below)
+				- ElectricalElement::Engine
+			- Settings:
+				- Flag to turn off
+					- ApplyWorldForces becomes templated on boolean
+				- Displacement Wave amplitude adjust
+				- SettingsDialog
+			- Final tests:
 				- Check disappearing field issue
 				- Test in Debug build
 					- Displacement at middle of world
 					- Displacement close to both ends of the world
-			- Settings:
-				- Displacement Wave amplitude adjust
-				- SettingsDialog
 
 	- Gases:
 		- Spec:

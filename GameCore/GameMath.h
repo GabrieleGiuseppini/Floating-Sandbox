@@ -138,6 +138,20 @@ inline float FastPow(
     return FastPow2(p * FastLog2(x));
 }
 
+namespace detail {
+    float constexpr SqrtNewtonRaphson(float x, float curr, float prev)
+    {
+        return curr == prev
+            ? curr
+            : SqrtNewtonRaphson(x, 0.5f * (curr + x / curr), curr);
+    }
+}
+
+float constexpr CompileTimeSqrt(float x)
+{
+    return detail::SqrtNewtonRaphson(x, x, 0.0f);
+}
+
 inline float Clamp(
     float x,
     float lLimit,
