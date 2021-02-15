@@ -110,14 +110,14 @@ bool Ship::UpdateExplosionStateMachine(
             float const absExplosionDepth = std::abs(explosionDepth);
 
             // No effect when abs depth greater than this
-            float constexpr MaxDepth = 30.0f;
+            float constexpr MaxDepth = 20.0f;
 
-            // Calculate radius: depends on depth (abs)
+            // Calculate (lateral) radius: depends on depth (abs)
             //  radius(depth) = ax + b
             //  radius(0) = maxRadius
             //  radius(maxDepth) = MinRadius;
             float constexpr MinRadius = 1.0f;
-            float const maxRadius = 3.0f * blastRadius;
+            float const maxRadius = 20.0f * blastRadius; // Spectacular, spectacular
             float const radius = maxRadius + (absExplosionDepth / MaxDepth * (MinRadius - maxRadius));
 
             // Calculate displacement: depends on depth
