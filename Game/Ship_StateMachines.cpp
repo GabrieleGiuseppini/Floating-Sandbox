@@ -106,7 +106,7 @@ bool Ship::UpdateExplosionStateMachine(
 
         {
 
-            float constexpr MaxDepth = 15.0f; // No effect when abs depth greater than this
+            float constexpr MaxDepth = 20.0f; // No effect when abs depth greater than this
             float constexpr MaxDisplacement = 6.0f; // Max displacement
 
             // Explostion depth (positive when underwater)
@@ -119,18 +119,17 @@ bool Ship::UpdateExplosionStateMachine(
             float const width = maxWidth + (absExplosionDepth / MaxDepth * (MinWidth - maxWidth));
 
             // Calculate displacement: depends on depth
-            //  displacement =  - (1 / (x + a)) + b
+            //  displacement =  ax^2 + bx + c
             //  f(MaxDepth) = 0
             //  f(0) = MaxDisplacement
-            float constexpr a = (-MaxDepth + CompileTimeSqrt(MaxDepth * MaxDepth + 4 * MaxDepth / MaxDisplacement)) / 2.0f;
-            float constexpr b = 1.0f / (MaxDisplacement + a);
+            //  f'(MaxDepth) = 0
+            float constexpr a = -MaxDisplacement / (MaxDepth * MaxDepth);
+            float constexpr b = 2.0f * MaxDisplacement / MaxDepth;
+            float constexpr c = -MaxDisplacement;
             float const displacement =
-                -1.0f / (absExplosionDepth + a) + b
+                (a * absExplosionDepth * absExplosionDepth + b * absExplosionDepth + c)
                 * (absExplosionDepth > MaxDepth ? 0.0f : 1.0f) // Turn off at far-away depths
                 * (explosionDepth <= 0.0f ? 1.0f : -1.0f); // Follow depth sign
-
-            // TODOTEST
-            LogMessage("|D|=", absExplosionDepth, " W=", width, "D=", displacement);
 
             // Displace
             // TODO: loop for half, taper down at extremes
