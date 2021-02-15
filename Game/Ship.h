@@ -260,6 +260,7 @@ private:
 
     // Mechanical
 
+    template<bool DoDisplaceWater>
     void ApplyWorldForces(
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters,

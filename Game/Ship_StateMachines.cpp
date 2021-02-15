@@ -104,6 +104,7 @@ bool Ship::UpdateExplosionStateMachine(
         // Blast ocean surface displacement
         //
 
+        if (gameParameters.DoDisplaceWater)
         {
             // Explosion depth (positive when underwater)
             float const explosionDepth = mParentWorld.GetOceanSurfaceHeightAt(centerPosition.x) - centerPosition.y;

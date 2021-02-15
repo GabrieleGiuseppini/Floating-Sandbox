@@ -73,6 +73,12 @@ struct IGameControllerSettings
     virtual float GetWaterCrazyness() const = 0;
     virtual void SetWaterCrazyness(float value) = 0;
 
+    virtual bool GetDoDisplaceWater() const = 0;
+    virtual void SetDoDisplaceWater(bool value) = 0;
+
+    virtual float GetWaterDisplacementWaveHeightAdjustment() const = 0;
+    virtual void SetWaterDisplacementWaveHeightAdjustment(float value) = 0;
+
     // Ephemeral Particles
 
     virtual float GetSmokeEmissionDensityAdjustment() const = 0;

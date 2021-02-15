@@ -168,6 +168,12 @@ struct GameParameters
     static float constexpr MinWaterCrazyness = 0.0f;
     static float constexpr MaxWaterCrazyness = 2.0f;
 
+    bool DoDisplaceWater;
+
+    float WaterDisplacementWaveHeightAdjustment;
+    static float constexpr MinWaterDisplacementWaveHeightAdjustment = 0.1f;
+    static float constexpr MaxWaterDisplacementWaveHeightAdjustment = 2.5f;
+
     // Ephemeral particles
 
     static constexpr ElementCount MaxEphemeralParticles = 4096;

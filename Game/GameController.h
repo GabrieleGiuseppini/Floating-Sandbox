@@ -319,15 +319,23 @@ public:
     float GetMinWaterIntakeAdjustment() const override { return GameParameters::MinWaterIntakeAdjustment; }
     float GetMaxWaterIntakeAdjustment() const override { return GameParameters::MaxWaterIntakeAdjustment; }
 
+    float GetWaterDiffusionSpeedAdjustment() const override { return mGameParameters.WaterDiffusionSpeedAdjustment; }
+    void SetWaterDiffusionSpeedAdjustment(float value) override { mGameParameters.WaterDiffusionSpeedAdjustment = value; }
+    float GetMinWaterDiffusionSpeedAdjustment() const override { return GameParameters::MinWaterDiffusionSpeedAdjustment; }
+    float GetMaxWaterDiffusionSpeedAdjustment() const override { return GameParameters::MaxWaterDiffusionSpeedAdjustment; }
+
     float GetWaterCrazyness() const override { return mGameParameters.WaterCrazyness; }
     void SetWaterCrazyness(float value) override { mGameParameters.WaterCrazyness = value; }
     float GetMinWaterCrazyness() const override { return GameParameters::MinWaterCrazyness; }
     float GetMaxWaterCrazyness() const override { return GameParameters::MaxWaterCrazyness; }
 
-    float GetWaterDiffusionSpeedAdjustment() const override { return mGameParameters.WaterDiffusionSpeedAdjustment; }
-    void SetWaterDiffusionSpeedAdjustment(float value) override { mGameParameters.WaterDiffusionSpeedAdjustment = value; }
-    float GetMinWaterDiffusionSpeedAdjustment() const override { return GameParameters::MinWaterDiffusionSpeedAdjustment; }
-    float GetMaxWaterDiffusionSpeedAdjustment() const override { return GameParameters::MaxWaterDiffusionSpeedAdjustment; }
+    bool GetDoDisplaceWater() const override { return mGameParameters.DoDisplaceWater; }
+    void SetDoDisplaceWater(bool value) override { mGameParameters.DoDisplaceWater = value; }
+
+    float GetWaterDisplacementWaveHeightAdjustment() const override { return mGameParameters.WaterDisplacementWaveHeightAdjustment; }
+    void SetWaterDisplacementWaveHeightAdjustment(float value) override { mGameParameters.WaterDisplacementWaveHeightAdjustment = value; }
+    float GetMinWaterDisplacementWaveHeightAdjustment() const override { return GameParameters::MinWaterDisplacementWaveHeightAdjustment; }
+    float GetMaxWaterDisplacementWaveHeightAdjustment() const override { return GameParameters::MaxWaterDisplacementWaveHeightAdjustment; }
 
     float GetSmokeEmissionDensityAdjustment() const override { return mGameParameters.SmokeEmissionDensityAdjustment; }
     void SetSmokeEmissionDensityAdjustment(float value) override { mGameParameters.SmokeEmissionDensityAdjustment = value; }

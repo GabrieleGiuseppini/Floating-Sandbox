@@ -2524,6 +2524,83 @@ void SettingsDialog::PopulateWindWavesFishesLightsPanel(wxPanel * panel)
     }
 
     //
+    // Water Displacement
+    //
+
+    {
+        wxStaticBox * displacementWavesBox = new wxStaticBox(panel, wxID_ANY, _("Displacement Waves"));
+
+        wxBoxSizer * windBoxSizer = new wxBoxSizer(wxVERTICAL);
+        windBoxSizer->AddSpacer(StaticBoxTopMargin + 4);
+
+        {
+            wxGridBagSizer * displacementWavesSizer = new wxGridBagSizer(0, 0);
+
+            displacementWavesSizer->AddGrowableRow(1, 1);
+
+            {
+                // Displace Water
+                {
+                    mDoDisplaceWaterCheckBox = new wxCheckBox(displacementWavesBox, wxID_ANY, _("Displace Water"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, wxEmptyString);
+                    mDoDisplaceWaterCheckBox->SetToolTip(_("Enables or disables displacement of water due to interactions with physical objects."));
+                    mDoDisplaceWaterCheckBox->Bind(
+                        wxEVT_COMMAND_CHECKBOX_CLICKED,
+                        [this](wxCommandEvent & event)
+                        {
+                            mLiveSettings.SetValue<bool>(GameSettings::DoDisplaceWater, event.IsChecked());
+                            OnLiveSettingsChanged();
+
+                            mWaterDisplacementWaveHeightAdjustmentSlider->Enable(mDoDisplaceWaterCheckBox->IsChecked());
+                        });
+
+                    displacementWavesSizer->Add(
+                        mDoDisplaceWaterCheckBox,
+                        wxGBPosition(0, 0),
+                        wxGBSpan(1, 1),
+                        wxEXPAND | wxLEFT | wxRIGHT,
+                        CellBorder);
+                }
+
+                // Water Displacement Wave Height
+                {
+                    mWaterDisplacementWaveHeightAdjustmentSlider = new SliderControl<float>(
+                        displacementWavesBox,
+                        SliderWidth,
+                        -1,
+                        _("Displacement Wave Adjust"),
+                        _("Adjusts the magnitude of the waves caused by water displacement."),
+                        [this](float value)
+                        {
+                            this->mLiveSettings.SetValue(GameSettings::WaterDisplacementWaveHeightAdjustment, value);
+                            this->OnLiveSettingsChanged();
+                        },
+                        std::make_unique<LinearSliderCore>(
+                            mGameControllerSettingsOptions->GetMinWaterDisplacementWaveHeightAdjustment(),
+                            mGameControllerSettingsOptions->GetMaxWaterDisplacementWaveHeightAdjustment()));
+
+                    displacementWavesSizer->Add(
+                        mWaterDisplacementWaveHeightAdjustmentSlider,
+                        wxGBPosition(1, 0),
+                        wxGBSpan(1, 1),
+                        wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                        CellBorder);
+                }
+            }
+
+            windBoxSizer->Add(displacementWavesSizer, 1, wxEXPAND | wxALL, StaticBoxInsetMargin);
+        }
+
+        displacementWavesBox->SetSizerAndFit(windBoxSizer);
+
+        gridSizer->Add(
+            displacementWavesBox,
+            wxGBPosition(1, 0),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorder);
+    }
+
+    //
     // Fishes
     //
 
@@ -2667,7 +2744,7 @@ void SettingsDialog::PopulateWindWavesFishesLightsPanel(wxPanel * panel)
 
         gridSizer->Add(
             fishesBox,
-            wxGBPosition(1, 0),
+            wxGBPosition(1, 1),
             wxGBSpan(1, 4),
             wxEXPAND | wxALL,
             CellBorder);
@@ -2744,7 +2821,7 @@ void SettingsDialog::PopulateWindWavesFishesLightsPanel(wxPanel * panel)
 
         gridSizer->Add(
             lightsBox,
-            wxGBPosition(1, 4),
+            wxGBPosition(1, 5),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorder);
@@ -4546,6 +4623,10 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mBasalWaveSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BasalWaveSpeedAdjustment));
     mTsunamiRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::TsunamiRate).count());
     mRogueWaveRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::RogueWaveRate).count());
+
+    mDoDisplaceWaterCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoDisplaceWater));
+    mWaterDisplacementWaveHeightAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDisplacementWaveHeightAdjustment));
+    mWaterDisplacementWaveHeightAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoDisplaceWater));
 
     mNumberOfFishesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfFishes));
     mFishSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::FishSizeMultiplier));

@@ -630,6 +630,10 @@ Render:
 					- Date added: see after install if file creation dates are still originala
 				- Asc/desc
 
+		- Randomized start
+			- Alternatives:
+				- Like now
+				- Zero wind
 		- Larger world
 			- See if OceanSurface::UpdateFields() becomes too heavy
 				- If so, resuscitate idea of vectorizing DeltaHeightBuffer smoothing
@@ -1729,22 +1733,22 @@ Render:
 		- Richter reading upon impact (see https://www.quora.com/How-fast-did-the-Titanic-sink-to-the-bottom-and-did-it-make-a-noise-when-it-hit)
 
 	= Waves from ship (*):
-		- Spec:
-			- Physics:
-				- For each underwater frontier point:
-					- Ocean surface disturbation proportional to:
+		! Spec:
+			! Physics:
+				! For each underwater frontier point:
+					! Ocean surface disturbation proportional to:
 						a) Velocity of point (its vertical component only)
 						b) Depth of point 
 						c) May be: normal of frontier at the point
-			- Computation:
-				- Done at frontier visit in ship, but simply accumulating delta's in OceanSurface
-				- These delta's will then be materialized into real surface y's at the next OceanSurface::Update (after being smoothed via a low-pass filter)
-					- Yes, this generates a lag between the ship entering the water, and the surface moving for it, but we hope it won't be noticeable
-					- With this deferred scheme though, we have the following pro's:
-						- Not having to recalculate cached point depths
-						- Not having to materialize ocean surface delta's at each ship's Update() (we can do it once for all ships, and at OceanSurface::Update() which is more adept)
-						- All frontiers in all ships still get to see the original surface, and thus there's no risk of one affecting the next
-							- However, we might not want delta's to be cumulative. For example, if CC 1 sees y=0 and makes delta=-3, and CC2 sees y=0 and makes delta=-2, we might not
+			! Computation:
+				! Done at frontier visit in ship, by simply accumulating delta's in OceanSurface
+				! These delta's will then be materialized into real surface y's at the next OceanSurface::Update (after being smoothed via a low-pass filter)
+					! Yes, this generates a lag between the ship entering the water, and the surface moving for it, but we hope it won't be noticeable
+					! With this deferred scheme though, we have the following pro's:
+						! Not having to recalculate cached point depths
+						! Not having to materialize ocean surface delta's at each *ship*'s Update() (we can do it once for all ships, and at OceanSurface::Update() which is more adept)
+						! All frontiers in all ships still get to see the original surface, and thus there's no risk of one affecting the next
+							! However, we might not want delta's to be cumulative. For example, if CC 1 sees y=0 and makes delta=-3, and CC2 sees y=0 and makes delta=-2, we might not
 							  want to end up with delta=-5. See if should use a "max" thing instead
 		= Impl:
 			+ Step 1: basic
@@ -1803,13 +1807,16 @@ Render:
 			= Other wave generations:
 				+ Ship::Explosion state machine (above or below)
 				- ElectricalElement::Engine
-			- Settings:
-				- Flag to turn off
-					- ApplyWorldForces becomes templated on boolean
-				- Displacement Wave amplitude adjust
-				- SettingsDialog
+					- Honor flag from settings
+			+ Settings:
+				+ Flag to turn off - everywhere
+					+ ApplyWorldForces becomes templated on boolean
+					+ Also applies to Ship::UpdateExplosionStateMachine
+				+ Displacement Wave amplitude adjust - only applies to ship (& engine may be?)
+					+ Test min & max
+				+ SettingsDialog
 			- Final tests:
-				- Check disappearing field issue
+				+ Check disappearing field issue
 				- Test in Debug build
 					- Displacement at middle of world
 					- Displacement close to both ends of the world
@@ -1818,6 +1825,7 @@ Render:
 						- Before=TODO after=
 						- Explosion
 						- Engine
+		- Changelist
 
 	- Gases:
 		- Spec:

@@ -56,8 +56,11 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, WaterFrictionDragAdjustment);
     ADD_GC_SETTING(float, WaterPressureDragAdjustment);
     ADD_GC_SETTING(float, WaterIntakeAdjustment);
-    ADD_GC_SETTING(float, WaterCrazyness);
     ADD_GC_SETTING(float, WaterDiffusionSpeedAdjustment);
+    ADD_GC_SETTING(float, WaterCrazyness);
+    ADD_GC_SETTING(bool, DoDisplaceWater);
+    ADD_GC_SETTING(float, WaterDisplacementWaveHeightAdjustment);
+
 
     ADD_GC_SETTING(float, BasalWaveHeightAdjustment);
     ADD_GC_SETTING(float, BasalWaveLengthAdjustment);

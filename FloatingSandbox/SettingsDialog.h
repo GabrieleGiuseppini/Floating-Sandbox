@@ -136,6 +136,8 @@ private:
     SliderControl<float> * mBasalWaveSpeedAdjustmentSlider;
     SliderControl<std::chrono::minutes::rep> * mTsunamiRateSlider;
     SliderControl<std::chrono::minutes::rep> * mRogueWaveRateSlider;
+    wxCheckBox * mDoDisplaceWaterCheckBox;
+    SliderControl<float> * mWaterDisplacementWaveHeightAdjustmentSlider;
     SliderControl<unsigned int> * mNumberOfFishesSlider;
     SliderControl<float> * mFishSizeMultiplierSlider;
     SliderControl<float> * mFishSpeedAdjustmentSlider;

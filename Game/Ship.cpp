@@ -233,7 +233,10 @@ void Ship::Update(
     //
 
     // Apply world forces
-    ApplyWorldForces(stormParameters, gameParameters, aabbSet);
+    if (gameParameters.DoDisplaceWater)
+        ApplyWorldForces<true>(stormParameters, gameParameters, aabbSet);
+    else
+        ApplyWorldForces<false>(stormParameters, gameParameters, aabbSet);
 
     //
     // Run spring relaxation iterations
@@ -708,6 +711,7 @@ void Ship::Finalize()
 // Mechanical Dynamics
 ///////////////////////////////////////////////////////////////////////////////////
 
+template<bool DoDisplaceWater>
 void Ship::ApplyWorldForces(
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters,
@@ -939,86 +943,90 @@ void Ship::ApplyWorldForces(
             // Apply drag force
             mPoints.GetNonSpringForce(pointIndex) -= dragForce;
 
-            //
-            // Water displacement
-            //
-            // * The magnitude of water displacement is proportional to the square root of
-            //   the kinetic energy of the particle, thus it is proportional to the square
-            //   root of the particle mass, and to the particle's velocity
-            //      * However, in order to generate visible waves also for very small velocities,
-            //        we want the contribution of small velocities to be more than linear wrt
-            //        the contribution of higher velocities, and so we'll be using a piecewise
-            //        function: quadratic for small velocities, and linear for higher
-            // * The deeper the particle is, the less it contributes to displacement
-            //
+            if constexpr (DoDisplaceWater)
+            {
+                //
+                // Water displacement
+                //
+                // * The magnitude of water displacement is proportional to the square root of
+                //   the kinetic energy of the particle, thus it is proportional to the square
+                //   root of the particle mass, and to the particle's velocity
+                //      * However, in order to generate visible waves also for very small velocities,
+                //        we want the contribution of small velocities to be more than linear wrt
+                //        the contribution of higher velocities, and so we'll be using a piecewise
+                //        function: quadratic for small velocities, and linear for higher
+                // * The deeper the particle is, the less it contributes to displacement
+                //
 
-            float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
-            float const absVerticalVelocity = std::abs(verticalVelocity);
+                float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
+                float const absVerticalVelocity = std::abs(verticalVelocity);
 
-            //
-            // Displacement magnitude calculation
-            //
+                //
+                // Displacement magnitude calculation
+                //
 
-            float constexpr x0 = 2.4f; // Velocity of transition from quadratic to linear
-            float constexpr y0 = 0.3f; // Displacement magnitude at x0
+                float constexpr x0 = 2.4f; // Velocity of transition from quadratic to linear
+                float constexpr y0 = 0.3f; // Displacement magnitude at x0
 
-            // Linear portion
-            float constexpr linearSlope = GameParameters::SimulationStepTimeDuration<float>;
-            float const linearDisplacementMagnitude = y0 + linearSlope * (absVerticalVelocity - x0);
+                // Linear portion
+                float constexpr linearSlope = GameParameters::SimulationStepTimeDuration<float>;
+                float const linearDisplacementMagnitude = y0 + linearSlope * (absVerticalVelocity - x0);
 
-            // Quadratic portion: y = ax^2 + bx, with constraints:
-            //  y(0) = 0
-            //  y'(x0) = slope
-            //  y(x0) = y0
-            float constexpr a = -(linearSlope * x0 + y0) / (x0 * x0);
-            float constexpr b = linearSlope + 2.0f * y0 / x0;
-            float const quadraticDisplacementMagnitude = a * absVerticalVelocity * absVerticalVelocity + b * absVerticalVelocity;
+                // Quadratic portion: y = ax^2 + bx, with constraints:
+                //  y(0) = 0
+                //  y'(x0) = slope
+                //  y(x0) = y0
+                float constexpr a = -(linearSlope * x0 + y0) / (x0 * x0);
+                float constexpr b = linearSlope + 2.0f * y0 / x0;
+                float const quadraticDisplacementMagnitude = a * absVerticalVelocity * absVerticalVelocity + b * absVerticalVelocity;
 
-            //
-            // Depth attenuation: tapers down displacement the deeper the point is
-            //
+                //
+                // Depth attenuation: tapers down displacement the deeper the point is
+                //
 
-            // Depth at which the point stops contributing: rises quadratically, asymptotically, and asymmetric wrt sinking or rising
-            float constexpr MaxVel = 30.0f;
-            float constexpr a2 = -0.5f / (MaxVel * MaxVel);
-            float constexpr b2 = 1.0f / MaxVel;
-            float const clampedAbsVerticalVelocity = std::min(absVerticalVelocity, MaxVel);
-            float const maxDepth =
-                (a2 * clampedAbsVerticalVelocity * clampedAbsVerticalVelocity + b2 * clampedAbsVerticalVelocity + 0.5f)
-                * (verticalVelocity <= 0.0f ? 12.0f : 6.0f);
+                // Depth at which the point stops contributing: rises quadratically, asymptotically, and asymmetric wrt sinking or rising
+                float constexpr MaxVel = 30.0f;
+                float constexpr a2 = -0.5f / (MaxVel * MaxVel);
+                float constexpr b2 = 1.0f / MaxVel;
+                float const clampedAbsVerticalVelocity = std::min(absVerticalVelocity, MaxVel);
+                float const maxDepth =
+                    (a2 * clampedAbsVerticalVelocity * clampedAbsVerticalVelocity + b2 * clampedAbsVerticalVelocity + 0.5f)
+                    * (verticalVelocity <= 0.0f ? 12.0f : 6.0f)
+                    * gameParameters.WaterDisplacementWaveHeightAdjustment;
 
-            // Linear attenuation up to maxDepth
-            float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, pointDepth); // Tapers down contribution the deeper the point is
+                // Linear attenuation up to maxDepth
+                float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, pointDepth); // Tapers down contribution the deeper the point is
 
-            //
-            // Mass impact
-            // - The impact of mass should follow a square root law, but for performance we approximate it
-            //   with a linear law based on the following points on a sqrt curve:
-            //      - Mass=  18: impact=10.03
-            //      -[Mass= 743: impact=28.85] -> 26.56
-            //      - Mass=1000: impact=32.42
-            //
+                //
+                // Mass impact
+                // - The impact of mass should follow a square root law, but for performance we approximate it
+                //   with a linear law based on the following points on a sqrt curve:
+                //      - Mass=  18: impact=10.03
+                //      -[Mass= 743: impact=28.85] -> 26.56
+                //      - Mass=1000: impact=32.42
+                //
 
-            float constexpr Mass1 = 18.0f;
-            float constexpr Impact1 = 10.03f;
-            float constexpr Mass2 = 1000.0f;
-            float constexpr Impact2 = 32.42f;
+                float constexpr Mass1 = 18.0f;
+                float constexpr Impact1 = 10.03f;
+                float constexpr Mass2 = 1000.0f;
+                float constexpr Impact2 = 32.42f;
 
-            float const massImpact = Impact1 + (mPoints.GetMass(pointIndex) - Mass1) * (Impact2 - Impact1) / (Mass2 - Mass1);
+                float const massImpact = Impact1 + (mPoints.GetMass(pointIndex) - Mass1) * (Impact2 - Impact1) / (Mass2 - Mass1);
 
-            //
-            // Displacement
-            //
+                //
+                // Displacement
+                //
 
-            float const displacement =
-                (absVerticalVelocity < x0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
-                * massImpact
-                * depthAttenuation
-                * (verticalVelocity < 0.0f ? -1.0f : 1.0f) // Displacement has same sign as vertical velocity
-                * (pointDepth >= 0.0f ? 1.0f : 0.0f) // No displacement for above-water points
-                * 0.02f; // Magic number
+                float const displacement =
+                    (absVerticalVelocity < x0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
+                    * massImpact
+                    * depthAttenuation
+                    * (verticalVelocity < 0.0f ? -1.0f : 1.0f) // Displacement has same sign as vertical velocity
+                    * (pointDepth >= 0.0f ? 1.0f : 0.0f) // No displacement for above-water points
+                    * 0.02f; // Magic number
 
-            mParentWorld.DisplaceOceanSurfaceAt(pointPosition.x, displacement);
+                mParentWorld.DisplaceOceanSurfaceAt(pointPosition.x, displacement);
+            }
 
             //
             // Advance edge in the frontier

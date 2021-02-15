@@ -70,6 +70,9 @@ struct IGameControllerSettingsOptions
     virtual float GetMinWaterCrazyness() const = 0;
     virtual float GetMaxWaterCrazyness() const = 0;
 
+    virtual float GetMinWaterDisplacementWaveHeightAdjustment() const = 0;
+    virtual float GetMaxWaterDisplacementWaveHeightAdjustment() const = 0;
+
     // Ephemeral Particles
 
     virtual float GetMinSmokeEmissionDensityAdjustment() const = 0;
