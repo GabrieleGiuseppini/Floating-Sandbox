@@ -1800,8 +1800,8 @@ Render:
 					+ @ AirBubble surfacing
 				+ Name of method to populate deltas
 				+ Make y offset the same between two Titanic's			
-			- Other wave generations:
-				- Ship::Explosion state machine (above or below)
+			= Other wave generations:
+				+ Ship::Explosion state machine (above or below)
 				- ElectricalElement::Engine
 			- Settings:
 				- Flag to turn off
@@ -1813,6 +1813,11 @@ Render:
 				- Test in Debug build
 					- Displacement at middle of world
 					- Displacement close to both ends of the world
+				- Perf tests
+					- Old dell
+						- Before=TODO after=
+						- Explosion
+						- Engine
 
 	- Gases:
 		- Spec:

@@ -105,24 +105,27 @@ bool Ship::UpdateExplosionStateMachine(
         //
 
         {
-
-            float constexpr MaxDepth = 20.0f; // No effect when abs depth greater than this
-            float constexpr MaxDisplacement = 6.0f; // Max displacement
-
-            // Explostion depth (positive when underwater)
+            // Explosion depth (positive when underwater)
             float const explosionDepth = mParentWorld.GetOceanSurfaceHeightAt(centerPosition.x) - centerPosition.y;
             float const absExplosionDepth = std::abs(explosionDepth);
 
-            // Calculate width: depends on depth (abs)
-            float constexpr MinWidth = 1.0f;
-            float const maxWidth = 2.0f * blastRadius;
-            float const width = maxWidth + (absExplosionDepth / MaxDepth * (MinWidth - maxWidth));
+            // No effect when abs depth greater than this
+            float constexpr MaxDepth = 30.0f;
+
+            // Calculate radius: depends on depth (abs)
+            //  radius(depth) = ax + b
+            //  radius(0) = maxRadius
+            //  radius(maxDepth) = MinRadius;
+            float constexpr MinRadius = 1.0f;
+            float const maxRadius = 3.0f * blastRadius;
+            float const radius = maxRadius + (absExplosionDepth / MaxDepth * (MinRadius - maxRadius));
 
             // Calculate displacement: depends on depth
-            //  displacement =  ax^2 + bx + c
+            //  displacement(depth) =  ax^2 + bx + c
             //  f(MaxDepth) = 0
             //  f(0) = MaxDisplacement
             //  f'(MaxDepth) = 0
+            float constexpr MaxDisplacement = 6.0f; // Max displacement
             float constexpr a = -MaxDisplacement / (MaxDepth * MaxDepth);
             float constexpr b = 2.0f * MaxDisplacement / MaxDepth;
             float constexpr c = -MaxDisplacement;
@@ -132,10 +135,11 @@ bool Ship::UpdateExplosionStateMachine(
                 * (explosionDepth <= 0.0f ? 1.0f : -1.0f); // Follow depth sign
 
             // Displace
-            // TODO: loop for half, taper down at extremes
-            for (float x = centerPosition.x - width / 2.0f; x < centerPosition.x + width / 2.0f; x += 0.5f)
+            for (float r = 0.0f; r <= radius; r += 0.5f)
             {
-                mParentWorld.DisplaceOceanSurfaceAt(x, displacement);
+                float const d = displacement * (1.0f - r / radius);
+                mParentWorld.DisplaceOceanSurfaceAt(centerPosition.x - r, d);
+                mParentWorld.DisplaceOceanSurfaceAt(centerPosition.x + r, d);
             }
         }
 
