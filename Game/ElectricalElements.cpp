@@ -1778,39 +1778,83 @@ void ElectricalElements::UpdateSinks(
                 * GameParameters::SimulationStepTimeDuration<float>);
 
             //
-            // Generate wake if running and underwater
+            // Generate wake - if running and underwater
             //
 
-            if (gameParameters.DoGenerateEngineWakeParticles)
             {
                 vec2f const enginePosition = points.GetPosition(enginePointIndex);
 
-                if (float const absThrustMagnitude = std::abs(engineState.CurrentThrustMagnitude);
-                    absThrustMagnitude > 0.1f // Magic number
-                    && mParentWorld.IsUnderwater(enginePosition))
+                // Depth of engine, positive = underwater
+                float const engineDepth = mParentWorld.GetOceanSurfaceHeightAt(enginePosition.x) - enginePosition.y;
+
+                float const absThrustMagnitude = std::abs(engineState.CurrentThrustMagnitude);
+
+                if (absThrustMagnitude > 0.1f // Magic number
+                    && engineDepth >= 0.0f)
                 {
-                    auto const planeId = points.GetPlaneId(enginePointIndex);
-
-                    for (int i = 0; i < std::round(absThrustMagnitude * 4.0f); ++i)
+                    // Generate wake particles
+                    if (gameParameters.DoGenerateEngineWakeParticles)
                     {
-                        float constexpr HalfFanOutAngle = Pi<float> / 14.0f; // Magic number
+                        auto const planeId = points.GetPlaneId(enginePointIndex);
 
-                        float const angle = Clamp(
-                            0.15f * GameRandomEngine::GetInstance().GenerateNormalizedNormalReal(),
-                            -HalfFanOutAngle,
-                            HalfFanOutAngle);
+                        for (int i = 0; i < std::round(absThrustMagnitude * 4.0f); ++i)
+                        {
+                            // Choose random angle for this particle
+                            float constexpr HalfFanOutAngle = Pi<float> / 14.0f; // Magic number
+                            float const angle = Clamp(
+                                0.15f * GameRandomEngine::GetInstance().GenerateNormalizedNormalReal(),
+                                -HalfFanOutAngle,
+                                HalfFanOutAngle);
 
-                        vec2f const wakeVelocity =
-                            -engineState.TargetThrustDir.rotate(angle)
-                            * (engineState.CurrentThrustMagnitude < 0.0f ? -1.0f : 1.0f)
-                            * 20.0f; // Magic number
+                            // Calculate velocity
+                            vec2f const wakeVelocity =
+                                -engineState.TargetThrustDir.rotate(angle)
+                                * (engineState.CurrentThrustMagnitude < 0.0f ? -1.0f : 1.0f)
+                                * 20.0f; // Magic number
 
-                        points.CreateEphemeralParticleWakeBubble(
-                            enginePosition,
-                            wakeVelocity,
-                            currentSimulationTime,
-                            planeId,
-                            gameParameters);
+                            // Create particle
+                            points.CreateEphemeralParticleWakeBubble(
+                                enginePosition,
+                                wakeVelocity,
+                                currentSimulationTime,
+                                planeId,
+                                gameParameters);
+                        }
+                    }
+
+                    // Displace ocean surface
+                    if (gameParameters.DoDisplaceWater)
+                    {
+                        // New position of engine - adjusted with force
+                        vec2f const equivalentEnginePosition =
+                            enginePosition
+                            - thrustForce * GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float> * 0.01f;
+
+                        // Angle between vertical line to engine and
+                        // direction of displacement towards surface
+                        float constexpr Angle = Pi<float> / 4.0f;
+
+                        // Horizontal distance from new engine position to vertical
+                        // from water displacenent
+                        float const horizontalDistance =
+                            std::tan(Angle)
+                            * engineDepth
+                            * (thrustForce.x >= 0.0f ? -1.0f : 1.0f);
+
+                        // Displacement amount - goes to zero after a certain depth threshold
+                        float const displacementAmount =
+                            // TODOTEST
+                            //5.0f
+                            1.0f
+                            * absThrustMagnitude
+                            * SmoothStep(0.0f, 15.0f, engineDepth);
+
+                        // TODOHERE
+                        LogMessage("TODOTEST: Engine@", enginePosition.toString(), " EquivEngine@", equivalentEnginePosition.toString(), " HorizDist=", horizontalDistance);
+
+                        mParentWorld.DisplaceOceanSurfaceAt(
+                            equivalentEnginePosition.x + horizontalDistance,
+                            displacementAmount);
                     }
                 }
             }

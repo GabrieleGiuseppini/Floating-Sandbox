@@ -623,17 +623,27 @@ Render:
 		- Water temperature goes down with depth
 
 		- ShipLoadDialog: toolbar above preview window
-			- Flip H and V (toggle buttons)
+			- Flip H and V (toggle buttons, wxBitmapToggleButton)
+				= Icons
 			- Info button (move from below)
-			- Sort "button" w/drop-down
-				- By: Name, HD/Elec, Elec/HD, Size, Date added
-					- Date added: see after install if file creation dates are still originala
-				- Asc/desc
+				+ Icon
+			- Sort "button" w/drop-down, like in Windows; contains:
+				- UIControls: Popup button
+					- Static image (w/Windows background effect) with little arrow to the right (TODO - think well)
+					- Custom handler that takes coords
+				= Icon
+				- By: Name, HD/Elec/0, Elec/HD/0, Size, Date added (radio)
+					- Date added: see after install if file creation dates are still originals
+				- Asc/desc radio
 
 		- Randomized start
-			- Alternatives:
-				- Like now
-				- Zero wind
+			- Done by new method at SettingsManager, by choosing settings (system & user) weighted by new optional probability attribute
+				- Proability at SettingsDialog
+				- "defaults" (not a setting) have own hardcoded probability
+			- Add new system settings, with probs:
+				- Starry night 1/10
+				- Quiet sea 4/10
+
 		- Larger world
 			- See if OceanSurface::UpdateFields() becomes too heavy
 				- If so, resuscitate idea of vectorizing DeltaHeightBuffer smoothing
@@ -663,11 +673,6 @@ Render:
 	
 		- New ships
 			- changelist
-
-		- Incandescence layer (*)
-
-
-		- Light improvements (*)
 				
 		- Repair improvement:
 			- 1) Debug test case (w/default_ship)
@@ -684,6 +689,10 @@ Render:
 					- Move the point to the other side (rendering the triangle CW)
 			- OR: B)
 				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
+
+		- Incandescence layer (*)
+
+		- Light improvements (*)
 
 		- Sources of Light
 			- See if there's a * below
@@ -1806,8 +1815,8 @@ Render:
 				+ Make y offset the same between two Titanic's			
 			= Other wave generations:
 				+ Ship::Explosion state machine (above or below)
-				- ElectricalElement::Engine
-					- Honor flag from settings
+				= ElectricalElement::Engine
+					+ Honor flag from settings
 			+ Settings:
 				+ Flag to turn off - everywhere
 					+ ApplyWorldForces becomes templated on boolean
