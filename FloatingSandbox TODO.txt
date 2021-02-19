@@ -620,6 +620,10 @@ Render:
 
 		= Waves from ship (*)
 
+		- Default settings: 
+			- Flatten waves
+			- Lower speed of (sin) ocean waves - now that we run faster?
+
 		- Water temperature goes down with depth
 
 		- ShipLoadDialog: toolbar above preview window
@@ -730,8 +734,6 @@ Render:
 		- ShipRenderContext: see if may turn off Z-depth check @ triangles
 			- Check first on Dell if doing so would improve perf
 			- Check then if there are any artifacts when doing so
-
-		- Lower speed of (sin) ocean waves - now that we run faster?
 
 		- Night vision (*)
 
