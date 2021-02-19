@@ -624,6 +624,15 @@ Render:
 			- Flatten waves
 			- Lower speed of (sin) ocean waves - now that we run faster?
 
+		- Randomized start
+			- Done by new method at SettingsManager, by choosing settings (system & user) weighted by new optional probability attribute
+				- Proability at SettingsDialog
+				- "defaults" (not a setting) have own hardcoded probability
+			- Add new system settings, with probs:
+				- Starry night 0/10
+				- Quiet sea 4/10
+				- Blue world (sky: 0, 119, 196; find ocean, rest like quiet sea) 2/10
+
 		- Water temperature goes down with depth
 
 		- ShipLoadDialog: toolbar above preview window
@@ -639,14 +648,6 @@ Render:
 				- By: Name, HD/Elec/0, Elec/HD/0, Size, Date added (radio)
 					- Date added: see after install if file creation dates are still originals
 				- Asc/desc radio
-
-		- Randomized start
-			- Done by new method at SettingsManager, by choosing settings (system & user) weighted by new optional probability attribute
-				- Proability at SettingsDialog
-				- "defaults" (not a setting) have own hardcoded probability
-			- Add new system settings, with probs:
-				- Starry night 1/10
-				- Quiet sea 4/10
 
 		- Larger world
 			- See if OceanSurface::UpdateFields() becomes too heavy

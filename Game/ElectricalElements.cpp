@@ -1825,37 +1825,29 @@ void ElectricalElements::UpdateSinks(
                     // Displace ocean surface
                     if (gameParameters.DoDisplaceWater)
                     {
-                        // Offset from engine
+                        // Offset from engine due to thrust
                         vec2f const engineOffset =
                             -thrustForce
                             * GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>
                             * 0.05f;
 
-                        // New depth at offset
-                        float const offsetedEngineDepth = engineDepth - engineOffset.y;
+                        vec2f const engineOffsetedPosition = enginePosition + engineOffset;
 
-                        // New engine x
-                        float const offsetedEngineX = enginePosition.x + engineOffset.x;
+                        // New depth at offset
+                        float const offsetedEngineDepth = mParentWorld.GetOceanSurfaceHeightAt(engineOffsetedPosition.x) - engineOffsetedPosition.y;
 
                         // Sine perturbation - to make sure that water displacement keeps moving,
                         // otherwise big waves build up
-                        float const sinePerturbation = std::sin(currentSimulationTime * 1.2f);
-
-                        // Displacement x: moving sine around offseted engine x
-                        float const displacementX = offsetedEngineX + 5.0f * sinePerturbation;
+                        float const sinePerturbation = std::sin(currentSimulationTime * 2.5f);
 
                         // Displacement amount - goes to zero after a certain depth threshold
                         float const displacementAmount =
-                            0.5f * absThrustMagnitude
-                            * sinePerturbation
+                            4.0f * absThrustMagnitude
+                            * (1.0f + sinePerturbation) / 2.0f
                             * (1.0f - SmoothStep(0.0f, 10.0f, offsetedEngineDepth));
 
-                        LogMessage("TODOTEST: Engine@", enginePosition.toString(), " OffsetedEngine@", (enginePosition + engineOffset).toString(),
-                            " OffsetedDepth=", offsetedEngineDepth,
-                            " DisplacementX=", displacementX, " DisplacementAmount=", displacementAmount);
-
                         mParentWorld.DisplaceOceanSurfaceAt(
-                            displacementX,
+                            engineOffsetedPosition.x,
                             displacementAmount);
                     }
                 }
