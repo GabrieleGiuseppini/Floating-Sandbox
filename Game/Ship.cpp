@@ -969,14 +969,14 @@ void Ship::ApplyWorldForces(
 
                 // TODOTEST
                 //float constexpr x0 = 2.4f; // Velocity of transition from quadratic to linear
-                float constexpr x0 = 8.5f; // Velocity of transition from quadratic to linear
+                float constexpr x0 = 8.0f; // Velocity of transition from quadratic to linear
                 // TODOTEST
                 //float constexpr y0 = 0.3f; // Displacement magnitude at x0
                 float constexpr y0 = 0.3f; // Displacement magnitude at x0
 
                 // Linear portion
-                float constexpr linearSlope =
-                    //TODO 2: use adjustment here and get idea
+                //float constexpr linearSlope =
+                float const linearSlope =
                     2.0f *
                     GameParameters::SimulationStepTimeDuration<float>;
                 float const linearDisplacementMagnitude = y0 + linearSlope * (absVerticalVelocity - x0);
