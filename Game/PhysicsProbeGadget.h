@@ -76,8 +76,8 @@ private:
 
     State mState;
 
-    static constexpr auto PingOffInterval = 250ms;
-    static constexpr auto PingOnInterval = 250ms;
+    static constexpr auto PingOffInterval = 150ms;
+    static constexpr auto PingOnInterval = 150ms;
 
     // The next timestamp at which we'll automatically transition state
     GameWallClock::time_point mNextStateTransitionTimePoint;

@@ -965,19 +965,28 @@ void Ship::ApplyWorldForces(
                 // Displacement magnitude calculation
                 //
 
-                float constexpr x0 = 2.4f; // Velocity of transition from quadratic to linear
-                float constexpr y0 = 0.3f; // Displacement magnitude at x0
+                // TODO: try: lower displacement mag at x0, but greater slope for higher (linear) velocities
+
+                // TODOTEST
+                //float constexpr x0 = 2.4f; // Velocity of transition from quadratic to linear
+                float constexpr x0 = 6.5f; // Velocity of transition from quadratic to linear
+                // TODOTEST
+                //float constexpr y0 = 0.3f; // Displacement magnitude at x0
+                float constexpr y0 = 0.25f; // Displacement magnitude at x0
 
                 // Linear portion
-                float constexpr linearSlope = GameParameters::SimulationStepTimeDuration<float>;
+                float constexpr linearSlope =
+                    //TODOTEST
+                    2.0f *
+                    GameParameters::SimulationStepTimeDuration<float>;
                 float const linearDisplacementMagnitude = y0 + linearSlope * (absVerticalVelocity - x0);
 
                 // Quadratic portion: y = ax^2 + bx, with constraints:
                 //  y(0) = 0
                 //  y'(x0) = slope
                 //  y(x0) = y0
-                float constexpr a = -(linearSlope * x0 + y0) / (x0 * x0);
-                float constexpr b = linearSlope + 2.0f * y0 / x0;
+                float constexpr a = (linearSlope * x0 - y0) / (x0 * x0);
+                float constexpr b = 2.0f * y0 / x0 - linearSlope;
                 float const quadraticDisplacementMagnitude = a * absVerticalVelocity * absVerticalVelocity + b * absVerticalVelocity;
 
                 //
@@ -1000,10 +1009,10 @@ void Ship::ApplyWorldForces(
                 //
                 // Mass impact
                 // - The impact of mass should follow a square root law, but for performance we approximate it
-                //   with a linear law based on the following points on a sqrt curve:
-                //      - Mass=  18: impact=10.03
-                //      -[Mass= 743: impact=28.85] -> 26.56
-                //      - Mass=1000: impact=32.42
+                //   with a linear law based on the following points taken on a sqrt curve:
+                //      -  Mass=  18: impact=10.03
+                //      - [Mass= 743: impact=28.85] -> 26.56
+                //      -  Mass=1000: impact=32.42
                 //
 
                 float constexpr Mass1 = 18.0f;

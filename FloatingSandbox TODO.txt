@@ -620,6 +620,8 @@ Render:
 
 		= Waves from ship (*)
 
+		- Faster probe readings
+
 		- Default settings: 
 			- Flatten waves
 			- Lower speed of (sin) ocean waves - now that we run faster?
@@ -1820,6 +1822,7 @@ Render:
 				+ Ship::Explosion state machine (above or below)
 				= ElectricalElement::Engine
 					+ Honor flag from settings
+			- See if can recalibrate Lifeboat
 			+ Settings:
 				+ Flag to turn off - everywhere
 					+ ApplyWorldForces becomes templated on boolean
