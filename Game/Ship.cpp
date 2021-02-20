@@ -965,18 +965,18 @@ void Ship::ApplyWorldForces(
                 // Displacement magnitude calculation
                 //
 
-                // TODO: try: lower displacement mag at x0, but greater slope for higher (linear) velocities
+                // TODO 1: see if can damp lifeboat more
 
                 // TODOTEST
                 //float constexpr x0 = 2.4f; // Velocity of transition from quadratic to linear
                 float constexpr x0 = 6.5f; // Velocity of transition from quadratic to linear
                 // TODOTEST
                 //float constexpr y0 = 0.3f; // Displacement magnitude at x0
-                float constexpr y0 = 0.25f; // Displacement magnitude at x0
+                float constexpr y0 = 0.3f; // Displacement magnitude at x0
 
                 // Linear portion
                 float constexpr linearSlope =
-                    //TODOTEST
+                    //TODO 2: use adjustment here and get idea
                     2.0f *
                     GameParameters::SimulationStepTimeDuration<float>;
                 float const linearDisplacementMagnitude = y0 + linearSlope * (absVerticalVelocity - x0);
@@ -1000,7 +1000,7 @@ void Ship::ApplyWorldForces(
                 float const clampedAbsVerticalVelocity = std::min(absVerticalVelocity, MaxVel);
                 float const maxDepth =
                     (a2 * clampedAbsVerticalVelocity * clampedAbsVerticalVelocity + b2 * clampedAbsVerticalVelocity + 0.5f)
-                    * (verticalVelocity <= 0.0f ? 12.0f : 6.0f)
+                    * (verticalVelocity <= 0.0f ? 12.0f : 3.0f)
                     * gameParameters.WaterDisplacementWaveHeightAdjustment;
 
                 // Linear attenuation up to maxDepth
