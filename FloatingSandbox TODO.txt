@@ -555,6 +555,7 @@ Render:
 			+ Ask Fernando for his ships
 			+ Tell CPM/Wreno rules for using ShipBucket
 				+ Credits format		
+		+ Faster probe readings
 
 		= MAC:
 			= Full high-DPI path:
@@ -620,7 +621,6 @@ Render:
 
 		= Waves from ship (*)
 
-		- Faster probe readings
 
 		- Default settings: 
 			- Flatten waves

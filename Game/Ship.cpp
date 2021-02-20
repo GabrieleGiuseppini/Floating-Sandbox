@@ -965,20 +965,11 @@ void Ship::ApplyWorldForces(
                 // Displacement magnitude calculation
                 //
 
-                // TODO 1: see if can damp lifeboat more
-
-                // TODOTEST
-                //float constexpr x0 = 2.4f; // Velocity of transition from quadratic to linear
-                float constexpr x0 = 7.5f; // Velocity of transition from quadratic to linear
-                // TODOTEST
-                //float constexpr y0 = 0.3f; // Displacement magnitude at x0
+                float constexpr x0 = 7.5f; // Velocity at which displacement transitions from quadratic to linear
                 float constexpr y0 = 0.3f; // Displacement magnitude at x0
 
                 // Linear portion
-                //float constexpr linearSlope =
-                float const linearSlope =
-                    2.0f *
-                    GameParameters::SimulationStepTimeDuration<float>;
+                float constexpr linearSlope = 2.0f * GameParameters::SimulationStepTimeDuration<float>;
                 float const linearDisplacementMagnitude = y0 + linearSlope * (absVerticalVelocity - x0);
 
                 // Quadratic portion: y = ax^2 + bx, with constraints:
