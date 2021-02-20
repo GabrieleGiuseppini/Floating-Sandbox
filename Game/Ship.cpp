@@ -969,7 +969,7 @@ void Ship::ApplyWorldForces(
 
                 // TODOTEST
                 //float constexpr x0 = 2.4f; // Velocity of transition from quadratic to linear
-                float constexpr x0 = 6.5f; // Velocity of transition from quadratic to linear
+                float constexpr x0 = 8.5f; // Velocity of transition from quadratic to linear
                 // TODOTEST
                 //float constexpr y0 = 0.3f; // Displacement magnitude at x0
                 float constexpr y0 = 0.3f; // Displacement magnitude at x0
