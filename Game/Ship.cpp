@@ -1748,13 +1748,11 @@ void Ship::UpdateWaterVelocities(
     }
 
 
-
     //
     // Average kinetic energy loss
     //
 
     waterSplashed = mWaterSplashedRunningAverage.Update(waterSplashed);
-
 
 
     //
