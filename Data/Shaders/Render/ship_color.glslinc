@@ -46,7 +46,7 @@ void main()
     vec4 fragColour = mix(decayColor, vertexCol, vertexAttributes.z);
 
     // Apply point water
-    float vertexColorWetness = min(vertexAttributes.y, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
+    float vertexColorWetness = min(max(vertexAttributes.y, 0.0), paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
     fragColour = mix(fragColour, paramWaterColor, vertexColorWetness);
 
     // Complement missing ambient light with point's light

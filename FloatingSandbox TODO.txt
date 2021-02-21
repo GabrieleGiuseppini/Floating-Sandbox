@@ -558,6 +558,8 @@ Render:
 		+ Faster probe readings
 		+ Water temperature goes down with depth (thermocline)
 		+ Waves from ship (*)
+		+ Send for testing
+		+ DKUZ bug with yellow dots
 
 		= MAC:
 			= Full high-DPI path:
@@ -619,11 +621,13 @@ Render:
 				- wxWidgets so's
 					- See if may statically link		
 
-		- DKUZ bug with yellow dots @ rotting
+		
+		- Timcan bug with engine sound goin' off
+			- "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
 
 		= Default settings: 
 			- Flatten waves?
-			+ Lower speed of (sin) ocean waves - now that we run faster?
+			+ Lower speed of (sin) ocean waves - now that we run faster
 
 		- Randomized start
 			- Done by new method at SettingsManager, by choosing settings (system & user) weighted by new optional probability attribute
@@ -634,19 +638,7 @@ Render:
 				- Quiet sea 4/10
 				= Blue world (sky: 0, 119, 196; find ocean, rest like quiet sea) 2/10
 
-		- ShipLoadDialog: toolbar above preview window
-			- Flip H and V (toggle buttons, wxBitmapToggleButton)
-				= Icons
-			- Info button (move from below)
-				+ Icon
-			- Sort "button" w/drop-down, like in Windows; contains:
-				- UIControls: Popup button
-					- Static image (w/Windows background effect) with little arrow to the right (TODO - think well)
-					- Custom handler that takes coords
-				= Icon
-				- By: Name, HD/Elec/0, Elec/HD/0, Size, Date added (radio)
-					- Date added: see after install if file creation dates are still originals
-				- Asc/desc radio
+		- ShipLoadDialog Toolbar (*)
 
 		- Larger world
 			- See if OceanSurface::UpdateFields() becomes too heavy
@@ -689,6 +681,8 @@ Render:
 					- Move the point to the other side (rendering the triangle CW)
 			- OR: B)
 				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
+
+		- Sound space (*)
 
 		- Incandescence layer (*)
 
@@ -988,10 +982,8 @@ Render:
 		- Players can collect different kinds of fish; click on one they don't have and it goes into like a collectors book
 		- Could have a "fishing rod" tool
 	- Drain ocean
-	- Speedometer
 	- Shockwave bomb
 		- When detonated the area destroyed is quite small but it sends out a shock wave with a pretty big radius that can cause things to break or collapse and stuff like that. Also maybe it could be very damaging to rotted materials, causing it to shatter like the thanos snap thing.
-	- Temperature tool - to get temperature of points
 	- Make lights not propagate through hull
 	- Sun rays
 	- Moving furniture
@@ -1008,8 +1000,6 @@ Render:
 	- Can the bubble tool be used to remove water from the ship? that could be pretty cool
 	- I wonder if that's possible to make the UI dark once the brightness of the game gets lower than a specific level just like your make the FPS counter white
 		+ Tools turning white at night
-	- I wonder if you can add the "Ground" material, which is a material that cannot move.
-	  No physics calculation. Plus, you're using texture, so it would be neat if the same texture as the ground can be applied to it
 	- Tornado
 		- Mixes swirl and grab
 	- Meteorites
@@ -1073,6 +1063,16 @@ Render:
 			- sea water: the default
 			- lake water: a brownish color; not as good as decaying ships, they turn brown but don't break apart
 			- river water: a constant turbulent water that flows along the contour of the terrain much like a river does
+			- more details:
+				So I know you said different water types would be something in the distant future
+				but I was thinking about something unique that could involve lake water
+				the rot is minimal so I was thinking of an alternative growth
+				was thinking that maybe we could have zebra mussel colonies that grow on the wrecks over time in fresh water
+				we could introduce a new tool
+				like a picaxe type tool that can remove heavy growths like zebra mussels and barnacles
+				barnacles would be the problem for the default water settings
+				and zebra mussels could be something in lake water settings
+				these would slowly colonize the hull and put weight on it			
 
 - Testers:
 	- Pac0master: Intel core i5-8600K 6 cores, NVIDIA GeForce RTX 2070
@@ -1922,14 +1922,21 @@ Render:
 	- Also "clock time since last reload" would be helpful
 		- Add two Game Preferences checkboxes to select each
 
-	- ShipLoadDialog: 
+	- ShipLoadDialog toolbar (*): 
+		- Above preview window
+		- Flip H and V (toggle buttons, wxBitmapToggleButton)
+			= Icons
+		- Info button (move from below)
+			+ Icon
+		- Sort "button" w/drop-down, like in Windows; contains:
+			- UIControls: Popup button
+				- Static image (w/Windows background effect) with little arrow to the right (TODO - think well)
+				- Custom handler that takes coords
+			= Icon
+			- By: Name, HD/Elec/0, Elec/HD/0, Size, Date added (radio)
+				- Date added: see after install if file creation dates are still originals
+			- Asc/desc radio
 		- Display also folders
-		- Filters for these properties:
-			1) Size (small, medium, large)
-			2) HD vs non-HD
-			3) Electrical vs non-Electrical
-			4) Used recently vs All
-		- Sort: Alphabetically (like now), Most Recent (the new one)
 
 	- Localization:
 		- Keyboard shortcuts
@@ -1949,14 +1956,20 @@ Render:
 
 - Sounds:
 
-	- Separate slider for engine volumes
-
 	- Ship Custom Sounds (*)
 		- Ship may come with custom sound(s) for horns et al 
 		- New electrical material: "Custom sound switch"; first one plays sound #1, second one play sound #2, etc.
 		- Need to find way for ship-loading process to communicate sound file (buffer) to SoundController
 			- At Electrical announcement! passing buffer as MemoryStream, or filename
 		- Might be better done after ship builder, so that we may package sounds better in .shp2 files
+
+	- Voices:
+		- For ships with engine and electric systems, a voice says "Half Ahead on Engine 3" or "Pumps ON" and things like that, of course depends on the game´s language, 
+		  for example in spanish it will be "Media Velocidad en Motor 3" and "Bombas Encendidas"
+			- Joadix for Spanish
+			- Tim for English
+		- Multiple voices for the same sound
+		- Disabled by default (people might hate them)
 
 	- Sounds that play before ship starts sinking
 		- SOS, bell, sailor screaming, etc.
@@ -1971,9 +1984,12 @@ Render:
 		- Ship sinking: https://www.youtube.com/watch?v=-f2B_bzcgV8
 		- ShipSoundsForFS (in Scratch)
 
-	- Sound space:
-		- Volume of effects should depend on distance/zoom
-		- Position of effects (L/R) should depend on world position re: camera
+	- Sound space (*):
+		- 1) Volume of effects should depend on distance/zoom
+			- "Sounds' volumes that depend on the distance of their source from the visible field"
+		- 2) Position of effects (L/R) should depend on world position re: camera
+
+	- Voices
 
 -Probing:
 	- IProbe:
