@@ -663,10 +663,6 @@ Render:
 				- Before
 				- After
 
-		- Post for rot tool w/link to TimCan: https://youtu.be/Xf2CcIAVH4c
-
-		- Try sky: 0, 119, 196
-
 		- Music:
 			- James horners soundtrack "death of titanic" and "building panic" may make the game greater
 
