@@ -1971,7 +1971,11 @@ void Ship::PropagateHeat(
         * gameParameters.HeatDissipationAdjustment
         * 2.0f; // We exaggerate a bit to take into account water wetting the material and thus making it more difficult for fire to re-kindle
 
-    float const waterTemperature = gameParameters.WaterTemperature;
+    // Water temperature
+    // We approximate the thermocline as a linear decrease of
+    // temperature: 15 degrees in MaxSeaDepth meters
+    float const surfaceWaterTemperature = gameParameters.WaterTemperature;
+    float constexpr ThermoclineSlope = -15.0f / GameParameters::MaxSeaDepth;
 
     // We include rain in air
     float const effectiveAirConvectiveHeatTransferCoefficient =
@@ -1991,10 +1995,12 @@ void Ship::PropagateHeat(
         float deltaT; // Temperature delta (particle - env)
         float heatLost; // Heat lost in this time quantum (positive when outgoing)
 
-        if (mParentWorld.IsUnderwater(mPoints.GetPosition(pointIndex))
+        auto const pointPosition = mPoints.GetPosition(pointIndex);
+        if (mParentWorld.IsUnderwater(pointPosition)
             || mPoints.GetWater(pointIndex) > GameParameters::SmotheringWaterHighWatermark)
         {
             // Dissipation in water
+            float const waterTemperature = surfaceWaterTemperature - std::max(pointPosition.y * ThermoclineSlope, 0.0f);
             deltaT = newPointTemperatureBufferData[pointIndex] - waterTemperature;
             heatLost = effectiveWaterConvectiveHeatTransferCoefficient * deltaT;
         }

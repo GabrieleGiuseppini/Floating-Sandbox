@@ -556,6 +556,7 @@ Render:
 			+ Tell CPM/Wreno rules for using ShipBucket
 				+ Credits format		
 		+ Faster probe readings
+		+ Water temperature goes down with depth (thermocline)
 
 		= MAC:
 			= Full high-DPI path:
@@ -621,7 +622,6 @@ Render:
 
 		= Waves from ship (*)
 
-
 		- Default settings: 
 			- Flatten waves
 			- Lower speed of (sin) ocean waves - now that we run faster?
@@ -634,8 +634,6 @@ Render:
 				- Starry night 0/10
 				- Quiet sea 4/10
 				- Blue world (sky: 0, 119, 196; find ocean, rest like quiet sea) 2/10
-
-		- Water temperature goes down with depth
 
 		- ShipLoadDialog: toolbar above preview window
 			- Flip H and V (toggle buttons, wxBitmapToggleButton)
@@ -1818,11 +1816,11 @@ Render:
 					+ @ AirBubble surfacing
 				+ Name of method to populate deltas
 				+ Make y offset the same between two Titanic's			
-			= Other wave generations:
+			+ Other wave generations:
 				+ Ship::Explosion state machine (above or below)
-				= ElectricalElement::Engine
+				+ ElectricalElement::Engine
 					+ Honor flag from settings
-			- See if can recalibrate Lifeboat
+			+ See if can recalibrate Lifeboat
 			+ Settings:
 				+ Flag to turn off - everywhere
 					+ ApplyWorldForces becomes templated on boolean
@@ -1830,6 +1828,7 @@ Render:
 				+ Displacement Wave amplitude adjust - only applies to ship (& engine may be?)
 					+ Test min & max
 				+ SettingsDialog
+			- Test more displacement at fish
 			- Final tests:
 				+ Check disappearing field issue
 				- Test in Debug build
