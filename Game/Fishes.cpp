@@ -580,7 +580,7 @@ void Fishes::UpdateDynamics(
         // 2) Update dynamics
         ///////////////////////////////////////////////////////////////////
 
-        float constexpr OceanSurfaceDisturbance = 2.5f; // Magic number
+        float constexpr OceanSurfaceDisturbance = 2.75f; // Magic number
 
         // Get water surface level at this fish
         float const oceanY = oceanSurface.GetHeightAt(fish.CurrentPosition.x);

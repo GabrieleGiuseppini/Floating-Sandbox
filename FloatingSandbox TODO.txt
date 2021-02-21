@@ -1828,17 +1828,17 @@ Render:
 				+ Displacement Wave amplitude adjust - only applies to ship (& engine may be?)
 					+ Test min & max
 				+ SettingsDialog
-			- Test more displacement at fish
-			- Final tests:
+			+ Test more displacement at fish
+			= Final tests:
 				+ Check disappearing field issue
-				- Test in Debug build
-					- Displacement at middle of world
-					- Displacement close to both ends of the world
-				- Perf tests
-					- Old dell
-						- Before=TODO after=
-						- Explosion
-						- Engine
+				+ Test in Debug build
+					+ Displacement at middle of world
+					+ Displacement close to both ends of the world
+				- Perf tests on old dell
+					- Copy old exe
+					- Before=TODO after=
+					- Explosion
+					- Engine
 		- Changelist
 
 	- Gases:
