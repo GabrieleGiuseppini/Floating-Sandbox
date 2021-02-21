@@ -557,6 +557,7 @@ Render:
 				+ Credits format		
 		+ Faster probe readings
 		+ Water temperature goes down with depth (thermocline)
+		+ Waves from ship (*)
 
 		= MAC:
 			= Full high-DPI path:
@@ -619,8 +620,6 @@ Render:
 					- See if may statically link		
 
 		- DKUZ bug with yellow dots @ rotting
-
-		= Waves from ship (*)
 
 		- Default settings: 
 			- Flatten waves
@@ -1743,103 +1742,6 @@ Render:
 		- WATCH OUT: might be ugly with peaks (very vertical slope)
 			- Increase resolution of ocean floor - shouldn't impact perf other than for cache misses
 		- Richter reading upon impact (see https://www.quora.com/How-fast-did-the-Titanic-sink-to-the-bottom-and-did-it-make-a-noise-when-it-hit)
-
-	= Waves from ship (*):
-		! Spec:
-			! Physics:
-				! For each underwater frontier point:
-					! Ocean surface disturbation proportional to:
-						a) Velocity of point (its vertical component only)
-						b) Depth of point 
-						c) May be: normal of frontier at the point
-			! Computation:
-				! Done at frontier visit in ship, by simply accumulating delta's in OceanSurface
-				! These delta's will then be materialized into real surface y's at the next OceanSurface::Update (after being smoothed via a low-pass filter)
-					! Yes, this generates a lag between the ship entering the water, and the surface moving for it, but we hope it won't be noticeable
-					! With this deferred scheme though, we have the following pro's:
-						! Not having to recalculate cached point depths
-						! Not having to materialize ocean surface delta's at each *ship*'s Update() (we can do it once for all ships, and at OceanSurface::Update() which is more adept)
-						! All frontiers in all ships still get to see the original surface, and thus there's no risk of one affecting the next
-							! However, we might not want delta's to be cumulative. For example, if CC 1 sees y=0 and makes delta=-3, and CC2 sees y=0 and makes delta=-2, we might not
-							  want to end up with delta=-5. See if should use a "max" thing instead
-		= Impl:
-			+ Step 1: basic
-				+ Simple, immediate adjustment of surface height
-					+ Requires temporary method from OceanSurface (& world)
-			+ Step 2: delta's incorporated at next update
-				+ OceanSurface: mHeightFieldDeltas buffer
-					+ Simply a buffer of samples
-						+ Make it part of SWE
-							+ Make it a FixedBuffer
-								+ Clear it in cctor with fill()
-									+ Verify assembly
-							+ Make its size==SamplesCount+1
-					+ Materialized into samples during UpdateFields()
-					+ Then zeroed out at end of UpdateFields(), so it's ready for the next cycle
-				+ Wave generation:
-					+ pointDepth (capped) * (1 - Smoothstep(0, maxDepth, depth)) // no velocity here, velocity influences maxDepth already
-			+ Step 3: add smoothing
-				! Smoothing is needed: it removes little spikes (exactly the same spikes we used to get with bubbles)
-				+ constexpr constant gives width of smoothing, so we may experiment
-					+ Make delta buffer size==SamplesCount + 2 * (DeltaSmoothingWidth/2) // or just +(DeltaSmoothingWidth/2), depends on whether we need right part or not
-			+ Step 4: nail down displacement calculation
-				+ Temporarily alter UpdateFields() to use DeltaHeight buffer directly, without SWE and with/without smoothing
-				+ At small velocities, displacement should be greater
-					+ Plot displacement by velocity
-					+ Find curve
-						+ Piecewise quadratic + linear
-				+ Incorporate mass, so that light wooden ball doesn't create as many waves
-					+ Smaller masses should have slightly more impact			
-			+ Perf:
-				! Do not optimize mass calculations, are we only need to calc for those points that are
-				  in frontier - as opposed to *all* points if we were doing it at UpdateMasses()
-				 + Pre (20s. +10->):
-					+ ApplyWorldForces: 1.67%
-					+ OceanSurface::Update: 0.55% (UpdateFields: 0.51%)
-				+ See abs vs intrinsics
-				+ OceanSurface: DeltaBuffer smoothing:
-					+ Vectorize
-						+ Attempt 1: by compiler, with restrict
-							+ OceanSurface::Update: 0.52%
-				+ Ship: Displacement:
-					+ Do benchmarks for various Heaviside "if" steps
-					+ Formulas optimization:
-						+ Try replacing sqrt(mass) with linear law
-						+ Others, with PlotLab
-				+ Post:
-					+ ApplyWorldForces: 1.60%
-					+ OceanSurface::Update: 0.53% (UpdateFields: 0.51%)
-			+ Cleanup:
-				+ See if can get rid of "displace small scale" function, and use delta-buffer instead
-					+ Already verified that small spikes caused by single-sample displacement go away when distributing the displacement among the two adjacent samples
-					+ @ Fishes x 2 (entering freefall, leaving freefall)
-					+ @ AirBubble surfacing
-				+ Name of method to populate deltas
-				+ Make y offset the same between two Titanic's			
-			+ Other wave generations:
-				+ Ship::Explosion state machine (above or below)
-				+ ElectricalElement::Engine
-					+ Honor flag from settings
-			+ See if can recalibrate Lifeboat
-			+ Settings:
-				+ Flag to turn off - everywhere
-					+ ApplyWorldForces becomes templated on boolean
-					+ Also applies to Ship::UpdateExplosionStateMachine
-				+ Displacement Wave amplitude adjust - only applies to ship (& engine may be?)
-					+ Test min & max
-				+ SettingsDialog
-			+ Test more displacement at fish
-			= Final tests:
-				+ Check disappearing field issue
-				+ Test in Debug build
-					+ Displacement at middle of world
-					+ Displacement close to both ends of the world
-				- Perf tests on old dell
-					- Copy old exe
-					- Before=TODO after=
-					- Explosion
-					- Engine
-		- Changelist
 
 	- Gases:
 		- Spec:
@@ -8185,6 +8087,101 @@ IF WX:
 			+ Abovewater should rot less
 		+ Test:
 			+ With no effect volume
+	+ Waves from ship (*):
+		! Spec:
+			! Physics:
+				! For each underwater frontier point:
+					! Ocean surface disturbation proportional to:
+						a) Velocity of point (its vertical component only)
+						b) Depth of point 
+						c) May be: normal of frontier at the point
+			! Computation:
+				! Done at frontier visit in ship, by simply accumulating delta's in OceanSurface
+				! These delta's will then be materialized into real surface y's at the next OceanSurface::Update (after being smoothed via a low-pass filter)
+					! Yes, this generates a lag between the ship entering the water, and the surface moving for it, but we hope it won't be noticeable
+					! With this deferred scheme though, we have the following pro's:
+						! Not having to recalculate cached point depths
+						! Not having to materialize ocean surface delta's at each *ship*'s Update() (we can do it once for all ships, and at OceanSurface::Update() which is more adept)
+						! All frontiers in all ships still get to see the original surface, and thus there's no risk of one affecting the next
+							! However, we might not want delta's to be cumulative. For example, if CC 1 sees y=0 and makes delta=-3, and CC2 sees y=0 and makes delta=-2, we might not
+							  want to end up with delta=-5. See if should use a "max" thing instead
+		+ Impl:
+			+ Step 1: basic
+				+ Simple, immediate adjustment of surface height
+					+ Requires temporary method from OceanSurface (& world)
+			+ Step 2: delta's incorporated at next update
+				+ OceanSurface: mHeightFieldDeltas buffer
+					+ Simply a buffer of samples
+						+ Make it part of SWE
+							+ Make it a FixedBuffer
+								+ Clear it in cctor with fill()
+									+ Verify assembly
+							+ Make its size==SamplesCount+1
+					+ Materialized into samples during UpdateFields()
+					+ Then zeroed out at end of UpdateFields(), so it's ready for the next cycle
+				+ Wave generation:
+					+ pointDepth (capped) * (1 - Smoothstep(0, maxDepth, depth)) // no velocity here, velocity influences maxDepth already
+			+ Step 3: add smoothing
+				! Smoothing is needed: it removes little spikes (exactly the same spikes we used to get with bubbles)
+				+ constexpr constant gives width of smoothing, so we may experiment
+					+ Make delta buffer size==SamplesCount + 2 * (DeltaSmoothingWidth/2) // or just +(DeltaSmoothingWidth/2), depends on whether we need right part or not
+			+ Step 4: nail down displacement calculation
+				+ Temporarily alter UpdateFields() to use DeltaHeight buffer directly, without SWE and with/without smoothing
+				+ At small velocities, displacement should be greater
+					+ Plot displacement by velocity
+					+ Find curve
+						+ Piecewise quadratic + linear
+				+ Incorporate mass, so that light wooden ball doesn't create as many waves
+					+ Smaller masses should have slightly more impact			
+			+ Perf:
+				! Do not optimize mass calculations, are we only need to calc for those points that are
+				  in frontier - as opposed to *all* points if we were doing it at UpdateMasses()
+				 + Pre (20s. +10->):
+					+ ApplyWorldForces: 1.67%
+					+ OceanSurface::Update: 0.55% (UpdateFields: 0.51%)
+				+ See abs vs intrinsics
+				+ OceanSurface: DeltaBuffer smoothing:
+					+ Vectorize
+						+ Attempt 1: by compiler, with restrict
+							+ OceanSurface::Update: 0.52%
+				+ Ship: Displacement:
+					+ Do benchmarks for various Heaviside "if" steps
+					+ Formulas optimization:
+						+ Try replacing sqrt(mass) with linear law
+						+ Others, with PlotLab
+				+ Post:
+					+ ApplyWorldForces: 1.60%
+					+ OceanSurface::Update: 0.53% (UpdateFields: 0.51%)
+			+ Cleanup:
+				+ See if can get rid of "displace small scale" function, and use delta-buffer instead
+					+ Already verified that small spikes caused by single-sample displacement go away when distributing the displacement among the two adjacent samples
+					+ @ Fishes x 2 (entering freefall, leaving freefall)
+					+ @ AirBubble surfacing
+				+ Name of method to populate deltas
+				+ Make y offset the same between two Titanic's			
+			+ Other wave generations:
+				+ Ship::Explosion state machine (above or below)
+				+ ElectricalElement::Engine
+					+ Honor flag from settings
+			+ See if can recalibrate Lifeboat
+			+ Settings:
+				+ Flag to turn off - everywhere
+					+ ApplyWorldForces becomes templated on boolean
+					+ Also applies to Ship::UpdateExplosionStateMachine
+				+ Displacement Wave amplitude adjust - only applies to ship (& engine may be?)
+					+ Test min & max
+				+ SettingsDialog
+			+ Test more displacement at fish
+			+ Final tests:
+				+ Check disappearing field issue
+				+ Test in Debug build
+					+ Displacement at middle of world
+					+ Displacement close to both ends of the world
+				+ Perf tests on old dell
+					+ Before=30.0/30.1 after=30.5
+					+ Explosion 
+					+ Engine 19.3/19.4 => 
+		+ Changelist
 
 
 
