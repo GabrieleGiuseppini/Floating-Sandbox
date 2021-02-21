@@ -6,6 +6,7 @@
     "flat_sky_color": "ff c4 9f",
     "heat_dissipation_adjustment": 9.7450218200683594,
     "number_of_fishes": 0,
+    "ocean_render_mode": 0,
     "texture_land_texture_index": 11,
     "texture_ocean_texture_index": 12,
     "thermal_conductivity_adjustment": 100,

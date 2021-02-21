@@ -621,9 +621,9 @@ Render:
 
 		- DKUZ bug with yellow dots @ rotting
 
-		- Default settings: 
-			- Flatten waves
-			- Lower speed of (sin) ocean waves - now that we run faster?
+		= Default settings: 
+			- Flatten waves?
+			+ Lower speed of (sin) ocean waves - now that we run faster?
 
 		- Randomized start
 			- Done by new method at SettingsManager, by choosing settings (system & user) weighted by new optional probability attribute
@@ -632,7 +632,7 @@ Render:
 			- Add new system settings, with probs:
 				- Starry night 0/10
 				- Quiet sea 4/10
-				- Blue world (sky: 0, 119, 196; find ocean, rest like quiet sea) 2/10
+				= Blue world (sky: 0, 119, 196; find ocean, rest like quiet sea) 2/10
 
 		- ShipLoadDialog: toolbar above preview window
 			- Flip H and V (toggle buttons, wxBitmapToggleButton)

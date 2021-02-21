@@ -42,7 +42,7 @@ GameParameters::GameParameters()
     // Waves
     , BasalWaveHeightAdjustment(1.0f)
     , BasalWaveLengthAdjustment(1.0f)
-    , BasalWaveSpeedAdjustment(4.0f)
+    , BasalWaveSpeedAdjustment(2.0f)
     , TsunamiRate(12)
     , RogueWaveRate(2)
     // Storm

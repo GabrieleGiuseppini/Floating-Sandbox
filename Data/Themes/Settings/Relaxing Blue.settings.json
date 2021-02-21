@@ -1,0 +1,11 @@
+{
+  "description": "Calmer sea and blue skies.",
+  "settings": {
+    "basal_wave_length_adjustment": 3.9671058654785156,
+    "depth_ocean_color_start": "91 d5 f9",
+    "flat_sky_color": "00 77 c4",
+    "ocean_render_mode": 1,
+    "texture_ocean_texture_index": 1
+  },
+  "version": "1.16.3.3"
+}
