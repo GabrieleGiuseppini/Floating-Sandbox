@@ -1161,14 +1161,14 @@ void ShipBuilder::ConnectSpringsAndTriangles(
 
     /*
      *
-     * Removed in 1.16.0, as it was causing problems with frontier maintenance and
-     * we couldn't find a justification to attach traverse springs to triangles.
+     * Removed in 1.16.0, as it was causing problems with frontier maintenance.
      *
 
     //
     // 3. Now find "traverse" springs - i.e. springs that are not edges of any triangles
     // (because of our tessellation algorithm) - and see whether they're fully covered by two triangles;
-    // if they are, consider these springs as sub-springs of those two triangles.
+    // if they are, consider these springs as sub-springs of those two triangles, so that they won't look
+    // like edge springs.
     //
     // A "traverse" spring would be the B-C spring in the following tessellation neighborhood:
     //
