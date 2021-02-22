@@ -462,6 +462,9 @@ void Ship::RepairAt(
 
     float const squareSearchRadius = searchRadius * searchRadius;
 
+    // TODOTEST
+    mDebugMarker.ClearPointToPointArrows();
+
     // Visit all non-ephemeral points
     for (auto const pointIndex : mPoints.RawShipPoints())
     {

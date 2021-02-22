@@ -43,6 +43,7 @@ public:
 
     DebugMarker()
         : mPointToPointArrows()
+        , mIsPointToPointArrowsBufferDirty(true)
     {}
 
     void Upload(
@@ -64,11 +65,19 @@ public:
             startPoint,
             endPoint,
             color);
+
+        mIsPointToPointArrowsBufferDirty = true;
     }
 
 private:
 
+    //
+    // Point-to-point arrows
+    //
+
     std::vector<PointToPointArrow> mPointToPointArrows;
+
+    bool mutable mIsPointToPointArrowsBufferDirty;
 };
 
 }

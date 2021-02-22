@@ -677,9 +677,6 @@ void Ship::RenderUpload(Render::RenderContext & renderContext)
         mId,
         renderContext);
 
-    // TODOTEST
-    mDebugMarker.ClearPointToPointArrows();
-
 
     //////////////////////////////////////////////////////////////////////////////
 

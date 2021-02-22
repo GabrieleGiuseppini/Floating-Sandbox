@@ -13,19 +13,30 @@ void DebugMarker::Upload(
 {
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
-    for (auto const & p : mPointToPointArrows)
+    if (mIsPointToPointArrowsBufferDirty)
     {
-        shipRenderContext.UploadPointToPointArrow(
-            p.Plane,
-            p.StartPoint,
-            p.EndPoint,
-            p.Color);
+        shipRenderContext.UploadPointToPointArrowsStart(mPointToPointArrows.size());
+
+        for (auto const & p : mPointToPointArrows)
+        {
+            shipRenderContext.UploadPointToPointArrow(
+                p.Plane,
+                p.StartPoint,
+                p.EndPoint,
+                p.Color);
+        }
+
+        shipRenderContext.UploadPointToPointArrowsEnd();
+
+        mIsPointToPointArrowsBufferDirty = false;
     }
 }
 
 void DebugMarker::ClearPointToPointArrows()
 {
     mPointToPointArrows.clear();
+
+    mIsPointToPointArrowsBufferDirty = true;
 }
 
 }

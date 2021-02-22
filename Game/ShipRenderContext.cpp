@@ -527,7 +527,7 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
 {
     //
     // Reset explosions, sparkles, air bubbles, generic textures, highlights,
-    // vector arrows, point-to-point arrows;
+    // vector arrows;
     // they are all uploaded as needed
     //
 
@@ -570,8 +570,6 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
     }
 
     mVectorArrowVertexBuffer.clear();
-
-    mPointToPointArrowVertexBuffer.clear();
 
     //
     // Check if the max max plane ID has changed
@@ -893,6 +891,22 @@ void ShipRenderContext::UploadVectors(
 
         mIsVectorArrowColorDirty = true;
     }
+}
+
+void ShipRenderContext::UploadPointToPointArrowsStart(size_t count)
+{
+    //
+    // Point-to-point arrows are not sticky: we upload them at each frame,
+    // though they will be empty most of the time
+    //
+
+    mPointToPointArrowVertexBuffer.clear();
+    mPointToPointArrowVertexBuffer.reserve(count);
+}
+
+void ShipRenderContext::UploadPointToPointArrowsEnd()
+{
+    // Nop
 }
 
 void ShipRenderContext::UploadEnd()

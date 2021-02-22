@@ -684,6 +684,8 @@ public:
     // Debug
     //
 
+    void UploadPointToPointArrowsStart(size_t count);
+
     inline void UploadPointToPointArrow(
         PlaneId planeId,
         vec2f const & startPoint,
@@ -717,6 +719,8 @@ public:
         mPointToPointArrowVertexBuffer.emplace_back(endPoint, fPlaneId, fColor);
         mPointToPointArrowVertexBuffer.emplace_back(endPoint + rightDir * 0.2f, fPlaneId, fColor);
     }
+
+    void UploadPointToPointArrowsEnd();
 
     /////////////////////////////////////////
 
