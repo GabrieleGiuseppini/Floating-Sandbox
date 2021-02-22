@@ -703,11 +703,11 @@ void Ship::RepairAt(
                         }
 
                         // TODOTEST
-                        mDebugMarker.AddPointToPointArrow(
-                            mPoints.GetPlaneId(otherEndpointIndex),
-                            mPoints.GetPosition(otherEndpointIndex),
-                            targetOtherEndpointPosition,
-                            rgbColor(250, 40, 40));
+                        ////mDebugMarker.AddPointToPointArrow(
+                        ////    mPoints.GetPlaneId(otherEndpointIndex),
+                        ////    mPoints.GetPosition(otherEndpointIndex),
+                        ////    targetOtherEndpointPosition,
+                        ////    rgbColor(250, 40, 40));
 
                         //
                         // Check progress of other endpoint towards the target position
@@ -732,9 +732,9 @@ void Ship::RepairAt(
 
                             // Smoothing of the movement, based on how long this point has been an attracted
                             // in the current session
-                            float const smoothing = SmoothStep(
+                            float const smoothing = LinearStep(
                                 0.0f,
-                                10.0f * 30.0f / gameParameters.RepairSpeedAdjustment, // Reach max in 5 seconds (at 60 fps)
+                                600.0f / gameParameters.RepairSpeedAdjustment, // Reach max in 10 seconds (at 60 fps)
                                 static_cast<float>(mPoints.GetRepairState(otherEndpointIndex).CurrentAttractedNumberOfSteps));
 
                             // Movement direction (positive towards this point)
