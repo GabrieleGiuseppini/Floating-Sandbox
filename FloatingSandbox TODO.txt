@@ -627,10 +627,11 @@ Render:
 		- Timcan bug with engine sound goin' off
 			- "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
 
-		- Repair improvement:
-			- See if it's due to triangle forming folded
-				= Add log when we calc a point's destination, if that point repair would result in a new triangle
+		= Repair improvement:
+			+ See if it's due to triangle forming folded
+				+ Add log when we calc a point's destination, if that point repair would result in a new triangle
 				  that is NOT clockwise wrt current point positions
+				+ Prevent CCW triangle from being formed altogether
 			- Destruction, however, seems to happen also without folded triangles
 				- See then if it's because of momentum of particles
 			- Additionals:
