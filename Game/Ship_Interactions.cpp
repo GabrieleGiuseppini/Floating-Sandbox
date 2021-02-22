@@ -436,7 +436,7 @@ void Ship::RepairAt(
     float radiusMultiplier,
     RepairSessionId sessionId,
     RepairSessionStepId sessionStepId,
-    float /*currentSimulationTime*/,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     ///////////////////////////////////////////////////////
@@ -516,6 +516,15 @@ void Ship::RepairAt(
                     if (mPoints.GetRepairState(otherEndpointIndex).LastAttractorSessionId != sessionId
                         || mPoints.GetRepairState(otherEndpointIndex).LastAttractorSessionStepId + 1 < sessionStepId)
                     {
+                        ////// TODOTEST: attractor must have more springs attached than attractee
+                        ////if (!(
+                        ////    mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() >=
+                        ////    mPoints.GetConnectedSprings(otherEndpointIndex).ConnectedSprings.size())
+                        ////    && mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size() > mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size()
+                        ////    && mPoints.GetFactoryConnectedSprings(otherEndpointIndex).ConnectedSprings.size() > mPoints.GetConnectedSprings(otherEndpointIndex).ConnectedSprings.size())
+                        ////    continue;
+
+
                         //
                         // This point has taken over the role of attracted in this step
                         //
@@ -744,6 +753,17 @@ void Ship::RepairAt(
 
                             ////    mPoints.GetRepairState(otherEndpointIndex).CurrentAttractedNumberOfSteps = 0;
                             ////}
+
+                            // TODOTEST: connected component check
+                            if (mPoints.GetConnectedComponentId(otherEndpointIndex) != mPoints.GetConnectedComponentId(pointIndex))
+                            {
+                                mPoints.Detach(
+                                    otherEndpointIndex,
+                                    mPoints.GetVelocity(otherEndpointIndex),
+                                    Points::DetachOptions::None,
+                                    currentSimulationTime,
+                                    gameParameters);
+                            }
 
                             // Smoothing of the movement, based on how long this point has been an attracted
                             // in the current session

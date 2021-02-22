@@ -633,6 +633,7 @@ Render:
 				  that is NOT clockwise wrt current point positions
 				+ Prevent CCW triangle from being formed altogether
 			- Improvements to try:
+				- Attractor must have more springs attached than attractee
 				- Restore position of _all_ points in radius (which have at least one missing spring), based on octants
 				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
 			- Additionals:
