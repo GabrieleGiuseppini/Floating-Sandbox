@@ -451,7 +451,7 @@ void Ship::RepairAt(
     // - Shipped 1.13 with 0.07
     float constexpr DisplacementTolerance = 0.06f;
 
-    // Tolerance to rest length vs. factory rest length, before restoring to it factory
+    // Tolerance to rest length vs. factory rest length, before restoring it to factory
     float constexpr RestLengthDivergenceTolerance = 0.05f;
 
     ///////////////////////////////////////////////////////
@@ -703,11 +703,11 @@ void Ship::RepairAt(
                         }
 
                         // TODOTEST
-                        ////mDebugMarker.AddPointToPointArrow(
-                        ////    mPoints.GetPlaneId(otherEndpointIndex),
-                        ////    mPoints.GetPosition(otherEndpointIndex),
-                        ////    targetOtherEndpointPosition,
-                        ////    rgbColor(250, 40, 40));
+                        mDebugMarker.AddPointToPointArrow(
+                            mPoints.GetPlaneId(otherEndpointIndex),
+                            mPoints.GetPosition(otherEndpointIndex),
+                            targetOtherEndpointPosition,
+                            rgbColor(250, 40, 40));
 
                         //
                         // Check progress of other endpoint towards the target position
@@ -729,6 +729,21 @@ void Ship::RepairAt(
                             // Endpoints are too far...
                             // ...move them closer by moving the other endpoint towards its target position
                             //
+
+                            // TODOTEST: impatience check
+                            ////if (mPoints.GetRepairState(otherEndpointIndex).CurrentAttractedNumberOfSteps > 100)
+                            ////{
+                            ////    LogMessage("TODOHERE: impatient");
+
+                            ////    mPoints.Detach(
+                            ////        otherEndpointIndex,
+                            ////        mPoints.GetVelocity(otherEndpointIndex),
+                            ////        Points::DetachOptions::None,
+                            ////        currentSimulationTime,
+                            ////        gameParameters);
+
+                            ////    mPoints.GetRepairState(otherEndpointIndex).CurrentAttractedNumberOfSteps = 0;
+                            ////}
 
                             // Smoothing of the movement, based on how long this point has been an attracted
                             // in the current session
