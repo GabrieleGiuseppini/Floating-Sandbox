@@ -680,6 +680,46 @@ public:
         float lengthAdjustment,
         vec4f const & color);
 
+    //
+    // Debug
+    //
+
+    inline void UploadPointToPointArrow(
+        PlaneId planeId,
+        vec2f const & startPoint,
+        vec2f const & endPoint,
+        rgbColor const & color)
+    {
+        static float const CosAlphaLeftRight = std::cos(-2.f * Pi<float> / 8.f);
+        static float const SinAlphaLeft = std::sin(-2.f * Pi<float> / 8.f);
+        static float const SinAlphaRight = -SinAlphaLeft;
+
+        static vec2f const XMatrixLeft = vec2f(CosAlphaLeftRight, SinAlphaLeft);
+        static vec2f const YMatrixLeft = vec2f(-SinAlphaLeft, CosAlphaLeftRight);
+        static vec2f const XMatrixRight = vec2f(CosAlphaLeftRight, SinAlphaRight);
+        static vec2f const YMatrixRight = vec2f(-SinAlphaRight, CosAlphaLeftRight);
+
+        vec2f const stemVector = endPoint - startPoint;
+        float const fPlaneId = static_cast<float>(planeId);
+        vec3f const fColor = color.toVec3f();
+
+        // Stem
+        mPointToPointArrowVertexBuffer.emplace_back(startPoint, fPlaneId, fColor);
+        mPointToPointArrowVertexBuffer.emplace_back(endPoint, fPlaneId, fColor);
+
+        // Left
+        vec2f leftDir = vec2f(-stemVector.dot(XMatrixLeft), -stemVector.dot(YMatrixLeft)).normalise();
+        mPointToPointArrowVertexBuffer.emplace_back(endPoint, fPlaneId, fColor);
+        mPointToPointArrowVertexBuffer.emplace_back(endPoint + leftDir * 0.2f, fPlaneId, fColor);
+
+        // Right
+        vec2f rightDir = vec2f(-stemVector.dot(XMatrixRight), -stemVector.dot(YMatrixRight)).normalise();
+        mPointToPointArrowVertexBuffer.emplace_back(endPoint, fPlaneId, fColor);
+        mPointToPointArrowVertexBuffer.emplace_back(endPoint + rightDir * 0.2f, fPlaneId, fColor);
+    }
+
+    /////////////////////////////////////////
+
     void UploadEnd();
 
     void ProcessParameterChanges(RenderParameters const & renderParameters);
@@ -914,6 +954,9 @@ private:
     void RenderPrepareVectorArrows(RenderParameters const & renderParameters);
     void RenderDrawVectorArrows(RenderParameters const & renderParameters);
 
+    void RenderPreparePointToPointArrows(RenderParameters const & renderParameters);
+    void RenderDrawPointToPointArrows(RenderParameters const & renderParameters);
+
     void ApplyViewModelChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
     void ApplyFlatLampLightColorChanges(RenderParameters const & renderParameters);
@@ -1092,6 +1135,22 @@ private:
         {}
     };
 
+    struct PointToPointArrowVertex
+    {
+        vec2f vertexPosition;
+        float planeId;
+        vec3f color;
+
+        PointToPointArrowVertex(
+            vec2f _vertexPosition,
+            float _planeId,
+            vec3f _color)
+            : vertexPosition(_vertexPosition)
+            , planeId(_planeId)
+            , color(_color)
+        {}
+    };
+
 #pragma pack(pop)
 
     struct ExplosionPlaneData
@@ -1163,6 +1222,10 @@ private:
     vec4f mVectorArrowColor;
     bool mIsVectorArrowColorDirty;
 
+    std::vector<PointToPointArrowVertex> mPointToPointArrowVertexBuffer;
+    GameOpenGLVBO mPointToPointArrowVBO;
+    size_t mPointToPointArrowVBOAllocatedVertexSize;
+
     //
     // Element (index) buffers
     //
@@ -1198,6 +1261,7 @@ private:
     GameOpenGLVAO mGenericMipMappedTextureVAO;
     GameOpenGLVAO mHighlightVAO;
     GameOpenGLVAO mVectorArrowVAO;
+    GameOpenGLVAO mPointToPointArrowVAO;
 
 
     //

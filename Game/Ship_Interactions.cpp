@@ -699,6 +699,13 @@ void Ship::RepairAt(
                             continue;
                         }
 
+                        // TODOTEST
+                        mDebugMarker.AddPointToPointArrow(
+                            mPoints.GetPlaneId(otherEndpointIndex),
+                            mPoints.GetPosition(otherEndpointIndex),
+                            targetOtherEndpointPosition,
+                            rgbColor(250, 40, 40));
+
                         //
                         // Check progress of other endpoint towards the target position
                         //

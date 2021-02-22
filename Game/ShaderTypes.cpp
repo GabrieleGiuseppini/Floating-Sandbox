@@ -73,6 +73,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipFrontierEdges;
     else if (lstr == "ship_generic_mipmapped_textures")
         return ProgramType::ShipGenericMipMappedTextures;
+    else if (lstr == "ship_point_to_point_arrows")
+        return ProgramType::ShipPointToPointArrows;
     else if (lstr == "ship_points_color")
         return ProgramType::ShipPointsColor;
     else if (lstr == "ship_points_color_with_temperature")
@@ -179,6 +181,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipFrontierEdges";
     case ProgramType::ShipGenericMipMappedTextures:
         return "ShipGenericMipMappedTextures";
+    case ProgramType::ShipPointToPointArrows:
+        return "ShipPointToPointArrows";
     case ProgramType::ShipPointsColor:
         return "ShipPointsColor";
     case ProgramType::ShipPointsColorWithTemperature:
@@ -475,6 +479,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Highlight3;
     else if (Utils::CaseInsensitiveEquals(str, "VectorArrow"))
         return VertexAttributeType::VectorArrow;
+    else if (Utils::CaseInsensitiveEquals(str, "PointToPointArrow1"))
+        return VertexAttributeType::PointToPointArrow1;
+    else if (Utils::CaseInsensitiveEquals(str, "PointToPointArrow2"))
+        return VertexAttributeType::PointToPointArrow2;
     // Notifications
     else if (Utils::CaseInsensitiveEquals(str, "Text1"))
         return VertexAttributeType::Text1;

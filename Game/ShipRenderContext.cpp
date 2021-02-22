@@ -83,6 +83,10 @@ ShipRenderContext::ShipRenderContext(
     , mVectorArrowVBOAllocatedVertexSize(0u)
     , mVectorArrowColor(0.0f, 0.0f, 0.0f, 1.0f)
     , mIsVectorArrowColorDirty(true)
+    //
+    , mPointToPointArrowVertexBuffer()
+    , mPointToPointArrowVBO()
+    , mPointToPointArrowVBOAllocatedVertexSize(0u)
     // Element (index) buffers
     , mPointElementBuffer()
     , mEphemeralPointElementBuffer()
@@ -104,6 +108,7 @@ ShipRenderContext::ShipRenderContext(
     , mSparkleVAO()
     , mGenericMipMappedTextureVAO()
     , mVectorArrowVAO()
+    , mPointToPointArrowVAO()
     // Textures
     , mShipTextureOpenGLHandle()
     , mStressedSpringTextureOpenGLHandle()
@@ -127,8 +132,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[13];
-    glGenBuffers(13, vbos);
+    GLuint vbos[14];
+    glGenBuffers(14, vbos);
     CheckOpenGLError();
 
     mPointAttributeGroup1VBO = vbos[0];
@@ -172,6 +177,8 @@ ShipRenderContext::ShipRenderContext(
     mHighlightVBO = vbos[11];
 
     mVectorArrowVBO = vbos[12];
+
+    mPointToPointArrowVBO = vbos[13];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -389,6 +396,30 @@ ShipRenderContext::ShipRenderContext(
 
 
     //
+    // Initialize PointToPointArrow VAO
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mPointToPointArrowVAO = tmpGLuint;
+
+        glBindVertexArray(*mPointToPointArrowVAO);
+        CheckOpenGLError();
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointToPointArrowVBO);
+        static_assert(sizeof(PointToPointArrowVertex) == (2 + 1 + 3) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::PointToPointArrow1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::PointToPointArrow1), 3, GL_FLOAT, GL_FALSE, sizeof(PointToPointArrowVertex), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::PointToPointArrow2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::PointToPointArrow2), 3, GL_FLOAT, GL_FALSE, sizeof(PointToPointArrowVertex), (void *)((3) * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+
+    //
     // Initialize Ship texture
     //
 
@@ -496,7 +527,7 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
 {
     //
     // Reset explosions, sparkles, air bubbles, generic textures, highlights,
-    // vector arrows;
+    // vector arrows, point-to-point arrows;
     // they are all uploaded as needed
     //
 
@@ -539,6 +570,8 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
     }
 
     mVectorArrowVertexBuffer.clear();
+
+    mPointToPointArrowVertexBuffer.clear();
 
     //
     // Check if the max max plane ID has changed
@@ -1110,6 +1143,12 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
     //
 
     RenderPrepareVectorArrows(renderParameters);
+
+    //
+    // Prepare point-to-point arrows
+    //
+
+    RenderPreparePointToPointArrows(renderParameters);
 }
 
 void ShipRenderContext::RenderDraw(
@@ -1410,6 +1449,12 @@ void ShipRenderContext::RenderDraw(
     //
 
     RenderDrawVectorArrows(renderParameters);
+
+    //
+    // Render point-to-point arrows
+    //
+
+    RenderDrawPointToPointArrows(renderParameters);
 
     //
     // Update stats
@@ -1822,6 +1867,47 @@ void ShipRenderContext::RenderDrawVectorArrows(RenderParameters const & /*render
     }
 }
 
+void ShipRenderContext::RenderPreparePointToPointArrows(RenderParameters const & /*renderParameters*/)
+{
+    if (!mPointToPointArrowVertexBuffer.empty())
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointToPointArrowVBO);
+
+        if (mPointToPointArrowVertexBuffer.size() > mPointToPointArrowVBOAllocatedVertexSize)
+        {
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ARRAY_BUFFER, mPointToPointArrowVertexBuffer.size() * sizeof(PointToPointArrowVertex), mPointToPointArrowVertexBuffer.data(), GL_DYNAMIC_DRAW);
+            CheckOpenGLError();
+
+            mPointToPointArrowVBOAllocatedVertexSize = mPointToPointArrowVertexBuffer.size();
+        }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mPointToPointArrowVertexBuffer.size() * sizeof(PointToPointArrowVertex), mPointToPointArrowVertexBuffer.data());
+            CheckOpenGLError();
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
+
+void ShipRenderContext::RenderDrawPointToPointArrows(RenderParameters const & /*renderParameters*/)
+{
+    if (!mPointToPointArrowVertexBuffer.empty())
+    {
+        glBindVertexArray(*mPointToPointArrowVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::ShipPointToPointArrows>();
+
+        glLineWidth(0.5f);
+
+        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mPointToPointArrowVertexBuffer.size()));
+
+        glBindVertexArray(0);
+    }
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderParameters)
@@ -1840,7 +1926,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     //      - 8: Generic textures
     //      - 9: Explosions
     //      - 10: Highlights
-    //      - 11: Vectors
+    //      - 11: Vectors, Point-to-Point Arrows
     //
 
     constexpr float ShipRegionZStart = 1.0f; // Far
@@ -2095,7 +2181,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         shipOrthoMatrix);
 
     //
-    // Layer 11: Vectors
+    // Layer 11: Vectors, Point-to-Point Arrows
     //
 
     view.CalculateShipOrthoMatrix(
@@ -2110,6 +2196,10 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
 
     mShaderManager.ActivateProgram<ProgramType::ShipVectors>();
     mShaderManager.SetProgramParameter<ProgramType::ShipVectors, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipPointToPointArrows>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipPointToPointArrows, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 }
 

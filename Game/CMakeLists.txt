@@ -55,6 +55,8 @@ set  (PHYSICS_SOURCES
 	AntiMatterBombGadget.cpp
 	Clouds.cpp
 	Clouds.h
+	DebugMarker.cpp
+	DebugMarker.h
 	ElectricalElements.cpp
 	ElectricalElements.h
 	Fishes.cpp

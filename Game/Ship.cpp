@@ -74,6 +74,7 @@ Ship::Ship(
     , mGameEventHandler(std::move(gameEventDispatcher))
     , mTaskThreadPool(std::move(taskThreadPool))
     , mEventRecorder(nullptr)
+    , mDebugMarker()
     , mSize(points.GetAABB().GetSize())
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
@@ -526,6 +527,8 @@ void Ship::RenderUpload(Render::RenderContext & renderContext)
 
     shipRenderContext.UploadStart(mMaxMaxPlaneId);
 
+    //////////////////////////////////////////////////////////////////////////////
+
     //
     // Upload points's immutable and mutable attributes
     //
@@ -666,6 +669,19 @@ void Ship::RenderUpload(Render::RenderContext & renderContext)
 
     UploadStateMachines(renderContext);
 
+    //
+    // Upload debug
+    //
+
+    mDebugMarker.Upload(
+        mId,
+        renderContext);
+
+    // TODOTEST
+    mDebugMarker.ClearPointToPointArrows();
+
+
+    //////////////////////////////////////////////////////////////////////////////
 
     //
     // Finalize upload

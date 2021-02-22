@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include "DebugMarker.h"
 #include "EventRecorder.h"
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
@@ -531,6 +532,7 @@ private:
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
     std::shared_ptr<TaskThreadPool> mTaskThreadPool;
     EventRecorder * mEventRecorder;
+    DebugMarker mDebugMarker;
 
     // The (initial) world size of  the ship
     vec2f const mSize;
