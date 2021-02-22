@@ -632,8 +632,11 @@ Render:
 				+ Add log when we calc a point's destination, if that point repair would result in a new triangle
 				  that is NOT clockwise wrt current point positions
 				+ Prevent CCW triangle from being formed altogether
-			- Improvements to try:
-				- Attractor must have more springs attached than attractee
+			= Improvements to try:
+				X Attractor must have more springs attached than attractee
+				= Forfefully detach particle that belongs to another connected component
+					- Better if after a few steps with no consequence
+						- Fix: we don't reset the count of consecutive steps when a point leaves the radius
 				- Restore position of _all_ points in radius (which have at least one missing spring), based on octants
 				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
 			- Additionals:

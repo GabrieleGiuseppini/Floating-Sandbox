@@ -755,7 +755,8 @@ void Ship::RepairAt(
                             ////}
 
                             // TODOTEST: connected component check
-                            if (mPoints.GetConnectedComponentId(otherEndpointIndex) != mPoints.GetConnectedComponentId(pointIndex))
+                            if (mPoints.GetConnectedComponentId(otherEndpointIndex) != mPoints.GetConnectedComponentId(pointIndex)
+                                && mPoints.GetRepairState(otherEndpointIndex).CurrentAttractedNumberOfSteps > 120) // TODOHERE: it seems we don't reset it to zero when the guy is not attracted
                             {
                                 mPoints.Detach(
                                     otherEndpointIndex,
