@@ -552,7 +552,6 @@ void Ship::RepairAt(
                             fcs.SpringIndex,
                             pointIndex);
 
-
                         //
                         // 1. Find nearest CW spring and nearest CCW spring
                         // (which might end up being the same spring in case there's only one spring)
@@ -648,12 +647,12 @@ void Ship::RepairAt(
 
                         //
                         // Check whether restoring this spring with the endpoint at its
-                        // calculated target position would generate a CCW triangle
+                        // calculated target position would generate by mistake a CCW triangle
                         //
 
                         bool springWouldGenerateCCWTriangle = false;
 
-                        for (auto testTriangleIndex : mSprings.GetFactorySuperTriangles(fcs.SpringIndex))
+                        for (auto const testTriangleIndex : mSprings.GetFactorySuperTriangles(fcs.SpringIndex))
                         {
                             vec2f vertexPositions[3];
 
@@ -678,7 +677,7 @@ void Ship::RepairAt(
                                 ? targetOtherEndpointPosition
                                 : mPoints.GetPosition(mTriangles.GetPointCIndex(testTriangleIndex));
 
-                            vec2f edges[3]
+                            vec2f const edges[3]
                             {
                                 vertexPositions[1] - vertexPositions[0],
                                 vertexPositions[2] - vertexPositions[1],
@@ -696,6 +695,7 @@ void Ship::RepairAt(
 
                         if (springWouldGenerateCCWTriangle)
                         {
+                            // Skip
                             continue;
                         }
 
@@ -904,19 +904,19 @@ void Ship::RepairAt(
                         AttemptPointRestore(mTriangles.GetPointBIndex(fct));
                         AttemptPointRestore(mTriangles.GetPointCIndex(fct));
 
-                        // TODOTEST
-                        vec2f edges[3]{
-                            mPoints.GetPosition(mTriangles.GetPointBIndex(fct)) - mPoints.GetPosition(mTriangles.GetPointAIndex(fct)),
-                            mPoints.GetPosition(mTriangles.GetPointCIndex(fct)) - mPoints.GetPosition(mTriangles.GetPointBIndex(fct)),
-                            mPoints.GetPosition(mTriangles.GetPointAIndex(fct)) - mPoints.GetPosition(mTriangles.GetPointCIndex(fct))
-                        };
+                        // TODOTEST: CCW triangle detection
+                        ////vec2f edges[3]{
+                        ////    mPoints.GetPosition(mTriangles.GetPointBIndex(fct)) - mPoints.GetPosition(mTriangles.GetPointAIndex(fct)),
+                        ////    mPoints.GetPosition(mTriangles.GetPointCIndex(fct)) - mPoints.GetPosition(mTriangles.GetPointBIndex(fct)),
+                        ////    mPoints.GetPosition(mTriangles.GetPointAIndex(fct)) - mPoints.GetPosition(mTriangles.GetPointCIndex(fct))
+                        ////};
 
-                        if (edges[0].cross(edges[1]) > 0.0f
-                            || edges[1].cross(edges[2]) > 0.0f
-                            || edges[2].cross(edges[0]) > 0.0f)
-                        {
-                            LogMessage("TODOTEST2: triangle=", fct);
-                        }
+                        ////if (edges[0].cross(edges[1]) > 0.0f
+                        ////    || edges[1].cross(edges[2]) > 0.0f
+                        ////    || edges[2].cross(edges[0]) > 0.0f)
+                        ////{
+                        ////    LogMessage("TODOTEST2: triangle=", fct);
+                        ////}
                     }
                 }
             }
