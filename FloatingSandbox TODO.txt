@@ -621,9 +621,28 @@ Render:
 				- wxWidgets so's
 					- See if may statically link		
 
-		
+		- Second look at DKUZ's bug
+			- See if it only happens with Line primitives (i.e. that it doesn't happen with Triangle primitives)
+
 		- Timcan bug with engine sound goin' off
 			- "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
+
+		- Repair improvement:
+			- See if it's due to triangle forming folded
+				= Add log when we calc a point's destination, if that point repair would result in a new triangle
+				  that is NOT clockwise wrt current point positions
+			- Destruction, however, seems to happen also without folded triangles
+				- See then if it's because of momentum of particles
+			- Additionals:
+				- See if may simplify octant finding by considering just one spring (say, nearest CCW)
+			- Old:
+			- AA) Try with force-based adjusting
+				- Gives a chance to springs to prevent flips
+			- A)
+				- If, after attaching a point, that point is a vertex of a flipped (i.e. CCW) triangle:
+					- Move the point to the other side (rendering the triangle CW)
+			- OR: B)
+				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
 
 		= Default settings: 
 			- Flatten waves?
@@ -666,22 +685,6 @@ Render:
 		- New ships
 			- changelist
 				
-		- Repair improvement:
-			- 1) Debug test case (w/default_ship)
-				- Need ability to highlight point by its index
-					- Use SecretTypingDebugConsole
-			- 2) See if it's due to triangle forming folded
-				- Add log when we calc a point's destination, if that point repair wuold result in a new triangle
-				  that is NOT clockwise wrt current point positions
-			- Old:
-			- AA) Try with force-based adjusting
-				- Gives a chance to springs to prevent flips
-			- A)
-				- If, after attaching a point, that point is a vertex of a flipped (i.e. CCW) triangle:
-					- Move the point to the other side (rendering the triangle CW)
-			- OR: B)
-				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
-
 		- Sound space (*)
 
 		- Incandescence layer (*)

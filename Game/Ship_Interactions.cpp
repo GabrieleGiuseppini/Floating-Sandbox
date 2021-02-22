@@ -546,8 +546,6 @@ void Ship::RepairAt(
                         // the two non-deleted springs immediately CW and CCW of this spring
                         //
 
-                        float targetWorldAngleCw; // In world coordinates, CW, 0 at E
-
                         // The angle of the spring wrt this point
                         // 0 = E, 1 = SE, ..., 7 = NE
                         Octant const factoryPointSpringOctant = mSprings.GetFactoryEndpointOctant(
@@ -614,7 +612,7 @@ void Ship::RepairAt(
                         ElementIndex const cwSpringOtherEndpointIndex =
                             mSprings.GetOtherEndpointIndex(nearestCWSpringIndex, pointIndex);
 
-                        // Angle between this two springs (internal angle)
+                        // Angle between these two springs (internal angle)
                         float neighborsAngleCw =
                             (ccwSpringOtherEndpointIndex == cwSpringOtherEndpointIndex)
                             ? 2.0f * Pi<float>
@@ -633,7 +631,8 @@ void Ship::RepairAt(
                         // And finally, the target world angle (world angle is 0 at E), by adding
                         // interpolated CCW spring angle offset to world angle of CCW spring
                         float const nearestCCWSpringWorldAngle = vec2f(1.0f, 0.0f).angleCw(mPoints.GetPosition(ccwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex));
-                        targetWorldAngleCw =
+                        // In world coordinates, CW, 0 at E
+                        float const targetWorldAngleCw =
                             nearestCCWSpringWorldAngle
                             + interpolatedAngleCwFromCCWSpring;
 
@@ -647,6 +646,58 @@ void Ship::RepairAt(
                                 mSprings.GetFactoryRestLength(fcs.SpringIndex),
                                 targetWorldAngleCw);
 
+                        //
+                        // Check whether restoring this spring with the endpoint at its
+                        // calculated target position would generate a CCW triangle
+                        //
+
+                        bool springWouldGenerateCCWTriangle = false;
+
+                        for (auto testTriangleIndex : mSprings.GetFactorySuperTriangles(fcs.SpringIndex))
+                        {
+                            vec2f vertexPositions[3];
+
+                            // Edge A
+                            if (mSprings.IsDeleted(mTriangles.GetSubSpringAIndex(testTriangleIndex)) && mTriangles.GetSubSpringAIndex(testTriangleIndex) != fcs.SpringIndex)
+                                continue;
+                            vertexPositions[0] = (mTriangles.GetPointAIndex(testTriangleIndex) == otherEndpointIndex)
+                                ? targetOtherEndpointPosition
+                                : mPoints.GetPosition(mTriangles.GetPointAIndex(testTriangleIndex));
+
+                            // Edge B
+                            if (mSprings.IsDeleted(mTriangles.GetSubSpringBIndex(testTriangleIndex)) && mTriangles.GetSubSpringBIndex(testTriangleIndex) != fcs.SpringIndex)
+                                continue;
+                            vertexPositions[1] = (mTriangles.GetPointBIndex(testTriangleIndex) == otherEndpointIndex)
+                                ? targetOtherEndpointPosition
+                                : mPoints.GetPosition(mTriangles.GetPointBIndex(testTriangleIndex));
+
+                            // Edge C
+                            if (mSprings.IsDeleted(mTriangles.GetSubSpringCIndex(testTriangleIndex)) && mTriangles.GetSubSpringCIndex(testTriangleIndex) != fcs.SpringIndex)
+                                continue;
+                            vertexPositions[2] = (mTriangles.GetPointCIndex(testTriangleIndex) == otherEndpointIndex)
+                                ? targetOtherEndpointPosition
+                                : mPoints.GetPosition(mTriangles.GetPointCIndex(testTriangleIndex));
+
+                            vec2f edges[3]
+                            {
+                                vertexPositions[1] - vertexPositions[0],
+                                vertexPositions[2] - vertexPositions[1],
+                                vertexPositions[0] - vertexPositions[2]
+                            };
+
+                            if (edges[0].cross(edges[1]) > 0.0f
+                                || edges[1].cross(edges[2]) > 0.0f
+                                || edges[2].cross(edges[0]) > 0.0f)
+                            {
+                                springWouldGenerateCCWTriangle = true;
+                                break;
+                            }
+                        }
+
+                        if (springWouldGenerateCCWTriangle)
+                        {
+                            continue;
+                        }
 
                         //
                         // Check progress of other endpoint towards the target position
@@ -724,7 +775,7 @@ void Ship::RepairAt(
                             hasOtherEndpointPointBeenMoved = true;
                         }
 
-                        // Check whether we are now close enough
+                        // Check whether we are now close enough to restore the spring
                         if (displacementMagnitude <= DisplacementTolerance)
                         {
                             //
@@ -772,7 +823,6 @@ void Ship::RepairAt(
                             // Remember that we've acted on the other endpoint
                             hasOtherEndpointPointBeenMoved = true;
                         }
-
 
                         //
                         // Dry the other endpoint, if we've messed with it
@@ -835,13 +885,13 @@ void Ship::RepairAt(
             //
 
             // Visit all the triangles that were connected at factory time
-            for (auto fct : mPoints.GetFactoryConnectedTriangles(pointIndex).ConnectedTriangles)
+            for (auto const fct : mPoints.GetFactoryConnectedTriangles(pointIndex).ConnectedTriangles)
             {
                 if (mTriangles.IsDeleted(fct))
                 {
                     // Check if eligible
                     bool hasDeletedSubsprings = false;
-                    for (auto ss : mTriangles.GetSubSprings(fct).SpringIndices)
+                    for (auto const ss : mTriangles.GetSubSprings(fct).SpringIndices)
                         hasDeletedSubsprings |= mSprings.IsDeleted(ss);
 
                     if (!hasDeletedSubsprings)
@@ -853,6 +903,20 @@ void Ship::RepairAt(
                         AttemptPointRestore(mTriangles.GetPointAIndex(fct));
                         AttemptPointRestore(mTriangles.GetPointBIndex(fct));
                         AttemptPointRestore(mTriangles.GetPointCIndex(fct));
+
+                        // TODOTEST
+                        vec2f edges[3]{
+                            mPoints.GetPosition(mTriangles.GetPointBIndex(fct)) - mPoints.GetPosition(mTriangles.GetPointAIndex(fct)),
+                            mPoints.GetPosition(mTriangles.GetPointCIndex(fct)) - mPoints.GetPosition(mTriangles.GetPointBIndex(fct)),
+                            mPoints.GetPosition(mTriangles.GetPointAIndex(fct)) - mPoints.GetPosition(mTriangles.GetPointCIndex(fct))
+                        };
+
+                        if (edges[0].cross(edges[1]) > 0.0f
+                            || edges[1].cross(edges[2]) > 0.0f
+                            || edges[2].cross(edges[0]) > 0.0f)
+                        {
+                            LogMessage("TODOTEST2: triangle=", fct);
+                        }
                     }
                 }
             }
