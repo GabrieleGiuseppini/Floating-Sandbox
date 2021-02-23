@@ -219,6 +219,9 @@ using ElectricalElementId = ObjectId<ElementIndex, struct ElectricalElementTypeT
 
 /*
  * A sequence number which is never zero.
+ *
+ * Assuming an increment at each frame, this sequence will wrap
+ * every ~700 days.
  */
 struct SequenceNumber
 {
