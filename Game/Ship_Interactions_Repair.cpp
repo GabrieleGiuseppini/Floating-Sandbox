@@ -585,7 +585,9 @@ void Ship::RepairAt(
     auto const previousStep = repairStepId.Previous();
     for (auto const pointIndex : mPoints.RawShipPoints())
     {
-        if (mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId == previousStep)
+        if (float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+            squareRadius <= squareSearchRadius
+            && mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId == previousStep)
         {
             TryRepairAndPropagateFromPoint(
                 pointIndex,
@@ -604,12 +606,16 @@ void Ship::RepairAt(
     // Visit all (in-radius) non-ephemeral points
     for (auto const pointIndex : mPoints.RawShipPoints())
     {
-        TryRepairAndPropagateFromPoint(
-            pointIndex,
-            targetPos,
-            squareSearchRadius,
-            repairStepId,
-            gameParameters);
+        if (float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+            squareRadius <= squareSearchRadius)
+        {
+            TryRepairAndPropagateFromPoint(
+                pointIndex,
+                targetPos,
+                squareSearchRadius,
+                repairStepId,
+                gameParameters);
+        }
     }
 
     //
@@ -814,7 +820,10 @@ bool Ship::RepairFromAttractor(
 
             // Do not consider the spring if the other endpoint has already taken
             // the role of attractor in this step
-            if (mPoints.GetRepairState(otherEndpointIndex).LastAttractorRepairStepId != repairStepId)
+            if (mPoints.GetRepairState(otherEndpointIndex).LastAttractorRepairStepId != repairStepId
+                // TODOTEST: preventing an attractee from being attracted twice
+                //&& mPoints.GetRepairState(otherEndpointIndex).LastAttracteeRepairStepId != repairStepId)
+                )
             {
                 //
                 // This point has taken over the role of attractee in this step
@@ -835,7 +844,7 @@ bool Ship::RepairFromAttractor(
 
                 ////////////////////////////////////////////////////////
                 //
-                // Restore this spring by moving the other endpoint nearer
+                // Attempt to restore this spring by moving the other endpoint nearer
                 //
                 ////////////////////////////////////////////////////////
 
@@ -1028,7 +1037,7 @@ bool Ship::RepairFromAttractor(
                     float const smoothing = SmoothStep(
                         0.0f,
                         // TODOTEST
-                        (30.0f * 64.0f) / gameParameters.RepairSpeedAdjustment, // Reach max in 30 seconds (at 64 fps)
+                        (15.0f * 64.0f) / gameParameters.RepairSpeedAdjustment, // Reach max in 15 seconds (at 64 fps)
                         static_cast<float>(mPoints.GetRepairState(otherEndpointIndex).CurrentAttracteeConsecutiveNumberOfSteps));
 
                     // Movement direction (positive towards this point)
@@ -1099,10 +1108,20 @@ bool Ship::RepairFromAttractor(
                     // Forget that the other endpoint has been an attractee in this step
                     mPoints.GetRepairState(otherEndpointIndex).LastAttracteeRepairStepId = SequenceNumber::None();
 
-                    // Brake the other endpoint
-                    // Note: imparting the same velocity of the attractor to the attracted
-                    // seems to make things worse
-                    mPoints.SetVelocity(otherEndpointIndex, vec2f::zero());
+                    // Impart to the other endpoint the average velocity of all of its
+                    // connected particles, including the new one
+                    assert(mPoints.GetConnectedSprings(otherEndpointIndex).ConnectedSprings.size() > 0);
+                    vec2f const sumVelocity = std::accumulate(
+                        mPoints.GetConnectedSprings(otherEndpointIndex).ConnectedSprings.cbegin(),
+                        mPoints.GetConnectedSprings(otherEndpointIndex).ConnectedSprings.cend(),
+                        vec2f::zero(),
+                        [this](vec2f const & total, auto cs)
+                        {
+                            return total + mPoints.GetVelocity(cs.OtherEndpointIndex);
+                        });
+                    mPoints.SetVelocity(
+                        otherEndpointIndex,
+                        sumVelocity / static_cast<float>(mPoints.GetConnectedSprings(otherEndpointIndex).ConnectedSprings.size()));
 
                     // Halve the decay of both endpoints
                     float const pointDecay = mPoints.GetDecay(pointIndex);

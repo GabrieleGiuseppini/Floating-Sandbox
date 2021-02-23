@@ -634,7 +634,7 @@ Render:
 				+ Prevent CCW triangle from being formed altogether
 			= Improvements to try:
 				X Attractor must have more springs attached than attractee
-				= Local consistency of attractor/attractee roles: ensure that if one particle is attractor, also its directed neighbors are
+				+ Local consistency of attractor/attractee roles: ensure that if one particle is attractor, also its directed neighbors are
 					! Spec:
 						- Pass 1: for each point p that is in radius and which was an attractor in the previous step and which has not been an attractee in this step
 						  and which needs reparation:
@@ -649,17 +649,17 @@ Render:
 						  and which need reparation:
 							- RepairFromPoint(p)
 							- Visit all points p' from graph visit starting at p, such that: ...
-					= Impl:
+					+ Impl:
 						+ Move repair code to own source file
 						+ Points::RepairState:
 							+ LastAttractorRepairStepSequenceNumber, LastAttractee...: type is SequenceNumber
 						+ Tool:
 							+ Pass just sequence number
 							+ Increase seq num (skip) at each mouse down
-						= Do
-				= Forcefully detach particle that belongs to another connected component
-					- Better if after a few steps with no consequence
-						- Fix: we don't reset the count of consecutive steps when a point leaves the radius
+						+ Do
+				- Larger radius: 4?
+				- Prevent attractee from being attracted twice?
+				+ Final velocity of restored particle is avg of all connected
 				- Restore position of _all_ points in radius (which have at least one missing spring), based on octants
 				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
 			- Additionals:
