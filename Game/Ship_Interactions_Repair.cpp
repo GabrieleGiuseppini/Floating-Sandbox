@@ -788,7 +788,8 @@ bool Ship::RepairFromAttractor(
     // already stretched or compressed, generating an undesirable force impulse
     //
     // - Shipped 1.13 with 0.07
-    float constexpr DisplacementTolerance = 0.06f;
+    //float constexpr DisplacementTolerance = 0.06f;
+    float constexpr DisplacementTolerance = 0.065f;
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -809,8 +810,6 @@ bool Ship::RepairFromAttractor(
     {
         if (mSprings.IsDeleted(fcs.SpringIndex))
         {
-            bool doRecalculateSpringCoefficients = false;
-
             auto const otherEndpointIndex = fcs.OtherEndpointIndex;
 
             // Do not consider the spring if the other endpoint has already taken
@@ -821,11 +820,15 @@ bool Ship::RepairFromAttractor(
                 // This point has taken over the role of attractee in this step
                 //
 
-                // Update its count of consecutive steps as an attractee
-                if (mPoints.GetRepairState(otherEndpointIndex).LastAttracteeRepairStepId == repairStepId.Previous())
-                    mPoints.GetRepairState(otherEndpointIndex).CurrentAttracteeConsecutiveNumberOfSteps++;
-                else
-                    mPoints.GetRepairState(otherEndpointIndex).CurrentAttracteeConsecutiveNumberOfSteps = 1;
+                // Update its count of consecutive steps as an attractee, if this is its first time as an actractee
+                // in this step
+                if (mPoints.GetRepairState(otherEndpointIndex).LastAttracteeRepairStepId != repairStepId)
+                {
+                    if (mPoints.GetRepairState(otherEndpointIndex).LastAttracteeRepairStepId == repairStepId.Previous())
+                        mPoints.GetRepairState(otherEndpointIndex).CurrentAttracteeConsecutiveNumberOfSteps++;
+                    else
+                        mPoints.GetRepairState(otherEndpointIndex).CurrentAttracteeConsecutiveNumberOfSteps = 1;
+                }
 
                 // Remember the role
                 mPoints.GetRepairState(otherEndpointIndex).LastAttracteeRepairStepId = repairStepId;
@@ -1025,9 +1028,10 @@ bool Ship::RepairFromAttractor(
 
                     // Smoothing of the movement, based on how long this point has been an attracted
                     // in the current session
+                    // TODOTEST: smoothstep?
                     float const smoothing = LinearStep(
                         0.0f,
-                        (6.0f * 64.0f) / gameParameters.RepairSpeedAdjustment, // Reach max in 6 seconds (at 64 fps)
+                        (30.0f * 64.0f) / gameParameters.RepairSpeedAdjustment, // Reach max in 30 seconds (at 64 fps)
                         static_cast<float>(mPoints.GetRepairState(otherEndpointIndex).CurrentAttracteeConsecutiveNumberOfSteps));
 
                     // Movement direction (positive towards this point)
@@ -1049,7 +1053,7 @@ bool Ship::RepairFromAttractor(
                         * smoothing
                         * repairStrength;
 
-                    // Move point
+                    // Move point, clamping to world boundaries
                     mPoints.SetPosition(otherEndpointIndex,
                         (mPoints.GetPosition(otherEndpointIndex) + movementDir * movementMagnitude)
                         .clamp(-GameParameters::HalfMaxWorldWidth,
@@ -1122,9 +1126,11 @@ bool Ship::RepairFromAttractor(
                     AttemptPointRestore(pointIndex);
                     AttemptPointRestore(otherEndpointIndex);
 
-                    // Remember to recalculate the spring's coefficients, now that we
-                    // have changed its rest length
-                    doRecalculateSpringCoefficients = true;
+                    // Recalculate the spring's coefficients, since we have changed the
+                    // spring's rest length
+                    mSprings.UpdateForRestLength(
+                        fcs.SpringIndex,
+                        mPoints);
 
                     // Remember that we've acted on the other endpoint
                     hasOtherEndpointPointBeenMoved = true;
@@ -1141,17 +1147,6 @@ bool Ship::RepairFromAttractor(
                 {
                     mPoints.GetWater(otherEndpointIndex) /= 2.0f;
                 }
-            }
-
-            //
-            // Recalculate the spring's coefficients, if we have messed with it
-            //
-
-            if (doRecalculateSpringCoefficients)
-            {
-                mSprings.UpdateForRestLength(
-                    fcs.SpringIndex,
-                    mPoints);
             }
         }
     }
