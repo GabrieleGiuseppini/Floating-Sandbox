@@ -135,23 +135,18 @@ public:
      */
     struct RepairState
     {
-        // Each point is only allowed one role (attractor or attracted) per session step;
-        // these keep track of when they last had each role
-        RepairSessionId LastAttractorSessionId;
-        RepairSessionStepId LastAttractorSessionStepId;
-        RepairSessionId LastAttractedSessionId;
-        RepairSessionStepId LastAttractedSessionStepId;
+        // The last steps at which this point had the specified repair role
+        SequenceNumber LastAttractorRepairStepId;
+        SequenceNumber LastAttracteeRepairStepId;
 
-        // The number of consecutive steps - in this session - that this point has been
-        // acting as attracted for
-        std::uint64_t CurrentAttractedNumberOfSteps;
+        // Total number of consecutive steps that this point has been
+        // an attractee for
+        std::uint64_t CurrentAttracteeConsecutiveNumberOfSteps;
 
         RepairState()
-            : LastAttractorSessionId(0)
-            , LastAttractorSessionStepId(0)
-            , LastAttractedSessionId(0)
-            , LastAttractedSessionStepId(0)
-            , CurrentAttractedNumberOfSteps(0)
+            : LastAttractorRepairStepId()
+            , LastAttracteeRepairStepId()
+            , CurrentAttracteeConsecutiveNumberOfSteps()
         {}
     };
 

@@ -85,6 +85,7 @@ set  (PHYSICS_SOURCES
 	Ship.cpp
 	Ship_ForceFields.cpp
 	Ship_Interactions.cpp
+	Ship_Interactions_Repair.cpp
 	Ship_StateMachines.cpp
 	Ship_StateMachines.h
 	Ship.h

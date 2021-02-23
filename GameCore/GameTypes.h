@@ -252,6 +252,16 @@ public:
         return *this;
     }
 
+    SequenceNumber Previous() const
+    {
+        SequenceNumber res = *this;
+        --res.mValue;
+        if (res.mValue == 0)
+            res.mValue = std::numeric_limits<std::uint32_t>::max();
+
+        return res;
+    }
+
     inline bool operator==(SequenceNumber const & other) const
     {
         return mValue == other.mValue;
@@ -262,7 +272,7 @@ public:
         return !(*this == other);
     }
 
-    inline operator bool() const
+    inline explicit operator bool() const
     {
         return (*this) != None();
     }
@@ -274,8 +284,18 @@ public:
 
 private:
 
+    friend std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, SequenceNumber const & s);
+
     std::uint32_t mValue;
 };
+
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, SequenceNumber const & s)
+{
+    os << s.mValue;
+
+    return os;
+}
+
 
 /*
  * Types of frontiers (duh).
@@ -380,14 +400,6 @@ struct ElectricalPanelElementMetadata
         , IsHidden(isHidden)
     {}
 };
-
-/*
- * Repair session IDs and step IDs in a session.
- *
- * Comparable and ordered.
- */
-using RepairSessionId = std::uint32_t;
-using RepairSessionStepId = std::uint64_t;
 
 /*
  * HeatBlaster action.

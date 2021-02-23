@@ -132,8 +132,7 @@ public:
     void RepairAt(
         vec2f const & targetPos,
         float radiusMultiplier,
-        RepairSessionId sessionId,
-        RepairSessionStepId sessionStepId,
+        SequenceNumber repairStepId,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
@@ -351,6 +350,10 @@ private:
 
 private:
 
+    /////////////////////////////////////////////////////////////////////////
+    // Misc
+    /////////////////////////////////////////////////////////////////////////
+
     void RunConnectivityVisit();
 
     inline void SetAndPropagateResultantPointHullness(
@@ -523,6 +526,25 @@ private:
         Render::RenderContext & renderContext);
 
     std::list<std::unique_ptr<StateMachine>> mStateMachines;
+
+private:
+
+    /////////////////////////////////////////////////////////////////////////
+    // Interaction Helpers
+    /////////////////////////////////////////////////////////////////////////
+
+    bool TryRepairAndPropagateFromPoint(
+        ElementIndex startingPointIndex,
+        vec2f const & targetPos,
+        float squareSearchRadius,
+        SequenceNumber repairStepId,
+        GameParameters const & gameParameters);
+
+    bool RepairFromAttractor(
+        ElementIndex pointIndex,
+        float repairStrength,
+        SequenceNumber repairStepId,
+        GameParameters const & gameParameters);
 
 private:
 

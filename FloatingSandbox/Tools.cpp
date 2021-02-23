@@ -521,8 +521,7 @@ RepairStructureTool::RepairStructureTool(
         std::move(gameController),
         std::move(soundController))
     , mEngagementStartTimestamp()
-    , mCurrentSessionId(0)
-    , mCurrentSessionStepId(0)
+    , mCurrentStepId()
     , mUpCursorImage(WxHelpers::LoadCursorImage("repair_structure_cursor_up", 8, 8, resourceLocator))
     , mDownCursorImages{
         WxHelpers::LoadCursorImage("repair_structure_cursor_down_0", 8, 8, resourceLocator),
