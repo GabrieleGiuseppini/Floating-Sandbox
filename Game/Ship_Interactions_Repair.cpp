@@ -945,8 +945,11 @@ bool Ship::RepairFromAttractor(
                         targetWorldAngleCw);
 
                 //
-                // Check whether restoring this spring with the endpoint at its
-                // calculated target position would generate by mistake a CCW triangle
+                // Check whether this spring with the endpoint at its calculated
+                // target position would generate a CCW triangle; if so, we'll
+                // ignore it as we want to avoid creating folded structures.
+                // We rely on its particles to somehow acquire later their correct
+                // positions
                 //
 
                 bool springWouldGenerateCCWTriangle = false;
@@ -956,22 +959,16 @@ bool Ship::RepairFromAttractor(
                     vec2f vertexPositions[3];
 
                     // Edge A
-                    if (mSprings.IsDeleted(mTriangles.GetSubSpringAIndex(testTriangleIndex)) && mTriangles.GetSubSpringAIndex(testTriangleIndex) != fcs.SpringIndex)
-                        continue;
                     vertexPositions[0] = (mTriangles.GetPointAIndex(testTriangleIndex) == otherEndpointIndex)
                         ? targetOtherEndpointPosition
                         : mPoints.GetPosition(mTriangles.GetPointAIndex(testTriangleIndex));
 
                     // Edge B
-                    if (mSprings.IsDeleted(mTriangles.GetSubSpringBIndex(testTriangleIndex)) && mTriangles.GetSubSpringBIndex(testTriangleIndex) != fcs.SpringIndex)
-                        continue;
                     vertexPositions[1] = (mTriangles.GetPointBIndex(testTriangleIndex) == otherEndpointIndex)
                         ? targetOtherEndpointPosition
                         : mPoints.GetPosition(mTriangles.GetPointBIndex(testTriangleIndex));
 
                     // Edge C
-                    if (mSprings.IsDeleted(mTriangles.GetSubSpringCIndex(testTriangleIndex)) && mTriangles.GetSubSpringCIndex(testTriangleIndex) != fcs.SpringIndex)
-                        continue;
                     vertexPositions[2] = (mTriangles.GetPointCIndex(testTriangleIndex) == otherEndpointIndex)
                         ? targetOtherEndpointPosition
                         : mPoints.GetPosition(mTriangles.GetPointCIndex(testTriangleIndex));
@@ -994,7 +991,7 @@ bool Ship::RepairFromAttractor(
 
                 if (springWouldGenerateCCWTriangle)
                 {
-                    // Skip
+                    // Skip this spring
                     continue;
                 }
 
@@ -1028,9 +1025,9 @@ bool Ship::RepairFromAttractor(
 
                     // Smoothing of the movement, based on how long this point has been an attracted
                     // in the current session
-                    // TODOTEST: smoothstep?
-                    float const smoothing = LinearStep(
+                    float const smoothing = SmoothStep(
                         0.0f,
+                        // TODOTEST
                         (30.0f * 64.0f) / gameParameters.RepairSpeedAdjustment, // Reach max in 30 seconds (at 64 fps)
                         static_cast<float>(mPoints.GetRepairState(otherEndpointIndex).CurrentAttracteeConsecutiveNumberOfSteps));
 
