@@ -769,8 +769,6 @@ bool Ship::TryRepairAndPropagateFromPoint(
 
             for (auto const cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
             {
-                LogMessage("TODOTEST: propagating to ", cs.OtherEndpointIndex);
-
                 pointsToVisit.push_back(cs.OtherEndpointIndex);
             }
         }
@@ -830,24 +828,11 @@ bool Ship::RepairFromAttractor(
 
             // Do not consider the spring if the other endpoint has already taken
             // the role of attractor in this step
-            if (mPoints.GetRepairState(otherEndpointIndex).LastAttractorRepairStepId != repairStepId
-                // TODOTEST: give a former attractor a chance to still be an attractor
-                //&& mPoints.GetRepairState(otherEndpointIndex).LastAttractorRepairStepId != repairStepId.Previous()
-                )
+            if (mPoints.GetRepairState(otherEndpointIndex).LastAttractorRepairStepId != repairStepId)
             {
                 //
                 // This point has taken over the role of attractee in this step
                 //
-
-                // TODOTEST
-                LogMessage("Attractee: ", otherEndpointIndex);
-
-                if (mPoints.GetRepairState(otherEndpointIndex).LastAttractorRepairStepId == repairStepId.Previous())
-                {
-                    LogMessage("TODOTEST: point ", otherEndpointIndex, " just became attractee at ", repairStepId, " when it was attractor at ",
-                        mPoints.GetRepairState(otherEndpointIndex).LastAttractorRepairStepId, "; distance=",
-                        (mPoints.GetPosition(otherEndpointIndex) - targetPos).length());
-                }
 
                 // Update its count of consecutive steps as an attractee, if this is its first time as an actractee
                 // in this step
