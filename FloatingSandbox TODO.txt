@@ -661,7 +661,7 @@ Render:
 					+ Attractee from prev step becomes attractor					
 				- CCW check for traverse springs: 
 					- See if should replace CCW triangle checks with spring octant checks
-				- Larger radius: 4?
+				+ Larger radius: 4
 				- Prevent attractee from being attracted twice?
 				+ Final velocity of restored particle is avg of all connected
 				- Restore position of _all_ points in radius (which have at least one missing spring), based on octants
