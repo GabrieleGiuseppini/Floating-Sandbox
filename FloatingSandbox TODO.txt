@@ -657,6 +657,12 @@ Render:
 							+ Pass just sequence number
 							+ Increase seq num (skip) at each mouse down
 						+ Do
+				- CCW check for traverse springs: 
+					- See if should replace CCW triangle checks with spring octant checks
+				= See why roles sometimes flip
+					+ Attractee from prev step becomes attractor
+					- Attractor from prev step becomes first an attractee == 
+					
 				- Larger radius: 4?
 				- Prevent attractee from being attracted twice?
 				+ Final velocity of restored particle is avg of all connected

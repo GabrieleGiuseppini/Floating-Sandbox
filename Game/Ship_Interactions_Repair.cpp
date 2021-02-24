@@ -711,12 +711,17 @@ bool Ship::TryRepairAndPropagateFromPoint(
     SequenceNumber repairStepId,
     GameParameters const & gameParameters)
 {
+    // TODOTEST
+    LogMessage("TODOTEST: TryRepairAndPropagateFromPoint: ", startingPointIndex);
+
     bool hasRepairedAnything = false;
 
     // Conditions for a point to be an attactor:
     //  - is in radius
     //  - and has not been an attractor in this step
     //  - and has not been an attractee in this step
+    //  - and has not been an attractee in the *previous* step (so to prevent
+    //    sudden role flipping)
     //  - and needs reparation
     //  - and is not orphaned (to avoid orphan-oprhan attractions)
     //
@@ -728,13 +733,14 @@ bool Ship::TryRepairAndPropagateFromPoint(
     for (ElementIndex pointIndex = startingPointIndex; ;)
     {
         //
-        // Check if this point meets all the conditions
+        // Check if this point meets all the conditions for being an attractor
         //
 
         if (float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
             squareRadius <= squareSearchRadius
             && mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId != repairStepId
             && mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId
+            && mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId.Previous()
             && mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size() > mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size()
             && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0)
         {
@@ -752,7 +758,8 @@ bool Ship::TryRepairAndPropagateFromPoint(
                 pointIndex,
                 repairStrength,
                 repairStepId,
-                gameParameters);
+                gameParameters,
+                targetPos);
 
             hasRepairedAnything |= hasRepaired;
 
@@ -762,6 +769,8 @@ bool Ship::TryRepairAndPropagateFromPoint(
 
             for (auto const cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
             {
+                LogMessage("TODOTEST: propagating to ", cs.OtherEndpointIndex);
+
                 pointsToVisit.push_back(cs.OtherEndpointIndex);
             }
         }
@@ -784,7 +793,8 @@ bool Ship::RepairFromAttractor(
     ElementIndex pointIndex,
     float repairStrength,
     SequenceNumber repairStepId,
-    GameParameters const & gameParameters)
+    GameParameters const & gameParameters,
+    vec2f const & targetPos)
 {
     // Tolerance to distance: the minimum distance between the endpoint
     // of a broken spring and its target position, below which we restore
@@ -821,13 +831,23 @@ bool Ship::RepairFromAttractor(
             // Do not consider the spring if the other endpoint has already taken
             // the role of attractor in this step
             if (mPoints.GetRepairState(otherEndpointIndex).LastAttractorRepairStepId != repairStepId
-                // TODOTEST: preventing an attractee from being attracted twice
-                //&& mPoints.GetRepairState(otherEndpointIndex).LastAttracteeRepairStepId != repairStepId)
+                // TODOTEST: give a former attractor a chance to still be an attractor
+                //&& mPoints.GetRepairState(otherEndpointIndex).LastAttractorRepairStepId != repairStepId.Previous()
                 )
             {
                 //
                 // This point has taken over the role of attractee in this step
                 //
+
+                // TODOTEST
+                LogMessage("Attractee: ", otherEndpointIndex);
+
+                if (mPoints.GetRepairState(otherEndpointIndex).LastAttractorRepairStepId == repairStepId.Previous())
+                {
+                    LogMessage("TODOTEST: point ", otherEndpointIndex, " just became attractee at ", repairStepId, " when it was attractor at ",
+                        mPoints.GetRepairState(otherEndpointIndex).LastAttractorRepairStepId, "; distance=",
+                        (mPoints.GetPosition(otherEndpointIndex) - targetPos).length());
+                }
 
                 // Update its count of consecutive steps as an attractee, if this is its first time as an actractee
                 // in this step
@@ -1153,6 +1173,8 @@ bool Ship::RepairFromAttractor(
 
                     // Remember that we've repaired a spring
                     hasAnySpringBeenRepaired = true;
+
+                    LogMessage("TODOTEST: repaired: ", otherEndpointIndex);
                 }
 
                 //
