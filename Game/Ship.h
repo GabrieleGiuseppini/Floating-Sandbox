@@ -544,8 +544,7 @@ private:
         ElementIndex pointIndex,
         float repairStrength,
         SequenceNumber repairStepId,
-        GameParameters const & gameParameters,
-        vec2f const & targetPos);
+        GameParameters const & gameParameters);
 
 private:
 

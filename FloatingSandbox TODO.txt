@@ -661,19 +661,17 @@ Render:
 					+ Attractee from prev step becomes attractor					
 				- CCW check for traverse springs: 
 					- See if should replace CCW triangle checks with spring octant checks
+					- If, after attaching a point, that point is a vertex of a flipped (i.e. CCW) triangle:
+						- Move the point to the other side (rendering the triangle CW)				
+
 				+ Larger radius: 4
-				- Prevent attractee from being attracted twice?
 				+ Final velocity of restored particle is avg of all connected
-				- Restore position of _all_ points in radius (which have at least one missing spring), based on octants
-				- An attractor with only one spring attached cannot attract an attracted that has >= 2 springs attached
-			- Additionals:
+				- Test 2 repair settings extremes
 				- See if may simplify octant finding by considering just one spring (say, nearest CCW)
-			- Old:
-			- AA) Try with force-based adjusting
-				- Gives a chance to springs to prevent flips
-			- A)
-				- If, after attaching a point, that point is a vertex of a flipped (i.e. CCW) triangle:
-					- Move the point to the other side (rendering the triangle CW)				
+			- Final:
+				+ Perf: accumulate points from first pass in vector for 2nd pass
+				- Run in Debug
+			- changelist
 
 		= Default settings: 
 			- Flatten waves?

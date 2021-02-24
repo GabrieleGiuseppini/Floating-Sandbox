@@ -36,20 +36,27 @@ void Ship::RepairAt(
     // an attractor will continue to be an attractor until it needs reparation
     //
 
+    // We store points in radius to speedup pass 2
+    std::vector<ElementIndex> pointsInRadius;
+
     // Visit all (in-radius) non-ephemeral points that had been attractors in the previous step
     auto const previousStep = repairStepId.Previous();
     for (auto const pointIndex : mPoints.RawShipPoints())
     {
         if (float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-            squareRadius <= squareSearchRadius
-            && mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId == previousStep)
+            squareRadius <= squareSearchRadius)
         {
-            TryRepairAndPropagateFromPoint(
-                pointIndex,
-                targetPos,
-                squareSearchRadius,
-                repairStepId,
-                gameParameters);
+            pointsInRadius.push_back(pointIndex);
+
+            if (mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId == previousStep)
+            {
+                TryRepairAndPropagateFromPoint(
+                    pointIndex,
+                    targetPos,
+                    squareSearchRadius,
+                    repairStepId,
+                    gameParameters);
+            }
         }
     }
 
@@ -59,18 +66,14 @@ void Ship::RepairAt(
     //
 
     // Visit all (in-radius) non-ephemeral points
-    for (auto const pointIndex : mPoints.RawShipPoints())
+    for (auto const pointIndex : pointsInRadius)
     {
-        if (float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-            squareRadius <= squareSearchRadius)
-        {
-            TryRepairAndPropagateFromPoint(
-                pointIndex,
-                targetPos,
-                squareSearchRadius,
-                repairStepId,
-                gameParameters);
-        }
+        TryRepairAndPropagateFromPoint(
+            pointIndex,
+            targetPos,
+            squareSearchRadius,
+            repairStepId,
+            gameParameters);
     }
 
     //
@@ -156,12 +159,12 @@ bool Ship::TryRepairAndPropagateFromPoint(
 
     // Conditions for a point to be an attactor:
     //  - is in radius
-    //  - and has not been an attractor in this step
+    //  - and has not already been an attractor in this step
     //  - and has not been an attractee in this step
     //  - and has not been an attractee in the *previous* step (so to prevent
     //    sudden role flipping)
     //  - and needs reparation
-    //  - and is not orphaned (to avoid orphan-oprhan attractions)
+    //  - and is not orphaned (we realy on existing springs to repair)
     //
     // After being an attractor, do a breadth-first visit from the point propagating
     // repair from directly-connected candidates
@@ -196,8 +199,7 @@ bool Ship::TryRepairAndPropagateFromPoint(
                 pointIndex,
                 repairStrength,
                 repairStepId,
-                gameParameters,
-                targetPos);
+                gameParameters);
 
             hasRepairedAnything |= hasRepaired;
 
@@ -229,8 +231,7 @@ bool Ship::RepairFromAttractor(
     ElementIndex pointIndex,
     float repairStrength,
     SequenceNumber repairStepId,
-    GameParameters const & gameParameters,
-    vec2f const & targetPos)
+    GameParameters const & gameParameters)
 {
     // Tolerance to distance: the minimum distance between the endpoint
     // of a broken spring and its target position, below which we restore
@@ -240,10 +241,15 @@ bool Ship::RepairFromAttractor(
     // already stretched or compressed, generating an undesirable force impulse
     //
     // - Shipped 1.13 with 0.07
+    // TODOTEST
     //float constexpr DisplacementTolerance = 0.06f;
     float constexpr DisplacementTolerance = 0.065f;
 
     ////////////////////////////////////////////////////////////////////////////
+
+    // This point hasn't taken any role yet in this step
+    assert(mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId != repairStepId);
+    assert(mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId);
 
     // Remember that this point has taken over the role of attractor in this step
     mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId = repairStepId;
@@ -503,7 +509,7 @@ bool Ship::RepairFromAttractor(
                     //
 
                     // Smoothing of the movement, based on how long this point has been an attracted
-                    // in the current session
+                    // during the current session
                     float const smoothing = SmoothStep(
                         0.0f,
                         (15.0f * 64.0f) / gameParameters.RepairSpeedAdjustment, // Reach max in 15 simulated seconds (at 64 fps)
@@ -536,7 +542,7 @@ bool Ship::RepairFromAttractor(
                             -GameParameters::HalfMaxWorldHeight,
                             GameParameters::HalfMaxWorldHeight));
 
-                    // Adjust displacement
+                    // Update displacement with move
                     assert(movementMagnitude < displacementMagnitude);
                     displacementMagnitude -= movementMagnitude;
 
@@ -574,7 +580,8 @@ bool Ship::RepairFromAttractor(
 
                     assert(!mSprings.IsDeleted(fcs.SpringIndex));
 
-                    // Forget that the other endpoint has been an attractee in this step
+                    // Forget that the other endpoint has been an attractee in this step,
+                    // so that it might soon take the role of attractor
                     mPoints.GetRepairState(otherEndpointIndex).LastAttracteeRepairStepId = SequenceNumber::None();
 
                     // Impart to the other endpoint the average velocity of all of its
@@ -592,7 +599,8 @@ bool Ship::RepairFromAttractor(
                         otherEndpointIndex,
                         sumVelocity / static_cast<float>(mPoints.GetConnectedSprings(otherEndpointIndex).ConnectedSprings.size()));
 
-                    // Halve the decay of both endpoints
+                    // Halve the decay of both endpoints, to prevent newly-repaired
+                    // rotten particles from crumbling again
                     float const pointDecay = mPoints.GetDecay(pointIndex);
                     mPoints.SetDecay(
                         pointIndex,
