@@ -660,6 +660,10 @@ Render:
 				+ See why roles sometimes flip
 					+ Attractee from prev step becomes attractor
 				- Try to straighten out CCW structures
+					- Idea 1: as a separate, initial step, before repairing: for each point in-radius that has at least one traverse spring
+					  and two other springs:
+						- Calculate theoretical nearest CW and nearest CCW springs of the traverse spring
+						- Make sure that traverse spring is between those two
 					- If works, consider doing these which at the moment we can't do because of
 					  folded structures:
 						- Lower distance tolerance (e.g. 0.03 or lower), to prevent newly-repaired springs from breaking up immediately again
