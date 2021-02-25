@@ -400,32 +400,6 @@ bool Ship::RepairFromAttractor(
                         targetWorldAngleCw);
 
                 //
-                // TODOTEST: flip check
-                //
-
-                // TODOTEST
-                bool springWouldGenerateCCWTriangle = false;
-
-                // TODOTEST
-                ////if (nearestCCWSpringIndex != nearestCWSpringIndex)
-                ////{
-                ////    // Theoretical span between the two closest springs
-                ////    float const theoreticalOctantSpan = static_cast<float>(nearestCWSpringDeltaOctant + nearestCCWSpringDeltaOctant);
-
-                ////    // Actual span between the two closest springs
-                ////    float const actualAngleSpan = neighborsAngleCw;
-
-                ////    if ((theoreticalOctantSpan < 4.0f && actualAngleSpan > Pi<float>)
-                ////        || (theoreticalOctantSpan > 4.0f && actualAngleSpan < Pi<float>))
-                ////    {
-                ////        ////LogMessage("TODOTEST: Flip Detection: CCW==(", pointIndex, "->", ccwSpringOtherEndpointIndex, ") CW==(",
-                ////        ////    pointIndex, "->", cwSpringOtherEndpointIndex, ")");
-
-                ////        springWouldGenerateCCWTriangle = true;
-                ////    }
-                ////}
-
-                //
                 // Check whether this spring with the endpoint at its calculated
                 // target position would generate a CCW triangle; if so, we'll
                 // ignore it as we want to avoid creating folded structures.
@@ -433,44 +407,142 @@ bool Ship::RepairFromAttractor(
                 // positions
                 //
 
-                // TODOTEST
-                //bool springWouldGenerateCCWTriangle = false;
+                bool springWouldGenerateCCWTriangle = false;
 
-                for (auto const testTriangleIndex : mSprings.GetFactorySuperTriangles(fcs.SpringIndex))
+                if (!mSprings.GetFactorySuperTriangles(fcs.SpringIndex).empty())
                 {
-                    vec2f vertexPositions[3];
+                    //
+                    // Spring with triangles
+                    //
 
-                    // Edge A
-                    vertexPositions[0] = (mTriangles.GetPointAIndex(testTriangleIndex) == otherEndpointIndex)
-                        ? targetOtherEndpointPosition
-                        : mPoints.GetPosition(mTriangles.GetPointAIndex(testTriangleIndex));
-
-                    // Edge B
-                    vertexPositions[1] = (mTriangles.GetPointBIndex(testTriangleIndex) == otherEndpointIndex)
-                        ? targetOtherEndpointPosition
-                        : mPoints.GetPosition(mTriangles.GetPointBIndex(testTriangleIndex));
-
-                    // Edge C
-                    vertexPositions[2] = (mTriangles.GetPointCIndex(testTriangleIndex) == otherEndpointIndex)
-                        ? targetOtherEndpointPosition
-                        : mPoints.GetPosition(mTriangles.GetPointCIndex(testTriangleIndex));
-
-                    vec2f const edges[3]
+                    for (auto const testTriangleIndex : mSprings.GetFactorySuperTriangles(fcs.SpringIndex))
                     {
-                        vertexPositions[1] - vertexPositions[0],
-                        vertexPositions[2] - vertexPositions[1],
-                        vertexPositions[0] - vertexPositions[2]
-                    };
+                        vec2f vertexPositions[3];
 
-                    if (edges[0].cross(edges[1]) > 0.0f
-                        || edges[1].cross(edges[2]) > 0.0f
-                        || edges[2].cross(edges[0]) > 0.0f)
+                        // Edge A
+                        vertexPositions[0] = (mTriangles.GetPointAIndex(testTriangleIndex) == otherEndpointIndex)
+                            ? targetOtherEndpointPosition
+                            : mPoints.GetPosition(mTriangles.GetPointAIndex(testTriangleIndex));
+
+                        // Edge B
+                        vertexPositions[1] = (mTriangles.GetPointBIndex(testTriangleIndex) == otherEndpointIndex)
+                            ? targetOtherEndpointPosition
+                            : mPoints.GetPosition(mTriangles.GetPointBIndex(testTriangleIndex));
+
+                        // Edge C
+                        vertexPositions[2] = (mTriangles.GetPointCIndex(testTriangleIndex) == otherEndpointIndex)
+                            ? targetOtherEndpointPosition
+                            : mPoints.GetPosition(mTriangles.GetPointCIndex(testTriangleIndex));
+
+                        vec2f const edges[3]
+                        {
+                            vertexPositions[1] - vertexPositions[0],
+                            vertexPositions[2] - vertexPositions[1],
+                            vertexPositions[0] - vertexPositions[2]
+                        };
+
+                        if (edges[0].cross(edges[1]) > 0.0f
+                            || edges[1].cross(edges[2]) > 0.0f
+                            || edges[2].cross(edges[0]) > 0.0f)
+                        {
+                            ////if (!springWouldGenerateCCWTriangle)
+                            ////    LogMessage("TODOTEST: CCW Triangle Detection (", nearestCCWSpringIndex, "->", nearestCWSpringIndex, ")");
+
+                            springWouldGenerateCCWTriangle = true;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    // TODOTEST: wrong: false positives
+                    //////
+                    ////// Traverse spring
+                    //////
+                    ////// Use the nearest springs as "the triangle"
+                    //////
+
+                    ////if (nearestCCWSpringIndex != nearestCWSpringIndex)
+                    ////{
+                    ////    vec2f vertexPositions[3];
+
+                    ////    // Edge A
+                    ////    vertexPositions[0] = mPoints.GetPosition(ccwSpringOtherEndpointIndex);
+
+                    ////    // Edge B
+                    ////    vertexPositions[1] = targetOtherEndpointPosition;
+
+                    ////    // Edge C
+                    ////    vertexPositions[2] = mPoints.GetPosition(cwSpringOtherEndpointIndex);
+
+                    ////    vec2f const edges[3]
+                    ////    {
+                    ////        vertexPositions[1] - vertexPositions[0],
+                    ////        vertexPositions[2] - vertexPositions[1],
+                    ////        vertexPositions[0] - vertexPositions[2]
+                    ////    };
+
+                    ////    if (edges[0].cross(edges[1]) > 0.0f
+                    ////        || edges[1].cross(edges[2]) > 0.0f
+                    ////        || edges[2].cross(edges[0]) > 0.0f)
+                    ////    {
+                    ////        LogMessage("TODOTEST: CCW TraverseSpring Triangle Detection (@pt=", otherEndpointIndex, ")");
+
+                    ////        springWouldGenerateCCWTriangle = true;
+                    ////    }
+                    ////}
+
+                    //
+                    // Traverse spring
+                    //
+                    // Check if spring to restore would be between the nearest ccw vector and the nearest cw vector
+                    //
+
+                    if (nearestCCWSpringIndex != nearestCWSpringIndex)
                     {
-                        ////if (!springWouldGenerateCCWTriangle)
-                        ////    LogMessage("TODOTEST: CCW Triangle Detection (", nearestCCWSpringIndex, "->", nearestCWSpringIndex, ")");
+                        vec2f const ccwVector = mPoints.GetPosition(ccwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex);
+                        vec2f const cwVector = mPoints.GetPosition(cwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex);
+                        vec2f const targetVector = targetOtherEndpointPosition - mPoints.GetPosition(pointIndex);
 
-                        springWouldGenerateCCWTriangle = true;
-                        break;
+                        /*
+                        if (targetVector.cross(ccwVector) >= 0.0f)
+                        {
+                            if (!(cwVector.cross(targetVector) >= 0.0f))
+                            {
+                                LogMessage("TODOTEST: TraverseSpring detection 1 at ", pointIndex, "->", otherEndpointIndex);
+                            }
+                        }
+                        else
+                        {
+                            if (!(cwVector.cross(targetVector) < 0.0f))
+                            {
+                                LogMessage("TODOTEST: TraverseSpring detection 2 at ", pointIndex, "->", otherEndpointIndex);
+                            }
+                        }
+                        */
+
+                        if (nearestCCWSpringDeltaOctant + nearestCWSpringDeltaOctant <= 4)
+                        {
+                            // Angle between ccw and cw is <= 180
+
+                            // Expect: CCW->V->CW
+                            if (targetVector.cross(ccwVector) < 0.0f
+                                || cwVector.cross(targetVector) < 0.0f)
+                            {
+                                LogMessage("TODOTEST: TraverseSpring detection 1 at ", pointIndex, "->", otherEndpointIndex);
+                            }
+                        }
+                        else
+                        {
+                            // Angle between ccw and cw is > 180
+
+                            // Expect: ! CW->V->CCW
+                            if (targetVector.cross(cwVector) >= 0.0f
+                                && ccwVector.cross(targetVector) >= 0.0)
+                            {
+                                LogMessage("TODOTEST: TraverseSpring detection 2 at ", pointIndex, "->", otherEndpointIndex);
+                            }
+                        }
                     }
                 }
 

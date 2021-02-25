@@ -140,6 +140,10 @@ public:
         return x * other.x + y * other.y;
     }
 
+    /*
+     * When >= 0, then this is to the right of other
+     * When >= 0, angle between other and this is < PI
+     */
     inline float cross(vec2f const & other) const noexcept
     {
         return x * other.y - y * other.x;

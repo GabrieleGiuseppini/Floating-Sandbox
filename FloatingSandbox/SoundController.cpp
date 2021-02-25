@@ -2103,15 +2103,15 @@ void SoundController::PlayMSUOneShotMultipleChoiceSound(
     else
         sizeType = SizeType::Large;
 
-    LogDebug("MSUSound: <",
-        static_cast<int>(soundType),
-        ",",
-        static_cast<int>(materialSound),
-        ",",
-        static_cast<int>(sizeType),
-        ",",
-        static_cast<int>(isUnderwater),
-        ">");
+    ////LogDebug("MSUSound: <",
+    ////    static_cast<int>(soundType),
+    ////    ",",
+    ////    static_cast<int>(materialSound),
+    ////    ",",
+    ////    static_cast<int>(sizeType),
+    ////    ",",
+    ////    static_cast<int>(isUnderwater),
+    ////    ">");
 
     //
     // Find vector
@@ -2168,11 +2168,11 @@ void SoundController::PlayMOneShotMultipleChoiceSound(
     float volume,
     bool isInterruptible)
 {
-    LogDebug("MSound: <",
-        static_cast<int>(soundType),
-        ",",
-        static_cast<int>(materialSound),
-        ">");
+    ////LogDebug("MSound: <",
+    ////    static_cast<int>(soundType),
+    ////    ",",
+    ////    static_cast<int>(materialSound),
+    ////    ">");
 
     //
     // Find vector
@@ -2204,13 +2204,13 @@ void SoundController::PlayDslUOneShotMultipleChoiceSound(
     float volume,
     bool isInterruptible)
 {
-    LogDebug("DslUSound: <",
-        static_cast<int>(soundType),
-        ",",
-        static_cast<int>(duration),
-        ",",
-        static_cast<int>(isUnderwater),
-        ">");
+    ////LogDebug("DslUSound: <",
+    ////    static_cast<int>(soundType),
+    ////    ",",
+    ////    static_cast<int>(duration),
+    ////    ",",
+    ////    static_cast<int>(isUnderwater),
+    ////    ">");
 
     //
     // Find vector
@@ -2241,11 +2241,11 @@ void SoundController::PlayUOneShotMultipleChoiceSound(
     float volume,
     bool isInterruptible)
 {
-    LogDebug("USound: <",
-        static_cast<int>(soundType),
-        ",",
-        static_cast<int>(isUnderwater),
-        ">");
+    ////LogDebug("USound: <",
+    ////    static_cast<int>(soundType),
+    ////    ",",
+    ////    static_cast<int>(isUnderwater),
+    ////    ">");
 
     //
     // Find vector
@@ -2281,9 +2281,9 @@ void SoundController::PlayOneShotMultipleChoiceSound(
     float volume,
     bool isInterruptible)
 {
-    LogDebug("Sound: <",
-        static_cast<int>(soundType),
-        ">");
+    ////LogDebug("Sound: <",
+    ////    static_cast<int>(soundType),
+    ////    ">");
 
     //
     // Find vector
