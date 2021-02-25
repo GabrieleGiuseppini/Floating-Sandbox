@@ -241,9 +241,7 @@ bool Ship::RepairFromAttractor(
     // already stretched or compressed, generating an undesirable force impulse
     //
     // - Shipped 1.13 with 0.07
-    // TODOTEST
-    //float constexpr DisplacementTolerance = 0.06f;
-    float constexpr DisplacementTolerance = 0.065f;
+    float constexpr DisplacementTolerance = 0.06f;
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -269,6 +267,9 @@ bool Ship::RepairFromAttractor(
 
             // Do not consider the spring if the other endpoint has already taken
             // the role of attractor in this step
+            //
+            // Note: we allow a point to be an attractee multiple times, as that helps it move better
+            // into "multiple target places" at the same time
             if (mPoints.GetRepairState(otherEndpointIndex).LastAttractorRepairStepId != repairStepId)
             {
                 //
@@ -445,9 +446,6 @@ bool Ship::RepairFromAttractor(
                             || edges[1].cross(edges[2]) > 0.0f
                             || edges[2].cross(edges[0]) > 0.0f)
                         {
-                            ////if (!springWouldGenerateCCWTriangle)
-                            ////    LogMessage("TODOTEST: CCW Triangle Detection (", nearestCCWSpringIndex, "->", nearestCWSpringIndex, ")");
-
                             springWouldGenerateCCWTriangle = true;
                             break;
                         }
@@ -455,71 +453,12 @@ bool Ship::RepairFromAttractor(
                 }
                 else
                 {
-                    // TODOTEST: wrong: false positives
-                    //////
-                    ////// Traverse spring
-                    //////
-                    ////// Use the nearest springs as "the triangle"
-                    //////
-
-                    ////if (nearestCCWSpringIndex != nearestCWSpringIndex)
-                    ////{
-                    ////    vec2f vertexPositions[3];
-
-                    ////    // Edge A
-                    ////    vertexPositions[0] = mPoints.GetPosition(ccwSpringOtherEndpointIndex);
-
-                    ////    // Edge B
-                    ////    vertexPositions[1] = targetOtherEndpointPosition;
-
-                    ////    // Edge C
-                    ////    vertexPositions[2] = mPoints.GetPosition(cwSpringOtherEndpointIndex);
-
-                    ////    vec2f const edges[3]
-                    ////    {
-                    ////        vertexPositions[1] - vertexPositions[0],
-                    ////        vertexPositions[2] - vertexPositions[1],
-                    ////        vertexPositions[0] - vertexPositions[2]
-                    ////    };
-
-                    ////    if (edges[0].cross(edges[1]) > 0.0f
-                    ////        || edges[1].cross(edges[2]) > 0.0f
-                    ////        || edges[2].cross(edges[0]) > 0.0f)
-                    ////    {
-                    ////        LogMessage("TODOTEST: CCW TraverseSpring Triangle Detection (@pt=", otherEndpointIndex, ")");
-
-                    ////        springWouldGenerateCCWTriangle = true;
-                    ////    }
-                    ////}
-
-                    //
-                    // Traverse spring
-                    //
-                    // Check if spring to restore would be between the nearest ccw vector and the nearest cw vector
-                    //
-
+                    /* TODOTEST: quite useless, we've found - structures become CCW not at their immediate repair
                     if (nearestCCWSpringIndex != nearestCWSpringIndex)
                     {
                         vec2f const ccwVector = mPoints.GetPosition(ccwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex);
                         vec2f const cwVector = mPoints.GetPosition(cwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex);
                         vec2f const targetVector = targetOtherEndpointPosition - mPoints.GetPosition(pointIndex);
-
-                        /*
-                        if (targetVector.cross(ccwVector) >= 0.0f)
-                        {
-                            if (!(cwVector.cross(targetVector) >= 0.0f))
-                            {
-                                LogMessage("TODOTEST: TraverseSpring detection 1 at ", pointIndex, "->", otherEndpointIndex);
-                            }
-                        }
-                        else
-                        {
-                            if (!(cwVector.cross(targetVector) < 0.0f))
-                            {
-                                LogMessage("TODOTEST: TraverseSpring detection 2 at ", pointIndex, "->", otherEndpointIndex);
-                            }
-                        }
-                        */
 
                         if (nearestCCWSpringDeltaOctant + nearestCWSpringDeltaOctant <= 4)
                         {
@@ -529,7 +468,7 @@ bool Ship::RepairFromAttractor(
                             if (targetVector.cross(ccwVector) < 0.0f
                                 || cwVector.cross(targetVector) < 0.0f)
                             {
-                                LogMessage("TODOTEST: TraverseSpring detection 1 at ", pointIndex, "->", otherEndpointIndex);
+                                LogMessage("TODOTEST: TraverseSpring: detection 1 at ", pointIndex, "->", otherEndpointIndex);
                             }
                         }
                         else
@@ -540,10 +479,11 @@ bool Ship::RepairFromAttractor(
                             if (targetVector.cross(cwVector) >= 0.0f
                                 && ccwVector.cross(targetVector) >= 0.0)
                             {
-                                LogMessage("TODOTEST: TraverseSpring detection 2 at ", pointIndex, "->", otherEndpointIndex);
+                                LogMessage("TODOTEST: TraverseSpring: detection 2 at ", pointIndex, "->", otherEndpointIndex);
                             }
                         }
                     }
+                    */
                 }
 
                 if (springWouldGenerateCCWTriangle)

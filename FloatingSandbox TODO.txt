@@ -658,16 +658,12 @@ Render:
 							+ Increase seq num (skip) at each mouse down
 						+ Do
 				+ See why roles sometimes flip
-					+ Attractee from prev step becomes attractor					
-				= CCW check for traverse springs: 
-					= Determine if target pos is really between ccw and cw
-						- Disable creation after detection
-					- If works, see if could replace also ccw triangle check
-					- OLD:
-					- See if should replace CCW triangle checks with spring octant checks
-					- If, after attaching a point, that point is a vertex of a flipped (i.e. CCW) triangle:
-						- Move the point to the other side (rendering the triangle CW)				
-
+					+ Attractee from prev step becomes attractor
+				- Try to straighten out CCW structures
+					- If works, consider doing these which at the moment we can't do because of
+					  folded structures:
+						- Lower distance tolerance (e.g. 0.03 or lower), to prevent newly-repaired springs from breaking up immediately again
+						- Allow each particle to act as attractor only once per step
 				+ Larger radius: 4
 				+ Final velocity of restored particle is avg of all connected
 				- Test 2 repair settings extremes
