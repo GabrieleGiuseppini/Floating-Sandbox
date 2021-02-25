@@ -533,6 +533,10 @@ private:
     // Interaction Helpers
     /////////////////////////////////////////////////////////////////////////
 
+    bool IsSpringCrossed(
+        ElementIndex traverseSpringIndex,
+        ElementIndex endpointIndex);
+
     bool TryRepairAndPropagateFromPoint(
         ElementIndex startingPointIndex,
         vec2f const & targetPos,

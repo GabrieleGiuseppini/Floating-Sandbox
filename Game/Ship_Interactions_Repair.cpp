@@ -30,7 +30,43 @@ void Ship::RepairAt(
     ////mDebugMarker.ClearPointToPointArrows();
 
     //
-    // Pass 1: visit first all points that had been attractors in the previous step
+    // Pass 1: detect folded naked springs
+    //
+
+    for (auto const pointIndex : mPoints.RawShipPoints())
+    {
+        if (float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+            squareRadius <= squareSearchRadius)
+        {
+            for (auto const cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+            {
+                if (mSprings.GetSuperTriangles(cs.SpringIndex).empty())
+                {
+                    // This is a naked spring
+
+                    // TODOTEST
+                    ////// Check whether the spring is folded from both endpoints
+                    ////if (IsSpringCrossed(cs.SpringIndex, mSprings.GetEndpointAIndex(cs.SpringIndex))
+                    ////    && IsSpringCrossed(cs.SpringIndex, mSprings.GetEndpointBIndex(cs.SpringIndex)))
+                    ////{
+                    ////    // TODOHERE
+                    ////    LogMessage("Folded spring: ", mSprings.GetEndpointAIndex(cs.SpringIndex), "---", cs.SpringIndex, "-->", mSprings.GetEndpointBIndex(cs.SpringIndex));
+                    ////}
+                    // Check whether the spring is folded from both endpoints
+                    if (IsSpringCrossed(cs.SpringIndex, mSprings.GetEndpointAIndex(cs.SpringIndex))
+                        || IsSpringCrossed(cs.SpringIndex, mSprings.GetEndpointBIndex(cs.SpringIndex)))
+                    {
+                        // TODOHERE
+                        LogMessage("Folded spring: ", mSprings.GetEndpointAIndex(cs.SpringIndex), "---", cs.SpringIndex, "-->", mSprings.GetEndpointBIndex(cs.SpringIndex));
+                    }
+                }
+            }
+        }
+    }
+
+
+    //
+    // Pass 2: visit all points that had been attractors in the previous step
     //
     // This is to prevent attractors and attractees from flipping roles during a session;
     // an attractor will continue to be an attractor until it needs reparation
@@ -146,6 +182,115 @@ void Ship::RepairAt(
             }
         }
     }
+}
+
+bool Ship::IsSpringCrossed(
+    ElementIndex springIndex,
+    ElementIndex endpointIndex)
+{
+    // Find the theoretical nearest CCW and CW springs and, if there's two, make sure the
+    // spring is really in-between those two
+
+    if (mPoints.GetConnectedSprings(endpointIndex).ConnectedSprings.size() < 3)
+    {
+        return false;
+    }
+
+    //
+    // Find the nearest CCW and CW springs
+    //
+
+    // The angle of the spring wrt this point
+    // 0 = E, 1 = SE, ..., 7 = NE
+    Octant const factoryPointSpringOctant = mSprings.GetFactoryEndpointOctant(
+        springIndex,
+        endpointIndex);
+
+    int nearestCWSpringIndex = -1;
+    int nearestCWSpringDeltaOctant = std::numeric_limits<int>::max();
+    int nearestCCWSpringIndex = -1;
+    int nearestCCWSpringDeltaOctant = std::numeric_limits<int>::max();
+    for (auto const & cs : mPoints.GetConnectedSprings(endpointIndex).ConnectedSprings)
+    {
+        if (cs.SpringIndex != springIndex)
+        {
+            //
+            // CW
+            //
+
+            int cwDelta =
+                mSprings.GetFactoryEndpointOctant(cs.SpringIndex, endpointIndex)
+                - factoryPointSpringOctant;
+
+            if (cwDelta < 0)
+                cwDelta += 8;
+
+            if (cwDelta < nearestCWSpringDeltaOctant)
+            {
+                nearestCWSpringIndex = cs.SpringIndex;
+                nearestCWSpringDeltaOctant = cwDelta;
+            }
+
+            //
+            // CCW
+            //
+
+            assert(cwDelta > 0 && cwDelta < 8);
+            int const ccwDelta = 8 - cwDelta;
+            assert(ccwDelta > 0);
+
+            if (ccwDelta < nearestCCWSpringDeltaOctant)
+            {
+                nearestCCWSpringIndex = cs.SpringIndex;
+                nearestCCWSpringDeltaOctant = ccwDelta;
+            }
+        }
+    }
+
+    assert(nearestCWSpringIndex >= 0);
+    assert(nearestCWSpringDeltaOctant > 0);
+    assert(nearestCCWSpringIndex >= 0);
+    assert(nearestCCWSpringDeltaOctant > 0);
+    assert(nearestCWSpringIndex != nearestCCWSpringIndex);
+
+    ElementIndex const ccwSpringOtherEndpointIndex =
+        mSprings.GetOtherEndpointIndex(nearestCCWSpringIndex, endpointIndex);
+
+    ElementIndex const cwSpringOtherEndpointIndex =
+        mSprings.GetOtherEndpointIndex(nearestCWSpringIndex, endpointIndex);
+
+    // Check whether we indeed have two different springs around this one
+    if (nearestCWSpringIndex != nearestCCWSpringIndex)
+    {
+        vec2f const ccwVector = mPoints.GetPosition(ccwSpringOtherEndpointIndex) - mPoints.GetPosition(endpointIndex);
+        vec2f const cwVector = mPoints.GetPosition(cwSpringOtherEndpointIndex) - mPoints.GetPosition(endpointIndex);
+        vec2f const springVector = mPoints.GetPosition(mSprings.GetOtherEndpointIndex(springIndex, endpointIndex)) - mPoints.GetPosition(endpointIndex);
+
+        if (nearestCCWSpringDeltaOctant + nearestCWSpringDeltaOctant <= 4)
+        {
+            // Angle between ccw and cw is <= 180
+
+            // Expect: CCW->V->CW
+            if (springVector.cross(ccwVector) < 0.0f
+                || cwVector.cross(springVector) < 0.0f)
+            {
+                return true;
+            }
+        }
+        else
+        {
+            // Angle between ccw and cw is > 180
+
+            // Expect: ! CW->V->CCW
+            if (springVector.cross(cwVector) >= 0.0f
+                && ccwVector.cross(springVector) >= 0.0)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 bool Ship::TryRepairAndPropagateFromPoint(
