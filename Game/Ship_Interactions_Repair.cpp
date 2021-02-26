@@ -30,7 +30,7 @@ void Ship::RepairAt(
     ////mDebugMarker.ClearPointToPointArrows();
 
     //
-    // Pass 1: detect folded naked springs
+    // Pass 1: straighten folded naked springs
     //
 
     for (auto const pointIndex : mPoints.RawShipPoints())
@@ -163,6 +163,10 @@ void Ship::RepairAt(
 
 void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
 {
+    //
+    // Here we detect P (connected to R and L by naked springs) being on the
+    // wrong side of RL, and flip it
+    //
     //     P
     //     O
     //    / \
@@ -170,6 +174,7 @@ void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
     //  /     \
     // O       O
     // R       L
+    //
 
     auto const & connectedSprings = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings;
 
@@ -231,121 +236,9 @@ void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
             // Reflect P onto the other side of the RL vector: RP' = PR - RL * 2 * (PR dot RL) / |RL|^2
             vec2f const rlVector = lPosition - rPosition;
             vec2f const newPPosition = rPosition + prVector - rlVector * 2.0f * (prVector.dot(rlVector)) / rlVector.squareLength();
-
-            // TODOHERE
-            LogMessage("Wrong arc: ", mSprings.GetOtherEndpointIndex(prSpring, pointIndex), "---", prSpring, "--> ", pointIndex, " <--", plSpring, "---", mSprings.GetOtherEndpointIndex(plSpring, pointIndex));
-            LogMessage("Moving ", pointIndex, " from ", pPosition.toString(), " to ", newPPosition.toString(), " (L@", lPosition.toString(), " R@", rPosition.toString(), ")");
-
-            // ROTFL - TODOHERE
             mPoints.SetPosition(pointIndex, newPPosition);
         }
     }
-
-    // TODOOLD
-    /*
-    //
-    // Find the nearest CCW and CW springs
-    //
-
-    // The angle of the spring wrt this point
-    // 0 = E, 1 = SE, ..., 7 = NE
-    Octant const factoryPointSpringOctant = mSprings.GetFactoryEndpointOctant(
-        springIndex,
-        endpointIndex);
-
-    int nearestCWSpringIndex = -1;
-    int nearestCWSpringDeltaOctant = std::numeric_limits<int>::max();
-    int nearestCCWSpringIndex = -1;
-    int nearestCCWSpringDeltaOctant = std::numeric_limits<int>::max();
-    for (auto const & cs : mPoints.GetConnectedSprings(endpointIndex).ConnectedSprings)
-    {
-        if (cs.SpringIndex != springIndex)
-        {
-            //
-            // CW
-            //
-
-            int cwDelta =
-                mSprings.GetFactoryEndpointOctant(cs.SpringIndex, endpointIndex)
-                - factoryPointSpringOctant;
-
-            if (cwDelta < 0)
-                cwDelta += 8;
-
-            if (cwDelta < nearestCWSpringDeltaOctant)
-            {
-                nearestCWSpringIndex = cs.SpringIndex;
-                nearestCWSpringDeltaOctant = cwDelta;
-            }
-
-            //
-            // CCW
-            //
-
-            assert(cwDelta > 0 && cwDelta < 8);
-            int const ccwDelta = 8 - cwDelta;
-            assert(ccwDelta > 0);
-
-            if (ccwDelta < nearestCCWSpringDeltaOctant)
-            {
-                nearestCCWSpringIndex = cs.SpringIndex;
-                nearestCCWSpringDeltaOctant = ccwDelta;
-            }
-        }
-    }
-
-    assert(nearestCWSpringIndex >= 0);
-    assert(nearestCWSpringDeltaOctant > 0);
-    assert(nearestCCWSpringIndex >= 0);
-    assert(nearestCCWSpringDeltaOctant > 0);
-    assert(nearestCWSpringIndex != nearestCCWSpringIndex);
-
-    ElementIndex const ccwSpringOtherEndpointIndex =
-        mSprings.GetOtherEndpointIndex(nearestCCWSpringIndex, endpointIndex);
-
-    ElementIndex const cwSpringOtherEndpointIndex =
-        mSprings.GetOtherEndpointIndex(nearestCWSpringIndex, endpointIndex);
-
-    // Check whether we indeed have two different springs around this one
-    if (nearestCWSpringIndex != nearestCCWSpringIndex)
-    {
-        vec2f const ccwVector = mPoints.GetPosition(ccwSpringOtherEndpointIndex) - mPoints.GetPosition(endpointIndex);
-        vec2f const cwVector = mPoints.GetPosition(cwSpringOtherEndpointIndex) - mPoints.GetPosition(endpointIndex);
-        vec2f const springVector = mPoints.GetPosition(mSprings.GetOtherEndpointIndex(springIndex, endpointIndex)) - mPoints.GetPosition(endpointIndex);
-
-        if (nearestCCWSpringDeltaOctant + nearestCWSpringDeltaOctant <= 4)
-        {
-            // Angle between ccw and cw is <= 180
-
-            // Expect: CCW->V->CW
-            if (springVector.cross(ccwVector) >= 0.0f
-                && cwVector.cross(springVector) >= 0.0f)
-            {
-                // Fine
-                return;
-            }
-        }
-        else
-        {
-            // Angle between ccw and cw is > 180
-
-            // Expect: ! CW->V->CCW
-            if (springVector.cross(cwVector) < 0.0f
-                || ccwVector.cross(springVector) < 0.0f)
-            {
-                // Fine
-                return;
-            }
-        }
-    }
-
-    //
-    // Move point to in-between CCW and CW
-    //
-
-    // TODOHERE
-    LogMessage("Crossed spring: ", mSprings.GetEndpointAIndex(springIndex), "---", springIndex, "-->", mSprings.GetEndpointBIndex(springIndex));
-    */
 }
 
 bool Ship::TryRepairAndPropagateFromPoint(
@@ -610,80 +503,39 @@ bool Ship::RepairFromAttractor(
 
                 bool springWouldGenerateCCWTriangle = false;
 
-                if (!mSprings.GetFactorySuperTriangles(fcs.SpringIndex).empty())
+                for (auto const testTriangleIndex : mSprings.GetFactorySuperTriangles(fcs.SpringIndex))
                 {
-                    //
-                    // Spring with triangles
-                    //
+                    vec2f vertexPositions[3];
 
-                    for (auto const testTriangleIndex : mSprings.GetFactorySuperTriangles(fcs.SpringIndex))
+                    // Edge A
+                    vertexPositions[0] = (mTriangles.GetPointAIndex(testTriangleIndex) == otherEndpointIndex)
+                        ? targetOtherEndpointPosition
+                        : mPoints.GetPosition(mTriangles.GetPointAIndex(testTriangleIndex));
+
+                    // Edge B
+                    vertexPositions[1] = (mTriangles.GetPointBIndex(testTriangleIndex) == otherEndpointIndex)
+                        ? targetOtherEndpointPosition
+                        : mPoints.GetPosition(mTriangles.GetPointBIndex(testTriangleIndex));
+
+                    // Edge C
+                    vertexPositions[2] = (mTriangles.GetPointCIndex(testTriangleIndex) == otherEndpointIndex)
+                        ? targetOtherEndpointPosition
+                        : mPoints.GetPosition(mTriangles.GetPointCIndex(testTriangleIndex));
+
+                    vec2f const edges[3]
                     {
-                        vec2f vertexPositions[3];
+                        vertexPositions[1] - vertexPositions[0],
+                        vertexPositions[2] - vertexPositions[1],
+                        vertexPositions[0] - vertexPositions[2]
+                    };
 
-                        // Edge A
-                        vertexPositions[0] = (mTriangles.GetPointAIndex(testTriangleIndex) == otherEndpointIndex)
-                            ? targetOtherEndpointPosition
-                            : mPoints.GetPosition(mTriangles.GetPointAIndex(testTriangleIndex));
-
-                        // Edge B
-                        vertexPositions[1] = (mTriangles.GetPointBIndex(testTriangleIndex) == otherEndpointIndex)
-                            ? targetOtherEndpointPosition
-                            : mPoints.GetPosition(mTriangles.GetPointBIndex(testTriangleIndex));
-
-                        // Edge C
-                        vertexPositions[2] = (mTriangles.GetPointCIndex(testTriangleIndex) == otherEndpointIndex)
-                            ? targetOtherEndpointPosition
-                            : mPoints.GetPosition(mTriangles.GetPointCIndex(testTriangleIndex));
-
-                        vec2f const edges[3]
-                        {
-                            vertexPositions[1] - vertexPositions[0],
-                            vertexPositions[2] - vertexPositions[1],
-                            vertexPositions[0] - vertexPositions[2]
-                        };
-
-                        if (edges[0].cross(edges[1]) > 0.0f
-                            || edges[1].cross(edges[2]) > 0.0f
-                            || edges[2].cross(edges[0]) > 0.0f)
-                        {
-                            springWouldGenerateCCWTriangle = true;
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    /* TODOTEST: quite useless, we've found - structures become CCW not at their immediate repair
-                    if (nearestCCWSpringIndex != nearestCWSpringIndex)
+                    if (edges[0].cross(edges[1]) > 0.0f
+                        || edges[1].cross(edges[2]) > 0.0f
+                        || edges[2].cross(edges[0]) > 0.0f)
                     {
-                        vec2f const ccwVector = mPoints.GetPosition(ccwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex);
-                        vec2f const cwVector = mPoints.GetPosition(cwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex);
-                        vec2f const targetVector = targetOtherEndpointPosition - mPoints.GetPosition(pointIndex);
-
-                        if (nearestCCWSpringDeltaOctant + nearestCWSpringDeltaOctant <= 4)
-                        {
-                            // Angle between ccw and cw is <= 180
-
-                            // Expect: CCW->V->CW
-                            if (targetVector.cross(ccwVector) < 0.0f
-                                || cwVector.cross(targetVector) < 0.0f)
-                            {
-                                LogMessage("TODOTEST: TraverseSpring: detection 1 at ", pointIndex, "->", otherEndpointIndex);
-                            }
-                        }
-                        else
-                        {
-                            // Angle between ccw and cw is > 180
-
-                            // Expect: ! CW->V->CCW
-                            if (targetVector.cross(cwVector) >= 0.0f
-                                && ccwVector.cross(targetVector) >= 0.0)
-                            {
-                                LogMessage("TODOTEST: TraverseSpring: detection 2 at ", pointIndex, "->", otherEndpointIndex);
-                            }
-                        }
+                        springWouldGenerateCCWTriangle = true;
+                        break;
                     }
-                    */
                 }
 
                 if (springWouldGenerateCCWTriangle)
