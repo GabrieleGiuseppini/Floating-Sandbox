@@ -495,18 +495,20 @@ bool Ship::RepairFromAttractor(
                 // This point has taken over the role of attractee in this step
                 //
 
-                // Update its count of consecutive steps as an attractee, if this is its first time as an actractee
-                // in this step
+                // Check if first time it became an actractee in this step
                 if (mPoints.GetRepairState(otherEndpointIndex).LastAttracteeRepairStepId != repairStepId)
                 {
+                    // Update its count of consecutive steps as an attractee
                     if (mPoints.GetRepairState(otherEndpointIndex).LastAttracteeRepairStepId == repairStepId.Previous())
-                        mPoints.GetRepairState(otherEndpointIndex).CurrentAttracteeConsecutiveNumberOfSteps++;
+                        ++mPoints.GetRepairState(otherEndpointIndex).CurrentAttracteeConsecutiveNumberOfSteps;
                     else
                         mPoints.GetRepairState(otherEndpointIndex).CurrentAttracteeConsecutiveNumberOfSteps = 1;
+
+                    // Remember it took on this role now
+                    mPoints.GetRepairState(otherEndpointIndex).LastAttracteeRepairStepId = repairStepId;
                 }
 
-                // Remember the role
-                mPoints.GetRepairState(otherEndpointIndex).LastAttracteeRepairStepId = repairStepId;
+
 
                 ////////////////////////////////////////////////////////
                 //
