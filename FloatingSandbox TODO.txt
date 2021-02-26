@@ -662,7 +662,7 @@ Render:
 				= Try to straighten out CCW structures
 					= Idea 1: as a separate, initial step, before repairing: for each two-now_naked-spring arc, make sure two springs are in right angle wrt central point
 					- Idea 2: expand idea 1: as a pre-step: for each in-radius point: for each naked spring: make sure it's in right angle
-					- If works, consider doing these which at the moment we can't do because of
+					- If works, consider doing trying these which at the moment we can't do because of
 					  folded structures:
 						- Remove role-taking: allow attractor to take on role of attractee, and viceversa
 						- Lower distance tolerance (e.g. 0.03 or lower), to prevent newly-repaired springs from breaking up immediately again

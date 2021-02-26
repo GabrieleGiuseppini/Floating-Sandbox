@@ -572,12 +572,25 @@ bool Ship::RepairFromAttractor(
                     // ...move them closer by moving the other endpoint towards its target position
                     //
 
-                    // Smoothing of the movement, based on how long this point has been an attracted
-                    // during the current session
-                    float const smoothing = SmoothStep(
-                        0.0f,
-                        (15.0f * 64.0f) / gameParameters.RepairSpeedAdjustment, // Reach max in 15 simulated seconds (at 64 fps)
-                        static_cast<float>(mPoints.GetRepairState(otherEndpointIndex).CurrentAttracteeConsecutiveNumberOfSteps));
+                    // Smooth movement:
+                    // * Lonely particle: fast when far, slowing when getting closer
+                    // * Connected particle: based on how long this point has been an attracted during
+                    //   the current session - so to force detachment when particle is entangled with
+                    //   something heavy
+                    float movementSmoothing;
+                    if (mPoints.GetConnectedSprings(otherEndpointIndex).ConnectedSprings.empty())
+                    {
+                        movementSmoothing = SmoothStep(0.0f, 20.0f, displacementMagnitude)
+                            * gameParameters.RepairSpeedAdjustment
+                            * 0.15f;
+                    }
+                    else
+                    {
+                        movementSmoothing = SmoothStep(
+                            0.0f,
+                            (15.0f * 64.0f) / gameParameters.RepairSpeedAdjustment, // Reach max in 15 simulated seconds (at 64 fps)
+                            static_cast<float>(mPoints.GetRepairState(otherEndpointIndex).CurrentAttracteeConsecutiveNumberOfSteps));
+                    }
 
                     // Movement direction (positive towards this point)
                     vec2f const movementDir = displacementVector.normalise(displacementMagnitude);
