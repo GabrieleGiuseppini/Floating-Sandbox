@@ -165,10 +165,25 @@ void Ship::RepairAt(
 
 void Ship::StraightenOneSpringChains(ElementIndex pointIndex)
 {
+    //
+    // Here we detect (currently) naked dead-end springs and forcefully move the lonely
+    // opposite endpoint where it should be wrt the other springs attached to
+    // this point.
+    //
+    //             O
+    //            /
+    //           /
+    //          /
+    // -   -   P   -   -
+    //         |
+    //         |
+    //         |
+    //         |
+
     auto const & connectedSprings = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings;
     if (connectedSprings.size() >= 2)
     {
-        // Visit naked springs not connected to anything else
+        // Visit (currently) naked springs not connected to anything else
         for (auto const & nakedCs : connectedSprings)
         {
             ElementIndex const otherEndpointIndex = mSprings.GetOtherEndpointIndex(nakedCs.SpringIndex, pointIndex);
@@ -179,9 +194,8 @@ void Ship::StraightenOneSpringChains(ElementIndex pointIndex)
                 // between CW and CCW
 
                 //
-                // Move other endpoint where it should be wrt the CCW spring
+                // Move other endpoint where it should be wrt the (arbitrary) CCW spring
                 // nearest to this spring
-                // (CCW arbitrarily)
                 //
 
                 // The angle of the spring wrt this point
@@ -231,14 +245,14 @@ void Ship::StraightenOneSpringChains(ElementIndex pointIndex)
 
                 float const nearestCCWSpringWorldAngle = vec2f(1.0f, 0.0f).angleCw(mPoints.GetPosition(ccwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex));
 
-                // In world coordinates, CW, 0 at E
-                float const targetWorldAngleCw =
-                    nearestCCWSpringWorldAngle
-                    + 2.0f * Pi<float> / 8.0f * static_cast<float>(nearestCCWSpringDeltaOctant);
-
                 //
                 // Calculate target position for the other endpoint
                 //
+
+                // Target angle, in world coordinates, CW, 0 at E
+                float const targetWorldAngleCw =
+                    nearestCCWSpringWorldAngle
+                    + 2.0f * Pi<float> / 8.0f * static_cast<float>(nearestCCWSpringDeltaOctant);
 
                 vec2f const targetOtherEndpointPosition =
                     mPoints.GetPosition(pointIndex)
@@ -261,7 +275,8 @@ void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
 {
     //
     // Here we detect P (connected to R and L by naked springs) being on the
-    // wrong side of RL, and flip it
+    // wrong side of RL, and flip it. We do this to supplement the CCW triangle
+    // detection which won't work for traverse spring.
     //
     //     P
     //     O
