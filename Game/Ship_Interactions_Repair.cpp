@@ -257,7 +257,7 @@ bool Ship::TryRepairAndPropagateFromPoint(
     //  - and has not been an attractee in the *previous* step (so to prevent
     //    sudden role flipping)
     //  - and needs reparation
-    //  - and is not orphaned (we realy on existing springs to repair)
+    //  - and is not orphaned (we rely on existing springs in order to repair)
     //
     // After being an attractor, do a breadth-first visit from the point propagating
     // repair from directly-connected candidates
@@ -275,7 +275,7 @@ bool Ship::TryRepairAndPropagateFromPoint(
 
         if (float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
             squareRadius <= squareSearchRadius
-            && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0)
+            && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0) // Not orphaned
         {
             //
             // Check if this point meets the remaining conditions for being an attractor
@@ -284,7 +284,7 @@ bool Ship::TryRepairAndPropagateFromPoint(
             if (mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId != repairStepId
                 && mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId
                 && mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId.Previous()
-                && mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size() > mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size())
+                && mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size() > mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size()) // Needs reparation
             {
                 //
                 // This point has now taken the role of an attractor
