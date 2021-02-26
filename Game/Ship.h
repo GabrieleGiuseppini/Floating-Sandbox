@@ -533,9 +533,7 @@ private:
     // Interaction Helpers
     /////////////////////////////////////////////////////////////////////////
 
-    bool IsSpringCrossed(
-        ElementIndex traverseSpringIndex,
-        ElementIndex endpointIndex);
+    void StraightenTwoSpringChains(ElementIndex pointIndex);
 
     bool TryRepairAndPropagateFromPoint(
         ElementIndex startingPointIndex,

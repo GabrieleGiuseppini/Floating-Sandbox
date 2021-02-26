@@ -38,32 +38,9 @@ void Ship::RepairAt(
         if (float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
             squareRadius <= squareSearchRadius)
         {
-            for (auto const cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
-            {
-                if (mSprings.GetSuperTriangles(cs.SpringIndex).empty())
-                {
-                    // This is a naked spring
-
-                    // TODOTEST
-                    ////// Check whether the spring is folded from both endpoints
-                    ////if (IsSpringCrossed(cs.SpringIndex, mSprings.GetEndpointAIndex(cs.SpringIndex))
-                    ////    && IsSpringCrossed(cs.SpringIndex, mSprings.GetEndpointBIndex(cs.SpringIndex)))
-                    ////{
-                    ////    // TODOHERE
-                    ////    LogMessage("Folded spring: ", mSprings.GetEndpointAIndex(cs.SpringIndex), "---", cs.SpringIndex, "-->", mSprings.GetEndpointBIndex(cs.SpringIndex));
-                    ////}
-                    // Check whether the spring is folded from both endpoints
-                    if (IsSpringCrossed(cs.SpringIndex, mSprings.GetEndpointAIndex(cs.SpringIndex))
-                        || IsSpringCrossed(cs.SpringIndex, mSprings.GetEndpointBIndex(cs.SpringIndex)))
-                    {
-                        // TODOHERE
-                        LogMessage("Folded spring: ", mSprings.GetEndpointAIndex(cs.SpringIndex), "---", cs.SpringIndex, "-->", mSprings.GetEndpointBIndex(cs.SpringIndex));
-                    }
-                }
-            }
+            StraightenTwoSpringChains(pointIndex);
         }
     }
-
 
     //
     // Pass 2: visit all points that had been attractors in the previous step
@@ -184,18 +161,88 @@ void Ship::RepairAt(
     }
 }
 
-bool Ship::IsSpringCrossed(
-    ElementIndex springIndex,
-    ElementIndex endpointIndex)
+void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
 {
-    // Find the theoretical nearest CCW and CW springs and, if there's two, make sure the
-    // spring is really in-between those two
+    //     P
+    //     O
+    //    / \
+    //   /   \
+    //  /     \
+    // O       O
+    // R       L
 
-    if (mPoints.GetConnectedSprings(endpointIndex).ConnectedSprings.size() < 3)
+    auto const & connectedSprings = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings;
+
+    if (connectedSprings.size() == 2
+        && mSprings.GetSuperTriangles(connectedSprings[0].SpringIndex).empty()  // Naked at this moment
+        && mSprings.GetSuperTriangles(connectedSprings[1].SpringIndex).empty()) // Naked at this moment
     {
-        return false;
+        // The angles of the springs wrt P
+        // 0 = E, 1 = SE, ..., 7 = NE
+
+        Octant const spring0Octant = mSprings.GetFactoryEndpointOctant(
+            connectedSprings[0].SpringIndex,
+            pointIndex);
+
+        Octant const spring1Octant = mSprings.GetFactoryEndpointOctant(
+            connectedSprings[1].SpringIndex,
+            pointIndex);
+
+        ElementIndex prSpring, plSpring;
+        Octant prOctant, plOctant;
+
+        if (spring1Octant == spring0Octant + 2
+            || (spring1Octant < 2 && spring1Octant == spring0Octant + 2 - 8))
+        {
+            prSpring = connectedSprings[1].SpringIndex;
+            prOctant = spring1Octant;
+            plSpring = connectedSprings[0].SpringIndex;
+            plOctant = spring0Octant;
+        }
+        else if (spring0Octant == spring1Octant + 2
+            || (spring0Octant < 2 && spring0Octant == spring1Octant + 2 - 8))
+        {
+            prSpring = connectedSprings[0].SpringIndex;
+            prOctant = spring0Octant;
+            plSpring = connectedSprings[1].SpringIndex;
+            plOctant = spring1Octant;
+        }
+        else
+        {
+            // Not under our jurisdiction
+            // TODOHERE: do we really need to bail out here?
+            return;
+        }
+
+        // Check if PR is still at the right or PL
+
+        vec2f const & pPosition = mPoints.GetPosition(pointIndex);
+        vec2f const & lPosition = mPoints.GetPosition(mSprings.GetOtherEndpointIndex(plSpring, pointIndex));
+        vec2f const & rPosition = mPoints.GetPosition(mSprings.GetOtherEndpointIndex(prSpring, pointIndex));
+
+        vec2f const prVector = rPosition - pPosition;
+        vec2f const plVector = lPosition - pPosition;
+        if (prVector.cross(plVector) < 0.0f)
+        {
+            //
+            // This arc needs to be straightened
+            //
+
+            // Reflect P onto the other side of the RL vector: RP' = PR - RL * 2 * (PR dot RL) / |RL|^2
+            vec2f const rlVector = lPosition - rPosition;
+            vec2f const newPPosition = rPosition + prVector - rlVector * 2.0f * (prVector.dot(rlVector)) / rlVector.squareLength();
+
+            // TODOHERE
+            LogMessage("Wrong arc: ", mSprings.GetOtherEndpointIndex(prSpring, pointIndex), "---", prSpring, "--> ", pointIndex, " <--", plSpring, "---", mSprings.GetOtherEndpointIndex(plSpring, pointIndex));
+            LogMessage("Moving ", pointIndex, " from ", pPosition.toString(), " to ", newPPosition.toString(), " (L@", lPosition.toString(), " R@", rPosition.toString(), ")");
+
+            // ROTFL - TODOHERE
+            mPoints.SetPosition(pointIndex, newPPosition);
+        }
     }
 
+    // TODOOLD
+    /*
     //
     // Find the nearest CCW and CW springs
     //
@@ -271,10 +318,11 @@ bool Ship::IsSpringCrossed(
             // Angle between ccw and cw is <= 180
 
             // Expect: CCW->V->CW
-            if (springVector.cross(ccwVector) < 0.0f
-                || cwVector.cross(springVector) < 0.0f)
+            if (springVector.cross(ccwVector) >= 0.0f
+                && cwVector.cross(springVector) >= 0.0f)
             {
-                return true;
+                // Fine
+                return;
             }
         }
         else
@@ -282,15 +330,22 @@ bool Ship::IsSpringCrossed(
             // Angle between ccw and cw is > 180
 
             // Expect: ! CW->V->CCW
-            if (springVector.cross(cwVector) >= 0.0f
-                && ccwVector.cross(springVector) >= 0.0)
+            if (springVector.cross(cwVector) < 0.0f
+                || ccwVector.cross(springVector) < 0.0f)
             {
-                return true;
+                // Fine
+                return;
             }
         }
     }
 
-    return false;
+    //
+    // Move point to in-between CCW and CW
+    //
+
+    // TODOHERE
+    LogMessage("Crossed spring: ", mSprings.GetEndpointAIndex(springIndex), "---", springIndex, "-->", mSprings.GetEndpointBIndex(springIndex));
+    */
 }
 
 bool Ship::TryRepairAndPropagateFromPoint(
