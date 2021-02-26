@@ -931,7 +931,7 @@ void Ship::ApplyWorldForces(
             // Max drag force magnitude: m * (V dot Nn) / dt
             float const maxDragForceMagnitude =
                 mPoints.GetMass(pointIndex) * velocityMagnitudeAlongNormal
-                / gameParameters.SimulationStepTimeDuration<float>;
+                / GameParameters::SimulationStepTimeDuration<float>;
 
             // Get point depth (positive at greater depths, negative over-water)
             float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(pointPosition.x);
