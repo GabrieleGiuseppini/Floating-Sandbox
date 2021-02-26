@@ -589,7 +589,7 @@ public:
 
     void OnPhysicsProbeReading(
         vec2f const & velocity,
-        float const temperature)
+        float const temperature) override
     {
         for (auto sink : mGenericSinks)
         {
