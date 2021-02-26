@@ -751,7 +751,7 @@ bool Ship::RepairFromAttractor(
                     assert(movementMagnitude < displacementMagnitude);
                     displacementMagnitude -= movementMagnitude;
 
-                    // Impart some non-linear inertia (smaller at higher displacements),
+                    // Impart some non-linear inertia (smaller at higher displacements, higher at very low displacements),
                     // retaining a bit of the previous velocity
                     auto const displacementVelocity =
                         movementDir
@@ -759,9 +759,10 @@ bool Ship::RepairFromAttractor(
                         * std::pow(std::abs(movementMagnitude), 0.2f)
                         / GameParameters::SimulationStepTimeDuration<float>
                         * 0.5f;
+                    float constexpr InertialFraction = 0.65f;
                     mPoints.SetVelocity(otherEndpointIndex,
-                        (mPoints.GetVelocity(otherEndpointIndex) * 0.35f)
-                        + (displacementVelocity * 0.65f));
+                        (mPoints.GetVelocity(otherEndpointIndex) * (1.0f - InertialFraction))
+                        + (displacementVelocity * InertialFraction));
 
                     // Remember that we've acted on the other endpoint
                     hasOtherEndpointPointBeenMoved = true;
