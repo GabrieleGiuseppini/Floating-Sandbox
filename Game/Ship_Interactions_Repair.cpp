@@ -751,7 +751,6 @@ bool Ship::RepairFromAttractor(
 
                     // Impart some non-linear inertia (smaller at higher displacements),
                     // retaining a bit of the previous velocity
-                    // (note: last one that pulls this point wins)
                     auto const displacementVelocity =
                         movementDir
                         * ((movementMagnitude < 0.0f) ? -1.0f : 1.0f)
