@@ -30,7 +30,7 @@ void Ship::RepairAt(
     ////mDebugMarker.ClearPointToPointArrows();
 
     //
-    // Pass 1: straighten folded naked springs
+    // Pass 1: straighten one-spring and two-spring naked springs
     //
 
     for (auto const pointIndex : mPoints.RawShipPoints())
@@ -38,6 +38,8 @@ void Ship::RepairAt(
         if (float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
             squareRadius <= squareSearchRadius)
         {
+            StraightenOneSpringChains(pointIndex);
+
             StraightenTwoSpringChains(pointIndex);
         }
     }
@@ -134,7 +136,7 @@ void Ship::RepairAt(
             }
 
             // b) Visit all springs, trying to restore their rest lenghts
-            for (auto const cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+            for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
             {
                 if (mSprings.GetRestLength(cs.SpringIndex) != mSprings.GetFactoryRestLength(cs.SpringIndex))
                 {
@@ -156,6 +158,100 @@ void Ship::RepairAt(
                         cs.SpringIndex,
                         mPoints);
                 }
+            }
+        }
+    }
+}
+
+void Ship::StraightenOneSpringChains(ElementIndex pointIndex)
+{
+    auto const & connectedSprings = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings;
+    if (connectedSprings.size() >= 2)
+    {
+        // Visit naked springs not connected to anything else
+        for (auto const & nakedCs : connectedSprings)
+        {
+            ElementIndex const otherEndpointIndex = mSprings.GetOtherEndpointIndex(nakedCs.SpringIndex, pointIndex);
+            if (mSprings.GetSuperTriangles(nakedCs.SpringIndex).empty() // Naked
+                && mPoints.GetConnectedSprings(otherEndpointIndex).ConnectedSprings.size() == 1) // Other endpoint only has this naked spring
+            {
+                // TODOTEST: first we try with CCW only, then might want to try with interpolation
+                // between CW and CCW
+
+                //
+                // Move other endpoint where it should be wrt the CCW spring
+                // nearest to this spring
+                // (CCW arbitrarily)
+                //
+
+                // The angle of the spring wrt this point
+                // 0 = E, 1 = SE, ..., 7 = NE
+                Octant const factoryPointSpringOctant = mSprings.GetFactoryEndpointOctant(
+                    nakedCs.SpringIndex,
+                    pointIndex);
+
+                //
+                // Find nearest CCW spring
+                //
+
+                int nearestCCWSpringIndex = -1;
+                int nearestCCWSpringDeltaOctant = std::numeric_limits<int>::max();
+                for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+                {
+                    if (cs.SpringIndex != nakedCs.SpringIndex)
+                    {
+                        int cwDelta =
+                            mSprings.GetFactoryEndpointOctant(cs.SpringIndex, pointIndex)
+                            - factoryPointSpringOctant;
+
+                        if (cwDelta < 0)
+                            cwDelta += 8;
+
+                        assert(cwDelta > 0 && cwDelta < 8);
+                        int ccwDelta = 8 - cwDelta;
+                        assert(ccwDelta > 0);
+
+                        if (ccwDelta < nearestCCWSpringDeltaOctant)
+                        {
+                            nearestCCWSpringIndex = cs.SpringIndex;
+                            nearestCCWSpringDeltaOctant = ccwDelta;
+                        }
+                    }
+                }
+
+                assert(nearestCCWSpringIndex >= 0);
+                assert(nearestCCWSpringDeltaOctant > 0);
+
+                //
+                // Calculate this spring's world angle wrt nearest CCW
+                //
+
+                ElementIndex const ccwSpringOtherEndpointIndex =
+                    mSprings.GetOtherEndpointIndex(nearestCCWSpringIndex, pointIndex);
+
+                float const nearestCCWSpringWorldAngle = vec2f(1.0f, 0.0f).angleCw(mPoints.GetPosition(ccwSpringOtherEndpointIndex) - mPoints.GetPosition(pointIndex));
+
+                // In world coordinates, CW, 0 at E
+                float const targetWorldAngleCw =
+                    nearestCCWSpringWorldAngle
+                    + 2.0f * Pi<float> / 8.0f * static_cast<float>(nearestCCWSpringDeltaOctant);
+
+                //
+                // Calculate target position for the other endpoint
+                //
+
+                vec2f const targetOtherEndpointPosition =
+                    mPoints.GetPosition(pointIndex)
+                    + vec2f::fromPolar(
+                        (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).length(),
+                        targetWorldAngleCw);
+
+                //
+                // Move the other endpoint
+                //
+
+                // TODOHERE: world bounds
+                mPoints.SetPosition(otherEndpointIndex, targetOtherEndpointPosition);
             }
         }
     }
@@ -236,6 +332,9 @@ void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
             // Reflect P onto the other side of the RL vector: RP' = PR - RL * 2 * (PR dot RL) / |RL|^2
             vec2f const rlVector = lPosition - rPosition;
             vec2f const newPPosition = rPosition + prVector - rlVector * 2.0f * (prVector.dot(rlVector)) / rlVector.squareLength();
+
+            // Set position
+            // TODOHERE: world bounds
             mPoints.SetPosition(pointIndex, newPPosition);
         }
     }
@@ -309,7 +408,7 @@ bool Ship::TryRepairAndPropagateFromPoint(
             // Propagate to all of the no-yet-visited immediately-connected points
             //
 
-            for (auto const cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+            for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
             {
                 if (mPoints.GetRepairState(cs.OtherEndpointIndex).CurrentAttractorPropagationVisitStepId != repairStepId)
                 {

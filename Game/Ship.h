@@ -533,6 +533,8 @@ private:
     // Interaction Helpers
     /////////////////////////////////////////////////////////////////////////
 
+    void StraightenOneSpringChains(ElementIndex pointIndex);
+
     void StraightenTwoSpringChains(ElementIndex pointIndex);
 
     bool TryRepairAndPropagateFromPoint(
