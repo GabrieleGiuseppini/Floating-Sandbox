@@ -266,43 +266,55 @@ bool Ship::TryRepairAndPropagateFromPoint(
 
     for (ElementIndex pointIndex = startingPointIndex; ;)
     {
+        // Mark point as visited
+        mPoints.GetRepairState(pointIndex).CurrentAttractorPropagationVisitStepId = repairStepId;
+
         //
-        // Check if this point meets all the conditions for being an attractor
+        // Check if this point meets the conditions to propagate
         //
 
         if (float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
             squareRadius <= squareSearchRadius
-            && mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId != repairStepId
-            && mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId
-            && mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId.Previous()
-            && mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size() > mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size()
             && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0)
         {
             //
-            // This point has now taken the role of an attractor
+            // Check if this point meets the remaining conditions for being an attractor
             //
 
-            // Calculate repair strength (1.0 at center and zero at border, fourth power)
-            float const repairStrength =
-                (1.0f - (squareRadius / squareSearchRadius) * (squareRadius / squareSearchRadius))
-                * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+            if (mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId != repairStepId
+                && mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId
+                && mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId.Previous()
+                && mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size() > mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size())
+            {
+                //
+                // This point has now taken the role of an attractor
+                //
 
-            // Repair from this point
-            bool const hasRepaired = RepairFromAttractor(
-                pointIndex,
-                repairStrength,
-                repairStepId,
-                gameParameters);
+                // Calculate repair strength (1.0 at center and zero at border, fourth power)
+                float const repairStrength =
+                    (1.0f - (squareRadius / squareSearchRadius) * (squareRadius / squareSearchRadius))
+                    * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
-            hasRepairedAnything |= hasRepaired;
+                // Repair from this point
+                bool const hasRepaired = RepairFromAttractor(
+                    pointIndex,
+                    repairStrength,
+                    repairStepId,
+                    gameParameters);
+
+                hasRepairedAnything |= hasRepaired;
+            }
 
             //
-            // Propagate to all of the immediately-connected points
+            // Propagate to all of the no-yet-visited immediately-connected points
             //
 
             for (auto const cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
             {
-                pointsToVisit.push_back(cs.OtherEndpointIndex);
+                if (mPoints.GetRepairState(cs.OtherEndpointIndex).CurrentAttractorPropagationVisitStepId != repairStepId)
+                {
+                    pointsToVisit.push_back(cs.OtherEndpointIndex);
+                }
             }
         }
 
@@ -608,7 +620,7 @@ bool Ship::RepairFromAttractor(
                     // that's moving away!
                     float const movementMagnitude =
                         displacementMagnitude
-                        * smoothing
+                        * movementSmoothing
                         * repairStrength;
 
                     // Move point, clamping to world boundaries

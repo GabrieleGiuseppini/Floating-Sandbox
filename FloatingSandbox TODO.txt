@@ -674,6 +674,7 @@ Render:
 			- Final:
 				+ Perf: accumulate points from first pass in vector for 2nd pass
 				- Run in Debug
+				- Check perf on old Dell
 			- changelist
 
 		= Default settings: 

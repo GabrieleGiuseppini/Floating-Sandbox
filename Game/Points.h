@@ -143,10 +143,14 @@ public:
         // an attractee for
         std::uint64_t CurrentAttracteeConsecutiveNumberOfSteps;
 
+        // Visit step ID
+        SequenceNumber CurrentAttractorPropagationVisitStepId;
+
         RepairState()
             : LastAttractorRepairStepId()
             , LastAttracteeRepairStepId()
             , CurrentAttracteeConsecutiveNumberOfSteps()
+            , CurrentAttractorPropagationVisitStepId()
         {}
     };
 
