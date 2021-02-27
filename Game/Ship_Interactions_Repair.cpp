@@ -267,17 +267,17 @@ void Ship::StraightenOneSpringChains(ElementIndex pointIndex)
 void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
 {
     //
-    // Here we detect P (connected to R and L by naked springs) being on the
-    // wrong side of RL, and flip it. We do this to supplement the CCW triangle
+    // Here we detect P (connected to S0 and S1 by naked springs) being on the
+    // wrong side of S0S1, and flip it. We do this to supplement the CCW triangle
     // detection which won't work for traverse spring.
     //
-    //     P
-    //     O
-    //    / \
-    //   /   \
-    //  /     \
-    // O       O
-    // R       L
+    //       P
+    //       O
+    //      / \
+    //     /   \
+    //    /     \
+    //   O       O
+    //  S0       S1
     //
 
     auto const & connectedSprings = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings;
@@ -297,48 +297,31 @@ void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
             connectedSprings[1].SpringIndex,
             pointIndex);
 
-        ElementIndex prSpring, plSpring;
-        Octant prOctant, plOctant;
+        Octant deltaOctant = spring1Octant - spring0Octant;
+        if (deltaOctant < 0)
+            deltaOctant += 8;
 
-        if (spring1Octant == spring0Octant + 2
-            || (spring1Octant < 2 && spring1Octant == spring0Octant + 2 - 8))
-        {
-            prSpring = connectedSprings[1].SpringIndex;
-            prOctant = spring1Octant;
-            plSpring = connectedSprings[0].SpringIndex;
-            plOctant = spring0Octant;
-        }
-        else if (spring0Octant == spring1Octant + 2
-            || (spring0Octant < 2 && spring0Octant == spring1Octant + 2 - 8))
-        {
-            prSpring = connectedSprings[0].SpringIndex;
-            prOctant = spring0Octant;
-            plSpring = connectedSprings[1].SpringIndex;
-            plOctant = spring1Octant;
-        }
-        else
-        {
-            // Not under our jurisdiction
-            return;
-        }
-
-        // Check if PR is still at the right or PL
+        assert(deltaOctant >= 0 && deltaOctant < 8);
 
         vec2f const & pPosition = mPoints.GetPosition(pointIndex);
-        vec2f const & lPosition = mPoints.GetPosition(mSprings.GetOtherEndpointIndex(plSpring, pointIndex));
-        vec2f const & rPosition = mPoints.GetPosition(mSprings.GetOtherEndpointIndex(prSpring, pointIndex));
+        vec2f const & s0Position = mPoints.GetPosition(mSprings.GetOtherEndpointIndex(connectedSprings[0].SpringIndex, pointIndex));
+        vec2f const & s1Position = mPoints.GetPosition(mSprings.GetOtherEndpointIndex(connectedSprings[1].SpringIndex, pointIndex));
 
-        vec2f const prVector = rPosition - pPosition;
-        vec2f const plVector = lPosition - pPosition;
-        if (prVector.cross(plVector) < 0.0f)
+        vec2f const ps0Vector = s0Position - pPosition;
+        vec2f const ps1Vector = s1Position - pPosition;
+
+        // TODOTEST
+        if ((deltaOctant < 4 && ps1Vector.cross(ps0Vector) < 0.0f) // Delta < 4: spring 1 must be to the R of spring 0
+            || (deltaOctant > 4 && ps1Vector.cross(ps0Vector) > 0.0f)) // Delta > 4: spring 1 must be to the L of spring 0
+        ////if ((deltaOctant > 1 && deltaOctant < 4 && ps1Vector.cross(ps0Vector) < 0.0f) // Delta < 4: spring 1 must be to the R of spring 0
+        ////    || (deltaOctant > 4 && deltaOctant < 7 && ps1Vector.cross(ps0Vector) > 0.0f)) // Delta > 4: spring 1 must be to the L of spring 0
         {
-            //
-            // This arc needs to be straightened
-            //
+            // Reflect P onto the other side of the S0S1 vector: S0P' = PS0 - S0S1 * 2 * (PS0 dot S0S1) / |S0S1|^2
+            vec2f const s0s1Vector = s0Position - s1Position;
+            vec2f const newPPosition = s0Position + ps0Vector - s0s1Vector * 2.0f * (ps0Vector.dot(s0s1Vector)) / s0s1Vector.squareLength();
 
-            // Reflect P onto the other side of the RL vector: RP' = PR - RL * 2 * (PR dot RL) / |RL|^2
-            vec2f const rlVector = lPosition - rPosition;
-            vec2f const newPPosition = rPosition + prVector - rlVector * 2.0f * (prVector.dot(rlVector)) / rlVector.squareLength();
+            LogMessage(deltaOctant, "-Arc Detected (new): ", mSprings.GetOtherEndpointIndex(connectedSprings[0].SpringIndex, pointIndex), " --> ", pointIndex, " --> ", mSprings.GetOtherEndpointIndex(connectedSprings[1].SpringIndex, pointIndex),
+                " newPos: ", newPPosition.toString());
 
             // Set position
             mPoints.SetPosition(
@@ -347,6 +330,65 @@ void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
                     GameParameters::HalfMaxWorldWidth,
                     -GameParameters::HalfMaxWorldHeight,
                     GameParameters::HalfMaxWorldHeight));
+        }
+
+        //
+        // TODOTEST TODOOLD
+        //
+        {
+            ElementIndex prSpring, plSpring;
+            Octant prOctant, plOctant;
+
+            if (spring1Octant == spring0Octant + 2
+                || (spring1Octant < 2 && spring1Octant == spring0Octant + 2 - 8))
+            {
+                prSpring = connectedSprings[1].SpringIndex;
+                prOctant = spring1Octant;
+                plSpring = connectedSprings[0].SpringIndex;
+                plOctant = spring0Octant;
+            }
+            else if (spring0Octant == spring1Octant + 2
+                || (spring0Octant < 2 && spring0Octant == spring1Octant + 2 - 8))
+            {
+                prSpring = connectedSprings[0].SpringIndex;
+                prOctant = spring0Octant;
+                plSpring = connectedSprings[1].SpringIndex;
+                plOctant = spring1Octant;
+            }
+            else
+            {
+                // Not under our jurisdiction
+                return;
+            }
+
+            // Check if PR is still at the right or PL
+
+            vec2f const & pPosition = mPoints.GetPosition(pointIndex);
+            vec2f const & lPosition = mPoints.GetPosition(mSprings.GetOtherEndpointIndex(plSpring, pointIndex));
+            vec2f const & rPosition = mPoints.GetPosition(mSprings.GetOtherEndpointIndex(prSpring, pointIndex));
+
+            vec2f const prVector = rPosition - pPosition;
+            vec2f const plVector = lPosition - pPosition;
+            if (prVector.cross(plVector) < 0.0f)
+            {
+                //
+                // This arc needs to be straightened
+                //
+
+                // Reflect P onto the other side of the RL vector: RP' = PR - RL * 2 * (PR dot RL) / |RL|^2
+                vec2f const rlVector = lPosition - rPosition;
+                vec2f const newPPosition = rPosition + prVector - rlVector * 2.0f * (prVector.dot(rlVector)) / rlVector.squareLength();
+
+                ////// Set position
+                ////mPoints.SetPosition(
+                ////    pointIndex,
+                ////    newPPosition.clamp(-GameParameters::HalfMaxWorldWidth,
+                ////        GameParameters::HalfMaxWorldWidth,
+                ////        -GameParameters::HalfMaxWorldHeight,
+                ////        GameParameters::HalfMaxWorldHeight));
+                LogMessage("2-Arc Detected (old): ", mSprings.GetOtherEndpointIndex(plSpring, pointIndex), " --> ", pointIndex, " --> ", mSprings.GetOtherEndpointIndex(prSpring, pointIndex),
+                    " newPos: ", newPPosition.toString());
+            }
         }
     }
 }
@@ -691,6 +733,7 @@ bool Ship::RepairFromAttractor(
                 // Check whether we are still further away than our tolerance,
                 // and whether the attractee is free to move
                 bool hasAttracteeBeenMoved = false;
+                float displacementToleranceBoost = 1.0f;
                 if (displacementMagnitude > DisplacementTolerance
                     && !mPoints.IsPinned(attracteePointIndex))
                 {
@@ -713,7 +756,7 @@ bool Ship::RepairFromAttractor(
                         // Slow down at small distances, but increase with insisting time to prevent lonely particles
                         // from getting frozen in mid-air
 
-                        int constexpr MaxSimulatedFrames = 2 * 64; // 2 simulated seconds at 64fps
+                        int constexpr MaxSimulatedFrames = 5 * 64; // 5 simulated seconds at 64fps
 
                         movementSmoothing =
                             SmoothStep(0.0f, 20.0f / gameParameters.RepairSpeedAdjustment, displacementMagnitude)
@@ -723,7 +766,9 @@ bool Ship::RepairFromAttractor(
                             && (attracteeDurationSteps % 32) == 0)
                         {
                             // Hammer-boost
-                            movementSmoothing = 2.0f;
+                            displacementToleranceBoost = 3.0f;
+
+                            LogMessage("Repair: particle Hammer-Boost");
                         }
                     }
                     else
@@ -743,7 +788,9 @@ bool Ship::RepairFromAttractor(
                             && (attracteeDurationSteps % 32) == 0)
                         {
                             // Hammer-boost
-                            movementSmoothing = 2.0f;
+                            movementSmoothing *= 1.2f;
+
+                            LogMessage("Repair: structure Hammer-Boost");
                         }
                     }
 
@@ -775,7 +822,6 @@ bool Ship::RepairFromAttractor(
                             GameParameters::HalfMaxWorldHeight));
 
                     // Update displacement with move
-                    assert(movementMagnitude < displacementMagnitude);
                     displacementMagnitude -= movementMagnitude;
 
                     // Impart some non-linear inertia (smaller at higher displacements, higher at very low displacements),
@@ -796,7 +842,7 @@ bool Ship::RepairFromAttractor(
                 }
 
                 // Check whether we are now close enough to restore the spring
-                if (displacementMagnitude <= DisplacementTolerance)
+                if (displacementMagnitude <= DisplacementTolerance * displacementToleranceBoost)
                 {
                     //
                     // The attractee is close enough to its target, implying that

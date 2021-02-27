@@ -674,9 +674,9 @@ Render:
 					X Issue with dancing dots: try: target pos is half-way between offseted with attractor's velocity * dt
 						+ Variable names for point/other endpoint: attractorPoint and attracteePoint
 				+ Final boost after max consecutive number of steps
+				= Expand delta2 trick to all deltas
 				- Scale forces on attractee depending on # of its springs
 					- Grow with # of springs
-				- Expand delta2 trick to all deltas
 				+ Test 2 repair settings extremes
 					+ Speed
 						+ Fixed max
