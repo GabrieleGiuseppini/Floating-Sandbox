@@ -364,76 +364,82 @@ bool Ship::TryRepairAndPropagateFromPoint(
     //  - is in radius
     //  - and has not already been an attractor in this step
     //  - and has not been an attractee in this step
-    //  - and has not been an attractee in the *previous* step (so to prevent
-    //    sudden role flipping)
+    //  - and has not been an attractee in the *previous* step (so to prevent sudden role flips)
     //  - and needs reparation
     //  - and is not orphaned (we rely on existing springs in order to repair)
     //
     // After being an attractor, do a breadth-first visit from the point propagating
     // repair from directly-connected in-radius particles
 
-    std::deque<ElementIndex> pointsToVisit;
-
-    for (ElementIndex pointIndex = startingPointIndex; ;)
+    if (mPoints.GetRepairState(startingPointIndex).CurrentAttractorPropagationVisitStepId != repairStepId)
     {
-        // Mark point as visited
-        mPoints.GetRepairState(pointIndex).CurrentAttractorPropagationVisitStepId = repairStepId;
+        mPoints.GetRepairState(startingPointIndex).CurrentAttractorPropagationVisitStepId = repairStepId;
 
-        //
-        // Check if this point meets the conditions for being an attractor
-        //
+        std::deque<ElementIndex> pointsToVisit;
 
-        if (mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId != repairStepId
-            && mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId
-            && mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId.Previous()
-            && mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size() > mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() // Needs reparation
-            && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0) // Not orphaned
+        for (ElementIndex pointIndex = startingPointIndex; ;)
         {
             //
-            // This point has now taken the role of an attractor
+            // Check if this point meets the conditions for being an attractor
             //
 
-            // Calculate repair strength (1.0 at center and zero at border, fourth power)
-            float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-            float const repairStrength =
-                (1.0f - (squareRadius / squareSearchRadius) * (squareRadius / squareSearchRadius))
-                * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
-            // Repair from this point
-            bool const hasRepaired = RepairFromAttractor(
-                pointIndex,
-                repairStrength,
-                repairStepId,
-                gameParameters);
-
-            hasRepairedAnything |= hasRepaired;
-        }
-
-        //
-        // Propagate to all of the in-radius, not-yet-visited immediately-connected points
-        //
-
-        for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
-        {
-            if (mPoints.GetRepairState(cs.OtherEndpointIndex).CurrentAttractorPropagationVisitStepId != repairStepId)
+            if (mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId != repairStepId
+                && mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId
+                && mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId.Previous()
+                && mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size() > mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() // Needs reparation
+                && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0) // Not orphaned
             {
-                if (float const squareRadius = (mPoints.GetPosition(cs.OtherEndpointIndex) - targetPos).squareLength();
-                    squareRadius <= squareSearchRadius)
+                //
+                // This point has now taken the role of an attractor
+                //
+
+                // Calculate repair strength (1.0 at center and zero at border, fourth power)
+                float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+                float const repairStrength =
+                    (1.0f - (squareRadius / squareSearchRadius) * (squareRadius / squareSearchRadius))
+                    * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+                // Repair from this point
+                bool const hasRepaired = RepairFromAttractor(
+                    pointIndex,
+                    repairStrength,
+                    repairStepId,
+                    gameParameters);
+
+                hasRepairedAnything |= hasRepaired;
+            }
+
+            //
+            // Propagate to all of the in-radius, not-yet-visited immediately-connected points
+            //
+
+            for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+            {
+                ElementIndex const newPointIndex = cs.OtherEndpointIndex;
+
+                if (mPoints.GetRepairState(newPointIndex).CurrentAttractorPropagationVisitStepId != repairStepId)
                 {
-                    pointsToVisit.push_back(cs.OtherEndpointIndex);
+                    mPoints.GetRepairState(newPointIndex).CurrentAttractorPropagationVisitStepId = repairStepId;
+
+                    // See if it's in radius
+                    if (float const squareRadius = (mPoints.GetPosition(newPointIndex) - targetPos).squareLength();
+                        squareRadius <= squareSearchRadius)
+                    {
+                        pointsToVisit.push_back(newPointIndex);
+                    }
                 }
             }
+
+            //
+            // Visit next point
+            //
+
+            if (pointsToVisit.empty())
+                break;
+
+            pointIndex = pointsToVisit.front();
+            pointsToVisit.pop_front();
         }
-
-        //
-        // Visit next point
-        //
-
-        if (pointsToVisit.empty())
-            break;
-
-        pointIndex = pointsToVisit.front();
-        pointsToVisit.pop_front();
     }
 
     return hasRepairedAnything;
