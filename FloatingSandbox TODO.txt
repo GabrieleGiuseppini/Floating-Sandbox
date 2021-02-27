@@ -673,7 +673,7 @@ Render:
 					X Issue with half titanic: try with more inertial velocity
 					X Issue with dancing dots: try: target pos is half-way between offseted with attractor's velocity * dt
 						+ Variable names for point/other endpoint: attractorPoint and attracteePoint
-				- Final boost after max consecutive number of steps
+				+ Final boost after max consecutive number of steps
 				- Scale forces on attractee depending on # of its springs
 					- Grow with # of springs
 				- Expand delta2 trick to all deltas

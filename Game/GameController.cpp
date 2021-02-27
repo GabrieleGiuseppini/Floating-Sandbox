@@ -1237,6 +1237,8 @@ void GameController::OnTsunami(float x)
 void GameController::OnShipRepaired(ShipId /*shipId*/)
 {
     mNotificationLayer.AddEphemeralTextLine("SHIP REPAIRED!");
+
+    LogMessage("Ship repaired!");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

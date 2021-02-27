@@ -705,18 +705,46 @@ bool Ship::RepairFromAttractor(
                     //   the current session - so to force detachment when particle is entangled with
                     //   something heavy
                     float movementSmoothing;
+                    auto const attracteeDurationSteps = mPoints.GetRepairState(attracteePointIndex).CurrentAttracteeConsecutiveNumberOfSteps;
                     if (mPoints.GetConnectedSprings(attracteePointIndex).ConnectedSprings.empty())
                     {
+                        // Orphan
+                        //
+                        // Slow down at small distances, but increase with insisting time to prevent lonely particles
+                        // from getting frozen in mid-air
+
+                        int constexpr MaxSimulatedFrames = 2 * 64; // 2 simulated seconds at 64fps
+
                         movementSmoothing =
                             SmoothStep(0.0f, 20.0f / gameParameters.RepairSpeedAdjustment, displacementMagnitude)
-                            * 0.15f;
+                            * (0.15f + 0.35f * SmoothStep(0.0f, static_cast<float>(MaxSimulatedFrames) / gameParameters.RepairSpeedAdjustment, static_cast<float>(attracteeDurationSteps)));
+
+                        if (attracteeDurationSteps >= MaxSimulatedFrames
+                            && (attracteeDurationSteps % 32) == 0)
+                        {
+                            // Hammer-boost
+                            movementSmoothing = 2.0f;
+                        }
                     }
                     else
                     {
+                        // Connected
+                        //
+                        // Reach max after a while
+
+                        int constexpr MaxSimulatedFrames = 15 * 64; // 15 simulated seconds at 64fps
+
                         movementSmoothing = SmoothStep(
                             0.0f,
-                            (15.0f * 64.0f) / gameParameters.RepairSpeedAdjustment, // Reach max in 15 simulated seconds (at 64 fps)
-                            static_cast<float>(mPoints.GetRepairState(attracteePointIndex).CurrentAttracteeConsecutiveNumberOfSteps));
+                            static_cast<float>(MaxSimulatedFrames) / gameParameters.RepairSpeedAdjustment,
+                            static_cast<float>(attracteeDurationSteps));
+
+                        if (attracteeDurationSteps >= MaxSimulatedFrames
+                            && (attracteeDurationSteps % 32) == 0)
+                        {
+                            // Hammer-boost
+                            movementSmoothing = 2.0f;
+                        }
                     }
 
                     // Movement direction (positive towards this point)
