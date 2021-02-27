@@ -370,7 +370,7 @@ bool Ship::TryRepairAndPropagateFromPoint(
     //  - and is not orphaned (we rely on existing springs in order to repair)
     //
     // After being an attractor, do a breadth-first visit from the point propagating
-    // repair from directly-connected candidates
+    // repair from directly-connected in-radius particles
 
     std::deque<ElementIndex> pointsToVisit;
 
@@ -415,11 +415,13 @@ bool Ship::TryRepairAndPropagateFromPoint(
 
         for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
         {
-            if (float const squareRadius = (mPoints.GetPosition(cs.OtherEndpointIndex) - targetPos).squareLength();
-                squareRadius <= squareSearchRadius
-                && mPoints.GetRepairState(cs.OtherEndpointIndex).CurrentAttractorPropagationVisitStepId != repairStepId)
+            if (mPoints.GetRepairState(cs.OtherEndpointIndex).CurrentAttractorPropagationVisitStepId != repairStepId)
             {
-                pointsToVisit.push_back(cs.OtherEndpointIndex);
+                if (float const squareRadius = (mPoints.GetPosition(cs.OtherEndpointIndex) - targetPos).squareLength();
+                    squareRadius <= squareSearchRadius)
+                {
+                    pointsToVisit.push_back(cs.OtherEndpointIndex);
+                }
             }
         }
 
