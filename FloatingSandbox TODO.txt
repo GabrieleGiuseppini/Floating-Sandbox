@@ -664,18 +664,36 @@ Render:
 					+ Idea 2: expand idea 1: as a pre-step: for each in-radius point: for each naked spring: make sure it's in right angle
 					= If works, consider doing trying these which at the moment we can't do because of
 					  folded structures:
-						- Remove role-taking: allow attractor to take on role of attractee, and viceversa
+						x Remove role-taking: allow attractor to take on role of attractee, and viceversa
 						- Lower distance tolerance (e.g. 0.03 or lower), to prevent newly-repaired springs from breaking up immediately again
-						- Allow each particle to act as attractor only once per step
+						- Allow each particle to act as attractee only once per step
 				+ Larger radius: 4
 				+ Final velocity of restored particle is avg of all connected
-				- Test 2 repair settings extremes
+				+ Velocities:
+					X Issue with half titanic: try with more inertial velocity
+					X Issue with dancing dots: try: target pos is half-way between offseted with attractor's velocity * dt
+						+ Variable names for point/other endpoint: attractorPoint and attracteePoint
+				= Test 2 repair settings extremes
+					+ Speed
+						+ Fixed max
+						+ Rewrite so that adjustment changes smoothstep's time horizon
+					- Radius: see why slows down @ 10
+						- Perf: 
+							- Store in-radius points at first pass, and keep using it
+								- Nuke subsequent useless radius checks
+							- Avoid queuing for out-of-radius
+						
 				- See if may simplify octant finding by considering just one spring (say, nearest CCW)
 			- Final:
 				+ Perf: accumulate points from first pass in vector for 2nd pass
+				- Cleanup TODOs
 				- Run in Debug
 				- Check perf on old Dell
 			- changelist
+
+		- Waves:
+			- Try to smoothen peaks with avg=5
+			- See maximum adjust
 
 		= Default settings: 
 			- Flatten waves?

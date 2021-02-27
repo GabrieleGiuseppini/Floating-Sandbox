@@ -452,7 +452,7 @@ struct GameParameters
 
     float RepairSpeedAdjustment;
     static float constexpr MinRepairSpeedAdjustment = 0.25f;
-    static float constexpr MaxRepairSpeedAdjustment = 10.0f;
+    static float constexpr MaxRepairSpeedAdjustment = 5.0f;
 
     static float constexpr DrawForce = 40000.0f;
 
