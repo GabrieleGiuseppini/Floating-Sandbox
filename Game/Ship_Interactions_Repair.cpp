@@ -612,10 +612,10 @@ bool Ship::RepairFromAttractor(
                     + interpolatedAngleCwFromCCWSpring;
 
                 //
-                // Calculate target position for the other endpoint
+                // Calculate target position for the attractee
                 //
 
-                vec2f const targetOtherEndpointPosition =
+                vec2f const targetAttracteePosition =
                     mPoints.GetPosition(attractorPointIndex)
                     + vec2f::fromPolar(
                         mSprings.GetFactoryRestLength(fcs.SpringIndex),
@@ -637,17 +637,17 @@ bool Ship::RepairFromAttractor(
 
                     // Edge A
                     vertexPositions[0] = (mTriangles.GetPointAIndex(testTriangleIndex) == attracteePointIndex)
-                        ? targetOtherEndpointPosition
+                        ? targetAttracteePosition
                         : mPoints.GetPosition(mTriangles.GetPointAIndex(testTriangleIndex));
 
                     // Edge B
                     vertexPositions[1] = (mTriangles.GetPointBIndex(testTriangleIndex) == attracteePointIndex)
-                        ? targetOtherEndpointPosition
+                        ? targetAttracteePosition
                         : mPoints.GetPosition(mTriangles.GetPointBIndex(testTriangleIndex));
 
                     // Edge C
                     vertexPositions[2] = (mTriangles.GetPointCIndex(testTriangleIndex) == attracteePointIndex)
-                        ? targetOtherEndpointPosition
+                        ? targetAttracteePosition
                         : mPoints.GetPosition(mTriangles.GetPointCIndex(testTriangleIndex));
 
                     vec2f const edges[3]
@@ -680,24 +680,24 @@ bool Ship::RepairFromAttractor(
                 ////    rgbColor(250, 40, 40));
 
                 //
-                // Check progress of other endpoint towards the target position
+                // Check progress of attractee towards the target position
                 //
 
-                // Displacement vector (positive towards target point)
-                vec2f const displacementVector = targetOtherEndpointPosition - mPoints.GetPosition(attracteePointIndex);
+                // Displacement vector (positive towards target)
+                vec2f const displacementVector = targetAttracteePosition - mPoints.GetPosition(attracteePointIndex);
 
                 // Distance
                 float displacementMagnitude = displacementVector.length();
 
                 // Check whether we are still further away than our tolerance,
-                // and whether this point is free to move
-                bool hasOtherEndpointPointBeenMoved = false;
+                // and whether the attractee is free to move
+                bool hasAttracteeBeenMoved = false;
                 if (displacementMagnitude > DisplacementTolerance
                     && !mPoints.IsPinned(attracteePointIndex))
                 {
                     //
                     // Endpoints are too far...
-                    // ...move them closer by moving the other endpoint towards its target position
+                    // ...move them closer by moving the attractee towards its target position
                     //
 
                     // Smooth movement:
@@ -764,15 +764,15 @@ bool Ship::RepairFromAttractor(
                         (mPoints.GetVelocity(attracteePointIndex) * (1.0f - InertialFraction))
                         + (displacementVelocity * InertialFraction));
 
-                    // Remember that we've acted on the other endpoint
-                    hasOtherEndpointPointBeenMoved = true;
+                    // Remember that we've acted on the attractee
+                    hasAttracteeBeenMoved = true;
                 }
 
                 // Check whether we are now close enough to restore the spring
                 if (displacementMagnitude <= DisplacementTolerance)
                 {
                     //
-                    // The other endpoint is close enough to its target, implying that
+                    // The attractee is close enough to its target, implying that
                     // the spring length should be close to its rest length...
                     // ...we can restore the spring
                     //
@@ -785,12 +785,12 @@ bool Ship::RepairFromAttractor(
 
                     assert(!mSprings.IsDeleted(fcs.SpringIndex));
 
-                    // Forget that the other endpoint has been an attractee in this step,
+                    // Forget that the attractee has been an attractee in this step,
                     // so that it might soon take the role of attractor
                     mPoints.GetRepairState(attracteePointIndex).LastAttracteeRepairStepId = SequenceNumber::None();
 
-                    // Impart to the other endpoint the average velocity of all of its
-                    // connected particles, including the new one
+                    // Impart to the attractee the average velocity of all of its
+                    // connected particles, including the attractor's
                     assert(mPoints.GetConnectedSprings(attracteePointIndex).ConnectedSprings.size() > 0);
                     vec2f const sumVelocity = std::accumulate(
                         mPoints.GetConnectedSprings(attracteePointIndex).ConnectedSprings.cbegin(),
@@ -806,14 +806,14 @@ bool Ship::RepairFromAttractor(
 
                     // Halve the decay of both endpoints, to prevent newly-repaired
                     // rotten particles from crumbling again
-                    float const pointDecay = mPoints.GetDecay(attractorPointIndex);
+                    float const attractorDecay = mPoints.GetDecay(attractorPointIndex);
                     mPoints.SetDecay(
                         attractorPointIndex,
-                        pointDecay + (1.0f - pointDecay) / 2.0f);
-                    float const otherPointDecay = mPoints.GetDecay(attracteePointIndex);
+                        attractorDecay + (1.0f - attractorDecay) / 2.0f);
+                    float const attracteeDecay = mPoints.GetDecay(attracteePointIndex);
                     mPoints.SetDecay(
                         attracteePointIndex,
-                        otherPointDecay + (1.0f - otherPointDecay) / 2.0f);
+                        attracteeDecay + (1.0f - attracteeDecay) / 2.0f);
 
                     // Restore the spring's rest length to its factory value
                     mSprings.SetRestLength(
@@ -830,18 +830,18 @@ bool Ship::RepairFromAttractor(
                         fcs.SpringIndex,
                         mPoints);
 
-                    // Remember that we've acted on the other endpoint
-                    hasOtherEndpointPointBeenMoved = true;
+                    // Remember that we've acted on the attractee
+                    hasAttracteeBeenMoved = true;
 
                     // Remember that we've repaired a spring
                     hasAnySpringBeenRepaired = true;
                 }
 
                 //
-                // Dry the other endpoint, if we've messed with it
+                // Dry the attractee, if we've messed with it
                 //
 
-                if (hasOtherEndpointPointBeenMoved)
+                if (hasAttracteeBeenMoved)
                 {
                     mPoints.GetWater(attracteePointIndex) /= 2.0f;
                 }
