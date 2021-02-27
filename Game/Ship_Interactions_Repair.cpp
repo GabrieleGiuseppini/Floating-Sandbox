@@ -190,9 +190,6 @@ void Ship::StraightenOneSpringChains(ElementIndex pointIndex)
             if (mSprings.GetSuperTriangles(nakedCs.SpringIndex).empty() // Naked
                 && mPoints.GetConnectedSprings(otherEndpointIndex).ConnectedSprings.size() == 1) // Other endpoint only has this naked spring
             {
-                // TODOTEST: first we try with CCW only, then might want to try with interpolation
-                // between CW and CCW
-
                 //
                 // Move other endpoint where it should be wrt the (arbitrary) CCW spring
                 // nearest to this spring
@@ -264,8 +261,12 @@ void Ship::StraightenOneSpringChains(ElementIndex pointIndex)
                 // Move the other endpoint
                 //
 
-                // TODOHERE: world bounds
-                mPoints.SetPosition(otherEndpointIndex, targetOtherEndpointPosition);
+                mPoints.SetPosition(
+                    otherEndpointIndex,
+                    targetOtherEndpointPosition.clamp(-GameParameters::HalfMaxWorldWidth,
+                        GameParameters::HalfMaxWorldWidth,
+                        -GameParameters::HalfMaxWorldHeight,
+                        GameParameters::HalfMaxWorldHeight));
             }
         }
     }
@@ -326,7 +327,6 @@ void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
         else
         {
             // Not under our jurisdiction
-            // TODOHERE: do we really need to bail out here?
             return;
         }
 
@@ -349,8 +349,12 @@ void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
             vec2f const newPPosition = rPosition + prVector - rlVector * 2.0f * (prVector.dot(rlVector)) / rlVector.squareLength();
 
             // Set position
-            // TODOHERE: world bounds
-            mPoints.SetPosition(pointIndex, newPPosition);
+            mPoints.SetPosition(
+                pointIndex,
+                newPPosition.clamp(-GameParameters::HalfMaxWorldWidth,
+                    GameParameters::HalfMaxWorldWidth,
+                    -GameParameters::HalfMaxWorldHeight,
+                    GameParameters::HalfMaxWorldHeight));
         }
     }
 }

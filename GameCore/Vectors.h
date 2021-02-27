@@ -112,6 +112,13 @@ public:
         return *this;
     }
 
+    inline vec2f clamp(float minX, float maxX, float minY, float maxY) const
+    {
+        return vec2f(
+            Clamp(x, minX, maxX),
+            Clamp(y, minY, maxY));
+    }
+
     inline vec2f & clamp(float minX, float maxX, float minY, float maxY)
     {
         x = Clamp(x, minX, maxX);
