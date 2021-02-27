@@ -683,9 +683,9 @@ Render:
 						+ Rewrite so that adjustment changes smoothstep's time horizon
 					- Radius: see why slows down @ 10
 						- Perf: 
-							- Store in-radius points at first pass, and keep using it
-								- Nuke subsequent useless radius checks
-							- Avoid queuing for out-of-radius						
+							+ Store in-radius points at first pass, and keep using it
+								+ Nuke subsequent useless radius checks
+							+ Avoid queuing for out-of-radius						
 				- See if may simplify octant finding by considering just one spring (say, nearest CCW)
 			- Final:
 				+ Perf: accumulate points from first pass in vector for 2nd pass

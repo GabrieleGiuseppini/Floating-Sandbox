@@ -33,6 +33,9 @@ void Ship::RepairAt(
     // Pass 1: straighten one-spring and two-spring naked springs
     //
 
+    // We store points in radius here in order to speedup subsequent passes
+    std::vector<ElementIndex> pointsInRadius;
+
     for (auto const pointIndex : mPoints.RawShipPoints())
     {
         if (float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
@@ -41,6 +44,8 @@ void Ship::RepairAt(
             StraightenOneSpringChains(pointIndex);
 
             StraightenTwoSpringChains(pointIndex);
+
+            pointsInRadius.push_back(pointIndex);
         }
     }
 
@@ -51,32 +56,23 @@ void Ship::RepairAt(
     // an attractor will continue to be an attractor until it needs reparation
     //
 
-    // We store points in radius to speedup pass 2
-    std::vector<ElementIndex> pointsInRadius;
-
     // Visit all (in-radius) non-ephemeral points that had been attractors in the previous step
     auto const previousStep = repairStepId.Previous();
-    for (auto const pointIndex : mPoints.RawShipPoints())
+    for (auto const pointIndex : pointsInRadius)
     {
-        if (float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-            squareRadius <= squareSearchRadius)
+        if (mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId == previousStep)
         {
-            pointsInRadius.push_back(pointIndex);
-
-            if (mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId == previousStep)
-            {
-                TryRepairAndPropagateFromPoint(
-                    pointIndex,
-                    targetPos,
-                    squareSearchRadius,
-                    repairStepId,
-                    gameParameters);
-            }
+            TryRepairAndPropagateFromPoint(
+                pointIndex,
+                targetPos,
+                squareSearchRadius,
+                repairStepId,
+                gameParameters);
         }
     }
 
     //
-    // Pass 2: visit all other points now, to give a chance to everyone else to be
+    // Pass 3: visit all other points now, to give a chance to everyone else to be
     // an attractor
     //
 
@@ -92,7 +88,7 @@ void Ship::RepairAt(
     }
 
     //
-    // Pass 3:
+    // Pass 4:
     //  a) Restore deleted _eligible_ triangles that were connected to each (in-radius) point
     //     at factory time
     //
@@ -107,57 +103,53 @@ void Ship::RepairAt(
     //
 
     // Visit all (in-radius) non-ephemeral points
-    for (auto const pointIndex : mPoints.RawShipPoints())
+    for (auto const pointIndex : pointsInRadius)
     {
-        if (float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-            squareRadius <= squareSearchRadius)
+        // a) Visit all deleted triangles, trying to restore them
+        for (auto const fct : mPoints.GetFactoryConnectedTriangles(pointIndex).ConnectedTriangles)
         {
-            // a) Visit all deleted triangles, trying to restore them
-            for (auto const fct : mPoints.GetFactoryConnectedTriangles(pointIndex).ConnectedTriangles)
+            if (mTriangles.IsDeleted(fct))
             {
-                if (mTriangles.IsDeleted(fct))
+                // Check if eligible
+                bool hasDeletedSubsprings = false;
+                for (auto const ss : mTriangles.GetSubSprings(fct).SpringIndices)
+                    hasDeletedSubsprings |= mSprings.IsDeleted(ss);
+
+                if (!hasDeletedSubsprings)
                 {
-                    // Check if eligible
-                    bool hasDeletedSubsprings = false;
-                    for (auto const ss : mTriangles.GetSubSprings(fct).SpringIndices)
-                        hasDeletedSubsprings |= mSprings.IsDeleted(ss);
+                    // Restore it
+                    mTriangles.Restore(fct);
 
-                    if (!hasDeletedSubsprings)
-                    {
-                        // Restore it
-                        mTriangles.Restore(fct);
-
-                        // Attempt to restore all endpoints
-                        AttemptPointRestore(mTriangles.GetPointAIndex(fct));
-                        AttemptPointRestore(mTriangles.GetPointBIndex(fct));
-                        AttemptPointRestore(mTriangles.GetPointCIndex(fct));
-                    }
+                    // Attempt to restore all endpoints
+                    AttemptPointRestore(mTriangles.GetPointAIndex(fct));
+                    AttemptPointRestore(mTriangles.GetPointBIndex(fct));
+                    AttemptPointRestore(mTriangles.GetPointCIndex(fct));
                 }
             }
+        }
 
-            // b) Visit all springs, trying to restore their rest lenghts
-            for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+        // b) Visit all springs, trying to restore their rest lenghts
+        for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+        {
+            if (mSprings.GetRestLength(cs.SpringIndex) != mSprings.GetFactoryRestLength(cs.SpringIndex))
             {
-                if (mSprings.GetRestLength(cs.SpringIndex) != mSprings.GetFactoryRestLength(cs.SpringIndex))
+                mSprings.SetRestLength(
+                    cs.SpringIndex,
+                    mSprings.GetFactoryRestLength(cs.SpringIndex)
+                    + 0.97f * (mSprings.GetRestLength(cs.SpringIndex) - mSprings.GetFactoryRestLength(cs.SpringIndex)));
+
+                // Check if may fully restore
+                if (std::abs(mSprings.GetRestLength(cs.SpringIndex) - mSprings.GetFactoryRestLength(cs.SpringIndex)) < 0.05f) // Magic number
                 {
                     mSprings.SetRestLength(
                         cs.SpringIndex,
-                        mSprings.GetFactoryRestLength(cs.SpringIndex)
-                        + 0.97f * (mSprings.GetRestLength(cs.SpringIndex) - mSprings.GetFactoryRestLength(cs.SpringIndex)));
-
-                    // Check if may fully restore
-                    if (std::abs(mSprings.GetRestLength(cs.SpringIndex) - mSprings.GetFactoryRestLength(cs.SpringIndex)) < 0.05f) // Magic number
-                    {
-                        mSprings.SetRestLength(
-                            cs.SpringIndex,
-                            mSprings.GetFactoryRestLength(cs.SpringIndex));
-                    }
-
-                    // Recalculate this spring's coefficients, now that we have changed its rest length
-                    mSprings.UpdateForRestLength(
-                        cs.SpringIndex,
-                        mPoints);
+                        mSprings.GetFactoryRestLength(cs.SpringIndex));
                 }
+
+                // Recalculate this spring's coefficients, now that we have changed its rest length
+                mSprings.UpdateForRestLength(
+                    cs.SpringIndex,
+                    mPoints);
             }
         }
     }
@@ -388,51 +380,46 @@ bool Ship::TryRepairAndPropagateFromPoint(
         mPoints.GetRepairState(pointIndex).CurrentAttractorPropagationVisitStepId = repairStepId;
 
         //
-        // Check if this point meets the conditions to propagate
+        // Check if this point meets the conditions for being an attractor
         //
 
-        if (float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-            squareRadius <= squareSearchRadius
+        if (mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId != repairStepId
+            && mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId
+            && mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId.Previous()
+            && mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size() > mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() // Needs reparation
             && mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size() > 0) // Not orphaned
         {
             //
-            // Check if this point meets the remaining conditions for being an attractor
+            // This point has now taken the role of an attractor
             //
 
-            if (mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId != repairStepId
-                && mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId
-                && mPoints.GetRepairState(pointIndex).LastAttracteeRepairStepId != repairStepId.Previous()
-                && mPoints.GetFactoryConnectedSprings(pointIndex).ConnectedSprings.size() > mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size()) // Needs reparation
+            // Calculate repair strength (1.0 at center and zero at border, fourth power)
+            float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+            float const repairStrength =
+                (1.0f - (squareRadius / squareSearchRadius) * (squareRadius / squareSearchRadius))
+                * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+            // Repair from this point
+            bool const hasRepaired = RepairFromAttractor(
+                pointIndex,
+                repairStrength,
+                repairStepId,
+                gameParameters);
+
+            hasRepairedAnything |= hasRepaired;
+        }
+
+        //
+        // Propagate to all of the in-radius, not-yet-visited immediately-connected points
+        //
+
+        for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+        {
+            if (float const squareRadius = (mPoints.GetPosition(cs.OtherEndpointIndex) - targetPos).squareLength();
+                squareRadius <= squareSearchRadius
+                && mPoints.GetRepairState(cs.OtherEndpointIndex).CurrentAttractorPropagationVisitStepId != repairStepId)
             {
-                //
-                // This point has now taken the role of an attractor
-                //
-
-                // Calculate repair strength (1.0 at center and zero at border, fourth power)
-                float const repairStrength =
-                    (1.0f - (squareRadius / squareSearchRadius) * (squareRadius / squareSearchRadius))
-                    * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
-                // Repair from this point
-                bool const hasRepaired = RepairFromAttractor(
-                    pointIndex,
-                    repairStrength,
-                    repairStepId,
-                    gameParameters);
-
-                hasRepairedAnything |= hasRepaired;
-            }
-
-            //
-            // Propagate to all of the no-yet-visited immediately-connected points
-            //
-
-            for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
-            {
-                if (mPoints.GetRepairState(cs.OtherEndpointIndex).CurrentAttractorPropagationVisitStepId != repairStepId)
-                {
-                    pointsToVisit.push_back(cs.OtherEndpointIndex);
-                }
+                pointsToVisit.push_back(cs.OtherEndpointIndex);
             }
         }
 
