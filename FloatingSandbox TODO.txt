@@ -666,7 +666,7 @@ Render:
 					  folded structures:
 						x Remove role-taking: allow attractor to take on role of attractee, and viceversa
 						+ Lower distance tolerance (e.g. 0.03 or lower), to prevent newly-repaired springs from breaking up immediately again
-						- Allow each particle to act as attractee only once per step
+						= Allow each particle to act as attractee only once per step
 				+ Larger radius: 4
 				+ Final velocity of restored particle is avg of all connected
 				+ Velocities:

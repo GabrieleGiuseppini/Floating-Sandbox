@@ -708,7 +708,8 @@ bool Ship::RepairFromAttractor(
                     float movementSmoothing;
                     if (mPoints.GetConnectedSprings(attracteePointIndex).ConnectedSprings.empty())
                     {
-                        movementSmoothing = SmoothStep(0.0f, 20.0f / gameParameters.RepairSpeedAdjustment, displacementMagnitude)
+                        movementSmoothing =
+                            SmoothStep(0.0f, 20.0f / gameParameters.RepairSpeedAdjustment, displacementMagnitude)
                             * 0.15f;
                     }
                     else
