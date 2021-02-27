@@ -677,12 +677,12 @@ Render:
 				- Scale forces on attractee depending on # of its springs
 					- Grow with # of springs
 				- Expand delta2 trick to all deltas
-				= Test 2 repair settings extremes
+				+ Test 2 repair settings extremes
 					+ Speed
 						+ Fixed max
 						+ Rewrite so that adjustment changes smoothstep's time horizon
-					- Radius: see why slows down @ 10
-						- Perf: 
+					+ Radius: see why slows down @ 10
+						+ Perf: 
 							+ Store in-radius points at first pass, and keep using it
 								+ Nuke subsequent useless radius checks
 							+ Avoid queuing for out-of-radius						
