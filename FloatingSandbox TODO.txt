@@ -674,18 +674,18 @@ Render:
 					X Issue with dancing dots: try: target pos is half-way between offseted with attractor's velocity * dt
 						+ Variable names for point/other endpoint: attractorPoint and attracteePoint
 				+ Final boost after max consecutive number of steps
-				= Expand delta2 trick to all deltas
-				- Scale forces on attractee depending on # of its springs
-					- Grow with # of springs
 				+ Test 2 repair settings extremes
 					+ Speed
 						+ Fixed max
 						+ Rewrite so that adjustment changes smoothstep's time horizon
 					+ Radius: see why slows down @ 10
-						+ Perf: 
+						+ Perf:
 							+ Store in-radius points at first pass, and keep using it
 								+ Nuke subsequent useless radius checks
-							+ Avoid queuing for out-of-radius						
+							+ Avoid queuing for out-of-radius
+				+ Expand delta2 trick to all deltas
+				- Scale forces on attractee depending on # of its springs
+					- Grow with # of springs
 				- See if may simplify octant finding by considering just one spring (say, nearest CCW)
 			- Final:
 				+ Perf: accumulate points from first pass in vector for 2nd pass

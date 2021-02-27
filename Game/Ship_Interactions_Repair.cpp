@@ -310,18 +310,16 @@ void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
         vec2f const ps0Vector = s0Position - pPosition;
         vec2f const ps1Vector = s1Position - pPosition;
 
-        // TODOTEST
         if ((deltaOctant < 4 && ps1Vector.cross(ps0Vector) < 0.0f) // Delta < 4: spring 1 must be to the R of spring 0
             || (deltaOctant > 4 && ps1Vector.cross(ps0Vector) > 0.0f)) // Delta > 4: spring 1 must be to the L of spring 0
-        ////if ((deltaOctant > 1 && deltaOctant < 4 && ps1Vector.cross(ps0Vector) < 0.0f) // Delta < 4: spring 1 must be to the R of spring 0
-        ////    || (deltaOctant > 4 && deltaOctant < 7 && ps1Vector.cross(ps0Vector) > 0.0f)) // Delta > 4: spring 1 must be to the L of spring 0
         {
             // Reflect P onto the other side of the S0S1 vector: S0P' = PS0 - S0S1 * 2 * (PS0 dot S0S1) / |S0S1|^2
             vec2f const s0s1Vector = s0Position - s1Position;
             vec2f const newPPosition = s0Position + ps0Vector - s0s1Vector * 2.0f * (ps0Vector.dot(s0s1Vector)) / s0s1Vector.squareLength();
 
             LogMessage(deltaOctant, "-Arc Detected (new): ", mSprings.GetOtherEndpointIndex(connectedSprings[0].SpringIndex, pointIndex), " --> ", pointIndex, " --> ", mSprings.GetOtherEndpointIndex(connectedSprings[1].SpringIndex, pointIndex),
-                " newPos: ", newPPosition.toString());
+                " Cross=", ps1Vector.cross(ps0Vector),
+                " NewPos: ", newPPosition.toString());
 
             // Set position
             mPoints.SetPosition(
@@ -330,65 +328,6 @@ void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
                     GameParameters::HalfMaxWorldWidth,
                     -GameParameters::HalfMaxWorldHeight,
                     GameParameters::HalfMaxWorldHeight));
-        }
-
-        //
-        // TODOTEST TODOOLD
-        //
-        {
-            ElementIndex prSpring, plSpring;
-            Octant prOctant, plOctant;
-
-            if (spring1Octant == spring0Octant + 2
-                || (spring1Octant < 2 && spring1Octant == spring0Octant + 2 - 8))
-            {
-                prSpring = connectedSprings[1].SpringIndex;
-                prOctant = spring1Octant;
-                plSpring = connectedSprings[0].SpringIndex;
-                plOctant = spring0Octant;
-            }
-            else if (spring0Octant == spring1Octant + 2
-                || (spring0Octant < 2 && spring0Octant == spring1Octant + 2 - 8))
-            {
-                prSpring = connectedSprings[0].SpringIndex;
-                prOctant = spring0Octant;
-                plSpring = connectedSprings[1].SpringIndex;
-                plOctant = spring1Octant;
-            }
-            else
-            {
-                // Not under our jurisdiction
-                return;
-            }
-
-            // Check if PR is still at the right or PL
-
-            vec2f const & pPosition = mPoints.GetPosition(pointIndex);
-            vec2f const & lPosition = mPoints.GetPosition(mSprings.GetOtherEndpointIndex(plSpring, pointIndex));
-            vec2f const & rPosition = mPoints.GetPosition(mSprings.GetOtherEndpointIndex(prSpring, pointIndex));
-
-            vec2f const prVector = rPosition - pPosition;
-            vec2f const plVector = lPosition - pPosition;
-            if (prVector.cross(plVector) < 0.0f)
-            {
-                //
-                // This arc needs to be straightened
-                //
-
-                // Reflect P onto the other side of the RL vector: RP' = PR - RL * 2 * (PR dot RL) / |RL|^2
-                vec2f const rlVector = lPosition - rPosition;
-                vec2f const newPPosition = rPosition + prVector - rlVector * 2.0f * (prVector.dot(rlVector)) / rlVector.squareLength();
-
-                ////// Set position
-                ////mPoints.SetPosition(
-                ////    pointIndex,
-                ////    newPPosition.clamp(-GameParameters::HalfMaxWorldWidth,
-                ////        GameParameters::HalfMaxWorldWidth,
-                ////        -GameParameters::HalfMaxWorldHeight,
-                ////        GameParameters::HalfMaxWorldHeight));
-                LogMessage("2-Arc Detected (old): ", mSprings.GetOtherEndpointIndex(plSpring, pointIndex), " --> ", pointIndex, " --> ", mSprings.GetOtherEndpointIndex(prSpring, pointIndex),
-                    " newPos: ", newPPosition.toString());
-            }
         }
     }
 }
