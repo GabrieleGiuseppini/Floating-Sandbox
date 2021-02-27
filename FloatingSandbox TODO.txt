@@ -665,7 +665,7 @@ Render:
 					= If works, consider doing trying these which at the moment we can't do because of
 					  folded structures:
 						x Remove role-taking: allow attractor to take on role of attractee, and viceversa
-						- Lower distance tolerance (e.g. 0.03 or lower), to prevent newly-repaired springs from breaking up immediately again
+						+ Lower distance tolerance (e.g. 0.03 or lower), to prevent newly-repaired springs from breaking up immediately again
 						- Allow each particle to act as attractee only once per step
 				+ Larger radius: 4
 				+ Final velocity of restored particle is avg of all connected
@@ -681,8 +681,7 @@ Render:
 						- Perf: 
 							- Store in-radius points at first pass, and keep using it
 								- Nuke subsequent useless radius checks
-							- Avoid queuing for out-of-radius
-						
+							- Avoid queuing for out-of-radius						
 				- See if may simplify octant finding by considering just one spring (say, nearest CCW)
 			- Final:
 				+ Perf: accumulate points from first pass in vector for 2nd pass

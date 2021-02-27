@@ -459,8 +459,8 @@ bool Ship::RepairFromAttractor(
     // Note: a higher tolerance here causes springs to...spring into life
     // already stretched or compressed, generating an undesirable force impulse
     //
-    // - Shipped 1.13 with 0.07
-    float constexpr DisplacementTolerance = 0.06f;
+    // - Shipped 1.13 with 0.07 and up to 1.16.2 with 0.06
+    float constexpr DisplacementTolerance = 0.05f;
 
     ////////////////////////////////////////////////////////////////////////////
 
