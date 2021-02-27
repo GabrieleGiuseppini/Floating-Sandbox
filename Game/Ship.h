@@ -545,7 +545,7 @@ private:
         GameParameters const & gameParameters);
 
     bool RepairFromAttractor(
-        ElementIndex pointIndex,
+        ElementIndex attractorPointIndex,
         float repairStrength,
         SequenceNumber repairStepId,
         GameParameters const & gameParameters);
