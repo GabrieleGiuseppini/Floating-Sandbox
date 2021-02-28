@@ -685,7 +685,7 @@ Render:
 							+ Avoid queuing for out-of-radius
 				+ Expand delta2 trick to all deltas
 				+ See if may simplify octant finding by considering just one spring (say, nearest CCW)
-				- Clear visit seq at repaired
+				+ Clear visit seq at repaired
 				- Scale forces on attractee depending on # of its springs
 					- Grow with # of springs
 			- Final:

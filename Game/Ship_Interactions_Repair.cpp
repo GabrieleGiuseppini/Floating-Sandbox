@@ -317,6 +317,7 @@ void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
             vec2f const s0s1Vector = s0Position - s1Position;
             vec2f const newPPosition = s0Position + ps0Vector - s0s1Vector * 2.0f * (ps0Vector.dot(s0s1Vector)) / s0s1Vector.squareLength();
 
+            // TODOTEST
             LogMessage(deltaOctant, "-Arc Detected (new): ", mSprings.GetOtherEndpointIndex(connectedSprings[0].SpringIndex, pointIndex), " --> ", pointIndex, " --> ", mSprings.GetOtherEndpointIndex(connectedSprings[1].SpringIndex, pointIndex),
                 " Cross=", ps1Vector.cross(ps0Vector),
                 " NewPos: ", newPPosition.toString());
@@ -707,6 +708,7 @@ bool Ship::RepairFromAttractor(
                             // Hammer-boost
                             displacementToleranceBoost = 3.0f;
 
+                            // TODOTEST
                             LogMessage("Repair: particle Hammer-Boost");
                         }
                     }
@@ -797,9 +799,10 @@ bool Ship::RepairFromAttractor(
 
                     assert(!mSprings.IsDeleted(fcs.SpringIndex));
 
-                    // Forget that the attractee has been an attractee in this step,
-                    // so that it might soon take the role of attractor
+                    // Forget that the attractee has been an attractee in this step, to allow it
+                    // to soon take the role of attractor
                     mPoints.GetRepairState(attracteePointIndex).LastAttracteeRepairStepId = SequenceNumber::None();
+                    mPoints.GetRepairState(attracteePointIndex).CurrentAttractorPropagationVisitStepId = SequenceNumber::None();
 
                     // Impart to the attractee the average velocity of all of its
                     // connected particles, including the attractor's
