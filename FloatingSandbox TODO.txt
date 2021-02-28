@@ -690,8 +690,8 @@ Render:
 					+ Grow with # of springs
 			- Final:
 				+ Perf: accumulate points from first pass in vector for 2nd pass
-				- Cleanup TODOs
-				- Run in Debug
+				+ Cleanup TODOs
+				+ Run in Debug
 				- Check perf on old Dell
 					- See if time for powerup should be better done with wall clock
 			+ changelist
