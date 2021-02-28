@@ -706,7 +706,7 @@ bool Ship::RepairFromAttractor(
                             && (attracteeDurationSteps % 32) == 0)
                         {
                             // Hammer-boost
-                            displacementToleranceBoost = 3.0f;
+                            displacementToleranceBoost = 3.5f;
 
                             // TODOTEST
                             LogMessage("Repair: particle Hammer-Boost");
@@ -716,13 +716,18 @@ bool Ship::RepairFromAttractor(
                     {
                         // Connected
                         //
-                        // Reach max after a while
+                        // Ramp up forces over time
 
                         int constexpr MaxSimulatedFrames = 15 * 64; // 15 simulated seconds at 64fps
 
+                        // Allow chains to move slower and thus have more chances to attach
+                        float const timeAdjustment = (mPoints.GetConnectedSprings(attracteePointIndex).ConnectedSprings.size() == 1)
+                            ? 1.6f
+                            : 1.0f;
+
                         movementSmoothing = SmoothStep(
                             0.0f,
-                            static_cast<float>(MaxSimulatedFrames) / gameParameters.RepairSpeedAdjustment,
+                            static_cast<float>(MaxSimulatedFrames) * timeAdjustment / gameParameters.RepairSpeedAdjustment,
                             static_cast<float>(attracteeDurationSteps));
 
                         if (attracteeDurationSteps >= MaxSimulatedFrames
