@@ -316,6 +316,7 @@ void World::RepairAt(
 void World::SawThrough(
     vec2f const & startPos,
     vec2f const & endPos,
+    bool isFirstSegment,
     GameParameters const & gameParameters)
 {
     for (auto & ship : mAllShips)
@@ -323,6 +324,7 @@ void World::SawThrough(
         ship->SawThrough(
             startPos,
             endPos,
+            isFirstSegment,
             mCurrentSimulationTime,
             gameParameters);
     }

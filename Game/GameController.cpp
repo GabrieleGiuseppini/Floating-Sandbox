@@ -781,7 +781,8 @@ void GameController::RepairAt(
 
 void GameController::SawThrough(
     LogicalPixelCoordinates const & startScreenCoordinates,
-    LogicalPixelCoordinates const & endScreenCoordinates)
+    LogicalPixelCoordinates const & endScreenCoordinates,
+    bool isFirstSegment)
 {
     vec2f const startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
     vec2f const endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
@@ -791,6 +792,7 @@ void GameController::SawThrough(
     mWorld->SawThrough(
         startWorldCoordinates,
         endWorldCoordinates,
+        isFirstSegment,
         mGameParameters);
 }
 

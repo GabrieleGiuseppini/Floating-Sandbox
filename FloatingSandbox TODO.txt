@@ -684,9 +684,10 @@ Render:
 								+ Nuke subsequent useless radius checks
 							+ Avoid queuing for out-of-radius
 				+ Expand delta2 trick to all deltas
+				+ See if may simplify octant finding by considering just one spring (say, nearest CCW)
+				- Clear visit seq at repaired
 				- Scale forces on attractee depending on # of its springs
 					- Grow with # of springs
-				- See if may simplify octant finding by considering just one spring (say, nearest CCW)
 			- Final:
 				+ Perf: accumulate points from first pass in vector for 2nd pass
 				- Cleanup TODOs
@@ -696,6 +697,7 @@ Render:
 			- changelist
 
 		- Waves:
+			- See Base III
 			- Try to smoothen peaks with avg=5
 			- See maximum adjust
 

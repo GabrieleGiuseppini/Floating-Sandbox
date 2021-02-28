@@ -163,6 +163,7 @@ SawTool::SawTool(
     , mDownCursorImage1(WxHelpers::LoadCursorImage("chainsaw_cursor_down_1", 8, 20, resourceLocator))
     , mDownCursorImage2(WxHelpers::LoadCursorImage("chainsaw_cursor_down_2", 8, 20, resourceLocator))
     , mPreviousMousePos()
+    , mIsFirstSegment(false)
     , mDownCursorCounter(0)
     , mIsUnderwater(false)
 {

@@ -139,6 +139,7 @@ public:
     void SawThrough(
         vec2f const & startPos,
         vec2f const & endPos,
+        bool isFirstSegment,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 

@@ -211,6 +211,7 @@ public:
     void SawThrough(
         vec2f const & startPos,
         vec2f const & endPos,
+        bool isFirstSegment,
         GameParameters const & gameParameters);
 
     bool ApplyHeatBlasterAt(

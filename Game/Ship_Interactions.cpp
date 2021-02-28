@@ -434,12 +434,17 @@ bool Ship::DestroyAt(
 void Ship::SawThrough(
     vec2f const & startPos,
     vec2f const & endPos,
+    bool isFirstSegment,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     //
     // Find all springs that intersect the saw segment
     //
+
+    vec2f const adjustedStartPos = isFirstSegment
+        ? startPos
+        : (startPos - (endPos - startPos).normalise() * 1.0f);
 
     unsigned int metalsSawed = 0;
     unsigned int nonMetalsSawed = 0;
@@ -449,7 +454,7 @@ void Ship::SawThrough(
         if (!mSprings.IsDeleted(springIndex))
         {
             if (Segment::ProperIntersectionTest(
-                startPos,
+                adjustedStartPos,
                 endPos,
                 mSprings.GetEndpointAPosition(springIndex, mPoints),
                 mSprings.GetEndpointBPosition(springIndex, mPoints)))
@@ -470,7 +475,7 @@ void Ship::SawThrough(
                     // Emit sparkles
                     GenerateSparklesForCut(
                         springIndex,
-                        startPos,
+                        adjustedStartPos,
                         endPos,
                         currentSimulationTime,
                         gameParameters);

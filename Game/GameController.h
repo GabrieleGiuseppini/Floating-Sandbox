@@ -175,7 +175,7 @@ public:
     void Pull(ElementId elementId, LogicalPixelCoordinates const & screenTarget) override;
     void DestroyAt(LogicalPixelCoordinates const & screenCoordinates, float radiusMultiplier) override;
     void RepairAt(LogicalPixelCoordinates const & screenCoordinates, float radiusMultiplier, SequenceNumber repairStepId) override;
-    void SawThrough(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates) override;
+    void SawThrough(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates, bool isFirstSegment) override;
     bool ApplyHeatBlasterAt(LogicalPixelCoordinates const & screenCoordinates, HeatBlasterActionType action) override;
     bool ExtinguishFireAt(LogicalPixelCoordinates const & screenCoordinates) override;
     void DrawTo(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) override;

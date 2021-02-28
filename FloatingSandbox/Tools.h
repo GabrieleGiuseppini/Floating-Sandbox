@@ -877,6 +877,7 @@ public:
         {
             // Initialize state
             mPreviousMousePos = inputState.MousePosition;
+            mIsFirstSegment = true;
             mIsUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
 
             // Start sound
@@ -902,7 +903,7 @@ public:
     {
         if (inputState.IsLeftMouseDown)
         {
-            // Update underwater-ness
+            // Update underwater-ness of sound
             bool isUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
             if (isUnderwater != mIsUnderwater)
             {
@@ -923,11 +924,15 @@ public:
     {
         if (inputState.IsLeftMouseDown)
         {
-            if (!!mPreviousMousePos)
+            if (mPreviousMousePos.has_value())
             {
                 mGameController->SawThrough(
                     *mPreviousMousePos,
-                    inputState.MousePosition);
+                    inputState.MousePosition,
+                    mIsFirstSegment);
+
+                // Not anymore the first segment
+                mIsFirstSegment = false;
             }
 
             // Remember the next previous mouse position
@@ -939,6 +944,7 @@ public:
     {
         // Initialize state
         mPreviousMousePos = inputState.MousePosition;
+        mIsFirstSegment = true;
         mIsUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
 
         // Start sound
@@ -990,6 +996,9 @@ private:
 
     // The previous mouse position; when set, we have a segment and can saw
     std::optional<LogicalPixelCoordinates> mPreviousMousePos;
+
+    // True when this is the first mouse move of a series
+    bool mIsFirstSegment;
 
     // The current counter for the down cursors
     uint8_t mDownCursorCounter;
