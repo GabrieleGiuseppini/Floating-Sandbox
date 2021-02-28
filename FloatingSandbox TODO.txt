@@ -622,6 +622,8 @@ Render:
 					- See if may statically link		
 
 		- Second look at DKUZ's bug
+			- Ensure that it's due to negative values in fragment shader when vertex shader always has positive
+				- Test shader: clamp at vertex, quantize at fragment when negative
 			- See if it only happens with Line primitives (i.e. that it doesn't happen with Triangle primitives)
 
 		- Timcan bug with engine sound goin' off
@@ -688,13 +690,13 @@ Render:
 				+ Clear visit seq at repaired
 				+ Scale forces on attractee depending on # of its springs
 					+ Grow with # of springs
-			- Final:
+			+ Final:
 				+ Perf: accumulate points from first pass in vector for 2nd pass
 				+ Cleanup TODOs
 				+ Run in Debug
-				- Check perf on old Dell
-					- See if time for powerup should be better done with wall clock
+				+ Check perf on old Dell
 			+ changelist
+			- Merge
 
 		- Waves:
 			- See Base III
