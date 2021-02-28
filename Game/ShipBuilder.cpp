@@ -785,9 +785,9 @@ void ShipBuilder::AppendRopes(
             ElementIndex const springIndex = static_cast<ElementIndex>(springInfos1.size());
             springInfos1.emplace_back(
                 curStartPointIndex,
-                factoryDirectionStart,
+                factoryDirectionEnd,
                 newPointIndex,
-                factoryDirectionEnd);
+                factoryDirectionStart);
 
             // Add spring to point pair map
             auto const [_, isInserted] = pointPairToSpringIndex1Map.try_emplace({ curStartPointIndex , newPointIndex }, springIndex);
@@ -820,9 +820,9 @@ void ShipBuilder::AppendRopes(
         ElementIndex const lastSpringIndex = static_cast<ElementIndex>(springInfos1.size());
         springInfos1.emplace_back(
             curStartPointIndex,
-            0,  // Arbitrary factory direction (E)
+            factoryDirectionEnd,
             ropeSegment.PointBIndex1,
-            4); // Arbitrary factory direction (W)
+            factoryDirectionStart);
 
         // Add spring to point pair map
         auto const [_, isInserted] = pointPairToSpringIndex1Map.try_emplace(
