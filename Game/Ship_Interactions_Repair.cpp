@@ -26,7 +26,6 @@ void Ship::RepairAt(
 
     float const squareSearchRadius = searchRadius * searchRadius;
 
-    ////// TODOTEST
     ////mDebugMarker.ClearPointToPointArrows();
 
     //
@@ -50,17 +49,18 @@ void Ship::RepairAt(
     }
 
     //
-    // Pass 2: visit all points that had been attractors in the previous step
+    // Pass 2: visit all points that had been attractors in the previous 2 step2
     //
     // This is to prevent attractors and attractees from flipping roles during a session;
     // an attractor will continue to be an attractor until it needs reparation
     //
 
-    // Visit all (in-radius) non-ephemeral points that had been attractors in the previous step
     auto const previousStep = repairStepId.Previous();
+    auto const previousPreviousStep = previousStep.Previous();
     for (auto const pointIndex : pointsInRadius)
     {
-        if (mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId == previousStep)
+        if (mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId == previousStep
+            || mPoints.GetRepairState(pointIndex).LastAttractorRepairStepId == previousPreviousStep)
         {
             TryRepairAndPropagateFromPoint(
                 pointIndex,
@@ -316,11 +316,6 @@ void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
             // Reflect P onto the other side of the S0S1 vector: S0P' = PS0 - S0S1 * 2 * (PS0 dot S0S1) / |S0S1|^2
             vec2f const s0s1Vector = s0Position - s1Position;
             vec2f const newPPosition = s0Position + ps0Vector - s0s1Vector * 2.0f * (ps0Vector.dot(s0s1Vector)) / s0s1Vector.squareLength();
-
-            // TODOTEST
-            LogMessage(deltaOctant, "-Arc Detected (new): ", mSprings.GetOtherEndpointIndex(connectedSprings[0].SpringIndex, pointIndex), " --> ", pointIndex, " --> ", mSprings.GetOtherEndpointIndex(connectedSprings[1].SpringIndex, pointIndex),
-                " Cross=", ps1Vector.cross(ps0Vector),
-                " NewPos: ", newPPosition.toString());
 
             // Set position
             mPoints.SetPosition(
@@ -653,7 +648,6 @@ bool Ship::RepairFromAttractor(
                     continue;
                 }
 
-                ////// TODOTEST
                 ////mDebugMarker.AddPointToPointArrow(
                 ////    mPoints.GetPlaneId(otherEndpointIndex),
                 ////    mPoints.GetPosition(otherEndpointIndex),
@@ -707,9 +701,6 @@ bool Ship::RepairFromAttractor(
                         {
                             // Hammer-boost
                             displacementToleranceBoost = 3.5f;
-
-                            // TODOTEST
-                            LogMessage("Repair: particle Hammer-Boost");
                         }
                     }
                     else

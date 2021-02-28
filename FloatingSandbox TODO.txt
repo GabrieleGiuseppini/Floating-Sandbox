@@ -686,15 +686,15 @@ Render:
 				+ Expand delta2 trick to all deltas
 				+ See if may simplify octant finding by considering just one spring (say, nearest CCW)
 				+ Clear visit seq at repaired
-				- Scale forces on attractee depending on # of its springs
-					- Grow with # of springs
+				+ Scale forces on attractee depending on # of its springs
+					+ Grow with # of springs
 			- Final:
 				+ Perf: accumulate points from first pass in vector for 2nd pass
 				- Cleanup TODOs
 				- Run in Debug
 				- Check perf on old Dell
 					- See if time for powerup should be better done with wall clock
-			- changelist
+			+ changelist
 
 		- Waves:
 			- See Base III
