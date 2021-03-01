@@ -968,18 +968,18 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
 
     // Prepare elements for layout helper
     std::vector<LayoutHelper::LayoutElement<ElectricalElementId>> layoutElements;
-    for (auto const it : mElementMap)
+    for (auto const & entry : mElementMap)
     {
         // Ignore if hidden
-        if (nullptr != it.second.Control)
+        if (nullptr != entry.second.Control)
         {
-            if (!!(it.second.PanelElementMetadata))
+            if (entry.second.PanelElementMetadata.has_value())
                 layoutElements.emplace_back(
-                    it.first,
-                    it.second.PanelElementMetadata->PanelCoordinates);
+                    entry.first,
+                    entry.second.PanelElementMetadata->PanelCoordinates);
             else
                 layoutElements.emplace_back(
-                    it.first,
+                    entry.first,
                     std::nullopt);
         }
     }

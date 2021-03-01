@@ -1328,14 +1328,14 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
     // Verify all panel metadata indices are valid instance IDs
     //
 
-    for (auto const it : panelMetadata)
+    for (auto const & entry : panelMetadata)
     {
         if (std::find(
             electricalElementInstanceIndices.cbegin(),
             electricalElementInstanceIndices.cend(),
-            it.first) == electricalElementInstanceIndices.cend())
+            entry.first) == electricalElementInstanceIndices.cend())
         {
-            throw GameException("Index '" + std::to_string(it.first) + "' of electrical panel metadata cannot be found among electrical element indices");
+            throw GameException("Index '" + std::to_string(entry.first) + "' of electrical panel metadata cannot be found among electrical element indices");
         }
     }
 

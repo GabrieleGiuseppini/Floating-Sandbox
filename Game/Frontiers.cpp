@@ -944,7 +944,7 @@ inline bool Frontiers::ProcessTriangleCuspDestroy(
                 // stays and the other portion becomes the new frontier)
                 //
 
-                FrontierId const newFrontierId = SplitIntoNewFrontier(
+                SplitIntoNewFrontier(
                     mFrontierEdges[edgeIn].NextEdgeIndex,
                     mFrontierEdges[edgeOut].PrevEdgeIndex,
                     frontierInId,

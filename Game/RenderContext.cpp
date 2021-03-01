@@ -60,6 +60,8 @@ RenderContext::RenderContext(
     , mRenderThread(CalculateDoForceNoMultithreadedRendering(renderDeviceProperties.DoForceNoMultithreadedRendering))
     , mLastRenderUploadEndCompletionIndicator()
     , mLastRenderDrawCompletionIndicator()
+    // Shader manager
+    , mShaderManager()
     // Child contextes
     , mGlobalRenderContext()
     , mWorldRenderContext()
@@ -73,8 +75,6 @@ RenderContext::RenderContext(
     , mVectorFieldLengthMultiplier(1.0f)
     // Rendering externals
     , mSwapRenderBuffersFunction(renderDeviceProperties.SwapRenderBuffersFunction)
-    // Shader manager
-    , mShaderManager()
     // Render parameters
     , mRenderParameters(
         renderDeviceProperties.InitialCanvasSize,

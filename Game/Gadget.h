@@ -191,7 +191,7 @@ protected:
     /*
      * Returns the plane ID of this gadget.
      */
-    inline PlaneId const GetPlaneId() const
+    inline PlaneId GetPlaneId() const
     {
         return mShipPoints.GetPlaneId(mPointIndex);
     }
