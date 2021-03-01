@@ -560,6 +560,74 @@ Render:
 		+ Waves from ship (*)
 		+ Send for testing
 		+ DKUZ bug with yellow dots
+		+ Repair improvement:
+			+ See if it's due to triangle forming folded
+				+ Add log when we calc a point's destination, if that point repair would result in a new triangle
+				  that is NOT clockwise wrt current point positions
+				+ Prevent CCW triangle from being formed altogether
+			+ Improvements to try:
+				X Attractor must have more springs attached than attractee
+				+ Local consistency of attractor/attractee roles: ensure that if one particle is attractor, also its directed neighbors are
+					! Spec:
+						- Pass 1: for each point p that is in radius and which was an attractor in the previous step and which has not been an attractee in this step
+						  and which needs reparation:
+							- RepairFromPoint(p)
+								- Conditions for being an attractee: not having been an attractor in this step
+								- Upon spring restore: forget attractee role at this step
+							- Visit all points p' from graph visit starting at p, such that: p' is in radius and needs reparation and has not been an attractor in this step and has
+							  not been an attractee in this step
+								- Do visit breadth first, truncating when not in radius or when doesn't need reparation or when has been attractee in this step or when has been attractor
+								  in this step
+						- Pass 2: find new points p that are in radius and which have not been already an attractor in this step and which have not been an attractee in this step
+						  and which need reparation:
+							- RepairFromPoint(p)
+							- Visit all points p' from graph visit starting at p, such that: ...
+					+ Impl:
+						+ Move repair code to own source file
+						+ Points::RepairState:
+							+ LastAttractorRepairStepSequenceNumber, LastAttractee...: type is SequenceNumber
+						+ Tool:
+							+ Pass just sequence number
+							+ Increase seq num (skip) at each mouse down
+						+ Do
+				+ See why roles sometimes flip
+					+ Attractee from prev step becomes attractor
+				+ Try to straighten out CCW structures
+					+ Idea 1: as a separate, initial step, before repairing: for each two-now_naked-spring arc, make sure two springs are in right angle wrt central point
+					+ Idea 2: expand idea 1: as a pre-step: for each in-radius point: for each naked spring: make sure it's in right angle
+					+ If works, consider doing trying these which at the moment we can't do because of
+					  folded structures:
+						x Remove role-taking: allow attractor to take on role of attractee, and viceversa
+						+ Lower distance tolerance (e.g. 0.03 or lower), to prevent newly-repaired springs from breaking up immediately again
+						x Allow each particle to act as attractee only once per step
+				+ Larger radius: 4
+				+ Final velocity of restored particle is avg of all connected
+				+ Velocities:
+					X Issue with half titanic: try with more inertial velocity
+					X Issue with dancing dots: try: target pos is half-way between offseted with attractor's velocity * dt
+						+ Variable names for point/other endpoint: attractorPoint and attracteePoint
+				+ Final boost after max consecutive number of steps
+				+ Test 2 repair settings extremes
+					+ Speed
+						+ Fixed max
+						+ Rewrite so that adjustment changes smoothstep's time horizon
+					+ Radius: see why slows down @ 10
+						+ Perf:
+							+ Store in-radius points at first pass, and keep using it
+								+ Nuke subsequent useless radius checks
+							+ Avoid queuing for out-of-radius
+				+ Expand delta2 trick to all deltas
+				+ See if may simplify octant finding by considering just one spring (say, nearest CCW)
+				+ Clear visit seq at repaired
+				+ Scale forces on attractee depending on # of its springs
+					+ Grow with # of springs
+			+ Final:
+				+ Perf: accumulate points from first pass in vector for 2nd pass
+				+ Cleanup TODOs
+				+ Run in Debug
+				+ Check perf on old Dell
+			+ changelist
+			+ Merge
 
 		= MAC:
 			= Full high-DPI path:
@@ -623,80 +691,13 @@ Render:
 
 		- Second look at DKUZ's bug
 			- Ensure that it's due to negative values in fragment shader when vertex shader always has positive
-				- Test shader: clamp at vertex, quantize at fragment when negative
+				- Test shader: remove fix; clamp at vertex, quantize at fragment when negative
 			- See if it only happens with Line primitives (i.e. that it doesn't happen with Triangle primitives)
 
 		- Timcan bug with engine sound goin' off
 			- "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
+				- Ask if not due to engine breaking
 
-		= Repair improvement:
-			+ See if it's due to triangle forming folded
-				+ Add log when we calc a point's destination, if that point repair would result in a new triangle
-				  that is NOT clockwise wrt current point positions
-				+ Prevent CCW triangle from being formed altogether
-			= Improvements to try:
-				X Attractor must have more springs attached than attractee
-				+ Local consistency of attractor/attractee roles: ensure that if one particle is attractor, also its directed neighbors are
-					! Spec:
-						- Pass 1: for each point p that is in radius and which was an attractor in the previous step and which has not been an attractee in this step
-						  and which needs reparation:
-							- RepairFromPoint(p)
-								- Conditions for being an attractee: not having been an attractor in this step
-								- Upon spring restore: forget attractee role at this step
-							- Visit all points p' from graph visit starting at p, such that: p' is in radius and needs reparation and has not been an attractor in this step and has
-							  not been an attractee in this step
-								- Do visit breadth first, truncating when not in radius or when doesn't need reparation or when has been attractee in this step or when has been attractor
-								  in this step
-						- Pass 2: find new points p that are in radius and which have not been already an attractor in this step and which have not been an attractee in this step
-						  and which need reparation:
-							- RepairFromPoint(p)
-							- Visit all points p' from graph visit starting at p, such that: ...
-					+ Impl:
-						+ Move repair code to own source file
-						+ Points::RepairState:
-							+ LastAttractorRepairStepSequenceNumber, LastAttractee...: type is SequenceNumber
-						+ Tool:
-							+ Pass just sequence number
-							+ Increase seq num (skip) at each mouse down
-						+ Do
-				+ See why roles sometimes flip
-					+ Attractee from prev step becomes attractor
-				+ Try to straighten out CCW structures
-					+ Idea 1: as a separate, initial step, before repairing: for each two-now_naked-spring arc, make sure two springs are in right angle wrt central point
-					+ Idea 2: expand idea 1: as a pre-step: for each in-radius point: for each naked spring: make sure it's in right angle
-					+ If works, consider doing trying these which at the moment we can't do because of
-					  folded structures:
-						x Remove role-taking: allow attractor to take on role of attractee, and viceversa
-						+ Lower distance tolerance (e.g. 0.03 or lower), to prevent newly-repaired springs from breaking up immediately again
-						x Allow each particle to act as attractee only once per step
-				+ Larger radius: 4
-				+ Final velocity of restored particle is avg of all connected
-				+ Velocities:
-					X Issue with half titanic: try with more inertial velocity
-					X Issue with dancing dots: try: target pos is half-way between offseted with attractor's velocity * dt
-						+ Variable names for point/other endpoint: attractorPoint and attracteePoint
-				+ Final boost after max consecutive number of steps
-				+ Test 2 repair settings extremes
-					+ Speed
-						+ Fixed max
-						+ Rewrite so that adjustment changes smoothstep's time horizon
-					+ Radius: see why slows down @ 10
-						+ Perf:
-							+ Store in-radius points at first pass, and keep using it
-								+ Nuke subsequent useless radius checks
-							+ Avoid queuing for out-of-radius
-				+ Expand delta2 trick to all deltas
-				+ See if may simplify octant finding by considering just one spring (say, nearest CCW)
-				+ Clear visit seq at repaired
-				+ Scale forces on attractee depending on # of its springs
-					+ Grow with # of springs
-			+ Final:
-				+ Perf: accumulate points from first pass in vector for 2nd pass
-				+ Cleanup TODOs
-				+ Run in Debug
-				+ Check perf on old Dell
-			+ changelist
-			- Merge
 
 		- Waves:
 			- See Base III
