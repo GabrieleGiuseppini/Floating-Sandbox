@@ -690,9 +690,15 @@ Render:
 					- See if may statically link		
 
 		- Second look at DKUZ's bug
-			- Ensure that it's due to negative values in fragment shader when vertex shader always has positive
-				- Test shader: remove fix; clamp at vertex, quantize at fragment when negative
-			- See if it only happens with Line primitives (i.e. that it doesn't happen with Triangle primitives)
+			+ Was there in 1.16.2 as well
+			+ Repro's with float uniform, clamped between 0.0 and 1.0
+			+ Ensure that it's due to negative values in fragment shader when vertex shader always has positive
+				+ Test shader: remove fix; clamp at vertex
+				+ Quantize at fragment when negative
+			+ See if it only happens with Line primitives (i.e. that it doesn't happen with Triangle primitives)
+				+ It doesn't happen with Triangle primitives
+			- Use #define for turning on/off clamping
+			- Use in other shaders as well, draw tree
 
 		- Timcan bug with engine sound goin' off
 			- "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
