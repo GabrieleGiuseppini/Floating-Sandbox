@@ -258,9 +258,9 @@ private:
         std::string const & source,
         std::map<std::string, std::string> const & staticParameters);
 
-    static std::set<typename Traits::ProgramParameterType> ExtractShaderParameters(std::string const & source);
+    static std::set<std::string> ExtractVertexAttributeNames(GameOpenGLShaderProgram const & shaderProgram);
 
-    static std::set<std::string> ExtractVertexAttributeNames(std::string const & source);
+    static std::set<std::string> ExtractParameterNames(GameOpenGLShaderProgram const & shaderProgram);
 
 private:
 

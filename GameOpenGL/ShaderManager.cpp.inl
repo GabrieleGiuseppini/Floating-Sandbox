@@ -15,8 +15,7 @@
 static const std::string StaticParametersFilenameStem = "static_parameters";
 
 template<typename Traits>
-ShaderManager<Traits>::ShaderManager(
-    std::filesystem::path const & shadersRoot)
+ShaderManager<Traits>::ShaderManager(std::filesystem::path const & shadersRoot)
 {
     if (!std::filesystem::exists(shadersRoot))
         throw GameException("Shaders root path \"" + shadersRoot.string() + "\" does not exist");
@@ -99,7 +98,7 @@ template<typename Traits>
 void ShaderManager<Traits>::CompileShader(
     std::string const & shaderFilename,
     std::string const & shaderSource,
-    std::unordered_map<std::string, std::pair<bool, std::string>> const & shaderSources,
+    std::unordered_map<std::string, std::pair<bool, std::string>> const & allShaderSources,
     std::map<std::string, std::string> const & staticParameters)
 {
     try
@@ -122,12 +121,16 @@ void ShaderManager<Traits>::CompileShader(
         // Resolve includes
         std::string preprocessedShaderSource = ResolveIncludes(
             shaderSource,
-            shaderSources);
+            allShaderSources);
 
         // Split the source file
         auto [vertexShaderSource, fragmentShaderSource] = SplitSource(preprocessedShaderSource);
 
+
+        //
         // Create program
+        //
+
         mPrograms[programIndex].OpenGLHandle = glCreateProgram();
         CheckOpenGLError();
 
@@ -159,10 +162,17 @@ void ShaderManager<Traits>::CompileShader(
 
 
         //
+        // Link a first time, to enable extraction of attributes and uniforms
+        //
+
+        GameOpenGL::LinkShaderProgram(mPrograms[programIndex].OpenGLHandle, programName);
+
+
+        //
         // Extract attribute names from vertex shader and bind them
         //
 
-        std::set<std::string> vertexAttributeNames = ExtractVertexAttributeNames(vertexShaderSource);
+        std::set<std::string> vertexAttributeNames = ExtractVertexAttributeNames(mPrograms[programIndex].OpenGLHandle);
 
         for (auto const & vertexAttributeName : vertexAttributeNames)
         {
@@ -176,7 +186,7 @@ void ShaderManager<Traits>::CompileShader(
 
 
         //
-        // Link
+        // Link a second time, to freeze vertex attribute binding
         //
 
         GameOpenGL::LinkShaderProgram(mPrograms[programIndex].OpenGLHandle, programName);
@@ -188,12 +198,12 @@ void ShaderManager<Traits>::CompileShader(
 
         std::vector<GLint> uniformLocations;
 
-        auto allProgramParameters = ExtractShaderParameters(vertexShaderSource);
-        auto fragmentShaderParameters = ExtractShaderParameters(fragmentShaderSource);
-        allProgramParameters.merge(fragmentShaderParameters);
+        std::set<std::string> parameterNames = ExtractParameterNames(mPrograms[programIndex].OpenGLHandle);
 
-        for (typename Traits::ProgramParameterType programParameter : allProgramParameters)
+        for (auto const & parameterName : parameterNames)
         {
+            auto programParameter = Traits::StrToProgramParameterType(parameterName);
+
             // Make sure there is room
             size_t programParameterIndex = static_cast<size_t>(programParameter);
             while (mPrograms[programIndex].UniformLocations.size() <= programParameterIndex)
@@ -436,52 +446,36 @@ std::string ShaderManager<Traits>::SubstituteStaticParameters(
 }
 
 template<typename Traits>
-std::set<typename Traits::ProgramParameterType> ShaderManager<Traits>::ExtractShaderParameters(std::string const & source)
+std::set<std::string> ShaderManager<Traits>::ExtractVertexAttributeNames(GameOpenGLShaderProgram const & shaderProgram)
 {
-    static std::regex ShaderParamNameRegex(R"!(^\s*(//\s*)?\buniform\s+.*\s+param([_a-zA-Z0-9]+);\s*(?://.*)?$)!");
-
-    std::set<typename Traits::ProgramParameterType> shaderParameters;
-
-    std::stringstream sSource(source);
-    std::string line;
-    std::smatch match;
-    while (std::getline(sSource, line))
-    {
-        if (std::regex_match(line, match, ShaderParamNameRegex))
-        {
-            assert(3 == match.size());
-            if (!match[1].matched) // Not a comment
-            {
-                auto const & shaderParameterName = match[2].str();
-
-                // Lookup the parameter
-                typename Traits::ProgramParameterType shaderParameter = Traits::StrToProgramParameterType(shaderParameterName);
-
-                // Store it, making sure it's not specified more than once
-                if (!shaderParameters.insert(shaderParameter).second)
-                {
-                    throw GameException("Shader parameter \"" + shaderParameterName + "\" is declared more than once");
-                }
-            }
-        }
-    }
-
-    return shaderParameters;
-}
-
-template<typename Traits>
-std::set<std::string> ShaderManager<Traits>::ExtractVertexAttributeNames(std::string const & source)
-{
-    static std::regex AttributeNameRegex(R"!(\bin\s+.*?\s+in([_a-zA-Z][_a-zA-Z0-9]*);)!");
-
     std::set<std::string> attributeNames;
 
-    std::string remainingSource = source;
-    std::smatch match;
-    while (std::regex_search(remainingSource, match, AttributeNameRegex))
+    GLint count;
+    glGetProgramiv(*shaderProgram, GL_ACTIVE_ATTRIBUTES, &count);
+
+    for (GLuint i = 0; i < static_cast<GLuint>(count); ++i)
     {
-        assert(2 == match.size());
-        auto const & attributeName = match[1].str();
+        char nameBuffer[256];
+        GLsizei nameLength;
+        GLint attributeSize;
+        GLenum attributeType;
+
+        glGetActiveAttrib(
+            *shaderProgram,
+            i,
+            static_cast<GLsizei>(sizeof(nameBuffer)),
+            &nameLength,
+            &attributeSize,
+            &attributeType,
+            nameBuffer);
+        CheckOpenGLError();
+
+        if (nameLength < 2 || strncmp(nameBuffer, "in", 2))
+        {
+            throw GameException("Attribute name \"" + std::string(nameBuffer, nameLength) + "\" does not follow the expected name structure: missing \"in\" prefix");
+        }
+
+        std::string const attributeName(nameBuffer + 2, nameLength - 2);
 
         // Lookup the attribute name - just as a sanity check
         Traits::StrToVertexAttributeType(attributeName);
@@ -491,10 +485,52 @@ std::set<std::string> ShaderManager<Traits>::ExtractVertexAttributeNames(std::st
         {
             throw GameException("Attribute name \"" + attributeName + "\" is declared more than once");
         }
-
-        // Advance
-        remainingSource = match.suffix();
     }
 
     return attributeNames;
+}
+
+template<typename Traits>
+std::set<std::string> ShaderManager<Traits>::ExtractParameterNames(GameOpenGLShaderProgram const & shaderProgram)
+{
+    std::set<std::string> parameterNames;
+
+    GLint count;
+    glGetProgramiv(*shaderProgram, GL_ACTIVE_UNIFORMS, &count);
+
+    for (GLuint i = 0; i < static_cast<GLuint>(count); ++i)
+    {
+        char nameBuffer[256];
+        GLsizei nameLength;
+        GLint attributeSize;
+        GLenum attributeType;
+
+        glGetActiveUniform(
+            *shaderProgram,
+            i,
+            static_cast<GLsizei>(sizeof(nameBuffer)),
+            &nameLength,
+            &attributeSize,
+            &attributeType,
+            nameBuffer);
+        CheckOpenGLError();
+
+        if (nameLength < 5 || strncmp(nameBuffer, "param", 5))
+        {
+            throw GameException("Uniform name \"" + std::string(nameBuffer, nameLength) + "\" does not follow the expected name structure: missing \"param\" prefix");
+        }
+
+        std::string const parameterName(nameBuffer + 5, nameLength - 5);
+
+        // Lookup the parameter name - just as a sanity check
+        Traits::StrToProgramParameterType(parameterName);
+
+        // Store it, making sure it's not specified more than once
+        if (!parameterNames.insert(parameterName).second)
+        {
+            throw GameException("Uniform name \"" + parameterName + "\" is declared more than once");
+        }
+    }
+
+    return parameterNames;
 }

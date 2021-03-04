@@ -1,1 +1,3 @@
-#include "ship_texture_with_temperature.glslinc"
+#define FOR_LINES
+#define WITH_TEMPERATURE
+#include "ship_element.glslinc"

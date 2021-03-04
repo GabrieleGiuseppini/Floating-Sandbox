@@ -689,7 +689,7 @@ Render:
 				- wxWidgets so's
 					- See if may statically link		
 
-		- Second look at DKUZ's bug
+		= Second look at DKUZ's bug
 			+ Was there in 1.16.2 as well
 			+ Repro's with float uniform, clamped between 0.0 and 1.0
 			+ Ensure that it's due to negative values in fragment shader when vertex shader always has positive
@@ -697,18 +697,31 @@ Render:
 				+ Quantize at fragment when negative
 			+ See if it only happens with Line primitives (i.e. that it doesn't happen with Triangle primitives)
 				+ It doesn't happen with Triangle primitives
-			- Use #define for turning on/off clamping
-			- Use in other shaders as well, draw tree
+			= Use #define's for turning on/off clamping - and for temperature
+				+ ship_texture.glslinc:
+					+ vec3: 6.83/6.81
+					+ 3 floats: 6.84/6.84
+				+ pre-perf: [vec3]: 5.39ms @20ms
+				+ do
+					+ ShaderManager: extract uniforms and vertex attributes from OpenGL APIs, not from parsing
+						+ Actually, reduce extraction of things via parsing to nil, if there's anything else
+					+ Nuke old shaders
+					+ Check StressedSprings
+					+ Fix ShaderManager unit tests
+				- post-perf: 
 
 		- Timcan bug with engine sound goin' off
 			- "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
 				- Ask if not due to engine breaking
 
-
 		- Waves:
 			- See Base III
 			- Try to smoothen peaks with avg=5
 			- See maximum adjust
+
+		- Incandescence layer (*)
+
+		- Send for testing
 
 		= Default settings: 
 			- Flatten waves?
@@ -747,13 +760,24 @@ Render:
 			- Test perf drop on Dell
 		
 		- Cached quantities (*)
+
+		- Send for testing
 	
 		- New ships
 			- changelist
+			
+		- Frontier-enabled features:			
+			- Pressure implosions / pressure crush (*)			
+			- Transfer of momentum from waves
+				- Option A: by point visit; all points which were not underwater in previous step and are now (via double buffer for "Cached Underwater"), receive force
+				  proportional to OceanSurface::VelocityVector
+					- OceanSurface::VelocityVector: direction=normal, magnitude=velocity. With two options:
+						- A) SWE + Waves (i.e. full samples)
+						- B) Just SWE
+				- Option B: by point visit; all points in tiny band from depth 0
+			- Punch tool (*)		
 				
 		- Sound space (*)
-
-		- Incandescence layer (*)
 
 		- Light improvements (*)
 
@@ -776,19 +800,6 @@ Render:
 						- LightSource::Add/RemoveDynamicSource
 						- Ephemeral particle state @ Point stores the index in LightSource, which is needed for setting params, removing, etc.
 				- Used by lighting algorithm AND by shader (after Lights Improvements work (*))
-
-		- Frontier-enabled features:			
-			- Pressure implosions / pressure crush (*)
-			- Transfer of momentum from waves
-				- Option A: by point visit; all points which were not underwater in previous step and are now (via double buffer for "Cached Underwater"), receive force
-				  proportional to OceanSurface::VelocityVector
-					- OceanSurface::VelocityVector: direction=normal, magnitude=velocity. With two options:
-						- A) SWE + Waves (i.e. full samples)
-						- B) Just SWE
-				- Option B: by point visit; all points in tiny band from depth 0
-			- Punch tool (*)		
-
-		- Try with improved generation of random sparkles at slice: https://mathworld.wolfram.com/SpherePointPicking.html
 
 		- ShipRenderContext: see if may turn off Z-depth check @ triangles
 			- Check first on Dell if doing so would improve perf
@@ -830,8 +841,6 @@ Render:
 
 		----------------------------------------------------------------------------------------
 
-		- Move PhysicsSimulation::UpdateWaterVelocities (8%) to separate thread
-
 		- Spring relaxation with intrinsics
 
 		- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
@@ -847,13 +856,12 @@ Render:
 		- Test: re-try cache layout optimizations
 			- See current optimization's impact first with NOP optimization
 
-		- Splash for bombs
+		- Splashes
 			- Option A) Ephemeral particles with own shader:
 				- Texture of splash
 				- Elongated with vertical velocity
 			- Option B) Same as A, but instead of one single texture, a (small) set of frames
 			- Option C) Fully "movie" (not ephemeral particles), just like explosions
-			- Consider using ParentWorld.DisturbOcean with new arg on top of fishes' radius
 
 		= See if fire may emit Heavy smoke
 			- Smoke should be drawn behind flames, hence GenericTexture's should be in an earlier layer than flames.
@@ -866,6 +874,7 @@ Render:
 			- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
 
 		- Multi-threading, phase II:
+			- Move PhysicsSimulation::UpdateWaterVelocities (8%) to separate thread
 			- Springs: each iteration done in parallel with NThreads partitions
 				- Pre-perf:
 					- Dell: x ms/x fps
@@ -1488,12 +1497,18 @@ Render:
 
 	- Background ships: just any of the other ships, that would sail in the background
 
-	- Incandescence: Heat overlay more integrated in game play (*):
-		- On by default if calibration says it's ok
-		- Make switch: "Heat map mode" (now) and "Incandescence mode" (no black), in which shader replaces black with alpha=0
-			- "Black blending"?
-			- See https://discord.com/channels/559822257275404307/561385532698001419/777597209327566862
-			- If it would also glow in the dark, it'd be awesome!
+	- Incandescence: heat overlay more integrated in game play (*):
+		- New enum: HeatRenderMode (@ DebugShip, FlameRenderMode, etc.):
+			- Incandescence (default if calibration says it's ok)
+			- HeatOverlay
+			- None (else if calibration says it's not ok)
+		- Impl:
+			- New shader (using core ship_element with ApplyHeat function that uses new #define - or replace WITH_TEMPERATURE with HEAT_RENDER_MODE)
+				- Replaces black with alpha=0
+					- "Black blending"?
+					- See https://discord.com/channels/559822257275404307/561385532698001419/777597209327566862
+					- If it would also glow in the dark, it'd be awesome!
+			- Temperature upload when HeatRenderMode != None
 
 	- Fog
 

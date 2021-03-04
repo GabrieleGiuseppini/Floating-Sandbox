@@ -1,1 +1,3 @@
-#include "ship_color_with_temperature.glslinc"
+#define WITH_MATTE_COLOR
+#define WITH_TEMPERATURE
+#include "ship_element.glslinc"

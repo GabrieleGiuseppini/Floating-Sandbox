@@ -27,9 +27,9 @@ void main()
 in vec2 vertexTextureCoords;
 
 // Input texture
-uniform sampler2D sharedSpringTexture;
+uniform sampler2D paramSharedTexture;
 
 void main()
 {
-    gl_FragColor = texture2D(sharedSpringTexture, vertexTextureCoords);
+    gl_FragColor = texture2D(paramSharedTexture, vertexTextureCoords);
 } 
