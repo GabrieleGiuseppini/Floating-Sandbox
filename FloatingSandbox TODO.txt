@@ -628,6 +628,26 @@ Render:
 				+ Check perf on old Dell
 			+ changelist
 			+ Merge
+		+ Second look at DKUZ's bug
+			+ Was there in 1.16.2 as well
+			+ Repro's with float uniform, clamped between 0.0 and 1.0
+			+ Ensure that it's due to negative values in fragment shader when vertex shader always has positive
+				+ Test shader: remove fix; clamp at vertex
+				+ Quantize at fragment when negative
+			+ See if it only happens with Line primitives (i.e. that it doesn't happen with Triangle primitives)
+				+ It doesn't happen with Triangle primitives
+			+ Use #define's for turning on/off clamping - and for temperature
+				+ ship_texture.glslinc:
+					+ vec3: 6.83/6.81
+					+ 3 floats: 6.84/6.84
+				+ pre-perf: [vec3]: 5.39ms @20ms
+				+ do
+					+ ShaderManager: extract uniforms and vertex attributes from OpenGL APIs, not from parsing
+						+ Actually, reduce extraction of things via parsing to nil, if there's anything else
+					+ Nuke old shaders
+					+ Check StressedSprings
+					+ Fix ShaderManager unit tests
+				+ post-perf: 5.22
 
 		= MAC:
 			= Full high-DPI path:
@@ -688,27 +708,6 @@ Render:
 			- Packaging:
 				- wxWidgets so's
 					- See if may statically link		
-
-		= Second look at DKUZ's bug
-			+ Was there in 1.16.2 as well
-			+ Repro's with float uniform, clamped between 0.0 and 1.0
-			+ Ensure that it's due to negative values in fragment shader when vertex shader always has positive
-				+ Test shader: remove fix; clamp at vertex
-				+ Quantize at fragment when negative
-			+ See if it only happens with Line primitives (i.e. that it doesn't happen with Triangle primitives)
-				+ It doesn't happen with Triangle primitives
-			= Use #define's for turning on/off clamping - and for temperature
-				+ ship_texture.glslinc:
-					+ vec3: 6.83/6.81
-					+ 3 floats: 6.84/6.84
-				+ pre-perf: [vec3]: 5.39ms @20ms
-				+ do
-					+ ShaderManager: extract uniforms and vertex attributes from OpenGL APIs, not from parsing
-						+ Actually, reduce extraction of things via parsing to nil, if there's anything else
-					+ Nuke old shaders
-					+ Check StressedSprings
-					+ Fix ShaderManager unit tests
-				- post-perf: 
 
 		- Timcan bug with engine sound goin' off
 			- "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
