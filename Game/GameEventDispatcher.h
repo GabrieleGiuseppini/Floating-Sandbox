@@ -68,12 +68,11 @@ public:
 
     void OnShipLoaded(
         ShipId id,
-        std::string const & name,
-        std::optional<std::string> const & author) override
+        ShipMetadata const & shipMetadata) override
     {
         for (auto sink : mLifecycleSinks)
         {
-            sink->OnShipLoaded(id, name, author);
+            sink->OnShipLoaded(id, shipMetadata);
         }
     }
 

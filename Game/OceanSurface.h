@@ -223,7 +223,7 @@ private:
         + SWEOuterLayerSamples;
 
     // The width of the delta-height smoothing
-    static size_t constexpr DeltaHeightSmoothing = 3;
+    static size_t constexpr DeltaHeightSmoothing = 5;
     static_assert((DeltaHeightSmoothing % 2) == 1);
 
     //

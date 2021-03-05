@@ -1,7 +1,7 @@
 {
 	"structure_image":"ms_costa_concordia_structure.png.dat",
 	"electrical_image":"ms_costa_concordia_electrical.png.dat",
-	"offset":{"x":0.0, "y":0.0},
+	"offset":{"x":0.0, "y":-4.0},
 	"ship_name":"M.S. Costa Concordia",
 	"electrical_panel":{
 

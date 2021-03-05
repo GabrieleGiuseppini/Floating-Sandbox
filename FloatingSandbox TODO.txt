@@ -648,6 +648,15 @@ Render:
 					+ Check StressedSprings
 					+ Fix ShaderManager unit tests
 				+ post-perf: 5.22
+		+ Waves:
+			+ See Base III
+			+ Try to smoothen peaks with avg=5
+			+ Test perf with Base III (many frontiers) with and without displacement
+				+ With: ApplyWorldForces=2.73%
+				+ Without: 2.38%
+			+ See maximum adjust
+			+ Test all ships
+				+ Add offsets where needed
 
 		= MAC:
 			= Full high-DPI path:
@@ -712,11 +721,6 @@ Render:
 		- Timcan bug with engine sound goin' off
 			- "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
 				- Ask if not due to engine breaking
-
-		- Waves:
-			- See Base III
-			- Try to smoothen peaks with avg=5
-			- See maximum adjust
 
 		- Incandescence layer (*)
 
@@ -1496,7 +1500,7 @@ Render:
 
 	- Background ships: just any of the other ships, that would sail in the background
 
-	- Incandescence: heat overlay more integrated in game play (*):
+	= Incandescence: heat overlay more integrated in game play (*):
 		- New enum: HeatRenderMode (@ DebugShip, FlameRenderMode, etc.):
 			- Incandescence (default if calibration says it's ok)
 			- HeatOverlay
@@ -1505,7 +1509,8 @@ Render:
 			- New shader (using core ship_element with ApplyHeat function that uses new #define - or replace WITH_TEMPERATURE with HEAT_RENDER_MODE)
 				- Replaces black with alpha=0
 					- "Black blending"?
-					- See https://discord.com/channels/559822257275404307/561385532698001419/777597209327566862
+						- See https://discord.com/channels/559822257275404307/561385532698001419/777597209327566862
+						- https://photoshoptrainingchannel.com/blending-modes-explained/
 					- If it would also glow in the dark, it'd be awesome!
 			- Temperature upload when HeatRenderMode != None
 

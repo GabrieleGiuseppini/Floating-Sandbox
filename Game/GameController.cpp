@@ -1352,8 +1352,7 @@ void GameController::OnShipAdded(
     // Notify ship load
     mGameEventDispatcher->OnShipLoaded(
         shipId,
-        shipMetadata.ShipName,
-        shipMetadata.Author);
+        shipMetadata);
 
     // Announce
     mWorld->Announce();

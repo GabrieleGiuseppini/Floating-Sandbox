@@ -48,8 +48,7 @@ public:
 
     virtual void OnShipLoaded(
         unsigned int id,
-        std::string const & name,
-        std::optional<std::string> const & author) override;
+        ShipMetadata const & author) override;
 
     virtual void OnSinkingBegin(ShipId shipId) override;
 

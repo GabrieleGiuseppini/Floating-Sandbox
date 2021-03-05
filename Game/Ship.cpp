@@ -979,10 +979,10 @@ void Ship::ApplyWorldForces(
                 //
 
                 float constexpr x0 = 7.5f; // Velocity at which displacement transitions from quadratic to linear
-                float constexpr y0 = 0.3f; // Displacement magnitude at x0
+                float constexpr y0 = 0.6f; // Displacement magnitude at x0
 
                 // Linear portion
-                float constexpr linearSlope = 2.0f * GameParameters::SimulationStepTimeDuration<float>;
+                float constexpr linearSlope = GameParameters::SimulationStepTimeDuration<float>;
                 float const linearDisplacementMagnitude = y0 + linearSlope * (absVerticalVelocity - x0);
 
                 // Quadratic portion: y = ax^2 + bx, with constraints:
@@ -998,13 +998,13 @@ void Ship::ApplyWorldForces(
                 //
 
                 // Depth at which the point stops contributing: rises quadratically, asymptotically, and asymmetric wrt sinking or rising
-                float constexpr MaxVel = 30.0f;
+                float constexpr MaxVel = 25.0f;
                 float constexpr a2 = -0.5f / (MaxVel * MaxVel);
                 float constexpr b2 = 1.0f / MaxVel;
                 float const clampedAbsVerticalVelocity = std::min(absVerticalVelocity, MaxVel);
                 float const maxDepth =
                     (a2 * clampedAbsVerticalVelocity * clampedAbsVerticalVelocity + b2 * clampedAbsVerticalVelocity + 0.5f)
-                    * (verticalVelocity <= 0.0f ? 12.0f : 3.0f)
+                    * (verticalVelocity <= 0.0f ? 12.0f : 3.0f) // Keep up-push low or else bodies keep jumping up and down forever
                     * gameParameters.WaterDisplacementWaveHeightAdjustment;
 
                 // Linear attenuation up to maxDepth
@@ -1013,16 +1013,13 @@ void Ship::ApplyWorldForces(
                 //
                 // Mass impact
                 // - The impact of mass should follow a square root law, but for performance we approximate it
-                //   with a linear law based on the following points taken on a sqrt curve:
-                //      -  Mass=  18: impact=10.03
-                //      - [Mass= 743: impact=28.85] -> 26.56
-                //      -  Mass=1000: impact=32.42
+                //   with a linear law based on some points taken on a sqrt curve
                 //
 
                 float constexpr Mass1 = 18.0f;
-                float constexpr Impact1 = 10.03f;
+                float constexpr Impact1 = 11.0f;
                 float constexpr Mass2 = 1000.0f;
-                float constexpr Impact2 = 32.42f;
+                float constexpr Impact2 = 25.0f;
 
                 float const massImpact = Impact1 + (mPoints.GetMass(pointIndex) - Mass1) * (Impact2 - Impact1) / (Mass2 - Mass1);
 

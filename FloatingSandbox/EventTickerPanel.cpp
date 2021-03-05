@@ -86,14 +86,16 @@ void EventTickerPanel::OnGameReset()
 
 void EventTickerPanel::OnShipLoaded(
     unsigned int /*id*/,
-    std::string const & name,
-    std::optional<std::string> const & author)
+    ShipMetadata const & shipMetadata)
 {
     std::stringstream ss;
-    ss << "Loaded " << name;
+    ss << "Loaded " << shipMetadata.ShipName;
 
-    if (!!author)
-        ss << " by " << *author;
+    if (shipMetadata.Author.has_value())
+        ss << " by " << *shipMetadata.Author;
+
+    if (shipMetadata.ArtCredits.has_value())
+        ss << "; art by " << *shipMetadata.ArtCredits;
 
     AppendFutureTickerText(ss.str());
 }

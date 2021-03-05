@@ -236,12 +236,13 @@ private:
 
     virtual void OnShipLoaded(
         unsigned int /*id*/,
-        std::string const & name,
-        std::optional<std::string> const & author) override
+        ShipMetadata const & shipMetadata) override
     {
-        std::string shipTitle = name;
-        if (!!author)
-            shipTitle += " - by " + *author;
+        std::string shipTitle = shipMetadata.ShipName;
+        if (shipMetadata.Author.has_value())
+            shipTitle += " - by " + *shipMetadata.Author;
+        if (shipMetadata.ArtCredits.has_value())
+            shipTitle += "; art by " + *shipMetadata.ArtCredits;
 
         mCurrentShipTitles.push_back(shipTitle);
 

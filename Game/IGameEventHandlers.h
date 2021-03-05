@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Materials.h"
+#include "ShipMetadata.h"
 
 #include <GameCore/GameTypes.h>
 
@@ -27,8 +28,7 @@ struct ILifecycleGameEventHandler
 
     virtual void OnShipLoaded(
         ShipId /*id*/,
-        std::string const & /*name*/,
-        std::optional<std::string> const & /*author*/)
+        ShipMetadata const & /*shipMetadata*/)
     {
         // Default-implemented
     }

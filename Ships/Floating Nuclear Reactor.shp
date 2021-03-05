@@ -1,7 +1,7 @@
 {
 	"structure_image":"floating_nuclear_reactor_structure.png.dat",
 	"electrical_image":"floating_nuclear_reactor_electrical.png.dat",
-	"offset":{"x":0.0, "y":0.0},
+	"offset":{"x":0.0, "y":-5.0},
 	"ship_name":"Floating Nuclear Reactor",
 	"created_by":"Officer TimCan",
 	"description":"This ship is a floating nuclear reactor, carried around by five powerful engines. What could go wrong with this concept? Make it run at full speed for a couple of minutes and you'll see...",
