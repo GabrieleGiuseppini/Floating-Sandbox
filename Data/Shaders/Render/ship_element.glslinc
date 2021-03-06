@@ -132,7 +132,7 @@ void main()
     vec3 heatColor = get_heat_color(vertexTemperature, paramHeatShift);
 
     // Calculate strength of heat color
-    float heatColorStrength = dot(vec3(1.0/3.0), heatColor);
+    float heatColorStrength = dot(vec3(0.7, 0.15, 0.15), heatColor);
 
     // Blend fragment color with heat color
     fragColour = mix(fragColour, heatColor, heatColorStrength);

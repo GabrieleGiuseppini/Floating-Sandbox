@@ -1525,15 +1525,15 @@ Render:
 			+ SettingsDialog
 				+ Move to render tab, in own section - radio and slider
 				+ HeatSensitivity enabled depending on HeatRenderMode
-		- Perf:
+		+ Perf:
 			+ Before:
 				+ Upload: 0.03/0.04
 				+ Render: 5.20
 			+ Try with vec3 downgrade
 				+ If OK: change also type of lightColor and waterColor (both vec3 instead of vec4)
-			- Now:
-				- Upload: 0.04
-				- Render: 5.47
+			+ Now:
+				+ Upload: 0.04
+				+ Render: 5.47 -> 5.41
 
 		- ShipRenderContext: rearc shaders & reactions to param changes
 			! Goals: avoid settings params to a gazillion of shaders which we don't need

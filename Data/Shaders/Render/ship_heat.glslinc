@@ -1,27 +1,24 @@
 vec3 get_heat_color(float vertexTemperature, float heatShift)
 {
-    /*
-        -INF ->   10: BLACK
-          15 ->  900: RED
-         950 -> 1200: YELLOW
-        1200 -> +INF: WHITE
-    */
+    float lowerRedTemp = (100.0 + 273.15) * heatShift;
+    float lowerYellowTemp = (900.0 + 273.15);
+    float lowerWhiteTemp = (1150.0 + 273.15);
+    float higherWhiteTemp = (1500.0 + 273.15);
     
     vec3 redTint = mix(
         vec3(0.0, 0.0, 0.0), 
-        vec3(1.0, 0.0, 0.0),
-        //smoothstep((10.0 + 273.15) * heatShift, 900.0 + 273.15, vertexTemperature - 250.0)); // Real
-        smoothstep((10.0 + 273.15) * heatShift, 900.0 + 273.15, vertexTemperature - 30.0));    // Scenic
+        vec3(1.0, 0.0, 0.0),        
+        clamp((vertexTemperature - lowerRedTemp) / (lowerYellowTemp - lowerRedTemp), 0.0, 1.0));
     
     vec3 yellowTint = mix(
         redTint,
         vec3(1.0, 1.0, 0.19),
-        smoothstep(900.0 + 273.15, 1150.0 + 273.15, vertexTemperature - 30.0));
-    
+        clamp((vertexTemperature - lowerYellowTemp) / (lowerWhiteTemp - lowerYellowTemp), 0.0, 1.0));
+        
     vec3 whiteTint = mix(
         yellowTint,
         vec3(1.0, 1.0, 1.0),
-        smoothstep(1150.0 + 273.15, 1500.0 + 273.15, vertexTemperature - 0.0));        
+        clamp((vertexTemperature - lowerWhiteTemp) / (higherWhiteTemp - lowerWhiteTemp), 0.0, 1.0));          
 
     return whiteTint;
 }
