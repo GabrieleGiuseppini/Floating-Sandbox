@@ -967,7 +967,7 @@ private:
     void ApplyWaterColorChanges(RenderParameters const & renderParameters);
     void ApplyWaterContrastChanges(RenderParameters const & renderParameters);
     void ApplyWaterLevelOfDetailChanges(RenderParameters const & renderParameters);
-    void ApplyHeatOverlayTransparencyChanges(RenderParameters const & renderParameters);
+    void ApplyHeatSensitivityChanges(RenderParameters const & renderParameters);
 
 private:
 

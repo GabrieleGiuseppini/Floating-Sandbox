@@ -355,11 +355,11 @@ struct IGameControllerSettings
     virtual bool GetShowAABBs() const = 0;
     virtual void SetShowAABBs(bool value) = 0;
 
-    virtual bool GetDrawHeatOverlay() const = 0;
-    virtual void SetDrawHeatOverlay(bool value) = 0;
+    virtual HeatRenderModeType GetHeatRenderMode() const = 0;
+    virtual void SetHeatRenderMode(HeatRenderModeType value) = 0;
 
-    virtual float GetHeatOverlayTransparency() const = 0;
-    virtual void SetHeatOverlayTransparency(float value) = 0;
+    virtual float GetHeatSensitivity() const = 0;
+    virtual void SetHeatSensitivity(float value) = 0;
 
     virtual bool GetDrawFlames() const = 0;
     virtual void SetDrawFlames(bool value) = 0;

@@ -77,34 +77,46 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipPointToPointArrows;
     else if (lstr == "ship_points_color")
         return ProgramType::ShipPointsColor;
-    else if (lstr == "ship_points_color_with_temperature")
-        return ProgramType::ShipPointsColorWithTemperature;
+    else if (lstr == "ship_points_color_heatoverlay")
+        return ProgramType::ShipPointsColorHeatOverlay;
+    else if (lstr == "ship_points_color_incandescence")
+        return ProgramType::ShipPointsColorIncandescence;
     else if (lstr == "ship_ropes")
         return ProgramType::ShipRopes;
-    else if (lstr == "ship_ropes_with_temperature")
-        return ProgramType::ShipRopesWithTemperature;
+    else if (lstr == "ship_ropes_heatoverlay")
+        return ProgramType::ShipRopesHeatOverlay;
+    else if (lstr == "ship_ropes_incandescence")
+        return ProgramType::ShipRopesIncandescence;
     else if (lstr == "ship_sparkles")
         return ProgramType::ShipSparkles;
     else if (lstr == "ship_springs_color")
         return ProgramType::ShipSpringsColor;
-    else if (lstr == "ship_springs_color_with_temperature")
-        return ProgramType::ShipSpringsColorWithTemperature;
+    else if (lstr == "ship_springs_color_heatoverlay")
+        return ProgramType::ShipSpringsColorHeatOverlay;
+    else if (lstr == "ship_springs_color_incandescence")
+        return ProgramType::ShipSpringsColorIncandescence;
     else if (lstr == "ship_springs_texture")
         return ProgramType::ShipSpringsTexture;
-    else if (lstr == "ship_springs_texture_with_temperature")
-        return ProgramType::ShipSpringsTextureWithTemperature;
+    else if (lstr == "ship_springs_texture_heatoverlay")
+        return ProgramType::ShipSpringsTextureHeatOverlay;
+    else if (lstr == "ship_springs_texture_incandescence")
+        return ProgramType::ShipSpringsTextureIncandescence;
     else if (lstr == "ship_stressed_springs")
         return ProgramType::ShipStressedSprings;
     else if (lstr == "ship_triangles_color")
         return ProgramType::ShipTrianglesColor;
-    else if (lstr == "ship_triangles_color_with_temperature")
-        return ProgramType::ShipTrianglesColorWithTemperature;
+    else if (lstr == "ship_triangles_color_heatoverlay")
+        return ProgramType::ShipTrianglesColorHeatOverlay;
+    else if (lstr == "ship_triangles_color_incandescence")
+        return ProgramType::ShipTrianglesColorIncandescence;
     else if (lstr == "ship_triangles_decay")
         return ProgramType::ShipTrianglesDecay;
     else if (lstr == "ship_triangles_texture")
         return ProgramType::ShipTrianglesTexture;
-    else if (lstr == "ship_triangles_texture_with_temperature")
-        return ProgramType::ShipTrianglesTextureWithTemperature;
+    else if (lstr == "ship_triangles_texture_heatoverlay")
+        return ProgramType::ShipTrianglesTextureHeatOverlay;
+    else if (lstr == "ship_triangles_texture_incandescence")
+        return ProgramType::ShipTrianglesTextureIncandescence;
     else if (lstr == "ship_vectors")
         return ProgramType::ShipVectors;
     else if (lstr == "stars")
@@ -185,34 +197,46 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipPointToPointArrows";
     case ProgramType::ShipPointsColor:
         return "ShipPointsColor";
-    case ProgramType::ShipPointsColorWithTemperature:
-        return "ShipPointsColorWithTemperature";
+    case ProgramType::ShipPointsColorHeatOverlay:
+        return "ShipPointsColorHeatOverlay";
+    case ProgramType::ShipPointsColorIncandescence:
+        return "ShipPointsColorIncandescence";
     case ProgramType::ShipRopes:
         return "ShipRopes";
-    case ProgramType::ShipRopesWithTemperature:
-        return "ShipRopesWithTemperature";
+    case ProgramType::ShipRopesHeatOverlay:
+        return "ShipRopesHeatOverlay";
+    case ProgramType::ShipRopesIncandescence:
+        return "ShipRopesIncandescence";
     case ProgramType::ShipSparkles:
         return "ShipSparkles";
     case ProgramType::ShipSpringsColor:
         return "ShipSpringsColor";
-    case ProgramType::ShipSpringsColorWithTemperature:
-        return "ShipSpringsColorWithTemperature";
+    case ProgramType::ShipSpringsColorHeatOverlay:
+        return "ShipSpringsColorHeatOverlay";
+    case ProgramType::ShipSpringsColorIncandescence:
+        return "ShipSpringsColorIncandescence";
     case ProgramType::ShipSpringsTexture:
         return "ShipSpringsTexture";
-    case ProgramType::ShipSpringsTextureWithTemperature:
-        return "ShipSpringsTextureWithTemperature";
+    case ProgramType::ShipSpringsTextureHeatOverlay:
+        return "ShipSpringsTextureHeatOverlay";
+    case ProgramType::ShipSpringsTextureIncandescence:
+        return "ShipSpringsTextureIncandescence";
     case ProgramType::ShipStressedSprings:
         return "ShipStressedSprings";
     case ProgramType::ShipTrianglesColor:
         return "ShipTrianglesColor";
-    case ProgramType::ShipTrianglesColorWithTemperature:
-        return "ShipTrianglesColorWithTemperature";
+    case ProgramType::ShipTrianglesColorHeatOverlay:
+        return "ShipTrianglesColorHeatOverlay";
+    case ProgramType::ShipTrianglesColorIncandescence:
+        return "ShipTrianglesColorIncandescence";
     case ProgramType::ShipTrianglesDecay:
         return "ShipTrianglesDecay";
     case ProgramType::ShipTrianglesTexture:
         return "ShipTrianglesTexture";
-    case ProgramType::ShipTrianglesTextureWithTemperature:
-        return "ShipTrianglesTextureWithTemperature";
+    case ProgramType::ShipTrianglesTextureHeatOverlay:
+        return "ShipTrianglesTextureHeatOverlay";
+    case ProgramType::ShipTrianglesTextureIncandescence:
+        return "ShipTrianglesTextureIncandescence";
     case ProgramType::ShipVectors:
         return "ShipVectors";
     case ProgramType::Stars:
@@ -243,8 +267,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::FlameSpeed;
     else if (str == "FlameWindRotationAngle")
         return ProgramParameterType::FlameWindRotationAngle;
-    else if (str == "HeatOverlayTransparency")
-        return ProgramParameterType::HeatOverlayTransparency;
+    else if (str == "HeatShift")
+        return ProgramParameterType::HeatShift;
     else if (str == "LampLightColor")
         return ProgramParameterType::LampLightColor;
     else if (str == "LandFlatColor")
@@ -326,8 +350,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "FlameSpeed";
     case ProgramParameterType::FlameWindRotationAngle:
         return "FlameWindRotationAngle";
-    case ProgramParameterType::HeatOverlayTransparency:
-        return "HeatOverlayTransparency";
+    case ProgramParameterType::HeatShift:
+        return "HeatShift";
     case ProgramParameterType::LampLightColor:
         return "LampLightColor";
     case ProgramParameterType::LandFlatColor:

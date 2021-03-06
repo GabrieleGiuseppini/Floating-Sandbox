@@ -82,10 +82,10 @@ struct RenderParameters
     float ShipWaterLevelOfDetail;
     bool IsShipWaterLevelOfDetailDirty;
 
-    bool DrawHeatOverlay;
+    HeatRenderModeType HeatRenderMode;
 
-    float HeatOverlayTransparency;
-    float IsHeatOverlayTransparencyDirty;
+    float HeatSensitivity;
+    bool IsHeatSensitivityDirty;
 
     DebugShipRenderModeType DebugShipRenderMode;
     bool IsDebugShipRenderModeDirty;

@@ -1625,7 +1625,7 @@ void Points::UploadAttributes(
         mIsDecayBufferDirty = false;
     }
 
-    if (renderContext.GetDrawHeatOverlay())
+    if (renderContext.GetHeatRenderMode() != HeatRenderModeType::None)
     {
         renderContext.UploadShipPointTemperatureAsync(
             shipId,

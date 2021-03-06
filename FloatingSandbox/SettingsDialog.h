@@ -47,7 +47,6 @@ private:
     void OnOceanRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnDepthOceanColorStartChanged(wxColourPickerEvent & event);
     void OnDepthOceanColorEndChanged(wxColourPickerEvent & event);
-    void OnDefaultWaterColorChanged(wxColourPickerEvent & event);
 
     void OnLandRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnFlatLandColorChanged(wxColourPickerEvent & event);
@@ -55,6 +54,10 @@ private:
 
     void OnFlatOceanColorChanged(wxColourPickerEvent & event);
     void OnFlatLampLightColorChanged(wxColourPickerEvent & event);
+
+    void OnHeatRenderModeRadioBox(wxCommandEvent & event);
+
+    void OnDefaultWaterColorChanged(wxColourPickerEvent & event);
 
     void OnDebugShipRenderModeRadioBox(wxCommandEvent & event);
     void OnVectorFieldRenderModeRadioBox(wxCommandEvent & event);
@@ -188,8 +191,9 @@ private:
     wxColourPickerCtrl * mDefaultWaterColorPicker;
     SliderControl<float> * mWaterContrastSlider;
     SliderControl<float> * mWaterLevelOfDetailSlider;
-    wxCheckBox * mDrawHeatOverlayCheckBox;
-    SliderControl<float> * mHeatOverlayTransparencySlider;
+    // TODOHERE
+    wxRadioBox * mHeatRenderModeRadioBox;
+    SliderControl<float> * mHeatSensitivitySlider;
     wxCheckBox * mDrawHeatBlasterFlameCheckBox;
     SliderControl<float> * mShipFlameSizeAdjustmentSlider;
 

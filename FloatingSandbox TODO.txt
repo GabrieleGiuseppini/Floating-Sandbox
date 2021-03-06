@@ -980,8 +980,8 @@ Render:
 			+ Screenshots and description in PM
 			+ I keep donations
 			+ Test
-			- Asked: name & author
-				- Zip
+			+ Meta
+			- Zip & release
 		- HummeL:
 			- Meta: <asked>
 		+ Waallrus: have all
@@ -1501,18 +1501,48 @@ Render:
 	- Background ships: just any of the other ships, that would sail in the background
 
 	= Incandescence: heat overlay more integrated in game play (*):
-		- New enum: HeatRenderMode (@ DebugShip, FlameRenderMode, etc.):
+		! New enum: HeatRenderMode (@ DebugShip, FlameRenderMode, etc.):
 			- Incandescence (default if calibration says it's ok)
 			- HeatOverlay
 			- None (else if calibration says it's not ok)
-		- Impl:
-			- New shader (using core ship_element with ApplyHeat function that uses new #define - or replace WITH_TEMPERATURE with HEAT_RENDER_MODE)
+		= Impl:
+			+ Enum
+			+ Replace DrawHeatOverlay boolean
+				+ Turn HeatTransparency into HeatSensitivity, for both shaders
+				+ ShipRenderContext:
+					+ RenderParams
+					+ Getters/Setters
+					+ Shader Program
+				+ I/GameController
+			- Shaders:
+				- TODO: #define w/#error --- New shader (using core ship_element with ApplyHeat function that uses new #define - or replace WITH_TEMPERATURE with HEAT_RENDER_MODE)
 				- Replaces black with alpha=0
 					- "Black blending"?
 						- See https://discord.com/channels/559822257275404307/561385532698001419/777597209327566862
 						- https://photoshoptrainingchannel.com/blending-modes-explained/
 					- If it would also glow in the dark, it'd be awesome!
-			- Temperature upload when HeatRenderMode != None
+			+ Temperature upload when HeatRenderMode != None
+			- Calibration: Incandescence is default if calibration says it's ok, otherwise it's None
+			= SettingsDialog
+				+ Move to render tab, in own section - radio and slider
+				= HeatSensitivity enabled depending on HeatRenderMode
+		- ShipRenderContext: rearc shaders & reactions to param changes
+			! Goals: avoid settings params to a gazillion of shaders which we don't need
+			- RenderParameters: AreShipStructureRenderModeSelectorsDirty
+				- Set when DebugShipRenderMode or HeatRenderMode (or ...?) change
+			- Specific ProgramType members for ship structure
+				- mShipStructureXYZShader
+			- ProcessParameterChanges:
+				- When RenderParameters::AreShipStructureRenderModeSelectorsDirty:
+					- SelectShipShaders()
+						- Sets various mShipStructureXYZShader based on selectors
+					- ApplyViewModelChanges()
+					- ApplyWaterContrastChanges()
+					- Apply....
+			- ApplyViewModelChanges(), ApplyWaterContrastChanges(), Apply...():
+				- Only set changes for mShipStructureXYZShader shaders
+			- RenderDraw:
+				- Use mShipStructureXYZShader members instead of hardcoded programs
 
 	- Fog
 

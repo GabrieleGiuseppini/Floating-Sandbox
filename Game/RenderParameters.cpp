@@ -47,9 +47,9 @@ RenderParameters::RenderParameters(
 	, IsShipWaterContrastDirty(true)
 	, ShipWaterLevelOfDetail(0.6875f)
 	, IsShipWaterLevelOfDetailDirty(true)
-	, DrawHeatOverlay(false)
-	, HeatOverlayTransparency(0.1875f)
-	, IsHeatOverlayTransparencyDirty(true)
+	, HeatRenderMode(HeatRenderModeType::Incandescence)
+	, HeatSensitivity(0.0f)
+	, IsHeatSensitivityDirty(true)
 	, DebugShipRenderMode(DebugShipRenderModeType::None)
 	, IsDebugShipRenderModeDirty(true)
 {
@@ -74,7 +74,7 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	IsShipWaterColorDirty = false;
 	IsShipWaterContrastDirty = false;
 	IsShipWaterLevelOfDetailDirty = false;
-	IsHeatOverlayTransparencyDirty = false;
+	IsHeatSensitivityDirty = false;
 	IsDebugShipRenderModeDirty = false;
 
 	return copy;

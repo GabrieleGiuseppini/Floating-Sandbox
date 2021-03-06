@@ -526,7 +526,6 @@ struct ShipAutoTexturizationSettings
     picojson::object ToJSON() const;
 };
 
-
 /*
  * The different visual ways in which we render highlights.
  */
@@ -536,6 +535,16 @@ enum class HighlightModeType : size_t
     ElectricalElement,
 
     _Last = ElectricalElement
+};
+
+/*
+ * The ways in which heat may be rendered.
+ */
+enum class HeatRenderModeType
+{
+    None,
+    Incandescence,
+    HeatOverlay
 };
 
 /*

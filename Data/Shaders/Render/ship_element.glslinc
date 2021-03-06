@@ -70,7 +70,7 @@ uniform vec4 paramWaterColor;
 uniform float paramWaterContrast;
 uniform float paramWaterLevelThreshold;
 #ifdef WITH_TEMPERATURE
-uniform float paramHeatOverlayTransparency;
+uniform float paramHeatShift;
 #endif
 
 #ifndef  WITH_MATTE_COLOR
@@ -111,7 +111,7 @@ void main()
 
 #ifdef WITH_TEMPERATURE
     // Apply heat
-    fragColour = apply_heat(fragColour, vertexTemperature, paramHeatOverlayTransparency);
+    fragColour = apply_heat(fragColour, vertexTemperature, paramHeatShift);
 #endif
 
     // Apply point light color

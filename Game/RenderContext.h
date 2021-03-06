@@ -460,26 +460,26 @@ public:
     static constexpr float MinShipWaterLevelOfDetail = 0.0f;
     static constexpr float MaxShipWaterLevelOfDetail = 1.0f;
 
-    bool GetDrawHeatOverlay() const
+    HeatRenderModeType GetHeatRenderMode() const
     {
-        return mRenderParameters.DrawHeatOverlay;
+        return mRenderParameters.HeatRenderMode;
     }
 
-    void SetDrawHeatOverlay(bool drawHeatOverlay)
+    void SetHeatRenderMode(HeatRenderModeType heatRenderMode)
     {
-        mRenderParameters.DrawHeatOverlay = drawHeatOverlay;
+        mRenderParameters.HeatRenderMode = heatRenderMode;
         // No need to set dirty, this is picked up at each cycle anway
     }
 
-    float GetHeatOverlayTransparency() const
+    float GetHeatSensitivity() const
     {
-        return mRenderParameters.HeatOverlayTransparency;
+        return mRenderParameters.HeatSensitivity;
     }
 
-    void SetHeatOverlayTransparency(float transparency)
+    void SetHeatSensitivity(float heatSensitivity)
     {
-        mRenderParameters.HeatOverlayTransparency = transparency;
-        mRenderParameters.IsHeatOverlayTransparencyDirty = true;
+        mRenderParameters.HeatSensitivity = heatSensitivity;
+        mRenderParameters.IsHeatSensitivityDirty = true;
     }
 
     VectorFieldRenderModeType GetVectorFieldRenderMode() const

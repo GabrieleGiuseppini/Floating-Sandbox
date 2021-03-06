@@ -717,11 +717,11 @@ public:
     bool GetShowAABBs() const override { return mRenderContext->GetShowAABBs(); }
     void SetShowAABBs(bool value) override { mRenderContext->SetShowAABBs(value); }
 
-    bool GetDrawHeatOverlay() const override { return mRenderContext->GetDrawHeatOverlay(); }
-    void SetDrawHeatOverlay(bool value) override { mRenderContext->SetDrawHeatOverlay(value); }
+    HeatRenderModeType GetHeatRenderMode() const override { return mRenderContext->GetHeatRenderMode(); }
+    void SetHeatRenderMode(HeatRenderModeType value) override { mRenderContext->SetHeatRenderMode(value); }
 
-    float GetHeatOverlayTransparency() const override { return mRenderContext->GetHeatOverlayTransparency(); }
-    void SetHeatOverlayTransparency(float value) override { mRenderContext->SetHeatOverlayTransparency(value); }
+    float GetHeatSensitivity() const override { return mRenderContext->GetHeatSensitivity(); }
+    void SetHeatSensitivity(float value) override { mRenderContext->SetHeatSensitivity(value); }
 
     bool GetDrawFlames() const override { return mRenderContext->GetDrawFlames(); }
     void SetDrawFlames(bool value) override { mRenderContext->SetDrawFlames(value); }

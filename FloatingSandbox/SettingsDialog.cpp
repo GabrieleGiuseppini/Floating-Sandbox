@@ -431,6 +431,28 @@ void SettingsDialog::OnFlatLampLightColorChanged(wxColourPickerEvent & event)
     OnLiveSettingsChanged();
 }
 
+void SettingsDialog::OnHeatRenderModeRadioBox(wxCommandEvent & /*event*/)
+{
+    auto selectedHeatRenderMode = mHeatRenderModeRadioBox->GetSelection();
+    if (0 == selectedHeatRenderMode)
+    {
+        mLiveSettings.SetValue(GameSettings::HeatRenderMode, HeatRenderModeType::Incandescence);
+    }
+    else if (1 == selectedHeatRenderMode)
+    {
+        mLiveSettings.SetValue(GameSettings::HeatRenderMode, HeatRenderModeType::HeatOverlay);
+    }
+    else
+    {
+        assert(2 == selectedHeatRenderMode);
+        mLiveSettings.SetValue(GameSettings::HeatRenderMode, HeatRenderModeType::None);
+    }
+
+    mHeatSensitivitySlider->Enable(selectedHeatRenderMode != 2);
+
+    OnLiveSettingsChanged();
+}
+
 void SettingsDialog::OnDefaultWaterColorChanged(wxColourPickerEvent & event)
 {
     auto color = event.GetColour();
@@ -3548,7 +3570,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         gridSizer->Add(
             oceanBox,
             wxGBPosition(0, 0),
-            wxGBSpan(2, 2),
+            wxGBSpan(2, 4),
             wxALL,
             CellBorder);
     }
@@ -3628,7 +3650,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             landBox,
-            wxGBPosition(0, 2),
+            wxGBPosition(0, 4),
             wxGBSpan(1, 2),
             wxALL | wxEXPAND,
             CellBorder);
@@ -3665,7 +3687,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             skyBox,
-            wxGBPosition(1, 2),
+            wxGBPosition(1, 4),
             wxGBSpan(1, 1),
             wxALL | wxALIGN_LEFT,
             CellBorder);
@@ -3702,7 +3724,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             lampLightBox,
-            wxGBPosition(1, 3),
+            wxGBPosition(1, 5),
             wxGBSpan(1, 1),
             wxALL | wxALIGN_RIGHT,
             CellBorder);
@@ -3716,30 +3738,31 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         heatBoxSizer1->AddSpacer(StaticBoxTopMargin);
 
         {
-            wxGridBagSizer * renderSizer = new wxGridBagSizer(0, 0);
+            wxGridBagSizer * heatSizer = new wxGridBagSizer(0, 0);
 
-            // Draw heat overlay
+            // Heat render mode
             {
-                mDrawHeatOverlayCheckBox = new wxCheckBox(heatBox, wxID_ANY,
-                    _("Draw Heat Overlay"), wxDefaultPosition, wxDefaultSize);
-                mDrawHeatOverlayCheckBox->SetToolTip(_("Renders heat over ships."));
-                mDrawHeatOverlayCheckBox->Bind(
-                    wxEVT_COMMAND_CHECKBOX_CLICKED,
-                    [this](wxCommandEvent & event)
-                    {
-                        mLiveSettings.SetValue(GameSettings::DrawHeatOverlay, event.IsChecked());
-                        OnLiveSettingsChanged();
-                    });
+                wxString heatRenderModeChoices[] =
+                {
+                    _("Incandescence"),
+                    _("Heat Overlay"),
+                    _("None")
+                };
 
-                renderSizer->Add(
-                    mDrawHeatOverlayCheckBox,
+                mHeatRenderModeRadioBox = new wxRadioBox(heatBox, wxID_ANY, _("Heat Draw Options"), wxDefaultPosition, wxDefaultSize,
+                    WXSIZEOF(heatRenderModeChoices), heatRenderModeChoices, 1, wxRA_SPECIFY_COLS);
+                mHeatRenderModeRadioBox->SetToolTip(_("Selects how heat is rendered on the ship."));
+                Connect(mHeatRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnHeatRenderModeRadioBox);
+
+                heatSizer->Add(
+                    mHeatRenderModeRadioBox,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxALL,
                     CellBorder);
             }
 
-            // Heat blaster flame
+            // Draw HeatBlaster flame
             {
                 mDrawHeatBlasterFlameCheckBox = new wxCheckBox(heatBox, wxID_ANY,
                     _("Draw HeatBlaster Flame"), wxDefaultPosition, wxDefaultSize);
@@ -3752,11 +3775,36 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                         OnLiveSettingsChanged();
                     });
 
-                renderSizer->Add(
+                heatSizer->Add(
                     mDrawHeatBlasterFlameCheckBox,
                     wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
                     wxALL,
+                    CellBorder);
+            }
+
+            // Heat sensitivity
+            {
+                mHeatSensitivitySlider = new SliderControl<float>(
+                    heatBox,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Heat Sensitivity"),
+                    _("Adjusts the temperature at which materials start emitting red radiation, hence making incandescence more visible at lower temperatures."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::HeatSensitivity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                heatSizer->Add(
+                    mHeatSensitivitySlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
                     CellBorder);
             }
 
@@ -3765,7 +3813,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                 mShipFlameSizeAdjustmentSlider = new SliderControl<float>(
                     heatBox,
                     SliderWidth,
-                    -1,
+                    SliderHeight,
                     _("Flame Size Adjust"),
                     _("Adjusts the size of flames."),
                     [this](float value)
@@ -3777,40 +3825,15 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                         mGameControllerSettingsOptions->GetMinShipFlameSizeAdjustment(),
                         mGameControllerSettingsOptions->GetMaxShipFlameSizeAdjustment()));
 
-                renderSizer->Add(
+                heatSizer->Add(
                     mShipFlameSizeAdjustmentSlider,
-                    wxGBPosition(2, 0),
-                    wxGBSpan(1, 1),
+                    wxGBPosition(0, 2),
+                    wxGBSpan(2, 1),
                     wxALL,
                     CellBorder);
             }
 
-            // Heat overlay transparency
-            {
-                mHeatOverlayTransparencySlider = new SliderControl<float>(
-                    heatBox,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Heat Overlay Transparency"),
-                    _("Adjusts the transparency of the heat overlay."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::HeatOverlayTransparency, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        0.0f,
-                        1.0f));
-
-                renderSizer->Add(
-                    mHeatOverlayTransparencySlider,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(3, 1),
-                    wxEXPAND | wxALL,
-                    CellBorder);
-            }
-
-            heatBoxSizer1->Add(renderSizer, 0, wxALL, StaticBoxInsetMargin);
+            heatBoxSizer1->Add(heatSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
         heatBox->SetSizerAndFit(heatBoxSizer1);
@@ -3818,7 +3841,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         gridSizer->Add(
             heatBox,
             wxGBPosition(2, 0),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 3),
             wxALL,
             CellBorder);
     }
@@ -3856,7 +3879,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             shipBox,
-            wxGBPosition(2, 1),
+            wxGBPosition(2, 3),
             wxGBSpan(1, 1),
             wxALL,
             CellBorder);
@@ -3945,7 +3968,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             waterBox,
-            wxGBPosition(2, 2),
+            wxGBPosition(2, 4),
             wxGBSpan(1, 2),
             wxALL,
             CellBorder);
@@ -4761,9 +4784,30 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mWaterLevelOfDetailSlider->SetValue(settings.GetValue<float>(GameSettings::WaterLevelOfDetail));
 
-    mDrawHeatOverlayCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DrawHeatOverlay));
+    auto const heatRenderMode = settings.GetValue<HeatRenderModeType>(GameSettings::HeatRenderMode);
+    switch (heatRenderMode)
+    {
+        case HeatRenderModeType::Incandescence:
+        {
+            mHeatRenderModeRadioBox->SetSelection(0);
+            break;
+        }
 
-    mHeatOverlayTransparencySlider->SetValue(settings.GetValue<float>(GameSettings::HeatOverlayTransparency));
+        case HeatRenderModeType::HeatOverlay:
+        {
+            mHeatRenderModeRadioBox->SetSelection(1);
+            break;
+        }
+
+        case HeatRenderModeType::None:
+        {
+            mHeatRenderModeRadioBox->SetSelection(2);
+            break;
+        }
+    }
+
+    mHeatSensitivitySlider->SetValue(settings.GetValue<float>(GameSettings::HeatSensitivity));
+    mHeatSensitivitySlider->Enable(heatRenderMode != HeatRenderModeType::None);
 
     mDrawHeatBlasterFlameCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DrawHeatBlasterFlame));
 
@@ -4789,7 +4833,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mSpringDampingSlider->SetValue(settings.GetValue<float>(GameSettings::SpringDampingAdjustment));
 
-    auto debugShipRenderMode = settings.GetValue<DebugShipRenderModeType>(GameSettings::DebugShipRenderMode);
+    auto const debugShipRenderMode = settings.GetValue<DebugShipRenderModeType>(GameSettings::DebugShipRenderMode);
     switch (debugShipRenderMode)
     {
         case DebugShipRenderModeType::None:
