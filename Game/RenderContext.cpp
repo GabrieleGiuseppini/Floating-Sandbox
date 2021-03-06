@@ -628,27 +628,27 @@ float RenderContext::CalculateEffectiveAmbientLightIntensity(
     return ambientLightIntensity * stormAmbientDarkening;
 }
 
-vec4f RenderContext::CalculateShipWaterColor() const
+vec3f RenderContext::CalculateShipWaterColor() const
 {
     switch (mRenderParameters.OceanRenderMode)
     {
         case OceanRenderModeType::Depth:
         {
             return
-                (mRenderParameters.DepthOceanColorStart.toVec4f(1.0f) + mRenderParameters.DepthOceanColorEnd.toVec4f(1.0f))
+                (mRenderParameters.DepthOceanColorStart.toVec3f() + mRenderParameters.DepthOceanColorEnd.toVec3f())
                 / 2.0f;
         }
 
         case OceanRenderModeType::Flat:
         {
-            return mRenderParameters.FlatOceanColor.toVec4f(1.0f);
+            return mRenderParameters.FlatOceanColor.toVec3f();
         }
 
         default:
         {
             assert(mRenderParameters.OceanRenderMode == OceanRenderModeType::Texture); // Darn VS - warns
 
-            return mShipDefaultWaterColor.toVec4f(1.0f);
+            return mShipDefaultWaterColor.toVec3f();
         }
     }
 }

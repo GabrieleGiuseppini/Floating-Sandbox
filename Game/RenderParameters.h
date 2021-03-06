@@ -73,7 +73,7 @@ struct RenderParameters
     bool ShowFrontiers;
     bool ShowAABBs;
 
-    vec4f ShipWaterColor; // Calculated
+    vec3f ShipWaterColor; // Calculated
     bool IsShipWaterColorDirty;
 
     float ShipWaterContrast;

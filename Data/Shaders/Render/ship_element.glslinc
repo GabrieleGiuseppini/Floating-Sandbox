@@ -65,8 +65,8 @@ in float vertexTemperature;
 
 // Params
 uniform float paramEffectiveAmbientLightIntensity;
-uniform vec4 paramLampLightColor;
-uniform vec4 paramWaterColor;
+uniform vec3 paramLampLightColor;
+uniform vec3 paramWaterColor;
 uniform float paramWaterContrast;
 uniform float paramWaterLevelThreshold;
 #if HEAT_RENDER_MODE != 0
@@ -91,8 +91,8 @@ void main()
 
     // Apply decay
     float originalLightness = dot(vec3(1.0/3.0), vertexCol.xyz);
-    vec4 decayColor = mix(vec4(%ROT_GREEN_COLOR%), vec4(%ROT_BROWN_COLOR%), originalLightness);
-    vec4 fragColour = mix(decayColor, vertexCol, vertexAttributes.z);
+    vec3 decayColor = mix(vec3(%ROT_GREEN_COLOR%), vec3(%ROT_BROWN_COLOR%), originalLightness);
+    vec3 fragColour = mix(decayColor, vertexCol.xyz, vertexAttributes.z);
 
     // Apply point water
 #ifdef FOR_LINES
@@ -122,7 +122,7 @@ void main()
     vec3 heatColor = get_heat_color(vertexTemperature, paramHeatShift);
 
     // Overwrite fragment color with heat color
-    fragColour = vec4(heatColor, 1.0);
+    fragColour = heatColor;
 
 #elif HEAT_RENDER_MODE == 2
 
@@ -132,12 +132,10 @@ void main()
     vec3 heatColor = get_heat_color(vertexTemperature, paramHeatShift);
 
     // Calculate strength of heat color
-    float heatColorStrength = dot(vec3(0.33333), heatColor);
+    float heatColorStrength = dot(vec3(1.0/3.0), heatColor);
 
     // Blend fragment color with heat color
-    fragColour = vec4(
-        mix(fragColour.xyz, heatColor, heatColorStrength),
-        1.0);
+    fragColour = mix(fragColour.xyz, heatColor, heatColorStrength);
 
 #else
 #error "Unrecognized value for HEAT_RENDER_MODE"
@@ -148,5 +146,5 @@ void main()
     fragColour = mix(fragColour, paramLampLightColor, vertexAttributes.x);
     
     // Make final color, using original vertex's alpha
-    gl_FragColor = vec4(fragColour.xyz, vertexCol.w);
+    gl_FragColor = vec4(fragColour, vertexCol.w);
 } 

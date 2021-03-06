@@ -41,7 +41,7 @@ RenderParameters::RenderParameters(
 	, ShowStressedSprings(false)
 	, ShowFrontiers(false)
 	, ShowAABBs(false)
-	, ShipWaterColor(vec4f::zero()) // Calculated
+	, ShipWaterColor(vec3f::zero()) // Calculated
 	, IsShipWaterColorDirty(true)
 	, ShipWaterContrast(0.71875f)
 	, IsShipWaterContrastDirty(true)

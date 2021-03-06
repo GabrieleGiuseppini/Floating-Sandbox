@@ -1520,6 +1520,8 @@ Render:
 					+ If it would also glow in the dark, it'd be awesome!
 			+ Temperature upload when HeatRenderMode != None
 			- Calibration: Incandescence is default if calibration says it's ok, otherwise it's None
+				- Render score 
+				- Test old Dell for CPU score
 			+ SettingsDialog
 				+ Move to render tab, in own section - radio and slider
 				+ HeatSensitivity enabled depending on HeatRenderMode
@@ -1527,9 +1529,12 @@ Render:
 			+ Before:
 				+ Upload: 0.03/0.04
 				+ Render: 5.20
+			+ Try with vec3 downgrade
+				+ If OK: change also type of lightColor and waterColor (both vec3 instead of vec4)
 			- Now:
 				- Upload: 0.04
 				- Render: 5.47
+
 		- ShipRenderContext: rearc shaders & reactions to param changes
 			! Goals: avoid settings params to a gazillion of shaders which we don't need
 			- RenderParameters: AreShipStructureRenderModeSelectorsDirty

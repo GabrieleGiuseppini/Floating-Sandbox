@@ -907,7 +907,7 @@ private:
         float ambientLightIntensity,
         float stormAmbientDarkening);
 
-    vec4f CalculateShipWaterColor() const;
+    vec3f CalculateShipWaterColor() const;
 
 private:
 
