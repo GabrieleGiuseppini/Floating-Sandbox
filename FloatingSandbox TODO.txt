@@ -1534,7 +1534,7 @@ Render:
 			+ Now:
 				+ Upload: 0.04
 				+ Render: 5.47 -> 5.41
-
+		- Cap temperature at burning point (+~10%)?
 		- ShipRenderContext: rearc shaders & reactions to param changes
 			! Goals: avoid settings params to a gazillion of shaders which we don't need
 			- RenderParameters: AreShipStructureRenderModeSelectorsDirty
