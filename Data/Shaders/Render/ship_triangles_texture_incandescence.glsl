@@ -1,2 +1,2 @@
-#define WITH_TEMPERATURE
+#define HEAT_RENDER_MODE 2
 #include "ship_element.glslinc"

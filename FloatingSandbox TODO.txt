@@ -1515,17 +1515,21 @@ Render:
 					+ Shader Program
 				+ I/GameController
 			- Shaders:
-				- TODO: #define w/#error --- New shader (using core ship_element with ApplyHeat function that uses new #define - or replace WITH_TEMPERATURE with HEAT_RENDER_MODE)
-				- Replaces black with alpha=0
-					- "Black blending"?
-						- See https://discord.com/channels/559822257275404307/561385532698001419/777597209327566862
-						- https://photoshoptrainingchannel.com/blending-modes-explained/
-					- If it would also glow in the dark, it'd be awesome!
+				+ #define w/#error
+				+ Replaces black with alpha=0
+					+ If it would also glow in the dark, it'd be awesome!
 			+ Temperature upload when HeatRenderMode != None
 			- Calibration: Incandescence is default if calibration says it's ok, otherwise it's None
-			= SettingsDialog
+			+ SettingsDialog
 				+ Move to render tab, in own section - radio and slider
-				= HeatSensitivity enabled depending on HeatRenderMode
+				+ HeatSensitivity enabled depending on HeatRenderMode
+		- Perf:
+			+ Before:
+				+ Upload: 0.03/0.04
+				+ Render: 5.20
+			- Now:
+				- Upload: 0.04
+				- Render: 5.47
 		- ShipRenderContext: rearc shaders & reactions to param changes
 			! Goals: avoid settings params to a gazillion of shaders which we don't need
 			- RenderParameters: AreShipStructureRenderModeSelectorsDirty

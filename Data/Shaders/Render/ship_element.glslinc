@@ -6,7 +6,7 @@
 // Inputs
 in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
 in vec4 inShipPointAttributeGroup2; // Light, Water, PlaneId, Decay
-#ifdef WITH_TEMPERATURE
+#if HEAT_RENDER_MODE != 0
 in float inShipPointTemperature; // Temperature
 #endif
 #ifdef WITH_MATTE_COLOR
@@ -20,7 +20,7 @@ out vec2 vertexTextureCoords;
 #else
 out vec4 vertexCol;
 #endif
-#ifdef WITH_TEMPERATURE
+#if HEAT_RENDER_MODE != 0
 out float vertexTemperature;
 #endif
 
@@ -37,7 +37,7 @@ void main()
     vertexCol = inShipPointColor;
 #endif
 
-#ifdef WITH_TEMPERATURE
+#if HEAT_RENDER_MODE != 0
     vertexTemperature = inShipPointTemperature;
 #endif
 
@@ -48,8 +48,8 @@ void main()
 
 #define in varying
 
-#ifdef WITH_TEMPERATURE
-#include "heat_overlay.glslinc"
+#if HEAT_RENDER_MODE != 0
+#include "ship_heat.glslinc"
 #endif
 
 // Inputs from previous shader        
@@ -59,7 +59,7 @@ in vec2 vertexTextureCoords;
 #else
 in vec4 vertexCol;
 #endif
-#ifdef WITH_TEMPERATURE
+#if HEAT_RENDER_MODE != 0
 in float vertexTemperature;
 #endif
 
@@ -69,7 +69,7 @@ uniform vec4 paramLampLightColor;
 uniform vec4 paramWaterColor;
 uniform float paramWaterContrast;
 uniform float paramWaterLevelThreshold;
-#ifdef WITH_TEMPERATURE
+#if HEAT_RENDER_MODE != 0
 uniform float paramHeatShift;
 #endif
 
@@ -109,13 +109,44 @@ void main()
     // Apply light
     fragColour *= effectiveLightIntensity;
 
-#ifdef WITH_TEMPERATURE
-    // Apply heat
-    fragColour = apply_heat(fragColour, vertexTemperature, paramHeatShift);
+
+#if HEAT_RENDER_MODE == 0
+
+    // None
+
+#elif HEAT_RENDER_MODE == 1
+
+    // Heat Overlay
+
+    // Get heat color
+    vec3 heatColor = get_heat_color(vertexTemperature, paramHeatShift);
+
+    // Overwrite fragment color with heat color
+    fragColour = vec4(heatColor, 1.0);
+
+#elif HEAT_RENDER_MODE == 2
+
+    // Incandescence
+
+    // Get heat color
+    vec3 heatColor = get_heat_color(vertexTemperature, paramHeatShift);
+
+    // Calculate strength of heat color
+    float heatColorStrength = dot(vec3(0.33333), heatColor);
+
+    // Blend fragment color with heat color
+    fragColour = vec4(
+        mix(fragColour.xyz, heatColor, heatColorStrength),
+        1.0);
+
+#else
+#error "Unrecognized value for HEAT_RENDER_MODE"
 #endif
 
-    // Apply point light color
+
+    // Apply lamp color
     fragColour = mix(fragColour, paramLampLightColor, vertexAttributes.x);
     
+    // Make final color, using original vertex's alpha
     gl_FragColor = vec4(fragColour.xyz, vertexCol.w);
 } 

@@ -1,3 +1,3 @@
 #define FOR_LINES
-#define WITH_TEMPERATURE
+#define HEAT_RENDER_MODE 1
 #include "ship_element.glslinc"
