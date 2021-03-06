@@ -135,7 +135,7 @@ void main()
     float heatColorStrength = dot(vec3(1.0/3.0), heatColor);
 
     // Blend fragment color with heat color
-    fragColour = mix(fragColour.xyz, heatColor, heatColorStrength);
+    fragColour = mix(fragColour, heatColor, heatColorStrength);
 
 #else
 #error "Unrecognized value for HEAT_RENDER_MODE"
