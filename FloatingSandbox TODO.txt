@@ -660,6 +660,7 @@ Render:
 		+ Adjust terrain lock
 			+ Help
 				+ Also add Rot, etc.
+		+ Incandescence layer (*)
 
 		= MAC:
 			= Full high-DPI path:
@@ -725,11 +726,11 @@ Render:
 			- "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
 				- Ask if not due to engine breaking
 
-		= Incandescence layer (*)
-
 		- Send for testing
 		- Send for localization
 			- Give GitHub diff for Help
+
+		- Bump up version
 
 		- Localization
 			- Help
@@ -1458,6 +1459,9 @@ Render:
 
 - Gfx optimizations:
 
+	- Temperature buffer is currently uploaded separately; now that we've made it "mainstream", see if it makes more sense
+	  to upload it together with the other frequently-changing fields (i.e. water, light)
+
 	- Limit FPS for refresh
 		- "some screens can fail or even die (led burning) if you refresh too fast, like sending 70FPS to a 60FPS screen, if not protected the screen can die"
 		- Search it out
@@ -1511,64 +1515,6 @@ Render:
 	  by just punching holes
 
 	- Background ships: just any of the other ships, that would sail in the background
-
-	= Incandescence: heat overlay more integrated in game play (*):
-		+ New enum: HeatRenderMode (@ DebugShip, FlameRenderMode, etc.):
-			+ Incandescence (default if calibration says it's ok)
-			+ HeatOverlay
-			+ None (else if calibration says it's not ok)
-		= Impl:
-			+ Enum
-			+ Replace DrawHeatOverlay boolean
-				+ Turn HeatTransparency into HeatSensitivity, for both shaders
-				+ ShipRenderContext:
-					+ RenderParams
-					+ Getters/Setters
-					+ Shader Program
-				+ I/GameController
-			+ Shaders:
-				+ #define w/#error
-				+ Replaces black with alpha=0
-					+ If it would also glow in the dark, it'd be awesome!
-			+ Temperature upload when HeatRenderMode != None
-			- Calibration: Incandescence is default if calibration says it's ok, otherwise it's None
-				- Render score 
-				- Test old Dell for CPU score
-			+ SettingsDialog
-				+ Move to render tab, in own section - radio and slider
-				+ HeatSensitivity enabled depending on HeatRenderMode
-		+ Perf:
-			+ Before:
-				+ Upload: 0.03/0.04
-				+ Render: 5.20
-			+ Try with vec3 downgrade
-				+ If OK: change also type of lightColor and waterColor (both vec3 instead of vec4)
-			+ Now:
-				+ Upload: 0.04
-				+ Render: 5.47 -> 5.41
-		= ShipRenderContext: rearc shaders & reactions to param changes
-			! Goals: avoid settings params to a gazillion of shaders which we don't need
-			+ RenderParameters: AreShipStructureRenderModeSelectorsDirty
-				+ Set when DebugShipRenderMode or HeatRenderMode (or ...?) change
-			+ Specific ProgramType members for ship structure
-				+ mShipStructureXYZShader
-			+ ProcessParameterChanges:
-				+ When RenderParameters::AreShipStructureRenderModeSelectorsDirty:
-					+ ApplyShipStructureRenderModeChanges()
-						+ SelectShipShaders()
-							+ Sets various mShipStructureXYZShader based on selectors
-					+ Invoke ApplyViewModelChanges(), ApplyWaterContrastChanges(), Apply.... (all the ones that affect ship structure shaders)
-			+ ApplyViewModelChanges(), ApplyWaterContrastChanges(), Apply...():
-				+ Only set changes for mShipStructureXYZShader shaders
-			+ RenderDraw:
-				+ Use mShipStructureXYZShader members instead of hardcoded programs
-			+ Full test:
-				+ All debug modes times heat render modes
-				+ Parameter changes followed by shader changes
-					+ Water params, ViewModel params,
-			- Run ApiTrace
-		- changelist
-			- "...incandescence is now visible..."
 
 	- Fog
 
@@ -4020,6 +3966,65 @@ IF WX:
 			+ New clouds
 		+ Test:
 			+ Mariana's Trench
+	+ Incandescence: heat overlay more integrated in game play (*):
+		+ New enum: HeatRenderMode (@ DebugShip, FlameRenderMode, etc.):
+			+ Incandescence (default if calibration says it's ok)
+			+ HeatOverlay
+			+ None (else if calibration says it's not ok)
+		+ Impl:
+			+ Enum
+			+ Replace DrawHeatOverlay boolean
+				+ Turn HeatTransparency into HeatSensitivity, for both shaders
+				+ ShipRenderContext:
+					+ RenderParams
+					+ Getters/Setters
+					+ Shader Program
+				+ I/GameController
+			+ Shaders:
+				+ #define w/#error
+				+ Replaces black with alpha=0
+					+ If it would also glow in the dark, it'd be awesome!
+			+ Temperature upload when HeatRenderMode != None
+			+ Calibration: Incandescence is default if calibration says it's ok, otherwise it's None
+				+ Render score 
+				+ Test old Dell for CPU score
+					+ No noticeable CPU impact, but huge rendering impact
+			+ SettingsDialog
+				+ Move to render tab, in own section - radio and slider
+				+ HeatSensitivity enabled depending on HeatRenderMode
+		+ Perf:
+			+ Before:
+				+ Upload: 0.03/0.04
+				+ Render: 5.20
+			+ Try with vec3 downgrade
+				+ If OK: change also type of lightColor and waterColor (both vec3 instead of vec4)
+			+ Now:
+				+ Upload: 0.04
+				+ Render: 5.47 -> 5.41
+		+ ShipRenderContext: rearc shaders & reactions to param changes
+			! Goals: avoid settings params to a gazillion of shaders which we don't need
+			+ RenderParameters: AreShipStructureRenderModeSelectorsDirty
+				+ Set when DebugShipRenderMode or HeatRenderMode (or ...?) change
+			+ Specific ProgramType members for ship structure
+				+ mShipStructureXYZShader
+			+ ProcessParameterChanges:
+				+ When RenderParameters::AreShipStructureRenderModeSelectorsDirty:
+					+ ApplyShipStructureRenderModeChanges()
+						+ SelectShipShaders()
+							+ Sets various mShipStructureXYZShader based on selectors
+					+ Invoke ApplyViewModelChanges(), ApplyWaterContrastChanges(), Apply.... (all the ones that affect ship structure shaders)
+			+ ApplyViewModelChanges(), ApplyWaterContrastChanges(), Apply...():
+				+ Only set changes for mShipStructureXYZShader shaders
+			+ RenderDraw:
+				+ Use mShipStructureXYZShader members instead of hardcoded programs
+			+ Full test:
+				+ All debug modes times heat render modes
+				+ Parameter changes followed by shader changes
+					+ Water params, ViewModel params,
+			+ Run ApiTrace
+		+ changelist
+			+ "...incandescence is now visible..."
+
 
 + Gfx Optimizations:
 	+ Try without buffer population:

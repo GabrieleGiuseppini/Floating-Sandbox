@@ -15,6 +15,7 @@
 #include <cmath>
 #include <cstdint>
 #include <random>
+#include <thread>
 
 ComputerCalibrationScore ComputerCalibrator::Calibrate()
 {
@@ -69,9 +70,24 @@ void ComputerCalibrator::TuneGame(
     {
         renderContext.SetOceanRenderDetail(OceanRenderDetailType::Basic);
     }
+    else
+    {
+        renderContext.SetOceanRenderDetail(OceanRenderDetailType::Detailed);
+    }
 
-    LogMessage("ComputerCalibration: "
-        "OceanRenderDetail=", renderContext.GetOceanRenderDetail() == OceanRenderDetailType::Basic ? "Basic" : "Advanced");
+    if (score.NormalizedGfxScore < 0.1f
+        || std::thread::hardware_concurrency() == 1)
+    {
+        renderContext.SetHeatRenderMode(HeatRenderModeType::None);
+    }
+    else
+    {
+        renderContext.SetHeatRenderMode(HeatRenderModeType::Incandescence);
+    }
+
+    LogMessage("ComputerCalibration:"
+        " OceanRenderDetail=", renderContext.GetOceanRenderDetail() == OceanRenderDetailType::Basic ? "Basic" : "Advanced",
+        " HeatRenderMode=", renderContext.GetHeatRenderMode() == HeatRenderModeType::None ? "None" : (renderContext.GetHeatRenderMode() == HeatRenderModeType::HeatOverlay ? "HeatOverlay" : "Incandescence"));
 }
 
 float ComputerCalibrator::RunComputation()
