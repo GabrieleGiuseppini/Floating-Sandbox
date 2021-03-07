@@ -66,11 +66,11 @@ in float vertexTemperature;
 // Params
 #if HEAT_RENDER_MODE != 1
 uniform float paramEffectiveAmbientLightIntensity;
-#endif
-uniform vec3 paramLampLightColor;
 uniform vec3 paramWaterColor;
 uniform float paramWaterContrast;
 uniform float paramWaterLevelThreshold;
+#endif
+uniform vec3 paramLampLightColor;
 #if HEAT_RENDER_MODE != 0
 uniform float paramHeatShift;
 #endif
@@ -91,6 +91,9 @@ void main()
         discard;
 #endif
 
+
+
+#if HEAT_RENDER_MODE != 1
     // Apply decay
     float originalLightness = dot(vec3(1.0/3.0), vertexCol.xyz);
     vec3 decayColor = mix(vec3(%ROT_GREEN_COLOR%), vec3(%ROT_BROWN_COLOR%), originalLightness);
@@ -105,7 +108,6 @@ void main()
     float vertexColorWetness = min(vertexWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
     fragColour = mix(fragColour, paramWaterColor, vertexColorWetness);
 
-#if HEAT_RENDER_MODE != 1
     // Complement missing ambient light with point's light
     float effectiveLightIntensity = mix(vertexAttributes.x, 1.0, paramEffectiveAmbientLightIntensity);
 
@@ -113,20 +115,17 @@ void main()
     fragColour *= effectiveLightIntensity;
 #endif
 
+
 #if HEAT_RENDER_MODE == 0
-
     // None
-
 #elif HEAT_RENDER_MODE == 1
-
     // Heat Overlay
 
     // Get heat color
     vec3 heatColor = get_heat_color(vertexTemperature, paramHeatShift);
 
     // Overwrite fragment color with heat color
-    fragColour = heatColor;
-
+    vec3 fragColour = heatColor;
 #elif HEAT_RENDER_MODE == 2
 
     // Incandescence
@@ -137,11 +136,9 @@ void main()
     // Screen-blend fragment color with heat color
     vec3 one = vec3(1.0);
     fragColour = one - (one - fragColour) * (one - heatColor);
-
 #else
 #error "Unrecognized value for HEAT_RENDER_MODE"
 #endif
-
 
     // Apply lamp color
     fragColour = mix(fragColour, paramLampLightColor, vertexAttributes.x);

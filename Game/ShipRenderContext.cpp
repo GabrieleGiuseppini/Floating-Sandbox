@@ -968,7 +968,8 @@ void ShipRenderContext::ProcessParameterChanges(RenderParameters const & renderP
         ApplyWaterLevelOfDetailChanges(renderParameters);
     }
 
-    if (renderParameters.IsHeatSensitivityDirty)
+    if (renderParameters.IsHeatSensitivityDirty
+        || renderParameters.AreShipStructureRenderModeSelectorsDirty)
     {
         ApplyHeatSensitivityChanges(renderParameters);
     }
@@ -2257,25 +2258,28 @@ void ShipRenderContext::ApplyWaterColorChanges(RenderParameters const & renderPa
 
     auto const waterColor = renderParameters.ShipWaterColor;
 
-    mShaderManager.ActivateProgram(mShipPointsProgram);
-    mShaderManager.SetProgramParameter<ProgramParameterType::WaterColor>(
-        mShipPointsProgram,
-        waterColor.x, waterColor.y, waterColor.z);
+    if (renderParameters.HeatRenderMode != HeatRenderModeType::HeatOverlay)
+    {
+        mShaderManager.ActivateProgram(mShipPointsProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::WaterColor>(
+            mShipPointsProgram,
+            waterColor.x, waterColor.y, waterColor.z);
 
-    mShaderManager.ActivateProgram(mShipRopesProgram);
-    mShaderManager.SetProgramParameter<ProgramParameterType::WaterColor>(
-        mShipRopesProgram,
-        waterColor.x, waterColor.y, waterColor.z);
+        mShaderManager.ActivateProgram(mShipRopesProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::WaterColor>(
+            mShipRopesProgram,
+            waterColor.x, waterColor.y, waterColor.z);
 
-    mShaderManager.ActivateProgram(mShipSpringsProgram);
-    mShaderManager.SetProgramParameter<ProgramParameterType::WaterColor>(
-        mShipSpringsProgram,
-        waterColor.x, waterColor.y, waterColor.z);
+        mShaderManager.ActivateProgram(mShipSpringsProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::WaterColor>(
+            mShipSpringsProgram,
+            waterColor.x, waterColor.y, waterColor.z);
 
-    mShaderManager.ActivateProgram(mShipTrianglesProgram);
-    mShaderManager.SetProgramParameter<ProgramParameterType::WaterColor>(
-        mShipTrianglesProgram,
-        waterColor.x, waterColor.y, waterColor.z);
+        mShaderManager.ActivateProgram(mShipTrianglesProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::WaterColor>(
+            mShipTrianglesProgram,
+            waterColor.x, waterColor.y, waterColor.z);
+    }
 }
 
 void ShipRenderContext::ApplyWaterContrastChanges(RenderParameters const & renderParameters)
@@ -2284,25 +2288,28 @@ void ShipRenderContext::ApplyWaterContrastChanges(RenderParameters const & rende
     // Set parameter in all affected programs
     //
 
-    mShaderManager.ActivateProgram(mShipPointsProgram);
-    mShaderManager.SetProgramParameter<ProgramParameterType::WaterContrast>(
-        mShipPointsProgram,
-        renderParameters.ShipWaterContrast);
+    if (renderParameters.HeatRenderMode != HeatRenderModeType::HeatOverlay)
+    {
+        mShaderManager.ActivateProgram(mShipPointsProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::WaterContrast>(
+            mShipPointsProgram,
+            renderParameters.ShipWaterContrast);
 
-    mShaderManager.ActivateProgram(mShipRopesProgram);
-    mShaderManager.SetProgramParameter<ProgramParameterType::WaterContrast>(
-        mShipRopesProgram,
-        renderParameters.ShipWaterContrast);
+        mShaderManager.ActivateProgram(mShipRopesProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::WaterContrast>(
+            mShipRopesProgram,
+            renderParameters.ShipWaterContrast);
 
-    mShaderManager.ActivateProgram(mShipSpringsProgram);
-    mShaderManager.SetProgramParameter<ProgramParameterType::WaterContrast>(
-        mShipSpringsProgram,
-        renderParameters.ShipWaterContrast);
+        mShaderManager.ActivateProgram(mShipSpringsProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::WaterContrast>(
+            mShipSpringsProgram,
+            renderParameters.ShipWaterContrast);
 
-    mShaderManager.ActivateProgram(mShipTrianglesProgram);
-    mShaderManager.SetProgramParameter<ProgramParameterType::WaterContrast>(
-        mShipTrianglesProgram,
-        renderParameters.ShipWaterContrast);
+        mShaderManager.ActivateProgram(mShipTrianglesProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::WaterContrast>(
+            mShipTrianglesProgram,
+            renderParameters.ShipWaterContrast);
+    }
 }
 
 void ShipRenderContext::ApplyWaterLevelOfDetailChanges(RenderParameters const & renderParameters)
@@ -2314,25 +2321,28 @@ void ShipRenderContext::ApplyWaterLevelOfDetailChanges(RenderParameters const & 
     // Transform: 0->1 == 2.0->0.01
     float const waterLevelThreshold = 2.0f + renderParameters.ShipWaterLevelOfDetail * (-2.0f + 0.01f);
 
-    mShaderManager.ActivateProgram(mShipPointsProgram);
-    mShaderManager.SetProgramParameter<ProgramParameterType::WaterLevelThreshold>(
-        mShipPointsProgram,
-        waterLevelThreshold);
+    if (renderParameters.HeatRenderMode != HeatRenderModeType::HeatOverlay)
+    {
+        mShaderManager.ActivateProgram(mShipPointsProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::WaterLevelThreshold>(
+            mShipPointsProgram,
+            waterLevelThreshold);
 
-    mShaderManager.ActivateProgram(mShipRopesProgram);
-    mShaderManager.SetProgramParameter<ProgramParameterType::WaterLevelThreshold>(
-        mShipRopesProgram,
-        waterLevelThreshold);
+        mShaderManager.ActivateProgram(mShipRopesProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::WaterLevelThreshold>(
+            mShipRopesProgram,
+            waterLevelThreshold);
 
-    mShaderManager.ActivateProgram(mShipSpringsProgram);
-    mShaderManager.SetProgramParameter<ProgramParameterType::WaterLevelThreshold>(
-        mShipSpringsProgram,
-        waterLevelThreshold);
+        mShaderManager.ActivateProgram(mShipSpringsProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::WaterLevelThreshold>(
+            mShipSpringsProgram,
+            waterLevelThreshold);
 
-    mShaderManager.ActivateProgram(mShipTrianglesProgram);
-    mShaderManager.SetProgramParameter<ProgramParameterType::WaterLevelThreshold>(
-        mShipTrianglesProgram,
-        waterLevelThreshold);
+        mShaderManager.ActivateProgram(mShipTrianglesProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::WaterLevelThreshold>(
+            mShipTrianglesProgram,
+            waterLevelThreshold);
+    }
 }
 
 void ShipRenderContext::ApplyHeatSensitivityChanges(RenderParameters const & renderParameters)
@@ -2345,53 +2355,28 @@ void ShipRenderContext::ApplyHeatSensitivityChanges(RenderParameters const & ren
     // Sensitivity = 1  => Shift = 0.0001
     float const heatShift = 1.0f - renderParameters.HeatSensitivity * (1.0f - 0.0001f);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipRopesHeatOverlay>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipRopesHeatOverlay, ProgramParameterType::HeatShift>(
-        heatShift);
+    if (renderParameters.HeatRenderMode != HeatRenderModeType::None)
+    {
+        mShaderManager.ActivateProgram(mShipPointsProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::HeatShift>(
+            mShipPointsProgram,
+            heatShift);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipRopesIncandescence>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipRopesIncandescence, ProgramParameterType::HeatShift>(
-        heatShift);
+        mShaderManager.ActivateProgram(mShipRopesProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::HeatShift>(
+            mShipRopesProgram,
+            heatShift);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipSpringsColorHeatOverlay>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsColorHeatOverlay, ProgramParameterType::HeatShift>(
-        heatShift);
+        mShaderManager.ActivateProgram(mShipSpringsProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::HeatShift>(
+            mShipSpringsProgram,
+            heatShift);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipSpringsColorIncandescence>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsColorIncandescence, ProgramParameterType::HeatShift>(
-        heatShift);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTextureHeatOverlay>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTextureHeatOverlay, ProgramParameterType::HeatShift>(
-        heatShift);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTextureIncandescence>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTextureIncandescence, ProgramParameterType::HeatShift>(
-        heatShift);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColorHeatOverlay>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColorHeatOverlay, ProgramParameterType::HeatShift>(
-        heatShift);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesColorIncandescence>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesColorIncandescence, ProgramParameterType::HeatShift>(
-        heatShift);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTextureHeatOverlay>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTextureHeatOverlay, ProgramParameterType::HeatShift>(
-        heatShift);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTextureIncandescence>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTextureIncandescence, ProgramParameterType::HeatShift>(
-        heatShift);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipPointsColorHeatOverlay>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipPointsColorHeatOverlay, ProgramParameterType::HeatShift>(
-        heatShift);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipPointsColorIncandescence>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipPointsColorIncandescence, ProgramParameterType::HeatShift>(
-        heatShift);
+        mShaderManager.ActivateProgram(mShipTrianglesProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::HeatShift>(
+            mShipTrianglesProgram,
+            heatShift);
+    }
 }
 
 void ShipRenderContext::SelectShipPrograms(RenderParameters const & renderParameters)

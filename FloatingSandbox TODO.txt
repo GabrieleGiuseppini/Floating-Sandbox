@@ -735,6 +735,9 @@ Render:
 		+ Bump up version
 		+ Fix Pac0master's bug
 		+ Bump up version
+		+ Fix bug 2
+			+ Test on both cards
+		+ Bump up version
 
 		- Localization
 			+ IT
@@ -752,7 +755,7 @@ Render:
 
 		- Release
 			- REMEMBER: remove debug logging for Mac, see above
-			- Branch is merged into master (if applicable)
+			+ Branch is merged into master (if applicable)
 			- MSI variables
 			- Commit & push
 			- 64-bit MSI
@@ -775,6 +778,8 @@ Render:
 				- Upload changes.txt
 					- Test w/old FS
 				- Update current version in FAQ
+
+		- See why NVidia's rendering is so slow
 
 		- Randomized start (?)
 			- Done by new method at SettingsManager, by choosing settings (system & user) weighted by new optional probability attribute
