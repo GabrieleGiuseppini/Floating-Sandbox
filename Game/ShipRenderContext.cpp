@@ -2188,25 +2188,28 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
     // Set parameter in all programs
     //
 
-    mShaderManager.ActivateProgram(mShipPointsProgram);
-    mShaderManager.SetProgramParameter<ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mShipPointsProgram,
-        renderParameters.EffectiveAmbientLightIntensity);
+    if (renderParameters.HeatRenderMode != HeatRenderModeType::HeatOverlay)
+    {
+        mShaderManager.ActivateProgram(mShipPointsProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::EffectiveAmbientLightIntensity>(
+            mShipPointsProgram,
+            renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram(mShipRopesProgram);
-    mShaderManager.SetProgramParameter<ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mShipRopesProgram,
-        renderParameters.EffectiveAmbientLightIntensity);
+        mShaderManager.ActivateProgram(mShipRopesProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::EffectiveAmbientLightIntensity>(
+            mShipRopesProgram,
+            renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram(mShipSpringsProgram);
-    mShaderManager.SetProgramParameter<ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mShipSpringsProgram,
-        renderParameters.EffectiveAmbientLightIntensity);
+        mShaderManager.ActivateProgram(mShipSpringsProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::EffectiveAmbientLightIntensity>(
+            mShipSpringsProgram,
+            renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram(mShipTrianglesProgram);
-    mShaderManager.SetProgramParameter<ProgramParameterType::EffectiveAmbientLightIntensity>(
-        mShipTrianglesProgram,
-        renderParameters.EffectiveAmbientLightIntensity);
+        mShaderManager.ActivateProgram(mShipTrianglesProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::EffectiveAmbientLightIntensity>(
+            mShipTrianglesProgram,
+            renderParameters.EffectiveAmbientLightIntensity);
+    }
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesDecay, ProgramParameterType::EffectiveAmbientLightIntensity>(

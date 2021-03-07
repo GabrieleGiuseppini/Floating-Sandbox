@@ -64,7 +64,9 @@ in float vertexTemperature;
 #endif
 
 // Params
+#if HEAT_RENDER_MODE != 1
 uniform float paramEffectiveAmbientLightIntensity;
+#endif
 uniform vec3 paramLampLightColor;
 uniform vec3 paramWaterColor;
 uniform float paramWaterContrast;
@@ -103,12 +105,13 @@ void main()
     float vertexColorWetness = min(vertexWater, paramWaterLevelThreshold) / paramWaterLevelThreshold * paramWaterContrast;
     fragColour = mix(fragColour, paramWaterColor, vertexColorWetness);
 
+#if HEAT_RENDER_MODE != 1
     // Complement missing ambient light with point's light
     float effectiveLightIntensity = mix(vertexAttributes.x, 1.0, paramEffectiveAmbientLightIntensity);
 
     // Apply light
     fragColour *= effectiveLightIntensity;
-
+#endif
 
 #if HEAT_RENDER_MODE == 0
 
