@@ -661,6 +661,9 @@ Render:
 			+ Help
 				+ Also add Rot, etc.
 		+ Incandescence layer (*)
+		+ Default settings: 
+			X Flatten waves?
+			+ Lower speed of (sin) ocean waves - now that we run faster
 
 		= MAC:
 			= Full high-DPI path:
@@ -739,11 +742,11 @@ Render:
 			- ES
 			- RU
 
-		= Default settings: 
-			- Flatten waves?
-			+ Lower speed of (sin) ocean waves - now that we run faster
+		- Release
+			- TODOHERE
+			- REMEMBER: remove debug logging for Mac, see above
 
-		- Randomized start
+		- Randomized start (?)
 			- Done by new method at SettingsManager, by choosing settings (system & user) weighted by new optional probability attribute
 				- Proability at SettingsDialog
 				- "defaults" (not a setting) have own hardcoded probability
