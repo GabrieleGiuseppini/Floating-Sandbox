@@ -733,6 +733,8 @@ Render:
 		+ Send for localization
 			+ Give GitHub diff for Help: https://github.com/GabrieleGiuseppini/Floating-Sandbox/commit/9ef5e00d5d1a35d63eea6ce757000951e043dd80?branch=9ef5e00d5d1a35d63eea6ce757000951e043dd80&diff=split
 		+ Bump up version
+		+ Fix Pac0master's bug
+		+ Bump up version
 
 		- Localization
 			+ IT
