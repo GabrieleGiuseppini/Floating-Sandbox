@@ -51,7 +51,7 @@ RenderParameters::RenderParameters(
 	, HeatSensitivity(0.0f)
 	, IsHeatSensitivityDirty(true)
 	, DebugShipRenderMode(DebugShipRenderModeType::None)
-	, IsDebugShipRenderModeDirty(true)
+	, AreShipStructureRenderModeSelectorsDirty(true)
 {
 }
 
@@ -75,7 +75,7 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	IsShipWaterContrastDirty = false;
 	IsShipWaterLevelOfDetailDirty = false;
 	IsHeatSensitivityDirty = false;
-	IsDebugShipRenderModeDirty = false;
+	AreShipStructureRenderModeSelectorsDirty = false;
 
 	return copy;
 }

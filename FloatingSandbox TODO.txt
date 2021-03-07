@@ -657,6 +657,9 @@ Render:
 			+ See maximum adjust
 			+ Test all ships
 				+ Add offsets where needed
+		+ Adjust terrain lock
+			+ Help
+				+ Also add Rot, etc.
 
 		= MAC:
 			= Full high-DPI path:
@@ -722,9 +725,18 @@ Render:
 			- "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
 				- Ask if not due to engine breaking
 
-		- Incandescence layer (*)
+		= Incandescence layer (*)
 
 		- Send for testing
+		- Send for localization
+			- Give GitHub diff for Help
+
+		- Localization
+			- Help
+			- Strings
+			- IT
+			- ES
+			- RU
 
 		= Default settings: 
 			- Flatten waves?
@@ -1501,10 +1513,10 @@ Render:
 	- Background ships: just any of the other ships, that would sail in the background
 
 	= Incandescence: heat overlay more integrated in game play (*):
-		! New enum: HeatRenderMode (@ DebugShip, FlameRenderMode, etc.):
-			- Incandescence (default if calibration says it's ok)
-			- HeatOverlay
-			- None (else if calibration says it's not ok)
+		+ New enum: HeatRenderMode (@ DebugShip, FlameRenderMode, etc.):
+			+ Incandescence (default if calibration says it's ok)
+			+ HeatOverlay
+			+ None (else if calibration says it's not ok)
 		= Impl:
 			+ Enum
 			+ Replace DrawHeatOverlay boolean
@@ -1514,7 +1526,7 @@ Render:
 					+ Getters/Setters
 					+ Shader Program
 				+ I/GameController
-			- Shaders:
+			+ Shaders:
 				+ #define w/#error
 				+ Replaces black with alpha=0
 					+ If it would also glow in the dark, it'd be awesome!
@@ -1534,24 +1546,29 @@ Render:
 			+ Now:
 				+ Upload: 0.04
 				+ Render: 5.47 -> 5.41
-		- Cap temperature at burning point (+~10%)?
-		- ShipRenderContext: rearc shaders & reactions to param changes
+		= ShipRenderContext: rearc shaders & reactions to param changes
 			! Goals: avoid settings params to a gazillion of shaders which we don't need
-			- RenderParameters: AreShipStructureRenderModeSelectorsDirty
-				- Set when DebugShipRenderMode or HeatRenderMode (or ...?) change
-			- Specific ProgramType members for ship structure
-				- mShipStructureXYZShader
-			- ProcessParameterChanges:
-				- When RenderParameters::AreShipStructureRenderModeSelectorsDirty:
-					- SelectShipShaders()
-						- Sets various mShipStructureXYZShader based on selectors
-					- ApplyViewModelChanges()
-					- ApplyWaterContrastChanges()
-					- Apply....
-			- ApplyViewModelChanges(), ApplyWaterContrastChanges(), Apply...():
-				- Only set changes for mShipStructureXYZShader shaders
-			- RenderDraw:
-				- Use mShipStructureXYZShader members instead of hardcoded programs
+			+ RenderParameters: AreShipStructureRenderModeSelectorsDirty
+				+ Set when DebugShipRenderMode or HeatRenderMode (or ...?) change
+			+ Specific ProgramType members for ship structure
+				+ mShipStructureXYZShader
+			+ ProcessParameterChanges:
+				+ When RenderParameters::AreShipStructureRenderModeSelectorsDirty:
+					+ ApplyShipStructureRenderModeChanges()
+						+ SelectShipShaders()
+							+ Sets various mShipStructureXYZShader based on selectors
+					+ Invoke ApplyViewModelChanges(), ApplyWaterContrastChanges(), Apply.... (all the ones that affect ship structure shaders)
+			+ ApplyViewModelChanges(), ApplyWaterContrastChanges(), Apply...():
+				+ Only set changes for mShipStructureXYZShader shaders
+			+ RenderDraw:
+				+ Use mShipStructureXYZShader members instead of hardcoded programs
+			+ Full test:
+				+ All debug modes times heat render modes
+				+ Parameter changes followed by shader changes
+					+ Water params, ViewModel params,
+			- Run ApiTrace
+		- changelist
+			- "...incandescence is now visible..."
 
 	- Fog
 
@@ -1985,7 +2002,16 @@ Render:
 		- This is an alternative to the "Internal Pressure (*)" idea
 		- Plan A: simple: inward forces on (ext and int) (non-leaking) frontier points based on external pressure (density*depth*g) at that point
 			- Con: does not consider internal pressure/water
-			- Watch out: might generate phantom forces
+			- Watch out: might generate phantom forces; since it needs to be zero-sum, calc sum as you go and do a second pass adding -sum/N to each particle (which was involved in the first step)
+		- Plan B: with internal pressure
+			! Spec:
+				- New quantity at each particle, much like Water
+				- Intake @ WaterIntake, more or less same concept
+				- New EqualizePressure step to propagate pressure from each particle to its neighbors along springs
+					- More like we do in temperature
+					- Hullness trick, to ensure that hull particles have pressure (for frontier checking) yet pressure does not propagate through internal hull walls:
+						- Particles do *not* propagate through hull springs
+						- Hull particles do not partecipate in normal propagation, but get average instead of all neighboring particles
 
 	- Punch tool (*): interacts with frontier, just like a punch
 		- Requires frontier work first

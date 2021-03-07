@@ -3789,8 +3789,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     heatBox,
                     SliderWidth,
                     SliderHeight,
-                    _("Heat Sensitivity"),
-                    _("Adjusts the temperature at which materials start emitting red radiation, hence making incandescence more visible at lower temperatures."),
+                    _("Heat Boost"),
+                    _("Lowers the temperature at which materials start emitting red radiation, hence making incandescence more visible at lower temperatures."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::HeatSensitivity, value);

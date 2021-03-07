@@ -88,7 +88,8 @@ struct RenderParameters
     bool IsHeatSensitivityDirty;
 
     DebugShipRenderModeType DebugShipRenderMode;
-    bool IsDebugShipRenderModeDirty;
+
+    bool AreShipStructureRenderModeSelectorsDirty; // For all those parameters that require changing ship shaders
 
     RenderParameters(
         LogicalPixelSize const & initialCanvasSize,

@@ -131,11 +131,9 @@ void main()
     // Get heat color
     vec3 heatColor = get_heat_color(vertexTemperature, paramHeatShift);
 
-    // Calculate strength of heat color
-    float heatColorStrength = dot(vec3(0.7, 0.15, 0.15), heatColor);
-
-    // Blend fragment color with heat color
-    fragColour = mix(fragColour, heatColor, heatColorStrength);
+    // Screen-blend fragment color with heat color
+    vec3 one = vec3(1.0);
+    fragColour = one - (one - fragColour) * (one - heatColor);
 
 #else
 #error "Unrecognized value for HEAT_RENDER_MODE"

@@ -598,9 +598,9 @@ void RenderContext::ProcessParameterChanges(RenderParameters const & renderParam
         ApplyCanvasSizeChanges(renderParameters);
     }
 
-    if (renderParameters.IsDebugShipRenderModeDirty)
+    if (renderParameters.AreShipStructureRenderModeSelectorsDirty)
     {
-        ApplyDebugShipRenderModeChanges(renderParameters);
+        ApplyShipStructureRenderModeChanges(renderParameters);
     }
 }
 
@@ -612,7 +612,7 @@ void RenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParame
     glViewport(0, 0, view.GetCanvasPhysicalPixelSize().width, view.GetCanvasPhysicalPixelSize().height);
 }
 
-void RenderContext::ApplyDebugShipRenderModeChanges(RenderParameters const & renderParameters)
+void RenderContext::ApplyShipStructureRenderModeChanges(RenderParameters const & renderParameters)
 {
     // Set polygon mode
     if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)

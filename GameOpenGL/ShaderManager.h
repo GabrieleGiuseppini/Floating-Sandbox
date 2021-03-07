@@ -102,13 +102,13 @@ public:
         typename Traits::ProgramType program,
         float value)
     {
-        const uint32_t programIndex = static_cast<uint32_t>(program);
-        constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
+        uint32_t const programIndex = static_cast<uint32_t>(program);
+        uint32_t constexpr ParameterIndex = static_cast<uint32_t>(Parameter);
 
-        assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
+        assert(mPrograms[programIndex].UniformLocations[ParameterIndex] != NoParameterLocation);
 
         glUniform1f(
-            mPrograms[programIndex].UniformLocations[parameterIndex],
+            mPrograms[programIndex].UniformLocations[ParameterIndex],
             value);
 
         CheckUniformError(program, Parameter);
@@ -133,18 +133,26 @@ public:
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
     inline void SetProgramParameter(float val1, float val2, float val3)
     {
-        constexpr uint32_t programIndex = static_cast<uint32_t>(Program);
-        constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
+        SetProgramParameter<Parameter>(Program, val1, val2, val3);
+    }
 
-        assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
+    template <typename Traits::ProgramParameterType Parameter>
+    inline void SetProgramParameter(
+        typename Traits::ProgramType program,
+        float val1, float val2, float val3)
+    {
+        uint32_t const programIndex = static_cast<uint32_t>(program);
+        uint32_t constexpr ParameterIndex = static_cast<uint32_t>(Parameter);
+
+        assert(mPrograms[programIndex].UniformLocations[ParameterIndex] != NoParameterLocation);
 
         glUniform3f(
-            mPrograms[programIndex].UniformLocations[parameterIndex],
+            mPrograms[programIndex].UniformLocations[ParameterIndex],
             val1,
             val2,
             val3);
 
-        CheckUniformError<Program, Parameter>();
+        CheckUniformError(program, Parameter);
     }
 
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
@@ -168,18 +176,26 @@ public:
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
     inline void SetProgramParameter(float const(&value)[4][4])
     {
-        constexpr uint32_t programIndex = static_cast<uint32_t>(Program);
-        constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
+        SetProgramParameter<Parameter>(Program, value);
+    }
 
-        assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
+    template <typename Traits::ProgramParameterType Parameter>
+    inline void SetProgramParameter(
+        typename Traits::ProgramType program,
+        float const(&value)[4][4])
+    {
+        uint32_t const programIndex = static_cast<uint32_t>(program);
+        uint32_t constexpr ParameterIndex = static_cast<uint32_t>(Parameter);
+
+        assert(mPrograms[programIndex].UniformLocations[ParameterIndex] != NoParameterLocation);
 
         glUniformMatrix4fv(
-            mPrograms[programIndex].UniformLocations[parameterIndex],
+            mPrograms[programIndex].UniformLocations[ParameterIndex],
             1,
             GL_FALSE,
             &(value[0][0]));
 
-        CheckUniformError<Program, Parameter>();
+        CheckUniformError(program, Parameter);
     }
 
     // At any given moment, only one program may be active

@@ -468,7 +468,7 @@ public:
     void SetHeatRenderMode(HeatRenderModeType heatRenderMode)
     {
         mRenderParameters.HeatRenderMode = heatRenderMode;
-        // No need to set dirty, this is picked up at each cycle anway
+        mRenderParameters.AreShipStructureRenderModeSelectorsDirty = true;
     }
 
     float GetHeatSensitivity() const
@@ -515,7 +515,7 @@ public:
     void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode)
     {
         mRenderParameters.DebugShipRenderMode = debugShipRenderMode;
-        mRenderParameters.IsDebugShipRenderModeDirty = true;
+        mRenderParameters.AreShipStructureRenderModeSelectorsDirty = true;
     }
 
     //
@@ -901,7 +901,7 @@ private:
 
     void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
 
-    void ApplyDebugShipRenderModeChanges(RenderParameters const & renderParameters);
+    void ApplyShipStructureRenderModeChanges(RenderParameters const & renderParameters);
 
     static float CalculateEffectiveAmbientLightIntensity(
         float ambientLightIntensity,

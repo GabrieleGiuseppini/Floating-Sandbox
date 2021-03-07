@@ -961,6 +961,7 @@ private:
     void RenderPreparePointToPointArrows(RenderParameters const & renderParameters);
     void RenderDrawPointToPointArrows(RenderParameters const & renderParameters);
 
+    void ApplyShipStructureRenderModeChanges(RenderParameters const & renderParameters);
     void ApplyViewModelChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
     void ApplyFlatLampLightColorChanges(RenderParameters const & renderParameters);
@@ -968,6 +969,8 @@ private:
     void ApplyWaterContrastChanges(RenderParameters const & renderParameters);
     void ApplyWaterLevelOfDetailChanges(RenderParameters const & renderParameters);
     void ApplyHeatSensitivityChanges(RenderParameters const & renderParameters);
+
+    void SelectShipPrograms(RenderParameters const & renderParameters);
 
 private:
 
@@ -1253,7 +1256,6 @@ private:
     size_t mRopeElementVBOStartIndex;
     size_t mTriangleElementVBOStartIndex;
 
-
     //
     // VAOs
     //
@@ -1267,6 +1269,14 @@ private:
     GameOpenGLVAO mVectorArrowVAO;
     GameOpenGLVAO mPointToPointArrowVAO;
 
+    //
+    // The shaders to use for ship structures
+    //
+
+    ProgramType mShipPointsProgram;
+    ProgramType mShipRopesProgram;
+    ProgramType mShipSpringsProgram;
+    ProgramType mShipTrianglesProgram;
 
     //
     // Textures
