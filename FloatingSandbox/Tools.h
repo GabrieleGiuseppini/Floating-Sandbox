@@ -1904,11 +1904,17 @@ public:
         if (inputState.IsLeftMouseDown)
         {
             if (!mCurrentTrajectoryPreviousPosition)
+            {
                 mCurrentTrajectoryPreviousPosition = inputState.MousePosition;
+            }
 
-            auto isAdjusted = mGameController->AdjustOceanFloorTo(
+            auto const targetPosition = inputState.IsShiftKeyDown
+                ? LogicalPixelCoordinates(inputState.MousePosition.x, mCurrentTrajectoryPreviousPosition->y)
+                : inputState.MousePosition;
+
+            auto const isAdjusted = mGameController->AdjustOceanFloorTo(
                 *mCurrentTrajectoryPreviousPosition,
-                inputState.MousePosition);
+                targetPosition);
 
             if (isAdjusted.has_value())
             {
@@ -1929,7 +1935,7 @@ public:
 
             // Remember this coordinate as the starting point of the
             // next stride
-            mCurrentTrajectoryPreviousPosition = inputState.MousePosition;
+            mCurrentTrajectoryPreviousPosition = targetPosition;
         }
         else
         {
