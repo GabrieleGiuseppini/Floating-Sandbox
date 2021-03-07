@@ -729,22 +729,50 @@ Render:
 			- "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
 				- Ask if not due to engine breaking
 
-		- Send for testing
-		- Send for localization
-			- Give GitHub diff for Help
-
-		- Bump up version
+		+ Send for testing
+		+ Send for localization
+			+ Give GitHub diff for Help: https://github.com/GabrieleGiuseppini/Floating-Sandbox/commit/9ef5e00d5d1a35d63eea6ce757000951e043dd80?branch=9ef5e00d5d1a35d63eea6ce757000951e043dd80&diff=split
+		+ Bump up version
 
 		- Localization
-			- Help
-			- Strings
-			- IT
+			+ IT
+				+ strings
+				+ help.html
 			- ES
-			- RU
+				= strings
+					- Fix "Sets wind speed to zero"
+				- help.html
+			+ RU
+				+ strings
+					+ Fix "Sets wind speed to zero"
+				+ help.html
+
 
 		- Release
-			- TODOHERE
 			- REMEMBER: remove debug logging for Mac, see above
+			- Branch is merged into master (if applicable)
+			- MSI variables
+			- Commit & push
+			- 64-bit MSI
+				- Build Install
+				- Make MSI
+				- Rename MSI
+				- Test upgrade from previous version
+			- 32-bit MSI
+				- Build Install
+				- Make MSI
+				- Rename MSI
+				- Test clean install
+			- Get both installers tested on dev server
+			- Wait for test results
+			- Cut tag on github
+			- Upload packages to GameJolt
+				- Report file as safe (https://gamejolt.com/privacy)
+				- Post
+			- www.floatingsandbox.com:
+				- Upload changes.txt
+					- Test w/old FS
+				- Update current version in FAQ
 
 		- Randomized start (?)
 			- Done by new method at SettingsManager, by choosing settings (system & user) weighted by new optional probability attribute

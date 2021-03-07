@@ -2260,7 +2260,7 @@ void SettingsDialog::PopulateWindWavesFishesLightsPanel(wxPanel * panel)
                 // Zero wind
                 {
                     auto button = new wxButton(windBox, wxID_ANY, _T("Zero"), wxDefaultPosition, wxDefaultSize);
-                    button->SetToolTip(_("Set wind speed to zero."));
+                    button->SetToolTip(_("Sets wind speed to zero."));
                     button->Bind(
                         wxEVT_BUTTON,
                         [this](wxCommandEvent & /*event*/)
