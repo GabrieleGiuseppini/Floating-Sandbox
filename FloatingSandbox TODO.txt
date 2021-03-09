@@ -738,15 +738,14 @@ Render:
 		+ Fix bug 2
 			+ Test on both cards
 		+ Bump up version
-
-		- Localization
+		+ Localization
 			+ IT
 				+ strings
 				+ help.html
-			- ES
-				= strings
-					- Fix "Sets wind speed to zero"
-				- help.html
+			+ ES
+				+ strings
+					+ Fix "Sets wind speed to zero"
+				+ help.html
 			+ RU
 				+ strings
 					+ Fix "Sets wind speed to zero"
