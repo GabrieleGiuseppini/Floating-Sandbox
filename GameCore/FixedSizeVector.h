@@ -13,7 +13,7 @@
 #include <iterator>
 
 /*
- * This class is a fixed-size vector for value elements.
+ * This class is a fixed-size vector for value elements, whose size is specified at compile time.
  *
  * Elements can be added up to the specified maximum size, after which the behavior is undefined.
  *

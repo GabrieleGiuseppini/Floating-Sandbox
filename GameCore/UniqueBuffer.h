@@ -13,7 +13,7 @@
 
 /*
  * This class is exactly like a unique_ptr<TValue[]>, but it also
- * carries the size ofthe buffer.
+ * carries the size of the buffer.
  */
 template<typename TValue>
 class unique_buffer
@@ -159,7 +159,7 @@ public:
 
         auto const newSize = mSize * sizeof(TValue) / sizeof(TValue2);
         unique_buffer<TValue2> newBuffer(newSize);
-        std::memcpy(reinterpret_cast<void *>(newBuffer.get()), reinterpret_cast<void *>(mBuffer.get()), newSize * sizeof(TValue2));
+        std::memcpy(reinterpret_cast<void *>(newBuffer.get()), reinterpret_cast<void *>(mBuffer.get()), mSize * sizeof(TValue));
 
         return newBuffer;
     }
