@@ -947,16 +947,11 @@ void Ship::ApplyWorldForces(
             // Calculate magnitude of drag force (opposite sign)
             //  - C * |V| * cos(a) == - C * |V| * (Vn dot Nn) == -C * (V dot Nn)
             float const dragForceMagnitude =
-                // TODOTEST
-                ////dragCoefficient
-                ////* velocityMagnitudeAlongNormal;
-                dragCoefficient / 16.0f
-                * velocityMagnitudeAlongNormal * velocityMagnitudeAlongNormal;
+                dragCoefficient
+                * velocityMagnitudeAlongNormal;
 
             // Final drag force - at this moment in the direction of the normal
-            // TODOTEST
-            //vec2f const dragForce = normal * std::min(dragForceMagnitude, maxDragForceMagnitude);
-            vec2f const dragForce = normal * dragForceMagnitude;
+            vec2f const dragForce = normal * std::min(dragForceMagnitude, maxDragForceMagnitude);
 
             // Apply drag force
             mPoints.GetNonSpringForce(pointIndex) -= dragForce;
