@@ -14,6 +14,7 @@
 - Added "Rot" tool - allows player to rot parts of a ship interactively
 	- Accessed by holding down the SHIFT key while using the "Scrub" tool
 - Pressing the SHIFT key while using the "Adjust Terrain" tool now locks terrain edits horizontally
+	- Thanks to phase1studios2018 for the idea!
 - Refactored bombs as instances of generic "Gadgets", opening the possibility for creating new "thinghies" that may be attached to a ship
 	- Added first non-bomb gadget: a "physics probe" that continuously displays a particle's velocity and temperature
 - Marginal optimizations, gained 3%/4% better FPS rate

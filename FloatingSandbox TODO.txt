@@ -780,6 +780,18 @@ Render:
 				- Update current version in FAQ
 
 		- See why NVidia's rendering is so slow
+			+ Try VSync: yes, it's the VSync
+			- Decide whether FS should turn VSync off
+				- See if there's a non-NVidia-specific way which may be done with all cards
+					- Windows-only would be fine
+		- Try using same vertex buffer for Ocean and Land
+			- Same size as largest
+				- Make buffer of union's: 2 ocean + 1 land
+				- Use new GrowableSizeBuffer - just like BoundedVector, but only reallocates on grow, never on shrink
+					- Note: we know that we'll know by how much it grows each time: reserve_more(.) // on top of current size
+			- Same VBO as well
+			- Try also stars
+			- Then try everything else, if ok
 
 		- Randomized start (?)
 			- Done by new method at SettingsManager, by choosing settings (system & user) weighted by new optional probability attribute
@@ -831,6 +843,8 @@ Render:
 				- Option B: by point visit; all points in tiny band from depth 0
 			- Punch tool (*)		
 				
+		- Revise water drag (*)
+
 		- Sound space (*)
 
 		- Light improvements (*)
@@ -1660,19 +1674,22 @@ Render:
 
 - Dynamics:
 
+	- Revise water drag (*): it does not cause ships to break upon impact
+		- See if due to lack of square law: find law such that Titanic's dive is still the same, but higher velocities get higher drags
+
 	- Air bubbles with proper vortices, due to water moving fast around it
 		- Like at https://youtu.be/KPsnUPIHZuM
 		- Kinda as if the originating ship particle's velocity at the moment of generation has a (decaying) impact on the air bubble particle, making it move like an orbit
 
 	- Internal pressure (*)
-		- TO BE EXPANDED BASED ON RESEARCH
 		- Basic ideas:
-			- Pressure is a new particle quantity, unrelated to water
-			- Pressure expands to adjacent particles along springs, kinda like water but without gravity nor momentum
-			- Pressure also expands to hull particles
-				- Required to allow external pressure to be compared with internal pressure along hull of any thickness
-				- Note: won't be able to model different tight compartments then - the whole ship is one single compartment
-					- BIG PROBLEM!
+			- New quantity at each particle, much like Water
+			- Intake @ WaterIntake, more or less same concept
+			- New EqualizePressure step to propagate pressure from each particle to its neighbors along springs
+				- Much like we do in temperature
+				- Hullness trick, to ensure that hull particles have pressure (for frontier checking) yet pressure does not propagate through internal hull walls:
+					- Particles do *not* propagate through hull springs
+					- Hull particles do not partecipate in normal propagation, but get average instead of all neighboring particles
 
 	- Ropes 2 layer
 		- json only allows one ropes layer
@@ -1982,20 +1999,12 @@ Render:
 
 	- Pressure implosions / pressure crush (*)
 		! Requires frontier
-		- Better done after cached quantities - underwater depth (*)
-		- This is an alternative to the "Internal Pressure (*)" idea
+		- Better done after cached quantities - underwater depth (*)		
 		- Plan A: simple: inward forces on (ext and int) (non-leaking) frontier points based on external pressure (density*depth*g) at that point
 			- Con: does not consider internal pressure/water
 			- Watch out: might generate phantom forces; since it needs to be zero-sum, calc sum as you go and do a second pass adding -sum/N to each particle (which was involved in the first step)
-		- Plan B: with internal pressure
-			! Spec:
-				- New quantity at each particle, much like Water
-				- Intake @ WaterIntake, more or less same concept
-				- New EqualizePressure step to propagate pressure from each particle to its neighbors along springs
-					- More like we do in temperature
-					- Hullness trick, to ensure that hull particles have pressure (for frontier checking) yet pressure does not propagate through internal hull walls:
-						- Particles do *not* propagate through hull springs
-						- Hull particles do not partecipate in normal propagation, but get average instead of all neighboring particles
+		- Plan B: same, but considering internal pressure
+			- Needs "Internal Pressure (*)" first
 
 	- Punch tool (*): interacts with frontier, just like a punch
 		- Requires frontier work first
