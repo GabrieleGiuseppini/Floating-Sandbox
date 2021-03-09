@@ -1675,7 +1675,12 @@ Render:
 - Dynamics:
 
 	- Revise water drag (*): it does not cause ships to break upon impact
-		- See if due to lack of square law: find law such that Titanic's dive is still the same, but higher velocities get higher drags
+		= See if due to lack of square law: find law such that Titanic's dive is still the same, but higher velocities get higher drags
+			+ dragCoefficient' * titanicVelocity = dragCoefficient'' * titanicVelocity^2
+			- Doesn't change the fact that airplanes break upon impact; multiplying drag forces x10 causes some almost reasonable crashing on impact, but sinking Titanic 
+			  slows down to 8m/s (from ~15m/s normally) - even with pressure=0 and drag=0
+				- Should we let go of the high Titanic sinking speed?
+		- Alternatively: ship breaks upon impact due to impact forces, not drag, so we should model that
 
 	- Air bubbles with proper vortices, due to water moving fast around it
 		- Like at https://youtu.be/KPsnUPIHZuM
