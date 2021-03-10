@@ -1419,8 +1419,9 @@ public:
 
     bool IsPlaying(TInstanceId instanceId)
     {
-        auto instanceSoundIt = mPlayingSounds.find(instanceId);
-        return (instanceSoundIt != mPlayingSounds.end());
+        auto const instanceSoundIt = mPlayingSounds.find(instanceId);
+        return (instanceSoundIt != mPlayingSounds.end()
+            && instanceSoundIt->second.IsPlaying);
     }
 
     void Start(
@@ -1443,7 +1444,8 @@ public:
         assert(!!soundFileInfoIt->second);
 
         // See whether we're already playing this instance
-        if (auto instanceSoundIt = mPlayingSounds.find(instanceId); instanceSoundIt != mPlayingSounds.end())
+        if (auto instanceSoundIt = mPlayingSounds.find(instanceId);
+            instanceSoundIt != mPlayingSounds.end())
         {
             // Nuke existing sound
             instanceSoundIt->second.Sound->stop();
@@ -1484,8 +1486,8 @@ public:
         bool isUnderwater,
         float volume)
     {
-        auto const srchIt = mInstanceIdToSoundType.find(instanceId);
-        if (srchIt != mInstanceIdToSoundType.cend())
+        if (auto const srchIt = mInstanceIdToSoundType.find(instanceId);
+            srchIt != mInstanceIdToSoundType.cend())
         {
             Start(
                 instanceId,
@@ -1497,10 +1499,11 @@ public:
 
     void Stop(TInstanceId instanceId)
     {
-        auto it = mPlayingSounds.find(instanceId);
-        if (it != mPlayingSounds.end())
+        if (auto it = mPlayingSounds.find(instanceId);
+            it != mPlayingSounds.end())
         {
-            // Let it finish now
+            // Mark as not playing anymore, and let the sound run to its end
+            it->second.IsPlaying = false;
             it->second.Sound->setLoop(false);
         }
     }
@@ -1597,14 +1600,16 @@ private:
     struct PlayingSoundInfo
     {
         std::unique_ptr<sf::Music> Sound;
+        bool IsPlaying; // Cleared when loop has been stopped; says nothing about being paused
         float Volume;
-        std::uintptr_t SoundFileInfoId;
+        std::uintptr_t const SoundFileInfoId;
 
         PlayingSoundInfo(
             std::unique_ptr<sf::Music> sound,
             float volume,
             std::uintptr_t soundFileInfoId)
             : Sound(std::move(sound))
+            , IsPlaying(true) // Start as playing
             , Volume(volume)
             , SoundFileInfoId(soundFileInfoId)
         {}

@@ -725,10 +725,6 @@ Render:
 				- wxWidgets so's
 					- See if may statically link		
 
-		- Timcan bug with engine sound goin' off
-			- "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
-				- Ask if not due to engine breaking
-
 		+ Send for testing
 		+ Send for localization
 			+ Give GitHub diff for Help: https://github.com/GabrieleGiuseppini/Floating-Sandbox/commit/9ef5e00d5d1a35d63eea6ce757000951e043dd80?branch=9ef5e00d5d1a35d63eea6ce757000951e043dd80&diff=split
@@ -750,7 +746,9 @@ Render:
 				+ strings
 					+ Fix "Sets wind speed to zero"
 				+ help.html
-
+		+ Timcan bug with engine sound goin' off
+			+ "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
+		+ Bump up version
 
 		- Release
 			- REMEMBER: remove debug logging for Mac, see above
@@ -842,7 +840,7 @@ Render:
 				- Option B: by point visit; all points in tiny band from depth 0
 			- Punch tool (*)		
 				
-		- Revise water drag (*)
+		- Water impact (*)
 
 		- Sound space (*)
 
@@ -1326,14 +1324,68 @@ Render:
 					- Also use instead of factory rest lengths at:
 						- Water
 						- Heat
-			- Underwater depth
+			- Underwater depth: Points::Depth				
 				- Valid as long as points don't move
 					- Do DEBUG work above
+				- Points::Depth
+					- Initialization: via value provided by Add() caller (ShipBuilder) with depth
+					- Getter
+					- Buffer getter & swapper (see water buffers)
+				- Also valid as long as points are not created after depths are taken
+					- Ephemeral points must take depth at creation, always
+						- Bubbles already have it anyway!
+					- Creation happens at:
+						- Interactions
+						- Breakages at UpdateForSpringStrains
+						- Bubble generation
+						- Anywhere else?
+				- Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
+					- Loop: 
+						- [WorldBoundaries apply]
+						- [Interactive position changes]
+							- These take a world in boundaries, and leave the world in boundaries
+								- Since we'll likely be accessing OceanSurface or OceanFloor during interactions
+							- Need to make sure these clamp to world boundaries then
+						- START
+						- Spring + Integration
+						- WorldBoundaries
+							- This ends position changes in the entire loop
+						- [WorldBoundaries apply]
+						- UpdateForSpringStrains
+							- Because bounce @ WorldBoundaries requires immediately UpdateForSpringStrains to prevent humongously long springs
+							- Does not require depth anyway, and does not change positions
+						- ApplyWorldForces
+							- Alloc new depth buffer - no need to clean
+							- Per-Particle
+								- Calculate and store depths here
+							- Per-Frontier
+							- Swap depth buffers
+						- ... everything else...
+						- [WorldBoundaries apply]
+						- END
+					- OLD LOOP:
+						- [WorldBoundaries apply]
+						- [Interactive position changes]
+							- These take a world in boundaries, and leave the world in boundaries
+								- Since we'll likely be accessing OceanSurface or OceanFloor during interactions
+							- Need to make sure these clamp to world boundaries then
+						- START
+						- [WorldBoundaries apply]
+						- ApplyWorldForces
+							- Per-Particle
+								- Calculate and store depths here
+							- Per-Frontier
+						- ... everything else...
+						- Spring + Integration [just move this one at bottom, here]
+						- UpdateForSpringStrains [just move this one at bottom, here]
+						- WorldBoundaries [just move this one at bottom, here]
+						- [WorldBoundaries apply]
+						- END
 				- Used by:
 					- ApplyWorldForces:
 						- Per-point
 							- Note: now we check twice (buoyancyl then drag); should also unify per-point visit to have single underwater check applying buoyancy + drag
-						- Per-frontier (water pressure drag)
+						- Per-frontier (water pressure drag, waves)
 					- UpdateWaterIntake (for leaking points only)
 					- Heat dissipation
 					- Breaking materials for pressure
@@ -1341,31 +1393,7 @@ Render:
 					- Points::UpdateEphemeralParticles (AirBubbles - and others?)
 						- Need to do vortex with forces, though, rather than positions
 						- Make sure no other ephemeral types change positions
-				- Change sequence of steps at Ship::Update so that position changes come late, and thus we may re-use depth, calculated early, for as long as possible:
-					- TODO: need to catch - or set depth at - creation of ephemeral particles
-						- Creation happens at:
-							- Interactions
-							- Breakages at UpdateForSpringStrains
-							- Anywhere else?
-						- Some ephemeral particle creations have depth already (e.g. bubbles), some will be created before
-						  we assign depth (e.g. debris & sparkles during interactions), some others will however happen afterwards
-					- [WorldBoundaries apply]
-					- [Interactive position changes]
-						- These take a world in boundaries, and leave the world in boundaries
-							- Since we'll likely be accessing OceanSurface or OceanFloor during interactions
-						- Need to make sure these clamp to world boundaries then
-					- START
-					- [WorldBoundaries apply]
-					- ApplyWorldForces
-						- Per-Particle
-							- Calculate and store depths here
-						- Per-Frontier
-					- TODOHERE					
-					- Spring + Integration [just move this one at bottom, here]
-					- UpdateForSpringStrains [just move this one at bottom, here]
-					- WorldBoundaries [just move this one at bottom, here]
-					- [WorldBoundaries apply]
-					- END
+
 
 	- 2** Try with SpringRelaxation updating only positions **2 (*)
 		- RelaxSprings() updates position directly, no forces involved
@@ -1673,13 +1701,20 @@ Render:
 
 - Dynamics:
 
-	- Revise water drag (*): it does not cause ships to break upon impact
+	- Water impact (*): water drag does not cause ships to break upon impact
 		= See if due to lack of square law: find law such that Titanic's dive is still the same, but higher velocities get higher drags
 			+ dragCoefficient' * titanicVelocity = dragCoefficient'' * titanicVelocity^2
 			- Doesn't change the fact that airplanes break upon impact; multiplying drag forces x10 causes some almost reasonable crashing on impact, but sinking Titanic 
 			  slows down to 8m/s (from ~15m/s normally) - even with pressure=0 and drag=0
 				- Should we let go of the high Titanic sinking speed?
 		- Alternatively: ship breaks upon impact due to impact forces, not drag, so we should model that
+			- Using cached Points::Depth, and two buffers (old/new): inspect new to establish when point first touches water
+				- Then, heavily dependent on velocity, and normally on mass 
+					- And normal? Technically no, but try
+					- Some references:
+						- Impact depth: https://en.wikipedia.org/wiki/Impact_depth
+						- https://physics.stackexchange.com/questions/120036/force-of-an-impact-on-water?noredirect=1&lq=1
+						- https://wat.lewiscollard.com/archive/www.newton.dep.anl.gov/askasci/gen01/gen01790.htm
 
 	- Air bubbles with proper vortices, due to water moving fast around it
 		- Like at https://youtu.be/KPsnUPIHZuM
