@@ -1,0 +1,38 @@
+{
+	"electrical_image" : "rms_mauretania_electrical.png.dat",
+        "structure_image":"rms_mauretania_structure.png.dat",
+        "texture_image":"rms_mauretania_texture.png.dat",
+	"offset":{"x":0.0, "y":-8.0},
+	"ship_name":"R.M.S. Mauretania",
+	"created_by":"FER ZCL; ColinTheP6M (DeviantArt.com)",
+	"year_built":"1906",
+	"electrical_panel":{
+
+		"0": {"panel_x":-6, "panel_y":0, "label":"Generator" },
+		"1": {"panel_x":-5, "panel_y":0, "label":"Engine #1" },
+		"3": {"panel_x":-4, "panel_y":0, "label":"Engine #1" },
+		"2": {"panel_x":-3, "panel_y":0, "label":"Engines #2,#3" },
+		"4": {"panel_x":-2, "panel_y":0, "label":"Engine #2" },
+		"5": {"panel_x":-1, "panel_y":0, "label":"Engine #3" },
+
+		"6": {"panel_x":1, "panel_y":0, "label":"Horn" },
+		"7": {"panel_x":2, "panel_y":0, "label":"Bell" },
+
+		"10": {"panel_x":3, "panel_y":0, "label":"Funnel #1" },
+		"11": {"panel_x":4, "panel_y":0, "label":"Funnel #2" },
+		"12": {"panel_x":5, "panel_y":0, "label":"Funnel #3" },
+		"13": {"panel_x":6, "panel_y":0, "label":"Funnel #4" },
+
+		"29": {"panel_x":7, "panel_y":0, "label":"Watertight Compartments" },
+
+		"30": {"panel_x":0, "panel_y":1, "label":"Watertight Door", "is_hidden":true },
+		"31": {"panel_x":1, "panel_y":1, "label":"Watertight Door", "is_hidden":true },
+		"32": {"panel_x":2, "panel_y":1, "label":"Watertight Door", "is_hidden":true },
+		"33": {"panel_x":3, "panel_y":1, "label":"Watertight Door", "is_hidden":true },
+		"34": {"panel_x":4, "panel_y":1, "label":"Watertight Door", "is_hidden":true },
+		"35": {"panel_x":5, "panel_y":1, "label":"Watertight Door", "is_hidden":true },
+		"36": {"panel_x":6, "panel_y":1, "label":"Watertight Door", "is_hidden":true },
+		"37": {"panel_x":7, "panel_y":1, "label":"Watertight Door", "is_hidden":true },
+		"38": {"panel_x":7, "panel_y":1, "label":"Watertight Door", "is_hidden":true }
+	}
+}

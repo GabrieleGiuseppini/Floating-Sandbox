@@ -1,0 +1,8 @@
+{       
+	"structure_image":"eiffel_tower_structure.png.dat",
+	"texture_image":"eiffel_tower_texture.png.dat",
+	"offset":{"x":0.0, "y":-8.0},
+	"ship_name":"Eiffel Tower",
+	"created_by":"FER ZCL",
+	"year_built":"1889"
+}
