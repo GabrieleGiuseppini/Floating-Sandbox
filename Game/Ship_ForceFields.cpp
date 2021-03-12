@@ -74,23 +74,23 @@ void Ship::ApplyBlastForceField(
         float squarePointDistance = pointRadius.squareLength();
         if (squarePointDistance < squareBlastRadius)
         {
+            // Create acceleration to flip the point to the other side
+            // of the radius
+            float const pointRadiusLength = std::sqrt(squarePointDistance);
+            vec2f const flippedRadius = pointRadius.normalise(pointRadiusLength) * (blastRadius + (blastRadius - pointRadiusLength));
+            vec2f const newPosition = centerPosition + flippedRadius;
+            mPoints.GetNonSpringForce(pointIndex) +=
+                (newPosition - mPoints.GetPosition(pointIndex))
+                / DtSquared
+                * strength
+                * mPoints.GetMass(pointIndex);
+
             // Check whether this point is the closest point
             if (squarePointDistance < closestPointSquareDistance)
             {
                 closestPointSquareDistance = squarePointDistance;
                 closestPointIndex = pointIndex;
             }
-
-            // Create acceleration to flip the point to the other side
-            // of the radius
-            float const pointRadiusLength = std::sqrt(squarePointDistance);
-            vec2f flippedRadius = pointRadius.normalise(pointRadiusLength) * (blastRadius + (blastRadius - pointRadiusLength));
-            vec2f newPosition = centerPosition + flippedRadius;
-            mPoints.GetNonSpringForce(pointIndex) +=
-                (newPosition - mPoints.GetPosition(pointIndex))
-                / DtSquared
-                * strength
-                * mPoints.GetMass(pointIndex);
         }
     }
 

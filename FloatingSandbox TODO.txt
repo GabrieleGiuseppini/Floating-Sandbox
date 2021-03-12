@@ -751,7 +751,7 @@ Render:
 		+ Bump up version
 
 		- Release
-			- REMEMBER: remove debug logging for Mac, see above
+			+ REMEMBER: remove debug logging for Mac, see above
 			+ Branch is merged into master (if applicable)
 			- MSI variables
 			- Commit & push
@@ -766,6 +766,7 @@ Render:
 				- Rename MSI
 				- Test clean install
 			- Get both installers tested on dev server
+				- Also: John Smith, Fernando, 
 			- Wait for test results
 			- Cut tag on github
 			- Upload packages to GameJolt
