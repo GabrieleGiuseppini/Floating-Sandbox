@@ -695,7 +695,7 @@ Render:
 			+ REMEMBER: remove debug logging for Mac, see above
 			+ Branch is merged into master (if applicable)
 			+ MSI variables
-			- Commit & push
+			+ Commit & push
 			- 64-bit MSI
 				+ Cleanup Install
 				- Build Install
