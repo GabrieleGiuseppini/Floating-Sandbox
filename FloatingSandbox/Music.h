@@ -197,7 +197,7 @@ private:
 
     inline std::optional<StateType> PopDesiredState()
     {
-        if (!!mDesiredState)
+        if (mDesiredState.has_value())
         {
             auto const r = mDesiredState;
             mDesiredState.reset();
@@ -234,7 +234,7 @@ private:
         //
 
         auto const desiredState = PopDesiredState();
-        if (!!desiredState)
+        if (desiredState.has_value())
         {
             switch (*desiredState)
             {

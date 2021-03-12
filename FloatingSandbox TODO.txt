@@ -665,6 +665,68 @@ Render:
 			X Flatten waves?
 			+ Lower speed of (sin) ocean waves - now that we run faster
 
+
+		+ Send for testing
+		+ Send for localization
+			+ Give GitHub diff for Help: https://github.com/GabrieleGiuseppini/Floating-Sandbox/commit/9ef5e00d5d1a35d63eea6ce757000951e043dd80?branch=9ef5e00d5d1a35d63eea6ce757000951e043dd80&diff=split
+		+ Bump up version
+		+ Fix Pac0master's bug
+		+ Bump up version
+		+ Fix bug 2
+			+ Test on both cards
+		+ Bump up version
+		+ Localization
+			+ IT
+				+ strings
+				+ help.html
+			+ ES
+				+ strings
+					+ Fix "Sets wind speed to zero"
+				+ help.html
+			+ RU
+				+ strings
+					+ Fix "Sets wind speed to zero"
+				+ help.html
+		+ Timcan bug with engine sound goin' off
+			+ "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
+		+ Bump up version
+
+		- Fix no-music perf bug
+
+		- Release
+			+ REMEMBER: remove debug logging for Mac, see above
+			+ Branch is merged into master (if applicable)
+			- MSI variables
+			- Commit & push
+			- 64-bit MSI
+				+ Cleanup Install
+				- Build Install
+				- Make MSI
+				- Rename MSI
+				- Test upgrade from previous version
+			- 32-bit MSI
+				+ Cleanup Install
+				- Build Install
+				- Make MSI
+				- Rename MSI
+				- Test clean install
+			- Get both installers tested on dev server
+				- Also: John Smith, Fernando, 
+			- Wait for test results
+			- Cut tag on github
+			- Upload packages to GameJolt
+				- Report file as safe (https://gamejolt.com/privacy)
+				- Post
+			- www.floatingsandbox.com:
+				- Upload changes.txt
+					- Test w/old FS
+				- Update current version in FAQ
+
+		===================================================================
+		- Make branch
+		- Bump up version
+		- Cleanup TODO list
+
 		= MAC:
 			= Full high-DPI path:
 				! a) Window scaling: on a 2X DPI, a wxWindow of size (500, 500) would be (1000, 1000) on Mac and (500, 500) on Windows. To overcome this, use wxFrame->FromDIP:
@@ -724,58 +786,6 @@ Render:
 			- Packaging:
 				- wxWidgets so's
 					- See if may statically link		
-
-		+ Send for testing
-		+ Send for localization
-			+ Give GitHub diff for Help: https://github.com/GabrieleGiuseppini/Floating-Sandbox/commit/9ef5e00d5d1a35d63eea6ce757000951e043dd80?branch=9ef5e00d5d1a35d63eea6ce757000951e043dd80&diff=split
-		+ Bump up version
-		+ Fix Pac0master's bug
-		+ Bump up version
-		+ Fix bug 2
-			+ Test on both cards
-		+ Bump up version
-		+ Localization
-			+ IT
-				+ strings
-				+ help.html
-			+ ES
-				+ strings
-					+ Fix "Sets wind speed to zero"
-				+ help.html
-			+ RU
-				+ strings
-					+ Fix "Sets wind speed to zero"
-				+ help.html
-		+ Timcan bug with engine sound goin' off
-			+ "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
-		+ Bump up version
-
-		- Release
-			+ REMEMBER: remove debug logging for Mac, see above
-			+ Branch is merged into master (if applicable)
-			- MSI variables
-			- Commit & push
-			- 64-bit MSI
-				- Build Install
-				- Make MSI
-				- Rename MSI
-				- Test upgrade from previous version
-			- 32-bit MSI
-				- Build Install
-				- Make MSI
-				- Rename MSI
-				- Test clean install
-			- Get both installers tested on dev server
-				- Also: John Smith, Fernando, 
-			- Wait for test results
-			- Cut tag on github
-			- Upload packages to GameJolt
-				- Report file as safe (https://gamejolt.com/privacy)
-				- Post
-			- www.floatingsandbox.com:
-				- Upload changes.txt
-					- Test w/old FS
-				- Update current version in FAQ
 
 		- See why NVidia's rendering is so slow
 			+ Try VSync: yes, it's the VSync
@@ -979,11 +989,13 @@ Render:
 	- MSI variables
 	- Commit & push
 	- 64-bit MSI
+		- Cleanup Install
 		- Build Install
 		- Make MSI
 		- Rename MSI
 		- Test upgrade from previous version
 	- 32-bit MSI
+		- Cleanup Install
 		- Build Install
 		- Make MSI
 		- Rename MSI
