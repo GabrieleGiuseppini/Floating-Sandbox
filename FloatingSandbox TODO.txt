@@ -691,12 +691,10 @@ Render:
 			+ "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
 		+ Bump up version
 
-		- Fix no-music perf bug
-
 		- Release
 			+ REMEMBER: remove debug logging for Mac, see above
 			+ Branch is merged into master (if applicable)
-			- MSI variables
+			+ MSI variables
 			- Commit & push
 			- 64-bit MSI
 				+ Cleanup Install
