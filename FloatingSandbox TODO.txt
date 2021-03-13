@@ -733,10 +733,11 @@ Render:
 			+ https://www.hass.de/content/wix-how-use-removefolderex-your-xml-scripts
 		+ Debris:
 			+ When ship has water all over the place, debris particles start life without water and thus look too different than surroundings - at least for first 0.5 seconds
+		+ Fix Gadgets: 
+			+ Opposite assert at Gadgets::Update
+			+ Each gadget must detach itself when expiring from state machine
+			+ Test with vectors after bomb explosion (and thus disappearance)
 
-		- Fix Gadgets: 
-			- Opposite assert at Gadgets::Update
-			- Each gadget must detach itself when expiring from state machine
 		- Rework explosion dynamics: they are too inconsistent at this moment
 			- RenderSetting: DrawExplosions, exactly like DrawFlames
 				- Rendering

@@ -35,7 +35,7 @@ void Gadgets::Update(
 
             // Gadget has detached itself already
             // (our rule, to allow gadgets' state machines to detach themselves at will)
-            assert(mShipPoints.IsGadgetAttached((*it)->GetPointIndex()));
+            assert(!mShipPoints.IsGadgetAttached((*it)->GetPointIndex()));
 
             // Notify (soundless) removal
             mGameEventHandler->OnGadgetRemoved(

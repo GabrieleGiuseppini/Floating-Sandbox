@@ -172,6 +172,13 @@ bool RCBombGadget::Update(
         case State::Expired:
         default:
         {
+            // Detach ourselves
+            assert(mShipPoints.IsGadgetAttached(mPointIndex));
+            mShipPoints.DetachGadget(
+                mPointIndex,
+                mShipSprings);
+
+            // Disappear
             return false;
         }
     }
