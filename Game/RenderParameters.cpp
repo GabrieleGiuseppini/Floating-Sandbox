@@ -37,6 +37,7 @@ RenderParameters::RenderParameters(
 	// Ship
 	, FlatLampLightColor(0xff, 0xff, 0xbf)
 	, IsFlatLampLightColorDirty(true)
+	, DrawExplosions(true)
 	, DrawFlames(true)
 	, ShowStressedSprings(false)
 	, ShowFrontiers(false)

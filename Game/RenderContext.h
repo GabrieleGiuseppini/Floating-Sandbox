@@ -360,6 +360,17 @@ public:
         mRenderParameters.IsFlatLampLightColorDirty = true;
     }
 
+    bool GetDrawExplosions() const
+    {
+        return mRenderParameters.DrawExplosions;
+    }
+
+    void SetDrawExplosions(bool drawExplosions)
+    {
+        mRenderParameters.DrawExplosions = drawExplosions;
+        // No need to set dirty, this is picked up at each cycle anway
+    }
+
     bool GetDrawFlames() const
     {
         return mRenderParameters.DrawFlames;

@@ -723,6 +723,9 @@ public:
     float GetHeatSensitivity() const override { return mRenderContext->GetHeatSensitivity(); }
     void SetHeatSensitivity(float value) override { mRenderContext->SetHeatSensitivity(value); }
 
+    bool GetDrawExplosions() const override { return mRenderContext->GetDrawExplosions(); }
+    void SetDrawExplosions(bool value) override { mRenderContext->SetDrawExplosions(value); }
+
     bool GetDrawFlames() const override { return mRenderContext->GetDrawFlames(); }
     void SetDrawFlames(bool value) override { mRenderContext->SetDrawFlames(value); }
 

@@ -361,6 +361,9 @@ struct IGameControllerSettings
     virtual float GetHeatSensitivity() const = 0;
     virtual void SetHeatSensitivity(float value) = 0;
 
+    virtual bool GetDrawExplosions() const = 0;
+    virtual void SetDrawExplosions(bool value) = 0;
+
     virtual bool GetDrawFlames() const = 0;
     virtual void SetDrawFlames(bool value) = 0;
 

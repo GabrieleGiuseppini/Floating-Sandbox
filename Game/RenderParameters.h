@@ -67,6 +67,7 @@ struct RenderParameters
     rgbColor FlatLampLightColor;
     bool IsFlatLampLightColorDirty;
 
+    bool DrawExplosions;
     bool DrawFlames;
 
     bool ShowStressedSprings;

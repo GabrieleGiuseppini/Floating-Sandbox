@@ -4128,7 +4128,7 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
         gridSizer->Add(
             soundBox,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 3),
             wxALL,
             CellBorder);
     }
@@ -4197,134 +4197,6 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
                     CellBorder);
             }
 
-            // Checkboxes
-            {
-                wxStaticBoxSizer * checkboxesSizer = new wxStaticBoxSizer(wxVERTICAL, advancedBox);
-
-                {
-                    wxString debugShipRenderModeChoices[] =
-                    {
-                        _("No Debug"),
-                        _("Draw in Wireframe Mode"),
-                        _("Draw Only Points"),
-                        _("Draw Only Springs"),
-                        _("Draw Only Edge Springs"),
-                        _("Draw Decay"),
-                        _("Draw Structure")
-                    };
-
-                    mDebugShipRenderModeRadioBox = new wxRadioBox(advancedBox, wxID_ANY, _("Ship Debug Draw Options"), wxDefaultPosition, wxDefaultSize,
-                        WXSIZEOF(debugShipRenderModeChoices), debugShipRenderModeChoices, 1, wxRA_SPECIFY_COLS);
-                    Connect(mDebugShipRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnDebugShipRenderModeRadioBox);
-
-                    checkboxesSizer->Add(
-                        mDebugShipRenderModeRadioBox,
-                        0,
-                        wxEXPAND | wxALL,
-                        5);
-                }
-
-                {
-                    wxStaticBox * extrasBox = new wxStaticBox(advancedBox, wxID_ANY, _("Ship Extra Draw Options"));
-
-                    wxBoxSizer * extrasBoxSizer = new wxBoxSizer(wxVERTICAL);
-                    extrasBoxSizer->AddSpacer(StaticBoxTopMargin);
-                    extrasBoxSizer->AddSpacer(3);
-
-                    {
-                        wxBoxSizer * extrasSizer = new wxBoxSizer(wxVERTICAL);
-
-                        {
-                            mDrawFlamesCheckBox = new wxCheckBox(extrasBox, wxID_ANY,
-                                _("Draw Flames"), wxDefaultPosition, wxDefaultSize);
-                            mDrawFlamesCheckBox->SetToolTip(_("Enables or disables rendering of flames."));
-                            mDrawFlamesCheckBox->Bind(
-                                wxEVT_COMMAND_CHECKBOX_CLICKED,
-                                [this](wxCommandEvent & event)
-                                {
-                                    mLiveSettings.SetValue(GameSettings::DrawFlames, event.IsChecked());
-                                    OnLiveSettingsChanged();
-                                });
-
-                            extrasSizer->Add(mDrawFlamesCheckBox, 0, wxALIGN_LEFT, 0);
-                        }
-
-                        extrasSizer->AddSpacer(3);
-
-                        {
-                            mShowFrontiersCheckBox = new wxCheckBox(extrasBox, wxID_ANY,
-                                _("Show Frontiers"), wxDefaultPosition, wxDefaultSize);
-                            mShowFrontiersCheckBox->SetToolTip(_("Enables or disables visualization of the frontiers of the ship."));
-                            mShowFrontiersCheckBox->Bind(
-                                wxEVT_COMMAND_CHECKBOX_CLICKED,
-                                [this](wxCommandEvent & event)
-                                {
-                                    mLiveSettings.SetValue(GameSettings::ShowShipFrontiers, event.IsChecked());
-                                    OnLiveSettingsChanged();
-                                });
-
-                            extrasSizer->Add(mShowFrontiersCheckBox, 0, wxALIGN_LEFT, 0);
-                        }
-
-                        extrasSizer->AddSpacer(3);
-
-                        {
-                            mShowAABBsCheckBox = new wxCheckBox(extrasBox, wxID_ANY,
-                                _("Show AABBs"), wxDefaultPosition, wxDefaultSize);
-                            mShowAABBsCheckBox->SetToolTip(_("Enables or disables visualization of the AABBs (Axis-Aligned Bounding Boxes)."));
-                            mShowAABBsCheckBox->Bind(
-                                wxEVT_COMMAND_CHECKBOX_CLICKED,
-                                [this](wxCommandEvent & event)
-                                {
-                                    mLiveSettings.SetValue(GameSettings::ShowAABBs, event.IsChecked());
-                                    OnLiveSettingsChanged();
-                                });
-
-                            extrasSizer->Add(mShowAABBsCheckBox, 0, wxALIGN_LEFT, 0);
-                        }
-
-                        extrasBoxSizer->Add(extrasSizer, 0, wxALL, StaticBoxInsetMargin);
-                    }
-
-                    extrasBox->SetSizerAndFit(extrasBoxSizer);
-
-                    checkboxesSizer->Add(
-                        extrasBox,
-                        0,
-                        wxEXPAND | wxALL,
-                        5);
-                }
-
-                {
-                    wxString vectorFieldRenderModeChoices[] =
-                    {
-                        _("None"),
-                        _("Point Velocities"),
-                        _("Point Forces"),
-                        _("Point Water Velocities"),
-                        _("Point Water Momenta")
-                    };
-
-                    mVectorFieldRenderModeRadioBox = new wxRadioBox(advancedBox, wxID_ANY, _("Vector Field Draw Options"), wxDefaultPosition, wxSize(-1, -1),
-                        WXSIZEOF(vectorFieldRenderModeChoices), vectorFieldRenderModeChoices, 1, wxRA_SPECIFY_COLS);
-                    mVectorFieldRenderModeRadioBox->SetToolTip(_("Enables or disables rendering of vector fields."));
-                    Connect(mVectorFieldRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnVectorFieldRenderModeRadioBox);
-
-                    checkboxesSizer->Add(
-                        mVectorFieldRenderModeRadioBox,
-                        0,
-                        wxEXPAND | wxALL,
-                        5);
-                }
-
-                advancedSizer->Add(
-                    checkboxesSizer,
-                    wxGBPosition(0, 2),
-                    wxGBSpan(1, 1),
-                    wxALL,
-                    CellBorder);
-            }
-
             advancedBoxSizer1->Add(advancedSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
@@ -4332,10 +4204,154 @@ void SettingsDialog::PopulateSoundAndAdvancedPanel(wxPanel * panel)
 
         gridSizer->Add(
             advancedBox,
-            wxGBPosition(0, 1),
+            wxGBPosition(0, 3),
+            wxGBSpan(1, 2),
+            wxALL,
+            CellBorder);
+    }
+
+    //
+    // Row 2
+    //
+
+    // Ship Debug Draw Options
+    {
+        wxString debugShipRenderModeChoices[] =
+        {
+            _("No Debug"),
+            _("Draw in Wireframe Mode"),
+            _("Draw Only Points"),
+            _("Draw Only Springs"),
+            _("Draw Only Edge Springs"),
+            _("Draw Decay"),
+            _("Draw Structure")
+        };
+
+        mDebugShipRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Ship Debug Draw Options"), wxDefaultPosition, wxDefaultSize,
+            WXSIZEOF(debugShipRenderModeChoices), debugShipRenderModeChoices, 1, wxRA_SPECIFY_COLS);
+        Connect(mDebugShipRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnDebugShipRenderModeRadioBox);
+
+        gridSizer->Add(
+            mDebugShipRenderModeRadioBox,
+            wxGBPosition(1, 0),
             wxGBSpan(1, 1),
             wxALL,
             CellBorder);
+    }
+
+    // Ship Extra Draw Options
+    {
+        wxStaticBox * extrasBox = new wxStaticBox(panel, wxID_ANY, _("Ship Extra Draw Options"));
+
+        wxBoxSizer * extrasBoxSizer = new wxBoxSizer(wxVERTICAL);
+        extrasBoxSizer->AddSpacer(StaticBoxTopMargin);
+        extrasBoxSizer->AddSpacer(3);
+
+        {
+            wxBoxSizer * extrasSizer = new wxBoxSizer(wxVERTICAL);
+
+            {
+                mDrawExplosionsCheckBox = new wxCheckBox(extrasBox, wxID_ANY,
+                    _("Draw Explosions"), wxDefaultPosition, wxDefaultSize);
+                mDrawExplosionsCheckBox->SetToolTip(_("Enables or disables rendering of explosions."));
+                mDrawExplosionsCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::DrawExplosions, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
+
+                extrasSizer->Add(mDrawExplosionsCheckBox, 0, wxALIGN_LEFT, 0);
+            }
+
+            extrasSizer->AddSpacer(3);
+
+            {
+                mDrawFlamesCheckBox = new wxCheckBox(extrasBox, wxID_ANY,
+                    _("Draw Flames"), wxDefaultPosition, wxDefaultSize);
+                mDrawFlamesCheckBox->SetToolTip(_("Enables or disables rendering of flames."));
+                mDrawFlamesCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::DrawFlames, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
+
+                extrasSizer->Add(mDrawFlamesCheckBox, 0, wxALIGN_LEFT, 0);
+            }
+
+            extrasSizer->AddSpacer(3);
+
+            {
+                mShowFrontiersCheckBox = new wxCheckBox(extrasBox, wxID_ANY,
+                    _("Show Frontiers"), wxDefaultPosition, wxDefaultSize);
+                mShowFrontiersCheckBox->SetToolTip(_("Enables or disables visualization of the frontiers of the ship."));
+                mShowFrontiersCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::ShowShipFrontiers, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
+
+                extrasSizer->Add(mShowFrontiersCheckBox, 0, wxALIGN_LEFT, 0);
+            }
+
+            extrasSizer->AddSpacer(3);
+
+            {
+                mShowAABBsCheckBox = new wxCheckBox(extrasBox, wxID_ANY,
+                    _("Show AABBs"), wxDefaultPosition, wxDefaultSize);
+                mShowAABBsCheckBox->SetToolTip(_("Enables or disables visualization of the AABBs (Axis-Aligned Bounding Boxes)."));
+                mShowAABBsCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::ShowAABBs, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
+
+                extrasSizer->Add(mShowAABBsCheckBox, 0, wxALIGN_LEFT, 0);
+            }
+
+            extrasBoxSizer->Add(extrasSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        extrasBox->SetSizerAndFit(extrasBoxSizer);
+
+        gridSizer->Add(
+            extrasBox,
+            wxGBPosition(1, 1),
+            wxGBSpan(1, 1),
+            wxALL,
+            CellBorder);
+    }
+
+    // Vector Field Draw Options
+    {
+        wxString vectorFieldRenderModeChoices[] =
+        {
+            _("None"),
+            _("Point Velocities"),
+            _("Point Forces"),
+            _("Point Water Velocities"),
+            _("Point Water Momenta")
+        };
+
+        mVectorFieldRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Vector Field Draw Options"), wxDefaultPosition, wxSize(-1, -1),
+            WXSIZEOF(vectorFieldRenderModeChoices), vectorFieldRenderModeChoices, 1, wxRA_SPECIFY_COLS);
+        mVectorFieldRenderModeRadioBox->SetToolTip(_("Enables or disables rendering of vector fields."));
+        Connect(mVectorFieldRenderModeRadioBox->GetId(), wxEVT_RADIOBOX, (wxObjectEventFunction)&SettingsDialog::OnVectorFieldRenderModeRadioBox);
+
+        gridSizer->Add(
+            mVectorFieldRenderModeRadioBox,
+            wxGBPosition(1, 2),
+            wxGBSpan(1, 1),
+            wxALL,
+            CellBorder);
+
     }
 
     // Finalize panel
@@ -4878,6 +4894,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
             break;
         }
     }
+
+    mDrawExplosionsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DrawExplosions));
 
     mDrawFlamesCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DrawFlames));
 
