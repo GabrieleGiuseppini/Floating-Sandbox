@@ -622,11 +622,11 @@ void ShipRenderContext::UploadPointMutableAttributes(
 
     // Interleave positions into AttributeGroup1 buffer, and
     // light and water into AttributeGroup2 buffer
-    vec2f const * restrict pSrc1 = position;
-    float const * restrict pSrc2 = light;
-    float const * restrict pSrc3 = water;
-    vec4f * restrict pDst1 = mPointAttributeGroup1Buffer.get();
-    vec4f * restrict pDst2 = mPointAttributeGroup2Buffer.get();
+    vec2f const * const restrict pSrc1 = position;
+    float const * const restrict pSrc2 = light;
+    float const * const restrict pSrc3 = water;
+    vec4f * restrict const pDst1 = mPointAttributeGroup1Buffer.get();
+    vec4f * restrict const pDst2 = mPointAttributeGroup2Buffer.get();
     for (size_t i = 0; i < mPointCount; ++i)
     {
         pDst1[i].x = pSrc1[i].x;
@@ -1432,7 +1432,10 @@ void ShipRenderContext::RenderDraw(
     // Render explosions
     //
 
-    RenderDrawExplosions(renderParameters);
+    if (renderParameters.DrawExplosions)
+    {
+        RenderDrawExplosions(renderParameters);
+    }
 
     //
     // Render highlights

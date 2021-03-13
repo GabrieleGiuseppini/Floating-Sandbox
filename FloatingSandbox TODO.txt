@@ -738,10 +738,10 @@ Render:
 			+ Each gadget must detach itself when expiring from state machine
 			+ Test with vectors after bomb explosion (and thus disappearance)
 
-		- Rework explosion dynamics: they are too inconsistent at this moment
-			- RenderSetting: DrawExplosions, exactly like DrawFlames
-				- Rendering
-				- SettingsDialog, @ "Advanced Settings"
+		= Rework explosion dynamics: they are too inconsistent at this moment
+			+ RenderSetting: DrawExplosions, exactly like DrawFlames
+				+ Rendering
+				+ SettingsDialog, @ "Advanced Settings"
 			- Ship::ExplosionStateMachine:
 				- Factor that calcs blastProgress from CurrentProgress: 3.0 -> 4.0
 			- GameParams: bomb blast radius ~= 6
