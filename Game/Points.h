@@ -707,6 +707,7 @@ public:
     void CreateEphemeralParticleDebris(
         vec2f const & position,
         vec2f const & velocity,
+        float water,
         StructuralMaterial const & structuralMaterial,
         float currentSimulationTime,
         float maxSimulationLifetime,

@@ -156,8 +156,7 @@ void Points::CreateEphemeralParticleAirBubble(
     //mMaterialWaterIntakeBuffer[pointIndex] = airStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - airStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = airStructuralMaterial.WaterDiffusionSpeed;
-    assert(mWaterBuffer[pointIndex] == 0.0f);
-    //mWaterBuffer[pointIndex] = 0.0f;
+    mWaterBuffer[pointIndex] = 0.0f;
     assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
     //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
@@ -197,6 +196,7 @@ void Points::CreateEphemeralParticleAirBubble(
 void Points::CreateEphemeralParticleDebris(
     vec2f const & position,
     vec2f const & velocity,
+    float water,
     StructuralMaterial const & structuralMaterial,
     float currentSimulationTime,
     float maxSimulationLifetime,
@@ -228,8 +228,7 @@ void Points::CreateEphemeralParticleDebris(
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
-    assert(mWaterBuffer[pointIndex] == 0.0f);
-    //mWaterBuffer[pointIndex] = 0.0f;
+    mWaterBuffer[pointIndex] = water;
     assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
     //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
@@ -315,8 +314,7 @@ void Points::CreateEphemeralParticleSmoke(
     //mMaterialWaterIntakeBuffer[pointIndex] = airStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - airStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = airStructuralMaterial.WaterDiffusionSpeed;
-    assert(mWaterBuffer[pointIndex] == 0.0f);
-    //mWaterBuffer[pointIndex] = 0.0f;
+    mWaterBuffer[pointIndex] = 0.0f;
     assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
     //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
@@ -388,8 +386,7 @@ void Points::CreateEphemeralParticleSparkle(
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
-    assert(mWaterBuffer[pointIndex] == 0.0f);
-    //mWaterBuffer[pointIndex] = 0.0f;
+    mWaterBuffer[pointIndex] = 0.0f;
     assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
     //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
@@ -459,8 +456,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     //mMaterialWaterIntakeBuffer[pointIndex] = waterStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - waterStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = waterStructuralMaterial.WaterDiffusionSpeed;
-    assert(mWaterBuffer[pointIndex] == 0.0f);
-    //mWaterBuffer[pointIndex] = 0.0f;
+    mWaterBuffer[pointIndex] = 0.0f;
     assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
     //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
@@ -1565,18 +1561,12 @@ void Points::UploadAttributes(
     // Upload mutable attributes
     //
 
-    // We only upload all points for the first upload, so that also ephemeral
-    // points have reasonable (default) values; for subsequent uploads,
-    // for some buffers we only need to upload non-ephemeral points
-    size_t const partialPointCount = mHaveWholeBuffersBeenUploadedOnce ? mRawShipPointCount : mAllPointCount;
-
     shipRenderContext.UploadPointMutableAttributesStart();
 
     shipRenderContext.UploadPointMutableAttributes(
         mPositionBuffer.data(),
         mLightBuffer.data(),
-        mWaterBuffer.data(),
-        partialPointCount);
+        mWaterBuffer.data());
 
     if (mIsPlaneIdBufferNonEphemeralDirty)
     {
@@ -1614,6 +1604,12 @@ void Points::UploadAttributes(
 
         mIsPlaneIdBufferEphemeralDirty = false;
     }
+
+    // The following attributes never change for ephemeral particles,
+    // hence after the first upload for reasonable defaults, we only
+    // need to upload them for the ship's (structural = raw) points,
+    // not for the ephemeral ones
+    size_t const partialPointCount = mHaveWholeBuffersBeenUploadedOnce ? mRawShipPointCount : mAllPointCount;
 
     if (mIsDecayBufferDirty)
     {
