@@ -729,11 +729,10 @@ Render:
 		- Bump up version
 		- Cleanup TODO list
 
-		- Wix: delete Data folder on install
-			- https://www.hass.de/content/wix-how-use-removefolderex-your-xml-scripts
-
-		- Debris:
-			- When ship has water all over the place, debris particles start life without water and thus look too different than surroundings - at least for first 0.5 seconds
+		+ Wix: delete Data folder on install
+			+ https://www.hass.de/content/wix-how-use-removefolderex-your-xml-scripts
+		+ Debris:
+			+ When ship has water all over the place, debris particles start life without water and thus look too different than surroundings - at least for first 0.5 seconds
 
 		- Fix Gadgets: 
 			- Opposite assert at Gadgets::Update

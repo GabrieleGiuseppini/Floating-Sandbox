@@ -93,8 +93,7 @@ public:
     void UploadPointMutableAttributes(
         vec2f const * position,
         float const * light,
-        float const * water,
-        size_t lightAndWaterCount);
+        float const * water);
 
     void UploadPointMutableAttributesPlaneId(
         float const * planeId,

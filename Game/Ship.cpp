@@ -2410,6 +2410,7 @@ void Ship::GenerateDebris(
             mPoints.CreateEphemeralParticleDebris(
                 mPoints.GetPosition(pointElementIndex),
                 velocity,
+                mPoints.GetWater(pointElementIndex),
                 mPoints.GetStructuralMaterial(pointElementIndex),
                 currentSimulationTime,
                 maxLifetime,
