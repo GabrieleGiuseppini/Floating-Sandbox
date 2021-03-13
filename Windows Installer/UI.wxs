@@ -69,7 +69,7 @@
                     <Condition Action="show">NOT Installed</Condition>
                 </Control>
 
-                <Control Id="Install" Type="PushButton" X="85" Y="125" Width="200" Height="77" Hidden="yes" Default="yes" Bitmap="yes" FixedSize="yes" ToolTip="Install/Upgrade" Text="[InstallControlContent]">
+                <Control Id="Install" Type="PushButton" X="85" Y="125" Width="190" Height="67" Hidden="yes" Default="yes" Bitmap="yes" FixedSize="yes" ToolTip="Install/Upgrade" Text="[InstallControlContent]">
                     <Publish Event="SetTargetPath" Value="[WIXUI_INSTALLDIR]" Order="1">1</Publish>
                     <Publish Property="ACTION_TEXT_DOING" Value="Installing" Order="2">NOT WIX_UPGRADE_DETECTED</Publish>
                     <Publish Property="ACTION_TEXT_DOING" Value="Upgrading" Order="2">WIX_UPGRADE_DETECTED</Publish>
@@ -86,7 +86,7 @@
                     <Condition Action="show">Installed</Condition>
                 </Control>
 
-                <Control Id="RepairButton" Type="PushButton" X="0" Y="125" Width="180" Height="77" Hidden="yes" Bitmap="yes" FixedSize="yes" ToolTip="Repair" Text="[RepairControlContent]">
+                <Control Id="RepairButton" Type="PushButton" X="0" Y="125" Width="190" Height="67" Hidden="yes" Bitmap="yes" FixedSize="yes" ToolTip="Repair" Text="[RepairControlContent]">
                     <Publish Property="WixUI_InstallMode" Value="Repair" Order="1">1</Publish>
                     <Publish Property="ACTION_TEXT_DOING" Value="Repairing" Order="2">1</Publish>
                     <Publish Property="ACTION_TEXT_DONE" Value="Repaired" Order="3">1</Publish>
@@ -96,7 +96,7 @@
                     <Condition Action="show">Installed</Condition>
                 </Control>
 
-                <Control Id="RemoveButton" Type="PushButton" X="190" Y="125" Width="180" Height="77" Hidden="yes" Bitmap="yes" FixedSize="yes" ToolTip="Remove" Text="[RemoveControlContent]">
+                <Control Id="RemoveButton" Type="PushButton" X="190" Y="125" Width="190" Height="67" Hidden="yes" Bitmap="yes" FixedSize="yes" ToolTip="Remove" Text="[RemoveControlContent]">
                     <Publish Property="WixUI_InstallMode" Value="Remove" Order="1">1</Publish>
                     <Publish Property="ACTION_TEXT_DOING" Value="Removing" Order="2">1</Publish>
                     <Publish Property="ACTION_TEXT_DONE" Value="Removed" Order="3">1</Publish>
@@ -105,7 +105,7 @@
                     <Condition Action="show">Installed</Condition>
                 </Control>
 
-                <Control Id="Cancel" Type="PushButton" X="85" Y="195" Width="200" Height="77" Cancel="yes" Bitmap="yes" FixedSize="yes" ToolTip="Cancel" Text="[CancelControlContent]">
+                <Control Id="Cancel" Type="PushButton" X="85" Y="195" Width="190" Height="67" Cancel="yes" Bitmap="yes" FixedSize="yes" ToolTip="Cancel" Text="[CancelControlContent]">
                     <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
                 </Control>
             </Dialog>
@@ -136,7 +136,7 @@
                     <Subscribe Event="SetProgress" Attribute="Progress" />
                 </Control>
 
-                <Control Id="Cancel" Type="PushButton" X="85" Y="180" Width="200" Height="77" Cancel="yes" Bitmap="yes" FixedSize="yes" ToolTip="Cancel" Text="[CancelControlContent]">
+                <Control Id="Cancel" Type="PushButton" X="85" Y="180" Width="190" Height="67" Cancel="yes" Bitmap="yes" FixedSize="yes" ToolTip="Cancel" Text="[CancelControlContent]">
                     <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
                 </Control>
             </Dialog>
@@ -159,7 +159,7 @@
                     <Condition Action="show">Installed AND (WixUI_InstallMode = "Remove")</Condition>
                 </Control>
 
-                <Control Id="Finish" Type="PushButton" X="85" Y="165" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" ToolTip="Close" Text="[OkControlContent]">
+                <Control Id="Finish" Type="PushButton" X="85" Y="165" Width="190" Height="67" Default="yes" Bitmap="yes" FixedSize="yes" ToolTip="Close" Text="[OkControlContent]">
                     <Publish Event="EndDialog" Value="Return" Order="999">1</Publish>
                     <Publish Event="DoAction" Value="LaunchApp">(DO_LAUNCH_APP = 1) AND (NOT Installed)</Publish>
                     <Condition Action="enable">1</Condition> <!-- See http://windows-installer-xml-wix-toolset.687559.n2.nabble.com/Bug-causing-ICE-17-failure-td4050724.html -->
@@ -173,7 +173,7 @@
             <Dialog Id="FSUserExit" Width="370" Height="270" Title="[ProductName] Aborted">
                 <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="80" TabSkip="no" FixedSize="yes" Text="FSBannerBitmap" />
                 <Control Id="InterruptedText" Type="Text" X="20" Y="117" Width="320" Height="40" Hidden="no" Text="[ProductName] setup was interrupted. Your system has not been modified. To install, repair, or uninstall [ProductName] at a later time, please run this installation again." />
-                <Control Id="Finish" Type="PushButton" X="85" Y="165" Width="200" Height="77" Default="yes" Bitmap="yes" FixedSize="yes" ToolTip="Exit" Text="[OkControlContent]">
+                <Control Id="Finish" Type="PushButton" X="85" Y="165" Width="190" Height="67" Default="yes" Bitmap="yes" FixedSize="yes" ToolTip="Exit" Text="[OkControlContent]">
                     <Publish Event="EndDialog" Value="Exit">1</Publish>
                     <Condition Action="enable">1</Condition>
                     <!-- See http://windows-installer-xml-wix-toolset.687559.n2.nabble.com/Bug-causing-ICE-17-failure-td4050724.html -->

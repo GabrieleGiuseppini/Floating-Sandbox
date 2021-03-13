@@ -77,6 +77,7 @@
                     <Directory Id="ShipsDir" Name="Ships">
                         <Component Id="ShipsDir_comp" Guid="5DE0B9D5-322B-412F-A174-D673E2A54FDD">
                             <CreateFolder />
+                            <RemoveFile Id="DefaultShipFSDBFileRemoval" Name=".floatingsandbox_shipdb" On="both" />
                             <RemoveFolder Id="ShipsDirRemoval" Directory="ShipsDir" On="uninstall" />
                             <!-- We're not clearing the folder anymore, but this will be when upgrading from 1.13.0 onwards
                             <RemoveFile Id="RemoveFilesFromShipsDir" Name="*.*" On="uninstall" />
