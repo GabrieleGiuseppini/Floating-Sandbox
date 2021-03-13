@@ -310,6 +310,12 @@ bool AntiMatterBombGadget::Update(
         case State::Expired_8:
         default:
         {
+            // Detach ourselves
+            assert(mShipPoints.IsGadgetAttached(mPointIndex));
+            mShipPoints.DetachGadget(
+                mPointIndex,
+                mShipSprings);
+
             // Let us disappear
             return false;
         }
