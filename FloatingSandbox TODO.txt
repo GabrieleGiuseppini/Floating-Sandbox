@@ -691,25 +691,29 @@ Render:
 			+ "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
 		+ Bump up version
 
-		- Release
+		= Release
 			+ REMEMBER: remove debug logging for Mac, see above
 			+ Branch is merged into master (if applicable)
 			+ MSI variables
 			+ Commit & push
-			- 64-bit MSI
+			+ 64-bit MSI
 				+ Cleanup Install
-				- Build Install
-				- Make MSI
-				- Rename MSI
-				- Test upgrade from previous version
-			- 32-bit MSI
+				+ Build Install
+				+ Make MSI
+				+ Rename MSI
+				+ Test upgrade from previous version
+			+ 32-bit MSI
 				+ Cleanup Install
-				- Build Install
-				- Make MSI
-				- Rename MSI
-				- Test clean install
-			- Get both installers tested on dev server
-				- Also: John Smith, Fernando, 
+				+ Build Install
+				+ Make MSI
+				+ Rename MSI
+				+ Test clean install
+			= Get both installers tested on dev server
+				- Dev server
+				- John Smith: 64
+				- Fernando: 32
+				- LucaAlex: 64
+				- MMorin: 64
 			- Wait for test results
 			- Cut tag on github
 			- Upload packages to GameJolt
@@ -724,6 +728,34 @@ Render:
 		- Make branch
 		- Bump up version
 		- Cleanup TODO list
+
+		- Wix: delete Data folder on install
+			- https://www.hass.de/content/wix-how-use-removefolderex-your-xml-scripts
+
+		- Debris:
+			- When ship has water all over the place, debris particles start life without water and thus look too different than surroundings - at least for first 0.5 seconds
+
+		- Fix Gadgets: 
+			- Opposite assert at Gadgets::Update
+			- Each gadget must detach itself when expiring from state machine
+		- Rework explosion dynamics: they are too inconsistent at this moment
+			- RenderSetting: DrawExplosions, exactly like DrawFlames
+				- Rendering
+				- SettingsDialog, @ "Advanced Settings"
+			- Ship::ExplosionStateMachine:
+				- Factor that calcs blastProgress from CurrentProgress: 3.0 -> 4.0
+			- GameParams: bomb blast radius ~= 6
+			- Ship::ForceFields:
+				- Good force: 
+					mPoints.GetNonSpringForce(pointIndex) +=
+							pointRadius.normalise(std::sqrt(squarePointDistance))
+							/ std::max(std::sqrt(squarePointDistance), 1.0f)
+							* strength
+							* 40000.0f // Magic number
+							;
+			- Heat: lower heat at higher distances from center
+			- Test Ultra-Violent mode
+			- changelist
 
 		= MAC:
 			= Full high-DPI path:
@@ -1749,8 +1781,6 @@ Render:
 			- New rope materials:
 				- Strong, very strong
 				- Elastic
-
-	- Rework explosion dynamics: they are too inconsistent at this moment
 
 	- Generalized light emission
 		- TODO: obsolete due to "Light Sources" work above
