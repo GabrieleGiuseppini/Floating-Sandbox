@@ -165,15 +165,31 @@
     </xsl:template>
 
     <xsl:template match="wix:Directory" mode="DirectoryRemoval">
+
+        <xsl:element name="RemoveFile">
+            <xsl:attribute name="Id">
+                <xsl:value-of select="concat('File_', @Id)" />
+            </xsl:attribute>
+          <xsl:attribute name="Directory">
+                <xsl:value-of select="concat('Dir_', @Id)" />
+          </xsl:attribute>
+            <xsl:attribute name="Name">
+                <xsl:text>*</xsl:text>
+            </xsl:attribute>
+            <xsl:attribute name="On">
+                <xsl:text>both</xsl:text>
+            </xsl:attribute>
+        </xsl:element>
+
         <xsl:element name="RemoveFolder">
             <xsl:attribute name="Id">
-                <xsl:value-of select="@Id" />
+                <xsl:value-of select="concat('Dir_', @Id)" />
             </xsl:attribute>
             <xsl:attribute name="Directory">
                 <xsl:value-of select="concat('Dir_', @Id)" />
             </xsl:attribute>
             <xsl:attribute name="On">
-                <xsl:text>uninstall</xsl:text>
+                <xsl:text>both</xsl:text>
             </xsl:attribute>
         </xsl:element>
 
