@@ -137,7 +137,7 @@ void main()
     vec3 one = vec3(1.0);
     fragColour = one - (one - fragColour) * (one - heatColor);
 #else
-#error "Unrecognized value for HEAT_RENDER_MODE"
+#error Unrecognized value for HEAT_RENDER_MODE
 #endif
 
     // Apply lamp color
