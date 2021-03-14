@@ -88,6 +88,7 @@ enum class GameSettings : size_t
     RepairRadius,
     RepairSpeedAdjustment,
     BombBlastRadius,
+    BombBlastForceAdjustment,
     BombBlastHeat,
     AntiMatterBombImplosionStrength,
     FloodRadius,

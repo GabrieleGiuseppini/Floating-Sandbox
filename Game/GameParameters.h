@@ -460,11 +460,11 @@ struct GameParameters
 
     float BombBlastRadius;
     static float constexpr MinBombBlastRadius = 0.1f;
-    static float constexpr MaxBombBlastRadius = 20.0f;
+    static float constexpr MaxBombBlastRadius = 15.0f;
 
     float BombBlastForceAdjustment;
     static float constexpr MinBombBlastForceAdjustment = 0.1f;
-    static float constexpr MaxBombBlastForceAdjustment = 100.0f;
+    static float constexpr MaxBombBlastForceAdjustment = 10.0f;
 
     float BombBlastHeat; // KJoules/sec
     static float constexpr MinBombBlastHeat = 0.0f;

@@ -295,13 +295,17 @@ Render:
 			+ Test with blast force on _all_ particles - not only just the ship ones
 			+ Heat: lower heat at higher distances from center?
 				+ Then see if it might make more sense to nuke ApplyBastForceField and put its code directly in explosion state machine
-			- Tests:
-				- 3 Bombs
-				- Explosive combustion
-				- Blimp
-				- All: also with Ultra-Violent mode
-				- Bomb blast radius min/max
-			- changelist
+			+ Ultraviolent mode: changes all 3 (Radius, BlastForce, Heat)
+				+ Expose BombBlastForceAdjustment first
+				+ Do @ each bomb
+			+ Tests:
+				+ 3 Bombs
+				+ Explosive combustion
+				+ Blimp
+				+ All: also with Ultra-Violent mode
+				+ Bomb blast radius min/max
+			+ changelist
+			- Send to Pac0 & John Smith
 
 		= MAC:
 			= Full high-DPI path:
