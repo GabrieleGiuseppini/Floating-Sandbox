@@ -891,7 +891,9 @@ void Points::UpdateCombustionLowFrequency(
                 mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionRadius
                 * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
-            float const blastStrength = mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionStrength;
+            float const blastForce =
+                40000.0f // Magic number
+                * mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionStrength;
 
             // Start explosion
             mShipPhysicsHandler->StartExplosion(
@@ -899,7 +901,7 @@ void Points::UpdateCombustionLowFrequency(
                 GetPlaneId(pointIndex),
                 pointPosition,
                 blastRadius,
-                blastStrength,
+                blastForce,
                 blastHeat,
                 ExplosionType::Combustion,
                 gameParameters);

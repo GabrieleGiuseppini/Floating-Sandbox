@@ -69,9 +69,9 @@ bool ImpactBombGadget::Update(
                 gameParameters.BombBlastRadius
                 * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
-            // Blast strength
-            float const blastStrength =
-                60.0f // Magic number
+            // Blast force
+            float const blastForce =
+                60.0f * 40000.0f // Magic number
                 * gameParameters.BombBlastForceAdjustment;
 
             // Blast heat
@@ -85,7 +85,7 @@ bool ImpactBombGadget::Update(
                 mExplosionPlaneId,
                 mExplosionPosition,
                 blastRadius,
-                blastStrength,
+                blastForce,
                 blastHeat,
                 ExplosionType::Deflagration,
                 gameParameters);

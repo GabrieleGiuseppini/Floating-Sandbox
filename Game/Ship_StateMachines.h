@@ -17,7 +17,7 @@ public:
     PlaneId const Plane;
     vec2f const CenterPosition;
     float const BlastRadius; // m
-    float const BlastStrength; // <>
+    float const BlastForce; // N
     float const BlastHeat; // KJ
     ExplosionType const Type;
     float const PersonalitySeed;
@@ -31,7 +31,7 @@ public:
         PlaneId planeId,
         vec2f const & centerPosition,
         float blastRadius,
-        float blastStrength,
+        float blastForce,
         float blastHeat,
         ExplosionType type)
         : StateMachine(StateMachineType::Explosion)
@@ -39,7 +39,7 @@ public:
         , Plane(planeId)
         , CenterPosition(centerPosition)
         , BlastRadius(blastRadius)
-        , BlastStrength(blastStrength)
+        , BlastForce(blastForce)
         , BlastHeat(blastHeat)
         , Type(type)
         , PersonalitySeed(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())

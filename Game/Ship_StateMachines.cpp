@@ -45,7 +45,7 @@ bool Ship::UpdateExplosionStateMachine(
         // Blast progress: reaches max at a fraction of the blast duration,
         // as the whole duration includes also gfx effects while the blast should
         // last for less time
-        float const blastProgress = explosionStateMachine.CurrentProgress * 3.0f;
+        float const blastProgress = explosionStateMachine.CurrentProgress * 4.0f;
 
         // Blast radius: from 0.0 to BlastRadius, linearly with progress
         float const blastRadius =
@@ -59,7 +59,7 @@ bool Ship::UpdateExplosionStateMachine(
         ApplyBlastForceField(
             centerPosition,
             blastRadius,
-            explosionStateMachine.BlastStrength,
+            explosionStateMachine.BlastForce,
             explosionStateMachine.IsFirstFrame, // DoDetachPoint
             currentSimulationTime,
             gameParameters);

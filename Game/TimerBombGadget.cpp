@@ -148,9 +148,9 @@ bool TimerBombGadget::Update(
                     gameParameters.BombBlastRadius
                     * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
-                // Blast strength
-                float const blastStrength =
-                    50.0f // Magic number
+                // Blast force
+                float const blastForce =
+                    80.0f * 40000.0f // Magic number
                     * gameParameters.BombBlastForceAdjustment;
 
                 // Blast heat
@@ -164,7 +164,7 @@ bool TimerBombGadget::Update(
                     mExplosionPlaneId,
                     mExplosionPosition,
                     blastRadius,
-                    blastStrength,
+                    blastForce,
                     blastHeat,
                     ExplosionType::Deflagration,
                     gameParameters);

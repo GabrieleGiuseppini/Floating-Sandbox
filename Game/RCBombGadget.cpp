@@ -112,9 +112,9 @@ bool RCBombGadget::Update(
                     gameParameters.BombBlastRadius
                     * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
-                // Blast strength
-                float const blastStrength =
-                    70.0f // Magic number
+                // Blast force
+                float const blastForce =
+                    70.0f * 40000.0f // Magic number
                     * gameParameters.BombBlastForceAdjustment;
 
                 // Blast heat
@@ -128,7 +128,7 @@ bool RCBombGadget::Update(
                     mExplosionPlaneId,
                     mExplosionPosition,
                     blastRadius,
-                    blastStrength,
+                    blastForce,
                     blastHeat,
                     ExplosionType::Deflagration,
                     gameParameters);

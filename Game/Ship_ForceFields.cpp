@@ -49,7 +49,7 @@ void Ship::ApplySwirlForceField(
 void Ship::ApplyBlastForceField(
     vec2f const & centerPosition,
     float blastRadius,
-    float strength,
+    float blastForce,
     bool doDetachPoint,
     float currentSimulationTime,
     GameParameters const & gameParameters)
@@ -62,28 +62,24 @@ void Ship::ApplyBlastForceField(
     //
 
     float const squareBlastRadius = blastRadius * blastRadius;
-    constexpr float DtSquared = GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>;
 
     float closestPointSquareDistance = std::numeric_limits<float>::max();
     ElementIndex closestPointIndex = NoneElementIndex;
 
-    // Visit all (non-ephemeral) points (ephemerals would be blown immediately away otherwise)
-    for (auto pointIndex : mPoints.RawShipPoints())
+    // Visit all points
+    for (auto pointIndex : mPoints)
     {
-        vec2f pointRadius = mPoints.GetPosition(pointIndex) - centerPosition;
-        float squarePointDistance = pointRadius.squareLength();
+        vec2f const pointRadius = mPoints.GetPosition(pointIndex) - centerPosition;
+        float const squarePointDistance = pointRadius.squareLength();
         if (squarePointDistance < squareBlastRadius)
         {
-            // Create acceleration to flip the point to the other side
-            // of the radius
+            // Apply blast force (inversely proportional to distance,
+            // not second power as one would expect though)
             float const pointRadiusLength = std::sqrt(squarePointDistance);
-            vec2f const flippedRadius = pointRadius.normalise(pointRadiusLength) * (blastRadius + (blastRadius - pointRadiusLength));
-            vec2f const newPosition = centerPosition + flippedRadius;
             mPoints.GetNonSpringForce(pointIndex) +=
-                (newPosition - mPoints.GetPosition(pointIndex))
-                / DtSquared
-                * strength
-                * mPoints.GetMass(pointIndex);
+                pointRadius.normalise(pointRadiusLength)
+                / std::max(pointRadiusLength, 1.0f)
+                * blastForce;
 
             // Check whether this point is the closest point
             if (squarePointDistance < closestPointSquareDistance)
@@ -103,7 +99,7 @@ void Ship::ApplyBlastForceField(
         && NoneElementIndex != closestPointIndex)
     {
         // Choose a detach velocity - using the same distribution as Debris
-        vec2f detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
+        vec2f const detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
             GameParameters::MinDebrisParticlesVelocity,
             GameParameters::MaxDebrisParticlesVelocity);
 
