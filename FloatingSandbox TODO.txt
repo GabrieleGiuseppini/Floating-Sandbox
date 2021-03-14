@@ -264,7 +264,7 @@ Render:
 ====================================================
 
 - Roadmap:
-	- 1.16.4:		
+	- 1.16.5:		
 		+ Make branch
 		+ Bump up version
 		+ Cleanup TODO list
@@ -365,7 +365,9 @@ Render:
 			- Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
 			- Packaging:
 				- wxWidgets so's
-					- See if may statically link		
+					- See if may statically link	
+					
+		- Do "SHIFT lock" also for Cut tool
 
 		- Whole OceanSurface: use FixedSizeBuffer's instead of std::unique_ptr<float[]>'s
 			- Perf measurements:
