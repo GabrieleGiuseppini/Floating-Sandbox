@@ -264,471 +264,10 @@ Render:
 ====================================================
 
 - Roadmap:
-
-		----------------------------------------------------------------------------------------
-
-		+ Branch to new branch
-		+ Lantern fish at big depth
-			+ Do selective spawning
-				+ Redo fish<->shoal assignment algo @ spawn
-				+ Test:
-					+ Lantern fish with and without OK depth
-					+ Decrease & re-increase # of fishes
-		+ NewVersionDialog & other: display short version (i.e. no Build)
-		+ Log date at startup
-		+ Way to enable single-threaded rendering, one-shot
-			+ Class GameCore::BootSettings
-				+ bool DoForceNoGlFinish
-				+ bool DoForceNoMultithrededRendering
-				+ static factory Load(path)
-					+ ResourceHelper provides helper (used by caller)
-					+ If version not current => empty (w/defaults)
-			+ Instantiated and loaded by MainFrame at init
-				+ Local member
-				+ Struct passed to each cctor/initializer that needs it
-					+ RenderContext uses it for glFinish
-						+ Cooks own mDoInvokeGlFinish
-					+ RenderContext uses it for MT rendering
-						+ Passes to thread
-			+ Alt-D bootsettings:
-				+ Opens window, w/large disclaimer on top
-				+ Window also loads its own copy of settings
-				+ Save: deletes if identical to defaults
-					+ BootSettings default cctor is the defaults
-						+ Used also to populate at BootSettings::Load
-					+ Populates default one with checkboxes and then checks == with default-constructed BootSettings
-				+ Revert to Defaults
-					+ Populate checkboxes with defaults from default-constructed BootSettings
-				+ Then saves upon "Save" button
-		+ Add velocity probe gadget
-			+ Requires Gadget Rearc (*) first
-			+ Font rearc
-				+ See first sizes of both font textures: 256x256
-				+ TextureTypes: font groups w/one group only
-				+ Move RenderTypes::TextType to private of NotificationRenderContext
-					+ Specialize RenderContext/NotificationRenderContext methods, which simply fw to helper w/enum value
-				+ TextNotificationContext carries FontMetadata & and atlas frame metadata & of own font
-				+ Init: of all fonts, make one single texture (linear atlas)+vao+vbo
-				+ Lines: per-type of text notification, rather than per-font
-				+ Uploads:
-					+ Mark individual TextNotificationContext's dirty flag 
-				+ RenderPrepareTextNotifications:
-					+ If any TextNotificationContext has dirty text:
-						+ Regenerate its quad vertex buffer
-						+ Clear TextNotificationContext dirty text flag
-						+ Remember to re-upload whole vertex buffer
-					+ If need to re-upload whole vertex buffer:
-						+ Upload whole vertex buffer via multiple sub-uploads
-				+ Font::Metadata rearc:
-					+ Font::Fontmetadata is basic straight from font (integers, etc.), and no EmitQuadVertices
-					+ A new struct in NotificationRenderContext ("FontTextureAtlasMetadata") contains the atlas/texture-scaled version
-					+ A new EmitQuadVertices() method in NotificationRenderContext contains the code that was from Fontmetadata
-					+ mFonts goes and store instead vector of FontMetadata
-					+ Make allocation sticky
-				+ Draw: make one single call
-			+ GameController logic: always-present state machine 
-				+ Implements driving of NotificationLayer's PhysicsProbePanel
-				+ Emits panel sound events
-				+ Implements event handler and decides when to pass probe reading event through to NotificationLayer					
-			+ Move state machine from GameController into NotificationLayer
-				+ NotificationLayer gets EventDispatcher at cctor
-				+ Initial delay before starting panel
-				+ Tells NotificationRenderContext when text should disappear (i.e. whet opened transitions from 1.0 to != 1.0)
-			+ NotificationLayer:
-				+ Uploads panel's opened to NotificationRenderContext at next Upload()
-					+ Needs dirty flag
-				+ Uploads reading and/or clear to NotificationRenderContext at next Upload()						
-					+ mIsPhysicsProbeReadingDirty flag (like others)
-			+ NotificationRenderContext:
-				+ New NotificationRenderContext notification "type": PhysicsProbePanel
-					+ Upload is sticky: when uploaded, clears buffers, creates vertices, and sets dirty flag
-						+ When opened==0.0, clears the buffer and stops
-					+ RenderPrepare: upload if dirty
-						+ Alloc if size > allocated
-						+ And clear dirty flag
-					+ RenderDraw: draw if vertices not empty
-					+ Texture for background of panel
-						+ 200x100
-						+ Speed
-						+ Temperature
-					+ See right noise texture (we want the "rough" one, i.e. small)
-					+ Panel grows vertically first
-				+ New NotificationRenderContext text notification type: PhysicsProbeReading
-					+ UploadPhysicsProbeReading
-						+ Emit vertices with two new anchor types
-					+ ClearPhysicsProbeReading
-					+ 7-segment font (including - and .)
-						+ DSEG7 Modern-Regular, bold, 16 [18x18, adjust .], normal AL, (242, 255, 0)
-						+ Color?
-					+ Adjust panel: 
-						+ Larger backdrop for reading (eventually larger panel altogether)
-						+ See if need darker and/or smoother backdrop for better contrast
-			+ New gadget & tool
-				+ Enum
-				+ MainFrame menu entry - no keyboard shortcut
-				+ Tool
-				+ IGameController::TogglePhysicsProbeAt
-				+ Gadgets:
-					+ TogglePhysicsProbeAt
-					+ RemovePhysicsProbe
-				+ Cursor: physics_probe_cursor
-				+ Place/Removal Sound
-					+ Event publishing
-					+ Also underwater sound					
-				+ Physics publishing at Update()
-			+ Panel open/close sound, time-syncd with panel
-				+ Event publishing
-				+ Sound
-			+ Cleanup:
-				+ Gadgets spring->point rearc: 
-					+ First off, verify gadgets currently freeze when their spring is destroyed - which we'll fix with this change
-					+ Move "IsGadgetAttached" shebang from Springs to Points
-					+ See if can move detachment from point (i.e. for mass) completely to Gadgets, just like
-					  attachment is
-					+ Overall: Gadget attachment: to ship points (no ephemeral) which are attached to at least one spring and which
-					  have no other gadgets attached
-						+ Gadget base remembers point's first spring index for giving back rotation angle
-							+ "TrackedSpringIndex"
-						+ On spring destroy: do same trick as now, crystallize angle
-					+ PhysicsProbe final tasks:
-						+ Gadgets::OnSpringDestroyed: also deal with PhysicsProbe
-						+ Toggle algo:
-							+ If there's a probe in radius: remove it and done
-								+ Publish event: removal makes sound
-								+ return false
-							+ Else if found good candidate particle:
-								+ If there's already a probe on the ship: remove it (basically we move it)
-									+ No event: (we're moving it) (no removal sound)
-								+ Create new probe
-									+ If we are not moving: publish event (sound)
-								+ return true if we are not moving, else nullopt
-							+ Else:
-								+ return nullopt
-						+ See if may move mGameEventHandler->OnGadgetRemoved(.) call from each gadget's OnExternallyRemoved() to where we invoke
-						  OnExternallyRemoved in Gadgets
-						+ Merge removal code in Toggle() and RemovePhysicsProbe()
-					+ Cleanup:
-						+ Gadgets: see if may unify ToggleGadget<T>/TogglePhysicsProbeGadget
-							+ Or at least use same procedures when adding and removing a gadget														  
-						+ See if IGadget::GetPosition is really needed
-							+ If it's needed, then also add GetPlaneId()
-						+ Rendering: it seems order of gadgets and explosions is screwed
-							+ It's a problem with the bomb being detached upon explosion and thus taking a new Z plane; freeze plane ID as well
-					+ Tests:
-						+ Run all scenarios in debug, for all gadgets
-						+ Freezing of rotation axis @ spring destroy
-						+ Detachment at bomb explosions: make sure explosion does not move
-				+ Make RenderContext expose GetNoficationRenderContext() and nuke all forwards
-				+ Improve gadget texture
-					+ Antennas on top
-				+ Cursor: slightly thicker stroke
-					+ Or different altogether
-					+ Adjust anchor
-				+ Run panel open/close in Debug
-				+ changelist: re-architected "bombs" as generic "gadgets"...
-			+ Nuke inertial velocity notification
-				+ GameController et al
-				+ UI preferences
-				+ Preferences dialog
-			+ Test perf of panel opening on old Dell
-		+ Boot settings:
-			+ 3-valued optional's
-			+ Consumers use flag exclusively if set
-			+ Test
-				+ glFinish
-					+ Now
-					+ Simulate Intel HD
-				+ MultiThreaded:	
-					+ Now
-					+ Simulate Mac
-		+ Scrub/Rot tool (*)
-			+ Changelist
-		+ Investigate missing pin/gadget sounds when paused
-			+ It's due to game clock stopping and time used @ StartedTimestamp/duration
-			+ Migrate SoundController away from GameClock
-		+ Cursor change rate
-		+ 0.8 water crazyness
-		+ Sinking speed:
-			! Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s				
-			+ We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
-				+ Copy old exe first
-				+ Take speeds with old:
-					+ Titanic sinking: 6.4m/s (@ GlobalDampAdjust==0.00: 36.7)
-					+ Plane falling: touchdown is at 41m/s (@ GlobalDampAdjust==0.00: 97m/s)
-				+ Test with following global damps, looking at explosions, debris, etc. in *air*
-					+ 1: with water intake at minimum, particles/springs dance for a very long time
-					+ 0: some violent ejections of springs, but nothing broken
-					+ 0: with water intake at minimum, particles/springs accelerate
-				+ Old math:
-					+ Verify global damp == 0 means no vel damping at Ship::IntegratePoints(.)
-					+ globalDampingCoefficient=0.99988; velocityBuffer[i] = deltaPos / dt * globalDampingCoefficient;
-					+ 30 iterations
-					+ vN = (d^N)*v0; // d^N = 0.99640
-				+ Impl:
-					+ Global damp adjust=0.0f - for now
-					+ Point-by-point: 
-						+ !Underwater: add same drags (friction and pressure) as water, but different magnitude
-						+ Pressure drag: interpolate coefficient close to interface, and thus nuke if/else (air/water is now in coefficient)
-					+ First finalization:
-						+ Parallel GameParameters settings for air drags
-						+ SettingsDialog
-							+ Mechanics, Air, and Fluids
-								+ Move lights to Wind, Waves, Fishes, and Light
-					+ Lower apd
-						+ 0.5: barely visible on hydrodynamics test, but cardboard tower ok
-					+ Optimize Mix
-						X No need for by-point
-						+ See if needed for by-frontier
-					+ Tests: 
-						+ Debris, with and without WaterIntake=0
-							+ Now that the only brake to debris is friction, see if we need more friction
-								+ Air
-								+ Water - can't increase too much, or else air bubbles freeze
-						+ Cardboard tower
-							x With air pressure drag = 100, there's oscillations
-							+ With air pressure drag = 10, there's no oscillations
-						+ Cardboard ships
-						+ Air/Water ship
-						+ Hydrodynamics test
-						+ Airplane falling
-						+ Blimps
-						+ Trellis
-						+ Titanic splitting + sinking
-					+ Zero-wind button
-					+ Finalization:
-						+ Interpolations for discontinuities
-							+ Do all @ Ship::ApplyWorldForces
-								+ Have a single multiplier used for all forces
-							+ See to optimize Mix with 1 mult only
-								+ Check assembly
-						+ Test perf on old Dell
-						+ Finalize good settings, reset all adjustments to 1.0
-							+ Set coeffs accordingly
-							+ Nail down adjustment ranges
-						+ Nuke Ship::ByPoints
-			+ changelist
-		+ Aerodynamics, as well
-			+ changelist, together w/drag
-			+ video & post
-		+ Optimization: OceanSurface and OceanFloor ::GetNormalAt(x)
-			! Optimized: no second sampling needed!
-			+ Track down all usages
-				+ See if OceanSurface really needed: no
-				+ Do OceanFloor
-				+ Track usages of OceanFloor::GetHeightAt and make sure always in boundaries
-					+ Then remove "allow for derivative taking"
-					+ Also at OceanSurface
-			+ Test in debug
-		+ Send for testing
-		+ HandleCollisionsWithSeaFloor optimization:
-			+ Fast check: go away if y > max of two samples's y's
-				+ 8.98%%: if (y > mSamples[sampleIndexI].SampleValue && y > mSamples[sampleIndexI + 1].SampleValue)
-		+ See vector normalization optimization with mult's with 1/len
-			X It's already assembled like that
-			+ SSE version 2
-			+ SSE version 2 with length
-			+ Unit tests:
-				+ normalize_approx()
-				+ normalize_approx(len)
-			x Use normalize_approx(len) at spring iteratations (w/profiling)
-				+ Get assembly before & after
-				+ Before: Ship::ApplySpringForces_BySprings: 54.87%, UPD=4.90ms (@20s)
-				+ After: Ship::ApplySpringForces_BySprings: 54.73%, UPD=4.89ms (@20s)
-			+ Use normalize_approx() at water dynamics (w/profiling)
-				+ Before: 8.98%
-				+ After: 7.95%
-				+ Test
-			+ Test perf on Dell
-			+ Redo profiling above
-		+ Rot tool:
-			+ An option for the radius (also for scrub)
-				+ SettingsDialog
-			+ Faster rotting
-		+ Send for testing
-		+ ShipBucket:
-			+ Split author by ';', put remainder on next line prefixed with "art by:"
-				+ Do split at metadata load time, exposing "ArtCredits"
-				+ Add check to verify_ships.py to make sure author contains 0 or 1 ';'
-					+ Run on all
-				+ Change dialog
-			+ I also like a warning not to repost the work on youtube, though i'm sure people will ignore this (we cant control everything unfortunately :wink: )
-			+ Ask Fernando for his ships
-			+ Tell CPM/Wreno rules for using ShipBucket
-				+ Credits format		
-		+ Faster probe readings
-		+ Water temperature goes down with depth (thermocline)
-		+ Waves from ship (*)
-		+ Send for testing
-		+ DKUZ bug with yellow dots
-		+ Repair improvement:
-			+ See if it's due to triangle forming folded
-				+ Add log when we calc a point's destination, if that point repair would result in a new triangle
-				  that is NOT clockwise wrt current point positions
-				+ Prevent CCW triangle from being formed altogether
-			+ Improvements to try:
-				X Attractor must have more springs attached than attractee
-				+ Local consistency of attractor/attractee roles: ensure that if one particle is attractor, also its directed neighbors are
-					! Spec:
-						- Pass 1: for each point p that is in radius and which was an attractor in the previous step and which has not been an attractee in this step
-						  and which needs reparation:
-							- RepairFromPoint(p)
-								- Conditions for being an attractee: not having been an attractor in this step
-								- Upon spring restore: forget attractee role at this step
-							- Visit all points p' from graph visit starting at p, such that: p' is in radius and needs reparation and has not been an attractor in this step and has
-							  not been an attractee in this step
-								- Do visit breadth first, truncating when not in radius or when doesn't need reparation or when has been attractee in this step or when has been attractor
-								  in this step
-						- Pass 2: find new points p that are in radius and which have not been already an attractor in this step and which have not been an attractee in this step
-						  and which need reparation:
-							- RepairFromPoint(p)
-							- Visit all points p' from graph visit starting at p, such that: ...
-					+ Impl:
-						+ Move repair code to own source file
-						+ Points::RepairState:
-							+ LastAttractorRepairStepSequenceNumber, LastAttractee...: type is SequenceNumber
-						+ Tool:
-							+ Pass just sequence number
-							+ Increase seq num (skip) at each mouse down
-						+ Do
-				+ See why roles sometimes flip
-					+ Attractee from prev step becomes attractor
-				+ Try to straighten out CCW structures
-					+ Idea 1: as a separate, initial step, before repairing: for each two-now_naked-spring arc, make sure two springs are in right angle wrt central point
-					+ Idea 2: expand idea 1: as a pre-step: for each in-radius point: for each naked spring: make sure it's in right angle
-					+ If works, consider doing trying these which at the moment we can't do because of
-					  folded structures:
-						x Remove role-taking: allow attractor to take on role of attractee, and viceversa
-						+ Lower distance tolerance (e.g. 0.03 or lower), to prevent newly-repaired springs from breaking up immediately again
-						x Allow each particle to act as attractee only once per step
-				+ Larger radius: 4
-				+ Final velocity of restored particle is avg of all connected
-				+ Velocities:
-					X Issue with half titanic: try with more inertial velocity
-					X Issue with dancing dots: try: target pos is half-way between offseted with attractor's velocity * dt
-						+ Variable names for point/other endpoint: attractorPoint and attracteePoint
-				+ Final boost after max consecutive number of steps
-				+ Test 2 repair settings extremes
-					+ Speed
-						+ Fixed max
-						+ Rewrite so that adjustment changes smoothstep's time horizon
-					+ Radius: see why slows down @ 10
-						+ Perf:
-							+ Store in-radius points at first pass, and keep using it
-								+ Nuke subsequent useless radius checks
-							+ Avoid queuing for out-of-radius
-				+ Expand delta2 trick to all deltas
-				+ See if may simplify octant finding by considering just one spring (say, nearest CCW)
-				+ Clear visit seq at repaired
-				+ Scale forces on attractee depending on # of its springs
-					+ Grow with # of springs
-			+ Final:
-				+ Perf: accumulate points from first pass in vector for 2nd pass
-				+ Cleanup TODOs
-				+ Run in Debug
-				+ Check perf on old Dell
-			+ changelist
-			+ Merge
-		+ Second look at DKUZ's bug
-			+ Was there in 1.16.2 as well
-			+ Repro's with float uniform, clamped between 0.0 and 1.0
-			+ Ensure that it's due to negative values in fragment shader when vertex shader always has positive
-				+ Test shader: remove fix; clamp at vertex
-				+ Quantize at fragment when negative
-			+ See if it only happens with Line primitives (i.e. that it doesn't happen with Triangle primitives)
-				+ It doesn't happen with Triangle primitives
-			+ Use #define's for turning on/off clamping - and for temperature
-				+ ship_texture.glslinc:
-					+ vec3: 6.83/6.81
-					+ 3 floats: 6.84/6.84
-				+ pre-perf: [vec3]: 5.39ms @20ms
-				+ do
-					+ ShaderManager: extract uniforms and vertex attributes from OpenGL APIs, not from parsing
-						+ Actually, reduce extraction of things via parsing to nil, if there's anything else
-					+ Nuke old shaders
-					+ Check StressedSprings
-					+ Fix ShaderManager unit tests
-				+ post-perf: 5.22
-		+ Waves:
-			+ See Base III
-			+ Try to smoothen peaks with avg=5
-			+ Test perf with Base III (many frontiers) with and without displacement
-				+ With: ApplyWorldForces=2.73%
-				+ Without: 2.38%
-			+ See maximum adjust
-			+ Test all ships
-				+ Add offsets where needed
-		+ Adjust terrain lock
-			+ Help
-				+ Also add Rot, etc.
-		+ Incandescence layer (*)
-		+ Default settings: 
-			X Flatten waves?
-			+ Lower speed of (sin) ocean waves - now that we run faster
-
-
-		+ Send for testing
-		+ Send for localization
-			+ Give GitHub diff for Help: https://github.com/GabrieleGiuseppini/Floating-Sandbox/commit/9ef5e00d5d1a35d63eea6ce757000951e043dd80?branch=9ef5e00d5d1a35d63eea6ce757000951e043dd80&diff=split
+	- 1.16.4:		
+		+ Make branch
 		+ Bump up version
-		+ Fix Pac0master's bug
-		+ Bump up version
-		+ Fix bug 2
-			+ Test on both cards
-		+ Bump up version
-		+ Localization
-			+ IT
-				+ strings
-				+ help.html
-			+ ES
-				+ strings
-					+ Fix "Sets wind speed to zero"
-				+ help.html
-			+ RU
-				+ strings
-					+ Fix "Sets wind speed to zero"
-				+ help.html
-		+ Timcan bug with engine sound goin' off
-			+ "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
-		+ Bump up version
-
-		= Release
-			+ REMEMBER: remove debug logging for Mac, see above
-			+ Branch is merged into master (if applicable)
-			+ MSI variables
-			+ Commit & push
-			+ 64-bit MSI
-				+ Cleanup Install
-				+ Build Install
-				+ Make MSI
-				+ Rename MSI
-				+ Test upgrade from previous version
-			+ 32-bit MSI
-				+ Cleanup Install
-				+ Build Install
-				+ Make MSI
-				+ Rename MSI
-				+ Test clean install
-			= Get both installers tested:
-				+ Dev server
-				+ John Smith: 64
-				+ Fernando: 32
-				+ LucaAlex: 64
-				+ MMorin: 64
-				- Old dell: 32
-			- Cut tag on github
-			- Upload packages to GameJolt
-				- Report file as safe (https://gamejolt.com/privacy)
-				- Post
-			- www.floatingsandbox.com:
-				- Upload changes.txt
-					- Test w/old FS
-				- Update current version in FAQ
-
-		===================================================================
-		- Make branch
-		- Bump up version
-		- Cleanup TODO list
-
+		+ Cleanup TODO list
 		+ Wix: delete Data folder on install
 			+ https://www.hass.de/content/wix-how-use-removefolderex-your-xml-scripts
 		+ Debris:
@@ -742,10 +281,10 @@ Render:
 			+ RenderSetting: DrawExplosions, exactly like DrawFlames
 				+ Rendering
 				+ SettingsDialog, @ "Advanced Settings"
-			= Ship::ExplosionStateMachine:
+			+ Ship::ExplosionStateMachine:
 				+ Factor that calcs blastProgress from CurrentProgress: 3.0 -> 4.0
-			= GameParams: bomb blast radius ~= 6
-			= Ship::ForceFields:
+			+ GameParams: bomb blast radius ~= 6
+			+ Ship::ForceFields:
 				+ Good force: 
 					mPoints.GetNonSpringForce(pointIndex) +=
 							pointRadius.normalise(std::sqrt(squarePointDistance))
@@ -753,10 +292,9 @@ Render:
 							* strength
 							* 40000.0f // Magic number
 							;
-			= Test with blast force on _all_ particles - not only just the ship ones
-				- See on bubbles, debris
-			- Heat: lower heat at higher distances from center
-				- Then see if it might make more sense to nuke ApplyBastForceField and put its code directly in explosion state machine
+			+ Test with blast force on _all_ particles - not only just the ship ones
+			+ Heat: lower heat at higher distances from center?
+				+ Then see if it might make more sense to nuke ApplyBastForceField and put its code directly in explosion state machine
 			- Tests:
 				- 3 Bombs
 				- Explosive combustion
@@ -825,6 +363,19 @@ Render:
 				- wxWidgets so's
 					- See if may statically link		
 
+		- Whole OceanSurface: use FixedSizeBuffer's instead of std::unique_ptr<float[]>'s
+			- Perf measurements:
+				- Before
+				- After
+
+		- Music:
+			- James horners soundtrack "death of titanic" and "building panic" may make the game greater
+
+		- New rain: https://www.shadertoy.com/view/tttyDB
+			- Test perf drop on Dell
+		
+		- Cached quantities (*)
+
 		- See why NVidia's rendering is so slow
 			+ Try VSync: yes, it's the VSync
 			- Decide whether FS should turn VSync off
@@ -859,19 +410,6 @@ Render:
 			- Old Dell FPS & update ms:
 				- Before:
 				- After:
-
-		- Whole OceanSurface: use FixedSizeBuffer's instead of std::unique_ptr<float[]>'s
-			- Perf measurements:
-				- Before
-				- After
-
-		- Music:
-			- James horners soundtrack "death of titanic" and "building panic" may make the game greater
-
-		- New rain: https://www.shadertoy.com/view/tttyDB
-			- Test perf drop on Dell
-		
-		- Cached quantities (*)
 
 		- Send for testing
 	
@@ -11993,6 +11531,462 @@ IF WX:
 				X Test clean install
 			+ Send both installers for testing
 			+ Wait for test results
+			+ Cut tag on github
+			+ Upload packages to GameJolt
+				+ Report file as safe (https://gamejolt.com/privacy)
+				+ Post
+			+ www.floatingsandbox.com:
+				+ Upload changes.txt
+					+ Test w/old FS
+				+ Update current version in FAQ
+	+ 1.16.3
+		+ Branch to new branch
+		+ Lantern fish at big depth
+			+ Do selective spawning
+				+ Redo fish<->shoal assignment algo @ spawn
+				+ Test:
+					+ Lantern fish with and without OK depth
+					+ Decrease & re-increase # of fishes
+		+ NewVersionDialog & other: display short version (i.e. no Build)
+		+ Log date at startup
+		+ Way to enable single-threaded rendering, one-shot
+			+ Class GameCore::BootSettings
+				+ bool DoForceNoGlFinish
+				+ bool DoForceNoMultithrededRendering
+				+ static factory Load(path)
+					+ ResourceHelper provides helper (used by caller)
+					+ If version not current => empty (w/defaults)
+			+ Instantiated and loaded by MainFrame at init
+				+ Local member
+				+ Struct passed to each cctor/initializer that needs it
+					+ RenderContext uses it for glFinish
+						+ Cooks own mDoInvokeGlFinish
+					+ RenderContext uses it for MT rendering
+						+ Passes to thread
+			+ Alt-D bootsettings:
+				+ Opens window, w/large disclaimer on top
+				+ Window also loads its own copy of settings
+				+ Save: deletes if identical to defaults
+					+ BootSettings default cctor is the defaults
+						+ Used also to populate at BootSettings::Load
+					+ Populates default one with checkboxes and then checks == with default-constructed BootSettings
+				+ Revert to Defaults
+					+ Populate checkboxes with defaults from default-constructed BootSettings
+				+ Then saves upon "Save" button
+		+ Add velocity probe gadget
+			+ Requires Gadget Rearc (*) first
+			+ Font rearc
+				+ See first sizes of both font textures: 256x256
+				+ TextureTypes: font groups w/one group only
+				+ Move RenderTypes::TextType to private of NotificationRenderContext
+					+ Specialize RenderContext/NotificationRenderContext methods, which simply fw to helper w/enum value
+				+ TextNotificationContext carries FontMetadata & and atlas frame metadata & of own font
+				+ Init: of all fonts, make one single texture (linear atlas)+vao+vbo
+				+ Lines: per-type of text notification, rather than per-font
+				+ Uploads:
+					+ Mark individual TextNotificationContext's dirty flag 
+				+ RenderPrepareTextNotifications:
+					+ If any TextNotificationContext has dirty text:
+						+ Regenerate its quad vertex buffer
+						+ Clear TextNotificationContext dirty text flag
+						+ Remember to re-upload whole vertex buffer
+					+ If need to re-upload whole vertex buffer:
+						+ Upload whole vertex buffer via multiple sub-uploads
+				+ Font::Metadata rearc:
+					+ Font::Fontmetadata is basic straight from font (integers, etc.), and no EmitQuadVertices
+					+ A new struct in NotificationRenderContext ("FontTextureAtlasMetadata") contains the atlas/texture-scaled version
+					+ A new EmitQuadVertices() method in NotificationRenderContext contains the code that was from Fontmetadata
+					+ mFonts goes and store instead vector of FontMetadata
+					+ Make allocation sticky
+				+ Draw: make one single call
+			+ GameController logic: always-present state machine 
+				+ Implements driving of NotificationLayer's PhysicsProbePanel
+				+ Emits panel sound events
+				+ Implements event handler and decides when to pass probe reading event through to NotificationLayer					
+			+ Move state machine from GameController into NotificationLayer
+				+ NotificationLayer gets EventDispatcher at cctor
+				+ Initial delay before starting panel
+				+ Tells NotificationRenderContext when text should disappear (i.e. whet opened transitions from 1.0 to != 1.0)
+			+ NotificationLayer:
+				+ Uploads panel's opened to NotificationRenderContext at next Upload()
+					+ Needs dirty flag
+				+ Uploads reading and/or clear to NotificationRenderContext at next Upload()						
+					+ mIsPhysicsProbeReadingDirty flag (like others)
+			+ NotificationRenderContext:
+				+ New NotificationRenderContext notification "type": PhysicsProbePanel
+					+ Upload is sticky: when uploaded, clears buffers, creates vertices, and sets dirty flag
+						+ When opened==0.0, clears the buffer and stops
+					+ RenderPrepare: upload if dirty
+						+ Alloc if size > allocated
+						+ And clear dirty flag
+					+ RenderDraw: draw if vertices not empty
+					+ Texture for background of panel
+						+ 200x100
+						+ Speed
+						+ Temperature
+					+ See right noise texture (we want the "rough" one, i.e. small)
+					+ Panel grows vertically first
+				+ New NotificationRenderContext text notification type: PhysicsProbeReading
+					+ UploadPhysicsProbeReading
+						+ Emit vertices with two new anchor types
+					+ ClearPhysicsProbeReading
+					+ 7-segment font (including - and .)
+						+ DSEG7 Modern-Regular, bold, 16 [18x18, adjust .], normal AL, (242, 255, 0)
+						+ Color?
+					+ Adjust panel: 
+						+ Larger backdrop for reading (eventually larger panel altogether)
+						+ See if need darker and/or smoother backdrop for better contrast
+			+ New gadget & tool
+				+ Enum
+				+ MainFrame menu entry - no keyboard shortcut
+				+ Tool
+				+ IGameController::TogglePhysicsProbeAt
+				+ Gadgets:
+					+ TogglePhysicsProbeAt
+					+ RemovePhysicsProbe
+				+ Cursor: physics_probe_cursor
+				+ Place/Removal Sound
+					+ Event publishing
+					+ Also underwater sound					
+				+ Physics publishing at Update()
+			+ Panel open/close sound, time-syncd with panel
+				+ Event publishing
+				+ Sound
+			+ Cleanup:
+				+ Gadgets spring->point rearc: 
+					+ First off, verify gadgets currently freeze when their spring is destroyed - which we'll fix with this change
+					+ Move "IsGadgetAttached" shebang from Springs to Points
+					+ See if can move detachment from point (i.e. for mass) completely to Gadgets, just like
+					  attachment is
+					+ Overall: Gadget attachment: to ship points (no ephemeral) which are attached to at least one spring and which
+					  have no other gadgets attached
+						+ Gadget base remembers point's first spring index for giving back rotation angle
+							+ "TrackedSpringIndex"
+						+ On spring destroy: do same trick as now, crystallize angle
+					+ PhysicsProbe final tasks:
+						+ Gadgets::OnSpringDestroyed: also deal with PhysicsProbe
+						+ Toggle algo:
+							+ If there's a probe in radius: remove it and done
+								+ Publish event: removal makes sound
+								+ return false
+							+ Else if found good candidate particle:
+								+ If there's already a probe on the ship: remove it (basically we move it)
+									+ No event: (we're moving it) (no removal sound)
+								+ Create new probe
+									+ If we are not moving: publish event (sound)
+								+ return true if we are not moving, else nullopt
+							+ Else:
+								+ return nullopt
+						+ See if may move mGameEventHandler->OnGadgetRemoved(.) call from each gadget's OnExternallyRemoved() to where we invoke
+						  OnExternallyRemoved in Gadgets
+						+ Merge removal code in Toggle() and RemovePhysicsProbe()
+					+ Cleanup:
+						+ Gadgets: see if may unify ToggleGadget<T>/TogglePhysicsProbeGadget
+							+ Or at least use same procedures when adding and removing a gadget														  
+						+ See if IGadget::GetPosition is really needed
+							+ If it's needed, then also add GetPlaneId()
+						+ Rendering: it seems order of gadgets and explosions is screwed
+							+ It's a problem with the bomb being detached upon explosion and thus taking a new Z plane; freeze plane ID as well
+					+ Tests:
+						+ Run all scenarios in debug, for all gadgets
+						+ Freezing of rotation axis @ spring destroy
+						+ Detachment at bomb explosions: make sure explosion does not move
+				+ Make RenderContext expose GetNoficationRenderContext() and nuke all forwards
+				+ Improve gadget texture
+					+ Antennas on top
+				+ Cursor: slightly thicker stroke
+					+ Or different altogether
+					+ Adjust anchor
+				+ Run panel open/close in Debug
+				+ changelist: re-architected "bombs" as generic "gadgets"...
+			+ Nuke inertial velocity notification
+				+ GameController et al
+				+ UI preferences
+				+ Preferences dialog
+			+ Test perf of panel opening on old Dell
+		+ Boot settings:
+			+ 3-valued optional's
+			+ Consumers use flag exclusively if set
+			+ Test
+				+ glFinish
+					+ Now
+					+ Simulate Intel HD
+				+ MultiThreaded:	
+					+ Now
+					+ Simulate Mac
+		+ Scrub/Rot tool (*)
+			+ Changelist
+		+ Investigate missing pin/gadget sounds when paused
+			+ It's due to game clock stopping and time used @ StartedTimestamp/duration
+			+ Migrate SoundController away from GameClock
+		+ Cursor change rate
+		+ 0.8 water crazyness
+		+ Sinking speed:
+			! Real Titanic's bow sank at 10.7m/s or 15m/s, FS sinks at 6..7m/s				
+			+ We get to 10m/s by lowering Global Damp Adjust to 0.08, so consider not applying global damp for underwater points, which means:
+				+ Copy old exe first
+				+ Take speeds with old:
+					+ Titanic sinking: 6.4m/s (@ GlobalDampAdjust==0.00: 36.7)
+					+ Plane falling: touchdown is at 41m/s (@ GlobalDampAdjust==0.00: 97m/s)
+				+ Test with following global damps, looking at explosions, debris, etc. in *air*
+					+ 1: with water intake at minimum, particles/springs dance for a very long time
+					+ 0: some violent ejections of springs, but nothing broken
+					+ 0: with water intake at minimum, particles/springs accelerate
+				+ Old math:
+					+ Verify global damp == 0 means no vel damping at Ship::IntegratePoints(.)
+					+ globalDampingCoefficient=0.99988; velocityBuffer[i] = deltaPos / dt * globalDampingCoefficient;
+					+ 30 iterations
+					+ vN = (d^N)*v0; // d^N = 0.99640
+				+ Impl:
+					+ Global damp adjust=0.0f - for now
+					+ Point-by-point: 
+						+ !Underwater: add same drags (friction and pressure) as water, but different magnitude
+						+ Pressure drag: interpolate coefficient close to interface, and thus nuke if/else (air/water is now in coefficient)
+					+ First finalization:
+						+ Parallel GameParameters settings for air drags
+						+ SettingsDialog
+							+ Mechanics, Air, and Fluids
+								+ Move lights to Wind, Waves, Fishes, and Light
+					+ Lower apd
+						+ 0.5: barely visible on hydrodynamics test, but cardboard tower ok
+					+ Optimize Mix
+						X No need for by-point
+						+ See if needed for by-frontier
+					+ Tests: 
+						+ Debris, with and without WaterIntake=0
+							+ Now that the only brake to debris is friction, see if we need more friction
+								+ Air
+								+ Water - can't increase too much, or else air bubbles freeze
+						+ Cardboard tower
+							x With air pressure drag = 100, there's oscillations
+							+ With air pressure drag = 10, there's no oscillations
+						+ Cardboard ships
+						+ Air/Water ship
+						+ Hydrodynamics test
+						+ Airplane falling
+						+ Blimps
+						+ Trellis
+						+ Titanic splitting + sinking
+					+ Zero-wind button
+					+ Finalization:
+						+ Interpolations for discontinuities
+							+ Do all @ Ship::ApplyWorldForces
+								+ Have a single multiplier used for all forces
+							+ See to optimize Mix with 1 mult only
+								+ Check assembly
+						+ Test perf on old Dell
+						+ Finalize good settings, reset all adjustments to 1.0
+							+ Set coeffs accordingly
+							+ Nail down adjustment ranges
+						+ Nuke Ship::ByPoints
+			+ changelist
+		+ Aerodynamics, as well
+			+ changelist, together w/drag
+			+ video & post
+		+ Optimization: OceanSurface and OceanFloor ::GetNormalAt(x)
+			! Optimized: no second sampling needed!
+			+ Track down all usages
+				+ See if OceanSurface really needed: no
+				+ Do OceanFloor
+				+ Track usages of OceanFloor::GetHeightAt and make sure always in boundaries
+					+ Then remove "allow for derivative taking"
+					+ Also at OceanSurface
+			+ Test in debug
+		+ Send for testing
+		+ HandleCollisionsWithSeaFloor optimization:
+			+ Fast check: go away if y > max of two samples's y's
+				+ 8.98%%: if (y > mSamples[sampleIndexI].SampleValue && y > mSamples[sampleIndexI + 1].SampleValue)
+		+ See vector normalization optimization with mult's with 1/len
+			X It's already assembled like that
+			+ SSE version 2
+			+ SSE version 2 with length
+			+ Unit tests:
+				+ normalize_approx()
+				+ normalize_approx(len)
+			x Use normalize_approx(len) at spring iteratations (w/profiling)
+				+ Get assembly before & after
+				+ Before: Ship::ApplySpringForces_BySprings: 54.87%, UPD=4.90ms (@20s)
+				+ After: Ship::ApplySpringForces_BySprings: 54.73%, UPD=4.89ms (@20s)
+			+ Use normalize_approx() at water dynamics (w/profiling)
+				+ Before: 8.98%
+				+ After: 7.95%
+				+ Test
+			+ Test perf on Dell
+			+ Redo profiling above
+		+ Rot tool:
+			+ An option for the radius (also for scrub)
+				+ SettingsDialog
+			+ Faster rotting
+		+ Send for testing
+		+ ShipBucket:
+			+ Split author by ';', put remainder on next line prefixed with "art by:"
+				+ Do split at metadata load time, exposing "ArtCredits"
+				+ Add check to verify_ships.py to make sure author contains 0 or 1 ';'
+					+ Run on all
+				+ Change dialog
+			+ I also like a warning not to repost the work on youtube, though i'm sure people will ignore this (we cant control everything unfortunately :wink: )
+			+ Ask Fernando for his ships
+			+ Tell CPM/Wreno rules for using ShipBucket
+				+ Credits format		
+		+ Faster probe readings
+		+ Water temperature goes down with depth (thermocline)
+		+ Waves from ship (*)
+		+ Send for testing
+		+ DKUZ bug with yellow dots
+		+ Repair improvement:
+			+ See if it's due to triangle forming folded
+				+ Add log when we calc a point's destination, if that point repair would result in a new triangle
+				  that is NOT clockwise wrt current point positions
+				+ Prevent CCW triangle from being formed altogether
+			+ Improvements to try:
+				X Attractor must have more springs attached than attractee
+				+ Local consistency of attractor/attractee roles: ensure that if one particle is attractor, also its directed neighbors are
+					! Spec:
+						- Pass 1: for each point p that is in radius and which was an attractor in the previous step and which has not been an attractee in this step
+						  and which needs reparation:
+							- RepairFromPoint(p)
+								- Conditions for being an attractee: not having been an attractor in this step
+								- Upon spring restore: forget attractee role at this step
+							- Visit all points p' from graph visit starting at p, such that: p' is in radius and needs reparation and has not been an attractor in this step and has
+							  not been an attractee in this step
+								- Do visit breadth first, truncating when not in radius or when doesn't need reparation or when has been attractee in this step or when has been attractor
+								  in this step
+						- Pass 2: find new points p that are in radius and which have not been already an attractor in this step and which have not been an attractee in this step
+						  and which need reparation:
+							- RepairFromPoint(p)
+							- Visit all points p' from graph visit starting at p, such that: ...
+					+ Impl:
+						+ Move repair code to own source file
+						+ Points::RepairState:
+							+ LastAttractorRepairStepSequenceNumber, LastAttractee...: type is SequenceNumber
+						+ Tool:
+							+ Pass just sequence number
+							+ Increase seq num (skip) at each mouse down
+						+ Do
+				+ See why roles sometimes flip
+					+ Attractee from prev step becomes attractor
+				+ Try to straighten out CCW structures
+					+ Idea 1: as a separate, initial step, before repairing: for each two-now_naked-spring arc, make sure two springs are in right angle wrt central point
+					+ Idea 2: expand idea 1: as a pre-step: for each in-radius point: for each naked spring: make sure it's in right angle
+					+ If works, consider doing trying these which at the moment we can't do because of
+					  folded structures:
+						x Remove role-taking: allow attractor to take on role of attractee, and viceversa
+						+ Lower distance tolerance (e.g. 0.03 or lower), to prevent newly-repaired springs from breaking up immediately again
+						x Allow each particle to act as attractee only once per step
+				+ Larger radius: 4
+				+ Final velocity of restored particle is avg of all connected
+				+ Velocities:
+					X Issue with half titanic: try with more inertial velocity
+					X Issue with dancing dots: try: target pos is half-way between offseted with attractor's velocity * dt
+						+ Variable names for point/other endpoint: attractorPoint and attracteePoint
+				+ Final boost after max consecutive number of steps
+				+ Test 2 repair settings extremes
+					+ Speed
+						+ Fixed max
+						+ Rewrite so that adjustment changes smoothstep's time horizon
+					+ Radius: see why slows down @ 10
+						+ Perf:
+							+ Store in-radius points at first pass, and keep using it
+								+ Nuke subsequent useless radius checks
+							+ Avoid queuing for out-of-radius
+				+ Expand delta2 trick to all deltas
+				+ See if may simplify octant finding by considering just one spring (say, nearest CCW)
+				+ Clear visit seq at repaired
+				+ Scale forces on attractee depending on # of its springs
+					+ Grow with # of springs
+			+ Final:
+				+ Perf: accumulate points from first pass in vector for 2nd pass
+				+ Cleanup TODOs
+				+ Run in Debug
+				+ Check perf on old Dell
+			+ changelist
+			+ Merge
+		+ Second look at DKUZ's bug
+			+ Was there in 1.16.2 as well
+			+ Repro's with float uniform, clamped between 0.0 and 1.0
+			+ Ensure that it's due to negative values in fragment shader when vertex shader always has positive
+				+ Test shader: remove fix; clamp at vertex
+				+ Quantize at fragment when negative
+			+ See if it only happens with Line primitives (i.e. that it doesn't happen with Triangle primitives)
+				+ It doesn't happen with Triangle primitives
+			+ Use #define's for turning on/off clamping - and for temperature
+				+ ship_texture.glslinc:
+					+ vec3: 6.83/6.81
+					+ 3 floats: 6.84/6.84
+				+ pre-perf: [vec3]: 5.39ms @20ms
+				+ do
+					+ ShaderManager: extract uniforms and vertex attributes from OpenGL APIs, not from parsing
+						+ Actually, reduce extraction of things via parsing to nil, if there's anything else
+					+ Nuke old shaders
+					+ Check StressedSprings
+					+ Fix ShaderManager unit tests
+				+ post-perf: 5.22
+		+ Waves:
+			+ See Base III
+			+ Try to smoothen peaks with avg=5
+			+ Test perf with Base III (many frontiers) with and without displacement
+				+ With: ApplyWorldForces=2.73%
+				+ Without: 2.38%
+			+ See maximum adjust
+			+ Test all ships
+				+ Add offsets where needed
+		+ Adjust terrain lock
+			+ Help
+				+ Also add Rot, etc.
+		+ Incandescence layer (*)
+		+ Default settings: 
+			X Flatten waves?
+			+ Lower speed of (sin) ocean waves - now that we run faster
+
+
+		+ Send for testing
+		+ Send for localization
+			+ Give GitHub diff for Help: https://github.com/GabrieleGiuseppini/Floating-Sandbox/commit/9ef5e00d5d1a35d63eea6ce757000951e043dd80?branch=9ef5e00d5d1a35d63eea6ce757000951e043dd80&diff=split
+		+ Bump up version
+		+ Fix Pac0master's bug
+		+ Bump up version
+		+ Fix bug 2
+			+ Test on both cards
+		+ Bump up version
+		+ Localization
+			+ IT
+				+ strings
+				+ help.html
+			+ ES
+				+ strings
+					+ Fix "Sets wind speed to zero"
+				+ help.html
+			+ RU
+				+ strings
+					+ Fix "Sets wind speed to zero"
+				+ help.html
+		+ Timcan bug with engine sound goin' off
+			+ "yeah just select a ship with an engine, it will start the engine sound and after 15-20 seconds the sound will cut off"
+		+ Bump up version
+		+ Release
+			+ REMEMBER: remove debug logging for Mac, see above
+			+ Branch is merged into master (if applicable)
+			+ MSI variables
+			+ Commit & push
+			+ 64-bit MSI
+				+ Cleanup Install
+				+ Build Install
+				+ Make MSI
+				+ Rename MSI
+				+ Test upgrade from previous version
+			+ 32-bit MSI
+				+ Cleanup Install
+				+ Build Install
+				+ Make MSI
+				+ Rename MSI
+				+ Test clean install
+			+ Get both installers tested:
+				+ Dev server
+				+ John Smith: 64
+				+ Fernando: 32
+				+ LucaAlex: 64
+				+ MMorin: 64
+				+ Old dell: 32
 			+ Cut tag on github
 			+ Upload packages to GameJolt
 				+ Report file as safe (https://gamejolt.com/privacy)
