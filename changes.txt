@@ -1,3 +1,7 @@
+1.16.4
+- Revisited physics of explosions
+	- ...and added yet another setting to adjust the power of bomb blasts
+
 1.16.3
 - Implemented coupling of physical bodies with water surface (finally! Been wanting to do this for years...)
 	- Water is now affected by ships and other actions occurring close to the surface
