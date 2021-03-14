@@ -327,14 +327,6 @@ private:
         vec2f const & centerPosition,
         float strength);
 
-    void ApplyBlastForceField(
-        vec2f const & centerPosition,
-        float blastRadius,
-        float strength,
-        bool doDetachPoint,
-        float currentSimulationTime,
-        GameParameters const & gameParameters);
-
     void ApplyRadialSpaceWarpForceField(
         vec2f const & centerPosition,
         float radius,
