@@ -708,13 +708,13 @@ Render:
 				+ Make MSI
 				+ Rename MSI
 				+ Test clean install
-			= Get both installers tested on dev server
-				- Dev server
-				- John Smith: 64
-				- Fernando: 32
-				- LucaAlex: 64
-				- MMorin: 64
-			- Wait for test results
+			= Get both installers tested:
+				+ Dev server
+				+ John Smith: 64
+				+ Fernando: 32
+				+ LucaAlex: 64
+				+ MMorin: 64
+				- Old dell: 32
 			- Cut tag on github
 			- Upload packages to GameJolt
 				- Report file as safe (https://gamejolt.com/privacy)
@@ -742,19 +742,27 @@ Render:
 			+ RenderSetting: DrawExplosions, exactly like DrawFlames
 				+ Rendering
 				+ SettingsDialog, @ "Advanced Settings"
-			- Ship::ExplosionStateMachine:
-				- Factor that calcs blastProgress from CurrentProgress: 3.0 -> 4.0
-			- GameParams: bomb blast radius ~= 6
-			- Ship::ForceFields:
-				- Good force: 
+			= Ship::ExplosionStateMachine:
+				+ Factor that calcs blastProgress from CurrentProgress: 3.0 -> 4.0
+			= GameParams: bomb blast radius ~= 6
+			= Ship::ForceFields:
+				+ Good force: 
 					mPoints.GetNonSpringForce(pointIndex) +=
 							pointRadius.normalise(std::sqrt(squarePointDistance))
 							/ std::max(std::sqrt(squarePointDistance), 1.0f)
 							* strength
 							* 40000.0f // Magic number
 							;
+			= Test with blast force on _all_ particles - not only just the ship ones
+				- See on bubbles, debris
 			- Heat: lower heat at higher distances from center
-			- Test Ultra-Violent mode
+				- Then see if it might make more sense to nuke ApplyBastForceField and put its code directly in explosion state machine
+			- Tests:
+				- 3 Bombs
+				- Explosive combustion
+				- Blimp
+				- All: also with Ultra-Violent mode
+				- Bomb blast radius min/max
 			- changelist
 
 		= MAC:
