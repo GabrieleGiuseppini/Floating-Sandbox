@@ -444,7 +444,7 @@ void Ship::SawThrough(
 
     vec2f const adjustedStartPos = isFirstSegment
         ? startPos
-        : (startPos - (endPos - startPos).normalise() * 1.0f);
+        : (startPos - (endPos - startPos).normalise() * 0.25f);
 
     unsigned int metalsSawed = 0;
     unsigned int nonMetalsSawed = 0;
