@@ -311,10 +311,11 @@ Render:
 		- bishobe64 as tester
 			- Invite
 
-		- Cut tool
-			- See issue
-				- Try 0.5 instead of 1.0
-				- If not: return last cut spring index, used by next step to calc offset and do last->start + start->end
+		= Cut tool
+			= See issue
+				= Try 0.25 instead of 1.0
+				- Find balance between straight lines and single-cut
+					- See if depends on zoom
 			- Do "SHIFT lock"
 				- Does it actually make sense, if we can't fix the issue with ship moving?
 
