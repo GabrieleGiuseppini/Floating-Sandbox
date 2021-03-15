@@ -276,8 +276,7 @@ Render:
 			+ Opposite assert at Gadgets::Update
 			+ Each gadget must detach itself when expiring from state machine
 			+ Test with vectors after bomb explosion (and thus disappearance)
-
-		= Rework explosion dynamics: they are too inconsistent at this moment
+		+ Rework explosion dynamics: they are too inconsistent at this moment
 			+ RenderSetting: DrawExplosions, exactly like DrawFlames
 				+ Rendering
 				+ SettingsDialog, @ "Advanced Settings"
@@ -305,7 +304,20 @@ Render:
 				+ All: also with Ultra-Violent mode
 				+ Bomb blast radius min/max
 			+ changelist
-			- Send to Pac0 & John Smith
+			+ Send to Pac0 & John Smith
+			X Try with scaling up forces with masses
+			X See if need heat blast to be larger, in order to catch fire on the rim
+
+		- bishobe64 as tester
+			- Invite
+
+		- Cut tool
+			- See issue
+				- Try 0.5 instead of 1.0
+				- If not: return last cut spring index, used by next step to calc offset and do last->start + start->end
+			- Do "SHIFT lock"
+				- Does it actually make sense, if we can't fix the issue with ship moving?
+
 
 		= MAC:
 			= Full high-DPI path:
@@ -367,18 +379,19 @@ Render:
 				- wxWidgets so's
 					- See if may statically link	
 					
-		- Do "SHIFT lock" also for Cut tool
-
 		- Whole OceanSurface: use FixedSizeBuffer's instead of std::unique_ptr<float[]>'s
 			- Perf measurements:
 				- Before
 				- After
 
-		- Music:
-			- James horners soundtrack "death of titanic" and "building panic" may make the game greater
-
 		- New rain: https://www.shadertoy.com/view/tttyDB
 			- Test perf drop on Dell
+
+		- New tool 1: TODOHERE
+		- New tool 2: TODOHERE (*)
+
+		- Music:
+			- James horners soundtrack "death of titanic" and "building panic" may make the game greater
 		
 		- Cached quantities (*)
 
@@ -418,6 +431,7 @@ Render:
 				- After:
 
 		- Send for testing
+			- bishobe64 in Credits?
 	
 		- New ships
 			- changelist
@@ -582,7 +596,9 @@ Render:
 		- Make MSI
 		- Rename MSI
 		- Test clean install
-	- Get both installers tested on dev server
+	- Get both installers tested:
+		- dev server
+		- bishobe644
 	- Wait for test results
 	- Cut tag on github
 	- Upload packages to GameJolt
