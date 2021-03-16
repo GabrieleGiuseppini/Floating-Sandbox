@@ -307,6 +307,12 @@ Render:
 			+ Send to Pac0 & John Smith
 			X Try with scaling up forces with masses
 			X See if need heat blast to be larger, in order to catch fire on the rim
+		+ Whole OceanSurface: use FixedSizeBuffer's instead of std::unique_ptr<float[]>'s
+			+ Perf measurements:
+				+ Before: UPD=4.89/4.90
+				+ After: same
+			+ Run in DEBUG
+			+ Check assembly
 
 
 		= MAC:
@@ -376,13 +382,6 @@ Render:
 			+ See issue
 				+ Try 0.25 instead of 1.0
 			- Do "SHIFT lock"
-
-		= Whole OceanSurface: use FixedSizeBuffer's instead of std::unique_ptr<float[]>'s
-			+ Perf measurements:
-				+ Before: UPD=4.89/4.90
-				+ After: same
-			+ Run in DEBUG
-			- Check assembly
 
 		- New rain: https://www.shadertoy.com/view/tttyDB
 			- Test perf drop on Dell
