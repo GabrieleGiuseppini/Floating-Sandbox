@@ -24,7 +24,6 @@ OceanSurface::OceanSurface(
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
     : mParentWorld(parentWorld)
     , mGameEventHandler(std::move(gameEventDispatcher))
-    , mSamples(new Sample[SamplesCount + 1]) // One extra sample for the rightmost X
     ////////
     , mBasalWaveAmplitude1(0.0f)
     , mBasalWaveAmplitude2(0.0f)
@@ -43,8 +42,9 @@ OceanSurface::OceanSurface(
     , mTsunamiRate(std::chrono::minutes::max())
     , mRogueWaveRate(std::chrono::minutes::max())
     ////////
-    , mHeightField(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
-    , mVelocityField(new float[SWETotalSamples + 1]) // One extra cell just to ease interpolations
+    , mSamples()
+    , mHeightField()
+    , mVelocityField()
     , mDeltaHeightBuffer()
     ////////
     , mSWEInteractiveWaveStateMachine()
@@ -53,6 +53,8 @@ OceanSurface::OceanSurface(
     , mLastTsunamiTimestamp(GameWallClock::GetInstance().Now())
     , mLastRogueWaveTimestamp(GameWallClock::GetInstance().Now())
 {
+    mSamples.fill({ 0.0f, 0.0f });
+
     //
     // Initialize SWE layer
     // - Initialize *all* values - including extra unused sample
@@ -60,8 +62,8 @@ OceanSurface::OceanSurface(
 
     for (size_t i = 0; i <= SWETotalSamples; ++i)
     {
-        mHeightField[i] = SWEHeightFieldOffset;
-        mVelocityField[i] = 0.0f;
+        mHeightField.emplace_back(SWEHeightFieldOffset);
+        mVelocityField.emplace_back(0.0f);
     }
 
     mDeltaHeightBuffer.fill(0.0f);
@@ -801,7 +803,7 @@ void OceanSurface::UpdateFields()
     //
 
     float const * restrict const deltaHeightBuffer = mDeltaHeightBuffer.data() + (DeltaHeightSmoothing / 2);
-    float * restrict const heightFieldBuffer = mHeightField.get() + SWEOuterLayerSamples;
+    float * restrict const heightFieldBuffer = mHeightField.data() + SWEOuterLayerSamples;
 
     for (size_t i = 0; i <= SamplesCount; ++i)
     {

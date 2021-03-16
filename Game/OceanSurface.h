@@ -14,7 +14,6 @@
 #include <GameCore/RunningAverage.h>
 #include <GameCore/StrongTypeDef.h>
 
-#include <memory>
 #include <optional>
 
 namespace Physics
@@ -165,16 +164,6 @@ private:
     World & mParentWorld;
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
-    // What we store for each sample
-    struct Sample
-    {
-        float SampleValue; // Value of this sample
-        float SampleValuePlusOneMinusSampleValue; // Delta between next sample and this sample
-    };
-
-    // The samples (plus 1 to account for x==MaxWorldWidth)
-    std::unique_ptr<Sample[]> mSamples;
-
     // Smoothing of wind incisiveness
     RunningAverage<15> mWindIncisivenessRunningAverage;
 
@@ -250,16 +239,30 @@ private:
     std::chrono::minutes mRogueWaveRate;
 
     //
+    // Buffers
+    //
+
+    // What we store for each sample
+    struct Sample
+    {
+        float SampleValue; // Value of this sample
+        float SampleValuePlusOneMinusSampleValue; // Delta between next sample and this sample
+    };
+
+    // The samples (plus 1 to account for x==MaxWorldWidth)
+    FixedSizeVector<Sample, SamplesCount + 1> mSamples; // One extra sample for the rightmost X
+
+    //
     // SWE buffers
     //
 
     // Height field
     // - Height values are at the center of the staggered grid cells
-    std::unique_ptr<float[]> mHeightField;
+    FixedSizeVector<float, SWETotalSamples + 1> mHeightField; // One extra cell just to ease interpolations
 
     // Velocity field
     // - Velocity values are at the edges of the staggered grid cells
-    std::unique_ptr<float[]> mVelocityField;
+    FixedSizeVector<float, SWETotalSamples + 1> mVelocityField; // One extra cell just to ease interpolations
 
     // Delta height buffer
     // - Contains interactive surface height delta's that are taken into account during update step
