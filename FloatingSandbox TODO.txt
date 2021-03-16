@@ -378,10 +378,11 @@ Render:
 			- Do "SHIFT lock"
 
 		= Whole OceanSurface: use FixedSizeBuffer's instead of std::unique_ptr<float[]>'s
-			= Perf measurements:
+			+ Perf measurements:
 				+ Before: UPD=4.89/4.90
 				+ After: same
-			- Run in DEBUG
+			+ Run in DEBUG
+			- Check assembly
 
 		- New rain: https://www.shadertoy.com/view/tttyDB
 			- Test perf drop on Dell

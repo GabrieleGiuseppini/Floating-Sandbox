@@ -839,20 +839,23 @@ void OceanSurface::UpdateFields()
     float constexpr FactorH = GameParameters::SimulationStepTimeDuration<float> / Dx;
     float constexpr FactorV = FactorH * GameParameters::GravityMagnitude;
 
-    mHeightField[0] -=
-        mHeightField[0]
-        * (mVelocityField[0 + 1] - mVelocityField[0])
+    float * const restrict heightField = mHeightField.data();
+    float * const restrict velocityField = mVelocityField.data();
+
+    heightField[0] -=
+        heightField[0]
+        * (velocityField[0 + 1] - velocityField[0])
         * FactorH;
 
-    for (size_t i = 1; i < SWETotalSamples; ++i)
+    for (size_t i = 1; i < SWETotalSamples; ++i) // Vectorized by VS2019 as of this commit
     {
-        mHeightField[i] -=
-            mHeightField[i]
-            * (mVelocityField[i + 1] - mVelocityField[i])
+        heightField[i] -=
+            heightField[i]
+            * (velocityField[i + 1] - velocityField[i])
             * FactorH;
 
-        mVelocityField[i] +=
-            (mHeightField[i - 1] - mHeightField[i])
+        velocityField[i] +=
+            (heightField[i - 1] - heightField[i])
             * FactorV;
     }
 
