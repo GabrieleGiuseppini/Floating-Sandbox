@@ -875,18 +875,7 @@ public:
     {
         if (inputState.IsLeftMouseDown)
         {
-            // Initialize state
-            mPreviousMousePos = inputState.MousePosition;
-            mIsFirstSegment = true;
-            mIsUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
-
-            // Start sound
-            mSoundController->PlaySawSound(mIsUnderwater);
-        }
-        else
-        {
-            // Reset state
-            mPreviousMousePos = std::nullopt;
+            InitializeDown(inputState);
         }
 
         // Set cursor
@@ -895,7 +884,7 @@ public:
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
     {
-        // Stop sound
+        // Stop sound if we're playing
         mSoundController->StopSawSound();
     }
 
@@ -903,6 +892,9 @@ public:
     {
         if (inputState.IsLeftMouseDown)
         {
+            // State is initialized
+            assert(mPreviousMousePos.has_value());
+
             // Update underwater-ness of sound
             bool isUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
             if (isUnderwater != mIsUnderwater)
@@ -924,31 +916,41 @@ public:
     {
         if (inputState.IsLeftMouseDown)
         {
-            if (mPreviousMousePos.has_value())
-            {
-                mGameController->SawThrough(
-                    *mPreviousMousePos,
-                    inputState.MousePosition,
-                    mIsFirstSegment);
+            // State is initialized
+            assert(mPreviousMousePos.has_value());
 
-                // Not anymore the first segment
-                mIsFirstSegment = false;
+            // Calculate target position depending on whether we're locked or not
+            auto const targetPosition = CalculateTargetPosition(inputState);
+
+            // Saw
+            mGameController->SawThrough(
+                *mPreviousMousePos,
+                targetPosition,
+                mIsFirstSegment);
+
+            // Not anymore the first segment
+            mIsFirstSegment = false;
+
+            // Check whether we still need to lock a direction
+            if (inputState.IsShiftKeyDown
+                && !mCurrentLockedDirection.has_value())
+            {
+                auto const lastDirection = (targetPosition.ToFloat() - mPreviousMousePos->ToFloat());
+                auto const lastDirectionLength = lastDirection.length();
+                if (lastDirectionLength >= 1.5f)
+                {
+                    mCurrentLockedDirection = lastDirection.normalise(lastDirectionLength);
+                }
             }
 
             // Remember the next previous mouse position
-            mPreviousMousePos = inputState.MousePosition;
+            mPreviousMousePos = targetPosition;
         }
     }
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
-        // Initialize state
-        mPreviousMousePos = inputState.MousePosition;
-        mIsFirstSegment = true;
-        mIsUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
-
-        // Start sound
-        mSoundController->PlaySawSound(mGameController->IsUnderwater(inputState.MousePosition));
+        InitializeDown(inputState);
 
         // Set cursor
         SetCurrentCursor(inputState);
@@ -956,9 +958,6 @@ public:
 
     virtual void OnLeftMouseUp(InputState const & inputState) override
     {
-        // Reset state
-        mPreviousMousePos = std::nullopt;
-
         // Stop sound
         mSoundController->StopSawSound();
 
@@ -970,6 +969,37 @@ public:
     virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
 private:
+
+    void InitializeDown(InputState const & inputState)
+    {
+        // Initialize state
+        mPreviousMousePos = inputState.MousePosition;
+        mCurrentLockedDirection.reset();
+        mIsFirstSegment = true;
+        mIsUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
+
+        // Start sound
+        mSoundController->PlaySawSound(mIsUnderwater);
+    }
+
+    LogicalPixelCoordinates CalculateTargetPosition(InputState const & inputState) const
+    {
+        if (mCurrentLockedDirection.has_value())
+        {
+            assert(mPreviousMousePos.has_value());
+
+            auto const sourcePosition = mPreviousMousePos->ToFloat();
+            auto const targetPosition =
+                sourcePosition
+                + *mCurrentLockedDirection * (inputState.MousePosition.ToFloat() - sourcePosition).dot(*mCurrentLockedDirection);
+
+            return LogicalPixelCoordinates::FromFloat(targetPosition);
+        }
+        else
+        {
+            return inputState.MousePosition;
+        }
+    }
 
     void SetCurrentCursor(InputState const & inputState)
     {
@@ -996,6 +1026,9 @@ private:
 
     // The previous mouse position; when set, we have a segment and can saw
     std::optional<LogicalPixelCoordinates> mPreviousMousePos;
+
+    // The current locked direction, in case locking is activated
+    std::optional<vec2f> mCurrentLockedDirection;
 
     // True when this is the first mouse move of a series
     bool mIsFirstSegment;
