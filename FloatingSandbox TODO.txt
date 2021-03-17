@@ -313,6 +313,10 @@ Render:
 				+ After: same
 			+ Run in DEBUG
 			+ Check assembly
+		+ Cut tool
+			+ See issue
+				+ Try 0.25 instead of 1.0
+			+ Do "SHIFT lock"
 
 
 		= MAC:
@@ -377,11 +381,6 @@ Render:
 					
 		- bishobe64 as tester
 			- Invite
-
-		= Cut tool
-			+ See issue
-				+ Try 0.25 instead of 1.0
-			- Do "SHIFT lock"
 
 		- New rain: https://www.shadertoy.com/view/tttyDB
 			- Test perf drop on Dell
