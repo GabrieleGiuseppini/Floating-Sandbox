@@ -372,6 +372,22 @@ bool World::ExtinguishFireAt(
     return atLeastOneShipApplied;
 }
 
+void World::ApplyBlastAt(
+    vec2f const & targetPos,
+    float radius,
+    float forceMultiplier,
+    GameParameters const & gameParameters)
+{
+    for (auto & ship : mAllShips)
+    {
+        ship->ApplyBlastAt(
+            targetPos,
+            radius,
+            forceMultiplier,
+            gameParameters);
+    }
+}
+
 void World::DrawTo(
     vec2f const & targetPos,
     float strengthFraction,

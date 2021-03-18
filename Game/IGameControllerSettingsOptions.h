@@ -226,6 +226,12 @@ struct IGameControllerSettingsOptions
     virtual float GetMinFloodQuantity() const = 0;
     virtual float GetMaxFloodQuantity() const = 0;
 
+    virtual float GetMinBlastToolRadius() const = 0;
+    virtual float GetMaxBlastToolRadius() const = 0;
+
+    virtual float GetMinBlastToolForceAdjustment() const = 0;
+    virtual float GetMaxBlastToolForceAdjustment() const = 0;
+
     virtual float GetMinScrubRotRadius() const = 0;
     virtual float GetMaxScrubRotRadius() const = 0;
 

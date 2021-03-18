@@ -59,7 +59,7 @@ public:
         }
     }
 
-    void UpdateSimulation()
+    void UpdateSimulation(float currentSimulationTime)
     {
         // See if cursor brightness has changed
         float const newCurrentToolCursorBrightness = CalculateCursorBrightness(mGameController->GetEffectiveAmbientLightIntensity());
@@ -72,7 +72,7 @@ public:
         // Update tools
         if (nullptr != mCurrentTool)
         {
-            mCurrentTool->UpdateSimulation(mInputState);
+            mCurrentTool->UpdateSimulation(mInputState, currentSimulationTime);
         }
     }
 

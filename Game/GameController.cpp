@@ -857,6 +857,35 @@ bool GameController::ExtinguishFireAt(LogicalPixelCoordinates const & screenCoor
     return isApplied;
 }
 
+void GameController::ApplyBlastAt(
+    LogicalPixelCoordinates const & screenCoordinates,
+    float radiusMultiplier,
+    float forceMultiplier)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Calculate radius
+    float const radius =
+        mGameParameters.BlastToolRadius
+        * forceMultiplier
+        * (mGameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->ApplyBlastAt(
+        worldCoordinates,
+        radius,
+        forceMultiplier,
+        mGameParameters);
+
+    // Draw notification (one frame only)
+    /* TODOHERE
+    mNotificationLayer.SetBlast(
+        worldCoordinates,
+        radius);
+    */
+}
+
 void GameController::DrawTo(
     LogicalPixelCoordinates const & screenCoordinates,
     float strengthFraction)

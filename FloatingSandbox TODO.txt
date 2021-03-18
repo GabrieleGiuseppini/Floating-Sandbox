@@ -382,21 +382,42 @@ Render:
 		- bishobe64 as tester
 			- Invite
 
-		- New rain: https://www.shadertoy.com/view/tttyDB
-			- Test perf drop on Dell
-
-		- New tool 1: Blast
-			- Spec:
+		= New tool 1: Blast
+			! Spec:
 				- Same force field as Explosion state machine
-				- - Hitting SHIFT makes it faster and stronger
-			- Impl:
-				- TODOHERE
+				- Hitting SHIFT makes it faster and stronger
+			= Impl:
+				= Cursor
+					= See why empty cursor is all black
+				= Tool:
+					- When hitting:
+						+ Cursor disappears
+						- Sound starts (depending on SHIFT)
+						- Tool's state machine starts
+							- Speed and strength depend on SHIFT
+							- Shader follows progress
+								- See HeatBlaster implementation for link between IGameController::TODOBlast and NotificationLayer->Context
+						- End of blast doesn't change anything - only mouseup does
+							+ ...and at mouseup, cursor reappears
+				= Physics
+				- Shader: 
+					- Option 1: different blending: whiteish overlay expanding, thicker on rim
+				= Sounds:
+					= Sounds normal
+					= Sound faster
+				- SettingsDialog:
+					- BlastToolRadius
+					- BlastToolForceAdjustment
+				- Finalize maxima of all settings, & ultra-violent mode
 		- New tool 2: Punch
 			- Spec:
 				- Works only on frontier from outside->in
 					- Might want to try, at end, also from inside->out
 			- Impl:
 				- TODOHERE
+
+		- New rain: https://www.shadertoy.com/view/tttyDB
+			- Test perf drop on Dell
 
 		- Music:
 			- James horners soundtrack "death of titanic" and "building panic" may make the game greater

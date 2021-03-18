@@ -15,7 +15,7 @@
 // Continuous Tool
 /////////////////////////////////////////////////////////////////////////
 
-void ContinuousTool::UpdateSimulation(InputState const & inputState)
+void ContinuousTool::UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/)
 {
     // We apply the tool only if the left mouse button is down
     if (inputState.IsLeftMouseDown)
@@ -594,5 +594,25 @@ PhysicsProbeTool::PhysicsProbeTool(
         std::move(gameController),
         std::move(soundController))
     , mCursorImage(WxHelpers::LoadCursorImage("physics_probe_cursor", 0, 19, resourceLocator))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
+// BlastTool
+////////////////////////////////////////////////////////////////////////
+
+BlastTool::BlastTool(
+    IToolCursorManager & toolCursorManager,
+    std::shared_ptr<IGameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLocator & resourceLocator)
+    : Tool(
+        ToolType::BlastTool,
+        toolCursorManager,
+        std::move(gameController),
+        std::move(soundController))
+    , mEngagementData()
+    , mUpCursorImage(WxHelpers::LoadCursorImage("blast_cursor_up", 15, 15, resourceLocator))
+    , mDownCursorImage(WxHelpers::LoadCursorImage("empty_cursor", 15, 15, resourceLocator))
 {
 }

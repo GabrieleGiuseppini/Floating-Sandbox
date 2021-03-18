@@ -107,6 +107,9 @@ enum class SoundType : uint32_t
     WaveMaker,
     FishScream,
     FishShaker,
+    BlastToolSlow1,
+    BlastToolSlow2,
+    BlastToolFast,
 
     // UI
     Error

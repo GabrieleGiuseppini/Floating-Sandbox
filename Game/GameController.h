@@ -178,6 +178,7 @@ public:
     void SawThrough(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates, bool isFirstSegment) override;
     bool ApplyHeatBlasterAt(LogicalPixelCoordinates const & screenCoordinates, HeatBlasterActionType action) override;
     bool ExtinguishFireAt(LogicalPixelCoordinates const & screenCoordinates) override;
+    void ApplyBlastAt(LogicalPixelCoordinates const & screenCoordinates, float radiusMultiplier, float forceMultiplier) override;
     void DrawTo(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) override;
     void SwirlAt(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) override;
     void TogglePinAt(LogicalPixelCoordinates const & screenCoordinates) override;
@@ -583,6 +584,16 @@ public:
     void SetFloodQuantity(float value) override { mGameParameters.FloodQuantity = value; }
     float GetMinFloodQuantity() const override { return GameParameters::MinFloodQuantity; }
     float GetMaxFloodQuantity() const override { return GameParameters::MaxFloodQuantity; }
+
+    float GetBlastToolRadius() const override { return mGameParameters.BlastToolRadius; }
+    void SetBlastToolRadius(float value) override { mGameParameters.BlastToolRadius = value; }
+    float GetMinBlastToolRadius() const override { return GameParameters::MinBlastToolRadius; }
+    float GetMaxBlastToolRadius() const override { return GameParameters::MaxBlastToolRadius; }
+
+    float GetBlastToolForceAdjustment() const override { return mGameParameters.BlastToolForceAdjustment; }
+    void SetBlastToolForceAdjustment(float value) override { mGameParameters.BlastToolForceAdjustment = value; }
+    float GetMinBlastToolForceAdjustment() const override { return GameParameters::MinBlastToolForceAdjustment; }
+    float GetMaxBlastToolForceAdjustment() const override { return GameParameters::MaxBlastToolForceAdjustment; }
 
     float GetScrubRotRadius() const override { return mGameParameters.ScrubRotRadius; }
     void SetScrubRotRadius(float value) override { mGameParameters.ScrubRotRadius = value; }

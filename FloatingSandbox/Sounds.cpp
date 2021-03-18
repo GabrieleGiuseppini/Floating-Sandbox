@@ -165,6 +165,12 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::FishScream;
     else if (Utils::CaseInsensitiveEquals(str, "FishShaker"))
         return SoundType::FishShaker;
+    else if (Utils::CaseInsensitiveEquals(str, "BlastToolSlow1"))
+        return SoundType::BlastToolSlow1;
+    else if (Utils::CaseInsensitiveEquals(str, "BlastToolSlow2"))
+        return SoundType::BlastToolSlow2;
+    else if (Utils::CaseInsensitiveEquals(str, "BlastToolFast"))
+        return SoundType::BlastToolFast;
     else if (Utils::CaseInsensitiveEquals(str, "Error"))
         return SoundType::Error;
     else

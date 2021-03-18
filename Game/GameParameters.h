@@ -490,6 +490,14 @@ struct GameParameters
 
     float FireExtinguisherRadius;
 
+    float BlastToolRadius;
+    static float constexpr MinBlastToolRadius = 0.1f;
+    static float constexpr MaxBlastToolRadius = 15.0f;
+
+    float BlastToolForceAdjustment;
+    static float constexpr MinBlastToolForceAdjustment = 0.1f;
+    static float constexpr MaxBlastToolForceAdjustment = 10.0f;
+
     float ScrubRotRadius;
     static float constexpr MinScrubRotRadius = 1.0f;
     static float constexpr MaxScrubRotRadius = 20.0f;
