@@ -612,7 +612,8 @@ BlastTool::BlastTool(
         std::move(gameController),
         std::move(soundController))
     , mEngagementData()
-    , mUpCursorImage(WxHelpers::LoadCursorImage("blast_cursor_up", 15, 15, resourceLocator))
+    , mUpCursorImage1(WxHelpers::LoadCursorImage("blast_cursor_up_1", 15, 15, resourceLocator))
+    , mUpCursorImage2(WxHelpers::LoadCursorImage("blast_cursor_up_2", 15, 15, resourceLocator))
     , mDownCursorImage(WxHelpers::LoadCursorImage("empty_cursor", 15, 15, resourceLocator))
 {
 }

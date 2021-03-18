@@ -387,20 +387,20 @@ Render:
 				- Same force field as Explosion state machine
 				- Hitting SHIFT makes it faster and stronger
 			= Impl:
-				= Cursor
-					= See why empty cursor is all black
+				+ Cursor
+					+ Cursor 1 and cursor 2
 				= Tool:
-					- When hitting:
+					+ When hitting:
 						+ Cursor disappears
-						- Sound starts (depending on SHIFT)
-						- Tool's state machine starts
-							- Speed and strength depend on SHIFT
-							- Shader follows progress
-								- See HeatBlaster implementation for link between IGameController::TODOBlast and NotificationLayer->Context
-						- End of blast doesn't change anything - only mouseup does
+						+ Sound starts (depending on SHIFT)
+						+ Tool's state machine starts
+							+ Speed and strength depend on SHIFT
+						+ End of blast doesn't change anything - only mouseup does
 							+ ...and at mouseup, cursor reappears
-				= Physics
+				+ Physics
 				- Shader: 
+					- Shader follows progress
+						- See HeatBlaster implementation for link between IGameController::TODOBlast and NotificationLayer->Context
 					- Option 1: different blending: whiteish overlay expanding, thicker on rim
 				= Sounds:
 					= Sounds normal

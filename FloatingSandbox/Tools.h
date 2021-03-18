@@ -2608,11 +2608,11 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & /*inputState*/) override
+    virtual void Initialize(InputState const & inputState) override
     {
         mEngagementData.reset();
 
-        SetCurrentCursor();
+        SetCurrentCursor(inputState.IsShiftKeyDown);
     }
 
     virtual void Deinitialize(InputState const & /*inputState*/) override {}
@@ -2637,7 +2637,7 @@ public:
             else
                 mSoundController->PlayBlastToolSlow1Sound();
 
-            SetCurrentCursor();
+            SetCurrentCursor(isBoosted);
         }
 
         if (mEngagementData.has_value() && !mEngagementData->IsCompleted)
@@ -2675,6 +2675,7 @@ public:
                 }
                 else
                 {
+                    // TODO: have phase in engagement and detect entrance in this phase to emit sound
                     float const progress = std::min((elapsed - (BlastDuration1 + BlastDurationPause)) / BlastDuration2, 1.0f);
 
                     mGameController->ApplyBlastAt(
@@ -2714,7 +2715,7 @@ public:
     virtual void OnMouseMove(InputState const & /*inputState*/) override {}
     virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override
+    virtual void OnLeftMouseUp(InputState const & inputState) override
     {
         //
         // Restore to normal
@@ -2722,15 +2723,22 @@ public:
 
         mEngagementData.reset();
 
-        SetCurrentCursor();
+        SetCurrentCursor(inputState.IsShiftKeyDown);
     }
 
-    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyDown(InputState const & inputState) override
+    {
+        SetCurrentCursor(inputState.IsShiftKeyDown);
+    }
+
+    virtual void OnShiftKeyUp(InputState const & inputState) override
+    {
+        SetCurrentCursor(inputState.IsShiftKeyDown);
+    }
 
 private:
 
-    void SetCurrentCursor()
+    void SetCurrentCursor(bool isShiftKey)
     {
         if (mEngagementData.has_value())
         {
@@ -2738,7 +2746,10 @@ private:
         }
         else
         {
-            mToolCursorManager.SetToolCursor(mUpCursorImage);
+            if (!isShiftKey)
+                mToolCursorManager.SetToolCursor(mUpCursorImage1);
+            else
+                mToolCursorManager.SetToolCursor(mUpCursorImage2);
         }
     }
 
@@ -2761,6 +2772,7 @@ private:
     std::optional<EngagementData> mEngagementData;
 
     // The cursors
-    wxImage const mUpCursorImage;
+    wxImage const mUpCursorImage1;
+    wxImage const mUpCursorImage2;
     wxImage const mDownCursorImage;
 };
