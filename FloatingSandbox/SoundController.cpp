@@ -464,6 +464,9 @@ SoundController::SoundController(
                 || soundType == SoundType::ThanosSnap
                 || soundType == SoundType::Scrub
                 || soundType == SoundType::Rot
+                || soundType == SoundType::BlastToolSlow1
+                || soundType == SoundType::BlastToolSlow2
+                || soundType == SoundType::BlastToolFast
                 || soundType == SoundType::InteractiveSwitchOn
                 || soundType == SoundType::InteractiveSwitchOff
                 || soundType == SoundType::ElectricalPanelClose
@@ -1180,6 +1183,30 @@ void SoundController::PlayFishFoodSound()
 void SoundController::StopFishFoodSound()
 {
     mFishFoodSound.Stop();
+}
+
+void SoundController::PlayBlastToolSlow1Sound()
+{
+    PlayOneShotMultipleChoiceSound(
+        SoundType::BlastToolSlow1,
+        100.0f,
+        true);
+}
+
+void SoundController::PlayBlastToolSlow2Sound()
+{
+    PlayOneShotMultipleChoiceSound(
+        SoundType::BlastToolSlow2,
+        100.0f,
+        true);
+}
+
+void SoundController::PlayBlastToolFastSound()
+{
+    PlayOneShotMultipleChoiceSound(
+        SoundType::BlastToolFast,
+        100.0f,
+        true);
 }
 
 void SoundController::PlaySnapshotSound()

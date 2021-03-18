@@ -51,7 +51,8 @@ enum class ToolType
     RepairStructure,
     ThanosSnap,
     ScareFish,
-    PhysicsProbe
+    PhysicsProbe,
+    BlastTool
 };
 
 struct InputState
@@ -86,7 +87,7 @@ public:
     virtual void Initialize(InputState const & inputState) = 0;
     virtual void Deinitialize(InputState const & inputState) = 0;
 
-    virtual void UpdateSimulation(InputState const & inputState) = 0;
+    virtual void UpdateSimulation(InputState const & inputState, float currentSimulationTime) = 0;
 
     virtual void OnMouseMove(InputState const & inputState) = 0;
     virtual void OnLeftMouseDown(InputState const & inputState) = 0;
@@ -127,7 +128,7 @@ public:
 
     virtual void Deinitialize(InputState const & /*inputState*/) override {}
 
-    virtual void UpdateSimulation(InputState const & /*inputState*/) override {}
+    virtual void UpdateSimulation(InputState const & /*inputState*/, float /*currentSimulationTime*/) override {}
 
     virtual void OnMouseMove(InputState const & /*inputState*/) override {}
     virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
@@ -169,7 +170,7 @@ public:
         mLastQuantizedCursorStrength.reset();
     }
 
-    virtual void UpdateSimulation(InputState const & inputState) override;
+    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override;
 
     virtual void OnMouseMove(InputState const & /*inputState*/) override {}
 
@@ -273,7 +274,7 @@ public:
         }
     }
 
-    virtual void UpdateSimulation(InputState const & /*inputState*/) override
+    virtual void UpdateSimulation(InputState const & /*inputState*/, float /*currentSimulationTime*/) override
     {
         if (mCurrentTrajectory.has_value())
         {
@@ -665,7 +666,7 @@ public:
     {
     }
 
-    virtual void UpdateSimulation(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         bool wasEngaged = !!mCurrentEngagementState;
 
@@ -888,7 +889,7 @@ public:
         mSoundController->StopSawSound();
     }
 
-    virtual void UpdateSimulation(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         if (inputState.IsLeftMouseDown)
         {
@@ -1074,7 +1075,7 @@ public:
         mSoundController->StopHeatBlasterSound();
     }
 
-    virtual void UpdateSimulation(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         bool isEngaged;
         HeatBlasterActionType currentAction = inputState.IsShiftKeyDown ? HeatBlasterActionType::Cool : HeatBlasterActionType::Heat;
@@ -1191,7 +1192,7 @@ public:
         mSoundController->StopFireExtinguisherSound();
     }
 
-    virtual void UpdateSimulation(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         bool isEngaged;
 
@@ -1535,7 +1536,7 @@ public:
         mSoundController->StopAirBubblesSound();
     }
 
-    virtual void UpdateSimulation(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         bool isEngaged;
         if (inputState.IsLeftMouseDown)
@@ -1622,7 +1623,7 @@ public:
         mSoundController->StopFloodHoseSound();
     }
 
-    virtual void UpdateSimulation(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         bool isEngaged;
         if (inputState.IsLeftMouseDown)
@@ -1932,7 +1933,7 @@ public:
     {
     }
 
-    virtual void UpdateSimulation(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         if (inputState.IsLeftMouseDown)
         {
@@ -2039,7 +2040,7 @@ public:
 
     virtual void Deinitialize(InputState const & /*inputState*/) override {}
 
-    virtual void UpdateSimulation(InputState const & /*inputState*/) override {}
+    virtual void UpdateSimulation(InputState const & /*inputState*/, float /*currentSimulationTime*/) override {}
 
     virtual void OnMouseMove(InputState const & inputState) override
     {
@@ -2200,7 +2201,7 @@ public:
         mSoundController->StopRepairStructureSound();
     }
 
-    virtual void UpdateSimulation(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         bool isEngaged;
         if (inputState.IsLeftMouseDown)
@@ -2387,7 +2388,7 @@ public:
         }
     }
 
-    virtual void UpdateSimulation(InputState const & inputState) override
+    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         // Calculate new state and eventually apply action
         bool newIsEngaged = inputState.IsLeftMouseDown;
@@ -2593,4 +2594,173 @@ public:
 private:
 
     wxImage const mCursorImage;
+};
+
+class BlastTool final : public Tool
+{
+public:
+
+    BlastTool(
+        IToolCursorManager & toolCursorManager,
+        std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLocator & resourceLocator);
+
+public:
+
+    virtual void Initialize(InputState const & /*inputState*/) override
+    {
+        mEngagementData.reset();
+
+        SetCurrentCursor();
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override {}
+
+    virtual void UpdateSimulation(InputState const & inputState, float currentSimulationTime) override
+    {
+        if (inputState.IsLeftMouseDown
+            && !mEngagementData.has_value())
+        {
+            //
+            // Start
+            //
+
+            bool const isBoosted = inputState.IsShiftKeyDown;
+
+            mEngagementData.emplace(
+                currentSimulationTime,
+                isBoosted);
+
+            if (isBoosted)
+                mSoundController->PlayBlastToolFastSound();
+            else
+                mSoundController->PlayBlastToolSlow1Sound();
+
+            SetCurrentCursor();
+        }
+
+        if (mEngagementData.has_value() && !mEngagementData->IsCompleted)
+        {
+            //
+            // Make progress
+            //
+
+            float const elapsed = currentSimulationTime - mEngagementData->StartSimulationTime;
+
+            assert(elapsed >= 0.0f);
+
+            if (!mEngagementData->IsBoosted)
+            {
+                //
+                // Normal
+                //
+
+                float constexpr BlastDuration1 = 1.5f;
+                float constexpr BlastDurationPause = 1.5f;
+                float constexpr BlastDuration2 = 0.5f;
+
+                if (elapsed <= BlastDuration1)
+                {
+                    float const progress = elapsed / BlastDuration1;
+
+                    mGameController->ApplyBlastAt(
+                        inputState.MousePosition,
+                        progress,
+                        1.0f + progress);
+                }
+                else if (elapsed < BlastDuration1 + BlastDurationPause)
+                {
+                    // Nop
+                }
+                else
+                {
+                    float const progress = std::min((elapsed - (BlastDuration1 + BlastDurationPause)) / BlastDuration2, 1.0f);
+
+                    mGameController->ApplyBlastAt(
+                        inputState.MousePosition,
+                        1.0f + progress * 1.5f,
+                        2.5f);
+
+                    if (progress == 1.0f)
+                    {
+                        mEngagementData->IsCompleted = true;
+                    }
+                }
+            }
+            else
+            {
+                //
+                // Boosted
+                //
+
+                float constexpr BoostedBlastDuration = 1.0f;
+
+                float const progress = std::min(elapsed / BoostedBlastDuration, 1.0f);
+
+                mGameController->ApplyBlastAt(
+                    inputState.MousePosition,
+                    progress * 1.5f,
+                    1.5f);
+
+                if (progress == 1.0f)
+                {
+                    mEngagementData->IsCompleted = true;
+                }
+            }
+        }
+    }
+
+    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override
+    {
+        //
+        // Restore to normal
+        //
+
+        mEngagementData.reset();
+
+        SetCurrentCursor();
+    }
+
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+private:
+
+    void SetCurrentCursor()
+    {
+        if (mEngagementData.has_value())
+        {
+            mToolCursorManager.SetToolCursor(mDownCursorImage);
+        }
+        else
+        {
+            mToolCursorManager.SetToolCursor(mUpCursorImage);
+        }
+    }
+
+    struct EngagementData
+    {
+        float StartSimulationTime;
+        bool IsBoosted;
+        bool IsCompleted;
+
+        EngagementData(
+            float startSimulationTime,
+            bool isBoosted)
+            : StartSimulationTime(startSimulationTime)
+            , IsBoosted(isBoosted)
+            , IsCompleted(false)
+        { }
+    };
+
+    // Our state
+    std::optional<EngagementData> mEngagementData;
+
+    // The cursors
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage;
 };

@@ -600,6 +600,45 @@ bool Ship::ExtinguishFireAt(
     return atLeastOnePointFound;
 }
 
+void Ship::ApplyBlastAt(
+    vec2f const & targetPos,
+    float radius,
+    float forceMultiplier,
+    GameParameters const & gameParameters)
+{
+    float const squareRadius = radius * radius;
+
+    // Calculate blast force magnitude
+    float const blastForceMagnitude =
+        70.0f * 50000.0f // Magic number
+        * forceMultiplier
+        * gameParameters.BlastToolForceAdjustment
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+    // Visit all points
+    for (auto pointIndex : mPoints)
+    {
+        vec2f const pointRadius = mPoints.GetPosition(pointIndex) - targetPos;
+        float const squarePointDistance = pointRadius.squareLength();
+        if (squarePointDistance < squareRadius)
+        {
+            float const pointRadiusLength = std::sqrt(squarePointDistance);
+
+            //
+            // Apply blast force
+            //
+            // (inversely proportional to distance,
+            // not second power as one would expect though)
+            //
+
+            mPoints.GetNonSpringForce(pointIndex) +=
+                pointRadius.normalise(pointRadiusLength)
+                / std::max(pointRadiusLength, 1.0f)
+                * blastForceMagnitude;
+        }
+    }
+}
+
 void Ship::DrawTo(
     vec2f const & targetPos,
     float strengthFraction,

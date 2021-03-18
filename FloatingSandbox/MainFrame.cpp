@@ -68,6 +68,7 @@ long const ID_SMASH_MENUITEM = wxNewId();
 long const ID_SLICE_MENUITEM = wxNewId();
 long const ID_HEAT_BLASTER_MENUITEM = wxNewId();
 long const ID_FIRE_EXTINGUISHER_MENUITEM = wxNewId();
+long const ID_BLAST_TOOL_MENUITEM = wxNewId();
 long const ID_GRAB_MENUITEM = wxNewId();
 long const ID_SWIRL_MENUITEM = wxNewId();
 long const ID_PIN_MENUITEM = wxNewId();
@@ -300,6 +301,10 @@ MainFrame::MainFrame(
     wxMenuItem * fireExtinguisherMenuItem = new wxMenuItem(mToolsMenu, ID_FIRE_EXTINGUISHER_MENUITEM, _("Fire Extinguisher") + wxS("\tX"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(fireExtinguisherMenuItem);
     Connect(ID_FIRE_EXTINGUISHER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFireExtinguisherMenuItemSelected);
+
+    wxMenuItem * blastToolMenuItem = new wxMenuItem(mToolsMenu, ID_BLAST_TOOL_MENUITEM, _("Blast Tool") + wxS("\t8"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(blastToolMenuItem);
+    Connect(ID_BLAST_TOOL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnBlastToolMenuItemSelected);
 
     wxMenuItem * grabMenuItem = new wxMenuItem(mToolsMenu, ID_GRAB_MENUITEM, _("Attract/Repel") + wxS("\tG"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(grabMenuItem);
@@ -1202,8 +1207,9 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
     try
     {
         // Update tool controller
+        assert(!!mGameController);
         assert(!!mToolController);
-        mToolController->UpdateSimulation();
+        mToolController->UpdateSimulation(mGameController->GetCurrentSimulationTime());
 
         // Update game - will also render
         ////LogMessage("TODOTEST: MainFrame::OnGameTimerTrigger: Running game iteration; IsSplashShown=",
@@ -1726,6 +1732,12 @@ void MainFrame::OnFireExtinguisherMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::FireExtinguisher);
+}
+
+void MainFrame::OnBlastToolMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::BlastTool);
 }
 
 void MainFrame::OnGrabMenuItemSelected(wxCommandEvent & /*event*/)

@@ -155,6 +155,10 @@ public:
     void PlayFishFoodSound();
     void StopFishFoodSound();
 
+    void PlayBlastToolSlow1Sound();
+    void PlayBlastToolSlow2Sound();
+    void PlayBlastToolFastSound();
+
     void PlaySnapshotSound();
 
     void PlayElectricalPanelOpenSound(bool isClose);
@@ -462,6 +466,10 @@ private:
             case SoundType::Snapshot:
             case SoundType::Error:
                 return 2;
+            case SoundType::BlastToolSlow1:
+            case SoundType::BlastToolSlow2:
+            case SoundType::BlastToolFast:
+                return 4;
             default:
                 return 15;
         }

@@ -225,6 +225,12 @@ public:
         float radius,
         GameParameters const & gameParameters);
 
+    void ApplyBlastAt(
+        vec2f const & targetPos,
+        float radius,
+        float forceMultiplier,
+        GameParameters const & gameParameters);
+
     void DrawTo(
         vec2f const & targetPos,
         float strengthFraction,

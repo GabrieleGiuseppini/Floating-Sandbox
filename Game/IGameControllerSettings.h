@@ -246,6 +246,12 @@ struct IGameControllerSettings
     virtual float GetFloodQuantity() const = 0;
     virtual void SetFloodQuantity(float value) = 0;
 
+    virtual float GetBlastToolRadius() const = 0;
+    virtual void SetBlastToolRadius(float value) = 0;
+
+    virtual float GetBlastToolForceAdjustment() const = 0;
+    virtual void SetBlastToolForceAdjustment(float value) = 0;
+
     virtual float GetScrubRotRadius() const = 0;
     virtual void SetScrubRotRadius(float value) = 0;
 
