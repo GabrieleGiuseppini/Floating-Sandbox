@@ -58,7 +58,6 @@ public:
 	void SetPhysicsProbePanelState(float targetOpen);
 
 	// One frame only; after RenderUpload() it's gone
-	// (special case as this is really UI)
 	inline void SetHeatBlaster(
 		vec2f const & worldCoordinates,
 		float radius,
@@ -71,12 +70,22 @@ public:
 	}
 
 	// One frame only; after RenderUpload() it's gone
-	// (special case as this is really UI)
 	inline void SetFireExtinguisherSpray(
 		vec2f const & worldCoordinates,
 		float radius)
 	{
 		mFireExtinguisherSprayToRender.emplace(
+			worldCoordinates,
+			radius);
+	}
+
+	// One frame only; after RenderUpload() it's gone
+	// (special case as this is really UI)
+	inline void SetBlastToolHalo(
+		vec2f const & worldCoordinates,
+		float radius)
+	{
+		mBlastToolHaloToRender.emplace(
 			worldCoordinates,
 			radius);
 	}
@@ -251,4 +260,21 @@ private:
 	// When set, will be uploaded to display the fire extinguisher spray
 	// - and then reset (one-time use, it's a special case as it's really UI)
 	std::optional<FireExtinguisherSpray> mFireExtinguisherSprayToRender;
+
+	struct BlastToolHalo
+	{
+		vec2f WorldCoordinates;
+		float Radius;
+
+		BlastToolHalo(
+			vec2f const & worldCoordinates,
+			float radius)
+			: WorldCoordinates(worldCoordinates)
+			, Radius(radius)
+		{}
+	};
+
+	// When set, will be uploaded to display the blast
+	// - and then reset (one-time use, it's a special case as it's really UI)
+	std::optional<BlastToolHalo> mBlastToolHaloToRender;
 };

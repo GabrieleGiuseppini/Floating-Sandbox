@@ -584,7 +584,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 	// Upload interactions, if needed
 	//
 
-	if (!!mHeatBlasterFlameToRender)
+	if (mHeatBlasterFlameToRender.has_value())
 	{
 		notificationRenderContext.UploadHeatBlasterFlame(
 			mHeatBlasterFlameToRender->WorldCoordinates,
@@ -594,13 +594,22 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 		mHeatBlasterFlameToRender.reset();
 	}
 
-	if (!!mFireExtinguisherSprayToRender)
+	if (mFireExtinguisherSprayToRender.has_value())
 	{
 		notificationRenderContext.UploadFireExtinguisherSpray(
 			mFireExtinguisherSprayToRender->WorldCoordinates,
 			mFireExtinguisherSprayToRender->Radius);
 
 		mFireExtinguisherSprayToRender.reset();
+	}
+
+	if (mBlastToolHaloToRender.has_value())
+	{
+		notificationRenderContext.UploadBlastToolHalo(
+			mBlastToolHaloToRender->WorldCoordinates,
+			mBlastToolHaloToRender->Radius);
+
+		mBlastToolHaloToRender.reset();
 	}
 }
 

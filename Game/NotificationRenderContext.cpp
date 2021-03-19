@@ -49,6 +49,8 @@ NotificationRenderContext::NotificationRenderContext(
     , mFireExtinguisherSprayVAO()
     , mFireExtinguisherSprayVBO()
     , mFireExtinguisherSprayShaderToRender()
+    , mBlastToolHaloVAO()
+    , mBlastToolHaloVBO()
 {
     GLuint tmpGLuint;
 
@@ -332,6 +334,37 @@ NotificationRenderContext::NotificationRenderContext(
         mShaderManager.SetTextureParameters<ProgramType::FireExtinguisherSpray>();
     }
 
+    //
+    // Initialize Blast Tool halo
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mFireExtinguisherSprayVAO = tmpGLuint;
+
+        glBindVertexArray(*mBlastToolHaloVAO);
+        CheckOpenGLError();
+
+        glGenBuffers(1, &tmpGLuint);
+        mBlastToolHaloVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mBlastToolHaloVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::BlastToolHalo));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::BlastToolHalo), 4, GL_FLOAT, GL_FALSE, sizeof(BlastToolHaloVertex), (void *)0);
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+
+        /* TODOHERE: see if needed
+        // Set noise in shader
+        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture2>();
+        glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetNoiseTextureOpenGLHandle(1));
+        mShaderManager.ActivateProgram<ProgramType::BlastToolHalo>();
+        mShaderManager.SetTextureParameters<ProgramType::BlastToolHalo>();
+        */
+    }
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -342,6 +375,9 @@ void NotificationRenderContext::UploadStart()
 
     // Reset fire extinguisher spray, it's uploaded as needed
     mFireExtinguisherSprayShaderToRender.reset();
+
+    // Reset blast tool halo, it's uploaded as needed
+    mBlastToolHaloVertexBuffer.clear();
 }
 
 void NotificationRenderContext::UploadEnd()
@@ -378,6 +414,8 @@ void NotificationRenderContext::RenderPrepare()
     RenderPrepareHeatBlasterFlame();
 
     RenderPrepareFireExtinguisherSpray();
+
+    RenderPrepareBlastToolHalo();
 }
 
 void NotificationRenderContext::RenderDraw()
@@ -391,6 +429,8 @@ void NotificationRenderContext::RenderDraw()
     RenderDrawHeatBlasterFlame();
 
     RenderDrawFireExtinguisherSpray();
+
+    RenderDrawBlastToolHalo();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -417,6 +457,10 @@ void NotificationRenderContext::ApplyViewModelChanges(RenderParameters const & r
 
     mShaderManager.ActivateProgram<ProgramType::FireExtinguisherSpray>();
     mShaderManager.SetProgramParameter<ProgramType::FireExtinguisherSpray, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::BlastToolHalo>();
+    mShaderManager.SetProgramParameter<ProgramType::BlastToolHalo, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 }
 
@@ -710,6 +754,38 @@ void NotificationRenderContext::RenderDrawFireExtinguisherSpray()
         // Draw
         assert((mFireExtinguisherSprayVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mFireExtinguisherSprayVertexBuffer.size()));
+
+        glBindVertexArray(0);
+    }
+}
+
+void NotificationRenderContext::RenderPrepareBlastToolHalo()
+{
+    if (!mBlastToolHaloVertexBuffer.empty())
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mBlastToolHaloVBO);
+
+        glBufferData(GL_ARRAY_BUFFER,
+            sizeof(BlastToolHaloVertex) * mBlastToolHaloVertexBuffer.size(),
+            mBlastToolHaloVertexBuffer.data(),
+            GL_DYNAMIC_DRAW);
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
+
+void NotificationRenderContext::RenderDrawBlastToolHalo()
+{
+    if (!mBlastToolHaloVertexBuffer.empty())
+    {
+        glBindVertexArray(*mBlastToolHaloVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::BlastToolHalo>();
+
+        // Draw
+        assert((mBlastToolHaloVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mBlastToolHaloVertexBuffer.size()));
 
         glBindVertexArray(0);
     }

@@ -400,10 +400,11 @@ Render:
 					- Decide what to do during phase paused
 					- Finalize durations - seem a bit too long now
 				+ Physics
-				- Shader: 
-					- Shader follows progress
-						- See HeatBlaster implementation for link between IGameController::TODOBlast and NotificationLayer->Context
-					- Option 1: different blending: whiteish overlay expanding, thicker on rim
+				= Shader: 
+					+ Link between IGameController::TODOBlast and NotificationLayer->Context
+					- Basic shader
+					- Advanced shader, option 1: different blending: whiteish overlay expanding, thicker on rim
+					- See if it needs noise
 				= Sounds:
 					= Sounds normal
 					= Sound faster

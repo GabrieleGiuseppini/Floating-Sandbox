@@ -20,6 +20,7 @@ enum class ProgramType
 {
     AABBs = 0,
     AMBombPreImplosion,
+    BlastToolHalo,
     Clouds,
     CrossOfLight,
     FireExtinguisherSpray,
@@ -222,7 +223,9 @@ enum class VertexAttributeType : GLuint
 
     FireExtinguisherSpray = 0,
 
-    HeatBlasterFlame = 0
+    HeatBlasterFlame = 0,
+
+    BlastToolHalo = 0
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);
