@@ -2640,73 +2640,111 @@ public:
             SetCurrentCursor(isBoosted);
         }
 
-        if (mEngagementData.has_value() && !mEngagementData->IsCompleted)
+        if (mEngagementData.has_value())
         {
             //
-            // Make progress
+            // Progress state machine
             //
 
-            float const elapsed = currentSimulationTime - mEngagementData->StartSimulationTime;
-
+            float const elapsed = currentSimulationTime - mEngagementData->CurrentStateStartSimulationTime;
             assert(elapsed >= 0.0f);
 
-            if (!mEngagementData->IsBoosted)
+            switch (mEngagementData->CurrentState)
             {
-                //
-                // Normal
-                //
-
-                float constexpr BlastDuration1 = 1.5f;
-                float constexpr BlastDurationPause = 1.5f;
-                float constexpr BlastDuration2 = 0.5f;
-
-                if (elapsed <= BlastDuration1)
+                case EngagementData::StateType::NormalPhase1:
                 {
-                    float const progress = elapsed / BlastDuration1;
+                    float constexpr BlastDuration1 = 1.5f;
+
+                    float const progress = std::min(elapsed / BlastDuration1, 1.0f);
 
                     mGameController->ApplyBlastAt(
                         inputState.MousePosition,
                         progress,
                         1.0f + progress);
+
+                    if (progress == 1.0f)
+                    {
+                        // Transition
+                        mEngagementData->CurrentState = EngagementData::StateType::NormalPhase2;
+                        mEngagementData->CurrentStateStartSimulationTime = currentSimulationTime;
+                    }
+
+                    break;
                 }
-                else if (elapsed < BlastDuration1 + BlastDurationPause)
+
+                case EngagementData::StateType::NormalPhase2:
                 {
-                    // Nop
+                    float constexpr BlastDurationPause = 1.5f;
+
+                    float const progress = std::min(elapsed / BlastDurationPause, 1.0f);
+
+                    // TODO: do we still want to apply a (stationary) blast?
+
+                    if (progress == 1.0f)
+                    {
+                        // Transition
+                        mEngagementData->CurrentState = EngagementData::StateType::NormalPhase3;
+                        mEngagementData->CurrentStateStartSimulationTime = currentSimulationTime;
+
+                        // Emit sound
+                        mSoundController->PlayBlastToolSlow2Sound();
+                    }
+
+                    break;
                 }
-                else
+
+                case EngagementData::StateType::NormalPhase3:
                 {
-                    // TODO: have phase in engagement and detect entrance in this phase to emit sound
-                    float const progress = std::min((elapsed - (BlastDuration1 + BlastDurationPause)) / BlastDuration2, 1.0f);
+                    float constexpr BlastDuration2 = 0.5f;
+
+                    float const progress = std::min(elapsed / BlastDuration2, 1.0f);
 
                     mGameController->ApplyBlastAt(
                         inputState.MousePosition,
                         1.0f + progress * 1.5f,
-                        2.5f);
+                        2.0f + 0.5f);
 
                     if (progress == 1.0f)
                     {
-                        mEngagementData->IsCompleted = true;
+                        // Transition
+                        mEngagementData->CurrentState = EngagementData::StateType::NormalPhase2;
+                        mEngagementData->CurrentStateStartSimulationTime = currentSimulationTime;
                     }
+
+                    break;
                 }
-            }
-            else
-            {
-                //
-                // Boosted
-                //
 
-                float constexpr BoostedBlastDuration = 1.0f;
-
-                float const progress = std::min(elapsed / BoostedBlastDuration, 1.0f);
-
-                mGameController->ApplyBlastAt(
-                    inputState.MousePosition,
-                    progress * 1.5f,
-                    1.5f);
-
-                if (progress == 1.0f)
+                case EngagementData::StateType::NormalCompleted:
                 {
-                    mEngagementData->IsCompleted = true;
+                    // Nop
+                    break;
+                }
+
+                case EngagementData::StateType::BoostedPhase1:
+                {
+                    float constexpr BoostedBlastDuration = 1.0f;
+
+                    float const progress = std::min(elapsed / BoostedBlastDuration, 1.0f);
+
+                    mGameController->ApplyBlastAt(
+                        inputState.MousePosition,
+                        progress * 1.5f,
+                        1.0f + progress * 2.0f);
+
+                    if (progress == 1.0f)
+                    {
+                        // Transition
+                        mEngagementData->CurrentState = EngagementData::StateType::BoostedCompleted;
+                        mEngagementData->CurrentStateStartSimulationTime = currentSimulationTime;
+                    }
+
+                    break;
+                }
+
+                case EngagementData::StateType::BoostedCompleted:
+                {
+                    // Nop
+                    break;
                 }
             }
         }
@@ -2755,16 +2793,24 @@ private:
 
     struct EngagementData
     {
-        float StartSimulationTime;
-        bool IsBoosted;
-        bool IsCompleted;
+        enum class StateType
+        {
+            NormalPhase1,
+            NormalPhase2,
+            NormalPhase3,
+            NormalCompleted,
+            BoostedPhase1,
+            BoostedCompleted
+        };
+
+        float CurrentStateStartSimulationTime;
+        StateType CurrentState;
 
         EngagementData(
             float startSimulationTime,
             bool isBoosted)
-            : StartSimulationTime(startSimulationTime)
-            , IsBoosted(isBoosted)
-            , IsCompleted(false)
+            : CurrentStateStartSimulationTime(startSimulationTime)
+            , CurrentState(isBoosted ? StateType::BoostedPhase1 : StateType::NormalPhase1)
         { }
     };
 

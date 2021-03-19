@@ -397,6 +397,8 @@ Render:
 							+ Speed and strength depend on SHIFT
 						+ End of blast doesn't change anything - only mouseup does
 							+ ...and at mouseup, cursor reappears
+					- Decide what to do during phase paused
+					- Finalize durations - seem a bit too long now
 				+ Physics
 				- Shader: 
 					- Shader follows progress
