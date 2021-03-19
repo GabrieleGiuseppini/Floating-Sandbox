@@ -137,8 +137,8 @@ NotificationRenderContext::NotificationRenderContext(
     CheckOpenGLError();
 
     // Describe vertex attributes
-    glBindBuffer(GL_ARRAY_BUFFER, *mTextVBO);
     static_assert(sizeof(TextQuadVertex) == (4 + 1) * sizeof(float));
+    glBindBuffer(GL_ARRAY_BUFFER, *mTextVBO);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Text1));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Text1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)0);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Text2));
@@ -231,9 +231,9 @@ NotificationRenderContext::NotificationRenderContext(
         mTextureNotificationVBO = tmpGLuint;
 
         // Describe vertex attributes
+        static_assert(sizeof(TextureNotificationVertex) == (4 + 1) * sizeof(float));
         glBindVertexArray(*mTextureNotificationVAO);
         glBindBuffer(GL_ARRAY_BUFFER, *mTextureNotificationVBO);
-        static_assert(sizeof(TextureNotificationVertex) == (4 + 1) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::TextureNotification1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::TextureNotification1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::TextureNotification2));
@@ -257,8 +257,8 @@ NotificationRenderContext::NotificationRenderContext(
         mPhysicsProbePanelVBO = tmpGLuint;
 
         // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mPhysicsProbePanelVBO);
         static_assert(sizeof(PhysicsProbePanelVertex) == 7 * sizeof(float));
+        glBindBuffer(GL_ARRAY_BUFFER, *mPhysicsProbePanelVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::PhysicsProbePanel1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::PhysicsProbePanel1), 4, GL_FLOAT, GL_FALSE, sizeof(PhysicsProbePanelVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::PhysicsProbePanel2));
@@ -289,6 +289,7 @@ NotificationRenderContext::NotificationRenderContext(
         mHeatBlasterFlameVBO = tmpGLuint;
 
         // Describe vertex attributes
+        static_assert(sizeof(HeatBlasterFlameVertex) == 4 * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mHeatBlasterFlameVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::HeatBlasterFlame));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::HeatBlasterFlame), 4, GL_FLOAT, GL_FALSE, sizeof(HeatBlasterFlameVertex), (void *)0);
@@ -320,6 +321,7 @@ NotificationRenderContext::NotificationRenderContext(
         mFireExtinguisherSprayVBO = tmpGLuint;
 
         // Describe vertex attributes
+        static_assert(sizeof(FireExtinguisherSprayVertex) == 4 * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mFireExtinguisherSprayVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::FireExtinguisherSpray));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::FireExtinguisherSpray), 4, GL_FLOAT, GL_FALSE, sizeof(FireExtinguisherSprayVertex), (void *)0);
@@ -349,6 +351,7 @@ NotificationRenderContext::NotificationRenderContext(
         mBlastToolHaloVBO = tmpGLuint;
 
         // Describe vertex attributes
+        static_assert(sizeof(BlastToolHaloVertex) == 4 * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mBlastToolHaloVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::BlastToolHalo));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::BlastToolHalo), 4, GL_FLOAT, GL_FALSE, sizeof(BlastToolHaloVertex), (void *)0);
@@ -356,13 +359,11 @@ NotificationRenderContext::NotificationRenderContext(
 
         glBindVertexArray(0);
 
-        /* TODOHERE: see if needed
         // Set noise in shader
         mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture2>();
         glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetNoiseTextureOpenGLHandle(1));
         mShaderManager.ActivateProgram<ProgramType::BlastToolHalo>();
         mShaderManager.SetTextureParameters<ProgramType::BlastToolHalo>();
-        */
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
