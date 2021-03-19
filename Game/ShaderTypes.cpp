@@ -19,6 +19,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::AABBs;
     else if (lstr == "am_bomb_preimplosion")
         return ProgramType::AMBombPreImplosion;
+    else if (lstr == "blast_tool_halo")
+        return ProgramType::BlastToolHalo;
     else if (lstr == "clouds")
         return ProgramType::Clouds;
     else if (lstr == "cross_of_light")
@@ -139,6 +141,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "AABBs";
     case ProgramType::AMBombPreImplosion:
         return "AMBombPreImplosion";
+    case ProgramType::BlastToolHalo:
+        return "BlastToolHalo";
     case ProgramType::Clouds:
         return "Clouds";
     case ProgramType::CrossOfLight:
@@ -524,6 +528,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::FireExtinguisherSpray;
     else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterFlame"))
         return VertexAttributeType::HeatBlasterFlame;
+    else if (Utils::CaseInsensitiveEquals(str, "BlastToolHalo"))
+        return VertexAttributeType::BlastToolHalo;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }

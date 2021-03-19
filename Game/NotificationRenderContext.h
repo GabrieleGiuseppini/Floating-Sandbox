@@ -381,6 +381,48 @@ public:
 		mFireExtinguisherSprayShaderToRender = Render::ProgramType::FireExtinguisherSpray;
 	}
 
+	inline void UploadBlastToolHalo(
+		vec2f const & centerPosition,
+		float radius)
+	{
+		//
+		// Populate vertices
+		//
+
+		float const left = centerPosition.x - radius;
+		float const right = centerPosition.x + radius;
+		float const top = centerPosition.y + radius;
+		float const bottom = centerPosition.y - radius;
+
+		// Triangle 1
+
+		mBlastToolHaloVertexBuffer.emplace_back(
+			vec2f(left, bottom),
+			vec2f(-1.0f, -1.0f));
+
+		mBlastToolHaloVertexBuffer.emplace_back(
+			vec2f(left, top),
+			vec2f(-1.0f, 1.0f));
+
+		mBlastToolHaloVertexBuffer.emplace_back(
+			vec2f(right, bottom),
+			vec2f(1.0f, -1.0f));
+
+		// Triangle 2
+
+		mBlastToolHaloVertexBuffer.emplace_back(
+			vec2f(left, top),
+			vec2f(-1.0f, 1.0f));
+
+		mBlastToolHaloVertexBuffer.emplace_back(
+			vec2f(right, bottom),
+			vec2f(1.0f, -1.0f));
+
+		mBlastToolHaloVertexBuffer.emplace_back(
+			vec2f(right, top),
+			vec2f(1.0f, 1.0f));
+	}
+
 	void UploadEnd();
 
 	void ProcessParameterChanges(RenderParameters const & renderParameters);
@@ -409,6 +451,9 @@ private:
 
 	void RenderPrepareFireExtinguisherSpray();
 	void RenderDrawFireExtinguisherSpray();
+
+	void RenderPrepareBlastToolHalo();
+	void RenderDrawBlastToolHalo();
 
 private:
 
@@ -515,6 +560,19 @@ private:
 		vec2f spraySpacePosition;
 
 		FireExtinguisherSprayVertex()
+		{}
+	};
+
+	struct BlastToolHaloVertex
+	{
+		vec2f vertexPosition;
+		vec2f haloSpacePosition;
+
+		BlastToolHaloVertex(
+			vec2f _vertexPosition,
+			vec2f _haloSpacePosition)
+			: vertexPosition(_vertexPosition)
+			, haloSpacePosition(_haloSpacePosition)
 		{}
 	};
 
@@ -655,6 +713,10 @@ private:
 	std::array<FireExtinguisherSprayVertex, 6> mFireExtinguisherSprayVertexBuffer;
 	GameOpenGLVBO mFireExtinguisherSprayVBO;
 	std::optional<Render::ProgramType> mFireExtinguisherSprayShaderToRender;
+
+	GameOpenGLVAO mBlastToolHaloVAO;
+	std::vector<BlastToolHaloVertex> mBlastToolHaloVertexBuffer;
+	GameOpenGLVBO mBlastToolHaloVBO;
 };
 
 }

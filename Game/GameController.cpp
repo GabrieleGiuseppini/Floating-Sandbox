@@ -867,6 +867,7 @@ void GameController::ApplyBlastAt(
     // Calculate radius
     float const radius =
         mGameParameters.BlastToolRadius
+        * radiusMultiplier
         * forceMultiplier
         * (mGameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
@@ -879,11 +880,9 @@ void GameController::ApplyBlastAt(
         mGameParameters);
 
     // Draw notification (one frame only)
-    /* TODOHERE
-    mNotificationLayer.SetBlast(
+    mNotificationLayer.SetBlastToolHalo(
         worldCoordinates,
         radius);
-    */
 }
 
 void GameController::DrawTo(
