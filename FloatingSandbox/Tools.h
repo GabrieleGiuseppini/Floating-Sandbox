@@ -2653,7 +2653,7 @@ public:
             {
                 case EngagementData::StateType::NormalPhase1:
                 {
-                    float constexpr BlastDuration1 = 1.5f;
+                    float constexpr BlastDuration1 = 0.75f;
 
                     float const progress = std::min(elapsed / BlastDuration1, 1.0f);
 
@@ -2707,8 +2707,7 @@ public:
                     if (progress == 1.0f)
                     {
                         // Transition
-                        mEngagementData->CurrentState = EngagementData::StateType::NormalPhase2;
-                        mEngagementData->CurrentStateStartSimulationTime = currentSimulationTime;
+                        mEngagementData->CurrentState = EngagementData::StateType::NormalCompleted;
                     }
 
                     break;
@@ -2722,7 +2721,7 @@ public:
 
                 case EngagementData::StateType::BoostedPhase1:
                 {
-                    float constexpr BoostedBlastDuration = 1.0f;
+                    float constexpr BoostedBlastDuration = 0.4f;
 
                     float const progress = std::min(elapsed / BoostedBlastDuration, 1.0f);
 
