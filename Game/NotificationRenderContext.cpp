@@ -342,7 +342,7 @@ NotificationRenderContext::NotificationRenderContext(
 
     {
         glGenVertexArrays(1, &tmpGLuint);
-        mFireExtinguisherSprayVAO = tmpGLuint;
+        mBlastToolHaloVAO = tmpGLuint;
 
         glBindVertexArray(*mBlastToolHaloVAO);
         CheckOpenGLError();

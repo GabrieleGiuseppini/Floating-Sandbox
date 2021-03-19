@@ -386,6 +386,14 @@ void World::ApplyBlastAt(
             forceMultiplier,
             gameParameters);
     }
+
+    // TODO: disturb ocean surface?
+
+    // Also scare fishes at bit
+    mFishes.DisturbAt(
+        targetPos,
+        radius,
+        std::chrono::milliseconds(0));
 }
 
 void World::DrawTo(

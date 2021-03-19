@@ -402,9 +402,9 @@ Render:
 				+ Physics
 				= Shader: 
 					+ Link between IGameController::TODOBlast and NotificationLayer->Context
-					- Basic shader
+					+ Basic shader
 					- Advanced shader, option 1: different blending: whiteish overlay expanding, thicker on rim
-					- See if it needs noise
+					+ See if it needs noise
 				= Sounds:
 					= Sounds normal
 					= Sound faster
