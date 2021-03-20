@@ -42,6 +42,7 @@ public:
 
 private:
 
+    /* TODOOLD
     void OnRestoreDefaultTerrainButton(wxCommandEvent & event);
 
     void OnOceanRenderModeRadioButtonClick(wxCommandEvent & event);
@@ -70,6 +71,7 @@ private:
     void OnDeletePersistedSettingsButton(wxCommandEvent & event);
     void OnSaveSettingsTextEdited(wxCommandEvent & event);
     void OnSaveSettingsButton(wxCommandEvent & event);
+    */
 
     void OnRevertToDefaultsButton(wxCommandEvent & event);
     void OnOkButton(wxCommandEvent & event);
@@ -84,10 +86,20 @@ private:
     // Control tabs
     //////////////////////////////////////////////////////
 
-    // Mechanics, Air, and Fluids
+    // Mechanics and Thermodynamics
     SliderControl<float> * mMechanicalQualitySlider;
     SliderControl<float> * mStrengthSlider;
     SliderControl<float> * mGlobalDampingAdjustmentSlider;
+    SliderControl<float> * mThermalConductivityAdjustmentSlider;
+    SliderControl<float> * mHeatDissipationAdjustmentSlider;
+    SliderControl<float> * mIgnitionTemperatureAdjustmentSlider;
+    SliderControl<float> * mMeltingTemperatureAdjustmentSlider;
+    SliderControl<float> * mCombustionSpeedAdjustmentSlider;
+    SliderControl<float> * mCombustionHeatAdjustmentSlider;
+    SliderControl<unsigned int> * mMaxBurningParticlesSlider;
+
+    /* TODOOLD
+    // Mechanics, Air, and Fluids
     SliderControl<float> * mRotAcceler8rSlider;
     SliderControl<float> * mAirFrictionDragSlider;
     SliderControl<float> * mAirPressureDragSlider;
@@ -99,18 +111,11 @@ private:
     SliderControl<float> * mWaterDiffusionSpeedSlider;
 
     // Heat and Combustion
-    SliderControl<float> * mThermalConductivityAdjustmentSlider;
-    SliderControl<float> * mHeatDissipationAdjustmentSlider;
-    SliderControl<float> * mIgnitionTemperatureAdjustmentSlider;
-    SliderControl<float> * mMeltingTemperatureAdjustmentSlider;
-    SliderControl<float> * mCombustionSpeedAdjustmentSlider;
-    SliderControl<float> * mCombustionHeatAdjustmentSlider;
     SliderControl<float> * mAirTemperatureSlider;
     SliderControl<float> * mWaterTemperatureSlider;
     SliderControl<float> * mElectricalElementHeatProducedAdjustmentSlider;
     SliderControl<float> * mHeatBlasterRadiusSlider;
     SliderControl<float> * mHeatBlasterHeatFlowSlider;
-    SliderControl<unsigned int> * mMaxBurningParticlesSlider;
 
     // Ocean, Smoke, and Sky
     SliderControl<float> * mOceanDepthSlider;
@@ -223,6 +228,7 @@ private:
     wxTextCtrl * mSaveSettingsNameTextCtrl;
     wxTextCtrl * mSaveSettingsDescriptionTextCtrl;
     wxButton * mSaveSettingsButton;
+    */
 
     //////////////////////////////////////////////////////
 
@@ -240,6 +246,9 @@ private:
     void DoCancel();
     void DoClose();
 
+    void PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel);
+
+    /* TODOOLD
     void PopulateMechanicsAirFluidsPanel(wxPanel * panel);
     void PopulateHeatPanel(wxPanel * panel);
     void PopulateOceanSmokeSkyPanel(wxPanel * panel);
@@ -248,23 +257,27 @@ private:
     void PopulateRenderingPanel(wxPanel * panel);
     void PopulateSoundAndAdvancedPanel(wxPanel * panel);
     void PopulateSettingsManagementPanel(wxPanel * panel);
+    */
 
     void SyncControlsWithSettings(Settings<GameSettings> const & settings);
 
+    /* TODOOLD
     void ReconciliateOceanRenderModeSettings();
     void ReconciliateLandRenderModeSettings();
+    */
 
     void OnLiveSettingsChanged();
     void ReconcileDirtyState();
 
+    /* TODOOLD
     long GetSelectedPersistedSettingIndexFromCtrl() const;
     void InsertPersistedSettingInCtrl(int index, PersistedSettingsKey const & psKey);
     void LoadPersistedSettings(size_t index, bool withDefaults);
     void ReconciliateLoadPersistedSettings();
     void SavePersistedSettings(PersistedSettingsMetadata const & metadata);
     void ReconciliateSavePersistedSettings();
-
     void OnPersistenceError(std::string const & errorMessage) const;
+    */
 
 private:
 
