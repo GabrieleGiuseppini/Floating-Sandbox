@@ -414,7 +414,7 @@ Render:
 				+ Disturb ocean surface
 					+ At World
 				- SettingsDialog:
-					- Refactor tools into new Tools tab
+					- Refactor: (TODOOLD: tools into new Tools tab)
 						- Icons in static boxes?
 						- Try using StaticBoxSizer instead of static boxes
 					- BlastToolRadius
