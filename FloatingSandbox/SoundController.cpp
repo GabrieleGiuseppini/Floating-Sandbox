@@ -175,15 +175,15 @@ SoundController::SoundController(
             {
                 mSawedMetalSound.Initialize(
                     std::move(soundBuffer),
-                    mMasterToolsVolume,
-                    mMasterToolsMuted);
+                    mMasterEffectsVolume,
+                    mMasterEffectsMuted);
             }
             else
             {
                 mSawedWoodSound.Initialize(
                     std::move(soundBuffer),
-                    mMasterToolsVolume,
-                    mMasterToolsMuted);
+                    mMasterEffectsVolume,
+                    mMasterEffectsMuted);
             }
         }
         else if (soundType == SoundType::HeatBlasterCool)
@@ -798,6 +798,8 @@ void SoundController::SetMasterEffectsVolume(float volume)
         }
     }
 
+    mSawedMetalSound.SetMasterVolume(mMasterEffectsVolume);
+    mSawedWoodSound.SetMasterVolume(mMasterEffectsVolume);
     mWaterRushSound.SetMasterVolume(mMasterEffectsVolume);
     mWaterSplashSound.SetMasterVolume(mMasterEffectsVolume);
     mAirBubblesSurfacingSound.SetMasterVolume(mMasterEffectsVolume);
@@ -825,6 +827,8 @@ void SoundController::SetMasterEffectsMuted(bool isMuted)
         }
     }
 
+    mSawedMetalSound.SetMuted(mMasterEffectsMuted);
+    mSawedWoodSound.SetMuted(mMasterEffectsMuted);
     mWaterRushSound.SetMuted(mMasterEffectsMuted);
     mWaterSplashSound.SetMuted(mMasterEffectsMuted);
     mAirBubblesSurfacingSound.SetMuted(mMasterEffectsMuted);
@@ -853,9 +857,6 @@ void SoundController::SetMasterToolsVolume(float volume)
             }
         }
     }
-
-    mSawedMetalSound.SetMasterVolume(mMasterToolsVolume);
-    mSawedWoodSound.SetMasterVolume(mMasterToolsVolume);
 
     mSawAbovewaterSound.SetMasterVolume(mMasterToolsVolume);
     mSawUnderwaterSound.SetMasterVolume(mMasterToolsVolume);
@@ -886,9 +887,6 @@ void SoundController::SetMasterToolsMuted(bool isMuted)
             }
         }
     }
-
-    mSawedMetalSound.SetMuted(mMasterToolsMuted);
-    mSawedWoodSound.SetMuted(mMasterToolsMuted);
 
     mSawAbovewaterSound.SetMuted(mMasterToolsMuted);
     mSawUnderwaterSound.SetMuted(mMasterToolsMuted);
