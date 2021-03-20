@@ -411,15 +411,16 @@ Render:
 				+ Sounds:
 					+ Sounds normal
 					+ Sound faster
-				- Disturb ocean surface
-					- At World
+				+ Disturb ocean surface
+					+ At World
 				- SettingsDialog:
 					- Refactor tools into new Tools tab
 						- Icons in static boxes?
 						- Try using StaticBoxSizer instead of static boxes
 					- BlastToolRadius
 					- BlastToolForceAdjustment
-				- Finalize maxima of all settings, & ultra-violent mode
+				- Finalize all three current default radii
+				- Finalize maxima of all settings, & ultra-violent mode					
 		- New tool 2: Punch
 			- Spec:
 				- Works only on frontier from outside->in

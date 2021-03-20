@@ -387,13 +387,31 @@ void World::ApplyBlastAt(
             gameParameters);
     }
 
-    ////// TODO: Displace ocean surface
-    ////for (float r = 0.0f; r <= radius; r += 0.5f)
-    ////{
-    ////    float const d = 1.5f * (1.0f - r / radius);
-    ////    mOceanSurface.DisplaceAt(targetPos.x - r, d);
-    ////    mOceanSurface.DisplaceAt(targetPos.x + r, d);
-    ////}
+    // Displace ocean surface
+    {
+        // Explosion depth (positive when underwater)
+        float const explosionDepth = mOceanSurface.GetHeightAt(targetPos.x) - targetPos.y;
+
+        // Calculate length of chord on circle given (clamped) distance of
+        // ocean surface from center of blast (i.e. depth)
+        float const circleRadius = radius * 2.0f; // Displacement sphere radius larger than blast
+        float const halfChordLength = std::sqrt(
+            std::max(
+                circleRadius * circleRadius - explosionDepth * explosionDepth,
+                0.0f));
+
+        // Apply displacement along chord length
+        for (float r = 0.0f; r < halfChordLength; r += 0.5f)
+        {
+            float const d =
+                1.0f  // Magic number
+                * (1.0f - r / halfChordLength) // Max at center, zero at extremes
+                * (explosionDepth <= 0.0f ? -1.0f : 1.0f); // Follow depth sign
+
+            mOceanSurface.DisplaceAt(targetPos.x - r, d);
+            mOceanSurface.DisplaceAt(targetPos.x + r, d);
+        }
+    }
 
     // Also scare fishes at bit
     mFishes.DisturbAt(
