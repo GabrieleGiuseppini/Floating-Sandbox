@@ -869,7 +869,6 @@ void GameController::ApplyBlastAt(
     float const radius =
         mGameParameters.BlastToolRadius
         * radiusMultiplier
-        * forceMultiplier
         * (mGameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     // Apply action
