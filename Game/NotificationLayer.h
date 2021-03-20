@@ -83,11 +83,13 @@ public:
 	// (special case as this is really UI)
 	inline void SetBlastToolHalo(
 		vec2f const & worldCoordinates,
-		float radius)
+		float radius,
+		float renderProgress)
 	{
 		mBlastToolHaloToRender.emplace(
 			worldCoordinates,
-			radius);
+			radius,
+			renderProgress);
 	}
 
 	void Reset();
@@ -265,12 +267,15 @@ private:
 	{
 		vec2f WorldCoordinates;
 		float Radius;
+		float RenderProgress;
 
 		BlastToolHalo(
 			vec2f const & worldCoordinates,
-			float radius)
+			float radius,
+			float renderProgress)
 			: WorldCoordinates(worldCoordinates)
 			, Radius(radius)
+			, RenderProgress(renderProgress)
 		{}
 	};
 

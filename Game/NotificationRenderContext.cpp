@@ -351,10 +351,12 @@ NotificationRenderContext::NotificationRenderContext(
         mBlastToolHaloVBO = tmpGLuint;
 
         // Describe vertex attributes
-        static_assert(sizeof(BlastToolHaloVertex) == 4 * sizeof(float));
+        static_assert(sizeof(BlastToolHaloVertex) == (4 + 1) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mBlastToolHaloVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::BlastToolHalo));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::BlastToolHalo), 4, GL_FLOAT, GL_FALSE, sizeof(BlastToolHaloVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::BlastToolHalo1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::BlastToolHalo1), 4, GL_FLOAT, GL_FALSE, sizeof(BlastToolHaloVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::BlastToolHalo2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::BlastToolHalo2), 1, GL_FLOAT, GL_FALSE, sizeof(BlastToolHaloVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -784,9 +786,17 @@ void NotificationRenderContext::RenderDrawBlastToolHalo()
 
         mShaderManager.ActivateProgram<ProgramType::BlastToolHalo>();
 
+        // Setup blending
+        glBlendFunc(GL_SRC_COLOR, GL_ONE);
+        glBlendEquation(GL_FUNC_ADD);
+
         // Draw
         assert((mBlastToolHaloVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mBlastToolHaloVertexBuffer.size()));
+
+        // Reset blending
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendEquation(GL_FUNC_ADD);
 
         glBindVertexArray(0);
     }

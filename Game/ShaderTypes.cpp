@@ -528,8 +528,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::FireExtinguisherSpray;
     else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterFlame"))
         return VertexAttributeType::HeatBlasterFlame;
-    else if (Utils::CaseInsensitiveEquals(str, "BlastToolHalo"))
-        return VertexAttributeType::BlastToolHalo;
+    else if (Utils::CaseInsensitiveEquals(str, "BlastToolHalo1"))
+        return VertexAttributeType::BlastToolHalo1;
+    else if (Utils::CaseInsensitiveEquals(str, "BlastToolHalo2"))
+        return VertexAttributeType::BlastToolHalo2;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }

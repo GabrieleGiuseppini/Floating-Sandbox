@@ -860,7 +860,8 @@ bool GameController::ExtinguishFireAt(LogicalPixelCoordinates const & screenCoor
 void GameController::ApplyBlastAt(
     LogicalPixelCoordinates const & screenCoordinates,
     float radiusMultiplier,
-    float forceMultiplier)
+    float forceMultiplier,
+    float renderProgress)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -882,7 +883,8 @@ void GameController::ApplyBlastAt(
     // Draw notification (one frame only)
     mNotificationLayer.SetBlastToolHalo(
         worldCoordinates,
-        radius);
+        radius,
+        renderProgress);
 }
 
 void GameController::DrawTo(
