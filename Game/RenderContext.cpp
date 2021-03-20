@@ -112,9 +112,10 @@ RenderContext::RenderContext(
             glEnable(GL_LINE_SMOOTH);
             glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 
-            // Enable blend for alpha transparency
+            // Enable blending for alpha transparency
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendEquation(GL_FUNC_ADD);
 
             // Disable depth test
             glDisable(GL_DEPTH_TEST);

@@ -2660,7 +2660,8 @@ public:
                     mGameController->ApplyBlastAt(
                         inputState.MousePosition,
                         progress,
-                        1.0f + progress);
+                        1.0f + progress,
+                        progress);
 
                     if (progress == 1.0f)
                     {
@@ -2702,7 +2703,8 @@ public:
                     mGameController->ApplyBlastAt(
                         inputState.MousePosition,
                         1.0f + progress * 1.5f,
-                        2.0f + 0.5f);
+                        2.0f + 0.5f,
+                        progress);
 
                     if (progress == 1.0f)
                     {
@@ -2728,7 +2730,8 @@ public:
                     mGameController->ApplyBlastAt(
                         inputState.MousePosition,
                         progress * 1.5f,
-                        1.0f + progress * 2.0f);
+                        1.0f + progress * 2.0f,
+                        progress);
 
                     if (progress == 1.0f)
                     {

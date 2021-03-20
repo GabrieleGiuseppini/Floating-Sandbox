@@ -225,7 +225,8 @@ enum class VertexAttributeType : GLuint
 
     HeatBlasterFlame = 0,
 
-    BlastToolHalo = 0
+    BlastToolHalo1 = 0,
+    BlastToolHalo2 = 1
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);
