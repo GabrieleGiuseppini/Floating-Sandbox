@@ -387,7 +387,13 @@ void World::ApplyBlastAt(
             gameParameters);
     }
 
-    // TODO: disturb ocean surface?
+    ////// TODO: Displace ocean surface
+    ////for (float r = 0.0f; r <= radius; r += 0.5f)
+    ////{
+    ////    float const d = 1.5f * (1.0f - r / radius);
+    ////    mOceanSurface.DisplaceAt(targetPos.x - r, d);
+    ////    mOceanSurface.DisplaceAt(targetPos.x + r, d);
+    ////}
 
     // Also scare fishes at bit
     mFishes.DisturbAt(

@@ -2653,14 +2653,14 @@ public:
             {
                 case EngagementData::StateType::NormalPhase1:
                 {
-                    float constexpr BlastDuration1 = 0.75f;
+                    float constexpr BlastDuration1 = 0.5f;
 
                     float const progress = std::min(elapsed / BlastDuration1, 1.0f);
 
                     mGameController->ApplyBlastAt(
                         inputState.MousePosition,
                         progress,
-                        1.0f + progress,
+                        1.0f,
                         progress);
 
                     if (progress == 1.0f)
@@ -2696,13 +2696,13 @@ public:
 
                 case EngagementData::StateType::NormalPhase3:
                 {
-                    float constexpr BlastDuration2 = 0.5f;
+                    float constexpr BlastDuration2 = 0.25f;
 
                     float const progress = std::min(elapsed / BlastDuration2, 1.0f);
 
                     mGameController->ApplyBlastAt(
                         inputState.MousePosition,
-                        1.0f + progress * 1.5f,
+                        1.0f + progress * 2.5f,
                         2.0f + 0.5f,
                         progress);
 
@@ -2723,14 +2723,14 @@ public:
 
                 case EngagementData::StateType::BoostedPhase1:
                 {
-                    float constexpr BoostedBlastDuration = 0.4f;
+                    float constexpr BoostedBlastDuration = 0.25f;
 
                     float const progress = std::min(elapsed / BoostedBlastDuration, 1.0f);
 
                     mGameController->ApplyBlastAt(
                         inputState.MousePosition,
-                        progress * 1.5f,
-                        1.0f + progress * 2.0f,
+                        progress * 2.0f,
+                        2.0f,
                         progress);
 
                     if (progress == 1.0f)
