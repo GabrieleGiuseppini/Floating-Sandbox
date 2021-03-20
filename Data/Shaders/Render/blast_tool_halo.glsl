@@ -5,11 +5,12 @@
 
 // Inputs
 in vec4 inBlastToolHalo1;  // Position, HaloSpacePosition
-in float inBlastToolHalo2;  // Progress
+in vec2 inBlastToolHalo2;  // Progress, PersonalitySeed
 
 // Outputs
 out vec2 haloSpacePosition;
 out float progress;
+out float personalitySeed;
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
@@ -17,7 +18,8 @@ uniform mat4 paramOrthoMatrix;
 void main()
 {
     haloSpacePosition = inBlastToolHalo1.zw;
-    progress = inBlastToolHalo2;
+    progress = inBlastToolHalo2.x;
+    personalitySeed = inBlastToolHalo2.y;
 
     gl_Position = paramOrthoMatrix * vec4(inBlastToolHalo1.xy, -1.0, 1.0);
 }
@@ -29,13 +31,14 @@ void main()
 // Inputs from previous shader
 in vec2 haloSpacePosition; // (x=[-1.0, 1.0], y=[-1.0, 1.0])
 in float progress;
+in float personalitySeed;
 
 // The texture
 uniform sampler2D paramNoiseTexture2;
 
-float GetNoise(float a, float b) // -> (0.0, 1.0)
+float GetNoise(float a, float b, float c) // -> (0.0, 1.0)
 {
-    return texture2D(paramNoiseTexture2, vec2(0.015 * b, a)).r;
+    return texture2D(paramNoiseTexture2, vec2(0.015 * b + c, a)).r;
 }
 
 void main()
@@ -47,7 +50,7 @@ void main()
     #define PI 3.14159265358979323844
     
     float theta = atan(haloSpacePosition.y, haloSpacePosition.x) / (2.0 * PI);
-    float noise = GetNoise(theta, progress); // 0.0 -> 1.0
+    float noise = GetNoise(theta, progress, personalitySeed); // 0.0 -> 1.0
     
     //
     // Border

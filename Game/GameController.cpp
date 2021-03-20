@@ -861,7 +861,8 @@ void GameController::ApplyBlastAt(
     LogicalPixelCoordinates const & screenCoordinates,
     float radiusMultiplier,
     float forceMultiplier,
-    float renderProgress)
+    float renderProgress,
+    float personalitySeed)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -869,7 +870,7 @@ void GameController::ApplyBlastAt(
     float const radius =
         mGameParameters.BlastToolRadius
         * radiusMultiplier
-        * (mGameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+        * (mGameParameters.IsUltraViolentMode ? 2.5f : 1.0f);
 
     // Apply action
     assert(!!mWorld);
@@ -883,7 +884,8 @@ void GameController::ApplyBlastAt(
     mNotificationLayer.SetBlastToolHalo(
         worldCoordinates,
         radius,
-        renderProgress);
+        renderProgress,
+        personalitySeed);
 }
 
 void GameController::DrawTo(

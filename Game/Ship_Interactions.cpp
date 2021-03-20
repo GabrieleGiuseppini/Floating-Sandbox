@@ -613,7 +613,7 @@ void Ship::ApplyBlastAt(
         105.0f * 50000.0f // Magic number
         * forceMultiplier
         * gameParameters.BlastToolForceAdjustment
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     // Visit all points
     for (auto pointIndex : mPoints)

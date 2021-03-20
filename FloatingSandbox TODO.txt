@@ -389,7 +389,7 @@ Render:
 			= Impl:
 				+ Cursor
 					+ Cursor 1 and cursor 2
-				= Tool:
+				+ Tool:
 					+ When hitting:
 						+ Cursor disappears
 						+ Sound starts (depending on SHIFT)
@@ -397,20 +397,21 @@ Render:
 							+ Speed and strength depend on SHIFT
 						+ End of blast doesn't change anything - only mouseup does
 							+ ...and at mouseup, cursor reappears
-					- Decide what to do during phase paused
-					= Finalize durations - seem a bit too long now
+					X Decide what to do during phase paused
+					+ Finalize durations - seem a bit too long now
 				+ Physics
-				= Shader: 
+				+ Shader: 
 					+ Link between IGameController::TODOBlast and NotificationLayer->Context
 					+ Basic shader
-					= Advanced shader, option 1: different blending: whiteish overlay expanding, thicker on rim
+					+ Advanced shader, option 1: different blending: whiteish overlay expanding, thicker on rim
 						+ Provide progress
-						- Do blending
+						+ Do blending
+						+ Add personality
 					+ See if it needs noise
-				= Sounds:
-					= Sounds normal
-					= Sound faster
-				- Disturb ocean surface?
+				+ Sounds:
+					+ Sounds normal
+					+ Sound faster
+				- Disturb ocean surface
 					- At World
 				- SettingsDialog:
 					- Refactor tools into new Tools tab

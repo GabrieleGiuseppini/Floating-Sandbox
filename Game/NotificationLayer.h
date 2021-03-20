@@ -84,12 +84,14 @@ public:
 	inline void SetBlastToolHalo(
 		vec2f const & worldCoordinates,
 		float radius,
-		float renderProgress)
+		float renderProgress,
+		float personalitySeed)
 	{
 		mBlastToolHaloToRender.emplace(
 			worldCoordinates,
 			radius,
-			renderProgress);
+			renderProgress,
+			personalitySeed);
 	}
 
 	void Reset();
@@ -268,14 +270,17 @@ private:
 		vec2f WorldCoordinates;
 		float Radius;
 		float RenderProgress;
+		float PersonalitySeed;
 
 		BlastToolHalo(
 			vec2f const & worldCoordinates,
 			float radius,
-			float renderProgress)
+			float renderProgress,
+			float personalitySeed)
 			: WorldCoordinates(worldCoordinates)
 			, Radius(radius)
 			, RenderProgress(renderProgress)
+			, PersonalitySeed(personalitySeed)
 		{}
 	};
 
