@@ -384,7 +384,8 @@ public:
 	inline void UploadBlastToolHalo(
 		vec2f const & centerPosition,
 		float radius,
-		float renderProgress)
+		float renderProgress,
+		float personalitySeed)
 	{
 		//
 		// Populate vertices
@@ -400,34 +401,40 @@ public:
 		mBlastToolHaloVertexBuffer.emplace_back(
 			vec2f(left, bottom),
 			vec2f(-1.0f, -1.0f),
-			renderProgress);
+			renderProgress,
+			personalitySeed);
 
 		mBlastToolHaloVertexBuffer.emplace_back(
 			vec2f(left, top),
 			vec2f(-1.0f, 1.0f),
-			renderProgress);
+			renderProgress,
+			personalitySeed);
 
 		mBlastToolHaloVertexBuffer.emplace_back(
 			vec2f(right, bottom),
 			vec2f(1.0f, -1.0f),
-			renderProgress);
+			renderProgress,
+			personalitySeed);
 
 		// Triangle 2
 
 		mBlastToolHaloVertexBuffer.emplace_back(
 			vec2f(left, top),
 			vec2f(-1.0f, 1.0f),
-			renderProgress);
+			renderProgress,
+			personalitySeed);
 
 		mBlastToolHaloVertexBuffer.emplace_back(
 			vec2f(right, bottom),
 			vec2f(1.0f, -1.0f),
-			renderProgress);
+			renderProgress,
+			personalitySeed);
 
 		mBlastToolHaloVertexBuffer.emplace_back(
 			vec2f(right, top),
 			vec2f(1.0f, 1.0f),
-			renderProgress);
+			renderProgress,
+			personalitySeed);
 	}
 
 	void UploadEnd();
@@ -575,14 +582,17 @@ private:
 		vec2f vertexPosition;
 		vec2f haloSpacePosition;
 		float renderProgress;
+		float personalitySeed;
 
 		BlastToolHaloVertex(
 			vec2f _vertexPosition,
 			vec2f _haloSpacePosition,
-			float _renderProgress)
+			float _renderProgress,
+			float _personalitySeed)
 			: vertexPosition(_vertexPosition)
 			, haloSpacePosition(_haloSpacePosition)
 			, renderProgress(_renderProgress)
+			, personalitySeed(_personalitySeed)
 		{}
 	};
 

@@ -351,12 +351,12 @@ NotificationRenderContext::NotificationRenderContext(
         mBlastToolHaloVBO = tmpGLuint;
 
         // Describe vertex attributes
-        static_assert(sizeof(BlastToolHaloVertex) == (4 + 1) * sizeof(float));
+        static_assert(sizeof(BlastToolHaloVertex) == (4 + 2) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mBlastToolHaloVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::BlastToolHalo1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::BlastToolHalo1), 4, GL_FLOAT, GL_FALSE, sizeof(BlastToolHaloVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::BlastToolHalo2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::BlastToolHalo2), 1, GL_FLOAT, GL_FALSE, sizeof(BlastToolHaloVertex), (void *)(4 * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::BlastToolHalo2), 2, GL_FLOAT, GL_FALSE, sizeof(BlastToolHaloVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);

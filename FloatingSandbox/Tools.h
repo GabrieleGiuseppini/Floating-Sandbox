@@ -10,6 +10,7 @@
 #include <Game/IGameController.h>
 #include <Game/ResourceLocator.h>
 
+#include <GameCore/GameRandomEngine.h>
 #include <GameCore/GameTypes.h>
 
 #include <wx/image.h>
@@ -2630,7 +2631,8 @@ public:
 
             mEngagementData.emplace(
                 currentSimulationTime,
-                isBoosted);
+                isBoosted,
+                GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
 
             if (isBoosted)
                 mSoundController->PlayBlastToolFastSound();
@@ -2661,7 +2663,8 @@ public:
                         inputState.MousePosition,
                         progress,
                         1.0f,
-                        progress);
+                        progress,
+                        mEngagementData->PersonalitySeed);
 
                     if (progress == 1.0f)
                     {
@@ -2678,8 +2681,6 @@ public:
                     float constexpr BlastDurationPause = 1.5f;
 
                     float const progress = std::min(elapsed / BlastDurationPause, 1.0f);
-
-                    // TODO: do we still want to apply a (stationary) blast?
 
                     if (progress == 1.0f)
                     {
@@ -2704,7 +2705,8 @@ public:
                         inputState.MousePosition,
                         1.0f + progress * 2.5f,
                         2.0f + 0.5f,
-                        progress);
+                        progress,
+                        mEngagementData->PersonalitySeed);
 
                     if (progress == 1.0f)
                     {
@@ -2731,7 +2733,8 @@ public:
                         inputState.MousePosition,
                         progress * 2.0f,
                         2.0f,
-                        progress);
+                        progress,
+                        mEngagementData->PersonalitySeed);
 
                     if (progress == 1.0f)
                     {
@@ -2808,11 +2811,15 @@ private:
         float CurrentStateStartSimulationTime;
         StateType CurrentState;
 
+        float const PersonalitySeed;
+
         EngagementData(
             float startSimulationTime,
-            bool isBoosted)
+            bool isBoosted,
+            float personalitySeed)
             : CurrentStateStartSimulationTime(startSimulationTime)
             , CurrentState(isBoosted ? StateType::BoostedPhase1 : StateType::NormalPhase1)
+            , PersonalitySeed(personalitySeed)
         { }
     };
 

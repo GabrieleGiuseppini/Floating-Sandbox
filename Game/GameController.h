@@ -178,7 +178,7 @@ public:
     void SawThrough(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates, bool isFirstSegment) override;
     bool ApplyHeatBlasterAt(LogicalPixelCoordinates const & screenCoordinates, HeatBlasterActionType action) override;
     bool ExtinguishFireAt(LogicalPixelCoordinates const & screenCoordinates) override;
-    void ApplyBlastAt(LogicalPixelCoordinates const & screenCoordinates, float radiusMultiplier, float forceMultiplier, float renderProgress) override;
+    void ApplyBlastAt(LogicalPixelCoordinates const & screenCoordinates, float radiusMultiplier, float forceMultiplier, float renderProgress, float personalitySeed) override;
     void DrawTo(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) override;
     void SwirlAt(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) override;
     void TogglePinAt(LogicalPixelCoordinates const & screenCoordinates) override;

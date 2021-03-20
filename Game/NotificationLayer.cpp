@@ -608,7 +608,8 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 		notificationRenderContext.UploadBlastToolHalo(
 			mBlastToolHaloToRender->WorldCoordinates,
 			mBlastToolHaloToRender->Radius,
-			mBlastToolHaloToRender->RenderProgress);
+			mBlastToolHaloToRender->RenderProgress,
+			mBlastToolHaloToRender->PersonalitySeed);
 
 		mBlastToolHaloToRender.reset();
 	}
