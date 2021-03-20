@@ -1038,6 +1038,11 @@ struct OneShotSingleChoiceSound
         : SoundBuffer()
     {
     }
+
+    void Initialize(std::unique_ptr<sf::SoundBuffer> && soundBuffer)
+    {
+        SoundBuffer = std::move(soundBuffer);
+    }
 };
 
 struct ContinuousMultipleChoiceSound

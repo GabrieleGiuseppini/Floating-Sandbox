@@ -67,6 +67,9 @@ SoundController::SoundController(
     , mWaveMakerSound()
     , mFishScareSound()
     , mFishFoodSound()
+    , mBlastToolSlow1Sound()
+    , mBlastToolSlow2Sound()
+    , mBlastToolFastSound()
     , mWaterRushSound()
     , mWaterSplashSound()
     , mAirBubblesSurfacingSound(0.23f, 0.12f)
@@ -264,6 +267,18 @@ SoundController::SoundController(
                 40.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
+        }
+        else if (soundType == SoundType::BlastToolSlow1)
+        {
+            mBlastToolSlow1Sound.Initialize(std::move(soundBuffer));
+        }
+        else if (soundType == SoundType::BlastToolSlow2)
+        {
+            mBlastToolSlow2Sound.Initialize(std::move(soundBuffer));
+        }
+        else if (soundType == SoundType::BlastToolFast)
+        {
+            mBlastToolFastSound.Initialize(std::move(soundBuffer));
         }
         else if (soundType == SoundType::WaterRush)
         {
@@ -464,9 +479,6 @@ SoundController::SoundController(
                 || soundType == SoundType::ThanosSnap
                 || soundType == SoundType::Scrub
                 || soundType == SoundType::Rot
-                || soundType == SoundType::BlastToolSlow1
-                || soundType == SoundType::BlastToolSlow2
-                || soundType == SoundType::BlastToolFast
                 || soundType == SoundType::InteractiveSwitchOn
                 || soundType == SoundType::InteractiveSwitchOff
                 || soundType == SoundType::ElectricalPanelClose
@@ -777,16 +789,9 @@ void SoundController::SetMasterEffectsVolume(float volume)
 
     for (auto const & playingSoundIt : mCurrentlyPlayingOneShotSounds)
     {
-        if (playingSoundIt.first != SoundType::Draw
-            && playingSoundIt.first != SoundType::Saw
-            && playingSoundIt.first != SoundType::HeatBlasterCool
-            && playingSoundIt.first != SoundType::HeatBlasterHeat
-            && playingSoundIt.first != SoundType::FireExtinguisher
-            && playingSoundIt.first != SoundType::Swirl
-            && playingSoundIt.first != SoundType::AirBubbles
-            && playingSoundIt.first != SoundType::FloodHose)
+        for (auto & playingSound : playingSoundIt.second)
         {
-            for (auto & playingSound : playingSoundIt.second)
+            if (playingSound.GroupType == SoundGroupType::Effects)
             {
                 playingSound.Sound->setMasterVolume(mMasterEffectsVolume);
             }
@@ -811,16 +816,9 @@ void SoundController::SetMasterEffectsMuted(bool isMuted)
 
     for (auto const & playingSoundIt : mCurrentlyPlayingOneShotSounds)
     {
-        if (playingSoundIt.first != SoundType::Draw
-            && playingSoundIt.first != SoundType::Saw
-            && playingSoundIt.first != SoundType::HeatBlasterCool
-            && playingSoundIt.first != SoundType::HeatBlasterHeat
-            && playingSoundIt.first != SoundType::FireExtinguisher
-            && playingSoundIt.first != SoundType::Swirl
-            && playingSoundIt.first != SoundType::AirBubbles
-            && playingSoundIt.first != SoundType::FloodHose)
+        for (auto & playingSound : playingSoundIt.second)
         {
-            for (auto & playingSound : playingSoundIt.second)
+            if (playingSound.GroupType == SoundGroupType::Effects)
             {
                 playingSound.Sound->setMuted(mMasterEffectsMuted);
             }
@@ -847,16 +845,9 @@ void SoundController::SetMasterToolsVolume(float volume)
 
     for (auto const & playingSoundIt : mCurrentlyPlayingOneShotSounds)
     {
-        if (playingSoundIt.first == SoundType::Draw
-            || playingSoundIt.first == SoundType::Saw
-            || playingSoundIt.first == SoundType::HeatBlasterCool
-            || playingSoundIt.first == SoundType::HeatBlasterHeat
-            || playingSoundIt.first == SoundType::FireExtinguisher
-            || playingSoundIt.first == SoundType::Swirl
-            || playingSoundIt.first == SoundType::AirBubbles
-            || playingSoundIt.first == SoundType::FloodHose)
+        for (auto & playingSound : playingSoundIt.second)
         {
-            for (auto & playingSound : playingSoundIt.second)
+            if (playingSound.GroupType == SoundGroupType::Tools)
             {
                 playingSound.Sound->setMasterVolume(mMasterToolsVolume);
             }
@@ -887,16 +878,9 @@ void SoundController::SetMasterToolsMuted(bool isMuted)
 
     for (auto const & playingSoundIt : mCurrentlyPlayingOneShotSounds)
     {
-        if (playingSoundIt.first == SoundType::Draw
-            || playingSoundIt.first == SoundType::Saw
-            || playingSoundIt.first == SoundType::HeatBlasterCool
-            || playingSoundIt.first == SoundType::HeatBlasterHeat
-            || playingSoundIt.first == SoundType::FireExtinguisher
-            || playingSoundIt.first == SoundType::Swirl
-            || playingSoundIt.first == SoundType::AirBubbles
-            || playingSoundIt.first == SoundType::FloodHose)
+        for (auto & playingSound : playingSoundIt.second)
         {
-            for (auto & playingSound : playingSoundIt.second)
+            if (playingSound.GroupType == SoundGroupType::Tools)
             {
                 playingSound.Sound->setMuted(mMasterToolsMuted);
             }
@@ -1108,6 +1092,7 @@ void SoundController::PlayTerrainAdjustSound()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::TerrainAdjust,
+        SoundGroupType::Tools,
         100.0f,
         true);
 }
@@ -1126,6 +1111,7 @@ void SoundController::PlayThanosSnapSound()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::ThanosSnap,
+        SoundGroupType::Tools,
         100.0f,
         true);
 }
@@ -1144,6 +1130,7 @@ void SoundController::PlayScrubSound()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::Scrub,
+        SoundGroupType::Tools,
         100.0f,
         true);
 }
@@ -1152,6 +1139,7 @@ void SoundController::PlayRotSound()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::Rot,
+        SoundGroupType::Tools,
         100.0f,
         true);
 }
@@ -1160,6 +1148,7 @@ void SoundController::PlayPliersSound(bool isUnderwater)
 {
     PlayUOneShotMultipleChoiceSound(
         SoundType::Pliers,
+        SoundGroupType::Tools,
         isUnderwater,
         100.0f,
         true);
@@ -1187,32 +1176,48 @@ void SoundController::StopFishFoodSound()
 
 void SoundController::PlayBlastToolSlow1Sound()
 {
-    PlayOneShotMultipleChoiceSound(
-        SoundType::BlastToolSlow1,
-        100.0f,
-        true);
+    if (!GetMasterToolsMuted())
+    {
+        PlayOneShotSound(
+            SoundType::BlastToolSlow1,
+            SoundGroupType::Tools,
+            mBlastToolSlow1Sound.SoundBuffer.get(),
+            GetMasterToolsVolume(),
+            false);
+    }
 }
 
 void SoundController::PlayBlastToolSlow2Sound()
 {
-    PlayOneShotMultipleChoiceSound(
-        SoundType::BlastToolSlow2,
-        100.0f,
-        true);
+    if (!GetMasterToolsMuted())
+    {
+        PlayOneShotSound(
+            SoundType::BlastToolSlow2,
+            SoundGroupType::Tools,
+            mBlastToolSlow2Sound.SoundBuffer.get(),
+            GetMasterToolsVolume(),
+            false);
+    }
 }
 
 void SoundController::PlayBlastToolFastSound()
 {
-    PlayOneShotMultipleChoiceSound(
-        SoundType::BlastToolFast,
-        100.0f,
-        true);
+    if (!GetMasterToolsMuted())
+    {
+        PlayOneShotSound(
+            SoundType::BlastToolFast,
+            SoundGroupType::Tools,
+            mBlastToolFastSound.SoundBuffer.get(),
+            GetMasterToolsVolume(),
+            false);
+    }
 }
 
 void SoundController::PlaySnapshotSound()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::Snapshot,
+        SoundGroupType::Effects,
         100.0f,
         true);
 }
@@ -1221,6 +1226,7 @@ void SoundController::PlayElectricalPanelOpenSound(bool isClose)
 {
     PlayOneShotMultipleChoiceSound(
         isClose ? SoundType::ElectricalPanelClose: SoundType::ElectricalPanelOpen,
+        SoundGroupType::Effects,
         100.0f,
         true);
 }
@@ -1229,6 +1235,7 @@ void SoundController::PlayElectricalPanelDockSound(bool isUndock)
 {
     PlayOneShotMultipleChoiceSound(
         isUndock ? SoundType::ElectricalPanelUndock : SoundType::ElectricalPanelDock,
+        SoundGroupType::Effects,
         100.0f,
         true);
 }
@@ -1237,6 +1244,7 @@ void SoundController::PlayTickSound()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::GlassTick,
+        SoundGroupType::Effects,
         100.0f,
         true);
 }
@@ -1245,6 +1253,7 @@ void SoundController::PlayErrorSound()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::Error,
+        SoundGroupType::Effects,
         50.0f,
         true);
 }
@@ -1334,6 +1343,7 @@ void SoundController::OnDestroy(
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::Destroy,
+            SoundGroupType::Tools,
             *(structuralMaterial.MaterialSound),
             size,
             isUnderwater,
@@ -1348,6 +1358,7 @@ void SoundController::OnLightningHit(StructuralMaterial const & structuralMateri
     {
         PlayMOneShotMultipleChoiceSound(
             SoundType::LightningHit,
+            SoundGroupType::Effects,
             *(structuralMaterial.MaterialSound),
             70.0f,
             true);
@@ -1363,6 +1374,7 @@ void SoundController::OnSpringRepaired(
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::RepairSpring,
+            SoundGroupType::Effects,
             *(structuralMaterial.MaterialSound),
             size,
             isUnderwater,
@@ -1380,6 +1392,7 @@ void SoundController::OnTriangleRepaired(
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::RepairTriangle,
+            SoundGroupType::Effects,
             *(structuralMaterial.MaterialSound),
             size,
             isUnderwater,
@@ -1404,6 +1417,7 @@ void SoundController::OnPinToggled(
 {
     PlayUOneShotMultipleChoiceSound(
         isPinned ? SoundType::PinPoint : SoundType::UnpinPoint,
+        SoundGroupType::Effects,
         isUnderwater,
         100.0f,
         true);
@@ -1413,6 +1427,7 @@ void SoundController::OnTsunamiNotification(float /*x*/)
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::TsunamiTriggered,
+        SoundGroupType::Effects,
         100.0f,
         true);
 }
@@ -1431,6 +1446,7 @@ void SoundController::OnCombustionSmothered()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::FireSizzling,
+        SoundGroupType::Effects,
         100.0f,
         true);
 }
@@ -1443,6 +1459,7 @@ void SoundController::OnCombustionExplosion(
 
     PlayUOneShotMultipleChoiceSound(
         SoundType::CombustionExplosion,
+        SoundGroupType::Effects,
         isUnderwater,
         volume,
         false);
@@ -1458,6 +1475,7 @@ void SoundController::OnStress(
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::Stress,
+            SoundGroupType::Effects,
             *(structuralMaterial.MaterialSound),
             size,
             isUnderwater,
@@ -1476,6 +1494,7 @@ void SoundController::OnBreak(
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::Break,
+            SoundGroupType::Effects,
             *(structuralMaterial.MaterialSound),
             size,
             isUnderwater,
@@ -1508,6 +1527,7 @@ void SoundController::OnWaterSplashed(float waterSplashed)
 
             PlayOneShotMultipleChoiceSound(
                 SoundType::Wave,
+                SoundGroupType::Effects,
                 waveVolume,
                 true);
 
@@ -1591,6 +1611,7 @@ void SoundController::OnWindSpeedUpdated(
         {
             PlayOneShotMultipleChoiceSound(
                 SoundType::WindGust,
+                SoundGroupType::Effects,
                 smoothedWindVolume,
                 true);
         }
@@ -1609,6 +1630,7 @@ void SoundController::OnThunder()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::Thunder,
+        SoundGroupType::Effects,
         100.0f,
         true);
 }
@@ -1617,6 +1639,7 @@ void SoundController::OnLightning()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::Lightning,
+        SoundGroupType::Effects,
         100.0f,
         true);
 }
@@ -1628,6 +1651,7 @@ void SoundController::OnLightFlicker(
 {
     PlayDslUOneShotMultipleChoiceSound(
         SoundType::LightFlicker,
+        SoundGroupType::Effects,
         duration,
         isUnderwater,
         std::max(
@@ -1686,6 +1710,7 @@ void SoundController::OnSwitchToggled(
 {
     PlayOneShotMultipleChoiceSound(
         newState == ElectricalState::On ? SoundType::InteractiveSwitchOn : SoundType::InteractiveSwitchOff,
+        SoundGroupType::Effects,
         100.0f,
         false);
 }
@@ -1696,6 +1721,7 @@ void SoundController::OnEngineControllerUpdated(
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::EngineTelegraph,
+        SoundGroupType::Effects,
         100.0f,
         false);
 }
@@ -1873,6 +1899,7 @@ void SoundController::OnGadgetPlaced(
         {
             PlayUOneShotMultipleChoiceSound(
                 SoundType::BombAttached,
+                SoundGroupType::Effects,
                 isUnderwater,
                 100.0f,
                 true);
@@ -1884,6 +1911,7 @@ void SoundController::OnGadgetPlaced(
         {
             PlayUOneShotMultipleChoiceSound(
                 SoundType::PhysicsProbeAttached,
+                SoundGroupType::Effects,
                 isUnderwater,
                 100.0f,
                 true);
@@ -1909,6 +1937,7 @@ void SoundController::OnGadgetRemoved(
             {
                 PlayUOneShotMultipleChoiceSound(
                     SoundType::BombDetached,
+                    SoundGroupType::Effects,
                     *isUnderwater,
                     100.0f,
                     true);
@@ -1923,6 +1952,7 @@ void SoundController::OnGadgetRemoved(
             {
                 PlayUOneShotMultipleChoiceSound(
                     SoundType::PhysicsProbeDetached,
+                    SoundGroupType::Effects,
                     *isUnderwater,
                     100.0f,
                     true);
@@ -1944,6 +1974,7 @@ void SoundController::OnBombExplosion(
         {
             PlayUOneShotMultipleChoiceSound(
                 SoundType::AntiMatterBombExplosion,
+                SoundGroupType::Effects,
                 isUnderwater,
                 std::max(
                     100.0f,
@@ -1959,6 +1990,7 @@ void SoundController::OnBombExplosion(
         {
             PlayUOneShotMultipleChoiceSound(
                 SoundType::BombExplosion,
+                SoundGroupType::Effects,
                 isUnderwater,
                 std::max(
                     100.0f,
@@ -1982,6 +2014,7 @@ void SoundController::OnRCBombPing(
 {
     PlayUOneShotMultipleChoiceSound(
         SoundType::RCBombPing,
+        SoundGroupType::Effects,
         isUnderwater,
         std::max(
             100.0f,
@@ -2032,6 +2065,7 @@ void SoundController::OnTimerBombDefused(
 {
     PlayUOneShotMultipleChoiceSound(
         SoundType::TimerBombDefused,
+        SoundGroupType::Effects,
         isUnderwater,
         std::max(
             100.0f,
@@ -2059,6 +2093,7 @@ void SoundController::OnAntiMatterBombPreImploding()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::AntiMatterBombPreImplosion,
+        SoundGroupType::Effects,
         100.0f,
         true);
 }
@@ -2067,6 +2102,7 @@ void SoundController::OnAntiMatterBombImploding()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::AntiMatterBombImplosion,
+        SoundGroupType::Effects,
         100.0f,
         false);
 }
@@ -2077,6 +2113,7 @@ void SoundController::OnWatertightDoorOpened(
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::WatertightDoorOpened,
+        SoundGroupType::Effects,
         std::max(
             100.0f,
             30.0f * size),
@@ -2089,6 +2126,7 @@ void SoundController::OnWatertightDoorClosed(
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::WatertightDoorClosed,
+        SoundGroupType::Effects,
         std::max(
             100.0f,
             30.0f * size),
@@ -2099,6 +2137,7 @@ void SoundController::OnPhysicsProbePanelOpened()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::PhysicsProbePanelOpen,
+        SoundGroupType::Tools,
         100.0f,
         true);
 }
@@ -2107,6 +2146,7 @@ void SoundController::OnPhysicsProbePanelClosed()
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::PhysicsProbePanelClose,
+        SoundGroupType::Tools,
         100.0f,
         true);
 }
@@ -2115,6 +2155,7 @@ void SoundController::OnPhysicsProbePanelClosed()
 
 void SoundController::PlayMSUOneShotMultipleChoiceSound(
     SoundType soundType,
+    SoundGroupType soundGroupType,
     StructuralMaterial::MaterialSoundType materialSound,
     unsigned int size,
     bool isUnderwater,
@@ -2184,6 +2225,7 @@ void SoundController::PlayMSUOneShotMultipleChoiceSound(
 
     ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
+        soundGroupType,
         it->second,
         volume,
         isInterruptible);
@@ -2191,6 +2233,7 @@ void SoundController::PlayMSUOneShotMultipleChoiceSound(
 
 void SoundController::PlayMOneShotMultipleChoiceSound(
     SoundType soundType,
+    SoundGroupType soundGroupType,
     StructuralMaterial::MaterialSoundType materialSound,
     float volume,
     bool isInterruptible)
@@ -2219,6 +2262,7 @@ void SoundController::PlayMOneShotMultipleChoiceSound(
 
     ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
+        soundGroupType,
         it->second,
         volume,
         isInterruptible);
@@ -2226,6 +2270,7 @@ void SoundController::PlayMOneShotMultipleChoiceSound(
 
 void SoundController::PlayDslUOneShotMultipleChoiceSound(
     SoundType soundType,
+    SoundGroupType soundGroupType,
     DurationShortLongType duration,
     bool isUnderwater,
     float volume,
@@ -2257,6 +2302,7 @@ void SoundController::PlayDslUOneShotMultipleChoiceSound(
 
     ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
+        soundGroupType,
         it->second,
         volume,
         isInterruptible);
@@ -2264,6 +2310,7 @@ void SoundController::PlayDslUOneShotMultipleChoiceSound(
 
 void SoundController::PlayUOneShotMultipleChoiceSound(
     SoundType soundType,
+    SoundGroupType soundGroupType,
     bool isUnderwater,
     float volume,
     bool isInterruptible)
@@ -2298,6 +2345,7 @@ void SoundController::PlayUOneShotMultipleChoiceSound(
 
     ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
+        soundGroupType,
         it->second,
         volume,
         isInterruptible);
@@ -2305,6 +2353,7 @@ void SoundController::PlayUOneShotMultipleChoiceSound(
 
 void SoundController::PlayOneShotMultipleChoiceSound(
     SoundType soundType,
+    SoundGroupType soundGroupType,
     float volume,
     bool isInterruptible)
 {
@@ -2330,6 +2379,7 @@ void SoundController::PlayOneShotMultipleChoiceSound(
 
     ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
+        soundGroupType,
         it->second,
         volume,
         isInterruptible);
@@ -2337,6 +2387,7 @@ void SoundController::PlayOneShotMultipleChoiceSound(
 
 void SoundController::ChooseAndPlayOneShotMultipleChoiceSound(
     SoundType soundType,
+    SoundGroupType soundGroupType,
     OneShotMultipleChoiceSound & sound,
     float volume,
     bool isInterruptible)
@@ -2371,6 +2422,7 @@ void SoundController::ChooseAndPlayOneShotMultipleChoiceSound(
 
     PlayOneShotSound(
         soundType,
+        soundGroupType,
         chosenSoundBuffer,
         volume,
         isInterruptible);
@@ -2378,6 +2430,7 @@ void SoundController::ChooseAndPlayOneShotMultipleChoiceSound(
 
 void SoundController::PlayOneShotSound(
     SoundType soundType,
+    SoundGroupType soundGroupType,
     sf::SoundBuffer * soundBuffer,
     float volume,
     bool isInterruptible)
@@ -2432,16 +2485,39 @@ void SoundController::PlayOneShotSound(
     // Create and play sound
     //
 
-    std::unique_ptr<GameSound> sound = std::make_unique<GameSound>(
-        *soundBuffer,
-        volume,
-        mMasterEffectsVolume,
-        mMasterEffectsMuted);
+    std::unique_ptr<GameSound> sound;
+    switch (soundGroupType)
+    {
+        case SoundGroupType::Effects:
+        {
+            sound = std::make_unique<GameSound>(
+                *soundBuffer,
+                volume,
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
+
+            break;
+        }
+
+        case SoundGroupType::Tools:
+        {
+            sound = std::make_unique<GameSound>(
+                *soundBuffer,
+                volume,
+                mMasterToolsVolume,
+                mMasterToolsMuted);
+
+            break;
+        }
+    }
+
+    assert(!!sound);
 
     sound->play();
 
     thisTypeCurrentlyPlayingSounds.emplace_back(
         soundType,
+        soundGroupType,
         std::move(sound),
         now,
         isInterruptible);

@@ -354,19 +354,28 @@ public:
 
 private:
 
+    enum class SoundGroupType
+    {
+        Effects,
+        Tools
+    };
+
     struct PlayingSound
     {
         SoundType Type;
+        SoundGroupType GroupType;
         std::unique_ptr<GameSound> Sound;
         std::chrono::steady_clock::time_point StartedTimestamp;
         bool IsInterruptible;
 
         PlayingSound(
             SoundType type,
+            SoundGroupType groupType,
             std::unique_ptr<GameSound> sound,
             std::chrono::steady_clock::time_point startedTimestamp,
             bool isInterruptible)
             : Type(type)
+            , GroupType(groupType)
             , Sound(std::move(sound))
             , StartedTimestamp(startedTimestamp)
             , IsInterruptible(isInterruptible)
@@ -378,6 +387,7 @@ private:
 
     void PlayMSUOneShotMultipleChoiceSound(
         SoundType soundType,
+        SoundGroupType soundGroupType,
         StructuralMaterial::MaterialSoundType materialSound,
         unsigned int size,
         bool isUnderwater,
@@ -386,12 +396,14 @@ private:
 
 	void PlayMOneShotMultipleChoiceSound(
 		SoundType soundType,
+        SoundGroupType soundGroupType,
 		StructuralMaterial::MaterialSoundType materialSound,
 		float volume,
 		bool isInterruptible);
 
     void PlayDslUOneShotMultipleChoiceSound(
         SoundType soundType,
+        SoundGroupType soundGroupType,
         DurationShortLongType duration,
         bool isUnderwater,
         float volume,
@@ -399,23 +411,27 @@ private:
 
     void PlayUOneShotMultipleChoiceSound(
         SoundType soundType,
+        SoundGroupType soundGroupType,
         bool isUnderwater,
         float volume,
         bool isInterruptible);
 
     void PlayOneShotMultipleChoiceSound(
         SoundType soundType,
+        SoundGroupType soundGroupType,
         float volume,
         bool isInterruptible);
 
     void ChooseAndPlayOneShotMultipleChoiceSound(
         SoundType soundType,
+        SoundGroupType soundGroupType,
         OneShotMultipleChoiceSound & sound,
         float volume,
         bool isInterruptible);
 
     void PlayOneShotSound(
         SoundType soundType,
+        SoundGroupType soundGroupType,
         sf::SoundBuffer * soundBuffer,
         float volume,
         bool isInterruptible);
@@ -545,6 +561,9 @@ private:
     ContinuousSingleChoiceSound mWaveMakerSound;
     ContinuousSingleChoiceSound mFishScareSound;
     ContinuousSingleChoiceSound mFishFoodSound;
+    OneShotSingleChoiceSound mBlastToolSlow1Sound;
+    OneShotSingleChoiceSound mBlastToolSlow2Sound;
+    OneShotSingleChoiceSound mBlastToolFastSound;
 
     ContinuousSingleChoiceSound mWaterRushSound;
     ContinuousSingleChoiceSound mWaterSplashSound;
