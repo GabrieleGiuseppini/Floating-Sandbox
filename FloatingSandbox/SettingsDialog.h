@@ -192,7 +192,6 @@ private:
     wxColourPickerCtrl * mDefaultWaterColorPicker;
     SliderControl<float> * mWaterContrastSlider;
     SliderControl<float> * mWaterLevelOfDetailSlider;
-    // TODOHERE
     wxRadioBox * mHeatRenderModeRadioBox;
     SliderControl<float> * mHeatSensitivitySlider;
     wxCheckBox * mDrawHeatBlasterFlameCheckBox;
