@@ -117,6 +117,10 @@ public:
         , mOnValueChanged(std::move(onValueChanged))
         , mSliderCore(std::move(sliderCore))
     {
+        // Set font
+        SetFont(parent->GetFont());
+
+        // Set tooltop
         if (!toolTipLabel.IsEmpty())
             SetToolTip(toolTipLabel);
 
@@ -158,6 +162,7 @@ public:
 
         {
             wxStaticText * labelStaticText = new wxStaticText(this, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, 0);
+
             if (!toolTipLabel.IsEmpty())
                 labelStaticText->SetToolTip(toolTipLabel);
 
@@ -182,6 +187,7 @@ public:
                 // Icon
                 {
                     wxStaticBitmap * icon = new wxStaticBitmap(this, wxID_ANY, *warningIcon, wxDefaultPosition, wxSize(-1, -1), wxBORDER_NONE);
+
                     if (!toolTipLabel.IsEmpty())
                         icon->SetToolTip(toolTipLabel);
 
@@ -210,7 +216,7 @@ public:
                     wxID_ANY,
                     wxEmptyString,
                     wxDefaultPosition,
-                    wxDefaultSize,
+                    wxSize(width, -1),
                     wxTE_CENTRE | wxTE_PROCESS_ENTER,
                     *mTextCtrlValidator);
 
