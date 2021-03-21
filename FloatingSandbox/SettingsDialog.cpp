@@ -101,7 +101,6 @@ SettingsDialog::SettingsDialog(
 
     SetIcon(wxICON(BBB_SHIP_ICON));
 
-
     //
     // Populate and sort persisted settings
     //
@@ -113,7 +112,6 @@ SettingsDialog::SettingsDialog(
         mPersistedSettings.end(),
         cmp);
 
-
     //
     // Load icons
     //
@@ -122,14 +120,11 @@ SettingsDialog::SettingsDialog(
         resourceLocator.GetIconFilePath("warning_icon").string(),
         wxBITMAP_TYPE_PNG);
 
-
-
     //
     // Lay the dialog out
     //
 
     wxBoxSizer * dialogVSizer = new wxBoxSizer(wxVERTICAL);
-
 
     wxNotebook * notebook = new wxNotebook(
         this,
@@ -137,7 +132,6 @@ SettingsDialog::SettingsDialog(
         wxPoint(-1, -1),
         wxSize(-1, -1),
         wxNB_TOP);
-
 
     //
     // Mechanics and Thermodynamics
@@ -152,7 +146,7 @@ SettingsDialog::SettingsDialog(
     }
 
     //
-    // Water and OCean
+    // Water and Ocean
     //
 
     {
@@ -161,6 +155,18 @@ SettingsDialog::SettingsDialog(
         PopulateWaterAndOceanPanel(panel);
 
         notebook->AddPage(panel, _("Water and Ocean"));
+    }
+
+    //
+    // Air and Waves
+    //
+
+    {
+        wxPanel * panel = new wxPanel(notebook);
+
+        PopulateAirAndWavesPanel(panel);
+
+        notebook->AddPage(panel, _("Air and Waves"));
     }
 
     /* TODOOLD
@@ -981,7 +987,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
             mechanicsBoxSizer,
             wxGBPosition(0, 0),
             wxGBSpan(1, 3),
-            wxEXPAND | wxALL,
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -1054,7 +1060,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
             thermodynamicsBoxSizer,
             wxGBPosition(0, 3),
             wxGBSpan(1, 2),
-            wxEXPAND | wxALL,
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -1205,13 +1211,16 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
             combustionBoxSizer,
             wxGBPosition(1, 0),
             wxGBSpan(1, 5),
-            wxEXPAND | wxALL,
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
     // Finalize panel
 
-    panel->SetSizerAndFit(gridSizer);
+    for (int c = 0; c < gridSizer->GetCols(); ++c)
+        gridSizer->AddGrowableCol(c);
+
+    panel->SetSizer(gridSizer);
 }
 
 void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
@@ -1413,7 +1422,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             waterBoxSizer,
             wxGBPosition(0, 0),
             wxGBSpan(1, 7),
-            wxEXPAND | wxALL,
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -1460,7 +1469,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             oceanBoxSizer,
             wxGBPosition(1, 0),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALL,
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -1520,7 +1529,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     restoreDefaultTerrainButton,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
-                    wxEXPAND | wxLEFT | wxRIGHT,
+                    wxLEFT | wxRIGHT,
                     CellBorderInner);
             }
 
@@ -1607,7 +1616,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             oceanFloorBoxSizer,
             wxGBPosition(1, 1),
             wxGBSpan(1, 4),
-            wxEXPAND | wxALL,
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -1654,13 +1663,769 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             rottingBoxSizer,
             wxGBPosition(1, 5),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALL,
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
     // Finalize panel
 
-    panel->SetSizerAndFit(gridSizer);
+    for (int c = 0; c < gridSizer->GetCols(); ++c)
+        gridSizer->AddGrowableCol(c);
+
+    panel->SetSizer(gridSizer);
+}
+
+void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
+{
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+
+    //
+    // Wind
+    //
+
+    {
+        wxStaticBoxSizer * windBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Wind"));
+
+        {
+            wxGridBagSizer * windSizer = new wxGridBagSizer(0, 0);
+
+            // Zero wind
+            {
+                wxButton * zeroWindButton = new wxButton(windBoxSizer->GetStaticBox(), wxID_ANY, _T("Zero"));
+                zeroWindButton->SetToolTip(_("Sets wind speed to zero."));
+                zeroWindButton->Bind(
+                    wxEVT_BUTTON,
+                    [this](wxCommandEvent &)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WindSpeedBase, 0.0f);
+                        mWindSpeedBaseSlider->SetValue(0.0f);
+                        this->OnLiveSettingsChanged();
+                    });
+
+                windSizer->Add(
+                    zeroWindButton,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxLEFT | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            // Wind Speed Base
+            {
+                mWindSpeedBaseSlider = new SliderControl<float>(
+                    windBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    -1,
+                    _("Wind Speed Base"),
+                    _("The base speed of wind (Km/h), before modulation takes place. Wind speed in turn determines ocean wave characteristics such as their height, speed, and width."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WindSpeedBase, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinWindSpeedBase(),
+                        mGameControllerSettingsOptions->GetMaxWindSpeedBase()));
+
+                windSizer->Add(
+                    mWindSpeedBaseSlider,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            // Modulate Wind
+            {
+                mModulateWindCheckBox = new wxCheckBox(windBoxSizer->GetStaticBox(), wxID_ANY, _("Modulate Wind"));
+                mModulateWindCheckBox->SetToolTip(_("Enables or disables simulation of wind variations, alternating between dead calm and high-speed gusts."));
+                mModulateWindCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue<bool>(GameSettings::DoModulateWind, event.IsChecked());
+                        OnLiveSettingsChanged();
+
+                        mWindGustAmplitudeSlider->Enable(mModulateWindCheckBox->IsChecked());
+                    });
+
+                windSizer->Add(
+                    mModulateWindCheckBox,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxLEFT | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            // Wind Gust Amplitude
+            {
+                mWindGustAmplitudeSlider = new SliderControl<float>(
+                    windBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    -1,
+                    _("Wind Gust Amplitude"),
+                    _("The amplitude of wind gusts, as a multiplier of the base wind speed."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WindSpeedMaxFactor, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinWindSpeedMaxFactor(),
+                        mGameControllerSettingsOptions->GetMaxWindSpeedMaxFactor()));
+
+                windSizer->Add(
+                    mWindGustAmplitudeSlider,
+                    wxGBPosition(1, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            windBoxSizer->Add(windSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            windBoxSizer,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 2),
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // Waves
+    //
+
+    {
+        wxStaticBoxSizer * wavesBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Waves"));
+
+        {
+            wxGridBagSizer * wavesSizer = new wxGridBagSizer(0, 0);
+
+            // Basal Wave Height Adjustment
+            {
+                mBasalWaveHeightAdjustmentSlider = new SliderControl<float>(
+                    wavesBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Wave Height Adjust"),
+                    _("Adjusts the height of ocean waves wrt their optimal value, which is determined by wind speed."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::BasalWaveHeightAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinBasalWaveHeightAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxBasalWaveHeightAdjustment()));
+
+                wavesSizer->Add(
+                    mBasalWaveHeightAdjustmentSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Basal Wave Length Adjustment
+            {
+                mBasalWaveLengthAdjustmentSlider = new SliderControl<float>(
+                    wavesBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Wave Width Adjust"),
+                    _("Adjusts the width of ocean waves wrt their optimal value, which is determined by wind speed."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::BasalWaveLengthAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinBasalWaveLengthAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxBasalWaveLengthAdjustment()));
+
+                wavesSizer->Add(
+                    mBasalWaveLengthAdjustmentSlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Basal Wave Speed Adjustment
+            {
+                mBasalWaveSpeedAdjustmentSlider = new SliderControl<float>(
+                    wavesBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Wave Speed Adjust"),
+                    _("Adjusts the speed of ocean waves wrt their optimal value, which is determined by wind speed."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::BasalWaveSpeedAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinBasalWaveSpeedAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxBasalWaveSpeedAdjustment()));
+
+                wavesSizer->Add(
+                    mBasalWaveSpeedAdjustmentSlider,
+                    wxGBPosition(0, 4),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            wavesBoxSizer->Add(wavesSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            wavesBoxSizer,
+            wxGBPosition(0, 2),
+            wxGBSpan(1, 3),
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // Displacement Waves
+    //
+
+    {
+        wxStaticBoxSizer * displacementWavesBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Displacement Waves"));
+
+        {
+            wxGridBagSizer * displacementWavesSizer = new wxGridBagSizer(0, 0);
+
+            // Displace Water
+            {
+                mDoDisplaceWaterCheckBox = new wxCheckBox(displacementWavesBoxSizer->GetStaticBox(), wxID_ANY, _("Displace Water"));
+                mDoDisplaceWaterCheckBox->SetToolTip(_("Enables or disables displacement of water due to interactions with physical objects."));
+                mDoDisplaceWaterCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue<bool>(GameSettings::DoDisplaceWater, event.IsChecked());
+                        OnLiveSettingsChanged();
+
+                        mWaterDisplacementWaveHeightAdjustmentSlider->Enable(mDoDisplaceWaterCheckBox->IsChecked());
+                    });
+
+                displacementWavesSizer->Add(
+                    mDoDisplaceWaterCheckBox,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxLEFT | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            // Water Displacement Wave Height Adjust
+            {
+                mWaterDisplacementWaveHeightAdjustmentSlider = new SliderControl<float>(
+                    displacementWavesBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    -1,
+                    _("Displacement Wave Adjust"),
+                    _("Adjusts the magnitude of the waves caused by water displacement."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterDisplacementWaveHeightAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinWaterDisplacementWaveHeightAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxWaterDisplacementWaveHeightAdjustment()));
+
+                displacementWavesSizer->Add(
+                    mWaterDisplacementWaveHeightAdjustmentSlider,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            // TODOHERE: 1
+            displacementWavesSizer->AddGrowableRow(1);
+
+            // TODOHERE: 2
+            displacementWavesBoxSizer->Add(displacementWavesSizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            displacementWavesBoxSizer,
+            wxGBPosition(0, 5),
+            wxGBSpan(1, 1),
+            // TODOHERE: 3
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // Wave Phenomena
+    //
+
+    {
+        wxStaticBoxSizer * wavePhenomenaBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Wave Phenomena"));
+
+        {
+            wxGridBagSizer * wavePhenomenaSizer = new wxGridBagSizer(0, 0);
+
+            // Tsunami Rate
+            {
+                mTsunamiRateSlider = new SliderControl<std::chrono::minutes::rep>(
+                    wavePhenomenaBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Tsunami Rate"),
+                    _("The expected time between two automatically-generated tsunami waves (minutes). Set to zero to disable automatic generation of tsunami waves altogether."),
+                    [this](std::chrono::minutes::rep value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::TsunamiRate, std::chrono::minutes(value));
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<std::chrono::minutes::rep>>(
+                        mGameControllerSettingsOptions->GetMinTsunamiRate().count(),
+                        mGameControllerSettingsOptions->GetMaxTsunamiRate().count()));
+
+                wavePhenomenaSizer->Add(
+                    mTsunamiRateSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Rogue Wave Rate
+            {
+                mRogueWaveRateSlider = new SliderControl<std::chrono::minutes::rep>(
+                    wavePhenomenaBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Rogue Wave Rate"),
+                    _("The expected time between two automatically-generated rogue waves (minutes). Set to zero to disable automatic generation of rogue waves altogether."),
+                    [this](std::chrono::minutes::rep value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::RogueWaveRate, std::chrono::minutes(value));
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<std::chrono::minutes::rep>>(
+                        mGameControllerSettingsOptions->GetMinRogueWaveRate().count(),
+                        mGameControllerSettingsOptions->GetMaxRogueWaveRate().count()));
+
+                wavePhenomenaSizer->Add(
+                    mRogueWaveRateSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            wavePhenomenaBoxSizer->Add(wavePhenomenaSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            wavePhenomenaBoxSizer,
+            wxGBPosition(0, 6),
+            wxGBSpan(1, 2),
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // Storms
+    //
+
+    {
+        wxStaticBoxSizer * stormsBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Storms"));
+
+        {
+            wxGridBagSizer * stormsSizer = new wxGridBagSizer(0, 0);
+
+            // Storm Strength Adjustment
+            {
+                mStormStrengthAdjustmentSlider = new SliderControl<float>(
+                    stormsBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Storm Strength Adjust"),
+                    _("Adjusts the strength of storms."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::StormStrengthAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinStormStrengthAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxStormStrengthAdjustment()));
+
+                stormsSizer->Add(
+                    mStormStrengthAdjustmentSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Do rain with storm
+            {
+                mDoRainWithStormCheckBox = new wxCheckBox(stormsBoxSizer->GetStaticBox(), wxID_ANY, _("Spawn Rain"));
+                mDoRainWithStormCheckBox->SetToolTip(_("Enables or disables generation of rain during a storm."));
+                mDoRainWithStormCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue<bool>(GameSettings::DoRainWithStorm, event.IsChecked());
+                        OnLiveSettingsChanged();
+
+                        mRainFloodAdjustmentSlider->Enable(event.IsChecked());
+                    });
+
+                stormsSizer->Add(
+                    mDoRainWithStormCheckBox,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxLEFT | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            // Rain Flood Adjustment
+            {
+                mRainFloodAdjustmentSlider = new SliderControl<float>(
+                    stormsBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    -1,
+                    _("Rain Flood Adjust"),
+                    _("Adjusts the extent to which rain floods exposed areas of a ship."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::RainFloodAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinRainFloodAdjustment(),
+                        10000.0f,
+                        mGameControllerSettingsOptions->GetMaxRainFloodAdjustment()));
+
+                stormsSizer->Add(
+                    mRainFloodAdjustmentSlider,
+                    wxGBPosition(1, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            // Storm Duration
+            {
+                mStormDurationSlider = new SliderControl<std::chrono::seconds::rep>(
+                    stormsBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Storm Duration"),
+                    _("The duration of a storm (s)."),
+                    [this](std::chrono::seconds::rep value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::StormDuration, std::chrono::seconds(value));
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<std::chrono::seconds::rep>>(
+                        mGameControllerSettingsOptions->GetMinStormDuration().count(),
+                        mGameControllerSettingsOptions->GetMaxStormDuration().count()));
+
+                stormsSizer->Add(
+                    mStormDurationSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Storm Rate
+            {
+                mStormRateSlider = new SliderControl<std::chrono::minutes::rep>(
+                    stormsBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Storm Rate"),
+                    _("The expected time between two automatically-generated storms (minutes). Set to zero to disable automatic generation of storms altogether."),
+                    [this](std::chrono::minutes::rep value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::StormRate, std::chrono::minutes(value));
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<std::chrono::minutes::rep>>(
+                        mGameControllerSettingsOptions->GetMinStormRate().count(),
+                        mGameControllerSettingsOptions->GetMaxStormRate().count()));
+
+                stormsSizer->Add(
+                    mStormRateSlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            stormsBoxSizer->Add(stormsSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            stormsBoxSizer,
+            wxGBPosition(1, 0),
+            wxGBSpan(1, 4),
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // Air
+    //
+
+    {
+        wxStaticBoxSizer * airBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Air"));
+
+        {
+            wxGridBagSizer * airSizer = new wxGridBagSizer(0, 0);
+
+            // Air Friction Drag
+            {
+                mAirFrictionDragSlider = new SliderControl<float>(
+                    airBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Air Friction Drag Adjust"),
+                    _("Adjusts the frictional drag force (or 'skin' drag) exerted by air on physical bodies."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AirFrictionDragAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinAirFrictionDragAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxAirFrictionDragAdjustment()));
+
+                airSizer->Add(
+                    mAirFrictionDragSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Air Pressure Drag
+            {
+                mAirPressureDragSlider = new SliderControl<float>(
+                    airBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Air Pressure Drag Adjust"),
+                    _("Adjusts the pressure drag force (or 'form' drag) exerted by air on physical bodies."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AirPressureDragAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinAirPressureDragAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxAirPressureDragAdjustment()));
+
+                airSizer->Add(
+                    mAirPressureDragSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Air Temperature
+            {
+                mAirTemperatureSlider = new SliderControl<float>(
+                    airBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Air Temperature"),
+                    _("The temperature of air (K)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AirTemperature, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinAirTemperature(),
+                        mGameControllerSettingsOptions->GetMaxAirTemperature()));
+
+                airSizer->Add(
+                    mAirTemperatureSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Air Bubbles Density
+            {
+                mAirBubbleDensitySlider = new SliderControl<float>(
+                    airBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    -1,
+                    _("Air Bubbles Density"),
+                    _("The density of air bubbles generated when water enters a ship."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AirBubblesDensity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinAirBubblesDensity(),
+                        mGameControllerSettingsOptions->GetMaxAirBubblesDensity()));
+
+                airSizer->Add(
+                    mAirBubbleDensitySlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            airBoxSizer->Add(airSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            airBoxSizer,
+            wxGBPosition(1, 4),
+            wxGBSpan(1, 4),
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // Sky
+    //
+
+    {
+        wxStaticBoxSizer * skyBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Sky"));
+
+        {
+            wxGridBagSizer * skySizer = new wxGridBagSizer(0, 0);
+
+            // Number of Stars
+            {
+                mNumberOfStarsSlider = new SliderControl<unsigned int>(
+                    skyBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Number of Stars"),
+                    _("The number of stars in the sky."),
+                    [this](unsigned int value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::NumberOfStars, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<unsigned int>>(
+                        mGameControllerSettingsOptions->GetMinNumberOfStars(),
+                        mGameControllerSettingsOptions->GetMaxNumberOfStars()));
+
+                skySizer->Add(
+                    mNumberOfStarsSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Number of Clouds
+            {
+                mNumberOfCloudsSlider = new SliderControl<unsigned int>(
+                    skyBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Number of Clouds"),
+                    _("The number of clouds in the world's sky. This is the total number of clouds in the world; at any moment in time, the number of clouds that are visible will be less than or equal to this value."),
+                    [this](unsigned int value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::NumberOfClouds, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<unsigned int>>(
+                        mGameControllerSettingsOptions->GetMinNumberOfClouds(),
+                        mGameControllerSettingsOptions->GetMaxNumberOfClouds()));
+
+                skySizer->Add(
+                    mNumberOfCloudsSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Do daylight cycle
+            {
+                mDoDayLightCycleCheckBox = new wxCheckBox(skyBoxSizer->GetStaticBox(), wxID_ANY, _("Automatic Daylight Cycle"));
+                mDoDayLightCycleCheckBox->SetToolTip(_("Enables or disables automatic cycling of daylight."));
+                mDoDayLightCycleCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue<bool>(GameSettings::DoDayLightCycle, event.IsChecked());
+                        OnLiveSettingsChanged();
+
+                        mDayLightCycleDurationSlider->Enable(event.IsChecked());
+                    });
+
+                skySizer->Add(
+                    mDoDayLightCycleCheckBox,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxLEFT | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            // Daylight Cycle Duration
+            {
+                mDayLightCycleDurationSlider = new SliderControl<std::chrono::minutes::rep>(
+                    skyBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    -1,
+                    _("Daylight Cycle Duration"),
+                    _("The duration of a full daylight cycle (minutes)."),
+                    [this](std::chrono::minutes::rep value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::DayLightCycleDuration, std::chrono::minutes(value));
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<std::chrono::minutes::rep>>(
+                        mGameControllerSettingsOptions->GetMinDayLightCycleDuration().count(),
+                        mGameControllerSettingsOptions->GetMaxDayLightCycleDuration().count()));
+
+                skySizer->Add(
+                    mDayLightCycleDurationSlider,
+                    wxGBPosition(1, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            skyBoxSizer->Add(skySizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            skyBoxSizer,
+            wxGBPosition(1, 8),
+            wxGBSpan(1, 3),
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    // Finalize panel
+
+    for (int c = 0; c < gridSizer->GetCols(); ++c)
+        gridSizer->AddGrowableCol(c);
+
+    panel->SetSizer(gridSizer);
 }
 
 void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & settings)
@@ -1698,20 +2463,51 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mOceanFloorFrictionSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorFriction));
     mRotAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RotAcceler8r));
 
+    //
+    // Air and Waves
+    //
+
+    mWindSpeedBaseSlider->SetValue(settings.GetValue<float>(GameSettings::WindSpeedBase));
+    mModulateWindCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoModulateWind));
+    mWindGustAmplitudeSlider->SetValue(settings.GetValue<float>(GameSettings::WindSpeedMaxFactor));
+    mWindGustAmplitudeSlider->Enable(settings.GetValue<bool>(GameSettings::DoModulateWind));
+    mBasalWaveHeightAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BasalWaveHeightAdjustment));
+    mBasalWaveLengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BasalWaveLengthAdjustment));
+    mBasalWaveSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BasalWaveSpeedAdjustment));
+    mDoDisplaceWaterCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoDisplaceWater));
+    mWaterDisplacementWaveHeightAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDisplacementWaveHeightAdjustment));
+    mWaterDisplacementWaveHeightAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoDisplaceWater));
+    mTsunamiRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::TsunamiRate).count());
+    mRogueWaveRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::RogueWaveRate).count());
+    mStormStrengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StormStrengthAdjustment));
+    mDoRainWithStormCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
+    mRainFloodAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RainFloodAdjustment));
+    mRainFloodAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
+    mStormDurationSlider->SetValue(settings.GetValue<std::chrono::seconds>(GameSettings::StormDuration).count());
+    mStormRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::StormRate).count());
+    mAirFrictionDragSlider->SetValue(settings.GetValue<float>(GameSettings::AirFrictionDragAdjustment));
+    mAirPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::AirPressureDragAdjustment));
+    mAirTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::AirTemperature));
+    mAirBubbleDensitySlider->SetValue(settings.GetValue<float>(GameSettings::AirBubblesDensity));
+    mAirBubbleDensitySlider->Enable(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles)); // tODO: this will go once the setting goes (replaced by density == 0)
+    mNumberOfStarsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfStars));
+    mNumberOfCloudsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfClouds));
+    mDoDayLightCycleCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoDayLightCycle));
+    mDayLightCycleDurationSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::DayLightCycleDuration).count());
+    mDayLightCycleDurationSlider->Enable(settings.GetValue<bool>(GameSettings::DoDayLightCycle));
+
+
+
     // TODOHERE
 
     /* TODOOLD
 
 
-    mAirFrictionDragSlider->SetValue(settings.GetValue<float>(GameSettings::AirFrictionDragAdjustment));
-
-    mAirPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::AirPressureDragAdjustment));
 
 
     // Heat
 
 
-    mAirTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::AirTemperature));
 
 
 
@@ -1729,35 +2525,9 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mSmokeEmissionDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeEmissionDensityAdjustment));
     mSmokeParticleLifetimeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeParticleLifetimeAdjustment));
 
-    mStormStrengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StormStrengthAdjustment));
-    mDoRainWithStormCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
-    mRainFloodAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RainFloodAdjustment));
-    mRainFloodAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
-    mStormDurationSlider->SetValue(settings.GetValue<std::chrono::seconds>(GameSettings::StormDuration).count());
-    mStormRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::StormRate).count());
 
-    mNumberOfStarsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfStars));
-    mNumberOfCloudsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfClouds));
-    mDoDayLightCycleCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoDayLightCycle));
-    mDayLightCycleDurationSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::DayLightCycleDuration).count());
-    mDayLightCycleDurationSlider->Enable(settings.GetValue<bool>(GameSettings::DoDayLightCycle));
 
     // Wind, Waves, Fishes, and Lights
-
-    mWindSpeedBaseSlider->SetValue(settings.GetValue<float>(GameSettings::WindSpeedBase));
-    mModulateWindCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoModulateWind));
-    mWindGustAmplitudeSlider->SetValue(settings.GetValue<float>(GameSettings::WindSpeedMaxFactor));
-    mWindGustAmplitudeSlider->Enable(settings.GetValue<bool>(GameSettings::DoModulateWind));
-
-    mBasalWaveHeightAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BasalWaveHeightAdjustment));
-    mBasalWaveLengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BasalWaveLengthAdjustment));
-    mBasalWaveSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BasalWaveSpeedAdjustment));
-    mTsunamiRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::TsunamiRate).count());
-    mRogueWaveRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::RogueWaveRate).count());
-
-    mDoDisplaceWaterCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoDisplaceWater));
-    mWaterDisplacementWaveHeightAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDisplacementWaveHeightAdjustment));
-    mWaterDisplacementWaveHeightAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoDisplaceWater));
 
     mNumberOfFishesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfFishes));
     mFishSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::FishSizeMultiplier));

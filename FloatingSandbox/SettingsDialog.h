@@ -113,13 +113,35 @@ private:
     SliderControl<float> * mOceanFloorFrictionSlider;
     SliderControl<float> * mRotAcceler8rSlider;
 
-    /* TODOOLD
-    // Mechanics, Air, and Fluids
+    // Air and Waves
+    SliderControl<float> * mWindSpeedBaseSlider;
+    wxCheckBox * mModulateWindCheckBox;
+    SliderControl<float> * mWindGustAmplitudeSlider;
+    SliderControl<float> * mBasalWaveHeightAdjustmentSlider;
+    SliderControl<float> * mBasalWaveLengthAdjustmentSlider;
+    SliderControl<float> * mBasalWaveSpeedAdjustmentSlider;
+    wxCheckBox * mDoDisplaceWaterCheckBox;
+    SliderControl<float> * mWaterDisplacementWaveHeightAdjustmentSlider;
+    SliderControl<std::chrono::minutes::rep> * mTsunamiRateSlider;
+    SliderControl<std::chrono::minutes::rep> * mRogueWaveRateSlider;
+    SliderControl<float> * mStormStrengthAdjustmentSlider;
+    wxCheckBox * mDoRainWithStormCheckBox;
+    SliderControl<float> * mRainFloodAdjustmentSlider;
+    SliderControl<std::chrono::seconds::rep> * mStormDurationSlider;
+    SliderControl<std::chrono::minutes::rep> * mStormRateSlider;
     SliderControl<float> * mAirFrictionDragSlider;
     SliderControl<float> * mAirPressureDragSlider;
+    SliderControl<float> * mAirTemperatureSlider;
+    SliderControl<float> * mAirBubbleDensitySlider;
+    SliderControl<unsigned int> * mNumberOfStarsSlider;
+    SliderControl<unsigned int> * mNumberOfCloudsSlider;
+    wxCheckBox * mDoDayLightCycleCheckBox;
+    SliderControl<std::chrono::minutes::rep> * mDayLightCycleDurationSlider;
+
+    /* TODOOLD
+    // Mechanics, Air, and Fluids
 
     // Heat and Combustion
-    SliderControl<float> * mAirTemperatureSlider;
 
     SliderControl<float> * mElectricalElementHeatProducedAdjustmentSlider;
     SliderControl<float> * mHeatBlasterRadiusSlider;
@@ -128,27 +150,8 @@ private:
     // Ocean, Smoke, and Sky
     SliderControl<float> * mSmokeEmissionDensityAdjustmentSlider;
     SliderControl<float> * mSmokeParticleLifetimeAdjustmentSlider;
-    SliderControl<float> * mStormStrengthAdjustmentSlider;
-    wxCheckBox * mDoRainWithStormCheckBox;
-    SliderControl<float> * mRainFloodAdjustmentSlider;
-    SliderControl<std::chrono::seconds::rep> * mStormDurationSlider;
-    SliderControl<std::chrono::minutes::rep> * mStormRateSlider;
-    SliderControl<unsigned int> * mNumberOfStarsSlider;
-    SliderControl<unsigned int> * mNumberOfCloudsSlider;
-    wxCheckBox * mDoDayLightCycleCheckBox;
-    SliderControl<std::chrono::minutes::rep> * mDayLightCycleDurationSlider;
 
     // Wind, Waves, Fishes, and Lights
-    SliderControl<float> * mWindSpeedBaseSlider;
-    wxCheckBox * mModulateWindCheckBox;
-    SliderControl<float> * mWindGustAmplitudeSlider;
-    SliderControl<float> * mBasalWaveHeightAdjustmentSlider;
-    SliderControl<float> * mBasalWaveLengthAdjustmentSlider;
-    SliderControl<float> * mBasalWaveSpeedAdjustmentSlider;
-    SliderControl<std::chrono::minutes::rep> * mTsunamiRateSlider;
-    SliderControl<std::chrono::minutes::rep> * mRogueWaveRateSlider;
-    wxCheckBox * mDoDisplaceWaterCheckBox;
-    SliderControl<float> * mWaterDisplacementWaveHeightAdjustmentSlider;
     SliderControl<unsigned int> * mNumberOfFishesSlider;
     SliderControl<float> * mFishSizeMultiplierSlider;
     SliderControl<float> * mFishSpeedAdjustmentSlider;
@@ -251,6 +254,7 @@ private:
 
     void PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel);
     void PopulateWaterAndOceanPanel(wxPanel * panel);
+    void PopulateAirAndWavesPanel(wxPanel * panel);
 
     /* TODOOLD
     void PopulateMechanicsAirFluidsPanel(wxPanel * panel);
