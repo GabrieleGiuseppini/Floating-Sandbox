@@ -413,10 +413,30 @@ Render:
 					+ Sound faster
 				+ Disturb ocean surface
 					+ At World
-				- SettingsDialog:
-					- Refactor: (TODOOLD: tools into new Tools tab)
+				= SettingsDialog:
+					= Refactor: 
+						+ Fonts
+						- 1: new SettingsDialog
+							+ Take all screenshots
+							= Do
+								+ Try using StaticBoxSizer instead of static boxes
+								+ See to center notebook panels that are less wide
+								- Fix single checkbox + slider vertical cell
+									- Set size of row == constant, taken from button
+								- Move to Advanced:
+									- GenerateSparkles
+									- GenerateDebris
+								- Nuke settings:
+									- air bubbles displace waves: honor global displacement instead
+									- generate air bubbles: use zero density
+							- Nuke old files and old code
+							
+						- 2: Shorten labels
+							- Fluids: remove redundant "Water" 
+							- "Adjust" -> "%" ?
+							- Fix localization files
 						- Icons in static boxes?
-						- Try using StaticBoxSizer instead of static boxes
+						
 					- BlastToolRadius
 					- BlastToolForceAdjustment
 				- Finalize all three current default radii
@@ -486,6 +506,14 @@ Render:
 						- A) SWE + Waves (i.e. full samples)
 						- B) Just SWE
 				- Option B: by point visit; all points in tiny band from depth 0
+
+		- Localization:
+			- IT
+				- Check out changed SettingsDialog strings
+			- ES
+				- Check out changed SettingsDialog strings
+			- RU
+				- Check out changed SettingsDialog strings
 				
 		- Water impact (*)
 
@@ -1351,6 +1379,8 @@ Render:
 	- Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool.
 
 - Dynamics:
+
+	- Way to remove all pins
 
 	- Water impact (*): water drag does not cause ships to break upon impact
 		= See if due to lack of square law: find law such that Titanic's dive is still the same, but higher velocities get higher drags
