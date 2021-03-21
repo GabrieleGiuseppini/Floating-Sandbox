@@ -142,25 +142,30 @@ private:
     wxCheckBox * mDoDayLightCycleCheckBox;
     SliderControl<std::chrono::minutes::rep> * mDayLightCycleDurationSlider;
 
+    // Lights, Electricals, and Fishes
+    SliderControl<float> * mLuminiscenceSlider;
+    SliderControl<float> * mLightSpreadSlider;
+    wxCheckBox * mGenerateEngineWakeCheckBox;
+    SliderControl<float> * mEngineThrustAdjustmentSlider;
+    SliderControl<float> * mWaterPumpPowerAdjustmentSlider;
+    SliderControl<float> * mElectricalElementHeatProducedAdjustmentSlider;
+    SliderControl<unsigned int> * mNumberOfFishesSlider;
+    SliderControl<float> * mFishSizeMultiplierSlider;
+    SliderControl<float> * mFishSpeedAdjustmentSlider;
+    wxCheckBox * mDoFishShoalingCheckBox;
+    SliderControl<float> * mFishShoalRadiusAdjustmentSlider;
+
     /* TODOOLD
     // Mechanics, Air, and Fluids
 
     // Heat and Combustion
 
-    SliderControl<float> * mElectricalElementHeatProducedAdjustmentSlider;
     SliderControl<float> * mHeatBlasterRadiusSlider;
     SliderControl<float> * mHeatBlasterHeatFlowSlider;
 
     // Ocean, Smoke, and Sky
 
     // Wind, Waves, Fishes, and Lights
-    SliderControl<unsigned int> * mNumberOfFishesSlider;
-    SliderControl<float> * mFishSizeMultiplierSlider;
-    SliderControl<float> * mFishSpeedAdjustmentSlider;
-    wxCheckBox * mDoFishShoalingCheckBox;
-    SliderControl<float> * mFishShoalRadiusAdjustmentSlider;
-    SliderControl<float> * mLuminiscenceSlider;
-    SliderControl<float> * mLightSpreadSlider;
 
     // Interactions
     SliderControl<float> * mDestroyRadiusSlider;
@@ -175,13 +180,10 @@ private:
     SliderControl<float> * mRepairSpeedAdjustmentSlider;
     wxCheckBox * mGenerateAirBubblesCheckBox;
     wxCheckBox * mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox;
-    SliderControl<float> * mAirBubbleDensitySlider;
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesForCutsCheckBox;
-    wxCheckBox * mGenerateEngineWakeCheckBox;
+
     wxCheckBox * mUltraViolentCheckBox;
-    SliderControl<float> * mEngineThrustAdjustmentSlider;
-    SliderControl<float> * mWaterPumpPowerAdjustmentSlider;
 
     // Rendering
     wxRadioButton * mTextureOceanRenderModeRadioButton;
@@ -258,6 +260,7 @@ private:
     void PopulateWaterAndOceanPanel(wxPanel * panel);
     void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateAirAndSkyPanel(wxPanel * panel);
+    void PopulateLightsElectricalAndFishesPanel(wxPanel * panel);
 
     /* TODOOLD
     void PopulateMechanicsAirFluidsPanel(wxPanel * panel);
