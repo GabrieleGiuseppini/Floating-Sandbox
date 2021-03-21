@@ -33,9 +33,9 @@
 static int constexpr SliderWidth = 60;
 static int constexpr SliderHeight = 140;
 
-static int constexpr StaticBoxTopMargin = 7;
-static int constexpr StaticBoxInsetMargin = 10;
-static int constexpr CellBorder = 8;
+static int constexpr StaticBoxInsetMargin = 0; // 4;
+static int constexpr CellBorderInner = 8;
+static int constexpr CellBorderOuter = 4;
 
 namespace /* anonymous */ {
 
@@ -149,6 +149,18 @@ SettingsDialog::SettingsDialog(
         PopulateMechanicsAndThermodynamicsPanel(panel);
 
         notebook->AddPage(panel, _("Mechanics and Thermodynamics"));
+    }
+
+    //
+    // Water and OCean
+    //
+
+    {
+        wxPanel * panel = new wxPanel(notebook);
+
+        PopulateWaterAndOceanPanel(panel);
+
+        notebook->AddPage(panel, _("Water and Ocean"));
     }
 
     /* TODOOLD
@@ -907,7 +919,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             // Strength Adjust
@@ -933,7 +945,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             // Global Damping Adjust
@@ -959,10 +971,10 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                     wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
-            mechanicsBoxSizer->Add(mechanicsSizer);
+            mechanicsBoxSizer->Add(mechanicsSizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -970,7 +982,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
             wxGBPosition(0, 0),
             wxGBSpan(1, 3),
             wxEXPAND | wxALL,
-            CellBorder);
+            CellBorderOuter);
     }
 
     //
@@ -1006,7 +1018,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             // Heat Dissipation Adjustment
@@ -1032,7 +1044,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             thermodynamicsBoxSizer->Add(thermodynamicsSizer, 0, wxALL, StaticBoxInsetMargin);
@@ -1043,7 +1055,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
             wxGBPosition(0, 3),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL,
-            CellBorder);
+            CellBorderOuter);
     }
 
     //
@@ -1079,7 +1091,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             // Melting Temperature Adjustment
@@ -1105,7 +1117,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             // Combustion Speed Adjustment
@@ -1131,7 +1143,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                     wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             // Combustion Heat Adjustment
@@ -1157,7 +1169,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                     wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             // Max Particles
@@ -1183,7 +1195,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                     wxGBPosition(0, 4),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             combustionBoxSizer->Add(combustionSizer, 0, wxALL, StaticBoxInsetMargin);
@@ -1194,7 +1206,456 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
             wxGBPosition(1, 0),
             wxGBSpan(1, 5),
             wxEXPAND | wxALL,
-            CellBorder);
+            CellBorderOuter);
+    }
+
+    // Finalize panel
+
+    panel->SetSizerAndFit(gridSizer);
+}
+
+void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
+{
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+
+    //
+    // Water
+    //
+
+    {
+        wxStaticBoxSizer * waterBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Water"));
+
+        {
+            wxGridBagSizer * waterSizer = new wxGridBagSizer(0, 0);
+
+            // Water Density
+            {
+                mWaterDensitySlider = new SliderControl<float>(
+                    waterBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Water Density Adjust"),
+                    _("Adjusts the density of sea water, and thus the buoyancy it exerts on physical bodies."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterDensityAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinWaterDensityAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxWaterDensityAdjustment()));
+
+                waterSizer->Add(
+                    mWaterDensitySlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Water Friction Drag
+            {
+                mWaterFrictionDragSlider = new SliderControl<float>(
+                    waterBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Water Friction Drag Adjust"),
+                    _("Adjusts the frictional drag force (or 'skin' drag) exerted by sea water on physical bodies."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterFrictionDragAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinWaterFrictionDragAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxWaterFrictionDragAdjustment()));
+
+                waterSizer->Add(
+                    mWaterFrictionDragSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Water Pressure Drag
+            {
+                mWaterPressureDragSlider = new SliderControl<float>(
+                    waterBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Water Pressure Drag Adjust"),
+                    _("Adjusts the pressure drag force (or 'form' drag) exerted by sea water on physical bodies."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterPressureDragAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinWaterPressureDragAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxWaterPressureDragAdjustment()));
+
+                waterSizer->Add(
+                    mWaterPressureDragSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Water Intake
+            {
+                mWaterIntakeSlider = new SliderControl<float>(
+                    waterBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Water Intake Adjust"),
+                    _("Adjusts the speed with which sea water enters or leaves a physical body."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterIntakeAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinWaterIntakeAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxWaterIntakeAdjustment()));
+
+                waterSizer->Add(
+                    mWaterIntakeSlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Water Diffusion Speed
+            {
+                mWaterDiffusionSpeedSlider = new SliderControl<float>(
+                    waterBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Water Diffusion Speed"),
+                    _("Adjusts the speed with which water propagates within a physical body."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterDiffusionSpeedAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinWaterDiffusionSpeedAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxWaterDiffusionSpeedAdjustment()));
+
+                waterSizer->Add(
+                    mWaterDiffusionSpeedSlider,
+                    wxGBPosition(0, 4),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Water Crazyness
+            {
+                mWaterCrazynessSlider = new SliderControl<float>(
+                    waterBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Water Crazyness"),
+                    _("Adjusts how \"splashy\" water flows inside a physical body."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterCrazyness, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinWaterCrazyness(),
+                        mGameControllerSettingsOptions->GetMaxWaterCrazyness()));
+
+                waterSizer->Add(
+                    mWaterCrazynessSlider,
+                    wxGBPosition(0, 5),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Water Temperature
+            {
+                mWaterTemperatureSlider = new SliderControl<float>(
+                    waterBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Water Temperature"),
+                    _("The temperature of water (K)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterTemperature, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinWaterTemperature(),
+                        mGameControllerSettingsOptions->GetMaxWaterTemperature()));
+
+                waterSizer->Add(
+                    mWaterTemperatureSlider,
+                    wxGBPosition(0, 6),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            waterBoxSizer->Add(waterSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            waterBoxSizer,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 7),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+    //
+    // Ocean
+    //
+
+    {
+        wxStaticBoxSizer * oceanBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Ocean"));
+
+        {
+            wxGridBagSizer * oceanSizer = new wxGridBagSizer(0, 0);
+
+            // Ocean Depth
+            {
+                mOceanDepthSlider = new SliderControl<float>(
+                    oceanBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Ocean Depth"),
+                    _("The ocean depth (m)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::SeaDepth, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinSeaDepth(),
+                        300.0f,
+                        mGameControllerSettingsOptions->GetMaxSeaDepth()));
+
+                oceanSizer->Add(
+                    mOceanDepthSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            oceanBoxSizer->Add(oceanSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            oceanBoxSizer,
+            wxGBPosition(1, 0),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+    //
+    // Ocean Floor
+    //
+
+    {
+        wxStaticBoxSizer * oceanFloorBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Ocean Floor"));
+
+        {
+            wxGridBagSizer * oceanFloorSizer = new wxGridBagSizer(0, 0);
+
+            // Ocean Floor Bumpiness
+            {
+                mOceanFloorBumpinessSlider = new SliderControl<float>(
+                    oceanFloorBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Ocean Floor Bumpiness"),
+                    _("Adjusts how much the ocean floor rolls up and down."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::OceanFloorBumpiness, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinOceanFloorBumpiness(),
+                        mGameControllerSettingsOptions->GetMaxOceanFloorBumpiness()));
+
+                oceanFloorSizer->Add(
+                    mOceanFloorBumpinessSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Restore Ocean Floor Terrain
+            {
+                wxButton * restoreDefaultTerrainButton = new wxButton(oceanFloorBoxSizer->GetStaticBox(), wxID_ANY, _("Restore Default Terrain"));
+                restoreDefaultTerrainButton->SetToolTip(_("Reverts the user-drawn ocean floor terrain to the default terrain."));
+                restoreDefaultTerrainButton->Bind(
+                    wxEVT_BUTTON,
+                    [this](wxCommandEvent &)
+                    {
+                        mLiveSettings.ClearAllDirty();
+
+                        mLiveSettings.SetValue<OceanFloorTerrain>(
+                            GameSettings::OceanFloorTerrain,
+                            mSettingsManager->GetDefaults().GetValue<OceanFloorTerrain>(GameSettings::OceanFloorTerrain));
+
+                        OnLiveSettingsChanged();
+                    });
+
+                oceanFloorSizer->Add(
+                    restoreDefaultTerrainButton,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            // Ocean Floor Detail Amplification
+            {
+                mOceanFloorDetailAmplificationSlider = new SliderControl<float>(
+                    oceanFloorBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    -1,
+                    _("Ocean Floor Detail"),
+                    _("Adjusts the contrast of the user-drawn ocean floor terrain. Setting this to zero disables the ability to adjust the ocean floor."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::OceanFloorDetailAmplification, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinOceanFloorDetailAmplification(),
+                        10.0f,
+                        mGameControllerSettingsOptions->GetMaxOceanFloorDetailAmplification()));
+
+                oceanFloorSizer->Add(
+                    mOceanFloorDetailAmplificationSlider,
+                    wxGBPosition(1, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            // Ocean Floor Elasticity
+            {
+                mOceanFloorElasticitySlider = new SliderControl<float>(
+                    oceanFloorBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Ocean Floor Elasticity"),
+                    _("Adjusts the elasticity of collisions with the ocean floor."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::OceanFloorElasticity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinOceanFloorElasticity(),
+                        mGameControllerSettingsOptions->GetMaxOceanFloorElasticity()));
+
+                oceanFloorSizer->Add(
+                    mOceanFloorElasticitySlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Ocean Floor Friction
+            {
+                mOceanFloorFrictionSlider = new SliderControl<float>(
+                    oceanFloorBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Ocean Floor Friction"),
+                    _("Adjusts the friction exherted by the ocean floor."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::OceanFloorFriction, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinOceanFloorFriction(),
+                        mGameControllerSettingsOptions->GetMaxOceanFloorFriction()));
+
+                oceanFloorSizer->Add(
+                    mOceanFloorFrictionSlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            oceanFloorBoxSizer->Add(oceanFloorSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            oceanFloorBoxSizer,
+            wxGBPosition(1, 1),
+            wxGBSpan(1, 4),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+    //
+    // Rotting
+    //
+
+    {
+        wxStaticBoxSizer * rottingBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Rotting"));
+
+        {
+            wxGridBagSizer * rottingSizer = new wxGridBagSizer(0, 0);
+
+            // Rot Accelerator
+            {
+                mRotAcceler8rSlider = new SliderControl<float>(
+                    rottingBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Rot Acceler8r"),
+                    _("Adjusts the speed with which materials rot when exposed to sea water. Set to zero to disable rotting altogether."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::RotAcceler8r, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinRotAcceler8r(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxRotAcceler8r()));
+
+                rottingSizer->Add(
+                    mRotAcceler8rSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            rottingBoxSizer->Add(rottingSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            rottingBoxSizer,
+            wxGBPosition(1, 5),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
     }
 
     // Finalize panel
@@ -1209,50 +1670,50 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     //
 
     mMechanicalQualitySlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
-
     mStrengthSlider->SetValue(settings.GetValue<float>(GameSettings::SpringStrengthAdjustment));
-
     mGlobalDampingAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::GlobalDampingAdjustment));
-
     mThermalConductivityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ThermalConductivityAdjustment));
-
     mHeatDissipationAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::HeatDissipationAdjustment));
-
     mIgnitionTemperatureAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::IgnitionTemperatureAdjustment));
-
     mMeltingTemperatureAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::MeltingTemperatureAdjustment));
-
     mCombustionSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::CombustionSpeedAdjustment));
-
     mCombustionHeatAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::CombustionHeatAdjustment));
-
     mMaxBurningParticlesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::MaxBurningParticles));
 
-    /* TODOOLD
+    //
+    // Water and Ocean
+    //
+
+    mWaterDensitySlider->SetValue(settings.GetValue<float>(GameSettings::WaterDensityAdjustment));
+    mWaterFrictionDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterFrictionDragAdjustment));
+    mWaterPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterPressureDragAdjustment));
+    mWaterIntakeSlider->SetValue(settings.GetValue<float>(GameSettings::WaterIntakeAdjustment));
+    mWaterCrazynessSlider->SetValue(settings.GetValue<float>(GameSettings::WaterCrazyness));
+    mWaterDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDiffusionSpeedAdjustment));
+    mWaterTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::WaterTemperature));
+    mOceanDepthSlider->SetValue(settings.GetValue<float>(GameSettings::SeaDepth));
+    mOceanFloorBumpinessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorBumpiness));
+    mOceanFloorDetailAmplificationSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorDetailAmplification));
+    mOceanFloorElasticitySlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorElasticity));
+    mOceanFloorFrictionSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorFriction));
     mRotAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RotAcceler8r));
+
+    // TODOHERE
+
+    /* TODOOLD
+
 
     mAirFrictionDragSlider->SetValue(settings.GetValue<float>(GameSettings::AirFrictionDragAdjustment));
 
     mAirPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::AirPressureDragAdjustment));
 
-    mWaterDensitySlider->SetValue(settings.GetValue<float>(GameSettings::WaterDensityAdjustment));
-
-    mWaterFrictionDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterFrictionDragAdjustment));
-
-    mWaterPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterPressureDragAdjustment));
-
-    mWaterIntakeSlider->SetValue(settings.GetValue<float>(GameSettings::WaterIntakeAdjustment));
-
-    mWaterCrazynessSlider->SetValue(settings.GetValue<float>(GameSettings::WaterCrazyness));
-
-    mWaterDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDiffusionSpeedAdjustment));
 
     // Heat
 
 
     mAirTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::AirTemperature));
 
-    mWaterTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::WaterTemperature));
+
 
     mElectricalElementHeatProducedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ElectricalElementHeatProducedAdjustment));
 
@@ -1264,11 +1725,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     // Ocean, Smoke, and Sky
 
-    mOceanDepthSlider->SetValue(settings.GetValue<float>(GameSettings::SeaDepth));
-    mOceanFloorBumpinessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorBumpiness));
-    mOceanFloorDetailAmplificationSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorDetailAmplification));
-    mOceanFloorElasticitySlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorElasticity));
-    mOceanFloorFrictionSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorFriction));
 
     mSmokeEmissionDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeEmissionDensityAdjustment));
     mSmokeParticleLifetimeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeParticleLifetimeAdjustment));

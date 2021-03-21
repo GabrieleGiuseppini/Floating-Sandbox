@@ -98,31 +98,34 @@ private:
     SliderControl<float> * mCombustionHeatAdjustmentSlider;
     SliderControl<unsigned int> * mMaxBurningParticlesSlider;
 
-    /* TODOOLD
-    // Mechanics, Air, and Fluids
-    SliderControl<float> * mRotAcceler8rSlider;
-    SliderControl<float> * mAirFrictionDragSlider;
-    SliderControl<float> * mAirPressureDragSlider;
+    // Ocean and Water
     SliderControl<float> * mWaterDensitySlider;
     SliderControl<float> * mWaterFrictionDragSlider;
     SliderControl<float> * mWaterPressureDragSlider;
     SliderControl<float> * mWaterIntakeSlider;
     SliderControl<float> * mWaterCrazynessSlider;
     SliderControl<float> * mWaterDiffusionSpeedSlider;
-
-    // Heat and Combustion
-    SliderControl<float> * mAirTemperatureSlider;
     SliderControl<float> * mWaterTemperatureSlider;
-    SliderControl<float> * mElectricalElementHeatProducedAdjustmentSlider;
-    SliderControl<float> * mHeatBlasterRadiusSlider;
-    SliderControl<float> * mHeatBlasterHeatFlowSlider;
-
-    // Ocean, Smoke, and Sky
     SliderControl<float> * mOceanDepthSlider;
     SliderControl<float> * mOceanFloorBumpinessSlider;
     SliderControl<float> * mOceanFloorDetailAmplificationSlider;
     SliderControl<float> * mOceanFloorElasticitySlider;
     SliderControl<float> * mOceanFloorFrictionSlider;
+    SliderControl<float> * mRotAcceler8rSlider;
+
+    /* TODOOLD
+    // Mechanics, Air, and Fluids
+    SliderControl<float> * mAirFrictionDragSlider;
+    SliderControl<float> * mAirPressureDragSlider;
+
+    // Heat and Combustion
+    SliderControl<float> * mAirTemperatureSlider;
+
+    SliderControl<float> * mElectricalElementHeatProducedAdjustmentSlider;
+    SliderControl<float> * mHeatBlasterRadiusSlider;
+    SliderControl<float> * mHeatBlasterHeatFlowSlider;
+
+    // Ocean, Smoke, and Sky
     SliderControl<float> * mSmokeEmissionDensityAdjustmentSlider;
     SliderControl<float> * mSmokeParticleLifetimeAdjustmentSlider;
     SliderControl<float> * mStormStrengthAdjustmentSlider;
@@ -247,6 +250,7 @@ private:
     void DoClose();
 
     void PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel);
+    void PopulateWaterAndOceanPanel(wxPanel * panel);
 
     /* TODOOLD
     void PopulateMechanicsAirFluidsPanel(wxPanel * panel);
