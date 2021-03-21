@@ -33,7 +33,8 @@
 static int constexpr SliderWidth = 60;
 static int constexpr SliderHeight = 140;
 
-static int constexpr StaticBoxInsetMargin = 0; // 4;
+static int constexpr TopmostCellOverSliderHeight = 24;
+static int constexpr StaticBoxInsetMargin = 0;
 static int constexpr CellBorderInner = 8;
 static int constexpr CellBorderOuter = 4;
 
@@ -158,15 +159,27 @@ SettingsDialog::SettingsDialog(
     }
 
     //
-    // Air and Waves
+    // Wind and Waves
     //
 
     {
         wxPanel * panel = new wxPanel(notebook);
 
-        PopulateAirAndWavesPanel(panel);
+        PopulateWindAndWavesPanel(panel);
 
-        notebook->AddPage(panel, _("Air and Waves"));
+        notebook->AddPage(panel, _("Wind and Waves"));
+    }
+
+    //
+    // Air and Sky
+    //
+
+    {
+        wxPanel * panel = new wxPanel(notebook);
+
+        PopulateAirAndSkyPanel(panel);
+
+        notebook->AddPage(panel, _("Air and Sky"));
     }
 
     /* TODOOLD
@@ -980,14 +993,14 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            mechanicsBoxSizer->Add(mechanicsSizer, 0, wxALL, StaticBoxInsetMargin);
+            mechanicsBoxSizer->Add(mechanicsSizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             mechanicsBoxSizer,
             wxGBPosition(0, 0),
             wxGBSpan(1, 3),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -1053,14 +1066,14 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            thermodynamicsBoxSizer->Add(thermodynamicsSizer, 0, wxALL, StaticBoxInsetMargin);
+            thermodynamicsBoxSizer->Add(thermodynamicsSizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             thermodynamicsBoxSizer,
             wxGBPosition(0, 3),
             wxGBSpan(1, 2),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -1204,14 +1217,14 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            combustionBoxSizer->Add(combustionSizer, 0, wxALL, StaticBoxInsetMargin);
+            combustionBoxSizer->Add(combustionSizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             combustionBoxSizer,
             wxGBPosition(1, 0),
             wxGBSpan(1, 5),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -1415,14 +1428,14 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            waterBoxSizer->Add(waterSizer, 0, wxALL, StaticBoxInsetMargin);
+            waterBoxSizer->Add(waterSizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             waterBoxSizer,
             wxGBPosition(0, 0),
             wxGBSpan(1, 7),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -1462,14 +1475,14 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            oceanBoxSizer->Add(oceanSizer, 0, wxALL, StaticBoxInsetMargin);
+            oceanBoxSizer->Add(oceanSizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             oceanBoxSizer,
             wxGBPosition(1, 0),
             wxGBSpan(1, 1),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -1525,12 +1538,14 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                         OnLiveSettingsChanged();
                     });
 
-                oceanFloorSizer->Add(
+                auto sizer = oceanFloorSizer->Add(
                     restoreDefaultTerrainButton,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT,
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
                     CellBorderInner);
+
+                sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
             }
 
             // Ocean Floor Detail Amplification
@@ -1609,14 +1624,16 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            oceanFloorBoxSizer->Add(oceanFloorSizer, 0, wxALL, StaticBoxInsetMargin);
+            oceanFloorSizer->AddGrowableRow(1);
+
+            oceanFloorBoxSizer->Add(oceanFloorSizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             oceanFloorBoxSizer,
             wxGBPosition(1, 1),
             wxGBSpan(1, 4),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -1656,14 +1673,14 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            rottingBoxSizer->Add(rottingSizer, 0, wxALL, StaticBoxInsetMargin);
+            rottingBoxSizer->Add(rottingSizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             rottingBoxSizer,
             wxGBPosition(1, 5),
             wxGBSpan(1, 1),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -1675,7 +1692,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
     panel->SetSizer(gridSizer);
 }
 
-void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
+void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 {
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
@@ -1702,12 +1719,14 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                         this->OnLiveSettingsChanged();
                     });
 
-                windSizer->Add(
+                auto sizer = windSizer->Add(
                     zeroWindButton,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT,
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
                     CellBorderInner);
+
+                sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
             }
 
             // Wind Speed Base
@@ -1749,12 +1768,14 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                         mWindGustAmplitudeSlider->Enable(mModulateWindCheckBox->IsChecked());
                     });
 
-                windSizer->Add(
+                auto sizer = windSizer->Add(
                     mModulateWindCheckBox,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT,
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
                     CellBorderInner);
+
+                sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
             }
 
             // Wind Gust Amplitude
@@ -1782,14 +1803,16 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            windBoxSizer->Add(windSizer, 0, wxALL, StaticBoxInsetMargin);
+            windSizer->AddGrowableRow(1);
+
+            windBoxSizer->Add(windSizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             windBoxSizer,
             wxGBPosition(0, 0),
             wxGBSpan(1, 2),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -1879,14 +1902,14 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            wavesBoxSizer->Add(wavesSizer, 0, wxALL, StaticBoxInsetMargin);
+            wavesBoxSizer->Add(wavesSizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             wavesBoxSizer,
             wxGBPosition(0, 2),
             wxGBSpan(1, 3),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -1914,12 +1937,14 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                         mWaterDisplacementWaveHeightAdjustmentSlider->Enable(mDoDisplaceWaterCheckBox->IsChecked());
                     });
 
-                displacementWavesSizer->Add(
+                auto sizer = displacementWavesSizer->Add(
                     mDoDisplaceWaterCheckBox,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT,
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
                     CellBorderInner);
+
+                sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
             }
 
             // Water Displacement Wave Height Adjust
@@ -1947,10 +1972,8 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // TODOHERE: 1
             displacementWavesSizer->AddGrowableRow(1);
 
-            // TODOHERE: 2
             displacementWavesBoxSizer->Add(displacementWavesSizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
@@ -1958,7 +1981,6 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
             displacementWavesBoxSizer,
             wxGBPosition(0, 5),
             wxGBSpan(1, 1),
-            // TODOHERE: 3
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -2023,14 +2045,14 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            wavePhenomenaBoxSizer->Add(wavePhenomenaSizer, 0, wxALL, StaticBoxInsetMargin);
+            wavePhenomenaBoxSizer->Add(wavePhenomenaSizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             wavePhenomenaBoxSizer,
-            wxGBPosition(0, 6),
+            wxGBPosition(1, 0),
             wxGBSpan(1, 2),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -2084,12 +2106,14 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                         mRainFloodAdjustmentSlider->Enable(event.IsChecked());
                     });
 
-                stormsSizer->Add(
+                auto sizer = stormsSizer->Add(
                     mDoRainWithStormCheckBox,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT,
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
                     CellBorderInner);
+
+                sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
             }
 
             // Rain Flood Adjustment
@@ -2168,16 +2192,30 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            stormsBoxSizer->Add(stormsSizer, 0, wxALL, StaticBoxInsetMargin);
+            stormsSizer->AddGrowableRow(1);
+
+            stormsBoxSizer->Add(stormsSizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             stormsBoxSizer,
-            wxGBPosition(1, 0),
+            wxGBPosition(1, 2),
             wxGBSpan(1, 4),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
+
+    // Finalize panel
+
+    for (int c = 0; c < gridSizer->GetCols(); ++c)
+        gridSizer->AddGrowableCol(c);
+
+    panel->SetSizer(gridSizer);
+}
+
+void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
+{
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
     //
     // Air
@@ -2198,10 +2236,10 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                     _("Air Friction Drag Adjust"),
                     _("Adjusts the frictional drag force (or 'skin' drag) exerted by air on physical bodies."),
                     [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::AirFrictionDragAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
+                {
+                    this->mLiveSettings.SetValue(GameSettings::AirFrictionDragAdjustment, value);
+                    this->OnLiveSettingsChanged();
+                },
                     std::make_unique<ExponentialSliderCore>(
                         mGameControllerSettingsOptions->GetMinAirFrictionDragAdjustment(),
                         1.0f,
@@ -2224,10 +2262,10 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                     _("Air Pressure Drag Adjust"),
                     _("Adjusts the pressure drag force (or 'form' drag) exerted by air on physical bodies."),
                     [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::AirPressureDragAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
+                {
+                    this->mLiveSettings.SetValue(GameSettings::AirPressureDragAdjustment, value);
+                    this->OnLiveSettingsChanged();
+                },
                     std::make_unique<ExponentialSliderCore>(
                         mGameControllerSettingsOptions->GetMinAirPressureDragAdjustment(),
                         1.0f,
@@ -2250,10 +2288,10 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                     _("Air Temperature"),
                     _("The temperature of air (K)."),
                     [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::AirTemperature, value);
-                        this->OnLiveSettingsChanged();
-                    },
+                {
+                    this->mLiveSettings.SetValue(GameSettings::AirTemperature, value);
+                    this->OnLiveSettingsChanged();
+                },
                     std::make_unique<LinearSliderCore>(
                         mGameControllerSettingsOptions->GetMinAirTemperature(),
                         mGameControllerSettingsOptions->GetMaxAirTemperature()));
@@ -2275,10 +2313,10 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                     _("Air Bubbles Density"),
                     _("The density of air bubbles generated when water enters a ship."),
                     [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::AirBubblesDensity, value);
-                        this->OnLiveSettingsChanged();
-                    },
+                {
+                    this->mLiveSettings.SetValue(GameSettings::AirBubblesDensity, value);
+                    this->OnLiveSettingsChanged();
+                },
                     std::make_unique<LinearSliderCore>(
                         mGameControllerSettingsOptions->GetMinAirBubblesDensity(),
                         mGameControllerSettingsOptions->GetMaxAirBubblesDensity()));
@@ -2291,14 +2329,88 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            airBoxSizer->Add(airSizer, 0, wxALL, StaticBoxInsetMargin);
+            airBoxSizer->Add(airSizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             airBoxSizer,
-            wxGBPosition(1, 4),
+            wxGBPosition(0, 0),
             wxGBSpan(1, 4),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // Smoke
+    //
+
+    {
+        wxStaticBoxSizer * smokeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Smoke"));
+
+        {
+            wxGridBagSizer * smokeSizer = new wxGridBagSizer(0, 0);
+
+            // Smoke Density Adjust
+            {
+                mSmokeEmissionDensityAdjustmentSlider = new SliderControl<float>(
+                    smokeBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Smoke Density Adjust"),
+                    _("Adjusts the density of smoke particles."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::SmokeEmissionDensityAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinSmokeEmissionDensityAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxSmokeEmissionDensityAdjustment()));
+
+                smokeSizer->Add(
+                    mSmokeEmissionDensityAdjustmentSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Smoke Persistence Adjust
+            {
+                mSmokeParticleLifetimeAdjustmentSlider = new SliderControl<float>(
+                    smokeBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Smoke Persistence Adjust"),
+                    _("Adjusts how long it takes for smoke to vanish."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::SmokeParticleLifetimeAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinSmokeParticleLifetimeAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxSmokeParticleLifetimeAdjustment()));
+
+                smokeSizer->Add(
+                    mSmokeParticleLifetimeAdjustmentSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+
+            smokeBoxSizer->Add(smokeSizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            smokeBoxSizer,
+            wxGBPosition(0, 4),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -2321,10 +2433,10 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                     _("Number of Stars"),
                     _("The number of stars in the sky."),
                     [this](unsigned int value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::NumberOfStars, value);
-                        this->OnLiveSettingsChanged();
-                    },
+                {
+                    this->mLiveSettings.SetValue(GameSettings::NumberOfStars, value);
+                    this->OnLiveSettingsChanged();
+                },
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
                         mGameControllerSettingsOptions->GetMinNumberOfStars(),
                         mGameControllerSettingsOptions->GetMaxNumberOfStars()));
@@ -2346,10 +2458,10 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                     _("Number of Clouds"),
                     _("The number of clouds in the world's sky. This is the total number of clouds in the world; at any moment in time, the number of clouds that are visible will be less than or equal to this value."),
                     [this](unsigned int value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::NumberOfClouds, value);
-                        this->OnLiveSettingsChanged();
-                    },
+                {
+                    this->mLiveSettings.SetValue(GameSettings::NumberOfClouds, value);
+                    this->OnLiveSettingsChanged();
+                },
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
                         mGameControllerSettingsOptions->GetMinNumberOfClouds(),
                         mGameControllerSettingsOptions->GetMaxNumberOfClouds()));
@@ -2369,19 +2481,21 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                 mDoDayLightCycleCheckBox->Bind(
                     wxEVT_COMMAND_CHECKBOX_CLICKED,
                     [this](wxCommandEvent & event)
-                    {
-                        mLiveSettings.SetValue<bool>(GameSettings::DoDayLightCycle, event.IsChecked());
-                        OnLiveSettingsChanged();
+                {
+                    mLiveSettings.SetValue<bool>(GameSettings::DoDayLightCycle, event.IsChecked());
+                    OnLiveSettingsChanged();
 
-                        mDayLightCycleDurationSlider->Enable(event.IsChecked());
-                    });
+                    mDayLightCycleDurationSlider->Enable(event.IsChecked());
+                });
 
-                skySizer->Add(
+                auto sizer = skySizer->Add(
                     mDoDayLightCycleCheckBox,
                     wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT,
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
                     CellBorderInner);
+
+                sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
             }
 
             // Daylight Cycle Duration
@@ -2393,10 +2507,10 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                     _("Daylight Cycle Duration"),
                     _("The duration of a full daylight cycle (minutes)."),
                     [this](std::chrono::minutes::rep value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::DayLightCycleDuration, std::chrono::minutes(value));
-                        this->OnLiveSettingsChanged();
-                    },
+                {
+                    this->mLiveSettings.SetValue(GameSettings::DayLightCycleDuration, std::chrono::minutes(value));
+                    this->OnLiveSettingsChanged();
+                },
                     std::make_unique<IntegralLinearSliderCore<std::chrono::minutes::rep>>(
                         mGameControllerSettingsOptions->GetMinDayLightCycleDuration().count(),
                         mGameControllerSettingsOptions->GetMaxDayLightCycleDuration().count()));
@@ -2409,14 +2523,16 @@ void SettingsDialog::PopulateAirAndWavesPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            skyBoxSizer->Add(skySizer, 0, wxALL, StaticBoxInsetMargin);
+            skySizer->AddGrowableRow(1);
+
+            skyBoxSizer->Add(skySizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             skyBoxSizer,
-            wxGBPosition(1, 8),
+            wxGBPosition(1, 0),
             wxGBSpan(1, 3),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
@@ -2464,7 +2580,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mRotAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RotAcceler8r));
 
     //
-    // Air and Waves
+    // Wind and Waves
     //
 
     mWindSpeedBaseSlider->SetValue(settings.GetValue<float>(GameSettings::WindSpeedBase));
@@ -2485,18 +2601,23 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mRainFloodAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
     mStormDurationSlider->SetValue(settings.GetValue<std::chrono::seconds>(GameSettings::StormDuration).count());
     mStormRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::StormRate).count());
+
+    //
+    // Air and Sky
+    //
+
     mAirFrictionDragSlider->SetValue(settings.GetValue<float>(GameSettings::AirFrictionDragAdjustment));
     mAirPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::AirPressureDragAdjustment));
     mAirTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::AirTemperature));
     mAirBubbleDensitySlider->SetValue(settings.GetValue<float>(GameSettings::AirBubblesDensity));
     mAirBubbleDensitySlider->Enable(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles)); // tODO: this will go once the setting goes (replaced by density == 0)
+    mSmokeEmissionDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeEmissionDensityAdjustment));
+    mSmokeParticleLifetimeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeParticleLifetimeAdjustment));
     mNumberOfStarsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfStars));
     mNumberOfCloudsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfClouds));
     mDoDayLightCycleCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoDayLightCycle));
     mDayLightCycleDurationSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::DayLightCycleDuration).count());
     mDayLightCycleDurationSlider->Enable(settings.GetValue<bool>(GameSettings::DoDayLightCycle));
-
-
 
     // TODOHERE
 
@@ -2522,8 +2643,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     // Ocean, Smoke, and Sky
 
 
-    mSmokeEmissionDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeEmissionDensityAdjustment));
-    mSmokeParticleLifetimeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::SmokeParticleLifetimeAdjustment));
 
 
 
