@@ -182,6 +182,18 @@ SettingsDialog::SettingsDialog(
         notebook->AddPage(panel, _("Air and Sky"));
     }
 
+    //
+    // Lights, Electricals, and Fishes
+    //
+
+    {
+        wxPanel * panel = new wxPanel(notebook);
+
+        PopulateLightsElectricalAndFishesPanel(panel);
+
+        notebook->AddPage(panel, _("Lights, Electricals, and Fishes"));
+    }
+
     /* TODOOLD
     //
     // Heat
@@ -909,15 +921,15 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBoxSizer * mechanicsBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Mechanics"));
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Mechanics"));
 
         {
-            wxGridBagSizer * mechanicsSizer = new wxGridBagSizer(0, 0);
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
             // Simulation Quality
             {
                 mMechanicalQualitySlider = new SliderControl<float>(
-                    mechanicsBoxSizer->GetStaticBox(),
+                    boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
                     _("Simulation Quality"),
@@ -933,7 +945,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                         mGameControllerSettingsOptions->GetMaxNumMechanicalDynamicsIterationsAdjustment()),
                     mWarningIcon.get());
 
-                mechanicsSizer->Add(
+                sizer->Add(
                     mMechanicalQualitySlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
@@ -944,7 +956,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
             // Strength Adjust
             {
                 mStrengthSlider = new SliderControl<float>(
-                    mechanicsBoxSizer->GetStaticBox(),
+                    boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
                     _("Strength Adjust"),
@@ -959,7 +971,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                         1.0f,
                         mGameControllerSettingsOptions->GetMaxSpringStrengthAdjustment()));
 
-                mechanicsSizer->Add(
+                sizer->Add(
                     mStrengthSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
@@ -970,7 +982,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
             // Global Damping Adjust
             {
                 mGlobalDampingAdjustmentSlider = new SliderControl<float>(
-                    mechanicsBoxSizer->GetStaticBox(),
+                    boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
                     _("Global Damping Adjust"),
@@ -985,7 +997,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                         1.0f,
                         mGameControllerSettingsOptions->GetMaxGlobalDampingAdjustment()));
 
-                mechanicsSizer->Add(
+                sizer->Add(
                     mGlobalDampingAdjustmentSlider,
                     wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
@@ -993,13 +1005,13 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            mechanicsBoxSizer->Add(mechanicsSizer, 1, wxALL, StaticBoxInsetMargin);
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
-            mechanicsBoxSizer,
+            boxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 3),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -1071,8 +1083,8 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
 
         gridSizer->Add(
             thermodynamicsBoxSizer,
-            wxGBPosition(0, 3),
-            wxGBSpan(1, 2),
+            wxGBPosition(0, 1),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -1223,7 +1235,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
         gridSizer->Add(
             combustionBoxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 5),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -1434,7 +1446,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
         gridSizer->Add(
             waterBoxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 7),
+            wxGBSpan(1, 5),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -1481,7 +1493,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
         gridSizer->Add(
             oceanBoxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -1631,8 +1643,8 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
 
         gridSizer->Add(
             oceanFloorBoxSizer,
-            wxGBPosition(1, 1),
-            wxGBSpan(1, 4),
+            wxGBPosition(1, 2),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -1678,8 +1690,8 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
 
         gridSizer->Add(
             rottingBoxSizer,
-            wxGBPosition(1, 5),
-            wxGBSpan(1, 1),
+            wxGBPosition(1, 3),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -1811,7 +1823,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
         gridSizer->Add(
             windBoxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 2),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -1907,8 +1919,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
         gridSizer->Add(
             wavesBoxSizer,
-            wxGBPosition(0, 2),
-            wxGBSpan(1, 3),
+            wxGBPosition(0, 1),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -1979,7 +1991,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
         gridSizer->Add(
             displacementWavesBoxSizer,
-            wxGBPosition(0, 5),
+            wxGBPosition(0, 3),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
@@ -2200,7 +2212,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
         gridSizer->Add(
             stormsBoxSizer,
             wxGBPosition(1, 2),
-            wxGBSpan(1, 4),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -2335,7 +2347,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
         gridSizer->Add(
             airBoxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 4),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -2408,8 +2420,8 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
         gridSizer->Add(
             smokeBoxSizer,
-            wxGBPosition(0, 4),
-            wxGBSpan(1, 2),
+            wxGBPosition(0, 1),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -2531,7 +2543,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
         gridSizer->Add(
             skyBoxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 3),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -2543,6 +2555,358 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
     panel->SetSizer(gridSizer);
 }
+
+void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
+{
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+
+    //
+    // Lights
+    //
+
+    {
+        wxStaticBoxSizer * lightsBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Lights"));
+
+        {
+            wxGridBagSizer * lightsSizer = new wxGridBagSizer(0, 0);
+
+            // Luminiscence Adjust
+            {
+                mLuminiscenceSlider = new SliderControl<float>(
+                    lightsBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Luminiscence Adjust"),
+                    _("Adjusts the quantity of light emitted by luminiscent materials."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::LuminiscenceAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinLuminiscenceAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxLuminiscenceAdjustment()));
+
+                lightsSizer->Add(
+                    mLuminiscenceSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Light Spread
+            {
+                mLightSpreadSlider = new SliderControl<float>(
+                    lightsBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Light Spread Adjust"),
+                    _("Adjusts how wide light emitted by luminiscent materials spreads out."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::LightSpreadAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinLightSpreadAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxLightSpreadAdjustment()));
+
+                lightsSizer->Add(
+                    mLightSpreadSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            lightsBoxSizer->Add(lightsSizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            lightsBoxSizer,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // Electricals
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Electricals"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Generate Engine Wake
+            {
+                mGenerateEngineWakeCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Generate Engine Wake"));
+                mGenerateEngineWakeCheckBox->SetToolTip(_("Enables or disables generation of wakes when engines are running underwater."));
+                mGenerateEngineWakeCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::DoGenerateEngineWakeParticles, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
+
+                auto cellSizer = sizer->Add(
+                    mGenerateEngineWakeCheckBox,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
+
+                cellSizer->SetMinSize(-1, TopmostCellOverSliderHeight);
+            }
+
+            // Engine Thrust Adjust
+            {
+                mEngineThrustAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    -1,
+                    _("Engine Thrust Adjust"),
+                    _("Adjusts the thrust exerted by engines."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::EngineThrustAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinEngineThrustAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxEngineThrustAdjustment()));
+
+                sizer->Add(
+                    mEngineThrustAdjustmentSlider,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            // Water Pump Power Adjust
+            {
+                mWaterPumpPowerAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Water Pump Power Adjust"),
+                    _("Adjusts the power of water pumps."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterPumpPowerAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinWaterPumpPowerAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxWaterPumpPowerAdjustment()));
+
+                sizer->Add(
+                    mWaterPumpPowerAdjustmentSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Heat Generation Adjustment
+            {
+                mElectricalElementHeatProducedAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Heat Generation Adjust"),
+                    _("Adjusts the amount of heat generated by working electrical elements, such as lamps and generators."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ElectricalElementHeatProducedAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinElectricalElementHeatProducedAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxElectricalElementHeatProducedAdjustment()));
+
+                sizer->Add(
+                    mElectricalElementHeatProducedAdjustmentSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 1),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // Fishes
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Fishes"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Number of Fishes
+            {
+                mNumberOfFishesSlider = new SliderControl<unsigned int>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Number of Fishes"),
+                    _("The number of fishes in the ocean."),
+                    [this](unsigned int value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::NumberOfFishes, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<unsigned int>>(
+                        mGameControllerSettingsOptions->GetMinNumberOfFishes(),
+                        mGameControllerSettingsOptions->GetMaxNumberOfFishes()));
+
+                sizer->Add(
+                    mNumberOfFishesSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Fish Size Multiplier
+            {
+                mFishSizeMultiplierSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Fish Size Multiplier"),
+                    _("Magnifies or minimizes the physical size of fishes."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::FishSizeMultiplier, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinFishSizeMultiplier(),
+                        mGameControllerSettingsOptions->GetMaxFishSizeMultiplier()));
+
+                sizer->Add(
+                    mFishSizeMultiplierSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Fish Speed Adjustment
+            {
+                mFishSpeedAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Fish Speed Adjust"),
+                    _("Adjusts the speed of fishes."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::FishSpeedAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinFishSpeedAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxFishSpeedAdjustment()));
+
+                sizer->Add(
+                    mFishSpeedAdjustmentSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Do shoaling
+            {
+                mDoFishShoalingCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Enable Shoaling"));
+                mDoFishShoalingCheckBox->SetToolTip(_("Enables or disables shoaling behavior in fishes."));
+                mDoFishShoalingCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue<bool>(GameSettings::DoFishShoaling, event.IsChecked());
+                        OnLiveSettingsChanged();
+
+                        mFishShoalRadiusAdjustmentSlider->Enable(event.IsChecked());
+                    });
+
+                auto cellSizer = sizer->Add(
+                    mDoFishShoalingCheckBox,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
+
+                cellSizer->SetMinSize(-1, TopmostCellOverSliderHeight);
+            }
+
+            // Shoal Radius Adjustment
+            {
+                mFishShoalRadiusAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    -1,
+                    _("Shoal Radius Adjust"),
+                    _("Adjusts the radius of the neighborhood tracked by fishes in a shoal."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::FishShoalRadiusAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinFishShoalRadiusAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxFishShoalRadiusAdjustment()));
+
+                sizer->Add(
+                    mFishShoalRadiusAdjustmentSlider,
+                    wxGBPosition(1, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(1, 0),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    // Finalize panel
+
+    for (int c = 0; c < gridSizer->GetCols(); ++c)
+        gridSizer->AddGrowableCol(c);
+
+    panel->SetSizer(gridSizer);
+}
+
 
 void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & settings)
 {
@@ -2619,6 +2983,24 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDayLightCycleDurationSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::DayLightCycleDuration).count());
     mDayLightCycleDurationSlider->Enable(settings.GetValue<bool>(GameSettings::DoDayLightCycle));
 
+    //
+    // Lights, Electricals, and Fishes
+    //
+
+    mLuminiscenceSlider->SetValue(settings.GetValue<float>(GameSettings::LuminiscenceAdjustment));
+    mLightSpreadSlider->SetValue(settings.GetValue<float>(GameSettings::LightSpreadAdjustment));
+    mGenerateEngineWakeCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateEngineWakeParticles));
+    mEngineThrustAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::EngineThrustAdjustment));
+    mWaterPumpPowerAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterPumpPowerAdjustment));
+    mElectricalElementHeatProducedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ElectricalElementHeatProducedAdjustment));
+    mNumberOfFishesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfFishes));
+    mFishSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::FishSizeMultiplier));
+    mFishSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishSpeedAdjustment));
+    mDoFishShoalingCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoFishShoaling));
+    mFishShoalRadiusAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishShoalRadiusAdjustment));
+    mFishShoalRadiusAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoFishShoaling));
+
+
     // TODOHERE
 
     /* TODOOLD
@@ -2632,7 +3014,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
 
 
-    mElectricalElementHeatProducedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ElectricalElementHeatProducedAdjustment));
+
 
     mHeatBlasterRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterRadius));
 
@@ -2648,15 +3030,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     // Wind, Waves, Fishes, and Lights
 
-    mNumberOfFishesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfFishes));
-    mFishSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::FishSizeMultiplier));
-    mFishSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishSpeedAdjustment));
-    mDoFishShoalingCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoFishShoaling));
-    mFishShoalRadiusAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishShoalRadiusAdjustment));
-    mFishShoalRadiusAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoFishShoaling));
-
-    mLuminiscenceSlider->SetValue(settings.GetValue<float>(GameSettings::LuminiscenceAdjustment));
-    mLightSpreadSlider->SetValue(settings.GetValue<float>(GameSettings::LightSpreadAdjustment));
 
     // Interactions
 
@@ -2692,13 +3065,10 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mGenerateSparklesForCutsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparklesForCuts));
 
-    mGenerateEngineWakeCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateEngineWakeParticles));
+
 
     mUltraViolentCheckBox->SetValue(settings.GetValue<bool>(GameSettings::UltraViolentMode));
 
-    mEngineThrustAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::EngineThrustAdjustment));
-
-    mWaterPumpPowerAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterPumpPowerAdjustment));
 
     // Render
 
