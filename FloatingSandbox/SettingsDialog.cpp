@@ -3301,10 +3301,12 @@ void SettingsDialog::PopulateInteractionsPanel(
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 3),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
+
+    /////////////////////////////////////
 
     //
     // Scrub/Rot Tool
@@ -3383,6 +3385,8 @@ void SettingsDialog::PopulateInteractionsPanel(
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
+
+    // Spacer
 
     //
     // Flood Tool
@@ -3558,6 +3562,8 @@ void SettingsDialog::PopulateInteractionsPanel(
             CellBorderOuter);
     }
 
+    // Spacer
+
     //
     // HeatBlaster
     //
@@ -3641,15 +3647,17 @@ void SettingsDialog::PopulateInteractionsPanel(
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 3),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
     // Finalize panel
 
-    for (int c = 0; c < gridSizer->GetCols(); ++c)
-        gridSizer->AddGrowableCol(c);
+    ///*for (int c = 0; c < gridSizer->GetCols(); ++c)
+    //    gridSizer->AddGrowableCol(c);*/
+    //gridSizer->AddGrowableCol(1);
+    //gridSizer->AddGrowableCol(4);
 
     panel->SetSizer(gridSizer);
 }
