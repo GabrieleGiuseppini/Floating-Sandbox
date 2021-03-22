@@ -416,13 +416,15 @@ Render:
 				= SettingsDialog:
 					= Refactor: 
 						+ Fonts
-						- 1: new SettingsDialog
+						= 1: new SettingsDialog
 							+ Take all screenshots
 							= Do
 								+ Try using StaticBoxSizer instead of static boxes
 								+ See to center notebook panels that are less wide
-								- Fix single checkbox + slider vertical cell
-									- Set size of row == constant, taken from button
+								+ Fix single checkbox + slider vertical cell
+									+ Set size of row == constant, taken from button
+								+ Move UltraViolent to first panel
+								= Interactions panel								
 								- Move to Advanced:
 									- GenerateSparkles
 									- GenerateDebris
@@ -440,7 +442,11 @@ Render:
 					- BlastToolRadius
 					- BlastToolForceAdjustment
 				- Finalize all three current default radii
-				- Finalize maxima of all settings, & ultra-violent mode					
+				- Finalize maxima of all settings, & ultra-violent mode	
+			- changelist
+
+		- See rot tool + UV mode
+
 		- New tool 2: Punch
 			- Spec:
 				- Works only on frontier from outside->in

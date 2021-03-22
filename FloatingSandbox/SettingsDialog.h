@@ -22,6 +22,7 @@
 #include <wx/listctrl.h>
 #include <wx/radiobox.h>
 #include <wx/textctrl.h>
+#include <wx/tglbtn.h>
 
 #include <memory>
 #include <vector>
@@ -97,6 +98,7 @@ private:
     SliderControl<float> * mCombustionSpeedAdjustmentSlider;
     SliderControl<float> * mCombustionHeatAdjustmentSlider;
     SliderControl<unsigned int> * mMaxBurningParticlesSlider;
+    wxToggleButton * mUltraViolentToggleButton;
 
     // Ocean and Water
     SliderControl<float> * mWaterDensitySlider;
@@ -155,35 +157,39 @@ private:
     wxCheckBox * mDoFishShoalingCheckBox;
     SliderControl<float> * mFishShoalRadiusAdjustmentSlider;
 
+    // Tools
+    SliderControl<float> * mDestroyRadiusSlider;
+    SliderControl<float> * mBombBlastRadiusSlider;
+    SliderControl<float> * mBombBlastForceAdjustmentSlider;
+    SliderControl<float> * mBombBlastHeatSlider;
+    SliderControl<float> * mAntiMatterBombImplosionStrengthSlider;
+    SliderControl<float> * mBlastToolRadiusSlider;
+    SliderControl<float> * mBlastToolForceAdjustmentSlider;
+    SliderControl<float> * mScrubRotRadiusSlider;
+    SliderControl<float> * mFloodRadiusSlider;
+    SliderControl<float> * mFloodQuantitySlider;
+    SliderControl<float> * mRepairRadiusSlider;
+    SliderControl<float> * mRepairSpeedAdjustmentSlider;
+    SliderControl<float> * mHeatBlasterRadiusSlider;
+    SliderControl<float> * mHeatBlasterHeatFlowSlider;
+
     /* TODOOLD
     // Mechanics, Air, and Fluids
 
     // Heat and Combustion
 
-    SliderControl<float> * mHeatBlasterRadiusSlider;
-    SliderControl<float> * mHeatBlasterHeatFlowSlider;
 
     // Ocean, Smoke, and Sky
 
     // Wind, Waves, Fishes, and Lights
 
     // Interactions
-    SliderControl<float> * mDestroyRadiusSlider;
-    SliderControl<float> * mBombBlastRadiusSlider;
-    SliderControl<float> * mBombBlastForceAdjustmentSlider;
-    SliderControl<float> * mBombBlastHeatSlider;
-    SliderControl<float> * mAntiMatterBombImplosionStrengthSlider;
-    SliderControl<float> * mScrubRotRadiusSlider;
-    SliderControl<float> * mFloodRadiusSlider;
-    SliderControl<float> * mFloodQuantitySlider;
-    SliderControl<float> * mRepairRadiusSlider;
-    SliderControl<float> * mRepairSpeedAdjustmentSlider;
     wxCheckBox * mGenerateAirBubblesCheckBox;
     wxCheckBox * mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox;
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesForCutsCheckBox;
 
-    wxCheckBox * mUltraViolentCheckBox;
+
 
     // Rendering
     wxRadioButton * mTextureOceanRenderModeRadioButton;
@@ -256,11 +262,12 @@ private:
     void DoCancel();
     void DoClose();
 
-    void PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel);
+    void PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel, ResourceLocator const & resourceLocator);
     void PopulateWaterAndOceanPanel(wxPanel * panel);
     void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateAirAndSkyPanel(wxPanel * panel);
     void PopulateLightsElectricalAndFishesPanel(wxPanel * panel);
+    void PopulateInteractionsPanel(wxPanel * panel, ResourceLocator const & resourceLocator);
 
     /* TODOOLD
     void PopulateMechanicsAirFluidsPanel(wxPanel * panel);

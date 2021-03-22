@@ -302,7 +302,7 @@ MainFrame::MainFrame(
     mToolsMenu->Append(fireExtinguisherMenuItem);
     Connect(ID_FIRE_EXTINGUISHER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFireExtinguisherMenuItemSelected);
 
-    wxMenuItem * blastToolMenuItem = new wxMenuItem(mToolsMenu, ID_BLAST_TOOL_MENUITEM, _("Blast Tool") + wxS("\t8"), wxEmptyString, wxITEM_RADIO);
+    wxMenuItem * blastToolMenuItem = new wxMenuItem(mToolsMenu, ID_BLAST_TOOL_MENUITEM, _("Blast") + wxS("\t8"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(blastToolMenuItem);
     Connect(ID_BLAST_TOOL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnBlastToolMenuItemSelected);
 
@@ -356,7 +356,7 @@ MainFrame::MainFrame(
     mToolsMenu->Append(adjustTerrainMenuItem);
     Connect(ID_ADJUSTTERRAIN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAdjustTerrainMenuItemSelected);
 
-    wxMenuItem * repairStructureMenuItem = new wxMenuItem(mToolsMenu, ID_REPAIRSTRUCTURE_MENUITEM, _("Repair Structure") + wxS("\tE"), wxEmptyString, wxITEM_RADIO);
+    wxMenuItem * repairStructureMenuItem = new wxMenuItem(mToolsMenu, ID_REPAIRSTRUCTURE_MENUITEM, _("Repair") + wxS("\tE"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(repairStructureMenuItem);
     Connect(ID_REPAIRSTRUCTURE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRepairStructureMenuItemSelected);
 
