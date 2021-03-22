@@ -3214,7 +3214,7 @@ void SettingsDialog::PopulateInteractionsPanel(
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 1),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -3300,7 +3300,347 @@ void SettingsDialog::PopulateInteractionsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 2),
+            wxGBPosition(0, 3),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // Scrub/Rot Tool
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Scrub/Rot Tool"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Icon
+            {
+                wxBitmap bitmap = wxBitmap(
+                    resourceLocator.GetCursorFilePath("scrub_cursor_up").string(),
+                    wxBITMAP_TYPE_PNG);
+
+                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+
+                sizer->Add(
+                    staticBitmap,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxTOP | wxLEFT,
+                    IconInStaticBorderMargin);
+            }
+
+            // Icon
+            {
+                wxBitmap bitmap = wxBitmap(
+                    resourceLocator.GetCursorFilePath("rot_cursor_up").string(),
+                    wxBITMAP_TYPE_PNG);
+
+                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+
+                sizer->Add(
+                    staticBitmap,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxTOP | wxLEFT,
+                    IconInStaticBorderMargin);
+            }
+
+            // Scrub/Rot Radius
+            {
+                mScrubRotRadiusSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Scrub/Rot Radius"),
+                    _("How wide an area is affected by the scrub/rot tool (m)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ScrubRotRadius, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinScrubRotRadius(),
+                        mGameControllerSettingsOptions->GetMaxScrubRotRadius()));
+
+                sizer->Add(
+                    mScrubRotRadiusSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(1, 0),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // Flood Tool
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Flood Tool"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Icon
+            {
+                wxBitmap bitmap = wxBitmap(
+                    resourceLocator.GetCursorFilePath("flood_cursor_up").string(),
+                    wxBITMAP_TYPE_PNG);
+
+                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+
+                sizer->Add(
+                    staticBitmap,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxTOP | wxLEFT,
+                    IconInStaticBorderMargin);
+            }
+
+            // Flood Radius
+            {
+                mFloodRadiusSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Flood Radius"),
+                    _("How wide an area is flooded or drained by the flood tool (m)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::FloodRadius, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinFloodRadius(),
+                        mGameControllerSettingsOptions->GetMaxFloodRadius()));
+
+                sizer->Add(
+                    mFloodRadiusSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Flood Quantity
+            {
+                mFloodQuantitySlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Flood Quantity"),
+                    _("How much water is injected or drained by the flood tool (m3)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::FloodQuantity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinFloodQuantity(),
+                        mGameControllerSettingsOptions->GetMaxFloodQuantity()));
+
+                sizer->Add(
+                    mFloodQuantitySlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(1, 1),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // Repair Tool
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Repair Tool"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Icon
+            {
+                wxBitmap bitmap = wxBitmap(
+                    resourceLocator.GetCursorFilePath("repair_structure_cursor_up").string(),
+                    wxBITMAP_TYPE_PNG);
+
+                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+
+                sizer->Add(
+                    staticBitmap,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxTOP | wxLEFT,
+                    IconInStaticBorderMargin);
+            }
+
+            // Repair Radius
+            {
+                mRepairRadiusSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Repair Radius"),
+                    _("Adjusts the radius of the repair tool (m)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::RepairRadius, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinRepairRadius(),
+                        mGameControllerSettingsOptions->GetMaxRepairRadius()));
+
+                sizer->Add(
+                    mRepairRadiusSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Repair Speed Adjustment
+            {
+                mRepairSpeedAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Repair Speed Adjust"),
+                    _("Adjusts the speed with which the repair tool attracts particles to repair damage. Warning: at high speeds the repair tool might become destructive!"),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::RepairSpeedAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinRepairSpeedAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxRepairSpeedAdjustment()));
+
+                sizer->Add(
+                    mRepairSpeedAdjustmentSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(1, 2),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // HeatBlaster
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("HeatBlaster"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Icon
+            {
+                wxBitmap bitmap = wxBitmap(
+                    resourceLocator.GetCursorFilePath("heat_blaster_heat_cursor_up").string(),
+                    wxBITMAP_TYPE_PNG);
+
+                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+
+                sizer->Add(
+                    staticBitmap,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxTOP | wxLEFT,
+                    IconInStaticBorderMargin);
+            }
+
+            // Radius
+            {
+                mHeatBlasterRadiusSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Radius"),
+                    _("The radius of HeatBlaster tool (m)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::HeatBlasterRadius, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinHeatBlasterRadius(),
+                        mGameControllerSettingsOptions->GetMaxHeatBlasterRadius()));
+
+                sizer->Add(
+                    mHeatBlasterRadiusSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Heat flow
+            {
+                mHeatBlasterHeatFlowSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Heat"),
+                    _("The heat produced by the HeatBlaster tool (KJ/s)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::HeatBlasterHeatFlow, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinHeatBlasterHeatFlow(),
+                        2000.0f,
+                        mGameControllerSettingsOptions->GetMaxHeatBlasterHeatFlow()));
+
+                sizer->Add(
+                    mHeatBlasterHeatFlowSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(1, 3),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
@@ -3418,7 +3758,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mAntiMatterBombImplosionStrengthSlider->SetValue(settings.GetValue<float>(GameSettings::AntiMatterBombImplosionStrength));
     mBlastToolRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::BlastToolRadius));
     mBlastToolForceAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BlastToolForceAdjustment));
-    /* TODOTEST
     mScrubRotRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::ScrubRotRadius));
     mFloodRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::FloodRadius));
     mFloodQuantitySlider->SetValue(settings.GetValue<float>(GameSettings::FloodQuantity));
@@ -3426,7 +3765,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mRepairSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RepairSpeedAdjustment));
     mHeatBlasterRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterRadius));
     mHeatBlasterHeatFlowSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterHeatFlow));
-    */
 
     // TODOHERE
 
