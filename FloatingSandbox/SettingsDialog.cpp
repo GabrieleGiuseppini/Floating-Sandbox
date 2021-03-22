@@ -33,6 +33,7 @@
 static int constexpr SliderWidth = 60;
 static int constexpr SliderHeight = 140;
 
+static int constexpr IconInStaticBorderMargin = 4;
 static int constexpr TopmostCellOverSliderHeight = 24;
 static int constexpr StaticBoxInsetMargin = 0;
 static int constexpr CellBorderInner = 8;
@@ -141,7 +142,7 @@ SettingsDialog::SettingsDialog(
     {
         wxPanel * panel = new wxPanel(notebook);
 
-        PopulateMechanicsAndThermodynamicsPanel(panel);
+        PopulateMechanicsAndThermodynamicsPanel(panel, resourceLocator);
 
         notebook->AddPage(panel, _("Mechanics and Thermodynamics"));
     }
@@ -192,6 +193,18 @@ SettingsDialog::SettingsDialog(
         PopulateLightsElectricalAndFishesPanel(panel);
 
         notebook->AddPage(panel, _("Lights, Electricals, and Fishes"));
+    }
+
+    //
+    // Interactions
+    //
+
+    {
+        wxPanel * panel = new wxPanel(notebook);
+
+        PopulateInteractionsPanel(panel, resourceLocator);
+
+        notebook->AddPage(panel, _("Interactions"));
     }
 
     /* TODOOLD
@@ -912,7 +925,9 @@ void SettingsDialog::DoClose()
     this->Hide();
 }
 
-void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
+void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
+    wxPanel * panel,
+    ResourceLocator const & resourceLocator)
 {
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
@@ -1090,6 +1105,49 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
     }
 
     //
+    // Ultra-Violent Mode
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Ultra-Violent Mode"));
+
+        {
+            boxSizer->AddStretchSpacer(1);
+        }
+
+        {
+            wxBitmap bitmap = wxBitmap(
+                resourceLocator.GetIconFilePath("uv_mode_icon").string(),
+                wxBITMAP_TYPE_PNG);
+
+            mUltraViolentToggleButton = new wxBitmapToggleButton(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+            mUltraViolentToggleButton->SetToolTip(_("Enables or disables amplification of tool forces and inflicted damages."));
+            mUltraViolentToggleButton->Bind(
+                wxEVT_TOGGLEBUTTON,
+                [this](wxCommandEvent & event)
+                {
+                    mLiveSettings.SetValue(GameSettings::UltraViolentMode, event.IsChecked());
+                    OnLiveSettingsChanged();
+                });
+
+            boxSizer->Add(
+                mUltraViolentToggleButton,
+                0,
+                wxALL | wxALIGN_CENTER_HORIZONTAL,
+                StaticBoxInsetMargin);
+        }
+
+        {
+            boxSizer->AddStretchSpacer(1);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 2),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
     // Combustion
     //
 
@@ -1235,7 +1293,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel)
         gridSizer->Add(
             combustionBoxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 2),
+            wxGBSpan(1, 3),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -2907,6 +2965,354 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
     panel->SetSizer(gridSizer);
 }
 
+void SettingsDialog::PopulateInteractionsPanel(
+    wxPanel * panel,
+    ResourceLocator const & resourceLocator)
+{
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+
+    //
+    // Smash Tool
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Smash Tool"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Icon
+            {
+                wxBitmap bitmap = wxBitmap(
+                    resourceLocator.GetCursorFilePath("smash_cursor_up").string(),
+                    wxBITMAP_TYPE_PNG);
+
+                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+
+                sizer->Add(
+                    staticBitmap,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxTOP | wxLEFT,
+                    IconInStaticBorderMargin);
+            }
+
+            // Destroy Radius
+            {
+                mDestroyRadiusSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Destroy Radius"),
+                    _("The starting radius of the damage caused by destructive tools (m)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::DestroyRadius, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinDestroyRadius(),
+                        mGameControllerSettingsOptions->GetMaxDestroyRadius()));
+
+                sizer->Add(
+                    mDestroyRadiusSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // Bombs
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Bombs"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Icon
+            {
+                wxBitmap bitmap = wxBitmap(
+                    resourceLocator.GetCursorFilePath("impact_bomb_cursor").string(),
+                    wxBITMAP_TYPE_PNG);
+
+                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+
+                sizer->Add(
+                    staticBitmap,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxTOP | wxLEFT,
+                    IconInStaticBorderMargin);
+            }
+
+            // Icon
+            {
+                wxBitmap bitmap = wxBitmap(
+                    resourceLocator.GetCursorFilePath("rc_bomb_cursor").string(),
+                    wxBITMAP_TYPE_PNG);
+
+                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+
+                sizer->Add(
+                    staticBitmap,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxTOP | wxLEFT,
+                    IconInStaticBorderMargin);
+            }
+
+            // Icon
+            {
+                wxBitmap bitmap = wxBitmap(
+                    resourceLocator.GetCursorFilePath("timer_bomb_cursor").string(),
+                    wxBITMAP_TYPE_PNG);
+
+                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+
+                sizer->Add(
+                    staticBitmap,
+                    wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxTOP | wxLEFT,
+                    IconInStaticBorderMargin);
+            }
+
+            // Icon
+            {
+                wxBitmap bitmap = wxBitmap(
+                    resourceLocator.GetCursorFilePath("am_bomb_cursor").string(),
+                    wxBITMAP_TYPE_PNG);
+
+                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+
+                sizer->Add(
+                    staticBitmap,
+                    wxGBPosition(3, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxTOP | wxLEFT,
+                    IconInStaticBorderMargin);
+            }
+
+            // Bomb Blast Radius
+            {
+                mBombBlastRadiusSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Bomb Blast Radius"),
+                    _("The radius of bomb explosions (m)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::BombBlastRadius, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinBombBlastRadius(),
+                        mGameControllerSettingsOptions->GetMaxBombBlastRadius()));
+
+                sizer->Add(
+                    mBombBlastRadiusSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(4, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Bomb Blast Force Adjustment
+            {
+                mBombBlastForceAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Bomb Blast Force Adjust"),
+                    _("Adjusts the blast force generated by bomb explosions."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::BombBlastForceAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinBombBlastForceAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxBombBlastForceAdjustment()));
+
+                sizer->Add(
+                    mBombBlastForceAdjustmentSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(4, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Bomb Blast Heat
+            {
+                mBombBlastHeatSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Bomb Blast Heat"),
+                    _("The heat generated by bomb explosions (KJ/s)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::BombBlastHeat, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinBombBlastHeat(),
+                        40000.0f,
+                        mGameControllerSettingsOptions->GetMaxBombBlastHeat()));
+
+                sizer->Add(
+                    mBombBlastHeatSlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(4, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Anti-matter Bomb Implosion Strength
+            {
+                mAntiMatterBombImplosionStrengthSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("AM Bomb Implosion Strength"),
+                    _("Adjusts the strength of the initial anti-matter bomb implosion."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AntiMatterBombImplosionStrength, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinAntiMatterBombImplosionStrength(),
+                        mGameControllerSettingsOptions->GetMaxAntiMatterBombImplosionStrength()));
+
+                sizer->Add(
+                    mAntiMatterBombImplosionStrengthSlider,
+                    wxGBPosition(0, 4),
+                    wxGBSpan(4, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 1),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // Blast Tool
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Blast Tool"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Icon
+            {
+                wxBitmap bitmap = wxBitmap(
+                    resourceLocator.GetCursorFilePath("blast_cursor_up_1").string(),
+                    wxBITMAP_TYPE_PNG);
+
+                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+
+                sizer->Add(
+                    staticBitmap,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxTOP | wxLEFT,
+                    IconInStaticBorderMargin);
+            }
+
+            // Blast Tool Radius
+            {
+                mBlastToolRadiusSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Radius"),
+                    _("The radius of the blast tool (m)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::BlastToolRadius, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinBlastToolRadius(),
+                        mGameControllerSettingsOptions->GetMaxBlastToolRadius()));
+
+                sizer->Add(
+                    mBlastToolRadiusSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Blast Tool Force Adjustment
+            {
+                mBlastToolForceAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Force Adjust"),
+                    _("Adjusts the blast force generated by the Blast tool."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::BlastToolForceAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinBlastToolForceAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxBlastToolForceAdjustment()));
+
+                sizer->Add(
+                    mBlastToolForceAdjustmentSlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 2),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    // Finalize panel
+
+    for (int c = 0; c < gridSizer->GetCols(); ++c)
+        gridSizer->AddGrowableCol(c);
+
+    panel->SetSizer(gridSizer);
+}
 
 void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & settings)
 {
@@ -2924,6 +3330,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mCombustionSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::CombustionSpeedAdjustment));
     mCombustionHeatAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::CombustionHeatAdjustment));
     mMaxBurningParticlesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::MaxBurningParticles));
+    mUltraViolentToggleButton->SetValue(settings.GetValue<bool>(GameSettings::UltraViolentMode));
 
     //
     // Water and Ocean
@@ -3000,61 +3407,33 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mFishShoalRadiusAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishShoalRadiusAdjustment));
     mFishShoalRadiusAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoFishShoaling));
 
+    //
+    // Tools
+    //
+
+    mDestroyRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::DestroyRadius));
+    mBombBlastRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::BombBlastRadius));
+    mBombBlastForceAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BombBlastForceAdjustment));
+    mBombBlastHeatSlider->SetValue(settings.GetValue<float>(GameSettings::BombBlastHeat));
+    mAntiMatterBombImplosionStrengthSlider->SetValue(settings.GetValue<float>(GameSettings::AntiMatterBombImplosionStrength));
+    mBlastToolRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::BlastToolRadius));
+    mBlastToolForceAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BlastToolForceAdjustment));
+    /* TODOTEST
+    mScrubRotRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::ScrubRotRadius));
+    mFloodRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::FloodRadius));
+    mFloodQuantitySlider->SetValue(settings.GetValue<float>(GameSettings::FloodQuantity));
+    mRepairRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::RepairRadius));
+    mRepairSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RepairSpeedAdjustment));
+    mHeatBlasterRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterRadius));
+    mHeatBlasterHeatFlowSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterHeatFlow));
+    */
 
     // TODOHERE
 
     /* TODOOLD
 
-
-
-
-    // Heat
-
-
-
-
-
-
-
-    mHeatBlasterRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterRadius));
-
-    mHeatBlasterHeatFlowSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterHeatFlow));
-
-
-
-    // Ocean, Smoke, and Sky
-
-
-
-
-
-    // Wind, Waves, Fishes, and Lights
-
-
     // Interactions
-
-    mDestroyRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::DestroyRadius));
-
-    mBombBlastRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::BombBlastRadius));
-
-    mBombBlastForceAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::BombBlastForceAdjustment));
-
-    mBombBlastHeatSlider->SetValue(settings.GetValue<float>(GameSettings::BombBlastHeat));
-
-    mAntiMatterBombImplosionStrengthSlider->SetValue(settings.GetValue<float>(GameSettings::AntiMatterBombImplosionStrength));
-
-    mScrubRotRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::ScrubRotRadius));
-
-    mFloodRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::FloodRadius));
-
-    mFloodQuantitySlider->SetValue(settings.GetValue<float>(GameSettings::FloodQuantity));
-
-    mRepairRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::RepairRadius));
-
-    mRepairSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RepairSpeedAdjustment));
-
     mGenerateAirBubblesCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
-
     mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoDisplaceOceanSurfaceAtAirBubblesSurfacing));
     mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox->Enable(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
 
@@ -3064,11 +3443,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mGenerateDebrisCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateDebris));
 
     mGenerateSparklesForCutsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparklesForCuts));
-
-
-
-    mUltraViolentCheckBox->SetValue(settings.GetValue<bool>(GameSettings::UltraViolentMode));
-
 
     // Render
 
