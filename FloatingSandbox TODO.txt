@@ -425,24 +425,20 @@ Render:
 									+ Set size of row == constant, taken from button
 								+ Move UltraViolent to first panel
 								+ Rendering panel
-								- Fix centering on those two panels
-								- Sound and Advanced Settings
+								= Sound and Advanced Settings
+									- Add:
+										- GenerateSparkles (New box)
+										- GenerateDebris
+										+ Draw HeatBlaster Flame (Extra Draw Options)
 								- Settings Management
-								- Move to Advanced:
-									- GenerateSparkles
-									- GenerateDebris
-									- Draw HeatBlaster Flame
 								- Nuke settings:
 									- air bubbles displace waves: honor global displacement instead
 									- generate air bubbles: use zero density
-							- Nuke old files and old code
-							
+							- Nuke old source files and old code in remaining source file							
 						- 2: Shorten labels
 							- Fluids: remove redundant "Water" 
-							- "Adjust" -> "%" ?
-							- Fix localization files
-						- Icons in static boxes?
-						
+							- Remove other redundant parts of labels
+							- "Adjust" -> "%" ?						
 					+ BlastToolRadius
 					+ BlastToolForceAdjustment
 				- Finalize all three current default radii
