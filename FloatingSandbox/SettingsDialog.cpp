@@ -207,6 +207,18 @@ SettingsDialog::SettingsDialog(
         notebook->AddPage(panel, _("Interactions"));
     }
 
+    //
+    // Rendering
+    //
+
+    {
+        wxPanel * panel = new wxPanel(notebook);
+
+        PopulateRenderingPanel(panel);
+
+        notebook->AddPage(panel, _("Rendering"));
+    }
+
     /* TODOOLD
     //
     // Heat
@@ -384,6 +396,45 @@ void SettingsDialog::Open()
     this->Show();
 }
 
+void SettingsDialog::OnOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+{
+    if (mTextureOceanRenderModeRadioButton->GetValue())
+    {
+        mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderModeType::Texture);
+    }
+    else if (mDepthOceanRenderModeRadioButton->GetValue())
+    {
+        mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderModeType::Depth);
+    }
+    else
+    {
+        assert(mFlatOceanRenderModeRadioButton->GetValue());
+        mLiveSettings.SetValue(GameSettings::OceanRenderMode, OceanRenderModeType::Flat);
+    }
+
+    OnLiveSettingsChanged();
+
+    ReconciliateOceanRenderModeSettings();
+}
+
+void SettingsDialog::OnLandRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+{
+    if (mTextureLandRenderModeRadioButton->GetValue())
+    {
+        mLiveSettings.SetValue(GameSettings::LandRenderMode, LandRenderModeType::Texture);
+    }
+    else
+    {
+        assert(mFlatLandRenderModeRadioButton->GetValue());
+        mLiveSettings.SetValue(GameSettings::LandRenderMode, LandRenderModeType::Flat);
+    }
+
+    ReconciliateLandRenderModeSettings();
+
+    OnLiveSettingsChanged();
+}
+
+
 ////TODOOLD
 ////void SettingsDialog::OnRestoreDefaultTerrainButton(wxCommandEvent & /*event*/)
 ////{
@@ -450,22 +501,6 @@ void SettingsDialog::Open()
 ////    OnLiveSettingsChanged();
 ////}
 ////
-////void SettingsDialog::OnLandRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
-////{
-////    if (mTextureLandRenderModeRadioButton->GetValue())
-////    {
-////        mLiveSettings.SetValue(GameSettings::LandRenderMode, LandRenderModeType::Texture);
-////    }
-////    else
-////    {
-////        assert(mFlatLandRenderModeRadioButton->GetValue());
-////        mLiveSettings.SetValue(GameSettings::LandRenderMode, LandRenderModeType::Flat);
-////    }
-////
-////    ReconciliateLandRenderModeSettings();
-////
-////    OnLiveSettingsChanged();
-////}
 ////
 ////void SettingsDialog::OnFlatLandColorChanged(wxColourPickerEvent & event)
 ////{
@@ -3386,8 +3421,6 @@ void SettingsDialog::PopulateInteractionsPanel(
             CellBorderOuter);
     }
 
-    // Spacer
-
     //
     // Flood Tool
     //
@@ -3562,8 +3595,6 @@ void SettingsDialog::PopulateInteractionsPanel(
             CellBorderOuter);
     }
 
-    // Spacer
-
     //
     // HeatBlaster
     //
@@ -3658,6 +3689,666 @@ void SettingsDialog::PopulateInteractionsPanel(
     //    gridSizer->AddGrowableCol(c);*/
     //gridSizer->AddGrowableCol(1);
     //gridSizer->AddGrowableCol(4);
+
+    panel->SetSizer(gridSizer);
+}
+
+void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
+{
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+
+    // Sea
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Sea"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Ocean Render Mode
+            {
+                wxStaticBoxSizer * oceanRenderModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, boxSizer->GetStaticBox(), _("Draw Mode"));
+
+                {
+                    wxGridBagSizer * oceanRenderModeSizer = new wxGridBagSizer(3, 3);
+
+                    mTextureOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Texture"),
+                        wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+                    mTextureOceanRenderModeRadioButton->SetToolTip(_("Draws the ocean using a static pattern."));
+                    mTextureOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnOceanRenderModeRadioButtonClick, this);
+
+                    oceanRenderModeSizer->Add(mTextureOceanRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+                    mTextureOceanComboBox = new wxBitmapComboBox(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxEmptyString,
+                        wxDefaultPosition, wxDefaultSize, wxArrayString(), wxCB_READONLY);
+                    for (auto const & entry : mGameControllerSettingsOptions->GetTextureOceanAvailableThumbnails())
+                    {
+                        mTextureOceanComboBox->Append(
+                            entry.first,
+                            WxHelpers::MakeBitmap(entry.second));
+                    }
+                    mTextureOceanComboBox->SetToolTip(_("Sets the texture to use for the ocean."));
+                    mTextureOceanComboBox->Bind(
+                        wxEVT_COMBOBOX,
+                        [this](wxCommandEvent & /*event*/)
+                        {
+                            mLiveSettings.SetValue(GameSettings::TextureOceanTextureIndex, static_cast<size_t>(mTextureOceanComboBox->GetSelection()));
+                            OnLiveSettingsChanged();
+                        });
+
+                    oceanRenderModeSizer->Add(mTextureOceanComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxALL | wxEXPAND, 0);
+
+                    //
+
+                    mDepthOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Depth Gradient"));
+                    mDepthOceanRenderModeRadioButton->SetToolTip(_("Draws the ocean using a vertical color gradient."));
+                    mDepthOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnOceanRenderModeRadioButtonClick, this);
+
+                    oceanRenderModeSizer->Add(mDepthOceanRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+                    mDepthOceanColorStartPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"));
+                    mDepthOceanColorStartPicker->SetToolTip(_("Sets the starting (top) color of the gradient."));
+                    mDepthOceanColorStartPicker->Bind(
+                        wxEVT_COLOURPICKER_CHANGED,
+                        [this](wxColourPickerEvent & event)
+                        {
+                            auto const color = event.GetColour();
+
+                            mLiveSettings.SetValue(
+                                GameSettings::DepthOceanColorStart,
+                                rgbColor(color.Red(), color.Green(), color.Blue()));
+
+                            OnLiveSettingsChanged();
+                        });
+
+                    oceanRenderModeSizer->Add(mDepthOceanColorStartPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALL, 0);
+
+                    mDepthOceanColorEndPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"));
+                    mDepthOceanColorEndPicker->SetToolTip(_("Sets the ending (bottom) color of the gradient."));
+                    mDepthOceanColorEndPicker->Bind(
+                        wxEVT_COLOURPICKER_CHANGED,
+                        [this](wxColourPickerEvent & event)
+                        {
+                            auto color = event.GetColour();
+
+                            mLiveSettings.SetValue(
+                                GameSettings::DepthOceanColorEnd,
+                                rgbColor(color.Red(), color.Green(), color.Blue()));
+
+                            OnLiveSettingsChanged();
+                        });
+
+                    oceanRenderModeSizer->Add(mDepthOceanColorEndPicker, wxGBPosition(1, 2), wxGBSpan(1, 1), wxALL, 0);
+
+                    //
+
+                    mFlatOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Flat"));
+                    mFlatOceanRenderModeRadioButton->SetToolTip(_("Draws the ocean using a single color."));
+                    mFlatOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnOceanRenderModeRadioButtonClick, this);
+
+                    oceanRenderModeSizer->Add(mFlatOceanRenderModeRadioButton, wxGBPosition(2, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+                    mFlatOceanColorPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
+                        wxDefaultPosition, wxDefaultSize);
+                    mFlatOceanColorPicker->SetToolTip(_("Sets the single color of the ocean."));
+                    mFlatOceanColorPicker->Bind(
+                        wxEVT_COLOURPICKER_CHANGED,
+                        [this](wxColourPickerEvent & event)
+                        {
+                            auto color = event.GetColour();
+
+                            mLiveSettings.SetValue(
+                                GameSettings::FlatOceanColor,
+                                rgbColor(color.Red(), color.Green(), color.Blue()));
+
+                            OnLiveSettingsChanged();
+                        });
+
+                    oceanRenderModeSizer->Add(mFlatOceanColorPicker, wxGBPosition(2, 1), wxGBSpan(1, 1), wxALL, 0);
+
+                    oceanRenderModeBoxSizer->Add(oceanRenderModeSizer, 0, wxALL, StaticBoxInsetMargin);
+                }
+
+                sizer->Add(
+                    oceanRenderModeBoxSizer,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            // High-Quality Rendering
+            {
+                mOceanRenderDetailModeDetailedCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("High-Quality Rendering"));
+                mOceanRenderDetailModeDetailedCheckBox->SetToolTip(_("Renders the ocean with additional details. Requires more computational resources."));
+                mOceanRenderDetailModeDetailedCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::OceanRenderDetail, event.IsChecked() ? OceanRenderDetailType::Detailed : OceanRenderDetailType::Basic);
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mOceanRenderDetailModeDetailedCheckBox,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            // See Ship Through Water
+            {
+                mSeeShipThroughOceanCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("See Ship Through Water"));
+                mSeeShipThroughOceanCheckBox->SetToolTip(_("Shows the ship either behind the sea water or in front of it."));
+                mSeeShipThroughOceanCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::ShowShipThroughOcean, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mSeeShipThroughOceanCheckBox,
+                    wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            // Ocean Transparency
+            {
+                mOceanTransparencySlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Transparency"),
+                    _("Adjusts the transparency of sea water."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::OceanTransparency, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                sizer->Add(
+                    mOceanTransparencySlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(3, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            // Ocean Darkening Rate
+            {
+                mOceanDarkeningRateSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Darkening Rate"),
+                    _("Adjusts the rate at which the ocean darkens with depth."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::OceanDarkeningRate, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        0.0f,
+                        0.2f,
+                        1.0f));
+
+                sizer->Add(
+                    mOceanDarkeningRateSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(3, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 0),
+            wxGBSpan(2, 4),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderInner);
+    }
+
+    // Land
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Land"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Land Render Mode
+            {
+                wxStaticBoxSizer * landRenderModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, boxSizer->GetStaticBox(), _("Draw Mode"));
+
+                {
+                    wxGridBagSizer * landRenderModeSizer = new wxGridBagSizer(5, 5);
+
+                    mTextureLandRenderModeRadioButton = new wxRadioButton(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Texture"),
+                        wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+                    mTextureLandRenderModeRadioButton->SetToolTip(_("Draws the ocean floor using a static image."));
+                    mTextureLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnLandRenderModeRadioButtonClick, this);
+
+                    landRenderModeSizer->Add(mTextureLandRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+                    mTextureLandComboBox = new wxBitmapComboBox(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxEmptyString,
+                        wxDefaultPosition, wxSize(140, -1), wxArrayString(), wxCB_READONLY);
+                    for (auto const & entry : mGameControllerSettingsOptions->GetTextureLandAvailableThumbnails())
+                    {
+                        mTextureLandComboBox->Append(
+                            entry.first,
+                            WxHelpers::MakeBitmap(entry.second));
+                    }
+                    mTextureLandComboBox->SetToolTip(_("Sets the texture to use for the ocean floor."));
+                    mTextureLandComboBox->Bind(
+                        wxEVT_COMBOBOX,
+                        [this](wxCommandEvent & /*event*/)
+                        {
+                            mLiveSettings.SetValue(GameSettings::TextureLandTextureIndex, static_cast<size_t>(mTextureLandComboBox->GetSelection()));
+                            OnLiveSettingsChanged();
+                        });
+
+                    landRenderModeSizer->Add(mTextureLandComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxALL, 0);
+
+                    mFlatLandRenderModeRadioButton = new wxRadioButton(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Flat"));
+                    mFlatLandRenderModeRadioButton->SetToolTip(_("Draws the ocean floor using a static color."));
+                    mFlatLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnLandRenderModeRadioButtonClick, this);
+
+                    landRenderModeSizer->Add(mFlatLandRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+
+                    mFlatLandColorPicker = new wxColourPickerCtrl(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY);
+                    mFlatLandColorPicker->SetToolTip(_("Sets the single color of the ocean floor."));
+                    mFlatLandColorPicker->Bind(
+                        wxEVT_COLOURPICKER_CHANGED,
+                        [this](wxColourPickerEvent & event)
+                        {
+                            auto color = event.GetColour();
+
+                            mLiveSettings.SetValue(
+                                GameSettings::FlatLandColor,
+                                rgbColor(color.Red(), color.Green(), color.Blue()));
+
+                            OnLiveSettingsChanged();
+                        });
+
+                    landRenderModeSizer->Add(mFlatLandColorPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALL, 0);
+
+                    landRenderModeBoxSizer->Add(landRenderModeSizer, 0, wxALL, StaticBoxInsetMargin);
+                }
+
+                sizer->Add(
+                    landRenderModeBoxSizer,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 4),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderInner);
+    }
+
+    // Sky
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Sky"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Sky color
+            {
+                mFlatSkyColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY);
+                mFlatSkyColorPicker->SetToolTip(_("Sets the color of the sky. Duh."));
+                mFlatSkyColorPicker->Bind(
+                    wxEVT_COLOURPICKER_CHANGED,
+                    [this](wxColourPickerEvent & event)
+                    {
+                        auto color = event.GetColour();
+
+                        mLiveSettings.SetValue(
+                            GameSettings::FlatSkyColor,
+                            rgbColor(color.Red(), color.Green(), color.Blue()));
+
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mFlatSkyColorPicker,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(1, 4),
+            wxGBSpan(1, 1),
+            wxALL | wxALIGN_LEFT,
+            CellBorderInner);
+    }
+
+    // Lamp Light
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Lamp Light"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Lamp Light color
+            {
+                mFlatLampLightColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY);
+                mFlatLampLightColorPicker->SetToolTip(_("Sets the color of lamp lights."));
+                mFlatLampLightColorPicker->Bind(
+                    wxEVT_COLOURPICKER_CHANGED,
+                    [this](wxColourPickerEvent & event)
+                    {
+                        auto color = event.GetColour();
+
+                        mLiveSettings.SetValue(
+                            GameSettings::FlatLampLightColor,
+                            rgbColor(color.Red(), color.Green(), color.Blue()));
+
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mFlatLampLightColorPicker,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(1, 5),
+            wxGBSpan(1, 1),
+            wxALL | wxALIGN_RIGHT,
+            CellBorderInner);
+    }
+
+    // Heat
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Heat"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Heat render mode
+            {
+                wxString heatRenderModeChoices[] =
+                {
+                    _("Incandescence"),
+                    _("Heat Overlay"),
+                    _("None")
+                };
+
+                mHeatRenderModeRadioBox = new wxRadioBox(boxSizer->GetStaticBox(), wxID_ANY, _("Heat Draw Options"), wxDefaultPosition, wxDefaultSize,
+                    WXSIZEOF(heatRenderModeChoices), heatRenderModeChoices, 1, wxRA_SPECIFY_COLS);
+                mHeatRenderModeRadioBox->SetToolTip(_("Selects how heat is rendered on the ship."));
+                mHeatRenderModeRadioBox->Bind(
+                    wxEVT_RADIOBOX,
+                    [this](wxCommandEvent & event)
+                    {
+                        auto const selectedHeatRenderMode = event.GetSelection();
+                        if (0 == selectedHeatRenderMode)
+                        {
+                            mLiveSettings.SetValue(GameSettings::HeatRenderMode, HeatRenderModeType::Incandescence);
+                        }
+                        else if (1 == selectedHeatRenderMode)
+                        {
+                            mLiveSettings.SetValue(GameSettings::HeatRenderMode, HeatRenderModeType::HeatOverlay);
+                        }
+                        else
+                        {
+                            assert(2 == selectedHeatRenderMode);
+                            mLiveSettings.SetValue(GameSettings::HeatRenderMode, HeatRenderModeType::None);
+                        }
+
+                        mHeatSensitivitySlider->Enable(selectedHeatRenderMode != 2);
+
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mHeatRenderModeRadioBox,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            // Draw HeatBlaster flame
+            {
+                mDrawHeatBlasterFlameCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,_("Draw HeatBlaster Flame"));
+                mDrawHeatBlasterFlameCheckBox->SetToolTip(_("Renders flames out of the HeatBlaster tool."));
+                mDrawHeatBlasterFlameCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::DrawHeatBlasterFlame, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mDrawHeatBlasterFlameCheckBox,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            // Heat sensitivity
+            {
+                mHeatSensitivitySlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Heat Boost"),
+                    _("Lowers the temperature at which materials start emitting red radiation, hence making incandescence more visible at lower temperatures."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::HeatSensitivity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                sizer->Add(
+                    mHeatSensitivitySlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Flame size adjustment
+            {
+                mShipFlameSizeAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Flame Size Adjust"),
+                    _("Adjusts the size of flames."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ShipFlameSizeAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinShipFlameSizeAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxShipFlameSizeAdjustment()));
+
+                sizer->Add(
+                    mShipFlameSizeAdjustmentSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(2, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(2, 0),
+            wxGBSpan(1, 3),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderInner);
+    }
+
+    // Ship
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Ship"));
+
+        {
+            wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
+
+            // Show Stress
+            {
+                mShowStressCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Show Stress"));
+                mShowStressCheckBox->SetToolTip(_("Enables or disables highlighting of the springs that are under heavy stress and close to rupture."));
+                mShowStressCheckBox->Bind(
+                    wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::ShowShipStress, event.IsChecked());
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(mShowStressCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
+            }
+
+            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(2, 3),
+            wxGBSpan(1, 1),
+            wxALL,
+            CellBorderInner);
+    }
+
+    // Water
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Water"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Default Water Color
+            {
+                mDefaultWaterColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY);
+                mDefaultWaterColorPicker->SetToolTip(_("Sets the color of water which is used when ocean render mode is set to 'Texture'."));
+                mDefaultWaterColorPicker->Bind(
+                    wxEVT_COLOURPICKER_CHANGED,
+                    [this](wxColourPickerEvent & event)
+                    {
+                        auto const color = event.GetColour();
+
+                        mLiveSettings.SetValue(
+                            GameSettings::DefaultWaterColor,
+                            rgbColor(color.Red(), color.Green(), color.Blue()));
+
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mDefaultWaterColorPicker,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
+            }
+
+            // Water Contrast
+            {
+                mWaterContrastSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    -1,
+                    _("Water Contrast"),
+                    _("Adjusts the contrast of water inside physical bodies."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterContrast, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                sizer->Add(
+                    mWaterContrastSlider,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            // Water Level of Detail
+            {
+                mWaterLevelOfDetailSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Water Level of Detail"),
+                    _("Adjusts how detailed water inside a physical body looks."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterLevelOfDetail, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinWaterLevelOfDetail(),
+                        mGameControllerSettingsOptions->GetMaxWaterLevelOfDetail()));
+
+                sizer->Add(
+                    mWaterLevelOfDetailSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(2, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(2, 4),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderInner);
+    }
+
+    // Finalize panel
+
+    for (int c = 0; c < gridSizer->GetCols(); ++c)
+        gridSizer->AddGrowableCol(c);
 
     panel->SetSizer(gridSizer);
 }
@@ -3774,55 +4465,41 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mHeatBlasterRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterRadius));
     mHeatBlasterHeatFlowSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterHeatFlow));
 
-    // TODOHERE
+    //
+    // Rendering
+    //
 
-    /* TODOOLD
-
-    // Interactions
-    mGenerateAirBubblesCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
-    mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoDisplaceOceanSurfaceAtAirBubblesSurfacing));
-    mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox->Enable(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
-
-    mAirBubbleDensitySlider->SetValue(settings.GetValue<float>(GameSettings::AirBubblesDensity));
-    mAirBubbleDensitySlider->Enable(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
-
-    mGenerateDebrisCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateDebris));
-
-    mGenerateSparklesForCutsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparklesForCuts));
-
-    // Render
-
-    auto oceanRenderMode = settings.GetValue<OceanRenderModeType>(GameSettings::OceanRenderMode);
+    auto const oceanRenderMode = settings.GetValue<OceanRenderModeType>(GameSettings::OceanRenderMode);
     switch (oceanRenderMode)
     {
-    case OceanRenderModeType::Texture:
-    {
-        mTextureOceanRenderModeRadioButton->SetValue(true);
-        break;
-    }
+        case OceanRenderModeType::Texture:
+        {
+            mTextureOceanRenderModeRadioButton->SetValue(true);
+            break;
+        }
 
-    case OceanRenderModeType::Depth:
-    {
-        mDepthOceanRenderModeRadioButton->SetValue(true);
-        break;
-    }
+        case OceanRenderModeType::Depth:
+        {
+            mDepthOceanRenderModeRadioButton->SetValue(true);
+            break;
+        }
 
-    case OceanRenderModeType::Flat:
-    {
-        mFlatOceanRenderModeRadioButton->SetValue(true);
-        break;
-    }
+        case OceanRenderModeType::Flat:
+        {
+            mFlatOceanRenderModeRadioButton->SetValue(true);
+            break;
+        }
     }
 
     mTextureOceanComboBox->Select(static_cast<int>(settings.GetValue<size_t>(GameSettings::TextureOceanTextureIndex)));
 
-    auto depthOceanColorStart = settings.GetValue<rgbColor>(GameSettings::DepthOceanColorStart);
+    auto const depthOceanColorStart = settings.GetValue<rgbColor>(GameSettings::DepthOceanColorStart);
     mDepthOceanColorStartPicker->SetColour(wxColor(depthOceanColorStart.r, depthOceanColorStart.g, depthOceanColorStart.b));
 
-    auto depthOceanColorEnd = settings.GetValue<rgbColor>(GameSettings::DepthOceanColorEnd);
+    auto const depthOceanColorEnd = settings.GetValue<rgbColor>(GameSettings::DepthOceanColorEnd);
     mDepthOceanColorEndPicker->SetColour(wxColor(depthOceanColorEnd.r, depthOceanColorEnd.g, depthOceanColorEnd.b));
 
-    auto flatOceanColor = settings.GetValue<rgbColor>(GameSettings::FlatOceanColor);
+    auto const flatOceanColor = settings.GetValue<rgbColor>(GameSettings::FlatOceanColor);
     mFlatOceanColorPicker->SetColour(wxColor(flatOceanColor.r, flatOceanColor.g, flatOceanColor.b));
 
     ReconciliateOceanRenderModeSettings();
@@ -3835,43 +4512,34 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mOceanDarkeningRateSlider->SetValue(settings.GetValue<float>(GameSettings::OceanDarkeningRate));
 
-    auto landRenderMode = settings.GetValue<LandRenderModeType>(GameSettings::LandRenderMode);
+    auto const landRenderMode = settings.GetValue<LandRenderModeType>(GameSettings::LandRenderMode);
     switch (landRenderMode)
     {
-    case LandRenderModeType::Texture:
-    {
-        mTextureLandRenderModeRadioButton->SetValue(true);
-        break;
-    }
+        case LandRenderModeType::Texture:
+        {
+            mTextureLandRenderModeRadioButton->SetValue(true);
+            break;
+        }
 
-    case LandRenderModeType::Flat:
-    {
-        mFlatLandRenderModeRadioButton->SetValue(true);
-        break;
-    }
+        case LandRenderModeType::Flat:
+        {
+            mFlatLandRenderModeRadioButton->SetValue(true);
+            break;
+        }
     }
 
     mTextureLandComboBox->Select(static_cast<int>(settings.GetValue<size_t>(GameSettings::TextureLandTextureIndex)));
 
-    auto flatLandColor = settings.GetValue<rgbColor>(GameSettings::FlatLandColor);
+    auto const flatLandColor = settings.GetValue<rgbColor>(GameSettings::FlatLandColor);
     mFlatLandColorPicker->SetColour(wxColor(flatLandColor.r, flatLandColor.g, flatLandColor.b));
 
     ReconciliateLandRenderModeSettings();
 
-    auto flatSkyColor = settings.GetValue<rgbColor>(GameSettings::FlatSkyColor);
+    auto const flatSkyColor = settings.GetValue<rgbColor>(GameSettings::FlatSkyColor);
     mFlatSkyColorPicker->SetColour(wxColor(flatSkyColor.r, flatSkyColor.g, flatSkyColor.b));
-
-    mShowStressCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipStress));
 
     auto flatLampLightColor = settings.GetValue<rgbColor>(GameSettings::FlatLampLightColor);
     mFlatLampLightColorPicker->SetColour(wxColor(flatLampLightColor.r, flatLampLightColor.g, flatLampLightColor.b));
-
-    auto defaultWaterColor = settings.GetValue<rgbColor>(GameSettings::DefaultWaterColor);
-    mDefaultWaterColorPicker->SetColour(wxColor(defaultWaterColor.r, defaultWaterColor.g, defaultWaterColor.b));
-
-    mWaterContrastSlider->SetValue(settings.GetValue<float>(GameSettings::WaterContrast));
-
-    mWaterLevelOfDetailSlider->SetValue(settings.GetValue<float>(GameSettings::WaterLevelOfDetail));
 
     auto const heatRenderMode = settings.GetValue<HeatRenderModeType>(GameSettings::HeatRenderMode);
     switch (heatRenderMode)
@@ -3901,6 +4569,31 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDrawHeatBlasterFlameCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DrawHeatBlasterFlame));
 
     mShipFlameSizeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipFlameSizeAdjustment));
+
+    mShowStressCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipStress));
+
+    auto const defaultWaterColor = settings.GetValue<rgbColor>(GameSettings::DefaultWaterColor);
+    mDefaultWaterColorPicker->SetColour(wxColor(defaultWaterColor.r, defaultWaterColor.g, defaultWaterColor.b));
+
+    mWaterContrastSlider->SetValue(settings.GetValue<float>(GameSettings::WaterContrast));
+
+    mWaterLevelOfDetailSlider->SetValue(settings.GetValue<float>(GameSettings::WaterLevelOfDetail));
+
+    // TODOHERE
+
+    /* TODOOLD
+
+    // Interactions
+    mGenerateAirBubblesCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
+    mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoDisplaceOceanSurfaceAtAirBubblesSurfacing));
+    mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox->Enable(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
+
+    mAirBubbleDensitySlider->SetValue(settings.GetValue<float>(GameSettings::AirBubblesDensity));
+    mAirBubbleDensitySlider->Enable(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
+
+    mGenerateDebrisCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateDebris));
+
+    mGenerateSparklesForCutsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparklesForCuts));
 
     // Sound
 
@@ -4012,7 +4705,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     */
 }
 
-/* TODOOLD
 void SettingsDialog::ReconciliateOceanRenderModeSettings()
 {
     mTextureOceanComboBox->Enable(mTextureOceanRenderModeRadioButton->GetValue());
@@ -4026,7 +4718,6 @@ void SettingsDialog::ReconciliateLandRenderModeSettings()
     mTextureLandComboBox->Enable(mTextureLandRenderModeRadioButton->GetValue());
     mFlatLandColorPicker->Enable(mFlatLandRenderModeRadioButton->GetValue());
 }
-*/
 
 void SettingsDialog::OnLiveSettingsChanged()
 {

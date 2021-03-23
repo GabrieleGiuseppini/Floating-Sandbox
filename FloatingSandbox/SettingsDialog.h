@@ -43,6 +43,9 @@ public:
 
 private:
 
+    void OnOceanRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnLandRenderModeRadioButtonClick(wxCommandEvent & event);
+
     /* TODOOLD
     void OnRestoreDefaultTerrainButton(wxCommandEvent & event);
 
@@ -173,24 +176,6 @@ private:
     SliderControl<float> * mHeatBlasterRadiusSlider;
     SliderControl<float> * mHeatBlasterHeatFlowSlider;
 
-    /* TODOOLD
-    // Mechanics, Air, and Fluids
-
-    // Heat and Combustion
-
-
-    // Ocean, Smoke, and Sky
-
-    // Wind, Waves, Fishes, and Lights
-
-    // Interactions
-    wxCheckBox * mGenerateAirBubblesCheckBox;
-    wxCheckBox * mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox;
-    wxCheckBox * mGenerateDebrisCheckBox;
-    wxCheckBox * mGenerateSparklesForCutsCheckBox;
-
-
-
     // Rendering
     wxRadioButton * mTextureOceanRenderModeRadioButton;
     wxRadioButton * mDepthOceanRenderModeRadioButton;
@@ -208,15 +193,32 @@ private:
     wxRadioButton * mFlatLandRenderModeRadioButton;
     wxColourPickerCtrl * mFlatLandColorPicker;
     wxColourPickerCtrl * mFlatSkyColorPicker;
-    wxCheckBox * mShowStressCheckBox;
     wxColourPickerCtrl * mFlatLampLightColorPicker;
-    wxColourPickerCtrl * mDefaultWaterColorPicker;
-    SliderControl<float> * mWaterContrastSlider;
-    SliderControl<float> * mWaterLevelOfDetailSlider;
     wxRadioBox * mHeatRenderModeRadioBox;
     SliderControl<float> * mHeatSensitivitySlider;
     wxCheckBox * mDrawHeatBlasterFlameCheckBox;
     SliderControl<float> * mShipFlameSizeAdjustmentSlider;
+    wxCheckBox * mShowStressCheckBox;
+    wxColourPickerCtrl * mDefaultWaterColorPicker;
+    SliderControl<float> * mWaterContrastSlider;
+    SliderControl<float> * mWaterLevelOfDetailSlider;
+
+    /* TODOOLD
+    // Mechanics, Air, and Fluids
+
+    // Heat and Combustion
+
+
+    // Ocean, Smoke, and Sky
+
+    // Wind, Waves, Fishes, and Lights
+
+    // Interactions
+    wxCheckBox * mGenerateAirBubblesCheckBox;
+    wxCheckBox * mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox;
+    wxCheckBox * mGenerateDebrisCheckBox;
+    wxCheckBox * mGenerateSparklesForCutsCheckBox;
+
 
     // Sound and Advanced
     SliderControl<float> * mEffectsVolumeSlider;
@@ -268,6 +270,7 @@ private:
     void PopulateAirAndSkyPanel(wxPanel * panel);
     void PopulateLightsElectricalAndFishesPanel(wxPanel * panel);
     void PopulateInteractionsPanel(wxPanel * panel, ResourceLocator const & resourceLocator);
+    void PopulateRenderingPanel(wxPanel * panel);
 
     /* TODOOLD
     void PopulateMechanicsAirFluidsPanel(wxPanel * panel);
@@ -281,12 +284,8 @@ private:
     */
 
     void SyncControlsWithSettings(Settings<GameSettings> const & settings);
-
-    /* TODOOLD
     void ReconciliateOceanRenderModeSettings();
     void ReconciliateLandRenderModeSettings();
-    */
-
     void OnLiveSettingsChanged();
     void ReconcileDirtyState();
 
