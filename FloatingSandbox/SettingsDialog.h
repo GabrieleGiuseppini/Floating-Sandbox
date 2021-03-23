@@ -196,31 +196,13 @@ private:
     wxColourPickerCtrl * mFlatLampLightColorPicker;
     wxRadioBox * mHeatRenderModeRadioBox;
     SliderControl<float> * mHeatSensitivitySlider;
-    wxCheckBox * mDrawHeatBlasterFlameCheckBox;
     SliderControl<float> * mShipFlameSizeAdjustmentSlider;
     wxCheckBox * mShowStressCheckBox;
     wxColourPickerCtrl * mDefaultWaterColorPicker;
     SliderControl<float> * mWaterContrastSlider;
     SliderControl<float> * mWaterLevelOfDetailSlider;
 
-    /* TODOOLD
-    // Mechanics, Air, and Fluids
-
-    // Heat and Combustion
-
-
-    // Ocean, Smoke, and Sky
-
-    // Wind, Waves, Fishes, and Lights
-
-    // Interactions
-    wxCheckBox * mGenerateAirBubblesCheckBox;
-    wxCheckBox * mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox;
-    wxCheckBox * mGenerateDebrisCheckBox;
-    wxCheckBox * mGenerateSparklesForCutsCheckBox;
-
-
-    // Sound and Advanced
+    // Sound and Advanced Settings
     SliderControl<float> * mEffectsVolumeSlider;
     SliderControl<float> * mToolsVolumeSlider;
     wxCheckBox * mPlayBreakSoundsCheckBox;
@@ -234,7 +216,26 @@ private:
     wxCheckBox * mDrawFlamesCheckBox;
     wxCheckBox * mShowFrontiersCheckBox;
     wxCheckBox * mShowAABBsCheckBox;
+    wxCheckBox * mDrawHeatBlasterFlameCheckBox;
     wxRadioBox * mVectorFieldRenderModeRadioBox;
+    // tODOHERE: add GenerateSparkles, GenerateDebris, Draw HeatBlaster Flame
+
+
+    /* TODOOLD
+    // Mechanics, Air, and Fluids
+
+    // Heat and Combustion
+
+
+    // Ocean, Smoke, and Sky
+
+    // Wind, Waves, Fishes, and Lights
+
+    // Interactions
+    wxCheckBox * mGenerateAirBubblesCheckBox; // Will be gone, replaced by density==0
+    wxCheckBox * mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox; // Will be gone, replaced by global displacement
+    wxCheckBox * mGenerateDebrisCheckBox;
+    wxCheckBox * mGenerateSparklesForCutsCheckBox;
 
     // Settings Management
     wxListCtrl * mPersistedSettingsListCtrl;
@@ -269,8 +270,9 @@ private:
     void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateAirAndSkyPanel(wxPanel * panel);
     void PopulateLightsElectricalAndFishesPanel(wxPanel * panel);
-    void PopulateInteractionsPanel(wxPanel * panel, ResourceLocator const & resourceLocator);
+    void PopulateToolsPanel(wxPanel * panel, ResourceLocator const & resourceLocator);
     void PopulateRenderingPanel(wxPanel * panel);
+    void PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel);
 
     /* TODOOLD
     void PopulateMechanicsAirFluidsPanel(wxPanel * panel);
