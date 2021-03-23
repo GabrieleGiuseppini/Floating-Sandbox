@@ -3063,7 +3063,7 @@ void SettingsDialog::PopulateInteractionsPanel(
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -3248,8 +3248,8 @@ void SettingsDialog::PopulateInteractionsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 1),
-            wxGBSpan(1, 2),
+            wxGBPosition(0, 2),
+            wxGBSpan(1, 9),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -3335,7 +3335,7 @@ void SettingsDialog::PopulateInteractionsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 3),
+            wxGBPosition(0, 11),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
@@ -3416,7 +3416,7 @@ void SettingsDialog::PopulateInteractionsPanel(
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -3502,8 +3502,8 @@ void SettingsDialog::PopulateInteractionsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 1),
-            wxGBSpan(1, 1),
+            wxGBPosition(1, 2),
+            wxGBSpan(1, 4),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -3589,8 +3589,8 @@ void SettingsDialog::PopulateInteractionsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 2),
-            wxGBSpan(1, 1),
+            wxGBPosition(1, 7),
+            wxGBSpan(1, 4),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -3677,7 +3677,7 @@ void SettingsDialog::PopulateInteractionsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 3),
+            wxGBPosition(1, 11),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
@@ -3685,10 +3685,8 @@ void SettingsDialog::PopulateInteractionsPanel(
 
     // Finalize panel
 
-    ///*for (int c = 0; c < gridSizer->GetCols(); ++c)
-    //    gridSizer->AddGrowableCol(c);*/
-    //gridSizer->AddGrowableCol(1);
-    //gridSizer->AddGrowableCol(4);
+    for (int c = 0; c < gridSizer->GetCols(); ++c)
+        gridSizer->AddGrowableCol(c);
 
     panel->SetSizer(gridSizer);
 }

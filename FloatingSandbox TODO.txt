@@ -384,8 +384,8 @@ Render:
 
 		= New tool 1: Blast
 			! Spec:
-				- Same force field as Explosion state machine
-				- Hitting SHIFT makes it faster and stronger
+				+ Same force field as Explosion state machine
+				+ Hitting SHIFT makes it faster and stronger
 			= Impl:
 				+ Cursor
 					+ Cursor 1 and cursor 2
@@ -424,10 +424,14 @@ Render:
 								+ Fix single checkbox + slider vertical cell
 									+ Set size of row == constant, taken from button
 								+ Move UltraViolent to first panel
-								= Interactions panel								
+								+ Rendering panel
+								- Fix centering on those two panels
+								- Sound and Advanced Settings
+								- Settings Management
 								- Move to Advanced:
 									- GenerateSparkles
 									- GenerateDebris
+									- Draw HeatBlaster Flame
 								- Nuke settings:
 									- air bubbles displace waves: honor global displacement instead
 									- generate air bubbles: use zero density
@@ -439,8 +443,8 @@ Render:
 							- Fix localization files
 						- Icons in static boxes?
 						
-					- BlastToolRadius
-					- BlastToolForceAdjustment
+					+ BlastToolRadius
+					+ BlastToolForceAdjustment
 				- Finalize all three current default radii
 				- Finalize maxima of all settings, & ultra-violent mode	
 			- changelist
@@ -1012,7 +1016,7 @@ Render:
 			- Underwater depth: Points::Depth				
 				- Valid as long as points don't move
 					- Do DEBUG work above
-				- Points::Depth
+				- Points::CachedDepth
 					- Initialization: via value provided by Add() caller (ShipBuilder) with depth
 					- Getter
 					- Buffer getter & swapper (see water buffers)
