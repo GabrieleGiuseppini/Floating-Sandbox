@@ -3911,7 +3911,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(2, 2),
+            wxGBSpan(2, 5),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -3995,8 +3995,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 2),
-            wxGBSpan(1, 2),
+            wxGBPosition(0, 5),
+            wxGBSpan(1, 5),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4038,8 +4038,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 2),
-            wxGBSpan(1, 1),
+            wxGBPosition(1, 5),
+            wxGBSpan(1, 2),
             wxALL | wxALIGN_LEFT,
             CellBorderInner);
     }
@@ -4081,8 +4081,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 3),
-            wxGBSpan(1, 1),
+            wxGBPosition(1, 8),
+            wxGBSpan(1, 2),
             wxALL | wxALIGN_RIGHT,
             CellBorderInner);
     }
@@ -4214,7 +4214,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(2, 0),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 3),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4246,7 +4246,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(2, 1),
+            wxGBPosition(2, 4),
             wxGBSpan(1, 1),
             wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
@@ -4339,8 +4339,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(2, 2),
-            wxGBSpan(1, 2),
+            wxGBPosition(2, 5),
+            wxGBSpan(1, 5),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
