@@ -210,12 +210,14 @@ struct GameParameters
     static constexpr float MinSparkleParticlesForLightningLifetime = 0.2f;
     static constexpr float MaxSparkleParticlesForLightningLifetime = 0.5f;
 
-    bool DoGenerateAirBubbles;
-    float CumulatedIntakenWaterThresholdForAirBubbles;
-    static float constexpr MinCumulatedIntakenWaterThresholdForAirBubbles = 2.0f;
-    static float constexpr MaxCumulatedIntakenWaterThresholdForAirBubbles = 128.0f;
+    float AirBubblesDensity;
+    static float constexpr MinAirBubblesDensity = 0.0f;
+    static float constexpr MaxAirBubblesDensity = 128.0f;
 
-    bool DoDisplaceOceanSurfaceAtAirBubblesSurfacing;
+    static float constexpr AirBubblesDensityToCumulatedIntakenWater(float airBubblesDensity)
+    {
+        return 128.0f - airBubblesDensity;
+    }
 
     bool DoGenerateEngineWakeParticles;
 

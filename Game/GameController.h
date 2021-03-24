@@ -619,16 +619,10 @@ public:
     bool GetDoGenerateSparklesForCuts() const override { return mGameParameters.DoGenerateSparklesForCuts; }
     void SetDoGenerateSparklesForCuts(bool value) override { mGameParameters.DoGenerateSparklesForCuts = value; }
 
-    bool GetDoGenerateAirBubbles() const override { return mGameParameters.DoGenerateAirBubbles; }
-    void SetDoGenerateAirBubbles(bool value) override { mGameParameters.DoGenerateAirBubbles = value; }
-
-    float GetAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - mGameParameters.CumulatedIntakenWaterThresholdForAirBubbles; }
-    void SetAirBubblesDensity(float value) override { mGameParameters.CumulatedIntakenWaterThresholdForAirBubbles = GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - value; }
-    float GetMinAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles; }
-    float GetMaxAirBubblesDensity() const override { return GameParameters::MaxCumulatedIntakenWaterThresholdForAirBubbles - GameParameters::MinCumulatedIntakenWaterThresholdForAirBubbles; }
-
-    bool GetDoDisplaceOceanSurfaceAtAirBubblesSurfacing() const override { return mGameParameters.DoDisplaceOceanSurfaceAtAirBubblesSurfacing; }
-    void SetDoDisplaceOceanSurfaceAtAirBubblesSurfacing(bool value) override { mGameParameters.DoDisplaceOceanSurfaceAtAirBubblesSurfacing = value; }
+    float GetAirBubblesDensity() const override { return mGameParameters.AirBubblesDensity; }
+    void SetAirBubblesDensity(float value) override { mGameParameters.AirBubblesDensity = value; }
+    float GetMaxAirBubblesDensity() const override { return GameParameters::MaxAirBubblesDensity; }
+    float GetMinAirBubblesDensity() const override { return GameParameters::MinAirBubblesDensity; }
 
     bool GetDoGenerateEngineWakeParticles() const override { return mGameParameters.DoGenerateEngineWakeParticles; }
     void SetDoGenerateEngineWakeParticles(bool value) override { mGameParameters.DoGenerateEngineWakeParticles = value; }

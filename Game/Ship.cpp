@@ -1336,6 +1336,11 @@ void Ship::UpdateWaterInflow(
         gameParameters.WaterPumpPowerAdjustment
         * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
+    bool const doGenerateAirBubbles = (gameParameters.AirBubblesDensity != 0.0f);
+
+    float const cumulatedIntakenWaterThresholdForAirBubbles =
+        GameParameters::AirBubblesDensityToCumulatedIntakenWater(gameParameters.AirBubblesDensity);
+
     for (auto pointIndex : mPoints.RawShipPoints())
     {
         // This is one of the few cases in which we prefer branching over calculating
@@ -1446,10 +1451,10 @@ void Ship::UpdateWaterInflow(
 
             // Check if it's time to produce air bubbles
             mPoints.GetCumulatedIntakenWater(pointIndex) += newWater;
-            if (mPoints.GetCumulatedIntakenWater(pointIndex) > gameParameters.CumulatedIntakenWaterThresholdForAirBubbles)
+            if (mPoints.GetCumulatedIntakenWater(pointIndex) > cumulatedIntakenWaterThresholdForAirBubbles)
             {
                 // Generate air bubbles - but not on ropes as that looks awful
-                if (gameParameters.DoGenerateAirBubbles
+                if (doGenerateAirBubbles
                     && !mPoints.IsRope(pointIndex))
                 {
                     GenerateAirBubbles(

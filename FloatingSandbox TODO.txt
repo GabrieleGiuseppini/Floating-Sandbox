@@ -416,9 +416,9 @@ Render:
 				= SettingsDialog:
 					= Refactor: 
 						+ Fonts
-						= 1: new SettingsDialog
+						+ 1: new SettingsDialog
 							+ Take all screenshots
-							= Do
+							+ Do
 								+ Try using StaticBoxSizer instead of static boxes
 								+ See to center notebook panels that are less wide
 								+ Fix single checkbox + slider vertical cell
@@ -432,10 +432,10 @@ Render:
 										+ Draw HeatBlaster Flame (Extra Draw Options)
 								+ Settings Management
 								+ Multiline notebook
-								- Nuke settings:
-									- air bubbles displace waves: honor global displacement instead
-									- generate air bubbles: use zero density
-							- Nuke old source files and old code in remaining source file						
+								+ Nuke settings:
+									+ air bubbles displace waves: honor global displacement instead
+									+ generate air bubbles: use zero density
+							+ Nuke old source files and old code in remaining source file						
 						- 2: Shorten labels
 							- Fluids: remove redundant "Water" 
 							- Remove other redundant parts of labels
@@ -443,11 +443,12 @@ Render:
 						- Final test
 					+ BlastToolRadius
 					+ BlastToolForceAdjustment
+					- merge
 				- Finalize all three current default radii
-				- Finalize maxima of all settings, & ultra-violent mode	
+				- Finalize maxima of all settings, & ultra-violent mode			
 			- changelist
-
-		- Interim localization
+			- Update help
+		- Interim localization (help + po)
 			- IT
 			- ES
 			- RU
