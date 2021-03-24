@@ -86,7 +86,8 @@ SettingsDialog::SettingsDialog(
         wxID_ANY,
         _("Simulation Settings"),
         wxDefaultPosition,
-        wxSize(400, 200),
+        wxDefaultSize,
+        //wxSize(400, 200), TODOTEST
         wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxFRAME_NO_TASKBAR
         | /* wxFRAME_FLOAT_ON_PARENT */ wxSTAY_ON_TOP, // See https://trac.wxwidgets.org/ticket/18535
         wxS("Settings Window"));
@@ -109,6 +110,7 @@ SettingsDialog::SettingsDialog(
     //
 
     mPersistedSettings = mSettingsManager->ListPersistedSettings();
+
     PersistedSettingsComparer cmp;
     std::sort(
         mPersistedSettings.begin(),
@@ -132,9 +134,9 @@ SettingsDialog::SettingsDialog(
     wxNotebook * notebook = new wxNotebook(
         this,
         wxID_ANY,
-        wxPoint(-1, -1),
-        wxSize(-1, -1),
-        wxNB_TOP);
+        wxDefaultPosition,
+        wxDefaultSize,
+        wxNB_TOP | wxNB_MULTILINE | wxNB_NOPAGETHEME);
 
     //
     // Mechanics and Thermodynamics
@@ -232,89 +234,22 @@ SettingsDialog::SettingsDialog(
         notebook->AddPage(panel, _("Sound and Advanced Settings"));
     }
 
-    /* TODOOLD
-    //
-    // Heat
-    //
-
-    wxPanel * heatPanel = new wxPanel(notebook);
-
-    PopulateHeatPanel(heatPanel);
-
-    notebook->AddPage(heatPanel, _("Heat and Combustion"));
-
-
-    //
-    // Ocean, Smoke, Sky
-    //
-
-    wxPanel * oceanSmokeSkyPanel = new wxPanel(notebook);
-
-    PopulateOceanSmokeSkyPanel(oceanSmokeSkyPanel);
-
-    notebook->AddPage(oceanSmokeSkyPanel, _("Ocean, Smoke, and Sky"));
-
-
-    //
-    // Wind, Waves, Fishes, Lights
-    //
-
-    wxPanel * windWavesFishesLightsPanel = new wxPanel(notebook);
-
-    PopulateWindWavesFishesLightsPanel(windWavesFishesLightsPanel);
-
-    notebook->AddPage(windWavesFishesLightsPanel, _("Wind, Waves, Fishes, and Lights"));
-
-
-    //
-    // Interactions
-    //
-
-    wxPanel * interactionsPanel = new wxPanel(notebook);
-
-    PopulateInteractionsPanel(interactionsPanel);
-
-    notebook->AddPage(interactionsPanel, _("Interactions"));
-
-
-    //
-    // Rendering
-    //
-
-    wxPanel * renderingPanel = new wxPanel(notebook);
-
-    PopulateRenderingPanel(renderingPanel);
-
-    notebook->AddPage(renderingPanel, _("Rendering"));
-
-
-    //
-    // Sound and Advanced
-    //
-
-    wxPanel * soundAndAdvancedPanel = new wxPanel(notebook);
-
-    PopulateSoundAndAdvancedPanel(soundAndAdvancedPanel);
-
-    notebook->AddPage(soundAndAdvancedPanel, _("Sound and Advanced Settings"));
-
-
     //
     // Settings Management
     //
 
-    wxPanel * settingsManagementPanel = new wxPanel(notebook);
+    {
+        wxPanel * panel = new wxPanel(notebook);
 
-    PopulateSettingsManagementPanel(settingsManagementPanel);
+        PopulateSettingsManagementPanel(panel);
 
-    notebook->AddPage(settingsManagementPanel, _("Settings Management"));
-    */
+        notebook->AddPage(panel, _("Settings Management"));
+    }
 
-
-    dialogVSizer->Add(notebook, 0, wxEXPAND);
+    dialogVSizer->Add(notebook, 0);
+    dialogVSizer->Fit(notebook); // Workaround for multi-line bug
 
     dialogVSizer->AddSpacer(20);
-
 
     // Buttons
 
@@ -399,7 +334,6 @@ void SettingsDialog::Open()
 
     // Reconcile controls wrt dirty state
     ReconcileDirtyState();
-
 
     //
     // Open dialog
@@ -4811,6 +4745,418 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
     panel->SetSizer(gridSizer);
 }
 
+void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
+{
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+
+    //
+    // Load settings
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Load Settings"));
+
+        {
+            wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
+
+            // Col 1
+
+            {
+                mPersistedSettingsListCtrl = new wxListCtrl(
+                    boxSizer->GetStaticBox(),
+                    wxID_ANY,
+                    wxDefaultPosition,
+                    wxSize(250, 370),
+                    wxBORDER_STATIC /*https://trac.wxwidgets.org/ticket/18549*/ | wxLC_REPORT | wxLC_NO_HEADER | wxLC_SINGLE_SEL);
+
+                mPersistedSettingsListCtrl->AppendColumn(
+                    wxEmptyString,
+                    wxLIST_FORMAT_LEFT,
+                    wxLIST_AUTOSIZE_USEHEADER);
+
+                for (size_t p = 0; p < mPersistedSettings.size(); ++p)
+                {
+                    InsertPersistedSettingInCtrl(p, mPersistedSettings[p].Key);
+                }
+
+                if (!mPersistedSettings.empty())
+                {
+                    // Select first item
+                    mPersistedSettingsListCtrl->SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
+                }
+
+                mPersistedSettingsListCtrl->Bind(
+                    wxEVT_LIST_ITEM_SELECTED,
+                    [this](wxListEvent &)
+                    {
+                        ReconciliateLoadPersistedSettings();
+                    });
+
+                mPersistedSettingsListCtrl->Bind(
+                    wxEVT_LIST_ITEM_ACTIVATED,
+                    [this](wxListEvent & event)
+                    {
+                        assert(event.GetIndex() != wxNOT_FOUND);
+
+                        LoadPersistedSettings(static_cast<size_t>(event.GetIndex()), true);
+                    });
+
+                hSizer->Add(mPersistedSettingsListCtrl, 0, wxALL | wxEXPAND, 5);
+            }
+
+            // Col 2
+
+            {
+                wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+                {
+                    auto label = new wxStaticText(boxSizer->GetStaticBox(), wxID_ANY, _("Description:"));
+
+                    vSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND, 5);
+                }
+
+                {
+                    mPersistedSettingsDescriptionTextCtrl = new wxTextCtrl(
+                        boxSizer->GetStaticBox(),
+                        wxID_ANY,
+                        wxEmptyString,
+                        wxDefaultPosition,
+                        wxSize(250, 120),
+                        wxTE_MULTILINE | wxTE_READONLY | wxTE_WORDWRAP);
+
+                    vSizer->Add(mPersistedSettingsDescriptionTextCtrl, 0, wxALL | wxEXPAND, 5);
+                }
+
+                {
+                    mApplyPersistedSettingsButton = new wxButton(boxSizer->GetStaticBox(), wxID_ANY, _("Apply Saved Settings"));
+                    mApplyPersistedSettingsButton->SetToolTip(_("Loads the selected settings and applies them on top of the current settings."));
+                    mApplyPersistedSettingsButton->Bind(
+                        wxEVT_BUTTON,
+                        [this](wxCommandEvent & /*event*/)
+                        {
+                            auto const selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
+
+                            assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
+                            assert(static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
+
+                            if (selectedIndex != wxNOT_FOUND)
+                            {
+                                LoadPersistedSettings(static_cast<size_t>(selectedIndex), false);
+                            }
+                        });
+
+                    vSizer->Add(mApplyPersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
+
+                    mRevertToPersistedSettingsButton = new wxButton(boxSizer->GetStaticBox(), wxID_ANY, _("Revert to Saved Settings"));
+                    mRevertToPersistedSettingsButton->SetToolTip(_("Reverts all settings to the selected settings."));
+                    mRevertToPersistedSettingsButton->Bind(
+                        wxEVT_BUTTON,
+                        [this](wxCommandEvent & /*event*/)
+                        {
+                            auto const selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
+
+                            assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
+                            assert(static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
+
+                            if (selectedIndex != wxNOT_FOUND)
+                            {
+                                LoadPersistedSettings(static_cast<size_t>(selectedIndex), true);
+                            }
+                        });
+
+                    vSizer->Add(mRevertToPersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
+
+                    mReplacePersistedSettingsButton = new wxButton(boxSizer->GetStaticBox(), wxID_ANY, _("Replace Saved Settings with Current"));
+                    mReplacePersistedSettingsButton->SetToolTip(_("Overwrites the selected settings with the current settings."));
+                    mReplacePersistedSettingsButton->Bind(
+                        wxEVT_BUTTON,
+                        [this](wxCommandEvent & /*event*/)
+                        {
+                            auto const selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
+
+                            assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
+                            assert(static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
+                            assert(mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User); // Enforced by UI
+
+                            if (selectedIndex != wxNOT_FOUND)
+                            {
+                                auto const & metadata = mPersistedSettings[selectedIndex];
+
+                                wxString message;
+                                message.Printf(_("Are you sure you want to replace settings \"%s\" with the current settings?"), metadata.Key.Name.c_str());
+                                auto const result = wxMessageBox(
+                                    message,
+                                    _("Warning"),
+                                    wxCANCEL | wxOK);
+
+                                if (result == wxOK)
+                                {
+                                    // Save
+                                    SavePersistedSettings(metadata);
+
+                                    // Reconciliate load UI
+                                    ReconciliateLoadPersistedSettings();
+                                }
+                            }
+                        });
+
+                    vSizer->Add(mReplacePersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
+
+                    mDeletePersistedSettingsButton = new wxButton(boxSizer->GetStaticBox(), wxID_ANY, _("Delete Saved Settings"));
+                    mDeletePersistedSettingsButton->SetToolTip(_("Deletes the selected settings."));
+                    mDeletePersistedSettingsButton->Bind(
+                        wxEVT_BUTTON,
+                        [this](wxCommandEvent & /*event*/)
+                        {
+                            auto const selectedIndex = GetSelectedPersistedSettingIndexFromCtrl();
+
+                            assert(selectedIndex != wxNOT_FOUND); // Enforced by UI
+                            assert(static_cast<size_t>(selectedIndex) < mPersistedSettings.size());
+                            assert(mPersistedSettings[selectedIndex].Key.StorageType == PersistedSettingsStorageTypes::User); // Enforced by UI
+
+                            if (selectedIndex != wxNOT_FOUND)
+                            {
+                                auto const & metadata = mPersistedSettings[selectedIndex];
+
+                                // Ask user whether they're sure
+                                wxString message;
+                                message.Printf(_("Are you sure you want to delete settings \"%s\"?"), metadata.Key.Name.c_str());
+                                auto const result = wxMessageBox(
+                                    message,
+                                    _("Warning"),
+                                    wxCANCEL | wxOK);
+
+                                if (result == wxOK)
+                                {
+                                    try
+                                    {
+                                        // Delete
+                                        mSettingsManager->DeletePersistedSettings(metadata.Key);
+                                    }
+                                    catch (std::runtime_error const & ex)
+                                    {
+                                        OnPersistenceError(std::string("Error deleting settings: ") + ex.what());
+                                        return;
+                                    }
+
+                                    // Remove from list box
+                                    mPersistedSettingsListCtrl->DeleteItem(selectedIndex);
+
+                                    // Remove from mPersistedSettings
+                                    mPersistedSettings.erase(mPersistedSettings.cbegin() + selectedIndex);
+
+                                    // Reconciliate with UI
+                                    ReconciliateLoadPersistedSettings();
+                                }
+                            }
+                        });
+
+                    vSizer->Add(mDeletePersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
+                }
+
+                hSizer->Add(vSizer, 0, 0, 0);
+            }
+
+            boxSizer->Add(hSizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 1),
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderInner);
+
+        ReconciliateLoadPersistedSettings();
+    }
+
+    //
+    // Save settings
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Save Settings"));
+
+        {
+            {
+                auto label = new wxStaticText(boxSizer->GetStaticBox(), wxID_ANY, _("Name:"));
+
+                boxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND, 5);
+            }
+
+            {
+                wxTextValidator validator(wxFILTER_INCLUDE_CHAR_LIST);
+                validator.SetCharIncludes(
+                    wxS("abcdefghijklmnopqrstuvwxyz"
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                        "0123456789"
+                        " "
+                        "_-"));
+                validator.SuppressBellOnError();
+
+                mSaveSettingsNameTextCtrl = new wxTextCtrl(
+                    boxSizer->GetStaticBox(),
+                    wxID_ANY,
+                    wxEmptyString,
+                    wxDefaultPosition,
+                    wxDefaultSize,
+                    0,
+                    validator);
+
+                mSaveSettingsNameTextCtrl->Bind(
+                    wxEVT_TEXT,
+                    [this](wxCommandEvent &)
+                    {
+                        ReconciliateSavePersistedSettings();
+                    });
+
+                boxSizer->Add(mSaveSettingsNameTextCtrl, 0, wxALL | wxEXPAND, 5);
+            }
+
+            {
+                auto label = new wxStaticText(boxSizer->GetStaticBox(), wxID_ANY, _("Description:"));
+
+                boxSizer->Add(label, 0, wxLEFT | wxTOP | wxRIGHT | wxEXPAND, 5);
+            }
+
+            {
+                mSaveSettingsDescriptionTextCtrl = new wxTextCtrl(
+                    boxSizer->GetStaticBox(),
+                    wxID_ANY,
+                    wxEmptyString,
+                    wxDefaultPosition,
+                    wxSize(250, 120),
+                    wxTE_MULTILINE | wxTE_WORDWRAP);
+
+                mSaveSettingsDescriptionTextCtrl->Bind(
+                    wxEVT_TEXT,
+                    [this](wxCommandEvent &)
+                    {
+                        ReconciliateSavePersistedSettings();
+                    });
+
+                boxSizer->Add(mSaveSettingsDescriptionTextCtrl, 0, wxALL | wxEXPAND, 5);
+            }
+
+            {
+                mSaveSettingsButton = new wxButton(boxSizer->GetStaticBox(), wxID_ANY, _("Save Current Settings"));
+                mSaveSettingsButton->SetToolTip(_("Saves the current settings using the specified name."));
+                mSaveSettingsButton->Bind(
+                    wxEVT_BUTTON,
+                    [this](wxCommandEvent &)
+                    {
+                        assert(!mSaveSettingsNameTextCtrl->IsEmpty()); // Guaranteed by UI
+
+                        if (mSaveSettingsNameTextCtrl->IsEmpty())
+                            return;
+
+                        auto const settingsMetadata = PersistedSettingsMetadata(
+                            PersistedSettingsKey(
+                                mSaveSettingsNameTextCtrl->GetValue().ToStdString(),
+                                PersistedSettingsStorageTypes::User),
+                            mSaveSettingsDescriptionTextCtrl->GetValue().ToStdString());
+
+
+                        //
+                        // Check if settings with this name already exist
+                        //
+
+                        {
+                            auto it = std::find_if(
+                                mPersistedSettings.cbegin(),
+                                mPersistedSettings.cend(),
+                                [&settingsMetadata](auto const & sm)
+                                {
+                                    return sm.Key == settingsMetadata.Key;
+                                });
+
+                            if (it != mPersistedSettings.cend())
+                            {
+                                // Ask user if sure
+                                wxString message;
+                                message.Printf(_("Settings \"%s\" already exist; do you want to replace them with the current settings?"), settingsMetadata.Key.Name.c_str());
+                                auto const result = wxMessageBox(
+                                    message,
+                                    _("Warning"),
+                                    wxCANCEL | wxOK);
+
+                                if (result == wxCANCEL)
+                                {
+                                    // Abort
+                                    return;
+                                }
+                            }
+                        }
+
+                        //
+                        // Save settings
+                        //
+
+                        // Save
+                        SavePersistedSettings(settingsMetadata);
+
+                        // Find index for insertion
+                        PersistedSettingsComparer cmp;
+                        auto const it = std::lower_bound(
+                            mPersistedSettings.begin(),
+                            mPersistedSettings.end(),
+                            settingsMetadata,
+                            cmp);
+
+                        if (it != mPersistedSettings.end()
+                            && it->Key == settingsMetadata.Key)
+                        {
+                            // It's a replace
+
+                            // Replace in persisted settings
+                            it->Description = settingsMetadata.Description;
+                        }
+                        else
+                        {
+                            // It's an insert
+
+                            auto const insertIdx = std::distance(mPersistedSettings.begin(), it);
+
+                            // Insert into persisted settings
+                            mPersistedSettings.insert(it, settingsMetadata);
+
+                            // Insert in list control
+                            InsertPersistedSettingInCtrl(insertIdx, settingsMetadata.Key);
+                        }
+
+                        // Reconciliate load UI
+                        ReconciliateLoadPersistedSettings();
+
+                        // Clear name and description
+                        mSaveSettingsNameTextCtrl->Clear();
+                        mSaveSettingsDescriptionTextCtrl->Clear();
+
+                        // Reconciliate save UI
+                        ReconciliateSavePersistedSettings();
+                    });
+
+                boxSizer->Add(mSaveSettingsButton, 0, wxALL | wxEXPAND, 5);
+            }
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 1),
+            wxGBSpan(1, 1),
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderInner);
+
+        ReconciliateSavePersistedSettings();
+    }
+
+    // Finalize panel
+
+    for (int c = 0; c < gridSizer->GetCols(); ++c)
+        gridSizer->AddGrowableCol(c);
+
+    panel->SetSizer(gridSizer);
+}
+
 void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & settings)
 {
     //
@@ -5184,7 +5530,6 @@ void SettingsDialog::ReconcileDirtyState()
     mUndoButton->Enable(mHasBeenDirtyInCurrentSession);
 }
 
-/* TODOOLD
 long SettingsDialog::GetSelectedPersistedSettingIndexFromCtrl() const
 {
     return mPersistedSettingsListCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
@@ -5326,4 +5671,3 @@ void SettingsDialog::OnPersistenceError(std::string const & errorMessage) const
 {
     wxMessageBox(errorMessage, _("Error"), wxICON_ERROR);
 }
-*/

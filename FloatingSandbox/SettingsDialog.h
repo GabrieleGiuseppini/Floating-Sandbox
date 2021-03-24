@@ -221,6 +221,16 @@ private:
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesForCutsCheckBox;
 
+    // Settings Management
+    wxListCtrl * mPersistedSettingsListCtrl;
+    wxTextCtrl * mPersistedSettingsDescriptionTextCtrl;
+    wxButton * mApplyPersistedSettingsButton;
+    wxButton * mRevertToPersistedSettingsButton;
+    wxButton * mReplacePersistedSettingsButton;
+    wxButton * mDeletePersistedSettingsButton;
+    wxTextCtrl * mSaveSettingsNameTextCtrl;
+    wxTextCtrl * mSaveSettingsDescriptionTextCtrl;
+    wxButton * mSaveSettingsButton;
 
     /* TODOOLD
     // Mechanics, Air, and Fluids
@@ -236,16 +246,6 @@ private:
     wxCheckBox * mGenerateAirBubblesCheckBox; // Will be gone, replaced by density==0
     wxCheckBox * mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox; // Will be gone, replaced by global displacement
 
-    // Settings Management
-    wxListCtrl * mPersistedSettingsListCtrl;
-    wxTextCtrl * mPersistedSettingsDescriptionTextCtrl;
-    wxButton * mApplyPersistedSettingsButton;
-    wxButton * mRevertToPersistedSettingsButton;
-    wxButton * mReplacePersistedSettingsButton;
-    wxButton * mDeletePersistedSettingsButton;
-    wxTextCtrl * mSaveSettingsNameTextCtrl;
-    wxTextCtrl * mSaveSettingsDescriptionTextCtrl;
-    wxButton * mSaveSettingsButton;
     */
 
     //////////////////////////////////////////////////////
@@ -272,6 +272,7 @@ private:
     void PopulateToolsPanel(wxPanel * panel, ResourceLocator const & resourceLocator);
     void PopulateRenderingPanel(wxPanel * panel);
     void PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel);
+    void PopulateSettingsManagementPanel(wxPanel * panel);
 
     /* TODOOLD
     void PopulateMechanicsAirFluidsPanel(wxPanel * panel);
@@ -290,7 +291,6 @@ private:
     void OnLiveSettingsChanged();
     void ReconcileDirtyState();
 
-    /* TODOOLD
     long GetSelectedPersistedSettingIndexFromCtrl() const;
     void InsertPersistedSettingInCtrl(int index, PersistedSettingsKey const & psKey);
     void LoadPersistedSettings(size_t index, bool withDefaults);
@@ -298,7 +298,6 @@ private:
     void SavePersistedSettings(PersistedSettingsMetadata const & metadata);
     void ReconciliateSavePersistedSettings();
     void OnPersistenceError(std::string const & errorMessage) const;
-    */
 
 private:
 

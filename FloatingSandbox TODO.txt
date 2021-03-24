@@ -430,7 +430,8 @@ Render:
 										+ GenerateSparkles (New box)
 										+ GenerateDebris
 										+ Draw HeatBlaster Flame (Extra Draw Options)
-								- Settings Management
+								+ Settings Management
+								+ Multiline notebook
 								- Nuke settings:
 									- air bubbles displace waves: honor global displacement instead
 									- generate air bubbles: use zero density
