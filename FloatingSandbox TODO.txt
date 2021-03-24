@@ -317,6 +317,72 @@ Render:
 			+ See issue
 				+ Try 0.25 instead of 1.0
 			+ Do "SHIFT lock"
+		+ New tool 1: Blast
+			! Spec:
+				+ Same force field as Explosion state machine
+				+ Hitting SHIFT makes it faster and stronger
+			+ Impl:
+				+ Cursor
+					+ Cursor 1 and cursor 2
+				+ Tool:
+					+ When hitting:
+						+ Cursor disappears
+						+ Sound starts (depending on SHIFT)
+						+ Tool's state machine starts
+							+ Speed and strength depend on SHIFT
+						+ End of blast doesn't change anything - only mouseup does
+							+ ...and at mouseup, cursor reappears
+					X Decide what to do during phase paused
+					+ Finalize durations - seem a bit too long now
+				+ Physics
+				+ Shader: 
+					+ Link between IGameController::TODOBlast and NotificationLayer->Context
+					+ Basic shader
+					+ Advanced shader, option 1: different blending: whiteish overlay expanding, thicker on rim
+						+ Provide progress
+						+ Do blending
+						+ Add personality
+					+ See if it needs noise
+				+ Sounds:
+					+ Sounds normal
+					+ Sound faster
+				+ Disturb ocean surface
+					+ At World
+				+ SettingsDialog:
+					+ Refactor: 
+						+ Fonts
+						+ 1: new SettingsDialog
+							+ Take all screenshots
+							+ Do
+								+ Try using StaticBoxSizer instead of static boxes
+								+ See to center notebook panels that are less wide
+								+ Fix single checkbox + slider vertical cell
+									+ Set size of row == constant, taken from button
+								+ Move UltraViolent to first panel
+								+ Rendering panel
+								+ Sound and Advanced Settings
+									+ Add:
+										+ GenerateSparkles (New box)
+										+ GenerateDebris
+										+ Draw HeatBlaster Flame (Extra Draw Options)
+								+ Settings Management
+								+ Multiline notebook
+								+ Nuke settings:
+									+ air bubbles displace waves: honor global displacement instead
+									+ generate air bubbles: use zero density
+							+ Nuke old source files and old code in remaining source file						
+						+ 2: Shorten labels
+							+ Fluids: remove redundant "Water" 
+							+ Remove other redundant parts of labels
+							X "Adjust" -> "%" ?
+						+ Final test
+					+ BlastToolRadius
+					+ BlastToolForceAdjustment
+					+ merge
+				+ Finalize all three current default radii
+				+ Finalize maxima of all settings, & ultra-violent mode			
+			+ changelist
+			+ Update help
 
 
 		= MAC:
@@ -382,73 +448,8 @@ Render:
 		- bishobe64 as tester
 			- Invite
 
-		= New tool 1: Blast
-			! Spec:
-				+ Same force field as Explosion state machine
-				+ Hitting SHIFT makes it faster and stronger
-			= Impl:
-				+ Cursor
-					+ Cursor 1 and cursor 2
-				+ Tool:
-					+ When hitting:
-						+ Cursor disappears
-						+ Sound starts (depending on SHIFT)
-						+ Tool's state machine starts
-							+ Speed and strength depend on SHIFT
-						+ End of blast doesn't change anything - only mouseup does
-							+ ...and at mouseup, cursor reappears
-					X Decide what to do during phase paused
-					+ Finalize durations - seem a bit too long now
-				+ Physics
-				+ Shader: 
-					+ Link between IGameController::TODOBlast and NotificationLayer->Context
-					+ Basic shader
-					+ Advanced shader, option 1: different blending: whiteish overlay expanding, thicker on rim
-						+ Provide progress
-						+ Do blending
-						+ Add personality
-					+ See if it needs noise
-				+ Sounds:
-					+ Sounds normal
-					+ Sound faster
-				+ Disturb ocean surface
-					+ At World
-				= SettingsDialog:
-					+ Refactor: 
-						+ Fonts
-						+ 1: new SettingsDialog
-							+ Take all screenshots
-							+ Do
-								+ Try using StaticBoxSizer instead of static boxes
-								+ See to center notebook panels that are less wide
-								+ Fix single checkbox + slider vertical cell
-									+ Set size of row == constant, taken from button
-								+ Move UltraViolent to first panel
-								+ Rendering panel
-								+ Sound and Advanced Settings
-									+ Add:
-										+ GenerateSparkles (New box)
-										+ GenerateDebris
-										+ Draw HeatBlaster Flame (Extra Draw Options)
-								+ Settings Management
-								+ Multiline notebook
-								+ Nuke settings:
-									+ air bubbles displace waves: honor global displacement instead
-									+ generate air bubbles: use zero density
-							+ Nuke old source files and old code in remaining source file						
-						+ 2: Shorten labels
-							+ Fluids: remove redundant "Water" 
-							+ Remove other redundant parts of labels
-							X "Adjust" -> "%" ?
-						+ Final test
-					+ BlastToolRadius
-					+ BlastToolForceAdjustment
-					- merge
-				- Finalize all three current default radii
-				- Finalize maxima of all settings, & ultra-violent mode			
-			- changelist
-			- Update help
 		- Interim localization (help + po)
+			- Help: Use the <b>Blast</b> <img src="../../Resources/blast_cursor_up_1.png"/> tool instead to generate an explosive force field; the <img src="../../Help/ks_shift.png"/> key shortens the blast dynamics for a more focused effect.<br/>
 			- IT
 			- ES
 			- RU

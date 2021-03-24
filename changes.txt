@@ -1,6 +1,9 @@
 1.16.4
+- Added new "Blast" tool
 - Revisited physics of explosions
 	- ...and added yet another setting to adjust the power of bomb blasts
+- Reorganized Simulation Settings window
+	- The location of most settings has been shuffled around, but they're all still there!
 - Added "direction lock" to slice tool - hitting the SHIFT key during a cut locks its direction 
 
 1.16.3
