@@ -30,7 +30,7 @@
 #include "Resources/ShipBBB.xpm"
 #endif
 
-static int constexpr SliderWidth = 60;
+static int constexpr SliderWidth = 82; // Min
 static int constexpr SliderHeight = 140;
 
 static int constexpr IconInStaticBorderMargin = 4;
@@ -887,7 +887,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     waterBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Water Density Adjust"),
+                    _("Density Adjust"),
                     _("Adjusts the density of sea water, and thus the buoyancy it exerts on physical bodies."),
                     [this](float value)
                     {
@@ -912,7 +912,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     waterBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Water Friction Drag Adjust"),
+                    _("Friction Drag Adjust"),
                     _("Adjusts the frictional drag force (or 'skin' drag) exerted by sea water on physical bodies."),
                     [this](float value)
                     {
@@ -938,7 +938,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     waterBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Water Pressure Drag Adjust"),
+                    _("Pressure Drag Adjust"),
                     _("Adjusts the pressure drag force (or 'form' drag) exerted by sea water on physical bodies."),
                     [this](float value)
                     {
@@ -964,7 +964,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     waterBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Water Intake Adjust"),
+                    _("Intake Adjust"),
                     _("Adjusts the speed with which sea water enters or leaves a physical body."),
                     [this](float value)
                     {
@@ -990,7 +990,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     waterBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Water Diffusion Speed"),
+                    _("Diffusion Speed"),
                     _("Adjusts the speed with which water propagates within a physical body."),
                     [this](float value)
                     {
@@ -1015,7 +1015,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     waterBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Water Crazyness"),
+                    _("Fluid Crazyness"),
                     _("Adjusts how \"splashy\" water flows inside a physical body."),
                     [this](float value)
                     {
@@ -1040,7 +1040,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     waterBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Water Temperature"),
+                    _("Temperature"),
                     _("The temperature of water (K)."),
                     [this](float value)
                     {
@@ -1086,7 +1086,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     oceanBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Ocean Depth"),
+                    _("Depth"),
                     _("The ocean depth (m)."),
                     [this](float value)
                     {
@@ -1133,7 +1133,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     oceanFloorBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Ocean Floor Bumpiness"),
+                    _("Bumpiness"),
                     _("Adjusts how much the ocean floor rolls up and down."),
                     [this](float value)
                     {
@@ -1185,7 +1185,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     oceanFloorBoxSizer->GetStaticBox(),
                     SliderWidth,
                     -1,
-                    _("Ocean Floor Detail"),
+                    _("Detail"),
                     _("Adjusts the contrast of the user-drawn ocean floor terrain. Setting this to zero disables the ability to adjust the ocean floor."),
                     [this](float value)
                     {
@@ -1211,7 +1211,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     oceanFloorBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Ocean Floor Elasticity"),
+                    _("Elasticity"),
                     _("Adjusts the elasticity of collisions with the ocean floor."),
                     [this](float value)
                     {
@@ -1236,7 +1236,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     oceanFloorBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Ocean Floor Friction"),
+                    _("Friction"),
                     _("Adjusts the friction exherted by the ocean floor."),
                     [this](float value)
                     {
@@ -1366,7 +1366,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     windBoxSizer->GetStaticBox(),
                     SliderWidth,
                     -1,
-                    _("Wind Speed Base"),
+                    _("Base Speed"),
                     _("The base speed of wind (Km/h), before modulation takes place. Wind speed in turn determines ocean wave characteristics such as their height, speed, and width."),
                     [this](float value)
                     {
@@ -1415,7 +1415,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     windBoxSizer->GetStaticBox(),
                     SliderWidth,
                     -1,
-                    _("Wind Gust Amplitude"),
+                    _("Gust Amplitude"),
                     _("The amplitude of wind gusts, as a multiplier of the base wind speed."),
                     [this](float value)
                     {
@@ -1463,7 +1463,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     wavesBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Wave Height Adjust"),
+                    _("Height Adjust"),
                     _("Adjusts the height of ocean waves wrt their optimal value, which is determined by wind speed."),
                     [this](float value)
                     {
@@ -1488,7 +1488,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     wavesBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Wave Width Adjust"),
+                    _("Width Adjust"),
                     _("Adjusts the width of ocean waves wrt their optimal value, which is determined by wind speed."),
                     [this](float value)
                     {
@@ -1514,7 +1514,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     wavesBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Wave Speed Adjust"),
+                    _("Speed Adjust"),
                     _("Adjusts the speed of ocean waves wrt their optimal value, which is determined by wind speed."),
                     [this](float value)
                     {
@@ -1584,7 +1584,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     displacementWavesBoxSizer->GetStaticBox(),
                     SliderWidth,
                     -1,
-                    _("Displacement Wave Adjust"),
+                    _("Height Adjust"),
                     _("Adjusts the magnitude of the waves caused by water displacement."),
                     [this](float value)
                     {
@@ -1703,7 +1703,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     stormsBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Storm Strength Adjust"),
+                    _("Strength Adjust"),
                     _("Adjusts the strength of storms."),
                     [this](float value)
                     {
@@ -1779,7 +1779,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     stormsBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Storm Duration"),
+                    _("Duration"),
                     _("The duration of a storm (s)."),
                     [this](std::chrono::seconds::rep value)
                     {
@@ -1804,7 +1804,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     stormsBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Storm Rate"),
+                    _("Rate"),
                     _("The expected time between two automatically-generated storms (minutes). Set to zero to disable automatic generation of storms altogether."),
                     [this](std::chrono::minutes::rep value)
                     {
@@ -1864,7 +1864,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     airBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Air Friction Drag Adjust"),
+                    _("Friction Drag Adjust"),
                     _("Adjusts the frictional drag force (or 'skin' drag) exerted by air on physical bodies."),
                     [this](float value)
                 {
@@ -1890,7 +1890,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     airBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Air Pressure Drag Adjust"),
+                    _("Pressure Drag Adjust"),
                     _("Adjusts the pressure drag force (or 'form' drag) exerted by air on physical bodies."),
                     [this](float value)
                 {
@@ -1916,7 +1916,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     airBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Air Temperature"),
+                    _("Temperature"),
                     _("The temperature of air (K)."),
                     [this](float value)
                 {
@@ -1987,7 +1987,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     smokeBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Smoke Density Adjust"),
+                    _("Density Adjust"),
                     _("Adjusts the density of smoke particles."),
                     [this](float value)
                     {
@@ -2013,7 +2013,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     smokeBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Smoke Persistence Adjust"),
+                    _("Persistence Adjust"),
                     _("Adjusts how long it takes for smoke to vanish."),
                     [this](float value)
                     {
@@ -2112,12 +2112,12 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                 mDoDayLightCycleCheckBox->Bind(
                     wxEVT_COMMAND_CHECKBOX_CLICKED,
                     [this](wxCommandEvent & event)
-                {
-                    mLiveSettings.SetValue<bool>(GameSettings::DoDayLightCycle, event.IsChecked());
-                    OnLiveSettingsChanged();
+                    {
+                        mLiveSettings.SetValue<bool>(GameSettings::DoDayLightCycle, event.IsChecked());
+                        OnLiveSettingsChanged();
 
-                    mDayLightCycleDurationSlider->Enable(event.IsChecked());
-                });
+                        mDayLightCycleDurationSlider->Enable(event.IsChecked());
+                    });
 
                 auto sizer = skySizer->Add(
                     mDoDayLightCycleCheckBox,
@@ -2138,10 +2138,10 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     _("Daylight Cycle Duration"),
                     _("The duration of a full daylight cycle (minutes)."),
                     [this](std::chrono::minutes::rep value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::DayLightCycleDuration, std::chrono::minutes(value));
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::DayLightCycleDuration, std::chrono::minutes(value));
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<IntegralLinearSliderCore<std::chrono::minutes::rep>>(
                         mGameControllerSettingsOptions->GetMinDayLightCycleDuration().count(),
                         mGameControllerSettingsOptions->GetMaxDayLightCycleDuration().count()));
@@ -2221,7 +2221,7 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
                     lightsBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Light Spread Adjust"),
+                    _("Spread Adjust"),
                     _("Adjusts how wide light emitted by luminiscent materials spreads out."),
                     [this](float value)
                     {
@@ -2413,7 +2413,7 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
                     boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Fish Size Multiplier"),
+                    _("Size Multiplier"),
                     _("Magnifies or minimizes the physical size of fishes."),
                     [this](float value)
                     {
@@ -2438,7 +2438,7 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
                     boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Fish Speed Adjust"),
+                    _("Speed Adjust"),
                     _("Adjusts the speed of fishes."),
                     [this](float value)
                     {
@@ -2674,7 +2674,7 @@ void SettingsDialog::PopulateToolsPanel(
                     boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Bomb Blast Radius"),
+                    _("Blast Radius"),
                     _("The radius of bomb explosions (m)."),
                     [this](float value)
                     {
@@ -2699,7 +2699,7 @@ void SettingsDialog::PopulateToolsPanel(
                     boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Bomb Blast Force Adjust"),
+                    _("Blast Force Adjust"),
                     _("Adjusts the blast force generated by bomb explosions."),
                     [this](float value)
                     {
@@ -2724,7 +2724,7 @@ void SettingsDialog::PopulateToolsPanel(
                     boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Bomb Blast Heat"),
+                    _("Blast Heat"),
                     _("The heat generated by bomb explosions (KJ/s)."),
                     [this](float value)
                     {
@@ -2917,7 +2917,7 @@ void SettingsDialog::PopulateToolsPanel(
                     boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Scrub/Rot Radius"),
+                    _("Radius"),
                     _("How wide an area is affected by the scrub/rot tool (m)."),
                     [this](float value)
                     {
@@ -2979,7 +2979,7 @@ void SettingsDialog::PopulateToolsPanel(
                     boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Flood Radius"),
+                    _("Radius"),
                     _("How wide an area is flooded or drained by the flood tool (m)."),
                     [this](float value)
                     {
@@ -3004,7 +3004,7 @@ void SettingsDialog::PopulateToolsPanel(
                     boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Flood Quantity"),
+                    _("Flow"),
                     _("How much water is injected or drained by the flood tool (m3)."),
                     [this](float value)
                     {
@@ -3066,7 +3066,7 @@ void SettingsDialog::PopulateToolsPanel(
                     boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Repair Radius"),
+                    _("Radius"),
                     _("Adjusts the radius of the repair tool (m)."),
                     [this](float value)
                     {
@@ -3091,7 +3091,7 @@ void SettingsDialog::PopulateToolsPanel(
                     boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Repair Speed Adjust"),
+                    _("Speed Adjust"),
                     _("Adjusts the speed with which the repair tool attracts particles to repair damage. Warning: at high speeds the repair tool might become destructive!"),
                     [this](float value)
                     {
@@ -3794,7 +3794,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     boxSizer->GetStaticBox(),
                     SliderWidth,
                     -1,
-                    _("Water Contrast"),
+                    _("Contrast"),
                     _("Adjusts the contrast of water inside physical bodies."),
                     [this](float value)
                     {
@@ -3819,7 +3819,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Water Level of Detail"),
+                    _("Level of Detail"),
                     _("Adjusts how detailed water inside a physical body looks."),
                     [this](float value)
                     {
