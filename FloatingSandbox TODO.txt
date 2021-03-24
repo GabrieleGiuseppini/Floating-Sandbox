@@ -425,25 +425,31 @@ Render:
 									+ Set size of row == constant, taken from button
 								+ Move UltraViolent to first panel
 								+ Rendering panel
-								= Sound and Advanced Settings
-									- Add:
-										- GenerateSparkles (New box)
-										- GenerateDebris
+								+ Sound and Advanced Settings
+									+ Add:
+										+ GenerateSparkles (New box)
+										+ GenerateDebris
 										+ Draw HeatBlaster Flame (Extra Draw Options)
 								- Settings Management
 								- Nuke settings:
 									- air bubbles displace waves: honor global displacement instead
 									- generate air bubbles: use zero density
-							- Nuke old source files and old code in remaining source file							
+							- Nuke old source files and old code in remaining source file						
 						- 2: Shorten labels
 							- Fluids: remove redundant "Water" 
 							- Remove other redundant parts of labels
-							- "Adjust" -> "%" ?						
+							- "Adjust" -> "%" ?
+						- Final test
 					+ BlastToolRadius
 					+ BlastToolForceAdjustment
 				- Finalize all three current default radii
 				- Finalize maxima of all settings, & ultra-violent mode	
 			- changelist
+
+		- Interim localization
+			- IT
+			- ES
+			- RU
 
 		- See rot tool + UV mode
 

@@ -4479,7 +4479,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 3),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4550,8 +4550,8 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 4),
-            wxGBSpan(1, 3),
+            wxGBPosition(0, 2),
+            wxGBSpan(1, 2),
             wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4611,7 +4611,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
         gridSizer->Add(
             mDebugShipRenderModeRadioBox,
-            wxGBPosition(1, 1),
+            wxGBPosition(1, 0),
             wxGBSpan(1, 1),
             wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
@@ -4693,8 +4693,8 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 2),
-            wxGBSpan(1, 3),
+            wxGBPosition(1, 1),
+            wxGBSpan(1, 1),
             wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4757,7 +4757,47 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
         gridSizer->Add(
             mVectorFieldRenderModeRadioBox,
-            wxGBPosition(1, 5),
+            wxGBPosition(1, 2),
+            wxGBSpan(1, 1),
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderInner);
+    }
+
+    // Side-Effects
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Side-Effects"));
+
+        {
+            mGenerateDebrisCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Generate Debris"));
+            mGenerateDebrisCheckBox->SetToolTip(_("Enables or disables generation of debris when using destructive tools."));
+            mGenerateDebrisCheckBox->Bind(
+                wxEVT_COMMAND_CHECKBOX_CLICKED,
+                [this](wxCommandEvent & event)
+                {
+                    mLiveSettings.SetValue(GameSettings::DoGenerateDebris, event.IsChecked());
+                    OnLiveSettingsChanged();
+                });
+
+            boxSizer->Add(mGenerateDebrisCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
+        }
+
+        {
+            mGenerateSparklesForCutsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Generate Sparkles"));
+            mGenerateSparklesForCutsCheckBox->SetToolTip(_("Enables or disables generation of sparkles when using the saw tool on metal."));
+            mGenerateSparklesForCutsCheckBox->Bind(
+                wxEVT_COMMAND_CHECKBOX_CLICKED,
+                [this](wxCommandEvent & event)
+                {
+                    mLiveSettings.SetValue(GameSettings::DoGenerateSparklesForCuts, event.IsChecked());
+                    OnLiveSettingsChanged();
+                });
+
+            boxSizer->Add(mGenerateSparklesForCutsCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(1, 3),
             wxGBSpan(1, 1),
             wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
@@ -5085,6 +5125,9 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
         }
     }
 
+    mGenerateDebrisCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateDebris));
+    mGenerateSparklesForCutsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparklesForCuts));
+
     // TODOHERE
 
     /* TODOOLD
@@ -5097,9 +5140,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mAirBubbleDensitySlider->SetValue(settings.GetValue<float>(GameSettings::AirBubblesDensity));
     mAirBubbleDensitySlider->Enable(settings.GetValue<bool>(GameSettings::DoGenerateAirBubbles));
 
-    mGenerateDebrisCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateDebris));
-
-    mGenerateSparklesForCutsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparklesForCuts));
 
     */
 }
