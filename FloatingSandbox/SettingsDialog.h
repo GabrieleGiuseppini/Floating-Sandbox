@@ -218,7 +218,8 @@ private:
     wxCheckBox * mShowAABBsCheckBox;
     wxCheckBox * mDrawHeatBlasterFlameCheckBox;
     wxRadioBox * mVectorFieldRenderModeRadioBox;
-    // tODOHERE: add GenerateSparkles, GenerateDebris, Draw HeatBlaster Flame
+    wxCheckBox * mGenerateDebrisCheckBox;
+    wxCheckBox * mGenerateSparklesForCutsCheckBox;
 
 
     /* TODOOLD
@@ -234,8 +235,6 @@ private:
     // Interactions
     wxCheckBox * mGenerateAirBubblesCheckBox; // Will be gone, replaced by density==0
     wxCheckBox * mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox; // Will be gone, replaced by global displacement
-    wxCheckBox * mGenerateDebrisCheckBox;
-    wxCheckBox * mGenerateSparklesForCutsCheckBox;
 
     // Settings Management
     wxListCtrl * mPersistedSettingsListCtrl;
