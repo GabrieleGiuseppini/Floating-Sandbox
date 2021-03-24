@@ -613,7 +613,7 @@ public:
         , mShipPhysicsHandler(nullptr)
         , mHaveWholeBuffersBeenUploadedOnce(false)
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
-        , mCurrentCumulatedIntakenWaterThresholdForAirBubbles(gameParameters.CumulatedIntakenWaterThresholdForAirBubbles)
+        , mCurrentCumulatedIntakenWaterThresholdForAirBubbles(GameParameters::AirBubblesDensityToCumulatedIntakenWater(gameParameters.AirBubblesDensity))
         , mCurrentCombustionSpeedAdjustment(gameParameters.CombustionSpeedAdjustment)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)

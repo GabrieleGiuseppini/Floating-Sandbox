@@ -46,37 +46,6 @@ private:
     void OnOceanRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnLandRenderModeRadioButtonClick(wxCommandEvent & event);
 
-    /* TODOOLD
-    void OnRestoreDefaultTerrainButton(wxCommandEvent & event);
-
-    void OnOceanRenderModeRadioButtonClick(wxCommandEvent & event);
-    void OnDepthOceanColorStartChanged(wxColourPickerEvent & event);
-    void OnDepthOceanColorEndChanged(wxColourPickerEvent & event);
-
-    void OnLandRenderModeRadioButtonClick(wxCommandEvent & event);
-    void OnFlatLandColorChanged(wxColourPickerEvent & event);
-    void OnFlatSkyColorChanged(wxColourPickerEvent & event);
-
-    void OnFlatOceanColorChanged(wxColourPickerEvent & event);
-    void OnFlatLampLightColorChanged(wxColourPickerEvent & event);
-
-    void OnHeatRenderModeRadioBox(wxCommandEvent & event);
-
-    void OnDefaultWaterColorChanged(wxColourPickerEvent & event);
-
-    void OnDebugShipRenderModeRadioBox(wxCommandEvent & event);
-    void OnVectorFieldRenderModeRadioBox(wxCommandEvent & event);
-
-    void OnPersistedSettingsListCtrlSelected(wxListEvent & event);
-    void OnPersistedSettingsListCtrlActivated(wxListEvent & event);
-    void OnApplyPersistedSettingsButton(wxCommandEvent & event);
-    void OnRevertToPersistedSettingsButton(wxCommandEvent & event);
-    void OnReplacePersistedSettingsButton(wxCommandEvent & event);
-    void OnDeletePersistedSettingsButton(wxCommandEvent & event);
-    void OnSaveSettingsTextEdited(wxCommandEvent & event);
-    void OnSaveSettingsButton(wxCommandEvent & event);
-    */
-
     void OnRevertToDefaultsButton(wxCommandEvent & event);
     void OnOkButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
@@ -232,22 +201,6 @@ private:
     wxTextCtrl * mSaveSettingsDescriptionTextCtrl;
     wxButton * mSaveSettingsButton;
 
-    /* TODOOLD
-    // Mechanics, Air, and Fluids
-
-    // Heat and Combustion
-
-
-    // Ocean, Smoke, and Sky
-
-    // Wind, Waves, Fishes, and Lights
-
-    // Interactions
-    wxCheckBox * mGenerateAirBubblesCheckBox; // Will be gone, replaced by density==0
-    wxCheckBox * mDisplaceOceanFloorSurfaceAtAirBubbleSurfacingCheckBox; // Will be gone, replaced by global displacement
-
-    */
-
     //////////////////////////////////////////////////////
 
     // Buttons
@@ -273,17 +226,6 @@ private:
     void PopulateRenderingPanel(wxPanel * panel);
     void PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel);
     void PopulateSettingsManagementPanel(wxPanel * panel);
-
-    /* TODOOLD
-    void PopulateMechanicsAirFluidsPanel(wxPanel * panel);
-    void PopulateHeatPanel(wxPanel * panel);
-    void PopulateOceanSmokeSkyPanel(wxPanel * panel);
-    void PopulateWindWavesFishesLightsPanel(wxPanel * panel);
-    void PopulateInteractionsPanel(wxPanel * panel);
-    void PopulateRenderingPanel(wxPanel * panel);
-    void PopulateSoundAndAdvancedPanel(wxPanel * panel);
-    void PopulateSettingsManagementPanel(wxPanel * panel);
-    */
 
     void SyncControlsWithSettings(Settings<GameSettings> const & settings);
     void ReconciliateOceanRenderModeSettings();

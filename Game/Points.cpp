@@ -612,7 +612,7 @@ void Points::UpdateForGameParameters(GameParameters const & gameParameters)
         mCurrentNumMechanicalDynamicsIterations = numMechanicalDynamicsIterations;
     }
 
-    float const cumulatedIntakenWaterThresholdForAirBubbles = gameParameters.CumulatedIntakenWaterThresholdForAirBubbles;
+    float const cumulatedIntakenWaterThresholdForAirBubbles = GameParameters::AirBubblesDensityToCumulatedIntakenWater(gameParameters.AirBubblesDensity);
     if (cumulatedIntakenWaterThresholdForAirBubbles != mCurrentCumulatedIntakenWaterThresholdForAirBubbles)
     {
         // Randomize cumulated water intaken for each leaking point
@@ -1241,7 +1241,7 @@ void Points::UpdateEphemeralParticles(
 
     // Ocean surface displacement at bubbles surfacing
     float const oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset =
-        (gameParameters.DoDisplaceOceanSurfaceAtAirBubblesSurfacing ? 1.0f : 0.0f)
+        (gameParameters.DoDisplaceWater ? 1.0f : 0.0f)
         * 1.0f;
 
     for (ElementIndex pointIndex : this->EphemeralPoints())

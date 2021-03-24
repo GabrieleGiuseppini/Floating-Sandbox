@@ -264,14 +264,8 @@ struct IGameControllerSettings
     virtual bool GetDoGenerateSparklesForCuts() const = 0;
     virtual void SetDoGenerateSparklesForCuts(bool value) = 0;
 
-    virtual bool GetDoGenerateAirBubbles() const = 0;
-    virtual void SetDoGenerateAirBubbles(bool value) = 0;
-
     virtual float GetAirBubblesDensity() const = 0;
     virtual void SetAirBubblesDensity(float value) = 0;
-
-    virtual bool GetDoDisplaceOceanSurfaceAtAirBubblesSurfacing() const = 0;
-    virtual void SetDoDisplaceOceanSurfaceAtAirBubblesSurfacing(bool value) = 0;
 
     virtual bool GetDoGenerateEngineWakeParticles() const = 0;
     virtual void SetDoGenerateEngineWakeParticles(bool value) = 0;
