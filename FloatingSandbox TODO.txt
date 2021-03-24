@@ -436,9 +436,9 @@ Render:
 									+ air bubbles displace waves: honor global displacement instead
 									+ generate air bubbles: use zero density
 							+ Nuke old source files and old code in remaining source file						
-						- 2: Shorten labels
-							- Fluids: remove redundant "Water" 
-							- Remove other redundant parts of labels
+						= 2: Shorten labels
+							+ Fluids: remove redundant "Water" 
+							+ Remove other redundant parts of labels
 							- "Adjust" -> "%" ?
 						- Final test
 					+ BlastToolRadius
