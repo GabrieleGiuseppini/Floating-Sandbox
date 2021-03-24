@@ -2372,14 +2372,15 @@ void Ship::GenerateAirBubbles(
     PlaneId planeId,
     GameParameters const & /*gameParameters*/)
 {
-    float constexpr MaxAirBubblesVortexAmplitude = 2.0f;
-    float const vortexAmplitude = GameRandomEngine::GetInstance().GenerateUniformReal(
-        -MaxAirBubblesVortexAmplitude, MaxAirBubblesVortexAmplitude);
+    float const vortexAmplitude =
+        GameRandomEngine::GetInstance().GenerateUniformReal(
+            1.5f,
+            5.0f)
+        * (GameRandomEngine::GetInstance().Choose(2) == 1 ? 1.0f : -1.0f);
 
-    float constexpr MinAirBubblesVortexPeriod = 1.5f; // seconds
-    float constexpr MaxAirBubblesVortexPeriod = 4.5f; // seconds
     float const vortexPeriod = GameRandomEngine::GetInstance().GenerateUniformReal(
-        MinAirBubblesVortexPeriod, MaxAirBubblesVortexPeriod);
+        1.5f,  // seconds
+        4.5f); // seconds
 
     mPoints.CreateEphemeralParticleAirBubble(
         position,
