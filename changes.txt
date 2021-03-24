@@ -5,6 +5,7 @@
 - Reorganized Simulation Settings window
 	- The location of most settings has been shuffled around, but they're all still there!
 - Added "direction lock" to slice tool - hitting the SHIFT key during a cut locks its direction 
+- ...and a few more small improvements here and there!
 
 1.16.3
 - Implemented coupling of physical bodies with water surface (finally! Been wanting to do this for years...)
