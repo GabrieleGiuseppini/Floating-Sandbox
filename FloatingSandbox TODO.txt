@@ -383,6 +383,7 @@ Render:
 				+ Finalize maxima of all settings, & ultra-violent mode			
 			+ changelist
 			+ Update help
+		+ Change rot tool with UV mode
 
 
 		= MAC:
@@ -450,11 +451,10 @@ Render:
 
 		- Interim localization (help + po)
 			- Help: Use the <b>Blast</b> <img src="../../Resources/blast_cursor_up_1.png"/> tool instead to generate an explosive force field; the <img src="../../Help/ks_shift.png"/> key shortens the blast dynamics for a more focused effect.<br/>
-			- IT
+			- Please pay particular attention - there are both *changed* strings and *new* strings. The POEdit tool will likely provide an automated translation for the changed strings, which in almost all cases is *WRONG*, so please double-check all the orange translations!
+			+ IT
 			- ES
 			- RU
-
-		- See rot tool + UV mode
 
 		- New tool 2: Punch
 			- Spec:

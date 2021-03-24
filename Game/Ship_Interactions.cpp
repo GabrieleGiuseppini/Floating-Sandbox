@@ -871,6 +871,10 @@ bool Ship::RotThrough(
 {
     float const rotRadius = gameParameters.ScrubRotRadius; // Yes, using the same for symmetry
 
+    float const decayCoeffMultiplier = gameParameters.IsUltraViolentMode
+        ? 2.5f
+        : 1.0f;
+
     //
     // Find all points in the radius of the segment
     //
@@ -913,7 +917,7 @@ bool Ship::RotThrough(
 
                 float const newDecay =
                     mPoints.GetDecay(pointIndex)
-                    * (1.0f - decayCoeff * (rotRadius - distance) / rotRadius);
+                    * (1.0f - decayCoeff * decayCoeffMultiplier * (rotRadius - distance) / rotRadius);
 
                 mPoints.SetDecay(pointIndex, newDecay);
 
