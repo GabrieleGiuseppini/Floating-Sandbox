@@ -253,8 +253,8 @@ public:
                 -GameParameters::HalfMaxWorldHeight,
                 GameParameters::HalfMaxWorldHeight));
 
-        ////LogMessage("TODOTEST: ScreenToWorld(", screenCoordinates.x, ",", screenCoordinates.y, "): ", worldCoordinates.toString(), " (LogToPhys:", mLogicalToPhysicalPixelFactor, " CanvasPhys:(",
-        ////    mCanvasPhysicalPixelSize.width, ",", mCanvasPhysicalPixelSize.height, ") Zoom:", mZoom, " Cam: ", mCam.toString());
+        LogMessage("TODOTEST: ScreenToWorld(", screenCoordinates.x, ",", screenCoordinates.y, "): ", worldCoordinates.toString(), " (LogToPhys:", mLogicalToPhysicalPixelFactor, " CanvasPhys:(",
+            mCanvasPhysicalPixelSize.width, ",", mCanvasPhysicalPixelSize.height, ") Zoom:", mZoom, " Cam: ", mCam.toString());
 
         return worldCoordinates;
     }
