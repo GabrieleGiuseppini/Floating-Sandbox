@@ -449,12 +449,10 @@ Render:
 		- bishobe64 as tester
 			- Invite
 
-		- Interim localization (help + po)
-			- Help: Use the <b>Blast</b> <img src="../../Resources/blast_cursor_up_1.png"/> tool instead to generate an explosive force field; the <img src="../../Help/ks_shift.png"/> key shortens the blast dynamics for a more focused effect.<br/>
-			- Please pay particular attention - there are both *changed* strings and *new* strings. The POEdit tool will likely provide an automated translation for the changed strings, which in almost all cases is *WRONG*, so please double-check all the orange translations!
+		= Interim localization (help + po)
 			+ IT
-			- ES
-			- RU
+			= ES
+			= RU
 
 		- New tool 2: Punch
 			- Spec:
@@ -464,6 +462,7 @@ Render:
 				- TODOHERE
 
 		- New rain: https://www.shadertoy.com/view/tttyDB
+			- See if MaxRainDensity calc'd at Storm needs to be adjusted - see progression from no rain to max rain, and also setting
 			- Test perf drop on Dell
 
 		- Music:

@@ -1442,10 +1442,20 @@ void WorldRenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderP
     auto const & view = renderParameters.View;
 
     // Set shader parameters
-    mShaderManager.ActivateProgram<ProgramType::CrossOfLight>();
-    mShaderManager.SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::ViewportSize>(
+
+    vec2f const viewportSize = vec2f(
         static_cast<float>(view.GetCanvasPhysicalPixelSize().width),
         static_cast<float>(view.GetCanvasPhysicalPixelSize().height));
+
+    mShaderManager.ActivateProgram<ProgramType::CrossOfLight>();
+    mShaderManager.SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::ViewportSize>(
+        viewportSize.x,
+        viewportSize.y);
+
+    mShaderManager.ActivateProgram<ProgramType::Rain>();
+    mShaderManager.SetProgramParameter<ProgramType::Rain, ProgramParameterType::ViewportSize>(
+        viewportSize.x,
+        viewportSize.y);
 }
 
 void WorldRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters)
