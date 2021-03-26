@@ -305,6 +305,11 @@ void Wind::Update(
         mCurrentWindSpeed);
 }
 
+void Wind::Upload(Render::RenderContext & renderContext) const
+{
+    renderContext.UploadWind(mCurrentWindSpeed);
+}
+
 GameWallClock::duration Wind::ChooseDuration(float minSeconds, float maxSeconds)
 {
     float chosenSeconds = GameRandomEngine::GetInstance().GenerateUniformReal(minSeconds, maxSeconds);

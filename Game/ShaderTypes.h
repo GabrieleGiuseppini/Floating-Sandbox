@@ -101,6 +101,7 @@ enum class ProgramParameterType : uint8_t
     OceanDepthColorEnd,
     OceanFlatColor,
     OrthoMatrix,
+    RainAngle,
     RainDensity,
     StarTransparency,
     TextLighteningStrength,

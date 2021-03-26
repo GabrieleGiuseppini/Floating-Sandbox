@@ -291,6 +291,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::OceanFlatColor;
     else if (str == "OrthoMatrix")
         return ProgramParameterType::OrthoMatrix;
+    else if (str == "RainAngle")
+        return ProgramParameterType::RainAngle;
     else if (str == "RainDensity")
         return ProgramParameterType::RainDensity;
     else if (str == "StarTransparency")
@@ -374,6 +376,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "OceanFlatColor";
     case ProgramParameterType::OrthoMatrix:
         return "OrthoMatrix";
+    case ProgramParameterType::RainAngle:
+        return "RainAngle";
     case ProgramParameterType::RainDensity:
         return "RainDensity";
     case ProgramParameterType::StarTransparency:

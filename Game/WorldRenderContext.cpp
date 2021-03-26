@@ -56,6 +56,8 @@ WorldRenderContext::WorldRenderContext(
     , mAABBVertexBuffer()
     , mAABBVBO()
     , mAABBVBOAllocatedVertexSize(0u)
+    , mWindSpeed(vec2f::zero())
+    , mIsWindSpeedDirty(true)
     , mStormAmbientDarkening(0.0f)
     , mRainVBO()
     , mRainDensity(0.0)
@@ -1248,6 +1250,23 @@ void WorldRenderContext::RenderDrawForegroundLightnings(RenderParameters const &
         CheckOpenGLError();
 
         glBindVertexArray(0);
+    }
+}
+
+void WorldRenderContext::RenderPrepareWind(RenderParameters const & /*renderParameters*/)
+{
+    if (mIsWindSpeedDirty && mRainDensity != 0.0f)
+    {
+        float const rainAngle = mWindSpeed.x / 200.0f;
+
+        mShaderManager.ActivateProgram<ProgramType::Rain>();
+
+        // Set time parameter
+        mShaderManager.SetProgramParameter<ProgramParameterType::RainAngle>(
+            ProgramType::Rain,
+            rainAngle);
+
+        mIsWindSpeedDirty = false;
     }
 }
 

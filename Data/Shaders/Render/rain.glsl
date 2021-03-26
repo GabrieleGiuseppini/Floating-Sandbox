@@ -29,6 +29,7 @@ in vec2 uv;
 
 // Parameters        
 uniform float paramEffectiveAmbientLightIntensity;
+uniform float paramRainAngle;
 uniform float paramRainDensity;
 uniform float paramTime;
 uniform vec2 paramViewportSize;
@@ -57,8 +58,6 @@ float noise(vec2 x)
 
 void main()
 {
-    float paramRainAngle = 0.0;
-
     //
     // ---------------------------------------------
     //
