@@ -20,7 +20,7 @@ void main()
 }
 
 
-###FRAGMENT-120-120
+###FRAGMENT-120
 
 #define in varying
 
@@ -31,69 +31,61 @@ in vec2 uv;
 uniform float paramEffectiveAmbientLightIntensity;
 uniform float paramRainDensity;
 uniform float paramTime;
+uniform vec2 paramViewportSize;
+
+// Based on https://www.shadertoy.com/view/wsKcWw by evilRyu
+
+float hash1(vec2 p)
+{
+    p  = 50.0 * fract(p * 0.3183099);
+    return fract(p.x * p.y * (p.x + p.y));
+}
+
+float noise(vec2 x)
+{
+    vec2 p = floor(x);
+    vec2 w = fract(x);
+    vec2 u = w*w*w*(w*(w*6.0-15.0)+10.0);
+    
+    float a = hash1(p+vec2(0,0));
+    float b = hash1(p+vec2(1,0));
+    float c = hash1(p+vec2(0,1));
+    float d = hash1(p+vec2(1,1));
+    
+    return -1.0+2.0*(a + (b-a)*u.x + (c-a)*u.y + (a - b - c + d)*u.x*u.y);
+}
 
 void main()
 {
-    //
-    // ---------------------------------------------
-    //
-    
-    #define RainSpatialDensityX 45.0
-    #define RainSpatialDensityY 30.0
-    #define RainSpeed 30.0
-    #define DropletLength .9
-    #define DropletWidth .08
-    
-    vec2 scaledUV = uv * vec2(RainSpatialDensityX, RainSpatialDensityY);
-        
-    // Calculate tile X coordinate
-    float tileX = floor(scaledUV.x);
-    
-	// Offset Y based off time, and in two different ways to provide 
-    // a sense of depth
-    scaledUV.y += 
-        paramTime 
-        * RainSpeed 
-        * (.8 + mod(tileX, 3.) * .1);
-                
-    // Offset Y randomly based off its tile X coordinate
-    scaledUV.y += 407.567 * fract(351.5776456 * tileX);
-    
-    // Calculate tile Y coordinate
-    float tileY = floor(scaledUV.y);
-
-    // Decide whether tile is turned off
-    float randOnOff = fract(sin(tileX * 71. + tileY * 7.));
-    float onOffThickness = 1. - step(paramRainDensity, randOnOff);
-
-    // Shortcut
-    if (onOffThickness == 0.)
-        discard;
-    
-    // Calculate coords within the tile
-    vec2 inTile = fract(scaledUV);
-    
-    // Shuffle tile center X based on its tile coordinates
-    float rand = fract(sin(77.7 * tileY + 7.7 * tileX));
-    float tileCenterX = .5 + (abs(rand) - .5) * (1. - DropletWidth);
-        
-    // Distance from center of tile
-    float xDistance = abs(tileCenterX - inTile.x);
-    float yDistance = abs(.5 - inTile.y);
-    	    
-    // Thickness of droplet:
-    //    > 0.0 only within Width
-    //    ...with some tile-specific randomization
-    float clampedXDistance = smoothstep(.0, DropletWidth, xDistance);
-    float dropletThickness = (1. - clampedXDistance) * smoothstep(1. - DropletLength + rand/2.4, 1., 1. - yDistance);
+    float paramRainAngle = 0.0;
 
     //
     // ---------------------------------------------
     //
 
-    float alpha = .4 * smoothstep(.4, 1., dropletThickness);
-    vec3 c = vec3(dropletThickness, dropletThickness, dropletThickness) * paramEffectiveAmbientLightIntensity;
+    vec2 uvScaled = uv * (paramViewportSize.x / 620.0);
+    
+    #define SPEED .13
+    vec2 timeVector = vec2(paramTime * SPEED);
+    
+    vec2 directionVector = vec2((uvScaled.y + 1.) / 2. * paramRainAngle, 0.);
+    
+    vec2 st = 256. * (uvScaled * vec2(.5, .01) + timeVector + directionVector);
+    float f = noise(st) * noise(st * 0.773) * 1.55;
+    
+    f = clamp(pow(abs(f), 1.0 / paramRainDensity * 13.0) * 13.0, 0.0, .14);
+    
+    # define LUMINANCE 1.94 // The higher, the whiter
+    vec3 col = f * vec3(LUMINANCE * paramEffectiveAmbientLightIntensity);    
+    col = clamp(col, 0.0, 1.0);
+    
+    float alpha = col.x;
+    col = vec3(1.) - col;
+
+    //
+    // ---------------------------------------------
+    //
 
     // Output to screen
-    gl_FragColor = vec4(c, alpha);
+    gl_FragColor = vec4(col, alpha);
 } 
