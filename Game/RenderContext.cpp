@@ -510,6 +510,8 @@ void RenderContext::Draw()
 
                 mWorldRenderContext->RenderPrepareCrossesOfLight(renderParameters);
 
+                mWorldRenderContext->RenderPrepareWind(renderParameters);
+
                 mWorldRenderContext->RenderPrepareRain(renderParameters);
 
                 mWorldRenderContext->RenderPrepareAABBs(renderParameters);

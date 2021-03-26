@@ -612,6 +612,11 @@ public:
         mWorldRenderContext->UploadStarsEnd();
     }
 
+    inline void UploadWind(vec2f speed)
+    {
+        mWorldRenderContext->UploadWind(speed);
+    }
+
     inline void UploadStormAmbientDarkening(float darkening)
     {
         if (mWorldRenderContext->UploadStormAmbientDarkening(darkening))

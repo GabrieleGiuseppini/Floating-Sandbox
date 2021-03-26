@@ -934,6 +934,8 @@ void World::RenderUpload(
 {
     mStars.Upload(renderContext);
 
+    mWind.Upload(renderContext);
+
     mStorm.Upload(renderContext);
 
     mClouds.Upload(renderContext);

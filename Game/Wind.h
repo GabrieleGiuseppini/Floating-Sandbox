@@ -29,8 +29,10 @@ public:
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
+    void Upload(Render::RenderContext & renderContext) const;
+
     /*
-     * Returns the (signed) base speed magnitude - i.e. the magnitude of the unmodulated 
+     * Returns the (signed) base speed magnitude - i.e. the magnitude of the unmodulated
      * wind speed - with the storm speed magnitude on top of it.
      *
      * Km/h.

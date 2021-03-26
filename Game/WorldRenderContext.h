@@ -92,6 +92,15 @@ public:
 
     void UploadStarsEnd();
 
+    inline void UploadWind(vec2f speed)
+    {
+        if (speed != mWindSpeed) // Damp frequency of calls
+        {
+            mWindSpeed = speed;
+            mIsWindSpeedDirty = true;
+        }
+    }
+
     inline bool UploadStormAmbientDarkening(float darkening)
     {
         if (darkening != mStormAmbientDarkening) // Damp frequency of calls
@@ -666,6 +675,8 @@ public:
 
     void RenderDrawForegroundLightnings(RenderParameters const & renderParameters);
 
+    void RenderPrepareWind(RenderParameters const & renderParameters);
+
     void RenderPrepareRain(RenderParameters const & renderParameters);
     void RenderDrawRain(RenderParameters const & renderParameters);
 
@@ -1048,6 +1059,9 @@ private:
     BoundedVector<AABBVertex> mAABBVertexBuffer;
     GameOpenGLVBO mAABBVBO;
     size_t mAABBVBOAllocatedVertexSize;
+
+    vec2f mWindSpeed;
+    bool mIsWindSpeedDirty;
 
     float mStormAmbientDarkening;
 
