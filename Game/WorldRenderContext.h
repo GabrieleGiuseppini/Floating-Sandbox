@@ -24,6 +24,7 @@
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/ImageSize.h>
+#include <GameCore/RunningAverage.h>
 #include <GameCore/Vectors.h>
 
 #include <array>
@@ -94,10 +95,11 @@ public:
 
     inline void UploadWind(vec2f speed)
     {
-        if (speed != mWindSpeed) // Damp frequency of calls
+        float newWindMagnitude = mWindSpeedMagnitudeRunningAverage.Update(speed.length());
+        if (newWindMagnitude != mWindSpeedMagnitude) // Damp frequency of calls
         {
-            mWindSpeed = speed;
-            mIsWindSpeedDirty = true;
+            mWindSpeedMagnitude = newWindMagnitude;
+            mIsWindSpeedMagnitudeDirty = true;
         }
     }
 
@@ -1060,8 +1062,9 @@ private:
     GameOpenGLVBO mAABBVBO;
     size_t mAABBVBOAllocatedVertexSize;
 
-    vec2f mWindSpeed;
-    bool mIsWindSpeedDirty;
+    RunningAverage<32> mWindSpeedMagnitudeRunningAverage;
+    float mWindSpeedMagnitude;
+    bool mIsWindSpeedMagnitudeDirty;
 
     float mStormAmbientDarkening;
 

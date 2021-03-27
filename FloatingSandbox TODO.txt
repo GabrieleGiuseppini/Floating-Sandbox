@@ -454,19 +454,28 @@ Render:
 			= ES
 			= RU
 
-		- New tool 2: Punch
-			- Spec:
-				- Works only on frontier from outside->in
-					- Might want to try, at end, also from inside->out
-			- Impl:
-				- TODOHERE
-
-		- New rain: https://www.shadertoy.com/view/tttyDB
-			- See if MaxRainDensity calc'd at Storm needs to be adjusted - see progression from no rain to max rain, and also setting
+		= New rain: https://www.shadertoy.com/view/tttyDB
+			+ Do
+			- Wind rearc:
+				- Wind uploads speed vector to RenderContext
+				- RenderContext calcs magnitude, runs avg, and if different dispatches to WorldRenderContext and to each ShipRenderContext
+					- WorldRenderContext: 
+						- UploadWindSpeedMagnitude: store and set dirty, both as "RainWindAngle"
+						- RenderPrepareWind: only if will be drawing rain: pick up dirty flag, set param, and clear flag
+					- ShipRenderContext:
+						- UploadWindSpeedMagnitude: store and set dirty, both as "FlameWindAngle"
+						- RenderPrepareFlames: only if will be drawing flames: pick up dirty flag, set param, and clear flag
+				- RenderContext::Reset: 
+					- Reset average
+						! Enough, as next wind upload would generate different value than current member value and thus trigger param set's
+				- Stop uploading wind with flames
+			= Wind magnitude
+				- More vertical at beginning and less horizontal at max
+			- Check spatial density
+			- Check density dynamics: goes from zero to max too quickly
+				- See if MaxRainDensity calc'd at Storm needs to be adjusted - see progression from no rain to max rain, and also setting
+			- Test viewport size change
 			- Test perf drop on Dell
-
-		- Music:
-			- James horners soundtrack "death of titanic" and "building panic" may make the game greater
 		
 		- Cached quantities (*)
 
@@ -475,10 +484,11 @@ Render:
 			- Decide whether FS should turn VSync off
 				- See if there's a non-NVidia-specific way which may be done with all cards
 					- Windows-only would be fine
+
 		- Try using same vertex buffer for Ocean and Land
 			- Same size as largest
-				- Make buffer of union's: 2 ocean + 1 land
-				- Use new GrowableSizeBuffer - just like BoundedVector, but only reallocates on grow, never on shrink
+				- Make buffer of union's: ocean basic || ocean detailed || land
+				- We upload ocean first and land then: so use new GrowableSizeBuffer - just like BoundedVector, but reallocates on grow (on grow only, never on shrink)
 					- Note: we know that we'll know by how much it grows each time: reserve_more(.) // on top of current size
 			- Same VBO as well
 			- Try also stars
@@ -487,11 +497,13 @@ Render:
 		- Randomized start (?)
 			- Done by new method at SettingsManager, by choosing settings (system & user) weighted by new optional probability attribute
 				- Proability at SettingsDialog
-				- "defaults" (not a setting) have own hardcoded probability
+				- "defaults" (not a setting, just hardcoded) have own hardcoded probability
 			- Add new system settings, with probs:
 				- Starry night 0/10
 				- Quiet sea 4/10
 				= Blue world (sky: 0, 119, 196; find ocean, rest like quiet sea) 2/10
+			- Triggered on/off via Game Preferences
+				- Default off
 
 		- ShipLoadDialog Toolbar (*)
 
@@ -529,6 +541,17 @@ Render:
 			- RU
 				- Check out changed SettingsDialog strings
 				
+		- Release
+
+		// -----------------------------------------------------------------------
+
+		- New tool 2: Punch
+			- Spec:
+				- Works only on frontier from outside->in
+					- Might want to try, at end, also from inside->out
+			- Impl:
+				- TODOHERE
+
 		- Water impact (*)
 
 		- Sound space (*)
