@@ -79,6 +79,9 @@ RenderContext::RenderContext(
     , mRenderParameters(
         renderDeviceProperties.InitialCanvasSize,
         renderDeviceProperties.LogicalToPhysicalPixelFactor)
+    // State
+    , mWindSpeedMagnitudeRunningAverage(0.0f)
+    , mCurrentWindSpeedMagnitude(0.0f)
     // Statistics
     , mPerfStats(perfStats)
     , mRenderStats()
@@ -287,6 +290,9 @@ void RenderContext::Reset()
             // Clear ships
             mShips.clear();
         });
+
+    // Reset state
+    mWindSpeedMagnitudeRunningAverage.Reset(0.0f);
 }
 
 void RenderContext::ValidateShipTexture(RgbaImageData const & texture) const
@@ -509,8 +515,6 @@ void RenderContext::Draw()
                 mWorldRenderContext->RenderPrepareAMBombPreImplosions(renderParameters);
 
                 mWorldRenderContext->RenderPrepareCrossesOfLight(renderParameters);
-
-                mWorldRenderContext->RenderPrepareWind(renderParameters);
 
                 mWorldRenderContext->RenderPrepareRain(renderParameters);
 

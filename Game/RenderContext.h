@@ -33,6 +33,7 @@
 #include <GameCore/ImageData.h>
 #include <GameCore/ImageSize.h>
 #include <GameCore/ProgressCallback.h>
+#include <GameCore/RunningAverage.h>
 #include <GameCore/SysSpecifics.h>
 #include <GameCore/TaskThread.h>
 #include <GameCore/Vectors.h>
@@ -614,7 +615,18 @@ public:
 
     inline void UploadWind(vec2f speed)
     {
-        mWorldRenderContext->UploadWind(speed);
+        float const smoothedWindMagnitude = mWindSpeedMagnitudeRunningAverage.Update(speed.x);
+        if (smoothedWindMagnitude != mCurrentWindSpeedMagnitude) // Damp frequency of calls
+        {
+            mWorldRenderContext->UploadWind(smoothedWindMagnitude);
+
+            for (auto & ship : mShips)
+            {
+                ship->UploadWind(smoothedWindMagnitude);
+            }
+
+            mCurrentWindSpeedMagnitude = smoothedWindMagnitude;
+        }
     }
 
     inline void UploadStormAmbientDarkening(float darkening)
@@ -986,6 +998,15 @@ private:
     //
 
     RenderParameters mRenderParameters;
+
+    //
+    // State
+    //
+
+    // Wind
+    RunningAverage<32> mWindSpeedMagnitudeRunningAverage;
+    float mCurrentWindSpeedMagnitude;
+
 
     //
     // Statistics

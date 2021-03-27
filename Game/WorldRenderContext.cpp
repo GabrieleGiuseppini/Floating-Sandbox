@@ -56,13 +56,12 @@ WorldRenderContext::WorldRenderContext(
     , mAABBVertexBuffer()
     , mAABBVBO()
     , mAABBVBOAllocatedVertexSize(0u)
-    , mWindSpeedMagnitudeRunningAverage(0.0f)
-    , mWindSpeedMagnitude(0.0f)
-    , mIsWindSpeedMagnitudeDirty(true)
     , mStormAmbientDarkening(0.0f)
     , mRainVBO()
     , mRainDensity(0.0)
     , mIsRainDensityDirty(true)
+    , mRainWindSpeedMagnitude(0.0f)
+    , mIsRainWindSpeedMagnitudeDirty(true)
     , mWorldBorderVertexBuffer()
     , mWorldBorderVBO()
     // VAOs
@@ -1254,23 +1253,6 @@ void WorldRenderContext::RenderDrawForegroundLightnings(RenderParameters const &
     }
 }
 
-void WorldRenderContext::RenderPrepareWind(RenderParameters const & /*renderParameters*/)
-{
-    if (mIsWindSpeedMagnitudeDirty && mRainDensity != 0.0f)
-    {
-        float const rainAngle = mWindSpeedMagnitude / 200.0f;
-
-        mShaderManager.ActivateProgram<ProgramType::Rain>();
-
-        // Set time parameter
-        mShaderManager.SetProgramParameter<ProgramParameterType::RainAngle>(
-            ProgramType::Rain,
-            rainAngle);
-
-        mIsWindSpeedMagnitudeDirty = false;
-    }
-}
-
 void WorldRenderContext::RenderPrepareRain(RenderParameters const & /*renderParameters*/)
 {
     if (mIsRainDensityDirty || mRainDensity != 0.0f)
@@ -1283,7 +1265,23 @@ void WorldRenderContext::RenderPrepareRain(RenderParameters const & /*renderPara
             mShaderManager.SetProgramParameter<ProgramType::Rain, ProgramParameterType::RainDensity>(
                 mRainDensity);
 
-            mIsRainDensityDirty = false; // Uploaded flag
+            mIsRainDensityDirty = false; // Uploaded
+        }
+
+        if (mIsRainWindSpeedMagnitudeDirty)
+        {
+            float const rainAngle = SmoothStep(
+                30.0f,
+                250.0f,
+                std::abs(mRainWindSpeedMagnitude))
+                * ((mRainWindSpeedMagnitude < 0.0f) ? -1.0f : 1.0f)
+                * 0.8f;
+
+            // Set parameter
+            mShaderManager.SetProgramParameter<ProgramType::Rain, ProgramParameterType::RainAngle>(
+                rainAngle);
+
+            mIsRainWindSpeedMagnitudeDirty = false; // Uploaded
         }
 
         if (mRainDensity != 0.0f)

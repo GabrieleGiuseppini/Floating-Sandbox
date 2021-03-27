@@ -840,7 +840,6 @@ public:
 
     void UploadFlames(
         ShipId shipId,
-        float windSpeedMagnitude,
         Render::RenderContext & renderContext) const;
 
     void UploadVectors(

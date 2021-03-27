@@ -20,7 +20,6 @@
 #include <GameCore/BoundedVector.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
-#include <GameCore/RunningAverage.h>
 #include <GameCore/SysSpecifics.h>
 #include <GameCore/Vectors.h>
 
@@ -81,6 +80,12 @@ public:
 public:
 
     void UploadStart(PlaneId maxMaxPlaneId);
+
+    inline void UploadWind(float smoothedWindSpeedMagnitude)
+    {
+        mFlameWindSpeedMagnitude = smoothedWindSpeedMagnitude;
+        mIsFlameWindSpeedMagnitudeDirty = true;
+    }
 
     //
     // Points
@@ -211,9 +216,7 @@ public:
     // Flames
     //
 
-    void UploadFlamesStart(
-        size_t count,
-        float windSpeedMagnitude);
+    void UploadFlamesStart(size_t count);
 
     /*
      * Assumptions:
@@ -1199,9 +1202,8 @@ private:
     size_t mFlameForegroundCount;
     GameOpenGLVBO mFlameVBO;
     size_t mFlameVBOAllocatedVertexSize;
-    RunningAverage<32> mFlameWindSpeedMagnitudeRunningAverage;
-    float mFlameWindSpeedMagnitudeAverage;
-    bool mIsFlameWindSpeedMagnitudeAverageDirty;
+    float mFlameWindSpeedMagnitude;
+    bool mIsFlameWindSpeedMagnitudeDirty;
 
     std::vector<ExplosionPlaneData> mExplosionPlaneVertexBuffers;
     size_t mExplosionTotalVertexCount; // Calculated at RenderPrepare and cached for convenience

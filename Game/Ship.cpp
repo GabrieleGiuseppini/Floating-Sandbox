@@ -107,7 +107,6 @@ Ship::Ship(
     // Render
     , mLastUploadedDebugShipRenderMode()
     , mPlaneTriangleIndicesToRender()
-    , mWindSpeedMagnitudeToRender(0.0)
 {
     mPlaneTriangleIndicesToRender.reserve(mTriangles.GetElementCount());
 
@@ -195,8 +194,6 @@ void Ship::Update(
 
     mElectricalElements.UpdateForGameParameters(
         gameParameters);
-
-    mWindSpeedMagnitudeToRender = mParentWorld.GetCurrentWindSpeed().x;
 
     ///////////////////////////////////////////////////////////////////
     // Update state machines
@@ -620,7 +617,6 @@ void Ship::RenderUpload(Render::RenderContext & renderContext)
 
     mPoints.UploadFlames(
         mId,
-        mWindSpeedMagnitudeToRender,
         renderContext);
 
     //
