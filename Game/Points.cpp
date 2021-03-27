@@ -1657,7 +1657,6 @@ void Points::UploadNonEphemeralPointElements(
 
 void Points::UploadFlames(
     ShipId shipId,
-    float windSpeedMagnitude,
     Render::RenderContext & renderContext) const
 {
     //
@@ -1672,7 +1671,7 @@ void Points::UploadFlames(
 
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
-    shipRenderContext.UploadFlamesStart(mBurningPoints.size(), windSpeedMagnitude);
+    shipRenderContext.UploadFlamesStart(mBurningPoints.size());
 
     // Background
     for (auto const pointIndex : mBurningPoints)

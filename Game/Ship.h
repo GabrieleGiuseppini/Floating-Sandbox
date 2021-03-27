@@ -624,9 +624,6 @@ private:
     // Initial indices of the triangles for each plane ID;
     // last extra element contains total number of triangles
     std::vector<size_t> mPlaneTriangleIndicesToRender;
-
-    // The wind speed magnitude to use for rendering
-    float mWindSpeedMagnitudeToRender;
 };
 
 }

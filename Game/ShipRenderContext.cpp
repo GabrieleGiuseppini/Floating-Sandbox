@@ -55,9 +55,8 @@ ShipRenderContext::ShipRenderContext(
     , mFlameForegroundCount(0u)
     , mFlameVBO()
     , mFlameVBOAllocatedVertexSize(0u)
-    , mFlameWindSpeedMagnitudeRunningAverage(0.0f)
-    , mFlameWindSpeedMagnitudeAverage(0.0f)
-    , mIsFlameWindSpeedMagnitudeAverageDirty(true)
+    , mFlameWindSpeedMagnitude(0.0f)
+    , mIsFlameWindSpeedMagnitudeDirty(true)
     //
     , mExplosionPlaneVertexBuffers()
     , mExplosionTotalVertexCount(0u)
@@ -800,9 +799,7 @@ void ShipRenderContext::UploadElementFrontierEdgesEnd()
     // Nop
 }
 
-void ShipRenderContext::UploadFlamesStart(
-    size_t count,
-    float windSpeedMagnitude)
+void ShipRenderContext::UploadFlamesStart(size_t count)
 {
     //
     // Flames are not sticky: we upload them at each frame,
@@ -813,19 +810,6 @@ void ShipRenderContext::UploadFlamesStart(
 
     mFlameBackgroundCount = 0;
     mFlameForegroundCount = 0;
-
-    //
-    // Update wind speed
-    //
-
-    float newWind = mFlameWindSpeedMagnitudeRunningAverage.Update(windSpeedMagnitude);
-
-    // Pickup wind speed magnitude, if it has changed
-    if (newWind != mFlameWindSpeedMagnitudeAverage)
-    {
-        mFlameWindSpeedMagnitudeAverage = newWind;
-        mIsFlameWindSpeedMagnitudeAverageDirty = true;
-    }
 }
 
 void ShipRenderContext::UploadFlamesEnd()
@@ -1467,28 +1451,6 @@ void ShipRenderContext::RenderDraw(
 void ShipRenderContext::RenderPrepareFlames()
 {
     //
-    // Pickup wind speed magnitude, if it has changed
-    //
-
-    if (mIsFlameWindSpeedMagnitudeAverageDirty)
-    {
-        // Calculate wind angle: we do this here once instead of doing it for each and every pixel
-        float const windRotationAngle = std::copysign(
-            0.5f * SmoothStep(0.0f, 100.0f, std::abs(mFlameWindSpeedMagnitudeAverage)),
-            -mFlameWindSpeedMagnitudeAverage);
-
-        mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
-        mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::FlameWindRotationAngle>(
-            windRotationAngle);
-
-        mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
-        mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::FlameWindRotationAngle>(
-            windRotationAngle);
-
-        mIsFlameWindSpeedMagnitudeAverageDirty = true;
-    }
-
-    //
     // Upload buffers, if needed
     //
 
@@ -1515,7 +1477,7 @@ void ShipRenderContext::RenderPrepareFlames()
     }
 
     //
-    // Set flame speed parameter, if needed
+    // Set flame parameters, if we'll be drawing flames
     //
 
     if (mFlameBackgroundCount > 0 || mFlameForegroundCount > 0)
@@ -1527,6 +1489,23 @@ void ShipRenderContext::RenderPrepareFlames()
 
         mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
         mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::FlameSpeed>(flameSpeed);
+
+        if (mIsFlameWindSpeedMagnitudeDirty)
+        {
+            float const windRotationAngle = std::copysign(
+                0.5f * SmoothStep(0.0f, 100.0f, std::abs(mFlameWindSpeedMagnitude)),
+                -mFlameWindSpeedMagnitude);
+
+            mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
+            mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::FlameWindRotationAngle>(
+                windRotationAngle);
+
+            mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
+            mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::FlameWindRotationAngle>(
+                windRotationAngle);
+
+            mIsFlameWindSpeedMagnitudeDirty = true;
+        }
     }
 }
 

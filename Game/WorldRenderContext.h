@@ -24,7 +24,6 @@
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/ImageSize.h>
-#include <GameCore/RunningAverage.h>
 #include <GameCore/Vectors.h>
 
 #include <array>
@@ -93,14 +92,10 @@ public:
 
     void UploadStarsEnd();
 
-    inline void UploadWind(vec2f speed)
+    inline void UploadWind(float smoothedWindSpeedMagnitude)
     {
-        float newWindMagnitude = mWindSpeedMagnitudeRunningAverage.Update(speed.length());
-        if (newWindMagnitude != mWindSpeedMagnitude) // Damp frequency of calls
-        {
-            mWindSpeedMagnitude = newWindMagnitude;
-            mIsWindSpeedMagnitudeDirty = true;
-        }
+        mRainWindSpeedMagnitude = smoothedWindSpeedMagnitude;
+        mIsRainWindSpeedMagnitudeDirty = true;
     }
 
     inline bool UploadStormAmbientDarkening(float darkening)
@@ -677,8 +672,6 @@ public:
 
     void RenderDrawForegroundLightnings(RenderParameters const & renderParameters);
 
-    void RenderPrepareWind(RenderParameters const & renderParameters);
-
     void RenderPrepareRain(RenderParameters const & renderParameters);
     void RenderDrawRain(RenderParameters const & renderParameters);
 
@@ -1062,15 +1055,13 @@ private:
     GameOpenGLVBO mAABBVBO;
     size_t mAABBVBOAllocatedVertexSize;
 
-    RunningAverage<32> mWindSpeedMagnitudeRunningAverage;
-    float mWindSpeedMagnitude;
-    bool mIsWindSpeedMagnitudeDirty;
-
     float mStormAmbientDarkening;
 
     GameOpenGLVBO mRainVBO;
     float mRainDensity;
     bool mIsRainDensityDirty;
+    float mRainWindSpeedMagnitude;
+    bool mIsRainWindSpeedMagnitudeDirty;
 
     std::vector<WorldBorderVertex> mWorldBorderVertexBuffer;
     GameOpenGLVBO mWorldBorderVBO;
