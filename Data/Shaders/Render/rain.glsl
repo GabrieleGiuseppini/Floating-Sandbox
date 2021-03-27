@@ -62,7 +62,7 @@ void main()
     // ---------------------------------------------
     //
 
-    vec2 uvScaled = uv * (paramViewportSize.x / 620.0);
+    vec2 uvScaled = uv * (paramViewportSize.x / 520.0);
     
     #define SPEED .13
     vec2 timeVector = vec2(paramTime * SPEED);
