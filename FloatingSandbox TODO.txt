@@ -477,13 +477,14 @@ Render:
 				+ More vertical at beginning and less horizontal at max
 					! Wind speed magnitude during storm: 60-125
 					+ Function we want: 60 => 0.1, 120 => 0.8
-			- Check spatial density
+			+ Check spatial density
 			- Check density dynamics: goes from zero to max too quickly
 				- See if MaxRainDensity calc'd at Storm needs to be adjusted - see progression from no rain to max rain, and also setting
-			- Test viewport size change
+			+ Test viewport size change
 			- Physics: think of displacing water surface during rain
 				- Count of random places per frame depends on density
-			- Test perf drop on Dell
+			- Test perf drop on Dell - simply perf during storm before and after
+			- Changelist
 		
 		- Cached quantities (*)
 
