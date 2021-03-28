@@ -38,7 +38,7 @@ uniform vec2 paramViewportSize;
 
 float hash1(vec2 p)
 {
-    p  = 50.0 * fract(p * 0.3183099);
+    p = 50.0 * fract(p * 0.3183099);
     return fract(p.x * p.y * (p.x + p.y));
 }
 
@@ -46,14 +46,13 @@ float noise(vec2 x)
 {
     vec2 p = floor(x);
     vec2 w = fract(x);
-    vec2 u = w*w*w*(w*(w*6.0-15.0)+10.0);
     
-    float a = hash1(p+vec2(0,0));
-    float b = hash1(p+vec2(1,0));
-    float c = hash1(p+vec2(0,1));
-    float d = hash1(p+vec2(1,1));
+    float a = hash1(p + vec2(0,0));
+    float b = hash1(p + vec2(1,0));
+    float c = hash1(p + vec2(0,1));
+    float d = hash1(p + vec2(1,1));
     
-    return -1.0+2.0*(a + (b-a)*u.x + (c-a)*u.y + (a - b - c + d)*u.x*u.y);
+    return -1.0 + 2.0 * (a + (b-a) * w.x + (c-a) * w.y + (a - b - c + d) * w.x * w.y);
 }
 
 void main()
@@ -62,7 +61,7 @@ void main()
     // ---------------------------------------------
     //
 
-    vec2 uvScaled = uv * (paramViewportSize.x / 520.0);
+   vec2 uvScaled = uv * (paramViewportSize.x / 520.0);
     
     #define SPEED .13
     vec2 timeVector = vec2(paramTime * SPEED);
@@ -70,16 +69,11 @@ void main()
     vec2 directionVector = vec2((uvScaled.y + 1.) / 2. * paramRainAngle, 0.);
     
     vec2 st = 256. * (uvScaled * vec2(.5, .01) + timeVector + directionVector);
-    float f = noise(st) * noise(st * 0.773) * 1.55;
-    
-    f = clamp(pow(abs(f), 1.0 / paramRainDensity * 13.0) * 13.0, 0.0, .14);
     
     # define LUMINANCE 1.94 // The higher, the whiter
-    vec3 col = f * vec3(LUMINANCE * paramEffectiveAmbientLightIntensity);    
-    col = clamp(col, 0.0, 1.0);
-    
-    float alpha = col.x;
-    col = vec3(1.) - col;
+    float alpha = noise(st) * noise(st * 0.773) * 0.485 * paramEffectiveAmbientLightIntensity;
+    alpha = clamp(alpha, 0.0, 1.0) * step(1. - (.7 + paramRainDensity * .3), alpha);
+    vec3 col = vec3(1. - alpha);
 
     //
     // ---------------------------------------------

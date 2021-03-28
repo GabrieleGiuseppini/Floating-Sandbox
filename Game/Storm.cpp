@@ -109,7 +109,7 @@ void Storm::Update(
     float constexpr WindUpEnd = 0.1f;
 	float constexpr BackgroundLightningStart = 0.11f;
     float constexpr AmbientDarkeningAndAirTemperatureDropUpEnd = 0.125f;
-	float constexpr RainUpEnd = 0.35f;
+	float constexpr RainUpEnd = 0.2f;
 	float constexpr ForegroundLightningStart = 0.36f;
 
 	float constexpr ForegroundLightningEnd = 0.74f;
@@ -163,7 +163,7 @@ void Storm::Update(
 		// Rain
 		if (gameParameters.DoRainWithStorm)
 		{
-			float const rainSmoothProgress = SmoothStep(RainUpStart, RainUpEnd, upProgress);
+			float const rainSmoothProgress = LinearStep(RainUpStart, RainUpEnd, upProgress);
 			mParameters.RainDensity = rainSmoothProgress * mMaxRainDensity;
 		}
 		else
@@ -195,7 +195,7 @@ void Storm::Update(
 		// Rain
 		if (gameParameters.DoRainWithStorm)
 		{
-			float const rainSmoothProgress = 1.0f - SmoothStep(RainDownStart, RainDownEnd, downProgress);
+			float const rainSmoothProgress = 1.0f - LinearStep(RainDownStart, RainDownEnd, downProgress);
 			mParameters.RainDensity = rainSmoothProgress * mMaxRainDensity;
 		}
 		else
@@ -385,7 +385,7 @@ void Storm::RecalculateCoefficients(
 		* (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
 	mMaxRainDensity = MixPiecewiseLinear(
-		0.1f, 0.4f, 0.9f, // Rendering at 1.0 is not that nice
+		0.1f, 0.75f, 1.0f,
 		GameParameters::MinStormStrengthAdjustment,
 		GameParameters::MaxStormStrengthAdjustment,
 		gameParameters.StormStrengthAdjustment);
