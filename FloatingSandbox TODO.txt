@@ -384,6 +384,37 @@ Render:
 			+ changelist
 			+ Update help
 		+ Change rot tool with UV mode
+		+ New rain: https://www.shadertoy.com/view/tttyDB
+			+ Do
+			+ Wind rearc:
+				+ Wind uploads speed vector to RenderContext
+				+ RenderContext calcs magnitude, runs avg, and if different dispatches to WorldRenderContext and to each ShipRenderContext
+				+ WorldRenderContext: 
+					+ UploadWind: store and set dirty, both as "RainWindAngle"
+					+ RenderPrepareRain: only if will be drawing rain: pick up dirty flag, set param, and clear flag
+				+ ShipRenderContext:
+					+ UploadWind: store and set dirty, both as "FlameWindAngle"
+					+ RenderPrepareFlames: only if will be drawing flames: pick up dirty flag, set param, and clear flag
+				+ RenderContext::Reset: 
+					+ Reset average
+						! Enough, as next wind upload would generate different value than current member value and thus trigger param set's
+				+ Stop uploading wind with flames
+					+ Nuke Ship::mWindSpeedMagnitudeToRender
+				+ Tests (also across reloads)
+					+ Flame
+					+ Rain
+			+ Wind magnitude
+				+ More vertical at beginning and less horizontal at max
+					! Wind speed magnitude during storm: 60-125
+					+ Function we want: 60 => 0.1, 120 => 0.8
+			+ Check spatial density
+			+ Check density dynamics: goes from zero to max too quickly
+				+ See if MaxRainDensity calc'd at Storm needs to be adjusted - see progression from no rain to max rain, and also setting
+			+ Test viewport size change
+			+ Test perf drop on Dell - simply perf during storm before and after
+				+ Old: 30fps/12-13msRND, Storm: 18fps/35msRND
+				+ New: Storm: 18/35 @ 2:20
+			+ Changelist
 
 
 		= MAC:
@@ -453,40 +484,20 @@ Render:
 			+ IT
 			= ES
 			= RU
-
-		= New rain: https://www.shadertoy.com/view/tttyDB
-			+ Do
-			+ Wind rearc:
-				+ Wind uploads speed vector to RenderContext
-				+ RenderContext calcs magnitude, runs avg, and if different dispatches to WorldRenderContext and to each ShipRenderContext
-				+ WorldRenderContext: 
-					+ UploadWind: store and set dirty, both as "RainWindAngle"
-					+ RenderPrepareRain: only if will be drawing rain: pick up dirty flag, set param, and clear flag
-				+ ShipRenderContext:
-					+ UploadWind: store and set dirty, both as "FlameWindAngle"
-					+ RenderPrepareFlames: only if will be drawing flames: pick up dirty flag, set param, and clear flag
-				+ RenderContext::Reset: 
-					+ Reset average
-						! Enough, as next wind upload would generate different value than current member value and thus trigger param set's
-				+ Stop uploading wind with flames
-					+ Nuke Ship::mWindSpeedMagnitudeToRender
-				+ Tests (also across reloads)
-					+ Flame
-					+ Rain
-			+ Wind magnitude
-				+ More vertical at beginning and less horizontal at max
-					! Wind speed magnitude during storm: 60-125
-					+ Function we want: 60 => 0.1, 120 => 0.8
-			+ Check spatial density
-			+ Check density dynamics: goes from zero to max too quickly
-				+ See if MaxRainDensity calc'd at Storm needs to be adjusted - see progression from no rain to max rain, and also setting
-			+ Test viewport size change
-			- Physics: think of displacing water surface during rain
-				- Count of random places per frame depends on density
-			- Test perf drop on Dell - simply perf during storm before and after
-			- Changelist
 		
 		- Cached quantities (*)
+
+		- Fix "cycle of sounds" issue with sounds
+			- Repro first and detect chain of noise, in these two situations:
+				- 1) Melted metal that cools in water
+				- 2) Cardboard tower pushed down
+			- Try spreading out spring coeffs' recalculations - also for better look'n'feel
+				- Test look'n'feel
+				- Test perf on Dell, before & after
+			- See if longer relax interval for stress sounds does the trick
+			- More stress metal sounds, to dilute "cycle of sounds"
+				- Save new raw sounds at C:\Users\Neurodancer\Desktop\Ship Scratch\Sounds\Metal Stress II
+			- Also try: not dispatching stress if also dispatching break's (or destroy's?)
 
 		- See why NVidia's rendering is so slow
 			+ Try VSync: yes, it's the VSync
@@ -605,17 +616,6 @@ Render:
 				- Experiments:
 					-
 			+ Remove all TODOTEST logging
-
-		- More stress metal sounds, to dilute "cycle of sounds"
-			- Repro first and detect chain of noise, in these two situations:
-				- 1) Melted metal that cools in water
-				- 2) Cardboard tower pushed down
-			- Try spreading out spring coeffs' recalculations - also for better look'n'feel
-				- Test look'n'feel
-				- Test perf on Dell, before & after
-			- See if longer relax interval for stress sounds does the trick
-			- Save new raw sounds at C:\Users\Neurodancer\Desktop\Ship Scratch\Sounds\Metal Stress II
-			- Also try: not dispatching stress if also dispatching break's (or destroy's?)
 
 		- Try ocean rendering with concentration of waves at top
 
@@ -1049,21 +1049,54 @@ Render:
 					- Also use instead of factory rest lengths at:
 						- Water
 						- Heat
-			- Underwater depth: Points::Depth				
-				- Valid as long as points don't move
-					- Do DEBUG work above
-				- Points::CachedDepth
-					- Initialization: via value provided by Add() caller (ShipBuilder) with depth
-					- Getter
-					- Buffer getter & swapper (see water buffers)
-				- Also valid as long as points are not created after depths are taken
-					- Ephemeral points must take depth at creation, always
+			- Underwater depth: Points::Depth
+				! Spec:
+					! Valid as long as points don't move after caching, and as long as cached depth is not used between interactions and moment when it's calculated again
+					! Also valid as long as points are not created after depths are taken
+						! So also creation of ephemeral particles needs to be tackled
+
+
+				- Plan:
+					- Interactions: clamp positions to world boundaries
+					- Do DEBUG work above to catch late positions changes
+						- Test and verify that after WorldBoundaries there's no position changes
+					- Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
+						- See below
+					- Points::CachedDepth
+						- Initialization: via value provided by Add() caller (ShipBuilder) with depth
+							- But Points already has mParentWorld at Add(.) time, and so does ShipBuilder at that call
+						- Getter
+						- Buffer getter & swapper (see water buffers)
+					- Populate CachedDepth at ApplyWorldForces
+					- Ephemeral points: ephemeral points must take depth at creation, always
 						- Bubbles already have it anyway!
-					- Creation happens at:
-						- Interactions
-						- Breakages at UpdateForSpringStrains
-						- Bubble generation
-						- Anywhere else?
+						- Creation happens at:
+							- Interactions
+							- Breakages at UpdateForSpringStrains
+							- Bubble generation
+							- Anywhere else?
+					- Use it, getting rid of now-superfluous parent.IsUnderwater/GetDepth calls
+						- ApplyWorldForces:
+							- Per-point
+								- Note: now we check twice (buoyancyl then drag); should also unify per-point visit to have single underwater check applying buoyancy + drag
+							- Per-frontier (water pressure drag, waves)
+						- UpdateWaterIntake (for leaking points only)
+						- Heat dissipation
+						- Springs::ApplyStrains() for sounds
+						- Points::UpdateCombustionHighFrequency
+						- Points::UpdateEphemeralParticles (AirBubbles - and others?)
+							- Need to do vortex with forces, though, rather than positions
+							- Make sure no other ephemeral types change positions
+						- Catch any other calls to parent.IsUnderwater/GetDepth() by changing name
+							- Only places allowed to invoke World.IsUnderwater/GetDepth() now:
+								- ShipBuilder for Points building
+								- CachedDepth population at ApplyWorldForces()
+								- Ephemeral particle creation
+								- Interactions
+								- PhysicsHandlers at Ship, as they might be invoked at any moment
+									- But not even sure these really need depth/isUnderwater
+					- Check perf on Dell
+				- TODOOLD - to incorporate above
 				- Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
 					- Loop: 
 						- [WorldBoundaries apply]
@@ -1078,13 +1111,15 @@ Render:
 						- [WorldBoundaries apply]
 						- UpdateForSpringStrains
 							- Because bounce @ WorldBoundaries requires immediately UpdateForSpringStrains to prevent humongously long springs
-							- Does not require depth anyway, and does not change positions
+							- Requires depth for sounds 
+							- TODOHERE: does not change positions, can't it really be moved later?
 						- ApplyWorldForces
 							- Alloc new depth buffer - no need to clean
 							- Per-Particle
 								- Calculate and store depths here
 							- Per-Frontier
 							- Swap depth buffers
+						- [Cached depths are valid starting now]
 						- ... everything else...
 						- [WorldBoundaries apply]
 						- END
@@ -1106,19 +1141,6 @@ Render:
 						- WorldBoundaries [just move this one at bottom, here]
 						- [WorldBoundaries apply]
 						- END
-				- Used by:
-					- ApplyWorldForces:
-						- Per-point
-							- Note: now we check twice (buoyancyl then drag); should also unify per-point visit to have single underwater check applying buoyancy + drag
-						- Per-frontier (water pressure drag, waves)
-					- UpdateWaterIntake (for leaking points only)
-					- Heat dissipation
-					- Breaking materials for pressure
-					- Points::UpdateCombustionHighFrequency
-					- Points::UpdateEphemeralParticles (AirBubbles - and others?)
-						- Need to do vortex with forces, though, rather than positions
-						- Make sure no other ephemeral types change positions
-
 
 	- 2** Try with SpringRelaxation updating only positions **2 (*)
 		- RelaxSprings() updates position directly, no forces involved

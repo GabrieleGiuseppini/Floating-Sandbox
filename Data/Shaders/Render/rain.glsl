@@ -15,7 +15,7 @@ out vec2 uv;
 
 void main()
 {
-    uv = (vec2(1.0, 1.0) + inRain.xy) / 2.0;
+    uv = inRain.xy;
     gl_Position = vec4(inRain.xy, -1.0, 1.0);
 }
 
@@ -36,7 +36,7 @@ uniform vec2 paramViewportSize;
 
 // Based on https://www.shadertoy.com/view/wsKcWw by evilRyu
 
-float hash1(vec2 p)
+float hash(vec2 p)
 {
     p = 50.0 * fract(p * 0.3183099);
     return fract(p.x * p.y * (p.x + p.y));
@@ -47,10 +47,10 @@ float noise(vec2 x)
     vec2 p = floor(x);
     vec2 w = fract(x);
     
-    float a = hash1(p + vec2(0,0));
-    float b = hash1(p + vec2(1,0));
-    float c = hash1(p + vec2(0,1));
-    float d = hash1(p + vec2(1,1));
+    float a = hash(p + vec2(0,0));
+    float b = hash(p + vec2(1,0));
+    float c = hash(p + vec2(0,1));
+    float d = hash(p + vec2(1,1));
     
     return -1.0 + 2.0 * (a + (b-a) * w.x + (c-a) * w.y + (a - b - c + d) * w.x * w.y);
 }
