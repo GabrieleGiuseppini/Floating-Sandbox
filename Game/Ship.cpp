@@ -1240,10 +1240,14 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
 
                 // Move point back to where it was in the previous step,
                 // which is guaranteed to be more towards the outside
-                mPoints.GetPosition(pointIndex) -= pointVelocity * dt;
+                mPoints.SetPosition(
+                    pointIndex,
+                    mPoints.GetPosition(pointIndex) - pointVelocity * dt);
 
                 // Set velocity to resultant collision velocity
-                mPoints.GetVelocity(pointIndex) = normalResponse + tangentialResponse;
+                mPoints.SetVelocity(
+                    pointIndex,
+                    normalResponse + tangentialResponse);
             }
         }
     }
@@ -1265,42 +1269,45 @@ void Ship::TrimForWorldBounds(GameParameters const & gameParameters)
     static constexpr float MaxBounceVelocity = 150.0f; // Magic number
 
     // Visit all points
-    for (auto pointIndex : mPoints)
+    vec2f * const restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
+    vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
+    size_t const count = mPoints.GetBufferElementCount();
+    for (size_t p = 0; p < count; ++p)
     {
-        auto & pos = mPoints.GetPosition(pointIndex);
+        auto const & pos = positionBuffer[p];
 
         if (pos.x < MaxWorldLeft)
         {
             // Simulate bounce, bounded
-            pos.x = std::min(MaxWorldLeft + elasticity * (MaxWorldLeft - pos.x), 0.0f);
+            positionBuffer[p].x = std::min(MaxWorldLeft + elasticity * (MaxWorldLeft - pos.x), 0.0f);
 
             // Bounce bounded
-            mPoints.GetVelocity(pointIndex).x = std::min(-mPoints.GetVelocity(pointIndex).x, MaxBounceVelocity);
+            velocityBuffer[p].x = std::min(-velocityBuffer[p].x, MaxBounceVelocity);
         }
         else if (pos.x > MaxWorldRight)
         {
             // Simulate bounce, bounded
-            pos.x = std::max(MaxWorldRight - elasticity * (pos.x - MaxWorldRight), 0.0f);
+            positionBuffer[p].x = std::max(MaxWorldRight - elasticity * (pos.x - MaxWorldRight), 0.0f);
 
             // Bounce bounded
-            mPoints.GetVelocity(pointIndex).x = std::max(-mPoints.GetVelocity(pointIndex).x, -MaxBounceVelocity);
+            velocityBuffer[p].x = std::max(-velocityBuffer[p].x, -MaxBounceVelocity);
         }
 
         if (pos.y > MaxWorldTop)
         {
             // Simulate bounce, bounded
-            pos.y = std::max(MaxWorldTop - elasticity * (pos.y - MaxWorldTop), 0.0f);
+            positionBuffer[p].y = std::max(MaxWorldTop - elasticity * (pos.y - MaxWorldTop), 0.0f);
 
             // Bounce bounded
-            mPoints.GetVelocity(pointIndex).y = std::max(-mPoints.GetVelocity(pointIndex).y, -MaxBounceVelocity);
+            velocityBuffer[p].y = std::max(-velocityBuffer[p].y, -MaxBounceVelocity);
         }
         else if (pos.y < MaxWorldBottom)
         {
             // Simulate bounce, bounded
-            pos.y = std::min(MaxWorldBottom + elasticity * (MaxWorldBottom - pos.y), 0.0f);
+            positionBuffer[p].y = std::min(MaxWorldBottom + elasticity * (MaxWorldBottom - pos.y), 0.0f);
 
             // Bounce bounded
-            mPoints.GetVelocity(pointIndex).y = std::min(-mPoints.GetVelocity(pointIndex).y, MaxBounceVelocity);
+            velocityBuffer[p].y = std::min(-velocityBuffer[p].y, MaxBounceVelocity);
         }
     }
 }

@@ -99,7 +99,9 @@ void Ship::MoveBy(
         {
             if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
             {
-                mPoints.GetPosition(p) += offset;
+                mPoints.SetPosition(
+                    p,
+                    mPoints.GetPosition(p) + offset);
 
                 if (!mPoints.IsPinned(p))
                 {
@@ -161,8 +163,9 @@ void Ship::RotateBy(
             if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
             {
                 vec2f const centeredPos = mPoints.GetPosition(p) - center;
+                vec2f const newPosition = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
 
-                mPoints.GetPosition(p) = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
+                mPoints.SetPosition(p, newPosition);
 
                 if (!mPoints.IsPinned(p))
                 {
