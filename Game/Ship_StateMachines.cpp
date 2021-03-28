@@ -87,10 +87,9 @@ bool Ship::UpdateExplosionStateMachine(
                 // not second power as one would expect though)
                 //
 
-                mPoints.GetNonSpringForce(pointIndex) +=
-                    pointRadius.normalise(pointRadiusLength)
-                    / std::max(pointRadiusLength, 1.0f)
-                    * explosionStateMachine.BlastForce;
+                mPoints.AddNonSpringForce(
+                    pointIndex,
+                    pointRadius.normalise(pointRadiusLength) / std::max(pointRadiusLength, 1.0f) * explosionStateMachine.BlastForce);
 
                 //
                 // Inject heat at this point

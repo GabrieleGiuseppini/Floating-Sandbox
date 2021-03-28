@@ -1734,7 +1734,7 @@ void ElectricalElements::UpdateSinks(
                 * gameParameters.EngineThrustAdjustment;
 
             // Apply force to point
-            points.GetNonSpringForce(enginePointIndex) += thrustForce;
+            points.AddNonSpringForce(enginePointIndex, thrustForce);
 
             //
             // Publish

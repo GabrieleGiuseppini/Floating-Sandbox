@@ -24,7 +24,9 @@ void Ship::ApplyDrawForceField(
         vec2f displacement = (centerPosition - mPoints.GetPosition(pointIndex));
         float forceMagnitude = strength / sqrtf(0.1f + displacement.length());
 
-        mPoints.GetNonSpringForce(pointIndex) += displacement.normalise() * forceMagnitude;
+        mPoints.AddNonSpringForce(
+            pointIndex,
+            displacement.normalise() * forceMagnitude);
     }
 }
 
@@ -42,7 +44,9 @@ void Ship::ApplySwirlForceField(
         float const displacementLength = displacement.length();
         float forceMagnitude = strength / sqrtf(0.1f + displacementLength);
 
-        mPoints.GetNonSpringForce(pointIndex) += vec2f(-displacement.y, displacement.x) * forceMagnitude;
+        mPoints.AddNonSpringForce(
+            pointIndex,
+            vec2f(-displacement.y, displacement.x) * forceMagnitude);
     }
 }
 
@@ -63,10 +67,9 @@ void Ship::ApplyRadialSpaceWarpForceField(
 
             float const forceStrength = strength * (1.0f - absolutePointDistanceFromRadius / radiusThickness);
 
-            mPoints.GetNonSpringForce(pointIndex) +=
-                pointRadius.normalise()
-                * forceStrength
-                * forceDirection;
+            mPoints.AddNonSpringForce(
+                pointIndex,
+                pointRadius.normalise() * forceStrength * forceDirection);
         }
     }
 }
@@ -85,19 +88,21 @@ void Ship::ApplyImplosionForceField(
         float const massNormalization = mPoints.GetMass(pointIndex) / 50.0f;
 
         // Angular (constant)
-        mPoints.GetNonSpringForce(pointIndex) +=
+        mPoints.AddNonSpringForce(
+            pointIndex,
             vec2f(-normalizedDisplacement.y, normalizedDisplacement.x)
-            * strength
-            * massNormalization
-            / 10.0f; // Magic number
+                * strength
+                * massNormalization
+                / 10.0f); // Magic number
 
         // Radial (stronger when closer)
-        mPoints.GetNonSpringForce(pointIndex) +=
+        mPoints.AddNonSpringForce(
+            pointIndex,
             normalizedDisplacement
-            * strength
-            / (0.2f + sqrt(displacementLength))
-            * massNormalization
-            * 10.0f; // Magic number
+                * strength
+                / (0.2f + sqrt(displacementLength))
+                * massNormalization
+                * 10.0f); // Magic number
     }
 }
 
@@ -114,7 +119,9 @@ void Ship::ApplyRadialExplosionForceField(
         vec2f displacement = (mPoints.GetPosition(pointIndex) - centerPosition);
         float forceMagnitude = strength / sqrtf(0.1f + displacement.length());
 
-        mPoints.GetNonSpringForce(pointIndex) += displacement.normalise() * forceMagnitude;
+        mPoints.AddNonSpringForce(
+            pointIndex,
+            displacement.normalise() * forceMagnitude);
     }
 }
 
