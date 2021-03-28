@@ -1063,12 +1063,30 @@ Render:
 						! GenerateDebris uses source particle's position
 						! GenerateSparklesForCut uses midpoint of spring
 						! GenerateSparklesForLightning uses source particle's position
+					+ Test ApplyWorldForces
+						+ Wind
+						+ Friction drag
+					- Commit
+					+ Take initial perf with analyzer
+						- GameController::RunGameIteration: 86.52
+							- Ship::Update: 83.82
+								- Springs: 56.59
+								- CollisionsWithSeafloor: 9.43
+								- UpdateWaterVelocities: 8.27
+								- Integrate: 3.74
+								- PropagateHeat: 2.17
+								- ApplyWorldForces: 1.63
+					- Try CollisionsWithSeafloor optimizations:
+						- 1: Do once at the end, taking snapshot of velocities before loop
+						- 2: If doesn't work: do once every N steps, taking snapshot of velocities before N steps
+							- 3: If works: instead of copying velocity vector each time, swap vectors used at spring and integration steps
 					- Do DEBUG work above to catch late positions changes
-						- Also make sure to catch modifiers of position buffer
-						- Test and verify that after WorldBoundaries there's no position changes
+						- Also make sure to flag positions as dirty at modifiers of position buffer
+					- Test and verify that after WorldBoundaries there's no position changes
 					- Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
 						- See below
-					- Points::CachedDepth
+					- Test and verify that after WorldBoundaries there's no position changes
+					- New Points::CachedDepth buffer
 						- Initialization: via value provided by Add() caller (ShipBuilder) with depth
 							- But Points already has mParentWorld at Add(.) time, and so does ShipBuilder at that call
 						- Getter

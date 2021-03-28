@@ -764,15 +764,18 @@ void Ship::ApplyWorldForces(
         GameParameters::WaterFrictionDragCoefficient
         * gameParameters.WaterFrictionDragAdjustment;
 
-    for (auto pointIndex : mPoints)
+    vec2f * const restrict nonSpringForcesBuffer = mPoints.GetNonSpringForceBufferAsVec2();
+    for (auto pointIndex : mPoints.BufferElements())
     {
+        vec2f nonSpringForce = vec2f::zero();
+
         //
         // Apply gravity
         //
 
-        mPoints.AddNonSpringForce(
-            pointIndex,
-            gameParameters.Gravity * mPoints.GetMass(pointIndex)); // Material + Augmentation + Water
+        nonSpringForce +=
+            gameParameters.Gravity
+            * mPoints.GetMass(pointIndex); // Material + Augmentation + Water
 
         //
         // Calculate above/under-water coefficient
@@ -796,11 +799,9 @@ void Ship::ApplyWorldForces(
             + buoyancyCoefficients.Coefficient2 * mPoints.GetTemperature(pointIndex);
 
         // Apply buoyancy
-        mPoints.AddNonSpringForce(
-            pointIndex,
-            vec2f(
-                0.0f,
-                buoyancyPush * Mix(effectiveAirDensity, effectiveWaterDensity, uwCoefficient)));
+        nonSpringForce.y +=
+            buoyancyPush
+            * Mix(effectiveAirDensity, effectiveWaterDensity, uwCoefficient);
 
         //
         // Apply friction drag
@@ -812,18 +813,21 @@ void Ship::ApplyWorldForces(
         // hence we don't care here about capping the force to prevent overcoming accelerations.
         //
 
-        mPoints.AddNonSpringForce(
-            pointIndex,
-            - mPoints.GetVelocity(pointIndex) * Mix(airFrictionDragCoefficient, waterFrictionDragCoefficient, uwCoefficient));
+        nonSpringForce +=
+            - mPoints.GetVelocity(pointIndex)
+            * Mix(airFrictionDragCoefficient, waterFrictionDragCoefficient, uwCoefficient);
 
         //
         // Wind force
         //
 
         // Note: should be based on relative velocity, but we simplify here for performance reasons
-        mPoints.AddNonSpringForce(
-            pointIndex,
-            windForce * mPoints.GetMaterialWindReceptivity(pointIndex) * (1.0f - uwCoefficient));
+        nonSpringForce +=
+            windForce
+            * mPoints.GetMaterialWindReceptivity(pointIndex)
+            * (1.0f - uwCoefficient); // Only above-water
+
+        nonSpringForcesBuffer[pointIndex] += nonSpringForce;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////
