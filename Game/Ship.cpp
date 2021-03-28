@@ -770,9 +770,9 @@ void Ship::ApplyWorldForces(
         // Apply gravity
         //
 
-        mPoints.GetNonSpringForce(pointIndex) +=
-            gameParameters.Gravity
-            * mPoints.GetMass(pointIndex); // Material + Augmentation + Water
+        mPoints.AddNonSpringForce(
+            pointIndex,
+            gameParameters.Gravity * mPoints.GetMass(pointIndex)); // Material + Augmentation + Water
 
         //
         // Calculate above/under-water coefficient
@@ -796,9 +796,11 @@ void Ship::ApplyWorldForces(
             + buoyancyCoefficients.Coefficient2 * mPoints.GetTemperature(pointIndex);
 
         // Apply buoyancy
-        mPoints.GetNonSpringForce(pointIndex).y +=
-            buoyancyPush
-            * Mix(effectiveAirDensity, effectiveWaterDensity, uwCoefficient);
+        mPoints.AddNonSpringForce(
+            pointIndex,
+            vec2f(
+                0.0f,
+                buoyancyPush * Mix(effectiveAirDensity, effectiveWaterDensity, uwCoefficient)));
 
         //
         // Apply friction drag
@@ -810,19 +812,18 @@ void Ship::ApplyWorldForces(
         // hence we don't care here about capping the force to prevent overcoming accelerations.
         //
 
-        mPoints.GetNonSpringForce(pointIndex) -=
-            mPoints.GetVelocity(pointIndex)
-            * Mix(airFrictionDragCoefficient, waterFrictionDragCoefficient, uwCoefficient);
+        mPoints.AddNonSpringForce(
+            pointIndex,
+            - mPoints.GetVelocity(pointIndex) * Mix(airFrictionDragCoefficient, waterFrictionDragCoefficient, uwCoefficient));
 
         //
         // Wind force
         //
 
         // Note: should be based on relative velocity, but we simplify here for performance reasons
-        mPoints.GetNonSpringForce(pointIndex) +=
-            windForce
-            * mPoints.GetMaterialWindReceptivity(pointIndex)
-            * (1.0f - uwCoefficient);
+        mPoints.AddNonSpringForce(
+            pointIndex,
+            windForce * mPoints.GetMaterialWindReceptivity(pointIndex) * (1.0f - uwCoefficient));
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -950,7 +951,9 @@ void Ship::ApplyWorldForces(
             vec2f const dragForce = normal * std::min(dragForceMagnitude, maxDragForceMagnitude);
 
             // Apply drag force
-            mPoints.GetNonSpringForce(pointIndex) -= dragForce;
+            mPoints.AddNonSpringForce(
+                pointIndex,
+                -dragForce);
 
             if constexpr (DoDisplaceWater)
             {

@@ -981,11 +981,6 @@ public:
         return mNonSpringForceBuffer[pointElementIndex];
     }
 
-    vec2f & GetNonSpringForce(ElementIndex pointElementIndex) noexcept
-    {
-        return mNonSpringForceBuffer[pointElementIndex];
-    }
-
     float * GetNonSpringForceBufferAsFloat()
     {
         return reinterpret_cast<float *>(mNonSpringForceBuffer.data());
@@ -999,6 +994,13 @@ public:
     void CopyNonSpringForceBufferToForceRenderBuffer()
     {
         mForceRenderBuffer.copy_from(mNonSpringForceBuffer);
+    }
+
+    void AddNonSpringForce(
+        ElementIndex pointElementIndex,
+        vec2f const & force) noexcept
+    {
+        mNonSpringForceBuffer[pointElementIndex] += force;
     }
 
     void ResetNonSpringForces()

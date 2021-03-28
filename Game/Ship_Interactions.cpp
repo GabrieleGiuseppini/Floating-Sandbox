@@ -287,9 +287,9 @@ void Ship::Pull(
     float const displacementLength = displacement.length();
     vec2f const dir = displacement.normalise(displacementLength);
 
-    mPoints.GetNonSpringForce(pointElementIndex) +=
-        dir
-        * (displacementLength * forceStiffness);
+    mPoints.AddNonSpringForce(
+        pointElementIndex,
+        dir * (displacementLength * forceStiffness));
 
     //
     // Zero velocity: this it a bit unpolite, but it prevents the "classic"
@@ -634,10 +634,9 @@ void Ship::ApplyBlastAt(
             // not second power as one would expect though)
             //
 
-            mPoints.GetNonSpringForce(pointIndex) +=
-                pointRadius.normalise(pointRadiusLength)
-                / std::max(pointRadiusLength, 1.0f)
-                * blastForceMagnitude;
+            mPoints.AddNonSpringForce(
+                pointIndex,
+                pointRadius.normalise(pointRadiusLength) / std::max(pointRadiusLength, 1.0f) * blastForceMagnitude);
         }
     }
 }
