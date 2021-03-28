@@ -691,7 +691,9 @@ bool Ship::InjectBubblesAt(
     if (targetPos.y < mParentWorld.GetOceanSurfaceHeightAt(targetPos.x))
     {
         GenerateAirBubbles(
-            targetPos,
+            targetPos.clamp(
+                -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth,
+                -GameParameters::HalfMaxWorldHeight, GameParameters::HalfMaxWorldHeight),
             GameParameters::Temperature0,
             currentSimulationTime,
             mMaxMaxPlaneId,
@@ -731,10 +733,9 @@ bool Ship::FloodAt(
             float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
             if (squareDistance < searchSquareRadius)
             {
-                if (quantityOfWater >= 0.0f)
-                    mPoints.GetWater(pointIndex) += quantityOfWater;
-                else
-                    mPoints.GetWater(pointIndex) -= std::min(-quantityOfWater, mPoints.GetWater(pointIndex));
+                mPoints.SetWater(
+                    pointIndex,
+                    std::max(mPoints.GetWater(pointIndex) + quantityOfWater, 0.0f));
 
                 anyHasFlooded = true;
             }

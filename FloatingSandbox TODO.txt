@@ -1039,11 +1039,11 @@ Render:
 		- Candidates:
 			- Spring length, spring dir
 				- Valid as long as points don't move
-					- In DEBUG, mark mPoints.mArePositionsDirty on each position change, and expose mPoints.Diagnostic_ClearDirtyPositions() which is
-					  invoked when Springs' cached lengths are re-calculated
+					- In DEBUG, mark mPoints.mDiagnostic_ArePositionsDirty on each position change, and expose mPoints.Diagnostic_ClearDirtyPositions() which is
+					  invoked after Springs' cached lengths are re-calculated
 						- Force position changes to go through setters
-							- Except for buffered ones, follow these manually
-							- Verify assembly for SetPosition(GetPosition.x, GetPosition.y + foo)
+							- Except for buffered ones, follow these manually and invoke mPoints.Diagnostic_MarkPositionsAsDirty()
+							+ Verify assembly for SetPosition(GetPosition.x, GetPosition.y + foo)
 				- Used by: water update, heat update, Springs::UpdateStrains
 					- Also use instead of factory rest lengths at:
 						- Water
@@ -1059,7 +1059,10 @@ Render:
 						+ Test:
 							+ CollisionWithOceanFloor
 							+ WorldBoundaries
-					- Interactions: clamp positions to world boundaries after each position change
+					+ Interactions: clamp positions to world boundaries after each position change
+						! GenerateDebris uses source particle's position
+						! GenerateSparklesForCut uses midpoint of spring
+						! GenerateSparklesForLightning uses source particle's position
 					- Do DEBUG work above to catch late positions changes
 						- Also make sure to catch modifiers of position buffer
 						- Test and verify that after WorldBoundaries there's no position changes

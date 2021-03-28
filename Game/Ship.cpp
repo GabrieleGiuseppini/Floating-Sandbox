@@ -1450,7 +1450,9 @@ void Ship::UpdateWaterInflow(
             }
 
             // Adjust water
-            mPoints.GetWater(pointIndex) += newWater;
+            mPoints.SetWater(
+                pointIndex,
+                mPoints.GetWater(pointIndex) + newWater);
 
             // Check if it's time to produce air bubbles
             mPoints.GetCumulatedIntakenWater(pointIndex) += newWater;

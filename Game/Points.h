@@ -1167,11 +1167,6 @@ public:
         return mWaterBuffer[pointElementIndex];
     }
 
-    float & GetWater(ElementIndex pointElementIndex)
-    {
-        return mWaterBuffer[pointElementIndex];
-    }
-
     void SetWater(
         ElementIndex pointElementIndex,
         float value)
