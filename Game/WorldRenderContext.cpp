@@ -1261,9 +1261,11 @@ void WorldRenderContext::RenderPrepareRain(RenderParameters const & /*renderPara
 
         if (mIsRainDensityDirty)
         {
+            float const actualRainDensity = std::sqrt(mRainDensity); // Focus
+
             // Set parameter
             mShaderManager.SetProgramParameter<ProgramType::Rain, ProgramParameterType::RainDensity>(
-                mRainDensity);
+                actualRainDensity);
 
             mIsRainDensityDirty = false; // Uploaded
         }
