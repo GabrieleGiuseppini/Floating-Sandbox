@@ -415,6 +415,10 @@ Render:
 				+ Old: 30fps/12-13msRND, Storm: 18fps/35msRND
 				+ New: Storm: 18/35 @ 2:20
 			+ Changelist
+		+ Interim localization (help + po)
+			+ IT
+			+ ES
+			+ RU
 
 
 		= MAC:
@@ -479,13 +483,8 @@ Render:
 					
 		- bishobe64 as tester
 			- Invite
-
-		= Interim localization (help + po)
-			+ IT
-			= ES
-			= RU
 		
-		- Cached quantities (*)
+		= Cached quantities (*)
 
 		- Fix "cycle of sounds" issue with sounds
 			- Repro first and detect chain of noise, in these two situations:
@@ -1049,14 +1048,12 @@ Render:
 					- Also use instead of factory rest lengths at:
 						- Water
 						- Heat
-			- Underwater depth: Points::Depth
+			= Underwater depth: Points::Depth
 				! Spec:
 					! Valid as long as points don't move after caching, and as long as cached depth is not used between interactions and moment when it's calculated again
 					! Also valid as long as points are not created after depths are taken
 						! So also creation of ephemeral particles needs to be tackled
-
-
-				- Plan:
+				= Plan:
 					- Interactions: clamp positions to world boundaries
 					- Do DEBUG work above to catch late positions changes
 						- Test and verify that after WorldBoundaries there's no position changes
