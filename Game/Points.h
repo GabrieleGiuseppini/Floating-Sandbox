@@ -896,11 +896,6 @@ public:
         return mPositionBuffer[pointElementIndex];
     }
 
-    vec2f & GetPosition(ElementIndex pointElementIndex) noexcept
-    {
-        return mPositionBuffer[pointElementIndex];
-    }
-
     vec2f * GetPositionBufferAsVec2()
     {
         return mPositionBuffer.data();
@@ -932,11 +927,6 @@ public:
     }
 
     vec2f const & GetVelocity(ElementIndex pointElementIndex) const noexcept
-    {
-        return mVelocityBuffer[pointElementIndex];
-    }
-
-    vec2f & GetVelocity(ElementIndex pointElementIndex) noexcept
     {
         return mVelocityBuffer[pointElementIndex];
     }

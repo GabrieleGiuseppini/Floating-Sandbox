@@ -1054,8 +1054,14 @@ Render:
 					! Also valid as long as points are not created after depths are taken
 						! So also creation of ephemeral particles needs to be tackled
 				= Plan:
-					- Interactions: clamp positions to world boundaries
+					+ Points::GetPosition() -> &: convert to Set
+						+ Check assembly before and after
+						+ Test:
+							+ CollisionWithOceanFloor
+							+ WorldBoundaries
+					- Interactions: clamp positions to world boundaries after each position change
 					- Do DEBUG work above to catch late positions changes
+						- Also make sure to catch modifiers of position buffer
 						- Test and verify that after WorldBoundaries there's no position changes
 					- Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
 						- See below
