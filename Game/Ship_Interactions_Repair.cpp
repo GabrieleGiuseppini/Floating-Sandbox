@@ -255,10 +255,9 @@ void Ship::StraightenOneSpringChains(ElementIndex pointIndex)
 
                 mPoints.SetPosition(
                     otherEndpointIndex,
-                    targetOtherEndpointPosition.clamp(-GameParameters::HalfMaxWorldWidth,
-                        GameParameters::HalfMaxWorldWidth,
-                        -GameParameters::HalfMaxWorldHeight,
-                        GameParameters::HalfMaxWorldHeight));
+                    targetOtherEndpointPosition.clamp(
+                        -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth,
+                        -GameParameters::HalfMaxWorldHeight, GameParameters::HalfMaxWorldHeight));
             }
         }
     }
@@ -320,10 +319,9 @@ void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
             // Set position
             mPoints.SetPosition(
                 pointIndex,
-                newPPosition.clamp(-GameParameters::HalfMaxWorldWidth,
-                    GameParameters::HalfMaxWorldWidth,
-                    -GameParameters::HalfMaxWorldHeight,
-                    GameParameters::HalfMaxWorldHeight));
+                newPPosition.clamp(
+                    -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth,
+                    -GameParameters::HalfMaxWorldHeight, GameParameters::HalfMaxWorldHeight));
         }
     }
 }
@@ -753,10 +751,9 @@ bool Ship::RepairFromAttractor(
                     // Move point, clamping to world boundaries
                     mPoints.SetPosition(attracteePointIndex,
                         (mPoints.GetPosition(attracteePointIndex) + movementDir * movementMagnitude)
-                        .clamp(-GameParameters::HalfMaxWorldWidth,
-                            GameParameters::HalfMaxWorldWidth,
-                            -GameParameters::HalfMaxWorldHeight,
-                            GameParameters::HalfMaxWorldHeight));
+                        .clamp(
+                            -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth,
+                            -GameParameters::HalfMaxWorldHeight, GameParameters::HalfMaxWorldHeight));
 
                     // Update displacement with move
                     displacementMagnitude -= movementMagnitude;
@@ -854,7 +851,9 @@ bool Ship::RepairFromAttractor(
 
                 if (hasAttracteeBeenMoved)
                 {
-                    mPoints.GetWater(attracteePointIndex) /= 2.0f;
+                    mPoints.SetWater(
+                        attracteePointIndex,
+                        mPoints.GetWater(attracteePointIndex) / 2.0f);
                 }
             }
         }
