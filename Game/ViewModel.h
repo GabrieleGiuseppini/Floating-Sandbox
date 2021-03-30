@@ -254,7 +254,10 @@ public:
                 GameParameters::HalfMaxWorldHeight));
 
         LogMessage("TODOTEST: ScreenToWorld(", screenCoordinates.x, ",", screenCoordinates.y, "): ", worldCoordinates.toString(), " (LogToPhys:", mLogicalToPhysicalPixelFactor, " CanvasPhys:(",
-            mCanvasPhysicalPixelSize.width, ",", mCanvasPhysicalPixelSize.height, ") VisibleWorld:(", mVisibleWorld.Width, ",", mVisibleWorld.Height, ") Zoom:", mZoom, " Cam: ", mCam.toString());
+            mCanvasPhysicalPixelSize.width, ",", mCanvasPhysicalPixelSize.height, ") VisibleWorld:(", mVisibleWorld.Width, ",", mVisibleWorld.Height, ") ",
+            "WorldToNdc(left, top):", WorldToNdc(vec2f(-mVisibleWorld.Width/2.0f, mVisibleWorld.Height/2.0f)).toString(),
+            " WorldToNdc(right, bottom):", WorldToNdc(vec2f(mVisibleWorld.Width / 2.0f, -mVisibleWorld.Height / 2.0f)).toString(),
+            "Zoom:", mZoom, " Cam: ", mCam.toString());
 
         return worldCoordinates;
     }
