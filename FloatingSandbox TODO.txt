@@ -1066,7 +1066,7 @@ Render:
 					+ Test ApplyWorldForces
 						+ Wind
 						+ Friction drag
-					- Commit
+					+ Commit
 					+ Take initial perf with analyzer
 						- GameController::RunGameIteration: 86.52
 							- Ship::Update: 83.82
@@ -1077,9 +1077,9 @@ Render:
 								- PropagateHeat: 2.17
 								- ApplyWorldForces: 1.63
 					- Try CollisionsWithSeafloor optimizations:
-						- 1: Do once at the end, taking snapshot of velocities before loop
-						- 2: If doesn't work: do once every N steps, taking snapshot of velocities before N steps
-							- 3: If works: instead of copying velocity vector each time, swap vectors used at spring and integration steps
+						- 1: Do once at the end, taking snapshot of positions ("pre-impact positions") before loop
+						- 2: If doesn't work: do once every N steps, taking snapshot of positions before N steps
+							- 3: If works: instead of copying position vector each time, swap vectors used at spring and integration steps
 					- Do DEBUG work above to catch late positions changes
 						- Also make sure to flag positions as dirty at modifiers of position buffer
 					- Test and verify that after WorldBoundaries there's no position changes
