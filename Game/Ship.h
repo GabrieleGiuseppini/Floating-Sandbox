@@ -279,6 +279,11 @@ private:
 
     void HandleCollisionsWithSeaFloor(GameParameters const & gameParameters);
 
+    void HandleCollisionsWithSeaFloor(
+        Buffer<vec2f> const & preImpactPositions,
+        float dt,
+        GameParameters const & gameParameters);
+
     void TrimForWorldBounds(GameParameters const & gameParameters);
 
     // Water
