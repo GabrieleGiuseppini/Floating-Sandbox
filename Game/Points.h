@@ -623,6 +623,9 @@ public:
         , mStoppedBurningPoints()
         , mFreeEphemeralParticleSearchStartIndex(mAlignedShipPointCount)
         , mAreEphemeralPointsDirtyForRendering(false)
+#ifdef _DEBUG
+        , mDiagnostic_ArePositionsDirty(false)
+#endif
     {
         CalculateCombustionDecayParameters(mCurrentCombustionSpeedAdjustment, GameParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>);
     }
@@ -919,6 +922,10 @@ public:
         vec2f const & position) noexcept
     {
         mPositionBuffer[pointElementIndex] = position;
+
+#ifdef _DEBUG
+        mDiagnostic_ArePositionsDirty = true;
+#endif
     }
 
     vec2f const & GetFactoryPosition(ElementIndex pointElementIndex) const noexcept
@@ -1748,6 +1755,29 @@ public:
         return mVec2fBufferAllocator.Allocate();
     }
 
+    //
+    // Diagnostics
+    //
+
+#ifdef _DEBUG
+
+    bool Diagnostic_ArePositionsDirty() const
+    {
+        return mDiagnostic_ArePositionsDirty;
+    }
+
+    void Diagnostic_ClearDirtyPositions()
+    {
+        mDiagnostic_ArePositionsDirty = false;
+    }
+
+    void Diagnostic_MarkPositionsAsDirty()
+    {
+        mDiagnostic_ArePositionsDirty = true;
+    }
+
+#endif
+
 private:
 
     void CalculateCombustionDecayParameters(
@@ -1978,7 +2008,6 @@ private:
     Buffer<vec2f> mTextureCoordinatesBuffer;
     bool mutable mIsTextureCoordinatesBufferDirty; // Whether or not is dirty since last render upload
 
-
     //////////////////////////////////////////////////////////
     // Container
     //////////////////////////////////////////////////////////
@@ -2041,6 +2070,10 @@ private:
     float mCombustionDecayAlphaFunctionA;
     float mCombustionDecayAlphaFunctionB;
     float mCombustionDecayAlphaFunctionC;
+
+#ifdef _DEBUG
+    bool mDiagnostic_ArePositionsDirty;
+#endif
 };
 
 }

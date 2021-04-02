@@ -295,6 +295,12 @@ void Ship::Update(
     // - Outputs: Position, Velocity
     TrimForWorldBounds(gameParameters);
 
+    // We're done with changing positions for the rest of the Update() loop
+#ifdef _DEBUG
+    mPoints.Diagnostic_ClearDirtyPositions();
+#endif
+
+
     /////////////////////////////////////////////////////////////////
     // Update gadgets
     /////////////////////////////////////////////////////////////////
@@ -508,8 +514,16 @@ void Ship::Update(
 
     mPoints.UpdateHighlights(currentWallClockTimeFloat);
 
+    ///////////////////////////////////////////////////////////////////
+    // Diagnostics
+    ///////////////////////////////////////////////////////////////////
+
 #ifdef _DEBUG
+
+    Verify(!mPoints.Diagnostic_ArePositionsDirty());
+
     VerifyInvariants();
+
 #endif
 }
 
@@ -1200,6 +1214,10 @@ void Ship::IntegrateAndResetSpringForces(GameParameters const & gameParameters)
         // Zero out spring force now that we've integrated it
         springForceBuffer[i] = 0.0f;
     }
+
+#ifdef _DEBUG
+    mPoints.Diagnostic_MarkPositionsAsDirty();
+#endif
 }
 
 void Ship::HandleCollisionsWithSeaFloor(
@@ -1329,6 +1347,10 @@ void Ship::TrimForWorldBounds(GameParameters const & gameParameters)
             velocityBuffer[p].y = std::min(-velocityBuffer[p].y, MaxBounceVelocity);
         }
     }
+
+#ifdef _DEBUG
+    mPoints.Diagnostic_MarkPositionsAsDirty();
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
