@@ -41,9 +41,6 @@ void main()
 {
     float d = distance(vertexWorldCoords, vertexWorldCenterPosition) / vertexWorldRadius;
 
-    if (d > 1.0f)
-        discard;
-    
     #define HaloWidth .012
 
     float halo = 
