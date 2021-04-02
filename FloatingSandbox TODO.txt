@@ -1027,7 +1027,7 @@ Render:
 
 	- See if additional springs (e.g. between i and i+2) help
 
-	- Cached quantities (*)
+	= Cached quantities (*)
 		! Ship::Update: cache quantities that are currently re-calculated multiple times
 		! Identify streak of calculations that need a quantity more than once, and during which the quantity never changes
 			- e.g. spring lengths between water update and heat update
@@ -1036,7 +1036,7 @@ Render:
 			- Alternatively, use lambda
 				- Verify with assembly that there's no overhead with empty lambda
 			- Alternatively use Algorithms::CalculateSpringDirAndReciprocalLengths
-		- Candidates:
+		= Candidates:
 			- Spring length, spring dir
 				- Valid as long as points don't move
 					- In DEBUG, mark mPoints.mDiagnostic_ArePositionsDirty on each position change, and expose mPoints.Diagnostic_ClearDirtyPositions() which is
@@ -1084,19 +1084,15 @@ Render:
 							+ N=2
 								x Try N=4 again with fixed collision dynamics
 								+ See ocean floor friction
-						- 3: Try sparsely for most of loop, then more densely at end
-							- e.g.: After half, then quarter, ..., then two
-						- 4: Try using velocity instead of previous position vector
-						- Cleanup: 
-							- Instead of copying position vector each time, swap vectors used at spring and integration steps
-								- Need two "integrate" functions?
-							- See new minima and maxima for both friction and elasticity
-							- Optimize
-							- Cleanup
-						- Cleanup TODOs and useless functions
+						+ 3: Try using velocity instead of previous position vector
+						X 4: Try sparsely for most of loop, then more densely at end
+						+ Cleanup:
+							+ See new minima and maxima for both friction and elasticity
+							+ Cleanup TODOs and useless functions
+						- Try soft interpolation
 					- Do DEBUG work above to catch late positions changes
 						- Also make sure to flag positions as dirty at modifiers of position buffer
-					- Test and verify that after WorldBoundaries there's no position changes
+						- Test and verify that after WorldBoundaries there's no position changes
 					- Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
 						- See below
 					- Test and verify that after WorldBoundaries there's no position changes

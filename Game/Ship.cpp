@@ -237,23 +237,19 @@ void Ship::Update(
         ApplyWorldForces<false>(stormParameters, gameParameters, aabbSet);
 
     //
-    // Run spring relaxation iterations
+    // Run spring relaxation iterations, together with integration
+    // and ocean floor collision handling
     //
 
-    int constexpr SeaFloorCollisionCheckPeriod = 2;
-    std::shared_ptr<Buffer<vec2f>> preSpringPositionBuffer;
-
     int const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<int>();
-    assert(0 == (numMechanicalDynamicsIterations % SeaFloorCollisionCheckPeriod));
+
+    // We run ocean floor collision handling every so often
+    int constexpr SeaFloorCollisionPeriod = 2;
+    float const seaFloorCollisionDt = gameParameters.MechanicalSimulationStepTimeDuration<float>() * static_cast<float>(SeaFloorCollisionPeriod);
+    assert(0 == (numMechanicalDynamicsIterations % SeaFloorCollisionPeriod));
 
     for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
     {
-        if ((iter % SeaFloorCollisionCheckPeriod) == 0)
-        {
-            // Take positions before spring relaxation
-            preSpringPositionBuffer = mPoints.MakePositionBufferCopy();
-        }
-
         // - SpringForces = 0
 
         // Apply spring forces
@@ -267,14 +263,12 @@ void Ship::Update(
 
         // - SpringForces = 0
 
-        if ((iter % SeaFloorCollisionCheckPeriod) == SeaFloorCollisionCheckPeriod - 1)
+        if ((iter % SeaFloorCollisionPeriod) == SeaFloorCollisionPeriod - 1)
         {
             // Handle collisions with sea floor
             //  - Changes position and velocity
-            assert(!!preSpringPositionBuffer);
             HandleCollisionsWithSeaFloor(
-                *preSpringPositionBuffer,
-                gameParameters.MechanicalSimulationStepTimeDuration<float>() * static_cast<float>(SeaFloorCollisionCheckPeriod), // TODOHERE
+                seaFloorCollisionDt,
                 gameParameters);
         }
     }
@@ -1208,10 +1202,10 @@ void Ship::IntegrateAndResetSpringForces(GameParameters const & gameParameters)
     }
 }
 
-void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
+void Ship::HandleCollisionsWithSeaFloor(
+    float dt,
+    GameParameters const & gameParameters)
 {
-    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
-
     float const elasticityFactor = -gameParameters.OceanFloorElasticity;
     float const inverseFriction = 1.0f - gameParameters.OceanFloorFriction;
 
@@ -1268,79 +1262,6 @@ void Ship::HandleCollisionsWithSeaFloor(GameParameters const & gameParameters)
                 mPoints.SetPosition(
                     pointIndex,
                     mPoints.GetPosition(pointIndex) - pointVelocity * dt);
-
-                // Set velocity to resultant collision velocity
-                mPoints.SetVelocity(
-                    pointIndex,
-                    normalResponse + tangentialResponse);
-            }
-        }
-    }
-}
-
-void Ship::HandleCollisionsWithSeaFloor(
-    Buffer<vec2f> const & preImpactPositions,
-    float dt,
-    GameParameters const & gameParameters)
-{
-    float const elasticityFactor = -gameParameters.OceanFloorElasticity;
-    float const inverseFriction = 1.0f - gameParameters.OceanFloorFriction;
-
-    for (auto pointIndex : mPoints)
-    {
-        auto const & position = mPoints.GetPosition(pointIndex);
-
-        // Check if point is below the sea floor
-        //
-        // At this moment the point might be outside of world boundaries,
-        // so better clamp its x before sampling ocean floor height
-        float const clampedX = Clamp(position.x, -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth);
-        if (mParentWorld.IsUnderOceanFloor(clampedX, position.y))
-        {
-            // Collision!
-
-            //
-            // Calculate post-bounce velocity
-            //
-
-            vec2f const pointVelocity =
-                (mPoints.GetPosition(pointIndex) - preImpactPositions[pointIndex])
-                / dt;
-
-            // Calculate sea floor anti-normal
-            // (positive points down)
-            vec2f const seaFloorAntiNormal = -mParentWorld.GetOceanFloorNormalAt(clampedX);
-
-            // Calculate the component of the point's velocity along the anti-normal,
-            // i.e. towards the interior of the floor...
-            float const pointVelocityAlongAntiNormal = pointVelocity.dot(seaFloorAntiNormal);
-
-            // ...if negative, it's already pointing outside the floor, hence we leave it as-is
-            if (pointVelocityAlongAntiNormal > 0.0f)
-            {
-                // Decompose point velocity into normal and tangential
-                vec2f const normalVelocity = seaFloorAntiNormal * pointVelocityAlongAntiNormal;
-                vec2f const tangentialVelocity = pointVelocity - normalVelocity;
-
-                // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
-                vec2f const normalResponse =
-                    normalVelocity
-                    * elasticityFactor; // Already negative
-
-                // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
-                vec2f const tangentialResponse =
-                    tangentialVelocity
-                    * inverseFriction;
-
-                //
-                // Impart final position and velocity
-                //
-
-                // Move point back to where it was in the previous step,
-                // which is guaranteed to be more towards the outside
-                mPoints.SetPosition(
-                    pointIndex,
-                    preImpactPositions[pointIndex]);
 
                 // Set velocity to resultant collision velocity
                 mPoints.SetVelocity(
