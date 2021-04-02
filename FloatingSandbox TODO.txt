@@ -1090,9 +1090,9 @@ Render:
 							+ See new minima and maxima for both friction and elasticity
 							+ Cleanup TODOs and useless functions
 						X Try soft interpolation
-					= Do DEBUG work above to catch late positions changes
+					+ Do DEBUG work above to catch late positions changes
 						+ Also make sure to flag positions as dirty at modifiers of position buffer
-						= Test and verify that after WorldBoundaries there's no position changes
+						+ Test and verify that after WorldBoundaries there's no position changes
 					- Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
 						- See below
 					- Test and verify that after WorldBoundaries there's no position changes
