@@ -277,10 +277,7 @@ private:
 
     void IntegrateAndResetSpringForces(GameParameters const & gameParameters);
 
-    void HandleCollisionsWithSeaFloor(GameParameters const & gameParameters);
-
     void HandleCollisionsWithSeaFloor(
-        Buffer<vec2f> const & preImpactPositions,
         float dt,
         GameParameters const & gameParameters);
 
