@@ -420,10 +420,10 @@ struct GameParameters
 
     float OceanFloorElasticity;
     static float constexpr MinOceanFloorElasticity = 0.0f;
-    static float constexpr MaxOceanFloorElasticity = 0.95f;
+    static float constexpr MaxOceanFloorElasticity = 1.0f;
 
     float OceanFloorFriction;
-    static float constexpr MinOceanFloorFriction = 0.05f;
+    static float constexpr MinOceanFloorFriction = 0.05f; // Keeps some sanity at lower end
     static float constexpr MaxOceanFloorFriction = 1.0f;
 
     unsigned int NumberOfStars;

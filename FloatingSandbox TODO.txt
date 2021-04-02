@@ -1076,10 +1076,23 @@ Render:
 								- Integrate: 3.74
 								- PropagateHeat: 2.17
 								- ApplyWorldForces: 1.63
-					- Try CollisionsWithSeafloor optimizations:
-						- 1: Do once at the end, taking snapshot of positions ("pre-impact positions") before loop
-						- 2: If doesn't work: do once every N steps, taking snapshot of positions before N steps
-							- 3: If works: instead of copying position vector each time, swap vectors used at spring and integration steps
+					= Try CollisionsWithSeafloor optimizations:
+						X 1: Do once at the end, taking snapshot of positions ("pre-impact positions") before loop
+							X Springs' displacement is too high to survive any strain check
+						= 2: If doesn't work: do once every N steps, taking snapshot of positions before N steps
+							+ N=4: still too much
+							= N=2
+								x Try N=4 again with fixed collision dynamics
+								= See ocean floor friction
+									+ See new minima and maxima for both friction and elasticity
+								- Optimize and commit
+						- 3: Try sparsely for most of loop, then more densely at end
+							- e.g.: After half, then quarter, ..., then two in a row
+						- 4: Try using velocity instead of previous position vector
+						- Cleanup: 
+							- Instead of copying position vector each time, swap vectors used at spring and integration steps
+								- Need two "integrate" functions?
+						- Cleanup TODOs and useless functions
 					- Do DEBUG work above to catch late positions changes
 						- Also make sure to flag positions as dirty at modifiers of position buffer
 					- Test and verify that after WorldBoundaries there's no position changes
