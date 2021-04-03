@@ -620,7 +620,7 @@ void RenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParame
 
     // TODOTEST
     LogMessage("TODOTEST: RenderContext::ApplyCanvasSizeChanges(): CanvasPhysicalPixelSize:(",
-        view.GetCanvasPhysicalPixelSize().width, ",", view.GetCanvasPhysicalPixelSize().height);
+        view.GetCanvasPhysicalPixelSize().width, ",", view.GetCanvasPhysicalPixelSize().height, ")");
 }
 
 void RenderContext::ApplyShipStructureRenderModeChanges(RenderParameters const & renderParameters)

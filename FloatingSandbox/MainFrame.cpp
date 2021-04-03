@@ -158,6 +158,7 @@ MainFrame::MainFrame(
 
     mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
     mMainPanel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnMainPanelKeyDown, this); // Just for arrow keys
+
     mMainPanelSizer = new wxBoxSizer(wxVERTICAL);
 
 
@@ -1358,6 +1359,17 @@ void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
             LogicalPixelSize(
                 event.GetSize().GetX(),
                 event.GetSize().GetY()));
+
+        LogMessage("OnMainGLCanvasResize: Now rebinding context");
+
+        // TODOTEST
+        assert(!!mMainGLCanvas);
+        assert(!!mMainGLCanvasContext);
+        mGameController->RebindOpenGLContext(
+            [this]()
+            {
+                mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
+            });
     }
 
     event.Skip();
