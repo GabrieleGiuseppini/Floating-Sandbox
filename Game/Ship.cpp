@@ -159,6 +159,10 @@ void Ship::Update(
     std::vector<TaskThreadPool::Task> parallelTasks;
 
     /////////////////////////////////////////////////////////////////
+    // At this moment:
+    //  - Particle positions are within world boundaries
+    //  - Particle non-spring forces contain interaction-provided forces
+    /////////////////////////////////////////////////////////////////
 
     // Get the current wall clock time
     auto const currentWallClockTime = GameWallClock::GetInstance().Now();
@@ -199,6 +203,8 @@ void Ship::Update(
     // Update state machines
     ///////////////////////////////////////////////////////////////////
 
+    // - Outputs:   Non-spring forces, temperature
+    //              Point Detach, Debris generation
     UpdateStateMachines(currentSimulationTime, gameParameters);
 
     /////////////////////////////////////////////////////////////////

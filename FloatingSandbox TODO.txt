@@ -475,6 +475,8 @@ Render:
 				= ScreenToOffset with electrical panel
 					+ Add logging
 					- Remove TODOTEST logging
+				= Test setting glContext after resize
+					- If works, add #ifdef for MAC
 				- MAC tests:
 					- Tools:
 						- Move tool
@@ -1101,18 +1103,22 @@ Render:
 					+ Do DEBUG work above to catch late positions changes
 						+ Also make sure to flag positions as dirty at modifiers of position buffer
 						+ Test and verify that after WorldBoundaries there's no position changes
-					- Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
-						- [WorldBoundaries apply]
-						- [Interactive position changes]
-							- These take a world in boundaries, and leave the world in boundaries
-								- Since we'll likely be accessing OceanSurface or OceanFloor during interactions
-							- Need to make sure these clamp to world boundaries then
-						- START
+					= Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
+						! [WorldBoundaries apply]
+						+ [Interactive position changes]
+							+ These take a world in boundaries, and leave the world in boundaries
+								+ Since we'll likely be accessing OceanSurface or OceanFloor during interactions
+							+ Need to make sure these clamp to world boundaries then
+						! [WorldBoundaries apply]
+						! START
+						+ UpdateForGameParameters
+
+						- TODO: UpdateStateMachine
+
 						- UpdateMasses
 						- Spring + Integration + OceanFloorCollision
 						- TrimForWorldBounds
-							- This ends position changes in the entire loop
-						- [WorldBoundaries apply]
+							- This ends position changes in the entire loop						
 						- // From now on, we only work with forces and never update positions
 						- ResetNonSpringForces
 						- ApplyWorldForces
@@ -1131,7 +1137,11 @@ Render:
 						- ... everything else...
 						- [WorldBoundaries apply]
 						- END
-					- Test and verify that after WorldBoundaries there's no position changes
+					- Test:
+						- Verify that after WorldBoundaries there's no position changes
+						- Rotting
+						- Melting
+						- Bombs detonations (ship's state machine)
 					- New Points::CachedDepth buffer
 						- Initialization: via mParentWorld call at Add()
 						- Getter
