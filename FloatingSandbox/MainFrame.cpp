@@ -1360,9 +1360,8 @@ void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
                 event.GetSize().GetX(),
                 event.GetSize().GetY()));
 
-        LogMessage("OnMainGLCanvasResize: Now rebinding context");
-
         // TODOTEST
+        LogMessage("OnMainGLCanvasResize: Now rebinding context");
         assert(!!mMainGLCanvas);
         assert(!!mMainGLCanvasContext);
         mGameController->RebindOpenGLContext(
