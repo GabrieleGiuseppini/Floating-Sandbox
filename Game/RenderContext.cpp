@@ -96,7 +96,7 @@ RenderContext::RenderContext(
             //
 
             // Make render context current - invoke from this thread
-            renderDeviceProperties.MakeRenderContextCurrentFunction();
+            renderDeviceProperties.InitialMakeRenderContextCurrentFunction();
 
             // Initialize OpenGL
             GameOpenGL::InitOpenGL();
