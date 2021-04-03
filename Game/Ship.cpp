@@ -156,6 +156,10 @@ void Ship::Update(
     Render::RenderContext const & renderContext,
     Geometry::AABBSet & aabbSet)
 {
+    /////////////////////////////////////////////////////////////////
+    //         This is where most of the magic happens             //
+    /////////////////////////////////////////////////////////////////
+
     std::vector<TaskThreadPool::Task> parallelTasks;
 
     /////////////////////////////////////////////////////////////////
@@ -200,52 +204,17 @@ void Ship::Update(
         gameParameters);
 
     ///////////////////////////////////////////////////////////////////
-    // Update state machines
+    // Recalculate current masses and everything else that derives from them
     ///////////////////////////////////////////////////////////////////
-
-    // - Outputs:   Non-spring forces, temperature
-    //              Point Detach, Debris generation
-    UpdateStateMachines(currentSimulationTime, gameParameters);
-
-    /////////////////////////////////////////////////////////////////
-    // Update mechanical dynamics
-    /////////////////////////////////////////////////////////////////
-
-    //
-    // Rot points
-    //
-
-    if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsPeriodStep, GameParameters::ParticleUpdateLowFrequencyPeriod))
-    {
-        // - Inputs: Position, Water, IsLeaking
-        // - Output: Decay
-        RotPoints(
-            currentSimulationTime,
-            gameParameters);
-    }
-
-    //
-    // Recalculate current masses and everything else that derives from them, once and for all
-    //
 
     // - Inputs: Water, AugmentedMaterialMass
     // - Outputs: Mass
     mPoints.UpdateMasses(gameParameters);
 
-    //
-    // Update non-spring forces
-    //
-
-    // Apply world forces
-    if (gameParameters.DoDisplaceWater)
-        ApplyWorldForces<true>(stormParameters, gameParameters, aabbSet);
-    else
-        ApplyWorldForces<false>(stormParameters, gameParameters, aabbSet);
-
-    //
+    ///////////////////////////////////////////////////////////////////
     // Run spring relaxation iterations, together with integration
     // and ocean floor collision handling
-    //
+    ///////////////////////////////////////////////////////////////////
 
     int const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<int>();
 
@@ -279,9 +248,28 @@ void Ship::Update(
         }
     }
 
-    //
+    ///////////////////////////////////////////////////////////////////
+    // Trim for world bounds
+    ///////////////////////////////////////////////////////////////////
+
+    // - Inputs: Position
+    // - Outputs: Position, Velocity
+    TrimForWorldBounds(gameParameters);
+
+    // We're done with changing positions for the rest of the Update() loop
+#ifdef _DEBUG
+    mPoints.Diagnostic_ClearDirtyPositions();
+#endif
+
+    ///////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////
+    // From now on, we only work with forces and never update positions
+    ///////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////
     // Reset non-spring forces, now that we have integrated them
-    //
+    ///////////////////////////////////////////////////////////////////
 
     // Check whether we need to save the non-spring force buffer before we zero it out
     if (VectorFieldRenderModeType::PointForce == renderContext.GetVectorFieldRenderMode())
@@ -293,29 +281,36 @@ void Ship::Update(
     // - Outputs: NonSpringForce
     mPoints.ResetNonSpringForces();
 
-    //
-    // Trim for world bounds
-    //
+    ///////////////////////////////////////////////////////////////////
+    // Apply world forces
+    ///////////////////////////////////////////////////////////////////
 
-    // - Inputs: Position
-    // - Outputs: Position, Velocity
-    TrimForWorldBounds(gameParameters);
+    if (gameParameters.DoDisplaceWater)
+        ApplyWorldForces<true>(stormParameters, gameParameters, aabbSet);
+    else
+        ApplyWorldForces<false>(stormParameters, gameParameters, aabbSet);
 
-    // We're done with changing positions for the rest of the Update() loop
-#ifdef _DEBUG
-    mPoints.Diagnostic_ClearDirtyPositions();
-#endif
+    // Cached depths are valid from now on
 
+    ///////////////////////////////////////////////////////////////////
+    // Rot points
+    ///////////////////////////////////////////////////////////////////
+
+    if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsPeriodStep, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    {
+        // - Inputs: Position, Water, IsLeaking
+        // - Output: Decay
+        RotPoints(
+            currentSimulationTime,
+            gameParameters);
+    }
 
     /////////////////////////////////////////////////////////////////
     // Update gadgets
     /////////////////////////////////////////////////////////////////
 
-    //
     // Might cause explosions; might cause elements to be detached/destroyed
     // (which would flag our structure as dirty)
-    //
-
     mGadgets.Update(
         currentWallClockTime,
         currentSimulationTime,
@@ -333,6 +328,33 @@ void Ship::Update(
     mSprings.UpdateForStrains(
         gameParameters,
         mPoints);
+
+    ///////////////////////////////////////////////////////////////////
+    // Update state machines
+    ///////////////////////////////////////////////////////////////////
+
+    // - Outputs:   Non-spring forces, temperature
+    //              Point Detach, Debris generation
+    UpdateStateMachines(currentSimulationTime, gameParameters);
+
+    /* TODOOLD
+
+    // TODOOLD: Update state machines
+
+    // TODOOLD: Rot points
+
+    // TODOOLD: Update non-spring forces / world forces
+
+    // TODOOLD: Springs + integration + ocean floor collisions
+
+    // TODOOLD: Reset non-spring forces, now that we have integrated them
+
+    // TODOOLD: Trim for world bounds
+
+    // TODOOLD: Update gadgets
+
+    // TODOOLD: Update spring strains
+    */
 
     /////////////////////////////////////////////////////////////////
     // Update water dynamics - may generate ephemeral particles
@@ -370,7 +392,7 @@ void Ship::Update(
     mGameEventHandler->OnWaterSplashed(waterSplashedInStep);
 
     //
-    // Run sink/unsink detection
+    // Run sinking/unsinking detection
     //
 
     if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateSinkingPeriodStep, GameParameters::ParticleUpdateLowFrequencyPeriod))
@@ -3135,6 +3157,17 @@ void Ship::HandleWatertightDoorUpdated(
 #ifdef _DEBUG
 void Ship::VerifyInvariants()
 {
+    //
+    // Points
+    //
+
+    for (auto p : mPoints)
+    {
+        auto const & pos = mPoints.GetPosition(p);
+        Verify(pos.x >= -GameParameters::HalfMaxWorldWidth && pos.x <= GameParameters::HalfMaxWorldWidth);
+        Verify(pos.y >= -GameParameters::HalfMaxWorldHeight && pos.y <= GameParameters::HalfMaxWorldHeight);
+    }
+
     //
     // Triangles and points
     //
