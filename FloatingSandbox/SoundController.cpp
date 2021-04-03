@@ -20,10 +20,11 @@
 
 using namespace std::chrono_literals;
 
+float constexpr BreakSoundVolume = 10.0f;
+float constexpr StressSoundVolume = 7.0f;
 float constexpr RepairVolume = 40.0f;
 float constexpr SawVolume = 50.0f;
 float constexpr SawedVolume = 80.0f;
-float constexpr StressSoundVolume = 20.0f;
 std::chrono::milliseconds constexpr SawedInertiaDuration = std::chrono::milliseconds(200);
 float constexpr WaveSplashTriggerSize = 0.5f;
 
@@ -31,7 +32,7 @@ SoundController::SoundController(
     ResourceLocator & resourceLocator,
     ProgressCallback const & progressCallback)
     : // State
-      mMasterEffectsVolume(100.0f)
+      mMasterEffectsVolume(50.0f)
     , mMasterEffectsMuted(false)
     , mMasterToolsVolume(100.0f)
     , mMasterToolsMuted(false)
@@ -1341,8 +1342,8 @@ void SoundController::OnDestroy(
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::Destroy,
-            SoundGroupType::Tools,
             *(structuralMaterial.MaterialSound),
+            SoundGroupType::Tools,
             size,
             isUnderwater,
             70.0f,
@@ -1356,8 +1357,8 @@ void SoundController::OnLightningHit(StructuralMaterial const & structuralMateri
     {
         PlayMOneShotMultipleChoiceSound(
             SoundType::LightningHit,
-            SoundGroupType::Effects,
             *(structuralMaterial.MaterialSound),
+            SoundGroupType::Effects,
             70.0f,
             true);
     }
@@ -1372,8 +1373,8 @@ void SoundController::OnSpringRepaired(
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::RepairSpring,
-            SoundGroupType::Effects,
             *(structuralMaterial.MaterialSound),
+            SoundGroupType::Effects,
             size,
             isUnderwater,
             RepairVolume,
@@ -1390,8 +1391,8 @@ void SoundController::OnTriangleRepaired(
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::RepairTriangle,
-            SoundGroupType::Effects,
             *(structuralMaterial.MaterialSound),
+            SoundGroupType::Effects,
             size,
             isUnderwater,
             RepairVolume,
@@ -1473,8 +1474,8 @@ void SoundController::OnStress(
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::Stress,
-            SoundGroupType::Effects,
             *(structuralMaterial.MaterialSound),
+            SoundGroupType::Effects,
             size,
             isUnderwater,
             StressSoundVolume,
@@ -1492,11 +1493,11 @@ void SoundController::OnBreak(
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::Break,
-            SoundGroupType::Effects,
             *(structuralMaterial.MaterialSound),
+            SoundGroupType::Effects,
             size,
             isUnderwater,
-            10.0f,
+            BreakSoundVolume,
             true);
     }
 }
@@ -2153,8 +2154,8 @@ void SoundController::OnPhysicsProbePanelClosed()
 
 void SoundController::PlayMSUOneShotMultipleChoiceSound(
     SoundType soundType,
+    StructuralMaterial::MaterialSoundType material,
     SoundGroupType soundGroupType,
-    StructuralMaterial::MaterialSoundType materialSound,
     unsigned int size,
     bool isUnderwater,
     float volume,
@@ -2164,7 +2165,7 @@ void SoundController::PlayMSUOneShotMultipleChoiceSound(
     SizeType sizeType;
     if (size < 2)
         sizeType = SizeType::Small;
-    else if (size < 10)
+    else if (size < 9)
         sizeType = SizeType::Medium;
     else
         sizeType = SizeType::Large;
@@ -2172,7 +2173,7 @@ void SoundController::PlayMSUOneShotMultipleChoiceSound(
     ////LogDebug("MSUSound: <",
     ////    static_cast<int>(soundType),
     ////    ",",
-    ////    static_cast<int>(materialSound),
+    ////    static_cast<int>(material),
     ////    ",",
     ////    static_cast<int>(sizeType),
     ////    ",",
@@ -2183,15 +2184,16 @@ void SoundController::PlayMSUOneShotMultipleChoiceSound(
     // Find vector
     //
 
-    auto it = mMSUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, materialSound, sizeType, isUnderwater));
+    auto it = mMSUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, material, sizeType, isUnderwater));
     if (it == mMSUOneShotMultipleChoiceSounds.end())
     {
         // Find a smaller one
         for (int s = static_cast<int>(sizeType) - 1; s >= static_cast<int>(SizeType::Min); --s)
         {
-            it = mMSUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, materialSound, static_cast<SizeType>(s), isUnderwater));
+            it = mMSUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, material, static_cast<SizeType>(s), isUnderwater));
             if (it != mMSUOneShotMultipleChoiceSounds.end())
             {
+                sizeType = static_cast<SizeType>(s);
                 break;
             }
         }
@@ -2202,9 +2204,10 @@ void SoundController::PlayMSUOneShotMultipleChoiceSound(
         // Find this or smaller size with different underwater
         for (int s = static_cast<int>(sizeType); s >= static_cast<int>(SizeType::Min); --s)
         {
-            it = mMSUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, materialSound, static_cast<SizeType>(s), !isUnderwater));
+            it = mMSUOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, material, static_cast<SizeType>(s), !isUnderwater));
             if (it != mMSUOneShotMultipleChoiceSounds.end())
             {
+                sizeType = static_cast<SizeType>(s);
                 break;
             }
         }
@@ -2223,6 +2226,8 @@ void SoundController::PlayMSUOneShotMultipleChoiceSound(
 
     ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
+        material,
+        sizeType,
         soundGroupType,
         it->second,
         volume,
@@ -2231,22 +2236,22 @@ void SoundController::PlayMSUOneShotMultipleChoiceSound(
 
 void SoundController::PlayMOneShotMultipleChoiceSound(
     SoundType soundType,
+    StructuralMaterial::MaterialSoundType material,
     SoundGroupType soundGroupType,
-    StructuralMaterial::MaterialSoundType materialSound,
     float volume,
     bool isInterruptible)
 {
     ////LogDebug("MSound: <",
     ////    static_cast<int>(soundType),
     ////    ",",
-    ////    static_cast<int>(materialSound),
+    ////    static_cast<int>(material),
     ////    ">");
 
     //
     // Find vector
     //
 
-    auto it = mMOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, materialSound));
+    auto it = mMOneShotMultipleChoiceSounds.find(std::make_tuple(soundType, material));
     if (it == mMOneShotMultipleChoiceSounds.end())
     {
         // No luck
@@ -2260,6 +2265,8 @@ void SoundController::PlayMOneShotMultipleChoiceSound(
 
     ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
+        material,
+        std::nullopt,
         soundGroupType,
         it->second,
         volume,
@@ -2300,6 +2307,8 @@ void SoundController::PlayDslUOneShotMultipleChoiceSound(
 
     ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
+        std::nullopt,
+        std::nullopt,
         soundGroupType,
         it->second,
         volume,
@@ -2343,6 +2352,8 @@ void SoundController::PlayUOneShotMultipleChoiceSound(
 
     ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
+        std::nullopt,
+        std::nullopt,
         soundGroupType,
         it->second,
         volume,
@@ -2351,6 +2362,21 @@ void SoundController::PlayUOneShotMultipleChoiceSound(
 
 void SoundController::PlayOneShotMultipleChoiceSound(
     SoundType soundType,
+    SoundGroupType soundGroupType,
+    float volume,
+    bool isInterruptible)
+{
+    PlayOneShotMultipleChoiceSound(
+        soundType,
+        std::nullopt,
+        soundGroupType,
+        volume,
+        isInterruptible);
+}
+
+void SoundController::PlayOneShotMultipleChoiceSound(
+    SoundType soundType,
+    std::optional<StructuralMaterial::MaterialSoundType> material,
     SoundGroupType soundGroupType,
     float volume,
     bool isInterruptible)
@@ -2377,6 +2403,8 @@ void SoundController::PlayOneShotMultipleChoiceSound(
 
     ChooseAndPlayOneShotMultipleChoiceSound(
         soundType,
+        material,
+        std::nullopt,
         soundGroupType,
         it->second,
         volume,
@@ -2385,6 +2413,8 @@ void SoundController::PlayOneShotMultipleChoiceSound(
 
 void SoundController::ChooseAndPlayOneShotMultipleChoiceSound(
     SoundType soundType,
+    std::optional<StructuralMaterial::MaterialSoundType> material,
+    std::optional<SizeType> size,
     SoundGroupType soundGroupType,
     OneShotMultipleChoiceSound & sound,
     float volume,
@@ -2420,6 +2450,8 @@ void SoundController::ChooseAndPlayOneShotMultipleChoiceSound(
 
     PlayOneShotSound(
         soundType,
+        material,
+        size,
         soundGroupType,
         chosenSoundBuffer,
         volume,
@@ -2433,12 +2465,30 @@ void SoundController::PlayOneShotSound(
     float volume,
     bool isInterruptible)
 {
+    PlayOneShotSound(
+        soundType,
+        std::nullopt,
+        std::nullopt,
+        soundGroupType,
+        soundBuffer,
+        volume,
+        isInterruptible);
+}
+
+void SoundController::PlayOneShotSound(
+    SoundType soundType,
+    std::optional<StructuralMaterial::MaterialSoundType> material,
+    std::optional<SizeType> size,
+    SoundGroupType soundGroupType,
+    sf::SoundBuffer * soundBuffer,
+    float volume,
+    bool isInterruptible)
+{
     assert(nullptr != soundBuffer);
 
     //
-    // Make sure there isn't already a sound with this sound buffer that started
-    // playing too recently;
-    // if there is, adjust its volume
+    // Make sure there isn't already a "fungible" sound that started playing too recently;
+    // if there is, just add to its volume
     //
 
     auto & thisTypeCurrentlyPlayingSounds = mCurrentlyPlayingOneShotSounds[soundType];
@@ -2449,14 +2499,33 @@ void SoundController::PlayOneShotSound(
     for (auto & playingSound : thisTypeCurrentlyPlayingSounds)
     {
         assert(!!playingSound.Sound);
-        if (playingSound.Sound->getBuffer() == soundBuffer
-            && std::chrono::duration_cast<std::chrono::milliseconds>(now - playingSound.StartedTimestamp) < minDeltaTimeSoundForType)
+
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(now - playingSound.StartedTimestamp) < minDeltaTimeSoundForType)
         {
-            playingSound.Sound->addVolume(volume);
-            return;
+            bool doIncorporateWithExisting = false;
+
+            if (soundType == SoundType::Break || soundType == SoundType::Stress)
+            {
+                // Incorporate if it's same material and same or greater size
+                doIncorporateWithExisting =
+                    (playingSound.Material == material)
+                    &&
+                    (size.has_value() && playingSound.Size.has_value() && *(playingSound.Size) >= *size);
+            }
+            else
+            {
+                // Incorporate if it's exactly the same sound
+                doIncorporateWithExisting = (playingSound.Sound->getBuffer() == soundBuffer);
+            }
+
+            if (doIncorporateWithExisting)
+            {
+                // Just increase the volume and leave
+                playingSound.Sound->addVolume(volume);
+                return;
+            }
         }
     }
-
 
     //
     // Make sure there's room for this sound
@@ -2476,8 +2545,6 @@ void SoundController::PlayOneShotSound(
     }
 
     assert(thisTypeCurrentlyPlayingSounds.size() < maxPlayingSoundsForThisType);
-
-
 
     //
     // Create and play sound
@@ -2515,6 +2582,8 @@ void SoundController::PlayOneShotSound(
 
     thisTypeCurrentlyPlayingSounds.emplace_back(
         soundType,
+        material,
+        size,
         soundGroupType,
         std::move(sound),
         now,

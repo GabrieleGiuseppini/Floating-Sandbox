@@ -189,7 +189,7 @@ public:
 
     void addVolume(float volume)
     {
-        mVolume += volume;
+        mVolume += (100.0f - mVolume) / 100.0f * volume;
         InternalSetVolume();
     }
 
@@ -373,9 +373,7 @@ private:
     {
         if (!mIsMuted)
         {
-            // 100*(1 - e^(-0.01*x))
-            float localVolume = 1.0f - exp(-0.01f * mVolume);
-            sf::Sound::setVolume(100.0f * localVolume * (mMasterVolume / 100.0f) * mFadeLevel);
+            sf::Sound::setVolume(mVolume * (mMasterVolume / 100.0f) * mFadeLevel);
         }
         else
         {
