@@ -419,6 +419,24 @@ Render:
 			+ IT
 			+ ES
 			+ RU
+		+ Fix "cycle of sounds" issue with sounds
+			+ Limit stress and break sounds' proximity *regardless* of chosen buffer
+				+ But allow greater size
+			+ Cut initial silence @ all break sounds
+			+ AddVolume becomes exponential: v' = v + (100-v) * dv
+				+ Remove exponential from InternalSetVolume
+			X See if break's minTime might be lowered
+			+ Medium<->Large boundary
+			+ Double-check sounds
+				+ Metal; replace:
+					+ break_metal_large_2
+					+ break_metal_large_3
+					+ break_metal_large_underwater_5
+					+ stress_metal_large_underwater_1 (clicks)
+				+ Wood
+				+ break_glass_small_1
+			+ Take new wood stress sounds
+			+ More stress metal sounds, to dilute "cycle of sounds"
 
 
 		= MAC:
@@ -486,21 +504,10 @@ Render:
 		
 		= Cached quantities (*)
 
-		- Fix "cycle of sounds" issue with sounds
-			- Repro first and detect chain of noise, in these two situations:
-				- 1) Melted metal that cools in water
-				- 2) Cardboard tower pushed down
-			- Try spreading out spring coeffs' recalculations - also for better look'n'feel
-				- Test look'n'feel
-				- Test perf on Dell, before & after
-			- See if longer relax interval for stress sounds does the trick
-			- More stress metal sounds, to dilute "cycle of sounds"
-				- Save new raw sounds at C:\Users\Neurodancer\Desktop\Ship Scratch\Sounds\Metal Stress II
-			- Also try: not dispatching stress if also dispatching break's (or destroy's?)
-
 		- See why NVidia's rendering is so slow
 			+ Try VSync: yes, it's the VSync
 			- Decide whether FS should turn VSync off
+				- I'D SAY NO - PREVENTS TEARING
 				- See if there's a non-NVidia-specific way which may be done with all cards
 					- Windows-only would be fine
 
@@ -660,6 +667,7 @@ Render:
 
 		- Multi-threading, phase II:
 			- Move PhysicsSimulation::UpdateWaterVelocities (8%) to separate thread
+				- If water is being read in parallel, make UpdateWaterVelocities take the newWater buffer, and swap it after the tasks have completed
 			- Springs: each iteration done in parallel with NThreads partitions
 				- Pre-perf:
 					- Dell: x ms/x fps
@@ -1094,11 +1102,38 @@ Render:
 						+ Also make sure to flag positions as dirty at modifiers of position buffer
 						+ Test and verify that after WorldBoundaries there's no position changes
 					- Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
-						- See below
+						- [WorldBoundaries apply]
+						- [Interactive position changes]
+							- These take a world in boundaries, and leave the world in boundaries
+								- Since we'll likely be accessing OceanSurface or OceanFloor during interactions
+							- Need to make sure these clamp to world boundaries then
+						- START
+						- UpdateMasses
+						- Spring + Integration + OceanFloorCollision
+						- TrimForWorldBounds
+							- This ends position changes in the entire loop
+						- [WorldBoundaries apply]
+						- // From now on, we only work with forces and never update positions
+						- ResetNonSpringForces
+						- ApplyWorldForces
+							- Alloc new depth buffer - no need to clean
+								- TODO: why can't use existing one?
+							- Per-Particle
+								- Calculate and store depths here
+							- Per-Frontier
+							- Swap depth buffers
+						- [Cached depths are valid starting now]
+						- RotPoints()
+						- Gadgets::Update()
+						- UpdateForSpringStrains
+							- Because bounce @ WorldBoundaries requires UpdateForSpringStrains in same frame to prevent humongously long springs
+							- Requires depth for sounds, but no big deal if has to calculate it
+						- ... everything else...
+						- [WorldBoundaries apply]
+						- END
 					- Test and verify that after WorldBoundaries there's no position changes
 					- New Points::CachedDepth buffer
-						- Initialization: via value provided by Add() caller (ShipBuilder) with depth
-							- But Points already has mParentWorld at Add(.) time, and so does ShipBuilder at that call
+						- Initialization: via mParentWorld call at Add()
 						- Getter
 						- Buffer getter & swapper (see water buffers)
 					- Populate CachedDepth at ApplyWorldForces
@@ -1116,6 +1151,7 @@ Render:
 							- Per-frontier (water pressure drag, waves)
 						- UpdateWaterIntake (for leaking points only)
 						- Heat dissipation
+						- Rot points
 						- Springs::ApplyStrains() for sounds
 						- Points::UpdateCombustionHighFrequency
 						- Points::UpdateEphemeralParticles (AirBubbles - and others?)
@@ -1123,40 +1159,15 @@ Render:
 							- Make sure no other ephemeral types change positions
 						- Catch any other calls to parent.IsUnderwater/GetDepth() by changing name
 							- Only places allowed to invoke World.IsUnderwater/GetDepth() now:
-								- ShipBuilder for Points building
+								- Points::Add for Points building
 								- CachedDepth population at ApplyWorldForces()
 								- Ephemeral particle creation
 								- Interactions
 								- PhysicsHandlers at Ship, as they might be invoked at any moment
 									- But not even sure these really need depth/isUnderwater
 					- Check perf on Dell
-				- TODOOLD - to incorporate above
+				- TODOOLD
 				- Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
-					- Loop: 
-						- [WorldBoundaries apply]
-						- [Interactive position changes]
-							- These take a world in boundaries, and leave the world in boundaries
-								- Since we'll likely be accessing OceanSurface or OceanFloor during interactions
-							- Need to make sure these clamp to world boundaries then
-						- START
-						- Spring + Integration
-						- WorldBoundaries
-							- This ends position changes in the entire loop
-						- [WorldBoundaries apply]
-						- UpdateForSpringStrains
-							- Because bounce @ WorldBoundaries requires immediately UpdateForSpringStrains to prevent humongously long springs
-							- Requires depth for sounds 
-							- TODOHERE: does not change positions, can't it really be moved later?
-						- ApplyWorldForces
-							- Alloc new depth buffer - no need to clean
-							- Per-Particle
-								- Calculate and store depths here
-							- Per-Frontier
-							- Swap depth buffers
-						- [Cached depths are valid starting now]
-						- ... everything else...
-						- [WorldBoundaries apply]
-						- END
 					- OLD LOOP:
 						- [WorldBoundaries apply]
 						- [Interactive position changes]
@@ -1481,6 +1492,10 @@ Render:
 	- Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool.
 
 - Dynamics:
+
+	- Try spreading out rotting - for better look'n'feel
+
+	- Try spreading out spring coeffs' recalculations - for better look'n'feel
 
 	- Way to remove all pins
 

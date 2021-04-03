@@ -23,6 +23,7 @@
 #include <chrono>
 #include <memory>
 #include <limits>
+#include <optional>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -363,18 +364,25 @@ private:
     struct PlayingSound
     {
         SoundType Type;
+        std::optional<StructuralMaterial::MaterialSoundType> Material;
+        std::optional<SizeType> Size;
         SoundGroupType GroupType;
+
         std::unique_ptr<GameSound> Sound;
         std::chrono::steady_clock::time_point StartedTimestamp;
         bool IsInterruptible;
 
         PlayingSound(
             SoundType type,
+            std::optional<StructuralMaterial::MaterialSoundType> material,
+            std::optional<SizeType> size,
             SoundGroupType groupType,
             std::unique_ptr<GameSound> sound,
             std::chrono::steady_clock::time_point startedTimestamp,
             bool isInterruptible)
             : Type(type)
+            , Material(material)
+            , Size(size)
             , GroupType(groupType)
             , Sound(std::move(sound))
             , StartedTimestamp(startedTimestamp)
@@ -387,8 +395,8 @@ private:
 
     void PlayMSUOneShotMultipleChoiceSound(
         SoundType soundType,
+        StructuralMaterial::MaterialSoundType material,
         SoundGroupType soundGroupType,
-        StructuralMaterial::MaterialSoundType materialSound,
         unsigned int size,
         bool isUnderwater,
         float volume,
@@ -396,8 +404,8 @@ private:
 
 	void PlayMOneShotMultipleChoiceSound(
 		SoundType soundType,
+        StructuralMaterial::MaterialSoundType material,
         SoundGroupType soundGroupType,
-		StructuralMaterial::MaterialSoundType materialSound,
 		float volume,
 		bool isInterruptible);
 
@@ -422,8 +430,17 @@ private:
         float volume,
         bool isInterruptible);
 
+    void PlayOneShotMultipleChoiceSound(
+        SoundType soundType,
+        std::optional<StructuralMaterial::MaterialSoundType> material,
+        SoundGroupType soundGroupType,
+        float volume,
+        bool isInterruptible);
+
     void ChooseAndPlayOneShotMultipleChoiceSound(
         SoundType soundType,
+        std::optional<StructuralMaterial::MaterialSoundType> material,
+        std::optional<SizeType> size,
         SoundGroupType soundGroupType,
         OneShotMultipleChoiceSound & sound,
         float volume,
@@ -431,6 +448,15 @@ private:
 
     void PlayOneShotSound(
         SoundType soundType,
+        SoundGroupType soundGroupType,
+        sf::SoundBuffer * soundBuffer,
+        float volume,
+        bool isInterruptible);
+
+    void PlayOneShotSound(
+        SoundType soundType,
+        std::optional<StructuralMaterial::MaterialSoundType> material,
+        std::optional<SizeType> size,
         SoundGroupType soundGroupType,
         sf::SoundBuffer * soundBuffer,
         float volume,
@@ -501,21 +527,10 @@ private:
             case SoundType::RepairTriangle:
                 return std::chrono::milliseconds(200);
             case SoundType::Stress:
-                return std::chrono::milliseconds(600);
             case SoundType::TerrainAdjust:
-            case SoundType::Snapshot:
                 return std::chrono::milliseconds(700);
-            case SoundType::GlassTick:
-            case SoundType::InteractiveSwitchOn:
-            case SoundType::InteractiveSwitchOff:
-            case SoundType::ElectricalPanelOpen:
-            case SoundType::ElectricalPanelClose:
-            case SoundType::ElectricalPanelDock:
-            case SoundType::ElectricalPanelUndock:
-            case SoundType::EngineTelegraph:
-                return std::chrono::milliseconds(0);
             default:
-                return std::chrono::milliseconds(75);
+                return std::chrono::milliseconds(0);
         }
     }
 
