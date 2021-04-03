@@ -1103,7 +1103,7 @@ Render:
 					+ Do DEBUG work above to catch late positions changes
 						+ Also make sure to flag positions as dirty at modifiers of position buffer
 						+ Test and verify that after WorldBoundaries there's no position changes
-					= Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
+					+ Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
 						! [WorldBoundaries apply]
 						+ [Interactive position changes]
 							+ These take a world in boundaries, and leave the world in boundaries
@@ -1112,42 +1112,44 @@ Render:
 						! [WorldBoundaries apply]
 						! START
 						+ UpdateForGameParameters
-
-						- TODO: UpdateStateMachine
-
-						- UpdateMasses
-						- Spring + Integration + OceanFloorCollision
-						- TrimForWorldBounds
-							- This ends position changes in the entire loop						
-						- // From now on, we only work with forces and never update positions
-						- ResetNonSpringForces
-						- ApplyWorldForces
-							- Alloc new depth buffer - no need to clean
-								- TODO: why can't use existing one?
-							- Per-Particle
-								- Calculate and store depths here
-							- Per-Frontier
-							- Swap depth buffers
-						- [Cached depths are valid starting now]
-						- RotPoints()
-						- Gadgets::Update()
-						- UpdateForSpringStrains
-							- Because bounce @ WorldBoundaries requires UpdateForSpringStrains in same frame to prevent humongously long springs
-							- Requires depth for sounds, but no big deal if has to calculate it
-						- ... everything else...
-						- [WorldBoundaries apply]
-						- END
-					- Test:
+						+ UpdateMasses
+						+ Spring + Integration + OceanFloorCollision
+						+ TrimForWorldBounds
+							+ This ends position changes in the entire loop						
+						+ // From now on, we only work with forces and never update positions
+						+ ResetNonSpringForces
+						+ ApplyWorldForces							
+						+ [Cached depths are valid starting now]
+						+ RotPoints()
+						+ Gadgets::Update()
+						+ UpdateForSpringStrains
+							+ Because bounce @ WorldBoundaries requires UpdateForSpringStrains in same frame to prevent humongously long springs
+							+ Requires depth for sounds, but no big deal if has to calculate it
+						+ UpdateStateMachines
+						+ ... everything else...
+						! [WorldBoundaries apply]
+						! END
+					= Test:
 						- Verify that after WorldBoundaries there's no position changes
-						- Rotting
-						- Melting
-						- Bombs detonations (ship's state machine)
+						+ Rotting
+						+ Melting
+						+ Bombs detonations (ship's state machine)
+						+ Ocean floor bounce
+						+ World boundary bounce
 					- New Points::CachedDepth buffer
 						- Initialization: via mParentWorld call at Add()
 						- Getter
 						- Buffer getter & swapper (see water buffers)
 					- Populate CachedDepth at ApplyWorldForces
+						- Alloc new depth buffer - no need to clean
+							- For future usages
+						- Per-Particle
+							- Calculate and store depths here
+						- Per-Frontier
+							- No need to use it right now, see later
+						- Swap depth buffers
 					- Ephemeral points: ephemeral points must take depth at creation, always
+						- Change all Points::CreateXYZ() methods to take point depth
 						- Bubbles already have it anyway!
 						- Creation happens at:
 							- Interactions
@@ -1155,6 +1157,7 @@ Render:
 							- Bubble generation
 							- Anywhere else?
 					- Use it, getting rid of now-superfluous parent.IsUnderwater/GetDepth calls
+						- Fork exe, take initial perf: TODO
 						- ApplyWorldForces:
 							- Per-point
 								- Note: now we check twice (buoyancyl then drag); should also unify per-point visit to have single underwater check applying buoyancy + drag
@@ -1167,6 +1170,7 @@ Render:
 						- Points::UpdateEphemeralParticles (AirBubbles - and others?)
 							- Need to do vortex with forces, though, rather than positions
 							- Make sure no other ephemeral types change positions
+						- All ephemeral particle creation call sites
 						- Catch any other calls to parent.IsUnderwater/GetDepth() by changing name
 							- Only places allowed to invoke World.IsUnderwater/GetDepth() now:
 								- Points::Add for Points building
@@ -1175,6 +1179,7 @@ Render:
 								- Interactions
 								- PhysicsHandlers at Ship, as they might be invoked at any moment
 									- But not even sure these really need depth/isUnderwater
+						- Final perf: TODO
 					- Check perf on Dell
 				- TODOOLD
 				- Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
