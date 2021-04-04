@@ -283,6 +283,8 @@ void Ship::Update(
 
     ///////////////////////////////////////////////////////////////////
     // Apply world forces
+    //
+    // Also calculates cached depths
     ///////////////////////////////////////////////////////////////////
 
     if (gameParameters.DoDisplaceWater)
@@ -290,7 +292,7 @@ void Ship::Update(
     else
         ApplyWorldForces<false>(stormParameters, gameParameters, aabbSet);
 
-    // Cached depths are valid from now on
+    // Cached depths are valid from now on --------------------------->
 
     ///////////////////////////////////////////////////////////////////
     // Rot points
@@ -336,25 +338,6 @@ void Ship::Update(
     // - Outputs:   Non-spring forces, temperature
     //              Point Detach, Debris generation
     UpdateStateMachines(currentSimulationTime, gameParameters);
-
-    /* TODOOLD
-
-    // TODOOLD: Update state machines
-
-    // TODOOLD: Rot points
-
-    // TODOOLD: Update non-spring forces / world forces
-
-    // TODOOLD: Springs + integration + ocean floor collisions
-
-    // TODOOLD: Reset non-spring forces, now that we have integrated them
-
-    // TODOOLD: Trim for world bounds
-
-    // TODOOLD: Update gadgets
-
-    // TODOOLD: Update spring strains
-    */
 
     /////////////////////////////////////////////////////////////////
     // Update water dynamics - may generate ephemeral particles
@@ -832,9 +815,7 @@ void Ship::ApplyWorldForces(
         // Calculate and store depth
         //
 
-        newCachedPointDepthsBuffer[pointIndex] =
-            mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x) -
-            mPoints.GetPosition(pointIndex).y;
+        newCachedPointDepthsBuffer[pointIndex] = mParentWorld.GetDepth(mPoints.GetPosition(pointIndex));
 
         //
         // Calculate above/under-water coefficient
@@ -1435,9 +1416,7 @@ void Ship::UpdateWaterInflow(
         auto const & pointCompositeLeaking = mPoints.GetLeakingComposite(pointIndex);
         if (pointCompositeLeaking.IsCumulativelyLeaking)
         {
-            float const pointDepth =
-                mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x)
-                - mPoints.GetPosition(pointIndex).y;
+            float const pointDepth = mPoints.GetCachedDepth(pointIndex);
 
             // External water height (~=external pressure)
             //
@@ -2099,12 +2078,11 @@ void Ship::PropagateHeat(
         float deltaT; // Temperature delta (particle - env)
         float heatLost; // Heat lost in this time quantum (positive when outgoing)
 
-        auto const pointPosition = mPoints.GetPosition(pointIndex);
-        if (mParentWorld.IsUnderwater(pointPosition)
+        if (mPoints.IsCachedUnderwater(pointIndex)
             || mPoints.GetWater(pointIndex) > GameParameters::SmotheringWaterHighWatermark)
         {
             // Dissipation in water
-            float const waterTemperature = surfaceWaterTemperature - std::max(pointPosition.y * ThermoclineSlope, 0.0f);
+            float const waterTemperature = surfaceWaterTemperature - Clamp(mPoints.GetPosition(pointIndex).y * ThermoclineSlope, 0.0f, surfaceWaterTemperature);
             deltaT = newPointTemperatureBufferData[pointIndex] - waterTemperature;
             heatLost = effectiveWaterConvectiveHeatTransferCoefficient * deltaT;
         }
@@ -2198,7 +2176,7 @@ void Ship::RotPoints(
     for (auto p : mPoints.RawShipPoints())
     {
         float x =
-            (mParentWorld.IsUnderwater(mPoints.GetPosition(p)) ? x_uw : 0.0f) // x_uw
+            (mPoints.IsCachedUnderwater(p) ? x_uw : 0.0f) // x_uw
             + std::min(mPoints.GetWater(p), 1.0f); // x_fl
 
         // Adjust with leaking: if leaking and subject to rusting, then rusts faster
@@ -2496,9 +2474,7 @@ void Ship::GenerateDebris(
 
         vec2f const pointPosition = mPoints.GetPosition(pointElementIndex);
 
-        float const pointDepth =
-            mParentWorld.GetOceanSurfaceHeightAt(pointPosition.x)
-            - pointPosition.y;
+        float const pointDepth = mParentWorld.GetDepth(pointPosition);
 
         for (unsigned int d = 0; d < debrisParticleCount; ++d)
         {
@@ -2554,14 +2530,12 @@ void Ship::GenerateSparklesForCut(
         // Create particles
         //
 
+        vec2f const sparklePosition = mSprings.GetMidpointPosition(springElementIndex, mPoints);
+
+        float const sparkleDepth = mParentWorld.GetDepth(sparklePosition);
+
         for (unsigned int d = 0; d < sparkleParticleCount; ++d)
         {
-            auto const sparklePosition = mSprings.GetMidpointPosition(springElementIndex, mPoints);
-
-            float const sparkleDepth =
-                mParentWorld.GetOceanSurfaceHeightAt(sparklePosition.x)
-                - sparklePosition.y;
-
             // Velocity magnitude
             float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateUniformReal(
                 GameParameters::MinSparkleParticlesForCutVelocity, GameParameters::MaxSparkleParticlesForCutVelocity);
@@ -2605,11 +2579,9 @@ void Ship::GenerateSparklesForLightning(
     // Create particles
     //
 
-    auto const sparklePosition = mPoints.GetPosition(pointElementIndex);
+    vec2f const sparklePosition = mPoints.GetPosition(pointElementIndex);
 
-    auto const sparkleDepth =
-        mParentWorld.GetOceanSurfaceHeightAt(sparklePosition.x)
-        - sparklePosition.y;
+    float const sparkleDepth = mParentWorld.GetDepth(sparklePosition);
 
     for (unsigned int d = 0; d < sparkleParticleCount; ++d)
     {
@@ -2909,9 +2881,10 @@ void Ship::HandleSpringRestore(
     //
 
     // Fire event - using point A's properties (quite arbitrarily)
+    auto const endpointAIndex = mSprings.GetEndpointAIndex(springElementIndex);
     mGameEventHandler->OnSpringRepaired(
-        mPoints.GetStructuralMaterial(mSprings.GetEndpointAIndex(springElementIndex)),
-        mParentWorld.IsUnderwater(mPoints.GetPosition(mSprings.GetEndpointAIndex(springElementIndex))),
+        mPoints.GetStructuralMaterial(endpointAIndex),
+        mParentWorld.IsUnderwater(mPoints.GetPosition(endpointAIndex)),
         1);
 
     // Remember our structure is now dirty
@@ -2998,9 +2971,10 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
     /////////////////////////////////////////////////////////
 
     // Fire event - using point A's properties (quite arbitrarily)
+    auto const endpointAIndex = mTriangles.GetPointAIndex(triangleElementIndex);
     mGameEventHandler->OnTriangleRepaired(
-        mPoints.GetStructuralMaterial(mTriangles.GetPointAIndex(triangleElementIndex)),
-        mParentWorld.IsUnderwater(mPoints.GetPosition(mTriangles.GetPointAIndex(triangleElementIndex))),
+        mPoints.GetStructuralMaterial(endpointAIndex),
+        mParentWorld.IsUnderwater(mPoints.GetPosition(endpointAIndex)),
         1);
 
     // Remember our structure is now dirty

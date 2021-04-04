@@ -60,7 +60,7 @@ bool RCBombGadget::Update(
                     ++mPingOnStepCounter;
 
                     mGameEventHandler->OnRCBombPing(
-                        mParentWorld.IsUnderwater(GetPosition()),
+                        mShipPoints.IsCachedUnderwater(mPointIndex),
                         1);
 
                     // Schedule next transition
@@ -138,7 +138,7 @@ bool RCBombGadget::Update(
                 // Notify explosion
                 mGameEventHandler->OnBombExplosion(
                     GadgetType::RCBomb,
-                    mParentWorld.IsUnderwater(mExplosionPosition),
+                    mShipPoints.IsCachedUnderwater(mPointIndex),
                     1);
 
                 //
