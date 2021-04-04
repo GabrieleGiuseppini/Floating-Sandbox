@@ -1421,13 +1421,20 @@ void ElectricalElements::UpdateSinks(
 
             case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
             {
+                auto const emitterPointIndex = GetPointIndex(sinkElementIndex);
+                vec2f const emitterPosition = points.GetPosition(emitterPointIndex);
+
+                float const emitterDepth =
+                    mParentWorld.GetOceanSurfaceHeightAt(emitterPosition.x)
+                    - emitterPosition.y;
+
                 if (!IsDeleted(sinkElementIndex))
                 {
                     // Update state machine
                     if (mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating)
                     {
                         if (!isConnectedToPower
-                            || mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkElementIndex))))
+                            || emitterDepth >= 0.0f)
                         {
                             // Stop operating
                             mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating = false;
@@ -1436,7 +1443,7 @@ void ElectricalElements::UpdateSinks(
                     else
                     {
                         if (isConnectedToPower
-                            && !mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkElementIndex))))
+                            && emitterDepth < 0.0f)
                         {
                             // Start operating
                             mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating = true;
@@ -1465,8 +1472,6 @@ void ElectricalElements::UpdateSinks(
                             // Emit smoke
                             //
 
-                            auto const emitterPointIndex = GetPointIndex(sinkElementIndex);
-
                             // Choose temperature: highest of emitter's and current air + something (to ensure buoyancy)
                             float const smokeTemperature = std::max(
                                 points.GetTemperature(emitterPointIndex),
@@ -1474,7 +1479,8 @@ void ElectricalElements::UpdateSinks(
 
                             // Generate particle
                             points.CreateEphemeralParticleLightSmoke(
-                                points.GetPosition(emitterPointIndex),
+                                emitterPosition,
+                                emitterDepth,
                                 smokeTemperature,
                                 currentSimulationTime,
                                 points.GetPlaneId(emitterPointIndex),
@@ -1816,6 +1822,7 @@ void ElectricalElements::UpdateSinks(
                             points.CreateEphemeralParticleWakeBubble(
                                 enginePosition,
                                 wakeVelocity,
+                                engineDepth,
                                 currentSimulationTime,
                                 planeId,
                                 gameParameters);

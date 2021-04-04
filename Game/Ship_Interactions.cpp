@@ -687,12 +687,16 @@ bool Ship::InjectBubblesAt(
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
-    if (targetPos.y < mParentWorld.GetOceanSurfaceHeightAt(targetPos.x))
+    vec2f const position = targetPos.clamp(
+        -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth,
+        -GameParameters::HalfMaxWorldHeight, GameParameters::HalfMaxWorldHeight);
+
+    if (float const depth = mParentWorld.GetOceanSurfaceHeightAt(position.x) - position.y;
+        depth > 0.0f)
     {
-        GenerateAirBubbles(
-            targetPos.clamp(
-                -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth,
-                -GameParameters::HalfMaxWorldHeight, GameParameters::HalfMaxWorldHeight),
+        GenerateAirBubble(
+            position,
+            depth,
             GameParameters::Temperature0,
             currentSimulationTime,
             mMaxMaxPlaneId,

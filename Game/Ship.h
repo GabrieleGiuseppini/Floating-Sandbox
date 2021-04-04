@@ -369,8 +369,9 @@ private:
 
     void AttemptPointRestore(ElementIndex pointElementIndex);
 
-    void GenerateAirBubbles(
+    void GenerateAirBubble(
         vec2f const & position,
+        float depth,
         float temperature,
         float currentSimulationTime,
         PlaneId planeId,

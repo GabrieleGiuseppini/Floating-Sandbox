@@ -46,6 +46,7 @@ void Points::Add(
     mBuoyancyCoefficientsBuffer.emplace_back(CalculateBuoyancyCoefficients(
         structuralMaterial.BuoyancyVolumeFill,
         structuralMaterial.ThermalExpansionCoefficient));
+    mCachedDepthBuffer.emplace_back(mParentWorld.GetOceanSurfaceHeightAt(position.x) - position.y);
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
     mForceRenderBuffer.emplace_back(vec2f::zero());
@@ -116,6 +117,7 @@ void Points::Add(
 
 void Points::CreateEphemeralParticleAirBubble(
     vec2f const & position,
+    float depth,
     float temperature,
     float vortexAmplitude,
     float vortexPeriod,
@@ -134,24 +136,25 @@ void Points::CreateEphemeralParticleAirBubble(
     StructuralMaterial const & airStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air);
 
     // We want to limit the buoyancy applied to air - using 1.0 makes an air particle boost up too quickly
-    float constexpr BuoyancyVolumeFill = 0.003f;
+    float constexpr AirBuoyancyVolumeFill = 0.003f;
 
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
     assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
     mNonSpringForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
-    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = BuoyancyVolumeFill;
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = AirBuoyancyVolumeFill;
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
-        BuoyancyVolumeFill,
+        AirBuoyancyVolumeFill,
         airStructuralMaterial.ThermalExpansionCoefficient);
-    mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
+    mCachedDepthBuffer[pointIndex] = depth;
 
     //mMaterialWaterIntakeBuffer[pointIndex] = airStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - airStructuralMaterial.WaterRetention;
@@ -196,6 +199,7 @@ void Points::CreateEphemeralParticleAirBubble(
 void Points::CreateEphemeralParticleDebris(
     vec2f const & position,
     vec2f const & velocity,
+    float depth,
     float water,
     StructuralMaterial const & structuralMaterial,
     float currentSimulationTime,
@@ -211,6 +215,7 @@ void Points::CreateEphemeralParticleDebris(
     //
 
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
@@ -223,7 +228,7 @@ void Points::CreateEphemeralParticleDebris(
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
-    mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
+    mCachedDepthBuffer[pointIndex] = depth;
 
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
@@ -270,6 +275,7 @@ void Points::CreateEphemeralParticleSmoke(
     Render::GenericMipMappedTextureGroups textureGroup,
     EphemeralState::SmokeState::GrowthType growth,
     vec2f const & position,
+    float depth,
     float temperature,
     float currentSimulationTime,
     PlaneId planeId,
@@ -292,24 +298,25 @@ void Points::CreateEphemeralParticleSmoke(
 
     StructuralMaterial const & airStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air);
 
-    float constexpr BuoyancyVolumeFill = 1.0f;
+    float constexpr SmokeBuoyancyVolumeFill = 1.0f;
 
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
     assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
     mNonSpringForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
-    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = BuoyancyVolumeFill;
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = SmokeBuoyancyVolumeFill;
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
-        BuoyancyVolumeFill,
+        SmokeBuoyancyVolumeFill,
         airStructuralMaterial.ThermalExpansionCoefficient);
-    mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
+    mCachedDepthBuffer[pointIndex] = depth;
 
     //mMaterialWaterIntakeBuffer[pointIndex] = airStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - airStructuralMaterial.WaterRetention;
@@ -356,6 +363,7 @@ void Points::CreateEphemeralParticleSparkle(
     vec2f const & position,
     vec2f const & velocity,
     StructuralMaterial const & structuralMaterial,
+    float depth,
     float currentSimulationTime,
     float maxSimulationLifetime,
     PlaneId planeId)
@@ -369,6 +377,7 @@ void Points::CreateEphemeralParticleSparkle(
     //
 
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
@@ -381,7 +390,7 @@ void Points::CreateEphemeralParticleSparkle(
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
-    mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
+    mCachedDepthBuffer[pointIndex] = depth;
 
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
@@ -421,6 +430,7 @@ void Points::CreateEphemeralParticleSparkle(
 void Points::CreateEphemeralParticleWakeBubble(
     vec2f const & position,
     vec2f const & velocity,
+    float depth,
     float currentSimulationTime,
     PlaneId planeId,
     GameParameters const & gameParameters)
@@ -437,6 +447,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     StructuralMaterial const & waterStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Water);
 
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
+    mMaterialsBuffer[pointIndex] = Materials(&waterStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
     assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
@@ -451,7 +462,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
         waterStructuralMaterial.BuoyancyVolumeFill,
         waterStructuralMaterial.ThermalExpansionCoefficient);
-    mMaterialsBuffer[pointIndex] = Materials(&waterStructuralMaterial, nullptr);
+    mCachedDepthBuffer[pointIndex] = depth;
 
     //mMaterialWaterIntakeBuffer[pointIndex] = waterStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - waterStructuralMaterial.WaterRetention;

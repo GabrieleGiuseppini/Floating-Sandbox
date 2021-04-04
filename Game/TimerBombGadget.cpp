@@ -53,8 +53,13 @@ bool TimerBombGadget::Update(
         case State::SlowFuseBurning:
         case State::FastFuseBurning:
         {
+            float constexpr FuseVerticalOffset = 5.0f; // Fuse position wrt center of bomb
+
+            vec2f const bombPosition = GetPosition();
+
             // Check if we're underwater
-            if (mParentWorld.IsUnderwater(GetPosition()))
+            if (float const bombDepth = mParentWorld.GetOceanSurfaceHeightAt(bombPosition.x) - bombPosition.y;
+                bombDepth >= 0.0)
             {
                 //
                 // Defuse
@@ -62,7 +67,8 @@ bool TimerBombGadget::Update(
 
                 // Emit smoke
                 mShipPoints.CreateEphemeralParticleHeavySmoke(
-                    GetPosition() + vec2f(0.0f, 5.0f), // Where the fuse is
+                    bombPosition + vec2f(0.0f, FuseVerticalOffset),
+                    bombDepth - FuseVerticalOffset,
                     gameParameters.AirTemperature + stormParameters.AirTemperatureDelta + 300.0f,
                     currentSimulationTime,
                     GetPlaneId(),

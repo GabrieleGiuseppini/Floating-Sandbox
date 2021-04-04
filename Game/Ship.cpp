@@ -1421,15 +1421,17 @@ void Ship::UpdateWaterInflow(
         auto const & pointCompositeLeaking = mPoints.GetLeakingComposite(pointIndex);
         if (pointCompositeLeaking.IsCumulativelyLeaking)
         {
+            float const pointDepth =
+                mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x)
+                - mPoints.GetPosition(pointIndex).y;
+
             // External water height (~=external pressure)
             //
             // We also incorporate rain in the sources of external water height:
             // - If point is below water surface: external water height is due to depth
             // - If point is above water surface: external water height is due to rain
             float const externalWaterHeight = std::max(
-                mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x)
-                    + 0.1f // Magic number to force flotsam to take some water in and eventually sink
-                    - mPoints.GetPosition(pointIndex).y,
+                pointDepth + 0.1f, // Magic number to force flotsam to take some water in and eventually sink
                 rainEquivalentWaterHeight); // At most is one meter, so does not interfere with underwater pressure
 
             // Internal water height (~=internal pressure)
@@ -1531,8 +1533,9 @@ void Ship::UpdateWaterInflow(
                 if (doGenerateAirBubbles
                     && !mPoints.IsRope(pointIndex))
                 {
-                    GenerateAirBubbles(
+                    GenerateAirBubble(
                         mPoints.GetPosition(pointIndex),
+                        pointDepth,
                         mPoints.GetTemperature(pointIndex),
                         currentSimulationTime,
                         mPoints.GetPlaneId(pointIndex),
@@ -2439,8 +2442,9 @@ void Ship::AttemptPointRestore(ElementIndex pointElementIndex)
     }
 }
 
-void Ship::GenerateAirBubbles(
+void Ship::GenerateAirBubble(
     vec2f const & position,
+    float depth,
     float temperature,
     float currentSimulationTime,
     PlaneId planeId,
@@ -2448,8 +2452,8 @@ void Ship::GenerateAirBubbles(
 {
     float const vortexAmplitude =
         GameRandomEngine::GetInstance().GenerateUniformReal(
-            1.5f,
-            5.0f)
+            0.1f,
+            4.0f)
         * (GameRandomEngine::GetInstance().Choose(2) == 1 ? 1.0f : -1.0f);
 
     float const vortexPeriod = GameRandomEngine::GetInstance().GenerateUniformReal(
@@ -2458,6 +2462,7 @@ void Ship::GenerateAirBubbles(
 
     mPoints.CreateEphemeralParticleAirBubble(
         position,
+        depth,
         temperature,
         vortexAmplitude,
         vortexPeriod,
@@ -2475,6 +2480,12 @@ void Ship::GenerateDebris(
         unsigned int const debrisParticleCount = GameRandomEngine::GetInstance().GenerateUniformInteger(
             GameParameters::MinDebrisParticlesPerEvent, GameParameters::MaxDebrisParticlesPerEvent);
 
+        vec2f const pointPosition = mPoints.GetPosition(pointElementIndex);
+
+        float const pointDepth =
+            mParentWorld.GetOceanSurfaceHeightAt(pointPosition.x)
+            - pointPosition.y;
+
         for (unsigned int d = 0; d < debrisParticleCount; ++d)
         {
             // Choose velocity
@@ -2488,8 +2499,9 @@ void Ship::GenerateDebris(
                 GameParameters::MaxDebrisParticlesLifetime);
 
             mPoints.CreateEphemeralParticleDebris(
-                mPoints.GetPosition(pointElementIndex),
+                pointPosition,
                 velocity,
+                pointDepth,
                 mPoints.GetWater(pointElementIndex),
                 mPoints.GetStructuralMaterial(pointElementIndex),
                 currentSimulationTime,
@@ -2530,6 +2542,12 @@ void Ship::GenerateSparklesForCut(
 
         for (unsigned int d = 0; d < sparkleParticleCount; ++d)
         {
+            auto const sparklePosition = mSprings.GetMidpointPosition(springElementIndex, mPoints);
+
+            float const sparkleDepth =
+                mParentWorld.GetOceanSurfaceHeightAt(sparklePosition.x)
+                - sparklePosition.y;
+
             // Velocity magnitude
             float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateUniformReal(
                 GameParameters::MinSparkleParticlesForCutVelocity, GameParameters::MaxSparkleParticlesForCutVelocity);
@@ -2546,9 +2564,10 @@ void Ship::GenerateSparklesForCut(
 
             // Create sparkle
             mPoints.CreateEphemeralParticleSparkle(
-                mSprings.GetMidpointPosition(springElementIndex, mPoints),
+                sparklePosition,
                 vec2f::fromPolar(velocityMagnitude, velocityAngleCw),
                 mSprings.GetBaseStructuralMaterial(springElementIndex),
+                sparkleDepth,
                 currentSimulationTime,
                 maxLifetime,
                 mSprings.GetPlaneId(springElementIndex, mPoints));
@@ -2568,10 +2587,15 @@ void Ship::GenerateSparklesForLightning(
     unsigned int const sparkleParticleCount = GameRandomEngine::GetInstance().GenerateUniformInteger(
         GameParameters::MinSparkleParticlesForLightningEvent, GameParameters::MaxSparkleParticlesForLightningEvent);
 
-
     //
     // Create particles
     //
+
+    auto const sparklePosition = mPoints.GetPosition(pointElementIndex);
+
+    auto const sparkleDepth =
+        mParentWorld.GetOceanSurfaceHeightAt(sparklePosition.x)
+        - sparklePosition.y;
 
     for (unsigned int d = 0; d < sparkleParticleCount; ++d)
     {
@@ -2589,9 +2613,10 @@ void Ship::GenerateSparklesForLightning(
 
         // Create sparkle
         mPoints.CreateEphemeralParticleSparkle(
-            mPoints.GetPosition(pointElementIndex),
+            sparklePosition,
             vec2f::fromPolar(velocityMagnitude, velocityAngleCw),
             mPoints.GetStructuralMaterial(pointElementIndex),
+            sparkleDepth,
             currentSimulationTime,
             maxLifetime,
             mPoints.GetPlaneId(pointElementIndex));
