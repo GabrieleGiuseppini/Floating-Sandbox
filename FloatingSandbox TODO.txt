@@ -667,6 +667,9 @@ Render:
 			- Smoke should be drawn behind flames, hence GenericTexture's should be in an earlier layer than flames.
 			  However, generic textures (smoke) have internal transparency, while flames have none; the Z test makes it so then
 			  that smoke at plane ID P shows the ship behind it, even though there are flames at plane IDs < P
+			- We need a new shader, 'cause black smoke looks awful when it fades away
+				- Identical to GenericTextures, but with whitening contestual with alpha
+				- Buffer can stay the same, just need separate portions: all generic textures followed by smoke
 			- Do cleanup tasks
 
 		- Add more background music:
@@ -1169,9 +1172,10 @@ Render:
 						+ Fork exe, take initial perf (UPD):
 							+ Normal: 4.65
 							+ With bubbles (@ all eph particles): 4.80/4.90
-						- ApplyWorldForces:
-							- Per-frontier (water pressure drag, waves)
-						- UpdateWaterIntake (for leaking points only)
+						+ ApplyWorldForces:
+							+ Per-frontier (water pressure drag, waves)
+						- Add Points::IsCachedUnderwater(): just depth > 0.0 check
+						- UpdateWaterIntake
 						- Heat dissipation
 						- Rot points
 						- Springs::ApplyStrains() for sounds
@@ -1180,7 +1184,7 @@ Render:
 							- Need to do vortex with forces, though, rather than positions
 							- Make sure no other ephemeral types change positions
 						- All ephemeral particle creation call sites
-						- Catch any other calls to parent.IsUnderwater/GetDepth() by changing name
+						- Catch any other calls to parent.IsUnderwater/GetDepth() by changing names
 							- Only places allowed to invoke World.IsUnderwater/GetDepth() now:
 								- Points::Add for Points building
 								- CachedDepth population at ApplyWorldForces()
@@ -1188,7 +1192,9 @@ Render:
 								- Interactions
 								- PhysicsHandlers at Ship, as they might be invoked at any moment
 									- But not even sure these really need depth/isUnderwater
+						- Nuke World::IsUnderwater?
 						- Test:
+							- Debug
 							- Ephemeral particles at right depth:
 								- Air bubbles
 								- Debris
@@ -1345,21 +1351,6 @@ Render:
 	- UpdateWaterDynamics:
 		- Test turning it around into (multiple) spring visits, rather than point visits
 			- Multiple because of need to normalize outgoing for each point
-
-	- UpdatePointForces:
-		- Substitute "if(y<waterHeight)" branches with "float isUnderwater (with values 1.f/0.f)"
-			- Force compiler into not branching - "?" operator won't work
-		- Precalculate things that do not depend on position nor velocity
-			- Stored in buffers
-				- When possible, via template/lambda tricks
-			- Technically, would have to store separately effectiveMassMultiplier (*Mass) and effectiveBuoyancy (*Mass)
-				- Test: but could cheat and use water height based on initial positions only, in which case
-				  we store directly the result as FieldForce == Gravity + Buoyancy + Water Drag
-				  - FieldForce used directly in Integrate(), added to Force (-> "SpringForce")
-				  - This allows us to call UpdatePointForces only once
-				  - Also need to reset StaticForce buffer before UpdatePointForces, so:
-					- UpdatePointForces becomes CalculateFieldForces and take care of *filling* the buffer, overwriting it
-
 
 - Gfx optimizations:
 
