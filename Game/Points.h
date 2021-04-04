@@ -1095,6 +1095,9 @@ public:
      */
     float GetCachedDepth(ElementIndex pointElementIndex) const
     {
+#ifdef _DEBUG
+        assert(!mDiagnostic_ArePositionsDirty);
+#endif
         return mCachedDepthBuffer[pointElementIndex];
     }
 

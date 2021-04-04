@@ -1001,8 +1001,7 @@ void Ship::ApplyWorldForces(
                 / GameParameters::SimulationStepTimeDuration<float>;
 
             // Get point depth (positive at greater depths, negative over-water)
-            float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(pointPosition.x);
-            float const pointDepth = waterHeightAtThisPoint - pointPosition.y;
+            float const pointDepth = mPoints.GetCachedDepth(pointIndex);
 
             // Calculate drag coefficient: air or water, with soft transition
             // to avoid discontinuities in drag force close to the air-water interface
@@ -1025,21 +1024,21 @@ void Ship::ApplyWorldForces(
                 pointIndex,
                 -dragForce);
 
+            //
+            // Water displacement
+            //
+            // * The magnitude of water displacement is proportional to the square root of
+            //   the kinetic energy of the particle, thus it is proportional to the square
+            //   root of the particle mass, and to the particle's velocity
+            //      * However, in order to generate visible waves also for very small velocities,
+            //        we want the contribution of small velocities to be more than linear wrt
+            //        the contribution of higher velocities, and so we'll be using a piecewise
+            //        function: quadratic for small velocities, and linear for higher
+            // * The deeper the particle is, the less it contributes to displacement
+            //
+
             if constexpr (DoDisplaceWater)
             {
-                //
-                // Water displacement
-                //
-                // * The magnitude of water displacement is proportional to the square root of
-                //   the kinetic energy of the particle, thus it is proportional to the square
-                //   root of the particle mass, and to the particle's velocity
-                //      * However, in order to generate visible waves also for very small velocities,
-                //        we want the contribution of small velocities to be more than linear wrt
-                //        the contribution of higher velocities, and so we'll be using a piecewise
-                //        function: quadratic for small velocities, and linear for higher
-                // * The deeper the particle is, the less it contributes to displacement
-                //
-
                 float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
                 float const absVerticalVelocity = std::abs(verticalVelocity);
 
