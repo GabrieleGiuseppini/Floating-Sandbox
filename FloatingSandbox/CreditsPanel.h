@@ -16,10 +16,7 @@ class CreditsPanel : public wxPanel
 {
 public:
 
-    CreditsPanel(
-        wxWindow* parent,
-        wxString application,
-        wxString buildInfo);
+    CreditsPanel(wxWindow* parent);
 
 private:
 
@@ -32,8 +29,8 @@ private:
     void OnEraseBackground(wxPaintEvent & event);
     void OnLeftDown(wxMouseEvent & event);
     void OnMouseMove(wxMouseEvent & event);
-    void OnScrollTimer(wxTimerEvent & event);    
-       
+    void OnScrollTimer(wxTimerEvent & event);
+
 private:
 
     struct Title
@@ -45,10 +42,7 @@ private:
 
 private:
 
-    wxString const mApplication;
-    wxString const mBuildInfo;
-
-    std::array<wxFont, 4> mFonts;   
+    std::array<wxFont, 4> mFonts;
 
     std::unique_ptr<wxBitmap> mCreditsBitmap;
     std::unique_ptr<wxBufferedPaintDC> mCreditsBitmapBufferedPaintDC;

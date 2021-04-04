@@ -475,6 +475,9 @@ Render:
 				= ScreenToOffset with electrical panel
 					+ Add logging
 					- Remove TODOTEST logging
+				+ Move BuildInfo generation to BuildInfo
+					+ Log
+					+ CreditsPanel
 				= Test setting glContext after resize
 					- If works, add #ifdef for MAC
 				- MAC tests:
@@ -496,6 +499,7 @@ Render:
 					- Credits
 						- Please send me a screenshot of this one
 			+ Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
+			+ FPS: 13-14
 			- Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
 			- Packaging:
 				- wxWidgets so's
@@ -508,6 +512,8 @@ Render:
 
 		- See why NVidia's rendering is so slow
 			+ Try VSync: yes, it's the VSync
+			- See if without glFinish it goes away
+				- If so: remove glFinish?
 			- Decide whether FS should turn VSync off
 				- I'D SAY NO - PREVENTS TEARING
 				- See if there's a non-NVidia-specific way which may be done with all cards
@@ -1129,8 +1135,8 @@ Render:
 						+ ... everything else...
 						! [WorldBoundaries apply]
 						! END
-					= Test:
-						- Verify that after WorldBoundaries there's no position changes
+					+ Test:
+						+ Verify that after WorldBoundaries there's no position changes
 						+ Rotting
 						+ Melting
 						+ Bombs detonations (ship's state machine)

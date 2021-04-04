@@ -27,37 +27,6 @@ AboutDialog::AboutDialog(wxWindow * parent)
 
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-    // Application and build info
-    std::string application;
-    std::string buildInfo;
-    {
-        application = std::string(APPLICATION_NAME_WITH_LONG_VERSION);
-
-#if defined(FS_ARCHITECTURE_ARM_32)
-        buildInfo += " ARM 32-bit";
-#elif defined(FS_ARCHITECTURE_ARM_64)
-        buildInfo += " ARM 64-bit";
-#elif defined(FS_ARCHITECTURE_X86_32)
-        buildInfo += " x86 32-bit";
-#elif defined(FS_ARCHITECTURE_X86_64)
-        buildInfo += " x86 64-bit";
-#else
-        buildInfo += " <ARCH?>";
-#endif
-
-#if defined(FS_OS_LINUX)
-        buildInfo += " Linux";
-#elif defined(FS_OS_MACOS)
-        buildInfo += " MacOS";
-#elif defined(FS_OS_WINDOWS)
-        buildInfo += " Windows";
-#else
-        buildInfo += " <OS?>";
-#endif
-
-        buildInfo += " (" __DATE__ ")";
-    }
-
     //
     // Setup dialog
     //
@@ -66,7 +35,7 @@ AboutDialog::AboutDialog(wxWindow * parent)
 
     // Credits panel
     {
-        CreditsPanel * creditsPanel = new CreditsPanel(this, application, buildInfo);
+        CreditsPanel * creditsPanel = new CreditsPanel(this);
 
         mainSizer->Add(
             creditsPanel,

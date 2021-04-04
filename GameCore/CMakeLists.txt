@@ -12,6 +12,7 @@ set  (SOURCES
 	BoundedVector.h
 	Buffer.h
 	BufferAllocator.h
+	BuildInfo.h
 	CircularList.h
 	Colors.cpp
 	Colors.h
