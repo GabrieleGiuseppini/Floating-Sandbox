@@ -555,7 +555,7 @@ public:
 
 public:
 
-    void RebindContext(std::function<void()> rebindContextFunction);
+    void RebindContext();
 
     void Reset();
 
@@ -990,6 +990,7 @@ private:
     // Rendering externals
     //
 
+    std::function<void()> const mMakeRenderContextCurrentFunction;
     std::function<void()> const mSwapRenderBuffersFunction;
 
 

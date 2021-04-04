@@ -479,8 +479,13 @@ Render:
 					+ Log
 					+ CreditsPanel
 				= Test setting glContext after resize
-					- If works, add #ifdef for MAC
-					- Take care also of resize's happening with splash screen
+					+ If works, add #ifdef for MAC 
+						+ Do it from RenderContext directly, @ ApplyCanvasSizeChanges
+							+ Callback binds to a new MainFrame's private method
+								+ std::atomic for pointer to canvas
+							+ Callback from RenderDeviceProperties goes back to being simply named
+							+ "RebindContext" call takes no args
+					= Take care also of resize's happening with splash screen
 				- MAC tests:
 					- Tools:
 						- Move tool
@@ -502,9 +507,12 @@ Render:
 			+ Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
 			+ FPS: 13-14
 			- Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
+				- Add log entry for current directory *and* for executable directory
 			- Packaging:
 				- wxWidgets so's
-					- See if may statically link	
+					- See if may statically link
+				- SFML: so's?
+				- DevIL: so's?
 					
 		- bishobe64 as tester
 			- Invite

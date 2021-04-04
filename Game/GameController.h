@@ -114,7 +114,7 @@ public:
         mGameEventDispatcher->RegisterGenericEventHandler(handler);
     }
 
-    void RebindOpenGLContext(std::function<void()> rebindContextFunction);
+    void RebindOpenGLContext();
 
     ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) override;
     ShipMetadata ResetAndReloadShip(std::filesystem::path const & shipDefinitionFilepath) override;

@@ -20,7 +20,7 @@ struct RenderDeviceProperties
     std::optional<bool> DoForceNoGlFinish;
     std::optional<bool> DoForceNoMultithreadedRendering;
 
-    std::function<void()> InitialMakeRenderContextCurrentFunction;
+    std::function<void()> MakeRenderContextCurrentFunction;
     std::function<void()> SwapRenderBuffersFunction;
 
     RenderDeviceProperties(
@@ -28,13 +28,13 @@ struct RenderDeviceProperties
         int logicalToPhysicalPixelFactor,
         std::optional<bool> doForceNoGlFinish,
         std::optional<bool> doForceNoMultithreadedRendering,
-        std::function<void()> initialMakeRenderContextCurrentFunction,
+        std::function<void()> makeRenderContextCurrentFunction,
         std::function<void()> swapRenderBuffersFunction)
         : InitialCanvasSize(initialCanvasSize)
         , LogicalToPhysicalPixelFactor(logicalToPhysicalPixelFactor)
         , DoForceNoGlFinish(doForceNoGlFinish)
         , DoForceNoMultithreadedRendering(doForceNoMultithreadedRendering)
-        , InitialMakeRenderContextCurrentFunction(std::move(initialMakeRenderContextCurrentFunction))
+        , MakeRenderContextCurrentFunction(std::move(makeRenderContextCurrentFunction))
         , SwapRenderBuffersFunction(std::move(swapRenderBuffersFunction))
     {}
 };
