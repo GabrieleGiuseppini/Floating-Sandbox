@@ -5,20 +5,18 @@
  ***************************************************************************************/
 #include "CreditsPanel.h"
 
+#include <GameCore/BuildInfo.h>
+#include <GameCore/Version.h>
+
 #include <utility>
 
-CreditsPanel::CreditsPanel(
-    wxWindow* parent,
-    wxString application,
-    wxString buildInfo)
+CreditsPanel::CreditsPanel(wxWindow* parent)
     : wxPanel(
         parent,
         wxID_ANY,
         wxDefaultPosition,
         wxDefaultSize,
         wxBORDER_NONE)
-    , mApplication(application)
-    , mBuildInfo(buildInfo)
     , mLastMousePosition(0, 0)
 {
     SetMinSize(parent->GetSize()); // Occupy all space
@@ -67,8 +65,8 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
 
     std::vector<Title> titles = {
 
-        {0, mApplication, 0},
-        {1, mBuildInfo, panelSize.GetHeight() / 2},
+        {0, std::string(APPLICATION_NAME_WITH_LONG_VERSION), 0},
+        {1, BuildInfo::GetBuildInfo().ToString(), panelSize.GetHeight() / 2},
 
         {1, _("(c) Gabriele Giuseppini 2018-2021"), 0},
         {2, _("Original concept (c) Luke Wren, Francis Racicot (Pac0master) 2013"), VMargin},
