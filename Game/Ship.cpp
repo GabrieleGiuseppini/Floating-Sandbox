@@ -818,18 +818,23 @@ void Ship::ApplyWorldForces(
         GameParameters::WaterFrictionDragCoefficient
         * gameParameters.WaterFrictionDragAdjustment;
 
+    // New buffer for cached depths, which are calculated here
+    std::shared_ptr<Buffer<float>> newCachedPointDepths = mPoints.AllocateWorkBufferFloat();
+    float * const restrict newCachedPointDepthsBuffer = newCachedPointDepths->data();
+
     vec2f * const restrict nonSpringForcesBuffer = mPoints.GetNonSpringForceBufferAsVec2();
+
     for (auto pointIndex : mPoints.BufferElements())
     {
         vec2f nonSpringForce = vec2f::zero();
 
         //
-        // Apply gravity
+        // Calculate and store depth
         //
 
-        nonSpringForce +=
-            gameParameters.Gravity
-            * mPoints.GetMass(pointIndex); // Material + Augmentation + Water
+        newCachedPointDepthsBuffer[pointIndex] =
+            mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x) -
+            mPoints.GetPosition(pointIndex).y;
 
         //
         // Calculate above/under-water coefficient
@@ -839,8 +844,15 @@ void Ship::ApplyWorldForces(
         // in-between: smooth air-water interface (nature abhors discontinuities)
         //
 
-        float const waterHeightAtThisPoint = mParentWorld.GetOceanSurfaceHeightAt(mPoints.GetPosition(pointIndex).x);
-        float const uwCoefficient = Clamp(waterHeightAtThisPoint - mPoints.GetPosition(pointIndex).y, 0.0f, 1.0f);
+        float const uwCoefficient = Clamp(newCachedPointDepthsBuffer[pointIndex], 0.0f, 1.0f);
+
+        //
+        // Apply gravity
+        //
+
+        nonSpringForce +=
+            gameParameters.Gravity
+            * mPoints.GetMass(pointIndex); // Material + Augmentation + Water
 
         //
         // Apply water/air buoyancy
@@ -1115,6 +1127,9 @@ void Ship::ApplyWorldForces(
         // Store AABB
         aabbSet.Add(std::move(aabb));
     }
+
+    // Store new cached depths
+    mPoints.SwapCachedDepthBuffer(*newCachedPointDepths);
 }
 
 void Ship::ApplySpringsForces_BySprings(GameParameters const & /*gameParameters*/)

@@ -519,6 +519,8 @@ Render:
 		
 		= Cached quantities (*)
 
+		- UpdateWaterVelocities: can skip water buffer copy and just allocated + swap
+
 		- See why NVidia's rendering is so slow
 			+ Try VSync: yes, it's the VSync
 			- See if without glFinish it goes away
@@ -528,6 +530,9 @@ Render:
 				- See if there's a non-NVidia-specific way which may be done with all cards
 					- Windows-only would be fine
 
+		- Send for testing
+			- bishobe64 in Credits?
+
 		- Try using same vertex buffer for Ocean and Land
 			- Same size as largest
 				- Make buffer of union's: ocean basic || ocean detailed || land
@@ -536,17 +541,6 @@ Render:
 			- Same VBO as well
 			- Try also stars
 			- Then try everything else, if ok
-
-		- Randomized start (?)
-			- Done by new method at SettingsManager, by choosing settings (system & user) weighted by new optional probability attribute
-				- Proability at SettingsDialog
-				- "defaults" (not a setting, just hardcoded) have own hardcoded probability
-			- Add new system settings, with probs:
-				- Starry night 0/10
-				- Quiet sea 4/10
-				= Blue world (sky: 0, 119, 196; find ocean, rest like quiet sea) 2/10
-			- Triggered on/off via Game Preferences
-				- Default off
 
 		- ShipLoadDialog Toolbar (*)
 
@@ -559,9 +553,6 @@ Render:
 			- Old Dell FPS & update ms:
 				- Before:
 				- After:
-
-		- Send for testing
-			- bishobe64 in Credits?
 	
 		- New ships
 			- changelist
@@ -1170,21 +1161,15 @@ Render:
 							+ Smoke
 							+ Sparkles
 							+ TimerBomb smoke
-					- Populate CachedDepth at ApplyWorldForces
-						- Alloc new depth buffer - no need to clean
-							- For future usages
-						- Per-Particle
-							- Calculate and store depths here
-						- Per-Frontier
-							- No need to use it right now, see later
-						- Swap depth buffers
-					- Use it, getting rid of now-superfluous parent.IsUnderwater/GetDepth calls
+					+ Populate CachedDepth at ApplyWorldForces
+						+ Alloc new depth buffer - no need to clean
+						+ Per-Particle: calculate and store depths here
+						+ Swap depth buffers
+					= Use it, getting rid of now-superfluous parent.IsUnderwater/GetDepth calls
 						+ Fork exe, take initial perf (UPD):
 							+ Normal: 4.65
 							+ With bubbles (@ all eph particles): 4.80/4.90
 						- ApplyWorldForces:
-							- Per-point
-								- Note: now we check twice (buoyancyl then drag); should also unify per-point visit to have single underwater check applying buoyancy + drag
 							- Per-frontier (water pressure drag, waves)
 						- UpdateWaterIntake (for leaking points only)
 						- Heat dissipation
@@ -1919,6 +1904,17 @@ Render:
 		- Sediment could also preserve anything that is buried under it
 
 - Game Interactions and Controls:
+
+	- Randomized start
+		- Done by new method at SettingsManager, by choosing settings (system & user) weighted by new optional probability attribute
+			- Proability at SettingsDialog
+			- "defaults" (not a setting, just hardcoded) have own hardcoded probability
+		- Add new system settings, with probs:
+			- Starry night 0/10
+			- Quiet sea 4/10
+			= Blue world (sky: 0, 119, 196; find ocean, rest like quiet sea) 2/10
+		- Triggered on/off via Game Preferences
+			- Default off
 
 	- Ship carries with it:
 		- Overriding/addition of materials
