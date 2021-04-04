@@ -617,10 +617,6 @@ void RenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParame
 
     // Set viewport and scissor
     glViewport(0, 0, view.GetCanvasPhysicalPixelSize().width, view.GetCanvasPhysicalPixelSize().height);
-
-    // TODOTEST
-    LogMessage("TODOTEST: RenderContext::ApplyCanvasSizeChanges(): CanvasPhysicalPixelSize:(",
-        view.GetCanvasPhysicalPixelSize().width, ",", view.GetCanvasPhysicalPixelSize().height, ")");
 }
 
 void RenderContext::ApplyShipStructureRenderModeChanges(RenderParameters const & renderParameters)
