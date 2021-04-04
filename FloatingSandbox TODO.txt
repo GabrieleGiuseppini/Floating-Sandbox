@@ -472,14 +472,15 @@ Render:
 							+ MoveBy
 						+ Shaders: cross of light, interactive, texture notifications
 						+ Screenshot
-				= ScreenToOffset with electrical panel
+				+ ScreenToOffset with electrical panel
 					+ Add logging
-					- Remove TODOTEST logging
+					+ Remove TODOTEST logging
 				+ Move BuildInfo generation to BuildInfo
 					+ Log
 					+ CreditsPanel
 				= Test setting glContext after resize
 					- If works, add #ifdef for MAC
+					- Take care also of resize's happening with splash screen
 				- MAC tests:
 					- Tools:
 						- Move tool
