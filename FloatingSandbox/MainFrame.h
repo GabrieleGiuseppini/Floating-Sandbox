@@ -34,6 +34,7 @@
 #include <wx/sizer.h>
 #include <wx/timer.h>
 
+#include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <memory>
@@ -78,11 +79,14 @@ private:
     wxPanel * mMainPanel;
 
     //
-    // Canvas
+    // OpenGL Canvas and Context
     //
 
     std::unique_ptr<GLCanvas> mMainGLCanvas;
     std::unique_ptr<wxGLContext> mMainGLCanvasContext;
+
+    // Pointer to the canvas that the OpenGL context may be made current on
+    std::atomic<wxGLCanvas *> mCurrentOpenGLCanvas;
 
     //
     // Controls that we're interacting with
@@ -302,6 +306,14 @@ private:
     }
 
 private:
+
+    void MakeOpenGLContextCurrent()
+    {
+        LogMessage("MainFrame::MakeOpenGLContextCurrent()");
+
+        assert(mCurrentOpenGLCanvas.load() != nullptr);
+        mMainGLCanvasContext->SetCurrent(*(mCurrentOpenGLCanvas.load()));
+    }
 
     inline void AfterGameRender()
     {

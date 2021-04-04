@@ -74,6 +74,7 @@ RenderContext::RenderContext(
     , mVectorFieldRenderMode(VectorFieldRenderModeType::None)
     , mVectorFieldLengthMultiplier(1.0f)
     // Rendering externals
+    , mMakeRenderContextCurrentFunction(renderDeviceProperties.MakeRenderContextCurrentFunction)
     , mSwapRenderBuffersFunction(renderDeviceProperties.SwapRenderBuffersFunction)
     // Render parameters
     , mRenderParameters(
@@ -96,7 +97,7 @@ RenderContext::RenderContext(
             //
 
             // Make render context current - invoke from this thread
-            renderDeviceProperties.InitialMakeRenderContextCurrentFunction();
+            mMakeRenderContextCurrentFunction();
 
             // Initialize OpenGL
             GameOpenGL::InitOpenGL();
@@ -270,13 +271,13 @@ RenderContext::~RenderContext()
 
 //////////////////////////////////////////////////////////////////////////////////
 
-void RenderContext::RebindContext(std::function<void()> rebindContextFunction)
+void RenderContext::RebindContext()
 {
-    LogMessage("RenderContext::RebindContext: start");
-
-    mRenderThread.RunSynchronously(std::move(rebindContextFunction));
-
-    LogMessage("RenderContext::RebindContext: end");
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            mMakeRenderContextCurrentFunction();
+        });
 }
 
 void RenderContext::Reset()
@@ -617,6 +618,13 @@ void RenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParame
 
     // Set viewport and scissor
     glViewport(0, 0, view.GetCanvasPhysicalPixelSize().width, view.GetCanvasPhysicalPixelSize().height);
+
+#ifdef FS_OS_MACOS
+    // After changing the viewport, on MacOS one must also re-make the context current;
+    // see https://forums.wxwidgets.org/viewtopic.php?t=41368 and
+    // https://developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/OpenGL-MacProgGuide/opengl_contexts/opengl_contexts.html
+    mMakeRenderContextCurrentFunction();
+#endif
 }
 
 void RenderContext::ApplyShipStructureRenderModeChanges(RenderParameters const & renderParameters)

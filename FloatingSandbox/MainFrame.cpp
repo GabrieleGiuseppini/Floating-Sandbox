@@ -119,7 +119,8 @@ long const ID_CHECK_UPDATES_TIMER = wxNewId();
 MainFrame::MainFrame(
     wxApp * mainApp,
     LocalizationManager & localizationManager)
-    : mMainApp(mainApp)
+    : mCurrentOpenGLCanvas(nullptr)
+    , mMainApp(mainApp)
     , mLocalizationManager(localizationManager)
     , mResourceLocator()
     , mGameController()
@@ -752,6 +753,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // the canvas to be visible at the moment the context is created
     //
 
+    mCurrentOpenGLCanvas.store(splash->GetOpenGLCanvas());
+
     mMainGLCanvasContext = std::make_unique<wxGLContext>(splash->GetOpenGLCanvas());
 
 #if defined(_DEBUG) && defined(_WIN32)
@@ -777,16 +780,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
                 mMainGLCanvas->GetContentScaleFactor(),
                 bootSettings.DoForceNoGlFinish,
                 bootSettings.DoForceNoMultithreadedRendering,
-                [this, splash]() // Allow deferred execution, capturing splash dialog by value
-                {
-                    //
-                    // Invoked on a different thread, but with synchronous
-                    // execution
-                    //
-
-                    mMainGLCanvasContext->SetCurrent(*(splash->GetOpenGLCanvas()));
-
-                },
+                std::bind(&MainFrame::MakeOpenGLContextCurrent, this),
                 [this]()
                 {
                     //
@@ -1327,18 +1321,16 @@ void MainFrame::OnMainGLCanvasPaint(wxPaintEvent & event)
         // the OpenGL context to the canvas and close the splash screen
         //
 
+        LogMessage("MainFrame::OnMainGLCanvasPaint(): rebinding OpenGLContext to main GL canvas, and hiding SplashScreen");
+
         // Move OpenGL context to *our* canvas
         assert(!!mMainGLCanvas);
         assert(!!mMainGLCanvasContext);
         assert(!!mGameController);
-        mGameController->RebindOpenGLContext(
-            [this]()
-            {
-                mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
-            });
+        mCurrentOpenGLCanvas.store(mMainGLCanvas.get());
+        mGameController->RebindOpenGLContext();
 
         // Close splash screen
-        LogMessage("MainFrame::OnMainGLCanvasPaint(): Hiding SplashScreen");
         mSplashScreenDialog->Close();
         mSplashScreenDialog->Destroy();
         mSplashScreenDialog.reset();
@@ -1349,7 +1341,8 @@ void MainFrame::OnMainGLCanvasPaint(wxPaintEvent & event)
 
 void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
 {
-    LogMessage("OnMainGLCanvasResize: ", event.GetSize().GetX(), "x", event.GetSize().GetY());
+    LogMessage("OnMainGLCanvasResize: ", event.GetSize().GetX(), "x", event.GetSize().GetY(),
+        (!!mGameController) ? " (With GameController)" : " (Without GameController)");
 
     if (!!mGameController
         && event.GetSize().GetX() > 0
@@ -1359,16 +1352,6 @@ void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
             LogicalPixelSize(
                 event.GetSize().GetX(),
                 event.GetSize().GetY()));
-
-        // TODOTEST
-        LogMessage("OnMainGLCanvasResize: Now rebinding context");
-        assert(!!mMainGLCanvas);
-        assert(!!mMainGLCanvasContext);
-        mGameController->RebindOpenGLContext(
-            [this]()
-            {
-                mMainGLCanvasContext->SetCurrent(*mMainGLCanvas);
-            });
     }
 
     event.Skip();

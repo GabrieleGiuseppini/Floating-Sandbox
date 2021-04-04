@@ -264,10 +264,10 @@ GameController::GameController(
     ComputerCalibrator::TuneGame(score, mGameParameters, *mRenderContext);
 }
 
-void GameController::RebindOpenGLContext(std::function<void()> rebindContextFunction)
+void GameController::RebindOpenGLContext()
 {
     assert(!!mRenderContext);
-    mRenderContext->RebindContext(std::move(rebindContextFunction));
+    mRenderContext->RebindContext();
 }
 
 ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)
