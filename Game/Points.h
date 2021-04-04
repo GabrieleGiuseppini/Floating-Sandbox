@@ -1101,6 +1101,14 @@ public:
         return mCachedDepthBuffer[pointElementIndex];
     }
 
+    bool IsCachedUnderwater(ElementIndex pointElementIndex) const
+    {
+#ifdef _DEBUG
+        assert(!mDiagnostic_ArePositionsDirty);
+#endif
+        return mCachedDepthBuffer[pointElementIndex] > 0.0f;
+    }
+
     float * GetCachedDepthBufferAsFloat()
     {
         return mCachedDepthBuffer.data();

@@ -517,7 +517,8 @@ Render:
 		- bishobe64 as tester
 			- Invite
 		
-		= Cached quantities (*)
+		= Cached depths (*)
+			- Check perf on Dell
 
 		- UpdateWaterVelocities: can skip water buffer copy and just allocated + swap
 
@@ -1046,7 +1047,7 @@ Render:
 
 	- See if additional springs (e.g. between i and i+2) help
 
-	= Cached quantities (*)
+	= Cached spring lengths (*)
 		! Ship::Update: cache quantities that are currently re-calculated multiple times
 		! Identify streak of calculations that need a quantity more than once, and during which the quantity never changes
 			- e.g. spring lengths between water update and heat update
@@ -1057,8 +1058,8 @@ Render:
 			- Alternatively use Algorithms::CalculateSpringDirAndReciprocalLengths
 		= Candidates:
 			- Spring length, spring dir
-				- Valid as long as points don't move
-					- In DEBUG, mark mPoints.mDiagnostic_ArePositionsDirty on each position change, and expose mPoints.Diagnostic_ClearDirtyPositions() which is
+				+ Valid as long as points don't move
+					+ In DEBUG, mark mPoints.mDiagnostic_ArePositionsDirty on each position change, and expose mPoints.Diagnostic_ClearDirtyPositions() which is
 					  invoked after Springs' cached lengths are re-calculated
 						+ Force position changes to go through setters
 							+ Except for buffered ones, follow these manually and invoke mPoints.Diagnostic_MarkPositionsAsDirty()
@@ -1067,164 +1068,6 @@ Render:
 					- Also use instead of factory rest lengths at:
 						- Water
 						- Heat
-			= Underwater depth: Points::Depth
-				! Spec:
-					! Valid as long as points don't move after caching, and as long as cached depth is not used between interactions and moment when it's calculated again
-					! Also valid as long as points are not created after depths are taken
-						! So also creation of ephemeral particles needs to be tackled
-				= Plan:
-					+ Points::GetPosition() -> &: convert to Set
-						+ Check assembly before and after
-						+ Test:
-							+ CollisionWithOceanFloor
-							+ WorldBoundaries
-					+ Interactions: clamp positions to world boundaries after each position change
-						! GenerateDebris uses source particle's position
-						! GenerateSparklesForCut uses midpoint of spring
-						! GenerateSparklesForLightning uses source particle's position
-					+ Test ApplyWorldForces
-						+ Wind
-						+ Friction drag
-					+ Commit
-					+ Take initial perf with analyzer
-						- GameController::RunGameIteration: 86.52
-							- Ship::Update: 83.82
-								- Springs: 56.59
-								- CollisionsWithSeafloor: 9.43
-								- UpdateWaterVelocities: 8.27
-								- Integrate: 3.74
-								- PropagateHeat: 2.17
-								- ApplyWorldForces: 1.63
-					+ Try CollisionsWithSeafloor optimizations:
-						X 1: Do once at the end, taking snapshot of positions ("pre-impact positions") before loop
-							X Springs' displacement is too high to survive any strain check
-						+ 2: If doesn't work: do once every N steps, taking snapshot of positions before N steps
-							+ N=4: still too much
-							+ N=2
-								x Try N=4 again with fixed collision dynamics
-								+ See ocean floor friction
-						+ 3: Try using velocity instead of previous position vector
-						X 4: Try sparsely for most of loop, then more densely at end
-						+ Cleanup:
-							+ See new minima and maxima for both friction and elasticity
-							+ Cleanup TODOs and useless functions
-						X Try soft interpolation
-					+ Do DEBUG work above to catch late positions changes
-						+ Also make sure to flag positions as dirty at modifiers of position buffer
-						+ Test and verify that after WorldBoundaries there's no position changes
-					+ Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
-						! [WorldBoundaries apply]
-						+ [Interactive position changes]
-							+ These take a world in boundaries, and leave the world in boundaries
-								+ Since we'll likely be accessing OceanSurface or OceanFloor during interactions
-							+ Need to make sure these clamp to world boundaries then
-						! [WorldBoundaries apply]
-						! START
-						+ UpdateForGameParameters
-						+ UpdateMasses
-						+ Spring + Integration + OceanFloorCollision
-						+ TrimForWorldBounds
-							+ This ends position changes in the entire loop						
-						+ // From now on, we only work with forces and never update positions
-						+ ResetNonSpringForces
-						+ ApplyWorldForces							
-						+ [Cached depths are valid starting now]
-						+ RotPoints()
-						+ Gadgets::Update()
-						+ UpdateForSpringStrains
-							+ Because bounce @ WorldBoundaries requires UpdateForSpringStrains in same frame to prevent humongously long springs
-							+ Requires depth for sounds, but no big deal if has to calculate it
-						+ UpdateStateMachines
-						+ ... everything else...
-						! [WorldBoundaries apply]
-						! END
-					+ Test:
-						+ Verify that after WorldBoundaries there's no position changes
-						+ Rotting
-						+ Melting
-						+ Bombs detonations (ship's state machine)
-						+ Ocean floor bounce
-						+ World boundary bounce
-					+ New Points::CachedDepth buffer
-						+ Initialization: via mParentWorld call at Add()
-						+ Getter
-						+ Buffer getter & swapper (see water buffers)
-					+ Ephemeral points: ephemeral points must take depth at creation, always
-						+ Change all Points::CreateXYZ() methods to take point depth
-						+ Bubbles already have it anyway!
-						+ Creation happens at:
-							+ Interactions
-							+ Breakages at UpdateForSpringStrains
-							+ Bubble generation
-							+ Anywhere else?
-						+ Test:
-							+ Water inflow (for depth recalculation)
-							+ Air bubbles
-							+ Debris
-							+ Smoke
-							+ Sparkles
-							+ TimerBomb smoke
-					+ Populate CachedDepth at ApplyWorldForces
-						+ Alloc new depth buffer - no need to clean
-						+ Per-Particle: calculate and store depths here
-						+ Swap depth buffers
-					= Use it, getting rid of now-superfluous parent.IsUnderwater/GetDepth calls
-						+ Fork exe, take initial perf (UPD):
-							+ Normal: 4.65
-							+ With bubbles (@ all eph particles): 4.80/4.90
-						+ ApplyWorldForces:
-							+ Per-frontier (water pressure drag, waves)
-						- Add Points::IsCachedUnderwater(): just depth > 0.0 check
-						- UpdateWaterIntake
-						- Heat dissipation
-						- Rot points
-						- Springs::ApplyStrains() for sounds
-						- Points::UpdateCombustionHighFrequency
-						- Points::UpdateEphemeralParticles (AirBubbles - and others?)
-							- Need to do vortex with forces, though, rather than positions
-							- Make sure no other ephemeral types change positions
-						- All ephemeral particle creation call sites
-						- Catch any other calls to parent.IsUnderwater/GetDepth() by changing names
-							- Only places allowed to invoke World.IsUnderwater/GetDepth() now:
-								- Points::Add for Points building
-								- CachedDepth population at ApplyWorldForces()
-								- Ephemeral particle creation
-								- Interactions
-								- PhysicsHandlers at Ship, as they might be invoked at any moment
-									- But not even sure these really need depth/isUnderwater
-						- Nuke World::IsUnderwater?
-						- Test:
-							- Debug
-							- Ephemeral particles at right depth:
-								- Air bubbles
-								- Debris
-								- Smoke
-								- Sparkles
-								- TimerBomb smoke
-						- Final perf: 
-							- Normal: TODO
-							- With bubbles: TODO
-					- Check perf on Dell
-				- TODOOLD
-				- Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
-					- OLD LOOP:
-						- [WorldBoundaries apply]
-						- [Interactive position changes]
-							- These take a world in boundaries, and leave the world in boundaries
-								- Since we'll likely be accessing OceanSurface or OceanFloor during interactions
-							- Need to make sure these clamp to world boundaries then
-						- START
-						- [WorldBoundaries apply]
-						- ApplyWorldForces
-							- Per-Particle
-								- Calculate and store depths here
-							- Per-Frontier
-						- ... everything else...
-						- Spring + Integration [just move this one at bottom, here]
-						- UpdateForSpringStrains [just move this one at bottom, here]
-						- WorldBoundaries [just move this one at bottom, here]
-						- [WorldBoundaries apply]
-						- END
 
 	- 2** Try with SpringRelaxation updating only positions **2 (*)
 		- RelaxSprings() updates position directly, no forces involved
@@ -2729,6 +2572,158 @@ IF WX:
 		+ Test:
 			+ See bounces from ocean floor
 				+ The back-sending should be fine as it's based off real initial velocity TODO: double-check
+	+ Cached depths (*)
+		+ Underwater depth: Points::CachedDepth
+			! Spec:
+				! Valid as long as points don't move after caching, and as long as cached depth is not used between interactions and moment when it's calculated again
+				! Also valid as long as points are not created after depths are taken
+					! So also creation of ephemeral particles needs to be tackled
+			+ Plan:
+				+ Points::GetPosition() -> &: convert to Set
+					+ Check assembly before and after
+					+ Test:
+						+ CollisionWithOceanFloor
+						+ WorldBoundaries
+				+ Interactions: clamp positions to world boundaries after each position change
+					! GenerateDebris uses source particle's position
+					! GenerateSparklesForCut uses midpoint of spring
+					! GenerateSparklesForLightning uses source particle's position
+				+ Test ApplyWorldForces
+					+ Wind
+					+ Friction drag
+				+ Commit
+				+ Take initial perf with analyzer
+					- GameController::RunGameIteration: 86.52
+						- Ship::Update: 83.82
+							- Springs: 56.59
+							- CollisionsWithSeafloor: 9.43
+							- UpdateWaterVelocities: 8.27
+							- Integrate: 3.74
+							- PropagateHeat: 2.17
+							- ApplyWorldForces: 1.63
+				+ Try CollisionsWithSeafloor optimizations:
+					X 1: Do once at the end, taking snapshot of positions ("pre-impact positions") before loop
+						X Springs' displacement is too high to survive any strain check
+					+ 2: If doesn't work: do once every N steps, taking snapshot of positions before N steps
+						+ N=4: still too much
+						+ N=2
+							x Try N=4 again with fixed collision dynamics
+							+ See ocean floor friction
+					+ 3: Try using velocity instead of previous position vector
+					X 4: Try sparsely for most of loop, then more densely at end
+					+ Cleanup:
+						+ See new minima and maxima for both friction and elasticity
+						+ Cleanup TODOs and useless functions
+					X Try soft interpolation
+				+ Do DEBUG work above to catch late positions changes
+					+ Also make sure to flag positions as dirty at modifiers of position buffer
+					+ Test and verify that after WorldBoundaries there's no position changes
+				+ Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
+					! [WorldBoundaries apply]
+					+ [Interactive position changes]
+						+ These take a world in boundaries, and leave the world in boundaries
+							+ Since we'll likely be accessing OceanSurface or OceanFloor during interactions
+						+ Need to make sure these clamp to world boundaries then
+					! [WorldBoundaries apply]
+					! START
+					+ UpdateForGameParameters
+					+ UpdateMasses
+					+ Spring + Integration + OceanFloorCollision
+					+ TrimForWorldBounds
+						+ This ends position changes in the entire loop						
+					+ // From now on, we only work with forces and never update positions
+					+ ResetNonSpringForces
+					+ ApplyWorldForces							
+					+ [Cached depths are valid starting now]
+					+ RotPoints()
+					+ Gadgets::Update()
+					+ UpdateForSpringStrains
+						+ Because bounce @ WorldBoundaries requires UpdateForSpringStrains in same frame to prevent humongously long springs
+						+ Requires depth for sounds, but no big deal if has to calculate it
+					+ UpdateStateMachines
+					+ ... everything else...
+					! [WorldBoundaries apply]
+					! END
+				+ Test:
+					+ Verify that after WorldBoundaries there's no position changes
+					+ Rotting
+					+ Melting
+					+ Bombs detonations (ship's state machine)
+					+ Ocean floor bounce
+					+ World boundary bounce
+				+ New Points::CachedDepth buffer
+					+ Initialization: via mParentWorld call at Add()
+					+ Getter
+					+ Buffer getter & swapper (see water buffers)
+				+ Ephemeral points: ephemeral points must take depth at creation, always
+					+ Change all Points::CreateXYZ() methods to take point depth
+					+ Bubbles already have it anyway!
+					+ Creation happens at:
+						+ Interactions
+						+ Breakages at UpdateForSpringStrains
+						+ Bubble generation
+						+ Anywhere else?
+					+ Test:
+						+ Water inflow (for depth recalculation)
+						+ Air bubbles
+						+ Debris
+						+ Smoke
+						+ Sparkles
+						+ TimerBomb smoke
+				+ Populate CachedDepth at ApplyWorldForces
+					+ Alloc new depth buffer - no need to clean
+					+ Per-Particle: calculate and store depths here
+					+ Swap depth buffers
+				+ Use it, getting rid of now-superfluous parent.IsUnderwater/GetDepth calls
+					+ Fork exe, take initial perf (UPD):
+						+ Normal: 4.65
+						+ With bubbles (@ all eph particles): 4.80/4.90
+					+ ApplyWorldForces:
+						+ Per-frontier (water pressure drag, waves)
+					+ Add Points::IsCachedUnderwater(): just depth > 0.0 check
+					+ UpdateWaterIntake
+					+ Heat dissipation
+					+ Rot points
+					+ Springs::ApplyStrains() for sounds
+					+ Points::UpdateCombustionHighFrequency
+					+ Points::UpdateEphemeralParticles (AirBubbles - and others?)
+						+ Make sure no other ephemeral types change positions
+					+ All ephemeral particle creation call sites
+					+ Catch any other calls to parent.IsUnderwater/GetOceanFloorSurfaceAt() by changing names
+						! Only places allowed to invoke World.IsUnderwater/GetOceanFloorSurfaceAt() now:
+							+ Points::Add for Points building
+							+ CachedDepth population at ApplyWorldForces()
+							+ Ephemeral particle creation
+							+ Interactions
+							+ PhysicsHandlers at Ship, as they might be invoked at any moment
+							+ Gadgets' and PinnedPoints' interactions
+							+ Anywhere the position is not that of a particle
+								+ ElectricalElements::Update for offseted engine
+						+ Rename World::TODO's back
+							+ Verify "allowed" list as you go
+							+ Add GetDepth(position)
+					+ Test:
+						+ Verify assembly of mWorld.IsUnderwater() and GetDepth() at a caller's site
+						+ Debug
+						+ Water inflow via leaking
+							+ Pumps
+						+ Combustion initiation and smothering
+						+ Air bubbles expiration
+						+ Sparkles expiration
+						+ WakeBubbles
+						+ Rotting
+						+ Stressed springs underwater (for sound)
+						+ TimerBomb
+							+ And fuse
+						+ Ephemeral particles at right depth:
+							+ Air bubbles
+							+ Debris
+							+ Smoke
+							+ Sparkles
+							+ TimerBomb smoke
+					+ Final perf: 
+						+ Normal: 4.63
+						+ With bubbles: 4.81
 
 + Fix 4 BPP images
 	+ Need ilCopyPixels to convert to standard format (BPP:3, Format: RGB, Type: U_BYTE)

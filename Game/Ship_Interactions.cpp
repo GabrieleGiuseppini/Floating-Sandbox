@@ -691,7 +691,7 @@ bool Ship::InjectBubblesAt(
         -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth,
         -GameParameters::HalfMaxWorldHeight, GameParameters::HalfMaxWorldHeight);
 
-    if (float const depth = mParentWorld.GetOceanSurfaceHeightAt(position.x) - position.y;
+    if (float const depth = mParentWorld.GetDepth(position);
         depth > 0.0f)
     {
         GenerateAirBubble(

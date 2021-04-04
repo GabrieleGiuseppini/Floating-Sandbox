@@ -249,7 +249,7 @@ bool AntiMatterBombGadget::Update(
                 // Notify explosion
                 mGameEventHandler->OnBombExplosion(
                     GadgetType::AntiMatterBomb,
-                    mParentWorld.IsUnderwater(GetPosition()),
+                    mShipPoints.IsCachedUnderwater(mPointIndex),
                     1);
 
                 // Invoke explosion handler

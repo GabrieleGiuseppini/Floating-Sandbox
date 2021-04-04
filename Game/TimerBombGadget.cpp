@@ -55,10 +55,8 @@ bool TimerBombGadget::Update(
         {
             float constexpr FuseVerticalOffset = 5.0f; // Fuse position wrt center of bomb
 
-            vec2f const bombPosition = GetPosition();
-
             // Check if we're underwater
-            if (float const bombDepth = mParentWorld.GetOceanSurfaceHeightAt(bombPosition.x) - bombPosition.y;
+            if (float const bombDepth = mShipPoints.GetCachedDepth(mPointIndex);
                 bombDepth >= 0.0)
             {
                 //
@@ -67,7 +65,7 @@ bool TimerBombGadget::Update(
 
                 // Emit smoke
                 mShipPoints.CreateEphemeralParticleHeavySmoke(
-                    bombPosition + vec2f(0.0f, FuseVerticalOffset),
+                    GetPosition() + vec2f(0.0f, FuseVerticalOffset),
                     bombDepth - FuseVerticalOffset,
                     gameParameters.AirTemperature + stormParameters.AirTemperatureDelta + 300.0f,
                     currentSimulationTime,
@@ -180,7 +178,7 @@ bool TimerBombGadget::Update(
                 // Notify explosion
                 mGameEventHandler->OnBombExplosion(
                     GadgetType::TimerBomb,
-                    mParentWorld.IsUnderwater(mExplosionPosition),
+                    mShipPoints.IsCachedUnderwater(mPointIndex),
                     1);
 
                 //

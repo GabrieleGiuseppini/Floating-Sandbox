@@ -46,7 +46,7 @@ void Points::Add(
     mBuoyancyCoefficientsBuffer.emplace_back(CalculateBuoyancyCoefficients(
         structuralMaterial.BuoyancyVolumeFill,
         structuralMaterial.ThermalExpansionCoefficient));
-    mCachedDepthBuffer.emplace_back(mParentWorld.GetOceanSurfaceHeightAt(position.x) - position.y);
+    mCachedDepthBuffer.emplace_back(mParentWorld.GetDepth(position));
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
     mForceRenderBuffer.emplace_back(vec2f::zero());
@@ -699,7 +699,7 @@ void Points::UpdateCombustionLowFrequency(
                 auto const combustionType = mMaterialCombustionTypeBuffer[pointIndex];
 
                 if (combustionType == StructuralMaterial::MaterialCombustionType::Combustion
-                    && !mParentWorld.IsUnderwater(GetPosition(pointIndex)))
+                    && !IsCachedUnderwater(pointIndex))
                 {
                     // Store point as ignition candidate
                     mCombustionIgnitionCandidates.emplace_back(
@@ -919,7 +919,7 @@ void Points::UpdateCombustionLowFrequency(
 
             // Notify explosion
             mGameEventHandler->OnCombustionExplosion(
-                mParentWorld.IsUnderwater(pointPosition),
+                IsCachedUnderwater(pointIndex),
                 1);
 
             // Transition state
@@ -965,7 +965,7 @@ void Points::UpdateCombustionHighFrequency(
             || currentState == CombustionState::StateType::Developing_2
             || currentState == CombustionState::StateType::Burning
             || currentState == CombustionState::StateType::Extinguishing_Consumed)
-            && (mParentWorld.IsUnderwater(GetPosition(pointIndex))
+            && (IsCachedUnderwater(pointIndex)
                 || GetWater(pointIndex) > GameParameters::SmotheringWaterHighWatermark))
         {
             //
@@ -1271,10 +1271,8 @@ void Points::UpdateEphemeralParticles(
                     // Do not advance air bubble if it's pinned
                     if (!IsPinned(pointIndex))
                     {
-                        auto const & position = GetPosition(pointIndex);
-                        float const waterHeight = mParentWorld.GetOceanSurfaceHeightAt(position.x);
-                        float const deltaY = waterHeight - position.y; // Positive when point _below_ surface
-                        if (deltaY <= 0.0f)
+                        float const depth = GetCachedDepth(pointIndex);
+                        if (depth <= 0.0f)
                         {
                             // Got to the surface, expire
                             ExpireEphemeralParticle(pointIndex);
@@ -1289,7 +1287,7 @@ void Points::UpdateEphemeralParticles(
 
                             // DeltaY
 
-                            state.CurrentDeltaY = deltaY;
+                            state.CurrentDeltaY = depth;
 
                             // Simulation lifetime
 
@@ -1317,11 +1315,11 @@ void Points::UpdateEphemeralParticles(
                             // Displace ocean surface, if surfacing
                             //
 
-                            if (deltaY < oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset)
+                            if (depth < oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset)
                             {
                                 mParentWorld.DisplaceOceanSurfaceAt(
-                                    mPositionBuffer[pointIndex].x,
-                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - deltaY) / 4.0f); // Magic number
+                                    GetPosition(pointIndex).x,
+                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - depth) / 4.0f); // Magic number
 
                                 mGameEventHandler->OnAirBubbleSurfaced(1);
                             }
@@ -1368,9 +1366,8 @@ void Points::UpdateEphemeralParticles(
                         / mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
 
                     // Check if expired
-                    auto const & position = GetPosition(pointIndex);
                     if (lifetimeProgress >= 1.0f
-                        || mParentWorld.IsUnderwater(position))
+                        || IsCachedUnderwater(pointIndex))
                     {
                         //
                         /// Expired
@@ -1417,7 +1414,7 @@ void Points::UpdateEphemeralParticles(
                     auto const elapsedSimulationLifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
                     auto const maxSimulationLifetime = mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
                     if (elapsedSimulationLifetime >= maxSimulationLifetime
-                        || mParentWorld.IsUnderwater(GetPosition(pointIndex)))
+                        || IsCachedUnderwater(pointIndex))
                     {
                         ExpireEphemeralParticle(pointIndex);
                     }
@@ -1438,7 +1435,7 @@ void Points::UpdateEphemeralParticles(
                     auto const elapsedSimulationLifetime = currentSimulationTime - mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime;
                     auto const maxSimulationLifetime = mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime;
                     if (elapsedSimulationLifetime >= maxSimulationLifetime
-                        || !mParentWorld.IsUnderwater(GetPosition(pointIndex)))
+                        || !IsCachedUnderwater(pointIndex))
                     {
                         ExpireEphemeralParticle(pointIndex);
                     }

@@ -95,7 +95,7 @@ bool ImpactBombGadget::Update(
             // Notify explosion
             mGameEventHandler->OnBombExplosion(
                 GadgetType::ImpactBomb,
-                mParentWorld.IsUnderwater(mExplosionPosition),
+                mShipPoints.IsCachedUnderwater(mPointIndex),
                 1);
 
             //

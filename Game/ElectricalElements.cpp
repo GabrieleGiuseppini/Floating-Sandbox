@@ -1371,7 +1371,7 @@ void ElectricalElements::UpdateSinks(
                                 ElectricalElementId(mShipId, sinkElementIndex),
                                 *(mMaterialBuffer[sinkElementIndex]),
                                 true,
-                                mParentWorld.IsUnderwater(points.GetPosition(GetPointIndex(sinkElementIndex))));
+                                points.IsCachedUnderwater(GetPointIndex(sinkElementIndex)));
 
                             // Disturb ocean, with delays depending on sound
                             switch (mMaterialBuffer[sinkElementIndex]->ShipSoundType)
@@ -1422,11 +1422,7 @@ void ElectricalElements::UpdateSinks(
             case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
             {
                 auto const emitterPointIndex = GetPointIndex(sinkElementIndex);
-                vec2f const emitterPosition = points.GetPosition(emitterPointIndex);
-
-                float const emitterDepth =
-                    mParentWorld.GetOceanSurfaceHeightAt(emitterPosition.x)
-                    - emitterPosition.y;
+                float const emitterDepth = points.GetCachedDepth(emitterPointIndex);
 
                 if (!IsDeleted(sinkElementIndex))
                 {
@@ -1434,7 +1430,7 @@ void ElectricalElements::UpdateSinks(
                     if (mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating)
                     {
                         if (!isConnectedToPower
-                            || emitterDepth >= 0.0f)
+                            || emitterDepth > 0.0f)
                         {
                             // Stop operating
                             mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating = false;
@@ -1443,7 +1439,7 @@ void ElectricalElements::UpdateSinks(
                     else
                     {
                         if (isConnectedToPower
-                            && emitterDepth < 0.0f)
+                            && emitterDepth <= 0.0f)
                         {
                             // Start operating
                             mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating = true;
@@ -1479,7 +1475,7 @@ void ElectricalElements::UpdateSinks(
 
                             // Generate particle
                             points.CreateEphemeralParticleLightSmoke(
-                                emitterPosition,
+                                points.GetPosition(emitterPointIndex),
                                 emitterDepth,
                                 smokeTemperature,
                                 currentSimulationTime,
@@ -1791,12 +1787,12 @@ void ElectricalElements::UpdateSinks(
                 vec2f const enginePosition = points.GetPosition(enginePointIndex);
 
                 // Depth of engine, positive = underwater
-                float const engineDepth = mParentWorld.GetOceanSurfaceHeightAt(enginePosition.x) - enginePosition.y;
+                float const engineDepth = points.GetCachedDepth(enginePointIndex);
 
                 float const absThrustMagnitude = std::abs(engineState.CurrentThrustMagnitude);
 
                 if (absThrustMagnitude > 0.1f // Magic number
-                    && engineDepth >= 0.0f)
+                    && engineDepth > 0.0f)
                 {
                     // Generate wake particles
                     if (gameParameters.DoGenerateEngineWakeParticles)
@@ -1841,7 +1837,7 @@ void ElectricalElements::UpdateSinks(
                         vec2f const engineOffsetedPosition = enginePosition + engineOffset;
 
                         // New depth at offset
-                        float const offsetedEngineDepth = mParentWorld.GetOceanSurfaceHeightAt(engineOffsetedPosition.x) - engineOffsetedPosition.y;
+                        float const offsetedEngineDepth = mParentWorld.GetDepth(engineOffsetedPosition);
 
                         // Sine perturbation - to make sure that water displacement keeps moving,
                         // otherwise big waves build up
@@ -2111,7 +2107,7 @@ void ElectricalElements::RunLampStateMachine(
 
                     mGameEventHandler->OnLightFlicker(
                         DurationShortLongType::Short,
-                        mParentWorld.IsUnderwater(points.GetPosition(pointIndex)),
+                        points.IsCachedUnderwater(pointIndex),
                         1);
 
                     lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerAInterval;
@@ -2164,7 +2160,7 @@ void ElectricalElements::RunLampStateMachine(
 
                     mGameEventHandler->OnLightFlicker(
                         DurationShortLongType::Short,
-                        mParentWorld.IsUnderwater(points.GetPosition(pointIndex)),
+                        points.IsCachedUnderwater(pointIndex),
                         1);
 
                     lamp.NextStateTransitionTimePoint = currentWallclockTime + ElementState::LampState::FlickerBInterval;
@@ -2186,7 +2182,7 @@ void ElectricalElements::RunLampStateMachine(
 
                     mGameEventHandler->OnLightFlicker(
                         DurationShortLongType::Long,
-                        mParentWorld.IsUnderwater(points.GetPosition(pointIndex)),
+                        points.IsCachedUnderwater(pointIndex),
                         1);
 
                     lamp.NextStateTransitionTimePoint = currentWallclockTime + 2 * ElementState::LampState::FlickerBInterval;
@@ -2218,7 +2214,7 @@ void ElectricalElements::RunLampStateMachine(
                 // Notify flicker event, so we play light-on sound
                 mGameEventHandler->OnLightFlicker(
                     DurationShortLongType::Short,
-                    mParentWorld.IsUnderwater(points.GetPosition(pointIndex)),
+                    points.IsCachedUnderwater(pointIndex),
                     1);
 
                 // Transition state

@@ -70,14 +70,14 @@ public:
 
     vec2f GetShipSize(ShipId shipId) const;
 
-    inline float GetOceanSurfaceHeightAt(float x) const
+    inline float GetDepth(vec2f const & position) const noexcept
     {
-        return mOceanSurface.GetHeightAt(x);
+        return mOceanSurface.GetHeightAt(position.x) - position.y;
     }
 
-    inline bool IsUnderwater(vec2f const & position) const
+    inline bool IsUnderwater(vec2f const & position) const noexcept
     {
-        return position.y < GetOceanSurfaceHeightAt(position.x);
+        return GetDepth(position) > 0.0f;
     }
 
     bool IsUnderwater(ElementId elementId) const;
