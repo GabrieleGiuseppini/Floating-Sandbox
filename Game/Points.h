@@ -541,6 +541,7 @@ public:
         , mFrozenCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mBuoyancyCoefficientsBuffer(mBufferElementCount, shipPointCount, BuoyancyCoefficients(0.0f, 0.0f))
+        , mCachedDepthBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mForceRenderBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         // Water dynamics
@@ -701,6 +702,7 @@ public:
 
     void CreateEphemeralParticleAirBubble(
         vec2f const & position,
+        float depth,
         float temperature,
         float vortexAmplitude,
         float vortexPeriod,
@@ -710,6 +712,7 @@ public:
     void CreateEphemeralParticleDebris(
         vec2f const & position,
         vec2f const & velocity,
+        float depth,
         float water,
         StructuralMaterial const & structuralMaterial,
         float currentSimulationTime,
@@ -718,6 +721,7 @@ public:
 
     void CreateEphemeralParticleLightSmoke(
         vec2f const & position,
+        float depth,
         float temperature,
         float currentSimulationTime,
         PlaneId planeId,
@@ -727,6 +731,7 @@ public:
             Render::GenericMipMappedTextureGroups::SmokeLight,
             EphemeralState::SmokeState::GrowthType::Slow,
             position,
+            depth,
             temperature,
             currentSimulationTime,
             planeId,
@@ -735,6 +740,7 @@ public:
 
     void CreateEphemeralParticleHeavySmoke(
         vec2f const & position,
+        float depth,
         float temperature,
         float currentSimulationTime,
         PlaneId planeId,
@@ -744,6 +750,7 @@ public:
             Render::GenericMipMappedTextureGroups::SmokeDark,
             EphemeralState::SmokeState::GrowthType::Fast,
             position,
+            depth,
             temperature,
             currentSimulationTime,
             planeId,
@@ -754,6 +761,7 @@ public:
         Render::GenericMipMappedTextureGroups textureGroup,
         EphemeralState::SmokeState::GrowthType growth,
         vec2f const & position,
+        float depth,
         float temperature,
         float currentSimulationTime,
         PlaneId planeId,
@@ -763,6 +771,7 @@ public:
         vec2f const & position,
         vec2f const & velocity,
         StructuralMaterial const & structuralMaterial,
+        float depth,
         float currentSimulationTime,
         float maxSimulationLifetime,
         PlaneId planeId);
@@ -770,6 +779,7 @@ public:
     void CreateEphemeralParticleWakeBubble(
         vec2f const & position,
         vec2f const & velocity,
+        float depth,
         float currentSimulationTime,
         PlaneId planeId,
         GameParameters const & gameParameters);
@@ -1078,6 +1088,24 @@ public:
     BuoyancyCoefficients const & GetBuoyancyCoefficients(ElementIndex pointElementIndex)
     {
         return mBuoyancyCoefficientsBuffer[pointElementIndex];
+    }
+
+    /*
+     * Valid only when positions haven't changed since the last time depths have been calculated.
+     */
+    float GetCachedDepth(ElementIndex pointElementIndex) const
+    {
+        return mCachedDepthBuffer[pointElementIndex];
+    }
+
+    float * GetCachedDepthBufferAsFloat()
+    {
+        return mCachedDepthBuffer.data();
+    }
+
+    void SwapCachedDepthBuffer(Buffer<float> & other)
+    {
+        mCachedDepthBuffer.swap(other);
     }
 
     /*
@@ -1879,6 +1907,7 @@ private:
     Buffer<float> mFrozenCoefficientBuffer; // 1.0: not frozen; 0.0f: frozen
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
     Buffer<BuoyancyCoefficients> mBuoyancyCoefficientsBuffer;
+    Buffer<float> mCachedDepthBuffer; // Positive when underwater
 
     Buffer<vec2f> mIntegrationFactorBuffer;
     Buffer<vec2f> mForceRenderBuffer;

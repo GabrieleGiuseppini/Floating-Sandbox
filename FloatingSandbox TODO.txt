@@ -1151,10 +1151,25 @@ Render:
 						+ Bombs detonations (ship's state machine)
 						+ Ocean floor bounce
 						+ World boundary bounce
-					- New Points::CachedDepth buffer
-						- Initialization: via mParentWorld call at Add()
-						- Getter
-						- Buffer getter & swapper (see water buffers)
+					+ New Points::CachedDepth buffer
+						+ Initialization: via mParentWorld call at Add()
+						+ Getter
+						+ Buffer getter & swapper (see water buffers)
+					+ Ephemeral points: ephemeral points must take depth at creation, always
+						+ Change all Points::CreateXYZ() methods to take point depth
+						+ Bubbles already have it anyway!
+						+ Creation happens at:
+							+ Interactions
+							+ Breakages at UpdateForSpringStrains
+							+ Bubble generation
+							+ Anywhere else?
+						+ Test:
+							+ Water inflow (for depth recalculation)
+							+ Air bubbles
+							+ Debris
+							+ Smoke
+							+ Sparkles
+							+ TimerBomb smoke
 					- Populate CachedDepth at ApplyWorldForces
 						- Alloc new depth buffer - no need to clean
 							- For future usages
@@ -1163,16 +1178,10 @@ Render:
 						- Per-Frontier
 							- No need to use it right now, see later
 						- Swap depth buffers
-					- Ephemeral points: ephemeral points must take depth at creation, always
-						- Change all Points::CreateXYZ() methods to take point depth
-						- Bubbles already have it anyway!
-						- Creation happens at:
-							- Interactions
-							- Breakages at UpdateForSpringStrains
-							- Bubble generation
-							- Anywhere else?
 					- Use it, getting rid of now-superfluous parent.IsUnderwater/GetDepth calls
-						- Fork exe, take initial perf: TODO
+						+ Fork exe, take initial perf (UPD):
+							+ Normal: 4.65
+							+ With bubbles (@ all eph particles): 4.80/4.90
 						- ApplyWorldForces:
 							- Per-point
 								- Note: now we check twice (buoyancyl then drag); should also unify per-point visit to have single underwater check applying buoyancy + drag
@@ -1194,7 +1203,16 @@ Render:
 								- Interactions
 								- PhysicsHandlers at Ship, as they might be invoked at any moment
 									- But not even sure these really need depth/isUnderwater
-						- Final perf: TODO
+						- Test:
+							- Ephemeral particles at right depth:
+								- Air bubbles
+								- Debris
+								- Smoke
+								- Sparkles
+								- TimerBomb smoke
+						- Final perf: 
+							- Normal: TODO
+							- With bubbles: TODO
 					- Check perf on Dell
 				- TODOOLD
 				- Change sequence of steps at Ship::Update so that we put all position changes as early as possible, and take depths afterwards
