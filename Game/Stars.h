@@ -19,7 +19,7 @@ public:
 
     Stars()
         : mStars()
-        , mIsDirty(false)
+        , mIsDirtyForRendering(false)
     {}
 
     void Update(GameParameters const & gameParameters)
@@ -28,13 +28,13 @@ public:
         {
             GenerateStars(gameParameters.NumberOfStars);
 
-            mIsDirty = true;
+            mIsDirtyForRendering = true;
         }
     }
 
     void Upload(Render::RenderContext & renderContext) const
     {
-        if (mIsDirty)
+        if (mIsDirtyForRendering)
         {
             renderContext.UploadStarsStart(mStars.size());
 
@@ -45,7 +45,7 @@ public:
 
             renderContext.UploadStarsEnd();
 
-            mIsDirty = false;
+            mIsDirtyForRendering = false;
         }
     }
 
@@ -73,7 +73,7 @@ private:
 
     std::vector<Star> mStars;
 
-    mutable bool mIsDirty;
+    mutable bool mIsDirtyForRendering;
 };
 
 }
