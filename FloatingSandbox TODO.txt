@@ -514,36 +514,28 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 					
-		- bishobe64 as tester
-			- Invite
 		
 		= Cached depths (*)
+			+ 1.16.3: Titanic: 7.92, now: 7.65
 			- Check perf on Dell
-
-		- UpdateWaterVelocities: can skip water buffer copy and just allocated + swap
 
 		- See why NVidia's rendering is so slow
 			+ Try VSync: yes, it's the VSync
 			- See if without glFinish it goes away
-				- If so: remove glFinish?
-			- Decide whether FS should turn VSync off
-				- I'D SAY NO - PREVENTS TEARING
-				- See if there's a non-NVidia-specific way which may be done with all cards
-					- Windows-only would be fine
-
-		- Send for testing
-			- bishobe64 in Credits?
+				- If so: remove glFinish - also to have better readings
+					- Keep boot settings to turn it on as needed
+					- Remove turning off with those cards
 
 		- Try using same vertex buffer for Ocean and Land
-			- Same size as largest
+			- Same element size as largest
 				- Make buffer of union's: ocean basic || ocean detailed || land
-				- We upload ocean first and land then: so use new GrowableSizeBuffer - just like BoundedVector, but reallocates on grow (on grow only, never on shrink)
-					- Note: we know that we'll know by how much it grows each time: reserve_more(.) // on top of current size
+				- We upload ocean first and land then: so BoundedVector must reallocate on grow (on grow only, never on shrink)
+					- Unit tests
+					- Note: given that we'll know by how much it grows each time: reserve_more(.) // on top of current size
+						- Copies to new buffer if needs to reallocate
 			- Same VBO as well
 			- Try also stars
 			- Then try everything else, if ok
-
-		- ShipLoadDialog Toolbar (*)
 
 		- Larger world
 			- See if OceanSurface::UpdateFields() becomes too heavy
@@ -554,6 +546,11 @@ Render:
 			- Old Dell FPS & update ms:
 				- Before:
 				- After:
+
+		- Send for testing
+			- bishobe64 as tester
+				- Invite
+			- bishobe64 in Credits?
 	
 		- New ships
 			- changelist
@@ -579,6 +576,8 @@ Render:
 		- Release
 
 		// -----------------------------------------------------------------------
+
+		- ShipLoadDialog Toolbar (*)
 
 		- New tool 2: Punch
 			- Spec:
