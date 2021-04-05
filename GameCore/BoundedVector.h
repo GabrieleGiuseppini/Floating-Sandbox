@@ -83,14 +83,27 @@ public:
 
     inline void reset(size_t maxSize)
     {
-        set_maxsize(maxSize);
+        internal_reset(maxSize);
         mSize = 0u;
     }
 
     inline void reset_fill(size_t maxSize)
     {
-        set_maxsize(maxSize);
+        internal_reset(maxSize);
         mSize = maxSize;
+    }
+
+    inline void grow_by(size_t additionalSize)
+    {
+        size_t totalRequiredSize = mSize + additionalSize;
+        if (totalRequiredSize > mAllocatedSize)
+        {
+            TElement * newBuffer = static_cast<TElement *>(std::malloc(sizeof(TElement) * totalRequiredSize));
+            memcpy(newBuffer, mBuffer.get(), mSize * sizeof(TElement));
+            mBuffer.reset(newBuffer);
+
+            mAllocatedSize = totalRequiredSize;
+        }
     }
 
     template<typename... TArgs>
@@ -120,9 +133,9 @@ public:
 
 private:
 
-    inline void set_maxsize(size_t maxSize)
+    inline void internal_reset(size_t maxSize)
     {
-        if (maxSize != mAllocatedSize)
+        if (maxSize > mAllocatedSize)
         {
             mBuffer.reset(static_cast<TElement *>(std::malloc(sizeof(TElement) * maxSize)));
             mAllocatedSize = maxSize;
