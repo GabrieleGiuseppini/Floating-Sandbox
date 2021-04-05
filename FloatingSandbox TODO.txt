@@ -517,23 +517,17 @@ Render:
 		
 		= Cached depths (*)
 			+ 1.16.3: Titanic: 7.92, now: 7.65
-			- Check perf on Dell
-
-		- See why NVidia's rendering is so slow
-			+ Try VSync: yes, it's the VSync
-			- See if without glFinish it goes away
-				- If so: remove glFinish - also to have better readings
-					- Keep boot settings to turn it on as needed
-					- Remove turning off with those cards
+			- Check perf on old Dell
 
 		- Try using same vertex buffer for Ocean and Land
+			- Fork exe, old perf on old Dell:
 			- Same element size as largest
 				- Make buffer of union's: ocean basic || ocean detailed || land
 				- We upload ocean first and land then: so BoundedVector must reallocate on grow (on grow only, never on shrink)
-					- Unit tests
-					- Note: given that we'll know by how much it grows each time: reserve_more(.) // on top of current size
-						- Copies to new buffer if needs to reallocate
+					+ Normal reset() shouldn't copy to new buffer when reallocates, only reserve_more(.)  does
+					+ Unit tests
 			- Same VBO as well
+			- Perf on new Dell: 
 			- Try also stars
 			- Then try everything else, if ok
 

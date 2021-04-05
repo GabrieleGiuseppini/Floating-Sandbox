@@ -806,18 +806,18 @@ void WorldRenderContext::RenderPrepareLightnings(RenderParameters const & /*rend
     {
         glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
 
-        if (mLightningVertexBuffer.size() > mLightningVBOAllocatedVertexSize)
+        if (mLightningVertexBuffer.max_size() > mLightningVBOAllocatedVertexSize)
         {
             // Re-allocate VBO buffer and upload
-            glBufferData(GL_ARRAY_BUFFER, mLightningVertexBuffer.size() * sizeof(LightningVertex), mLightningVertexBuffer.data(), GL_STREAM_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, mLightningVertexBuffer.max_size() * sizeof(LightningVertex), mLightningVertexBuffer.data(), GL_STREAM_DRAW);
             CheckOpenGLError();
 
-            mLightningVBOAllocatedVertexSize = mLightningVertexBuffer.size();
+            mLightningVBOAllocatedVertexSize = mLightningVertexBuffer.max_size();
         }
         else
         {
             // No size change, just upload VBO buffer
-            glBufferSubData(GL_ARRAY_BUFFER, 0, mLightningVertexBuffer.size() * sizeof(LightningVertex), mLightningVertexBuffer.data());
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mLightningVertexBuffer.max_size() * sizeof(LightningVertex), mLightningVertexBuffer.data());
             CheckOpenGLError();
         }
 
@@ -1245,7 +1245,7 @@ void WorldRenderContext::RenderDrawForegroundLightnings(RenderParameters const &
         mShaderManager.ActivateProgram<ProgramType::Lightning>();
 
         glDrawArrays(GL_TRIANGLES,
-            static_cast<GLsizei>(mLightningVertexBuffer.size() - mForegroundLightningVertexCount),
+            static_cast<GLsizei>(mLightningVertexBuffer.max_size() - mForegroundLightningVertexCount),
             static_cast<GLsizei>(mForegroundLightningVertexCount));
         CheckOpenGLError();
 
