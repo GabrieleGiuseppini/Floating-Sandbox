@@ -1199,6 +1199,8 @@ Render:
 	  to upload it together with the other frequently-changing fields (i.e. water, light)
 
 	- OceanFloor doesn't need to be updated at each step
+		- However, vertex buffers rely on inputs such as view model, so when these changes, we'd need to trigger a re-upload from OceanFloor itself
+		- So, best solution would be to make VertexBuffer independent from these extra parameters
 
 	- Reduce number of VAO changes by incorporating multiple VBOs into one, with element size as large as largest (union of structs)
 		- Each element type though retains its own BoundedVector, which is uploaded as-needed into larger VBO
