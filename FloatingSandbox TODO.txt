@@ -1,6 +1,24 @@
 =================================================
 Current perf:
 =================================================
+1.16.3.next, after periodic CollisionsWithSeaFloor, and Points::CachedDepths:
+- default_ship, 20s
+	- Old dell: 30.4/30.5 FPS, 18.8/19.1 UPD, 12.7/13.6 RND (RelWithDebInfo)
+	- New Dell: 4.45 UPD, 5.35/5.38 RND (RelWithDebInfo)
+- GameController::RunGameIteration: 86.72%
+	- World::Update: 85.69%
+		- Ship::Update: 83.59%
+			- Ship::ApplySpringForces_BySprings: 60.63%
+			- Ship::UpdateWaterVelocities: 8.76%
+			- Ship::HandleCollisionsWithSeaFloor: 4.73%
+			- Ship::IntegrateAndResetSpringForces: 3.60%
+			- Ship::PropagateHeat: 2.08%
+			- Ship::ApplyWorldForces: 1.62%
+			- Springs::UpdateForStrains: 0.93%
+		- OceanSurface::GenerateSamples: 1.27%
+		- OceanSurface::Update: 0.55%
+	- World::RenderUpload: 0.86%
+=================================================
 - After initial 1.16.3 perf optimizations:
 - default_ship, 40s, in [6s, 49s]
 	- Old dell: 30.20 (RelWithDebInfo)
@@ -20,7 +38,6 @@ Current perf:
 			- Ship::UpdateWaterInflow: 0.10%
 		- OceanSurface::GenerateSamples: 1.20%
 		- OceanSurface::Update: 0.30%
-
 =================================================
 1.16.0
 - DELL new (default_ship): FPS=62.9 UPD=4.8ms RND=4.3ms
@@ -437,6 +454,11 @@ Render:
 				+ break_glass_small_1
 			+ Take new wood stress sounds
 			+ More stress metal sounds, to dilute "cycle of sounds"
+		+ Cached depths (*)
+			+ 1.16.3: Titanic: 7.92, now: 7.65
+			+ Check perf on old Dell:
+				+ Before: 29.6/29.9 FPS, 20.04/20.2 UPD
+				+ After: 30.4/30.5 FPS, 18.8/19.1 UPD
 
 
 		= MAC:
@@ -513,23 +535,6 @@ Render:
 					- See if may statically link
 				- SFML: so's?
 				- DevIL: so's?
-					
-		
-		= Cached depths (*)
-			+ 1.16.3: Titanic: 7.92, now: 7.65
-			- Check perf on old Dell
-
-		- Try using same vertex buffer for Ocean and Land
-			- Fork exe, old perf on old Dell:
-			- Same element size as largest
-				- Make buffer of union's: ocean basic || ocean detailed || land
-				- We upload ocean first and land then: so BoundedVector must reallocate on grow (on grow only, never on shrink)
-					+ Normal reset() shouldn't copy to new buffer when reallocates, only reserve_more(.)  does
-					+ Unit tests
-			- Same VBO as well
-			- Perf on new Dell: 
-			- Try also stars
-			- Then try everything else, if ok
 
 		- Larger world
 			- See if OceanSurface::UpdateFields() becomes too heavy
@@ -1193,9 +1198,10 @@ Render:
 	- Temperature buffer is currently uploaded separately; now that we've made it "mainstream", see if it makes more sense
 	  to upload it together with the other frequently-changing fields (i.e. water, light)
 
-	- Limit FPS for refresh
-		- "some screens can fail or even die (led burning) if you refresh too fast, like sending 70FPS to a 60FPS screen, if not protected the screen can die"
-		- Search it out
+	- OceanFloor doesn't need to be updated at each step
+
+	- Reduce number of VAO changes by incorporating multiple VBOs into one, with element size as large as largest (union of structs)
+		- Each element type though retains its own BoundedVector, which is uploaded as-needed into larger VBO
 
 	- See impact of drawing onto texture and then quad'ing the texture onto the screen (w/no filtering) (*)
 		- If fine:
@@ -1637,7 +1643,7 @@ Render:
 			- ...but only glass, lights, and may be a few others have reasonable values - others are basically indestructible, and they
 			  will destroy with the "other" external pressure work which is tied with frontier
 		- Impl:
-			- Better done after cached quantities - underwater depth (*)
+			+ Better done after cached quantities - underwater depth (*)
 			- All points visited and checked at some step in UpdateMechanicalDynamics(), before UpdateWaterIntake()
 				- Only non-leaking points (broken edge of glass ball should not break again)
 				- Pressure delta between current water at point and external Y
@@ -1694,7 +1700,7 @@ Render:
 
 	- Pressure implosions / pressure crush (*)
 		! Requires frontier
-		- Better done after cached quantities - underwater depth (*)		
+		! Better done after cached quantities - underwater depth (*)		
 		- Plan A: simple: inward forces on (ext and int) (non-leaking) frontier points based on external pressure (density*depth*g) at that point
 			- Con: does not consider internal pressure/water
 			- Watch out: might generate phantom forces; since it needs to be zero-sum, calc sum as you go and do a second pass adding -sum/N to each particle (which was involved in the first step)
