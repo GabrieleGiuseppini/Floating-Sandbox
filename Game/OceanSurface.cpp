@@ -205,6 +205,8 @@ void OceanSurface::Update(
     // 2. SWE Update
     //
 
+    SmoothDeltaBufferIntoHeightField();
+
     ApplyDampingBoundaryConditions();
 
     //AdvectFieldsTest();
@@ -779,32 +781,10 @@ void OceanSurface::AdvectFieldsTest()
 }
 */
 
-void OceanSurface::ApplyDampingBoundaryConditions()
-{
-    for (size_t i = 0; i < SWEBoundaryConditionsSamples; ++i)
-    {
-        float const damping = static_cast<float>(i) / static_cast<float>(SWEBoundaryConditionsSamples);
-
-        mHeightField[i] =
-            (mHeightField[i] - SWEHeightFieldOffset) * damping
-            + SWEHeightFieldOffset;
-
-        mVelocityField[i] *= damping;
-
-        mHeightField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i] =
-            (mHeightField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i] - SWEHeightFieldOffset) * damping
-            + SWEHeightFieldOffset;
-
-        // For symmetry we actually damp the v-sample after this height field sample
-        mVelocityField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i + 1] *= damping;
-    }
-
-}
-
-void OceanSurface::UpdateFields()
+void OceanSurface::SmoothDeltaBufferIntoHeightField()
 {
     //
-    // 1. Incorporate delta-height into height field, after smoothing
+    // Incorporate delta-height into height field, after smoothing
     //
     // We use a two-pass average on a window of width DeltaHeightSmoothing,
     // centered on the sample
@@ -841,8 +821,36 @@ void OceanSurface::UpdateFields()
             * accumulatedHeight;
     }
 
+    // Clear delta-height buffer
+    mDeltaHeightBuffer.fill(0.0f);
+}
+
+void OceanSurface::ApplyDampingBoundaryConditions()
+{
+    for (size_t i = 0; i < SWEBoundaryConditionsSamples; ++i)
+    {
+        float const damping = static_cast<float>(i) / static_cast<float>(SWEBoundaryConditionsSamples);
+
+        mHeightField[i] =
+            (mHeightField[i] - SWEHeightFieldOffset) * damping
+            + SWEHeightFieldOffset;
+
+        mVelocityField[i] *= damping;
+
+        mHeightField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i] =
+            (mHeightField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i] - SWEHeightFieldOffset) * damping
+            + SWEHeightFieldOffset;
+
+        // For symmetry we actually damp the v-sample after this height field sample
+        mVelocityField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i + 1] *= damping;
+    }
+
+}
+
+void OceanSurface::UpdateFields()
+{
     //
-    // 2. SWE Update
+    // SWE Update
     //
     // "q‐Upwind Numerical Scheme" from "Improving the stability of a simple formulation of the shallow water equations for 2‐D flood modeling",
     //      de Almeida, Bates, Freer, Souvignet (2012), https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2011WR011570
@@ -887,12 +895,6 @@ void OceanSurface::UpdateFields()
         float const denominator = (1.0f + GameParameters::GravityMagnitude * GameParameters::SimulationStepTimeDuration<float> * n * n * std::abs(velocityField[i]) / std::pow(hf, 7.0f / 3.0f));
         velocityField[i] = numerator / denominator;
     }
-
-    //
-    // 3. Clear delta-height buffer
-    //
-
-    mDeltaHeightBuffer.fill(0.0f);
 }
 
 void OceanSurface::GenerateSamples(
