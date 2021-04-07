@@ -247,7 +247,7 @@ SoundController::SoundController(
         {
             mWaveMakerSound.Initialize(
                 std::move(soundBuffer),
-                40.0f,
+                20.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted,
                 std::chrono::milliseconds(2500),
