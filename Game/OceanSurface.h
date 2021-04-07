@@ -150,6 +150,8 @@ private:
         GameWallClock::time_point lastTimestamp,
         TDuration rate);
 
+    void SmoothDeltaBufferIntoHeightField();
+
     void ApplyDampingBoundaryConditions();
 
     //void AdvectFieldsTest();

@@ -1769,10 +1769,10 @@ Render:
 						+ Less delay at small delta heights => try again with Smoothstep
 				+ Tsunami
 				+ Rogue wave
-			- Split UpdateFields:
-				- SmoothDeltaBufferIntoHeightField
-					- As-is, for the time being
-					- Also clears at end					
+			= Split UpdateFields:
+				+ SmoothDeltaBufferIntoHeightField
+					+ As-is, for the time being
+					+ Also clears at end					
 				- UpdateFields: just SWE loop
 					- Optimize:
 						- See if best to store velocity field or Q field
@@ -1787,6 +1787,8 @@ Render:
 				- 4: x86 instrinsics unit tests
 			------------------------------
 			- Try to change n - new setting ("WaveDamping") & SettingsDialog
+			- See if wave discplacement can now be slightly more pronounced
+				- Keep an eye on infinitely-bouncing balls
 		- TODOOLD:
 			- See if need to, and may damp tiny oscillations; if good, consider two SWE fields: one for abnormals (undamped) and one for interactive/displaced (damped)
 				- Actually, just two velocity fields, always used in sum, but one is damped and the other is not
