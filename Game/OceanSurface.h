@@ -152,6 +152,8 @@ private:
 
     void ApplyDampingBoundaryConditions();
 
+    //void AdvectFieldsTest();
+
     void UpdateFields();
 
     void GenerateSamples(
@@ -173,7 +175,7 @@ private:
 
     // The number of samples for the entire world width;
     // a higher value means more resolution at the expense of Update() and of cache misses
-    static size_t constexpr SamplesCount = 8192;
+    static size_t constexpr SamplesCount = 16384;
 
     // The x step of the samples
     static float constexpr Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount);
