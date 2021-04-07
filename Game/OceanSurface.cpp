@@ -859,10 +859,14 @@ void OceanSurface::UpdateFields()
     // Velocity field: from 1 to SWETotalSamples (i.e. at boundaries it's inner only)
     //
 
-    // We will divide deltaField by Dx (spatial derivatives) and
-    // then multiply by dt (because we are integrating over time)
-    float constexpr FactorH = GameParameters::SimulationStepTimeDuration<float> / Dx;
-    float constexpr FactorV = FactorH * GameParameters::GravityMagnitude;
+    float constexpr G = GameParameters::GravityMagnitude;
+    float constexpr Dt = GameParameters::SimulationStepTimeDuration<float>;
+
+    // Friction: a lower friction raises instability
+    float constexpr Friction = 0.1f;
+
+    // Q-upwind interpolation theta: the authors used 0.8
+    float const QUpwindTheta = 0.8f;
 
     float * const restrict heightField = mHeightField.data();
     float * const restrict velocityField = mVelocityField.data();
@@ -876,23 +880,19 @@ void OceanSurface::UpdateFields()
     // TODOTEST: velocityField is really Q
     heightField[0] =
         heightField[0]
-        + GameParameters::SimulationStepTimeDuration<float> / Dx * (velocityField[0] - velocityField[0 + 1]);
+        + Dt / Dx * (velocityField[0] - velocityField[0 + 1]);
 
     for (size_t i = 1; i < SWETotalSamples; ++i)
     {
-        // TODOTEST: verify if really needed
-        float const hf = std::max(heightField[i], heightField[i - 1]);
-
         heightField[i] =
             heightField[i]
-            + GameParameters::SimulationStepTimeDuration<float> / Dx * (velocityField[i] - velocityField[i + 1]);
+            + Dt / Dx * (velocityField[i] - velocityField[i + 1]);
 
+        // TODO: rename if velocities become again velocities
+        float const previousQ = QUpwindTheta * velocityField[i] + (1.0f - QUpwindTheta) / 2.0f * (velocityField[i - 1] + velocityField[i + 1]);
         // TODOTEST: Populating velocity as Q
-        float constexpr Theta = 0.8f;
-        float constexpr n = 0.1f;
-        float const numerator = Theta * velocityField[i] + (1.0f - Theta) / 2.0f * (velocityField[i - 1] + velocityField[i + 1])
-            - GameParameters::GravityMagnitude * hf * GameParameters::SimulationStepTimeDuration<float> / Dx * (heightField[i] - heightField[i - 1]);
-        float const denominator = (1.0f + GameParameters::GravityMagnitude * GameParameters::SimulationStepTimeDuration<float> * n * n * std::abs(velocityField[i]) / std::pow(hf, 7.0f / 3.0f));
+        float const numerator = previousQ - G * heightField[i] * Dt / Dx * (heightField[i] - heightField[i - 1]);
+        float const denominator = (1.0f + G * Dt * Friction * Friction * std::abs(velocityField[i]) / std::pow(heightField[i], 7.0f / 3.0f));
         velocityField[i] = numerator / denominator;
     }
 }
