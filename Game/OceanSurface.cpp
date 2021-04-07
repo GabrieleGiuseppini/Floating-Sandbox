@@ -258,8 +258,8 @@ void OceanSurface::AdjustTo(
     if (worldCoordinates.has_value())
     {
         // Calculate target height
-        float constexpr MaxRelativeHeight = 4.0f; // Carefully selected; 4.5 makes waves unstable (velocities oscillating around 0.5 and diverging) after a while
-        float constexpr MinRelativeHeight = -2.0f;
+        float constexpr MaxRelativeHeight = 6.0f;
+        float constexpr MinRelativeHeight = -6.0f;
         float targetHeight =
             Clamp(worldCoordinates->y / SWEHeightFieldAmplification, MinRelativeHeight, MaxRelativeHeight)
             + SWEHeightFieldOffset;
@@ -323,13 +323,13 @@ void OceanSurface::ApplyThanosSnap(
 
 void OceanSurface::TriggerTsunami(float currentSimulationTime)
 {
-    // Choose X - restricting maximum travel distance to avoid ugly wavelets
+    // Choose X
     float const tsunamiWorldX = GameRandomEngine::GetInstance().GenerateUniformReal(
-        -GameParameters::HalfMaxWorldWidth / 2.0f,
-        GameParameters::HalfMaxWorldWidth / 2.0f);
+        -GameParameters::HalfMaxWorldWidth * 4.0 / 5.0f,
+        GameParameters::HalfMaxWorldWidth * 4.0 / 5.0f);
 
     // Choose height
-    float constexpr AverageTsunamiHeight = 210.0f / SWEHeightFieldAmplification;
+    float constexpr AverageTsunamiHeight = 350.0f / SWEHeightFieldAmplification;
     float const tsunamiHeight = GameRandomEngine::GetInstance().GenerateUniformReal(
         AverageTsunamiHeight * 0.96f,
         AverageTsunamiHeight * 1.04f)
@@ -344,8 +344,8 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
         centerIndex,
         mHeightField[centerIndex],  // LowHeight == current height
         tsunamiHeight,              // HighHeight == tsunami height
-        15.0f,
-        5.0f,
+        3.0f, // Rise delay
+        2.0f, // Fall delay
         currentSimulationTime);
 
     // Fire tsunami event
@@ -371,7 +371,7 @@ void OceanSurface::TriggerRogueWave(
     }
 
     // Choose height
-    float constexpr MaxRogueWaveHeight = 50.0f / SWEHeightFieldAmplification;
+    float constexpr MaxRogueWaveHeight = 120.0f / SWEHeightFieldAmplification;
     float const rogueWaveHeight = GameRandomEngine::GetInstance().GenerateUniformReal(
         MaxRogueWaveHeight * 0.35f,
         MaxRogueWaveHeight)
@@ -388,7 +388,7 @@ void OceanSurface::TriggerRogueWave(
         mHeightField[centerIndex],  // LowHeight == current height
         rogueWaveHeight,            // HighHeight == rogue wave height
         rogueWaveDelay, // Rise delay
-        rogueWaveDelay, // Fall delay
+        rogueWaveDelay / 2.0f, // Fall delay
         currentSimulationTime);
 }
 
@@ -544,6 +544,7 @@ void OceanSurface::SetSWEWaveHeight(
     size_t centerIndex,
     float height)
 {
+    // TODO: if nuke this, also nuke SWEWaveStateMachinePerturbedSamplesCount
     // TODOTEST
     ////int const firstSampleIndex = static_cast<int>(centerIndex) - static_cast<int>(SWEWaveStateMachinePerturbedSamplesCount / 2);
 
@@ -556,6 +557,7 @@ void OceanSurface::SetSWEWaveHeight(
     ////        mHeightField[idx] = height;
     ////    }
     ////}
+
     mDeltaHeightBuffer[centerIndex] = (height - SWEHeightFieldOffset);
 }
 
@@ -842,8 +844,11 @@ void OceanSurface::UpdateFields()
     //
     // 2. SWE Update
     //
+    // "q‐Upwind Numerical Scheme" from "Improving the stability of a simple formulation of the shallow water equations for 2‐D flood modeling",
+    //      de Almeida, Bates, Freer, Souvignet (2012), https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2011WR011570
+    //
     // Height field  : from 0 to SWETotalSamples
-    // Velocity field: from 1 to SWETotalSamples
+    // Velocity field: from 1 to SWETotalSamples (i.e. at boundaries it's inner only)
     //
 
     // We will divide deltaField by Dx (spatial derivatives) and
@@ -865,83 +870,16 @@ void OceanSurface::UpdateFields()
         heightField[0]
         + GameParameters::SimulationStepTimeDuration<float> / Dx * (velocityField[0] - velocityField[0 + 1]);
 
-    // TODOTEST
-    ////for (size_t i = 1; i < SWETotalSamples; ++i) // Vectorized by VS2019 as of this commit
-    ////{
-    ////    heightField[i] -=
-    ////        heightField[i]
-    ////        * (velocityField[i + 1] - velocityField[i])
-    ////        * FactorH;
-
-    ////    velocityField[i] +=
-    ////        (heightField[i - 1] - heightField[i])
-    ////        * FactorV;
-    ////}
-
-    // First formulation in (1)
-    // TODOTEST: works fine
-    ////for (size_t i = 1; i < SWETotalSamples; ++i)
-    ////{
-    ////    heightField[i] -=
-    ////        heightField[i]
-    ////        * (velocityField[i + 1] - velocityField[i])
-    ////        * FactorH;
-
-    ////    float constexpr fc = 1.0f; // 0.5f;
-
-    ////    float const q = velocityField[i] * heightField[i];
-
-    ////    velocityField[i] =
-    ////        velocityField[i]
-    ////        - GameParameters::GravityMagnitude * GameParameters::SimulationStepTimeDuration<float>
-    ////        * ( (heightField[i] - heightField[i - 1]) / Dx + fc * fc * std::abs(q) * q / std::pow(heightField[i], 10.0f / 3.0f));
-    ////}
-
-    ////// Second formulation in (1) - with h/v order flipped
-    // TODOTEST: works fine
-    ////for (size_t i = 1; i < SWETotalSamples; ++i)
-    ////{
-    ////    heightField[i] -=
-    ////        heightField[i]
-    ////        * (velocityField[i + 1] - velocityField[i])
-    ////        * FactorH;
-
-    ////    float constexpr n = 1.0f;
-    ////    float const q = velocityField[i] * heightField[i];
-
-    ////    float nextQ =
-    ////        (q - GameParameters::GravityMagnitude * heightField[i] * GameParameters::SimulationStepTimeDuration<float> * (heightField[i] - heightField[i - 1]) / Dx)
-    ////        / (1.0f + GameParameters::GravityMagnitude * heightField[i] * GameParameters::SimulationStepTimeDuration<float> * n * n * std::abs(q) / std::pow(heightField[i], 10.0f / 3.0f));
-
-    ////    velocityField[i] = nextQ / heightField[i];
-    ////}
-
-    ////// Second formulation in (1) with q instead of h
-    ////for (size_t i = 1; i < SWETotalSamples; ++i)
-    ////{
-    ////    float const hf = std::max(heightField[i], heightField[i - 1]);
-
-    ////    heightField[i] =
-    ////        heightField[i]
-    ////        + GameParameters::SimulationStepTimeDuration<float> / Dx * (velocityField[i] - velocityField[i + 1]);
-
-    ////    // Populating velocity as Q
-    ////    float constexpr n = 1.0f;
-    ////    velocityField[i] =
-    ////        (velocityField[i] - GameParameters::GravityMagnitude * hf * GameParameters::SimulationStepTimeDuration<float> * (heightField[i] - heightField[i - 1]) / Dx)
-    ////        / (1.0f + GameParameters::GravityMagnitude * GameParameters::SimulationStepTimeDuration<float> * n * n * std::abs(velocityField[i]) / std::pow(hf, 7.0f / 3.0f));
-    ////}
-
-    // q-centered - pro: less damping, con: spiky center at manual waves
     for (size_t i = 1; i < SWETotalSamples; ++i)
     {
+        // TODOTEST: verify if really needed
         float const hf = std::max(heightField[i], heightField[i - 1]);
 
         heightField[i] =
             heightField[i]
             + GameParameters::SimulationStepTimeDuration<float> / Dx * (velocityField[i] - velocityField[i + 1]);
 
-        // Populating velocity as Q
+        // TODOTEST: Populating velocity as Q
         float constexpr Theta = 0.8f;
         float constexpr n = 0.1f;
         float const numerator = Theta * velocityField[i] + (1.0f - Theta) / 2.0f * (velocityField[i - 1] + velocityField[i + 1])
@@ -1226,28 +1164,17 @@ bool OceanSurface::SWEInteractiveWaveStateMachine::MayBeOverridden() const
 
 float OceanSurface::SWEInteractiveWaveStateMachine::CalculateRisingPhaseDuration(float deltaHeight)
 {
-    // We want very little rises to be quick, so they generate nice ripples on the surface.
-    // We want large rises to be small, so that we don't generate height slopes that are
-    // too steep.
-    //
-    // From empirical observations, we want the following fixed points:
-    //  deltaH = 0.00:  duration = 0.00
-    //  deltaH = 0.01:  duration = 0.13
-    //  deltaH =  0.1:  duration ~= 1.5
-    //  deltaH =  0.5:  duration = 2.5
-
-    // y = 2.53079 - 2.572298*e^(-9.031207*x)
-    // TODOTEST
-    //return std::max(2.53079f - 2.572298f * std::exp(-9.031207f * std::abs(deltaHeight)), 0.0f);
-    return std::max(12.0f * SmoothStep(0.0, 1.0f, std::abs(deltaHeight) / 0.6f), 0.0f);
+    // We want little rises to be quick (0.0)
+    // We want large rises to be slow, so that we don't generate height slopes that are
+    // too steep
+    return 1.0f * SmoothStep(1.0, 1.6f, std::abs(deltaHeight));
 }
 
 float OceanSurface::SWEInteractiveWaveStateMachine::CalculateFallingPhaseDecayCoefficient(float deltaHeight)
 {
-    // When delta is very small, we want to converge very fast - but not too much
-    // or else spiky ripples occur;
-    // when delta is wide enough, we're fine with 0.025.
-    return 0.65f - (0.65f - 0.025f) * SmoothStep(0.0f, 0.1f, std::abs(deltaHeight));
+    // We want little falls to be immediate (1.0)
+    // At higher delta's we want slower
+    return 1.0f - (1.0f - 0.04f) * SmoothStep(1.0f, 4.0f, std::abs(deltaHeight));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

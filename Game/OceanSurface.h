@@ -192,6 +192,7 @@ private:
     // The factor by which we amplify the height field perturbations;
     // higher values allow for smaller height field variations with the same visual height,
     // and smaller height field variations allow for greater stability
+    // World offset = SWE offset * SWEHeightFieldAmplification
     static float constexpr SWEHeightFieldAmplification = 50.0f;
 
     // The number of samples we raise with a state machine
@@ -264,6 +265,7 @@ private:
 
     // Velocity field
     // - Velocity values are at the edges of the staggered grid cells
+    //      - H[i] has V[i] at its left and V[i+1] at its right
     FixedSizeVector<float, SWETotalSamples + 1> mVelocityField; // One extra cell just to ease interpolations
 
     // Delta height buffer

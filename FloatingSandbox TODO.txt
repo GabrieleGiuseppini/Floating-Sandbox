@@ -547,6 +547,7 @@ Render:
 				- Redo default startup ocean floor - double the width so that it's more dense
 					- Add more to the left and to the right
 					- Also change depth at middle so that it fits with new bumpiness and it's ~-283
+						- Or simply change the bumpiness frequency or phase, whichever looks best
 			= OceanSurface				
 				- Fix manual waves
 					+ Try to re-instate full SWEs
@@ -557,11 +558,6 @@ Render:
 						- ...and now gentler at smaller height
 				+ Double # of samples
 				+ See if Update() becomes too heavy
-				- Vectorize averaging
-					- 1: Move current algo to Algorithms as Naive
-					- 2: Naive unit tests
-					- 3: Make version with x86 intrinsics in Algorithms
-					- 4: x86 instrinsics unit tests
 			- New Dell profiling percentages:
 				- Before:
 				- After:
@@ -1752,25 +1748,48 @@ Render:
 	- Ripple: "basically you click and hold somewhere on the ship, and when you let go, it sends a ripple into the ship, weak points might tear,
 	  or start getting damaged, etc."
 
-	- Look back at SWE's (*)
+	= Look back at SWE's (*)
 		X Try re-instating skipped steps - just redo original implementation (two buffers, etc.)
 		= Other SWE ideas:
 			X Flow limited to avoid chequerboard oscillations (cell draining completely and then back)
-			= Inertial formulations:
+			+ Inertial formulations:
 				= http://catalytics.asia/wp-content/themes/catalytics/flood/Bates%20et%20al%202010%20new%20lisflood.pdf (1) improved at https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2011WR011570 (2)
-				- TODO:
-					+ Implement second formulation in (1): OK
-					- Find right params:
-						- q-centered model:
-							- Theta = 0.8f;
-							- n = 0.1f;
-						- formulation with q:
-							- n = 0.8
-					- Test for optimizations: replace velocity field with Q field
-						- Also, if we go for Q field, be careful - height and velocity/Q are at different places in the cell
-		- SetSWEWaveHeight: see if can be replaced by populating deltabuffer
-		- See if need to, and may damp tiny oscillations; if good, consider two SWE fields: one for abnormals (undamped) and one for interactive/displaced (damped)
-			- Actually, just two velocity fields, always used in sum, but one is damped and the other is not
+				+ Implement second formulation in (1): OK
+				+ Implement q-centered in (2): OK
+				+ Find right params:
+					+ q-centered model:
+						+ Theta = 0.8f;
+						+ n = 0.1f;
+			+ Cleanup:
+				+ UpdateFields, w/comments
+			+ Nail down parameters:
+				+ Interactive state machine
+					+ More max height
+					+ Better delay curve
+						+ Less delay at small delta heights => try again with Smoothstep
+				+ Tsunami
+				+ Rogue wave
+			- Split UpdateFields:
+				- SmoothDeltaBufferIntoHeightField
+					- As-is, for the time being
+					- Also clears at end					
+				- UpdateFields: just SWE loop
+					- Optimize:
+						- See if best to store velocity field or Q field
+							- Also, if we go for Q field, be careful - height and velocity/Q are at different places in the cell
+						- Make sure it's vectorized
+			- SetSWEWaveHeight: see if can be replaced by populating deltabuffer
+				- Every caller (state machines only?) need to start reasoning in terms of delta's then, rather than absolute heights? 
+			- Vectorize SmoothDeltaBufferIntoHeightField
+				- 1: Move current algo to Algorithms as Naive
+				- 2: Naive unit tests
+				- 3: Make version with x86 intrinsics in Algorithms
+				- 4: x86 instrinsics unit tests
+			------------------------------
+			- Try to change n - new setting ("WaveDamping") & SettingsDialog
+		- TODOOLD:
+			- See if need to, and may damp tiny oscillations; if good, consider two SWE fields: one for abnormals (undamped) and one for interactive/displaced (damped)
+				- Actually, just two velocity fields, always used in sum, but one is damped and the other is not
 		- Ocean waves:
 			- Add somehow waves to SWE height field, rather than "fake" superimposition of sins over SWE's height field
 
