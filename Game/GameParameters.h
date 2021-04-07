@@ -512,7 +512,7 @@ struct GameParameters
     // Limits
     //
 
-    static float constexpr MaxWorldWidth = 5000.0f;
+    static float constexpr MaxWorldWidth = 10000.0f;
     static float constexpr HalfMaxWorldWidth = MaxWorldWidth / 2.0f;
 
     static float constexpr MaxWorldHeight = 22000.0f;

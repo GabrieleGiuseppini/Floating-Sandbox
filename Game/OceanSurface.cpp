@@ -207,6 +207,8 @@ void OceanSurface::Update(
 
     ApplyDampingBoundaryConditions();
 
+    //AdvectFieldsTest();
+
     UpdateFields();
 
     ////// Calc avg height among all samples
@@ -321,13 +323,13 @@ void OceanSurface::ApplyThanosSnap(
 
 void OceanSurface::TriggerTsunami(float currentSimulationTime)
 {
-    // Choose X
+    // Choose X - restricting maximum travel distance to avoid ugly wavelets
     float const tsunamiWorldX = GameRandomEngine::GetInstance().GenerateUniformReal(
-        -GameParameters::HalfMaxWorldWidth,
-        GameParameters::HalfMaxWorldWidth);
+        -GameParameters::HalfMaxWorldWidth / 2.0f,
+        GameParameters::HalfMaxWorldWidth / 2.0f);
 
-    // Choose height (good: 5 at 50-50)
-    float constexpr AverageTsunamiHeight = 250.0f / SWEHeightFieldAmplification;
+    // Choose height
+    float constexpr AverageTsunamiHeight = 210.0f / SWEHeightFieldAmplification;
     float const tsunamiHeight = GameRandomEngine::GetInstance().GenerateUniformReal(
         AverageTsunamiHeight * 0.96f,
         AverageTsunamiHeight * 1.04f)
@@ -342,7 +344,7 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
         centerIndex,
         mHeightField[centerIndex],  // LowHeight == current height
         tsunamiHeight,              // HighHeight == tsunami height
-        7.0f,
+        15.0f,
         5.0f,
         currentSimulationTime);
 
@@ -542,17 +544,19 @@ void OceanSurface::SetSWEWaveHeight(
     size_t centerIndex,
     float height)
 {
-    int const firstSampleIndex = static_cast<int>(centerIndex) - static_cast<int>(SWEWaveStateMachinePerturbedSamplesCount / 2);
+    // TODOTEST
+    ////int const firstSampleIndex = static_cast<int>(centerIndex) - static_cast<int>(SWEWaveStateMachinePerturbedSamplesCount / 2);
 
-    for (int i = 0; i < SWEWaveStateMachinePerturbedSamplesCount; ++i)
-    {
-        int idx = firstSampleIndex + i;
-        if (idx >= SWEBoundaryConditionsSamples
-            && idx < SWEOuterLayerSamples + SamplesCount + SWEWaveGenerationSamples)
-        {
-            mHeightField[idx] = height;
-        }
-    }
+    ////for (int i = 0; i < SWEWaveStateMachinePerturbedSamplesCount; ++i)
+    ////{
+    ////    int idx = firstSampleIndex + i;
+    ////    if (idx >= SWEBoundaryConditionsSamples
+    ////        && idx < SWEOuterLayerSamples + SamplesCount + SWEWaveGenerationSamples)
+    ////    {
+    ////        mHeightField[idx] = height;
+    ////    }
+    ////}
+    mDeltaHeightBuffer[centerIndex] = (height - SWEHeightFieldOffset);
 }
 
 void OceanSurface::RecalculateWaveCoefficients(
@@ -687,12 +691,13 @@ GameWallClock::time_point OceanSurface::CalculateNextAbnormalWaveTimestamp(
 
 /* Note: in this implementation we let go of the field advections,
    as they dont's seem to improve the simulation in any visible way.
-
-void OceanSurface::AdvectHeightField()
+void OceanSurface::AdvectFieldsTest()
 {
     //
     // Semi-Lagrangian method
     //
+
+    FixedSizeVector<float, SWETotalSamples + 1> newHeightField;
 
     // Process all height samples, except for boundary condition samples
     for (size_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
@@ -700,7 +705,7 @@ void OceanSurface::AdvectHeightField()
         // The height field values are at the center of the cell,
         // while velocities are at the edges - hence we need to take
         // the two neighboring velocities
-        float const v = (mCurrentVelocityField[i] + mCurrentVelocityField[i + 1]) / 2.0f;
+        float const v = (mVelocityField[i] + mVelocityField[i + 1]) / 2.0f;
 
         // Calculate the (fractional) index that this height sample had one time step ago
         float const prevCellIndex =
@@ -720,17 +725,19 @@ void OceanSurface::AdvectHeightField()
 
         // Set this height field sample as the previous (in time) sample,
         // interpolated between its two neighbors
-        mNextHeightField[i] =
-            (1.0f - prevCellIndexF) * mCurrentHeightField[prevCellIndexI]
-            + prevCellIndexF * mCurrentHeightField[prevCellIndexI + 1];
+        newHeightField[i] =
+            (1.0f - prevCellIndexF) * mHeightField[prevCellIndexI]
+            + prevCellIndexF * mHeightField[prevCellIndexI + 1];
     }
-}
 
-void OceanSurface::AdvectVelocityField()
-{
-    //
-    // Semi-Lagrangian method
-    //
+    std::memcpy(
+        &(mHeightField[SWEBoundaryConditionsSamples]),
+        &(newHeightField[SWEBoundaryConditionsSamples]),
+        SWETotalSamples - 2 * SWEBoundaryConditionsSamples);
+
+    /////////////////////////////////////////////////////////////
+
+    FixedSizeVector<float, SWETotalSamples + 1> newVelocityField;
 
     // Process all velocity samples, except for boundary condition samples
     //
@@ -738,7 +745,7 @@ void OceanSurface::AdvectVelocityField()
     for (size_t i = SWEBoundaryConditionsSamples; i <= SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
     {
         // Velocity values are at the edges of the cell
-        float const v = mCurrentVelocityField[i];
+        float const v = mVelocityField[i];
 
         // Calculate the (fractional) index that this velocity sample had one time step ago
         float const prevCellIndex =
@@ -758,10 +765,15 @@ void OceanSurface::AdvectVelocityField()
 
         // Set this velocity field sample as the previous (in time) sample,
         // interpolated between its two neighbors
-        mNextVelocityField[i] =
-            (1.0f - prevCellIndexF) * mCurrentVelocityField[prevCellIndexI]
-            + prevCellIndexF * mCurrentVelocityField[prevCellIndexI + 1];
+        newVelocityField[i] =
+            (1.0f - prevCellIndexF) * mVelocityField[prevCellIndexI]
+            + prevCellIndexF * mVelocityField[prevCellIndexI + 1];
     }
+
+    std::memcpy(
+        &(mVelocityField[SWEBoundaryConditionsSamples]),
+        &(newVelocityField[SWEBoundaryConditionsSamples]),
+        SWETotalSamples - 2 * SWEBoundaryConditionsSamples);
 }
 */
 
@@ -842,21 +854,100 @@ void OceanSurface::UpdateFields()
     float * const restrict heightField = mHeightField.data();
     float * const restrict velocityField = mVelocityField.data();
 
-    heightField[0] -=
+    // TODOTEST: original, velocityField is really velocity
+    ////heightField[0] -=
+    ////    heightField[0]
+    ////    * (velocityField[0 + 1] - velocityField[0])
+    ////    * FactorH;
+
+    // TODOTEST: velocityField is really Q
+    heightField[0] =
         heightField[0]
-        * (velocityField[0 + 1] - velocityField[0])
-        * FactorH;
+        + GameParameters::SimulationStepTimeDuration<float> / Dx * (velocityField[0] - velocityField[0 + 1]);
 
-    for (size_t i = 1; i < SWETotalSamples; ++i) // Vectorized by VS2019 as of this commit
+    // TODOTEST
+    ////for (size_t i = 1; i < SWETotalSamples; ++i) // Vectorized by VS2019 as of this commit
+    ////{
+    ////    heightField[i] -=
+    ////        heightField[i]
+    ////        * (velocityField[i + 1] - velocityField[i])
+    ////        * FactorH;
+
+    ////    velocityField[i] +=
+    ////        (heightField[i - 1] - heightField[i])
+    ////        * FactorV;
+    ////}
+
+    // First formulation in (1)
+    // TODOTEST: works fine
+    ////for (size_t i = 1; i < SWETotalSamples; ++i)
+    ////{
+    ////    heightField[i] -=
+    ////        heightField[i]
+    ////        * (velocityField[i + 1] - velocityField[i])
+    ////        * FactorH;
+
+    ////    float constexpr fc = 1.0f; // 0.5f;
+
+    ////    float const q = velocityField[i] * heightField[i];
+
+    ////    velocityField[i] =
+    ////        velocityField[i]
+    ////        - GameParameters::GravityMagnitude * GameParameters::SimulationStepTimeDuration<float>
+    ////        * ( (heightField[i] - heightField[i - 1]) / Dx + fc * fc * std::abs(q) * q / std::pow(heightField[i], 10.0f / 3.0f));
+    ////}
+
+    ////// Second formulation in (1) - with h/v order flipped
+    // TODOTEST: works fine
+    ////for (size_t i = 1; i < SWETotalSamples; ++i)
+    ////{
+    ////    heightField[i] -=
+    ////        heightField[i]
+    ////        * (velocityField[i + 1] - velocityField[i])
+    ////        * FactorH;
+
+    ////    float constexpr n = 1.0f;
+    ////    float const q = velocityField[i] * heightField[i];
+
+    ////    float nextQ =
+    ////        (q - GameParameters::GravityMagnitude * heightField[i] * GameParameters::SimulationStepTimeDuration<float> * (heightField[i] - heightField[i - 1]) / Dx)
+    ////        / (1.0f + GameParameters::GravityMagnitude * heightField[i] * GameParameters::SimulationStepTimeDuration<float> * n * n * std::abs(q) / std::pow(heightField[i], 10.0f / 3.0f));
+
+    ////    velocityField[i] = nextQ / heightField[i];
+    ////}
+
+    ////// Second formulation in (1) with q instead of h
+    ////for (size_t i = 1; i < SWETotalSamples; ++i)
+    ////{
+    ////    float const hf = std::max(heightField[i], heightField[i - 1]);
+
+    ////    heightField[i] =
+    ////        heightField[i]
+    ////        + GameParameters::SimulationStepTimeDuration<float> / Dx * (velocityField[i] - velocityField[i + 1]);
+
+    ////    // Populating velocity as Q
+    ////    float constexpr n = 1.0f;
+    ////    velocityField[i] =
+    ////        (velocityField[i] - GameParameters::GravityMagnitude * hf * GameParameters::SimulationStepTimeDuration<float> * (heightField[i] - heightField[i - 1]) / Dx)
+    ////        / (1.0f + GameParameters::GravityMagnitude * GameParameters::SimulationStepTimeDuration<float> * n * n * std::abs(velocityField[i]) / std::pow(hf, 7.0f / 3.0f));
+    ////}
+
+    // q-centered - pro: less damping, con: spiky center at manual waves
+    for (size_t i = 1; i < SWETotalSamples; ++i)
     {
-        heightField[i] -=
-            heightField[i]
-            * (velocityField[i + 1] - velocityField[i])
-            * FactorH;
+        float const hf = std::max(heightField[i], heightField[i - 1]);
 
-        velocityField[i] +=
-            (heightField[i - 1] - heightField[i])
-            * FactorV;
+        heightField[i] =
+            heightField[i]
+            + GameParameters::SimulationStepTimeDuration<float> / Dx * (velocityField[i] - velocityField[i + 1]);
+
+        // Populating velocity as Q
+        float constexpr Theta = 0.8f;
+        float constexpr n = 0.1f;
+        float const numerator = Theta * velocityField[i] + (1.0f - Theta) / 2.0f * (velocityField[i - 1] + velocityField[i + 1])
+            - GameParameters::GravityMagnitude * hf * GameParameters::SimulationStepTimeDuration<float> / Dx * (heightField[i] - heightField[i - 1]);
+        float const denominator = (1.0f + GameParameters::GravityMagnitude * GameParameters::SimulationStepTimeDuration<float> * n * n * std::abs(velocityField[i]) / std::pow(hf, 7.0f / 3.0f));
+        velocityField[i] = numerator / denominator;
     }
 
     //
@@ -1115,7 +1206,6 @@ std::optional<float> OceanSurface::SWEInteractiveWaveStateMachine::Update(
 
         // Calculate height with decay process
 
-
         mCurrentHeight += (mCurrentPhaseTargetHeight - mCurrentHeight) * mFallingPhaseDecayCoefficient;
 
         // Check whether it's time to shut down
@@ -1147,7 +1237,9 @@ float OceanSurface::SWEInteractiveWaveStateMachine::CalculateRisingPhaseDuration
     //  deltaH =  0.5:  duration = 2.5
 
     // y = 2.53079 - 2.572298*e^(-9.031207*x)
-    return std::max(2.53079f - 2.572298f * std::exp(-9.031207f * std::abs(deltaHeight)), 0.0f);
+    // TODOTEST
+    //return std::max(2.53079f - 2.572298f * std::exp(-9.031207f * std::abs(deltaHeight)), 0.0f);
+    return std::max(12.0f * SmoothStep(0.0, 1.0f, std::abs(deltaHeight) / 0.6f), 0.0f);
 }
 
 float OceanSurface::SWEInteractiveWaveStateMachine::CalculateFallingPhaseDecayCoefficient(float deltaHeight)
