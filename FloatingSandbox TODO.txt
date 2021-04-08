@@ -1769,10 +1769,10 @@ Render:
 						+ Less delay at small delta heights => try again with Smoothstep
 				+ Tsunami
 				+ Rogue wave
-			- See if the removal of hf is making the wave evolution asymmetrical
+			+ See if the removal of hf is making the wave evolution asymmetrical
 				- No - remove hf again
-			- Make less rigid - try to make waves bounce back
-				- Play with fixed height
+			= Make less rigid - try to make waves bounce back
+				+ Play with fixed height
 				- Try to change Friction - new setting ("WaveDamping") & SettingsDialog
 					- Might be best to temporarily set decay rate to zero to better see the effect here
 			= Split UpdateFields:
@@ -1787,6 +1787,7 @@ Render:
 						- Make sure it's vectorized
 			- SetSWEWaveHeight: see if can be replaced by populating deltabuffer
 				- Every caller (state machines only?) need to start reasoning in terms of delta's then, rather than absolute heights? 
+				- Nuke SWEWaveStateMachinePerturbedSamplesCount
 			- Vectorize SmoothDeltaBufferIntoHeightField
 				- 1: Move current algo to Algorithms as Naive
 				- 2: Naive unit tests

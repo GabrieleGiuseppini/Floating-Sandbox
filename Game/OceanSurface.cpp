@@ -412,12 +412,12 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
 
     // Find index of leftmost sample, and its corresponding world X
     auto const leftmostSampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorld().TopLeft.x + GameParameters::HalfMaxWorldWidth) / Dx);
-    float sampleIndexX = -GameParameters::HalfMaxWorldWidth + (Dx * leftmostSampleIndex);
+    float sampleIndexWorldX = -GameParameters::HalfMaxWorldWidth + (Dx * leftmostSampleIndex);
 
     // Calculate number of samples required to cover screen from leftmost sample
     // up to the visible world right (included)
-    float const coverageWidth = renderContext.GetVisibleWorld().BottomRight.x - sampleIndexX;
-    auto const numberOfSamplesToRender = static_cast<size_t>(ceil(coverageWidth / Dx));
+    float const coverageWorldWidth = renderContext.GetVisibleWorld().BottomRight.x - sampleIndexWorldX;
+    auto const numberOfSamplesToRender = static_cast<size_t>(ceil(coverageWorldWidth / Dx));
 
     if (numberOfSamplesToRender >= RenderSlices<size_t>)
     {
@@ -432,22 +432,22 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
             renderContext.UploadOceanDetailedStart(RenderSlices<int>);
 
         // Calculate dx between each pair of slices with want to upload
-        float const sliceDx = coverageWidth / RenderSlices<float>;
+        float const sliceDx = coverageWorldWidth / RenderSlices<float>;
 
         // We do one extra iteration as the number of slices is the number of quads, and the last vertical
         // quad side must be at the end of the width
-        for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexX += sliceDx)
+        for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexWorldX += sliceDx)
         {
             //
             // Split sample index X into index in sample array and fractional part
             // between that sample and the next
             //
 
-            assert(sampleIndexX >= -GameParameters::HalfMaxWorldWidth
-                && sampleIndexX <= GameParameters::HalfMaxWorldWidth);
+            assert(sampleIndexWorldX >= -GameParameters::HalfMaxWorldWidth
+                && sampleIndexWorldX <= GameParameters::HalfMaxWorldWidth);
 
             // Fractional index in the sample array
-            float const sampleIndexF = (sampleIndexX + GameParameters::HalfMaxWorldWidth) / Dx;
+            float const sampleIndexF = (sampleIndexWorldX + GameParameters::HalfMaxWorldWidth) / Dx;
 
             // Integral part
             auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
@@ -473,7 +473,7 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
             if constexpr (DetailType == OceanRenderDetailType::Basic)
             {
                 renderContext.UploadOceanBasic(
-                    sampleIndexX,
+                    sampleIndexWorldX,
                     sample);
             }
             else
@@ -494,7 +494,7 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
                     + mSamples[indexMid].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
 
                 renderContext.UploadOceanDetailed(
-                    sampleIndexX,
+                    sampleIndexWorldX,
                     sampleBack * BackPlaneDamp,
                     sampleMid * MidPlaneDamp,
                     sample);
@@ -517,18 +517,18 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
 
         // We do one extra iteration as the number of slices is the number of quads, and the last vertical
         // quad side must be at the end of the width
-        for (size_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexX += Dx)
+        for (size_t s = 0; s <= numberOfSamplesToRender; ++s, sampleIndexWorldX += Dx)
         {
             if constexpr (DetailType == OceanRenderDetailType::Basic)
             {
                 renderContext.UploadOceanBasic(
-                    sampleIndexX,
+                    sampleIndexWorldX,
                     mSamples[leftmostSampleIndex + static_cast<int64_t>(s)].SampleValue);
             }
             else
             {
                 renderContext.UploadOceanDetailed(
-                    sampleIndexX,
+                    sampleIndexWorldX,
                     mSamples[std::max(leftmostSampleIndex + static_cast<int64_t>(s) - DetailXOffsetSamples * 2, int64_t(0))].SampleValue * BackPlaneDamp,
                     mSamples[std::max(leftmostSampleIndex + static_cast<int64_t>(s) - DetailXOffsetSamples, int64_t(0))].SampleValue * MidPlaneDamp,
                     mSamples[leftmostSampleIndex + static_cast<int64_t>(s)].SampleValue);
@@ -895,7 +895,7 @@ void OceanSurface::UpdateFields()
         float const previousQ = QUpwindTheta * velocityField[i] + (1.0f - QUpwindTheta) / 2.0f * (velocityField[i - 1] + velocityField[i + 1]);
         // TODOTEST: Populating velocity as Q
         float const numerator = previousQ - G * heightField[i] * Dt / Dx * (heightField[i] - heightField[i - 1]);
-        //float const denominator = (1.0f + G * Dt * Friction * Friction * std::abs(velocityField[i]) / std::pow(heightField[i], 7.0f / 3.0f));
+        //float const denominator = (1.0f + G * Dt * Friction * Friction * std::abs(velocityField[i]) / std::pow(hf, 7.0f / 3.0f));
         float const denominator = 1.0f + G * Dt * Friction * Friction * std::abs(velocityField[i]) / (heightField[i] * heightField[i]);
         velocityField[i] = numerator / denominator;
     }

@@ -189,7 +189,7 @@ private:
     // The rest height of the height field - indirectly determines velocity
     // of waves (via dv/dt <= dh/dx, with dh/dt <= h*dv/dx).
     // Sensitive to Dx - With Dx=1.22, a good offset is 100; with dx=0.61, a good offset is 50
-    static float constexpr SWEHeightFieldOffset = 50.0f;
+    static float constexpr SWEHeightFieldOffset = 20.0f;
 
     // The factor by which we amplify the height field perturbations;
     // higher values allow for smaller height field variations with the same visual height,
