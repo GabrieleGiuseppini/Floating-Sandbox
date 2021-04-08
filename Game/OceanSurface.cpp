@@ -888,11 +888,15 @@ void OceanSurface::UpdateFields()
             heightField[i]
             + Dt / Dx * (velocityField[i] - velocityField[i + 1]);
 
+        // TODOTEST
+        //float const hf = std::max(heightField[i], heightField[i - 1]);
+
         // TODO: rename if velocities become again velocities
         float const previousQ = QUpwindTheta * velocityField[i] + (1.0f - QUpwindTheta) / 2.0f * (velocityField[i - 1] + velocityField[i + 1]);
         // TODOTEST: Populating velocity as Q
         float const numerator = previousQ - G * heightField[i] * Dt / Dx * (heightField[i] - heightField[i - 1]);
-        float const denominator = (1.0f + G * Dt * Friction * Friction * std::abs(velocityField[i]) / std::pow(heightField[i], 7.0f / 3.0f));
+        //float const denominator = (1.0f + G * Dt * Friction * Friction * std::abs(velocityField[i]) / std::pow(heightField[i], 7.0f / 3.0f));
+        float const denominator = 1.0f + G * Dt * Friction * Friction * std::abs(velocityField[i]) / (heightField[i] * heightField[i]);
         velocityField[i] = numerator / denominator;
     }
 }

@@ -1769,12 +1769,19 @@ Render:
 						+ Less delay at small delta heights => try again with Smoothstep
 				+ Tsunami
 				+ Rogue wave
+			- See if the removal of hf is making the wave evolution asymmetrical
+				- No - remove hf again
+			- Make less rigid - try to make waves bounce back
+				- Play with fixed height
+				- Try to change Friction - new setting ("WaveDamping") & SettingsDialog
+					- Might be best to temporarily set decay rate to zero to better see the effect here
 			= Split UpdateFields:
 				+ SmoothDeltaBufferIntoHeightField
 					+ As-is, for the time being
 					+ Also clears at end					
-				- UpdateFields: just SWE loop
-					- Optimize:
+				= UpdateFields: just SWE loop
+					= Optimize:
+						= pow
 						- See if best to store velocity field or Q field
 							- Also, if we go for Q field, be careful - height and velocity/Q are at different places in the cell
 						- Make sure it's vectorized
@@ -1786,7 +1793,8 @@ Render:
 				- 3: Make version with x86 intrinsics in Algorithms
 				- 4: x86 instrinsics unit tests
 			------------------------------
-			- Try to change n - new setting ("WaveDamping") & SettingsDialog
+			- See what's going on with rendering at far zoom
+				- See if repros with basic shader
 			- See if wave discplacement can now be slightly more pronounced
 				- Keep an eye on infinitely-bouncing balls
 		- TODOOLD:
