@@ -330,14 +330,6 @@ public:
     float GetMinWaterCrazyness() const override { return GameParameters::MinWaterCrazyness; }
     float GetMaxWaterCrazyness() const override { return GameParameters::MaxWaterCrazyness; }
 
-    bool GetDoDisplaceWater() const override { return mGameParameters.DoDisplaceWater; }
-    void SetDoDisplaceWater(bool value) override { mGameParameters.DoDisplaceWater = value; }
-
-    float GetWaterDisplacementWaveHeightAdjustment() const override { return mGameParameters.WaterDisplacementWaveHeightAdjustment; }
-    void SetWaterDisplacementWaveHeightAdjustment(float value) override { mGameParameters.WaterDisplacementWaveHeightAdjustment = value; }
-    float GetMinWaterDisplacementWaveHeightAdjustment() const override { return GameParameters::MinWaterDisplacementWaveHeightAdjustment; }
-    float GetMaxWaterDisplacementWaveHeightAdjustment() const override { return GameParameters::MaxWaterDisplacementWaveHeightAdjustment; }
-
     float GetSmokeEmissionDensityAdjustment() const override { return mGameParameters.SmokeEmissionDensityAdjustment; }
     void SetSmokeEmissionDensityAdjustment(float value) override { mGameParameters.SmokeEmissionDensityAdjustment = value; }
     float GetMinSmokeEmissionDensityAdjustment() const override { return GameParameters::MinSmokeEmissionDensityAdjustment; }
@@ -347,6 +339,19 @@ public:
     void SetSmokeParticleLifetimeAdjustment(float value) override { mGameParameters.SmokeParticleLifetimeAdjustment = value; }
     float GetMinSmokeParticleLifetimeAdjustment() const override { return GameParameters::MinSmokeParticleLifetimeAdjustment; }
     float GetMaxSmokeParticleLifetimeAdjustment() const override { return GameParameters::MaxSmokeParticleLifetimeAdjustment; }
+
+    bool GetDoModulateWind() const override { return mGameParameters.DoModulateWind; }
+    void SetDoModulateWind(bool value) override { mGameParameters.DoModulateWind = value; }
+
+    float GetWindSpeedBase() const override { return mGameParameters.WindSpeedBase; }
+    void SetWindSpeedBase(float value) override { mGameParameters.WindSpeedBase = value; }
+    float GetMinWindSpeedBase() const override { return GameParameters::MinWindSpeedBase; }
+    float GetMaxWindSpeedBase() const override { return GameParameters::MaxWindSpeedBase; }
+
+    float GetWindSpeedMaxFactor() const override { return mGameParameters.WindSpeedMaxFactor; }
+    void SetWindSpeedMaxFactor(float value) override { mGameParameters.WindSpeedMaxFactor = value; }
+    float GetMinWindSpeedMaxFactor() const override { return GameParameters::MinWindSpeedMaxFactor; }
+    float GetMaxWindSpeedMaxFactor() const override { return GameParameters::MaxWindSpeedMaxFactor; }
 
     float GetBasalWaveHeightAdjustment() const override { return mFloatParameterSmoothers[BasalWaveHeightAdjustmentParameterSmoother].GetValue(); }
     void SetBasalWaveHeightAdjustment(float value) override { mFloatParameterSmoothers[BasalWaveHeightAdjustmentParameterSmoother].SetValue(value); }
@@ -373,18 +378,18 @@ public:
     std::chrono::minutes GetMinRogueWaveRate() const override { return GameParameters::MinRogueWaveRate; }
     std::chrono::minutes GetMaxRogueWaveRate() const override { return GameParameters::MaxRogueWaveRate; }
 
-    bool GetDoModulateWind() const override { return mGameParameters.DoModulateWind; }
-    void SetDoModulateWind(bool value) override { mGameParameters.DoModulateWind = value; }
+    bool GetDoDisplaceWater() const override { return mGameParameters.DoDisplaceWater; }
+    void SetDoDisplaceWater(bool value) override { mGameParameters.DoDisplaceWater = value; }
 
-    float GetWindSpeedBase() const override { return mGameParameters.WindSpeedBase; }
-    void SetWindSpeedBase(float value) override { mGameParameters.WindSpeedBase = value; }
-    float GetMinWindSpeedBase() const override { return GameParameters::MinWindSpeedBase; }
-    float GetMaxWindSpeedBase() const override { return GameParameters::MaxWindSpeedBase; }
+    float GetWaterDisplacementWaveHeightAdjustment() const override { return mGameParameters.WaterDisplacementWaveHeightAdjustment; }
+    void SetWaterDisplacementWaveHeightAdjustment(float value) override { mGameParameters.WaterDisplacementWaveHeightAdjustment = value; }
+    float GetMinWaterDisplacementWaveHeightAdjustment() const override { return GameParameters::MinWaterDisplacementWaveHeightAdjustment; }
+    float GetMaxWaterDisplacementWaveHeightAdjustment() const override { return GameParameters::MaxWaterDisplacementWaveHeightAdjustment; }
 
-    float GetWindSpeedMaxFactor() const override { return mGameParameters.WindSpeedMaxFactor; }
-    void SetWindSpeedMaxFactor(float value) override { mGameParameters.WindSpeedMaxFactor = value; }
-    float GetMinWindSpeedMaxFactor() const override { return GameParameters::MinWindSpeedMaxFactor; }
-    float GetMaxWindSpeedMaxFactor() const override { return GameParameters::MaxWindSpeedMaxFactor; }
+    float GetWaveSmoothnessAdjustment() const override { return mGameParameters.WaveSmoothnessAdjustment; }
+    void SetWaveSmoothnessAdjustment(float value) override { mGameParameters.WaveSmoothnessAdjustment = value; }
+    float GetMinWaveSmoothnessAdjustment() const override { return GameParameters::MinWaveSmoothnessAdjustment; }
+    float GetMaxWaveSmoothnessAdjustment() const override { return GameParameters::MaxWaveSmoothnessAdjustment; }
 
     // Storm
 

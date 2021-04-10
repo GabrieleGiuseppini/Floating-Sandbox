@@ -70,9 +70,6 @@ struct IGameControllerSettingsOptions
     virtual float GetMinWaterCrazyness() const = 0;
     virtual float GetMaxWaterCrazyness() const = 0;
 
-    virtual float GetMinWaterDisplacementWaveHeightAdjustment() const = 0;
-    virtual float GetMaxWaterDisplacementWaveHeightAdjustment() const = 0;
-
     // Ephemeral Particles
 
     virtual float GetMinSmokeEmissionDensityAdjustment() const = 0;
@@ -80,6 +77,16 @@ struct IGameControllerSettingsOptions
 
     virtual float GetMinSmokeParticleLifetimeAdjustment() const = 0;
     virtual float GetMaxSmokeParticleLifetimeAdjustment() const = 0;
+
+    // Wind
+
+    virtual float GetMinWindSpeedBase() const = 0;
+    virtual float GetMaxWindSpeedBase() const = 0;
+
+    virtual float GetMinWindSpeedMaxFactor() const = 0;
+    virtual float GetMaxWindSpeedMaxFactor() const = 0;
+
+    // Waves
 
     virtual float GetMinBasalWaveHeightAdjustment() const = 0;
     virtual float GetMaxBasalWaveHeightAdjustment() const = 0;
@@ -96,11 +103,11 @@ struct IGameControllerSettingsOptions
     virtual std::chrono::minutes GetMinRogueWaveRate() const = 0;
     virtual std::chrono::minutes GetMaxRogueWaveRate() const = 0;
 
-    virtual float GetMinWindSpeedBase() const = 0;
-    virtual float GetMaxWindSpeedBase() const = 0;
+    virtual float GetMinWaterDisplacementWaveHeightAdjustment() const = 0;
+    virtual float GetMaxWaterDisplacementWaveHeightAdjustment() const = 0;
 
-    virtual float GetMinWindSpeedMaxFactor() const = 0;
-    virtual float GetMaxWindSpeedMaxFactor() const = 0;
+    virtual float GetMinWaveSmoothnessAdjustment() const = 0;
+    virtual float GetMaxWaveSmoothnessAdjustment() const = 0;
 
     // Storm
 

@@ -61,7 +61,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(bool, DoDisplaceWater);
     ADD_GC_SETTING(float, WaterDisplacementWaveHeightAdjustment);
 
-
+    // Waves
     ADD_GC_SETTING(float, BasalWaveHeightAdjustment);
     ADD_GC_SETTING(float, BasalWaveLengthAdjustment);
     ADD_GC_SETTING(float, BasalWaveSpeedAdjustment);
@@ -70,6 +70,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(bool, DoModulateWind);
     ADD_GC_SETTING(float, WindSpeedBase);
     ADD_GC_SETTING(float, WindSpeedMaxFactor);
+    ADD_GC_SETTING(float, WaveSmoothnessAdjustment);
 
     // Storm
     ADD_GC_SETTING(std::chrono::minutes, StormRate);

@@ -549,10 +549,13 @@ Render:
 					- Also change depth at middle so that it fits with new bumpiness and it's ~-283
 						- Or simply change the bumpiness frequency or phase, whichever looks best
 			= OceanSurface				
-				- Fix manual waves
+				= Fix manual waves
 					+ Try to re-instate full SWEs
 						X If works, see if can put back tsunami's parameters
 					- Look back at SWEs (*)
+						- changelist
+							- Improving the stability of a simple formulation of the shallow water equations for 2D flood modeling, https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2011WR011570,
+							  de Almeida et al (2012)
 					= If new SWE doesn't work: gentler rising slope at interactive waves
 						= ...but also steeper at small height
 						- ...and now gentler at smaller height
@@ -1771,11 +1774,27 @@ Render:
 				+ Rogue wave
 			+ See if the removal of hf is making the wave evolution asymmetrical
 				- No - remove hf again
-			= Make less rigid - try to make waves bounce back
+			+ Make less rigid - try to make waves bounce back
 				+ Play with fixed height
 				X It's not friction (actually friction might be zero, see below)
-				- Play with theta - new setting ("WaveSmoothness" or find better name in paper) & SettingsDialog
-					- Might be best to temporarily set decay rate to zero to better see the effect here
+				+ Play with theta - new setting ("WaveSmoothness" or find better name in paper) & SettingsDialog
+					+ 0.95, friction 0.5: nice bouncing, but weird vertical offset stays
+					+ 0.953, friction 0.25: nice bouncing, small weird vertical offset
+					+ 0.953, friction 0.15: nice bouncing, no weird vertical offset, stable - BEST
+					+ 0.922, friction 0.15: little but visibile bouncing
+					+ 0.172, friction 0.005: no bouncing, no instabilities, wave stays round, but asymmetric
+					+ 0.906, friction 0.005: small bouncing
+					+ 0.984, friction 0.005: repeated bouncing, dying off soon; tall waves become unstable
+					+ 1.0, friction 0.005: repeated irregular bouncing
+					+ 0.984, friction 0.1: repeated bouncing, dying off soon; tall waves become unstable
+					+ 0.891, friction 0: negligible bouncing, wave is steep
+					+ 0.844, friction 0: negligible bouncing, wave is almost triangular
+					+ 0.8, friction 0: negligible bouncing, wave is reasonably round
+					+ 0.5, friction 0: no bouncing,  wave stays round, no instabilities
+					+ Might be best to temporarily set decay rate to zero to better see the effect here
+					+ At end:
+						+ Decide decay rate of interactive
+						+ Make rising slope of interactive less steep, tsunami is quite nice
 			= Split UpdateFields:
 				+ SmoothDeltaBufferIntoHeightField
 					+ As-is, for the time being
@@ -1802,6 +1821,11 @@ Render:
 				+ Remove dFdy at basal width, it's useless anyway
 			- See if wave discplacement can now be slightly more pronounced
 				- Keep an eye on infinitely-bouncing balls
+			- See if may adjust:
+				- Fish displacement
+				- Bubble displacement
+			- Decide whether to keep or not WaveSmoothnessAdjustment in SettingsDialog
+				- If so: find right Min/Max range
 		- TODOOLD:
 			- See if need to, and may damp tiny oscillations; if good, consider two SWE fields: one for abnormals (undamped) and one for interactive/displaced (damped)
 				- Actually, just two velocity fields, always used in sum, but one is damped and the other is not

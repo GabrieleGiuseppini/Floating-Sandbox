@@ -156,7 +156,7 @@ private:
 
     //void AdvectFieldsTest();
 
-    void UpdateFields();
+    void UpdateFields(GameParameters const & gameParameters);
 
     void GenerateSamples(
         float currentSimulationTime,

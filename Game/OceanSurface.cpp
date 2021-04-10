@@ -211,7 +211,7 @@ void OceanSurface::Update(
 
     //AdvectFieldsTest();
 
-    UpdateFields();
+    UpdateFields(gameParameters);
 
     ////// Calc avg height among all samples
     ////float avgHeight = 0.0f;
@@ -847,7 +847,7 @@ void OceanSurface::ApplyDampingBoundaryConditions()
 
 }
 
-void OceanSurface::UpdateFields()
+void OceanSurface::UpdateFields(GameParameters const & gameParameters)
 {
     //
     // SWE Update
@@ -863,10 +863,9 @@ void OceanSurface::UpdateFields()
     float constexpr Dt = GameParameters::SimulationStepTimeDuration<float>;
 
     // Friction: a lower friction raises instability
-    float constexpr Friction = 0.1f;
-
-    // Q-upwind interpolation theta: the authors used 0.8
-    float const QUpwindTheta = 0.8f;
+    //float constexpr Friction = 0.1f;
+    //float constexpr Friction = 0.005f;
+    float constexpr Friction = 0.15f;
 
     float * const restrict heightField = mHeightField.data();
     float * const restrict velocityField = mVelocityField.data();
@@ -892,7 +891,7 @@ void OceanSurface::UpdateFields()
         //float const hf = std::max(heightField[i], heightField[i - 1]);
 
         // TODO: rename if velocities become again velocities
-        float const previousQ = QUpwindTheta * velocityField[i] + (1.0f - QUpwindTheta) / 2.0f * (velocityField[i - 1] + velocityField[i + 1]);
+        float const previousQ = gameParameters.WaveSmoothnessAdjustment * velocityField[i] + (1.0f - gameParameters.WaveSmoothnessAdjustment) / 2.0f * (velocityField[i - 1] + velocityField[i + 1]);
         // TODOTEST: Populating velocity as Q
         float const numerator = previousQ - G * heightField[i] * Dt / Dx * (heightField[i] - heightField[i - 1]);
         //float const denominator = (1.0f + G * Dt * Friction * Friction * std::abs(velocityField[i]) / std::pow(hf, 7.0f / 3.0f));
@@ -1171,16 +1170,18 @@ bool OceanSurface::SWEInteractiveWaveStateMachine::MayBeOverridden() const
 float OceanSurface::SWEInteractiveWaveStateMachine::CalculateRisingPhaseDuration(float deltaHeight)
 {
     // We want little rises to be quick (0.0)
-    // We want large rises to be slow, so that we don't generate height slopes that are
+    // We want large rises to be slow, so that we don't generate slopes that are
     // too steep
-    return 1.0f * SmoothStep(1.0, 1.6f, std::abs(deltaHeight));
+    float const duration = 1.5f * SmoothStep(1.0, 5.0f, std::abs(deltaHeight));
+    return duration;
 }
 
 float OceanSurface::SWEInteractiveWaveStateMachine::CalculateFallingPhaseDecayCoefficient(float deltaHeight)
 {
-    // We want little falls to be immediate (1.0)
-    // At higher delta's we want slower
-    return 1.0f - (1.0f - 0.04f) * SmoothStep(1.0f, 4.0f, std::abs(deltaHeight));
+    // We want little falls to be immediate (close to 1.0)
+    // At higher delta's we want slower (close to 0.0)
+    float const coeff = 0.85f - (0.85f - 0.1f) * SmoothStep(0.5f, 4.0f, std::abs(deltaHeight));
+    return coeff;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
