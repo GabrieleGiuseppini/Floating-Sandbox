@@ -344,7 +344,6 @@ public:
         // - Each plane sub-segment is divided into nLayers layers
         //
 
-
         // Copy kernel ortho matrix
         std::copy(
             &(mKernelOrthoMatrix[0][0]),
@@ -407,6 +406,14 @@ private:
 
         mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasPhysicalPixelSize.height) / mVisibleWorld.Height;
         mCanvasWidthToHeightRatio = static_cast<float>(mCanvasPhysicalPixelSize.width) / static_cast<float>(mCanvasPhysicalPixelSize.height);
+
+        //
+        // Ortho Matrix:
+        //
+        //  2 / WrdW            0                   0                0
+        //  0                   2 / WrdH            0                0
+        //  0                   0                   WrdZMult         0
+        //  -2 * CamX / WrdW    -2 * CamY / WrdH    ZOffset          1
 
         // Recalculate kernel Ortho Matrix cells
         mKernelOrthoMatrix[0][0] = 2.0f / mVisibleWorld.Width;
