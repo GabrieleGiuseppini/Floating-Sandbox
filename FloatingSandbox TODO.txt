@@ -1773,7 +1773,8 @@ Render:
 				- No - remove hf again
 			= Make less rigid - try to make waves bounce back
 				+ Play with fixed height
-				- Try to change Friction - new setting ("WaveDamping") & SettingsDialog
+				X It's not friction (actually friction might be zero, see below)
+				- Play with theta - new setting ("WaveSmoothness" or find better name in paper) & SettingsDialog
 					- Might be best to temporarily set decay rate to zero to better see the effect here
 			= Split UpdateFields:
 				+ SmoothDeltaBufferIntoHeightField
@@ -1784,6 +1785,7 @@ Render:
 						= pow
 						- See if best to store velocity field or Q field
 							- Also, if we go for Q field, be careful - height and velocity/Q are at different places in the cell
+						- See if friction is really needed - setting it to zero seems to have no effect
 						- Make sure it's vectorized
 			- SetSWEWaveHeight: see if can be replaced by populating deltabuffer
 				- Every caller (state machines only?) need to start reasoning in terms of delta's then, rather than absolute heights? 
@@ -1794,8 +1796,10 @@ Render:
 				- 3: Make version with x86 intrinsics in Algorithms
 				- 4: x86 instrinsics unit tests
 			------------------------------
-			- See what's going on with rendering at far zoom
-				- See if repros with basic shader
+			= See what's going on with rendering at far zoom
+				X See if repros with basic shader
+				- Try with squared, as in experiment
+				- Remove dFdy at basal width, it's useless anyway
 			- See if wave discplacement can now be slightly more pronounced
 				- Keep an eye on infinitely-bouncing balls
 		- TODOOLD:
