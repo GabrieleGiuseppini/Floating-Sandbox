@@ -1800,6 +1800,11 @@ Render:
 				X See if repros with basic shader
 				- Try with squared, as in experiment
 				- Remove dFdy at basal width, it's useless anyway
+				- Test:
+					- Flat
+					- Depth
+					- Texture
+					- And darkening rate at all
 			- See if wave discplacement can now be slightly more pronounced
 				- Keep an eye on infinitely-bouncing balls
 		- TODOOLD:
