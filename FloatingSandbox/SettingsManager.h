@@ -34,6 +34,7 @@ enum class GameSettings : size_t
     DoDisplaceWater,
     WaterDisplacementWaveHeightAdjustment,
 
+    // Waves
     BasalWaveHeightAdjustment,
     BasalWaveLengthAdjustment,
     BasalWaveSpeedAdjustment,
@@ -42,6 +43,7 @@ enum class GameSettings : size_t
     DoModulateWind,
     WindSpeedBase,
     WindSpeedMaxFactor,
+    WaveSmoothnessAdjustment,
 
     // Storm
     StormRate,

@@ -73,12 +73,6 @@ struct IGameControllerSettings
     virtual float GetWaterCrazyness() const = 0;
     virtual void SetWaterCrazyness(float value) = 0;
 
-    virtual bool GetDoDisplaceWater() const = 0;
-    virtual void SetDoDisplaceWater(bool value) = 0;
-
-    virtual float GetWaterDisplacementWaveHeightAdjustment() const = 0;
-    virtual void SetWaterDisplacementWaveHeightAdjustment(float value) = 0;
-
     // Ephemeral Particles
 
     virtual float GetSmokeEmissionDensityAdjustment() const = 0;
@@ -86,6 +80,19 @@ struct IGameControllerSettings
 
     virtual float GetSmokeParticleLifetimeAdjustment() const = 0;
     virtual void SetSmokeParticleLifetimeAdjustment(float value) = 0;
+
+    // Wind
+
+    virtual bool GetDoModulateWind() const = 0;
+    virtual void SetDoModulateWind(bool value) = 0;
+
+    virtual float GetWindSpeedBase() const = 0;
+    virtual void SetWindSpeedBase(float value) = 0;
+
+    virtual float GetWindSpeedMaxFactor() const = 0;
+    virtual void SetWindSpeedMaxFactor(float value) = 0;
+
+    // Waves
 
     virtual float GetBasalWaveHeightAdjustment() const = 0;
     virtual void SetBasalWaveHeightAdjustment(float value) = 0;
@@ -102,14 +109,14 @@ struct IGameControllerSettings
     virtual std::chrono::minutes GetRogueWaveRate() const = 0;
     virtual void SetRogueWaveRate(std::chrono::minutes value) = 0;
 
-    virtual bool GetDoModulateWind() const = 0;
-    virtual void SetDoModulateWind(bool value) = 0;
+    virtual bool GetDoDisplaceWater() const = 0;
+    virtual void SetDoDisplaceWater(bool value) = 0;
 
-    virtual float GetWindSpeedBase() const = 0;
-    virtual void SetWindSpeedBase(float value) = 0;
+    virtual float GetWaterDisplacementWaveHeightAdjustment() const = 0;
+    virtual void SetWaterDisplacementWaveHeightAdjustment(float value) = 0;
 
-    virtual float GetWindSpeedMaxFactor() const = 0;
-    virtual void SetWindSpeedMaxFactor(float value) = 0;
+    virtual float GetWaveSmoothnessAdjustment() const = 0;
+    virtual void SetWaveSmoothnessAdjustment(float value) = 0;
 
     // Storm
 

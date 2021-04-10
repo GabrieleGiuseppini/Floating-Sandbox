@@ -1448,11 +1448,11 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
     }
 
     //
-    // Waves
+    // Oceanic Waves
     //
 
     {
-        wxStaticBoxSizer * wavesBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Waves"));
+        wxStaticBoxSizer * wavesBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Oceanic Waves"));
 
         {
             wxGridBagSizer * wavesSizer = new wxGridBagSizer(0, 0);
@@ -1600,6 +1600,31 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    CellBorderInner);
+            }
+
+            // Wave Smoothness Adjust
+            {
+                mWaveSmoothnessAdjustmentSlider = new SliderControl<float>(
+                    displacementWavesBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Smoothness Adjust"),
+                    _("Adjusts the smoothness of waves caused by water displacement."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaveSmoothnessAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinWaveSmoothnessAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxWaveSmoothnessAdjustment()));
+
+                displacementWavesSizer->Add(
+                    mWaveSmoothnessAdjustmentSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
@@ -4786,6 +4811,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDoDisplaceWaterCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoDisplaceWater));
     mWaterDisplacementWaveHeightAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDisplacementWaveHeightAdjustment));
     mWaterDisplacementWaveHeightAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoDisplaceWater));
+    mWaveSmoothnessAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaveSmoothnessAdjustment));
     mTsunamiRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::TsunamiRate).count());
     mRogueWaveRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::RogueWaveRate).count());
     mStormStrengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StormStrengthAdjustment));

@@ -23,8 +23,6 @@ GameParameters::GameParameters()
     , WaterIntakeAdjustment(1.0f)
     , WaterDiffusionSpeedAdjustment(1.0f)
     , WaterCrazyness(0.8125f)
-    , DoDisplaceWater(true)
-    , WaterDisplacementWaveHeightAdjustment(1.0f)
     // Ephemeral particles
     , DoGenerateDebris(true)
     , SmokeEmissionDensityAdjustment(1.0f)
@@ -43,6 +41,9 @@ GameParameters::GameParameters()
     , BasalWaveSpeedAdjustment(2.0f)
     , TsunamiRate(12)
     , RogueWaveRate(2)
+    , DoDisplaceWater(true)
+    , WaterDisplacementWaveHeightAdjustment(1.0f)
+    , WaveSmoothnessAdjustment(0.8f)
     // Storm
     , StormRate(60)
     , StormDuration(60 * 4) // 4 minutes
