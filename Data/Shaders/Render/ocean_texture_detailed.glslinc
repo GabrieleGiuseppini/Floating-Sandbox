@@ -12,14 +12,14 @@ uniform mat4 paramOrthoMatrix;
 
 // Outputs
 out vec2 worldCoords;
-out float yWorld;
+out float yTexture;
 out vec4 yVectorNdc;
 
 void main()
 {
     gl_Position = paramOrthoMatrix * vec4(inOceanDetailed1, -1.0, 1.0);
     worldCoords = inOceanDetailed1;
-    yWorld = inOceanDetailed2.x;
+    yTexture = inOceanDetailed2.x;
 
     // Pass y values to fragment shader, converting to NDC
     yVectorNdc = vec4(
@@ -36,7 +36,7 @@ void main()
 
 // Inputs from previous shader
 in vec2 worldCoords;
-in float yWorld;
+in float yTexture;
 in vec4 yVectorNdc;
 
 // The texture
@@ -51,7 +51,7 @@ uniform float paramOceanDarkeningRate;
 void main()
 {
     // Get texture color sample
-    vec2 textureCoord2 = vec2(worldCoords.x, yWorld);
+    vec2 textureCoord2 = vec2(worldCoords.x, yTexture);
     float darkMix = 1.0 - exp(min(0.0, worldCoords.y) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
     vec3 textureColor = mix(
         texture2D(paramOceanTexture, textureCoord2 * paramTextureScaling).xyz,
