@@ -863,9 +863,8 @@ void OceanSurface::UpdateFields(GameParameters const & gameParameters)
     float constexpr Dt = GameParameters::SimulationStepTimeDuration<float>;
 
     // Friction: a lower friction raises instability
-    //float constexpr Friction = 0.1f;
-    //float constexpr Friction = 0.005f;
-    float constexpr Friction = 0.15f;
+    //float constexpr Friction = 0.15f;
+    float constexpr Friction = 0.0f;
 
     float * const restrict heightField = mHeightField.data();
     float * const restrict velocityField = mVelocityField.data();
