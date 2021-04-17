@@ -507,9 +507,9 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
     else
     {
         //
-        // Zoom in: each sample encompasses multiple slices;
-        // we upload then just the required number of samples, which is less than
-        // the max number of slices we're prepared to upload, and we let OpenGL
+        // Zoom in: each sample encompasses multiple slices; we upload then just the
+        // required number of samples - using straight, whole samples - which is less
+        // than the max number of slices we're prepared to upload, and we let OpenGL
         // interpolate on our behalf
         //
 

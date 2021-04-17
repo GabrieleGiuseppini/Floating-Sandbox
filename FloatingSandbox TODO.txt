@@ -1807,16 +1807,18 @@ Render:
 					X Upload avg of three derivatives
 				= Try:
 					+ Back to world coords
-					X 1: with shader-calculated derivative:
+					X 1: with shader-calculated derivatives:
 						float borderWidthHalfFront = (basalBorderWidth + abs(dYFrontWorld)) / 1.2;
 						float yFrontMidBorder = yFrontWorld;
 						float borderFront =
 							1. - smoothstep(0., borderWidthHalfFront, abs(yWorld - yFrontMidBorder));
 						X 1b: if OK: see with code-calculated derivative instead						
-					= 2: Try "double-shader" + second derivative
+					= 2: Try "double-shader" + second derivatives
 						+ Go back to all shaders working on World
 						+ Shadertoy PoC
-						- Implement second derivative
+						= Implement second derivatives
+							+ Infrastructure
+							- Second derivatives
 					- Final: do other planes
 			- Verify stability wrt zero-level
 			= Split UpdateFields:
@@ -1841,9 +1843,9 @@ Render:
 				- 3: Make version with x86 intrinsics in Algorithms
 				- 4: x86 instrinsics unit tests
 			------------------------------
-			- See if wave discplacement can now be slightly more pronounced
+			- See if wave displacement can now be slightly more pronounced
 				- Keep an eye on infinitely-bouncing balls
-			- See if may adjust:
+			- See if may increase:
 				- Fish displacement
 				- Bubble displacement
 			- Decide whether to keep or not WaveSmoothnessAdjustment in SettingsDialog
