@@ -15,7 +15,7 @@ uniform mat4 paramOrthoMatrix;
 
 // Outputs
 out vec4 oceanColor;
-out vec4 yVectorNdc;
+out vec4 yVectorWorld;
 
 void main()
 {
@@ -28,10 +28,8 @@ void main()
     // Calculate position
     gl_Position = paramOrthoMatrix * vec4(inOceanDetailed1, -1.0, 1.0);
 
-    // Pass y values to fragment shader, converting to NDC
-    yVectorNdc = vec4(
-        gl_Position.y,
-        inOceanDetailed2.yzw * paramOrthoMatrix[1].y + vec3(paramOrthoMatrix[3].y));
+    // Pass y values to fragment shader
+    yVectorWorld = vec4(inOceanDetailed1.y, inOceanDetailed2.yzw);
 }
 
 
@@ -43,9 +41,9 @@ void main()
 
 // Inputs from previous shader
 in vec4 oceanColor;
-in vec4 yVectorNdc;
+in vec4 yVectorWorld;
 
 void main()
 {
-    gl_FragColor = CalculateOceanPlaneColor(oceanColor, yVectorNdc.x, yVectorNdc.y, yVectorNdc.z, yVectorNdc.w);
+    gl_FragColor = CalculateOceanPlaneColor(oceanColor, yVectorWorld.x, yVectorWorld.y, yVectorWorld.z, yVectorWorld.w);
 }

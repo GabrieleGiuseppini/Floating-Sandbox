@@ -1,30 +1,32 @@
-vec4 CalculateOceanPlaneColor(vec4 baseColor, float yNdc, float yBackNdc, float yMidNdc, float yFrontNdc)
+#undef RENDER_ALL_PLANES
+vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWorld, float yBackWorld, float yMidWorld, float yFrontWorld)
 {
     //
     // Calculate border width, taking into account steep vertical edges
     //
 
-    float basalBorderWidth = 0.0035; // Independent from resolution
+    float basalBorderWidth = 3. * abs(dFdy(yWorld)); // 6 pixels
 
 #ifdef RENDER_ALL_PLANES
-    float borderWidthHalfBack = basalBorderWidth + abs(dFdx(yBackNdc));
-    float borderWidthHalfMid = basalBorderWidth + abs(dFdx(yMidNdc));
+    float borderWidthHalfBack = basalBorderWidth + abs(dFdx(yBackWorld));
+    float borderWidthHalfMid = basalBorderWidth + abs(dFdx(yMidWorld));
 #endif
 
-    float borderWidthHalfFront = basalBorderWidth + abs(dFdx(yFrontNdc));
+    float borderWidthHalfFront = basalBorderWidth + abs(dFdx(yFrontWorld)) * 2.;
+    float yFrontMidBorder = yFrontWorld;
 
     //
     // Color
     //
 
-    // 1 when yNdc is below middle of the border, 0 otherwise
+    // 1 when yWorld is below middle of the border, 0 otherwise
 
 #ifdef RENDER_ALL_PLANES
-    float baseColorBack = step(yNdc, yBackNdc - borderWidthHalfBack);
-    float baseColorMid = step(yNdc, yMidNdc - borderWidthHalfMid);
+    float baseColorBack = step(yWorld, yBackWorld - borderWidthHalfBack);
+    float baseColorMid = step(yWorld, yMidWorld - borderWidthHalfMid);
 #endif
 
-    float baseColorFront = step(yNdc, yFrontNdc - borderWidthHalfFront);
+    float baseColorFront = step(yWorld, yFrontMidBorder);
 
 #ifdef RENDER_ALL_PLANES
     float baseColorAlpha =
@@ -45,14 +47,14 @@ vec4 CalculateOceanPlaneColor(vec4 baseColor, float yNdc, float yBackNdc, float 
 
 #ifdef RENDER_ALL_PLANES
     float borderBack =
-        1. - smoothstep(0., borderWidthHalfBack, abs(yNdc - (yBackNdc - borderWidthHalfBack)));
+        1. - smoothstep(0., borderWidthHalfBack, abs(yWorld - (yBackWorld - borderWidthHalfBack)));
 
     float borderMid =
-        1. - smoothstep(0., borderWidthHalfMid, abs(yNdc - (yMidNdc - borderWidthHalfMid)));
+        1. - smoothstep(0., borderWidthHalfMid, abs(yWorld - (yMidWorld - borderWidthHalfMid)));
 #endif
 
     float borderFront =
-        1. - smoothstep(0., borderWidthHalfFront, abs(yNdc - (yFrontNdc - borderWidthHalfFront)));
+        1. - smoothstep(0., borderWidthHalfFront, abs(yWorld - yFrontMidBorder));
 
 #ifdef RENDER_ALL_PLANES
     // epsilon when front is visible, 1 otherwise
