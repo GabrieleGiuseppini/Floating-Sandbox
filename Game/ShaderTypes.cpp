@@ -448,6 +448,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::OceanDetailed1;
     else if (Utils::CaseInsensitiveEquals(str, "OceanDetailed2"))
         return VertexAttributeType::OceanDetailed2;
+    else if (Utils::CaseInsensitiveEquals(str, "OceanDetailed3"))
+        return VertexAttributeType::OceanDetailed3;
     else if (Utils::CaseInsensitiveEquals(str, "Fish1"))
         return VertexAttributeType::Fish1;
     else if (Utils::CaseInsensitiveEquals(str, "Fish2"))
