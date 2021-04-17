@@ -1805,17 +1805,18 @@ Render:
 				X Tan trick?
 				X See if may change how we upload
 					X Upload avg of three derivatives
-				- Try:
+				= Try:
 					+ Back to world coords
-					- 1: with shader-calculated derivative:
+					X 1: with shader-calculated derivative:
 						float borderWidthHalfFront = (basalBorderWidth + abs(dYFrontWorld)) / 1.2;
 						float yFrontMidBorder = yFrontWorld;
 						float borderFront =
 							1. - smoothstep(0., borderWidthHalfFront, abs(yWorld - yFrontMidBorder));
-						- 1b: if OK: see with code-calculated derivative instead						
-					- 2: Try "double-shader" + second derivative
-						- Go back to all shaders working on World
-						- Shadertoy: TODOHERE
+						X 1b: if OK: see with code-calculated derivative instead						
+					= 2: Try "double-shader" + second derivative
+						+ Go back to all shaders working on World
+						+ Shadertoy PoC
+						- Implement second derivative
 					- Final: do other planes
 			- Verify stability wrt zero-level
 			= Split UpdateFields:
