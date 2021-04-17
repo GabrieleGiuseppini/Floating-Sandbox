@@ -5,19 +5,22 @@
 
 // Inputs
 in vec2 inOceanDetailed1;	// Position (vec2)
-in vec4 inOceanDetailed2;	// yTexture (float, UNUSED), yBack/yMid/yFront (float, world y)
+in vec4 inOceanDetailed2;	// yTexture (float, UNUSED), yBack/dYBack2/yMid (float, world y)
+in vec3 inOceanDetailed3;	// dYMid2/yFront/dYFront2 (float, world y)
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
 
 // Outputs
-out vec4 yVectorWorld;
+out vec4 yVectorWorld1; // yWorld, yBackWorld/dYBack2World/yMidWorld
+out vec3 yVectorWorld2; // dYMid2World/yFrontWorld/dYFront2World
 
 void main()
 {
     gl_Position = paramOrthoMatrix * vec4(inOceanDetailed1, -1.0, 1.0);
 
-    yVectorWorld = vec4(inOceanDetailed1.y, inOceanDetailed2.yzw);
+    yVectorWorld1 = vec4(inOceanDetailed1.y, inOceanDetailed2.yzw);
+    yVectorWorld2 = inOceanDetailed3;
 }
 
 
@@ -28,7 +31,8 @@ void main()
 #include "ocean_surface.glslinc"
 
 // Inputs from previous shader
-in vec4 yVectorWorld;
+in vec4 yVectorWorld1; // yWorld, yBackWorld/dYBack2World/yMidWorld
+in vec3 yVectorWorld2; // dYMid2World/yFrontWorld/dYFront2World
 
 // Parameters
 uniform float paramEffectiveAmbientLightIntensity;
@@ -40,7 +44,7 @@ uniform float paramOceanDarkeningRate;
 void main()
 {
     // Get depth color sample
-    float darkMix = 1.0 - exp(min(0.0, yVectorWorld.x) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
+    float darkMix = 1.0 - exp(min(0.0, yVectorWorld1.x) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
     vec3 depthColor = mix(
         paramOceanDepthColorStart,
         paramOceanDepthColorEnd,
@@ -49,8 +53,10 @@ void main()
     // Apply detail
     vec4 color = CalculateOceanPlaneColor(
         vec4(depthColor, (1.0 - paramOceanTransparency)),
-        yVectorWorld.x,
-        yVectorWorld.y, yVectorWorld.z, yVectorWorld.w);
+        yVectorWorld1.x,
+        yVectorWorld1.y, yVectorWorld1.z,
+        yVectorWorld1.w, yVectorWorld2.x, 
+        yVectorWorld2.y, yVectorWorld2.z);
 
     // Combine
     gl_FragColor = vec4(color.xyz * paramEffectiveAmbientLightIntensity, color.w);

@@ -496,8 +496,11 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
                 renderContext.UploadOceanDetailed(
                     sampleIndexWorldX,
                     sampleBack * BackPlaneDamp,
+                    0.0f, // TODO
                     sampleMid * MidPlaneDamp,
-                    sample);
+                    0.0f, // TODO
+                    sample,
+                    0.0f); // TODO
             }
         }
     }
@@ -530,8 +533,11 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
                 renderContext.UploadOceanDetailed(
                     sampleIndexWorldX,
                     mSamples[std::max(leftmostSampleIndex + static_cast<int64_t>(s) - DetailXOffsetSamples * 2, int64_t(0))].SampleValue * BackPlaneDamp,
+                    0.0f, // TODO
                     mSamples[std::max(leftmostSampleIndex + static_cast<int64_t>(s) - DetailXOffsetSamples, int64_t(0))].SampleValue * MidPlaneDamp,
-                    mSamples[leftmostSampleIndex + static_cast<int64_t>(s)].SampleValue);
+                    0.0f, // TODO
+                    mSamples[leftmostSampleIndex + static_cast<int64_t>(s)].SampleValue,
+                    0.0f); // TODO
             }
         }
     }
