@@ -5,7 +5,7 @@ vec4 CalculateOceanPlaneColor(vec4 baseColor, float yWorld, float yBackWorld, fl
     // Calculate border width, taking into account steep vertical edges
     //
 
-    float basalBorderWidth = 2. * abs(dFdy(yWorld)); // 6 pixels
+    float basalBorderWidth = 2. * abs(dFdy(yWorld)); // pixels
 
 #ifdef RENDER_ALL_PLANES
     float borderWidthHalfBack = basalBorderWidth + abs(dFdx(yBackWorld));
