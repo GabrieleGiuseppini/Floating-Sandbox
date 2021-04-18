@@ -16,10 +16,10 @@ vec4 CalculateOceanPlaneColor(
 
 #ifdef RENDER_ALL_PLANES
     float borderWidthHalfBack = basalBorderWidth + abs(dFdx(yBackWorld)) * 1.2;
-    float yBackMidBorder = yBackWorld - borderWidthHalfBack;
+    float yBackMidBorder = yBackWorld;
 
     float borderWidthHalfMid = basalBorderWidth + abs(dFdx(yMidWorld)) * 1.2;
-    float yMidMidBorder = yMidWorld - borderWidthHalfMid;
+    float yMidMidBorder = yMidWorld;
 #endif
 
     float borderWidthHalfFront = basalBorderWidth + abs(dFdx(yFrontWorld)) * 1.2;
