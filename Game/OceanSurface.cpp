@@ -421,22 +421,14 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
 
     if (numberOfSamplesToRender >= RenderSlices<size_t>)
     {
+        LogMessage("TODOHERE");
+
         //
         // Zoom out from afar: each slice encompasses more than 1 sample;
         // we upload then RenderSlices slices, interpolating Y at each slice boundary
         //
 
-        if constexpr(DetailType == OceanRenderDetailType::Basic)
-            renderContext.UploadOceanBasicStart(RenderSlices<int>);
-        else
-            renderContext.UploadOceanDetailedStart(RenderSlices<int>);
-
-        // Calculate dx between each pair of slices with want to upload
-        float const sliceDx = coverageWorldWidth / RenderSlices<float>;
-
-        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
-        // quad side must be at the end of the width
-        for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexWorldX += sliceDx)
+        auto const getSampleAtX = [this](float sampleIndexWorldX)
         {
             //
             // Split sample index X into index in sample array and fractional part
@@ -466,9 +458,85 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
                 mSamples[sampleIndexI].SampleValue
                 + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
 
-            //
-            // Upload slice
-            //
+            return std::make_tuple(sample, sampleIndexI, sampleIndexDx);
+        };
+
+        auto const getSampleAtI = [this](int64_t sampleIndexI, float sampleIndexDx)
+        {
+            return mSamples[sampleIndexI].SampleValue
+                + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+        };
+
+        // Start uploading
+        if constexpr(DetailType == OceanRenderDetailType::Basic)
+            renderContext.UploadOceanBasicStart(RenderSlices<int>);
+        else
+            renderContext.UploadOceanDetailedStart(RenderSlices<int>);
+
+        // Calculate dx between each pair of slices with want to upload
+        float const sliceDx = coverageWorldWidth / RenderSlices<float>;
+
+        // First step:
+        //  - previous, current= s[0]
+        auto [currentSample, currentSampleIndexI, currentSampleIndexDx] = getSampleAtX(sampleIndexWorldX);
+        float previousSample = currentSample;
+
+        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
+        // quad side must be at the end of the width
+        for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexWorldX += sliceDx)
+        {
+            auto [nextSample, nextSampleIndexI, nextSampleIndexDx] = (s < RenderSlices<size_t>)
+                ? getSampleAtX(sampleIndexWorldX + sliceDx)
+                : std::tie(currentSample, currentSampleIndexI, currentSampleIndexDx);
+
+            if constexpr (DetailType == OceanRenderDetailType::Basic)
+            {
+                renderContext.UploadOceanBasic(
+                    sampleIndexWorldX,
+                    currentSample);
+            }
+            else
+            {
+                //
+                // Interpolate samples at sampleIndeX minus offsets,
+                // re-using the fractional part that we've already calculated for sampleIndexX
+                //
+
+                auto const indexBack = std::max(currentSampleIndexI - DetailXOffsetSamples * 2, int64_t(0));
+                float const sampleBack =
+                    mSamples[indexBack].SampleValue
+                    + mSamples[indexBack].SampleValuePlusOneMinusSampleValue * currentSampleIndexDx;
+
+                auto const indexMid = std::max(currentSampleIndexI - DetailXOffsetSamples, int64_t(0));
+                float const sampleMid =
+                    mSamples[indexMid].SampleValue
+                    + mSamples[indexMid].SampleValuePlusOneMinusSampleValue * currentSampleIndexDx;
+
+                float const d2YFront = (nextSample - currentSample) - (currentSample - previousSample);
+
+                renderContext.UploadOceanDetailed(
+                    sampleIndexWorldX,
+                    sampleBack * BackPlaneDamp,
+                    0.0f, // TODO
+                    sampleMid * MidPlaneDamp,
+                    0.0f, // TODO
+                    currentSample,
+                    d2YFront);
+            }
+
+            previousSample = currentSample;
+            currentSample = nextSample;
+            currentSampleIndexI = nextSampleIndexI;
+            currentSampleIndexDx = nextSampleIndexDx;
+        }
+
+        /*
+        // TODOOLD
+        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
+        // quad side must be at the end of the width
+        for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexWorldX += sliceDx)
+        {
+            auto const [sample, sampleIndexI, sampleIndexDx] = getSampleAtX(sampleIndexWorldX);
 
             if constexpr (DetailType == OceanRenderDetailType::Basic)
             {
@@ -503,6 +571,7 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
                     0.0f); // TODO
             }
         }
+        */
     }
     else
     {
