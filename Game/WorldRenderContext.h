@@ -360,7 +360,7 @@ public:
         float d2YFront,
         RenderParameters const & renderParameters)
     {
-        float const yTop = std::max(yBack, std::max(yMid, yFront));
+        float const yTop = std::max(yBack, std::max(yMid, yFront)) + 10.0f; // Magic offset to allow shader to anti-alias close to the boundary
         float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorld().BottomRight.y;
 
         //
