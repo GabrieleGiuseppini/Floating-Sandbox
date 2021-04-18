@@ -17,7 +17,7 @@ namespace Physics {
 // The number of slices we want to render the water surface as;
 // this is the graphical resolution
 template<typename T>
-T constexpr RenderSlices = 500;
+T constexpr RenderSlices = 768;
 
 OceanSurface::OceanSurface(
     World & parentWorld,
@@ -426,6 +426,19 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
         // we upload then RenderSlices slices, interpolating Y at each slice boundary
         //
 
+        // Start uploading
+        if constexpr (DetailType == OceanRenderDetailType::Basic)
+            renderContext.UploadOceanBasicStart(RenderSlices<int>);
+        else
+            renderContext.UploadOceanDetailedStart(RenderSlices<int>);
+
+        // Calculate dx between each pair of slices with want to upload
+        float const sliceDx = coverageWorldWidth / RenderSlices<float>;
+
+        //
+        //
+        //
+
         auto const getSampleAtX = [this](float sampleIndexWorldX)
         {
             //
@@ -459,23 +472,8 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
             return std::make_tuple(sample, sampleIndexI, sampleIndexDx);
         };
 
-        auto const getSampleAtI = [this](int64_t sampleIndexI, float sampleIndexDx)
-        {
-            return mSamples[sampleIndexI].SampleValue
-                + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
-        };
-
-        // Start uploading
-        if constexpr(DetailType == OceanRenderDetailType::Basic)
-            renderContext.UploadOceanBasicStart(RenderSlices<int>);
-        else
-            renderContext.UploadOceanDetailedStart(RenderSlices<int>);
-
-        // Calculate dx between each pair of slices with want to upload
-        float const sliceDx = coverageWorldWidth / RenderSlices<float>;
-
         // First step:
-        //  - previous, current= s[0]
+        //  - previous, current = s[0]
         auto [currentSample, currentSampleIndexI, currentSampleIndexDx] = getSampleAtX(sampleIndexWorldX);
         float previousSample = currentSample;
 

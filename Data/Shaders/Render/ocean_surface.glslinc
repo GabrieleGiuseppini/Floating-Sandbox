@@ -16,10 +16,7 @@ vec4 CalculateOceanPlaneColor(
 
 #ifdef RENDER_ALL_PLANES
     float borderWidthHalfBack = basalBorderWidth + abs(dFdx(yBackWorld)) * 1.2;
-    float yBackMidBorder = yBackWorld;
-
     float borderWidthHalfMid = basalBorderWidth + abs(dFdx(yMidWorld)) * 1.2;
-    float yMidMidBorder = yMidWorld;
 #endif
 
     float borderWidthHalfFront = basalBorderWidth + abs(dFdx(yFrontWorld)) * 1.2;
@@ -32,8 +29,8 @@ vec4 CalculateOceanPlaneColor(
     // 1.0 when yWorld is below middle of the border, 0.0 otherwise
 
 #ifdef RENDER_ALL_PLANES
-    float baseColorBack = step(yWorld, yBackMidBorder);
-    float baseColorMid = step(yWorld, yMidMidBorder);
+    float baseColorBack = step(yWorld, yBackWorld);
+    float baseColorMid = step(yWorld, yMidWorld);
 #endif
 
     float baseColorFront = step(yWorld, yFrontMidBorder);
@@ -41,12 +38,12 @@ vec4 CalculateOceanPlaneColor(
 #ifdef RENDER_ALL_PLANES
     float baseColorAlpha =
         max(
-            1. * baseColorFront,
+            baseColorFront,
             max(
                 .6 * baseColorMid,
                 .5 * baseColorBack));
 #else
-    float baseColorAlpha = 1. * baseColorFront;
+    float baseColorAlpha = baseColorFront;
 #endif
 
     //return vec4(baseColor, baseColorAlpha);
@@ -57,10 +54,10 @@ vec4 CalculateOceanPlaneColor(
 
 #ifdef RENDER_ALL_PLANES
     float borderBack =
-        1. - smoothstep(0., borderWidthHalfBack, abs(yWorld - yBackMidBorder));
+        1. - smoothstep(0., borderWidthHalfBack, abs(yWorld - yBackWorld));
 
     float borderMid =
-        1. - smoothstep(0., borderWidthHalfMid, abs(yWorld - yMidMidBorder));
+        1. - smoothstep(0., borderWidthHalfMid, abs(yWorld - yMidWorld));
 #endif
 
     float borderFront =
