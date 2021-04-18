@@ -8,13 +8,18 @@ vec4 CalculateOceanPlaneColor(
     //
     // Calculate border width
     //
+    // We use the second derivative to offset the border width vertically
+    //
     
     float dWorld = dFdy(yWorld); // World per pixel
     float basalBorderWidth = 1.5 * dWorld; // pixels
 
 #ifdef RENDER_ALL_PLANES
     float borderWidthHalfBack = basalBorderWidth + abs(dFdx(yBackWorld)) * 1.2;
+    float yBackMidBorder = yBackWorld - borderWidthHalfBack;
+
     float borderWidthHalfMid = basalBorderWidth + abs(dFdx(yMidWorld)) * 1.2;
+    float yMidMidBorder = yMidWorld - borderWidthHalfMid;
 #endif
 
     float borderWidthHalfFront = basalBorderWidth + abs(dFdx(yFrontWorld)) * 1.2;
@@ -27,8 +32,8 @@ vec4 CalculateOceanPlaneColor(
     // 1.0 when yWorld is below middle of the border, 0.0 otherwise
 
 #ifdef RENDER_ALL_PLANES
-    float baseColorBack = step(yWorld, yBackWorld - borderWidthHalfBack);
-    float baseColorMid = step(yWorld, yMidWorld - borderWidthHalfMid);
+    float baseColorBack = step(yWorld, yBackMidBorder);
+    float baseColorMid = step(yWorld, yMidMidBorder);
 #endif
 
     float baseColorFront = step(yWorld, yFrontMidBorder);
@@ -52,10 +57,10 @@ vec4 CalculateOceanPlaneColor(
 
 #ifdef RENDER_ALL_PLANES
     float borderBack =
-        1. - smoothstep(0., borderWidthHalfBack, abs(yWorld - (yBackWorld - borderWidthHalfBack)));
+        1. - smoothstep(0., borderWidthHalfBack, abs(yWorld - yBackMidBorder));
 
     float borderMid =
-        1. - smoothstep(0., borderWidthHalfMid, abs(yWorld - (yMidWorld - borderWidthHalfMid)));
+        1. - smoothstep(0., borderWidthHalfMid, abs(yWorld - yMidMidBorder));
 #endif
 
     float borderFront =
@@ -74,12 +79,12 @@ vec4 CalculateOceanPlaneColor(
 #ifdef RENDER_ALL_PLANES
     float borderAlpha =
         max(
-            1. * borderFront,
+            borderFront,
             max(
                 .9 * borderMid * borderFrontOpaqueness,
                 .7 * borderBack * borderFrontOpaqueness * borderMidOpaqueness));
 #else
-    float borderAlpha = 1. * borderFront;
+    float borderAlpha = borderFront;
 #endif
 
     //return vec4(1., 1., 1., borderAlpha);
