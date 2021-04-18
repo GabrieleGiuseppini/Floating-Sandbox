@@ -1832,6 +1832,8 @@ Render:
 									- Upload code
 									- Shader
 					- Cleanup shader
+					- Test all rendering modes
+						- {Basic, Detailed } x 3 render modes
 			- Verify stability wrt zero-level
 			= Split UpdateFields:
 				+ SmoothDeltaBufferIntoHeightField
