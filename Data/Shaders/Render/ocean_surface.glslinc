@@ -1,8 +1,8 @@
 vec4 CalculateOceanPlaneColor(
     vec4 baseColor, 
     float yWorld, 
-    float yBackWorld, float d2YBackWorld,
-    float yMidWorld, float d2YMidWorld,
+    float yBackWorld,
+    float yMidWorld,
     float yFrontWorld, float d2YFrontWorld)
 {
     //

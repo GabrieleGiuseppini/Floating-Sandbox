@@ -157,7 +157,6 @@ enum class VertexAttributeType : GLuint
 
     OceanDetailed1 = 0,
     OceanDetailed2 = 1,
-    OceanDetailed3 = 2,
 
     Fish1 = 0,
     Fish2 = 1,

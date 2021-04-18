@@ -1819,15 +1819,18 @@ Render:
 						= Implement second derivatives
 							+ Infrastructure
 							= Second derivatives
-								= Zoom-out case
+								+ Zoom-out case
 									+ Fix problem with top y
 										+ At buffer upload: fixed world offset									
-									= Do other planes
+									+ Do other planes
 										+ See if other planes really need derivatives: NO
-										- Remove derivatives
-								- Zoom-in case
-									- See if can leave derivatives at zero
+										+ Remove derivatives
+								+ Zoom-in case
+									+ See if can really leave derivatives at zero
+								- Adjust shader: border continuity at TL and other angle
 								- Optimize
+									- Upload code
+									- Shader
 					- Cleanup shader
 			- Verify stability wrt zero-level
 			= Split UpdateFields:
