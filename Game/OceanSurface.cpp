@@ -421,8 +421,6 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
 
     if (numberOfSamplesToRender >= RenderSlices<size_t>)
     {
-        LogMessage("TODOHERE");
-
         //
         // Zoom out from afar: each slice encompasses more than 1 sample;
         // we upload then RenderSlices slices, interpolating Y at each slice boundary

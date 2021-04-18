@@ -1,4 +1,3 @@
-#undef RENDER_ALL_PLANES // TODO
 vec4 CalculateOceanPlaneColor(
     vec4 baseColor, 
     float yWorld, 
@@ -14,9 +13,8 @@ vec4 CalculateOceanPlaneColor(
     float basalBorderWidth = 1.5 * dWorld; // pixels
 
 #ifdef RENDER_ALL_PLANES
-    // TODO
-    float borderWidthHalfBack = basalBorderWidth + abs(dFdx(yBackWorld));
-    float borderWidthHalfMid = basalBorderWidth + abs(dFdx(yMidWorld));
+    float borderWidthHalfBack = basalBorderWidth + abs(dFdx(yBackWorld)) * 1.2;
+    float borderWidthHalfMid = basalBorderWidth + abs(dFdx(yMidWorld)) * 1.2;
 #endif
 
     float borderWidthHalfFront = basalBorderWidth + abs(dFdx(yFrontWorld)) * 1.2;
@@ -93,6 +91,5 @@ vec4 CalculateOceanPlaneColor(
         vec4(1.), // Border color
         borderAlpha);
 
-    //return finalColor * .5 + vec4(vec3(frontDeriv), 1.) * .5;
     return finalColor;
 }

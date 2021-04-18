@@ -1822,7 +1822,7 @@ Render:
 								= zoom-out case
 									+ Fix problem with top y
 										+ At buffer upload: fixed world offset									
-									- Do other planes
+									= Do other planes
 										- See if other planes really need derivatives
 								- zoom-in case
 									- See if really needed
