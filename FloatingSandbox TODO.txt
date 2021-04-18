@@ -1818,8 +1818,16 @@ Render:
 						+ Shadertoy PoC
 						= Implement second derivatives
 							+ Infrastructure
-							- Second derivatives
-					- Final: do other planes
+							= Second derivatives
+								= zoom-out case
+									+ Fix problem with top y
+										+ At buffer upload: fixed world offset									
+									- Do other planes
+										- See if other planes really need derivatives
+								- zoom-in case
+									- See if really needed
+								- optimize
+					- Cleanup shader
 			- Verify stability wrt zero-level
 			= Split UpdateFields:
 				+ SmoothDeltaBufferIntoHeightField
