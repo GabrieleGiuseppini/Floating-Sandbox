@@ -4,24 +4,23 @@
 #define out varying
 
 // Inputs
-in vec2 inOceanDetailed1;	// Position (vec2)
-in vec4 inOceanDetailed2;	// yTexture (float, UNUSED), yBack/dYBack2/yMid (float, world y)
-in vec3 inOceanDetailed3;	// dYMid2/yFront/dYFront2 (float, world y)
+in vec3 inOceanDetailed1;	// Position (vec2), yTexture (float)
+in vec4 inOceanDetailed2;	// yBack/yMid/yFront/dYFront2 (float, world y)
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
 
 // Outputs
 out vec2 worldCoords;
-out vec4 yVectorWorld1; // yTexture, yBackWorld/dYBack2World/yMidWorld
-out vec3 yVectorWorld2; // dYMid2World/yFrontWorld/dYFront2World
+out float yTexture;
+out vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 
 void main()
 {
-    gl_Position = paramOrthoMatrix * vec4(inOceanDetailed1, -1.0, 1.0);
-    worldCoords = inOceanDetailed1;
-    yVectorWorld1 = inOceanDetailed2;
-    yVectorWorld2 = inOceanDetailed3;
+    gl_Position = paramOrthoMatrix * vec4(inOceanDetailed1.xy, -1.0, 1.0);
+    worldCoords = inOceanDetailed1.xy;
+    yTexture = inOceanDetailed1.z;
+    yVectorWorld = inOceanDetailed2;
 }
 
 
@@ -33,8 +32,8 @@ void main()
 
 // Inputs from previous shader
 in vec2 worldCoords;
-in vec4 yVectorWorld1; // yTexture, yBackWorld/dYBack2World/yMidWorld
-in vec3 yVectorWorld2; // dYMid2World/yFrontWorld/dYFront2World
+in float yTexture;
+in vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 
 // The texture
 uniform sampler2D paramOceanTexture;
@@ -48,7 +47,7 @@ uniform float paramOceanDarkeningRate;
 void main()
 {
     // Get texture color sample
-    vec2 textureCoord2 = vec2(worldCoords.x, yVectorWorld1.x);
+    vec2 textureCoord2 = vec2(worldCoords.x, yTexture);
     float darkMix = 1.0 - exp(min(0.0, worldCoords.y) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
     vec3 textureColor = mix(
         texture2D(paramOceanTexture, textureCoord2 * paramTextureScaling).xyz,
@@ -59,9 +58,9 @@ void main()
     vec4 color = CalculateOceanPlaneColor(
         vec4(textureColor, (1.0 - paramOceanTransparency)),
         worldCoords.y,
-        yVectorWorld1.y, yVectorWorld1.z,
-        yVectorWorld1.w, yVectorWorld2.x, 
-        yVectorWorld2.y, yVectorWorld2.z);
+        yVectorWorld.x, 
+        yVectorWorld.y, 
+        yVectorWorld.z, yVectorWorld.w);
 
     // Combine
     gl_FragColor = vec4(color.xyz * paramEffectiveAmbientLightIntensity, color.w);

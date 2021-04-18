@@ -515,9 +515,7 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
                 renderContext.UploadOceanDetailed(
                     sampleIndexWorldX,
                     sampleBack * BackPlaneDamp,
-                    0.0f, // TODO
                     sampleMid * MidPlaneDamp,
-                    0.0f, // TODO
                     currentSample,
                     d2YFront);
             }
@@ -527,49 +525,6 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
             currentSampleIndexI = nextSampleIndexI;
             currentSampleIndexDx = nextSampleIndexDx;
         }
-
-        /*
-        // TODOOLD
-        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
-        // quad side must be at the end of the width
-        for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexWorldX += sliceDx)
-        {
-            auto const [sample, sampleIndexI, sampleIndexDx] = getSampleAtX(sampleIndexWorldX);
-
-            if constexpr (DetailType == OceanRenderDetailType::Basic)
-            {
-                renderContext.UploadOceanBasic(
-                    sampleIndexWorldX,
-                    sample);
-            }
-            else
-            {
-                //
-                // Interpolate samples at sampleIndeX minus offsets,
-                // re-using the fractional part that we've already calculated for sampleIndexX
-                //
-
-                auto const indexBack = std::max(sampleIndexI - DetailXOffsetSamples * 2, int64_t(0));
-                float const sampleBack =
-                    mSamples[indexBack].SampleValue
-                    + mSamples[indexBack].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
-
-                auto const indexMid = std::max(sampleIndexI - DetailXOffsetSamples, int64_t(0));
-                float const sampleMid =
-                    mSamples[indexMid].SampleValue
-                    + mSamples[indexMid].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
-
-                renderContext.UploadOceanDetailed(
-                    sampleIndexWorldX,
-                    sampleBack * BackPlaneDamp,
-                    0.0f, // TODO
-                    sampleMid * MidPlaneDamp,
-                    0.0f, // TODO
-                    sample,
-                    0.0f); // TODO
-            }
-        }
-        */
     }
     else
     {
@@ -600,11 +555,9 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
                 renderContext.UploadOceanDetailed(
                     sampleIndexWorldX,
                     mSamples[std::max(leftmostSampleIndex + static_cast<int64_t>(s) - DetailXOffsetSamples * 2, int64_t(0))].SampleValue * BackPlaneDamp,
-                    0.0f, // TODO
                     mSamples[std::max(leftmostSampleIndex + static_cast<int64_t>(s) - DetailXOffsetSamples, int64_t(0))].SampleValue * MidPlaneDamp,
-                    0.0f, // TODO
                     mSamples[leftmostSampleIndex + static_cast<int64_t>(s)].SampleValue,
-                    0.0f); // TODO
+                    0.0f); // No need to worry with second derivative in zoom-in case
             }
         }
     }

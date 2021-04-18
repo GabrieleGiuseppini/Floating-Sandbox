@@ -353,9 +353,7 @@ public:
     inline void UploadOceanDetailed(
         float x,
         float yBack,
-        float d2YBack,
         float yMid,
-        float d2YMid,
         float yFront,
         float d2YFront,
         RenderParameters const & renderParameters)
@@ -372,18 +370,14 @@ public:
         oceanSegment.x1 = x;
         oceanSegment.y1 = yTop;
         oceanSegment.yBack1 = yBack;
-        oceanSegment.d2YBack1 = d2YBack;
         oceanSegment.yMid1 = yMid;
-        oceanSegment.d2YMid1 = d2YMid;
         oceanSegment.yFront1 = yFront;
         oceanSegment.d2YFront1 = d2YFront;
 
         oceanSegment.x2 = x;
         oceanSegment.y2 = yVisibleWorldBottom;
         oceanSegment.yBack2 = yBack;
-        oceanSegment.d2YBack2 = d2YBack;
         oceanSegment.yMid2 = yMid;
-        oceanSegment.d2YMid2 = d2YMid;
         oceanSegment.yFront2 = yFront;
         oceanSegment.d2YFront2 = d2YFront;
 
@@ -887,9 +881,7 @@ private:
         float y1;
         float yTexture1;
         float yBack1;
-        float d2YBack1;
         float yMid1;
-        float d2YMid1;
         float yFront1;
         float d2YFront1;
 
@@ -897,9 +889,7 @@ private:
         float y2;
         float yTexture2;
         float yBack2;
-        float d2YBack2;
         float yMid2;
-        float d2YMid2;
         float yFront2;
         float d2YFront2;
     };

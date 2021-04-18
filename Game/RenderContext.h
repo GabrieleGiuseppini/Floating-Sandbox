@@ -762,18 +762,14 @@ public:
     inline void UploadOceanDetailed(
         float x,
         float yBack,
-        float d2YBack,
         float yMid,
-        float d2YMid,
         float yFront,
         float d2YFront)
     {
         mWorldRenderContext->UploadOceanDetailed(
             x,
             yBack,
-            d2YBack,
             yMid,
-            d2YMid,
             yFront,
             d2YFront,
             mRenderParameters);

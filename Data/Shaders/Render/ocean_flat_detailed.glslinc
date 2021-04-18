@@ -5,8 +5,7 @@
 
 // Inputs
 in vec2 inOceanDetailed1;	// Position (vec2)
-in vec4 inOceanDetailed2;	// yTexture (float, UNUSED), yBack/dYBack2/yMid (float, world y)
-in vec3 inOceanDetailed3;	// dYMid2/yFront/dYFront2 (float, world y)
+in vec4 inOceanDetailed2;	// yBack/yMid/yFront/dYFront2 (float, world y)
 
 // Parameters
 uniform float paramEffectiveAmbientLightIntensity;
@@ -16,8 +15,8 @@ uniform mat4 paramOrthoMatrix;
 
 // Outputs
 out vec4 oceanColor;
-out vec4 yVectorWorld1; // yWorld, yBackWorld/dYBack2World/yMidWorld
-out vec3 yVectorWorld2; // dYMid2World/yFrontWorld/dYFront2World
+out float yWorld;
+out vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 
 void main()
 {
@@ -31,8 +30,8 @@ void main()
     gl_Position = paramOrthoMatrix * vec4(inOceanDetailed1, -1.0, 1.0);
 
     // Pass y values to fragment shader
-    yVectorWorld1 = vec4(inOceanDetailed1.y, inOceanDetailed2.yzw);
-    yVectorWorld2 = inOceanDetailed3;
+    yWorld = inOceanDetailed1.y;
+    yVectorWorld = inOceanDetailed2;
 }
 
 
@@ -44,15 +43,16 @@ void main()
 
 // Inputs from previous shader
 in vec4 oceanColor;
-in vec4 yVectorWorld1; // yWorld, yBackWorld/dYBack2World/yMidWorld
-in vec3 yVectorWorld2; // dYMid2World/yFrontWorld/dYFront2World
+in float yWorld;
+in vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
+
 
 void main()
 {
     gl_FragColor = CalculateOceanPlaneColor(
         oceanColor, 
-        yVectorWorld1.x, 
-        yVectorWorld1.y, yVectorWorld1.z,
-        yVectorWorld1.w, yVectorWorld2.x, 
-        yVectorWorld2.y, yVectorWorld2.z);
+        yWorld,
+        yVectorWorld.x, 
+        yVectorWorld.y, 
+        yVectorWorld.z, yVectorWorld.w);
 }
