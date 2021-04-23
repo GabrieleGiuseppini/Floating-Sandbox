@@ -327,8 +327,8 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
 {
     // Choose X
     float const tsunamiWorldX = GameRandomEngine::GetInstance().GenerateUniformReal(
-        -GameParameters::HalfMaxWorldWidth * 4.0 / 5.0f,
-        GameParameters::HalfMaxWorldWidth * 4.0 / 5.0f);
+        -GameParameters::HalfMaxWorldWidth * 4.0f / 5.0f,
+        GameParameters::HalfMaxWorldWidth * 4.0f / 5.0f);
 
     // Choose height
     float constexpr AverageTsunamiHeight = 350.0f / SWEHeightFieldAmplification;
@@ -432,69 +432,67 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
         else
             renderContext.UploadOceanDetailedStart(RenderSlices<int>);
 
-        // Calculate dx between each pair of slices with want to upload
+        // Calculate dx between each pair of slices we want to upload
         float const sliceDx = coverageWorldWidth / RenderSlices<float>;
 
-        //
-        //
-        //
-
-        auto const getSampleAtX = [this](float sampleIndexWorldX)
+        if constexpr (DetailType == OceanRenderDetailType::Basic)
         {
-            //
-            // Split sample index X into index in sample array and fractional part
-            // between that sample and the next
-            //
-
-            assert(sampleIndexWorldX >= -GameParameters::HalfMaxWorldWidth
-                && sampleIndexWorldX <= GameParameters::HalfMaxWorldWidth);
-
-            // Fractional index in the sample array
-            float const sampleIndexF = (sampleIndexWorldX + GameParameters::HalfMaxWorldWidth) / Dx;
-
-            // Integral part
-            auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
-
-            // Fractional part within sample index and the next sample index
-            float const sampleIndexDx = sampleIndexF - sampleIndexI;
-
-            assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
-            assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
-
-            //
-            // Interpolate sample at sampleIndexX
-            //
-
-            float const sample =
-                mSamples[sampleIndexI].SampleValue
-                + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
-
-            return std::make_tuple(sample, sampleIndexI, sampleIndexDx);
-        };
-
-        // First step:
-        //  - previous, current = s[0]
-        auto [currentSample, currentSampleIndexI, currentSampleIndexDx] = getSampleAtX(sampleIndexWorldX);
-        float previousSample = currentSample;
-
-        // We do one extra iteration as the number of slices is the number of quads, and the last vertical
-        // quad side must be at the end of the width
-        for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexWorldX += sliceDx)
-        {
-            auto [nextSample, nextSampleIndexI, nextSampleIndexDx] = (s < RenderSlices<size_t>)
-                ? getSampleAtX(sampleIndexWorldX + sliceDx)
-                : std::tie(currentSample, currentSampleIndexI, currentSampleIndexDx);
-
-            if constexpr (DetailType == OceanRenderDetailType::Basic)
+            for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexWorldX += sliceDx)
             {
                 renderContext.UploadOceanBasic(
                     sampleIndexWorldX,
-                    currentSample);
+                    GetHeightAt(sampleIndexWorldX));
             }
-            else
+        }
+        else
+        {
+            //
+            //
+            //
+
+            auto const getSampleAtX = [this](float sampleIndexWorldX)
             {
                 //
-                // Interpolate samples at sampleIndeX minus offsets,
+                // Split sample index X into index in sample array and fractional part
+                // between that sample and the next
+                //
+
+                assert(sampleIndexWorldX >= -GameParameters::HalfMaxWorldWidth
+                    && sampleIndexWorldX <= GameParameters::HalfMaxWorldWidth);
+
+                // Fractional index in the sample array
+                float const sampleIndexF = (sampleIndexWorldX + GameParameters::HalfMaxWorldWidth) / Dx;
+
+                // Integral part
+                auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+
+                // Fractional part within sample index and the next sample index
+                float const sampleIndexDx = sampleIndexF - sampleIndexI;
+
+                assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+                assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
+
+                //
+                // Interpolate sample at sampleIndexX
+                //
+
+                float const sample =
+                    mSamples[sampleIndexI].SampleValue
+                    + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+
+                return std::make_tuple(sample, sampleIndexI, sampleIndexDx);
+            };
+
+            // First step:
+            //  - previous, current = s[0]
+            auto [currentSample, currentSampleIndexI, currentSampleIndexDx] = getSampleAtX(sampleIndexWorldX);
+            float previousDerivative = 0.0f; // [0] - [-1]
+            float nextSample = 0.0f;
+
+            for (size_t s = 0; s < RenderSlices<size_t>; ++s)
+            {
+                //
+                // Interpolate back- and mid- samples at sampleIndeX minus offsets,
                 // re-using the fractional part that we've already calculated for sampleIndexX
                 //
 
@@ -508,20 +506,47 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
                     mSamples[indexMid].SampleValue
                     + mSamples[indexMid].SampleValuePlusOneMinusSampleValue * currentSampleIndexDx;
 
-                float const d2YFront = (nextSample - currentSample) - (currentSample - previousSample);
+                // Get next sample
+                float const nextSampleIndexWorldX = sampleIndexWorldX + sliceDx;
+                std::tie(nextSample, currentSampleIndexI, currentSampleIndexDx) = getSampleAtX(nextSampleIndexWorldX);
 
+                // Calculate second derivative
+                float const nextDerivative = nextSample - currentSample;
+                float const d2YFront = nextDerivative - previousDerivative;
+
+                // Upload
                 renderContext.UploadOceanDetailed(
                     sampleIndexWorldX,
                     sampleBack * BackPlaneDamp,
                     sampleMid * MidPlaneDamp,
                     currentSample,
                     d2YFront);
+
+                // Advance
+                currentSample = nextSample;
+                previousDerivative = nextDerivative;
+                sampleIndexWorldX = nextSampleIndexWorldX;
             }
 
-            previousSample = currentSample;
-            currentSample = nextSample;
-            currentSampleIndexI = nextSampleIndexI;
-            currentSampleIndexDx = nextSampleIndexDx;
+            // We do one extra iteration as the number of slices is the number of quads, and the last vertical
+            // quad side must be at the end of the width
+
+            auto const indexBack = std::max(currentSampleIndexI - DetailXOffsetSamples * 2, int64_t(0));
+            float const sampleBack =
+                mSamples[indexBack].SampleValue
+                + mSamples[indexBack].SampleValuePlusOneMinusSampleValue * currentSampleIndexDx;
+
+            auto const indexMid = std::max(currentSampleIndexI - DetailXOffsetSamples, int64_t(0));
+            float const sampleMid =
+                mSamples[indexMid].SampleValue
+                + mSamples[indexMid].SampleValuePlusOneMinusSampleValue * currentSampleIndexDx;
+
+            renderContext.UploadOceanDetailed(
+                sampleIndexWorldX,
+                sampleBack * BackPlaneDamp,
+                sampleMid * MidPlaneDamp,
+                currentSample,
+                -previousDerivative); // 0.0 - previousDerivative
         }
     }
     else
