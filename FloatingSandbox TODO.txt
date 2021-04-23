@@ -1827,14 +1827,16 @@ Render:
 										+ Remove derivatives
 								+ Zoom-in case
 									+ See if can really leave derivatives at zero
-								- Adjust shader: border continuity at TL and other angle
-								- Optimize
-									- Upload code
-									- Shader
+								+ Fix bug in upload code w/fractional part from next sample
+								- Adjust shader: border continuity at top-left and at other angle
+								= Optimize
+									= Upload code
+										= Fix DEBUG issues
+											- Redo NumSlices, DX
+										- Verify assembly
 					- Cleanup shader
 					- Test all rendering modes
-						- {Basic, Detailed } x 3 render modes
-			- Verify stability wrt zero-level
+						- {Basic, Detailed } x 3 render modes x {far, close}
 			= Split UpdateFields:
 				+ SmoothDeltaBufferIntoHeightField
 					+ As-is, for the time being
@@ -1857,6 +1859,7 @@ Render:
 				- 3: Make version with x86 intrinsics in Algorithms
 				- 4: x86 instrinsics unit tests
 			------------------------------
+			- Bump up rate of rogue waves
 			- See if wave displacement can now be slightly more pronounced
 				- Keep an eye on infinitely-bouncing balls
 			- See if may increase:
