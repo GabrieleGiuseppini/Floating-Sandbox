@@ -8,7 +8,6 @@ in vec2 inOceanDetailed1;	// Position (vec2)
 in vec4 inOceanDetailed2;	// yBack/yMid/yFront/dYFront2 (float, world y)
 
 // Parameters
-uniform float paramEffectiveAmbientLightIntensity;
 uniform float paramOceanTransparency;
 uniform vec3 paramOceanFlatColor;
 uniform mat4 paramOrthoMatrix;
@@ -22,9 +21,6 @@ void main()
 {
     // Calculate color
     oceanColor = vec4(paramOceanFlatColor.xyz, 1.0 - paramOceanTransparency);
-
-    // Apply ambient light
-    oceanColor = oceanColor * paramEffectiveAmbientLightIntensity;
 
     // Calculate position
     gl_Position = paramOrthoMatrix * vec4(inOceanDetailed1, -1.0, 1.0);
@@ -46,13 +42,15 @@ in vec4 oceanColor;
 in float yWorld;
 in vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 
+// Parameters
+uniform float paramEffectiveAmbientLightIntensity;
 
 void main()
 {
-    gl_FragColor = CalculateOceanPlaneColor(
+    vec4 color = CalculateOceanPlaneColor(
         oceanColor, 
         yWorld,
-        yVectorWorld.x, 
-        yVectorWorld.y, 
-        yVectorWorld.z, yVectorWorld.w);
+        yVectorWorld);
+
+    gl_FragColor = vec4(color.xyz * paramEffectiveAmbientLightIntensity, color.w);
 }
