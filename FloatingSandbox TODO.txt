@@ -1834,9 +1834,9 @@ Render:
 											+ Redo NumSlices, DX
 											+ Also @ OceanFloor
 										+ Verify assembly
-					- Cleanup shader
-					- Test all rendering modes
-						- {Basic, Detailed } x 3 render modes x {far, close}
+					= Cleanup shader
+					+ Test all rendering modes
+						+ {Basic, Detailed } x 3 render modes x {far, close}
 			= Split UpdateFields:
 				+ SmoothDeltaBufferIntoHeightField
 					+ As-is, for the time being

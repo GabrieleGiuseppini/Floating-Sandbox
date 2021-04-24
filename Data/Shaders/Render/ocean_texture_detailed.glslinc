@@ -55,9 +55,7 @@ void main()
     vec4 color = CalculateOceanPlaneColor(
         vec4(textureColor, (1.0 - paramOceanTransparency)),
         worldCoordsAndYTexture.y,
-        yVectorWorld.x, 
-        yVectorWorld.y, 
-        yVectorWorld.z, yVectorWorld.w);
+        yVectorWorld);
 
     // Combine
     gl_FragColor = vec4(color.xyz * paramEffectiveAmbientLightIntensity, color.w);
