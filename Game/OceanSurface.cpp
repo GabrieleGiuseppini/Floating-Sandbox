@@ -906,6 +906,7 @@ void OceanSurface::UpdateFields(GameParameters const & gameParameters)
     //
     // Height field  : from 0 to SWETotalSamples
     // Velocity field: from 1 to SWETotalSamples (i.e. at boundaries it's inner only)
+    //                 H[i] has V[i] at its left and V[i+1] at its right
     //
 
     float constexpr G = GameParameters::GravityMagnitude;

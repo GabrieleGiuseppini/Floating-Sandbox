@@ -1844,12 +1844,14 @@ Render:
 				= UpdateFields: just SWE loop
 					= Optimize:
 						+ pow
+						+ Pre-perf: 4.59/4.60
 						- See if best to store velocity field or Q field
 							- Write alternative - and verify it works - using velocities
 							- Also, if we go for Q field, be careful - height and velocity/Q are at different places in the cell
 						= See if friction is really needed - setting it to zero seems to have no effect
 							- Waves stay stable with smoothness at 0.8
 						- Make sure it's vectorized
+						- Post-perf: 
 			- SetSWEWaveHeight: see if can be replaced by populating deltabuffer
 				- Every caller (state machines only?) need to start reasoning in terms of delta's then, rather than absolute heights? 
 				- Nuke SWEWaveStateMachinePerturbedSamplesCount
