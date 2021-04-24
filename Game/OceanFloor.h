@@ -70,8 +70,8 @@ public:
         // Fractional part within sample index and the next sample index
         float const sampleIndexDx = sampleIndexF - sampleIndexI;
 
-        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
-        assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
+        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
+        assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
 
         return mSamples[sampleIndexI].SampleValue
             + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
@@ -94,7 +94,7 @@ public:
         // Integral part
         auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
 
-        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
 
         return vec2f(
             -mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue,
@@ -117,9 +117,9 @@ public:
 
         // Integral part
         auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
-        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
 
-        // Rough check
+        // Rough check (we allocate an extra sample just for this)
         if (y > mSamples[sampleIndexI].SampleValue && y > mSamples[sampleIndexI + 1].SampleValue)
         {
             return false;
@@ -128,7 +128,7 @@ public:
         // Fractional part within sample index and the next sample index
         float const sampleIndexDx = sampleIndexF - sampleIndexI;
 
-        assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
+        assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
 
         float const sampleValue =
             mSamples[sampleIndexI].SampleValue
@@ -175,7 +175,7 @@ private:
     static constexpr size_t SamplesCount = GameParameters::OceanFloorTerrainSamples<size_t>;
 
     // The x step of the samples
-    static constexpr float Dx = GameParameters::MaxWorldWidth / GameParameters::OceanFloorTerrainSamples<float>;
+    static constexpr float Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount - 1);
 
     // What we store for each sample
     struct Sample
@@ -184,8 +184,7 @@ private:
         float SampleValuePlusOneMinusSampleValue; // Delta w/next
     };
 
-    // The current samples (plus 1 to account for x==MaxWorldWidth),
-    // derived from the components
+    // The current samples, calculated from the components
     std::unique_ptr<Sample[]> mSamples;
 
     //

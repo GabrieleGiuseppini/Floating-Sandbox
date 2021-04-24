@@ -56,8 +56,8 @@ public:
         // Fractional part within sample index and the next sample index
         float const sampleIndexDx = sampleIndexF - sampleIndexI;
 
-        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
-        assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
+        assert(sampleIndexI >= 0 && sampleIndexI < static_cast<decltype(sampleIndexI)>(mSamples.size()));
+        assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
 
         return mSamples[sampleIndexI].SampleValue
             + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
@@ -80,7 +80,7 @@ public:
         // Integral part
         auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
 
-        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
 
         return vec2f(
             -mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue,
@@ -104,7 +104,7 @@ public:
         // Integral part
         auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
 
-        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
 
         // Store
         mDeltaHeightBuffer[(DeltaHeightSmoothing / 2) + sampleIndexI] += yOffset / SWEHeightFieldAmplification;
@@ -130,7 +130,7 @@ private:
         // Calculate sample index, minimizing error
         float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
         auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF + 0.5f);
-        assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
+        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
 
         return sampleIndexI;
     }
@@ -176,11 +176,11 @@ private:
     //
 
     // The number of samples for the entire world width;
-    // a higher value means more resolution at the expense of Update() and of cache misses
+    // a higher value means more resolution at the expense of Update() and cache misses
     static size_t constexpr SamplesCount = 16384;
 
     // The x step of the samples
-    static float constexpr Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount);
+    static float constexpr Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount - 1);
 
     //
     // SWE Layer constants
@@ -231,7 +231,7 @@ private:
     float mBasalWaveNumber2;
     float mBasalWaveAngularVelocity1;
     float mBasalWaveAngularVelocity2;
-    PrecalculatedFunction<SamplesCount> mBasalWaveSin1;
+    PrecalculatedFunction<8192> mBasalWaveSin1;
     GameWallClock::time_point mNextTsunamiTimestamp;
     GameWallClock::time_point mNextRogueWaveTimestamp;
 
@@ -254,8 +254,8 @@ private:
         float SampleValuePlusOneMinusSampleValue; // Delta between next sample and this sample
     };
 
-    // The samples (plus 1 to account for x==MaxWorldWidth)
-    FixedSizeVector<Sample, SamplesCount + 1> mSamples; // One extra sample for the rightmost X
+    // The samples
+    FixedSizeVector<Sample, SamplesCount + 1> mSamples; // One extra sample to allow for numeric imprecisions falling over boundary
 
     //
     // SWE buffers
@@ -272,7 +272,7 @@ private:
 
     // Delta height buffer
     // - Contains interactive surface height delta's that are taken into account during update step
-    FixedSizeVector<float, (DeltaHeightSmoothing / 2) + (SamplesCount + 1) + (DeltaHeightSmoothing / 2)> mDeltaHeightBuffer; // One extra sample for the rightmost X
+    FixedSizeVector<float, (DeltaHeightSmoothing / 2) + SamplesCount + (DeltaHeightSmoothing / 2)> mDeltaHeightBuffer;
 
 private:
 

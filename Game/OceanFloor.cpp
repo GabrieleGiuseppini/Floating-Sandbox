@@ -18,19 +18,16 @@ OceanFloor::OceanFloor(OceanFloorTerrain && terrain)
     : mBumpProfile(SamplesCount)
     , mTerrain(std::move(terrain))
     // Regarding the number of samples:
-    //  - The sample index for x==max (HalfMaxWorldWidth) is SamplesCount, and its sample value is == the previous one (sample[SamplesCount].SampleValue == sample[SamplesCount - 1].SampleValue)
-    //  - To allow for interpolation at x==max, we need an addressable value for sample[SamplesCount].SampleValuePlusOneMinusSampleValue (and it's flat there)
-    //  - To allow for rough check at x==max, we need an addressable value for sample[SamplesCount + 1].SampleValue
-    // So the total number of samples we need is SamplesCount + 2
-    , mSamples(new Sample[SamplesCount + 2])
+    //  - The sample index for x==max (HalfMaxWorldWidth) is SamplesCount - 1
+    //  - To allow for our "rough check" at x==max, we need an addressable value for sample[SamplesCount].SampleValue
+    , mSamples(new Sample[SamplesCount + 1])
     , mCurrentSeaDepth(0.0f)
     , mCurrentOceanFloorBumpiness(0.0f)
     , mCurrentOceanFloorDetailAmplification(0.0f)
 {
     // Initialize constant sample values
-    mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = 0.0f; // Because mSamples[SamplesCount].SampleValue is == mSamples[SamplesCount - 1].SampleValue
-    mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Because mSamples[SamplesCount + 1].SampleValue is == mSamples[SamplesCount].SampleValue
-    mSamples[SamplesCount + 1].SampleValuePlusOneMinusSampleValue = 0.0f; // Just because (won't ever be accessed)
+    mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = 0.0f; // Because extra sample is == mSamples[SamplesCount - 1].SampleValue
+    mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Just to be neat
 
     // Calculate bump profile
     CalculateBumpProfile();
@@ -183,7 +180,7 @@ std::optional<bool> OceanFloor::AdjustTo(
 
     auto const sampleIndex = FastTruncateToArchInt(sampleIndexF + 0.5f);
 
-    assert(sampleIndex >= 0 && sampleIndex <= SamplesCount);
+    assert(sampleIndex >= 0 && sampleIndex < SamplesCount);
 
 
     //
@@ -233,25 +230,22 @@ void OceanFloor::DisplaceAt(
     // Fractional part within sample index and the next sample index
     float const sampleIndexDx = sampleIndexF - sampleIndexI;
 
-    assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
-    assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
+    assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
+    assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
 
     //
     // Distribute offset according to position between two points
     //
 
-    if (sampleIndexI < SamplesCount)
-    {
-        // Left
-        float lYOffset = yOffset * (1.0f - sampleIndexDx);
-        SetTerrainHeight(sampleIndexI, mTerrain[sampleIndexI] + lYOffset);
+    // Left
+    float lYOffset = yOffset * (1.0f - sampleIndexDx);
+    SetTerrainHeight(sampleIndexI, mTerrain[sampleIndexI] + lYOffset);
 
-        // Right
-        if (sampleIndexI < SamplesCount - 1)
-        {
-            float rYOffset = yOffset * sampleIndexDx;
-            SetTerrainHeight(sampleIndexI + 1, mTerrain[sampleIndexI + 1] + rYOffset);
-        }
+    // Right
+    if (sampleIndexI < SamplesCount - 1)
+    {
+        float rYOffset = yOffset * sampleIndexDx;
+        SetTerrainHeight(sampleIndexI + 1, mTerrain[sampleIndexI + 1] + rYOffset);
     }
 }
 
@@ -279,18 +273,12 @@ void OceanFloor::SetTerrainHeight(
     if (sampleIndex < SamplesCount - 1)
     {
         // Update this sample's delta;
-        // no point in updating delta of extra sample, as it's always zero,
-        // and no point in updating delta of last sample, as it's always zero
+        // no point in updating delta of extra sample, as it's always zero
         mSamples[sampleIndex].SampleValuePlusOneMinusSampleValue = mSamples[sampleIndex + 1].SampleValue - newSampleValue;
     }
-    else
-    {
-        assert(sampleIndex == SamplesCount - 1);
 
-        // Make sure the final extra samples have the same value as the last sample
-        mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
-        mSamples[SamplesCount + 1].SampleValue = mSamples[SamplesCount - 1].SampleValue;
-    }
+    // Make sure extra sample has same value as previous one
+    mSamples[SamplesCount].SampleValue = mSamples[SamplesCount - 1].SampleValue;
 }
 
 void OceanFloor::CalculateBumpProfile()
@@ -330,17 +318,13 @@ void OceanFloor::CalculateResultantSampleValues()
         previousSampleValue = sampleValue;
     }
 
-    // Sample[SampleCount - 1] == Sample[SampleCount]
-    assert(mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue == 0.0f);
+    assert(mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
+
+    // Make sure extra sample has same value as previous one
     assert(previousSampleValue == mSamples[SamplesCount - 1].SampleValue);
     mSamples[SamplesCount].SampleValue = previousSampleValue;
 
-    // Sample[SampleCount] == Sample[SampleCount + 1]
-    assert(mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue == 0.0f);
-    mSamples[SamplesCount + 1].SampleValue = previousSampleValue;
-
-    // Just because (won't ever be accessed)
-    assert(mSamples[SamplesCount + 1].SampleValuePlusOneMinusSampleValue == 0.0f);
+    assert(mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
 }
 
 }
