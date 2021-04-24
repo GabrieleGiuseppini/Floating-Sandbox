@@ -15,7 +15,7 @@
 namespace Physics {
 
 // The number of slices we want to render the water surface as;
-// this is the graphical resolution
+// this is our graphical resolution
 template<typename T>
 T constexpr RenderSlices = 768;
 
@@ -72,7 +72,8 @@ OceanSurface::OceanSurface(
     // Initialize constant sample values
     //
 
-    mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f;
+    mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = 0.0f; // Extra sample is always == last sample
+    mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Won't really be used
 }
 
 void OceanSurface::Update(
@@ -100,7 +101,6 @@ void OceanSurface::Update(
         RecalculateAbnormalWaveTimestamps(gameParameters);
     }
 
-
     //
     // 1. Advance SWE Wave State Machines
     //
@@ -108,8 +108,8 @@ void OceanSurface::Update(
     // Interactive
     if (mSWEInteractiveWaveStateMachine.has_value())
     {
-        auto heightValue = mSWEInteractiveWaveStateMachine->Update(currentSimulationTime);
-        if (!heightValue)
+        auto const heightValue = mSWEInteractiveWaveStateMachine->Update(currentSimulationTime);
+        if (!heightValue.has_value())
         {
             // Done
             mSWEInteractiveWaveStateMachine.reset();
@@ -126,8 +126,8 @@ void OceanSurface::Update(
     // Tsunami
     if (mSWETsunamiWaveStateMachine.has_value())
     {
-        auto heightValue = mSWETsunamiWaveStateMachine->Update(currentSimulationTime);
-        if (!heightValue)
+        auto const heightValue = mSWETsunamiWaveStateMachine->Update(currentSimulationTime);
+        if (!heightValue.has_value())
         {
             // Done
             mSWETsunamiWaveStateMachine.reset();
@@ -166,8 +166,8 @@ void OceanSurface::Update(
     // Rogue Wave
     if (mSWERogueWaveWaveStateMachine.has_value())
     {
-        auto heightValue = mSWERogueWaveWaveStateMachine->Update(currentSimulationTime);
-        if (!heightValue)
+        auto const heightValue = mSWERogueWaveWaveStateMachine->Update(currentSimulationTime);
+        if (!heightValue.has_value())
         {
             // Done
             mSWERogueWaveWaveStateMachine.reset();
@@ -200,7 +200,6 @@ void OceanSurface::Update(
         }
     }
 
-
     //
     // 2. SWE Update
     //
@@ -221,7 +220,6 @@ void OceanSurface::Update(
     ////}
     ////avgHeight /= static_cast<float>(SamplesCount);
     ////LogMessage("AVG:", avgHeight);
-
 
     //
     // 3. Generate samples
@@ -312,14 +310,14 @@ void OceanSurface::ApplyThanosSnap(
     float leftFrontX,
     float rightFrontX)
 {
-    auto const sampleIndexStart = SWEOuterLayerSamples + ToSampleIndex(std::max(leftFrontX, -GameParameters::HalfMaxWorldWidth));
-    auto const sampleIndexEnd = SWEOuterLayerSamples + ToSampleIndex(std::min(rightFrontX, GameParameters::HalfMaxWorldWidth));
+    auto const sweIndexStart = SWEOuterLayerSamples + ToSampleIndex(std::max(leftFrontX, -GameParameters::HalfMaxWorldWidth));
+    auto const sweIndexEnd = SWEOuterLayerSamples + ToSampleIndex(std::min(rightFrontX, GameParameters::HalfMaxWorldWidth));
 
-    assert(sampleIndexStart >= 0 && sampleIndexStart < SWETotalSamples);
+    assert(sweIndexStart >= 0 && sweIndexStart < SWETotalSamples);
 
     float constexpr WaterDepression = 1.0f / SWEHeightFieldAmplification;
 
-    for (auto idx = sampleIndexStart; idx <= sampleIndexEnd; ++idx)
+    for (auto idx = sweIndexStart; idx <= sweIndexEnd; ++idx)
         mHeightField[idx] -= WaterDepression;
 }
 
@@ -437,7 +435,9 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
 
         if constexpr (DetailType == OceanRenderDetailType::Basic)
         {
-            for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexWorldX += sliceDx)
+            for (size_t s = 0;
+                s <= RenderSlices<size_t>;
+                ++s, sampleIndexWorldX = std::min(sampleIndexWorldX + sliceDx, GameParameters::HalfMaxWorldWidth))
             {
                 renderContext.UploadOceanBasic(
                     sampleIndexWorldX,
@@ -458,7 +458,7 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
                 //
 
                 assert(sampleIndexWorldX >= -GameParameters::HalfMaxWorldWidth
-                    && sampleIndexWorldX <= GameParameters::HalfMaxWorldWidth);
+                    && sampleIndexWorldX <= GameParameters::HalfMaxWorldWidth + 1.0f); // Allow for compounding inaccuracies
 
                 // Fractional index in the sample array
                 float const sampleIndexF = (sampleIndexWorldX + GameParameters::HalfMaxWorldWidth) / Dx;
@@ -469,8 +469,8 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
                 // Fractional part within sample index and the next sample index
                 float const sampleIndexDx = sampleIndexF - sampleIndexI;
 
-                assert(sampleIndexI >= 0 && sampleIndexI <= SamplesCount);
-                assert(sampleIndexDx >= 0.0f && sampleIndexDx <= 1.0f);
+                assert(sampleIndexI >= 0 && sampleIndexI <= static_cast<decltype(sampleIndexI)>(SamplesCount)); // Allow for compounding inaccuracies
+                assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
 
                 //
                 // Interpolate sample at sampleIndexX
@@ -595,7 +595,7 @@ void OceanSurface::SetSWEWaveHeight(
     size_t centerIndex,
     float height)
 {
-    // TODO: if nuke this, also nuke SWEWaveStateMachinePerturbedSamplesCount
+    // TODO: if nuke this, also nuke SWEWaveStateMachinePerturbedSamplesCount and SWEWaveGenerationSamples
     // TODOTEST
     ////int const firstSampleIndex = static_cast<int>(centerIndex) - static_cast<int>(SWEWaveStateMachinePerturbedSamplesCount / 2);
 
@@ -675,7 +675,7 @@ void OceanSurface::RecalculateWaveCoefficients(
     // Pre-calculate basal wave sinusoid
     //
     // By pre-multiplying with the first basal wave's amplitude we may save
-    // one multiplication
+    // one multiplication later
     //
 
     mBasalWaveSin1.Recalculate(
@@ -848,7 +848,7 @@ void OceanSurface::SmoothDeltaBufferIntoHeightField()
     float const * restrict const deltaHeightBuffer = mDeltaHeightBuffer.data() + (DeltaHeightSmoothing / 2);
     float * restrict const heightFieldBuffer = mHeightField.data() + SWEOuterLayerSamples;
 
-    for (size_t i = 0; i <= SamplesCount; ++i)
+    for (size_t i = 0; i < SamplesCount; ++i)
     {
         // Central sample
         float accumulatedHeight = deltaHeightBuffer[i] * static_cast<float>((DeltaHeightSmoothing / 2) + 1);
@@ -1069,14 +1069,13 @@ void OceanSurface::GenerateSamples(
         previousSampleValue = sampleValue;
     }
 
-    // Populate last delta (extra sample will have same value as this sample)
-    mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = 0.0f;
+    assert(mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
 
     // Populate extra sample - same value as last sample
     assert(previousSampleValue == mSamples[SamplesCount - 1].SampleValue);
     mSamples[SamplesCount].SampleValue = previousSampleValue;
 
-    assert(mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue == 0.0f);
+    assert(mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

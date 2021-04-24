@@ -1813,12 +1813,12 @@ Render:
 						float borderFront =
 							1. - smoothstep(0., borderWidthHalfFront, abs(yWorld - yFrontMidBorder));
 						X 1b: if OK: see with code-calculated derivative instead						
-					= 2: Try "double-shader" + second derivatives
+					+ 2: Try "double-shader" + second derivatives
 						+ Go back to all shaders working on World
 						+ Shadertoy PoC
-						= Implement second derivatives
+						+ Implement second derivatives
 							+ Infrastructure
-							= Second derivatives
+							+ Second derivatives
 								+ Zoom-out case
 									+ Fix problem with top y
 										+ At buffer upload: fixed world offset									
@@ -1828,12 +1828,12 @@ Render:
 								+ Zoom-in case
 									+ See if can really leave derivatives at zero
 								+ Fix bug in upload code w/fractional part from next sample
-								- Adjust shader: border continuity at top-left and at other angle
-								= Optimize
-									= Upload code
-										= Fix DEBUG issues
-											- Redo NumSlices, DX
-										- Verify assembly
+								+ Optimize
+									+ Upload code
+										+ Fix DEBUG issues
+											+ Redo NumSlices, DX
+											+ Also @ OceanFloor
+										+ Verify assembly
 					- Cleanup shader
 					- Test all rendering modes
 						- {Basic, Detailed } x 3 render modes x {far, close}
