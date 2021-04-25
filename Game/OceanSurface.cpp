@@ -44,7 +44,7 @@ OceanSurface::OceanSurface(
     ////////
     , mSamples()
     , mHeightField()
-    , mFluxField()
+    , mVelocityField()
     , mDeltaHeightBuffer()
     ////////
     , mSWEInteractiveWaveStateMachine()
@@ -63,7 +63,7 @@ OceanSurface::OceanSurface(
     for (size_t i = 0; i <= SWETotalSamples; ++i)
     {
         mHeightField.emplace_back(SWEHeightFieldOffset);
-        mFluxField.emplace_back(0.0f);
+        mVelocityField.emplace_back(0.0f);
     }
 
     mDeltaHeightBuffer.fill(0.0f);
@@ -884,14 +884,14 @@ void OceanSurface::ApplyDampingBoundaryConditions()
             (mHeightField[i] - SWEHeightFieldOffset) * damping
             + SWEHeightFieldOffset;
 
-        mFluxField[i] *= damping;
+        mVelocityField[i] *= damping;
 
         mHeightField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i] =
             (mHeightField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i] - SWEHeightFieldOffset) * damping
             + SWEHeightFieldOffset;
 
-        // For symmetry we actually damp the q-sample after this height field sample
-        mFluxField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i + 1] *= damping;
+        // For symmetry we actually damp the v-sample that is *after* this h-sample
+        mVelocityField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i + 1] *= damping;
     }
 
 }
@@ -904,36 +904,34 @@ void OceanSurface::UpdateFields(GameParameters const & gameParameters)
     // "q‐Upwind Numerical Scheme" from "Improving the stability of a simple formulation of the shallow water equations for 2‐D flood modeling",
     //      de Almeida, Bates, Freer, Souvignet (2012), https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2011WR011570
     //
-    // Height field: from 0 to SWETotalSamples
-    // Flux field  : from 1 to SWETotalSamples (i.e. at boundaries it's inner only)
-    //                 H[i] has Q[i] at its left and Q[i+1] at its right
+    // Height field  : from 0 to SWETotalSamples
+    // Velocity field: from 1 to SWETotalSamples (i.e. at boundaries it's inner only)
+    //                 H[i] has V[i] at its left and V[i+1] at its right
     //
 
     float constexpr G = GameParameters::GravityMagnitude;
     float constexpr Dt = GameParameters::SimulationStepTimeDuration<float>;
 
     float * const restrict heightField = mHeightField.data();
-    float * const restrict fluxField = mFluxField.data();
+    float * const restrict velocityField = mVelocityField.data();
 
-    // First height field value
-    heightField[0] =
-        heightField[0]
-        + Dt / Dx * (fluxField[0] - fluxField[0 + 1]);
+    // Update first height field value
+    heightField[0] *=
+        1.0f + Dt / Dx * (velocityField[0] - velocityField[0 + 1]);
 
     for (size_t i = 1; i < SWETotalSamples; ++i)
     {
         // Update height field
-        heightField[i] =
-            heightField[i]
-            + Dt / Dx * (fluxField[i] - fluxField[i + 1]);
+        heightField[i] *=
+            1.0f + Dt / Dx * (velocityField[i] - velocityField[i + 1]);
 
-        // Q @ t-1: mix of Q[i] and of avg(Q[i-1], Q[i])
-        float const previousQ =
-            gameParameters.WaveSmoothnessAdjustment * fluxField[i]
-            + (1.0f - gameParameters.WaveSmoothnessAdjustment) * (fluxField[i - 1] + fluxField[i + 1]) / 2.0f;
+        // V @ t-1: mix of V[i] and of avg(V[i-1], V[i+1])
+        float const previousV =
+            gameParameters.WaveSmoothnessAdjustment * velocityField[i]
+            + (1.0f - gameParameters.WaveSmoothnessAdjustment) * (velocityField[i - 1] + velocityField[i + 1]) / 2.0f;
 
-        // Update flux field
-        fluxField[i] = previousQ - G * heightField[i] * Dt / Dx * (heightField[i] - heightField[i - 1]);
+        // Update velocity field
+        velocityField[i] = previousV - G * Dt / Dx * (heightField[i] - heightField[i - 1]);
     }
 }
 
