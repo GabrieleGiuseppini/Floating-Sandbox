@@ -1851,7 +1851,9 @@ Render:
 							+ Rename everything as Q/flux
 							+ Write alternative - and verify it works - using velocities
 							+ Also, if we go for Q field, be careful - height and velocity/Q are at different places in the cell
-						- Make sure it's vectorized
+						+ Optimize
+						- Check if may be vectorized
+							- See first if all works fine with separate-time buffers 
 						- Post-perf: 
 			- SetSWEWaveHeight: see if can be replaced by populating deltabuffer
 				- Every caller (state machines only?) need to start reasoning in terms of delta's then, rather than absolute heights? 

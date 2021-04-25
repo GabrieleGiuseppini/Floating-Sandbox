@@ -911,6 +911,8 @@ void OceanSurface::UpdateFields(GameParameters const & gameParameters)
 
     float constexpr G = GameParameters::GravityMagnitude;
     float constexpr Dt = GameParameters::SimulationStepTimeDuration<float>;
+    float const previousVWeight1 = gameParameters.WaveSmoothnessAdjustment;
+    float const previousVWeight2 = (1.0f - gameParameters.WaveSmoothnessAdjustment) / 2.0f; // Including /2 for average
 
     float * const restrict heightField = mHeightField.data();
     float * const restrict velocityField = mVelocityField.data();
@@ -927,8 +929,8 @@ void OceanSurface::UpdateFields(GameParameters const & gameParameters)
 
         // V @ t-1: mix of V[i] and of avg(V[i-1], V[i+1])
         float const previousV =
-            gameParameters.WaveSmoothnessAdjustment * velocityField[i]
-            + (1.0f - gameParameters.WaveSmoothnessAdjustment) * (velocityField[i - 1] + velocityField[i + 1]) / 2.0f;
+            previousVWeight1 * velocityField[i]
+            + previousVWeight2 * (velocityField[i - 1] + velocityField[i + 1]);
 
         // Update velocity field
         velocityField[i] = previousV - G * Dt / Dx * (heightField[i] - heightField[i - 1]);
