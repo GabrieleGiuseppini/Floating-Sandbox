@@ -1845,11 +1845,12 @@ Render:
 					= Optimize:
 						+ pow
 						+ Pre-perf: 4.59/4.60
-						- See if best to store velocity field or Q field
+						= See if friction is really needed - setting it to zero seems to have no effect
+							+ Waves stay stable with smoothness at 0.8
+						= See if best to store velocity field or Q field
+							+ Rename everything as Q/flux
 							- Write alternative - and verify it works - using velocities
 							- Also, if we go for Q field, be careful - height and velocity/Q are at different places in the cell
-						= See if friction is really needed - setting it to zero seems to have no effect
-							- Waves stay stable with smoothness at 0.8
 						- Make sure it's vectorized
 						- Post-perf: 
 			- SetSWEWaveHeight: see if can be replaced by populating deltabuffer
@@ -1861,6 +1862,7 @@ Render:
 				- 3: Make version with x86 intrinsics in Algorithms
 				- 4: x86 instrinsics unit tests
 			------------------------------
+			- Interactive state machine: try with bouncing waves
 			- Bump up rate of rogue waves
 			- See if wave displacement can now be slightly more pronounced
 				- Keep an eye on infinitely-bouncing balls
