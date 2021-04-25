@@ -904,49 +904,36 @@ void OceanSurface::UpdateFields(GameParameters const & gameParameters)
     // "q‐Upwind Numerical Scheme" from "Improving the stability of a simple formulation of the shallow water equations for 2‐D flood modeling",
     //      de Almeida, Bates, Freer, Souvignet (2012), https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2011WR011570
     //
-    // Height field  : from 0 to SWETotalSamples
-    // Flux field: from 1 to SWETotalSamples (i.e. at boundaries it's inner only)
+    // Height field: from 0 to SWETotalSamples
+    // Flux field  : from 1 to SWETotalSamples (i.e. at boundaries it's inner only)
     //                 H[i] has Q[i] at its left and Q[i+1] at its right
     //
 
     float constexpr G = GameParameters::GravityMagnitude;
     float constexpr Dt = GameParameters::SimulationStepTimeDuration<float>;
 
-    // Friction: a lower friction raises instability
-    // // TODOHERE: nuke friction terms in formula
-    //float constexpr Friction = 0.15f;
-    float constexpr Friction = 0.0f;
-
     float * const restrict heightField = mHeightField.data();
     float * const restrict fluxField = mFluxField.data();
 
-    // TODOTEST: original, velocityField is really velocity
-    ////heightField[0] -=
-    ////    heightField[0]
-    ////    * (velocityField[0 + 1] - velocityField[0])
-    ////    * FactorH;
-
-    // TODOTEST: velocityField is really Q
+    // First height field value
     heightField[0] =
         heightField[0]
         + Dt / Dx * (fluxField[0] - fluxField[0 + 1]);
 
     for (size_t i = 1; i < SWETotalSamples; ++i)
     {
+        // Update height field
         heightField[i] =
             heightField[i]
             + Dt / Dx * (fluxField[i] - fluxField[i + 1]);
 
-        // TODOTEST
-        //float const hf = std::max(heightField[i], heightField[i - 1]);
+        // Q @ t-1: mix of Q[i] and of avg(Q[i-1], Q[i])
+        float const previousQ =
+            gameParameters.WaveSmoothnessAdjustment * fluxField[i]
+            + (1.0f - gameParameters.WaveSmoothnessAdjustment) * (fluxField[i - 1] + fluxField[i + 1]) / 2.0f;
 
-        // TODO: rename if velocities become again velocities
-        float const previousQ = gameParameters.WaveSmoothnessAdjustment * fluxField[i] + (1.0f - gameParameters.WaveSmoothnessAdjustment) / 2.0f * (fluxField[i - 1] + fluxField[i + 1]);
-        // TODOTEST: Populating velocity as Q
-        float const numerator = previousQ - G * heightField[i] * Dt / Dx * (heightField[i] - heightField[i - 1]);
-        //float const denominator = (1.0f + G * Dt * Friction * Friction * std::abs(velocityField[i]) / std::pow(hf, 7.0f / 3.0f));
-        float const denominator = 1.0f + G * Dt * Friction * Friction * std::abs(fluxField[i]) / (heightField[i] * heightField[i]);
-        fluxField[i] = numerator / denominator;
+        // Update flux field
+        fluxField[i] = previousQ - G * heightField[i] * Dt / Dx * (heightField[i] - heightField[i - 1]);
     }
 }
 
