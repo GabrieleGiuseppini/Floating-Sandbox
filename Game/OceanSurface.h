@@ -186,7 +186,7 @@ private:
     // SWE Layer constants
     //
 
-    // The rest height of the height field - indirectly determines velocity
+    // The rest height of the height field - indirectly determines speed
     // of waves (via dv/dt <= dh/dx, with dh/dt <= h*dv/dx).
     // Sensitive to Dx - With Dx=1.22, a good offset is 100; with dx=0.61, a good offset is 50
     static float constexpr SWEHeightFieldOffset = 20.0f;
@@ -265,10 +265,11 @@ private:
     // - Height values are at the center of the staggered grid cells
     FixedSizeVector<float, SWETotalSamples + 1> mHeightField; // One extra cell just to ease interpolations
 
-    // Velocity field
-    // - Velocity values are at the edges of the staggered grid cells
-    //      - H[i] has V[i] at its left and V[i+1] at its right
-    FixedSizeVector<float, SWETotalSamples + 1> mVelocityField; // One extra cell just to ease interpolations
+    // Flux field
+    // - Flux (q) is velocity * height
+    // - Flux values are at the edges of the staggered grid cells
+    //      - H[i] has Q[i] at its left and Q[i+1] at its right
+    FixedSizeVector<float, SWETotalSamples + 1> mFluxField; // One extra cell just to ease interpolations
 
     // Delta height buffer
     // - Contains interactive surface height delta's that are taken into account during update step
