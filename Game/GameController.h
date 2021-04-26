@@ -224,6 +224,7 @@ public:
     void SetCanvasSize(LogicalPixelSize const & canvasSize) override;
     void Pan(LogicalPixelSize const & screenOffset) override;
     void PanImmediate(LogicalPixelSize const & screenOffset) override;
+    void PanToWorldEnd(int side) override;
     void ResetPan() override;
     void AdjustZoom(float amount) override;
     void ResetZoom() override;

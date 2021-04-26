@@ -716,6 +716,11 @@ void MainFrame::OnSecretTypingLoadBuiltInShip(int ship)
     OnShipLoaded(builtInShipFilePath);
 }
 
+void MainFrame::OnSecretTypingGoToWorldEnd(int side)
+{
+    mGameController->PanToWorldEnd(side);
+}
+
 //
 // App event handlers
 //
