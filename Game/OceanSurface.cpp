@@ -592,7 +592,7 @@ void OceanSurface::SetSWEWaveHeight(
     ////    }
     ////}
 
-    mDeltaHeightBuffer[centerIndex] = (height - SWEHeightFieldOffset);
+    mDeltaHeightBuffer[centerIndex] += (height - SWEHeightFieldOffset);
 }
 
 void OceanSurface::RecalculateWaveCoefficients(

@@ -4,7 +4,7 @@
 #define out varying
 
 // Inputs
-in vec4 inFlame1; // Position, PlaneId, FlamePersonalitySeed
+in vec4 inFlame1; // Position (vec2), PlaneId, FlamePersonalitySeed
 in vec2 inFlame2; // FlameSpacePosition
 
 // Outputs
@@ -67,7 +67,7 @@ void main()
     
     // Rotation angle is higher the higher we go
     float windAngle = paramFlameWindRotationAngle * flameSpacePosition.y;
-    windAngle += (noiseOffset.x - .5) * windAngle * 1.2; // Randomize with personality seed, +/- 60%
+    windAngle += (noiseOffset.x - .5) * windAngle * 1.6; // Randomize with personality seed, +/- 80%
             
     // Rotate around bottom
     vec2 uv = GetRotationMatrix(windAngle) * flameSpacePosition - vec2(0.0, 0.5);
