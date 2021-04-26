@@ -1873,9 +1873,9 @@ Render:
 						+ Works
 						+ Assembly
 				+ Post-perf: 4.57
-			- SetSWEWaveHeight: see if can be replaced by populating deltabuffer
-				- Every caller (state machines only?) need to start reasoning in terms of delta's then, rather than absolute heights? 
-				- Nuke SWEWaveStateMachinePerturbedSamplesCount
+			+ SetSWEWaveHeight: see if can be replaced by populating deltabuffer
+				X Every caller (state machines only?) need to start reasoning in terms of delta's then, rather than absolute heights? 
+				+ Nuke SWEWaveStateMachinePerturbedSamplesCount
 			------------------------------
 			- Interactive state machine: try with bouncing waves
 			- Bump up rate of rogue waves
