@@ -105,7 +105,9 @@ void OceanFloor::Upload(
 
         // We do one extra iteration as the number of slices is the number of quads, and the last vertical
         // quad side must be at the end of the width
-        for (size_t s = 0; s <= RenderSlices<size_t>; ++s, sampleIndexX += sliceDx)
+        for (size_t s = 0;
+            s <= RenderSlices<size_t>;
+            ++s, sampleIndexX = std::min(sampleIndexX + sliceDx, GameParameters::HalfMaxWorldWidth))
         {
             renderContext.UploadLand(
                 sampleIndexX,
