@@ -15,8 +15,11 @@
 
 namespace Algorithms {
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Vector normalization
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
 template<typename TVector>
 inline TVector NormalizeVector2_SSE(TVector const & v) noexcept
 {
@@ -40,11 +43,9 @@ inline TVector NormalizeVector2_SSE(TVector const & v) noexcept
 
     return TVector(_mm_cvtss_f32(x), _mm_cvtss_f32(y));
 }
-
 #endif
 
 #if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
-
 template<typename TVector>
 inline TVector NormalizeVector2_SSE(TVector const & v, float length) noexcept
 {
@@ -61,11 +62,9 @@ inline TVector NormalizeVector2_SSE(TVector const & v, float length) noexcept
 
     return TVector(_mm_cvtss_f32(_x), _mm_cvtss_f32(_y));
 }
-
 #endif
 
 #if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
-
 template<typename EndpointStruct, typename TVector>
 inline void CalculateVectorDirsAndReciprocalLengths_SSE(
     TVector const * pointPositions,
@@ -74,7 +73,7 @@ inline void CalculateVectorDirsAndReciprocalLengths_SSE(
     float * restrict outReciprocalLengths,
     size_t const elementCount)
 {
-    assert(elementCount % 4 == 0); // Element counts are aligned
+    assert((elementCount % 4) == 0); // Element counts are aligned
 
     __m128 const Zero = _mm_setzero_ps();
 
@@ -126,8 +125,11 @@ inline void CalculateVectorDirsAndReciprocalLengths_SSE(
         _mm_store_ps(reinterpret_cast<float * restrict>(outDirs + s + 2), s23);
     }
 }
-
 #endif
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// DiffuseLight
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Currently unused - just by benchmarks
 template<typename TVector>
@@ -140,7 +142,7 @@ inline void DiffuseLight_Naive(
     float const * lampDistanceCoeffs,
     float const * lampSpreadMaxDistances,
     ElementIndex const lampCount,
-    float * restrict outLightBuffer)
+    float * restrict outLightBuffer) noexcept
 {
     for (ElementIndex p = 0; p < pointCount; ++p)
     {
@@ -184,7 +186,7 @@ inline void DiffuseLight_Vectorized(
     float const * restrict lampDistanceCoeffs,
     float const * restrict lampSpreadMaxDistances,
     ElementIndex const lampCount,
-    float * restrict outLightBuffer)
+    float * restrict outLightBuffer) noexcept
 {
     // This code is vectorized for 4 floats
     static_assert(vectorization_float_count<size_t> >= 4);
@@ -256,7 +258,6 @@ inline void DiffuseLight_Vectorized(
 }
 
 #if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
-
 template<typename TVector>
 inline void DiffuseLight_SSEVectorized(
     TVector const * restrict pointPositions,
@@ -267,7 +268,7 @@ inline void DiffuseLight_SSEVectorized(
     float const * restrict lampDistanceCoeffs,
     float const * restrict lampSpreadMaxDistances,
     ElementIndex const lampCount,
-    float * restrict outLightBuffer)
+    float * restrict outLightBuffer) noexcept
 {
     // This code is vectorized for SSE = 4 floats
     static_assert(vectorization_float_count<size_t> >= 4);
@@ -462,7 +463,6 @@ inline void DiffuseLight_SSEVectorized(
         _mm_store_ps(outLightBuffer + p, pointLight_4);
     }
 }
-
 #endif
 
 /*
@@ -479,7 +479,7 @@ inline void DiffuseLight(
     float const * lampDistanceCoeffs,
     float const * lampSpreadMaxDistances,
     ElementIndex const lampCount,
-    float * restrict outLightBuffer)
+    float * restrict outLightBuffer) noexcept
 {
 #if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
     DiffuseLight_SSEVectorized(
@@ -503,6 +503,107 @@ inline void DiffuseLight(
         lampSpreadMaxDistances,
         lampCount,
         outLightBuffer);
+#endif
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// BufferSmoothing
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<size_t BufferSize, size_t SmoothingSize>
+inline void SmoothBufferAndAdd_Naive(
+    float const * restrict inBuffer,
+    float * restrict outBuffer) noexcept
+{
+    static_assert((SmoothingSize % 2) == 1);
+
+    for (size_t i = 0; i < BufferSize; ++i)
+    {
+        // Central sample
+        float accumulatedHeight = inBuffer[i] * static_cast<float>((SmoothingSize / 2) + 1);
+
+        // Lateral samples; l is offset from central
+        for (size_t l = 1; l <= SmoothingSize / 2; ++l)
+        {
+            float const lateralWeight = static_cast<float>((SmoothingSize / 2) + 1 - l);
+
+            accumulatedHeight +=
+                inBuffer[i - l] * lateralWeight
+                + inBuffer[i + l] * lateralWeight;
+        }
+
+        // Update height field
+        outBuffer[i] +=
+            (1.0f / static_cast<float>(SmoothingSize))
+            * (1.0f / static_cast<float>(SmoothingSize))
+            * accumulatedHeight;
+    }
+}
+
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+template<size_t BufferSize, size_t SmoothingSize>
+inline void SmoothBufferAndAdd_SSEVectorized(
+    float const * restrict inBuffer,
+    float * restrict outBuffer) noexcept
+{
+    // This code is vectorized for SSE = 4 floats
+    static_assert(vectorization_float_count<size_t> >= 4);
+    static_assert(is_aligned_to_float_element_count(BufferSize));
+    static_assert((SmoothingSize % 2) == 1);
+
+    __m128 const centralWeight = _mm_set_ps1(static_cast<float>((SmoothingSize / 2) + 1));
+    __m128 const scaling = _mm_set_ps1(
+        (1.0f / static_cast<float>(SmoothingSize))
+        * (1.0f / static_cast<float>(SmoothingSize)));
+
+    for (size_t i = 0; i < BufferSize; i += 4)
+    {
+        // Central sample
+        __m128 accumulatedHeight = _mm_mul_ps(
+            _mm_load_ps(inBuffer + i),
+            centralWeight);
+
+        // Lateral samples; l is offset from central
+        for (size_t l = 1; l <= SmoothingSize / 2; ++l)
+        {
+            __m128 const lateralWeight = _mm_set_ps1(static_cast<float>((SmoothingSize / 2) + 1 - l));
+
+            accumulatedHeight = _mm_add_ps(
+                accumulatedHeight,
+                _mm_mul_ps(
+                    _mm_add_ps(
+                        _mm_loadu_ps(inBuffer + i - l),
+                        _mm_loadu_ps(inBuffer + i + l)),
+                    lateralWeight));
+        }
+
+        // Update output
+        _mm_store_ps(
+            outBuffer + i,
+            _mm_add_ps(
+                _mm_load_ps(outBuffer + i),
+                _mm_mul_ps(
+                    accumulatedHeight,
+                    scaling)));
+    }
+}
+#endif
+
+/*
+ * Calculates a two-pass average on a window of width SmoothingSize,
+ * centered on the sample.
+ *
+ * The input buffer is assumed to be extended left and right - outside of the BufferSize - with zeroes.
+ */
+template<size_t BufferSize, size_t SmoothingSize>
+inline void SmoothBufferAndAdd(
+    float const * restrict inBuffer,
+    float * restrict outBuffer) noexcept
+{
+#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+    SmoothBufferAndAdd_SSEVectorized<BufferSize, SmoothingSize>(inBuffer, outBuffer);
+#else
+    SmoothBufferAndAdd_Naive<BufferSize, SmoothingSize>(inBuffer, outBuffer);
 #endif
 }
 
