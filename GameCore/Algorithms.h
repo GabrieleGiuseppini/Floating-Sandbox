@@ -550,6 +550,8 @@ inline void SmoothBufferAndAdd_SSEVectorized(
     static_assert(vectorization_float_count<size_t> >= 4);
     static_assert(is_aligned_to_float_element_count(BufferSize));
     static_assert((SmoothingSize % 2) == 1);
+    assert(is_aligned_to_vectorization_word(inBuffer));
+    assert(is_aligned_to_vectorization_word(outBuffer));
 
     __m128 const centralWeight = _mm_set_ps1(static_cast<float>((SmoothingSize / 2) + 1));
     __m128 const scaling = _mm_set_ps1(

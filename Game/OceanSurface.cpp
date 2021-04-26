@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "Physics.h"
 
+#include <GameCore/Algorithms.h>
 #include <GameCore/GameRandomEngine.h>
 #include <GameCore/GameWallClock.h>
 
@@ -42,10 +43,10 @@ OceanSurface::OceanSurface(
     , mTsunamiRate(std::chrono::minutes::max())
     , mRogueWaveRate(std::chrono::minutes::max())
     ////////
-    , mSamples()
-    , mHeightField()
-    , mVelocityField()
-    , mDeltaHeightBuffer()
+    , mSamples(SamplesCount + 1)
+    , mSWEHeightField(SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + (SamplesCount + 1) + SWEBoundaryConditionsSamples)
+    , mSWEVelocityField(SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + (SamplesCount + 1) + SWEBoundaryConditionsSamples + 1)
+    , mDeltaHeightBuffer(DeltaHeightBufferAlignmentPrefixSize + (DeltaHeightSmoothing / 2) + SamplesCount + (DeltaHeightSmoothing / 2))
     ////////
     , mSWEInteractiveWaveStateMachine()
     , mSWETsunamiWaveStateMachine()
@@ -53,25 +54,13 @@ OceanSurface::OceanSurface(
     , mLastTsunamiTimestamp(GameWallClock::GetInstance().Now())
     , mLastRogueWaveTimestamp(GameWallClock::GetInstance().Now())
 {
+    // Initialize buffers
     mSamples.fill({ 0.0f, 0.0f });
-
-    //
-    // Initialize SWE layer
-    // - Initialize *all* values - including extra unused sample
-    //
-
-    for (size_t i = 0; i <= SWETotalSamples; ++i)
-    {
-        mHeightField.emplace_back(SWEHeightFieldOffset);
-        mVelocityField.emplace_back(0.0f);
-    }
-
+    mSWEHeightField.fill(SWEHeightFieldOffset);
+    mSWEVelocityField.fill(0.0f);
     mDeltaHeightBuffer.fill(0.0f);
 
-    //
     // Initialize constant sample values
-    //
-
     mSamples[SamplesCount - 1].SampleValuePlusOneMinusSampleValue = 0.0f; // Extra sample is always == last sample
     mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue = 0.0f; // Won't really be used
 }
@@ -216,7 +205,7 @@ void OceanSurface::Update(
     ////float avgHeight = 0.0f;
     ////for (size_t i = SWEOuterLayerSamples; i < SWEOuterLayerSamples + SamplesCount; ++i)
     ////{
-    ////    avgHeight += mHeightField[i];
+    ////    avgHeight += mSWEHeightField[i];
     ////}
     ////avgHeight /= static_cast<float>(SamplesCount);
     ////LogMessage("AVG:", avgHeight);
@@ -275,12 +264,12 @@ void OceanSurface::AdjustTo(
 
             auto const sampleIndex = ToSampleIndex(worldCoordinates->x);
 
-            size_t const centerIndex = SWEOuterLayerSamples + static_cast<size_t>(sampleIndex);
+            size_t const centerIndex = SWEBufferPrefixSize + static_cast<size_t>(sampleIndex);
 
             // Start wave
             mSWEInteractiveWaveStateMachine.emplace(
                 centerIndex,
-                mHeightField[centerIndex],  // LowHeight == current height
+                mSWEHeightField[centerIndex],  // LowHeight == current height
                 targetHeight,               // HighHeight == target
                 currentSimulationTime);
         }
@@ -310,15 +299,13 @@ void OceanSurface::ApplyThanosSnap(
     float leftFrontX,
     float rightFrontX)
 {
-    auto const sweIndexStart = SWEOuterLayerSamples + ToSampleIndex(std::max(leftFrontX, -GameParameters::HalfMaxWorldWidth));
-    auto const sweIndexEnd = SWEOuterLayerSamples + ToSampleIndex(std::min(rightFrontX, GameParameters::HalfMaxWorldWidth));
-
-    assert(sweIndexStart >= 0 && sweIndexStart < SWETotalSamples);
+    auto const sweIndexStart = SWEBufferPrefixSize + ToSampleIndex(std::max(leftFrontX, -GameParameters::HalfMaxWorldWidth));
+    auto const sweIndexEnd = SWEBufferPrefixSize + ToSampleIndex(std::min(rightFrontX, GameParameters::HalfMaxWorldWidth));
 
     float constexpr WaterDepression = 1.0f / SWEHeightFieldAmplification;
 
     for (auto idx = sweIndexStart; idx <= sweIndexEnd; ++idx)
-        mHeightField[idx] -= WaterDepression;
+        mSWEHeightField[idx] -= WaterDepression;
 }
 
 void OceanSurface::TriggerTsunami(float currentSimulationTime)
@@ -339,10 +326,10 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
     auto const sampleIndex = ToSampleIndex(tsunamiWorldX);
 
     // (Re-)start state machine
-    size_t const centerIndex = SWEOuterLayerSamples + static_cast<size_t>(sampleIndex);
+    size_t const centerIndex = SWEBufferPrefixSize + static_cast<size_t>(sampleIndex);
     mSWETsunamiWaveStateMachine.emplace(
         centerIndex,
-        mHeightField[centerIndex],  // LowHeight == current height
+        mSWEHeightField[centerIndex],  // LowHeight == current height
         tsunamiHeight,              // HighHeight == tsunami height
         3.0f, // Rise delay
         2.0f, // Fall delay
@@ -362,12 +349,12 @@ void OceanSurface::TriggerRogueWave(
     if (wind.GetBaseAndStormSpeedMagnitude() >= 0.0f)
     {
         // Left locus
-        centerIndex = SWEBoundaryConditionsSamples;
+        centerIndex = SWEBufferPrefixSize;
     }
     else
     {
         // Right locus
-        centerIndex = SWEOuterLayerSamples + OceanSurface::SamplesCount;
+        centerIndex = SWEBufferPrefixSize + SamplesCount;
     }
 
     // Choose height
@@ -385,7 +372,7 @@ void OceanSurface::TriggerRogueWave(
     // (Re-)start state machine
     mSWERogueWaveWaveStateMachine.emplace(
         centerIndex,
-        mHeightField[centerIndex],  // LowHeight == current height
+        mSWEHeightField[centerIndex],  // LowHeight == current height
         rogueWaveHeight,            // HighHeight == rogue wave height
         rogueWaveDelay, // Rise delay
         rogueWaveDelay / 2.0f, // Fall delay
@@ -446,10 +433,6 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
         }
         else
         {
-            //
-            //
-            //
-
             auto const getSampleAtX = [this](float sampleIndexWorldX)
             {
                 //
@@ -605,7 +588,7 @@ void OceanSurface::SetSWEWaveHeight(
     ////    if (idx >= SWEBoundaryConditionsSamples
     ////        && idx < SWEOuterLayerSamples + SamplesCount + SWEWaveGenerationSamples)
     ////    {
-    ////        mHeightField[idx] = height;
+    ////        mSWEHeightField[idx] = height;
     ////    }
     ////}
 
@@ -758,7 +741,7 @@ void OceanSurface::AdvectFieldsTest()
         // The height field values are at the center of the cell,
         // while velocities are at the edges - hence we need to take
         // the two neighboring velocities
-        float const v = (mVelocityField[i] + mVelocityField[i + 1]) / 2.0f;
+        float const v = (mSWEVelocityField[i] + mSWEVelocityField[i + 1]) / 2.0f;
 
         // Calculate the (fractional) index that this height sample had one time step ago
         float const prevCellIndex =
@@ -779,12 +762,12 @@ void OceanSurface::AdvectFieldsTest()
         // Set this height field sample as the previous (in time) sample,
         // interpolated between its two neighbors
         newHeightField[i] =
-            (1.0f - prevCellIndexF) * mHeightField[prevCellIndexI]
-            + prevCellIndexF * mHeightField[prevCellIndexI + 1];
+            (1.0f - prevCellIndexF) * mSWEHeightField[prevCellIndexI]
+            + prevCellIndexF * mSWEHeightField[prevCellIndexI + 1];
     }
 
     std::memcpy(
-        &(mHeightField[SWEBoundaryConditionsSamples]),
+        &(mSWEHeightField[SWEBoundaryConditionsSamples]),
         &(newHeightField[SWEBoundaryConditionsSamples]),
         SWETotalSamples - 2 * SWEBoundaryConditionsSamples);
 
@@ -798,7 +781,7 @@ void OceanSurface::AdvectFieldsTest()
     for (size_t i = SWEBoundaryConditionsSamples; i <= SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
     {
         // Velocity values are at the edges of the cell
-        float const v = mVelocityField[i];
+        float const v = mSWEVelocityField[i];
 
         // Calculate the (fractional) index that this velocity sample had one time step ago
         float const prevCellIndex =
@@ -819,12 +802,12 @@ void OceanSurface::AdvectFieldsTest()
         // Set this velocity field sample as the previous (in time) sample,
         // interpolated between its two neighbors
         newVelocityField[i] =
-            (1.0f - prevCellIndexF) * mVelocityField[prevCellIndexI]
-            + prevCellIndexF * mVelocityField[prevCellIndexI + 1];
+            (1.0f - prevCellIndexF) * mSWEVelocityField[prevCellIndexI]
+            + prevCellIndexF * mSWEVelocityField[prevCellIndexI + 1];
     }
 
     std::memcpy(
-        &(mVelocityField[SWEBoundaryConditionsSamples]),
+        &(mSWEVelocityField[SWEBoundaryConditionsSamples]),
         &(newVelocityField[SWEBoundaryConditionsSamples]),
         SWETotalSamples - 2 * SWEBoundaryConditionsSamples);
 }
@@ -838,37 +821,10 @@ void OceanSurface::SmoothDeltaBufferIntoHeightField()
     // We use a two-pass average on a window of width DeltaHeightSmoothing,
     // centered on the sample
     //
-    // Note: this algorithm may be vectorized, by noticing that the accumulation
-    // for samples [i, i+1, i+2, i+3] requires samples [j, j+1, j+2, j+3].
-    // However, this function nowadays takes 0.51% of the runtime, and a vectorization
-    // of the loop would require careful alignment of the buffers, so for the time
-    // being we think that it's not worth spending too much time here.
-    //
 
-    float const * restrict const deltaHeightBuffer = mDeltaHeightBuffer.data() + (DeltaHeightSmoothing / 2);
-    float * restrict const heightFieldBuffer = mHeightField.data() + SWEOuterLayerSamples;
-
-    for (size_t i = 0; i < SamplesCount; ++i)
-    {
-        // Central sample
-        float accumulatedHeight = deltaHeightBuffer[i] * static_cast<float>((DeltaHeightSmoothing / 2) + 1);
-
-        // Lateral samples; l is offset from central
-        for (size_t l = 1; l <= DeltaHeightSmoothing / 2; ++l)
-        {
-            float const lateralWeight = static_cast<float>((DeltaHeightSmoothing / 2) + 1 - l);
-
-            accumulatedHeight +=
-                deltaHeightBuffer[i - l] * lateralWeight
-                + deltaHeightBuffer[i + l] * lateralWeight;
-        }
-
-        // Update height field
-        heightFieldBuffer[i] +=
-            (1.0f / static_cast<float>(DeltaHeightSmoothing))
-            * (1.0f / static_cast<float>(DeltaHeightSmoothing))
-            * accumulatedHeight;
-    }
+    Algorithms::SmoothBufferAndAdd<SamplesCount, DeltaHeightSmoothing>(
+        mDeltaHeightBuffer.data() + DeltaHeightBufferPrefixSize,
+        mSWEHeightField.data() + SWEBufferPrefixSize);
 
     // Clear delta-height buffer
     mDeltaHeightBuffer.fill(0.0f);
@@ -880,20 +836,19 @@ void OceanSurface::ApplyDampingBoundaryConditions()
     {
         float const damping = static_cast<float>(i) / static_cast<float>(SWEBoundaryConditionsSamples);
 
-        mHeightField[i] =
-            (mHeightField[i] - SWEHeightFieldOffset) * damping
+        mSWEHeightField[SWEBufferAlignmentPrefixSize + i] =
+            (mSWEHeightField[SWEBufferAlignmentPrefixSize + i] - SWEHeightFieldOffset) * damping
             + SWEHeightFieldOffset;
 
-        mVelocityField[i] *= damping;
+        mSWEVelocityField[SWEBufferAlignmentPrefixSize + i] *= damping;
 
-        mHeightField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i] =
-            (mHeightField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i] - SWEHeightFieldOffset) * damping
+        mSWEHeightField[SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + (SamplesCount + 1) + SWEBoundaryConditionsSamples - i - 1] =
+            (mSWEHeightField[SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + (SamplesCount + 1) + SWEBoundaryConditionsSamples - i - 1] - SWEHeightFieldOffset) * damping
             + SWEHeightFieldOffset;
 
         // For symmetry we actually damp the v-sample that is *after* this h-sample
-        mVelocityField[SWEOuterLayerSamples + SamplesCount + SWEOuterLayerSamples - 1 - i + 1] *= damping;
+        mSWEVelocityField[SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + (SamplesCount + 1) + SWEBoundaryConditionsSamples - i - 1 + 1] *= damping;
     }
-
 }
 
 void OceanSurface::UpdateFields(GameParameters const & gameParameters)
@@ -914,14 +869,14 @@ void OceanSurface::UpdateFields(GameParameters const & gameParameters)
     float const previousVWeight1 = gameParameters.WaveSmoothnessAdjustment;
     float const previousVWeight2 = (1.0f - gameParameters.WaveSmoothnessAdjustment) / 2.0f; // Including /2 for average
 
-    float * const restrict heightField = mHeightField.data();
-    float * const restrict velocityField = mVelocityField.data();
+    float * const restrict heightField = mSWEHeightField.data() + SWEBufferAlignmentPrefixSize;
+    float * const restrict velocityField = mSWEVelocityField.data() + SWEBufferAlignmentPrefixSize;
 
     // Update first height field value
     heightField[0] *=
         1.0f + Dt / Dx * (velocityField[0] - velocityField[0 + 1]);
 
-    for (size_t i = 1; i < SWETotalSamples; ++i)
+    for (size_t i = 1; i < SWEBoundaryConditionsSamples + (SamplesCount + 1) + SWEBoundaryConditionsSamples; ++i)
     {
         // Update height field
         heightField[i] *=
@@ -998,7 +953,7 @@ void OceanSurface::GenerateSamples(
     float previousSampleValue;
     {
         float const sweValue =
-            (mHeightField[SWEOuterLayerSamples + 0] - SWEHeightFieldOffset)
+            (mSWEHeightField[SWEBufferPrefixSize + 0] - SWEHeightFieldOffset)
             * SWEHeightFieldAmplification;
 
         float const basalValue1 =
@@ -1029,7 +984,7 @@ void OceanSurface::GenerateSamples(
     for (size_t i = 1; i < SamplesCount; ++i)
     {
         float const sweValue =
-            (mHeightField[SWEOuterLayerSamples + i] - SWEHeightFieldOffset)
+            (mSWEHeightField[SWEBufferPrefixSize + i] - SWEHeightFieldOffset)
             * SWEHeightFieldAmplification;
 
         sinArg1 += sinArg1Dx;

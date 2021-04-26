@@ -1862,8 +1862,17 @@ Render:
 				+ 2: Naive unit tests
 				+ 3: Make version with x86 intrinsics in Algorithms
 				+ 4: x86 instrinsics unit tests
-				- 5: Hook up into OceanSurface
-					- Do alignment: use Buffer
+				= 5: Hook up into OceanSurface
+					= Do alignment: use Buffer
+						+ DeltaBuffer
+						= Both SWE buffers
+							+ Nuke FixedSizeVector usage completely
+							- See if +1 @ SWE buffers is still needed
+					+ Invoke Algorithm
+					= Verify 
+						+ Works
+						- Assembly
+					- Cleanup
 				- Post-perf:
 			- SetSWEWaveHeight: see if can be replaced by populating deltabuffer
 				- Every caller (state machines only?) need to start reasoning in terms of delta's then, rather than absolute heights? 

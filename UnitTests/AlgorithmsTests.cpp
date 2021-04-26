@@ -375,44 +375,27 @@ void RunSmoothBufferAndAddTest_12_5(Algorithm algorithm)
     };
 
     aligned_to_vword float outBuffer[] = {
-        0.0f, 0.0f, // BufferPrefix
-
-        2.0f,
-        2.0f,
-
         2.0f, 2.0f, 2.0f, 2.0f,
         2.0f, 2.0f, 2.0f, 2.0f,
-        2.0f, 2.0f, 2.0f, 2.0f,
-
-        2.0f,
-        2.0f
+        2.0f, 2.0f, 2.0f, 2.0f
     };
 
     algorithm(
         inBuffer + BufferPrefixSize + 2,
-        outBuffer + BufferPrefixSize + 2);
+        outBuffer);
 
-    EXPECT_FLOAT_EQ(2.0f, outBuffer[BufferPrefixSize + 0]);
-    EXPECT_FLOAT_EQ(2.0f, outBuffer[BufferPrefixSize + 1]);
-
-    EXPECT_FLOAT_EQ((0.0f * 1.0f + 0.0f * 2.0f + 1.0f * 3.0f + 4.0f * 2.0f + 5.0f * 1.0f) / 25.0f + 2.0f, outBuffer[BufferPrefixSize + 2]);
-    EXPECT_FLOAT_EQ((0.0f * 1.0f + 1.0f * 2.0f + 4.0f * 3.0f + 5.0f * 2.0f + 100.0f * 1.0f) / 25.0f + 2.0f, outBuffer[BufferPrefixSize + 3]);
-    EXPECT_FLOAT_EQ((1.0f * 1.0f + 4.0f * 2.0f + 5.0f * 3.0f + 100.0f * 2.0f + 200.0f * 1.0f) / 25.0f + 2.0f, outBuffer[BufferPrefixSize + 4]);
-    EXPECT_FLOAT_EQ((4.0f * 1.0f + 5.0f * 2.0f + 100.0f * 3.0f + 200.0f * 2.0f + 2.0f * 1.0f) / 25.0f + 2.0f, outBuffer[BufferPrefixSize + 5]);
-    EXPECT_FLOAT_EQ((5.0f * 1.0f + 100.0f * 2.0f + 200.0f * 3.0f + 2.0f * 2.0f + 5.0f * 1.0f) / 25.0f + 2.0f, outBuffer[BufferPrefixSize + 6]);
-    EXPECT_FLOAT_EQ((100.0f * 1.0f + 200.0f * 2.0f + 2.0f * 3.0f + 5.0f * 2.0f + 6.0f * 1.0f) / 25.0f + 2.0f, outBuffer[BufferPrefixSize + 7]);
-    EXPECT_FLOAT_EQ((200.0f * 1.0f + 2.0f * 2.0f + 5.0f * 3.0f + 6.0f * 2.0f + 150.0f * 1.0f) / 25.0f + 2.0f, outBuffer[BufferPrefixSize + 8]);
-    EXPECT_FLOAT_EQ((2.0f * 1.0f + 5.0f * 2.0f + 6.0f * 3.0f + 150.0f * 2.0f + 1000.0f * 1.0f) / 25.0f + 2.0f, outBuffer[BufferPrefixSize + 9]);
-
-    EXPECT_FLOAT_EQ((5.0f * 1.0f + 6.0f * 2.0f + 150.0f * 3.0f + 1000.0f * 2.0f + 7.0f * 1.0f) / 25.0f + 2.0f, outBuffer[BufferPrefixSize + 10]);
-    EXPECT_FLOAT_EQ((6.0f * 1.0f + 150.0f * 2.0f + 1000.0f * 3.0f + 7.0f * 2.0f + -5.0f * 1.0f) / 25.0f + 2.0f, outBuffer[BufferPrefixSize + 11]);
-    EXPECT_FLOAT_EQ((150.0f * 1.0f + 1000.0f * 2.0f + 7.0f * 3.0f + -5.0f * 2.0f + 0.0f * 1.0f) / 25.0f + 2.0f, outBuffer[BufferPrefixSize + 12]);
-    EXPECT_FLOAT_EQ((1000.0f * 1.0f + 7.0f * 2.0f + -5.0f * 3.0f + 0.0f * 2.0f + 0.0f * 1.0f) / 25.0f + 2.0f, outBuffer[BufferPrefixSize + 13]);
-
-    static_assert(BufferPrefixSize + 13 + 1 == BufferPrefixSize + 2 + BufferSize);
-
-    EXPECT_FLOAT_EQ(2.0f, outBuffer[BufferPrefixSize + 2 + BufferSize]);
-    EXPECT_FLOAT_EQ(2.0f, outBuffer[BufferPrefixSize + 2 + BufferSize + 1]);
+    EXPECT_FLOAT_EQ((0.0f * 1.0f + 0.0f * 2.0f + 1.0f * 3.0f + 4.0f * 2.0f + 5.0f * 1.0f) / 25.0f + 2.0f, outBuffer[0]);
+    EXPECT_FLOAT_EQ((0.0f * 1.0f + 1.0f * 2.0f + 4.0f * 3.0f + 5.0f * 2.0f + 100.0f * 1.0f) / 25.0f + 2.0f, outBuffer[1]);
+    EXPECT_FLOAT_EQ((1.0f * 1.0f + 4.0f * 2.0f + 5.0f * 3.0f + 100.0f * 2.0f + 200.0f * 1.0f) / 25.0f + 2.0f, outBuffer[2]);
+    EXPECT_FLOAT_EQ((4.0f * 1.0f + 5.0f * 2.0f + 100.0f * 3.0f + 200.0f * 2.0f + 2.0f * 1.0f) / 25.0f + 2.0f, outBuffer[3]);
+    EXPECT_FLOAT_EQ((5.0f * 1.0f + 100.0f * 2.0f + 200.0f * 3.0f + 2.0f * 2.0f + 5.0f * 1.0f) / 25.0f + 2.0f, outBuffer[4]);
+    EXPECT_FLOAT_EQ((100.0f * 1.0f + 200.0f * 2.0f + 2.0f * 3.0f + 5.0f * 2.0f + 6.0f * 1.0f) / 25.0f + 2.0f, outBuffer[5]);
+    EXPECT_FLOAT_EQ((200.0f * 1.0f + 2.0f * 2.0f + 5.0f * 3.0f + 6.0f * 2.0f + 150.0f * 1.0f) / 25.0f + 2.0f, outBuffer[6]);
+    EXPECT_FLOAT_EQ((2.0f * 1.0f + 5.0f * 2.0f + 6.0f * 3.0f + 150.0f * 2.0f + 1000.0f * 1.0f) / 25.0f + 2.0f, outBuffer[7]);
+    EXPECT_FLOAT_EQ((5.0f * 1.0f + 6.0f * 2.0f + 150.0f * 3.0f + 1000.0f * 2.0f + 7.0f * 1.0f) / 25.0f + 2.0f, outBuffer[8]);
+    EXPECT_FLOAT_EQ((6.0f * 1.0f + 150.0f * 2.0f + 1000.0f * 3.0f + 7.0f * 2.0f + -5.0f * 1.0f) / 25.0f + 2.0f, outBuffer[9]);
+    EXPECT_FLOAT_EQ((150.0f * 1.0f + 1000.0f * 2.0f + 7.0f * 3.0f + -5.0f * 2.0f + 0.0f * 1.0f) / 25.0f + 2.0f, outBuffer[10]);
+    EXPECT_FLOAT_EQ((1000.0f * 1.0f + 7.0f * 2.0f + -5.0f * 3.0f + 0.0f * 2.0f + 0.0f * 1.0f) / 25.0f + 2.0f, outBuffer[11]);
 }
 
 TEST(AlgorithmsTests, SmoothBufferAndAdd_12_5_Naive)

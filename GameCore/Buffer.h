@@ -37,6 +37,15 @@ public:
 public:
 
     /*
+     * Gets the size of the buffer, including the extra room allocated to make the buffer aligned;
+     * greater than or equal the currently-populated size.
+     */
+    size_t GetSize() const
+    {
+        return mSize;
+    }
+
+    /*
      * Gets the current number of elements populated in the buffer via emplace_back();
      * less than or equal the declared buffer size.
      */
@@ -71,6 +80,8 @@ public:
         TElement * restrict const ptr = mBuffer;
         for (size_t i = 0; i < mSize; ++i)
             ptr[i] = value;
+
+        mCurrentPopulatedSize = mSize;
     }
 
     /*

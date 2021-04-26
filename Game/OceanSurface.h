@@ -8,11 +8,12 @@
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
 
-#include <GameCore/FixedSizeVector.h>
+#include <GameCore/Buffer.h>
 #include <GameCore/GameMath.h>
 #include <GameCore/PrecalculatedFunction.h>
 #include <GameCore/RunningAverage.h>
 #include <GameCore/StrongTypeDef.h>
+#include <GameCore/SysSpecifics.h>
 
 #include <optional>
 
@@ -56,7 +57,7 @@ public:
         // Fractional part within sample index and the next sample index
         float const sampleIndexDx = sampleIndexF - sampleIndexI;
 
-        assert(sampleIndexI >= 0 && sampleIndexI < static_cast<decltype(sampleIndexI)>(mSamples.size()));
+        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
         assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
 
         return mSamples[sampleIndexI].SampleValue
@@ -95,8 +96,7 @@ public:
         float const x,
         float const yOffset)
     {
-        assert(x >= -GameParameters::HalfMaxWorldWidth
-            && x <= GameParameters::HalfMaxWorldWidth);
+        assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
 
         // Fractional index in the sample array - smack in the center
         float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth + Dx / 2.0f) / Dx;
@@ -172,55 +172,6 @@ private:
     RunningAverage<15> mWindIncisivenessRunningAverage;
 
     //
-    // Constants
-    //
-
-    // The number of samples for the entire world width;
-    // a higher value means more resolution at the expense of Update() and cache misses
-    static size_t constexpr SamplesCount = 16384;
-
-    // The x step of the samples
-    static float constexpr Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount - 1);
-
-    //
-    // SWE Layer constants
-    //
-
-    // The rest height of the height field - indirectly determines speed
-    // of waves (via dv/dt <= dh/dx, with dh/dt <= h*dv/dx).
-    // Sensitive to Dx - With Dx=1.22, a good offset is 100; with dx=0.61, a good offset is 50
-    static float constexpr SWEHeightFieldOffset = 20.0f;
-
-    // The factor by which we amplify the height field perturbations;
-    // higher values allow for smaller height field variations with the same visual height,
-    // and smaller height field variations allow for greater stability
-    // World offset = SWE offset * SWEHeightFieldAmplification
-    static float constexpr SWEHeightFieldAmplification = 50.0f;
-
-    // The number of samples we raise with a state machine
-    static size_t constexpr SWEWaveStateMachinePerturbedSamplesCount = 3;
-
-    // The number of samples we set apart in the SWE buffers for wave generation at each end of a buffer
-    static size_t constexpr SWEWaveGenerationSamples = 1;
-
-    // The number of samples we set apart in the SWE buffers for boundary conditions at each end of a buffer
-    static size_t constexpr SWEBoundaryConditionsSamples = 3;
-
-    static size_t constexpr SWEOuterLayerSamples =
-        SWEWaveGenerationSamples
-        + SWEBoundaryConditionsSamples;
-
-    // The total number of samples in the SWE buffers
-    static size_t constexpr SWETotalSamples =
-        SWEOuterLayerSamples
-        + SamplesCount
-        + SWEOuterLayerSamples;
-
-    // The width of the delta-height smoothing
-    static size_t constexpr DeltaHeightSmoothing = 5;
-    static_assert((DeltaHeightSmoothing % 2) == 1);
-
-    //
     // Calculated coefficients
     //
 
@@ -244,8 +195,37 @@ private:
     std::chrono::minutes mRogueWaveRate;
 
     //
-    // Buffers
+    // SWE Constants
     //
+
+    // The rest height of the height field - indirectly determines speed
+    // of waves (via dv/dt <= dh/dx, with dh/dt <= h*dv/dx).
+    // Sensitive to Dx - With Dx=1.22, a good offset is 100; with dx=0.61, a good offset is 50
+    static float constexpr SWEHeightFieldOffset = 20.0f;
+
+    // The factor by which we amplify the height field perturbations;
+    // higher values allow for smaller height field variations with the same visual height,
+    // and smaller height field variations allow for greater stability
+    // World offset = SWE offset * SWEHeightFieldAmplification
+    static float constexpr SWEHeightFieldAmplification = 50.0f;
+
+    // The number of samples we raise with a state machine
+    static size_t constexpr SWEWaveStateMachinePerturbedSamplesCount = 3;
+
+    //
+    // Samples buffer
+    //
+    // - Contains actual ocean surface heightfield, result of all other buffers
+    // - Geometry:
+    //      - Buffer "body" (size == SamplesCount + 1, one extra sample to allow for numeric imprecisions falling over boundary)
+    //
+
+    // The number of samples for the entire world width;
+    // a higher value means more resolution at the expense of Update() and cache misses
+    static size_t constexpr SamplesCount = 16384;
+
+    // The x step of the samples
+    static float constexpr Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount - 1);
 
     // What we store for each sample
     struct Sample
@@ -255,24 +235,64 @@ private:
     };
 
     // The samples
-    FixedSizeVector<Sample, SamplesCount + 1> mSamples; // One extra sample to allow for numeric imprecisions falling over boundary
+    Buffer<Sample> mSamples;
 
     //
-    // SWE buffers
+    // SWE Buffers
+    //
+    // - Geometry:
+    //      - Padding for making buffer "body" below aligned (size == SWEBufferAlignmentPrefixSize)
+    //      - Floats set aside for SWE's boundary conditions (size == SWEBoundaryConditionsSamples)
+    //      - Buffer "body" (size == SamplesCount + 1, one extra cell just to ease interpolations)
+    //      - Floats set aside for SWE's boundary conditions (size == SWEBoundaryConditionsSamples)
+    //      - Velocity buffer only: one extra sample, as this buffer surrounds the height buffer
     //
 
-    // Height field
+    // The number of samples we set apart in the SWE buffers for boundary conditions at each end of a buffer
+    static size_t constexpr SWEBoundaryConditionsSamples = 3;
+
+    // The extra float's at the beginning of the SWE buffers necessary
+    // to make each buffer "body" (i.e. the non-outer section) aligned
+    static size_t constexpr SWEBufferAlignmentPrefixSize = make_aligned_float_element_count(SWEBoundaryConditionsSamples) - SWEBoundaryConditionsSamples;
+
+    // For convenience: offset of "body"
+    static size_t constexpr SWEBufferPrefixSize = SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples;
+    static_assert(is_aligned_to_float_element_count(SWEBufferPrefixSize));
+
+    // SWE height field
     // - Height values are at the center of the staggered grid cells
-    FixedSizeVector<float, SWETotalSamples + 1> mHeightField; // One extra cell just to ease interpolations
+    Buffer<float> mSWEHeightField;
 
-    // Velocity field
+    // SWE velocity field
     // - Velocity values are at the edges of the staggered grid cells
     //      - H[i] has V[i] at its left and V[i+1] at its right
-    FixedSizeVector<float, SWETotalSamples + 1> mVelocityField; // One extra cell just to ease interpolations
+    Buffer<float> mSWEVelocityField;
 
+    //
     // Delta height buffer
+    //
     // - Contains interactive surface height delta's that are taken into account during update step
-    FixedSizeVector<float, (DeltaHeightSmoothing / 2) + SamplesCount + (DeltaHeightSmoothing / 2)> mDeltaHeightBuffer;
+    // - Geometry:
+    //      - Padding for making buffer "body" below aligned (size == DeltaHeightBufferAlignmentPrefixSize)
+    //      - Half smoothing window (which will be filled with zeroes, size == DeltaHeightSmoothing / 2)
+    //      - Buffer "body" (size == SamplesCount)
+    //      - Half smoothing window (which will be filled with zeroes, size == DeltaHeightSmoothing / 2)
+    //
+
+    // The width of the delta-height smoothing
+    static size_t constexpr DeltaHeightSmoothing = 5;
+    static_assert((DeltaHeightSmoothing % 2) == 1);
+
+    // The extra float's at the beginning of the delta-height buffer necessary
+    // to make the delta-height buffer *body* (i.e. the section after the zero's prefix)
+    // aligned
+    static size_t constexpr DeltaHeightBufferAlignmentPrefixSize = make_aligned_float_element_count(DeltaHeightSmoothing / 2) - (DeltaHeightSmoothing / 2);
+
+    // For convenience: offset of "body"
+    static size_t constexpr DeltaHeightBufferPrefixSize = DeltaHeightBufferAlignmentPrefixSize + (DeltaHeightSmoothing / 2);
+    static_assert(is_aligned_to_float_element_count(DeltaHeightBufferPrefixSize));
+
+    Buffer<float> mDeltaHeightBuffer;
 
 private:
 
