@@ -44,8 +44,8 @@ OceanSurface::OceanSurface(
     , mRogueWaveRate(std::chrono::minutes::max())
     ////////
     , mSamples(SamplesCount + 1)
-    , mSWEHeightField(SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + (SamplesCount + 1) + SWEBoundaryConditionsSamples)
-    , mSWEVelocityField(SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + (SamplesCount + 1) + SWEBoundaryConditionsSamples + 1)
+    , mSWEHeightField(SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + SamplesCount + SWEBoundaryConditionsSamples)
+    , mSWEVelocityField(SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + SamplesCount + SWEBoundaryConditionsSamples + 1)
     , mDeltaHeightBuffer(DeltaHeightBufferAlignmentPrefixSize + (DeltaHeightSmoothing / 2) + SamplesCount + (DeltaHeightSmoothing / 2))
     ////////
     , mSWEInteractiveWaveStateMachine()
@@ -667,7 +667,6 @@ void OceanSurface::RecalculateWaveCoefficients(
             return a * sin(2.0f * Pi<float> * x);
         });
 
-
     //
     // Store new parameter values that we are now current with
     //
@@ -836,18 +835,22 @@ void OceanSurface::ApplyDampingBoundaryConditions()
     {
         float const damping = static_cast<float>(i) / static_cast<float>(SWEBoundaryConditionsSamples);
 
+        // Left side
+
         mSWEHeightField[SWEBufferAlignmentPrefixSize + i] =
             (mSWEHeightField[SWEBufferAlignmentPrefixSize + i] - SWEHeightFieldOffset) * damping
             + SWEHeightFieldOffset;
 
         mSWEVelocityField[SWEBufferAlignmentPrefixSize + i] *= damping;
 
-        mSWEHeightField[SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + (SamplesCount + 1) + SWEBoundaryConditionsSamples - i - 1] =
-            (mSWEHeightField[SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + (SamplesCount + 1) + SWEBoundaryConditionsSamples - i - 1] - SWEHeightFieldOffset) * damping
+        // Right side
+
+        mSWEHeightField[SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + SamplesCount + SWEBoundaryConditionsSamples - 1 - i] =
+            (mSWEHeightField[SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + SamplesCount + SWEBoundaryConditionsSamples - 1 - i] - SWEHeightFieldOffset) * damping
             + SWEHeightFieldOffset;
 
         // For symmetry we actually damp the v-sample that is *after* this h-sample
-        mSWEVelocityField[SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + (SamplesCount + 1) + SWEBoundaryConditionsSamples - i - 1 + 1] *= damping;
+        mSWEVelocityField[SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + SamplesCount + SWEBoundaryConditionsSamples - 1 - i + 1] *= damping;
     }
 }
 
@@ -876,7 +879,7 @@ void OceanSurface::UpdateFields(GameParameters const & gameParameters)
     heightField[0] *=
         1.0f + Dt / Dx * (velocityField[0] - velocityField[0 + 1]);
 
-    for (size_t i = 1; i < SWEBoundaryConditionsSamples + (SamplesCount + 1) + SWEBoundaryConditionsSamples; ++i)
+    for (size_t i = 1; i < SWEBoundaryConditionsSamples + SamplesCount + SWEBoundaryConditionsSamples; ++i)
     {
         // Update height field
         heightField[i] *=

@@ -1856,24 +1856,23 @@ Render:
 							X See first if all works fine with separate-time buffers 
 							X See two-pass
 						+ Post-perf: 4.57/4.58
-			= Vectorize SmoothDeltaBufferIntoHeightField
+			+ Vectorize SmoothDeltaBufferIntoHeightField
 				+ Pre-perf: 4.57/4.58
 				+ 1: Move current algo to Algorithms as Naive
 				+ 2: Naive unit tests
 				+ 3: Make version with x86 intrinsics in Algorithms
 				+ 4: x86 instrinsics unit tests
-				= 5: Hook up into OceanSurface
-					= Do alignment: use Buffer
+				+ 5: Hook up into OceanSurface
+					+ Do alignment: use Buffer
 						+ DeltaBuffer
-						= Both SWE buffers
+						+ Both SWE buffers
 							+ Nuke FixedSizeVector usage completely
-							- See if +1 @ SWE buffers is still needed
+							+ See if +1 @ SWE buffers is still needed
 					+ Invoke Algorithm
-					= Verify 
+					+ Verify 
 						+ Works
-						- Assembly
-					- Cleanup
-				- Post-perf:
+						+ Assembly
+				+ Post-perf: 4.57
 			- SetSWEWaveHeight: see if can be replaced by populating deltabuffer
 				- Every caller (state machines only?) need to start reasoning in terms of delta's then, rather than absolute heights? 
 				- Nuke SWEWaveStateMachinePerturbedSamplesCount

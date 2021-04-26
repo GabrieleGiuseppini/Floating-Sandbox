@@ -73,6 +73,7 @@ public:
     void OnSecretTypingBootSettings();
     void OnSecretTypingDebug();
     void OnSecretTypingLoadBuiltInShip(int ship);
+    void OnSecretTypingGoToWorldEnd(int side);
 
 private:
 

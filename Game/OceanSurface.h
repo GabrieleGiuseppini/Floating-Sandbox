@@ -243,7 +243,7 @@ private:
     // - Geometry:
     //      - Padding for making buffer "body" below aligned (size == SWEBufferAlignmentPrefixSize)
     //      - Floats set aside for SWE's boundary conditions (size == SWEBoundaryConditionsSamples)
-    //      - Buffer "body" (size == SamplesCount + 1, one extra cell just to ease interpolations)
+    //      - Buffer "body" (size == SamplesCount)
     //      - Floats set aside for SWE's boundary conditions (size == SWEBoundaryConditionsSamples)
     //      - Velocity buffer only: one extra sample, as this buffer surrounds the height buffer
     //

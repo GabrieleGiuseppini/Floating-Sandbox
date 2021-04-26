@@ -158,7 +158,6 @@ bool MainApp::OnInit()
     }
 #endif
 
-
     try
     {
         //
@@ -189,6 +188,8 @@ bool MainApp::OnInit()
         mSecretTypingMappings.emplace_back("BUILTINSHIP1", std::bind(&MainFrame::OnSecretTypingLoadBuiltInShip, mMainFrame, 1));
         mSecretTypingMappings.emplace_back("BUILTINSHIP2", std::bind(&MainFrame::OnSecretTypingLoadBuiltInShip, mMainFrame, 2));
         mSecretTypingMappings.emplace_back("BUILTINSHIP3", std::bind(&MainFrame::OnSecretTypingLoadBuiltInShip, mMainFrame, 3));
+        mSecretTypingMappings.emplace_back("LEFT", std::bind(&MainFrame::OnSecretTypingGoToWorldEnd, mMainFrame, 0));
+        mSecretTypingMappings.emplace_back("RIGHT", std::bind(&MainFrame::OnSecretTypingGoToWorldEnd, mMainFrame, 1));
 
         //
         // Run

@@ -1208,6 +1208,17 @@ void GameController::PanImmediate(LogicalPixelSize const & screenOffset)
     mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
 }
 
+void GameController::PanToWorldEnd(int side)
+{
+    vec2f const newTargetCameraWorldPosition = vec2f(
+        side == 0
+            ? -GameParameters::HalfMaxWorldWidth
+            : GameParameters::HalfMaxWorldWidth,
+        mCameraWorldPositionParameterSmoother->GetValue().y);
+
+    mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
+}
+
 void GameController::ResetPan()
 {
     vec2f const newTargetCameraWorldPosition = vec2f(0, 0);
