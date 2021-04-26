@@ -135,9 +135,12 @@ private:
         return sampleIndexI;
     }
 
-    void SetSWEWaveHeight(
+    void AddToSWEWaveHeight(
         size_t centerIndex,
-        float height);
+        float height)
+    {
+        mDeltaHeightBuffer[centerIndex] += (height - SWEHeightFieldOffset);
+    }
 
     void RecalculateWaveCoefficients(
         Wind const & wind,
@@ -208,9 +211,6 @@ private:
     // and smaller height field variations allow for greater stability
     // World offset = SWE offset * SWEHeightFieldAmplification
     static float constexpr SWEHeightFieldAmplification = 50.0f;
-
-    // The number of samples we raise with a state machine
-    static size_t constexpr SWEWaveStateMachinePerturbedSamplesCount = 3;
 
     //
     // Samples buffer

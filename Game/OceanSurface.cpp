@@ -106,7 +106,7 @@ void OceanSurface::Update(
         else
         {
             // Apply
-            SetSWEWaveHeight(
+            AddToSWEWaveHeight(
                 mSWEInteractiveWaveStateMachine->GetCenterIndex(),
                 *heightValue);
         }
@@ -124,7 +124,7 @@ void OceanSurface::Update(
         else
         {
             // Apply
-            SetSWEWaveHeight(
+            AddToSWEWaveHeight(
                 mSWETsunamiWaveStateMachine->GetCenterIndex(),
                 *heightValue);
         }
@@ -164,7 +164,7 @@ void OceanSurface::Update(
         else
         {
             // Apply
-            SetSWEWaveHeight(
+            AddToSWEWaveHeight(
                 mSWERogueWaveWaveStateMachine->GetCenterIndex(),
                 *heightValue);
         }
@@ -572,27 +572,6 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
         renderContext.UploadOceanBasicEnd();
     else
         renderContext.UploadOceanDetailedEnd();
-}
-
-void OceanSurface::SetSWEWaveHeight(
-    size_t centerIndex,
-    float height)
-{
-    // TODO: if nuke this, also nuke SWEWaveStateMachinePerturbedSamplesCount and SWEWaveGenerationSamples
-    // TODOTEST
-    ////int const firstSampleIndex = static_cast<int>(centerIndex) - static_cast<int>(SWEWaveStateMachinePerturbedSamplesCount / 2);
-
-    ////for (int i = 0; i < SWEWaveStateMachinePerturbedSamplesCount; ++i)
-    ////{
-    ////    int idx = firstSampleIndex + i;
-    ////    if (idx >= SWEBoundaryConditionsSamples
-    ////        && idx < SWEOuterLayerSamples + SamplesCount + SWEWaveGenerationSamples)
-    ////    {
-    ////        mSWEHeightField[idx] = height;
-    ////    }
-    ////}
-
-    mDeltaHeightBuffer[centerIndex] += (height - SWEHeightFieldOffset);
 }
 
 void OceanSurface::RecalculateWaveCoefficients(
