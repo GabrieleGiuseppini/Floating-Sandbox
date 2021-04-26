@@ -1877,8 +1877,8 @@ Render:
 				X Every caller (state machines only?) need to start reasoning in terms of delta's then, rather than absolute heights? 
 				+ Nuke SWEWaveStateMachinePerturbedSamplesCount
 			------------------------------
+			+ Bump up rate of rogue waves
 			- Interactive state machine: try with bouncing waves
-			- Bump up rate of rogue waves
 			- See if wave displacement can now be slightly more pronounced
 				- Keep an eye on infinitely-bouncing balls
 			- See if may increase:
@@ -1886,11 +1886,6 @@ Render:
 				- Bubble displacement
 			- Decide whether to keep or not WaveSmoothnessAdjustment in SettingsDialog
 				- If so: find right Min/Max range - keep an eye on preventing unstable waves
-		- TODOOLD:
-			- See if need to, and may damp tiny oscillations; if good, consider two SWE fields: one for abnormals (undamped) and one for interactive/displaced (damped)
-				- Actually, just two velocity fields, always used in sum, but one is damped and the other is not
-		- Ocean waves:
-			- Add somehow waves to SWE height field, rather than "fake" superimposition of sins over SWE's height field
 
 	- Sediment on ocean floor
 		- Things basically bury a bit

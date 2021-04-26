@@ -66,7 +66,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, BasalWaveLengthAdjustment);
     ADD_GC_SETTING(float, BasalWaveSpeedAdjustment);
     ADD_GC_SETTING(std::chrono::minutes, TsunamiRate);
-    ADD_GC_SETTING(std::chrono::minutes, RogueWaveRate);
+    ADD_GC_SETTING(std::chrono::seconds, RogueWaveRate);
     ADD_GC_SETTING(bool, DoModulateWind);
     ADD_GC_SETTING(float, WindSpeedBase);
     ADD_GC_SETTING(float, WindSpeedMaxFactor);

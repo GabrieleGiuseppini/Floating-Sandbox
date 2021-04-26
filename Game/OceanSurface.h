@@ -148,10 +148,11 @@ private:
 
     void RecalculateAbnormalWaveTimestamps(GameParameters const & gameParameters);
 
-    template<typename TDuration>
+    template<typename TRateDuration, typename TGraceDuration>
     static GameWallClock::time_point CalculateNextAbnormalWaveTimestamp(
         GameWallClock::time_point lastTimestamp,
-        TDuration rate);
+        TRateDuration rate,
+        TGraceDuration gracePeriod);
 
     void SmoothDeltaBufferIntoHeightField();
 
@@ -195,7 +196,7 @@ private:
     float mBasalWaveLengthAdjustment;
     float mBasalWaveSpeedAdjustment;
     std::chrono::minutes mTsunamiRate;
-    std::chrono::minutes mRogueWaveRate;
+    std::chrono::seconds mRogueWaveRate;
 
     //
     // SWE Constants

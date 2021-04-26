@@ -374,10 +374,10 @@ public:
     std::chrono::minutes GetMinTsunamiRate() const override { return GameParameters::MinTsunamiRate; }
     std::chrono::minutes GetMaxTsunamiRate() const override { return GameParameters::MaxTsunamiRate; }
 
-    std::chrono::minutes GetRogueWaveRate() const override { return mGameParameters.RogueWaveRate; }
-    void SetRogueWaveRate(std::chrono::minutes value) override { mGameParameters.RogueWaveRate = value; }
-    std::chrono::minutes GetMinRogueWaveRate() const override { return GameParameters::MinRogueWaveRate; }
-    std::chrono::minutes GetMaxRogueWaveRate() const override { return GameParameters::MaxRogueWaveRate; }
+    std::chrono::seconds GetRogueWaveRate() const override { return mGameParameters.RogueWaveRate; }
+    void SetRogueWaveRate(std::chrono::seconds value) override { mGameParameters.RogueWaveRate = value; }
+    std::chrono::seconds GetMinRogueWaveRate() const override { return GameParameters::MinRogueWaveRate; }
+    std::chrono::seconds GetMaxRogueWaveRate() const override { return GameParameters::MaxRogueWaveRate; }
 
     bool GetDoDisplaceWater() const override { return mGameParameters.DoDisplaceWater; }
     void SetDoDisplaceWater(bool value) override { mGameParameters.DoDisplaceWater = value; }
