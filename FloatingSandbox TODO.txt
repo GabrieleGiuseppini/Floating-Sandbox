@@ -1856,11 +1856,15 @@ Render:
 							X See first if all works fine with separate-time buffers 
 							X See two-pass
 						+ Post-perf: 4.57/4.58
-			- Vectorize SmoothDeltaBufferIntoHeightField
-				- 1: Move current algo to Algorithms as Naive
-				- 2: Naive unit tests
-				- 3: Make version with x86 intrinsics in Algorithms
-				- 4: x86 instrinsics unit tests
+			= Vectorize SmoothDeltaBufferIntoHeightField
+				+ Pre-perf: 4.57/4.58
+				+ 1: Move current algo to Algorithms as Naive
+				+ 2: Naive unit tests
+				+ 3: Make version with x86 intrinsics in Algorithms
+				+ 4: x86 instrinsics unit tests
+				- 5: Hook up into OceanSurface
+					- Do alignment: use Buffer
+				- Post-perf:
 			- SetSWEWaveHeight: see if can be replaced by populating deltabuffer
 				- Every caller (state machines only?) need to start reasoning in terms of delta's then, rather than absolute heights? 
 				- Nuke SWEWaveStateMachinePerturbedSamplesCount
