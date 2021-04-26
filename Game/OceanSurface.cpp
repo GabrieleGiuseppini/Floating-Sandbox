@@ -20,6 +20,8 @@ namespace Physics {
 template<typename T>
 T constexpr RenderSlices = 768;
 
+static std::chrono::seconds constexpr TsunamiGracePeriod(120);
+
 OceanSurface::OceanSurface(
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
@@ -41,7 +43,7 @@ OceanSurface::OceanSurface(
     , mBasalWaveLengthAdjustment(std::numeric_limits<float>::max())
     , mBasalWaveSpeedAdjustment(std::numeric_limits<float>::max())
     , mTsunamiRate(std::chrono::minutes::max())
-    , mRogueWaveRate(std::chrono::minutes::max())
+    , mRogueWaveRate(std::chrono::seconds::max())
     ////////
     , mSamples(SamplesCount + 1)
     , mSWEHeightField(SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + SamplesCount + SWEBoundaryConditionsSamples)
@@ -145,7 +147,8 @@ void OceanSurface::Update(
             // Reset automatically-generated tsunamis
             mNextTsunamiTimestamp = CalculateNextAbnormalWaveTimestamp(
                 now,
-                gameParameters.TsunamiRate);
+                gameParameters.TsunamiRate,
+                TsunamiGracePeriod);
 
             // Tell world
             mParentWorld.DisturbOcean(std::chrono::milliseconds(0));
@@ -185,7 +188,8 @@ void OceanSurface::Update(
             // Reset automatically-generated rogue waves
             mNextRogueWaveTimestamp = CalculateNextAbnormalWaveTimestamp(
                 now,
-                gameParameters.RogueWaveRate);
+                gameParameters.RogueWaveRate,
+                std::chrono::seconds(0));
         }
     }
 
@@ -662,7 +666,8 @@ void OceanSurface::RecalculateAbnormalWaveTimestamps(GameParameters const & game
     {
         mNextTsunamiTimestamp = CalculateNextAbnormalWaveTimestamp(
             mLastTsunamiTimestamp,
-            gameParameters.TsunamiRate);
+            gameParameters.TsunamiRate,
+            TsunamiGracePeriod);
     }
     else
     {
@@ -673,7 +678,8 @@ void OceanSurface::RecalculateAbnormalWaveTimestamps(GameParameters const & game
     {
         mNextRogueWaveTimestamp = CalculateNextAbnormalWaveTimestamp(
             mLastRogueWaveTimestamp,
-            gameParameters.RogueWaveRate);
+            gameParameters.RogueWaveRate,
+            std::chrono::seconds(0));
     }
     else
     {
@@ -689,18 +695,19 @@ void OceanSurface::RecalculateAbnormalWaveTimestamps(GameParameters const & game
     mRogueWaveRate = gameParameters.RogueWaveRate;
 }
 
-template<typename TDuration>
+template<typename TRateDuration, typename TGraceDuration>
 GameWallClock::time_point OceanSurface::CalculateNextAbnormalWaveTimestamp(
     GameWallClock::time_point lastTimestamp,
-    TDuration rate)
+    TRateDuration rate,
+    TGraceDuration gracePeriod)
 {
     float const rateSeconds = static_cast<float>(std::chrono::duration_cast<std::chrono::seconds>(rate).count());
 
     return lastTimestamp
+        + gracePeriod
         + std::chrono::duration_cast<GameWallClock::duration>(
             std::chrono::duration<float>(
-                120.0f // Grace period between tsunami waves
-                + GameRandomEngine::GetInstance().GenerateExponentialReal(1.0f / rateSeconds)));
+                GameRandomEngine::GetInstance().GenerateExponentialReal(1.0f / rateSeconds)));
 }
 
 /* Note: in this implementation we let go of the field advections,

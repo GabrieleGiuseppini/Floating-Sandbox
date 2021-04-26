@@ -106,8 +106,8 @@ struct IGameControllerSettings
     virtual std::chrono::minutes GetTsunamiRate() const = 0;
     virtual void SetTsunamiRate(std::chrono::minutes value) = 0;
 
-    virtual std::chrono::minutes GetRogueWaveRate() const = 0;
-    virtual void SetRogueWaveRate(std::chrono::minutes value) = 0;
+    virtual std::chrono::seconds GetRogueWaveRate() const = 0;
+    virtual void SetRogueWaveRate(std::chrono::seconds value) = 0;
 
     virtual bool GetDoDisplaceWater() const = 0;
     virtual void SetDoDisplaceWater(bool value) = 0;

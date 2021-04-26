@@ -1678,18 +1678,18 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             // Rogue Wave Rate
             {
-                mRogueWaveRateSlider = new SliderControl<std::chrono::minutes::rep>(
+                mRogueWaveRateSlider = new SliderControl<std::chrono::seconds::rep>(
                     wavePhenomenaBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
                     _("Rogue Wave Rate"),
-                    _("The expected time between two automatically-generated rogue waves (minutes). Set to zero to disable automatic generation of rogue waves altogether."),
-                    [this](std::chrono::minutes::rep value)
+                    _("The expected time between two automatically-generated rogue waves (seconds). Set to zero to disable automatic generation of rogue waves altogether."),
+                    [this](std::chrono::seconds::rep value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::RogueWaveRate, std::chrono::minutes(value));
+                        this->mLiveSettings.SetValue(GameSettings::RogueWaveRate, std::chrono::seconds(value));
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<IntegralLinearSliderCore<std::chrono::minutes::rep>>(
+                    std::make_unique<IntegralLinearSliderCore<std::chrono::seconds::rep>>(
                         mGameControllerSettingsOptions->GetMinRogueWaveRate().count(),
                         mGameControllerSettingsOptions->GetMaxRogueWaveRate().count()));
 
@@ -4813,7 +4813,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mWaterDisplacementWaveHeightAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoDisplaceWater));
     mWaveSmoothnessAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaveSmoothnessAdjustment));
     mTsunamiRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::TsunamiRate).count());
-    mRogueWaveRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::RogueWaveRate).count());
+    mRogueWaveRateSlider->SetValue(settings.GetValue<std::chrono::seconds>(GameSettings::RogueWaveRate).count());
     mStormStrengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StormStrengthAdjustment));
     mDoRainWithStormCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
     mRainFloodAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RainFloodAdjustment));

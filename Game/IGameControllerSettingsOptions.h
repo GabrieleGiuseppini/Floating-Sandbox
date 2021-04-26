@@ -100,8 +100,8 @@ struct IGameControllerSettingsOptions
     virtual std::chrono::minutes GetMinTsunamiRate() const = 0;
     virtual std::chrono::minutes GetMaxTsunamiRate() const = 0;
 
-    virtual std::chrono::minutes GetMinRogueWaveRate() const = 0;
-    virtual std::chrono::minutes GetMaxRogueWaveRate() const = 0;
+    virtual std::chrono::seconds GetMinRogueWaveRate() const = 0;
+    virtual std::chrono::seconds GetMaxRogueWaveRate() const = 0;
 
     virtual float GetMinWaterDisplacementWaveHeightAdjustment() const = 0;
     virtual float GetMaxWaterDisplacementWaveHeightAdjustment() const = 0;
