@@ -1080,8 +1080,8 @@ void Ship::ApplyWorldForces(
                     (absVerticalVelocity < x0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
                     * massImpact
                     * depthAttenuation
-                    * (verticalVelocity < 0.0f ? -1.0f : 1.0f) // Displacement has same sign as vertical velocity
-                    * (pointDepth >= 0.0f ? 1.0f : 0.0f) // No displacement for above-water points
+                    * SignStep(0.0f, verticalVelocity) // Displacement has same sign as vertical velocity
+                    * Step(0.0f, pointDepth) // No displacement for above-water points
                     * 0.02f; // Magic number
 
                 mParentWorld.DisplaceOceanSurfaceAt(pointPosition.x, displacement);
