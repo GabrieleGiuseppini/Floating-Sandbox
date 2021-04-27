@@ -1881,9 +1881,10 @@ Render:
 			+ Interactive state machine: try with bouncing waves
 			- See if wave displacement can now be slightly more pronounced
 				- Keep an eye on infinitely-bouncing balls
-			- See if may increase:
-				- Fish displacement
-				- Bubble displacement
+			+ See if may increase:
+				+ Fish displacement
+				+ Bubble displacement
+				X Engines
 			- Decide whether to keep or not WaveSmoothnessAdjustment in SettingsDialog
 				- If so: find right Min/Max range - keep an eye on preventing unstable waves
 
