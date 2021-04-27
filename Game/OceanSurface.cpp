@@ -1149,10 +1149,10 @@ bool OceanSurface::SWEInteractiveWaveStateMachine::MayBeOverridden() const
 
 float OceanSurface::SWEInteractiveWaveStateMachine::CalculateRisingPhaseDuration(float deltaHeight)
 {
-    // We want little rises to be quick (0.0)
+    // We want little rises to be quick (close to 0.0)
     // We want large rises to be slow, so that we don't generate slopes that are
     // too steep
-    float const duration = 1.5f * SmoothStep(1.0, 5.0f, std::abs(deltaHeight));
+    float const duration = 2.0f * SmoothStep(0.0, 5.0f, std::abs(deltaHeight));
     return duration;
 }
 
