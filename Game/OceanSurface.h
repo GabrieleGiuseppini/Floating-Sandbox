@@ -348,7 +348,7 @@ private:
         float mCurrentPhaseStartHeight;
         float mCurrentPhaseTargetHeight;
         float mCurrentHeight;
-        float mStartSimulationTime;
+        float mCurrentPhaseStartSimulationTime;
         WavePhaseType mCurrentWavePhase;
 
         float mRisingPhaseDuration;
