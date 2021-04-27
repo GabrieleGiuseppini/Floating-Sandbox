@@ -1137,7 +1137,12 @@ std::optional<float> OceanSurface::SWEInteractiveWaveStateMachine::Update(
             return std::nullopt;
         }
 
-        return mCurrentHeight;
+        // Modulate height to simulate a bouncing wave
+        // (a bit of a hack)
+        return
+            (mCurrentHeight - SWEHeightFieldOffset)
+            * std::sin(2.0f * Pi<float> / 0.2f * elapsed)
+            + SWEHeightFieldOffset;
     }
 }
 
@@ -1156,12 +1161,9 @@ float OceanSurface::SWEInteractiveWaveStateMachine::CalculateRisingPhaseDuration
     return duration;
 }
 
-float OceanSurface::SWEInteractiveWaveStateMachine::CalculateFallingPhaseDecayCoefficient(float deltaHeight)
+float OceanSurface::SWEInteractiveWaveStateMachine::CalculateFallingPhaseDecayCoefficient(float /*deltaHeight*/)
 {
-    // We want little falls to be immediate (close to 1.0)
-    // At higher delta's we want slower (close to 0.0)
-    float const coeff = 0.85f - (0.85f - 0.1f) * SmoothStep(0.5f, 4.0f, std::abs(deltaHeight));
-    return coeff;
+    return 0.1f;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

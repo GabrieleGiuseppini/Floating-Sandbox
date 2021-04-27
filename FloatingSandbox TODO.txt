@@ -1878,7 +1878,7 @@ Render:
 				+ Nuke SWEWaveStateMachinePerturbedSamplesCount
 			------------------------------
 			+ Bump up rate of rogue waves
-			- Interactive state machine: try with bouncing waves
+			+ Interactive state machine: try with bouncing waves
 			- See if wave displacement can now be slightly more pronounced
 				- Keep an eye on infinitely-bouncing balls
 			- See if may increase:
