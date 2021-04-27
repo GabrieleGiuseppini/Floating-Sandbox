@@ -1010,7 +1010,7 @@ void Ship::ApplyWorldForces(
             //
             // * The magnitude of water displacement is proportional to the square root of
             //   the kinetic energy of the particle, thus it is proportional to the square
-            //   root of the particle mass, and to the particle's velocity
+            //   root of the particle mass, and linearly to the particle's velocity
             //      * However, in order to generate visible waves also for very small velocities,
             //        we want the contribution of small velocities to be more than linear wrt
             //        the contribution of higher velocities, and so we'll be using a piecewise
@@ -1027,16 +1027,11 @@ void Ship::ApplyWorldForces(
                 // Displacement magnitude calculation
                 //
 
-                // TODOTEST
-                ////float constexpr x0 = 7.5f; // Velocity at which displacement transitions from quadratic to linear
-                ////float constexpr y0 = 0.6f; // Displacement magnitude at x0
-                float constexpr x0 = 0.1f * 7.5f; // Velocity at which displacement transitions from quadratic to linear
-                float constexpr y0 = 0.1f * 0.6f; // Displacement magnitude at x0
+                float constexpr x0 = 3.75f; // Velocity at which displacement transitions from quadratic to linear
+                float constexpr y0 = 0.3f; // Displacement magnitude at x0
 
                 // Linear portion
-                // TODOTEST
-                //float constexpr linearSlope = GameParameters::SimulationStepTimeDuration<float>;
-                float constexpr linearSlope = GameParameters::SimulationStepTimeDuration<float> * 4.0f;
+                float constexpr linearSlope = GameParameters::SimulationStepTimeDuration<float> * 4.0f; // Magic number
                 float const linearDisplacementMagnitude = y0 + linearSlope * (absVerticalVelocity - x0);
 
                 // Quadratic portion: y = ax^2 + bx, with constraints:
@@ -1052,8 +1047,6 @@ void Ship::ApplyWorldForces(
                 //
 
                 // Depth at which the point stops contributing: rises quadratically, asymptotically, and asymmetric wrt sinking or rising
-                // TODOHERE
-                //float constexpr MaxVel = 25.0f;
                 float constexpr MaxVel = 35.0f;
                 float constexpr a2 = -0.5f / (MaxVel * MaxVel);
                 float constexpr b2 = 1.0f / MaxVel;
