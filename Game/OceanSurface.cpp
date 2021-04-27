@@ -1023,7 +1023,7 @@ OceanSurface::SWEInteractiveWaveStateMachine::SWEInteractiveWaveStateMachine(
     , mCurrentPhaseStartHeight(startHeight)
     , mCurrentPhaseTargetHeight(targetHeight)
     , mCurrentHeight(startHeight)
-    , mStartSimulationTime(currentSimulationTime)
+    , mCurrentPhaseStartSimulationTime(currentSimulationTime)
     , mCurrentWavePhase(WavePhaseType::Rise)
     , mRisingPhaseDuration(CalculateRisingPhaseDuration(targetHeight - mOriginalHeight))
     , mFallingPhaseDecayCoefficient(0.0f) // Will be calculated when needed
@@ -1049,7 +1049,7 @@ void OceanSurface::SWEInteractiveWaveStateMachine::Restart(
         // values start diverging too much.
         // We may safely clamp down to 0.9 as the value will stay and the slope
         // will only change marginally.
-        float const elapsed = currentSimulationTime - mStartSimulationTime;
+        float const elapsed = currentSimulationTime - mCurrentPhaseStartSimulationTime;
         float const progressFraction = std::min(
             elapsed / mRisingPhaseDuration,
             0.9f);
@@ -1060,7 +1060,7 @@ void OceanSurface::SWEInteractiveWaveStateMachine::Restart(
 
         // Calculate fictitious start timestamp so that current elapsed is
         // to old duration like new elapsed would be to new duration
-        mStartSimulationTime = currentSimulationTime - newDuration * progressFraction;
+        mCurrentPhaseStartSimulationTime = currentSimulationTime - newDuration * progressFraction;
 
         // Our new target is the restart target
         mCurrentPhaseTargetHeight = restartHeight;
@@ -1083,7 +1083,7 @@ void OceanSurface::SWEInteractiveWaveStateMachine::Restart(
         // ...start rising from scratch
         mCurrentPhaseStartHeight = mCurrentHeight;
         mCurrentPhaseTargetHeight = restartHeight;
-        mStartSimulationTime = currentSimulationTime;
+        mCurrentPhaseStartSimulationTime = currentSimulationTime;
         mCurrentWavePhase = WavePhaseType::Rise;
 
         mRisingPhaseDuration = CalculateRisingPhaseDuration(restartHeight - mOriginalHeight);
@@ -1097,7 +1097,7 @@ void OceanSurface::SWEInteractiveWaveStateMachine::Release(float currentSimulati
     // Start falling back to original height
     mCurrentPhaseStartHeight = mCurrentHeight;
     mCurrentPhaseTargetHeight = mOriginalHeight;
-    mStartSimulationTime = currentSimulationTime;
+    mCurrentPhaseStartSimulationTime = currentSimulationTime;
     mCurrentWavePhase = WavePhaseType::Fall;
 
     // Calculate decay coefficient based on delta to fall
@@ -1107,10 +1107,10 @@ void OceanSurface::SWEInteractiveWaveStateMachine::Release(float currentSimulati
 std::optional<float> OceanSurface::SWEInteractiveWaveStateMachine::Update(
     float currentSimulationTime)
 {
+    float const elapsed = currentSimulationTime - mCurrentPhaseStartSimulationTime;
+
     if (mCurrentWavePhase == WavePhaseType::Rise)
     {
-        float const elapsed = currentSimulationTime - mStartSimulationTime;
-
         // Calculate height as f(elapsed)
 
         float const smoothFactor = SmoothStep(
@@ -1127,7 +1127,7 @@ std::optional<float> OceanSurface::SWEInteractiveWaveStateMachine::Update(
     {
         assert(mCurrentWavePhase == WavePhaseType::Fall);
 
-        // Calculate height with decay process
+        // Update height with decay process
 
         mCurrentHeight += (mCurrentPhaseTargetHeight - mCurrentHeight) * mFallingPhaseDecayCoefficient;
 
