@@ -1027,11 +1027,16 @@ void Ship::ApplyWorldForces(
                 // Displacement magnitude calculation
                 //
 
-                float constexpr x0 = 7.5f; // Velocity at which displacement transitions from quadratic to linear
-                float constexpr y0 = 0.6f; // Displacement magnitude at x0
+                // TODOTEST
+                ////float constexpr x0 = 7.5f; // Velocity at which displacement transitions from quadratic to linear
+                ////float constexpr y0 = 0.6f; // Displacement magnitude at x0
+                float constexpr x0 = 0.1f * 7.5f; // Velocity at which displacement transitions from quadratic to linear
+                float constexpr y0 = 0.1f * 0.6f; // Displacement magnitude at x0
 
                 // Linear portion
-                float constexpr linearSlope = GameParameters::SimulationStepTimeDuration<float>;
+                // TODOTEST
+                //float constexpr linearSlope = GameParameters::SimulationStepTimeDuration<float>;
+                float constexpr linearSlope = GameParameters::SimulationStepTimeDuration<float> * 4.0f;
                 float const linearDisplacementMagnitude = y0 + linearSlope * (absVerticalVelocity - x0);
 
                 // Quadratic portion: y = ax^2 + bx, with constraints:
@@ -1047,13 +1052,15 @@ void Ship::ApplyWorldForces(
                 //
 
                 // Depth at which the point stops contributing: rises quadratically, asymptotically, and asymmetric wrt sinking or rising
-                float constexpr MaxVel = 25.0f;
+                // TODOHERE
+                //float constexpr MaxVel = 25.0f;
+                float constexpr MaxVel = 35.0f;
                 float constexpr a2 = -0.5f / (MaxVel * MaxVel);
                 float constexpr b2 = 1.0f / MaxVel;
                 float const clampedAbsVerticalVelocity = std::min(absVerticalVelocity, MaxVel);
                 float const maxDepth =
                     (a2 * clampedAbsVerticalVelocity * clampedAbsVerticalVelocity + b2 * clampedAbsVerticalVelocity + 0.5f)
-                    * (verticalVelocity <= 0.0f ? 12.0f : 3.0f) // Keep up-push low or else bodies keep jumping up and down forever
+                    * (verticalVelocity <= 0.0f ? 12.0f : 4.0f) // Keep up-push low or else bodies keep jumping up and down forever
                     * gameParameters.WaterDisplacementWaveHeightAdjustment;
 
                 // Linear attenuation up to maxDepth
