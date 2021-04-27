@@ -180,6 +180,13 @@ inline float Step(
     return x < lEdge ? 0.0f : 1.0f;
 }
 
+inline float SignStep(
+    float lEdge,
+    float x) noexcept
+{
+    return x < lEdge ? -1.0f : 1.0f;
+}
+
 inline float LinearStep(
     float lEdge,
     float rEdge,
