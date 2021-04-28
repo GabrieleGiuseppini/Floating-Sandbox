@@ -20,9 +20,12 @@
 - Tools:
 	- Structure layer:
 		- Pencil
-		- Mass wijzer
+		- Mass changer
 
 - Ship file format:
-	- Min FS version (.shp, shp2)
+	- Min FS version (.shp, .shp2)
 		- Ideally it should be a "set" of versions, including the Materials' DB versions which live in the json so to be easily editable manually
+	- "File lock" which disallows saving layers as images
+	- Also includes sounds
+		- Extract from other "TODO" .txt file
 
