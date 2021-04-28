@@ -855,8 +855,8 @@ void OceanSurface::UpdateFields(GameParameters const & gameParameters)
 
     float constexpr G = GameParameters::GravityMagnitude;
     float constexpr Dt = GameParameters::SimulationStepTimeDuration<float>;
-    float const previousVWeight1 = gameParameters.WaveSmoothnessAdjustment;
-    float const previousVWeight2 = (1.0f - gameParameters.WaveSmoothnessAdjustment) / 2.0f; // Including /2 for average
+    float const previousVWeight1 = 1.0f - gameParameters.WaveSmoothnessAdjustment;
+    float const previousVWeight2 = gameParameters.WaveSmoothnessAdjustment / 2.0f; // Includes /2 for average
 
     float * const restrict heightField = mSWEHeightField.data() + SWEBufferAlignmentPrefixSize;
     float * const restrict velocityField = mSWEVelocityField.data() + SWEBufferAlignmentPrefixSize;
