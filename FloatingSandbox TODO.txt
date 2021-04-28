@@ -564,6 +564,7 @@ Render:
 			- bishobe64 as tester
 				- Invite
 			- bishobe64 in Credits?
+		- Bump up version
 	
 		- New ships
 			- changelist
