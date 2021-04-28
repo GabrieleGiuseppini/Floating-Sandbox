@@ -43,7 +43,7 @@ GameParameters::GameParameters()
     , RogueWaveRate(32)
     , DoDisplaceWater(true)
     , WaterDisplacementWaveHeightAdjustment(1.0f)
-    , WaveSmoothnessAdjustment(0.8f)
+    , WaveSmoothnessAdjustment(0.203125f)
     // Storm
     , StormRate(60)
     , StormDuration(60 * 4) // 4 minutes

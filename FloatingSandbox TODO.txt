@@ -548,17 +548,14 @@ Render:
 					- Add more to the left and to the right
 					- Also change depth at middle so that it fits with new bumpiness and it's ~-283
 						- Or simply change the bumpiness frequency or phase, whichever looks best
-			= OceanSurface				
-				= Fix manual waves
+			+ OceanSurface				
+				+ Fix manual waves
 					+ Try to re-instate full SWEs
 						X If works, see if can put back tsunami's parameters
-					- Look back at SWEs (*)
-						- changelist
-							- Improving the stability of a simple formulation of the shallow water equations for 2D flood modeling, https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2011WR011570,
+					+ Look back at SWEs (*)
+						+ changelist
+							+ Improving the stability of a simple formulation of the shallow water equations for 2D flood modeling, https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2011WR011570,
 							  de Almeida et al (2012)
-					= If new SWE doesn't work: gentler rising slope at interactive waves
-						= ...but also steeper at small height
-						- ...and now gentler at smaller height
 				+ Double # of samples
 				+ See if Update() becomes too heavy
 			- New Dell profiling percentages:
@@ -1421,7 +1418,7 @@ Render:
 					- Particles do *not* propagate through hull springs
 					- Hull particles do not partecipate in normal propagation, but get average instead of all neighboring particles
 
-	- Ropes 2 layer
+	- "Ropes 2" layer with different rope materials
 		- json only allows one ropes layer
 		- With this key name, the rope pixels' blue component is the index of a Rope element
 			- Material: new 'rope_index' optional attrib
@@ -1634,9 +1631,6 @@ Render:
 
 	- When lightning hits (a metal part of) the ship, then lights should go off temporarily
 
-	- Consider making world 1.5 times wider
-		- Or just round?
-
 	- Fires break out where electrical layer breaks (e.g. where *powered* line is cut)
 
 	- EMP tool
@@ -1750,146 +1744,6 @@ Render:
 
 	- Ripple: "basically you click and hold somewhere on the ship, and when you let go, it sends a ripple into the ship, weak points might tear,
 	  or start getting damaged, etc."
-
-	= Look back at SWE's (*)
-		X Try re-instating skipped steps - just redo original implementation (two buffers, etc.)
-		= Other SWE ideas:
-			X Flow limited to avoid chequerboard oscillations (cell draining completely and then back)
-			+ Inertial formulations:
-				= http://catalytics.asia/wp-content/themes/catalytics/flood/Bates%20et%20al%202010%20new%20lisflood.pdf (1) improved at https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2011WR011570 (2)
-				+ Implement second formulation in (1): OK
-				+ Implement q-centered in (2): OK
-				+ Find right params:
-					+ q-centered model:
-						+ Theta = 0.8f;
-						+ n = 0.1f;
-			+ Cleanup:
-				+ UpdateFields, w/comments
-			+ Nail down parameters:
-				+ Interactive state machine
-					+ More max height
-					+ Better delay curve
-						+ Less delay at small delta heights => try again with Smoothstep
-				+ Tsunami
-				+ Rogue wave
-			+ See if the removal of hf is making the wave evolution asymmetrical
-				- No - remove hf again
-			+ Make less rigid - try to make waves bounce back
-				+ Play with fixed height
-				X It's not friction (actually friction might be zero, see below)
-				+ Play with theta - new setting ("WaveSmoothness" or find better name in paper) & SettingsDialog
-					+ 0.95, friction 0.5: nice bouncing, but weird vertical offset stays
-					+ 0.953, friction 0.25: nice bouncing, small weird vertical offset
-					+ 0.953, friction 0.15: nice bouncing, no weird vertical offset, stable - BEST
-					+ 0.922, friction 0.15: little but visibile bouncing
-					+ 0.172, friction 0.005: no bouncing, no instabilities, wave stays round, but asymmetric
-					+ 0.906, friction 0.005: small bouncing
-					+ 0.984, friction 0.005: repeated bouncing, dying off soon; tall waves become unstable
-					+ 1.0, friction 0.005: repeated irregular bouncing
-					+ 0.984, friction 0.1: repeated bouncing, dying off soon; tall waves become unstable
-					+ 0.891, friction 0: negligible bouncing, wave is steep
-					+ 0.844, friction 0: negligible bouncing, wave is almost triangular
-					+ 0.8, friction 0: negligible bouncing, wave is reasonably round
-					+ 0.5, friction 0: no bouncing,  wave stays round, no instabilities
-					+ Might be best to temporarily set decay rate to zero to better see the effect here
-					+ At end:
-						+ Decide decay rate of interactive
-						+ Make rising slope of interactive less steep, tsunami is quite nice
-			+ See what's going on with rendering at far zoom
-				X See if repros with basic shader
-				X Try with squared, as in experiment
-				+ Remove dFdy at basal width, it's useless anyway
-				X Analyze derivatives
-					+ Hardcode in shadertoy shader and play with it
-					X Try with that new shader
-				X Tan trick?
-				X See if may change how we upload
-					X Upload avg of three derivatives
-				+ Try:
-					+ Back to world coords
-					X 1: with shader-calculated derivatives:
-						float borderWidthHalfFront = (basalBorderWidth + abs(dYFrontWorld)) / 1.2;
-						float yFrontMidBorder = yFrontWorld;
-						float borderFront =
-							1. - smoothstep(0., borderWidthHalfFront, abs(yWorld - yFrontMidBorder));
-						X 1b: if OK: see with code-calculated derivative instead						
-					+ 2: Try "double-shader" + second derivatives
-						+ Go back to all shaders working on World
-						+ Shadertoy PoC
-						+ Implement second derivatives
-							+ Infrastructure
-							+ Second derivatives
-								+ Zoom-out case
-									+ Fix problem with top y
-										+ At buffer upload: fixed world offset									
-									+ Do other planes
-										+ See if other planes really need derivatives: NO
-										+ Remove derivatives
-								+ Zoom-in case
-									+ See if can really leave derivatives at zero
-								+ Fix bug in upload code w/fractional part from next sample
-								+ Optimize
-									+ Upload code
-										+ Fix DEBUG issues
-											+ Redo NumSlices, DX
-											+ Also @ OceanFloor
-										+ Verify assembly
-					+ Cleanup shader
-					+ Test all rendering modes
-						+ {Basic, Detailed } x 3 render modes x {far, close}
-			+ Split UpdateFields:
-				+ SmoothDeltaBufferIntoHeightField
-					+ As-is, for the time being
-					+ Also clears at end					
-				+ UpdateFields: just SWE loop
-					+ Optimize:
-						+ pow
-						+ Pre-perf: 4.59/4.60
-						+ See if friction is really needed - setting it to zero seems to have no effect
-							+ Waves stay stable with smoothness at 0.8
-						+ See if best to store velocity field or Q field
-							+ Rename everything as Q/flux
-							+ Write alternative - and verify it works - using velocities
-							+ Also, if we go for Q field, be careful - height and velocity/Q are at different places in the cell
-						+ Optimize
-						X Check if may be vectorized
-							X See first if all works fine with separate-time buffers 
-							X See two-pass
-						+ Post-perf: 4.57/4.58
-			+ Vectorize SmoothDeltaBufferIntoHeightField
-				+ Pre-perf: 4.57/4.58
-				+ 1: Move current algo to Algorithms as Naive
-				+ 2: Naive unit tests
-				+ 3: Make version with x86 intrinsics in Algorithms
-				+ 4: x86 instrinsics unit tests
-				+ 5: Hook up into OceanSurface
-					+ Do alignment: use Buffer
-						+ DeltaBuffer
-						+ Both SWE buffers
-							+ Nuke FixedSizeVector usage completely
-							+ See if +1 @ SWE buffers is still needed
-					+ Invoke Algorithm
-					+ Verify 
-						+ Works
-						+ Assembly
-				+ Post-perf: 4.57
-			+ SetSWEWaveHeight: see if can be replaced by populating deltabuffer
-				X Every caller (state machines only?) need to start reasoning in terms of delta's then, rather than absolute heights? 
-				+ Nuke SWEWaveStateMachinePerturbedSamplesCount
-			------------------------------
-			+ Bump up rate of rogue waves
-			+ Interactive state machine: try with bouncing waves
-			= See if wave displacement can now be slightly more pronounced
-				+ Keep an eye on infinitely-bouncing balls
-				= See if adjustment may move to:
-					- Simply multiplier
-					+ Slope
-			+ See if may increase:
-				+ Fish displacement
-				+ Bubble displacement
-				X Engines
-			- Decide whether to keep or not WaveSmoothnessAdjustment in SettingsDialog
-				- If so: find right Min/Max range - keep an eye on preventing unstable waves
 
 	- Sediment on ocean floor
 		- Things basically bury a bit
@@ -8419,6 +8273,145 @@ IF WX:
 					+ Explosion 
 					+ Engine 19.3/19.4 => 
 		+ Changelist
+	+ Look back at SWE's (*)
+		X Try re-instating skipped steps - just redo original implementation (two buffers, etc.)
+		+ Other SWE ideas:
+			X Flow limited to avoid chequerboard oscillations (cell draining completely and then back)
+			+ Inertial formulations:
+				= http://catalytics.asia/wp-content/themes/catalytics/flood/Bates%20et%20al%202010%20new%20lisflood.pdf (1) improved at https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2011WR011570 (2)
+				+ Implement second formulation in (1): OK
+				+ Implement q-centered in (2): OK
+				+ Find right params:
+					+ q-centered model:
+						+ Theta = 0.8f;
+						+ n = 0.1f;
+			+ Cleanup:
+				+ UpdateFields, w/comments
+			+ Nail down parameters:
+				+ Interactive state machine
+					+ More max height
+					+ Better delay curve
+						+ Less delay at small delta heights => try again with Smoothstep
+				+ Tsunami
+				+ Rogue wave
+			+ See if the removal of hf is making the wave evolution asymmetrical
+				- No - remove hf again
+			+ Make less rigid - try to make waves bounce back
+				+ Play with fixed height
+				X It's not friction (actually friction might be zero, see below)
+				+ Play with theta - new setting ("WaveSmoothness" or find better name in paper) & SettingsDialog
+					+ 0.95, friction 0.5: nice bouncing, but weird vertical offset stays
+					+ 0.953, friction 0.25: nice bouncing, small weird vertical offset
+					+ 0.953, friction 0.15: nice bouncing, no weird vertical offset, stable - BEST
+					+ 0.922, friction 0.15: little but visibile bouncing
+					+ 0.172, friction 0.005: no bouncing, no instabilities, wave stays round, but asymmetric
+					+ 0.906, friction 0.005: small bouncing
+					+ 0.984, friction 0.005: repeated bouncing, dying off soon; tall waves become unstable
+					+ 1.0, friction 0.005: repeated irregular bouncing
+					+ 0.984, friction 0.1: repeated bouncing, dying off soon; tall waves become unstable
+					+ 0.891, friction 0: negligible bouncing, wave is steep
+					+ 0.844, friction 0: negligible bouncing, wave is almost triangular
+					+ 0.8, friction 0: negligible bouncing, wave is reasonably round
+					+ 0.5, friction 0: no bouncing,  wave stays round, no instabilities
+					+ Might be best to temporarily set decay rate to zero to better see the effect here
+					+ At end:
+						+ Decide decay rate of interactive
+						+ Make rising slope of interactive less steep, tsunami is quite nice
+			+ See what's going on with rendering at far zoom
+				X See if repros with basic shader
+				X Try with squared, as in experiment
+				+ Remove dFdy at basal width, it's useless anyway
+				X Analyze derivatives
+					+ Hardcode in shadertoy shader and play with it
+					X Try with that new shader
+				X Tan trick?
+				X See if may change how we upload
+					X Upload avg of three derivatives
+				+ Try:
+					+ Back to world coords
+					X 1: with shader-calculated derivatives:
+						float borderWidthHalfFront = (basalBorderWidth + abs(dYFrontWorld)) / 1.2;
+						float yFrontMidBorder = yFrontWorld;
+						float borderFront =
+							1. - smoothstep(0., borderWidthHalfFront, abs(yWorld - yFrontMidBorder));
+						X 1b: if OK: see with code-calculated derivative instead						
+					+ 2: Try "double-shader" + second derivatives
+						+ Go back to all shaders working on World
+						+ Shadertoy PoC
+						+ Implement second derivatives
+							+ Infrastructure
+							+ Second derivatives
+								+ Zoom-out case
+									+ Fix problem with top y
+										+ At buffer upload: fixed world offset									
+									+ Do other planes
+										+ See if other planes really need derivatives: NO
+										+ Remove derivatives
+								+ Zoom-in case
+									+ See if can really leave derivatives at zero
+								+ Fix bug in upload code w/fractional part from next sample
+								+ Optimize
+									+ Upload code
+										+ Fix DEBUG issues
+											+ Redo NumSlices, DX
+											+ Also @ OceanFloor
+										+ Verify assembly
+					+ Cleanup shader
+					+ Test all rendering modes
+						+ {Basic, Detailed } x 3 render modes x {far, close}
+			+ Split UpdateFields:
+				+ SmoothDeltaBufferIntoHeightField
+					+ As-is, for the time being
+					+ Also clears at end					
+				+ UpdateFields: just SWE loop
+					+ Optimize:
+						+ pow
+						+ Pre-perf: 4.59/4.60
+						+ See if friction is really needed - setting it to zero seems to have no effect
+							+ Waves stay stable with smoothness at 0.8
+						+ See if best to store velocity field or Q field
+							+ Rename everything as Q/flux
+							+ Write alternative - and verify it works - using velocities
+							+ Also, if we go for Q field, be careful - height and velocity/Q are at different places in the cell
+						+ Optimize
+						X Check if may be vectorized
+							X See first if all works fine with separate-time buffers 
+							X See two-pass
+						+ Post-perf: 4.57/4.58
+			+ Vectorize SmoothDeltaBufferIntoHeightField
+				+ Pre-perf: 4.57/4.58
+				+ 1: Move current algo to Algorithms as Naive
+				+ 2: Naive unit tests
+				+ 3: Make version with x86 intrinsics in Algorithms
+				+ 4: x86 instrinsics unit tests
+				+ 5: Hook up into OceanSurface
+					+ Do alignment: use Buffer
+						+ DeltaBuffer
+						+ Both SWE buffers
+							+ Nuke FixedSizeVector usage completely
+							+ See if +1 @ SWE buffers is still needed
+					+ Invoke Algorithm
+					+ Verify 
+						+ Works
+						+ Assembly
+				+ Post-perf: 4.57
+			+ SetSWEWaveHeight: see if can be replaced by populating deltabuffer
+				X Every caller (state machines only?) need to start reasoning in terms of delta's then, rather than absolute heights? 
+				+ Nuke SWEWaveStateMachinePerturbedSamplesCount
+			------------------------------
+			+ Bump up rate of rogue waves
+			+ Interactive state machine: try with bouncing waves
+			+ See if wave displacement can now be slightly more pronounced
+				+ Keep an eye on infinitely-bouncing balls
+				+ See if adjustment may move to:
+					X Simply multiplier
+					+ Slope
+			+ See if may increase:
+				+ Fish displacement
+				+ Bubble displacement
+				X Engines
+			+ Decide whether to keep or not WaveSmoothnessAdjustment in SettingsDialog
+				+ If so: find right Min/Max range - keep an eye on preventing unstable waves
 
 
 
