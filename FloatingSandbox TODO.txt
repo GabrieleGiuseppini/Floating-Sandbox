@@ -483,6 +483,10 @@ Render:
 				+ Double # of samples
 				+ See if Update() becomes too heavy
 			+ changelist		
+		+ Send for testing
+			+ bishobe64 as tester
+				+ Invite
+		+ Bump up version
 
 
 		= MAC:
@@ -560,11 +564,7 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		- Send for testing
-			- bishobe64 as tester
-				- Invite
-			- bishobe64 in Credits?
-		- Bump up version
+		- bishobe64 in Credits?
 	
 		- New ships
 			- changelist
@@ -587,7 +587,7 @@ Render:
 			- RU
 				- Check out changed SettingsDialog strings
 				
-		- Release
+		- Release 1.16.5
 
 		// -----------------------------------------------------------------------
 
