@@ -289,7 +289,7 @@ void OceanFloor::CalculateBumpProfile()
     static constexpr float BumpFrequency2 = 0.015f;
     static constexpr float BumpFrequency3 = 0.001f;
 
-    float x = 0.0;
+    float x = -GameParameters::HalfMaxWorldWidth;
     for (size_t i = 0; i < SamplesCount; ++i, x += Dx)
     {
         float const c1 = sinf(x * BumpFrequency1) * 10.f;

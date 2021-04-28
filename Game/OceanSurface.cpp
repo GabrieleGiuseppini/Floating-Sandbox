@@ -205,15 +205,6 @@ void OceanSurface::Update(
 
     UpdateFields(gameParameters);
 
-    ////// Calc avg height among all samples
-    ////float avgHeight = 0.0f;
-    ////for (size_t i = SWEOuterLayerSamples; i < SWEOuterLayerSamples + SamplesCount; ++i)
-    ////{
-    ////    avgHeight += mSWEHeightField[i];
-    ////}
-    ////avgHeight /= static_cast<float>(SamplesCount);
-    ////LogMessage("AVG:", avgHeight);
-
     //
     // 3. Generate samples
     //

@@ -334,7 +334,7 @@ Render:
 			+ See issue
 				+ Try 0.25 instead of 1.0
 			+ Do "SHIFT lock"
-		+ New tool 1: Blast
+		+ New tool: Blast
 			! Spec:
 				+ Same force field as Explosion state machine
 				+ Hitting SHIFT makes it faster and stronger
@@ -459,6 +459,30 @@ Render:
 			+ Check perf on old Dell:
 				+ Before: 29.6/29.9 FPS, 20.04/20.2 UPD
 				+ After: 30.4/30.5 FPS, 18.8/19.1 UPD
+		+ Larger world
+			+ GameParameters
+				+ Double size
+			+ Restrict tsunami creation area so that it won't travel more than 5k
+				+ Or alternatively, lower its height
+			+ Check rogue waves as well
+			+ OceanFloor
+				+ Keep # of samples
+				+ Double the width of default ocean floor so that it's more dense
+					+ Add more to the left and to the right
+					+ Also change depth at middle so that it fits with new bumpiness and it's ~-283
+						+ Or simply change the bumpiness frequency or phase, whichever looks best
+				+ Test Mariana's Trench
+			+ OceanSurface				
+				+ Fix manual waves
+					+ Try to re-instate full SWEs
+						X If works, see if can put back tsunami's parameters
+					+ Look back at SWEs (*)
+						+ changelist
+							+ Improving the stability of a simple formulation of the shallow water equations for 2D flood modeling, https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2011WR011570,
+							  de Almeida et al (2012)
+				+ Double # of samples
+				+ See if Update() becomes too heavy
+			+ changelist		
 
 
 		= MAC:
@@ -536,38 +560,6 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		= Larger world
-			+ GameParameters
-				+ Double size
-			+ Restrict tsunami creation area so that it won't travel more than 5k
-				+ Or alternatively, lower its height
-			+ Check rogue waves as well
-			= OceanFloor
-				+ Keep # of samples
-				- Redo default startup ocean floor - double the width so that it's more dense
-					- Add more to the left and to the right
-					- Also change depth at middle so that it fits with new bumpiness and it's ~-283
-						- Or simply change the bumpiness frequency or phase, whichever looks best
-			+ OceanSurface				
-				+ Fix manual waves
-					+ Try to re-instate full SWEs
-						X If works, see if can put back tsunami's parameters
-					+ Look back at SWEs (*)
-						+ changelist
-							+ Improving the stability of a simple formulation of the shallow water equations for 2D flood modeling, https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2011WR011570,
-							  de Almeida et al (2012)
-				+ Double # of samples
-				+ See if Update() becomes too heavy
-			- New Dell profiling percentages:
-				- Before:
-				- After:
-			- Old Dell FPS & update ms:
-				- Before:
-				- After:
-			- changelist
-
-		
-
 		- Send for testing
 			- bishobe64 as tester
 				- Invite
@@ -579,12 +571,12 @@ Render:
 		- Frontier-enabled features:			
 			- Pressure implosions / pressure crush (*)			
 			- Transfer of momentum from waves
-				- Option A: by point visit; all points which were not underwater in previous step and are now (via double buffer for "Cached Underwater"), receive force
+				- Option A: by point visit; all points which were not underwater in previous step and are now (via double buffer for Points::CachedDepth), receive force
 				  proportional to OceanSurface::VelocityVector
-					- OceanSurface::VelocityVector: direction=normal, magnitude=velocity. With two options:
+					- OceanSurface::VelocityVector: direction=normal, magnitude=SWE velocity. With two options:
 						- A) SWE + Waves (i.e. full samples)
 						- B) Just SWE
-				- Option B: by point visit; all points in tiny band from depth 0
+				- Option B: by point visit; all points in tiny band from depth 0, receive force...same as above....
 
 		- Localization:
 			- IT
