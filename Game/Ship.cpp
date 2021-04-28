@@ -881,6 +881,10 @@ void Ship::ApplyWorldForces(
     // Apply per-surface forces
     ///////////////////////////////////////////////////////////////////////////////////////
 
+    //
+    // Drag constants
+    //
+
     // Abovewater points feel this amount of air drag, due to pressure
     float const airPressureDragCoefficient =
         GameParameters::AirPressureDragCoefficient
@@ -892,6 +896,25 @@ void Ship::ApplyWorldForces(
         GameParameters::WaterPressureDragCoefficient
         * gameParameters.WaterPressureDragAdjustment
         * (effectiveWaterDensity / GameParameters::WaterMass);
+
+    //
+    // Water displacement constants
+    //
+
+    float constexpr wdmX0 = 3.75f; // Velocity at which displacement transitions from quadratic to linear
+    float constexpr wdmY0 = 0.3f; // Displacement magnitude at x0
+
+    // Linear portion
+    float const wdmLinearSlope =
+        GameParameters::SimulationStepTimeDuration<float> * 4.0f // Magic number
+        * gameParameters.WaterDisplacementWaveHeightAdjustment;
+
+    // Quadratic portion: y = ax^2 + bx, with constraints:
+    //  y(0) = 0
+    //  y'(x0) = slope
+    //  y(x0) = y0
+    float const wdmQuadraticA = (wdmLinearSlope * wdmX0 - wdmY0) / (wdmX0 * wdmX0);
+    float const wdmQuadraticB = 2.0f * wdmY0 / wdmX0 - wdmLinearSlope;
 
     //
     // Visit all frontiers
@@ -1027,20 +1050,8 @@ void Ship::ApplyWorldForces(
                 // Displacement magnitude calculation
                 //
 
-                float constexpr x0 = 3.75f; // Velocity at which displacement transitions from quadratic to linear
-                float constexpr y0 = 0.3f; // Displacement magnitude at x0
-
-                // Linear portion
-                float constexpr linearSlope = GameParameters::SimulationStepTimeDuration<float> * 4.0f; // Magic number
-                float const linearDisplacementMagnitude = y0 + linearSlope * (absVerticalVelocity - x0);
-
-                // Quadratic portion: y = ax^2 + bx, with constraints:
-                //  y(0) = 0
-                //  y'(x0) = slope
-                //  y(x0) = y0
-                float constexpr a = (linearSlope * x0 - y0) / (x0 * x0);
-                float constexpr b = 2.0f * y0 / x0 - linearSlope;
-                float const quadraticDisplacementMagnitude = a * absVerticalVelocity * absVerticalVelocity + b * absVerticalVelocity;
+                float const linearDisplacementMagnitude = wdmY0 + wdmLinearSlope * (absVerticalVelocity - wdmX0);
+                float const quadraticDisplacementMagnitude = wdmQuadraticA * absVerticalVelocity * absVerticalVelocity + wdmQuadraticB * absVerticalVelocity;
 
                 //
                 // Depth attenuation: tapers down displacement the deeper the point is
@@ -1053,8 +1064,7 @@ void Ship::ApplyWorldForces(
                 float const clampedAbsVerticalVelocity = std::min(absVerticalVelocity, MaxVel);
                 float const maxDepth =
                     (a2 * clampedAbsVerticalVelocity * clampedAbsVerticalVelocity + b2 * clampedAbsVerticalVelocity + 0.5f)
-                    * (verticalVelocity <= 0.0f ? 12.0f : 4.0f) // Keep up-push low or else bodies keep jumping up and down forever
-                    * gameParameters.WaterDisplacementWaveHeightAdjustment;
+                    * (verticalVelocity <= 0.0f ? 12.0f : 4.0f); // Keep up-push low or else bodies keep jumping up and down forever
 
                 // Linear attenuation up to maxDepth
                 float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, pointDepth); // Tapers down contribution the deeper the point is
@@ -1077,7 +1087,7 @@ void Ship::ApplyWorldForces(
                 //
 
                 float const displacement =
-                    (absVerticalVelocity < x0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
+                    (absVerticalVelocity < wdmX0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
                     * massImpact
                     * depthAttenuation
                     * SignStep(0.0f, verticalVelocity) // Displacement has same sign as vertical velocity
