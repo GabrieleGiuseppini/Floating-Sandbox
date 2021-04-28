@@ -48,7 +48,7 @@ OceanFloorTerrain OceanFloorTerrain::LoadFromImage(std::filesystem::path const &
     float constexpr Dx = GameParameters::MaxWorldWidth / GameParameters::OceanFloorTerrainSamples<float>;
 
     // Calculate WorldX->ImageX factor: we want the entire width of this image to fit the entire
-    // world width
+    // world width (by stretching or compressing)
     float const worldXToImageX = static_cast<float>(oceanFloorImage.Size.Width) / GameParameters::MaxWorldWidth;
 
     for (size_t s = 0; s < GameParameters::OceanFloorTerrainSamples<size_t>; ++s)
