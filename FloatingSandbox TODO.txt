@@ -565,6 +565,14 @@ Render:
 				- DevIL: so's?
 
 		- bishobe64 in Credits?
+
+		= OpenGL optimizations
+			+ Clear color
+			+ Perf: 5.88/5.90
+			- All dirty flags at RenderParameters
+				+ See assembly
+			- See how heavy edge springs are
+			- ocean transparency
 	
 		- New ships
 			- changelist
