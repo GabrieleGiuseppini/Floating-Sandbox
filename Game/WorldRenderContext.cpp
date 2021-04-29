@@ -1674,7 +1674,9 @@ void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & 
     CheckOpenGLError();
 
     // Upload texture
-    GameOpenGL::UploadMipmappedTexture(std::move(oceanTextureFrame.TextureData));
+    GameOpenGL::UploadMipmappedTexture(
+        std::move(oceanTextureFrame.TextureData),
+        GL_RGB8);
 
     // Set repeat mode
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -1747,7 +1749,9 @@ void WorldRenderContext::ApplyLandTextureIndexChanges(RenderParameters const & r
     CheckOpenGLError();
 
     // Upload texture
-    GameOpenGL::UploadMipmappedTexture(std::move(landTextureFrame.TextureData));
+    GameOpenGL::UploadMipmappedTexture(
+        std::move(landTextureFrame.TextureData),
+        GL_RGB8);
 
     // Set repeat mode
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

@@ -251,9 +251,11 @@ void GameOpenGL::BindAttributeLocation(
     }
 }
 
-void GameOpenGL::UploadTexture(RgbaImageData texture)
+void GameOpenGL::UploadTexture(
+    RgbaImageData texture,
+    GLint internalFormat)
 {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.Size.Width, texture.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.Data.get());
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, texture.Size.Width, texture.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.Data.get());
     GLenum glError = glGetError();
     if (GL_NO_ERROR != glError)
     {
@@ -261,13 +263,15 @@ void GameOpenGL::UploadTexture(RgbaImageData texture)
     }
 }
 
-void GameOpenGL::UploadMipmappedTexture(RgbaImageData baseTexture)
+void GameOpenGL::UploadMipmappedTexture(
+    RgbaImageData baseTexture,
+    GLint internalFormat)
 {
     //
     // Upload base image
     //
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, baseTexture.Size.Width, baseTexture.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, baseTexture.Data.get());
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, baseTexture.Size.Width, baseTexture.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, baseTexture.Data.get());
     GLenum glError = glGetError();
     if (GL_NO_ERROR != glError)
     {
@@ -334,7 +338,7 @@ void GameOpenGL::UploadMipmappedTexture(RgbaImageData baseTexture)
         }
 
         // Upload write buffer
-        glTexImage2D(GL_TEXTURE_2D, textureLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, writeBuffer.get());
+        glTexImage2D(GL_TEXTURE_2D, textureLevel, internalFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, writeBuffer.get());
         glError = glGetError();
         if (GL_NO_ERROR != glError)
         {
