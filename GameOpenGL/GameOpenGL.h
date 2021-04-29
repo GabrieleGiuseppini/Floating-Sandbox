@@ -222,9 +222,13 @@ public:
         GLuint attributeIndex,
         std::string const & attributeName);
 
-    static void UploadTexture(RgbaImageData texture);
+    static void UploadTexture(
+        RgbaImageData texture,
+        GLint internalFormat = GL_RGBA);
 
-    static void UploadMipmappedTexture(RgbaImageData baseTexture);
+    static void UploadMipmappedTexture(
+        RgbaImageData baseTexture,
+        GLint internalFormat = GL_RGBA);
 
     static void UploadMipmappedPowerOfTwoTexture(
         RgbaImageData baseTexture,

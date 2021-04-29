@@ -579,9 +579,8 @@ Render:
 				= Ocean SOLs (35% + 30%)
 					! (https://developer.nvidia.com/blog/the-peak-performance-analysis-method-for-optimizing-any-gpu-workload/)
 					+ starting TEX=44.9
-					- Tests:
-						- Texture format: R11G11B10F (we don't use alpha)
-						- Texture filtering
+					+ Tests:
+						+ Texture format: no alpha
 			- Profiling w/Bubbles
 
 	
