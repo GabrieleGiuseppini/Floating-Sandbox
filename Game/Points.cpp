@@ -1791,14 +1791,11 @@ void Points::UploadEphemeralParticles(
             {
                 auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.AirBubble;
 
-                // Calculate scale:
-                //  - Depth: deep bubbles are smaller
-                //  - Lifetime: bubbles start out very small
+                // Calculate scale based on lifetime
                 float constexpr ScaleMax = 0.275f;
                 float constexpr ScaleMin = 0.1f;
                 float const scale =
-                    (ScaleMin + (ScaleMax - ScaleMin) * (1.0f - LinearStep(80.0f, 400.0f, state.CurrentDeltaY)))
-                    * std::min(state.SimulationLifetime, 2.0f) / 2.0f; // Grow from 0 to 1 in 2 seconds
+                    ScaleMin + (ScaleMax - ScaleMin) * LinearStep(0.0f, 2.0f, state.SimulationLifetime);
 
                 shipRenderContext.UploadAirBubble(
                     GetPlaneId(pointIndex),
