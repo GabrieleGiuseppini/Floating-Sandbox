@@ -34,6 +34,7 @@ struct RenderParameters
     //
 
     rgbColor FlatSkyColor;
+    bool IsFlatSkyColorDirty;
 
     float OceanTransparency;
 

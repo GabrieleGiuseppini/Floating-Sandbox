@@ -487,8 +487,6 @@ void RenderContext::Draw()
             //
 
             // Clear canvas - and depth buffer
-            vec3f const clearColor = renderParameters.FlatSkyColor.toVec3f() * renderParameters.EffectiveAmbientLightIntensity;
-            glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             //
@@ -610,6 +608,12 @@ void RenderContext::ProcessParameterChanges(RenderParameters const & renderParam
     {
         ApplyShipStructureRenderModeChanges(renderParameters);
     }
+
+    if (renderParameters.IsEffectiveAmbientLightIntensityDirty
+        || renderParameters.IsFlatSkyColorDirty)
+    {
+        ApplyClearColorChanges(renderParameters);
+    }
 }
 
 void RenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParameters)
@@ -634,6 +638,12 @@ void RenderContext::ApplyShipStructureRenderModeChanges(RenderParameters const &
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     else
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+void RenderContext::ApplyClearColorChanges(RenderParameters const & renderParameters)
+{
+    vec3f const clearColor = renderParameters.FlatSkyColor.toVec3f() * renderParameters.EffectiveAmbientLightIntensity;
+    glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
 }
 
 float RenderContext::CalculateEffectiveAmbientLightIntensity(

@@ -17,6 +17,7 @@ RenderParameters::RenderParameters(
 	, IsEffectiveAmbientLightIntensityDirty(true)
 	// World
 	, FlatSkyColor(0x87, 0xce, 0xfa) // (cornflower blue)
+	, IsFlatSkyColorDirty(true)
 	, OceanTransparency(0.8125f)
 	, OceanDarkeningRate(0.356993f)
 	, IsOceanDarkeningRateDirty(true)
@@ -65,6 +66,7 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	IsViewDirty = false;
 	IsCanvasSizeDirty = false;
 	IsEffectiveAmbientLightIntensityDirty = false;
+	IsFlatSkyColorDirty = false;
 	IsOceanDarkeningRateDirty = false;
 	AreOceanRenderModeParametersDirty = false;
 	IsOceanTextureIndexDirty = false;

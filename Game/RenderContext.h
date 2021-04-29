@@ -189,7 +189,7 @@ public:
     void SetFlatSkyColor(rgbColor const & color)
     {
         mRenderParameters.FlatSkyColor = color;
-        // No need to set dirty, this is picked up at each cycle anyway
+        mRenderParameters.IsFlatSkyColorDirty = true;
     }
 
     float GetOceanTransparency() const
@@ -930,8 +930,9 @@ private:
     void ProcessParameterChanges(RenderParameters const & renderParameters);
 
     void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
-
     void ApplyShipStructureRenderModeChanges(RenderParameters const & renderParameters);
+    void ApplyClearColorChanges(RenderParameters const & renderParameters);
+
 
     static float CalculateEffectiveAmbientLightIntensity(
         float ambientLightIntensity,
