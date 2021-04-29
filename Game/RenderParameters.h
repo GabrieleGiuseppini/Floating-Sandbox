@@ -23,74 +23,63 @@ namespace Render {
 struct RenderParameters
 {
     ViewModel View;
-    bool IsViewDirty;
-    bool IsCanvasSizeDirty;
-
     float EffectiveAmbientLightIntensity; // Calculated
-    bool IsEffectiveAmbientLightIntensityDirty;
 
     //
     // World
     //
 
     rgbColor FlatSkyColor;
-    bool IsFlatSkyColorDirty;
-
     float OceanTransparency;
-
     float OceanDarkeningRate;
-    bool IsOceanDarkeningRateDirty;
-
     OceanRenderModeType OceanRenderMode;
     rgbColor DepthOceanColorStart;
     rgbColor DepthOceanColorEnd;
     rgbColor FlatOceanColor;
-    bool AreOceanRenderModeParametersDirty; // Tracks all of the above as a whole, for convenience
-
     size_t OceanTextureIndex;
-    bool IsOceanTextureIndexDirty;
-
     OceanRenderDetailType OceanRenderDetail;
-
     bool ShowShipThroughOcean;
-
     LandRenderModeType LandRenderMode;
     rgbColor FlatLandColor;
-    bool AreLandRenderParametersDirty; // Tracks all of the above as a whole, for convenience
-
     size_t LandTextureIndex;
-    bool IsLandTextureIndexDirty;
 
     //
     // Ship
     //
 
     rgbColor FlatLampLightColor;
-    bool IsFlatLampLightColorDirty;
-
     bool DrawExplosions;
     bool DrawFlames;
-
     bool ShowStressedSprings;
     bool ShowFrontiers;
     bool ShowAABBs;
-
     vec3f ShipWaterColor; // Calculated
-    bool IsShipWaterColorDirty;
-
     float ShipWaterContrast;
-    bool IsShipWaterContrastDirty;
-
     float ShipWaterLevelOfDetail;
-    bool IsShipWaterLevelOfDetailDirty;
-
     HeatRenderModeType HeatRenderMode;
-
     float HeatSensitivity;
-    bool IsHeatSensitivityDirty;
-
     DebugShipRenderModeType DebugShipRenderMode;
 
+    //
+    // Dirty flags
+    //
+
+    // World
+    bool IsViewDirty;
+    bool IsCanvasSizeDirty;
+    bool IsEffectiveAmbientLightIntensityDirty;
+    bool IsFlatSkyColorDirty;
+    bool IsOceanDarkeningRateDirty;
+    bool AreOceanRenderModeParametersDirty; // Tracks various render mode parameters as a whole, for convenience
+    bool IsOceanTextureIndexDirty;
+    bool AreLandRenderParametersDirty; // Tracks various land render mode parameters as a whole, for convenience
+    bool IsLandTextureIndexDirty;
+    // Ship
+    bool IsFlatLampLightColorDirty;
+    bool IsShipWaterColorDirty;
+    bool IsShipWaterContrastDirty;
+    bool IsShipWaterLevelOfDetailDirty;
+    bool IsHeatSensitivityDirty;
     bool AreShipStructureRenderModeSelectorsDirty; // For all those parameters that require changing ship shaders
 
     RenderParameters(
