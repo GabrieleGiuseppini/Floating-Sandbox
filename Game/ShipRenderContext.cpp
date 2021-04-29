@@ -1368,20 +1368,23 @@ void ShipRenderContext::RenderDraw(
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
         {
-            auto const totalPoints = mPointElementBuffer.size() + mEphemeralPointElementBuffer.size();
+            size_t const totalPoints = mPointElementBuffer.size() + mEphemeralPointElementBuffer.size();
 
-            mShaderManager.ActivateProgram(mShipPointsProgram);
+            if (totalPoints > 0)
+            {
+                mShaderManager.ActivateProgram(mShipPointsProgram);
 
-            glPointSize(0.3f * renderParameters.View.GetCanvasToVisibleWorldHeightRatio());
+                glPointSize(0.3f * renderParameters.View.GetCanvasToVisibleWorldHeightRatio());
 
-            glDrawElements(
-                GL_POINTS,
-                static_cast<GLsizei>(1 * totalPoints),
-                GL_UNSIGNED_INT,
-                (GLvoid *)mPointElementVBOStartIndex);
+                glDrawElements(
+                    GL_POINTS,
+                    static_cast<GLsizei>(totalPoints),
+                    GL_UNSIGNED_INT,
+                    (GLvoid *)mPointElementVBOStartIndex);
 
-            // Update stats
-            renderStats.LastRenderedShipPoints += totalPoints;
+                // Update stats
+                renderStats.LastRenderedShipPoints += totalPoints;
+            }
         }
 
         // We are done with the ship VAO
