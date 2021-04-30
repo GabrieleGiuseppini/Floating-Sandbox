@@ -13,13 +13,22 @@ void Triangles::Add(
     ElementIndex pointCIndex,
     ElementIndex subSpringAIndex,
     ElementIndex subSpringBIndex,
-    ElementIndex subSpringCIndex)
+    ElementIndex subSpringCIndex,
+    std::optional<ElementIndex> coveredTraverseSpringIndex)
 {
     mIsDeletedBuffer.emplace_back(false);
 
     mEndpointsBuffer.emplace_back(pointAIndex, pointBIndex, pointCIndex);
 
     mSubSpringsBuffer.emplace_back(subSpringAIndex, subSpringBIndex, subSpringCIndex);
+
+    CoveredSpringsVector coveredSprings;
+    coveredSprings.emplace_back(subSpringAIndex);
+    coveredSprings.emplace_back(subSpringBIndex);
+    coveredSprings.emplace_back(subSpringCIndex);
+    if (coveredTraverseSpringIndex.has_value())
+        coveredSprings.push_back(*coveredTraverseSpringIndex);
+    mCoveredSpringsBuffer.emplace_back(coveredSprings);
 }
 
 void Triangles::Destroy(ElementIndex triangleElementIndex)

@@ -1152,6 +1152,8 @@ void ShipBuilder::ConnectSpringsAndTriangles(
             // Tell this spring that it has this additional super triangle
             springInfos2[springIndex].SuperTriangles2.push_back(t);
             assert(springInfos2[springIndex].SuperTriangles2.size() <= 2);
+            ++(springInfos2[springIndex].CoveringTrianglesCount);
+            assert(springInfos2[springIndex].CoveringTrianglesCount <= 2);
 
             // Tell the triangle about this sub spring
             assert(!triangleInfos2[t].SubSprings2.contains(springIndex));
@@ -1159,18 +1161,13 @@ void ShipBuilder::ConnectSpringsAndTriangles(
         }
     }
 
-    /*
-     *
-     * Removed in 1.16.0, as it was causing problems with frontier maintenance.
-     *
-
     //
     // 3. Now find "traverse" springs - i.e. springs that are not edges of any triangles
-    // (because of our tessellation algorithm) - and see whether they're fully covered by two triangles;
-    // if they are, consider these springs as sub-springs of those two triangles, so that they won't look
-    // like edge springs.
+    // (because of our tessellation algorithm) - and see whether they're fully covered
+    // by two triangles; if they are, consider these springs as being covered by those
+    // two triangles.
     //
-    // A "traverse" spring would be the B-C spring in the following tessellation neighborhood:
+    // A "traverse" spring would be the B-C spring in the following pair of triangles:
     //
     //   A     B
     //    *---*
@@ -1232,18 +1229,18 @@ void ShipBuilder::ConnectSpringsAndTriangles(
 
                 assert(0 == springInfos2[traverseSpringIt->second].SuperTriangles2.size());
 
-                // Tell the traverse spring that it has these super triangles
-                springInfos2[traverseSpringIt->second].SuperTriangles2.push_back(springInfos2[s].SuperTriangles2[0]);
-                springInfos2[traverseSpringIt->second].SuperTriangles2.push_back(springInfos2[s].SuperTriangles2[1]);
-                assert(springInfos2[traverseSpringIt->second].SuperTriangles2.size() == 2);
+                // Tell the traverse spring that it has these 2 covering triangles
+                springInfos2[traverseSpringIt->second].CoveringTrianglesCount += 2;
+                assert(springInfos2[traverseSpringIt->second].CoveringTrianglesCount == 2);
 
-                // Tell the triangles about this new sub spring of theirs
-                triangle1.SubSprings2.push_back(traverseSpringIt->second);
-                triangle2.SubSprings2.push_back(traverseSpringIt->second);
+                // Tell the triangles that they're covering this spring
+                assert(!triangle1.CoveredTraverseSpringIndex2.has_value());
+                triangle1.CoveredTraverseSpringIndex2 = traverseSpringIt->second;
+                assert(!triangle2.CoveredTraverseSpringIndex2.has_value());
+                triangle2.CoveredTraverseSpringIndex2 = traverseSpringIt->second;
             }
         }
     }
-    */
 }
 
 Physics::Springs ShipBuilder::CreateSprings(
@@ -1269,6 +1266,7 @@ Physics::Springs ShipBuilder::CreateSprings(
             springInfos2[s].PointAAngle,
             springInfos2[s].PointBAngle,
             springInfos2[s].SuperTriangles2,
+            springInfos2[s].CoveringTrianglesCount,
             points);
 
         // Add spring to its endpoints
@@ -1303,7 +1301,8 @@ Physics::Triangles ShipBuilder::CreateTriangles(
             pointIndexRemap[triangleInfos2[t].PointIndices1[2]],
             triangleInfos2[t].SubSprings2[0],
             triangleInfos2[t].SubSprings2[1],
-            triangleInfos2[t].SubSprings2[2]);
+            triangleInfos2[t].SubSprings2[2],
+            triangleInfos2[t].CoveredTraverseSpringIndex2);
 
         // Add triangle to its endpoints
         points.AddFactoryConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[0]], t, true); // Owner

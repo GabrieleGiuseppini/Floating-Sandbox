@@ -2917,10 +2917,16 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
     // Remove triangle from other elements
     //
 
-    // Remove triangle from sets of super triangles of its non-deleted sub springs
+    // Remove triangle from sets of super triangles of its sub springs
     for (ElementIndex const subSpringIndex : mTriangles.GetSubSprings(triangleElementIndex).SpringIndices)
     {
         mSprings.RemoveSuperTriangle(subSpringIndex, triangleElementIndex);
+    }
+
+    // Decrement count of covering triangles of each covered spring
+    for (ElementIndex const coveredSpringIndex : mTriangles.GetCoveredSprings(triangleElementIndex))
+    {
+        mSprings.RemoveCoveringTriangle(coveredSpringIndex);
     }
 
     // Disconnect triangle from its endpoints
@@ -2970,6 +2976,12 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
     mPoints.ConnectTriangle(mTriangles.GetPointAIndex(triangleElementIndex), triangleElementIndex, true); // Owner
     mPoints.ConnectTriangle(mTriangles.GetPointBIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
     mPoints.ConnectTriangle(mTriangles.GetPointCIndex(triangleElementIndex), triangleElementIndex, false); // Not owner
+
+    // Increment count of covering triangles for each of the covered springs
+    for (ElementIndex const coveredSpringIndex : mTriangles.GetCoveredSprings(triangleElementIndex))
+    {
+        mSprings.AddCoveringTriangle(coveredSpringIndex);
+    }
 
     // Add triangle to set of super triangles of each of its sub springs
     assert(mTriangles.GetSubSprings(triangleElementIndex).SpringIndices.size() == 3);
