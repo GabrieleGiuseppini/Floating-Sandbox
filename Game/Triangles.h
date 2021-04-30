@@ -16,6 +16,7 @@
 #include <array>
 #include <cassert>
 #include <functional>
+#include <optional>
 
 namespace Physics
 {
@@ -56,6 +57,11 @@ private:
         {}
     };
 
+    /*
+     * The springs covered by a triangle, in arbitrary order.
+     */
+    using CoveredSpringsVector = FixedSizeVector<ElementIndex, 4u>; // Up to 4 springs may be covered by one triangle
+
 public:
 
     Triangles(ElementCount elementCount)
@@ -68,6 +74,8 @@ public:
         , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex, NoneElementIndex))
         // Sub springs
         , mSubSpringsBuffer(mBufferElementCount, mElementCount, SubSprings(NoneElementIndex, NoneElementIndex, NoneElementIndex))
+        // Covered springs
+        , mCoveredSpringsBuffer(mBufferElementCount, mElementCount, CoveredSpringsVector())
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -88,7 +96,8 @@ public:
         ElementIndex pointCIndex,
         ElementIndex subSpringAIndex,
         ElementIndex subSpringBIndex,
-        ElementIndex subSpringCIndex);
+        ElementIndex subSpringCIndex,
+        std::optional<ElementIndex> coveredTraverseSpringIndex);
 
     void Destroy(ElementIndex triangleElementIndex);
 
@@ -205,6 +214,15 @@ public:
         return mSubSpringsBuffer[triangleElementIndex].SpringIndices[2];
     }
 
+    //
+    // Covered springs
+    //
+
+    auto const & GetCoveredSprings(ElementIndex triangleElementIndex) const
+    {
+        return mCoveredSpringsBuffer[triangleElementIndex];
+    }
+
 private:
 
     //////////////////////////////////////////////////////////
@@ -217,9 +235,13 @@ private:
     // Endpoints
     Buffer<Endpoints> mEndpointsBuffer;
 
-    // Sub springs - the springs that have this triangle among their super-triangles;
+    // Sub springs - the springs that have this triangle among their super triangles;
     // immutable
     Buffer<SubSprings> mSubSpringsBuffer;
+
+    // Covered springs - the springs that have this triangle among their covering triangles;
+    // immutable
+    Buffer<CoveredSpringsVector> mCoveredSpringsBuffer;
 
     //////////////////////////////////////////////////////////
     // Container

@@ -92,6 +92,8 @@ private:
 
         FixedSizeVector<ElementIndex, 2> SuperTriangles2;
 
+        ElementCount CoveringTrianglesCount;
+
         ShipBuildSpring(
             ElementIndex pointAIndex1,
             uint32_t pointAAngle,
@@ -102,6 +104,7 @@ private:
             , PointBIndex1(pointBIndex1)
             , PointBAngle(pointBAngle)
             , SuperTriangles2()
+            , CoveringTrianglesCount(0)
         {
         }
     };
@@ -112,10 +115,13 @@ private:
 
         FixedSizeVector<ElementIndex, 3> SubSprings2;
 
+        std::optional<ElementIndex> CoveredTraverseSpringIndex2;
+
         ShipBuildTriangle(
             std::array<ElementIndex, 3> const & pointIndices1)
             : PointIndices1(pointIndices1)
             , SubSprings2()
+            , CoveredTraverseSpringIndex2()
         {
         }
     };

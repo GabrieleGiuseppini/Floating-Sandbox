@@ -15,6 +15,7 @@ void Springs::Add(
     Octant factoryPointAOctant,
     Octant factoryPointBOctant,
     SuperTrianglesVector const & superTriangles,
+    ElementCount coveringTrianglesCount,
     Points const & points)
 {
     ElementIndex const springIndex = static_cast<ElementIndex>(mIsDeletedBuffer.GetCurrentPopulatedSize());
@@ -27,6 +28,9 @@ void Springs::Add(
 
     mSuperTrianglesBuffer.emplace_back(superTriangles);
     mFactorySuperTrianglesBuffer.emplace_back(superTriangles);
+
+    assert(coveringTrianglesCount >= superTriangles.size()); // Covering triangles count includes super triangles
+    mCoveringTrianglesCountBuffer.emplace_back(coveringTrianglesCount);
 
     // Strength is average
     float const averageStrength =
@@ -209,12 +213,13 @@ void Springs::UploadElements(
     Render::RenderContext & renderContext) const
 {
     // Either upload all springs, or just the edge springs
-    bool const doUploadAllSprings = (DebugShipRenderModeType::Springs == renderContext.GetDebugShipRenderMode());
+    bool const doUploadAllSprings =
+        DebugShipRenderModeType::Springs == renderContext.GetDebugShipRenderMode();
 
     // Ropes are uploaded as springs only if DebugRenderMode is springs or edge springs
-    bool const doUploadRopesAsSprings = (
+    bool const doUploadRopesAsSprings =
         DebugShipRenderModeType::Springs == renderContext.GetDebugShipRenderMode()
-        || DebugShipRenderModeType::EdgeSprings == renderContext.GetDebugShipRenderMode());
+        || DebugShipRenderModeType::EdgeSprings == renderContext.GetDebugShipRenderMode();
 
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
@@ -231,7 +236,7 @@ void Springs::UploadElements(
                     GetEndpointBIndex(i));
             }
             else if (
-                mSuperTrianglesBuffer[i].size() < 2
+                mCoveringTrianglesCountBuffer[i] < 2
                 || doUploadAllSprings
                 || IsRope(i))
             {

@@ -113,6 +113,8 @@ public:
         // Super triangles
         , mSuperTrianglesBuffer(mBufferElementCount, mElementCount, SuperTrianglesVector())
         , mFactorySuperTrianglesBuffer(mBufferElementCount, mElementCount, SuperTrianglesVector())
+        // Covering triangles
+        , mCoveringTrianglesCountBuffer(mBufferElementCount, mElementCount, 0)
         // Physical
         , mMaterialStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mBreakingElongationBuffer(mBufferElementCount, mElementCount, 0.0f)
@@ -159,6 +161,7 @@ public:
         Octant factoryPointAOctant,
         Octant factoryPointBOctant,
         SuperTrianglesVector const & superTriangles,
+        ElementCount coveringTrianglesCount,
         Points const & points);
 
     void Destroy(
@@ -412,6 +415,27 @@ public:
     }
 
     //
+    // Covering triangles
+    //
+
+    ElementCount GetCoveringTrianglesCount(ElementIndex springElementIndex) const
+    {
+        return mCoveringTrianglesCountBuffer[springElementIndex];
+    }
+
+    inline void AddCoveringTriangle(ElementIndex springElementIndex)
+    {
+        assert(mCoveringTrianglesCountBuffer[springElementIndex] < 2);
+        ++(mCoveringTrianglesCountBuffer[springElementIndex]);
+    }
+
+    inline void RemoveCoveringTriangle(ElementIndex springElementIndex)
+    {
+        assert(mCoveringTrianglesCountBuffer[springElementIndex] > 0);
+        --(mCoveringTrianglesCountBuffer[springElementIndex]);
+    }
+
+    //
     // Physical
     //
 
@@ -595,13 +619,17 @@ private:
     // Factory-time endpoint octants
     Buffer<EndpointOctants> mFactoryEndpointOctantsBuffer;
 
-    // Indexes of the super triangles covering this spring.
-    // "Super triangles" are triangles that "cover" this spring when they're rendered - it's either triangles that
-    // have this spring as one of their edges, or triangles that (partially) cover this spring
-    // (i.e. when this spring is the non-edge diagonal of a two-triangle square).
-    // In any case, a spring may have between 0 and at most 2 super triangles.
+    // Indexes of the triangles having this spring as edge.
+    // A spring may have between 0 and 2 super triangles.
     Buffer<SuperTrianglesVector> mSuperTrianglesBuffer;
     Buffer<SuperTrianglesVector> mFactorySuperTrianglesBuffer;
+
+    // Number of triangles covering this spring.
+    // "Covering triangles" are triangles that "cover" this spring when they're rendered - it's either triangles that
+    // have this spring as one of their edges (i.e. super triangles), or triangles that (partially) cover this spring
+    // (i.e. when this spring is the non-edge diagonal of a two-triangle square, i.e. a "traverse" spring).
+    // A spring may have between 0 and 2 covering triangles.
+    Buffer<ElementCount> mCoveringTrianglesCountBuffer;
 
     //
     // Physical
