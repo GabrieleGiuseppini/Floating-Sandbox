@@ -571,18 +571,27 @@ Render:
 			+ Perf: 5.88/5.90
 			+ All dirty flags at RenderParameters
 				+ See assembly
-			- Edge springs
-				 + See how heavy: quite
-				 - Figure out how to do it
-			- Profiling w/Basic
-				- What breaks pipeline after water 1?
-				= Ocean SOLs (35% + 30%)
+			= Edge springs
+				+ See how heavy: quite
+				- Option 1: Springs has new uint8_t member, CoveringTrianglesCount
+					- Triangles: need new immutable container, "CoveredSprings", similar to SubSprings - so to act at Triangle::Destroy later
+					- Springs::Upload: consider this count instead of count of SuperTriangles
+					- Populated by ShipBuilder with same triangles as in SuperTriangles, plus covering triangles for traverse springs
+						- Triangles::CoveredSprings
+					- Maintained at Triangle Destroy and Repair
+						- Should be exactly as with SuperTriangles container, but updating only counts
+				- Option 2: Springs has new container member, "covering" triangles
+					- Springs::Upload: consider this container instead of current one
+					- Populated by ShipBuilder with same triangles as in SuperTriangles, plus covering triangles for traverse springs
+					- Maintained at Destroy and Repair, exactly as with other container
+					- Check at VerifyInvariants
+			+ Profiling w/Basic
+				+ Ocean SOLs (35% + 30%)
 					! (https://developer.nvidia.com/blog/the-peak-performance-analysis-method-for-optimizing-any-gpu-workload/)
 					+ starting TEX=44.9
 					+ Tests:
 						+ Texture format: no alpha
-			- Profiling w/Bubbles
-
+			+ Profiling w/Bubbles
 	
 		- New ships
 			- changelist

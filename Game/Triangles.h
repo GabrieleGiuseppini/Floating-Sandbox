@@ -217,7 +217,8 @@ private:
     // Endpoints
     Buffer<Endpoints> mEndpointsBuffer;
 
-    // Sub springs - the springs that have this triangle among their super-triangles.
+    // Sub springs - the springs that have this triangle among their super-triangles;
+    // immutable
     Buffer<SubSprings> mSubSpringsBuffer;
 
     //////////////////////////////////////////////////////////

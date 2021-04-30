@@ -1,6 +1,7 @@
 {
 	"structure_image":"rms_titanic_at_night_structure.png.dat",
 	"texture_image":"rms_titanic_at_night_texture.png.dat",
+	"ropes_image":"rms_titanic_at_night_ropes.png.dat",
 	"offset":{"x":0.0, "y":-9.0},
 	"ship_name":"R.M.S. Titanic at Night",
 	"created_by":"DennisDanielGrimaldo; Titanic HG",
