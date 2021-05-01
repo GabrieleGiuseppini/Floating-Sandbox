@@ -672,8 +672,10 @@ Render:
 
 		- Add whistle: pipe_steam_whistle_for_fs.mp3
 
-		- Check new explosion animation
+		= Check new explosion animation
 			- If cool, replace the one with "three fingers"
+				+ 01:10 - 01:19
+				- Make psd
 			- If not, adjust the one with "three fingers": its tail lasts too long
 
 		----------------------------------------------------------------------------------------
@@ -1235,9 +1237,10 @@ Render:
 
 	- Temperature buffer is currently uploaded separately; now that we've made it "mainstream", see if it makes more sense
 	  to upload it together with the other frequently-changing fields (i.e. water, light)
+		- Pre: UPL=0.05ms
 
-	- OceanFloor doesn't need to be updated at each step
-		- However, vertex buffers rely on inputs such as view model, so when these changes, we'd need to trigger a re-upload from OceanFloor itself
+	- OceanFloor doesn't need to be uploaded at each step
+		- However, vertex buffers rely on inputs such as view model, so when these change, we'd need to trigger a re-upload from OceanFloor itself
 		- So, best solution would be to make VertexBuffer independent from these extra parameters
 
 	- Reduce number of VAO changes by incorporating multiple VBOs into one, with element size as large as largest (union of structs)
@@ -1358,8 +1361,6 @@ Render:
 		- Night sky should use a round darkening - center of screen is slightly lighter
 			- Or even better, Milky Way
 
-	- Make water texture scroll with wind speed
-
 	- Electrical view (*):
 		- Spec:
 			- New flag (not in ShipRenderMode, standalone ~like StressedSprings)
@@ -1396,6 +1397,7 @@ Render:
 		- https://www.shadertoy.com/view/4tdXDl
 
 	- Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool.
+		- Requires "sources of light" feature
 
 - Dynamics:
 
@@ -1702,7 +1704,7 @@ Render:
 				- Constant
 				- Lorenz, from http://sprott.physics.wisc.edu/chaos/eulermap.htm
 				- Lorenz II, from https://en.wikipedia.org/wiki/Lorenz_96_model
-				- WaterSurface, may be x-shifted
+				- OceanSurface profile, but x-shifted
 		- For each point: y-distance between point.y and trajectory(point.x) gives strength of x and y components of a force on the point
 		- Dynamics:
 			- Ship gets UnderwaterCurrents object from parent world
@@ -1740,7 +1742,7 @@ Render:
 		! Better done after cached quantities - underwater depth (*)		
 		- Plan A: simple: inward forces on (ext and int) (non-leaking) frontier points based on external pressure (density*depth*g) at that point
 			- Con: does not consider internal pressure/water
-			- Watch out: might generate phantom forces; since it needs to be zero-sum, calc sum as you go and do a second pass adding -sum/N to each particle (which was involved in the first step)
+			- Watch out: might generate phantom forces; since it needs to be zero-sum, calc sum as you go and do a second pass adding -sum/N to each particle (...which was involved in the first step)
 		- Plan B: same, but considering internal pressure
 			- Needs "Internal Pressure (*)" first
 
