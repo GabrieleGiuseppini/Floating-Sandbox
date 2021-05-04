@@ -672,12 +672,6 @@ Render:
 
 		- Add whistle: pipe_steam_whistle_for_fs.mp3
 
-		= Check new explosion animation
-			- If cool, replace the one with "three fingers"
-				+ 01:10 - 01:19
-				- Make psd
-			- If not, adjust the one with "three fingers": its tail lasts too long
-
 		----------------------------------------------------------------------------------------
 
 		- Spring relaxation with intrinsics
