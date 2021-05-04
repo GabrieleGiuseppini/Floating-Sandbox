@@ -1,3 +1,9 @@
+- Gist:
+	- ShipBuilder project, slave of FloatingSandbox project
+	- All in separate ShipBuilder namespace
+	- Own frame for UI
+	- Model, View, Controller architecture
+
 - Architecture:
 	- Main Frame, toolboxes, etc.
 		- Very thin, calls into Controller for each interaction
@@ -8,14 +14,26 @@
 		- Maintains Undo stack
 		- Modifies Model
 	- Model
-		- All data
+		- All data, almost no operations
 		- Modified by Controller
 	- View
 		- Rendering of ship, all layers
 		- Fully OpenGL
 
+- ResourceHelper gets new methods for ShipBuilder resources
 
-- Main UI:
+- MainFrame:
+	- Created by game MainFrame at initialization, but kept hidden
+	- Switching between two frames: 
+		- MainFrame owns ShipBulderFrame, ShipBulderFrame takes MainFrame& in cctor
+		- Switch implemented via:
+			- MainFrame::SwitchToShipBuilder: invoked by MainFrame when user switches to ship builder
+				- Stops game loop
+				- Hides self
+				- Invokes ShipBuilder::MainFrame::Open(...ship...)
+			- ShipBuilder::MainFrame::ReturnToGame: invoked by ShipBuilder::MainFrame when user returns to game
+				- Hides self
+				- Invokes MainFrame::ReturnToGame(...ship...)
 
 - Tools:
 	- Structure layer:
@@ -25,7 +43,7 @@
 - Ship file format:
 	- Min FS version (.shp, .shp2)
 		- Ideally it should be a "set" of versions, including the Materials' DB versions which live in the json so to be easily editable manually
-	- "File lock" which disallows saving layers as images
+	- "File lock" which disallows saving layers as images (?)
 	- Also includes sounds
 		- Extract from other "TODO" .txt file
 
