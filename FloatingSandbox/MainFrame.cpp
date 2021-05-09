@@ -138,7 +138,6 @@ MainFrame::MainFrame(
     , mCurrentShipTitles()
     , mCurrentRCBombCount(0u)
     , mCurrentAntiMatterBombCount(0u)
-    , mIsShiftKeyDown(false)
     , mIsMouseCapturedByGLCanvas(false)
 {
     Create(
@@ -157,8 +156,7 @@ MainFrame::MainFrame(
 
     Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnMainFrameClose, this);
 
-    mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
-    mMainPanel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnMainPanelKeyDown, this); // Just for arrow keys
+    mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
     mMainPanelSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -611,17 +609,26 @@ bool MainFrame::ProcessKeyDown(
             return true;
         }
     }
+    else if (keyCode == WXK_SHIFT)
+    {
+        if (!!mToolController)
+        {
+            mToolController->OnShiftKeyDown();
+            // Allow event to be processed further
+        }
+    }
     else if (keyCode == 'B')
     {
         // Air Bubbles tool
+        if (!!mToolController)
+        {
+            mToolController->SetTool(ToolType::InjectAirBubbles);
 
-        assert(!!mToolController);
-        mToolController->SetTool(ToolType::InjectAirBubbles);
+            // Note: at this moment the current menu item is still selected, so re-selecting it has no effect; there's no way
+            // around this, but this is an Easter Egg after all....
 
-        // Note: at this moment the current menu item is still selected, so re-selecting it has no effect; there's no way
-        // around this, but this is an Easter Egg after all....
-
-        return true;
+            return true;
+        }
     }
     else if (keyCode == '/')
     {
@@ -661,6 +668,15 @@ bool MainFrame::ProcessKeyUp(
     int keyCode,
     int keyModifiers)
 {
+    if (keyCode == WXK_SHIFT)
+    {
+        if (!!mToolController)
+        {
+            mToolController->OnShiftKeyUp();
+            // Allow event to be processed further
+        }
+    }
+
     // Deliver to electric panel
     if (!!mElectricalPanel)
     {
@@ -1134,12 +1150,6 @@ void MainFrame::OnQuit(wxCommandEvent & /*event*/)
     Close();
 }
 
-void MainFrame::OnMainPanelKeyDown(wxKeyEvent & event)
-{
-    if (!ProcessKeyDown(event.GetKeyCode(), event.GetModifiers()))
-        event.Skip();
-}
-
 void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
 {
     if (!!mUpdateChecker)
@@ -1180,25 +1190,6 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         // frame - the earlier the better (mind the 15ms minimum on MSW)
         PostGameStepTimer();
     }
-
-    // Update SHIFT key state
-    if (wxGetKeyState(WXK_SHIFT))
-    {
-        if (!mIsShiftKeyDown)
-        {
-            mIsShiftKeyDown = true;
-            mToolController->OnShiftKeyDown();
-        }
-    }
-    else
-    {
-        if (mIsShiftKeyDown)
-        {
-            mIsShiftKeyDown = false;
-            mToolController->OnShiftKeyUp();
-        }
-    }
-
 
     //
     // Run a game step

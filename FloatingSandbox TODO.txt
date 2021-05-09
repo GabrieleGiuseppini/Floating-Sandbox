@@ -518,7 +518,7 @@ Render:
 				+ After: 31.9 (19.1, 11.8)
 		+ Add whistle: pipe_steam_whistle_for_fs.mp3
 			+ changelist
-
+		+ See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
 
 		= MAC:
 			= Full high-DPI path:
@@ -595,9 +595,7 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		- bishobe64 in Credits?
-	
-		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
+		- bishobe64 in Credits?			
 
 		- New ships
 			- changelist
