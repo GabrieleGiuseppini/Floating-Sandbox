@@ -1,5 +1,7 @@
 - Gist:
 	- ShipBuilder project, slave of FloatingSandbox project
+	- ShipBuilderStandalone project, top-level project
+		- For testing ShipBuilder alone
 	- All in separate ShipBuilder namespace
 	- Own frame for UI
 	- Model, View, Controller architecture
@@ -24,8 +26,10 @@
 
 - MainFrame:
 	- Created by game MainFrame at initialization, but kept hidden
+		- Via ShipBuilder::MainFrame::Create(IProgress)
 	- Switching between two frames: 
-		- MainFrame owns ShipBulderFrame, ShipBulderFrame takes MainFrame& in cctor
+		- MainFrame owns ShipBulderFrame, ShipBulderFrame takes std::function(...ship...) "ReturnToGame" in cctor
+			- Latter may be null for stand-alone test
 		- Switch implemented via:
 			- MainFrame::SwitchToShipBuilder: invoked by MainFrame when user switches to ship builder
 				- Stops game loop
@@ -33,12 +37,19 @@
 				- Invokes ShipBuilder::MainFrame::Open(...ship...)
 			- ShipBuilder::MainFrame::ReturnToGame: invoked by ShipBuilder::MainFrame when user returns to game
 				- Hides self
-				- Invokes MainFrame::ReturnToGame(...ship...)
+				- Invokes std::function(...ship...) "ReturnToGame"
 
-- Tools:
-	- Structure layer:
-		- Pencil
-		- Mass changer
+- RenderContext:
+	- TODO: remember that OpenGL context needs to be created on canvas that is visible
+
+- UI architecture:
+	- Topmost toolbar:
+	- Above main working area: "tab-like" buttons for layers, including "+" to add layers, and horizontal sliding bar for transparency of currently-selected layer
+	- Left toolbar: tools:
+		- Changes content depending on currently-selected layer
+		- Structure layer:
+			- Pencil
+			- Mass changer
 
 - Ship file format:
 	- Min FS version (.shp, .shp2)

@@ -1,6 +1,9 @@
 =================================================
 Current perf:
 =================================================
+1.16.3.next, after OpenGL optimizations (edge springs, etc.)
+- default ship, 20s
+	- Old dell: 31.9 FPS, 19.1 UPD, 11.8 RND (RelWithDebInfo)
 1.16.3.next, after periodic CollisionsWithSeaFloor, and Points::CachedDepths:
 - default_ship, 20s
 	- Old dell: 30.4/30.5 FPS, 18.8/19.1 UPD, 12.7/13.6 RND (RelWithDebInfo)
@@ -510,6 +513,11 @@ Render:
 						+ Texture format: no alpha
 			+ Profiling w/Bubbles
 			+ Perf: 5.68/5.71
+			+ Old dell: 
+				+ Before: 30.4 (19.0, 12-13)
+				+ After: 31.9 (19.1, 11.8)
+		+ Add whistle: pipe_steam_whistle_for_fs.mp3
+			+ changelist
 
 
 		= MAC:
@@ -589,6 +597,8 @@ Render:
 
 		- bishobe64 in Credits?
 	
+		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
+
 		- New ships
 			- changelist
 			
@@ -668,18 +678,12 @@ Render:
 					-
 			+ Remove all TODOTEST logging
 
-		- Try ocean rendering with concentration of waves at top
-
-		- Add whistle: pipe_steam_whistle_for_fs.mp3
-
 		----------------------------------------------------------------------------------------
 
 		- Spring relaxation with intrinsics
 
 		- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
 			- If it works: do "reshader" type of work (*)
-
-		- See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
 
 		- See if may put smoke emitters behind triangles and springs
 			- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;

@@ -67,6 +67,7 @@ enum class SoundType : uint32_t
     ShipHorn1,
     ShipHorn2,
     ShipHorn3,
+    ShipHorn4,
     ShipKlaxon1,
     ShipNuclearAlarm1,
     WaterRush,

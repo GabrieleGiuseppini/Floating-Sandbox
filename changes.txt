@@ -11,6 +11,7 @@
 	- Also improved scheduling to reduce cacophony with widespread destruction
 - Added "direction lock" to slice tool - hitting the SHIFT key during a cut locks its direction
 - Improved rain
+- Added new horn sound - thanks to Officer TimCan!
 - ...and a few more small improvements here and there!
 
 1.16.3
