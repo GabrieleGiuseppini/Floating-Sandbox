@@ -3743,41 +3743,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(2, 0),
-            wxGBSpan(1, 3),
+            wxGBSpan(1, 5),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
-            CellBorderInner);
-    }
-
-    // Ship
-    {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Ship"));
-
-        {
-            wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
-
-            // Show Stress
-            {
-                mShowStressCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Show Stress"));
-                mShowStressCheckBox->SetToolTip(_("Enables or disables highlighting of the springs that are under heavy stress and close to rupture."));
-                mShowStressCheckBox->Bind(
-                    wxEVT_COMMAND_CHECKBOX_CLICKED,
-                    [this](wxCommandEvent & event)
-                    {
-                        mLiveSettings.SetValue(GameSettings::ShowShipStress, event.IsChecked());
-                        OnLiveSettingsChanged();
-                    });
-
-                sizer->Add(mShowStressCheckBox, 0, wxALL | wxALIGN_LEFT, 5);
-            }
-
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
-        }
-
-        gridSizer->Add(
-            boxSizer,
-            wxGBPosition(2, 4),
-            wxGBSpan(1, 1),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
 
@@ -4213,6 +4180,20 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                 });
 
             boxSizer->Add(mShowAABBsCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
+        }
+
+        {
+            mShowStressCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Show Stress"));
+            mShowStressCheckBox->SetToolTip(_("Enables or disables highlighting of the springs that are under heavy stress and close to rupture."));
+            mShowStressCheckBox->Bind(
+                wxEVT_COMMAND_CHECKBOX_CLICKED,
+                [this](wxCommandEvent & event)
+                {
+                    mLiveSettings.SetValue(GameSettings::ShowShipStress, event.IsChecked());
+                    OnLiveSettingsChanged();
+                });
+
+            boxSizer->Add(mShowStressCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
         }
 
         {
@@ -4969,7 +4950,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mHeatSensitivitySlider->SetValue(settings.GetValue<float>(GameSettings::HeatSensitivity));
     mHeatSensitivitySlider->Enable(heatRenderMode != HeatRenderModeType::None);
     mShipFlameSizeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipFlameSizeAdjustment));
-    mShowStressCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipStress));
 
     auto const defaultWaterColor = settings.GetValue<rgbColor>(GameSettings::DefaultWaterColor);
     mDefaultWaterColorPicker->SetColour(wxColor(defaultWaterColor.r, defaultWaterColor.g, defaultWaterColor.b));
@@ -5040,6 +5020,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDrawFlamesCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DrawFlames));
     mShowFrontiersCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipFrontiers));
     mShowAABBsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowAABBs));
+    mShowStressCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipStress));
     mDrawHeatBlasterFlameCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DrawHeatBlasterFlame));
 
     switch (settings.GetValue<VectorFieldRenderModeType>(GameSettings::VectorFieldRenderMode))

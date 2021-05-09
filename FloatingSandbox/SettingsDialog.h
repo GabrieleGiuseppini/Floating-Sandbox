@@ -167,7 +167,6 @@ private:
     wxRadioBox * mHeatRenderModeRadioBox;
     SliderControl<float> * mHeatSensitivitySlider;
     SliderControl<float> * mShipFlameSizeAdjustmentSlider;
-    wxCheckBox * mShowStressCheckBox;
     wxColourPickerCtrl * mDefaultWaterColorPicker;
     SliderControl<float> * mWaterContrastSlider;
     SliderControl<float> * mWaterLevelOfDetailSlider;
@@ -186,6 +185,7 @@ private:
     wxCheckBox * mDrawFlamesCheckBox;
     wxCheckBox * mShowFrontiersCheckBox;
     wxCheckBox * mShowAABBsCheckBox;
+    wxCheckBox * mShowStressCheckBox;
     wxCheckBox * mDrawHeatBlasterFlameCheckBox;
     wxRadioBox * mVectorFieldRenderModeRadioBox;
     wxCheckBox * mGenerateDebrisCheckBox;
