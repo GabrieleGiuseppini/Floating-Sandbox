@@ -544,6 +544,7 @@ SoundController::SoundController(
                 || soundType == SoundType::ShipHorn1
                 || soundType == SoundType::ShipHorn2
                 || soundType == SoundType::ShipHorn3
+                || soundType == SoundType::ShipHorn4
                 || soundType == SoundType::ShipKlaxon1
                 || soundType == SoundType::ShipNuclearAlarm1)
         {
@@ -656,6 +657,22 @@ SoundController::SoundController(
                     {
                         loopStartSample = 1.7388f;
                         loopEndSample = loopStartSample + 1.09977f;
+                    }
+
+                    break;
+                }
+
+                case SoundType::ShipHorn4:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 1.43939f;
+                        loopEndSample = loopStartSample + 1.09732f;
+                    }
+                    else
+                    {
+                        loopStartSample = 2.37601f;
+                        loopEndSample = loopStartSample + 1.3156f;
                     }
 
                     break;
@@ -1836,6 +1853,12 @@ void SoundController::OnShipSoundUpdated(
             case ElectricalMaterial::ShipSoundElementType::Horn3:
             {
                 soundType = SoundType::ShipHorn3;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::Horn4:
+            {
+                soundType = SoundType::ShipHorn4;
                 break;
             }
 

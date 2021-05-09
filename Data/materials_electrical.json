@@ -780,6 +780,23 @@
     },
 
     {
+        "color_key": "#409300",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Horn 4", 
+	"ship_sound_type": "Horn4",
+        "template": {
+            "column": 3, 
+            "row": "15|Horns"
+        }
+    },
+
+    {
         "color_key": "#40A000",
 	"conducts_electricity": false,
         "electrical_type": "ShipSound", 
@@ -791,7 +808,7 @@
         "name": "Bell 1", 
 	"ship_sound_type": "Bell1",
         "template": {
-            "column": 3, 
+            "column": 4, 
             "row": "15|Bells"
         }
     },
@@ -808,7 +825,7 @@
         "name": "Bell 2", 
 	"ship_sound_type": "Bell2",
         "template": {
-            "column": 4, 
+            "column": 5, 
             "row": "15|Bells"
         }
     },
@@ -825,7 +842,7 @@
         "name": "Klaxon 1", 
 	"ship_sound_type": "Klaxon1",
         "template": {
-            "column": 5, 
+            "column": 6, 
             "row": "15|Klaxon"
         }
     },
@@ -842,7 +859,7 @@
         "name": "Klaxon 1", 
 	"ship_sound_type": "NuclearAlarm1",
         "template": {
-            "column": 6, 
+            "column": 7, 
             "row": "15|Nuclear Alarm"
         }
     },
