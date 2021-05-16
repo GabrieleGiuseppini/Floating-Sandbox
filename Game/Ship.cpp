@@ -74,7 +74,6 @@ Ship::Ship(
     , mGameEventHandler(std::move(gameEventDispatcher))
     , mTaskThreadPool(std::move(taskThreadPool))
     , mEventRecorder(nullptr)
-    , mDebugMarker()
     , mSize(points.GetAABB().GetSize())
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
@@ -92,6 +91,7 @@ Ship::Ship(
         *this,
         mPoints,
         mSprings)
+    , mOverlays()
     , mCurrentSimulationSequenceNumber()
     , mCurrentConnectivityVisitSequenceNumber()
     , mMaxMaxPlaneId(0)
@@ -287,10 +287,10 @@ void Ship::Update(
     // Also calculates cached depths
     ///////////////////////////////////////////////////////////////////
 
-    if (gameParameters.DoDisplaceWater)
-        ApplyWorldForces<true>(stormParameters, gameParameters, aabbSet);
-    else
-        ApplyWorldForces<false>(stormParameters, gameParameters, aabbSet);
+    ApplyWorldForces(
+        stormParameters,
+        gameParameters,
+        aabbSet);
 
     // Cached depths are valid from now on --------------------------->
 
@@ -703,13 +703,12 @@ void Ship::RenderUpload(Render::RenderContext & renderContext)
     UploadStateMachines(renderContext);
 
     //
-    // Upload debug
+    // Upload overlays
     //
 
-    mDebugMarker.Upload(
+    mOverlays.Upload(
         mId,
         renderContext);
-
 
     //////////////////////////////////////////////////////////////////////////////
 
@@ -757,16 +756,11 @@ void Ship::Finalize()
 // Mechanical Dynamics
 ///////////////////////////////////////////////////////////////////////////////////
 
-template<bool DoDisplaceWater>
 void Ship::ApplyWorldForces(
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters,
     Geometry::AABBSet & aabbSet)
 {
-    ///////////////////////////////////////////////////////////////////////////////////////
-    // Apply per-particle forces
-    ///////////////////////////////////////////////////////////////////////////////////////
-
     float const effectiveAirTemperature =
         gameParameters.AirTemperature
         + stormParameters.AirTemperatureDelta;
@@ -777,11 +771,31 @@ void Ship::ApplyWorldForces(
         / (1.0f + GameParameters::AirThermalExpansionCoefficient * (effectiveAirTemperature - GameParameters::Temperature0));
 
     // Density of water, adjusted for temperature and manual adjustment
-    float const effectiveWaterDensity  =
+    float const effectiveWaterDensity =
         GameParameters::WaterMass
-        / (1.0f + GameParameters::WaterThermalExpansionCoefficient * (gameParameters.WaterTemperature - GameParameters::Temperature0) )
+        / (1.0f + GameParameters::WaterThermalExpansionCoefficient * (gameParameters.WaterTemperature - GameParameters::Temperature0))
         * gameParameters.WaterDensityAdjustment;
 
+    // New buffer to which new cached depths will be written to
+    std::shared_ptr<Buffer<float>> newCachedPointDepths = mPoints.AllocateWorkBufferFloat();
+
+    ApplyWorldParticleForces(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters);
+
+    if (gameParameters.DoDisplaceWater)
+        ApplyWorldSurfaceForces<true, true>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters, aabbSet);
+    else
+        ApplyWorldSurfaceForces<false, true>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters, aabbSet);
+
+    // Commit new buffer
+    mPoints.SwapCachedDepthBuffer(*newCachedPointDepths);
+}
+
+void Ship::ApplyWorldParticleForces(
+    float effectiveAirDensity,
+    float effectiveWaterDensity,
+    Buffer<float> & newCachedPointDepths,
+    GameParameters const & gameParameters)
+{
     // Wind force:
     //  Km/h -> Newton: F = 1/2 rho v**2 A
     float constexpr WindVelocityConversionFactor = 1000.0f / 3600.0f;
@@ -801,10 +815,7 @@ void Ship::ApplyWorldForces(
         GameParameters::WaterFrictionDragCoefficient
         * gameParameters.WaterFrictionDragAdjustment;
 
-    // New buffer for cached depths, which are calculated here
-    std::shared_ptr<Buffer<float>> newCachedPointDepths = mPoints.AllocateWorkBufferFloat();
-    float * const restrict newCachedPointDepthsBuffer = newCachedPointDepths->data();
-
+    float * const restrict newCachedPointDepthsBuffer = newCachedPointDepths.data();
     vec2f * const restrict nonSpringForcesBuffer = mPoints.GetNonSpringForceBufferAsVec2();
 
     for (auto pointIndex : mPoints.BufferElements())
@@ -861,7 +872,7 @@ void Ship::ApplyWorldForces(
         //
 
         nonSpringForce +=
-            - mPoints.GetVelocity(pointIndex)
+            -mPoints.GetVelocity(pointIndex)
             * Mix(airFrictionDragCoefficient, waterFrictionDragCoefficient, uwCoefficient);
 
         //
@@ -876,11 +887,16 @@ void Ship::ApplyWorldForces(
 
         nonSpringForcesBuffer[pointIndex] += nonSpringForce;
     }
+}
 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    // Apply per-surface forces
-    ///////////////////////////////////////////////////////////////////////////////////////
-
+template<bool DoDisplaceWater, bool DoHydrostaticPressure>
+void Ship::ApplyWorldSurfaceForces(
+    float effectiveAirDensity,
+    float effectiveWaterDensity,
+    Buffer<float> & newCachedPointDepths,
+    GameParameters const & gameParameters,
+    Geometry::AABBSet & aabbSet)
+{
     //
     // Drag constants
     //
@@ -926,31 +942,67 @@ void Ship::ApplyWorldForces(
 
         assert(frontier.Size >= 3);
 
-        ElementIndex startEdgeIndex = frontier.StartingEdgeIndex;
+        ElementIndex const startEdgeIndex = frontier.StartingEdgeIndex;
 
-        // Take previous point
-        auto const & previousFrontierEdge = mFrontiers.GetFrontierEdge(startEdgeIndex);
-        vec2f previousPointPosition = mPoints.GetPosition(previousFrontierEdge.PointAIndex);
-        startEdgeIndex = previousFrontierEdge.NextEdgeIndex;
+        //
+        // 1. If we're doing hydrostatic pressure, calculate geometric center
+        //
 
-        // Take this point
-        auto const & frontierEdge = mFrontiers.GetFrontierEdge(startEdgeIndex);
-        ElementIndex pointIndex = frontierEdge.PointAIndex;
-        vec2f pointPosition = mPoints.GetPosition(pointIndex);
-        startEdgeIndex = frontierEdge.NextEdgeIndex;
+        vec2f geometricCenterPosition = vec2f::zero();
+
+        if constexpr (DoHydrostaticPressure)
+        {
+            for (ElementIndex edgeIndex = startEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
+            {
+                auto const & frontierEdge = mFrontiers.GetFrontierEdge(edgeIndex);
+
+                geometricCenterPosition += mPoints.GetPosition(frontierEdge.PointAIndex);
+
+                edgeIndex = frontierEdge.NextEdgeIndex;
+                if (edgeIndex == startEdgeIndex)
+                    break;
+            }
+
+            geometricCenterPosition /= static_cast<float>(frontier.Size);
+
+            // TODOTEST: new setting for this
+            mOverlays.AddCenter(
+                mPoints.GetPlaneId(mFrontiers.GetFrontierEdge(startEdgeIndex).PointAIndex),
+                geometricCenterPosition);
+        }
+
+        //
+        // 2. Apply surface forces
+        //
 
         // Initialize AABB
         Geometry::AABB aabb;
+
+        // Initialize resultant hydrostatic pressure forces
+        // TODOHERE
+        vec2f netHydrostaticPressureForceApplied = vec2f::zero();
+        // TODOTEST
+        float const todoFrontierPressureDepth = mParentWorld.GetDepth(geometricCenterPosition);
 
         //
         // Visit all edges of this frontier
         //
 
+        // Take previous point
+        auto const & previousFrontierEdge = mFrontiers.GetFrontierEdge(startEdgeIndex);
+        vec2f previousPointPosition = mPoints.GetPosition(previousFrontierEdge.PointAIndex);
+
+        // Take this point
+        auto const & thisFrontierEdge = mFrontiers.GetFrontierEdge(previousFrontierEdge.NextEdgeIndex);
+        ElementIndex thisPointIndex = thisFrontierEdge.PointAIndex;
+        vec2f thisPointPosition = mPoints.GetPosition(thisPointIndex);
+
 #ifdef _DEBUG
         size_t visitedPoints = 0;
 #endif
 
-        for (ElementIndex nextEdgeIndex = startEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
+        ElementIndex const visitStartEdgeIndex = thisFrontierEdge.NextEdgeIndex;
+        for (ElementIndex nextEdgeIndex = visitStartEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
         {
 
 #ifdef _DEBUG
@@ -963,7 +1015,7 @@ void Ship::ApplyWorldForces(
 
             if (frontier.Type == FrontierType::External)
             {
-                aabb.ExtendTo(pointPosition);
+                aabb.ExtendTo(thisPointPosition);
             }
 
             // Get next edge and point
@@ -990,29 +1042,29 @@ void Ship::ApplyWorldForces(
             // we have to cap the force to prevent velocity overcome.
             //
 
-            // Normal to surface - calculated between p1 and p3
-            vec2f const normal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
+            // Normal to surface - calculated between p1 and p3; points outside
+            vec2f const surfaceNormal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
 
             // Velocity along normal - capped to the same direction as velocity, to avoid suction force
             // (i.e. drag force attracting surface facing opposite of velocity)
             float const velocityMagnitudeAlongNormal = std::max(
-                mPoints.GetVelocity(pointIndex).dot(normal),
+                mPoints.GetVelocity(thisPointIndex).dot(surfaceNormal),
                 0.0f);
 
             // Max drag force magnitude: m * (V dot Nn) / dt
             float const maxDragForceMagnitude =
-                mPoints.GetMass(pointIndex) * velocityMagnitudeAlongNormal
+                mPoints.GetMass(thisPointIndex) * velocityMagnitudeAlongNormal
                 / GameParameters::SimulationStepTimeDuration<float>;
 
             // Get point depth (positive at greater depths, negative over-water)
-            float const pointDepth = mPoints.GetCachedDepth(pointIndex);
+            float const thisPointDepth = newCachedPointDepths[thisPointIndex];
 
             // Calculate drag coefficient: air or water, with soft transition
             // to avoid discontinuities in drag force close to the air-water interface
             float const dragCoefficient = Mix(
                 airPressureDragCoefficient,
                 waterPressureDragCoefficient,
-                Clamp(pointDepth, 0.0f, 1.0f));
+                Clamp(thisPointDepth, 0.0f, 1.0f));
 
             // Calculate magnitude of drag force (opposite sign)
             //  - C * |V| * cos(a) == - C * |V| * (Vn dot Nn) == -C * (V dot Nn)
@@ -1020,12 +1072,12 @@ void Ship::ApplyWorldForces(
                 dragCoefficient
                 * velocityMagnitudeAlongNormal;
 
-            // Final drag force - at this moment in the direction of the normal
-            vec2f const dragForce = normal * std::min(dragForceMagnitude, maxDragForceMagnitude);
+            // Final drag force - at this moment in the direction of the normal (i.e. outside)
+            vec2f const dragForce = surfaceNormal * std::min(dragForceMagnitude, maxDragForceMagnitude);
 
             // Apply drag force
             mPoints.AddNonSpringForce(
-                pointIndex,
+                thisPointIndex,
                 -dragForce);
 
             //
@@ -1043,7 +1095,7 @@ void Ship::ApplyWorldForces(
 
             if constexpr (DoDisplaceWater)
             {
-                float const verticalVelocity = mPoints.GetVelocity(pointIndex).y;
+                float const verticalVelocity = mPoints.GetVelocity(thisPointIndex).y;
                 float const absVerticalVelocity = std::abs(verticalVelocity);
 
                 //
@@ -1067,7 +1119,7 @@ void Ship::ApplyWorldForces(
                     * (verticalVelocity <= 0.0f ? 12.0f : 4.0f); // Keep up-push low or else bodies keep jumping up and down forever
 
                 // Linear attenuation up to maxDepth
-                float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, pointDepth); // Tapers down contribution the deeper the point is
+                float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, thisPointDepth); // Tapers down contribution the deeper the point is
 
                 //
                 // Mass impact
@@ -1080,7 +1132,7 @@ void Ship::ApplyWorldForces(
                 float constexpr Mass2 = 1000.0f;
                 float constexpr Impact2 = 25.0f;
 
-                float const massImpact = Impact1 + (mPoints.GetMass(pointIndex) - Mass1) * (Impact2 - Impact1) / (Mass2 - Mass1);
+                float const massImpact = Impact1 + (mPoints.GetMass(thisPointIndex) - Mass1) * (Impact2 - Impact1) / (Mass2 - Mass1);
 
                 //
                 // Displacement
@@ -1091,35 +1143,98 @@ void Ship::ApplyWorldForces(
                     * massImpact
                     * depthAttenuation
                     * SignStep(0.0f, verticalVelocity) // Displacement has same sign as vertical velocity
-                    * Step(0.0f, pointDepth) // No displacement for above-water points
+                    * Step(0.0f, thisPointDepth) // No displacement for above-water points
                     * 0.02f; // Magic number
 
-                mParentWorld.DisplaceOceanSurfaceAt(pointPosition.x, displacement);
+                mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, displacement);
             }
 
             //
-            // Advance edge in the frontier
+            // Hydrostatic pressure
+            //
+
+            if constexpr (DoHydrostaticPressure)
+            {
+                // TODOHERE: optimize with constants
+                // TODO: use (to-be-added) adjustment setting
+                float const externalPressure =
+                    // TODOTEST
+                    //std::max(thisPointDepth, 0.0f)
+                    std::max(todoFrontierPressureDepth, 0.0f)
+                    * GameParameters::GravityMagnitude
+                    * GameParameters::WaterMass
+                    * gameParameters.WaterDensityAdjustment;
+
+                // Calculate force - opposite to normal (i.e. pointing inside)
+                vec2f const hydrostaticPressureForce = -surfaceNormal * externalPressure;
+
+                // Apply hydrostatic pressure
+                mPoints.AddNonSpringForce(thisPointIndex, hydrostaticPressureForce);
+
+                // Update total sum of hydrostatic pressure force applied
+                netHydrostaticPressureForceApplied += hydrostaticPressureForce;
+            }
+
+            //
+            // Advance edge in the frontier visit
             //
 
             nextEdgeIndex = nextFrontierEdge.NextEdgeIndex;
-            if (nextEdgeIndex == startEdgeIndex)
+            if (nextEdgeIndex == visitStartEdgeIndex)
                 break;
 
-            previousPointPosition = pointPosition;
-            pointPosition = nextPointPosition;
-            pointIndex = nextPointIndex;
+            previousPointPosition = thisPointPosition;
+            thisPointPosition = nextPointPosition;
+            thisPointIndex = nextPointIndex;
         }
 
 #ifdef _DEBUG
         assert(visitedPoints == frontier.Size);
 #endif
 
+        if constexpr (DoHydrostaticPressure)
+        {
+            //
+            // Given that we calculate buoyancy separately, hydrostatic pressure
+            // needs to be for us a zero-sum force.
+            //
+            // To enforce its zero-sumness, we now apply the opposite (likely non-zero)
+            // sum of forces applied so far
+            //
+
+            vec2f const particleZeroingForce = -netHydrostaticPressureForceApplied / static_cast<float>(frontier.Size);
+
+#ifdef _DEBUG
+            visitedPoints = 0;
+#endif
+
+            for (ElementIndex edgeIndex = startEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
+            {
+
+#ifdef _DEBUG
+                ++visitedPoints;
+#endif
+                auto const & frontierEdge = mFrontiers.GetFrontierEdge(edgeIndex);
+
+                ElementIndex const pointIndex = frontierEdge.PointAIndex;
+
+                // Apply force
+                mPoints.AddNonSpringForce(pointIndex, particleZeroingForce);
+
+                // Advance
+                edgeIndex = frontierEdge.NextEdgeIndex;
+                if (edgeIndex == startEdgeIndex)
+                    break;
+            }
+
+#ifdef _DEBUG
+            assert(visitedPoints == frontier.Size);
+#endif
+        }
+
         // Store AABB
         aabbSet.Add(std::move(aabb));
     }
-
-    // Store new cached depths
-    mPoints.SwapCachedDepthBuffer(*newCachedPointDepths);
 }
 
 void Ship::ApplySpringsForces_BySprings(GameParameters const & /*gameParameters*/)

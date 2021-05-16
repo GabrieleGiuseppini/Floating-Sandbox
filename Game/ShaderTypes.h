@@ -41,6 +41,7 @@ enum class ProgramType
     OceanTextureDetailedForeground,
     PhysicsProbePanel,
     Rain,
+    ShipCenters,
     ShipCircleHighlights,
     ShipElectricalElementHighlights,
     ShipExplosions,
@@ -205,6 +206,9 @@ enum class VertexAttributeType : GLuint
     Highlight3 = 2,
 
     VectorArrow = 0,
+
+    Center1 = 0,
+    Center2 = 1,
 
     PointToPointArrow1 = 0,
     PointToPointArrow2 = 1,

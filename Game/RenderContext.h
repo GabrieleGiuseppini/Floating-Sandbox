@@ -154,6 +154,11 @@ public:
         return mRenderParameters.View.CalculateZoomForWorldHeight(worldHeight);
     }
 
+    ViewModel const & GetViewModel() const
+    {
+        return mRenderParameters.View;
+    }
+
     //
 
     float GetAmbientLightIntensity() const

@@ -265,20 +265,20 @@ public:
 
     inline float PixelWidthToWorldWidth(float pixelWidth) const
     {
-        // Width in NDC coordinates (between 0 and 2.0)
-        float const ndcW = 2.0f * pixelWidth / static_cast<float>(mCanvasPhysicalPixelSize.width);
+        // Width between 0 and 1.0
+        float const ndcW = pixelWidth / static_cast<float>(mCanvasPhysicalPixelSize.width);
 
-        // An NDC width of 2 is the entire visible world width
-        return (ndcW / 2.0f) * mVisibleWorld.Width;
+        // A width of 1 is the entire visible world width
+        return ndcW * mVisibleWorld.Width;
     }
 
     inline float PixelHeightToWorldHeight(float pixelHeight) const
     {
-        // Height in NDC coordinates (between 0 and 2.0)
-        float const ndcH = 2.0f * pixelHeight / static_cast<float>(mCanvasPhysicalPixelSize.height);
+        // Height between 0 and 1.0
+        float const ndcH = pixelHeight / static_cast<float>(mCanvasPhysicalPixelSize.height);
 
-        // An NDC height of 2 is the entire visible world height
-        return (ndcH / 2.0f) * mVisibleWorld.Height;
+        // An NDC height of 1 is the entire visible world height
+        return ndcH * mVisibleWorld.Height;
     }
 
     /*

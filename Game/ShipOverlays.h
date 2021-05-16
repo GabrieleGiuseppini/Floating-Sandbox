@@ -16,9 +16,22 @@
 namespace Physics
 {
 
-class DebugMarker
+class ShipOverlays
 {
 private:
+
+    struct Center
+    {
+        PlaneId Plane;
+        vec2f Position;
+
+        Center(
+            PlaneId plane,
+            vec2f const & position)
+            : Plane(plane)
+            , Position(position)
+        {}
+    };
 
     struct PointToPointArrow
     {
@@ -41,18 +54,27 @@ private:
 
 public:
 
-    DebugMarker()
+    ShipOverlays()
         : mPointToPointArrows()
         , mIsPointToPointArrowsBufferDirty(true)
     {}
 
     void Upload(
         ShipId shipId,
-        Render::RenderContext & renderContext) const;
+        Render::RenderContext & renderContext);
 
 public:
 
-    void ClearPointToPointArrows();
+    void AddCenter(
+        PlaneId planeId,
+        vec2f const & center)
+    {
+        mCenters.emplace_back(
+            planeId,
+            center);
+
+        mIsCentersBufferDirty = true;
+    }
 
     void AddPointToPointArrow(
         PlaneId planeId,
@@ -70,6 +92,14 @@ public:
     }
 
 private:
+
+    //
+    // Centers
+    //
+
+    std::vector<Center> mCenters;
+
+    bool mutable mIsCentersBufferDirty;
 
     //
     // Point-to-point arrows

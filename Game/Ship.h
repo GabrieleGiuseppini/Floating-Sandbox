@@ -5,7 +5,6 @@
  ***************************************************************************************/
 #pragma once
 
-#include "DebugMarker.h"
 #include "EventRecorder.h"
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
@@ -13,6 +12,7 @@
 #include "Physics.h"
 #include "RenderContext.h"
 #include "ShipDefinition.h"
+#include "ShipOverlays.h"
 
 #include <GameCore/AABBSet.h>
 #include <GameCore/GameTypes.h>
@@ -267,9 +267,22 @@ private:
 
     // Mechanical
 
-    template<bool DoDisplaceWater>
     void ApplyWorldForces(
         Storm::Parameters const & stormParameters,
+        GameParameters const & gameParameters,
+        Geometry::AABBSet & aabbSet);
+
+    void ApplyWorldParticleForces(
+        float effectiveAirDensity,
+        float effectiveWaterDensity,
+        Buffer<float> & newCachedPointDepths,
+        GameParameters const & gameParameters);
+
+    template<bool DoDisplaceWater, bool DoHydrostaticPressure>
+    void ApplyWorldSurfaceForces(
+        float effectiveAirDensity,
+        float effectiveWaterDensity,
+        Buffer<float> & newCachedPointDepths,
         GameParameters const & gameParameters,
         Geometry::AABBSet & aabbSet);
 
@@ -560,7 +573,6 @@ private:
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
     std::shared_ptr<TaskThreadPool> mTaskThreadPool;
     EventRecorder * mEventRecorder;
-    DebugMarker mDebugMarker;
 
     // The (initial) world size of  the ship
     vec2f const mSize;
@@ -577,6 +589,9 @@ private:
 
     // Gadgets
     Gadgets mGadgets;
+
+    // Overlays
+    ShipOverlays mOverlays;
 
     // The current simulation sequence number
     SequenceNumber mCurrentSimulationSequenceNumber;
