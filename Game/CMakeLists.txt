@@ -54,9 +54,7 @@ set  (PHYSICS_SOURCES
 	AntiMatterBombGadget.h
 	AntiMatterBombGadget.cpp
 	Clouds.cpp
-	Clouds.h
-	DebugMarker.cpp
-	DebugMarker.h
+	Clouds.h	
 	ElectricalElements.cpp
 	ElectricalElements.h
 	Fishes.cpp
@@ -89,6 +87,8 @@ set  (PHYSICS_SOURCES
 	Ship_StateMachines.cpp
 	Ship_StateMachines.h
 	Ship.h
+	ShipOverlays.cpp
+	ShipOverlays.h
 	Springs.cpp
 	Springs.h
 	Stars.cpp

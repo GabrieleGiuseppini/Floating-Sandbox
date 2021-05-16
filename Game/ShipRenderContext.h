@@ -683,8 +683,68 @@ public:
         vec4f const & color);
 
     //
-    // Debug
+    // Overlays
     //
+
+    void UploadCentersStart(size_t count);
+
+    inline void UploadCenter(
+        PlaneId planeId,
+        vec2f const & position,
+        ViewModel const & viewModel)
+    {
+        float const fPlaneId = static_cast<float>(planeId);
+
+        // Append vertices - two triangles
+
+        float const halfQuadWorldSize = viewModel.PixelWidthToWorldWidth(18.0f); // We want the quad size to be independent from zoom
+        float const leftX = position.x - halfQuadWorldSize;
+        float const rightX = position.x + halfQuadWorldSize;
+        float const topY = position.y - halfQuadWorldSize;
+        float const bottomY = position.y + halfQuadWorldSize;
+
+        // Triangle 1
+
+        // Top-left
+        mCenterVertexBuffer.emplace_back(
+            vec2f(leftX, topY),
+            vec2f(-1.0f, 1.0f),
+            fPlaneId);
+
+        // Top-Right
+        mCenterVertexBuffer.emplace_back(
+            vec2f(rightX, topY),
+            vec2f(1.0f, 1.0f),
+            fPlaneId);
+
+        // Bottom-left
+        mCenterVertexBuffer.emplace_back(
+            vec2f(leftX, bottomY),
+            vec2f(-1.0f, -1.0f),
+            fPlaneId);
+
+        // Triangle 2
+
+        // Top-Right
+        mCenterVertexBuffer.emplace_back(
+            vec2f(rightX, topY),
+            vec2f(1.0f, 1.0f),
+            fPlaneId);
+
+        // Bottom-left
+        mCenterVertexBuffer.emplace_back(
+            vec2f(leftX, bottomY),
+            vec2f(-1.0f, -1.0f),
+            fPlaneId);
+
+        // Bottom-right
+        mCenterVertexBuffer.emplace_back(
+            vec2f(rightX, bottomY),
+            vec2f(1.0f, -1.0f),
+            fPlaneId);
+    }
+
+    void UploadCentersEnd();
 
     void UploadPointToPointArrowsStart(size_t count);
 
@@ -960,6 +1020,9 @@ private:
     void RenderPrepareVectorArrows(RenderParameters const & renderParameters);
     void RenderDrawVectorArrows(RenderParameters const & renderParameters);
 
+    void RenderPrepareCenters(RenderParameters const & renderParameters);
+    void RenderDrawCenters(RenderParameters const & renderParameters);
+
     void RenderPreparePointToPointArrows(RenderParameters const & renderParameters);
     void RenderDrawPointToPointArrows(RenderParameters const & renderParameters);
 
@@ -1144,6 +1207,22 @@ private:
         {}
     };
 
+    struct CenterVertex
+    {
+        vec2f vertexPosition;
+        vec2f vertexSpacePosition;
+        float planeId;
+
+        CenterVertex(
+            vec2f _vertexPosition,
+            vec2f _vertexSpacePosition,
+            float _planeId)
+            : vertexPosition(_vertexPosition)
+            , vertexSpacePosition(_vertexSpacePosition)
+            , planeId(_planeId)
+        {}
+    };
+
     struct PointToPointArrowVertex
     {
         vec2f vertexPosition;
@@ -1230,7 +1309,13 @@ private:
     vec4f mVectorArrowColor;
     bool mIsVectorArrowColorDirty;
 
+    std::vector<CenterVertex> mCenterVertexBuffer;
+    bool mIsCenterVertexBufferDirty;
+    GameOpenGLVBO mCenterVBO;
+    size_t mCenterVBOAllocatedVertexSize;
+
     std::vector<PointToPointArrowVertex> mPointToPointArrowVertexBuffer;
+    bool mIsPointToPointArrowsVertexBufferDirty;
     GameOpenGLVBO mPointToPointArrowVBO;
     size_t mPointToPointArrowVBOAllocatedVertexSize;
 
@@ -1268,6 +1353,7 @@ private:
     GameOpenGLVAO mGenericMipMappedTextureVAO;
     GameOpenGLVAO mHighlightVAO;
     GameOpenGLVAO mVectorArrowVAO;
+    GameOpenGLVAO mCenterVAO;
     GameOpenGLVAO mPointToPointArrowVAO;
 
     //

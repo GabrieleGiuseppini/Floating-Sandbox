@@ -61,6 +61,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::PhysicsProbePanel;
     else if (lstr == "rain")
         return ProgramType::Rain;
+    else if (lstr == "ship_centers")
+        return ProgramType::ShipCenters;
     else if (lstr == "ship_circle_highlights")
         return ProgramType::ShipCircleHighlights;
     else if (lstr == "ship_electrical_element_highlights")
@@ -183,6 +185,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "PhysicsProbePanel";
     case ProgramType::Rain:
         return "Rain";
+    case ProgramType::ShipCenters:
+        return "ShipCenters";
     case ProgramType::ShipCircleHighlights:
         return "ShipCircleHighlights";
     case ProgramType::ShipElectricalElementHighlights:
@@ -511,6 +515,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Highlight3;
     else if (Utils::CaseInsensitiveEquals(str, "VectorArrow"))
         return VertexAttributeType::VectorArrow;
+    else if (Utils::CaseInsensitiveEquals(str, "Center1"))
+        return VertexAttributeType::Center1;
+    else if (Utils::CaseInsensitiveEquals(str, "Center2"))
+        return VertexAttributeType::Center2;
     else if (Utils::CaseInsensitiveEquals(str, "PointToPointArrow1"))
         return VertexAttributeType::PointToPointArrow1;
     else if (Utils::CaseInsensitiveEquals(str, "PointToPointArrow2"))

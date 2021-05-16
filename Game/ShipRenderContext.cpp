@@ -83,7 +83,13 @@ ShipRenderContext::ShipRenderContext(
     , mVectorArrowColor(0.0f, 0.0f, 0.0f, 1.0f)
     , mIsVectorArrowColorDirty(true)
     //
+    , mCenterVertexBuffer()
+    , mIsCenterVertexBufferDirty(true)
+    , mCenterVBO()
+    , mCenterVBOAllocatedVertexSize(0u)
+    //
     , mPointToPointArrowVertexBuffer()
+    , mIsPointToPointArrowsVertexBufferDirty(true)
     , mPointToPointArrowVBO()
     , mPointToPointArrowVBOAllocatedVertexSize(0u)
     // Element (index) buffers
@@ -107,6 +113,7 @@ ShipRenderContext::ShipRenderContext(
     , mSparkleVAO()
     , mGenericMipMappedTextureVAO()
     , mVectorArrowVAO()
+    , mCenterVAO()
     , mPointToPointArrowVAO()
     // Ship structure programs
     , mShipPointsProgram(ProgramType::ShipPointsColor) // Will be recalculated
@@ -136,8 +143,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[14];
-    glGenBuffers(14, vbos);
+    GLuint vbos[15];
+    glGenBuffers(15, vbos);
     CheckOpenGLError();
 
     mPointAttributeGroup1VBO = vbos[0];
@@ -182,10 +189,11 @@ ShipRenderContext::ShipRenderContext(
 
     mVectorArrowVBO = vbos[12];
 
-    mPointToPointArrowVBO = vbos[13];
+    mCenterVBO = vbos[13];
+
+    mPointToPointArrowVBO = vbos[14];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 
     //
     // Initialize element (index) buffers
@@ -393,6 +401,30 @@ ShipRenderContext::ShipRenderContext(
         glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::VectorArrow));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::VectorArrow), 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), (void*)(0));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+
+    //
+    // Initialize Center VAO
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mCenterVAO = tmpGLuint;
+
+        glBindVertexArray(*mCenterVAO);
+        CheckOpenGLError();
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mCenterVBO);
+        static_assert(sizeof(CenterVertex) == (2 + 2 + 1) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Center1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Center1), 4, GL_FLOAT, GL_FALSE, sizeof(CenterVertex), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Center2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Center2), 1, GL_FLOAT, GL_FALSE, sizeof(CenterVertex), (void *)((2 + 2) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -883,15 +915,40 @@ void ShipRenderContext::UploadVectors(
     }
 }
 
+void ShipRenderContext::UploadCentersStart(size_t count)
+{
+    //
+    // Centers are are sticky as long as start() is not invoked
+    //
+
+    mCenterVertexBuffer.clear();
+    mCenterVertexBuffer.reserve(count);
+
+    mIsCenterVertexBufferDirty = true;
+}
+
+void ShipRenderContext::UploadCentersEnd()
+{
+    // Sort centers by plane ID
+    std::sort(
+        mCenterVertexBuffer.begin(),
+        mCenterVertexBuffer.end(),
+        [](auto const & l, auto const & r)
+        {
+            return l.planeId < r.planeId;
+        });
+}
+
 void ShipRenderContext::UploadPointToPointArrowsStart(size_t count)
 {
     //
-    // Point-to-point arrows are not sticky: we upload them at each frame,
-    // though they will be empty most of the time
+    // Point-to-point arrows are sticky as long as start() is not invoked
     //
 
     mPointToPointArrowVertexBuffer.clear();
     mPointToPointArrowVertexBuffer.reserve(count);
+
+    mIsPointToPointArrowsVertexBufferDirty = true;
 }
 
 void ShipRenderContext::UploadPointToPointArrowsEnd()
@@ -1159,6 +1216,12 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
     //
 
     RenderPrepareVectorArrows(renderParameters);
+
+    //
+    // Prepare centers
+    //
+
+    RenderPrepareCenters(renderParameters);
 
     //
     // Prepare point-to-point arrows
@@ -1435,6 +1498,12 @@ void ShipRenderContext::RenderDraw(
     //
 
     RenderDrawVectorArrows(renderParameters);
+
+    //
+    // Render centers
+    //
+
+    RenderDrawCenters(renderParameters);
 
     //
     // Render point-to-point arrows
@@ -1848,28 +1917,81 @@ void ShipRenderContext::RenderDrawVectorArrows(RenderParameters const & /*render
     }
 }
 
-void ShipRenderContext::RenderPreparePointToPointArrows(RenderParameters const & /*renderParameters*/)
+void ShipRenderContext::RenderPrepareCenters(RenderParameters const & /*renderParameters*/)
 {
-    if (!mPointToPointArrowVertexBuffer.empty())
+    if (mIsCenterVertexBufferDirty)
     {
-        glBindBuffer(GL_ARRAY_BUFFER, *mPointToPointArrowVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mCenterVBO);
 
-        if (mPointToPointArrowVertexBuffer.size() > mPointToPointArrowVBOAllocatedVertexSize)
+        if (!mCenterVertexBuffer.empty())
         {
-            // Re-allocate VBO buffer and upload
-            glBufferData(GL_ARRAY_BUFFER, mPointToPointArrowVertexBuffer.size() * sizeof(PointToPointArrowVertex), mPointToPointArrowVertexBuffer.data(), GL_DYNAMIC_DRAW);
-            CheckOpenGLError();
+            if (mCenterVertexBuffer.size() > mCenterVBOAllocatedVertexSize)
+            {
+                // Re-allocate VBO buffer and upload
+                glBufferData(GL_ARRAY_BUFFER, mCenterVertexBuffer.size() * sizeof(CenterVertex), mCenterVertexBuffer.data(), GL_DYNAMIC_DRAW);
+                CheckOpenGLError();
 
-            mPointToPointArrowVBOAllocatedVertexSize = mPointToPointArrowVertexBuffer.size();
-        }
-        else
-        {
-            // No size change, just upload VBO buffer
-            glBufferSubData(GL_ARRAY_BUFFER, 0, mPointToPointArrowVertexBuffer.size() * sizeof(PointToPointArrowVertex), mPointToPointArrowVertexBuffer.data());
-            CheckOpenGLError();
+                mCenterVBOAllocatedVertexSize = mCenterVertexBuffer.size();
+            }
+            else
+            {
+                // No size change, just upload VBO buffer
+                glBufferSubData(GL_ARRAY_BUFFER, 0, mCenterVertexBuffer.size() * sizeof(CenterVertex), mCenterVertexBuffer.data());
+                CheckOpenGLError();
+            }
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        mIsCenterVertexBufferDirty = false;
+    }
+}
+
+void ShipRenderContext::RenderDrawCenters(RenderParameters const & renderParameters)
+{
+    if (!mCenterVertexBuffer.empty())
+    {
+        glBindVertexArray(*mCenterVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::ShipCenters>();
+
+        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
+            glLineWidth(0.1f);
+
+        assert(0 == (mCenterVertexBuffer.size() % 6));
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mCenterVertexBuffer.size()));
+
+        glBindVertexArray(0);
+    }
+}
+
+void ShipRenderContext::RenderPreparePointToPointArrows(RenderParameters const & /*renderParameters*/)
+{
+    if (mIsPointToPointArrowsVertexBufferDirty)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointToPointArrowVBO);
+
+        if (!mPointToPointArrowVertexBuffer.empty())
+        {
+            if (mPointToPointArrowVertexBuffer.size() > mPointToPointArrowVBOAllocatedVertexSize)
+            {
+                // Re-allocate VBO buffer and upload
+                glBufferData(GL_ARRAY_BUFFER, mPointToPointArrowVertexBuffer.size() * sizeof(PointToPointArrowVertex), mPointToPointArrowVertexBuffer.data(), GL_DYNAMIC_DRAW);
+                CheckOpenGLError();
+
+                mPointToPointArrowVBOAllocatedVertexSize = mPointToPointArrowVertexBuffer.size();
+            }
+            else
+            {
+                // No size change, just upload VBO buffer
+                glBufferSubData(GL_ARRAY_BUFFER, 0, mPointToPointArrowVertexBuffer.size() * sizeof(PointToPointArrowVertex), mPointToPointArrowVertexBuffer.data());
+                CheckOpenGLError();
+            }
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        mIsPointToPointArrowsVertexBufferDirty = false;
     }
 }
 
@@ -1914,7 +2036,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     //      - 7: Sparkles
     //      - 8: Generic textures
     //      - 9: Explosions
-    //      - 10: Highlights
+    //      - 10: Highlights, Centers
     //      - 11: Vectors, Point-to-Point Arrows
     //
 
@@ -2120,7 +2242,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         shipOrthoMatrix);
 
     //
-    // Layer 10: Highlights
+    // Layer 10: Highlights, Centers
     //
 
     view.CalculateShipOrthoMatrix(
@@ -2139,6 +2261,10 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
 
     mShaderManager.ActivateProgram<ProgramType::ShipCircleHighlights>();
     mShaderManager.SetProgramParameter<ProgramType::ShipCircleHighlights, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipCenters>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipCenters, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //

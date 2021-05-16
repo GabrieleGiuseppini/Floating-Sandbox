@@ -26,8 +26,6 @@ void Ship::RepairAt(
 
     float const squareSearchRadius = searchRadius * searchRadius;
 
-    ////mDebugMarker.ClearPointToPointArrows();
-
     //
     // Pass 1: straighten one-spring and two-spring naked springs
     //
@@ -646,10 +644,10 @@ bool Ship::RepairFromAttractor(
                     continue;
                 }
 
-                ////mDebugMarker.AddPointToPointArrow(
-                ////    mPoints.GetPlaneId(otherEndpointIndex),
-                ////    mPoints.GetPosition(otherEndpointIndex),
-                ////    targetOtherEndpointPosition,
+                ////mOverlays.AddPointToPointArrow(
+                ////    mPoints.GetPlaneId(attracteePointIndex),
+                ////    mPoints.GetPosition(attracteePointIndex),
+                ////    targetAttracteePosition,
                 ////    rgbColor(250, 40, 40));
 
                 //

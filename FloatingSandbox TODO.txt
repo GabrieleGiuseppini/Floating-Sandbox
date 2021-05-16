@@ -600,8 +600,8 @@ Render:
 		- New ships
 			- changelist
 			
-		- Frontier-enabled features:			
-			- Pressure implosions / pressure crush (*)			
+		= Frontier-enabled features:			
+			= Pressure implosions / pressure crush (*)			
 			- Transfer of momentum from waves
 				- Option A: by point visit; all points which were not underwater in previous step and are now (via double buffer for Points::CachedDepth), receive force
 				  proportional to OceanSurface::VelocityVector
@@ -609,6 +609,15 @@ Render:
 						- A) SWE + Waves (i.e. full samples)
 						- B) Just SWE
 				- Option B: by point visit; all points in tiny band from depth 0, receive force...same as above....
+
+		- Test optimization: ApplyWorldSurfaceForces: only consider *external* frontiers
+			! No drag, 
+			- Test Base III before: TODO
+			- Test Base III after: TODO
+
+		- Splash sounds at displacement: TOSPEC
+
+		- Impact when ship touches water for first time (*)
 
 		- Localization:
 			- IT
@@ -1295,7 +1304,7 @@ Render:
 	- Fog
 
 	- Continuous auto-focus (*)
-		- Vision: once we have ships, make "Lock Ship in View" flag and move camera with ship's center of mass (representative point or real CoM)
+		- Vision: once we have ships, make "Lock Ship in View" flag and move camera with ship's center
 		- Spec:
 			- Orchestrated by GameController by taking "optimal" AABB from World (which takes union of "optimal" AABB's from each ship)
 			  and giving it to RenderContext, which adjusts ViewModel based on it				
@@ -1423,7 +1432,7 @@ Render:
 		- Kinda as if the originating ship particle's velocity at the moment of generation has a (decaying) impact on the air bubble particle, making it move like an orbit
 
 	- Internal pressure (*)
-		- Basic ideas:
+		- Option 1: a new single "pressure" quantity, separate than Water
 			- New quantity at each particle, much like Water
 			- Intake @ WaterIntake, more or less same concept
 			- New EqualizePressure step to propagate pressure from each particle to its neighbors along springs
@@ -1431,6 +1440,13 @@ Render:
 				- Hullness trick, to ensure that hull particles have pressure (for frontier checking) yet pressure does not propagate through internal hull walls:
 					- Particles do *not* propagate through hull springs
 					- Hull particles do not partecipate in normal propagation, but get average instead of all neighboring particles
+		- Option 2: separate WaterPressure and AirPressure quantities, playing in tandem
+			- At any moment: total pressure at a particle is Water+Air
+			- UpdateWaterIntake:
+				- TODOHERE
+			- UpdatePressures:
+				- 1: Water: like now but with pressure being Water+Air
+				- 2: Air: TODOHERE
 
 	- "Ropes 2" layer with different rope materials
 		- json only allows one ropes layer
@@ -1733,14 +1749,47 @@ Render:
 			- With stiffness going marginally up
 		- Shader?
 
-	- Pressure implosions / pressure crush (*)
+	= Pressure implosions / pressure crush (*)
 		! Requires frontier
 		! Better done after cached quantities - underwater depth (*)		
-		- Plan A: simple: inward forces on (ext and int) (non-leaking) frontier points based on external pressure (density*depth*g) at that point
+		= Plan A: simple: inward forces on (ext and int) (non-leaking) frontier points based on external pressure (density*depth*g) at that point
+			- To decide: only on hull particles or on all instead
 			- Con: does not consider internal pressure/water
-			- Watch out: might generate phantom forces; since it needs to be zero-sum, calc sum as you go and do a second pass adding -sum/N to each particle (...which was involved in the first step)
+			= Phantom forces:
+				+ Verify rotation happens always around *geometric* center, not around *mass* center
+					+ Calc center as first step
+						+ Break up ApplyWorldForces first:
+							+ ApplyWorldParticleForces
+							+ ApplyWorldSurfaceForces
+					+ Rendering of center:
+						+ Physics folder: ShipOverlays
+							+ Just container, member of Ship
+							+ Centers vector: vec2f pos, PlaneId
+							+ Also takes over DebugMarker functionality
+							+ TODO: nail down: allow to be drawn during interactions (hence can't be cleared at beginning of Update())
+								! Remember: upload is always called, also when paused
+								+ ShipOverlays::Upload() only uploads when dirty
+									+ Uploaded stuff is sticky on the RenderContext side
+									+ Self-resets after upload, and then marks itself as dirty so at next upload it will upload emptyness
+							+ Remove clearing of PointToPointArrows during Repair - implied by previous one
+							+ ShipRenderContext::Upload requires ViewModel for NDC
+								+ ShipRenderContext::Upload needs to take ViewModel, given by caller
+							+ Uploaded at each Upload()
+						+ ShipRenderContext::UploadCentersStart/./End
+							+ Quad size is independent from zoom
+							+ Shader: two concentric circles
+				- If so: add contrary momentum
+					- TODOHERE
+				X Another option: use geometric center's depth for entire surface
 		- Plan B: same, but considering internal pressure
 			- Needs "Internal Pressure (*)" first
+		- Finalization:
+			- GameParameters settings:
+				- 1: Enable/disable hydrostatic pressure simulation
+				- 2: Adjustment (or just adjustment, and == 0 disables simulation)
+				- 3: Advanced render: draw centers
+				- SettingsDialog
+			- Center rendering: see if can make centers stick when paused
 
 	- Stars with database
 		- python script to generate binary maps for N and S emispheres
