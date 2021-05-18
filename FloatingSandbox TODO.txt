@@ -610,6 +610,9 @@ Render:
 						- B) Just SWE
 				- Option B: by point visit; all points in tiny band from depth 0, receive force...same as above....
 
+		- See issue with ocean texture shading: texture coords change depending on cam: repro with pause and high zoom
+		- See if may nuke Points::ForceRenderBuffer - though that would mean to lose the interactive forces
+
 		- Test optimization: ApplyWorldSurfaceForces: only consider *external* frontiers
 			! No drag, 
 			- Test Base III before: TODO
@@ -1778,12 +1781,36 @@ Render:
 						+ ShipRenderContext::UploadCentersStart/./End
 							+ Quad size is independent from zoom
 							+ Shader: two concentric circles
-				- If so: add contrary momentum
-					- TODOHERE
-				X Another option: use geometric center's depth for entire surface
+					+ Investigation facts:
+						+ Triangle: inside-pointing normal using before-and-after edges points along edge rather than towards inside of triangle
+						+ Square: normals look ok, yet resultant torque is non-zero (10^-3)
+					= Do:
+						= Cleanup:
+							+ Cleanup code to the point that hydrostatic pressure is applied as only force
+								+ Undo force render buffer as well
+								+ Undo any other TODOTEST
+							- Commit
+							- Do ForceRenderBuffer thing (*)
+								- New Points::NextFrameNonSpringForces buffer
+								- All interactions populate Points::NextFrameNonSpringForces
+								- After Spring+Integrate:
+									- Reset Points::NonSpringForces
+									- Swap Points::NonSpringForces <-> Points::NextFrameNonSpringForces
+									- ...continue as usual...
+								- Points::Upload vectors:
+									- Nuke ForceRenderBuffer
+									- Upload NonSpringForces directly
+						- Hydrostatic pressure: change way of calculating normals and verify:
+							- a: Triangle
+							- b: Square
+				= If so: add contrary torque
+					X Adding resultant torque - even when last remaining is mostly zero or e.g. -8.88178e-16 - still results in rotation
+					- Try with contrary torque being all in the same direction (e.g. upwards)
+				= Another option: use geometric center's depth for entire surface
+					+ Reduces phantom linear forces as there's no more buoyancy (verified), and it makes for better perf
 		- Plan B: same, but considering internal pressure
 			- Needs "Internal Pressure (*)" first
-		- Finalization:
+		- Finalization:						
 			- GameParameters settings:
 				- 1: Enable/disable hydrostatic pressure simulation
 				- 2: Adjustment (or just adjustment, and == 0 disables simulation)
