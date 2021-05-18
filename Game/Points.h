@@ -1013,6 +1013,13 @@ public:
         mForceRenderBuffer.copy_from(mNonSpringForceBuffer);
     }
 
+    void SetNonSpringForce(
+        ElementIndex pointElementIndex,
+        vec2f const & force) noexcept
+    {
+        mNonSpringForceBuffer[pointElementIndex] = force;
+    }
+
     void AddNonSpringForce(
         ElementIndex pointElementIndex,
         vec2f const & force) noexcept
