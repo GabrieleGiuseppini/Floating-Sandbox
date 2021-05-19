@@ -533,7 +533,6 @@ public:
         , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mSpringForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mNonSpringForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
-        , mNextStepNonSpringForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mAugmentedMaterialMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMaterialBuoyancyVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -1022,21 +1021,9 @@ public:
         mNonSpringForceBuffer[pointElementIndex] += force;
     }
 
-    void AddNextStepNonSpringForce(
-        ElementIndex pointElementIndex,
-        vec2f const & force) noexcept
-    {
-        mNextStepNonSpringForceBuffer[pointElementIndex] += force;
-    }
-
     void ResetNonSpringForces()
     {
         mNonSpringForceBuffer.fill(vec2f::zero());
-    }
-
-    void SwapNonSpringForcesBuffers()
-    {
-        mNonSpringForceBuffer.swap(mNextStepNonSpringForceBuffer);
     }
 
     float GetAugmentedMaterialMass(ElementIndex pointElementIndex) const
@@ -1912,7 +1899,6 @@ private:
     Buffer<vec2f> mVelocityBuffer;
     Buffer<vec2f> mSpringForceBuffer;
     Buffer<vec2f> mNonSpringForceBuffer;
-    Buffer<vec2f> mNextStepNonSpringForceBuffer;
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
     Buffer<float> mMassBuffer; // Augmented + Water
     Buffer<float> mMaterialBuoyancyVolumeFillBuffer;

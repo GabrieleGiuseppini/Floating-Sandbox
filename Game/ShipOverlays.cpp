@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "ShipOverlays.h"
 
+#include <algorithm>
 #include <cassert>
 
 namespace Physics {
@@ -18,6 +19,15 @@ void ShipOverlays::Upload(
 
     if (mIsCentersBufferDirty)
     {
+        // Sort centers by plane ID
+        std::sort(
+            mCenters.begin(),
+            mCenters.end(),
+            [](auto const & l, auto const & r)
+            {
+                return l.Plane < r.Plane;
+            });
+
         shipRenderContext.UploadCentersStart(mCenters.size());
 
         for (auto const & c : mCenters)

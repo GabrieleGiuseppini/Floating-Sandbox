@@ -260,11 +260,149 @@ public:
 
 private:
 
+    // Queued interactions
+
+    struct Interaction
+    {
+        enum class InteractionType
+        {
+            Blast,
+            Draw,
+            Pull,
+            Swirl
+        };
+
+        InteractionType Type;
+
+        union ArgumentsUnion
+        {
+            struct BlastArguments
+            {
+                vec2f CenterPos;
+                float Radius;
+                float Magnitude;
+
+                BlastArguments(
+                    vec2f const & centerPos,
+                    float radius,
+                    float magnitude)
+                    : CenterPos(centerPos)
+                    , Radius(radius)
+                    , Magnitude(magnitude)
+                {}
+            };
+
+            BlastArguments Blast;
+
+            struct DrawArguments
+            {
+                vec2f CenterPos;
+                float Strength;
+
+                DrawArguments(
+                    vec2f const & centerPos,
+                    float strength)
+                    : CenterPos(centerPos)
+                    , Strength(strength)
+                {}
+            };
+
+            DrawArguments Draw;
+
+            struct PullArguments
+            {
+                ElementIndex PointIndex;
+                vec2f TargetPos;
+                float Stiffness;
+
+                PullArguments(
+                    ElementIndex pointIndex,
+                    vec2f const & targetPos,
+                    float stiffness)
+                    : PointIndex(pointIndex)
+                    , TargetPos(targetPos)
+                    , Stiffness(stiffness)
+                {}
+            };
+
+            PullArguments Pull;
+
+            struct SwirlArguments
+            {
+                vec2f CenterPos;
+                float Strength;
+
+                SwirlArguments(
+                    vec2f const & centerPos,
+                    float strength)
+                    : CenterPos(centerPos)
+                    , Strength(strength)
+                {}
+            };
+
+            SwirlArguments Swirl;
+
+            ArgumentsUnion(BlastArguments blast)
+                : Blast(blast)
+            {}
+
+            ArgumentsUnion(DrawArguments draw)
+                : Draw(draw)
+            {}
+
+            ArgumentsUnion(PullArguments pull)
+                : Pull(pull)
+            {}
+
+            ArgumentsUnion(SwirlArguments swirl)
+                : Swirl(swirl)
+            {}
+        } Arguments;
+
+        Interaction(ArgumentsUnion::BlastArguments blast)
+            : Type(InteractionType::Blast)
+            , Arguments(blast)
+        {
+        }
+
+        Interaction(ArgumentsUnion::DrawArguments draw)
+            : Type(InteractionType::Draw)
+            , Arguments(draw)
+        {
+        }
+
+        Interaction(ArgumentsUnion::PullArguments pull)
+            : Type(InteractionType::Pull)
+            , Arguments(pull)
+        {
+        }
+
+        Interaction(ArgumentsUnion::SwirlArguments swirl)
+            : Type(InteractionType::Swirl)
+            , Arguments(swirl)
+        {
+        }
+    };
+
+    std::list<Interaction> mQueuedInteractions;
+
+    void ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args);
+
+    void DrawTo(Interaction::ArgumentsUnion::DrawArguments const & args);
+
+    void Pull(Interaction::ArgumentsUnion::PullArguments const & args);
+
+    void SwirlAt(Interaction::ArgumentsUnion::SwirlArguments const & args);
+
+private:
+
     /////////////////////////////////////////////////////////////////////////
     // Dynamics
     /////////////////////////////////////////////////////////////////////////
 
     // Mechanical
+
+    void ApplyQueuedInteractionForces();
 
     void ApplyWorldForces(
         Storm::Parameters const & stormParameters,

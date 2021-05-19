@@ -274,11 +274,12 @@ void Ship::Update(
     // - We do this for the next step
     mPoints.ResetNonSpringForces();
 
-    // Swap non-spring forces buffer
-    // - So we take the interactive forces now, and add World forces on
-    //   top of them
-    // - Next-step non-spring forces buffer is clean afterwards
-    mPoints.SwapNonSpringForcesBuffers();
+    ///////////////////////////////////////////////////////////////////
+    // Apply interaction forces that have been queued before this
+    // step
+    ///////////////////////////////////////////////////////////////////
+
+    ApplyQueuedInteractionForces();
 
     ///////////////////////////////////////////////////////////////////
     // Apply world forces
@@ -754,6 +755,45 @@ void Ship::Finalize()
 ///////////////////////////////////////////////////////////////////////////////////
 // Mechanical Dynamics
 ///////////////////////////////////////////////////////////////////////////////////
+
+void Ship::ApplyQueuedInteractionForces()
+{
+    for (auto const & interaction : mQueuedInteractions)
+    {
+        switch (interaction.Type)
+        {
+            case Interaction::InteractionType::Blast:
+            {
+                ApplyBlastAt(interaction.Arguments.Blast);
+
+                break;
+            }
+
+            case Interaction::InteractionType::Draw:
+            {
+                DrawTo(interaction.Arguments.Draw);
+
+                break;
+            }
+
+            case Interaction::InteractionType::Pull:
+            {
+                Pull(interaction.Arguments.Pull);
+
+                break;
+            }
+
+            case Interaction::InteractionType::Swirl:
+            {
+                SwirlAt(interaction.Arguments.Swirl);
+
+                break;
+            }
+        }
+    }
+
+    mQueuedInteractions.clear();
+}
 
 void Ship::ApplyWorldForces(
     Storm::Parameters const & stormParameters,

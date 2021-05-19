@@ -278,17 +278,34 @@ void Ship::Pull(
         / triangularCoeff
         * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
+    // Queue interaction
+    mQueuedInteractions.emplace_back(
+        Interaction::ArgumentsUnion::PullArguments(
+            pointElementIndex,
+            target,
+            forceStiffness));
+}
+
+void Ship::Pull(Interaction::ArgumentsUnion::PullArguments const & args)
+{
+    //
+    //
+    // Exhert a pull on the specified particle, according to a Hookean force
+    //
+    //
+
+
     //
     // Now calculate Hookean force
     //
 
-    vec2f const displacement = target - mPoints.GetPosition(pointElementIndex);
+    vec2f const displacement = args.TargetPos - mPoints.GetPosition(args.PointIndex);
     float const displacementLength = displacement.length();
     vec2f const dir = displacement.normalise(displacementLength);
 
-    mPoints.AddNextStepNonSpringForce(
-        pointElementIndex,
-        dir * (displacementLength * forceStiffness));
+    mPoints.AddNonSpringForce(
+        args.PointIndex,
+        dir * (displacementLength * args.Stiffness));
 
     //
     // Zero velocity: this it a bit unpolite, but it prevents the "classic"
@@ -296,7 +313,7 @@ void Ship::Pull(
     // occur if we were to dump velocities along the point->target direction only
     //
 
-    mPoints.SetVelocity(pointElementIndex, vec2f::zero());
+    mPoints.SetVelocity(args.PointIndex, vec2f::zero());
 
     ////////////////////////////////////////////////////////////
 
@@ -309,7 +326,7 @@ void Ship::Pull(
     float const highlightStrength = 1.0f - std::exp(-displacementLength / 10.0f);
 
     mPoints.StartCircleHighlight(
-        pointElementIndex,
+        args.PointIndex,
         rgbColor(
             Mix(
                 vec3f(0.0f, 0.0f, 0.0f),
@@ -608,8 +625,6 @@ void Ship::ApplyBlastAt(
     float forceMultiplier,
     GameParameters const & gameParameters)
 {
-    float const squareRadius = radius * radius;
-
     // Calculate blast force magnitude
     float const blastForceMagnitude =
         105.0f * 50000.0f // Magic number
@@ -617,10 +632,22 @@ void Ship::ApplyBlastAt(
         * gameParameters.BlastToolForceAdjustment
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
+    // Queue interaction
+    mQueuedInteractions.emplace_back(
+        Interaction::ArgumentsUnion::BlastArguments(
+            targetPos,
+            radius,
+            blastForceMagnitude));
+}
+
+void Ship::ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args)
+{
+    float const squareRadius = args.Radius * args.Radius;
+
     // Visit all points
     for (auto pointIndex : mPoints)
     {
-        vec2f const pointRadius = mPoints.GetPosition(pointIndex) - targetPos;
+        vec2f const pointRadius = mPoints.GetPosition(pointIndex) - args.CenterPos;
         float const squarePointDistance = pointRadius.squareLength();
         if (squarePointDistance < squareRadius)
         {
@@ -633,9 +660,9 @@ void Ship::ApplyBlastAt(
             // not second power as one would expect though)
             //
 
-            mPoints.AddNextStepNonSpringForce(
+            mPoints.AddNonSpringForce(
                 pointIndex,
-                pointRadius.normalise(pointRadiusLength) / std::max(pointRadiusLength, 1.0f) * blastForceMagnitude);
+                pointRadius.normalise(pointRadiusLength) / std::max(pointRadiusLength, 1.0f) * args.Magnitude);
         }
     }
 }
@@ -645,21 +672,31 @@ void Ship::DrawTo(
     float strengthFraction,
     GameParameters const & gameParameters)
 {
+    // Calculate draw force
     float const strength =
         GameParameters::DrawForce
         * strengthFraction
         * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
+    // Queue interaction
+    mQueuedInteractions.emplace_back(
+        Interaction::ArgumentsUnion::DrawArguments(
+            targetPos,
+            strength));
+}
+
+void Ship::DrawTo(Interaction::ArgumentsUnion::DrawArguments const & args)
+{
     //
     // F = ForceStrength/sqrt(distance), along radius
     //
 
     for (auto pointIndex : mPoints)
     {
-        vec2f displacement = (targetPos - mPoints.GetPosition(pointIndex));
-        float forceMagnitude = strength / sqrtf(0.1f + displacement.length());
+        vec2f displacement = (args.CenterPos - mPoints.GetPosition(pointIndex));
+        float forceMagnitude = args.Strength / sqrtf(0.1f + displacement.length());
 
-        mPoints.AddNextStepNonSpringForce(
+        mPoints.AddNonSpringForce(
             pointIndex,
             displacement.normalise() * forceMagnitude);
     }
@@ -670,22 +707,32 @@ void Ship::SwirlAt(
     float strengthFraction,
     GameParameters const & gameParameters)
 {
+    // Calculate swirl strength
     float const strength =
         GameParameters::SwirlForce
         * strengthFraction
         * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
+    // Queue interaction
+    mQueuedInteractions.emplace_back(
+        Interaction::ArgumentsUnion::SwirlArguments(
+            targetPos,
+            strength));
+}
+
+void Ship::SwirlAt(Interaction::ArgumentsUnion::SwirlArguments const & args)
+{
     //
     // F = ForceStrength*radius/sqrt(distance), perpendicular to radius
     //
 
     for (auto pointIndex : mPoints)
     {
-        vec2f displacement = (targetPos - mPoints.GetPosition(pointIndex));
+        vec2f displacement = (args.CenterPos - mPoints.GetPosition(pointIndex));
         float const displacementLength = displacement.length();
-        float forceMagnitude = strength / sqrtf(0.1f + displacementLength);
+        float forceMagnitude = args.Strength / sqrtf(0.1f + displacementLength);
 
-        mPoints.AddNextStepNonSpringForce(
+        mPoints.AddNonSpringForce(
             pointIndex,
             vec2f(-displacement.y, displacement.x) * forceMagnitude);
     }

@@ -1788,12 +1788,12 @@ Render:
 						+ Triangle: inside-pointing normal using before-and-after edges points along edge rather than towards inside of triangle
 						+ Square: normals look ok, yet resultant torque is non-zero (10^-3)
 					= Do:
-						= Cleanup:
+						+ Cleanup:
 							+ Cleanup code to the point that hydrostatic pressure is applied as only force
 								+ Undo force render buffer as well
 								+ Undo any other TODOTEST
 							+ Commit
-							= Do ForceRenderBuffer fix (*)
+							+ Do ForceRenderBuffer fix (*)
 								+ New Points::NextFrameNonSpringForces buffer
 								+ All interactions populate Points::NextFrameNonSpringForces
 								+ After Spring+Integrate:
@@ -1804,22 +1804,21 @@ Render:
 									+ Nuke ForceRenderBuffer
 									+ Upload NonSpringForces directly
 								+ Test both interactions and world forces are rendered now
-								= Issue with pick'n'move - i.e. issue with forces having to apply to next frame
+								+ Issue with pick'n'move - i.e. issue with forces having to apply to next frame
 									! Interactions that generate forces: Pick, Blast, Draw, Swirl
-									- Fix option 1: those 4 interactions are queued - as merely "interaction packets" - and processed
+									+ Fix option 1: those 4 interactions are queued - as merely "interaction packets" - and processed
 									  at about the same time as ApplyWorldForces, in any case after integration and before rendering
 										! This way the positions their forces depend on are consistent, i.e. it's the positions that are 
 										  in effect at the time we apply the forces
-										- Plan:
-											- Nuke NextStepNonSpringForce's
-											- "Interaction" struct & union internal to Ship, containing args of interaction + struct's EnumClass+Type
-											- List of interactions
-											- New step before ApplyWorldForces: ApplyQueuedInteractionForces
-								- See issue with skewed quad for ship center
+										+ Plan:
+											+ Nuke NextStepNonSpringForce's
+											+ "Interaction" struct & union internal to Ship, containing args of interaction + struct's EnumClass+Type
+											+ List of interactions
+											+ New step before ApplyWorldForces: ApplyQueuedInteractionForces
+											+ Queue interactions @ interactions
+								+ See issue with skewed quad for ship center
 									+ Due to sorting at ShipRenderContext
-									- Fix option 0: ShipOverlays does the sorting before giving to ShipRenderContext
-									- Fix option 1: instead of being a buffer of vertices, it's a buffer of quads (6 vertices)
-									- Fix option 2: do not sort at all									
+									+ ShipOverlays does the sorting before giving to ShipRenderContext
 						- Hydrostatic pressure: change way of calculating normals and verify:
 							- a: Triangle
 							- b: Square

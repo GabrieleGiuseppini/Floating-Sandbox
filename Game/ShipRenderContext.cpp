@@ -929,14 +929,7 @@ void ShipRenderContext::UploadCentersStart(size_t count)
 
 void ShipRenderContext::UploadCentersEnd()
 {
-    // Sort centers by plane ID
-    std::sort(
-        mCenterVertexBuffer.begin(),
-        mCenterVertexBuffer.end(),
-        [](auto const & l, auto const & r)
-        {
-            return l.planeId < r.planeId;
-        });
+    // Nop
 }
 
 void ShipRenderContext::UploadPointToPointArrowsStart(size_t count)
