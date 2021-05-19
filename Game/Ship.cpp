@@ -818,14 +818,22 @@ void Ship::ApplyWorldForces(
     // New buffer to which new cached depths will be written to
     std::shared_ptr<Buffer<float>> newCachedPointDepths = mPoints.AllocateWorkBufferFloat();
 
+    //
+    // Particle forces
+    //
+
     ApplyWorldParticleForces(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters);
+
+    //
+    // Surface forces
+    //
 
     if (gameParameters.DoDisplaceWater)
         ApplyWorldSurfaceForces<true, true>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters, aabbSet);
     else
         ApplyWorldSurfaceForces<false, true>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters, aabbSet);
 
-    // Commit new buffer
+    // Commit new particle depth buffer
     mPoints.SwapCachedDepthBuffer(*newCachedPointDepths);
 }
 
