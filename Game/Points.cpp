@@ -1717,56 +1717,70 @@ void Points::UploadVectors(
 {
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
-    if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderModeType::PointVelocity)
-    {
-        static vec4f constexpr VectorColor(0.203f, 0.552f, 0.219f, 1.0f);
+    vec4f color;
+    vec2f const * vectorBuffer = nullptr;
+    float lengthAdjustment = 0.0f;
 
-        // TODO: loop
-        shipRenderContext.UploadVectors(
-            mElementCount,
-            mPositionBuffer.data(),
-            mPlaneIdFloatBuffer.data(),
-            mVelocityBuffer.data(),
-            0.25f,
-            VectorColor);
-    }
-    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderModeType::PointForce)
+    switch (renderContext.GetVectorFieldRenderMode())
     {
-        static vec4f constexpr VectorColor(0.5f, 0.1f, 0.f, 1.0f);
+        case VectorFieldRenderModeType::PointForce:
+        {
+            color = vec4f(0.5f, 0.1f, 0.f, 1.0f);
+            vectorBuffer = mNonSpringForceBuffer.data();
+            lengthAdjustment = 0.00075f;
 
-        // TODO: loop
-        shipRenderContext.UploadVectors(
-            mElementCount,
-            mPositionBuffer.data(),
-            mPlaneIdFloatBuffer.data(),
-            mNonSpringForceBuffer.data(),
-            0.0005f,
-            VectorColor);
+            break;
+        }
+
+        case VectorFieldRenderModeType::PointVelocity:
+        {
+            color = vec4f(0.203f, 0.552f, 0.219f, 1.0f);
+            vectorBuffer = mVelocityBuffer.data();
+            lengthAdjustment = 0.25f;
+
+            break;
+        }
+
+        case VectorFieldRenderModeType::PointWaterMomentum:
+        {
+            color = vec4f(0.054f, 0.066f, 0.443f, 1.0f);
+            vectorBuffer = mWaterMomentumBuffer.data();
+            lengthAdjustment = 0.4f;
+
+            break;
+        }
+
+        case VectorFieldRenderModeType::PointWaterVelocity:
+        {
+            color = vec4f(0.094f, 0.509f, 0.925f, 1.0f);
+            vectorBuffer = mWaterVelocityBuffer.data();
+            lengthAdjustment = 1.0f;
+
+            break;
+        }
+
+        case VectorFieldRenderModeType::None:
+        {
+            return;
+        }
     }
-    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderModeType::PointWaterVelocity)
+
+    shipRenderContext.UploadVectorsStart(mElementCount, color);
+
+    for (auto const p : *this)
     {
-        static vec4f constexpr VectorColor(0.094f, 0.509f, 0.925f, 1.0f);
-
-        shipRenderContext.UploadVectors(
-            mRawShipPointCount,
-            mPositionBuffer.data(),
-            mPlaneIdFloatBuffer.data(),
-            mWaterVelocityBuffer.data(),
-            1.0f,
-            VectorColor);
+        if (!IsEphemeral(p)
+            || GetEphemeralType(p) != EphemeralType::None)
+        {
+            shipRenderContext.UploadVector(
+                GetPosition(p),
+                mPlaneIdFloatBuffer[p],
+                vectorBuffer[p],
+                lengthAdjustment);
+        }
     }
-    else if (renderContext.GetVectorFieldRenderMode() == VectorFieldRenderModeType::PointWaterMomentum)
-    {
-        static vec4f constexpr VectorColor(0.054f, 0.066f, 0.443f, 1.0f);
 
-        shipRenderContext.UploadVectors(
-            mRawShipPointCount,
-            mPositionBuffer.data(),
-            mPlaneIdFloatBuffer.data(),
-            mWaterMomentumBuffer.data(),
-            0.4f,
-            VectorColor);
-    }
+    shipRenderContext.UploadVectorsEnd();
 }
 
 void Points::UploadEphemeralParticles(

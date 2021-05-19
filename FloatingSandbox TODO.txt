@@ -519,6 +519,9 @@ Render:
 		+ Add whistle: pipe_steam_whistle_for_fs.mp3
 			+ changelist
 		+ See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
+		+ Force rendering: avoid rendering expired ephemeral particles
+			+ Transform ShipRenderContext::UploadVectors from a one-time Upload call with batch to a Start/NxUpload/End call pattern,
+			  with Start() doing the reserve() call we currently do at the one-time Upload call
 
 		= MAC:
 			= Full high-DPI path:
@@ -612,10 +615,6 @@ Render:
 
 		- See issue with ocean texture shading: texture coords change depending on cam: repro with pause and high zoom
 		
-		- Force rendering: avoid expired ephemeral particles
-			- Transform ShipRenderContext::UploadVectors from a one-time Upload call with batch to a Start/NxUpload/End call pattern,
-			  with Start() doing the reserve() call we currently do at the one-time Upload call
-
 		- Test optimization: ApplyWorldSurfaceForces: only consider *external* frontiers
 			! No drag, 
 			- Test Base III before: TODO
