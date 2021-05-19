@@ -1818,6 +1818,7 @@ Render:
 								+ See issue with skewed quad for ship center
 									+ Due to sorting at ShipRenderContext
 									+ ShipOverlays does the sorting before giving to ShipRenderContext
+						+ Move and Rotate interactions: should zero-out non-spring forces as well? Otherwise yet-to-integrate forces might generate torques after rotation
 						- Hydrostatic pressure: change way of calculating normals and verify:
 							- a: Triangle
 							- b: Square
