@@ -864,48 +864,11 @@ void ShipRenderContext::UploadElementEphemeralPointsEnd()
     // Nop
 }
 
-void ShipRenderContext::UploadVectors(
-    size_t count,
-    vec2f const * position,
-    float const * planeId,
-    vec2f const * vector,
-    float lengthAdjustment,
+void ShipRenderContext::UploadVectorsStart(
+    size_t maxCount,
     vec4f const & color)
 {
-    static float const CosAlphaLeftRight = std::cos(-2.f * Pi<float> / 8.f);
-    static float const SinAlphaLeft = std::sin(-2.f * Pi<float> / 8.f);
-    static float const SinAlphaRight = -SinAlphaLeft;
-
-    static vec2f const XMatrixLeft = vec2f(CosAlphaLeftRight, SinAlphaLeft);
-    static vec2f const YMatrixLeft = vec2f(-SinAlphaLeft, CosAlphaLeftRight);
-    static vec2f const XMatrixRight = vec2f(CosAlphaLeftRight, SinAlphaRight);
-    static vec2f const YMatrixRight = vec2f(-SinAlphaRight, CosAlphaLeftRight);
-
-    float const effectiveVectorLength = lengthAdjustment * mVectorFieldLengthMultiplier;
-
-    //
-    // Create buffer with endpoint positions of each segment of each arrow
-    //
-
-    mVectorArrowVertexBuffer.reserve(count * 3 * 2);
-
-    for (size_t i = 0; i < count; ++i)
-    {
-        // Stem
-        vec2f stemEndpoint = position[i] + vector[i] * effectiveVectorLength;
-        mVectorArrowVertexBuffer.emplace_back(position[i], planeId[i]);
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeId[i]);
-
-        // Left
-        vec2f leftDir = vec2f(-vector[i].dot(XMatrixLeft), -vector[i].dot(YMatrixLeft)).normalise();
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeId[i]);
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint + leftDir * 0.2f, planeId[i]);
-
-        // Right
-        vec2f rightDir = vec2f(-vector[i].dot(XMatrixRight), -vector[i].dot(YMatrixRight)).normalise();
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeId[i]);
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint + rightDir * 0.2f, planeId[i]);
-    }
+    mVectorArrowVertexBuffer.reserve(maxCount * 3 * 2);
 
     if (color != mVectorArrowColor)
     {
@@ -914,6 +877,12 @@ void ShipRenderContext::UploadVectors(
         mIsVectorArrowColorDirty = true;
     }
 }
+
+void ShipRenderContext::UploadVectorsEnd()
+{
+    // Nop
+}
+
 
 void ShipRenderContext::UploadCentersStart(size_t count)
 {
