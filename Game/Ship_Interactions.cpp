@@ -91,22 +91,22 @@ void Ship::MoveBy(
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     // Get connected component ID of the point
-    auto connectedComponentId = mPoints.GetConnectedComponentId(pointElementIndex);
+    auto const connectedComponentId = mPoints.GetConnectedComponentId(pointElementIndex);
     if (connectedComponentId != NoneConnectedComponentId)
     {
         // Move all points (ephemeral and non-ephemeral) that belong to the same connected component
-        for (auto p : mPoints)
+        for (auto const p : mPoints)
         {
             if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
             {
-                mPoints.SetPosition(
-                    p,
-                    mPoints.GetPosition(p) + offset);
+                mPoints.SetPosition(p, mPoints.GetPosition(p) + offset);
 
                 if (!mPoints.IsPinned(p))
                 {
                     mPoints.SetVelocity(p, actualInertialVelocity);
                 }
+
+                mPoints.SetNonSpringForce(p, vec2f::zero());
             }
         }
 
@@ -124,13 +124,15 @@ void Ship::MoveBy(
         * gameParameters.MoveToolInertia
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
-    vec2f * restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
-    vec2f * restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
+    vec2f * const restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
+    vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
+    vec2f * const restrict nonSpringForceBuffer = mPoints.GetNonSpringForceBufferAsVec2();
 
-    for (auto p : mPoints.BufferElements())
+    for (auto const p : mPoints.BufferElements())
     {
         positionBuffer[p] += offset;
         velocityBuffer[p] = actualInertialVelocity;
+        nonSpringForceBuffer[p] = vec2f::zero();
     }
 
     TrimForWorldBounds(gameParameters);
@@ -158,7 +160,7 @@ void Ship::RotateBy(
     if (connectedComponentId != NoneConnectedComponentId)
     {
         // Rotate all points (ephemeral and non-ephemeral) that belong to the same connected component
-        for (auto p : mPoints)
+        for (auto const p : mPoints)
         {
             if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
             {
@@ -173,6 +175,8 @@ void Ship::RotateBy(
                         p,
                         (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude);
                 }
+
+                mPoints.SetNonSpringForce(p, vec2f::zero());
             }
         }
 
@@ -196,16 +200,18 @@ void Ship::RotateBy(
     vec2f const inertialRotX(cos(inertialAngle), sin(inertialAngle));
     vec2f const inertialRotY(-sin(inertialAngle), cos(inertialAngle));
 
-    vec2f * restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
-    vec2f * restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
+    vec2f * const restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
+    vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
+    vec2f * const restrict nonSpringForceBuffer = mPoints.GetNonSpringForceBufferAsVec2();
 
-    for (auto p : mPoints.BufferElements())
+    for (auto const p : mPoints.BufferElements())
     {
         vec2f const centeredPos = positionBuffer[p] - center;
 
         positionBuffer[p] = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
         velocityBuffer[p] =
             (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
+        nonSpringForceBuffer[p] = vec2f::zero();
     }
 
     TrimForWorldBounds(gameParameters);
