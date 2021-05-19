@@ -255,7 +255,6 @@ void Ship::Pull(
     //
     //
 
-
     //
     // In order to ensure stability, we choose a stiffness equal to the maximum stiffness
     // that keeps the system stable. This is the stiffness that generates a force such
@@ -287,7 +286,7 @@ void Ship::Pull(
     float const displacementLength = displacement.length();
     vec2f const dir = displacement.normalise(displacementLength);
 
-    mPoints.AddNonSpringForce(
+    mPoints.AddNextStepNonSpringForce(
         pointElementIndex,
         dir * (displacementLength * forceStiffness));
 
@@ -634,7 +633,7 @@ void Ship::ApplyBlastAt(
             // not second power as one would expect though)
             //
 
-            mPoints.AddNonSpringForce(
+            mPoints.AddNextStepNonSpringForce(
                 pointIndex,
                 pointRadius.normalise(pointRadiusLength) / std::max(pointRadiusLength, 1.0f) * blastForceMagnitude);
         }
@@ -651,10 +650,19 @@ void Ship::DrawTo(
         * strengthFraction
         * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
-    // Apply the force field
-    ApplyDrawForceField(
-        targetPos,
-        strength);
+    //
+    // F = ForceStrength/sqrt(distance), along radius
+    //
+
+    for (auto pointIndex : mPoints)
+    {
+        vec2f displacement = (targetPos - mPoints.GetPosition(pointIndex));
+        float forceMagnitude = strength / sqrtf(0.1f + displacement.length());
+
+        mPoints.AddNextStepNonSpringForce(
+            pointIndex,
+            displacement.normalise() * forceMagnitude);
+    }
 }
 
 void Ship::SwirlAt(
@@ -667,10 +675,20 @@ void Ship::SwirlAt(
         * strengthFraction
         * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
-    // Apply the force field
-    ApplySwirlForceField(
-        targetPos,
-        strength);
+    //
+    // F = ForceStrength*radius/sqrt(distance), perpendicular to radius
+    //
+
+    for (auto pointIndex : mPoints)
+    {
+        vec2f displacement = (targetPos - mPoints.GetPosition(pointIndex));
+        float const displacementLength = displacement.length();
+        float forceMagnitude = strength / sqrtf(0.1f + displacementLength);
+
+        mPoints.AddNextStepNonSpringForce(
+            pointIndex,
+            vec2f(-displacement.y, displacement.x) * forceMagnitude);
+    }
 }
 
 bool Ship::TogglePinAt(

@@ -47,6 +47,9 @@ void main()
         * step(radius, 1. - CircleWidth)
         * step(.5 - CircleWidth, radius);
 
+    if (depth < 0.2)
+        discard;
+
     gl_FragColor = vec4(
         depth, 
         0., 

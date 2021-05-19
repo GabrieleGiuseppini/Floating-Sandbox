@@ -380,7 +380,6 @@ void GameController::RunGameIteration()
         mWorld->Update(
             mGameParameters,
             mRenderContext->GetVisibleWorld(),
-            *mRenderContext,
             *mTotalPerfStats);
 
         // Flush events

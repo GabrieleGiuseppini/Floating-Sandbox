@@ -35,6 +35,9 @@ void main()
 {
     float d = distance(vertexSpacePosition, vec2(.0, .0));
     float alpha = smoothstep(0.68, 0.8, d) - smoothstep(0.8, 0.92, d);
+
+    if (alpha < 0.2)
+        discard;
         
     gl_FragColor = vec4(color, alpha);
 }
