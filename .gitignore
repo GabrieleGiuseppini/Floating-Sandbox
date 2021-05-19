@@ -4,3 +4,4 @@ PerfReports/
 .vscode/
 *.aps
 UserSettings.cmake
+.floatingsandbox_shipdb
