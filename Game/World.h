@@ -350,7 +350,6 @@ public:
     void Update(
         GameParameters const & gameParameters,
         VisibleWorld const & visibleWorld,
-        Render::RenderContext & renderContext,
         PerfStats & perfStats);
 
     void RenderUpload(

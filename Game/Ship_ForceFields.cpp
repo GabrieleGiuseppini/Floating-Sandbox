@@ -11,45 +11,6 @@
 
 namespace Physics {
 
-void Ship::ApplyDrawForceField(
-    vec2f const & centerPosition,
-    float strength)
-{
-    //
-    // F = ForceStrength/sqrt(distance), along radius
-    //
-
-    for (auto pointIndex : mPoints)
-    {
-        vec2f displacement = (centerPosition - mPoints.GetPosition(pointIndex));
-        float forceMagnitude = strength / sqrtf(0.1f + displacement.length());
-
-        mPoints.AddNonSpringForce(
-            pointIndex,
-            displacement.normalise() * forceMagnitude);
-    }
-}
-
-void Ship::ApplySwirlForceField(
-    vec2f const & centerPosition,
-    float strength)
-{
-    //
-    // F = ForceStrength*radius/sqrt(distance), perpendicular to radius
-    //
-
-    for (auto pointIndex : mPoints)
-    {
-        vec2f displacement = (centerPosition - mPoints.GetPosition(pointIndex));
-        float const displacementLength = displacement.length();
-        float forceMagnitude = strength / sqrtf(0.1f + displacementLength);
-
-        mPoints.AddNonSpringForce(
-            pointIndex,
-            vec2f(-displacement.y, displacement.x) * forceMagnitude);
-    }
-}
-
 void Ship::ApplyRadialSpaceWarpForceField(
     vec2f const & centerPosition,
     float radius,

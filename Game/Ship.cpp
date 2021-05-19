@@ -153,7 +153,6 @@ void Ship::Update(
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters,
-    Render::RenderContext const & renderContext,
     Geometry::AABBSet & aabbSet)
 {
     /////////////////////////////////////////////////////////////////
@@ -271,15 +270,15 @@ void Ship::Update(
     // Reset non-spring forces, now that we have integrated them
     ///////////////////////////////////////////////////////////////////
 
-    // Check whether we need to save the non-spring force buffer before we zero it out
-    if (VectorFieldRenderModeType::PointForce == renderContext.GetVectorFieldRenderMode())
-    {
-        mPoints.CopyNonSpringForceBufferToForceRenderBuffer();
-    }
-
     // Zero-out non-spring forces
-    // - Outputs: NonSpringForce
+    // - We do this for the next step
     mPoints.ResetNonSpringForces();
+
+    // Swap non-spring forces buffer
+    // - So we take the interactive forces now, and add World forces on
+    //   top of them
+    // - Next-step non-spring forces buffer is clean afterwards
+    mPoints.SwapNonSpringForcesBuffers();
 
     ///////////////////////////////////////////////////////////////////
     // Apply world forces
@@ -1170,9 +1169,9 @@ void Ship::ApplyWorldSurfaceForces(
                 vec2f const hydrostaticPressureForce = -surfaceNormal * externalPressure;
 
                 // Apply hydrostatic pressure
-                // TODOTEST
-                //mPoints.AddNonSpringForce(thisPointIndex, hydrostaticPressureForce);
-                mPoints.SetNonSpringForce(thisPointIndex, hydrostaticPressureForce);
+                // TODOHERE
+                mPoints.AddNonSpringForce(thisPointIndex, hydrostaticPressureForce);
+                //mPoints.SetNonSpringForce(thisPointIndex, hydrostaticPressureForce);
 
                 // Update resultant force
                 resultantHydrostaticPressureForce += hydrostaticPressureForce;

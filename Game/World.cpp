@@ -883,7 +883,6 @@ bool World::RestoreTriangle(ElementId triangleId)
 void World::Update(
     GameParameters const & gameParameters,
     VisibleWorld const & visibleWorld,
-    Render::RenderContext & renderContext,
     PerfStats & perfStats)
 {
     // Update current time
@@ -914,7 +913,6 @@ void World::Update(
             mCurrentSimulationTime,
             mStorm.GetParameters(),
             gameParameters,
-            renderContext,
             mAllAABBs);
     }
 

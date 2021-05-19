@@ -611,7 +611,10 @@ Render:
 				- Option B: by point visit; all points in tiny band from depth 0, receive force...same as above....
 
 		- See issue with ocean texture shading: texture coords change depending on cam: repro with pause and high zoom
-		- See if may nuke Points::ForceRenderBuffer - though that would mean to lose the interactive forces
+		
+		- Force rendering: avoid expired ephemeral particles
+			- Transform ShipRenderContext::UploadVectors from a one-time Upload call with batch to a Start/NxUpload/End call pattern,
+			  with Start() doing the reserve() call we currently do at the one-time Upload call
 
 		- Test optimization: ApplyWorldSurfaceForces: only consider *external* frontiers
 			! No drag, 
@@ -1789,17 +1792,34 @@ Render:
 							+ Cleanup code to the point that hydrostatic pressure is applied as only force
 								+ Undo force render buffer as well
 								+ Undo any other TODOTEST
-							- Commit
-							- Do ForceRenderBuffer thing (*)
-								- New Points::NextFrameNonSpringForces buffer
-								- All interactions populate Points::NextFrameNonSpringForces
-								- After Spring+Integrate:
-									- Reset Points::NonSpringForces
-									- Swap Points::NonSpringForces <-> Points::NextFrameNonSpringForces
-									- ...continue as usual...
-								- Points::Upload vectors:
-									- Nuke ForceRenderBuffer
-									- Upload NonSpringForces directly
+							+ Commit
+							= Do ForceRenderBuffer fix (*)
+								+ New Points::NextFrameNonSpringForces buffer
+								+ All interactions populate Points::NextFrameNonSpringForces
+								+ After Spring+Integrate:
+									+ Reset Points::NonSpringForces
+									+ Swap Points::NonSpringForces <-> Points::NextFrameNonSpringForces
+									+ ...continue as usual...
+								+ Points::Upload vectors:
+									+ Nuke ForceRenderBuffer
+									+ Upload NonSpringForces directly
+								+ Test both interactions and world forces are rendered now
+								= Issue with pick'n'move - i.e. issue with forces having to apply to next frame
+									! Interactions that generate forces: Pick, Blast, Draw, Swirl
+									- Fix option 1: those 4 interactions are queued - as merely "interaction packets" - and processed
+									  at about the same time as ApplyWorldForces, in any case after integration and before rendering
+										! This way the positions their forces depend on are consistent, i.e. it's the positions that are 
+										  in effect at the time we apply the forces
+										- Plan:
+											- Nuke NextStepNonSpringForce's
+											- "Interaction" struct & union internal to Ship, containing args of interaction + struct's EnumClass+Type
+											- List of interactions
+											- New step before ApplyWorldForces: ApplyQueuedInteractionForces
+								- See issue with skewed quad for ship center
+									+ Due to sorting at ShipRenderContext
+									- Fix option 0: ShipOverlays does the sorting before giving to ShipRenderContext
+									- Fix option 1: instead of being a buffer of vertices, it's a buffer of quads (6 vertices)
+									- Fix option 2: do not sort at all									
 						- Hydrostatic pressure: change way of calculating normals and verify:
 							- a: Triangle
 							- b: Square
@@ -1808,6 +1828,7 @@ Render:
 					- Try with contrary torque being all in the same direction (e.g. upwards)
 				= Another option: use geometric center's depth for entire surface
 					+ Reduces phantom linear forces as there's no more buoyancy (verified), and it makes for better perf
+					- Add comment "there"
 		- Plan B: same, but considering internal pressure
 			- Needs "Internal Pressure (*)" first
 		- Finalization:						

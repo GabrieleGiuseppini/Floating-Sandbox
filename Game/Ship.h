@@ -73,7 +73,6 @@ public:
         float currentSimulationTime,
 		Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters,
-        Render::RenderContext const & renderContext,
         Geometry::AABBSet & aabbSet);
 
     void RenderUpload(Render::RenderContext & renderContext);
@@ -339,14 +338,6 @@ private:
     /////////////////////////////////////////////////////////////////////////
     // Force Fields
     /////////////////////////////////////////////////////////////////////////
-
-    void ApplyDrawForceField(
-        vec2f const & centerPosition,
-        float strength);
-
-    void ApplySwirlForceField(
-        vec2f const & centerPosition,
-        float strength);
 
     void ApplyRadialSpaceWarpForceField(
         vec2f const & centerPosition,
