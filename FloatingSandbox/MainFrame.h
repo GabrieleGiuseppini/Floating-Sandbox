@@ -312,9 +312,6 @@ private:
     {
         LogMessage("MainFrame::MakeOpenGLContextCurrent()");
 
-        // TODOTEST
-        std::this_thread::sleep_for(std::chrono::seconds(10));
-
         assert(mCurrentOpenGLCanvas.load() != nullptr);
         mMainGLCanvasContext->SetCurrent(*(mCurrentOpenGLCanvas.load()));
     }
