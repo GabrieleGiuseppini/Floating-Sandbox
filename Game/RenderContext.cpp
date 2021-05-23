@@ -624,7 +624,7 @@ void RenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParame
     // Set viewport and scissor
     glViewport(0, 0, view.GetCanvasPhysicalPixelSize().width, view.GetCanvasPhysicalPixelSize().height);
 
-#ifdef FS_OS_MACOS
+#if defined(FS_OS_MACOS) || defined(FS_OS_LINUX)
     // After changing the viewport, on MacOS one must also re-make the context current;
     // see https://forums.wxwidgets.org/viewtopic.php?t=41368 and
     // https://developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/OpenGL-MacProgGuide/opengl_contexts/opengl_contexts.html
