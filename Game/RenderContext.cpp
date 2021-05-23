@@ -44,7 +44,7 @@ namespace /*anonymous*/ {
             return true;
 ////#elif defined(FS_OS_LINUX) // Do not use multi-threaded rendering on X11
 ////            return true;
-////#else
+#else
             return false;
 #endif
         }
