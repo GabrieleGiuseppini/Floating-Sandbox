@@ -73,7 +73,7 @@ private:
 
 IMPLEMENT_APP(MainApp);
 
-#ifdef FS_OS_LINUX
+#if FS_IS_OS_LINUX()
 #include <X11/Xlib.h>
 #endif
 
@@ -81,7 +81,7 @@ MainApp::MainApp()
     : mMainFrame(nullptr)
     , mLocalizationManager()
 {
-#ifdef FS_OS_LINUX
+#if FS_IS_OS_LINUX()
     //
     // Initialize multi-threading in X-Windows
     //

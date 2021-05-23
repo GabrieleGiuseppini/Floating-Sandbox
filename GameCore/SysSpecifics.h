@@ -49,16 +49,18 @@
 // None defined means "no specific code required"
 //
 
-#undef FS_OS_LINUX
+#define FS_IS_OS_LINUX() 0
 #undef FS_OS_MACOS
-#undef FS_OS_WINDOWS
+#define FS_IS_OS_WINDOWS() 0
 
 #if defined(macintosh) || defined(Macintosh) || (defined(__APPLE__) && defined(__MACH__))
 #define FS_OS_MACOS
 #elif defined(__linux__) || defined(linux) || defined(__linux)
-#define FS_OS_LINUX
+#undef FS_IS_OS_LINUX
+#define FS_IS_OS_LINUX() 1
 #elif defined(_WIN32) || defined(_WIN64) || defined(__WIN32__)
-#define FS_OS_WINDOWS
+#undef FS_IS_OS_WINDOWS
+#define FS_IS_OS_WINDOWS() 1
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////

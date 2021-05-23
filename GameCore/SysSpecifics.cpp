@@ -15,11 +15,11 @@
 #pragma message ("ARCHITECTURE:<UNKNOWN>")
 #endif
 
-#if defined(FS_OS_LINUX)
+#if FS_IS_OS_LINUX()
 #pragma message ("OS:FS_OS_LINUX")
 #elif defined(FS_OS_MACOS)
 #pragma message ("OS:FS_OS_MACOS")
-#elif defined(FS_OS_WINDOWS)
+#elif FS_IS_OS_WINDOWS()
 #pragma message ("OS:FS_OS_WINDOWS")
 #else
 #pragma message ("OS:<UNKNOWN>")
