@@ -41,6 +41,11 @@ sudo apt-get install libvorbis-dev
 ```
 sudo apt-get install libflac++-dev
 ```
+### OpenGL
+```
+sudo apt-get install libgl1-mesa-dev
+sudo apt-get install libglu1-mesa-dev
+```
 # Preparing Prerequisite Libraries
 
 Here we clone and build the libraries required by Floating Sandbox. Some notes:
@@ -159,25 +164,55 @@ Finally, we're gonna build _wxWidgets_, a cross-platform library for windowing a
 ### Cloning
 ```
 cd ~/git
-git clone https://github.com/wxWidgets/wxWidgets.git
+git clone --recurse-submodules https://github.com/wxWidgets/wxWidgets.git
 cd wxWidgets
 git checkout v3.1.4
 ```
 ### Building
-We're gonna build wxWidgets in a folder named `my_wx_build` under its checkout root. Note also that we want to build with UNICODE support, and with support for the PNG image format.
+We're gonna build wxWidgets in a folder named `my_wx_build` under its checkout root. Note that we want to build it for GTK with UNICODE support and static linking, and with support for the PNG image format.
+First of all, we're going to configure the build:
 ```
 cd ~/git/wxWidgets
 mkdir my_wx_build
 cd my_wx_build
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DwxBUILD_SAMPLES=OFF -DwxBUILD_TESTS=OFF -DwxBUILD_DEMOS=OFF -DwxUSE_LIBJPEG=OFF -DwxUSE_UNICODE=ON -DwxBUILD_SHARED=OFF -DCMAKE_INSTALL_PREFIX=~/fs_libs/wxWidgets ..
+../configure --disable-shared --with-gtk=3 --with-libpng --with-libxpm --without-libjpeg --without-libtiff --without-expat --disable-pnm --disable-gif --disable-pcx --disable-iff  --with-opengl --prefix=${HOME}/fs_libs/wxWidgets --exec_prefix=${HOME}/fs_libs/wxWidgets --disable-tests --disable-rpath
+```
+The output of the last `configure` step should look like this:
+```
+Configured wxWidgets 3.1.4 for `x86_64-pc-linux-gnu'
+
+  Which GUI toolkit should wxWidgets use?                 GTK+ 3 with support for GTK+ printing
+  Should wxWidgets be compiled into single library?       no
+  Should wxWidgets be linked as a shared library?         no
+  Should wxWidgets support Unicode?                       yes (using wchar_t)
+  What level of wxWidgets compatibility should be enabled?
+                                       wxWidgets 2.8      no
+                                       wxWidgets 3.0      yes
+  Which libraries should wxWidgets use?
+                                       STL                no
+                                       jpeg               no
+                                       png                sys
+                                       regex              builtin
+                                       tiff               no
+                                       lzma               no
+                                       zlib               sys
+                                       expat              no
+                                       libmspack          no
+                                       sdl                no
+```
+Now, it's time to build:
+```
 make install
 ```
-After the build is complete and installed, you should see the following under your new `~/fs_libs/wxWidgets` directory:
-```
-drwxr-xr-x 2 gg gg 4096 mei 22 19:09 bin/
-drwxrwxr-x 3 gg gg 4096 mei 22 19:09 include/
-drwxrwxr-x 3 gg gg 4096 mei 22 19:09 lib/
-```
+
+
+
+
+
+
+
+
+
 ## GoogleTest
 We also need GoogleTest, for running Floating Sandbox's unit tests. We won't build it, as GoogleTest is best built together with the unit test's sources.
 ### Cloning
@@ -208,17 +243,20 @@ We're gonna build Floating Sandbox in a folder named `build` under its checkout 
 cd ~/git/Floating-Sandbox
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX=~/floating-sandbox ..
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DCMAKE_INSTALL_PREFIX=~/floating-sandbox ..
 TODOHERE
 ```
 
 
-
-TODO:
+TODO - after verifying it all works:
+* Make patch for DevIL
+* Push patch for DevIL
+* Commit and push this .md
 * Redo as:
+	** UserSettings.cmake for Ubuntu: nuke WX_ROOT
 	** RELEASE
 	** Without libpng and zlib (which are already installed by gtk3)
 	** Less wxWidgets libs (we only need: base gl core html media)
 * Link to this from main Readme
 * Update Readme for "I'm building on Ubuntu" and OSes
-* Push patch for DevIL
+
