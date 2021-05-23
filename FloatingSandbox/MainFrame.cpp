@@ -1092,7 +1092,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     mGameTimer = std::make_unique<wxTimer>(this, ID_GAME_TIMER);
     Connect(ID_GAME_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnGameTimerTrigger);
 
-    PostGameStepTimer();
+    PostGameStepTimer(mGameTimerDuration);
 
 
     //
@@ -1159,8 +1159,8 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
     {
         // We are checking for updates...
         // ...check whether the...check has completed
-        auto outcome = mUpdateChecker->GetOutcome();
-        if (!!outcome)
+        auto const outcome = mUpdateChecker->GetOutcome();
+        if (outcome.has_value())
         {
             // Check completed...
             // ...check if it's an interesting new version
@@ -1186,12 +1186,19 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         }
     }
 
+    std::chrono::steady_clock::time_point startTimestamp;
+
     if (mHasStartupTipBeenChecked)
     {
+#if FS_IS_OS_WINDOWS()
         // We've already checked the startup tip...
         // ...so we can safely post the timer event for the next
         // frame - the earlier the better (mind the 15ms minimum on MSW)
-        PostGameStepTimer();
+        PostGameStepTimer(mGameTimerDuration);
+#else
+        // Take the current timestamp
+        startTimestamp = std::chrono::steady_clock::now();
+#endif
     }
 
     //
@@ -1264,12 +1271,21 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
             startupTipDialog.ShowModal();
         }
 
-        // Post next game step now
-        PostGameStepTimer();
-
         // Don't check for startup tips anymore
         mHasStartupTipBeenChecked = true;
+
+        // Post next game step now
+        PostGameStepTimer(mGameTimerDuration);
     }
+#if !FS_IS_OS_WINDOWS()
+    else
+    {
+        // Run next game step after the remaining time
+        auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - startTimestamp);
+        PostGameStepTimer(std::max(mGameTimerDuration - elapsed, std::chrono::milliseconds::zero()));
+    }
+#endif
 }
 
 void MainFrame::OnLowFrequencyTimerTrigger(wxTimerEvent & /*event*/)
@@ -2123,7 +2139,7 @@ void MainFrame::OnError(
 
         if (!!mGameTimer)
         {
-            PostGameStepTimer();
+            PostGameStepTimer(mGameTimerDuration);
         }
 
         if (!!mLowFrequencyTimer)
@@ -2133,12 +2149,12 @@ void MainFrame::OnError(
     }
 }
 
-void MainFrame::PostGameStepTimer()
+void MainFrame::PostGameStepTimer(std::chrono::milliseconds duration)
 {
     assert(!!mGameTimer);
 
     mGameTimer->Start(
-        mGameTimerDuration.count(),
+        duration.count(),
         true); // One-shot
 }
 
