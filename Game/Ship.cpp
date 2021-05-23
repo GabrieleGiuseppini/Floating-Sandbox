@@ -1272,6 +1272,7 @@ void Ship::ApplyWorldSurfaceForces(
         assert(visitedPoints == frontier.Size);
 #endif
 
+        /* TODOTEST
         if constexpr (DoHydrostaticPressure)
         {
             //
@@ -1292,7 +1293,6 @@ void Ship::ApplyWorldSurfaceForces(
             visitedPoints = 0;
 #endif
 
-            //while (resultantHydrostaticPressureTorque != 0.0f)
             {
                 float const particleZeroingTorque = -resultantHydrostaticPressureTorque / static_cast<float>(frontier.Size);
 
@@ -1347,6 +1347,7 @@ void Ship::ApplyWorldSurfaceForces(
             assert(visitedPoints == frontier.Size);
 #endif
         }
+        */
 
         // Store AABB
         aabbSet.Add(std::move(aabb));
