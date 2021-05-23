@@ -181,7 +181,7 @@ public:
 
     inline vec2f normalise_approx() const noexcept
     {
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
         // SSE version is 15% faster than "normal" vec.normalize()
         __m128 _x = _mm_load_ss(&x);
         __m128 _y = _mm_load_ss(&y);
@@ -219,7 +219,7 @@ public:
 
     inline vec2f normalise_approx(float length) const noexcept
     {
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
         // SSE version is 5% faster than "normal" vec.normalize(length)
         __m128 _x = _mm_load_ss(&x);
         __m128 _y = _mm_load_ss(&y);
