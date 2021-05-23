@@ -21,10 +21,7 @@ project (FloatingSandbox)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(FS_USE_STATIC_LIBS "Force static linking" ON)
-message (STATUS "FS_USE_STATIC_LIBS:" ${FS_USE_STATIC_LIBS})
-
 option(FS_BUILD_BENCHMARKS "Build benchmarks" ON)
-message (STATUS "FS_BUILD_BENCHMARKS:" ${FS_BUILD_BENCHMARKS})
 
 ####################################################
 # Custom CMake modules
@@ -45,6 +42,9 @@ endif()
 ####################################################
 #  External libraries configuration
 ####################################################
+
+message (STATUS "FS_USE_STATIC_LIBS:" ${FS_USE_STATIC_LIBS})
+message (STATUS "FS_BUILD_BENCHMARKS:" ${FS_BUILD_BENCHMARKS})
 
 #
 # PicoJSON
@@ -302,3 +302,4 @@ message (STATUS "exe Linker Flags RelWithDebInfo:" ${CMAKE_EXE_LINKER_FLAGS_RELW
 message (STATUS "exe Linker Flags Debug:" ${CMAKE_EXE_LINKER_FLAGS_DEBUG})
 message (STATUS "Additional libraries:" "${ADDITIONAL_LIBRARIES}")
 message (STATUS "Install directory:" ${CMAKE_INSTALL_PREFIX})
+message (STATUS "-----------------------------------------------------")
