@@ -53,7 +53,7 @@ public:
         {
             this->InternalRun();
         }
-        catch (TestCaseFailException)
+        catch (TestCaseFailException const &)
         {
 
         }

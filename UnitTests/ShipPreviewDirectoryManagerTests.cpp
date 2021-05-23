@@ -38,9 +38,9 @@ namespace {
                 std::make_unique<RgbaImageData>(MakePreviewImage(static_cast<int>(i) + 1)));
         }
 
-        auto oldDb = PersistedShipPreviewImageDatabase(testFileSystem);
+        auto const oldDb = PersistedShipPreviewImageDatabase(testFileSystem);
 
-        bool const isCreated = newDb.Commit(
+        newDb.Commit(
             databaseFilePath,
             oldDb,
             true,

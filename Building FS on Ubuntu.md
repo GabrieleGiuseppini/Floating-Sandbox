@@ -78,7 +78,7 @@ sudo apt install libpng-dev
 Here we clone and build the libraries required by Floating Sandbox. Some notes:
 * In these instructions we'll be cloning all library sources under `~/git`; change as you like
 * We'll build static libraries and link statically, as I prefer one single executable with everything in it, over depending on carefully prepared target environments
-* We'll build `RelWithDebInfo`, though you may as well build `Debug` or `Release`
+* We'll build `Release`, though you may as well build `Debug` or `RelWithDebInfo`
 * Finally, we'll install all library binaries and include files under `~/fs_libs`
 
 ## Picojson 1.3.0
@@ -109,7 +109,7 @@ We are now ready to build DevIL in a folder named `build` under its checkout roo
 cd ~/git/DevIL
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=~/fs_libs/DevIL ../DevIL 
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=~/fs_libs/DevIL ../DevIL 
 make install
 ```
 After the build is complete and installed, you should see the following under your new `~/fs_libs/DevIL` directory:
@@ -132,7 +132,7 @@ We're gonna build SFML in a folder named `build` under its checkout root.
 cd ~/git/SFML
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=FALSE -DSFML_BUILD_WINDOW=FALSE -DSFML_BUILD_GRAPHICS=FALSE -DSFML_BUILD_DOC=FALSE -DSFML_BUILD_EXAMPLES=FALSE -DCMAKE_INSTALL_PREFIX=~/fs_libs/SFML ..
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DSFML_BUILD_WINDOW=FALSE -DSFML_BUILD_GRAPHICS=FALSE -DSFML_BUILD_DOC=FALSE -DSFML_BUILD_EXAMPLES=FALSE -DCMAKE_INSTALL_PREFIX=~/fs_libs/SFML ..
 make install
 ```
 After the build is complete and installed, you should see the following under your new `~/fs_libs/SFML` directory:
@@ -224,7 +224,7 @@ We're gonna build Floating Sandbox in a folder named `build` under its checkout 
 cd ~/git/Floating-Sandbox
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
 make install
 ```
 ### Running
@@ -245,8 +245,6 @@ drwxr-xr-x  2 gg gg     57344 mei 23 15:57 Ships/
 To start the game, go into that directory and launch `FloatingSandbox`.
 TODO - after verifying it all works:
 * Commit and push this .md
-* Redo as:
-	** RELEASE
 * Link to this from main Readme
 * Update Readme for "I'm building on Ubuntu" and OSes
 

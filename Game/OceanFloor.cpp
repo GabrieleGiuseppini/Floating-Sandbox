@@ -191,7 +191,7 @@ std::optional<bool> OceanFloor::AdjustTo(
 
     bool hasAdjusted = false;
     float x = leftX;
-    for (auto s = sampleIndex; x <= rightX && s < SamplesCount; ++s, x += Dx)
+    for (auto s = static_cast<size_t>(sampleIndex); x <= rightX && s < SamplesCount; ++s, x += Dx)
     {
         // Calculate new sample value, i.e. trajectory's value
         float const newSampleValue = leftTargetY + slopeY * (x - leftX);
@@ -244,7 +244,7 @@ void OceanFloor::DisplaceAt(
     SetTerrainHeight(sampleIndexI, mTerrain[sampleIndexI] + lYOffset);
 
     // Right
-    if (sampleIndexI < SamplesCount - 1)
+    if (static_cast<size_t>(sampleIndexI) < SamplesCount - 1)
     {
         float rYOffset = yOffset * sampleIndexDx;
         SetTerrainHeight(sampleIndexI + 1, mTerrain[sampleIndexI + 1] + rYOffset);
