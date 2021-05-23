@@ -95,6 +95,8 @@ source_group("Resources" FILES ${RESOURCE_FILES})
 
 add_executable (FloatingSandbox ${FLOATING_SANDBOX_SOURCES} ${DIALOGS_SOURCES} ${RESOURCE_FILES})
 
+include(${wxWidgets_USE_FILE})
+
 target_include_directories(FloatingSandbox PRIVATE .)
 target_include_directories(FloatingSandbox PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_compile_definitions(FloatingSandbox PRIVATE "${wxWidgets_DEFINITIONS}")
