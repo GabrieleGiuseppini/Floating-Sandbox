@@ -339,7 +339,7 @@ private:
         std::string const & message,
         bool die);
 
-    void PostGameStepTimer();
+    void PostGameStepTimer(std::chrono::milliseconds duration);
 
     void StartLowFrequencyTimer();
 
