@@ -812,12 +812,13 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
                     // execution
                     //
 
-                    ////LogMessage("TODOTEST: Swapping buffers...");
+                    // TODOTEST
+                    LogMessage("TODOTEST: Swapping buffers...");
 
                     assert(!!mMainGLCanvas);
                     mMainGLCanvas->SwapBuffers();
 
-                    ////LogMessage("TODOTEST: ...buffers swapped.");
+                    LogMessage("TODOTEST: ...buffers swapped.");
                 }),
             mResourceLocator,
             [this, &splash](float progress, ProgressMessageType message)
@@ -1206,10 +1207,12 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         mToolController->UpdateSimulation(mGameController->GetCurrentSimulationTime());
 
         // Update game - will also render
-        ////LogMessage("TODOTEST: MainFrame::OnGameTimerTrigger: Running game iteration; IsSplashShown=",
-        ////    !!mSplashScreenDialog ? std::to_string(mSplashScreenDialog->IsShown()) : "<NoSplash>",
-        ////    " IsMainGLCanvasShown=", !!mMainGLCanvas ? std::to_string(mMainGLCanvas->IsShown()) : "<NoCanvas>",
-        ////    " IsFrameShown=", std::to_string(this->IsShown()));
+        // TODOTEST
+        LogMessage("TODOTEST: MainFrame::OnGameTimerTrigger: Running game iteration; IsSplashShown=",
+            !!mSplashScreenDialog ? std::to_string(mSplashScreenDialog->IsShown()) : "<NoSplash>",
+            " IsMainGLCanvasShown=", !!mMainGLCanvas ? std::to_string(mMainGLCanvas->IsShown()) : "<NoCanvas>",
+            " IsFrameShown=", std::to_string(this->IsShown()));
+
         assert(!!mGameController);
         mGameController->RunGameIteration();
 
