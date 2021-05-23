@@ -98,7 +98,7 @@ public:
 
     inline bool IsAlphaPremultiplied() const
     {
-        return !!(mOptions & AtlasOptions::AlphaPremultiply);
+        return (static_cast<int>(mOptions) & static_cast<int>(AtlasOptions::AlphaPremultiply));
     }
 
     inline std::vector<TextureAtlasFrameMetadata<TextureGroups>> const & GetFrameMetadata() const
