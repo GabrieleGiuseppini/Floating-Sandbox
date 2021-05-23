@@ -352,8 +352,6 @@ TEST(AlgorithmsTests, DiffuseLight_SSEVectorized_8Lamps)
 template<typename Algorithm>
 void RunSmoothBufferAndAddTest_12_5(Algorithm algorithm)
 {
-    size_t constexpr BufferSize = 12;
-
     // Prefix of buffer "body" necessary to include half of average window
     // (with initial zeroes) *and* making the buffer "body" aligned
     size_t constexpr BufferBodyPrefixSize = make_aligned_float_element_count(5 / 2); // Before "body"

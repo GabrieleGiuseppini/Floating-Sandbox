@@ -21,7 +21,10 @@ project (FloatingSandbox)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(FS_USE_STATIC_LIBS "Force static linking" ON)
+message (STATUS "FS_USE_STATIC_LIBS:" ${FS_USE_STATIC_LIBS})
+
 option(FS_BUILD_BENCHMARKS "Build benchmarks" ON)
+message (STATUS "FS_BUILD_BENCHMARKS:" ${FS_BUILD_BENCHMARKS})
 
 ####################################################
 # Custom CMake modules
@@ -38,9 +41,6 @@ if(EXISTS "${USER_SETTINGS_FILE}")
 	message(STATUS "Loading user specific settings from ${USER_SETTINGS_FILE}")
 	include("${USER_SETTINGS_FILE}")
 endif()
-
-message (STATUS "FS_USE_STATIC_LIBS:" ${FS_USE_STATIC_LIBS})
-message (STATUS "FS_BUILD_BENCHMARKS:" ${FS_BUILD_BENCHMARKS})
 
 ####################################################
 #  External libraries configuration
@@ -250,19 +250,6 @@ elseif(CMAKE_COMPILER_IS_GNUXX OR CMAKE_COMPILER_IS_GNUCC)
 	endif (UNIX)
 endif()
 
-message (STATUS "cxx Flags:" ${CMAKE_CXX_FLAGS})
-message (STATUS "cxx Flags Release:" ${CMAKE_CXX_FLAGS_RELEASE})
-message (STATUS "cxx Flags RelWithDebInfo:" ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
-message (STATUS "cxx Flags Debug:" ${CMAKE_CXX_FLAGS_DEBUG})
-message (STATUS "c Flags:" ${CMAKE_C_FLAGS})
-message (STATUS "c Flags Release:" ${CMAKE_C_FLAGS_RELEASE})
-message (STATUS "c Flags RelWithDebInfo:" ${CMAKE_C_FLAGS_RELWITHDEBINFO})
-message (STATUS "c Flags Debug:" ${CMAKE_C_FLAGS_DEBUG})
-message (STATUS "exe Linker Flags Release:" ${CMAKE_EXE_LINKER_FLAGS_RELEASE})
-message (STATUS "exe Linker Flags RelWithDebInfo:" ${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO})
-message (STATUS "exe Linker Flags Debug:" ${CMAKE_EXE_LINKER_FLAGS_DEBUG})
-message (STATUS "Additional libraries:" "${ADDITIONAL_LIBRARIES}")
-
 ####################################################
 # Sub-projects
 ####################################################
@@ -285,7 +272,7 @@ endif()
 # Visual Studio specifics
 ####################################################
 
-if (MSVC)
+if(MSVC)
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT "FloatingSandbox")
 endif()
 
@@ -293,8 +280,30 @@ endif()
 # Install
 ####################################################
 
-set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/Install" CACHE PATH "..." FORCE)
+if(FS_INSTALL_DIRECTORY)
+	set(CMAKE_INSTALL_PREFIX "${FS_INSTALL_DIRECTORY}" CACHE PATH "..." FORCE)
+else()
+	set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/Install" CACHE PATH "..." FORCE)
+endif()
 
 # User-defined
 DefineUserPostInstall()
 
+####################################################
+# Diagnostics
+####################################################
+
+message (STATUS "-----------------------------------------------------")
+message (STATUS "cxx Flags:" ${CMAKE_CXX_FLAGS})
+message (STATUS "cxx Flags Release:" ${CMAKE_CXX_FLAGS_RELEASE})
+message (STATUS "cxx Flags RelWithDebInfo:" ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
+message (STATUS "cxx Flags Debug:" ${CMAKE_CXX_FLAGS_DEBUG})
+message (STATUS "c Flags:" ${CMAKE_C_FLAGS})
+message (STATUS "c Flags Release:" ${CMAKE_C_FLAGS_RELEASE})
+message (STATUS "c Flags RelWithDebInfo:" ${CMAKE_C_FLAGS_RELWITHDEBINFO})
+message (STATUS "c Flags Debug:" ${CMAKE_C_FLAGS_DEBUG})
+message (STATUS "exe Linker Flags Release:" ${CMAKE_EXE_LINKER_FLAGS_RELEASE})
+message (STATUS "exe Linker Flags RelWithDebInfo:" ${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO})
+message (STATUS "exe Linker Flags Debug:" ${CMAKE_EXE_LINKER_FLAGS_DEBUG})
+message (STATUS "Additional libraries:" "${ADDITIONAL_LIBRARIES}")
+message (STATUS "Install directory:" ${CMAKE_INSTALL_PREFIX})
