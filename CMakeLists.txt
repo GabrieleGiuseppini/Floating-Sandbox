@@ -56,9 +56,11 @@ find_package(PicoJSON REQUIRED)
 # Google Benchmark
 #
 
-list(APPEND CMAKE_PREFIX_PATH "${BENCHMARK_ROOT_DIR}")
+if(FS_BUILD_BENCHMARKS)
+	list(APPEND CMAKE_PREFIX_PATH "${BENCHMARK_ROOT_DIR}")
 
-find_package(benchmark) # Not required as benchmarks are optional and used only for testing
+	find_package(benchmark) # Not required as benchmarks are optional and used only for testing
+endif()
 
 #
 # wxWidgets
