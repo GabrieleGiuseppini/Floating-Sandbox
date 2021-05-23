@@ -16,7 +16,7 @@ endif()
 
 ###################################################
 
-project (FloatingSandbox CXX)
+project (FloatingSandbox)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -227,7 +227,7 @@ if(MSVC)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:MSVCRT /NODEFAULTLIB:MSVCRTD")
 	add_compile_options(/permissive-)
 
-elseif(CMAKE_COMPILER_IS_GNUXX)
+elseif(CMAKE_COMPILER_IS_GNUXX OR CMAKE_COMPILER_IS_GNUCC)
 
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -O3 -ffast-math -fno-math-errno -funsafe-math-optimizations -ffinite-math-only -fno-trapping-math")
 	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -Wall -O3 -ffast-math -fno-math-errno -funsafe-math-optimizations -ffinite-math-only -fno-trapping-math")
@@ -243,7 +243,7 @@ add_definitions(-DPICOJSON_USE_INT64)
 
 if(MSVC)
 	set(ADDITIONAL_LIBRARIES comctl32 rpcrt4 advapi32)
-elseif(CMAKE_COMPILER_IS_GNUXX)
+elseif(CMAKE_COMPILER_IS_GNUXX OR CMAKE_COMPILER_IS_GNUCC)
 	set(ADDITIONAL_LIBRARIES ${CMAKE_DL_LIBS} pthread stdc++fs atomic)
 	if (UNIX)
 	    list(APPEND ADDITIONAL_LIBRARIES X11)
