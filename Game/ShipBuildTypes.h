@@ -36,7 +36,7 @@ struct ShipBuildPoint
     float Water;
 
     ElectricalMaterial const* ElectricalMtl;
-    ElectricalElementInstanceIndex ElectricalElementInstanceIndex;
+    ElectricalElementInstanceIndex ElectricalElementInstanceIdx;
     std::vector<ElementIndex> ConnectedSprings;
 
     ShipBuildPoint(
@@ -56,7 +56,7 @@ struct ShipBuildPoint
         , IsLeaking(isRope ? true : false) // Ropes leak by default
         , Water(water)
         , ElectricalMtl(nullptr)
-        , ElectricalElementInstanceIndex(NoneElectricalElementInstanceIndex)
+        , ElectricalElementInstanceIdx(NoneElectricalElementInstanceIndex)
         , ConnectedSprings()
     {
     }
