@@ -6,6 +6,8 @@ This game is a realistic two-dimensional particle system, which uses mass-spring
 
 <img src="https://i.imgur.com/c8fTsgY.png">
 
+The game is really a generic physics simulator that can be used to simulate just about any 2D floating rigid body under stress.
+
 As of now the simulator implements the following aspects of physics:
 - Classical mechanics - Hookean laws for springs, impacts with ocean floor
 - Thermodynamics - heat transfer, dissipation, combustion
@@ -22,8 +24,6 @@ If you want, you can also apply a higher-resolution image to be used as a more r
 For the physics in the simulation I'm trying to shy away from tricks that exist solely for the purpose of delivering an eye-candy; every bit is grounded as close as possible into real physics, and the material system has been put together using physical attributes of real-world materials. This makes it sometimes hard to build structures that sustain their own weight or float easily - as it is in reality, after all - but the reward is a realistic world-in-a-sandbox where every action and corresponding reaction are not pre-programmed but, rather, are generated automatically by the physics engine calculations.
 
 The game currently comes with a few example objects - mostly ships - and I'm always busy making new ships and objects. Anyone is encouraged to make their own objects, and if you'd like them to be included in the game, just get in touch with me - you'll get proper recognition in the About dialog, of course.
-
-The original idea for the game is from Luke Wren, who wrote a Sinking Ship Simulator to simulate sinking ships. I have adopted his idea, completely reimplemented his simulator, and revamped its feature set; at this moment it is really a generic physics simulator that can be used to simulate just about any 2D floating rigid body under stress.
 
 There are lots of improvements that I'm currently working on; some of these are:
 - In-game Ship Builder
