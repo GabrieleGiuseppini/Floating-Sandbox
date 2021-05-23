@@ -1,16 +1,16 @@
-These are instructions on how to build Floating Sandbox on a *clean* Ubuntu 18.04. These instructions were written at the time of Floating Sandbox 1.16.4, and tested on a completely clean VM.
+These are instructions on how to build Floating Sandbox on a *clean* Ubuntu 18.04. These instructions were written at the time of Floating Sandbox 1.16.4, and tested on a completely clean VM. Note that I'm writing this mostly for myself, as I'm a Linux newbie (I'm a hardcore Windows developer), so forgive the verbosity.
 
 # Installing Prerequisite Tooling and SDKs
 
 Follow these instructions to setup your Ubuntu with development tools and the necessary SDKs. You may skip any steps when you already have the indicated versions.
 
-## Prepare
+### Prepare APT
 ```
 sudo apt update
 sudo apt install software-properties-common
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test
 ```
-## gcc 8.4.0 (at least)
+### gcc 8.4.0 (at least)
 ```
 sudo apt install gcc-8
 sudo apt install g++-8
@@ -21,7 +21,7 @@ Check the installed versions now:
 gcc --version
 g++ --version
 ```
-## cmake 3.12 (at least)
+### cmake 3.12 (at least)
 If the `cmake` package for your Ubuntu version is later than or equal 3.12, just do the following:
 ```
 sudo apt install cmake
@@ -41,36 +41,36 @@ The install step will copy cmake under `/usr/local/bin`. Verify your cmake versi
 hash -r
 cmake --version
 ```
-## git
+### git
 ```
 sudo apt install git
 ```
-## X11 SDK
+### X11 SDK
 ```
 sudo apt install libx11-dev
 ```
-## GTK3 SDK
+### GTK3 SDK
 ```
 sudo apt install libgtk-3-dev
 ```
-## Vorbis SDK
+### Vorbis SDK
 ```
 sudo apt install libvorbis-dev
 ```
-## FLAC SDK
+### FLAC SDK
 ```
 sudo apt install libflac++-dev
 ```
-### OpenGL
+### OpenGL SDK
 ```
 sudo apt install libgl1-mesa-dev
 sudo apt install libglu1-mesa-dev
 ```
-### zlib
+### zlib SDK
 ```
 sudo apt install zlib1g-dev
 ```
-### pnglib
+### pnglib SDK
 ```
 sudo apt install libpng-dev
 ```
@@ -99,7 +99,12 @@ cd DevIL
 git checkout v1.8.0
 ```
 ### Building
-We're gonna build DevIL in a folder named `build` under its checkout root.
+Before we can build, we need to apply a patch to fix [an issue in DevIL with building static libraries](https://github.com/DentonW/DevIL/issues/95). Since DevIL seems pretty much dead, I couldn't get my patch to the repo and thus you'll be better off applying the `devil-issue-95.patch` patch - which you can find in the root of the Floating Sandbox repo - to your checkout:
+```
+cd ~/git/DevIL
+git apply devil-issue-95.patch
+```
+We are now ready to build DevIL in a folder named `build` under its checkout root.
 ```
 cd ~/git/DevIL
 mkdir build
@@ -225,14 +230,20 @@ make install
 ### Running
 At this moment you should have the game neatly packaged and laid out under your `~/floating-sandbox` directory:
 ```
-TODO
+gg@ubuntu1804-vm:~$ ll ~/floating-sandbox/
+total 183572
+drwxrwxr-x  5 gg gg      4096 mei 23 15:57 ./
+drwxr-xr-x 18 gg gg      4096 mei 23 15:57 ../
+-rw-r--r--  1 gg gg     20235 mei 23 11:06 changes.txt
+drwxr-xr-x 13 gg gg      4096 mei 23 15:57 Data/
+-rwxr-xr-x  1 gg gg 187856824 mei 23 15:44 FloatingSandbox*
+drwxr-xr-x  2 gg gg      4096 mei 23 15:57 Guides/
+-rw-r--r--  1 gg gg      1270 mei 22 14:25 license.txt
+-rw-r--r--  1 gg gg     12903 mei 23 14:43 README.md
+drwxr-xr-x  2 gg gg     57344 mei 23 15:57 Ships/
 ```
-To start the game, TODOHERE
-
-
+To start the game, go into that directory and launch `FloatingSandbox`.
 TODO - after verifying it all works:
-* Make patch for DevIL
-* Push patch for DevIL
 * Commit and push this .md
 * Redo as:
 	** RELEASE
