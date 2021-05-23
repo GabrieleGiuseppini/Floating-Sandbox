@@ -256,9 +256,8 @@ We're gonna build Floating Sandbox in a folder named `build` under its checkout 
 cd ~/git/Floating-Sandbox
 mkdir build
 cd build
-TODOHERE
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DCMAKE_INSTALL_PREFIX=~/floating-sandbox ..
-
+make install
 ```
 
 
