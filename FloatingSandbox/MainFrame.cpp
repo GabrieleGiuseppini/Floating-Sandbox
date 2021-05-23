@@ -169,6 +169,7 @@ MainFrame::MainFrame(
         mMainPanel,
         ID_MAIN_CANVAS);
 
+    mMainGLCanvas->Connect(wxEVT_SHOW, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasShow, 0, this);
     mMainGLCanvas->Connect(wxEVT_PAINT, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasPaint, 0, this);
     mMainGLCanvas->Connect(wxEVT_SIZE, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasResize, 0, this);
     mMainGLCanvas->Connect(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasLeftDown, 0, this);
@@ -206,9 +207,9 @@ MainFrame::MainFrame(
     Connect(ID_RELOAD_CURRENT_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadCurrentShipMenuItemSelected);
 
     mReloadPreviousShipMenuItem = new wxMenuItem(fileMenu, ID_RELOAD_PREVIOUS_SHIP_MENUITEM, _("Reload Previous Ship") + wxS("\tCtrl+V"), wxEmptyString, wxITEM_NORMAL);
-    mReloadPreviousShipMenuItem->Enable(false);
     fileMenu->Append(mReloadPreviousShipMenuItem);
     Connect(ID_RELOAD_PREVIOUS_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadPreviousShipMenuItemSelected);
+    mReloadPreviousShipMenuItem->Enable(false);
 
     fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
 
@@ -774,9 +775,11 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // the canvas to be visible at the moment the context is created
     //
 
+    // Our current OpenGL canvas is the canvas of the splash screen
     mCurrentOpenGLCanvas.store(splash->GetOpenGLCanvas());
 
-    mMainGLCanvasContext = std::make_unique<wxGLContext>(splash->GetOpenGLCanvas());
+    // Create the main - and only - OpenGL context on the current (splash) canvas
+    mMainGLCanvasContext = std::make_unique<wxGLContext>(mCurrentOpenGLCanvas.load());
 
 #if defined(_DEBUG) && defined(_WIN32)
     LogMessage("MainFrame::OnPostInitializeTrigger: Hiding SplashScreenDialog");
@@ -1307,6 +1310,13 @@ void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 //
 // Main canvas event handlers
 //
+
+void MainFrame::OnMainGLCanvasShow(wxShowEvent & event)
+{
+    LogMessage("MainFrame::OnMainGLCanvasShow()");
+
+    event.Skip();
+}
 
 void MainFrame::OnMainGLCanvasPaint(wxPaintEvent & event)
 {
