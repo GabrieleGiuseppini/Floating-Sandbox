@@ -273,11 +273,18 @@ RenderContext::~RenderContext()
 
 void RenderContext::RebindContext()
 {
-    mRenderThread.RunSynchronously(
+    // TODOTEST
+    ////mRenderThread.RunSynchronously(
+    ////    [&]()
+    ////    {
+    ////        mMakeRenderContextCurrentFunction();
+    ////    });
+    mRenderThread.QueueTask(
         [&]()
-        {
-            mMakeRenderContextCurrentFunction();
-        });
+    {
+        mMakeRenderContextCurrentFunction();
+    });
+
 }
 
 void RenderContext::Reset()
