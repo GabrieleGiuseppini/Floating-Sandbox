@@ -485,7 +485,6 @@ private:
 				return NotificationAnchorPositionType::BottomRight;
 		}
 
-		assert(false);
 		return NotificationAnchorPositionType::BottomLeft;
 	}
 
