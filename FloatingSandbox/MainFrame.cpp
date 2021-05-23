@@ -815,9 +815,13 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
                     // TODOTEST
                     LogMessage("TODOTEST: Swapping buffers...");
 
-                    assert(!!mMainGLCanvas);
-                    mMainGLCanvas->SwapBuffers();
+                    // TODOTEST
+                    ////assert(!!mMainGLCanvas);
+                    ////mMainGLCanvas->SwapBuffers();
+                    assert(mCurrentOpenGLCanvas.load() != nullptr);
+                    mCurrentOpenGLCanvas.load()->SwapBuffers();
 
+                    // TODOTEST
                     LogMessage("TODOTEST: ...buffers swapped.");
                 }),
             mResourceLocator,
@@ -1206,7 +1210,7 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         assert(!!mToolController);
         mToolController->UpdateSimulation(mGameController->GetCurrentSimulationTime());
 
-        // Update game - will also render
+        // Update and render
         // TODOTEST
         LogMessage("TODOTEST: MainFrame::OnGameTimerTrigger: Running game iteration; IsSplashShown=",
             !!mSplashScreenDialog ? std::to_string(mSplashScreenDialog->IsShown()) : "<NoSplash>",
