@@ -20,7 +20,7 @@ project (FloatingSandbox)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-option(FS_USE_STATIC_LIBS "Force static linking" OFF)
+option(FS_USE_STATIC_LIBS "Force static linking" ON)
 option(FS_BUILD_BENCHMARKS "Build benchmarks" ON)
 
 ####################################################

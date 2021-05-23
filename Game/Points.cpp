@@ -1727,7 +1727,9 @@ void Points::UploadVectors(
         {
             color = vec4f(0.5f, 0.1f, 0.f, 1.0f);
             vectorBuffer = mNonSpringForceBuffer.data();
-            lengthAdjustment = 0.00075f;
+            // TODOTEST
+            //lengthAdjustment = 0.00075f;
+            lengthAdjustment = 0.000025f;
 
             break;
         }
@@ -1767,10 +1769,18 @@ void Points::UploadVectors(
 
     shipRenderContext.UploadVectorsStart(mElementCount, color);
 
-    for (auto const p : *this)
+    for (auto const p : this->RawShipPoints())
     {
-        if (!IsEphemeral(p)
-            || GetEphemeralType(p) != EphemeralType::None)
+        shipRenderContext.UploadVector(
+            GetPosition(p),
+            mPlaneIdFloatBuffer[p],
+            vectorBuffer[p],
+            lengthAdjustment);
+    }
+
+    for (auto const p : this->EphemeralPoints())
+    {
+        if (GetEphemeralType(p) != EphemeralType::None)
         {
             shipRenderContext.UploadVector(
                 GetPosition(p),

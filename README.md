@@ -118,6 +118,9 @@ Dependencies marked with * may be statically linked by using the `MSVC_USE_STATI
 
 A custom `UserSettings.cmake` may be used in order to configure the locations of all dependencies. If you want to use it, copy the `UserSettings.example.cmake` to `UserSettings.cmake` and adapt it to your setup. In case you do not want to use this file, you can use the example to get an overview of all CMake variables you might need to use to configure the dependencies.
 
+Over the years we've been writing down OS-specific build steps:
+- [Ubuntu](https://github.com/GabrieleGiuseppini/Floating-Sandbox/Building FS on Ubuntu.md)
+
 # Contributing
 At this moment I'm looking for volunteers for three specific tasks: creating a "Ship Editor" for the game, creating new ships, and building the game on non-Windows platforms.
 
