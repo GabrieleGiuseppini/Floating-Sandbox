@@ -1,18 +1,18 @@
 cmake_minimum_required (VERSION 3.6)
 
-if (POLICY CMP0048)
+if(POLICY CMP0048)
 	cmake_policy(SET CMP0048 NEW)
-endif (POLICY CMP0048)
+endif()
 
-if (POLICY CMP0082)
+if(POLICY CMP0082)
 	# Run install rules in specified order
 	cmake_policy(SET CMP0082 NEW)
-endif (POLICY CMP0082)
+endif()
 
-if (POLICY CMP0087)
+if(POLICY CMP0087)
 	# Allow generator expressions in install
 	cmake_policy(SET CMP0087 NEW)
-endif (POLICY CMP0087)
+endif()
 
 ###################################################
 
@@ -20,7 +20,8 @@ project (FloatingSandbox)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-option(MSVC_USE_STATIC_LINKING "Force static linking on MSVC" OFF)
+option(FS_USE_STATIC_LIBS "Force static linking" OFF)
+option(FS_BUILD_BENCHMARKS "Build benchmarks" ON)
 
 ####################################################
 # Custom CMake modules
@@ -37,6 +38,9 @@ if(EXISTS "${USER_SETTINGS_FILE}")
 	message(STATUS "Loading user specific settings from ${USER_SETTINGS_FILE}")
 	include("${USER_SETTINGS_FILE}")
 endif()
+
+message (STATUS "FS_USE_STATIC_LIBS:" ${FS_USE_STATIC_LIBS})
+message (STATUS "FS_BUILD_BENCHMARKS:" ${FS_BUILD_BENCHMARKS})
 
 ####################################################
 #  External libraries configuration
@@ -73,15 +77,13 @@ find_package(wxWidgets REQUIRED base gl core html media)
 
 find_package(DevIL REQUIRED)
 
-if (WIN32)
-	if(MSVC_USE_STATIC_LINKING)
-		# If we use static linking, we expect to have built DevIL 
-		# as static libs, and we expect to _use_ it as static libs,
-		# so tell the DevIL include files that DevIL is used as static libs.
-		# Note: in this cse we also expect the DevIL libs to be statically-linked
-		# with the png and zlib static libs
-		add_compile_definitions("IL_STATIC_LIB")
-	endif(MSVC_USE_STATIC_LINKING)
+if(FS_USE_STATIC_LIBS)
+	# If we use static linking, we expect to have built DevIL 
+	# as static libs, and we expect to _use_ it as static libs,
+	# so tell the DevIL include files that DevIL is used as static libs.
+	# Note: in this case we also expect the DevIL libs to be statically-linked
+	# with the png and zlib static libs
+	add_compile_definitions("IL_STATIC_LIB")
 endif()
 
 #
@@ -90,15 +92,14 @@ endif()
 
 find_package(SFML 2.5 COMPONENTS system audio REQUIRED)
 
-if (WIN32)
+if(WIN32)
 
 	# Record runtime SFML libraries that we need to install
 
 	find_path(SFML_BIN_DIR
 		NAMES sfml-system-2.dll openal32.dll
 		HINTS ${SFML_DIR}/../../../
-		PATH_SUFFIXES SFML bin
-	)
+		PATH_SUFFIXES SFML bin)
 
 	if(NOT EXISTS "${SFML_BIN_DIR}")
 		message(FATAL_ERROR "Could not find SFML binary directory")
@@ -132,7 +133,7 @@ find_package(OpenGL REQUIRED)
 # GTest
 #
 
-if(MSVC_USE_STATIC_LINKING) # No way to 'negate' a variable easily
+if(FS_USE_STATIC_LIBS) # No way to 'negate' a variable easily
 	set(gtest_force_shared_crt OFF CACHE BOOL "" FORCE)
 else()
 	set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -146,7 +147,7 @@ add_subdirectory(${GTEST_DIR} gtest EXCLUDE_FROM_ALL)
 
 set(CMAKE_CXX_STANDARD 17)
 
-if (MSVC)
+if(MSVC)
 
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_CRT_SECURE_NO_WARNINGS")
 
@@ -156,7 +157,7 @@ if (MSVC)
 		CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO
 		CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
 		CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
-		if(MSVC_USE_STATIC_LINKING)
+		if(FS_USE_STATIC_LIBS)
 			if(${flag_var} MATCHES "/MD")
 				string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
 			endif(${flag_var} MATCHES "/MD")
@@ -232,7 +233,7 @@ add_definitions(-DPICOJSON_USE_INT64)
 # Libraries
 ####################################################
 
-if (MSVC)
+if(MSVC)
 	set(ADDITIONAL_LIBRARIES comctl32 rpcrt4 advapi32)
 elseif(CMAKE_COMPILER_IS_GNUXX)
 	set(ADDITIONAL_LIBRARIES ${CMAKE_DL_LIBS} pthread stdc++fs atomic)
@@ -258,7 +259,6 @@ message (STATUS "Additional libraries:" "${ADDITIONAL_LIBRARIES}")
 # Sub-projects
 ####################################################
 
-add_subdirectory(Benchmarks)
 add_subdirectory(FloatingSandbox)
 add_subdirectory(Game)
 add_subdirectory(GameCore)
@@ -269,13 +269,17 @@ add_subdirectory(ShipTools)
 add_subdirectory(UIControls)
 add_subdirectory(UnitTests)
 
+if(FS_BUILD_BENCHMARKS)
+	add_subdirectory(Benchmarks)
+endif()
+
 ####################################################
 # Visual Studio specifics
 ####################################################
 
 if (MSVC)
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT "FloatingSandbox")
-endif(MSVC)
+endif()
 
 ####################################################
 # Install
