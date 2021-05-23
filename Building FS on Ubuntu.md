@@ -259,6 +259,12 @@ cd build
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DCMAKE_INSTALL_PREFIX=~/floating-sandbox ..
 make install
 ```
+### Running
+At this moment you should have the game neatly packaged and laid out under your `~/floating-sandbox` directory:
+```
+TODO
+```
+To start the game, TODOHERE
 
 
 TODO - after verifying it all works:

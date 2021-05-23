@@ -71,7 +71,7 @@ endif()
 #	set(wxWidgets_CONFIG_EXECUTABLE "${wxWidgets_ROOT_DIR}/wx-config")
 #endif(APPLE)
 
-find_package(wxWidgets REQUIRED base gl core html media)
+find_package(wxWidgets REQUIRED base gl core html)
 
 #
 # DevIL
