@@ -48,11 +48,11 @@ private:
         mArchitecture = "<ARCH?>";
 #endif
 
-#if defined(FS_OS_LINUX)
+#if FS_IS_OS_LINUX()
         mOS = "Linux";
 #elif defined(FS_OS_MACOS)
         mOS = "MacOS";
-#elif defined(FS_OS_WINDOWS)
+#elif FS_IS_OS_WINDOWS()
         mOS = "Windows";
 #else
         mOS = "<OS?>";
