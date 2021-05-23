@@ -242,9 +242,4 @@ drwxr-xr-x  2 gg gg      4096 mei 23 15:57 Guides/
 -rw-r--r--  1 gg gg     12903 mei 23 14:43 README.md
 drwxr-xr-x  2 gg gg     57344 mei 23 15:57 Ships/
 ```
-To start the game, go into that directory and launch `FloatingSandbox`.
-TODO - after verifying it all works:
-* Commit and push this .md
-* Link to this from main Readme
-* Update Readme for "I'm building on Ubuntu" and OSes
-
+To start the game, go into that directory and launch `FloatingSandbox`. Enjoy!
