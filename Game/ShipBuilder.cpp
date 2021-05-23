@@ -571,11 +571,11 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
                 // Store instance index, if material requires one
                 if (electricalMaterial->IsInstanced)
                 {
-                    pointInfos1[pointIndex].ElectricalElementInstanceIndex = MaterialDatabase::GetElectricalElementInstanceIndex(colorKey);
+                    pointInfos1[pointIndex].ElectricalElementInstanceIdx = MaterialDatabase::GetElectricalElementInstanceIndex(colorKey);
                 }
                 else
                 {
-                    assert(pointInfos1[pointIndex].ElectricalElementInstanceIndex == NoneElectricalElementInstanceIndex);
+                    assert(pointInfos1[pointIndex].ElectricalElementInstanceIdx == NoneElectricalElementInstanceIndex);
                 }
             }
         }
@@ -591,7 +591,7 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
         if (nullptr != pi.ElectricalMtl
             && pi.ElectricalMtl->IsInstanced)
         {
-            auto searchIt = seenInstanceIndicesToOriginalCoords.find(pi.ElectricalElementInstanceIndex);
+            auto searchIt = seenInstanceIndicesToOriginalCoords.find(pi.ElectricalElementInstanceIdx);
             if (searchIt != seenInstanceIndicesToOriginalCoords.end())
             {
                 // Dupe
@@ -600,7 +600,7 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
 
                 throw GameException(
                     "Found two electrical elements with instance ID \""
-                    + std::to_string(pi.ElectricalElementInstanceIndex)
+                    + std::to_string(pi.ElectricalElementInstanceIdx)
                     + "\" in the electrical layer image, at " + pi.OriginalDefinitionCoordinates->ToString()
                     + " and at " + searchIt->second.ToString() + "; "
                     + " make sure that all instanced elements"
@@ -610,7 +610,7 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
             {
                 // First time we see it
                 seenInstanceIndicesToOriginalCoords.emplace(
-                    pi.ElectricalElementInstanceIndex,
+                    pi.ElectricalElementInstanceIdx,
                     *(pi.OriginalDefinitionCoordinates));
             }
         }
@@ -1050,7 +1050,7 @@ Physics::Points ShipBuilder::CreatePoints(
         // Store electrical element instance index
         //
 
-        electricalElementInstanceIndices.push_back(pointInfo.ElectricalElementInstanceIndex);
+        electricalElementInstanceIndices.push_back(pointInfo.ElectricalElementInstanceIdx);
     }
 
     return points;

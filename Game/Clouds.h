@@ -11,6 +11,7 @@
 #include <GameCore/GameMath.h>
 #include <GameCore/GameRandomEngine.h>
 
+#include <cmath>
 #include <memory>
 #include <vector>
 
