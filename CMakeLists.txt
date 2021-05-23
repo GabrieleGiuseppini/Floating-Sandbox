@@ -72,6 +72,7 @@ endif()
 #endif(APPLE)
 
 find_package(wxWidgets REQUIRED base gl core html media)
+include(${wxWidgets_USE_FILE})
 
 #
 # DevIL
