@@ -8,7 +8,7 @@ set(REPOS_ROOT "~/git")
 set(DevIL_ROOT_DIR "${SDK_ROOT}/DevIL")
 set(SFML_DIR "${SDK_ROOT}/SFML/lib/cmake/SFML")
 set(BENCHMARK_ROOT_DIR "${SDK_ROOT}/benchmark")
-set(wxWidgets_ROOT "${SDK_ROOT}/wxWidgets")
+set(wxWidgets_ROOT "${SDK_ROOT}/wxWidgets") # Only works with CMake >= 3.12 - directs FindwxWidgets.cmake to the right root
 set(GTEST_DIR "${REPOS_ROOT}/googletest")
 set(PICOJSON_DIR "${REPOS_ROOT}/picojson")
 

@@ -1,6 +1,6 @@
 These are instructions on how to build Floating Sandbox on Ubuntu 18.04. These instructions were written at the time of Floating Sandbox 1.16.4.
 
-# Installing Prerequisite Tooling
+# Installing Prerequisite Tooling and SDKs
 
 Follow these instructions to setup your Ubuntu with development tools and the necessary SDKs.
 
@@ -16,9 +16,23 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 80 --slave /u
 gcc --version
 g++ --version
 ```
-## cmake 3.10.2
+## cmake 3.12 (at least)
+If the `cmake` package for your Ubuntu version is later than or equal 3.12, just do the following:
 ```
 sudo apt install cmake
+```
+Otherwise, if - like me - you're running an older Ubuntu whose `cmake` package is earlier than 3.12 (Ubuntu 18.04 comes with cmake 3.10), then follow these instructions.
+
+First of all, go to https://cmake.org/download/ and download the latest `Unix/Linux Source` tar package - at the time of writing, that would be `cmake-3.20.2.tar.gz`.
+Unpack the tar, go into its output directory, and build and install it as follows:
+```
+sudo apt-get install libssl-dev
+./configure
+make
+sudo make install
+```
+Verify your cmake version as follows:
+```
 cmake --version
 ```
 ## git
@@ -204,15 +218,13 @@ Now, it's time to build:
 ```
 make install
 ```
-
-
-
-
-
-
-
-
-
+After the build is complete and installed, you should see the following under your new `~/fs_libs/wxWidgets` directory:
+```
+drwxrwxr-x 2 gg gg 4096 mei 23 12:54 bin/
+drwxrwxr-x 3 gg gg 4096 mei 23 12:54 include/
+drwxrwxr-x 3 gg gg 4096 mei 23 12:54 lib/
+drwxrwxr-x 5 gg gg 4096 mei 23 12:54 share/
+```
 ## GoogleTest
 We also need GoogleTest, for running Floating Sandbox's unit tests. We won't build it, as GoogleTest is best built together with the unit test's sources.
 ### Cloning
@@ -253,7 +265,6 @@ TODO - after verifying it all works:
 * Push patch for DevIL
 * Commit and push this .md
 * Redo as:
-	** UserSettings.cmake for Ubuntu: nuke WX_ROOT
 	** RELEASE
 	** Without libpng and zlib (which are already installed by gtk3)
 	** Less wxWidgets libs (we only need: base gl core html media)
