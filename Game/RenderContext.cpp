@@ -40,8 +40,9 @@ namespace /*anonymous*/ {
         }
         else
         {
-            // Do not use multi-threaded rendering on MacOS
-#if defined(FS_OS_MACOS)
+#if defined(FS_OS_MACOS) // Do not use multi-threaded rendering on MacOS
+            return true;
+#elif defined(FS_OS_LINUX) // Do not use multi-threaded rendering on X11
             return true;
 #else
             return false;
@@ -273,18 +274,11 @@ RenderContext::~RenderContext()
 
 void RenderContext::RebindContext()
 {
-    // TODOTEST
-    ////mRenderThread.RunSynchronously(
-    ////    [&]()
-    ////    {
-    ////        mMakeRenderContextCurrentFunction();
-    ////    });
-    mRenderThread.QueueTask(
+    mRenderThread.RunSynchronously(
         [&]()
-    {
-        mMakeRenderContextCurrentFunction();
-    });
-
+        {
+            mMakeRenderContextCurrentFunction();
+        });
 }
 
 void RenderContext::Reset()
