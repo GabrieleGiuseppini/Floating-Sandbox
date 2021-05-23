@@ -16,7 +16,7 @@ endif()
 
 ###################################################
 
-project (FloatingSandbox)
+project (FloatingSandbox CXX)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
