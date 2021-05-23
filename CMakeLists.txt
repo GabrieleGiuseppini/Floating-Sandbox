@@ -93,7 +93,9 @@ endif()
 #
 
 if(FS_USE_STATIC_LIBS)
-	set(SFML_STATIC_LIBRARIES TRUE)
+	if(NOT WIN32) # No real reason, other than I'm slightly nervous to embed SFML code in FloatingSandbox.exe		
+		set(SFML_STATIC_LIBRARIES TRUE)
+	endif()
 endif()
 
 find_package(SFML 2.5 COMPONENTS system audio REQUIRED)

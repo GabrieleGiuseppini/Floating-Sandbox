@@ -99,7 +99,7 @@ struct PersistedSettingsMetadata
         std::stringstream ss;
         ss
             << "The settings that were last modified when the game was played on "
-            << std::put_time(std::localtime(&now_c), "%F at %T") 
+            << std::put_time(std::localtime(&now_c), "%F at %T")
             << ".";
 
         return PersistedSettingsMetadata(
@@ -110,7 +110,7 @@ struct PersistedSettingsMetadata
 
 /*
  * Abstraction over the storage, implementing high-level operations specific
- * to settings. 
+ * to settings.
  *
  * Bridges between the settings logic and the
  * IFileSystem interface.
@@ -229,7 +229,7 @@ private:
 
     PersistedSettingsKey const mSettingsKey;
     SettingsStorage const & mStorage;
-    
+
     picojson::object mSettingsRoot;
     Version mSettingsVersion;
 };
@@ -239,7 +239,7 @@ private:
  */
 struct SettingSerializer
 {
-    template<typename TValue, 
+    template<typename TValue,
         typename std::enable_if_t<
             !std::is_integral<TValue>::value
             && !std::is_same<TValue, bool>::value
@@ -263,7 +263,7 @@ struct SettingSerializer
 
     // Specializations for integral and enum types
 
-    template<typename TValue, 
+    template<typename TValue,
         typename std::enable_if_t<
             (std::is_integral<TValue>::value && !std::is_same<bool, TValue>::value)
             || std::is_enum<TValue>::value> * = nullptr>
@@ -275,7 +275,7 @@ struct SettingSerializer
         context.GetSettingsRoot()[settingName] = picojson::value(static_cast<int64_t>(value));
     }
 
-    template<typename TValue, 
+    template<typename TValue,
         typename std::enable_if_t<
             (std::is_integral<TValue>::value && !std::is_same<bool, TValue>::value)
             || std::is_enum<TValue>::value> * = nullptr>
@@ -352,8 +352,8 @@ struct SettingSerializer
 ///////////////////////////////////////////////////////////////////////////////////////
 //
 // Settings: these classes provide (temporary) storage for settings that are being
-// managed. 
-// This storage is not meant to replace the official storage provided by the 
+// managed.
+// This storage is not meant to replace the official storage provided by the
 // settings' owners.
 //
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -443,7 +443,7 @@ public:
 
         MarkAsDirty();
     }
-    
+
     virtual std::type_info const & GetType() const override
     {
         return typeid(TValue);
@@ -474,7 +474,7 @@ public:
     }
 
 private:
-    
+
     TValue mValue;
 };
 
@@ -482,7 +482,7 @@ private:
  * This class implements a container of settings thay are managed
  * together.
  *
- * A settings container is aligned with an enum that provides "ID's" 
+ * A settings container is aligned with an enum that provides "ID's"
  * to address individual settings.
  */
 template<typename TEnum>
@@ -518,7 +518,7 @@ public:
     explicit Settings(std::vector<std::unique_ptr<BaseSetting>> const & settings)
     {
         assert(settings.size() == Size);
-        
+
         mSettings.reserve(settings.size());
 
         for (auto const & s : settings)
@@ -555,7 +555,7 @@ public:
         assert(other.mSettings.size() == Size);
 
         for (size_t s = 0; s < Size; ++s)
-        { 
+        {
             if (!mSettings[s]->IsEqual(*other.mSettings[s]))
                 return false;
         }
@@ -658,7 +658,7 @@ public:
     {
         for (auto & s : mSettings)
             s->MarkAsDirty();
-    }    
+    }
 
     /*
      * Marks each setting as dirty or clean depending on whether or not
@@ -815,20 +815,6 @@ public:
         }
     }
 
-    Enforcers & operator=(Enforcers const & other)
-    {
-        assert(other.size() == static_cast<size_t>(TEnum::_Last) + 1);
-
-        mEnforcers.clear();
-
-        for (auto const & e : other.mEnforcers)
-        {
-            mEnforcers.emplace_back(e->Clone());
-        }
-
-        return *this;
-    }
-
     Enforcers & operator=(Enforcers && other)
     {
         assert(other.size() == static_cast<size_t>(TEnum::_Last) + 1);
@@ -977,7 +963,7 @@ public:
             PersistedSettingsKey(
                 name,
 				PersistedSettingsStorageTypes::User),
-            description, 
+            description,
             mStorage);
 
         settings.SerializeDirty(ctx);
@@ -989,7 +975,7 @@ public:
     }
 
     /*
-     * Checks whether the last-modified settings are available for 
+     * Checks whether the last-modified settings are available for
 	 * being loaded.
      */
     bool HasLastModifiedSettingsPersisted() const
@@ -998,7 +984,7 @@ public:
     }
 
 	/*
-	 * If the last-modified settings exist, enforces default settings with, on top of them, 
+	 * If the last-modified settings exist, enforces default settings with, on top of them,
 	 * the last-modified settings, and returns true. Otherwise, returns false.
 	 *
 	 * Enforcement is done with the "immediate" setters.
@@ -1013,7 +999,7 @@ public:
 			// Load settings on top of defaults
 			{
 				SettingsDeserializationContext ctx(
-					PersistedSettingsKey::MakeLastModifiedSettingsKey(), 
+					PersistedSettingsKey::MakeLastModifiedSettingsKey(),
 					mStorage);
 
 				settings.Deserialize(ctx);
@@ -1107,7 +1093,7 @@ protected:
         , mEnforcers(std::move(factory.mEnforcers))
         , mDefaultSettings(mTemplateSettings)
     {
-        // Build defaults 
+        // Build defaults
         // (assuming this manager is constructed when all getters deliver
         //  default settings)
         mEnforcers.Pull(mDefaultSettings);
@@ -1118,7 +1104,7 @@ private:
 
     // Storage
     SettingsStorage mStorage;
-  
+
     // Templates
     Settings<TEnum> mTemplateSettings;
     Enforcers<TEnum> mEnforcers;
