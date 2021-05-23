@@ -792,6 +792,7 @@ void ShipBuilder::AppendRopes(
             // Add spring to point pair map
             auto const [_, isInserted] = pointPairToSpringIndex1Map.try_emplace({ curStartPointIndex , newPointIndex }, springIndex);
             assert(isInserted);
+            (void)isInserted;
 
             // Add ShipBuildPoint
             pointInfos1.emplace_back(
@@ -829,6 +830,7 @@ void ShipBuilder::AppendRopes(
             { curStartPointIndex , ropeSegment.PointBIndex1 },
             lastSpringIndex);
         assert(isInserted);
+        (void)isInserted;
 
         // Connect points to spring
         pointInfos1[curStartPointIndex].AddConnectedSpring(lastSpringIndex);
@@ -923,6 +925,7 @@ void ShipBuilder::CreateShipElementInfos(
                             { pointIndex, otherEndpointIndex },
                             springIndex);
                         assert(isInserted);
+                        (void)isInserted;
 
                         // Add the spring to its endpoints
                         pointInfos1[pointIndex].AddConnectedSpring(springIndex);

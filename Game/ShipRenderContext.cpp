@@ -151,13 +151,19 @@ ShipRenderContext::ShipRenderContext(
     glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup1VBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec4f), nullptr, GL_STREAM_DRAW);
     mPointAttributeGroup1Buffer.reset(new vec4f[pointCount]);
-    std::memset(mPointAttributeGroup1Buffer.get(), 0, pointCount * sizeof(vec4f));
+    std::fill(
+        mPointAttributeGroup1Buffer.get(),
+        mPointAttributeGroup1Buffer.get() + pointCount,
+        vec4f::zero());
 
     mPointAttributeGroup2VBO = vbos[1];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup2VBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(vec4f), nullptr, GL_STREAM_DRAW);
     mPointAttributeGroup2Buffer.reset(new vec4f[pointCount]);
-    std::memset(mPointAttributeGroup2Buffer.get(), 0, pointCount * sizeof(vec4f));
+    std::fill(
+        mPointAttributeGroup2Buffer.get(),
+        mPointAttributeGroup2Buffer.get() + pointCount,
+        vec4f::zero());
 
     mPointColorVBO = vbos[2];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
