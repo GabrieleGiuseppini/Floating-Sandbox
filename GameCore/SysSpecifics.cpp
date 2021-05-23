@@ -5,11 +5,13 @@
 ***************************************************************************************/
 #include "SysSpecifics.h"
 
-#if defined(FS_ARCHITECTURE_ARM)
-#pragma message ("ARCHITECTURE:FS_ARCHITECTURE_ARM")
-#elif defined(FS_ARCHITECTURE_X86_32)
+#if FS_IS_ARCHITECTURE_ARM_32()
+#pragma message ("ARCHITECTURE:FS_ARCHITECTURE_ARM_32")
+#elif FS_IS_ARCHITECTURE_ARM_64()
+#pragma message ("ARCHITECTURE:FS_ARCHITECTURE_ARM_64")
+#elif FS_IS_ARCHITECTURE_X86_32()
 #pragma message ("ARCHITECTURE:FS_ARCHITECTURE_X86_32")
-#elif defined(FS_ARCHITECTURE_X86_64)
+#elif FS_IS_ARCHITECTURE_X86_64()
 #pragma message ("ARCHITECTURE:FS_ARCHITECTURE_X86_64")
 #else
 #pragma message ("ARCHITECTURE:<UNKNOWN>")
@@ -17,7 +19,7 @@
 
 #if FS_IS_OS_LINUX()
 #pragma message ("OS:FS_OS_LINUX")
-#elif defined(FS_OS_MACOS)
+#elif FS_IS_OS_MACOS()
 #pragma message ("OS:FS_OS_MACOS")
 #elif FS_IS_OS_WINDOWS()
 #pragma message ("OS:FS_OS_WINDOWS")

@@ -20,7 +20,7 @@ struct SpringEndpoints
 // Vector normalization
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 TEST(AlgorithmsTests, CalculateVectorDirsAndReciprocalLengths_SSE)
 {
     vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
@@ -247,7 +247,7 @@ TEST(AlgorithmsTests, DiffuseLight_Vectorized_8Lamps)
     EXPECT_FLOAT_EQ(0.17639320225f, outLightBuffer[3]);
 }
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 TEST(AlgorithmsTests, DiffuseLight_SSEVectorized_4Lamps)
 {
     aligned_to_vword vec2f pointPositions[] = { { 1.0f, 2.0f}, {2.0f, 4.0f}, {10.0f, 5.0f}, {3.0f, 4.0f} };
@@ -401,7 +401,7 @@ TEST(AlgorithmsTests, SmoothBufferAndAdd_12_5_Naive)
     RunSmoothBufferAndAddTest_12_5(Algorithms::SmoothBufferAndAdd_Naive<12, 5>);
 }
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 TEST(AlgorithmsTests, SmoothBufferAndAdd_12_5_SSEVectorized)
 {
     RunSmoothBufferAndAddTest_12_5(Algorithms::SmoothBufferAndAdd_SSEVectorized<12, 5>);

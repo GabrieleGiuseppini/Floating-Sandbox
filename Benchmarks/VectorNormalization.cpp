@@ -111,7 +111,7 @@ BENCHMARK(VectorNormalization_Naive_AndLengthStorage_RestrictPointers);
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 
 static void VectorNormalization_Vectorized_AndLengthStorage_FullInstrinsics(benchmark::State& state)
 {
@@ -192,7 +192,7 @@ BENCHMARK(VectorNormalization_Vectorized_AndLengthStorage_FullInstrinsics);
 
 #endif
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 
 static void VectorNormalization_Vectorized_AndLengthStorage_Reciprocal_FullInstrinsics(benchmark::State & state)
 {
@@ -271,7 +271,7 @@ BENCHMARK(VectorNormalization_Vectorized_AndLengthStorage_Reciprocal_FullInstrin
 
 #endif
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 
 static void VectorNormalization_Algorithm(benchmark::State & state)
 {

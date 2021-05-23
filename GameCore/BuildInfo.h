@@ -36,13 +36,13 @@ private:
 
     BuildInfo()
     {
-#if defined(FS_ARCHITECTURE_ARM_32)
+#if FS_IS_ARCHITECTURE_ARM_32()
         mArchitecture = "ARM 32-bit";
-#elif defined(FS_ARCHITECTURE_ARM_64)
+#elif FS_IS_ARCHITECTURE_ARM_64()
         mArchitecture = "ARM 64-bit";
-#elif defined(FS_ARCHITECTURE_X86_32)
+#elif FS_IS_ARCHITECTURE_X86_32()
         mArchitecture = "x86 32-bit";
-#elif defined(FS_ARCHITECTURE_X86_64)
+#elif FS_IS_ARCHITECTURE_X86_64()
         mArchitecture = "x86 64-bit";
 #else
         mArchitecture = "<ARCH?>";
@@ -50,7 +50,7 @@ private:
 
 #if FS_IS_OS_LINUX()
         mOS = "Linux";
-#elif defined(FS_OS_MACOS)
+#elif FS_IS_OS_MACOS()
         mOS = "MacOS";
 #elif FS_IS_OS_WINDOWS()
         mOS = "Windows";

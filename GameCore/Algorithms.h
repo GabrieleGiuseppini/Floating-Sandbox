@@ -19,7 +19,7 @@ namespace Algorithms {
 // Vector normalization
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 template<typename TVector>
 inline TVector NormalizeVector2_SSE(TVector const & v) noexcept
 {
@@ -45,7 +45,7 @@ inline TVector NormalizeVector2_SSE(TVector const & v) noexcept
 }
 #endif
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 template<typename TVector>
 inline TVector NormalizeVector2_SSE(TVector const & v, float length) noexcept
 {
@@ -64,7 +64,7 @@ inline TVector NormalizeVector2_SSE(TVector const & v, float length) noexcept
 }
 #endif
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 template<typename EndpointStruct, typename TVector>
 inline void CalculateVectorDirsAndReciprocalLengths_SSE(
     TVector const * pointPositions,
@@ -257,7 +257,7 @@ inline void DiffuseLight_Vectorized(
     }
 }
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 template<typename TVector>
 inline void DiffuseLight_SSEVectorized(
     TVector const * restrict pointPositions,
@@ -481,7 +481,7 @@ inline void DiffuseLight(
     ElementIndex const lampCount,
     float * restrict outLightBuffer) noexcept
 {
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
     DiffuseLight_SSEVectorized(
         pointPositions,
         pointPlaneIds,
@@ -540,7 +540,7 @@ inline void SmoothBufferAndAdd_Naive(
     }
 }
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 template<size_t BufferSize, size_t SmoothingSize>
 inline void SmoothBufferAndAdd_SSEVectorized(
     float const * restrict inBuffer,
@@ -602,7 +602,7 @@ inline void SmoothBufferAndAdd(
     float const * restrict inBuffer,
     float * restrict outBuffer) noexcept
 {
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
     SmoothBufferAndAdd_SSEVectorized<BufferSize, SmoothingSize>(inBuffer, outBuffer);
 #else
     SmoothBufferAndAdd_Naive<BufferSize, SmoothingSize>(inBuffer, outBuffer);

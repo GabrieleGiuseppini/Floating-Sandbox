@@ -38,7 +38,7 @@ inline vec2f normalise_naive(vec2f const & v, float length) noexcept
     }
 }
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 
 inline vec2f normalise_SSEx2(vec2f const & v, float length) noexcept
 {
@@ -80,7 +80,7 @@ static void SingleVectorNormalization_Naive_PreLength_ResultDiscarded(benchmark:
 }
 BENCHMARK(SingleVectorNormalization_Naive_PreLength_ResultDiscarded);
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 
 static void SingleVectorNormalization_SSEX1_PreLength_ResultDiscarded(benchmark::State& state)
 {
@@ -106,7 +106,7 @@ BENCHMARK(SingleVectorNormalization_SSEX1_PreLength_ResultDiscarded);
 
 #endif
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 
 static void SingleVectorNormalization_SSEX2_PreLength_ResultDiscarded(benchmark::State& state)
 {
@@ -155,7 +155,7 @@ static void SingleVectorNormalization_Naive_PreLength_ResultStored(benchmark::St
 }
 BENCHMARK(SingleVectorNormalization_Naive_PreLength_ResultStored);
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 
 static void SingleVectorNormalization_SSEX1_PreLength_ResultStored(benchmark::State& state)
 {
@@ -182,7 +182,7 @@ BENCHMARK(SingleVectorNormalization_SSEX1_PreLength_ResultStored);
 
 #endif
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 
 static void SingleVectorNormalization_SSEX2_PreLength_ResultStored(benchmark::State& state)
 {
@@ -232,7 +232,7 @@ static void SingleVectorNormalization_Naive_NoLength_ResultDiscarded(benchmark::
 }
 BENCHMARK(SingleVectorNormalization_Naive_NoLength_ResultDiscarded);
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 
 static void SingleVectorNormalization_SSEX1_NoLength_ResultDiscarded(benchmark::State& state)
 {
@@ -278,7 +278,7 @@ static void SingleVectorNormalization_Naive_NoLength_ResultStored(benchmark::Sta
 }
 BENCHMARK(SingleVectorNormalization_Naive_NoLength_ResultStored);
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 
 static void SingleVectorNormalization_SSEX1_NoLength_Algorithms_ResultStored(benchmark::State& state)
 {
@@ -409,7 +409,7 @@ static void SingleVectorNormalization_Simple_MulInsteadOfDiv(benchmark::State & 
 }
 BENCHMARK(SingleVectorNormalization_Simple_MulInsteadOfDiv);
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 
 inline vec2f NormalizeVector_SSE_1_Precise(vec2f const & v) noexcept
 {
@@ -465,7 +465,7 @@ BENCHMARK(SingleVectorNormalization_SSE_1_Precise);
 #endif
 
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 
 static void SingleVectorNormalization_SSE_2_Approx(benchmark::State & state)
 {
@@ -497,7 +497,7 @@ BENCHMARK(SingleVectorNormalization_SSE_2_Approx);
 
 #endif
 
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 
 static void SingleVectorNormalization_SSE_3_Approx_WithLength(benchmark::State & state)
 {
@@ -536,7 +536,7 @@ BENCHMARK(SingleVectorNormalization_SSE_3_Approx_WithLength);
 
 
 /*
-#if defined(FS_ARCHITECTURE_X86_32) || defined(FS_ARCHITECTURE_X86_64)
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 
 inline vec2f NormalizeVector_SSE_4_Approx_Packed(vec2f const & v) noexcept
 {
