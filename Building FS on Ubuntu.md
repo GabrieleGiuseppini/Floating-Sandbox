@@ -1,10 +1,10 @@
-These are instructions on how to build Floating Sandbox on Ubuntu 18.04. These instructions were written at the time of Floating Sandbox 1.16.4.
+These are instructions on how to build Floating Sandbox on a *clean* Ubuntu 18.04. These instructions were written at the time of Floating Sandbox 1.16.4.
 
 # Installing Prerequisite Tooling and SDKs
 
-Follow these instructions to setup your Ubuntu with development tools and the necessary SDKs.
+Follow these instructions to setup your Ubuntu with development tools and the necessary SDKs. You may skip any steps when you already have the indicated versions.
 
-## gcc 8.4.0
+## gcc 8.4.0 (at least)
 The following is the relevant excerpt from https://linuxize.com/post/how-to-install-gcc-compiler-on-ubuntu-18-04/:
 ```
 sudo apt update
@@ -31,8 +31,9 @@ sudo apt-get install libssl-dev
 make
 sudo make install
 ```
-Verify your cmake version as follows:
+The install step will copy cmake under `/usr/local/bin`. Verify your cmake version as follows:
 ```
+hash -r
 cmake --version
 ```
 ## git
@@ -61,7 +62,6 @@ sudo apt-get install libgl1-mesa-dev
 sudo apt-get install libglu1-mesa-dev
 ```
 # Preparing Prerequisite Libraries
-
 Here we clone and build the libraries required by Floating Sandbox. Some notes:
 * In these instructions we'll be cloning all library sources under `~/git`; change as you like
 * We'll build static libraries and link statically, as I prefer one single executable with everything in it, over depending on carefully prepared target environments
@@ -183,13 +183,14 @@ cd wxWidgets
 git checkout v3.1.4
 ```
 ### Building
-We're gonna build wxWidgets in a folder named `my_wx_build` under its checkout root. Note that we want to build it for GTK with UNICODE support and static linking, and with support for the PNG image format.
-First of all, we're going to configure the build:
+We're going to build wxWidgets in a folder named `my_wx_build` under its checkout root.
+
+First of all, we're going to configure the build for GTK, with UNICODE and OpenGL support, stating that we only want static linking:
 ```
 cd ~/git/wxWidgets
 mkdir my_wx_build
 cd my_wx_build
-../configure --disable-shared --with-gtk=3 --with-libpng --with-libxpm --without-libjpeg --without-libtiff --without-expat --disable-pnm --disable-gif --disable-pcx --disable-iff  --with-opengl --prefix=${HOME}/fs_libs/wxWidgets --exec_prefix=${HOME}/fs_libs/wxWidgets --disable-tests --disable-rpath
+../configure --disable-shared --with-gtk=3 --with-libpng --with-libxpm --without-libjpeg --without-libtiff --without-expat --disable-pnm --disable-gif --disable-pcx --disable-iff --with-opengl --prefix=${HOME}/fs_libs/wxWidgets --exec_prefix=${HOME}/fs_libs/wxWidgets --disable-tests --disable-rpath
 ```
 The output of the last `configure` step should look like this:
 ```
@@ -214,7 +215,7 @@ Configured wxWidgets 3.1.4 for `x86_64-pc-linux-gnu'
                                        libmspack          no
                                        sdl                no
 ```
-Now, it's time to build:
+Now, it's time to build wxWidgets - launch this and go grab a cup of coffee:
 ```
 make install
 ```
@@ -235,7 +236,7 @@ cd googletest
 git checkout release-1.10.0
 ```
 # Building Floating Sandbox
-Now that all static libraries and 3-rd party repo's are ready, it's time to build Floating Sandbox. We are going to clone and build `master`, though this might be risky as you might catch some late commits that break compilation in gcc. If this happens to you, feel free to create a ticket for me on github.
+Now that all static libraries and 3-rd party repo's are ready, it's time to _finally_ build Floating Sandbox. We are going to clone and build `master`, though this might be risky as you might catch some latest commits that break gcc (I do my daily dev work with Visual Studio and only check gcc build-ability every so often). If this happens to you, feel free to create a ticket for me on github.
 ### Cloning
 ```
 cd ~/git
@@ -255,8 +256,9 @@ We're gonna build Floating Sandbox in a folder named `build` under its checkout 
 cd ~/git/Floating-Sandbox
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DCMAKE_INSTALL_PREFIX=~/floating-sandbox ..
 TODOHERE
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DCMAKE_INSTALL_PREFIX=~/floating-sandbox ..
+
 ```
 
 

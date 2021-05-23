@@ -93,6 +93,10 @@ endif()
 # SFML
 #
 
+if(FS_USE_STATIC_LIBS)
+	set(SFML_STATIC_LIBRARIES TRUE)
+endif()
+
 find_package(SFML 2.5 COMPONENTS system audio REQUIRED)
 
 if(WIN32)
