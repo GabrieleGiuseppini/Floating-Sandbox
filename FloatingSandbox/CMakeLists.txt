@@ -80,16 +80,16 @@ source_group(" " FILES ${FLOATING_SANDBOX_SOURCES})
 source_group("Dialogs" FILES ${DIALOGS_SOURCES})
 
 set(RESOURCE_FILES "")
-if (MSVC)
+if(MSVC)
 	list(APPEND RESOURCE_FILES
 		Resources/FloatingSandbox.rc
 		Resources/ShipAAA.ico
 		Resources/ShipBBB.ico)
-else (MSVC)
+else()
 	list(APPEND RESOURCE_FILES
 		Resources/ShipAAA.xpm
 		Resources/ShipBBB.xpm)
-endif (MSVC)
+endif()
 
 source_group("Resources" FILES ${RESOURCE_FILES})
 

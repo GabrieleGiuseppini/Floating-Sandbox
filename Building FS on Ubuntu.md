@@ -1,18 +1,23 @@
-These are instructions on how to build Floating Sandbox on a *clean* Ubuntu 18.04. These instructions were written at the time of Floating Sandbox 1.16.4.
+These are instructions on how to build Floating Sandbox on a *clean* Ubuntu 18.04. These instructions were written at the time of Floating Sandbox 1.16.4, and tested on a completely clean VM.
 
 # Installing Prerequisite Tooling and SDKs
 
 Follow these instructions to setup your Ubuntu with development tools and the necessary SDKs. You may skip any steps when you already have the indicated versions.
 
-## gcc 8.4.0 (at least)
-The following is the relevant excerpt from https://linuxize.com/post/how-to-install-gcc-compiler-on-ubuntu-18-04/:
+## Prepare
 ```
 sudo apt update
 sudo apt install software-properties-common
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+```
+## gcc 8.4.0 (at least)
+```
 sudo apt install gcc-8
 sudo apt install g++-8
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 80 --slave /usr/bin/g++ g++ /usr/bin/g++-8
+```
+Check the installed versions now:
+```
 gcc --version
 g++ --version
 ```
@@ -26,7 +31,7 @@ Otherwise, if - like me - you're running an older Ubuntu whose `cmake` package i
 First of all, go to https://cmake.org/download/ and download the latest `Unix/Linux Source` tar package - at the time of writing, that would be `cmake-3.20.2.tar.gz`.
 Unpack the tar, go into its output directory, and build and install it as follows:
 ```
-sudo apt-get install libssl-dev
+sudo apt install libssl-dev
 ./configure
 make
 sudo make install
@@ -46,20 +51,28 @@ sudo apt install libx11-dev
 ```
 ## GTK3 SDK
 ```
-sudo apt-get install libgtk-3-dev
+sudo apt install libgtk-3-dev
 ```
 ## Vorbis SDK
 ```
-sudo apt-get install libvorbis-dev
+sudo apt install libvorbis-dev
 ```
 ## FLAC SDK
 ```
-sudo apt-get install libflac++-dev
+sudo apt install libflac++-dev
 ```
 ### OpenGL
 ```
-sudo apt-get install libgl1-mesa-dev
-sudo apt-get install libglu1-mesa-dev
+sudo apt install libgl1-mesa-dev
+sudo apt install libglu1-mesa-dev
+```
+### zlib
+```
+sudo apt install zlib1g-dev
+```
+### pnglib
+```
+sudo apt install libpng-dev
 ```
 # Preparing Prerequisite Libraries
 Here we clone and build the libraries required by Floating Sandbox. Some notes:
@@ -76,56 +89,6 @@ git clone https://github.com/kazuho/picojson.git
 cd picojson
 git checkout v1.3.0
 ```
-
-## zlib 1.2.11
-This library is required by a bit of everything. It's the master library that implements compression, and it's used by so many image formats.
-### Cloning
-```
-cd ~/git
-git clone https://github.com/madler/zlib.git
-cd zlib
-git checkout v1.2.11
-```
-### Building
-We're going to build `zlib` in a folder named `build` under its checkout root, and we're going to ask it to install its library and header files under `~/fs_libs/zlib`.
-```
-cd ~/git/zlib
-mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=~/fs_libs/zlib ..
-make install
-```
-After the build is complete and installed, you should see the following under your new `~/fs_libs/zlib` directory:
-```
-drwxrwxr-x 2 gg gg 4096 mei 22 17:03 include/
-drwxrwxr-x 2 gg gg 4096 mei 22 17:03 lib/
-drwxrwxr-x 4 gg gg 4096 mei 22 17:03 share/
-```
-## libpng 1.6.37
-This library implements support for the PNG image format. Luckily this is the only image format supported by Floating Sandbox (it's a nice, compact *lossless* format) and thus it's the only image format library we'll ever have to tinker with.
-### Cloning
-```
-cd ~/git
-git clone https://github.com/glennrp/libpng
-cd libpng
-git checkout v1.6.37
-```
-### Building
-We're going to build `libpng` in a folder named `build` under its checkout root, and we're going to ask it to install its library and header files under `~/fs_libs/libpng.
-```
-cd ~/git/libpng
-mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPNG_STATIC=ON -DPNG_SHARED=OFF -DPNG_TESTS=OFF -DCMAKE_PREFIX_PATH=~/fs_libs/zlib  -DCMAKE_INSTALL_PREFIX=~/fs_libs/libpng ..
-make install
-```
-After the build is complete and installed, you should see the following under your new `~/fs_libs/libpng directory:
-```
-drwxrwxr-x 2 gg gg 4096 mei 22 17:22 bin/
-drwxrwxr-x 3 gg gg 4096 mei 22 17:22 include/
-drwxrwxr-x 4 gg gg 4096 mei 22 17:22 lib/
-drwxrwxr-x 3 gg gg 4096 mei 22 17:22 share/
-```
 ## DevIL 1.8.0
 DevIL is a cross-platform image manipulation library. We'll need to clone it _and_ build it as a static library.
 ### Cloning
@@ -141,7 +104,7 @@ We're gonna build DevIL in a folder named `build` under its checkout root.
 cd ~/git/DevIL
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DZLIB_LIBRARY=~/fs_libs/zlib/lib -DZLIB_INCLUDE_DIR=~/fs_libs/zlib/include -DPNG_LIBRARY=~/fs_libs/libpng/lib -DPNG_PNG_INCLUDE_DIR=~/fs_libs/libpng/include -DCMAKE_INSTALL_PREFIX=~/fs_libs/DevIL ../DevIL 
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=~/fs_libs/DevIL ../DevIL 
 make install
 ```
 After the build is complete and installed, you should see the following under your new `~/fs_libs/DevIL` directory:
@@ -273,8 +236,6 @@ TODO - after verifying it all works:
 * Commit and push this .md
 * Redo as:
 	** RELEASE
-	** Without libpng and zlib (which are already installed by gtk3)
-	** Less wxWidgets libs (we only need: base gl core html media)
 * Link to this from main Readme
 * Update Readme for "I'm building on Ubuntu" and OSes
 

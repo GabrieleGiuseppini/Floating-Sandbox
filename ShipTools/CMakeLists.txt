@@ -30,17 +30,16 @@ target_link_libraries (ShipTools
 	${ADDITIONAL_LIBRARIES})
 
 
-if (MSVC)
+if(MSVC)
 	set_target_properties(ShipTools PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE /NODEFAULTLIB:MSVCRTD")
-else (MSVC)
-endif (MSVC)
+endif()
 
 
 #
 # Set VS properties
 #
 
-if (MSVC)
+if(MSVC)
 
 	set_target_properties(
 		ShipTools
@@ -52,4 +51,4 @@ if (MSVC)
 			RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
 	)
 
-endif (MSVC)
+endif()
