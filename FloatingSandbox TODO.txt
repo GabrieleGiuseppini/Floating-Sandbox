@@ -523,6 +523,18 @@ Render:
 			+ Transform ShipRenderContext::UploadVectors from a one-time Upload call with batch to a Start/NxUpload/End call pattern,
 			  with Start() doing the reserve() call we currently do at the one-time Upload call
 
+		= Ubuntu:
+			- Event polling issue:
+				- See Yield() or something like it
+				- Do it only on Linux, not on Mac
+			- Fixes:
+				- Window positions:
+					- TODO
+				- SettingsDialog:
+					- UV Mode
+			- README.md
+				- Requirements: do different by OS
+
 		= MAC:
 			= Full high-DPI path:
 				! a) Window scaling: on a 2X DPI, a wxWindow of size (500, 500) would be (1000, 1000) on Mac and (500, 500) on Windows. To overcome this, use wxFrame->FromDIP:

@@ -1283,7 +1283,11 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
         // Run next game step after the remaining time
         auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - startTimestamp);
-        PostGameStepTimer(std::max(mGameTimerDuration - elapsed, std::chrono::milliseconds::zero()));
+
+        if (elapsed.count() < 0)
+            CallAfter([this]() { this->PostGameStepTimer(std::chrono::milliseconds::zero()); });
+        else
+            PostGameStepTimer(std::max(mGameTimerDuration - elapsed, std::chrono::milliseconds::zero()));
     }
 #endif
 }
