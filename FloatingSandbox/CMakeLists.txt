@@ -123,7 +123,7 @@ endif (MSVC)
 # VS properties
 #
 
-if (MSVC)
+if(MSVC)
 	
 	set_target_properties(
 		FloatingSandbox
@@ -132,10 +132,9 @@ if (MSVC)
 			VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$(Configuration)"
 
 			# Set output directory to binary output directory - VS will add the configuration type
-			RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-	)
+			RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
-endif (MSVC)
+endif()
 
 
 

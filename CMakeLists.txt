@@ -66,11 +66,6 @@ endif()
 # wxWidgets
 #
 
-#if(APPLE)
-#	# find_package() on OSX does not use wxWidgets_ROOT_DIR, uses intermediate wx-config exe instead...
-#	set(wxWidgets_CONFIG_EXECUTABLE "${wxWidgets_ROOT_DIR}/wx-config")
-#endif(APPLE)
-
 find_package(wxWidgets REQUIRED base gl core html)
 
 #
