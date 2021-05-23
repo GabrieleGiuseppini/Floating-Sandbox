@@ -107,11 +107,11 @@ private:
 
             float const growthProgressSpeed =
                 (1.0f / 45.0f) // Basal velocity
-                + std::fabsf(globalCloudSpeed) / (400.0f);
+                + std::abs(globalCloudSpeed) / (400.0f);
 
             mGrowthProgressPhase += growthProgressSpeed * GameParameters::SimulationStepTimeDuration<float>;
 
-            GrowthProgress = 0.3f + (1.0f + std::sinf(mGrowthProgressPhase * Pi<float> * 2.0f)) * 0.7f / 2.0f;
+            GrowthProgress = 0.3f + (1.0f + std::sin(mGrowthProgressPhase * Pi<float> * 2.0f)) * 0.7f / 2.0f;
         }
 
     private:
