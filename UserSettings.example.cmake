@@ -1,5 +1,5 @@
-# Enable Static linking
-set(MSVC_USE_STATIC_LINKING ON)
+# Enable static linking
+set(FS_USE_STATIC_LIBS ON)
 
 # Define dependency locations
 set(SDK_ROOT "C:/Users/Neurodancer/source/SDK")
