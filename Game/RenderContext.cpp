@@ -42,9 +42,9 @@ namespace /*anonymous*/ {
         {
 #if defined(FS_OS_MACOS) // Do not use multi-threaded rendering on MacOS
             return true;
-#elif defined(FS_OS_LINUX) // Do not use multi-threaded rendering on X11
-            return true;
-#else
+////#elif defined(FS_OS_LINUX) // Do not use multi-threaded rendering on X11
+////            return true;
+////#else
             return false;
 #endif
         }
