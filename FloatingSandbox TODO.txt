@@ -1786,7 +1786,7 @@ Render:
 					+ Investigation facts:
 						+ Triangle: inside-pointing normal using before-and-after edges points along edge rather than towards inside of triangle
 						+ Square: normals look ok, yet resultant torque is non-zero (10^-3)
-					= Do:
+					+ Do:
 						+ Cleanup:
 							+ Cleanup code to the point that hydrostatic pressure is applied as only force
 								+ Undo force render buffer as well
@@ -1819,12 +1819,14 @@ Render:
 									+ Due to sorting at ShipRenderContext
 									+ ShipOverlays does the sorting before giving to ShipRenderContext
 						+ Move and Rotate interactions: should zero-out non-spring forces as well? Otherwise yet-to-integrate forces might generate torques after rotation
-						- Hydrostatic pressure: change way of calculating normals and verify:
-							- a: Triangle
-							- b: Square
-				= If so: add contrary torque
-					X Adding resultant torque - even when last remaining is mostly zero or e.g. -8.88178e-16 - still results in rotation
-					- Try with contrary torque being all in the same direction (e.g. upwards)
+				- Theory: this might happen because the force is calculated once on a certain position configuration, and then integrated multiple times during the
+				  spring iteration loop, with particles changing positions - and likely getting in a configuration that causes torque
+					- Solution: last spring iteration step calls ApplyHydrostaticPressureForces() before Integrate()
+					- ApplyHydrostaticPressureForces: simply adds forces to NonSpringForces
+				= If so: experiment with contrary torque
+					+ Calculate normals with pre-and-post edges, and scale force magnitudes with edge lengths
+						! Lowers ghost forces and torques
+					- Add resultant torque
 				= Another option: use geometric center's depth for entire surface
 					+ Reduces phantom linear forces as there's no more buoyancy (verified), and it makes for better perf
 					- Add comment "there"
