@@ -530,7 +530,6 @@ Render:
 					+ OnIdle(): if mHasStartupTipBeenChecked && !timer.isArmed: invoke RunGameIteration
 			= Misc fixes:
 				= SettingsDialog:
-					= Two "Draw Mode" static boxes under Rendering
 					- Slider is clipped
 			- Build as RELEASE
 			- README.md

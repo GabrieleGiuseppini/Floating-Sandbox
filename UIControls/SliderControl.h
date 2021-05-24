@@ -140,7 +140,8 @@ public:
                 mSliderCore->GetNumberOfTicks(),
                 wxDefaultPosition,
                 wxSize(-1, height),
-                wxSL_VERTICAL | wxSL_LEFT | wxSL_INVERSE | wxSL_AUTOTICKS, wxDefaultValidator);
+                wxSL_VERTICAL | wxSL_LEFT | wxSL_INVERSE | wxSL_AUTOTICKS,
+                wxDefaultValidator);
 
             mSlider->SetTickFreq(4);
 
