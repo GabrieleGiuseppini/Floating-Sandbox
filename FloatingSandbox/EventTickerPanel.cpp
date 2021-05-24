@@ -44,7 +44,8 @@ EventTickerPanel::EventTickerPanel(wxWindow* parent)
     // Create font
     //
 
-    mFont = wxFont(wxFontInfo(wxSize(TickerFontSize, TickerFontSize)).Family(wxFONTFAMILY_TELETYPE));
+    wxFont font(wxFontInfo(wxSize(TickerFontSize, TickerFontSize)).Family(wxFONTFAMILY_TELETYPE));
+    SetFont(font);
 }
 
 EventTickerPanel::~EventTickerPanel()
@@ -342,19 +343,16 @@ void EventTickerPanel::AppendFutureTickerText(std::string const & text)
 
 void EventTickerPanel::Render(wxDC & dc)
 {
-    wxSize tickerPanelSize = dc.GetSize();
+    wxSize const tickerPanelSize = dc.GetSize();
 
-    // TODOTEST
-    LogMessage("TODOWidth: ", tickerPanelSize.x);
-
-    int leftX = tickerPanelSize.GetWidth() + TickerFontSize - mCurrentCharStep - (TickerTextSize * TickerFontSize);
+    int const leftX = tickerPanelSize.GetWidth() + TickerFontSize - mCurrentCharStep - (TickerTextSize * TickerFontSize);
 
     wxString tickerText(mCurrentTickerText, TickerTextSize);
 
     dc.Clear();
-    dc.SetFont(mFont);
     dc.DrawText(tickerText, leftX, -2);
 
     // TODOTEST
+    dc.DrawText("ZORRO", 50, 0);
     dc.DrawLine(wxPoint(0, 0), wxPoint(40, 10));
 }

@@ -118,10 +118,6 @@ private:
 
 private:
 
-    wxFont mFont;
-
-private:
-
     // The current text in the ticker. The text scrolls to the left.
     // This string is always full and long TickerTextSize, eventually
     // padded with spaces.
