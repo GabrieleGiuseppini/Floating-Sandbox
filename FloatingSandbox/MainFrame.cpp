@@ -1983,7 +1983,7 @@ void MainFrame::RunGameIteration()
         // The same does not appear to hold for GTK; if a timer fires during the
         // game iteration, its event will be processed immediately after the
         // current handler, and thus no GUI events will be processed, starving
-        // (and freezing) the UI as a result.
+        // (and freezing) the UI as a result (see also Issue#41 on GitHub).
         //
         // This, coupled with the fact that windows timers have a minimum granularity
         // matching our frame rate (1/64th of a second), makes it so that starting a
