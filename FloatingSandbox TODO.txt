@@ -524,12 +524,14 @@ Render:
 			  with Start() doing the reserve() call we currently do at the one-time Upload call
 
 		= Ubuntu:
-			= Event polling issue:
+			+ Event polling issue:
 				+ Try: on Linux: 
 					+ if elapsed < 0: wxWakeUpIdle(), else SetTimer
 					+ OnIdle(): if mHasStartupTipBeenChecked && !timer.isArmed: invoke RunGameIteration
 			- Fixes:
-				- Window positions:
+				- Windows:
+					- Credits: too narrow
+					= Startup: not center
 					- TODO
 				- SettingsDialog:
 					- UV Mode
