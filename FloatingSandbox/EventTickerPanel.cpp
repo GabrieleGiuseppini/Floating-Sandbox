@@ -5,9 +5,6 @@
 ***************************************************************************************/
 #include "EventTickerPanel.h"
 
-// TODOTEST
-#include <GameCore/Log.h>
-
 #include <wx/dcbuffer.h>
 
 #include <cassert>
@@ -350,9 +347,11 @@ void EventTickerPanel::Render(wxDC & dc)
     wxString tickerText(mCurrentTickerText, TickerTextSize);
 
     dc.Clear();
-    dc.DrawText(tickerText, leftX, -2);
 
-    // TODOTEST
-    dc.DrawText("ZORRO", 50, 0);
-    dc.DrawLine(wxPoint(0, 0), wxPoint(40, 10));
+#ifdef __WXMSW__
+    int constexpr Y = -2; // Better vertically centered
+#else
+    int constexpr Y = 0;
+#endif
+    dc.DrawText(tickerText, leftX, Y);
 }
