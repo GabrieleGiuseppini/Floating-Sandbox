@@ -530,8 +530,6 @@ Render:
 					+ OnIdle(): if mHasStartupTipBeenChecked && !timer.isArmed: invoke RunGameIteration
 			= Misc issues:
 				- Slider control is clipped
-				= EventTicker: vertical offset
-					- Use GetTextExtent to get height and do formula w/TickerPanelHeight
 				- MouseMove's are delayed and/or skipped
 			- Build as RELEASE
 			- README.md

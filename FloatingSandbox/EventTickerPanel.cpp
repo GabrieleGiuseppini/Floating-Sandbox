@@ -350,5 +350,5 @@ void EventTickerPanel::Render(wxDC & dc)
     wxString const tickerText(mCurrentTickerText, TickerTextSize);
 
     dc.Clear();
-    dc.DrawText(tickerText, leftX, -2 + TickerFontSize + 3 - mCharSize.GetHeight());
+    dc.DrawText(tickerText, leftX, TickerFontSize - mCharSize.GetHeight() + 1);
 }
