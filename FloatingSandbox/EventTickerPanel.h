@@ -119,13 +119,8 @@ private:
 private:
 
     wxFont mFont;
-    std::unique_ptr<wxBitmap> mBufferedDCBitmap;
 
 private:
-
-    static constexpr size_t TickerTextSize = 1024u;
-    static constexpr unsigned int TickerFontSize = 12;
-    static constexpr unsigned int TickerCharStep = 1;
 
     // The current text in the ticker. The text scrolls to the left.
     // This string is always full and long TickerTextSize, eventually

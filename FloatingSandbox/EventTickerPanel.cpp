@@ -5,10 +5,17 @@
 ***************************************************************************************/
 #include "EventTickerPanel.h"
 
+// TODOTEST
+#include <GameCore/Log.h>
+
 #include <wx/dcbuffer.h>
 
 #include <cassert>
 #include <sstream>
+
+static size_t constexpr TickerTextSize = 1024u;
+static unsigned int constexpr TickerFontSize = 12;
+static unsigned int constexpr TickerCharStep = 1;
 
 EventTickerPanel::EventTickerPanel(wxWindow* parent)
     : wxPanel(
@@ -17,7 +24,6 @@ EventTickerPanel::EventTickerPanel(wxWindow* parent)
         wxDefaultPosition,
         wxDefaultSize,
         wxBORDER_SIMPLE)
-    , mBufferedDCBitmap()
     , mCurrentTickerText(TickerTextSize, ' ')
     , mFutureTickerText()
     , mCurrentCharStep(TickerFontSize)
@@ -35,11 +41,10 @@ EventTickerPanel::EventTickerPanel(wxWindow* parent)
     Connect(this->GetId(), wxEVT_ERASE_BACKGROUND, (wxObjectEventFunction)&EventTickerPanel::OnEraseBackground);
 
     //
-    // Set font
+    // Create font
     //
 
     mFont = wxFont(wxFontInfo(wxSize(TickerFontSize, TickerFontSize)).Family(wxFONTFAMILY_TELETYPE));
-    SetFont(mFont);
 }
 
 EventTickerPanel::~EventTickerPanel()
@@ -311,16 +316,7 @@ void EventTickerPanel::OnBombExplosion(
 
 void EventTickerPanel::OnPaint(wxPaintEvent & /*event*/)
 {
-#ifdef __WXMSW__
-    if (!mBufferedDCBitmap || mBufferedDCBitmap->GetSize() != this->GetSize())
-    {
-        mBufferedDCBitmap = std::make_unique<wxBitmap>(this->GetSize());
-    }
-
-    wxBufferedPaintDC dc(this, *mBufferedDCBitmap);
-#else
     wxPaintDC dc(this);
-#endif
 
     Render(dc);
 }
@@ -348,10 +344,17 @@ void EventTickerPanel::Render(wxDC & dc)
 {
     wxSize tickerPanelSize = dc.GetSize();
 
+    // TODOTEST
+    LogMessage("TODOWidth: ", tickerPanelSize.x);
+
     int leftX = tickerPanelSize.GetWidth() + TickerFontSize - mCurrentCharStep - (TickerTextSize * TickerFontSize);
 
     wxString tickerText(mCurrentTickerText, TickerTextSize);
 
     dc.Clear();
+    dc.SetFont(mFont);
     dc.DrawText(tickerText, leftX, -2);
+
+    // TODOTEST
+    dc.DrawLine(wxPoint(0, 0), wxPoint(40, 10));
 }
