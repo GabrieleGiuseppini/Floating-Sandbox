@@ -152,7 +152,7 @@ public:
 
             mSlider->Bind(wxEVT_SLIDER, (wxObjectEventFunction)&SliderControl::OnSliderScroll, this);
 
-            // Make the slider expand
+            // Make the slider expand vertically
             vSizer->Add(mSlider, 1, wxALIGN_CENTER_HORIZONTAL);
         }
 
@@ -166,6 +166,10 @@ public:
 
             if (!toolTipLabel.IsEmpty())
                 labelStaticText->SetToolTip(toolTipLabel);
+
+#ifdef __WXGTK__
+            vSizer->AddSpacer(3); // Labels falls over slider above it
+#endif
 
             if (nullptr == warningIcon)
             {

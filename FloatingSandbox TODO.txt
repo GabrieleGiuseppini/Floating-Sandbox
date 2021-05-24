@@ -533,11 +533,12 @@ Render:
 					+ Credits: too narrow
 					= Startup: not centered
 						X Try with CallAfter
-						= Try with one-shot, ad-hoc OnIdle
+						- ?
 				= SettingsDialog:
-					=UV Mode
-					= LoadSettings: settings names shows only first char ("C", "O", "R")
-				- ElectricalPanel labels: align vertical
+					- UV Mode
+					= LoadSettings: slightly smaller font
+					= Slider: label falls over slider above it
+				= ElectricalPanel labels: align vertical
 			- README.md
 				- Requirements: do different by OS
 
