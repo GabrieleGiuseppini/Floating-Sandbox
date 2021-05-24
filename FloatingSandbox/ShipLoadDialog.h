@@ -74,9 +74,9 @@ private:
     ShipPreviewWindow * mShipPreviewWindow;
     wxComboBox * mRecentDirectoriesComboBox;
     wxSearchCtrl * mShipSearchCtrl;
-    wxButton * mInfoButton;
+    wxBitmapButton * mInfoButton;
     wxButton * mLoadButton;
-    wxButton * mSearchNextButton;
+    wxBitmapButton * mSearchNextButton;
 
 private:
 
