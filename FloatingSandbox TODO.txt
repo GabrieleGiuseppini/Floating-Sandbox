@@ -532,11 +532,12 @@ Render:
 				= Windows:
 					+ Credits: too narrow
 					= Startup: not centered
-						= Try with CallAfter
-				= PreferencesDialog:
-					= Static boxes
-				- SettingsDialog:
-					- UV Mode
+						X Try with CallAfter
+						= Try with one-shot, ad-hoc OnIdle
+				= SettingsDialog:
+					=UV Mode
+					= LoadSettings: settings names shows only first char ("C", "O", "R")
+				- ElectricalPanel labels: align vertical
 			- README.md
 				- Requirements: do different by OS
 

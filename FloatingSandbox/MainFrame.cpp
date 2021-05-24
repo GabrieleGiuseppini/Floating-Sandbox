@@ -155,7 +155,6 @@ MainFrame::MainFrame(
     Centre();
 
     Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnMainFrameClose, this);
-    Bind(wxEVT_IDLE, &MainFrame::OnIdle, this);
 
     mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
@@ -1081,7 +1080,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
-    // Start game timer
+    // Setup game timer
     //
 
     // Ensure 1 second of real time is (no less than) 1 second of simulation
@@ -1092,9 +1091,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     mGameTimer = std::make_unique<wxTimer>(this, ID_GAME_TIMER);
     Connect(ID_GAME_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnGameTimerTrigger);
-
-    // TODOTEST
-    CallAfter([this]() { PostGameStepTimer(mGameTimerDuration); });
 
 
     //
@@ -1112,6 +1108,33 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     //
 
     mSplashScreenDialog = std::move(splash);
+
+
+    //
+    // Run the first game iteration at the next idle event
+    //
+
+    Bind(wxEVT_IDLE, &MainFrame::OnPostInitializeIdle, this);
+
+    wxWakeUpIdle(); // Make sure we run an Idle event right after this handler
+}
+
+void MainFrame::OnPostInitializeIdle(wxIdleEvent & /*event*/)
+{
+    LogMessage("MainFrame::OnPostInitializeIdle()");
+
+    // Unbind this Idle handler
+    bool unbindResult = Unbind(wxEVT_IDLE, &MainFrame::OnPostInitializeIdle, this);
+    if (!unbindResult)
+    {
+        OnError("Cannot unbind OnIdle", true);
+    }
+
+    // Bind definitive Idle handler
+    Bind(wxEVT_IDLE, &MainFrame::OnIdle, this);
+
+    // Run the very first game iteration
+    RunGameIteration();
 }
 
 void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
