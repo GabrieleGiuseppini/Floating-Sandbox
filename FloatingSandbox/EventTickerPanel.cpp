@@ -348,10 +348,11 @@ void EventTickerPanel::Render(wxDC & dc)
     wxString const tickerText(mCurrentTickerText, TickerTextSize);
 
     int const textWidth = dc.GetTextExtent(tickerText).GetWidth();
+    int const pixelsPerChar = textWidth / TickerTextSize;
 
-    int const leftX = tickerPanelWidth + TickerFontSize - mCurrentCharStep - (TickerTextSize * TickerFontSize);
+    int const leftX = tickerPanelWidth + pixelsPerChar - mCurrentCharStep - (TickerTextSize * pixelsPerChar);
 
-    LogMessage("TODOHERE: ", tickerPanelWidth, ", ", textWidth);
+    LogMessage("TODOHERE: ", tickerPanelWidth, ", ", textWidth, " leftX=", leftX);
 
     dc.Clear();
     dc.DrawText(tickerText, leftX, -2);
