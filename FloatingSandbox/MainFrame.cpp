@@ -155,6 +155,7 @@ MainFrame::MainFrame(
     Centre();
 
     Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnMainFrameClose, this);
+    Bind(wxEVT_IDLE, &MainFrame::OnIdle, this);
 
     mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
@@ -1155,141 +1156,7 @@ void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 
 void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
 {
-    if (!!mUpdateChecker)
-    {
-        // We are checking for updates...
-        // ...check whether the...check has completed
-        auto const outcome = mUpdateChecker->GetOutcome();
-        if (outcome.has_value())
-        {
-            // Check completed...
-            // ...check if it's an interesting new version
-            if (outcome->OutcomeType == UpdateChecker::UpdateCheckOutcomeType::HasVersion
-                && *(outcome->LatestVersion) > Version::CurrentVersion()
-                && !mUIPreferencesManager->IsUpdateBlacklisted(*(outcome->LatestVersion)))
-            {
-                //
-                // Notify user of new version
-                //
-
-                NewVersionDisplayDialog dlg(
-                    this,
-                    *(outcome->LatestVersion),
-                    outcome->Features,
-                    mUIPreferencesManager.get());
-
-                dlg.ShowModal();
-            }
-
-            // Forget about the update check
-            mUpdateChecker.reset();
-        }
-    }
-
-    std::chrono::steady_clock::time_point startTimestamp;
-
-    if (mHasStartupTipBeenChecked)
-    {
-#if FS_IS_OS_WINDOWS()
-        // We've already checked the startup tip...
-        // ...so we can safely post the timer event for the next
-        // frame - the earlier the better (mind the 15ms minimum on MSW)
-        PostGameStepTimer(mGameTimerDuration);
-#else
-        // Take the current timestamp
-        startTimestamp = std::chrono::steady_clock::now();
-#endif
-    }
-
-    //
-    // Run a game step
-    //
-
-    try
-    {
-        // Update tool controller
-        assert(!!mGameController);
-        assert(!!mToolController);
-        mToolController->UpdateSimulation(mGameController->GetCurrentSimulationTime());
-
-        // Update and render
-        ////LogMessage("TODOTEST: MainFrame::OnGameTimerTrigger: Running game iteration; IsSplashShown=",
-        ////    !!mSplashScreenDialog ? std::to_string(mSplashScreenDialog->IsShown()) : "<NoSplash>",
-        ////    " IsMainGLCanvasShown=", !!mMainGLCanvas ? std::to_string(mMainGLCanvas->IsShown()) : "<NoCanvas>",
-        ////    " IsFrameShown=", std::to_string(this->IsShown()));
-        assert(!!mGameController);
-        mGameController->RunGameIteration();
-
-        // Update probe panel
-        assert(!!mProbePanel);
-        mProbePanel->UpdateSimulation();
-
-        // Update event ticker
-        assert(!!mEventTickerPanel);
-        mEventTickerPanel->UpdateSimulation();
-
-        // Update electrical panel
-        assert(!!mElectricalPanel);
-        mElectricalPanel->UpdateSimulation();
-
-        // Update sound controller
-        assert(!!mSoundController);
-        mSoundController->UpdateSimulation();
-
-        // Update music controller
-        assert(!!mMusicController);
-        mMusicController->UpdateSimulation();
-
-        // Do after-render chores
-        AfterGameRender();
-    }
-    catch (std::exception const & e)
-    {
-        OnError("Error during game step: " + std::string(e.what()), true);
-
-        return;
-    }
-
-    if (!mHasStartupTipBeenChecked)
-    {
-        // Show startup tip - unless user has decided not to
-        if (mUIPreferencesManager->GetShowStartupTip())
-        {
-            // Set canvas' background color to sky color
-            {
-                auto const skyColor = mGameController->GetFlatSkyColor();
-                mMainGLCanvas->SetBackgroundColour(wxColor(skyColor.r, skyColor.g, skyColor.b));
-                mMainGLCanvas->ClearBackground();
-            }
-
-            StartupTipDialog startupTipDialog(
-                this,
-                mUIPreferencesManager,
-                mResourceLocator,
-                mLocalizationManager);
-
-            startupTipDialog.ShowModal();
-        }
-
-        // Don't check for startup tips anymore
-        mHasStartupTipBeenChecked = true;
-
-        // Post next game step now
-        PostGameStepTimer(mGameTimerDuration);
-    }
-#if !FS_IS_OS_WINDOWS()
-    else
-    {
-        // Run next game step after the remaining time
-        auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::steady_clock::now() - startTimestamp);
-
-        if (elapsed.count() < 0)
-            CallAfter([this]() { this->PostGameStepTimer(std::chrono::milliseconds::zero()); });
-        else
-            PostGameStepTimer(std::max(mGameTimerDuration - elapsed, std::chrono::milliseconds::zero()));
-    }
-#endif
+    RunGameIteration();
 }
 
 void MainFrame::OnLowFrequencyTimerTrigger(wxTimerEvent & /*event*/)
@@ -1325,6 +1192,10 @@ void MainFrame::OnCheckUpdatesTimerTrigger(wxTimerEvent & /*event*/)
 
 void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 {
+    if (mHasStartupTipBeenChecked && !!mGameTimer && !mGameTimer->IsRunning())
+    {
+        RunGameIteration();
+    }
 }
 
 //
@@ -2068,6 +1939,166 @@ void MainFrame::OnCheckForUpdatesMenuItemSelected(wxCommandEvent & /*event*/)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+
+void MainFrame::RunGameIteration()
+{
+    if (!!mUpdateChecker)
+    {
+        // We are checking for updates...
+        // ...check whether the...check has completed
+        auto const outcome = mUpdateChecker->GetOutcome();
+        if (outcome.has_value())
+        {
+            // Check completed...
+            // ...check if it's an interesting new version
+            if (outcome->OutcomeType == UpdateChecker::UpdateCheckOutcomeType::HasVersion
+                && *(outcome->LatestVersion) > Version::CurrentVersion()
+                && !mUIPreferencesManager->IsUpdateBlacklisted(*(outcome->LatestVersion)))
+            {
+                //
+                // Notify user of new version
+                //
+
+                NewVersionDisplayDialog dlg(
+                    this,
+                    *(outcome->LatestVersion),
+                    outcome->Features,
+                    mUIPreferencesManager.get());
+
+                dlg.ShowModal();
+            }
+
+            // Forget about the update check
+            mUpdateChecker.reset();
+        }
+    }
+
+#if FS_IS_OS_WINDOWS()
+    if (mHasStartupTipBeenChecked)
+    {
+        //
+        // On Windows, timer events (appear to be) queued after GUI events, hence
+        // even if the timer fires *during* a game iteration, its event will be
+        // processed after outstanding GUI events.
+        // The same does not appear to hold for GTK; if a timer fires during the
+        // game iteration, its event will be processed immediately after the
+        // current handler, and thus no GUI events will be processed, starving
+        // (and freezing) the UI as a result.
+        //
+        // This, coupled with the fact that windows timers have a minimum granularity
+        // matching our frame rate (1/64th of a second), makes it so that starting a
+        // timer here is the best strategy to ensure a steady 64-FPS rate of game
+        // iteration callbacks.
+        //
+
+        PostGameStepTimer(mGameTimerDuration);
+    }
+#else
+    std::chrono::steady_clock::time_point const startTimestamp = std::chrono::steady_clock::now();
+#endif
+
+    //
+    // Run a game step
+    //
+
+    try
+    {
+        // Update tool controller
+        assert(!!mGameController);
+        assert(!!mToolController);
+        mToolController->UpdateSimulation(mGameController->GetCurrentSimulationTime());
+
+        // Update and render
+        ////LogMessage("TODOTEST: MainFrame::OnGameTimerTrigger: Running game iteration; IsSplashShown=",
+        ////    !!mSplashScreenDialog ? std::to_string(mSplashScreenDialog->IsShown()) : "<NoSplash>",
+        ////    " IsMainGLCanvasShown=", !!mMainGLCanvas ? std::to_string(mMainGLCanvas->IsShown()) : "<NoCanvas>",
+        ////    " IsFrameShown=", std::to_string(this->IsShown()));
+        assert(!!mGameController);
+        mGameController->RunGameIteration();
+
+        // Update probe panel
+        assert(!!mProbePanel);
+        mProbePanel->UpdateSimulation();
+
+        // Update event ticker
+        assert(!!mEventTickerPanel);
+        mEventTickerPanel->UpdateSimulation();
+
+        // Update electrical panel
+        assert(!!mElectricalPanel);
+        mElectricalPanel->UpdateSimulation();
+
+        // Update sound controller
+        assert(!!mSoundController);
+        mSoundController->UpdateSimulation();
+
+        // Update music controller
+        assert(!!mMusicController);
+        mMusicController->UpdateSimulation();
+
+        // Do after-render chores
+        AfterGameRender();
+    }
+    catch (std::exception const & e)
+    {
+        OnError("Error during game step: " + std::string(e.what()), true);
+
+        return;
+    }
+
+    if (!mHasStartupTipBeenChecked)
+    {
+        // Show startup tip - unless user has decided not to
+        if (mUIPreferencesManager->GetShowStartupTip())
+        {
+            // Set canvas' background color to sky color
+            {
+                auto const skyColor = mGameController->GetFlatSkyColor();
+                mMainGLCanvas->SetBackgroundColour(wxColor(skyColor.r, skyColor.g, skyColor.b));
+                mMainGLCanvas->ClearBackground();
+            }
+
+            StartupTipDialog startupTipDialog(
+                this,
+                mUIPreferencesManager,
+                mResourceLocator,
+                mLocalizationManager);
+
+            startupTipDialog.ShowModal();
+        }
+
+        // Don't check for startup tips anymore
+        mHasStartupTipBeenChecked = true;
+
+#if FS_IS_OS_WINDOWS()
+        // Post next game step now
+        PostGameStepTimer(mGameTimerDuration);
+#endif
+    }
+
+#if !FS_IS_OS_WINDOWS()
+    //
+    // Run next game step after the remaining time
+    //
+
+    auto const nextIterationDelay =
+        mGameTimerDuration
+        - std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - startTimestamp);
+
+    if (nextIterationDelay.count() <= 0)
+    {
+        // It took us longer than the timer duration, hence run a game iteration
+        // as soon as possible, but still giving the event loop some time to drain
+        // UI events
+        wxWakeUpIdle(); // Ensure an Idle event is proeuced even if we are...idle
+    }
+    else
+    {
+        // Schedule the next game iteration after the remaining time
+        PostGameStepTimer(nextIterationDelay);
+    }
+#endif
+}
 
 void MainFrame::ResetState()
 {
