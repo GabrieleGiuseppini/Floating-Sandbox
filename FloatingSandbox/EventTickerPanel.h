@@ -127,6 +127,9 @@ private:
     // the left. This string might be empty.
     std::string mFutureTickerText;
 
-    // The fraction of a character we're currently scrolled by
-    unsigned int mCurrentCharStep;
+    // The width of a character
+    unsigned int mCharWidth;
+
+    // The fraction of the character width that we're currently scrolled by
+    unsigned int mCurrentCharWidthStep;
 };
