@@ -46,11 +46,6 @@ EventTickerPanel::EventTickerPanel(wxWindow* parent)
 
     wxFont font(wxFontInfo(wxSize(TickerFontSize, TickerFontSize)).Family(wxFONTFAMILY_TELETYPE));
     SetFont(font);
-
-    // TODOTEST
-    mCurrentTickerText = "";
-    for (int a = 0; a < TickerTextSize; ++a)
-        mCurrentTickerText.append(1, char('a' + a % 26));
 }
 
 EventTickerPanel::~EventTickerPanel()
@@ -348,29 +343,16 @@ void EventTickerPanel::AppendFutureTickerText(std::string const & text)
 
 void EventTickerPanel::Render(wxDC & dc)
 {
-    wxSize const tickerPanelSize = dc.GetSize();
+    int const tickerPanelWidth = dc.GetSize().GetWidth();
 
-    // TODOTEST
-    ////int const leftX = tickerPanelSize.GetWidth() + TickerFontSize - mCurrentCharStep - (TickerTextSize * TickerFontSize);
-    ////wxString tickerText(mCurrentTickerText, TickerTextSize);
+    wxString const tickerText(mCurrentTickerText, TickerTextSize);
 
-    int const numberOfCharsForWholeTicker = (tickerPanelSize.GetWidth() / TickerFontSize) + 1;
-    int const leftX = -static_cast<int>(mCurrentCharStep);
-    wxString tickerText(mCurrentTickerText.data() + TickerTextSize - numberOfCharsForWholeTicker, numberOfCharsForWholeTicker);
+    int const textWidth = dc.GetTextExtent(tickerText).GetWidth();
 
-    auto const textSize = dc.GetTextExtent(tickerText);
+    int const leftX = tickerPanelWidth + TickerFontSize - mCurrentCharStep - (TickerTextSize * TickerFontSize);
+
+    LogMessage("TODOHERE: ", tickerPanelWidth, ", ", textWidth);
 
     dc.Clear();
-
-// TODOTEST
-//#ifdef __WXMSW__
-    int constexpr Y = -2; // Better vertically centered
-//#else
-    //int constexpr Y = 0;
-//#endif
-
-    LogMessage("TODO: tickerPanelSize.width=", tickerPanelSize.GetWidth(), " textSize=", textSize.GetWidth());
-    LogMessage("TODO: leftX=", leftX, ":", tickerText.ToStdString());
-
-    dc.DrawText(tickerText, leftX, Y);
+    dc.DrawText(tickerText, leftX, -2);
 }
