@@ -334,6 +334,7 @@ private:
             // Make sure the main frame is correctly laid out afterwards
             this->Layout();
             mMainApp->Yield();
+            mMainApp->Yield();
 #endif
 
             mHasWindowBeenShown = true;

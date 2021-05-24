@@ -531,6 +531,8 @@ Render:
 			= Misc issues:
 				- Slider control is clipped
 				- EventTicker: problem with font scaling
+					- MSW: 1912, 12288 (== 1024 * 12)
+					- GTK: 
 				- MouseMove's are delayed and/or skipped
 			- Build as RELEASE
 			- README.md
