@@ -528,11 +528,13 @@ Render:
 				+ Try: on Linux: 
 					+ if elapsed < 0: wxWakeUpIdle(), else SetTimer
 					+ OnIdle(): if mHasStartupTipBeenChecked && !timer.isArmed: invoke RunGameIteration
-			- Fixes:
-				- Windows:
-					- Credits: too narrow
-					= Startup: not center
-					- TODO
+			= Fixes:
+				= Windows:
+					+ Credits: too narrow
+					= Startup: not centered
+						= Try with CallAfter
+				= PreferencesDialog:
+					= Static boxes
 				- SettingsDialog:
 					- UV Mode
 			- README.md

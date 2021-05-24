@@ -20,7 +20,7 @@ static int constexpr StaticBoxTopMargin = 7;
 static int constexpr StaticBoxInsetMargin = 10;
 static int constexpr CellBorder = 8;
 
-static int constexpr SliderWidth = 40;
+static int constexpr SliderWidth = 82;
 static int constexpr SliderHeight = 140;
 
 static constexpr int MaxZoomIncrementPosition = 200;
@@ -643,45 +643,37 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * autoTexturizationBox = new wxStaticBox(panel, wxID_ANY, _("Auto-Texturization"));
-
-        wxBoxSizer * autoTexturizationBoxSizer = new wxBoxSizer(wxVERTICAL);
-        autoTexturizationBoxSizer->AddSpacer(StaticBoxTopMargin);
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Auto-Texturization"));
 
         {
-            wxGridBagSizer * autoTexturizationSizer = new wxGridBagSizer(0, 0);
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
             // Texturization Mode
             {
-                wxStaticBox * texturizationModeBox = new wxStaticBox(autoTexturizationBox, wxID_ANY, _("Mode"));
-
-                wxBoxSizer * texturizationModeBoxSizer1 = new wxBoxSizer(wxVERTICAL);
-                texturizationModeBoxSizer1->AddSpacer(StaticBoxTopMargin);
+                wxStaticBoxSizer * texturizationModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, boxSizer->GetStaticBox(), _("Mode"));
 
                 {
-                    wxGridBagSizer * texturizationModeBoxSizer2 = new wxGridBagSizer(5, 3);
+                    wxGridBagSizer * texturizationModeSizer = new wxGridBagSizer(5, 3);
 
-                    mFlatStructureAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBox, wxID_ANY,
+                    mFlatStructureAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBoxSizer->GetStaticBox(), wxID_ANY,
                         _("Flat Structure"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
                     mFlatStructureAutoTexturizationModeRadioButton->SetToolTip(_("When a ship does not have a high-definition image, generates one using the materials' matte colors. Changes to this setting are only visible after a new ship is loaded."));
                     mFlatStructureAutoTexturizationModeRadioButton->Bind(wxEVT_RADIOBUTTON, &PreferencesDialog::OnAutoTexturizationModeRadioButtonClick, this);
-                    texturizationModeBoxSizer2->Add(mFlatStructureAutoTexturizationModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                    texturizationModeSizer->Add(mFlatStructureAutoTexturizationModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
                     //
 
-                    mMaterialTexturesAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBox, wxID_ANY,
+                    mMaterialTexturesAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBoxSizer->GetStaticBox(), wxID_ANY,
                         _("Material Textures"), wxDefaultPosition, wxDefaultSize);
                     mMaterialTexturesAutoTexturizationModeRadioButton->SetToolTip(_("When a ship does not have a high-definition image, generates one using material-specific textures. Changes to this setting are only visible after a new ship is loaded."));
                     mMaterialTexturesAutoTexturizationModeRadioButton->Bind(wxEVT_RADIOBUTTON, &PreferencesDialog::OnAutoTexturizationModeRadioButtonClick, this);
-                    texturizationModeBoxSizer2->Add(mMaterialTexturesAutoTexturizationModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                    texturizationModeSizer->Add(mMaterialTexturesAutoTexturizationModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
-                    texturizationModeBoxSizer1->Add(texturizationModeBoxSizer2, 0, wxALL, StaticBoxInsetMargin);
+                    texturizationModeBoxSizer->Add(texturizationModeSizer, 1, wxALL, StaticBoxInsetMargin);
                 }
 
-                texturizationModeBox->SetSizerAndFit(texturizationModeBoxSizer1);
-
-                autoTexturizationSizer->Add(
-                    texturizationModeBox,
+                sizer->Add(
+                    texturizationModeBoxSizer,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxALL,
@@ -690,12 +682,12 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
             // Force default settings onto ship
             {
-                mForceDefaultAutoTexturizationSettingsOntoShipCheckBox = new wxCheckBox(autoTexturizationBox, wxID_ANY,
+                mForceDefaultAutoTexturizationSettingsOntoShipCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
                     _("Force Defaults onto Ships"), wxDefaultPosition, wxDefaultSize, 0);
                 mForceDefaultAutoTexturizationSettingsOntoShipCheckBox->SetToolTip(_("Override individual ships' auto-texturization settings with these defaults. This setting is not saved, and it will revert to OFF the next time the game is played."));
                 mForceDefaultAutoTexturizationSettingsOntoShipCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnForceDefaultAutoTexturizationSettingsOntoShipCheckBoxClicked, this);
 
-                autoTexturizationSizer->Add(
+                sizer->Add(
                     mForceDefaultAutoTexturizationSettingsOntoShipCheckBox,
                     wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
@@ -706,7 +698,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
             // Material Texture Magnification
             {
                 mMaterialTextureMagnificationSlider = new SliderControl<float>(
-                    autoTexturizationBox,
+                    boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
                     _("Texture Magnification"),
@@ -722,7 +714,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                         1.0f,
                         2.0f));
 
-                autoTexturizationSizer->Add(
+                sizer->Add(
                     mMaterialTextureMagnificationSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(2, 1),
@@ -733,7 +725,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
             // Material Texture Transparency
             {
                 mMaterialTextureTransparencySlider = new SliderControl<float>(
-                    autoTexturizationBox,
+                    boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
                     _("Texture Transparency"),
@@ -748,7 +740,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                         0.0f,
                         1.0f));
 
-                autoTexturizationSizer->Add(
+                sizer->Add(
                     mMaterialTextureTransparencySlider,
                     wxGBPosition(0, 2),
                     wxGBSpan(2, 1),
@@ -756,16 +748,14 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     CellBorder);
             }
 
-            autoTexturizationBoxSizer->Add(autoTexturizationSizer, 0, wxALL, StaticBoxInsetMargin);
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
-        autoTexturizationBox->SetSizerAndFit(autoTexturizationBoxSizer);
-
         gridSizer->Add(
-            autoTexturizationBox,
+            boxSizer,
             wxGBPosition(0, 0),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALL,
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorder);
     }
 
@@ -774,22 +764,19 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBox * miscBox = new wxStaticBox(panel, wxID_ANY, _("Miscellaneous"));
-
-        wxBoxSizer * miscBoxSizer = new wxBoxSizer(wxVERTICAL);
-        miscBoxSizer->AddSpacer(StaticBoxTopMargin);
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Miscellaneous"));
 
         {
-            wxGridBagSizer * miscSizer = new wxGridBagSizer(0, 0);
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
             // Reload last loaded ship on startup
             {
-                mReloadLastLoadedShipOnStartupCheckBox = new wxCheckBox(miscBox, wxID_ANY,
+                mReloadLastLoadedShipOnStartupCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
                     _("Reload Previous Ship on Startup"), wxDefaultPosition, wxDefaultSize, 0);
                 mReloadLastLoadedShipOnStartupCheckBox->SetToolTip(_("When checked, the game starts with the ship that had been loaded when the game was last played."));
                 mReloadLastLoadedShipOnStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnReloadLastLoadedShipOnStartupCheckBoxClicked, this);
 
-                miscSizer->Add(
+                sizer->Add(
                     mReloadLastLoadedShipOnStartupCheckBox,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
@@ -799,12 +786,12 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
             // Show Ship Description at Ship Load
             {
-                mShowShipDescriptionAtShipLoadCheckBox = new wxCheckBox(miscBox, wxID_ANY,
+                mShowShipDescriptionAtShipLoadCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
                     _("Show Ship Descriptions at Load"), wxDefaultPosition, wxDefaultSize, 0);
                 mShowShipDescriptionAtShipLoadCheckBox->SetToolTip(_("Enables or disables the window showing ship descriptions when ships are loaded."));
                 mShowShipDescriptionAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked, this);
 
-                miscSizer->Add(
+                sizer->Add(
                     mShowShipDescriptionAtShipLoadCheckBox,
                     wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
@@ -814,12 +801,12 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
             // Auto-Zoom
             {
-                mAutoZoomAtShipLoadCheckBox = new wxCheckBox(miscBox, wxID_ANY,
+                mAutoZoomAtShipLoadCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
                     _("Auto-Zoom at Ship Load"), wxDefaultPosition, wxDefaultSize, 0);
                 mAutoZoomAtShipLoadCheckBox->SetToolTip(_("Enables or disables auto-zooming when loading a new ship."));
                 mAutoZoomAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoZoomAtShipLoadCheckBoxClicked, this);
 
-                miscSizer->Add(
+                sizer->Add(
                     mAutoZoomAtShipLoadCheckBox,
                     wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
@@ -829,12 +816,12 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
             // Auto-Show Switchboard
             {
-                mAutoShowSwitchboardCheckBox = new wxCheckBox(miscBox, wxID_ANY,
+                mAutoShowSwitchboardCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
                     _("Open Electrical Panel at Load"), wxDefaultPosition, wxDefaultSize, 0);
                 mAutoShowSwitchboardCheckBox->SetToolTip(_("Enables or disables automatic showing of the ship's electrical panel when a ship with interactive electrical elements is loaded."));
                 mAutoShowSwitchboardCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoShowSwitchboardCheckBoxClicked, this);
 
-                miscSizer->Add(
+                sizer->Add(
                     mAutoShowSwitchboardCheckBox,
                     wxGBPosition(3, 0),
                     wxGBSpan(1, 1),
@@ -844,12 +831,12 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
             // Show Electrical Notifications
             {
-                mShowElectricalNotificationsCheckBox = new wxCheckBox(miscBox, wxID_ANY,
+                mShowElectricalNotificationsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
                     _("Show Electrical Notifications"), wxDefaultPosition, wxDefaultSize, 0);
                 mShowElectricalNotificationsCheckBox->SetToolTip(_("Enables or disables visual notifications when an electrical element changes state."));
                 mShowElectricalNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowElectricalNotificationsCheckBoxClicked, this);
 
-                miscSizer->Add(
+                sizer->Add(
                     mShowElectricalNotificationsCheckBox,
                     wxGBPosition(4, 0),
                     wxGBSpan(1, 1),
@@ -857,16 +844,14 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     CellBorder);
             }
 
-            miscBoxSizer->Add(miscSizer, 0, wxALL, StaticBoxInsetMargin);
+            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
-        miscBox->SetSizerAndFit(miscBoxSizer);
-
         gridSizer->Add(
-            miscBox,
+            boxSizer,
             wxGBPosition(0, 1),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALL,
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorder);
     }
 
@@ -934,7 +919,7 @@ void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
                         mBackgroundMusicVolumeSlider,
                         wxGBPosition(0, 1),
                         wxGBSpan(1, 1),
-                        wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxALL,
+                        wxEXPAND | wxALL,
                         Border);
                 }
 
@@ -959,7 +944,7 @@ void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
                         mSinkingMusicVolumeSlider,
                         wxGBPosition(0, 3),
                         wxGBSpan(1, 1),
-                        wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL | wxALL,
+                        wxEXPAND | wxALL,
                         Border);
                 }
             }

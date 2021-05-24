@@ -1093,7 +1093,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     mGameTimer = std::make_unique<wxTimer>(this, ID_GAME_TIMER);
     Connect(ID_GAME_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnGameTimerTrigger);
 
-    PostGameStepTimer(mGameTimerDuration);
+    // TODOTEST
+    CallAfter([this]() { PostGameStepTimer(mGameTimerDuration); });
 
 
     //
