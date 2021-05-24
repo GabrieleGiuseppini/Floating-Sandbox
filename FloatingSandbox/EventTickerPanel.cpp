@@ -46,6 +46,9 @@ EventTickerPanel::EventTickerPanel(wxWindow* parent)
 
     wxFont font(wxFontInfo(wxSize(TickerFontSize, TickerFontSize)).Family(wxFONTFAMILY_TELETYPE));
     SetFont(font);
+
+    // TODOTEST
+    LogMessage("TODOTEST: TextExtentWidth1: ", GetTextExtent("Z").GetWidth());
 }
 
 EventTickerPanel::~EventTickerPanel()
@@ -349,6 +352,9 @@ void EventTickerPanel::Render(wxDC & dc)
 
     int const textWidth = dc.GetTextExtent(tickerText).GetWidth();
     int const pixelsPerChar = textWidth / TickerTextSize;
+
+    // TODOTEST
+    LogMessage("TODOTEST: TextExtentWidth2: ", dc.GetTextExtent("Z").GetWidth(), " ppc:", pixelsPerChar);
 
     int const leftX = tickerPanelWidth + pixelsPerChar - mCurrentCharStep - (TickerTextSize * pixelsPerChar);
 
