@@ -5,16 +5,13 @@
 ***************************************************************************************/
 #include "EventTickerPanel.h"
 
-// TODOTEST
-#include <GameCore/Log.h>
-
 #include <wx/dcbuffer.h>
 
 #include <cassert>
 #include <sstream>
 
 static size_t constexpr TickerTextSize = 1024u;
-static unsigned int constexpr TickerFontSize = 12;
+static int constexpr TickerFontSize = 12; // Not a pixel size
 static unsigned int constexpr TickerCharStep = 1;
 
 EventTickerPanel::EventTickerPanel(wxWindow* parent)
@@ -26,7 +23,6 @@ EventTickerPanel::EventTickerPanel(wxWindow* parent)
         wxBORDER_SIMPLE)
     , mCurrentTickerText(TickerTextSize, ' ')
     , mFutureTickerText()
-    , mCurrentCharStep(TickerFontSize)
 {
     SetMinSize(wxSize(-1, 1 + TickerFontSize + 1));
     SetMaxSize(wxSize(-1, 1 + TickerFontSize + 1));
@@ -47,8 +43,8 @@ EventTickerPanel::EventTickerPanel(wxWindow* parent)
     wxFont font(wxFontInfo(wxSize(TickerFontSize, TickerFontSize)).Family(wxFONTFAMILY_TELETYPE));
     SetFont(font);
 
-    // TODOTEST
-    LogMessage("TODOTEST: TextExtentWidth1: ", GetTextExtent("Z").GetWidth());
+    mCharWidth = GetTextExtent("Z").GetWidth();
+    mCurrentCharWidthStep = mCharWidth; // Initialize
 }
 
 EventTickerPanel::~EventTickerPanel()
@@ -57,10 +53,10 @@ EventTickerPanel::~EventTickerPanel()
 
 void EventTickerPanel::UpdateSimulation()
 {
-    mCurrentCharStep += TickerCharStep;
-    if (mCurrentCharStep >= TickerFontSize)
+    mCurrentCharWidthStep += TickerCharStep;
+    if (mCurrentCharWidthStep >= mCharWidth)
     {
-        mCurrentCharStep = 0;
+        mCurrentCharWidthStep = 0;
 
         // Pop first char
         assert(TickerTextSize == mCurrentTickerText.size());
@@ -347,18 +343,9 @@ void EventTickerPanel::AppendFutureTickerText(std::string const & text)
 void EventTickerPanel::Render(wxDC & dc)
 {
     int const tickerPanelWidth = dc.GetSize().GetWidth();
+    int const leftX = tickerPanelWidth + mCharWidth - mCurrentCharWidthStep - (TickerTextSize * mCharWidth);
 
     wxString const tickerText(mCurrentTickerText, TickerTextSize);
-
-    int const textWidth = dc.GetTextExtent(tickerText).GetWidth();
-    int const pixelsPerChar = textWidth / TickerTextSize;
-
-    // TODOTEST
-    LogMessage("TODOTEST: TextExtentWidth2: ", dc.GetTextExtent("Z").GetWidth(), " ppc:", pixelsPerChar);
-
-    int const leftX = tickerPanelWidth + pixelsPerChar - mCurrentCharStep - (TickerTextSize * pixelsPerChar);
-
-    LogMessage("TODOHERE: ", tickerPanelWidth, ", ", textWidth, " leftX=", leftX);
 
     dc.Clear();
     dc.DrawText(tickerText, leftX, -2);
