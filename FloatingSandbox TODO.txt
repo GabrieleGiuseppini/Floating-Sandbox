@@ -528,9 +528,11 @@ Render:
 				+ Try: on Linux: 
 					+ if elapsed < 0: wxWakeUpIdle(), else SetTimer
 					+ OnIdle(): if mHasStartupTipBeenChecked && !timer.isArmed: invoke RunGameIteration
-			= Misc fixes:
+			= Misc issues:
 				= SettingsDialog:
 					- Slider is clipped
+				- EventTicker doesn't draw
+				- MouseMove's are delayed and/or skipped
 			- Build as RELEASE
 			- README.md
 				- Requirements: do different by OS
