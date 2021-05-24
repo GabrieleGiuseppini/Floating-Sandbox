@@ -81,7 +81,7 @@ protected:
 
             wxBoxSizer* labelSizer = new wxBoxSizer(wxVERTICAL);
             labelSizer->Add(labelStaticText, 1, wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT, 6);
-            labelPanel->SetSizerAndFit(labelSizer);
+            labelPanel->SetSizer(labelSizer);
         }
         vSizer->Add(labelPanel, 0, wxEXPAND);
 

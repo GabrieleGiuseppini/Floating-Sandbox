@@ -670,6 +670,11 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
     {
         wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Ultra-Violent Mode"));
 
+#ifdef __WXGTK__
+        auto const titleWidth = panel->GetTextExtent(boxSizer->GetStaticBox()->GetLabelText()).x;
+        boxSizer->SetMinSize(titleWidth, -1);
+#endif
+
         {
             boxSizer->AddStretchSpacer(1);
         }
@@ -4354,11 +4359,15 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
                     wxSize(250, 370),
                     wxBORDER_STATIC /*https://trac.wxwidgets.org/ticket/18549*/ | wxLC_REPORT | wxLC_NO_HEADER | wxLC_SINGLE_SEL);
 
+#ifdef __WXGTK__
+                mPersistedSettingsListCtrl->SetFont(
+                    mPersistedSettingsListCtrl->GetFont().SetPointSize(
+                        mPersistedSettingsListCtrl->GetFont().GetPointSize() - 4));
+#endif
+
                 mPersistedSettingsListCtrl->AppendColumn(
                     wxEmptyString,
                     wxLIST_FORMAT_LEFT,
-                    // TODOTEST
-                    //wxLIST_AUTOSIZE_USEHEADER);
                     mPersistedSettingsListCtrl->GetSize().GetWidth() - 10);
 
                 for (size_t p = 0; p < mPersistedSettings.size(); ++p)
