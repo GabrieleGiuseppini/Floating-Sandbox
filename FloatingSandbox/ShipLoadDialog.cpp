@@ -50,7 +50,6 @@ ShipLoadDialog::ShipLoadDialog(
     {
         wxBoxSizer * hSizer1 = new wxBoxSizer(wxHORIZONTAL);
 
-
         // Directory tree
         {
             assert(!mUIPreferencesManager.GetShipLoadDirectories().empty());
@@ -159,9 +158,8 @@ ShipLoadDialog::ShipLoadDialog(
 
             // HomeDir button
 
-            wxButton * homeDirButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
             wxBitmap homeBitmap(mResourceLocator.GetIconFilePath("home").string(), wxBITMAP_TYPE_PNG);
-            homeDirButton->SetBitmap(homeBitmap);
+            wxBitmapButton * homeDirButton = new wxBitmapButton(this, wxID_ANY, homeBitmap, wxDefaultPosition, wxDefaultSize);
             homeDirButton->SetToolTip(_("Go to the default Ships folder"));
             homeDirButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnHomeDirButtonClicked, this);
 
@@ -194,9 +192,8 @@ ShipLoadDialog::ShipLoadDialog(
 
 			// Search button
 
-            mSearchNextButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, 24));
             wxBitmap searchNextBitmap(mResourceLocator.GetIconFilePath("right_arrow").string(), wxBITMAP_TYPE_PNG);
-            mSearchNextButton->SetBitmap(searchNextBitmap);
+            mSearchNextButton = new wxBitmapButton(this, wxID_ANY, searchNextBitmap, wxDefaultPosition, wxDefaultSize);
             mSearchNextButton->SetToolTip(_("Go to the next search result"));
             mSearchNextButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnSearchNextButtonClicked, this);
 
@@ -224,9 +221,8 @@ ShipLoadDialog::ShipLoadDialog(
 
         buttonsSizer->AddSpacer(10);
 
-        mInfoButton = new wxButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(24, -1));
         wxBitmap infoBitmap(mResourceLocator.GetIconFilePath("info").string(), wxBITMAP_TYPE_PNG);
-        mInfoButton->SetBitmap(infoBitmap);
+        mInfoButton = new wxBitmapButton(this, wxID_ANY, infoBitmap, wxDefaultPosition, wxDefaultSize);
         mInfoButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnInfoButtonClicked, this);
         buttonsSizer->Add(mInfoButton, 0);
 
