@@ -4359,11 +4359,17 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
                     wxSize(250, 370),
                     wxBORDER_STATIC /*https://trac.wxwidgets.org/ticket/18549*/ | wxLC_REPORT | wxLC_NO_HEADER | wxLC_SINGLE_SEL);
 
-#ifdef __WXGTK__
-                mPersistedSettingsListCtrl->SetFont(
-                    mPersistedSettingsListCtrl->GetFont().SetPointSize(
-                        mPersistedSettingsListCtrl->GetFont().GetPointSize() - 4));
-#endif
+                // TODOTEST
+//#ifdef __WXGTK__
+                {
+                    // Use a smaller font
+                    auto font = mPersistedSettingsListCtrl->GetFont();
+                    LogMessage("TODOTEST: mPersistedSettingsListCtrl font point size=", font.GetPointSize());
+                    LogMessage("TODOTEST: panel font point size=", panel->GetFont().GetPointSize());
+                    //font.SetPointSize(font.GetPointSize() - 4);
+                    //mPersistedSettingsListCtrl->SetFont(font);
+                }
+//#endif
 
                 mPersistedSettingsListCtrl->AppendColumn(
                     wxEmptyString,
@@ -5128,9 +5134,10 @@ void SettingsDialog::InsertPersistedSettingInCtrl(
         || psKey == PersistedSettingsKey::MakeLastModifiedSettingsKey())
     {
         // Make it bold
-        auto font = mPersistedSettingsListCtrl->GetItemFont(index);
-        font.SetWeight(wxFONTWEIGHT_BOLD);
-        mPersistedSettingsListCtrl->SetItemFont(index, font);
+        auto parentFont = mPersistedSettingsListCtrl->GetParent()->GetFont();
+        LogMessage("TODOTEST: mPersistedSettingsListCtrl parent font size=", parentFont.GetPointSize());
+        parentFont.SetWeight(wxFONTWEIGHT_BOLD);
+        mPersistedSettingsListCtrl->SetItemFont(index, parentFont);
     }
 }
 
