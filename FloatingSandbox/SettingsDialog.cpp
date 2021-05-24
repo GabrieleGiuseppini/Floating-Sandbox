@@ -37,6 +37,7 @@ static int constexpr IconInStaticBorderMargin = 4;
 static int constexpr TopmostCellOverSliderHeight = 24;
 static int constexpr InterCheckboxRowMargin = 4;
 static int constexpr StaticBoxInsetMargin = 0;
+static int constexpr StaticBoxInsetMargin2 = 4;
 static int constexpr CellBorderInner = 8;
 static int constexpr CellBorderOuter = 4;
 
@@ -3271,7 +3272,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     mTextureOceanRenderModeRadioButton->SetToolTip(_("Draws the ocean using a static pattern."));
                     mTextureOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnOceanRenderModeRadioButtonClick, this);
 
-                    oceanRenderModeSizer->Add(mTextureOceanRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                    oceanRenderModeSizer->Add(mTextureOceanRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
                     mTextureOceanComboBox = new wxBitmapComboBox(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxEmptyString,
                         wxDefaultPosition, wxDefaultSize, wxArrayString(), wxCB_READONLY);
@@ -3290,7 +3291,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             OnLiveSettingsChanged();
                         });
 
-                    oceanRenderModeSizer->Add(mTextureOceanComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxALL | wxEXPAND, 0);
+                    oceanRenderModeSizer->Add(mTextureOceanComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND, 0);
 
                     //
 
@@ -3298,7 +3299,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     mDepthOceanRenderModeRadioButton->SetToolTip(_("Draws the ocean using a vertical color gradient."));
                     mDepthOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnOceanRenderModeRadioButtonClick, this);
 
-                    oceanRenderModeSizer->Add(mDepthOceanRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                    oceanRenderModeSizer->Add(mDepthOceanRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
                     mDepthOceanColorStartPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"));
                     mDepthOceanColorStartPicker->SetToolTip(_("Sets the starting (top) color of the gradient."));
@@ -3315,7 +3316,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             OnLiveSettingsChanged();
                         });
 
-                    oceanRenderModeSizer->Add(mDepthOceanColorStartPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALL, 0);
+                    oceanRenderModeSizer->Add(mDepthOceanColorStartPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), 0, 0);
 
                     mDepthOceanColorEndPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"));
                     mDepthOceanColorEndPicker->SetToolTip(_("Sets the ending (bottom) color of the gradient."));
@@ -3332,7 +3333,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             OnLiveSettingsChanged();
                         });
 
-                    oceanRenderModeSizer->Add(mDepthOceanColorEndPicker, wxGBPosition(1, 2), wxGBSpan(1, 1), wxALL, 0);
+                    oceanRenderModeSizer->Add(mDepthOceanColorEndPicker, wxGBPosition(1, 2), wxGBSpan(1, 1), 0, 0);
 
                     //
 
@@ -3340,7 +3341,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     mFlatOceanRenderModeRadioButton->SetToolTip(_("Draws the ocean using a single color."));
                     mFlatOceanRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnOceanRenderModeRadioButtonClick, this);
 
-                    oceanRenderModeSizer->Add(mFlatOceanRenderModeRadioButton, wxGBPosition(2, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                    oceanRenderModeSizer->Add(mFlatOceanRenderModeRadioButton, wxGBPosition(2, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
                     mFlatOceanColorPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"),
                         wxDefaultPosition, wxDefaultSize);
@@ -3358,9 +3359,9 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             OnLiveSettingsChanged();
                         });
 
-                    oceanRenderModeSizer->Add(mFlatOceanColorPicker, wxGBPosition(2, 1), wxGBSpan(1, 1), wxALL, 0);
+                    oceanRenderModeSizer->Add(mFlatOceanColorPicker, wxGBPosition(2, 1), wxGBSpan(1, 1), 0, 0);
 
-                    oceanRenderModeBoxSizer->Add(oceanRenderModeSizer, 1, wxALL, StaticBoxInsetMargin);
+                    oceanRenderModeBoxSizer->Add(oceanRenderModeSizer, 1, wxALL, StaticBoxInsetMargin2);
                 }
 
                 sizer->Add(
@@ -3490,7 +3491,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     mTextureLandRenderModeRadioButton->SetToolTip(_("Draws the ocean floor using a static image."));
                     mTextureLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnLandRenderModeRadioButtonClick, this);
 
-                    landRenderModeSizer->Add(mTextureLandRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                    landRenderModeSizer->Add(mTextureLandRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
                     mTextureLandComboBox = new wxBitmapComboBox(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxEmptyString,
                         wxDefaultPosition, wxSize(140, -1), wxArrayString(), wxCB_READONLY);
@@ -3509,13 +3510,13 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             OnLiveSettingsChanged();
                         });
 
-                    landRenderModeSizer->Add(mTextureLandComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxALL, 0);
+                    landRenderModeSizer->Add(mTextureLandComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), 0, 0);
 
                     mFlatLandRenderModeRadioButton = new wxRadioButton(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Flat"));
                     mFlatLandRenderModeRadioButton->SetToolTip(_("Draws the ocean floor using a static color."));
                     mFlatLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnLandRenderModeRadioButtonClick, this);
 
-                    landRenderModeSizer->Add(mFlatLandRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                    landRenderModeSizer->Add(mFlatLandRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
                     mFlatLandColorPicker = new wxColourPickerCtrl(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY);
                     mFlatLandColorPicker->SetToolTip(_("Sets the single color of the ocean floor."));
@@ -3532,9 +3533,9 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             OnLiveSettingsChanged();
                         });
 
-                    landRenderModeSizer->Add(mFlatLandColorPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALL, 0);
+                    landRenderModeSizer->Add(mFlatLandColorPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), 0, 0);
 
-                    landRenderModeBoxSizer->Add(landRenderModeSizer, 1, wxALL, StaticBoxInsetMargin);
+                    landRenderModeBoxSizer->Add(landRenderModeSizer, 1, wxALL, StaticBoxInsetMargin2);
                 }
 
                 sizer->Add(
