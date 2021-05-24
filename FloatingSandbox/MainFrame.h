@@ -327,6 +327,9 @@ private:
 
             this->Show(true);
 
+            // TODOTEST
+            this->Layout();
+
             if (StartInFullScreenMode)
                 this->ShowFullScreen(true, wxFULLSCREEN_NOBORDER);
 

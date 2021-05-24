@@ -168,7 +168,7 @@ public:
                 labelStaticText->SetToolTip(toolTipLabel);
 
 #ifdef __WXGTK__
-            vSizer->AddSpacer(3); // Labels falls over slider above it
+            vSizer->AddSpacer(10); // Labels falls over slider above it
 #endif
 
             if (nullptr == warningIcon)

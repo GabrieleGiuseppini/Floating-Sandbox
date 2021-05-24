@@ -535,10 +535,9 @@ Render:
 						X Try with CallAfter
 						- ?
 				= SettingsDialog:
-					- UV Mode
-					= LoadSettings: slightly smaller font
+					= LoadSettings: slightly smaller font - OK!
 					= Slider: label falls over slider above it
-				= ElectricalPanel labels: align vertical
+			- Build as RELEASE
 			- README.md
 				- Requirements: do different by OS
 

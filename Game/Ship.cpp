@@ -220,7 +220,6 @@ void Ship::Update(
     // We run ocean floor collision handling every so often
     int constexpr SeaFloorCollisionPeriod = 2;
     float const seaFloorCollisionDt = gameParameters.MechanicalSimulationStepTimeDuration<float>() * static_cast<float>(SeaFloorCollisionPeriod);
-    assert(0 == (numMechanicalDynamicsIterations % SeaFloorCollisionPeriod));
 
     for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
     {
