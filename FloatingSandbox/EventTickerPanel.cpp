@@ -5,6 +5,9 @@
 ***************************************************************************************/
 #include "EventTickerPanel.h"
 
+// TODOTEST
+#include <GameCore/Log.h>
+
 #include <wx/dcbuffer.h>
 
 #include <cassert>
@@ -353,5 +356,8 @@ void EventTickerPanel::Render(wxDC & dc)
 #else
     int constexpr Y = 0;
 #endif
+
+    LogMessage("TODO: ", leftX, ", ", Y, ":", tickerText.ToStdString());
+
     dc.DrawText(tickerText, leftX, Y);
 }
