@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "StandardSystemPaths.h"
 
+#include <GameCore/SysSpecifics.h>
 #include <GameCore/Version.h>
 
 #include <wx/stdpaths.h>
@@ -24,6 +25,9 @@ std::filesystem::path StandardSystemPaths::GetUserGameRootFolderPath() const
     auto userFolder = wxStandardPaths::Get().GetUserConfigDir();
 
     return std::filesystem::path(userFolder.ToStdString())
+#if FS_IS_OS_LINUX()
+        / ".config"
+#endif
         / ApplicationName; // Without version - we want this to be sticky across upgrades
 }
 
