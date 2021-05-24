@@ -12,6 +12,12 @@
 
 #include <wx/sizer.h>
 
+#if __WXGTK__
+#define DIALOG_WIDTH 840
+#else
+#define DIALOG_WIDTH 780
+#endif
+
 AboutDialog::AboutDialog(wxWindow * parent)
 {
     wxString dialogTitle;
@@ -22,7 +28,7 @@ AboutDialog::AboutDialog(wxWindow * parent)
         wxID_ANY,
         dialogTitle,
         wxDefaultPosition,
-        wxSize(780, 620),
+        wxSize(DIALOG_WIDTH, 620),
         wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxSTAY_ON_TOP);
 
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
@@ -46,7 +52,7 @@ AboutDialog::AboutDialog(wxWindow * parent)
 
     SetSizer(mainSizer);
 
-    Centre(wxCENTER_ON_SCREEN | wxBOTH);
+    Centre(wxBOTH);
 }
 
 AboutDialog::~AboutDialog()

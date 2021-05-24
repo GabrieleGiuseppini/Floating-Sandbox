@@ -70,7 +70,7 @@ StartupTipDialog::StartupTipDialog(
 
     this->SetSizerAndFit(topSizer);
 
-    Centre(wxCENTER_ON_SCREEN | wxBOTH);
+    Centre(wxBOTH);
 }
 
 StartupTipDialog::~StartupTipDialog()
