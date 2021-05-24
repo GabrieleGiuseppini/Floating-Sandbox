@@ -46,6 +46,11 @@ EventTickerPanel::EventTickerPanel(wxWindow* parent)
 
     wxFont font(wxFontInfo(wxSize(TickerFontSize, TickerFontSize)).Family(wxFONTFAMILY_TELETYPE));
     SetFont(font);
+
+    // TODOTEST
+    mCurrentTickerText = "";
+    for (int a = 0; a < TickerTextSize; ++a)
+        mCurrentTickerText.append(1, char('a' + a % 26));
 }
 
 EventTickerPanel::~EventTickerPanel()
@@ -353,16 +358,19 @@ void EventTickerPanel::Render(wxDC & dc)
     int const leftX = -static_cast<int>(mCurrentCharStep);
     wxString tickerText(mCurrentTickerText.data() + TickerTextSize - numberOfCharsForWholeTicker, numberOfCharsForWholeTicker);
 
+    auto const textSize = dc.GetTextExtent(tickerText);
+
     dc.Clear();
 
-#ifdef __WXMSW__
+// TODOTEST
+//#ifdef __WXMSW__
     int constexpr Y = -2; // Better vertically centered
-#else
-    int constexpr Y = 0;
-#endif
+//#else
+    //int constexpr Y = 0;
+//#endif
 
-    LogMessage("TODO: width=", tickerPanelSize.GetWidth(), " mCurrentCharStep=", mCurrentCharStep);
-    LogMessage("TODO: ", leftX, ", ", Y, ":", tickerText.ToStdString());
+    LogMessage("TODO: tickerPanelSize.width=", tickerPanelSize.GetWidth(), " textSize=", textSize.GetWidth());
+    LogMessage("TODO: leftX=", leftX, ":", tickerText.ToStdString());
 
     dc.DrawText(tickerText, leftX, Y);
 }
