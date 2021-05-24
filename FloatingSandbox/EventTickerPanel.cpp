@@ -13,6 +13,7 @@
 static size_t constexpr TickerTextSize = 1024u;
 static int constexpr TickerFontSize = 12; // Not a pixel size
 static unsigned int constexpr TickerCharStep = 1;
+static unsigned int constexpr TickerPanelHeight = 1 + TickerFontSize + 1;
 
 EventTickerPanel::EventTickerPanel(wxWindow* parent)
     : wxPanel(
@@ -24,8 +25,8 @@ EventTickerPanel::EventTickerPanel(wxWindow* parent)
     , mCurrentTickerText(TickerTextSize, ' ')
     , mFutureTickerText()
 {
-    SetMinSize(wxSize(-1, 1 + TickerFontSize + 1));
-    SetMaxSize(wxSize(-1, 1 + TickerFontSize + 1));
+    SetMinSize(wxSize(-1, TickerPanelHeight));
+    SetMaxSize(wxSize(-1, TickerPanelHeight));
 
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
 
@@ -43,8 +44,8 @@ EventTickerPanel::EventTickerPanel(wxWindow* parent)
     wxFont font(wxFontInfo(wxSize(TickerFontSize, TickerFontSize)).Family(wxFONTFAMILY_TELETYPE));
     SetFont(font);
 
-    mCharWidth = GetTextExtent("Z").GetWidth();
-    mCurrentCharWidthStep = mCharWidth; // Initialize
+    mCharSize = GetTextExtent("Z");
+    mCurrentCharWidthStep = mCharSize.GetWidth(); // Initialize
 }
 
 EventTickerPanel::~EventTickerPanel()
@@ -54,7 +55,7 @@ EventTickerPanel::~EventTickerPanel()
 void EventTickerPanel::UpdateSimulation()
 {
     mCurrentCharWidthStep += TickerCharStep;
-    if (mCurrentCharWidthStep >= mCharWidth)
+    if (mCurrentCharWidthStep >= mCharSize.GetWidth())
     {
         mCurrentCharWidthStep = 0;
 
@@ -343,10 +344,11 @@ void EventTickerPanel::AppendFutureTickerText(std::string const & text)
 void EventTickerPanel::Render(wxDC & dc)
 {
     int const tickerPanelWidth = dc.GetSize().GetWidth();
-    int const leftX = tickerPanelWidth + mCharWidth - mCurrentCharWidthStep - (TickerTextSize * mCharWidth);
+    auto const charWidth = mCharSize.GetWidth();
+    int const leftX = tickerPanelWidth + charWidth - mCurrentCharWidthStep - (TickerTextSize * charWidth);
 
     wxString const tickerText(mCurrentTickerText, TickerTextSize);
 
     dc.Clear();
-    dc.DrawText(tickerText, leftX, -2);
+    dc.DrawText(tickerText, leftX, -2 + TickerFontSize + 3 - mCharSize.GetHeight());
 }
