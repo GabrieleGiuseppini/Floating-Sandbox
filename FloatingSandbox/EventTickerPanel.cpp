@@ -345,9 +345,13 @@ void EventTickerPanel::Render(wxDC & dc)
 {
     wxSize const tickerPanelSize = dc.GetSize();
 
-    int const leftX = tickerPanelSize.GetWidth() + TickerFontSize - mCurrentCharStep - (TickerTextSize * TickerFontSize);
+    // TODOTEST
+    ////int const leftX = tickerPanelSize.GetWidth() + TickerFontSize - mCurrentCharStep - (TickerTextSize * TickerFontSize);
+    ////wxString tickerText(mCurrentTickerText, TickerTextSize);
 
-    wxString tickerText(mCurrentTickerText, TickerTextSize);
+    int const numberOfCharsForWholeTicker = (tickerPanelSize.GetWidth() / TickerFontSize) + 1;
+    int const leftX = -static_cast<int>(mCurrentCharStep);
+    wxString tickerText(mCurrentTickerText.data() + TickerTextSize - numberOfCharsForWholeTicker, numberOfCharsForWholeTicker);
 
     dc.Clear();
 
@@ -357,6 +361,7 @@ void EventTickerPanel::Render(wxDC & dc)
     int constexpr Y = 0;
 #endif
 
+    LogMessage("TODO: width=", tickerPanelSize.GetWidth(), " mCurrentCharStep=", mCurrentCharStep);
     LogMessage("TODO: ", leftX, ", ", Y, ":", tickerText.ToStdString());
 
     dc.DrawText(tickerText, leftX, Y);
