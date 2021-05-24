@@ -327,11 +327,14 @@ private:
 
             this->Show(true);
 
-            // TODOTEST
-            this->Layout();
-
             if (StartInFullScreenMode)
                 this->ShowFullScreen(true, wxFULLSCREEN_NOBORDER);
+
+#ifdef __WXGTK__
+            // Make sure the main frame is correctly laid out afterwards
+            this->Layout();
+            mMainApp->Yield();
+#endif
 
             mHasWindowBeenShown = true;
         }

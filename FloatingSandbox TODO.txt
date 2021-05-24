@@ -533,10 +533,11 @@ Render:
 					+ Credits: too narrow
 					= Startup: not centered
 						X Try with CallAfter
-						- ?
+						= Layout + Yield
 				= SettingsDialog:
-					= LoadSettings: slightly smaller font - OK!
-					= Slider: label falls over slider above it
+					- Two "Draw Mode" static boxes under Rendering
+					= Slider: label is not centered at first: wxALIGN_CENTRE_HORIZONTAL
+					- Slider is clipped
 			- Build as RELEASE
 			- README.md
 				- Requirements: do different by OS

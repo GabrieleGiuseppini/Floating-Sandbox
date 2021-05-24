@@ -3360,7 +3360,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     oceanRenderModeSizer->Add(mFlatOceanColorPicker, wxGBPosition(2, 1), wxGBSpan(1, 1), wxALL, 0);
 
-                    oceanRenderModeBoxSizer->Add(oceanRenderModeSizer, 0, wxALL, StaticBoxInsetMargin);
+                    oceanRenderModeBoxSizer->Add(oceanRenderModeSizer, 1, wxALL, StaticBoxInsetMargin);
                 }
 
                 sizer->Add(
@@ -3534,7 +3534,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                     landRenderModeSizer->Add(mFlatLandColorPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALL, 0);
 
-                    landRenderModeBoxSizer->Add(landRenderModeSizer, 0, wxALL, StaticBoxInsetMargin);
+                    landRenderModeBoxSizer->Add(landRenderModeSizer, 1, wxALL, StaticBoxInsetMargin);
                 }
 
                 sizer->Add(
