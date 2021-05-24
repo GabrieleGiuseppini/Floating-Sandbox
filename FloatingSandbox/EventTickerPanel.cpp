@@ -311,14 +311,18 @@ void EventTickerPanel::OnBombExplosion(
 
 void EventTickerPanel::OnPaint(wxPaintEvent & /*event*/)
 {
+#ifdef __WXMSW__
     if (!mBufferedDCBitmap || mBufferedDCBitmap->GetSize() != this->GetSize())
     {
         mBufferedDCBitmap = std::make_unique<wxBitmap>(this->GetSize());
     }
 
-    wxBufferedPaintDC bufDc(this, *mBufferedDCBitmap);
+    wxBufferedPaintDC dc(this, *mBufferedDCBitmap);
+#else
+    wxPaintDC dc(this);
+#endif
 
-    Render(bufDc);
+    Render(dc);
 }
 
 void EventTickerPanel::OnEraseBackground(wxPaintEvent & /*event*/)
