@@ -144,6 +144,7 @@ private:
 
     // App
     void OnPostInitializeTrigger(wxTimerEvent & event);
+    void OnPostInitializeIdle(wxIdleEvent & event);
     void OnMainFrameClose(wxCloseEvent & event);
     void OnQuit(wxCommandEvent & event);
     void OnGameTimerTrigger(wxTimerEvent & event);

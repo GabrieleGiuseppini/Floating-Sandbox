@@ -691,7 +691,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
 
             boxSizer->Add(
                 mUltraViolentToggleButton,
-                0,
+                1,
                 wxALL | wxALIGN_CENTER_HORIZONTAL,
                 StaticBoxInsetMargin);
         }
@@ -4357,7 +4357,9 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
                 mPersistedSettingsListCtrl->AppendColumn(
                     wxEmptyString,
                     wxLIST_FORMAT_LEFT,
-                    wxLIST_AUTOSIZE_USEHEADER);
+                    // TODOTEST
+                    //wxLIST_AUTOSIZE_USEHEADER);
+                    mPersistedSettingsListCtrl->GetSize().GetWidth() - 10);
 
                 for (size_t p = 0; p < mPersistedSettings.size(); ++p)
                 {

@@ -159,7 +159,7 @@ void SplashScreenDialog::UpdateProgress(
 
 void SplashScreenDialog::OnPaint(wxPaintEvent & event)
 {
-    LogMessage("SplashScreenDialog::OnPaint()");
+    //// LogMessage("SplashScreenDialog::OnPaint()");
 
     event.Skip();
 }
