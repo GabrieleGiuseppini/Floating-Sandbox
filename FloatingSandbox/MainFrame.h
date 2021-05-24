@@ -308,6 +308,8 @@ private:
 
 private:
 
+    void RunGameIteration();
+
     void MakeOpenGLContextCurrent()
     {
         LogMessage("MainFrame::MakeOpenGLContextCurrent()");
