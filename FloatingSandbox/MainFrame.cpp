@@ -2082,9 +2082,6 @@ void MainFrame::RunGameIteration()
                 mMainGLCanvas->ClearBackground();
             }
 
-            // TODOTEST
-            LogMessage("Opening StartupTipDialog, this size is: ", this->GetSize().GetWidth(), " x ", this->GetSize().GetHeight());
-
             StartupTipDialog startupTipDialog(
                 this,
                 mUIPreferencesManager,

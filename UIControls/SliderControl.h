@@ -162,14 +162,10 @@ public:
         //
 
         {
-            wxStaticText * labelStaticText = new wxStaticText(this, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, 0);
+            wxStaticText * labelStaticText = new wxStaticText(this, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
 
             if (!toolTipLabel.IsEmpty())
                 labelStaticText->SetToolTip(toolTipLabel);
-
-#ifdef __WXGTK__
-            vSizer->AddSpacer(10); // Labels falls over slider above it
-#endif
 
             if (nullptr == warningIcon)
             {
