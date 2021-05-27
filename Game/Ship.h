@@ -405,7 +405,8 @@ private:
     void ApplyQueuedInteractionForces();
 
     void ApplyWorldForces(
-        Storm::Parameters const & stormParameters,
+        float effectiveAirDensity,
+        float effectiveWaterDensity,
         GameParameters const & gameParameters,
         Geometry::AABBSet & aabbSet);
 
@@ -424,12 +425,13 @@ private:
         Geometry::AABBSet & aabbSet);
 
     void ApplyHydrostaticPressureForces(
-        float forceMultiplier,
+        float effectiveAirDensity,
+        float effectiveWaterDensity,
         GameParameters const & gameParameters);
 
     void ApplySpringsForces_BySprings(GameParameters const & gameParameters);
 
-    void IntegrateAndResetSpringForces(GameParameters const & gameParameters);
+    void IntegrateAndResetDynamicForces(GameParameters const & gameParameters);
 
     void HandleCollisionsWithSeaFloor(
         float dt,

@@ -531,8 +531,8 @@ public:
         , mPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mFactoryPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
-        , mSpringForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
-        , mNonSpringForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mDynamicForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mStaticForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mAugmentedMaterialMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMaterialBuoyancyVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -972,58 +972,60 @@ public:
         mVelocityBuffer[pointElementIndex] = velocity;
     }
 
-    vec2f const & GetSpringForce(ElementIndex pointElementIndex) const noexcept
+    vec2f const & GetDynamicForce(ElementIndex pointElementIndex) const noexcept
     {
-        return mSpringForceBuffer[pointElementIndex];
+        return mDynamicForceBuffer[pointElementIndex];
     }
 
-    vec2f & GetSpringForce(ElementIndex pointElementIndex) noexcept
+    float * GetDynamicForceBufferAsFloat()
     {
-        return mSpringForceBuffer[pointElementIndex];
+        return reinterpret_cast<float *>(mDynamicForceBuffer.data());
     }
 
-    float * GetSpringForceBufferAsFloat()
+    vec2f * GetDynamicForceBufferAsVec2()
     {
-        return reinterpret_cast<float *>(mSpringForceBuffer.data());
+        return mDynamicForceBuffer.data();
     }
 
-    vec2f * GetSpringForceBufferAsVec2()
-    {
-        return mSpringForceBuffer.data();
-    }
-
-    vec2f const & GetNonSpringForce(ElementIndex pointElementIndex) const noexcept
-    {
-        return mNonSpringForceBuffer[pointElementIndex];
-    }
-
-    float * GetNonSpringForceBufferAsFloat()
-    {
-        return reinterpret_cast<float *>(mNonSpringForceBuffer.data());
-    }
-
-    vec2f * GetNonSpringForceBufferAsVec2()
-    {
-        return mNonSpringForceBuffer.data();
-    }
-
-    void SetNonSpringForce(
+    void AddDynamicForce(
         ElementIndex pointElementIndex,
         vec2f const & force) noexcept
     {
-        mNonSpringForceBuffer[pointElementIndex] = force;
+        mDynamicForceBuffer[pointElementIndex] += force;
     }
 
-    void AddNonSpringForce(
+    vec2f const & GetStaticForce(ElementIndex pointElementIndex) const noexcept
+    {
+        return mStaticForceBuffer[pointElementIndex];
+    }
+
+    float * GetStaticForceBufferAsFloat()
+    {
+        return reinterpret_cast<float *>(mStaticForceBuffer.data());
+    }
+
+    vec2f * GetStaticForceBufferAsVec2()
+    {
+        return mStaticForceBuffer.data();
+    }
+
+    void SetStaticForce(
         ElementIndex pointElementIndex,
         vec2f const & force) noexcept
     {
-        mNonSpringForceBuffer[pointElementIndex] += force;
+        mStaticForceBuffer[pointElementIndex] = force;
     }
 
-    void ResetNonSpringForces()
+    void AddStaticForce(
+        ElementIndex pointElementIndex,
+        vec2f const & force) noexcept
     {
-        mNonSpringForceBuffer.fill(vec2f::zero());
+        mStaticForceBuffer[pointElementIndex] += force;
+    }
+
+    void ResetStaticForces()
+    {
+        mStaticForceBuffer.fill(vec2f::zero());
     }
 
     float GetAugmentedMaterialMass(ElementIndex pointElementIndex) const
@@ -1897,8 +1899,8 @@ private:
     Buffer<vec2f> mPositionBuffer;
     Buffer<vec2f> mFactoryPositionBuffer;
     Buffer<vec2f> mVelocityBuffer;
-    Buffer<vec2f> mSpringForceBuffer;
-    Buffer<vec2f> mNonSpringForceBuffer;
+    Buffer<vec2f> mDynamicForceBuffer; // Forces that vary across the multiple mechanical iterations (i.e. spring, hydrostatic surface pressure)
+    Buffer<vec2f> mStaticForceBuffer; // Forces that never change across the multiple mechanical iterations (all other forces)
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
     Buffer<float> mMassBuffer; // Augmented + Water
     Buffer<float> mMaterialBuoyancyVolumeFillBuffer;

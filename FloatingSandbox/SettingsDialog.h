@@ -76,6 +76,7 @@ private:
     SliderControl<float> * mWaterDensitySlider;
     SliderControl<float> * mWaterFrictionDragSlider;
     SliderControl<float> * mWaterPressureDragSlider;
+    SliderControl<float> * mHydrostaticPressureAdjustmentSlider;
     SliderControl<float> * mWaterIntakeSlider;
     SliderControl<float> * mWaterCrazynessSlider;
     SliderControl<float> * mWaterDiffusionSpeedSlider;

@@ -1852,14 +1852,14 @@ Render:
 									+ Due to sorting at ShipRenderContext
 									+ ShipOverlays does the sorting before giving to ShipRenderContext
 						+ Move and Rotate interactions: should zero-out non-spring forces as well? Otherwise yet-to-integrate forces might generate torques after rotation
-				- Theory: this might happen because the force is calculated once on a certain position configuration, and then integrated multiple times during the
+				= Theory: this might happen because the force is calculated once on a certain position configuration, and then integrated multiple times during the
 				  spring iteration loop, with particles changing positions - and likely getting in a configuration that causes torque
 					+ Solution: last spring iteration step calls ApplyHydrostaticPressureForces() before Integrate()
 					+ ApplyHydrostaticPressureForces: simply adds forces to NonSpringForces
-					- See if applying forces _before_ spring relaxation (i.e. at iteration 0) is better
-						- For a test, populate SpringForces
-						- If works:
-							- Rename Spring and NonSpring forces: DynamicForces and StaticForces
+					= See if applying forces _before_ spring relaxation (i.e. at iteration 0) is better
+						+ For a test, populate SpringForces
+						= If works:
+							= Rename Spring and NonSpring forces: DynamicForces and StaticForces
 					= See if Red October also gets torque
 						+ Screenshot taken WITHOUT at -839m
 					- Cleanup:
@@ -1876,11 +1876,9 @@ Render:
 		- Plan B: same, but considering internal pressure
 			- Needs "Internal Pressure (*)" first
 		- Finalization:						
-			- GameParameters settings:
-				- 1: Enable/disable hydrostatic pressure simulation
-				- 2: Adjustment (or just adjustment, and == 0 disables simulation)
-				- 3: Advanced render: draw centers
-				- SettingsDialog
+			= GameParameters settings:
+				= 1: Adjustment (or just adjustment, and == 0 disables simulation)
+					+ SettingsDialog
 
 	- Stars with database
 		- python script to generate binary maps for N and S emispheres
