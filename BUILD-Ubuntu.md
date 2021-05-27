@@ -228,7 +228,7 @@ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=
 make install
 ```
 ### Running
-At this moment you should have the game neatly packaged and laid out under your `~/floating-sandbox` directory:
+At this moment you should have the game neatly laid out under your `~/floating-sandbox` directory:
 ```
 gg@ubuntu1804-vm:~$ ll ~/floating-sandbox/
 total 183572

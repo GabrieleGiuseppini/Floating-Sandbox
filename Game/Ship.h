@@ -415,13 +415,17 @@ private:
         Buffer<float> & newCachedPointDepths,
         GameParameters const & gameParameters);
 
-    template<bool DoDisplaceWater, bool DoHydrostaticPressure>
+    template<bool DoDisplaceWater>
     void ApplyWorldSurfaceForces(
         float effectiveAirDensity,
         float effectiveWaterDensity,
         Buffer<float> & newCachedPointDepths,
         GameParameters const & gameParameters,
         Geometry::AABBSet & aabbSet);
+
+    void ApplyHydrostaticPressureForces(
+        float forceMultiplier,
+        GameParameters const & gameParameters);
 
     void ApplySpringsForces_BySprings(GameParameters const & gameParameters);
 
