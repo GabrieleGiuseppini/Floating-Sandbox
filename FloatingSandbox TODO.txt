@@ -531,7 +531,27 @@ Render:
 			= Misc issues:
 				- Slider control is clipped
 				- MouseMove's are delayed and/or skipped
-			- Build as RELEASE
+			- Check ldd which other libs should be statically linked
+					libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007f2447085000)
+					libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007f2446e66000)
+					libatomic.so.1 => /usr/lib/x86_64-linux-gnu/libatomic.so.1 (0x00007f2446c5e000)
+
+					libopenal.so.1 => /usr/lib/x86_64-linux-gnu/libopenal.so.1 (0x00007f24469bf000)
+					libvorbisfile.so.3 => /usr/lib/x86_64-linux-gnu/libvorbisfile.so.3 (0x00007f24467b7000)
+					libvorbisenc.so.2 => /usr/lib/x86_64-linux-gnu/libvorbisenc.so.2 (0x00007f244650e000)
+					libvorbis.so.0 => /usr/lib/x86_64-linux-gnu/libvorbis.so.0 (0x00007f24462e3000)
+					libogg.so.0 => /usr/lib/x86_64-linux-gnu/libogg.so.0 (0x00007f24460da000)
+					libFLAC.so.8 => /usr/lib/x86_64-linux-gnu/libFLAC.so.8 (0x00007f2445e63000)
+
+					- Vorbis for example comes as both .so and .a; see https://stackoverflow.com/questions/28536435/how-to-link-a-static-library-to-an-executable-using-cmake
+					  and https://stackoverflow.com/questions/5604061/making-gcc-prefer-static-libs-to-shared-objects-when-linking and
+					  https://gcc.gnu.org/onlinedocs/gcc/Link-Options.html ("If both static and shared libraries are found, the linker gives preference to linking with the shared library unless the -static option is used.")
+
+				- gcc libs?
+				- vorbis, flac					
+				- ...
+			= Build as RELEASE
+				- See if have to set _DEBUG in CMake also for Linux, so it appears in BuildInfo
 			- README.md
 				- Requirements: do different by OS
 
@@ -625,6 +645,7 @@ Render:
 						- B) Just SWE
 				- Option B: by point visit; all points in tiny band from depth 0, receive force...same as above....
 
+		- See if also on Windows "High Quality Rendering" of water is faster than normal
 		- See issue with ocean texture shading: texture coords change depending on cam: repro with pause and high zoom
 		
 		- Test optimization: ApplyWorldSurfaceForces: only consider *external* frontiers
@@ -1833,8 +1854,18 @@ Render:
 						+ Move and Rotate interactions: should zero-out non-spring forces as well? Otherwise yet-to-integrate forces might generate torques after rotation
 				- Theory: this might happen because the force is calculated once on a certain position configuration, and then integrated multiple times during the
 				  spring iteration loop, with particles changing positions - and likely getting in a configuration that causes torque
-					- Solution: last spring iteration step calls ApplyHydrostaticPressureForces() before Integrate()
-					- ApplyHydrostaticPressureForces: simply adds forces to NonSpringForces
+					+ Solution: last spring iteration step calls ApplyHydrostaticPressureForces() before Integrate()
+					+ ApplyHydrostaticPressureForces: simply adds forces to NonSpringForces
+					- See if applying forces _before_ spring relaxation (i.e. at iteration 0) is better
+						- For a test, populate SpringForces
+						- If works:
+							- Rename Spring and NonSpring forces: DynamicForces and StaticForces
+					= See if Red October also gets torque
+						+ Screenshot taken WITHOUT at -839m
+					- Cleanup:
+						- Associate AABB with frontier (Frontier->AABB)
+							- At calculatation time: populates a frontier member
+							- Then adds that member const & to AABBSet
 				= If so: experiment with contrary torque
 					+ Calculate normals with pre-and-post edges, and scale force magnitudes with edge lengths
 						! Lowers ghost forces and torques
@@ -1850,7 +1881,6 @@ Render:
 				- 2: Adjustment (or just adjustment, and == 0 disables simulation)
 				- 3: Advanced render: draw centers
 				- SettingsDialog
-			- Center rendering: see if can make centers stick when paused
 
 	- Stars with database
 		- python script to generate binary maps for N and S emispheres

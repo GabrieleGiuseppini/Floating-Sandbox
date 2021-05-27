@@ -230,6 +230,19 @@ void Ship::Update(
 
         // - SpringForces = fs
 
+        if (iter == numMechanicalDynamicsIterations - 1)
+        {
+            // Last step: apply hydrostatic pressure forces, times N (mechanical dynamics iterations)
+            // to account for integration happening only once for 1 mechanical dynamics iteration
+            //
+            // Output: adds to non-spring forces
+            ApplyHydrostaticPressureForces(
+                // TODOTEST
+                //gameParameters.NumMechanicalDynamicsIterations<float>(),
+                1.0f,
+                gameParameters);
+        }
+
         // Integrate spring and non-spring forces,
         // and reset spring forces
         IntegrateAndResetSpringForces(gameParameters);
@@ -828,9 +841,9 @@ void Ship::ApplyWorldForces(
     //
 
     if (gameParameters.DoDisplaceWater)
-        ApplyWorldSurfaceForces<true, true>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters, aabbSet);
+        ApplyWorldSurfaceForces<true>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters, aabbSet);
     else
-        ApplyWorldSurfaceForces<false, true>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters, aabbSet);
+        ApplyWorldSurfaceForces<false>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters, aabbSet);
 
     // Commit new particle depth buffer
     mPoints.SwapCachedDepthBuffer(*newCachedPointDepths);
@@ -935,7 +948,7 @@ void Ship::ApplyWorldParticleForces(
     }
 }
 
-template<bool DoDisplaceWater, bool DoHydrostaticPressure>
+template<bool DoDisplaceWater>
 void Ship::ApplyWorldSurfaceForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
@@ -979,63 +992,23 @@ void Ship::ApplyWorldSurfaceForces(
     float const wdmQuadraticB = 2.0f * wdmY0 / wdmX0 - wdmLinearSlope;
 
     //
-    // Visit all frontiers
+    // Visit all frontiers and apply surface forces
     //
 
     for (FrontierId frontierId : mFrontiers.GetFrontierIds())
     {
+        // Initialize AABB
+        Geometry::AABB aabb;
+
+        //
+        // Visit all edges of this frontier
+        //
+
         auto const & frontier = mFrontiers.GetFrontier(frontierId);
 
         assert(frontier.Size >= 3);
 
         ElementIndex const startEdgeIndex = frontier.StartingEdgeIndex;
-
-        //
-        // 1. If we're doing hydrostatic pressure, calculate geometric center
-        //
-
-        vec2f geometricCenterPosition = vec2f::zero();
-        float frontierHydrostaticPressureDepth = 0.0f;
-
-        if constexpr (DoHydrostaticPressure)
-        {
-            for (ElementIndex edgeIndex = startEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
-            {
-                auto const & frontierEdge = mFrontiers.GetFrontierEdge(edgeIndex);
-
-                geometricCenterPosition += mPoints.GetPosition(frontierEdge.PointAIndex);
-
-                edgeIndex = frontierEdge.NextEdgeIndex;
-                if (edgeIndex == startEdgeIndex)
-                    break;
-            }
-
-            geometricCenterPosition /= static_cast<float>(frontier.Size);
-
-            // Use the depth at this position as the representative depth for the entire frontier
-            // TODO: comment about this removing buoyancy
-            frontierHydrostaticPressureDepth = mParentWorld.GetDepth(geometricCenterPosition);
-
-            // TODOTEST: new setting for this
-            mOverlays.AddCenter(
-                mPoints.GetPlaneId(mFrontiers.GetFrontierEdge(startEdgeIndex).PointAIndex),
-                geometricCenterPosition);
-        }
-
-        //
-        // 2. Apply surface forces
-        //
-
-        // Initialize AABB
-        Geometry::AABB aabb;
-
-        // Initialize resultant hydrostatic pressure forces
-        vec2f resultantHydrostaticPressureForce = vec2f::zero();
-        float resultantHydrostaticPressureTorque = 0.0f;
-
-        //
-        // Visit all edges of this frontier
-        //
 
         // Take previous point
         auto const & previousFrontierEdge = mFrontiers.GetFrontierEdge(startEdgeIndex);
@@ -1199,62 +1172,6 @@ void Ship::ApplyWorldSurfaceForces(
             }
 
             //
-            // Hydrostatic pressure
-            //
-
-            if constexpr (DoHydrostaticPressure)
-            {
-                // TODOHERE: optimize with constants
-                // TODO: use (to-be-added) adjustment setting
-                float const externalPressure =
-                    std::max(frontierHydrostaticPressureDepth, 0.0f)
-
-                    * GameParameters::GravityMagnitude
-                    * GameParameters::WaterMass
-                    * gameParameters.WaterDensityAdjustment;
-
-                /* TODOTEST: new way for normals
-                // Calculate force - opposite to normal (i.e. pointing inside)
-                vec2f const hydrostaticPressureForce = -surfaceNormal * externalPressure;
-
-                // Apply hydrostatic pressure
-                // TODOTEST
-                //mPoints.AddNonSpringForce(thisPointIndex, hydrostaticPressureForce);
-                mPoints.SetNonSpringForce(thisPointIndex, hydrostaticPressureForce);
-
-                // Update resultant force
-                resultantHydrostaticPressureForce += hydrostaticPressureForce;
-
-                // Update resultant torque
-                resultantHydrostaticPressureTorque += (thisPointPosition - geometricCenterPosition).cross(hydrostaticPressureForce);
-                */
-
-                vec2f const previousEdgeNormal = (thisPointPosition - previousPointPosition).normalise().to_perpendicular();
-                vec2f const previousEdgeHydrostaticPressureForceOnThisPoint =
-                    -previousEdgeNormal
-                    * externalPressure * (thisPointPosition - previousPointPosition).length()
-                    / 2.0f;
-
-                vec2f const nextEdgeNormal = (nextPointPosition - thisPointPosition).normalise().to_perpendicular();
-                vec2f const nextEdgeHydrostaticPressureForceOnThisPoint =
-                    -nextEdgeNormal
-                    * externalPressure * (nextPointPosition - thisPointPosition).length()
-                    / 2.0f;
-
-                vec2f const totalHydrostaticPressureForceOnThisPoint =
-                    previousEdgeHydrostaticPressureForceOnThisPoint
-                    + nextEdgeHydrostaticPressureForceOnThisPoint;
-
-                ////LogMessage("@", thisPointIndex, ": ", previousEdgeNormal.toString(), " -> ", previousEdgeHydrostaticPressureForceOnThisPoint.toString(),
-                ////    "   ", nextEdgeNormal.toString(), " -> ", nextEdgeHydrostaticPressureForceOnThisPoint.toString(), " == ",
-                ////    totalHydrostaticPressureForceOnThisPoint.toString());
-
-                mPoints.SetNonSpringForce(thisPointIndex, totalHydrostaticPressureForceOnThisPoint);
-                resultantHydrostaticPressureForce += totalHydrostaticPressureForceOnThisPoint;
-                resultantHydrostaticPressureTorque += (thisPointPosition - geometricCenterPosition).cross(totalHydrostaticPressureForceOnThisPoint);
-            }
-
-            //
             // Advance edge in the frontier visit
             //
 
@@ -1271,85 +1188,93 @@ void Ship::ApplyWorldSurfaceForces(
         assert(visitedPoints == frontier.Size);
 #endif
 
-        /* TODOTEST
-        if constexpr (DoHydrostaticPressure)
-        {
-            //
-            // Given that we calculate buoyancy separately, hydrostatic pressure
-            // needs to be for us a zero-sum force.
-            //
-            // To enforce its zero-sumness, we now apply the opposite (likely non-zero)
-            // sum of forces applied so far. Also, to avoid phantom rotations,
-            // we also apply the opposite of the total torque applied so far.
-            //
-
-            LogMessage(frontierId, ": PRE=", resultantHydrostaticPressureForce, ", ", resultantHydrostaticPressureTorque);
-
-            vec2f const particleZeroingForce = -resultantHydrostaticPressureForce / static_cast<float>(frontier.Size);
-
-
-#ifdef _DEBUG
-            visitedPoints = 0;
-#endif
-
-            {
-                float const particleZeroingTorque = -resultantHydrostaticPressureTorque / static_cast<float>(frontier.Size);
-
-                for (ElementIndex edgeIndex = startEdgeIndex; ;)
-                {
-
-#ifdef _DEBUG
-                    ++visitedPoints;
-#endif
-                    auto const & frontierEdge = mFrontiers.GetFrontierEdge(edgeIndex);
-
-                    ElementIndex const pointIndex = frontierEdge.PointAIndex;
-
-                    // Apply force
-                    //Points.AddNonSpringForce(pointIndex, particleZeroingForce);
-                    //resultantHydrostaticPressureForce += particleZeroingForce;
-
-                    // Apply torque
-                    vec2f const particleZeroingTorqueForce =
-                        (mPoints.GetPosition(pointIndex) - geometricCenterPosition).normalise().to_perpendicular()
-                        * particleZeroingTorque
-                        / (mPoints.GetPosition(pointIndex) - geometricCenterPosition).length();
-                    mPoints.AddNonSpringForce(pointIndex, particleZeroingTorqueForce);
-                    resultantHydrostaticPressureTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(particleZeroingTorqueForce);
-
-                    // Advance
-                    edgeIndex = frontierEdge.NextEdgeIndex;
-                    if (edgeIndex == startEdgeIndex)
-                        break;
-
-                    if (resultantHydrostaticPressureTorque == 0.0f)
-                        break;
-                }
-            }
-
-            LogMessage(frontierId, ": POST=", resultantHydrostaticPressureForce, ", ", resultantHydrostaticPressureTorque);
-
-            // Add last remnant of torque to first point
-            {
-                auto const firstPointIndex = mFrontiers.GetFrontierEdge(startEdgeIndex).PointAIndex;
-
-                vec2f const particleZeroingTorqueForce =
-                    (mPoints.GetPosition(firstPointIndex) - geometricCenterPosition).normalise().to_perpendicular()
-                    * (-resultantHydrostaticPressureTorque)
-                    / (mPoints.GetPosition(firstPointIndex) - geometricCenterPosition).length();
-                mPoints.AddNonSpringForce(firstPointIndex, particleZeroingTorqueForce);
-                resultantHydrostaticPressureTorque += (mPoints.GetPosition(firstPointIndex) - geometricCenterPosition).cross(particleZeroingTorqueForce);
-                LogMessage(frontierId, ": POST2=", resultantHydrostaticPressureForce, ", ", resultantHydrostaticPressureTorque);
-            }
-
-#ifdef _DEBUG
-            assert(visitedPoints == frontier.Size);
-#endif
-        }
-        */
-
         // Store AABB
         aabbSet.Add(std::move(aabb));
+    }
+}
+
+void Ship::ApplyHydrostaticPressureForces(
+    float forceMultiplier,
+    GameParameters const & gameParameters)
+{
+    for (FrontierId const frontierId : mFrontiers.GetFrontierIds())
+    {
+        auto const & frontier = mFrontiers.GetFrontier(frontierId);
+
+        assert(frontier.Size >= 3);
+
+        // TODOHERE
+
+        ElementIndex const startEdgeIndex = frontier.StartingEdgeIndex;
+
+        // Take previous point
+        auto const & startFrontierEdge = mFrontiers.GetFrontierEdge(startEdgeIndex);
+        vec2f previousPointPosition = mPoints.GetPosition(startFrontierEdge.PointAIndex);
+
+        // Take this point
+        auto const & thisFrontierEdge = mFrontiers.GetFrontierEdge(startFrontierEdge.NextEdgeIndex);
+        ElementIndex thisPointIndex = thisFrontierEdge.PointAIndex;
+        vec2f thisPointPosition = mPoints.GetPosition(thisPointIndex);
+
+#ifdef _DEBUG
+        size_t visitedPoints = 0;
+#endif
+
+        ElementIndex const visitStartEdgeIndex = thisFrontierEdge.NextEdgeIndex;
+        for (ElementIndex nextEdgeIndex = visitStartEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
+        {
+
+#ifdef _DEBUG
+            ++visitedPoints;
+#endif
+
+            // Get next edge and point
+            auto const & nextFrontierEdge = mFrontiers.GetFrontierEdge(nextEdgeIndex);
+            ElementIndex const nextPointIndex = nextFrontierEdge.PointAIndex;
+            vec2f const nextPointPosition = mPoints.GetPosition(nextPointIndex);
+
+            // TODOHERE: optimize with constants
+            // TODO: use (to-be-added) adjustment setting
+            // TODO: use center of AABB
+            float const externalPressure =
+                std::max(mPoints.GetCachedDepth(startFrontierEdge.PointAIndex), 0.0f)
+                * GameParameters::GravityMagnitude
+                * GameParameters::WaterMass
+                * gameParameters.WaterDensityAdjustment
+                * forceMultiplier;
+
+            // TODOHERE: optimize by remembering previous normal
+            vec2f const previousEdgeNormal = (thisPointPosition - previousPointPosition).normalise().to_perpendicular();
+            vec2f const previousEdgeHydrostaticPressureForce =
+                -previousEdgeNormal
+                * externalPressure * (thisPointPosition - previousPointPosition).length();
+
+            vec2f const nextEdgeNormal = (nextPointPosition - thisPointPosition).normalise().to_perpendicular();
+            vec2f const nextEdgeHydrostaticPressureForce =
+                -nextEdgeNormal
+                * externalPressure * (nextPointPosition - thisPointPosition).length();
+
+            vec2f const totalHydrostaticPressureForceOnThisPoint =
+                (previousEdgeHydrostaticPressureForce + nextEdgeHydrostaticPressureForce) / 2.0f;
+
+            mPoints.AddNonSpringForce(thisPointIndex, totalHydrostaticPressureForceOnThisPoint);
+
+            //
+             // Advance edge in the frontier visit
+             //
+
+            nextEdgeIndex = nextFrontierEdge.NextEdgeIndex;
+            if (nextEdgeIndex == visitStartEdgeIndex)
+                break;
+
+            previousPointPosition = thisPointPosition;
+            thisPointPosition = nextPointPosition;
+            thisPointIndex = nextPointIndex;
+        }
+
+#ifdef _DEBUG
+        assert(visitedPoints == frontier.Size);
+#endif
     }
 }
 
