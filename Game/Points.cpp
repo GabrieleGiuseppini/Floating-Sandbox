@@ -35,8 +35,8 @@ void Points::Add(
     mPositionBuffer.emplace_back(position);
     mFactoryPositionBuffer.emplace_back(position);
     mVelocityBuffer.emplace_back(vec2f::zero());
-    mSpringForceBuffer.emplace_back(vec2f::zero());
-    mNonSpringForceBuffer.emplace_back(vec2f::zero());
+    mDynamicForceBuffer.emplace_back(vec2f::zero());
+    mStaticForceBuffer.emplace_back(vec2f::zero());
     mAugmentedMaterialMassBuffer.emplace_back(structuralMaterial.GetMass());
     mMassBuffer.emplace_back(structuralMaterial.GetMass());
     mMaterialBuoyancyVolumeFillBuffer.emplace_back(structuralMaterial.BuoyancyVolumeFill);
@@ -141,8 +141,8 @@ void Points::CreateEphemeralParticleAirBubble(
     mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
-    assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
-    mNonSpringForceBuffer[pointIndex] = vec2f::zero();
+    assert(mDynamicForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in dynamic forces (springs + surface pressure)
+    mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = AirBuoyancyVolumeFill;
@@ -217,8 +217,8 @@ void Points::CreateEphemeralParticleDebris(
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
-    mNonSpringForceBuffer[pointIndex] = vec2f::zero();
+    assert(mDynamicForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
+    mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
@@ -303,8 +303,8 @@ void Points::CreateEphemeralParticleSmoke(
     mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
-    assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
-    mNonSpringForceBuffer[pointIndex] = vec2f::zero();
+    assert(mDynamicForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs nor surface pressure
+    mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = SmokeBuoyancyVolumeFill;
@@ -379,8 +379,8 @@ void Points::CreateEphemeralParticleSparkle(
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
-    mNonSpringForceBuffer[pointIndex] = vec2f::zero();
+    assert(mDynamicForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
+    mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
@@ -449,8 +449,8 @@ void Points::CreateEphemeralParticleWakeBubble(
     mMaterialsBuffer[pointIndex] = Materials(&waterStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    assert(mSpringForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs
-    mNonSpringForceBuffer[pointIndex] = vec2f::zero();
+    assert(mDynamicForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
+    mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = waterStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = waterStructuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = waterStructuralMaterial.BuoyancyVolumeFill;
@@ -1306,9 +1306,11 @@ void Points::UpdateEphemeralParticles(
                                     state.NormalizedVortexAngularVelocity * simulationLifetime);
 
                             // Apply vortex to bubble
-                            mNonSpringForceBuffer[pointIndex] += vec2f(
-                                vortexValue,
-                                0.0f);
+                            AddStaticForce(
+                                pointIndex,
+                                vec2f(
+                                    vortexValue,
+                                    0.0f));
 
                             //
                             // Displace ocean surface, if surfacing
@@ -1399,9 +1401,9 @@ void Points::UpdateEphemeralParticles(
                             0.3f * (static_cast<float>(GameRandomEngine::GetInstance().Choose<int>(2)) - 0.5f);
                         vec2f const deviationDirection =
                             GetVelocity(pointIndex).normalise().to_perpendicular();
-                        mNonSpringForceBuffer[pointIndex] +=
-                            deviationDirection * randomWalkMagnitude
-                            * randomWalkVelocityImpulseToForceCoefficient;
+                        AddStaticForce(
+                            pointIndex,
+                            deviationDirection * randomWalkMagnitude * randomWalkVelocityImpulseToForceCoefficient);
                     }
 
                     break;
@@ -1723,10 +1725,10 @@ void Points::UploadVectors(
 
     switch (renderContext.GetVectorFieldRenderMode())
     {
-        case VectorFieldRenderModeType::PointForce:
+        case VectorFieldRenderModeType::PointStaticForce:
         {
             color = vec4f(0.5f, 0.1f, 0.f, 1.0f);
-            vectorBuffer = mNonSpringForceBuffer.data();
+            vectorBuffer = mStaticForceBuffer.data();
             lengthAdjustment = 0.00075f;
 
             break;

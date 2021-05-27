@@ -28,7 +28,7 @@ void Ship::ApplyRadialSpaceWarpForceField(
 
             float const forceStrength = strength * (1.0f - absolutePointDistanceFromRadius / radiusThickness);
 
-            mPoints.AddNonSpringForce(
+            mPoints.AddStaticForce(
                 pointIndex,
                 pointRadius.normalise() * forceStrength * forceDirection);
         }
@@ -49,7 +49,7 @@ void Ship::ApplyImplosionForceField(
         float const massNormalization = mPoints.GetMass(pointIndex) / 50.0f;
 
         // Angular (constant)
-        mPoints.AddNonSpringForce(
+        mPoints.AddStaticForce(
             pointIndex,
             vec2f(-normalizedDisplacement.y, normalizedDisplacement.x)
                 * strength
@@ -57,7 +57,7 @@ void Ship::ApplyImplosionForceField(
                 / 10.0f); // Magic number
 
         // Radial (stronger when closer)
-        mPoints.AddNonSpringForce(
+        mPoints.AddStaticForce(
             pointIndex,
             normalizedDisplacement
                 * strength
@@ -80,7 +80,7 @@ void Ship::ApplyRadialExplosionForceField(
         vec2f displacement = (mPoints.GetPosition(pointIndex) - centerPosition);
         float forceMagnitude = strength / sqrtf(0.1f + displacement.length());
 
-        mPoints.AddNonSpringForce(
+        mPoints.AddStaticForce(
             pointIndex,
             displacement.normalise() * forceMagnitude);
     }

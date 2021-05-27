@@ -106,7 +106,7 @@ void Ship::MoveBy(
                     mPoints.SetVelocity(p, actualInertialVelocity);
                 }
 
-                mPoints.SetNonSpringForce(p, vec2f::zero());
+                mPoints.SetStaticForce(p, vec2f::zero()); // Zero-out already-existing force
             }
         }
 
@@ -126,13 +126,13 @@ void Ship::MoveBy(
 
     vec2f * const restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
-    vec2f * const restrict nonSpringForceBuffer = mPoints.GetNonSpringForceBufferAsVec2();
+    vec2f * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsVec2();
 
     for (auto const p : mPoints.BufferElements())
     {
         positionBuffer[p] += offset;
         velocityBuffer[p] = actualInertialVelocity;
-        nonSpringForceBuffer[p] = vec2f::zero();
+        staticForceBuffer[p] = vec2f::zero();
     }
 
     TrimForWorldBounds(gameParameters);
@@ -176,7 +176,7 @@ void Ship::RotateBy(
                         (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude);
                 }
 
-                mPoints.SetNonSpringForce(p, vec2f::zero());
+                mPoints.SetStaticForce(p, vec2f::zero()); // Zero-out already-existing force
             }
         }
 
@@ -202,7 +202,7 @@ void Ship::RotateBy(
 
     vec2f * const restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
-    vec2f * const restrict nonSpringForceBuffer = mPoints.GetNonSpringForceBufferAsVec2();
+    vec2f * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsVec2();
 
     for (auto const p : mPoints.BufferElements())
     {
@@ -211,7 +211,7 @@ void Ship::RotateBy(
         positionBuffer[p] = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
         velocityBuffer[p] =
             (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
-        nonSpringForceBuffer[p] = vec2f::zero();
+        staticForceBuffer[p] = vec2f::zero();
     }
 
     TrimForWorldBounds(gameParameters);
@@ -309,7 +309,7 @@ void Ship::Pull(Interaction::ArgumentsUnion::PullArguments const & args)
     float const displacementLength = displacement.length();
     vec2f const dir = displacement.normalise(displacementLength);
 
-    mPoints.AddNonSpringForce(
+    mPoints.AddStaticForce(
         args.PointIndex,
         dir * (displacementLength * args.Stiffness));
 
@@ -662,11 +662,10 @@ void Ship::ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args
             //
             // Apply blast force
             //
-            // (inversely proportional to distance,
-            // not second power as one would expect though)
+            // (inversely proportional to distance, not second power as one would expect though)
             //
 
-            mPoints.AddNonSpringForce(
+            mPoints.AddStaticForce(
                 pointIndex,
                 pointRadius.normalise(pointRadiusLength) / std::max(pointRadiusLength, 1.0f) * args.Magnitude);
         }
@@ -702,7 +701,7 @@ void Ship::DrawTo(Interaction::ArgumentsUnion::DrawArguments const & args)
         vec2f displacement = (args.CenterPos - mPoints.GetPosition(pointIndex));
         float forceMagnitude = args.Strength / sqrtf(0.1f + displacement.length());
 
-        mPoints.AddNonSpringForce(
+        mPoints.AddStaticForce(
             pointIndex,
             displacement.normalise() * forceMagnitude);
     }
@@ -738,7 +737,7 @@ void Ship::SwirlAt(Interaction::ArgumentsUnion::SwirlArguments const & args)
         float const displacementLength = displacement.length();
         float forceMagnitude = args.Strength / sqrtf(0.1f + displacementLength);
 
-        mPoints.AddNonSpringForce(
+        mPoints.AddStaticForce(
             pointIndex,
             vec2f(-displacement.y, displacement.x) * forceMagnitude);
     }

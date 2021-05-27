@@ -316,6 +316,11 @@ public:
     float GetMinWaterPressureDragAdjustment() const override { return GameParameters::MinWaterPressureDragAdjustment; }
     float GetMaxWaterPressureDragAdjustment() const override { return GameParameters::MaxWaterPressureDragAdjustment; }
 
+    float GetHydrostaticPressureAdjustment() const override { return mGameParameters.HydrostaticPressureAdjustment; }
+    void SetHydrostaticPressureAdjustment(float value) override { mGameParameters.HydrostaticPressureAdjustment = value; }
+    float GetMinHydrostaticPressureAdjustment() const override { return GameParameters::MinHydrostaticPressureAdjustment; }
+    float GetMaxHydrostaticPressureAdjustment() const override { return GameParameters::MaxHydrostaticPressureAdjustment; }
+
     float GetWaterIntakeAdjustment() const override { return mGameParameters.WaterIntakeAdjustment; }
     void SetWaterIntakeAdjustment(float value) override { mGameParameters.WaterIntakeAdjustment = value; }
     float GetMinWaterIntakeAdjustment() const override { return GameParameters::MinWaterIntakeAdjustment; }

@@ -203,6 +203,25 @@ void Ship::Update(
         gameParameters);
 
     ///////////////////////////////////////////////////////////////////
+    // Calculate some widely-used physical constants
+    ///////////////////////////////////////////////////////////////////
+
+    float const effectiveAirTemperature =
+        gameParameters.AirTemperature
+        + stormParameters.AirTemperatureDelta;
+
+    // Density of air, adjusted for temperature
+    float const effectiveAirDensity =
+        GameParameters::AirMass
+        / (1.0f + GameParameters::AirThermalExpansionCoefficient * (effectiveAirTemperature - GameParameters::Temperature0));
+
+    // Density of water, adjusted for temperature and manual adjustment
+    float const effectiveWaterDensity =
+        GameParameters::WaterMass
+        / (1.0f + GameParameters::WaterThermalExpansionCoefficient * (gameParameters.WaterTemperature - GameParameters::Temperature0))
+        * gameParameters.WaterDensityAdjustment;
+
+    ///////////////////////////////////////////////////////////////////
     // Recalculate current masses and everything else that derives from them
     ///////////////////////////////////////////////////////////////////
 
@@ -211,8 +230,8 @@ void Ship::Update(
     mPoints.UpdateMasses(gameParameters);
 
     ///////////////////////////////////////////////////////////////////
-    // Run spring relaxation iterations, together with integration
-    // and ocean floor collision handling
+    // Run spring relaxation iterations and hydrostatic pressure,
+    // together with integration and ocean floor collision handling
     ///////////////////////////////////////////////////////////////////
 
     int const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<int>();
@@ -223,31 +242,29 @@ void Ship::Update(
 
     for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
     {
-        // - SpringForces = 0
+        // - DynamicForces = 0
 
         // Apply spring forces
         ApplySpringsForces_BySprings(gameParameters);
 
-        // - SpringForces = fs
+        // - DynamicForces = fs
 
         if (iter == numMechanicalDynamicsIterations - 1)
         {
-            // Last step: apply hydrostatic pressure forces, times N (mechanical dynamics iterations)
-            // to account for integration happening only once for 1 mechanical dynamics iteration
-            //
-            // Output: adds to non-spring forces
+            // Last step: apply hydrostatic pressure forces
             ApplyHydrostaticPressureForces(
-                // TODOTEST
-                //gameParameters.NumMechanicalDynamicsIterations<float>(),
-                1.0f,
+                effectiveAirDensity,
+                effectiveWaterDensity,
                 gameParameters);
+
+            // - DynamicForces = fs + hp
         }
 
-        // Integrate spring and non-spring forces,
-        // and reset spring forces
-        IntegrateAndResetSpringForces(gameParameters);
+        // Integrate dynamic and static forces,
+        // and reset dynamic forces
+        IntegrateAndResetDynamicForces(gameParameters);
 
-        // - SpringForces = 0
+        // - DynamicForces = 0
 
         if ((iter % SeaFloorCollisionPeriod) == SeaFloorCollisionPeriod - 1)
         {
@@ -274,17 +291,15 @@ void Ship::Update(
 
     ///////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////
-    // From now on, we only work with forces and never update positions
+    // From now on, we only work with (static) forces and never update positions
     ///////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////
 
     ///////////////////////////////////////////////////////////////////
-    // Reset non-spring forces, now that we have integrated them
+    // Reset static forces, now that we have integrated them
     ///////////////////////////////////////////////////////////////////
 
-    // Zero-out non-spring forces
-    // - We do this for the next step
-    mPoints.ResetNonSpringForces();
+    mPoints.ResetStaticForces();
 
     ///////////////////////////////////////////////////////////////////
     // Apply interaction forces that have been queued before this
@@ -300,7 +315,8 @@ void Ship::Update(
     ///////////////////////////////////////////////////////////////////
 
     ApplyWorldForces(
-        stormParameters,
+        effectiveAirDensity,
+        effectiveWaterDensity,
         gameParameters,
         aabbSet);
 
@@ -425,7 +441,7 @@ void Ship::Update(
     //
     // 3. Update sinks
     //
-    // - Applies NonSpring force, will be integrated at next loop
+    // - Applies static forces, will be integrated at next loop
     //
 
     mElectricalElements.UpdateSinks(
@@ -808,25 +824,11 @@ void Ship::ApplyQueuedInteractionForces()
 }
 
 void Ship::ApplyWorldForces(
-    Storm::Parameters const & stormParameters,
+    float effectiveAirDensity,
+    float effectiveWaterDensity,
     GameParameters const & gameParameters,
     Geometry::AABBSet & aabbSet)
 {
-    float const effectiveAirTemperature =
-        gameParameters.AirTemperature
-        + stormParameters.AirTemperatureDelta;
-
-    // Density of air, adjusted for temperature
-    float const effectiveAirDensity =
-        GameParameters::AirMass
-        / (1.0f + GameParameters::AirThermalExpansionCoefficient * (effectiveAirTemperature - GameParameters::Temperature0));
-
-    // Density of water, adjusted for temperature and manual adjustment
-    float const effectiveWaterDensity =
-        GameParameters::WaterMass
-        / (1.0f + GameParameters::WaterThermalExpansionCoefficient * (gameParameters.WaterTemperature - GameParameters::Temperature0))
-        * gameParameters.WaterDensityAdjustment;
-
     // New buffer to which new cached depths will be written to
     std::shared_ptr<Buffer<float>> newCachedPointDepths = mPoints.AllocateWorkBufferFloat();
 
@@ -875,11 +877,11 @@ void Ship::ApplyWorldParticleForces(
         * gameParameters.WaterFrictionDragAdjustment;
 
     float * const restrict newCachedPointDepthsBuffer = newCachedPointDepths.data();
-    vec2f * const restrict nonSpringForcesBuffer = mPoints.GetNonSpringForceBufferAsVec2();
+    vec2f * const restrict staticForcesBuffer = mPoints.GetStaticForceBufferAsVec2();
 
     for (auto pointIndex : mPoints.BufferElements())
     {
-        vec2f nonSpringForce = vec2f::zero();
+        vec2f staticForce = vec2f::zero();
 
         //
         // Calculate and store depth
@@ -901,7 +903,7 @@ void Ship::ApplyWorldParticleForces(
         // Apply gravity
         //
 
-        nonSpringForce +=
+        staticForce +=
             gameParameters.Gravity
             * mPoints.GetMass(pointIndex); // Material + Augmentation + Water
 
@@ -916,7 +918,7 @@ void Ship::ApplyWorldParticleForces(
             + buoyancyCoefficients.Coefficient2 * mPoints.GetTemperature(pointIndex);
 
         // Apply buoyancy
-        nonSpringForce.y +=
+        staticForce.y +=
             buoyancyPush
             * Mix(effectiveAirDensity, effectiveWaterDensity, uwCoefficient);
 
@@ -930,7 +932,7 @@ void Ship::ApplyWorldParticleForces(
         // hence we don't care here about capping the force to prevent overcoming accelerations.
         //
 
-        nonSpringForce +=
+        staticForce +=
             -mPoints.GetVelocity(pointIndex)
             * Mix(airFrictionDragCoefficient, waterFrictionDragCoefficient, uwCoefficient);
 
@@ -939,12 +941,12 @@ void Ship::ApplyWorldParticleForces(
         //
 
         // Note: should be based on relative velocity, but we simplify here for performance reasons
-        nonSpringForce +=
+        staticForce +=
             windForce
             * mPoints.GetMaterialWindReceptivity(pointIndex)
             * (1.0f - uwCoefficient); // Only above-water
 
-        nonSpringForcesBuffer[pointIndex] += nonSpringForce;
+        staticForcesBuffer[pointIndex] += staticForce;
     }
 }
 
@@ -1098,7 +1100,7 @@ void Ship::ApplyWorldSurfaceForces(
             vec2f const dragForce = surfaceNormal * std::min(dragForceMagnitude, maxDragForceMagnitude);
 
             // Apply drag force
-            mPoints.AddNonSpringForce(
+            mPoints.AddStaticForce(
                 thisPointIndex,
                 -dragForce);
 
@@ -1194,7 +1196,8 @@ void Ship::ApplyWorldSurfaceForces(
 }
 
 void Ship::ApplyHydrostaticPressureForces(
-    float forceMultiplier,
+    float /*effectiveAirDensity*/, // CODEWORK: future, if we want to also apply *air* pressure
+    float effectiveWaterDensity,
     GameParameters const & gameParameters)
 {
     for (FrontierId const frontierId : mFrontiers.GetFrontierIds())
@@ -1239,9 +1242,8 @@ void Ship::ApplyHydrostaticPressureForces(
             float const externalPressure =
                 std::max(mPoints.GetCachedDepth(startFrontierEdge.PointAIndex), 0.0f)
                 * GameParameters::GravityMagnitude
-                * GameParameters::WaterMass
-                * gameParameters.WaterDensityAdjustment
-                * forceMultiplier;
+                * effectiveWaterDensity
+                * gameParameters.HydrostaticPressureAdjustment;
 
             // TODOHERE: optimize by remembering previous normal
             vec2f const previousEdgeNormal = (thisPointPosition - previousPointPosition).normalise().to_perpendicular();
@@ -1257,7 +1259,10 @@ void Ship::ApplyHydrostaticPressureForces(
             vec2f const totalHydrostaticPressureForceOnThisPoint =
                 (previousEdgeHydrostaticPressureForce + nextEdgeHydrostaticPressureForce) / 2.0f;
 
-            mPoints.AddNonSpringForce(thisPointIndex, totalHydrostaticPressureForceOnThisPoint);
+            // TODO: comment here
+            mPoints.AddDynamicForce(
+                thisPointIndex,
+                totalHydrostaticPressureForceOnThisPoint);
 
             //
              // Advance edge in the frontier visit
@@ -1282,7 +1287,7 @@ void Ship::ApplySpringsForces_BySprings(GameParameters const & /*gameParameters*
 {
     vec2f const * restrict const pointPositionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f const * restrict const pointVelocityBuffer = mPoints.GetVelocityBufferAsVec2();
-    vec2f * restrict const pointSpringForceBuffer = mPoints.GetSpringForceBufferAsVec2();
+    vec2f * restrict const pointDynamicForceBuffer = mPoints.GetDynamicForceBufferAsVec2();
 
     Springs::Endpoints const * restrict const endpointsBuffer = mSprings.GetEndpointsBuffer();
     float const * restrict const restLengthBuffer = mSprings.GetRestLengthBuffer();
@@ -1328,12 +1333,12 @@ void Ship::ApplySpringsForces_BySprings(GameParameters const & /*gameParameters*
         //
 
         vec2f const forceA = springDir * (fSpring + fDamp);
-        pointSpringForceBuffer[pointAIndex] += forceA;
-        pointSpringForceBuffer[pointBIndex] -= forceA;
+        pointDynamicForceBuffer[pointAIndex] += forceA;
+        pointDynamicForceBuffer[pointBIndex] -= forceA;
     }
 }
 
-void Ship::IntegrateAndResetSpringForces(GameParameters const & gameParameters)
+void Ship::IntegrateAndResetDynamicForces(GameParameters const & gameParameters)
 {
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
 
@@ -1382,8 +1387,8 @@ void Ship::IntegrateAndResetSpringForces(GameParameters const & gameParameters)
 
     float * const restrict positionBuffer = mPoints.GetPositionBufferAsFloat();
     float * const restrict velocityBuffer = mPoints.GetVelocityBufferAsFloat();
-    float * const restrict springForceBuffer = mPoints.GetSpringForceBufferAsFloat();
-    float const * const restrict nonSpringForceBuffer = mPoints.GetNonSpringForceBufferAsFloat();
+    float * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBufferAsFloat();
+    float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat();
     float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
 
     size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
@@ -1395,13 +1400,13 @@ void Ship::IntegrateAndResetSpringForces(GameParameters const & gameParameters)
 
         float const deltaPos =
             velocityBuffer[i] * dt
-            + (springForceBuffer[i] + nonSpringForceBuffer[i]) * integrationFactorBuffer[i];
+            + (dynamicForceBuffer[i] + staticForceBuffer[i]) * integrationFactorBuffer[i];
 
         positionBuffer[i] += deltaPos;
         velocityBuffer[i] = deltaPos * velocityFactor;
 
-        // Zero out spring force now that we've integrated it
-        springForceBuffer[i] = 0.0f;
+        // Zero out dynamic force now that we've integrated it
+        dynamicForceBuffer[i] = 0.0f;
     }
 
 #ifdef _DEBUG

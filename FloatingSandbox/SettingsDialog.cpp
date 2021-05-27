@@ -965,6 +965,32 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Hydrostatic Pressure Adjust
+            {
+                mHydrostaticPressureAdjustmentSlider = new SliderControl<float>(
+                    waterBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Hydrostatic Pressure Adjust"),
+                    _("Adjusts the hydrostatic pressure (or 'pressure crush') exerted by sea water on physical bodies."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::HydrostaticPressureAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinHydrostaticPressureAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxHydrostaticPressureAdjustment()));
+
+                waterSizer->Add(
+                    mHydrostaticPressureAdjustmentSlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             // Water Intake
             {
                 mWaterIntakeSlider = new SliderControl<float>(
@@ -985,7 +1011,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
 
                 waterSizer->Add(
                     mWaterIntakeSlider,
-                    wxGBPosition(0, 3),
+                    wxGBPosition(0, 4),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -1010,7 +1036,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
 
                 waterSizer->Add(
                     mWaterDiffusionSpeedSlider,
-                    wxGBPosition(0, 4),
+                    wxGBPosition(0, 5),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -1035,7 +1061,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
 
                 waterSizer->Add(
                     mWaterCrazynessSlider,
-                    wxGBPosition(0, 5),
+                    wxGBPosition(0, 6),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -1060,7 +1086,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
 
                 waterSizer->Add(
                     mWaterTemperatureSlider,
-                    wxGBPosition(0, 6),
+                    wxGBPosition(0, 7),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -4260,7 +4286,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
                     case 2:
                     {
-                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointForce);
+                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointStaticForce);
                         break;
                     }
 
@@ -4774,6 +4800,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mWaterDensitySlider->SetValue(settings.GetValue<float>(GameSettings::WaterDensityAdjustment));
     mWaterFrictionDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterFrictionDragAdjustment));
     mWaterPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterPressureDragAdjustment));
+    mHydrostaticPressureAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::HydrostaticPressureAdjustment));
     mWaterIntakeSlider->SetValue(settings.GetValue<float>(GameSettings::WaterIntakeAdjustment));
     mWaterCrazynessSlider->SetValue(settings.GetValue<float>(GameSettings::WaterCrazyness));
     mWaterDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDiffusionSpeedAdjustment));
@@ -5044,7 +5071,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
             break;
         }
 
-        case VectorFieldRenderModeType::PointForce:
+        case VectorFieldRenderModeType::PointStaticForce:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(2);
             break;

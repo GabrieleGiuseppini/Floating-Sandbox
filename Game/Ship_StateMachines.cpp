@@ -83,11 +83,10 @@ bool Ship::UpdateExplosionStateMachine(
                 //
                 // Apply blast force
                 //
-                // (inversely proportional to distance,
-                // not second power as one would expect though)
+                // (inversely proportional to distance, not second power as one would expect though)
                 //
 
-                mPoints.AddNonSpringForce(
+                mPoints.AddStaticForce(
                     pointIndex,
                     pointRadius.normalise(pointRadiusLength) / std::max(pointRadiusLength, 1.0f) * explosionStateMachine.BlastForce);
 
