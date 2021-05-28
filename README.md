@@ -11,7 +11,7 @@ The game is really a generic physics simulator that can be used to simulate just
 As of now the simulator implements the following aspects of physics:
 - Classical mechanics - Hookean laws for springs, impacts with ocean floor
 - Thermodynamics - heat transfer, dissipation, combustion
-- Fluid dynamics - buoyancy, drag
+- Fluid dynamics - buoyancy, drag, hydrostatic pressure
 - Basic electrotechnics - conductivity
 
 <img src="https://i.imgur.com/kovxCty.png">
@@ -39,10 +39,16 @@ These and other ideas will come out with frequent releases.
 The game is also featured at [GameJolt](https://gamejolt.com/games/floating-sandbox/353572), and plenty of videos may be found on Youtube.
 
 # System Requirements
-- Windows 7, 8, or 10, either 64-bit or 32-bit (Linux coming soon!)
-	- The 64-bit build of Floating Sandbox runs ~7% faster than the 32-bit build, so if you're running a 64-bit Windows it is advisable to install the 64-bit build of Floating Sandbox
-- OpenGL 2.1 or later
-	- If your graphics card does not support OpenGL 2.1, try upgrading its drivers - most likely there's a newer version with support for 2.1
+- Windows:
+	- Windows 7, 8, or 10, either 64-bit or 32-bit
+		- The 64-bit build of Floating Sandbox runs ~7% faster than the 32-bit build, so if you're running a 64-bit Windows it is advisable to install the 64-bit build of Floating Sandbox
+	- OpenGL 2.1 or later
+		- If your graphics card does not support OpenGL 2.1, try upgrading its drivers - most likely there's a newer version with support for 2.1
+- Linux:
+	- Either 64-bit or 32-bit
+	- X11 and GTK3
+	- OpenGL 2.1 or later
+	- OpenAL, Vorbis and FLAC
 
 <img src="https://i.imgur.com/6LOVsqX.jpg">
 
