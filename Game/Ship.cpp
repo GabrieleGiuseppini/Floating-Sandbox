@@ -999,199 +999,199 @@ void Ship::ApplyWorldSurfaceForces(
 
     for (FrontierId frontierId : mFrontiers.GetFrontierIds())
     {
-        // Initialize AABB
-        Geometry::AABB aabb;
-
-        //
-        // Visit all edges of this frontier
-        //
-
         auto & frontier = mFrontiers.GetFrontier(frontierId);
 
-        assert(frontier.Size >= 3);
-
-        ElementIndex const startEdgeIndex = frontier.StartingEdgeIndex;
-
-        // Take previous point
-        auto const & previousFrontierEdge = mFrontiers.GetFrontierEdge(startEdgeIndex);
-        vec2f previousPointPosition = mPoints.GetPosition(previousFrontierEdge.PointAIndex);
-
-        // Take this point
-        auto const & thisFrontierEdge = mFrontiers.GetFrontierEdge(previousFrontierEdge.NextEdgeIndex);
-        ElementIndex thisPointIndex = thisFrontierEdge.PointAIndex;
-        vec2f thisPointPosition = mPoints.GetPosition(thisPointIndex);
-
-#ifdef _DEBUG
-        size_t visitedPoints = 0;
-#endif
-
-        ElementIndex const visitStartEdgeIndex = thisFrontierEdge.NextEdgeIndex;
-        for (ElementIndex nextEdgeIndex = visitStartEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
-        {
-
-#ifdef _DEBUG
-            ++visitedPoints;
-#endif
-
-            //
-            // Update AABB with this point
-            //
-
-            if (frontier.Type == FrontierType::External)
-            {
-                aabb.ExtendTo(thisPointPosition);
-            }
-
-            // Get next edge and point
-            auto const & nextFrontierEdge = mFrontiers.GetFrontierEdge(nextEdgeIndex);
-            ElementIndex const nextPointIndex = nextFrontierEdge.PointAIndex;
-            vec2f const nextPointPosition = mPoints.GetPosition(nextPointIndex);
-
-            //
-            // Drag force
-            //
-            // We would like to use a square law (i.e. drag force proportional to square
-            // of velocity), but then particles at high velocities become subject to
-            // enormous forces, which, for small masses - such as cloth - means astronomical
-            // accelerations.
-            //
-            // We have to recourse then, again, to a linear law:
-            //
-            // F = - C * |V| * cos(a) * Nn
-            //
-            //      cos(a) == cos(angle between velocity and surface normal) == Vn dot Nn
-            //
-            // With this law, a particle's velocity is overcome by the drag force when its
-            // mass is <= C * dt, i.e. ~78Kg with water drag. Since this mass we do have in our sytem,
-            // we have to cap the force to prevent velocity overcome.
-            //
-
-            // Normal to surface - calculated between p1 and p3; points outside
-            vec2f const surfaceNormal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
-
-            // Velocity along normal - capped to the same direction as velocity, to avoid suction force
-            // (i.e. drag force attracting surface facing opposite of velocity)
-            float const velocityMagnitudeAlongNormal = std::max(
-                mPoints.GetVelocity(thisPointIndex).dot(surfaceNormal),
-                0.0f);
-
-            // Max drag force magnitude: m * (V dot Nn) / dt
-            float const maxDragForceMagnitude =
-                mPoints.GetMass(thisPointIndex) * velocityMagnitudeAlongNormal
-                / GameParameters::SimulationStepTimeDuration<float>;
-
-            // Get point depth (positive at greater depths, negative over-water)
-            float const thisPointDepth = newCachedPointDepths[thisPointIndex];
-
-            // Calculate drag coefficient: air or water, with soft transition
-            // to avoid discontinuities in drag force close to the air-water interface
-            float const dragCoefficient = Mix(
-                airPressureDragCoefficient,
-                waterPressureDragCoefficient,
-                Clamp(thisPointDepth, 0.0f, 1.0f));
-
-            // Calculate magnitude of drag force (opposite sign)
-            //  - C * |V| * cos(a) == - C * |V| * (Vn dot Nn) == -C * (V dot Nn)
-            float const dragForceMagnitude =
-                dragCoefficient
-                * velocityMagnitudeAlongNormal;
-
-            // Final drag force - at this moment in the direction of the normal (i.e. outside)
-            vec2f const dragForce = surfaceNormal * std::min(dragForceMagnitude, maxDragForceMagnitude);
-
-            // Apply drag force
-            mPoints.AddStaticForce(
-                thisPointIndex,
-                -dragForce);
-
-            //
-            // Water displacement
-            //
-            // * The magnitude of water displacement is proportional to the square root of
-            //   the kinetic energy of the particle, thus it is proportional to the square
-            //   root of the particle mass, and linearly to the particle's velocity
-            //      * However, in order to generate visible waves also for very small velocities,
-            //        we want the contribution of small velocities to be more than linear wrt
-            //        the contribution of higher velocities, and so we'll be using a piecewise
-            //        function: quadratic for small velocities, and linear for higher
-            // * The deeper the particle is, the less it contributes to displacement
-            //
-
-            if constexpr (DoDisplaceWater)
-            {
-                float const verticalVelocity = mPoints.GetVelocity(thisPointIndex).y;
-                float const absVerticalVelocity = std::abs(verticalVelocity);
-
-                //
-                // Displacement magnitude calculation
-                //
-
-                float const linearDisplacementMagnitude = wdmY0 + wdmLinearSlope * (absVerticalVelocity - wdmX0);
-                float const quadraticDisplacementMagnitude = wdmQuadraticA * absVerticalVelocity * absVerticalVelocity + wdmQuadraticB * absVerticalVelocity;
-
-                //
-                // Depth attenuation: tapers down displacement the deeper the point is
-                //
-
-                // Depth at which the point stops contributing: rises quadratically, asymptotically, and asymmetric wrt sinking or rising
-                float constexpr MaxVel = 35.0f;
-                float constexpr a2 = -0.5f / (MaxVel * MaxVel);
-                float constexpr b2 = 1.0f / MaxVel;
-                float const clampedAbsVerticalVelocity = std::min(absVerticalVelocity, MaxVel);
-                float const maxDepth =
-                    (a2 * clampedAbsVerticalVelocity * clampedAbsVerticalVelocity + b2 * clampedAbsVerticalVelocity + 0.5f)
-                    * (verticalVelocity <= 0.0f ? 12.0f : 4.0f); // Keep up-push low or else bodies keep jumping up and down forever
-
-                // Linear attenuation up to maxDepth
-                float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, thisPointDepth); // Tapers down contribution the deeper the point is
-
-                //
-                // Mass impact
-                // - The impact of mass should follow a square root law, but for performance we approximate it
-                //   with a linear law based on some points taken on a sqrt curve
-                //
-
-                float constexpr Mass1 = 18.0f;
-                float constexpr Impact1 = 11.0f;
-                float constexpr Mass2 = 1000.0f;
-                float constexpr Impact2 = 25.0f;
-
-                float const massImpact = Impact1 + (mPoints.GetMass(thisPointIndex) - Mass1) * (Impact2 - Impact1) / (Mass2 - Mass1);
-
-                //
-                // Displacement
-                //
-
-                float const displacement =
-                    (absVerticalVelocity < wdmX0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
-                    * massImpact
-                    * depthAttenuation
-                    * SignStep(0.0f, verticalVelocity) // Displacement has same sign as vertical velocity
-                    * Step(0.0f, thisPointDepth) // No displacement for above-water points
-                    * 0.02f; // Magic number
-
-                mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, displacement);
-            }
-
-            //
-            // Advance edge in the frontier visit
-            //
-
-            nextEdgeIndex = nextFrontierEdge.NextEdgeIndex;
-            if (nextEdgeIndex == visitStartEdgeIndex)
-                break;
-
-            previousPointPosition = thisPointPosition;
-            thisPointPosition = nextPointPosition;
-            thisPointIndex = nextPointIndex;
-        }
-
-#ifdef _DEBUG
-        assert(visitedPoints == frontier.Size);
-#endif
-
+        // We only apply velocity drag and displace water for *external* frontiers,
+        // not for internal ones
         if (frontier.Type == FrontierType::External)
         {
+            // Initialize AABB
+            Geometry::AABB aabb;
+
+            //
+            // Visit all edges of this frontier
+            //
+
+            assert(frontier.Size >= 3);
+
+            ElementIndex const startEdgeIndex = frontier.StartingEdgeIndex;
+
+            // Take previous point
+            auto const & previousFrontierEdge = mFrontiers.GetFrontierEdge(startEdgeIndex);
+            vec2f previousPointPosition = mPoints.GetPosition(previousFrontierEdge.PointAIndex);
+
+            // Take this point
+            auto const & thisFrontierEdge = mFrontiers.GetFrontierEdge(previousFrontierEdge.NextEdgeIndex);
+            ElementIndex thisPointIndex = thisFrontierEdge.PointAIndex;
+            vec2f thisPointPosition = mPoints.GetPosition(thisPointIndex);
+
+#ifdef _DEBUG
+            size_t visitedPoints = 0;
+#endif
+
+            ElementIndex const visitStartEdgeIndex = thisFrontierEdge.NextEdgeIndex;
+
+            for (ElementIndex nextEdgeIndex = visitStartEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
+            {
+
+#ifdef _DEBUG
+                ++visitedPoints;
+#endif
+
+                // Update AABB with this point
+                aabb.ExtendTo(thisPointPosition);
+
+                // Get next edge and point
+                auto const & nextFrontierEdge = mFrontiers.GetFrontierEdge(nextEdgeIndex);
+                ElementIndex const nextPointIndex = nextFrontierEdge.PointAIndex;
+                vec2f const nextPointPosition = mPoints.GetPosition(nextPointIndex);
+
+                //
+                // Drag force
+                //
+                // We would like to use a square law (i.e. drag force proportional to square
+                // of velocity), but then particles at high velocities become subject to
+                // enormous forces, which, for small masses - such as cloth - means astronomical
+                // accelerations.
+                //
+                // We have to recourse then, again, to a linear law:
+                //
+                // F = - C * |V| * cos(a) * Nn
+                //
+                //      cos(a) == cos(angle between velocity and surface normal) == Vn dot Nn
+                //
+                // With this law, a particle's velocity is overcome by the drag force when its
+                // mass is <= C * dt, i.e. ~78Kg with water drag. Since this mass we do have in our sytem,
+                // we have to cap the force to prevent velocity overcome.
+                //
+
+                // Normal to surface - calculated between p1 and p3; points outside
+                vec2f const surfaceNormal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
+
+                // Velocity along normal - capped to the same direction as velocity, to avoid suction force
+                // (i.e. drag force attracting surface facing opposite of velocity)
+                float const velocityMagnitudeAlongNormal = std::max(
+                    mPoints.GetVelocity(thisPointIndex).dot(surfaceNormal),
+                    0.0f);
+
+                // Max drag force magnitude: m * (V dot Nn) / dt
+                float const maxDragForceMagnitude =
+                    mPoints.GetMass(thisPointIndex) * velocityMagnitudeAlongNormal
+                    / GameParameters::SimulationStepTimeDuration<float>;
+
+                // Get point depth (positive at greater depths, negative over-water)
+                float const thisPointDepth = newCachedPointDepths[thisPointIndex];
+
+                // Calculate drag coefficient: air or water, with soft transition
+                // to avoid discontinuities in drag force close to the air-water interface
+                float const dragCoefficient = Mix(
+                    airPressureDragCoefficient,
+                    waterPressureDragCoefficient,
+                    Clamp(thisPointDepth, 0.0f, 1.0f));
+
+                // Calculate magnitude of drag force (opposite sign)
+                //  - C * |V| * cos(a) == - C * |V| * (Vn dot Nn) == -C * (V dot Nn)
+                float const dragForceMagnitude =
+                    dragCoefficient
+                    * velocityMagnitudeAlongNormal;
+
+                // Final drag force - at this moment in the direction of the normal (i.e. outside)
+                vec2f const dragForce = surfaceNormal * std::min(dragForceMagnitude, maxDragForceMagnitude);
+
+                // Apply drag force
+                mPoints.AddStaticForce(
+                    thisPointIndex,
+                    -dragForce);
+
+                //
+                // Water displacement
+                //
+                // * The magnitude of water displacement is proportional to the square root of
+                //   the kinetic energy of the particle, thus it is proportional to the square
+                //   root of the particle mass, and linearly to the particle's velocity
+                //      * However, in order to generate visible waves also for very small velocities,
+                //        we want the contribution of small velocities to be more than linear wrt
+                //        the contribution of higher velocities, and so we'll be using a piecewise
+                //        function: quadratic for small velocities, and linear for higher
+                // * The deeper the particle is, the less it contributes to displacement
+                //
+
+                if constexpr (DoDisplaceWater)
+                {
+                    float const verticalVelocity = mPoints.GetVelocity(thisPointIndex).y;
+                    float const absVerticalVelocity = std::abs(verticalVelocity);
+
+                    //
+                    // Displacement magnitude calculation
+                    //
+
+                    float const linearDisplacementMagnitude = wdmY0 + wdmLinearSlope * (absVerticalVelocity - wdmX0);
+                    float const quadraticDisplacementMagnitude = wdmQuadraticA * absVerticalVelocity * absVerticalVelocity + wdmQuadraticB * absVerticalVelocity;
+
+                    //
+                    // Depth attenuation: tapers down displacement the deeper the point is
+                    //
+
+                    // Depth at which the point stops contributing: rises quadratically, asymptotically, and asymmetric wrt sinking or rising
+                    float constexpr MaxVel = 35.0f;
+                    float constexpr a2 = -0.5f / (MaxVel * MaxVel);
+                    float constexpr b2 = 1.0f / MaxVel;
+                    float const clampedAbsVerticalVelocity = std::min(absVerticalVelocity, MaxVel);
+                    float const maxDepth =
+                        (a2 * clampedAbsVerticalVelocity * clampedAbsVerticalVelocity + b2 * clampedAbsVerticalVelocity + 0.5f)
+                        * (verticalVelocity <= 0.0f ? 12.0f : 4.0f); // Keep up-push low or else bodies keep jumping up and down forever
+
+                    // Linear attenuation up to maxDepth
+                    float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, thisPointDepth); // Tapers down contribution the deeper the point is
+
+                    //
+                    // Mass impact
+                    // - The impact of mass should follow a square root law, but for performance we approximate it
+                    //   with a linear law based on some points taken on a sqrt curve
+                    //
+
+                    float constexpr Mass1 = 18.0f;
+                    float constexpr Impact1 = 11.0f;
+                    float constexpr Mass2 = 1000.0f;
+                    float constexpr Impact2 = 25.0f;
+
+                    float const massImpact = Impact1 + (mPoints.GetMass(thisPointIndex) - Mass1) * (Impact2 - Impact1) / (Mass2 - Mass1);
+
+                    //
+                    // Displacement
+                    //
+
+                    float const displacement =
+                        (absVerticalVelocity < wdmX0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
+                        * massImpact
+                        * depthAttenuation
+                        * SignStep(0.0f, verticalVelocity) // Displacement has same sign as vertical velocity
+                        * Step(0.0f, thisPointDepth) // No displacement for above-water points
+                        * 0.02f; // Magic number
+
+                    mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, displacement);
+                }
+
+                //
+                // Advance edge in the frontier visit
+                //
+
+                nextEdgeIndex = nextFrontierEdge.NextEdgeIndex;
+                if (nextEdgeIndex == visitStartEdgeIndex)
+                    break;
+
+                previousPointPosition = thisPointPosition;
+                thisPointPosition = nextPointPosition;
+                thisPointIndex = nextPointIndex;
+            }
+
+#ifdef _DEBUG
+            assert(visitedPoints == frontier.Size);
+#endif
+            //
+            // Finalize AABB update
+            //
+
             // Store AABB in frontier
             frontier.ExternalFrontierAABB = aabb;
 

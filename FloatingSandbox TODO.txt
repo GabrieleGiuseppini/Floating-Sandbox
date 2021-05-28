@@ -525,6 +525,12 @@ Render:
 		+ Pressure implosions / pressure crush (*)			
 		+ See issue with ocean texture shading: texture coords change depending on cam: repro with pause and high zoom
 		X See if also on Windows "High Quality Rendering" of water is faster than normal
+		+ Test optimization: ApplyWorldSurfaceForces: only consider *external* frontiers
+			! No drag, no displacement for internal frontiers. We are fine with it
+			+ Test Base III before: UPD=17.30ms, plus weird water displacement
+			+ Test Base III after: UPD=16.9ms, no more weird water displacement
+			+ If ok:
+				+ Remove checks for type==External @ AABB updating
 
 		= Ubuntu:
 			+ Event polling issue:
@@ -640,12 +646,7 @@ Render:
 		- New ships
 			- changelist
 
-		- Test optimization: ApplyWorldSurfaceForces: only consider *external* frontiers
-			! No drag, no displacement for internal frontiers. We are fine with it
-			- Test Base III before: TODO
-			- Test Base III after: TODO
-			- If ok:
-				- Remove checks for type==External @ AABB updating
+		- Do some normal wrecks and decide on default hydrostatic pressure adjust value
 
 		- Test on Dell
 
