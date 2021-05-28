@@ -672,6 +672,42 @@ void Ship::ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args
     }
 }
 
+bool Ship::ApplyElectricSparkAt(
+    vec2f const & targetPos,
+    float progress,
+    GameParameters const & gameParameters)
+{
+    //
+    // 1. Find closest point, and check whether there _is_ actually a closest point
+    //
+
+    float closestDistance = std::numeric_limits<float>::max();
+    ElementIndex closestPointIndex = NoneElementIndex;
+
+    for (auto pointIndex : mPoints.RawShipPoints()) // No point in visiting ephemeral points
+    {
+        vec2f const pointRadius = mPoints.GetPosition(pointIndex) - targetPos;
+        float const squarePointDistance = pointRadius.squareLength();
+        if (squarePointDistance < closestDistance)
+        {
+            closestDistance = squarePointDistance;
+            closestPointIndex = pointIndex;
+        }
+    }
+
+    if (closestDistance > 1.0f)
+    {
+        // No luck
+        return false;
+    }
+
+    assert(closestPointIndex != NoneElementIndex);
+
+    // TODOHERE
+
+    return true;
+}
+
 void Ship::DrawTo(
     vec2f const & targetPos,
     float strengthFraction,

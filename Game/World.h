@@ -231,6 +231,11 @@ public:
         float forceMultiplier,
         GameParameters const & gameParameters);
 
+    bool ApplyElectricSparkAt(
+        vec2f const & targetPos,
+        float progress,
+        GameParameters const & gameParameters);
+
     void DrawTo(
         vec2f const & targetPos,
         float strengthFraction,

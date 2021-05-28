@@ -101,6 +101,7 @@ struct IGameController
     virtual bool ApplyHeatBlasterAt(LogicalPixelCoordinates const & screenCoordinates, HeatBlasterActionType action) = 0;
     virtual bool ExtinguishFireAt(LogicalPixelCoordinates const & screenCoordinates) = 0;
     virtual void ApplyBlastAt(LogicalPixelCoordinates const & screenCoordinates, float radiusMultiplier, float forceMultiplier, float renderProgress, float personalitySeed) = 0;
+    virtual bool ApplyElectricSparkAt(LogicalPixelCoordinates const & screenCoordinates, float progress) = 0;
     virtual void DrawTo(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) = 0;
     virtual void SwirlAt(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) = 0;
     virtual void TogglePinAt(LogicalPixelCoordinates const & screenCoordinates) = 0;

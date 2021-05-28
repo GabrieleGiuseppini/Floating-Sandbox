@@ -69,6 +69,7 @@ long const ID_SLICE_MENUITEM = wxNewId();
 long const ID_HEAT_BLASTER_MENUITEM = wxNewId();
 long const ID_FIRE_EXTINGUISHER_MENUITEM = wxNewId();
 long const ID_BLAST_TOOL_MENUITEM = wxNewId();
+long const ID_ELECTRICSPARK_MENUITEM = wxNewId();
 long const ID_GRAB_MENUITEM = wxNewId();
 long const ID_SWIRL_MENUITEM = wxNewId();
 long const ID_PIN_MENUITEM = wxNewId();
@@ -306,6 +307,10 @@ MainFrame::MainFrame(
     wxMenuItem * blastToolMenuItem = new wxMenuItem(mToolsMenu, ID_BLAST_TOOL_MENUITEM, _("Blast") + wxS("\t8"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(blastToolMenuItem);
     Connect(ID_BLAST_TOOL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnBlastToolMenuItemSelected);
+
+    wxMenuItem * electricSparkMenuItem = new wxMenuItem(mToolsMenu, ID_ELECTRICSPARK_MENUITEM, _("Electric Spark") + wxS("\t7"), wxEmptyString, wxITEM_RADIO);
+    mToolsMenu->Append(electricSparkMenuItem);
+    Connect(ID_ELECTRICSPARK_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnElectricSparkToolMenuItemSelected);
 
     wxMenuItem * grabMenuItem = new wxMenuItem(mToolsMenu, ID_GRAB_MENUITEM, _("Attract/Repel") + wxS("\tG"), wxEmptyString, wxITEM_RADIO);
     mToolsMenu->Append(grabMenuItem);
@@ -1653,6 +1658,12 @@ void MainFrame::OnBlastToolMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::BlastTool);
+}
+
+void MainFrame::OnElectricSparkToolMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::ElectricSparkTool);
 }
 
 void MainFrame::OnGrabMenuItemSelected(wxCommandEvent & /*event*/)

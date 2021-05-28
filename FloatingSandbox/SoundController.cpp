@@ -59,6 +59,8 @@ SoundController::SoundController(
     , mSawUnderwaterSound()
     , mHeatBlasterCoolSound()
     , mHeatBlasterHeatSound()
+    , mElectricSparkAbovewaterSound()
+    , mElectricSparkUnderwaterSound()
     , mFireExtinguisherSound()
     , mDrawSound()
     , mSwirlSound()
@@ -146,6 +148,33 @@ SoundController::SoundController(
                 mSawAbovewaterSound.Initialize(
                     std::move(soundBuffer),
                     SawVolume,
+                    mMasterToolsVolume,
+                    mMasterToolsMuted);
+            }
+        }
+        else if (soundType == SoundType::ElectricSpark)
+        {
+            std::regex sawRegex(R"(([^_]+)(?:_(underwater))?)");
+            std::smatch uMatch;
+            if (!std::regex_match(soundName, uMatch, sawRegex))
+            {
+                throw GameException("Electric Spark sound filename \"" + soundName + "\" is not recognized");
+            }
+
+            if (uMatch[2].matched)
+            {
+                assert(uMatch[2].str() == "underwater");
+                mElectricSparkUnderwaterSound.Initialize(
+                    std::move(soundBuffer),
+                    100.0f,
+                    mMasterToolsVolume,
+                    mMasterToolsMuted);
+            }
+            else
+            {
+                mElectricSparkAbovewaterSound.Initialize(
+                    std::move(soundBuffer),
+                    100.0f,
                     mMasterToolsVolume,
                     mMasterToolsMuted);
             }
@@ -880,6 +909,8 @@ void SoundController::SetMasterToolsVolume(float volume)
     mSawUnderwaterSound.SetMasterVolume(mMasterToolsVolume);
     mHeatBlasterCoolSound.SetMasterVolume(mMasterToolsVolume);
     mHeatBlasterHeatSound.SetMasterVolume(mMasterToolsVolume);
+    mElectricSparkAbovewaterSound.SetMasterVolume(mMasterToolsVolume);
+    mElectricSparkUnderwaterSound.SetMasterVolume(mMasterToolsVolume);
     mFireExtinguisherSound.SetMasterVolume(mMasterToolsVolume);
     mDrawSound.SetMasterVolume(mMasterToolsVolume);
     mSwirlSound.SetMasterVolume(mMasterToolsVolume);
@@ -910,6 +941,8 @@ void SoundController::SetMasterToolsMuted(bool isMuted)
     mSawUnderwaterSound.SetMuted(mMasterToolsMuted);
     mHeatBlasterCoolSound.SetMuted(mMasterToolsMuted);
     mHeatBlasterHeatSound.SetMuted(mMasterToolsMuted);
+    mElectricSparkAbovewaterSound.SetMuted(mMasterToolsMuted);
+    mElectricSparkUnderwaterSound.SetMuted(mMasterToolsMuted);
     mFireExtinguisherSound.SetMuted(mMasterToolsMuted);
     mDrawSound.SetMuted(mMasterToolsMuted);
     mSwirlSound.SetMuted(mMasterToolsMuted);
@@ -1061,6 +1094,26 @@ void SoundController::StopHeatBlasterSound()
 {
     mHeatBlasterCoolSound.Stop();
     mHeatBlasterHeatSound.Stop();
+}
+
+void SoundController::PlayElectricSparkSound(bool isUnderwater)
+{
+    if (isUnderwater)
+    {
+        mElectricSparkUnderwaterSound.Start();
+        mElectricSparkAbovewaterSound.Stop();
+    }
+    else
+    {
+        mElectricSparkAbovewaterSound.Start();
+        mElectricSparkUnderwaterSound.Stop();
+    }
+}
+
+void SoundController::StopElectricSparkSound()
+{
+    mElectricSparkAbovewaterSound.Stop();
+    mElectricSparkUnderwaterSound.Stop();
 }
 
 void SoundController::PlayFireExtinguisherSound()
@@ -1316,6 +1369,8 @@ void SoundController::Reset()
     mSawUnderwaterSound.Reset();
     mHeatBlasterCoolSound.Reset();
     mHeatBlasterHeatSound.Reset();
+    mElectricSparkAbovewaterSound.Reset();
+    mElectricSparkUnderwaterSound.Reset();
     mFireExtinguisherSound.Reset();
     mDrawSound.Reset();
     mSwirlSound.Reset();

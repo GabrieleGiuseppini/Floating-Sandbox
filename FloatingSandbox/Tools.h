@@ -53,7 +53,8 @@ enum class ToolType
     ThanosSnap,
     ScareFish,
     PhysicsProbe,
-    BlastTool
+    BlastTool,
+    ElectricSparkTool
 };
 
 struct InputState
@@ -2829,5 +2830,145 @@ private:
     // The cursors
     wxImage const mUpCursorImage1;
     wxImage const mUpCursorImage2;
+    wxImage const mDownCursorImage;
+};
+
+class ElectricSparkTool final : public Tool
+{
+public:
+
+    ElectricSparkTool(
+        IToolCursorManager & toolCursorManager,
+        std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLocator & resourceLocator);
+
+public:
+
+    virtual void Initialize(InputState const & /*inputState*/) override
+    {
+        // Update cursor
+        SetCurrentCursor();
+    }
+
+    virtual void Deinitialize(InputState const & /*inputState*/) override
+    {
+        // Stop sound
+        mSoundController->StopElectricSparkSound();
+    }
+
+    virtual void UpdateSimulation(InputState const & inputState, float currentSimulationTime) override
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            if (mEngagementData.has_value())
+            {
+                // We are currently engaged
+
+                // Send interaction
+                bool hasBeenApplied = mGameController->ApplyElectricSparkAt(
+                    inputState.MousePosition,
+                    currentSimulationTime - mEngagementData->StartEngagementSimulationTime);
+
+                if (!hasBeenApplied)
+                {
+                    //
+                    // State change: engaged -> not engaged
+                    //
+
+                    Disengage();
+                }
+                else
+                {
+                    // Check if we need to change the underwater-ness of the sound
+                    bool isUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
+                    if (isUnderwater != mEngagementData->IsUnderwater)
+                    {
+                        mSoundController->PlayElectricSparkSound(isUnderwater);
+                        mEngagementData->IsUnderwater = isUnderwater;
+                    }
+                }
+            }
+            else
+            {
+                // We are currently not engaged
+
+                // Send first interaction, together with probe
+                bool hasBeenApplied = mGameController->ApplyElectricSparkAt(
+                    inputState.MousePosition,
+                    0.0f);
+
+                if (hasBeenApplied)
+                {
+                    //
+                    // State change: not engaged -> engaged
+                    //
+
+                    bool const isUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
+
+                    mEngagementData.emplace(currentSimulationTime, isUnderwater);
+
+                    mSoundController->PlayElectricSparkSound(isUnderwater);
+
+                    SetCurrentCursor();
+                }
+            }
+        }
+        else
+        {
+            if (mEngagementData.has_value())
+            {
+                //
+                // State change: engaged -> not engaged
+                //
+
+                Disengage();
+            }
+        }
+    }
+
+    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+private:
+
+    void Disengage()
+    {
+        mEngagementData.reset();
+
+        mSoundController->StopElectricSparkSound();
+
+        SetCurrentCursor();
+    }
+
+    void SetCurrentCursor()
+    {
+        mToolCursorManager.SetToolCursor(
+            mEngagementData.has_value()
+            ? mDownCursorImage
+            : mUpCursorImage);
+    }
+
+    struct EngagementData
+    {
+        float StartEngagementSimulationTime;
+        bool IsUnderwater;
+
+        EngagementData(
+            float startEngagementSimulationTime,
+            bool isUnderwater)
+            : StartEngagementSimulationTime(startEngagementSimulationTime)
+            , IsUnderwater(isUnderwater)
+        {}
+    };
+
+    // Our state
+    std::optional<EngagementData> mEngagementData;
+
+    // The cursors
+    wxImage const mUpCursorImage;
     wxImage const mDownCursorImage;
 };

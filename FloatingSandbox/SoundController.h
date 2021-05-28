@@ -122,6 +122,9 @@ public:
     void PlayHeatBlasterSound(HeatBlasterActionType action);
     void StopHeatBlasterSound();
 
+    void PlayElectricSparkSound(bool isUnderwater);
+    void StopElectricSparkSound();
+
     void PlayFireExtinguisherSound();
     void StopFireExtinguisherSound();
 
@@ -567,6 +570,8 @@ private:
     ContinuousSingleChoiceSound mSawUnderwaterSound;
     ContinuousSingleChoiceSound mHeatBlasterCoolSound;
     ContinuousSingleChoiceSound mHeatBlasterHeatSound;
+    ContinuousSingleChoiceSound mElectricSparkAbovewaterSound;
+    ContinuousSingleChoiceSound mElectricSparkUnderwaterSound;
     ContinuousSingleChoiceSound mFireExtinguisherSound;
     ContinuousSingleChoiceSound mDrawSound;
     ContinuousSingleChoiceSound mSwirlSound;

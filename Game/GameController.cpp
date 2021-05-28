@@ -887,6 +887,20 @@ void GameController::ApplyBlastAt(
         personalitySeed);
 }
 
+bool GameController::ApplyElectricSparkAt(
+    LogicalPixelCoordinates const & screenCoordinates,
+    float progress)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    return mWorld->ApplyElectricSparkAt(
+        worldCoordinates,
+        progress,
+        mGameParameters);
+}
+
 void GameController::DrawTo(
     LogicalPixelCoordinates const & screenCoordinates,
     float strengthFraction)

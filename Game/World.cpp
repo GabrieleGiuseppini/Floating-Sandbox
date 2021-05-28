@@ -420,6 +420,26 @@ void World::ApplyBlastAt(
         std::chrono::milliseconds(0));
 }
 
+bool World::ApplyElectricSparkAt(
+    vec2f const & targetPos,
+    float progress,
+    GameParameters const & gameParameters)
+{
+    bool atLeastOneShipApplied = false;
+
+    for (auto & ship : mAllShips)
+    {
+        bool isApplied = ship->ApplyElectricSparkAt(
+            targetPos,
+            progress,
+            gameParameters);
+
+        atLeastOneShipApplied |= isApplied;
+    }
+
+    return atLeastOneShipApplied;
+}
+
 void World::DrawTo(
     vec2f const & targetPos,
     float strengthFraction,
