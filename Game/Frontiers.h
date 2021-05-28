@@ -9,6 +9,7 @@
 #include "RenderContext.h"
 #include "RenderTypes.h"
 
+#include <GameCore/AABB.h>
 #include <GameCore/Buffer.h>
 
 #include <array>
@@ -50,6 +51,7 @@ public:
         FrontierType Type;
         ElementIndex StartingEdgeIndex; // Arbitrary first edge in this frontier
         ElementCount Size; // Being a closed curve, this is both # of edges and # of points
+        std::optional<Geometry::AABB> ExternalFrontierAABB; // Only calculated - during Ship updates - for external frontiers
 
         Frontier(
             FrontierType type,
@@ -58,6 +60,7 @@ public:
             : Type(type)
             , StartingEdgeIndex(startingEdgeIndex)
             , Size(size)
+            , ExternalFrontierAABB(std::nullopt)
         {}
     };
 
@@ -126,6 +129,13 @@ public:
     }
 
     inline Frontier const & GetFrontier(FrontierId frontierId) const noexcept
+    {
+        assert(frontierId < mFrontiers.size());
+        assert(mFrontiers[frontierId].has_value());
+        return *(mFrontiers[frontierId]);
+    }
+
+    inline Frontier & GetFrontier(FrontierId frontierId) noexcept
     {
         assert(frontierId < mFrontiers.size());
         assert(mFrontiers[frontierId].has_value());

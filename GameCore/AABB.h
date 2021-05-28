@@ -55,6 +55,13 @@ public:
         return vec2f(GetWidth(), GetHeight());
     }
 
+    inline vec2f CalculateCenter() const
+    {
+        return vec2f(
+            (TopRight.x + BottomLeft.x) / 2.0f,
+            (TopRight.y + BottomLeft.y) / 2.0f);
+    }
+
     inline void ExtendTo(vec2f const & point)
     {
         if (point.x > TopRight.x)
