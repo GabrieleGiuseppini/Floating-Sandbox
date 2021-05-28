@@ -1856,16 +1856,19 @@ Render:
 				  spring iteration loop, with particles changing positions - and likely getting in a configuration that causes torque
 					+ Solution: last spring iteration step calls ApplyHydrostaticPressureForces() before Integrate()
 					+ ApplyHydrostaticPressureForces: simply adds forces to NonSpringForces
-					= See if applying forces _before_ spring relaxation (i.e. at iteration 0) is better
+					+ See if applying forces _before_ spring relaxation (i.e. at iteration 0) is better
 						+ For a test, populate SpringForces
-						= If works:
-							= Rename Spring and NonSpring forces: DynamicForces and StaticForces
-					= See if Red October also gets torque
+						+ If works:
+							+ Rename Spring and NonSpring forces: DynamicForces and StaticForces
+					+ See if Red October also gets torque
 						+ Screenshot taken WITHOUT at -839m
-					- Cleanup:
-						- Associate AABB with frontier (Frontier->AABB)
-							- At calculatation time: populates a frontier member
-							- Then adds that member const & to AABBSet
+					+ Associate AABB with frontier (Frontier->AABB)
+						+ At calculatation time: populates a frontier member
+						+ Then adds that member const & to AABBSet
+					- Decide between applying HP on *first* iteration or on *last* (or even in-between)
+					- TODO: see if AABBs really get stuck when moving/rotating ships
+						- If so: invoke "RecalculateExternalFrontierAABBs" from within the interactions
+				- TODO OLD: NUKE:
 				= If so: experiment with contrary torque
 					+ Calculate normals with pre-and-post edges, and scale force magnitudes with edge lengths
 						! Lowers ghost forces and torques
@@ -1876,8 +1879,8 @@ Render:
 		- Plan B: same, but considering internal pressure
 			- Needs "Internal Pressure (*)" first
 		- Finalization:						
-			= GameParameters settings:
-				= 1: Adjustment (or just adjustment, and == 0 disables simulation)
+			+ GameParameters settings:
+				+ 1: Adjustment (or just adjustment, and == 0 disables simulation)
 					+ SettingsDialog
 
 	- Stars with database
