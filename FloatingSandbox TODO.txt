@@ -559,12 +559,13 @@ Render:
 				- gcc libs?
 				- vorbis, flac					
 				- ...
-			= Build as RELEASE
-				= See if have to set _DEBUG in CMake also for Linux, so it appears in BuildInfo
-					- Test
+			+ Build as RELEASE
+				+ See if have to set _DEBUG in CMake also for Linux, so it appears in BuildInfo
+					+ Test
 			+ README.md
 				+ Requirements: do different by OS
 			- Gather testers and send them tar.gz
+				+ Walther first
 
 		= MAC:
 			= Full high-DPI path:
@@ -648,7 +649,7 @@ Render:
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
-			= 0.242
+			+ 0.242
 
 		- Inject cracks (*)
 
