@@ -658,7 +658,16 @@ Render:
 					+ New Ship buffer: ElectricSpark, simple std::vector
 						+ Reset at first update that was not preceded by the interaction
 						+ Uploaded by Ship::Upload
+			- Move everything to own class, "ElectricSparks"
+				- Rendering machinery that we just put in Ship
+				- Interaction(taking points and springs as args)
+				- If we need per-spring stuff, then ElectricSparks::cctor takes Springs and allocates buffers for springs, much like Frontiers does
 			- Interaction
+				- TODO
+				- Interactions with ElectricalElements:
+					- Driven by interaction: upon energizing a point, calls into ElectricalElements
+					- Call causes same "damage" to selected types of electrical elements as EMP tool (*), i.e. stores SimulationTimestamp in 
+					  state of that electrical element, make it not working for a limited period of time
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
