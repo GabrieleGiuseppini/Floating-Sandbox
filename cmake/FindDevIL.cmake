@@ -20,8 +20,8 @@ find_library(ILU_LIBRARIES_RELEASE
 set(IL_LIBRARIES ${IL_LIBRARIES_RELEASE})
 set(ILU_LIBRARIES ${ILU_LIBRARIES_RELEASE})
 
-if (WIN32)
-	if (MSVC_USE_STATIC_LINKING)
+if(WIN32)
+	if(FS_USE_STATIC_LIBS)
 
 		# If we're using static linking, then we assume DevIL is also statically linked,
 		# hence we want different debug/release libs
@@ -42,8 +42,8 @@ if (WIN32)
 
 		set(IL_LIBRARIES optimized ${IL_LIBRARIES_RELEASE} debug ${IL_LIBRARIES_DEBUG})
 		set(ILU_LIBRARIES optimized ${ILU_LIBRARIES_RELEASE} debug ${ILU_LIBRARIES_DEBUG})
-	endif (MSVC_USE_STATIC_LINKING)
-endif (WIN32)
+	endif()
+endif()
 
 
 include(FindPackageHandleStandardArgs)
