@@ -617,3 +617,23 @@ BlastTool::BlastTool(
     , mDownCursorImage(WxHelpers::LoadCursorImage("empty_cursor", 15, 15, resourceLocator))
 {
 }
+
+////////////////////////////////////////////////////////////////////////
+// ElectricSparkTool
+////////////////////////////////////////////////////////////////////////
+
+ElectricSparkTool::ElectricSparkTool(
+    IToolCursorManager & toolCursorManager,
+    std::shared_ptr<IGameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLocator & resourceLocator)
+    : Tool(
+        ToolType::ElectricSparkTool,
+        toolCursorManager,
+        std::move(gameController),
+        std::move(soundController))
+    , mEngagementData()
+    , mUpCursorImage(WxHelpers::LoadCursorImage("electric_spark_cursor_up", 10, 30, resourceLocator))
+    , mDownCursorImage(WxHelpers::LoadCursorImage("electric_spark_cursor_down", 13, 31, resourceLocator))
+{
+}

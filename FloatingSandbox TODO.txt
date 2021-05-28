@@ -647,6 +647,11 @@ Render:
 		- New ships
 			- changelist
 
+		= Electric Spark tool
+			+ Infrastructure (tool, sound, cursor)
+			- Rendering
+			- Interaction
+
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
 			+ 0.242
