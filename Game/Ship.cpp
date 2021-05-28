@@ -1296,7 +1296,10 @@ void Ship::ApplyHydrostaticPressureForces(
 
                 // Apply force - we apply it as a *dynamic* force, otherwise if it were static it would
                 // generate phantom torques due to geometries changing for every dynamic step
-                vec2f const pressureForce = (edge1PerpVector + edge2PerpVector) * pressureForceStem;
+
+                vec2f const pressureForce =
+                    (edge1PerpVector + edge2PerpVector) * pressureForceStem;
+
                 mPoints.AddDynamicForce(
                     thisPointIndex,
                     pressureForce);

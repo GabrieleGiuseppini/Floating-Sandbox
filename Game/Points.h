@@ -1757,6 +1757,15 @@ public:
     }
 
     //
+    // Randomness
+    //
+
+    float GetRandomNormalizedUniformPersonalitySeed(ElementIndex pointElementIndex) const
+    {
+        return mRandomNormalizedUniformFloatBuffer[pointElementIndex];
+    }
+
+    //
     // Immutable attributes
     //
 

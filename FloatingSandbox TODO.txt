@@ -646,7 +646,11 @@ Render:
 		- New ships
 			- changelist
 
-		- Do some normal wrecks and decide on default hydrostatic pressure adjust value
+		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
+			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
+			= 0.242
+
+		- Inject cracks (*)
 
 		- Test on Dell
 
@@ -664,8 +668,6 @@ Render:
 		
 		- Splash sounds at displacement: TOSPEC
 		
-		- Inject cracks (*)
-
 		- Localization:
 			- IT
 				- Check out changed SettingsDialog strings
