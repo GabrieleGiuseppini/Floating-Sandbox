@@ -311,7 +311,7 @@ void Ship::Update(
     ///////////////////////////////////////////////////////////////////
     // Apply world forces
     //
-    // Also calculates cached depths
+    // Also calculates cached depths, and updates AABBs
     ///////////////////////////////////////////////////////////////////
 
     ApplyWorldForces(
@@ -1212,22 +1212,33 @@ void Ship::ApplyHydrostaticPressureForces(
     //
     //      F(P) = F(E1)/2 + F(E2)/2
     //
-    // The hydrostatic pressure force acting on edge Ei - F(Ei) - is:
+    // The hydrostatic pressure force acting on edge Ei is:
     //
     //      F(Ei) = -Ni * D * Mw * G * |Ei|
     //
     // Where Ni is the normal to Ei, D is the depth (which we take constant
     // so to not produce buoyancy forces), Mw * G is the weight of water, and
-    // |Ei| accounts for longer edges being subject to more pressure.
+    // |Ei| accounts for wider edges being subject to more pressure.
     //
     //
-    // We will simplify F(Ei) as:
+    // We will rewrite F(Ei) as:
     //
     //      F(Ei) = -Perp(Ei) * ForceStem
     //
     // And thus:
     //
     //      F(P)  = (-Perp(E1) -Perp(E2)) * ForceStem / 2
+    //
+    //
+    //
+    // Notes:
+    //  - We use the AABB's center as the point where the depth is calculated at;
+    //    as a consequence, if the ship is interactively moved or rotated, the AABB's
+    //    that we use here are stale. Not a big deal...
+    //    Outside of these "moving" interactions, the AABBs we use here are also
+    //    inconsistent with the current positions because of integration during dynamic
+    //    iterations, unless hydrostatic pressures are calculated on the *first* dynamic
+    //    iteration.
     //
 
     for (FrontierId const frontierId : mFrontiers.GetFrontierIds())
