@@ -213,6 +213,101 @@ public:
     void UploadElementFrontierEdgesEnd();
 
     //
+    // Electric sparks
+    //
+
+    void UploadElectricSparksStart(size_t count);
+
+    void UploadElectricSpark(
+        PlaneId planeId,
+        vec2f const & startPosition,
+        float startSize,
+        vec2f const & endPosition,
+        float endSize)
+    {
+        float const fPlaneId = static_cast<float>(planeId);
+
+        //
+        // Calculate start and end vectors
+        //
+        // C---S---D
+        // |       |
+        // |       |
+        // |       |
+        // |       |
+        // |       |
+        // |       |
+        // |       |
+        // A---E---B
+        //
+
+        // S->E vector
+        vec2f const sparkVector = endPosition - startPosition;
+
+        // Qn = normalized spark vector
+        // Qnp = perpendicular to Qn (i.e. Q's normal)
+        float Ql = sparkVector.length();
+        vec2f const Qn = sparkVector.normalise(Ql);
+        vec2f const Qnp = Qn.to_perpendicular(); // rotated by PI/2, i.e. oriented to the right (wrt spark vector)
+
+        // Qhw = vector delineating one half of the quad width, the one to the left
+        vec2f const Qhw = Qnp * 0.45f;
+
+        // A, B = left-bottom, right-bottom
+        vec2f const A = endPosition - Qhw * endSize;
+        vec2f const B = endPosition + Qhw * endSize;
+        // C, D = left-top, right-top
+        vec2f const C = startPosition - Qhw * startSize;
+        vec2f const D = startPosition + Qhw * startSize;
+
+        //
+        // Append vertices - two triangles
+        //
+
+        // Triangle 1
+
+        // Top-left
+        mElectricSparkVertexBuffer.emplace_back(
+            C,
+            fPlaneId,
+            0.0f);
+
+        // Top-Right
+        mElectricSparkVertexBuffer.emplace_back(
+            D,
+            fPlaneId,
+            1.0f);
+
+        // Bottom-left
+        mElectricSparkVertexBuffer.emplace_back(
+            A,
+            fPlaneId,
+            0.0f);
+
+        // Triangle 2
+
+        // Top-Right
+        mElectricSparkVertexBuffer.emplace_back(
+            D,
+            fPlaneId,
+            1.0f);
+
+        // Bottom-left
+        mElectricSparkVertexBuffer.emplace_back(
+            A,
+            fPlaneId,
+            0.0f);
+
+        // Bottom-right
+        mElectricSparkVertexBuffer.emplace_back(
+            B,
+            fPlaneId,
+            1.0f);
+    }
+
+    void UploadElectricSparksEnd();
+
+    //
     // Flames
     //
 
@@ -1032,6 +1127,9 @@ private:
 
 private:
 
+    void RenderPrepareElectricSparks(RenderParameters const & renderParameters);
+    void RenderDrawElectricSparks(RenderParameters const & renderParameters);
+
     void RenderPrepareFlames();
 
     template<ProgramType FlameShaderType>
@@ -1114,6 +1212,22 @@ private:
         int pointIndex1;
         int pointIndex2;
         int pointIndex3;
+    };
+
+    struct ElectricSparkVertex
+    {
+        vec2f vertexPosition;
+        float planeId;
+        float gamma; // 0.0 left, 1.0 right
+
+        ElectricSparkVertex(
+            vec2f _vertexPosition,
+            float _planeId,
+            float _gamma)
+            : vertexPosition(_vertexPosition)
+            , planeId(_planeId)
+            , gamma(_gamma)
+        {}
     };
 
     struct FlameVertex
@@ -1311,6 +1425,11 @@ private:
     GameOpenGLVBO mFrontierEdgeElementVBO;
     size_t mFrontierEdgeElementVBOAllocatedElementSize;
 
+    std::vector<ElectricSparkVertex> mElectricSparkVertexBuffer;
+    bool mIsElectricSparkVertexBufferDirty;
+    GameOpenGLVBO mElectricSparkVBO;
+    size_t mElectricSparkVBOAllocatedVertexSize;
+
     BoundedVector<FlameVertex> mFlameVertexBuffer;
     size_t mFlameBackgroundCount;
     size_t mFlameForegroundCount;
@@ -1382,6 +1501,7 @@ private:
     //
 
     GameOpenGLVAO mShipVAO;
+    GameOpenGLVAO mElectricSparkVAO;
     GameOpenGLVAO mFlameVAO;
     GameOpenGLVAO mExplosionVAO;
     GameOpenGLVAO mSparkleVAO;

@@ -649,7 +649,15 @@ Render:
 
 		= Electric Spark tool
 			+ Infrastructure (tool, sound, cursor)
-			- Rendering
+			= Rendering
+				= ShipRenderContext machinery
+					- Rethink: it's bad that we continuously flag vertex buffer as dirty: it can be assumed to be always dirty when it's not empty;
+					  use same strategy then that we use for...clouds?
+				= Shader
+				+ Ship::Upload
+					+ New Ship buffer: ElectricSpark, simple std::vector
+						+ Reset at first update that was not preceded by the interaction
+						+ Uploaded by Ship::Upload
 			- Interaction
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
