@@ -1,4 +1,6 @@
 1.16.5
+- Added hydrostatic pressure, aka "Pressure Crush"
+	- Underwater surfaces now feel an amount of external pressure proportional to their depth
 - Revisited simulation of waves originating from water displacement
 	- Taken inspiration from "Improving the stability of a simple formulation of the shallow water equations for 2D flood modeling", de Almeida et al.(2012) (https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2011WR011570)
 - Doubled world width to 10.0km

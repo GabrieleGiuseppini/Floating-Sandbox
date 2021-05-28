@@ -158,7 +158,7 @@ struct GameParameters
 
     float HydrostaticPressureAdjustment;
     static float constexpr MinHydrostaticPressureAdjustment = 0.0f;
-    static float constexpr MaxHydrostaticPressureAdjustment = 10.0f;
+    static float constexpr MaxHydrostaticPressureAdjustment = 20.0f;
 
     float WaterIntakeAdjustment;
     static float constexpr MinWaterIntakeAdjustment = 0.001f;
