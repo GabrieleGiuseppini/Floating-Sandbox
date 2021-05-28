@@ -47,7 +47,7 @@ The game is also featured at [GameJolt](https://gamejolt.com/games/floating-sand
 - Linux:
 	- Either 64-bit or 32-bit
 	- X11 and GTK3
-	- OpenGL 2.1 or later
+	- OpenGL 2.1 or later, MESA drivers are fine
 	- OpenAL, Vorbis and FLAC
 
 <img src="https://i.imgur.com/6LOVsqX.jpg">

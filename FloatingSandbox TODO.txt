@@ -523,6 +523,8 @@ Render:
 			+ Transform ShipRenderContext::UploadVectors from a one-time Upload call with batch to a Start/NxUpload/End call pattern,
 			  with Start() doing the reserve() call we currently do at the one-time Upload call
 		+ Pressure implosions / pressure crush (*)			
+		+ See issue with ocean texture shading: texture coords change depending on cam: repro with pause and high zoom
+		X See if also on Windows "High Quality Rendering" of water is faster than normal
 
 		= Ubuntu:
 			+ Event polling issue:
@@ -554,8 +556,8 @@ Render:
 			= Build as RELEASE
 				= See if have to set _DEBUG in CMake also for Linux, so it appears in BuildInfo
 					- Test
-			- README.md
-				- Requirements: do different by OS
+			+ README.md
+				+ Requirements: do different by OS
 			- Gather testers and send them tar.gz
 
 		= MAC:
@@ -637,9 +639,6 @@ Render:
 
 		- New ships
 			- changelist
-
-		+ See issue with ocean texture shading: texture coords change depending on cam: repro with pause and high zoom
-		X See if also on Windows "High Quality Rendering" of water is faster than normal
 
 		- Test optimization: ApplyWorldSurfaceForces: only consider *external* frontiers
 			! No drag, no displacement for internal frontiers. We are fine with it
