@@ -50,6 +50,11 @@ ShipRenderContext::ShipRenderContext(
     , mFrontierEdgeElementVBO()
     , mFrontierEdgeElementVBOAllocatedElementSize(0u)
     //
+    , mElectricSparkVertexBuffer()
+    , mIsElectricSparkVertexBufferDirty(true)
+    , mElectricSparkVBO()
+    , mElectricSparkVBOAllocatedVertexSize(0u)
+    //
     , mFlameVertexBuffer()
     , mFlameBackgroundCount(0u)
     , mFlameForegroundCount(0u)
@@ -108,6 +113,7 @@ ShipRenderContext::ShipRenderContext(
     , mTriangleElementVBOStartIndex(0)
     // VAOs
     , mShipVAO()
+    , mElectricSparkVAO()
     , mFlameVAO()
     , mExplosionVAO()
     , mSparkleVAO()
@@ -143,8 +149,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[15];
-    glGenBuffers(15, vbos);
+    GLuint vbos[16];
+    glGenBuffers(16, vbos);
     CheckOpenGLError();
 
     mPointAttributeGroup1VBO = vbos[0];
@@ -182,22 +188,24 @@ ShipRenderContext::ShipRenderContext(
 
     mFrontierEdgeElementVBO = vbos[6];
 
-    mFlameVBO = vbos[7];
+    mElectricSparkVBO = vbos[7];
 
-    mExplosionVBO = vbos[8];
+    mFlameVBO = vbos[8];
 
-    mSparkleVBO = vbos[9];
+    mExplosionVBO = vbos[9];
+
+    mSparkleVBO = vbos[10];
     mSparkleVertexBuffer.reserve(256); // Arbitrary
 
-    mGenericMipMappedTextureVBO = vbos[10];
+    mGenericMipMappedTextureVBO = vbos[11];
 
-    mHighlightVBO = vbos[11];
+    mHighlightVBO = vbos[12];
 
-    mVectorArrowVBO = vbos[12];
+    mVectorArrowVBO = vbos[13];
 
-    mCenterVBO = vbos[13];
+    mCenterVBO = vbos[14];
 
-    mPointToPointArrowVBO = vbos[14];
+    mPointToPointArrowVBO = vbos[15];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -266,6 +274,28 @@ ShipRenderContext::ShipRenderContext(
         // in the VAO. So we won't associate the element VBO here, but rather before the drawing call.
         ////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mPointElementVBO);
         ////CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+
+    //
+    // Initialize Electric Spark VAO
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mElectricSparkVAO = tmpGLuint;
+
+        glBindVertexArray(*mElectricSparkVAO);
+        CheckOpenGLError();
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mElectricSparkVBO);
+        static_assert(sizeof(ElectricSparkVertex) == (2 + 1 + 1) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ElectricSpark1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ElectricSpark1), 4, GL_FLOAT, GL_FALSE, sizeof(ElectricSparkVertex), (void *)(0));
+        CheckOpenGLError();
 
         glBindVertexArray(0);
     }
@@ -837,6 +867,23 @@ void ShipRenderContext::UploadElementFrontierEdgesEnd()
     // Nop
 }
 
+void ShipRenderContext::UploadElectricSparksStart(size_t count)
+{
+    //
+    // Electric sparks are are sticky as long as start() is not invoked
+    //
+
+    mElectricSparkVertexBuffer.clear();
+    mElectricSparkVertexBuffer.reserve(count);
+
+    mIsElectricSparkVertexBufferDirty = true;
+}
+
+void ShipRenderContext::UploadElectricSparksEnd()
+{
+    // Nop
+}
+
 void ShipRenderContext::UploadFlamesStart(size_t count)
 {
     //
@@ -1156,6 +1203,12 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
     }
 
     //
+    // Prepare electric sparks
+    //
+
+    RenderPrepareElectricSparks(renderParameters);
+
+    //
     // Prepare sparkles
     //
 
@@ -1423,6 +1476,12 @@ void ShipRenderContext::RenderDraw(
     }
 
     //
+    // Render electric sparks
+    //
+
+    RenderDrawElectricSparks(renderParameters);
+
+    //
     // Render foreground flames
     //
 
@@ -1487,6 +1546,51 @@ void ShipRenderContext::RenderDraw(
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
+
+void ShipRenderContext::RenderPrepareElectricSparks(RenderParameters const & /*renderParameters*/)
+{
+    if (mIsElectricSparkVertexBufferDirty)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mElectricSparkVBO);
+
+        if (!mElectricSparkVertexBuffer.empty())
+        {
+            if (mElectricSparkVertexBuffer.size() > mElectricSparkVBOAllocatedVertexSize)
+            {
+                // Re-allocate VBO buffer and upload
+                glBufferData(GL_ARRAY_BUFFER, mElectricSparkVertexBuffer.size() * sizeof(ElectricSparkVertex), mElectricSparkVertexBuffer.data(), GL_DYNAMIC_DRAW);
+                CheckOpenGLError();
+
+                mElectricSparkVBOAllocatedVertexSize = mElectricSparkVertexBuffer.size();
+            }
+            else
+            {
+                // No size change, just upload VBO buffer
+                glBufferSubData(GL_ARRAY_BUFFER, 0, mElectricSparkVertexBuffer.size() * sizeof(ElectricSparkVertex), mElectricSparkVertexBuffer.data());
+                CheckOpenGLError();
+            }
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        mIsElectricSparkVertexBufferDirty = false;
+    }
+}
+
+void ShipRenderContext::RenderDrawElectricSparks(RenderParameters const & /*renderParameters*/)
+{
+    if (!mElectricSparkVertexBuffer.empty())
+    {
+        glBindVertexArray(*mElectricSparkVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::ShipElectricSparks>();
+
+        assert(0 == (mElectricSparkVertexBuffer.size() % 6));
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mElectricSparkVertexBuffer.size()));
+
+        glBindVertexArray(0);
+    }
+}
 
 void ShipRenderContext::RenderPrepareFlames()
 {
@@ -2000,7 +2104,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     //          - Triangles are always drawn temporally before ropes and springs though, to avoid anti-aliasing issues
     //      - 4: Stressed springs, Frontier edges (temporally after)
     //      - 5: Points
-    //      - 6: Flames (foreground)
+    //      - 6: Electric sparks, Flames (foreground)
     //      - 7: Sparkles
     //      - 8: Generic textures
     //      - 9: Explosions
@@ -2138,7 +2242,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         shipOrthoMatrix);
 
     //
-    // Layer 6: Flames - foreground
+    // Layer 6: Electric Sparks, Flames - foreground
     //
 
     view.CalculateShipOrthoMatrix(
@@ -2149,6 +2253,10 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         static_cast<int>(mMaxMaxPlaneId),
         6,
         NLayers,
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipElectricSparks>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipElectricSparks, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();

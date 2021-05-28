@@ -44,6 +44,7 @@ enum class ProgramType
     ShipCenters,
     ShipCircleHighlights,
     ShipElectricalElementHighlights,
+    ShipElectricSparks,
     ShipExplosions,
     ShipFlamesBackground,
     ShipFlamesForeground,
@@ -186,6 +187,8 @@ enum class VertexAttributeType : GLuint
     ShipPointColor = 2,
     ShipPointTemperature = 3,
     ShipPointFrontierColor = 4,
+
+    ElectricSpark1 = 0,
 
     Explosion1 = 0,
     Explosion2 = 1,

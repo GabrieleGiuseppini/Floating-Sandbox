@@ -703,7 +703,40 @@ bool Ship::ApplyElectricSparkAt(
 
     assert(closestPointIndex != NoneElementIndex);
 
-    // TODOHERE
+    //
+    // 2. TODOHERE
+    //
+
+    mElectricSparksToRender.clear();
+
+    if (mPoints.GetConnectedSprings(closestPointIndex).ConnectedSprings.size() > 0)
+    {
+        auto const spring1 = mPoints.GetConnectedSprings(closestPointIndex).ConnectedSprings[0].SpringIndex;
+        auto const point2 = mPoints.GetConnectedSprings(closestPointIndex).ConnectedSprings[0].OtherEndpointIndex;
+
+        mElectricSparksToRender.emplace_back(
+            closestPointIndex,
+            1.0f,
+            point2,
+            1.0f);
+
+        if (mPoints.GetConnectedSprings(point2).ConnectedSprings.size() > 1)
+        {
+            auto const spring2 =
+                mPoints.GetConnectedSprings(point2).ConnectedSprings[0].SpringIndex != spring1
+                ? mPoints.GetConnectedSprings(point2).ConnectedSprings[0].SpringIndex
+                : mPoints.GetConnectedSprings(point2).ConnectedSprings[1].SpringIndex;
+
+            mElectricSparksToRender.emplace_back(
+                point2,
+                1.0f,
+                mSprings.GetOtherEndpointIndex(spring2, point2),
+                0.2f);
+        }
+    }
+
+    // Remember that we have populated electric sparks
+    mAreElectricSparksPopulatedBeforeNextUpdate = true;
 
     return true;
 }

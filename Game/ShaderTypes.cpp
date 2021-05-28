@@ -67,6 +67,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipCircleHighlights;
     else if (lstr == "ship_electrical_element_highlights")
         return ProgramType::ShipElectricalElementHighlights;
+    else if (lstr == "ship_electric_sparks")
+        return ProgramType::ShipElectricSparks;
     else if (lstr == "ship_explosions")
         return ProgramType::ShipExplosions;
     else if (lstr == "ship_flames_background")
@@ -191,6 +193,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipCircleHighlights";
     case ProgramType::ShipElectricalElementHighlights:
         return "ShipElectricalElementHighlights";
+    case ProgramType::ShipElectricSparks:
+        return "ShipElectricSparks";
     case ProgramType::ShipExplosions:
         return "ShipExplosions";
     case ProgramType::ShipFlamesBackground:
@@ -487,6 +491,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointTemperature;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointFrontierColor"))
         return VertexAttributeType::ShipPointFrontierColor;
+    else if (Utils::CaseInsensitiveEquals(str, "ElectricSpark1"))
+        return VertexAttributeType::ElectricSpark1;
     else if (Utils::CaseInsensitiveEquals(str, "Explosion1"))
         return VertexAttributeType::Explosion1;
     else if (Utils::CaseInsensitiveEquals(str, "Explosion2"))

@@ -105,6 +105,8 @@ Ship::Ship(
     , mWaterSplashedRunningAverage()
     , mLastLuminiscenceAdjustmentDiffused(-1.0f)
     // Render
+    , mElectricSparksToRender()
+    , mAreElectricSparksPopulatedBeforeNextUpdate(false)
     , mLastUploadedDebugShipRenderMode()
     , mPlaneTriangleIndicesToRender()
 {
@@ -554,6 +556,17 @@ void Ship::Update(
     mPoints.UpdateHighlights(currentWallClockTimeFloat);
 
     ///////////////////////////////////////////////////////////////////
+    // Electric sparks
+    ///////////////////////////////////////////////////////////////////
+
+    if (!mAreElectricSparksPopulatedBeforeNextUpdate)
+    {
+        mElectricSparksToRender.clear();
+    }
+
+    mAreElectricSparksPopulatedBeforeNextUpdate = false;
+
+    ///////////////////////////////////////////////////////////////////
     // Diagnostics
     ///////////////////////////////////////////////////////////////////
 
@@ -667,6 +680,26 @@ void Ship::RenderUpload(Render::RenderContext & renderContext)
     }
 
     shipRenderContext.UploadElementStressedSpringsEnd();
+
+    //
+    // Upload electric sparks
+    //
+
+    {
+        shipRenderContext.UploadElectricSparksStart(mElectricSparksToRender.size());
+
+        for (auto const & electricSpark : mElectricSparksToRender)
+        {
+            shipRenderContext.UploadElectricSpark(
+                mPoints.GetPlaneId(electricSpark.StartPointIndex),
+                mPoints.GetPosition(electricSpark.StartPointIndex),
+                electricSpark.StartSize,
+                mPoints.GetPosition(electricSpark.EndPointIndex),
+                electricSpark.EndSize);
+        }
+
+        shipRenderContext.UploadElectricSparksEnd();
+    }
 
     //
     // Upload frontiers

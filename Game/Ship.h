@@ -775,6 +775,31 @@ private:
     // Render members
     //
 
+    struct ElectricSpark
+    {
+        ElementIndex StartPointIndex;
+        float StartSize;
+        ElementIndex EndPointIndex;
+        float EndSize;
+
+        ElectricSpark(
+            ElementIndex startPointIndex,
+            float startSize,
+            ElementIndex endPointIndex,
+            float endSize)
+            : StartPointIndex(startPointIndex)
+            , StartSize(startSize)
+            , EndPointIndex(endPointIndex)
+            , EndSize(endSize)
+        {}
+    };
+
+    // The electric sparks
+    std::vector<ElectricSpark> mElectricSparksToRender;
+
+    // Flag remembering whether electric sparks have been populated prior to the next Update() step
+    bool mAreElectricSparksPopulatedBeforeNextUpdate;
+
     // The debug ship render mode that was in effect the last time we've uploaded elements;
     // used to detect changes and eventually re-upload
     std::optional<DebugShipRenderModeType> mLastUploadedDebugShipRenderMode;
