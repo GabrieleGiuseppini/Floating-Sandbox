@@ -387,7 +387,7 @@ public:
             {
                 // Anchor textureY at 0.0 at top
                 oceanSegment.yTexture1 = 0.0f;
-                oceanSegment.yTexture2 = yMid - yVisibleWorldBottom; // Negative if yOcean invisible, but then who cares
+                oceanSegment.yTexture2 = yTop - yVisibleWorldBottom; // Negative if yTop invisible, but then who cares
 
                 break;
             }

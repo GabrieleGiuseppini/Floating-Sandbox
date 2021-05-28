@@ -552,9 +552,11 @@ Render:
 				- vorbis, flac					
 				- ...
 			= Build as RELEASE
-				- See if have to set _DEBUG in CMake also for Linux, so it appears in BuildInfo
+				= See if have to set _DEBUG in CMake also for Linux, so it appears in BuildInfo
+					- Test
 			- README.md
 				- Requirements: do different by OS
+			- Gather testers and send them tar.gz
 
 		= MAC:
 			= Full high-DPI path:
@@ -635,6 +637,20 @@ Render:
 
 		- New ships
 			- changelist
+
+		+ See issue with ocean texture shading: texture coords change depending on cam: repro with pause and high zoom
+		X See if also on Windows "High Quality Rendering" of water is faster than normal
+
+		- Test optimization: ApplyWorldSurfaceForces: only consider *external* frontiers
+			! No drag, no displacement for internal frontiers. We are fine with it
+			- Test Base III before: TODO
+			- Test Base III after: TODO
+			- If ok:
+				- Remove checks for type==External @ AABB updating
+
+		- Test on Dell
+
+		- Send for testing
 			
 		= Frontier-enabled features:			
 			- Impact when ship touches water for first time (*)
@@ -645,19 +661,9 @@ Render:
 						- A) SWE + Waves (i.e. full samples)
 						- B) Just SWE
 				- Option B: by point visit; all points in tiny band from depth 0, receive force...same as above....
-
-		- See if also on Windows "High Quality Rendering" of water is faster than normal
-		- See issue with ocean texture shading: texture coords change depending on cam: repro with pause and high zoom
 		
-		- Test optimization: ApplyWorldSurfaceForces: only consider *external* frontiers
-			! No drag, 
-			- Test Base III before: TODO
-			- Test Base III after: TODO
-
 		- Splash sounds at displacement: TOSPEC
-
 		
-
 		- Inject cracks (*)
 
 		- Localization:
