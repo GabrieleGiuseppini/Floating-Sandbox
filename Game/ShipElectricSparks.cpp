@@ -12,10 +12,12 @@
 
 namespace Physics {
 
-ShipElectricSparks::ShipElectricSparks(Springs const & springs)
-    : mSpringCount(springs.GetElementCount())
-    , mIsArcElectrified(mSpringCount, 0, false)
-    , mIsArcElectrifiedBackup(mSpringCount, 0, false)
+ShipElectricSparks::ShipElectricSparks(
+    Points const & points,
+    Springs const & springs)
+    : mHasPointBeenVisited(points.GetElementCount(), 0, false)
+    , mIsSpringElectrified(springs.GetElementCount(), 0, false)
+    , mIsSpringElectrifiedBackup(springs.GetElementCount(), 0, false)
     , mAreSparksPopulatedBeforeNextUpdate(false)
     , mSparksToRender()
 {
@@ -105,6 +107,8 @@ void ShipElectricSparks::PropagateSparks(
     Points const & points,
     Springs const & springs)
 {
+    LogMessage("TODOTEST:---------------------------------------------------------------------");
+
     //
     // Constants
     //
@@ -145,23 +149,30 @@ void ShipElectricSparks::PropagateSparks(
     // Initialize
     //
 
+    // Prepare IsVisited buffer
+    mHasPointBeenVisited.fill(false);
+
     // Prepare IsElectrified buffer
-    mIsArcElectrifiedBackup.fill(false);
-    bool * const oldIsElectrified = mIsArcElectrified.data();
-    bool * const newIsElectrified = mIsArcElectrifiedBackup.data();
+    mIsSpringElectrifiedBackup.fill(false);
+    bool * const oldIsElectrified = mIsSpringElectrified.data();
+    bool * const newIsElectrified = mIsSpringElectrifiedBackup.data();
 
     // Clear the sparks to render after this step
     mSparksToRender.clear();
 
-    // Calculate max number of expansions for this iteration
-    float const MaxNumberOfExpansions = std::min(
+    // Calculate max equivalent path length for this iteration - we won't create arcs longer than this
+    float constexpr TODOLimit = 15.0f; // TODO: should this be based off total number of springs?
+    float const maxEquivalentPathLengthForThisIteration = std::min(
         static_cast<float>(counter + 1),
-        50.0f);// TODO: should this be based off total number of springs?
+        TODOLimit);
 
-    auto const calculateSparkSize = [CurrentMaxPathLength = static_cast<float>(counter)](float pathLength)
+    LogMessage("TODOTEST: startPoint=", startingPointIndex);
+
+    // Functor that calculates size of a sparkle, given its current path length and the distance of that path
+    // length from the theoretical maximum
+    auto const calculateSparkSize = [maxEquivalentPathLengthForThisIteration, TODOLimit](float pathLength)
     {
-        return 0.2f
-            + (1.0f - 0.2f) * std::min(pathLength / CurrentMaxPathLength, 1.0f);
+        return 0.2f + (1.0f - 0.2f) * (maxEquivalentPathLengthForThisIteration - pathLength) / TODOLimit;
     };
 
     //
@@ -173,17 +184,13 @@ void ShipElectricSparks::PropagateSparks(
     {
         std::vector<std::tuple<ElementIndex, float>> otherSprings;
 
-        // Choose number of starting arcs
-        size_t const startingArcCount = GameRandomEngine::GetInstance().GenerateUniformInteger(MinNumberOfStartingArcs, MaxNumberOfStartingArcs);
-
         //
         // 1. Springs already electrified
         //
 
         for (auto const & cs : points.GetConnectedSprings(startingPointIndex).ConnectedSprings)
         {
-            if (mIsArcElectrified[cs.SpringIndex]
-                && startingSprings.size() < startingArcCount)
+            if (oldIsElectrified[cs.SpringIndex])
             {
                 startingSprings.emplace_back(cs.SpringIndex);
             }
@@ -199,8 +206,11 @@ void ShipElectricSparks::PropagateSparks(
         // 2. Remaining springs
         //
 
-        if (startingSprings.size() < startingArcCount)
+        if (startingSprings.size() < MinNumberOfStartingArcs)
         {
+            // Choose number of starting arcs
+            size_t const startingArcCount = GameRandomEngine::GetInstance().GenerateUniformInteger(MinNumberOfStartingArcs, MaxNumberOfStartingArcs);
+
             // Sort remaining
             std::sort(
                 otherSprings.begin(),
@@ -226,6 +236,8 @@ void ShipElectricSparks::PropagateSparks(
 
     auto const startingPointPosition = points.GetPosition(startingPointIndex);
 
+    LogMessage("TODOTEST: iter=", 0, " #startingSprings=", startingSprings.size());
+
     for (ElementIndex const s : startingSprings)
     {
         float const equivalentPathLength = 1.0f; // TODO: material-based
@@ -244,7 +256,8 @@ void ShipElectricSparks::PropagateSparks(
             targetSize);
 
         // Next expansion
-        if (equivalentPathLength < MaxNumberOfExpansions)
+        if (equivalentPathLength < maxEquivalentPathLengthForThisIteration
+            && !mHasPointBeenVisited[targetEndpointIndex])
         {
             currentPointsToVisit.emplace_back(
                 targetEndpointIndex,
@@ -252,6 +265,8 @@ void ShipElectricSparks::PropagateSparks(
                 targetSize,
                 equivalentPathLength,
                 s);
+
+            mHasPointBeenVisited[targetEndpointIndex] = true;
         }
     }
 
@@ -261,12 +276,148 @@ void ShipElectricSparks::PropagateSparks(
 
     std::vector<SparkPointToVisit> nextPointsToVisit;
 
-    while (!currentPointsToVisit.empty())
+    std::vector<ElementIndex> nextSprings;
+
+    // TODOTEST
+    //while (!currentPointsToVisit.empty())
+    for (int iter = 1; !currentPointsToVisit.empty(); ++iter)
     {
+        LogMessage("TODOTEST: iter=", iter, " #currentPointsToVisit=", currentPointsToVisit.size());
+
+        assert(nextPointsToVisit.empty());
+
+        bool hasForkedInThisExpansionIteration = false;
+
         // Visit all points
         for (auto const & pv : currentPointsToVisit)
         {
-            // TODOHERE
+            vec2f const pointPosition = points.GetPosition(pv.PointIndex);
+
+            //
+            // Collect the already-electrified outgoing springs that are *not* the incoming spring,
+            // randomly discarding them
+            //
+
+            nextSprings.clear();
+
+            for (auto const & cs : points.GetConnectedSprings(pv.PointIndex).ConnectedSprings)
+            {
+                if (oldIsElectrified[cs.SpringIndex]
+                    && cs.SpringIndex != pv.IncomingSpringIndex)
+                {
+                    if (GameRandomEngine::GetInstance().GenerateUniformBoolean(0.995f))
+                    {
+                        nextSprings.emplace_back(cs.SpringIndex);
+                    }
+                }
+            }
+
+            //
+            // Choose a new outgoing spring under any of these conditions:
+            //  - There are no already-electrified outgoing springs, and we choose to continue;
+            //  - There is only one already-electrified outgoing spring, and we choose to fork
+            //
+
+            // Calculate how close we are to theoretical end
+            float const distanceToTheoreticalMaxPathLength = (TODOLimit - pv.EquivalentPathLength) / TODOLimit;
+
+            bool const doFindNewSpring =
+                nextSprings.size() == 0
+                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.995f * distanceToTheoreticalMaxPathLength);
+
+            bool const doFork =
+                nextSprings.size() == 1
+                && !hasForkedInThisExpansionIteration
+                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.01f * (1.0f - distanceToTheoreticalMaxPathLength));
+
+            if (doFindNewSpring || doFork)
+            {
+                //
+                // Find the top spring that is *not* the incoming spring;
+                // ranking is based on alignment of direction with incoming direction,
+                // we take second best - if possible - to impose a zig-zag pattern
+                //
+
+                ElementIndex bestSpring1 = NoneElementIndex;
+                float bestSpringAligment1 = -1.0f;
+                ElementIndex bestSpring2 = NoneElementIndex;
+                float bestSpringAligment2 = -1.0f;
+
+                for (auto const & cs : points.GetConnectedSprings(pv.PointIndex).ConnectedSprings)
+                {
+                    if (!oldIsElectrified[cs.SpringIndex]
+                        && cs.SpringIndex != pv.IncomingSpringIndex)
+                    {
+                        // Calculate alignment
+                        float const alignment = (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction);
+                        if (alignment > bestSpringAligment1)
+                        {
+                            bestSpring2 = bestSpring1;
+                            bestSpringAligment2 = bestSpringAligment1;
+
+                            bestSpring1 = cs.SpringIndex;
+                            bestSpringAligment1 = alignment;
+                        }
+                        else if (alignment > bestSpringAligment2)
+                        {
+                            bestSpring2 = cs.SpringIndex;
+                            bestSpringAligment2 = alignment;
+                        }
+                    }
+                }
+
+                if (bestSpring2 != NoneElementIndex
+                    && bestSpringAligment2 >= 0.0f)
+                {
+                    nextSprings.emplace_back(bestSpring2);
+                }
+                else if (bestSpring1 != NoneElementIndex)
+                {
+                    nextSprings.emplace_back(bestSpring1);
+                }
+            }
+
+            hasForkedInThisExpansionIteration |= doFork;
+
+            //
+            // Follow all of these
+            //
+
+            LogMessage("TODOTEST:       #nextSprings(@", pv.PointIndex, ")=", nextSprings.size(), "   hasFoundNew:", doFindNewSpring, " hasForked:", doFork);
+
+            for (auto const s : nextSprings)
+            {
+                float const equivalentStepLength = 1.0f; // TODO: material-based
+                float const newEquivalentPathLength = pv.EquivalentPathLength + equivalentStepLength;
+
+                ElementIndex const targetEndpointIndex = springs.GetOtherEndpointIndex(s, pv.PointIndex);
+
+                // Electrify
+                newIsElectrified[s] = true;
+
+                // Render
+                float const targetSize = calculateSparkSize(newEquivalentPathLength);
+                LogMessage("TODOTEST:                     targetSize:", targetSize);
+                mSparksToRender.emplace_back(
+                    pv.PointIndex,
+                    pv.Size,
+                    targetEndpointIndex,
+                    targetSize);
+
+                // Next expansion
+                if (newEquivalentPathLength < maxEquivalentPathLengthForThisIteration
+                    && !mHasPointBeenVisited[targetEndpointIndex])
+                {
+                    nextPointsToVisit.emplace_back(
+                        targetEndpointIndex,
+                        (points.GetPosition(targetEndpointIndex) - pointPosition).normalise(),
+                        targetSize,
+                        newEquivalentPathLength,
+                        s);
+
+                    mHasPointBeenVisited[targetEndpointIndex] = true;
+                }
+            }
         }
 
         // Advance expansion
@@ -279,7 +430,7 @@ void ShipElectricSparks::PropagateSparks(
     //
 
     // Swap IsElectrified buffers
-    mIsArcElectrified.swap(mIsArcElectrifiedBackup);
+    mIsSpringElectrified.swap(mIsSpringElectrifiedBackup);
 
     // Remember that we have populated electric sparks
     mAreSparksPopulatedBeforeNextUpdate = true;
