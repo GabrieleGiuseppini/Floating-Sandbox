@@ -13,10 +13,9 @@
 namespace Physics {
 
 ShipElectricSparks::ShipElectricSparks(
-    Points const & points,
+    Points const & points, // TODO: see if needed
     Springs const & springs)
-    : mHasPointBeenVisited(points.GetElementCount(), 0, false)
-    , mIsSpringElectrified(springs.GetElementCount(), 0, false)
+    : mIsSpringElectrified(springs.GetElementCount(), 0, false)
     , mIsSpringElectrifiedBackup(springs.GetElementCount(), 0, false)
     , mAreSparksPopulatedBeforeNextUpdate(false)
     , mSparksToRender()
@@ -148,9 +147,6 @@ void ShipElectricSparks::PropagateSparks(
     // Initialize
     //
 
-    // Prepare IsVisited buffer
-    mHasPointBeenVisited.fill(false);
-
     // Prepare IsElectrified buffer
     mIsSpringElectrifiedBackup.fill(false);
     bool * const oldIsElectrified = mIsSpringElectrified.data();
@@ -248,8 +244,7 @@ void ShipElectricSparks::PropagateSparks(
             targetSize);
 
         // Next expansion
-        if (equivalentPathLength < maxEquivalentPathLengthForThisInteraction
-            && !mHasPointBeenVisited[targetEndpointIndex])
+        if (equivalentPathLength < maxEquivalentPathLengthForThisInteraction)
         {
             currentPointsToVisit.emplace_back(
                 targetEndpointIndex,
@@ -257,8 +252,6 @@ void ShipElectricSparks::PropagateSparks(
                 targetSize,
                 equivalentPathLength,
                 s);
-
-            mHasPointBeenVisited[targetEndpointIndex] = true;
         }
     }
 
@@ -438,8 +431,7 @@ void ShipElectricSparks::PropagateSparks(
                 for (auto const & cs : points.GetConnectedSprings(pv.PointIndex).ConnectedSprings)
                 {
                     if (!oldIsElectrified[cs.SpringIndex]
-                        && cs.SpringIndex != pv.IncomingSpringIndex
-                        && !mHasPointBeenVisited[cs.OtherEndpointIndex])
+                        && cs.SpringIndex != pv.IncomingSpringIndex)
                     {
                         // Calculate alignment
                         float const alignment = (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction);
@@ -543,8 +535,6 @@ void ShipElectricSparks::PropagateSparks(
                         targetSize,
                         newEquivalentPathLength,
                         s);
-
-                    mHasPointBeenVisited[targetEndpointIndex] = true;
                 }
 
                 ++TODOElectrifiedSpringsCount;
