@@ -422,6 +422,7 @@ void World::ApplyBlastAt(
 
 bool World::ApplyElectricSparkAt(
     vec2f const & targetPos,
+    std::uint64_t counter,
     float progress,
     GameParameters const & gameParameters)
 {
@@ -431,6 +432,7 @@ bool World::ApplyElectricSparkAt(
     {
         bool isApplied = ship->ApplyElectricSparkAt(
             targetPos,
+            counter,
             progress,
             gameParameters);
 

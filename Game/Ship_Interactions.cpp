@@ -674,71 +674,17 @@ void Ship::ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args
 
 bool Ship::ApplyElectricSparkAt(
     vec2f const & targetPos,
+    std::uint64_t counter,
     float progress,
     GameParameters const & gameParameters)
 {
-    //
-    // 1. Find closest point, and check whether there _is_ actually a closest point
-    //
-
-    float closestDistance = std::numeric_limits<float>::max();
-    ElementIndex closestPointIndex = NoneElementIndex;
-
-    for (auto pointIndex : mPoints.RawShipPoints()) // No point in visiting ephemeral points
-    {
-        vec2f const pointRadius = mPoints.GetPosition(pointIndex) - targetPos;
-        float const squarePointDistance = pointRadius.squareLength();
-        if (squarePointDistance < closestDistance)
-        {
-            closestDistance = squarePointDistance;
-            closestPointIndex = pointIndex;
-        }
-    }
-
-    if (closestDistance > 1.0f)
-    {
-        // No luck
-        return false;
-    }
-
-    assert(closestPointIndex != NoneElementIndex);
-
-    //
-    // 2. TODOHERE
-    //
-
-    mElectricSparksToRender.clear();
-
-    if (mPoints.GetConnectedSprings(closestPointIndex).ConnectedSprings.size() > 0)
-    {
-        auto const spring1 = mPoints.GetConnectedSprings(closestPointIndex).ConnectedSprings[0].SpringIndex;
-        auto const point2 = mPoints.GetConnectedSprings(closestPointIndex).ConnectedSprings[0].OtherEndpointIndex;
-
-        mElectricSparksToRender.emplace_back(
-            closestPointIndex,
-            1.0f,
-            point2,
-            1.0f);
-
-        if (mPoints.GetConnectedSprings(point2).ConnectedSprings.size() > 1)
-        {
-            auto const spring2 =
-                mPoints.GetConnectedSprings(point2).ConnectedSprings[0].SpringIndex != spring1
-                ? mPoints.GetConnectedSprings(point2).ConnectedSprings[0].SpringIndex
-                : mPoints.GetConnectedSprings(point2).ConnectedSprings[1].SpringIndex;
-
-            mElectricSparksToRender.emplace_back(
-                point2,
-                1.0f,
-                mSprings.GetOtherEndpointIndex(spring2, point2),
-                0.2f);
-        }
-    }
-
-    // Remember that we have populated electric sparks
-    mAreElectricSparksPopulatedBeforeNextUpdate = true;
-
-    return true;
+    return mElectricSparks.ApplySparkAt(
+        targetPos,
+        counter,
+        progress,
+        mPoints,
+        mSprings,
+        gameParameters);
 }
 
 void Ship::DrawTo(
