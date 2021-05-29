@@ -52,10 +52,6 @@ private:
 
 private:
 
-    // Flag remembering whether a point has been visited in a given iteration or or not;
-    // cardinality=points
-    Buffer<bool> mHasPointBeenVisited;
-
     // Flag remembering whether a spring is electrified or not;
     // cardinality=springs
     Buffer<bool> mIsSpringElectrified;
