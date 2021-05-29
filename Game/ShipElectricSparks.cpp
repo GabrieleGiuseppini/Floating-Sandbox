@@ -414,12 +414,12 @@ void ShipElectricSparks::PropagateSparks(
                 nextSprings.size() == 1
                 && !hasForkedInThisInteraction
                 // Fork more closer to theoretical end
-                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.01f * (1.0f - distanceToTheoreticalMaxPathLength) * (1.0f - distanceToTheoreticalMaxPathLength));
+                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.05f * (1.0f - distanceToTheoreticalMaxPathLength) * (1.0f - distanceToTheoreticalMaxPathLength));
 
             bool const doReroute =
                 nextSprings.size() == 1
                 // Reroute more closer to interaction end
-                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.2f * (1.0f - distanceToInteractionMaxPathLength) * (1.0f - distanceToInteractionMaxPathLength));
+                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f * (1.0f - distanceToInteractionMaxPathLength) * (1.0f - distanceToInteractionMaxPathLength));
 
             if (doFindNewSpring || doFork || doReroute)
             {
@@ -433,6 +433,8 @@ void ShipElectricSparks::PropagateSparks(
                 float bestSpringAligment1 = -1.0f;
                 ElementIndex bestSpring2 = NoneElementIndex;
                 float bestSpringAligment2 = -1.0f;
+                ElementIndex bestSpring3 = NoneElementIndex;
+                float bestSpringAligment3 = -1.0f;
 
                 for (auto const & cs : points.GetConnectedSprings(pv.PointIndex).ConnectedSprings)
                 {
@@ -444,6 +446,9 @@ void ShipElectricSparks::PropagateSparks(
                         float const alignment = (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction);
                         if (alignment > bestSpringAligment1)
                         {
+                            bestSpring3 = bestSpring2;
+                            bestSpringAligment3 = bestSpringAligment2;
+
                             bestSpring2 = bestSpring1;
                             bestSpringAligment2 = bestSpringAligment1;
 
@@ -452,16 +457,31 @@ void ShipElectricSparks::PropagateSparks(
                         }
                         else if (alignment > bestSpringAligment2)
                         {
+                            bestSpring3 = bestSpring2;
+                            bestSpringAligment3 = bestSpringAligment2;
+
                             bestSpring2 = cs.SpringIndex;
                             bestSpringAligment2 = alignment;
+                        }
+                        else if (alignment > bestSpringAligment3)
+                        {
+                            bestSpring3 = cs.SpringIndex;
+                            bestSpringAligment3 = alignment;
                         }
                     }
                 }
 
+                // Pick second best if possible
                 if (bestSpring2 != NoneElementIndex
                     && bestSpringAligment2 >= 0.0f)
                 {
-                    nextSprings.emplace_back(bestSpring2);
+                    // second and third best are similar, choose between them
+                    if (bestSpring3 != NoneElementIndex
+                        && bestSpringAligment3 >= 0.0f
+                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f))
+                        nextSprings.emplace_back(bestSpring3);
+                    else
+                        nextSprings.emplace_back(bestSpring2);
                 }
                 else if (bestSpring1 != NoneElementIndex)
                 {
