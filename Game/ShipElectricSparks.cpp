@@ -369,7 +369,7 @@ void ShipElectricSparks::PropagateSparks(
 
             //
             // Collect the outgoing springs that are *not* the incoming spring, which
-            // were previously electrified but not yet electrified in this interaction,
+            // were previously electrified /* TODOTEST: removed now: but not yet electrified in this interaction*/,
             // and which are aligned with our incoming direction
             //
 
@@ -381,6 +381,7 @@ void ShipElectricSparks::PropagateSparks(
                     && cs.SpringIndex != pv.IncomingSpringIndex
                     && (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction) > 0.0f)
                 {
+                    // TODOHERE
                     // TODOTEST: enforcing max one; NOTE: this makes the algo forget all forks
                     if (!nextSprings.empty())
                         continue;
@@ -495,14 +496,6 @@ void ShipElectricSparks::PropagateSparks(
                     nextSprings.erase(nextSprings.begin(), std::next(nextSprings.begin()));
                 }
             }
-
-
-            if (nextSprings.size() < 1)
-                LogMessage("TODOTEST: AAAAARGH 1");
-
-
-
-
 
             //
             // Follow all of these
