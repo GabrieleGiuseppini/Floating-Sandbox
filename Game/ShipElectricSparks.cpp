@@ -114,6 +114,7 @@ void ShipElectricSparks::PropagateSparks(
     //
 
     size_t constexpr StartingArcs = 6;
+    float constexpr MaxPathLength = 30.0f; // TODO: should this be based off total number of springs?
 
     //
     // The algorithm works by running a number of "expansions", each expansion
@@ -158,19 +159,16 @@ void ShipElectricSparks::PropagateSparks(
     // Clear the sparks to render after this step
     mSparksToRender.clear();
 
-    // Calculate max equivalent path length for this iteration - we won't create arcs longer than this
-    float constexpr TODOLimit = 25.0f; // TODO: should this be based off total number of springs?
-    float const maxEquivalentPathLengthForThisIteration = std::min(
+    // Calculate max equivalent path length for this interaction - we won't create arcs longer than this at this interaction
+    float const maxEquivalentPathLengthForThisInteraction = std::min(
         static_cast<float>(counter + 1),
-        TODOLimit);
-
-    LogMessage("TODOTEST: startPoint=", startingPointIndex);
+        MaxPathLength);
 
     // Functor that calculates size of a sparkle, given its current path length and the distance of that path
-    // length from the theoretical maximum
-    auto const calculateSparkSize = [maxEquivalentPathLengthForThisIteration, TODOLimit](float pathLength)
+    // length from the maximum for this interaction
+    auto const calculateSparkSize = [maxEquivalentPathLengthForThisInteraction](float pathLength)
     {
-        return 0.2f + (1.0f - 0.2f) * (maxEquivalentPathLengthForThisIteration - pathLength) / TODOLimit;
+        return 0.2f + (1.0f - 0.2f) * (maxEquivalentPathLengthForThisInteraction - pathLength) / maxEquivalentPathLengthForThisInteraction;
     };
 
     //
@@ -241,15 +239,16 @@ void ShipElectricSparks::PropagateSparks(
         newIsElectrified[s] = true;
 
         // Render
+        float const sourceSize = calculateSparkSize(0.0f);
         float const targetSize = calculateSparkSize(equivalentPathLength);
         mSparksToRender.emplace_back(
             startingPointIndex,
-            calculateSparkSize(0.0f),
+            sourceSize,
             targetEndpointIndex,
             targetSize);
 
         // Next expansion
-        if (equivalentPathLength < maxEquivalentPathLengthForThisIteration
+        if (equivalentPathLength < maxEquivalentPathLengthForThisInteraction
             && !mHasPointBeenVisited[targetEndpointIndex])
         {
             currentPointsToVisit.emplace_back(
@@ -290,8 +289,11 @@ void ShipElectricSparks::PropagateSparks(
         {
             vec2f const pointPosition = points.GetPosition(pv.PointIndex);
 
-            // Calculate how close we are with this point to the theoretical end of its path
-            float const distanceToTheoreticalMaxPathLength = (TODOLimit - pv.EquivalentPathLength) / TODOLimit;
+            // Calculate distance to the theoretical end of its path
+            float const distanceToTheoreticalMaxPathLength = (MaxPathLength - pv.EquivalentPathLength) / MaxPathLength;
+
+            // Calculate distance to the end of this path in this interaction
+            float const distanceToInteractionMaxPathLength = (maxEquivalentPathLengthForThisInteraction - pv.EquivalentPathLength) / maxEquivalentPathLengthForThisInteraction;
 
             /*
             //
@@ -391,10 +393,6 @@ void ShipElectricSparks::PropagateSparks(
                     if (!nextSprings.empty())
                         continue;
 
-                    ////// TODOTEST: enforcing max two
-                    ////if (nextSprings.size() >= 2)
-                    ////    continue;
-
                     nextSprings.emplace_back(cs.SpringIndex);
                 }
             }
@@ -415,11 +413,13 @@ void ShipElectricSparks::PropagateSparks(
             bool const doFork =
                 nextSprings.size() == 1
                 && !hasForkedInThisInteraction
-                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.01f * (1.0f - distanceToTheoreticalMaxPathLength));
+                // Fork more closer to theoretical end
+                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.01f * (1.0f - distanceToTheoreticalMaxPathLength) * (1.0f - distanceToTheoreticalMaxPathLength));
 
             bool const doReroute =
                 nextSprings.size() == 1
-                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.2f * (1.0f - distanceToTheoreticalMaxPathLength) * (1.0f - distanceToTheoreticalMaxPathLength));
+                // Reroute more closer to interaction end
+                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.2f * (1.0f - distanceToInteractionMaxPathLength) * (1.0f - distanceToInteractionMaxPathLength));
 
             if (doFindNewSpring || doFork || doReroute)
             {
@@ -513,7 +513,7 @@ void ShipElectricSparks::PropagateSparks(
                     targetSize);
 
                 // Next expansion
-                if (newEquivalentPathLength < maxEquivalentPathLengthForThisIteration
+                if (newEquivalentPathLength < maxEquivalentPathLengthForThisInteraction
                     && !mHasPointBeenVisited[targetEndpointIndex])
                 {
                     nextPointsToVisit.emplace_back(
