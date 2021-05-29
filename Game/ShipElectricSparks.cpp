@@ -113,9 +113,9 @@ void ShipElectricSparks::PropagateSparks(
     // Constants
     //
 
-    size_t constexpr MedianNumberOfStartingArcs = 5;
-    size_t constexpr MinNumberOfStartingArcs = 4;
-    size_t constexpr MaxNumberOfStartingArcs = 7;
+    size_t constexpr MedianNumberOfStartingArcs = 4;
+    size_t constexpr MinNumberOfStartingArcs = 3;
+    size_t constexpr MaxNumberOfStartingArcs = 6;
 
     //
     // The algorithm works by running a number of "expansions", each expansion
@@ -161,7 +161,9 @@ void ShipElectricSparks::PropagateSparks(
     mSparksToRender.clear();
 
     // Calculate max equivalent path length for this iteration - we won't create arcs longer than this
-    float constexpr TODOLimit = 15.0f; // TODO: should this be based off total number of springs?
+    // TODOTEST
+    //float constexpr TODOLimit = 15.0f; // TODO: should this be based off total number of springs?
+    float constexpr TODOLimit = 8.0f;
     float const maxEquivalentPathLengthForThisIteration = std::min(
         static_cast<float>(counter + 1),
         TODOLimit);
@@ -278,15 +280,20 @@ void ShipElectricSparks::PropagateSparks(
 
     std::vector<ElementIndex> nextSprings;
 
+    bool hasForkedInThisInteraction = false;
+
+    // TODOTEST
+    hasForkedInThisInteraction = true;
+
     // TODOTEST
     //while (!currentPointsToVisit.empty())
-    for (int iter = 1; !currentPointsToVisit.empty(); ++iter)
+    int iter;
+    for (iter = 1; !currentPointsToVisit.empty(); ++iter)
     {
-        LogMessage("TODOTEST: iter=", iter, " #currentPointsToVisit=", currentPointsToVisit.size());
+        if (iter == 1)
+            LogMessage("TODOTEST: iter=", iter, " #currentPointsToVisit=", currentPointsToVisit.size());
 
         assert(nextPointsToVisit.empty());
-
-        bool hasForkedInThisExpansionIteration = false;
 
         // Visit all points
         for (auto const & pv : currentPointsToVisit)
@@ -294,8 +301,8 @@ void ShipElectricSparks::PropagateSparks(
             vec2f const pointPosition = points.GetPosition(pv.PointIndex);
 
             //
-            // Collect the already-electrified outgoing springs that are *not* the incoming spring,
-            // randomly discarding them
+            // Collect the outgoing springs that are *not* the incoming spring, and which
+            // were previously electrified but not yet electrified in this interaction
             //
 
             nextSprings.clear();
@@ -303,19 +310,18 @@ void ShipElectricSparks::PropagateSparks(
             for (auto const & cs : points.GetConnectedSprings(pv.PointIndex).ConnectedSprings)
             {
                 if (oldIsElectrified[cs.SpringIndex]
+                    && !newIsElectrified[cs.SpringIndex]
                     && cs.SpringIndex != pv.IncomingSpringIndex)
                 {
-                    if (GameRandomEngine::GetInstance().GenerateUniformBoolean(0.995f))
-                    {
-                        nextSprings.emplace_back(cs.SpringIndex);
-                    }
+                    nextSprings.emplace_back(cs.SpringIndex);
                 }
             }
 
             //
-            // Choose a new outgoing spring under any of these conditions:
+            // Choose a new, not electrified outgoing spring under any of these conditions:
             //  - There are no already-electrified outgoing springs, and we choose to continue;
-            //  - There is only one already-electrified outgoing spring, and we choose to fork
+            //  - There is only one already-electrified outgoing spring, and we choose to fork while not having forked already in this iteration
+            //  - There is only one already-electrified outgoing spring, and we choose to reroute
             //
 
             // Calculate how close we are to theoretical end
@@ -323,17 +329,23 @@ void ShipElectricSparks::PropagateSparks(
 
             bool const doFindNewSpring =
                 nextSprings.size() == 0
-                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.995f * distanceToTheoreticalMaxPathLength);
+                // TODOTEST
+                //&& GameRandomEngine::GetInstance().GenerateUniformBoolean(0.995f * distanceToTheoreticalMaxPathLength);
+                ;
 
             bool const doFork =
                 nextSprings.size() == 1
-                && !hasForkedInThisExpansionIteration
+                && !hasForkedInThisInteraction
                 && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.01f * (1.0f - distanceToTheoreticalMaxPathLength));
 
-            if (doFindNewSpring || doFork)
+            bool const doReroute =
+                nextSprings.size() == 1
+                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.2f * (1.0f - distanceToTheoreticalMaxPathLength) * (1.0f - distanceToTheoreticalMaxPathLength));
+
+            if (doFindNewSpring || doFork || doReroute)
             {
                 //
-                // Find the top spring that is *not* the incoming spring;
+                // Find the top spring that is *not* the incoming spring, and which leads to a non-visited point;
                 // ranking is based on alignment of direction with incoming direction,
                 // we take second best - if possible - to impose a zig-zag pattern
                 //
@@ -346,7 +358,8 @@ void ShipElectricSparks::PropagateSparks(
                 for (auto const & cs : points.GetConnectedSprings(pv.PointIndex).ConnectedSprings)
                 {
                     if (!oldIsElectrified[cs.SpringIndex]
-                        && cs.SpringIndex != pv.IncomingSpringIndex)
+                        && cs.SpringIndex != pv.IncomingSpringIndex
+                        && !mHasPointBeenVisited[cs.OtherEndpointIndex])
                     {
                         // Calculate alignment
                         float const alignment = (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction);
@@ -377,13 +390,25 @@ void ShipElectricSparks::PropagateSparks(
                 }
             }
 
-            hasForkedInThisExpansionIteration |= doFork;
+            if (doFork)
+            {
+                hasForkedInThisInteraction = true;
+
+                LogMessage("TODOHERE: HAS FORKED!");
+            }
+
+            if (doReroute)
+            {
+                assert(nextSprings.size() == 1 || nextSprings.size() == 2);
+                if (nextSprings.size() == 2)
+                {
+                    nextSprings.erase(nextSprings.begin(), std::next(nextSprings.begin()));
+                }
+            }
 
             //
             // Follow all of these
             //
-
-            LogMessage("TODOTEST:       #nextSprings(@", pv.PointIndex, ")=", nextSprings.size(), "   hasFoundNew:", doFindNewSpring, " hasForked:", doFork);
 
             for (auto const s : nextSprings)
             {
@@ -397,7 +422,6 @@ void ShipElectricSparks::PropagateSparks(
 
                 // Render
                 float const targetSize = calculateSparkSize(newEquivalentPathLength);
-                LogMessage("TODOTEST:                     targetSize:", targetSize);
                 mSparksToRender.emplace_back(
                     pv.PointIndex,
                     pv.Size,
@@ -424,6 +448,8 @@ void ShipElectricSparks::PropagateSparks(
         std::swap(currentPointsToVisit, nextPointsToVisit);
         nextPointsToVisit.clear();
     }
+
+    LogMessage("TODOTEST: enditer=", iter);
 
     //
     // Finalize
