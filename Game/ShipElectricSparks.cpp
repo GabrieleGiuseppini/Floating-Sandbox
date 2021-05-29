@@ -123,7 +123,7 @@ void ShipElectricSparks::PropagateSparks(
     {
         ElementIndex PointIndex;
         vec2f Direction; // Normalized direction that we reached this point to from the origin
-        float Size; // Cumulative size so far
+        float Size; // Cumulative size so far, at point
         float EquivalentPathLength; // Cumulative equivalent length of path so far
         ElementIndex IncomingSpringIndex; // The index of the spring that we traveled to reach this point
 
@@ -158,6 +158,12 @@ void ShipElectricSparks::PropagateSparks(
         static_cast<float>(counter + 1),
         50.0f);// TODO: should this be based off total number of springs?
 
+    auto const calculateSparkSize = [CurrentMaxPathLength = static_cast<float>(counter)](float pathLength)
+    {
+        return 0.2f
+            + (1.0f - 0.2f) * std::min(pathLength / CurrentMaxPathLength, 1.0f);
+    };
+
     //
     // Jump-start: find the initial springs outgoing from the starting point
     //
@@ -167,13 +173,17 @@ void ShipElectricSparks::PropagateSparks(
     {
         std::vector<std::tuple<ElementIndex, float>> otherSprings;
 
+        // Choose number of starting arcs
+        size_t const startingArcCount = GameRandomEngine::GetInstance().GenerateUniformInteger(MinNumberOfStartingArcs, MaxNumberOfStartingArcs);
+
         //
         // 1. Springs already electrified
         //
 
         for (auto const & cs : points.GetConnectedSprings(startingPointIndex).ConnectedSprings)
         {
-            if (mIsArcElectrified[cs.SpringIndex])
+            if (mIsArcElectrified[cs.SpringIndex]
+                && startingSprings.size() < startingArcCount)
             {
                 startingSprings.emplace_back(cs.SpringIndex);
             }
@@ -189,11 +199,8 @@ void ShipElectricSparks::PropagateSparks(
         // 2. Remaining springs
         //
 
-        if (startingSprings.size() < MedianNumberOfStartingArcs)
+        if (startingSprings.size() < startingArcCount)
         {
-            // Choose number of starting arcs
-            size_t const startingArcCount = GameRandomEngine::GetInstance().GenerateUniformInteger(MinNumberOfStartingArcs, MaxNumberOfStartingArcs);
-
             // Sort remaining
             std::sort(
                 otherSprings.begin(),
@@ -219,31 +226,30 @@ void ShipElectricSparks::PropagateSparks(
 
     auto const startingPointPosition = points.GetPosition(startingPointIndex);
 
-    for (ElementIndex s : startingSprings)
+    for (ElementIndex const s : startingSprings)
     {
+        float const equivalentPathLength = 1.0f; // TODO: material-based
+
         ElementIndex const targetEndpointIndex = springs.GetOtherEndpointIndex(s, startingPointIndex);
 
         // Electrify
         newIsElectrified[s] = true;
 
         // Render
+        float const targetSize = calculateSparkSize(equivalentPathLength);
         mSparksToRender.emplace_back(
             startingPointIndex,
-            // TODO: size
-            1.0f,
+            calculateSparkSize(0.0f),
             targetEndpointIndex,
-            // TODO: size
-            1.0f);
+            targetSize);
 
         // Next expansion
-        float const equivalentPathLength = 1.0f; // TODO: material-based
         if (equivalentPathLength < MaxNumberOfExpansions)
         {
             currentPointsToVisit.emplace_back(
                 targetEndpointIndex,
                 (points.GetPosition(targetEndpointIndex) - startingPointPosition).normalise(),
-                // TODO: size
-                1.0f,
+                targetSize,
                 equivalentPathLength,
                 s);
         }
