@@ -467,7 +467,7 @@ void ShipElectricSparks::PropagateSparks(
                 if (bestSpring2 != NoneElementIndex
                     && bestSpringAligment2 >= 0.0f)
                 {
-                    // second and third best are similar, choose between them
+                    // If second and third best are similar, choose between them
                     if (bestSpring3 != NoneElementIndex
                         && bestSpringAligment3 >= 0.0f
                         && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f))
