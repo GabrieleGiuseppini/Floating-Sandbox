@@ -87,6 +87,8 @@ set  (PHYSICS_SOURCES
 	Ship_StateMachines.cpp
 	Ship_StateMachines.h
 	Ship.h
+	ShipElectricSparks.cpp
+	ShipElectricSparks.h
 	ShipOverlays.cpp
 	ShipOverlays.h
 	Springs.cpp

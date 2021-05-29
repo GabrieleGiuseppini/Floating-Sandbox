@@ -889,6 +889,7 @@ void GameController::ApplyBlastAt(
 
 bool GameController::ApplyElectricSparkAt(
     LogicalPixelCoordinates const & screenCoordinates,
+    std::uint64_t counter,
     float progress)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -897,6 +898,7 @@ bool GameController::ApplyElectricSparkAt(
     assert(!!mWorld);
     return mWorld->ApplyElectricSparkAt(
         worldCoordinates,
+        counter,
         progress,
         mGameParameters);
 }

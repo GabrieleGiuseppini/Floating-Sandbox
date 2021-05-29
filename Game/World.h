@@ -233,6 +233,7 @@ public:
 
     bool ApplyElectricSparkAt(
         vec2f const & targetPos,
+        std::uint64_t counter,
         float progress,
         GameParameters const & gameParameters);
 

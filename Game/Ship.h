@@ -12,6 +12,7 @@
 #include "Physics.h"
 #include "RenderContext.h"
 #include "ShipDefinition.h"
+#include "ShipElectricSparks.h"
 #include "ShipOverlays.h"
 
 #include <GameCore/AABBSet.h>
@@ -161,6 +162,7 @@ public:
 
     bool ApplyElectricSparkAt(
         vec2f const & targetPos,
+        std::uint64_t counter,
         float progress,
         GameParameters const & gameParameters);
 
@@ -730,6 +732,9 @@ private:
     // Gadgets
     Gadgets mGadgets;
 
+    // Electric sparks
+    ShipElectricSparks mElectricSparks;
+
     // Overlays
     ShipOverlays mOverlays;
 
@@ -774,31 +779,6 @@ private:
     //
     // Render members
     //
-
-    struct ElectricSpark
-    {
-        ElementIndex StartPointIndex;
-        float StartSize;
-        ElementIndex EndPointIndex;
-        float EndSize;
-
-        ElectricSpark(
-            ElementIndex startPointIndex,
-            float startSize,
-            ElementIndex endPointIndex,
-            float endSize)
-            : StartPointIndex(startPointIndex)
-            , StartSize(startSize)
-            , EndPointIndex(endPointIndex)
-            , EndSize(endSize)
-        {}
-    };
-
-    // The electric sparks
-    std::vector<ElectricSpark> mElectricSparksToRender;
-
-    // Flag remembering whether electric sparks have been populated prior to the next Update() step
-    bool mAreElectricSparksPopulatedBeforeNextUpdate;
 
     // The debug ship render mode that was in effect the last time we've uploaded elements;
     // used to detect changes and eventually re-upload
