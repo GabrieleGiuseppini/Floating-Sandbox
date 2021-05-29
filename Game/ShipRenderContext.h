@@ -230,16 +230,17 @@ public:
         //
         // Calculate start and end vectors
         //
-        // C---S---D
+        // C-------D
+        // |       |
+        // |---S---|
         // |       |
         // |       |
         // |       |
         // |       |
         // |       |
+        // |---E---|
         // |       |
-        // |       |
-        // A---E---B
-        //
+        // A-------B
 
         // S->E vector
         vec2f const sparkVector = endPosition - startPosition;
@@ -254,11 +255,11 @@ public:
         vec2f const Qhw = Qnp * 0.45f;
 
         // A, B = left-bottom, right-bottom
-        vec2f const A = endPosition - Qhw * endSize;
-        vec2f const B = endPosition + Qhw * endSize;
+        vec2f const A = endPosition + Qn * 0.1f - Qhw * endSize;
+        vec2f const B = endPosition + Qn * 0.1f + Qhw * endSize;
         // C, D = left-top, right-top
-        vec2f const C = startPosition - Qhw * startSize;
-        vec2f const D = startPosition + Qhw * startSize;
+        vec2f const C = startPosition - Qn * 0.1f - Qhw * startSize;
+        vec2f const D = startPosition - Qn * 0.1f + Qhw * startSize;
 
         //
         // Append vertices - two triangles

@@ -20,7 +20,9 @@ class ShipElectricSparks
 {
 public:
 
-    ShipElectricSparks(Springs const & springs);
+    ShipElectricSparks(
+        Points const & points,
+        Springs const & springs);
 
     bool ApplySparkAt(
         vec2f const & targetPos,
@@ -50,12 +52,14 @@ private:
 
 private:
 
-    // The total number of springs (elements, not buffer)
-    size_t const mSpringCount;
+    // Flag remembering whether a point has been visited in a given iteration or or not;
+    // cardinality=points
+    Buffer<bool> mHasPointBeenVisited;
 
-    // Flag remembering whether a spring is electrified or not
-    Buffer<bool> mIsArcElectrified;
-    Buffer<bool> mIsArcElectrifiedBackup;
+    // Flag remembering whether a spring is electrified or not;
+    // cardinality=springs
+    Buffer<bool> mIsSpringElectrified;
+    Buffer<bool> mIsSpringElectrifiedBackup;
 
     // Flag remembering whether electric sparks have been populated prior to the next Update() step
     bool mAreSparksPopulatedBeforeNextUpdate;

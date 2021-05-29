@@ -91,7 +91,7 @@ Ship::Ship(
         *this,
         mPoints,
         mSprings)
-    , mElectricSparks(mSprings)
+    , mElectricSparks(mPoints, mSprings)
     , mOverlays()
     , mCurrentSimulationSequenceNumber()
     , mCurrentConnectivityVisitSequenceNumber()

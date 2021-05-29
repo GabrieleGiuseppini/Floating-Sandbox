@@ -658,8 +658,8 @@ Render:
 					+ New Ship buffer: ElectricSpark, simple std::vector
 						+ Reset at first update that was not preceded by the interaction
 						+ Uploaded by Ship::Upload
-			- Interaction
-				- TODO
+			= Interaction
+				= Bulk
 				- Interactions with ElectricalElements:
 					- Driven by interaction: upon energizing a point, calls into ElectricalElements
 					- Call causes same "damage" to selected types of electrical elements as EMP tool (*), i.e. stores SimulationTimestamp in 
