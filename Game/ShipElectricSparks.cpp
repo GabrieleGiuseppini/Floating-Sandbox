@@ -385,7 +385,6 @@ void ShipElectricSparks::PropagateSparks(
             for (auto const & cs : points.GetConnectedSprings(pv.PointIndex).ConnectedSprings)
             {
                 if (oldIsElectrified[cs.SpringIndex]
-                    && !newIsElectrified[cs.SpringIndex]
                     && cs.SpringIndex != pv.IncomingSpringIndex
                     && (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction) > 0.0f)
                 {
@@ -506,6 +505,9 @@ void ShipElectricSparks::PropagateSparks(
             }
 
 
+            if (nextSprings.size() < 1)
+                LogMessage("TODOTEST: AAAAARGH 1");
+
 
 
 
@@ -533,8 +535,7 @@ void ShipElectricSparks::PropagateSparks(
                     targetSize);
 
                 // Next expansion
-                if (newEquivalentPathLength < maxEquivalentPathLengthForThisInteraction
-                    && !mHasPointBeenVisited[targetEndpointIndex])
+                if (newEquivalentPathLength < maxEquivalentPathLengthForThisInteraction)
                 {
                     nextPointsToVisit.emplace_back(
                         targetEndpointIndex,
