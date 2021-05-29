@@ -5,6 +5,9 @@
 ***************************************************************************************/
 #include "Physics.h"
 
+#include <GameCore/GameRandomEngine.h>
+
+#include <algorithm>
 #include <cassert>
 
 namespace Physics {
@@ -103,43 +106,176 @@ void ShipElectricSparks::PropagateSparks(
     Springs const & springs)
 {
     //
-    // Clear the sparks to render in the next step
+    // Constants
     //
 
+    size_t constexpr MedianNumberOfStartingArcs = 5;
+    size_t constexpr MinNumberOfStartingArcs = 4;
+    size_t constexpr MaxNumberOfStartingArcs = 7;
+
+    //
+    // The algorithm works by running a number of "expansions", each expansion
+    // propagating the existing sparks one extra (or two) springs outwardly.
+    //
+
+    // The information associated with a point that the next expansion will start from
+    struct SparkPointToVisit
+    {
+        ElementIndex PointIndex;
+        vec2f Direction; // Normalized direction that we reached this point to from the origin
+        float Size; // Cumulative size so far
+        float EquivalentPathLength; // Cumulative equivalent length of path so far
+        ElementIndex IncomingSpringIndex; // The index of the spring that we traveled to reach this point
+
+        SparkPointToVisit(
+            ElementIndex pointIndex,
+            vec2f && direction,
+            float size,
+            float equivalentPathLength,
+            ElementIndex incomingSpringIndex)
+            : PointIndex(pointIndex)
+            , Direction(std::move(direction))
+            , Size(size)
+            , EquivalentPathLength(equivalentPathLength)
+            , IncomingSpringIndex(incomingSpringIndex)
+        {}
+    };
+
+    //
+    // Initialize
+    //
+
+    // Prepare IsElectrified buffer
+    mIsArcElectrifiedBackup.fill(false);
+    bool * const oldIsElectrified = mIsArcElectrified.data();
+    bool * const newIsElectrified = mIsArcElectrifiedBackup.data();
+
+    // Clear the sparks to render after this step
     mSparksToRender.clear();
 
+    // Calculate max number of expansions for this iteration
+    float const MaxNumberOfExpansions = std::min(
+        static_cast<float>(counter + 1),
+        50.0f);// TODO: should this be based off total number of springs?
 
-    // TODOTEST
-    if (points.GetConnectedSprings(startingPointIndex).ConnectedSprings.size() > 0)
+    //
+    // Jump-start: find the initial springs outgoing from the starting point
+    //
+
+    std::vector<ElementIndex> startingSprings;
+
     {
-        auto const spring1 = points.GetConnectedSprings(startingPointIndex).ConnectedSprings[0].SpringIndex;
-        auto const point2 = points.GetConnectedSprings(startingPointIndex).ConnectedSprings[0].OtherEndpointIndex;
+        std::vector<std::tuple<ElementIndex, float>> otherSprings;
 
-        mSparksToRender.emplace_back(
-            startingPointIndex,
-            1.0f,
-            point2,
-            1.0f);
+        //
+        // 1. Springs already electrified
+        //
 
-        if (points.GetConnectedSprings(point2).ConnectedSprings.size() > 1)
+        for (auto const & cs : points.GetConnectedSprings(startingPointIndex).ConnectedSprings)
         {
-            auto const spring2 =
-                points.GetConnectedSprings(point2).ConnectedSprings[0].SpringIndex != spring1
-                ? points.GetConnectedSprings(point2).ConnectedSprings[0].SpringIndex
-                : points.GetConnectedSprings(point2).ConnectedSprings[1].SpringIndex;
+            if (mIsArcElectrified[cs.SpringIndex])
+            {
+                startingSprings.emplace_back(cs.SpringIndex);
+            }
+            else
+            {
+                otherSprings.emplace_back(
+                    cs.SpringIndex,
+                    points.GetRandomNormalizedUniformPersonalitySeed(cs.OtherEndpointIndex));
+            }
+        }
 
-            mSparksToRender.emplace_back(
-                point2,
-                1.0f,
-                springs.GetOtherEndpointIndex(spring2, point2),
-                0.2f);
+        //
+        // 2. Remaining springs
+        //
+
+        if (startingSprings.size() < MedianNumberOfStartingArcs)
+        {
+            // Choose number of starting arcs
+            size_t const startingArcCount = GameRandomEngine::GetInstance().GenerateUniformInteger(MinNumberOfStartingArcs, MaxNumberOfStartingArcs);
+
+            // Sort remaining
+            std::sort(
+                otherSprings.begin(),
+                otherSprings.end(),
+                [](auto const & s1, auto const & s2)
+                {
+                    return std::get<1>(s1) < std::get<1>(s2);
+                });
+
+            // Pick winners
+            for (size_t s = 0; s < startingArcCount - startingSprings.size() && s < otherSprings.size(); ++s)
+            {
+                startingSprings.emplace_back(std::get<0>(otherSprings[s]));
+            }
         }
     }
 
     //
-    // Remember that we have populated electric sparks
+    // Electrify the starting springs and initialize visits
     //
 
+    std::vector<SparkPointToVisit> currentPointsToVisit;
+
+    auto const startingPointPosition = points.GetPosition(startingPointIndex);
+
+    for (ElementIndex s : startingSprings)
+    {
+        ElementIndex const targetEndpointIndex = springs.GetOtherEndpointIndex(s, startingPointIndex);
+
+        // Electrify
+        newIsElectrified[s] = true;
+
+        // Render
+        mSparksToRender.emplace_back(
+            startingPointIndex,
+            // TODO: size
+            1.0f,
+            targetEndpointIndex,
+            // TODO: size
+            1.0f);
+
+        // Next expansion
+        float const equivalentPathLength = 1.0f; // TODO: material-based
+        if (equivalentPathLength < MaxNumberOfExpansions)
+        {
+            currentPointsToVisit.emplace_back(
+                targetEndpointIndex,
+                (points.GetPosition(targetEndpointIndex) - startingPointPosition).normalise(),
+                // TODO: size
+                1.0f,
+                equivalentPathLength,
+                s);
+        }
+    }
+
+    //
+    // Expand
+    //
+
+    std::vector<SparkPointToVisit> nextPointsToVisit;
+
+    while (!currentPointsToVisit.empty())
+    {
+        // Visit all points
+        for (auto const & pv : currentPointsToVisit)
+        {
+            // TODOHERE
+        }
+
+        // Advance expansion
+        std::swap(currentPointsToVisit, nextPointsToVisit);
+        nextPointsToVisit.clear();
+    }
+
+    //
+    // Finalize
+    //
+
+    // Swap IsElectrified buffers
+    mIsArcElectrified.swap(mIsArcElectrifiedBackup);
+
+    // Remember that we have populated electric sparks
     mAreSparksPopulatedBeforeNextUpdate = true;
 }
 
