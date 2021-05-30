@@ -111,20 +111,16 @@ void ShipElectricSparks::PropagateSparks(
 
     //
     // The algorithm works by running a number of "expansions", each expansion
-    // propagating the existing sparks one extra (or two) springs outwardly.
+    // propagating sparks one extra (or more...) springs outwardly
     //
 
     //
     // Constants
     //
 
-    // TODOTEST
-    ////size_t constexpr StartingArcsMin = 2;
-    ////size_t constexpr StartingArcsMax = 4;
-    ////float constexpr MaxPathLength = 25.0f; // TODO: should this be based off total number of springs?
     size_t constexpr StartingArcsMin = 3;
     size_t constexpr StartingArcsMax = 5;
-    float constexpr MaxPathLength = 35.0f; // TODO: should this be based off total number of springs?
+    float constexpr MaxEquivalentPathLength = 35.0f; // TODO: should this be based off total number of springs?
 
     // The information associated with a point that the next expansion will start from
     struct SparkPointToVisit
@@ -153,7 +149,7 @@ void ShipElectricSparks::PropagateSparks(
     // Initialize
     //
 
-    // Prepare IsElectrified buffer
+    // Prepare IsSpringElectrified buffer
     mIsSpringElectrifiedBackup.fill(false);
     bool * const wasSpringElectrifiedInPreviousInteraction = mIsSpringElectrified.data();
     bool * const isSpringElectrifiedInThisInteraction = mIsSpringElectrifiedBackup.data();
@@ -162,19 +158,22 @@ void ShipElectricSparks::PropagateSparks(
     mIsPointElectrified.fill(false);
     mIsPointElectrified[startingPointIndex] = true;
 
-    // Clear the sparks to render after this step
+    // Clear the sparks that have to be rendered after this step
     mSparksToRender.clear();
 
-    // Calculate max equivalent path length for this interaction - we won't create arcs longer than this at this interaction
+    // Calculate max equivalent path length (total of single-step costs) for this interaction:
+    // we won't create arcs longer than this at this interaction
     float const maxEquivalentPathLengthForThisInteraction = std::min(
         static_cast<float>(counter + 1),
-        MaxPathLength);
+        MaxEquivalentPathLength);
 
     // Functor that calculates size of a sparkle, given its current path length and the distance of that path
-    // length from the maximum for this interaction
-    auto const calculateSparkSize = [maxEquivalentPathLengthForThisInteraction](float pathLength)
+    // length from the maximum for this interaction:
+    //  - When we're at the end of the path for this interaction: small size
+    //  - When we're at the beginning of the path for this interaction: large size
+    auto const calculateSparkSize = [maxEquivalentPathLengthForThisInteraction](float equivalentPathLength)
     {
-        return 0.2f + (1.0f - 0.2f) * (maxEquivalentPathLengthForThisInteraction - pathLength) / maxEquivalentPathLengthForThisInteraction;
+        return 0.2f + (1.0f - 0.2f) * (maxEquivalentPathLengthForThisInteraction - equivalentPathLength) / maxEquivalentPathLengthForThisInteraction;
     };
 
     //
@@ -184,8 +183,8 @@ void ShipElectricSparks::PropagateSparks(
     std::vector<ElementIndex> startingSprings;
 
     {
-        // Decide number of starting springs
-        size_t startingArcsCount = GameRandomEngine::GetInstance().GenerateUniformInteger(StartingArcsMin, StartingArcsMax);
+        // Decide number of starting springs for this interaction
+        size_t const startingArcsCount = GameRandomEngine::GetInstance().GenerateUniformInteger(StartingArcsMin, StartingArcsMax);
 
         //
         // 1. Fetch all springs already electrified, and collect the remaining springs
@@ -306,7 +305,7 @@ void ShipElectricSparks::PropagateSparks(
             vec2f const pointPosition = points.GetPosition(pv.PointIndex);
 
             // Calculate distance to the theoretical end of its path
-            float const distanceToTheoreticalMaxPathLength = (MaxPathLength - pv.EquivalentPathLength) / MaxPathLength;
+            float const distanceToTheoreticalMaxPathLength = (MaxEquivalentPathLength - pv.EquivalentPathLength) / MaxEquivalentPathLength;
 
             // Calculate distance to the end of this path in this interaction
             float const distanceToInteractionMaxPathLength = (maxEquivalentPathLengthForThisInteraction - pv.EquivalentPathLength) / maxEquivalentPathLengthForThisInteraction;

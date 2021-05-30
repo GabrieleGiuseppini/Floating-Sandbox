@@ -565,6 +565,7 @@ Render:
 			+ README.md
 				+ Requirements: do different by OS
 			- Gather testers and send them tar.gz
+				= gabe3333342323, ayjanu, TheCrafters001: sent friend requests
 				+ Walther first
 
 		= MAC:
@@ -653,7 +654,7 @@ Render:
 				= ShipRenderContext machinery
 					- Rethink: it's bad that we continuously flag vertex buffer as dirty: it can be assumed to be always dirty when it's not empty;
 					  use same strategy then that we use for...clouds?
-				= Shader
+				+ Shader
 				+ Ship::Upload
 					+ New Ship buffer: ElectricSpark, simple std::vector
 						+ Reset at first update that was not preceded by the interaction
@@ -663,8 +664,9 @@ Render:
 					+ Fork memory: make sure that, when we collect a previously-electrified spring, we do this along the same direction
 					  as before
 					+ Decide whether we want to keep picking third best
-					= Try with NextSprings picking being agnostic re: current point, and just skip visit
-						- Need to set size to zero though for trunk that is now truncated
+					- Try with new startup algo:
+						- For each pre-existing: forget with P<<1
+						- For each non-existing: pickup with P<<1
 					- Cleanups:
 						- Unify the spring candidate search loop @ expansion
 						- Remove all logging
