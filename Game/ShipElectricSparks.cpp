@@ -118,9 +118,13 @@ void ShipElectricSparks::PropagateSparks(
     // Constants
     //
 
-    size_t constexpr StartingArcsMin = 2;
-    size_t constexpr StartingArcsMax = 4;
-    float constexpr MaxPathLength = 25.0f; // TODO: should this be based off total number of springs?
+    // TODOTEST
+    ////size_t constexpr StartingArcsMin = 2;
+    ////size_t constexpr StartingArcsMax = 4;
+    ////float constexpr MaxPathLength = 25.0f; // TODO: should this be based off total number of springs?
+    size_t constexpr StartingArcsMin = 3;
+    size_t constexpr StartingArcsMax = 5;
+    float constexpr MaxPathLength = 35.0f; // TODO: should this be based off total number of springs?
 
     // The information associated with a point that the next expansion will start from
     struct SparkPointToVisit
@@ -321,18 +325,20 @@ void ShipElectricSparks::PropagateSparks(
             {
                 if (wasSpringElectrifiedInPreviousInteraction[cs.SpringIndex]
                     && cs.SpringIndex != pv.IncomingSpringIndex
-                    && !mIsPointElectrified[cs.OtherEndpointIndex]
+                    // TODOTEST
+                    //&& !mIsPointElectrified[cs.OtherEndpointIndex]
                     && (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction) > 0.0f)
                 {
                     nextSprings.emplace_back(cs.SpringIndex);
                 }
             }
 
-            // If we've scooped up a fork, count it as a...fork
-            if (nextSprings.size() > 1)
-            {
-                hasForkedInThisInteraction = true;
-            }
+            // TODOTEST
+            ////// If we've scooped up a fork, count it as a...fork
+            ////if (nextSprings.size() > 1)
+            ////{
+            ////    hasForkedInThisInteraction = true;
+            ////}
 
             //
             // Choose a new, not electrified outgoing spring under any of these conditions:
@@ -351,7 +357,7 @@ void ShipElectricSparks::PropagateSparks(
                 nextSprings.size() == 1
                 && !hasForkedInThisInteraction
                 // Fork more closer to theoretical end
-                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.1f * std::pow(1.0f - distanceToTheoreticalMaxPathLength, 4.0f));
+                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.3f * std::pow(1.0f - distanceToTheoreticalMaxPathLength, 4.0f));
 
             bool const doReroute =
                 nextSprings.size() == 1
@@ -378,7 +384,9 @@ void ShipElectricSparks::PropagateSparks(
                 {
                     if (!wasSpringElectrifiedInPreviousInteraction[cs.SpringIndex]
                         && cs.SpringIndex != pv.IncomingSpringIndex
-                        && !mIsPointElectrified[cs.OtherEndpointIndex])
+                        // TODOTEST
+                        // && !mIsPointElectrified[cs.OtherEndpointIndex])
+                        )
                     {
                         // Calculate alignment
                         float const alignment = (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction);

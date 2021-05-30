@@ -663,6 +663,8 @@ Render:
 					+ Fork memory: make sure that, when we collect a previously-electrified spring, we do this along the same direction
 					  as before
 					+ Decide whether we want to keep picking third best
+					= Try with NextSprings picking being agnostic re: current point, and just skip visit
+						- Need to set size to zero though for trunk that is now truncated
 					- Cleanups:
 						- Remove all logging
 				- Interactions with ElectricalElements:
