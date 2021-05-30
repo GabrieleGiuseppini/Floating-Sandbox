@@ -118,8 +118,8 @@ void ShipElectricSparks::PropagateSparks(
     // Constants
     //
 
-    size_t constexpr StartingArcs = 6;
-    float constexpr MaxPathLength = 15.0f; // TODO: should this be based off total number of springs?
+    size_t constexpr StartingArcs = 4;
+    float constexpr MaxPathLength = 25.0f; // TODO: should this be based off total number of springs?
 
     // The information associated with a point that the next expansion will start from
     struct SparkPointToVisit
