@@ -2908,7 +2908,7 @@ public:
 
                     bool const isUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
 
-                    mEngagementData.emplace(1, currentSimulationTime, isUnderwater);
+                    mEngagementData.emplace(0, currentSimulationTime, isUnderwater);
 
                     mSoundController->PlayElectricSparkSound(isUnderwater);
 
