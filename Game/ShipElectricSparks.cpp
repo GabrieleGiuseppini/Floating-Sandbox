@@ -413,15 +413,13 @@ void ShipElectricSparks::PropagateSparks(
                 if (bestSpring2 != NoneElementIndex
                     && bestSpringAligment2 >= 0.0f)
                 {
-                    // TODOTEST
-                    ////// If second and third best are similar, choose between them
-                    ////if (bestSpring3 != NoneElementIndex
-                    ////    && bestSpringAligment3 >= 0.0f
-                    ////    && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f))
-                    ////    nextSprings.emplace_back(bestSpring3);
-                    ////else
-                    ////    nextSprings.emplace_back(bestSpring2);
-                    nextSprings.emplace_back(bestSpring2);
+                    // If second and third best are similar, choose between them
+                    if (bestSpring3 != NoneElementIndex
+                        && bestSpringAligment3 >= 0.0f
+                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f))
+                        nextSprings.emplace_back(bestSpring3);
+                    else
+                        nextSprings.emplace_back(bestSpring2);
                 }
                 else if (bestSpring1 != NoneElementIndex)
                 {
