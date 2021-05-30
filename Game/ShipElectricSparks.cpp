@@ -351,7 +351,7 @@ void ShipElectricSparks::PropagateSparks(
                 nextSprings.size() == 1
                 && !hasForkedInThisInteraction
                 // Fork more closer to theoretical end
-                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.1f * (1.0f - distanceToTheoreticalMaxPathLength) * (1.0f - distanceToTheoreticalMaxPathLength));
+                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.1f * std::powf(1.0f - distanceToTheoreticalMaxPathLength, 4.0f));
 
             bool const doReroute =
                 nextSprings.size() == 1
