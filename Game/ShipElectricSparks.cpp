@@ -17,6 +17,7 @@ ShipElectricSparks::ShipElectricSparks(
     Springs const & springs)
     : mIsSpringElectrified(springs.GetElementCount(), 0, false)
     , mIsSpringElectrifiedBackup(springs.GetElementCount(), 0, false)
+    , mIsPointElectrified(points.GetElementCount(), 0, false)
     , mAreSparksPopulatedBeforeNextUpdate(false)
     , mSparksToRender()
 {
@@ -109,16 +110,16 @@ void ShipElectricSparks::PropagateSparks(
     LogMessage("TODOTEST:---------------------------------------------------------------------");
 
     //
+    // The algorithm works by running a number of "expansions", each expansion
+    // propagating the existing sparks one extra (or two) springs outwardly.
+    //
+
+    //
     // Constants
     //
 
     size_t constexpr StartingArcs = 6;
     float constexpr MaxPathLength = 30.0f; // TODO: should this be based off total number of springs?
-
-    //
-    // The algorithm works by running a number of "expansions", each expansion
-    // propagating the existing sparks one extra (or two) springs outwardly.
-    //
 
     // The information associated with a point that the next expansion will start from
     struct SparkPointToVisit
@@ -152,6 +153,10 @@ void ShipElectricSparks::PropagateSparks(
     bool * const oldIsElectrified = mIsSpringElectrified.data();
     bool * const newIsElectrified = mIsSpringElectrifiedBackup.data();
 
+    // Only the starting point has been electrified
+    mIsPointElectrified.fill(false);
+    mIsPointElectrified[startingPointIndex] = true;
+
     // Clear the sparks to render after this step
     mSparksToRender.clear();
 
@@ -182,6 +187,8 @@ void ShipElectricSparks::PropagateSparks(
 
         for (auto const & cs : points.GetConnectedSprings(startingPointIndex).ConnectedSprings)
         {
+            assert(!mIsPointElectrified[cs.OtherEndpointIndex]);
+
             if (oldIsElectrified[cs.SpringIndex]
                 && startingSprings.size() < StartingArcs)
             {
@@ -231,8 +238,11 @@ void ShipElectricSparks::PropagateSparks(
 
         ElementIndex const targetEndpointIndex = springs.GetOtherEndpointIndex(s, startingPointIndex);
 
-        // Electrify
+        // Electrify spring
         newIsElectrified[s] = true;
+
+        // Electrify target point
+        mIsPointElectrified[targetEndpointIndex];
 
         // Render
         float const sourceSize = calculateSparkSize(0.0f);
@@ -370,6 +380,7 @@ void ShipElectricSparks::PropagateSparks(
             //
             // Collect the outgoing springs that are *not* the incoming spring, which
             // were previously electrified /* TODOTEST: removed now: but not yet electrified in this interaction*/,
+            // and lead to a not-yet-electrified point,
             // and which are aligned with our incoming direction
             //
 
@@ -379,12 +390,13 @@ void ShipElectricSparks::PropagateSparks(
             {
                 if (oldIsElectrified[cs.SpringIndex]
                     && cs.SpringIndex != pv.IncomingSpringIndex
+                    && !mIsPointElectrified[cs.OtherEndpointIndex]
                     && (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction) > 0.0f)
                 {
                     // TODOHERE
                     // TODOTEST: enforcing max one; NOTE: this makes the algo forget all forks
-                    if (!nextSprings.empty())
-                        continue;
+                    //if (!nextSprings.empty())
+                    //    continue;
 
                     nextSprings.emplace_back(cs.SpringIndex);
                 }
@@ -406,6 +418,8 @@ void ShipElectricSparks::PropagateSparks(
             bool const doFork =
                 nextSprings.size() == 1
                 && !hasForkedInThisInteraction
+                // TODOTEST: turning off fork
+                && false
                 // Fork more closer to theoretical end
                 && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.05f * (1.0f - distanceToTheoreticalMaxPathLength) * (1.0f - distanceToTheoreticalMaxPathLength));
 
@@ -417,10 +431,11 @@ void ShipElectricSparks::PropagateSparks(
             if (doFindNewSpring || doFork || doReroute)
             {
                 //
-                // Find the top spring that is *not* the incoming spring, and which leads to a non-visited point;
+                // Find the top spring among the leftover ones;
                 // ranking is based on alignment of direction with incoming direction,
                 // we take second best - if possible - to impose a zig-zag pattern
                 //
+                // TODO: consider re-using visit above to populate candidate list
 
                 ElementIndex bestSpring1 = NoneElementIndex;
                 float bestSpringAligment1 = -1.0f;
@@ -432,7 +447,8 @@ void ShipElectricSparks::PropagateSparks(
                 for (auto const & cs : points.GetConnectedSprings(pv.PointIndex).ConnectedSprings)
                 {
                     if (!oldIsElectrified[cs.SpringIndex]
-                        && cs.SpringIndex != pv.IncomingSpringIndex)
+                        && cs.SpringIndex != pv.IncomingSpringIndex
+                        && !mIsPointElectrified[cs.OtherEndpointIndex])
                     {
                         // Calculate alignment
                         float const alignment = (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction);
@@ -467,13 +483,15 @@ void ShipElectricSparks::PropagateSparks(
                 if (bestSpring2 != NoneElementIndex
                     && bestSpringAligment2 >= 0.0f)
                 {
-                    // If second and third best are similar, choose between them
-                    if (bestSpring3 != NoneElementIndex
-                        && bestSpringAligment3 >= 0.0f
-                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f))
-                        nextSprings.emplace_back(bestSpring3);
-                    else
-                        nextSprings.emplace_back(bestSpring2);
+                    // TODOTEST
+                    ////// If second and third best are similar, choose between them
+                    ////if (bestSpring3 != NoneElementIndex
+                    ////    && bestSpringAligment3 >= 0.0f
+                    ////    && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f))
+                    ////    nextSprings.emplace_back(bestSpring3);
+                    ////else
+                    ////    nextSprings.emplace_back(bestSpring2);
+                    nextSprings.emplace_back(bestSpring2);
                 }
                 else if (bestSpring1 != NoneElementIndex)
                 {
@@ -508,8 +526,12 @@ void ShipElectricSparks::PropagateSparks(
 
                 ElementIndex const targetEndpointIndex = springs.GetOtherEndpointIndex(s, pv.PointIndex);
 
-                // Electrify
+                // Electrify spring
                 newIsElectrified[s] = true;
+
+                // Electrify point
+                assert(!mIsPointElectrified[targetEndpointIndex]);
+                mIsPointElectrified[targetEndpointIndex] = true;
 
                 // Render
                 float const targetSize = calculateSparkSize(newEquivalentPathLength);
