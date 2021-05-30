@@ -325,8 +325,7 @@ void ShipElectricSparks::PropagateSparks(
             {
                 if (wasSpringElectrifiedInPreviousInteraction[cs.SpringIndex]
                     && cs.SpringIndex != pv.IncomingSpringIndex
-                    // TODOTEST
-                    //&& !mIsPointElectrified[cs.OtherEndpointIndex]
+                    && !mIsPointElectrified[cs.OtherEndpointIndex]
                     && (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction) > 0.0f)
                 {
                     nextSprings.emplace_back(cs.SpringIndex);
@@ -459,24 +458,24 @@ void ShipElectricSparks::PropagateSparks(
             {
                 ElementIndex const targetEndpointIndex = springs.GetOtherEndpointIndex(s, pv.PointIndex);
 
+                float const equivalentStepLength = 1.0f; // TODO: material-based
+                float const newEquivalentPathLength = pv.EquivalentPathLength + equivalentStepLength;
+
+                // Render
+                float const targetSize = calculateSparkSize(newEquivalentPathLength);
+                mSparksToRender.emplace_back(
+                    pv.PointIndex,
+                    pv.Size,
+                    targetEndpointIndex,
+                    targetSize);
+
                 if (!mIsPointElectrified[targetEndpointIndex])
                 {
-                    float const equivalentStepLength = 1.0f; // TODO: material-based
-                    float const newEquivalentPathLength = pv.EquivalentPathLength + equivalentStepLength;
-
                     // Electrify spring
                     isSpringElectrifiedInThisInteraction[s] = true;
 
                     // Electrify point
                     mIsPointElectrified[targetEndpointIndex] = true;
-
-                    // Render
-                    float const targetSize = calculateSparkSize(newEquivalentPathLength);
-                    mSparksToRender.emplace_back(
-                        pv.PointIndex,
-                        pv.Size,
-                        targetEndpointIndex,
-                        targetSize);
 
                     //LogMessage("TODOTEST: ARC=", pv.PointIndex, " -> ", targetEndpointIndex, " (via ", s, ")");
 

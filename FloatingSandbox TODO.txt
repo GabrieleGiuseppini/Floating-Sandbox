@@ -666,6 +666,7 @@ Render:
 					= Try with NextSprings picking being agnostic re: current point, and just skip visit
 						- Need to set size to zero though for trunk that is now truncated
 					- Cleanups:
+						- Unify the spring candidate search loop @ expansion
 						- Remove all logging
 				- Interactions with ElectricalElements:
 					- Driven by interaction: upon energizing a point, calls into ElectricalElements
