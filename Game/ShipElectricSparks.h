@@ -57,11 +57,9 @@ private:
     Buffer<bool> mIsSpringElectrified;
     Buffer<bool> mIsSpringElectrifiedBackup;
 
-    // Work buffer for flagging points as already visited during each interaction;
+    // Work buffer for flagging points as visited during an interaction;
     // cardinality=points
-    // TODO: consider using counter and only resetting it at beginning of interaction
-    // with counter==0
-    Buffer<bool> mIsPointElectrified;
+    Buffer<std::uint64_t> mPointElectrificationCounter;
 
     // Flag remembering whether electric sparks have been populated prior to the next Update() step
     bool mAreSparksPopulatedBeforeNextUpdate;
