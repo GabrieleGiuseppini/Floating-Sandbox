@@ -257,7 +257,7 @@ void ShipElectricSparks::PropagateSparks(
             targetEndpointIndex,
             targetSize);
 
-        LogMessage("TODOTEST: ARC=", startingPointIndex, " -> ", targetEndpointIndex, " (via ", s, ")");
+        //LogMessage("TODOTEST: ARC=", startingPointIndex, " -> ", targetEndpointIndex, " (via ", s, ")");
 
         // Next expansion
         if (equivalentPathLength < maxEquivalentPathLengthForThisInteraction)
@@ -427,8 +427,6 @@ void ShipElectricSparks::PropagateSparks(
             bool const doFork =
                 nextSprings.size() == 1
                 && !hasForkedInThisInteraction
-                // TODOTEST: turning off fork
-                && false
                 // Fork more closer to theoretical end
                 && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.05f * (1.0f - distanceToTheoreticalMaxPathLength) * (1.0f - distanceToTheoreticalMaxPathLength));
 
@@ -551,7 +549,7 @@ void ShipElectricSparks::PropagateSparks(
                         targetEndpointIndex,
                         targetSize);
 
-                    LogMessage("TODOTEST: ARC=", pv.PointIndex, " -> ", targetEndpointIndex, " (via ", s, ")");
+                    //LogMessage("TODOTEST: ARC=", pv.PointIndex, " -> ", targetEndpointIndex, " (via ", s, ")");
 
                     // Next expansion
                     if (newEquivalentPathLength < maxEquivalentPathLengthForThisInteraction)
