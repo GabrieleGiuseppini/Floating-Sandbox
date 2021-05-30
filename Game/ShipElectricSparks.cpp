@@ -352,16 +352,10 @@ void ShipElectricSparks::PropagateSparks(
 
             //
             // Choose a new, not electrified spring under any of these conditions:
-            //  - There are no already-electrified outgoing springs, and we choose to continue;
+            //  - There are no already-electrified outgoing springs
             //  - There is only one already-electrified outgoing spring, and we choose to fork while not having forked already in this iteration
             //  - There is only one already-electrified outgoing spring, and we choose to reroute
             //
-
-            bool const doFindNewSpring =
-                nextSprings.size() == 0
-                // TODOTEST
-                //&& GameRandomEngine::GetInstance().GenerateUniformBoolean(0.995f * distanceToTheoreticalMaxPathLength);
-                ;
 
             bool const doFork =
                 nextSprings.size() == 1
@@ -374,7 +368,7 @@ void ShipElectricSparks::PropagateSparks(
                 // Reroute more closer to interaction end
                 && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f * std::pow(1.0f - distanceToInteractionMaxPathLength, 2.0f));
 
-            if (doFindNewSpring || doFork || doReroute)
+            if (nextSprings.size() == 0 || doFork || doReroute)
             {
                 // Pick second best if possible, to impose a zig-zag pattern
                 if (bestSpring2 != NoneElementIndex
