@@ -247,8 +247,7 @@ public:
 
         // Qn = normalized spark vector
         // Qnp = perpendicular to Qn (i.e. Q's normal)
-        float Ql = sparkVector.length();
-        vec2f const Qn = sparkVector.normalise(Ql);
+        vec2f const Qn = sparkVector.normalise();
         vec2f const Qnp = Qn.to_perpendicular(); // rotated by PI/2, i.e. oriented to the right (wrt spark vector)
 
         // Qhw = vector delineating one half of the quad width, the one to the left
