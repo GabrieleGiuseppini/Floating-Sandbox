@@ -299,28 +299,59 @@ void ShipElectricSparks::PropagateSparks(
             float const distanceToInteractionMaxPathLength = (maxEquivalentPathLengthForThisInteraction - pv.EquivalentPathLength) / maxEquivalentPathLengthForThisInteraction;
 
             //
-            // Collect the outgoing springs that are *not* the incoming spring, which
-            // were previously electrified and lead to a not-yet-electrified point,
-            // and which are aligned with our incoming direction
+            // Of all the outgoing springs that are *not* the incoming spring:
+            //  - Collect those that were electrified in the previous interaction, do not
+            //    lead to a point already electrified in this interaction (so to avoid forks),
+            //    and agree with alignment
+            //  - Keep the top two that were not electrified in the previous interaction,
+            //    ranking them on their alignment
+            //      - We don't check beforehand if these will lead to an already-electrified
+            //        point, so to allow for closing loops (which we won't electrify anyway)
             //
-
-            // TODOHERE: collect both sets in this visit, like we do at startup
 
             nextSprings.clear();
 
+            ElementIndex bestSpring1 = NoneElementIndex;
+            float bestSpringAligment1 = -1.0f;
+            ElementIndex bestSpring2 = NoneElementIndex;
+            float bestSpringAligment2 = -1.0f;
+
             for (auto const & cs : points.GetConnectedSprings(pv.PointIndex).ConnectedSprings)
             {
-                if (wasSpringElectrifiedInPreviousInteraction[cs.SpringIndex]
-                    && cs.SpringIndex != pv.IncomingSpringIndex
-                    && !mIsPointElectrified[cs.OtherEndpointIndex]
-                    && (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction) > 0.0f)
+                if (cs.SpringIndex != pv.IncomingSpringIndex)
                 {
-                    nextSprings.emplace_back(cs.SpringIndex);
+                    if (wasSpringElectrifiedInPreviousInteraction[cs.SpringIndex])
+                    {
+                        if (!mIsPointElectrified[cs.OtherEndpointIndex]
+                            && (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction) > 0.0f)
+                        {
+                            // We take this one for sure
+                            nextSprings.emplace_back(cs.SpringIndex);
+                        }
+                    }
+                    else
+                    {
+                        // Rank based on alignment
+                        float const alignment = (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction);
+                        if (alignment > bestSpringAligment1)
+                        {
+                            bestSpring2 = bestSpring1;
+                            bestSpringAligment2 = bestSpringAligment1;
+
+                            bestSpring1 = cs.SpringIndex;
+                            bestSpringAligment1 = alignment;
+                        }
+                        else if (alignment > bestSpringAligment2)
+                        {
+                            bestSpring2 = cs.SpringIndex;
+                            bestSpringAligment2 = alignment;
+                        }
+                    }
                 }
             }
 
             //
-            // Choose a new, not electrified outgoing spring under any of these conditions:
+            // Choose a new, not electrified spring under any of these conditions:
             //  - There are no already-electrified outgoing springs, and we choose to continue;
             //  - There is only one already-electrified outgoing spring, and we choose to fork while not having forked already in this iteration
             //  - There is only one already-electrified outgoing spring, and we choose to reroute
@@ -345,49 +376,7 @@ void ShipElectricSparks::PropagateSparks(
 
             if (doFindNewSpring || doFork || doReroute)
             {
-                //
-                // Find the top spring among the leftover ones;
-                // ranking is based on alignment of direction with incoming direction,
-                // and we take second best - if possible - to impose a zig-zag pattern.
-                //
-                // We don't check beforehand if the spring will lead us to an already-electrified
-                // point, so to allow for closing loops
-                //
-
-                // TODO: consider re-using visit above to populate candidate list
-
-                ElementIndex bestSpring1 = NoneElementIndex;
-                float bestSpringAligment1 = -1.0f;
-                ElementIndex bestSpring2 = NoneElementIndex;
-                float bestSpringAligment2 = -1.0f;
-
-                for (auto const & cs : points.GetConnectedSprings(pv.PointIndex).ConnectedSprings)
-                {
-                    if (!wasSpringElectrifiedInPreviousInteraction[cs.SpringIndex]
-                        && cs.SpringIndex != pv.IncomingSpringIndex
-                        // TODOTEST
-                        // && !mIsPointElectrified[cs.OtherEndpointIndex])
-                        )
-                    {
-                        // Calculate alignment
-                        float const alignment = (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction);
-                        if (alignment > bestSpringAligment1)
-                        {
-                            bestSpring2 = bestSpring1;
-                            bestSpringAligment2 = bestSpringAligment1;
-
-                            bestSpring1 = cs.SpringIndex;
-                            bestSpringAligment1 = alignment;
-                        }
-                        else if (alignment > bestSpringAligment2)
-                        {
-                            bestSpring2 = cs.SpringIndex;
-                            bestSpringAligment2 = alignment;
-                        }
-                    }
-                }
-
-                // Pick second best if possible
+                // Pick second best if possible, to impose a zig-zag pattern
                 if (bestSpring2 != NoneElementIndex
                     && bestSpringAligment2 >= 0.0f)
                 {
@@ -414,7 +403,7 @@ void ShipElectricSparks::PropagateSparks(
             }
 
             //
-            // Follow all of these
+            // Follow all of the new springs
             //
 
             for (auto const s : nextSprings)
