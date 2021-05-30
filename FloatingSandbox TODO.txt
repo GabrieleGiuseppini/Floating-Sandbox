@@ -677,6 +677,7 @@ Render:
 					- Depends on size of incoming, cumulative
 				- Material-driven
 					- New "electrical conductivity" *structural* property - try to name it differently than the electrical property though
+						- First off, need "Material Type" rearc (*) just for helping a script that populates electrical conductivity automatically in material json
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
