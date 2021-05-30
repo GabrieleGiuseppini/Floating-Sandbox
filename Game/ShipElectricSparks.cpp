@@ -351,12 +351,12 @@ void ShipElectricSparks::PropagateSparks(
                 nextSprings.size() == 1
                 && !hasForkedInThisInteraction
                 // Fork more closer to theoretical end
-                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.1f * std::powf(1.0f - distanceToTheoreticalMaxPathLength, 4.0f));
+                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.1f * std::pow(1.0f - distanceToTheoreticalMaxPathLength, 4.0f));
 
             bool const doReroute =
                 nextSprings.size() == 1
                 // Reroute more closer to interaction end
-                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f * (1.0f - distanceToInteractionMaxPathLength) * (1.0f - distanceToInteractionMaxPathLength));
+                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f * std::pow(1.0f - distanceToInteractionMaxPathLength, 2.0f));
 
             if (doFindNewSpring || doFork || doReroute)
             {
