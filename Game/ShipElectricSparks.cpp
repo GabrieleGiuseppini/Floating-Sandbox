@@ -281,7 +281,7 @@ void ShipElectricSparks::PropagateSparks(
 
     std::vector<ElementIndex> nextSprings;
 
-    // Flag to limit forks to only once per expansion
+    // Flag to limit forks to only once per interaction
     bool hasForkedInThisInteraction = false;
 
     // TODOTEST
@@ -324,16 +324,14 @@ void ShipElectricSparks::PropagateSparks(
                     && !mIsPointElectrified[cs.OtherEndpointIndex]
                     && (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction) > 0.0f)
                 {
-                    // TODOHERE
-                    // TODOTEST: enforcing max one; NOTE: this makes the algo forget all forks
-                    //if (!nextSprings.empty())
-                    //    continue;
-
-                    if (!nextSprings.empty())
-                        LogMessage("TODOTEST: break here!");
-
                     nextSprings.emplace_back(cs.SpringIndex);
                 }
+            }
+
+            // If we've scooped up a fork, count it as a...fork
+            if (nextSprings.size() > 1)
+            {
+                hasForkedInThisInteraction = true;
             }
 
             //
@@ -353,7 +351,7 @@ void ShipElectricSparks::PropagateSparks(
                 nextSprings.size() == 1
                 && !hasForkedInThisInteraction
                 // Fork more closer to theoretical end
-                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.05f * (1.0f - distanceToTheoreticalMaxPathLength) * (1.0f - distanceToTheoreticalMaxPathLength));
+                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.1f * (1.0f - distanceToTheoreticalMaxPathLength) * (1.0f - distanceToTheoreticalMaxPathLength));
 
             bool const doReroute =
                 nextSprings.size() == 1
