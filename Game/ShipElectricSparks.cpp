@@ -153,7 +153,7 @@ void ShipElectricSparks::PropagateSparks(
     bool * const oldIsElectrified = mIsSpringElectrified.data();
     bool * const newIsElectrified = mIsSpringElectrifiedBackup.data();
 
-    // Only the starting point has been electrified
+    // Only the starting point has been electrified for now
     mIsPointElectrified.fill(false);
     mIsPointElectrified[startingPointIndex] = true;
 
@@ -179,6 +179,9 @@ void ShipElectricSparks::PropagateSparks(
     std::vector<ElementIndex> startingSprings;
 
     {
+        // Decide number of starting springs
+        // TODOHERE
+
         //
         // 1. Fetch all springs already electrified, and collect the remaining springs
         //
@@ -238,11 +241,9 @@ void ShipElectricSparks::PropagateSparks(
 
         ElementIndex const targetEndpointIndex = springs.GetOtherEndpointIndex(s, startingPointIndex);
 
-        // Electrify spring
-        // TODOTEST: we don't electrify the starting springs, as they are the only ones who share
-        // a point in common and thus if they're scooped up at the next interactions, they'll add a N-way fork,
-        // which could even compound
-        //newIsElectrified[s] = true;
+        // Note: we don't electrify the starting springs, as they are the only ones who share
+        // a point in common and thus if they're scooped up at the next interaction, they'll add
+        // an N-way fork, which could even get compounded by being picked up at the next, and so on
 
         // Electrify target point
         assert(!mIsPointElectrified[targetEndpointIndex]);
