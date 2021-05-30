@@ -28,7 +28,6 @@ public:
         vec2f const & targetPos,
         std::uint64_t counter,
         float progress,
-        // TODO: see if both needed
         Points const & points,
         Springs const & springs,
         GameParameters const & gameParameters);
@@ -45,8 +44,6 @@ private:
     void PropagateSparks(
         ElementIndex startingPointIndex,
         std::uint64_t counter,
-        float progress,
-        // TODO: see if both needed
         Points const & points,
         Springs const & springs);
 
@@ -54,8 +51,8 @@ private:
 
     // Flag remembering whether a spring is electrified or not;
     // cardinality=springs
-    Buffer<bool> mIsSpringElectrified;
-    Buffer<bool> mIsSpringElectrifiedBackup;
+    Buffer<bool> mIsSpringElectrifiedOld;
+    Buffer<bool> mIsSpringElectrifiedNew;
 
     // Work buffer for flagging points as visited during an interaction;
     // cardinality=points

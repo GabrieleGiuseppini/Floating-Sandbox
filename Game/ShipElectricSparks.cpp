@@ -13,10 +13,10 @@
 namespace Physics {
 
 ShipElectricSparks::ShipElectricSparks(
-    Points const & points, // TODO: see if needed
+    Points const & points,
     Springs const & springs)
-    : mIsSpringElectrified(springs.GetElementCount(), 0, false)
-    , mIsSpringElectrifiedBackup(springs.GetElementCount(), 0, false)
+    : mIsSpringElectrifiedOld(springs.GetElementCount(), 0, false)
+    , mIsSpringElectrifiedNew(springs.GetElementCount(), 0, false)
     , mPointElectrificationCounter(points.GetElementCount(), 0, std::numeric_limits<std::uint64_t>::max())
     , mAreSparksPopulatedBeforeNextUpdate(false)
     , mSparksToRender()
@@ -26,10 +26,10 @@ ShipElectricSparks::ShipElectricSparks(
 bool ShipElectricSparks::ApplySparkAt(
     vec2f const & targetPos,
     std::uint64_t counter,
-    float progress,
+    float /*progress*/,
     Points const & points,
     Springs const & springs,
-    GameParameters const & gameParameters)
+    GameParameters const & /*gameParameters*/)
 {
     //
     // Find closest point, and check whether there _is_ actually a closest point
@@ -54,7 +54,6 @@ bool ShipElectricSparks::ApplySparkAt(
         PropagateSparks(
             nearestPointIndex,
             counter,
-            progress,
             points,
             springs);
 
@@ -102,7 +101,6 @@ void ShipElectricSparks::Upload(
 void ShipElectricSparks::PropagateSparks(
     ElementIndex startingPointIndex,
     std::uint64_t counter,
-    float progress,
     Points const & points,
     Springs const & springs)
 {
@@ -144,9 +142,9 @@ void ShipElectricSparks::PropagateSparks(
     //
 
     // Prepare IsSpringElectrified buffer
-    mIsSpringElectrifiedBackup.fill(false);
-    bool * const wasSpringElectrifiedInPreviousInteraction = mIsSpringElectrified.data();
-    bool * const isSpringElectrifiedInThisInteraction = mIsSpringElectrifiedBackup.data();
+    mIsSpringElectrifiedNew.fill(false);
+    bool * const wasSpringElectrifiedInPreviousInteraction = mIsSpringElectrifiedOld.data();
+    bool * const isSpringElectrifiedInThisInteraction = mIsSpringElectrifiedNew.data();
 
     // Only the starting point has been electrified for now
     if (counter == 0)
@@ -442,7 +440,7 @@ void ShipElectricSparks::PropagateSparks(
     //
 
     // Swap IsElectrified buffers
-    mIsSpringElectrified.swap(mIsSpringElectrifiedBackup);
+    mIsSpringElectrifiedNew.swap(mIsSpringElectrifiedOld);
 
     // Remember that we have populated electric sparks
     mAreSparksPopulatedBeforeNextUpdate = true;
