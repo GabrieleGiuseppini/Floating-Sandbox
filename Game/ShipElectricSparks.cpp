@@ -274,7 +274,7 @@ void ShipElectricSparks::PropagateSparks(
     }
 
     //
-    // Expand
+    // Expand now
     //
 
     std::vector<SparkPointToVisit> nextPointsToVisit;
@@ -307,91 +307,13 @@ void ShipElectricSparks::PropagateSparks(
             // Calculate distance to the end of this path in this interaction
             float const distanceToInteractionMaxPathLength = (maxEquivalentPathLengthForThisInteraction - pv.EquivalentPathLength) / maxEquivalentPathLengthForThisInteraction;
 
-            /*
-            //
-            // Find the topmost three candidates for continuing the incoming arc; ranking and selection
-            // criteria are:
-            //  - Not the incoming spring
-            //  - Not yet electrified in this interaction
-            //  - Aligned with incoming arc (though if we can choose, we'll choose the second best one
-            //    to enforce a zig-zag pattern)
-            //  - Between a previously-electrified with positive alignment and a non-previously-electrified
-            //    with positive alignment, we'll choose the previously-electrified one
-            //
-
-            nextSprings.clear();
-
-            ElementIndex bestSpring1 = NoneElementIndex;
-            float bestSpringAligment1 = -1.0f;
-            ElementIndex bestSpring2 = NoneElementIndex;
-            float bestSpringAligment2 = -1.0f;
-            ElementIndex bestSpring3 = NoneElementIndex;
-            float bestSpringAligment3 = -1.0f;
-
-            for (auto const & cs : points.GetConnectedSprings(pv.PointIndex).ConnectedSprings)
-            {
-                if (cs.SpringIndex != pv.IncomingSpringIndex
-                    && !newIsElectrified[cs.SpringIndex])
-                {
-                    // Calculate alignment
-                    float const alignment = (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction);
-                    if (alignment > bestSpringAligment1)
-                    {
-                        bestSpring3 = bestSpring2;
-                        bestSpringAligment3 = bestSpringAligment2;
-
-                        bestSpring2 = bestSpring1;
-                        bestSpringAligment2 = bestSpringAligment1;
-
-                        bestSpring1 = cs.SpringIndex;
-                        bestSpringAligment1 = alignment;
-                    }
-                    else if (alignment > bestSpringAligment2)
-                    {
-                        bestSpring3 = bestSpring2;
-                        bestSpringAligment3 = bestSpringAligment2;
-
-                        bestSpring2 = cs.SpringIndex;
-                        bestSpringAligment2 = alignment;
-                    }
-                    else if (alignment > bestSpringAligment3)
-                    {
-                        bestSpring3 = cs.SpringIndex;
-                        bestSpringAligment3 = alignment;
-                    }
-                }
-            }
-
-            // TODOTEST: not taking previous electrification into consideration
-            if (bestSpring2 != NoneElementIndex
-                && bestSpringAligment2 >= 0.0f)
-            {
-                nextSprings.emplace_back(bestSpring2);
-
-                // See if we want to fork
-                if (!hasForkedInThisInteraction
-                    && bestSpring3 != NoneElementIndex
-                    && bestSpringAligment3 >= 0.0f
-                    && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.01f * (1.0f - distanceToTheoreticalMaxPathLength)))
-                {
-                    // Fork!
-                    nextSprings.emplace_back(bestSpring3);
-
-                    hasForkedInThisInteraction = true;
-                }
-            }
-            else if (bestSpring1 != NoneElementIndex)
-            {
-                nextSprings.emplace_back(bestSpring1);
-            }
-            */
-
             //
             // Collect the outgoing springs that are *not* the incoming spring, which
-            // were previously electrified /* TODOTEST: removed now: but not yet electrified in this interaction*/,
-            // and lead to a not-yet-electrified point,
+            // were previously electrified and lead to a not-yet-electrified point,
             // and which are aligned with our incoming direction
             //
+
+            // TODOHERE: collect both sets in this visit, like we do at startup
 
             nextSprings.clear();
 
