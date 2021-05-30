@@ -32,10 +32,6 @@ void main()
     float depthWhite = 1.0 - smoothstep(0.0, 0.15, d);
     float depth = 1.0 - smoothstep(0.0, 0.5, d);
 
-    // TODOTEST
-    //if (depth < 0.2)
-    //    discard;
-
     gl_FragColor = vec4(
         mix(
             vec3(0.6, 0.8, 1.0), 

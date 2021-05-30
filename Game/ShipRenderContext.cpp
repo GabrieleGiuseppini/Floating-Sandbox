@@ -51,7 +51,6 @@ ShipRenderContext::ShipRenderContext(
     , mFrontierEdgeElementVBOAllocatedElementSize(0u)
     //
     , mElectricSparkVertexBuffer()
-    , mIsElectricSparkVertexBufferDirty(true)
     , mElectricSparkVBO()
     , mElectricSparkVBOAllocatedVertexSize(0u)
     //
@@ -870,13 +869,10 @@ void ShipRenderContext::UploadElementFrontierEdgesEnd()
 void ShipRenderContext::UploadElectricSparksStart(size_t count)
 {
     //
-    // Electric sparks are are sticky as long as start() is not invoked
+    // Electric sparks are not sticky: we upload them at each frame
     //
 
-    mElectricSparkVertexBuffer.clear();
-    mElectricSparkVertexBuffer.reserve(count);
-
-    mIsElectricSparkVertexBufferDirty = true;
+    mElectricSparkVertexBuffer.reset(6 * count);
 }
 
 void ShipRenderContext::UploadElectricSparksEnd()
@@ -1549,31 +1545,26 @@ void ShipRenderContext::RenderDraw(
 
 void ShipRenderContext::RenderPrepareElectricSparks(RenderParameters const & /*renderParameters*/)
 {
-    if (mIsElectricSparkVertexBufferDirty)
+    if (!mElectricSparkVertexBuffer.empty())
     {
         glBindBuffer(GL_ARRAY_BUFFER, *mElectricSparkVBO);
 
-        if (!mElectricSparkVertexBuffer.empty())
+        if (mElectricSparkVertexBuffer.size() > mElectricSparkVBOAllocatedVertexSize)
         {
-            if (mElectricSparkVertexBuffer.size() > mElectricSparkVBOAllocatedVertexSize)
-            {
-                // Re-allocate VBO buffer and upload
-                glBufferData(GL_ARRAY_BUFFER, mElectricSparkVertexBuffer.size() * sizeof(ElectricSparkVertex), mElectricSparkVertexBuffer.data(), GL_DYNAMIC_DRAW);
-                CheckOpenGLError();
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ARRAY_BUFFER, mElectricSparkVertexBuffer.size() * sizeof(ElectricSparkVertex), mElectricSparkVertexBuffer.data(), GL_DYNAMIC_DRAW);
+            CheckOpenGLError();
 
-                mElectricSparkVBOAllocatedVertexSize = mElectricSparkVertexBuffer.size();
-            }
-            else
-            {
-                // No size change, just upload VBO buffer
-                glBufferSubData(GL_ARRAY_BUFFER, 0, mElectricSparkVertexBuffer.size() * sizeof(ElectricSparkVertex), mElectricSparkVertexBuffer.data());
-                CheckOpenGLError();
-            }
+            mElectricSparkVBOAllocatedVertexSize = mElectricSparkVertexBuffer.size();
+        }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mElectricSparkVertexBuffer.size() * sizeof(ElectricSparkVertex), mElectricSparkVertexBuffer.data());
+            CheckOpenGLError();
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        mIsElectricSparkVertexBufferDirty = false;
     }
 }
 

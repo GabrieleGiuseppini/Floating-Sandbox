@@ -1426,8 +1426,7 @@ private:
     GameOpenGLVBO mFrontierEdgeElementVBO;
     size_t mFrontierEdgeElementVBOAllocatedElementSize;
 
-    std::vector<ElectricSparkVertex> mElectricSparkVertexBuffer;
-    bool mIsElectricSparkVertexBufferDirty;
+    BoundedVector<ElectricSparkVertex> mElectricSparkVertexBuffer;
     GameOpenGLVBO mElectricSparkVBO;
     size_t mElectricSparkVBOAllocatedVertexSize;
 

@@ -651,8 +651,8 @@ Render:
 		= Electric Spark tool
 			+ Infrastructure (tool, sound, cursor)
 			= Rendering
-				= ShipRenderContext machinery
-					- Rethink: it's bad that we continuously flag vertex buffer as dirty: it can be assumed to be always dirty when it's not empty;
+				+ ShipRenderContext machinery
+					+ Rethink: it's bad that we continuously flag vertex buffer as dirty: it can be assumed to be always dirty when it's not empty;
 					  use same strategy then that we use for...clouds?
 				+ Shader
 				+ Ship::Upload
@@ -661,6 +661,7 @@ Render:
 						+ Uploaded by Ship::Upload
 			= Interaction
 				= Spark expansion logic
+					- Issue with parallel arms: see if reintroducing third-best helps
 				- Interactions with ElectricalElements:
 					- Driven by interaction: upon energizing a point, calls into ElectricalElements
 					- Call causes same "damage" to selected types of electrical elements as EMP tool (*), i.e. stores SimulationTimestamp in 
