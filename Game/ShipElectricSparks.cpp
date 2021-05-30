@@ -361,7 +361,9 @@ void ShipElectricSparks::PropagateSparks(
             bool const doReroute =
                 nextSprings.size() == 1
                 // Reroute more closer to interaction end
-                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f * std::pow(1.0f - distanceToInteractionMaxPathLength, 2.0f));
+                // TODOTEST
+                //&& GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f * std::pow(1.0f - distanceToInteractionMaxPathLength, 2.0f));
+                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f * std::pow(1.0f - distanceToTheoreticalMaxPathLength, 2.0f));
 
             if (doFindNewSpring || doFork || doReroute)
             {
@@ -416,6 +418,8 @@ void ShipElectricSparks::PropagateSparks(
                     }
                 }
 
+                // TODOHERE:
+                //  - Nuke third best
                 // Pick second best if possible
                 if (bestSpring2 != NoneElementIndex
                     && bestSpringAligment2 >= 0.0f)
@@ -423,6 +427,8 @@ void ShipElectricSparks::PropagateSparks(
                     // If second and third best are similar, choose between them
                     if (bestSpring3 != NoneElementIndex
                         && bestSpringAligment3 >= 0.0f
+                        // TODOTEST
+                        && false
                         && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f))
                         nextSprings.emplace_back(bestSpring3);
                     else
