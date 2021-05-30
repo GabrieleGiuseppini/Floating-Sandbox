@@ -664,12 +664,9 @@ Render:
 					+ Fork memory: make sure that, when we collect a previously-electrified spring, we do this along the same direction
 					  as before
 					+ Decide whether we want to keep picking third best
-					- Try with new startup algo:
-						- For each pre-existing: forget with P<<1
-						- For each non-existing: pickup with P<<1
 					- Cleanups:
 						- Unify the spring candidate search loop @ expansion
-						- Remove all logging
+						- See if both members can become counters, without needing to cleanup at startup
 				- Interactions with ElectricalElements:
 					- Driven by interaction: upon energizing a point, calls into ElectricalElements
 					- Call causes same "damage" to selected types of electrical elements as EMP tool (*), i.e. stores SimulationTimestamp in 
