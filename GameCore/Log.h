@@ -133,6 +133,10 @@ public:
 
         // Output to stdout
         std::cout << message << std::endl;
+
+#ifdef _DEBUG
+        LogToDebugStream(message);
+#endif
 	}
 
     template<typename...TArgs>
@@ -161,6 +165,10 @@ public:
         outputFile.flush();
         outputFile.close();
     }
+
+private:
+
+    void LogToDebugStream(std::string const & message);
 
 public:
 
