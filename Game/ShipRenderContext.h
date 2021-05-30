@@ -252,7 +252,7 @@ public:
         vec2f const Qnp = Qn.to_perpendicular(); // rotated by PI/2, i.e. oriented to the right (wrt spark vector)
 
         // Qhw = vector delineating one half of the quad width, the one to the left
-        vec2f const Qhw = Qnp * 0.45f;
+        vec2f const Qhw = Qnp * 0.75f; // Magic number: sparkle half width, world coords
 
         // A, B = left-bottom, right-bottom
         vec2f const A = endPosition + Qn * 0.1f - Qhw * endSize;
