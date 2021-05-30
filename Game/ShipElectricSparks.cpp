@@ -125,19 +125,16 @@ void ShipElectricSparks::PropagateSparks(
     {
         ElementIndex PointIndex;
         vec2f Direction; // Normalized direction that we reached this point to from the origin
-        float Size; // Cumulative size so far, at point
-        float EquivalentPathLength; // Cumulative equivalent length of path so far
+        float EquivalentPathLength; // Cumulative equivalent length of path so far, up to the point that the spark starts at
         ElementIndex IncomingSpringIndex; // The index of the spring that we traveled to reach this point
 
         SparkPointToVisit(
             ElementIndex pointIndex,
             vec2f && direction,
-            float size,
             float equivalentPathLength,
             ElementIndex incomingSpringIndex)
             : PointIndex(pointIndex)
             , Direction(std::move(direction))
-            , Size(size)
             , EquivalentPathLength(equivalentPathLength)
             , IncomingSpringIndex(incomingSpringIndex)
         {}
@@ -175,7 +172,7 @@ void ShipElectricSparks::PropagateSparks(
     };
 
     //
-    // Jump-start: find the initial springs outgoing from the starting point
+    // 1. Jump-start: find the initial springs outgoing from the starting point
     //
 
     std::vector<ElementIndex> startingSprings;
@@ -228,7 +225,7 @@ void ShipElectricSparks::PropagateSparks(
     }
 
     //
-    // Electrify the starting springs and initialize expansions
+    // 2. Electrify the starting springs and initialize expansions
     //
 
     std::vector<SparkPointToVisit> currentPointsToVisit;
@@ -251,13 +248,11 @@ void ShipElectricSparks::PropagateSparks(
             mIsPointElectrified[targetEndpointIndex] = true;
 
             // Render
-            float const sourceSize = calculateSparkSize(0.0f);
-            float const targetSize = calculateSparkSize(equivalentPathLength);
             mSparksToRender.emplace_back(
                 startingPointIndex,
-                sourceSize,
+                calculateSparkSize(0.0f),
                 targetEndpointIndex,
-                targetSize);
+                calculateSparkSize(equivalentPathLength));
 
             // Queue for next expansion
             if (equivalentPathLength < maxEquivalentPathLengthForThisInteraction)
@@ -265,7 +260,6 @@ void ShipElectricSparks::PropagateSparks(
                 currentPointsToVisit.emplace_back(
                     targetEndpointIndex,
                     (points.GetPosition(targetEndpointIndex) - startingPointPosition).normalise(),
-                    targetSize,
                     equivalentPathLength,
                     s);
             }
@@ -273,7 +267,7 @@ void ShipElectricSparks::PropagateSparks(
     }
 
     //
-    // Expand now
+    // 3. Expand now
     //
 
     std::vector<SparkPointToVisit> nextPointsToVisit;
@@ -404,16 +398,16 @@ void ShipElectricSparks::PropagateSparks(
             {
                 ElementIndex const targetEndpointIndex = springs.GetOtherEndpointIndex(s, pv.PointIndex);
 
+                float const startEquivalentPathLength = pv.EquivalentPathLength;
                 float const equivalentStepLength = 1.0f; // TODO: material-based
-                float const newEquivalentPathLength = pv.EquivalentPathLength + equivalentStepLength;
+                float const endEquivalentPathLength = startEquivalentPathLength + equivalentStepLength;
 
                 // Render
-                float const targetSize = calculateSparkSize(newEquivalentPathLength);
                 mSparksToRender.emplace_back(
                     pv.PointIndex,
-                    pv.Size,
+                    calculateSparkSize(startEquivalentPathLength),
                     targetEndpointIndex,
-                    targetSize);
+                    calculateSparkSize(endEquivalentPathLength));
 
                 if (!mIsPointElectrified[targetEndpointIndex])
                 {
@@ -424,13 +418,12 @@ void ShipElectricSparks::PropagateSparks(
                     mIsPointElectrified[targetEndpointIndex] = true;
 
                     // Next expansion
-                    if (newEquivalentPathLength < maxEquivalentPathLengthForThisInteraction)
+                    if (endEquivalentPathLength < maxEquivalentPathLengthForThisInteraction)
                     {
                         nextPointsToVisit.emplace_back(
                             targetEndpointIndex,
                             (points.GetPosition(targetEndpointIndex) - pointPosition).normalise(),
-                            targetSize,
-                            newEquivalentPathLength,
+                            endEquivalentPathLength,
                             s);
                     }
                 }
