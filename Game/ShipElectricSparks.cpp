@@ -119,7 +119,7 @@ void ShipElectricSparks::PropagateSparks(
     //
 
     size_t constexpr StartingArcs = 6;
-    float constexpr MaxPathLength = 30.0f; // TODO: should this be based off total number of springs?
+    float constexpr MaxPathLength = 15.0f; // TODO: should this be based off total number of springs?
 
     // The information associated with a point that the next expansion will start from
     struct SparkPointToVisit
@@ -239,10 +239,14 @@ void ShipElectricSparks::PropagateSparks(
         ElementIndex const targetEndpointIndex = springs.GetOtherEndpointIndex(s, startingPointIndex);
 
         // Electrify spring
-        newIsElectrified[s] = true;
+        // TODOTEST: we don't electrify the starting springs, as they are the only ones who share
+        // a point in common and thus if they're scooped up at the next interactions, they'll add a N-way fork,
+        // which could even compound
+        //newIsElectrified[s] = true;
 
         // Electrify target point
-        mIsPointElectrified[targetEndpointIndex];
+        assert(!mIsPointElectrified[targetEndpointIndex]);
+        mIsPointElectrified[targetEndpointIndex] = true;
 
         // Render
         float const sourceSize = calculateSparkSize(0.0f);
@@ -252,6 +256,8 @@ void ShipElectricSparks::PropagateSparks(
             sourceSize,
             targetEndpointIndex,
             targetSize);
+
+        LogMessage("TODOTEST: ARC=", startingPointIndex, " -> ", targetEndpointIndex, " (via ", s, ")");
 
         // Next expansion
         if (equivalentPathLength < maxEquivalentPathLengthForThisInteraction)
@@ -398,6 +404,9 @@ void ShipElectricSparks::PropagateSparks(
                     //if (!nextSprings.empty())
                     //    continue;
 
+                    if (!nextSprings.empty())
+                        LogMessage("TODOTEST: break here!");
+
                     nextSprings.emplace_back(cs.SpringIndex);
                 }
             }
@@ -521,38 +530,42 @@ void ShipElectricSparks::PropagateSparks(
 
             for (auto const s : nextSprings)
             {
-                float const equivalentStepLength = 1.0f; // TODO: material-based
-                float const newEquivalentPathLength = pv.EquivalentPathLength + equivalentStepLength;
-
                 ElementIndex const targetEndpointIndex = springs.GetOtherEndpointIndex(s, pv.PointIndex);
 
-                // Electrify spring
-                newIsElectrified[s] = true;
-
-                // Electrify point
-                assert(!mIsPointElectrified[targetEndpointIndex]);
-                mIsPointElectrified[targetEndpointIndex] = true;
-
-                // Render
-                float const targetSize = calculateSparkSize(newEquivalentPathLength);
-                mSparksToRender.emplace_back(
-                    pv.PointIndex,
-                    pv.Size,
-                    targetEndpointIndex,
-                    targetSize);
-
-                // Next expansion
-                if (newEquivalentPathLength < maxEquivalentPathLengthForThisInteraction)
+                if (!mIsPointElectrified[targetEndpointIndex])
                 {
-                    nextPointsToVisit.emplace_back(
-                        targetEndpointIndex,
-                        (points.GetPosition(targetEndpointIndex) - pointPosition).normalise(),
-                        targetSize,
-                        newEquivalentPathLength,
-                        s);
-                }
+                    float const equivalentStepLength = 1.0f; // TODO: material-based
+                    float const newEquivalentPathLength = pv.EquivalentPathLength + equivalentStepLength;
 
-                ++TODOElectrifiedSpringsCount;
+                    // Electrify spring
+                    newIsElectrified[s] = true;
+
+                    // Electrify point
+                    mIsPointElectrified[targetEndpointIndex] = true;
+
+                    // Render
+                    float const targetSize = calculateSparkSize(newEquivalentPathLength);
+                    mSparksToRender.emplace_back(
+                        pv.PointIndex,
+                        pv.Size,
+                        targetEndpointIndex,
+                        targetSize);
+
+                    LogMessage("TODOTEST: ARC=", pv.PointIndex, " -> ", targetEndpointIndex, " (via ", s, ")");
+
+                    // Next expansion
+                    if (newEquivalentPathLength < maxEquivalentPathLengthForThisInteraction)
+                    {
+                        nextPointsToVisit.emplace_back(
+                            targetEndpointIndex,
+                            (points.GetPosition(targetEndpointIndex) - pointPosition).normalise(),
+                            targetSize,
+                            newEquivalentPathLength,
+                            s);
+                    }
+
+                    ++TODOElectrifiedSpringsCount;
+                }
             }
         }
 
