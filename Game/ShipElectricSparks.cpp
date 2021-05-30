@@ -150,8 +150,8 @@ void ShipElectricSparks::PropagateSparks(
 
     // Prepare IsElectrified buffer
     mIsSpringElectrifiedBackup.fill(false);
-    bool * const oldIsElectrified = mIsSpringElectrified.data();
-    bool * const newIsElectrified = mIsSpringElectrifiedBackup.data();
+    bool * const wasSpringElectrifiedInPreviousInteraction = mIsSpringElectrified.data();
+    bool * const isSpringElectrifiedInThisInteraction = mIsSpringElectrifiedBackup.data();
 
     // Only the starting point has been electrified for now
     mIsPointElectrified.fill(false);
@@ -192,7 +192,7 @@ void ShipElectricSparks::PropagateSparks(
         {
             assert(!mIsPointElectrified[cs.OtherEndpointIndex]);
 
-            if (oldIsElectrified[cs.SpringIndex]
+            if (wasSpringElectrifiedInPreviousInteraction[cs.SpringIndex]
                 && startingSprings.size() < StartingArcs)
             {
                 startingSprings.emplace_back(cs.SpringIndex);
@@ -395,7 +395,7 @@ void ShipElectricSparks::PropagateSparks(
 
             for (auto const & cs : points.GetConnectedSprings(pv.PointIndex).ConnectedSprings)
             {
-                if (oldIsElectrified[cs.SpringIndex]
+                if (wasSpringElectrifiedInPreviousInteraction[cs.SpringIndex]
                     && cs.SpringIndex != pv.IncomingSpringIndex
                     && !mIsPointElectrified[cs.OtherEndpointIndex]
                     && (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction) > 0.0f)
@@ -454,7 +454,7 @@ void ShipElectricSparks::PropagateSparks(
 
                 for (auto const & cs : points.GetConnectedSprings(pv.PointIndex).ConnectedSprings)
                 {
-                    if (!oldIsElectrified[cs.SpringIndex]
+                    if (!wasSpringElectrifiedInPreviousInteraction[cs.SpringIndex]
                         && cs.SpringIndex != pv.IncomingSpringIndex
                         && !mIsPointElectrified[cs.OtherEndpointIndex])
                     {
@@ -537,7 +537,7 @@ void ShipElectricSparks::PropagateSparks(
                     float const newEquivalentPathLength = pv.EquivalentPathLength + equivalentStepLength;
 
                     // Electrify spring
-                    newIsElectrified[s] = true;
+                    isSpringElectrifiedInThisInteraction[s] = true;
 
                     // Electrify point
                     mIsPointElectrified[targetEndpointIndex] = true;
