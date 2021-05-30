@@ -665,7 +665,6 @@ Render:
 					  as before
 					+ Decide whether we want to keep picking third best
 					- Cleanups:
-						- Unify the spring candidate search loop @ expansion
 						- See if both members can become counters, without needing to cleanup at startup
 				- Interactions with ElectricalElements:
 					- Driven by interaction: upon energizing a point, calls into ElectricalElements
