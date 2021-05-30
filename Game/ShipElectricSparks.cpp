@@ -118,7 +118,8 @@ void ShipElectricSparks::PropagateSparks(
     // Constants
     //
 
-    size_t constexpr StartingArcs = 4;
+    size_t constexpr StartingArcsMin = 2;
+    size_t constexpr StartingArcsMax = 4;
     float constexpr MaxPathLength = 25.0f; // TODO: should this be based off total number of springs?
 
     // The information associated with a point that the next expansion will start from
@@ -180,7 +181,7 @@ void ShipElectricSparks::PropagateSparks(
 
     {
         // Decide number of starting springs
-        // TODOHERE
+        size_t startingArcsCount = GameRandomEngine::GetInstance().GenerateUniformInteger(StartingArcsMin, StartingArcsMax);
 
         //
         // 1. Fetch all springs already electrified, and collect the remaining springs
@@ -193,7 +194,7 @@ void ShipElectricSparks::PropagateSparks(
             assert(!mIsPointElectrified[cs.OtherEndpointIndex]);
 
             if (wasSpringElectrifiedInPreviousInteraction[cs.SpringIndex]
-                && startingSprings.size() < StartingArcs)
+                && startingSprings.size() < startingArcsCount)
             {
                 startingSprings.emplace_back(cs.SpringIndex);
             }
@@ -219,7 +220,7 @@ void ShipElectricSparks::PropagateSparks(
             });
 
         // Pick winners
-        for (size_t s = 0; s < otherSprings.size() && startingSprings.size() < StartingArcs; ++s)
+        for (size_t s = 0; s < otherSprings.size() && startingSprings.size() < startingArcsCount; ++s)
         {
             startingSprings.emplace_back(std::get<0>(otherSprings[s]));
         }
@@ -260,7 +261,7 @@ void ShipElectricSparks::PropagateSparks(
 
         //LogMessage("TODOTEST: ARC=", startingPointIndex, " -> ", targetEndpointIndex, " (via ", s, ")");
 
-        // Next expansion
+        // Queue for next expansion
         if (equivalentPathLength < maxEquivalentPathLengthForThisInteraction)
         {
             currentPointsToVisit.emplace_back(
@@ -280,6 +281,7 @@ void ShipElectricSparks::PropagateSparks(
 
     std::vector<ElementIndex> nextSprings;
 
+    // Flag to limit forks to only once per expansion
     bool hasForkedInThisInteraction = false;
 
     // TODOTEST

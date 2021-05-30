@@ -660,8 +660,9 @@ Render:
 						+ Uploaded by Ship::Upload
 			= Interaction
 				= Bulk
-					= Fork memory: make sure that, when we collect a previously-electrified spring, we do this along the same direction
+					+ Fork memory: make sure that, when we collect a previously-electrified spring, we do this along the same direction
 					  as before
+					- Decide whether we want to keep picking third best
 					- Cleanups:
 						- Remove all logging
 				- Interactions with ElectricalElements:
