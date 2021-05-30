@@ -17,7 +17,7 @@ ShipElectricSparks::ShipElectricSparks(
     Springs const & springs)
     : mIsSpringElectrified(springs.GetElementCount(), 0, false)
     , mIsSpringElectrifiedBackup(springs.GetElementCount(), 0, false)
-    , mIsPointElectrified(points.GetElementCount(), 0, false)
+    , mPointElectrificationCounter(points.GetElementCount(), 0, std::numeric_limits<std::uint64_t>::max())
     , mAreSparksPopulatedBeforeNextUpdate(false)
     , mSparksToRender()
 {
@@ -103,7 +103,6 @@ void ShipElectricSparks::PropagateSparks(
     ElementIndex startingPointIndex,
     std::uint64_t counter,
     float progress,
-    // TODO: see if both needed
     Points const & points,
     Springs const & springs)
 {
@@ -150,8 +149,11 @@ void ShipElectricSparks::PropagateSparks(
     bool * const isSpringElectrifiedInThisInteraction = mIsSpringElectrifiedBackup.data();
 
     // Only the starting point has been electrified for now
-    mIsPointElectrified.fill(false);
-    mIsPointElectrified[startingPointIndex] = true;
+    if (counter == 0)
+    {
+        mPointElectrificationCounter.fill(std::numeric_limits<std::uint64_t>::max());
+    }
+    mPointElectrificationCounter[startingPointIndex] = counter;
 
     // Clear the sparks that have to be rendered after this step
     mSparksToRender.clear();
@@ -189,7 +191,7 @@ void ShipElectricSparks::PropagateSparks(
 
         for (auto const & cs : points.GetConnectedSprings(startingPointIndex).ConnectedSprings)
         {
-            assert(!mIsPointElectrified[cs.OtherEndpointIndex]);
+            assert(mPointElectrificationCounter[cs.OtherEndpointIndex] != counter);
 
             if (wasSpringElectrifiedInPreviousInteraction[cs.SpringIndex]
                 && startingSprings.size() < startingArcsCount)
@@ -244,8 +246,8 @@ void ShipElectricSparks::PropagateSparks(
             // an N-way fork, which could even get compounded by being picked up at the next, and so on
 
             // Electrify target point
-            assert(!mIsPointElectrified[targetEndpointIndex]);
-            mIsPointElectrified[targetEndpointIndex] = true;
+            assert(mPointElectrificationCounter[targetEndpointIndex] != counter);
+            mPointElectrificationCounter[targetEndpointIndex] = counter;
 
             // Render
             mSparksToRender.emplace_back(
@@ -316,7 +318,7 @@ void ShipElectricSparks::PropagateSparks(
                 {
                     if (wasSpringElectrifiedInPreviousInteraction[cs.SpringIndex])
                     {
-                        if (!mIsPointElectrified[cs.OtherEndpointIndex]
+                        if (mPointElectrificationCounter[cs.OtherEndpointIndex] != counter
                             && (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction) > 0.0f)
                         {
                             // We take this one for sure
@@ -409,13 +411,13 @@ void ShipElectricSparks::PropagateSparks(
                     targetEndpointIndex,
                     calculateSparkSize(endEquivalentPathLength));
 
-                if (!mIsPointElectrified[targetEndpointIndex])
+                if (mPointElectrificationCounter[targetEndpointIndex] != counter)
                 {
                     // Electrify spring
                     isSpringElectrifiedInThisInteraction[s] = true;
 
                     // Electrify point
-                    mIsPointElectrified[targetEndpointIndex] = true;
+                    mPointElectrificationCounter[targetEndpointIndex] = counter;
 
                     // Next expansion
                     if (endEquivalentPathLength < maxEquivalentPathLengthForThisInteraction)
