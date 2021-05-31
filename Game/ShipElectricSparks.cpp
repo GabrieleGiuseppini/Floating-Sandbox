@@ -309,6 +309,8 @@ void ShipElectricSparks::PropagateSparks(
             float bestSpringAligment1 = -1.0f;
             ElementIndex bestSpring2 = NoneElementIndex;
             float bestSpringAligment2 = -1.0f;
+            ElementIndex bestSpring3 = NoneElementIndex;
+            float bestSpringAligment3 = -1.0f;
 
             for (auto const & cs : points.GetConnectedSprings(pv.PointIndex).ConnectedSprings)
             {
@@ -329,6 +331,9 @@ void ShipElectricSparks::PropagateSparks(
                         float const alignment = (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction);
                         if (alignment > bestSpringAligment1)
                         {
+                            bestSpring3 = bestSpring2;
+                            bestSpringAligment3 = bestSpringAligment2;
+
                             bestSpring2 = bestSpring1;
                             bestSpringAligment2 = bestSpringAligment1;
 
@@ -337,13 +342,111 @@ void ShipElectricSparks::PropagateSparks(
                         }
                         else if (alignment > bestSpringAligment2)
                         {
+                            bestSpring3 = bestSpring2;
+                            bestSpringAligment3 = bestSpringAligment2;
+
                             bestSpring2 = cs.SpringIndex;
                             bestSpringAligment2 = alignment;
+                        }
+                        else if (alignment > bestSpringAligment3)
+                        {
+                            bestSpring3 = cs.SpringIndex;
+                            bestSpringAligment3 = alignment;
                         }
                     }
                 }
             }
 
+            // TODO: comment
+
+            if (bestSpring1 != NoneElementIndex)
+            {
+                if (nextSprings.empty())
+                {
+                    float const r = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
+                    if (r < 0.55f || bestSpring2 == NoneElementIndex)
+                    {
+                        nextSprings.emplace_back(bestSpring1);
+                    }
+                    else if (r < 0.85f || bestSpring3 == NoneElementIndex)
+                    {
+                        nextSprings.emplace_back(bestSpring2);
+                    }
+                    else
+                    {
+                        nextSprings.emplace_back(bestSpring3);
+                    }
+                    /*
+                    // Pick second best if possible, to impose a zig-zag pattern
+                    if (bestSpring2 != NoneElementIndex
+                        && bestSpringAligment2 >= 0.0f)
+                    {
+                        if (bestSpring3 != NoneElementIndex
+                            && bestSpringAligment3 >= 0.0f
+                            && !hasDeviatedInThisInteraction
+                            && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.1f))
+                        {
+                            nextSprings.emplace_back(bestSpring3);
+                            hasDeviatedInThisInteraction = true;
+                        }
+                        else
+                        {
+                            nextSprings.emplace_back(bestSpring2);
+                        }
+                    }
+                    else if (bestSpring1 != NoneElementIndex)
+                    {
+                        nextSprings.emplace_back(bestSpring1);
+                    }
+                    */
+                }
+                else
+                {
+                    bool const doFork =
+                        nextSprings.size() == 1
+                        && !hasForkedInThisInteraction
+                        // Fork more closer to theoretical end
+                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.9f * std::pow(1.0f - distanceToTheoreticalMaxPathLength, 6.0f));
+
+                    bool const doReroute =
+                        nextSprings.size() == 1
+                        // Reroute more closer to interaction end
+                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f * std::pow(1.0f - distanceToInteractionMaxPathLength, 2.0f));
+
+                    if (doFork || doReroute)
+                    {
+                        // Pick second best if possible, to impose a zig-zag pattern
+                        /*
+                        if (bestSpring2 != NoneElementIndex
+                            && bestSpringAligment2 >= 0.0f)
+                        {
+                            nextSprings.emplace_back(bestSpring2);
+                        }
+                        else
+                        */
+                        {
+                            nextSprings.emplace_back(bestSpring1);
+                        }
+                    }
+
+                    if (doFork)
+                    {
+                        hasForkedInThisInteraction = true;
+                    }
+
+                    if (doReroute)
+                    {
+                        assert(nextSprings.size() == 1 || nextSprings.size() == 2);
+                        if (nextSprings.size() == 2)
+                        {
+                            nextSprings.erase(nextSprings.begin(), std::next(nextSprings.begin()));
+                        }
+                    }
+                }
+            }
+
+            // TODOOLD
+            /*
             //
             // Choose a new, not electrified spring under any of these conditions:
             //  - There are no already-electrified outgoing springs
@@ -368,7 +471,17 @@ void ShipElectricSparks::PropagateSparks(
                 if (bestSpring2 != NoneElementIndex
                     && bestSpringAligment2 >= 0.0f)
                 {
-                    nextSprings.emplace_back(bestSpring2);
+                    if (nextSprings.size() == 0
+                        && bestSpring3 != NoneElementIndex
+                        && bestSpringAligment3 >= 0.0f
+                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.1f))
+                    {
+                        nextSprings.emplace_back(bestSpring3);
+                    }
+                    else
+                    {
+                        nextSprings.emplace_back(bestSpring2);
+                    }
                 }
                 else if (bestSpring1 != NoneElementIndex)
                 {
@@ -389,6 +502,7 @@ void ShipElectricSparks::PropagateSparks(
                     nextSprings.erase(nextSprings.begin(), std::next(nextSprings.begin()));
                 }
             }
+            */
 
             //
             // Follow all of the new springs
