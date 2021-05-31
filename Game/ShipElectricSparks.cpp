@@ -378,7 +378,7 @@ void ShipElectricSparks::PropagateSparks(
                         nextSprings.emplace_back(bestCandidateNewSpring3);
                     }
                 }
-                else if (nextSprings.size() == 1)
+                else if (nextSprings.size() == 1 && bestCandidateNewSpringAligment1 >= 0.0f)
                 {
                     //
                     // Decide whether we want to fork or re-route, but always with a positive
@@ -389,7 +389,7 @@ void ShipElectricSparks::PropagateSparks(
                         GameRandomEngine::GetInstance().GenerateUniformBoolean(0.2f * std::pow(1.0f - distanceToTheoreticalMaxPathLength, 2.0f)))
                     {
                         // Fork
-                        if (bestCandidateNewSpring3 != NoneElementIndex)
+                        if (bestCandidateNewSpringAligment3 >= 0.0f)
                         {
                             nextSprings[0]= bestCandidateNewSpring1;
                             nextSprings.emplace_back(bestCandidateNewSpring3);
@@ -404,7 +404,7 @@ void ShipElectricSparks::PropagateSparks(
                         GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f * std::pow(1.0f - distanceToInteractionMaxPathLength, 0.5f)))
                     {
                         // Reroute
-                        if (bestCandidateNewSpring2 != NoneElementIndex
+                        if (bestCandidateNewSpringAligment2 >= 0.0f
                             && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f))
                         {
                             nextSprings[0] = bestCandidateNewSpring2;
