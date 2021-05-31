@@ -297,7 +297,7 @@ void ShipElectricSparks::PropagateSparks(
             //  - Collect those that were electrified in the previous interaction, do not
             //    lead to a point already electrified in this interaction (so to avoid forks),
             //    and agree with alignment
-            //  - Keep the top two that were not electrified in the previous interaction,
+            //  - Keep the top three that were not electrified in the previous interaction,
             //    ranking them on their alignment
             //      - We don't check beforehand if these will lead to an already-electrified
             //        point, so to allow for closing loops (which we won't electrify anyway)
@@ -305,13 +305,12 @@ void ShipElectricSparks::PropagateSparks(
 
             nextSprings.clear();
 
-            // TODO: rename: bestSpring -> bestCandidateNewSpring
-            ElementIndex bestSpring1 = NoneElementIndex;
-            float bestSpringAligment1 = -1.0f;
-            ElementIndex bestSpring2 = NoneElementIndex;
-            float bestSpringAligment2 = -1.0f;
-            ElementIndex bestSpring3 = NoneElementIndex;
-            float bestSpringAligment3 = -1.0f;
+            ElementIndex bestCandidateNewSpring1 = NoneElementIndex;
+            float bestCandidateNewSpringAligment1 = -1.0f;
+            ElementIndex bestCandidateNewSpring2 = NoneElementIndex;
+            float bestCandidateNewSpringAligment2 = -1.0f;
+            ElementIndex bestCandidateNewSpring3 = NoneElementIndex;
+            float bestCandidateNewSpringAligment3 = -1.0f;
 
             for (auto const & cs : points.GetConnectedSprings(pv.PointIndex).ConnectedSprings)
             {
@@ -330,75 +329,75 @@ void ShipElectricSparks::PropagateSparks(
                     {
                         // Rank based on alignment
                         float const alignment = (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction);
-                        if (alignment > bestSpringAligment1)
+                        if (alignment > bestCandidateNewSpringAligment1)
                         {
-                            bestSpring3 = bestSpring2;
-                            bestSpringAligment3 = bestSpringAligment2;
+                            bestCandidateNewSpring3 = bestCandidateNewSpring2;
+                            bestCandidateNewSpringAligment3 = bestCandidateNewSpringAligment2;
 
-                            bestSpring2 = bestSpring1;
-                            bestSpringAligment2 = bestSpringAligment1;
+                            bestCandidateNewSpring2 = bestCandidateNewSpring1;
+                            bestCandidateNewSpringAligment2 = bestCandidateNewSpringAligment1;
 
-                            bestSpring1 = cs.SpringIndex;
-                            bestSpringAligment1 = alignment;
+                            bestCandidateNewSpring1 = cs.SpringIndex;
+                            bestCandidateNewSpringAligment1 = alignment;
                         }
-                        else if (alignment > bestSpringAligment2)
+                        else if (alignment > bestCandidateNewSpringAligment2)
                         {
-                            bestSpring3 = bestSpring2;
-                            bestSpringAligment3 = bestSpringAligment2;
+                            bestCandidateNewSpring3 = bestCandidateNewSpring2;
+                            bestCandidateNewSpringAligment3 = bestCandidateNewSpringAligment2;
 
-                            bestSpring2 = cs.SpringIndex;
-                            bestSpringAligment2 = alignment;
+                            bestCandidateNewSpring2 = cs.SpringIndex;
+                            bestCandidateNewSpringAligment2 = alignment;
                         }
-                        else if (alignment > bestSpringAligment3)
+                        else if (alignment > bestCandidateNewSpringAligment3)
                         {
-                            bestSpring3 = cs.SpringIndex;
-                            bestSpringAligment3 = alignment;
+                            bestCandidateNewSpring3 = cs.SpringIndex;
+                            bestCandidateNewSpringAligment3 = alignment;
                         }
                     }
                 }
             }
 
-            if (bestSpring1 != NoneElementIndex)
+            if (bestCandidateNewSpring1 != NoneElementIndex)
             {
-                // TODOHERE: comment
-                //
-                // Choose a new, not electrified spring under any of these conditions:
-                //  - There are no already-electrified outgoing springs
-                //  - There is only one already-electrified outgoing spring, and we choose to fork while not having forked already in this iteration
-                //  - There is only one already-electrified outgoing spring, and we choose to reroute
-                //
-
                 if (nextSprings.empty())
                 {
+                    //
+                    // Choose one spring out of the best three, with probabilities enforcing a nice zig-zag pattern
+                    //
+
                     float const r = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
-                    if (r < 0.55f || bestSpring2 == NoneElementIndex)
+                    if (r < 0.55f || bestCandidateNewSpring2 == NoneElementIndex)
                     {
-                        nextSprings.emplace_back(bestSpring1);
+                        nextSprings.emplace_back(bestCandidateNewSpring1);
                     }
-                    else if (r < 0.85f || bestSpring3 == NoneElementIndex)
+                    else if (r < 0.85f || bestCandidateNewSpring3 == NoneElementIndex)
                     {
-                        nextSprings.emplace_back(bestSpring2);
+                        nextSprings.emplace_back(bestCandidateNewSpring2);
                     }
                     else
                     {
-                        nextSprings.emplace_back(bestSpring3);
+                        nextSprings.emplace_back(bestCandidateNewSpring3);
                     }
                 }
                 else if (nextSprings.size() == 1)
                 {
+                    //
+                    // Decide whether we want to fork or re-route
+                    //
+
                     if (!hasForkedInThisInteraction
                         // Fork more closer to theoretical end
                         && GameRandomEngine::GetInstance().GenerateUniformBoolean(std::pow(1.0f - distanceToTheoreticalMaxPathLength, 6.0f)))
                     {
                         // Fork
-                        if (bestSpring3 != NoneElementIndex)
+                        if (bestCandidateNewSpring3 != NoneElementIndex)
                         {
-                            nextSprings[0]= bestSpring2;
-                            nextSprings.push_back(bestSpring3);
+                            nextSprings[0]= bestCandidateNewSpring2;
+                            nextSprings.push_back(bestCandidateNewSpring3);
                         }
                         else
                         {
-                            nextSprings.emplace_back(bestSpring1);
+                            nextSprings.emplace_back(bestCandidateNewSpring1);
                         }
 
                         hasForkedInThisInteraction = true;
@@ -408,46 +407,16 @@ void ShipElectricSparks::PropagateSparks(
                         GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f * std::pow(1.0f - distanceToInteractionMaxPathLength, 0.5f)))
                     {
                         // Reroute
-                        if (bestSpring2 != NoneElementIndex
+                        if (bestCandidateNewSpring2 != NoneElementIndex
                             && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f))
                         {
-                            nextSprings[0] = bestSpring2;
+                            nextSprings[0] = bestCandidateNewSpring2;
                         }
                         else
                         {
-                            nextSprings[0] = bestSpring1;
+                            nextSprings[0] = bestCandidateNewSpring1;
                         }
                     }
-
-                    /*
-                    bool const doFork =
-                        !hasForkedInThisInteraction
-                        // Fork more closer to theoretical end
-                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(std::pow(1.0f - distanceToTheoreticalMaxPathLength, 6.0f));
-
-                    bool const doReroute =
-                        // Reroute more closer to interaction end
-                        GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f * std::pow(1.0f - distanceToInteractionMaxPathLength, 0.5f));
-
-                    if (doFork || doReroute)
-                    {
-                        nextSprings.emplace_back(bestSpring1);
-
-                        if (doFork)
-                        {
-                            hasForkedInThisInteraction = true;
-                        }
-
-                        if (doReroute)
-                        {
-                            assert(nextSprings.size() == 1 || nextSprings.size() == 2);
-                            if (nextSprings.size() == 2)
-                            {
-                                nextSprings.erase(nextSprings.begin(), std::next(nextSprings.begin()));
-                            }
-                        }
-                    }
-                    */
                 }
             }
 
