@@ -665,9 +665,9 @@ Render:
 				= Spark expansion logic
 					+ Issue with parallel arms: see if reintroducing third-best helps
 					+ Try with alignment being exclusively on original spring
-					- Change prob's:
+					= Change prob's:
 						- Fork: less absolute but more uniform along path
-						- Reroute: slightly more prob when distance~1
+						+ Reroute: slightly more prob when distance~1
 				- Interactions: private OnPointElectrified(...):
 					- Interactions with ElectricalElements:
 						- Takes also ElectricalElements
