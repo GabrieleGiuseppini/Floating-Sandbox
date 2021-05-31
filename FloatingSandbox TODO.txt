@@ -669,19 +669,22 @@ Render:
 						+ Fork: less absolute but more uniform along path
 						+ Reroute: slightly more prob when distance~1
 				- Interactions: private OnPointElectrified(...):
-					- Interactions with ElectricalElements:
-						- Takes also ElectricalElements
-						- Driven by interaction: upon energizing a point, calls into ElectricalElements
-						- Call causes same "damage" to selected types of electrical elements as EMP tool (*), i.e. stores SimulationTimestamp in 
-						  state of that electrical element, make it not working for a limited period of time
+					+ Takes also ElectricalElements
+					+ Driven by interaction: upon energizing a point, calls into ElectricalElements
 					- Heat
 						- Depends on size of incoming, cumulative
 					- Rotting
 						- Depends on size of incoming, cumulative
+					- Interactions with ElectricalElements:
+						- Call causes same "damage" to selected types of electrical elements as EMP tool (*), i.e. stores SimulationTimestamp in 
+						  state of that electrical element, make it not working for a limited period of time
+						- Engines: X 4?
 				- Material-driven
 					- New "electrical conductivity" *structural* property - try to name it differently than the electrical property though
 						- First off, need "Material Type" rearc (*) just for helping a script that populates electrical conductivity automatically in material json
 					- New springs ranking: f(direction + conductivity)
+			- Shader:
+				- Different ratio of inner white vs. body
 			- Test:
 				- Disconnected components
 

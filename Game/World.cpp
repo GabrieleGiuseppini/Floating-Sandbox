@@ -423,7 +423,7 @@ void World::ApplyBlastAt(
 bool World::ApplyElectricSparkAt(
     vec2f const & targetPos,
     std::uint64_t counter,
-    float progress,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     bool atLeastOneShipApplied = false;
@@ -433,7 +433,7 @@ bool World::ApplyElectricSparkAt(
         bool isApplied = ship->ApplyElectricSparkAt(
             targetPos,
             counter,
-            progress,
+            currentSimulationTime,
             gameParameters);
 
         atLeastOneShipApplied |= isApplied;

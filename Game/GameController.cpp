@@ -890,7 +890,7 @@ void GameController::ApplyBlastAt(
 bool GameController::ApplyElectricSparkAt(
     LogicalPixelCoordinates const & screenCoordinates,
     std::uint64_t counter,
-    float progress)
+    float currentSimulationTime)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -899,7 +899,7 @@ bool GameController::ApplyElectricSparkAt(
     return mWorld->ApplyElectricSparkAt(
         worldCoordinates,
         counter,
-        progress,
+        currentSimulationTime,
         mGameParameters);
 }
 
