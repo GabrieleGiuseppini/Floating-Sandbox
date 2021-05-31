@@ -389,7 +389,7 @@ void ShipElectricSparks::PropagateSparks(
                     bool const doFork =
                         !hasForkedInThisInteraction
                         // Fork more closer to theoretical end
-                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.9f * std::pow(1.0f - distanceToTheoreticalMaxPathLength, 6.0f));
+                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(std::pow(1.0f - distanceToTheoreticalMaxPathLength, 6.0f));
 
                     bool const doReroute =
                         // Reroute more closer to interaction end
