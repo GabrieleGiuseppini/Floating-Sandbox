@@ -113,25 +113,25 @@ void ShipElectricSparks::PropagateSparks(
     // Constants
     //
 
-    size_t constexpr StartingArcsMin = 3;
-    size_t constexpr StartingArcsMax = 5;
+    size_t constexpr StartingArcsMin = 4;
+    size_t constexpr StartingArcsMax = 6;
     float constexpr MaxEquivalentPathLength = 35.0f; // TODO: should this be based off total number of springs?
 
     // The information associated with a point that the next expansion will start from
     struct SparkPointToVisit
     {
         ElementIndex PointIndex;
-        vec2f Direction; // Normalized direction that we reached this point to from the origin
+        vec2f Direction; // Normalized direction that this arc started with
         float EquivalentPathLength; // Cumulative equivalent length of path so far, up to the point that the spark starts at
         ElementIndex IncomingSpringIndex; // The index of the spring that we traveled to reach this point
 
         SparkPointToVisit(
             ElementIndex pointIndex,
-            vec2f && direction,
+            vec2f const & direction,
             float equivalentPathLength,
             ElementIndex incomingSpringIndex)
             : PointIndex(pointIndex)
-            , Direction(std::move(direction))
+            , Direction(direction)
             , EquivalentPathLength(equivalentPathLength)
             , IncomingSpringIndex(incomingSpringIndex)
         {}
@@ -305,6 +305,7 @@ void ShipElectricSparks::PropagateSparks(
 
             nextSprings.clear();
 
+            // TODO: rename: bestSpring -> bestCandidateNewSpring
             ElementIndex bestSpring1 = NoneElementIndex;
             float bestSpringAligment1 = -1.0f;
             ElementIndex bestSpring2 = NoneElementIndex;
@@ -357,10 +358,16 @@ void ShipElectricSparks::PropagateSparks(
                 }
             }
 
-            // TODO: comment
-
             if (bestSpring1 != NoneElementIndex)
             {
+                // TODOHERE: comment
+                //
+                // Choose a new, not electrified spring under any of these conditions:
+                //  - There are no already-electrified outgoing springs
+                //  - There is only one already-electrified outgoing spring, and we choose to fork while not having forked already in this iteration
+                //  - There is only one already-electrified outgoing spring, and we choose to reroute
+                //
+
                 if (nextSprings.empty())
                 {
                     float const r = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
@@ -376,29 +383,6 @@ void ShipElectricSparks::PropagateSparks(
                     {
                         nextSprings.emplace_back(bestSpring3);
                     }
-                    /*
-                    // Pick second best if possible, to impose a zig-zag pattern
-                    if (bestSpring2 != NoneElementIndex
-                        && bestSpringAligment2 >= 0.0f)
-                    {
-                        if (bestSpring3 != NoneElementIndex
-                            && bestSpringAligment3 >= 0.0f
-                            && !hasDeviatedInThisInteraction
-                            && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.1f))
-                        {
-                            nextSprings.emplace_back(bestSpring3);
-                            hasDeviatedInThisInteraction = true;
-                        }
-                        else
-                        {
-                            nextSprings.emplace_back(bestSpring2);
-                        }
-                    }
-                    else if (bestSpring1 != NoneElementIndex)
-                    {
-                        nextSprings.emplace_back(bestSpring1);
-                    }
-                    */
                 }
                 else
                 {
@@ -445,65 +429,6 @@ void ShipElectricSparks::PropagateSparks(
                 }
             }
 
-            // TODOOLD
-            /*
-            //
-            // Choose a new, not electrified spring under any of these conditions:
-            //  - There are no already-electrified outgoing springs
-            //  - There is only one already-electrified outgoing spring, and we choose to fork while not having forked already in this iteration
-            //  - There is only one already-electrified outgoing spring, and we choose to reroute
-            //
-
-            bool const doFork =
-                nextSprings.size() == 1
-                && !hasForkedInThisInteraction
-                // Fork more closer to theoretical end
-                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.85f * std::pow(1.0f - distanceToTheoreticalMaxPathLength, 6.0f));
-
-            bool const doReroute =
-                nextSprings.size() == 1
-                // Reroute more closer to interaction end
-                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f * std::pow(1.0f - distanceToInteractionMaxPathLength, 2.0f));
-
-            if (nextSprings.size() == 0 || doFork || doReroute)
-            {
-                // Pick second best if possible, to impose a zig-zag pattern
-                if (bestSpring2 != NoneElementIndex
-                    && bestSpringAligment2 >= 0.0f)
-                {
-                    if (nextSprings.size() == 0
-                        && bestSpring3 != NoneElementIndex
-                        && bestSpringAligment3 >= 0.0f
-                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.1f))
-                    {
-                        nextSprings.emplace_back(bestSpring3);
-                    }
-                    else
-                    {
-                        nextSprings.emplace_back(bestSpring2);
-                    }
-                }
-                else if (bestSpring1 != NoneElementIndex)
-                {
-                    nextSprings.emplace_back(bestSpring1);
-                }
-            }
-
-            if (doFork)
-            {
-                hasForkedInThisInteraction = true;
-            }
-
-            if (doReroute)
-            {
-                assert(nextSprings.size() == 1 || nextSprings.size() == 2);
-                if (nextSprings.size() == 2)
-                {
-                    nextSprings.erase(nextSprings.begin(), std::next(nextSprings.begin()));
-                }
-            }
-            */
-
             //
             // Follow all of the new springs
             //
@@ -536,7 +461,8 @@ void ShipElectricSparks::PropagateSparks(
                     {
                         nextPointsToVisit.emplace_back(
                             targetEndpointIndex,
-                            (points.GetPosition(targetEndpointIndex) - pointPosition).normalise(),
+                            //(points.GetPosition(targetEndpointIndex) - pointPosition).normalise(),
+                            pv.Direction,
                             endEquivalentPathLength,
                             s);
                     }
