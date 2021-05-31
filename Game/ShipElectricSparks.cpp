@@ -384,18 +384,16 @@ void ShipElectricSparks::PropagateSparks(
                         nextSprings.emplace_back(bestSpring3);
                     }
                 }
-                else
+                else if (nextSprings.size() == 1)
                 {
                     bool const doFork =
-                        nextSprings.size() == 1
-                        && !hasForkedInThisInteraction
+                        !hasForkedInThisInteraction
                         // Fork more closer to theoretical end
                         && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.9f * std::pow(1.0f - distanceToTheoreticalMaxPathLength, 6.0f));
 
                     bool const doReroute =
-                        nextSprings.size() == 1
                         // Reroute more closer to interaction end
-                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f * std::pow(1.0f - distanceToInteractionMaxPathLength, 2.0f));
+                        GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f * std::pow(1.0f - distanceToInteractionMaxPathLength, 0.5f));
 
                     if (doFork || doReroute)
                     {
@@ -411,19 +409,19 @@ void ShipElectricSparks::PropagateSparks(
                         {
                             nextSprings.emplace_back(bestSpring1);
                         }
-                    }
 
-                    if (doFork)
-                    {
-                        hasForkedInThisInteraction = true;
-                    }
-
-                    if (doReroute)
-                    {
-                        assert(nextSprings.size() == 1 || nextSprings.size() == 2);
-                        if (nextSprings.size() == 2)
+                        if (doFork)
                         {
-                            nextSprings.erase(nextSprings.begin(), std::next(nextSprings.begin()));
+                            hasForkedInThisInteraction = true;
+                        }
+
+                        if (doReroute)
+                        {
+                            assert(nextSprings.size() == 1 || nextSprings.size() == 2);
+                            if (nextSprings.size() == 2)
+                            {
+                                nextSprings.erase(nextSprings.begin(), std::next(nextSprings.begin()));
+                            }
                         }
                     }
                 }
