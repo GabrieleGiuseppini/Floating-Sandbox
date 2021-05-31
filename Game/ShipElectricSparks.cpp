@@ -387,13 +387,13 @@ void ShipElectricSparks::PropagateSparks(
 
                     if (!hasForkedInThisInteraction
                         // Fork more closer to theoretical end
-                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(std::pow(1.0f - distanceToTheoreticalMaxPathLength, 6.0f)))
+                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(std::pow(1.0f - distanceToTheoreticalMaxPathLength, 4.0f)))
                     {
                         // Fork
                         if (bestCandidateNewSpring3 != NoneElementIndex)
                         {
                             nextSprings[0]= bestCandidateNewSpring2;
-                            nextSprings.push_back(bestCandidateNewSpring3);
+                            nextSprings.emplace_back(bestCandidateNewSpring3);
                         }
                         else
                         {
@@ -452,7 +452,6 @@ void ShipElectricSparks::PropagateSparks(
                     {
                         nextPointsToVisit.emplace_back(
                             targetEndpointIndex,
-                            //(points.GetPosition(targetEndpointIndex) - pointPosition).normalise(),
                             pv.Direction,
                             endEquivalentPathLength,
                             s);
