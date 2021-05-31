@@ -26,10 +26,11 @@ ShipElectricSparks::ShipElectricSparks(
 bool ShipElectricSparks::ApplySparkAt(
     vec2f const & targetPos,
     std::uint64_t counter,
-    float /*progress*/,
+    float currentSimulationTime,
     Points const & points,
     Springs const & springs,
-    GameParameters const & /*gameParameters*/)
+    ElectricalElements const & electricalElements,
+    GameParameters const & gameParameters)
 {
     //
     // Find closest point, and check whether there _is_ actually a closest point
@@ -54,8 +55,11 @@ bool ShipElectricSparks::ApplySparkAt(
         PropagateSparks(
             nearestPointIndex,
             counter,
+            currentSimulationTime,
             points,
-            springs);
+            springs,
+            electricalElements,
+            gameParameters);
 
         return true;
     }
@@ -98,11 +102,16 @@ void ShipElectricSparks::Upload(
     shipRenderContext.UploadElectricSparksEnd();
 }
 
+/// //////////////////////////////////////////////////////////////
+
 void ShipElectricSparks::PropagateSparks(
     ElementIndex startingPointIndex,
     std::uint64_t counter,
+    float currentSimulationTime,
     Points const & points,
-    Springs const & springs)
+    Springs const & springs,
+    ElectricalElements const & electricalElements,
+    GameParameters const & gameParameters)
 {
     //
     // This algorithm works by running a number of "expansions" at each iteration,
@@ -146,11 +155,20 @@ void ShipElectricSparks::PropagateSparks(
     bool * const wasSpringElectrifiedInPreviousInteraction = mIsSpringElectrifiedOld.data();
     bool * const isSpringElectrifiedInThisInteraction = mIsSpringElectrifiedNew.data();
 
-    // Only the starting point has been electrified for now
+    // Prepare point electrication flag
     if (counter == 0)
     {
         mPointElectrificationCounter.fill(std::numeric_limits<std::uint64_t>::max());
     }
+
+    // Electrify starting point
+    OnPointElectrified(
+        startingPointIndex,
+        currentSimulationTime,
+        points,
+        springs,
+        electricalElements,
+        gameParameters);
     mPointElectrificationCounter[startingPointIndex] = counter;
 
     // Clear the sparks that have to be rendered after this step
@@ -244,6 +262,13 @@ void ShipElectricSparks::PropagateSparks(
             // an N-way fork, which could even get compounded by being picked up at the next, and so on
 
             // Electrify target point
+            OnPointElectrified(
+                targetEndpointIndex,
+                currentSimulationTime,
+                points,
+                springs,
+                electricalElements,
+                gameParameters);
             assert(mPointElectrificationCounter[targetEndpointIndex] != counter);
             mPointElectrificationCounter[targetEndpointIndex] = counter;
 
@@ -442,6 +467,13 @@ void ShipElectricSparks::PropagateSparks(
                     isSpringElectrifiedInThisInteraction[s] = true;
 
                     // Electrify point
+                    OnPointElectrified(
+                        targetEndpointIndex,
+                        currentSimulationTime,
+                        points,
+                        springs,
+                        electricalElements,
+                        gameParameters);
                     mPointElectrificationCounter[targetEndpointIndex] = counter;
 
                     // Next expansion
@@ -471,6 +503,17 @@ void ShipElectricSparks::PropagateSparks(
 
     // Remember that we have populated electric sparks
     mAreSparksPopulatedBeforeNextUpdate = true;
+}
+
+void ShipElectricSparks::OnPointElectrified(
+    ElementIndex pointIndex,
+    float currentSimulationTime,
+    Points const & points,
+    Springs const & springs,
+    ElectricalElements const & electricalElements,
+    GameParameters const & gameParameters)
+{
+    // TODOHERE
 }
 
 }

@@ -179,7 +179,7 @@ public:
     bool ApplyHeatBlasterAt(LogicalPixelCoordinates const & screenCoordinates, HeatBlasterActionType action) override;
     bool ExtinguishFireAt(LogicalPixelCoordinates const & screenCoordinates) override;
     void ApplyBlastAt(LogicalPixelCoordinates const & screenCoordinates, float radiusMultiplier, float forceMultiplier, float renderProgress, float personalitySeed) override;
-    bool ApplyElectricSparkAt(LogicalPixelCoordinates const & screenCoordinates, std::uint64_t counter, float progress) override;
+    bool ApplyElectricSparkAt(LogicalPixelCoordinates const & screenCoordinates, std::uint64_t counter, float currentSimulationTime) override;
     void DrawTo(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) override;
     void SwirlAt(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) override;
     void TogglePinAt(LogicalPixelCoordinates const & screenCoordinates) override;

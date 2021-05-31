@@ -2869,7 +2869,7 @@ public:
                 bool hasBeenApplied = mGameController->ApplyElectricSparkAt(
                     inputState.MousePosition,
                     ++(mEngagementData->CurrentCounter),
-                    currentSimulationTime - mEngagementData->StartEngagementSimulationTime);
+                    currentSimulationTime);
 
                 if (!hasBeenApplied)
                 {
@@ -2898,7 +2898,7 @@ public:
                 bool hasBeenApplied = mGameController->ApplyElectricSparkAt(
                     inputState.MousePosition,
                     0,
-                    0.0f);
+                    currentSimulationTime);
 
                 if (hasBeenApplied)
                 {
@@ -2908,7 +2908,7 @@ public:
 
                     bool const isUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
 
-                    mEngagementData.emplace(0, currentSimulationTime, isUnderwater);
+                    mEngagementData.emplace(0, isUnderwater);
 
                     mSoundController->PlayElectricSparkSound(isUnderwater);
 
@@ -2957,15 +2957,12 @@ private:
     struct EngagementData
     {
         std::uint64_t CurrentCounter;
-        float StartEngagementSimulationTime;
         bool IsUnderwater;
 
         EngagementData(
             std::uint64_t initialCounter,
-            float startEngagementSimulationTime,
             bool isUnderwater)
             : CurrentCounter(initialCounter)
-            , StartEngagementSimulationTime(startEngagementSimulationTime)
             , IsUnderwater(isUnderwater)
         {}
     };

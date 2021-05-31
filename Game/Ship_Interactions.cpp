@@ -675,15 +675,16 @@ void Ship::ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args
 bool Ship::ApplyElectricSparkAt(
     vec2f const & targetPos,
     std::uint64_t counter,
-    float progress,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     return mElectricSparks.ApplySparkAt(
         targetPos,
         counter,
-        progress,
+        currentSimulationTime,
         mPoints,
         mSprings,
+        mElectricalElements,
         gameParameters);
 }
 

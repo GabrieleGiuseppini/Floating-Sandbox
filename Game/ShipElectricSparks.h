@@ -27,9 +27,10 @@ public:
     bool ApplySparkAt(
         vec2f const & targetPos,
         std::uint64_t counter,
-        float progress,
+        float currentSimulationTime,
         Points const & points,
         Springs const & springs,
+        ElectricalElements const & electricalElements,
         GameParameters const & gameParameters);
 
     void Update();
@@ -44,8 +45,19 @@ private:
     void PropagateSparks(
         ElementIndex startingPointIndex,
         std::uint64_t counter,
+        float currentSimulationTime,
         Points const & points,
-        Springs const & springs);
+        Springs const & springs,
+        ElectricalElements const & electricalElements,
+        GameParameters const & gameParameters);
+
+    void OnPointElectrified(
+        ElementIndex pointIndex,
+        float currentSimulationTime,
+        Points const & points,
+        Springs const & springs,
+        ElectricalElements const & electricalElements,
+        GameParameters const & gameParameters);
 
 private:
 
