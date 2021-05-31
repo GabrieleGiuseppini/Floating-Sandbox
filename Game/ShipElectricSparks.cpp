@@ -361,6 +361,8 @@ void ShipElectricSparks::PropagateSparks(
                     //
                     // Choose one spring out of the best three, with probabilities enforcing a nice zig-zag pattern
                     //
+                    // Ignore sign of alignment, if we're forced we'll even recoil back
+                    //
 
                     float const r = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
                     if (r < 0.55f || bestCandidateNewSpring2 == NoneElementIndex)
@@ -379,16 +381,17 @@ void ShipElectricSparks::PropagateSparks(
                 else if (nextSprings.size() == 1)
                 {
                     //
-                    // Decide whether we want to fork or re-route
+                    // Decide whether we want to fork or re-route, but always with a positive
+                    // alignment
                     //
 
                     if (// Fork more closer to theoretical end
-                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.2f * std::pow(1.0f - distanceToTheoreticalMaxPathLength, 2.0f)))
+                        GameRandomEngine::GetInstance().GenerateUniformBoolean(0.2f * std::pow(1.0f - distanceToTheoreticalMaxPathLength, 2.0f)))
                     {
                         // Fork
                         if (bestCandidateNewSpring3 != NoneElementIndex)
                         {
-                            nextSprings[0]= bestCandidateNewSpring2;
+                            nextSprings[0]= bestCandidateNewSpring1;
                             nextSprings.emplace_back(bestCandidateNewSpring3);
                         }
                         else
