@@ -274,9 +274,6 @@ void ShipElectricSparks::PropagateSparks(
 
     std::vector<ElementIndex> nextSprings; // Allocated once for perf
 
-    // Flag to limit forks to only once per interaction
-    bool hasForkedInThisInteraction = false;
-
     while (!currentPointsToVisit.empty())
     {
         assert(nextPointsToVisit.empty());
@@ -385,9 +382,8 @@ void ShipElectricSparks::PropagateSparks(
                     // Decide whether we want to fork or re-route
                     //
 
-                    if (!hasForkedInThisInteraction
-                        // Fork more closer to theoretical end
-                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(std::pow(1.0f - distanceToTheoreticalMaxPathLength, 4.0f)))
+                    if (// Fork more closer to theoretical end
+                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.2f * std::pow(1.0f - distanceToTheoreticalMaxPathLength, 2.0f)))
                     {
                         // Fork
                         if (bestCandidateNewSpring3 != NoneElementIndex)
@@ -399,8 +395,6 @@ void ShipElectricSparks::PropagateSparks(
                         {
                             nextSprings.emplace_back(bestCandidateNewSpring1);
                         }
-
-                        hasForkedInThisInteraction = true;
                     }
                     else if (
                         // Reroute more closer to interaction end
