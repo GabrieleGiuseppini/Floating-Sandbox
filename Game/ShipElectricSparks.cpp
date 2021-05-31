@@ -386,6 +386,40 @@ void ShipElectricSparks::PropagateSparks(
                 }
                 else if (nextSprings.size() == 1)
                 {
+                    if (!hasForkedInThisInteraction
+                        // Fork more closer to theoretical end
+                        && GameRandomEngine::GetInstance().GenerateUniformBoolean(std::pow(1.0f - distanceToTheoreticalMaxPathLength, 6.0f)))
+                    {
+                        // Fork
+                        if (bestSpring3 != NoneElementIndex)
+                        {
+                            nextSprings[0]= bestSpring2;
+                            nextSprings.push_back(bestSpring3);
+                        }
+                        else
+                        {
+                            nextSprings.emplace_back(bestSpring1);
+                        }
+
+                        hasForkedInThisInteraction = true;
+                    }
+                    else if (
+                        // Reroute more closer to interaction end
+                        GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f * std::pow(1.0f - distanceToInteractionMaxPathLength, 0.5f)))
+                    {
+                        // Reroute
+                        if (bestSpring2 != NoneElementIndex
+                            && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f))
+                        {
+                            nextSprings[0] = bestSpring2;
+                        }
+                        else
+                        {
+                            nextSprings[0] = bestSpring1;
+                        }
+                    }
+
+                    /*
                     bool const doFork =
                         !hasForkedInThisInteraction
                         // Fork more closer to theoretical end
@@ -397,18 +431,7 @@ void ShipElectricSparks::PropagateSparks(
 
                     if (doFork || doReroute)
                     {
-                        // Pick second best if possible, to impose a zig-zag pattern
-                        /*
-                        if (bestSpring2 != NoneElementIndex
-                            && bestSpringAligment2 >= 0.0f)
-                        {
-                            nextSprings.emplace_back(bestSpring2);
-                        }
-                        else
-                        */
-                        {
-                            nextSprings.emplace_back(bestSpring1);
-                        }
+                        nextSprings.emplace_back(bestSpring1);
 
                         if (doFork)
                         {
@@ -424,6 +447,7 @@ void ShipElectricSparks::PropagateSparks(
                             }
                         }
                     }
+                    */
                 }
             }
 
