@@ -659,8 +659,9 @@ Render:
 					+ New Ship buffer: ElectricSpark, simple std::vector
 						+ Reset at first update that was not preceded by the interaction
 						+ Uploaded by Ship::Upload
-			- Fix juncture
-				- Previous and Next normalized vectors need to be passed to each Upload()
+			= Fix juncture
+				+ Previous and Next normalized vectors need to be passed to each Upload()
+				- Optimize locally
 			= Interaction
 				+ Spark expansion logic
 					+ Issue with parallel arms: see if reintroducing third-best helps
@@ -683,10 +684,13 @@ Render:
 					- New "electrical conductivity" *structural* property - try to name it differently than the electrical property though
 						- First off, need "Material Type" rearc (*) just for helping a script that populates electrical conductivity automatically in material json
 					- New springs ranking: f(direction + conductivity)
+			- Finalize:
+				- Test with Rendering struct containing immediately positions, rather than indices
+					- We'd save on normalizations
 			- Shader:
 				- Different ratio of inner white vs. body
 			- Test:
-				- Disconnected components
+				+ Disconnected components
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
