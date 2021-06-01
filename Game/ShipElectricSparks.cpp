@@ -91,12 +91,26 @@ void ShipElectricSparks::Upload(
 
     for (auto const & electricSpark : mSparksToRender)
     {
+        vec2f const startPosition = points.GetPosition(electricSpark.StartPointIndex);
+        vec2f const endPosition = points.GetPosition(electricSpark.EndPointIndex);
+
+        vec2f const direction = (endPosition - startPosition).normalise();
+        vec2f const startDirection = (electricSpark.PreviousPointIndex != NoneElementIndex)
+            ? (startPosition - points.GetPosition(electricSpark.PreviousPointIndex)).normalise()
+            : direction;
+        vec2f const endDirection = (electricSpark.NextPointIndex != NoneElementIndex)
+            ? (points.GetPosition(electricSpark.NextPointIndex) - endPosition).normalise()
+            : direction;
+
         shipRenderContext.UploadElectricSpark(
             points.GetPlaneId(electricSpark.StartPointIndex),
-            points.GetPosition(electricSpark.StartPointIndex),
+            startPosition,
             electricSpark.StartSize,
-            points.GetPosition(electricSpark.EndPointIndex),
-            electricSpark.EndSize);
+            endPosition,
+            electricSpark.EndSize,
+            startDirection,
+            direction,
+            endDirection);
     }
 
     shipRenderContext.UploadElectricSparksEnd();

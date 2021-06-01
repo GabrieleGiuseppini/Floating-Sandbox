@@ -84,8 +84,8 @@ private:
         ElementIndex StartPointIndex;
         float StartSize;
         ElementIndex EndPointIndex;
-
         float EndSize;
+
         ElementIndex NextPointIndex;
 
         RenderableElectricSpark(

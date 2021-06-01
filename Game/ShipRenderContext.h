@@ -223,7 +223,10 @@ public:
         vec2f const & startPosition,
         float startSize,
         vec2f const & endPosition,
-        float endSize)
+        float endSize,
+        vec2f const & /*startDirection*/,
+        vec2f const & direction,
+        vec2f const & /*endDirection*/)
     {
         float const fPlaneId = static_cast<float>(planeId);
 
@@ -242,23 +245,19 @@ public:
         // |       |
         // A-------B
 
-        // S->E vector
-        vec2f const sparkVector = endPosition - startPosition;
-
         // Qn = normalized spark vector
-        // Qnp = perpendicular to Qn (i.e. Q's normal)
-        vec2f const Qn = sparkVector.normalise();
-        vec2f const Qnp = Qn.to_perpendicular(); // rotated by PI/2, i.e. oriented to the right (wrt spark vector)
+        // Qnp = perpendicular to direction (i.e. direction's normal)
+        vec2f const Qnp = direction.to_perpendicular(); // rotated by PI/2, i.e. oriented to the right (wrt spark vector)
 
         // Qhw = vector delineating one half of the quad width, the one to the left
         vec2f const Qhw = Qnp * 0.75f; // Magic number: sparkle half width, world coords
 
         // A, B = left-bottom, right-bottom
-        vec2f const A = endPosition + Qn * 0.1f - Qhw * endSize;
-        vec2f const B = endPosition + Qn * 0.1f + Qhw * endSize;
+        vec2f const A = endPosition - Qhw * endSize;
+        vec2f const B = endPosition + Qhw * endSize;
         // C, D = left-top, right-top
-        vec2f const C = startPosition - Qn * 0.1f - Qhw * startSize;
-        vec2f const D = startPosition - Qn * 0.1f + Qhw * startSize;
+        vec2f const C = startPosition - Qhw * startSize;
+        vec2f const D = startPosition + Qhw * startSize;
 
         //
         // Append vertices - two triangles
