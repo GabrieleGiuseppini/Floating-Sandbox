@@ -203,7 +203,7 @@ void ShipElectricSparks::PropagateSparks(
     //  - When we're at the beginning of the path for this interaction: large size
     auto const calculateSparkSize = [maxEquivalentPathLengthForThisInteraction](float equivalentPathLength)
     {
-        return 0.2f + (1.0f - 0.2f) * (maxEquivalentPathLengthForThisInteraction - equivalentPathLength) / maxEquivalentPathLengthForThisInteraction;
+        return 0.05f + (1.0f - 0.05f) * (maxEquivalentPathLengthForThisInteraction - equivalentPathLength) / maxEquivalentPathLengthForThisInteraction;
     };
 
     //
