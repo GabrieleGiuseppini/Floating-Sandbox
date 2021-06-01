@@ -224,40 +224,43 @@ public:
         float startSize,
         vec2f const & endPosition,
         float endSize,
-        vec2f const & /*startDirection*/,
+        vec2f const & startDirection,
         vec2f const & direction,
-        vec2f const & /*endDirection*/)
+        vec2f const & endDirection)
     {
         float const fPlaneId = static_cast<float>(planeId);
 
         //
         // Calculate start and end vectors
         //
-        // C-------D
-        // |       |
-        // |---S---|
+        // C---S---D
         // |       |
         // |       |
         // |       |
         // |       |
         // |       |
-        // |---E---|
         // |       |
-        // A-------B
+        // |       |
+        // A---E---B
+        //
 
-        // Qn = normalized spark vector
-        // Qnp = perpendicular to direction (i.e. direction's normal)
-        vec2f const Qnp = direction.to_perpendicular(); // rotated by PI/2, i.e. oriented to the right (wrt spark vector)
+        float constexpr Wh = 0.75f; // Magic number: sparkle half width, world coords
 
-        // Qhw = vector delineating one half of the quad width, the one to the left
-        vec2f const Qhw = Qnp * 0.75f; // Magic number: sparkle half width, world coords
 
-        // A, B = left-bottom, right-bottom
-        vec2f const A = endPosition - Qhw * endSize;
-        vec2f const B = endPosition + Qhw * endSize;
+        // TODOTEST
+        vec2f const startN = startDirection.to_perpendicular();
+        vec2f const n = direction.to_perpendicular();
+        vec2f const endN = endDirection.to_perpendicular();
+
+        vec2f const startJ = (startN + n) / startN.dot(startN + n) * Wh;
+        vec2f const endJ = (n + endN) / n.dot(n + endN) * Wh;
+
         // C, D = left-top, right-top
-        vec2f const C = startPosition - Qhw * startSize;
-        vec2f const D = startPosition + Qhw * startSize;
+        vec2f const C = startPosition - startJ * startSize;
+        vec2f const D = startPosition + startJ * startSize;
+        // A, B = left-bottom, right-bottom
+        vec2f const A = endPosition - endJ * endSize;
+        vec2f const B = endPosition + endJ * endSize;
 
         //
         // Append vertices - two triangles
