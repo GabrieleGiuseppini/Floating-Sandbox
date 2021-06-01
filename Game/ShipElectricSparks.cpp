@@ -133,16 +133,19 @@ void ShipElectricSparks::PropagateSparks(
         vec2f Direction; // Normalized direction that this arc started with
         float EquivalentPathLength; // Cumulative equivalent length of path so far, up to the point that the spark starts at
         ElementIndex IncomingSpringIndex; // The index of the spring that we traveled to reach this point
+        size_t PreviousRenderableSparkIndex; // The index if the previous spark in the vector of sparks to render
 
         SparkPointToVisit(
             ElementIndex pointIndex,
             vec2f const & direction,
             float equivalentPathLength,
-            ElementIndex incomingSpringIndex)
+            ElementIndex incomingSpringIndex,
+            size_t previousRenderableSparkIndex)
             : PointIndex(pointIndex)
             , Direction(direction)
             , EquivalentPathLength(equivalentPathLength)
             , IncomingSpringIndex(incomingSpringIndex)
+            , PreviousRenderableSparkIndex(previousRenderableSparkIndex)
         {}
     };
 
@@ -253,9 +256,9 @@ void ShipElectricSparks::PropagateSparks(
 
         for (ElementIndex const s : startingSprings)
         {
-            float const equivalentPathLength = 1.0f; // TODO: material-based
-
             ElementIndex const targetEndpointIndex = springs.GetOtherEndpointIndex(s, startingPointIndex);
+
+            float const equivalentPathLength = 1.0f; // TODO: material-based
 
             // Note: we don't flag the starting springs as electrieid, as they are the only ones who share
             // a point in common and thus if they're scooped up at the next interaction, they'll add
@@ -272,13 +275,6 @@ void ShipElectricSparks::PropagateSparks(
             assert(mPointElectrificationCounter[targetEndpointIndex] != counter);
             mPointElectrificationCounter[targetEndpointIndex] = counter;
 
-            // Render
-            mSparksToRender.emplace_back(
-                startingPointIndex,
-                calculateSparkSize(0.0f),
-                targetEndpointIndex,
-                calculateSparkSize(equivalentPathLength));
-
             // Queue for next expansion
             if (equivalentPathLength < maxEquivalentPathLengthForThisInteraction)
             {
@@ -286,8 +282,18 @@ void ShipElectricSparks::PropagateSparks(
                     targetEndpointIndex,
                     (points.GetPosition(targetEndpointIndex) - startingPointPosition).normalise(),
                     equivalentPathLength,
-                    s);
+                    s,
+                    mSparksToRender.size());
             }
+
+            // Render
+            mSparksToRender.emplace_back(
+                NoneElementIndex, // Previous point == none
+                startingPointIndex,
+                calculateSparkSize(0.0f),
+                targetEndpointIndex,
+                calculateSparkSize(equivalentPathLength),
+                NoneElementIndex); // Next point == will fill later
         }
     }
 
@@ -454,13 +460,6 @@ void ShipElectricSparks::PropagateSparks(
                 float const equivalentStepLength = 1.0f; // TODO: material-based
                 float const endEquivalentPathLength = startEquivalentPathLength + equivalentStepLength;
 
-                // Render
-                mSparksToRender.emplace_back(
-                    pv.PointIndex,
-                    calculateSparkSize(startEquivalentPathLength),
-                    targetEndpointIndex,
-                    calculateSparkSize(endEquivalentPathLength));
-
                 if (mPointElectrificationCounter[targetEndpointIndex] != counter)
                 {
                     // Electrify spring
@@ -483,9 +482,22 @@ void ShipElectricSparks::PropagateSparks(
                             targetEndpointIndex,
                             pv.Direction,
                             endEquivalentPathLength,
-                            s);
+                            s,
+                            mSparksToRender.size());
                     }
                 }
+
+                // Render
+                mSparksToRender.emplace_back(
+                    springs.GetOtherEndpointIndex(pv.IncomingSpringIndex, pv.PointIndex),
+                    pv.PointIndex,
+                    calculateSparkSize(startEquivalentPathLength),
+                    targetEndpointIndex,
+                    calculateSparkSize(endEquivalentPathLength),
+                    NoneElementIndex);
+
+                // Connect to previous spark
+                mSparksToRender[pv.PreviousRenderableSparkIndex].NextPointIndex = targetEndpointIndex;
             }
         }
 

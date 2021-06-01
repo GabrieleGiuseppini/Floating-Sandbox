@@ -77,27 +77,34 @@ private:
     // Rendering
     //
 
-    struct ElectricSpark
+    struct RenderableElectricSpark
     {
+        ElementIndex PreviousPointIndex;
+
         ElementIndex StartPointIndex;
         float StartSize;
         ElementIndex EndPointIndex;
-        float EndSize;
 
-        ElectricSpark(
+        float EndSize;
+        ElementIndex NextPointIndex;
+
+        RenderableElectricSpark(
+            ElementIndex previousPointIndex,
             ElementIndex startPointIndex,
             float startSize,
             ElementIndex endPointIndex,
-            float endSize)
-            : StartPointIndex(startPointIndex)
+            float endSize,
+            ElementIndex nextPointIndex)
+            : PreviousPointIndex(previousPointIndex)
+            , StartPointIndex(startPointIndex)
             , StartSize(startSize)
             , EndPointIndex(endPointIndex)
             , EndSize(endSize)
+            , NextPointIndex(nextPointIndex)
         {}
     };
 
-    // The electric sparks
-    std::vector<ElectricSpark> mSparksToRender;
+    std::vector<RenderableElectricSpark> mSparksToRender;
 };
 
 }
