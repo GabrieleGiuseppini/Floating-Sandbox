@@ -252,8 +252,20 @@ public:
         vec2f const n = direction.to_perpendicular();
         vec2f const endN = endDirection.to_perpendicular();
 
-        vec2f const startJ = (startN + n) / startN.dot(startN + n) * Wh;
+        // TODOTEST
+        vec2f const startJ = (startN + n) / n.dot(startN + n) * Wh; // TODO: see what should dot here
         vec2f const endJ = (n + endN) / n.dot(n + endN) * Wh;
+        /*
+        vec2f sOffset = (startN + n).normalise();
+        float sd = startN.dot(sOffset);
+        sOffset /= sd;
+        vec2f const startJ = sOffset * Wh;
+
+        vec2f eOffset = (n + endN).normalise();
+        float ed = n.dot(eOffset);
+        eOffset /= ed;
+        vec2f const endJ = eOffset * Wh;
+        */
 
         // C, D = left-top, right-top
         vec2f const C = startPosition - startJ * startSize;
