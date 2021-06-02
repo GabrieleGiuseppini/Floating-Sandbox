@@ -659,10 +659,10 @@ Render:
 					+ New Ship buffer: ElectricSpark, simple std::vector
 						+ Reset at first update that was not preceded by the interaction
 						+ Uploaded by Ship::Upload
-			= Fix juncture
+			+ Fix juncture
 				+ Previous and Next normalized vectors need to be passed to each Upload()
-				- Optimize locally
-				- Wireframe
+				+ Optimize locally
+				+ Wireframe
 			= Interaction
 				= Spark expansion logic
 					+ Issue with parallel arms: see if reintroducing third-best helps
