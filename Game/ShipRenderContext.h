@@ -233,7 +233,7 @@ public:
         //
         // Calculate start and end vectors
         //
-        // C---S---D
+        // C---S---D    -- startJ -->
         // |       |
         // |       |
         // |       |
@@ -241,38 +241,32 @@ public:
         // |       |
         // |       |
         // |       |
-        // A---E---B
+        // A---E---B    --- endJ --->
+        //
+        // Also, we extrude the corners to make them join nicely to the previous
+        // and next segments. The calculation of the extrusion (J) between two
+        // segments is based on these observations:
+        //  * The direction of the extrusion is along the resultant of the normals
+        //    to the two segments
+        //  * The magnitude of the extrusion is (W/2) / cos(alpha), where alpha is
+        //    the angle between a normal and the direction of the extrusion
         //
 
         float constexpr Wh = 0.75f; // Magic number: sparkle half width, world coords
 
-
-        // TODOTEST
-        vec2f const startN = startDirection.to_perpendicular();
         vec2f const n = direction.to_perpendicular();
-        vec2f const endN = endDirection.to_perpendicular();
+        vec2f const startNormals = startDirection.to_perpendicular() + n;
+        vec2f const endNormals = n + endDirection.to_perpendicular();
 
-        // TODOTEST
-        vec2f const startJ = (startN + n) / n.dot(startN + n) * Wh; // TODO: see what should dot here
-        vec2f const endJ = (n + endN) / n.dot(n + endN) * Wh;
-        /*
-        vec2f sOffset = (startN + n).normalise();
-        float sd = startN.dot(sOffset);
-        sOffset /= sd;
-        vec2f const startJ = sOffset * Wh;
-
-        vec2f eOffset = (n + endN).normalise();
-        float ed = n.dot(eOffset);
-        eOffset /= ed;
-        vec2f const endJ = eOffset * Wh;
-        */
+        vec2f const startJ = startNormals / n.dot(startNormals) * Wh * startSize;
+        vec2f const endJ = endNormals / n.dot(endNormals) * Wh * endSize;
 
         // C, D = left-top, right-top
-        vec2f const C = startPosition - startJ * startSize;
-        vec2f const D = startPosition + startJ * startSize;
+        vec2f const C = startPosition - startJ;
+        vec2f const D = startPosition + startJ;
         // A, B = left-bottom, right-bottom
-        vec2f const A = endPosition - endJ * endSize;
-        vec2f const B = endPosition + endJ * endSize;
+        vec2f const A = endPosition - endJ;
+        vec2f const B = endPosition + endJ;
 
         //
         // Append vertices - two triangles

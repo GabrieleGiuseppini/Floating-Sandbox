@@ -1568,13 +1568,16 @@ void ShipRenderContext::RenderPrepareElectricSparks(RenderParameters const & /*r
     }
 }
 
-void ShipRenderContext::RenderDrawElectricSparks(RenderParameters const & /*renderParameters*/)
+void ShipRenderContext::RenderDrawElectricSparks(RenderParameters const & renderParameters)
 {
     if (!mElectricSparkVertexBuffer.empty())
     {
         glBindVertexArray(*mElectricSparkVAO);
 
         mShaderManager.ActivateProgram<ProgramType::ShipElectricSparks>();
+
+        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
+            glLineWidth(0.1f);
 
         assert(0 == (mElectricSparkVertexBuffer.size() % 6));
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mElectricSparkVertexBuffer.size()));
