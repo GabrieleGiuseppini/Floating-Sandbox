@@ -662,13 +662,16 @@ Render:
 			= Fix juncture
 				+ Previous and Next normalized vectors need to be passed to each Upload()
 				- Optimize locally
+				- Wireframe
 			= Interaction
-				+ Spark expansion logic
+				= Spark expansion logic
 					+ Issue with parallel arms: see if reintroducing third-best helps
 					+ Try with alignment being exclusively on original spring
 					+ Change prob's:
 						+ Fork: less absolute but more uniform along path
 						+ Reroute: slightly more prob when distance~1
+					- Fork probs: try with using pv.EquivalentPathSinceLastFork
+					- Try also with Reroute
 				- Interactions: private OnPointElectrified(...):
 					+ Takes also ElectricalElements
 					+ Driven by interaction: upon energizing a point, calls into ElectricalElements
@@ -677,9 +680,16 @@ Render:
 					- Rotting
 						- Depends on size of incoming, cumulative
 					- Interactions with ElectricalElements:
-						- Call causes same "damage" to selected types of electrical elements as EMP tool (*), i.e. stores SimulationTimestamp in 
+						- Call causes same "damage" to selected types of electrical elements as EMP tool (*), i.e. stores simulation timestamp in 
 						  state of that electrical element, make it not working for a limited period of time
-						- Engines: X 4?
+							- For each non-destroyed generator|pump|sounder|TODO that is in radius:
+								- XYZ.state.DisabledEndTimestamp = now + small random variation
+							- ElectricalElements::Update: generator|pump|sounder|TODO:
+								- If now > XYZ.state.DisabledEndTimestamp: XYZ.state.DisabledEndTimestamp.reset()
+							- ElectricalElements::UpdateSource/Sink/Whatever:
+								- XYZ is off if XYZ.state.DisabledEndTimestamp.has_value()
+						- Engines: thrust X 4?
+					- Gadgets
 				- Material-driven
 					- New "electrical conductivity" *structural* property - try to name it differently than the electrical property though
 						- First off, need "Material Type" rearc (*) just for helping a script that populates electrical conductivity automatically in material json
@@ -687,10 +697,14 @@ Render:
 			- Finalize:
 				- Test with Rendering struct containing immediately positions, rather than indices
 					- We'd save on normalizations
+					- It might also be better visually, allowing for sparks to "leave" the structure
 			- Shader:
 				- Different ratio of inner white vs. body
+				- Wider halo (linear? linear+smoothstep?)
 			- Test:
 				+ Disconnected components
+			- Nuke EMP tool in this spec
+			- changelist
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
@@ -1762,7 +1776,7 @@ Render:
 
 	- Fires break out where electrical layer breaks (e.g. where *powered* line is cut)
 
-	- EMP tool
+	= EMP tool (*)
 		! Better after electrical "expansion"
 		! Better after frontier
 		- Spec:
