@@ -138,6 +138,8 @@ void ShipElectricSparks::PropagateSparks(
 
     size_t constexpr StartingArcsMin = 4;
     size_t constexpr StartingArcsMax = 6;
+    float constexpr ForkSpacingMin = 5.0f;
+    float constexpr ForkSpacingMax = 10.0f;
     float constexpr MaxEquivalentPathLength = 35.0f; // TODO: should this be based off total number of springs?
 
     // The information associated with a point that the next expansion will start from
@@ -148,18 +150,21 @@ void ShipElectricSparks::PropagateSparks(
         float EquivalentPathLength; // Cumulative equivalent length of path so far, up to the point that the spark starts at
         ElementIndex IncomingSpringIndex; // The index of the spring that we traveled to reach this point
         size_t PreviousRenderableSparkIndex; // The index if the previous spark in the vector of sparks to render
+        float EquivalentPathLengthToNextFork; // We'll fork when the equivalent path length is longer than this
 
         SparkPointToVisit(
             ElementIndex pointIndex,
             vec2f const & direction,
             float equivalentPathLength,
             ElementIndex incomingSpringIndex,
-            size_t previousRenderableSparkIndex)
+            size_t previousRenderableSparkIndex,
+            float equivalentPathLengthToNextFork)
             : PointIndex(pointIndex)
             , Direction(direction)
             , EquivalentPathLength(equivalentPathLength)
             , IncomingSpringIndex(incomingSpringIndex)
             , PreviousRenderableSparkIndex(previousRenderableSparkIndex)
+            , EquivalentPathLengthToNextFork(equivalentPathLengthToNextFork)
         {}
     };
 
@@ -297,7 +302,8 @@ void ShipElectricSparks::PropagateSparks(
                     (points.GetPosition(targetEndpointIndex) - startingPointPosition).normalise(),
                     equivalentPathLength,
                     s,
-                    mSparksToRender.size());
+                    mSparksToRender.size(),
+                    GameRandomEngine::GetInstance().GenerateUniformReal(ForkSpacingMin, ForkSpacingMax));
             }
 
             // Render
@@ -328,19 +334,18 @@ void ShipElectricSparks::PropagateSparks(
         {
             vec2f const pointPosition = points.GetPosition(pv.PointIndex);
 
-            // Calculate distance to the theoretical end of its path
-            float const distanceToTheoreticalMaxPathLength = (MaxEquivalentPathLength - pv.EquivalentPathLength) / MaxEquivalentPathLength;
+            // Initialize path length until next fork - we'll eventually reset it if we fork
+            float equivalentPathLengthToNextFork = pv.EquivalentPathLengthToNextFork;
 
             // Calculate distance to the end of this path in this interaction
             float const distanceToInteractionMaxPathLength = (maxEquivalentPathLengthForThisInteraction - pv.EquivalentPathLength) / maxEquivalentPathLengthForThisInteraction;
 
             //
             // Of all the outgoing springs that are *not* the incoming spring:
-            //  - Collect those that were electrified in the previous interaction, do not
+            //  - Collect the first one that wa electrified in the previous interaction, does not
             //    lead to a point already electrified in this interaction (so to avoid forks),
-            //    and agree with alignment
-            //  - Keep the top three that were not electrified in the previous interaction,
-            //    ranking them on their alignment
+            //    and agrees with alignment
+            //  - Keep the others, ranking them on their alignment
             //      - We don't check beforehand if these will lead to an already-electrified
             //        point, so to allow for closing loops (which we won't electrify anyway)
             //
@@ -348,17 +353,17 @@ void ShipElectricSparks::PropagateSparks(
             nextSprings.clear();
 
             ElementIndex bestCandidateNewSpring1 = NoneElementIndex;
-            float bestCandidateNewSpringAligment1 = -1.0f;
+            float bestCandidateNewSpringAlignment1 = -1.0f;
             ElementIndex bestCandidateNewSpring2 = NoneElementIndex;
-            float bestCandidateNewSpringAligment2 = -1.0f;
+            float bestCandidateNewSpringAlignment2 = -1.0f;
             ElementIndex bestCandidateNewSpring3 = NoneElementIndex;
-            float bestCandidateNewSpringAligment3 = -1.0f;
+            float bestCandidateNewSpringAlignment3 = -1.0f;
 
             for (auto const & cs : points.GetConnectedSprings(pv.PointIndex).ConnectedSprings)
             {
                 if (cs.SpringIndex != pv.IncomingSpringIndex)
                 {
-                    if (wasSpringElectrifiedInPreviousInteraction[cs.SpringIndex])
+                    if (nextSprings.empty() && wasSpringElectrifiedInPreviousInteraction[cs.SpringIndex])
                     {
                         if (mPointElectrificationCounter[cs.OtherEndpointIndex] != counter
                             && (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction) > 0.0f)
@@ -371,29 +376,29 @@ void ShipElectricSparks::PropagateSparks(
                     {
                         // Rank based on alignment
                         float const alignment = (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction);
-                        if (alignment > bestCandidateNewSpringAligment1)
+                        if (alignment > bestCandidateNewSpringAlignment1)
                         {
                             bestCandidateNewSpring3 = bestCandidateNewSpring2;
-                            bestCandidateNewSpringAligment3 = bestCandidateNewSpringAligment2;
+                            bestCandidateNewSpringAlignment3 = bestCandidateNewSpringAlignment2;
 
                             bestCandidateNewSpring2 = bestCandidateNewSpring1;
-                            bestCandidateNewSpringAligment2 = bestCandidateNewSpringAligment1;
+                            bestCandidateNewSpringAlignment2 = bestCandidateNewSpringAlignment1;
 
                             bestCandidateNewSpring1 = cs.SpringIndex;
-                            bestCandidateNewSpringAligment1 = alignment;
+                            bestCandidateNewSpringAlignment1 = alignment;
                         }
-                        else if (alignment > bestCandidateNewSpringAligment2)
+                        else if (alignment > bestCandidateNewSpringAlignment2)
                         {
                             bestCandidateNewSpring3 = bestCandidateNewSpring2;
-                            bestCandidateNewSpringAligment3 = bestCandidateNewSpringAligment2;
+                            bestCandidateNewSpringAlignment3 = bestCandidateNewSpringAlignment2;
 
                             bestCandidateNewSpring2 = cs.SpringIndex;
-                            bestCandidateNewSpringAligment2 = alignment;
+                            bestCandidateNewSpringAlignment2 = alignment;
                         }
-                        else if (alignment > bestCandidateNewSpringAligment3)
+                        else if (alignment > bestCandidateNewSpringAlignment3)
                         {
                             bestCandidateNewSpring3 = cs.SpringIndex;
-                            bestCandidateNewSpringAligment3 = alignment;
+                            bestCandidateNewSpringAlignment3 = alignment;
                         }
                     }
                 }
@@ -410,7 +415,7 @@ void ShipElectricSparks::PropagateSparks(
                     //
 
                     float const r = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
-                    if (r < 0.55f || bestCandidateNewSpring2 == NoneElementIndex)
+                    if (r < 0.25f || bestCandidateNewSpring2 == NoneElementIndex)
                     {
                         nextSprings.emplace_back(bestCandidateNewSpring1);
                     }
@@ -423,33 +428,39 @@ void ShipElectricSparks::PropagateSparks(
                         nextSprings.emplace_back(bestCandidateNewSpring3);
                     }
                 }
-                else if (nextSprings.size() == 1 && bestCandidateNewSpringAligment1 >= 0.0f)
+                else if (nextSprings.size() == 1 && bestCandidateNewSpringAlignment1 >= 0.0f)
                 {
                     //
                     // Decide whether we want to fork or re-route, but always with a positive
                     // alignment
                     //
 
-                    if (// Fork more closer to theoretical end
-                        GameRandomEngine::GetInstance().GenerateUniformBoolean(0.2f * std::pow(1.0f - distanceToTheoreticalMaxPathLength, 2.0f)))
+                    if (pv.EquivalentPathLength >= equivalentPathLengthToNextFork)
                     {
                         // Fork
-                        if (bestCandidateNewSpringAligment3 >= 0.0f)
+                        if (bestCandidateNewSpringAlignment3 >= 0.0f)
                         {
-                            nextSprings[0]= bestCandidateNewSpring1;
+                            // We have 3, choose second and third then
+                            nextSprings[0] = bestCandidateNewSpring2;
                             nextSprings.emplace_back(bestCandidateNewSpring3);
+                        }
+                        else if (bestCandidateNewSpringAlignment2 >= 0.0f)
+                        {
+                            nextSprings.emplace_back(bestCandidateNewSpring2);
                         }
                         else
                         {
                             nextSprings.emplace_back(bestCandidateNewSpring1);
                         }
+
+                        equivalentPathLengthToNextFork = pv.EquivalentPathLength + GameRandomEngine::GetInstance().GenerateUniformReal(ForkSpacingMin, ForkSpacingMax);
                     }
                     else if (
-                        // Reroute more closer to interaction end
+                        // Reroute when we're closer to interaction end
                         GameRandomEngine::GetInstance().GenerateUniformBoolean(0.15f * std::pow(1.0f - distanceToInteractionMaxPathLength, 0.5f)))
                     {
                         // Reroute
-                        if (bestCandidateNewSpringAligment2 >= 0.0f
+                        if (bestCandidateNewSpringAlignment2 >= 0.0f
                             && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f))
                         {
                             nextSprings[0] = bestCandidateNewSpring2;
@@ -497,7 +508,8 @@ void ShipElectricSparks::PropagateSparks(
                             pv.Direction,
                             endEquivalentPathLength,
                             s,
-                            mSparksToRender.size());
+                            mSparksToRender.size(),
+                            equivalentPathLengthToNextFork);
                     }
                 }
 
