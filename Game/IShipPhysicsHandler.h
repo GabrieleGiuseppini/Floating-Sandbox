@@ -143,7 +143,7 @@ struct IShipPhysicsHandler
     virtual void HandleElectricalElementRestore(ElementIndex electricalElementIndex) = 0;
 
     //
-    // Explosions
+    // Misc
     //
 
     virtual void StartExplosion(
@@ -155,10 +155,6 @@ struct IShipPhysicsHandler
         float blastHeat,
         ExplosionType explosionType,
         GameParameters const & gameParameters) = 0;
-
-    //
-    // Bombs
-    //
 
     virtual void DoAntiMatterBombPreimplosion(
         vec2f const & centerPosition,
@@ -176,11 +172,13 @@ struct IShipPhysicsHandler
         float sequenceProgress,
         GameParameters const & gameParameters) = 0;
 
-    //
-    // Gadgets
-    //
-
     virtual void HandleWatertightDoorUpdated(
         ElementIndex pointElementIndex,
         bool isOpen) = 0;
+
+    virtual void HandleElectricSpark(
+        ElementIndex pointElementIndex,
+        float size,
+        float currentSimulationTime,
+        GameParameters const & gameParameters) = 0;
 };

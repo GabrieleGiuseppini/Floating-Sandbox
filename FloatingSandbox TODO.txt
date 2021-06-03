@@ -680,8 +680,9 @@ Render:
 				- Interactions: private OnPointElectrified(...):
 					+ Takes also ElectricalElements
 					+ Driven by interaction: upon energizing a point, calls into ElectricalElements
-					- Heat
-						- Depends on size of incoming, cumulative
+					= Heat
+						+ Depends on size of incoming, cumulative
+						- Lower the dependency on size (goal: longer to catch fire at center, more read hot at periphery)
 					- Rotting
 						- Depends on size of incoming, cumulative
 					- Interactions with ElectricalElements:
@@ -694,7 +695,8 @@ Render:
 							- ElectricalElements::UpdateSource/Sink/Whatever:
 								- XYZ is off if XYZ.state.DisabledEndTimestamp.has_value()
 						- Engines: thrust X 4?
-					- Gadgets
+					= Gadgets
+						+ New Gadgets::OnNeighborhoodDisturbed() (i.e. make it public)
 				- Material-driven
 					- New "electrical conductivity" *structural* property - try to name it differently than the electrical property though
 						- First off, need "Material Type" rearc (*) just for helping a script that populates electrical conductivity automatically in material json

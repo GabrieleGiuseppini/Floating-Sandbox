@@ -684,7 +684,6 @@ bool Ship::ApplyElectricSparkAt(
         currentSimulationTime,
         mPoints,
         mSprings,
-        mElectricalElements,
         gameParameters);
 }
 

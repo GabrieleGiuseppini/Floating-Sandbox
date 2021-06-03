@@ -21,6 +21,7 @@ class ShipElectricSparks
 public:
 
     ShipElectricSparks(
+        IShipPhysicsHandler & shipPhysicsHandler,
         Points const & points,
         Springs const & springs);
 
@@ -30,7 +31,6 @@ public:
         float currentSimulationTime,
         Points const & points,
         Springs const & springs,
-        ElectricalElements const & electricalElements,
         GameParameters const & gameParameters);
 
     void Update();
@@ -48,18 +48,12 @@ private:
         float currentSimulationTime,
         Points const & points,
         Springs const & springs,
-        ElectricalElements const & electricalElements,
-        GameParameters const & gameParameters);
-
-    void OnPointElectrified(
-        ElementIndex pointIndex,
-        float currentSimulationTime,
-        Points const & points,
-        Springs const & springs,
-        ElectricalElements const & electricalElements,
         GameParameters const & gameParameters);
 
 private:
+
+    // The handler to invoke for acting on the ship
+    IShipPhysicsHandler & mShipPhysicsHandler;
 
     // Flag remembering whether a spring is electrified or not;
     // cardinality=springs

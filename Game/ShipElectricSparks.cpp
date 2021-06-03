@@ -13,9 +13,11 @@
 namespace Physics {
 
 ShipElectricSparks::ShipElectricSparks(
+    IShipPhysicsHandler & shipPhysicsHandler,
     Points const & points,
     Springs const & springs)
-    : mIsSpringElectrifiedOld(springs.GetElementCount(), 0, false)
+    : mShipPhysicsHandler(shipPhysicsHandler)
+    , mIsSpringElectrifiedOld(springs.GetElementCount(), 0, false)
     , mIsSpringElectrifiedNew(springs.GetElementCount(), 0, false)
     , mPointElectrificationCounter(points.GetElementCount(), 0, std::numeric_limits<std::uint64_t>::max())
     , mAreSparksPopulatedBeforeNextUpdate(false)
@@ -29,7 +31,6 @@ bool ShipElectricSparks::ApplySparkAt(
     float currentSimulationTime,
     Points const & points,
     Springs const & springs,
-    ElectricalElements const & electricalElements,
     GameParameters const & gameParameters)
 {
     //
@@ -58,7 +59,6 @@ bool ShipElectricSparks::ApplySparkAt(
             currentSimulationTime,
             points,
             springs,
-            electricalElements,
             gameParameters);
 
         return true;
@@ -124,7 +124,6 @@ void ShipElectricSparks::PropagateSparks(
     float currentSimulationTime,
     Points const & points,
     Springs const & springs,
-    ElectricalElements const & electricalElements,
     GameParameters const & gameParameters)
 {
     //
@@ -177,21 +176,11 @@ void ShipElectricSparks::PropagateSparks(
     bool * const wasSpringElectrifiedInPreviousInteraction = mIsSpringElectrifiedOld.data();
     bool * const isSpringElectrifiedInThisInteraction = mIsSpringElectrifiedNew.data();
 
-    // Prepare point electrication flag
+    // Prepare point electrification flag
     if (counter == 0)
     {
         mPointElectrificationCounter.fill(std::numeric_limits<std::uint64_t>::max());
     }
-
-    // Electrify starting point
-    OnPointElectrified(
-        startingPointIndex,
-        currentSimulationTime,
-        points,
-        springs,
-        electricalElements,
-        gameParameters);
-    mPointElectrificationCounter[startingPointIndex] = counter;
 
     // Clear the sparks that have to be rendered after this step
     mSparksToRender.clear();
@@ -212,7 +201,21 @@ void ShipElectricSparks::PropagateSparks(
     };
 
     //
-    // 1. Jump-start: find the initial springs outgoing from the starting point
+    // 1. Electrify starting point
+    //
+
+    float const startingPointSize = calculateSparkSize(0.0f);
+
+    mShipPhysicsHandler.HandleElectricSpark(
+        startingPointIndex,
+        startingPointSize,
+        currentSimulationTime,
+        gameParameters);
+
+    mPointElectrificationCounter[startingPointIndex] = counter;
+
+    //
+    // 2. Jump-start: find the initial springs outgoing from the starting point
     //
 
     std::vector<ElementIndex> startingSprings;
@@ -265,7 +268,7 @@ void ShipElectricSparks::PropagateSparks(
     }
 
     //
-    // 2. Electrify the starting springs and initialize expansions
+    // 3. Electrify the starting springs and initialize expansions
     //
 
     std::vector<SparkPointToVisit> currentPointsToVisit;
@@ -279,18 +282,20 @@ void ShipElectricSparks::PropagateSparks(
 
             float const equivalentPathLength = 1.0f; // TODO: material-based
 
-            // Note: we don't flag the starting springs as electrieid, as they are the only ones who share
+            float const size = calculateSparkSize(equivalentPathLength);
+
+            // Note: we don't flag the starting springs as electrified, as they are the only ones who share
             // a point in common and thus if they're scooped up at the next interaction, they'll add
-            // an N-way fork, which could even get compounded by being picked up at the next, and so on
+            // an N-way fork, which could even get compounded by being picked up at the next, and so on...
 
             // Electrify target point
-            OnPointElectrified(
+            mShipPhysicsHandler.HandleElectricSpark(
                 targetEndpointIndex,
+                size,
                 currentSimulationTime,
-                points,
-                springs,
-                electricalElements,
                 gameParameters);
+
+            // Remember the point is electrified now
             assert(mPointElectrificationCounter[targetEndpointIndex] != counter);
             mPointElectrificationCounter[targetEndpointIndex] = counter;
 
@@ -310,9 +315,9 @@ void ShipElectricSparks::PropagateSparks(
             mSparksToRender.emplace_back(
                 NoneElementIndex, // Previous point == none
                 startingPointIndex,
-                calculateSparkSize(0.0f),
+                startingPointSize,
                 targetEndpointIndex,
-                calculateSparkSize(equivalentPathLength),
+                size,
                 NoneElementIndex); // Next point == will fill later
         }
     }
@@ -485,19 +490,21 @@ void ShipElectricSparks::PropagateSparks(
                 float const equivalentStepLength = 1.0f; // TODO: material-based
                 float const endEquivalentPathLength = startEquivalentPathLength + equivalentStepLength;
 
+                float const startSize = calculateSparkSize(startEquivalentPathLength);
+
                 if (mPointElectrificationCounter[targetEndpointIndex] != counter)
                 {
                     // Electrify spring
                     isSpringElectrifiedInThisInteraction[s] = true;
 
                     // Electrify point
-                    OnPointElectrified(
+                    mShipPhysicsHandler.HandleElectricSpark(
                         targetEndpointIndex,
+                        startSize,
                         currentSimulationTime,
-                        points,
-                        springs,
-                        electricalElements,
                         gameParameters);
+
+                    // Remember this point is not electrified
                     mPointElectrificationCounter[targetEndpointIndex] = counter;
 
                     // Next expansion
@@ -517,7 +524,7 @@ void ShipElectricSparks::PropagateSparks(
                 mSparksToRender.emplace_back(
                     springs.GetOtherEndpointIndex(pv.IncomingSpringIndex, pv.PointIndex),
                     pv.PointIndex,
-                    calculateSparkSize(startEquivalentPathLength),
+                    startSize,
                     targetEndpointIndex,
                     calculateSparkSize(endEquivalentPathLength),
                     NoneElementIndex);
@@ -541,17 +548,6 @@ void ShipElectricSparks::PropagateSparks(
 
     // Remember that we have populated electric sparks
     mAreSparksPopulatedBeforeNextUpdate = true;
-}
-
-void ShipElectricSparks::OnPointElectrified(
-    ElementIndex pointIndex,
-    float currentSimulationTime,
-    Points const & points,
-    Springs const & springs,
-    ElectricalElements const & electricalElements,
-    GameParameters const & gameParameters)
-{
-    // TODOHERE
 }
 
 }
