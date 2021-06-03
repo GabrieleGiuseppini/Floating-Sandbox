@@ -71,33 +71,14 @@ void Gadgets::Update(
 
 void Gadgets::OnPointDetached(ElementIndex pointElementIndex)
 {
-    auto squareNeighborhoodRadius = NeighborhoodRadius * NeighborhoodRadius;
-
-    auto neighborhoodCenter = mShipPoints.GetPosition(pointElementIndex);
-
-    //
-    // Gadgets
-    //
-
-    for (auto & gadget : mCurrentGadgets)
-    {
-        // Check if the gadget is within the neighborhood of the disturbed point
-        float squareGadgetDistance = (gadget->GetPosition() - neighborhoodCenter).squareLength();
-        if (squareGadgetDistance < squareNeighborhoodRadius)
-        {
-            // Tel the gadget that its neighborhood has been disturbed
-            gadget->OnNeighborhoodDisturbed();
-        }
-    }
-
-    // No need to check Physics probe gadget
+    OnNeighborhoodDisturbed(pointElementIndex);
 }
 
 void Gadgets::OnSpringDestroyed(ElementIndex springElementIndex)
 {
-    auto squareNeighborhoodRadius = NeighborhoodRadius * NeighborhoodRadius;
+    float constexpr SquareNeighborhoodRadius = NeighborhoodRadius * NeighborhoodRadius;
 
-    auto neighborhoodCenter = mShipSprings.GetMidpointPosition(springElementIndex, mShipPoints);
+    vec2f const neighborhoodCenter = mShipSprings.GetMidpointPosition(springElementIndex, mShipPoints);
 
     //
     // Gadgets
@@ -106,7 +87,7 @@ void Gadgets::OnSpringDestroyed(ElementIndex springElementIndex)
     for (auto & gadget : mCurrentGadgets)
     {
         // Check if the gadget is tracking this spring
-        auto trackedSpring = gadget->GetTrackedSpringIndex();
+        auto const trackedSpring = gadget->GetTrackedSpringIndex();
         if (trackedSpring.has_value() && *trackedSpring == springElementIndex)
         {
             // Tell gadget
@@ -114,10 +95,10 @@ void Gadgets::OnSpringDestroyed(ElementIndex springElementIndex)
         }
 
         // Check if the gadget is within the neighborhood of the disturbed center
-        float squareGadgetDistance = (gadget->GetPosition() - neighborhoodCenter).squareLength();
-        if (squareGadgetDistance < squareNeighborhoodRadius)
+        float const squareGadgetDistance = (gadget->GetPosition() - neighborhoodCenter).squareLength();
+        if (squareGadgetDistance < SquareNeighborhoodRadius)
         {
-            // Tel the gadget that its neighborhood has been disturbed
+            // Tell the gadget that its neighborhood has been disturbed
             gadget->OnNeighborhoodDisturbed();
         }
     }
@@ -129,13 +110,38 @@ void Gadgets::OnSpringDestroyed(ElementIndex springElementIndex)
     if (!!mCurrentPhysicsProbeGadget)
     {
         // Check if the gadget is tracking this spring
-        auto trackedSpring = mCurrentPhysicsProbeGadget->GetTrackedSpringIndex();
+        auto const trackedSpring = mCurrentPhysicsProbeGadget->GetTrackedSpringIndex();
         if (trackedSpring.has_value() && *trackedSpring == springElementIndex)
         {
             // Tell gadget
             mCurrentPhysicsProbeGadget->OnTrackedSpringDestroyed();
         }
     }
+}
+
+void Gadgets::OnNeighborhoodDisturbed(ElementIndex pointElementIndex)
+{
+    float constexpr SquareNeighborhoodRadius = NeighborhoodRadius * NeighborhoodRadius;
+
+    auto neighborhoodCenter = mShipPoints.GetPosition(pointElementIndex);
+
+    //
+    // Gadgets
+    //
+
+    for (auto & gadget : mCurrentGadgets)
+    {
+        // Check if the gadget is within the neighborhood of the disturbed point
+        float const squareGadgetDistance = (gadget->GetPosition() - neighborhoodCenter).squareLength();
+        if (squareGadgetDistance < SquareNeighborhoodRadius)
+        {
+            // Tell the gadget that its neighborhood has been disturbed
+            gadget->OnNeighborhoodDisturbed();
+        }
+    }
+
+
+    // No need to check Physics probe gadget
 }
 
 std::optional<bool> Gadgets::TogglePhysicsProbeAt(

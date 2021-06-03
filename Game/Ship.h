@@ -640,6 +640,12 @@ private:
         ElementIndex pointElementIndex,
         bool isOpen) override;
 
+    virtual void HandleElectricSpark(
+        ElementIndex pointElementIndex,
+        float size,
+        float currentSimulationTime,
+        GameParameters const & gameParameters) override;
+
 private:
 
 #ifdef _DEBUG

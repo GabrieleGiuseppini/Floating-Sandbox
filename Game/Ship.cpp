@@ -91,7 +91,10 @@ Ship::Ship(
         *this,
         mPoints,
         mSprings)
-    , mElectricSparks(mPoints, mSprings)
+    , mElectricSparks(
+        *this,
+        mPoints,
+        mSprings)
     , mOverlays()
     , mCurrentSimulationSequenceNumber()
     , mCurrentConnectivityVisitSequenceNumber()
@@ -3401,6 +3404,41 @@ void Ship::HandleWatertightDoorUpdated(
             mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex)),
             1);
     }
+}
+
+void Ship::HandleElectricSpark(
+    ElementIndex pointElementIndex,
+    float size,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    // TODOHERE
+
+    //
+    // Heat
+    //
+
+    float const heat =
+        1.3f * 1000.0f // KJoule->Joule
+        * size
+        * (gameParameters.IsUltraViolentMode ? 8.0f : 1.0f);
+
+    // Calc temperature delta
+    // T = Q/HeatCapacity
+    float const deltaT =
+        heat
+        * mPoints.GetMaterialHeatCapacityReciprocal(pointElementIndex);
+
+    // Increase/lower temperature
+    mPoints.SetTemperature(
+        pointElementIndex,
+        std::max(mPoints.GetTemperature(pointElementIndex) + deltaT, 0.1f)); // 3rd principle of thermodynamics
+
+    //
+    // Gadgets
+    //
+
+    mGadgets.OnNeighborhoodDisturbed(pointElementIndex);
 }
 
 #ifdef _DEBUG

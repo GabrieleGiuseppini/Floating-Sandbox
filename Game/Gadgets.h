@@ -60,6 +60,8 @@ public:
 
     void OnSpringDestroyed(ElementIndex springElementIndex);
 
+    void OnNeighborhoodDisturbed(ElementIndex pointElementIndex);
+
     bool ToggleAntiMatterBombAt(
         vec2f const & targetPos,
         GameParameters const & gameParameters)
