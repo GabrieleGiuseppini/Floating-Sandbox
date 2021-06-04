@@ -3420,7 +3420,6 @@ void Ship::HandleElectricSpark(
 
     float const heat =
         1.3f * 1000.0f // KJoule->Joule
-        * size
         * (gameParameters.IsUltraViolentMode ? 8.0f : 1.0f);
 
     // Calc temperature delta
@@ -3438,7 +3437,7 @@ void Ship::HandleElectricSpark(
     // Gadgets
     //
 
-    mGadgets.OnNeighborhoodDisturbed(pointElementIndex);
+    mGadgets.OnElectricSpark(pointElementIndex);
 }
 
 #ifdef _DEBUG

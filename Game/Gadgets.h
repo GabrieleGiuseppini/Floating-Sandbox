@@ -60,7 +60,7 @@ public:
 
     void OnSpringDestroyed(ElementIndex springElementIndex);
 
-    void OnNeighborhoodDisturbed(ElementIndex pointElementIndex);
+    void OnElectricSpark(ElementIndex pointElementIndex);
 
     bool ToggleAntiMatterBombAt(
         vec2f const & targetPos,

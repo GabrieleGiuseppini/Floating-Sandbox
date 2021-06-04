@@ -663,6 +663,7 @@ Render:
 				+ Previous and Next normalized vectors need to be passed to each Upload()
 				+ Optimize locally
 				+ Wireframe
+				- Wireframe, again
 				- Fix fork: substitute "nextDirection" with "nextL/RDirection"
 					- R is direction with min cross product
 					- L is direction with max cross product
@@ -682,7 +683,8 @@ Render:
 					+ Driven by interaction: upon energizing a point, calls into ElectricalElements
 					= Heat
 						+ Depends on size of incoming, cumulative
-						- Lower the dependency on size (goal: longer to catch fire at center, more read hot at periphery)
+						= Lower the dependency on size (goal: longer to catch fire at center, more read hot at periphery)
+							- Avoid too much heat on central point: pass equivalentPathLength, and do heat inversely proportional to it
 					- Rotting
 						- Depends on size of incoming, cumulative
 					- Interactions with ElectricalElements:
@@ -695,8 +697,9 @@ Render:
 							- ElectricalElements::UpdateSource/Sink/Whatever:
 								- XYZ is off if XYZ.state.DisabledEndTimestamp.has_value()
 						- Engines: thrust X 4?
-					= Gadgets
-						+ New Gadgets::OnNeighborhoodDisturbed() (i.e. make it public)
+					+ Gadgets
+						+ Replace OnNeighborhoodDisturbed() with OnElectricSpark(pointIndex), & precise check for index
+							+ Undo OnPointDetached change
 				- Material-driven
 					- New "electrical conductivity" *structural* property - try to name it differently than the electrical property though
 						- First off, need "Material Type" rearc (*) just for helping a script that populates electrical conductivity automatically in material json
@@ -718,6 +721,11 @@ Render:
 			+ 0.242
 
 		- Inject cracks (*)
+
+		- Test ocean rendering with indices
+			- If OK, also test land
+
+		- Pins: SHIFT to remove them all *
 
 		- Test on Dell
 			- Working: TODO: list
