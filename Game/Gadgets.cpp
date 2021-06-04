@@ -71,7 +71,26 @@ void Gadgets::Update(
 
 void Gadgets::OnPointDetached(ElementIndex pointElementIndex)
 {
-    OnNeighborhoodDisturbed(pointElementIndex);
+    float constexpr SquareNeighborhoodRadius = NeighborhoodRadius * NeighborhoodRadius;
+
+    auto const neighborhoodCenter = mShipPoints.GetPosition(pointElementIndex);
+
+    //
+    // Gadgets
+    //
+
+    for (auto & gadget : mCurrentGadgets)
+    {
+        // Check if the gadget is within the neighborhood of the disturbed point
+        float const squareGadgetDistance = (gadget->GetPosition() - neighborhoodCenter).squareLength();
+        if (squareGadgetDistance < SquareNeighborhoodRadius)
+        {
+            // Tell the gadget that its neighborhood has been disturbed
+            gadget->OnNeighborhoodDisturbed();
+        }
+    }
+
+    // No need to check Physics probe gadget
 }
 
 void Gadgets::OnSpringDestroyed(ElementIndex springElementIndex)
@@ -119,27 +138,20 @@ void Gadgets::OnSpringDestroyed(ElementIndex springElementIndex)
     }
 }
 
-void Gadgets::OnNeighborhoodDisturbed(ElementIndex pointElementIndex)
+void Gadgets::OnElectricSpark(ElementIndex pointElementIndex)
 {
-    float constexpr SquareNeighborhoodRadius = NeighborhoodRadius * NeighborhoodRadius;
-
-    auto neighborhoodCenter = mShipPoints.GetPosition(pointElementIndex);
-
     //
     // Gadgets
     //
 
     for (auto & gadget : mCurrentGadgets)
     {
-        // Check if the gadget is within the neighborhood of the disturbed point
-        float const squareGadgetDistance = (gadget->GetPosition() - neighborhoodCenter).squareLength();
-        if (squareGadgetDistance < SquareNeighborhoodRadius)
+        if (gadget->GetPointIndex() == pointElementIndex)
         {
             // Tell the gadget that its neighborhood has been disturbed
             gadget->OnNeighborhoodDisturbed();
         }
     }
-
 
     // No need to check Physics probe gadget
 }
