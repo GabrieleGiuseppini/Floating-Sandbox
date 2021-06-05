@@ -841,7 +841,21 @@ void ElectricalElements::OnElectricSpark(
             break;
         }
 
-        // TODOHERE
+        case ElectricalMaterial::ElectricalElementType::Lamp:
+        {
+            mElementStateBuffer[electricalElementIndex].Lamp.DisabledEndSimulationTimestamp =
+                currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(5.0f, 10.0f);
+
+            mHasPowerBeenSeveredInCurrentStep = true;
+
+            break;
+        }
+
+        default:
+        {
+            // We don't disable anything else, we rely on generators going off
+            break;
+        }
     }
 }
 
@@ -973,7 +987,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
 
                     // Check if disable interval has elapsed
                     if (generatorState.DisabledEndSimulationTimestamp.has_value()
-                        && currentSimulationTime > *generatorState.DisabledEndSimulationTimestamp)
+                        && currentSimulationTime >= *generatorState.DisabledEndSimulationTimestamp)
                     {
                         generatorState.DisabledEndSimulationTimestamp.reset();
                     }
@@ -1261,6 +1275,7 @@ void ElectricalElements::UpdateSinks(
                         isConnectedToPower,
                         sinkElementIndex,
                         currentWallclockTime,
+                        currentSimulationTime,
                         points,
                         gameParameters);
 
@@ -1683,7 +1698,6 @@ void ElectricalElements::UpdateSinks(
             }
         }
 
-
         //
         // Generate heat if sink is working
         //
@@ -2022,6 +2036,7 @@ void ElectricalElements::RunLampStateMachine(
     bool isConnectedToPower,
     ElementIndex elementLampIndex,
     GameWallClock::time_point currentWallclockTime,
+    float currentSimulationTime,
     Points & points,
     GameParameters const & /*gameParameters*/)
 {
@@ -2029,8 +2044,8 @@ void ElectricalElements::RunLampStateMachine(
     float constexpr LampWetFailureWaterLowWatermark = 0.055f;
 
     //
-    // Lamp is only on if visited or self-powered and within operating temperature;
-    // actual light depends on flicker state machine
+    // Lamp is only on if visited or self-powered, and within operating temperature and
+    // not disabled; actual light depends on flicker state machine
     //
 
     auto const pointIndex = GetPointIndex(elementLampIndex);
@@ -2038,13 +2053,22 @@ void ElectricalElements::RunLampStateMachine(
     assert(GetMaterialType(elementLampIndex) == ElectricalMaterial::ElectricalElementType::Lamp);
     auto & lamp = mElementStateBuffer[elementLampIndex].Lamp;
 
+    // First of all, check if disable interval has elapsed
+    if (lamp.DisabledEndSimulationTimestamp.has_value()
+        && currentSimulationTime >= *lamp.DisabledEndSimulationTimestamp)
+    {
+        lamp.DisabledEndSimulationTimestamp.reset();
+    }
+
+    // Now run state machine
     switch (lamp.State)
     {
         case ElementState::LampState::StateType::Initial:
         {
             // Transition to ON - if we have current or if we're self-powered AND if within operating temperature
             if ((isConnectedToPower || lamp.IsSelfPowered)
-                && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsInRange(points.GetTemperature(pointIndex)))
+                && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsInRange(points.GetTemperature(pointIndex))
+                && !lamp.DisabledEndSimulationTimestamp.has_value())
             {
                 // Transition to ON
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
@@ -2073,15 +2097,18 @@ void ElectricalElements::RunLampStateMachine(
                 ) ||
                 (
                     !mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsInRange(points.GetTemperature(pointIndex))
+                ) ||
+                (
+                    lamp.DisabledEndSimulationTimestamp.has_value()
                 ))
             {
                 //
                 // Turn off
                 //
 
-                mAvailableLightBuffer[elementLampIndex] = 0.f;
+                mAvailableLightBuffer[elementLampIndex] = 0.0f;
 
-                // Check whether we need to flicker or just turn off gracefully
+                // Check whether we need to flicker or just turn off suddenly
                 if (mHasPowerBeenSeveredInCurrentStep)
                 {
                     //
@@ -2099,7 +2126,7 @@ void ElectricalElements::RunLampStateMachine(
                 else
                 {
                     //
-                    // Turn off gracefully
+                    // Turn off immediately
                     //
 
                     lamp.State = ElementState::LampState::StateType::LightOff;
@@ -2116,7 +2143,8 @@ void ElectricalElements::RunLampStateMachine(
             // Check if we should become ON again
             if ((isConnectedToPower || lamp.IsSelfPowered)
                 && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterLowWatermark)
-                && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
+                && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex))
+                && !lamp.DisabledEndSimulationTimestamp.has_value())
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
 
@@ -2169,7 +2197,8 @@ void ElectricalElements::RunLampStateMachine(
             // Check if we should become ON again
             if ((isConnectedToPower || lamp.IsSelfPowered)
                 && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterLowWatermark)
-                && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
+                && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex))
+                && !lamp.DisabledEndSimulationTimestamp.has_value())
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
 
@@ -2236,7 +2265,8 @@ void ElectricalElements::RunLampStateMachine(
             // Check if we should become ON again
             if ((isConnectedToPower || lamp.IsSelfPowered)
                 && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterLowWatermark)
-                && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex)))
+                && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex))
+                && !lamp.DisabledEndSimulationTimestamp.has_value())
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
 

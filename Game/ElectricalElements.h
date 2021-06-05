@@ -185,6 +185,7 @@ private:
         struct LampState
         {
             bool IsSelfPowered;
+            std::optional<float> DisabledEndSimulationTimestamp;
 
             // Probability that light fails within 1 second
             float WetFailureRateCdf;
@@ -701,6 +702,7 @@ private:
         bool isConnectedToPower,
         ElementIndex elementLampIndex,
         GameWallClock::time_point currentWallclockTime,
+        float currentSimulationTime,
         Points & points,
         GameParameters const & gameParameters);
 
