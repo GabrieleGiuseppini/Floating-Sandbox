@@ -682,6 +682,7 @@ Render:
 								! XYZ is off if XYZ.state.DisabledEndTimestamp.has_value()
 						+ Generator
 						+ Lamp
+							+ Sound controller: flicker sound should have some inertia
 						- Engine (on/off is from generator though, so only thrust here)						
 					+ Gadgets
 						+ Replace OnNeighborhoodDisturbed() with OnElectricSpark(pointIndex), & precise check for index

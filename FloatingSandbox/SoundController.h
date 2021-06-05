@@ -528,6 +528,7 @@ private:
             case SoundType::Destroy:
             case SoundType::RepairSpring:
             case SoundType::RepairTriangle:
+            case SoundType::LightFlicker:
                 return std::chrono::milliseconds(200);
             case SoundType::Stress:
             case SoundType::TerrainAdjust:
