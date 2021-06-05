@@ -175,6 +175,7 @@ private:
         struct GeneratorState
         {
             bool IsProducingCurrent;
+            std::optional<float> DisabledEndSimulationTimestamp;
 
             GeneratorState(bool isProducingCurrent)
                 : IsProducingCurrent(isProducingCurrent)
@@ -483,6 +484,10 @@ public:
 
     void Restore(ElementIndex electricalElementIndex);
 
+    void OnElectricSpark(
+        ElementIndex electricalElementIndex,
+        float currentSimulationTime);
+
     void UpdateForGameParameters(GameParameters const & gameParameters);
 
     void UpdateAutomaticConductivityToggles(
@@ -490,6 +495,7 @@ public:
         GameParameters const & gameParameters);
 
     void UpdateSourcesAndPropagation(
+        float currentSimulationTime,
         SequenceNumber newConnectivityVisitSequenceNumber,
         Points & points,
         GameParameters const & gameParameters);

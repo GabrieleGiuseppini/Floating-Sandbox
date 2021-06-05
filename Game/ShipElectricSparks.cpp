@@ -208,7 +208,7 @@ void ShipElectricSparks::PropagateSparks(
 
     mShipPhysicsHandler.HandleElectricSpark(
         startingPointIndex,
-        startingPointSize,
+        startingPointSize, // strength
         currentSimulationTime,
         gameParameters);
 
@@ -282,7 +282,7 @@ void ShipElectricSparks::PropagateSparks(
 
             float const equivalentPathLength = 1.0f; // TODO: material-based
 
-            float const size = calculateSparkSize(equivalentPathLength);
+            float const size = calculateSparkSize(0.0f + equivalentPathLength);
 
             // Note: we don't flag the starting springs as electrified, as they are the only ones who share
             // a point in common and thus if they're scooped up at the next interaction, they'll add
@@ -291,7 +291,7 @@ void ShipElectricSparks::PropagateSparks(
             // Electrify target point
             mShipPhysicsHandler.HandleElectricSpark(
                 targetEndpointIndex,
-                size,
+                size, // strength
                 currentSimulationTime,
                 gameParameters);
 
@@ -305,7 +305,7 @@ void ShipElectricSparks::PropagateSparks(
                 currentPointsToVisit.emplace_back(
                     targetEndpointIndex,
                     (points.GetPosition(targetEndpointIndex) - startingPointPosition).normalise(),
-                    equivalentPathLength,
+                    0.0f + equivalentPathLength,
                     s,
                     mSparksToRender.size(),
                     GameRandomEngine::GetInstance().GenerateUniformReal(ForkSpacingMin, ForkSpacingMax));
@@ -500,7 +500,7 @@ void ShipElectricSparks::PropagateSparks(
                     // Electrify point
                     mShipPhysicsHandler.HandleElectricSpark(
                         targetEndpointIndex,
-                        startSize,
+                        startSize, // strength
                         currentSimulationTime,
                         gameParameters);
 
