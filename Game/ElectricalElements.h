@@ -104,6 +104,8 @@ private:
             float LastPublishedThrustMagnitude;
             float LastHighlightedRpm;
 
+            std::optional<float> SuperElectrificationEndTimestamp;
+
             EngineState(
                 float thrustCapacity,
                 float responsiveness)

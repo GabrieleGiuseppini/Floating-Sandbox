@@ -662,7 +662,7 @@ Render:
 					X Fork probabilities: try with using pv.EquivalentPathSinceLastFork
 					+ Fork probabilities: try with pre-calculated EquivalentPathLengthToNextFork
 						+ Value = uniform(min, max), calculated at emplace time
-				= Interactions: private OnPointElectrified(...):
+				+ Interactions: private OnPointElectrified(...):
 					+ Takes also ElectricalElements
 					+ Driven by interaction: upon energizing a point, calls into ElectricalElements
 					+ Heat
@@ -671,7 +671,7 @@ Render:
 							+ Avoid too much heat on central point: pass strength, and make it inversely proportional to size
 					+ Rotting
 						+ Depends on size of incoming, cumulative
-					= Interactions with ElectricalElements:
+					+ Interactions with ElectricalElements:
 						! Call causes same "damage" to selected types of electrical elements as EMP tool (*), i.e. stores simulation timestamp in 
 						  state of that electrical element, make it not working for a limited period of time
 							! For each non-destroyed generator|pump|sounder|etc. that is in radius:
@@ -683,7 +683,11 @@ Render:
 						+ Generator
 						+ Lamp
 							+ Sound controller: flicker sound should have some inertia
-						- Engine (on/off is from generator though, so only thrust here)						
+						+ Engine (on/off is from generator though, so only thrust here)
+							+ EngineState: SuperElectrificationEndTimestamp
+								+ Set at OnElectricSpark
+								+ Checked for expiration at beginning of engines update loop
+								+ Checked for ON-ness and thrust multiply at engine state management
 					+ Gadgets
 						+ Replace OnNeighborhoodDisturbed() with OnElectricSpark(pointIndex), & precise check for index
 							+ Undo OnPointDetached change
