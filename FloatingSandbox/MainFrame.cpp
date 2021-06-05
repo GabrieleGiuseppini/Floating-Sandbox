@@ -139,6 +139,7 @@ MainFrame::MainFrame(
     , mCurrentShipTitles()
     , mCurrentRCBombCount(0u)
     , mCurrentAntiMatterBombCount(0u)
+    , mIsShiftKeyDown(false)
     , mIsMouseCapturedByGLCanvas(false)
 {
     Create(
@@ -157,7 +158,10 @@ MainFrame::MainFrame(
 
     Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnMainFrameClose, this);
 
-    mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    // We hook chars to get arrow keys; can't do it with global event filter as that would intercept presses in dialogs,
+    // while this one kicks off for leftovers of dialogs
+    mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
+    mMainPanel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnMainPanelKeyDown, this);
 
     mMainPanelSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -615,14 +619,6 @@ bool MainFrame::ProcessKeyDown(
             return true;
         }
     }
-    else if (keyCode == WXK_SHIFT)
-    {
-        if (!!mToolController)
-        {
-            mToolController->OnShiftKeyDown();
-            // Allow event to be processed further
-        }
-    }
     else if (keyCode == 'B')
     {
         // Air Bubbles tool
@@ -674,15 +670,6 @@ bool MainFrame::ProcessKeyUp(
     int keyCode,
     int keyModifiers)
 {
-    if (keyCode == WXK_SHIFT)
-    {
-        if (!!mToolController)
-        {
-            mToolController->OnShiftKeyUp();
-            // Allow event to be processed further
-        }
-    }
-
     // Deliver to electric panel
     if (!!mElectricalPanel)
     {
@@ -1181,6 +1168,12 @@ void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 {
     // Close frame
     Close();
+}
+
+void MainFrame::OnMainPanelKeyDown(wxKeyEvent & event)
+{
+    if (!ProcessKeyDown(event.GetKeyCode(), event.GetModifiers()))
+        event.Skip();
 }
 
 void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
@@ -2031,6 +2024,24 @@ void MainFrame::RunGameIteration()
 #else
     std::chrono::steady_clock::time_point const startTimestamp = std::chrono::steady_clock::now();
 #endif
+
+    // Update SHIFT key state
+    if (wxGetKeyState(WXK_SHIFT))
+    {
+        if (!mIsShiftKeyDown)
+        {
+            mIsShiftKeyDown = true;
+            mToolController->OnShiftKeyDown();
+        }
+    }
+    else
+    {
+        if (mIsShiftKeyDown)
+        {
+            mIsShiftKeyDown = false;
+            mToolController->OnShiftKeyUp();
+        }
+    }
 
     //
     // Run a game step

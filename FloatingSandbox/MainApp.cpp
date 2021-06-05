@@ -234,25 +234,13 @@ int MainApp::FilterEvent(wxEvent & event)
             wxKeyEvent const & keyEvent = static_cast<wxKeyEvent const &>(event);
 
             //
-            // Run secret typing state machine
+            // Run secret typing state machine and, if not processed,
+            // allow event to continue its path
             //
 
             if (RunSecretTypingStateMachine(keyEvent))
             {
                 return Event_Processed;
-            }
-            else
-            {
-                //
-                // Forward to main frame
-                //
-
-                bool const isProcessed = mMainFrame->ProcessKeyDown(
-                    keyEvent.GetKeyCode(),
-                    keyEvent.GetModifiers());
-
-                if (isProcessed)
-                    return Event_Processed;
             }
         }
     }
