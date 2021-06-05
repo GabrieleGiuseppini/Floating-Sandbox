@@ -438,6 +438,7 @@ void Ship::Update(
     //
 
     mElectricalElements.UpdateSourcesAndPropagation(
+        currentSimulationTime,
         mCurrentElectricalVisitSequenceNumber,
         mPoints,
         gameParameters);
@@ -2879,7 +2880,6 @@ void Ship::HandlePointDetach(
     // of a spring-edge of that triangle, then we shouldn't have any triangles now
     assert(mPoints.GetConnectedTriangles(pointElementIndex).ConnectedTriangles.empty());
 
-
     //
     // Destroy the connected electrical element, if any
     //
@@ -3408,19 +3408,18 @@ void Ship::HandleWatertightDoorUpdated(
 
 void Ship::HandleElectricSpark(
     ElementIndex pointElementIndex,
-    float size,
+    float strength,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
-    // TODOHERE
-
     //
     // Heat
     //
 
     float const heat =
-        1.3f * 1000.0f // KJoule->Joule
-        * (gameParameters.IsUltraViolentMode ? 8.0f : 1.0f);
+        10.0f * 1000.0f // KJoule->Joule
+        * strength
+        * (gameParameters.IsUltraViolentMode ? 15.0f : 1.0f);
 
     // Calc temperature delta
     // T = Q/HeatCapacity
@@ -3432,6 +3431,30 @@ void Ship::HandleElectricSpark(
     mPoints.SetTemperature(
         pointElementIndex,
         std::max(mPoints.GetTemperature(pointElementIndex) + deltaT, 0.1f)); // 3rd principle of thermodynamics
+
+    //
+    // Rotting
+    //
+
+    float const rotCoefficient =
+        (gameParameters.IsUltraViolentMode ? 0.99f : 0.9995f)
+        + (1.0f - strength) * 0.0003f;
+
+    mPoints.SetDecay(
+        pointElementIndex,
+        mPoints.GetDecay(pointElementIndex) * rotCoefficient);
+
+    //
+    // Electrical elements
+    //
+
+    auto const electricalElementIndex = mPoints.GetElectricalElement(pointElementIndex);
+    if (NoneElementIndex != electricalElementIndex)
+    {
+        mElectricalElements.OnElectricSpark(
+            electricalElementIndex,
+            currentSimulationTime);
+    }
 
     //
     // Gadgets

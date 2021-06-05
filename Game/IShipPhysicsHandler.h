@@ -178,7 +178,7 @@ struct IShipPhysicsHandler
 
     virtual void HandleElectricSpark(
         ElementIndex pointElementIndex,
-        float size,
+        float strength,
         float currentSimulationTime,
         GameParameters const & gameParameters) = 0;
 };

@@ -642,7 +642,7 @@ private:
 
     virtual void HandleElectricSpark(
         ElementIndex pointElementIndex,
-        float size,
+        float strength,
         float currentSimulationTime,
         GameParameters const & gameParameters) override;
 

@@ -826,6 +826,25 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
     mShipPhysicsHandler->HandleElectricalElementRestore(electricalElementIndex);
 }
 
+void ElectricalElements::OnElectricSpark(
+    ElementIndex electricalElementIndex,
+    float currentSimulationTime)
+{
+    // Disable as appropriate
+    switch (GetMaterialType(electricalElementIndex))
+    {
+        case ElectricalMaterial::ElectricalElementType::Generator:
+        {
+            mElementStateBuffer[electricalElementIndex].Generator.DisabledEndSimulationTimestamp =
+                currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(15.0f, 30.0f);
+
+            break;
+        }
+
+        // TODOHERE
+    }
+}
+
 void ElectricalElements::UpdateForGameParameters(GameParameters const & gameParameters)
 {
     //
@@ -914,6 +933,7 @@ void ElectricalElements::UpdateAutomaticConductivityToggles(
 }
 
 void ElectricalElements::UpdateSourcesAndPropagation(
+    float currentSimulationTime,
     SequenceNumber newConnectivityVisitSequenceNumber,
     Points & points,
     GameParameters const & gameParameters)
@@ -930,144 +950,153 @@ void ElectricalElements::UpdateSourcesAndPropagation(
         // Do not visit deleted sources
         if (!IsDeleted(sourceElementIndex))
         {
-            // Make sure we haven't visited it already
-            if (newConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sourceElementIndex])
+            //
+            // Check pre-conditions that need to be satisfied before visiting the connectivity graph
+            //
+
+            auto const sourcePointIndex = GetPointIndex(sourceElementIndex);
+
+            bool preconditionsSatisfied = false;
+
+            switch (GetMaterialType(sourceElementIndex))
+            {
+                case ElectricalMaterial::ElectricalElementType::Generator:
+                {
+                    //
+                    // Preconditions to produce current:
+                    // - Not too wet
+                    // - Temperature within operating temperature
+                    // - Not disabled
+                    //
+
+                    auto & generatorState = mElementStateBuffer[sourceElementIndex].Generator;
+
+                    // Check if disable interval has elapsed
+                    if (generatorState.DisabledEndSimulationTimestamp.has_value()
+                        && currentSimulationTime > *generatorState.DisabledEndSimulationTimestamp)
+                    {
+                        generatorState.DisabledEndSimulationTimestamp.reset();
+                    }
+
+                    bool isProducingCurrent;
+                    if (generatorState.IsProducingCurrent)
+                    {
+                        if (points.IsWet(sourcePointIndex, 0.55f)
+                            || !mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsInRange(points.GetTemperature(sourcePointIndex))
+                            || generatorState.DisabledEndSimulationTimestamp.has_value())
+                        {
+                            isProducingCurrent = false;
+                        }
+                        else
+                        {
+                            isProducingCurrent = true;
+                        }
+                    }
+                    else
+                    {
+                        if (!points.IsWet(sourcePointIndex, 0.15f)
+                            && mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsBackInRange(points.GetTemperature(sourcePointIndex))
+                            && !generatorState.DisabledEndSimulationTimestamp.has_value())
+                        {
+                            isProducingCurrent = true;
+                        }
+                        else
+                        {
+                            isProducingCurrent = false;
+                        }
+                    }
+
+                    preconditionsSatisfied = isProducingCurrent;
+
+                    //
+                    // Check if it's a state change
+                    //
+
+                    if (mElementStateBuffer[sourceElementIndex].Generator.IsProducingCurrent != isProducingCurrent)
+                    {
+                        // Change state
+                        mElementStateBuffer[sourceElementIndex].Generator.IsProducingCurrent = isProducingCurrent;
+
+                        // See whether we need to publish a power probe change
+                        if (mInstanceInfos[sourceElementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
+                        {
+                            // Notify
+                            mGameEventHandler->OnPowerProbeToggled(
+                                ElectricalElementId(mShipId, sourceElementIndex),
+                                static_cast<ElectricalState>(isProducingCurrent));
+
+                            // Show notifications
+                            if (gameParameters.DoShowElectricalNotifications)
+                            {
+                                HighlightElectricalElement(sourceElementIndex, points);
+                            }
+                        }
+
+                        // Remember that power has been severed, in case we're turning off
+                        if (!isProducingCurrent)
+                        {
+                            mHasPowerBeenSeveredInCurrentStep = true;
+                        }
+                    }
+
+                    break;
+                }
+
+                default:
+                {
+                    assert(false); // At the moment our only sources are generators
+                    break;
+                }
+            }
+
+            if (preconditionsSatisfied
+                // Make sure we haven't visited it already
+                && newConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sourceElementIndex])
             {
                 // Mark it as visited
                 mCurrentConnectivityVisitSequenceNumberBuffer[sourceElementIndex] = newConnectivityVisitSequenceNumber;
 
                 //
-                // Check pre-conditions that need to be satisfied before visiting the connectivity graph
+                // Flood graph
                 //
 
-                auto const sourcePointIndex = GetPointIndex(sourceElementIndex);
+                // Add source to queue
+                assert(electricalElementsToVisit.empty());
+                electricalElementsToVisit.push(sourceElementIndex);
 
-                bool preconditionsSatisfied = false;
-
-                switch (GetMaterialType(sourceElementIndex))
+                // Visit all electrical elements electrically reachable from this source
+                while (!electricalElementsToVisit.empty())
                 {
-                    case ElectricalMaterial::ElectricalElementType::Generator:
+                    auto const e = electricalElementsToVisit.front();
+                    electricalElementsToVisit.pop();
+
+                    // Already marked as visited
+                    assert(newConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[e]);
+
+                    for (auto conductingConnectedElectricalElementIndex : mConductingConnectedElectricalElementsBuffer[e])
                     {
-                        //
-                        // Preconditions to produce current:
-                        // - Not too wet
-                        // - Temperature within operating temperature
-                        //
+                        assert(!IsDeleted(conductingConnectedElectricalElementIndex));
 
-                        bool isProducingCurrent;
-                        if (mElementStateBuffer[sourceElementIndex].Generator.IsProducingCurrent)
+                        // Make sure not visited already
+                        if (newConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[conductingConnectedElectricalElementIndex])
                         {
-                            if (points.IsWet(sourcePointIndex, 0.55f)
-                                || !mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsInRange(points.GetTemperature(sourcePointIndex)))
-                            {
-                                isProducingCurrent = false;
-                            }
-                            else
-                            {
-                                isProducingCurrent = true;
-                            }
+                            // Add to queue
+                            electricalElementsToVisit.push(conductingConnectedElectricalElementIndex);
+
+                            // Mark it as visited
+                            mCurrentConnectivityVisitSequenceNumberBuffer[conductingConnectedElectricalElementIndex] = newConnectivityVisitSequenceNumber;
                         }
-                        else
-                        {
-                            if (!points.IsWet(sourcePointIndex, 0.15f)
-                                && mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsBackInRange(points.GetTemperature(sourcePointIndex)))
-                            {
-                                isProducingCurrent = true;
-                            }
-                            else
-                            {
-                                isProducingCurrent = false;
-                            }
-                        }
-
-                        preconditionsSatisfied = isProducingCurrent;
-
-                        //
-                        // Check if it's a state change
-                        //
-
-                        if (mElementStateBuffer[sourceElementIndex].Generator.IsProducingCurrent != isProducingCurrent)
-                        {
-                            // Change state
-                            mElementStateBuffer[sourceElementIndex].Generator.IsProducingCurrent = isProducingCurrent;
-
-                            // See whether we need to publish a power probe change
-                            if (mInstanceInfos[sourceElementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
-                            {
-                                // Notify
-                                mGameEventHandler->OnPowerProbeToggled(
-                                    ElectricalElementId(mShipId, sourceElementIndex),
-                                    static_cast<ElectricalState>(isProducingCurrent));
-
-                                // Show notifications
-                                if (gameParameters.DoShowElectricalNotifications)
-                                {
-                                    HighlightElectricalElement(sourceElementIndex, points);
-                                }
-                            }
-
-                            // Remember that power has been severed, in case we're turning off
-                            if (!isProducingCurrent)
-                            {
-                                mHasPowerBeenSeveredInCurrentStep = true;
-                            }
-                        }
-
-                        break;
-                    }
-
-                    default:
-                    {
-                        assert(false); // At the moment our only sources are generators
-                        break;
                     }
                 }
 
-                if (preconditionsSatisfied)
-                {
-                    //
-                    // Flood graph
-                    //
+                //
+                // Generate heat
+                //
 
-                    // Add source to queue
-                    assert(electricalElementsToVisit.empty());
-                    electricalElementsToVisit.push(sourceElementIndex);
-
-                    // Visit all electrical elements electrically reachable from this source
-                    while (!electricalElementsToVisit.empty())
-                    {
-                        auto const e = electricalElementsToVisit.front();
-                        electricalElementsToVisit.pop();
-
-                        // Already marked as visited
-                        assert(newConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[e]);
-
-                        for (auto conductingConnectedElectricalElementIndex : mConductingConnectedElectricalElementsBuffer[e])
-                        {
-                            assert(!IsDeleted(conductingConnectedElectricalElementIndex));
-
-                            // Make sure not visited already
-                            if (newConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[conductingConnectedElectricalElementIndex])
-                            {
-                                // Add to queue
-                                electricalElementsToVisit.push(conductingConnectedElectricalElementIndex);
-
-                                // Mark it as visited
-                                mCurrentConnectivityVisitSequenceNumberBuffer[conductingConnectedElectricalElementIndex] = newConnectivityVisitSequenceNumber;
-                            }
-                        }
-                    }
-
-
-                    //
-                    // Generate heat
-                    //
-
-                    points.AddHeat(sourcePointIndex,
-                        mMaterialHeatGeneratedBuffer[sourceElementIndex]
-                        * gameParameters.ElectricalElementHeatProducedAdjustment
-                        * GameParameters::SimulationStepTimeDuration<float>);
-                }
+                points.AddHeat(sourcePointIndex,
+                    mMaterialHeatGeneratedBuffer[sourceElementIndex]
+                    * gameParameters.ElectricalElementHeatProducedAdjustment
+                    * GameParameters::SimulationStepTimeDuration<float>);
             }
         }
     }

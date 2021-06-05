@@ -663,11 +663,13 @@ Render:
 				+ Previous and Next normalized vectors need to be passed to each Upload()
 				+ Optimize locally
 				+ Wireframe
-				- Wireframe, again
+				- Check double-rendering of quads
+					- Wireframe, again
 				- Fix fork: substitute "nextDirection" with "nextL/RDirection"
 					- R is direction with min cross product
 					- L is direction with max cross product
 					- Both default-init'd with max/min limit
+				- Fix sharp angles (Goodyear test)
 			= Interaction
 				+Spark expansion logic
 					+ Issue with parallel arms: see if reintroducing third-best helps
@@ -678,16 +680,16 @@ Render:
 					X Fork probabilities: try with using pv.EquivalentPathSinceLastFork
 					+ Fork probabilities: try with pre-calculated EquivalentPathLengthToNextFork
 						+ Value = uniform(min, max), calculated at emplace time
-				- Interactions: private OnPointElectrified(...):
+				= Interactions: private OnPointElectrified(...):
 					+ Takes also ElectricalElements
 					+ Driven by interaction: upon energizing a point, calls into ElectricalElements
-					= Heat
+					+ Heat
 						+ Depends on size of incoming, cumulative
-						= Lower the dependency on size (goal: longer to catch fire at center, more read hot at periphery)
-							- Avoid too much heat on central point: pass equivalentPathLength, and do heat inversely proportional to it
-					- Rotting
-						- Depends on size of incoming, cumulative
-					- Interactions with ElectricalElements:
+						+ Lower the dependency on size (goal: longer to catch fire at center, more read hot at periphery)
+							+ Avoid too much heat on central point: pass strength, and make it inversely proportional to size
+					+ Rotting
+						+ Depends on size of incoming, cumulative
+					= Interactions with ElectricalElements:
 						- Call causes same "damage" to selected types of electrical elements as EMP tool (*), i.e. stores simulation timestamp in 
 						  state of that electrical element, make it not working for a limited period of time
 							- For each non-destroyed generator|pump|sounder|TODO that is in radius:
@@ -697,6 +699,12 @@ Render:
 							- ElectricalElements::UpdateSource/Sink/Whatever:
 								- XYZ is off if XYZ.state.DisabledEndTimestamp.has_value()
 						- Engines: thrust X 4?
+
+						+ Generator
+						- Self-powered Lamp
+						- Engine (on/off is from generator though, so only thrust here)
+						
+
 					+ Gadgets
 						+ Replace OnNeighborhoodDisturbed() with OnElectricSpark(pointIndex), & precise check for index
 							+ Undo OnPointDetached change
@@ -716,14 +724,25 @@ Render:
 			- Nuke EMP tool in this spec
 			- changelist
 
+		- Spread out rotting:
+			! Now: at step 20/49
+			- Next: TODOHERE - and fix also combustion!
+				static constexpr int UpdateSinkingPeriodStep = 6;
+				static constexpr int CombustionStateMachineSlowPeriodStep1 = 13;
+				static constexpr int RotPointsPeriodStep = 20;
+				static constexpr int CombustionStateMachineSlowPeriodStep2 = 27;
+				static constexpr int SpringDecayAndTemperaturePeriodStep = 34;
+				static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
+				static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
+
+
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
-			+ 0.242
+			+ 0.242		
 
 		- Inject cracks (*)
 
-		- Test ocean rendering with indices
-			- If OK, also test land
+		- Test bubble rendering with indices
 
 		- Pins: SHIFT to remove them all *
 
@@ -1533,8 +1552,6 @@ Render:
 		- Requires "sources of light" feature
 
 - Dynamics:
-
-	- Try spreading out rotting - for better look'n'feel
 
 	- Try spreading out spring coeffs' recalculations - for better look'n'feel
 
