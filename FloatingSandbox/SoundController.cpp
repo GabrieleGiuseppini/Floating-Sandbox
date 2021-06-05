@@ -1826,14 +1826,14 @@ void SoundController::OnEngineMonitorUpdated(
             case SoundType::EngineSteam1:
             {
                 volume = 30.0f;
-                pitch = SmoothStep(0.0f, 1.0f, rpm) / 0.156f;  // rpm=0.25 => pitch=1; rpm=1.0 => pitch=6.4
+                pitch = 3.2f * rpm * (1.0f + rpm);  // rpm=0.25 => pitch=1; rpm=1.0 => pitch=6.4
                 break;
             }
 
             case SoundType::EngineSteam2:
             {
                 volume = 30.0f;
-                pitch = SmoothStep(0.0f, 1.0f, rpm) / 0.334f;  // rpm=0.25 => pitch=0.47; rpm=1.0 => pitch=3.3
+                pitch = 1.4f * rpm + 1.9f * rpm * rpm; // rpm=0.25 => pitch=0.47; rpm=1.0 => pitch=3.3
                 break;
             }
 

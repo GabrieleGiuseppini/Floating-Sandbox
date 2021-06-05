@@ -833,6 +833,14 @@ void ElectricalElements::OnElectricSpark(
     // Disable as appropriate
     switch (GetMaterialType(electricalElementIndex))
     {
+        case ElectricalMaterial::ElectricalElementType::Engine:
+        {
+            mElementStateBuffer[electricalElementIndex].Engine.SuperElectrificationEndTimestamp =
+                currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(7.0f, 15.0f);
+
+            break;
+        }
+
         case ElectricalMaterial::ElectricalElementType::Generator:
         {
             mElementStateBuffer[electricalElementIndex].Generator.DisabledEndSimulationTimestamp =
@@ -899,7 +907,7 @@ void ElectricalElements::UpdateAutomaticConductivityToggles(
     // and eventually change their conductivity
     //
 
-    for (auto elementIndex : mAutomaticConductivityTogglingElements)
+    for (auto const elementIndex : mAutomaticConductivityTogglingElements)
     {
         // Do not visit deleted elements
         if (!IsDeleted(elementIndex))
@@ -959,7 +967,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
 
     std::queue<ElementIndex> electricalElementsToVisit;
 
-    for (auto sourceElementIndex : mSources)
+    for (auto const sourceElementIndex : mSources)
     {
         // Do not visit deleted sources
         if (!IsDeleted(sourceElementIndex))
@@ -1137,7 +1145,7 @@ void ElectricalElements::UpdateSinks(
         + stormParameters.AirTemperatureDelta
         + 200.0f; // To ensure buoyancy
 
-    for (auto sinkElementIndex : mSinks)
+    for (auto const sinkElementIndex : mSinks)
     {
         //
         // Update state machine
@@ -1715,7 +1723,7 @@ void ElectricalElements::UpdateSinks(
     // Visit all engines and run their state machine
     //
 
-    for (auto engineSinkElementIndex : mEngineSinks)
+    for (auto const engineSinkElementIndex : mEngineSinks)
     {
         if (!IsDeleted(engineSinkElementIndex))
         {
@@ -1724,29 +1732,35 @@ void ElectricalElements::UpdateSinks(
 
             auto const enginePointIndex = GetPointIndex(engineSinkElementIndex);
 
+            // Check first of all if super-electrification interval has elapsed
+            if (engineState.SuperElectrificationEndTimestamp.has_value()
+                && currentSimulationTime >= *engineState.SuperElectrificationEndTimestamp)
+            {
+                engineState.SuperElectrificationEndTimestamp.reset();
+            }
+
             //
             // Apply engine thrust
             //
 
-            // Adjust targets based off point's water
-            //  e^(-0.5*x + 5)/(5 + e^(-0.5*x + 5))
-            float targetDamping;
+            // Adjust targets based off point's water and super-electrification
+
+            float powerMultiplier = engineState.SuperElectrificationEndTimestamp.has_value()
+                ? 4.0f
+                : 1.0f;
+
             auto const engineWater = points.GetWater(enginePointIndex);
             if (engineWater != 0.0f)
             {
+                //  e^(-0.5*x + 5)/(5 + e^(-0.5*x + 5))
                 float const expCoeff = std::exp(-engineWater * 0.5f + 5.0f);
-                targetDamping = expCoeff / (5.0f + expCoeff);
+                powerMultiplier *= expCoeff / (5.0f + expCoeff);
             }
-            else
-            {
-                targetDamping = 1.0f;
-            }
-
 
             // Update current values to match targets (via responsiveness)
 
             {
-                float const effectiveTargetRpm = engineState.TargetRpm * targetDamping;
+                float const effectiveTargetRpm = engineState.TargetRpm * powerMultiplier;
 
                 engineState.CurrentRpm =
                     engineState.CurrentRpm
@@ -1759,7 +1773,7 @@ void ElectricalElements::UpdateSinks(
             }
 
             {
-                float const effectiveTargetThrustMagnitude = engineState.TargetThrustMagnitude * targetDamping;
+                float const effectiveTargetThrustMagnitude = engineState.TargetThrustMagnitude * powerMultiplier;
 
                 engineState.CurrentThrustMagnitude =
                     engineState.CurrentThrustMagnitude
