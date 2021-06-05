@@ -537,28 +537,10 @@ Render:
 				+ Try: on Linux: 
 					+ if elapsed < 0: wxWakeUpIdle(), else SetTimer
 					+ OnIdle(): if mHasStartupTipBeenChecked && !timer.isArmed: invoke RunGameIteration
+			- Keyboard shortcuts don't work?
 			= Misc issues:
 				- Slider control is clipped
 				- MouseMove's are delayed and/or skipped
-			- Check ldd which other libs should be statically linked
-					libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007f2447085000)
-					libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007f2446e66000)
-					libatomic.so.1 => /usr/lib/x86_64-linux-gnu/libatomic.so.1 (0x00007f2446c5e000)
-
-					libopenal.so.1 => /usr/lib/x86_64-linux-gnu/libopenal.so.1 (0x00007f24469bf000)
-					libvorbisfile.so.3 => /usr/lib/x86_64-linux-gnu/libvorbisfile.so.3 (0x00007f24467b7000)
-					libvorbisenc.so.2 => /usr/lib/x86_64-linux-gnu/libvorbisenc.so.2 (0x00007f244650e000)
-					libvorbis.so.0 => /usr/lib/x86_64-linux-gnu/libvorbis.so.0 (0x00007f24462e3000)
-					libogg.so.0 => /usr/lib/x86_64-linux-gnu/libogg.so.0 (0x00007f24460da000)
-					libFLAC.so.8 => /usr/lib/x86_64-linux-gnu/libFLAC.so.8 (0x00007f2445e63000)
-
-					- Vorbis for example comes as both .so and .a; see https://stackoverflow.com/questions/28536435/how-to-link-a-static-library-to-an-executable-using-cmake
-					  and https://stackoverflow.com/questions/5604061/making-gcc-prefer-static-libs-to-shared-objects-when-linking and
-					  https://gcc.gnu.org/onlinedocs/gcc/Link-Options.html ("If both static and shared libraries are found, the linker gives preference to linking with the shared library unless the -static option is used.")
-
-				- gcc libs?
-				- vorbis, flac					
-				- ...
 			+ Build as RELEASE
 				+ See if have to set _DEBUG in CMake also for Linux, so it appears in BuildInfo
 					+ Test
@@ -690,21 +672,17 @@ Render:
 					+ Rotting
 						+ Depends on size of incoming, cumulative
 					= Interactions with ElectricalElements:
-						- Call causes same "damage" to selected types of electrical elements as EMP tool (*), i.e. stores simulation timestamp in 
+						! Call causes same "damage" to selected types of electrical elements as EMP tool (*), i.e. stores simulation timestamp in 
 						  state of that electrical element, make it not working for a limited period of time
-							- For each non-destroyed generator|pump|sounder|TODO that is in radius:
-								- XYZ.state.DisabledEndTimestamp = now + small random variation
-							- ElectricalElements::Update: generator|pump|sounder|TODO:
-								- If now > XYZ.state.DisabledEndTimestamp: XYZ.state.DisabledEndTimestamp.reset()
-							- ElectricalElements::UpdateSource/Sink/Whatever:
-								- XYZ is off if XYZ.state.DisabledEndTimestamp.has_value()
-						- Engines: thrust X 4?
-
+							! For each non-destroyed generator|pump|sounder|etc. that is in radius:
+								! XYZ.state.DisabledEndTimestamp = now + small random variation
+							! ElectricalElements::Update: generator|pump|sounder|etc.:
+								! If now >= XYZ.state.DisabledEndTimestamp: XYZ.state.DisabledEndTimestamp.reset()
+							! ElectricalElements::UpdateSource/Sink/Whatever:
+								! XYZ is off if XYZ.state.DisabledEndTimestamp.has_value()
 						+ Generator
-						- Self-powered Lamp
-						- Engine (on/off is from generator though, so only thrust here)
-						
-
+						+ Lamp
+						- Engine (on/off is from generator though, so only thrust here)						
 					+ Gadgets
 						+ Replace OnNeighborhoodDisturbed() with OnElectricSpark(pointIndex), & precise check for index
 							+ Undo OnPointDetached change
