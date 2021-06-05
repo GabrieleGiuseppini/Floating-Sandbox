@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include <UIControls/UnFocusablePanel.h>
+
 #include <Game/IGameController.h>
 #include <Game/IGameEventHandlers.h>
 
@@ -13,8 +15,8 @@
 #include <memory>
 #include <string>
 
-class EventTickerPanel
-    : public wxPanel
+class EventTickerPanel final
+    : public UnFocusablePanel
     , public ILifecycleGameEventHandler
     , public IStructuralGameEventHandler
     , public IWavePhenomenaGameEventHandler
@@ -24,8 +26,6 @@ class EventTickerPanel
 public:
 
     EventTickerPanel(wxWindow* parent);
-
-	virtual ~EventTickerPanel();
 
     void UpdateSimulation();
 

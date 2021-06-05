@@ -6,6 +6,7 @@
 #pragma once
 
 #include <UIControls/ScalarTimeSeriesProbeControl.h>
+#include <UIControls/UnFocusablePanel.h>
 
 #include <Game/IGameController.h>
 #include <Game/IGameEventHandlers.h>
@@ -17,8 +18,8 @@
 #include <string>
 #include <unordered_map>
 
-class ProbePanel
-    : public wxPanel
+class ProbePanel final
+    : public UnFocusablePanel
     , public ILifecycleGameEventHandler
     , public IStatisticsGameEventHandler
 	, public IAtmosphereGameEventHandler

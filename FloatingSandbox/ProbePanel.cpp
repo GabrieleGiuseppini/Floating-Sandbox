@@ -14,11 +14,8 @@ static constexpr int TopPadding = 2;
 static constexpr int ProbePadding = 10;
 
 ProbePanel::ProbePanel(wxWindow* parent)
-    : wxPanel(
+    : UnFocusablePanel(
         parent,
-        wxID_ANY,
-        wxDefaultPosition,
-        wxDefaultSize,
         wxBORDER_SIMPLE | wxCLIP_CHILDREN)
 {
 #ifdef __WXMSW__

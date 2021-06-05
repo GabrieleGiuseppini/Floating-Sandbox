@@ -16,11 +16,8 @@ static unsigned int constexpr TickerCharStep = 1;
 static unsigned int constexpr TickerPanelHeight = 1 + TickerFontSize + 1;
 
 EventTickerPanel::EventTickerPanel(wxWindow* parent)
-    : wxPanel(
+    : UnFocusablePanel(
         parent,
-        wxID_ANY,
-        wxDefaultPosition,
-        wxDefaultSize,
         wxBORDER_SIMPLE)
     , mCurrentTickerText(TickerTextSize, ' ')
     , mFutureTickerText()
@@ -46,10 +43,6 @@ EventTickerPanel::EventTickerPanel(wxWindow* parent)
 
     mCharSize = GetTextExtent("Z");
     mCurrentCharWidthStep = mCharSize.GetWidth(); // Initialize
-}
-
-EventTickerPanel::~EventTickerPanel()
-{
 }
 
 void EventTickerPanel::UpdateSimulation()

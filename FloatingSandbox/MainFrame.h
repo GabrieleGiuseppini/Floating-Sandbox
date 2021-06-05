@@ -22,6 +22,8 @@
 #include "UIPreferencesManager.h"
 #include "UpdateChecker.h"
 
+#include <UIControls/UnFocusablePanel.h>
+
 #include <Game/GameController.h>
 #include <Game/IGameEventHandlers.h>
 #include <Game/ResourceLocator.h>
@@ -44,7 +46,7 @@
 /*
  * The main window of the game's GUI.
  */
-class MainFrame
+class MainFrame final
     : public wxFrame
     , public ILifecycleGameEventHandler
     , public IAtmosphereGameEventHandler
@@ -59,8 +61,6 @@ public:
     MainFrame(
         wxApp * mainApp,
         LocalizationManager & localizationManager);
-
-    virtual ~MainFrame();
 
     bool ProcessKeyDown(
         int keyCode,
@@ -77,7 +77,7 @@ public:
 
 private:
 
-    wxPanel * mMainPanel;
+    UnFocusablePanel * mMainPanel;
 
     //
     // OpenGL Canvas and Context

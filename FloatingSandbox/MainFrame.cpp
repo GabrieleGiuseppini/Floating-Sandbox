@@ -160,7 +160,7 @@ MainFrame::MainFrame(
 
     // We hook chars to get arrow keys; can't do it with global event filter as that would intercept presses in dialogs,
     // while this one kicks off for leftovers of dialogs
-    mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
+    mMainPanel = new UnFocusablePanel(this, wxWANTS_CHARS);
     mMainPanel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnMainPanelKeyDown, this);
 
     mMainPanelSizer = new wxBoxSizer(wxVERTICAL);
@@ -575,10 +575,6 @@ MainFrame::MainFrame(
     mPostInitializeTimer->Start(1, true);
 }
 
-MainFrame::~MainFrame()
-{
-}
-
 bool MainFrame::ProcessKeyDown(
     int keyCode,
     int keyModifiers)
@@ -930,10 +926,10 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             mMainPanel->Layout();
         },
         mGameController,
-            mSoundController,
-            mUIPreferencesManager,
-            mResourceLocator,
-            [&splash, this](float progress, ProgressMessageType message)
+        mSoundController,
+        mUIPreferencesManager,
+        mResourceLocator,
+        [&splash, this](float progress, ProgressMessageType message)
         {
             // 0.83 -> 1.0
             splash->UpdateProgress(0.83f + progress / 6.0f, message);

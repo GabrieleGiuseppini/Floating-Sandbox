@@ -537,7 +537,8 @@ Render:
 				+ Try: on Linux: 
 					+ if elapsed < 0: wxWakeUpIdle(), else SetTimer
 					+ OnIdle(): if mHasStartupTipBeenChecked && !timer.isArmed: invoke RunGameIteration
-			- Keyboard shortcuts don't work?
+			= Keyboard shortcuts don't work
+				= Focusability of MainFrame's child controls
 			= Misc issues:
 				- Slider control is clipped
 				- MouseMove's are delayed and/or skipped
