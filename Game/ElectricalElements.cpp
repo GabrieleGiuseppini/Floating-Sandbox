@@ -844,7 +844,7 @@ void ElectricalElements::OnElectricSpark(
         case ElectricalMaterial::ElectricalElementType::Lamp:
         {
             mElementStateBuffer[electricalElementIndex].Lamp.DisabledEndSimulationTimestamp =
-                currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(5.0f, 10.0f);
+                currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(4.0f, 8.0f);
 
             mHasPowerBeenSeveredInCurrentStep = true;
 
