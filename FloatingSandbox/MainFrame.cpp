@@ -13,8 +13,6 @@
 #include "StandardSystemPaths.h"
 #include "StartupTipDialog.h"
 
-#include <UIControls/KeyEventForwardingControl.h>
-
 #include <Game/ImageFileTools.h>
 
 #include <GameCore/BootSettings.h>
@@ -172,7 +170,7 @@ MainFrame::MainFrame(
     // Build OpenGL canvas - this is where we render the game to
     //
 
-    mMainGLCanvas = std::make_unique<KeyEventForwardingControl<GLCanvas>>(
+    mMainGLCanvas = std::make_unique<GLCanvas>(
         mMainPanel,
         ID_MAIN_CANVAS);
 
@@ -187,9 +185,6 @@ MainFrame::MainFrame(
     mMainGLCanvas->Connect(wxEVT_MOUSEWHEEL, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseWheel, 0, this);
     mMainGLCanvas->Connect(wxEVT_MOUSE_CAPTURE_LOST, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasCaptureMouseLost, 0, this);
 
-    // Forward key events to this frame
-    dynamic_cast<KeyEventForwardingControl<GLCanvas> *>(mMainGLCanvas.get())->ForwardKeyEventsTo(this);
-
     mMainPanelSizer->Add(
         mMainGLCanvas.get(),
         1,                  // Occupy all available vertical space
@@ -201,324 +196,343 @@ MainFrame::MainFrame(
     // Build menu
     //
 
-    wxMenuBar * mainMenuBar = new wxMenuBar();
+    {
+        wxMenuBar * mainMenuBar = new wxMenuBar();
 
+        // Note: we also build an accelerator table for plain keys because of https://trac.wxwidgets.org/ticket/17611
+        std::vector<wxAcceleratorEntry> acceleratorEntries;
 
-    // File
 
-    wxMenu * fileMenu = new wxMenu();
+        // File
 
-    wxMenuItem * loadShipMenuItem = new wxMenuItem(fileMenu, ID_LOAD_SHIP_MENUITEM, _("Load Ship...") + wxS("\tCtrl+O"), wxEmptyString, wxITEM_NORMAL);
-    fileMenu->Append(loadShipMenuItem);
-    Connect(ID_LOAD_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnLoadShipMenuItemSelected);
+        wxMenu * fileMenu = new wxMenu();
 
-    wxMenuItem * reloadCurrentShipMenuItem = new wxMenuItem(fileMenu, ID_RELOAD_CURRENT_SHIP_MENUITEM, _("Reload Current Ship") + wxS("\tCtrl+R"), wxEmptyString, wxITEM_NORMAL);
-    fileMenu->Append(reloadCurrentShipMenuItem);
-    Connect(ID_RELOAD_CURRENT_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadCurrentShipMenuItemSelected);
+        wxMenuItem * loadShipMenuItem = new wxMenuItem(fileMenu, ID_LOAD_SHIP_MENUITEM, _("Load Ship...") + wxS("\tCtrl+O"), wxEmptyString, wxITEM_NORMAL);
+        fileMenu->Append(loadShipMenuItem);
+        Connect(ID_LOAD_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnLoadShipMenuItemSelected);
 
-    mReloadPreviousShipMenuItem = new wxMenuItem(fileMenu, ID_RELOAD_PREVIOUS_SHIP_MENUITEM, _("Reload Previous Ship") + wxS("\tCtrl+V"), wxEmptyString, wxITEM_NORMAL);
-    fileMenu->Append(mReloadPreviousShipMenuItem);
-    Connect(ID_RELOAD_PREVIOUS_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadPreviousShipMenuItemSelected);
-    mReloadPreviousShipMenuItem->Enable(false);
+        wxMenuItem * reloadCurrentShipMenuItem = new wxMenuItem(fileMenu, ID_RELOAD_CURRENT_SHIP_MENUITEM, _("Reload Current Ship") + wxS("\tCtrl+R"), wxEmptyString, wxITEM_NORMAL);
+        fileMenu->Append(reloadCurrentShipMenuItem);
+        Connect(ID_RELOAD_CURRENT_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadCurrentShipMenuItemSelected);
 
-    fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
+        mReloadPreviousShipMenuItem = new wxMenuItem(fileMenu, ID_RELOAD_PREVIOUS_SHIP_MENUITEM, _("Reload Previous Ship") + wxS("\tCtrl+V"), wxEmptyString, wxITEM_NORMAL);
+        fileMenu->Append(mReloadPreviousShipMenuItem);
+        Connect(ID_RELOAD_PREVIOUS_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadPreviousShipMenuItemSelected);
+        mReloadPreviousShipMenuItem->Enable(false);
 
-    wxMenuItem * reloadShipsMenuItem = new wxMenuItem(fileMenu, ID_MORE_SHIPS_MENUITEM, _("Get More Ships..."));
-    fileMenu->Append(reloadShipsMenuItem);
-    fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://floatingsandbox.com/ship-packs/"); }, ID_MORE_SHIPS_MENUITEM);
+        fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
 
-    fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
+        wxMenuItem * reloadShipsMenuItem = new wxMenuItem(fileMenu, ID_MORE_SHIPS_MENUITEM, _("Get More Ships..."));
+        fileMenu->Append(reloadShipsMenuItem);
+        fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://floatingsandbox.com/ship-packs/"); }, ID_MORE_SHIPS_MENUITEM);
 
-    wxMenuItem * saveScreenshotMenuItem = new wxMenuItem(fileMenu, ID_SAVE_SCREENSHOT_MENUITEM, _("Save Screenshot") + wxS("\tCtrl+C"), wxEmptyString, wxITEM_NORMAL);
-    fileMenu->Append(saveScreenshotMenuItem);
-    Connect(ID_SAVE_SCREENSHOT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveScreenshotMenuItemSelected);
+        fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
 
-    fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
+        wxMenuItem * saveScreenshotMenuItem = new wxMenuItem(fileMenu, ID_SAVE_SCREENSHOT_MENUITEM, _("Save Screenshot") + wxS("\tCtrl+C"), wxEmptyString, wxITEM_NORMAL);
+        fileMenu->Append(saveScreenshotMenuItem);
+        Connect(ID_SAVE_SCREENSHOT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveScreenshotMenuItemSelected);
 
-    wxMenuItem * quitMenuItem = new wxMenuItem(fileMenu, ID_QUIT_MENUITEM, _("Quit") + wxS("\tAlt-F4"), _("Quit the game"), wxITEM_NORMAL);
-    fileMenu->Append(quitMenuItem);
-    Connect(ID_QUIT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnQuit);
+        fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
 
-    mainMenuBar->Append(fileMenu, _("&File"));
+        wxMenuItem * quitMenuItem = new wxMenuItem(fileMenu, ID_QUIT_MENUITEM, _("Quit") + wxS("\tAlt-F4"), _("Quit the game"), wxITEM_NORMAL);
+        fileMenu->Append(quitMenuItem);
+        Connect(ID_QUIT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnQuit);
 
+        mainMenuBar->Append(fileMenu, _("&File"));
 
-    // Controls
 
-    wxMenu * controlsMenu = new wxMenu();
+        // Controls
 
-    wxMenuItem * zoomInMenuItem = new wxMenuItem(controlsMenu, ID_ZOOM_IN_MENUITEM, _("Zoom In") + wxS("\t+"), wxEmptyString, wxITEM_NORMAL);
-    controlsMenu->Append(zoomInMenuItem);
-    Connect(ID_ZOOM_IN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomInMenuItemSelected);
+        wxMenu * controlsMenu = new wxMenu();
 
-    wxMenuItem * zoomOutMenuItem = new wxMenuItem(controlsMenu, ID_ZOOM_OUT_MENUITEM, _("Zoom Out") + wxS("\t-"), wxEmptyString, wxITEM_NORMAL);
-    controlsMenu->Append(zoomOutMenuItem);
-    Connect(ID_ZOOM_OUT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomOutMenuItemSelected);
+        wxMenuItem * zoomInMenuItem = new wxMenuItem(controlsMenu, ID_ZOOM_IN_MENUITEM, _("Zoom In") + wxS("\t+"), wxEmptyString, wxITEM_NORMAL);
+        controlsMenu->Append(zoomInMenuItem);
+        Connect(ID_ZOOM_IN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomInMenuItemSelected);
+        // TODOTEST
+        //acceleratorEntries.emplace_back(); acceleratorEntries.back().FromString(zoomInMenuItem->GetItemLabel());
+        //acceleratorEntries.emplace_back(wxACCEL_NORMAL, int('+'), ID_ZOOM_IN_MENUITEM);
+        acceleratorEntries.emplace_back(0, 0, 0, zoomInMenuItem);
 
-    wxMenuItem * amblientLightUpMenuItem = new wxMenuItem(controlsMenu, ID_AMBIENT_LIGHT_UP_MENUITEM, _("Bright Ambient Light") + wxS("\tPgUp"), wxEmptyString, wxITEM_NORMAL);
-    controlsMenu->Append(amblientLightUpMenuItem);
-    Connect(ID_AMBIENT_LIGHT_UP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAmbientLightUpMenuItemSelected);
+        wxMenuItem * zoomOutMenuItem = new wxMenuItem(controlsMenu, ID_ZOOM_OUT_MENUITEM, _("Zoom Out") + wxS("\t-"), wxEmptyString, wxITEM_NORMAL);
+        controlsMenu->Append(zoomOutMenuItem);
+        Connect(ID_ZOOM_OUT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomOutMenuItemSelected);
 
-    wxMenuItem * ambientLightDownMenuItem = new wxMenuItem(controlsMenu, ID_AMBIENT_LIGHT_DOWN_MENUITEM, _("Dim Ambient Light") + wxS("\tPgDn"), wxEmptyString, wxITEM_NORMAL);
-    controlsMenu->Append(ambientLightDownMenuItem);
-    Connect(ID_AMBIENT_LIGHT_DOWN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAmbientLightDownMenuItemSelected);
+        wxMenuItem * amblientLightUpMenuItem = new wxMenuItem(controlsMenu, ID_AMBIENT_LIGHT_UP_MENUITEM, _("Bright Ambient Light") + wxS("\tPgUp"), wxEmptyString, wxITEM_NORMAL);
+        controlsMenu->Append(amblientLightUpMenuItem);
+        Connect(ID_AMBIENT_LIGHT_UP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAmbientLightUpMenuItemSelected);
 
-    mPauseMenuItem = new wxMenuItem(controlsMenu, ID_PAUSE_MENUITEM, _("Pause") + wxS("\tSpace"), _("Pause the game"), wxITEM_CHECK);
-    controlsMenu->Append(mPauseMenuItem);
-    Connect(ID_PAUSE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPauseMenuItemSelected);
-    mPauseMenuItem->Check(false);
+        wxMenuItem * ambientLightDownMenuItem = new wxMenuItem(controlsMenu, ID_AMBIENT_LIGHT_DOWN_MENUITEM, _("Dim Ambient Light") + wxS("\tPgDn"), wxEmptyString, wxITEM_NORMAL);
+        controlsMenu->Append(ambientLightDownMenuItem);
+        Connect(ID_AMBIENT_LIGHT_DOWN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAmbientLightDownMenuItemSelected);
 
-    mStepMenuItem = new wxMenuItem(controlsMenu, ID_STEP_MENUITEM, _("Step") + wxS("\tEnter"), _("Step one frame at a time"), wxITEM_NORMAL);
-    controlsMenu->Append(mStepMenuItem);
-    Connect(ID_STEP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnStepMenuItemSelected);
-    mStepMenuItem->Enable(false);
+        mPauseMenuItem = new wxMenuItem(controlsMenu, ID_PAUSE_MENUITEM, _("Pause") + wxS("\tSpace"), _("Pause the game"), wxITEM_CHECK);
+        controlsMenu->Append(mPauseMenuItem);
+        Connect(ID_PAUSE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPauseMenuItemSelected);
+        mPauseMenuItem->Check(false);
 
-    controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
+        mStepMenuItem = new wxMenuItem(controlsMenu, ID_STEP_MENUITEM, _("Step") + wxS("\tEnter"), _("Step one frame at a time"), wxITEM_NORMAL);
+        controlsMenu->Append(mStepMenuItem);
+        Connect(ID_STEP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnStepMenuItemSelected);
+        mStepMenuItem->Enable(false);
 
-    wxMenuItem * resetViewMenuItem = new wxMenuItem(controlsMenu, ID_RESET_VIEW_MENUITEM, _("Reset View") + wxS("\tHOME"), wxEmptyString, wxITEM_NORMAL);
-    controlsMenu->Append(resetViewMenuItem);
-    Connect(ID_RESET_VIEW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnResetViewMenuItemSelected);
+        controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
 
-    mainMenuBar->Append(controlsMenu, _("&Controls"));
+        wxMenuItem * resetViewMenuItem = new wxMenuItem(controlsMenu, ID_RESET_VIEW_MENUITEM, _("Reset View") + wxS("\tHOME"), wxEmptyString, wxITEM_NORMAL);
+        controlsMenu->Append(resetViewMenuItem);
+        Connect(ID_RESET_VIEW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnResetViewMenuItemSelected);
 
+        mainMenuBar->Append(controlsMenu, _("&Controls"));
 
-    // Tools
 
-    mToolsMenu = new wxMenu();
+        // Tools
 
-    wxMenuItem * moveMenuItem = new wxMenuItem(mToolsMenu, ID_MOVE_MENUITEM, _("Move/Rotate") + wxS("\tM"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(moveMenuItem);
-    Connect(ID_MOVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveMenuItemSelected);
+        mToolsMenu = new wxMenu();
 
-    wxMenuItem * moveAllMenuItem = new wxMenuItem(mToolsMenu, ID_MOVE_ALL_MENUITEM, _("Move All/Rotate All") + wxS("\tALT+M"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(moveAllMenuItem);
-    Connect(ID_MOVE_ALL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveAllMenuItemSelected);
+        wxMenuItem * moveMenuItem = new wxMenuItem(mToolsMenu, ID_MOVE_MENUITEM, _("Move/Rotate") + wxS("\tM"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(moveMenuItem);
+        Connect(ID_MOVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveMenuItemSelected);
 
-    wxMenuItem * pickAndPullMenuItem = new wxMenuItem(mToolsMenu, ID_PICK_AND_PULL_MENUITEM, _("Pick-n-Pull") + wxS("\tK"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(pickAndPullMenuItem);
-    Connect(ID_PICK_AND_PULL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPickAndPullMenuItemSelected);
+        wxMenuItem * moveAllMenuItem = new wxMenuItem(mToolsMenu, ID_MOVE_ALL_MENUITEM, _("Move All/Rotate All") + wxS("\tALT+M"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(moveAllMenuItem);
+        Connect(ID_MOVE_ALL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveAllMenuItemSelected);
 
-    wxMenuItem * smashMenuItem = new wxMenuItem(mToolsMenu, ID_SMASH_MENUITEM, _("Smash") + wxS("\tS"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(smashMenuItem);
-    Connect(ID_SMASH_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSmashMenuItemSelected);
+        wxMenuItem * pickAndPullMenuItem = new wxMenuItem(mToolsMenu, ID_PICK_AND_PULL_MENUITEM, _("Pick-n-Pull") + wxS("\tK"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(pickAndPullMenuItem);
+        Connect(ID_PICK_AND_PULL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPickAndPullMenuItemSelected);
+
+        wxMenuItem * smashMenuItem = new wxMenuItem(mToolsMenu, ID_SMASH_MENUITEM, _("Smash") + wxS("\tS"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(smashMenuItem);
+        Connect(ID_SMASH_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSmashMenuItemSelected);
+        // TODOTEST
+        acceleratorEntries.emplace_back(); acceleratorEntries.back().FromString(smashMenuItem->GetItemLabel());
+
+        wxMenuItem * sliceMenuItem = new wxMenuItem(mToolsMenu, ID_SLICE_MENUITEM, _("Slice") + wxS("\tL"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(sliceMenuItem);
+        Connect(ID_SLICE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSliceMenuItemSelected);
+        // TODOTEST
+        acceleratorEntries.emplace_back(); acceleratorEntries.back().FromString(sliceMenuItem->GetItemLabel());
+
+        wxMenuItem * heatBlasterMenuItem = new wxMenuItem(mToolsMenu, ID_HEAT_BLASTER_MENUITEM, _("HeatBlaster/CoolBlaster") + wxS("\tH"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(heatBlasterMenuItem);
+        Connect(ID_HEAT_BLASTER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnHeatBlasterMenuItemSelected);
+        // TODOTEST
+        //acceleratorEntries.emplace_back(); acceleratorEntries.back().FromString(heatBlasterMenuItem->GetItemLabel());
+        acceleratorEntries.emplace_back(0, 0, 0, heatBlasterMenuItem);
+
+        wxMenuItem * fireExtinguisherMenuItem = new wxMenuItem(mToolsMenu, ID_FIRE_EXTINGUISHER_MENUITEM, _("Fire Extinguisher") + wxS("\tX"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(fireExtinguisherMenuItem);
+        Connect(ID_FIRE_EXTINGUISHER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFireExtinguisherMenuItemSelected);
+
+        wxMenuItem * blastToolMenuItem = new wxMenuItem(mToolsMenu, ID_BLAST_TOOL_MENUITEM, _("Blast") + wxS("\t8"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(blastToolMenuItem);
+        Connect(ID_BLAST_TOOL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnBlastToolMenuItemSelected);
+
+        wxMenuItem * electricSparkMenuItem = new wxMenuItem(mToolsMenu, ID_ELECTRICSPARK_MENUITEM, _("Electric Spark") + wxS("\t7"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(electricSparkMenuItem);
+        Connect(ID_ELECTRICSPARK_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnElectricSparkToolMenuItemSelected);
+
+        wxMenuItem * grabMenuItem = new wxMenuItem(mToolsMenu, ID_GRAB_MENUITEM, _("Attract/Repel") + wxS("\tG"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(grabMenuItem);
+        Connect(ID_GRAB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnGrabMenuItemSelected);
+
+        wxMenuItem * swirlMenuItem = new wxMenuItem(mToolsMenu, ID_SWIRL_MENUITEM, _("Swirl/Counterswirl") + wxS("\tW"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(swirlMenuItem);
+        Connect(ID_SWIRL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSwirlMenuItemSelected);
+
+        wxMenuItem * pinMenuItem = new wxMenuItem(mToolsMenu, ID_PIN_MENUITEM, _("Toggle Pin") + wxS("\tP"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(pinMenuItem);
+        Connect(ID_PIN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPinMenuItemSelected);
+
+        /* Easter Egg
+        wxMenuItem * injectAirBubblesMenuItem = new wxMenuItem(mToolsMenu, ID_INJECT_AIR_BUBBLES_MENUITEM, _("Inject Air Bubbles") + wxS("\tB"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(injectAirBubblesMenuItem);
+        Connect(ID_INJECT_AIR_BUBBLES_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnInjectAirBubblesMenuItemSelected);
+        */
 
-    wxMenuItem * sliceMenuItem = new wxMenuItem(mToolsMenu, ID_SLICE_MENUITEM, _("Slice") + wxS("\tL"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(sliceMenuItem);
-    Connect(ID_SLICE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSliceMenuItemSelected);
-
-    wxMenuItem * heatBlasterMenuItem = new wxMenuItem(mToolsMenu, ID_HEAT_BLASTER_MENUITEM, _("HeatBlaster/CoolBlaster") + wxS("\tH"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(heatBlasterMenuItem);
-    Connect(ID_HEAT_BLASTER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnHeatBlasterMenuItemSelected);
-
-    wxMenuItem * fireExtinguisherMenuItem = new wxMenuItem(mToolsMenu, ID_FIRE_EXTINGUISHER_MENUITEM, _("Fire Extinguisher") + wxS("\tX"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(fireExtinguisherMenuItem);
-    Connect(ID_FIRE_EXTINGUISHER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFireExtinguisherMenuItemSelected);
-
-    wxMenuItem * blastToolMenuItem = new wxMenuItem(mToolsMenu, ID_BLAST_TOOL_MENUITEM, _("Blast") + wxS("\t8"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(blastToolMenuItem);
-    Connect(ID_BLAST_TOOL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnBlastToolMenuItemSelected);
-
-    wxMenuItem * electricSparkMenuItem = new wxMenuItem(mToolsMenu, ID_ELECTRICSPARK_MENUITEM, _("Electric Spark") + wxS("\t7"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(electricSparkMenuItem);
-    Connect(ID_ELECTRICSPARK_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnElectricSparkToolMenuItemSelected);
+        wxMenuItem * floodHoseMenuItem = new wxMenuItem(mToolsMenu, ID_FLOOD_HOSE_MENUITEM, _("Flood/Dry") + wxS("\tF"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(floodHoseMenuItem);
+        Connect(ID_FLOOD_HOSE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFloodHoseMenuItemSelected);
 
-    wxMenuItem * grabMenuItem = new wxMenuItem(mToolsMenu, ID_GRAB_MENUITEM, _("Attract/Repel") + wxS("\tG"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(grabMenuItem);
-    Connect(ID_GRAB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnGrabMenuItemSelected);
+        wxMenuItem * timerBombMenuItem = new wxMenuItem(mToolsMenu, ID_TIMERBOMB_MENUITEM, _("Toggle Timer Bomb") + wxS("\tT"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(timerBombMenuItem);
+        Connect(ID_TIMERBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTimerBombMenuItemSelected);
 
-    wxMenuItem * swirlMenuItem = new wxMenuItem(mToolsMenu, ID_SWIRL_MENUITEM, _("Swirl/Counterswirl") + wxS("\tW"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(swirlMenuItem);
-    Connect(ID_SWIRL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSwirlMenuItemSelected);
+        wxMenuItem * rcBombMenuItem = new wxMenuItem(mToolsMenu, ID_RCBOMB_MENUITEM, _("Toggle RC Bomb") + wxS("\tR"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(rcBombMenuItem);
+        Connect(ID_RCBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRCBombMenuItemSelected);
 
-    wxMenuItem * pinMenuItem = new wxMenuItem(mToolsMenu, ID_PIN_MENUITEM, _("Toggle Pin") + wxS("\tP"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(pinMenuItem);
-    Connect(ID_PIN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPinMenuItemSelected);
+        wxMenuItem * impactBombMenuItem = new wxMenuItem(mToolsMenu, ID_IMPACTBOMB_MENUITEM, _("Toggle Impact Bomb") + wxS("\tI"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(impactBombMenuItem);
+        Connect(ID_IMPACTBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnImpactBombMenuItemSelected);
 
-    /* Easter Egg
-    wxMenuItem * injectAirBubblesMenuItem = new wxMenuItem(mToolsMenu, ID_INJECT_AIR_BUBBLES_MENUITEM, _("Inject Air Bubbles") + wxS("\tB"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(injectAirBubblesMenuItem);
-    Connect(ID_INJECT_AIR_BUBBLES_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnInjectAirBubblesMenuItemSelected);
-    */
+        wxMenuItem * antiMatterBombMenuItem = new wxMenuItem(mToolsMenu, ID_ANTIMATTERBOMB_MENUITEM, _("Toggle Anti-Matter Bomb") + wxS("\tA"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(antiMatterBombMenuItem);
+        Connect(ID_ANTIMATTERBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombMenuItemSelected);
 
-    wxMenuItem * floodHoseMenuItem = new wxMenuItem(mToolsMenu, ID_FLOOD_HOSE_MENUITEM, _("Flood/Dry") + wxS("\tF"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(floodHoseMenuItem);
-    Connect(ID_FLOOD_HOSE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFloodHoseMenuItemSelected);
+        wxMenuItem * thanosSnapMenuItem = new wxMenuItem(mToolsMenu, ID_THANOSSNAP_MENUITEM, _("Thanos' Snap") + wxS("\tQ"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(thanosSnapMenuItem);
+        Connect(ID_THANOSSNAP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnThanosSnapMenuItemSelected);
 
-    wxMenuItem * timerBombMenuItem = new wxMenuItem(mToolsMenu, ID_TIMERBOMB_MENUITEM, _("Toggle Timer Bomb") + wxS("\tT"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(timerBombMenuItem);
-    Connect(ID_TIMERBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTimerBombMenuItemSelected);
+        wxMenuItem * waveMakerMenuItem = new wxMenuItem(mToolsMenu, ID_WAVEMAKER_MENUITEM, _("WaveMaker") + wxS("\tV"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(waveMakerMenuItem);
+        Connect(ID_WAVEMAKER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnWaveMakerMenuItemSelected);
 
-    wxMenuItem * rcBombMenuItem = new wxMenuItem(mToolsMenu, ID_RCBOMB_MENUITEM, _("Toggle RC Bomb") + wxS("\tR"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(rcBombMenuItem);
-    Connect(ID_RCBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRCBombMenuItemSelected);
+        wxMenuItem * adjustTerrainMenuItem = new wxMenuItem(mToolsMenu, ID_ADJUSTTERRAIN_MENUITEM, _("Adjust Terrain") + wxS("\tJ"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(adjustTerrainMenuItem);
+        Connect(ID_ADJUSTTERRAIN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAdjustTerrainMenuItemSelected);
 
-    wxMenuItem * impactBombMenuItem = new wxMenuItem(mToolsMenu, ID_IMPACTBOMB_MENUITEM, _("Toggle Impact Bomb") + wxS("\tI"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(impactBombMenuItem);
-    Connect(ID_IMPACTBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnImpactBombMenuItemSelected);
+        wxMenuItem * repairStructureMenuItem = new wxMenuItem(mToolsMenu, ID_REPAIRSTRUCTURE_MENUITEM, _("Repair") + wxS("\tE"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(repairStructureMenuItem);
+        Connect(ID_REPAIRSTRUCTURE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRepairStructureMenuItemSelected);
 
-    wxMenuItem * antiMatterBombMenuItem = new wxMenuItem(mToolsMenu, ID_ANTIMATTERBOMB_MENUITEM, _("Toggle Anti-Matter Bomb") + wxS("\tA"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(antiMatterBombMenuItem);
-    Connect(ID_ANTIMATTERBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombMenuItemSelected);
+        wxMenuItem * scrubMenuItem = new wxMenuItem(mToolsMenu, ID_SCRUB_MENUITEM, _("Scrub/Rot") + wxS("\tU"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(scrubMenuItem);
+        Connect(ID_SCRUB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnScrubMenuItemSelected);
 
-    wxMenuItem * thanosSnapMenuItem = new wxMenuItem(mToolsMenu, ID_THANOSSNAP_MENUITEM, _("Thanos' Snap") + wxS("\tQ"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(thanosSnapMenuItem);
-    Connect(ID_THANOSSNAP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnThanosSnapMenuItemSelected);
+        mScareFishMenuItem = new wxMenuItem(mToolsMenu, ID_SCAREFISH_MENUTEIM, _("Scare/Allure Fishes") + wxS("\tZ"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(mScareFishMenuItem);
+        Connect(ID_SCAREFISH_MENUTEIM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnScareFishMenuItemSelected);
+        mScareFishMenuItem->Enable(false);
 
-    wxMenuItem * waveMakerMenuItem = new wxMenuItem(mToolsMenu, ID_WAVEMAKER_MENUITEM, _("WaveMaker") + wxS("\tV"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(waveMakerMenuItem);
-    Connect(ID_WAVEMAKER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnWaveMakerMenuItemSelected);
+        wxMenuItem * physicsProbeMenuItem = new wxMenuItem(mToolsMenu, ID_PHYSICSPROBE_MENUITEM, _("Toggle Physics Probe"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(physicsProbeMenuItem);
+        Connect(ID_PHYSICSPROBE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPhysicsProbeMenuItemSelected);
 
-    wxMenuItem * adjustTerrainMenuItem = new wxMenuItem(mToolsMenu, ID_ADJUSTTERRAIN_MENUITEM, _("Adjust Terrain") + wxS("\tJ"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(adjustTerrainMenuItem);
-    Connect(ID_ADJUSTTERRAIN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAdjustTerrainMenuItemSelected);
+        mToolsMenu->Append(new wxMenuItem(mToolsMenu, wxID_SEPARATOR));
 
-    wxMenuItem * repairStructureMenuItem = new wxMenuItem(mToolsMenu, ID_REPAIRSTRUCTURE_MENUITEM, _("Repair") + wxS("\tE"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(repairStructureMenuItem);
-    Connect(ID_REPAIRSTRUCTURE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRepairStructureMenuItemSelected);
+        mRCBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_RCBOMBDETONATE_MENUITEM, _("Detonate RC Bombs") + wxS("\tD"), wxEmptyString, wxITEM_NORMAL);
+        mToolsMenu->Append(mRCBombsDetonateMenuItem);
+        Connect(ID_RCBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRCBombDetonateMenuItemSelected);
+        mRCBombsDetonateMenuItem->Enable(false);
 
-    wxMenuItem * scrubMenuItem = new wxMenuItem(mToolsMenu, ID_SCRUB_MENUITEM, _("Scrub/Rot") + wxS("\tU"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(scrubMenuItem);
-    Connect(ID_SCRUB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnScrubMenuItemSelected);
+        mAntiMatterBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_ANTIMATTERBOMBDETONATE_MENUITEM, _("Detonate Anti-Matter Bombs") + wxS("\tN"), wxEmptyString, wxITEM_NORMAL);
+        mToolsMenu->Append(mAntiMatterBombsDetonateMenuItem);
+        Connect(ID_ANTIMATTERBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombDetonateMenuItemSelected);
+        mAntiMatterBombsDetonateMenuItem->Enable(false);
 
-    mScareFishMenuItem = new wxMenuItem(mToolsMenu, ID_SCAREFISH_MENUTEIM, _("Scare/Allure Fishes") + wxS("\tZ"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(mScareFishMenuItem);
-    Connect(ID_SCAREFISH_MENUTEIM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnScareFishMenuItemSelected);
-    mScareFishMenuItem->Enable(false);
+        wxMenuItem * triggerTsunamiMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERTSUNAMI_MENUITEM, _("Trigger Tsunami"), wxEmptyString, wxITEM_NORMAL);
+        mToolsMenu->Append(triggerTsunamiMenuItem);
+        Connect(ID_TRIGGERTSUNAMI_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerTsunamiMenuItemSelected);
 
-    wxMenuItem * physicsProbeMenuItem = new wxMenuItem(mToolsMenu, ID_PHYSICSPROBE_MENUITEM, _("Toggle Physics Probe"), wxEmptyString, wxITEM_RADIO);
-    mToolsMenu->Append(physicsProbeMenuItem);
-    Connect(ID_PHYSICSPROBE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPhysicsProbeMenuItemSelected);
+        wxMenuItem * triggerRogueWaveMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERROGUEWAVE_MENUITEM, _("Trigger Rogue Wave"), wxEmptyString, wxITEM_NORMAL);
+        mToolsMenu->Append(triggerRogueWaveMenuItem);
+        Connect(ID_TRIGGERROGUEWAVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerRogueWaveMenuItemSelected);
 
-    mToolsMenu->Append(new wxMenuItem(mToolsMenu, wxID_SEPARATOR));
+        mTriggerStormMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERSTORM_MENUITEM, _("Trigger Storm"), wxEmptyString, wxITEM_NORMAL);
+        mToolsMenu->Append(mTriggerStormMenuItem);
+        Connect(ID_TRIGGERSTORM_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerStormMenuItemSelected);
+        mTriggerStormMenuItem->Enable(true);
 
-    mRCBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_RCBOMBDETONATE_MENUITEM, _("Detonate RC Bombs") + wxS("\tD"), wxEmptyString, wxITEM_NORMAL);
-    mToolsMenu->Append(mRCBombsDetonateMenuItem);
-    Connect(ID_RCBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRCBombDetonateMenuItemSelected);
-    mRCBombsDetonateMenuItem->Enable(false);
+        wxMenuItem * triggerLightningMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERLIGHTNING_MENUITEM, _("Trigger Lightning") + wxS("\tALT+L"), wxEmptyString, wxITEM_NORMAL);
+        mToolsMenu->Append(triggerLightningMenuItem);
+        Connect(ID_TRIGGERLIGHTNING_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerLightningMenuItemSelected);
 
-    mAntiMatterBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_ANTIMATTERBOMBDETONATE_MENUITEM, _("Detonate Anti-Matter Bombs") + wxS("\tN"), wxEmptyString, wxITEM_NORMAL);
-    mToolsMenu->Append(mAntiMatterBombsDetonateMenuItem);
-    Connect(ID_ANTIMATTERBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombDetonateMenuItemSelected);
-    mAntiMatterBombsDetonateMenuItem->Enable(false);
 
-    wxMenuItem * triggerTsunamiMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERTSUNAMI_MENUITEM, _("Trigger Tsunami"), wxEmptyString, wxITEM_NORMAL);
-    mToolsMenu->Append(triggerTsunamiMenuItem);
-    Connect(ID_TRIGGERTSUNAMI_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerTsunamiMenuItemSelected);
+        mainMenuBar->Append(mToolsMenu, _("&Tools"));
 
-    wxMenuItem * triggerRogueWaveMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERROGUEWAVE_MENUITEM, _("Trigger Rogue Wave"), wxEmptyString, wxITEM_NORMAL);
-    mToolsMenu->Append(triggerRogueWaveMenuItem);
-    Connect(ID_TRIGGERROGUEWAVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerRogueWaveMenuItemSelected);
 
-    mTriggerStormMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERSTORM_MENUITEM, _("Trigger Storm"), wxEmptyString, wxITEM_NORMAL);
-    mToolsMenu->Append(mTriggerStormMenuItem);
-    Connect(ID_TRIGGERSTORM_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerStormMenuItemSelected);
-    mTriggerStormMenuItem->Enable(true);
+        // Options
 
-    wxMenuItem * triggerLightningMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERLIGHTNING_MENUITEM, _("Trigger Lightning") + wxS("\tALT+L"), wxEmptyString, wxITEM_NORMAL);
-    mToolsMenu->Append(triggerLightningMenuItem);
-    Connect(ID_TRIGGERLIGHTNING_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerLightningMenuItemSelected);
+        wxMenu * optionsMenu = new wxMenu();
 
+        wxMenuItem * openSettingsWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_SETTINGS_WINDOW_MENUITEM, _("Simulation Settings...") + wxS("\tCtrl+S"), wxEmptyString, wxITEM_NORMAL);
+        optionsMenu->Append(openSettingsWindowMenuItem);
+        Connect(ID_OPEN_SETTINGS_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenSettingsWindowMenuItemSelected);
 
-    mainMenuBar->Append(mToolsMenu, _("&Tools"));
+        mReloadLastModifiedSettingsMenuItem = new wxMenuItem(optionsMenu, ID_RELOAD_LAST_MODIFIED_SETTINGS_MENUITEM, _("Reload Last-Modified Simulation Settings") + wxS("\tCtrl+D"), wxEmptyString, wxITEM_NORMAL);
+        optionsMenu->Append(mReloadLastModifiedSettingsMenuItem);
+        Connect(ID_RELOAD_LAST_MODIFIED_SETTINGS_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadLastModifiedSettingsMenuItem);
 
+        wxMenuItem * openPreferencesWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_PREFERENCES_WINDOW_MENUITEM, _("Game Preferences...") + wxS("\tCtrl+F"), wxEmptyString, wxITEM_NORMAL);
+        optionsMenu->Append(openPreferencesWindowMenuItem);
+        Connect(ID_OPEN_PREFERENCES_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenPreferencesWindowMenuItemSelected);
 
-    // Options
+        optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
 
-    wxMenu * optionsMenu = new wxMenu();
+        wxMenuItem * openLogWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_LOG_WINDOW_MENUITEM, _("Open Log Window") + wxS("\tCtrl+L"), wxEmptyString, wxITEM_NORMAL);
+        optionsMenu->Append(openLogWindowMenuItem);
+        Connect(ID_OPEN_LOG_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenLogWindowMenuItemSelected);
 
-    wxMenuItem * openSettingsWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_SETTINGS_WINDOW_MENUITEM, _("Simulation Settings...") + wxS("\tCtrl+S"), wxEmptyString, wxITEM_NORMAL);
-    optionsMenu->Append(openSettingsWindowMenuItem);
-    Connect(ID_OPEN_SETTINGS_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenSettingsWindowMenuItemSelected);
+        mShowEventTickerMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_EVENT_TICKER_MENUITEM, _("Show Event Ticker") + wxS("\tCtrl+E"), wxEmptyString, wxITEM_CHECK);
+        optionsMenu->Append(mShowEventTickerMenuItem);
+        Connect(ID_SHOW_EVENT_TICKER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowEventTickerMenuItemSelected);
+        mShowEventTickerMenuItem->Check(false);
 
-    mReloadLastModifiedSettingsMenuItem = new wxMenuItem(optionsMenu, ID_RELOAD_LAST_MODIFIED_SETTINGS_MENUITEM, _("Reload Last-Modified Simulation Settings") + wxS("\tCtrl+D"), wxEmptyString, wxITEM_NORMAL);
-    optionsMenu->Append(mReloadLastModifiedSettingsMenuItem);
-    Connect(ID_RELOAD_LAST_MODIFIED_SETTINGS_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadLastModifiedSettingsMenuItem);
+        mShowProbePanelMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_PROBE_PANEL_MENUITEM, _("Show Probe Panel") + wxS("\tCtrl+P"), wxEmptyString, wxITEM_CHECK);
+        optionsMenu->Append(mShowProbePanelMenuItem);
+        Connect(ID_SHOW_PROBE_PANEL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowProbePanelMenuItemSelected);
+        mShowProbePanelMenuItem->Check(false);
 
-    wxMenuItem * openPreferencesWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_PREFERENCES_WINDOW_MENUITEM, _("Game Preferences...") + wxS("\tCtrl+F"), wxEmptyString, wxITEM_NORMAL);
-    optionsMenu->Append(openPreferencesWindowMenuItem);
-    Connect(ID_OPEN_PREFERENCES_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenPreferencesWindowMenuItemSelected);
+        mShowStatusTextMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_STATUS_TEXT_MENUITEM, _("Show Status Text") + wxS("\tCtrl+T"), wxEmptyString, wxITEM_CHECK);
+        optionsMenu->Append(mShowStatusTextMenuItem);
+        Connect(ID_SHOW_STATUS_TEXT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowStatusTextMenuItemSelected);
 
-    optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
+        mShowExtendedStatusTextMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_EXTENDED_STATUS_TEXT_MENUITEM, _("Show Extended Status Text") + wxS("\tCtrl+X"), wxEmptyString, wxITEM_CHECK);
+        optionsMenu->Append(mShowExtendedStatusTextMenuItem);
+        Connect(ID_SHOW_EXTENDED_STATUS_TEXT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowExtendedStatusTextMenuItemSelected);
 
-    wxMenuItem * openLogWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_LOG_WINDOW_MENUITEM, _("Open Log Window") + wxS("\tCtrl+L"), wxEmptyString, wxITEM_NORMAL);
-    optionsMenu->Append(openLogWindowMenuItem);
-    Connect(ID_OPEN_LOG_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenLogWindowMenuItemSelected);
+        optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
 
-    mShowEventTickerMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_EVENT_TICKER_MENUITEM, _("Show Event Ticker") + wxS("\tCtrl+E"), wxEmptyString, wxITEM_CHECK);
-    optionsMenu->Append(mShowEventTickerMenuItem);
-    Connect(ID_SHOW_EVENT_TICKER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowEventTickerMenuItemSelected);
-    mShowEventTickerMenuItem->Check(false);
+        mFullScreenMenuItem = new wxMenuItem(optionsMenu, ID_FULL_SCREEN_MENUITEM, _("Full Screen") + wxS("\tF11"), wxEmptyString, wxITEM_NORMAL);
+        optionsMenu->Append(mFullScreenMenuItem);
+        Connect(ID_FULL_SCREEN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFullScreenMenuItemSelected);
+        mFullScreenMenuItem->Enable(!StartInFullScreenMode);
 
-    mShowProbePanelMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_PROBE_PANEL_MENUITEM, _("Show Probe Panel") + wxS("\tCtrl+P"), wxEmptyString, wxITEM_CHECK);
-    optionsMenu->Append(mShowProbePanelMenuItem);
-    Connect(ID_SHOW_PROBE_PANEL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowProbePanelMenuItemSelected);
-    mShowProbePanelMenuItem->Check(false);
+        mNormalScreenMenuItem = new wxMenuItem(optionsMenu, ID_NORMAL_SCREEN_MENUITEM, _("Normal Screen") + wxS("\tESC"), wxEmptyString, wxITEM_NORMAL);
+        optionsMenu->Append(mNormalScreenMenuItem);
+        Connect(ID_NORMAL_SCREEN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnNormalScreenMenuItemSelected);
+        mNormalScreenMenuItem->Enable(StartInFullScreenMode);
 
-    mShowStatusTextMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_STATUS_TEXT_MENUITEM, _("Show Status Text") + wxS("\tCtrl+T"), wxEmptyString, wxITEM_CHECK);
-    optionsMenu->Append(mShowStatusTextMenuItem);
-    Connect(ID_SHOW_STATUS_TEXT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowStatusTextMenuItemSelected);
+        optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
 
-    mShowExtendedStatusTextMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_EXTENDED_STATUS_TEXT_MENUITEM, _("Show Extended Status Text") + wxS("\tCtrl+X"), wxEmptyString, wxITEM_CHECK);
-    optionsMenu->Append(mShowExtendedStatusTextMenuItem);
-    Connect(ID_SHOW_EXTENDED_STATUS_TEXT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowExtendedStatusTextMenuItemSelected);
+        mMuteMenuItem = new wxMenuItem(optionsMenu, ID_MUTE_MENUITEM, _("Mute") + wxS("\tCtrl+M"), wxEmptyString, wxITEM_CHECK);
+        optionsMenu->Append(mMuteMenuItem);
+        Connect(ID_MUTE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMuteMenuItemSelected);
+        mMuteMenuItem->Check(false);
 
-    optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
+        mainMenuBar->Append(optionsMenu, _("&Options"));
 
-    mFullScreenMenuItem = new wxMenuItem(optionsMenu, ID_FULL_SCREEN_MENUITEM, _("Full Screen") + wxS("\tF11"), wxEmptyString, wxITEM_NORMAL);
-    optionsMenu->Append(mFullScreenMenuItem);
-    Connect(ID_FULL_SCREEN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFullScreenMenuItemSelected);
-    mFullScreenMenuItem->Enable(!StartInFullScreenMode);
 
-    mNormalScreenMenuItem = new wxMenuItem(optionsMenu, ID_NORMAL_SCREEN_MENUITEM, _("Normal Screen") + wxS("\tESC"), wxEmptyString, wxITEM_NORMAL);
-    optionsMenu->Append(mNormalScreenMenuItem);
-    Connect(ID_NORMAL_SCREEN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnNormalScreenMenuItemSelected);
-    mNormalScreenMenuItem->Enable(StartInFullScreenMode);
+        // Help
 
-    optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
+        wxMenu * helpMenu = new wxMenu();
 
-    mMuteMenuItem = new wxMenuItem(optionsMenu, ID_MUTE_MENUITEM, _("Mute") + wxS("\tCtrl+M"), wxEmptyString, wxITEM_CHECK);
-    optionsMenu->Append(mMuteMenuItem);
-    Connect(ID_MUTE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMuteMenuItemSelected);
-    mMuteMenuItem->Check(false);
+        wxMenuItem * helpMenuItem = new wxMenuItem(helpMenu, ID_HELP_MENUITEM, _("Guide") + wxS("\tF1"), _("Get help about the simulator"), wxITEM_NORMAL);
+        helpMenu->Append(helpMenuItem);
+        Connect(ID_HELP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnHelpMenuItemSelected);
 
-    mainMenuBar->Append(optionsMenu, _("&Options"));
+        wxMenuItem * aboutMenuItem = new wxMenuItem(helpMenu, ID_ABOUT_MENUITEM, _("About and Credits") + wxS("\tF2"), _("Show credits and other I'vedunnit stuff"), wxITEM_NORMAL);
+        helpMenu->Append(aboutMenuItem);
+        Connect(ID_ABOUT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAboutMenuItemSelected);
 
+        helpMenu->Append(new wxMenuItem(helpMenu, wxID_SEPARATOR));
 
-    // Help
+        wxMenuItem * checkForUpdatesMenuItem = new wxMenuItem(helpMenu, ID_CHECK_FOR_UPDATES_MENUITEM, _("Check for Updates..."), wxEmptyString, wxITEM_NORMAL);
+        helpMenu->Append(checkForUpdatesMenuItem);
+        Connect(ID_CHECK_FOR_UPDATES_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnCheckForUpdatesMenuItemSelected);
 
-    wxMenu * helpMenu = new wxMenu();
+        wxMenuItem * donateMenuItem = new wxMenuItem(helpMenu, ID_DONATE_MENUITEM, _("Donate..."));
+        helpMenu->Append(donateMenuItem);
+        helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://floatingsandbox.com/donate/"); }, ID_DONATE_MENUITEM);
 
-    wxMenuItem * helpMenuItem = new wxMenuItem(helpMenu, ID_HELP_MENUITEM, _("Guide") + wxS("\tF1"), _("Get help about the simulator"), wxITEM_NORMAL);
-    helpMenu->Append(helpMenuItem);
-    Connect(ID_HELP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnHelpMenuItemSelected);
+        helpMenu->Append(new wxMenuItem(helpMenu, wxID_SEPARATOR));
 
-    wxMenuItem * aboutMenuItem = new wxMenuItem(helpMenu, ID_ABOUT_MENUITEM, _("About and Credits") + wxS("\tF2"), _("Show credits and other I'vedunnit stuff"), wxITEM_NORMAL);
-    helpMenu->Append(aboutMenuItem);
-    Connect(ID_ABOUT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAboutMenuItemSelected);
+        wxMenuItem * openHomePageMenuItem = new wxMenuItem(helpMenu, ID_OPEN_HOME_PAGE_MENUITEM, _("Open Home Page"));
+        helpMenu->Append(openHomePageMenuItem);
+        helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://floatingsandbox.com"); }, ID_OPEN_HOME_PAGE_MENUITEM);
 
-    helpMenu->Append(new wxMenuItem(helpMenu, wxID_SEPARATOR));
+        wxMenuItem * openDownloadPageMenuItem = new wxMenuItem(helpMenu, ID_OPEN_DOWNLOAD_PAGE_MENUITEM, _("Open Download Page"));
+        helpMenu->Append(openDownloadPageMenuItem);
+        helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://gamejolt.com/games/floating-sandbox/353572"); }, ID_OPEN_DOWNLOAD_PAGE_MENUITEM);
 
-    wxMenuItem * checkForUpdatesMenuItem = new wxMenuItem(helpMenu, ID_CHECK_FOR_UPDATES_MENUITEM, _("Check for Updates..."), wxEmptyString, wxITEM_NORMAL);
-    helpMenu->Append(checkForUpdatesMenuItem);
-    Connect(ID_CHECK_FOR_UPDATES_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnCheckForUpdatesMenuItemSelected);
+        mainMenuBar->Append(helpMenu, _("&Help"));
 
-    wxMenuItem * donateMenuItem = new wxMenuItem(helpMenu, ID_DONATE_MENUITEM, _("Donate..."));
-    helpMenu->Append(donateMenuItem);
-    helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://floatingsandbox.com/donate/"); }, ID_DONATE_MENUITEM);
+        SetMenuBar(mainMenuBar);
 
-    helpMenu->Append(new wxMenuItem(helpMenu, wxID_SEPARATOR));
-
-    wxMenuItem * openHomePageMenuItem = new wxMenuItem(helpMenu, ID_OPEN_HOME_PAGE_MENUITEM, _("Open Home Page"));
-    helpMenu->Append(openHomePageMenuItem);
-    helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://floatingsandbox.com"); }, ID_OPEN_HOME_PAGE_MENUITEM);
-
-    wxMenuItem * openDownloadPageMenuItem = new wxMenuItem(helpMenu, ID_OPEN_DOWNLOAD_PAGE_MENUITEM, _("Open Download Page"));
-    helpMenu->Append(openDownloadPageMenuItem);
-    helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://gamejolt.com/games/floating-sandbox/353572"); }, ID_OPEN_DOWNLOAD_PAGE_MENUITEM);
-
-    mainMenuBar->Append(helpMenu, _("&Help"));
-
-    SetMenuBar(mainMenuBar);
-
+        // Set accelerator
+        wxAcceleratorTable accel(acceleratorEntries.size(), acceleratorEntries.data());
+        SetAcceleratorTable(accel);
+    }
 
 
     //
