@@ -537,17 +537,11 @@ Render:
 				+ Try: on Linux: 
 					+ if elapsed < 0: wxWakeUpIdle(), else SetTimer
 					+ OnIdle(): if mHasStartupTipBeenChecked && !timer.isArmed: invoke RunGameIteration
-			= Keyboard shortcuts don't work
-				+ Focusability of MainFrame's child controls
-				- Focus given back to MainGLCanvas at end of initialize; tentatives:
-					+ Redo minimal example and create ticket
-					- Undo unfocusability of GLCanvas - we want it to get mouse events after all
-					- Then see how to forward key events to parent
-					- Try without wxWANTS_CHARS on panel, but on frame instead - eventually registering char handler on MainFrame instead
-			- See save screenshot
+			+ Keyboard shortcuts don't work
 			= Misc issues:
 				- Slider control is clipped
 				- MouseMove's are delayed and/or skipped
+				- The plain '+' key and the space bar don't work as shortcuts
 			+ Build as RELEASE
 				+ See if have to set _DEBUG in CMake also for Linux, so it appears in BuildInfo
 					+ Test

@@ -1509,12 +1509,8 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
         // Take screenshot
         //
 
-        LogMessage("TODOTEST - 1");
-
         assert(!!mGameController);
         auto screenshotImage = mGameController->TakeScreenshot();
-
-        LogMessage("TODOTEST - 2");
 
         //
         // Ensure pictures folder exists
@@ -1522,8 +1518,6 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
 
         assert(!!mUIPreferencesManager);
         auto const folderPath = mUIPreferencesManager->GetScreenshotsFolderPath();
-
-        LogMessage("TODOTEST - 3");
 
         if (!std::filesystem::exists(folderPath))
         {
@@ -1540,8 +1534,6 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
                 return;
             }
         }
-
-        LogMessage("TODOTEST - 4");
 
         //
         // Choose filename
@@ -1574,8 +1566,6 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
             screenshotFilePath = folderPath / ssFilename.str();
 
         } while (std::filesystem::exists(screenshotFilePath));
-
-        LogMessage("TODOTEST - 5 - ", screenshotFilePath.string());
 
         //
         // Save screenshot
