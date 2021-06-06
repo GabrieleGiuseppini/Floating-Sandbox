@@ -250,7 +250,6 @@ MainFrame::MainFrame(
         wxMenuItem * zoomInMenuItem = new wxMenuItem(controlsMenu, ID_ZOOM_IN_MENUITEM, _("Zoom In") + wxS("\t+"), wxEmptyString, wxITEM_NORMAL);
         controlsMenu->Append(zoomInMenuItem);
         Connect(ID_ZOOM_IN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomInMenuItemSelected);
-        // TODOTEST
         ADD_PLAIN_ACCELERATOR_KEY('+', ID_ZOOM_IN_MENUITEM)
         ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_ADD, ID_ZOOM_IN_MENUITEM)
 
@@ -1510,8 +1509,12 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
         // Take screenshot
         //
 
+        LogMessage("TODOTEST - 1");
+
         assert(!!mGameController);
         auto screenshotImage = mGameController->TakeScreenshot();
+
+        LogMessage("TODOTEST - 2");
 
         //
         // Ensure pictures folder exists
@@ -1519,6 +1522,8 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
 
         assert(!!mUIPreferencesManager);
         auto const folderPath = mUIPreferencesManager->GetScreenshotsFolderPath();
+
+        LogMessage("TODOTEST - 3");
 
         if (!std::filesystem::exists(folderPath))
         {
@@ -1535,6 +1540,8 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
                 return;
             }
         }
+
+        LogMessage("TODOTEST - 4");
 
         //
         // Choose filename
@@ -1568,6 +1575,7 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
 
         } while (std::filesystem::exists(screenshotFilePath));
 
+        LogMessage("TODOTEST - 5 - ", screenshotFilePath.string());
 
         //
         // Save screenshot
