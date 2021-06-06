@@ -13,7 +13,7 @@
  * Our own GLCanvas that comes with the attributes we require for canvasses.
  * It allows us to have multiple canvasses which may share the same OpenGL context.
  */
-class GLCanvas final : public wxGLCanvas
+class GLCanvas : public wxGLCanvas
 {
 public:
 
@@ -30,11 +30,6 @@ public:
     {
         LogMessage("GLCanvas(", id, "): ContentScaleFactor=", this->GetContentScaleFactor(), " DPIScaleFactor=", this->GetDPIScaleFactor(),
             " 100x100dip=", this->FromDIP(wxSize(100, 100)).GetWidth(), "x", this->FromDIP(wxSize(100, 100)).GetHeight(), "px");
-    }
-
-    virtual bool AcceptsFocus() const final override
-    {
-        return false;
     }
 
 private:

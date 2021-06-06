@@ -13,6 +13,8 @@
 #include "StandardSystemPaths.h"
 #include "StartupTipDialog.h"
 
+#include <UIControls/KeyEventForwardingControl.h>
+
 #include <Game/ImageFileTools.h>
 
 #include <GameCore/BootSettings.h>
@@ -170,7 +172,7 @@ MainFrame::MainFrame(
     // Build OpenGL canvas - this is where we render the game to
     //
 
-    mMainGLCanvas = std::make_unique<GLCanvas>(
+    mMainGLCanvas = std::make_unique<KeyEventForwardingControl<GLCanvas>>(
         mMainPanel,
         ID_MAIN_CANVAS);
 
@@ -184,6 +186,9 @@ MainFrame::MainFrame(
     mMainGLCanvas->Connect(wxEVT_MOTION, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseMove, 0, this);
     mMainGLCanvas->Connect(wxEVT_MOUSEWHEEL, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseWheel, 0, this);
     mMainGLCanvas->Connect(wxEVT_MOUSE_CAPTURE_LOST, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasCaptureMouseLost, 0, this);
+
+    // Forward key events to this frame
+    dynamic_cast<KeyEventForwardingControl<GLCanvas> *>(mMainGLCanvas.get())->ForwardKeyEventsTo(this);
 
     mMainPanelSizer->Add(
         mMainGLCanvas.get(),

@@ -381,7 +381,6 @@ private:
     std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
     std::unique_ptr<UpdateChecker> mUpdateChecker;
 
-
     //
     // State
     //

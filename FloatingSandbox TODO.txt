@@ -538,7 +538,12 @@ Render:
 					+ if elapsed < 0: wxWakeUpIdle(), else SetTimer
 					+ OnIdle(): if mHasStartupTipBeenChecked && !timer.isArmed: invoke RunGameIteration
 			= Keyboard shortcuts don't work
-				= Focusability of MainFrame's child controls
+				+ Focusability of MainFrame's child controls
+				- Focus given back to MainGLCanvas at end of initialize; tentatives:
+					+ Redo minimal example and create ticket
+					- Undo unfocusability of GLCanvas - we want it to get mouse events after all
+					- Then see how to forward key events to parent
+					- Try without wxWANTS_CHARS on panel, but on frame instead - eventually registering char handler on MainFrame instead
 			= Misc issues:
 				- Slider control is clipped
 				- MouseMove's are delayed and/or skipped
