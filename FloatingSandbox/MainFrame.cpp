@@ -317,7 +317,7 @@ MainFrame::MainFrame(
         Connect(ID_HEAT_BLASTER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnHeatBlasterMenuItemSelected);
         // TODOTEST
         //acceleratorEntries.emplace_back(); acceleratorEntries.back().FromString(heatBlasterMenuItem->GetItemLabel());
-        acceleratorEntries.emplace_back(wxACCEL_NORMAL, ID_HEAT_BLASTER_MENUITEM, int('H'));
+        acceleratorEntries.emplace_back(wxACCEL_NORMAL, int('H'), ID_HEAT_BLASTER_MENUITEM);
 
         wxMenuItem * fireExtinguisherMenuItem = new wxMenuItem(mToolsMenu, ID_FIRE_EXTINGUISHER_MENUITEM, _("Fire Extinguisher") + wxS("\tX"), wxEmptyString, wxITEM_RADIO);
         mToolsMenu->Append(fireExtinguisherMenuItem);
