@@ -251,13 +251,14 @@ MainFrame::MainFrame(
         controlsMenu->Append(zoomInMenuItem);
         Connect(ID_ZOOM_IN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomInMenuItemSelected);
         // TODOTEST
-        //ADD_PLAIN_ACCELERATOR_KEY('+', ID_ZOOM_IN_MENUITEM)
-        ADD_PLAIN_ACCELERATOR_KEY(WXK_ADD, ID_ZOOM_IN_MENUITEM)
+        ADD_PLAIN_ACCELERATOR_KEY('+', ID_ZOOM_IN_MENUITEM)
+        ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_ADD, ID_ZOOM_IN_MENUITEM)
 
         wxMenuItem * zoomOutMenuItem = new wxMenuItem(controlsMenu, ID_ZOOM_OUT_MENUITEM, _("Zoom Out") + wxS("\t-"), wxEmptyString, wxITEM_NORMAL);
         controlsMenu->Append(zoomOutMenuItem);
         Connect(ID_ZOOM_OUT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomOutMenuItemSelected);
         ADD_PLAIN_ACCELERATOR_KEY('-', ID_ZOOM_OUT_MENUITEM)
+        ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_SUBTRACT, ID_ZOOM_OUT_MENUITEM)
 
         wxMenuItem * amblientLightUpMenuItem = new wxMenuItem(controlsMenu, ID_AMBIENT_LIGHT_UP_MENUITEM, _("Bright Ambient Light") + wxS("\tPgUp"), wxEmptyString, wxITEM_NORMAL);
         controlsMenu->Append(amblientLightUpMenuItem);
@@ -271,7 +272,7 @@ MainFrame::MainFrame(
         controlsMenu->Append(mPauseMenuItem);
         Connect(ID_PAUSE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPauseMenuItemSelected);
         mPauseMenuItem->Check(false);
-        ADD_PLAIN_ACCELERATOR_KEY(' ', ID_PAUSE_MENUITEM)
+        ADD_PLAIN_ACCELERATOR_KEY(WXK_SPACE, ID_PAUSE_MENUITEM)
 
         mStepMenuItem = new wxMenuItem(controlsMenu, ID_STEP_MENUITEM, _("Step") + wxS("\tEnter"), _("Step one frame at a time"), wxITEM_NORMAL);
         controlsMenu->Append(mStepMenuItem);
