@@ -201,6 +201,8 @@ MainFrame::MainFrame(
 
         // Note: we also build an accelerator table for plain keys because of https://trac.wxwidgets.org/ticket/17611
         std::vector<wxAcceleratorEntry> acceleratorEntries;
+#define ADD_PLAIN_ACCELERATOR_KEY(key, cmd) \
+        acceleratorEntries.emplace_back(wxACCEL_NORMAL, int((key)), (cmd));
 
 
         // File
@@ -248,14 +250,12 @@ MainFrame::MainFrame(
         wxMenuItem * zoomInMenuItem = new wxMenuItem(controlsMenu, ID_ZOOM_IN_MENUITEM, _("Zoom In") + wxS("\t+"), wxEmptyString, wxITEM_NORMAL);
         controlsMenu->Append(zoomInMenuItem);
         Connect(ID_ZOOM_IN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomInMenuItemSelected);
-        // TODOTEST
-        //acceleratorEntries.emplace_back(); acceleratorEntries.back().FromString(zoomInMenuItem->GetItemLabel());
-        //acceleratorEntries.emplace_back(wxACCEL_NORMAL, int('+'), ID_ZOOM_IN_MENUITEM);
-        acceleratorEntries.emplace_back(0, 0, 0, zoomInMenuItem);
+        ADD_PLAIN_ACCELERATOR_KEY('+', ID_ZOOM_IN_MENUITEM)
 
         wxMenuItem * zoomOutMenuItem = new wxMenuItem(controlsMenu, ID_ZOOM_OUT_MENUITEM, _("Zoom Out") + wxS("\t-"), wxEmptyString, wxITEM_NORMAL);
         controlsMenu->Append(zoomOutMenuItem);
         Connect(ID_ZOOM_OUT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomOutMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('-', ID_ZOOM_OUT_MENUITEM)
 
         wxMenuItem * amblientLightUpMenuItem = new wxMenuItem(controlsMenu, ID_AMBIENT_LIGHT_UP_MENUITEM, _("Bright Ambient Light") + wxS("\tPgUp"), wxEmptyString, wxITEM_NORMAL);
         controlsMenu->Append(amblientLightUpMenuItem);
@@ -269,6 +269,7 @@ MainFrame::MainFrame(
         controlsMenu->Append(mPauseMenuItem);
         Connect(ID_PAUSE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPauseMenuItemSelected);
         mPauseMenuItem->Check(false);
+        ADD_PLAIN_ACCELERATOR_KEY(' ', ID_PAUSE_MENUITEM)
 
         mStepMenuItem = new wxMenuItem(controlsMenu, ID_STEP_MENUITEM, _("Step") + wxS("\tEnter"), _("Step one frame at a time"), wxITEM_NORMAL);
         controlsMenu->Append(mStepMenuItem);
@@ -291,6 +292,7 @@ MainFrame::MainFrame(
         wxMenuItem * moveMenuItem = new wxMenuItem(mToolsMenu, ID_MOVE_MENUITEM, _("Move/Rotate") + wxS("\tM"), wxEmptyString, wxITEM_RADIO);
         mToolsMenu->Append(moveMenuItem);
         Connect(ID_MOVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('M', ID_MOVE_MENUITEM)
 
         wxMenuItem * moveAllMenuItem = new wxMenuItem(mToolsMenu, ID_MOVE_ALL_MENUITEM, _("Move All/Rotate All") + wxS("\tALT+M"), wxEmptyString, wxITEM_RADIO);
         mToolsMenu->Append(moveAllMenuItem);
@@ -299,37 +301,37 @@ MainFrame::MainFrame(
         wxMenuItem * pickAndPullMenuItem = new wxMenuItem(mToolsMenu, ID_PICK_AND_PULL_MENUITEM, _("Pick-n-Pull") + wxS("\tK"), wxEmptyString, wxITEM_RADIO);
         mToolsMenu->Append(pickAndPullMenuItem);
         Connect(ID_PICK_AND_PULL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPickAndPullMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('K', ID_PICK_AND_PULL_MENUITEM)
 
         wxMenuItem * smashMenuItem = new wxMenuItem(mToolsMenu, ID_SMASH_MENUITEM, _("Smash") + wxS("\tS"), wxEmptyString, wxITEM_RADIO);
         mToolsMenu->Append(smashMenuItem);
         Connect(ID_SMASH_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSmashMenuItemSelected);
-        // TODOTEST
-        acceleratorEntries.emplace_back(); acceleratorEntries.back().FromString(smashMenuItem->GetItemLabel());
+        ADD_PLAIN_ACCELERATOR_KEY('S', ID_SMASH_MENUITEM)
 
         wxMenuItem * sliceMenuItem = new wxMenuItem(mToolsMenu, ID_SLICE_MENUITEM, _("Slice") + wxS("\tL"), wxEmptyString, wxITEM_RADIO);
         mToolsMenu->Append(sliceMenuItem);
         Connect(ID_SLICE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSliceMenuItemSelected);
-        // TODOTEST
-        acceleratorEntries.emplace_back(); acceleratorEntries.back().FromString(sliceMenuItem->GetItemLabel());
+        ADD_PLAIN_ACCELERATOR_KEY('L', ID_SLICE_MENUITEM)
 
         wxMenuItem * heatBlasterMenuItem = new wxMenuItem(mToolsMenu, ID_HEAT_BLASTER_MENUITEM, _("HeatBlaster/CoolBlaster") + wxS("\tH"), wxEmptyString, wxITEM_RADIO);
         mToolsMenu->Append(heatBlasterMenuItem);
         Connect(ID_HEAT_BLASTER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnHeatBlasterMenuItemSelected);
-        // TODOTEST
-        //acceleratorEntries.emplace_back(); acceleratorEntries.back().FromString(heatBlasterMenuItem->GetItemLabel());
-        acceleratorEntries.emplace_back(wxACCEL_NORMAL, int('H'), ID_HEAT_BLASTER_MENUITEM);
+        ADD_PLAIN_ACCELERATOR_KEY('H', ID_HEAT_BLASTER_MENUITEM)
 
         wxMenuItem * fireExtinguisherMenuItem = new wxMenuItem(mToolsMenu, ID_FIRE_EXTINGUISHER_MENUITEM, _("Fire Extinguisher") + wxS("\tX"), wxEmptyString, wxITEM_RADIO);
         mToolsMenu->Append(fireExtinguisherMenuItem);
         Connect(ID_FIRE_EXTINGUISHER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFireExtinguisherMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('X', ID_FIRE_EXTINGUISHER_MENUITEM)
 
         wxMenuItem * blastToolMenuItem = new wxMenuItem(mToolsMenu, ID_BLAST_TOOL_MENUITEM, _("Blast") + wxS("\t8"), wxEmptyString, wxITEM_RADIO);
         mToolsMenu->Append(blastToolMenuItem);
         Connect(ID_BLAST_TOOL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnBlastToolMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('8', ID_BLAST_TOOL_MENUITEM)
 
         wxMenuItem * electricSparkMenuItem = new wxMenuItem(mToolsMenu, ID_ELECTRICSPARK_MENUITEM, _("Electric Spark") + wxS("\t7"), wxEmptyString, wxITEM_RADIO);
         mToolsMenu->Append(electricSparkMenuItem);
         Connect(ID_ELECTRICSPARK_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnElectricSparkToolMenuItemSelected);
+        // TODOHERE
 
         wxMenuItem * grabMenuItem = new wxMenuItem(mToolsMenu, ID_GRAB_MENUITEM, _("Attract/Repel") + wxS("\tG"), wxEmptyString, wxITEM_RADIO);
         mToolsMenu->Append(grabMenuItem);
