@@ -199,11 +199,14 @@ MainFrame::MainFrame(
     {
         wxMenuBar * mainMenuBar = new wxMenuBar();
 
+#ifdef __WXGTK__
         // Note: we also build an accelerator table for plain keys because of https://trac.wxwidgets.org/ticket/17611
         std::vector<wxAcceleratorEntry> acceleratorEntries;
 #define ADD_PLAIN_ACCELERATOR_KEY(key, cmd) \
         acceleratorEntries.emplace_back(wxACCEL_NORMAL, int((key)), (cmd));
-
+#else
+#define ADD_PLAIN_ACCELERATOR_KEY(key, cmd)
+#endif
 
         // File
 
@@ -550,9 +553,11 @@ MainFrame::MainFrame(
 
         SetMenuBar(mainMenuBar);
 
+#ifdef __WXGTK__
         // Set accelerator
         wxAcceleratorTable accel(acceleratorEntries.size(), acceleratorEntries.data());
         SetAcceleratorTable(accel);
+#endif
     }
 
 
