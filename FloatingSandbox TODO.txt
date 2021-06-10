@@ -651,6 +651,19 @@ Render:
 				+ Previous index or None (opt size_t)
 				- Review if all PointsToVisit members and RenderSparkle members are needed
 			- Fix sea disappearing: Titanic with strength=max engineThrust=max and sparkled engine, hitting ocean floor spike
+
+20:30:45.900354:TODOHERE! absVerticalVelocity=12880 q=-772923 l=805.068 mi=11.7406 depthAttenuation=0.990414
+20:30:46.185021:TODOHERE! absVerticalVelocity=1.57796e+15 q=-1.16199e+28 l=9.86227e+13 mi=21.3407 depthAttenuation=0.995361
+20:30:46.185055:TODOHERE! absVerticalVelocity=4.29216e+15 q=-8.59724e+28 l=2.6826e+14 mi=21.3407 depthAttenuation=0.995361
+20:30:46.185069:TODOHERE! absVerticalVelocity=9.25067e+09 q=-3.99349e+17 l=5.78167e+08 mi=11.8201 depthAttenuation=0.995361
+20:30:46.185076:TODOHERE! absVerticalVelocity=1.24676e+13 q=-7.25393e+23 l=7.79225e+11 mi=21.3407 depthAttenuation=0.995361
+20:30:46.185090:TODOHERE! absVerticalVelocity=3.24093e+11 q=-4.90169e+20 l=2.02558e+10 mi=16.8752 depthAttenuation=0.995361
+20:30:46.231057:TODOHERE! absVerticalVelocity=21909.6 q=-2.23802e+06 l=1369.42 mi=11.774 depthAttenuation=0.558795
+20:30:46.231088:TODOHERE! absVerticalVelocity=21067.8 q=-2.06925e+06 l=1316.8 mi=11.7756 depthAttenuation=0.631078
+20:30:46.231098:TODOHERE! absVerticalVelocity=25187.8 q=-2.95818e+06 l=1574.3 mi=11.7883 depthAttenuation=0.538089
+20:30:46.231106:TODOHERE! absVerticalVelocity=23158.4 q=-2.50052e+06 l=1447.46 mi=21.3407 depthAttenuation=0.667636
+				- Test with clamping absVerticalVelocity to 1000
+
 			= Fix juncture
 				+ Previous and Next normalized vectors need to be passed to each Upload()
 				+ Optimize locally
@@ -705,7 +718,7 @@ Render:
 				- Wider halo (linear? linear+smoothstep?)
 			- Test:
 				+ Disconnected components
-			- Nuke EMP tool in this spec
+			+ Nuke EMP tool in this spec
 			- Add material-based to spec:
 				- Material-driven
 					- New "electrical conductivity" *structural* property - try to name it differently than the electrical property though
@@ -719,12 +732,12 @@ Render:
 
 		- Spread out rotting:
 			! Now: at step 20/49
-			- Next: TODOHERE - and fix also combustion!
+			- Next: TODOHERE - and fix also combustion - spread evenly!
 				static constexpr int UpdateSinkingPeriodStep = 6;
 				static constexpr int CombustionStateMachineSlowPeriodStep1 = 13;
 				static constexpr int RotPointsPeriodStep = 20;
 				static constexpr int CombustionStateMachineSlowPeriodStep2 = 27;
-				static constexpr int SpringDecayAndTemperaturePeriodStep = 34;
+				static constexpr int SpringDecayAndTemperaturePeriodStep = 34; - Spread out spring coeffs' recalculations (*)
 				static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
 				static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
 
@@ -732,15 +745,36 @@ Render:
 		- Inject cracks (*)
 
 		- Test bubble rendering with indices
+			- Sharing VBOs in VAOs: 
+				- https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo
+				- https://stackoverflow.com/questions/23542355/using-a-vertex-buffer-in-two-different-vertex-array-objects
+				- Idea: one single "TriangleQuads" VBO for all render contexts, created and initialized in GlobalRenderContext, and passed
+				  to all child contextes via cctor
+					- New class in OpenGL lib: TriangleQuadsSeriesVBO
+						- Wraps VBO (public) and local buffer (BoundedVector, private)
+							- VBO taken in cctor (read below, instance is deferred-init'd as uq_ptr)
+						- Exposes void EnsureSize(# of quads)
+							- If # of quads > current: enlarge & populate local buffer, re-allocates VBO and uploads new portion
+							- Starts empty
+						- Exposes VBO
+					- One single instance owned by GlobalRenderContext, as uq_ptr (w/deferred creation taking VBO)
+						- At GlobalRenderContext::cctor()
+					- Passed to child contextes as reference
+					- Child contextes do:
+						- Prepare: EnsureSize(# of quads)
+						- Draw: Bind itbefore drawing quads
 			- If works, other candidates:
 				- Clouds
 				- Generic textures
-				- 
+				- Fonts
+				- Fishes
 
-		- Pins: SHIFT to remove them all (*)
+		- Way to remove all pins (*)
 
 		- Test on Dell
-			- Working: TODO: list
+			- Test that these work: 
+				- Pressure crush
+				- ElectricSpark
 			- Perf:
 				- Before:
 				- After:
@@ -1546,9 +1580,11 @@ Render:
 
 - Dynamics:
 
-	- Try spreading out spring coeffs' recalculations - for better look'n'feel
+	- Spread out spring coeffs' recalculations (*)
+		- For better look'n'feel
 
-	- Way to remove all pins
+	- Way to remove all pins (*)
+		- SHIFT to remove them all
 
 	- Water impact (*): water drag does not cause ships to break upon impact
 		= See if due to lack of square law: find law such that Titanic's dive is still the same, but higher velocities get higher drags
@@ -1564,6 +1600,12 @@ Render:
 						- Impact depth: https://en.wikipedia.org/wiki/Impact_depth
 						- https://physics.stackexchange.com/questions/120036/force-of-an-impact-on-water?noredirect=1&lq=1
 						- https://wat.lewiscollard.com/archive/www.newton.dep.anl.gov/askasci/gen01/gen01790.htm
+
+	- Electric sparks: material-driven
+		- New "electrical conductivity" *structural* property - try to name it differently than the electrical property though
+			- First off, need "Material Type" rearc (*) just for helping a script that populates electrical conductivity automatically in material json
+		- New springs ranking: f(direction + conductivity)
+
 
 	- Air bubbles with proper vortices, due to water moving fast around it
 		- Like at https://youtu.be/KPsnUPIHZuM
@@ -1800,30 +1842,6 @@ Render:
 	- When lightning hits (a metal part of) the ship, then lights should go off temporarily
 
 	- Fires break out where electrical layer breaks (e.g. where *powered* line is cut)
-
-	= EMP tool (*)
-		! Better after electrical "expansion"
-		! Better after frontier
-		- Spec:
-			- Turns off generators in radius
-			- Visualization:
-				- N electric arcs between N pairs of (far apart) frontier points, moving along frontier
-				- State machine for visualization @ GameController
-		- Impl:
-			- Expanding circle:
-				- Tool: progress 0->1 as long as mouse doesn't move
-				- GameController: 
-					- Calc progress=>radius transformation
-					- Invoke Ship::interaction(radius)
-					- Radius -> Trivial state machine -> render
-				- ShipInteraction(center, radius):
-					- For each non-destroyed generator that is in radius && !(generator.state.EMPEndTimestamp):
-						- generator.state.EMPEndTimestamp = now + small random variation
-				- ElectricalElements::Update: generators:
-					- If now > generator.state.EMPEndTimestamp: generator.state.EMPEndTimestamp.reset()
-				- ElectricalElements::ConnectivityVisit:
-					- Generator is off if !!(generator.state.EMPEndTimestamp)
-			- Sounds: electric buzz (kinda like Nemo) @ trigger; short; x2-4
 
 	- Lights/materials breaking under pressure (*)
 		! Unrelated to pressure crush (*) with frontier
