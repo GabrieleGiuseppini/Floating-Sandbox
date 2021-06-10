@@ -91,26 +91,19 @@ void ShipElectricSparks::Upload(
 
     for (auto const & electricSpark : mSparksToRender)
     {
-        vec2f const startPosition = points.GetPosition(electricSpark.StartPointIndex);
-        vec2f const endPosition = points.GetPosition(electricSpark.EndPointIndex);
-
-        vec2f const direction = (endPosition - startPosition).normalise();
-        vec2f const startDirection = (electricSpark.PreviousPointIndex != NoneElementIndex)
-            ? (startPosition - points.GetPosition(electricSpark.PreviousPointIndex)).normalise()
-            : direction;
-        vec2f const endDirection = (electricSpark.NextPointIndex != NoneElementIndex)
-            ? (points.GetPosition(electricSpark.NextPointIndex) - endPosition).normalise()
-            : direction;
-
         shipRenderContext.UploadElectricSpark(
             points.GetPlaneId(electricSpark.StartPointIndex),
-            startPosition,
+            electricSpark.StartPointPosition,
             electricSpark.StartSize,
-            endPosition,
+            electricSpark.EndPointPosition,
             electricSpark.EndSize,
-            startDirection,
-            direction,
-            endDirection);
+            electricSpark.Direction,
+            electricSpark.PreviousSparkIndex.has_value()
+                ? mSparksToRender[*electricSpark.PreviousSparkIndex].Direction
+                : electricSpark.Direction,
+            electricSpark.NextSparkIndex.has_value()
+                ? mSparksToRender[*electricSpark.NextSparkIndex].Direction
+                : electricSpark.Direction);
     }
 
     shipRenderContext.UploadElectricSparksEnd();
@@ -119,7 +112,7 @@ void ShipElectricSparks::Upload(
 /// //////////////////////////////////////////////////////////////
 
 void ShipElectricSparks::PropagateSparks(
-    ElementIndex startingPointIndex,
+    ElementIndex const initialPointIndex,
     std::uint64_t counter,
     float currentSimulationTime,
     Points const & points,
@@ -135,8 +128,8 @@ void ShipElectricSparks::PropagateSparks(
     // Constants
     //
 
-    size_t constexpr StartingArcsMin = 4;
-    size_t constexpr StartingArcsMax = 6;
+    size_t constexpr InitialArcsMin = 4;
+    size_t constexpr InitialArcsMax = 6;
     float constexpr ForkSpacingMin = 5.0f;
     float constexpr ForkSpacingMax = 10.0f;
     float constexpr MaxEquivalentPathLength = 35.0f; // TODO: should this be based off total number of springs?
@@ -145,24 +138,24 @@ void ShipElectricSparks::PropagateSparks(
     struct SparkPointToVisit
     {
         ElementIndex PointIndex;
-        vec2f Direction; // Normalized direction that this arc started with
+        vec2f PreferredDirection; // Normalized direction that this arc started with
         float EquivalentPathLength; // Cumulative equivalent length of path so far, up to the point that the spark starts at
         ElementIndex IncomingSpringIndex; // The index of the spring that we traveled to reach this point
-        size_t PreviousRenderableSparkIndex; // The index if the previous spark in the vector of sparks to render
+        size_t IncomingRenderableSparkIndex; // The index of the spark we traveled through to reach this point
         float EquivalentPathLengthToNextFork; // We'll fork when the equivalent path length is longer than this
 
         SparkPointToVisit(
             ElementIndex pointIndex,
-            vec2f const & direction,
+            vec2f const & preferredDirection,
             float equivalentPathLength,
             ElementIndex incomingSpringIndex,
-            size_t previousRenderableSparkIndex,
+            size_t incomingRenderableSparkIndex,
             float equivalentPathLengthToNextFork)
             : PointIndex(pointIndex)
-            , Direction(direction)
+            , PreferredDirection(preferredDirection)
             , EquivalentPathLength(equivalentPathLength)
             , IncomingSpringIndex(incomingSpringIndex)
-            , PreviousRenderableSparkIndex(previousRenderableSparkIndex)
+            , IncomingRenderableSparkIndex(incomingRenderableSparkIndex)
             , EquivalentPathLengthToNextFork(equivalentPathLengthToNextFork)
         {}
     };
@@ -201,28 +194,28 @@ void ShipElectricSparks::PropagateSparks(
     };
 
     //
-    // 1. Electrify starting point
+    // 1. Electrify initial point
     //
 
-    float const startingPointSize = calculateSparkSize(0.0f);
+    float const initialPointSize = calculateSparkSize(0.0f);
 
     mShipPhysicsHandler.HandleElectricSpark(
-        startingPointIndex,
-        startingPointSize, // strength
+        initialPointIndex,
+        initialPointSize, // strength
         currentSimulationTime,
         gameParameters);
 
-    mPointElectrificationCounter[startingPointIndex] = counter;
+    mPointElectrificationCounter[initialPointIndex] = counter;
 
     //
-    // 2. Jump-start: find the initial springs outgoing from the starting point
+    // 2. Jump-start: find the initial springs outgoing from the initial point
     //
 
-    std::vector<ElementIndex> startingSprings;
+    std::vector<ElementIndex> initialSprings;
 
     {
-        // Decide number of starting springs for this interaction
-        size_t const startingArcsCount = GameRandomEngine::GetInstance().GenerateUniformInteger(StartingArcsMin, StartingArcsMax);
+        // Decide number of initial springs for this interaction
+        size_t const initialArcsCount = GameRandomEngine::GetInstance().GenerateUniformInteger(InitialArcsMin, InitialArcsMax);
 
         //
         // 1. Fetch all springs that were electrified in the previous iteration
@@ -230,14 +223,14 @@ void ShipElectricSparks::PropagateSparks(
 
         std::vector<std::tuple<ElementIndex, float>> otherSprings;
 
-        for (auto const & cs : points.GetConnectedSprings(startingPointIndex).ConnectedSprings)
+        for (auto const & cs : points.GetConnectedSprings(initialPointIndex).ConnectedSprings)
         {
             assert(mPointElectrificationCounter[cs.OtherEndpointIndex] != counter);
 
             if (wasSpringElectrifiedInPreviousInteraction[cs.SpringIndex]
-                && startingSprings.size() < startingArcsCount)
+                && initialSprings.size() < initialArcsCount)
             {
-                startingSprings.emplace_back(cs.SpringIndex);
+                initialSprings.emplace_back(cs.SpringIndex);
             }
             else
             {
@@ -261,37 +254,39 @@ void ShipElectricSparks::PropagateSparks(
             });
 
         // Pick winners
-        for (size_t s = 0; s < otherSprings.size() && startingSprings.size() < startingArcsCount; ++s)
+        for (size_t s = 0; s < otherSprings.size() && initialSprings.size() < initialArcsCount; ++s)
         {
-            startingSprings.emplace_back(std::get<0>(otherSprings[s]));
+            initialSprings.emplace_back(std::get<0>(otherSprings[s]));
         }
     }
 
     //
-    // 3. Electrify the starting springs and initialize expansions
+    // 3. Electrify the initial springs and initialize expansions
     //
 
     std::vector<SparkPointToVisit> currentPointsToVisit;
 
     {
-        auto const startingPointPosition = points.GetPosition(startingPointIndex);
+        auto const initialPointPosition = points.GetPosition(initialPointIndex);
 
-        for (ElementIndex const s : startingSprings)
+        for (ElementIndex const s : initialSprings)
         {
-            ElementIndex const targetEndpointIndex = springs.GetOtherEndpointIndex(s, startingPointIndex);
+            ElementIndex const targetEndpointIndex = springs.GetOtherEndpointIndex(s, initialPointIndex);
+            vec2f const targetEndpointPosition = points.GetPosition(targetEndpointIndex);
+            vec2f const direction = (targetEndpointPosition - initialPointPosition).normalise();
 
             float const equivalentPathLength = 1.0f; // TODO: material-based
 
-            float const size = calculateSparkSize(0.0f + equivalentPathLength);
+            float const endSize = calculateSparkSize(0.0f + equivalentPathLength);
 
-            // Note: we don't flag the starting springs as electrified, as they are the only ones who share
+            // Note: we don't flag the initial springs as electrified, as they are the only ones who share
             // a point in common and thus if they're scooped up at the next interaction, they'll add
             // an N-way fork, which could even get compounded by being picked up at the next, and so on...
 
             // Electrify target point
             mShipPhysicsHandler.HandleElectricSpark(
                 targetEndpointIndex,
-                size, // strength
+                endSize, // strength
                 currentSimulationTime,
                 gameParameters);
 
@@ -304,21 +299,22 @@ void ShipElectricSparks::PropagateSparks(
             {
                 currentPointsToVisit.emplace_back(
                     targetEndpointIndex,
-                    (points.GetPosition(targetEndpointIndex) - startingPointPosition).normalise(),
+                    direction,
                     0.0f + equivalentPathLength,
                     s,
-                    mSparksToRender.size(),
+                    mSparksToRender.size(), // The arc we'll be pushing right now is the predecessor of this point we're pushing now
                     GameRandomEngine::GetInstance().GenerateUniformReal(ForkSpacingMin, ForkSpacingMax));
             }
 
             // Render
             mSparksToRender.emplace_back(
-                NoneElementIndex, // Previous point == none
-                startingPointIndex,
-                startingPointSize,
-                targetEndpointIndex,
-                size,
-                NoneElementIndex); // Next point == will fill later
+                initialPointIndex,
+                initialPointPosition,
+                initialPointSize,
+                targetEndpointPosition,
+                endSize,
+                direction,
+                std::nullopt); // No previous spark
         }
     }
 
@@ -337,7 +333,8 @@ void ShipElectricSparks::PropagateSparks(
         // Visit all points awaiting expansion
         for (auto const & pv : currentPointsToVisit)
         {
-            vec2f const pointPosition = points.GetPosition(pv.PointIndex);
+            ElementIndex const startingPointIndex = pv.PointIndex;
+            vec2f const startingPointPosition = points.GetPosition(startingPointIndex);
 
             // Initialize path length until next fork - we'll eventually reset it if we fork
             float equivalentPathLengthToNextFork = pv.EquivalentPathLengthToNextFork;
@@ -368,10 +365,13 @@ void ShipElectricSparks::PropagateSparks(
             {
                 if (cs.SpringIndex != pv.IncomingSpringIndex)
                 {
+                    vec2f const springDirection = (points.GetPosition(cs.OtherEndpointIndex) - startingPointPosition).normalise();
+                    float const springAlignment = springDirection.dot(pv.PreferredDirection);
+
                     if (nextSprings.empty() && wasSpringElectrifiedInPreviousInteraction[cs.SpringIndex])
                     {
                         if (mPointElectrificationCounter[cs.OtherEndpointIndex] != counter
-                            && (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction) > 0.0f)
+                            && springAlignment > 0.0f)
                         {
                             // We take this one for sure
                             nextSprings.emplace_back(cs.SpringIndex);
@@ -380,8 +380,7 @@ void ShipElectricSparks::PropagateSparks(
                     else
                     {
                         // Rank based on alignment
-                        float const alignment = (points.GetPosition(cs.OtherEndpointIndex) - pointPosition).normalise().dot(pv.Direction);
-                        if (alignment > bestCandidateNewSpringAlignment1)
+                        if (springAlignment > bestCandidateNewSpringAlignment1)
                         {
                             bestCandidateNewSpring3 = bestCandidateNewSpring2;
                             bestCandidateNewSpringAlignment3 = bestCandidateNewSpringAlignment2;
@@ -390,20 +389,20 @@ void ShipElectricSparks::PropagateSparks(
                             bestCandidateNewSpringAlignment2 = bestCandidateNewSpringAlignment1;
 
                             bestCandidateNewSpring1 = cs.SpringIndex;
-                            bestCandidateNewSpringAlignment1 = alignment;
+                            bestCandidateNewSpringAlignment1 = springAlignment;
                         }
-                        else if (alignment > bestCandidateNewSpringAlignment2)
+                        else if (springAlignment > bestCandidateNewSpringAlignment2)
                         {
                             bestCandidateNewSpring3 = bestCandidateNewSpring2;
                             bestCandidateNewSpringAlignment3 = bestCandidateNewSpringAlignment2;
 
                             bestCandidateNewSpring2 = cs.SpringIndex;
-                            bestCandidateNewSpringAlignment2 = alignment;
+                            bestCandidateNewSpringAlignment2 = springAlignment;
                         }
-                        else if (alignment > bestCandidateNewSpringAlignment3)
+                        else if (springAlignment > bestCandidateNewSpringAlignment3)
                         {
                             bestCandidateNewSpring3 = cs.SpringIndex;
-                            bestCandidateNewSpringAlignment3 = alignment;
+                            bestCandidateNewSpringAlignment3 = springAlignment;
                         }
                     }
                 }
@@ -485,6 +484,8 @@ void ShipElectricSparks::PropagateSparks(
             for (auto const s : nextSprings)
             {
                 ElementIndex const targetEndpointIndex = springs.GetOtherEndpointIndex(s, pv.PointIndex);
+                vec2f const targetEndpointPosition = points.GetPosition(targetEndpointIndex);
+                vec2f const springDirection = (targetEndpointPosition - startingPointPosition).normalise();
 
                 float const startEquivalentPathLength = pv.EquivalentPathLength;
                 float const equivalentStepLength = 1.0f; // TODO: material-based
@@ -512,25 +513,29 @@ void ShipElectricSparks::PropagateSparks(
                     {
                         nextPointsToVisit.emplace_back(
                             targetEndpointIndex,
-                            pv.Direction,
+                            pv.PreferredDirection,
                             endEquivalentPathLength,
                             s,
-                            mSparksToRender.size(),
+                            mSparksToRender.size(), // The arc we'll be pushing right now is the predecessor of this point we're pushing now
                             equivalentPathLengthToNextFork);
                     }
                 }
 
+                // Connect this renderable spark to its predecessor, if this is the first one
+                if (!mSparksToRender[pv.IncomingRenderableSparkIndex].NextSparkIndex.has_value())
+                {
+                    mSparksToRender[pv.IncomingRenderableSparkIndex].NextSparkIndex = mSparksToRender.size(); // The arc we'll be pushing right now
+                }
+
                 // Render
                 mSparksToRender.emplace_back(
-                    springs.GetOtherEndpointIndex(pv.IncomingSpringIndex, pv.PointIndex),
-                    pv.PointIndex,
+                    startingPointIndex,
+                    startingPointPosition,
                     startSize,
-                    targetEndpointIndex,
+                    targetEndpointPosition,
                     calculateSparkSize(endEquivalentPathLength),
-                    NoneElementIndex);
-
-                // Connect to previous spark
-                mSparksToRender[pv.PreviousRenderableSparkIndex].NextPointIndex = targetEndpointIndex;
+                    springDirection,
+                    pv.IncomingRenderableSparkIndex);
             }
         }
 

@@ -642,19 +642,26 @@ Render:
 					+ New Ship buffer: ElectricSpark, simple std::vector
 						+ Reset at first update that was not preceded by the interaction
 						+ Uploaded by Ship::Upload
+			= Redo rendering:
+				+ Rendering struct contains immediately positions, rather than indices
+					! We'd save on normalizations
+					! It might also be better visually, allowing for sparks to "leave" the structure
+				+ Starting point, ending point
+				+ Direction
+				+ Previous index or None (opt size_t)
+				- Review if all PointsToVisit members and RenderSparkle members are needed
+			- Fix sea disappearing: Titanic with strength=max engineThrust=max and sparkled engine, hitting ocean floor spike
 			= Fix juncture
 				+ Previous and Next normalized vectors need to be passed to each Upload()
 				+ Optimize locally
 				+ Wireframe
-				- Check double-rendering of quads
-					- Wireframe, again
-				- Fix fork: substitute "nextDirection" with "nextL/RDirection"
-					- R is direction with min cross product
-					- L is direction with max cross product
-					- Both default-init'd with max/min limit
+				X Fix fork: substitute "nextDirection" with "nextL/RDirection"
+					+ R is direction with min cross product
+					+ L is direction with max cross product
+					+ Both default-init'd with max/min limit
 				- Fix sharp angles (Goodyear test)
-			= Interaction
-				+Spark expansion logic
+			+ Interaction
+				+ Spark expansion logic
 					+ Issue with parallel arms: see if reintroducing third-best helps
 					+ Try with alignment being exclusively on original spring
 					+ Change prob's:
@@ -663,6 +670,7 @@ Render:
 					X Fork probabilities: try with using pv.EquivalentPathSinceLastFork
 					+ Fork probabilities: try with pre-calculated EquivalentPathLengthToNextFork
 						+ Value = uniform(min, max), calculated at emplace time
+					X After fork, proceed in both new directions
 				+ Interactions: private OnPointElectrified(...):
 					+ Takes also ElectricalElements
 					+ Driven by interaction: upon energizing a point, calls into ElectricalElements
@@ -692,21 +700,22 @@ Render:
 					+ Gadgets
 						+ Replace OnNeighborhoodDisturbed() with OnElectricSpark(pointIndex), & precise check for index
 							+ Undo OnPointDetached change
-				- Material-driven
-					- New "electrical conductivity" *structural* property - try to name it differently than the electrical property though
-						- First off, need "Material Type" rearc (*) just for helping a script that populates electrical conductivity automatically in material json
-					- New springs ranking: f(direction + conductivity)
-			- Finalize:
-				- Test with Rendering struct containing immediately positions, rather than indices
-					- We'd save on normalizations
-					- It might also be better visually, allowing for sparks to "leave" the structure
 			- Shader:
 				- Different ratio of inner white vs. body
 				- Wider halo (linear? linear+smoothstep?)
 			- Test:
 				+ Disconnected components
 			- Nuke EMP tool in this spec
+			- Add material-based to spec:
+				- Material-driven
+					- New "electrical conductivity" *structural* property - try to name it differently than the electrical property though
+						- First off, need "Material Type" rearc (*) just for helping a script that populates electrical conductivity automatically in material json
+					- New springs ranking: f(direction + conductivity)
 			- changelist
+
+		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
+			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
+			+ 0.242		
 
 		- Spread out rotting:
 			! Now: at step 20/49
@@ -720,15 +729,15 @@ Render:
 				static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
 
 
-		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
-			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
-			+ 0.242		
-
 		- Inject cracks (*)
 
 		- Test bubble rendering with indices
+			- If works, other candidates:
+				- Clouds
+				- Generic textures
+				- 
 
-		- Pins: SHIFT to remove them all *
+		- Pins: SHIFT to remove them all (*)
 
 		- Test on Dell
 			- Working: TODO: list

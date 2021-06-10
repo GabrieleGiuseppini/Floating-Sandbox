@@ -224,16 +224,16 @@ public:
         float startSize,
         vec2f const & endPosition,
         float endSize,
-        vec2f const & startDirection,
         vec2f const & direction,
-        vec2f const & endDirection)
+        vec2f previousDirection,
+        vec2f nextDirection)
     {
         float const fPlaneId = static_cast<float>(planeId);
 
         //
-        // Calculate start and end vectors
+        // Calculate quad vertices
         //
-        // C---S---D    -- startJ -->
+        // C---S---D
         // |       |
         // |       |
         // |       |
@@ -241,9 +241,9 @@ public:
         // |       |
         // |       |
         // |       |
-        // A---E---B    --- endJ --->
+        // A---E---B
         //
-        // Also, we extrude the corners to make them join nicely to the previous
+        // We extrude the corners to make them join nicely to the previous
         // and next segments. The calculation of the extrusion (J) between two
         // segments is based on these observations:
         //  * The direction of the extrusion is along the resultant of the normals
@@ -255,11 +255,11 @@ public:
         float constexpr Wh = 0.75f; // Magic number: sparkle half width, world coords
 
         vec2f const n = direction.to_perpendicular();
-        vec2f const startNormals = startDirection.to_perpendicular() + n;
-        vec2f const endNormals = n + endDirection.to_perpendicular();
+        vec2f const startResultantNormal = previousDirection.to_perpendicular() + n;
+        vec2f const endResultantNormal = n + nextDirection.to_perpendicular();
 
-        vec2f const startJ = startNormals / n.dot(startNormals) * Wh * startSize;
-        vec2f const endJ = endNormals / n.dot(endNormals) * Wh * endSize;
+        vec2f const startJ = startResultantNormal / n.dot(startResultantNormal) * Wh * startSize;
+        vec2f const endJ = endResultantNormal / n.dot(endResultantNormal) * Wh * endSize;
 
         // C, D = left-top, right-top
         vec2f const C = startPosition - startJ;

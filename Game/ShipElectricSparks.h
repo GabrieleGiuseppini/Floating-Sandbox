@@ -43,7 +43,7 @@ public:
 private:
 
     void PropagateSparks(
-        ElementIndex startingPointIndex,
+        ElementIndex initialPointIndex,
         std::uint64_t counter,
         float currentSimulationTime,
         Points const & points,
@@ -73,28 +73,35 @@ private:
 
     struct RenderableElectricSpark
     {
-        ElementIndex PreviousPointIndex;
-
         ElementIndex StartPointIndex;
+        vec2f StartPointPosition;
         float StartSize;
-        ElementIndex EndPointIndex;
+        vec2f EndPointPosition;
         float EndSize;
+        vec2f Direction;
 
-        ElementIndex NextPointIndex;
+        // Index of the spark that preceded this one, or None if this the first spark
+        std::optional<size_t> PreviousSparkIndex;
+
+        // Index of the (first) spark that follows this one, or None if this the last spark
+        std::optional<size_t> NextSparkIndex;
 
         RenderableElectricSpark(
-            ElementIndex previousPointIndex,
             ElementIndex startPointIndex,
+            vec2f startPointPosition,
             float startSize,
-            ElementIndex endPointIndex,
+            vec2f endPointPosition,
             float endSize,
-            ElementIndex nextPointIndex)
-            : PreviousPointIndex(previousPointIndex)
-            , StartPointIndex(startPointIndex)
+            vec2f direction,
+            std::optional<size_t> previousSparkIndex)
+            : StartPointIndex(startPointIndex)
+            , StartPointPosition(startPointPosition)
             , StartSize(startSize)
-            , EndPointIndex(endPointIndex)
+            , EndPointPosition(endPointPosition)
             , EndSize(endSize)
-            , NextPointIndex(nextPointIndex)
+            , Direction(direction)
+            , PreviousSparkIndex(previousSparkIndex)
+            , NextSparkIndex(std::nullopt) // Expected to be populated later
         {}
     };
 
