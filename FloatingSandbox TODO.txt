@@ -741,7 +741,6 @@ Render:
 				static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
 				static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
 
-
 		- Inject cracks (*)
 
 		- Test bubble rendering with indices
@@ -752,17 +751,17 @@ Render:
 				  to all child contextes via cctor
 					- New class in OpenGL lib: TriangleQuadsSeriesVBO
 						- Wraps VBO (public) and local buffer (BoundedVector, private)
-							- VBO taken in cctor (read below, instance is deferred-init'd as uq_ptr)
-						- Exposes void EnsureSize(# of quads)
+							- VBO taken in cctor (read below, instance of TriangleQuadsSeriesVBO is deferred-init'd as uq_ptr)
+						- Exposes void ensure_size(# of quads)
 							- If # of quads > current: enlarge & populate local buffer, re-allocates VBO and uploads new portion
 							- Starts empty
-						- Exposes VBO
+						- Exposes VBO via getter
 					- One single instance owned by GlobalRenderContext, as uq_ptr (w/deferred creation taking VBO)
 						- At GlobalRenderContext::cctor()
 					- Passed to child contextes as reference
 					- Child contextes do:
-						- Prepare: EnsureSize(# of quads)
-						- Draw: Bind itbefore drawing quads
+						- Prepare: ensure_size(# of quads)
+						- Draw: Bind it before drawing quads
 			- If works, other candidates:
 				- Clouds
 				- Generic textures
