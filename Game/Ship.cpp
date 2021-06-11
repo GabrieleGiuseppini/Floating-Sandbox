@@ -1189,6 +1189,14 @@ void Ship::ApplyWorldSurfaceForces(
                         * Step(0.0f, thisPointDepth) // No displacement for above-water points
                         * 0.02f; // Magic number
 
+                    // TODOTEST
+                    if (std::abs(displacement) > 100.0f)
+                    {
+                        LogMessage("TODOHERE! absVerticalVelocity=", absVerticalVelocity, " q=", quadraticDisplacementMagnitude, " l=", linearDisplacementMagnitude,
+                            " mi=", massImpact, " depthAttenuation=", depthAttenuation);
+                    }
+
+
                     mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, displacement);
                 }
 
