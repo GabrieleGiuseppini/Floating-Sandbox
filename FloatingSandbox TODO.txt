@@ -642,14 +642,14 @@ Render:
 					+ New Ship buffer: ElectricSpark, simple std::vector
 						+ Reset at first update that was not preceded by the interaction
 						+ Uploaded by Ship::Upload
-			= Redo rendering:
+			+ Redo rendering:
 				+ Rendering struct contains immediately positions, rather than indices
 					! We'd save on normalizations
 					! It might also be better visually, allowing for sparks to "leave" the structure
 				+ Starting point, ending point
 				+ Direction
 				+ Previous index or None (opt size_t)
-				- Review if all PointsToVisit members and RenderSparkle members are needed
+				+ Review if all PointsToVisit members and RenderSparkle members are needed
 			+ Fix sea disappearing: Titanic with strength=max engineThrust=max and sparkled engine, hitting ocean floor spike
 				+ Test with clamping absVerticalVelocity to 10000 or 20000
 			= Fix juncture

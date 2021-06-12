@@ -493,6 +493,25 @@ void ShipElectricSparks::PropagateSparks(
 
                 float const startSize = calculateSparkSize(startEquivalentPathLength);
 
+                size_t const springSparkToRenderIndex = mSparksToRender.size(); // The arc we'll be pushing right now is the arc for this spring
+
+                // Render
+                mSparksToRender.emplace_back(
+                    startingPointIndex,
+                    startingPointPosition,
+                    startSize,
+                    targetEndpointPosition,
+                    calculateSparkSize(endEquivalentPathLength),
+                    springDirection,
+                    pv.IncomingRenderableSparkIndex);
+
+                // Connect this renderable spark to its predecessor, if this is the first one
+                if (!mSparksToRender[pv.IncomingRenderableSparkIndex].NextSparkIndex.has_value())
+                {
+                    mSparksToRender[pv.IncomingRenderableSparkIndex].NextSparkIndex = springSparkToRenderIndex;
+                }
+
+                // Propagate visit
                 if (mPointElectrificationCounter[targetEndpointIndex] != counter)
                 {
                     // Electrify spring
@@ -516,26 +535,10 @@ void ShipElectricSparks::PropagateSparks(
                             pv.PreferredDirection,
                             endEquivalentPathLength,
                             s,
-                            mSparksToRender.size(), // The arc we'll be pushing right now is the predecessor of this point we're pushing now
+                            springSparkToRenderIndex, // Predecessor
                             equivalentPathLengthToNextFork);
                     }
                 }
-
-                // Connect this renderable spark to its predecessor, if this is the first one
-                if (!mSparksToRender[pv.IncomingRenderableSparkIndex].NextSparkIndex.has_value())
-                {
-                    mSparksToRender[pv.IncomingRenderableSparkIndex].NextSparkIndex = mSparksToRender.size(); // The arc we'll be pushing right now
-                }
-
-                // Render
-                mSparksToRender.emplace_back(
-                    startingPointIndex,
-                    startingPointPosition,
-                    startSize,
-                    targetEndpointPosition,
-                    calculateSparkSize(endEquivalentPathLength),
-                    springDirection,
-                    pv.IncomingRenderableSparkIndex);
             }
         }
 
