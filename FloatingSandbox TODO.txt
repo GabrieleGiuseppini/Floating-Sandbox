@@ -652,7 +652,7 @@ Render:
 				+ Review if all PointsToVisit members and RenderSparkle members are needed
 			+ Fix sea disappearing: Titanic with strength=max engineThrust=max and sparkled engine, hitting ocean floor spike
 				+ Test with clamping absVerticalVelocity to 10000 or 20000
-			= Fix juncture
+			+ Fix juncture
 				+ Previous and Next normalized vectors need to be passed to each Upload()
 				+ Optimize locally
 				+ Wireframe
@@ -660,7 +660,7 @@ Render:
 					+ R is direction with min cross product
 					+ L is direction with max cross product
 					+ Both default-init'd with max/min limit
-				- Fix sharp angles (Goodyear test)
+				+ Fix sharp angles (Goodyear test): clamp to 0.01
 			+ Interaction
 				+ Spark expansion logic
 					+ Issue with parallel arms: see if reintroducing third-best helps
@@ -701,17 +701,12 @@ Render:
 					+ Gadgets
 						+ Replace OnNeighborhoodDisturbed() with OnElectricSpark(pointIndex), & precise check for index
 							+ Undo OnPointDetached change
-			- Shader:
+			= Shader:
 				- Different ratio of inner white vs. body
 				- Wider halo (linear? linear+smoothstep?)
-			- Test:
+			+ Test:
 				+ Disconnected components
 			+ Nuke EMP tool in this spec
-			- Add material-based to spec:
-				- Material-driven
-					- New "electrical conductivity" *structural* property - try to name it differently than the electrical property though
-						- First off, need "Material Type" rearc (*) just for helping a script that populates electrical conductivity automatically in material json
-					- New springs ranking: f(direction + conductivity)
 			- changelist
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
@@ -1895,8 +1890,13 @@ Render:
 	- Stars with database
 		- python script to generate binary maps for N and S emispheres
 
-	- Random noise that lowers strength to inject "cracks" when the ship is under stress
+	- Random noise that lowers strength to inject "cracks" when the ship is under stress (*)
+		! Fully deterministic (no randomness, needs to be property of ship)
 		- Random walk across pairs of points on opposide sides of ships
+		- Visualization:
+			- New Debug ship mode
+			- Upload makes use of new "Auxiliary quantity" upload facility in ShipRenderContext for buffer data
+			- New shader
 
 	- Torpedoes and missiles
 		- "You place one down and click where it speeds off to and explodes at. Basically a moving bomb that explodes

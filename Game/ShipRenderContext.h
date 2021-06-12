@@ -258,8 +258,15 @@ public:
         vec2f const startResultantNormal = previousDirection.to_perpendicular() + n;
         vec2f const endResultantNormal = n + nextDirection.to_perpendicular();
 
-        vec2f const startJ = startResultantNormal / n.dot(startResultantNormal) * Wh * startSize;
-        vec2f const endJ = endResultantNormal / n.dot(endResultantNormal) * Wh * endSize;
+        // We want to clamp n * resultantNormal, or else parallel directions
+        // result in ugly oblongations.
+        // Note: n * resultantNormal is always >= 0; proof:
+        //  n * resultantNormal = n * (x + n) = n * x + n * n;
+        //  considering that: n * n = 1 and  -1 <= n * x <= 1:
+        //  n * x + n * n = n * x + 1 --- qed
+
+        vec2f const startJ = startResultantNormal / std::max(0.01f, n.dot(startResultantNormal)) * Wh * startSize;
+        vec2f const endJ = endResultantNormal / std::max(0.01f, n.dot(endResultantNormal)) * Wh * endSize;
 
         // C, D = left-top, right-top
         vec2f const C = startPosition - startJ;
