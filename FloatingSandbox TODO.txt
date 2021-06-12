@@ -1,4 +1,3 @@
-
 =================================================
 Current perf:
 =================================================
@@ -651,20 +650,8 @@ Render:
 				+ Direction
 				+ Previous index or None (opt size_t)
 				- Review if all PointsToVisit members and RenderSparkle members are needed
-			- Fix sea disappearing: Titanic with strength=max engineThrust=max and sparkled engine, hitting ocean floor spike
-
-20:30:45.900354:TODOHERE! absVerticalVelocity=12880 q=-772923 l=805.068 mi=11.7406 depthAttenuation=0.990414
-20:30:46.185021:TODOHERE! absVerticalVelocity=1.57796e+15 q=-1.16199e+28 l=9.86227e+13 mi=21.3407 depthAttenuation=0.995361
-20:30:46.185055:TODOHERE! absVerticalVelocity=4.29216e+15 q=-8.59724e+28 l=2.6826e+14 mi=21.3407 depthAttenuation=0.995361
-20:30:46.185069:TODOHERE! absVerticalVelocity=9.25067e+09 q=-3.99349e+17 l=5.78167e+08 mi=11.8201 depthAttenuation=0.995361
-20:30:46.185076:TODOHERE! absVerticalVelocity=1.24676e+13 q=-7.25393e+23 l=7.79225e+11 mi=21.3407 depthAttenuation=0.995361
-20:30:46.185090:TODOHERE! absVerticalVelocity=3.24093e+11 q=-4.90169e+20 l=2.02558e+10 mi=16.8752 depthAttenuation=0.995361
-20:30:46.231057:TODOHERE! absVerticalVelocity=21909.6 q=-2.23802e+06 l=1369.42 mi=11.774 depthAttenuation=0.558795
-20:30:46.231088:TODOHERE! absVerticalVelocity=21067.8 q=-2.06925e+06 l=1316.8 mi=11.7756 depthAttenuation=0.631078
-20:30:46.231098:TODOHERE! absVerticalVelocity=25187.8 q=-2.95818e+06 l=1574.3 mi=11.7883 depthAttenuation=0.538089
-20:30:46.231106:TODOHERE! absVerticalVelocity=23158.4 q=-2.50052e+06 l=1447.46 mi=21.3407 depthAttenuation=0.667636
-				- Test with clamping absVerticalVelocity to 1000
-
+			+ Fix sea disappearing: Titanic with strength=max engineThrust=max and sparkled engine, hitting ocean floor spike
+				+ Test with clamping absVerticalVelocity to 10000 or 20000
 			= Fix juncture
 				+ Previous and Next normalized vectors need to be passed to each Upload()
 				+ Optimize locally

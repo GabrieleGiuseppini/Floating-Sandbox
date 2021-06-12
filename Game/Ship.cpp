@@ -1138,8 +1138,12 @@ void Ship::ApplyWorldSurfaceForces(
 
                 if constexpr (DoDisplaceWater)
                 {
+                    // Calculate vertical velocity, clamping it to a maximum to prevent
+                    // ocean surface instabilities with extremely high velocities
                     float const verticalVelocity = mPoints.GetVelocity(thisPointIndex).y;
-                    float const absVerticalVelocity = std::abs(verticalVelocity);
+                    float const absVerticalVelocity = std::min(
+                        std::abs(verticalVelocity),
+                        10000.0f); // Magic number
 
                     //
                     // Displacement magnitude calculation
@@ -1188,14 +1192,6 @@ void Ship::ApplyWorldSurfaceForces(
                         * SignStep(0.0f, verticalVelocity) // Displacement has same sign as vertical velocity
                         * Step(0.0f, thisPointDepth) // No displacement for above-water points
                         * 0.02f; // Magic number
-
-                    // TODOTEST
-                    if (std::abs(displacement) > 100.0f)
-                    {
-                        LogMessage("TODOHERE! absVerticalVelocity=", absVerticalVelocity, " q=", quadraticDisplacementMagnitude, " l=", linearDisplacementMagnitude,
-                            " mi=", massImpact, " depthAttenuation=", depthAttenuation);
-                    }
-
 
                     mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, displacement);
                 }
