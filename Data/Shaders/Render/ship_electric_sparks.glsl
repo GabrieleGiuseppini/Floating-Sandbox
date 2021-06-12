@@ -29,13 +29,15 @@ void main()
 {
     float d = abs(vertexGamma - 0.5);
 
-    float depthWhite = 1.0 - smoothstep(0.0, 0.15, d);
-    float depth = 1.0 - smoothstep(0.0, 0.5, d);
+    #define WhiteWidth .1
+    float depthWhite = 1.0 - min(d, WhiteWidth) / WhiteWidth;
+    #define AlphaWidth .45
+    float alpha = 1.0 - min(d, AlphaWidth) / AlphaWidth;
 
     gl_FragColor = vec4(
         mix(
             vec3(0.6, 0.8, 1.0), 
             vec3(1.),
             depthWhite),
-        depth);
+        alpha);
 } 

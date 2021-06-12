@@ -37,7 +37,7 @@ bool ShipElectricSparks::ApplySparkAt(
     // Find closest point, and check whether there _is_ actually a closest point
     //
 
-    float nearestDistance = 1.5f;
+    float nearestDistance = 2.0f;
     ElementIndex nearestPointIndex = NoneElementIndex;
 
     for (auto pointIndex : points.RawShipPoints()) // No point in visiting ephemeral points

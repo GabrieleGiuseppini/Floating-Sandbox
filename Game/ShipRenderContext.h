@@ -252,7 +252,10 @@ public:
         //    the angle between a normal and the direction of the extrusion
         //
 
-        float constexpr Wh = 0.75f; // Magic number: sparkle half width, world coords
+        // Sparkle half width, world coords - must be small compared with spring lengths!
+        // TODOTEST
+        //float constexpr Wh = 0.75f;
+        float constexpr Wh = 1.0f;
 
         vec2f const n = direction.to_perpendicular();
         vec2f const startResultantNormal = previousDirection.to_perpendicular() + n;
