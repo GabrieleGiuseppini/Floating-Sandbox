@@ -1860,11 +1860,13 @@ void Ship::EqualizeInternalPressure(GameParameters const & gameParameters)
 
         for (size_t s = 0; s < connectedSpringCount; ++s)
         {
-            ElementIndex const otherEndpointIndex = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s].OtherEndpointIndex;
+            auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
+            ElementIndex const otherEndpointIndex = cs.OtherEndpointIndex;
 
-            // We only consider outgoing pressure
+            // We only consider outgoing pressure, not towards hull points
             float const otherEndpointInternalPressure = oldPointInternalPressureBufferData[otherEndpointIndex];
-            if (internalPressure > otherEndpointInternalPressure)
+            if (internalPressure > otherEndpointInternalPressure
+                && mSprings.GetWaterPermeability(cs.SpringIndex))
             {
                 averageInternalPressure += otherEndpointInternalPressure;
                 targetEndpointsCounts += 1.0f;
@@ -1879,11 +1881,13 @@ void Ship::EqualizeInternalPressure(GameParameters const & gameParameters)
 
         for (size_t s = 0; s < connectedSpringCount; ++s)
         {
-            ElementIndex const otherEndpointIndex = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s].OtherEndpointIndex;
+            auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
+            ElementIndex const otherEndpointIndex = cs.OtherEndpointIndex;
 
-            // We only consider outgoing pressure
+            // We only consider outgoing pressure, not towards hull points
             float const otherEndpointInternalPressure = oldPointInternalPressureBufferData[otherEndpointIndex];
-            if (internalPressure > otherEndpointInternalPressure)
+            if (internalPressure > otherEndpointInternalPressure
+                && mSprings.GetWaterPermeability(cs.SpringIndex))
             {
                 float const outgoingDelta = averageInternalPressure - otherEndpointInternalPressure;
                 newPointInternalPressureBufferData[pointIndex] -= outgoingDelta;
