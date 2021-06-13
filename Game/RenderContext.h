@@ -905,6 +905,27 @@ public:
 
     // Upload is Asynchronous - buffer may not be used until the
     // next UpdateStart
+    inline void UploadShipPointAuxiliaryDataAsync(
+        ShipId shipId,
+        float const * auxiliaryData,
+        size_t startDst,
+        size_t count)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        // Run upload asynchronously
+        mRenderThread.QueueTask(
+            [=]()
+            {
+                mShips[shipId]->UploadPointAuxiliaryData(
+                    auxiliaryData,
+                    startDst,
+                    count);
+            });
+    }
+
+    // Upload is Asynchronous - buffer may not be used until the
+    // next UpdateStart
     inline void UploadShipPointFrontierColorsAsync(
         ShipId shipId,
         FrontierColor const * colors)

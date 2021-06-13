@@ -543,8 +543,9 @@ public:
         , mBuoyancyCoefficientsBuffer(mBufferElementCount, shipPointCount, BuoyancyCoefficients(0.0f, 0.0f))
         , mCachedDepthBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
-        // Water dynamics
+        // Pressure and water dynamics
         , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
+        , mInternalPressureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterIntakeBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterRestitutionBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterDiffusionSpeedBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -1166,8 +1167,33 @@ public:
     }
 
     //
-    // Water dynamics
+    // Pressure and water dynamics
     //
+
+    float GetInternalPressure(ElementIndex pointElementIndex) const
+    {
+        return mInternalPressureBuffer[pointElementIndex];
+    }
+
+    void SetInternalPressure(
+        ElementIndex pointElementIndex,
+        float value)
+    {
+        mInternalPressureBuffer[pointElementIndex] = value;
+    }
+
+    float * GetInternalPressureBufferAsFloat()
+    {
+        return mInternalPressureBuffer.data();
+    }
+
+    std::shared_ptr<Buffer<float>> MakeInternalPressureBufferCopy()
+    {
+        auto internalPressureBufferCopy = mFloatBufferAllocator.Allocate();
+        internalPressureBufferCopy->copy_from(mInternalPressureBuffer);
+
+        return internalPressureBufferCopy;
+    }
 
     bool GetIsHull(ElementIndex pointElementIndex) const
     {
@@ -1196,11 +1222,6 @@ public:
         return mMaterialWaterDiffusionSpeedBuffer[pointElementIndex];
     }
 
-    float * GetWaterBufferAsFloat()
-    {
-        return mWaterBuffer.data();
-    }
-
     float GetWater(ElementIndex pointElementIndex) const
     {
         return mWaterBuffer[pointElementIndex];
@@ -1218,6 +1239,11 @@ public:
         float threshold) const
     {
         return mWaterBuffer[pointElementIndex] > threshold;
+    }
+
+    float * GetWaterBufferAsFloat()
+    {
+        return mWaterBuffer.data();
     }
 
     std::shared_ptr<Buffer<float>> MakeWaterBufferCopy()
@@ -1923,10 +1949,11 @@ private:
     Buffer<vec2f> mIntegrationFactorBuffer;
 
     //
-    // Water dynamics
+    // Pressure and water dynamics
     //
 
     Buffer<bool> mIsHullBuffer; // Externally-computed resultant of material hullness and dynamic hullness
+    Buffer<float> mInternalPressureBuffer; // Pressure at this particle
     Buffer<float> mMaterialWaterIntakeBuffer;
     Buffer<float> mMaterialWaterRestitutionBuffer;
     Buffer<float> mMaterialWaterDiffusionSpeedBuffer;

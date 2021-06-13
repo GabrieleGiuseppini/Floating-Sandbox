@@ -4103,8 +4103,9 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             _("Draw Only Points"),
             _("Draw Only Springs"),
             _("Draw Only Edge Springs"),
+            _("Draw Structure"),
             _("Draw Decay"),
-            _("Draw Structure")
+            _("Draw Internal Pressure")
         };
 
         mDebugShipRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Ship Debug Draw Options"), wxDefaultPosition, wxDefaultSize,
@@ -4136,12 +4137,16 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                 }
                 else if (5 == selectedDebugShipRenderMode)
                 {
+                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Structure);
+                }
+                else if (6 == selectedDebugShipRenderMode)
+                {
                     mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Decay);
                 }
                 else
                 {
-                    assert(6 == selectedDebugShipRenderMode);
-                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Structure);
+                    assert(7 == selectedDebugShipRenderMode);
+                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::InternalPressure);
                 }
 
                 OnLiveSettingsChanged();
@@ -5037,15 +5042,21 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
             break;
         }
 
-        case DebugShipRenderModeType::Decay:
+        case DebugShipRenderModeType::Structure:
         {
             mDebugShipRenderModeRadioBox->SetSelection(5);
             break;
         }
 
-        case DebugShipRenderModeType::Structure:
+        case DebugShipRenderModeType::Decay:
         {
             mDebugShipRenderModeRadioBox->SetSelection(6);
+            break;
+        }
+
+        case DebugShipRenderModeType::InternalPressure:
+        {
+            mDebugShipRenderModeRadioBox->SetSelection(7);
             break;
         }
     }

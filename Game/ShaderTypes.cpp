@@ -117,6 +117,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipTrianglesColorIncandescence;
     else if (lstr == "ship_triangles_decay")
         return ProgramType::ShipTrianglesDecay;
+    else if (lstr == "ship_triangles_internal_pressure")
+        return ProgramType::ShipTrianglesInternalPressure;
     else if (lstr == "ship_triangles_texture")
         return ProgramType::ShipTrianglesTexture;
     else if (lstr == "ship_triangles_texture_heatoverlay")
@@ -243,6 +245,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipTrianglesColorIncandescence";
     case ProgramType::ShipTrianglesDecay:
         return "ShipTrianglesDecay";
+    case ProgramType::ShipTrianglesInternalPressure:
+        return "ShipTrianglesInternalPressure";
     case ProgramType::ShipTrianglesTexture:
         return "ShipTrianglesTexture";
     case ProgramType::ShipTrianglesTextureHeatOverlay:
@@ -489,6 +493,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointColor;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointTemperature"))
         return VertexAttributeType::ShipPointTemperature;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipPointAuxiliaryData"))
+        return VertexAttributeType::ShipPointAuxiliaryData;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointFrontierColor"))
         return VertexAttributeType::ShipPointFrontierColor;
     else if (Utils::CaseInsensitiveEquals(str, "ElectricSpark1"))
