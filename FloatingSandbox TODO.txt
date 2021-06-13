@@ -728,14 +728,13 @@ Render:
 							- See if WaterPermeability is the right spring property to look at	
 						- TODO: refine algo
 					- Apply dynamic forces using avg internal pressure (i.e. leftover)
-				= Render
-					= New Debug ship mode
+				+ Render
+					+ New Debug ship mode
 						+ Enum
 						+ SettingsDialog
 					+ Points::Upload makes use of new "Auxiliary quantity" upload facility in ShipRenderContext for buffer data
-					= New shader
+					+ New shader
 					+ See how to do it for non-triangles
-					- Nuke same section of this plan from Inject cracks (*)					
 				- 3. ApplyExternalHydrostaticPressureForces: apply dynamic forces due to external pressure
 			- Decide what to do with atmospheric/zero pressure
 			- See if InternalPressure may be used for bubbles
@@ -1936,7 +1935,7 @@ Render:
 		- Random walk across pairs of points on opposide sides of ships
 		- Visualization:
 			- New Debug ship mode
-			- Upload makes use of new "Auxiliary quantity" upload facility in ShipRenderContext for buffer data
+			- Uploaded with "Auxiliary"
 			- New shader
 
 	- Torpedoes and missiles

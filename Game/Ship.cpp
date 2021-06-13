@@ -1844,9 +1844,6 @@ void Ship::EqualizeInternalPressure(GameParameters const & gameParameters)
     // No need to visit ephemeral points as they have no springs
     //
 
-    // TODOTEST
-    return;
-
     for (auto pointIndex : mPoints.RawShipPoints())
     {
         size_t const connectedSpringCount = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size();
