@@ -709,9 +709,41 @@ Render:
 		- New ships
 			- changelist
 
+		- Internal pressure
+			! Spec:
+				- Points has a new InternalPressure quantity, completely independent from water
+				- InternalPressure is responsible for acting on all hull particles
+				- Three steps, once during Spring iterations (i.e. replaces HydrostaticPressure forces)
+					- 1. Pressure intake
+					- 2. Pressure equalization
+					- 3. External pressure
+			- Impl:
+				- Points::InternalPressure 
+				- Comment out HydrostaticPressure and replace with UpdateHydrostaticPressure()
+				- UpdateHydrostaticPressure():
+					- Intake
+						- Copy from water
+					- Equalization
+					- Render
+						- New Debug ship mode
+						- Upload makes use of new "Auxiliary quantity" upload facility in ShipRenderContext for buffer data
+							- Replaces rotting
+						- New shader
+						- Nuke same section of this plan from Inject cracks (*)
+
+					- Create dynamic forces as last equalization step, using avg internal pressure (i.e. leftover)
+					- Apply dynamic forces due to external pressure
+					
+			- See if pressure may be used for bubbles
+			- Test:
+			- Cleanup:
+				- Nuke Internal pressure (*) section from this plan
+
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
-			+ 0.242		
+			+ 0.242	
+			- Adjustment is too low, raise it
+				- 0.5+ is somewhat acceptable for Titanic - breaks down at 4.5Km
 
 		- Spread out rotting:
 			! Now: at step 20/49
