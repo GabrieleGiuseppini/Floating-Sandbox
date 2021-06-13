@@ -61,6 +61,8 @@ enum class ProgramType
     ShipSpringsColor,
     ShipSpringsColorHeatOverlay,
     ShipSpringsColorIncandescence,
+    ShipSpringsDecay,
+    ShipSpringsInternalPressure,
     ShipSpringsTexture,
     ShipSpringsTextureHeatOverlay,
     ShipSpringsTextureIncandescence,

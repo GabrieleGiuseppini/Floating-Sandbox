@@ -1397,6 +1397,7 @@ void ShipRenderContext::RenderDraw(
         //   structural springs -, or
         // - DebugRenderMode is structure, in which case we use colors - so to draw 1D chains -, or
         // - DebugRenderMode is none, in which case we use texture - so to draw 1D chains and edge springs
+        // - DebugRenderMode is decay|internalPressure, in which case we use the special rendering
         //
         // Note: when DebugRenderMode is springs|edgeSprings, ropes would all be here.
         //
@@ -1404,9 +1405,22 @@ void ShipRenderContext::RenderDraw(
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Springs
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::EdgeSprings
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
-            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure)
         {
-            mShaderManager.ActivateProgram(mShipSpringsProgram);
+            if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipSpringsDecay>();
+            }
+            else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure)
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipSpringsInternalPressure>();
+            }
+            else
+            {
+                mShaderManager.ActivateProgram(mShipSpringsProgram);
+            }
 
             glDrawElements(
                 GL_LINES,
@@ -2202,6 +2216,15 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         mShipSpringsProgram,
         shipOrthoMatrix);
 
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsDecay>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsDecay, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsInternalPressure>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsInternalPressure, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+
     //
     // Layer 3: Triangles
     //
@@ -2424,6 +2447,14 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
             mShipTrianglesProgram,
             renderParameters.EffectiveAmbientLightIntensity);
     }
+
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsDecay>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsDecay, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        renderParameters.EffectiveAmbientLightIntensity);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsInternalPressure>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsInternalPressure, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesDecay, ProgramParameterType::EffectiveAmbientLightIntensity>(

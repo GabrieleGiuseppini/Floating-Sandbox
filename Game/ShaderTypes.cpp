@@ -101,6 +101,10 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipSpringsColorHeatOverlay;
     else if (lstr == "ship_springs_color_incandescence")
         return ProgramType::ShipSpringsColorIncandescence;
+    else if (lstr == "ship_springs_decay")
+        return ProgramType::ShipSpringsDecay;
+    else if (lstr == "ship_springs_internal_pressure")
+        return ProgramType::ShipSpringsInternalPressure;
     else if (lstr == "ship_springs_texture")
         return ProgramType::ShipSpringsTexture;
     else if (lstr == "ship_springs_texture_heatoverlay")
@@ -229,6 +233,10 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipSpringsColorHeatOverlay";
     case ProgramType::ShipSpringsColorIncandescence:
         return "ShipSpringsColorIncandescence";
+    case ProgramType::ShipSpringsDecay:
+        return "ShipSpringsDecay";
+    case ProgramType::ShipSpringsInternalPressure:
+        return "ShipSpringsInternalPressure";
     case ProgramType::ShipSpringsTexture:
         return "ShipSpringsTexture";
     case ProgramType::ShipSpringsTextureHeatOverlay:
