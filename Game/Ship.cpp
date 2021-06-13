@@ -1638,6 +1638,7 @@ void Ship::UpdatePressureAndWaterInflow(
     // Ephemeral points are never leaking, hence we ignore them
     //
 
+    // Constant which, when multiplied with depth, given pressure
     float const externalPressureDepthCoeff =
         effectiveWaterDensity
         * GameParameters::GravityMagnitude
@@ -1666,6 +1667,8 @@ void Ship::UpdatePressureAndWaterInflow(
         auto const & pointCompositeLeaking = mPoints.GetLeakingComposite(pointIndex);
         if (pointCompositeLeaking.IsCumulativelyLeaking)
         {
+            assert(!mPoints.GetIsHull(pointIndex)); // Hull points are never leaking
+
             float const pointDepth = mPoints.GetCachedDepth(pointIndex);
 
             // External pressure
@@ -1833,10 +1836,7 @@ void Ship::EqualizeInternalPressure(GameParameters const & gameParameters)
     // neighbors
     //
 
-    // Source and result pressure buffers
-    auto oldPointInternalPressureBuffer = mPoints.MakeInternalPressureBufferCopy();
-    float const * restrict oldPointInternalPressureBufferData = oldPointInternalPressureBuffer->data();
-    float * restrict newPointInternalPressureBufferData = mPoints.GetInternalPressureBufferAsFloat();
+    float * restrict internalPressureBufferData = mPoints.GetInternalPressureBufferAsFloat();
 
     //
     // Visit all non-ephemeral points and flow each particle's pressure to its neighbors
@@ -1848,7 +1848,7 @@ void Ship::EqualizeInternalPressure(GameParameters const & gameParameters)
     {
         size_t const connectedSpringCount = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size();
 
-        float const internalPressure = oldPointInternalPressureBufferData[pointIndex];
+        float const internalPressure = internalPressureBufferData[pointIndex];
 
         //
         // 1. Calculate average internal pressure among this particle and all its neighbors that have
@@ -1864,7 +1864,7 @@ void Ship::EqualizeInternalPressure(GameParameters const & gameParameters)
             ElementIndex const otherEndpointIndex = cs.OtherEndpointIndex;
 
             // We only consider outgoing pressure, not towards hull points
-            float const otherEndpointInternalPressure = oldPointInternalPressureBufferData[otherEndpointIndex];
+            float const otherEndpointInternalPressure = internalPressureBufferData[otherEndpointIndex];
             if (internalPressure > otherEndpointInternalPressure
                 && mSprings.GetWaterPermeability(cs.SpringIndex) != 0.0f)
             {
@@ -1885,13 +1885,13 @@ void Ship::EqualizeInternalPressure(GameParameters const & gameParameters)
             ElementIndex const otherEndpointIndex = cs.OtherEndpointIndex;
 
             // We only consider outgoing pressure, not towards hull points
-            float const otherEndpointInternalPressure = oldPointInternalPressureBufferData[otherEndpointIndex];
+            float const otherEndpointInternalPressure = internalPressureBufferData[otherEndpointIndex];
             if (internalPressure > otherEndpointInternalPressure
                 && mSprings.GetWaterPermeability(cs.SpringIndex) != 0.0f)
             {
                 float const outgoingDelta = averageInternalPressure - otherEndpointInternalPressure;
-                newPointInternalPressureBufferData[pointIndex] -= outgoingDelta;
-                newPointInternalPressureBufferData[otherEndpointIndex] += outgoingDelta;
+                internalPressureBufferData[pointIndex] -= outgoingDelta;
+                internalPressureBufferData[otherEndpointIndex] += outgoingDelta;
             }
         }
     }

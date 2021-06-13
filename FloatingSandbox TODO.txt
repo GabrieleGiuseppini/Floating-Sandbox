@@ -720,14 +720,14 @@ Render:
 			= Impl:
 				+ Points::InternalPressure 
 				+ Comment out HydrostaticPressure
-				= 1. UpdateWaterInflow -> UpdatePressureAndWaterInflow
-					= Also intakes pressure					
+				+ 1. UpdateWaterInflow -> UpdatePressureAndWaterInflow
+					+ And now intakes pressure together with water
 				= 2. EqualizeInternalPressure():
 					= Equalization
 						= Not towards hull points
-							- See if WaterPermeability is the right spring property to look at	
-						- TODO: refine algo
-					- Apply dynamic forces using avg internal pressure (i.e. leftover)
+							+ See if WaterPermeability is the right spring property to look at	
+					- Apply dynamic forces from all non-hull points to all adjacent hull points, using avg internal pressure (i.e. leftover)
+					- Optimize
 				+ Render
 					+ New Debug ship mode
 						+ Enum
@@ -737,6 +737,7 @@ Render:
 					+ See how to do it for non-triangles
 				- 3. ApplyExternalHydrostaticPressureForces: apply dynamic forces due to external pressure
 			- Decide what to do with atmospheric/zero pressure
+				- Also finalize population of Points::InternalPressure at Points:Add
 			- See if InternalPressure may be used for bubbles
 			- Flood tool
 			- See if want pressure in physics probe panel

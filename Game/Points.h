@@ -1187,14 +1187,6 @@ public:
         return mInternalPressureBuffer.data();
     }
 
-    std::shared_ptr<Buffer<float>> MakeInternalPressureBufferCopy()
-    {
-        auto internalPressureBufferCopy = mFloatBufferAllocator.Allocate();
-        internalPressureBufferCopy->copy_from(mInternalPressureBuffer);
-
-        return internalPressureBufferCopy;
-    }
-
     bool GetIsHull(ElementIndex pointElementIndex) const
     {
         return mIsHullBuffer[pointElementIndex];
@@ -1953,7 +1945,7 @@ private:
     //
 
     Buffer<bool> mIsHullBuffer; // Externally-computed resultant of material hullness and dynamic hullness
-    Buffer<float> mInternalPressureBuffer; // Pressure at this particle
+    Buffer<float> mInternalPressureBuffer; // Pressure at this particle (Pa)
     Buffer<float> mMaterialWaterIntakeBuffer;
     Buffer<float> mMaterialWaterRestitutionBuffer;
     Buffer<float> mMaterialWaterDiffusionSpeedBuffer;
