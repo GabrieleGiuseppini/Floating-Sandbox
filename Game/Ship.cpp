@@ -1856,7 +1856,7 @@ void Ship::EqualizeInternalPressure(GameParameters const & gameParameters)
         //
 
         float averageInternalPressure = internalPressure;
-        float targetEndpointsCounts = 1.0f;
+        float targetEndpointsCount = 1.0f;
 
         for (size_t s = 0; s < connectedSpringCount; ++s)
         {
@@ -1866,14 +1866,14 @@ void Ship::EqualizeInternalPressure(GameParameters const & gameParameters)
             // We only consider outgoing pressure, not towards hull points
             float const otherEndpointInternalPressure = oldPointInternalPressureBufferData[otherEndpointIndex];
             if (internalPressure > otherEndpointInternalPressure
-                && mSprings.GetWaterPermeability(cs.SpringIndex))
+                && mSprings.GetWaterPermeability(cs.SpringIndex) != 0.0f)
             {
                 averageInternalPressure += otherEndpointInternalPressure;
-                targetEndpointsCounts += 1.0f;
+                targetEndpointsCount += 1.0f;
             }
         }
 
-        averageInternalPressure /= targetEndpointsCounts;
+        averageInternalPressure /= targetEndpointsCount;
 
         //
         // 2. Distribute surplus pressure
@@ -1887,7 +1887,7 @@ void Ship::EqualizeInternalPressure(GameParameters const & gameParameters)
             // We only consider outgoing pressure, not towards hull points
             float const otherEndpointInternalPressure = oldPointInternalPressureBufferData[otherEndpointIndex];
             if (internalPressure > otherEndpointInternalPressure
-                && mSprings.GetWaterPermeability(cs.SpringIndex))
+                && mSprings.GetWaterPermeability(cs.SpringIndex) != 0.0f)
             {
                 float const outgoingDelta = averageInternalPressure - otherEndpointInternalPressure;
                 newPointInternalPressureBufferData[pointIndex] -= outgoingDelta;
