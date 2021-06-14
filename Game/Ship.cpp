@@ -1638,12 +1638,12 @@ void Ship::UpdatePressureAndWaterInflow(
     // Ephemeral points are never leaking, hence we ignore them
     //
 
-    // Constant which, when multiplied with depth, given pressure
+    // Constant which, when multiplied with depth, gives pressure
     float const externalPressureDepthCoeff =
         effectiveWaterDensity
-        * GameParameters::GravityMagnitude
-        * gameParameters.HydrostaticPressureAdjustment;
+        * GameParameters::GravityMagnitude;
 
+    // Equivalent depth of a point when it's exposed to rain
     float const rainEquivalentWaterHeight =
         stormParameters.RainQuantity // m/h
         / 3600.0f // -> m/s
