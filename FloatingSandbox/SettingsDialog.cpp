@@ -4261,10 +4261,11 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
         wxString vectorFieldRenderModeChoices[] =
         {
             _("None"),
-            _("Point Velocities"),
-            _("Point Forces"),
-            _("Point Water Velocities"),
-            _("Point Water Momenta")
+            _("Velocities"),
+            _("Static Forces"),
+            _("Dynamic Forces"),
+            _("Water Velocities"),
+            _("Water Momenta")
         };
 
         mVectorFieldRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Vector Field Draw Options"), wxDefaultPosition, wxSize(-1, -1),
@@ -4297,13 +4298,19 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
                     case 3:
                     {
+                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointDynamicForce);
+                        break;
+                    }
+
+                    case 4:
+                    {
                         mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterVelocity);
                         break;
                     }
 
                     default:
                     {
-                        assert(4 == selectedVectorFieldRenderMode);
+                        assert(5 == selectedVectorFieldRenderMode);
                         mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterMomentum);
                         break;
                     }
@@ -5088,15 +5095,21 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
             break;
         }
 
-        case VectorFieldRenderModeType::PointWaterVelocity:
+        case VectorFieldRenderModeType::PointDynamicForce:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(3);
             break;
         }
 
-        case VectorFieldRenderModeType::PointWaterMomentum:
+        case VectorFieldRenderModeType::PointWaterVelocity:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(4);
+            break;
+        }
+
+        case VectorFieldRenderModeType::PointWaterMomentum:
+        {
+            mVectorFieldRenderModeRadioBox->SetSelection(5);
             break;
         }
     }

@@ -246,12 +246,12 @@ void Ship::Update(
 
     for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
     {
-        // - DynamicForces = 0
+        // - DynamicForces = <iter == 0 ? anything from previous time step : 0>
 
         // Apply spring forces
         ApplySpringsForces_BySprings(gameParameters);
 
-        // - DynamicForces = fs
+        // - DynamicForces = <iter == 0 ? anything from previous time step : 0> + fs
 
         // TODOTEST
         ////if (iter == numMechanicalDynamicsIterations - 1)
@@ -403,6 +403,15 @@ void Ship::Update(
     // - Inputs: Position, InternalPressure, ConnectedSprings
     // - Outpus: InternalPressure, DynamicForces
     EqualizeInternalPressure(gameParameters);
+
+    //
+    // TODOTEST
+    //
+
+    ApplyExternalHydrostaticPressureForces(
+        effectiveAirDensity,
+        effectiveWaterDensity,
+        gameParameters);
 
     //
     // Diffuse water
@@ -1876,7 +1885,7 @@ void Ship::EqualizeInternalPressure(GameParameters const & gameParameters)
         averageInternalPressure /= targetEndpointsCount;
 
         //
-        // 2. Distribute surplus pressure
+        // 2. Distribute surplus pressure, and apply pressure forces
         //
 
         for (size_t s = 0; s < connectedSpringCount; ++s)
@@ -1893,7 +1902,143 @@ void Ship::EqualizeInternalPressure(GameParameters const & gameParameters)
                 internalPressureBufferData[pointIndex] -= outgoingDelta;
                 internalPressureBufferData[otherEndpointIndex] += outgoingDelta;
             }
+
+            // Apply pressure force from non-hull points to hull points,
+            // but only along the sides of triangles - want to prevent one end of a chain to
+            // push on the other hands, which looks silly
+            if (!mPoints.GetIsHull(pointIndex)
+                && mPoints.GetIsHull(otherEndpointIndex))
+                //&& !mSprings.GetSuperTriangles(cs.SpringIndex).empty())
+            {
+                vec2f const forceDirection = (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
+
+                vec2f const pressureForce =
+                    forceDirection
+                    * averageInternalPressure / 2.0f // TODO: comment on division by 2
+                    * gameParameters.HydrostaticPressureAdjustment;
+
+                mPoints.AddDynamicForce(otherEndpointIndex, pressureForce);
+            }
         }
+    }
+}
+
+void Ship::ApplyExternalHydrostaticPressureForces(
+    float effectiveAirDensity,
+    float effectiveWaterDensity,
+    GameParameters const & gameParameters)
+{
+    //
+    // The hydrostatic pressure force acting on point P, between edges
+    // E1 and E2, is:
+    //
+    //      F(P) = F(E1)/2 + F(E2)/2
+    //
+    // The hydrostatic pressure force acting on edge Ei is:
+    //
+    //      F(Ei) = -Ni * D * Mw * G * |Ei|
+    //
+    // Where Ni is the normal to Ei, D is the depth (which we take constant
+    // so to not produce buoyancy forces), Mw * G is the weight of water, and
+    // |Ei| accounts for wider edges being subject to more pressure.
+    //
+    //
+    // We will rewrite F(Ei) as:
+    //
+    //      F(Ei) = -Perp(Ei) * ForceStem
+    //
+    // And thus:
+    //
+    //      F(P)  = (-Perp(E1) -Perp(E2)) * ForceStem / 2
+    //
+    //
+    //
+    // Notes:
+    //  - We use the AABB's center as the point where the depth is calculated at;
+    //    as a consequence, if the ship is interactively moved or rotated, the AABB's
+    //    that we use here are stale. Not a big deal...
+    //    Outside of these "moving" interactions, the AABBs we use here are also
+    //    inconsistent with the current positions because of integration during dynamic
+    //    iterations, unless hydrostatic pressures are calculated on the *first* dynamic
+    //    iteration.
+    //
+
+    for (FrontierId const frontierId : mFrontiers.GetFrontierIds())
+    {
+        auto const & frontier = mFrontiers.GetFrontier(frontierId);
+
+        //
+        // Calculate force stem
+        //
+
+        float const pressureForceStem =
+            // TODOTEST: we're taking depth of first point
+            std::max(mPoints.GetCachedDepth(mFrontiers.GetFrontierEdge(frontier.StartingEdgeIndex).PointAIndex), 0.0f)
+            * effectiveWaterDensity
+            * GameParameters::GravityMagnitude
+            * gameParameters.HydrostaticPressureAdjustment
+            / 2.0f; // We include the division that we'll need for the particle force
+
+        //
+        // Visit all edges
+        //
+        //               thisPoint
+        //                   V
+        // ...---*---edge1---*---edge2---*---nextEdge---....
+        //
+
+        ElementIndex edge1Index = frontier.StartingEdgeIndex;
+
+        ElementIndex edge2Index = mFrontiers.GetFrontierEdge(edge1Index).NextEdgeIndex;
+
+        ElementIndex thisPointIndex = mFrontiers.GetFrontierEdge(edge2Index).PointAIndex;
+
+        vec2f edge1PerpVector =
+            -(mPoints.GetPosition(thisPointIndex) - mPoints.GetPosition(mFrontiers.GetFrontierEdge(edge1Index).PointAIndex)).to_perpendicular();
+
+#ifdef _DEBUG
+        ElementCount visitedPoints = 0;
+#endif
+
+        ElementIndex const startEdgeIndex = mFrontiers.GetFrontierEdge(edge2Index).NextEdgeIndex;
+
+        for (ElementIndex nextEdgeIndex = startEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
+        {
+#ifdef _DEBUG
+            ++visitedPoints;
+#endif
+            auto const & nextEdge = mFrontiers.GetFrontierEdge(nextEdgeIndex);
+            ElementIndex const nextPointIndex = nextEdge.PointAIndex;
+
+            vec2f edge2PerpVector =
+                -(mPoints.GetPosition(nextPointIndex) - mPoints.GetPosition(thisPointIndex)).to_perpendicular();
+
+            // Against hull points only
+            if (mPoints.GetIsHull(thisPointIndex))
+            {
+                // Apply force - we apply it as a *dynamic* force, otherwise if it were static it would
+                // generate phantom torques due to geometries changing for every dynamic step
+
+                vec2f const pressureForce =
+                    (edge1PerpVector + edge2PerpVector) * pressureForceStem;
+
+                mPoints.AddDynamicForce(
+                    thisPointIndex,
+                    pressureForce);
+            }
+
+            // Advance
+            nextEdgeIndex = nextEdge.NextEdgeIndex;
+            if (nextEdgeIndex == startEdgeIndex)
+                break;
+
+            thisPointIndex = nextPointIndex;
+            edge1PerpVector = edge2PerpVector;
+        }
+
+#ifdef _DEBUG
+        assert(visitedPoints == frontier.Size);
+#endif
     }
 }
 
