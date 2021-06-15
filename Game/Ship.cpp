@@ -1907,14 +1907,18 @@ void Ship::EqualizeInternalPressure(GameParameters const & gameParameters)
             // but only along the sides of triangles - want to prevent one end of a chain to
             // push on the other hands, which looks silly
             if (!mPoints.GetIsHull(pointIndex)
-                && mPoints.GetIsHull(otherEndpointIndex))
+                && mPoints.GetIsHull(otherEndpointIndex)
+                // TODOTEST
                 //&& !mSprings.GetSuperTriangles(cs.SpringIndex).empty())
+                )
             {
                 vec2f const forceDirection = (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
 
                 vec2f const pressureForce =
                     forceDirection
-                    * averageInternalPressure / 2.0f // TODO: comment on division by 2
+                    // TODOTEST
+                    //* averageInternalPressure / 2.0f // TODO: comment on division by 2
+                    * averageInternalPressure / 3.0f
                     * gameParameters.HydrostaticPressureAdjustment;
 
                 mPoints.AddDynamicForce(otherEndpointIndex, pressureForce);

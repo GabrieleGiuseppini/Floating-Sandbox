@@ -731,8 +731,10 @@ Render:
 					= Apply dynamic forces from all non-hull points to all adjacent hull points, using avg internal pressure (i.e. leftover)
 						= How to prevent lonely wet spring from pushing towards endpoint? Should we focus on triangles?
 				= 3. ApplyExternalHydrostaticPressureForces: apply dynamic forces due to external pressure
-					- Against hull only
+					+ Against hull only
 					+ Also include internal frontiers
+					- Try totally new idea:
+						- Visit (int|ext) frontier; for each hull point on it, apply pressure from point towards each non-hull point attached to it via a spring
 				+ Render
 					+ New Debug ship mode
 						+ Enum
