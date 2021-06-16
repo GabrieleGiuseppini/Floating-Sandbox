@@ -1330,17 +1330,12 @@ void ShipRenderContext::RenderDraw(
 
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay
-            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
         {
             if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
             {
                 mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
-            }
-            else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure)
-            {
-                mShaderManager.ActivateProgram<ProgramType::ShipTrianglesInternalPressure>();
             }
             else
             {
@@ -1406,16 +1401,11 @@ void ShipRenderContext::RenderDraw(
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::EdgeSprings
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None
-            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay
-            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure)
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
         {
             if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
             {
                 mShaderManager.ActivateProgram<ProgramType::ShipSpringsDecay>();
-            }
-            else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure)
-            {
-                mShaderManager.ActivateProgram<ProgramType::ShipSpringsInternalPressure>();
             }
             else
             {
@@ -2220,11 +2210,6 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsDecay, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipSpringsInternalPressure>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsInternalPressure, ProgramParameterType::OrthoMatrix>(
-        shipOrthoMatrix);
-
-
     //
     // Layer 3: Triangles
     //
@@ -2247,11 +2232,6 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesDecay, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesInternalPressure>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesInternalPressure, ProgramParameterType::OrthoMatrix>(
-        shipOrthoMatrix);
-
 
     //
     // Layer 4: Stressed Springs, Frontier Edges
@@ -2452,16 +2432,8 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsDecay, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipSpringsInternalPressure>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsInternalPressure, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
-
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesDecay, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesInternalPressure>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesInternalPressure, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();

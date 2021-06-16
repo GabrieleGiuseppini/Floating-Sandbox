@@ -761,12 +761,16 @@ Render:
 				- Nuke old HydrostaticPressure from ship
 				- Nuke Internal pressure (*) section from this plan
 
-		- Points::Upload: dynamic forces
-		- Ship::AABB calculation
+		+ Points::Upload: dynamic forces
+		+ Ship::AABB calculation
 		- ElectricalElements: WaterPump issues: -0.0f *and* never set to zero when decaying
-		- Visibility of DynamicForces via new VectorRenderMode
-			- Move ExternalPressure calc'n from Spring loop to right after that
-		- Auxiliary data visualization
+		+ Visibility of DynamicForces via new VectorRenderMode		
+		+ Auxiliary data visualization
+		- Move ExternalPressure calc'n from Spring loop to right after that
+
+		- Tests:
+			- Dynamic forces
+			- Water Pumps
 
 		- Inject cracks (*)
 

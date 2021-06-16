@@ -1019,15 +1019,15 @@ void Ship::ApplyWorldSurfaceForces(
 
     for (FrontierId frontierId : mFrontiers.GetFrontierIds())
     {
+        // Initialize AABB
+        Geometry::AABB aabb;
+
         auto & frontier = mFrontiers.GetFrontier(frontierId);
 
         // We only apply velocity drag and displace water for *external* frontiers,
         // not for internal ones
         if (frontier.Type == FrontierType::External)
         {
-            // Initialize AABB
-            Geometry::AABB aabb;
-
             //
             // Visit all edges of this frontier
             //
@@ -1212,14 +1212,39 @@ void Ship::ApplyWorldSurfaceForces(
 #ifdef _DEBUG
             assert(visitedPoints == frontier.Size);
 #endif
+        }
+        else
+        {
             //
-            // Finalize AABB update
+            // Simply update AABB
             //
 
-            // Store AABB in frontier
-            frontier.ExternalFrontierAABB = aabb;
+            ElementIndex const frontierStartEdge = frontier.StartingEdgeIndex;
 
-            // Store AABB in AABB set
+            for (ElementIndex edgeIndex = frontierStartEdge; /*checked in loop*/; /*advanced in loop*/)
+            {
+                auto const & frontierEdge = mFrontiers.GetFrontierEdge(edgeIndex);
+
+                // Update AABB with this point
+                aabb.ExtendTo(mPoints.GetPosition(frontierEdge.PointAIndex));
+
+                // Advance
+                edgeIndex = frontierEdge.NextEdgeIndex;
+                if (edgeIndex == frontierStartEdge)
+                    break;
+            }
+        }
+
+        //
+        // Finalize AABB update
+        //
+
+        // Store AABB in frontier
+        frontier.AABB = aabb;
+
+        // Store AABB in AABB set, but only if external
+        if (frontier.Type == FrontierType::External)
+        {
             aabbSet.Add(aabb);
         }
     }
@@ -1269,16 +1294,15 @@ void Ship::ApplyHydrostaticPressureForces(
     {
         auto const & frontier = mFrontiers.GetFrontier(frontierId);
 
-        // Only consider external frontiers for which we already have an AABB
-        if (frontier.Type == FrontierType::External
-            && frontier.ExternalFrontierAABB.has_value())
+        // Only consider external frontiers
+        if (frontier.Type == FrontierType::External)
         {
             //
             // Calculate force stem
             //
 
             float const pressureForceStem =
-                std::max(mParentWorld.GetDepth(frontier.ExternalFrontierAABB->CalculateCenter()), 0.0f)
+                std::max(mParentWorld.GetDepth(frontier.AABB.CalculateCenter()), 0.0f)
                 * effectiveWaterDensity
                 * GameParameters::GravityMagnitude
                 * gameParameters.HydrostaticPressureAdjustment
