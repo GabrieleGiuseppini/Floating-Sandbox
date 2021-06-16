@@ -122,6 +122,11 @@ public:
         size_t startDst,
         size_t count);
 
+    void UploadPointAuxiliaryData(
+        float const * auxiliaryData,
+        size_t startDst,
+        size_t count);
+
     void UploadPointFrontierColors(FrontierColor const * colors);
 
     //
@@ -1429,6 +1434,8 @@ private:
     GameOpenGLVBO mPointColorVBO;
 
     GameOpenGLVBO mPointTemperatureVBO;
+
+    GameOpenGLVBO mPointAuxiliaryDataVBO;
 
     GameOpenGLVBO mPointFrontierColorVBO;
 

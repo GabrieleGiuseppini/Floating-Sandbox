@@ -61,6 +61,7 @@ enum class ProgramType
     ShipSpringsColor,
     ShipSpringsColorHeatOverlay,
     ShipSpringsColorIncandescence,
+    ShipSpringsDecay,
     ShipSpringsTexture,
     ShipSpringsTextureHeatOverlay,
     ShipSpringsTextureIncandescence,
@@ -186,7 +187,8 @@ enum class VertexAttributeType : GLuint
     ShipPointAttributeGroup2 = 1,   // Light, Water, PlaneId, Decay
     ShipPointColor = 2,
     ShipPointTemperature = 3,
-    ShipPointFrontierColor = 4,
+    ShipPointAuxiliaryData = 4,
+    ShipPointFrontierColor = 5,
 
     ElectricSpark1 = 0,
 

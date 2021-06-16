@@ -557,8 +557,8 @@ enum class DebugShipRenderModeType
     Points,
     Springs,
     EdgeSprings,
-    Decay,
-    Structure
+    Structure,
+    Decay
 };
 
 /*
@@ -597,6 +597,7 @@ enum class VectorFieldRenderModeType
     None,
     PointVelocity,
     PointStaticForce,
+    PointDynamicForce,
     PointWaterVelocity,
     PointWaterMomentum
 };

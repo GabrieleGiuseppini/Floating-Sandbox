@@ -39,6 +39,7 @@ ShipRenderContext::ShipRenderContext(
     , mPointAttributeGroup2VBO()
     , mPointColorVBO()
     , mPointTemperatureVBO()
+    , mPointAuxiliaryDataVBO()
     , mPointFrontierColorVBO()
     //
     , mStressedSpringElementBuffer()
@@ -148,8 +149,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[16];
-    glGenBuffers(16, vbos);
+    GLuint vbos[17];
+    glGenBuffers(17, vbos);
     CheckOpenGLError();
 
     mPointAttributeGroup1VBO = vbos[0];
@@ -178,33 +179,37 @@ ShipRenderContext::ShipRenderContext(
     glBindBuffer(GL_ARRAY_BUFFER, *mPointTemperatureVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
 
-    mPointFrontierColorVBO = vbos[4];
+    mPointAuxiliaryDataVBO = vbos[4];
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointAuxiliaryDataVBO);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
+
+    mPointFrontierColorVBO = vbos[5];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointFrontierColorVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(FrontierColor), nullptr, GL_STATIC_DRAW);
 
-    mStressedSpringElementVBO = vbos[5];
+    mStressedSpringElementVBO = vbos[6];
     mStressedSpringElementBuffer.reserve(1024); // Arbitrary
 
-    mFrontierEdgeElementVBO = vbos[6];
+    mFrontierEdgeElementVBO = vbos[7];
 
-    mElectricSparkVBO = vbos[7];
+    mElectricSparkVBO = vbos[8];
 
-    mFlameVBO = vbos[8];
+    mFlameVBO = vbos[9];
 
-    mExplosionVBO = vbos[9];
+    mExplosionVBO = vbos[10];
 
-    mSparkleVBO = vbos[10];
+    mSparkleVBO = vbos[11];
     mSparkleVertexBuffer.reserve(256); // Arbitrary
 
-    mGenericMipMappedTextureVBO = vbos[11];
+    mGenericMipMappedTextureVBO = vbos[12];
 
-    mHighlightVBO = vbos[12];
+    mHighlightVBO = vbos[13];
 
-    mVectorArrowVBO = vbos[13];
+    mVectorArrowVBO = vbos[14];
 
-    mCenterVBO = vbos[14];
+    mCenterVBO = vbos[15];
 
-    mPointToPointArrowVBO = vbos[15];
+    mPointToPointArrowVBO = vbos[16];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -255,6 +260,11 @@ ShipRenderContext::ShipRenderContext(
         glBindBuffer(GL_ARRAY_BUFFER, *mPointTemperatureVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointTemperature));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointTemperature), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointAuxiliaryDataVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointAuxiliaryData));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointAuxiliaryData), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void *)(0));
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, *mPointFrontierColorVBO);
@@ -768,8 +778,6 @@ void ShipRenderContext::UploadPointTemperature(
     size_t startDst,
     size_t count)
 {
-    // Uploaded sparingly
-
     // We've been invoked on the render thread
 
     //
@@ -781,6 +789,25 @@ void ShipRenderContext::UploadPointTemperature(
     glBindBuffer(GL_ARRAY_BUFFER, *mPointTemperatureVBO);
 
     glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(float), count * sizeof(float), temperature);
+    CheckOpenGLError();
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void ShipRenderContext::UploadPointAuxiliaryData(
+    float const * auxiliaryData,
+    size_t startDst,
+    size_t count)
+{
+    // We've been invoked on the render thread
+
+    //
+    // Upload aux data
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointAuxiliaryDataVBO);
+
+    glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(float), count * sizeof(float), auxiliaryData);
     CheckOpenGLError();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -1308,7 +1335,6 @@ void ShipRenderContext::RenderDraw(
         {
             if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
             {
-                // Use decay program
                 mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
             }
             else
@@ -1366,6 +1392,7 @@ void ShipRenderContext::RenderDraw(
         //   structural springs -, or
         // - DebugRenderMode is structure, in which case we use colors - so to draw 1D chains -, or
         // - DebugRenderMode is none, in which case we use texture - so to draw 1D chains and edge springs
+        // - DebugRenderMode is decay|internalPressure, in which case we use the special rendering
         //
         // Note: when DebugRenderMode is springs|edgeSprings, ropes would all be here.
         //
@@ -1373,9 +1400,17 @@ void ShipRenderContext::RenderDraw(
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Springs
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::EdgeSprings
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
-            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
         {
-            mShaderManager.ActivateProgram(mShipSpringsProgram);
+            if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipSpringsDecay>();
+            }
+            else
+            {
+                mShaderManager.ActivateProgram(mShipSpringsProgram);
+            }
 
             glDrawElements(
                 GL_LINES,
@@ -2171,6 +2206,10 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         mShipSpringsProgram,
         shipOrthoMatrix);
 
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsDecay>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsDecay, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
     //
     // Layer 3: Triangles
     //
@@ -2388,6 +2427,10 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
             mShipTrianglesProgram,
             renderParameters.EffectiveAmbientLightIntensity);
     }
+
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsDecay>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsDecay, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesDecay, ProgramParameterType::EffectiveAmbientLightIntensity>(

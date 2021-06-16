@@ -4103,8 +4103,8 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             _("Draw Only Points"),
             _("Draw Only Springs"),
             _("Draw Only Edge Springs"),
-            _("Draw Decay"),
-            _("Draw Structure")
+            _("Draw Structure"),
+            _("Draw Decay")
         };
 
         mDebugShipRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Ship Debug Draw Options"), wxDefaultPosition, wxDefaultSize,
@@ -4136,12 +4136,12 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                 }
                 else if (5 == selectedDebugShipRenderMode)
                 {
-                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Decay);
+                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Structure);
                 }
                 else
                 {
                     assert(6 == selectedDebugShipRenderMode);
-                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Structure);
+                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Decay);
                 }
 
                 OnLiveSettingsChanged();
@@ -4256,10 +4256,11 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
         wxString vectorFieldRenderModeChoices[] =
         {
             _("None"),
-            _("Point Velocities"),
-            _("Point Forces"),
-            _("Point Water Velocities"),
-            _("Point Water Momenta")
+            _("Velocities"),
+            _("Static Forces"),
+            _("Dynamic Forces"),
+            _("Water Velocities"),
+            _("Water Momenta")
         };
 
         mVectorFieldRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Vector Field Draw Options"), wxDefaultPosition, wxSize(-1, -1),
@@ -4292,13 +4293,19 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
                     case 3:
                     {
+                        mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointDynamicForce);
+                        break;
+                    }
+
+                    case 4:
+                    {
                         mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterVelocity);
                         break;
                     }
 
                     default:
                     {
-                        assert(4 == selectedVectorFieldRenderMode);
+                        assert(5 == selectedVectorFieldRenderMode);
                         mLiveSettings.SetValue(GameSettings::VectorFieldRenderMode, VectorFieldRenderModeType::PointWaterMomentum);
                         break;
                     }
@@ -5037,13 +5044,13 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
             break;
         }
 
-        case DebugShipRenderModeType::Decay:
+        case DebugShipRenderModeType::Structure:
         {
             mDebugShipRenderModeRadioBox->SetSelection(5);
             break;
         }
 
-        case DebugShipRenderModeType::Structure:
+        case DebugShipRenderModeType::Decay:
         {
             mDebugShipRenderModeRadioBox->SetSelection(6);
             break;
@@ -5077,15 +5084,21 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
             break;
         }
 
-        case VectorFieldRenderModeType::PointWaterVelocity:
+        case VectorFieldRenderModeType::PointDynamicForce:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(3);
             break;
         }
 
-        case VectorFieldRenderModeType::PointWaterMomentum:
+        case VectorFieldRenderModeType::PointWaterVelocity:
         {
             mVectorFieldRenderModeRadioBox->SetSelection(4);
+            break;
+        }
+
+        case VectorFieldRenderModeType::PointWaterMomentum:
+        {
+            mVectorFieldRenderModeRadioBox->SetSelection(5);
             break;
         }
     }

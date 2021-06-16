@@ -51,7 +51,7 @@ public:
         FrontierType Type;
         ElementIndex StartingEdgeIndex; // Arbitrary first edge in this frontier
         ElementCount Size; // Being a closed curve, this is both # of edges and # of points
-        std::optional<Geometry::AABB> ExternalFrontierAABB; // Only calculated - during Ship updates - for external frontiers
+        Geometry::AABB AABB; // Only updated during Ship updates
 
         Frontier(
             FrontierType type,
@@ -60,7 +60,7 @@ public:
             : Type(type)
             , StartingEdgeIndex(startingEdgeIndex)
             , Size(size)
-            , ExternalFrontierAABB(std::nullopt)
+            , AABB()
         {}
     };
 
