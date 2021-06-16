@@ -761,9 +761,14 @@ Render:
 				- Nuke old HydrostaticPressure from ship
 				- Nuke Internal pressure (*) section from this plan
 
+		- ElectricalElements: WaterPump issues: -0.0f *and* never set to zero when decaying
+		- Visibility of DynamicForces via new VectorRenderMode
+			- Move ExternalPressure calc'n from Spring loop to right after that
+		- Auxiliary data visualization
+
 		- Inject cracks (*)
 
-		- Try electric sparks with different blend mode
+		- Try rendering electric sparks with different blend mode
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques

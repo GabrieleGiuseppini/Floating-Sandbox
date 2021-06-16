@@ -551,8 +551,16 @@ void Points::Restore(ElementIndex pointElementIndex)
     mIsDamagedBuffer[pointElementIndex] = false;
 
     // Restore factory-time structural IsLeaking
-    mLeakingCompositeBuffer[pointElementIndex].LeakingSources.StructuralLeak =
-        mFactoryIsStructurallyLeakingBuffer[pointElementIndex] ? 1.0f : 0.0f;
+    if (mFactoryIsStructurallyLeakingBuffer[pointElementIndex])
+    {
+        mLeakingCompositeBuffer[pointElementIndex].StructuralLeak = true;
+        mLeakingCompositeBuffer[pointElementIndex].IsCumulativelyLeakingTODO = true;
+    }
+    else
+    {
+        mLeakingCompositeBuffer[pointElementIndex].StructuralLeak = false;
+        mLeakingCompositeBuffer[pointElementIndex].IsCumulativelyLeakingTODO = (mLeakingCompositeBuffer[pointElementIndex].WaterPumpForce != 0.0f);
+    }
 
     // Remove point from set of burning points, in case it was burning
     if (mCombustionStateBuffer[pointElementIndex].State != CombustionState::StateType::NotBurning)
@@ -634,7 +642,7 @@ void Points::UpdateForGameParameters(GameParameters const & gameParameters)
         // Randomize cumulated water intaken for each leaking point
         for (ElementIndex i : RawShipPoints())
         {
-            if (GetLeakingComposite(i).IsCumulativelyLeaking)
+            if (GetLeakingComposite(i).IsCumulativelyLeakingTODO)
             {
                 mCumulatedIntakenWater[i] = RandomizeCumulatedIntakenWater(cumulatedIntakenWaterThresholdForAirBubbles);
             }

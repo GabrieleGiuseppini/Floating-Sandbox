@@ -1696,7 +1696,7 @@ void Ship::UpdatePressureAndWaterInflow(
         // for all points, mostly because we expect a tiny fraction of all points to
         // be leaking at any moment
         auto const & pointCompositeLeaking = mPoints.GetLeakingComposite(pointIndex);
-        if (pointCompositeLeaking.IsCumulativelyLeaking)
+        if (pointCompositeLeaking.IsCumulativelyLeakingTODO)
         {
             assert(!mPoints.GetIsHull(pointIndex)); // Hull points are never leaking
 
@@ -1760,7 +1760,7 @@ void Ship::UpdatePressureAndWaterInflow(
                 //
 
                 newWater_Structural =
-                    pointCompositeLeaking.LeakingSources.StructuralLeak // Dichotomical switch
+                    pointCompositeLeaking.StructuralLeak // Dichotomical switch
                     * incomingWaterVelocity_Structural
                     * GameParameters::SimulationStepTimeDuration<float>
                     * mPoints.GetMaterialWaterIntake(pointIndex)
@@ -1773,7 +1773,7 @@ void Ship::UpdatePressureAndWaterInflow(
 
             float newPressure_Forced = 0.0f;
             float newWater_Forced = 0.0f;
-            float const waterPumpForce = pointCompositeLeaking.LeakingSources.WaterPumpForce;
+            float const waterPumpForce = pointCompositeLeaking.WaterPumpForce;
             if (waterPumpForce > 0.0f)
             {
                 // Inward pump: only works if underwater
@@ -1925,22 +1925,12 @@ void Ship::EqualizeInternalPressure(GameParameters const & gameParameters)
                 internalPressureBufferData[otherEndpointIndex] += outgoingDelta;
             }
 
-            // Apply pressure force from non-hull points to hull points,
-            // but only if both points have at least one triangle - want to prevent one end of a chain to
-            // push on the other hand, which looks silly
-            if (!mPoints.GetIsHull(pointIndex)
-                && mPoints.GetIsHull(otherEndpointIndex)
-                // TODOTEST
-                /*
-                && !mPoints.GetConnectedTriangles(pointIndex).ConnectedTriangles.empty()
-                && !mPoints.GetConnectedTriangles(otherEndpointIndex).ConnectedTriangles.empty())
-                */
-                )
+            if (!mPoints.GetIsHull(pointIndex) && mPoints.GetIsHull(otherEndpointIndex))
             {
-                vec2f const springDirection = (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
+                vec2f const springDir = (mPoints.GetPosition(otherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
 
                 vec2f const pressureForce =
-                    springDirection
+                    springDir
                     * averageInternalPressure
                     * gameParameters.HydrostaticPressureAdjustment;
 
@@ -1997,10 +1987,10 @@ void Ship::ApplyExternalHydrostaticPressureForces(
         auto const & frontier = mFrontiers.GetFrontier(frontierId);
 
         //
-        // Calculate force stem
+        // Calculate pressure for this frontier
         //
 
-        float const pressureForceStem =
+        float const frontierPressure =
             std::max(mParentWorld.GetDepth(frontier.AABB.CalculateCenter()), 0.0f)
             * effectiveWaterDensity
             * GameParameters::GravityMagnitude
@@ -2044,15 +2034,27 @@ void Ship::ApplyExternalHydrostaticPressureForces(
             // Apply force - we apply it as a *dynamic* force, otherwise if it were static it would
             // generate phantom torques due to geometries changing for every dynamic step
 
+            // TODOTEST
             if (mPoints.GetIsHull(thisPointIndex))
             {
-                vec2f const pressureForce =
-                    (edge1PerpVector + edge2PerpVector) * pressureForceStem;
+                for (auto const & cs : mPoints.GetConnectedSprings(thisPointIndex).ConnectedSprings)
+                {
+                    vec2f const springDir = (mPoints.GetPosition(cs.OtherEndpointIndex) - mPoints.GetPosition(thisPointIndex)).normalise();
 
-                mPoints.AddDynamicForce(
-                    thisPointIndex,
-                    pressureForce);
+                    mPoints.AddDynamicForce(
+                        thisPointIndex,
+                        springDir * frontierPressure * 2.0f);
+                }
             }
+
+            // TODOTEST
+            ////vec2f const pressureForce =
+            ////    (edge1PerpVector + edge2PerpVector)
+            ////    * frontierPressure;
+
+            ////mPoints.AddDynamicForce(
+            ////    thisPointIndex,
+            ////    pressureForce);
 
             // Advance
             nextEdgeIndex = nextEdge.NextEdgeIndex;
@@ -2067,77 +2069,6 @@ void Ship::ApplyExternalHydrostaticPressureForces(
         assert(visitedPoints == frontier.Size);
 #endif
     }
-
-////    TODOTEST: along-springs implementation
-////    for (FrontierId const frontierId : mFrontiers.GetFrontierIds())
-////    {
-////        auto const & frontier = mFrontiers.GetFrontier(frontierId);
-////
-////        //
-////        // Calculate force stem
-////        //
-////
-////        float const pressureForceStem =
-////            std::max(mParentWorld.GetDepth(frontier.AABB.CalculateCenter()), 0.0f)
-////            * effectiveWaterDensity
-////            * GameParameters::GravityMagnitude
-////            * gameParameters.HydrostaticPressureAdjustment;
-////
-////        //
-////        // Visit all edges
-////        //
-////        //
-////
-////
-////        ElementIndex previousPointIndex = mFrontiers.GetFrontierEdge(frontier.StartingEdgeIndex).PointAIndex;
-////
-////        ElementIndex const startingEdgeIndex = mFrontiers.GetFrontierEdge(frontier.StartingEdgeIndex).NextEdgeIndex;
-////
-////#ifdef _DEBUG
-////        ElementCount visitedPoints = 0;
-////#endif
-////
-////        for (ElementIndex edgeIndex = startingEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
-////        {
-////#ifdef _DEBUG
-////            ++visitedPoints;
-////#endif
-////            auto const & frontierEdge = mFrontiers.GetFrontierEdge(edgeIndex);
-////
-////            ElementIndex const pointIndex = frontierEdge.PointAIndex;
-////            ElementIndex const nextPointIndex = mFrontiers.GetFrontierEdge(frontierEdge.NextEdgeIndex).PointAIndex;
-////
-////            if (mPoints.GetIsHull(pointIndex))
-////            {
-////                for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
-////                {
-////                    if (cs.OtherEndpointIndex != previousPointIndex
-////                        && cs.OtherEndpointIndex != nextPointIndex)
-////                    {
-////                        vec2f const direction = (mPoints.GetPosition(cs.OtherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise();
-////
-////                        vec2f const pressureForce =
-////                            direction
-////                            * pressureForceStem;
-////
-////                        mPoints.AddDynamicForce(
-////                            pointIndex,
-////                            pressureForce);
-////                    }
-////                }
-////            }
-////
-////            // Advance
-////            edgeIndex = frontierEdge.NextEdgeIndex;
-////            if (edgeIndex == startingEdgeIndex)
-////                break;
-////            previousPointIndex = pointIndex;
-////        }
-////
-////#ifdef _DEBUG
-////        assert(visitedPoints == frontier.Size);
-////#endif
-////    }
 }
 
 void Ship::UpdateWaterVelocities(
@@ -2775,7 +2706,7 @@ void Ship::RotPoints(
             + std::min(mPoints.GetWater(p), 1.0f); // x_fl
 
         // Adjust with leaking: if leaking and subject to rusting, then rusts faster
-        x += mPoints.GetLeakingComposite(p).LeakingSources.StructuralLeak * x * x_uw;
+        x += mPoints.GetLeakingComposite(p).StructuralLeak * x * x_uw;
 
         // Adjust with material's rust receptivity
         x *= mPoints.GetMaterialRustReceptivity(p);

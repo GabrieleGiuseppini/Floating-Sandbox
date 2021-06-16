@@ -157,30 +157,16 @@ public:
     /*
      * The leaking-related properties of a particle.
      */
-    union LeakingComposite
+    struct LeakingComposite
     {
-#pragma pack(push, 1)
-        struct LeakingSourcesType
-        {
-            float StructuralLeak; // 0.0 or 1.0
-            float WaterPumpForce; // -1.0 [out], ..., +1.0 [in]
-
-            LeakingSourcesType(
-                float structuralLeak,
-                float waterPumpNominalForce)
-                : StructuralLeak(structuralLeak)
-                , WaterPumpForce(waterPumpNominalForce)
-            {}
-        };
-#pragma pack(pop)
-
-        LeakingSourcesType LeakingSources;
-        uint64_t IsCumulativelyLeaking; // Allows for "if (IsLeaking)"
+        float StructuralLeak; // 0.0: not leaking; 1.0: leaking
+        float WaterPumpForce; // -x.0 [out], ..., +y.0 [in]
+        bool IsCumulativelyLeakingTODO;
 
         LeakingComposite(bool isStructurallyLeaking)
-            : LeakingSources(
-                isStructurallyLeaking ? 1.0f : 0.0f,
-                0.0f)
+            : StructuralLeak(isStructurallyLeaking ? 1.0f : 0.0f)
+            , WaterPumpForce(0.0f)
+            , IsCumulativelyLeakingTODO(isStructurallyLeaking)
         {}
     };
 
@@ -1338,7 +1324,8 @@ public:
             //
 
             // Set as leaking
-            mLeakingCompositeBuffer[pointElementIndex].LeakingSources.StructuralLeak = 1.0f;
+            mLeakingCompositeBuffer[pointElementIndex].StructuralLeak = 1.0f;
+            mLeakingCompositeBuffer[pointElementIndex].IsCumulativelyLeakingTODO = true;
 
             // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
             mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
@@ -1882,7 +1869,8 @@ private:
 
     inline void SetStructurallyLeaking(ElementIndex pointElementIndex)
     {
-        mLeakingCompositeBuffer[pointElementIndex].LeakingSources.StructuralLeak = 1.0f;
+        mLeakingCompositeBuffer[pointElementIndex].StructuralLeak = 1.0f;
+        mLeakingCompositeBuffer[pointElementIndex].IsCumulativelyLeakingTODO = true;
 
         // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
         mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
