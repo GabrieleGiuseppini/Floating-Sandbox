@@ -728,13 +728,14 @@ Render:
 							+ See if WaterPermeability is the right spring property to look at	
 							+ Verify with test ship
 						+ Remove adjustment - use it only for forces
-					= Apply dynamic forces from all non-hull points to all adjacent hull points, using avg internal pressure (i.e. leftover)
-						= How to prevent lonely wet spring from pushing towards endpoint? Should we focus on triangles?
+					- Apply dynamic forces from all non-hull points to all adjacent hull points, along the spring direction, but
+					  only if both points have at least one triangle
 				= 3. ApplyExternalHydrostaticPressureForces: apply dynamic forces due to external pressure
 					+ Against hull only
 					+ Also include internal frontiers
 					- Try totally new idea:
-						- Visit (int|ext) frontier; for each hull point on it, apply pressure from point towards each non-hull point attached to it via a spring
+						- Visit (int|ext) frontier; for each hull point on it, apply pressure from that point towards every other point attached to it via a spring,
+						  and which has at least one triangle
 				+ Render
 					+ New Debug ship mode
 						+ Enum
@@ -760,6 +761,10 @@ Render:
 				- Nuke old HydrostaticPressure from ship
 				- Nuke Internal pressure (*) section from this plan
 
+		- Inject cracks (*)
+
+		- Try electric sparks with different blend mode
+
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
 			+ 0.242	
@@ -777,7 +782,8 @@ Render:
 				static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
 				static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
 
-		- Inject cracks (*)
+		- Test using normalize_approx in spring loop
+			- Verify gain on Dell
 
 		- Test bubble rendering with indices
 			- Sharing VBOs in VAOs: 
