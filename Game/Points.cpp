@@ -50,7 +50,6 @@ void Points::Add(
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
 
-    mInternalPressureBuffer.emplace_back(0.0f); // TODOHERE
     mIsHullBuffer.emplace_back(structuralMaterial.IsHull); // Default is from material
     mMaterialWaterIntakeBuffer.emplace_back(structuralMaterial.WaterIntake);
     mMaterialWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);
@@ -156,7 +155,6 @@ void Points::CreateEphemeralParticleAirBubble(
         airStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
 
-    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = airStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - airStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = airStructuralMaterial.WaterDiffusionSpeed;
@@ -231,7 +229,6 @@ void Points::CreateEphemeralParticleDebris(
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
     mCachedDepthBuffer[pointIndex] = depth;
 
-    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
@@ -320,7 +317,6 @@ void Points::CreateEphemeralParticleSmoke(
         airStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
 
-    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = airStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - airStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = airStructuralMaterial.WaterDiffusionSpeed;
@@ -395,7 +391,6 @@ void Points::CreateEphemeralParticleSparkle(
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
     mCachedDepthBuffer[pointIndex] = depth;
 
-    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
@@ -468,7 +463,6 @@ void Points::CreateEphemeralParticleWakeBubble(
         waterStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
 
-    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = waterStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - waterStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = waterStructuralMaterial.WaterDiffusionSpeed;
@@ -551,16 +545,8 @@ void Points::Restore(ElementIndex pointElementIndex)
     mIsDamagedBuffer[pointElementIndex] = false;
 
     // Restore factory-time structural IsLeaking
-    if (mFactoryIsStructurallyLeakingBuffer[pointElementIndex])
-    {
-        mLeakingCompositeBuffer[pointElementIndex].StructuralLeak = true;
-        mLeakingCompositeBuffer[pointElementIndex].IsCumulativelyLeakingTODO = true;
-    }
-    else
-    {
-        mLeakingCompositeBuffer[pointElementIndex].StructuralLeak = false;
-        mLeakingCompositeBuffer[pointElementIndex].IsCumulativelyLeakingTODO = (mLeakingCompositeBuffer[pointElementIndex].WaterPumpForce != 0.0f);
-    }
+    mLeakingCompositeBuffer[pointElementIndex].LeakingSources.StructuralLeak =
+        mFactoryIsStructurallyLeakingBuffer[pointElementIndex] ? 1.0f : 0.0f;
 
     // Remove point from set of burning points, in case it was burning
     if (mCombustionStateBuffer[pointElementIndex].State != CombustionState::StateType::NotBurning)
@@ -642,7 +628,7 @@ void Points::UpdateForGameParameters(GameParameters const & gameParameters)
         // Randomize cumulated water intaken for each leaking point
         for (ElementIndex i : RawShipPoints())
         {
-            if (GetLeakingComposite(i).IsCumulativelyLeakingTODO)
+            if (GetLeakingComposite(i).IsCumulativelyLeaking)
             {
                 mCumulatedIntakenWater[i] = RandomizeCumulatedIntakenWater(cumulatedIntakenWaterThresholdForAirBubbles);
             }
@@ -1532,7 +1518,7 @@ void Points::Query(ElementIndex pointElementIndex) const
 {
     LogMessage("PointIndex: ", pointElementIndex, (nullptr != mMaterialsBuffer[pointElementIndex].Structural) ? (" (" + mMaterialsBuffer[pointElementIndex].Structural->Name) + ")" : "");
     LogMessage("P=", mPositionBuffer[pointElementIndex].toString(), " V=", mVelocityBuffer[pointElementIndex].toString());
-    LogMessage("M=", mMassBuffer[pointElementIndex], " IP=", mInternalPressureBuffer[pointElementIndex], " W=", mWaterBuffer[pointElementIndex], " L=", mLightBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex], " Decay=", mDecayBuffer[pointElementIndex]);
+    LogMessage("M=", mMassBuffer[pointElementIndex], " W=", mWaterBuffer[pointElementIndex], " L=", mLightBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex], " Decay=", mDecayBuffer[pointElementIndex]);
     LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex], " ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }
 
@@ -1630,7 +1616,7 @@ void Points::UploadAttributes(
         mIsPlaneIdBufferEphemeralDirty = false;
     }
 
-    // Some attributes never change for ephemeral particles,
+    // The following attributes never change for ephemeral particles,
     // hence after the first upload for reasonable defaults, we only
     // need to upload them for the ship's (structural = raw) points,
     // not for the ephemeral ones
@@ -1651,15 +1637,6 @@ void Points::UploadAttributes(
         renderContext.UploadShipPointTemperatureAsync(
             shipId,
             mTemperatureBuffer.data(),
-            0,
-            partialPointCount);
-    }
-
-    if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::InternalPressure)
-    {
-        renderContext.UploadShipPointAuxiliaryDataAsync(
-            shipId,
-            mInternalPressureBuffer.data(),
             0,
             partialPointCount);
     }
@@ -1748,15 +1725,6 @@ void Points::UploadVectors(
 
     switch (renderContext.GetVectorFieldRenderMode())
     {
-        case VectorFieldRenderModeType::PointVelocity:
-        {
-            color = vec4f(0.203f, 0.552f, 0.219f, 1.0f);
-            vectorBuffer = mVelocityBuffer.data();
-            lengthAdjustment = 0.25f;
-
-            break;
-        }
-
         case VectorFieldRenderModeType::PointStaticForce:
         {
             color = vec4f(0.5f, 0.1f, 0.f, 1.0f);
@@ -1766,11 +1734,11 @@ void Points::UploadVectors(
             break;
         }
 
-        case VectorFieldRenderModeType::PointDynamicForce:
+        case VectorFieldRenderModeType::PointVelocity:
         {
-            color = vec4f(0.5f, 0.1f, 0.f, 1.0f);
-            vectorBuffer = mDynamicForceBuffer.data();
-            lengthAdjustment = 0.000001f;
+            color = vec4f(0.203f, 0.552f, 0.219f, 1.0f);
+            vectorBuffer = mVelocityBuffer.data();
+            lengthAdjustment = 0.25f;
 
             break;
         }

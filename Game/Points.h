@@ -157,16 +157,30 @@ public:
     /*
      * The leaking-related properties of a particle.
      */
-    struct LeakingComposite
+    union LeakingComposite
     {
-        float StructuralLeak; // 0.0: not leaking; 1.0: leaking
-        float WaterPumpForce; // -x.0 [out], ..., +y.0 [in]
-        bool IsCumulativelyLeakingTODO;
+#pragma pack(push, 1)
+        struct LeakingSourcesType
+        {
+            float StructuralLeak; // 0.0 or 1.0
+            float WaterPumpForce; // -1.0 [out], ..., +1.0 [in]
+
+            LeakingSourcesType(
+                float structuralLeak,
+                float waterPumpNominalForce)
+                : StructuralLeak(structuralLeak)
+                , WaterPumpForce(waterPumpNominalForce)
+            {}
+        };
+#pragma pack(pop)
+
+        LeakingSourcesType LeakingSources;
+        uint64_t IsCumulativelyLeaking; // Allows for "if (IsLeaking)"
 
         LeakingComposite(bool isStructurallyLeaking)
-            : StructuralLeak(isStructurallyLeaking ? 1.0f : 0.0f)
-            , WaterPumpForce(0.0f)
-            , IsCumulativelyLeakingTODO(isStructurallyLeaking)
+            : LeakingSources(
+                isStructurallyLeaking ? 1.0f : 0.0f,
+                0.0f)
         {}
     };
 
@@ -529,9 +543,8 @@ public:
         , mBuoyancyCoefficientsBuffer(mBufferElementCount, shipPointCount, BuoyancyCoefficients(0.0f, 0.0f))
         , mCachedDepthBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
-        // Pressure and water dynamics
+        // Water dynamics
         , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
-        , mInternalPressureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterIntakeBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterRestitutionBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialWaterDiffusionSpeedBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -1153,25 +1166,8 @@ public:
     }
 
     //
-    // Pressure and water dynamics
+    // Water dynamics
     //
-
-    float GetInternalPressure(ElementIndex pointElementIndex) const
-    {
-        return mInternalPressureBuffer[pointElementIndex];
-    }
-
-    void SetInternalPressure(
-        ElementIndex pointElementIndex,
-        float value)
-    {
-        mInternalPressureBuffer[pointElementIndex] = value;
-    }
-
-    float * GetInternalPressureBufferAsFloat()
-    {
-        return mInternalPressureBuffer.data();
-    }
 
     bool GetIsHull(ElementIndex pointElementIndex) const
     {
@@ -1200,6 +1196,11 @@ public:
         return mMaterialWaterDiffusionSpeedBuffer[pointElementIndex];
     }
 
+    float * GetWaterBufferAsFloat()
+    {
+        return mWaterBuffer.data();
+    }
+
     float GetWater(ElementIndex pointElementIndex) const
     {
         return mWaterBuffer[pointElementIndex];
@@ -1217,11 +1218,6 @@ public:
         float threshold) const
     {
         return mWaterBuffer[pointElementIndex] > threshold;
-    }
-
-    float * GetWaterBufferAsFloat()
-    {
-        return mWaterBuffer.data();
     }
 
     std::shared_ptr<Buffer<float>> MakeWaterBufferCopy()
@@ -1324,8 +1320,7 @@ public:
             //
 
             // Set as leaking
-            mLeakingCompositeBuffer[pointElementIndex].StructuralLeak = 1.0f;
-            mLeakingCompositeBuffer[pointElementIndex].IsCumulativelyLeakingTODO = true;
+            mLeakingCompositeBuffer[pointElementIndex].LeakingSources.StructuralLeak = 1.0f;
 
             // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
             mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
@@ -1869,8 +1864,7 @@ private:
 
     inline void SetStructurallyLeaking(ElementIndex pointElementIndex)
     {
-        mLeakingCompositeBuffer[pointElementIndex].StructuralLeak = 1.0f;
-        mLeakingCompositeBuffer[pointElementIndex].IsCumulativelyLeakingTODO = true;
+        mLeakingCompositeBuffer[pointElementIndex].LeakingSources.StructuralLeak = 1.0f;
 
         // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
         mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
@@ -1929,11 +1923,10 @@ private:
     Buffer<vec2f> mIntegrationFactorBuffer;
 
     //
-    // Pressure and water dynamics
+    // Water dynamics
     //
 
     Buffer<bool> mIsHullBuffer; // Externally-computed resultant of material hullness and dynamic hullness
-    Buffer<float> mInternalPressureBuffer; // Pressure at this particle (Pa)
     Buffer<float> mMaterialWaterIntakeBuffer;
     Buffer<float> mMaterialWaterRestitutionBuffer;
     Buffer<float> mMaterialWaterDiffusionSpeedBuffer;

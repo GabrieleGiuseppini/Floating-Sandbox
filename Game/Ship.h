@@ -431,6 +431,11 @@ private:
         GameParameters const & gameParameters,
         Geometry::AABBSet & aabbSet);
 
+    void ApplyHydrostaticPressureForces(
+        float effectiveAirDensity,
+        float effectiveWaterDensity,
+        GameParameters const & gameParameters);
+
     void ApplySpringsForces_BySprings(GameParameters const & gameParameters);
 
     void IntegrateAndResetDynamicForces(GameParameters const & gameParameters);
@@ -441,22 +446,13 @@ private:
 
     void TrimForWorldBounds(GameParameters const & gameParameters);
 
-    // Pressure and water
+    // Water
 
-    void UpdatePressureAndWaterInflow(
-        float effectiveAirDensity,
-        float effectiveWaterDensity,
+    void UpdateWaterInflow(
         float currentSimulationTime,
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters,
         float & waterTakenInStep);
-
-    void EqualizeInternalPressure(GameParameters const & gameParameters);
-
-    void ApplyExternalHydrostaticPressureForces(
-        float effectiveAirDensity,
-        float effectiveWaterDensity,
-        GameParameters const & gameParameters);
 
     void UpdateWaterVelocities(
         GameParameters const & gameParameters,

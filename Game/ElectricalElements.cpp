@@ -1610,18 +1610,11 @@ void ElectricalElements::UpdateSinks(
                 waterPumpState.CurrentNormalizedForce +=
                     (waterPumpState.TargetNormalizedForce - waterPumpState.CurrentNormalizedForce)
                     * 0.025f; // Convergence rate, magic number
-                if (std::abs(waterPumpState.CurrentNormalizedForce) < 0.001f)
-                {
-                    waterPumpState.CurrentNormalizedForce = 0.0f;
-                }
-
-                // Calculate pump force
-                float const waterPumpForce = waterPumpState.CurrentNormalizedForce * waterPumpState.NominalForce;
 
                 // Apply force to point
-                points.GetLeakingComposite(pointIndex).WaterPumpForce = waterPumpForce;
-                points.GetLeakingComposite(pointIndex).IsCumulativelyLeakingTODO =
-                    (waterPumpForce != 0.0f || points.GetLeakingComposite(pointIndex).StructuralLeak);
+                points.GetLeakingComposite(pointIndex).LeakingSources.WaterPumpForce =
+                    waterPumpState.CurrentNormalizedForce
+                    * waterPumpState.NominalForce;
 
                 // Eventually publish force change notification
                 if (waterPumpState.CurrentNormalizedForce != waterPumpState.LastPublishedNormalizedForce)
