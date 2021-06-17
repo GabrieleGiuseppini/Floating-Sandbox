@@ -47,7 +47,7 @@ void main()
         discard;
 
     // Make color based off strength
-    float intensity = pow(vertexStrength, 0.25);
+    float intensity = pow(vertexStrength / 4., 0.3);
     vec3 color = vec3(intensity * paramEffectiveAmbientLightIntensity);
     gl_FragColor = vec4(color, vertexCol.w);
 } 

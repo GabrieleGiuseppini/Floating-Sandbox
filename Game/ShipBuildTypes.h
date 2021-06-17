@@ -37,7 +37,7 @@ struct ShipBuildPoint
 
     ElectricalMaterial const* ElectricalMtl;
     ElectricalElementInstanceIndex ElectricalElementInstanceIdx;
-    std::vector<ElementIndex> ConnectedSprings;
+    std::vector<ElementIndex> ConnectedSprings1;
 
     ShipBuildPoint(
         std::optional<IntegralPoint> originalDefinitionCoordinates,
@@ -57,14 +57,14 @@ struct ShipBuildPoint
         , Water(water)
         , ElectricalMtl(nullptr)
         , ElectricalElementInstanceIdx(NoneElectricalElementInstanceIndex)
-        , ConnectedSprings()
+        , ConnectedSprings1()
     {
     }
 
-    void AddConnectedSpring(ElementIndex springIndex)
+    void AddConnectedSpring1(ElementIndex springIndex1)
     {
-        assert(!ContainsConnectedSpring(springIndex));
-        ConnectedSprings.push_back(springIndex);
+        assert(!ContainsConnectedSpring(springIndex1));
+        ConnectedSprings1.push_back(springIndex1);
     }
 
 private:
@@ -72,9 +72,8 @@ private:
     inline bool ContainsConnectedSpring(ElementIndex springIndex1) const
     {
         return std::find(
-            ConnectedSprings.cbegin(),
-            ConnectedSprings.cend(),
-            springIndex1)
-            != ConnectedSprings.cend();
+            ConnectedSprings1.cbegin(),
+            ConnectedSprings1.cend(),
+            springIndex1) != ConnectedSprings1.cend();
     }
 };

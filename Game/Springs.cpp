@@ -34,7 +34,7 @@ void Springs::Add(
 
     // Strength is average
     float const averageStrength =
-        (points.GetStructuralMaterial(pointAIndex).Strength + points.GetStructuralMaterial(pointBIndex).Strength)
+        (points.GetStrength(pointAIndex) + points.GetStrength(pointBIndex))
         / 2.0f;
     mMaterialStrengthBuffer.emplace_back(averageStrength);
 
@@ -79,8 +79,6 @@ void Springs::Add(
     mMaterialMeltingTemperatureBuffer.emplace_back(meltingTemperature);
 
     mIsStressedBuffer.emplace_back(false);
-
-
 
     // Calculate parameters for this spring
     UpdateForDecayAndTemperatureAndGameParameters(

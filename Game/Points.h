@@ -536,13 +536,13 @@ public:
         , mAugmentedMaterialMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMaterialBuoyancyVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mStrengthBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mDecayBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIsDecayBufferDirty(true)
         , mFrozenCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mBuoyancyCoefficientsBuffer(mBufferElementCount, shipPointCount, BuoyancyCoefficients(0.0f, 0.0f))
         , mCachedDepthBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mRelativeStrengthBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         // Water dynamics
         , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
@@ -624,7 +624,6 @@ public:
         , mStoppedBurningPoints()
         , mFreeEphemeralParticleSearchStartIndex(mAlignedShipPointCount)
         , mAreEphemeralPointsDirtyForRendering(false)
-        , mMaxStrength(materialDatabase.GetLargestStrength())
 #ifdef _DEBUG
         , mDiagnostic_ArePositionsDirty(false)
 #endif
@@ -1061,6 +1060,11 @@ public:
     }
 
     void UpdateMasses(GameParameters const & gameParameters);
+
+    float GetStrength(ElementIndex pointElementIndex) const
+    {
+        return mStrengthBuffer[pointElementIndex];
+    }
 
     float GetDecay(ElementIndex pointElementIndex) const
     {
@@ -1923,13 +1927,13 @@ private:
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
     Buffer<float> mMassBuffer; // Augmented + Water
     Buffer<float> mMaterialBuoyancyVolumeFillBuffer;
+    Buffer<float> mStrengthBuffer; // Immutable
     Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
     bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
     Buffer<float> mFrozenCoefficientBuffer; // 1.0: not frozen; 0.0f: frozen
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
     Buffer<BuoyancyCoefficients> mBuoyancyCoefficientsBuffer;
     Buffer<float> mCachedDepthBuffer; // Positive when underwater
-    Buffer<float> mRelativeStrengthBuffer; // Only used for rendering
 
     Buffer<vec2f> mIntegrationFactorBuffer;
 
@@ -2115,9 +2119,6 @@ private:
     // of ephemeral types that are uploaded as ephemeral points
     // (thus no AirBubbles nor Sparkles, which are both uploaded specially)
     bool mutable mAreEphemeralPointsDirtyForRendering;
-
-    // The max strength across all elements
-    float const mMaxStrength;
 
     // Calculated constants for combustion decay
     float mCombustionDecayAlphaFunctionA;

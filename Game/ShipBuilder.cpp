@@ -204,7 +204,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
             materialDatabase);
     }
 
-
     //
     // Process all identified rope endpoints and:
     // - Fill-in points between the endpoints, creating additional ShipBuildPoint's for them
@@ -221,7 +220,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         pointInfos,
         springInfos,
         pointPairToSpringIndex1Map);
-
 
     //
     // Visit point matrix and:
@@ -242,7 +240,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         triangleInfos,
         leakingPointsCount);
 
-
     //
     // Optimize order of ShipBuildPoint's and ShipBuildSpring's to minimize cache misses
     //
@@ -261,7 +258,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     float optimizedSpringACMR = CalculateACMR(springInfos2);
 
     LogMessage("Spring ACMR: original=", originalSpringACMR, ", optimized=", optimizedSpringACMR);
-
 
     //
     // Optimize order of Triangles
@@ -282,7 +278,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     ////LogMessage("Triangles ACMR: original=", originalACMR, ", optimized=", optimizedACMR);
     ////LogMessage("Triangles VMR: original=", originalVMR, ", optimized=", optimizedVMR);
 
-
     //
     // Visit all ShipBuildPoint's and create Points, i.e. the entire set of points
     //
@@ -296,7 +291,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         gameParameters,
         electricalElementInstanceIndices);
 
-
     //
     // Filter out redundant triangles
     //
@@ -307,7 +301,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         pointIndexRemap2,
         springInfos2);
 
-
     //
     // Associate all springs with the triangles that cover them
     //
@@ -315,7 +308,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     ConnectSpringsAndTriangles(
         springInfos2,
         triangleInfos2);
-
 
     //
     // Create Springs for all ShipBuildSpring's
@@ -329,7 +321,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         gameEventDispatcher,
         gameParameters);
 
-
     //
     // Create Triangles for all (filtered out) ShipBuildTriangle's
     //
@@ -338,7 +329,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         triangleInfos2,
         points,
         pointIndexRemap2);
-
 
     //
     // Create Electrical Elements
@@ -353,7 +343,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         parentWorld,
         gameEventDispatcher,
         gameParameters);
-
 
     //
     // Create frontiers
@@ -372,7 +361,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
 
     auto const frontiersEndTime = std::chrono::steady_clock::now();
 
-
     //
     // Create texture, if needed
     //
@@ -384,7 +372,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
             shipDefinition.StructuralLayerImage.Size,
             pointIndexMatrix,
             pointInfos); // Auto-texturize
-
 
     //
     // We're done!
@@ -756,7 +743,7 @@ void ShipBuilder::AppendRopes(
         float curN = startN;
         float const halfW = fabs(endW - curW) / 2.0f;
 
-        auto curStartPointIndex = ropeSegment.PointAIndex1;
+        auto curStartPointIndex1 = ropeSegment.PointAIndex1;
         while (true)
         {
             curW += stepW;
@@ -779,18 +766,18 @@ void ShipBuilder::AppendRopes(
                 newPosition = vec2f(curN, curW);
             }
 
-            auto const newPointIndex = static_cast<ElementIndex>(pointInfos1.size());
+            auto const newPointIndex1 = static_cast<ElementIndex>(pointInfos1.size());
 
             // Add ShipBuildSpring
-            ElementIndex const springIndex = static_cast<ElementIndex>(springInfos1.size());
+            ElementIndex const springIndex1 = static_cast<ElementIndex>(springInfos1.size());
             springInfos1.emplace_back(
-                curStartPointIndex,
+                curStartPointIndex1,
                 factoryDirectionEnd,
-                newPointIndex,
+                newPointIndex1,
                 factoryDirectionStart);
 
             // Add spring to point pair map
-            auto const [_, isInserted] = pointPairToSpringIndex1Map.try_emplace({ curStartPointIndex , newPointIndex }, springIndex);
+            auto const [_, isInserted] = pointPairToSpringIndex1Map.try_emplace({ curStartPointIndex1 , newPointIndex1 }, springIndex1);
             assert(isInserted);
             (void)isInserted;
 
@@ -810,31 +797,31 @@ void ShipBuilder::AppendRopes(
                 : endElectricalMaterial; // Second half
 
             // Connect points to spring
-            pointInfos1[curStartPointIndex].AddConnectedSpring(springIndex);
-            pointInfos1[newPointIndex].AddConnectedSpring(springIndex);
+            pointInfos1[curStartPointIndex1].AddConnectedSpring1(springIndex1);
+            pointInfos1[newPointIndex1].AddConnectedSpring1(springIndex1);
 
             // Advance
-            curStartPointIndex = newPointIndex;
+            curStartPointIndex1 = newPointIndex1;
         }
 
         // Add last ShipBuildSpring (no ShipBuildPoint as the endpoint has already a ShipBuildPoint)
-        ElementIndex const lastSpringIndex = static_cast<ElementIndex>(springInfos1.size());
+        ElementIndex const lastSpringIndex1 = static_cast<ElementIndex>(springInfos1.size());
         springInfos1.emplace_back(
-            curStartPointIndex,
+            curStartPointIndex1,
             factoryDirectionEnd,
             ropeSegment.PointBIndex1,
             factoryDirectionStart);
 
         // Add spring to point pair map
         auto const [_, isInserted] = pointPairToSpringIndex1Map.try_emplace(
-            { curStartPointIndex , ropeSegment.PointBIndex1 },
-            lastSpringIndex);
+            { curStartPointIndex1, ropeSegment.PointBIndex1 },
+            lastSpringIndex1);
         assert(isInserted);
         (void)isInserted;
 
         // Connect points to spring
-        pointInfos1[curStartPointIndex].AddConnectedSpring(lastSpringIndex);
-        pointInfos1[ropeSegment.PointBIndex1].AddConnectedSpring(lastSpringIndex);
+        pointInfos1[curStartPointIndex1].AddConnectedSpring1(lastSpringIndex1);
+        pointInfos1[ropeSegment.PointBIndex1].AddConnectedSpring1(lastSpringIndex1);
     }
 }
 
@@ -872,20 +859,20 @@ void ShipBuilder::CreateShipElementInfos(
                 // A point exists at these coordinates
                 //
 
-                ElementIndex pointIndex = *pointIndexMatrix[x][y];
+                ElementIndex pointIndex1 = *pointIndexMatrix[x][y];
 
                 // If a non-hull node has empty space on one of its four sides, it is leaking.
                 // Check if a is leaking; a is leaking if:
                 // - a is not hull, AND
                 // - there is at least a hole at E, S, W, N
-                if (!pointInfos1[pointIndex].StructuralMtl.IsHull)
+                if (!pointInfos1[pointIndex1].StructuralMtl.IsHull)
                 {
                     if (!pointIndexMatrix[x + 1][y]
                         || !pointIndexMatrix[x][y + 1]
                         || !pointIndexMatrix[x - 1][y]
                         || !pointIndexMatrix[x][y - 1])
                     {
-                        pointInfos1[pointIndex].IsLeaking = true;
+                        pointInfos1[pointIndex1].IsLeaking = true;
                         ++leakingPointsCount;
                     }
                 }
@@ -910,26 +897,26 @@ void ShipBuilder::CreateShipElementInfos(
                         // Create ShipBuildSpring
                         //
 
-                        ElementIndex const otherEndpointIndex = *pointIndexMatrix[adjx1][adjy1];
+                        ElementIndex const otherEndpointIndex1 = *pointIndexMatrix[adjx1][adjy1];
 
                         // Add spring to spring infos
-                        ElementIndex const springIndex = static_cast<ElementIndex>(springInfos1.size());
+                        ElementIndex const springIndex1 = static_cast<ElementIndex>(springInfos1.size());
                         springInfos1.emplace_back(
-                            pointIndex,
+                            pointIndex1,
                             i,
-                            otherEndpointIndex,
+                            otherEndpointIndex1,
                             (i + 4) % 8);
 
                         // Add spring to point pair map
                         auto [_, isInserted] = pointPairToSpringIndex1Map.try_emplace(
-                            { pointIndex, otherEndpointIndex },
-                            springIndex);
+                            { pointIndex1, otherEndpointIndex1 },
+                            springIndex1);
                         assert(isInserted);
                         (void)isInserted;
 
                         // Add the spring to its endpoints
-                        pointInfos1[pointIndex].AddConnectedSpring(springIndex);
-                        pointInfos1[otherEndpointIndex].AddConnectedSpring(springIndex);
+                        pointInfos1[pointIndex1].AddConnectedSpring1(springIndex1);
+                        pointInfos1[otherEndpointIndex1].AddConnectedSpring1(springIndex1);
 
 
                         //
@@ -954,8 +941,8 @@ void ShipBuilder::CreateShipElementInfos(
                             triangleInfos1.emplace_back(
                                 std::array<ElementIndex, 3>( // Points are in CW order
                                     {
-                                        pointIndex,
-                                        otherEndpointIndex,
+                                        pointIndex1,
+                                        otherEndpointIndex1,
                                         *pointIndexMatrix[adjx2][adjy2]
                                     }));
                         }
@@ -979,7 +966,7 @@ void ShipBuilder::CreateShipElementInfos(
                             triangleInfos1.emplace_back(
                                 std::array<ElementIndex, 3>( // Points are in CW order
                                     {
-                                        pointIndex,
+                                        pointIndex1,
                                         *pointIndexMatrix[x + TessellationCircularOrderDirections[0][0]][y + TessellationCircularOrderDirections[0][1]],
                                         *pointIndexMatrix[x + TessellationCircularOrderDirections[2][0]][y + TessellationCircularOrderDirections[2][1]]
                                     }));
@@ -1861,7 +1848,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Str
             pointInfos2.push_back(pointInfos1[pointIndex1]);
 
             // Visit all connected not-yet-reordered springs
-            for (ElementIndex springIndex1 : pointInfos1[pointIndex1].ConnectedSprings)
+            for (ElementIndex springIndex1 : pointInfos1[pointIndex1].ConnectedSprings1)
             {
                 if (!reorderedSpringInfos1[springIndex1])
                 {
@@ -2049,7 +2036,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Blo
             pointInfos2.push_back(pointInfos1[pointIndex1]);
 
             // Visit all connected not-yet-reordered springs
-            for (ElementIndex springIndex1 : pointInfos1[pointIndex1].ConnectedSprings)
+            for (ElementIndex springIndex1 : pointInfos1[pointIndex1].ConnectedSprings1)
             {
                 if (!reorderedSpringInfos1[springIndex1])
                 {
@@ -2214,13 +2201,13 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Til
                         ElementIndex pointIndex = *(pointIndexMatrix[x + x2][y + y2]);
 
                         // Add all springs connected to this point
-                        for (auto connectedSpringIndex : pointInfos1[pointIndex].ConnectedSprings)
+                        for (auto connectedSpringIndex1 : pointInfos1[pointIndex].ConnectedSprings1)
                         {
-                            if (!reorderedSpringInfos1[connectedSpringIndex])
+                            if (!reorderedSpringInfos1[connectedSpringIndex1])
                             {
-                                springIndexRemap[connectedSpringIndex] = static_cast<ElementIndex>(springInfos2.size());
-                                springInfos2.push_back(springInfos1[connectedSpringIndex]);
-                                reorderedSpringInfos1[connectedSpringIndex] = true;
+                                springIndexRemap[connectedSpringIndex1] = static_cast<ElementIndex>(springInfos2.size());
+                                springInfos2.push_back(springInfos1[connectedSpringIndex1]);
+                                reorderedSpringInfos1[connectedSpringIndex1] = true;
                             }
                         }
                     }

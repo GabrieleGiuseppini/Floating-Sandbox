@@ -41,6 +41,7 @@ void Points::Add(
     mAugmentedMaterialMassBuffer.emplace_back(structuralMaterial.GetMass());
     mMassBuffer.emplace_back(structuralMaterial.GetMass());
     mMaterialBuoyancyVolumeFillBuffer.emplace_back(structuralMaterial.BuoyancyVolumeFill);
+    mStrengthBuffer.emplace_back(strength);
     mDecayBuffer.emplace_back(1.0f);
     mFrozenCoefficientBuffer.emplace_back(1.0f);
     mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f));
@@ -48,7 +49,6 @@ void Points::Add(
         structuralMaterial.BuoyancyVolumeFill,
         structuralMaterial.ThermalExpansionCoefficient));
     mCachedDepthBuffer.emplace_back(mParentWorld.GetDepth(position));
-    mRelativeStrengthBuffer.emplace_back(strength / mMaxStrength);
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
 
@@ -1647,7 +1647,7 @@ void Points::UploadAttributes(
     {
         renderContext.UploadShipPointAuxiliaryDataAsync(
             shipId,
-            mRelativeStrengthBuffer.data(),
+            mStrengthBuffer.data(),
             0,
             partialPointCount);
     }

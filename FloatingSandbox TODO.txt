@@ -713,9 +713,7 @@ Render:
 			+ Visualize strength first to ensure we don't already have fault lines
 				+ New visualization mode
 					+ SettingsDialog
-			- TODO
-
-		- Try rendering electric sparks with different blend mode
+			- Inject:
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
