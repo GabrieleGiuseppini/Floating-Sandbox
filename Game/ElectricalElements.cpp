@@ -1601,20 +1601,29 @@ void ElectricalElements::UpdateSinks(
                 }
 
                 //
-                // 2) Smooth CurrentForce towards TargetForce and eventually act on particle
+                // 2) Converge CurrentForce towards TargetForce and eventually act on particle
                 //
                 // We run this also when deleted, as it's part of our wind-down state machine
                 //
 
-                // Smooth current force
+                // Converge current force
                 waterPumpState.CurrentNormalizedForce +=
                     (waterPumpState.TargetNormalizedForce - waterPumpState.CurrentNormalizedForce)
                     * 0.025f; // Convergence rate, magic number
+                if (std::abs(waterPumpState.CurrentNormalizedForce - waterPumpState.TargetNormalizedForce) < 0.001f)
+                {
+                    waterPumpState.CurrentNormalizedForce = waterPumpState.TargetNormalizedForce;
+                }
+
+                // Calculate force
+                float waterPumpForce = waterPumpState.CurrentNormalizedForce * waterPumpState.NominalForce;
+                if (waterPumpForce == 0.0f) // Ensure -0.0 is +0.0, or else CompositeIsLeaking's union trick won't work
+                {
+                    waterPumpForce = 0.0f;
+                }
 
                 // Apply force to point
-                points.GetLeakingComposite(pointIndex).LeakingSources.WaterPumpForce =
-                    waterPumpState.CurrentNormalizedForce
-                    * waterPumpState.NominalForce;
+                points.GetLeakingComposite(pointIndex).LeakingSources.WaterPumpForce = waterPumpForce;
 
                 // Eventually publish force change notification
                 if (waterPumpState.CurrentNormalizedForce != waterPumpState.LastPublishedNormalizedForce)

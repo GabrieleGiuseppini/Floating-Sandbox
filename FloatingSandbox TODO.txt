@@ -704,75 +704,13 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		- bishobe64 in Credits?			
-
-		- New ships
-			- changelist
-
-		= Internal pressure
-			! Spec:
-				- Points has a new InternalPressure quantity, completely independent from water
-				- InternalPressure is responsible for acting on all hull particles
-				- Three steps
-					- 1. Pressure intake
-					- 2. Pressure equalization - generates dynamic forces, which will be integrated at next step
-					- 3. External pressure - generates dynamic forces, which will be integrated at next step
-			= Impl:
-				+ Points::InternalPressure 
-				+ Comment out HydrostaticPressure
-				+ 1. UpdateWaterInflow -> UpdatePressureAndWaterInflow
-					+ And now intakes pressure together with water
-				= 2. EqualizeInternalPressure():
-					+ Equalization
-						+ Not towards hull points
-							+ See if WaterPermeability is the right spring property to look at	
-							+ Verify with test ship
-						+ Remove adjustment - use it only for forces
-					- Apply dynamic forces from all non-hull points to all adjacent hull points, along the spring direction, but
-					  only if both points have at least one triangle
-				= 3. ApplyExternalHydrostaticPressureForces: apply dynamic forces due to external pressure
-					+ Against hull only
-					+ Also include internal frontiers
-					- Try totally new idea:
-						- Visit (int|ext) frontier; for each hull point on it, apply pressure from that point towards every other point attached to it via a spring,
-						  and which has at least one triangle
-				+ Render
-					+ New Debug ship mode
-						+ Enum
-						+ SettingsDialog
-					+ Points::Upload makes use of new "Auxiliary quantity" upload facility in ShipRenderContext for buffer data
-					+ New shader
-					+ See how to do it for non-triangles
-			= Visualize dynamic forces: new VectorRenderMode
-				+ SettingsDialog
-
-			- Finalize:
-				- Merge Equalize() with UpdateWaterVelocities -> EqualizeInternalPressureAndUpdateWaterVelocities
-					- Optimize
-				- Decide what to do with atmospheric/zero pressure
-					- Also finalize population of Points::InternalPressure at Points:Add
-				- Flood tool
-				- See if want pressure in physics probe panel
-				- See if InternalPressure may be used for bubbles
-			- Test:
-			- Cleanup:
-				- UpdatePressureAndWaterInflow:
-					- See if "effectiveDensity" args are really needed
-				- Nuke old HydrostaticPressure from ship
-				- Nuke Internal pressure (*) section from this plan
-
-		+ Points::Upload: dynamic forces
-		+ Ship::AABB calculation
-		- ElectricalElements: WaterPump issues: -0.0f *and* never set to zero when decaying
-		+ Visibility of DynamicForces via new VectorRenderMode		
-		+ Auxiliary data visualization
 		- Move ExternalPressure calc'n from Spring loop to right after that
-
+			- Test resultant net and torque before & after, with "Basic Shapes"
 		- Tests:
-			- Dynamic forces
-			- Water Pumps
+			- Dynamic forces visualization
 
 		- Inject cracks (*)
+			- Visualize strength first to ensure we don't already have fault lines
 
 		- Try rendering electric sparks with different blend mode
 
@@ -781,6 +719,9 @@ Render:
 			+ 0.242	
 			- Adjustment is too low, raise it
 				- 0.5+ is somewhat acceptable for Titanic - breaks down at 4.5Km
+
+		- Another hydrostatic pressure attempt:
+			- Frontier: do not act on non-hull points, but then compensate net resultant force (and may be resultant torque as well)
 
 		- Spread out rotting:
 			! Now: at step 20/49
@@ -792,6 +733,11 @@ Render:
 				static constexpr int SpringDecayAndTemperaturePeriodStep = 34; - Spread out spring coeffs' recalculations (*)
 				static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
 				static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
+
+		- bishobe64 in Credits?			
+
+		- New ships
+			- changelist
 
 		- Test using normalize_approx in spring loop
 			- Verify gain on Dell
