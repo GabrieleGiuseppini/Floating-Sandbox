@@ -987,6 +987,13 @@ public:
         return mDynamicForceBuffer.data();
     }
 
+    void SetDynamicForce(
+        ElementIndex pointElementIndex,
+        vec2f const & force) noexcept
+    {
+        mDynamicForceBuffer[pointElementIndex] = force;
+    }
+
     void AddDynamicForce(
         ElementIndex pointElementIndex,
         vec2f const & force) noexcept

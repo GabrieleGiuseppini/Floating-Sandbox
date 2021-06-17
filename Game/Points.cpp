@@ -1738,7 +1738,7 @@ void Points::UploadVectors(
         {
             color = vec4f(0.5f, 0.1f, 0.f, 1.0f);
             vectorBuffer = mDynamicForceBuffer.data();
-            lengthAdjustment = 0.00075f;
+            lengthAdjustment = 0.000001f;
 
             break;
         }

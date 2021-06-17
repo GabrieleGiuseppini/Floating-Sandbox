@@ -608,6 +608,11 @@ Render:
 				+ Disconnected components
 			+ Nuke EMP tool in this spec
 			+ changelist
+		+ Move ExternalPressure calc'n from Spring loop to right after that
+			+ Test resultant net and torque before & after, with "Basic Shapes"
+		+ Tests:
+			+ Dynamic forces visualization
+		+ Clear dynamic forces at position-changing interactions
 
 
 		= Ubuntu:
@@ -704,13 +709,10 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		- Move ExternalPressure calc'n from Spring loop to right after that
-			- Test resultant net and torque before & after, with "Basic Shapes"
-		- Tests:
-			- Dynamic forces visualization
-
 		- Inject cracks (*)
 			- Visualize strength first to ensure we don't already have fault lines
+				- New visualization mode
+					- SettingsDialog
 
 		- Try rendering electric sparks with different blend mode
 

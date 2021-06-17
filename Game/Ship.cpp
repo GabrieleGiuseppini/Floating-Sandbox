@@ -246,23 +246,12 @@ void Ship::Update(
 
     for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
     {
-        // - DynamicForces = 0
+        // - DynamicForces = 0 | others at first iteration only
 
         // Apply spring forces
         ApplySpringsForces_BySprings(gameParameters);
 
-        // - DynamicForces = fs
-
-        if (iter == numMechanicalDynamicsIterations - 1)
-        {
-            // Last step: apply hydrostatic pressure forces
-            ApplyHydrostaticPressureForces(
-                effectiveAirDensity,
-                effectiveWaterDensity,
-                gameParameters);
-
-            // - DynamicForces = fs + hp
-        }
+        // - DynamicForces = fs | fs + others at first iteration only
 
         // Integrate dynamic and static forces,
         // and reset dynamic forces
@@ -325,6 +314,15 @@ void Ship::Update(
         aabbSet);
 
     // Cached depths are valid from now on --------------------------->
+
+    ///////////////////////////////////////////////////////////////////
+    // Apply hydrostatic forces
+    ///////////////////////////////////////////////////////////////////
+
+    ApplyHydrostaticPressureForces(
+        effectiveAirDensity,
+        effectiveWaterDensity,
+        gameParameters);
 
     ///////////////////////////////////////////////////////////////////
     // Rot points

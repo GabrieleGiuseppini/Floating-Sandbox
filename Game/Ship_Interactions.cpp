@@ -106,7 +106,9 @@ void Ship::MoveBy(
                     mPoints.SetVelocity(p, actualInertialVelocity);
                 }
 
-                mPoints.SetStaticForce(p, vec2f::zero()); // Zero-out already-existing force
+                // Zero-out already-existing forces
+                mPoints.SetStaticForce(p, vec2f::zero());
+                mPoints.SetDynamicForce(p, vec2f::zero());
             }
         }
 
@@ -127,12 +129,14 @@ void Ship::MoveBy(
     vec2f * const restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
     vec2f * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsVec2();
+    vec2f * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBufferAsVec2();
 
     for (auto const p : mPoints.BufferElements())
     {
         positionBuffer[p] += offset;
         velocityBuffer[p] = actualInertialVelocity;
         staticForceBuffer[p] = vec2f::zero();
+        dynamicForceBuffer[p] = vec2f::zero();
     }
 
     TrimForWorldBounds(gameParameters);
@@ -176,7 +180,9 @@ void Ship::RotateBy(
                         (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude);
                 }
 
-                mPoints.SetStaticForce(p, vec2f::zero()); // Zero-out already-existing force
+                // Zero-out already-existing forces
+                mPoints.SetStaticForce(p, vec2f::zero());
+                mPoints.SetDynamicForce(p, vec2f::zero());
             }
         }
 
@@ -203,6 +209,7 @@ void Ship::RotateBy(
     vec2f * const restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
     vec2f * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsVec2();
+    vec2f * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBufferAsVec2();
 
     for (auto const p : mPoints.BufferElements())
     {
@@ -212,6 +219,7 @@ void Ship::RotateBy(
         velocityBuffer[p] =
             (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
         staticForceBuffer[p] = vec2f::zero();
+        dynamicForceBuffer[p] = vec2f::zero();
     }
 
     TrimForWorldBounds(gameParameters);
