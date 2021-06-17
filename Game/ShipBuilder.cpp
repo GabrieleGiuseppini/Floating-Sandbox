@@ -1043,6 +1043,7 @@ Physics::Points ShipBuilder::CreatePoints(
             pointInfo.StructuralMtl,
             pointInfo.ElectricalMtl,
             pointInfo.IsRope,
+            pointInfo.StructuralMtl.Strength,
             electricalElementIndex,
             pointInfo.IsLeaking,
             pointInfo.RenderColor,

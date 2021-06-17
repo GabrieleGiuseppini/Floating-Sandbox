@@ -5,10 +5,11 @@
 
 // Inputs
 in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
-in vec4 inShipPointAttributeGroup2; // Light, Water, PlaneId, Decay
+in vec3 inShipPointAttributeGroup2; // Light, Water, PlaneId
+in float inShipPointAuxiliaryData;  // Strength
 
 // Outputs        
-out float vertexDecay;
+out float vertexStrength;
 out vec2 vertexTextureCoords;
 
 // Params
@@ -16,7 +17,7 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {            
-    vertexDecay = inShipPointAttributeGroup2.w;
+    vertexStrength = inShipPointAuxiliaryData;
     vertexTextureCoords = inShipPointAttributeGroup1.zw;
 
     gl_Position = paramOrthoMatrix * vec4(inShipPointAttributeGroup1.xy, inShipPointAttributeGroup2.z, 1.0);
@@ -27,7 +28,7 @@ void main()
 #define in varying
 
 // Inputs from previous shader        
-in float vertexDecay;
+in float vertexStrength;
 in vec2 vertexTextureCoords;
 
 // Params
@@ -45,7 +46,8 @@ void main()
     if (vertexCol.w < 0.2)
         discard;
 
-    // Make color based off decay
-    vec3 color = vec3(vertexDecay * paramEffectiveAmbientLightIntensity);
+    // Make color based off strength
+    float intensity = pow(vertexStrength, 0.25);
+    vec3 color = vec3(intensity * paramEffectiveAmbientLightIntensity);
     gl_FragColor = vec4(color, vertexCol.w);
 } 

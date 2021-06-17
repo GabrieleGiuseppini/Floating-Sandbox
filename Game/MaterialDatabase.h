@@ -66,6 +66,7 @@ public:
         }
 
         float largestMass = 0.0f;
+        float largestStrength = 0.0f;
 
         picojson::array const & structuralMaterialsRootArray = structuralMaterialsRoot.get<picojson::array>();
         for (auto const & materialElem : structuralMaterialsRootArray)
@@ -108,8 +109,9 @@ public:
                     &(storedEntry.first->second));
             }
 
-            // Update largest mass
+            // Update extremes
             largestMass = std::max(material.GetMass(), largestMass);
+            largestStrength = std::max(material.Strength, largestStrength);
         }
 
         // Make sure we did find all the unique materials
@@ -187,7 +189,6 @@ public:
             }
         }
 
-
         //
         // Make sure there are no structural materials whose key appears
         // in electrical materials, with the exception for "legacy" electrical
@@ -204,14 +205,13 @@ public:
             }
         }
 
-
-
         return MaterialDatabase(
             std::move(structuralMaterialsMap),
             std::move(nonInstancedElectricalMaterialsMap),
             std::move(instancedElectricalMaterialsMap),
             uniqueStructuralMaterials,
-            largestMass);
+            largestMass,
+            largestStrength);
     }
 
     StructuralMaterial const * FindStructuralMaterial(ColorKey const & colorKey) const
@@ -288,6 +288,11 @@ public:
         return mLargestMass;
     }
 
+    float GetLargestStrength() const
+    {
+        return mLargestStrength;
+    }
+
 private:
 
     struct NonInstancedColorKeyComparer
@@ -312,12 +317,14 @@ private:
         std::map<ColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> nonInstancedElectricalMaterialMap,
         std::map<ColorKey, ElectricalMaterial, InstancedColorKeyComparer> instancedElectricalMaterialMap,
         UniqueStructuralMaterialsArray uniqueStructuralMaterials,
-        float largestMass)
+        float largestMass,
+        float largestStrength)
         : mStructuralMaterialMap(std::move(structuralMaterialMap))
         , mNonInstancedElectricalMaterialMap(std::move(nonInstancedElectricalMaterialMap))
         , mInstancedElectricalMaterialMap(std::move(instancedElectricalMaterialMap))
         , mUniqueStructuralMaterials(uniqueStructuralMaterials)
         , mLargestMass(largestMass)
+        , mLargestStrength(largestStrength)
     {
     }
 
@@ -327,5 +334,6 @@ private:
 
     UniqueStructuralMaterialsArray mUniqueStructuralMaterials;
 
-    float mLargestMass;
+    float const mLargestMass;
+    float const mLargestStrength;
 };

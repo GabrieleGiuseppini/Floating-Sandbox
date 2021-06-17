@@ -542,6 +542,7 @@ public:
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mBuoyancyCoefficientsBuffer(mBufferElementCount, shipPointCount, BuoyancyCoefficients(0.0f, 0.0f))
         , mCachedDepthBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mRelativeStrengthBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         // Water dynamics
         , mIsHullBuffer(mBufferElementCount, shipPointCount, false)
@@ -623,6 +624,7 @@ public:
         , mStoppedBurningPoints()
         , mFreeEphemeralParticleSearchStartIndex(mAlignedShipPointCount)
         , mAreEphemeralPointsDirtyForRendering(false)
+        , mMaxStrength(materialDatabase.GetLargestStrength())
 #ifdef _DEBUG
         , mDiagnostic_ArePositionsDirty(false)
 #endif
@@ -693,6 +695,7 @@ public:
         StructuralMaterial const & structuralMaterial,
         ElectricalMaterial const * electricalMaterial,
         bool isRope,
+        float strength,
         ElementIndex electricalElementIndex,
         bool isStructurallyLeaking,
         vec4f const & color,
@@ -1926,6 +1929,7 @@ private:
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
     Buffer<BuoyancyCoefficients> mBuoyancyCoefficientsBuffer;
     Buffer<float> mCachedDepthBuffer; // Positive when underwater
+    Buffer<float> mRelativeStrengthBuffer; // Only used for rendering
 
     Buffer<vec2f> mIntegrationFactorBuffer;
 
@@ -2111,6 +2115,9 @@ private:
     // of ephemeral types that are uploaded as ephemeral points
     // (thus no AirBubbles nor Sparkles, which are both uploaded specially)
     bool mutable mAreEphemeralPointsDirtyForRendering;
+
+    // The max strength across all elements
+    float const mMaxStrength;
 
     // Calculated constants for combustion decay
     float mCombustionDecayAlphaFunctionA;

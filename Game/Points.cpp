@@ -20,6 +20,7 @@ void Points::Add(
     StructuralMaterial const & structuralMaterial,
     ElectricalMaterial const * electricalMaterial,
     bool isRope,
+    float strength,
     ElementIndex electricalElementIndex,
     bool isStructurallyLeaking,
     vec4f const & color,
@@ -47,6 +48,7 @@ void Points::Add(
         structuralMaterial.BuoyancyVolumeFill,
         structuralMaterial.ThermalExpansionCoefficient));
     mCachedDepthBuffer.emplace_back(mParentWorld.GetDepth(position));
+    mRelativeStrengthBuffer.emplace_back(strength / mMaxStrength);
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
 
@@ -1637,6 +1639,15 @@ void Points::UploadAttributes(
         renderContext.UploadShipPointTemperatureAsync(
             shipId,
             mTemperatureBuffer.data(),
+            0,
+            partialPointCount);
+    }
+
+    if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::Strength)
+    {
+        renderContext.UploadShipPointAuxiliaryDataAsync(
+            shipId,
+            mRelativeStrengthBuffer.data(),
             0,
             partialPointCount);
     }

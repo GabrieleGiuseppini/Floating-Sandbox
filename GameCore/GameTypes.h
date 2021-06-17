@@ -558,7 +558,8 @@ enum class DebugShipRenderModeType
     Springs,
     EdgeSprings,
     Structure,
-    Decay
+    Decay,
+    Strength
 };
 
 /*

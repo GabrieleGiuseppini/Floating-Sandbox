@@ -709,10 +709,11 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		- Inject cracks (*)
-			- Visualize strength first to ensure we don't already have fault lines
-				- New visualization mode
-					- SettingsDialog
+		= Inject cracks (*)
+			+ Visualize strength first to ensure we don't already have fault lines
+				+ New visualization mode
+					+ SettingsDialog
+			- TODO
 
 		- Try rendering electric sparks with different blend mode
 

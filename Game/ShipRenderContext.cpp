@@ -1330,12 +1330,17 @@ void ShipRenderContext::RenderDraw(
 
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
         {
             if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
             {
                 mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
+            }
+            else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipTrianglesStrength>();
             }
             else
             {
@@ -1401,11 +1406,16 @@ void ShipRenderContext::RenderDraw(
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::EdgeSprings
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None
-            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)
         {
             if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
             {
                 mShaderManager.ActivateProgram<ProgramType::ShipSpringsDecay>();
+            }
+            else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipSpringsStrength>();
             }
             else
             {
@@ -2210,6 +2220,10 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsDecay, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsStrength>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsStrength, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
     //
     // Layer 3: Triangles
     //
@@ -2231,6 +2245,10 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesDecay, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesStrength>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesStrength, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -2432,8 +2450,16 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsDecay, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsStrength>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsStrength, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        renderParameters.EffectiveAmbientLightIntensity);
+
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesDecay, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        renderParameters.EffectiveAmbientLightIntensity);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesStrength>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesStrength, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();

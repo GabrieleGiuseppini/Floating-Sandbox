@@ -103,6 +103,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipSpringsColorIncandescence;
     else if (lstr == "ship_springs_decay")
         return ProgramType::ShipSpringsDecay;
+    else if (lstr == "ship_springs_strength")
+        return ProgramType::ShipSpringsStrength;
     else if (lstr == "ship_springs_texture")
         return ProgramType::ShipSpringsTexture;
     else if (lstr == "ship_springs_texture_heatoverlay")
@@ -119,6 +121,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipTrianglesColorIncandescence;
     else if (lstr == "ship_triangles_decay")
         return ProgramType::ShipTrianglesDecay;
+    else if (lstr == "ship_triangles_strength")
+        return ProgramType::ShipTrianglesStrength;
     else if (lstr == "ship_triangles_texture")
         return ProgramType::ShipTrianglesTexture;
     else if (lstr == "ship_triangles_texture_heatoverlay")
@@ -231,6 +235,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipSpringsColorIncandescence";
     case ProgramType::ShipSpringsDecay:
         return "ShipSpringsDecay";
+    case ProgramType::ShipSpringsStrength:
+        return "ShipSpringsStrength";
     case ProgramType::ShipSpringsTexture:
         return "ShipSpringsTexture";
     case ProgramType::ShipSpringsTextureHeatOverlay:
@@ -247,6 +253,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipTrianglesColorIncandescence";
     case ProgramType::ShipTrianglesDecay:
         return "ShipTrianglesDecay";
+    case ProgramType::ShipTrianglesStrength:
+        return "ShipTrianglesStrength";
     case ProgramType::ShipTrianglesTexture:
         return "ShipTrianglesTexture";
     case ProgramType::ShipTrianglesTextureHeatOverlay:
