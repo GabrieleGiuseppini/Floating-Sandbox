@@ -709,7 +709,7 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		= Inject cracks (*)
+		= Strength randomization
 			+ Visualize strength first to ensure we don't already have fault lines
 				+ New visualization mode
 					+ SettingsDialog
@@ -1918,14 +1918,6 @@ Render:
 
 	- Stars with database
 		- python script to generate binary maps for N and S emispheres
-
-	- Random noise that lowers strength to inject "cracks" when the ship is under stress (*)
-		! Fully deterministic (no randomness, needs to be property of ship)
-		- Random walk across pairs of points on opposide sides of ships
-		- Visualization:
-			- New Debug ship mode
-			- Uploaded with "Auxiliary"
-			- New shader
 
 	- Torpedoes and missiles
 		- "You place one down and click where it speeds off to and explodes at. Basically a moving bomb that explodes
