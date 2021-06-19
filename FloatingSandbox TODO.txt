@@ -717,8 +717,15 @@ Render:
 				+ Frontier creation: needs to come after points but before Springs are created
 					+ Reasons in terms of SpringInfo's
 						+ See if can also reason in terms of PointInfo's
-				- InjectCracks:
-					- TODOHERE
+				= InjectCracks
+					+ Do basic
+					- Parameters from outside:
+						- Density (grid spacing)
+						- Magnitude (room for change)
+						- Add to GamePreferences
+					- Test Titanic without breaking fault line
+					- Adjust:
+						- SCS titanic: offset Y
 
 		- Another hydrostatic pressure attempt:
 			- Frontier: do not act on non-hull points, but then compensate net resultant force (and may be resultant torque as well)

@@ -256,6 +256,11 @@ private:
         PointPairToIndexMap const & pointPairToSpringIndex1Map,
         std::vector<ElementIndex> const & springIndexRemap2);
 
+    static void RandomizeStrength(
+        std::vector<ShipBuildPoint> & pointInfos2,
+        std::vector<ShipBuildSpring> const & springInfos2,
+        std::vector<ShipBuildFrontier> const & shipBuildFrontiers);
+
     static std::vector<ElementIndex> PropagateFrontier(
         ElementIndex startPointIndex1,
         int startPointX,

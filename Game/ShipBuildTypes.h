@@ -33,6 +33,7 @@ struct ShipBuildPoint
     StructuralMaterial const& StructuralMtl;
     bool IsRope;
     bool IsLeaking;
+    float Strength;
     float Water;
 
     ElectricalMaterial const* ElectricalMtl;
@@ -47,6 +48,7 @@ struct ShipBuildPoint
         vec4f renderColor,
         StructuralMaterial const& structuralMtl,
         bool isRope,
+        float strength,
         float water)
         : OriginalDefinitionCoordinates(originalDefinitionCoordinates)
         , Position(position)
@@ -55,6 +57,7 @@ struct ShipBuildPoint
         , StructuralMtl(structuralMtl)
         , IsRope(isRope)
         , IsLeaking(isRope ? true : false) // Ropes leak by default
+        , Strength(strength)
         , Water(water)
         , ElectricalMtl(nullptr)
         , ElectricalElementInstanceIdx(NoneElectricalElementInstanceIndex)

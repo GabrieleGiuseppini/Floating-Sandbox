@@ -8,6 +8,7 @@
 #include "ShipBuilder.h"
 
 #include <GameCore/GameDebug.h>
+#include <GameCore/GameMath.h>
 #include <GameCore/ImageTools.h>
 #include <GameCore/Log.h>
 
@@ -120,6 +121,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
                     structuralMaterial->RenderColor,
                     *structuralMaterial,
                     structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope),
+                    structuralMaterial->Strength,
                     water);
 
                 //
@@ -321,6 +323,15 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     auto const frontiersEndTime = std::chrono::steady_clock::now();
 
     //
+    // Randomize strength
+    //
+
+    RandomizeStrength(
+        pointInfos2,
+        springInfos2,
+        shipBuildFrontiers);
+
+    //
     // Visit all ShipBuildPoint's and create Points, i.e. the entire set of points
     //
 
@@ -443,7 +454,8 @@ void ShipBuilder::AppendRopeEndpoints(
     float const halfWidth = static_cast<float>(width) / 2.0f;
     int const height = ropeLayerImage.Size.Height;
 
-    constexpr MaterialDatabase::ColorKey BackgroundColorKey = { 0xff, 0xff, 0xff };
+    MaterialDatabase::ColorKey constexpr BackgroundColorKey = { 0xff, 0xff, 0xff };
+    StructuralMaterial const & ropeMaterial = materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope);
 
     for (int x = 0; x < width; ++x)
     {
@@ -470,8 +482,9 @@ void ShipBuilder::AppendRopeEndpoints(
                         + shipOffset,
                         MakeTextureCoordinates(x, y, ropeLayerImage.Size),
                         colorKey.toVec4f(1.0f),
-                        materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope),
+                        ropeMaterial,
                         true, // IsRope
+                        ropeMaterial.Strength,
                         0.0f); // Water
 
                     pointIndexMatrix[x + 1][y + 1] = pointIndex;
@@ -805,6 +818,7 @@ void ShipBuilder::AppendRopes(
                 ropeSegment.RopeColorKey.toVec4f(1.0f),
                 ropeMaterial,
                 true, // IsRope
+                ropeMaterial.Strength,
                 0.0f); // Water
 
             // Set electrical material
@@ -1200,6 +1214,74 @@ std::vector<ShipBuilder::ShipBuildFrontier> ShipBuilder::CreateShipFrontiers(
     return shipBuildFrontiers;
 }
 
+void ShipBuilder::RandomizeStrength(
+    std::vector<ShipBuildPoint> & pointInfos2,
+    std::vector<ShipBuildSpring> const & springInfos2,
+    std::vector<ShipBuildFrontier> const & shipBuildFrontiers)
+{
+    //
+    // Basic Perlin noise generation
+    //
+    // Deterministic randomness
+    //
+
+    float constexpr CellWidth = 4.0f;
+
+    auto const gradientVectorAt = [](float x, float y) -> vec2f // Always positive
+    {
+        float const arg = (1.0f + std::sin(x * (x * 12.9898f + y * 78.233f))) * 43758.5453f;
+        float const random = arg - std::floor(arg);
+        return vec2f(random, random);
+    };
+
+    for (auto & point : pointInfos2)
+    {
+        // We don't want to randomize the strength of ropes
+        if (!point.IsRope)
+        {
+            // Coordinates of point in grid space
+            vec2f const gridPos(
+                static_cast<float>(point.Position.x) / CellWidth,
+                static_cast<float>(point.Position.y) / CellWidth);
+
+            // Coordinates of four cell corners
+            float const x0 = floor(gridPos.x);
+            float const x1 = x0 + 1.0f;
+            float const y0 = floor(gridPos.y);
+            float const y1 = y0 + 1.0f;
+
+            // Offset vectors from corners
+            vec2f const off00 = gridPos - vec2f(x0, y0);
+            vec2f const off10 = gridPos - vec2f(x1, y0);
+            vec2f const off01 = gridPos - vec2f(x0, y1);
+            vec2f const off11 = gridPos - vec2f(x1, y1);
+
+            // Gradient vectors at four corners
+            vec2f const gv00 = gradientVectorAt(x0, y0);
+            vec2f const gv10 = gradientVectorAt(x1, y0);
+            vec2f const gv01 = gradientVectorAt(x0, y1);
+            vec2f const gv11 = gradientVectorAt(x1, y1);
+
+            // Dot products at each corner
+            float const dp00 = off00.dot(gv00);
+            float const dp10 = off10.dot(gv10);
+            float const dp01 = off01.dot(gv01);
+            float const dp11 = off11.dot(gv11);
+
+            // Interpolate four dot products at this point (using a bilinear)
+            float const interpx1 = Mix(dp00, dp10, off00.x);
+            float const interpx2 = Mix(dp01, dp11, off00.x);
+            float const perlin = Mix(interpx1, interpx2, off00.y);
+
+            // Randomize strength
+            float constexpr RandomRange = 0.4f;
+            point.Strength *=
+                (1.0f - RandomRange)
+                + RandomRange * std::sqrt(std::abs(perlin));
+        }
+    }
+}
+
 std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
     ElementIndex startPointIndex1,
     int startPointX,
@@ -1384,7 +1466,7 @@ Physics::Points ShipBuilder::CreatePoints(
             pointInfo.StructuralMtl,
             pointInfo.ElectricalMtl,
             pointInfo.IsRope,
-            pointInfo.StructuralMtl.Strength,
+            pointInfo.Strength,
             electricalElementIndex,
             pointInfo.IsLeaking,
             pointInfo.RenderColor,
