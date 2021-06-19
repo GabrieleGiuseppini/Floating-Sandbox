@@ -713,16 +713,21 @@ Render:
 			+ Visualize strength first to ensure we don't already have fault lines
 				+ New visualization mode
 					+ SettingsDialog
-			- Inject:
+			- Inject: at ShipBuilder, after frontiers are created (i.e. almost at end); requires:
+				- Frontier creation: needs to come after points but before Springs are created
+					- Reasons in terms of SpringInfo's
+						- See if can also reason in terms of PointInfo's
+				- InjectCracks:
+					- TODOHERE
+
+		- Another hydrostatic pressure attempt:
+			- Frontier: do not act on non-hull points, but then compensate net resultant force (and may be resultant torque as well)
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
 			+ 0.242	
 			- Adjustment is too low, raise it
 				- 0.5+ is somewhat acceptable for Titanic - breaks down at 4.5Km
-
-		- Another hydrostatic pressure attempt:
-			- Frontier: do not act on non-hull points, but then compensate net resultant force (and may be resultant torque as well)
 
 		- Spread out rotting:
 			! Now: at step 20/49

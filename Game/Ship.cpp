@@ -319,10 +319,13 @@ void Ship::Update(
     // Apply hydrostatic forces
     ///////////////////////////////////////////////////////////////////
 
-    ApplyHydrostaticPressureForces(
-        effectiveAirDensity,
-        effectiveWaterDensity,
-        gameParameters);
+    if (gameParameters.HydrostaticPressureAdjustment > 0.0f)
+    {
+        ApplyHydrostaticPressureForces(
+            effectiveAirDensity,
+            effectiveWaterDensity,
+            gameParameters);
+    }
 
     ///////////////////////////////////////////////////////////////////
     // Rot points
