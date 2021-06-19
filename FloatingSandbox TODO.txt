@@ -713,10 +713,10 @@ Render:
 			+ Visualize strength first to ensure we don't already have fault lines
 				+ New visualization mode
 					+ SettingsDialog
-			- Inject: at ShipBuilder, after frontiers are created (i.e. almost at end); requires:
-				- Frontier creation: needs to come after points but before Springs are created
-					- Reasons in terms of SpringInfo's
-						- See if can also reason in terms of PointInfo's
+			= Inject: at ShipBuilder, after frontiers are created (i.e. almost at end); requires:
+				+ Frontier creation: needs to come after points but before Springs are created
+					+ Reasons in terms of SpringInfo's
+						+ See if can also reason in terms of PointInfo's
 				- InjectCracks:
 					- TODOHERE
 

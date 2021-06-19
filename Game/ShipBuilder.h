@@ -90,9 +90,9 @@ private:
         ElementIndex PointBIndex1;
         uint32_t PointBAngle;
 
-        FixedSizeVector<ElementIndex, 2> SuperTriangles2;
+        FixedSizeVector<ElementIndex, 2> SuperTriangles2; // Triangles that have this spring as an edge
 
-        ElementCount CoveringTrianglesCount;
+        ElementCount CoveringTrianglesCount; // Triangles that cover this spring, not necessarily having is as an edge
 
         ShipBuildSpring(
             ElementIndex pointAIndex1,
@@ -124,6 +124,19 @@ private:
             , CoveredTraverseSpringIndex2()
         {
         }
+    };
+
+    struct ShipBuildFrontier
+    {
+        FrontierType Type;
+        std::vector<ElementIndex> EdgeIndices2;
+
+        ShipBuildFrontier(
+            FrontierType type,
+            std::vector<ElementIndex> && edgeIndices2)
+            : Type(type)
+            , EdgeIndices2(std::move(edgeIndices2))
+        {}
     };
 
 private:
@@ -164,14 +177,13 @@ private:
 
     static inline bool IsConnectedToNonRopePoints(
         ElementIndex pointIndex,
-        Physics::Points const & points,
-        std::vector<ElementIndex> const & pointIndexRemap,
-        std::vector<ShipBuildSpring> const & springInfos)
+        std::vector<ShipBuildPoint> const & pointInfos1,
+        std::vector<ShipBuildSpring> const & springInfos1)
     {
-        for (auto cs : points.GetConnectedSprings(pointIndex).ConnectedSprings)
+        for (auto const springIndex1 : pointInfos1[pointIndex].ConnectedSprings1)
         {
-            if (!points.IsRope(pointIndexRemap[springInfos[cs.SpringIndex].PointAIndex1])
-                || !points.IsRope(pointIndexRemap[springInfos[cs.SpringIndex].PointBIndex1]))
+            if (!pointInfos1[springInfos1[springIndex1].PointAIndex1].IsRope
+                || !pointInfos1[springInfos1[springIndex1].PointBIndex1].IsRope)
             {
                 return true;
             }
@@ -226,6 +238,35 @@ private:
         std::vector<ShipBuildTriangle> & triangleInfos1,
         size_t & leakingPointsCount);
 
+    static std::vector<ShipBuildTriangle> FilterOutRedundantTriangles(
+        std::vector<ShipBuildTriangle> const & triangleInfos1,
+        std::vector<ShipBuildPoint> & pointInfos1,
+        std::vector<ShipBuildSpring> const & springInfos1);
+
+    static void ConnectPointsToTriangles(
+        std::vector<ShipBuildPoint> & pointInfos1,
+        std::vector<ShipBuildTriangle> const & triangleInfos1);
+
+    static std::vector<ShipBuildFrontier> CreateShipFrontiers(
+        ShipBuildPointIndexMatrix const & pointIndexMatrix,
+        ImageSize const & structureImageSize,
+        std::vector<ElementIndex> const & pointIndexRemap2,
+        std::vector<ShipBuildPoint> const & pointInfos2,
+        std::vector<ShipBuildSpring> const & springInfos2,
+        PointPairToIndexMap const & pointPairToSpringIndex1Map,
+        std::vector<ElementIndex> const & springIndexRemap2);
+
+    static std::vector<ElementIndex> PropagateFrontier(
+        ElementIndex startPointIndex1,
+        int startPointX,
+        int startPointY,
+        Octant startOctant,
+        ShipBuildPointIndexMatrix const & pointIndexMatrix,
+        std::set<ElementIndex> & frontierEdges2,
+        std::vector<ShipBuildSpring> const & springInfos2,
+        PointPairToIndexMap const & pointPairToSpringIndex1Map,
+        std::vector<ElementIndex> const & springIndexRemap2);
+
     static Physics::Points CreatePoints(
         std::vector<ShipBuildPoint> const & pointInfos2,
         Physics::World & parentWorld,
@@ -233,12 +274,6 @@ private:
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters,
         std::vector<ElectricalElementInstanceIndex> & electricalElementInstanceIndices);
-
-    static std::vector<ShipBuildTriangle> FilterOutRedundantTriangles(
-        std::vector<ShipBuildTriangle> const & triangleInfos2,
-        Physics::Points const & points,
-        std::vector<ElementIndex> const & pointIndexRemap,
-        std::vector<ShipBuildSpring> const & springInfos2);
 
     static void ConnectSpringsAndTriangles(
         std::vector<ShipBuildSpring> & springInfos2,
@@ -268,24 +303,9 @@ private:
         GameParameters const & gameParameters);
 
     static Physics::Frontiers CreateFrontiers(
-        ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        ImageSize const & structureImageSize,
-        std::vector<ElementIndex> const & pointIndexRemap2,
+        std::vector<ShipBuildFrontier> const & shipBuildFrontiers,
         Physics::Points const & points,
-        Physics::Springs const & springs,
-        PointPairToIndexMap const & pointPairToSpringIndex1Map,
-        std::vector<ElementIndex> const & springIndexRemap2);
-
-    static std::vector<ElementIndex> PropagateFrontier(
-        ElementIndex startPointIndex1,
-        int startPointX,
-        int startPointY,
-        Octant startOctant,
-        ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        std::set<ElementIndex> & frontierEdges2,
-        Physics::Springs const & springs,
-        PointPairToIndexMap const & pointPairToSpringIndex1Map,
-        std::vector<ElementIndex> const & springIndexRemap2);
+        Physics::Springs const & springs);
 
 #ifdef _DEBUG
     static void VerifyShipInvariants(

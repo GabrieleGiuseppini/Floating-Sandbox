@@ -38,6 +38,7 @@ struct ShipBuildPoint
     ElectricalMaterial const* ElectricalMtl;
     ElectricalElementInstanceIndex ElectricalElementInstanceIdx;
     std::vector<ElementIndex> ConnectedSprings1;
+    std::vector<ElementIndex> ConnectedTriangles1;
 
     ShipBuildPoint(
         std::optional<IntegralPoint> originalDefinitionCoordinates,
@@ -58,6 +59,7 @@ struct ShipBuildPoint
         , ElectricalMtl(nullptr)
         , ElectricalElementInstanceIdx(NoneElectricalElementInstanceIndex)
         , ConnectedSprings1()
+        , ConnectedTriangles1()
     {
     }
 

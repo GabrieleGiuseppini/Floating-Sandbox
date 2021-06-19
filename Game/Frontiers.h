@@ -68,8 +68,8 @@ public:
 
     Frontiers(
         size_t pointCount,
-        Springs const & springs)
-        : mEdgeCount(springs.GetElementCount())
+        size_t springCount)
+        : mEdgeCount(springCount)
         , mEdges(mEdgeCount, 0, Edge())
         , mFrontierEdges(mEdgeCount, 0, FrontierEdge())
         , mFrontiers()
