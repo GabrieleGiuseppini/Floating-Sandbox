@@ -806,10 +806,13 @@ Render:
 		
 		- Localization:
 			- IT
+				- Help
 				- Check out changed SettingsDialog strings
 			- ES
+				- Help
 				- Check out changed SettingsDialog strings
 			- RU
+				- Help
 				- Check out changed SettingsDialog strings
 				
 		- Release 1.16.5
@@ -988,7 +991,7 @@ Render:
 		- Add to credits: "Kiko", and change in other sections as well, and also in .shp files
 		- Fallback: The G a z e r W o l f
 
-	- Indonesian: Adli
+	- Indonesian: Adli/Nobodyree
 		= Doing HTMLs
 		- Add to credits:
 		- Invite to server
