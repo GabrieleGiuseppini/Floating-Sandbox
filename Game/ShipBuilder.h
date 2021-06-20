@@ -14,6 +14,7 @@
 #include <GameCore/FixedSizeVector.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageSize.h>
+#include <GameCore/Matrix.h>
 #include <GameCore/TaskThreadPool.h>
 
 #include <algorithm>
@@ -256,11 +257,6 @@ private:
         PointPairToIndexMap const & pointPairToSpringIndex1Map,
         std::vector<ElementIndex> const & springIndexRemap2);
 
-    static void RandomizeStrength(
-        std::vector<ShipBuildPoint> & pointInfos2,
-        std::vector<ShipBuildSpring> const & springInfos2,
-        std::vector<ShipBuildFrontier> const & shipBuildFrontiers);
-
     static std::vector<ElementIndex> PropagateFrontier(
         ElementIndex startPointIndex1,
         int startPointX,
@@ -271,6 +267,24 @@ private:
         std::vector<ShipBuildSpring> const & springInfos2,
         PointPairToIndexMap const & pointPairToSpringIndex1Map,
         std::vector<ElementIndex> const & springIndexRemap2);
+
+    static void RandomizeStrength_Perlin(std::vector<ShipBuildPoint> & pointInfos2);
+
+    static void RandomizeStrength_Batik(
+        ShipBuildPointIndexMatrix const & pointIndexMatrix,
+        ImageSize const & structureImageSize,
+        std::vector<ShipBuildPoint> & pointInfos2,
+        std::vector<ElementIndex> const & pointIndexRemap2,
+        std::vector<ShipBuildSpring> & springInfos2,
+        std::vector<ShipBuildFrontier> const & shipBuildFrontiers);
+
+    static void PropagateBatikCrack(
+        vec2f const & direction,
+        ShipBuildPointIndexMatrix const & pointIndexMatrix,
+        ImageSize const & structureImageSize,
+        Matrix2<float> & distanceMap);
+
+    static void UpdateDistanceMap(Matrix2<float> & distanceMap);
 
     static Physics::Points CreatePoints(
         std::vector<ShipBuildPoint> const & pointInfos2,

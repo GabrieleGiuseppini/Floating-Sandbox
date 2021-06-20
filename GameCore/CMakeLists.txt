@@ -45,6 +45,7 @@ set  (SOURCES
 	LinearSliderCore.h
 	Log.cpp
 	Log.h
+	Matrix.h
 	MemoryStreams.h
 	ParameterSmoother.h
 	PrecalculatedFunction.cpp

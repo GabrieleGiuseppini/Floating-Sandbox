@@ -36,12 +36,10 @@ struct IntegralPoint
         , Y(y)
     {}
 
-    static IntegralPoint FromFlippedY(
-        int x,
-        int y,
-        int height)
+    IntegralPoint FlipY(int height) const
     {
-        return IntegralPoint(x, height - 1 - y);
+        assert(height > Y);
+        return IntegralPoint(X, height - 1 - Y);
     }
 
     std::string ToString() const

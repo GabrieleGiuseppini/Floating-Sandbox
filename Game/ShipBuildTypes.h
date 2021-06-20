@@ -8,6 +8,7 @@
 #include "Materials.h"
 
 #include <GameCore/GameTypes.h>
+#include <GameCore/Matrix.h>
 #include <GameCore/Vectors.h>
 
 #include <algorithm>
@@ -26,7 +27,8 @@ using ShipBuildPointIndexMatrix = std::unique_ptr<std::unique_ptr<std::optional<
 
 struct ShipBuildPoint
 {
-    std::optional<IntegralPoint> OriginalDefinitionCoordinates; // From any of the layers that provide points
+    std::optional<Matrix2Index> OriginalDefinitionCoordinates; // In original image (y=0 @ bottom), from any of the layers that provide points
+    std::optional<IntegralPoint> UserCoordinates; // For displaying messages to users
     vec2f Position;
     vec2f TextureCoordinates;
     vec4f RenderColor;
@@ -42,7 +44,8 @@ struct ShipBuildPoint
     std::vector<ElementIndex> ConnectedTriangles1;
 
     ShipBuildPoint(
-        std::optional<IntegralPoint> originalDefinitionCoordinates,
+        std::optional<Matrix2Index> originalDefinitionCoordinates,
+        std::optional<IntegralPoint> userCoordinates,
         vec2f position,
         vec2f textureCoordinates,
         vec4f renderColor,
@@ -51,6 +54,7 @@ struct ShipBuildPoint
         float strength,
         float water)
         : OriginalDefinitionCoordinates(originalDefinitionCoordinates)
+        , UserCoordinates(userCoordinates)
         , Position(position)
         , TextureCoordinates(textureCoordinates)
         , RenderColor(renderColor)

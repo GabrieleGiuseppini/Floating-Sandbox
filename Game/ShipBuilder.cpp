@@ -16,6 +16,7 @@
 #include <cassert>
 #include <chrono>
 #include <limits>
+#include <random>
 #include <set>
 #include <sstream>
 #include <unordered_map>
@@ -57,10 +58,10 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     int const structureHeight = shipDefinition.StructuralLayerImage.Size.Height;
 
     // ShipBuildPoint's
-    std::vector<ShipBuildPoint> pointInfos;
+    std::vector<ShipBuildPoint> pointInfos1;
 
     // ShipBuildSpring's
-    std::vector<ShipBuildSpring> springInfos;
+    std::vector<ShipBuildSpring> springInfos1;
 
     // RopeSegment's, indexed by the rope color key
     std::map<MaterialDatabase::ColorKey, RopeSegment> ropeSegments;
@@ -108,12 +109,13 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
                 // Make a point
                 //
 
-                ElementIndex const pointIndex = static_cast<ElementIndex>(pointInfos.size());
+                ElementIndex const pointIndex = static_cast<ElementIndex>(pointInfos1.size());
 
                 pointIndexMatrix[x + 1][y + 1] = static_cast<ElementIndex>(pointIndex);
 
-                pointInfos.emplace_back(
-                    IntegralPoint::FromFlippedY(x, y, structureHeight),
+                pointInfos1.emplace_back(
+                    Matrix2Index(x, y),
+                    IntegralPoint(x, y).FlipY(structureHeight),
                     vec2f(
                         static_cast<float>(x) - halfWidth,
                         static_cast<float>(y)) + shipDefinition.Metadata.Offset,
@@ -137,7 +139,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
                     {
                         throw GameException(
                             "More than two \"" + Utils::RgbColor2Hex(colorKey) + "\" rope endpoints found at "
-                            + IntegralPoint::FromFlippedY(x, y, structureHeight).ToString());
+                            + IntegralPoint(x, y).FlipY(structureHeight).ToString());
                     }
                 }
             }
@@ -148,7 +150,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         }
     }
 
-    if (pointInfos.empty())
+    if (pointInfos1.empty())
     {
         throw GameException("The ship structure contains no pixels that may be recognized as structural material");
     }
@@ -169,7 +171,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         AppendRopeEndpoints(
             *(shipDefinition.RopesLayerImage),
             ropeSegments,
-            pointInfos,
+            pointInfos1,
             pointIndexMatrix,
             materialDatabase,
             shipDefinition.Metadata.Offset);
@@ -190,7 +192,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         // Decorate points with electrical materials from the electrical layer
         DecoratePointsWithElectricalMaterials(
             *(shipDefinition.ElectricalLayerImage),
-            pointInfos,
+            pointInfos1,
             true, // isDedicatedElectricalLayer
             pointIndexMatrix,
             materialDatabase);
@@ -200,7 +202,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         // Decorate points with electrical materials from the structural layer
         DecoratePointsWithElectricalMaterials(
             shipDefinition.StructuralLayerImage,
-            pointInfos,
+            pointInfos1,
             false, // isDedicatedElectricalLayer
             pointIndexMatrix,
             materialDatabase);
@@ -219,8 +221,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         ropeSegments,
         shipDefinition.StructuralLayerImage.Size,
         materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope),
-        pointInfos,
-        springInfos,
+        pointInfos1,
+        springInfos1,
         pointPairToSpringIndex1Map);
 
     //
@@ -236,8 +238,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     CreateShipElementInfos(
         pointIndexMatrix,
         shipDefinition.StructuralLayerImage.Size,
-        pointInfos,
-        springInfos,
+        pointInfos1,
+        springInfos1,
         pointPairToSpringIndex1Map,
         triangleInfos,
         leakingPointsCount);
@@ -248,28 +250,28 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
 
     triangleInfos = FilterOutRedundantTriangles(
         triangleInfos,
-        pointInfos,
-        springInfos);
+        pointInfos1,
+        springInfos1);
 
     //
     // Connect points to triangles
     //
 
     ConnectPointsToTriangles(
-        pointInfos,
+        pointInfos1,
         triangleInfos);
 
     //
     // Optimize order of ShipBuildPoint's and ShipBuildSpring's to minimize cache misses
     //
 
-    float originalSpringACMR = CalculateACMR(springInfos);
+    float originalSpringACMR = CalculateACMR(springInfos1);
 
     // Tiling algorithm
     //auto [pointInfos2, pointIndexRemap2, springInfos2, springIndexRemap2] = ReorderPointsAndSpringsOptimally_Tiling<2>(
     auto [pointInfos2, pointIndexRemap2, springInfos2, springIndexRemap2] = ReorderPointsAndSpringsOptimally_Stripes<4>(
-        pointInfos,
-        springInfos,
+        pointInfos1,
+        springInfos1,
         pointPairToSpringIndex1Map,
         pointIndexMatrix,
         shipDefinition.StructuralLayerImage.Size);
@@ -289,7 +291,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     ////float originalACMR = CalculateACMR(triangleInfos);
     ////float originalVMR = CalculateVertexMissRatio(triangleInfos);
 
-    ////triangleInfos = ReorderTrianglesOptimally_TomForsyth(triangleInfos, pointInfos.size());
+    ////triangleInfos = ReorderTrianglesOptimally_TomForsyth(triangleInfos, pointInfos1.size());
 
     ////float optimizedACMR = CalculateACMR(triangleInfos);
     ////float optimizedVMR = CalculateVertexMissRatio(triangleInfos);
@@ -326,8 +328,13 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     // Randomize strength
     //
 
-    RandomizeStrength(
+    // TODOTEST
+    //RandomizeStrength_Perlin(pointInfos2);
+    RandomizeStrength_Batik(
+        pointIndexMatrix,
+        shipDefinition.StructuralLayerImage.Size,
         pointInfos2,
+        pointIndexRemap2,
         springInfos2,
         shipBuildFrontiers);
 
@@ -398,7 +405,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
             shipDefinition.AutoTexturizationSettings,
             shipDefinition.StructuralLayerImage.Size,
             pointIndexMatrix,
-            pointInfos); // Auto-texturize
+            pointInfos1); // Auto-texturize
 
     //
     // We're done!
@@ -468,6 +475,8 @@ void ShipBuilder::AppendRopeEndpoints(
             // Check if background
             if (colorKey != BackgroundColorKey)
             {
+                auto const pointCoords = IntegralPoint(x, y);
+
                 // Check whether we have a structural point here
                 ElementIndex pointIndex;
                 if (!pointIndexMatrix[x + 1][y + 1])
@@ -475,7 +484,8 @@ void ShipBuilder::AppendRopeEndpoints(
                     // Make a point
                     pointIndex = static_cast<ElementIndex>(pointInfos1.size());
                     pointInfos1.emplace_back(
-                        IntegralPoint::FromFlippedY(x, y, height),
+                        Matrix2Index(x, y),
+                        pointCoords.FlipY(height),
                         vec2f(
                             static_cast<float>(x) - halfWidth,
                             static_cast<float>(y))
@@ -500,7 +510,7 @@ void ShipBuilder::AppendRopeEndpoints(
                     if (pointIndex == srchRopeSegment.PointAIndex1
                         || pointIndex == srchRopeSegment.PointBIndex1)
                     {
-                        throw GameException("There is already a rope at point " + IntegralPoint::FromFlippedY(x, y, height).ToString());
+                        throw GameException("There is already a rope at point " + pointCoords.FlipY(height).ToString());
                     }
                 }
 
@@ -510,7 +520,7 @@ void ShipBuilder::AppendRopeEndpoints(
                 {
                     throw GameException(
                         "More than two \"" + Utils::RgbColor2Hex(colorKey) + "\" rope endpoints found at "
-                        + IntegralPoint::FromFlippedY(x, y, height).ToString() + " in the rope layer image");
+                        + pointCoords.FlipY(height).ToString() + " in the rope layer image");
                 }
 
                 // Change endpoint's color to match the rope's - or else the spring will look bad,
@@ -555,7 +565,7 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
                 {
                     throw GameException(
                         "Cannot find electrical material for color key \"" + Utils::RgbColor2Hex(colorKey)
-                        + "\" of pixel found at " + IntegralPoint::FromFlippedY(x, y, height).ToString()
+                        + "\" of pixel found at " + IntegralPoint(x, y).FlipY(height).ToString()
                         + " in the " + (isDedicatedElectricalLayer ? "electrical" : "structural")
                         + " layer image");
                 }
@@ -575,7 +585,7 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
                 {
                     throw GameException(
                         "The electrical layer image specifies an electrical material at "
-                        + IntegralPoint::FromFlippedY(x, y, height).ToString()
+                        + IntegralPoint(x, y).FlipY(height).ToString()
                         + ", but no pixel may be found at those coordinates in the structural layer image");
                 }
 
@@ -601,23 +611,23 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
     // Check for duplicate electrical element instance indices
     //
 
-    std::map<ElectricalElementInstanceIndex, IntegralPoint> seenInstanceIndicesToOriginalCoords;
+    std::map<ElectricalElementInstanceIndex, IntegralPoint> seenInstanceIndicesToUserCoords;
     for (auto const & pi : pointInfos1)
     {
         if (nullptr != pi.ElectricalMtl
             && pi.ElectricalMtl->IsInstanced)
         {
-            auto searchIt = seenInstanceIndicesToOriginalCoords.find(pi.ElectricalElementInstanceIdx);
-            if (searchIt != seenInstanceIndicesToOriginalCoords.end())
+            auto searchIt = seenInstanceIndicesToUserCoords.find(pi.ElectricalElementInstanceIdx);
+            if (searchIt != seenInstanceIndicesToUserCoords.end())
             {
                 // Dupe
 
-                assert(pi.OriginalDefinitionCoordinates.has_value()); // Instanced electricals come from layers
+                assert(pi.UserCoordinates.has_value()); // Instanced electricals come from layers
 
                 throw GameException(
                     "Found two electrical elements with instance ID \""
                     + std::to_string(pi.ElectricalElementInstanceIdx)
-                    + "\" in the electrical layer image, at " + pi.OriginalDefinitionCoordinates->ToString()
+                    + "\" in the electrical layer image, at " + pi.UserCoordinates->ToString()
                     + " and at " + searchIt->second.ToString() + "; "
                     + " make sure that all instanced elements"
                     + " have unique values for the blue component of their color codes!");
@@ -625,9 +635,9 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
             else
             {
                 // First time we see it
-                seenInstanceIndicesToOriginalCoords.emplace(
+                seenInstanceIndicesToUserCoords.emplace(
                     pi.ElectricalElementInstanceIdx,
-                    *(pi.OriginalDefinitionCoordinates));
+                    *(pi.UserCoordinates));
             }
         }
     }
@@ -659,7 +669,7 @@ void ShipBuilder::AppendRopes(
                 std::string("Only one rope endpoint found with color key <")
                 + Utils::RgbColor2Hex(ropeSegmentEntry.first)
                 + "> (at "
-                + (pointInfos1[ropeSegment.PointAIndex1].OriginalDefinitionCoordinates.has_value() ? pointInfos1[ropeSegment.PointAIndex1].OriginalDefinitionCoordinates->ToString() : "?")
+                + (pointInfos1[ropeSegment.PointAIndex1].UserCoordinates.has_value() ? pointInfos1[ropeSegment.PointAIndex1].UserCoordinates->ToString() : "?")
                 +")");
         }
 
@@ -812,6 +822,7 @@ void ShipBuilder::AppendRopes(
 
             // Add ShipBuildPoint
             pointInfos1.emplace_back(
+                std::nullopt,
                 std::nullopt,
                 newPosition,
                 MakeTextureCoordinates(newPosition.x, newPosition.y, structureImageSize),
@@ -1214,74 +1225,6 @@ std::vector<ShipBuilder::ShipBuildFrontier> ShipBuilder::CreateShipFrontiers(
     return shipBuildFrontiers;
 }
 
-void ShipBuilder::RandomizeStrength(
-    std::vector<ShipBuildPoint> & pointInfos2,
-    std::vector<ShipBuildSpring> const & springInfos2,
-    std::vector<ShipBuildFrontier> const & shipBuildFrontiers)
-{
-    //
-    // Basic Perlin noise generation
-    //
-    // Deterministic randomness
-    //
-
-    float constexpr CellWidth = 4.0f;
-
-    auto const gradientVectorAt = [](float x, float y) -> vec2f // Always positive
-    {
-        float const arg = (1.0f + std::sin(x * (x * 12.9898f + y * 78.233f))) * 43758.5453f;
-        float const random = arg - std::floor(arg);
-        return vec2f(random, random);
-    };
-
-    for (auto & point : pointInfos2)
-    {
-        // We don't want to randomize the strength of ropes
-        if (!point.IsRope)
-        {
-            // Coordinates of point in grid space
-            vec2f const gridPos(
-                static_cast<float>(point.Position.x) / CellWidth,
-                static_cast<float>(point.Position.y) / CellWidth);
-
-            // Coordinates of four cell corners
-            float const x0 = floor(gridPos.x);
-            float const x1 = x0 + 1.0f;
-            float const y0 = floor(gridPos.y);
-            float const y1 = y0 + 1.0f;
-
-            // Offset vectors from corners
-            vec2f const off00 = gridPos - vec2f(x0, y0);
-            vec2f const off10 = gridPos - vec2f(x1, y0);
-            vec2f const off01 = gridPos - vec2f(x0, y1);
-            vec2f const off11 = gridPos - vec2f(x1, y1);
-
-            // Gradient vectors at four corners
-            vec2f const gv00 = gradientVectorAt(x0, y0);
-            vec2f const gv10 = gradientVectorAt(x1, y0);
-            vec2f const gv01 = gradientVectorAt(x0, y1);
-            vec2f const gv11 = gradientVectorAt(x1, y1);
-
-            // Dot products at each corner
-            float const dp00 = off00.dot(gv00);
-            float const dp10 = off10.dot(gv10);
-            float const dp01 = off01.dot(gv01);
-            float const dp11 = off11.dot(gv11);
-
-            // Interpolate four dot products at this point (using a bilinear)
-            float const interpx1 = Mix(dp00, dp10, off00.x);
-            float const interpx2 = Mix(dp01, dp11, off00.x);
-            float const perlin = Mix(interpx1, interpx2, off00.y);
-
-            // Randomize strength
-            float constexpr RandomRange = 0.4f;
-            point.Strength *=
-                (1.0f - RandomRange)
-                + RandomRange * std::sqrt(std::abs(perlin));
-        }
-    }
-}
-
 std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
     ElementIndex startPointIndex1,
     int startPointX,
@@ -1424,6 +1367,289 @@ std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
     }
 
     return edgeIndices;
+}
+
+void ShipBuilder::RandomizeStrength_Perlin(std::vector<ShipBuildPoint> & pointInfos2)
+{
+    //
+    // Basic Perlin noise generation
+    //
+    // Deterministic randomness
+    //
+
+    float constexpr CellWidth = 4.0f;
+
+    auto const gradientVectorAt = [](float x, float y) -> vec2f // Always positive
+    {
+        float const arg = (1.0f + std::sin(x * (x * 12.9898f + y * 78.233f))) * 43758.5453f;
+        float const random = arg - std::floor(arg);
+        return vec2f(random, random);
+    };
+
+    for (auto & point : pointInfos2)
+    {
+        // We don't want to randomize the strength of ropes
+        if (!point.IsRope)
+        {
+            // Coordinates of point in grid space
+            vec2f const gridPos(
+                static_cast<float>(point.Position.x) / CellWidth,
+                static_cast<float>(point.Position.y) / CellWidth);
+
+            // Coordinates of four cell corners
+            float const x0 = floor(gridPos.x);
+            float const x1 = x0 + 1.0f;
+            float const y0 = floor(gridPos.y);
+            float const y1 = y0 + 1.0f;
+
+            // Offset vectors from corners
+            vec2f const off00 = gridPos - vec2f(x0, y0);
+            vec2f const off10 = gridPos - vec2f(x1, y0);
+            vec2f const off01 = gridPos - vec2f(x0, y1);
+            vec2f const off11 = gridPos - vec2f(x1, y1);
+
+            // Gradient vectors at four corners
+            vec2f const gv00 = gradientVectorAt(x0, y0);
+            vec2f const gv10 = gradientVectorAt(x1, y0);
+            vec2f const gv01 = gradientVectorAt(x0, y1);
+            vec2f const gv11 = gradientVectorAt(x1, y1);
+
+            // Dot products at each corner
+            float const dp00 = off00.dot(gv00);
+            float const dp10 = off10.dot(gv10);
+            float const dp01 = off01.dot(gv01);
+            float const dp11 = off11.dot(gv11);
+
+            // Interpolate four dot products at this point (using a bilinear)
+            float const interpx1 = Mix(dp00, dp10, off00.x);
+            float const interpx2 = Mix(dp01, dp11, off00.x);
+            float const perlin = Mix(interpx1, interpx2, off00.y);
+
+            // Randomize strength
+            float constexpr RandomRange = 0.4f;
+            point.Strength *=
+                (1.0f - RandomRange)
+                + RandomRange * std::sqrt(std::abs(perlin));
+        }
+    }
+}
+
+void ShipBuilder::RandomizeStrength_Batik(
+    ShipBuildPointIndexMatrix const & pointIndexMatrix,
+    ImageSize const & structureImageSize,
+    std::vector<ShipBuildPoint> & pointInfos2,
+    std::vector<ElementIndex> const & pointIndexRemap2,
+    std::vector<ShipBuildSpring> & springInfos2,
+    std::vector<ShipBuildFrontier> const & shipBuildFrontiers)
+{
+    //
+    // Adapted from https://www.researchgate.net/publication/221523196_Rendering_cracks_in_Batik
+    //
+    // Main features:
+    //  - A crack should pass through a point that is at (locally) maximal distance from any earlier crack,
+    //    since there the stress is (locally) maximal;
+    //  - A crack should propagate as fast as possible to the nearest feature (i.e.earlier crack or border of the wax)
+    //
+
+    // Setup deterministic randomness
+
+    std::seed_seq seq({ 1, 242, 19730528 });
+    std::ranlux48_base randomEngine(seq);
+
+    std::uniform_int_distribution<int> disWidth(0, structureImageSize.Width);
+    std::uniform_int_distribution<int> disHeight(0, structureImageSize.Height);
+
+    //
+    // Create distance map
+    //
+
+    Matrix2<float> distanceMap(
+        structureImageSize.Width,
+        structureImageSize.Height,
+        std::numeric_limits<float>::max());
+
+    //
+    // Initialize distance map with distances from frontiers
+    //
+
+    for (ShipBuildFrontier const & frontier : shipBuildFrontiers)
+    {
+        for (ElementIndex springIndex2 : frontier.EdgeIndices2)
+        {
+            auto const pointAIndex2 = pointIndexRemap2[springInfos2[springIndex2].PointAIndex1];
+            auto const & coordsA = pointInfos2[pointAIndex2].OriginalDefinitionCoordinates;
+            if (coordsA.has_value())
+            {
+                distanceMap[*coordsA] = 0.0f;
+            }
+
+            auto const pointBIndex2 = pointIndexRemap2[springInfos2[springIndex2].PointBIndex1];
+            auto const & coordsB = pointInfos2[pointBIndex2].OriginalDefinitionCoordinates;
+            if (coordsB.has_value())
+            {
+                distanceMap[*coordsB] = 0.0f;
+            }
+        }
+    }
+
+    UpdateDistanceMap(distanceMap);
+
+    //
+    // Generate cracks
+    //
+
+    // Choose number of cracks
+    // TODOTEST
+    int const numberOfCracks = 1;
+
+    for (int iCrack = 0; iCrack < numberOfCracks; ++iCrack)
+    {
+        //
+        // Find suitable starting point
+        //
+
+        Matrix2Index startingPointCoords(0, 0);
+        do
+        {
+            startingPointCoords = Matrix2Index(
+                disWidth(randomEngine),
+                disHeight(randomEngine));
+        } while (!pointIndexMatrix[startingPointCoords.X + 1][startingPointCoords.Y + 1].has_value() || distanceMap[startingPointCoords] == 0.0f);
+
+        // Navigate in distance map to find local maximum
+        while (true)
+        {
+            std::optional<Matrix2Index> bestPointCoords;
+            float maxDistance = distanceMap[startingPointCoords];
+            for (int dx = -1; dx <= +1; ++dx)
+            {
+                for (int dy = -1; dy <= +1; ++dy)
+                {
+                    Matrix2Index candidateCoords(
+                        startingPointCoords.X + dx,
+                        startingPointCoords.Y + dy);
+
+                    if (candidateCoords.IsInRect(distanceMap)
+                        && distanceMap[candidateCoords] > maxDistance)
+                    {
+                        maxDistance = distanceMap[candidateCoords];
+                        bestPointCoords = candidateCoords;
+                    }
+                }
+            }
+
+            if (!bestPointCoords.has_value())
+            {
+                // We're done
+                break;
+            }
+
+            // Advance
+            startingPointCoords = *bestPointCoords;
+        }
+
+        //
+        // Find initial direction == direction of steepest descent of D
+        //
+
+        // TODOHERE
+
+        //
+        // Propagate crack on both directions
+        //
+
+        // Set crack at starting point
+        distanceMap[startingPointCoords] = 0.0f;
+
+        // TODOHERE
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // TODOTEST
+
+    float maxDistance = 0.0f;
+    for (int x = 0; x < structureImageSize.Width; ++x)
+    {
+        for (int y = 0; y < structureImageSize.Height; ++y)
+        {
+            if (distanceMap[{x, y}] > maxDistance)
+            {
+                maxDistance = distanceMap[{x, y}];
+            }
+        }
+    }
+
+    LogMessage("TODOTEST: MaxDistance=", maxDistance);
+
+    for (int x = 0; x < structureImageSize.Width; ++x)
+    {
+        for (int y = 0; y < structureImageSize.Height; ++y)
+        {
+            auto const & idx1 = pointIndexMatrix[x + 1][y + 1];
+            if (idx1.has_value())
+            {
+                pointInfos2[pointIndexRemap2[*idx1]].Strength = distanceMap[{x, y}] / maxDistance;
+            }
+        }
+    }
+}
+
+void ShipBuilder::PropagateBatikCrack(
+    vec2f const & direction,
+    ShipBuildPointIndexMatrix const & pointIndexMatrix,
+    ImageSize const & structureImageSize,
+    Matrix2<float> & distanceMap)
+{
+    // TODOHERE
+}
+
+void ShipBuilder::UpdateDistanceMap(Matrix2<float> & distanceMap)
+{
+    //
+    // Jain's algorithm (1989, Fundamentals of Digital Image Processing, Chapter 2)
+    //
+
+    // Top-Left -> Bottom-Right
+    for (int x = 0; x < distanceMap.Width; ++x)
+    {
+        for (int y = distanceMap.Height - 1; y >= 0; --y)
+        {
+            Matrix2Index const idx(x, y);
+
+            // Upper left half of 8-neighborhood of (x, y)
+            for (int t = 4; t <= 7; ++t)
+            {
+                Matrix2Index const nidx = idx + Matrix2Index(TessellationCircularOrderDirections[t][0], TessellationCircularOrderDirections[t][1]);
+
+                if (nidx.IsInRect(distanceMap)
+                    && distanceMap[nidx] + 1 < distanceMap[idx])
+                {
+                    distanceMap[idx] = distanceMap[nidx] + 1;
+                }
+            }
+        }
+    }
+
+    // Bottom-Right -> Top-Left
+    for (int x = distanceMap.Width - 1; x >= 0; --x)
+    {
+        for (int y = 0; y < distanceMap.Height; ++y)
+        {
+            Matrix2Index const idx(x, y);
+
+            // Lower right half of 8-neighborhood of (x, y)
+            for (int t = 0; t <= 3; ++t)
+            {
+                Matrix2Index const nidx = idx + Matrix2Index(TessellationCircularOrderDirections[t][0], TessellationCircularOrderDirections[t][1]);
+
+                if (nidx.IsInRect(distanceMap)
+                    && distanceMap[nidx] + 1 < distanceMap[idx])
+                {
+                    distanceMap[idx] = distanceMap[nidx] + 1;
+                }
+            }
+        }
+    }
 }
 
 Physics::Points ShipBuilder::CreatePoints(

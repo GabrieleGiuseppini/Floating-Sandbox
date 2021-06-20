@@ -29,6 +29,7 @@ set (UNIT_TEST_SOURCES
 	GameMathTests.cpp
 	LayoutHelperTests.cpp
 	main.cpp
+	Matrix2Tests.cpp
 	MemoryStreamsTests.cpp
 	ParameterSmootherTests.cpp
 	PrecalculatedFunctionTests.cpp

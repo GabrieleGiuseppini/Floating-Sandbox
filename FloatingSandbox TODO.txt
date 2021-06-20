@@ -719,7 +719,13 @@ Render:
 						+ See if can also reason in terms of PointInfo's
 				= InjectCracks
 					+ Do basic
+					= Try another crack algorithm
+						= Batik
+						- Finalization:
+							- Trim distance mapping by looping between min and max coords
 					- Parameters from outside:
+						- First of all, inglobate these ("StrengthRandomization") and auto-texturization in new "ShipBuildingParameters" struct
+							- Rework ship texturization setting architecture
 						- Density (grid spacing)
 						- Magnitude (room for change)
 						- Add to GamePreferences
@@ -735,6 +741,9 @@ Render:
 			+ 0.242	
 			- Adjustment is too low, raise it
 				- 0.5+ is somewhat acceptable for Titanic - breaks down at 4.5Km
+
+		- Settings for Electric Spark tool
+			- SettingsDialog
 
 		- Spread out rotting:
 			! Now: at step 20/49
@@ -781,6 +790,8 @@ Render:
 				- Fishes
 
 		- Way to remove all pins (*)
+
+		- See explosions issue with Marine Electric (now on Desktop)
 
 		- Test on Dell
 			- Test that these work: 
@@ -1013,12 +1024,12 @@ Render:
 		# An SR71 Habu: NotTelling
 		# JackMellon: JackTheBrickfilmMaker (Discord, https://drive.google.com/drive/folders/1isy3QiRzMfyu69v5M0gwD5tvBnYZMWXx)
 	- Ship Packs:
-		- Kiko's pack
+		+ Kiko's pack
 			+ Screenshots and description in PM
 			+ I keep donations
 			+ Test
 			+ Meta
-			- Zip & release
+			+ Zip & release
 		- HummeL:
 			- Meta: <asked>
 		+ Waallrus: have all
