@@ -725,9 +725,8 @@ Render:
 							+ Find better way of doing index math/relativity
 								+ vec2i @ vectors.h, replacing Matrix2Index and RectRegion
 								+ Batik takes vec2i as Origin and Span arguments
-							- Convert also PointInfoMatrix to Matrix2
-								- See if can do [int, int]
-								- Remove unneeded structureImageSize args
+							+ Convert also PointInfoMatrix to Matrix2
+								+ Remove unneeded structureImageSize args
 							- Condition to follow a point: covered triangles > 0
 							- Allow starting point to be an already-chosen point (i.e. remove condition of distance!=0)
 								- If it is, starting direction is further randomized

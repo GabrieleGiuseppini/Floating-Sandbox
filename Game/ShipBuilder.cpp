@@ -248,7 +248,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
 
     CreateShipElementInfos(
         pointIndexMatrix,
-        shipDefinition.StructuralLayerImage.Size,
         pointInfos1,
         springInfos1,
         pointPairToSpringIndex1Map,
@@ -284,8 +283,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         pointInfos1,
         springInfos1,
         pointPairToSpringIndex1Map,
-        pointIndexMatrix,
-        shipDefinition.StructuralLayerImage.Size);
+        pointIndexMatrix);
 
     float optimizedSpringACMR = CalculateACMR(springInfos2);
 
@@ -326,7 +324,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
 
     std::vector<ShipBuildFrontier> shipBuildFrontiers = CreateShipFrontiers(
         pointIndexMatrix,
-        shipDefinition.StructuralLayerImage.Size,
         pointIndexRemap2,
         pointInfos2,
         springInfos2,
@@ -883,7 +880,6 @@ void ShipBuilder::AppendRopes(
 
 void ShipBuilder::CreateShipElementInfos(
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
-    ImageSize const & structureImageSize,
     std::vector<ShipBuildPoint> & pointInfos1,
     std::vector<ShipBuildSpring> & springInfos1,
     PointPairToIndexMap & pointPairToSpringIndex1Map,
@@ -901,13 +897,13 @@ void ShipBuilder::CreateShipElementInfos(
     leakingPointsCount = 0;
 
     // From bottom to top - excluding extras at boundaries
-    for (int y = 1; y <= structureImageSize.Height; ++y)
+    for (int y = 1; y < pointIndexMatrix.Height - 1; ++y)
     {
         // We're starting a new row, so we're not in a ship now
         bool isInShip = false;
 
         // From left to right - excluding extras at boundaries
-        for (int x = 1; x <= structureImageSize.Width; ++x)
+        for (int x = 1; x < pointIndexMatrix.Width - 1; ++x)
         {
             if (!!pointIndexMatrix[{x, y}])
             {
@@ -932,7 +928,6 @@ void ShipBuilder::CreateShipElementInfos(
                         ++leakingPointsCount;
                     }
                 }
-
 
                 //
                 // Check if a spring exists
@@ -1096,7 +1091,6 @@ void ShipBuilder::ConnectPointsToTriangles(
 
 std::vector<ShipBuilder::ShipBuildFrontier> ShipBuilder::CreateShipFrontiers(
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
-    ImageSize const & structureImageSize,
     std::vector<ElementIndex> const & pointIndexRemap2,
     std::vector<ShipBuildPoint> const & pointInfos2,
     std::vector<ShipBuildSpring> const & springInfos2,
@@ -1113,13 +1107,13 @@ std::vector<ShipBuilder::ShipBuildFrontier> ShipBuilder::CreateShipFrontiers(
     std::set<ElementIndex> frontierEdges2;
 
     // From left to right, skipping padding columns
-    for (int x = 1; x <= structureImageSize.Width; ++x)
+    for (int x = 1; x < pointIndexMatrix.Width - 1; ++x)
     {
         // Frontierable points are points on border edges of triangles
         bool isInFrontierablePointsRegion = false;
 
         // From bottom to top, skipping padding columns
-        for (int y = 1; y <= structureImageSize.Height; ++y)
+        for (int y = 1; y < pointIndexMatrix.Height - 1; ++y)
         {
             if (isInFrontierablePointsRegion)
             {
@@ -1607,7 +1601,8 @@ void ShipBuilder::RandomizeStrength_Batik(
 void ShipBuilder::PropagateBatikCrack(
     vec2f const & direction,
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
-    vec2i const & pointIndexMatrixRegion,
+    vec2i const & pointIndexMatrixRegionOrigin,
+    vec2i const & pointIndexMatrixRegionSize,
     Matrix2<float> & distanceMap)
 {
     // TODOHERE
@@ -2115,8 +2110,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Str
     std::vector<ShipBuildPoint> const & pointInfos1,
     std::vector<ShipBuildSpring> const & springInfos1,
     PointPairToIndexMap const & pointPairToSpringIndex1Map,
-    ShipBuildPointIndexMatrix const & pointIndexMatrix,
-    ImageSize const & structureImageSize)
+    ShipBuildPointIndexMatrix const & pointIndexMatrix)
 {
     //
     // 1. Visit the point matrix by all rows, from top to bottom
@@ -2133,7 +2127,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Str
     std::vector<ElementIndex> springIndexRemap(springInfos1.size(), NoneElementIndex);
 
     // From top to bottom, starting at second row from top (i.e. first real row)
-    for (int y = structureImageSize.Height; y >= 1; y -= (StripeLength - 1))
+    for (int y = pointIndexMatrix.Height - 1; y >= 1; y -= (StripeLength - 1))
     {
         ReorderPointsAndSpringsOptimally_Stripes_Stripe<StripeLength>(
             y,
@@ -2142,7 +2136,6 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Str
             springInfos1,
             reorderedSpringInfos1,
             pointIndexMatrix,
-            structureImageSize,
             pointPairToSpringIndex1Map,
             pointInfos2,
             pointIndexRemap,
@@ -2218,7 +2211,6 @@ void ShipBuilder::ReorderPointsAndSpringsOptimally_Stripes_Stripe(
     std::vector<ShipBuildSpring> const & springInfos1,
     std::vector<bool> & reorderedSpringInfos1,
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
-    ImageSize const & structureImageSize,
     PointPairToIndexMap const & pointPairToSpringIndex1Map,
     std::vector<ShipBuildPoint> & pointInfos2,
     std::vector<ElementIndex> & pointIndexRemap,
@@ -2232,7 +2224,7 @@ void ShipBuilder::ReorderPointsAndSpringsOptimally_Stripes_Stripe(
     std::vector<ElementIndex> stripePointIndices1;
 
     // From left to right, start at first real col
-    for (int x1 = 1; x1 <= structureImageSize.Width; ++x1)
+    for (int x1 = 1; x1 < pointIndexMatrix.Width - 1; ++x1)
     {
         //
         // 1. Build sets of indices of points left and right of the stripe
@@ -2304,8 +2296,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Blo
     std::vector<ShipBuildPoint> const & pointInfos1,
     std::vector<ShipBuildSpring> const & springInfos1,
     PointPairToIndexMap const & pointPairToSpringIndex1Map,
-    ShipBuildPointIndexMatrix const & pointIndexMatrix,
-    ImageSize const & structureImageSize)
+    ShipBuildPointIndexMatrix const & pointIndexMatrix)
 {
     //
     // 1. Visit the point matrix by all rows, from top to bottom
@@ -2323,7 +2314,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Blo
 
     // From top to bottom, starting at second row from top (i.e. first real row),
     // skipping one row of points to ensure full squares
-    for (int y = structureImageSize.Height; y >= 1; y -= 2)
+    for (int y = pointIndexMatrix.Height - 1; y >= 1; y -= 2)
     {
         ReorderPointsAndSpringsOptimally_Blocks_Row(
             y,
@@ -2332,7 +2323,6 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Blo
             springInfos1,
             reorderedSpringInfos1,
             pointIndexMatrix,
-            structureImageSize,
             pointPairToSpringIndex1Map,
             pointInfos2,
             pointIndexRemap,
@@ -2405,7 +2395,6 @@ void ShipBuilder::ReorderPointsAndSpringsOptimally_Blocks_Row(
     std::vector<ShipBuildSpring> const & springInfos1,
     std::vector<bool> & reorderedSpringInfos1,
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
-    ImageSize const & structureImageSize,
     PointPairToIndexMap const & pointPairToSpringIndex1Map,
     std::vector<ShipBuildPoint> & pointInfos2,
     std::vector<ElementIndex> & pointIndexRemap,
@@ -2424,7 +2413,7 @@ void ShipBuilder::ReorderPointsAndSpringsOptimally_Blocks_Row(
     std::vector<ElementIndex> squarePointIndices1;
 
     // From left to right, start at first real col
-    for (int x = 1; x <= structureImageSize.Width; ++x)
+    for (int x = 1; x < pointIndexMatrix.Width - 1; ++x)
     {
         squarePointIndices1.clear();
 
@@ -2498,8 +2487,7 @@ template <int BlockSize>
 ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Tiling(
     std::vector<ShipBuildPoint> const & pointInfos1,
     std::vector<ShipBuildSpring> const & springInfos1,
-    ShipBuildPointIndexMatrix const & pointIndexMatrix,
-    ImageSize const & structureImageSize)
+    ShipBuildPointIndexMatrix const & pointIndexMatrix)
 {
     //
     // 1. Visit the point matrix in 2x2 blocks, and add all springs connected to any
@@ -2512,13 +2500,13 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Til
     std::vector<ElementIndex> springIndexRemap(springInfos1.size(), NoneElementIndex);
 
     // From bottom to top
-    for (int y = 1; y <= structureImageSize.Height; y += BlockSize)
+    for (int y = 1; y < pointIndexMatrix.Height - 1; y += BlockSize)
     {
-        for (int x = 1; x <= structureImageSize.Width; x += BlockSize)
+        for (int x = 1; x < pointIndexMatrix.Width - 1; x += BlockSize)
         {
-            for (int y2 = 0; y2 < BlockSize && y + y2 <= structureImageSize.Height; ++y2)
+            for (int y2 = 0; y2 < BlockSize && y + y2 < pointIndexMatrix.Height - 1; ++y2)
             {
-                for (int x2 = 0; x2 < BlockSize && x + x2 <= structureImageSize.Width; ++x2)
+                for (int x2 = 0; x2 < BlockSize && x + x2 < pointIndexMatrix.Width - 1; ++x2)
                 {
                     if (!!pointIndexMatrix[{x + x2, y + y2}])
                     {

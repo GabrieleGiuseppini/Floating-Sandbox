@@ -232,7 +232,6 @@ private:
 
     static void CreateShipElementInfos(
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        ImageSize const & structureImageSize,
         std::vector<ShipBuildPoint> & pointInfos1,
         std::vector<ShipBuildSpring> & springInfos1,
         PointPairToIndexMap & pointPairToSpringIndex1Map,
@@ -250,7 +249,6 @@ private:
 
     static std::vector<ShipBuildFrontier> CreateShipFrontiers(
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        ImageSize const & structureImageSize,
         std::vector<ElementIndex> const & pointIndexRemap2,
         std::vector<ShipBuildPoint> const & pointInfos2,
         std::vector<ShipBuildSpring> const & springInfos2,
@@ -281,7 +279,8 @@ private:
     static void PropagateBatikCrack(
         vec2f const & direction,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        vec2i const & pointIndexMatrixRegion,
+        vec2i const & pointIndexMatrixRegionOrigin,
+        vec2i const & pointIndexMatrixRegionSize,
         Matrix2<float> & distanceMap);
 
     static void UpdateDistanceMap(Matrix2<float> & distanceMap);
@@ -346,8 +345,7 @@ private:
         std::vector<ShipBuildPoint> const & pointInfos1,
         std::vector<ShipBuildSpring> const & springInfos1,
         PointPairToIndexMap const & pointPairToSpringIndex1Map,
-        ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        ImageSize const & structureImageSize);
+        ShipBuildPointIndexMatrix const & pointIndexMatrix);
 
     template <int StripeLength>
     static void ReorderPointsAndSpringsOptimally_Stripes_Stripe(
@@ -357,7 +355,6 @@ private:
         std::vector<ShipBuildSpring> const & springInfos1,
         std::vector<bool> & reorderedSpringInfos1,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        ImageSize const & structureImageSize,
         PointPairToIndexMap const & pointPairToSpringIndex1Map,
         std::vector<ShipBuildPoint> & pointInfos2,
         std::vector<ElementIndex> & pointIndexRemap,
@@ -368,8 +365,7 @@ private:
         std::vector<ShipBuildPoint> const & pointInfos1,
         std::vector<ShipBuildSpring> const & springInfos1,
         PointPairToIndexMap const & pointPairToSpringIndex1Map,
-        ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        ImageSize const & structureImageSize);
+        ShipBuildPointIndexMatrix const & pointIndexMatrix);
 
     static void ReorderPointsAndSpringsOptimally_Blocks_Row(
         int y,
@@ -378,7 +374,6 @@ private:
         std::vector<ShipBuildSpring> const & springInfos1,
         std::vector<bool> & reorderedSpringInfos1,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        ImageSize const & structureImageSize,
         PointPairToIndexMap const & pointPairToSpringIndex1Map,
         std::vector<ShipBuildPoint> & pointInfos2,
         std::vector<ElementIndex> & pointIndexRemap,
@@ -389,8 +384,7 @@ private:
     static ReorderingResults ReorderPointsAndSpringsOptimally_Tiling(
         std::vector<ShipBuildPoint> const & pointInfos1,
         std::vector<ShipBuildSpring> const & springInfos1,
-        ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        ImageSize const & structureImageSize);
+        ShipBuildPointIndexMatrix const & pointIndexMatrix);
 
     static std::vector<ShipBuildSpring> ReorderSpringsOptimally_TomForsyth(
         std::vector<ShipBuildSpring> const & springInfos1,
