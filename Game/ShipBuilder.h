@@ -272,7 +272,8 @@ private:
 
     static void RandomizeStrength_Batik(
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        IntegralRect const & pointIndexMatrixRegion,
+        vec2i const & pointIndexMatrixRegionOrigin,
+        vec2i const & pointIndexMatrixRegionSize,
         std::vector<ShipBuildPoint> & pointInfos2,
         std::vector<ElementIndex> const & pointIndexRemap2,
         std::vector<ShipBuildSpring> & springInfos2,
@@ -281,7 +282,7 @@ private:
     static void PropagateBatikCrack(
         vec2f const & direction,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        IntegralRect const & pointIndexMatrixRegion,
+        vec2i const & pointIndexMatrixRegion,
         Matrix2<float> & distanceMap);
 
     static void UpdateDistanceMap(Matrix2<float> & distanceMap);

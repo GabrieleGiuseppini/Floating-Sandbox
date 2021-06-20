@@ -152,14 +152,15 @@ float constexpr CompileTimeSqrt(float x)
     return detail::SqrtNewtonRaphson(x, x, 0.0f);
 }
 
-inline float Clamp(
-    float x,
-    float lLimit,
-    float rLimit) noexcept
+template<typename T>
+inline T Clamp(
+    T x,
+    T lLimit,
+    T rLimit) noexcept
 {
     assert(lLimit <= rLimit);
 
-    float const mx = x < lLimit ? lLimit : x;
+    T const mx = x < lLimit ? lLimit : x;
     return mx > rLimit ? rLimit : mx;
 }
 

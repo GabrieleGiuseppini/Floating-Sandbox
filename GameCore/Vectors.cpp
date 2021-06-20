@@ -28,3 +28,10 @@ std::string vec4f::toString() const
     ss << std::setprecision(12) << "(" << x << ", " << y << ", " << z << ", " << w << ")";
     return ss.str();
 }
+
+std::string vec2i::toString() const
+{
+    std::stringstream ss;
+    ss << "(" << x << ", " << y << ")";
+    return ss.str();
+}

@@ -722,8 +722,9 @@ Render:
 					= Try another crack algorithm
 						= Batik
 							+ Finish region-relativity
-							- Find better way of doing index math/relativity
-								- vec2i @ vectors.h, replacing Matrix2Index and RectRegion (as Origin and Span arguments)
+							+ Find better way of doing index math/relativity
+								+ vec2i @ vectors.h, replacing Matrix2Index and RectRegion
+								+ Batik takes vec2i as Origin and Span arguments
 							- Convert also PointInfoMatrix to Matrix2
 							- Condition to follow a point: covered triangles > 0
 							- Allow starting point to be an already-chosen point (i.e. remove condition of distance!=0)

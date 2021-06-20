@@ -30,6 +30,16 @@ TEST(VectorsTests, Sum_4f)
     EXPECT_EQ(c.w, 300.4f);
 }
 
+TEST(VectorsTests, Sum_2i)
+{
+    vec2i a(1, 5);
+    vec2i b(2, 4);
+    vec2i c = a + b;
+
+    EXPECT_EQ(c.x, 3);
+    EXPECT_EQ(c.y, 9);
+}
+
 class Normalization2fTest : public testing::TestWithParam<std::tuple<vec2f, vec2f>>
 {
 public:

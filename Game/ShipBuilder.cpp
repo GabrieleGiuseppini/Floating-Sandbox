@@ -119,7 +119,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
                 pointIndexMatrix[x + 1][y + 1] = static_cast<ElementIndex>(pointIndex);
 
                 pointInfos1.emplace_back(
-                    Matrix2Index(x, y),
+                    vec2i(x, y),
                     IntegralPoint(x, y).FlipY(structureHeight),
                     vec2f(
                         static_cast<float>(x) - halfWidth,
@@ -346,7 +346,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     //RandomizeStrength_Perlin(pointInfos2);
     RandomizeStrength_Batik(
         pointIndexMatrix,
-        IntegralRect(minX, maxX, minY, maxY),
+        vec2i(minX, minY),
+        vec2i(maxX - minX + 1, maxY - minY + 1),
         pointInfos2,
         pointIndexRemap2,
         springInfos2,
@@ -498,7 +499,7 @@ void ShipBuilder::AppendRopeEndpoints(
                     // Make a point
                     pointIndex = static_cast<ElementIndex>(pointInfos1.size());
                     pointInfos1.emplace_back(
-                        Matrix2Index(x, y),
+                        vec2i(x, y),
                         pointCoords.FlipY(height),
                         vec2f(
                             static_cast<float>(x) - halfWidth,
@@ -691,8 +692,8 @@ void ShipBuilder::AppendRopes(
         if (pointInfos1[ropeSegment.PointAIndex1].OriginalDefinitionCoordinates.has_value()
             && pointInfos1[ropeSegment.PointBIndex1].OriginalDefinitionCoordinates.has_value())
         {
-            if (abs(pointInfos1[ropeSegment.PointAIndex1].OriginalDefinitionCoordinates->X - pointInfos1[ropeSegment.PointBIndex1].OriginalDefinitionCoordinates->X) <= 1
-                && abs(pointInfos1[ropeSegment.PointAIndex1].OriginalDefinitionCoordinates->Y - pointInfos1[ropeSegment.PointBIndex1].OriginalDefinitionCoordinates->Y) <= 1)
+            if (abs(pointInfos1[ropeSegment.PointAIndex1].OriginalDefinitionCoordinates->x - pointInfos1[ropeSegment.PointBIndex1].OriginalDefinitionCoordinates->x) <= 1
+                && abs(pointInfos1[ropeSegment.PointAIndex1].OriginalDefinitionCoordinates->y - pointInfos1[ropeSegment.PointBIndex1].OriginalDefinitionCoordinates->y) <= 1)
             {
                 // No need to lay a rope
                 continue;
@@ -1450,7 +1451,8 @@ void ShipBuilder::RandomizeStrength_Perlin(std::vector<ShipBuildPoint> & pointIn
 
 void ShipBuilder::RandomizeStrength_Batik(
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
-    IntegralRect const & pointIndexMatrixRegion,
+    vec2i const & pointIndexMatrixRegionOrigin,
+    vec2i const & pointIndexMatrixRegionSize,
     std::vector<ShipBuildPoint> & pointInfos2,
     std::vector<ElementIndex> const & pointIndexRemap2,
     std::vector<ShipBuildSpring> & springInfos2,
@@ -1465,25 +1467,21 @@ void ShipBuilder::RandomizeStrength_Batik(
     //  - A crack should propagate as fast as possible to the nearest feature (i.e.earlier crack or border of the wax)
     //
 
-    int const width = pointIndexMatrixRegion.CalculateWidth();
-    int const height = pointIndexMatrixRegion.CalculateHeight();
-    Matrix2Index const pointIndexMatrixOrigin(pointIndexMatrixRegion.X1, pointIndexMatrixRegion.Y1);
-
     // Setup deterministic randomness
 
     std::seed_seq seq({ 1, 242, 19730528 });
     std::ranlux48_base randomEngine(seq);
 
-    std::uniform_int_distribution<int> disWidth(0, width);
-    std::uniform_int_distribution<int> disHeight(0, height);
+    std::uniform_int_distribution<int> disWidth(0, pointIndexMatrixRegionSize.x);
+    std::uniform_int_distribution<int> disHeight(0, pointIndexMatrixRegionSize.y);
 
     //
     // Create distance map
     //
 
     Matrix2<float> distanceMap(
-        width,
-        height,
+        pointIndexMatrixRegionSize.x,
+        pointIndexMatrixRegionSize.y,
         std::numeric_limits<float>::max());
 
     //
@@ -1498,14 +1496,14 @@ void ShipBuilder::RandomizeStrength_Batik(
             auto const & coordsA = pointInfos2[pointAIndex2].OriginalDefinitionCoordinates;
             if (coordsA.has_value())
             {
-                distanceMap[*coordsA - pointIndexMatrixOrigin] = 0.0f;
+                distanceMap[*coordsA - pointIndexMatrixRegionOrigin] = 0.0f;
             }
 
             auto const pointBIndex2 = pointIndexRemap2[springInfos2[springIndex2].PointBIndex1];
             auto const & coordsB = pointInfos2[pointBIndex2].OriginalDefinitionCoordinates;
             if (coordsB.has_value())
             {
-                distanceMap[*coordsB - pointIndexMatrixOrigin] = 0.0f;
+                distanceMap[*coordsB - pointIndexMatrixRegionOrigin] = 0.0f;
             }
         }
     }
@@ -1526,26 +1524,26 @@ void ShipBuilder::RandomizeStrength_Batik(
         // Find suitable starting point
         //
 
-        Matrix2Index startingPointCoords(0, 0);
+        vec2i startingPointCoords;
         do
         {
-            startingPointCoords = Matrix2Index(
+            startingPointCoords = vec2i(
                 disWidth(randomEngine),
                 disHeight(randomEngine));
-        } while (!pointIndexMatrix[startingPointCoords.X + pointIndexMatrixOrigin.X + 1][startingPointCoords.Y + pointIndexMatrixOrigin.Y + 1].has_value() || distanceMap[startingPointCoords] == 0.0f);
+        } while (!pointIndexMatrix[startingPointCoords.x + pointIndexMatrixRegionOrigin.x + 1][startingPointCoords.y + pointIndexMatrixRegionOrigin.y + 1].has_value() || distanceMap[startingPointCoords] == 0.0f);
 
         // Navigate in distance map to find local maximum
         while (true)
         {
-            std::optional<Matrix2Index> bestPointCoords;
+            std::optional<vec2i> bestPointCoords;
             float maxDistance = distanceMap[startingPointCoords];
             for (int dx = -1; dx <= +1; ++dx)
             {
                 for (int dy = -1; dy <= +1; ++dy)
                 {
-                    Matrix2Index candidateCoords(
-                        startingPointCoords.X + dx,
-                        startingPointCoords.Y + dy);
+                    vec2i candidateCoords(
+                        startingPointCoords.x + dx,
+                        startingPointCoords.y + dy);
 
                     if (candidateCoords.IsInRect(distanceMap)
                         && distanceMap[candidateCoords] > maxDistance)
@@ -1603,7 +1601,7 @@ void ShipBuilder::RandomizeStrength_Batik(
     {
         for (int y = 0; y < distanceMap.Height; ++y)
         {
-            auto const & idx1 = pointIndexMatrix[x + pointIndexMatrixOrigin.X + 1][y + pointIndexMatrixOrigin.Y + 1];
+            auto const & idx1 = pointIndexMatrix[x + pointIndexMatrixRegionOrigin.x + 1][y + pointIndexMatrixRegionOrigin.y + 1];
             if (idx1.has_value())
             {
                 pointInfos2[pointIndexRemap2[*idx1]].Strength = distanceMap[{x, y}] / maxDistance;
@@ -1615,7 +1613,7 @@ void ShipBuilder::RandomizeStrength_Batik(
 void ShipBuilder::PropagateBatikCrack(
     vec2f const & direction,
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
-    IntegralRect const & pointIndexMatrixRegion,
+    vec2i const & pointIndexMatrixRegion,
     Matrix2<float> & distanceMap)
 {
     // TODOHERE
@@ -1632,12 +1630,12 @@ void ShipBuilder::UpdateDistanceMap(Matrix2<float> & distanceMap)
     {
         for (int y = distanceMap.Height - 1; y >= 0; --y)
         {
-            Matrix2Index const idx(x, y);
+            vec2i const idx(x, y);
 
             // Upper left half of 8-neighborhood of (x, y)
             for (int t = 4; t <= 7; ++t)
             {
-                Matrix2Index const nidx = idx + Matrix2Index(TessellationCircularOrderDirections[t][0], TessellationCircularOrderDirections[t][1]);
+                vec2i const nidx = idx + vec2i(TessellationCircularOrderDirections[t][0], TessellationCircularOrderDirections[t][1]);
 
                 if (nidx.IsInRect(distanceMap)
                     && distanceMap[nidx] + 1 < distanceMap[idx])
@@ -1653,12 +1651,12 @@ void ShipBuilder::UpdateDistanceMap(Matrix2<float> & distanceMap)
     {
         for (int y = 0; y < distanceMap.Height; ++y)
         {
-            Matrix2Index const idx(x, y);
+            vec2i const idx(x, y);
 
             // Lower right half of 8-neighborhood of (x, y)
             for (int t = 0; t <= 3; ++t)
             {
-                Matrix2Index const nidx = idx + Matrix2Index(TessellationCircularOrderDirections[t][0], TessellationCircularOrderDirections[t][1]);
+                vec2i const nidx = idx + vec2i(TessellationCircularOrderDirections[t][0], TessellationCircularOrderDirections[t][1]);
 
                 if (nidx.IsInRect(distanceMap)
                     && distanceMap[nidx] + 1 < distanceMap[idx])

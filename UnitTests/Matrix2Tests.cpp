@@ -10,25 +10,7 @@ TEST(Matrix2Tests, Constructor_DefaultValue)
     {
         for (int y = 0; y < 12; ++y)
         {
-            EXPECT_EQ(m[Matrix2Index(x, y)], 242.0f);
+            EXPECT_EQ(m[vec2i(x, y)], 242.0f);
         }
     }
-}
-
-TEST(Matrix2Tests, Index_Plus)
-{
-    Matrix2Index i(10, 12);
-    Matrix2Index j = i + Matrix2Index(3, -5);
-
-    EXPECT_EQ(j.X, 13);
-    EXPECT_EQ(j.Y, 7);
-}
-
-TEST(Matrix2Tests, Index_Minus)
-{
-    Matrix2Index i(10, 12);
-    Matrix2Index j = i - Matrix2Index(3, -5);
-
-    EXPECT_EQ(j.X, 7);
-    EXPECT_EQ(j.Y, 17);
 }

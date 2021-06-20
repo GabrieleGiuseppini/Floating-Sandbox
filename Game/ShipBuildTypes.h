@@ -27,7 +27,7 @@ using ShipBuildPointIndexMatrix = std::unique_ptr<std::unique_ptr<std::optional<
 
 struct ShipBuildPoint
 {
-    std::optional<Matrix2Index> OriginalDefinitionCoordinates; // In original image (y=0 @ bottom), from any of the layers that provide points
+    std::optional<vec2i> OriginalDefinitionCoordinates; // In original image (y=0 @ bottom), from any of the layers that provide points
     std::optional<IntegralPoint> UserCoordinates; // For displaying messages to users
     vec2f Position;
     vec2f TextureCoordinates;
@@ -44,7 +44,7 @@ struct ShipBuildPoint
     std::vector<ElementIndex> ConnectedTriangles1;
 
     ShipBuildPoint(
-        std::optional<Matrix2Index> originalDefinitionCoordinates,
+        std::optional<vec2i> originalDefinitionCoordinates,
         std::optional<IntegralPoint> userCoordinates,
         vec2f position,
         vec2f textureCoordinates,

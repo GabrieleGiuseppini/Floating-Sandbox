@@ -19,7 +19,8 @@ struct vec2f
 {
 public:
 
-    float x, y;
+    float x;
+    float y;
 
     static constexpr vec2f zero()
     {
@@ -311,7 +312,9 @@ struct vec3f
 {
 public:
 
-    float x, y, z;
+    float x;
+    float y;
+    float z;
 
     static constexpr vec3f zero()
     {
@@ -490,7 +493,10 @@ struct vec4f
 {
 public:
 
-    float x, y, z, w;
+    float x;
+    float y;
+    float z;
+    float w;
 
     static constexpr vec4f zero()
     {
@@ -630,6 +636,128 @@ static_assert(offsetof(vec4f, w) == 3 * sizeof(float));
 static_assert(sizeof(vec4f) == 4 * sizeof(float));
 
 inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, vec4f const & v)
+{
+    os << v.toString();
+    return os;
+}
+
+#pragma pack(push, 1)
+
+struct vec2i
+{
+public:
+
+    int x;
+    int y;
+
+    static constexpr vec2i zero()
+    {
+        return vec2i();
+    }
+
+    inline constexpr vec2i()
+        : x(0)
+        , y(0)
+    {
+    }
+
+    inline constexpr vec2i(
+        int _x,
+        int _y)
+        : x(_x)
+        , y(_y)
+    {
+    }
+
+    inline vec2i operator+(vec2i const & other) const
+    {
+        return vec2i(
+            x + other.x,
+            y + other.y);
+    }
+
+    inline vec2i operator-(vec2i const & other) const
+    {
+        return vec2i(
+            x - other.x,
+            y - other.y);
+    }
+
+    inline vec2i operator-() const
+    {
+        return vec2i(
+            -x,
+            -y);
+    }
+
+    inline vec2i & operator+=(vec2i const & other)
+    {
+        x += other.x;
+        y += other.y;
+        return *this;
+    }
+
+    inline vec2i & operator-=(vec2i const & other)
+    {
+        x -= other.x;
+        y -= other.y;
+        return *this;
+    }
+
+    inline vec2i clamp(int minX, int maxX, int minY, int maxY) const
+    {
+        return vec2i(
+            Clamp(x, minX, maxX),
+            Clamp(y, minY, maxY));
+    }
+
+    inline vec2i & clamp(int minX, int maxX, int minY, int maxY)
+    {
+        x = Clamp(x, minX, maxX);
+        y = Clamp(y, minY, maxY);
+        return *this;
+    }
+
+    inline bool operator==(vec2i const & other) const
+    {
+        return x == other.x && y == other.y;
+    }
+
+    inline bool operator!=(vec2i const & other) const
+    {
+        return !(*this == other);
+    }
+
+    // (lexicographic comparison only)
+    inline bool operator<(vec2i const & other) const
+    {
+        return x < other.x || (x == other.x && y < other.y);
+    }
+
+    /*
+     * Returns the vector rotated by PI/2.
+     */
+    inline vec2i to_perpendicular() const noexcept
+    {
+        return vec2i(-y, x);
+    }
+
+    template<typename TRect>
+    bool IsInRect(TRect const & rect) const
+    {
+        return x >= 0 && x < rect.Width && y >= 0 && y < rect.Height;
+    }
+
+    std::string toString() const;
+};
+
+#pragma pack(pop)
+
+static_assert(offsetof(vec2i, x) == 0);
+static_assert(offsetof(vec2i, y) == sizeof(int));
+static_assert(sizeof(vec2i) == 2 * sizeof(int));
+
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, vec2i const & v)
 {
     os << v.toString();
     return os;
