@@ -18,6 +18,10 @@ struct Matrix2Index
     int X;
     int Y;
 
+    Matrix2Index()
+        : Matrix2Index(0, 0)
+    {}
+
     constexpr Matrix2Index(
         int x,
         int y)
@@ -28,6 +32,11 @@ struct Matrix2Index
     Matrix2Index operator+(Matrix2Index const & other) const
     {
         return Matrix2Index(X + other.X, Y + other.Y);
+    }
+
+    Matrix2Index operator-(Matrix2Index const & other) const
+    {
+        return Matrix2Index(X - other.X, Y - other.Y);
     }
 
     template<typename TRect>

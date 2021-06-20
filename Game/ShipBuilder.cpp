@@ -83,6 +83,11 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         pointIndexMatrix[c] = std::unique_ptr<std::optional<ElementIndex>[]>(new std::optional<ElementIndex>[structureHeight + 2]);
     }
 
+    int minX = std::numeric_limits<int>::max();
+    int maxX = std::numeric_limits<int>::lowest();
+    int minY = std::numeric_limits<int>::max();
+    int maxY = std::numeric_limits<int>::lowest();
+
     // Visit all columns
     for (int x = 0; x < structureWidth; ++x)
     {
@@ -142,6 +147,15 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
                             + IntegralPoint(x, y).FlipY(structureHeight).ToString());
                     }
                 }
+
+                //
+                // Update min/max coords
+                //
+
+                minX = std::min(minX, x);
+                maxX = std::max(maxX, x);
+                minY = std::min(minY, y);
+                maxY = std::max(maxY, y);
             }
             else
             {
@@ -332,7 +346,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     //RandomizeStrength_Perlin(pointInfos2);
     RandomizeStrength_Batik(
         pointIndexMatrix,
-        shipDefinition.StructuralLayerImage.Size,
+        IntegralRect(minX, maxX, minY, maxY),
         pointInfos2,
         pointIndexRemap2,
         springInfos2,
@@ -1436,7 +1450,7 @@ void ShipBuilder::RandomizeStrength_Perlin(std::vector<ShipBuildPoint> & pointIn
 
 void ShipBuilder::RandomizeStrength_Batik(
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
-    ImageSize const & structureImageSize,
+    IntegralRect const & pointIndexMatrixRegion,
     std::vector<ShipBuildPoint> & pointInfos2,
     std::vector<ElementIndex> const & pointIndexRemap2,
     std::vector<ShipBuildSpring> & springInfos2,
@@ -1451,21 +1465,25 @@ void ShipBuilder::RandomizeStrength_Batik(
     //  - A crack should propagate as fast as possible to the nearest feature (i.e.earlier crack or border of the wax)
     //
 
+    int const width = pointIndexMatrixRegion.CalculateWidth();
+    int const height = pointIndexMatrixRegion.CalculateHeight();
+    Matrix2Index const pointIndexMatrixOrigin(pointIndexMatrixRegion.X1, pointIndexMatrixRegion.Y1);
+
     // Setup deterministic randomness
 
     std::seed_seq seq({ 1, 242, 19730528 });
     std::ranlux48_base randomEngine(seq);
 
-    std::uniform_int_distribution<int> disWidth(0, structureImageSize.Width);
-    std::uniform_int_distribution<int> disHeight(0, structureImageSize.Height);
+    std::uniform_int_distribution<int> disWidth(0, width);
+    std::uniform_int_distribution<int> disHeight(0, height);
 
     //
     // Create distance map
     //
 
     Matrix2<float> distanceMap(
-        structureImageSize.Width,
-        structureImageSize.Height,
+        width,
+        height,
         std::numeric_limits<float>::max());
 
     //
@@ -1480,14 +1498,14 @@ void ShipBuilder::RandomizeStrength_Batik(
             auto const & coordsA = pointInfos2[pointAIndex2].OriginalDefinitionCoordinates;
             if (coordsA.has_value())
             {
-                distanceMap[*coordsA] = 0.0f;
+                distanceMap[*coordsA - pointIndexMatrixOrigin] = 0.0f;
             }
 
             auto const pointBIndex2 = pointIndexRemap2[springInfos2[springIndex2].PointBIndex1];
             auto const & coordsB = pointInfos2[pointBIndex2].OriginalDefinitionCoordinates;
             if (coordsB.has_value())
             {
-                distanceMap[*coordsB] = 0.0f;
+                distanceMap[*coordsB - pointIndexMatrixOrigin] = 0.0f;
             }
         }
     }
@@ -1514,7 +1532,7 @@ void ShipBuilder::RandomizeStrength_Batik(
             startingPointCoords = Matrix2Index(
                 disWidth(randomEngine),
                 disHeight(randomEngine));
-        } while (!pointIndexMatrix[startingPointCoords.X + 1][startingPointCoords.Y + 1].has_value() || distanceMap[startingPointCoords] == 0.0f);
+        } while (!pointIndexMatrix[startingPointCoords.X + pointIndexMatrixOrigin.X + 1][startingPointCoords.Y + pointIndexMatrixOrigin.Y + 1].has_value() || distanceMap[startingPointCoords] == 0.0f);
 
         // Navigate in distance map to find local maximum
         while (true)
@@ -1568,9 +1586,9 @@ void ShipBuilder::RandomizeStrength_Batik(
     // TODOTEST
 
     float maxDistance = 0.0f;
-    for (int x = 0; x < structureImageSize.Width; ++x)
+    for (int x = 0; x < distanceMap.Width; ++x)
     {
-        for (int y = 0; y < structureImageSize.Height; ++y)
+        for (int y = 0; y < distanceMap.Height; ++y)
         {
             if (distanceMap[{x, y}] > maxDistance)
             {
@@ -1581,11 +1599,11 @@ void ShipBuilder::RandomizeStrength_Batik(
 
     LogMessage("TODOTEST: MaxDistance=", maxDistance);
 
-    for (int x = 0; x < structureImageSize.Width; ++x)
+    for (int x = 0; x < distanceMap.Width; ++x)
     {
-        for (int y = 0; y < structureImageSize.Height; ++y)
+        for (int y = 0; y < distanceMap.Height; ++y)
         {
-            auto const & idx1 = pointIndexMatrix[x + 1][y + 1];
+            auto const & idx1 = pointIndexMatrix[x + pointIndexMatrixOrigin.X + 1][y + pointIndexMatrixOrigin.Y + 1];
             if (idx1.has_value())
             {
                 pointInfos2[pointIndexRemap2[*idx1]].Strength = distanceMap[{x, y}] / maxDistance;
@@ -1597,7 +1615,7 @@ void ShipBuilder::RandomizeStrength_Batik(
 void ShipBuilder::PropagateBatikCrack(
     vec2f const & direction,
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
-    ImageSize const & structureImageSize,
+    IntegralRect const & pointIndexMatrixRegion,
     Matrix2<float> & distanceMap)
 {
     // TODOHERE

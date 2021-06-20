@@ -23,3 +23,12 @@ TEST(Matrix2Tests, Index_Plus)
     EXPECT_EQ(j.X, 13);
     EXPECT_EQ(j.Y, 7);
 }
+
+TEST(Matrix2Tests, Index_Minus)
+{
+    Matrix2Index i(10, 12);
+    Matrix2Index j = i - Matrix2Index(3, -5);
+
+    EXPECT_EQ(j.X, 7);
+    EXPECT_EQ(j.Y, 17);
+}

@@ -57,6 +57,38 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, Inte
 }
 
 /*
+ * Rectangle with integral coordiantes.
+ */
+struct IntegralRect
+{
+    int X1;
+    int X2;
+    int Y1;
+    int Y2;
+
+    constexpr IntegralRect(
+        int x1,
+        int x2,
+        int y1,
+        int y2)
+        : X1(x1)
+        , X2(x2)
+        , Y1(y1)
+        , Y2(y2)
+    {}
+
+    int CalculateWidth() const
+    {
+        return X2 - X1 + 1;
+    }
+
+    int CalculateHeight() const
+    {
+        return Y2 - Y1 + 1;
+    }
+};
+
+/*
  * Octants, i.e. the direction of a spring connecting two neighbors.
  *
  * Octant 0 is E, octant 1 is SE, ..., Octant 7 is NE.
