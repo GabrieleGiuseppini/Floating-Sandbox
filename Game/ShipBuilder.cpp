@@ -77,16 +77,13 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     //
 
     // Matrix of points - we allocate 2 extra dummy rows and cols - around - to avoid checking for boundaries
-    ShipBuildPointIndexMatrix pointIndexMatrix(new std::unique_ptr<std::optional<ElementIndex>[]>[structureWidth + 2]);
-    for (int c = 0; c < structureWidth + 2; ++c)
-    {
-        pointIndexMatrix[c] = std::unique_ptr<std::optional<ElementIndex>[]>(new std::optional<ElementIndex>[structureHeight + 2]);
-    }
+    ShipBuildPointIndexMatrix pointIndexMatrix(structureWidth + 2, structureHeight + 2);
 
-    int minX = std::numeric_limits<int>::max();
-    int maxX = std::numeric_limits<int>::lowest();
-    int minY = std::numeric_limits<int>::max();
-    int maxY = std::numeric_limits<int>::lowest();
+    // Region of actual content
+    int minX = structureWidth;
+    int maxX = 0;
+    int minY = structureHeight;
+    int maxY = 0;
 
     // Visit all columns
     for (int x = 0; x < structureWidth; ++x)
@@ -116,7 +113,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
 
                 ElementIndex const pointIndex = static_cast<ElementIndex>(pointInfos1.size());
 
-                pointIndexMatrix[x + 1][y + 1] = static_cast<ElementIndex>(pointIndex);
+                pointIndexMatrix[{x + 1, y + 1}] = static_cast<ElementIndex>(pointIndex);
 
                 pointInfos1.emplace_back(
                     vec2i(x, y),
@@ -490,11 +487,12 @@ void ShipBuilder::AppendRopeEndpoints(
             // Check if background
             if (colorKey != BackgroundColorKey)
             {
+                vec2i const matrixPointIndex(x + 1, y + 1);
                 auto const pointCoords = IntegralPoint(x, y);
 
                 // Check whether we have a structural point here
                 ElementIndex pointIndex;
-                if (!pointIndexMatrix[x + 1][y + 1])
+                if (!pointIndexMatrix[matrixPointIndex])
                 {
                     // Make a point
                     pointIndex = static_cast<ElementIndex>(pointInfos1.size());
@@ -512,11 +510,11 @@ void ShipBuilder::AppendRopeEndpoints(
                         ropeMaterial.Strength,
                         0.0f); // Water
 
-                    pointIndexMatrix[x + 1][y + 1] = pointIndex;
+                    pointIndexMatrix[matrixPointIndex] = pointIndex;
                 }
                 else
                 {
-                    pointIndex = *(pointIndexMatrix[x + 1][y + 1]);
+                    pointIndex = *(pointIndexMatrix[matrixPointIndex]);
                 }
 
                 // Make sure we don't have a rope already with an endpoint here
@@ -591,12 +589,14 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
             }
             else
             {
+                vec2i const matrixPointIndex(x + 1, y + 1);
+
                 //
                 // Electrical material found on this particle
                 //
 
                 // Make sure we have a structural point here
-                if (!pointIndexMatrix[x + 1][y + 1])
+                if (!pointIndexMatrix[matrixPointIndex])
                 {
                     throw GameException(
                         "The electrical layer image specifies an electrical material at "
@@ -605,7 +605,7 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
                 }
 
                 // Store electrical material
-                auto const pointIndex = *(pointIndexMatrix[x + 1][y + 1]);
+                auto const pointIndex = *(pointIndexMatrix[matrixPointIndex]);
                 assert(nullptr == pointInfos1[pointIndex].ElectricalMtl);
                 pointInfos1[pointIndex].ElectricalMtl = electricalMaterial;
 
@@ -909,13 +909,13 @@ void ShipBuilder::CreateShipElementInfos(
         // From left to right - excluding extras at boundaries
         for (int x = 1; x <= structureImageSize.Width; ++x)
         {
-            if (!!pointIndexMatrix[x][y])
+            if (!!pointIndexMatrix[{x, y}])
             {
                 //
                 // A point exists at these coordinates
                 //
 
-                ElementIndex pointIndex1 = *pointIndexMatrix[x][y];
+                ElementIndex pointIndex1 = *pointIndexMatrix[{x, y}];
 
                 // If a non-hull node has empty space on one of its four sides, it is leaking.
                 // Check if a is leaking; a is leaking if:
@@ -923,10 +923,10 @@ void ShipBuilder::CreateShipElementInfos(
                 // - there is at least a hole at E, S, W, N
                 if (!pointInfos1[pointIndex1].StructuralMtl.IsHull)
                 {
-                    if (!pointIndexMatrix[x + 1][y]
-                        || !pointIndexMatrix[x][y + 1]
-                        || !pointIndexMatrix[x - 1][y]
-                        || !pointIndexMatrix[x][y - 1])
+                    if (!pointIndexMatrix[{x + 1, y}]
+                        || !pointIndexMatrix[{x, y + 1}]
+                        || !pointIndexMatrix[{x - 1, y}]
+                        || !pointIndexMatrix[{x, y - 1}])
                     {
                         pointInfos1[pointIndex1].IsLeaking = true;
                         ++leakingPointsCount;
@@ -945,7 +945,7 @@ void ShipBuilder::CreateShipElementInfos(
                     int adjx1 = x + TessellationCircularOrderDirections[i][0];
                     int adjy1 = y + TessellationCircularOrderDirections[i][1];
 
-                    if (!!pointIndexMatrix[adjx1][adjy1])
+                    if (!!pointIndexMatrix[{adjx1, adjy1}])
                     {
                         // This point is adjacent to the first point at one of E, SE, S, SW
 
@@ -953,7 +953,7 @@ void ShipBuilder::CreateShipElementInfos(
                         // Create ShipBuildSpring
                         //
 
-                        ElementIndex const otherEndpointIndex1 = *pointIndexMatrix[adjx1][adjy1];
+                        ElementIndex const otherEndpointIndex1 = *pointIndexMatrix[{adjx1, adjy1}];
 
                         // Add spring to spring infos
                         ElementIndex const springIndex1 = static_cast<ElementIndex>(springInfos1.size());
@@ -986,7 +986,7 @@ void ShipBuilder::CreateShipElementInfos(
                         int adjx2 = x + TessellationCircularOrderDirections[i + 1][0];
                         int adjy2 = y + TessellationCircularOrderDirections[i + 1][1];
                         if ((!isInShip || i < 2)
-                            && !!pointIndexMatrix[adjx2][adjy2])
+                            && !!pointIndexMatrix[{adjx2, adjy2}])
                         {
                             // This point is adjacent to the first point at one of SE, S, SW, W
 
@@ -999,7 +999,7 @@ void ShipBuilder::CreateShipElementInfos(
                                     {
                                         pointIndex1,
                                         otherEndpointIndex1,
-                                        *pointIndexMatrix[adjx2][adjy2]
+                                        *pointIndexMatrix[{adjx2, adjy2}]
                                     }));
                         }
 
@@ -1009,11 +1009,11 @@ void ShipBuilder::CreateShipElementInfos(
                         // We do this so that we can forget the entire W side for inner points and yet ensure
                         // full coverage of the area
                         if (i == 0
-                            && !pointIndexMatrix[x + TessellationCircularOrderDirections[1][0]][y + TessellationCircularOrderDirections[1][1]]
-                            && !!pointIndexMatrix[x + TessellationCircularOrderDirections[2][0]][y + TessellationCircularOrderDirections[2][1]])
+                            && !pointIndexMatrix[{x + TessellationCircularOrderDirections[1][0], y + TessellationCircularOrderDirections[1][1]}]
+                            && !!pointIndexMatrix[{x + TessellationCircularOrderDirections[2][0], y + TessellationCircularOrderDirections[2][1]}])
                         {
                             // If we're here, the point at E exists
-                            assert(!!pointIndexMatrix[x + TessellationCircularOrderDirections[0][0]][y + TessellationCircularOrderDirections[0][1]]);
+                            assert(!!pointIndexMatrix[vec2i(x + TessellationCircularOrderDirections[0][0], y + TessellationCircularOrderDirections[0][1])]);
 
                             //
                             // Create ShipBuildTriangle
@@ -1023,8 +1023,8 @@ void ShipBuilder::CreateShipElementInfos(
                                 std::array<ElementIndex, 3>( // Points are in CW order
                                     {
                                         pointIndex1,
-                                        *pointIndexMatrix[x + TessellationCircularOrderDirections[0][0]][y + TessellationCircularOrderDirections[0][1]],
-                                        *pointIndexMatrix[x + TessellationCircularOrderDirections[2][0]][y + TessellationCircularOrderDirections[2][1]]
+                                        * pointIndexMatrix[{x + TessellationCircularOrderDirections[0][0], y + TessellationCircularOrderDirections[0][1]}],
+                                        * pointIndexMatrix[{x + TessellationCircularOrderDirections[2][0], y + TessellationCircularOrderDirections[2][1]}]
                                     }));
                         }
                     }
@@ -1130,17 +1130,17 @@ std::vector<ShipBuilder::ShipBuildFrontier> ShipBuilder::CreateShipFrontiers(
                 //  - There's a point, but no spring along <previous_point>-<point>, or
                 //  - There's a spring along <previous_point>-<point>, but no triangles along it
 
-                assert(pointIndexMatrix[x][y - 1].has_value()); // We come from a frontierable region
-                ElementIndex const previousPointIndex1 = *pointIndexMatrix[x][y - 1];
+                assert(pointIndexMatrix[vec2i(x, y - 1)].has_value()); // We come from a frontierable region
+                ElementIndex const previousPointIndex1 = *pointIndexMatrix[{x, y - 1}];
 
-                if (!pointIndexMatrix[x][y].has_value())
+                if (!pointIndexMatrix[{x, y}].has_value())
                 {
                     // No point here
                     isInFrontierablePointsRegion = false;
                 }
                 else
                 {
-                    ElementIndex const pointIndex1 = *pointIndexMatrix[x][y];
+                    ElementIndex const pointIndex1 = *pointIndexMatrix[{x, y}];
 
                     auto const springIndex1It = pointPairToSpringIndex1Map.find({ previousPointIndex1, pointIndex1 });
                     if (springIndex1It == pointPairToSpringIndex1Map.cend())
@@ -1168,8 +1168,7 @@ std::vector<ShipBuilder::ShipBuildFrontier> ShipBuilder::CreateShipFrontiers(
                     // See if may create a new external frontier
                     auto edgeIndices = PropagateFrontier(
                         previousPointIndex1,
-                        x,
-                        y - 1,
+                        vec2i(x, y - 1),
                         6, // N: the external point is at N of starting point
                         pointIndexMatrix,
                         frontierEdges2,
@@ -1197,9 +1196,9 @@ std::vector<ShipBuilder::ShipBuildFrontier> ShipBuilder::CreateShipFrontiers(
                 //  - There's a point here, and
                 //  - There's at least one a triangle edge attached to this point
 
-                if (pointIndexMatrix[x][y].has_value())
+                if (pointIndexMatrix[{x, y}].has_value())
                 {
-                    ElementIndex const pointIndex1 = *pointIndexMatrix[x][y];
+                    ElementIndex const pointIndex1 = *pointIndexMatrix[{x, y}];
                     ElementIndex const pointIndex2 = pointIndexRemap2[pointIndex1];
 
                     if (!pointInfos2[pointIndex2].ConnectedTriangles1.empty())
@@ -1213,8 +1212,7 @@ std::vector<ShipBuilder::ShipBuildFrontier> ShipBuilder::CreateShipFrontiers(
                         // See if may create a new external frontier
                         auto edgeIndices = PropagateFrontier(
                             pointIndex1,
-                            x,
-                            y,
+                            vec2i(x, y),
                             2, // S: the external point is at S of starting point
                             pointIndexMatrix,
                             frontierEdges2,
@@ -1242,8 +1240,7 @@ std::vector<ShipBuilder::ShipBuildFrontier> ShipBuilder::CreateShipFrontiers(
 
 std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
     ElementIndex startPointIndex1,
-    int startPointX,
-    int startPointY,
+    vec2i startPointCoordinates,
     Octant startOctant, // Relative to starting point
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
     std::set<ElementIndex> & frontierEdges2,
@@ -1266,8 +1263,7 @@ std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
     //
 
     ElementIndex pointIndex1 = startPointIndex1;
-    int pointX = startPointX;
-    int pointY = startPointY;
+    vec2i pointCoords = startPointCoordinates;
 
     Octant octant = startOctant;
 
@@ -1279,8 +1275,7 @@ std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
         //
 
         ElementIndex nextPointIndex1 = NoneElementIndex;
-        int nextPointX;
-        int nextPointY;
+        vec2i nextPointCoords;
         ElementIndex springIndex2 = NoneElementIndex;
         Octant nextOctant = octant;
         while (true)
@@ -1296,8 +1291,7 @@ std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
             }
 
             // Get coords of next point
-            nextPointX = pointX + TessellationCircularOrderDirections[nextOctant][0];
-            nextPointY = pointY + TessellationCircularOrderDirections[nextOctant][1];
+            nextPointCoords = pointCoords + vec2i(TessellationCircularOrderDirections[nextOctant][0], TessellationCircularOrderDirections[nextOctant][1]);
 
             // Check whether it's a frontierable point
             //
@@ -1306,13 +1300,13 @@ std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
             //  - There's a spring along <previous_point>-<point>, and
             //  - There's one and only one triangle along it
 
-            if (!pointIndexMatrix[nextPointX][nextPointY].has_value())
+            if (!pointIndexMatrix[nextPointCoords].has_value())
             {
                 // No point here
                 continue;
             }
 
-            nextPointIndex1 = *pointIndexMatrix[nextPointX][nextPointY];
+            nextPointIndex1 = *pointIndexMatrix[nextPointCoords];
 
             auto const springIndex1It = pointPairToSpringIndex1Map.find({ pointIndex1, nextPointIndex1 });
             if (springIndex1It == pointPairToSpringIndex1Map.cend())
@@ -1376,8 +1370,7 @@ std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
         //
 
         pointIndex1 = nextPointIndex1;
-        pointX = nextPointX;
-        pointY = nextPointY;
+        pointCoords = nextPointCoords;
         octant = (nextOctant + 4) % 8; // Flip 180
     }
 
@@ -1530,7 +1523,7 @@ void ShipBuilder::RandomizeStrength_Batik(
             startingPointCoords = vec2i(
                 disWidth(randomEngine),
                 disHeight(randomEngine));
-        } while (!pointIndexMatrix[startingPointCoords.x + pointIndexMatrixRegionOrigin.x + 1][startingPointCoords.y + pointIndexMatrixRegionOrigin.y + 1].has_value() || distanceMap[startingPointCoords] == 0.0f);
+        } while (!pointIndexMatrix[startingPointCoords + pointIndexMatrixRegionOrigin + vec2i(1, 1)].has_value() || distanceMap[startingPointCoords] == 0.0f);
 
         // Navigate in distance map to find local maximum
         while (true)
@@ -1601,7 +1594,8 @@ void ShipBuilder::RandomizeStrength_Batik(
     {
         for (int y = 0; y < distanceMap.Height; ++y)
         {
-            auto const & idx1 = pointIndexMatrix[x + pointIndexMatrixRegionOrigin.x + 1][y + pointIndexMatrixRegionOrigin.y + 1];
+            vec2i const pointCoors(x, y);
+            auto const & idx1 = pointIndexMatrix[pointCoors + pointIndexMatrixRegionOrigin + vec2i(1, 1)];
             if (idx1.has_value())
             {
                 pointInfos2[pointIndexRemap2[*idx1]].Strength = distanceMap[{x, y}] / maxDistance;
@@ -2250,15 +2244,15 @@ void ShipBuilder::ReorderPointsAndSpringsOptimally_Stripes_Stripe(
         for (int y1 = y; y1 > y - StripeLength && y1 >= 1; --y1)
         {
             // Check if left exists
-            if (!!pointIndexMatrix[x1][y1])
+            if (!!pointIndexMatrix[{x1, y1}])
             {
-                stripePointIndices1.push_back(*(pointIndexMatrix[x1][y1]));
+                stripePointIndices1.push_back(*(pointIndexMatrix[{x1, y1}]));
             }
 
             // Check if right exists
-            if (!!pointIndexMatrix[x1 + 1][y1])
+            if (!!pointIndexMatrix[{x1 + 1, y1}])
             {
-                stripePointIndices1.push_back(*(pointIndexMatrix[x1 + 1][y1]));
+                stripePointIndices1.push_back(*(pointIndexMatrix[{x1 + 1, y1}]));
             }
         }
 
@@ -2435,26 +2429,26 @@ void ShipBuilder::ReorderPointsAndSpringsOptimally_Blocks_Row(
         squarePointIndices1.clear();
 
         // Check if b exists
-        if (!!pointIndexMatrix[x][y])
+        if (!!pointIndexMatrix[{x, y}])
         {
             //
             // 1. Collect all the points that we have around this square
             //
 
             // Add a if it exists
-            if (!!pointIndexMatrix[x][y - 1])
-                squarePointIndices1.push_back(*(pointIndexMatrix[x][y - 1]));
+            if (!!pointIndexMatrix[{x, y - 1}])
+                squarePointIndices1.push_back(*(pointIndexMatrix[{x, y - 1}]));
 
             // Add b
-            squarePointIndices1.push_back(*(pointIndexMatrix[x][y]));
+            squarePointIndices1.push_back(*(pointIndexMatrix[{x, y}]));
 
             // Add c if it exists
-            if (!!pointIndexMatrix[x + 1][y])
-                squarePointIndices1.push_back(*(pointIndexMatrix[x + 1][y]));
+            if (!!pointIndexMatrix[{x + 1, y}])
+                squarePointIndices1.push_back(*(pointIndexMatrix[{x + 1, y}]));
 
             // Add d if it exists
-            if (!!pointIndexMatrix[x + 1][y - 1])
-                squarePointIndices1.push_back(*(pointIndexMatrix[x + 1][y - 1]));
+            if (!!pointIndexMatrix[{x + 1, y - 1}])
+                squarePointIndices1.push_back(*(pointIndexMatrix[{x + 1, y - 1}]));
 
             //
             // 2. Add/sort all existing, not-yet-reordered springs among all these points
@@ -2526,9 +2520,9 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Til
             {
                 for (int x2 = 0; x2 < BlockSize && x + x2 <= structureImageSize.Width; ++x2)
                 {
-                    if (!!pointIndexMatrix[x + x2][y + y2])
+                    if (!!pointIndexMatrix[{x + x2, y + y2}])
                     {
-                        ElementIndex pointIndex = *(pointIndexMatrix[x + x2][y + y2]);
+                        ElementIndex pointIndex = *(pointIndexMatrix[{x + x2, y + y2}]);
 
                         // Add all springs connected to this point
                         for (auto connectedSpringIndex1 : pointInfos1[pointIndex].ConnectedSprings1)

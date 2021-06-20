@@ -23,7 +23,7 @@
  * These structures are shared between the ship builder and the ship texturizer.
  */
 
-using ShipBuildPointIndexMatrix = std::unique_ptr<std::unique_ptr<std::optional<ElementIndex>[]>[]>;
+using ShipBuildPointIndexMatrix = Matrix2<std::optional<ElementIndex>>;
 
 struct ShipBuildPoint
 {

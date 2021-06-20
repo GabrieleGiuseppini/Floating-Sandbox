@@ -104,13 +104,15 @@ RgbaImageData ShipTexturizer::Texturize(
     {
         for (int x = 1; x <= structureSize.Width; ++x)
         {
+            vec2i const pixelCoords(x, y);
+
             // Get structure pixel color
-            rgbaColor const structurePixelColor = pointMatrix[x][y].has_value()
-                ? rgbaColor(points[*pointMatrix[x][y]].StructuralMtl.RenderColor)
+            rgbaColor const structurePixelColor = pointMatrix[pixelCoords].has_value()
+                ? rgbaColor(points[*pointMatrix[pixelCoords]].StructuralMtl.RenderColor)
                 : rgbaColor::zero(); // Fully transparent
 
             if (settings.Mode == ShipAutoTexturizationModeType::FlatStructure
-                || !pointMatrix[x][y].has_value())
+                || !pointMatrix[pixelCoords].has_value())
             {
                 //
                 // Flat structure
@@ -140,8 +142,8 @@ RgbaImageData ShipTexturizer::Texturize(
                 vec3f const structurePixelColorF = structurePixelColor.toVec3f();
 
                 // Get bump map texture
-                assert(pointMatrix[x][y].has_value());
-                Vec3fImageData const & materialTexture = GetMaterialTexture(points[*pointMatrix[x][y]].StructuralMtl.MaterialTextureName);
+                assert(pointMatrix[pixelCoords].has_value());
+                Vec3fImageData const & materialTexture = GetMaterialTexture(points[*pointMatrix[pixelCoords]].StructuralMtl.MaterialTextureName);
 
                 //
                 // Fill quad with color multiply-blended with "bump map" texture

@@ -259,8 +259,7 @@ private:
 
     static std::vector<ElementIndex> PropagateFrontier(
         ElementIndex startPointIndex1,
-        int startPointX,
-        int startPointY,
+        vec2i startPointCoordinates,
         Octant startOctant,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
         std::set<ElementIndex> & frontierEdges2,
