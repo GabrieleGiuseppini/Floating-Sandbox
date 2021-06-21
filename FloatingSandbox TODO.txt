@@ -727,15 +727,13 @@ Render:
 								+ Batik takes vec2i as Origin and Span arguments
 							+ Convert also PointInfoMatrix to Matrix2
 								+ Remove unneeded structureImageSize args
-							- Condition to follow a point: covered triangles > 0
-							- Allow starting point to be an already-chosen point (i.e. remove condition of distance!=0)
-								- If it is, starting direction is further randomized
-							- Set points' strengths as you go, don't use distance map == 0
+							- Take & log running time
+							- Set points' strengths at end, by making distance map = struct{distance, bool}
+								- Set strength only on points that have connected triangles
 						- Finalization:
-							- Trim distance mapping by looping between min and max coords
 					- Parameters from outside:
-						- First of all, inglobate these ("StrengthRandomization") and auto-texturization in new "ShipBuildingParameters" struct
-							- Rework ship texturization setting architecture
+						- Passed to ShipBuilder as siblings of AutoTexturization settings
+							- Defaults live like AutoTexturization defaults live
 						- Density (grid spacing)
 						- Magnitude (room for change)
 						- Add to GamePreferences

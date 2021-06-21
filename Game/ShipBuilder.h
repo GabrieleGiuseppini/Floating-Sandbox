@@ -277,10 +277,9 @@ private:
         std::vector<ShipBuildFrontier> const & shipBuildFrontiers);
 
     static void PropagateBatikCrack(
-        vec2f const & direction,
+        vec2i const & startingPoint,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
         vec2i const & pointIndexMatrixRegionOrigin,
-        vec2i const & pointIndexMatrixRegionSize,
         Matrix2<float> & distanceMap);
 
     static void UpdateDistanceMap(Matrix2<float> & distanceMap);

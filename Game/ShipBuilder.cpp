@@ -1471,6 +1471,9 @@ void ShipBuilder::RandomizeStrength_Batik(
         pointIndexMatrixRegionSize.y,
         std::numeric_limits<float>::max());
 
+    // Offset to transform distance map coords into point index matrix coords
+    vec2i const pointIndexMatrixOffset = pointIndexMatrixRegionOrigin + vec2i(1, 1);
+
     //
     // Initialize distance map with distances from frontiers
     //
@@ -1517,27 +1520,25 @@ void ShipBuilder::RandomizeStrength_Batik(
             startingPointCoords = vec2i(
                 disWidth(randomEngine),
                 disHeight(randomEngine));
-        } while (!pointIndexMatrix[startingPointCoords + pointIndexMatrixRegionOrigin + vec2i(1, 1)].has_value() || distanceMap[startingPointCoords] == 0.0f);
+        } while (!pointIndexMatrix[startingPointCoords + pointIndexMatrixOffset].has_value());
 
         // Navigate in distance map to find local maximum
         while (true)
         {
             std::optional<vec2i> bestPointCoords;
             float maxDistance = distanceMap[startingPointCoords];
-            for (int dx = -1; dx <= +1; ++dx)
-            {
-                for (int dy = -1; dy <= +1; ++dy)
-                {
-                    vec2i candidateCoords(
-                        startingPointCoords.x + dx,
-                        startingPointCoords.y + dy);
 
-                    if (candidateCoords.IsInRect(distanceMap)
-                        && distanceMap[candidateCoords] > maxDistance)
-                    {
-                        maxDistance = distanceMap[candidateCoords];
-                        bestPointCoords = candidateCoords;
-                    }
+            for (int octant = 0; octant < 8; ++octant)
+            {
+                vec2i candidateCoords(
+                    startingPointCoords.x + TessellationCircularOrderDirections[octant][0],
+                    startingPointCoords.y + TessellationCircularOrderDirections[octant][1]);
+
+                if (pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value()
+                    && distanceMap[candidateCoords] > maxDistance)
+                {
+                    maxDistance = distanceMap[candidateCoords];
+                    bestPointCoords = candidateCoords;
                 }
             }
 
@@ -1551,21 +1552,79 @@ void ShipBuilder::RandomizeStrength_Batik(
             startingPointCoords = *bestPointCoords;
         }
 
+        // Set crack at starting point
+        // TODOHERE: consider having DistanceMap elements be a struct: distance + bool
+        distanceMap[startingPointCoords] = 0.0f;
+
         //
         // Find initial direction == direction of steepest descent of D
         //
 
-        // TODOHERE
+        std::optional<Octant> bestNextPointOctant;
+        float maxDelta = std::numeric_limits<float>::lowest();
+        for (Octant octant = 0; octant < 8; ++octant)
+        {
+            vec2i candidateCoords(
+                startingPointCoords.x + TessellationCircularOrderDirections[octant][0],
+                startingPointCoords.y + TessellationCircularOrderDirections[octant][1]);
+
+            if (pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value())
+            {
+                float const delta = distanceMap[startingPointCoords] - distanceMap[candidateCoords];
+                if (delta >= maxDelta)
+                {
+                    maxDelta = delta;
+                    bestNextPointOctant = octant;
+                }
+            }
+        }
+
+        if (!bestNextPointOctant.has_value())
+            continue;
 
         //
-        // Propagate crack on both directions
+        // Propagate crack along this direction
         //
 
-        // Set crack at starting point
-        distanceMap[startingPointCoords] = 0.0f;
+        PropagateBatikCrack(
+            vec2i(
+                startingPointCoords.x + TessellationCircularOrderDirections[*bestNextPointOctant][0],
+                startingPointCoords.y + TessellationCircularOrderDirections[*bestNextPointOctant][1]),
+            pointIndexMatrix,
+            pointIndexMatrixRegionOrigin,
+            distanceMap);
 
-        // TODOHERE
+        //
+        // Find (closest point to) opposite direction
+        //
+
+        Octant const oppositeOctant = *bestNextPointOctant + 4;
+
+        for (int deltaOctant : {0, -1, 1, -2, 2})
+        {
+            vec2i candidateCoords = vec2i(
+                startingPointCoords.x + TessellationCircularOrderDirections[(oppositeOctant + deltaOctant) % 8][0],
+                startingPointCoords.y + TessellationCircularOrderDirections[(oppositeOctant + deltaOctant) % 8][1]);
+
+            if (pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value())
+            {
+                // That's the one
+                PropagateBatikCrack(
+                    candidateCoords,
+                    pointIndexMatrix,
+                    pointIndexMatrixRegionOrigin,
+                    distanceMap);
+
+                break;
+            }
+        }
     }
+
+    //
+    // Randomize strengths
+    //
+
+    // TODOHERE
 
     ///////////////////////////////////////////////////////////////////////////
     // TODOTEST
@@ -1599,13 +1658,14 @@ void ShipBuilder::RandomizeStrength_Batik(
 }
 
 void ShipBuilder::PropagateBatikCrack(
-    vec2f const & direction,
+    vec2i const & startingPoint,
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
     vec2i const & pointIndexMatrixRegionOrigin,
-    vec2i const & pointIndexMatrixRegionSize,
     Matrix2<float> & distanceMap)
 {
+    // Set crack at starting point
     // TODOHERE
+    distanceMap[startingPoint] = 0.0f;
 }
 
 void ShipBuilder::UpdateDistanceMap(Matrix2<float> & distanceMap)
