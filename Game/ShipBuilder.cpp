@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
-#include <limits>
 #include <random>
 #include <set>
 #include <sstream>
@@ -1466,10 +1465,9 @@ void ShipBuilder::RandomizeStrength_Batik(
     // Create distance map
     //
 
-    Matrix2<float> distanceMap(
+    BatikPixelMatrix pixelMatrix(
         pointIndexMatrixRegionSize.x,
-        pointIndexMatrixRegionSize.y,
-        std::numeric_limits<float>::max());
+        pointIndexMatrixRegionSize.y);
 
     // Offset to transform distance map coords into point index matrix coords
     vec2i const pointIndexMatrixOffset = pointIndexMatrixRegionOrigin + vec2i(1, 1);
@@ -1486,19 +1484,19 @@ void ShipBuilder::RandomizeStrength_Batik(
             auto const & coordsA = pointInfos2[pointAIndex2].OriginalDefinitionCoordinates;
             if (coordsA.has_value())
             {
-                distanceMap[*coordsA - pointIndexMatrixRegionOrigin] = 0.0f;
+                pixelMatrix[*coordsA - pointIndexMatrixRegionOrigin].Distance = 0.0f;
             }
 
             auto const pointBIndex2 = pointIndexRemap2[springInfos2[springIndex2].PointBIndex1];
             auto const & coordsB = pointInfos2[pointBIndex2].OriginalDefinitionCoordinates;
             if (coordsB.has_value())
             {
-                distanceMap[*coordsB - pointIndexMatrixRegionOrigin] = 0.0f;
+                pixelMatrix[*coordsB - pointIndexMatrixRegionOrigin].Distance = 0.0f;
             }
         }
     }
 
-    UpdateDistanceMap(distanceMap);
+    UpdateBatikDistances(pixelMatrix);
 
     //
     // Generate cracks
@@ -1526,7 +1524,7 @@ void ShipBuilder::RandomizeStrength_Batik(
         while (true)
         {
             std::optional<vec2i> bestPointCoords;
-            float maxDistance = distanceMap[startingPointCoords];
+            float maxDistance = pixelMatrix[startingPointCoords].Distance;
 
             for (int octant = 0; octant < 8; ++octant)
             {
@@ -1535,9 +1533,9 @@ void ShipBuilder::RandomizeStrength_Batik(
                     startingPointCoords.y + TessellationCircularOrderDirections[octant][1]);
 
                 if (pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value()
-                    && distanceMap[candidateCoords] > maxDistance)
+                    && pixelMatrix[candidateCoords].Distance > maxDistance)
                 {
-                    maxDistance = distanceMap[candidateCoords];
+                    maxDistance = pixelMatrix[candidateCoords].Distance;
                     bestPointCoords = candidateCoords;
                 }
             }
@@ -1553,8 +1551,8 @@ void ShipBuilder::RandomizeStrength_Batik(
         }
 
         // Set crack at starting point
-        // TODOHERE: consider having DistanceMap elements be a struct: distance + bool
-        distanceMap[startingPointCoords] = 0.0f;
+        pixelMatrix[startingPointCoords].Distance = 0.0f;
+        pixelMatrix[startingPointCoords].IsCrack = true;
 
         //
         // Find initial direction == direction of steepest descent of D
@@ -1570,7 +1568,7 @@ void ShipBuilder::RandomizeStrength_Batik(
 
             if (pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value())
             {
-                float const delta = distanceMap[startingPointCoords] - distanceMap[candidateCoords];
+                float const delta = pixelMatrix[startingPointCoords].Distance - pixelMatrix[candidateCoords].Distance;
                 if (delta >= maxDelta)
                 {
                     maxDelta = delta;
@@ -1592,7 +1590,7 @@ void ShipBuilder::RandomizeStrength_Batik(
                 startingPointCoords.y + TessellationCircularOrderDirections[*bestNextPointOctant][1]),
             pointIndexMatrix,
             pointIndexMatrixRegionOrigin,
-            distanceMap);
+            pixelMatrix);
 
         //
         // Find (closest point to) opposite direction
@@ -1613,7 +1611,7 @@ void ShipBuilder::RandomizeStrength_Batik(
                     candidateCoords,
                     pointIndexMatrix,
                     pointIndexMatrixRegionOrigin,
-                    distanceMap);
+                    pixelMatrix);
 
                 break;
             }
@@ -1630,28 +1628,28 @@ void ShipBuilder::RandomizeStrength_Batik(
     // TODOTEST
 
     float maxDistance = 0.0f;
-    for (int x = 0; x < distanceMap.Width; ++x)
+    for (int x = 0; x < pixelMatrix.Width; ++x)
     {
-        for (int y = 0; y < distanceMap.Height; ++y)
+        for (int y = 0; y < pixelMatrix.Height; ++y)
         {
-            if (distanceMap[{x, y}] > maxDistance)
+            if (pixelMatrix[{x, y}].Distance > maxDistance)
             {
-                maxDistance = distanceMap[{x, y}];
+                maxDistance = pixelMatrix[{x, y}].Distance;
             }
         }
     }
 
     LogMessage("TODOTEST: MaxDistance=", maxDistance);
 
-    for (int x = 0; x < distanceMap.Width; ++x)
+    for (int x = 0; x < pixelMatrix.Width; ++x)
     {
-        for (int y = 0; y < distanceMap.Height; ++y)
+        for (int y = 0; y < pixelMatrix.Height; ++y)
         {
             vec2i const pointCoors(x, y);
             auto const & idx1 = pointIndexMatrix[pointCoors + pointIndexMatrixRegionOrigin + vec2i(1, 1)];
             if (idx1.has_value())
             {
-                pointInfos2[pointIndexRemap2[*idx1]].Strength = distanceMap[{x, y}] / maxDistance;
+                pointInfos2[pointIndexRemap2[*idx1]].Strength = pixelMatrix[{x, y}].Distance / maxDistance;
             }
         }
     }
@@ -1661,23 +1659,30 @@ void ShipBuilder::PropagateBatikCrack(
     vec2i const & startingPoint,
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
     vec2i const & pointIndexMatrixRegionOrigin,
-    Matrix2<float> & distanceMap)
+    BatikPixelMatrix & pixelMatrix)
 {
+    //
+    // Propagate crack along descent derivative of distance, until a point
+    // at distance zero (border or other crack) is reached
+    //
+
     // Set crack at starting point
+    pixelMatrix[startingPoint].Distance = 0.0f;
+    pixelMatrix[startingPoint].IsCrack = true;
+
     // TODOHERE
-    distanceMap[startingPoint] = 0.0f;
 }
 
-void ShipBuilder::UpdateDistanceMap(Matrix2<float> & distanceMap)
+void ShipBuilder::UpdateBatikDistances(BatikPixelMatrix & pixelMatrix)
 {
     //
     // Jain's algorithm (1989, Fundamentals of Digital Image Processing, Chapter 2)
     //
 
     // Top-Left -> Bottom-Right
-    for (int x = 0; x < distanceMap.Width; ++x)
+    for (int x = 0; x < pixelMatrix.Width; ++x)
     {
-        for (int y = distanceMap.Height - 1; y >= 0; --y)
+        for (int y = pixelMatrix.Height - 1; y >= 0; --y)
         {
             vec2i const idx(x, y);
 
@@ -1686,19 +1691,19 @@ void ShipBuilder::UpdateDistanceMap(Matrix2<float> & distanceMap)
             {
                 vec2i const nidx = idx + vec2i(TessellationCircularOrderDirections[t][0], TessellationCircularOrderDirections[t][1]);
 
-                if (nidx.IsInRect(distanceMap)
-                    && distanceMap[nidx] + 1 < distanceMap[idx])
+                if (nidx.IsInRect(pixelMatrix)
+                    && pixelMatrix[nidx].Distance + 1.0f < pixelMatrix[idx].Distance)
                 {
-                    distanceMap[idx] = distanceMap[nidx] + 1;
+                    pixelMatrix[idx].Distance = pixelMatrix[nidx].Distance + 1.0f;
                 }
             }
         }
     }
 
     // Bottom-Right -> Top-Left
-    for (int x = distanceMap.Width - 1; x >= 0; --x)
+    for (int x = pixelMatrix.Width - 1; x >= 0; --x)
     {
-        for (int y = 0; y < distanceMap.Height; ++y)
+        for (int y = 0; y < pixelMatrix.Height; ++y)
         {
             vec2i const idx(x, y);
 
@@ -1707,10 +1712,10 @@ void ShipBuilder::UpdateDistanceMap(Matrix2<float> & distanceMap)
             {
                 vec2i const nidx = idx + vec2i(TessellationCircularOrderDirections[t][0], TessellationCircularOrderDirections[t][1]);
 
-                if (nidx.IsInRect(distanceMap)
-                    && distanceMap[nidx] + 1 < distanceMap[idx])
+                if (nidx.IsInRect(pixelMatrix)
+                    && pixelMatrix[nidx].Distance + 1.0f < pixelMatrix[idx].Distance)
                 {
-                    distanceMap[idx] = distanceMap[nidx] + 1;
+                    pixelMatrix[idx].Distance = pixelMatrix[nidx].Distance + 1.0f;
                 }
             }
         }

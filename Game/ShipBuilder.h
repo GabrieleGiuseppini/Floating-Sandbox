@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <limits>
 #include <list>
 #include <map>
 #include <memory>
@@ -139,6 +140,20 @@ private:
             , EdgeIndices2(std::move(edgeIndices2))
         {}
     };
+
+    struct BatikPixel
+    {
+        float Distance;
+        bool IsCrack;
+
+        BatikPixel()
+            : Distance(std::numeric_limits<float>::max())
+            , IsCrack(false)
+        {
+        }
+    };
+
+    using BatikPixelMatrix = Matrix2<BatikPixel>;
 
 private:
 
@@ -280,9 +295,9 @@ private:
         vec2i const & startingPoint,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
         vec2i const & pointIndexMatrixRegionOrigin,
-        Matrix2<float> & distanceMap);
+        BatikPixelMatrix & pixelMatrix);
 
-    static void UpdateDistanceMap(Matrix2<float> & distanceMap);
+    static void UpdateBatikDistances(BatikPixelMatrix & pixelMatrix);
 
     static Physics::Points CreatePoints(
         std::vector<ShipBuildPoint> const & pointInfos2,
