@@ -727,6 +727,7 @@ Render:
 								+ Batik takes vec2i as Origin and Span arguments
 							+ Convert also PointInfoMatrix to Matrix2
 								+ Remove unneeded structureImageSize args
+							- Do matrix copy for before & after?
 							- Take & log running time
 							- Set points' strengths at end, by making distance map = struct{distance, bool}
 								- Set strength only on points that have connected triangles

@@ -1589,7 +1589,7 @@ void ShipBuilder::RandomizeStrength_Batik(
                 startingPointCoords.x + TessellationCircularOrderDirections[*bestNextPointOctant][0],
                 startingPointCoords.y + TessellationCircularOrderDirections[*bestNextPointOctant][1]),
             pointIndexMatrix,
-            pointIndexMatrixRegionOrigin,
+            pointIndexMatrixOffset,
             pixelMatrix);
 
         //
@@ -1610,7 +1610,7 @@ void ShipBuilder::RandomizeStrength_Batik(
                 PropagateBatikCrack(
                     candidateCoords,
                     pointIndexMatrix,
-                    pointIndexMatrixRegionOrigin,
+                    pointIndexMatrixOffset,
                     pixelMatrix);
 
                 break;
@@ -1658,7 +1658,7 @@ void ShipBuilder::RandomizeStrength_Batik(
 void ShipBuilder::PropagateBatikCrack(
     vec2i const & startingPoint,
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
-    vec2i const & pointIndexMatrixRegionOrigin,
+    vec2i const & pointIndexMatrixOffset,
     BatikPixelMatrix & pixelMatrix)
 {
     //
@@ -1666,11 +1666,55 @@ void ShipBuilder::PropagateBatikCrack(
     // at distance zero (border or other crack) is reached
     //
 
-    // Set crack at starting point
-    pixelMatrix[startingPoint].Distance = 0.0f;
-    pixelMatrix[startingPoint].IsCrack = true;
+    for (vec2i p = startingPoint; ;)
+    {
+        //
+        // Set crack
+        //
 
-    // TODOHERE
+        pixelMatrix[p].IsCrack = true;
+        if (pixelMatrix[p].Distance == 0.0f)
+        {
+            // Reached border or another crack, done
+            return;
+        }
+
+        float const pDistance = pixelMatrix[p].Distance;
+
+        pixelMatrix[p].Distance = 0.0f;
+
+        //
+        // Find direction of steepest descent
+        //
+
+        std::optional<vec2i> bestNextPointCoords;
+        float maxDelta = std::numeric_limits<float>::lowest();
+        for (Octant octant = 0; octant < 8; ++octant)
+        {
+            vec2i candidateCoords(
+                p.x + TessellationCircularOrderDirections[octant][0],
+                p.y + TessellationCircularOrderDirections[octant][1]);
+
+            if (pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value())
+            {
+                float const delta = pDistance - pixelMatrix[candidateCoords].Distance;
+                if (delta >= maxDelta)
+                {
+                    maxDelta = delta;
+                    bestNextPointCoords = candidateCoords;
+                }
+            }
+        }
+
+        if (!bestNextPointCoords.has_value())
+        {
+            // No more continuing
+            return;
+        }
+
+        // Follow this point
+        p = *bestNextPointCoords;
+    }
 }
 
 void ShipBuilder::UpdateBatikDistances(BatikPixelMatrix & pixelMatrix)

@@ -294,7 +294,7 @@ private:
     static void PropagateBatikCrack(
         vec2i const & startingPoint,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        vec2i const & pointIndexMatrixRegionOrigin,
+        vec2i const & pointIndexMatrixOffset,
         BatikPixelMatrix & pixelMatrix);
 
     static void UpdateBatikDistances(BatikPixelMatrix & pixelMatrix);
