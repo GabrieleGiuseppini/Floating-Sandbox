@@ -1550,10 +1550,6 @@ void ShipBuilder::RandomizeStrength_Batik(
             startingPointCoords = *bestPointCoords;
         }
 
-        // Set crack at starting point
-        pixelMatrix[startingPointCoords].Distance = 0.0f;
-        pixelMatrix[startingPointCoords].IsCrack = true;
-
         //
         // Find initial direction == direction of steepest descent of D
         //
@@ -1577,45 +1573,50 @@ void ShipBuilder::RandomizeStrength_Batik(
             }
         }
 
-        if (!bestNextPointOctant.has_value())
-            continue;
-
-        //
-        // Propagate crack along this direction
-        //
-
-        PropagateBatikCrack(
-            vec2i(
-                startingPointCoords.x + TessellationCircularOrderDirections[*bestNextPointOctant][0],
-                startingPointCoords.y + TessellationCircularOrderDirections[*bestNextPointOctant][1]),
-            pointIndexMatrix,
-            pointIndexMatrixOffset,
-            pixelMatrix);
-
-        //
-        // Find (closest point to) opposite direction
-        //
-
-        Octant const oppositeOctant = *bestNextPointOctant + 4;
-
-        for (int deltaOctant : {0, -1, 1, -2, 2})
+        if (bestNextPointOctant.has_value())
         {
-            vec2i candidateCoords = vec2i(
-                startingPointCoords.x + TessellationCircularOrderDirections[(oppositeOctant + deltaOctant) % 8][0],
-                startingPointCoords.y + TessellationCircularOrderDirections[(oppositeOctant + deltaOctant) % 8][1]);
+            //
+            // Propagate crack along this direction
+            //
 
-            if (pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value())
+            PropagateBatikCrack(
+                vec2i(
+                    startingPointCoords.x + TessellationCircularOrderDirections[*bestNextPointOctant][0],
+                    startingPointCoords.y + TessellationCircularOrderDirections[*bestNextPointOctant][1]),
+                pointIndexMatrix,
+                pointIndexMatrixOffset,
+                pixelMatrix);
+
+            //
+            // Find (closest point to) opposite direction
+            //
+
+            Octant const oppositeOctant = *bestNextPointOctant + 4;
+
+            for (int deltaOctant : {0, -1, 1, -2, 2})
             {
-                // That's the one
-                PropagateBatikCrack(
-                    candidateCoords,
-                    pointIndexMatrix,
-                    pointIndexMatrixOffset,
-                    pixelMatrix);
+                vec2i candidateCoords = vec2i(
+                    startingPointCoords.x + TessellationCircularOrderDirections[(oppositeOctant + deltaOctant) % 8][0],
+                    startingPointCoords.y + TessellationCircularOrderDirections[(oppositeOctant + deltaOctant) % 8][1]);
 
-                break;
+                if (pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value())
+                {
+                    // That's the one
+                    PropagateBatikCrack(
+                        candidateCoords,
+                        pointIndexMatrix,
+                        pointIndexMatrixOffset,
+                        pixelMatrix);
+
+                    break;
+                }
             }
         }
+
+        // Set crack at starting point
+        pixelMatrix[startingPointCoords].Distance = 0.0f;
+        pixelMatrix[startingPointCoords].IsCrack = true;
+
     }
 
     //
@@ -1666,22 +1667,21 @@ void ShipBuilder::PropagateBatikCrack(
     // at distance zero (border or other crack) is reached
     //
 
+    std::vector<vec2i> crackPointCoords;
+
     for (vec2i p = startingPoint; ;)
     {
+        crackPointCoords.emplace_back(p);
+
         //
-        // Set crack
+        // Check whether we're done
         //
 
-        pixelMatrix[p].IsCrack = true;
         if (pixelMatrix[p].Distance == 0.0f)
         {
             // Reached border or another crack, done
-            return;
+            break;
         }
-
-        float const pDistance = pixelMatrix[p].Distance;
-
-        pixelMatrix[p].Distance = 0.0f;
 
         //
         // Find direction of steepest descent
@@ -1697,7 +1697,7 @@ void ShipBuilder::PropagateBatikCrack(
 
             if (pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value())
             {
-                float const delta = pDistance - pixelMatrix[candidateCoords].Distance;
+                float const delta = pixelMatrix[p].Distance - pixelMatrix[candidateCoords].Distance;
                 if (delta >= maxDelta)
                 {
                     maxDelta = delta;
@@ -1714,6 +1714,12 @@ void ShipBuilder::PropagateBatikCrack(
 
         // Follow this point
         p = *bestNextPointCoords;
+    }
+
+    for (auto const & p : crackPointCoords)
+    {
+        pixelMatrix[p].Distance = 0.0f;
+        pixelMatrix[p].IsCrack = true;
     }
 }
 
