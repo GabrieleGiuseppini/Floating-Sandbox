@@ -291,11 +291,13 @@ private:
         std::vector<ShipBuildSpring> & springInfos2,
         std::vector<ShipBuildFrontier> const & shipBuildFrontiers);
 
+    template<typename TRandomEngine>
     static void PropagateBatikCrack(
         vec2i const & startingPoint,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
         vec2i const & pointIndexMatrixOffset,
-        BatikPixelMatrix & pixelMatrix);
+        BatikPixelMatrix & pixelMatrix,
+        TRandomEngine & randomEngine);
 
     static void UpdateBatikDistances(BatikPixelMatrix & pixelMatrix);
 
@@ -338,6 +340,12 @@ private:
         std::vector<ShipBuildFrontier> const & shipBuildFrontiers,
         Physics::Points const & points,
         Physics::Springs const & springs);
+
+    template <typename TAcceptor>
+    static std::optional<Octant> FindClosestOctant(
+        Octant startOctant,
+        int maxOctantDivergence,
+        TAcceptor const & acceptor);
 
 #ifdef _DEBUG
     static void VerifyShipInvariants(

@@ -1585,31 +1585,35 @@ void ShipBuilder::RandomizeStrength_Batik(
                     startingPointCoords.y + TessellationCircularOrderDirections[*bestNextPointOctant][1]),
                 pointIndexMatrix,
                 pointIndexMatrixOffset,
-                pixelMatrix);
+                pixelMatrix,
+                randomEngine);
 
             //
             // Find (closest point to) opposite direction
             //
 
-            Octant const oppositeOctant = *bestNextPointOctant + 4;
-
-            for (int deltaOctant : {0, -1, 1, -2, 2})
-            {
-                vec2i candidateCoords = vec2i(
-                    startingPointCoords.x + TessellationCircularOrderDirections[(oppositeOctant + deltaOctant) % 8][0],
-                    startingPointCoords.y + TessellationCircularOrderDirections[(oppositeOctant + deltaOctant) % 8][1]);
-
-                if (pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value())
+            auto const oppositeOctant = FindClosestOctant(
+                *bestNextPointOctant + 4,
+                2,
+                [&](Octant candidateOctant)
                 {
-                    // That's the one
-                    PropagateBatikCrack(
-                        candidateCoords,
-                        pointIndexMatrix,
-                        pointIndexMatrixOffset,
-                        pixelMatrix);
+                    vec2i const candidateCoords = startingPointCoords+ vec2i(
+                            TessellationCircularOrderDirections[candidateOctant][0],
+                            TessellationCircularOrderDirections[candidateOctant][1]);
 
-                    break;
-                }
+                    return pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value();
+                });
+
+            if (oppositeOctant.has_value())
+            {
+                PropagateBatikCrack(
+                    startingPointCoords + vec2i(
+                        TessellationCircularOrderDirections[*oppositeOctant][0],
+                        TessellationCircularOrderDirections[*oppositeOctant][1]),
+                    pointIndexMatrix,
+                    pointIndexMatrixOffset,
+                    pixelMatrix,
+                    randomEngine);
             }
         }
 
@@ -1656,12 +1660,16 @@ void ShipBuilder::RandomizeStrength_Batik(
     }
 }
 
+template<typename TRandomEngine>
 void ShipBuilder::PropagateBatikCrack(
     vec2i const & startingPoint,
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
     vec2i const & pointIndexMatrixOffset,
-    BatikPixelMatrix & pixelMatrix)
+    BatikPixelMatrix & pixelMatrix,
+    TRandomEngine & randomEngine)
 {
+    auto const directionPerturbationDistribution = std::uniform_int_distribution(-1, 1);
+
     //
     // Propagate crack along descent derivative of distance, until a point
     // at distance zero (border or other crack) is reached
@@ -1687,7 +1695,7 @@ void ShipBuilder::PropagateBatikCrack(
         // Find direction of steepest descent
         //
 
-        std::optional<vec2i> bestNextPointCoords;
+        std::optional<Octant> bestNextPointOctant;
         float maxDelta = std::numeric_limits<float>::lowest();
         for (Octant octant = 0; octant < 8; ++octant)
         {
@@ -1701,19 +1709,35 @@ void ShipBuilder::PropagateBatikCrack(
                 if (delta >= maxDelta)
                 {
                     maxDelta = delta;
-                    bestNextPointCoords = candidateCoords;
+                    bestNextPointOctant = octant;
                 }
             }
         }
 
-        if (!bestNextPointCoords.has_value())
+        if (!bestNextPointOctant.has_value())
         {
             // No more continuing
             return;
         }
 
+        //
+        // Randomize the direction
+        //
+
+        bestNextPointOctant = FindClosestOctant(
+            *bestNextPointOctant + directionPerturbationDistribution(randomEngine),
+            2,
+            [&](Octant candidateOctant)
+            {
+                vec2i const candidateCoords = p + vec2i(TessellationCircularOrderDirections[candidateOctant][0], TessellationCircularOrderDirections[candidateOctant][1]);
+                return pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value();
+            });
+
+        //
         // Follow this point
-        p = *bestNextPointCoords;
+        //
+
+        p = p + vec2i(TessellationCircularOrderDirections[*bestNextPointOctant][0], TessellationCircularOrderDirections[*bestNextPointOctant][1]);
     }
 
     for (auto const & p : crackPointCoords)
@@ -2193,6 +2217,42 @@ Physics::Frontiers ShipBuilder::CreateFrontiers(
     }
 
     return frontiers;
+}
+
+template <typename TAcceptor>
+static std::optional<Octant> ShipBuilder::FindClosestOctant(
+    Octant startOctant,
+    int maxOctantDivergence,
+    TAcceptor const & acceptor)
+{
+    if (startOctant < 0)
+        startOctant += 8;
+    startOctant = startOctant % 8;
+
+    if (acceptor(startOctant))
+    {
+        return startOctant;
+    }
+
+    for (int deltaOctant = 1; deltaOctant <= maxOctantDivergence; ++deltaOctant)
+    {
+        Octant octant = (startOctant + deltaOctant) % 8;
+        if (acceptor(octant))
+        {
+            return octant;
+        }
+
+        octant = startOctant - deltaOctant;
+        if (octant < 0)
+            octant += 8;
+        octant = octant % 8;
+        if (acceptor(octant))
+        {
+            return octant;
+        }
+    }
+
+    return std::nullopt;
 }
 
 #ifdef _DEBUG
