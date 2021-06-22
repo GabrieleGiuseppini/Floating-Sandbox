@@ -339,11 +339,12 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     //RandomizeStrength_Perlin(pointInfos2);
     RandomizeStrength_Batik(
         pointIndexMatrix,
-        vec2i(minX, minY),
+        vec2i(minX, minY) + vec2i(1, 1), // Image -> PointIndexMatrix
         vec2i(maxX - minX + 1, maxY - minY + 1),
         pointInfos2,
         pointIndexRemap2,
         springInfos2,
+        triangleInfos,
         shipBuildFrontiers);
 
     //
@@ -1441,7 +1442,8 @@ void ShipBuilder::RandomizeStrength_Batik(
     vec2i const & pointIndexMatrixRegionSize,
     std::vector<ShipBuildPoint> & pointInfos2,
     std::vector<ElementIndex> const & pointIndexRemap2,
-    std::vector<ShipBuildSpring> & springInfos2,
+    std::vector<ShipBuildSpring> const & springInfos2,
+    std::vector<ShipBuildTriangle> const & triangleInfos1,
     std::vector<ShipBuildFrontier> const & shipBuildFrontiers)
 {
     //
@@ -1458,8 +1460,7 @@ void ShipBuilder::RandomizeStrength_Batik(
     std::seed_seq seq({ 1, 242, 19730528 });
     std::ranlux48_base randomEngine(seq);
 
-    std::uniform_int_distribution<int> disWidth(0, pointIndexMatrixRegionSize.x);
-    std::uniform_int_distribution<int> disHeight(0, pointIndexMatrixRegionSize.y);
+    std::uniform_int_distribution<size_t> pointChoiceDistribution(0, triangleInfos1.size() * 3);
 
     //
     // Create distance map
@@ -1468,9 +1469,6 @@ void ShipBuilder::RandomizeStrength_Batik(
     BatikPixelMatrix pixelMatrix(
         pointIndexMatrixRegionSize.x,
         pointIndexMatrixRegionSize.y);
-
-    // Offset to transform distance map coords into point index matrix coords
-    vec2i const pointIndexMatrixOffset = pointIndexMatrixRegionOrigin + vec2i(1, 1);
 
     //
     // Initialize distance map with distances from frontiers
@@ -1484,14 +1482,14 @@ void ShipBuilder::RandomizeStrength_Batik(
             auto const & coordsA = pointInfos2[pointAIndex2].OriginalDefinitionCoordinates;
             if (coordsA.has_value())
             {
-                pixelMatrix[*coordsA - pointIndexMatrixRegionOrigin].Distance = 0.0f;
+                pixelMatrix[*coordsA + vec2i(1, 1) - pointIndexMatrixRegionOrigin].Distance = 0.0f;
             }
 
             auto const pointBIndex2 = pointIndexRemap2[springInfos2[springIndex2].PointBIndex1];
             auto const & coordsB = pointInfos2[pointBIndex2].OriginalDefinitionCoordinates;
             if (coordsB.has_value())
             {
-                pixelMatrix[*coordsB - pointIndexMatrixRegionOrigin].Distance = 0.0f;
+                pixelMatrix[*coordsB + vec2i(1, 1) - pointIndexMatrixRegionOrigin].Distance = 0.0f;
             }
         }
     }
@@ -1509,16 +1507,15 @@ void ShipBuilder::RandomizeStrength_Batik(
     for (int iCrack = 0; iCrack < numberOfCracks; ++iCrack)
     {
         //
-        // Find suitable starting point
+        // Choose a starting point
         //
 
-        vec2i startingPointCoords;
-        do
-        {
-            startingPointCoords = vec2i(
-                disWidth(randomEngine),
-                disHeight(randomEngine));
-        } while (!pointIndexMatrix[startingPointCoords + pointIndexMatrixOffset].has_value());
+        auto const randomDraw = pointChoiceDistribution(randomEngine);
+        ElementIndex const startingPointIndex2 = pointIndexRemap2[triangleInfos1[randomDraw / 3].PointIndices1[randomDraw % 3]];
+        if (!pointInfos2[startingPointIndex2].OriginalDefinitionCoordinates.has_value())
+            continue;
+
+        vec2i startingPointCoords = *pointInfos2[startingPointIndex2].OriginalDefinitionCoordinates + vec2i(1, 1) - pointIndexMatrixRegionOrigin;
 
         // Navigate in distance map to find local maximum
         while (true)
@@ -1532,7 +1529,7 @@ void ShipBuilder::RandomizeStrength_Batik(
                     startingPointCoords.x + TessellationCircularOrderDirections[octant][0],
                     startingPointCoords.y + TessellationCircularOrderDirections[octant][1]);
 
-                if (pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value()
+                if (pointIndexMatrix[candidateCoords + pointIndexMatrixRegionOrigin].has_value()
                     && pixelMatrix[candidateCoords].Distance > maxDistance)
                 {
                     maxDistance = pixelMatrix[candidateCoords].Distance;
@@ -1562,7 +1559,7 @@ void ShipBuilder::RandomizeStrength_Batik(
                 startingPointCoords.x + TessellationCircularOrderDirections[octant][0],
                 startingPointCoords.y + TessellationCircularOrderDirections[octant][1]);
 
-            if (pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value())
+            if (pointIndexMatrix[candidateCoords + pointIndexMatrixRegionOrigin].has_value())
             {
                 float const delta = pixelMatrix[startingPointCoords].Distance - pixelMatrix[candidateCoords].Distance;
                 if (delta >= maxDelta)
@@ -1584,7 +1581,7 @@ void ShipBuilder::RandomizeStrength_Batik(
                     startingPointCoords.x + TessellationCircularOrderDirections[*bestNextPointOctant][0],
                     startingPointCoords.y + TessellationCircularOrderDirections[*bestNextPointOctant][1]),
                 pointIndexMatrix,
-                pointIndexMatrixOffset,
+                pointIndexMatrixRegionOrigin,
                 pixelMatrix,
                 randomEngine);
 
@@ -1601,7 +1598,7 @@ void ShipBuilder::RandomizeStrength_Batik(
                             TessellationCircularOrderDirections[candidateOctant][0],
                             TessellationCircularOrderDirections[candidateOctant][1]);
 
-                    return pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value();
+                    return pointIndexMatrix[candidateCoords + pointIndexMatrixRegionOrigin].has_value();
                 });
 
             if (oppositeOctant.has_value())
@@ -1611,7 +1608,7 @@ void ShipBuilder::RandomizeStrength_Batik(
                         TessellationCircularOrderDirections[*oppositeOctant][0],
                         TessellationCircularOrderDirections[*oppositeOctant][1]),
                     pointIndexMatrix,
-                    pointIndexMatrixOffset,
+                    pointIndexMatrixRegionOrigin,
                     pixelMatrix,
                     randomEngine);
             }
@@ -1651,7 +1648,7 @@ void ShipBuilder::RandomizeStrength_Batik(
         for (int y = 0; y < pixelMatrix.Height; ++y)
         {
             vec2i const pointCoors(x, y);
-            auto const & idx1 = pointIndexMatrix[pointCoors + pointIndexMatrixRegionOrigin + vec2i(1, 1)];
+            auto const & idx1 = pointIndexMatrix[pointCoors + pointIndexMatrixRegionOrigin];
             if (idx1.has_value())
             {
                 pointInfos2[pointIndexRemap2[*idx1]].Strength = pixelMatrix[{x, y}].Distance / maxDistance;
@@ -1664,7 +1661,7 @@ template<typename TRandomEngine>
 void ShipBuilder::PropagateBatikCrack(
     vec2i const & startingPoint,
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
-    vec2i const & pointIndexMatrixOffset,
+    vec2i const & pointIndexMatrixRegionOrigin,
     BatikPixelMatrix & pixelMatrix,
     TRandomEngine & randomEngine)
 {
@@ -1703,7 +1700,7 @@ void ShipBuilder::PropagateBatikCrack(
                 p.x + TessellationCircularOrderDirections[octant][0],
                 p.y + TessellationCircularOrderDirections[octant][1]);
 
-            if (pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value())
+            if (pointIndexMatrix[candidateCoords + pointIndexMatrixRegionOrigin].has_value())
             {
                 float const delta = pixelMatrix[p].Distance - pixelMatrix[candidateCoords].Distance;
                 if (delta >= maxDelta)
@@ -1730,7 +1727,7 @@ void ShipBuilder::PropagateBatikCrack(
             [&](Octant candidateOctant)
             {
                 vec2i const candidateCoords = p + vec2i(TessellationCircularOrderDirections[candidateOctant][0], TessellationCircularOrderDirections[candidateOctant][1]);
-                return pointIndexMatrix[candidateCoords + pointIndexMatrixOffset].has_value();
+                return pointIndexMatrix[candidateCoords + pointIndexMatrixRegionOrigin].has_value();
             });
 
         //

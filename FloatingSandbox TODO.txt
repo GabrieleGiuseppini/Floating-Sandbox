@@ -727,7 +727,7 @@ Render:
 								+ Batik takes vec2i as Origin and Span arguments
 							+ Convert also PointInfoMatrix to Matrix2
 								+ Remove unneeded structureImageSize args
-							- Optimization (for e.g. BaseIII): initial random point is chosen on triangles 
+							+ Optimization (for e.g. BaseIII): initial random point is chosen on triangles 
 							- Take & log running time
 							- Set points' strengths at end, by making distance map = struct{distance, bool}
 								- Set strength only on points that have connected triangles

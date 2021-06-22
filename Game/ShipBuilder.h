@@ -288,7 +288,8 @@ private:
         vec2i const & pointIndexMatrixRegionSize,
         std::vector<ShipBuildPoint> & pointInfos2,
         std::vector<ElementIndex> const & pointIndexRemap2,
-        std::vector<ShipBuildSpring> & springInfos2,
+        std::vector<ShipBuildSpring> const & springInfos2,
+        std::vector<ShipBuildTriangle> const & triangleInfos1,
         std::vector<ShipBuildFrontier> const & shipBuildFrontiers);
 
     template<typename TRandomEngine>
