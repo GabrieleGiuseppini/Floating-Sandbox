@@ -631,8 +631,15 @@ Render:
 			+ README.md
 				+ Requirements: do different by OS
 			- Gather testers and send them tar.gz
-				= gabe3333342323, ayjanu, TheCrafters001: sent friend requests
+				= gabe3333342323, ayjanu: sent friend requests
 				+ Walther first
+
+			- TheCrafters001: Real Hardware on a Live Linux USB Drive, OS: Linux Mint 20.1 (Ubuntu/Debian Based)
+				- Pausing is non-functional
+				- Rotating Boats/Objects happens way too fast.
+				- Changing tools using the keyboard, doesn't update the tools menu correctly. Clicking on the tool you were just using does nothing.
+				- Smashing a hole under the water, then reparing it, sometimes it still causes the ship/object to flood.
+				- Triggering Rouge Wave is non-functional
 
 		= MAC:
 			= Full high-DPI path:
@@ -727,11 +734,26 @@ Render:
 								+ Batik takes vec2i as Origin and Span arguments
 							+ Convert also PointInfoMatrix to Matrix2
 								+ Remove unneeded structureImageSize args
-							+ Optimization (for e.g. BaseIII): initial random point is chosen on triangles 
-							- Take & log running time
+							+ Optimization (for e.g. BaseIII): initial random point is chosen on triangles
+							+ Update distance map after each crack
+							- Density of cracks
+								- Largest dimension (among W & H) / 4..8 
 							- Set points' strengths at end, by making distance map = struct{distance, bool}
 								- Set strength only on points that have connected triangles
+							- Take & log running time
+							- Consider optimizing for exclusive use of distance map, not point index matrix
+								- "PixelMatrix" -> "DistanceMatrix"
+								- And integral distances
+								- Distance map init:
+									- Init with 0 distance everywhere (will be the outside)
+									- Set to +inf all vertices of triangles
+									- Set to 0 for frontiers
+								- During algo: avoid points with distance 0							
 						- Finalization:
+							- Direction perturbation: consider avoiding perturbation to already cracked point
+							- Consider using original distance (the one set at distance map initialization time) for scaling strength
+								- Strength lowering is max at small distances, min at higher distances
+
 					- Parameters from outside:
 						- Passed to ShipBuilder as siblings of AutoTexturization settings
 							- Defaults live like AutoTexturization defaults live

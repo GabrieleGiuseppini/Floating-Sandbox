@@ -1494,20 +1494,24 @@ void ShipBuilder::RandomizeStrength_Batik(
         }
     }
 
-    UpdateBatikDistances(pixelMatrix);
-
     //
     // Generate cracks
     //
 
     // Choose number of cracks
     // TODOTEST
-    int const numberOfCracks = 1;
+    int const numberOfCracks = 3;
 
     for (int iCrack = 0; iCrack < numberOfCracks; ++iCrack)
     {
         //
-        // Choose a starting point
+        // Update distances
+        //
+
+        UpdateBatikDistances(pixelMatrix);
+
+        //
+        // Choose a starting point among all triangle vertices
         //
 
         auto const randomDraw = pointChoiceDistribution(randomEngine);
@@ -1665,6 +1669,8 @@ void ShipBuilder::PropagateBatikCrack(
     BatikPixelMatrix & pixelMatrix,
     TRandomEngine & randomEngine)
 {
+    LogMessage("TODOTEST: ---------------------PropagateBatikCrack");
+
     auto const directionPerturbationDistribution = std::uniform_int_distribution(-1, 1);
 
     //
@@ -1677,6 +1683,8 @@ void ShipBuilder::PropagateBatikCrack(
     for (vec2i p = startingPoint; ;)
     {
         crackPointCoords.emplace_back(p);
+
+        LogMessage("TODOTEST: ", p.toString(), " (d=", pixelMatrix[p].Distance, ")");
 
         //
         // Check whether we're done
@@ -1714,12 +1722,14 @@ void ShipBuilder::PropagateBatikCrack(
         if (!bestNextPointOctant.has_value())
         {
             // No more continuing
-            return;
+            break;
         }
 
         //
         // Randomize the direction
         //
+
+        LogMessage("   TODOTEST: oct'=", *bestNextPointOctant);
 
         bestNextPointOctant = FindClosestOctant(
             *bestNextPointOctant + directionPerturbationDistribution(randomEngine),
@@ -1729,6 +1739,8 @@ void ShipBuilder::PropagateBatikCrack(
                 vec2i const candidateCoords = p + vec2i(TessellationCircularOrderDirections[candidateOctant][0], TessellationCircularOrderDirections[candidateOctant][1]);
                 return pointIndexMatrix[candidateCoords + pointIndexMatrixRegionOrigin].has_value();
             });
+
+        LogMessage("   TODOTEST: oct''=", *bestNextPointOctant);
 
         //
         // Follow this point
