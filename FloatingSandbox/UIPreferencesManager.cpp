@@ -255,25 +255,25 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
-        // Ship auto-texturization default settings
+        // Ship auto-texturization shared settings
         //
 
-        if (auto shipAutoTexturizationDefaultSettingsIt = preferencesRootObject->find("ship_auto_texturization_default_settings");
-            shipAutoTexturizationDefaultSettingsIt != preferencesRootObject->end() && shipAutoTexturizationDefaultSettingsIt->second.is<picojson::object>())
+        if (auto shipAutoTexturizationSharedSettingsIt = preferencesRootObject->find("ship_auto_texturization_default_settings");
+            shipAutoTexturizationSharedSettingsIt != preferencesRootObject->end() && shipAutoTexturizationSharedSettingsIt->second.is<picojson::object>())
         {
-            mGameController->SetShipAutoTexturizationDefaultSettings(ShipAutoTexturizationSettings::FromJSON(shipAutoTexturizationDefaultSettingsIt->second.get<picojson::object>()));
+            mGameController->SetShipAutoTexturizationSharedSettings(ShipAutoTexturizationSettings::FromJSON(shipAutoTexturizationSharedSettingsIt->second.get<picojson::object>()));
         }
 
         // We don't load/save this setting on purpose
         //////
-        ////// Ship auto-texturization force defaults onto ship
+        ////// Ship auto-texturization force shared settings onto ship
         //////
 
         ////if (auto shipAutoTexturizationForceDefaultsOntoShipIt = preferencesRootObject->find("ship_auto_texturization_force_defaults_onto_ship");
         ////    shipAutoTexturizationForceDefaultsOntoShipIt != preferencesRootObject->end()
         ////    && shipAutoTexturizationForceDefaultsOntoShipIt->second.is<bool>())
         ////{
-        ////    mGameController->SetShipAutoTexturizationDoForceDefaultSettingsOntoShipSettings(shipAutoTexturizationForceDefaultsOntoShipIt->second.get<bool>());
+        ////    mGameController->SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(shipAutoTexturizationForceSharedSettingsOntoShipIt->second.get<bool>());
         ////}
 
         //
@@ -460,12 +460,12 @@ void UIPreferencesManager::SavePreferences() const
     // Add show tsunami notification
     preferencesRootObject["show_tsunami_notifications"] = picojson::value(mGameController->GetDoShowTsunamiNotifications());
 
-    // Add ship auto-texturization default settings
-    preferencesRootObject["ship_auto_texturization_default_settings"] = picojson::value(mGameController->GetShipAutoTexturizationDefaultSettings().ToJSON());
+    // Add ship auto-texturization shared settings
+    preferencesRootObject["ship_auto_texturization_default_settings"] = picojson::value(mGameController->GetShipAutoTexturizationSharedSettings().ToJSON());
 
     // We don't load/save this setting on purpose
-    ////// Add ship auto-texturization force defaults onto ship
-    ////preferencesRootObject["ship_auto_texturization_force_defaults_onto_ship"] = picojson::value(mGameController->GetShipAutoTexturizationDoForceDefaultSettingsOntoShipSettings());
+    ////// Add ship auto-texturization force shared settings onto ship
+    ////preferencesRootObject["ship_auto_texturization_force_defaults_onto_ship"] = picojson::value(mGameController->GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings());
 
     // Add auto zoom at ship load
     preferencesRootObject["auto_zoom_at_ship_load"] = picojson::value(mGameController->GetDoAutoZoomOnShipLoad());

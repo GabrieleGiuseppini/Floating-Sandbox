@@ -167,10 +167,10 @@ struct IGameController
     virtual bool GetDoAutoZoomOnShipLoad() const = 0;
     virtual void SetDoAutoZoomOnShipLoad(bool value) = 0;
 
-    virtual ShipAutoTexturizationSettings const & GetShipAutoTexturizationDefaultSettings() const = 0;
-    virtual ShipAutoTexturizationSettings & GetShipAutoTexturizationDefaultSettings() = 0;
-    virtual void SetShipAutoTexturizationDefaultSettings(ShipAutoTexturizationSettings const & value) = 0;
+    virtual ShipAutoTexturizationSettings const & GetShipAutoTexturizationSharedSettings() const = 0;
+    virtual ShipAutoTexturizationSettings & GetShipAutoTexturizationSharedSettings() = 0;
+    virtual void SetShipAutoTexturizationSharedSettings(ShipAutoTexturizationSettings const & value) = 0;
 
-    virtual bool GetShipAutoTexturizationDoForceDefaultSettingsOntoShipSettings() const = 0;
-    virtual void SetShipAutoTexturizationDoForceDefaultSettingsOntoShipSettings(bool value) = 0;
+    virtual bool GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings() const = 0;
+    virtual void SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(bool value) = 0;
 };

@@ -36,29 +36,29 @@ public:
     // Settings
     //
 
-    ShipAutoTexturizationSettings const & GetDefaultSettings() const
+    ShipAutoTexturizationSettings const & GetSharedSettings() const
     {
-        return mDefaultSettings;
+        return mSharedSettings;
     }
 
-    ShipAutoTexturizationSettings & GetDefaultSettings()
+    ShipAutoTexturizationSettings & GetSharedSettings()
     {
-        return mDefaultSettings;
+        return mSharedSettings;
     }
 
-    void SetDefaultSettings(ShipAutoTexturizationSettings const & defaultSettings)
+    void SetSharedSettings(ShipAutoTexturizationSettings const & sharedSettings)
     {
-        mDefaultSettings = defaultSettings;
+        mSharedSettings = sharedSettings;
     }
 
-    bool GetDoForceDefaultSettingsOntoShipSettings() const
+    bool GetDoForceSharedSettingsOntoShipSettings() const
     {
-        return mDoForceDefaultSettingsOntoShipSettings;
+        return mDoForceSharedSettingsOntoShipSettings;
     }
 
-    void SetDoForceDefaultSettingsOntoShipSettings(bool value)
+    void SetDoForceSharedSettingsOntoShipSettings(bool value)
     {
-        mDoForceDefaultSettingsOntoShipSettings = value;
+        mDoForceSharedSettingsOntoShipSettings = value;
     }
 
 private:
@@ -84,8 +84,8 @@ private:
     // Settings that we are the storage of
     //
 
-    ShipAutoTexturizationSettings mDefaultSettings;
-    bool mDoForceDefaultSettingsOntoShipSettings;
+    ShipAutoTexturizationSettings mSharedSettings;
+    bool mDoForceSharedSettingsOntoShipSettings;
 
     //
     // Material textures

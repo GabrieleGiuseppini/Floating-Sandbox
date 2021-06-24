@@ -40,6 +40,11 @@ static const int TessellationCircularOrderDirections[8][2] = {
 
 //////////////////////////////////////////////////////////////////////////////
 
+ShipBuilder::ShipBuilder(ResourceLocator const & resourceLocator)
+    : mShipTexturizer(resourceLocator)
+{
+}
+
 std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     ShipId shipId,
     World & parentWorld,
@@ -47,8 +52,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     std::shared_ptr<TaskThreadPool> taskThreadPool,
     ShipDefinition && shipDefinition,
     MaterialDatabase const & materialDatabase,
-    ShipTexturizer const & shipTexturizer,
-    GameParameters const & gameParameters)
+    GameParameters const & gameParameters) const
 {
     auto const totalStartTime = std::chrono::steady_clock::now();
 
@@ -408,7 +412,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
 
     RgbaImageData textureImage = shipDefinition.TextureLayerImage.has_value()
         ? std::move(*shipDefinition.TextureLayerImage) // Use provided texture
-        : shipTexturizer.Texturize(
+        : mShipTexturizer.Texturize(
             shipDefinition.AutoTexturizationSettings,
             shipDefinition.StructuralLayerImage.Size,
             pointIndexMatrix,
@@ -452,6 +456,11 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         std::move(textureImage));
 }
 
+void ShipBuilder::VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const
+{
+    mShipTexturizer.VerifyMaterialDatabase(materialDatabase);
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Building helpers
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -462,7 +471,7 @@ void ShipBuilder::AppendRopeEndpoints(
     std::vector<ShipBuildPoint> & pointInfos1,
     ShipBuildPointIndexMatrix & pointIndexMatrix,
     MaterialDatabase const & materialDatabase,
-    vec2f const & shipOffset)
+    vec2f const & shipOffset) const
 {
     int const width = ropeLayerImage.Size.Width;
     float const halfWidth = static_cast<float>(width) / 2.0f;
@@ -545,7 +554,7 @@ void ShipBuilder::DecoratePointsWithElectricalMaterials(
     std::vector<ShipBuildPoint> & pointInfos1,
     bool isDedicatedElectricalLayer,
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
-    MaterialDatabase const & materialDatabase)
+    MaterialDatabase const & materialDatabase) const
 {
     int const width = layerImage.Size.Width;
     int const height = layerImage.Size.Height;
@@ -659,7 +668,7 @@ void ShipBuilder::AppendRopes(
     StructuralMaterial const & ropeMaterial,
     std::vector<ShipBuildPoint> & pointInfos1,
     std::vector<ShipBuildSpring> & springInfos1,
-    PointPairToIndexMap & pointPairToSpringIndex1Map)
+    PointPairToIndexMap & pointPairToSpringIndex1Map) const
 {
     //
     // - Fill-in points between each pair of endpoints, creating additional ShipBuildPoint's for them
@@ -882,7 +891,7 @@ void ShipBuilder::CreateShipElementInfos(
     std::vector<ShipBuildSpring> & springInfos1,
     PointPairToIndexMap & pointPairToSpringIndex1Map,
     std::vector<ShipBuildTriangle> & triangleInfos1,
-    size_t & leakingPointsCount)
+    size_t & leakingPointsCount) const
 {
     //
     // Visit point matrix and:
@@ -1042,7 +1051,7 @@ void ShipBuilder::CreateShipElementInfos(
 std::vector<ShipBuilder::ShipBuildTriangle> ShipBuilder::FilterOutRedundantTriangles(
     std::vector<ShipBuildTriangle> const & triangleInfos,
     std::vector<ShipBuildPoint> & pointInfos1,
-    std::vector<ShipBuildSpring> const & springInfos1)
+    std::vector<ShipBuildSpring> const & springInfos1) const
 {
     // Remove:
     //  - Those triangles whose vertices are all rope points, of which at least one is connected exclusively
@@ -1076,7 +1085,7 @@ std::vector<ShipBuilder::ShipBuildTriangle> ShipBuilder::FilterOutRedundantTrian
 
 void ShipBuilder::ConnectPointsToTriangles(
     std::vector<ShipBuildPoint> & pointInfos1,
-    std::vector<ShipBuildTriangle> const & triangleInfos1)
+    std::vector<ShipBuildTriangle> const & triangleInfos1) const
 {
     for (ElementIndex t = 0; t < triangleInfos1.size(); ++t)
     {
@@ -1093,7 +1102,7 @@ std::vector<ShipBuilder::ShipBuildFrontier> ShipBuilder::CreateShipFrontiers(
     std::vector<ShipBuildPoint> const & pointInfos2,
     std::vector<ShipBuildSpring> const & springInfos2,
     PointPairToIndexMap const & pointPairToSpringIndex1Map,
-    std::vector<ElementIndex> const & springIndexRemap2)
+    std::vector<ElementIndex> const & springIndexRemap2) const
 {
     //
     // Detect and create frontiers
@@ -1238,7 +1247,7 @@ std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
     std::set<ElementIndex> & frontierEdges2,
     std::vector<ShipBuildSpring> const & springInfos2,
     PointPairToIndexMap const & pointPairToSpringIndex1Map,
-    std::vector<ElementIndex> const & springIndexRemap2)
+    std::vector<ElementIndex> const & springIndexRemap2) const
 {
     std::vector<ElementIndex> edgeIndices;
 
@@ -1369,7 +1378,7 @@ std::vector<ElementIndex> ShipBuilder::PropagateFrontier(
     return edgeIndices;
 }
 
-void ShipBuilder::RandomizeStrength_Perlin(std::vector<ShipBuildPoint> & pointInfos2)
+void ShipBuilder::RandomizeStrength_Perlin(std::vector<ShipBuildPoint> & pointInfos2) const
 {
     //
     // Basic Perlin noise generation
@@ -1442,7 +1451,7 @@ void ShipBuilder::RandomizeStrength_Batik(
     std::vector<ElementIndex> const & pointIndexRemap2,
     std::vector<ShipBuildSpring> const & springInfos2,
     std::vector<ShipBuildTriangle> const & triangleInfos1,
-    std::vector<ShipBuildFrontier> const & shipBuildFrontiers)
+    std::vector<ShipBuildFrontier> const & shipBuildFrontiers) const
 {
     //
     // Adapted from https://www.researchgate.net/publication/221523196_Rendering_cracks_in_Batik
@@ -1665,7 +1674,7 @@ void ShipBuilder::PropagateBatikCrack(
     ShipBuildPointIndexMatrix const & pointIndexMatrix,
     vec2i const & pointIndexMatrixRegionOrigin,
     BatikPixelMatrix & pixelMatrix,
-    TRandomEngine & randomEngine)
+    TRandomEngine & randomEngine) const
 {
     LogMessage("TODOTEST: ---------------------PropagateBatikCrack");
 
@@ -1754,7 +1763,7 @@ void ShipBuilder::PropagateBatikCrack(
     }
 }
 
-void ShipBuilder::UpdateBatikDistances(BatikPixelMatrix & pixelMatrix)
+void ShipBuilder::UpdateBatikDistances(BatikPixelMatrix & pixelMatrix) const
 {
     //
     // Jain's algorithm (1989, Fundamentals of Digital Image Processing, Chapter 2)
@@ -1809,7 +1818,7 @@ Physics::Points ShipBuilder::CreatePoints(
     MaterialDatabase const & materialDatabase,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters,
-    std::vector<ElectricalElementInstanceIndex> & electricalElementInstanceIndices)
+    std::vector<ElectricalElementInstanceIndex> & electricalElementInstanceIndices) const
 {
     Physics::Points points(
         static_cast<ElementIndex>(pointInfos2.size()),
@@ -1862,7 +1871,7 @@ Physics::Points ShipBuilder::CreatePoints(
 
 void ShipBuilder::ConnectSpringsAndTriangles(
     std::vector<ShipBuildSpring> & springInfos2,
-    std::vector<ShipBuildTriangle> & triangleInfos2)
+    std::vector<ShipBuildTriangle> & triangleInfos2) const
 {
     //
     // 1. Build Point Pair -> Spring table
@@ -2000,7 +2009,7 @@ Physics::Springs ShipBuilder::CreateSprings(
     std::vector<ElementIndex> const & pointIndexRemap,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    GameParameters const & gameParameters)
+    GameParameters const & gameParameters) const
 {
     Physics::Springs springs(
         static_cast<ElementIndex>(springInfos2.size()),
@@ -2037,7 +2046,7 @@ Physics::Springs ShipBuilder::CreateSprings(
 Physics::Triangles ShipBuilder::CreateTriangles(
     std::vector<ShipBuildTriangle> const & triangleInfos2,
     Physics::Points & points,
-    std::vector<ElementIndex> const & pointIndexRemap)
+    std::vector<ElementIndex> const & pointIndexRemap) const
 {
     Physics::Triangles triangles(static_cast<ElementIndex>(triangleInfos2.size()));
 
@@ -2072,7 +2081,7 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
     ShipId shipId,
     Physics::World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    GameParameters const & gameParameters)
+    GameParameters const & gameParameters) const
 {
     //
     // Verify all panel metadata indices are valid instance IDs
@@ -2201,7 +2210,7 @@ ElectricalElements ShipBuilder::CreateElectricalElements(
 Physics::Frontiers ShipBuilder::CreateFrontiers(
     std::vector<ShipBuildFrontier> const & shipBuildFrontiers,
     Physics::Points const & points,
-    Physics::Springs const & springs)
+    Physics::Springs const & springs) const
 {
     //
     // Create Frontiers container
@@ -2227,10 +2236,10 @@ Physics::Frontiers ShipBuilder::CreateFrontiers(
 }
 
 template <typename TAcceptor>
-static std::optional<Octant> ShipBuilder::FindClosestOctant(
+std::optional<Octant> ShipBuilder::FindClosestOctant(
     Octant startOctant,
     int maxOctantDivergence,
-    TAcceptor const & acceptor)
+    TAcceptor const & acceptor) const
 {
     if (startOctant < 0)
         startOctant += 8;
@@ -2266,7 +2275,7 @@ static std::optional<Octant> ShipBuilder::FindClosestOctant(
 void ShipBuilder::VerifyShipInvariants(
     Physics::Points const & points,
     Physics::Springs const & /*springs*/,
-    Physics::Triangles const & triangles)
+    Physics::Triangles const & triangles) const
 {
     //
     // Triangles' points are in CW order
@@ -2292,7 +2301,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Str
     std::vector<ShipBuildPoint> const & pointInfos1,
     std::vector<ShipBuildSpring> const & springInfos1,
     PointPairToIndexMap const & pointPairToSpringIndex1Map,
-    ShipBuildPointIndexMatrix const & pointIndexMatrix)
+    ShipBuildPointIndexMatrix const & pointIndexMatrix) const
 {
     //
     // 1. Visit the point matrix by all rows, from top to bottom
@@ -2397,7 +2406,7 @@ void ShipBuilder::ReorderPointsAndSpringsOptimally_Stripes_Stripe(
     std::vector<ShipBuildPoint> & pointInfos2,
     std::vector<ElementIndex> & pointIndexRemap,
     std::vector<ShipBuildSpring> & springInfos2,
-    std::vector<ElementIndex> & springIndexRemap)
+    std::vector<ElementIndex> & springIndexRemap) const
 {
     //
     // Collect points in a vertical stripe - 2 cols wide, StripeLength high
@@ -2478,7 +2487,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Blo
     std::vector<ShipBuildPoint> const & pointInfos1,
     std::vector<ShipBuildSpring> const & springInfos1,
     PointPairToIndexMap const & pointPairToSpringIndex1Map,
-    ShipBuildPointIndexMatrix const & pointIndexMatrix)
+    ShipBuildPointIndexMatrix const & pointIndexMatrix) const
 {
     //
     // 1. Visit the point matrix by all rows, from top to bottom
@@ -2581,7 +2590,7 @@ void ShipBuilder::ReorderPointsAndSpringsOptimally_Blocks_Row(
     std::vector<ShipBuildPoint> & pointInfos2,
     std::vector<ElementIndex> & pointIndexRemap,
     std::vector<ShipBuildSpring> & springInfos2,
-    std::vector<ElementIndex> & springIndexRemap)
+    std::vector<ElementIndex> & springIndexRemap) const
 {
     //
     // Visit each square as follows:
@@ -2669,7 +2678,7 @@ template <int BlockSize>
 ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Tiling(
     std::vector<ShipBuildPoint> const & pointInfos1,
     std::vector<ShipBuildSpring> const & springInfos1,
-    ShipBuildPointIndexMatrix const & pointIndexMatrix)
+    ShipBuildPointIndexMatrix const & pointIndexMatrix) const
 {
     //
     // 1. Visit the point matrix in 2x2 blocks, and add all springs connected to any
@@ -2782,7 +2791,7 @@ ShipBuilder::ReorderingResults ShipBuilder::ReorderPointsAndSpringsOptimally_Til
 
 std::vector<ShipBuilder::ShipBuildSpring> ShipBuilder::ReorderSpringsOptimally_TomForsyth(
     std::vector<ShipBuildSpring> const & springInfos1,
-    size_t pointCount)
+    size_t pointCount) const
 {
     std::vector<VertexData> vertexData(pointCount);
     std::vector<ElementData> elementData(springInfos1.size());
@@ -2815,7 +2824,7 @@ std::vector<ShipBuilder::ShipBuildSpring> ShipBuilder::ReorderSpringsOptimally_T
 
 std::vector<ShipBuilder::ShipBuildTriangle> ShipBuilder::ReorderTrianglesOptimally_ReuseOptimization(
     std::vector<ShipBuildTriangle> const & triangleInfos1,
-    size_t /*pointCount*/)
+    size_t /*pointCount*/) const
 {
     std::vector<ShipBuildTriangle> triangleInfos2;
     triangleInfos2.reserve(triangleInfos1.size());
@@ -2899,7 +2908,7 @@ std::vector<ShipBuilder::ShipBuildTriangle> ShipBuilder::ReorderTrianglesOptimal
 
 std::vector<ShipBuilder::ShipBuildTriangle> ShipBuilder::ReorderTrianglesOptimally_TomForsyth(
     std::vector<ShipBuildTriangle> const & triangleInfos1,
-    size_t pointCount)
+    size_t pointCount) const
 {
     std::vector<VertexData> vertexData(pointCount);
     std::vector<ElementData> elementData(triangleInfos1.size());
@@ -3059,7 +3068,7 @@ float ShipBuilder::CalculateVertexMissRatio(std::vector<ShipBuildTriangle> const
 template <size_t VerticesInElement>
 std::vector<size_t> ShipBuilder::ReorderOptimally(
     std::vector<VertexData> & vertexData,
-    std::vector<ElementData> & elementData)
+    std::vector<ElementData> & elementData) const
 {
     // Calculate vertex scores
     for (VertexData & v : vertexData)
@@ -3188,7 +3197,7 @@ std::vector<size_t> ShipBuilder::ReorderOptimally(
 
 void ShipBuilder::AddVertexToCache(
     size_t vertexIndex,
-    ModelLRUVertexCache & cache)
+    ModelLRUVertexCache & cache) const
 {
     for (auto it = cache.begin(); it != cache.end(); ++it)
     {

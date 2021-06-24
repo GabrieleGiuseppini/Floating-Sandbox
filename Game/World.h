@@ -14,8 +14,8 @@
 #include "Physics.h"
 #include "RenderContext.h"
 #include "ResourceLocator.h"
+#include "ShipBuilder.h"
 #include "ShipDefinition.h"
-#include "ShipTexturizer.h"
 #include "VisibleWorld.h"
 
 #include <GameCore/AABBSet.h>
@@ -45,11 +45,9 @@ public:
         GameParameters const & gameParameters,
         VisibleWorld const & visibleWorld);
 
-    std::tuple<ShipId, RgbaImageData> AddShip(
-        ShipDefinition && shipDefinition,
-        MaterialDatabase const & materialDatabase,
-        ShipTexturizer const & shipTexturizer,
-        GameParameters const & gameParameters);
+    ShipId GetNextShipId() const;
+
+    void AddShip(std::unique_ptr<Ship> ship);
 
     void Announce();
 

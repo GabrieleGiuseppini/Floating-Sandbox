@@ -29,11 +29,12 @@ namespace /*anonymous*/ {
 }
 
 ShipTexturizer::ShipTexturizer(ResourceLocator const & resourceLocator)
-    : mDefaultSettings(
+    // Here is where default settings live
+    : mSharedSettings(
         ShipAutoTexturizationModeType::MaterialTextures,
         1.0f, // MaterialTextureMagnification
         0.0f) // MaterialTextureTransparency
-    , mDoForceDefaultSettingsOntoShipSettings(false)
+    , mDoForceSharedSettingsOntoShipSettings(false)
     , mMaterialTexturesFolderPath(resourceLocator.GetMaterialTexturesFolderPath())
     , mMaterialTextureNameToTextureFilePathMap(MakeMaterialTextureNameToTextureFilePathMap(mMaterialTexturesFolderPath))
     , mMaterialTextureCache()
@@ -83,8 +84,8 @@ RgbaImageData ShipTexturizer::Texturize(
     // Prepare constants
     //
 
-    ShipAutoTexturizationSettings const & settings = (mDoForceDefaultSettingsOntoShipSettings || !shipDefinitionSettings.has_value())
-        ? mDefaultSettings
+    ShipAutoTexturizationSettings const & settings = (mDoForceSharedSettingsOntoShipSettings || !shipDefinitionSettings.has_value())
+        ? mSharedSettings
         : *shipDefinitionSettings;
 
     float const materialTextureWorldToPixelConversionFactor =

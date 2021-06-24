@@ -19,8 +19,8 @@
 #include "RenderContext.h"
 #include "RenderDeviceProperties.h"
 #include "ResourceLocator.h"
+#include "ShipBuilder.h"
 #include "ShipMetadata.h"
-#include "ShipTexturizer.h"
 
 #include <GameCore/Colors.h>
 #include <GameCore/GameChronometer.h>
@@ -31,6 +31,7 @@
 #include <GameCore/ParameterSmoother.h>
 #include <GameCore/ProgressCallback.h>
 #include <GameCore/StrongTypeDef.h>
+#include <GameCore/TaskThreadPool.h>
 #include <GameCore/Vectors.h>
 
 #include <algorithm>
@@ -245,12 +246,12 @@ public:
     bool GetDoAutoZoomOnShipLoad() const override { return mDoAutoZoomOnShipLoad; }
     void SetDoAutoZoomOnShipLoad(bool value) override { mDoAutoZoomOnShipLoad = value; }
 
-    ShipAutoTexturizationSettings const & GetShipAutoTexturizationDefaultSettings() const override { return mShipTexturizer.GetDefaultSettings(); }
-    ShipAutoTexturizationSettings & GetShipAutoTexturizationDefaultSettings() override { return mShipTexturizer.GetDefaultSettings(); }
-    void SetShipAutoTexturizationDefaultSettings(ShipAutoTexturizationSettings const & value) override { mShipTexturizer.SetDefaultSettings(value); }
+    ShipAutoTexturizationSettings const & GetShipAutoTexturizationSharedSettings() const override { return mShipBuilder.GetAutoTexturizationSharedSettings(); }
+    ShipAutoTexturizationSettings & GetShipAutoTexturizationSharedSettings() override { return mShipBuilder.GetAutoTexturizationSharedSettings(); }
+    void SetShipAutoTexturizationSharedSettings(ShipAutoTexturizationSettings const & value) override { mShipBuilder.SetAutoTexturizationSharedSettings(value); }
 
-    bool GetShipAutoTexturizationDoForceDefaultSettingsOntoShipSettings() const override { return mShipTexturizer.GetDoForceDefaultSettingsOntoShipSettings(); }
-    void SetShipAutoTexturizationDoForceDefaultSettingsOntoShipSettings(bool value) override { mShipTexturizer.SetDoForceDefaultSettingsOntoShipSettings(value); }
+    bool GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings() const override { return mShipBuilder.GetDoForceAutoTexturizationSharedSettingsOntoShipSettings(); }
+    void SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(bool value) override { mShipBuilder.SetDoForceAutoTexturizationSharedSettingsOntoShipSettings(value); }
 
     /////////////////////////////////////////////////////////
     // IGameControllerSettings and IGameControllerSettingsOptions
@@ -785,8 +786,8 @@ private:
 
     void Reset(std::unique_ptr<Physics::World> newWorld);
 
-    void OnShipAdded(
-        ShipId shipId,
+    void OnShipCreated(
+        std::unique_ptr<Physics::Ship> ship,
         RgbaImageData && textureImage,
         ShipMetadata const & shipMetadata,
         StrongTypedBool<struct DoAutoZoom> doAutoZoom);
@@ -853,9 +854,10 @@ private:
 
     std::shared_ptr<Render::RenderContext> mRenderContext;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
+    ShipBuilder mShipBuilder;
     NotificationLayer mNotificationLayer;
-    ShipTexturizer mShipTexturizer;
     std::unique_ptr<EventRecorder> mEventRecorder;
+    std::shared_ptr<TaskThreadPool> mTaskThreadPool;
 
 
     //

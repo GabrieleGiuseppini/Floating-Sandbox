@@ -50,7 +50,7 @@ private:
     void OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & event);
     void OnShowElectricalNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnAutoTexturizationModeRadioButtonClick(wxCommandEvent & event);
-    void OnForceDefaultAutoTexturizationSettingsOntoShipCheckBoxClicked(wxCommandEvent & event);
+    void OnForceSharedAutoTexturizationSettingsOntoShipCheckBoxClicked(wxCommandEvent & event);
 
     void OnGlobalMuteCheckBoxClicked(wxCommandEvent & event);
     void OnPlayBackgroundMusicCheckBoxClicked(wxCommandEvent & event);
@@ -99,7 +99,7 @@ private:
     wxCheckBox * mShowElectricalNotificationsCheckBox;
     wxRadioButton * mFlatStructureAutoTexturizationModeRadioButton;
     wxRadioButton * mMaterialTexturesAutoTexturizationModeRadioButton;
-    wxCheckBox * mForceDefaultAutoTexturizationSettingsOntoShipCheckBox;
+    wxCheckBox * mForceSharedAutoTexturizationSettingsOntoShipCheckBox;
     SliderControl<float> * mMaterialTextureMagnificationSlider;
     SliderControl<float> * mMaterialTextureTransparencySlider;
 

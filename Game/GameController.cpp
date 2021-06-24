@@ -80,12 +80,13 @@ GameController::GameController(
     // Doers
     , mRenderContext(std::move(renderContext))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
+    , mShipBuilder(resourceLocator)
     , mNotificationLayer(
         mGameParameters.IsUltraViolentMode,
         false /*loaded value will come later*/,
         mGameParameters.DoDayLightCycle,
         mGameEventDispatcher)
-    , mShipTexturizer(resourceLocator)
+    , mTaskThreadPool(std::make_shared<TaskThreadPool>())
     // World
     , mFishSpeciesDatabase(std::move(fishSpeciesDatabase))
     , mMaterialDatabase(std::move(materialDatabase))
@@ -93,7 +94,7 @@ GameController::GameController(
         OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilePath()),
         mFishSpeciesDatabase,
         mGameEventDispatcher,
-        std::make_shared<TaskThreadPool>(),
+        mTaskThreadPool,
         mGameParameters,
         mRenderContext->GetVisibleWorld()))
     // Smoothing
@@ -111,7 +112,7 @@ GameController::GameController(
     , mSkippedFirstStatPublishes(0)
 {
     // Verify materials' textures
-    mShipTexturizer.VerifyMaterialDatabase(mMaterialDatabase);
+    mShipBuilder.VerifyMaterialDatabase(mMaterialDatabase);
 
     // Register ourselves as event handler for the events we care about
     mGameEventDispatcher->RegisterLifecycleEventHandler(this);
@@ -285,26 +286,34 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
     // Load ship definition
     auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
 
-    // Pre-validate ship's texture
+    // Pre-validate ship's texture, if any
     if (shipDefinition.TextureLayerImage.has_value())
         mRenderContext->ValidateShipTexture(*shipDefinition.TextureLayerImage);
 
     // Remember metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);
 
-    // Load ship into current world
-    auto [shipId, textureImage] = mWorld->AddShip(
+    //
+    // Build ship
+    //
+
+    auto const shipId = mWorld->GetNextShipId();
+
+    auto [ship, textureImage] = mShipBuilder.Create(
+        shipId,
+        *mWorld,
+        mGameEventDispatcher,
+        mTaskThreadPool,
         std::move(shipDefinition),
         mMaterialDatabase,
-        mShipTexturizer,
         mGameParameters);
 
     //
     // No errors, so we may continue
     //
 
-    OnShipAdded(
-        shipId,
+    OnShipCreated(
+        std::move(ship),
         std::move(textureImage),
         shipMetadata,
         StrongTypedFalse<struct DoAutoZoom>);
@@ -1327,11 +1336,15 @@ ShipMetadata GameController::ResetAndLoadShip(
         mGameParameters,
         mRenderContext->GetVisibleWorld());
 
-    // Add ship to new world
-    auto [shipId, textureImage] = newWorld->AddShip(
+    // Build ship
+    auto const shipId = newWorld->GetNextShipId();
+    auto [ship, textureImage] = mShipBuilder.Create(
+        shipId,
+        *newWorld,
+        mGameEventDispatcher,
+        mTaskThreadPool,
         std::move(shipDefinition),
         mMaterialDatabase,
-        mShipTexturizer,
         mGameParameters);
 
     //
@@ -1340,8 +1353,8 @@ ShipMetadata GameController::ResetAndLoadShip(
 
     Reset(std::move(newWorld));
 
-    OnShipAdded(
-        shipId,
+    OnShipCreated(
+        std::move(ship),
         std::move(textureImage),
         shipMetadata,
         doAutoZoom);
@@ -1372,12 +1385,20 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
     mGameEventDispatcher->OnGameReset();
 }
 
-void GameController::OnShipAdded(
-    ShipId shipId,
+void GameController::OnShipCreated(
+    std::unique_ptr<Physics::Ship> ship,
     RgbaImageData && textureImage,
     ShipMetadata const & shipMetadata,
     StrongTypedBool<struct DoAutoZoom> doAutoZoom)
 {
+    ShipId const shipId = ship->GetId();
+
+    // Set recorder in ship (if any)
+    ship->SetEventRecorder(mEventRecorder.get());
+
+    // Add ship to our world
+    mWorld->AddShip(std::move(ship));
+
     // Auto-zoom (if requested)
     if (doAutoZoom && mDoAutoZoomOnShipLoad)
     {

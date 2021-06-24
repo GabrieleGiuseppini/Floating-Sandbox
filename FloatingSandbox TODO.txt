@@ -754,11 +754,12 @@ Render:
 							- Consider using original distance (the one set at distance map initialization time) for scaling strength
 								- Strength lowering is max at small distances, min at higher distances
 
-					- Parameters from outside:
-						- First off: refactor auto-texturization
-							- "DefaultSettings" -> "CommonSettings"
-							- Make ShipBuilder an instance of GameController, and make AutoTexturizer a member of ShipBuilder instead of GC
-								- ShipBuilder exposes setters for AutoTexturizationCommonSettings
+					= Parameters from outside:
+						= First off: refactor auto-texturization
+							+ "DefaultSettings" -> "CommonSettings"
+							+ Make ShipBuilder an instance of GameController, and make AutoTexturizer a member of ShipBuilder instead of GC
+								+ ShipBuilder exposes setters for AutoTexturizationCommonSettings
+							- Test: changing transparency and reloading
 						- Then, make "ShipStrengthRandomizer" class
 							- Also member of ShipBuilder
 							- Dynamics of settings is same as AutoTexturization

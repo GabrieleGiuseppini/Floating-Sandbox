@@ -165,29 +165,29 @@ public:
         mSaveSettingsOnExit = value;
     }
 
-    ShipAutoTexturizationSettings const & GetShipAutoTexturizationDefaultSettings() const
+    ShipAutoTexturizationSettings const & GetShipAutoTexturizationSharedSettings() const
     {
-        return mGameController->GetShipAutoTexturizationDefaultSettings();
+        return mGameController->GetShipAutoTexturizationSharedSettings();
     }
 
-    ShipAutoTexturizationSettings & GetShipAutoTexturizationDefaultSettings()
+    ShipAutoTexturizationSettings & GetShipAutoTexturizationSharedSettings()
     {
-        return mGameController->GetShipAutoTexturizationDefaultSettings();
+        return mGameController->GetShipAutoTexturizationSharedSettings();
     }
 
-    void SetShipAutoTexturizationDefaultSettings(ShipAutoTexturizationSettings const & settings)
+    void SetShipAutoTexturizationSharedSettings(ShipAutoTexturizationSettings const & settings)
     {
-        mGameController->SetShipAutoTexturizationDefaultSettings(settings);
+        mGameController->SetShipAutoTexturizationSharedSettings(settings);
     }
 
-    bool GetShipAutoTexturizationForceDefaultsOntoShipDefinition() const
+    bool GetShipAutoTexturizationForceSharedSettingsOntoShipDefinition() const
     {
-        return mGameController->GetShipAutoTexturizationDoForceDefaultSettingsOntoShipSettings();
+        return mGameController->GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings();
     }
 
-    void SetShipAutoTexturizationForceDefaultsOntoShipDefinition(bool value)
+    void SetShipAutoTexturizationForceSharedSettingsOntoShipDefinition(bool value)
     {
-        mGameController->SetShipAutoTexturizationDoForceDefaultSettingsOntoShipSettings(value);
+        mGameController->SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(value);
     }
 
     bool GetShowShipDescriptionsAtShipLoad() const

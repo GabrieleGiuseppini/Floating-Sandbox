@@ -5,8 +5,6 @@
  ***************************************************************************************/
 #include "Physics.h"
 
-#include "ShipBuilder.h"
-
 #include <GameCore/GameRandomEngine.h>
 
 #include <algorithm>
@@ -47,32 +45,15 @@ World::World(
     mOceanFloor.Update(gameParameters);
 }
 
-std::tuple<ShipId, RgbaImageData> World::AddShip(
-    ShipDefinition && shipDefinition,
-    MaterialDatabase const & materialDatabase,
-    ShipTexturizer const & shipTexturizer,
-    GameParameters const & gameParameters)
+ShipId World::GetNextShipId() const
 {
-    ShipId const shipId = static_cast<ShipId>(mAllShips.size());
+    return static_cast<ShipId>(mAllShips.size());
+}
 
-    // Build ship
-    auto [ship, textureImage] = ShipBuilder::Create(
-        shipId,
-        *this,
-        mGameEventHandler,
-        mTaskThreadPool,
-        std::move(shipDefinition),
-        materialDatabase,
-        shipTexturizer,
-        gameParameters);
-
-    // Set event recorder in new ship (if any)
-    ship->SetEventRecorder(mEventRecorder);
-
-    // Store ship
+void World::AddShip(std::unique_ptr<Ship> ship)
+{
+    assert(ship->GetId() == static_cast<ShipId>(mAllShips.size()));
     mAllShips.push_back(std::move(ship));
-
-    return std::make_tuple(shipId, std::move(textureImage));
 }
 
 void World::Announce()

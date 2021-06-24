@@ -299,12 +299,12 @@ void PreferencesDialog::OnAutoTexturizationModeRadioButtonClick(wxCommandEvent &
 {
     if (mFlatStructureAutoTexturizationModeRadioButton->GetValue())
     {
-        mUIPreferencesManager->GetShipAutoTexturizationDefaultSettings().Mode = ShipAutoTexturizationModeType::FlatStructure;
+        mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().Mode = ShipAutoTexturizationModeType::FlatStructure;
     }
     else
     {
         assert(mMaterialTexturesAutoTexturizationModeRadioButton->GetValue());
-        mUIPreferencesManager->GetShipAutoTexturizationDefaultSettings().Mode = ShipAutoTexturizationModeType::MaterialTextures;
+        mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().Mode = ShipAutoTexturizationModeType::MaterialTextures;
     }
 
     ReconciliateShipAutoTexturizationModeSettings();
@@ -312,10 +312,10 @@ void PreferencesDialog::OnAutoTexturizationModeRadioButtonClick(wxCommandEvent &
     mOnChangeCallback();
 }
 
-void PreferencesDialog::OnForceDefaultAutoTexturizationSettingsOntoShipCheckBoxClicked(wxCommandEvent & /*event*/)
+void PreferencesDialog::OnForceSharedAutoTexturizationSettingsOntoShipCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetShipAutoTexturizationForceDefaultsOntoShipDefinition(mForceDefaultAutoTexturizationSettingsOntoShipCheckBox->GetValue());
+    mUIPreferencesManager->SetShipAutoTexturizationForceSharedSettingsOntoShipDefinition(mForceSharedAutoTexturizationSettingsOntoShipCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -680,15 +680,15 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     CellBorder);
             }
 
-            // Force default settings onto ship
+            // Force shared settings onto ship
             {
-                mForceDefaultAutoTexturizationSettingsOntoShipCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
+                mForceSharedAutoTexturizationSettingsOntoShipCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
                     _("Force Defaults onto Ships"), wxDefaultPosition, wxDefaultSize, 0);
-                mForceDefaultAutoTexturizationSettingsOntoShipCheckBox->SetToolTip(_("Override individual ships' auto-texturization settings with these defaults. This setting is not saved, and it will revert to OFF the next time the game is played."));
-                mForceDefaultAutoTexturizationSettingsOntoShipCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnForceDefaultAutoTexturizationSettingsOntoShipCheckBoxClicked, this);
+                mForceSharedAutoTexturizationSettingsOntoShipCheckBox->SetToolTip(_("Override individual ships' auto-texturization settings with these defaults. This setting is not saved, and it will revert to OFF the next time the game is played."));
+                mForceSharedAutoTexturizationSettingsOntoShipCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnForceSharedAutoTexturizationSettingsOntoShipCheckBoxClicked, this);
 
                 sizer->Add(
-                    mForceDefaultAutoTexturizationSettingsOntoShipCheckBox,
+                    mForceSharedAutoTexturizationSettingsOntoShipCheckBox,
                     wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -706,7 +706,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     [this](float value)
                     {
                         assert(!!mUIPreferencesManager);
-                        mUIPreferencesManager->GetShipAutoTexturizationDefaultSettings().MaterialTextureMagnification = value;
+                        mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().MaterialTextureMagnification = value;
                         mOnChangeCallback();
                     },
                     std::make_unique<ExponentialSliderCore>(
@@ -733,7 +733,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     [this](float value)
                     {
                         assert(!!mUIPreferencesManager);
-                        mUIPreferencesManager->GetShipAutoTexturizationDefaultSettings().MaterialTextureTransparency = value;
+                        mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().MaterialTextureTransparency = value;
                         mOnChangeCallback();
                     },
                     std::make_unique<LinearSliderCore>(
@@ -1050,7 +1050,7 @@ void PreferencesDialog::ReadSettings()
     mAutoZoomAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetDoAutoZoomAtShipLoad());
     mAutoShowSwitchboardCheckBox->SetValue(mUIPreferencesManager->GetAutoShowSwitchboard());
     mShowElectricalNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowElectricalNotifications());
-    switch (mUIPreferencesManager->GetShipAutoTexturizationDefaultSettings().Mode)
+    switch (mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().Mode)
     {
         case ShipAutoTexturizationModeType::FlatStructure:
         {
@@ -1064,9 +1064,9 @@ void PreferencesDialog::ReadSettings()
             break;
         }
     }
-    mForceDefaultAutoTexturizationSettingsOntoShipCheckBox->SetValue(mUIPreferencesManager->GetShipAutoTexturizationForceDefaultsOntoShipDefinition());
-    mMaterialTextureMagnificationSlider->SetValue(mUIPreferencesManager->GetShipAutoTexturizationDefaultSettings().MaterialTextureMagnification);
-    mMaterialTextureTransparencySlider->SetValue(mUIPreferencesManager->GetShipAutoTexturizationDefaultSettings().MaterialTextureTransparency);
+    mForceSharedAutoTexturizationSettingsOntoShipCheckBox->SetValue(mUIPreferencesManager->GetShipAutoTexturizationForceSharedSettingsOntoShipDefinition());
+    mMaterialTextureMagnificationSlider->SetValue(mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().MaterialTextureMagnification);
+    mMaterialTextureTransparencySlider->SetValue(mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().MaterialTextureTransparency);
 
     mGlobalMuteCheckBox->SetValue(mUIPreferencesManager->GetGlobalMute());
     mBackgroundMusicVolumeSlider->SetValue(mUIPreferencesManager->GetBackgroundMusicVolume());
