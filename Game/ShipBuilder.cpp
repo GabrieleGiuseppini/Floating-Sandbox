@@ -45,13 +45,18 @@ ShipBuilder::ShipBuilder(ResourceLocator const & resourceLocator)
 {
 }
 
+void ShipBuilder::VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const
+{
+    mShipTexturizer.VerifyMaterialDatabase(materialDatabase);
+}
+
 std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     ShipId shipId,
     World & parentWorld,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    std::shared_ptr<TaskThreadPool> taskThreadPool,
     ShipDefinition && shipDefinition,
     MaterialDatabase const & materialDatabase,
+    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+    std::shared_ptr<TaskThreadPool> taskThreadPool,
     GameParameters const & gameParameters) const
 {
     auto const totalStartTime = std::chrono::steady_clock::now();
@@ -454,11 +459,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     return std::make_tuple(
         std::move(ship),
         std::move(textureImage));
-}
-
-void ShipBuilder::VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const
-{
-    mShipTexturizer.VerifyMaterialDatabase(materialDatabase);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

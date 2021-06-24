@@ -30,7 +30,8 @@
 #include <vector>
 
 /*
- * This class contains all the logic for building a ship out of a ShipDefinition.
+ * This class contains all the logic for building a ship out of a ShipDefinition, including
+ * ship post-processing.
  */
 class ShipBuilder
 {
@@ -38,16 +39,16 @@ public:
 
     ShipBuilder(ResourceLocator const & resourceLocator);
 
+    void VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const;
+
     std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> Create(
         ShipId shipId,
         Physics::World & parentWorld,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        std::shared_ptr<TaskThreadPool> taskThreadPool,
         ShipDefinition && shipDefinition,
         MaterialDatabase const & materialDatabase,
+        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+        std::shared_ptr<TaskThreadPool> taskThreadPool,
         GameParameters const & gameParameters) const;
-
-    void VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const;
 
     ShipAutoTexturizationSettings const & GetAutoTexturizationSharedSettings() const { return mShipTexturizer.GetSharedSettings(); }
 

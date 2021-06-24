@@ -302,10 +302,10 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
     auto [ship, textureImage] = mShipBuilder.Create(
         shipId,
         *mWorld,
-        mGameEventDispatcher,
-        mTaskThreadPool,
         std::move(shipDefinition),
         mMaterialDatabase,
+        mGameEventDispatcher,
+        mTaskThreadPool,
         mGameParameters);
 
     //
@@ -1341,10 +1341,10 @@ ShipMetadata GameController::ResetAndLoadShip(
     auto [ship, textureImage] = mShipBuilder.Create(
         shipId,
         *newWorld,
-        mGameEventDispatcher,
-        mTaskThreadPool,
         std::move(shipDefinition),
         mMaterialDatabase,
+        mGameEventDispatcher,
+        mTaskThreadPool,
         mGameParameters);
 
     //
