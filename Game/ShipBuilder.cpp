@@ -335,8 +335,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
     // Randomize strength
     //
 
-    // TODOTEST
-    //RandomizeStrength_Perlin(pointInfos2);
     RandomizeStrength_Batik(
         pointIndexMatrix,
         vec2i(minX, minY) + vec2i(1, 1), // Image -> PointIndexMatrix
@@ -1500,7 +1498,7 @@ void ShipBuilder::RandomizeStrength_Batik(
 
     // Choose number of cracks
     // TODOTEST
-    int const numberOfCracks = 3;
+    int const numberOfCracks = std::max(pointIndexMatrixRegionSize.x, pointIndexMatrixRegionSize.y) / 4;
 
     for (int iCrack = 0; iCrack < numberOfCracks; ++iCrack)
     {

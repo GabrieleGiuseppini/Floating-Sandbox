@@ -755,9 +755,14 @@ Render:
 								- Strength lowering is max at small distances, min at higher distances
 
 					- Parameters from outside:
-						- Passed to ShipBuilder as siblings of AutoTexturization settings
-							- Defaults live like AutoTexturization defaults live
-						- Density (grid spacing)
+						- First off: refactor auto-texturization
+							- "DefaultSettings" -> "CommonSettings"
+							- Make ShipBuilder an instance of GameController, and make AutoTexturizer a member of ShipBuilder instead of GC
+								- ShipBuilder exposes setters for AutoTexturizationCommonSettings
+						- Then, make "ShipStrengthRandomizer" class
+							- Also member of ShipBuilder
+							- Dynamics of settings is same as AutoTexturization
+						- Density
 						- Magnitude (room for change)
 						- Add to GamePreferences
 					- Test Titanic without breaking fault line
