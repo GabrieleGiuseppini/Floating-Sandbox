@@ -253,6 +253,16 @@ public:
     bool GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings() const override { return mShipBuilder.GetDoForceAutoTexturizationSharedSettingsOntoShipSettings(); }
     void SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(bool value) override { mShipBuilder.SetDoForceAutoTexturizationSharedSettingsOntoShipSettings(value); }
 
+    //
+    // Ship building parameters
+    //
+
+    float GetShipStrengthRandomizationDensityAdjustment() const override { return mShipBuilder.GetShipStrengthRandomizationDensityAdjustment(); }
+    void SetShipStrengthRandomizationDensityAdjustment(float value) override { mShipBuilder.SetShipStrengthRandomizationDensityAdjustment(value); }
+
+    float GetShipStrengthRandomizationExtent() const override { return mShipBuilder.GetShipStrengthRandomizationExtent(); }
+    void SetShipStrengthRandomizationExtent(float value) { mShipBuilder.SetShipStrengthRandomizationExtent(value); }
+
     /////////////////////////////////////////////////////////
     // IGameControllerSettings and IGameControllerSettingsOptions
     /////////////////////////////////////////////////////////

@@ -738,8 +738,10 @@ Render:
 							+ Update distance map after each crack
 							- Density of cracks
 								- Largest dimension (among W & H) / 4..8 
+								- Use settings
 							- Set points' strengths at end, by making distance map = struct{distance, bool}
 								- Set strength only on points that have connected triangles
+								- Use settings
 							- Take & log running time
 							- Consider optimizing for exclusive use of distance map, not point index matrix
 								- "PixelMatrix" -> "DistanceMatrix"
@@ -750,23 +752,25 @@ Render:
 									- Set to 0 for frontiers
 								- During algo: avoid points with distance 0							
 						- Finalization:
+							- Skip randomization if any of the settings are zero
 							- Direction perturbation: consider avoiding perturbation to already cracked point
 							- Consider using original distance (the one set at distance map initialization time) for scaling strength
 								- Strength lowering is max at small distances, min at higher distances
 
 					= Parameters from outside:
-						= First off: refactor auto-texturization
+						+ First off: refactor auto-texturization
 							+ "DefaultSettings" -> "CommonSettings"
 							+ Make ShipBuilder an instance of GameController, and make AutoTexturizer a member of ShipBuilder instead of GC
 								+ ShipBuilder exposes setters for AutoTexturizationCommonSettings
-							- Test: changing transparency and reloading
-						- Then, make "ShipStrengthRandomizer" class
-							- Also member of ShipBuilder
-							- Dynamics of settings is same as AutoTexturization
-						- Density
-						- Magnitude (room for change)
-						- Add to GamePreferences
-					- Test Titanic without breaking fault line
+						+ Then, make "ShipStrengthRandomizer" class
+							+ Also member of ShipBuilder
+							+ Dynamics of settings is same as AutoTexturization
+						+ Density
+						+ Magnitude (room for change)
+						+ Add to GamePreferences
+						- Verify it is saved and loaded
+					- Test Titanic without breaking fault line: see if breaks my itself
+						- Make new ship given that you are at it
 					- Adjust:
 						- SCS titanic: offset Y
 

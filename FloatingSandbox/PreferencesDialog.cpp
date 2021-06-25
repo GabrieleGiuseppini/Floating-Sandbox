@@ -631,6 +631,9 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
     // Finalize panel
 
+    for (int c = 0; c < gridSizer->GetCols(); ++c)
+        gridSizer->AddGrowableCol(c);
+
     panel->SetSizer(gridSizer);
 }
 
@@ -657,7 +660,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
                     mFlatStructureAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBoxSizer->GetStaticBox(), wxID_ANY,
                         _("Flat Structure"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-                    mFlatStructureAutoTexturizationModeRadioButton->SetToolTip(_("When a ship does not have a high-definition image, generates one using the materials' matte colors. Changes to this setting are only visible after a new ship is loaded."));
+                    mFlatStructureAutoTexturizationModeRadioButton->SetToolTip(_("When a ship does not have a high-definition image, generates one using the materials' matte colors. Changes to this setting will only be visible after the next ship is loaded."));
                     mFlatStructureAutoTexturizationModeRadioButton->Bind(wxEVT_RADIOBUTTON, &PreferencesDialog::OnAutoTexturizationModeRadioButtonClick, this);
                     texturizationModeSizer->Add(mFlatStructureAutoTexturizationModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
@@ -665,7 +668,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
                     mMaterialTexturesAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBoxSizer->GetStaticBox(), wxID_ANY,
                         _("Material Textures"), wxDefaultPosition, wxDefaultSize);
-                    mMaterialTexturesAutoTexturizationModeRadioButton->SetToolTip(_("When a ship does not have a high-definition image, generates one using material-specific textures. Changes to this setting are only visible after a new ship is loaded."));
+                    mMaterialTexturesAutoTexturizationModeRadioButton->SetToolTip(_("When a ship does not have a high-definition image, generates one using material-specific textures. Changes to this setting will only be visible after the next ship is loaded."));
                     mMaterialTexturesAutoTexturizationModeRadioButton->Bind(wxEVT_RADIOBUTTON, &PreferencesDialog::OnAutoTexturizationModeRadioButtonClick, this);
                     texturizationModeSizer->Add(mMaterialTexturesAutoTexturizationModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
 
@@ -702,7 +705,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     _("Texture Magnification"),
-                    _("Changes the level of detail of materials' textures. Changes to this setting are only visible after a new ship is loaded."),
+                    _("Changes the level of detail of materials' textures. Changes to this setting will only be visible after the next ship is loaded."),
                     [this](float value)
                     {
                         assert(!!mUIPreferencesManager);
@@ -729,7 +732,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     _("Texture Transparency"),
-                    _("Changes the transparency of materials' textures. Changes to this setting are only visible after a new ship is loaded."),
+                    _("Changes the transparency of materials' textures. Changes to this setting will only be visible after the next ship is loaded."),
                     [this](float value)
                     {
                         assert(!!mUIPreferencesManager);
@@ -754,6 +757,80 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorder);
+    }
+
+    //
+    // Strength randomization
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Strength Randomization"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Density Adjustment
+            {
+                mStrengthRandomizationDensityAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Density Adjust"),
+                    _("Adjusts the amount of weaknesses injected in structures. Changes to this setting will only be in effect when the next ship is loaded."),
+                    [this](float value)
+                    {
+                        assert(!!mUIPreferencesManager);
+                        mUIPreferencesManager->SetShipStrengthRandomizationDensityAdjustment(value);
+                        mOnChangeCallback();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        0.0f,
+                        1.0f,
+                        10.0f));
+
+                sizer->Add(
+                    mStrengthRandomizationDensityAdjustmentSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            // Randomization Extent
+            {
+                mStrengthRandomizationExtentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Extent"),
+                    _("Adjusts the extent to which structures are weakened. Changes to this setting will only be in effect when the next ship is loaded."),
+                    [this](float value)
+                    {
+                        assert(!!mUIPreferencesManager);
+                        mUIPreferencesManager->SetShipStrengthRandomizationExtent(value);
+                        mOnChangeCallback();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                sizer->Add(
+                    mStrengthRandomizationExtentSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorder);
+            }
+
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 1),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorder);
@@ -849,7 +926,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 1),
+            wxGBPosition(0, 2),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorder);
@@ -1067,6 +1144,8 @@ void PreferencesDialog::ReadSettings()
     mForceSharedAutoTexturizationSettingsOntoShipCheckBox->SetValue(mUIPreferencesManager->GetShipAutoTexturizationForceSharedSettingsOntoShipDefinition());
     mMaterialTextureMagnificationSlider->SetValue(mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().MaterialTextureMagnification);
     mMaterialTextureTransparencySlider->SetValue(mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().MaterialTextureTransparency);
+    mStrengthRandomizationDensityAdjustmentSlider->SetValue(mUIPreferencesManager->GetShipStrengthRandomizationDensityAdjustment());
+    mStrengthRandomizationExtentSlider->SetValue(mUIPreferencesManager->GetShipStrengthRandomizationExtent());
 
     mGlobalMuteCheckBox->SetValue(mUIPreferencesManager->GetGlobalMute());
     mBackgroundMusicVolumeSlider->SetValue(mUIPreferencesManager->GetBackgroundMusicVolume());

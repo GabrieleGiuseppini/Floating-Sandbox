@@ -102,6 +102,8 @@ private:
     wxCheckBox * mForceSharedAutoTexturizationSettingsOntoShipCheckBox;
     SliderControl<float> * mMaterialTextureMagnificationSlider;
     SliderControl<float> * mMaterialTextureTransparencySlider;
+    SliderControl<float> * mStrengthRandomizationDensityAdjustmentSlider;
+    SliderControl<float> * mStrengthRandomizationExtentSlider;
 
     // Global Sound and Music panel
     wxCheckBox * mGlobalMuteCheckBox;

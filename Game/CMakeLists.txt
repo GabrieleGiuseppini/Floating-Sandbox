@@ -46,6 +46,8 @@ set  (GAME_SOURCES
 	ShipPreviewDirectoryManager.h
 	ShipPreviewImageDatabase.cpp
 	ShipPreviewImageDatabase.h
+	ShipStrengthRandomizer.cpp
+	ShipStrengthRandomizer.h
 	ShipTexturizer.cpp
 	ShipTexturizer.h
 	VisibleWorld.h)

@@ -277,6 +277,26 @@ void UIPreferencesManager::LoadPreferences()
         ////}
 
         //
+        // Ship strength randomization density adjustment
+        //
+
+        if (auto it = preferencesRootObject->find("ship_strength_randomization_density_adjustment");
+            it != preferencesRootObject->end() && it->second.is<double>())
+        {
+            mGameController->SetShipStrengthRandomizationDensityAdjustment(static_cast<float>(it->second.get<double>()));
+        }
+
+        //
+        // Ship strength randomization extent
+        //
+
+        if (auto it = preferencesRootObject->find("ship_strength_randomization_extent");
+            it != preferencesRootObject->end() && it->second.is<double>())
+        {
+            mGameController->SetShipStrengthRandomizationExtent(static_cast<float>(it->second.get<double>()));
+        }
+
+        //
         // Auto-zoom at ship load
         //
 
@@ -466,6 +486,12 @@ void UIPreferencesManager::SavePreferences() const
     // We don't load/save this setting on purpose
     ////// Add ship auto-texturization force shared settings onto ship
     ////preferencesRootObject["ship_auto_texturization_force_defaults_onto_ship"] = picojson::value(mGameController->GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings());
+
+    // Add ship strength randomization density adjustment
+    preferencesRootObject["ship_strength_randomization_density_adjustment"] = picojson::value(static_cast<double>(mGameController->GetShipStrengthRandomizationDensityAdjustment()));
+
+    // Add ship strength randomization extent
+    preferencesRootObject["ship_strength_randomization_extent"] = picojson::value(static_cast<double>(mGameController->GetShipStrengthRandomizationExtent()));
 
     // Add auto zoom at ship load
     preferencesRootObject["auto_zoom_at_ship_load"] = picojson::value(mGameController->GetDoAutoZoomOnShipLoad());

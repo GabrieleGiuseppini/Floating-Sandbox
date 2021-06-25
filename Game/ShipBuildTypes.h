@@ -7,11 +7,13 @@
 
 #include "Materials.h"
 
+#include <GameCore/FixedSizeVector.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/Matrix.h>
 #include <GameCore/Vectors.h>
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <memory>
 #include <optional>
@@ -20,7 +22,7 @@
 /*
  * Definitions of data structures related to ship building.
  *
- * These structures are shared between the ship builder and the ship texturizer.
+ * These structures are shared between the ship builder and the ship post-processors.
  */
 
 using ShipBuildPointIndexMatrix = Matrix2<std::optional<ElementIndex>>;
@@ -85,4 +87,61 @@ private:
             ConnectedSprings1.cend(),
             springIndex1) != ConnectedSprings1.cend();
     }
+};
+
+struct ShipBuildSpring
+{
+    ElementIndex PointAIndex1;
+    uint32_t PointAAngle;
+
+    ElementIndex PointBIndex1;
+    uint32_t PointBAngle;
+
+    FixedSizeVector<ElementIndex, 2> SuperTriangles2; // Triangles that have this spring as an edge
+
+    ElementCount CoveringTrianglesCount; // Triangles that cover this spring, not necessarily having is as an edge
+
+    ShipBuildSpring(
+        ElementIndex pointAIndex1,
+        uint32_t pointAAngle,
+        ElementIndex pointBIndex1,
+        uint32_t pointBAngle)
+        : PointAIndex1(pointAIndex1)
+        , PointAAngle(pointAAngle)
+        , PointBIndex1(pointBIndex1)
+        , PointBAngle(pointBAngle)
+        , SuperTriangles2()
+        , CoveringTrianglesCount(0)
+    {
+    }
+};
+
+struct ShipBuildTriangle
+{
+    std::array<ElementIndex, 3> PointIndices1;
+
+    FixedSizeVector<ElementIndex, 3> SubSprings2;
+
+    std::optional<ElementIndex> CoveredTraverseSpringIndex2;
+
+    ShipBuildTriangle(
+        std::array<ElementIndex, 3> const & pointIndices1)
+        : PointIndices1(pointIndices1)
+        , SubSprings2()
+        , CoveredTraverseSpringIndex2()
+    {
+    }
+};
+
+struct ShipBuildFrontier
+{
+    FrontierType Type;
+    std::vector<ElementIndex> EdgeIndices2;
+
+    ShipBuildFrontier(
+        FrontierType type,
+        std::vector<ElementIndex> && edgeIndices2)
+        : Type(type)
+        , EdgeIndices2(std::move(edgeIndices2))
+    {}
 };

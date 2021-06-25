@@ -11,12 +11,11 @@
 #include "ResourceLocator.h"
 #include "ShipBuildTypes.h"
 #include "ShipDefinition.h"
+#include "ShipStrengthRandomizer.h"
 #include "ShipTexturizer.h"
 
-#include <GameCore/FixedSizeVector.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageSize.h>
-#include <GameCore/Matrix.h>
 #include <GameCore/TaskThreadPool.h>
 
 #include <algorithm>
@@ -55,10 +54,13 @@ public:
     ShipAutoTexturizationSettings & GetAutoTexturizationSharedSettings() { return mShipTexturizer.GetSharedSettings(); }
 
     void SetAutoTexturizationSharedSettings(ShipAutoTexturizationSettings const & sharedSettings) { mShipTexturizer.SetSharedSettings(sharedSettings); }
-
     bool GetDoForceAutoTexturizationSharedSettingsOntoShipSettings() const { return mShipTexturizer.GetDoForceSharedSettingsOntoShipSettings(); }
-
     void SetDoForceAutoTexturizationSharedSettingsOntoShipSettings(bool value) { mShipTexturizer.SetDoForceSharedSettingsOntoShipSettings(value); }
+
+    float GetShipStrengthRandomizationDensityAdjustment() const { return mShipStrengthRandomizer.GetDensityAdjustment(); }
+    void SetShipStrengthRandomizationDensityAdjustment(float value) { mShipStrengthRandomizer.SetDensityAdjustment(value); }
+    float GetShipStrengthRandomizationExtent() const { return mShipStrengthRandomizer.GetRandomizationExtent(); }
+    void SetShipStrengthRandomizationExtent(float value) { mShipStrengthRandomizer.SetRandomizationExtent(value); }
 
 private:
 
@@ -99,77 +101,6 @@ private:
             }
         }
     };
-
-    struct ShipBuildSpring
-    {
-        ElementIndex PointAIndex1;
-        uint32_t PointAAngle;
-
-        ElementIndex PointBIndex1;
-        uint32_t PointBAngle;
-
-        FixedSizeVector<ElementIndex, 2> SuperTriangles2; // Triangles that have this spring as an edge
-
-        ElementCount CoveringTrianglesCount; // Triangles that cover this spring, not necessarily having is as an edge
-
-        ShipBuildSpring(
-            ElementIndex pointAIndex1,
-            uint32_t pointAAngle,
-            ElementIndex pointBIndex1,
-            uint32_t pointBAngle)
-            : PointAIndex1(pointAIndex1)
-            , PointAAngle(pointAAngle)
-            , PointBIndex1(pointBIndex1)
-            , PointBAngle(pointBAngle)
-            , SuperTriangles2()
-            , CoveringTrianglesCount(0)
-        {
-        }
-    };
-
-    struct ShipBuildTriangle
-    {
-        std::array<ElementIndex, 3> PointIndices1;
-
-        FixedSizeVector<ElementIndex, 3> SubSprings2;
-
-        std::optional<ElementIndex> CoveredTraverseSpringIndex2;
-
-        ShipBuildTriangle(
-            std::array<ElementIndex, 3> const & pointIndices1)
-            : PointIndices1(pointIndices1)
-            , SubSprings2()
-            , CoveredTraverseSpringIndex2()
-        {
-        }
-    };
-
-    struct ShipBuildFrontier
-    {
-        FrontierType Type;
-        std::vector<ElementIndex> EdgeIndices2;
-
-        ShipBuildFrontier(
-            FrontierType type,
-            std::vector<ElementIndex> && edgeIndices2)
-            : Type(type)
-            , EdgeIndices2(std::move(edgeIndices2))
-        {}
-    };
-
-    struct BatikPixel
-    {
-        float Distance;
-        bool IsCrack;
-
-        BatikPixel()
-            : Distance(std::numeric_limits<float>::max())
-            , IsCrack(false)
-        {
-        }
-    };
-
-    using BatikPixelMatrix = Matrix2<BatikPixel>;
 
 private:
 
@@ -296,28 +227,6 @@ private:
         PointPairToIndexMap const & pointPairToSpringIndex1Map,
         std::vector<ElementIndex> const & springIndexRemap2) const;
 
-    void RandomizeStrength_Perlin(std::vector<ShipBuildPoint> & pointInfos2) const;
-
-    void RandomizeStrength_Batik(
-        ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        vec2i const & pointIndexMatrixRegionOrigin,
-        vec2i const & pointIndexMatrixRegionSize,
-        std::vector<ShipBuildPoint> & pointInfos2,
-        std::vector<ElementIndex> const & pointIndexRemap2,
-        std::vector<ShipBuildSpring> const & springInfos2,
-        std::vector<ShipBuildTriangle> const & triangleInfos1,
-        std::vector<ShipBuildFrontier> const & shipBuildFrontiers) const;
-
-    template<typename TRandomEngine>
-    void PropagateBatikCrack(
-        vec2i const & startingPoint,
-        ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        vec2i const & pointIndexMatrixOffset,
-        BatikPixelMatrix & pixelMatrix,
-        TRandomEngine & randomEngine) const;
-
-    void UpdateBatikDistances(BatikPixelMatrix & pixelMatrix) const;
-
     Physics::Points CreatePoints(
         std::vector<ShipBuildPoint> const & pointInfos2,
         Physics::World & parentWorld,
@@ -357,12 +266,6 @@ private:
         std::vector<ShipBuildFrontier> const & shipBuildFrontiers,
         Physics::Points const & points,
         Physics::Springs const & springs) const;
-
-    template <typename TAcceptor>
-    std::optional<Octant> FindClosestOctant(
-        Octant startOctant,
-        int maxOctantDivergence,
-        TAcceptor const & acceptor) const;
 
 #ifdef _DEBUG
     void VerifyShipInvariants(
@@ -510,5 +413,6 @@ private:
 
 private:
 
+    ShipStrengthRandomizer mShipStrengthRandomizer;
     ShipTexturizer mShipTexturizer;
 };

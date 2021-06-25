@@ -190,6 +190,26 @@ public:
         mGameController->SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(value);
     }
 
+    float GetShipStrengthRandomizationDensityAdjustment() const
+    {
+        return mGameController->GetShipStrengthRandomizationDensityAdjustment();
+    }
+
+    void SetShipStrengthRandomizationDensityAdjustment(float value)
+    {
+        mGameController->SetShipStrengthRandomizationDensityAdjustment(value);
+    }
+
+    float GetShipStrengthRandomizationExtent() const
+    {
+        return mGameController->GetShipStrengthRandomizationExtent();
+    }
+
+    void SetShipStrengthRandomizationExtent(float value)
+    {
+        mGameController->SetShipStrengthRandomizationExtent(value);
+    }
+
     bool GetShowShipDescriptionsAtShipLoad() const
     {
         return mShowShipDescriptionsAtShipLoad;
