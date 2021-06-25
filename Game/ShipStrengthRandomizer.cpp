@@ -350,8 +350,6 @@ void ShipStrengthRandomizer::PropagateBatikCrack(
     BatikPixelMatrix & pixelMatrix,
     TRandomEngine & randomEngine) const
 {
-    LogMessage("TODOTEST: ---------------------PropagateBatikCrack");
-
     auto const directionPerturbationDistribution = std::uniform_int_distribution(-1, 1);
 
     //
@@ -364,8 +362,6 @@ void ShipStrengthRandomizer::PropagateBatikCrack(
     for (vec2i p = startingPoint; ;)
     {
         crackPointCoords.emplace_back(p);
-
-        LogMessage("TODOTEST: ", p.toString(), " (d=", pixelMatrix[p].Distance, ")");
 
         //
         // Check whether we're done
@@ -407,8 +403,6 @@ void ShipStrengthRandomizer::PropagateBatikCrack(
         // Randomize the direction
         //
 
-        LogMessage("   TODOTEST: oct'=", *bestNextPointOctant);
-
         bestNextPointOctant = FindClosestOctant(
             *bestNextPointOctant + directionPerturbationDistribution(randomEngine),
             2,
@@ -417,8 +411,6 @@ void ShipStrengthRandomizer::PropagateBatikCrack(
             vec2i const candidateCoords = p + OctantDirections[candidateOctant];
             return pointIndexMatrix[candidateCoords + pointIndexMatrixRegionOrigin].has_value();
         });
-
-        LogMessage("   TODOTEST: oct''=", *bestNextPointOctant);
 
         //
         // Follow this point
