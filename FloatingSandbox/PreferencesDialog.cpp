@@ -14,17 +14,18 @@
 
 #include <algorithm>
 
-static constexpr int Border = 10;
+static int constexpr Border = 10;
 
 static int constexpr StaticBoxTopMargin = 7;
 static int constexpr StaticBoxInsetMargin = 10;
-static int constexpr CellBorder = 8;
+static int constexpr CellBorderInner = 8;
+static int constexpr CellBorderOuter = 4;
 
-static int constexpr SliderWidth = 82;
+static int constexpr SliderWidth = 82; // Min
 static int constexpr SliderHeight = 140;
 
-static constexpr int MaxZoomIncrementPosition = 200;
-static constexpr int MaxPanIncrementPosition = 200;
+static int constexpr MaxZoomIncrementPosition = 200;
+static int constexpr MaxPanIncrementPosition = 200;
 
 PreferencesDialog::PreferencesDialog(
     wxWindow* parent,
@@ -584,7 +585,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             wxGBPosition(0, 0),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
-            CellBorder);
+            CellBorderOuter);
     }
 
     //
@@ -626,7 +627,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             wxGBPosition(0, 1),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
-            CellBorder);
+            CellBorderOuter);
     }
 
     // Finalize panel
@@ -680,7 +681,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             // Force shared settings onto ship
@@ -695,7 +696,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             // Material Texture Magnification
@@ -722,7 +723,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     wxGBPosition(0, 1),
                     wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             // Material Texture Transparency
@@ -748,7 +749,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     wxGBPosition(0, 2),
                     wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
@@ -759,7 +760,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
             wxGBPosition(0, 0),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
-            CellBorder);
+            CellBorderOuter);
     }
 
     //
@@ -796,7 +797,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             // Randomization Extent
@@ -822,7 +823,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
@@ -833,7 +834,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
             wxGBPosition(0, 1),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
-            CellBorder);
+            CellBorderOuter);
     }
 
     //
@@ -858,7 +859,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             // Show Ship Description at Ship Load
@@ -873,7 +874,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             // Auto-Zoom
@@ -888,7 +889,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             // Auto-Show Switchboard
@@ -903,7 +904,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     wxGBPosition(3, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             // Show Electrical Notifications
@@ -918,7 +919,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     wxGBPosition(4, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
-                    CellBorder);
+                    CellBorderInner);
             }
 
             boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
@@ -929,7 +930,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
             wxGBPosition(0, 2),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
-            CellBorder);
+            CellBorderOuter);
     }
 
     // Finalize panel
