@@ -147,6 +147,8 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     //  - A crack should propagate as fast as possible to the nearest feature (i.e.earlier crack or border of the wax)
     //
 
+    auto const startTime = std::chrono::steady_clock::now();
+
     // Setup deterministic randomness
 
     std::seed_seq seq({ 1, 242, 19730528 });
@@ -283,10 +285,10 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
                 *bestNextPointOctant + 4,
                 2,
                 [&](Octant candidateOctant)
-            {
-                vec2i const candidateCoords = startingPointCoords + OctantDirections[candidateOctant];
-                return pointIndexMatrix[candidateCoords + pointIndexMatrixRegionOrigin].has_value();
-            });
+                {
+                    vec2i const candidateCoords = startingPointCoords + OctantDirections[candidateOctant];
+                    return pointIndexMatrix[candidateCoords + pointIndexMatrixRegionOrigin].has_value();
+                });
 
             if (oppositeOctant.has_value())
             {
@@ -309,11 +311,27 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     // Randomize strengths
     //
 
+    for (int x = 0; x < pixelMatrix.Width; ++x)
+    {
+        for (int y = 0; y < pixelMatrix.Height; ++y)
+        {
+            vec2i const pointCoords(x, y);
+
+            if (auto const & pointIndex1 = pointIndexMatrix[pointCoords + pointIndexMatrixRegionOrigin];
+                pixelMatrix[pointCoords].IsCrack
+                && pointIndex1.has_value()
+                && !pointInfos2[pointIndexRemap2[*pointIndex1]].ConnectedTriangles1.empty())
+            {
+                pointInfos2[pointIndexRemap2[*pointIndex1]].Strength *= (1.0f - mRandomizationExtent);
+            }
+        }
+    }
+
     // TODOHERE
 
     ///////////////////////////////////////////////////////////////////////////
     // TODOTEST
-
+    /*
     float maxDistance = 0.0f;
     for (int x = 0; x < pixelMatrix.Width; ++x)
     {
@@ -340,6 +358,11 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
             }
         }
     }
+    */
+
+    LogMessage("ShipStrengthRandomizer: completed randomization:",
+        " numberOfCracks=", numberOfCracks,
+        " time=", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startTime).count(), "us");
 }
 
 template<typename TRandomEngine>

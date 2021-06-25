@@ -63,6 +63,8 @@ RgbaImageData ShipTexturizer::Texturize(
     ShipBuildPointIndexMatrix const & pointMatrix, // One more point on each side, to avoid checking for boundaries
     std::vector<ShipBuildPoint> const & points) const
 {
+    auto const startTime = std::chrono::steady_clock::now();
+
     // Zero-out cache usage counts
     ResetMaterialTextureCacheUseCounts();
 
@@ -98,8 +100,6 @@ RgbaImageData ShipTexturizer::Texturize(
     //
 
     auto newImageData = std::make_unique<rgbaColor[]>(textureSize.GetPixelCount());
-
-    auto const startTime = std::chrono::steady_clock::now();
 
     for (int y = 1; y <= structureSize.Height; ++y)
     {

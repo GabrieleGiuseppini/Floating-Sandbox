@@ -736,13 +736,13 @@ Render:
 								+ Remove unneeded structureImageSize args
 							+ Optimization (for e.g. BaseIII): initial random point is chosen on triangles
 							+ Update distance map after each crack
-							= Density of cracks
+							+ Density of cracks
 								+ Largest dimension (among W & H) / 4..8 
 								+ Use settings
-							- Set points' strengths at end, by making distance map = struct{distance, bool}
-								- Set strength only on points that have connected triangles
-								- Use settings
-							- Take & log running time
+							+ Set points' strengths at end, by making distance map = struct{distance, bool}
+								+ Set strength only on points that have connected triangles
+								+ Use settings
+							+ Take & log running time
 							- Consider optimizing for exclusive use of distance map, not point index matrix
 								- "PixelMatrix" -> "DistanceMatrix"
 								- And integral distances
@@ -752,7 +752,7 @@ Render:
 									- Set to 0 for frontiers
 								- During algo: avoid points with distance 0							
 						- Finalization:
-							- Skip randomization if any of the settings are zero
+							+ Skip randomization if any of the settings are zero
 							- Direction perturbation: consider avoiding perturbation to already cracked point
 							- Consider using original distance (the one set at distance map initialization time) for scaling strength
 								- Strength lowering is max at small distances, min at higher distances
@@ -773,6 +773,8 @@ Render:
 						- Make new ship given that you are at it
 					- Adjust:
 						- SCS titanic: offset Y
+			- Finalization:
+				- Default randomization values based on slider steps
 
 		- Another hydrostatic pressure attempt:
 			- Frontier: do not act on non-hull points, but then compensate net resultant force (and may be resultant torque as well)
