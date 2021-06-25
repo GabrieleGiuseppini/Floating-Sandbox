@@ -52,6 +52,13 @@ void ShipStrengthRandomizer::RandomizeStrength(
 
 void ShipStrengthRandomizer::RandomizeStrength_Perlin(std::vector<ShipBuildPoint> & pointInfos2) const
 {
+    if (mDensityAdjustment == 0.0f
+        || mRandomizationExtent == 0.0f)
+    {
+        // Nothing to do
+        return;
+    }
+
     //
     // Basic Perlin noise generation
     //
@@ -107,11 +114,9 @@ void ShipStrengthRandomizer::RandomizeStrength_Perlin(std::vector<ShipBuildPoint
             float const perlin = Mix(interpx1, interpx2, off00.y);
 
             // Randomize strength
-            // TODO: use settings
-            float constexpr RandomRange = 0.4f;
             point.Strength *=
-                (1.0f - RandomRange)
-                + RandomRange * std::sqrt(std::abs(perlin));
+                (1.0f - mRandomizationExtent)
+                + mRandomizationExtent * std::sqrt(std::abs(perlin));
         }
     }
 }
@@ -126,6 +131,13 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     std::vector<ShipBuildTriangle> const & triangleInfos1,
     std::vector<ShipBuildFrontier> const & shipBuildFrontiers) const
 {
+    if (mDensityAdjustment == 0.0f
+        || mRandomizationExtent == 0.0f)
+    {
+        // Nothing to do
+        return;
+    }
+
     //
     // Adapted from https://www.researchgate.net/publication/221523196_Rendering_cracks_in_Batik
     //
@@ -134,13 +146,6 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     //    since there the stress is (locally) maximal;
     //  - A crack should propagate as fast as possible to the nearest feature (i.e.earlier crack or border of the wax)
     //
-
-    if (mDensityAdjustment == 0.0f
-        || mRandomizationExtent == 0.0f)
-    {
-        // Nothing to do
-        return;
-    }
 
     // Setup deterministic randomness
 
