@@ -135,6 +135,13 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     //  - A crack should propagate as fast as possible to the nearest feature (i.e.earlier crack or border of the wax)
     //
 
+    if (mDensityAdjustment == 0.0f
+        || mRandomizationExtent == 0.0f)
+    {
+        // Nothing to do
+        return;
+    }
+
     // Setup deterministic randomness
 
     std::seed_seq seq({ 1, 242, 19730528 });
@@ -179,8 +186,10 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     //
 
     // Choose number of cracks
-    // TODOTEST
-    int const numberOfCracks = std::max(pointIndexMatrixRegionSize.x, pointIndexMatrixRegionSize.y) / 4;
+    int const numberOfCracks = static_cast<int>(
+        static_cast<float>(std::max(pointIndexMatrixRegionSize.x, pointIndexMatrixRegionSize.y))
+        / 4.0f
+        * mDensityAdjustment);
 
     for (int iCrack = 0; iCrack < numberOfCracks; ++iCrack)
     {

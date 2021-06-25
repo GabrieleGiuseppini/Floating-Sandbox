@@ -736,9 +736,9 @@ Render:
 								+ Remove unneeded structureImageSize args
 							+ Optimization (for e.g. BaseIII): initial random point is chosen on triangles
 							+ Update distance map after each crack
-							- Density of cracks
-								- Largest dimension (among W & H) / 4..8 
-								- Use settings
+							= Density of cracks
+								+ Largest dimension (among W & H) / 4..8 
+								+ Use settings
 							- Set points' strengths at end, by making distance map = struct{distance, bool}
 								- Set strength only on points that have connected triangles
 								- Use settings
