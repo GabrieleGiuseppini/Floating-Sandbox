@@ -743,9 +743,10 @@ Render:
 								+ Set strength only on points that have connected triangles
 								+ Use settings
 							+ Take & log running time
-							- Consider optimizing for exclusive use of distance map, not point index matrix
-								- "PixelMatrix" -> "DistanceMatrix"
-								- And integral distances
+								+ Ark: 68/69ms, max density
+							= Consider optimizing for exclusive use of distance map, not point index matrix
+								+ "PixelMatrix" -> "DistanceMatrix"
+								+ And integral distances
 								- Distance map init:
 									- Init with 0 distance everywhere (will be the outside)
 									- Set to +inf all vertices of triangles

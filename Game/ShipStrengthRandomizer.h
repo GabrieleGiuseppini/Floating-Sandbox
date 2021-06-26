@@ -10,6 +10,7 @@
 #include <GameCore/Matrix.h>
 #include <GameCore/Vectors.h>
 
+#include <cstdint>
 #include <limits>
 #include <vector>
 
@@ -57,19 +58,19 @@ private:
 
     void RandomizeStrength_Perlin(std::vector<ShipBuildPoint> & pointInfos2) const;
 
-    struct BatikPixel
+    struct BatikDistance
     {
-        float Distance;
+        int32_t Distance;
         bool IsCrack;
 
-        BatikPixel()
-            : Distance(std::numeric_limits<float>::max())
+        BatikDistance()
+            : Distance(std::numeric_limits<int32_t>::max())
             , IsCrack(false)
         {
         }
     };
 
-    using BatikPixelMatrix = Matrix2<BatikPixel>;
+    using BatikDistanceMatrix = Matrix2<BatikDistance>;
 
     void RandomizeStrength_Batik(
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
@@ -86,10 +87,10 @@ private:
         vec2i const & startingPoint,
         ShipBuildPointIndexMatrix const & pointIndexMatrix,
         vec2i const & pointIndexMatrixOffset,
-        BatikPixelMatrix & pixelMatrix,
+        BatikDistanceMatrix & distanceMatrix,
         TRandomEngine & randomEngine) const;
 
-    void UpdateBatikDistances(BatikPixelMatrix & pixelMatrix) const;
+    void UpdateBatikDistances(BatikDistanceMatrix & distanceMatrix) const;
 
     template <typename TAcceptor>
     std::optional<Octant> FindClosestOctant(
