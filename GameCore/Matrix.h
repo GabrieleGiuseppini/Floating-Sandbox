@@ -10,8 +10,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
-#include <memory>
-#include <vector>
 
 template<typename TValue>
 struct Matrix2
@@ -34,19 +32,33 @@ struct Matrix2
         TValue defaultValue)
         : Width(width)
         , Height(height)
+        , mColumns(nullptr)
+        , mMatrixStorage(nullptr)
     {
-        mMatrix.reserve(Width);
-        for (int c = 0; c < Width; ++c)
+        mMatrixStorage = std::malloc(sizeof(TValue *) * width + sizeof(TValue) * height * width);
+
+        mColumns = reinterpret_cast<TValue **>(mMatrixStorage);
+
+        for (int c = 0; c < width; ++c)
         {
-            auto col = Column(static_cast<TValue *>(std::malloc(sizeof(TValue) * height)), &std::free);
+            TValue * const col = reinterpret_cast<TValue *>(
+                reinterpret_cast<uint8_t *>(mMatrixStorage)
+                + sizeof(TValue *) * width
+                + sizeof(TValue) * height * c);
 
-            std::fill(
-                col.get(),
-                col.get() + height,
-                defaultValue);
+            mColumns[c] = col;
 
-            mMatrix.push_back(std::move(col));
+            for (int r = 0; r < height; ++r)
+            {
+                new(&(col[r])) TValue(defaultValue);
+            }
         }
+    }
+
+    ~Matrix2()
+    {
+        assert(mMatrixStorage != nullptr);
+        std::free(mMatrixStorage);
     }
 
     TValue & operator[](vec2i const & index)
@@ -57,11 +69,13 @@ struct Matrix2
     TValue const & operator[](vec2i const & index) const
     {
         assert(index.IsInRect(*this));
-        return mMatrix[index.x].get()[index.y];
+        return mColumns[index.x][index.y];
     }
 
 private:
 
-    using Column = std::unique_ptr<TValue, decltype(&std::free)>;
-    std::vector<Column> mMatrix;
+    TValue ** mColumns;
+
+    // The storage
+    void * mMatrixStorage;
 };

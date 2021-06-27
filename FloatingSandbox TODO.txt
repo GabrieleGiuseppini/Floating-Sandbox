@@ -757,6 +757,7 @@ Render:
 									+ Verify assembly for using lambda at UpdateDistances
 								+ See if time increase is due to matrix indexing
 								- See what time increase is due to
+									+ New matrix: 68/69
 						- Finalization:
 							+ Skip randomization if any of the settings are zero
 							- Direction perturbation: consider avoiding perturbation to already cracked point
