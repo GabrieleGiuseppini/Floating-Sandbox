@@ -60,11 +60,11 @@ private:
 
     struct BatikDistance
     {
-        int32_t Distance;
+        uint32_t Distance;
         bool IsCrack;
 
-        BatikDistance()
-            : Distance(std::numeric_limits<int32_t>::max())
+        BatikDistance(uint32_t distance)
+            : Distance(distance)
             , IsCrack(false)
         {
         }
@@ -85,8 +85,6 @@ private:
     template<typename TRandomEngine>
     void PropagateBatikCrack(
         vec2i const & startingPoint,
-        ShipBuildPointIndexMatrix const & pointIndexMatrix,
-        vec2i const & pointIndexMatrixOffset,
         BatikDistanceMatrix & distanceMatrix,
         TRandomEngine & randomEngine) const;
 

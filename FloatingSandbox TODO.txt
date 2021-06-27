@@ -727,7 +727,7 @@ Render:
 				= InjectCracks
 					+ Do basic
 					= Try another crack algorithm
-						= Batik
+						+ Batik
 							+ Finish region-relativity
 							+ Find better way of doing index math/relativity
 								+ vec2i @ vectors.h, replacing Matrix2Index and RectRegion
@@ -744,14 +744,17 @@ Render:
 								+ Use settings
 							+ Take & log running time
 								+ Ark: 68/69ms, max density
-							= Consider optimizing for exclusive use of distance map, not point index matrix
+							+ Consider optimizing for exclusive use of distance map, not point index matrix
 								+ "PixelMatrix" -> "DistanceMatrix"
 								+ And integral distances
-								- Distance map init:
-									- Init with 0 distance everywhere (will be the outside)
-									- Set to +inf all vertices of triangles
-									- Set to 0 for frontiers
-								- During algo: avoid points with distance 0							
+								+ Distance map init:
+									+ Init with 0 distance everywhere (will be the outside)
+									+ Set to +inf all vertices of triangles
+									+ Set to 0 for frontiers
+								+ During algo: avoid points with distance 0							
+								+ New time: 88ms
+								+ Finalization:
+									+ Verify assembly for using lambda at UpdateDistances
 						- Finalization:
 							+ Skip randomization if any of the settings are zero
 							- Direction perturbation: consider avoiding perturbation to already cracked point

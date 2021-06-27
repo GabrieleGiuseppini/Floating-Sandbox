@@ -33,20 +33,12 @@ struct Matrix2
         TValue defaultValue)
         : Width(width)
         , Height(height)
+        , mMatrix(static_cast<TValue *>(std::malloc(sizeof(TValue) * width * height)), &std::free)
     {
-        mMatrix.reset(new std::unique_ptr<TValue[]>[width]);
-
-        for (int c = 0; c < width; ++c)
-        {
-            auto col = std::unique_ptr<TValue[]>(new TValue[height]);
-
-            std::fill(
-                col.get(),
-                col.get() + height,
-                defaultValue);
-
-            mMatrix[c] = std::move(col);
-        }
+        std::fill(
+            mMatrix.get(),
+            mMatrix.get() + width * height,
+            defaultValue);
     }
 
     TValue & operator[](vec2i const & index)
@@ -57,10 +49,10 @@ struct Matrix2
     TValue const & operator[](vec2i const & index) const
     {
         assert(index.IsInRect(*this));
-        return mMatrix[index.x][index.y];
+        return mMatrix.get()[index.x * Height + index.y];
     }
 
 private:
 
-    std::unique_ptr<std::unique_ptr<TValue[]>[]> mMatrix;
+    std::unique_ptr<TValue, decltype(&std::free)> mMatrix;
 };
