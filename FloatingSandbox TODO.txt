@@ -743,7 +743,7 @@ Render:
 								+ Set strength only on points that have connected triangles
 								+ Use settings
 							+ Take & log running time
-								+ Ark: 68/69ms, max density
+								+ Ark: 62/63ms, max density
 							= Consider optimizing for exclusive use of distance map, not point index matrix
 								+ "PixelMatrix" -> "DistanceMatrix"
 								+ And integral distances
@@ -756,6 +756,7 @@ Render:
 								+ Finalization:
 									+ Verify assembly for using lambda at UpdateDistances
 								+ See if time increase is due to matrix indexing
+								- See what time increase is due to
 						- Finalization:
 							+ Skip randomization if any of the settings are zero
 							- Direction perturbation: consider avoiding perturbation to already cracked point
