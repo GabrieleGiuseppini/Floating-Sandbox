@@ -11,6 +11,7 @@
 #include <cassert>
 #include <cstdint>
 #include <memory>
+#include <vector>
 
 template<typename TValue>
 struct Matrix2
@@ -33,12 +34,19 @@ struct Matrix2
         TValue defaultValue)
         : Width(width)
         , Height(height)
-        , mMatrix(static_cast<TValue *>(std::malloc(sizeof(TValue) * width * height)), &std::free)
     {
-        std::fill(
-            mMatrix.get(),
-            mMatrix.get() + width * height,
-            defaultValue);
+        mMatrix.reserve(Width);
+        for (int c = 0; c < Width; ++c)
+        {
+            auto col = Column(static_cast<TValue *>(std::malloc(sizeof(TValue) * height)), &std::free);
+
+            std::fill(
+                col.get(),
+                col.get() + height,
+                defaultValue);
+
+            mMatrix.push_back(std::move(col));
+        }
     }
 
     TValue & operator[](vec2i const & index)
@@ -49,10 +57,11 @@ struct Matrix2
     TValue const & operator[](vec2i const & index) const
     {
         assert(index.IsInRect(*this));
-        return mMatrix.get()[index.x * Height + index.y];
+        return mMatrix[index.x].get()[index.y];
     }
 
 private:
 
-    std::unique_ptr<TValue, decltype(&std::free)> mMatrix;
+    using Column = std::unique_ptr<TValue, decltype(&std::free)>;
+    std::vector<Column> mMatrix;
 };
