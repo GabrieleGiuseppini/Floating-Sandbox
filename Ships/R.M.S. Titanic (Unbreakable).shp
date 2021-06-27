@@ -1,0 +1,29 @@
+{
+	"structure_image":"rms_titanic_unbreakable_structure.png.dat",
+	"electrical_image":"rms_titanic_unbreakable_electrical.png.dat",
+	"texture_image":"rms_titanic_unbreakable_texture.png.dat",
+	"offset":{"x":0.0, "y":-6.0},
+	"ship_name":"R.M.S. Titanic (Unbreakable)",
+	"created_by":"Gabriele Giuseppini & Michael Bozarth",
+	"year_built":"1912",
+	"description":
+		"The 'R.M.S. Titanic' was a British passenger liner that was made to be unsinkable... Until her first maiden voyage in 1912. In a little more than the way into of her maiden trip to New York City, New York, United States of America, she had struck an iceberg and sank to the bottom of the North Atlantic Ocean, 3800 meters below sea level, where she sits to this day. She slowly deteriorates over time because of the hungry bacteria eating away at its structure and hull. Scientists say she will be completely lost by the year 2030. So long Titanic!<br/><br/>This version of the Titanic features a sturdier structure.",
+	"electrical_panel":{
+
+		"0": {"panel_x":-9, "panel_y":0, "label":"Engine Aft" },
+		"7": {"panel_x":-8, "panel_y":0, "label":"Engine Aft" },
+
+		"8": {"panel_x":-6, "panel_y":0, "label":"Generator" },
+
+		"4": {"panel_x":-4, "panel_y":0, "label":"Funnel 1" },
+		"3": {"panel_x":-3, "panel_y":0, "label":"Funnel 2" },
+		"2": {"panel_x":-2, "panel_y":0, "label":"Funnel 3" },
+		"1": {"panel_x":-1, "panel_y":0, "label":"Funnel 4" },
+
+		"6": {"panel_x":1, "panel_y":0, "label":"Aft Decks" },
+		"5": {"panel_x":2, "panel_y":0, "label":"Fore Decks" },
+
+		"9": {"panel_x":4, "panel_y":0, "label":"Bell" },
+		"10": {"panel_x":5, "panel_y":0, "label":"Fog Horn" }
+	}
+}

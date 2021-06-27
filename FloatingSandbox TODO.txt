@@ -726,7 +726,7 @@ Render:
 						+ See if can also reason in terms of PointInfo's
 				= InjectCracks
 					+ Do basic
-					= Try another crack algorithm
+					+ Try another crack algorithm
 						+ Batik
 							+ Finish region-relativity
 							+ Find better way of doing index math/relativity
@@ -759,13 +759,11 @@ Render:
 								+ See what time increase is due to
 									+ New matrix: 68/69
 									+ float distances: 63/64
-						- Finalization:
+						+ Finalization:
 							+ Skip randomization if any of the settings are zero
-							- Direction perturbation: consider avoiding perturbation to already cracked point
-							- Consider using original distance (the one set at distance map initialization time) for scaling strength
+							X Consider using original distance (the one set at distance map initialization time) for scaling strength
 								- Strength lowering is max at small distances, min at higher distances
-
-					= Parameters from outside:
+					+ Parameters from outside:
 						+ First off: refactor auto-texturization
 							+ "DefaultSettings" -> "CommonSettings"
 							+ Make ShipBuilder an instance of GameController, and make AutoTexturizer a member of ShipBuilder instead of GC
@@ -776,11 +774,11 @@ Render:
 						+ Density
 						+ Magnitude (room for change)
 						+ Add to GamePreferences
-						- Verify it is saved and loaded
-					- Test Titanic without breaking fault line: see if breaks my itself
-						- Make new ship given that you are at it
-					- Adjust:
-						- SCS titanic: offset Y
+						+ Verify it is saved and loaded
+					= Test Titanic without breaking fault line: see if breaks my itself
+						+ Make new ship given that you are at it
+					- Final params:
+						- 2, 0.6 (good for Triton)
 			- Finalization:
 				- Default randomization values based on slider steps
 
