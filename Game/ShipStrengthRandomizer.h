@@ -60,10 +60,10 @@ private:
 
     struct BatikDistance
     {
-        uint32_t Distance;
+        float Distance;
         bool IsCrack;
 
-        BatikDistance(uint32_t distance)
+        BatikDistance(float distance)
             : Distance(distance)
             , IsCrack(false)
         {
