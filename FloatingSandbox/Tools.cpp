@@ -52,7 +52,7 @@ MoveTool::MoveTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : BaseMoveTool(
         ToolType::Move,
         toolCursorManager,
@@ -69,7 +69,7 @@ MoveAllTool::MoveAllTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : BaseMoveTool(
         ToolType::MoveAll,
         toolCursorManager,
@@ -90,7 +90,7 @@ PickAndPullTool::PickAndPullTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::PickAndPull,
         toolCursorManager,
@@ -109,7 +109,7 @@ SmashTool::SmashTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : ContinuousTool(
         ToolType::Smash,
         toolCursorManager,
@@ -153,7 +153,7 @@ SawTool::SawTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::Saw,
         toolCursorManager,
@@ -178,7 +178,7 @@ HeatBlasterTool::HeatBlasterTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::HeatBlaster,
         toolCursorManager,
@@ -201,7 +201,7 @@ FireExtinguisherTool::FireExtinguisherTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::FireExtinguisher,
         toolCursorManager,
@@ -221,7 +221,7 @@ GrabTool::GrabTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : ContinuousTool(
         ToolType::Grab,
         toolCursorManager,
@@ -270,7 +270,7 @@ SwirlTool::SwirlTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : ContinuousTool(
         ToolType::Grab,
         toolCursorManager,
@@ -319,7 +319,7 @@ PinTool::PinTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : OneShotTool(
         ToolType::Pin,
         toolCursorManager,
@@ -337,7 +337,7 @@ InjectAirBubblesTool::InjectAirBubblesTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::InjectAirBubbles,
         toolCursorManager,
@@ -357,7 +357,7 @@ FloodHoseTool::FloodHoseTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::FloodHose,
         toolCursorManager,
@@ -379,7 +379,7 @@ AntiMatterBombTool::AntiMatterBombTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : OneShotTool(
         ToolType::AntiMatterBomb,
         toolCursorManager,
@@ -397,7 +397,7 @@ ImpactBombTool::ImpactBombTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : OneShotTool(
         ToolType::ImpactBomb,
         toolCursorManager,
@@ -415,7 +415,7 @@ RCBombTool::RCBombTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : OneShotTool(
         ToolType::RCBomb,
         toolCursorManager,
@@ -433,7 +433,7 @@ TimerBombTool::TimerBombTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : OneShotTool(
         ToolType::TimerBomb,
         toolCursorManager,
@@ -451,7 +451,7 @@ WaveMakerTool::WaveMakerTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : OneShotTool(
         ToolType::WaveMaker,
         toolCursorManager,
@@ -470,7 +470,7 @@ TerrainAdjustTool::TerrainAdjustTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::TerrainAdjust,
         toolCursorManager,
@@ -492,7 +492,7 @@ ScrubTool::ScrubTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::Scrub,
         toolCursorManager,
@@ -516,7 +516,7 @@ RepairStructureTool::RepairStructureTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::RepairStructure,
         toolCursorManager,
@@ -542,7 +542,7 @@ ThanosSnapTool::ThanosSnapTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : OneShotTool(
         ToolType::ThanosSnap,
         toolCursorManager,
@@ -561,7 +561,7 @@ ScareFishTool::ScareFishTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::ScareFish,
         toolCursorManager,
@@ -587,7 +587,7 @@ PhysicsProbeTool::PhysicsProbeTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : OneShotTool(
         ToolType::PhysicsProbe,
         toolCursorManager,
@@ -605,7 +605,7 @@ BlastTool::BlastTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::BlastTool,
         toolCursorManager,
@@ -626,7 +626,7 @@ ElectricSparkTool::ElectricSparkTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
-    ResourceLocator & resourceLocator)
+    ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::ElectricSparkTool,
         toolCursorManager,

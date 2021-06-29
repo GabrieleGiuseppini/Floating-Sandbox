@@ -13,6 +13,8 @@
 #include "UIPreferencesManager.h"
 #include "UnhandledExceptionHandler.h"
 
+#include <Game/ResourceLocator.h>
+
 #include <GameCore/FloatingPoint.h>
 #include <GameCore/SysSpecifics.h>
 
@@ -60,6 +62,7 @@ private:
 private:
 
     MainFrame * mMainFrame;
+    std::unique_ptr<ResourceLocator> mResourceLocator;
     std::unique_ptr<LocalizationManager> mLocalizationManager;
 
 
@@ -94,6 +97,7 @@ bool MainApp::OnInit()
 {
     if (!wxApp::OnInit())
         return false;
+
 
     //
     // Install handler for unhandled exceptions
@@ -161,7 +165,13 @@ bool MainApp::OnInit()
     try
     {
         //
-        // Initialize wxWidgets
+        // Initialize resource locator
+        //
+
+        mResourceLocator = std::make_unique<ResourceLocator>(std::string(argv[0]));
+
+        //
+        // Initialize wxWidgets and language used for localization
         //
 
         // Image handlers
@@ -169,13 +179,13 @@ bool MainApp::OnInit()
 
         // Language
         auto const preferredLanguage = UIPreferencesManager::LoadPreferredLanguage();
-        mLocalizationManager = LocalizationManager::CreateInstance(preferredLanguage);
+        mLocalizationManager = LocalizationManager::CreateInstance(preferredLanguage, *mResourceLocator);
 
         //
         // Create frame
         //
 
-        mMainFrame = new MainFrame(this, *mLocalizationManager);
+        mMainFrame = new MainFrame(this, *mResourceLocator , *mLocalizationManager);
 
         SetTopWindow(mMainFrame);
 

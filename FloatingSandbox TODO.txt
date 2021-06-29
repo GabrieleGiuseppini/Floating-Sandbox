@@ -708,8 +708,8 @@ Render:
 						- Please send me a screenshot of this one
 			+ Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
 			+ FPS: 13-14
-			- Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
-				- Add log entry for current directory *and* for executable directory
+			= Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
+				+ Add log entry for current directory *and* for executable directory
 			- Packaging:
 				- wxWidgets so's
 					- See if may statically link
@@ -775,12 +775,18 @@ Render:
 						+ Magnitude (room for change)
 						+ Add to GamePreferences
 						+ Verify it is saved and loaded
-					= Test Titanic without breaking fault line: see if breaks my itself
+					= Test Titanic without breaking fault line: see if breaks by itself
 						+ Make new ship given that you are at it
+					= Tests:
+						- Paper
+						- Cardboard
+						- Blimps
+						- Base
+						- Ball of water and air
 					- Final params:
-						- 2, 0.6 (good for Triton)
+						+ 2, 0.6 (good for Triton)
 			- Finalization:
-				- Default randomization values based on slider steps
+				- Default parameter values based on slider steps
 
 		- Another hydrostatic pressure attempt:
 			- Frontier: do not act on non-hull points, but then compensate net resultant force (and may be resultant torque as well)
@@ -820,18 +826,28 @@ Render:
 				- Idea: one single "TriangleQuads" VBO for all render contexts, created and initialized in GlobalRenderContext, and passed
 				  to all child contextes via cctor
 					- New class in OpenGL lib: TriangleQuadsSeriesVBO
-						- Wraps VBO (public) and local buffer (BoundedVector, private)
-							- VBO taken in cctor (read below, instance of TriangleQuadsSeriesVBO is deferred-init'd as uq_ptr)
+						- Wraps VBO (private) and local buffer (BoundedVector, private)
+							- VBO created in static factory (read below, instance of TriangleQuadsSeriesVBO is deferred-init'd as uq_ptr)
 						- Exposes void ensure_size(# of quads)
-							- If # of quads > current: enlarge & populate local buffer, re-allocates VBO and uploads new portion
+							- If # of quads > current: enlarge & populate local buffer, flag as dirty
 							- Starts empty
-						- Exposes VBO via getter
-					- One single instance owned by GlobalRenderContext, as uq_ptr (w/deferred creation taking VBO)
-						- At GlobalRenderContext::cctor()
+						- Exposes IsDirty()
+						- Exposes Bind()
+						- Exposes Upload()
+							- Binds and uploads
+						- OLD:						
+							- Exposes void ensure_size(# of quads)
+								- If # of quads > current: enlarge & populate local buffer, re-allocates VBO and uploads new portion
+								- Starts empty
+							- Exposes VBO via getter
+					- One single instance owned by GlobalRenderContext, as uq_ptr (w/deferred creation via static Create())
+						- At GlobalRenderContext::cctor() (verify doable)
 					- Passed to child contextes as reference
-					- Child contextes do:
-						- Prepare: ensure_size(# of quads)
-						- Draw: Bind it before drawing quads
+					- GlobalContext does:
+						- @RenderPrepare: if TriangleQuadsSeriesVBO.IsDirty: Upload()
+					- Child contextes do:				
+						- Upload(): ensure_size(# of quads)
+						- Draw: Bind before drawing quads
 			- If works, other candidates:
 				- Clouds
 				- Generic textures

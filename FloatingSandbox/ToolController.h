@@ -31,7 +31,7 @@ public:
         wxWindow * parentWindow,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
-        ResourceLocator & resourceLocator);
+        ResourceLocator const & resourceLocator);
 
     void SetTool(ToolType toolType)
     {

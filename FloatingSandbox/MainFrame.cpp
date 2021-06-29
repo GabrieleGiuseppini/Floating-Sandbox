@@ -119,11 +119,12 @@ long const ID_CHECK_UPDATES_TIMER = wxNewId();
 
 MainFrame::MainFrame(
     wxApp * mainApp,
+    ResourceLocator const & resourceLocator,
     LocalizationManager & localizationManager)
     : mCurrentOpenGLCanvas(nullptr)
     , mMainApp(mainApp)
+    , mResourceLocator(resourceLocator)
     , mLocalizationManager(localizationManager)
-    , mResourceLocator()
     , mGameController()
     , mSoundController()
     , mMusicController()

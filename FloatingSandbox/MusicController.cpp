@@ -16,7 +16,7 @@
 using namespace std::chrono_literals;
 
 MusicController::MusicController(
-    ResourceLocator &  resourceLocator,
+    ResourceLocator const &  resourceLocator,
     ProgressCallback const & progressCallback)
     : // State
       mIsMuted(false)
@@ -50,7 +50,7 @@ MusicController::MusicController(
 
         // Notify progress
         progressCallback(
-            static_cast<float>(i + 1) / static_cast<float>(musicNames.size()), 
+            static_cast<float>(i + 1) / static_cast<float>(musicNames.size()),
             ProgressMessageType::LoadingMusic);
 
         //

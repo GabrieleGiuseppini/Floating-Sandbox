@@ -33,7 +33,7 @@ class MusicController final
 public:
 
     MusicController(
-        ResourceLocator & resourceLocator,
+        ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 
 	~MusicController();

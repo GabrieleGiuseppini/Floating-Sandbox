@@ -30,7 +30,7 @@ std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-    ResourceLocator & resourceLocator,
+    ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
 {
     return std::unique_ptr<SwitchboardPanel>(
@@ -50,7 +50,7 @@ SwitchboardPanel::SwitchboardPanel(
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-    ResourceLocator & resourceLocator,
+    ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
     : mShowingMode(ShowingMode::NotShowing)
     , mLeaveWindowTimer()

@@ -60,6 +60,7 @@ public:
 
     MainFrame(
         wxApp * mainApp,
+        ResourceLocator const & resourceLocator,
         LocalizationManager & localizationManager);
 
     bool ProcessKeyDown(
@@ -371,8 +372,8 @@ private:
     // Helpers
     //
 
+    ResourceLocator const & mResourceLocator;
     LocalizationManager & mLocalizationManager;
-    ResourceLocator mResourceLocator;
     std::shared_ptr<GameController> mGameController;
     std::shared_ptr<SoundController> mSoundController;
     std::shared_ptr<MusicController> mMusicController;

@@ -40,7 +40,7 @@ class SoundController
 public:
 
     SoundController(
-        ResourceLocator & resourceLocator,
+        ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 
 	virtual ~SoundController();

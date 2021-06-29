@@ -26,11 +26,11 @@ namespace WxHelpers
         std::string const & cursorName,
         int hotspotX,
         int hotspotY,
-        ResourceLocator & resourceLocator);
+        ResourceLocator const & resourceLocator);
 
     wxImage LoadCursorImage(
         std::string const & cursorName,
         int hotspotX,
         int hotspotY,
-        ResourceLocator & resourceLocator);
+        ResourceLocator const & resourceLocator);
 };

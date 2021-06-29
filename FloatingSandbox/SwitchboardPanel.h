@@ -49,7 +49,7 @@ public:
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-        ResourceLocator & resourceLocator,
+        ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 
     virtual ~SwitchboardPanel();
@@ -176,7 +176,7 @@ private:
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
         std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
-        ResourceLocator & resourceLocator,
+        ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 
     void MakeSwitchPanel();

@@ -5,8 +5,6 @@
 ***************************************************************************************/
 #include "LocalizationManager.h"
 
-#include <Game/ResourceLocator.h>
-
 #include <GameCore/Log.h>
 
 #include <algorithm>
@@ -16,10 +14,12 @@ static wxLanguage constexpr TranslationsMsgIdLangId = wxLANGUAGE_ENGLISH; // The
 
 static std::string const TranslationsDomainName = "ui_strings";
 
-std::unique_ptr<LocalizationManager> LocalizationManager::CreateInstance(std::optional<std::string> desiredLanguageIdentifier)
+std::unique_ptr<LocalizationManager> LocalizationManager::CreateInstance(
+    std::optional<std::string> desiredLanguageIdentifier,
+    ResourceLocator const & resourceLocator)
 {
     // Create list of available languages
-    auto availableLanguages = MakeAvailableLanguages();
+    auto availableLanguages = MakeAvailableLanguages(resourceLocator);
 
     // See desired language
     std::optional<LanguageInfo> desiredLanguageInfo;
@@ -61,7 +61,7 @@ std::unique_ptr<LocalizationManager> LocalizationManager::CreateInstance(std::op
     else
     {
         // Add the catalog path
-        locale->AddCatalogLookupPathPrefix(ResourceLocator::GetLanguagesRootPath().string());
+        locale->AddCatalogLookupPathPrefix(resourceLocator.GetLanguagesRootPath().string());
 
         // Add the standard wxWidgets catalog
         if (auto const translations = wxTranslations::Get();
@@ -130,7 +130,7 @@ std::string LocalizationManager::MakeLanguageIdentifier(wxString const & canonic
     return canonicalLanguageName.BeforeFirst('_').ToStdString();
 }
 
-std::vector<LocalizationManager::LanguageInfo> LocalizationManager::MakeAvailableLanguages()
+std::vector<LocalizationManager::LanguageInfo> LocalizationManager::MakeAvailableLanguages(ResourceLocator const & resourceLocator)
 {
     std::vector<LanguageInfo> languages;
 
@@ -138,7 +138,7 @@ std::vector<LocalizationManager::LanguageInfo> LocalizationManager::MakeAvailabl
     // Enumerate all directories under our "languages" root
     //
 
-    for (auto const & entryIt : std::filesystem::directory_iterator(ResourceLocator::GetLanguagesRootPath()))
+    for (auto const & entryIt : std::filesystem::directory_iterator(resourceLocator.GetLanguagesRootPath()))
     {
         if (std::filesystem::is_directory(entryIt.path()))
         {

@@ -29,7 +29,7 @@ std::chrono::milliseconds constexpr SawedInertiaDuration = std::chrono::millisec
 float constexpr WaveSplashTriggerSize = 0.5f;
 
 SoundController::SoundController(
-    ResourceLocator & resourceLocator,
+    ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
     : // State
       mMasterEffectsVolume(50.0f)

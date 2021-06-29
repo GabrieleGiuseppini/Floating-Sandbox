@@ -13,7 +13,7 @@ class ResourceLocator
 {
 public:
 
-    ResourceLocator();
+    explicit ResourceLocator(std::string const & argv0);
 
 public:
 
@@ -108,13 +108,13 @@ public:
     // Help
     //
 
-    static std::filesystem::path GetStartupTipFilePath(
+    std::filesystem::path GetStartupTipFilePath(
         std::string const & desiredLanguageIdentifier,
-        std::string const & defaultLanguageIdentifier);
+        std::string const & defaultLanguageIdentifier) const;
 
-    static std::filesystem::path GetHelpFilePath(
+    std::filesystem::path GetHelpFilePath(
         std::string const & desiredLanguageIdentifier,
-        std::string const & defaultLanguageIdentifier);
+        std::string const & defaultLanguageIdentifier) const;
 
 
     //
@@ -123,14 +123,14 @@ public:
 
     std::filesystem::path GetRenderShadersRootPath() const;
 
-    static std::filesystem::path GetGPUCalcShadersRootPath();
+    std::filesystem::path GetGPUCalcShadersRootPath() const;
 
 
     //
     // Localization
     //
 
-    static std::filesystem::path GetLanguagesRootPath();
+    std::filesystem::path GetLanguagesRootPath() const;
 
 
     //
@@ -138,4 +138,10 @@ public:
     //
 
     std::filesystem::path GetBootSettingsFilePath() const;
+
+private:
+
+    std::filesystem::path MakeAbsolutePath(std::filesystem::path const & relativePath) const;
+
+    std::filesystem::path const mRootPath;
 };
