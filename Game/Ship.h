@@ -431,6 +431,11 @@ private:
         GameParameters const & gameParameters,
         Geometry::AABBSet & aabbSet);
 
+    template<typename TVisitor>
+    void VisitFrontierHullPoints(
+        Frontiers::Frontier const & frontier,
+        TVisitor && visitor);
+
     void ApplyHydrostaticPressureForces(
         float effectiveAirDensity,
         float effectiveWaterDensity,

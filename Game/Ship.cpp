@@ -1251,6 +1251,184 @@ void Ship::ApplyWorldSurfaceForces(
     }
 }
 
+// TODOOLD
+////void Ship::ApplyHydrostaticPressureForces(
+////    float /*effectiveAirDensity*/, // CODEWORK: future, if we want to also apply *air* pressure
+////    float effectiveWaterDensity,
+////    GameParameters const & gameParameters)
+////{
+////    //
+////    // The hydrostatic pressure force acting on point P, between edges
+////    // E1 and E2, is:
+////    //
+////    //      F(P) = F(E1)/2 + F(E2)/2
+////    //
+////    // The hydrostatic pressure force acting on edge Ei is:
+////    //
+////    //      F(Ei) = -Ni * D * Mw * G * |Ei|
+////    //
+////    // Where Ni is the normal to Ei, D is the depth (which we take constant
+////    // so to not produce buoyancy forces), Mw * G is the weight of water, and
+////    // |Ei| accounts for wider edges being subject to more pressure.
+////    //
+////    //
+////    // We will rewrite F(Ei) as:
+////    //
+////    //      F(Ei) = -Perp(Ei) * ForceStem
+////    //
+////    // And thus:
+////    //
+////    //      F(P)  = (-Perp(E1) -Perp(E2)) * ForceStem / 2
+////    //
+////    //
+////    //
+////    // Notes:
+////    //  - We use the AABB's center as the point where the depth is calculated at;
+////    //    as a consequence, if the ship is interactively moved or rotated, the AABB's
+////    //    that we use here are stale. Not a big deal...
+////    //    Outside of these "moving" interactions, the AABBs we use here are also
+////    //    inconsistent with the current positions because of integration during dynamic
+////    //    iterations, unless hydrostatic pressures are calculated on the *first* dynamic
+////    //    iteration.
+////    //
+////
+////    for (FrontierId const frontierId : mFrontiers.GetFrontierIds())
+////    {
+////        auto const & frontier = mFrontiers.GetFrontier(frontierId);
+////
+////        // Only consider external frontiers
+////        if (frontier.Type == FrontierType::External)
+////        {
+////            //
+////            // Calculate force stem
+////            //
+////
+////            float const pressureForceStem =
+////                std::max(mParentWorld.GetDepth(frontier.AABB.CalculateCenter()), 0.0f)
+////                * effectiveWaterDensity
+////                * GameParameters::GravityMagnitude
+////                * gameParameters.HydrostaticPressureAdjustment
+////                / 2.0f; // We include the division that we'll need for the particle force
+////
+////            //
+////            // Visit all edges
+////            //
+////            //               thisPoint
+////            //                   V
+////            // ...---*---edge1---*---edge2---*---nextEdge---....
+////            //
+////
+////            ElementIndex edge1Index = frontier.StartingEdgeIndex;
+////
+////            ElementIndex edge2Index = mFrontiers.GetFrontierEdge(edge1Index).NextEdgeIndex;
+////
+////            ElementIndex thisPointIndex = mFrontiers.GetFrontierEdge(edge2Index).PointAIndex;
+////
+////            vec2f edge1PerpVector =
+////                -(mPoints.GetPosition(thisPointIndex) - mPoints.GetPosition(mFrontiers.GetFrontierEdge(edge1Index).PointAIndex)).to_perpendicular();
+////
+////#ifdef _DEBUG
+////            ElementCount visitedPoints = 0;
+////#endif
+////
+////            ElementIndex const startEdgeIndex = mFrontiers.GetFrontierEdge(edge2Index).NextEdgeIndex;
+////
+////            for (ElementIndex nextEdgeIndex = startEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
+////            {
+////#ifdef _DEBUG
+////                ++visitedPoints;
+////#endif
+////                auto const & nextEdge = mFrontiers.GetFrontierEdge(nextEdgeIndex);
+////                ElementIndex const nextPointIndex = nextEdge.PointAIndex;
+////
+////                vec2f edge2PerpVector =
+////                    -(mPoints.GetPosition(nextPointIndex) - mPoints.GetPosition(thisPointIndex)).to_perpendicular();
+////
+////                // Apply force - we apply it as a *dynamic* force, otherwise if it were static it would
+////                // generate phantom torques due to geometries changing for every dynamic step
+////
+////                vec2f const pressureForce =
+////                    (edge1PerpVector + edge2PerpVector) * pressureForceStem;
+////
+////                mPoints.AddDynamicForce(
+////                    thisPointIndex,
+////                    pressureForce);
+////
+////                // Advance
+////                nextEdgeIndex = nextEdge.NextEdgeIndex;
+////                if (nextEdgeIndex == startEdgeIndex)
+////                    break;
+////
+////                thisPointIndex = nextPointIndex;
+////                edge1PerpVector = edge2PerpVector;
+////            }
+////
+////#ifdef _DEBUG
+////            assert(visitedPoints == frontier.Size);
+////#endif
+////        }
+////    }
+////}
+
+// TODOTEST: improve
+template<typename TVisitor>
+void Ship::VisitFrontierHullPoints(
+    Frontiers::Frontier const & frontier,
+    TVisitor && visitor)
+{
+    //
+    // Visit all edges
+    //
+    //               thisPoint
+    //                   V
+    // ...---*---edge1---*---edge2---*---nextEdge---....
+    //
+
+    ElementIndex edge1Index = frontier.StartingEdgeIndex;
+
+    ElementIndex edge2Index = mFrontiers.GetFrontierEdge(edge1Index).NextEdgeIndex;
+
+    ElementIndex thisPointIndex = mFrontiers.GetFrontierEdge(edge2Index).PointAIndex;
+
+    vec2f edge1PerpVector =
+        -(mPoints.GetPosition(thisPointIndex) - mPoints.GetPosition(mFrontiers.GetFrontierEdge(edge1Index).PointAIndex)).to_perpendicular();
+
+#ifdef _DEBUG
+    ElementCount visitedPoints = 0;
+#endif
+
+    ElementIndex const startEdgeIndex = mFrontiers.GetFrontierEdge(edge2Index).NextEdgeIndex;
+
+    for (ElementIndex nextEdgeIndex = startEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
+    {
+#ifdef _DEBUG
+        ++visitedPoints;
+#endif
+        auto const & nextEdge = mFrontiers.GetFrontierEdge(nextEdgeIndex);
+        ElementIndex const nextPointIndex = nextEdge.PointAIndex;
+
+        vec2f edge2PerpVector =
+            -(mPoints.GetPosition(nextPointIndex) - mPoints.GetPosition(thisPointIndex)).to_perpendicular();
+
+        if (mPoints.GetIsHull(thisPointIndex))
+        {
+            visitor(thisPointIndex, edge1PerpVector, edge2PerpVector);
+        }
+
+        // Advance
+        nextEdgeIndex = nextEdge.NextEdgeIndex;
+        if (nextEdgeIndex == startEdgeIndex)
+            break;
+
+        thisPointIndex = nextPointIndex;
+        edge1PerpVector = edge2PerpVector;
+    }
+
+#ifdef _DEBUG
+    assert(visitedPoints == frontier.Size);
+#endif
+}
+
 void Ship::ApplyHydrostaticPressureForces(
     float /*effectiveAirDensity*/, // CODEWORK: future, if we want to also apply *air* pressure
     float effectiveWaterDensity,
@@ -1291,6 +1469,13 @@ void Ship::ApplyHydrostaticPressureForces(
     //    iteration.
     //
 
+    //
+    // 1. Apply first round of force
+    //
+
+    vec2f netResultantForce = vec2f::zero();
+    size_t netResultantForcePointCount = 0;
+
     for (FrontierId const frontierId : mFrontiers.GetFrontierIds())
     {
         auto const & frontier = mFrontiers.GetFrontier(frontierId);
@@ -1309,64 +1494,198 @@ void Ship::ApplyHydrostaticPressureForces(
                 * gameParameters.HydrostaticPressureAdjustment
                 / 2.0f; // We include the division that we'll need for the particle force
 
-            //
-            // Visit all edges
-            //
-            //               thisPoint
-            //                   V
-            // ...---*---edge1---*---edge2---*---nextEdge---....
-            //
+            VisitFrontierHullPoints(
+                frontier,
+                [&](ElementIndex pointIndex, vec2f const & prevPerp, vec2f const & nextPerp)
+                {
+                    // Apply force - we apply it as a *dynamic* force, otherwise if it were static it would
+                    // generate phantom torques due to geometries changing for every dynamic step
 
-            ElementIndex edge1Index = frontier.StartingEdgeIndex;
+                    vec2f const pressureForce =
+                        (prevPerp + nextPerp) * pressureForceStem;
 
-            ElementIndex edge2Index = mFrontiers.GetFrontierEdge(edge1Index).NextEdgeIndex;
+                    mPoints.AddDynamicForce(
+                        pointIndex,
+                        pressureForce);
 
-            ElementIndex thisPointIndex = mFrontiers.GetFrontierEdge(edge2Index).PointAIndex;
-
-            vec2f edge1PerpVector =
-                -(mPoints.GetPosition(thisPointIndex) - mPoints.GetPosition(mFrontiers.GetFrontierEdge(edge1Index).PointAIndex)).to_perpendicular();
-
-#ifdef _DEBUG
-            ElementCount visitedPoints = 0;
-#endif
-
-            ElementIndex const startEdgeIndex = mFrontiers.GetFrontierEdge(edge2Index).NextEdgeIndex;
-
-            for (ElementIndex nextEdgeIndex = startEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
-            {
-#ifdef _DEBUG
-                ++visitedPoints;
-#endif
-                auto const & nextEdge = mFrontiers.GetFrontierEdge(nextEdgeIndex);
-                ElementIndex const nextPointIndex = nextEdge.PointAIndex;
-
-                vec2f edge2PerpVector =
-                    -(mPoints.GetPosition(nextPointIndex) - mPoints.GetPosition(thisPointIndex)).to_perpendicular();
-
-                // Apply force - we apply it as a *dynamic* force, otherwise if it were static it would
-                // generate phantom torques due to geometries changing for every dynamic step
-
-                vec2f const pressureForce =
-                    (edge1PerpVector + edge2PerpVector) * pressureForceStem;
-
-                mPoints.AddDynamicForce(
-                    thisPointIndex,
-                    pressureForce);
-
-                // Advance
-                nextEdgeIndex = nextEdge.NextEdgeIndex;
-                if (nextEdgeIndex == startEdgeIndex)
-                    break;
-
-                thisPointIndex = nextPointIndex;
-                edge1PerpVector = edge2PerpVector;
-            }
-
-#ifdef _DEBUG
-            assert(visitedPoints == frontier.Size);
-#endif
+                    netResultantForce += pressureForce;
+                    ++netResultantForcePointCount;
+                });
         }
     }
+
+////    for (FrontierId const frontierId : mFrontiers.GetFrontierIds())
+////    {
+////        auto const & frontier = mFrontiers.GetFrontier(frontierId);
+////
+////        // Only consider external frontiers
+////        if (frontier.Type == FrontierType::External)
+////        {
+////            //
+////            // Calculate force stem
+////            //
+////
+////            float const pressureForceStem =
+////                std::max(mParentWorld.GetDepth(frontier.AABB.CalculateCenter()), 0.0f)
+////                * effectiveWaterDensity
+////                * GameParameters::GravityMagnitude
+////                * gameParameters.HydrostaticPressureAdjustment
+////                / 2.0f; // We include the division that we'll need for the particle force
+////
+////            //
+////            // Visit all edges
+////            //
+////            //               thisPoint
+////            //                   V
+////            // ...---*---edge1---*---edge2---*---nextEdge---....
+////            //
+////
+////            ElementIndex edge1Index = frontier.StartingEdgeIndex;
+////
+////            ElementIndex edge2Index = mFrontiers.GetFrontierEdge(edge1Index).NextEdgeIndex;
+////
+////            ElementIndex thisPointIndex = mFrontiers.GetFrontierEdge(edge2Index).PointAIndex;
+////
+////            vec2f edge1PerpVector =
+////                -(mPoints.GetPosition(thisPointIndex) - mPoints.GetPosition(mFrontiers.GetFrontierEdge(edge1Index).PointAIndex)).to_perpendicular();
+////
+////#ifdef _DEBUG
+////            ElementCount visitedPoints = 0;
+////#endif
+////
+////            ElementIndex const startEdgeIndex = mFrontiers.GetFrontierEdge(edge2Index).NextEdgeIndex;
+////
+////            for (ElementIndex nextEdgeIndex = startEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
+////            {
+////#ifdef _DEBUG
+////                ++visitedPoints;
+////#endif
+////                auto const & nextEdge = mFrontiers.GetFrontierEdge(nextEdgeIndex);
+////                ElementIndex const nextPointIndex = nextEdge.PointAIndex;
+////
+////                vec2f edge2PerpVector =
+////                    -(mPoints.GetPosition(nextPointIndex) - mPoints.GetPosition(thisPointIndex)).to_perpendicular();
+////
+////                if (mPoints.GetIsHull(thisPointIndex))
+////                {
+////                    // Apply force - we apply it as a *dynamic* force, otherwise if it were static it would
+////                    // generate phantom torques due to geometries changing for every dynamic step
+////
+////                    vec2f const pressureForce =
+////                        (edge1PerpVector + edge2PerpVector) * pressureForceStem;
+////
+////                    mPoints.AddDynamicForce(
+////                        thisPointIndex,
+////                        pressureForce);
+////
+////                    netResultantForce += pressureForce;
+////                    ++netResultantForcePointCount;
+////                }
+////
+////                // Advance
+////                nextEdgeIndex = nextEdge.NextEdgeIndex;
+////                if (nextEdgeIndex == startEdgeIndex)
+////                    break;
+////
+////                thisPointIndex = nextPointIndex;
+////                edge1PerpVector = edge2PerpVector;
+////            }
+////
+////#ifdef _DEBUG
+////            assert(visitedPoints == frontier.Size);
+////#endif
+////        }
+////    }
+
+    //
+    // 2. Apply second round of force
+    //
+
+    if (netResultantForcePointCount == 0)
+        return;
+
+    vec2f const zeroingForce = -netResultantForce / static_cast<float>(netResultantForcePointCount);
+
+    for (FrontierId const frontierId : mFrontiers.GetFrontierIds())
+    {
+        auto const & frontier = mFrontiers.GetFrontier(frontierId);
+
+        // Only consider external frontiers
+        if (frontier.Type == FrontierType::External)
+        {
+            VisitFrontierHullPoints(
+                frontier,
+                [&](ElementIndex pointIndex, vec2f const & prevPerp, vec2f const & nextPerp)
+            {
+                mPoints.AddDynamicForce(
+                    pointIndex,
+                    zeroingForce);
+            });
+        }
+    }
+
+////    for (FrontierId const frontierId : mFrontiers.GetFrontierIds())
+////    {
+////        auto const & frontier = mFrontiers.GetFrontier(frontierId);
+////
+////        // Only consider external frontiers
+////        if (frontier.Type == FrontierType::External)
+////        {
+////            //
+////            // Visit all edges
+////            //
+////            //               thisPoint
+////            //                   V
+////            // ...---*---edge1---*---edge2---*---nextEdge---....
+////            //
+////
+////            ElementIndex edge1Index = frontier.StartingEdgeIndex;
+////
+////            ElementIndex edge2Index = mFrontiers.GetFrontierEdge(edge1Index).NextEdgeIndex;
+////
+////            ElementIndex thisPointIndex = mFrontiers.GetFrontierEdge(edge2Index).PointAIndex;
+////
+////            vec2f edge1PerpVector =
+////                -(mPoints.GetPosition(thisPointIndex) - mPoints.GetPosition(mFrontiers.GetFrontierEdge(edge1Index).PointAIndex)).to_perpendicular();
+////
+////#ifdef _DEBUG
+////            ElementCount visitedPoints = 0;
+////#endif
+////
+////            ElementIndex const startEdgeIndex = mFrontiers.GetFrontierEdge(edge2Index).NextEdgeIndex;
+////
+////            for (ElementIndex nextEdgeIndex = startEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
+////            {
+////#ifdef _DEBUG
+////                ++visitedPoints;
+////#endif
+////                auto const & nextEdge = mFrontiers.GetFrontierEdge(nextEdgeIndex);
+////                ElementIndex const nextPointIndex = nextEdge.PointAIndex;
+////
+////                vec2f edge2PerpVector =
+////                    -(mPoints.GetPosition(nextPointIndex) - mPoints.GetPosition(thisPointIndex)).to_perpendicular();
+////
+////                if (mPoints.GetIsHull(thisPointIndex))
+////                {
+////                    mPoints.AddDynamicForce(
+////                        thisPointIndex,
+////                        zeroingForce);
+////                }
+////
+////                // Advance
+////                nextEdgeIndex = nextEdge.NextEdgeIndex;
+////                if (nextEdgeIndex == startEdgeIndex)
+////                    break;
+////
+////                thisPointIndex = nextPointIndex;
+////                edge1PerpVector = edge2PerpVector;
+////            }
+////
+////#ifdef _DEBUG
+////            assert(visitedPoints == frontier.Size);
+////#endif
+////        }
+////    }
 }
 
 void Ship::ApplySpringsForces_BySprings(GameParameters const & /*gameParameters*/)
