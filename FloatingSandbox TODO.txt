@@ -788,8 +788,9 @@ Render:
 			- Finalization:
 				- Default parameter values based on slider steps
 
-		- Another hydrostatic pressure attempt:
-			- Frontier: do not act on non-hull points, but then compensate net resultant force (and may be resultant torque as well)
+		= Another hydrostatic pressure attempt:
+			= Frontier: do not act on non-hull points, but then compensate net resultant force (and may be resultant torque as well)
+				- Redo, frontier-by-frontier
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
