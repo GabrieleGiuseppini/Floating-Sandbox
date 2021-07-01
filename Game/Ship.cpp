@@ -1543,7 +1543,6 @@ void Ship::ApplyHydrostaticPressureForces(
             if (netResultantForcePointCount != 0)
             {
                 vec2f const zeroingForce = -netResultantForce / static_cast<float>(netResultantForcePointCount);
-                float const particleZeroingTorque = -resultantHydrostaticPressureTorque / static_cast<float>(netResultantForcePointCount);
 
                 VisitFrontierHullPoints(
                     frontier,
@@ -1554,11 +1553,27 @@ void Ship::ApplyHydrostaticPressureForces(
                             pointIndex,
                             zeroingForce);
 
+                        // Update resultant torque
+                        resultantHydrostaticPressureTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(zeroingForce);
+                    });
+            }
+
+            //
+            // 4. Apply fourth round of force
+            //
+
+            if (netResultantForcePointCount != 0)
+            {
+                float const zeroingTorque = -resultantHydrostaticPressureTorque / static_cast<float>(netResultantForcePointCount);
+
+                VisitFrontierHullPoints(
+                    frontier,
+                    [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
+                    {
                         // Apply zeroing torque
-                        // TODO: see if should just continue updating resultant torque here, and then a final pass on zeroing that out
                         vec2f const particleZeroingTorqueForce =
                             (mPoints.GetPosition(pointIndex) - geometricCenterPosition).normalise().to_perpendicular()
-                            * particleZeroingTorque
+                            * zeroingTorque
                             / (mPoints.GetPosition(pointIndex) - geometricCenterPosition).length();
                         mPoints.AddDynamicForce(pointIndex, particleZeroingTorqueForce);
                     });
