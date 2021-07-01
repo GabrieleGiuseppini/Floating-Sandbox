@@ -1386,12 +1386,18 @@ void Ship::VisitFrontierHullPoints(
 
     ElementIndex edge1Index = frontier.StartingEdgeIndex;
 
+    ElementIndex prevPointIndex = mFrontiers.GetFrontierEdge(edge1Index).PointAIndex;
+
     ElementIndex edge2Index = mFrontiers.GetFrontierEdge(edge1Index).NextEdgeIndex;
 
     ElementIndex thisPointIndex = mFrontiers.GetFrontierEdge(edge2Index).PointAIndex;
 
     vec2f edge1PerpVector =
-        -(mPoints.GetPosition(thisPointIndex) - mPoints.GetPosition(mFrontiers.GetFrontierEdge(edge1Index).PointAIndex)).to_perpendicular();
+        -(mPoints.GetPosition(thisPointIndex) - mPoints.GetPosition(prevPointIndex)).to_perpendicular();
+
+    int surroundingHullPointsCount =
+        (mPoints.GetIsHull(prevPointIndex) ? 1 : 0)
+        + (mPoints.GetIsHull(thisPointIndex) ? 1 : 0);
 
 #ifdef _DEBUG
     ElementCount visitedPoints = 0;
@@ -1410,7 +1416,9 @@ void Ship::VisitFrontierHullPoints(
         vec2f edge2PerpVector =
             -(mPoints.GetPosition(nextPointIndex) - mPoints.GetPosition(thisPointIndex)).to_perpendicular();
 
-        if (mPoints.GetIsHull(thisPointIndex))
+        surroundingHullPointsCount += (mPoints.GetIsHull(nextPointIndex) ? 1 : 0);
+
+        if (surroundingHullPointsCount == 3)
         {
             visitor(thisPointIndex, edge1PerpVector, edge2PerpVector);
         }
@@ -1420,6 +1428,9 @@ void Ship::VisitFrontierHullPoints(
         if (nextEdgeIndex == startEdgeIndex)
             break;
 
+        surroundingHullPointsCount -= (mPoints.GetIsHull(prevPointIndex) ? 1 : 0);
+
+        prevPointIndex = thisPointIndex;
         thisPointIndex = nextPointIndex;
         edge1PerpVector = edge2PerpVector;
     }

@@ -790,7 +790,8 @@ Render:
 
 		= Another hydrostatic pressure attempt:
 			= Frontier: do not act on non-hull points, but then compensate net resultant force (and may be resultant torque as well)
-				- Only on edges that are the center of three consecutive hull points
+				+ Only on edges that are the center of three consecutive hull points
+				- See remaining torques
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
