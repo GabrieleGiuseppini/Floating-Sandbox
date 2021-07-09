@@ -636,6 +636,7 @@ Render:
 
 			- TheCrafters001: Real Hardware on a Live Linux USB Drive, OS: Linux Mint 20.1 (Ubuntu/Debian Based)
 				- Pausing is non-functional
+					- When I check the pause option in the menu, it stays checked. For throughout most of that log I was playing with it checked. I think I managed to get it paused once, but it took a minute to get it unpaused.
 				- Rotating Boats/Objects happens way too fast.
 				- Changing tools using the keyboard, doesn't update the tools menu correctly. Clicking on the tool you were just using does nothing.
 				- Smashing a hole under the water, then reparing it, sometimes it still causes the ship/object to flood.
@@ -791,7 +792,14 @@ Render:
 		= Another hydrostatic pressure attempt:
 			= Frontier: do not act on non-hull points, but then compensate net resultant force (and may be resultant torque as well)
 				+ Only on edges that are the center of three consecutive hull points
-				- See remaining torques
+				- Try adaptive net_force/net_torque zeroing
+					- See paper
+					- Remember to do two passes
+					- To try:
+						- first pass at 50%
+					- Optimizations:
+						- At first pass, store point indices and reuse them for all subsequet passes
+				- Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
@@ -1009,10 +1017,11 @@ Render:
 					- Dell: x ms/x fps
 					- Samsung: x ms/x fps
 
-		- Lights/materials breaking under pressure (*)
+		- Lamps breaking under pressure (*)
 		- Break lights when structure gets "broken"
 			- Whenever a triangle or spring is destroyed, break also *lights* attached to any of the endpoints
 				- @ Ship::DestroyHandler's
+				- Invoke what we end up doing at "Lamps breaking under pressure (*)"
 
 		= Do shader at Anti-Matter bomb pre-implosion
 			+ Shader already started: https://www.shadertoy.com/view/3sVSRc
@@ -1090,6 +1099,7 @@ Render:
 		# sum wulf gurl: Artica
 		# An SR71 Habu: NotTelling
 		# JackMellon: JackTheBrickfilmMaker (Discord, https://drive.google.com/drive/folders/1isy3QiRzMfyu69v5M0gwD5tvBnYZMWXx)
+		# JonBrisby: Takara
 	- Ship Packs:
 		+ Kiko's pack
 			+ Screenshots and description in PM
@@ -1935,18 +1945,24 @@ Render:
 
 	- Fires break out where electrical layer breaks (e.g. where *powered* line is cut)
 
-	- Lights/materials breaking under pressure (*)
+	- Lamps breaking under pressure (*)
 		! Unrelated to pressure crush (*) with frontier
 		- Idea:
-			- All structural materials have max pressure delta after which they break, with some randomness
-			- ...but only glass, lights, and may be a few others have reasonable values - others are basically indestructible, and they
-			  will destroy with the "other" external pressure work which is tied with frontier
-		- Impl:
-			+ Better done after cached quantities - underwater depth (*)
-			- All points visited and checked at some step in UpdateMechanicalDynamics(), before UpdateWaterIntake()
-				- Only non-leaking points (broken edge of glass ball should not break again)
-				- Pressure delta between current water at point and external Y
-					- With added randomness based off random personality seed
+			- Lamps only
+			- UpdateLampStateMachine: first step checks external pressure (as in, depth) and if over threshold (from material): 
+				- TODO: the below, or simply Points::whatever_we_invoke_now with smash tool and the like
+				- Invokes Points::Break(iPointIndex): // new
+					- Sets self as Deleted
+					- Invokes IShipPhyisicsHandler::OnPointBroken(iIndex): // new
+						- Destroys triangles (springs stay)
+						- For each electrical element: invokes ElectricalElements::Break(iIndex): // new
+							- If lamp:
+								- Sound
+								- Sets flag TODO: OR Destroy()
+						- Invokes Gadgets
+					- TODO: how to do together with Destroy?
+			- Same effect should be caused by hammer on point, and possibly others
+		- TODO: see if can couple of Electric Sparkle tool: a lot of sparkle can cause lights to explode
 
 	- Tool to break enough to let water enter, but not to make a hole all the way to the other side
 		- Just sets points as leaking

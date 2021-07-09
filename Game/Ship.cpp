@@ -1499,7 +1499,6 @@ void Ship::ApplyHydrostaticPressureForces(
                 {
                     auto const & frontierEdge = mFrontiers.GetFrontierEdge(edgeIndex);
 
-                    // TODO: see if should calc geometric position of hull only
                     geometricCenterPosition += mPoints.GetPosition(frontierEdge.PointAIndex);
 
                     edgeIndex = frontierEdge.NextEdgeIndex;
@@ -1510,13 +1509,19 @@ void Ship::ApplyHydrostaticPressureForces(
                 geometricCenterPosition /= static_cast<float>(frontier.Size);
             }
 
+            // TODOTEST
+            //mOverlays.AddCenter(mPoints.GetPlaneId(mFrontiers.GetFrontierEdge(frontier.StartingEdgeIndex).PointAIndex), geometricCenterPosition);
+
             //
             // 2. Apply first round of force
             //
 
-            vec2f netResultantForce = vec2f::zero();
-            size_t netResultantForcePointCount = 0;
-            float resultantHydrostaticPressureTorque = 0.0f;
+             // TODOTEST
+            LogMessage("TODOTEST: ----------------------------------------");
+
+            vec2f netForce = vec2f::zero();
+            float netTorque = 0.0f;
+            size_t netPointCount = 0;
 
             float const pressureForceStem =
                 std::max(mParentWorld.GetDepth(frontier.AABB.CalculateCenter()), 0.0f)
@@ -1539,54 +1544,115 @@ void Ship::ApplyHydrostaticPressureForces(
                         pointIndex,
                         pressureForce);
 
-                    // Update resultant force
-                    netResultantForce += pressureForce;
-                    ++netResultantForcePointCount;
-
-                    // Update resultant torque
-                    resultantHydrostaticPressureTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(pressureForce);
+                    // Update resultant force and torque
+                    netForce += pressureForce;
+                    netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(pressureForce);
+                    ++netPointCount;
                 });
 
-            //
-            // 3. Apply second round of force
-            //
+            // TODOTEST
+            LogMessage("TODOTEST: 0: NetForce: ", netForce, " NetTorque: ", netTorque);
 
-            if (netResultantForcePointCount != 0)
+            // TODOTEST
+            //////
+            ////// TODO: TEMPLATE
+            //////
+
+            ////if (netResultantPointCount != 0)
+            ////{
+            ////    vec2f const zeroingForce = -netResultantForce / static_cast<float>(netResultantPointCount);
+            ////    float const zeroingTorque = -netResultantTorque / static_cast<float>(netResultantPointCount);
+
+            ////    VisitFrontierHullPoints(
+            ////        frontier,
+            ////        [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
+            ////    {
+            ////        // Apply zeroing force and torque
+            ////        vec2f const particleZeroingTorqueForce =
+            ////            (mPoints.GetPosition(pointIndex) - geometricCenterPosition).normalise().to_perpendicular()
+            ////            * zeroingTorque / (mPoints.GetPosition(pointIndex) - geometricCenterPosition).length();
+            ////        mPoints.AddDynamicForce(
+            ////            pointIndex,
+            ////            zeroingForce + particleZeroingTorqueForce);
+
+            ////        // Update resultant force and torque
+            ////        netResultantForce += zeroingForce + particleZeroingTorqueForce;
+            ////        netResultantTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(zeroingForce + particleZeroingTorqueForce);
+            ////    });
+            ////}
+
+            ////// TODOTEST
+            ////LogMessage("TODOTEST: 1: Force: ", netResultantForce.length(), " Torque: ", netResultantTorque);
+
+
+
+            // TODOTEST
+
+            if (netPointCount != 0)
             {
-                vec2f const zeroingForce = -netResultantForce / static_cast<float>(netResultantForcePointCount);
-
                 VisitFrontierHullPoints(
                     frontier,
                     [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
                     {
-                        // Apply zeroing force
+                        //
+                        // Calculate d(NetForce/NetTorque)/d(lambda) @ lambda=1
+                        //
+
+                        vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
+                        // TODOTEST
+                        //float const dNetForce = netForce.normalise_approx().dot(thisForce);
+                        float const netForceLength = netForce.length();
+                        float const dNetForce = (netForceLength == 0.0f)
+                            ? std::numeric_limits<float>::lowest() // Make sure torque gets chosen
+                            : (netForceLength - (netForce - thisForce).length()) / netForceLength;
+                        float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(mPoints.GetDynamicForce(pointIndex));
+                        // TODOTEST
+                        //float const dNetTorque = thisTorque;
+                        float const dNetTorque = (netTorque == 0.0f)
+                            ? std::numeric_limits<float>::lowest() // Make sure force gets chosen
+                            : thisTorque / netTorque;
+
+                        //
+                        // Calculate lambda for contribution with highest derivative
+                        //
+
+                        float lambdaRaw;
+                        if (dNetForce >= dNetTorque)
+                        {
+                            // lambda = lambda at which |NetForce| is minimal
+                            float const thisForceSquaredLength = thisForce.squareLength();
+                            lambdaRaw = thisForceSquaredLength == 0.0f
+                                ? 1.0f // do not change
+                                : -(netForce - thisForce).dot(thisForce) / thisForceSquaredLength;
+                        }
+                        else
+                        {
+                            // lambda = lambda at which NetTorque is zero
+                            lambdaRaw = thisTorque == 0.0f
+                                ? 1.0f // do not change
+                                : -(netTorque - thisTorque) / thisTorque;
+                        }
+
+                        float const lambda = Clamp(lambdaRaw, 0.0f, 1.0f);
+
+                        LogMessage(pointIndex, " @ ", mPoints.GetPosition(pointIndex), ": dNetForce=", dNetForce, " dNetTorque=", dNetTorque,
+                            " lambdaRaw=", lambdaRaw, " lambda=", lambda);
+
+                        //
+                        // Update force
+                        //
+
+                        vec2f const adjustmentForce = thisForce * (1.0f - lambda);
+
                         mPoints.AddDynamicForce(
                             pointIndex,
-                            zeroingForce);
+                            -adjustmentForce);
 
-                        // Update resultant torque
-                        resultantHydrostaticPressureTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(zeroingForce);
-                    });
-            }
+                        // Update resultant force and torque
+                        netForce += -adjustmentForce;
+                        netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(-adjustmentForce);
 
-            //
-            // 4. Apply fourth round of force
-            //
-
-            if (netResultantForcePointCount != 0)
-            {
-                float const zeroingTorque = -resultantHydrostaticPressureTorque / static_cast<float>(netResultantForcePointCount);
-
-                VisitFrontierHullPoints(
-                    frontier,
-                    [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
-                    {
-                        // Apply zeroing torque
-                        vec2f const particleZeroingTorqueForce =
-                            (mPoints.GetPosition(pointIndex) - geometricCenterPosition).normalise().to_perpendicular()
-                            * zeroingTorque
-                            / (mPoints.GetPosition(pointIndex) - geometricCenterPosition).length();
-                        mPoints.AddDynamicForce(pointIndex, particleZeroingTorqueForce);
+                        LogMessage("     NetForce'=", netForce, " NetTorque'=", netTorque);
                     });
             }
         }
