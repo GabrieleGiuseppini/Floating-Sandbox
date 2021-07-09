@@ -1605,7 +1605,7 @@ void Ship::ApplyHydrostaticPressureForces(
                         float const dNetForce = (netForceLength == 0.0f)
                             ? std::numeric_limits<float>::lowest() // Make sure torque gets chosen
                             : (netForceLength - (netForce - thisForce).length()) / netForceLength;
-                        float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(mPoints.GetDynamicForce(pointIndex));
+                        float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
                         // TODOTEST
                         //float const dNetTorque = thisTorque;
                         float const dNetTorque = (netTorque == 0.0f)
