@@ -1592,6 +1592,8 @@ void Ship::ApplyHydrostaticPressureForces(
             {
                 for (int iter = 0; iter < 2; ++iter)
                 {
+                    LogMessage("------------");
+
                     VisitFrontierHullPoints(
                         frontier,
                         [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
@@ -1648,11 +1650,16 @@ void Ship::ApplyHydrostaticPressureForces(
                                 pointIndex,
                                 -adjustmentForce);
 
+                            // TODOTEST
+                            vec2f const oldNetForce = netForce;
+                            float const oldNetTorque = netTorque;
+
                             // Update resultant force and torque
                             netForce += -adjustmentForce;
                             netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(-adjustmentForce);
 
-                            LogMessage("     NetForce'=", netForce, " (", netForce.length(), ") NetTorque'=", netTorque);
+                            LogMessage("     NetForce'=", netForce, " (", netForce.length(), ") (D=", netForce.length() - oldNetForce.length(), ") ",
+                                "NetTorque'=", netTorque, " (D=", netTorque - oldNetTorque, ")");
                         });
                 }
             }

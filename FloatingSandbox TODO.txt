@@ -793,8 +793,13 @@ Render:
 			= Frontier: do not act on non-hull points, but then compensate net resultant force (and may be resultant torque as well)
 				+ Only on edges that are the center of three consecutive hull points
 				= Try adaptive net_force/net_torque zeroing
-					= See paper
-					- Remember to do two passes
+					+ See paper
+					- Think what to do when non-chosen derivative is large negative, meaning that lambda==1 contributes to counteract and thus setting to zero makes a lot of damage
+10:45:49.898299:     NetForce'=(-247.646484375, 0.78125) (247.648) NetTorque'=-2.71273e+06
+10:45:49.898304:1110 @ (-8.52100467682, -10.5288419724): dNetForce=-731.045 dNetTorque=0.0667425 lambdaRaw=-13.983 lambda=0
+10:45:49.898311:     NetForce'=(-729.801086426, -181287.921875) (181289) NetTorque'=-2.53167e+06
+
+					= Remember to do two passes
 					- To try:
 						- first pass at 50%
 					- Optimizations:
