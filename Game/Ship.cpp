@@ -1551,7 +1551,7 @@ void Ship::ApplyHydrostaticPressureForces(
                 });
 
             // TODOTEST
-            LogMessage("TODOTEST: 0: NetForce: ", netForce, " NetTorque: ", netTorque);
+            LogMessage("TODOTEST: 0: NetForce: ", netForce, " (", netForce.length(), ") NetTorque: ", netTorque);
 
             // TODOTEST
             //////
@@ -1599,9 +1599,16 @@ void Ship::ApplyHydrostaticPressureForces(
                         //
 
                         vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
-                        float const dNetForce = netForce.normalise_approx().dot(thisForce);
+                        float const netForceLength = netForce.length();
+                        float const dNetForce = (netForceLength == 0.0f)
+                            ? std::numeric_limits<float>::lowest() // Make sure torque gets chosen
+                            : (netForceLength - (netForce - thisForce).length()) / netForceLength;
+
                         float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
-                        float const dNetTorque = std::abs(thisTorque) * (thisTorque * netTorque >= 0.0f ? 1.0f : -1.0f);
+                        float const dNetTorque = (netTorque == 0.0f)
+                            ? std::numeric_limits<float>::lowest() // Make sure force gets chosen
+                            : thisTorque / netTorque;
+
 
                         //
                         // Calculate lambda for contribution with highest derivative
@@ -1643,7 +1650,7 @@ void Ship::ApplyHydrostaticPressureForces(
                         netForce += -adjustmentForce;
                         netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(-adjustmentForce);
 
-                        LogMessage("     NetForce'=", netForce, " NetTorque'=", netTorque);
+                        LogMessage("     NetForce'=", netForce, " (", netForce.length(), ") NetTorque'=", netTorque);
                     });
             }
         }
