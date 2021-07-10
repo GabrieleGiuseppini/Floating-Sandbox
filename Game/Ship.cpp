@@ -1590,68 +1590,71 @@ void Ship::ApplyHydrostaticPressureForces(
 
             if (netPointCount != 0)
             {
-                VisitFrontierHullPoints(
-                    frontier,
-                    [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
-                    {
-                        //
-                        // Calculate d(NetForce/NetTorque)/d(lambda) @ lambda=1
-                        //
-
-                        vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
-                        float const netForceLength = netForce.length();
-                        float const dNetForce = (netForceLength == 0.0f)
-                            ? std::numeric_limits<float>::lowest() // Make sure torque gets chosen
-                            : (netForceLength - (netForce - thisForce).length()) / netForceLength;
-
-                        float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
-                        float const dNetTorque = (netTorque == 0.0f)
-                            ? std::numeric_limits<float>::lowest() // Make sure force gets chosen
-                            : thisTorque / netTorque;
-
-
-                        //
-                        // Calculate lambda for contribution with highest derivative
-                        //
-
-                        float lambdaRaw;
-                        if (dNetForce >= dNetTorque)
+                for (int iter = 0; iter < 2; ++iter)
+                {
+                    VisitFrontierHullPoints(
+                        frontier,
+                        [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
                         {
-                            // lambda = lambda at which |NetForce| is minimal
-                            float const thisForceSquaredLength = thisForce.squareLength();
-                            lambdaRaw = thisForceSquaredLength == 0.0f
-                                ? 1.0f // do not change
-                                : -(netForce - thisForce).dot(thisForce) / thisForceSquaredLength;
-                        }
-                        else
-                        {
-                            // lambda = lambda at which NetTorque is zero
-                            lambdaRaw = thisTorque == 0.0f
-                                ? 1.0f // do not change
-                                : -(netTorque - thisTorque) / thisTorque;
-                        }
+                            //
+                            // Calculate d(NetForce/NetTorque)/d(lambda) @ lambda=1
+                            //
 
-                        float const lambda = Clamp(lambdaRaw, 0.0f, 1.0f);
+                            vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
+                            float const netForceLength = netForce.length();
+                            float const dNetForce = (netForceLength == 0.0f)
+                                ? std::numeric_limits<float>::lowest() // Make sure torque gets chosen
+                                : (netForceLength - (netForce - thisForce).length()) / netForceLength;
 
-                        LogMessage(pointIndex, " @ ", mPoints.GetPosition(pointIndex), ": dNetForce=", dNetForce, " dNetTorque=", dNetTorque,
-                            " lambdaRaw=", lambdaRaw, " lambda=", lambda);
+                            float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
+                            float const dNetTorque = (netTorque == 0.0f)
+                                ? std::numeric_limits<float>::lowest() // Make sure force gets chosen
+                                : thisTorque / netTorque;
 
-                        //
-                        // Update force
-                        //
 
-                        vec2f const adjustmentForce = thisForce * (1.0f - lambda);
+                            //
+                            // Calculate lambda for contribution with highest derivative
+                            //
 
-                        mPoints.AddDynamicForce(
-                            pointIndex,
-                            -adjustmentForce);
+                            float lambdaRaw;
+                            if (dNetForce >= dNetTorque)
+                            {
+                                // lambda = lambda at which |NetForce| is minimal
+                                float const thisForceSquaredLength = thisForce.squareLength();
+                                lambdaRaw = thisForceSquaredLength == 0.0f
+                                    ? 1.0f // do not change
+                                    : -(netForce - thisForce).dot(thisForce) / thisForceSquaredLength;
+                            }
+                            else
+                            {
+                                // lambda = lambda at which NetTorque is zero
+                                lambdaRaw = thisTorque == 0.0f
+                                    ? 1.0f // do not change
+                                    : -(netTorque - thisTorque) / thisTorque;
+                            }
 
-                        // Update resultant force and torque
-                        netForce += -adjustmentForce;
-                        netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(-adjustmentForce);
+                            float const lambda = Clamp(lambdaRaw, 0.0f, 1.0f);
 
-                        LogMessage("     NetForce'=", netForce, " (", netForce.length(), ") NetTorque'=", netTorque);
-                    });
+                            LogMessage(pointIndex, " @ ", mPoints.GetPosition(pointIndex), ": dNetForce=", dNetForce, " dNetTorque=", dNetTorque,
+                                " lambdaRaw=", lambdaRaw, " lambda=", lambda);
+
+                            //
+                            // Update force
+                            //
+
+                            vec2f const adjustmentForce = thisForce * (1.0f - lambda);
+
+                            mPoints.AddDynamicForce(
+                                pointIndex,
+                                -adjustmentForce);
+
+                            // Update resultant force and torque
+                            netForce += -adjustmentForce;
+                            netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(-adjustmentForce);
+
+                            LogMessage("     NetForce'=", netForce, " (", netForce.length(), ") NetTorque'=", netTorque);
+                        });
+                }
             }
         }
     }
