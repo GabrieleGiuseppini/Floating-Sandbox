@@ -1590,7 +1590,7 @@ void Ship::ApplyHydrostaticPressureForces(
 
             if (netPointCount != 0)
             {
-                for (int iter = 0; iter < 4; ++iter)
+                for (int iter = 0; iter < 2; ++iter)
                 {
                     LogMessage("------------");
 
@@ -1598,7 +1598,61 @@ void Ship::ApplyHydrostaticPressureForces(
                         frontier,
                         [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
                         {
-                            ////// TODOTEST: Net Improvement approach
+                            ////// TODOTEST: Net Improvement approach, one lambda
+                            ////vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
+                            ////float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
+
+                            ////// TODOTEST: absolute
+                            ////////// Calculate net force improvement at lambda=0.0
+                            ////////float const netForceImprovement = netForce.length() - (netForce - thisForce).length();
+                            ////////// Calculate net torque improvement at lambda=0.0
+                            ////////float const netTorqueImprovement = std::abs(netTorque) - std::abs(netTorque - thisTorque);
+                            ////// TODOTEST: relative
+                            ////////// Calculate net force improvement at lambda=0.0
+                            ////////float const netForceImprovement = (netForce.length() - (netForce - thisForce).length()) / netForce.length();
+                            ////////// Calculate net torque improvement at lambda=0.0
+                            ////////float const netTorqueImprovement = (std::abs(netTorque) - std::abs(netTorque - thisTorque)) / std::abs(netTorque);
+
+                            ////// TODOTEST: absolute with adjustment
+                            ////// Calculate net force improvement at lambda=0.0
+                            ////float const netForceImprovement = (netForce.length() - (netForce - thisForce).length());
+                            ////// Calculate net torque improvement at lambda=0.0
+                            ////float const netTorqueImprovement = (std::abs(netTorque) - std::abs(netTorque - thisTorque)) * 0.1f;
+
+
+
+                            ////// Calculate net improvement
+                            ////float const netImprovement = netForceImprovement + netTorqueImprovement;
+
+                            ////LogMessage(pointIndex, " @ ", mPoints.GetPosition(pointIndex));
+                            ////LogMessage("   ",
+                            ////    " netForceImprovement=", netForceImprovement, " netTorqueImprovement=", netTorqueImprovement, " netImprovement=", netImprovement);
+
+                            ////vec2f adjustmentForce = vec2f::zero();
+                            ////if (netImprovement > 0.0f)
+                            ////{
+                            ////    LogMessage("   !Adjustment");
+                            ////    adjustmentForce = -thisForce;
+                            ////}
+
+                            //////
+                            ////// Update force
+                            //////
+
+                            ////mPoints.AddDynamicForce(
+                            ////    pointIndex,
+                            ////    adjustmentForce);
+
+                            ////// Update resultant force and torque
+                            ////netForce += adjustmentForce;
+                            ////netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(adjustmentForce);
+
+                            ////LogMessage("     NetForce'=", netForce, " (", netForce.length(), ") ", "NetTorque'=", netTorque);
+
+
+
+
+                            ////// TODOTEST: Net Improvement approach, two lambdas
                             ////vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
                             ////float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
 
@@ -1615,13 +1669,14 @@ void Ship::ApplyHydrostaticPressureForces(
                             ////    : -(netTorque - thisTorque) / thisTorque;
                             ////float const lambdaT = Clamp(lambdaTRaw, 0.0f, 1.0f);
 
-                            ////// TODOTEST
+                            ////// TODOTEST: absolute
                             ////////// Calculate net force improvement at two lambdas
                             ////////float const netForceImprovementF = netForce.length() - (netForce - thisForce + thisForce * lambdaF).length();
                             ////////float const netForceImprovementT = netForce.length() - (netForce - thisForce + thisForce * lambdaT).length();
                             ////////// Calculate net torque improvement at two lambdas
                             ////////float const netTorqueImprovementT = std::abs(netTorque) - std::abs(netTorque - thisTorque + thisTorque * lambdaT);
                             ////////float const netTorqueImprovementF = std::abs(netTorque) - std::abs(netTorque - thisTorque + thisTorque * lambdaF);
+                            ////// TODOTEST: relative
                             ////// Calculate net force improvement at two lambdas
                             ////float const netForceImprovementF = (netForce.length() - (netForce - thisForce + thisForce * lambdaF).length()) / netForce.length();
                             ////float const netForceImprovementT = (netForce.length() - (netForce - thisForce + thisForce * lambdaT).length()) / netForce.length();
@@ -1671,6 +1726,9 @@ void Ship::ApplyHydrostaticPressureForces(
                             ////LogMessage("     NetForce'=", netForce, " (", netForce.length(), ") ", "NetTorque'=", netTorque);
 
 
+
+
+
                             // TODOTEST: derivative approach (relativized)
                             //
                             // Calculate d(NetForce/NetTorque)/d(lambda) @ lambda=1
@@ -1678,14 +1736,20 @@ void Ship::ApplyHydrostaticPressureForces(
 
                             vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
                             float const netForceLength = netForce.length();
+                            // TODOTEST: relative
                             float const dNetForce = (netForceLength == 0.0f)
                                 ? std::numeric_limits<float>::lowest() // Make sure torque gets chosen
                                 : (netForceLength - (netForce - thisForce).length()) / netForceLength;
+                            // TODOTEST: absolute
+                            ////float const dNetForce = netForceLength - (netForce - thisForce).length();
 
                             float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
+                            // TODOTEST: relative
                             float const dNetTorque = (netTorque == 0.0f)
                                 ? std::numeric_limits<float>::lowest() // Make sure force gets chosen
                                 : thisTorque / netTorque;
+                            // TODOTEST: absolute
+                            ////float const dNetTorque = thisTorque;
 
 
                             LogMessage(pointIndex, " @ ", mPoints.GetPosition(pointIndex), ": dNetForce=", dNetForce, " dNetTorque=", dNetTorque);
@@ -1694,27 +1758,6 @@ void Ship::ApplyHydrostaticPressureForces(
                             //
                             // Calculate lambda for contribution with highest derivative
                             //
-
-                            ////float lambdaRaw = 1.0f;
-                            ////if (dNetForce >= dNetTorque)
-                            ////{
-                            ////    // lambda = lambda at which |NetForce| is minimal
-                            ////    float const thisForceSquaredLength = thisForce.squareLength();
-                            ////    lambdaRaw = thisForceSquaredLength == 0.0f
-                            ////        ? 1.0f // do not change
-                            ////        : -(netForce - thisForce).dot(thisForce) / thisForceSquaredLength;
-
-                            ////    LogMessage("    F: lambdaRaw=", lambdaRaw);
-                            ////}
-                            ////else
-                            ////{
-                            ////    // lambda = lambda at which NetTorque is zero
-                            ////    lambdaRaw = thisTorque == 0.0f
-                            ////        ? 1.0f // do not change
-                            ////        : -(netTorque - thisTorque) / thisTorque;
-
-                            ////    LogMessage("    T: lambdaRaw=", lambdaRaw);
-                            ////}
 
                             float lambda = 1.0f;
                             if (dNetForce >= 0.0f && dNetForce >= dNetTorque)
@@ -1726,7 +1769,6 @@ void Ship::ApplyHydrostaticPressureForces(
                                     : -(netForce - thisForce).dot(thisForce) / thisForceSquaredLength;
 
                                 lambda = Clamp(lambdaRaw, 0.0f, 1.0f);
-                                lambda = lambda + (1.0f - lambda) / 2.0f;
 
                                 LogMessage("    F: lambda=", lambda);
                             }
@@ -1738,15 +1780,9 @@ void Ship::ApplyHydrostaticPressureForces(
                                     : -(netTorque - thisTorque) / thisTorque;
 
                                 lambda = Clamp(lambdaRaw, 0.0f, 1.0f);
-                                lambda = lambda + (1.0f - lambda) / 2.0f;
 
                                 LogMessage("    T: lambda=", lambda);
                             }
-
-                            //float lambda = Clamp(lambdaRaw, 0.0f, 1.0f);
-
-                            LogMessage(pointIndex, " @ ", mPoints.GetPosition(pointIndex), ": dNetForce=", dNetForce, " dNetTorque=", dNetTorque,
-                                " lambda=", lambda);
 
                             //
                             // Update force
@@ -1758,7 +1794,6 @@ void Ship::ApplyHydrostaticPressureForces(
                                 pointIndex,
                                 -adjustmentForce);
 
-                            // TODOTEST
                             vec2f const oldNetForce = netForce;
                             float const oldNetTorque = netTorque;
 
@@ -1766,8 +1801,7 @@ void Ship::ApplyHydrostaticPressureForces(
                             netForce += -adjustmentForce;
                             netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(-adjustmentForce);
 
-                            LogMessage("     lambda=", lambda, " NetForce'=", netForce, " (", netForce.length(), ") (D=", netForce.length() - oldNetForce.length(), ") ",
-                                "NetTorque'=", netTorque, " (D=", netTorque - oldNetTorque, ")");
+                            LogMessage("     NetForce'=", netForce, " (", netForce.length(), ") ", "NetTorque'=", netTorque);
                         });
                 }
             }
