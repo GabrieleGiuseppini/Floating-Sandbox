@@ -1546,265 +1546,347 @@ void Ship::ApplyHydrostaticPressureForces(
 
                     // Update resultant force and torque
                     netForce += pressureForce;
+                    // TODOTEST
                     netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(pressureForce);
+                    //netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).normalise().cross(pressureForce);
                     ++netPointCount;
                 });
 
             // TODOTEST
             LogMessage("TODOTEST: 0: NetForce: ", netForce, " (", netForce.length(), ") NetTorque: ", netTorque);
 
-            // TODOTEST
-            //////
-            ////// TODO: TEMPLATE
-            //////
+            // ----------- EXPERIMENTS BEGIN -----------
 
-            ////if (netResultantPointCount != 0)
-            ////{
-            ////    vec2f const zeroingForce = -netResultantForce / static_cast<float>(netResultantPointCount);
-            ////    float const zeroingTorque = -netResultantTorque / static_cast<float>(netResultantPointCount);
-
-            ////    VisitFrontierHullPoints(
-            ////        frontier,
-            ////        [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
-            ////    {
-            ////        // Apply zeroing force and torque
-            ////        vec2f const particleZeroingTorqueForce =
-            ////            (mPoints.GetPosition(pointIndex) - geometricCenterPosition).normalise().to_perpendicular()
-            ////            * zeroingTorque / (mPoints.GetPosition(pointIndex) - geometricCenterPosition).length();
-            ////        mPoints.AddDynamicForce(
-            ////            pointIndex,
-            ////            zeroingForce + particleZeroingTorqueForce);
-
-            ////        // Update resultant force and torque
-            ////        netResultantForce += zeroingForce + particleZeroingTorqueForce;
-            ////        netResultantTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(zeroingForce + particleZeroingTorqueForce);
-            ////    });
-            ////}
-
-            ////// TODOTEST
-            ////LogMessage("TODOTEST: 1: Force: ", netResultantForce.length(), " Torque: ", netResultantTorque);
-
-
-
-            // TODOTEST
-
-            if (netPointCount != 0)
             {
-                for (int iter = 0; iter < 2; ++iter)
+            ////    //////
+            ////    ////// TODO: TEMPLATE
+            ////    //////
+
+            ////    ////if (netResultantPointCount != 0)
+            ////    ////{
+            ////    ////    vec2f const zeroingForce = -netResultantForce / static_cast<float>(netResultantPointCount);
+            ////    ////    float const zeroingTorque = -netResultantTorque / static_cast<float>(netResultantPointCount);
+
+            ////    ////    VisitFrontierHullPoints(
+            ////    ////        frontier,
+            ////    ////        [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
+            ////    ////    {
+            ////    ////        // Apply zeroing force and torque
+            ////    ////        vec2f const particleZeroingTorqueForce =
+            ////    ////            (mPoints.GetPosition(pointIndex) - geometricCenterPosition).normalise().to_perpendicular()
+            ////    ////            * zeroingTorque / (mPoints.GetPosition(pointIndex) - geometricCenterPosition).length();
+            ////    ////        mPoints.AddDynamicForce(
+            ////    ////            pointIndex,
+            ////    ////            zeroingForce + particleZeroingTorqueForce);
+
+            ////    ////        // Update resultant force and torque
+            ////    ////        netResultantForce += zeroingForce + particleZeroingTorqueForce;
+            ////    ////        netResultantTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(zeroingForce + particleZeroingTorqueForce);
+            ////    ////    });
+            ////    ////}
+
+            ////    ////// TODOTEST
+            ////    ////LogMessage("TODOTEST: 1: Force: ", netResultantForce.length(), " Torque: ", netResultantTorque);
+
+
+
+            ////    if (netPointCount != 0)
+            ////    {
+            ////        for (int iter = 0; iter < 2; ++iter)
+            ////        {
+            ////            LogMessage("------------");
+
+            ////            VisitFrontierHullPoints(
+            ////                frontier,
+            ////                [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
+            ////                {
+            ////                    ////// TODOTEST: Net Improvement approach, one lambda
+            ////                    ////vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
+            ////                    ////float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
+
+            ////                    ////// TODOTEST: absolute
+            ////                    ////////// Calculate net force improvement at lambda=0.0
+            ////                    ////////float const netForceImprovement = netForce.length() - (netForce - thisForce).length();
+            ////                    ////////// Calculate net torque improvement at lambda=0.0
+            ////                    ////////float const netTorqueImprovement = std::abs(netTorque) - std::abs(netTorque - thisTorque);
+            ////                    ////// TODOTEST: relative
+            ////                    ////////// Calculate net force improvement at lambda=0.0
+            ////                    ////////float const netForceImprovement = (netForce.length() - (netForce - thisForce).length()) / netForce.length();
+            ////                    ////////// Calculate net torque improvement at lambda=0.0
+            ////                    ////////float const netTorqueImprovement = (std::abs(netTorque) - std::abs(netTorque - thisTorque)) / std::abs(netTorque);
+
+            ////                    ////// TODOTEST: absolute with adjustment
+            ////                    ////// Calculate net force improvement at lambda=0.0
+            ////                    ////float const netForceImprovement = (netForce.length() - (netForce - thisForce).length());
+            ////                    ////// Calculate net torque improvement at lambda=0.0
+            ////                    ////float const netTorqueImprovement = (std::abs(netTorque) - std::abs(netTorque - thisTorque)) * 0.1f;
+
+
+
+            ////                    ////// Calculate net improvement
+            ////                    ////float const netImprovement = netForceImprovement + netTorqueImprovement;
+
+            ////                    ////LogMessage(pointIndex, " @ ", mPoints.GetPosition(pointIndex));
+            ////                    ////LogMessage("   ",
+            ////                    ////    " netForceImprovement=", netForceImprovement, " netTorqueImprovement=", netTorqueImprovement, " netImprovement=", netImprovement);
+
+            ////                    ////vec2f adjustmentForce = vec2f::zero();
+            ////                    ////if (netImprovement > 0.0f)
+            ////                    ////{
+            ////                    ////    LogMessage("   !Adjustment");
+            ////                    ////    adjustmentForce = -thisForce;
+            ////                    ////}
+
+            ////                    //////
+            ////                    ////// Update force
+            ////                    //////
+
+            ////                    ////mPoints.AddDynamicForce(
+            ////                    ////    pointIndex,
+            ////                    ////    adjustmentForce);
+
+            ////                    ////// Update resultant force and torque
+            ////                    ////netForce += adjustmentForce;
+            ////                    ////netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(adjustmentForce);
+
+            ////                    ////LogMessage("     NetForce'=", netForce, " (", netForce.length(), ") ", "NetTorque'=", netTorque);
+
+
+
+
+            ////                    // TODOTEST: Net Improvement approach, two lambdas
+            ////                    ////vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
+            ////                    ////float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
+
+            ////                    ////// Calculate lambda at which |netForce| is min
+            ////                    ////float const thisForceSquaredLength = thisForce.squareLength();
+            ////                    ////float const lambdaFRaw = thisForceSquaredLength == 0.0f
+            ////                    ////    ? 1.0f // Doesn't really matter - TODO: confirm
+            ////                    ////    : -(netForce - thisForce).dot(thisForce) / thisForceSquaredLength;
+            ////                    ////float const lambdaF = Clamp(lambdaFRaw, 0.0f, 1.0f);
+
+            ////                    ////// Calculate lambda at which netTorque is zero
+            ////                    ////float const lambdaTRaw = thisTorque == 0.0f
+            ////                    ////    ? 1.0f // Doesn't really matter - TODO: confirm
+            ////                    ////    : -(netTorque - thisTorque) / thisTorque;
+            ////                    ////float const lambdaT = Clamp(lambdaTRaw, 0.0f, 1.0f);
+
+            ////                    ////// TODOTEST: absolute
+            ////                    ////// Calculate net force improvement at two lambdas
+            ////                    ////float const netForceImprovementF = netForce.length() - (netForce - thisForce + thisForce * lambdaF).length();
+            ////                    ////float const netForceImprovementT = netForce.length() - (netForce - thisForce + thisForce * lambdaT).length();
+            ////                    ////// Calculate net torque improvement at two lambdas
+            ////                    ////float const netTorqueImprovementT = std::abs(netTorque) - std::abs(netTorque - thisTorque + thisTorque * lambdaT);
+            ////                    ////float const netTorqueImprovementF = std::abs(netTorque) - std::abs(netTorque - thisTorque + thisTorque * lambdaF);
+            ////                    ////// TODOTEST: relative
+            ////                    ////////// Calculate net force improvement at two lambdas
+            ////                    ////////float const netForceImprovementF = (netForce.length() - (netForce - thisForce + thisForce * lambdaF).length()) / netForce.length();
+            ////                    ////////float const netForceImprovementT = (netForce.length() - (netForce - thisForce + thisForce * lambdaT).length()) / netForce.length();
+            ////                    ////////// Calculate net torque improvement at two lambdas
+            ////                    ////////float const netTorqueImprovementT = (std::abs(netTorque) - std::abs(netTorque - thisTorque + thisTorque * lambdaT)) / std::abs(netTorque);
+            ////                    ////////float const netTorqueImprovementF = (std::abs(netTorque) - std::abs(netTorque - thisTorque + thisTorque * lambdaF)) / std::abs(netTorque);
+
+            ////                    ////// Calculate net improvements at two lambdas
+            ////                    ////float const netImprovementF = netForceImprovementF + netTorqueImprovementF;
+            ////                    ////float const netImprovementT = netForceImprovementT + netTorqueImprovementT;
+
+            ////                    ////LogMessage(pointIndex, " @ ", mPoints.GetPosition(pointIndex), ": lambdaFRaw=", lambdaFRaw, " lambdaF=", lambdaF, " lambdaTRaw=", lambdaTRaw, " lambdaT=", lambdaT);
+            ////                    ////LogMessage("   ",
+            ////                    ////    " netForceImprovementF=", netForceImprovementF, " netForceImprovementT=", netForceImprovementT,
+            ////                    ////    " netTorqueImprovementT=", netTorqueImprovementT, " netTorqueImprovementF=", netTorqueImprovementF);
+            ////                    ////LogMessage("   ",
+            ////                    ////    " netImprovementF=", netImprovementF,
+            ////                    ////    " netImprovementT=", netImprovementT);
+
+            ////                    ////vec2f adjustmentForce = vec2f::zero();
+            ////                    ////if (netImprovementF > 0.0f
+            ////                    ////    && netImprovementF >= netImprovementT)
+            ////                    ////{
+            ////                    ////    LogMessage("   !F Adjustment");
+            ////                    ////    adjustmentForce = -thisForce * (1.0f - lambdaF);
+            ////                    ////}
+            ////                    ////else if (
+            ////                    ////    netImprovementT > 0.0f
+            ////                    ////    && netImprovementT >= netImprovementF)
+            ////                    ////{
+            ////                    ////    LogMessage("   !T Adjustment");
+            ////                    ////    adjustmentForce = -thisForce * (1.0f - lambdaT);
+            ////                    ////}
+
+            ////                    //////
+            ////                    ////// Update force
+            ////                    //////
+
+            ////                    ////mPoints.AddDynamicForce(
+            ////                    ////    pointIndex,
+            ////                    ////    adjustmentForce);
+
+            ////                    ////// Update resultant force and torque
+            ////                    ////netForce += adjustmentForce;
+            ////                    ////netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(adjustmentForce);
+
+            ////                    ////LogMessage("     NetForce'=", netForce, " (", netForce.length(), ") ", "NetTorque'=", netTorque);
+
+
+
+
+
+            ////                    // TODOTEST: derivative approach
+            ////                    //
+            ////                    // Calculate d(NetForce/NetTorque)/d(lambda) @ lambda=1
+            ////                    //
+
+            ////                    vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
+            ////                    float const netForceLength = netForce.length();
+            ////                    // TODOTEST: relative
+            ////                    float const dNetForce = (netForceLength == 0.0f)
+            ////                        ? std::numeric_limits<float>::lowest() // Make sure torque gets chosen
+            ////                        : (netForceLength - (netForce - thisForce).length()) / netForceLength;
+            ////                    // TODOTEST: absolute
+            ////                    ////float const dNetForce = netForceLength - (netForce - thisForce).length();
+
+            ////                    // TODOTEST
+            ////                    float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
+            ////                    //float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).normalise().cross(thisForce);
+            ////                    // TODOTEST: relative
+            ////                    float const dNetTorque = (netTorque == 0.0f)
+            ////                        ? std::numeric_limits<float>::lowest() // Make sure force gets chosen
+            ////                        : thisTorque / netTorque;
+            ////                    // TODOTEST: absolute
+            ////                    ////float const dNetTorque = thisTorque;
+
+
+            ////                    LogMessage(pointIndex, " @ ", mPoints.GetPosition(pointIndex), ": dNetForce=", dNetForce, " dNetTorque=", dNetTorque);
+
+
+            ////                    //
+            ////                    // Calculate lambda for contribution with highest derivative
+            ////                    //
+
+            ////                    float lambda = 1.0f;
+            ////                    if (dNetForce >= 0.0f && dNetForce >= dNetTorque)
+            ////                    {
+            ////                        // lambda = lambda at which |NetForce| is minimal
+            ////                        float const thisForceSquaredLength = thisForce.squareLength();
+            ////                        float const lambdaRaw = thisForceSquaredLength == 0.0f
+            ////                            ? 1.0f // do not change
+            ////                            : -(netForce - thisForce).dot(thisForce) / thisForceSquaredLength;
+
+            ////                        lambda = Clamp(lambdaRaw, 0.0f, 1.0f);
+
+            ////                        LogMessage("    F: lambda=", lambda);
+            ////                    }
+            ////                    else if (dNetTorque >= 0.0f && dNetTorque >= dNetForce)
+            ////                    {
+            ////                        // lambda = lambda at which NetTorque is zero
+            ////                        float const lambdaRaw = thisTorque == 0.0f
+            ////                            ? 1.0f // do not change
+            ////                            : -(netTorque - thisTorque) / thisTorque;
+
+            ////                        lambda = Clamp(lambdaRaw, 0.0f, 1.0f);
+
+            ////                        LogMessage("    T: lambda=", lambda);
+            ////                    }
+
+            ////                    //
+            ////                    // Update force
+            ////                    //
+
+            ////                    vec2f const adjustmentForce = thisForce * (1.0f - lambda);
+
+            ////                    mPoints.AddDynamicForce(
+            ////                        pointIndex,
+            ////                        -adjustmentForce);
+
+            ////                    vec2f const oldNetForce = netForce;
+            ////                    float const oldNetTorque = netTorque;
+
+            ////                    // Update resultant force and torque
+            ////                    netForce += -adjustmentForce;
+            ////                    // TODOTEST
+            ////                    netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(-adjustmentForce);
+            ////                    //netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).normalise().cross(-adjustmentForce);
+
+            ////                    LogMessage("     NetForce'=", netForce, " (", netForce.length(), ") ", "NetTorque'=", netTorque);
+            ////                });
+            ////        }
+            ////    }
+            }
+
+            // TODOTEST: best edge approach
+            {
+                if (netPointCount != 0)
                 {
                     LogMessage("------------");
 
-                    VisitFrontierHullPoints(
-                        frontier,
-                        [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
+                    for (ElementCount iter = 0; iter < frontier.Size; ++iter)
+                    {
+                        // Find best
+                        // TODOTEST
+                        //float minCombinedNetForces = netForce.length() + std::abs(netTorque);
+                        //float minCombinedNetForces = std::numeric_limits<float>::max(); // With this, all forces are zeroed
+                        float minCombinedNetForces = (netForce.length() + std::abs(netTorque)) * 10.0f;
+                        ElementIndex bestPointIndex = NoneElementIndex;
+                        VisitFrontierHullPoints(
+                            frontier,
+                            [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
+                            {
+                                if (mPoints.GetDynamicForce(pointIndex) != vec2f::zero())
+                                {
+                                    vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
+                                    // TODOTEST
+                                    float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
+                                    //float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).normalise().cross(thisForce);
+
+                                    // Calculate new combined net forces at lambda=0 // TODO: not necessarily at lambda=0, should optimize lambda here
+                                    float const newAbsNetForce = (netForce - thisForce).length();
+                                    float const newAbsNetTorque = std::abs(netTorque - thisTorque);
+
+                                    // Remember best
+                                    if (newAbsNetForce + newAbsNetTorque < minCombinedNetForces)
+                                    {
+                                        minCombinedNetForces = newAbsNetForce + newAbsNetTorque;
+                                        bestPointIndex = pointIndex;
+                                    }
+                                }
+                            });
+
+                        if (bestPointIndex == NoneElementIndex)
                         {
-                            ////// TODOTEST: Net Improvement approach, one lambda
-                            ////vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
-                            ////float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
+                            LogMessage("Iter ", iter + 1, ": done");
+                            break;
+                        }
 
-                            ////// TODOTEST: absolute
-                            ////////// Calculate net force improvement at lambda=0.0
-                            ////////float const netForceImprovement = netForce.length() - (netForce - thisForce).length();
-                            ////////// Calculate net torque improvement at lambda=0.0
-                            ////////float const netTorqueImprovement = std::abs(netTorque) - std::abs(netTorque - thisTorque);
-                            ////// TODOTEST: relative
-                            ////////// Calculate net force improvement at lambda=0.0
-                            ////////float const netForceImprovement = (netForce.length() - (netForce - thisForce).length()) / netForce.length();
-                            ////////// Calculate net torque improvement at lambda=0.0
-                            ////////float const netTorqueImprovement = (std::abs(netTorque) - std::abs(netTorque - thisTorque)) / std::abs(netTorque);
+                        vec2f const thisForce = mPoints.GetDynamicForce(bestPointIndex);
+                        // TODOTEST
+                        float const thisTorque = (mPoints.GetPosition(bestPointIndex) - geometricCenterPosition).cross(thisForce);
+                        //float const thisTorque = (mPoints.GetPosition(bestPointIndex) - geometricCenterPosition).normalise().cross(thisForce);
 
-                            ////// TODOTEST: absolute with adjustment
-                            ////// Calculate net force improvement at lambda=0.0
-                            ////float const netForceImprovement = (netForce.length() - (netForce - thisForce).length());
-                            ////// Calculate net torque improvement at lambda=0.0
-                            ////float const netTorqueImprovement = (std::abs(netTorque) - std::abs(netTorque - thisTorque)) * 0.1f;
+                        mPoints.SetDynamicForce(bestPointIndex, vec2f::zero());
 
+                        netForce -= thisForce;
+                        netTorque -= thisTorque;
 
-
-                            ////// Calculate net improvement
-                            ////float const netImprovement = netForceImprovement + netTorqueImprovement;
-
-                            ////LogMessage(pointIndex, " @ ", mPoints.GetPosition(pointIndex));
-                            ////LogMessage("   ",
-                            ////    " netForceImprovement=", netForceImprovement, " netTorqueImprovement=", netTorqueImprovement, " netImprovement=", netImprovement);
-
-                            ////vec2f adjustmentForce = vec2f::zero();
-                            ////if (netImprovement > 0.0f)
-                            ////{
-                            ////    LogMessage("   !Adjustment");
-                            ////    adjustmentForce = -thisForce;
-                            ////}
-
-                            //////
-                            ////// Update force
-                            //////
-
-                            ////mPoints.AddDynamicForce(
-                            ////    pointIndex,
-                            ////    adjustmentForce);
-
-                            ////// Update resultant force and torque
-                            ////netForce += adjustmentForce;
-                            ////netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(adjustmentForce);
-
-                            ////LogMessage("     NetForce'=", netForce, " (", netForce.length(), ") ", "NetTorque'=", netTorque);
-
-
-
-
-                            ////// TODOTEST: Net Improvement approach, two lambdas
-                            ////vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
-                            ////float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
-
-                            ////// Calculate lambda at which |netForce| is min
-                            ////float const thisForceSquaredLength = thisForce.squareLength();
-                            ////float const lambdaFRaw = thisForceSquaredLength == 0.0f
-                            ////    ? 1.0f // Doesn't really matter - TODO: confirm
-                            ////    : -(netForce - thisForce).dot(thisForce) / thisForceSquaredLength;
-                            ////float const lambdaF = Clamp(lambdaFRaw, 0.0f, 1.0f);
-
-                            ////// Calculate lambda at which netTorque is zero
-                            ////float const lambdaTRaw = thisTorque == 0.0f
-                            ////    ? 1.0f // Doesn't really matter - TODO: confirm
-                            ////    : -(netTorque - thisTorque) / thisTorque;
-                            ////float const lambdaT = Clamp(lambdaTRaw, 0.0f, 1.0f);
-
-                            ////// TODOTEST: absolute
-                            ////////// Calculate net force improvement at two lambdas
-                            ////////float const netForceImprovementF = netForce.length() - (netForce - thisForce + thisForce * lambdaF).length();
-                            ////////float const netForceImprovementT = netForce.length() - (netForce - thisForce + thisForce * lambdaT).length();
-                            ////////// Calculate net torque improvement at two lambdas
-                            ////////float const netTorqueImprovementT = std::abs(netTorque) - std::abs(netTorque - thisTorque + thisTorque * lambdaT);
-                            ////////float const netTorqueImprovementF = std::abs(netTorque) - std::abs(netTorque - thisTorque + thisTorque * lambdaF);
-                            ////// TODOTEST: relative
-                            ////// Calculate net force improvement at two lambdas
-                            ////float const netForceImprovementF = (netForce.length() - (netForce - thisForce + thisForce * lambdaF).length()) / netForce.length();
-                            ////float const netForceImprovementT = (netForce.length() - (netForce - thisForce + thisForce * lambdaT).length()) / netForce.length();
-                            ////// Calculate net torque improvement at two lambdas
-                            ////float const netTorqueImprovementT = (std::abs(netTorque) - std::abs(netTorque - thisTorque + thisTorque * lambdaT)) / std::abs(netTorque);
-                            ////float const netTorqueImprovementF = (std::abs(netTorque) - std::abs(netTorque - thisTorque + thisTorque * lambdaF)) / std::abs(netTorque);
-
-                            ////// Calculate net improvements at two lambdas
-                            ////float const netImprovementF = netForceImprovementF + netTorqueImprovementF;
-                            ////float const netImprovementT = netForceImprovementT + netTorqueImprovementT;
-
-                            ////LogMessage(pointIndex, " @ ", mPoints.GetPosition(pointIndex), ": lambdaFRaw=", lambdaFRaw, " lambdaF=", lambdaF, " lambdaTRaw=", lambdaTRaw, " lambdaT=", lambdaT);
-                            ////LogMessage("   ",
-                            ////    " netForceImprovementF=", netForceImprovementF, " netForceImprovementT=", netForceImprovementT,
-                            ////    " netTorqueImprovementT=", netTorqueImprovementT, " netTorqueImprovementF=", netTorqueImprovementF);
-                            ////LogMessage("   ",
-                            ////    " netImprovementF=", netImprovementF,
-                            ////    " netImprovementT=", netImprovementT);
-
-                            ////vec2f adjustmentForce = vec2f::zero();
-                            ////if (netImprovementF > 1.0f
-                            ////    && netImprovementF >= netImprovementT)
-                            ////{
-                            ////    LogMessage("   !F Adjustment");
-                            ////    adjustmentForce = -thisForce * (1.0f - lambdaF);
-                            ////}
-                            ////else if (
-                            ////    netImprovementT > 1.0f
-                            ////    && netImprovementT >= netImprovementF)
-                            ////{
-                            ////    LogMessage("   !T Adjustment");
-                            ////    adjustmentForce = -thisForce * (1.0f - lambdaT);
-                            ////}
-
-                            //////
-                            ////// Update force
-                            //////
-
-                            ////mPoints.AddDynamicForce(
-                            ////    pointIndex,
-                            ////    adjustmentForce);
-
-                            ////// Update resultant force and torque
-                            ////netForce += adjustmentForce;
-                            ////netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(adjustmentForce);
-
-                            ////LogMessage("     NetForce'=", netForce, " (", netForce.length(), ") ", "NetTorque'=", netTorque);
-
-
-
-
-
-                            // TODOTEST: derivative approach (relativized)
-                            //
-                            // Calculate d(NetForce/NetTorque)/d(lambda) @ lambda=1
-                            //
-
-                            vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
-                            float const netForceLength = netForce.length();
-                            // TODOTEST: relative
-                            float const dNetForce = (netForceLength == 0.0f)
-                                ? std::numeric_limits<float>::lowest() // Make sure torque gets chosen
-                                : (netForceLength - (netForce - thisForce).length()) / netForceLength;
-                            // TODOTEST: absolute
-                            ////float const dNetForce = netForceLength - (netForce - thisForce).length();
-
-                            float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
-                            // TODOTEST: relative
-                            float const dNetTorque = (netTorque == 0.0f)
-                                ? std::numeric_limits<float>::lowest() // Make sure force gets chosen
-                                : thisTorque / netTorque;
-                            // TODOTEST: absolute
-                            ////float const dNetTorque = thisTorque;
-
-
-                            LogMessage(pointIndex, " @ ", mPoints.GetPosition(pointIndex), ": dNetForce=", dNetForce, " dNetTorque=", dNetTorque);
-
-
-                            //
-                            // Calculate lambda for contribution with highest derivative
-                            //
-
-                            float lambda = 1.0f;
-                            if (dNetForce >= 0.0f && dNetForce >= dNetTorque)
-                            {
-                                // lambda = lambda at which |NetForce| is minimal
-                                float const thisForceSquaredLength = thisForce.squareLength();
-                                float const lambdaRaw = thisForceSquaredLength == 0.0f
-                                    ? 1.0f // do not change
-                                    : -(netForce - thisForce).dot(thisForce) / thisForceSquaredLength;
-
-                                lambda = Clamp(lambdaRaw, 0.0f, 1.0f);
-
-                                LogMessage("    F: lambda=", lambda);
-                            }
-                            else if (dNetTorque >= 0.0f && dNetTorque >= dNetForce)
-                            {
-                                // lambda = lambda at which NetTorque is zero
-                                float const lambdaRaw = thisTorque == 0.0f
-                                    ? 1.0f // do not change
-                                    : -(netTorque - thisTorque) / thisTorque;
-
-                                lambda = Clamp(lambdaRaw, 0.0f, 1.0f);
-
-                                LogMessage("    T: lambda=", lambda);
-                            }
-
-                            //
-                            // Update force
-                            //
-
-                            vec2f const adjustmentForce = thisForce * (1.0f - lambda);
-
-                            mPoints.AddDynamicForce(
-                                pointIndex,
-                                -adjustmentForce);
-
-                            vec2f const oldNetForce = netForce;
-                            float const oldNetTorque = netTorque;
-
-                            // Update resultant force and torque
-                            netForce += -adjustmentForce;
-                            netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(-adjustmentForce);
-
-                            LogMessage("     NetForce'=", netForce, " (", netForce.length(), ") ", "NetTorque'=", netTorque);
-                        });
+                        LogMessage("Iter ", iter + 1, ": best=", bestPointIndex, "/", minCombinedNetForces, " (@", mPoints.GetPosition(bestPointIndex), ") NetForce'=", netForce, " (", netForce.length(), ") NetTorque'=", netTorque);
+                    }
                 }
             }
+
+            // Just to make sure
+            netForce = vec2f::zero();
+            netTorque = 0.0f;
+            VisitFrontierHullPoints(
+                frontier,
+                [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
+                {
+                    vec2f const pressureForce = mPoints.GetDynamicForce(pointIndex);
+
+                    // Update resultant force and torque
+                    netForce += pressureForce;
+                    netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(pressureForce);
+                });
+
+            LogMessage("NetForce''=", netForce, " (", netForce.length(), ") ", "NetTorque''=", netTorque);
         }
     }
 }
