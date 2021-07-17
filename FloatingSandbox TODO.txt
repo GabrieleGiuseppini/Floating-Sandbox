@@ -794,14 +794,18 @@ Render:
 				+ Only on edges that are the center of three consecutive hull points
 				= Try adaptive net_force/net_torque zeroing
 					+ See paper
-					- Think what to do when non-chosen derivative is large negative, meaning that lambda==1 contributes to counteract and thus setting to zero makes a lot of damage
-10:45:49.898299:     NetForce'=(-247.646484375, 0.78125) (247.648) NetTorque'=-2.71273e+06
-10:45:49.898304:1110 @ (-8.52100467682, -10.5288419724): dNetForce=-731.045 dNetTorque=0.0667425 lambdaRaw=-13.983 lambda=0
-10:45:49.898311:     NetForce'=(-729.801086426, -181287.921875) (181289) NetTorque'=-2.53167e+06
-
-					= Remember to do two passes
-					- To try:
-						- first pass at 50%
+					+ Rewrite algo so pressure force stem multiplication is last step - use 1.0 for stems before that
+						+ Assert initially that dynamic forces is empty
+							+ Verify in Debug						
+					= Best-each-time approach
+						= See if can integrate minimization, i.e. not only lambda=0:
+							+ Calc net_total at both minimal-and-clamped lambdas, and use best of the two
+								+ Store lambda as bestLambda, to use when min found
+					- Alternating approach:
+						- 1. Find point that makes force closest to zero
+							- When a tie (via tolerance, i.e. radius), compare also torque and choose one with torque being closest to zero
+						- 2. Find point that makes torque closest to zero
+							- When a tie (via tolerance, i.e. radius), compare also force and choose one with force being closest to zero
 					- Optimizations:
 						- At first pass, store point indices and reuse them for all subsequet passes
 				- Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation

@@ -1446,6 +1446,18 @@ void Ship::ApplyHydrostaticPressureForces(
     GameParameters const & gameParameters)
 {
     //
+    // At this moment, dynamic forces are all zero - we are the first populating those
+    //
+
+    assert(std::all_of(
+        mPoints.GetDynamicForceBufferAsVec2(),
+        mPoints.GetDynamicForceBufferAsVec2() + mPoints.GetElementCount(),
+        [](vec2f const & v)
+        {
+            return v == vec2f::zero();
+        }));
+
+    //
     // The hydrostatic pressure force acting on point P, between edges
     // E1 and E2, is:
     //
@@ -1523,13 +1535,6 @@ void Ship::ApplyHydrostaticPressureForces(
             float netTorque = 0.0f;
             size_t netPointCount = 0;
 
-            float const pressureForceStem =
-                std::max(mParentWorld.GetDepth(frontier.AABB.CalculateCenter()), 0.0f)
-                * effectiveWaterDensity
-                * GameParameters::GravityMagnitude
-                * gameParameters.HydrostaticPressureAdjustment
-                / 2.0f; // We include the division that we'll need for the particle force
-
             VisitFrontierHullPoints(
                 frontier,
                 [&](ElementIndex pointIndex, vec2f const & prevPerp, vec2f const & nextPerp)
@@ -1537,8 +1542,7 @@ void Ship::ApplyHydrostaticPressureForces(
                     // Apply force - we apply it as a *dynamic* force, otherwise if it were static it would
                     // generate phantom torques due to geometries changing for every dynamic step
 
-                    vec2f const pressureForce =
-                        (prevPerp + nextPerp) * pressureForceStem;
+                    vec2f const pressureForce = (prevPerp + nextPerp) / 2.0f;
 
                     mPoints.AddDynamicForce(
                         pointIndex,
@@ -1827,6 +1831,7 @@ void Ship::ApplyHydrostaticPressureForces(
                         //float minCombinedNetForces = std::numeric_limits<float>::max(); // With this, all forces are zeroed
                         float minCombinedNetForces = (netForce.length() + std::abs(netTorque)) * 10.0f;
                         ElementIndex bestPointIndex = NoneElementIndex;
+                        float bestLambda = 0.0f;
                         VisitFrontierHullPoints(
                             frontier,
                             [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
@@ -1838,15 +1843,57 @@ void Ship::ApplyHydrostaticPressureForces(
                                     float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
                                     //float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).normalise().cross(thisForce);
 
-                                    // Calculate new combined net forces at lambda=0 // TODO: not necessarily at lambda=0, should optimize lambda here
-                                    float const newAbsNetForce = (netForce - thisForce).length();
-                                    float const newAbsNetTorque = std::abs(netTorque - thisTorque);
-
-                                    // Remember best
-                                    if (newAbsNetForce + newAbsNetTorque < minCombinedNetForces)
+                                    // Lambda = 0
                                     {
-                                        minCombinedNetForces = newAbsNetForce + newAbsNetTorque;
-                                        bestPointIndex = pointIndex;
+                                        float const lambda = 0.0f;
+
+                                        // Remember best
+                                        float const newAbsNetForce = (netForce - thisForce + thisForce * lambda).length();
+                                        float const newAbsNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
+                                        if (newAbsNetForce + newAbsNetTorque < minCombinedNetForces)
+                                        {
+                                            minCombinedNetForces = newAbsNetForce + newAbsNetTorque;
+                                            bestPointIndex = pointIndex;
+                                            bestLambda = 0.0f;
+                                        }
+                                    }
+
+                                    // Lambda = lambda|min(F)
+                                    {
+                                        float const thisForceSquaredLength = thisForce.squareLength();
+                                        float const lambdaFRaw = thisForceSquaredLength == 0.0f
+                                            ? 1.0f // Doesn't really matter - TODO: confirm
+                                            : -(netForce - thisForce).dot(thisForce) / thisForceSquaredLength;
+                                        float const lambda = Clamp(lambdaFRaw, 0.0f, 1.0f);
+
+                                        // Remember best
+                                        float const newAbsNetForce = (netForce - thisForce + thisForce * lambda).length();
+                                        float const newAbsNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
+                                        if (newAbsNetForce + newAbsNetTorque < minCombinedNetForces)
+                                        {
+                                            minCombinedNetForces = newAbsNetForce + newAbsNetTorque;
+                                            bestPointIndex = pointIndex;
+                                            bestLambda = lambda;
+                                        }
+                                    }
+
+                                    // Lambda = lambda|min(T)
+                                    {
+                                        // Calculate lambda at which netTorque is zero
+                                        float const lambdaTRaw = thisTorque == 0.0f
+                                            ? 1.0f // Doesn't really matter - TODO: confirm
+                                            : -(netTorque - thisTorque) / thisTorque;
+                                        float const lambda = Clamp(lambdaTRaw, 0.0f, 1.0f);
+
+                                        // Remember best
+                                        float const newAbsNetForce = (netForce - thisForce + thisForce * lambda).length();
+                                        float const newAbsNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
+                                        if (newAbsNetForce + newAbsNetTorque < minCombinedNetForces)
+                                        {
+                                            minCombinedNetForces = newAbsNetForce + newAbsNetTorque;
+                                            bestPointIndex = pointIndex;
+                                            bestLambda = lambda;
+                                        }
                                     }
                                 }
                             });
@@ -1862,12 +1909,14 @@ void Ship::ApplyHydrostaticPressureForces(
                         float const thisTorque = (mPoints.GetPosition(bestPointIndex) - geometricCenterPosition).cross(thisForce);
                         //float const thisTorque = (mPoints.GetPosition(bestPointIndex) - geometricCenterPosition).normalise().cross(thisForce);
 
-                        mPoints.SetDynamicForce(bestPointIndex, vec2f::zero());
+                        mPoints.SetDynamicForce(bestPointIndex, thisForce * bestLambda);
 
-                        netForce -= thisForce;
-                        netTorque -= thisTorque;
+                        auto const oldNetTorque = netTorque;
 
-                        LogMessage("Iter ", iter + 1, ": best=", bestPointIndex, "/", minCombinedNetForces, " (@", mPoints.GetPosition(bestPointIndex), ") NetForce'=", netForce, " (", netForce.length(), ") NetTorque'=", netTorque);
+                        netForce += -thisForce + thisForce * bestLambda;
+                        netTorque += -thisTorque + thisTorque * bestLambda;
+
+                        LogMessage("Iter ", iter + 1, ": best=", bestPointIndex, "/", minCombinedNetForces, "/l=", bestLambda, " (@", mPoints.GetPosition(bestPointIndex), ") NetForce'=", netForce, " (", netForce.length(), ") NetTorque'=", netTorque);
                     }
                 }
             }
@@ -1887,6 +1936,26 @@ void Ship::ApplyHydrostaticPressureForces(
                 });
 
             LogMessage("NetForce''=", netForce, " (", netForce.length(), ") ", "NetTorque''=", netTorque);
+
+
+            //
+            // Scale pressure force now
+            //
+
+            float const pressureForceStem =
+                std::max(mParentWorld.GetDepth(frontier.AABB.CalculateCenter()), 0.0f)
+                * effectiveWaterDensity
+                * GameParameters::GravityMagnitude
+                * gameParameters.HydrostaticPressureAdjustment;
+
+            VisitFrontierHullPoints(
+                frontier,
+                [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
+                {
+                    mPoints.SetDynamicForce(
+                        pointIndex,
+                        mPoints.GetDynamicForce(pointIndex) * pressureForceStem);
+                });
         }
     }
 }
