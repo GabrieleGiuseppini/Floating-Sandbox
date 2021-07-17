@@ -1669,6 +1669,8 @@ void Ship::ApplyHydrostaticPressureForces(
                     float bestLambda = 0.0f;
                     if (netForce.length() >= std::abs(netTorque))
                     {
+                        LogMessage("Iter ", iter + 1, ": NetForce minimization");
+
                         // Find best lambda that minimizes force
                         float minNetForceMagnitude = std::numeric_limits<float>::max();
                         VisitFrontierHullPoints(
@@ -1685,6 +1687,7 @@ void Ship::ApplyHydrostaticPressureForces(
 
                                     // Remember best
                                     float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
+                                    LogMessage("      ", pointIndex, ": ", newNetForceMagnitude);
                                     if (newNetForceMagnitude < minNetForceMagnitude)
                                     {
                                         minNetForceMagnitude = newNetForceMagnitude;
@@ -1693,11 +1696,11 @@ void Ship::ApplyHydrostaticPressureForces(
                                     }
                                 }
                             });
-
-                        LogMessage("Iter ", iter + 1, ": NetForce minimization");
                     }
                     else
                     {
+                        LogMessage("Iter ", iter + 1, ": NetTorque minimization");
+
                         // Find best lambda that minimizes torque
                         float minNetTorqueMagnitude = std::numeric_limits<float>::max();
                         VisitFrontierHullPoints(
@@ -1714,6 +1717,7 @@ void Ship::ApplyHydrostaticPressureForces(
 
                                     // Remember best
                                     float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
+                                    LogMessage("      ", pointIndex, ": ", newNetTorque);
                                     if (newNetTorque < minNetTorqueMagnitude)
                                     {
                                         minNetTorqueMagnitude = newNetTorque;
@@ -1722,8 +1726,6 @@ void Ship::ApplyHydrostaticPressureForces(
                                     }
                                 }
                             });
-
-                        LogMessage("Iter ", iter + 1, ": NetTorque minimization");
                     }
 
                     // Find best
