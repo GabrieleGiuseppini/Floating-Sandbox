@@ -1670,6 +1670,7 @@ void Ship::ApplyHydrostaticPressureForces(
                                 vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
 
                                 // Lambda = 0
+                                if (thisForce != vec2f::zero())
                                 {
                                     float const lambda = 0.0f;
 
@@ -1719,6 +1720,7 @@ void Ship::ApplyHydrostaticPressureForces(
                                 float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(mPoints.GetDynamicForce(pointIndex));
 
                                 // Lambda = 0
+                                if (thisTorque != 0.0f)
                                 {
                                     float const lambda = 0.0f;
 
@@ -1775,7 +1777,7 @@ void Ship::ApplyHydrostaticPressureForces(
 
                     LogMessage("Iter ", iter + 1, ": best=", bestPointIndex, "/l=", bestLambda, " (@", mPoints.GetPosition(bestPointIndex), ") NetForce'=", netForce, " (", netForce.length(), ") NetTorque'=", netTorque);
 
-                    if (netForce.length() < 0.0001f && std::abs(netTorque) < 0.0001f)
+                    if (netForce.length() < 0.5f && std::abs(netTorque) < 0.5f)
                     {
                         LogMessage("Iter ", iter + 1, ": done because reached threshold");
                         break;
