@@ -798,14 +798,15 @@ Render:
 						+ Assert initially that dynamic forces is empty
 							+ Verify in Debug						
 					= Best-each-time approach
-						= See if can integrate minimization, i.e. not only lambda=0:
+						+ See if can integrate minimization, i.e. not only lambda=0:
 							+ Calc net_total at both minimal-and-clamped lambdas, and use best of the two
 								+ Store lambda as bestLambda, to use when min found
-					- Alternating approach:
-						- 1. Find point that makes force closest to zero
+					= Alternating approach:
+						= 1. Find point that makes force closest to zero
 							- When a tie (via tolerance, i.e. radius), compare also torque and choose one with torque being closest to zero
-						- 2. Find point that makes torque closest to zero
+						= 2. Find point that makes torque closest to zero
 							- When a tie (via tolerance, i.e. radius), compare also force and choose one with force being closest to zero
+						+ Other lambdas
 					- Optimizations:
 						- At first pass, store point indices and reuse them for all subsequet passes
 				- Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
