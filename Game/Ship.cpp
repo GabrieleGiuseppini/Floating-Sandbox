@@ -1669,6 +1669,8 @@ void Ship::ApplyHydrostaticPressureForces(
                             {
                                 vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
 
+                                // TODOHERE: change all of this: just find lambda::min, iff there is force here
+
                                 // Lambda = 0
                                 if (thisForce != vec2f::zero())
                                 {
@@ -1684,27 +1686,24 @@ void Ship::ApplyHydrostaticPressureForces(
                                     }
                                 }
 
-                                /* TODOTEST
                                 // Lambda = lambda|min(F)
+                                // TODO: how to prevent choosing this one and ending up making no changes
                                 {
                                     float const thisForceSquaredLength = thisForce.squareLength();
                                     float const lambdaFRaw = thisForceSquaredLength == 0.0f
-                                        ? 1.0f // Doesn't really matter - TODO: confirm
+                                        ? 1.0f // TODO: if there is no force here, avoid considering whole point altogether (i.e. move up)
                                         : -(netForce - thisForce).dot(thisForce) / thisForceSquaredLength;
                                     float const lambda = Clamp(lambdaFRaw, 0.0f, 1.0f);
 
                                     // Remember best
-                                    float const newAbsNetForce = (netForce - thisForce + thisForce * lambda).length();
-                                    float const newAbsNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
-                                    if (newAbsNetForce + newAbsNetTorque < minCombinedNetForces
-                                        && lambda != 1.0f)
+                                    float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
+                                    if (newNetForceMagnitude < minNetForceMagnitude)
                                     {
-                                        minCombinedNetForces = newAbsNetForce + newAbsNetTorque;
+                                        minNetForceMagnitude = newNetForceMagnitude;
                                         bestPointIndex = pointIndex;
                                         bestLambda = lambda;
                                     }
                                 }
-                                */
                             });
 
                         LogMessage("Iter ", iter + 1, ": NetForce minimization");
@@ -1718,6 +1717,8 @@ void Ship::ApplyHydrostaticPressureForces(
                             [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
                             {
                                 float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(mPoints.GetDynamicForce(pointIndex));
+
+                                // TODOHERE: change all of this: just find lambda::min, iff there is torque here
 
                                 // Lambda = 0
                                 if (thisTorque != 0.0f)
@@ -1734,27 +1735,24 @@ void Ship::ApplyHydrostaticPressureForces(
                                     }
                                 }
 
-                                /* TODOTEST
                                 // Lambda = lambda|min(T)
+                                // TODO: how to prevent choosing this one and ending up making no changes
                                 {
                                     // Calculate lambda at which netTorque is zero
                                     float const lambdaTRaw = thisTorque == 0.0f
-                                        ? 1.0f // Doesn't really matter - TODO: confirm
+                                        ? 1.0f // TODO: if there is no torque here, avoid considering whole point altogether (i.e. move up)
                                         : -(netTorque - thisTorque) / thisTorque;
                                     float const lambda = Clamp(lambdaTRaw, 0.0f, 1.0f);
 
                                     // Remember best
-                                    float const newAbsNetForce = (netForce - thisForce + thisForce * lambda).length();
-                                    float const newAbsNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
-                                    if (newAbsNetForce + newAbsNetTorque < minCombinedNetForces
-                                        && lambda != 1.0f)
+                                    float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
+                                    if (newNetTorque < minNetTorqueMagnitude)
                                     {
-                                        minCombinedNetForces = newAbsNetForce + newAbsNetTorque;
+                                        minNetTorqueMagnitude = newNetTorque;
                                         bestPointIndex = pointIndex;
-                                        bestLambda = lambda;
+                                        bestLambda = 0.0f;
                                     }
                                 }
-                                */
                             });
 
                         LogMessage("Iter ", iter + 1, ": NetTorque minimization");
