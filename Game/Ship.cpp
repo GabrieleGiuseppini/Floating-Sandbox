@@ -1718,7 +1718,7 @@ void Ship::ApplyHydrostaticPressureForces(
                                     {
                                         minNetTorqueMagnitude = newNetTorque;
                                         bestPointIndex = pointIndex;
-                                        bestLambda = 0.0f;
+                                        bestLambda = lambda;
                                     }
                                 }
                             });
