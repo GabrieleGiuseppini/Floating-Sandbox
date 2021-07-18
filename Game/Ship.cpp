@@ -1692,7 +1692,7 @@ void Ship::ApplyHydrostaticPressureForces(
                                     // Remember best
                                     float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
                                     float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
-                                    LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
+                                    //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
                                     if (newNetForceMagnitude < minNetForceMagnitude - Tolerance
                                         || (newNetForceMagnitude < minNetForceMagnitude + Tolerance && newNetTorque < minNetTorque))
                                     {
@@ -1727,7 +1727,7 @@ void Ship::ApplyHydrostaticPressureForces(
                                     // Remember best
                                     float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
                                     float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
-                                    LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
+                                    //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
                                     if (newNetTorque < minNetTorque - Tolerance
                                         || (newNetTorque < minNetTorque + Tolerance && newNetForceMagnitude < minNetForceMagnitude))
                                     {

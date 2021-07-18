@@ -797,18 +797,20 @@ Render:
 					+ Rewrite algo so pressure force stem multiplication is last step - use 1.0 for stems before that
 						+ Assert initially that dynamic forces is empty
 							+ Verify in Debug						
-					= Best-each-time approach
+					+ Best-each-time approach
 						+ See if can integrate minimization, i.e. not only lambda=0:
 							+ Calc net_total at both minimal-and-clamped lambdas, and use best of the two
 								+ Store lambda as bestLambda, to use when min found
-					= Alternating approach:
-						= 1. Find point that makes force closest to zero
+					+ Alternating approach:
+						+ 1. Find point that makes force closest to zero
 							+ When a tie (via tolerance, i.e. radius), compare also torque and choose one with torque being closest to zero
-						= 2. Find point that makes torque closest to zero
+						+ 2. Find point that makes torque closest to zero
 							+ When a tie (via tolerance, i.e. radius), compare also force and choose one with force being closest to zero
-						+ See if Red October still explodes: yes
+						+ See if Red October still explodes: yes - but it was already exploding even before stem multiplication
 						+ Other lambdas
+					- See why explodes
 					- Optimizations:
+						- Start: Update=5.68ms, ApplyHydrostaticPressureForce=13.40% (LogMessage=7.88%)
 						- At first pass, store point indices and reuse them for all subsequent passes
 						- Try - but unlikely to succeed - with calculating lambdas only at dirty structures
 				- Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
