@@ -1656,9 +1656,11 @@ void Ship::ApplyHydrostaticPressureForces(
             {
                 for (ElementCount iter = 0; iter < frontier.Size; ++iter)
                 {
+                    float constexpr Tolerance = 0.1f; // TODOHERE
+
                     // Check if we're done
-                    if (netForce.length() < 0.5f  // TODOHERE
-                        && std::abs(netTorque) < 0.5f) // TODOHERE
+                    if (netForce.length() < 0.5f
+                        && std::abs(netTorque) < 0.5f)
                     {
                         LogMessage("Iter ", iter + 1, ": done because reached threshold");
                         break;
@@ -1671,13 +1673,15 @@ void Ship::ApplyHydrostaticPressureForces(
                     {
                         LogMessage("Iter ", iter + 1, ": NetForce minimization");
 
-                        // Find best lambda that minimizes force
+                        // Find best lambda that minimizes force and, in a tie, torque
                         float minNetForceMagnitude = std::numeric_limits<float>::max();
+                        float minNetTorque = std::numeric_limits<float>::max();
                         VisitFrontierHullPoints(
                             frontier,
                             [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
                             {
                                 vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
+                                float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
 
                                 if (thisForce != vec2f::zero())
                                 {
@@ -1687,10 +1691,13 @@ void Ship::ApplyHydrostaticPressureForces(
 
                                     // Remember best
                                     float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
-                                    LogMessage("      ", pointIndex, ": ", newNetForceMagnitude);
-                                    if (newNetForceMagnitude < minNetForceMagnitude)
+                                    float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
+                                    LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
+                                    if (newNetForceMagnitude < minNetForceMagnitude - Tolerance
+                                        || (newNetForceMagnitude < minNetForceMagnitude + Tolerance && newNetTorque < minNetTorque))
                                     {
                                         minNetForceMagnitude = newNetForceMagnitude;
+                                        minNetTorque = newNetTorque;
                                         bestPointIndex = pointIndex;
                                         bestLambda = lambda;
                                     }
@@ -1701,13 +1708,15 @@ void Ship::ApplyHydrostaticPressureForces(
                     {
                         LogMessage("Iter ", iter + 1, ": NetTorque minimization");
 
-                        // Find best lambda that minimizes torque
-                        float minNetTorqueMagnitude = std::numeric_limits<float>::max();
+                        // Find best lambda that minimizes torque and, in a tie, force
+                        float minNetForceMagnitude = std::numeric_limits<float>::max();
+                        float minNetTorque = std::numeric_limits<float>::max();
                         VisitFrontierHullPoints(
                             frontier,
                             [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
                             {
-                                float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(mPoints.GetDynamicForce(pointIndex));
+                                vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
+                                float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
 
                                 if (thisTorque != 0.0f)
                                 {
@@ -1716,11 +1725,14 @@ void Ship::ApplyHydrostaticPressureForces(
                                     float const lambda = Clamp(lambdaTRaw, 0.0f, 1.0f);
 
                                     // Remember best
+                                    float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
                                     float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
-                                    LogMessage("      ", pointIndex, ": ", newNetTorque);
-                                    if (newNetTorque < minNetTorqueMagnitude)
+                                    LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
+                                    if (newNetTorque < minNetTorque - Tolerance
+                                        || (newNetTorque < minNetTorque + Tolerance && newNetForceMagnitude < minNetForceMagnitude))
                                     {
-                                        minNetTorqueMagnitude = newNetTorque;
+                                        minNetForceMagnitude = newNetForceMagnitude;
+                                        minNetTorque = newNetTorque;
                                         bestPointIndex = pointIndex;
                                         bestLambda = lambda;
                                     }
