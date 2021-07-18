@@ -803,12 +803,14 @@ Render:
 								+ Store lambda as bestLambda, to use when min found
 					= Alternating approach:
 						= 1. Find point that makes force closest to zero
-							- When a tie (via tolerance, i.e. radius), compare also torque and choose one with torque being closest to zero
+							+ When a tie (via tolerance, i.e. radius), compare also torque and choose one with torque being closest to zero
 						= 2. Find point that makes torque closest to zero
-							- When a tie (via tolerance, i.e. radius), compare also force and choose one with force being closest to zero
+							+ When a tie (via tolerance, i.e. radius), compare also force and choose one with force being closest to zero
+						+ See if Red October still explodes: yes
 						+ Other lambdas
 					- Optimizations:
-						- At first pass, store point indices and reuse them for all subsequet passes
+						- At first pass, store point indices and reuse them for all subsequent passes
+						- Try - but unlikely to succeed - with calculating lambdas only at dirty structures
 				- Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
