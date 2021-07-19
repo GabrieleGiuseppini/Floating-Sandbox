@@ -808,9 +808,16 @@ Render:
 							+ When a tie (via tolerance, i.e. radius), compare also force and choose one with force being closest to zero
 						+ See if Red October still explodes: yes - but it was already exploding even before stem multiplication
 						+ Other lambdas
-					- See why explodes
+					= See why explodes
+						+ Should be order: should be Strain => Hydrostatic, but it's Hydrostatic => Strain
+						X See if last beta also exploded at high depth
+						+ See why pressureForceStem is so jumpy
+							+ It's because UpdateForStrains causes new frontiers and their AABBs are not initialized yet
+							+ Use geometric center
+						- TODOHERE: See why that abnormal force at frontier knots
+					+ Fix getting stuck at lambda=1:
 					- Optimizations:
-						- Start: Update=5.68ms, ApplyHydrostaticPressureForce=13.40% (LogMessage=7.88%)
+						+ Start: Update=5.68ms, ApplyHydrostaticPressureForce=13.40% (LogMessage=7.88%)
 						- At first pass, store point indices and reuse them for all subsequent passes
 						- Try - but unlikely to succeed - with calculating lambdas only at dirty structures
 				- Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
@@ -818,8 +825,7 @@ Render:
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
 			+ 0.242	
-			- Adjustment is too low, raise it
-				- 0.5+ is somewhat acceptable for Titanic - breaks down at 4.5Km
+			- See why Titanic is bunch of particles at 10Km: rotting?
 
 		- Settings for Electric Spark tool
 			- SettingsDialog
@@ -1695,6 +1701,8 @@ Render:
 		- Requires "sources of light" feature
 
 - Dynamics:
+
+	- Time slowing down, both automatically (at explosions, at big events, etc.) and by user
 
 	- Spread out spring coeffs' recalculations (*)
 		- For better look'n'feel

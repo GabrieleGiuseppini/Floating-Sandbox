@@ -316,6 +316,18 @@ void Ship::Update(
     // Cached depths are valid from now on --------------------------->
 
     ///////////////////////////////////////////////////////////////////
+    // Update strain for all springs; might cause springs to break
+    // (which would flag our structure as dirty)
+    ///////////////////////////////////////////////////////////////////
+
+    // - Inputs: P.Position, S.SpringDeletion, S.ResetLength, S.BreakingElongation
+    // - Outputs: S.Destroy()
+    // - Fires events, updates frontiers
+    mSprings.UpdateForStrains(
+        gameParameters,
+        mPoints);
+
+    ///////////////////////////////////////////////////////////////////
     // Apply hydrostatic forces
     ///////////////////////////////////////////////////////////////////
 
@@ -352,17 +364,18 @@ void Ship::Update(
         stormParameters,
         gameParameters);
 
-    ///////////////////////////////////////////////////////////////////
-    // Update strain for all springs; might cause springs to break
-    // (which would flag our structure as dirty)
-    ///////////////////////////////////////////////////////////////////
+    // TODOTEST
+    ///////////////////////////////////////////////////////////////////////
+    ////// Update strain for all springs; might cause springs to break
+    ////// (which would flag our structure as dirty)
+    ///////////////////////////////////////////////////////////////////////
 
-    // - Inputs: P.Position, S.SpringDeletion, S.ResetLength, S.BreakingElongation
-    // - Outputs: S.Destroy()
-    // - FiresEvents
-    mSprings.UpdateForStrains(
-        gameParameters,
-        mPoints);
+    ////// - Inputs: P.Position, S.SpringDeletion, S.ResetLength, S.BreakingElongation
+    ////// - Outputs: S.Destroy()
+    ////// - Fires events
+    ////mSprings.UpdateForStrains(
+    ////    gameParameters,
+    ////    mPoints);
 
     ///////////////////////////////////////////////////////////////////
     // Update state machines
@@ -1492,6 +1505,8 @@ void Ship::ApplyHydrostaticPressureForces(
     //    iteration.
     //
 
+    LogMessage("TODOTEST: -----------------------------------------------------------------------");
+
     for (FrontierId const frontierId : mFrontiers.GetFrontierIds())
     {
         auto const & frontier = mFrontiers.GetFrontier(frontierId);
@@ -1525,7 +1540,7 @@ void Ship::ApplyHydrostaticPressureForces(
             // 2. Apply first round of force
             //
 
-            //LogMessage("TODOTEST: ----------------------------------------");
+            LogMessage("TODOTEST: ----------------------------------------");
 
             vec2f netForce = vec2f::zero();
             float netTorque = 0.0f;
@@ -1687,19 +1702,22 @@ void Ship::ApplyHydrostaticPressureForces(
                                 {
                                     // Find lambda that minimizes force
                                     float const lambdaFRaw = -(netForce - thisForce).dot(thisForce) / thisForce.squareLength();
-                                    float const lambda = Clamp(lambdaFRaw, 0.0f, 1.0f);
-
-                                    // Remember best
-                                    float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
-                                    float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
-                                    //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
-                                    if (newNetForceMagnitude < minNetForceMagnitude - Tolerance
-                                        || (newNetForceMagnitude < minNetForceMagnitude + Tolerance && newNetTorque < minNetTorque))
+                                    if (lambdaFRaw < 1.0f) // Ensure it's a change wrt now
                                     {
-                                        minNetForceMagnitude = newNetForceMagnitude;
-                                        minNetTorque = newNetTorque;
-                                        bestPointIndex = pointIndex;
-                                        bestLambda = lambda;
+                                        float const lambda = Clamp(lambdaFRaw, 0.0f, 1.0f);
+
+                                        // Remember best
+                                        float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
+                                        float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
+                                        //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
+                                        if (newNetForceMagnitude < minNetForceMagnitude - Tolerance
+                                            || (newNetForceMagnitude < minNetForceMagnitude + Tolerance && newNetTorque < minNetTorque))
+                                        {
+                                            minNetForceMagnitude = newNetForceMagnitude;
+                                            minNetTorque = newNetTorque;
+                                            bestPointIndex = pointIndex;
+                                            bestLambda = lambda;
+                                        }
                                     }
                                 }
                             });
@@ -1722,19 +1740,22 @@ void Ship::ApplyHydrostaticPressureForces(
                                 {
                                     // Calculate lambda at which netTorque is zero
                                     float const lambdaTRaw = -(netTorque - thisTorque) / thisTorque;
-                                    float const lambda = Clamp(lambdaTRaw, 0.0f, 1.0f);
-
-                                    // Remember best
-                                    float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
-                                    float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
-                                    //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
-                                    if (newNetTorque < minNetTorque - Tolerance
-                                        || (newNetTorque < minNetTorque + Tolerance && newNetForceMagnitude < minNetForceMagnitude))
+                                    if (lambdaTRaw < 1.0f) // Ensure it's a change wrt now
                                     {
-                                        minNetForceMagnitude = newNetForceMagnitude;
-                                        minNetTorque = newNetTorque;
-                                        bestPointIndex = pointIndex;
-                                        bestLambda = lambda;
+                                        float const lambda = Clamp(lambdaTRaw, 0.0f, 1.0f);
+
+                                        // Remember best
+                                        float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
+                                        float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
+                                        //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
+                                        if (newNetTorque < minNetTorque - Tolerance
+                                            || (newNetTorque < minNetTorque + Tolerance && newNetForceMagnitude < minNetForceMagnitude))
+                                        {
+                                            minNetForceMagnitude = newNetForceMagnitude;
+                                            minNetTorque = newNetTorque;
+                                            bestPointIndex = pointIndex;
+                                            bestLambda = lambda;
+                                        }
                                     }
                                 }
                             });
@@ -1766,10 +1787,12 @@ void Ship::ApplyHydrostaticPressureForces(
             //
 
             float const pressureForceStem =
-                std::max(mParentWorld.GetDepth(frontier.AABB.CalculateCenter()), 0.0f)
+                std::max(mParentWorld.GetDepth(geometricCenterPosition), 0.0f)
                 * effectiveWaterDensity
                 * GameParameters::GravityMagnitude
                 * gameParameters.HydrostaticPressureAdjustment;
+
+            LogMessage("  PressureForceStem=", pressureForceStem);
 
             VisitFrontierHullPoints(
                 frontier,
