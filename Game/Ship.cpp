@@ -364,7 +364,8 @@ void Ship::Update(
         stormParameters,
         gameParameters);
 
-    // TODOTEST
+    // TODOTEST: move earlier so that destruction and consequent new frontier
+    // is taken into consideration by hydrostatic pressure forces
     ///////////////////////////////////////////////////////////////////////
     ////// Update strain for all springs; might cause springs to break
     ////// (which would flag our structure as dirty)
@@ -1777,8 +1778,6 @@ void Ship::ApplyHydrostaticPressureForces(
                     netTorque += -thisTorque + thisTorque * bestLambda;
 
                     LogMessage("Iter ", iter + 1, ": best=", bestPointIndex, "/l=", bestLambda, " (@", mPoints.GetPosition(bestPointIndex), ") NetForce'=", netForce, " (", netForce.length(), ") NetTorque'=", netTorque);
-
-
                 }
             }
 
@@ -1791,8 +1790,6 @@ void Ship::ApplyHydrostaticPressureForces(
                 * effectiveWaterDensity
                 * GameParameters::GravityMagnitude
                 * gameParameters.HydrostaticPressureAdjustment;
-
-            LogMessage("  PressureForceStem=", pressureForceStem);
 
             VisitFrontierHullPoints(
                 frontier,

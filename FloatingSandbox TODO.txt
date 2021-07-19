@@ -814,13 +814,15 @@ Render:
 						+ See why pressureForceStem is so jumpy
 							+ It's because UpdateForStrains causes new frontiers and their AABBs are not initialized yet
 							+ Use geometric center
-						- TODOHERE: See why that abnormal force at frontier knots
+						- Abnormal force at frontier knots: due to pressure force stem multiplied twice
 					+ Fix getting stuck at lambda=1:
 					- Optimizations:
 						+ Start: Update=5.68ms, ApplyHydrostaticPressureForce=13.40% (LogMessage=7.88%)
+						- See if "min-3-consecutive-hulls" is still needed
 						- At first pass, store point indices and reuse them for all subsequent passes
 						- Try - but unlikely to succeed - with calculating lambdas only at dirty structures
 				- Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
+				- See if Frontiers::Frontier::AABB is still needed
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
