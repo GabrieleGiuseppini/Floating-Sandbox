@@ -808,21 +808,36 @@ Render:
 							+ When a tie (via tolerance, i.e. radius), compare also force and choose one with force being closest to zero
 						+ See if Red October still explodes: yes - but it was already exploding even before stem multiplication
 						+ Other lambdas
-					= See why explodes
-						+ Should be order: should be Strain => Hydrostatic, but it's Hydrostatic => Strain
+					+ See why explodes
+						+ Should be order: Strain => Hydrostatic, but it's Hydrostatic => Strain
 						X See if last beta also exploded at high depth
 						+ See why pressureForceStem is so jumpy
 							+ It's because UpdateForStrains causes new frontiers and their AABBs are not initialized yet
 							+ Use geometric center
-						- Abnormal force at frontier knots: due to pressure force stem multiplied twice
+						+ Abnormal force at frontier knots: due to pressure force stem multiplied twice
+					= Algo for optimization *and* avoidance of double stem (explosion)
+						- 1. Comment out current
+						- 2. TODO: ApplyWorldSurfaceForces: calculate geometric center and store it with Frontier
+							- Frontier maintenance: when creating new frontier, copy over old GeometricCenter and AABB
+						- 3. Buffer:
+							- Struct member of Ship: HydrostaticPressureTODO:State?
+								- ElementIndex PointIndex
+								- vec2f TorqueArm
+								- vec2f ForceVector
+							- Buffer is owned by Ship, cctd'd at cctor of Ship
+							! Buffer can be populated for same point multiple times, each time for a different "surface" of a frontier
+						- 4. Initial population:
+							! Allow particles that appear twice in same frontier to appear twice in buffer
+							- Make loop inline
+						- 5. Equalization
+						- End: DynamicForces are only populated at end, by multiplying ForceVector with stem and storing (TODO:adding?) to Points.DynamicForces
+							- Allow particles that appear twice in same frontier to TODO:addup? to DynamicForces
 					+ Fix getting stuck at lambda=1:
 					- Optimizations:
 						+ Start: Update=5.68ms, ApplyHydrostaticPressureForce=13.40% (LogMessage=7.88%)
 						- See if "min-3-consecutive-hulls" is still needed
-						- At first pass, store point indices and reuse them for all subsequent passes
 						- Try - but unlikely to succeed - with calculating lambdas only at dirty structures
 				- Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
-				- See if Frontiers::Frontier::AABB is still needed
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
