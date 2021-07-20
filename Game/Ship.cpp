@@ -1795,9 +1795,11 @@ void Ship::ApplyHydrostaticPressureForces(
                 frontier,
                 [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
                 {
-                    mPoints.SetDynamicForce(
-                        pointIndex,
-                        mPoints.GetDynamicForce(pointIndex) * pressureForceStem);
+                    // TODOTEST
+                    if (mPoints.GetDynamicForce(pointIndex).length() < 20.0f)
+                        mPoints.SetDynamicForce(
+                            pointIndex,
+                            mPoints.GetDynamicForce(pointIndex) * pressureForceStem);
                 });
         }
     }
