@@ -778,6 +778,7 @@ Render:
 						+ Verify it is saved and loaded
 					= Test Titanic without breaking fault line: see if breaks by itself
 						+ Make new ship given that you are at it
+					- Checkout impact of sinking ship on sea floor; if get pulverized, decrease weakening
 					= Tests:
 						- Paper
 						- Cardboard
@@ -815,10 +816,20 @@ Render:
 							+ It's because UpdateForStrains causes new frontiers and their AABBs are not initialized yet
 							+ Use geometric center
 						+ Abnormal force at frontier knots: due to pressure force stem multiplied twice
+					+ See if can initialize best'es with current nettorque/netforce
+						+ Calc average # of iterations, F, and T before and after
+							+ With numeric_limits::max: Hemisphere: 53/0.37/0.00... Triton: 8.4/0.05/0.00...
+							+ With current nettorque/netforce: Hemisphere: 42/0.7/0.00... Triton: 8.0/0.05/0.00...
+						+ Undo: we want to choose contributions > current net
 					= Algo for optimization *and* avoidance of double stem (explosion)
+						+ 0a. Confirm by multiplying all DynamicForces by stem - once across all points
+						+ 0b. Take perf measurements (default_ship, depth -= 200): Update:4.90ms, ApplyHydrostaticPressureForces: 3.47%
+							Hesleden: Update:67.8ms, ApplyHydrostaticPressureForces: 6.27%
+						+ Copy exe
 						- 1. Comment out current
 						- 2. TODO: ApplyWorldSurfaceForces: calculate geometric center and store it with Frontier
 							- Frontier maintenance: when creating new frontier, copy over old GeometricCenter and AABB
+						     TODO: alternative: move ApplyWorldForces after strains
 						- 3. Buffer:
 							- Struct member of Ship: HydrostaticPressureTODO:State?
 								- ElementIndex PointIndex
