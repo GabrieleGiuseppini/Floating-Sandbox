@@ -16,6 +16,7 @@
 #include "ShipOverlays.h"
 
 #include <GameCore/AABBSet.h>
+#include <GameCore/Buffer.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/RunningAverage.h>
 #include <GameCore/TaskThreadPool.h>
@@ -74,7 +75,7 @@ public:
         float currentSimulationTime,
 		Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters,
-        Geometry::AABBSet & aabbSet);
+        Geometry::AABBSet & externalAabbSet);
 
     void RenderUpload(Render::RenderContext & renderContext);
 
@@ -415,7 +416,7 @@ private:
         float effectiveAirDensity,
         float effectiveWaterDensity,
         GameParameters const & gameParameters,
-        Geometry::AABBSet & aabbSet);
+        Geometry::AABBSet & externalAabbSet);
 
     void ApplyWorldParticleForces(
         float effectiveAirDensity,
@@ -429,7 +430,7 @@ private:
         float effectiveWaterDensity,
         Buffer<float> & newCachedPointDepths,
         GameParameters const & gameParameters,
-        Geometry::AABBSet & aabbSet);
+        Geometry::AABBSet & externalAabbSet);
 
     template<typename TVisitor>
     void VisitFrontierHullPoints(
@@ -786,6 +787,23 @@ private:
     // used to avoid running diffusion when luminiscence adjustment is zero and we've
     // already ran once with zero (so to zero out buffer)
     float mLastLuminiscenceAdjustmentDiffused;
+
+    //
+    // Hydrostatic pressure
+    //
+
+    struct HydrostaticPressureOnPoint
+    {
+        ElementIndex PointIndex;
+        vec2f TorqueArm;
+        vec2f ForceVector;
+    };
+
+    // Index is _not_ point index, this is simply a container
+    //
+    // Note: may be populated for same point multiple times, once for each crossing of
+    // the frontier through that point
+    Buffer<HydrostaticPressureOnPoint> mHydrostaticPressureBuffer;
 
     //
     // Render members

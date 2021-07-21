@@ -827,20 +827,19 @@ Render:
 							Hesleden: Update:67.8ms, ApplyHydrostaticPressureForces: 6.27%
 						+ Copy exe
 						- 1. Comment out current
-						- 2. TODO: ApplyWorldSurfaceForces: calculate geometric center and store it with Frontier
-							- Frontier maintenance: when creating new frontier, copy over old GeometricCenter and AABB
-						     TODO: alternative: move ApplyWorldForces after strains
-						- 3. Buffer:
-							- Struct member of Ship: HydrostaticPressureTODO:State?
+						+ 2. Move ApplyWorldForces after UpdateForStrains
+						+ 3. ApplyWorldSurfaceForces: calculate geometric center and store it with Frontier, together with AABB
+						+ 4. Buffer:
+							+ Struct member of Ship: HydrostaticPressureTODO:State?
 								- ElementIndex PointIndex
 								- vec2f TorqueArm
 								- vec2f ForceVector
-							- Buffer is owned by Ship, cctd'd at cctor of Ship
+							+ Buffer is owned by Ship, cctd'd at cctor of Ship
 							! Buffer can be populated for same point multiple times, each time for a different "surface" of a frontier
-						- 4. Initial population:
+						- 5. Initial population:
 							! Allow particles that appear twice in same frontier to appear twice in buffer
 							- Make loop inline
-						- 5. Equalization
+						- 6. Equalization
 						- End: DynamicForces are only populated at end, by multiplying ForceVector with stem and storing (TODO:adding?) to Points.DynamicForces
 							- Allow particles that appear twice in same frontier to TODO:addup? to DynamicForces
 					+ Fix getting stuck at lambda=1:

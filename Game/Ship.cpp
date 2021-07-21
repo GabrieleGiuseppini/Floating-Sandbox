@@ -108,6 +108,8 @@ Ship::Ship(
     , mIsSinking(false)
     , mWaterSplashedRunningAverage()
     , mLastLuminiscenceAdjustmentDiffused(-1.0f)
+    // Hydrostatic pressure
+    , mHydrostaticPressureBuffer(mPoints.GetAlignedShipPointCount())
     // Render
     , mLastUploadedDebugShipRenderMode()
     , mPlaneTriangleIndicesToRender()
@@ -157,7 +159,7 @@ void Ship::Update(
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters,
-    Geometry::AABBSet & aabbSet)
+    Geometry::AABBSet & externalAabbSet)
 {
     /////////////////////////////////////////////////////////////////
     //         This is where most of the magic happens             //
@@ -289,6 +291,18 @@ void Ship::Update(
     ///////////////////////////////////////////////////////////////////
 
     ///////////////////////////////////////////////////////////////////
+    // Update strain for all springs - may cause springs to break,
+    // rerouting frontiers
+    ///////////////////////////////////////////////////////////////////
+
+    // - Inputs: P.Position, S.SpringDeletion, S.ResetLength, S.BreakingElongation
+    // - Outputs: S.Destroy()
+    // - Fires events, updates frontiers
+    mSprings.UpdateForStrains(
+        gameParameters,
+        mPoints);
+
+    ///////////////////////////////////////////////////////////////////
     // Reset static forces, now that we have integrated them
     ///////////////////////////////////////////////////////////////////
 
@@ -304,28 +318,17 @@ void Ship::Update(
     ///////////////////////////////////////////////////////////////////
     // Apply world forces
     //
-    // Also calculates cached depths, and updates AABBs
+    // Also calculates cached depths, and updates frontiers' AABBs and
+    // geometric centers - hence needs to come _after _ UpdateForStrains()
     ///////////////////////////////////////////////////////////////////
 
     ApplyWorldForces(
         effectiveAirDensity,
         effectiveWaterDensity,
         gameParameters,
-        aabbSet);
+        externalAabbSet);
 
     // Cached depths are valid from now on --------------------------->
-
-    ///////////////////////////////////////////////////////////////////
-    // Update strain for all springs; might cause springs to break
-    // (which would flag our structure as dirty)
-    ///////////////////////////////////////////////////////////////////
-
-    // - Inputs: P.Position, S.SpringDeletion, S.ResetLength, S.BreakingElongation
-    // - Outputs: S.Destroy()
-    // - Fires events, updates frontiers
-    mSprings.UpdateForStrains(
-        gameParameters,
-        mPoints);
 
     ///////////////////////////////////////////////////////////////////
     // Apply hydrostatic forces
@@ -862,7 +865,7 @@ void Ship::ApplyWorldForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
     GameParameters const & gameParameters,
-    Geometry::AABBSet & aabbSet)
+    Geometry::AABBSet & externalAabbSet)
 {
     // New buffer to which new cached depths will be written to
     std::shared_ptr<Buffer<float>> newCachedPointDepths = mPoints.AllocateWorkBufferFloat();
@@ -878,9 +881,9 @@ void Ship::ApplyWorldForces(
     //
 
     if (gameParameters.DoDisplaceWater)
-        ApplyWorldSurfaceForces<true>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters, aabbSet);
+        ApplyWorldSurfaceForces<true>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters, externalAabbSet);
     else
-        ApplyWorldSurfaceForces<false>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters, aabbSet);
+        ApplyWorldSurfaceForces<false>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters, externalAabbSet);
 
     // Commit new particle depth buffer
     mPoints.SwapCachedDepthBuffer(*newCachedPointDepths);
@@ -991,7 +994,7 @@ void Ship::ApplyWorldSurfaceForces(
     float effectiveWaterDensity,
     Buffer<float> & newCachedPointDepths,
     GameParameters const & gameParameters,
-    Geometry::AABBSet & aabbSet)
+    Geometry::AABBSet & externalAabbSet)
 {
     //
     // Drag constants
@@ -1034,8 +1037,9 @@ void Ship::ApplyWorldSurfaceForces(
 
     for (FrontierId frontierId : mFrontiers.GetFrontierIds())
     {
-        // Initialize AABB
+        // Initialize AABB and geometric center
         Geometry::AABB aabb;
+        vec2f geometricCenter = vec2f::zero();
 
         auto & frontier = mFrontiers.GetFrontier(frontierId);
 
@@ -1073,8 +1077,9 @@ void Ship::ApplyWorldSurfaceForces(
                 ++visitedPoints;
 #endif
 
-                // Update AABB with this point
+                // Update AABB and geometric center with this point
                 aabb.ExtendTo(thisPointPosition);
+                geometricCenter += thisPointPosition;
 
                 // Get next edge and point
                 auto const & nextFrontierEdge = mFrontiers.GetFrontierEdge(nextEdgeIndex);
@@ -1231,7 +1236,7 @@ void Ship::ApplyWorldSurfaceForces(
         else
         {
             //
-            // Simply update AABB
+            // Simply update AABB and geometric center
             //
 
             ElementIndex const frontierStartEdge = frontier.StartingEdgeIndex;
@@ -1240,8 +1245,10 @@ void Ship::ApplyWorldSurfaceForces(
             {
                 auto const & frontierEdge = mFrontiers.GetFrontierEdge(edgeIndex);
 
-                // Update AABB with this point
-                aabb.ExtendTo(mPoints.GetPosition(frontierEdge.PointAIndex));
+                // Update AABB and geometric center with this point
+                auto const pointPosition = mPoints.GetPosition(frontierEdge.PointAIndex);
+                aabb.ExtendTo(pointPosition);
+                geometricCenter += pointPosition;
 
                 // Advance
                 edgeIndex = frontierEdge.NextEdgeIndex;
@@ -1251,21 +1258,24 @@ void Ship::ApplyWorldSurfaceForces(
         }
 
         //
-        // Finalize AABB update
+        // Finalize AABB and geometric center update
         //
 
-        // Store AABB in frontier
+        geometricCenter /= static_cast<float>(frontier.Size);
+
+        // Store AABB and geometric center in frontier
         frontier.AABB = aabb;
+        frontier.GeometricCenterPosition = geometricCenter;
 
         // Store AABB in AABB set, but only if external
         if (frontier.Type == FrontierType::External)
         {
-            aabbSet.Add(aabb);
+            externalAabbSet.Add(aabb);
         }
     }
 }
 
-// TODOOLD
+// TODOOLD: Original, unequalized
 ////void Ship::ApplyHydrostaticPressureForces(
 ////    float /*effectiveAirDensity*/, // CODEWORK: future, if we want to also apply *air* pressure
 ////    float effectiveWaterDensity,
@@ -1384,6 +1394,7 @@ void Ship::ApplyWorldSurfaceForces(
 ////    }
 ////}
 
+// TODOOLD: Equalizing, Unoptimized
 // TODOTEST: improve
 template<typename TVisitor>
 void Ship::VisitFrontierHullPoints(
