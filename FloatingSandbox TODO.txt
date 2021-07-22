@@ -826,28 +826,32 @@ Render:
 						+ 0b. Take perf measurements (default_ship, depth -= 200): Update:4.90ms, ApplyHydrostaticPressureForces: 3.47%
 							Hesleden: Update:67.8ms, ApplyHydrostaticPressureForces: 6.27%
 						+ Copy exe
-						- 1. Comment out current
+						+ 1. Comment out current
 						+ 2. Move ApplyWorldForces after UpdateForStrains
 						+ 3. ApplyWorldSurfaceForces: calculate geometric center and store it with Frontier, together with AABB
 						+ 4. Buffer:
-							+ Struct member of Ship: HydrostaticPressureTODO:State?
+							+ Struct member of Ship: HydrostaticPressureOnPoint
 								- ElementIndex PointIndex
 								- vec2f TorqueArm
 								- vec2f ForceVector
 							+ Buffer is owned by Ship, cctd'd at cctor of Ship
 							! Buffer can be populated for same point multiple times, each time for a different "surface" of a frontier
-						- 5. Initial population:
+						+ 5. Initial population of HydrostaticPressureOnPoint buffer:
 							! Allow particles that appear twice in same frontier to appear twice in buffer
-							- Make loop inline
-						- 6. Equalization
-						- End: DynamicForces are only populated at end, by multiplying ForceVector with stem and storing (TODO:adding?) to Points.DynamicForces
-							- Allow particles that appear twice in same frontier to TODO:addup? to DynamicForces
+							+ Make loop inline
+						+ 6. Equalization
+						+ End: DynamicForces are only populated at end, by multiplying ForceVector with stem and adding to Points.DynamicForces
+						- Optimize
 					+ Fix getting stuck at lambda=1:
 					- Optimizations:
 						+ Start: Update=5.68ms, ApplyHydrostaticPressureForce=13.40% (LogMessage=7.88%)
 						- See if "min-3-consecutive-hulls" is still needed
 						- Try - but unlikely to succeed - with calculating lambdas only at dirty structures
+					- Run in Debug
+				- Test on melted long springs
 				- Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
+				- Cleanup commented out code
+					- Make video first
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques

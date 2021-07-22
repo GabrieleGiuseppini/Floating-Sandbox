@@ -432,12 +432,19 @@ private:
         GameParameters const & gameParameters,
         Geometry::AABBSet & externalAabbSet);
 
-    template<typename TVisitor>
-    void VisitFrontierHullPoints(
-        Frontiers::Frontier const & frontier,
-        TVisitor && visitor);
+    // TODOOLD
+    ////template<typename TVisitor>
+    ////void VisitFrontierHullPoints(
+    ////    Frontiers::Frontier const & frontier,
+    ////    TVisitor && visitor);
 
     void ApplyHydrostaticPressureForces(
+        float effectiveAirDensity,
+        float effectiveWaterDensity,
+        GameParameters const & gameParameters);
+
+    void ApplyHydrostaticPressureForces(
+        Frontiers::Frontier const & frontier,
         float effectiveAirDensity,
         float effectiveWaterDensity,
         GameParameters const & gameParameters);
@@ -795,8 +802,17 @@ private:
     struct HydrostaticPressureOnPoint
     {
         ElementIndex PointIndex;
-        vec2f TorqueArm;
         vec2f ForceVector;
+        vec2f TorqueArm;
+
+        HydrostaticPressureOnPoint(
+            ElementIndex pointIndex,
+            vec2f const & forceVector,
+            vec2f const & torqueArm)
+            : PointIndex(pointIndex)
+            , ForceVector(forceVector)
+            , TorqueArm(torqueArm)
+        {}
     };
 
     // Index is _not_ point index, this is simply a container

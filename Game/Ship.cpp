@@ -600,7 +600,7 @@ void Ship::RenderUpload(Render::RenderContext & renderContext)
     //
     // Run connectivity visit, if there have been any deletions
     //
-    // Note: we have to do this here, at render time rathern than
+    // Note: we have to do this here, at render time rather than
     // at update time, because the structure might have been dirtied
     // by an interactive tool while the game is paused
     //
@@ -1395,12 +1395,420 @@ void Ship::ApplyWorldSurfaceForces(
 ////}
 
 // TODOOLD: Equalizing, Unoptimized
-// TODOTEST: improve
-template<typename TVisitor>
-void Ship::VisitFrontierHullPoints(
-    Frontiers::Frontier const & frontier,
-    TVisitor && visitor)
+////template<typename TVisitor>
+////void Ship::VisitFrontierHullPoints(
+////    Frontiers::Frontier const & frontier,
+////    TVisitor && visitor)
+////{
+////    //
+////    // Visit all edges
+////    //
+////    //               thisPoint
+////    //                   V
+////    // ...---*---edge1---*---edge2---*---nextEdge---....
+////    //
+////
+////    ElementIndex edge1Index = frontier.StartingEdgeIndex;
+////
+////    ElementIndex prevPointIndex = mFrontiers.GetFrontierEdge(edge1Index).PointAIndex;
+////
+////    ElementIndex edge2Index = mFrontiers.GetFrontierEdge(edge1Index).NextEdgeIndex;
+////
+////    ElementIndex thisPointIndex = mFrontiers.GetFrontierEdge(edge2Index).PointAIndex;
+////
+////    vec2f edge1PerpVector =
+////        -(mPoints.GetPosition(thisPointIndex) - mPoints.GetPosition(prevPointIndex)).to_perpendicular();
+////
+////    int surroundingHullPointsCount =
+////        (mPoints.GetIsHull(prevPointIndex) ? 1 : 0)
+////        + (mPoints.GetIsHull(thisPointIndex) ? 1 : 0);
+////
+////#ifdef _DEBUG
+////    ElementCount visitedPoints = 0;
+////#endif
+////
+////    ElementIndex const startEdgeIndex = mFrontiers.GetFrontierEdge(edge2Index).NextEdgeIndex;
+////
+////    for (ElementIndex nextEdgeIndex = startEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
+////    {
+////#ifdef _DEBUG
+////        ++visitedPoints;
+////#endif
+////        auto const & nextEdge = mFrontiers.GetFrontierEdge(nextEdgeIndex);
+////        ElementIndex const nextPointIndex = nextEdge.PointAIndex;
+////
+////        vec2f edge2PerpVector =
+////            -(mPoints.GetPosition(nextPointIndex) - mPoints.GetPosition(thisPointIndex)).to_perpendicular();
+////
+////        surroundingHullPointsCount += (mPoints.GetIsHull(nextPointIndex) ? 1 : 0);
+////
+////        if (surroundingHullPointsCount == 3)
+////        {
+////            visitor(thisPointIndex, edge1PerpVector, edge2PerpVector);
+////        }
+////
+////        // Advance
+////        nextEdgeIndex = nextEdge.NextEdgeIndex;
+////        if (nextEdgeIndex == startEdgeIndex)
+////            break;
+////
+////        surroundingHullPointsCount -= (mPoints.GetIsHull(prevPointIndex) ? 1 : 0);
+////
+////        prevPointIndex = thisPointIndex;
+////        thisPointIndex = nextPointIndex;
+////        edge1PerpVector = edge2PerpVector;
+////    }
+////
+////#ifdef _DEBUG
+////    assert(visitedPoints == frontier.Size);
+////#endif
+////}
+////
+////void Ship::ApplyHydrostaticPressureForces(
+////    float /*effectiveAirDensity*/, // CODEWORK: future, if we want to also apply *air* pressure
+////    float effectiveWaterDensity,
+////    GameParameters const & gameParameters)
+////{
+////    //
+////    // At this moment, dynamic forces are all zero - we are the first populating those
+////    //
+////
+////    assert(std::all_of(
+////        mPoints.GetDynamicForceBufferAsVec2(),
+////        mPoints.GetDynamicForceBufferAsVec2() + mPoints.GetElementCount(),
+////        [](vec2f const & v)
+////        {
+////            return v == vec2f::zero();
+////        }));
+////
+////    //
+////    // The hydrostatic pressure force acting on point P, between edges
+////    // E1 and E2, is:
+////    //
+////    //      F(P) = F(E1)/2 + F(E2)/2
+////    //
+////    // The hydrostatic pressure force acting on edge Ei is:
+////    //
+////    //      F(Ei) = -Ni * D * Mw * G * |Ei|
+////    //
+////    // Where Ni is the normal to Ei, D is the depth (which we take constant
+////    // so to not produce buoyancy forces), Mw * G is the weight of water, and
+////    // |Ei| accounts for wider edges being subject to more pressure.
+////    //
+////    //
+////    // We will rewrite F(Ei) as:
+////    //
+////    //      F(Ei) = -Perp(Ei) * ForceStem
+////    //
+////    // And thus:
+////    //
+////    //      F(P)  = (-Perp(E1) -Perp(E2)) * ForceStem / 2
+////    //
+////    //
+////    //
+////    // Notes:
+////    //  - We use the AABB's center as the point where the depth is calculated at;
+////    //    as a consequence, if the ship is interactively moved or rotated, the AABB's
+////    //    that we use here are stale. Not a big deal...
+////    //    Outside of these "moving" interactions, the AABBs we use here are also
+////    //    inconsistent with the current positions because of integration during dynamic
+////    //    iterations, unless hydrostatic pressures are calculated on the *first* dynamic
+////    //    iteration.
+////    //
+////
+////    //LogMessage("TODOTEST: -----------------------------------------------------------------------");
+////
+////    for (FrontierId const frontierId : mFrontiers.GetFrontierIds())
+////    {
+////        auto const & frontier = mFrontiers.GetFrontier(frontierId);
+////
+////        // Only consider external frontiers
+////        if (frontier.Type == FrontierType::External)
+////        {
+////            //
+////            // 1. Calculate geometric center
+////            //
+////
+////            vec2f geometricCenterPosition = vec2f::zero();
+////
+////            {
+////                ElementIndex const startEdgeIndex = frontier.StartingEdgeIndex;
+////                for (ElementIndex edgeIndex = startEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
+////                {
+////                    auto const & frontierEdge = mFrontiers.GetFrontierEdge(edgeIndex);
+////
+////                    geometricCenterPosition += mPoints.GetPosition(frontierEdge.PointAIndex);
+////
+////                    edgeIndex = frontierEdge.NextEdgeIndex;
+////                    if (edgeIndex == startEdgeIndex)
+////                        break;
+////                }
+////
+////                geometricCenterPosition /= static_cast<float>(frontier.Size);
+////            }
+////
+////            // TODOTEST
+////            geometricCenterPosition.y -= 200.0f;
+////
+////            //
+////            // 2. Apply first round of force
+////            //
+////
+////            //LogMessage("TODOTEST: ----------------------------------------");
+////
+////            vec2f netForce = vec2f::zero();
+////            float netTorque = 0.0f;
+////            size_t netPointCount = 0;
+////
+////            VisitFrontierHullPoints(
+////                frontier,
+////                [&](ElementIndex pointIndex, vec2f const & prevPerp, vec2f const & nextPerp)
+////                {
+////                    // Apply force - we apply it as a *dynamic* force, otherwise if it were static it would
+////                    // generate phantom torques due to geometries changing for every dynamic step
+////
+////                    vec2f const pressureForce = (prevPerp + nextPerp) / 2.0f;
+////
+////                    mPoints.AddDynamicForce(
+////                        pointIndex,
+////                        pressureForce);
+////
+////                    // Update resultant force and torque
+////                    netForce += pressureForce;
+////                    netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(pressureForce);
+////                    ++netPointCount;
+////                });
+////
+////            // TODOTEST
+////            //LogMessage("TODOTEST: 0: NetForce: ", netForce, " (", netForce.length(), ") NetTorque: ", netTorque);
+////
+////            //
+////            // 3. TODO
+////            //
+////
+////            // Alternating optimum approach
+////            {
+////                for (ElementCount iter = 0; iter < frontier.Size; ++iter)
+////                {
+////                    float constexpr Tolerance = 0.1f;
+////
+////                    // Check if we're done
+////                    if (netForce.length() < 0.5f
+////                        && std::abs(netTorque) < 0.5f)
+////                    {
+////                        //LogMessage("Iter ", iter + 1, ": done because reached threshold");
+////                        break;
+////                    }
+////
+////                    // Find best
+////                    ElementIndex bestPointIndex = NoneElementIndex;
+////                    float bestLambda = 0.0f;
+////                    if (netForce.length() >= std::abs(netTorque))
+////                    {
+////                        //LogMessage("Iter ", iter + 1, ": NetForce minimization");
+////
+////                        // Find best lambda that minimizes force and, in a tie, torque
+////                        float minNetForceMagnitude = std::numeric_limits<float>::max();
+////                        float minNetTorque = std::numeric_limits<float>::max();
+////                        VisitFrontierHullPoints(
+////                            frontier,
+////                            [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
+////                            {
+////                                vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
+////                                float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
+////
+////                                if (thisForce != vec2f::zero())
+////                                {
+////                                    // Find lambda that minimizes force
+////                                    float const lambdaFRaw = -(netForce - thisForce).dot(thisForce) / thisForce.squareLength();
+////                                    if (lambdaFRaw < 1.0f) // Ensure it's a change wrt now
+////                                    {
+////                                        float const lambda = Clamp(lambdaFRaw, 0.0f, 1.0f);
+////
+////                                        // Remember best
+////                                        float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
+////                                        float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
+////                                        //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
+////                                        if (newNetForceMagnitude < minNetForceMagnitude - Tolerance
+////                                            || (newNetForceMagnitude < minNetForceMagnitude + Tolerance && newNetTorque < minNetTorque))
+////                                        {
+////                                            minNetForceMagnitude = newNetForceMagnitude;
+////                                            minNetTorque = newNetTorque;
+////                                            bestPointIndex = pointIndex;
+////                                            bestLambda = lambda;
+////                                        }
+////                                    }
+////                                }
+////                            });
+////                    }
+////                    else
+////                    {
+////                        //LogMessage("Iter ", iter + 1, ": NetTorque minimization");
+////
+////                        // Find best lambda that minimizes torque and, in a tie, force
+////                        float minNetForceMagnitude = std::numeric_limits<float>::max();
+////                        float minNetTorque = std::numeric_limits<float>::max();
+////                        VisitFrontierHullPoints(
+////                            frontier,
+////                            [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
+////                            {
+////                                vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
+////                                float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
+////
+////                                if (thisTorque != 0.0f)
+////                                {
+////                                    // Calculate lambda at which netTorque is zero
+////                                    float const lambdaTRaw = -(netTorque - thisTorque) / thisTorque;
+////                                    if (lambdaTRaw < 1.0f) // Ensure it's a change wrt now
+////                                    {
+////                                        float const lambda = Clamp(lambdaTRaw, 0.0f, 1.0f);
+////
+////                                        // Remember best
+////                                        float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
+////                                        float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
+////                                        //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
+////                                        if (newNetTorque < minNetTorque - Tolerance
+////                                            || (newNetTorque < minNetTorque + Tolerance && newNetForceMagnitude < minNetForceMagnitude))
+////                                        {
+////                                            minNetForceMagnitude = newNetForceMagnitude;
+////                                            minNetTorque = newNetTorque;
+////                                            bestPointIndex = pointIndex;
+////                                            bestLambda = lambda;
+////                                        }
+////                                    }
+////                                }
+////                            });
+////                    }
+////
+////                    // Find best
+////                    if (bestPointIndex == NoneElementIndex)
+////                    {
+////                        //LogMessage("Iter ", iter + 1, ": done because none found");
+////                        break;
+////                    }
+////
+////                    vec2f const thisForce = mPoints.GetDynamicForce(bestPointIndex);
+////                    float const thisTorque = (mPoints.GetPosition(bestPointIndex) - geometricCenterPosition).cross(thisForce);
+////
+////                    mPoints.SetDynamicForce(bestPointIndex, thisForce * bestLambda);
+////
+////                    netForce += -thisForce + thisForce * bestLambda;
+////                    netTorque += -thisTorque + thisTorque * bestLambda;
+////
+////                    //LogMessage("Iter ", iter + 1, ": best=", bestPointIndex, "/l=", bestLambda, " (@", mPoints.GetPosition(bestPointIndex), ") NetForce'=", netForce, " (", netForce.length(), ") NetTorque'=", netTorque);
+////                }
+////            }
+////
+////            //
+////            // 4. Scale pressure forces now
+////            //
+////
+////            float const pressureForceStem =
+////                std::max(mParentWorld.GetDepth(geometricCenterPosition), 0.0f)
+////                * effectiveWaterDensity
+////                * GameParameters::GravityMagnitude
+////                * gameParameters.HydrostaticPressureAdjustment;
+////
+////            VisitFrontierHullPoints(
+////                frontier,
+////                [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
+////                {
+////                    // TODOTEST
+////                    if (mPoints.GetDynamicForce(pointIndex).length() < 20.0f)
+////                        mPoints.SetDynamicForce(
+////                            pointIndex,
+////                            mPoints.GetDynamicForce(pointIndex) * pressureForceStem);
+////                });
+////        }
+////    }
+////}
+
+void Ship::ApplyHydrostaticPressureForces(
+    float effectiveAirDensity,
+    float effectiveWaterDensity,
+    GameParameters const & gameParameters)
 {
+    //
+    // At this moment, dynamic forces are all zero - we are the first populating those
+    //
+
+    assert(std::all_of(
+        mPoints.GetDynamicForceBufferAsVec2(),
+        mPoints.GetDynamicForceBufferAsVec2() + mPoints.GetElementCount(),
+        [](vec2f const & v)
+    {
+        return v == vec2f::zero();
+    }));
+
+    //
+    // The hydrostatic pressure force acting on point P, between edges
+    // E1 and E2, is:
+    //
+    //      F(P) = F(E1)/2 + F(E2)/2
+    //
+    // The hydrostatic pressure force acting on edge Ei is:
+    //
+    //      F(Ei) = -Ni * D * Mw * G * |Ei|
+    //
+    // Where Ni is the normal to Ei, D is the depth (which we take constant
+    // so to not produce buoyancy forces), Mw * G is the weight of water, and
+    // |Ei| accounts for wider edges being subject to more pressure.
+    //
+    //
+    // We will rewrite F(Ei) as:
+    //
+    //      F(Ei) = -Perp(Ei) * ForceStem
+    //
+    // And thus:
+    //
+    //      F(P)  = (-Perp(E1) -Perp(E2)) * ForceStem / 2
+    //
+    //
+    //
+    // Notes:
+    //  - We use the frontiers' gemetric centers as the place that depth is calculated at;
+    //    as a consequence, if the ship is interactively moved or rotated, the centers
+    //    that we use here are stale. Not a big deal...
+    //    Outside of these "moving" interactions, the centers we use here are also
+    //    inconsistent with the current positions because of integration during dynamic
+    //    iterations, unless hydrostatic pressures are calculated on the *first* dynamic
+    //    iteration.
+    //
+
+    for (FrontierId const frontierId : mFrontiers.GetFrontierIds())
+    {
+        auto const & frontier = mFrontiers.GetFrontier(frontierId);
+
+        // Only consider external frontiers
+        if (frontier.Type == FrontierType::External)
+        {
+            ApplyHydrostaticPressureForces(
+                frontier,
+                effectiveAirDensity,
+                effectiveWaterDensity,
+                gameParameters);
+        }
+    }
+}
+
+void Ship::ApplyHydrostaticPressureForces(
+    Frontiers::Frontier const & frontier,
+    float /*effectiveAirDensity*/, // CODEWORK: future, if we want to also apply *air* pressure
+    float effectiveWaterDensity,
+    GameParameters const & gameParameters)
+{
+    vec2f const & geometricCenterPosition = frontier.GeometricCenterPosition;
+
+    //
+    // 1. Calculate geometry of forces and populate interim buffer
+    //
+
+    mHydrostaticPressureBuffer.clear();
+
+    vec2f netForce = vec2f::zero();
+    float netTorque = 0.0f;
+    size_t netPointCount = 0;
+
     //
     // Visit all edges
     //
@@ -1445,7 +1853,18 @@ void Ship::VisitFrontierHullPoints(
 
         if (surroundingHullPointsCount == 3)
         {
-            visitor(thisPointIndex, edge1PerpVector, edge2PerpVector);
+            vec2f const forceVector = (edge1PerpVector + edge2PerpVector) / 2.0f;
+            vec2f const torqueArm = mPoints.GetPosition(thisPointIndex) - geometricCenterPosition;
+
+            mHydrostaticPressureBuffer.emplace_back(
+                thisPointIndex,
+                forceVector,
+                torqueArm);
+
+            // Update resultant force and torque
+            netForce += forceVector;
+            netTorque += torqueArm.cross(forceVector);
+            ++netPointCount;
         }
 
         // Advance
@@ -1463,264 +1882,137 @@ void Ship::VisitFrontierHullPoints(
 #ifdef _DEBUG
     assert(visitedPoints == frontier.Size);
 #endif
-}
-
-void Ship::ApplyHydrostaticPressureForces(
-    float /*effectiveAirDensity*/, // CODEWORK: future, if we want to also apply *air* pressure
-    float effectiveWaterDensity,
-    GameParameters const & gameParameters)
-{
-    //
-    // At this moment, dynamic forces are all zero - we are the first populating those
-    //
-
-    assert(std::all_of(
-        mPoints.GetDynamicForceBufferAsVec2(),
-        mPoints.GetDynamicForceBufferAsVec2() + mPoints.GetElementCount(),
-        [](vec2f const & v)
-        {
-            return v == vec2f::zero();
-        }));
 
     //
-    // The hydrostatic pressure force acting on point P, between edges
-    // E1 and E2, is:
+    // 2. Equalize forces to ensure they are zero-sum and zero-curl
     //
-    //      F(P) = F(E1)/2 + F(E2)/2
-    //
-    // The hydrostatic pressure force acting on edge Ei is:
-    //
-    //      F(Ei) = -Ni * D * Mw * G * |Ei|
-    //
-    // Where Ni is the normal to Ei, D is the depth (which we take constant
-    // so to not produce buoyancy forces), Mw * G is the weight of water, and
-    // |Ei| accounts for wider edges being subject to more pressure.
-    //
-    //
-    // We will rewrite F(Ei) as:
-    //
-    //      F(Ei) = -Perp(Ei) * ForceStem
-    //
-    // And thus:
-    //
-    //      F(P)  = (-Perp(E1) -Perp(E2)) * ForceStem / 2
-    //
-    //
-    //
-    // Notes:
-    //  - We use the AABB's center as the point where the depth is calculated at;
-    //    as a consequence, if the ship is interactively moved or rotated, the AABB's
-    //    that we use here are stale. Not a big deal...
-    //    Outside of these "moving" interactions, the AABBs we use here are also
-    //    inconsistent with the current positions because of integration during dynamic
-    //    iterations, unless hydrostatic pressures are calculated on the *first* dynamic
-    //    iteration.
+    // We do this via iterative optimization: at each iteration, we pick
+    // the particle that has the most potential to affect the net force
+    // and/or the net torque by getting its force reduced (via "lambda")
     //
 
-    //LogMessage("TODOTEST: -----------------------------------------------------------------------");
-
-    for (FrontierId const frontierId : mFrontiers.GetFrontierIds())
+    for (ElementCount iter = 0; iter < frontier.Size; ++iter)
     {
-        auto const & frontier = mFrontiers.GetFrontier(frontierId);
+        // TODOHERE: precalc these quantities
 
-        // Only consider external frontiers
-        if (frontier.Type == FrontierType::External)
+        // Check if we've reached a "minimum" that we're happy with
+        if (netForce.length() < 0.5f
+            && std::abs(netTorque) < 0.5f)
         {
-            //
-            // 1. Calculate geometric center
-            //
-
-            vec2f geometricCenterPosition = vec2f::zero();
-
-            {
-                ElementIndex const startEdgeIndex = frontier.StartingEdgeIndex;
-                for (ElementIndex edgeIndex = startEdgeIndex; /*checked in loop*/; /*advanced in loop*/)
-                {
-                    auto const & frontierEdge = mFrontiers.GetFrontierEdge(edgeIndex);
-
-                    geometricCenterPosition += mPoints.GetPosition(frontierEdge.PointAIndex);
-
-                    edgeIndex = frontierEdge.NextEdgeIndex;
-                    if (edgeIndex == startEdgeIndex)
-                        break;
-                }
-
-                geometricCenterPosition /= static_cast<float>(frontier.Size);
-            }
-
-            // TODOTEST
-            geometricCenterPosition.y -= 200.0f;
-
-            //
-            // 2. Apply first round of force
-            //
-
-            //LogMessage("TODOTEST: ----------------------------------------");
-
-            vec2f netForce = vec2f::zero();
-            float netTorque = 0.0f;
-            size_t netPointCount = 0;
-
-            VisitFrontierHullPoints(
-                frontier,
-                [&](ElementIndex pointIndex, vec2f const & prevPerp, vec2f const & nextPerp)
-                {
-                    // Apply force - we apply it as a *dynamic* force, otherwise if it were static it would
-                    // generate phantom torques due to geometries changing for every dynamic step
-
-                    vec2f const pressureForce = (prevPerp + nextPerp) / 2.0f;
-
-                    mPoints.AddDynamicForce(
-                        pointIndex,
-                        pressureForce);
-
-                    // Update resultant force and torque
-                    netForce += pressureForce;
-                    netTorque += (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(pressureForce);
-                    ++netPointCount;
-                });
-
-            // TODOTEST
-            //LogMessage("TODOTEST: 0: NetForce: ", netForce, " (", netForce.length(), ") NetTorque: ", netTorque);
-
-            //
-            // 3. TODO
-            //
-
-            // Alternating optimum approach
-            {
-                for (ElementCount iter = 0; iter < frontier.Size; ++iter)
-                {
-                    float constexpr Tolerance = 0.1f; // TODOHERE
-
-                    // Check if we're done
-                    if (netForce.length() < 0.5f
-                        && std::abs(netTorque) < 0.5f)
-                    {
-                        //LogMessage("Iter ", iter + 1, ": done because reached threshold");
-                        break;
-                    }
-
-                    // Find best
-                    ElementIndex bestPointIndex = NoneElementIndex;
-                    float bestLambda = 0.0f;
-                    if (netForce.length() >= std::abs(netTorque))
-                    {
-                        //LogMessage("Iter ", iter + 1, ": NetForce minimization");
-
-                        // Find best lambda that minimizes force and, in a tie, torque
-                        float minNetForceMagnitude = std::numeric_limits<float>::max();
-                        float minNetTorque = std::numeric_limits<float>::max();
-                        VisitFrontierHullPoints(
-                            frontier,
-                            [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
-                            {
-                                vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
-                                float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
-
-                                if (thisForce != vec2f::zero())
-                                {
-                                    // Find lambda that minimizes force
-                                    float const lambdaFRaw = -(netForce - thisForce).dot(thisForce) / thisForce.squareLength();
-                                    if (lambdaFRaw < 1.0f) // Ensure it's a change wrt now
-                                    {
-                                        float const lambda = Clamp(lambdaFRaw, 0.0f, 1.0f);
-
-                                        // Remember best
-                                        float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
-                                        float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
-                                        //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
-                                        if (newNetForceMagnitude < minNetForceMagnitude - Tolerance
-                                            || (newNetForceMagnitude < minNetForceMagnitude + Tolerance && newNetTorque < minNetTorque))
-                                        {
-                                            minNetForceMagnitude = newNetForceMagnitude;
-                                            minNetTorque = newNetTorque;
-                                            bestPointIndex = pointIndex;
-                                            bestLambda = lambda;
-                                        }
-                                    }
-                                }
-                            });
-                    }
-                    else
-                    {
-                        //LogMessage("Iter ", iter + 1, ": NetTorque minimization");
-
-                        // Find best lambda that minimizes torque and, in a tie, force
-                        float minNetForceMagnitude = std::numeric_limits<float>::max();
-                        float minNetTorque = std::numeric_limits<float>::max();
-                        VisitFrontierHullPoints(
-                            frontier,
-                            [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
-                            {
-                                vec2f const thisForce = mPoints.GetDynamicForce(pointIndex);
-                                float const thisTorque = (mPoints.GetPosition(pointIndex) - geometricCenterPosition).cross(thisForce);
-
-                                if (thisTorque != 0.0f)
-                                {
-                                    // Calculate lambda at which netTorque is zero
-                                    float const lambdaTRaw = -(netTorque - thisTorque) / thisTorque;
-                                    if (lambdaTRaw < 1.0f) // Ensure it's a change wrt now
-                                    {
-                                        float const lambda = Clamp(lambdaTRaw, 0.0f, 1.0f);
-
-                                        // Remember best
-                                        float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
-                                        float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
-                                        //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
-                                        if (newNetTorque < minNetTorque - Tolerance
-                                            || (newNetTorque < minNetTorque + Tolerance && newNetForceMagnitude < minNetForceMagnitude))
-                                        {
-                                            minNetForceMagnitude = newNetForceMagnitude;
-                                            minNetTorque = newNetTorque;
-                                            bestPointIndex = pointIndex;
-                                            bestLambda = lambda;
-                                        }
-                                    }
-                                }
-                            });
-                    }
-
-                    // Find best
-                    if (bestPointIndex == NoneElementIndex)
-                    {
-                        //LogMessage("Iter ", iter + 1, ": done because none found");
-                        break;
-                    }
-
-                    vec2f const thisForce = mPoints.GetDynamicForce(bestPointIndex);
-                    float const thisTorque = (mPoints.GetPosition(bestPointIndex) - geometricCenterPosition).cross(thisForce);
-
-                    mPoints.SetDynamicForce(bestPointIndex, thisForce * bestLambda);
-
-                    netForce += -thisForce + thisForce * bestLambda;
-                    netTorque += -thisTorque + thisTorque * bestLambda;
-
-                    //LogMessage("Iter ", iter + 1, ": best=", bestPointIndex, "/l=", bestLambda, " (@", mPoints.GetPosition(bestPointIndex), ") NetForce'=", netForce, " (", netForce.length(), ") NetTorque'=", netTorque);
-                }
-            }
-
-            //
-            // 4. Scale pressure forces now
-            //
-
-            float const pressureForceStem =
-                std::max(mParentWorld.GetDepth(geometricCenterPosition), 0.0f)
-                * effectiveWaterDensity
-                * GameParameters::GravityMagnitude
-                * gameParameters.HydrostaticPressureAdjustment;
-
-            VisitFrontierHullPoints(
-                frontier,
-                [&](ElementIndex pointIndex, vec2f const & /*prevPerp*/, vec2f const & /*nextPerp*/)
-                {
-                    // TODOTEST
-                    if (mPoints.GetDynamicForce(pointIndex).length() < 20.0f)
-                        mPoints.SetDynamicForce(
-                            pointIndex,
-                            mPoints.GetDynamicForce(pointIndex) * pressureForceStem);
-                });
+            break;
         }
+
+        float constexpr QuantizationRadius = 0.1f;
+
+        // Find best particle
+        std::optional<size_t> bestHPIndex;
+        float bestLambda = 0.0f;
+        if (netForce.length() >= std::abs(netTorque))
+        {
+            // Find best lambda that minimizes the net force and, in case of a tie, the net torque as well
+            float minNetForceMagnitude = std::numeric_limits<float>::max();
+            float minNetTorque = std::numeric_limits<float>::max();
+            for (size_t hpi = 0; hpi < mHydrostaticPressureBuffer.GetCurrentPopulatedSize(); ++hpi)
+            {
+                auto const & hp = mHydrostaticPressureBuffer[hpi];
+
+                vec2f const thisForce = hp.ForceVector;
+                float const thisTorque = hp.TorqueArm.cross(thisForce);
+                if (thisForce != vec2f::zero())
+                {
+                    // Find lambda that minimizes force
+                    float const lambdaFRaw = -(netForce - thisForce).dot(thisForce) / thisForce.squareLength();
+                    if (lambdaFRaw < 1.0f) // Ensure it's a change wrt now
+                    {
+                        float const lambda = Clamp(lambdaFRaw, 0.0f, 1.0f);
+
+                        // Remember best
+                        float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
+                        float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
+                        //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
+                        if (newNetForceMagnitude < minNetForceMagnitude - QuantizationRadius
+                            || (newNetForceMagnitude < minNetForceMagnitude + QuantizationRadius && newNetTorque < minNetTorque))
+                        {
+                            minNetForceMagnitude = newNetForceMagnitude;
+                            minNetTorque = newNetTorque;
+                            bestHPIndex = hpi;
+                            bestLambda = lambda;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            // Find best lambda that minimizes the net torque and, in case of a tie, the net force as well
+            float minNetForceMagnitude = std::numeric_limits<float>::max();
+            float minNetTorque = std::numeric_limits<float>::max();
+            for (size_t hpi = 0; hpi < mHydrostaticPressureBuffer.GetCurrentPopulatedSize(); ++hpi)
+            {
+                auto const & hp = mHydrostaticPressureBuffer[hpi];
+
+                vec2f const thisForce = hp.ForceVector;
+                float const thisTorque = hp.TorqueArm.cross(thisForce);
+
+                if (thisTorque != 0.0f)
+                {
+                    // Calculate lambda at which netTorque is zero
+                    float const lambdaTRaw = -(netTorque - thisTorque) / thisTorque;
+                    if (lambdaTRaw < 1.0f) // Ensure it's a change wrt now
+                    {
+                        float const lambda = Clamp(lambdaTRaw, 0.0f, 1.0f);
+
+                        // Remember best
+                        float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
+                        float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
+                        //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
+                        if (newNetTorque < minNetTorque - QuantizationRadius
+                            || (newNetTorque < minNetTorque + QuantizationRadius && newNetForceMagnitude < minNetForceMagnitude))
+                        {
+                            minNetForceMagnitude = newNetForceMagnitude;
+                            minNetTorque = newNetTorque;
+                            bestHPIndex = hpi;
+                            bestLambda = lambda;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!bestHPIndex.has_value())
+        {
+            //LogMessage("Iter ", iter + 1, ": done because none found");
+            break;
+        }
+
+        vec2f const thisForce = mHydrostaticPressureBuffer[*bestHPIndex].ForceVector;
+        float const thisTorque = mHydrostaticPressureBuffer[*bestHPIndex].TorqueArm.cross(thisForce);
+
+        mHydrostaticPressureBuffer[*bestHPIndex].ForceVector *= bestLambda;
+
+        netForce += -thisForce + thisForce * bestLambda;
+        netTorque += -thisTorque + thisTorque * bestLambda;
+
+        //LogMessage("Iter ", iter + 1, ": best=", bestPointIndex, "/l=", bestLambda, " (@", mPoints.GetPosition(bestPointIndex), ") NetForce'=", netForce, " (", netForce.length(), ") NetTorque'=", netTorque);
+    }
+
+    //
+    // 3. Apply forces
+    //
+
+    float const pressureForceStem =
+        // TODOTEST
+        //std::max(mParentWorld.GetDepth(geometricCenterPosition), 0.0f)
+        std::max(mParentWorld.GetDepth(geometricCenterPosition + vec2f(0.0f, -200.0f)), 0.0f)
+        * effectiveWaterDensity
+        * GameParameters::GravityMagnitude
+        * gameParameters.HydrostaticPressureAdjustment;
+
+    for (size_t hpi = 0; hpi < mHydrostaticPressureBuffer.GetCurrentPopulatedSize(); ++hpi)
+    {
+        mPoints.AddDynamicForce(
+            mHydrostaticPressureBuffer[hpi].PointIndex,
+            mHydrostaticPressureBuffer[hpi].ForceVector * pressureForceStem);
     }
 }
 
