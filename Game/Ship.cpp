@@ -110,6 +110,8 @@ Ship::Ship(
     , mLastLuminiscenceAdjustmentDiffused(-1.0f)
     // Hydrostatic pressure
     , mHydrostaticPressureBuffer(mPoints.GetAlignedShipPointCount())
+    , mHydrostaticPressureIterationsPercentagesSum(0.0f)
+    , mHydrostaticPressureIterationsCount(0.0f)
     // Render
     , mLastUploadedDebugShipRenderMode()
     , mPlaneTriangleIndicesToRender()
@@ -1775,6 +1777,9 @@ void Ship::ApplyHydrostaticPressureForces(
     //    iteration.
     //
 
+    mHydrostaticPressureIterationsPercentagesSum = 0.0f;
+    mHydrostaticPressureIterationsCount = 0.0f;
+
     for (FrontierId const frontierId : mFrontiers.GetFrontierIds())
     {
         auto const & frontier = mFrontiers.GetFrontier(frontierId);
@@ -1789,6 +1794,11 @@ void Ship::ApplyHydrostaticPressureForces(
                 gameParameters);
         }
     }
+
+    // Publish stats
+    mGameEventHandler->OnCustomProbe(
+        "HydrostaticPressure Complexity",
+        mHydrostaticPressureIterationsPercentagesSum / mHydrostaticPressureIterationsCount);
 }
 
 void Ship::ApplyHydrostaticPressureForces(
@@ -1891,7 +1901,8 @@ void Ship::ApplyHydrostaticPressureForces(
     // and/or the net torque by getting its force reduced (via "lambda")
     //
 
-    for (ElementCount iter = 0; iter < frontier.Size; ++iter)
+    ElementCount iter;
+    for (iter = 0; iter < frontier.Size; ++iter)
     {
         // TODOHERE: precalc these quantities
 
@@ -1995,6 +2006,10 @@ void Ship::ApplyHydrostaticPressureForces(
 
         //LogMessage("Iter ", iter + 1, ": best=", bestPointIndex, "/l=", bestLambda, " (@", mPoints.GetPosition(bestPointIndex), ") NetForce'=", netForce, " (", netForce.length(), ") NetTorque'=", netTorque);
     }
+
+    // Update stats
+    mHydrostaticPressureIterationsPercentagesSum += static_cast<float>(iter + 1) / static_cast<float>(frontier.Size);
+    mHydrostaticPressureIterationsCount += 1.0f;
 
     //
     // 3. Apply forces

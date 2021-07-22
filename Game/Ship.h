@@ -821,6 +821,10 @@ private:
     // the frontier through that point
     Buffer<HydrostaticPressureOnPoint> mHydrostaticPressureBuffer;
 
+    // For statistics purposes only
+    float mHydrostaticPressureIterationsPercentagesSum;
+    float mHydrostaticPressureIterationsCount;
+
     //
     // Render members
     //
