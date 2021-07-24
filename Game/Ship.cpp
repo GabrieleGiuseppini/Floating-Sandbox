@@ -2021,13 +2021,14 @@ void Ship::ApplyHydrostaticPressureForces(
             break;
         }
 
+        vec2f const thisForce = mHydrostaticPressureBuffer[*bestHPIndex].ForceVector;
+        float const thisTorque = mHydrostaticPressureBuffer[*bestHPIndex].TorqueArm.cross(thisForce);
+
         // Adjust force vector of optimal particle
         mHydrostaticPressureBuffer[*bestHPIndex].ForceVector *= bestLambda;
 
         // Update net force and torque
-        vec2f const thisForce = mHydrostaticPressureBuffer[*bestHPIndex].ForceVector;
         netForce -= thisForce * (1.0f - bestLambda);
-        float const thisTorque = mHydrostaticPressureBuffer[*bestHPIndex].TorqueArm.cross(thisForce);
         netTorque -= thisTorque * (1.0f - bestLambda);
 
         //LogMessage("Iter ", iter + 1, ": best=", bestPointIndex, "/l=", bestLambda, " (@", mPoints.GetPosition(bestPointIndex), ") NetForce'=", netForce, " (", netForce.length(), ") NetTorque'=", netTorque);
