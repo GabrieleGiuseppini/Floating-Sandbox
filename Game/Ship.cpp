@@ -1817,7 +1817,6 @@ void Ship::ApplyHydrostaticPressureForces(
 
     vec2f netForce = vec2f::zero();
     float netTorque = 0.0f;
-    size_t netPointCount = 0;
 
     //
     // Visit all edges
@@ -1859,9 +1858,25 @@ void Ship::ApplyHydrostaticPressureForces(
         vec2f edge2PerpVector =
             -(mPoints.GetPosition(nextPointIndex) - mPoints.GetPosition(thisPointIndex)).to_perpendicular();
 
-        surroundingHullPointsCount += (mPoints.GetIsHull(nextPointIndex) ? 1 : 0);
+        // TODOTEST
+        ////surroundingHullPointsCount += (mPoints.GetIsHull(nextPointIndex) ? 1 : 0);
 
-        if (surroundingHullPointsCount == 3)
+        ////if (surroundingHullPointsCount == 3)
+        ////{
+        ////    vec2f const forceVector = (edge1PerpVector + edge2PerpVector) / 2.0f;
+        ////    vec2f const torqueArm = mPoints.GetPosition(thisPointIndex) - geometricCenterPosition;
+
+        ////    mHydrostaticPressureBuffer.emplace_back(
+        ////        thisPointIndex,
+        ////        forceVector,
+        ////        torqueArm);
+
+        ////    // Update resultant force and torque
+        ////    netForce += forceVector;
+        ////    netTorque += torqueArm.cross(forceVector);
+        ////}
+
+        if (mPoints.GetIsHull(thisPointIndex))
         {
             vec2f const forceVector = (edge1PerpVector + edge2PerpVector) / 2.0f;
             vec2f const torqueArm = mPoints.GetPosition(thisPointIndex) - geometricCenterPosition;
@@ -1874,7 +1889,6 @@ void Ship::ApplyHydrostaticPressureForces(
             // Update resultant force and torque
             netForce += forceVector;
             netTorque += torqueArm.cross(forceVector);
-            ++netPointCount;
         }
 
         // Advance
@@ -1904,8 +1918,6 @@ void Ship::ApplyHydrostaticPressureForces(
     ElementCount iter;
     for (iter = 0; iter < frontier.Size; ++iter)
     {
-        // TODOHERE: precalc these quantities
-
         // Check if we've reached a "minimum" that we're happy with
         if (netForce.length() < 0.5f
             && std::abs(netTorque) < 0.5f)
@@ -1920,32 +1932,39 @@ void Ship::ApplyHydrostaticPressureForces(
         float bestLambda = 0.0f;
         if (netForce.length() >= std::abs(netTorque))
         {
+            //
             // Find best lambda that minimizes the net force and, in case of a tie, the net torque as well
+            //
+
             float minNetForceMagnitude = std::numeric_limits<float>::max();
-            float minNetTorque = std::numeric_limits<float>::max();
+            float minNetTorqueMagnitude = std::numeric_limits<float>::max();
             for (size_t hpi = 0; hpi < mHydrostaticPressureBuffer.GetCurrentPopulatedSize(); ++hpi)
             {
                 auto const & hp = mHydrostaticPressureBuffer[hpi];
 
-                vec2f const thisForce = hp.ForceVector;
-                float const thisTorque = hp.TorqueArm.cross(thisForce);
+                vec2f const & thisForce = hp.ForceVector;
+
                 if (thisForce != vec2f::zero())
                 {
-                    // Find lambda that minimizes force
+                    // Find lambda that minimizes magnitude of force:
+                    //      Magnitude(l) = |NetForce(l)| = |NetForcePrev + ThisForce*l|
+                    //      dMagnitude(l)/dl = 2*l*(ThisForce.x^2 + ThisForce.y^2) + 2*(NetForcePrev.x*ThisForce.x + NetForcePrev.y*ThisForce.y)
+                    //      dMagnitude(l)/dl = 0 => l = NetForcePrev.dot(ThisForce) / |ThisForce|^2
                     float const lambdaFRaw = -(netForce - thisForce).dot(thisForce) / thisForce.squareLength();
-                    if (lambdaFRaw < 1.0f) // Ensure it's a change wrt now
+                    if (lambdaFRaw < 1.0f) // Ensure it's a change wrt now, and that we don't amplify existing forces
                     {
-                        float const lambda = Clamp(lambdaFRaw, 0.0f, 1.0f);
+                        float const lambda = std::max(lambdaFRaw, 0.0f);
 
                         // Remember best
-                        float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
-                        float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
-                        //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
+                        float const newNetForceMagnitude = (netForce - thisForce * (1.0f - lambda)).length();
+                        float const thisTorque = hp.TorqueArm.cross(thisForce);
+                        float const newNetTorqueMagnitude = std::abs(netTorque - thisTorque * (1.0f - lambda));
+                        //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorqueMagnitude);
                         if (newNetForceMagnitude < minNetForceMagnitude - QuantizationRadius
-                            || (newNetForceMagnitude < minNetForceMagnitude + QuantizationRadius && newNetTorque < minNetTorque))
+                            || (newNetForceMagnitude < minNetForceMagnitude + QuantizationRadius && newNetTorqueMagnitude < minNetTorqueMagnitude))
                         {
                             minNetForceMagnitude = newNetForceMagnitude;
-                            minNetTorque = newNetTorque;
+                            minNetTorqueMagnitude = newNetTorqueMagnitude;
                             bestHPIndex = hpi;
                             bestLambda = lambda;
                         }
@@ -1955,33 +1974,38 @@ void Ship::ApplyHydrostaticPressureForces(
         }
         else
         {
+            //
             // Find best lambda that minimizes the net torque and, in case of a tie, the net force as well
+            //
+
             float minNetForceMagnitude = std::numeric_limits<float>::max();
-            float minNetTorque = std::numeric_limits<float>::max();
+            float minNetTorqueMagnitude = std::numeric_limits<float>::max();
             for (size_t hpi = 0; hpi < mHydrostaticPressureBuffer.GetCurrentPopulatedSize(); ++hpi)
             {
                 auto const & hp = mHydrostaticPressureBuffer[hpi];
 
-                vec2f const thisForce = hp.ForceVector;
+                vec2f const & thisForce = hp.ForceVector;
                 float const thisTorque = hp.TorqueArm.cross(thisForce);
 
                 if (thisTorque != 0.0f)
                 {
-                    // Calculate lambda at which netTorque is zero
+                    // Calculate lambda at which netTorque is zero:
+                    //      NetTorque(l) = NetTorquePrev + l*ThisTorque
+                    //      NetTorque(l) = 0 => l = -NetTorquePrev/ThisTorque
                     float const lambdaTRaw = -(netTorque - thisTorque) / thisTorque;
-                    if (lambdaTRaw < 1.0f) // Ensure it's a change wrt now
+                    if (lambdaTRaw < 1.0f) // Ensure it's a change wrt now, and that we don't amplify existing forces
                     {
-                        float const lambda = Clamp(lambdaTRaw, 0.0f, 1.0f);
+                        float const lambda = std::max(lambdaTRaw, 0.0f);
 
                         // Remember best
-                        float const newNetForceMagnitude = (netForce - thisForce + thisForce * lambda).length();
-                        float const newNetTorque = std::abs(netTorque - thisTorque + thisTorque * lambda);
+                        float const newNetForceMagnitude = (netForce - thisForce * (1.0f - lambda)).length();
+                        float const newNetTorqueMagnitude = std::abs(netTorque - thisTorque * (1.0f - lambda));
                         //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
-                        if (newNetTorque < minNetTorque - QuantizationRadius
-                            || (newNetTorque < minNetTorque + QuantizationRadius && newNetForceMagnitude < minNetForceMagnitude))
+                        if (newNetTorqueMagnitude < minNetTorqueMagnitude - QuantizationRadius
+                            || (newNetTorqueMagnitude < minNetTorqueMagnitude + QuantizationRadius && newNetForceMagnitude < minNetForceMagnitude))
                         {
                             minNetForceMagnitude = newNetForceMagnitude;
-                            minNetTorque = newNetTorque;
+                            minNetTorqueMagnitude = newNetTorqueMagnitude;
                             bestHPIndex = hpi;
                             bestLambda = lambda;
                         }
@@ -1992,17 +2016,19 @@ void Ship::ApplyHydrostaticPressureForces(
 
         if (!bestHPIndex.has_value())
         {
+            // Couldn't find a minimizer, stop
             //LogMessage("Iter ", iter + 1, ": done because none found");
             break;
         }
 
-        vec2f const thisForce = mHydrostaticPressureBuffer[*bestHPIndex].ForceVector;
-        float const thisTorque = mHydrostaticPressureBuffer[*bestHPIndex].TorqueArm.cross(thisForce);
-
+        // Adjust force vector of optimal particle
         mHydrostaticPressureBuffer[*bestHPIndex].ForceVector *= bestLambda;
 
-        netForce += -thisForce + thisForce * bestLambda;
-        netTorque += -thisTorque + thisTorque * bestLambda;
+        // Update net force and torque
+        vec2f const thisForce = mHydrostaticPressureBuffer[*bestHPIndex].ForceVector;
+        netForce -= thisForce * (1.0f - bestLambda);
+        float const thisTorque = mHydrostaticPressureBuffer[*bestHPIndex].TorqueArm.cross(thisForce);
+        netTorque -= thisTorque * (1.0f - bestLambda);
 
         //LogMessage("Iter ", iter + 1, ": best=", bestPointIndex, "/l=", bestLambda, " (@", mPoints.GetPosition(bestPointIndex), ") NetForce'=", netForce, " (", netForce.length(), ") NetTorque'=", netTorque);
     }
@@ -2012,7 +2038,9 @@ void Ship::ApplyHydrostaticPressureForces(
     mHydrostaticPressureIterationsCount += 1.0f;
 
     //
-    // 3. Apply forces
+    // 3. Apply forces as dynamic forces - so they only apply to current positions,
+    //    as these forces are very sensitive to their position, would generate
+    //    phantom forces and torques otherwise
     //
 
     float const pressureForceStem =

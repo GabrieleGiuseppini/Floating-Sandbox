@@ -821,7 +821,7 @@ Render:
 							+ With numeric_limits::max: Hemisphere: 53/0.37/0.00... Triton: 8.4/0.05/0.00...
 							+ With current nettorque/netforce: Hemisphere: 42/0.7/0.00... Triton: 8.0/0.05/0.00...
 						+ Undo: we want to choose contributions > current net
-					= Algo for optimization *and* avoidance of double stem (explosion)
+					+ Algo for optimization *and* avoidance of double stem (explosion)
 						+ 0a. Confirm by multiplying all DynamicForces by stem - once across all points
 						+ 0b. Take perf measurements (default_ship, depth -= 200): Update:4.90ms, ApplyHydrostaticPressureForces: 3.47%
 							Hesleden: Update:67.8ms, ApplyHydrostaticPressureForces: 6.27%
@@ -841,15 +841,18 @@ Render:
 							+ Make loop inline
 						+ 6. Equalization
 						+ End: DynamicForces are only populated at end, by multiplying ForceVector with stem and adding to Points.DynamicForces
-						- Optimize
+						+ Optimize
 					+ Fix getting stuck at lambda=1:
 					- Optimizations:
 						+ Start: Update=5.68ms, ApplyHydrostaticPressureForce=13.40% (LogMessage=7.88%)
-						- See if "min-3-consecutive-hulls" is still needed
+						= See if "min-3-consecutive-hulls" is still needed
+							- If decide to remove it, cleanup code
 						- Try - but unlikely to succeed - with calculating lambdas only at dirty structures
 					- Run in Debug
-				- Test on melted long springs
+					- Remove exhaggerations
+				- Test on melted long springs - after removing exhaggerations
 				- Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
+				- Apply air pressure as well
 				- Cleanup commented out code
 					- Make video first
 
@@ -860,6 +863,8 @@ Render:
 
 		- Settings for Electric Spark tool
 			- SettingsDialog
+
+		- More parallelization at Ship::Update
 
 		- Spread out rotting:
 			! Now: at step 20/49
