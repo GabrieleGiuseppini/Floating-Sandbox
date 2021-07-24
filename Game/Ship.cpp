@@ -1812,6 +1812,10 @@ void Ship::ApplyHydrostaticPressureForces(
     //
     // 1. Calculate geometry of forces and populate interim buffer
     //
+    // Here we calculate the *perpendicular* to each edge, rather than the normal, in order
+    // to take into account the length of the edge, as the pressure force on an edge is
+    // proportional to its length
+    //
 
     mHydrostaticPressureBuffer.clear();
 
@@ -1827,19 +1831,13 @@ void Ship::ApplyHydrostaticPressureForces(
     //
 
     ElementIndex edge1Index = frontier.StartingEdgeIndex;
-
     ElementIndex prevPointIndex = mFrontiers.GetFrontierEdge(edge1Index).PointAIndex;
 
     ElementIndex edge2Index = mFrontiers.GetFrontierEdge(edge1Index).NextEdgeIndex;
-
     ElementIndex thisPointIndex = mFrontiers.GetFrontierEdge(edge2Index).PointAIndex;
 
     vec2f edge1PerpVector =
         -(mPoints.GetPosition(thisPointIndex) - mPoints.GetPosition(prevPointIndex)).to_perpendicular();
-
-    int surroundingHullPointsCount =
-        (mPoints.GetIsHull(prevPointIndex) ? 1 : 0)
-        + (mPoints.GetIsHull(thisPointIndex) ? 1 : 0);
 
 #ifdef _DEBUG
     ElementCount visitedPoints = 0;
@@ -1858,25 +1856,7 @@ void Ship::ApplyHydrostaticPressureForces(
         vec2f edge2PerpVector =
             -(mPoints.GetPosition(nextPointIndex) - mPoints.GetPosition(thisPointIndex)).to_perpendicular();
 
-        // TODOTEST
-        ////surroundingHullPointsCount += (mPoints.GetIsHull(nextPointIndex) ? 1 : 0);
-
-        ////if (surroundingHullPointsCount == 3)
-        ////{
-        ////    vec2f const forceVector = (edge1PerpVector + edge2PerpVector) / 2.0f;
-        ////    vec2f const torqueArm = mPoints.GetPosition(thisPointIndex) - geometricCenterPosition;
-
-        ////    mHydrostaticPressureBuffer.emplace_back(
-        ////        thisPointIndex,
-        ////        forceVector,
-        ////        torqueArm);
-
-        ////    // Update resultant force and torque
-        ////    netForce += forceVector;
-        ////    netTorque += torqueArm.cross(forceVector);
-        ////}
-
-        if (mPoints.GetIsHull(thisPointIndex))
+        if (mPoints.GetIsHull(nextPointIndex))
         {
             vec2f const forceVector = (edge1PerpVector + edge2PerpVector) / 2.0f;
             vec2f const torqueArm = mPoints.GetPosition(thisPointIndex) - geometricCenterPosition;
@@ -1895,8 +1875,6 @@ void Ship::ApplyHydrostaticPressureForces(
         nextEdgeIndex = nextEdge.NextEdgeIndex;
         if (nextEdgeIndex == startEdgeIndex)
             break;
-
-        surroundingHullPointsCount -= (mPoints.GetIsHull(prevPointIndex) ? 1 : 0);
 
         prevPointIndex = thisPointIndex;
         thisPointIndex = nextPointIndex;
