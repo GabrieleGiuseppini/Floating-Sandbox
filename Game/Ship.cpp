@@ -1839,6 +1839,10 @@ void Ship::ApplyHydrostaticPressureForces(
     vec2f edge1PerpVector =
         -(mPoints.GetPosition(thisPointIndex) - mPoints.GetPosition(prevPointIndex)).to_perpendicular();
 
+    int surroundingHullPointsCount =
+        (mPoints.GetIsHull(prevPointIndex) ? 1 : 0)
+        + (mPoints.GetIsHull(thisPointIndex) ? 1 : 0);
+
 #ifdef _DEBUG
     ElementCount visitedPoints = 0;
 #endif
@@ -1856,7 +1860,8 @@ void Ship::ApplyHydrostaticPressureForces(
         vec2f edge2PerpVector =
             -(mPoints.GetPosition(nextPointIndex) - mPoints.GetPosition(thisPointIndex)).to_perpendicular();
 
-        if (mPoints.GetIsHull(nextPointIndex))
+        surroundingHullPointsCount += (mPoints.GetIsHull(nextPointIndex) ? 1 : 0);
+        if (surroundingHullPointsCount == 3) // Avoid applying force to one or two isolated hull particles, allows for more stability of wretched wrecks
         {
             vec2f const forceVector = (edge1PerpVector + edge2PerpVector) / 2.0f;
             vec2f const torqueArm = mPoints.GetPosition(thisPointIndex) - geometricCenterPosition;
@@ -1875,6 +1880,8 @@ void Ship::ApplyHydrostaticPressureForces(
         nextEdgeIndex = nextEdge.NextEdgeIndex;
         if (nextEdgeIndex == startEdgeIndex)
             break;
+
+        surroundingHullPointsCount -= (mPoints.GetIsHull(prevPointIndex) ? 1 : 0);
 
         prevPointIndex = thisPointIndex;
         thisPointIndex = nextPointIndex;

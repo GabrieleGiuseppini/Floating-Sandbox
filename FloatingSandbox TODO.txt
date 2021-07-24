@@ -848,11 +848,13 @@ Render:
 						+ See if "min-3-consecutive-hulls" is still needed
 							+ If decide to remove it, cleanup code
 						- TODO: REALLY? Try - but unlikely to succeed - with calculating lambdas only at dirty structures
-					- Run in Debug
+					+ Run in Debug
 					- Remove exhaggerations
 				- Test on melted long springs - after removing exhaggerations
 				- Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
 				- Apply air pressure as well
+				- Merge back into master
+				- Changelist
 				- Cleanup commented out code
 					- Make video first
 
