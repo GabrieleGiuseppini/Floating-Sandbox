@@ -1369,15 +1369,18 @@ void Ship::ApplyWorldSurfaceForces(
 ////                vec2f edge2PerpVector =
 ////                    -(mPoints.GetPosition(nextPointIndex) - mPoints.GetPosition(thisPointIndex)).to_perpendicular();
 ////
-////                // Apply force - we apply it as a *dynamic* force, otherwise if it were static it would
-////                // generate phantom torques due to geometries changing for every dynamic step
+////                if (mPoints.GetIsHull(thisPointIndex))
+////                {
+////                    // Apply force - we apply it as a *dynamic* force, otherwise if it were static it would
+////                    // generate phantom torques due to geometries changing for every dynamic step
 ////
-////                vec2f const pressureForce =
-////                    (edge1PerpVector + edge2PerpVector) * pressureForceStem;
+////                    vec2f const pressureForce =
+////                        (edge1PerpVector + edge2PerpVector) * pressureForceStem;
 ////
-////                mPoints.AddDynamicForce(
-////                    thisPointIndex,
-////                    pressureForce);
+////                    mPoints.AddDynamicForce(
+////                        thisPointIndex,
+////                        pressureForce);
+////                }
 ////
 ////                // Advance
 ////                nextEdgeIndex = nextEdge.NextEdgeIndex;
