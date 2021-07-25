@@ -793,7 +793,7 @@ Render:
 		= Another hydrostatic pressure attempt:
 			= Frontier: do not act on non-hull points, but then compensate net resultant force (and may be resultant torque as well)
 				+ Only on edges that are the center of three consecutive hull points
-				= Try adaptive net_force/net_torque zeroing
+				+ Try adaptive net_force/net_torque zeroing
 					+ See paper
 					+ Rewrite algo so pressure force stem multiplication is last step - use 1.0 for stems before that
 						+ Assert initially that dynamic forces is empty
@@ -849,12 +849,14 @@ Render:
 							+ If decide to remove it, cleanup code
 						+ End: Update=4.66ms, ApplyHydrostaticPressureForce=1.57%; Hesleden: 64.5ms, 2.01%
 					+ Run in Debug
-					- Remove exhaggerations
-				- Test on melted long springs - after removing exhaggerations
+					+ Remove exhaggerations
+				+ Test on melted long springs - after removing exhaggerations
 				- Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
 				- Try with internal pressure, again
 					- If goes thru: do all the internal pressure sidework (flood tool, rendering, ...*)
 				- Apply air pressure as well
+				- Finalize setting range
+					- Also see if it needs to be smoothed
 				- Merge back into master
 				- Changelist
 				- Cleanup commented out code
@@ -867,6 +869,8 @@ Render:
 
 		- Settings for Electric Spark tool
 			- SettingsDialog
+
+		- Add depth to physics probe
 
 		- More parallelization at Ship::Update
 
