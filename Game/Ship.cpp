@@ -110,6 +110,8 @@ Ship::Ship(
     , mLastLuminiscenceAdjustmentDiffused(-1.0f)
     // Hydrostatic pressure
     , mHydrostaticPressureBuffer(mPoints.GetAlignedShipPointCount())
+    , mHydrostaticPressureNetForceMagnitudeSum(0.0f)
+    , mHydrostaticPressureNetForceMagnitudeCount(0.0f)
     , mHydrostaticPressureIterationsPercentagesSum(0.0f)
     , mHydrostaticPressureIterationsCount(0.0f)
     // Render
@@ -1461,6 +1463,8 @@ void Ship::ApplyHydrostaticPressureForces(
     //
 
     // Initialize stats
+    mHydrostaticPressureNetForceMagnitudeSum = 0.0f;
+    mHydrostaticPressureNetForceMagnitudeCount = 0.0f;
     mHydrostaticPressureIterationsPercentagesSum = 0.0f;
     mHydrostaticPressureIterationsCount = 0.0f;
 
@@ -1481,6 +1485,9 @@ void Ship::ApplyHydrostaticPressureForces(
     }
 
     // Publish stats
+    mGameEventHandler->OnCustomProbe(
+        "HydrostaticPressure NetForce",
+        mHydrostaticPressureNetForceMagnitudeSum / mHydrostaticPressureNetForceMagnitudeCount);
     mGameEventHandler->OnCustomProbe(
         "HydrostaticPressure Complexity",
         mHydrostaticPressureIterationsPercentagesSum / mHydrostaticPressureIterationsCount);
@@ -1705,6 +1712,8 @@ void Ship::ApplyHydrostaticPressureForces(
     }
 
     // Update stats
+    mHydrostaticPressureNetForceMagnitudeSum += netForce.length();
+    mHydrostaticPressureNetForceMagnitudeCount += 1.0f;
     mHydrostaticPressureIterationsPercentagesSum += static_cast<float>(iter + 1) / static_cast<float>(frontier.Size);
     mHydrostaticPressureIterationsCount += 1.0f;
 

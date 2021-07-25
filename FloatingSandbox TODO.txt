@@ -865,10 +865,10 @@ Render:
 						- Optimize
 							- See local buffer remembering all we do in the first loop
 				- Apply air pressure as well
-					- TODOTHINK
-					- @ Internal pressure intake
-					- @ ApplyHydrostaticPressure
-				- Custom probe for net force - How to do one sample for all frontiers?
+					- TODOTHINK:
+						- @ Internal pressure intake
+						- @ ApplyHydrostaticPressure
+				+ Custom probe for net force
 				- Finalize setting range
 					- Also see if it needs to be smoothed
 				- Merge back into master
@@ -881,11 +881,14 @@ Render:
 			+ 0.242	
 			- See why Titanic is bunch of particles at 10Km: rotting?
 
+		- Add depth to physics probe
+			- Do triple-system while you're at it:
+				- SI-with-Celsius
+				- SI-with-Kelvin
+				- TODO: American
+
 		- Settings for Electric Spark tool
 			- SettingsDialog
-
-		- Add depth to physics probe
-			- Do dual-system while you're at it
 
 		- More parallelization at Ship::Update
 
