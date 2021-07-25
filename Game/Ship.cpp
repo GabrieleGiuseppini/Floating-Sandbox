@@ -2030,9 +2030,7 @@ void Ship::ApplyHydrostaticPressureForces(
     //
 
     float const pressureForceStem =
-        // TODOTEST
-        //std::max(mParentWorld.GetDepth(geometricCenterPosition), 0.0f)
-        std::max(mParentWorld.GetDepth(geometricCenterPosition + vec2f(0.0f, -200.0f)), 0.0f)
+        std::max(mParentWorld.GetDepth(geometricCenterPosition), 0.0f)
         * effectiveWaterDensity
         * GameParameters::GravityMagnitude
         * gameParameters.HydrostaticPressureAdjustment;

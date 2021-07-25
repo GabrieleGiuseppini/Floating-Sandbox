@@ -778,7 +778,7 @@ Render:
 						+ Verify it is saved and loaded
 					= Test Titanic without breaking fault line: see if breaks by itself
 						+ Make new ship given that you are at it
-					- Checkout impact of sinking ship on sea floor; if get pulverized, decrease weakening
+					- Checkout impact of sinking ship on sea floor; if gets pulverized, decrease weakening
 					= Tests:
 						- Paper
 						- Cardboard
@@ -843,15 +843,17 @@ Render:
 						+ End: DynamicForces are only populated at end, by multiplying ForceVector with stem and adding to Points.DynamicForces
 						+ Optimize
 					+ Fix getting stuck at lambda=1:
-					= Optimizations:
+					+ Optimizations:
 						+ Start: Update=5.68ms, ApplyHydrostaticPressureForce=13.40% (LogMessage=7.88%)
 						+ See if "min-3-consecutive-hulls" is still needed
 							+ If decide to remove it, cleanup code
-						- TODO: REALLY? Try - but unlikely to succeed - with calculating lambdas only at dirty structures
+						+ End: Update=4.66ms, ApplyHydrostaticPressureForce=1.57%; Hesleden: 64.5ms, 2.01%
 					+ Run in Debug
 					- Remove exhaggerations
 				- Test on melted long springs - after removing exhaggerations
 				- Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
+				- Try with internal pressure, again
+					- If goes thru: do all the internal pressure sidework (flood tool, rendering, ...*)
 				- Apply air pressure as well
 				- Merge back into master
 				- Changelist
