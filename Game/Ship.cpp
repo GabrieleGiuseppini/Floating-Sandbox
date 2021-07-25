@@ -396,19 +396,30 @@ void Ship::Update(
     /////////////////////////////////////////////////////////////////
 
     //
-    // Update intake of water
+    // Update intake of pressure and water
     //
 
     float waterTakenInStep = 0.f;
 
     // - Inputs: P.Position, P.Water, P.IsLeaking, P.Temperature, P.PlaneId
-    // - Outputs: P.Water, P.CumulatedIntakenWater
+    // - Outputs: P.InternalPressure, P.Water, P.CumulatedIntakenWater
     // - Creates ephemeral particles
-    UpdateWaterInflow(
+    UpdatePressureAndWaterInflow(
+        effectiveAirDensity,
+        effectiveWaterDensity,
         currentSimulationTime,
         stormParameters,
         gameParameters,
         waterTakenInStep);
+
+    //
+    // Equalize internal pressure, and apply internal hydrostatic forces
+    //
+
+    // - Inputs: Position, InternalPressure, ConnectedSprings
+    // - Outpus: InternalPressure, DynamicForces
+    EqualizeInternalPressure(gameParameters);
+
 
     // Notify intaken water
     mGameEventHandler->OnWaterTaken(waterTakenInStep);
@@ -1982,22 +1993,30 @@ void Ship::TrimForWorldBounds(GameParameters const & gameParameters)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
-// Water Dynamics
+// Pressure and water Dynamics
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::UpdateWaterInflow(
+void Ship::UpdatePressureAndWaterInflow(
+    float /*effectiveAirDensity*/, //TODO: codework
+    float effectiveWaterDensity,
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters,
     float & waterTakenInStep)
 {
     //
-    // Intake/outtake water into/from all the leaking nodes (structural or forced)
+    // Intake/outtake pressure and water into/from all the leaking nodes (structural or forced)
     // that are either underwater or are overwater and taking rain.
     //
     // Ephemeral points are never leaking, hence we ignore them
     //
 
+    // Constant which, when multiplied with depth, gives pressure
+    float const externalPressureDepthCoeff =
+        effectiveWaterDensity
+        * GameParameters::GravityMagnitude;
+
+    // Equivalent depth of a point when it's exposed to rain
     float const rainEquivalentWaterHeight =
         stormParameters.RainQuantity // m/h
         / 3600.0f // -> m/s
@@ -2021,9 +2040,17 @@ void Ship::UpdateWaterInflow(
         auto const & pointCompositeLeaking = mPoints.GetLeakingComposite(pointIndex);
         if (pointCompositeLeaking.IsCumulativelyLeaking)
         {
+            assert(!mPoints.GetIsHull(pointIndex)); // Hull points are never leaking
+
             float const pointDepth = mPoints.GetCachedDepth(pointIndex);
 
-            // External water height (~=external pressure)
+            // External pressure
+            float const externalPressure = std::max(pointDepth, 0.0f) * externalPressureDepthCoeff;
+
+            // Internal pressure
+            float const internalPressure = mPoints.GetInternalPressure(pointIndex);
+
+            // External water height
             //
             // We also incorporate rain in the sources of external water height:
             // - If point is below water surface: external water height is due to depth
@@ -2032,12 +2059,14 @@ void Ship::UpdateWaterInflow(
                 pointDepth + 0.1f, // Magic number to force flotsam to take some water in and eventually sink
                 rainEquivalentWaterHeight); // At most is one meter, so does not interfere with underwater pressure
 
-            // Internal water height (~=internal pressure)
+            // Internal water height
             float const internalWaterHeight = mPoints.GetWater(pointIndex);
 
             //
-            // 1) Calculate new water due to structural leaks (holes)
+            // 1) Calculate new pressure and water due to structural leaks (holes)
             //
+
+            float const newPressure_Structural = externalPressure - internalPressure;
 
             float newWater_Structural;
             {
@@ -2081,14 +2110,18 @@ void Ship::UpdateWaterInflow(
             }
 
             //
-            // 2) Calculate new water due to forced leaks (pumps)
+            // 2) Calculate new pressure and water due to forced leaks (pumps)
             //
 
+            float newPressure_Forced = 0.0f;
             float newWater_Forced = 0.0f;
             float const waterPumpForce = pointCompositeLeaking.LeakingSources.WaterPumpForce;
             if (waterPumpForce > 0.0f)
             {
                 // Inward pump: only works if underwater
+                newPressure_Forced = (externalPressure > 0.0f)
+                    ? waterPumpForce * waterPumpPowerMultiplier // No need to cap as sea is infinite
+                    : 0.0f;
                 newWater_Forced = (externalWaterHeight > 0.0f)
                     ? waterPumpForce * waterPumpPowerMultiplier // No need to cap as sea is infinite
                     : 0.0f;
@@ -2096,56 +2129,172 @@ void Ship::UpdateWaterInflow(
             else if (waterPumpForce < 0.0f)
             {
                 // Outward pump: only works if water inside
+                newPressure_Forced = (internalPressure > 0.0f)
+                    ? waterPumpForce * waterPumpPowerMultiplier // We'll cap it
+                    : 0.0f;
                 newWater_Forced = (internalWaterHeight > 0.0f)
                     ? waterPumpForce * waterPumpPowerMultiplier // We'll cap it
                     : 0.0f;
             }
 
             //
-            // 3) Apply resultant water changes
+            // 3) Apply resultant pressure and water changes
             //
 
-            float newWater = newWater_Structural + newWater_Forced;
-
-            if (newWater < 0.0f)
             {
-                // Outgoing water
-
-                // Make sure we don't over-drain the point
-                newWater = -std::min(-newWater, mPoints.GetWater(pointIndex));
-
-                // Honor the water retention of this material
-                newWater *= mPoints.GetMaterialWaterRestitution(pointIndex);
-            }
-
-            // Adjust water
-            mPoints.SetWater(
-                pointIndex,
-                mPoints.GetWater(pointIndex) + newWater);
-
-            // Check if it's time to produce air bubbles
-            mPoints.GetCumulatedIntakenWater(pointIndex) += newWater;
-            if (mPoints.GetCumulatedIntakenWater(pointIndex) > cumulatedIntakenWaterThresholdForAirBubbles)
-            {
-                // Generate air bubbles - but not on ropes as that looks awful
-                if (doGenerateAirBubbles
-                    && !mPoints.IsRope(pointIndex))
+                float newPressure = newPressure_Structural + newPressure_Forced;
+                if (newPressure < 0.0f)
                 {
-                    GenerateAirBubble(
-                        mPoints.GetPosition(pointIndex),
-                        pointDepth,
-                        mPoints.GetTemperature(pointIndex),
-                        currentSimulationTime,
-                        mPoints.GetPlaneId(pointIndex),
-                        gameParameters);
+                    // Outgoing pressure...
+                    // ...make sure we don't over-drain the point
+                    newPressure = -std::min(-newPressure, internalPressure);
                 }
 
-                // Consume all cumulated water
-                mPoints.GetCumulatedIntakenWater(pointIndex) = 0.0f;
+                // Adjust pressure
+                mPoints.SetInternalPressure(
+                    pointIndex,
+                    internalPressure + newPressure);
             }
 
-            // Adjust total water taken during this step
-            waterTakenInStep += newWater;
+            {
+                float newWater = newWater_Structural + newWater_Forced;
+
+                if (newWater < 0.0f)
+                {
+                    // Outgoing water
+
+                    // Make sure we don't over-drain the point
+                    newWater = -std::min(-newWater, mPoints.GetWater(pointIndex));
+
+                    // Honor the water retention of this material
+                    newWater *= mPoints.GetMaterialWaterRestitution(pointIndex);
+                }
+
+                // Adjust water
+                mPoints.SetWater(
+                    pointIndex,
+                    mPoints.GetWater(pointIndex) + newWater);
+
+                // Check if it's time to produce air bubbles
+                mPoints.GetCumulatedIntakenWater(pointIndex) += newWater;
+                if (mPoints.GetCumulatedIntakenWater(pointIndex) > cumulatedIntakenWaterThresholdForAirBubbles)
+                {
+                    // Generate air bubbles - but not on ropes as that looks awful
+                    if (doGenerateAirBubbles
+                        && !mPoints.IsRope(pointIndex))
+                    {
+                        GenerateAirBubble(
+                            mPoints.GetPosition(pointIndex),
+                            pointDepth,
+                            mPoints.GetTemperature(pointIndex),
+                            currentSimulationTime,
+                            mPoints.GetPlaneId(pointIndex),
+                            gameParameters);
+                    }
+
+                    // Consume all cumulated water
+                    mPoints.GetCumulatedIntakenWater(pointIndex) = 0.0f;
+                }
+
+                // Adjust total water taken during this step
+                waterTakenInStep += newWater;
+            }
+        }
+    }
+}
+
+void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
+{
+    //
+    // For each (non-ephemeral) point, equalize its internal pressure with its
+    // neighbors
+    //
+
+    float * restrict internalPressureBufferData = mPoints.GetInternalPressureBufferAsFloat();
+
+    for (auto pointIndex : mPoints.RawShipPoints()) // No need to visit ephemeral points as they have no springs
+    {
+        size_t const connectedSpringCount = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size();
+
+        if (!mPoints.GetIsHull(pointIndex))
+        {
+            //
+            // Non-hull particle: flow its surplus pressure to its neighbors
+            //
+
+            float const internalPressure = internalPressureBufferData[pointIndex];
+
+            //
+            // 1. Calculate average internal pressure among this particle and all its neighbors that have
+            // lower internal pressure
+            //
+
+            float averageInternalPressure = internalPressure;
+            float targetEndpointsCount = 1.0f;
+
+            for (size_t s = 0; s < connectedSpringCount; ++s)
+            {
+                auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
+                ElementIndex const otherEndpointIndex = cs.OtherEndpointIndex;
+
+                // We only consider outgoing pressure, not towards hull points
+                float const otherEndpointInternalPressure = internalPressureBufferData[otherEndpointIndex];
+                if (internalPressure > otherEndpointInternalPressure
+                    && mSprings.GetWaterPermeability(cs.SpringIndex) != 0.0f)
+                {
+                    averageInternalPressure += otherEndpointInternalPressure;
+                    targetEndpointsCount += 1.0f;
+                }
+            }
+
+            averageInternalPressure /= targetEndpointsCount;
+
+            //
+            // 2. Distribute surplus pressure
+            //
+
+            for (size_t s = 0; s < connectedSpringCount; ++s)
+            {
+                auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
+                ElementIndex const otherEndpointIndex = cs.OtherEndpointIndex;
+
+                // We only consider outgoing pressure, not towards hull points
+                float const otherEndpointInternalPressure = internalPressureBufferData[otherEndpointIndex];
+                if (internalPressure > otherEndpointInternalPressure
+                    && mSprings.GetWaterPermeability(cs.SpringIndex) != 0.0f)
+                {
+                    float const outgoingDelta = averageInternalPressure - otherEndpointInternalPressure;
+                    internalPressureBufferData[pointIndex] -= outgoingDelta;
+                    internalPressureBufferData[otherEndpointIndex] += outgoingDelta;
+                }
+            }
+        }
+        else
+        {
+            //
+            // Hull particle: set its internal pressure to the average internal pressure
+            // of all its non-hull neighbors
+            //
+
+            float averageInternalPressure = 0.0f;
+            float neighborsCount = 0.0f;
+
+            for (size_t s = 0; s < connectedSpringCount; ++s)
+            {
+                auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
+                ElementIndex const otherEndpointIndex = cs.OtherEndpointIndex;
+
+                if (!mPoints.GetIsHull(otherEndpointIndex))
+                {
+                    averageInternalPressure += internalPressureBufferData[otherEndpointIndex];
+                    neighborsCount += 1.0f;
+                }
+            }
+
+            if (neighborsCount != 0.0f)
+            {
+                internalPressureBufferData[pointIndex] = averageInternalPressure / neighborsCount;
+            }
         }
     }
 }

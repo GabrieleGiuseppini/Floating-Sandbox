@@ -103,6 +103,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipSpringsColorIncandescence;
     else if (lstr == "ship_springs_decay")
         return ProgramType::ShipSpringsDecay;
+    else if (lstr == "ship_springs_internal_pressure")
+        return ProgramType::ShipSpringsInternalPressure;
     else if (lstr == "ship_springs_strength")
         return ProgramType::ShipSpringsStrength;
     else if (lstr == "ship_springs_texture")
@@ -121,6 +123,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipTrianglesColorIncandescence;
     else if (lstr == "ship_triangles_decay")
         return ProgramType::ShipTrianglesDecay;
+    else if (lstr == "ship_triangles_internal_pressure")
+        return ProgramType::ShipTrianglesInternalPressure;
     else if (lstr == "ship_triangles_strength")
         return ProgramType::ShipTrianglesStrength;
     else if (lstr == "ship_triangles_texture")
@@ -235,6 +239,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipSpringsColorIncandescence";
     case ProgramType::ShipSpringsDecay:
         return "ShipSpringsDecay";
+    case ProgramType::ShipSpringsInternalPressure:
+        return "ShipSpringsInternalPressure";
     case ProgramType::ShipSpringsStrength:
         return "ShipSpringsStrength";
     case ProgramType::ShipSpringsTexture:
@@ -253,6 +259,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipTrianglesColorIncandescence";
     case ProgramType::ShipTrianglesDecay:
         return "ShipTrianglesDecay";
+    case ProgramType::ShipTrianglesInternalPressure:
+        return "ShipTrianglesInternalPressure";
     case ProgramType::ShipTrianglesStrength:
         return "ShipTrianglesStrength";
     case ProgramType::ShipTrianglesTexture:

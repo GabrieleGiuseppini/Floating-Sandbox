@@ -1,6 +1,9 @@
 =================================================
 Current perf:
 =================================================
+1.16.4.next, during Hydrostatic pressure
+- default ship: Update=4.66ms
+=================================================
 1.16.3.next, after OpenGL optimizations (edge springs, etc.)
 - default ship, 20s
 	- Old dell: 31.9 FPS, 19.1 UPD, 11.8 RND (RelWithDebInfo)
@@ -852,9 +855,19 @@ Render:
 					+ Remove exhaggerations
 				+ Test on melted long springs - after removing exhaggerations
 				X Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
-				- Try with internal pressure, again - just up to hull particles getting the average of all their non-hull neighbors
-					- If goes thru: do all the internal pressure sidework (flood tool, rendering, ...*)
+				= Try with internal pressure, again
+					+ Re-instate internal pressure code
+					+ Re-instate hull particles getting the average of all their non-hull neighbors
+					+ Commit
+					- Use hull's internal pressure to counteract external pressure, at initial forceVector calculation
+					- If goes thru: 
+						- Do all the internal pressure sidework (flood tool, rendering, ...*)
+						- Optimize
+							- See local buffer remembering all we do in the first loop
 				- Apply air pressure as well
+					- TODOTHINK
+					- @ Internal pressure intake
+					- @ ApplyHydrostaticPressure
 				- Custom probe for net force - How to do one sample for all frontiers?
 				- Finalize setting range
 					- Also see if it needs to be smoothed
