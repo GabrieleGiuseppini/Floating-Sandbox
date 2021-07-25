@@ -871,10 +871,11 @@ Render:
 				+ Custom probe for net force
 				- Finalize setting range
 					- Also see if it needs to be smoothed
-				- Merge back into master
-				- Changelist
 				- Cleanup commented out code
 					- Make video first
+				- Send for testing
+				- Merge back into master
+				- Changelist
 
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
