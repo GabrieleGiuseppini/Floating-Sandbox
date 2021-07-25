@@ -1761,7 +1761,7 @@ void Points::UploadVectors(
 
         case VectorFieldRenderModeType::PointDynamicForce:
         {
-            color = vec4f(1.0f, 0.466f, 0.16f, 1.0f);
+            color = vec4f(1.0f, 0.266f, 0.16f, 1.0f);
             vectorBuffer = mDynamicForceBuffer.data();
             lengthAdjustment = 0.000001f;
 

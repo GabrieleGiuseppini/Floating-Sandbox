@@ -2030,7 +2030,7 @@ void ShipRenderContext::RenderDrawVectorArrows(RenderParameters const & /*render
 
         mShaderManager.ActivateProgram<ProgramType::ShipVectors>();
 
-        glLineWidth(0.5f);
+        glLineWidth(1.0f);
 
         glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mVectorArrowVertexBuffer.size()));
 
