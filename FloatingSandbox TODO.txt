@@ -851,10 +851,11 @@ Render:
 					+ Run in Debug
 					+ Remove exhaggerations
 				+ Test on melted long springs - after removing exhaggerations
-				- Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
-				- Try with internal pressure, again
+				X Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
+				- Try with internal pressure, again - just up to hull particles getting the average of all their non-hull neighbors
 					- If goes thru: do all the internal pressure sidework (flood tool, rendering, ...*)
 				- Apply air pressure as well
+				- Custom probe for net force - How to do one sample for all frontiers?
 				- Finalize setting range
 					- Also see if it needs to be smoothed
 				- Merge back into master
@@ -871,6 +872,7 @@ Render:
 			- SettingsDialog
 
 		- Add depth to physics probe
+			- Do dual-system while you're at it
 
 		- More parallelization at Ship::Update
 
