@@ -371,20 +371,6 @@ void Ship::Update(
         stormParameters,
         gameParameters);
 
-    // TODOTEST: move earlier so that destruction and consequent new frontier
-    // is taken into consideration by hydrostatic pressure forces
-    ///////////////////////////////////////////////////////////////////////
-    ////// Update strain for all springs; might cause springs to break
-    ////// (which would flag our structure as dirty)
-    ///////////////////////////////////////////////////////////////////////
-
-    ////// - Inputs: P.Position, S.SpringDeletion, S.ResetLength, S.BreakingElongation
-    ////// - Outputs: S.Destroy()
-    ////// - Fires events
-    ////mSprings.UpdateForStrains(
-    ////    gameParameters,
-    ////    mPoints);
-
     ///////////////////////////////////////////////////////////////////
     // Update state machines
     ///////////////////////////////////////////////////////////////////
