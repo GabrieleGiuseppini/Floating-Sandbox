@@ -1276,7 +1276,7 @@ void Ship::ApplyWorldSurfaceForces(
     }
 }
 
-// TODOOLD: Original, unequalized
+//////TODOOLD: Original, unequalized
 ////void Ship::ApplyHydrostaticPressureForces(
 ////    float /*effectiveAirDensity*/, // CODEWORK: future, if we want to also apply *air* pressure
 ////    float effectiveWaterDensity,
@@ -1397,7 +1397,6 @@ void Ship::ApplyWorldSurfaceForces(
 ////        }
 ////    }
 ////}
-
 
 void Ship::ApplyHydrostaticPressureForces(
     float effectiveAirDensity,
