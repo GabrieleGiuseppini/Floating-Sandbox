@@ -909,11 +909,24 @@ Render:
 			+ 0.242	
 			- See why Titanic is bunch of particles at 10Km: rotting?
 
-		- Add depth to physics probe
-			- Do triple-system while you're at it:
-				- SI-with-Celsius
-				- SI-with-Kelvin
-				- TODO: American
+		= Add depth to physics probe
+			+ Reading
+				+ Interface
+				+ Gadget
+				+ Notification layer & display
+			= Do triple-system while you're at it ("SI (Kelvin)", "SI (Celsius)", "USCS")
+				+ UnitsSystem GameType enum
+				+ GameController-owned setting: "DisplayUnitsSystem"
+					+ Storage
+					+ Setters/Getters
+						+ Setter: Tell NotificationLayer
+				= NotificationLayer:
+					+ Own translation of reading into text
+					- On change:
+						- Re-publish reading - requires storing current raw values
+						- When units system dirty: tell ("upload") to notification context, who will have to store dirtyness and change texture @ RenderPreparePanel
+				+ UI settings manager
+				+ PreferencesDialog
 
 		- Settings for Electric Spark tool
 			- SettingsDialog

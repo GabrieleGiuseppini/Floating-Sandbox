@@ -26,6 +26,7 @@ public:
 		bool isUltraViolentMode,
 		bool isSoundMuted,
 		bool isDayLightCycleOn,
+		UnitsSystem displayUnitsSystem,
 		std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
 
 	bool IsStatusTextEnabled() const { return mIsStatusTextEnabled; }
@@ -56,6 +57,8 @@ public:
 	void SetDayLightCycleIndicator(bool isDayLightCycleOn);
 
 	void SetPhysicsProbePanelState(float targetOpen);
+
+	void SetDisplayUnitsSystem(UnitsSystem value);
 
 	// One frame only; after RenderUpload() it's gone
 	inline void SetHeatBlaster(
@@ -108,7 +111,8 @@ private:
 
 	void OnPhysicsProbeReading(
 		vec2f const & velocity,
-		float const temperature) override;
+		float temperature,
+		float depth) override;
 
 private:
 
@@ -212,17 +216,27 @@ private:
 	{
 		std::string Speed;
 		std::string Temperature;
+		std::string Depth;
 
 		PhysicsProbeReading(
 			std::string speed,
-			std::string temperature)
+			std::string temperature,
+			std::string depth)
 			: Speed(speed)
 			, Temperature(temperature)
+			, Depth(depth)
 		{}
 	};
 
 	std::optional<PhysicsProbeReading> mPhysicsProbeReading;
 	bool mIsPhysicsProbeReadingDirty;
+
+	//
+	// Units system
+	//
+
+	UnitsSystem mDisplayUnitsSystem;
+	bool mIsDisplayUnitsSystemDirty;
 
 	//
 	// Interactions

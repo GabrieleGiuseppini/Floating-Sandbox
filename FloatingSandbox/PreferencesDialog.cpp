@@ -537,18 +537,104 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             //
 
             {
-                wxStaticText * screenshotDirStaticText = new wxStaticText(boxSizer->GetStaticBox(), wxID_ANY, _("Screenshot directory:"));
+                wxStaticText * displayUnitsSystemStaticText = new wxStaticText(boxSizer->GetStaticBox(), wxID_ANY, _("Units system:"));
 
                 sizer->Add(
-                    screenshotDirStaticText,
+                    displayUnitsSystemStaticText,
                     wxGBPosition(4, 0),
                     wxGBSpan(1, 4),
-                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM | wxRIGHT,
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
                     UserInterfaceBorder);
             }
 
             //
             // Row 6
+            //
+
+            {
+                wxString choices[3] = {
+                    _T("SI (Kelvin)"),
+                    _T("SI (Celsius)"),
+                    _T("USCS")
+                };
+
+                mDisplayUnitsSettingsComboBox = new wxComboBox(
+                    boxSizer->GetStaticBox(),
+                    wxID_ANY,
+                    wxEmptyString,
+                    wxDefaultPosition,
+                    wxDefaultSize,
+                    3,
+                    choices,
+                    wxCB_DROPDOWN | wxCB_READONLY);
+
+                mDisplayUnitsSettingsComboBox->SetToolTip(_("Sets the units system to use when displaying physical quantities."));
+                mDisplayUnitsSettingsComboBox->Bind(
+                    wxEVT_COMBOBOX,
+                    [this](wxCommandEvent &)
+                    {
+                        assert(!!mUIPreferencesManager);
+
+                        switch (mDisplayUnitsSettingsComboBox->GetSelection())
+                        {
+                            case 0:
+                            {
+                                mUIPreferencesManager->SetDisplayUnitsSystem(UnitsSystem::SI_Kelvin);
+                                break;
+                            }
+
+                            case 1:
+                            {
+                                mUIPreferencesManager->SetDisplayUnitsSystem(UnitsSystem::SI_Celsius);
+                                break;
+                            }
+
+                            case 2:
+                            {
+                                mUIPreferencesManager->SetDisplayUnitsSystem(UnitsSystem::USCS);
+                                break;
+                            }
+
+                            case wxNOT_FOUND:
+                            {
+                                // Nop
+                                break;
+                            }
+
+                            default:
+                            {
+                                assert(false);
+                            }
+                        }
+
+                        mOnChangeCallback();
+                    });
+
+                sizer->Add(
+                    mDisplayUnitsSettingsComboBox,
+                    wxGBPosition(5, 0),
+                    wxGBSpan(1, 4),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    UserInterfaceBorder);
+            }
+
+            //
+            // Row 7
+            //
+
+            {
+                wxStaticText * screenshotDirStaticText = new wxStaticText(boxSizer->GetStaticBox(), wxID_ANY, _("Screenshot directory:"));
+
+                sizer->Add(
+                    screenshotDirStaticText,
+                    wxGBPosition(6, 0),
+                    wxGBSpan(1, 4),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
+                    UserInterfaceBorder);
+            }
+
+            //
+            // Row 8
             //
 
             {
@@ -565,7 +651,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
                 sizer->Add(
                     mScreenshotDirPickerCtrl,
-                    wxGBPosition(5, 0),
+                    wxGBPosition(7, 0),
                     wxGBSpan(1, 4),
                     wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
                     UserInterfaceBorder);
@@ -573,7 +659,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
             // Add spacer column
             {
-                gridSizer->Add(1, 1, wxGBPosition(1, 0), wxGBSpan(6, 1), wxEXPAND);
+                gridSizer->Add(1, 1, wxGBPosition(1, 0), wxGBSpan(8, 1), wxEXPAND);
                 sizer->AddGrowableCol(1, 1);
             }
 
@@ -1122,6 +1208,27 @@ void PreferencesDialog::ReadSettings()
     mPanIncrementSpinCtrl->SetValue(PanIncrementToPanIncrementSpin(mUIPreferencesManager->GetPanIncrement()));
     mShowStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowStatusText());
     mShowExtendedStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowExtendedStatusText());
+    mLanguagesListBox->SetSelection(GetLanguagesListBoxIndex(mUIPreferencesManager->GetDesiredLanguage()));
+    switch (mUIPreferencesManager->GetDisplayUnitsSystem())
+    {
+        case UnitsSystem::SI_Kelvin:
+        {
+            mDisplayUnitsSettingsComboBox->SetSelection(0);
+            break;
+        }
+
+        case UnitsSystem::SI_Celsius:
+        {
+            mDisplayUnitsSettingsComboBox->SetSelection(1);
+            break;
+        }
+
+        case UnitsSystem::USCS:
+        {
+            mDisplayUnitsSettingsComboBox->SetSelection(2);
+            break;
+        }
+    }
 
     mReloadLastLoadedShipOnStartupCheckBox->SetValue(mUIPreferencesManager->GetReloadLastLoadedShipOnStartup());
     mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad());
@@ -1153,8 +1260,6 @@ void PreferencesDialog::ReadSettings()
     mPlayBackgroundMusicCheckBox->SetValue(mUIPreferencesManager->GetPlayBackgroundMusic());
     mSinkingMusicVolumeSlider->SetValue(mUIPreferencesManager->GetGameMusicVolume());
     mPlaySinkingMusicCheckBox->SetValue(mUIPreferencesManager->GetPlaySinkingMusic());
-
-    mLanguagesListBox->SetSelection(GetLanguagesListBoxIndex(mUIPreferencesManager->GetDesiredLanguage()));
 
     ReconcileSoundSettings();
 }

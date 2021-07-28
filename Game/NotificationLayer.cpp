@@ -17,6 +17,7 @@ NotificationLayer::NotificationLayer(
 	bool isUltraViolentMode,
 	bool isSoundMuted,
 	bool isDayLightCycleOn,
+	UnitsSystem displayUnitsSystem,
 	std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
     : mGameEventDispatcher(std::move(gameEventDispatcher))
 	// StatusText
@@ -37,6 +38,9 @@ NotificationLayer::NotificationLayer(
 	, mIsPhysicsProbePanelDirty(true)
 	, mPhysicsProbeReading()
 	, mIsPhysicsProbeReadingDirty(true)
+	// Display units system
+	, mDisplayUnitsSystem(displayUnitsSystem)
+	, mIsDisplayUnitsSystemDirty(true)
 {
 	mGameEventDispatcher->RegisterGenericEventHandler(this);
 }
@@ -189,6 +193,13 @@ void NotificationLayer::SetPhysicsProbePanelState(float open)
 		// Store new target
 		mPhysicsProbePanelState.TargetOpen = open;
 	}
+}
+
+void NotificationLayer::SetDisplayUnitsSystem(UnitsSystem value)
+{
+	mDisplayUnitsSystem = value;
+
+	// We'll let periodic process pick this up and
 }
 
 void NotificationLayer::SetUltraViolentModeIndicator(bool isUltraViolentMode)
@@ -569,7 +580,10 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 		if (mPhysicsProbeReading.has_value())
 		{
 			// Upload reading
-			notificationRenderContext.UploadPhysicsProbeReading(mPhysicsProbeReading->Speed, mPhysicsProbeReading->Temperature);
+			notificationRenderContext.UploadPhysicsProbeReading(
+				mPhysicsProbeReading->Speed,
+				mPhysicsProbeReading->Temperature,
+				mPhysicsProbeReading->Depth);
 		}
 		else
 		{
@@ -578,6 +592,17 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 		}
 
 		mIsPhysicsProbeReadingDirty = false;
+	}
+
+	//
+	// Upload display units system, if needed
+	//
+
+	if (mIsDisplayUnitsSystemDirty)
+	{
+		// TODOHERE
+
+		mIsDisplayUnitsSystemDirty = false;
 	}
 
 	//
@@ -619,18 +644,49 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 
 void NotificationLayer::OnPhysicsProbeReading(
 	vec2f const & velocity,
-	float const temperature)
+	float temperature,
+	float depth)
 {
 	// Only pass through if the panel is currently fully open
 	if (mPhysicsProbePanelState.CurrentOpen == 1.0f)
 	{
 		// Create reading strings
 
+		float v;
+		float t;
+		float d;
+		switch (mDisplayUnitsSystem)
+		{
+			case UnitsSystem::SI_Celsius:
+			{
+				v = velocity.length();
+				t = temperature - 273.15f;
+				d = depth;
+				break;
+			}
+
+			case UnitsSystem::SI_Kelvin:
+			{
+				v = velocity.length();
+				t = temperature;
+				d = depth;
+				break;
+			}
+
+			case UnitsSystem::USCS:
+			{
+				v = velocity.length() * 3.28084f;
+				t = (temperature - 273.15f) * 9.0f / 5.0f + 32.0f;
+				d = depth * 3.28084f;
+				break;
+			}
+		}
+
 		std::ostringstream ss;
 
 		{
 			ss.fill('0');
-			ss << std::fixed << std::setprecision(1) << velocity.length();
+			ss << std::fixed << std::setprecision(1) << v;
 		}
 
 		std::string const speedStr = ss.str();
@@ -639,12 +695,20 @@ void NotificationLayer::OnPhysicsProbeReading(
 
 		{
 			ss.fill('0');
-			ss << std::fixed << std::setprecision(1) << temperature;
+			ss << std::fixed << std::setprecision(1) << t;
 		}
 
 		std::string const temperatureStr = ss.str();
 
-		mPhysicsProbeReading.emplace(speedStr, temperatureStr);
+		ss.str("");
+
+		{
+			ss << std::fixed << std::setprecision(0) << d;
+		}
+
+		std::string const depthStr = ss.str();
+
+		mPhysicsProbeReading.emplace(speedStr, temperatureStr, depthStr);
 
 		// Reading has to be uploaded
 		mIsPhysicsProbeReadingDirty = true;

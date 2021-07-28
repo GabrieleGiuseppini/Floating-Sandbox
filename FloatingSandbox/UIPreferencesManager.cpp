@@ -255,6 +255,16 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
+        // Display units system
+        //
+
+        if (auto displayUnitsSystemIt = preferencesRootObject->find("display_units_system");
+            displayUnitsSystemIt != preferencesRootObject->end() && displayUnitsSystemIt->second.is<std::int64_t>())
+        {
+            mGameController->SetDisplayUnitsSystem(static_cast<UnitsSystem>(displayUnitsSystemIt->second.get<std::int64_t>()));
+        }
+
+        //
         // Ship auto-texturization shared settings
         //
 
@@ -479,6 +489,9 @@ void UIPreferencesManager::SavePreferences() const
 
     // Add show tsunami notification
     preferencesRootObject["show_tsunami_notifications"] = picojson::value(mGameController->GetDoShowTsunamiNotifications());
+
+    // Add display units system
+    preferencesRootObject["display_units_system"] = picojson::value(static_cast<std::int64_t>(mGameController->GetDisplayUnitsSystem()));
 
     // Add ship auto-texturization shared settings
     preferencesRootObject["ship_auto_texturization_default_settings"] = picojson::value(mGameController->GetShipAutoTexturizationSharedSettings().ToJSON());

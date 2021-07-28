@@ -167,6 +167,9 @@ struct IGameController
     virtual bool GetDoAutoZoomOnShipLoad() const = 0;
     virtual void SetDoAutoZoomOnShipLoad(bool value) = 0;
 
+    virtual UnitsSystem GetDisplayUnitsSystem() const = 0;
+    virtual void SetDisplayUnitsSystem(UnitsSystem value) = 0;
+
     //
     // Ship building parameters
     //

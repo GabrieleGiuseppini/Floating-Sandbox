@@ -294,7 +294,6 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, Sequ
     return os;
 }
 
-
 /*
  * Types of frontiers (duh).
  */
@@ -368,6 +367,16 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, Elect
 
     return os;
 }
+
+/*
+ * Unit systems.
+ */
+enum class UnitsSystem
+{
+    SI_Kelvin,
+    SI_Celsius,
+    USCS
+};
 
 /*
  * Generic duration enum - short and long.

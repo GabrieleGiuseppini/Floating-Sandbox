@@ -10,6 +10,7 @@
 
 #include <UIControls/SliderControl.h>
 
+#include <wx/combobox.h>
 #include <wx/filepicker.h>
 #include <wx/listbox.h>
 #include <wx/spinctrl.h>
@@ -90,6 +91,7 @@ private:
     wxCheckBox * mShowStatusTextCheckBox;
     wxCheckBox * mShowExtendedStatusTextCheckBox;
     wxListBox * mLanguagesListBox;
+    wxComboBox * mDisplayUnitsSettingsComboBox;
 
     // Ships panel
     wxCheckBox * mReloadLastLoadedShipOnStartupCheckBox;

@@ -85,9 +85,11 @@ void main()
         vertexIsOpening * smoothstep(0.0, flangeLengthNdc, xLimitsNdc.y - vertexCoordinatesNdc.x)
         + (1. - vertexIsOpening) * (1. - smoothstep(0.0, flangeLengthNdc, vertexCoordinatesNdc.x - xLimitsNdc.y));
         
+    // Pick L or R flange depending on where this pixel is wrt mid
+    float isLeft = step(vertexCoordinatesNdc.x, midXNdc);
     float panelDepth = 
-        step(vertexCoordinatesNdc.x, midXNdc) * leftFlange
-        + step(midXNdc, vertexCoordinatesNdc.x) * rightFlange;
+        isLeft * leftFlange
+        + (1. - isLeft) * rightFlange;
                 
     float inPanelQuad = step(xLimitsNdc.x, vertexCoordinatesNdc.x) * step(vertexCoordinatesNdc.x, xLimitsNdc.y);
                      

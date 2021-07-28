@@ -246,6 +246,9 @@ public:
     bool GetDoAutoZoomOnShipLoad() const override { return mDoAutoZoomOnShipLoad; }
     void SetDoAutoZoomOnShipLoad(bool value) override { mDoAutoZoomOnShipLoad = value; }
 
+    UnitsSystem GetDisplayUnitsSystem() const override { return mDisplayUnitsSystem; }
+    void SetDisplayUnitsSystem(UnitsSystem value) override { mDisplayUnitsSystem = value; mNotificationLayer.SetDisplayUnitsSystem(value); }
+
     ShipAutoTexturizationSettings const & GetShipAutoTexturizationSharedSettings() const override { return mShipBuilder.GetAutoTexturizationSharedSettings(); }
     ShipAutoTexturizationSettings & GetShipAutoTexturizationSharedSettings() override { return mShipBuilder.GetAutoTexturizationSharedSettings(); }
     void SetShipAutoTexturizationSharedSettings(ShipAutoTexturizationSettings const & value) override { mShipBuilder.SetAutoTexturizationSharedSettings(value); }
@@ -861,6 +864,7 @@ private:
     bool mDoShowTsunamiNotifications;
     bool mDoDrawHeatBlasterFlame;
     bool mDoAutoZoomOnShipLoad;
+    UnitsSystem mDisplayUnitsSystem;
 
 
     //

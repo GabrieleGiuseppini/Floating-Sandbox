@@ -56,6 +56,7 @@ private:
 		TopRight,
 		BottomLeft,
 		BottomRight,
+		PhysicsProbeReadingDepth,
 		PhysicsProbeReadingSpeed,
 		PhysicsProbeReadingTemperature
 	};
@@ -177,7 +178,7 @@ public:
 				? open / VerticalOpenFraction
 				: 1.0f;
 
-			float const MinHorizontalOpen = 0.025f;
+			float const MinHorizontalOpen = 0.0125f;
 
 			float const horizontalOpen = (open < VerticalOpenFraction)
 				? MinHorizontalOpen
@@ -252,7 +253,8 @@ public:
 
 	inline void UploadPhysicsProbeReading(
 		std::string const & speed,
-		std::string const & temperature)
+		std::string const & temperature,
+		std::string const & depth)
 	{
 		auto & textNotificationContext = mTextNotificationTypeContexts[static_cast<size_t>(TextNotificationType::PhysicsProbeReading)];
 
@@ -267,6 +269,12 @@ public:
 		textNotificationContext.TextLines.emplace_back(
 			temperature,
 			NotificationAnchorPositionType::PhysicsProbeReadingTemperature,
+			vec2f::zero(),
+			1.0f);
+
+		textNotificationContext.TextLines.emplace_back(
+			depth,
+			NotificationAnchorPositionType::PhysicsProbeReadingDepth,
 			vec2f::zero(),
 			1.0f);
 

@@ -77,6 +77,7 @@ GameController::GameController(
     , mDoShowTsunamiNotifications(true)
     , mDoDrawHeatBlasterFlame(true)
     , mDoAutoZoomOnShipLoad(true)
+    , mDisplayUnitsSystem(UnitsSystem::SI_Kelvin)
     // Doers
     , mRenderContext(std::move(renderContext))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
@@ -85,6 +86,7 @@ GameController::GameController(
         mGameParameters.IsUltraViolentMode,
         false /*loaded value will come later*/,
         mGameParameters.DoDayLightCycle,
+        mDisplayUnitsSystem,
         mGameEventDispatcher)
     , mTaskThreadPool(std::make_shared<TaskThreadPool>())
     // World
