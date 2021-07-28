@@ -1072,7 +1072,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
         gridSizer->Add(
             waterBoxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 7),
+            wxGBSpan(1, 16),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -1118,8 +1118,8 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
 
         gridSizer->Add(
             rottingBoxSizer,
-            wxGBPosition(0, 7),
-            wxGBSpan(1, 1),
+            wxGBPosition(0, 16),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -1190,8 +1190,8 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
 
         gridSizer->Add(
             hydrostaticPressureBoxSizer,
-            wxGBPosition(1, 0),
-            wxGBSpan(1, 2),
+            wxGBPosition(1, 1),
+            wxGBSpan(1, 4),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -1237,7 +1237,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
 
         gridSizer->Add(
             oceanBoxSizer,
-            wxGBPosition(1, 2),
+            wxGBPosition(1, 5),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
@@ -1388,8 +1388,8 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
 
         gridSizer->Add(
             oceanFloorBoxSizer,
-            wxGBPosition(1, 4),
-            wxGBSpan(1, 4),
+            wxGBPosition(1, 7),
+            wxGBSpan(1, 10),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
