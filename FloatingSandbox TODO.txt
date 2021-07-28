@@ -859,9 +859,8 @@ Render:
 					+ Re-instate internal pressure code
 					+ Re-instate hull particles getting the average of all their non-hull neighbors
 					+ Commit
-					= Use hull's internal pressure to counteract external pressure, at initial forceVector calculation
+					+ Use hull's internal pressure to counteract external pressure, at initial forceVector calculation
 						+ forceVector *= 1.0 - internalPressure(Pi)/externalPressure * adj
-						- See if setting should be 0.25
 					- If goes thru: 
 						- Do all the internal pressure sidework:
 							- Flood tool
@@ -869,11 +868,11 @@ Render:
 								- Pumping-in: internal pressure grows
 								- Pumping out: internal pressure decreases
 							+ Rendering
-							- Anything else?
-							- Mark TODO item * as complete
+							- Anything else?							
 						+ SettingsDialog: make new group with new setting for internal pressure "contribution"						
 						- Optimize
 							- Try with local buffer remembering all we do in the first loop
+				- Send for testing
 				- Apply air pressure as well
 					! PressureAtZero == atmospheric pressure at sea level
 					- @ Points::Add: TODOHERE item: set default internal pressure
@@ -899,6 +898,8 @@ Render:
 						+ "2: iterative net effect minimization"
 						- TODOHERE 
 				- Final optimization attempt
+					- See if can get away without internal pressure, and using internal water instead @ counterbalance
+						- If we keep internal pressure: mark TODO item for internal pressure * as complete
 				- Send for testing
 				- Merge back into master
 				- Changelist
