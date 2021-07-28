@@ -876,7 +876,7 @@ Render:
 				- Apply air pressure as well
 					! PressureAtZero == atmospheric pressure at sea level
 					- @ Points::Add: TODOHERE item: set default internal pressure
-						- TODOTHINK: ship-specified, and default is PressureAtZero
+						- TODOTHINK: optionally ship-specified, and default is PressureAtZero
 					- @ ApplyHydrostaticPressure: 
 						- PressureAtCenter is: airColumnPressure(clamp(height)) + waterColumnPressure(clamp(depth))
 						- Force is proportional to PressureAtCenter - PressureAtZero
@@ -923,8 +923,10 @@ Render:
 				= NotificationLayer:
 					+ Own translation of reading into text
 					- On change:
-						- Re-publish reading - requires storing current raw values
-						- When units system dirty: tell ("upload") to notification context, who will have to store dirtyness and change texture @ RenderPreparePanel
+						- Re-publish reading - requires storing current raw values:
+							- OnReading -> StoreRawValues -> (Make Strings? &&) Make dirty -> Strings made at upload?
+							- OnChange -> (Make Strings? &&) Make dirty -> Strings made at upload?
+						- NotificationContext::UploadReading also takes UnitsSystem, immediately translate into vertex coords as member
 				+ UI settings manager
 				+ PreferencesDialog
 

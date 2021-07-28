@@ -614,7 +614,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
                     mDisplayUnitsSettingsComboBox,
                     wxGBPosition(5, 0),
                     wxGBSpan(1, 4),
-                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    wxALIGN_LEFT | wxLEFT | wxBOTTOM | wxRIGHT,
                     UserInterfaceBorder);
             }
 
