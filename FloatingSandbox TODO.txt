@@ -859,24 +859,36 @@ Render:
 					+ Re-instate internal pressure code
 					+ Re-instate hull particles getting the average of all their non-hull neighbors
 					+ Commit
-					- Use hull's internal pressure to counteract external pressure, at initial forceVector calculation
-						- forceVector *= 1.0 - internalPressure(Pi)/externalPressure * adj
+					= Use hull's internal pressure to counteract external pressure, at initial forceVector calculation
+						+ forceVector *= 1.0 - internalPressure(Pi)/externalPressure * adj
+						- See if setting should be 0.25
 					- If goes thru: 
-						- Do all the internal pressure sidework (flood tool, rendering, ...*)
-						= SettingsDialog: make new group with new setting for internal pressure "contribution"
-						- SettingsDialog: tooltip of HydrostaticPressureAdjust: add "atmosphere"
+						- Do all the internal pressure sidework:
+							- Flood tool
+							- Make sure pumps play nicely
+								- Pumping-in: internal pressure grows
+								- Pumping out: internal pressure decreases
+							+ Rendering
+							- Anything else?
+							- Mark TODO item * as complete
+						+ SettingsDialog: make new group with new setting for internal pressure "contribution"						
 						- Optimize
-							- See local buffer remembering all we do in the first loop
+							- Try with local buffer remembering all we do in the first loop
 				- Apply air pressure as well
+					! PressureAtZero == atmospheric pressure at sea level
+					- @ Points::Add: TODOHERE item: set default internal pressure
+						- TODOTHINK: ship-specified, and default is PressureAtZero
 					- @ ApplyHydrostaticPressure: 
 						- PressureAtCenter is: airColumnPressure(clamp(height)) + waterColumnPressure(clamp(depth))
 						- Force is proportional to PressureAtCenter - PressureAtZero
+						- TODOTHINK for internal pressure counterbalance
 					- TODOTHINK:
 						- @ Internal pressure intake
-						
+					- SettingsDialog: tooltip of HydrostaticPressureAdjust: add "atmosphere"						
 				+ Custom probe for net force
+				- Test repair
 				- Finalize setting range
-					- Also see if it needs to be smoothed
+					X Also see if it needs to be smoothed
 				- Cleanup commented out code
 					= Make video first
 						+ "1: the basics"
@@ -886,7 +898,7 @@ Render:
 						+ @ Titanic unequalized: "The problem becomes even more pronounced with bigger structures"
 						+ "2: iterative net effect minimization"
 						- TODOHERE 
-						
+				- Final optimization attempt
 				- Send for testing
 				- Merge back into master
 				- Changelist

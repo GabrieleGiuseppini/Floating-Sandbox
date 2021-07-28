@@ -1502,6 +1502,15 @@ void Ship::ApplyHydrostaticPressureForces(
     vec2f netForce = vec2f::zero();
     float netTorque = 0.0f;
 
+    float const externalPressure =
+        std::max(mParentWorld.GetDepth(geometricCenterPosition), 0.0f)
+        * effectiveWaterDensity
+        * GameParameters::GravityMagnitude;
+
+    float const internalPressureCounterbalanceAdjustmentFactor = (externalPressure == 0.0f)
+        ? 0.0f
+        : 1.0f / externalPressure * gameParameters.HydrostaticPressureInternalPressureCounterbalanceAdjustment;
+
     //
     // Visit all edges
     //
@@ -1543,7 +1552,13 @@ void Ship::ApplyHydrostaticPressureForces(
         neighboringHullPointsCount += (mPoints.GetIsHull(nextPointIndex) ? 1 : 0);
         if (neighboringHullPointsCount == 3) // Avoid applying force to one or two isolated hull particles, allows for more stability of wretched wrecks
         {
-            vec2f const forceVector = (edge1PerpVector + edge2PerpVector) / 2.0f;
+            // Calculate internal pressure counterbalance: we want the force vector
+            // to be zero when internal pressure == external pressure
+            float const internalPressureCounterbalanceFactor = std::max(
+                1.0f - mPoints.GetInternalPressure(thisPointIndex) * internalPressureCounterbalanceAdjustmentFactor,
+                0.0f); // CODEWORK: atmospheric pressure
+
+            vec2f const forceVector = (edge1PerpVector + edge2PerpVector) / 2.0f * internalPressureCounterbalanceFactor;
             vec2f const torqueArm = mPoints.GetPosition(thisPointIndex) - geometricCenterPosition;
 
             mHydrostaticPressureBuffer.emplace_back(
@@ -1711,17 +1726,12 @@ void Ship::ApplyHydrostaticPressureForces(
     //    phantom forces and torques otherwise
     //
 
-    float const pressureForceStem =
-        std::max(mParentWorld.GetDepth(geometricCenterPosition), 0.0f)
-        * effectiveWaterDensity
-        * GameParameters::GravityMagnitude
-        * gameParameters.HydrostaticPressureAdjustment;
-
     for (size_t hpi = 0; hpi < mHydrostaticPressureBuffer.GetCurrentPopulatedSize(); ++hpi)
     {
+        // TODOHERE: check assembly
         mPoints.AddDynamicForce(
             mHydrostaticPressureBuffer[hpi].PointIndex,
-            mHydrostaticPressureBuffer[hpi].ForceVector * pressureForceStem);
+            mHydrostaticPressureBuffer[hpi].ForceVector * externalPressure * gameParameters.HydrostaticPressureAdjustment);
     }
 }
 
