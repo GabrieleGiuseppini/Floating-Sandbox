@@ -29,6 +29,7 @@ enum class GameSettings : size_t
     WaterFrictionDragAdjustment,
     WaterPressureDragAdjustment,
     HydrostaticPressureAdjustment,
+    HydrostaticPressureInternalPressureCounterbalanceAdjustment,
     WaterIntakeAdjustment,
     WaterDiffusionSpeedAdjustment,
     WaterCrazyness,

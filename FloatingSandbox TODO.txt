@@ -860,20 +860,33 @@ Render:
 					+ Re-instate hull particles getting the average of all their non-hull neighbors
 					+ Commit
 					- Use hull's internal pressure to counteract external pressure, at initial forceVector calculation
-						- TODOTHINK: how?
+						- forceVector *= 1.0 - internalPressure(Pi)/externalPressure * adj
 					- If goes thru: 
 						- Do all the internal pressure sidework (flood tool, rendering, ...*)
+						= SettingsDialog: make new group with new setting for internal pressure "contribution"
+						- SettingsDialog: tooltip of HydrostaticPressureAdjust: add "atmosphere"
 						- Optimize
 							- See local buffer remembering all we do in the first loop
 				- Apply air pressure as well
+					- @ ApplyHydrostaticPressure: 
+						- PressureAtCenter is: airColumnPressure(clamp(height)) + waterColumnPressure(clamp(depth))
+						- Force is proportional to PressureAtCenter - PressureAtZero
 					- TODOTHINK:
 						- @ Internal pressure intake
-						- @ ApplyHydrostaticPressure
+						
 				+ Custom probe for net force
 				- Finalize setting range
 					- Also see if it needs to be smoothed
 				- Cleanup commented out code
-					- Make video first
+					= Make video first
+						+ "1: the basics"
+						+ With Triton large sinking slowly: "A hydrostatic pressure field consists of forces perpendicular to the exterior hull of the ship..."
+							"...but simulating it in a particle system is not as easy as it may sound."
+						+ ...
+						+ @ Titanic unequalized: "The problem becomes even more pronounced with bigger structures"
+						+ "2: iterative net effect minimization"
+						- TODOHERE 
+						
 				- Send for testing
 				- Merge back into master
 				- Changelist
