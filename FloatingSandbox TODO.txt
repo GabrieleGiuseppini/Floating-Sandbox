@@ -926,9 +926,10 @@ Render:
 						+ GameController's setter also tells RenderContext, who then sets parameter as dirty and NotificationLayer picks it up and passes it via a parameter at ProcessParameterChanges
 							+ Shader: get and use AtlasTile1LeftBottomTextureCoordinates parameter
 							+ NotificationRenderContext::UploadPanel: use texture-agnostic coords
-						- Re-publish reading - requires storing current raw values:
-							- OnReading -> StoreRawValues -> (Make Strings? &&) Make dirty -> Strings made at upload?
-							- OnChange -> (Make Strings? &&) Make dirty -> Strings made at upload?
+						= Re-publish reading - requires storing current raw values:
+							+ OnReading -> StoreRawValues -> (Make Strings? &&) Make dirty -> Strings made at upload?
+							+ OnChange -> (Make Strings? &&) Make dirty -> Strings made at upload?
+				- Redo panel for USCS
 				+ UI settings manager
 				+ PreferencesDialog
 

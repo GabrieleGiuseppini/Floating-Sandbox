@@ -122,6 +122,8 @@ private:
 		int & effectiveOrdinal,
 		Render::NotificationRenderContext & notificationRenderContext);
 
+	void RegeneratePhysicsProbeReadingStrings();
+
 private:
 
 	std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
@@ -214,11 +216,20 @@ private:
 
 	struct PhysicsProbeReading
 	{
+		float Speed;
+		float Temperature;
+		float Depth;
+	};
+
+	PhysicsProbeReading mPhysicsProbeReading; // Storage for raw reading values
+
+	struct PhysicsProbeReadingStrings
+	{
 		std::string Speed;
 		std::string Temperature;
 		std::string Depth;
 
-		PhysicsProbeReading(
+		PhysicsProbeReadingStrings(
 			std::string speed,
 			std::string temperature,
 			std::string depth)
@@ -228,15 +239,15 @@ private:
 		{}
 	};
 
-	std::optional<PhysicsProbeReading> mPhysicsProbeReading;
-	bool mIsPhysicsProbeReadingDirty;
+	std::optional<PhysicsProbeReadingStrings> mPhysicsProbeReadingStrings;
+	bool mArePhysicsProbeReadingStringsDirty;
 
 	//
 	// Units system
 	//
 
 	UnitsSystem mDisplayUnitsSystem;
-	bool mIsDisplayUnitsSystemDirty;
+	// No need to track dirtyness
 
 	//
 	// Interactions
