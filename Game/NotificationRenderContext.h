@@ -167,7 +167,10 @@ public:
 			// Generate quad
 			//
 
+			// Assuming all panels have equal dimensions
 			auto const & atlasFrame = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GenericLinearTextureGroups>(GenericLinearTextureGroups::PhysicsProbePanel, 0));
+			float const textureWidth = atlasFrame.TextureCoordinatesTopRight.x - atlasFrame.TextureCoordinatesBottomLeft.x;
+			float const textureHeight = atlasFrame.TextureCoordinatesTopRight.y - atlasFrame.TextureCoordinatesBottomLeft.y;
 
 			// First 1/3rd of open: grow vertically
 			// Last 2/3rds of open: grow horizontally
@@ -205,21 +208,21 @@ public:
 			// Top-left
 			mPhysicsProbePanelVertexBuffer.emplace_back(
 				quadTopLeft,
-				vec2f(atlasFrame.TextureCoordinatesBottomLeft.x, atlasFrame.TextureCoordinatesTopRight.y),
+				vec2f(0.0f, textureHeight),
 				xLimits,
 				opening);
 
 			// Top-right
 			mPhysicsProbePanelVertexBuffer.emplace_back(
 				vec2f(quadBottomRight.x, quadTopLeft.y),
-				atlasFrame.TextureCoordinatesTopRight,
+				vec2f(textureWidth, textureHeight),
 				xLimits,
 				opening);
 
 			// Bottom-left
 			mPhysicsProbePanelVertexBuffer.emplace_back(
 				vec2f(quadTopLeft.x, quadBottomRight.y),
-				atlasFrame.TextureCoordinatesBottomLeft,
+				vec2f(0.0f, 0.0f),
 				xLimits,
 				opening);
 
@@ -228,21 +231,21 @@ public:
 			// Top-right
 			mPhysicsProbePanelVertexBuffer.emplace_back(
 				vec2f(quadBottomRight.x, quadTopLeft.y),
-				atlasFrame.TextureCoordinatesTopRight,
+				vec2f(textureWidth, textureHeight),
 				xLimits,
 				opening);
 
 			// Bottom-left
 			mPhysicsProbePanelVertexBuffer.emplace_back(
 				vec2f(quadTopLeft.x, quadBottomRight.y),
-				atlasFrame.TextureCoordinatesBottomLeft,
+				vec2f(0.0f, 0.0f),
 				xLimits,
 				opening);
 
 			// Bottom-right
 			mPhysicsProbePanelVertexBuffer.emplace_back(
 				quadBottomRight,
-				vec2f(atlasFrame.TextureCoordinatesTopRight.x, atlasFrame.TextureCoordinatesBottomLeft.y),
+				vec2f(textureWidth, 0.0f),
 				xLimits,
 				opening);
 		}
@@ -458,6 +461,7 @@ private:
 	void ApplyViewModelChanges(RenderParameters const & renderParameters);
 	void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
 	void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
+	void ApplyDisplayUnitsSystemChanges(RenderParameters const & renderParameters);
 
 	void RenderPrepareTextNotifications();
 	void RenderDrawTextNotifications();
@@ -550,17 +554,17 @@ private:
 	struct PhysicsProbePanelVertex
 	{
 		vec2f vertexPositionNDC;
-		vec2f textureCoordinate;
+		vec2f textureFrameOffset;
 		vec2f xLimitsNDC;
 		float vertexIsOpening;
 
 		PhysicsProbePanelVertex(
 			vec2f const & _vertexPositionNDC,
-			vec2f const & _textureCoordinate,
+			vec2f const & _textureFrameOffset,
 			vec2f const & _xLimitsNDC,
 			float _vertexIsOpening)
 			: vertexPositionNDC(_vertexPositionNDC)
-			, textureCoordinate(_textureCoordinate)
+			, textureFrameOffset(_textureFrameOffset)
 			, xLimitsNDC(_xLimitsNDC)
 			, vertexIsOpening(_vertexIsOpening)
 		{}

@@ -39,6 +39,8 @@ RenderParameters::RenderParameters(
 	, HeatRenderMode(HeatRenderModeType::Incandescence)
 	, HeatSensitivity(0.0f)
 	, DebugShipRenderMode(DebugShipRenderModeType::None)
+	// Misc
+	, DisplayUnitsSystem(UnitsSystem::SI_Kelvin)
 	// Flags
 	, IsViewDirty(true)
 	, IsCanvasSizeDirty(true)
@@ -55,6 +57,7 @@ RenderParameters::RenderParameters(
 	, IsShipWaterLevelOfDetailDirty(true)
 	, IsHeatSensitivityDirty(true)
 	, AreShipStructureRenderModeSelectorsDirty(true)
+	, IsDisplayUnitsSystemDirty(true)
 {
 }
 
@@ -80,6 +83,8 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	IsShipWaterLevelOfDetailDirty = false;
 	IsHeatSensitivityDirty = false;
 	AreShipStructureRenderModeSelectorsDirty = false;
+	//
+	IsDisplayUnitsSystemDirty = false;
 
 	return copy;
 }

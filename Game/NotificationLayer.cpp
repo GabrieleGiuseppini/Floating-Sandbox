@@ -652,9 +652,9 @@ void NotificationLayer::OnPhysicsProbeReading(
 	{
 		// Create reading strings
 
-		float v;
-		float t;
-		float d;
+		float v{ 0.0f };
+		float t{ 0.0f };
+		float d{ 0.0f };
 		switch (mDisplayUnitsSystem)
 		{
 			case UnitsSystem::SI_Celsius:

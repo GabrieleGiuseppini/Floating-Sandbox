@@ -234,7 +234,7 @@ public:
     vec2f ScreenOffsetToWorldOffset(LogicalPixelSize const & screenOffset) const override;
 
     //
-    // Interaction parameters
+    // UI parameters
     //
 
     bool GetDoShowTsunamiNotifications() const override { return mDoShowTsunamiNotifications; }
@@ -246,8 +246,12 @@ public:
     bool GetDoAutoZoomOnShipLoad() const override { return mDoAutoZoomOnShipLoad; }
     void SetDoAutoZoomOnShipLoad(bool value) override { mDoAutoZoomOnShipLoad = value; }
 
-    UnitsSystem GetDisplayUnitsSystem() const override { return mDisplayUnitsSystem; }
-    void SetDisplayUnitsSystem(UnitsSystem value) override { mDisplayUnitsSystem = value; mNotificationLayer.SetDisplayUnitsSystem(value); }
+    UnitsSystem GetDisplayUnitsSystem() const override { return mRenderContext->GetDisplayUnitsSystem(); }
+    void SetDisplayUnitsSystem(UnitsSystem value) override { mRenderContext->SetDisplayUnitsSystem(value); mNotificationLayer.SetDisplayUnitsSystem(value); }
+
+    //
+    // Ship building parameters
+    //
 
     ShipAutoTexturizationSettings const & GetShipAutoTexturizationSharedSettings() const override { return mShipBuilder.GetAutoTexturizationSharedSettings(); }
     ShipAutoTexturizationSettings & GetShipAutoTexturizationSharedSettings() override { return mShipBuilder.GetAutoTexturizationSharedSettings(); }
@@ -255,10 +259,6 @@ public:
 
     bool GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings() const override { return mShipBuilder.GetDoForceAutoTexturizationSharedSettingsOntoShipSettings(); }
     void SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(bool value) override { mShipBuilder.SetDoForceAutoTexturizationSharedSettingsOntoShipSettings(value); }
-
-    //
-    // Ship building parameters
-    //
 
     float GetShipStrengthRandomizationDensityAdjustment() const override { return mShipBuilder.GetShipStrengthRandomizationDensityAdjustment(); }
     void SetShipStrengthRandomizationDensityAdjustment(float value) override { mShipBuilder.SetShipStrengthRandomizationDensityAdjustment(value); }
@@ -864,7 +864,6 @@ private:
     bool mDoShowTsunamiNotifications;
     bool mDoDrawHeatBlasterFlame;
     bool mDoAutoZoomOnShipLoad;
-    UnitsSystem mDisplayUnitsSystem;
 
 
     //

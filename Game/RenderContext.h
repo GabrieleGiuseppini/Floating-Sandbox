@@ -536,6 +536,21 @@ public:
     }
 
     //
+    // Misc rendering properties
+    //
+
+    UnitsSystem GetDisplayUnitsSystem() const
+    {
+        return mRenderParameters.DisplayUnitsSystem;
+    }
+
+    void SetDisplayUnitsSystem(UnitsSystem unitsSystem)
+    {
+        mRenderParameters.DisplayUnitsSystem = unitsSystem;
+        mRenderParameters.IsDisplayUnitsSystemDirty = true;
+    }
+
+    //
     // Screen <-> World transformations
     //
 

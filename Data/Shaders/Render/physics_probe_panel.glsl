@@ -8,19 +8,19 @@
 //
 
 // Inputs
-in vec4 inPhysicsProbePanel1; // Position (vec2), TextureCoordinates (vec2)
+in vec4 inPhysicsProbePanel1; // Position (vec2), TextureFrameOffset (vec2, from 0.0 to width - inclusive dx)
 in vec3 inPhysicsProbePanel2; // XLimits (vec2), Opening (float)
 
 // Outputs
 out vec2 vertexCoordinatesNdc;
-out vec2 vertexTextureCoordinates;
+out vec2 vertexTextureFrameOffset;
 out vec2 xLimitsNdc;
 out float vertexIsOpening;
 
 void main()
 {
     vertexCoordinatesNdc = inPhysicsProbePanel1.xy;
-    vertexTextureCoordinates = inPhysicsProbePanel1.zw; 
+    vertexTextureFrameOffset = inPhysicsProbePanel1.zw; 
     xLimitsNdc = inPhysicsProbePanel2.xy;
     vertexIsOpening = inPhysicsProbePanel2.z;
     gl_Position = vec4(inPhysicsProbePanel1.xy, -1.0, 1.0);
@@ -32,7 +32,7 @@ void main()
 
 // Inputs from previous shader
 in vec2 vertexCoordinatesNdc;
-in vec2 vertexTextureCoordinates;
+in vec2 vertexTextureFrameOffset;
 in vec2 xLimitsNdc;
 in float vertexIsOpening;
 
@@ -41,6 +41,7 @@ uniform sampler2D paramGenericLinearTexturesAtlasTexture;
 uniform sampler2D paramNoiseTexture2;
 
 // Params
+uniform vec2 paramAtlasTile1LeftBottomTextureCoordinates;
 uniform float paramWidthNdc;
 
 float GetNoise(float y, float seed, float time) // -> (0.0, 1.0)
@@ -97,7 +98,7 @@ void main()
     // Texture
     //
     
-    vec4 cTexture = texture2D(paramGenericLinearTexturesAtlasTexture, vertexTextureCoordinates);
+    vec4 cTexture = texture2D(paramGenericLinearTexturesAtlasTexture, paramAtlasTile1LeftBottomTextureCoordinates + vertexTextureFrameOffset);
     
            
     //

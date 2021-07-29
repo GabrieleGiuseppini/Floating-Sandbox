@@ -61,6 +61,12 @@ struct RenderParameters
     DebugShipRenderModeType DebugShipRenderMode;
 
     //
+    // Misc
+    //
+
+    UnitsSystem DisplayUnitsSystem;
+
+    //
     // Dirty flags
     //
 
@@ -81,6 +87,8 @@ struct RenderParameters
     bool IsShipWaterLevelOfDetailDirty;
     bool IsHeatSensitivityDirty;
     bool AreShipStructureRenderModeSelectorsDirty; // For all those parameters that require changing ship shaders
+    // Misc
+    bool IsDisplayUnitsSystemDirty;
 
     RenderParameters(
         LogicalPixelSize const & initialCanvasSize,

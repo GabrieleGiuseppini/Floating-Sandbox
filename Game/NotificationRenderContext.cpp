@@ -404,6 +404,11 @@ void NotificationRenderContext::ProcessParameterChanges(RenderParameters const &
     {
         ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
     }
+
+    if (renderParameters.IsDisplayUnitsSystemDirty)
+    {
+        ApplyDisplayUnitsSystemChanges(renderParameters);
+    }
 }
 
 void NotificationRenderContext::RenderPrepare()
@@ -512,6 +517,42 @@ void NotificationRenderContext::ApplyEffectiveAmbientLightIntensityChanges(Rende
     mShaderManager.ActivateProgram<ProgramType::TextureNotifications>();
     mShaderManager.SetProgramParameter<ProgramType::TextureNotifications, ProgramParameterType::TextureLighteningStrength>(
         lighteningStrength);
+}
+
+void NotificationRenderContext::ApplyDisplayUnitsSystemChanges(RenderParameters const & renderParameters)
+{
+    TextureFrameIndex frameIndex{ 0 };
+    switch (renderParameters.DisplayUnitsSystem)
+    {
+        case UnitsSystem::SI_Celsius:
+        {
+            // Frame 1
+            frameIndex = 1;
+            break;
+        }
+
+        case UnitsSystem::SI_Kelvin:
+        {
+            // Frame 0
+            frameIndex = 0;
+            break;
+        }
+
+        case UnitsSystem::USCS:
+        {
+            // Frame 2
+            frameIndex = 2;
+            break;
+        }
+    }
+
+    auto const & frameMetadata = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GenericLinearTextureGroups>(GenericLinearTextureGroups::PhysicsProbePanel, frameIndex));
+
+    // Set texture offset in program
+    mShaderManager.ActivateProgram<ProgramType::PhysicsProbePanel>();
+    mShaderManager.SetProgramParameter<ProgramType::PhysicsProbePanel, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
+        frameMetadata.TextureCoordinatesBottomLeft.x,
+        frameMetadata.TextureCoordinatesBottomLeft.y);
 }
 
 void NotificationRenderContext::RenderPrepareTextNotifications()

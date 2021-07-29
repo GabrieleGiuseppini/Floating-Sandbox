@@ -42,8 +42,8 @@ struct TextureAtlasFrameMetadata
 {
 public:
 
-    float TextureSpaceWidth; // Width in [0.0, 1.0] space (where 1.0 is the atlas' width)
-    float TextureSpaceHeight; // Height in [0.0, 1.0] space (where 1.0 is the atlas' height)
+    float TextureSpaceWidth; // Width in [0.0, 1.0] space (where 1.0 is the atlas' width), exclusive of dead-center dx's
+    float TextureSpaceHeight; // Height in [0.0, 1.0] space (where 1.0 is the atlas' height), exclusive of dead-center dx's
 
     vec2f TextureCoordinatesBottomLeft; // In [0.0, 1.0] space, inclusive dead-center dx
     vec2f TextureCoordinatesAnchorCenter; // In [0.0, 1.0] space, inclusive dead-center dx
