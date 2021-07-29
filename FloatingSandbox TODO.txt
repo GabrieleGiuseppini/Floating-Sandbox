@@ -616,6 +616,29 @@ Render:
 		+ Tests:
 			+ Dynamic forces visualization
 		+ Clear dynamic forces at position-changing interactions
+		+ Add depth to physics probe
+			+ Reading
+				+ Interface
+				+ Gadget
+				+ Notification layer & display
+			+ Do triple-system while you're at it ("SI (Kelvin)", "SI (Celsius)", "USCS")
+				+ UnitsSystem GameType enum
+				+ GameController-owned setting: "DisplayUnitsSystem"
+					+ Storage
+					+ Setters/Getters
+						+ Setter: Tell NotificationLayer
+				+ NotificationLayer:
+					+ Own translation of reading into text
+					+ On change:
+						+ GameController's setter also tells RenderContext, who then sets parameter as dirty and NotificationLayer picks it up and passes it via a parameter at ProcessParameterChanges
+							+ Shader: get and use AtlasTile1LeftBottomTextureCoordinates parameter
+							+ NotificationRenderContext::UploadPanel: use texture-agnostic coords
+						+ Re-publish reading - requires storing current raw values:
+							+ OnReading -> StoreRawValues -> (Make Strings? &&) Make dirty -> Strings made at upload?
+							+ OnChange -> (Make Strings? &&) Make dirty -> Strings made at upload?
+				+ Redo panel for USCS
+				+ UI settings manager
+				+ PreferencesDialog
 
 
 		= Ubuntu:
@@ -908,30 +931,6 @@ Render:
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
 			+ 0.242	
 			- See why Titanic is bunch of particles at 10Km: rotting?
-
-		= Add depth to physics probe
-			+ Reading
-				+ Interface
-				+ Gadget
-				+ Notification layer & display
-			= Do triple-system while you're at it ("SI (Kelvin)", "SI (Celsius)", "USCS")
-				+ UnitsSystem GameType enum
-				+ GameController-owned setting: "DisplayUnitsSystem"
-					+ Storage
-					+ Setters/Getters
-						+ Setter: Tell NotificationLayer
-				= NotificationLayer:
-					+ Own translation of reading into text
-					= On change:
-						+ GameController's setter also tells RenderContext, who then sets parameter as dirty and NotificationLayer picks it up and passes it via a parameter at ProcessParameterChanges
-							+ Shader: get and use AtlasTile1LeftBottomTextureCoordinates parameter
-							+ NotificationRenderContext::UploadPanel: use texture-agnostic coords
-						= Re-publish reading - requires storing current raw values:
-							+ OnReading -> StoreRawValues -> (Make Strings? &&) Make dirty -> Strings made at upload?
-							+ OnChange -> (Make Strings? &&) Make dirty -> Strings made at upload?
-				- Redo panel for USCS
-				+ UI settings manager
-				+ PreferencesDialog
 
 		- Settings for Electric Spark tool
 			- SettingsDialog
