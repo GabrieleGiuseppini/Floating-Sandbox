@@ -885,14 +885,13 @@ Render:
 					+ forceVector *= 1.0 - internalPressure(Pi)/externalPressure * adj
 				= If goes thru: 
 					= Do all the internal pressure sidework:
-						= Flood tool
-							- Remove pressure only if water has been removed - remove pressure by effective water wuantity removed
-							- Test both incoming and outgoing
+						+ Flood tool
+							+ Remove pressure only if water has been removed - remove pressure by effective water wuantity removed
+							+ Test both incoming and outgoing
 						- Make sure pumps play nicely
 							- Pumping-in: internal pressure grows
 							- Pumping out: internal pressure decreases
-						+ Rendering
-						- Anything else?							
+						+ Rendering							
 					+ SettingsDialog: make new group with new setting for internal pressure "contribution"						
 					- Optimize
 						- Try with local buffer remembering all we do in the first loop
@@ -910,7 +909,9 @@ Render:
 				= @ ApplyHydrostaticPressure: 
 					+ PressureAtCenter from Formulae::TotalPressure
 					! Internal pressure counterbalance formula: denominator will never be zero
-					- TODOTHINK: does outward pressure from inside have to be subject to counterbalance adjustment?
+					- Does outward pressure from inside have to be subject to counterbalance adjustment?
+						- Try with counterbalance adj = 1; if OK: nuke it (assume it's 1.0)
+							- SettingsDialog
 				- @ Internal pressure intake:
 					- TODOTHINK
 				+ @ Flood tool:
@@ -918,6 +919,8 @@ Render:
 				- SettingsDialog: tooltip of HydrostaticPressureAdjust: add "atmosphere"						
 				= @ Points::Add: take care of TODOHERE item: set default internal pressure
 					- ShipBuilder specifies value; optionally ship-specified, and default is PressureAtZero (calc'd via Formulae)
+				- See if need adjustment for air pressure; if so:
+					- SettingsDialog
 			+ Custom probe for net force
 			- Test repair
 			- Finalize setting range

@@ -51,7 +51,7 @@ void main()
         mix(
             vec3(1., 0., 0.),
             vec3(1., 1., 1.),
-            exp(-.000005 * vertexInternalPressure)),
+            exp(-.000001 * vertexInternalPressure)),
         1.0);
     
     // Apply ambient light

@@ -39,7 +39,8 @@ public:
             * gameParameters.WaterDensityAdjustment;
     }
 
-    // Calculates the ideal pressure at the bottom of 1 cubic meter of water at this temperature
+    // Calculates the ideal pressure at the bottom of 1 cubic meter of water at this temperature,
+    // in the void
     static float CalculateVolumetricWaterPressure(
         float waterTemperature,
         GameParameters const & gameParameters)
