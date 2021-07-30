@@ -1477,7 +1477,7 @@ void Ship::ApplyHydrostaticPressureForces(
 
 void Ship::ApplyHydrostaticPressureForces(
     Frontiers::Frontier const & frontier,
-    float /*effectiveAirDensity*/, // CODEWORK: future, if we want to also apply *air* pressure
+    float effectiveAirDensity,
     float effectiveWaterDensity,
     GameParameters const & gameParameters)
 {
@@ -1496,14 +1496,16 @@ void Ship::ApplyHydrostaticPressureForces(
     vec2f netForce = vec2f::zero();
     float netTorque = 0.0f;
 
-    float const externalPressure =
-        std::max(mParentWorld.GetDepth(geometricCenterPosition), 0.0f)
-        * effectiveWaterDensity
-        * GameParameters::GravityMagnitude;
+    float const totalExternalPressure = Formulae::CalculateTotalPressureAt(
+        geometricCenterPosition.y,
+        mParentWorld.GetOceanSurfaceHeightAt(geometricCenterPosition.x),
+        effectiveAirDensity,
+        effectiveWaterDensity,
+        gameParameters);
 
-    float const internalPressureCounterbalanceAdjustmentFactor = (externalPressure == 0.0f)
-        ? 0.0f
-        : 1.0f / externalPressure * gameParameters.HydrostaticPressureInternalPressureCounterbalanceAdjustment;
+    assert(totalExternalPressure != 0.0f); // Air pressure is never zero
+
+    float const internalPressureCounterbalanceAdjustmentFactor = 1.0f / totalExternalPressure * gameParameters.HydrostaticPressureInternalPressureCounterbalanceAdjustment;
 
     //
     // Visit all edges
@@ -1548,9 +1550,7 @@ void Ship::ApplyHydrostaticPressureForces(
         {
             // Calculate internal pressure counterbalance: we want the force vector
             // to be zero when internal pressure == external pressure
-            float const internalPressureCounterbalanceFactor = std::max(
-                1.0f - mPoints.GetInternalPressure(thisPointIndex) * internalPressureCounterbalanceAdjustmentFactor,
-                0.0f); // CODEWORK: atmospheric pressure
+            float const internalPressureCounterbalanceFactor = 1.0f - mPoints.GetInternalPressure(thisPointIndex) * internalPressureCounterbalanceAdjustmentFactor;
 
             vec2f const forceVector = (edge1PerpVector + edge2PerpVector) / 2.0f * internalPressureCounterbalanceFactor;
             vec2f const torqueArm = mPoints.GetPosition(thisPointIndex) - geometricCenterPosition;
@@ -1720,12 +1720,13 @@ void Ship::ApplyHydrostaticPressureForces(
     //    phantom forces and torques otherwise
     //
 
-    for (size_t hpi = 0; hpi < mHydrostaticPressureBuffer.GetCurrentPopulatedSize(); ++hpi)
+    float const forceMultiplier = totalExternalPressure * gameParameters.HydrostaticPressureAdjustment;
+    size_t const particleCount = mHydrostaticPressureBuffer.GetCurrentPopulatedSize();
+    for (size_t hpi = 0; hpi < particleCount; ++hpi)
     {
-        // TODOHERE: check assembly
         mPoints.AddDynamicForce(
             mHydrostaticPressureBuffer[hpi].PointIndex,
-            mHydrostaticPressureBuffer[hpi].ForceVector * externalPressure * gameParameters.HydrostaticPressureAdjustment);
+            mHydrostaticPressureBuffer[hpi].ForceVector * forceMultiplier);
     }
 }
 

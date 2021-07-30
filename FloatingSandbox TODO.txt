@@ -883,9 +883,10 @@ Render:
 				+ Commit
 				+ Use hull's internal pressure to counteract external pressure, at initial forceVector calculation
 					+ forceVector *= 1.0 - internalPressure(Pi)/externalPressure * adj
-				- TODOHERE1 If goes thru: 
-					- Do all the internal pressure sidework:
-						- Flood tool
+				= If goes thru: 
+					= Do all the internal pressure sidework:
+						= Flood tool
+							- Remove pressure only if water has been removed - remove pressure by effective water wuantity removed
 							- Test both incoming and outgoing
 						- Make sure pumps play nicely
 							- Pumping-in: internal pressure grows
@@ -898,24 +899,24 @@ Render:
 			= Apply air pressure as well
 				! InternalPressure and hydrostatic pressure will never be zero - zero is really "somewhere" above MaxWorldHeight
 				! Pressure at ocean surface zero (aka "PressureAtZero") is == column of air above (atmospheric pressure at sea level)
-				- Formulae class: implements formulae below
+				+ Formulae class: implements formulae below
 					+ Calcs effective air density, given temperature
 					+ Cals effective water density, given temperature					
 					+ Calcs volumetric water pressure, given temperature - VolumetricWaterPressure
-					TODOHERE2
-					- Calcs pure air pressure at height x - AirColumnPressure
-					- Calcs pure water pressure at depth x - WaterColumnPressure
-					- Calcs total pressure at height x - TotalColumnPressure
-						- airColumnPressure(clamp(height)) + waterColumnPressure(clamp(depth))
-				- @ ApplyHydrostaticPressure: 
-					- PressureAtCenter from Formulae::TotalPressure
+					+ Calcs pure air pressure at height x - AirColumnPressure
+					+ Calcs pure water pressure at depth x - WaterColumnPressure
+					+ Calcs total pressure at height x - TotalColumnPressure
+						+ airColumnPressure(clamp(height)) + waterColumnPressure(clamp(depth))
+				= @ ApplyHydrostaticPressure: 
+					+ PressureAtCenter from Formulae::TotalPressure
 					! Internal pressure counterbalance formula: denominator will never be zero
+					- TODOTHINK: does outward pressure from inside have to be subject to counterbalance adjustment?
 				- @ Internal pressure intake:
 					- TODOTHINK
 				+ @ Flood tool:
 					+ Use Formulae
 				- SettingsDialog: tooltip of HydrostaticPressureAdjust: add "atmosphere"						
-				- @ Points::Add: take care of TODOHERE item: set default internal pressure
+				= @ Points::Add: take care of TODOHERE item: set default internal pressure
 					- ShipBuilder specifies value; optionally ship-specified, and default is PressureAtZero (calc'd via Formulae)
 			+ Custom probe for net force
 			- Test repair
@@ -936,11 +937,13 @@ Render:
 					- If we keep internal pressure: mark TODO item for internal pressure * as complete
 			- Merge back into master
 			- Changelist
-
+		
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
 			+ 0.242	
 			- See why Titanic is bunch of particles at 10Km: rotting?
+
+		- Does it make sense to have a pressure tool?
 
 		- Settings for Electric Spark tool
 			- SettingsDialog

@@ -47,6 +47,51 @@ public:
         return CalculateWaterDensity(waterTemperature, gameParameters)
             * GameParameters::GravityMagnitude;
     }
+
+    // Calculates the pressure exherted by the 1m2 column of air at the given y
+    static float CalculateAirColumnPressureAt(
+        float y,
+        float airDensity,
+        GameParameters const & /*gameParameters*/)
+    {
+        // While the real barometric formula is exponential, here we simplify it as linear:
+        //      - Pressure is zero at y = MaxWorldHeight+10%
+        //      - Pressure is AirPressureAtSeaLvel at y = 0
+        float const seaLevelPressure = GameParameters::AirPressureAtSeaLevel * airDensity / GameParameters::AirMass;
+        return seaLevelPressure
+            * (GameParameters::HalfMaxWorldHeight * 1.1f - y) / (GameParameters::HalfMaxWorldHeight * 1.1f);
+    }
+
+    // Calculates the pressure exherted by a 1m2 column of water of the given height
+    static float CalculateWaterColumnPressure(
+        float height,
+        float waterDensity,
+        GameParameters const & /*gameParameters*/)
+    {
+        return waterDensity * height // Volume
+            * GameParameters::GravityMagnitude;
+    }
+
+    // Calculates the total (air above + water) pressure at the given y
+    static float CalculateTotalPressureAt(
+        float y,
+        float oceanSurfaceY,
+        float airDensity,
+        float waterDensity,
+        GameParameters const & gameParameters)
+    {
+        float const airPressure = CalculateAirColumnPressureAt(
+            std::max(y, oceanSurfaceY),
+            airDensity,
+            gameParameters);
+
+        float const waterPressure = CalculateWaterColumnPressure(
+            std::max(oceanSurfaceY - y, 0.0f),
+            waterDensity,
+            gameParameters);
+
+        return airPressure + waterPressure;
+    }
 };
 
 }

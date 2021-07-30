@@ -17,6 +17,7 @@ namespace Physics {
 void Points::Add(
     vec2f const & position,
     float water,
+    float internalPressure,
     StructuralMaterial const & structuralMaterial,
     ElectricalMaterial const * electricalMaterial,
     bool isRope,
@@ -52,7 +53,7 @@ void Points::Add(
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
 
-    mInternalPressureBuffer.emplace_back(0.0f); // TODOHERE
+    mInternalPressureBuffer.emplace_back(internalPressure);
     mIsHullBuffer.emplace_back(structuralMaterial.IsHull); // Default is from material
     mMaterialWaterIntakeBuffer.emplace_back(structuralMaterial.WaterIntake);
     mMaterialWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);
@@ -1262,6 +1263,7 @@ void Points::UpdateEphemeralParticles(
         (gameParameters.DoDisplaceWater ? 1.0f : 0.0f)
         * 1.0f;
 
+    // Visit all ephemeral particles
     for (ElementIndex pointIndex : this->EphemeralPoints())
     {
         auto const ephemeralType = GetEphemeralType(pointIndex);
