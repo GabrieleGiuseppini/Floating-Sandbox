@@ -816,13 +816,10 @@ bool Ship::FloodAt(
         * waterQuantityMultiplier
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
-    // Delta internal pressure - pressure at the bottom of this quantity of water
+    // Delta internal pressure - we use pressure at the bottom of this quantity of water
     float const internalPressureDelta =
         quantityOfWaterDelta
-        * GameParameters::WaterMass
-        / (1.0f + GameParameters::WaterThermalExpansionCoefficient * (gameParameters.WaterTemperature - GameParameters::Temperature0))
-        * gameParameters.WaterDensityAdjustment
-        * GameParameters::GravityMagnitude;
+        * Formulae::CalculateVolumetricWaterPressure(gameParameters.WaterTemperature, gameParameters);
 
     //
     // Find the (non-ephemeral) non-hull points in the radius

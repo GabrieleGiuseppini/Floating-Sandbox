@@ -38,6 +38,15 @@ public:
             / (1.0f + GameParameters::WaterThermalExpansionCoefficient * (waterTemperature - GameParameters::Temperature0))
             * gameParameters.WaterDensityAdjustment;
     }
+
+    // Calculates the ideal pressure at the bottom of 1 cubic meter of water at this temperature
+    static float CalculateVolumetricWaterPressure(
+        float waterTemperature,
+        GameParameters const & gameParameters)
+    {
+        return CalculateWaterDensity(waterTemperature, gameParameters)
+            * GameParameters::GravityMagnitude;
+    }
 };
 
 }

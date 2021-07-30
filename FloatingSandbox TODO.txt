@@ -895,29 +895,28 @@ Render:
 					+ SettingsDialog: make new group with new setting for internal pressure "contribution"						
 					- Optimize
 						- Try with local buffer remembering all we do in the first loop
-			- Apply air pressure as well
+			= Apply air pressure as well
 				! InternalPressure and hydrostatic pressure will never be zero - zero is really "somewhere" above MaxWorldHeight
 				! Pressure at ocean surface zero (aka "PressureAtZero") is == column of air above (atmospheric pressure at sea level)
 				- Formulae class: implements formulae below
 					+ Calcs effective air density, given temperature
-					+ Cals effective water density, given temperature
+					+ Cals effective water density, given temperature					
+					+ Calcs volumetric water pressure, given temperature - VolumetricWaterPressure
 					TODOHERE2
-					- Calcs volumetric water pressure, given temperature - VolumetricWaterPressure
 					- Calcs pure air pressure at height x - AirColumnPressure
 					- Calcs pure water pressure at depth x - WaterColumnPressure
 					- Calcs total pressure at height x - TotalColumnPressure
 						- airColumnPressure(clamp(height)) + waterColumnPressure(clamp(depth))
-				- @ Points::Add: take care of TODOHERE item: set default internal pressure
-					- ShipBuilder specifies value; optionally ship-specified, and default is PressureAtZero (calc'd via Formulae)
 				- @ ApplyHydrostaticPressure: 
 					- PressureAtCenter from Formulae::TotalPressure
-					- TODO: BROKEN? : Force is proportional to (PressureAtCenter - PressureAtZero)
-					- Internal pressure counterbalance formula: denominator will never be zero
+					! Internal pressure counterbalance formula: denominator will never be zero
 				- @ Internal pressure intake:
 					- TODOTHINK
-				- @ Flood tool:
-					- Use Formulae
+				+ @ Flood tool:
+					+ Use Formulae
 				- SettingsDialog: tooltip of HydrostaticPressureAdjust: add "atmosphere"						
+				- @ Points::Add: take care of TODOHERE item: set default internal pressure
+					- ShipBuilder specifies value; optionally ship-specified, and default is PressureAtZero (calc'd via Formulae)
 			+ Custom probe for net force
 			- Test repair
 			- Finalize setting range
