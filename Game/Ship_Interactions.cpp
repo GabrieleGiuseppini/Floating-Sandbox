@@ -810,10 +810,19 @@ bool Ship::FloodAt(
 {
     float const searchRadius = gameParameters.FloodRadius;
 
-    float const quantityOfWater =
+    // Delta quantity of water
+    float const quantityOfWaterDelta =
         gameParameters.FloodQuantity
         * waterQuantityMultiplier
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+    // Delta internal pressure - pressure at the bottom of this quantity of water
+    float const internalPressureDelta =
+        quantityOfWaterDelta
+        * GameParameters::WaterMass
+        / (1.0f + GameParameters::WaterThermalExpansionCoefficient * (gameParameters.WaterTemperature - GameParameters::Temperature0))
+        * gameParameters.WaterDensityAdjustment
+        * GameParameters::GravityMagnitude;
 
     //
     // Find the (non-ephemeral) non-hull points in the radius
@@ -831,7 +840,11 @@ bool Ship::FloodAt(
             {
                 mPoints.SetWater(
                     pointIndex,
-                    std::max(mPoints.GetWater(pointIndex) + quantityOfWater, 0.0f));
+                    std::max(mPoints.GetWater(pointIndex) + quantityOfWaterDelta, 0.0f));
+
+                mPoints.SetInternalPressure(
+                    pointIndex,
+                    std::max(mPoints.GetInternalPressure(pointIndex) + internalPressureDelta, 0.0f));
 
                 anyHasFlooded = true;
             }

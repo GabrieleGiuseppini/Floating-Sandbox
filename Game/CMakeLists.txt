@@ -61,6 +61,7 @@ set  (PHYSICS_SOURCES
 	ElectricalElements.h
 	Fishes.cpp
 	Fishes.h
+	Formulae.h
 	Frontiers.cpp
 	Frontiers.h
 	Gadget.h

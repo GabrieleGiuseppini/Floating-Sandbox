@@ -27,6 +27,7 @@ namespace Physics
 
 #include <GameCore/ElementContainer.h>
 
+#include "Formulae.h"
 #include "IShipPhysicsHandler.h"
 
 #include "Storm.h"

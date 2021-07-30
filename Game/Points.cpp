@@ -2004,7 +2004,10 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
     //  - Integration factor: integration factor time coefficient / current mass
     //
 
-    float const densityAdjustedWaterMass = GameParameters::WaterMass * gameParameters.WaterDensityAdjustment;
+    float const densityAdjustedWaterMass =
+        GameParameters::WaterMass
+        / (1.0f + GameParameters::WaterThermalExpansionCoefficient * (gameParameters.WaterTemperature - GameParameters::Temperature0))
+        * gameParameters.WaterDensityAdjustment;
 
     float const * restrict const augmentedMaterialMassBuffer = mAugmentedMaterialMassBuffer.data();
     float const * restrict const waterBuffer = mWaterBuffer.data();

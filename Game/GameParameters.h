@@ -126,6 +126,8 @@ struct GameParameters
 
     // Air
 
+    float AirDensityAdjustment;
+
     static float constexpr AirFrictionDragCoefficient = 0.003f;
 
     float AirFrictionDragAdjustment;

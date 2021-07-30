@@ -216,20 +216,14 @@ void Ship::Update(
     // Calculate some widely-used physical constants
     ///////////////////////////////////////////////////////////////////
 
-    float const effectiveAirTemperature =
-        gameParameters.AirTemperature
-        + stormParameters.AirTemperatureDelta;
+    // TODOHERE: see if can move these calculations where they're really needed
+    float const effectiveAirDensity = Formulae::CalculateAirDensity(
+        gameParameters.AirTemperature + stormParameters.AirTemperatureDelta,
+        gameParameters);
 
-    // Density of air, adjusted for temperature
-    float const effectiveAirDensity =
-        GameParameters::AirMass
-        / (1.0f + GameParameters::AirThermalExpansionCoefficient * (effectiveAirTemperature - GameParameters::Temperature0));
-
-    // Density of water, adjusted for temperature and manual adjustment
-    float const effectiveWaterDensity =
-        GameParameters::WaterMass
-        / (1.0f + GameParameters::WaterThermalExpansionCoefficient * (gameParameters.WaterTemperature - GameParameters::Temperature0))
-        * gameParameters.WaterDensityAdjustment;
+    float const effectiveWaterDensity = Formulae::CalculateWaterDensity(
+        gameParameters.WaterTemperature,
+        gameParameters);
 
     ///////////////////////////////////////////////////////////////////
     // Recalculate current masses and everything else that derives from them
@@ -1411,9 +1405,9 @@ void Ship::ApplyHydrostaticPressureForces(
         mPoints.GetDynamicForceBufferAsVec2(),
         mPoints.GetDynamicForceBufferAsVec2() + mPoints.GetElementCount(),
         [](vec2f const & v)
-    {
-        return v == vec2f::zero();
-    }));
+        {
+            return v == vec2f::zero();
+        }));
 
     //
     // The hydrostatic pressure force acting on point P, between edges
