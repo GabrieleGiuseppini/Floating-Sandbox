@@ -2096,10 +2096,9 @@ void Ship::UpdatePressureAndWaterInflow(
                     //
 
                     float deltaWater_Structural =
-                        pointCompositeLeaking.LeakingSources.StructuralLeak // Dichotomical switch
-                        * incomingWaterVelocity_Structural
+                        incomingWaterVelocity_Structural
                         * GameParameters::SimulationStepTimeDuration<float>
-                        *mPoints.GetMaterialWaterIntake(pointIndex)
+                        * mPoints.GetMaterialWaterIntake(pointIndex)
                         * gameParameters.WaterIntakeAdjustment;
 
                     //

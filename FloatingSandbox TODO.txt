@@ -895,13 +895,10 @@ Render:
 						- Try with counterbalance adj = 1; if OK: nuke it (assume it's 1.0)
 							- Remember GameParameters default is now 1
 							- SettingsDialog
-				= @ Internal pressure intake:
+				+ @ Internal pressure intake:
 					! Structural delta internal pressure and delta water are independent from each other
 					! Forced delta internal pressure only depends on water
 					+ Redo algo
-					- Review composite leaking; what we really need:
-						- bool for isStructural
-						- float for water pump force
 				+ @ Flood tool:
 					+ Use Formulae
 				- SettingsDialog: tooltip of HydrostaticPressureAdjust: add "atmosphere"						
