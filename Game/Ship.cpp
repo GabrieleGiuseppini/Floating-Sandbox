@@ -216,7 +216,6 @@ void Ship::Update(
     // Calculate some widely-used physical constants
     ///////////////////////////////////////////////////////////////////
 
-    // TODOHERE: see if can move these calculations where they're really needed
     float const effectiveAirDensity = Formulae::CalculateAirDensity(
         gameParameters.AirTemperature + stormParameters.AirTemperatureDelta,
         gameParameters);
@@ -1999,7 +1998,7 @@ void Ship::TrimForWorldBounds(GameParameters const & gameParameters)
 ///////////////////////////////////////////////////////////////////////////////////
 
 void Ship::UpdatePressureAndWaterInflow(
-    float /*effectiveAirDensity*/, //TODO: codework
+    float effectiveAirDensity,
     float effectiveWaterDensity,
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
@@ -2013,10 +2012,8 @@ void Ship::UpdatePressureAndWaterInflow(
     // Ephemeral points are never leaking, hence we ignore them
     //
 
-    // Constant which, when multiplied with depth, gives pressure
-    float const externalPressureDepthCoeff =
-        effectiveWaterDensity
-        * GameParameters::GravityMagnitude;
+    // Multiplier to get internal pressure delta from water delta
+    float const volumetricWaterPressure = Formulae::CalculateVolumetricWaterPressure(gameParameters.WaterTemperature, gameParameters);
 
     // Equivalent depth of a point when it's exposed to rain
     float const rainEquivalentWaterHeight =
@@ -2046,12 +2043,6 @@ void Ship::UpdatePressureAndWaterInflow(
 
             float const pointDepth = mPoints.GetCachedDepth(pointIndex);
 
-            // External pressure
-            float const externalPressure = std::max(pointDepth, 0.0f) * externalPressureDepthCoeff;
-
-            // Internal pressure
-            float const internalPressure = mPoints.GetInternalPressure(pointIndex);
-
             // External water height
             //
             // We also incorporate rain in the sources of external water height:
@@ -2064,143 +2055,171 @@ void Ship::UpdatePressureAndWaterInflow(
             // Internal water height
             float const internalWaterHeight = mPoints.GetWater(pointIndex);
 
-            //
-            // 1) Calculate new pressure and water due to structural leaks (holes)
-            //
+            float totalDeltaWater = 0.0f;
 
-            float const newPressure_Structural = externalPressure - internalPressure;
-
-            float newWater_Structural;
+            if (pointCompositeLeaking.LeakingSources.StructuralLeak != 0.0f)
             {
                 //
-                // 1.1) Calculate velocity of incoming water, based off Bernoulli's equation applied to point:
-                //  v**2/2 + p/density = c (assuming y of incoming water does not change along the intake)
-                //      With: p = pressure of water at point = d*wh*g (d = water density, wh = water height in point)
-                //
-                // Considering that at equilibrium we have v=0 and p=external_pressure,
-                // then c=external_pressure/density;
-                // external_pressure is height_of_water_at_y*g*density, then c=height_of_water_at_y*g;
-                // hence, the velocity of water incoming at point p, when the "water height" in the point is already
-                // wh and the external water pressure is d*height_of_water_at_y*g, is:
-                //  v = +/- sqrt(2*g*|height_of_water_at_y-wh|)
+                // 1. Update water due to structural leaks (holes)
                 //
 
-                float incomingWaterVelocity_Structural;
-                if (externalWaterHeight >= internalWaterHeight)
                 {
-                    // Incoming water
-                    incomingWaterVelocity_Structural = sqrtf(2.0f * GameParameters::GravityMagnitude * (externalWaterHeight - internalWaterHeight));
+                    //
+                    // 1.1) Calculate velocity of incoming water, based off Bernoulli's equation applied to point:
+                    //  v**2/2 + p/density = c (assuming y of incoming water does not change along the intake)
+                    //      With: p = pressure of water at point = d*wh*g (d = water density, wh = water height in point)
+                    //
+                    // Considering that at equilibrium we have v=0 and p=external_pressure,
+                    // then c=external_pressure/density;
+                    // external_pressure is height_of_water_at_y*g*density, then c=height_of_water_at_y*g;
+                    // hence, the velocity of water incoming at point p, when the "water height" in the point is already
+                    // wh and the external water pressure is d*height_of_water_at_y*g, is:
+                    //  v = +/- sqrt(2*g*|height_of_water_at_y-wh|)
+                    //
+
+                    float incomingWaterVelocity_Structural;
+                    if (externalWaterHeight >= internalWaterHeight)
+                    {
+                        // Incoming water
+                        incomingWaterVelocity_Structural = sqrtf(2.0f * GameParameters::GravityMagnitude * (externalWaterHeight - internalWaterHeight));
+                    }
+                    else
+                    {
+                        // Outgoing water
+                        incomingWaterVelocity_Structural = -sqrtf(2.0f * GameParameters::GravityMagnitude * (internalWaterHeight - externalWaterHeight));
+                    }
+
+                    //
+                    // 1.2) In/Outtake water according to velocity:
+                    // - During dt, we move a volume of water Vw equal to A*v*dt; the equivalent change in water
+                    //   height is thus Vw/A, i.e. v*dt
+                    //
+
+                    float deltaWater_Structural =
+                        pointCompositeLeaking.LeakingSources.StructuralLeak // Dichotomical switch
+                        * incomingWaterVelocity_Structural
+                        * GameParameters::SimulationStepTimeDuration<float>
+                        *mPoints.GetMaterialWaterIntake(pointIndex)
+                        * gameParameters.WaterIntakeAdjustment;
+
+                    //
+                    // 1.3) Update water
+                    //
+
+                    if (deltaWater_Structural < 0.0f)
+                    {
+                        // Outgoing water
+
+                        // Make sure we don't over-drain the point
+                        deltaWater_Structural = std::max(-mPoints.GetWater(pointIndex), deltaWater_Structural);
+
+                        // Honor the water retention of this material
+                        deltaWater_Structural *= mPoints.GetMaterialWaterRestitution(pointIndex);
+                    }
+
+                    // Adjust water
+                    mPoints.SetWater(
+                        pointIndex,
+                        mPoints.GetWater(pointIndex) + deltaWater_Structural);
+
+                    totalDeltaWater += deltaWater_Structural;
+                }
+
+                //
+                // 2. Update internal pressure due to structural leaks (holes)
+                //    (positive is incoming)
+                //
+                //    Structural delta pressure is independent from structural delta water
+                //
+
+                {
+                    float const externalPressure = Formulae::CalculateTotalPressureAt(
+                        mPoints.GetPosition(pointIndex).y,
+                        mPoints.GetPosition(pointIndex).y + pointDepth, // oceanSurfaceY
+                        effectiveAirDensity,
+                        effectiveWaterDensity,
+                        gameParameters);
+
+                    mPoints.SetInternalPressure(
+                        pointIndex,
+                        externalPressure);
+                }
+            }
+
+            float const waterPumpForce = pointCompositeLeaking.LeakingSources.WaterPumpForce;
+            if (waterPumpForce != 0.0f)
+            {
+                //
+                // 3) Update water due to forced leaks (pumps)
+                //    (positive is incoming)
+                //
+
+                float deltaWater_Forced = 0.0f;
+                if (waterPumpForce > 0.0f)
+                {
+                    // Inward pump: only works if underwater
+                    deltaWater_Forced = (externalWaterHeight > 0.0f)
+                        ? waterPumpForce * waterPumpPowerMultiplier // No need to cap as sea is infinite
+                        : 0.0f;
                 }
                 else
                 {
-                    // Outgoing water
-                    incomingWaterVelocity_Structural = -sqrtf(2.0f * GameParameters::GravityMagnitude * (internalWaterHeight - externalWaterHeight));
+                    // Outward pump: only works if water inside
+                    deltaWater_Forced = (internalWaterHeight > 0.0f)
+                        ? waterPumpForce * waterPumpPowerMultiplier // We'll cap it
+                        : 0.0f;
                 }
 
-                //
-                // 1.2) In/Outtake water according to velocity:
-                // - During dt, we move a volume of water Vw equal to A*v*dt; the equivalent change in water
-                //   height is thus Vw/A, i.e. v*dt
-                //
-
-                newWater_Structural =
-                    pointCompositeLeaking.LeakingSources.StructuralLeak // Dichotomical switch
-                    * incomingWaterVelocity_Structural
-                    * GameParameters::SimulationStepTimeDuration<float>
-                    * mPoints.GetMaterialWaterIntake(pointIndex)
-                    * gameParameters.WaterIntakeAdjustment;
-            }
-
-            //
-            // 2) Calculate new pressure and water due to forced leaks (pumps)
-            //
-
-            float newPressure_Forced = 0.0f;
-            float newWater_Forced = 0.0f;
-            float const waterPumpForce = pointCompositeLeaking.LeakingSources.WaterPumpForce;
-            if (waterPumpForce > 0.0f)
-            {
-                // Inward pump: only works if underwater
-                newPressure_Forced = (externalPressure > 0.0f)
-                    ? waterPumpForce * waterPumpPowerMultiplier // No need to cap as sea is infinite
-                    : 0.0f;
-                newWater_Forced = (externalWaterHeight > 0.0f)
-                    ? waterPumpForce * waterPumpPowerMultiplier // No need to cap as sea is infinite
-                    : 0.0f;
-            }
-            else if (waterPumpForce < 0.0f)
-            {
-                // Outward pump: only works if water inside
-                newPressure_Forced = (internalPressure > 0.0f)
-                    ? waterPumpForce * waterPumpPowerMultiplier // We'll cap it
-                    : 0.0f;
-                newWater_Forced = (internalWaterHeight > 0.0f)
-                    ? waterPumpForce * waterPumpPowerMultiplier // We'll cap it
-                    : 0.0f;
-            }
-
-            //
-            // 3) Apply resultant pressure and water changes
-            //
-
-            {
-                float newPressure = newPressure_Structural + newPressure_Forced;
-                if (newPressure < 0.0f)
-                {
-                    // Outgoing pressure...
-                    // ...make sure we don't over-drain the point
-                    newPressure = -std::min(-newPressure, internalPressure);
-                }
-
-                // Adjust pressure
-                mPoints.SetInternalPressure(
-                    pointIndex,
-                    internalPressure + newPressure);
-            }
-
-            {
-                float newWater = newWater_Structural + newWater_Forced;
-
-                if (newWater < 0.0f)
-                {
-                    // Outgoing water
-
-                    // Make sure we don't over-drain the point
-                    newWater = -std::min(-newWater, mPoints.GetWater(pointIndex));
-
-                    // Honor the water retention of this material
-                    newWater *= mPoints.GetMaterialWaterRestitution(pointIndex);
-                }
+                // Make sure we don't over-drain the point
+                deltaWater_Forced = std::max(-mPoints.GetWater(pointIndex), deltaWater_Forced);
 
                 // Adjust water
                 mPoints.SetWater(
                     pointIndex,
-                    mPoints.GetWater(pointIndex) + newWater);
+                    mPoints.GetWater(pointIndex) + deltaWater_Forced);
 
-                // Check if it's time to produce air bubbles
-                mPoints.GetCumulatedIntakenWater(pointIndex) += newWater;
-                if (mPoints.GetCumulatedIntakenWater(pointIndex) > cumulatedIntakenWaterThresholdForAirBubbles)
+                totalDeltaWater += deltaWater_Forced;
+
+                //
+                // 4) Update pressure due to forced leaks (pumps)
+                //    (positive is incoming)
+                //
+                //    Forced delta pressure depends on (effective) forced delta water only
+                //
+
+                float const deltaPressure_Forced = deltaWater_Forced * volumetricWaterPressure;
+
+                mPoints.SetInternalPressure(
+                    pointIndex,
+                    std::max(mPoints.GetInternalPressure(pointIndex) + deltaPressure_Forced, 0.0f)); // Make sure we don't over-drain the point
+            }
+
+            //
+            // 5) Check if it's time to produce air bubbles
+            //
+
+            mPoints.GetCumulatedIntakenWater(pointIndex) += totalDeltaWater;
+            if (mPoints.GetCumulatedIntakenWater(pointIndex) > cumulatedIntakenWaterThresholdForAirBubbles)
+            {
+                // Generate air bubbles - but not on ropes as that looks awful
+                if (doGenerateAirBubbles
+                    && !mPoints.IsRope(pointIndex))
                 {
-                    // Generate air bubbles - but not on ropes as that looks awful
-                    if (doGenerateAirBubbles
-                        && !mPoints.IsRope(pointIndex))
-                    {
-                        GenerateAirBubble(
-                            mPoints.GetPosition(pointIndex),
-                            pointDepth,
-                            mPoints.GetTemperature(pointIndex),
-                            currentSimulationTime,
-                            mPoints.GetPlaneId(pointIndex),
-                            gameParameters);
-                    }
-
-                    // Consume all cumulated water
-                    mPoints.GetCumulatedIntakenWater(pointIndex) = 0.0f;
+                    GenerateAirBubble(
+                        mPoints.GetPosition(pointIndex),
+                        pointDepth,
+                        mPoints.GetTemperature(pointIndex),
+                        currentSimulationTime,
+                        mPoints.GetPlaneId(pointIndex),
+                        gameParameters);
                 }
 
-                // Adjust total water taken during this step
-                waterTakenInStep += newWater;
+                // Consume all cumulated water
+                mPoints.GetCumulatedIntakenWater(pointIndex) = 0.0f;
             }
+
+            // Adjust total water taken during this step
+            waterTakenInStep += totalDeltaWater;
         }
     }
 }

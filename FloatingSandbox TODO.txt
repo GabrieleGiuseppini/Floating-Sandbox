@@ -877,6 +877,38 @@ Render:
 				+ Remove exhaggerations
 			+ Test on melted long springs - after removing exhaggerations
 			X Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
+			= Apply air pressure as well
+				! InternalPressure and hydrostatic pressure will never be zero - zero is really "somewhere" above MaxWorldHeight
+				! Pressure at ocean surface zero (aka "PressureAtZero") is == column of air above (atmospheric pressure at sea level)
+				+ Formulae class: implements formulae below
+					+ Calcs effective air density, given temperature
+					+ Cals effective water density, given temperature					
+					+ Calcs volumetric water pressure, given temperature - VolumetricWaterPressure
+					+ Calcs pure air pressure at height x - AirColumnPressure
+					+ Calcs pure water pressure at depth x - WaterColumnPressure
+					+ Calcs total pressure at height x - TotalColumnPressure
+						+ airColumnPressure(clamp(height)) + waterColumnPressure(clamp(depth))
+				= @ ApplyHydrostaticPressure: 
+					+ PressureAtCenter from Formulae::TotalPressure
+					! Internal pressure counterbalance formula: denominator will never be zero
+					- Does outward pressure from inside have to be subject to counterbalance adjustment?
+						- Try with counterbalance adj = 1; if OK: nuke it (assume it's 1.0)
+							- Remember GameParameters default is now 1
+							- SettingsDialog
+				= @ Internal pressure intake:
+					! Structural delta internal pressure and delta water are independent from each other
+					! Forced delta internal pressure only depends on water
+					+ Redo algo
+					- Review composite leaking; what we really need:
+						- bool for isStructural
+						- float for water pump force
+				+ @ Flood tool:
+					+ Use Formulae
+				- SettingsDialog: tooltip of HydrostaticPressureAdjust: add "atmosphere"						
+				= @ Points::Add: take care of TODOHERE item: set default internal pressure
+					- ShipBuilder specifies value; optionally ship-specified, and default is PressureAtZero (calc'd via Formulae)
+				- See if need adjustment for air pressure; if so:
+					- SettingsDialog
 			= Try with internal pressure, again
 				+ Re-instate internal pressure code
 				+ Re-instate hull particles getting the average of all their non-hull neighbors
@@ -895,36 +927,12 @@ Render:
 					+ SettingsDialog: make new group with new setting for internal pressure "contribution"						
 					- Optimize
 						- Try with local buffer remembering all we do in the first loop
-			= Apply air pressure as well
-				! InternalPressure and hydrostatic pressure will never be zero - zero is really "somewhere" above MaxWorldHeight
-				! Pressure at ocean surface zero (aka "PressureAtZero") is == column of air above (atmospheric pressure at sea level)
-				+ Formulae class: implements formulae below
-					+ Calcs effective air density, given temperature
-					+ Cals effective water density, given temperature					
-					+ Calcs volumetric water pressure, given temperature - VolumetricWaterPressure
-					+ Calcs pure air pressure at height x - AirColumnPressure
-					+ Calcs pure water pressure at depth x - WaterColumnPressure
-					+ Calcs total pressure at height x - TotalColumnPressure
-						+ airColumnPressure(clamp(height)) + waterColumnPressure(clamp(depth))
-				= @ ApplyHydrostaticPressure: 
-					+ PressureAtCenter from Formulae::TotalPressure
-					! Internal pressure counterbalance formula: denominator will never be zero
-					- Does outward pressure from inside have to be subject to counterbalance adjustment?
-						- Try with counterbalance adj = 1; if OK: nuke it (assume it's 1.0)
-							- SettingsDialog
-				- @ Internal pressure intake:
-					- TODOTHINK
-				+ @ Flood tool:
-					+ Use Formulae
-				- SettingsDialog: tooltip of HydrostaticPressureAdjust: add "atmosphere"						
-				= @ Points::Add: take care of TODOHERE item: set default internal pressure
-					- ShipBuilder specifies value; optionally ship-specified, and default is PressureAtZero (calc'd via Formulae)
-				- See if need adjustment for air pressure; if so:
-					- SettingsDialog
 			+ Custom probe for net force
 			- Test repair
 			- Finalize setting range
 				X Also see if it needs to be smoothed
+			- Changelist
+				- Both hydrostatic pressure and internal pressure
 			- Send for testing
 			- Cleanup commented out code
 				= Make video first
@@ -939,14 +947,15 @@ Render:
 				- See if can get away without internal pressure, and using internal water instead @ counterbalance
 					- If we keep internal pressure: mark TODO item for internal pressure * as complete
 			- Merge back into master
-			- Changelist
-		
+					
 		= Do some normal wrecks and decide on default hydrostatic pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
 			+ 0.242	
 			- See why Titanic is bunch of particles at 10Km: rotting?
 
 		- Does it make sense to have a pressure tool?
+			- Like Flood tool was before, but only acting on InternalPressure
+			- Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull
 
 		- Settings for Electric Spark tool
 			- SettingsDialog
