@@ -2245,10 +2245,25 @@ void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
 
     float * restrict internalPressureBufferData = mPoints.GetInternalPressureBufferAsFloat();
 
+    struct CachedSpringData
+    {
+        ElementIndex OtherEndpointIndex;
+        float OtherEndpointInternalPressure;
+
+        CachedSpringData() = default;
+
+        CachedSpringData(
+            ElementIndex otherEndpointIndex,
+            float otherEndpointInternalPressure)
+            : OtherEndpointIndex(otherEndpointIndex)
+            , OtherEndpointInternalPressure(otherEndpointInternalPressure)
+        {}
+    };
+
+    FixedSizeVector<CachedSpringData, GameParameters::MaxSpringsPerPoint> cachedSpringData;
+
     for (auto pointIndex : mPoints.RawShipPoints()) // No need to visit ephemeral points as they have no springs
     {
-        size_t const connectedSpringCount = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.size();
-
         if (!mPoints.GetIsHull(pointIndex))
         {
             //
@@ -2265,9 +2280,8 @@ void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
             float averageInternalPressure = internalPressure;
             float targetEndpointsCount = 1.0f;
 
-            for (size_t s = 0; s < connectedSpringCount; ++s)
+            for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
             {
-                auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
                 ElementIndex const otherEndpointIndex = cs.OtherEndpointIndex;
 
                 // We only consider outgoing pressure, not towards hull points
@@ -2277,6 +2291,10 @@ void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
                 {
                     averageInternalPressure += otherEndpointInternalPressure;
                     targetEndpointsCount += 1.0f;
+
+                    cachedSpringData.emplace_back(
+                        otherEndpointIndex,
+                        otherEndpointInternalPressure);
                 }
             }
 
@@ -2286,21 +2304,14 @@ void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
             // 2. Distribute surplus pressure
             //
 
-            for (size_t s = 0; s < connectedSpringCount; ++s)
+            for (auto const & targetSpring : cachedSpringData)
             {
-                auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
-                ElementIndex const otherEndpointIndex = cs.OtherEndpointIndex;
-
-                // We only consider outgoing pressure, not towards hull points
-                float const otherEndpointInternalPressure = internalPressureBufferData[otherEndpointIndex];
-                if (internalPressure > otherEndpointInternalPressure
-                    && mSprings.GetWaterPermeability(cs.SpringIndex) != 0.0f)
-                {
-                    float const outgoingDelta = averageInternalPressure - otherEndpointInternalPressure;
-                    internalPressureBufferData[pointIndex] -= outgoingDelta;
-                    internalPressureBufferData[otherEndpointIndex] += outgoingDelta;
-                }
+                float const outgoingDelta = averageInternalPressure - targetSpring.OtherEndpointInternalPressure;
+                internalPressureBufferData[pointIndex] -= outgoingDelta;
+                internalPressureBufferData[targetSpring.OtherEndpointIndex] += outgoingDelta;
             }
+
+            cachedSpringData.clear();
         }
         else
         {
@@ -2312,11 +2323,9 @@ void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
             float averageInternalPressure = 0.0f;
             float neighborsCount = 0.0f;
 
-            for (size_t s = 0; s < connectedSpringCount; ++s)
+            for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
             {
-                auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
                 ElementIndex const otherEndpointIndex = cs.OtherEndpointIndex;
-
                 if (!mPoints.GetIsHull(otherEndpointIndex))
                 {
                     averageInternalPressure += internalPressureBufferData[otherEndpointIndex];

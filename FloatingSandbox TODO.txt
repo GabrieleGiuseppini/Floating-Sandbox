@@ -914,10 +914,10 @@ Render:
 							+ Pumping out: internal pressure decreases
 						+ Rendering							
 					+ SettingsDialog: make new group with new setting for internal pressure "contribution"						
-					- Optimize
-						- EqualizeInternalPressure: try with local buffer remembering all we do in the first loop
-							- Before:
-							- After:
+					= Optimize
+						= EqualizeInternalPressure: try with local buffer remembering all we do in the first loop
+							+ Before: 4.96ms, 4%
+							+ After: 4.91ms, 2.73%
 			+ Internal pressure counterbalance:
 				+ Counterbalance adj = 1: reasonable (Titanic still breaks at depth)
 				+ See if can cheat and have "basically" counterbalance adj = 1, except at higher depths
