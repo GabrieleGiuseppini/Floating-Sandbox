@@ -928,6 +928,7 @@ Render:
 				+ HPCounterBalance: stays
 					+ SettingsDialog: merge with other water, and say "hydro"
 			+ Custom probe for net force
+			- Explain counterbalance in tooltip
 			- Changelist
 				- Both (hydro)static pressure and internal pressure
 			- Send for testing
@@ -949,15 +950,16 @@ Render:
 			- Merge back into master
 
 		FOLLOW-UPS:		
-		- See if need adjustment for air pressure; if so:
-			- SettingsDialog		
+		- See if need adjustment for air pressure
+			- Goal: high air pressure causes things to explode high up
+				! No need to extend counterbalance upwards
+			- If so: SettingsDialog		
 		- Ship definition: add optional value for default internal pressure
 			- When not specified, it's PressureAtZero (calc'd via Formulae)
 				- PressureAtZero is subject to AirPressureAdjustment
 		- Does it make sense to have a pressure tool?
 			- Like Flood tool was before, but only acting on InternalPressure
-			- Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull
-		- SettingsDialog: hydrostatic pressure might need to move to Mechanics
+			- Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
 
 
 
