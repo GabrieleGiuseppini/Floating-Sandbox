@@ -108,12 +108,12 @@ Ship::Ship(
     , mIsSinking(false)
     , mWaterSplashedRunningAverage()
     , mLastLuminiscenceAdjustmentDiffused(-1.0f)
-    // Hydrostatic pressure
-    , mHydrostaticPressureBuffer(mPoints.GetAlignedShipPointCount())
-    , mHydrostaticPressureNetForceMagnitudeSum(0.0f)
-    , mHydrostaticPressureNetForceMagnitudeCount(0.0f)
-    , mHydrostaticPressureIterationsPercentagesSum(0.0f)
-    , mHydrostaticPressureIterationsCount(0.0f)
+    // Static pressure
+    , mStaticPressureBuffer(mPoints.GetAlignedShipPointCount())
+    , mStaticPressureNetForceMagnitudeSum(0.0f)
+    , mStaticPressureNetForceMagnitudeCount(0.0f)
+    , mStaticPressureIterationsPercentagesSum(0.0f)
+    , mStaticPressureIterationsCount(0.0f)
     // Render
     , mLastUploadedDebugShipRenderMode()
     , mPlaneTriangleIndicesToRender()
@@ -233,8 +233,8 @@ void Ship::Update(
     mPoints.UpdateMasses(gameParameters);
 
     ///////////////////////////////////////////////////////////////////
-    // Run spring relaxation iterations and hydrostatic pressure,
-    // together with integration and ocean floor collision handling
+    // Run spring relaxation iterations, together with integration
+    // and ocean floor collision handling
     ///////////////////////////////////////////////////////////////////
 
     int const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<int>();
@@ -328,12 +328,12 @@ void Ship::Update(
     // Cached depths are valid from now on --------------------------->
 
     ///////////////////////////////////////////////////////////////////
-    // Apply hydrostatic forces
+    // Apply static pressure forces
     ///////////////////////////////////////////////////////////////////
 
-    if (gameParameters.HydrostaticPressureAdjustment > 0.0f)
+    if (gameParameters.StaticPressureAdjustment > 0.0f)
     {
-        ApplyHydrostaticPressureForces(
+        ApplyStaticPressureForces(
             effectiveAirDensity,
             effectiveWaterDensity,
             gameParameters);
@@ -393,17 +393,16 @@ void Ship::Update(
         gameParameters,
         waterTakenInStep);
 
+    // Notify intaken water
+    mGameEventHandler->OnWaterTaken(waterTakenInStep);
+
     //
-    // Equalize internal pressure, and apply internal hydrostatic forces
+    // Equalize internal pressure
     //
 
     // - Inputs: Position, InternalPressure, ConnectedSprings
     // - Outpus: InternalPressure, DynamicForces
     EqualizeInternalPressure(gameParameters);
-
-
-    // Notify intaken water
-    mGameEventHandler->OnWaterTaken(waterTakenInStep);
 
     //
     // Diffuse water
@@ -1270,13 +1269,13 @@ void Ship::ApplyWorldSurfaceForces(
 }
 
 //////TODOOLD: Original, unequalized
-////void Ship::ApplyHydrostaticPressureForces(
+////void Ship::ApplyStaticPressureForces(
 ////    float /*effectiveAirDensity*/, // CODEWORK: future, if we want to also apply *air* pressure
 ////    float effectiveWaterDensity,
 ////    GameParameters const & gameParameters)
 ////{
 ////    //
-////    // The hydrostatic pressure force acting on point P, between edges
+////    // The static pressure force acting on point P, between edges
 ////    // E1 and E2, is:
 ////    //
 ////    //      F(P) = F(E1)/2 + F(E2)/2
@@ -1325,7 +1324,7 @@ void Ship::ApplyWorldSurfaceForces(
 ////                std::max(mParentWorld.GetDepth(frontier.AABB.CalculateCenter()), 0.0f)
 ////                * effectiveWaterDensity
 ////                * GameParameters::GravityMagnitude
-////                * gameParameters.HydrostaticPressureAdjustment
+////                * gameParameters.StaticPressureAdjustment
 ////                / 2.0f; // We include the division that we'll need for the particle force
 ////
 ////            //
@@ -1391,7 +1390,7 @@ void Ship::ApplyWorldSurfaceForces(
 ////    }
 ////}
 
-void Ship::ApplyHydrostaticPressureForces(
+void Ship::ApplyStaticPressureForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
     GameParameters const & gameParameters)
@@ -1409,12 +1408,12 @@ void Ship::ApplyHydrostaticPressureForces(
         }));
 
     // Initialize stats
-    mHydrostaticPressureNetForceMagnitudeSum = 0.0f;
-    mHydrostaticPressureNetForceMagnitudeCount = 0.0f;
-    mHydrostaticPressureIterationsPercentagesSum = 0.0f;
-    mHydrostaticPressureIterationsCount = 0.0f;
+    mStaticPressureNetForceMagnitudeSum = 0.0f;
+    mStaticPressureNetForceMagnitudeCount = 0.0f;
+    mStaticPressureIterationsPercentagesSum = 0.0f;
+    mStaticPressureIterationsCount = 0.0f;
 
-    // Visit all frontiers and apply hydrostatic pressure forces on each
+    // Visit all frontiers and apply static pressure forces on each
     for (FrontierId const frontierId : mFrontiers.GetFrontierIds())
     {
         auto const & frontier = mFrontiers.GetFrontier(frontierId);
@@ -1422,7 +1421,7 @@ void Ship::ApplyHydrostaticPressureForces(
         // Only consider external frontiers
         if (frontier.Type == FrontierType::External)
         {
-            ApplyHydrostaticPressureForces(
+            ApplyStaticPressureForces(
                 frontier,
                 effectiveAirDensity,
                 effectiveWaterDensity,
@@ -1432,14 +1431,14 @@ void Ship::ApplyHydrostaticPressureForces(
 
     // Publish stats
     mGameEventHandler->OnCustomProbe(
-        "HydrostaticPressure NetForce",
-        mHydrostaticPressureNetForceMagnitudeSum / mHydrostaticPressureNetForceMagnitudeCount);
+        "StaticPressure NetForce",
+        mStaticPressureNetForceMagnitudeSum / mStaticPressureNetForceMagnitudeCount);
     mGameEventHandler->OnCustomProbe(
-        "HydrostaticPressure Complexity",
-        mHydrostaticPressureIterationsPercentagesSum / mHydrostaticPressureIterationsCount);
+        "StaticPressure Complexity",
+        mStaticPressureIterationsPercentagesSum / mStaticPressureIterationsCount);
 }
 
-void Ship::ApplyHydrostaticPressureForces(
+void Ship::ApplyStaticPressureForces(
     Frontiers::Frontier const & frontier,
     float effectiveAirDensity,
     float effectiveWaterDensity,
@@ -1499,12 +1498,12 @@ void Ship::ApplyHydrostaticPressureForces(
     //  - At adj=0.0, we want the internal pressure to NEVER counterbalance the external pressure as-is
     //  - At adj=0.5, we want the internal pressure to start counterbalancing the external pressure somewhere mid-way along the depth
     //  - At adj=1.0, we want the internal pressure to ALWAYS counterbalance the external pressure
-    float const internalPressureCounterbalanceAdjustmentFactor =
+    float const hydrostaticPressureCounterbalanceAdjustmentFactor =
         1.0f / totalExternalPressure
         * (1.0f - SmoothStep(
             GameParameters::HalfMaxWorldHeight,
             GameParameters::HalfMaxWorldHeight * 2.0f,
-            depth + (1.0f - gameParameters.HydrostaticPressureInternalPressureCounterbalanceAdjustment) * GameParameters::HalfMaxWorldHeight * 2.0f));
+            depth + (1.0f - gameParameters.HydrostaticPressureCounterbalanceAdjustment) * GameParameters::HalfMaxWorldHeight * 2.0f));
 
     //
     // 1. Calculate geometry of forces and populate interim buffer
@@ -1514,7 +1513,7 @@ void Ship::ApplyHydrostaticPressureForces(
     // proportional to its length
     //
 
-    mHydrostaticPressureBuffer.clear();
+    mStaticPressureBuffer.clear();
 
     vec2f netForce = vec2f::zero();
     float netTorque = 0.0f;
@@ -1561,13 +1560,13 @@ void Ship::ApplyHydrostaticPressureForces(
         if (neighboringHullPointsCount == 3) // Avoid applying force to one or two isolated hull particles, allows for more stability of wretched wrecks
         {
             // Calculate internal pressure counterbalance: we want the force vector
-            // to be zero when internal pressure == external pressure
-            float const internalPressureCounterbalanceFactor = 1.0f - mPoints.GetInternalPressure(thisPointIndex) * internalPressureCounterbalanceAdjustmentFactor;
+            // to be zero when internal pressure == external pressure, at 1.0 counterbalance
+            float const internalPressureCounterbalanceFactor = 1.0f - mPoints.GetInternalPressure(thisPointIndex) * hydrostaticPressureCounterbalanceAdjustmentFactor;
 
             vec2f const forceVector = (edge1PerpVector + edge2PerpVector) / 2.0f * internalPressureCounterbalanceFactor;
             vec2f const torqueArm = mPoints.GetPosition(thisPointIndex) - geometricCenterPosition;
 
-            mHydrostaticPressureBuffer.emplace_back(
+            mStaticPressureBuffer.emplace_back(
                 thisPointIndex,
                 forceVector,
                 torqueArm);
@@ -1624,9 +1623,9 @@ void Ship::ApplyHydrostaticPressureForces(
 
             float minNetForceMagnitude = std::numeric_limits<float>::max();
             float minNetTorqueMagnitude = std::numeric_limits<float>::max();
-            for (size_t hpi = 0; hpi < mHydrostaticPressureBuffer.GetCurrentPopulatedSize(); ++hpi)
+            for (size_t hpi = 0; hpi < mStaticPressureBuffer.GetCurrentPopulatedSize(); ++hpi)
             {
-                auto const & hp = mHydrostaticPressureBuffer[hpi];
+                auto const & hp = mStaticPressureBuffer[hpi];
 
                 vec2f const & thisForce = hp.ForceVector;
 
@@ -1666,9 +1665,9 @@ void Ship::ApplyHydrostaticPressureForces(
 
             float minNetForceMagnitude = std::numeric_limits<float>::max();
             float minNetTorqueMagnitude = std::numeric_limits<float>::max();
-            for (size_t hpi = 0; hpi < mHydrostaticPressureBuffer.GetCurrentPopulatedSize(); ++hpi)
+            for (size_t hpi = 0; hpi < mStaticPressureBuffer.GetCurrentPopulatedSize(); ++hpi)
             {
-                auto const & hp = mHydrostaticPressureBuffer[hpi];
+                auto const & hp = mStaticPressureBuffer[hpi];
 
                 vec2f const & thisForce = hp.ForceVector;
                 float const thisTorque = hp.TorqueArm.cross(thisForce);
@@ -1707,11 +1706,11 @@ void Ship::ApplyHydrostaticPressureForces(
             break;
         }
 
-        vec2f const thisForce = mHydrostaticPressureBuffer[*bestHPIndex].ForceVector;
-        float const thisTorque = mHydrostaticPressureBuffer[*bestHPIndex].TorqueArm.cross(thisForce);
+        vec2f const thisForce = mStaticPressureBuffer[*bestHPIndex].ForceVector;
+        float const thisTorque = mStaticPressureBuffer[*bestHPIndex].TorqueArm.cross(thisForce);
 
         // Adjust force vector of optimal particle
-        mHydrostaticPressureBuffer[*bestHPIndex].ForceVector *= bestLambda;
+        mStaticPressureBuffer[*bestHPIndex].ForceVector *= bestLambda;
 
         // Update net force and torque
         netForce -= thisForce * (1.0f - bestLambda);
@@ -1721,24 +1720,24 @@ void Ship::ApplyHydrostaticPressureForces(
     }
 
     // Update stats
-    mHydrostaticPressureNetForceMagnitudeSum += netForce.length();
-    mHydrostaticPressureNetForceMagnitudeCount += 1.0f;
-    mHydrostaticPressureIterationsPercentagesSum += static_cast<float>(iter + 1) / static_cast<float>(frontier.Size);
-    mHydrostaticPressureIterationsCount += 1.0f;
+    mStaticPressureNetForceMagnitudeSum += netForce.length();
+    mStaticPressureNetForceMagnitudeCount += 1.0f;
+    mStaticPressureIterationsPercentagesSum += static_cast<float>(iter + 1) / static_cast<float>(frontier.Size);
+    mStaticPressureIterationsCount += 1.0f;
 
     //
     // 3. Apply forces as dynamic forces - so they only apply to current positions,
-    //    as these forces are very sensitive to their position, would generate
+    //    as these forces are very sensitive to their position, and would generate
     //    phantom forces and torques otherwise
     //
 
-    float const forceMultiplier = totalExternalPressure * gameParameters.HydrostaticPressureAdjustment;
-    size_t const particleCount = mHydrostaticPressureBuffer.GetCurrentPopulatedSize();
+    float const forceMultiplier = totalExternalPressure * gameParameters.StaticPressureAdjustment;
+    size_t const particleCount = mStaticPressureBuffer.GetCurrentPopulatedSize();
     for (size_t hpi = 0; hpi < particleCount; ++hpi)
     {
         mPoints.AddDynamicForce(
-            mHydrostaticPressureBuffer[hpi].PointIndex,
-            mHydrostaticPressureBuffer[hpi].ForceVector * forceMultiplier);
+            mStaticPressureBuffer[hpi].PointIndex,
+            mStaticPressureBuffer[hpi].ForceVector * forceMultiplier);
     }
 }
 

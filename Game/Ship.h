@@ -432,18 +432,12 @@ private:
         GameParameters const & gameParameters,
         Geometry::AABBSet & externalAabbSet);
 
-    // TODOOLD
-    ////template<typename TVisitor>
-    ////void VisitFrontierHullPoints(
-    ////    Frontiers::Frontier const & frontier,
-    ////    TVisitor && visitor);
-
-    void ApplyHydrostaticPressureForces(
+    void ApplyStaticPressureForces(
         float effectiveAirDensity,
         float effectiveWaterDensity,
         GameParameters const & gameParameters);
 
-    void ApplyHydrostaticPressureForces(
+    void ApplyStaticPressureForces(
         Frontiers::Frontier const & frontier,
         float effectiveAirDensity,
         float effectiveWaterDensity,
@@ -800,16 +794,16 @@ private:
     float mLastLuminiscenceAdjustmentDiffused;
 
     //
-    // Hydrostatic pressure
+    // Static pressure
     //
 
-    struct HydrostaticPressureOnPoint
+    struct StaticPressureOnPoint
     {
         ElementIndex PointIndex;
         vec2f ForceVector;
         vec2f TorqueArm;
 
-        HydrostaticPressureOnPoint(
+        StaticPressureOnPoint(
             ElementIndex pointIndex,
             vec2f const & forceVector,
             vec2f const & torqueArm)
@@ -823,13 +817,13 @@ private:
     //
     // Note: may be populated for same point multiple times, once for each crossing of
     // the frontier through that point
-    Buffer<HydrostaticPressureOnPoint> mHydrostaticPressureBuffer;
+    Buffer<StaticPressureOnPoint> mStaticPressureBuffer;
 
     // For statistics
-    float mHydrostaticPressureNetForceMagnitudeSum;
-    float mHydrostaticPressureNetForceMagnitudeCount;
-    float mHydrostaticPressureIterationsPercentagesSum;
-    float mHydrostaticPressureIterationsCount;
+    float mStaticPressureNetForceMagnitudeSum;
+    float mStaticPressureNetForceMagnitudeCount;
+    float mStaticPressureIterationsPercentagesSum;
+    float mStaticPressureIterationsCount;
 
     //
     // Render members
