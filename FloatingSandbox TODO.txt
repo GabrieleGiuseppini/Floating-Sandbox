@@ -918,14 +918,17 @@ Render:
 						- EqualizeInternalPressure: try with local buffer remembering all we do in the first loop
 							- Before:
 							- After:
-			= Internal pressure counterbalance:
+			+ Internal pressure counterbalance:
 				+ Counterbalance adj = 1: reasonable (Titanic still breaks at depth)
-				- See if can cheat and have "basically" counterbalance adj = 1, except at higher depths
-				- Remember GameParameters default is now 1
-				- SettingsDialog: remove if we nuked it
+				+ See if can cheat and have "basically" counterbalance adj = 1, except at higher depths
+				+ Remember GameParameters default is now 1
+			- Rearc settings:
+				- HydrostaticPressureAdjustment: becomes StaticPressureAdjustment, in Mechanics
+					- Between 0 and 10 - TEST FIRST!
+					- SettingsDialog: Mechanics, and exponential
+				- HPCounterBalance: stays
+					- SettingsDialog: merge with other water
 			+ Custom probe for net force
-			- Finalize setting range
-				X Also see if it needs to be smoothed
 			- Changelist
 				- Both hydrostatic pressure and internal pressure
 			- Send for testing

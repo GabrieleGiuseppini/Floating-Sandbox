@@ -1408,41 +1408,6 @@ void Ship::ApplyHydrostaticPressureForces(
             return v == vec2f::zero();
         }));
 
-    //
-    // The hydrostatic pressure force acting on point P, between edges
-    // E1 and E2, is:
-    //
-    //      F(P) = F(E1)/2 + F(E2)/2
-    //
-    // The hydrostatic pressure force acting on edge Ei is:
-    //
-    //      F(Ei) = -Ni * D * Mw * G * |Ei|
-    //
-    // Where Ni is the normal to Ei, D is the depth (which we take constant
-    // so to not produce buoyancy forces), Mw * G is the weight of water, and
-    // |Ei| accounts for wider edges being subject to more pressure.
-    //
-    //
-    // We will rewrite F(Ei) as:
-    //
-    //      F(Ei) = -Perp(Ei) * ForceStem
-    //
-    // And thus:
-    //
-    //      F(P)  = (-Perp(E1) -Perp(E2)) * ForceStem / 2
-    //
-    //
-    //
-    // Notes:
-    //  - We use the frontiers' gemetric centers as the place that depth is calculated at;
-    //    as a consequence, if the ship is interactively moved or rotated, the centers
-    //    that we use here are stale. Not a big deal...
-    //    Outside of these "moving" interactions, the centers we use here are also
-    //    inconsistent with the current positions because of integration during dynamic
-    //    iterations, unless hydrostatic pressures are calculated on the *first* dynamic
-    //    iteration.
-    //
-
     // Initialize stats
     mHydrostaticPressureNetForceMagnitudeSum = 0.0f;
     mHydrostaticPressureNetForceMagnitudeCount = 0.0f;
@@ -1480,7 +1445,66 @@ void Ship::ApplyHydrostaticPressureForces(
     float effectiveWaterDensity,
     GameParameters const & gameParameters)
 {
+    //
+    // The hydrostatic pressure force acting on point P, between edges
+    // E1 and E2, is:
+    //
+    //      F(P) = F(E1)/2 + F(E2)/2
+    //
+    // The hydrostatic pressure force acting on edge Ei is:
+    //
+    //      F(Ei) = -Ni * D * Mw * G * |Ei|
+    //
+    // Where Ni is the normal to Ei, D is the depth (which we take constant
+    // so to not produce buoyancy forces), Mw * G is the weight of water, and
+    // |Ei| accounts for wider edges being subject to more pressure.
+    //
+    //
+    // We will rewrite F(Ei) as:
+    //
+    //      F(Ei) = -Perp(Ei) * ForceStem
+    //
+    // And thus:
+    //
+    //      F(P)  = (-Perp(E1) -Perp(E2)) * ForceStem / 2
+    //
+    //
+    //
+    // Notes:
+    //  - We use the frontiers' gemetric centers as the place that depth is calculated at;
+    //    as a consequence, if the ship is interactively moved or rotated, the centers
+    //    that we use here are stale. Not a big deal...
+    //    Outside of these "moving" interactions, the centers we use here are also
+    //    inconsistent with the current positions because of integration during dynamic
+    //    iterations, unless hydrostatic pressures are calculated on the *first* dynamic
+    //    iteration.
+    //
+
     vec2f const & geometricCenterPosition = frontier.GeometricCenterPosition;
+    float const oceanSurfaceY = mParentWorld.GetOceanSurfaceHeightAt(geometricCenterPosition.x);
+    float const depth = oceanSurfaceY - geometricCenterPosition.y;
+
+    float const totalExternalPressure = Formulae::CalculateTotalPressureAt(
+        geometricCenterPosition.y,
+        oceanSurfaceY,
+        effectiveAirDensity,
+        effectiveWaterDensity,
+        gameParameters);
+
+    assert(totalExternalPressure != 0.0f); // Air pressure is never zero
+
+    // Counterbalance adjustment: a "trick" to reduce the effect of inner pressure on the external pressure
+    // applied to the hull, so to generate higher hydrostatic forces.
+    // Factor for counterbalance adjustment:
+    //  - At adj=0.0, we want the internal pressure to NEVER counterbalance the external pressure as-is
+    //  - At adj=0.5, we want the internal pressure to start counterbalancing the external pressure somewhere mid-way along the depth
+    //  - At adj=1.0, we want the internal pressure to ALWAYS counterbalance the external pressure
+    float const internalPressureCounterbalanceAdjustmentFactor =
+        1.0f / totalExternalPressure
+        * (1.0f - SmoothStep(
+            GameParameters::HalfMaxWorldHeight,
+            GameParameters::HalfMaxWorldHeight * 2.0f,
+            depth + (1.0f - gameParameters.HydrostaticPressureInternalPressureCounterbalanceAdjustment) * GameParameters::HalfMaxWorldHeight * 2.0f));
 
     //
     // 1. Calculate geometry of forces and populate interim buffer
@@ -1494,17 +1518,6 @@ void Ship::ApplyHydrostaticPressureForces(
 
     vec2f netForce = vec2f::zero();
     float netTorque = 0.0f;
-
-    float const totalExternalPressure = Formulae::CalculateTotalPressureAt(
-        geometricCenterPosition.y,
-        mParentWorld.GetOceanSurfaceHeightAt(geometricCenterPosition.x),
-        effectiveAirDensity,
-        effectiveWaterDensity,
-        gameParameters);
-
-    assert(totalExternalPressure != 0.0f); // Air pressure is never zero
-
-    float const internalPressureCounterbalanceAdjustmentFactor = 1.0f / totalExternalPressure * gameParameters.HydrostaticPressureInternalPressureCounterbalanceAdjustment;
 
     //
     // Visit all edges

@@ -862,10 +862,10 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
     //
 
     // Hardcoded pixel offsets of readings in physics probe panel,
-    // giving position of text'd bottom-right corner
-    vec2f constexpr PhysicsProbePanelSpeedBottomRight(137.0f, 12.0f);
-    vec2f constexpr PhysicsProbePanelTemperatureBottomRight(295.0f, 12.0f);
-    vec2f constexpr PhysicsProbePanelDepthBottomRight(453.0f, 12.0f);
+    // giving position of text's bottom-right corner
+    vec2f constexpr PhysicsProbePanelSpeedBottomRight(137.0f, 11.0f);
+    vec2f constexpr PhysicsProbePanelTemperatureBottomRight(295.0f, 11.0f);
+    vec2f constexpr PhysicsProbePanelDepthBottomRight(453.0f, 11.0f);
 
     for (auto const & textLine : context.TextLines)
     {
