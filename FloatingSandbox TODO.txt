@@ -898,13 +898,13 @@ Render:
 				+ @ Flood tool:
 					+ Use Formulae
 				+ SettingsDialog: tooltip of HydrostaticPressureAdjust: add "atmosphere"				
-			= Try with internal pressure, again
+			+ Try with internal pressure, again
 				+ Re-instate internal pressure code
 				+ Re-instate hull particles getting the average of all their non-hull neighbors
 				+ Commit
 				+ Use hull's internal pressure to counteract external pressure, at initial forceVector calculation
 					+ forceVector *= 1.0 - internalPressure(Pi)/externalPressure * adj
-				= If goes thru: 
+				+ If goes thru: 
 					+ Do all the internal pressure sidework:
 						+ Flood tool
 							+ Remove pressure only if water has been removed - remove pressure by effective water wuantity removed
@@ -914,8 +914,8 @@ Render:
 							+ Pumping out: internal pressure decreases
 						+ Rendering							
 					+ SettingsDialog: make new group with new setting for internal pressure "contribution"						
-					= Optimize
-						= EqualizeInternalPressure: try with local buffer remembering all we do in the first loop
+					+ Optimize
+						+ EqualizeInternalPressure: try with local buffer remembering all we do in the first loop
 							+ Before: 4.96ms, 4%
 							+ After: 4.91ms, 2.73%
 			+ Internal pressure counterbalance:
