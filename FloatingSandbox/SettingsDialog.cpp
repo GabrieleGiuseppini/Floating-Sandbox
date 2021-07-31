@@ -1141,7 +1141,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     _("Pressure Adjust"),
-                    _("Adjusts the hydrostatic pressure (or 'pressure crush') exerted by sea water on the exterior of physical bodies."),
+                    _("Adjusts the hydrostatic pressure (a.k.a. 'pressure crush') felt by the exterior of physical bodies."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::HydrostaticPressureAdjustment, value);
