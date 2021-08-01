@@ -952,14 +952,17 @@ void GameController::TogglePinAt(LogicalPixelCoordinates const & screenCoordinat
         mGameParameters);
 }
 
-bool GameController::InjectBubblesAt(LogicalPixelCoordinates const & screenCoordinates)
+bool GameController::InjectPressureAt(
+    LogicalPixelCoordinates const & screenCoordinates,
+    float pressureQuantityMultiplier)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Apply action
     assert(!!mWorld);
-    return mWorld->InjectBubblesAt(
+    return mWorld->InjectPressureAt(
         worldCoordinates,
+        pressureQuantityMultiplier,
         mGameParameters);
 }
 

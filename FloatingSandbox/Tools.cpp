@@ -330,16 +330,16 @@ PinTool::PinTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
-// InjectAirBubbles
+// InjectPressure
 ////////////////////////////////////////////////////////////////////////
 
-InjectAirBubblesTool::InjectAirBubblesTool(
+InjectPressureTool::InjectPressureTool(
     IToolCursorManager & toolCursorManager,
     std::shared_ptr<IGameController> gameController,
     std::shared_ptr<SoundController> soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
-        ToolType::InjectAirBubbles,
+        ToolType::InjectPressure,
         toolCursorManager,
         std::move(gameController),
         std::move(soundController))

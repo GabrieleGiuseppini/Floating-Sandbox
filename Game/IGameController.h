@@ -105,7 +105,7 @@ struct IGameController
     virtual void DrawTo(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) = 0;
     virtual void SwirlAt(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) = 0;
     virtual void TogglePinAt(LogicalPixelCoordinates const & screenCoordinates) = 0;
-    virtual bool InjectBubblesAt(LogicalPixelCoordinates const & screenCoordinates) = 0;
+    virtual bool InjectPressureAt(LogicalPixelCoordinates const & screenCoordinates, float pressureQuantityMultiplier) = 0;
     virtual bool FloodAt(LogicalPixelCoordinates const & screenCoordinates, float waterQuantityMultiplier) = 0;
     virtual void ToggleAntiMatterBombAt(LogicalPixelCoordinates const & screenCoordinates) = 0;
     virtual void ToggleImpactBombAt(LogicalPixelCoordinates const & screenCoordinates) = 0;

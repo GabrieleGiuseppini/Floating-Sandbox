@@ -803,6 +803,51 @@ bool Ship::InjectBubblesAt(
     }
 }
 
+bool Ship::InjectPressureAt(
+    vec2f const & targetPos,
+    float pressureQuantityMultiplier,
+    GameParameters const & gameParameters)
+{
+    float const searchRadius = gameParameters.InjectPressureRadius;
+
+    // Delta quantity of pressure, added or removed;
+    // actual quantity removed depends on pre-existing pressure
+    float const quantityOfPressureDelta =
+        GameParameters::AirPressureAtSeaLevel
+        * gameParameters.InjectPressureQuantityAdjustment
+        * pressureQuantityMultiplier
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+    //
+    // Find the (non-ephemeral) non-hull points in the radius
+    //
+
+    float const searchSquareRadius = searchRadius * searchRadius;
+
+    bool anyWasApplied = false;
+    for (auto const pointIndex : mPoints.RawShipPoints())
+    {
+        if (!mPoints.GetIsHull(pointIndex))
+        {
+            float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+            if (squareDistance < searchSquareRadius)
+            {
+                //
+                // Update internal pressure
+                //
+
+                mPoints.SetInternalPressure(
+                    pointIndex,
+                    std::max(mPoints.GetInternalPressure(pointIndex) + quantityOfPressureDelta, 0.0f));
+
+                anyWasApplied = true;
+            }
+        }
+    }
+
+    return anyWasApplied;
+}
+
 bool Ship::FloodAt(
     vec2f const & targetPos,
     float waterQuantityMultiplier,

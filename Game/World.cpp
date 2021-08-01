@@ -469,11 +469,29 @@ void World::TogglePinAt(
     }
 }
 
-bool World::InjectBubblesAt(
+bool World::InjectPressureAt(
     vec2f const & targetPos,
+    float pressureQuantityMultiplier,
     GameParameters const & gameParameters)
 {
-    // Stop at first ship that successfully injects
+    // Stop at first ship that successfully injects pressure
+    for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
+    {
+        if ((*it)->InjectPressureAt(
+            targetPos,
+            pressureQuantityMultiplier,
+            gameParameters))
+        {
+            // Found!
+            return true;
+        }
+
+        // No luck...
+        // search other ships
+    }
+
+    // Couldn't inject pressure...
+    // ...stop at first ship that successfully injects bubbles now
     for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
         if ((*it)->InjectBubblesAt(

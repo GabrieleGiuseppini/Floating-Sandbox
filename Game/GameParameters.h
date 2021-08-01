@@ -497,6 +497,14 @@ struct GameParameters
 
     static float constexpr BombMass = 5000.0f; // Quite some fat bomb!
 
+    float InjectPressureRadius;
+    static float constexpr MinInjectPressureRadius = 0.1f;
+    static float constexpr MaxInjectPressureRadius = 10.0f;
+
+    float InjectPressureQuantityAdjustment;
+    static float constexpr MinInjectPressureQuantityAdjustment = 0.1f;
+    static float constexpr MaxInjectPressureQuantityAdjustment = 100.0f;
+
     float FloodRadius;
     static float constexpr MinFloodRadius = 0.1f;
     static float constexpr MaxFloodRadius = 10.0f;

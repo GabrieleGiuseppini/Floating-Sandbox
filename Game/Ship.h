@@ -186,6 +186,11 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
+    bool InjectPressureAt(
+        vec2f const & targetPos,
+        float pressureQuantityMultiplier,
+        GameParameters const & gameParameters);
+
     bool FloodAt(
         vec2f const & targetPos,
         float waterQuantityMultiplier,

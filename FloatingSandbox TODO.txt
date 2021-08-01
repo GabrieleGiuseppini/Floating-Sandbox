@@ -958,9 +958,12 @@ Render:
 					- At end sets mPostRepairGracePeriodMultiplier to 0.0
 					- Also at end, clears out whole dynamic forces buffer
 						- Remove ad-hoc setting of dynamic forces to zero
-			- Pressure tool:
-				- Like Flood tool was before, but only acting on InternalPressure
-				- Could repurpose bubble tool - does bubbles when no ship is found
+			= Pressure tool:
+				+ Like Flood tool was before, but only acting on InternalPressure
+				+ Could repurpose bubble tool - does bubbles when no ship is found
+				+ Shift modifier
+				- SettingsDialog - TODO: breakout tab, "Destructive Tools" and "Other Tools"
+				- Help
 			- Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
 				! Goodyear's current shell is currently normal cardboard (c1a46a)
 				- New material: Mylar, of "cloth" sound type
@@ -968,6 +971,7 @@ Render:
 					- Hull
 					- Use real combustion properties
 				- Do other blimp as well
+			- Find right setting value and range for InternalPressure tool
 			- See if need adjustment for air pressure
 				- Goal: high air pressure causes things to explode high up
 					! No need to extend counterbalance upwards

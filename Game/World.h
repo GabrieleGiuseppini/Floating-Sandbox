@@ -253,8 +253,9 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 
-    bool InjectBubblesAt(
+    bool InjectPressureAt(
         vec2f const & targetPos,
+        float pressureQuantityMultiplier,
         GameParameters const & gameParameters);
 
     bool FloodAt(

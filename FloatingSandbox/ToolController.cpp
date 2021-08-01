@@ -105,7 +105,7 @@ ToolController::ToolController(
             resourceLocator));
 
     mAllTools.emplace_back(
-        std::make_unique<InjectAirBubblesTool>(
+        std::make_unique<InjectPressureTool>(
             *this,
             gameController,
             soundController,

@@ -73,7 +73,7 @@ long const ID_ELECTRICSPARK_MENUITEM = wxNewId();
 long const ID_GRAB_MENUITEM = wxNewId();
 long const ID_SWIRL_MENUITEM = wxNewId();
 long const ID_PIN_MENUITEM = wxNewId();
-long const ID_INJECT_AIR_BUBBLES_MENUITEM = wxNewId();
+long const ID_INJECT_PRESSURE_MENUITEM = wxNewId();
 long const ID_FLOOD_HOSE_MENUITEM = wxNewId();
 long const ID_TIMERBOMB_MENUITEM = wxNewId();
 long const ID_RCBOMB_MENUITEM = wxNewId();
@@ -355,11 +355,10 @@ MainFrame::MainFrame(
         Connect(ID_PIN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPinMenuItemSelected);
         ADD_PLAIN_ACCELERATOR_KEY('P', ID_PIN_MENUITEM)
 
-        /* Easter Egg
-        wxMenuItem * injectAirBubblesMenuItem = new wxMenuItem(mToolsMenu, ID_INJECT_AIR_BUBBLES_MENUITEM, _("Inject Air Bubbles") + wxS("\tB"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(injectAirBubblesMenuItem);
-        Connect(ID_INJECT_AIR_BUBBLES_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnInjectAirBubblesMenuItemSelected);
-        */
+        wxMenuItem * injectPressureMenuItem = new wxMenuItem(mToolsMenu, ID_INJECT_PRESSURE_MENUITEM, _("Inject Pressure") + wxS("\tB"), wxEmptyString, wxITEM_RADIO);
+        mToolsMenu->Append(injectPressureMenuItem);
+        Connect(ID_INJECT_PRESSURE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnInjectPressureMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('B', ID_INJECT_PRESSURE_MENUITEM)
 
         wxMenuItem * floodHoseMenuItem = new wxMenuItem(mToolsMenu, ID_FLOOD_HOSE_MENUITEM, _("Flood/Dry") + wxS("\tF"), wxEmptyString, wxITEM_RADIO);
         mToolsMenu->Append(floodHoseMenuItem);
@@ -658,19 +657,6 @@ bool MainFrame::ProcessKeyDown(
         {
             // Down
             mGameController->Pan(LogicalPixelSize(0, mUIPreferencesManager->GetPanIncrement()));
-            return true;
-        }
-    }
-    else if (keyCode == 'B')
-    {
-        // Air Bubbles tool
-        if (!!mToolController)
-        {
-            mToolController->SetTool(ToolType::InjectAirBubbles);
-
-            // Note: at this moment the current menu item is still selected, so re-selecting it has no effect; there's no way
-            // around this, but this is an Easter Egg after all....
-
             return true;
         }
     }
@@ -1718,10 +1704,10 @@ void MainFrame::OnPinMenuItemSelected(wxCommandEvent & /*event*/)
     mToolController->SetTool(ToolType::Pin);
 }
 
-void MainFrame::OnInjectAirBubblesMenuItemSelected(wxCommandEvent & /*event*/)
+void MainFrame::OnInjectPressureMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
-    mToolController->SetTool(ToolType::InjectAirBubbles);
+    mToolController->SetTool(ToolType::InjectPressure);
 }
 
 void MainFrame::OnFloodHoseMenuItemSelected(wxCommandEvent & /*event*/)

@@ -40,7 +40,7 @@ enum class ToolType
     Grab,
     Swirl,
     Pin,
-    InjectAirBubbles,
+    InjectPressure,
     FloodHose,
     AntiMatterBomb,
     ImpactBomb,
@@ -1506,11 +1506,11 @@ private:
     wxImage const mCursorImage;
 };
 
-class InjectAirBubblesTool final : public Tool
+class InjectPressureTool final : public Tool
 {
 public:
 
-    InjectAirBubblesTool(
+    InjectPressureTool(
         IToolCursorManager & toolCursorManager,
         std::shared_ptr<IGameController> gameController,
         std::shared_ptr<SoundController> soundController,
@@ -1518,17 +1518,8 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    virtual void Initialize(InputState const & /*inputState*/) override
     {
-        if (inputState.IsLeftMouseDown)
-        {
-            mIsEngaged = mGameController->InjectBubblesAt(inputState.MousePosition);
-        }
-        else
-        {
-            mIsEngaged = false;
-        }
-
         SetCurrentCursor();
     }
 
@@ -1543,7 +1534,9 @@ public:
         bool isEngaged;
         if (inputState.IsLeftMouseDown)
         {
-            isEngaged = mGameController->InjectBubblesAt(inputState.MousePosition);
+            isEngaged = mGameController->InjectPressureAt(
+                inputState.MousePosition,
+                inputState.IsShiftKeyDown ? -1.0f : 1.0f);
         }
         else
         {
