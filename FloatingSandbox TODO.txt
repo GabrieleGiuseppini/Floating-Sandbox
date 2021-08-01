@@ -949,6 +949,25 @@ Render:
 			
 
 		- Hydrostatic pressure follow-ups:
+			- Repair tool: 
+				- Ship has float mPostRepairGracePeriodMultiplier, from 0.0 to 1.0 - default is 1.0
+				- At end of update, converges towards 1.0 - with tolerance check to become 1.0
+				- Used at:
+					- ApplyStaticPressureForces for final multiplier of forces
+				- Repair():
+					- At end sets mPostRepairGracePeriodMultiplier to 0.0
+					- Also at end, clears out whole dynamic forces buffer
+						- Remove ad-hoc setting of dynamic forces to zero
+			- Pressure tool:
+				- Like Flood tool was before, but only acting on InternalPressure
+				- Could repurpose bubble tool - does bubbles when no ship is found
+			- Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
+				! Goodyear's current shell is currently normal cardboard (c1a46a)
+				- New material: Mylar, of "cloth" sound type
+					- Copy from cloth: stiffness and strength
+					- Hull
+					- Use real combustion properties
+				- Do other blimp as well
 			- See if need adjustment for air pressure
 				- Goal: high air pressure causes things to explode high up
 					! No need to extend counterbalance upwards
@@ -956,16 +975,6 @@ Render:
 			- Ship definition: add optional value for default internal pressure
 				- When not specified, it's PressureAtZero (calc'd via Formulae)
 					- PressureAtZero is subject to AirPressureAdjustment
-			- Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
-				! Goodyear's current shell is currently normal cardboard (c1a46a)
-				- New material: Mylar, of "cloth" sound type
-					- See combustion properties
-			- Try pressure tool
-				- Like Flood tool was before, but only acting on InternalPressure
-				- Could repurpose bubble tool - does bubbles when no ship is found
-			- Repair tool:
-				- Consider: no ApplyHydrostaticPressure if we were repairing just before this step
-					- Repair() sets flag that is cleared @ end of Ship::Update()
 			- Optimizations:
 				- Merge EqualizeInternalPressure in UpdateWaterVelocities: EqualizeInternalPressureAndUpdateWaterVelocities
 
