@@ -2808,8 +2808,8 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 1),
-            wxGBSpan(1, 2),
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 8),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -2957,8 +2957,8 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 2),
-            wxGBSpan(1, 1),
+            wxGBPosition(1, 5),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -3050,7 +3050,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -3136,7 +3136,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 1),
+            wxGBPosition(0, 2),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
@@ -3224,7 +3224,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 3),
+            wxGBPosition(0, 4),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
@@ -3311,7 +3311,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 0),
+            wxGBPosition(1, 1),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
@@ -3399,7 +3399,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 2),
+            wxGBPosition(1, 3),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);

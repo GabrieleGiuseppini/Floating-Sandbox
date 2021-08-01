@@ -962,8 +962,9 @@ Render:
 				+ Like Flood tool was before, but only acting on InternalPressure
 				+ Could repurpose bubble tool - does bubbles when no ship is found
 				+ Shift modifier
-				= SettingsDialog - TODO: breakout tab, "Destructive Tools" and "Other Tools"
+				+ SettingsDialog - breakout tab, "Destructive Tools" and "Other Tools"
 				+ Help
+				- Manu with text and icon
 			- Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
 				! Goodyear's current shell is currently normal cardboard (c1a46a)
 				- New material: Mylar, of "cloth" sound type
