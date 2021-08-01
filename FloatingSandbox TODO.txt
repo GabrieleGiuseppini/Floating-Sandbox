@@ -928,9 +928,9 @@ Render:
 				+ HPCounterBalance: stays
 					+ SettingsDialog: merge with other water, and say "hydro"
 			+ Custom probe for net force
-			- Explain counterbalance in tooltip
-			- Changelist
-				- Both (hydro)static pressure and internal pressure
+			+ Explain counterbalance in tooltip
+			+ Changelist
+				+ Both (hydro)static pressure and internal pressure
 			- Send for testing
 			- Test repair
 				- Consider: no ApplyHydrostaticPressure if we were repairing just before this step
@@ -944,9 +944,7 @@ Render:
 					+ @ Titanic unequalized: "The problem becomes even more pronounced with bigger structures"
 					+ "2: iterative net effect minimization"
 					- TODOHERE 
-			- Final optimization attempt
-				- See if can get away without internal pressure, and using internal water instead @ counterbalance
-					- If we keep internal pressure: mark TODO item for internal pressure * as complete
+			- Mark internal pressure TODO item for internal pressure * as complete
 			- Merge back into master
 
 		FOLLOW-UPS:		
@@ -960,6 +958,7 @@ Render:
 		- Does it make sense to have a pressure tool?
 			- Like Flood tool was before, but only acting on InternalPressure
 			- Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
+				! Goodyear's current shell is currently normal cardboard (c1a46a)
 
 
 

@@ -998,7 +998,8 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     _("Hydrostatic Pressure Adjust"),
-                    _("Adjusts the amount by which internal pressure in the ship counterbalances the external hydrostatic pressure."),
+                    _("Adjusts the amount by which internal pressure in the ship counterbalances the external hydrostatic pressure. Lower values"\
+                      " increase the depth at which internal pressure stops contributing to the total hydrostatic pressure."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::HydrostaticPressureCounterbalanceAdjustment, value);
