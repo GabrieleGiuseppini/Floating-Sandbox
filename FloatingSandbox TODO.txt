@@ -931,7 +931,10 @@ Render:
 			+ Explain counterbalance in tooltip
 			+ Changelist
 				+ Both (hydro)static pressure and internal pressure
+			+ Merge back into master
+			+ Mark internal pressure TODO item for internal pressure * as complete
 			- Send for testing
+				- Bump up version
 			- Test repair
 				- Consider: no ApplyHydrostaticPressure if we were repairing just before this step
 					- Repair() sets flag that is cleared @ end of Ship::Update()
@@ -944,8 +947,7 @@ Render:
 					+ @ Titanic unequalized: "The problem becomes even more pronounced with bigger structures"
 					+ "2: iterative net effect minimization"
 					- TODOHERE 
-			- Mark internal pressure TODO item for internal pressure * as complete
-			- Merge back into master
+			
 
 		FOLLOW-UPS:		
 		- See if need adjustment for air pressure
@@ -1879,23 +1881,6 @@ Render:
 	- Air bubbles with proper vortices, due to water moving fast around it
 		- Like at https://youtu.be/KPsnUPIHZuM
 		- Kinda as if the originating ship particle's velocity at the moment of generation has a (decaying) impact on the air bubble particle, making it move like an orbit
-
-	- Internal pressure (*)
-		- Option 1: a new single "pressure" quantity, separate than Water
-			- New quantity at each particle, much like Water
-			- Intake @ WaterIntake, more or less same concept
-			- New EqualizePressure step to propagate pressure from each particle to its neighbors along springs
-				- Much like we do in temperature
-				- Hullness trick, to ensure that hull particles have pressure (for frontier checking) yet pressure does not propagate through internal hull walls:
-					- Particles do *not* propagate through hull springs
-					- Hull particles do not partecipate in normal propagation, but get average instead of all neighboring particles
-		- Option 2: separate WaterPressure and AirPressure quantities, playing in tandem
-			- At any moment: total pressure at a particle is Water+Air
-			- UpdateWaterIntake:
-				- TODOHERE
-			- UpdatePressures:
-				- 1: Water: like now but with pressure being Water+Air
-				- 2: Air: TODOHERE
 
 	- "Ropes 2" layer with different rope materials
 		- json only allows one ropes layer
@@ -8944,6 +8929,17 @@ IF WX:
 				+ 1: Adjustment (or just adjustment, and == 0 disables simulation)
 					+ SettingsDialog
 		+ changelist
+	+ Internal pressure (*)
+		+ Option 1: a new single "pressure" quantity, separate than Water
+			+ New quantity at each particle, much like Water
+			+ Intake @ WaterIntake, more or less same concept
+			+ New EqualizePressure step to propagate pressure from each particle to its neighbors along springs
+				+ Much like we do in temperature
+				+ Hullness trick, to ensure that hull particles have pressure (for frontier checking) yet pressure does not propagate through internal hull walls:
+					+ Pressure does *not* propagate through hull springs
+					+ Hull particles do not partecipate in normal propagation, but get average instead of all neighboring particles
+		X Option 2: separate WaterPressure and AirPressure quantities, playing in tandem
+			X At any moment: total pressure at a particle is Water+Air
 
 
 
