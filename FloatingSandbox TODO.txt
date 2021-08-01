@@ -933,11 +933,8 @@ Render:
 				+ Both (hydro)static pressure and internal pressure
 			+ Merge back into master
 			+ Mark internal pressure TODO item for internal pressure * as complete
-			- Send for testing
-				- Bump up version
-			- Test repair
-				- Consider: no ApplyHydrostaticPressure if we were repairing just before this step
-					- Repair() sets flag that is cleared @ end of Ship::Update()
+			+ Send for testing
+				+ Bump up version
 			- Cleanup commented out code
 				= Make video first
 					+ "1: the basics"
@@ -947,22 +944,30 @@ Render:
 					+ @ Titanic unequalized: "The problem becomes even more pronounced with bigger structures"
 					+ "2: iterative net effect minimization"
 					- TODOHERE 
+					- "3: internal pressure counterbalance"
+					- TODOHERE
 			
 
-		FOLLOW-UPS:		
-		- See if need adjustment for air pressure
-			- Goal: high air pressure causes things to explode high up
-				! No need to extend counterbalance upwards
-			- If so: SettingsDialog		
-		- Ship definition: add optional value for default internal pressure
-			- When not specified, it's PressureAtZero (calc'd via Formulae)
-				- PressureAtZero is subject to AirPressureAdjustment
-		- Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
-			! Goodyear's current shell is currently normal cardboard (c1a46a)
-			- New material: Mylar, of "cloth" sound type
-				- See combustion properties
-		- Try pressure tool
-			- Like Flood tool was before, but only acting on InternalPressure
+		- Hydrostatic pressure follow-ups:
+			- See if need adjustment for air pressure
+				- Goal: high air pressure causes things to explode high up
+					! No need to extend counterbalance upwards
+				- If so: SettingsDialog		
+			- Ship definition: add optional value for default internal pressure
+				- When not specified, it's PressureAtZero (calc'd via Formulae)
+					- PressureAtZero is subject to AirPressureAdjustment
+			- Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
+				! Goodyear's current shell is currently normal cardboard (c1a46a)
+				- New material: Mylar, of "cloth" sound type
+					- See combustion properties
+			- Try pressure tool
+				- Like Flood tool was before, but only acting on InternalPressure
+				- Could repurpose bubble tool - does bubbles when no ship is found
+			- Repair tool:
+				- Consider: no ApplyHydrostaticPressure if we were repairing just before this step
+					- Repair() sets flag that is cleared @ end of Ship::Update()
+			- Optimizations:
+				- Merge EqualizeInternalPressure in UpdateWaterVelocities: EqualizeInternalPressureAndUpdateWaterVelocities
 
 
 
@@ -1848,6 +1853,8 @@ Render:
 		- Requires "sources of light" feature
 
 - Dynamics:
+
+	- Different scale for ships
 
 	- Time slowing down, both automatically (at explosions, at big events, etc.) and by user
 
