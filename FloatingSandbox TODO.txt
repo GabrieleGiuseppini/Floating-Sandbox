@@ -955,10 +955,12 @@ Render:
 		- Ship definition: add optional value for default internal pressure
 			- When not specified, it's PressureAtZero (calc'd via Formulae)
 				- PressureAtZero is subject to AirPressureAdjustment
-		- Does it make sense to have a pressure tool?
+		- Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
+			! Goodyear's current shell is currently normal cardboard (c1a46a)
+			- New material: Mylar, of "cloth" sound type
+				- See combustion properties
+		- Try pressure tool
 			- Like Flood tool was before, but only acting on InternalPressure
-			- Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
-				! Goodyear's current shell is currently normal cardboard (c1a46a)
 
 
 
