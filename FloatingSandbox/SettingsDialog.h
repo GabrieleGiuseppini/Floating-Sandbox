@@ -132,7 +132,7 @@ private:
     wxCheckBox * mDoFishShoalingCheckBox;
     SliderControl<float> * mFishShoalRadiusAdjustmentSlider;
 
-    // Tools
+    // Destructive Tools
     SliderControl<float> * mDestroyRadiusSlider;
     SliderControl<float> * mBombBlastRadiusSlider;
     SliderControl<float> * mBombBlastForceAdjustmentSlider;
@@ -140,9 +140,13 @@ private:
     SliderControl<float> * mAntiMatterBombImplosionStrengthSlider;
     SliderControl<float> * mBlastToolRadiusSlider;
     SliderControl<float> * mBlastToolForceAdjustmentSlider;
+
+    // Other Tools
     SliderControl<float> * mScrubRotRadiusSlider;
     SliderControl<float> * mFloodRadiusSlider;
     SliderControl<float> * mFloodQuantitySlider;
+    SliderControl<float> * mInjectPressureRadiusSlider;
+    SliderControl<float> * mInjectPressureQuantityAdjustmentSlider;
     SliderControl<float> * mRepairRadiusSlider;
     SliderControl<float> * mRepairSpeedAdjustmentSlider;
     SliderControl<float> * mHeatBlasterRadiusSlider;
@@ -225,7 +229,8 @@ private:
     void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateAirAndSkyPanel(wxPanel * panel);
     void PopulateLightsElectricalAndFishesPanel(wxPanel * panel);
-    void PopulateToolsPanel(wxPanel * panel, ResourceLocator const & resourceLocator);
+    void PopulateDestructiveToolsPanel(wxPanel * panel, ResourceLocator const & resourceLocator);
+    void PopulateOtherToolsPanel(wxPanel * panel, ResourceLocator const & resourceLocator);
     void PopulateRenderingPanel(wxPanel * panel);
     void PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel);
     void PopulateSettingsManagementPanel(wxPanel * panel);

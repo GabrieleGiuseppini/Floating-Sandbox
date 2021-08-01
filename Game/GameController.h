@@ -620,6 +620,16 @@ public:
     float GetMinFloodQuantity() const override { return GameParameters::MinFloodQuantity; }
     float GetMaxFloodQuantity() const override { return GameParameters::MaxFloodQuantity; }
 
+    float GetInjectPressureRadius() const override { return mGameParameters.InjectPressureRadius; }
+    void SetInjectPressureRadius(float value) override { mGameParameters.InjectPressureRadius = value; }
+    float GetMinInjectPressureRadius() const override { return GameParameters::MinInjectPressureRadius; }
+    float GetMaxInjectPressureRadius() const override { return GameParameters::MaxInjectPressureRadius; }
+
+    float GetInjectPressureQuantityAdjustment() const override { return mGameParameters.InjectPressureQuantityAdjustment; }
+    void SetInjectPressureQuantityAdjustment(float value) override { mGameParameters.InjectPressureQuantityAdjustment = value; }
+    float GetMinInjectPressureQuantityAdjustment() const override { return GameParameters::MinInjectPressureQuantityAdjustment; }
+    float GetMaxInjectPressureQuantityAdjustment() const override { return GameParameters::MaxInjectPressureQuantityAdjustment; }
+
     float GetBlastToolRadius() const override { return mGameParameters.BlastToolRadius; }
     void SetBlastToolRadius(float value) override { mGameParameters.BlastToolRadius = value; }
     float GetMinBlastToolRadius() const override { return GameParameters::MinBlastToolRadius; }

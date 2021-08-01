@@ -239,6 +239,12 @@ struct IGameControllerSettingsOptions
     virtual float GetMinFloodQuantity() const = 0;
     virtual float GetMaxFloodQuantity() const = 0;
 
+    virtual float GetMinInjectPressureRadius() const = 0;
+    virtual float GetMaxInjectPressureRadius() const = 0;
+
+    virtual float GetMinInjectPressureQuantityAdjustment() const = 0;
+    virtual float GetMaxInjectPressureQuantityAdjustment() const = 0;
+
     virtual float GetMinBlastToolRadius() const = 0;
     virtual float GetMaxBlastToolRadius() const = 0;
 

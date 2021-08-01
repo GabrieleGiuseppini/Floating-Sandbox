@@ -97,6 +97,8 @@ enum class GameSettings : size_t
     AntiMatterBombImplosionStrength,
     FloodRadius,
     FloodQuantity,
+    InjectPressureRadius,
+    InjectPressureQuantityAdjustment,
     BlastToolRadius,
     BlastToolForceAdjustment,
     ScrubRotRadius,
