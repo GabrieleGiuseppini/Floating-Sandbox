@@ -16,6 +16,7 @@
 #include "ShipOverlays.h"
 
 #include <GameCore/AABBSet.h>
+#include <GameCore/Buffer.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/RunningAverage.h>
 #include <GameCore/TaskThreadPool.h>
@@ -74,7 +75,7 @@ public:
         float currentSimulationTime,
 		Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters,
-        Geometry::AABBSet & aabbSet);
+        Geometry::AABBSet & externalAabbSet);
 
     void RenderUpload(Render::RenderContext & renderContext);
 
@@ -415,7 +416,7 @@ private:
         float effectiveAirDensity,
         float effectiveWaterDensity,
         GameParameters const & gameParameters,
-        Geometry::AABBSet & aabbSet);
+        Geometry::AABBSet & externalAabbSet);
 
     void ApplyWorldParticleForces(
         float effectiveAirDensity,
@@ -429,9 +430,15 @@ private:
         float effectiveWaterDensity,
         Buffer<float> & newCachedPointDepths,
         GameParameters const & gameParameters,
-        Geometry::AABBSet & aabbSet);
+        Geometry::AABBSet & externalAabbSet);
 
-    void ApplyHydrostaticPressureForces(
+    void ApplyStaticPressureForces(
+        float effectiveAirDensity,
+        float effectiveWaterDensity,
+        GameParameters const & gameParameters);
+
+    void ApplyStaticPressureForces(
+        Frontiers::Frontier const & frontier,
         float effectiveAirDensity,
         float effectiveWaterDensity,
         GameParameters const & gameParameters);
@@ -446,13 +453,17 @@ private:
 
     void TrimForWorldBounds(GameParameters const & gameParameters);
 
-    // Water
+    // Pressure and water
 
-    void UpdateWaterInflow(
+    void UpdatePressureAndWaterInflow(
+        float effectiveAirDensity,
+        float effectiveWaterDensity,
         float currentSimulationTime,
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters,
         float & waterTakenInStep);
+
+    void EqualizeInternalPressure(GameParameters const & gameParameters);
 
     void UpdateWaterVelocities(
         GameParameters const & gameParameters,
@@ -781,6 +792,38 @@ private:
     // used to avoid running diffusion when luminiscence adjustment is zero and we've
     // already ran once with zero (so to zero out buffer)
     float mLastLuminiscenceAdjustmentDiffused;
+
+    //
+    // Static pressure
+    //
+
+    struct StaticPressureOnPoint
+    {
+        ElementIndex PointIndex;
+        vec2f ForceVector;
+        vec2f TorqueArm;
+
+        StaticPressureOnPoint(
+            ElementIndex pointIndex,
+            vec2f const & forceVector,
+            vec2f const & torqueArm)
+            : PointIndex(pointIndex)
+            , ForceVector(forceVector)
+            , TorqueArm(torqueArm)
+        {}
+    };
+
+    // Index is _not_ point index, this is simply a container
+    //
+    // Note: may be populated for same point multiple times, once for each crossing of
+    // the frontier through that point
+    Buffer<StaticPressureOnPoint> mStaticPressureBuffer;
+
+    // For statistics
+    float mStaticPressureNetForceMagnitudeSum;
+    float mStaticPressureNetForceMagnitudeCount;
+    float mStaticPressureIterationsPercentagesSum;
+    float mStaticPressureIterationsCount;
 
     //
     // Render members

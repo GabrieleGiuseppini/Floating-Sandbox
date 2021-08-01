@@ -320,7 +320,7 @@ void Springs::UpdateForStrains(
                     // Notify stress
                     mGameEventHandler->OnStress(
                         GetBaseStructuralMaterial(s),
-                        points.IsCachedUnderwater(mEndpointsBuffer[s].PointAIndex),
+                        mParentWorld.IsUnderwater(GetEndpointAPosition(s, points)), // Arbitrary
                         1);
                 }
             }

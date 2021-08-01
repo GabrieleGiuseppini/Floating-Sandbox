@@ -58,6 +58,7 @@ struct GameParameters
 
     // Air
     static float constexpr AirMass = 1.2754f; // Kg
+    static float constexpr AirPressureAtSeaLevel = 101325.0f; // No immediate relation to mass, due to compressibility of air; Pa
 
     // Water
     static float constexpr WaterMass = 1000.0f; // Kg
@@ -124,7 +125,13 @@ struct GameParameters
     static float constexpr MinRotAcceler8r = 0.0f;
     static float constexpr MaxRotAcceler8r = 1000.0f;
 
+    float StaticPressureAdjustment;
+    static float constexpr MinStaticPressureAdjustment = 0.0f;
+    static float constexpr MaxStaticPressureAdjustment = 20.0f;
+
     // Air
+
+    float AirDensityAdjustment;
 
     static float constexpr AirFrictionDragCoefficient = 0.003f;
 
@@ -156,9 +163,9 @@ struct GameParameters
     static float constexpr MinWaterPressureDragAdjustment = 0.0f;
     static float constexpr MaxWaterPressureDragAdjustment = 1000.0f;
 
-    float HydrostaticPressureAdjustment;
-    static float constexpr MinHydrostaticPressureAdjustment = 0.0f;
-    static float constexpr MaxHydrostaticPressureAdjustment = 20.0f;
+    float HydrostaticPressureCounterbalanceAdjustment;
+    static float constexpr MinHydrostaticPressureCounterbalanceAdjustment = 0.0f;
+    static float constexpr MaxHydrostaticPressureCounterbalanceAdjustment = 1.0f;
 
     float WaterIntakeAdjustment;
     static float constexpr MinWaterIntakeAdjustment = 0.001f;

@@ -240,6 +240,16 @@ public:
         mGameController->SetDoShowTsunamiNotifications(value);
     }
 
+    UnitsSystem GetDisplayUnitsSystem() const
+    {
+        return mGameController->GetDisplayUnitsSystem();
+    }
+
+    void SetDisplayUnitsSystem(UnitsSystem value)
+    {
+        mGameController->SetDisplayUnitsSystem(value);
+    }
+
     bool GetAutoShowSwitchboard() const
     {
         return mAutoShowSwitchboard;

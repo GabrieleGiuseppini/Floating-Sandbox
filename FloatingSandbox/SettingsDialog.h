@@ -63,6 +63,7 @@ private:
     SliderControl<float> * mMechanicalQualitySlider;
     SliderControl<float> * mStrengthSlider;
     SliderControl<float> * mGlobalDampingAdjustmentSlider;
+    SliderControl<float> * mStaticPressureAdjustmentSlider;
     SliderControl<float> * mThermalConductivityAdjustmentSlider;
     SliderControl<float> * mHeatDissipationAdjustmentSlider;
     SliderControl<float> * mIgnitionTemperatureAdjustmentSlider;
@@ -76,7 +77,7 @@ private:
     SliderControl<float> * mWaterDensitySlider;
     SliderControl<float> * mWaterFrictionDragSlider;
     SliderControl<float> * mWaterPressureDragSlider;
-    SliderControl<float> * mHydrostaticPressureAdjustmentSlider;
+    SliderControl<float> * mHydrostaticPressureCounterbalanceAdjustmentSlider;
     SliderControl<float> * mWaterIntakeSlider;
     SliderControl<float> * mWaterCrazynessSlider;
     SliderControl<float> * mWaterDiffusionSpeedSlider;

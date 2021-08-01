@@ -17,6 +17,7 @@ NotificationLayer::NotificationLayer(
 	bool isUltraViolentMode,
 	bool isSoundMuted,
 	bool isDayLightCycleOn,
+	UnitsSystem displayUnitsSystem,
 	std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
     : mGameEventDispatcher(std::move(gameEventDispatcher))
 	// StatusText
@@ -36,7 +37,10 @@ NotificationLayer::NotificationLayer(
 	, mPhysicsProbePanelState()
 	, mIsPhysicsProbePanelDirty(true)
 	, mPhysicsProbeReading()
-	, mIsPhysicsProbeReadingDirty(true)
+	, mPhysicsProbeReadingStrings()
+	, mArePhysicsProbeReadingStringsDirty(true)
+	// Display units system
+	, mDisplayUnitsSystem(displayUnitsSystem)
 {
 	mGameEventDispatcher->RegisterGenericEventHandler(this);
 }
@@ -191,6 +195,14 @@ void NotificationLayer::SetPhysicsProbePanelState(float open)
 	}
 }
 
+void NotificationLayer::SetDisplayUnitsSystem(UnitsSystem value)
+{
+	mDisplayUnitsSystem = value;
+
+	// Re-format strings with new system
+	RegeneratePhysicsProbeReadingStrings();
+}
+
 void NotificationLayer::SetUltraViolentModeIndicator(bool isUltraViolentMode)
 {
 	mIsUltraViolentModeIndicatorOn = isUltraViolentMode;
@@ -224,8 +236,8 @@ void NotificationLayer::Reset()
 	// Reset physics probe
 	mPhysicsProbePanelState.Reset();
 	mIsPhysicsProbePanelDirty = true;
-	mPhysicsProbeReading.reset();
-	mIsPhysicsProbeReadingDirty = true;
+	mPhysicsProbeReadingStrings.reset();
+	mArePhysicsProbeReadingStringsDirty = true;
 }
 
 void NotificationLayer::Update(float now)
@@ -390,8 +402,8 @@ void NotificationLayer::Update(float now)
 				// First update for closing...
 
 				// ...clear reading
-				mPhysicsProbeReading.reset();
-				mIsPhysicsProbeReadingDirty = true;
+				mPhysicsProbeReadingStrings.reset();
+				mArePhysicsProbeReadingStringsDirty = true;
 
 				// ...emit panel closed event
 				mGameEventDispatcher->OnPhysicsProbePanelClosed();
@@ -564,12 +576,15 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 		mIsPhysicsProbePanelDirty = false;
 	}
 
-	if (mIsPhysicsProbeReadingDirty)
+	if (mArePhysicsProbeReadingStringsDirty)
 	{
-		if (mPhysicsProbeReading.has_value())
+		if (mPhysicsProbeReadingStrings.has_value())
 		{
 			// Upload reading
-			notificationRenderContext.UploadPhysicsProbeReading(mPhysicsProbeReading->Speed, mPhysicsProbeReading->Temperature);
+			notificationRenderContext.UploadPhysicsProbeReading(
+				mPhysicsProbeReadingStrings->Speed,
+				mPhysicsProbeReadingStrings->Temperature,
+				mPhysicsProbeReadingStrings->Depth);
 		}
 		else
 		{
@@ -577,7 +592,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 			notificationRenderContext.UploadPhysicsProbeReadingClear();
 		}
 
-		mIsPhysicsProbeReadingDirty = false;
+		mArePhysicsProbeReadingStringsDirty = false;
 	}
 
 	//
@@ -619,36 +634,14 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 
 void NotificationLayer::OnPhysicsProbeReading(
 	vec2f const & velocity,
-	float const temperature)
+	float temperature,
+	float depth)
 {
-	// Only pass through if the panel is currently fully open
-	if (mPhysicsProbePanelState.CurrentOpen == 1.0f)
-	{
-		// Create reading strings
+	mPhysicsProbeReading.Speed = velocity.length();
+	mPhysicsProbeReading.Temperature = temperature;
+	mPhysicsProbeReading.Depth = depth;
 
-		std::ostringstream ss;
-
-		{
-			ss.fill('0');
-			ss << std::fixed << std::setprecision(1) << velocity.length();
-		}
-
-		std::string const speedStr = ss.str();
-
-		ss.str("");
-
-		{
-			ss.fill('0');
-			ss << std::fixed << std::setprecision(1) << temperature;
-		}
-
-		std::string const temperatureStr = ss.str();
-
-		mPhysicsProbeReading.emplace(speedStr, temperatureStr);
-
-		// Reading has to be uploaded
-		mIsPhysicsProbeReadingDirty = true;
-	}
+	RegeneratePhysicsProbeReadingStrings();
 }
 
 void NotificationLayer::UploadStatusTextLine(
@@ -672,5 +665,75 @@ void NotificationLayer::UploadStatusTextLine(
 			Render::AnchorPositionType::TopLeft,
 			screenOffset,
 			1.0f);
+	}
+}
+
+void NotificationLayer::RegeneratePhysicsProbeReadingStrings()
+{
+	// Only pass through if the panel is currently fully open
+	if (mPhysicsProbePanelState.CurrentOpen == 1.0f)
+	{
+		// Create reading strings
+
+		float v{ 0.0f };
+		float t{ 0.0f };
+		float d{ 0.0f };
+		switch (mDisplayUnitsSystem)
+		{
+			case UnitsSystem::SI_Celsius:
+			{
+				v = mPhysicsProbeReading.Speed;
+				t = mPhysicsProbeReading.Temperature - 273.15f;
+				d = mPhysicsProbeReading.Depth;
+				break;
+			}
+
+			case UnitsSystem::SI_Kelvin:
+			{
+				v = mPhysicsProbeReading.Speed;
+				t = mPhysicsProbeReading.Temperature;
+				d = mPhysicsProbeReading.Depth;
+				break;
+			}
+
+			case UnitsSystem::USCS:
+			{
+				v = mPhysicsProbeReading.Speed * 3.28084f;
+				t = (mPhysicsProbeReading.Temperature - 273.15f) * 9.0f / 5.0f + 32.0f;
+				d = mPhysicsProbeReading.Depth * 3.28084f;
+				break;
+			}
+		}
+
+		std::ostringstream ss;
+
+		{
+			ss.fill('0');
+			ss << std::fixed << std::setprecision(1) << v;
+		}
+
+		std::string const speedStr = ss.str();
+
+		ss.str("");
+
+		{
+			ss.fill('0');
+			ss << std::fixed << std::setprecision(1) << t;
+		}
+
+		std::string const temperatureStr = ss.str();
+
+		ss.str("");
+
+		{
+			ss << std::fixed << std::setprecision(0) << d;
+		}
+
+		std::string const depthStr = ss.str();
+
+		mPhysicsProbeReadingStrings.emplace(speedStr, temperatureStr, depthStr);
+
+		// Reading has to be uploaded
+		mArePhysicsProbeReadingStringsDirty = true;
 	}
 }

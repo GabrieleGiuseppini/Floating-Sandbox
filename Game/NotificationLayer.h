@@ -26,6 +26,7 @@ public:
 		bool isUltraViolentMode,
 		bool isSoundMuted,
 		bool isDayLightCycleOn,
+		UnitsSystem displayUnitsSystem,
 		std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
 
 	bool IsStatusTextEnabled() const { return mIsStatusTextEnabled; }
@@ -56,6 +57,8 @@ public:
 	void SetDayLightCycleIndicator(bool isDayLightCycleOn);
 
 	void SetPhysicsProbePanelState(float targetOpen);
+
+	void SetDisplayUnitsSystem(UnitsSystem value);
 
 	// One frame only; after RenderUpload() it's gone
 	inline void SetHeatBlaster(
@@ -108,7 +111,8 @@ private:
 
 	void OnPhysicsProbeReading(
 		vec2f const & velocity,
-		float const temperature) override;
+		float temperature,
+		float depth) override;
 
 private:
 
@@ -117,6 +121,8 @@ private:
 		bool isEnabled,
 		int & effectiveOrdinal,
 		Render::NotificationRenderContext & notificationRenderContext);
+
+	void RegeneratePhysicsProbeReadingStrings();
 
 private:
 
@@ -210,19 +216,38 @@ private:
 
 	struct PhysicsProbeReading
 	{
+		float Speed;
+		float Temperature;
+		float Depth;
+	};
+
+	PhysicsProbeReading mPhysicsProbeReading; // Storage for raw reading values
+
+	struct PhysicsProbeReadingStrings
+	{
 		std::string Speed;
 		std::string Temperature;
+		std::string Depth;
 
-		PhysicsProbeReading(
+		PhysicsProbeReadingStrings(
 			std::string speed,
-			std::string temperature)
+			std::string temperature,
+			std::string depth)
 			: Speed(speed)
 			, Temperature(temperature)
+			, Depth(depth)
 		{}
 	};
 
-	std::optional<PhysicsProbeReading> mPhysicsProbeReading;
-	bool mIsPhysicsProbeReadingDirty;
+	std::optional<PhysicsProbeReadingStrings> mPhysicsProbeReadingStrings;
+	bool mArePhysicsProbeReadingStringsDirty;
+
+	//
+	// Units system
+	//
+
+	UnitsSystem mDisplayUnitsSystem;
+	// No need to track dirtyness
 
 	//
 	// Interactions

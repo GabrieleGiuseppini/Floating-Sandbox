@@ -582,6 +582,32 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                     CellBorderInner);
             }
 
+            // Static pressure adjustment
+            {
+                mStaticPressureAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Static Pressure Adjust"),
+                    _("Adjusts the static pressure exherted on the exterior of physical bodies."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::StaticPressureAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinStaticPressureAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxStaticPressureAdjustment()));
+
+                sizer->Add(
+                    mStaticPressureAdjustmentSlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
@@ -965,26 +991,26 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // Hydrostatic Pressure Adjust
+            // Hydrostatic Pressure Counterbalance Adjust
             {
-                mHydrostaticPressureAdjustmentSlider = new SliderControl<float>(
+                mHydrostaticPressureCounterbalanceAdjustmentSlider = new SliderControl<float>(
                     waterBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
                     _("Hydrostatic Pressure Adjust"),
-                    _("Adjusts the hydrostatic pressure (or 'pressure crush') exerted by sea water on physical bodies."),
+                    _("Adjusts the amount by which internal pressure in the ship counterbalances the external hydrostatic pressure. Lower values"\
+                      " increase the depth at which internal pressure stops contributing to the total hydrostatic pressure."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::HydrostaticPressureAdjustment, value);
+                        this->mLiveSettings.SetValue(GameSettings::HydrostaticPressureCounterbalanceAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions->GetMinHydrostaticPressureAdjustment(),
-                        1.0f,
-                        mGameControllerSettingsOptions->GetMaxHydrostaticPressureAdjustment()));
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinHydrostaticPressureCounterbalanceAdjustment(),
+                        mGameControllerSettingsOptions->GetMaxHydrostaticPressureCounterbalanceAdjustment()));
 
                 waterSizer->Add(
-                    mHydrostaticPressureAdjustmentSlider,
+                    mHydrostaticPressureCounterbalanceAdjustmentSlider,
                     wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1104,6 +1130,53 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
     }
 
     //
+    // Rotting
+    //
+
+    {
+        wxStaticBoxSizer * rottingBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Rotting"));
+
+        {
+            wxGridBagSizer * rottingSizer = new wxGridBagSizer(0, 0);
+
+            // Rot Accelerator
+            {
+                mRotAcceler8rSlider = new SliderControl<float>(
+                    rottingBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Rot Acceler8r"),
+                    _("Adjusts the speed with which materials rot when exposed to sea water. Set to zero to disable rotting altogether."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::RotAcceler8r, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinRotAcceler8r(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxRotAcceler8r()));
+
+                rottingSizer->Add(
+                    mRotAcceler8rSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            rottingBoxSizer->Add(rottingSizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            rottingBoxSizer,
+            wxGBPosition(1, 0),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
     // Ocean
     //
 
@@ -1144,7 +1217,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
 
         gridSizer->Add(
             oceanBoxSizer,
-            wxGBPosition(1, 0),
+            wxGBPosition(1, 2),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
@@ -1295,55 +1368,8 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
 
         gridSizer->Add(
             oceanFloorBoxSizer,
-            wxGBPosition(1, 2),
+            wxGBPosition(1, 4),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
-            CellBorderOuter);
-    }
-
-    //
-    // Rotting
-    //
-
-    {
-        wxStaticBoxSizer * rottingBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Rotting"));
-
-        {
-            wxGridBagSizer * rottingSizer = new wxGridBagSizer(0, 0);
-
-            // Rot Accelerator
-            {
-                mRotAcceler8rSlider = new SliderControl<float>(
-                    rottingBoxSizer->GetStaticBox(),
-                    SliderWidth,
-                    SliderHeight,
-                    _("Rot Acceler8r"),
-                    _("Adjusts the speed with which materials rot when exposed to sea water. Set to zero to disable rotting altogether."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::RotAcceler8r, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions->GetMinRotAcceler8r(),
-                        1.0f,
-                        mGameControllerSettingsOptions->GetMaxRotAcceler8r()));
-
-                rottingSizer->Add(
-                    mRotAcceler8rSlider,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            rottingBoxSizer->Add(rottingSizer, 1, wxALL, StaticBoxInsetMargin);
-        }
-
-        gridSizer->Add(
-            rottingBoxSizer,
-            wxGBPosition(1, 3),
-            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -4105,6 +4131,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             _("Draw Only Edge Springs"),
             _("Draw Structure"),
             _("Draw Decay"),
+            _("Draw Internal Pressure"),
             _("Draw Strength")
         };
 
@@ -4143,9 +4170,13 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                 {
                     mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Decay);
                 }
+                else if (7 == selectedDebugShipRenderMode)
+                {
+                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::InternalPressure);
+                }
                 else
                 {
-                    assert(7 == selectedDebugShipRenderMode);
+                    assert(8 == selectedDebugShipRenderMode);
                     mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Strength);
                 }
 
@@ -4796,6 +4827,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mMechanicalQualitySlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
     mStrengthSlider->SetValue(settings.GetValue<float>(GameSettings::SpringStrengthAdjustment));
     mGlobalDampingAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::GlobalDampingAdjustment));
+    mStaticPressureAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StaticPressureAdjustment));
     mThermalConductivityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ThermalConductivityAdjustment));
     mHeatDissipationAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::HeatDissipationAdjustment));
     mIgnitionTemperatureAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::IgnitionTemperatureAdjustment));
@@ -4812,7 +4844,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mWaterDensitySlider->SetValue(settings.GetValue<float>(GameSettings::WaterDensityAdjustment));
     mWaterFrictionDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterFrictionDragAdjustment));
     mWaterPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterPressureDragAdjustment));
-    mHydrostaticPressureAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::HydrostaticPressureAdjustment));
+    mHydrostaticPressureCounterbalanceAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::HydrostaticPressureCounterbalanceAdjustment));
     mWaterIntakeSlider->SetValue(settings.GetValue<float>(GameSettings::WaterIntakeAdjustment));
     mWaterCrazynessSlider->SetValue(settings.GetValue<float>(GameSettings::WaterCrazyness));
     mWaterDiffusionSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDiffusionSpeedAdjustment));
@@ -5061,9 +5093,15 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
             break;
         }
 
-        case DebugShipRenderModeType::Strength:
+        case DebugShipRenderModeType::InternalPressure:
         {
             mDebugShipRenderModeRadioBox->SetSelection(7);
+            break;
+        }
+
+        case DebugShipRenderModeType::Strength:
+        {
+            mDebugShipRenderModeRadioBox->SetSelection(8);
             break;
         }
     }

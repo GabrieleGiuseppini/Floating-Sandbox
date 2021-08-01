@@ -45,6 +45,9 @@ struct IGameControllerSettings
     virtual float GetRotAcceler8r() const = 0;
     virtual void SetRotAcceler8r(float value) = 0;
 
+    virtual float GetStaticPressureAdjustment() const = 0;
+    virtual void SetStaticPressureAdjustment(float value) = 0;
+
     // Air
 
     virtual float GetAirFrictionDragAdjustment() const = 0;
@@ -64,8 +67,8 @@ struct IGameControllerSettings
     virtual float GetWaterPressureDragAdjustment() const = 0;
     virtual void SetWaterPressureDragAdjustment(float value) = 0;
 
-    virtual float GetHydrostaticPressureAdjustment() const = 0;
-    virtual void SetHydrostaticPressureAdjustment(float value) = 0;
+    virtual float GetHydrostaticPressureCounterbalanceAdjustment() const = 0;
+    virtual void SetHydrostaticPressureCounterbalanceAdjustment(float value) = 0;
 
     virtual float GetWaterIntakeAdjustment() const = 0;
     virtual void SetWaterIntakeAdjustment(float value) = 0;

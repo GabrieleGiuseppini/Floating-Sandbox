@@ -17,6 +17,7 @@ namespace Physics {
 void Points::Add(
     vec2f const & position,
     float water,
+    float internalPressure,
     StructuralMaterial const & structuralMaterial,
     ElectricalMaterial const * electricalMaterial,
     bool isRope,
@@ -52,6 +53,7 @@ void Points::Add(
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
 
+    mInternalPressureBuffer.emplace_back(internalPressure);
     mIsHullBuffer.emplace_back(structuralMaterial.IsHull); // Default is from material
     mMaterialWaterIntakeBuffer.emplace_back(structuralMaterial.WaterIntake);
     mMaterialWaterRestitutionBuffer.emplace_back(1.0f - structuralMaterial.WaterRetention);
@@ -157,6 +159,7 @@ void Points::CreateEphemeralParticleAirBubble(
         airStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
 
+    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = airStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - airStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = airStructuralMaterial.WaterDiffusionSpeed;
@@ -231,6 +234,7 @@ void Points::CreateEphemeralParticleDebris(
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
     mCachedDepthBuffer[pointIndex] = depth;
 
+    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
@@ -319,6 +323,7 @@ void Points::CreateEphemeralParticleSmoke(
         airStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
 
+    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = airStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - airStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = airStructuralMaterial.WaterDiffusionSpeed;
@@ -393,6 +398,7 @@ void Points::CreateEphemeralParticleSparkle(
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
     mCachedDepthBuffer[pointIndex] = depth;
 
+    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = structuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - structuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = structuralMaterial.WaterDiffusionSpeed;
@@ -465,6 +471,7 @@ void Points::CreateEphemeralParticleWakeBubble(
         waterStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
 
+    //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
     //mMaterialWaterIntakeBuffer[pointIndex] = waterStructuralMaterial.WaterIntake;
     //mMaterialWaterRestitutionBuffer[pointIndex] = 1.0f - waterStructuralMaterial.WaterRetention;
     //mMaterialWaterDiffusionSpeedBuffer[pointIndex] = waterStructuralMaterial.WaterDiffusionSpeed;
@@ -1256,6 +1263,7 @@ void Points::UpdateEphemeralParticles(
         (gameParameters.DoDisplaceWater ? 1.0f : 0.0f)
         * 1.0f;
 
+    // Visit all ephemeral particles
     for (ElementIndex pointIndex : this->EphemeralPoints())
     {
         auto const ephemeralType = GetEphemeralType(pointIndex);
@@ -1520,7 +1528,7 @@ void Points::Query(ElementIndex pointElementIndex) const
 {
     LogMessage("PointIndex: ", pointElementIndex, (nullptr != mMaterialsBuffer[pointElementIndex].Structural) ? (" (" + mMaterialsBuffer[pointElementIndex].Structural->Name) + ")" : "");
     LogMessage("P=", mPositionBuffer[pointElementIndex].toString(), " V=", mVelocityBuffer[pointElementIndex].toString());
-    LogMessage("M=", mMassBuffer[pointElementIndex], " W=", mWaterBuffer[pointElementIndex], " L=", mLightBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex], " Decay=", mDecayBuffer[pointElementIndex]);
+    LogMessage("M=", mMassBuffer[pointElementIndex], " IP=", mInternalPressureBuffer[pointElementIndex], " W=", mWaterBuffer[pointElementIndex], " L=", mLightBuffer[pointElementIndex], " T=", mTemperatureBuffer[pointElementIndex], " Decay=", mDecayBuffer[pointElementIndex]);
     LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex], " ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }
 
@@ -1643,7 +1651,15 @@ void Points::UploadAttributes(
             partialPointCount);
     }
 
-    if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::Strength)
+    if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::InternalPressure)
+    {
+        renderContext.UploadShipPointAuxiliaryDataAsync(
+            shipId,
+            mInternalPressureBuffer.data(),
+            0,
+            partialPointCount);
+    }
+    else if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::Strength)
     {
         renderContext.UploadShipPointAuxiliaryDataAsync(
             shipId,
@@ -1747,7 +1763,7 @@ void Points::UploadVectors(
 
         case VectorFieldRenderModeType::PointDynamicForce:
         {
-            color = vec4f(0.5f, 0.1f, 0.f, 1.0f);
+            color = vec4f(1.0f, 0.266f, 0.16f, 1.0f);
             vectorBuffer = mDynamicForceBuffer.data();
             lengthAdjustment = 0.000001f;
 
@@ -1990,7 +2006,10 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
     //  - Integration factor: integration factor time coefficient / current mass
     //
 
-    float const densityAdjustedWaterMass = GameParameters::WaterMass * gameParameters.WaterDensityAdjustment;
+    float const densityAdjustedWaterMass =
+        GameParameters::WaterMass
+        / (1.0f + GameParameters::WaterThermalExpansionCoefficient * (gameParameters.WaterTemperature - GameParameters::Temperature0))
+        * gameParameters.WaterDensityAdjustment;
 
     float const * restrict const augmentedMaterialMassBuffer = mAugmentedMaterialMassBuffer.data();
     float const * restrict const waterBuffer = mWaterBuffer.data();

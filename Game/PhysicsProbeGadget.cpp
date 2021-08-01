@@ -55,7 +55,8 @@ bool PhysicsProbeGadget::Update(
                 // Emit reading
                 mGameEventHandler->OnPhysicsProbeReading(
                     mShipPoints.GetVelocity(mPointIndex),
-                    mShipPoints.GetTemperature(mPointIndex));
+                    mShipPoints.GetTemperature(mPointIndex),
+                    mParentWorld.GetDepth(mShipPoints.GetPosition(mPointIndex)));
             }
 
             return true;

@@ -404,6 +404,11 @@ void NotificationRenderContext::ProcessParameterChanges(RenderParameters const &
     {
         ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
     }
+
+    if (renderParameters.IsDisplayUnitsSystemDirty)
+    {
+        ApplyDisplayUnitsSystemChanges(renderParameters);
+    }
 }
 
 void NotificationRenderContext::RenderPrepare()
@@ -469,6 +474,9 @@ void NotificationRenderContext::ApplyViewModelChanges(RenderParameters const & r
 
 void NotificationRenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParameters)
 {
+    // TODO: we'd need to recalculate the physics panel probe panel vertices,
+    // as the pixel size of the panel is constant and thus its NDC size is changing
+
     auto const & view = renderParameters.View;
 
     // Recalculate screen -> NDC conversion factors
@@ -509,6 +517,42 @@ void NotificationRenderContext::ApplyEffectiveAmbientLightIntensityChanges(Rende
     mShaderManager.ActivateProgram<ProgramType::TextureNotifications>();
     mShaderManager.SetProgramParameter<ProgramType::TextureNotifications, ProgramParameterType::TextureLighteningStrength>(
         lighteningStrength);
+}
+
+void NotificationRenderContext::ApplyDisplayUnitsSystemChanges(RenderParameters const & renderParameters)
+{
+    TextureFrameIndex frameIndex{ 0 };
+    switch (renderParameters.DisplayUnitsSystem)
+    {
+        case UnitsSystem::SI_Celsius:
+        {
+            // Frame 1
+            frameIndex = 1;
+            break;
+        }
+
+        case UnitsSystem::SI_Kelvin:
+        {
+            // Frame 0
+            frameIndex = 0;
+            break;
+        }
+
+        case UnitsSystem::USCS:
+        {
+            // Frame 2
+            frameIndex = 2;
+            break;
+        }
+    }
+
+    auto const & frameMetadata = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GenericLinearTextureGroups>(GenericLinearTextureGroups::PhysicsProbePanel, frameIndex));
+
+    // Set texture offset in program
+    mShaderManager.ActivateProgram<ProgramType::PhysicsProbePanel>();
+    mShaderManager.SetProgramParameter<ProgramType::PhysicsProbePanel, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
+        frameMetadata.TextureCoordinatesBottomLeft.x,
+        frameMetadata.TextureCoordinatesBottomLeft.y);
 }
 
 void NotificationRenderContext::RenderPrepareTextNotifications()
@@ -818,9 +862,10 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
     //
 
     // Hardcoded pixel offsets of readings in physics probe panel,
-    // relative to bottom-right corner
-    vec2f constexpr PhysicsProbePanelSpeedBottomRight(137.0f, 12.0f);
-    vec2f constexpr PhysicsProbePanelTemperatureBottomRight(295.0f, 12.0f);
+    // giving position of text's bottom-right corner
+    vec2f constexpr PhysicsProbePanelSpeedBottomRight(137.0f, 11.0f);
+    vec2f constexpr PhysicsProbePanelTemperatureBottomRight(295.0f, 11.0f);
+    vec2f constexpr PhysicsProbePanelDepthBottomRight(453.0f, 11.0f);
 
     for (auto const & textLine : context.TextLines)
     {
@@ -874,6 +919,19 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
                 linePositionNdc += vec2f(
                     1.f - (MarginScreen + static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
                     1.f - MarginTopScreen * mScreenToNdcY);
+
+                break;
+            }
+
+            case NotificationAnchorPositionType::PhysicsProbeReadingDepth:
+            {
+                auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
+                    textLine.Text.c_str(),
+                    textLine.Text.length());
+
+                linePositionNdc += vec2f(
+                    -1.f + (PhysicsProbePanelDepthBottomRight.x - static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
+                    -1.f + PhysicsProbePanelDepthBottomRight.y * mScreenToNdcY);
 
                 break;
             }

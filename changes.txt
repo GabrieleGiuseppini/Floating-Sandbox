@@ -1,6 +1,9 @@
 1.16.5
-- Added hydrostatic pressure, aka "Pressure Crush"
-	- Underwater structures feel an amount of inward pressure proportional to underwater depth
+- Added first implementation of *pressure*
+	- Underwater structures are subject to hydrostatic pressure, aka "Pressure Crush"
+	- Abovewater structures are subject to atmospheric pressure, decreasing with altitude
+	- Structures have their own internal pressure, which is exchanged with the environment through holes in their hull
+	- The difference between external and internal pressure generates pressure on the exterior hull of structures, causing implosions and explosions
 - Revisited simulation of waves originating from water displacement
 	- Taken inspiration from "Improving the stability of a simple formulation of the shallow water equations for 2D flood modeling", de Almeida et al.(2012) (https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2011WR011570)
 - Doubled world width to 10.0km
@@ -11,6 +14,7 @@
 	- ...and added yet another setting to adjust the power of bomb blasts
 - Reorganized Simulation Settings window
 	- The location of most settings has been shuffled around, but they're all still there!
+- Physics probe panel may now be configured to be in the USCS system, and in the International system with Celsius degrees
 - Improved sound effects
 	- Also improved scheduling to reduce cacophony with widespread destruction
 - Added "direction lock" to slice tool - hitting the SHIFT key during a cut locks its direction

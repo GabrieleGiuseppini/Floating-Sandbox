@@ -85,6 +85,7 @@ GameController::GameController(
         mGameParameters.IsUltraViolentMode,
         false /*loaded value will come later*/,
         mGameParameters.DoDayLightCycle,
+        mRenderContext->GetDisplayUnitsSystem(),
         mGameEventDispatcher)
     , mTaskThreadPool(std::make_shared<TaskThreadPool>())
     // World

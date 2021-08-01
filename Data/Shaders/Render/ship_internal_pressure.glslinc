@@ -1,0 +1,61 @@
+###VERTEX-120
+
+#define in attribute
+#define out varying
+
+// Inputs
+in vec4 inShipPointAttributeGroup1; // Position, TextureCoordinates
+in vec3 inShipPointAttributeGroup2; // Light, Water, PlaneId
+in float inShipPointAuxiliaryData;  // Internal pressure
+
+// Outputs        
+out float vertexInternalPressure;
+out vec2 vertexTextureCoords;
+
+// Params
+uniform mat4 paramOrthoMatrix;
+
+void main()
+{            
+    vertexInternalPressure = inShipPointAuxiliaryData;
+    vertexTextureCoords = inShipPointAttributeGroup1.zw;
+
+    gl_Position = paramOrthoMatrix * vec4(inShipPointAttributeGroup1.xy, inShipPointAttributeGroup2.z, 1.0);
+}
+
+###FRAGMENT-120
+
+#define in varying
+
+// Inputs from previous shader        
+in float vertexInternalPressure;
+in vec2 vertexTextureCoords;
+
+// Params
+uniform float paramEffectiveAmbientLightIntensity;
+
+// Input texture
+uniform sampler2D paramSharedTexture;
+
+void main()
+{
+    vec4 vertexCol = texture2D(paramSharedTexture, vertexTextureCoords);
+
+    // Discard transparent pixels, so that ropes (which are drawn temporally after
+    // this shader but Z-ally behind) are not occluded by transparent triangles
+    if (vertexCol.w < 0.2)
+        discard;
+
+    // Make color based off pressure
+    vec4 fragColour = vec4(
+        mix(
+            vec3(1., 0., 0.),
+            vec3(1., 1., 1.),
+            exp(-.000001 * vertexInternalPressure)),
+        1.0);
+    
+    // Apply ambient light
+    fragColour *= paramEffectiveAmbientLightIntensity;
+    
+    gl_FragColor = vec4(fragColour.xyz, vertexCol.w);
+} 

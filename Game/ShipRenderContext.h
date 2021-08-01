@@ -823,12 +823,12 @@ public:
         // Left
         vec2f leftDir = vec2f(-vector.dot(XMatrixLeft), -vector.dot(YMatrixLeft)).normalise();
         mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeId);
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint + leftDir * 0.2f, planeId);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint + leftDir * 0.3f, planeId);
 
         // Right
         vec2f rightDir = vec2f(-vector.dot(XMatrixRight), -vector.dot(YMatrixRight)).normalise();
         mVectorArrowVertexBuffer.emplace_back(stemEndpoint, planeId);
-        mVectorArrowVertexBuffer.emplace_back(stemEndpoint + rightDir * 0.2f, planeId);
+        mVectorArrowVertexBuffer.emplace_back(stemEndpoint + rightDir * 0.3f, planeId);
     }
 
     void UploadVectorsEnd();

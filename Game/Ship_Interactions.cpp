@@ -810,10 +810,15 @@ bool Ship::FloodAt(
 {
     float const searchRadius = gameParameters.FloodRadius;
 
-    float const quantityOfWater =
+    // Delta quantity of water, added or removed;
+    // actual quantity removed depends on pre-existing water
+    float const quantityOfWaterDelta =
         gameParameters.FloodQuantity
         * waterQuantityMultiplier
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+    // Multiplier to get internal pressure delta from water delta
+    float const volumetricWaterPressure = Formulae::CalculateVolumetricWaterPressure(gameParameters.WaterTemperature, gameParameters);
 
     //
     // Find the (non-ephemeral) non-hull points in the radius
@@ -821,7 +826,7 @@ bool Ship::FloodAt(
 
     float const searchSquareRadius = searchRadius * searchRadius;
 
-    bool anyHasFlooded = false;
+    bool anyWasApplied = false;
     for (auto const pointIndex : mPoints.RawShipPoints())
     {
         if (!mPoints.GetIsHull(pointIndex))
@@ -829,16 +834,33 @@ bool Ship::FloodAt(
             float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
             if (squareDistance < searchSquareRadius)
             {
+                //
+                // Update water
+                //
+
+                // Make sure we don't remove more water than available
+                float const actualQuantityOfWaterDelta = std::max(-mPoints.GetWater(pointIndex), quantityOfWaterDelta);
+
                 mPoints.SetWater(
                     pointIndex,
-                    std::max(mPoints.GetWater(pointIndex) + quantityOfWater, 0.0f));
+                    mPoints.GetWater(pointIndex) + actualQuantityOfWaterDelta);
 
-                anyHasFlooded = true;
+                //
+                // Update internal pressure
+                //
+
+                float const actualInternalPressureDelta = actualQuantityOfWaterDelta * volumetricWaterPressure;
+
+                mPoints.SetInternalPressure(
+                    pointIndex,
+                    std::max(mPoints.GetInternalPressure(pointIndex) + actualInternalPressureDelta, 0.0f));
+
+                anyWasApplied = true;
             }
         }
     }
 
-    return anyHasFlooded;
+    return anyWasApplied;
 }
 
 bool Ship::ToggleAntiMatterBombAt(

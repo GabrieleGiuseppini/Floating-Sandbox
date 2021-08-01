@@ -7,6 +7,8 @@
 ***************************************************************************************/
 #include "ShipBuilder.h"
 
+#include "Formulae.h"
+
 #include <GameCore/GameDebug.h>
 #include <GameCore/GameMath.h>
 #include <GameCore/ImageTools.h>
@@ -1415,6 +1417,7 @@ Physics::Points ShipBuilder::CreatePoints(
         points.Add(
             pointInfo.Position,
             pointInfo.Water,
+            GameParameters::AirPressureAtSeaLevel, // TODO: also from ship file
             pointInfo.StructuralMtl,
             pointInfo.ElectricalMtl,
             pointInfo.IsRope,

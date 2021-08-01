@@ -5,6 +5,8 @@
 	- All in separate ShipBuilder namespace
 	- Own frame for UI
 	- Model, View, Controller architecture
+	- On the "structure: pixels vs triangles", Wreno says fine to edit in pixel mode, and allow user to eventually _view_ also in triangle mode (but not necessarily edit)
+	- On the size: Wreno says "no fixed sized, allow whole world"
 
 - Architecture:
 	- Main Frame, toolboxes, etc.
@@ -29,7 +31,7 @@
 		- Via ShipBuilder::MainFrame::Create(IProgress)
 	- Switching between two frames: 
 		- MainFrame owns ShipBulderFrame, ShipBulderFrame takes std::function(...ship...) "ReturnToGame" in cctor
-			- Latter may be null for stand-alone test
+			- Latter may be null for stand-alone test executable
 		- Switch implemented via:
 			- MainFrame::SwitchToShipBuilder: invoked by MainFrame when user switches to ship builder
 				- Stops game loop
@@ -45,6 +47,7 @@
 - UI architecture:
 	- Topmost toolbar:
 	- Above main working area: "tab-like" buttons for layers, including "+" to add layers, and horizontal sliding bar for transparency of currently-selected layer
+		- Or as Wreno: 1 slider + N checkboxes for the "other layers" to see on top of currently-edited layer, with that transparency
 	- Left toolbar: tools:
 		- Changes content depending on currently-selected layer
 		- Structure layer:
@@ -54,7 +57,14 @@
 - Ship file format:
 	- Min FS version (.shp, .shp2)
 		- Ideally it should be a "set" of versions, including the Materials' DB versions which live in the json so to be easily editable manually
-	- "File lock" which disallows saving layers as images (?)
+	- "File lock" which disallows editing
+		- Password from user -> Hash in file
 	- Also includes sounds
 		- Extract from other "TODO" .txt file
+
+- Misc:
+	- Ruler: pick a scale (pixels to meter of original ship), then you choose how long the ruler
+		- L shaped: horizontal and vertical
+		- Ruler sticks to the canvas
+		- Only one ruler at a time
 

@@ -234,7 +234,7 @@ public:
     vec2f ScreenOffsetToWorldOffset(LogicalPixelSize const & screenOffset) const override;
 
     //
-    // Interaction parameters
+    // UI parameters
     //
 
     bool GetDoShowTsunamiNotifications() const override { return mDoShowTsunamiNotifications; }
@@ -246,16 +246,19 @@ public:
     bool GetDoAutoZoomOnShipLoad() const override { return mDoAutoZoomOnShipLoad; }
     void SetDoAutoZoomOnShipLoad(bool value) override { mDoAutoZoomOnShipLoad = value; }
 
+    UnitsSystem GetDisplayUnitsSystem() const override { return mRenderContext->GetDisplayUnitsSystem(); }
+    void SetDisplayUnitsSystem(UnitsSystem value) override { mRenderContext->SetDisplayUnitsSystem(value); mNotificationLayer.SetDisplayUnitsSystem(value); }
+
+    //
+    // Ship building parameters
+    //
+
     ShipAutoTexturizationSettings const & GetShipAutoTexturizationSharedSettings() const override { return mShipBuilder.GetAutoTexturizationSharedSettings(); }
     ShipAutoTexturizationSettings & GetShipAutoTexturizationSharedSettings() override { return mShipBuilder.GetAutoTexturizationSharedSettings(); }
     void SetShipAutoTexturizationSharedSettings(ShipAutoTexturizationSettings const & value) override { mShipBuilder.SetAutoTexturizationSharedSettings(value); }
 
     bool GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings() const override { return mShipBuilder.GetDoForceAutoTexturizationSharedSettingsOntoShipSettings(); }
     void SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(bool value) override { mShipBuilder.SetDoForceAutoTexturizationSharedSettingsOntoShipSettings(value); }
-
-    //
-    // Ship building parameters
-    //
 
     float GetShipStrengthRandomizationDensityAdjustment() const override { return mShipBuilder.GetShipStrengthRandomizationDensityAdjustment(); }
     void SetShipStrengthRandomizationDensityAdjustment(float value) override { mShipBuilder.SetShipStrengthRandomizationDensityAdjustment(value); }
@@ -303,6 +306,13 @@ public:
     float GetMinRotAcceler8r() const override { return GameParameters::MinRotAcceler8r; }
     float GetMaxRotAcceler8r() const override { return GameParameters::MaxRotAcceler8r; }
 
+    float GetStaticPressureAdjustment() const override { return mGameParameters.StaticPressureAdjustment; }
+    void SetStaticPressureAdjustment(float value) override { mGameParameters.StaticPressureAdjustment = value; }
+    float GetMinStaticPressureAdjustment() const override { return GameParameters::MinStaticPressureAdjustment; }
+    float GetMaxStaticPressureAdjustment() const override { return GameParameters::MaxStaticPressureAdjustment; }
+
+    // Air
+
     float GetAirFrictionDragAdjustment() const override { return mGameParameters.AirFrictionDragAdjustment; }
     void SetAirFrictionDragAdjustment(float value) override { mGameParameters.AirFrictionDragAdjustment = value; }
     float GetMinAirFrictionDragAdjustment() const override { return GameParameters::MinAirFrictionDragAdjustment; }
@@ -312,6 +322,8 @@ public:
     void SetAirPressureDragAdjustment(float value) override { mGameParameters.AirPressureDragAdjustment = value; }
     float GetMinAirPressureDragAdjustment() const override { return GameParameters::MinAirPressureDragAdjustment; }
     float GetMaxAirPressureDragAdjustment() const override { return GameParameters::MaxAirPressureDragAdjustment; }
+
+    // Water
 
     float GetWaterDensityAdjustment() const override { return mGameParameters.WaterDensityAdjustment; }
     void SetWaterDensityAdjustment(float value) override { mGameParameters.WaterDensityAdjustment = value; }
@@ -328,10 +340,10 @@ public:
     float GetMinWaterPressureDragAdjustment() const override { return GameParameters::MinWaterPressureDragAdjustment; }
     float GetMaxWaterPressureDragAdjustment() const override { return GameParameters::MaxWaterPressureDragAdjustment; }
 
-    float GetHydrostaticPressureAdjustment() const override { return mGameParameters.HydrostaticPressureAdjustment; }
-    void SetHydrostaticPressureAdjustment(float value) override { mGameParameters.HydrostaticPressureAdjustment = value; }
-    float GetMinHydrostaticPressureAdjustment() const override { return GameParameters::MinHydrostaticPressureAdjustment; }
-    float GetMaxHydrostaticPressureAdjustment() const override { return GameParameters::MaxHydrostaticPressureAdjustment; }
+    float GetHydrostaticPressureCounterbalanceAdjustment() const override { return mGameParameters.HydrostaticPressureCounterbalanceAdjustment; }
+    void SetHydrostaticPressureCounterbalanceAdjustment(float value) override { mGameParameters.HydrostaticPressureCounterbalanceAdjustment = value; }
+    float GetMinHydrostaticPressureCounterbalanceAdjustment() const override { return GameParameters::MinHydrostaticPressureCounterbalanceAdjustment; }
+    float GetMaxHydrostaticPressureCounterbalanceAdjustment() const override { return GameParameters::MaxHydrostaticPressureCounterbalanceAdjustment; }
 
     float GetWaterIntakeAdjustment() const override { return mGameParameters.WaterIntakeAdjustment; }
     void SetWaterIntakeAdjustment(float value) override { mGameParameters.WaterIntakeAdjustment = value; }
