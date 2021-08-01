@@ -58,7 +58,7 @@ struct GameParameters
 
     // Air
     static float constexpr AirMass = 1.2754f; // Kg
-    static float constexpr AirPressureAtSeaLevel = 101325.0f; // No immediate relation to mass, due to compressibility of air; Pa
+    static float constexpr AirPressureAtSeaLevel = 101325.0f; // No immediate relation to mass of air, due to compressibility of air; Pa == 1atm
 
     // Water
     static float constexpr WaterMass = 1000.0f; // Kg

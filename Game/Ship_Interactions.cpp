@@ -813,7 +813,7 @@ bool Ship::InjectPressureAt(
     // Delta quantity of pressure, added or removed;
     // actual quantity removed depends on pre-existing pressure
     float const quantityOfPressureDelta =
-        GameParameters::AirPressureAtSeaLevel
+        GameParameters::AirPressureAtSeaLevel // One atmosphere at a time
         * gameParameters.InjectPressureQuantityAdjustment
         * pressureQuantityMultiplier
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
