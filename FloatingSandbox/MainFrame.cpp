@@ -296,129 +296,94 @@ MainFrame::MainFrame(
 
         mToolsMenu = new wxMenu();
 
-        wxMenuItem * moveMenuItem = new wxMenuItem(mToolsMenu, ID_MOVE_MENUITEM, _("Move/Rotate") + wxS("\tM"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(moveMenuItem);
-        Connect(ID_MOVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('M', ID_MOVE_MENUITEM)
+#define ADD_TOOL_MENUITEM(id, label, shortcut, bitmap_path, handler) \
+        [&]()\
+        {\
+            wxMenuItem * toolMenuItem = new wxMenuItem(mToolsMenu, (id), (label) + (shortcut), wxEmptyString, wxITEM_RADIO);\
+            auto img = wxImage(\
+                resourceLocator.GetCursorFilePath((bitmap_path)).string(),\
+                wxBITMAP_TYPE_PNG);\
+            img.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);\
+            wxBitmap bmp(img);\
+            toolMenuItem->SetBitmaps(bmp, bmp);\
+            mToolsMenu->Append(toolMenuItem);\
+            Connect((id), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::##handler);\
+            return toolMenuItem;\
+        }();
 
-        wxMenuItem * moveAllMenuItem = new wxMenuItem(mToolsMenu, ID_MOVE_ALL_MENUITEM, _("Move All/Rotate All") + wxS("\tALT+M"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(moveAllMenuItem);
-        Connect(ID_MOVE_ALL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveAllMenuItemSelected);
+        ADD_TOOL_MENUITEM(ID_MOVE_MENUITEM, _("Move/Rotate"), wxS("\tM"), "move_cursor_up", OnMoveMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('K', ID_MOVE_MENUITEM);
 
-        wxMenuItem * pickAndPullMenuItem = new wxMenuItem(mToolsMenu, ID_PICK_AND_PULL_MENUITEM, _("Pick-n-Pull") + wxS("\tK"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(pickAndPullMenuItem);
-        Connect(ID_PICK_AND_PULL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPickAndPullMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('K', ID_PICK_AND_PULL_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_MOVE_ALL_MENUITEM, _("Move All/Rotate All"), wxS("\tALT+M"), "move_all_cursor_up", OnMoveAllMenuItemSelected);
 
-        wxMenuItem * smashMenuItem = new wxMenuItem(mToolsMenu, ID_SMASH_MENUITEM, _("Smash") + wxS("\tS"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(smashMenuItem);
-        Connect(ID_SMASH_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSmashMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('S', ID_SMASH_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_PICK_AND_PULL_MENUITEM, _("Pick-n-Pull"), wxS("\tK"), "pliers_cursor_up", OnPickAndPullMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('K', ID_PICK_AND_PULL_MENUITEM);
 
-        wxMenuItem * sliceMenuItem = new wxMenuItem(mToolsMenu, ID_SLICE_MENUITEM, _("Slice") + wxS("\tL"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(sliceMenuItem);
-        Connect(ID_SLICE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSliceMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('L', ID_SLICE_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_SMASH_MENUITEM, _("Smash"), wxS("\tS"), "smash_cursor_up", OnSmashMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('S', ID_SMASH_MENUITEM);
 
-        wxMenuItem * heatBlasterMenuItem = new wxMenuItem(mToolsMenu, ID_HEAT_BLASTER_MENUITEM, _("HeatBlaster/CoolBlaster") + wxS("\tH"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(heatBlasterMenuItem);
-        Connect(ID_HEAT_BLASTER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnHeatBlasterMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('H', ID_HEAT_BLASTER_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_SLICE_MENUITEM, _("Slice"), wxS("\tL"), "chainsaw_cursor_up", OnSliceMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('L', ID_SLICE_MENUITEM);
 
-        wxMenuItem * fireExtinguisherMenuItem = new wxMenuItem(mToolsMenu, ID_FIRE_EXTINGUISHER_MENUITEM, _("Fire Extinguisher") + wxS("\tX"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(fireExtinguisherMenuItem);
-        Connect(ID_FIRE_EXTINGUISHER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFireExtinguisherMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('X', ID_FIRE_EXTINGUISHER_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_HEAT_BLASTER_MENUITEM, _("HeatBlaster/CoolBlaster"), wxS("\tH"), "heat_blaster_heat_cursor_up", OnHeatBlasterMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('H', ID_HEAT_BLASTER_MENUITEM);
 
-        wxMenuItem * blastToolMenuItem = new wxMenuItem(mToolsMenu, ID_BLAST_TOOL_MENUITEM, _("Blast") + wxS("\t8"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(blastToolMenuItem);
-        Connect(ID_BLAST_TOOL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnBlastToolMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('8', ID_BLAST_TOOL_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_FIRE_EXTINGUISHER_MENUITEM, _("Fire Extinguisher"), wxS("\tX"), "fire_extinguisher_cursor_up", OnFireExtinguisherMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('X', ID_FIRE_EXTINGUISHER_MENUITEM);
 
-        wxMenuItem * electricSparkMenuItem = new wxMenuItem(mToolsMenu, ID_ELECTRICSPARK_MENUITEM, _("Electric Spark") + wxS("\t7"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(electricSparkMenuItem);
-        Connect(ID_ELECTRICSPARK_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnElectricSparkToolMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('7', ID_ELECTRICSPARK_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_BLAST_TOOL_MENUITEM, _("Fire Blast"), wxS("\t8"), "blast_cursor_up_1", OnBlastToolMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('8', ID_BLAST_TOOL_MENUITEM);
 
-        wxMenuItem * grabMenuItem = new wxMenuItem(mToolsMenu, ID_GRAB_MENUITEM, _("Attract/Repel") + wxS("\tG"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(grabMenuItem);
-        Connect(ID_GRAB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnGrabMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('G', ID_GRAB_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_ELECTRICSPARK_MENUITEM, _("Electric Spark"), wxS("\t7"), "electric_spark_cursor_up", OnElectricSparkToolMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('7', ID_ELECTRICSPARK_MENUITEM);
 
-        wxMenuItem * swirlMenuItem = new wxMenuItem(mToolsMenu, ID_SWIRL_MENUITEM, _("Swirl/Counterswirl") + wxS("\tW"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(swirlMenuItem);
-        Connect(ID_SWIRL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSwirlMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('W', ID_SWIRL_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_GRAB_MENUITEM, _("Attract/Repel"), wxS("\tG"), "drag_cursor_up_plus", OnGrabMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('G', ID_GRAB_MENUITEM);
 
-        wxMenuItem * pinMenuItem = new wxMenuItem(mToolsMenu, ID_PIN_MENUITEM, _("Toggle Pin") + wxS("\tP"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(pinMenuItem);
-        Connect(ID_PIN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPinMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('P', ID_PIN_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_SWIRL_MENUITEM, _("Swirl/Counterswirl"), wxS("\tW"), "swirl_cursor_up_cw", OnSwirlMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('W', ID_SWIRL_MENUITEM);
 
-        wxMenuItem * injectPressureMenuItem = new wxMenuItem(mToolsMenu, ID_INJECT_PRESSURE_MENUITEM, _("Inject Pressure") + wxS("\tB"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(injectPressureMenuItem);
-        Connect(ID_INJECT_PRESSURE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnInjectPressureMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('B', ID_INJECT_PRESSURE_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_PIN_MENUITEM, _("Toggle Pin"), wxS("\tP"), "pin_cursor", OnPinMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('P', ID_PIN_MENUITEM);
 
-        wxMenuItem * floodHoseMenuItem = new wxMenuItem(mToolsMenu, ID_FLOOD_HOSE_MENUITEM, _("Flood/Dry") + wxS("\tF"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(floodHoseMenuItem);
-        Connect(ID_FLOOD_HOSE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFloodHoseMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('F', ID_FLOOD_HOSE_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_INJECT_PRESSURE_MENUITEM, _("Inject Pressure"), wxS("\tB"), "air_tank_cursor_up", OnInjectPressureMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('B', ID_INJECT_PRESSURE_MENUITEM);
 
-        wxMenuItem * timerBombMenuItem = new wxMenuItem(mToolsMenu, ID_TIMERBOMB_MENUITEM, _("Toggle Timer Bomb") + wxS("\tT"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(timerBombMenuItem);
-        Connect(ID_TIMERBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTimerBombMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('T', ID_TIMERBOMB_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_FLOOD_HOSE_MENUITEM, _("Flood/Dry"), wxS("\tF"), "flood_cursor_up", OnFloodHoseMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('F', ID_FLOOD_HOSE_MENUITEM);
 
-        wxMenuItem * rcBombMenuItem = new wxMenuItem(mToolsMenu, ID_RCBOMB_MENUITEM, _("Toggle RC Bomb") + wxS("\tR"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(rcBombMenuItem);
-        Connect(ID_RCBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRCBombMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('R', ID_RCBOMB_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_TIMERBOMB_MENUITEM, _("Toggle Timer Bomb"), wxS("\tT"), "timer_bomb_cursor", OnTimerBombMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('T', ID_TIMERBOMB_MENUITEM);
 
-        wxMenuItem * impactBombMenuItem = new wxMenuItem(mToolsMenu, ID_IMPACTBOMB_MENUITEM, _("Toggle Impact Bomb") + wxS("\tI"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(impactBombMenuItem);
-        Connect(ID_IMPACTBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnImpactBombMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('I', ID_IMPACTBOMB_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_RCBOMB_MENUITEM, _("Toggle RC Bomb"), wxS("\tR"), "rc_bomb_cursor", OnRCBombMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('R', ID_RCBOMB_MENUITEM);
 
-        wxMenuItem * antiMatterBombMenuItem = new wxMenuItem(mToolsMenu, ID_ANTIMATTERBOMB_MENUITEM, _("Toggle Anti-Matter Bomb") + wxS("\tA"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(antiMatterBombMenuItem);
-        Connect(ID_ANTIMATTERBOMB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('A', ID_ANTIMATTERBOMB_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_IMPACTBOMB_MENUITEM, _("Toggle Impact Bomb"), wxS("\tI"), "impact_bomb_cursor", OnImpactBombMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('I', ID_IMPACTBOMB_MENUITEM);
 
-        wxMenuItem * thanosSnapMenuItem = new wxMenuItem(mToolsMenu, ID_THANOSSNAP_MENUITEM, _("Thanos' Snap") + wxS("\tQ"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(thanosSnapMenuItem);
-        Connect(ID_THANOSSNAP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnThanosSnapMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('Q', ID_THANOSSNAP_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_ANTIMATTERBOMB_MENUITEM, _("Toggle Anti-Matter Bomb"), wxS("\tA"), "am_bomb_cursor", OnAntiMatterBombMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('A', ID_ANTIMATTERBOMB_MENUITEM);
 
-        wxMenuItem * waveMakerMenuItem = new wxMenuItem(mToolsMenu, ID_WAVEMAKER_MENUITEM, _("WaveMaker") + wxS("\tV"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(waveMakerMenuItem);
-        Connect(ID_WAVEMAKER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnWaveMakerMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('V', ID_WAVEMAKER_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_THANOSSNAP_MENUITEM, _("Thanos' Snap"), wxS("\tQ"), "thanos_snap_cursor_up", OnThanosSnapMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('Q', ID_THANOSSNAP_MENUITEM);
 
-        wxMenuItem * adjustTerrainMenuItem = new wxMenuItem(mToolsMenu, ID_ADJUSTTERRAIN_MENUITEM, _("Adjust Terrain") + wxS("\tJ"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(adjustTerrainMenuItem);
-        Connect(ID_ADJUSTTERRAIN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAdjustTerrainMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('J', ID_ADJUSTTERRAIN_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_WAVEMAKER_MENUITEM, _("WaveMaker"), wxS("\tV"), "wave_maker_cursor_up", OnWaveMakerMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('V', ID_WAVEMAKER_MENUITEM);
 
-        wxMenuItem * repairStructureMenuItem = new wxMenuItem(mToolsMenu, ID_REPAIRSTRUCTURE_MENUITEM, _("Repair") + wxS("\tE"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(repairStructureMenuItem);
-        Connect(ID_REPAIRSTRUCTURE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRepairStructureMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('E', ID_REPAIRSTRUCTURE_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_ADJUSTTERRAIN_MENUITEM, _("Adjust Terrain"), wxS("\tJ"), "terrain_adjust_cursor_up", OnAdjustTerrainMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('J', ID_ADJUSTTERRAIN_MENUITEM);
 
-        wxMenuItem * scrubMenuItem = new wxMenuItem(mToolsMenu, ID_SCRUB_MENUITEM, _("Scrub/Rot") + wxS("\tU"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(scrubMenuItem);
-        Connect(ID_SCRUB_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnScrubMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('U', ID_SCRUB_MENUITEM)
+        ADD_TOOL_MENUITEM(ID_REPAIRSTRUCTURE_MENUITEM, _("Repair"), wxS("\tE"), "repair_structure_cursor_up", OnRepairStructureMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('E', ID_REPAIRSTRUCTURE_MENUITEM);
 
-        mScareFishMenuItem = new wxMenuItem(mToolsMenu, ID_SCAREFISH_MENUTEIM, _("Scare/Allure Fishes") + wxS("\tZ"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(mScareFishMenuItem);
-        Connect(ID_SCAREFISH_MENUTEIM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnScareFishMenuItemSelected);
+        ADD_TOOL_MENUITEM(ID_SCRUB_MENUITEM, _("Scrub/Rot"), wxS("\tU"), "scrub_cursor_up", OnScrubMenuItemSelected);
+        ADD_PLAIN_ACCELERATOR_KEY('U', ID_SCRUB_MENUITEM);
+
+        mScareFishMenuItem = ADD_TOOL_MENUITEM(ID_SCAREFISH_MENUTEIM, _("Scare/Allure Fishes"), wxS("\tZ"), "megaphone_cursor_up", OnScareFishMenuItemSelected);
         mScareFishMenuItem->Enable(false);
-        ADD_PLAIN_ACCELERATOR_KEY('Z', ID_SCAREFISH_MENUTEIM)
+        ADD_PLAIN_ACCELERATOR_KEY('Z', ID_SCAREFISH_MENUTEIM);
 
-        wxMenuItem * physicsProbeMenuItem = new wxMenuItem(mToolsMenu, ID_PHYSICSPROBE_MENUITEM, _("Toggle Physics Probe"), wxEmptyString, wxITEM_RADIO);
-        mToolsMenu->Append(physicsProbeMenuItem);
-        Connect(ID_PHYSICSPROBE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPhysicsProbeMenuItemSelected);
+        ADD_TOOL_MENUITEM(ID_PHYSICSPROBE_MENUITEM, _("Toggle Physics Probe"), wxS(""), "physics_probe_cursor", OnPhysicsProbeMenuItemSelected);
 
         mToolsMenu->Append(new wxMenuItem(mToolsMenu, wxID_SEPARATOR));
 
