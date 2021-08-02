@@ -1037,7 +1037,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": "#BFBFBF",
+        "color_key": ["#BFBFBF", "#E1BFBF", "#BFBFE1"],
         "combustion_type": "Combustion",
         "ignition_temperature": 553.15,
         "is_hull": true,
@@ -1047,7 +1047,6 @@
         },
         "melting_temperature": 1000000.0,
         "name": "Rubber Hull Soft",
-        "render_color": "#BFBFBF",
         "rust_receptivity": 0,
         "sound_type": "Rubber",
         "specific_heat": 1250.0,
@@ -1055,7 +1054,7 @@
         "strength": 2.5,
         "template": {
             "column": 10,
-            "row": "32|Rubber Hull Soft"
+            "row": "32"
         },
 	"texture_name": "rubber_1",
         "thermal_conductivity": 0.1,
@@ -1064,64 +1063,9 @@
         "water_retention": 0.05,
         "buoyancy_volume_fill": 0.0
     },
+        
     {
-        "color_key": "#E1BFBF",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 553.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Rubber Hull Soft Red",
-        "render_color": "#E1BFBF",
-        "rust_receptivity": 0,
-        "sound_type": "Rubber",
-        "specific_heat": 1250.0,
-        "stiffness": 0.5,
-        "strength": 2.5,
-        "template": {
-            "column": 11,
-            "row": "32|Rubber Hull Soft"
-        },
-	"texture_name": "rubber_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00008,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#BFBFE1",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 553.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Rubber Hull Soft Blue",
-        "render_color": "#BFBFE1",
-        "rust_receptivity": 0,
-        "sound_type": "Rubber",
-        "specific_heat": 1250.0,
-        "stiffness": 0.5,
-        "strength": 2.5,
-        "template": {
-            "column": 12,
-            "row": "32|Rubber Hull Soft"
-        },
-	"texture_name": "rubber_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00008,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#CFCFCF",
+        "color_key": ["#CFCFCF", "#E1CFCF", "#CFCFE1"],
         "combustion_type": "Combustion",
         "ignition_temperature": 553.15,
         "is_hull": false,
@@ -1131,7 +1075,6 @@
         },
         "melting_temperature": 1000000.0,
         "name": "Rubber Soft",
-        "render_color": "#CFCFCF",
         "rust_receptivity": 0,
         "sound_type": "Rubber",
         "specific_heat": 1250.0,
@@ -1139,7 +1082,7 @@
         "strength": 2.5,
         "template": {
             "column": 10,
-            "row": "40|Rubber Soft"
+            "row": "40"
         },
 	"texture_name": "rubber_1",
         "thermal_conductivity": 0.1,
@@ -1148,64 +1091,9 @@
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
     },
+
     {
-        "color_key": "#E1CFCF",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 553.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.02,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Rubber Soft Red",
-        "render_color": "#E1CFCF",
-        "rust_receptivity": 0,
-        "sound_type": "Rubber",
-        "specific_heat": 1250.0,
-        "stiffness": 0.5,
-        "strength": 2.5,
-        "template": {
-            "column": 11,
-            "row": "40|Rubber Soft"
-        },
-	"texture_name": "rubber_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00008,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#CFCFE1",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 553.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.02,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Rubber Soft Blue",
-        "render_color": "#CFCFE1",
-        "rust_receptivity": 0,
-        "sound_type": "Rubber",
-        "specific_heat": 1250.0,
-        "stiffness": 0.5,
-        "strength": 2.5,
-        "template": {
-            "column": 12,
-            "row": "40|Rubber Soft"
-        },
-	"texture_name": "rubber_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00008,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#B8B8B8",
+        "color_key": ["#B8B8B8", "#E1B8B8", "#B8B8E1"],
         "combustion_type": "Combustion",
         "ignition_temperature": 553.15,
         "is_hull": true,
@@ -1215,7 +1103,6 @@
         },
         "melting_temperature": 1000000.0,
         "name": "Rubber Hull Hard",
-        "render_color": "#B8B8B8",
         "rust_receptivity": 0,
         "sound_type": "Rubber",
         "specific_heat": 1250.0,
@@ -1223,7 +1110,7 @@
         "strength": 2.5,
         "template": {
             "column": 10,
-            "row": "42|Rubber Hull Hard"
+            "row": "42"
         },
 	"texture_name": "rubber_1",
         "thermal_conductivity": 0.1,
@@ -1233,63 +1120,7 @@
         "buoyancy_volume_fill": 0.0
     },
     {
-        "color_key": "#E1B8B8",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 553.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Rubber Hull Hard Red",
-        "render_color": "#E1B8B8",
-        "rust_receptivity": 0,
-        "sound_type": "Rubber",
-        "specific_heat": 1250.0,
-        "stiffness": 1.0,
-        "strength": 2.5,
-        "template": {
-            "column": 11,
-            "row": "42|Rubber Hull Hard"
-        },
-	"texture_name": "rubber_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00008,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#B8B8E1",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 553.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Rubber Hull Hard Blue",
-        "render_color": "#B8B8E1",
-        "rust_receptivity": 0,
-        "sound_type": "Rubber",
-        "specific_heat": 1250.0,
-        "stiffness": 1.0,
-        "strength": 2.5,
-        "template": {
-            "column": 12,
-            "row": "42|Rubber Hull Hard"
-        },
-	"texture_name": "rubber_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00008,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#C7C7C7",
+        "color_key": ["#C7C7C7", "#E1C7C7", "#C7C7E1"],
         "combustion_type": "Combustion",
         "ignition_temperature": 553.15,
         "is_hull": false,
@@ -1299,7 +1130,6 @@
         },
         "melting_temperature": 1000000.0,
         "name": "Rubber Hard",
-        "render_color": "#C7C7C7",
         "rust_receptivity": 0,
         "sound_type": "Rubber",
         "specific_heat": 1250.0,
@@ -1307,7 +1137,7 @@
         "strength": 2.5,
         "template": {
             "column": 9,
-            "row": "50|Rubber Hard"
+            "row": "50"
         },
 	"texture_name": "rubber_1",
         "thermal_conductivity": 0.1,
@@ -1316,62 +1146,7 @@
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
     },
-    {
-        "color_key": "#E1C7C7",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 553.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.02,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Rubber Hard Red",
-        "render_color": "#E1C7C7",
-        "rust_receptivity": 0,
-        "sound_type": "Rubber",
-        "specific_heat": 1250.0,
-        "stiffness": 1.0,
-        "strength": 2.5,
-        "template": {
-            "column": 10,
-            "row": "50|Rubber Hard"
-        },
-	"texture_name": "rubber_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00008,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#C7C7E1",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 553.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.02,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Rubber Hard Blue",
-        "render_color": "#C7C7E1",
-        "rust_receptivity": 0,
-        "sound_type": "Rubber",
-        "specific_heat": 1250.0,
-        "stiffness": 1.0,
-        "strength": 2.5,
-        "template": {
-            "column": 11,
-            "row": "50|Rubber Hard"
-        },
-	"texture_name": "rubber_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00008,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
+
     {
         "color_key": "#C4C4C4",
         "combustion_type": "Combustion",
