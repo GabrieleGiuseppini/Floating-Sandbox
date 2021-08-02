@@ -1473,8 +1473,8 @@
 	"rust_receptivity": 0.0,
         "sound_type": "Cloth",
         "specific_heat": 1172.304,
-        "stiffness": 0.012,
-        "strength": 4.5,
+        "stiffness": 0.009,
+        "strength": 4.0,
         "template": {
             "column": 2,
             "row": "100|Mylar Hull"
@@ -1484,6 +1484,7 @@
 	"thermal_expansion_coefficient": 0.0043,
         "water_diffusion_speed": 0.5,
         "water_retention": 0.2,
+	"wind_receptivity": 0.5,
         "buoyancy_volume_fill": 0.0
     },
     {
@@ -1500,7 +1501,7 @@
 	"rust_receptivity": 0.0,
         "sound_type": "Cloth",
         "specific_heat": 1172.304,
-        "stiffness": 0.001,
+        "stiffness": 0.0002,
         "strength": 6.0,
         "template": {
             "column": 3,
@@ -1510,6 +1511,7 @@
         "thermal_conductivity": 0.05,
 	"thermal_expansion_coefficient": 0.0043,
         "water_diffusion_speed": 0.5,
+	"water_intake": 0.05,
         "water_retention": 0.2,
         "buoyancy_volume_fill": 1.0
     },

@@ -981,6 +981,8 @@ Render:
 					+ Hull
 					+ Use real combustion properties
 				= Make inflatable balloon
+					- Inject pressure issue due to expanded graph and not finding particle: radius becomes TODOHERE
+					- Internal pressure at start
 				- Then try to use Aluminium Sheet for tubing
 				- Do other blimp as well
 				- Regenerate materials palette
