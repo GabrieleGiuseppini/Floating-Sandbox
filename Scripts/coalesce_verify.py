@@ -31,6 +31,8 @@ def coalesce_verify(json_obj, selector_pattern):
                 else:
                     print("{}: NOT MATCHING".format(name))
 
+    print()
+    print(len(color_keys))
     print(', '.join('"' + c + '"' for c in color_keys))
 
 def main():

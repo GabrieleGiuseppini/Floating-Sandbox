@@ -639,6 +639,15 @@ Render:
 				+ Redo panel for USCS
 				+ UI settings manager
 				+ PreferencesDialog
+		+ MaterialsDB rearc:
+			! 170 materials
+			+ Substitute N identical instances, in which only key color changes, with one instance having an _array_ of keys
+				+ The key element in json may be either a string or an array of strings
+				+ When it's an array of strings, there can't be a RenderColor element
+				+ A missing RenderColor means it's the same as KeyColor
+			+ At load time, that one material becomes multiple materials (non-invertible transformation)
+			+ Coalesce already-existing materials
+			+ Update palette-generation script
 
 
 		= Ubuntu:
@@ -971,7 +980,10 @@ Render:
 					- Copy from cloth: stiffness and strength
 					- Hull
 					- Use real combustion properties
+				- Then try to use Aluminium Sheet for tubing
 				- Do other blimp as well
+				- changelist, also for material
+					- Mention also other colors for materials, with total # from 170
 			- Find right setting value and range for InternalPressure tool
 				- Option 1: "Quantity" is really # of atmospheres
 				- If it's atmospheres, say "Atmospheres" in tooltip
@@ -984,32 +996,6 @@ Render:
 					- PressureAtZero is subject to AirPressureAdjustment
 			- Optimizations:
 				- Merge EqualizeInternalPressure in UpdateWaterVelocities: EqualizeInternalPressureAndUpdateWaterVelocities
-
-		= MaterialsDB rearc:
-			! 170 materials
-			+ Substitute N identical instances, in which only key color changes, with one instance having an _array_ of keys
-				+ The key element in json may be either a string or an array of strings
-				+ When it's an array of strings, there can't be a RenderColor element
-				+ A missing RenderColor means it's the same as KeyColor
-			+ At load time, that one material becomes multiple materials (non-invertible transformation)
-			= Collapse already-existing materials
-				- Iron Hull (9)
-				- Structural Iron (3) - +6 NEW
-				- Iron (9+1)
-				- Steel Hull (9)
-				- Structural Steel (3) - +6 NEW
-				- Steel (11)
-				- Titanium Hull (9)
-				+ Titanium (9)
-				- Aluminium Hull (7) - +2 NEW
-				- Aluminium (7 + 1?) - +2 NEW
-				- Cloth (7)
-				- Rubber x 4 (3)
-				- Fiberglass x 2 (3)
-				- Lego x 2 (6)
-			+ Update palette-generation script
-			- Remove TODO for logging
-
 
 		= Do some normal wrecks and decide on default static pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques

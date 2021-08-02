@@ -8,9 +8,6 @@
 #include "Materials.h"
 #include "ResourceLocator.h"
 
-// TODO
-#include <GameCore/Log.h>
-
 #include <GameCore/Colors.h>
 #include <GameCore/GameException.h>
 #include <GameCore/GameTypes.h>
@@ -198,9 +195,6 @@ public:
                 throw GameException("Structural material \"" + entry.second.Name + "\" has a color key that is reserved for ropes and rope endpoints");
             }
         }
-
-        // TODOTEST
-        LogMessage("Total materials: ", structuralMaterialsMap.size());
 
         //
         // Electrical materials

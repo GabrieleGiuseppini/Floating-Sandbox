@@ -864,7 +864,7 @@
         "stiffness": 1.0,
         "strength": 0.05,
         "template": {
-            "column": "0|Double-Bottom Steel",
+            "column": "0|Steel",
             "row": "90|Double-Bottom"
         },
 	"texture_name": "metal_bulkheads_1",
@@ -891,7 +891,7 @@
         "stiffness": 1.0,
         "strength": 0.1,
         "template": {
-            "column": "1|Double-Bottom Titanium",
+            "column": "1|Titanium",
             "row": "90|Double-Bottom"
         },
 	"texture_name": "metal_plates_1_small",
@@ -918,7 +918,7 @@
         "stiffness": 1.0,
         "strength": 0.6,
         "template": {
-            "column": "2|Double-Bottom Iron",
+            "column": "2|Iron",
             "row": "90|Double-Bottom"
         },
 	"texture_name": "metal_bulkheads_1",
@@ -945,7 +945,7 @@
         "stiffness": 1.0,
         "strength": 0.5,
         "template": {
-            "column": "3|Double-Bottom Wood",
+            "column": "3|Wood",
             "row": "90|Double-Bottom"
         },
 	"texture_name":"wood_planks_2",
@@ -999,8 +999,8 @@
         "stiffness": 1.0,
         "strength": 0.1,
         "template": {
-            "column": "0|Glass Hull",
-            "row": "100|Glass"
+            "column": "0",
+            "row": "100|Glass Hull"
         },
 	"texture_name":"glass_1",
         "thermal_conductivity": 0.8,
@@ -1026,7 +1026,7 @@
         "stiffness": 1.0,
         "strength": 0.1,
         "template": {
-            "column": "1|Glass",
+            "column": "1",
             "row": "100|Glass"
         },
 	"texture_name":"glass_1",
@@ -1202,7 +1202,7 @@
     },
 
     {
-        "color_key": "#E4E4E4",
+        "color_key": ["#E4E4E4", "#B3000B", "#EFED00", "#186F36", "#13377B", "#050505"],
         "combustion_type": "Combustion",
         "ignition_temperature": 689.15,
         "is_hull": true,
@@ -1211,8 +1211,7 @@
             "nominal_mass": 1060
         },
         "melting_temperature": 393.15,
-        "name": "LEGO Hull (ABS) White",
-        "render_color": "#E4E4E4",
+        "name": "LEGO Hull (ABS)",
         "rust_receptivity": 0,
         "sound_type": "Lego",
         "specific_heat": 523.512,
@@ -1220,7 +1219,7 @@
         "strength": 0.06,
         "template": {
             "column": 5,
-            "row": "70|LEGO Hull (ABS)"
+            "row": "70"
         },
 	"texture_name":"lego_1",
         "thermal_conductivity": 0.15,
@@ -1229,148 +1228,9 @@
         "water_retention": 0.05,
         "buoyancy_volume_fill": 0.0
     },
+
     {
-        "color_key": "#B3000B",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 689.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.38,
-            "nominal_mass": 1060
-        },
-        "melting_temperature": 393.15,
-        "name": "LEGO Hull (ABS) Red",
-        "render_color": "#B3000B",
-        "rust_receptivity": 0,
-        "sound_type": "Lego",
-        "specific_heat": 523.512,
-        "stiffness": 1.1,
-        "strength": 0.06,
-        "template": {
-            "column": 6,
-            "row": "70|LEGO Hull (ABS)"
-        },
-	"texture_name":"lego_1",
-        "thermal_conductivity": 0.15,
-	"thermal_expansion_coefficient": 0.000031,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#EFED00",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 689.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.38,
-            "nominal_mass": 1060
-        },
-        "melting_temperature": 393.15,
-        "name": "LEGO Hull (ABS) Yellow",
-        "render_color": "#EFED00",
-        "rust_receptivity": 0,
-        "sound_type": "Lego",
-        "specific_heat": 523.512,
-        "stiffness": 1.1,
-        "strength": 0.06,
-        "template": {
-            "column": 7,
-            "row": "70|LEGO Hull (ABS)"
-        },
-	"texture_name":"lego_1",
-        "thermal_conductivity": 0.15,
-	"thermal_expansion_coefficient": 0.000031,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#186F36",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 689.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.38,
-            "nominal_mass": 1060
-        },
-        "melting_temperature": 393.15,
-        "name": "LEGO Hull (ABS) Green",
-        "render_color": "#186F36",
-        "rust_receptivity": 0,
-        "sound_type": "Lego",
-        "specific_heat": 523.512,
-        "stiffness": 1.1,
-        "strength": 0.06,
-        "template": {
-            "column": 8,
-            "row": "70|LEGO Hull (ABS)"
-        },
-	"texture_name":"lego_1",
-        "thermal_conductivity": 0.15,
-	"thermal_expansion_coefficient": 0.000031,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#13377B",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 689.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.38,
-            "nominal_mass": 1060
-        },
-        "melting_temperature": 393.15,
-        "name": "LEGO Hull (ABS) Blue",
-        "render_color": "#13377B",
-        "rust_receptivity": 0,
-        "sound_type": "Lego",
-        "specific_heat": 523.512,
-        "stiffness": 1.1,
-        "strength": 0.06,
-        "template": {
-            "column": 9,
-            "row": "70|LEGO Hull (ABS)"
-        },
-	"texture_name":"lego_1",
-        "thermal_conductivity": 0.15,
-	"thermal_expansion_coefficient": 0.000031,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#050505",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 689.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.38,
-            "nominal_mass": 1060
-        },
-        "melting_temperature": 393.15,
-        "name": "LEGO Hull (ABS) Black",
-        "render_color": "#050505",
-        "rust_receptivity": 0,
-        "sound_type": "Lego",
-        "specific_heat": 523.512,
-        "stiffness": 1.1,
-        "strength": 0.06,
-        "template": {
-            "column": 10,
-            "row": "70|LEGO Hull (ABS)"
-        },
-	"texture_name":"lego_1",
-        "thermal_conductivity": 0.15,
-	"thermal_expansion_coefficient": 0.000031,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#F4F4F4",
+        "color_key": ["#F4F4F4", "#E3000B", "#FFED00", "#287F46", "#23478B", "#080808"],
         "combustion_type": "Combustion",
         "ignition_temperature": 689.15,
         "is_hull": false,
@@ -1379,8 +1239,7 @@
             "nominal_mass": 1060
         },
         "melting_temperature": 393.15,
-        "name": "LEGO (ABS) White",
-        "render_color": "#F4F4F4",
+        "name": "LEGO (ABS)",
         "rust_receptivity": 0,
         "sound_type": "Lego",
         "specific_heat": 523.512,
@@ -1388,147 +1247,7 @@
         "strength": 0.06,
         "template": {
             "column": 5,
-            "row": "80|LEGO (ABS)"
-        },
-	"texture_name":"lego_1",
-        "thermal_conductivity": 0.15,
-	"thermal_expansion_coefficient": 0.000031,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#E3000B",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 689.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.38,
-            "nominal_mass": 1060
-        },
-        "melting_temperature": 393.15,
-        "name": "LEGO (ABS) Red",
-        "render_color": "#E3000B",
-        "rust_receptivity": 0,
-        "sound_type": "Lego",
-        "specific_heat": 523.512,
-        "stiffness": 1.1,
-        "strength": 0.06,
-        "template": {
-            "column": 6,
-            "row": "80|LEGO (ABS)"
-        },
-	"texture_name":"lego_1",
-        "thermal_conductivity": 0.15,
-	"thermal_expansion_coefficient": 0.000031,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#FFED00",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 689.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.38,
-            "nominal_mass": 1060
-        },
-        "melting_temperature": 393.15,
-        "name": "LEGO (ABS) Yellow",
-        "render_color": "#FFED00",
-        "rust_receptivity": 0,
-        "sound_type": "Lego",
-        "specific_heat": 523.512,
-        "stiffness": 1.1,
-        "strength": 0.06,
-        "template": {
-            "column": 7,
-            "row": "80|LEGO (ABS)"
-        },
-	"texture_name":"lego_1",
-        "thermal_conductivity": 0.15,
-	"thermal_expansion_coefficient": 0.000031,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#287F46",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 689.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.38,
-            "nominal_mass": 1060
-        },
-        "melting_temperature": 393.15,
-        "name": "LEGO (ABS) Green",
-        "render_color": "#287F46",
-        "rust_receptivity": 0,
-        "sound_type": "Lego",
-        "specific_heat": 523.512,
-        "stiffness": 1.1,
-        "strength": 0.06,
-        "template": {
-            "column": 8,
-            "row": "80|LEGO (ABS)"
-        },
-	"texture_name":"lego_1",
-        "thermal_conductivity": 0.15,
-	"thermal_expansion_coefficient": 0.000031,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#23478B",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 689.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.38,
-            "nominal_mass": 1060
-        },
-        "melting_temperature": 393.15,
-        "name": "LEGO (ABS) Blue",
-        "render_color": "#23478B",
-        "rust_receptivity": 0,
-        "sound_type": "Lego",
-        "specific_heat": 523.512,
-        "stiffness": 1.1,
-        "strength": 0.06,
-        "template": {
-            "column": 9,
-            "row": "80|LEGO (ABS)"
-        },
-	"texture_name":"lego_1",
-        "thermal_conductivity": 0.15,
-	"thermal_expansion_coefficient": 0.000031,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#080808",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 689.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.38,
-            "nominal_mass": 1060
-        },
-        "melting_temperature": 393.15,
-        "name": "LEGO (ABS) Black",
-        "render_color": "#080808",
-        "rust_receptivity": 0,
-        "sound_type": "Lego",
-        "specific_heat": 523.512,
-        "stiffness": 1.1,
-        "strength": 0.06,
-        "template": {
-            "column": 10,
-            "row": "80|LEGO (ABS)"
+            "row": "80"
         },
 	"texture_name":"lego_1",
         "thermal_conductivity": 0.15,
