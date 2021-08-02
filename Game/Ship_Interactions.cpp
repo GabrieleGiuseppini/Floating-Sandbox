@@ -762,7 +762,7 @@ void Ship::SwirlAt(Interaction::ArgumentsUnion::SwirlArguments const & args)
 
         mPoints.AddStaticForce(
             pointIndex,
-            vec2f(-displacement.y, displacement.x) * forceMagnitude);
+vec2f(-displacement.y, displacement.x) * forceMagnitude);
     }
 }
 
@@ -808,41 +808,96 @@ bool Ship::InjectPressureAt(
     float pressureQuantityMultiplier,
     GameParameters const & gameParameters)
 {
-    float const searchRadius = gameParameters.InjectPressureRadius;
-
     // Delta quantity of pressure, added or removed;
     // actual quantity removed depends on pre-existing pressure
     float const quantityOfPressureDelta =
-        GameParameters::AirPressureAtSeaLevel // One atmosphere at a time
-        * gameParameters.InjectPressureQuantityAdjustment
+        gameParameters.InjectPressureQuantity // Number of atm
+        * GameParameters::AirPressureAtSeaLevel // Pressure of 1 atm
         * pressureQuantityMultiplier
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     //
-    // Find the (non-ephemeral) points in the radius
+    // Find closest (non-ephemeral) point in the radius
     //
 
-    float const searchSquareRadius = searchRadius * searchRadius;
+    float bestSquareDistance = gameParameters.ToolSearchRadius * gameParameters.ToolSearchRadius;
+    ElementIndex bestPointIndex = NoneElementIndex;
 
-    bool anyWasApplied = false;
     for (auto const pointIndex : mPoints.RawShipPoints())
     {
-        float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-        if (squareDistance < searchSquareRadius)
+        float const squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+        if (squareDistance < bestSquareDistance)
         {
-            //
-            // Update internal pressure
-            //
-
-            mPoints.SetInternalPressure(
-                pointIndex,
-                std::max(mPoints.GetInternalPressure(pointIndex) + quantityOfPressureDelta, 0.0f));
-
-            anyWasApplied = true;
+            bestSquareDistance = squareDistance;
+            bestPointIndex = pointIndex;
         }
     }
 
-    return anyWasApplied;
+    if (bestPointIndex == NoneElementIndex)
+    {
+        // Couldn't find a point within the search radius...
+        // ...cater to the main use case of this tool: expanded structures, which by means
+        // of expansion might make it impossible for the tool to find a point, even when
+        // in the ship.
+        //
+        // If the point is inside a triangle, inject at the closest endpoint
+
+        for (auto const & t : mTriangles)
+        {
+            auto const pointAPosition = mPoints.GetPosition(mTriangles.GetPointAIndex(t));
+            auto const pointBPosition = mPoints.GetPosition(mTriangles.GetPointBIndex(t));
+            auto const pointCPosition = mPoints.GetPosition(mTriangles.GetPointCIndex(t));
+
+            if (IsPointInTriangle(
+                targetPos,
+                pointAPosition,
+                pointBPosition,
+                pointCPosition))
+            {
+                if ((targetPos - pointAPosition).length() < (targetPos - pointBPosition).length())
+                {
+                    // Closer to A than B
+                    if ((targetPos - pointAPosition).length() < (targetPos - pointCPosition).length())
+                    {
+                        bestPointIndex = mTriangles.GetPointAIndex(t);
+                    }
+                    else
+                    {
+                        bestPointIndex = mTriangles.GetPointCIndex(t);
+                    }
+                }
+                else
+                {
+                    // Closer to B than A
+                    if ((targetPos - pointBPosition).length() < (targetPos - pointCPosition).length())
+                    {
+                        bestPointIndex = mTriangles.GetPointBIndex(t);
+                    }
+                    else
+                    {
+                        bestPointIndex = mTriangles.GetPointCIndex(t);
+                    }
+                }
+
+                break;
+            }
+        }
+    }
+
+    if (bestPointIndex != NoneElementIndex)
+    {
+        //
+        // Update internal pressure
+        //
+
+        mPoints.SetInternalPressure(
+            bestPointIndex,
+            std::max(mPoints.GetInternalPressure(bestPointIndex) + quantityOfPressureDelta, 0.0f));
+
+        return true;
+    }
+
+    return false;
 }
 
 bool Ship::FloodAt(

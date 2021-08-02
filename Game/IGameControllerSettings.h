@@ -259,11 +259,8 @@ struct IGameControllerSettings
     virtual float GetFloodQuantity() const = 0;
     virtual void SetFloodQuantity(float value) = 0;
 
-    virtual float GetInjectPressureRadius() const = 0;
-    virtual void SetInjectPressureRadius(float value) = 0;
-
-    virtual float GetInjectPressureQuantityAdjustment() const = 0;
-    virtual void SetInjectPressureQuantityAdjustment(float value) = 0;
+    virtual float GetInjectPressureQuantity() const = 0;
+    virtual void SetInjectPressureQuantity(float value) = 0;
 
     virtual float GetBlastToolRadius() const = 0;
     virtual void SetBlastToolRadius(float value) = 0;

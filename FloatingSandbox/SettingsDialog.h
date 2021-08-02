@@ -145,8 +145,7 @@ private:
     SliderControl<float> * mScrubRotRadiusSlider;
     SliderControl<float> * mFloodRadiusSlider;
     SliderControl<float> * mFloodQuantitySlider;
-    SliderControl<float> * mInjectPressureRadiusSlider;
-    SliderControl<float> * mInjectPressureQuantityAdjustmentSlider;
+    SliderControl<float> * mInjectPressureQuantitySlider;
     SliderControl<float> * mRepairRadiusSlider;
     SliderControl<float> * mRepairSpeedAdjustmentSlider;
     SliderControl<float> * mHeatBlasterRadiusSlider;

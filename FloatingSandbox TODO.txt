@@ -974,23 +974,27 @@ Render:
 				+ SettingsDialog - breakout tab, "Destructive Tools" and "Other Tools"
 				+ Help
 			+ Menu with text and icon
-			- Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
+			= Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
 				! Goodyear's current shell is currently normal cardboard (c1a46a)
 				+ New material: Mylar, of "cloth" sound type
 					+ Copy from cloth: stiffness and strength
 					+ Hull
 					+ Use real combustion properties
 				= Make inflatable balloon
-					- Inject pressure issue due to expanded graph and not finding particle: add to particle under cursor
+					+ Inject pressure issue due to expanded graph and not finding particle: find triangle if can't find
+						+ If ok: nuke InjectPressureRadius setting, and use GameParameters::ToolSearchRadius directly at Ship::InjectPressureAt()
+					- See if want to make it break at higher pressure by increasing stiffness of hull
+						- See then if can lower strength
 					- Internal pressure at start
+					- Description
 				- Then try to use Aluminium Sheet for tubing
 				- Do other blimp as well
 				- Regenerate materials palette
 				- changelist, also for material
 					- Mention also other colors for materials, with total # from 170
-			- Find right setting value and range for InternalPressure tool
-				- Option 1: "Quantity" is really # of atmospheres
-				- If it's atmospheres, say "Atmospheres" in tooltip
+			+ Find right setting value and range for InternalPressure tool
+				+ Option 1: "Quantity" is really # of atmospheres
+					+ If it's atmospheres, say "Atmospheres" in tooltip
 			- See if need adjustment for air pressure
 				- Goal: high air pressure causes things to explode high up
 					! No need to extend counterbalance upwards

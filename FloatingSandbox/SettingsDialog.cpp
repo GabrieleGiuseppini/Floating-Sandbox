@@ -3168,52 +3168,27 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     IconInStaticBorderMargin);
             }
 
-            // Inject Pressure Radius
+            // Inject Pressure Quantity
             {
-                mInjectPressureRadiusSlider = new SliderControl<float>(
+                mInjectPressureQuantitySlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
-                    _("Radius"),
-                    _("How wide an area is affected by the inject pressure tool (m)."),
+                    _("Flow"),
+                    _("Adjusts the number of atmospheres that are injected or drained by the inject pressure tool (atm)."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::InjectPressureRadius, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions->GetMinInjectPressureRadius(),
-                        mGameControllerSettingsOptions->GetMaxInjectPressureRadius()));
-
-                sizer->Add(
-                    mInjectPressureRadiusSlider,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            // Inject Pressure Quantity Adjustment
-            {
-                mInjectPressureQuantityAdjustmentSlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderWidth,
-                    SliderHeight,
-                    _("Flow Adjust"),
-                    _("Adjusts the amount of internal pressure that is injected or drained by the inject pressure tool."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::InjectPressureQuantityAdjustment, value);
+                        this->mLiveSettings.SetValue(GameSettings::InjectPressureQuantity, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions->GetMinInjectPressureQuantityAdjustment(),
+                        mGameControllerSettingsOptions->GetMinInjectPressureQuantity(),
                         1.0f,
-                        mGameControllerSettingsOptions->GetMaxInjectPressureQuantityAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxInjectPressureQuantity()));
 
                 sizer->Add(
-                    mInjectPressureQuantityAdjustmentSlider,
-                    wxGBPosition(0, 2),
+                    mInjectPressureQuantitySlider,
+                    wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -5044,8 +5019,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mScrubRotRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::ScrubRotRadius));
     mFloodRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::FloodRadius));
     mFloodQuantitySlider->SetValue(settings.GetValue<float>(GameSettings::FloodQuantity));
-    mInjectPressureRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::InjectPressureRadius));
-    mInjectPressureQuantityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::InjectPressureQuantityAdjustment));
+    mInjectPressureQuantitySlider->SetValue(settings.GetValue<float>(GameSettings::InjectPressureQuantity));
     mRepairRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::RepairRadius));
     mRepairSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RepairSpeedAdjustment));
     mHeatBlasterRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterRadius));
