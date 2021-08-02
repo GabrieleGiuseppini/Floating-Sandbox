@@ -26,6 +26,7 @@ set (UNIT_TEST_SOURCES
 	FixedSizeVectorTests.cpp
 	FloatingPointTests.cpp
 	GameEventDispatcherTests.cpp
+	GameGeometryTests.cpp
 	GameMathTests.cpp
 	LayoutHelperTests.cpp
 	main.cpp
@@ -33,7 +34,6 @@ set (UNIT_TEST_SOURCES
 	MemoryStreamsTests.cpp
 	ParameterSmootherTests.cpp
 	PrecalculatedFunctionTests.cpp
-	SegmentTests.cpp
 	SettingsTests.cpp
 	ShaderManagerTests.cpp
 	ShipPreviewDirectoryManagerTests.cpp

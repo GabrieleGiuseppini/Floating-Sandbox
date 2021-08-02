@@ -91,3 +91,14 @@ inline float OctantToCCWAngle(Octant octant)
     else
         return 2.0f * Pi<float> * (1.0f - static_cast<float>(octant) / 8.0f);
 }
+
+inline bool IsPointInTriangle(
+    vec2f const & pPosition,
+    vec2f const & aPosition,
+    vec2f const & bPosition,
+    vec2f const & cPosition)
+{
+    return (pPosition - aPosition).cross(bPosition - aPosition) >= 0.0f
+        && (pPosition - bPosition).cross(cPosition - bPosition) >= 0.0f
+        && (pPosition - cPosition).cross(aPosition - cPosition) >= 0.0f;
+}

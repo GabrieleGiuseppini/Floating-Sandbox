@@ -92,3 +92,33 @@ TEST_P(SegmentIntersectionTest, ProperIntersectionTest)
 
     EXPECT_EQ(result, std::get<4>(GetParam()));
 }
+
+class IsPointInTriangleTest : public testing::TestWithParam<std::tuple<vec2f, vec2f, vec2f, vec2f, bool>>
+{
+public:
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    IsPointInTriangleTests,
+    IsPointInTriangleTest,
+    ::testing::Values(
+        std::make_tuple(vec2f{ 1.0f, 2.0f }, vec2f{ 1.0f, 2.0f }, vec2f{ 2.0f, 3.0f }, vec2f{ 3.0f, 1.0f }, true),
+        std::make_tuple(vec2f{ 1.1f, 2.0f }, vec2f{ 1.0f, 2.0f }, vec2f{ 2.0f, 3.0f }, vec2f{ 3.0f, 1.0f }, true),
+        std::make_tuple(vec2f{ 2.0f, 2.0f }, vec2f{ 1.0f, 2.0f }, vec2f{ 2.0f, 3.0f }, vec2f{ 3.0f, 1.0f }, true),
+        std::make_tuple(vec2f{ 1.0f, 3.0f }, vec2f{ 1.0f, 2.0f }, vec2f{ 2.0f, 3.0f }, vec2f{ 3.0f, 1.0f }, false),
+        std::make_tuple(vec2f{ 1.0f, 2.1f }, vec2f{ 1.0f, 2.0f }, vec2f{ 2.0f, 3.0f }, vec2f{ 3.0f, 1.0f }, false),
+        std::make_tuple(vec2f{ 0.9f, 2.0f }, vec2f{ 1.0f, 2.0f }, vec2f{ 2.0f, 3.0f }, vec2f{ 3.0f, 1.0f }, false)
+    ));
+
+TEST_P(IsPointInTriangleTest, PositiveAndNegativeTests)
+{
+    bool result = IsPointInTriangle(
+        std::get<0>(GetParam()),
+        std::get<1>(GetParam()),
+        std::get<2>(GetParam()),
+        std::get<3>(GetParam()));
+
+    EXPECT_EQ(result, std::get<4>(GetParam()));
+}
