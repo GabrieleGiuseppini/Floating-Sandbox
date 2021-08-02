@@ -116,40 +116,41 @@ wxImage WxHelpers::LoadCursorImage(
 
 wxImage WxHelpers::RetintCursorImage(
     wxImage const & src,
-    unsigned char r,
-    unsigned char g,
-    unsigned char b)
+    rgbColor newTint)
 {
+    size_t const size = src.GetHeight() * src.GetWidth();
+    vec3f const tint = newTint.toVec3f();
+
     wxImage dst = src.Copy();
 
-    size_t const size = src.GetHeight() * src.GetWidth();
-
-    // TODO: rewrite in terms of rgbColor
-    unsigned char const * srcData = src.GetData();
-    unsigned char * const dstDataPtr = reinterpret_cast<unsigned char *>(std::malloc(size * 3));
-    assert(nullptr != dstDataPtr);
-    unsigned char * dstData = dstDataPtr;
-
-    for (int y = 0; y < src.GetHeight(); ++y)
+    // Data
     {
-        for (int x = 0; x < src.GetWidth(); ++x, srcData += 3, dstData += 3)
-        {
-            // TODOHERE
-            dstData[0] = srcData[0];
-            dstData[1] = srcData[1];
-            dstData[2] = srcData[2];
+        rgbColor const * srcData = reinterpret_cast<rgbColor const *>(src.GetData());
+        unsigned char * const dstDataPtr = reinterpret_cast<unsigned char *>(std::malloc(size * 3));
+        assert(nullptr != dstDataPtr);
+        rgbColor * dstData = reinterpret_cast<rgbColor *>(dstDataPtr);
 
-            // TODO: see from assembly if need operator << on rgb buffer
+        for (int y = 0; y < src.GetHeight(); ++y)
+        {
+            for (int x = 0; x < src.GetWidth(); ++x, ++srcData, ++dstData)
+            {
+                vec3f const v = srcData->toVec3f();
+                float const lum = (v.x + v.y + v.z) / 3.0f;
+                *dstData = rgbColor(tint * (1.0f - lum));
+            }
         }
+
+        dst.SetData(dstDataPtr);
     }
 
-    dst.SetData(dstDataPtr);
-
-    // Copy also alpha from source
-    unsigned char * const dstAlphaPtr = reinterpret_cast<unsigned char *>(std::malloc(size));
-    assert(nullptr != dstAlphaPtr);
-    std::memcpy(dstAlphaPtr, src.GetAlpha(), size);
-    dst.SetAlpha(dstAlphaPtr);
+    // Alpha
+    if (src.HasAlpha())
+    {
+        unsigned char * const dstAlphaPtr = reinterpret_cast<unsigned char *>(std::malloc(size));
+        assert(nullptr != dstAlphaPtr);
+        std::memcpy(dstAlphaPtr, src.GetAlpha(), size);
+        dst.SetAlpha(dstAlphaPtr);
+    }
 
     return dst;
 }

@@ -7,6 +7,7 @@
 
 #include <Game/ResourceLocator.h>
 
+#include <GameCore/Colors.h>
 #include <GameCore/ImageData.h>
 
 #include <wx/cursor.h>
@@ -36,7 +37,5 @@ namespace WxHelpers
 
     wxImage RetintCursorImage(
         wxImage const & src,
-        unsigned char r,
-        unsigned char g,
-        unsigned char b);
+        rgbColor newTint);
 };

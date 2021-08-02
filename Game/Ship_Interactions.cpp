@@ -819,7 +819,7 @@ bool Ship::InjectPressureAt(
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     //
-    // Find the (non-ephemeral) non-hull points in the radius
+    // Find the (non-ephemeral) points in the radius
     //
 
     float const searchSquareRadius = searchRadius * searchRadius;
@@ -827,21 +827,18 @@ bool Ship::InjectPressureAt(
     bool anyWasApplied = false;
     for (auto const pointIndex : mPoints.RawShipPoints())
     {
-        if (!mPoints.GetIsHull(pointIndex))
+        float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
+        if (squareDistance < searchSquareRadius)
         {
-            float squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-            if (squareDistance < searchSquareRadius)
-            {
-                //
-                // Update internal pressure
-                //
+            //
+            // Update internal pressure
+            //
 
-                mPoints.SetInternalPressure(
-                    pointIndex,
-                    std::max(mPoints.GetInternalPressure(pointIndex) + quantityOfPressureDelta, 0.0f));
+            mPoints.SetInternalPressure(
+                pointIndex,
+                std::max(mPoints.GetInternalPressure(pointIndex) + quantityOfPressureDelta, 0.0f));
 
-                anyWasApplied = true;
-            }
+            anyWasApplied = true;
         }
     }
 

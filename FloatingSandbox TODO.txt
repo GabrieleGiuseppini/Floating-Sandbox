@@ -975,6 +975,7 @@ Render:
 					- Use real combustion properties
 				- Do other blimp as well
 			- Find right setting value and range for InternalPressure tool
+				- Option 1: "Quantity" is really # of atmospheres
 				- If it's atmospheres, say "Atmospheres" in tooltip
 			- See if need adjustment for air pressure
 				- Goal: high air pressure causes things to explode high up
