@@ -992,7 +992,21 @@ Render:
 				+ When it's an array of strings, there can't be a RenderColor element
 				+ A missing RenderColor means it's the same as KeyColor
 			+ At load time, that one material becomes multiple materials (non-invertible transformation)
-			- Collapse already-existing materials
+			= Collapse already-existing materials
+				- Iron Hull (9)
+				- Structural Iron (3) - +6 NEW
+				- Iron (9+1)
+				- Steel Hull (9)
+				- Structural Steel (3) - +6 NEW
+				- Steel (11)
+				- Titanium Hull (9)
+				- Titanium (9)
+				- Aluminium Hull (7) - +2 NEW
+				- Aluminium (7 + 1?) - +2 NEW
+				- Cloth (7)
+				- Rubber x 4 (3)
+				- Fiberglass x 2 (3)
+				- Lego x 2 (6)
 			+ Update palette-generation script
 			- Remove TODO for logging
 
