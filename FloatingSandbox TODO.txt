@@ -983,10 +983,11 @@ Render:
 				= Make inflatable balloon
 					+ Inject pressure issue due to expanded graph and not finding particle: find triangle if can't find
 						+ If ok: nuke InjectPressureRadius setting, and use GameParameters::ToolSearchRadius directly at Ship::InjectPressureAt()
-					- See if want to make it break at higher pressure by increasing stiffness of hull
-						- See then if can lower strength
 					- Internal pressure at start
+					- See if want to make it break at higher pressure by increasing stiffness of hull
+						- See then if can lower strength					
 					- Description
+				- Change Goodyear's hull to Mylar
 				- Then try to use Aluminium Sheet for tubing
 				- Do other blimp as well
 				- Regenerate materials palette
@@ -999,9 +1000,11 @@ Render:
 				- Goal: high air pressure causes things to explode high up
 					! No need to extend counterbalance upwards
 				- If so: SettingsDialog		
-			- Ship definition: add optional value for default internal pressure
-				- When not specified, it's PressureAtZero (calc'd via Formulae)
+			= Ship definition: add optional value for default internal pressure
+				= When not specified, it's PressureAtZero (calc'd via Formulae)
 					- PressureAtZero is subject to AirPressureAdjustment
+				+ Move Offset out of metadata
+				- See if should also add to Red October and Triton
 			- Optimizations:
 				- Merge EqualizeInternalPressure in UpdateWaterVelocities: EqualizeInternalPressureAndUpdateWaterVelocities
 

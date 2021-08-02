@@ -130,7 +130,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
                     IntegralPoint(x, y).FlipY(structureHeight),
                     vec2f(
                         static_cast<float>(x) - halfWidth,
-                        static_cast<float>(y)) + shipDefinition.Metadata.Offset,
+                        static_cast<float>(y)) + shipDefinition.PhysicsData.Offset,
                     MakeTextureCoordinates(x, y, shipDefinition.StructuralLayerImage.Size),
                     structuralMaterial->RenderColor,
                     *structuralMaterial,
@@ -195,7 +195,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
             pointInfos1,
             pointIndexMatrix,
             materialDatabase,
-            shipDefinition.Metadata.Offset);
+            shipDefinition.PhysicsData.Offset);
     }
 
     //
@@ -367,7 +367,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipBuilder::Create(
         materialDatabase,
         gameEventDispatcher,
         gameParameters,
-        electricalElementInstanceIndices);
+        electricalElementInstanceIndices,
+        shipDefinition.PhysicsData);
 
     //
     // Create Springs for all ShipBuildSpring's
@@ -1386,7 +1387,8 @@ Physics::Points ShipBuilder::CreatePoints(
     MaterialDatabase const & materialDatabase,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters,
-    std::vector<ElectricalElementInstanceIndex> & electricalElementInstanceIndices) const
+    std::vector<ElectricalElementInstanceIndex> & electricalElementInstanceIndices,
+    ShipPhysicsData const & physicsData) const
 {
     Physics::Points points(
         static_cast<ElementIndex>(pointInfos2.size()),
@@ -1396,6 +1398,10 @@ Physics::Points ShipBuilder::CreatePoints(
         gameParameters);
 
     electricalElementInstanceIndices.reserve(pointInfos2.size());
+
+    float const internalPressure =
+        physicsData.InternalPressure.value_or(1.0f) // Default internal pressure is 1 atm
+        * GameParameters::AirPressureAtSeaLevel; // TODO: use air pressure adjustment if we add it
 
     ElementIndex electricalElementCounter = 0;
     for (size_t p = 0; p < pointInfos2.size(); ++p)
@@ -1417,7 +1423,7 @@ Physics::Points ShipBuilder::CreatePoints(
         points.Add(
             pointInfo.Position,
             pointInfo.Water,
-            GameParameters::AirPressureAtSeaLevel, // TODO: also from ship file
+            internalPressure,
             pointInfo.StructuralMtl,
             pointInfo.ElectricalMtl,
             pointInfo.IsRope,

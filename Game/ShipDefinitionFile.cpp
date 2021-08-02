@@ -117,6 +117,10 @@ ShipDefinitionFile ShipDefinitionFile::Load(std::filesystem::path definitionFile
             definitionJson,
             "description");
 
+        //
+        // Physics data
+        //
+
         vec2f offset(0.0f, 0.0f);
         std::optional<picojson::object> const offsetObject = Utils::GetOptionalJsonObject(definitionJson, "offset");
         if (!!offsetObject)
@@ -124,6 +128,8 @@ ShipDefinitionFile ShipDefinitionFile::Load(std::filesystem::path definitionFile
             offset.x = Utils::GetMandatoryJsonMember<float>(*offsetObject, "x");
             offset.y = Utils::GetMandatoryJsonMember<float>(*offsetObject, "y");
         }
+
+        std::optional<float> const internalPressure = Utils::GetOptionalJsonMember<float>(definitionJson, "internal_pressure");
 
         //
         // Electrical panel metadata
@@ -180,8 +186,10 @@ ShipDefinitionFile ShipDefinitionFile::Load(std::filesystem::path definitionFile
                 artCredits,
                 yearBuilt,
                 description,
+                electricalPanelMetadata),
+            ShipPhysicsData(
                 offset,
-                electricalPanelMetadata));
+                internalPressure));
     }
     else if (Utils::CaseInsensitiveEquals(definitionFilePath.extension().string(), ".png"))
     {
@@ -197,7 +205,8 @@ ShipDefinitionFile ShipDefinitionFile::Load(std::filesystem::path definitionFile
             std::nullopt, // AutoTexturizationSettings
             false, // HideElectricalsInPreview
             false, // HideHDInPreview
-            ShipMetadata(definitionFilePath.stem().string()));
+            ShipMetadata(definitionFilePath.stem().string()),
+            ShipPhysicsData());
     }
     else
     {

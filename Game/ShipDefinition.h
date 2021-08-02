@@ -6,6 +6,7 @@
 #pragma once
 
 #include "ShipMetadata.h"
+#include "ShipPhysicsData.h"
 
 #include <GameCore/ImageData.h>
 
@@ -31,6 +32,8 @@ public:
 
     ShipMetadata Metadata;
 
+    ShipPhysicsData PhysicsData;
+
     static ShipDefinition Load(std::filesystem::path const & filepath);
 
 private:
@@ -41,13 +44,15 @@ private:
         std::optional<RgbImageData> electricalLayerImage,
         std::optional<RgbaImageData> textureLayerImage,
         std::optional<ShipAutoTexturizationSettings> autoTexturizationSettings,
-        ShipMetadata metadata)
+        ShipMetadata metadata,
+        ShipPhysicsData physicsData)
         : StructuralLayerImage(std::move(structuralLayerImage))
         , RopesLayerImage(std::move(ropesLayerImage))
         , ElectricalLayerImage(std::move(electricalLayerImage))
         , TextureLayerImage(std::move(textureLayerImage))
         , AutoTexturizationSettings(std::move(autoTexturizationSettings))
         , Metadata(std::move(metadata))
+        , PhysicsData(std::move(physicsData))
     {
     }
 };

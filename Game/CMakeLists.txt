@@ -39,6 +39,7 @@ set  (GAME_SOURCES
 	ShipDefinition.h
 	ShipDefinitionFile.cpp
 	ShipDefinitionFile.h
+	ShipPhysicsData.h
 	ShipMetadata.h
 	ShipPreview.cpp
 	ShipPreview.h

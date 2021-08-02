@@ -6,6 +6,7 @@
 #pragma once
 
 #include "ShipMetadata.h"
+#include "ShipPhysicsData.h"
 
 #include <GameCore/GameTypes.h>
 #include <GameCore/SysSpecifics.h>
@@ -39,6 +40,7 @@ public:
     bool const DoHideHDInPreview;
 
     ShipMetadata const Metadata;
+    ShipPhysicsData const PhysicsData;
 
 public:
 
@@ -60,7 +62,8 @@ private:
         std::optional<ShipAutoTexturizationSettings> const & autoTexturizationSettings,
         bool doHideElectricalsInPreview,
         bool doHideHDInPreview,
-        ShipMetadata && shipMetadata)
+        ShipMetadata && metadata,
+        ShipPhysicsData && physicsData)
         : StructuralLayerImageFilePath(structuralLayerImageFilePath)
         , RopesLayerImageFilePath(ropesLayerImageFilePath)
         , ElectricalLayerImageFilePath(electricalLayerImageFilePath)
@@ -68,7 +71,8 @@ private:
         , AutoTexturizationSettings(autoTexturizationSettings)
         , DoHideElectricalsInPreview(doHideElectricalsInPreview)
         , DoHideHDInPreview(doHideHDInPreview)
-        , Metadata(std::move(shipMetadata))
+        , Metadata(std::move(metadata))
+        , PhysicsData(std::move(physicsData))
     {
     }
 };

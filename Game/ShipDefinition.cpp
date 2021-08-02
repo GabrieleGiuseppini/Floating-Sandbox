@@ -73,5 +73,6 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
         std::move(electricalLayerImage),
         std::move(textureLayerImage),
         std::move(sdf.AutoTexturizationSettings),
-        sdf.Metadata);
+        sdf.Metadata,
+        sdf.PhysicsData);
 }

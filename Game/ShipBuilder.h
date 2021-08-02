@@ -233,7 +233,8 @@ private:
         MaterialDatabase const & materialDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters,
-        std::vector<ElectricalElementInstanceIndex> & electricalElementInstanceIndices) const;
+        std::vector<ElectricalElementInstanceIndex> & electricalElementInstanceIndices,
+        ShipPhysicsData const & physicsData) const;
 
     void ConnectSpringsAndTriangles(
         std::vector<ShipBuildSpring> & springInfos2,

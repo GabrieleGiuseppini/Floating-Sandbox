@@ -29,8 +29,6 @@ public:
 
     std::optional<std::string> Description;
 
-    vec2f Offset;
-
     std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> ElectricalPanelMetadata;
 
     ShipMetadata(
@@ -39,14 +37,12 @@ public:
         std::optional<std::string> artCredits,
         std::optional<std::string> yearBuilt,
         std::optional<std::string> description,
-        vec2f offset,
         std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> electricalPanelMetadata)
         : ShipName(std::move(shipName))
         , Author(std::move(author))
         , ArtCredits(std::move(artCredits))
         , YearBuilt(std::move(yearBuilt))
         , Description(std::move(description))
-        , Offset(std::move(offset))
         , ElectricalPanelMetadata(std::move(electricalPanelMetadata))
     {
     }
@@ -57,7 +53,6 @@ public:
         , ArtCredits()
         , YearBuilt()
         , Description()
-        , Offset()
         , ElectricalPanelMetadata()
     {
     }

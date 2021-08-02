@@ -2,5 +2,6 @@
 	"structure_image":"inflatable_balloon_structural.png.dat",
 	"auto_texturization": { "mode": "material_textures" },
 	"ship_name":"Inflatable Balloon",
-	"year_built":"2021"
+	"year_built":"2021",
+	"internal_pressure": 1.35
 }
