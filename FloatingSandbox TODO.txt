@@ -980,6 +980,7 @@ Render:
 					+ Copy from cloth: stiffness and strength
 					+ Hull
 					+ Use real combustion properties
+				= Make inflatable balloon
 				- Then try to use Aluminium Sheet for tubing
 				- Do other blimp as well
 				- Regenerate materials palette

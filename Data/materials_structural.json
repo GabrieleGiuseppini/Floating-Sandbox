@@ -1474,7 +1474,7 @@
         "sound_type": "Cloth",
         "specific_heat": 1172.304,
         "stiffness": 0.012,
-        "strength": 3.8,
+        "strength": 4.5,
         "template": {
             "column": 2,
             "row": "100|Mylar Hull"
@@ -1492,7 +1492,7 @@
         "ignition_temperature": 1000000.0,
         "is_hull": false,
         "mass": {
-            "density": 0.0033633,
+            "density": 0.003,
             "nominal_mass": 1390
         },
         "melting_temperature": 527.15,
@@ -1500,8 +1500,8 @@
 	"rust_receptivity": 0.0,
         "sound_type": "Cloth",
         "specific_heat": 1172.304,
-        "stiffness": 0.012,
-        "strength": 3.8,
+        "stiffness": 0.001,
+        "strength": 6.0,
         "template": {
             "column": 3,
             "row": "100|Mylar"
