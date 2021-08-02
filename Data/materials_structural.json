@@ -158,7 +158,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": "#565663",
+        "color_key": ["#565663", "#8F1F00", "#8B7A00", "#3C8400", "#00657E", "#1A2C66", "#93007B", "#BA7100", "#555555"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1473.15,
         "is_hull": true,
@@ -168,14 +168,13 @@
         },
         "melting_temperature": 1941.15,
         "name": "Titanium Hull",
-        "render_color": "#565663",
         "sound_type": "Metal",
         "specific_heat": 523.0,
         "stiffness": 1.0,
         "strength": 0.13,
         "template": {
             "column": 0,
-            "row": "20|Titanium Hull"
+            "row": "20"
         },
 	"texture_name": "metal_plates_1_small",
         "thermal_conductivity": 17.0,
@@ -1144,35 +1143,6 @@
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
     },
-    
-    
-    {
-        "color_key": "#8F1F00",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1473.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 4600
-        },
-        "melting_temperature": 1941.15,
-        "name": "Titanium Hull Red",
-        "render_color": "#8F1F00",
-        "sound_type": "Metal",
-        "specific_heat": 523.0,
-        "stiffness": 1.0,
-        "strength": 0.13,
-        "template": {
-            "column": 1,
-            "row": "20|Titanium Hull"
-        },
-	"texture_name": "metal_plates_1_small",
-        "thermal_conductivity": 17.0,
-	"thermal_expansion_coefficient": 0.0000087,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },    
 
     {
         "color_key": "#926A00",
@@ -1228,175 +1198,6 @@
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
-    },
-    
-    
-    {
-        "color_key": "#8B7A00",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1473.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 4600
-        },
-        "melting_temperature": 1941.15,
-        "name": "Titanium Hull Yellow",
-        "render_color": "#8B7A00",
-        "sound_type": "Metal",
-        "specific_heat": 523.0,
-        "stiffness": 1.0,
-        "strength": 0.13,
-        "template": {
-            "column": 2,
-            "row": "20|Titanium Hull"
-        },
-	"texture_name": "metal_plates_1_small",
-        "thermal_conductivity": 17.0,
-	"thermal_expansion_coefficient": 0.0000087,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    
-    {
-        "color_key": "#3C8400",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1473.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 4600
-        },
-        "melting_temperature": 1941.15,
-        "name": "Titanium Hull Green",
-        "render_color": "#3C8400",
-        "sound_type": "Metal",
-        "specific_heat": 523.0,
-        "stiffness": 1.0,
-        "strength": 0.13,
-        "template": {
-            "column": 3,
-            "row": "20|Titanium Hull"
-        },
-	"texture_name": "metal_plates_1_small",
-        "thermal_conductivity": 17.0,
-	"thermal_expansion_coefficient": 0.0000087,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-
-    {
-        "color_key": "#00657E",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1473.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 4600
-        },
-        "melting_temperature": 1941.15,
-        "name": "Titanium Hull Blue",
-        "render_color": "#00657E",
-        "sound_type": "Metal",
-        "specific_heat": 523.0,
-        "stiffness": 1.0,
-        "strength": 0.13,
-        "template": {
-            "column": 4,
-            "row": "20|Titanium Hull"
-        },
-	"texture_name": "metal_plates_1_small",
-        "thermal_conductivity": 17.0,
-	"thermal_expansion_coefficient": 0.0000087,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    
-    {
-        "color_key": "#1A2C66",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1473.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 4600
-        },
-        "melting_temperature": 1941.15,
-        "name": "Titanium Hull Blue2",
-        "render_color": "#1A2C66",
-        "sound_type": "Metal",
-        "specific_heat": 523.0,
-        "stiffness": 1.0,
-        "strength": 0.13,
-        "template": {
-            "column": 5,
-            "row": "20|Titanium Hull"
-        },
-	"texture_name": "metal_plates_1_small",
-        "thermal_conductivity": 17.0,
-	"thermal_expansion_coefficient": 0.0000087,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    
-    {
-        "color_key": "#93007B",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1473.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 4600
-        },
-        "melting_temperature": 1941.15,
-        "name": "Titanium Hull Pink",
-        "render_color": "#93007B",
-        "sound_type": "Metal",
-        "specific_heat": 523.0,
-        "stiffness": 1.0,
-        "strength": 0.13,
-        "template": {
-            "column": 6,
-            "row": "20|Titanium Hull"
-        },
-	"texture_name": "metal_plates_1_small",
-        "thermal_conductivity": 17.0,
-	"thermal_expansion_coefficient": 0.0000087,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-
-    {
-        "color_key": "#BA7100",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1473.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 4600
-        },
-        "melting_temperature": 1941.15,
-        "name": "Titanium Hull Orange",
-        "render_color": "#BA7100",
-        "sound_type": "Metal",
-        "specific_heat": 523.0,
-        "stiffness": 1.0,
-        "strength": 0.13,
-        "template": {
-            "column": 7,
-            "row": "20|Titanium Hull"
-        },
-	"texture_name": "metal_plates_1_small",
-        "thermal_conductivity": 17.0,
-	"thermal_expansion_coefficient": 0.0000087,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
     },
     
     {
@@ -1484,34 +1285,6 @@
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
     },
-    {
-        "color_key": "#555555",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1473.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 4600
-        },
-        "melting_temperature": 1941.15,
-        "name": "Titanium Hull Grey2",
-        "render_color": "#555555",
-        "sound_type": "Metal",
-        "specific_heat": 523.0,
-        "stiffness": 1.0,
-        "strength": 0.13,
-        "template": {
-            "column": 8,
-            "row": "20|Titanium Hull"
-        },
-	"texture_name": "metal_plates_1_small",
-        "thermal_conductivity": 17.0,
-	"thermal_expansion_coefficient": 0.0000087,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    
     
     {
         "color_key": "#A21000",
