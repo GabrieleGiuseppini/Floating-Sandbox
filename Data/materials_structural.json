@@ -104,7 +104,7 @@
         "buoyancy_volume_fill": 0.0
     },
     {
-        "color_key": "#909090",
+        "color_key": ["#909090", "#950000", "#926A00", "#15BF5C", "#1597BF", "#020E57", "#5F0161", "#A6682B", "#121212"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1643.15,
         "is_hull": false,
@@ -114,14 +114,13 @@
         },
         "melting_temperature": 1089.15,
         "name": "Structural Steel",
-        "render_color": "#909090",
         "sound_type": "Metal",
         "specific_heat": 490.0,
         "stiffness": 1.0,
         "strength": 0.092,
         "template": {
             "column": 0,
-            "row": "11|Structural Steel"
+            "row": "11"
         },
 	"texture_name": "metal_riveted_1",
         "thermal_conductivity": 50.2,
@@ -735,34 +734,6 @@
     },
 
     {
-        "color_key": "#950000",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 7580
-        },
-        "melting_temperature": 1089.15,
-        "name": "Structural Steel Red",
-        "render_color": "#950000",
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.092,
-        "template": {
-            "column": 1,
-            "row": "11|Structural Steel"
-        },
-	"texture_name": "metal_riveted_1",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-    
-    {
         "color_key": "#D80E02",
         "combustion_type": "Combustion",
         "ignition_temperature": 1643.15,
@@ -779,36 +750,8 @@
         "stiffness": 1.0,
         "strength": 0.05,
         "template": {
-            "column": 2,
-            "row": "12|Steel"
-        },
-	"texture_name": "metal_riveted_1",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": "#926A00",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 7580
-        },
-        "melting_temperature": 1089.15,
-        "name": "Structural Steel Yellow",
-        "render_color": "#926A00",
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.092,
-        "template": {
-            "column": 2,
-            "row": "11|Structural Steel"
+            "column": 10,
+            "row": "12|Steel Cheap"
         },
 	"texture_name": "metal_riveted_1",
         "thermal_conductivity": 50.2,
@@ -836,7 +779,7 @@
         "strength": 0.02,
         "template": {
             "column": 9,
-            "row": "2|Iron"
+            "row": "2|Iron Cheap"
         },
 	"texture_name": "metal_riveted_1",
         "thermal_conductivity": 79.5,
@@ -893,8 +836,8 @@
         "stiffness": 1.0,
         "strength": 0.0856,
         "template": {
-            "column": 9,
-            "row": "20|Stainless Steel"
+            "column": 11,
+            "row": "12|Stainless Steel"
         },
 	"texture_name": "metal_riveted_1",
         "thermal_conductivity": 50.2,
@@ -2090,8 +2033,8 @@
         "stiffness": 1.0,
         "strength": 0.05,
         "template": {
-            "column": 10,
-            "row": "30|Styrofoam Hull"
+            "column": 9,
+            "row": "31|Styrofoam Hull"
         },
 	"texture_name":"styrofoam_1",
         "thermal_conductivity": 0.033,
