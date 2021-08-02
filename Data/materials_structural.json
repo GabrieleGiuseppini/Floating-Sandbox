@@ -531,7 +531,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": "#D2D2D2",
+        "color_key": ["#D2D2D2", "#DD4523", "#FFE680", "#054C00", "#0C20D1", "#FF8000", "#060606"],
         "combustion_type": "Combustion",
         "ignition_temperature": 393.15,
         "is_hull": false,
@@ -540,15 +540,14 @@
             "nominal_mass": 30
         },
         "melting_temperature": 1000000.0,
-        "name": "Cloth Grey",
-        "render_color": "#D2D2D2",
+        "name": "Cloth",
         "sound_type": "Cloth",
         "specific_heat": 1400.0,
         "stiffness": 0.012,
         "strength": 3.8,
         "template": {
             "column": 0,
-            "row": "50|Cloth"
+            "row": "50"
         },
 	"texture_name": "cloth_1",
         "thermal_conductivity": 0.04,
@@ -557,169 +556,7 @@
         "buoyancy_volume_fill": 0.05,
         "wind_receptivity": 0.5
     },
-    {
-        "color_key": "#DD4523",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 393.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0215,
-            "nominal_mass": 30
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Cloth Red",
-        "render_color": "#DD4523",
-        "sound_type": "Cloth",
-        "specific_heat": 1400.0,
-        "stiffness": 0.012,
-        "strength": 3.8,
-        "template": {
-            "column": 1,
-            "row": "50|Cloth"
-        },
-	"texture_name": "cloth_1",
-        "thermal_conductivity": 0.04,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.5,
-        "buoyancy_volume_fill": 0.05,
-        "wind_receptivity": 0.5
-    },
-    {
-        "color_key": "#FFE680",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 393.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0215,
-            "nominal_mass": 30
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Cloth Yellow",
-        "render_color": "#FFE680",
-        "sound_type": "Cloth",
-        "specific_heat": 1400.0,
-        "stiffness": 0.012,
-        "strength": 3.8,
-        "template": {
-            "column": 2,
-            "row": "50|Cloth"
-        },
-	"texture_name": "cloth_1",
-        "thermal_conductivity": 0.04,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.5,
-        "buoyancy_volume_fill": 0.05,
-        "wind_receptivity": 0.5
-    },
-    {
-        "color_key": "#054C00",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 393.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0215,
-            "nominal_mass": 30
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Cloth Green",
-        "render_color": "#054C00",
-        "sound_type": "Cloth",
-        "specific_heat": 1400.0,
-        "stiffness": 0.012,
-        "strength": 3.8,
-        "template": {
-            "column": 3,
-            "row": "50|Cloth"
-        },
-	"texture_name": "cloth_1",
-        "thermal_conductivity": 0.04,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.5,
-        "buoyancy_volume_fill": 0.05,
-        "wind_receptivity": 0.5
-    },
-    {
-        "color_key": "#0C20D1",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 393.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0215,
-            "nominal_mass": 30
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Cloth Blue",
-        "render_color": "#0C20D1",
-        "sound_type": "Cloth",
-        "specific_heat": 1400.0,
-        "stiffness": 0.012,
-        "strength": 3.8,
-        "template": {
-            "column": 4,
-            "row": "50|Cloth"
-        },
-	"texture_name": "cloth_1",
-        "thermal_conductivity": 0.04,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.5,
-        "buoyancy_volume_fill": 0.05,
-        "wind_receptivity": 0.5
-    },
-    {
-        "color_key": "#FF8000",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 393.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0215,
-            "nominal_mass": 30
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Cloth Orange",
-        "render_color": "#FF8000",
-        "sound_type": "Cloth",
-        "specific_heat": 1400.0,
-        "stiffness": 0.012,
-        "strength": 3.8,
-        "template": {
-            "column": 5,
-            "row": "50|Cloth"
-        },
-	"texture_name": "cloth_1",
-        "thermal_conductivity": 0.04,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.5,
-        "buoyancy_volume_fill": 0.05,
-        "wind_receptivity": 0.5
-    },
-    {
-        "color_key": "#060606",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 393.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0215,
-            "nominal_mass": 30
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Cloth Black",
-        "render_color": "#060606",
-        "sound_type": "Cloth",
-        "specific_heat": 1400.0,
-        "stiffness": 0.012,
-        "strength": 3.8,
-        "template": {
-            "column": 6,
-            "row": "50|Cloth"
-        },
-	"texture_name": "cloth_1",
-        "thermal_conductivity": 0.04,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.5,
-        "buoyancy_volume_fill": 0.05,
-        "wind_receptivity": 0.5
-    },
-
+    
     {
         "color_key": "#000000",
         "combustion_type": "Combustion",
