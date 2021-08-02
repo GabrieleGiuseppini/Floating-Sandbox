@@ -1148,7 +1148,7 @@
     },
 
     {
-        "color_key": "#C4C4C4",
+        "color_key": ["#C4C4C4", "#E1C4C4", "#C4C4E1"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1000000.0,
         "is_hull": true,
@@ -1158,7 +1158,6 @@
         },
         "melting_temperature": 1394.15,
         "name": "Fiberglass Hull",
-        "render_color": "#C4C4C4",
         "rust_receptivity": 0,
         "sound_type": "Plastic",
         "specific_heat": 700.0,
@@ -1166,7 +1165,7 @@
         "strength": 0.05,
         "template": {
             "column": 6,
-            "row": "55|Fiberglass Hull"
+            "row": "55"
         },
 	"texture_name":"fiberglass_1",
         "thermal_conductivity": 0.04,
@@ -1174,62 +1173,9 @@
         "water_retention": 0.05,
         "buoyancy_volume_fill": 0.0
     },
+
     {
-        "color_key": "#E1C4C4",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1394.15,
-        "name": "Fiberglass Hull Red",
-        "render_color": "#E1C4C4",
-        "rust_receptivity": 0,
-        "sound_type": "Plastic",
-        "specific_heat": 700.0,
-        "stiffness": 1.1,
-        "strength": 0.05,
-        "template": {
-            "column": 7,
-            "row": "55|Fiberglass Hull"
-        },
-	"texture_name":"fiberglass_1",
-        "thermal_conductivity": 0.04,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#C4C4E1",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1394.15,
-        "name": "Fiberglass Hull Blue",
-        "render_color": "#C4C4E1",
-        "rust_receptivity": 0,
-        "sound_type": "Plastic",
-        "specific_heat": 700.0,
-        "stiffness": 1.1,
-        "strength": 0.05,
-        "template": {
-            "column": 8,
-            "row": "55|Fiberglass Hull"
-        },
-	"texture_name":"fiberglass_1",
-        "thermal_conductivity": 0.04,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#D4D4D4",
+        "color_key": ["#D4D4D4", "#E1D4D4", "#D4D4E1"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1000000.0,
         "is_hull": false,
@@ -1239,7 +1185,6 @@
         },
         "melting_temperature": 1394.15,
         "name": "Fiberglass",
-        "render_color": "#D4D4D4",
         "rust_receptivity": 0,
         "sound_type": "Plastic",
         "specific_heat": 700.0,
@@ -1247,7 +1192,7 @@
         "strength": 0.05,
         "template": {
             "column": 9,
-            "row": "60|Fiberglass"
+            "row": "60"
         },
 	"texture_name":"fiberglass_1",
         "thermal_conductivity": 0.04,
@@ -1255,60 +1200,7 @@
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
     },
-    {
-        "color_key": "#E1D4D4",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1394.15,
-        "name": "Fiberglass Red",
-        "render_color": "#E1D4D4",
-        "rust_receptivity": 0,
-        "sound_type": "Plastic",
-        "specific_heat": 700.0,
-        "stiffness": 1.1,
-        "strength": 0.05,
-        "template": {
-            "column": 10,
-            "row": "60|Fiberglass"
-        },
-	"texture_name":"fiberglass_1",
-        "thermal_conductivity": 0.04,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#D4D4E1",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1394.15,
-        "name": "Fiberglass Blue",
-        "render_color": "#D4D4E1",
-        "rust_receptivity": 0,
-        "sound_type": "Plastic",
-        "specific_heat": 700.0,
-        "stiffness": 1.1,
-        "strength": 0.05,
-        "template": {
-            "column": 11,
-            "row": "60|Fiberglass"
-        },
-	"texture_name":"fiberglass_1",
-        "thermal_conductivity": 0.04,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
+
     {
         "color_key": "#E4E4E4",
         "combustion_type": "Combustion",
