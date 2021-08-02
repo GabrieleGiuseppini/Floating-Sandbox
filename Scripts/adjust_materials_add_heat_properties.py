@@ -1,7 +1,5 @@
 import json
 import sys
-
-from collections import OrderedDict
  
 def adjust_structural_material(material):
 

@@ -1000,7 +1000,7 @@ Render:
 				- Structural Steel (3) - +6 NEW
 				- Steel (11)
 				- Titanium Hull (9)
-				- Titanium (9)
+				+ Titanium (9)
 				- Aluminium Hull (7) - +2 NEW
 				- Aluminium (7 + 1?) - +2 NEW
 				- Cloth (7)

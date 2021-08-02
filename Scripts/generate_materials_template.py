@@ -4,8 +4,6 @@ from operator import itemgetter
 import re
 import sys
 
-
-
 def main():
     
     if len(sys.argv) != 3 or (sys.argv[2] != "s" and sys.argv[2] != "e"):
