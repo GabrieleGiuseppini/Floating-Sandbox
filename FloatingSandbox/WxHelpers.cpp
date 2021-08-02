@@ -9,6 +9,8 @@
 
 #include <wx/rawbmp.h>
 
+#include <cassert>
+#include <cstdlib>
 #include <stdexcept>
 
 wxBitmap WxHelpers::MakeBitmap(RgbaImageData const & imageData)
@@ -110,4 +112,44 @@ wxImage WxHelpers::LoadCursorImage(
     img.SetOption(wxIMAGE_OPTION_CUR_HOTSPOT_Y, hotspotY);
 
     return img;
+}
+
+wxImage WxHelpers::RetintCursorImage(
+    wxImage const & src,
+    unsigned char r,
+    unsigned char g,
+    unsigned char b)
+{
+    wxImage dst = src.Copy();
+
+    size_t const size = src.GetHeight() * src.GetWidth();
+
+    // TODO: rewrite in terms of rgbColor
+    unsigned char const * srcData = src.GetData();
+    unsigned char * const dstDataPtr = reinterpret_cast<unsigned char *>(std::malloc(size * 3));
+    assert(nullptr != dstDataPtr);
+    unsigned char * dstData = dstDataPtr;
+
+    for (int y = 0; y < src.GetHeight(); ++y)
+    {
+        for (int x = 0; x < src.GetWidth(); ++x, srcData += 3, dstData += 3)
+        {
+            // TODOHERE
+            dstData[0] = srcData[0];
+            dstData[1] = srcData[1];
+            dstData[2] = srcData[2];
+
+            // TODO: see from assembly if need operator << on rgb buffer
+        }
+    }
+
+    dst.SetData(dstDataPtr);
+
+    // Copy also alpha from source
+    unsigned char * const dstAlphaPtr = reinterpret_cast<unsigned char *>(std::malloc(size));
+    assert(nullptr != dstAlphaPtr);
+    std::memcpy(dstAlphaPtr, src.GetAlpha(), size);
+    dst.SetAlpha(dstAlphaPtr);
+
+    return dst;
 }

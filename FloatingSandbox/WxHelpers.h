@@ -33,4 +33,10 @@ namespace WxHelpers
         int hotspotX,
         int hotspotY,
         ResourceLocator const & resourceLocator);
+
+    wxImage RetintCursorImage(
+        wxImage const & src,
+        unsigned char r,
+        unsigned char g,
+        unsigned char b);
 };

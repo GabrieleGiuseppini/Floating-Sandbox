@@ -12,6 +12,7 @@
 #include "ShipDescriptionDialog.h"
 #include "StandardSystemPaths.h"
 #include "StartupTipDialog.h"
+#include "WxHelpers.h"
 
 #include <Game/ImageFileTools.h>
 
@@ -300,12 +301,12 @@ MainFrame::MainFrame(
         [&]()\
         {\
             wxMenuItem * toolMenuItem = new wxMenuItem(mToolsMenu, (id), (label) + (shortcut), wxEmptyString, wxITEM_RADIO);\
-            auto img = wxImage(\
+            auto img1 = wxImage(\
                 resourceLocator.GetCursorFilePath((bitmap_path)).string(),\
                 wxBITMAP_TYPE_PNG);\
-            img.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);\
-            wxBitmap bmp(img);\
-            toolMenuItem->SetBitmaps(bmp, bmp);\
+            img1.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);\
+            auto img2 = WxHelpers::RetintCursorImage(img1, 0x00, 0x90, 0x00);\
+            toolMenuItem->SetBitmaps(wxBitmap(img1), wxBitmap(img2));\
             mToolsMenu->Append(toolMenuItem);\
             Connect((id), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::##handler);\
             return toolMenuItem;\

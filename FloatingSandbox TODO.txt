@@ -965,7 +965,8 @@ Render:
 				+ SettingsDialog - breakout tab, "Destructive Tools" and "Other Tools"
 				+ Help
 			= Menu with text and icon
-				- Do checked image
+				= Do checked image
+					- Do own load and rescale and retint
 			- Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
 				! Goodyear's current shell is currently normal cardboard (c1a46a)
 				- New material: Mylar, of "cloth" sound type
