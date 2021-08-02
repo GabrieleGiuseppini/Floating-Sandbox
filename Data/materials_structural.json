@@ -210,7 +210,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": ["#E0E0E0", "#A42E10", "#A29A10", "#76B210", "#10A29A", "#204060", "#757575"],
+        "color_key": ["#E0E0E0", "#A42E10", "#A29A10", "#76B210", "#10A29A", "#204060", "#972ea3", "#d97a1c", "#757575"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1000000.0,
         "is_hull": true,
