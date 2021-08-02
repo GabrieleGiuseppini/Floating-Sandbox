@@ -263,7 +263,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": "#EFEFEF",
+        "color_key": ["#EFEFEF", "#B22212", "#B2A012", "#88B810", "#10B2A0", "#305878", "#8A1988", "#C96D12", "#989898"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1000000.0,
         "is_hull": false,
@@ -273,14 +273,13 @@
         },
         "melting_temperature": 933.45,
         "name": "Aluminium",
-        "render_color": "#EFEFEF",
         "sound_type": "Metal",
         "specific_heat": 897.0,
         "stiffness": 1.0,
         "strength": 0.09,
         "template": {
             "column": 0,
-            "row": "32|Aluminium"
+            "row": "32"
         },
 	"texture_name": "metal_riveted_2",
         "thermal_conductivity": 205.0,
@@ -307,7 +306,7 @@
         "strength": 0.027,
         "template": {
             "column": 1,
-            "row": "32|Aluminium"
+            "row": "31|Aluminium Cheap"
         },
 	"texture_name": "metal_riveted_2",
         "thermal_conductivity": 205.0,
@@ -316,168 +315,7 @@
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
     },    
-    {
-        "color_key": "#B22212",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Red",
-        "render_color": "#B22212",
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.09,
-        "template": {
-            "column": 2,
-            "row": "32|Aluminium"
-        },
-	"texture_name": "metal_riveted_2",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },    
-    {
-        "color_key": "#B2A012",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Yellow",
-        "render_color": "#B2A012",
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.09,
-        "template": {
-            "column": 3,
-            "row": "32|Aluminium"
-        },
-	"texture_name": "metal_riveted_2",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },    
-    {
-        "color_key": "#88B810",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Green",
-        "render_color": "#88B810",
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.09,
-        "template": {
-            "column": 4,
-            "row": "32|Aluminium"
-        },
-	"texture_name": "metal_riveted_2",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#10B2A0",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Blue",
-        "render_color": "#10B2A0",
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.09,
-        "template": {
-            "column": 5,
-            "row": "32|Aluminium"
-        },
-	"texture_name": "metal_riveted_2",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#305878",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Blue2",
-        "render_color": "#305878",
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.09,
-        "template": {
-            "column": 6,
-            "row": "32|Aluminium"
-        },
-	"texture_name": "metal_riveted_2",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#989898",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Grey2",
-        "render_color": "#989898",
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.09,
-        "template": {
-            "column": 8,
-            "row": "32|Aluminium"
-        },
-	"texture_name": "metal_riveted_2",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
+
     {
         "color_key": ["#905020", "#9E2E0C", "#998B0A", "#439206", "#036E8C", "#1E3070", "#A30085", "#CE8100", "#070707", "#777777"],
         "combustion_type": "Combustion",
