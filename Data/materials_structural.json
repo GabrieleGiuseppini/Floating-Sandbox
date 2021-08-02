@@ -79,7 +79,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": "#A0A0A0",
+        "color_key": ["#A0A0A0", "#A71000", "#A27A00", "#5A9B00", "#008A95", "#22437B", "#A900A7", "#D45B00", "#333333"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1643.15,
         "is_hull": true,
@@ -89,14 +89,13 @@
         },
         "melting_temperature": 1089.15,
         "name": "Steel Hull",
-        "render_color": "#A0A0A0",
         "sound_type": "Metal",
         "specific_heat": 490.0,
         "stiffness": 1.0,
         "strength": 0.092,
         "template": {
             "column": 0,
-            "row": "10|Steel Hull"
+            "row": "10"
         },
 	"texture_name": "metal_riveted_1_small",
         "thermal_conductivity": 50.2,
@@ -1062,34 +1061,6 @@
 	"wind_receptivity": 0.1
     },
 
-
-    {
-        "color_key": "#A71000",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 7580
-        },
-        "melting_temperature": 1089.15,
-        "name": "Steel Hull Red",
-        "render_color": "#A71000",
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.092,
-        "template": {
-            "column": 1,
-            "row": "10|Steel Hull"
-        },
-	"texture_name": "metal_riveted_1_small",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
     {
         "color_key": "#950000",
         "combustion_type": "Combustion",
@@ -1202,33 +1173,7 @@
         "water_retention": 0.05,
         "buoyancy_volume_fill": 0.0
     },    
-    {
-        "color_key": "#A27A00",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 7580
-        },
-        "melting_temperature": 1089.15,
-        "name": "Steel Hull Yellow",
-        "render_color": "#A27A00",
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.092,
-        "template": {
-            "column": 2,
-            "row": "10|Steel Hull"
-        },
-	"texture_name": "metal_riveted_1_small",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
+
     {
         "color_key": "#926A00",
         "combustion_type": "Combustion",
@@ -1315,34 +1260,6 @@
     },
     
     {
-        "color_key": "#5A9B00",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 7580
-        },
-        "melting_temperature": 1089.15,
-        "name": "Steel Hull Green",
-        "render_color": "#5A9B00",
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.092,
-        "template": {
-            "column": 3,
-            "row": "10|Steel Hull"
-        },
-	"texture_name": "metal_riveted_1_small",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    
-    {
         "color_key": "#3C8400",
         "combustion_type": "Combustion",
         "ignition_temperature": 1473.15,
@@ -1365,34 +1282,6 @@
 	"texture_name": "metal_plates_1_small",
         "thermal_conductivity": 17.0,
 	"thermal_expansion_coefficient": 0.0000087,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    
-    {
-        "color_key": "#008A95",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 7580
-        },
-        "melting_temperature": 1089.15,
-        "name": "Steel Hull Blue",
-        "render_color": "#008A95",
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.092,
-        "template": {
-            "column": 4,
-            "row": "10|Steel Hull"
-        },
-	"texture_name": "metal_riveted_1_small",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 0.0
@@ -1427,34 +1316,6 @@
     },
     
     {
-        "color_key": "#22437B",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 7580
-        },
-        "melting_temperature": 1089.15,
-        "name": "Steel Hull Blue2",
-        "render_color": "#22437B",
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.092,
-        "template": {
-            "column": 5,
-            "row": "10|Steel Hull"
-        },
-	"texture_name": "metal_riveted_1_small",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    
-    {
         "color_key": "#1A2C66",
         "combustion_type": "Combustion",
         "ignition_temperature": 1473.15,
@@ -1483,34 +1344,6 @@
     },
     
     {
-        "color_key": "#A900A7",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 7580
-        },
-        "melting_temperature": 1089.15,
-        "name": "Steel Hull Pink",
-        "render_color": "#A900A7",
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.092,
-        "template": {
-            "column": 6,
-            "row": "10|Steel Hull"
-        },
-	"texture_name": "metal_riveted_1_small",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    
-    {
         "color_key": "#93007B",
         "combustion_type": "Combustion",
         "ignition_temperature": 1473.15,
@@ -1533,34 +1366,6 @@
 	"texture_name": "metal_plates_1_small",
         "thermal_conductivity": 17.0,
 	"thermal_expansion_coefficient": 0.0000087,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-   
-    {
-        "color_key": "#D45B00",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 7580
-        },
-        "melting_temperature": 1089.15,
-        "name": "Steel Hull Orange",
-        "render_color": "#D45B00",
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.092,
-        "template": {
-            "column": 7,
-            "row": "10|Steel Hull"
-        },
-	"texture_name": "metal_riveted_1_small",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 0.0
@@ -1621,33 +1426,7 @@
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
     },
-    {
-        "color_key": "#333333",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 7580
-        },
-        "melting_temperature": 1089.15,
-        "name": "Steel Hull Grey2",
-        "render_color": "#333333",
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.092,
-        "template": {
-            "column": 8,
-            "row": "10|Steel Hull"
-        },
-	"texture_name": "metal_riveted_1_small",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
+
     {
         "color_key": "#A2A2A2",
         "combustion_type": "Combustion",
