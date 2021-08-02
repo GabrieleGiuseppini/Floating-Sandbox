@@ -7,7 +7,9 @@
 
 #include <GameCore/Utils.h>
 
-StructuralMaterial StructuralMaterial::Create(picojson::object const & structuralMaterialJson)
+StructuralMaterial StructuralMaterial::Create(
+    rgbColor const & renderColor,
+    picojson::object const & structuralMaterialJson)
 {
     std::string const name = Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "name");
 
@@ -21,11 +23,6 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
         float const buoyancyVolumeFill = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "buoyancy_volume_fill");
 
         float const stiffness = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "stiffness", 1.0);
-
-        vec4f const renderColor =
-            Utils::Hex2RgbColor(
-                Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "render_color"))
-            .toVec4f(1.0f);
 
         std::optional<MaterialUniqueType> uniqueType;
         if (name == "Air")
@@ -73,7 +70,7 @@ StructuralMaterial StructuralMaterial::Create(picojson::object const & structura
             density,
             buoyancyVolumeFill,
             stiffness,
-            renderColor,
+            renderColor.toVec4f(1.0f),
             uniqueType,
             materialSound,
             materialTextureName,

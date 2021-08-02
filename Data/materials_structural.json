@@ -216,7 +216,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": "#E0E0E0",
+        "color_key": ["#E0E0E0", "#A42E10", "#A29A10", "#76B210", "#10A29A", "#204060", "#757575"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1000000.0,
         "is_hull": true,
@@ -226,14 +226,13 @@
         },
         "melting_temperature": 933.45,
         "name": "Aluminium Hull",
-        "render_color": "#E0E0E0",
         "sound_type": "Metal",
         "specific_heat": 897.0,
         "stiffness": 1.0,
         "strength": 0.1,
         "template": {
             "column": 0,
-            "row": "30|Aluminium Hull"
+            "row": "30"
         },
 	"texture_name": "metal_riveted_2_small",
         "thermal_conductivity": 205.0,
@@ -322,34 +321,7 @@
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#A42E10",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Hull Red",
-        "render_color": "#A42E10",
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.1,
-        "template": {
-            "column": 1,
-            "row": "30|Aluminium Hull"
-        },
-	"texture_name": "metal_riveted_2_small",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
+    },    
     {
         "color_key": "#B22212",
         "combustion_type": "Combustion",
@@ -376,34 +348,7 @@
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#A29A10",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Hull Yellow",
-        "render_color": "#A29A10",
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.1,
-        "template": {
-            "column": 2,
-            "row": "30|Aluminium Hull"
-        },
-	"texture_name": "metal_riveted_2_small",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
+    },    
     {
         "color_key": "#B2A012",
         "combustion_type": "Combustion",
@@ -430,34 +375,7 @@
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#76B210",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Hull Green",
-        "render_color": "#76B210",
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.1,
-        "template": {
-            "column": 3,
-            "row": "30|Aluminium Hull"
-        },
-	"texture_name": "metal_riveted_2_small",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
+    },    
     {
         "color_key": "#88B810",
         "combustion_type": "Combustion",
@@ -484,33 +402,6 @@
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#10A29A",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Hull Blue",
-        "render_color": "#10A29A",
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.1,
-        "template": {
-            "column": 4,
-            "row": "30|Aluminium Hull"
-        },
-	"texture_name": "metal_riveted_2_small",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
     },
     {
         "color_key": "#10B2A0",
@@ -540,33 +431,6 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": "#204060",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Hull Blue2",
-        "render_color": "#204060",
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.1,
-        "template": {
-            "column": 5,
-            "row": "30|Aluminium Hull"
-        },
-	"texture_name": "metal_riveted_2_small",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
         "color_key": "#305878",
         "combustion_type": "Combustion",
         "ignition_temperature": 1000000.0,
@@ -592,33 +456,6 @@
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#757575",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Hull Grey2",
-        "render_color": "#757575",
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.1,
-        "template": {
-            "column": 8,
-            "row": "30|Aluminium Hull"
-        },
-	"texture_name": "metal_riveted_2_small",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
     },
     {
         "color_key": "#989898",
@@ -648,7 +485,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": "#905020",
+        "color_key": ["#905020", "#9E2E0C", "#998B0A", "#439206", "#036E8C", "#1E3070", "#A30085", "#CE8100", "#070707", "#777777"],
         "combustion_type": "Combustion",
         "ignition_temperature": 453.0,
         "is_hull": true,
@@ -657,15 +494,14 @@
             "nominal_mass": 1000
         },
         "melting_temperature": 1000000.0,
-        "name": "Wooden Hull",
-        "render_color": "#905020",
+        "name": "Wood Hull",
         "sound_type": "Wood",
         "specific_heat": 300.0,
         "stiffness": 1.0,
         "strength": 0.2,
         "template": {
             "column": 0,
-            "row": "40|Wood Hull"
+            "row": "40"
         },
 	"texture_name": "wood_studded_1",
         "thermal_conductivity": 0.1,
@@ -675,7 +511,7 @@
         "buoyancy_volume_fill": 0.0
     },
     {
-        "color_key": "#E0D8C0",
+        "color_key": ["#E0D8C0", "#B51B1B", "#AF7C18", "#78A814", "#10A19D", "#325989", "#9B00AF", "#DE4000", "#090909", "#888888"],
         "combustion_type": "Combustion",
         "ignition_temperature": 453.0,
         "is_hull": false,
@@ -685,14 +521,13 @@
         },
         "melting_temperature": 1000000.0,
         "name": "Wood",
-        "render_color": "#E0D8C0",
         "sound_type": "Wood",
         "specific_heat": 300.0,
         "stiffness": 1.0,
         "strength": 0.15,
         "template": {
             "column": 0,
-            "row": "42|Wood"
+            "row": "42"
         },
 	"texture_name": "wood_planks_1",
         "thermal_conductivity": 0.1,
@@ -1420,61 +1255,8 @@
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#9E2E0C",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1000
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Hull Red",
-        "render_color": "#9E2E0C",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.2,
-        "template": {
-            "column": 1,
-            "row": "40|Wood Hull"
-        },
-	"texture_name":"wood_studded_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#B51B1B",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.022935,
-            "nominal_mass": 800
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Red",
-        "render_color": "#B51B1B",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.15,
-        "template": {
-            "column": 1,
-            "row": "42|Wood"
-        },
-	"texture_name": "wood_planks_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
+    },    
+    
     {
         "color_key": "#8F1F00",
         "combustion_type": "Combustion",
@@ -1690,61 +1472,8 @@
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#998B0A",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1000
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Hull Yellow",
-        "render_color": "#998B0A",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.2,
-        "template": {
-            "column": 2,
-            "row": "40|Wood Hull"
-        },
-	"texture_name":"wood_studded_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#AF7C18",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.022935,
-            "nominal_mass": 800
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Yellow",
-        "render_color": "#AF7C18",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.15,
-        "template": {
-            "column": 2,
-            "row": "42|Wood"
-        },
-	"texture_name": "wood_planks_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
+    },    
+    
     {
         "color_key": "#8B7A00",
         "combustion_type": "Combustion",
@@ -1906,61 +1635,8 @@
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#439206",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1000
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Hull Green",
-        "render_color": "#439206",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.2,
-        "template": {
-            "column": 3,
-            "row": "40|Wood Hull"
-        },
-	"texture_name":"wood_studded_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#78A814",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.022935,
-            "nominal_mass": 800
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Green",
-        "render_color": "#78A814",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.15,
-        "template": {
-            "column": 3,
-            "row": "42|Wood"
-        },
-	"texture_name": "wood_planks_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
+    },    
+    
     {
         "color_key": "#3C8400",
         "combustion_type": "Combustion",
@@ -2122,61 +1798,8 @@
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#036E8C",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1000
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Hull Blue",
-        "render_color": "#036E8C",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.2,
-        "template": {
-            "column": 4,
-            "row": "40|Wood Hull"
-        },
-	"texture_name":"wood_studded_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#10A19D",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.022935,
-            "nominal_mass": 800
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Blue",
-        "render_color": "#10A19D",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.15,
-        "template": {
-            "column": 4,
-            "row": "42|Wood"
-        },
-	"texture_name": "wood_planks_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
+    },    
+    
     {
         "color_key": "#00657E",
         "combustion_type": "Combustion",
@@ -2338,61 +1961,8 @@
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#1E3070",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1000
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Hull Blue2",
-        "render_color": "#1E3070",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.2,
-        "template": {
-            "column": 5,
-            "row": "40|Wood Hull"
-        },
-	"texture_name":"wood_studded_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#325989",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.022935,
-            "nominal_mass": 800
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Blue2",
-        "render_color": "#325989",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.15,
-        "template": {
-            "column": 5,
-            "row": "42|Wood"
-        },
-	"texture_name": "wood_planks_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
+    },    
+    
     {
         "color_key": "#1A2C66",
         "combustion_type": "Combustion",
@@ -2554,61 +2124,8 @@
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#A30085",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1000
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Hull Pink",
-        "render_color": "#A30085",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.2,
-        "template": {
-            "column": 6,
-            "row": "40|Wood Hull"
-        },
-	"texture_name":"wood_studded_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#9B00AF",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.022935,
-            "nominal_mass": 800
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Pink",
-        "render_color": "#9B00AF",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.15,
-        "template": {
-            "column": 6,
-            "row": "42|Wood"
-        },
-	"texture_name": "wood_planks_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
+    },    
+    
     {
         "color_key": "#93007B",
         "combustion_type": "Combustion",
@@ -2770,119 +2287,8 @@
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#CE8100",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1000
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Hull Orange",
-        "render_color": "#CE8100",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.2,
-        "template": {
-            "column": 7,
-            "row": "40|Wood Hull"
-        },
-	"texture_name":"wood_studded_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#DE4000",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.022935,
-            "nominal_mass": 800
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Orange",
-        "render_color": "#DE4000",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.15,
-        "template": {
-            "column": 7,
-            "row": "42|Wood"
-        },
-	"texture_name": "wood_planks_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-
-
-    {
-        "color_key": "#070707",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1000
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Hull Black",
-        "render_color": "#070707",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.2,
-        "template": {
-            "column": 8,
-            "row": "40|Wood Hull"
-        },
-	"texture_name":"wood_studded_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#090909",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.022935,
-            "nominal_mass": 800
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Black",
-        "render_color": "#090909",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.15,
-        "template": {
-            "column": 8,
-            "row": "42|Wood"
-        },
-	"texture_name": "wood_planks_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-
-
+    },    
+    
     {
         "color_key": "#BA7100",
         "combustion_type": "Combustion",
@@ -3209,60 +2615,7 @@
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
     },
-    {
-        "color_key": "#777777",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1000
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Hull Grey2",
-        "render_color": "#777777",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.2,
-        "template": {
-            "column": 8,
-            "row": "40|Wood Hull"
-        },
-	"texture_name":"wood_studded_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#888888",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.022935,
-            "nominal_mass": 800
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Grey2",
-        "render_color": "#888888",
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.15,
-        "template": {
-            "column": 9,
-            "row": "42|Wood"
-        },
-	"texture_name": "wood_planks_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
+    
     {
         "color_key": "#A21000",
         "combustion_type": "Combustion",

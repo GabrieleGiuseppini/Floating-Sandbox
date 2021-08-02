@@ -85,7 +85,9 @@ public:
 
 public:
 
-    static StructuralMaterial Create(picojson::object const & structuralMaterialJson);
+    static StructuralMaterial Create(
+        rgbColor const & renderColor,
+        picojson::object const & structuralMaterialJson);
 
     static MaterialSoundType StrToMaterialSoundType(std::string const & str);
     static MaterialCombustionType StrToMaterialCombustionType(std::string const & str);

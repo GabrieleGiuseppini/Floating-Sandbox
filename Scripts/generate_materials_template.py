@@ -1,3 +1,4 @@
+from copy import deepcopy
 import json
 from operator import itemgetter
 import re
@@ -31,32 +32,44 @@ def main():
     
     for elem in data:
 
+        name = elem["name"]
+
         # Hide legacy elements
         if "is_legacy_electrical" in elem and elem["is_legacy_electrical"] == True:
             continue;
         
         row = elem["template"]["row"]
-        row_parts = row.split("|")
-        assert(len(row_parts) == 2)
+        row_parts = row.split("|")        
         row_order = int(row_parts[0])
-        row_name = row_parts[1]
+        if len(row_parts) == 2:
+            row_name = row_parts[1]
+        else:
+            row_name = name
             
         col = str(elem["template"]["column"])
         col_parts = col.split("|")
-        col_name = None
-        col_order = None
+        col_order = int(col_parts[0])
+        col_name = None        
         if len(col_parts) == 2:
             col_name = col_parts[1]
-            col_order = int(col_parts[0])
         else:
-            assert(len(col_parts) == 1)
             col_name = ""
-            col_order = int(col_parts[0])
 
+        # Normalize color_key to array
+        if not isinstance(elem["color_key"], list):
+            color_keys = [elem["color_key"]]
+        else:
+            color_keys = elem["color_key"]
+
+        # Store
         d_vals = d.setdefault(row_order, [])
-        d_vals.append((row_name,col_order,col_name,elem))
+        for color_key in color_keys:
+            elem2 = deepcopy(elem)
+            elem2["color_key"] = color_key
+            d_vals.append((row_name,col_order,col_name,elem2))
+            col_order = col_order + 1
 
-    # Sort cols
+    # Sort cols by row_order, col_order
     for k,v in d.items():
         d[k] = sorted(v, key=itemgetter(1))
 
@@ -81,7 +94,7 @@ def main():
 
         input_col_values = d[k]
 
-        output_col_values = []
+        output_col_values = [] # (row_name,col_order,col_name,Material)
 
         # 1. Prepare data
         ci = 0
