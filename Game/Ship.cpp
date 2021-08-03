@@ -1749,7 +1749,7 @@ void Ship::ApplySpringsForces_BySprings(GameParameters const & /*gameParameters*
 
     Springs::Endpoints const * restrict const endpointsBuffer = mSprings.GetEndpointsBuffer();
     float const * restrict const restLengthBuffer = mSprings.GetRestLengthBuffer();
-    Springs::Coefficients const * restrict const coefficientsBuffer = mSprings.GetCoefficientsBuffer();
+    Springs::DynamicsCoefficients const * restrict const dynamicsCoefficientsBuffer = mSprings.GetDynamicsCoefficientsBuffer();
 
     ElementCount const springCount = mSprings.GetElementCount();
     for (ElementIndex springIndex = 0; springIndex < springCount; ++springIndex)
@@ -1771,7 +1771,7 @@ void Ship::ApplySpringsForces_BySprings(GameParameters const & /*gameParameters*
         // Calculate spring force on point A
         float const fSpring =
             (displacementLength - restLengthBuffer[springIndex])
-            * coefficientsBuffer[springIndex].StiffnessCoefficient;
+            * dynamicsCoefficientsBuffer[springIndex].StiffnessCoefficient;
 
         //
         // 2. Damper forces
@@ -1784,7 +1784,7 @@ void Ship::ApplySpringsForces_BySprings(GameParameters const & /*gameParameters*
         vec2f const relVelocity = pointVelocityBuffer[pointBIndex] - pointVelocityBuffer[pointAIndex];
         float const fDamp =
             relVelocity.dot(springDir)
-            * coefficientsBuffer[springIndex].DampingCoefficient;
+            * dynamicsCoefficientsBuffer[springIndex].DampingCoefficient;
 
         //
         // Apply forces

@@ -55,12 +55,12 @@ public:
     /*
      * The pre-calculated coefficients used for the spring dynamics.
      */
-    struct Coefficients
+    struct DynamicsCoefficients
     {
         float StiffnessCoefficient;
         float DampingCoefficient;
 
-        Coefficients(
+        DynamicsCoefficients(
             float stiffnessCoefficient,
             float dampingCoefficient)
             : StiffnessCoefficient(stiffnessCoefficient)
@@ -121,7 +121,7 @@ public:
         , mMaterialStiffnessBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mFactoryRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
-        , mCoefficientsBuffer(mBufferElementCount, mElementCount, Coefficients(0.0f, 0.0f))
+        , mDynamicsCoefficientsBuffer(mBufferElementCount, mElementCount, DynamicsCoefficients(0.0f, 0.0f))
         , mBaseStructuralMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
         , mIsRopeBuffer(mBufferElementCount, mElementCount, false)
         // Water
@@ -482,17 +482,17 @@ public:
 
     float GetStiffnessCoefficient(ElementIndex springElementIndex) const noexcept
     {
-        return mCoefficientsBuffer[springElementIndex].StiffnessCoefficient;
+        return mDynamicsCoefficientsBuffer[springElementIndex].StiffnessCoefficient;
     }
 
     float GetDampingCoefficient(ElementIndex springElementIndex) const noexcept
     {
-        return mCoefficientsBuffer[springElementIndex].DampingCoefficient;
+        return mDynamicsCoefficientsBuffer[springElementIndex].DampingCoefficient;
     }
 
-    Coefficients const * GetCoefficientsBuffer() const noexcept
+    DynamicsCoefficients const * GetDynamicsCoefficientsBuffer() const noexcept
     {
-        return mCoefficientsBuffer.data();
+        return mDynamicsCoefficientsBuffer.data();
     }
 
     StructuralMaterial const & GetBaseStructuralMaterial(ElementIndex springElementIndex) const
@@ -640,7 +640,7 @@ private:
     Buffer<float> mMaterialStiffnessBuffer;
     Buffer<float> mFactoryRestLengthBuffer;
     Buffer<float> mRestLengthBuffer;
-    Buffer<Coefficients> mCoefficientsBuffer;
+    Buffer<DynamicsCoefficients> mDynamicsCoefficientsBuffer;
     Buffer<StructuralMaterial const *> mBaseStructuralMaterialBuffer;
     Buffer<bool> mIsRopeBuffer;
 
