@@ -1031,7 +1031,10 @@ Render:
 			- See if "subs" can be made of no-hull
 				- Test one one first to see if it's a win
 			- Optimizations:
-				- Merge EqualizeInternalPressure in UpdateWaterVelocities: EqualizeInternalPressureAndUpdateWaterVelocities
+				- EqualizeInternalPressure:
+					- See if can assign avg immediately
+					- Test perf: avoid if's with waterPermeability
+					- Test perf: merge EqualizeInternalPressure in UpdateWaterVelocities: EqualizeInternalPressureAndUpdateWaterVelocities
 
 		= Do some normal wrecks and decide on default static pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
