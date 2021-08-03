@@ -967,7 +967,7 @@ Render:
 					- At end sets mPostRepairGracePeriodMultiplier to 0.0
 					- Also at end, clears out whole dynamic forces buffer
 						- Remove ad-hoc setting of dynamic forces to zero
-			+ Pressure tool:
+			= Pressure tool:
 				+ Like Flood tool was before, but only acting on InternalPressure
 				+ Could repurpose bubble tool - does bubbles when no ship is found
 				+ Shift modifier
@@ -983,6 +983,9 @@ Render:
 					+ Sound
 					+ See if makes sense to have pssst sound always
 				+ Try with larger visual feedback
+				+ Not on hull
+				- Higher max flow
+					- Or test with also StaticPressureAdj at max
 			+ Menu with text and icon
 			= Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
 				! Goodyear's current shell is currently normal cardboard (c1a46a)
@@ -1004,7 +1007,7 @@ Render:
 				- Change Goodyear's hull to Mylar
 				- Then try to use Aluminium Sheet for tubing
 				- See if needs Hydrogen Structural vs Hydrogen Gaseous
-					- Also for ait then, SHOULD NOT matter which one is Unique, choose Gaseous if so
+					- Also for air then, SHOULD NOT matter which one is Unique, choose Gaseous if so
 				- Do other blimp as well
 				- Regenerate materials palette
 				- changelist, also for material
@@ -1021,6 +1024,8 @@ Render:
 					- PressureAtZero is subject to AirPressureAdjustment
 				+ Move Offset out of metadata
 				- See if should also add to Red October and Triton
+			- See if "subs" can be made of no-hull
+				- Test one one first to see if it's a win
 			- Optimizations:
 				- Merge EqualizeInternalPressure in UpdateWaterVelocities: EqualizeInternalPressureAndUpdateWaterVelocities
 

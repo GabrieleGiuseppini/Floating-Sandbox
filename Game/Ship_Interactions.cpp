@@ -817,7 +817,7 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     //
-    // Find closest (non-ephemeral) point in the radius
+    // Find closest (non-ephemeral) non-hull point in the radius
     //
 
     float bestSquareDistance = 1.2F;
@@ -826,7 +826,8 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
     for (auto const pointIndex : mPoints.RawShipPoints())
     {
         float const squareDistance = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
-        if (squareDistance < bestSquareDistance)
+        if (squareDistance < bestSquareDistance
+            && !mPoints.GetIsHull(pointIndex))
         {
             bestSquareDistance = squareDistance;
             bestPointIndex = pointIndex;
@@ -844,9 +845,13 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
 
         for (auto const & t : mTriangles)
         {
-            auto const pointAPosition = mPoints.GetPosition(mTriangles.GetPointAIndex(t));
-            auto const pointBPosition = mPoints.GetPosition(mTriangles.GetPointBIndex(t));
-            auto const pointCPosition = mPoints.GetPosition(mTriangles.GetPointCIndex(t));
+            auto const pointAIndex = mTriangles.GetPointAIndex(t);
+            auto const pointBIndex = mTriangles.GetPointBIndex(t);
+            auto const pointCIndex = mTriangles.GetPointCIndex(t);
+
+            auto const pointAPosition = mPoints.GetPosition(pointAIndex);
+            auto const pointBPosition = mPoints.GetPosition(pointBIndex);
+            auto const pointCPosition = mPoints.GetPosition(pointCIndex);
 
             if (IsPointInTriangle(
                 targetPos,
@@ -854,28 +859,31 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
                 pointBPosition,
                 pointCPosition))
             {
-                if ((targetPos - pointAPosition).length() < (targetPos - pointBPosition).length())
+                if ((targetPos - pointAPosition).length() < (targetPos - pointBPosition).length()
+                    && !mPoints.GetIsHull(pointAIndex))
                 {
                     // Closer to A than B
-                    if ((targetPos - pointAPosition).length() < (targetPos - pointCPosition).length())
+                    if ((targetPos - pointAPosition).length() < (targetPos - pointCPosition).length()
+                        || mPoints.GetIsHull(pointCIndex))
                     {
-                        bestPointIndex = mTriangles.GetPointAIndex(t);
+                        bestPointIndex = pointAIndex;
                     }
                     else
                     {
-                        bestPointIndex = mTriangles.GetPointCIndex(t);
+                        bestPointIndex = pointCIndex;
                     }
                 }
                 else
                 {
                     // Closer to B than A
-                    if ((targetPos - pointBPosition).length() < (targetPos - pointCPosition).length())
+                    if (((targetPos - pointBPosition).length() < (targetPos - pointCPosition).length() || mPoints.GetIsHull(pointCIndex))
+                        && !mPoints.GetIsHull(pointBIndex))
                     {
-                        bestPointIndex = mTriangles.GetPointBIndex(t);
+                        bestPointIndex = pointBIndex;
                     }
-                    else
+                    else if (!mPoints.GetIsHull(pointCIndex))
                     {
-                        bestPointIndex = mTriangles.GetPointCIndex(t);
+                        bestPointIndex = pointCIndex;
                     }
                 }
 
