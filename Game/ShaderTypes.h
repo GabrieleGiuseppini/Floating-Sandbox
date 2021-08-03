@@ -40,6 +40,7 @@ enum class ProgramType
     OceanTextureDetailedBackground,
     OceanTextureDetailedForeground,
     PhysicsProbePanel,
+    PressureInjectionHalo,
     Rain,
     ShipCenters,
     ShipCircleHighlights,
@@ -240,7 +241,10 @@ enum class VertexAttributeType : GLuint
     HeatBlasterFlame = 0,
 
     BlastToolHalo1 = 0,
-    BlastToolHalo2 = 1
+    BlastToolHalo2 = 1,
+
+    PressureInjectionHalo1 = 0,
+    PressureInjectionHalo2 = 1
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);

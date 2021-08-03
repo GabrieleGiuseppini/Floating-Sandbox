@@ -97,6 +97,16 @@ public:
 			personalitySeed);
 	}
 
+	// One frame only; after RenderUpload() it's gone
+	inline void SetPressureInjectionHalo(
+		vec2f const & worldCoordinates,
+		float flowMultiplier)
+	{
+		mPressureInjectionHaloToRender.emplace(
+			worldCoordinates,
+			flowMultiplier);
+	}
+
 	void Reset();
 
     void Update(float now);
@@ -312,4 +322,21 @@ private:
 	// When set, will be uploaded to display the blast
 	// - and then reset (one-time use, it's a special case as it's really UI)
 	std::optional<BlastToolHalo> mBlastToolHaloToRender;
+
+	struct PressureInjectionHalo
+	{
+		vec2f WorldCoordinates;
+		float FlowMultiplier;
+
+		PressureInjectionHalo(
+			vec2f const & worldCoordinates,
+			float flowMultiplier)
+			: WorldCoordinates(worldCoordinates)
+			, FlowMultiplier(flowMultiplier)
+		{}
+	};
+
+	// When set, will be uploaded to display the pressure injection
+	// - and then reset (one-time use, it's a special case as it's really UI)
+	std::optional<PressureInjectionHalo> mPressureInjectionHaloToRender;
 };

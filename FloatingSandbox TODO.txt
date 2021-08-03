@@ -967,12 +967,19 @@ Render:
 					- At end sets mPostRepairGracePeriodMultiplier to 0.0
 					- Also at end, clears out whole dynamic forces buffer
 						- Remove ad-hoc setting of dynamic forces to zero
-			+ Pressure tool:
+			= Pressure tool:
 				+ Like Flood tool was before, but only acting on InternalPressure
 				+ Could repurpose bubble tool - does bubbles when no ship is found
 				+ Shift modifier
 				+ SettingsDialog - breakout tab, "Destructive Tools" and "Other Tools"
 				+ Help
+				+ Visual feedback
+					+ Shader
+					+ NotificationRenderContex: see disassembly for calls to RenderPrepare/Draw, and eventually inline
+					+ Direction
+				- Sound feedback
+					- Switch different types
+					- Tool: needs to remember which sound it was doing, in order to stop it
 			+ Menu with text and icon
 			= Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
 				! Goodyear's current shell is currently normal cardboard (c1a46a)
@@ -980,6 +987,7 @@ Render:
 					+ Copy from cloth: stiffness and strength
 					+ Hull
 					+ Use real combustion properties
+				- Fix Mylar's weird bouncing on water
 				= Make inflatable balloon
 					+ Inject pressure issue due to expanded graph and not finding particle: find triangle if can't find
 						+ If ok: nuke InjectPressureRadius setting, and use GameParameters::ToolSearchRadius directly at Ship::InjectPressureAt()
@@ -987,8 +995,13 @@ Render:
 					- See if want to make it break at higher pressure by increasing stiffness of hull
 						- See then if can lower strength					
 					- Description
+					- Issue with melting:
+						- See if due to *decay*
+						- Else, might add material setting to control the melt elongation fraction
 				- Change Goodyear's hull to Mylar
 				- Then try to use Aluminium Sheet for tubing
+				- See if needs Hydrogen Structural vs Hydrogen Gaseous
+					- Also for ait then, SHOULD NOT matter which one is Unique, choose Gaseous if so
 				- Do other blimp as well
 				- Regenerate materials palette
 				- changelist, also for material

@@ -1536,7 +1536,7 @@ public:
         {
             isEngaged = mGameController->InjectPressureAt(
                 inputState.MousePosition,
-                inputState.IsShiftKeyDown ? -1.0f : 1.0f);
+                inputState.IsShiftKeyDown ? -1.0f : 1.0f).has_value();
         }
         else
         {

@@ -952,7 +952,7 @@ void GameController::TogglePinAt(LogicalPixelCoordinates const & screenCoordinat
         mGameParameters);
 }
 
-bool GameController::InjectPressureAt(
+std::optional<ToolApplicationLocus> GameController::InjectPressureAt(
     LogicalPixelCoordinates const & screenCoordinates,
     float pressureQuantityMultiplier)
 {
@@ -960,10 +960,21 @@ bool GameController::InjectPressureAt(
 
     // Apply action
     assert(!!mWorld);
-    return mWorld->InjectPressureAt(
+    auto applicationLocus = mWorld->InjectPressureAt(
         worldCoordinates,
         pressureQuantityMultiplier,
         mGameParameters);
+
+    if (applicationLocus.has_value()
+        && *applicationLocus == ToolApplicationLocus::Ship)
+    {
+        // Draw notification (one frame only)
+        mNotificationLayer.SetPressureInjectionHalo(
+            worldCoordinates,
+            pressureQuantityMultiplier);
+    }
+
+    return applicationLocus;
 }
 
 bool GameController::FloodAt(

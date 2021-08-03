@@ -469,7 +469,7 @@ void World::TogglePinAt(
     }
 }
 
-bool World::InjectPressureAt(
+std::optional<ToolApplicationLocus> World::InjectPressureAt(
     vec2f const & targetPos,
     float pressureQuantityMultiplier,
     GameParameters const & gameParameters)
@@ -483,7 +483,7 @@ bool World::InjectPressureAt(
             gameParameters))
         {
             // Found!
-            return true;
+            return ToolApplicationLocus::Ship;
         }
 
         // No luck...
@@ -500,14 +500,14 @@ bool World::InjectPressureAt(
             gameParameters))
         {
             // Found!
-            return true;
+            return ToolApplicationLocus::World;
         }
 
         // No luck...
         // search other ships
     }
 
-    return false;
+    return std::nullopt;
 }
 
 bool World::FloodAt(

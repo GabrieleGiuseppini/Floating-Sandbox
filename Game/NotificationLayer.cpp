@@ -628,6 +628,15 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 
 		mBlastToolHaloToRender.reset();
 	}
+
+	if (mPressureInjectionHaloToRender.has_value())
+	{
+		notificationRenderContext.UploadPressureInjectionHalo(
+			mPressureInjectionHaloToRender->WorldCoordinates,
+			mPressureInjectionHaloToRender->FlowMultiplier);
+
+		mPressureInjectionHaloToRender.reset();
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

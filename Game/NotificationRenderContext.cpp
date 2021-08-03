@@ -51,6 +51,8 @@ NotificationRenderContext::NotificationRenderContext(
     , mFireExtinguisherSprayShaderToRender()
     , mBlastToolHaloVAO()
     , mBlastToolHaloVBO()
+    , mPressureInjectionHaloVAO()
+    , mPressureInjectionHaloVBO()
 {
     GLuint tmpGLuint;
 
@@ -368,6 +370,32 @@ NotificationRenderContext::NotificationRenderContext(
         mShaderManager.SetTextureParameters<ProgramType::BlastToolHalo>();
     }
 
+    //
+    // Initialize Pressure Injection halo
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mPressureInjectionHaloVAO = tmpGLuint;
+
+        glBindVertexArray(*mPressureInjectionHaloVAO);
+        CheckOpenGLError();
+
+        glGenBuffers(1, &tmpGLuint);
+        mPressureInjectionHaloVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        static_assert(sizeof(PressureInjectionHaloVertex) == (4 + 1) * sizeof(float));
+        glBindBuffer(GL_ARRAY_BUFFER, *mPressureInjectionHaloVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::PressureInjectionHalo1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::PressureInjectionHalo1), 4, GL_FLOAT, GL_FALSE, sizeof(PressureInjectionHaloVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::PressureInjectionHalo2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::PressureInjectionHalo2), 1, GL_FLOAT, GL_FALSE, sizeof(PressureInjectionHaloVertex), (void *)(4 * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -381,6 +409,9 @@ void NotificationRenderContext::UploadStart()
 
     // Reset blast tool halo, it's uploaded as needed
     mBlastToolHaloVertexBuffer.clear();
+
+    // Reset pressure injection halo, it's uploaded as needed
+    mPressureInjectionHaloVertexBuffer.clear();
 }
 
 void NotificationRenderContext::UploadEnd()
@@ -424,6 +455,8 @@ void NotificationRenderContext::RenderPrepare()
     RenderPrepareFireExtinguisherSpray();
 
     RenderPrepareBlastToolHalo();
+
+    RenderPreparePressureInjectionHalo();
 }
 
 void NotificationRenderContext::RenderDraw()
@@ -439,6 +472,8 @@ void NotificationRenderContext::RenderDraw()
     RenderDrawFireExtinguisherSpray();
 
     RenderDrawBlastToolHalo();
+
+    RenderDrawPressureInjectionHalo();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -469,6 +504,10 @@ void NotificationRenderContext::ApplyViewModelChanges(RenderParameters const & r
 
     mShaderManager.ActivateProgram<ProgramType::BlastToolHalo>();
     mShaderManager.SetProgramParameter<ProgramType::BlastToolHalo, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::PressureInjectionHalo>();
+    mShaderManager.SetProgramParameter<ProgramType::PressureInjectionHalo, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 }
 
@@ -837,6 +876,52 @@ void NotificationRenderContext::RenderDrawBlastToolHalo()
         // Draw
         assert((mBlastToolHaloVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mBlastToolHaloVertexBuffer.size()));
+
+        // Reset blending
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendEquation(GL_FUNC_ADD);
+
+        glBindVertexArray(0);
+    }
+}
+
+void NotificationRenderContext::RenderPreparePressureInjectionHalo()
+{
+    if (!mPressureInjectionHaloVertexBuffer.empty())
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mPressureInjectionHaloVBO);
+
+        glBufferData(GL_ARRAY_BUFFER,
+            sizeof(PressureInjectionHaloVertex) * mPressureInjectionHaloVertexBuffer.size(),
+            mPressureInjectionHaloVertexBuffer.data(),
+            GL_DYNAMIC_DRAW);
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        // Set time parameter
+        mShaderManager.ActivateProgram<ProgramType::PressureInjectionHalo>();
+        mShaderManager.SetProgramParameter<ProgramParameterType::Time>(
+            ProgramType::PressureInjectionHalo,
+            GameWallClock::GetInstance().NowAsFloat());
+    }
+}
+
+void NotificationRenderContext::RenderDrawPressureInjectionHalo()
+{
+    if (!mPressureInjectionHaloVertexBuffer.empty())
+    {
+        glBindVertexArray(*mPressureInjectionHaloVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::PressureInjectionHalo>();
+
+        // Setup blending
+        glBlendFunc(GL_SRC_COLOR, GL_ONE);
+        glBlendEquation(GL_FUNC_ADD);
+
+        // Draw
+        assert((mPressureInjectionHaloVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mPressureInjectionHaloVertexBuffer.size()));
 
         // Reset blending
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

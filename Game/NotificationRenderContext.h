@@ -448,6 +448,55 @@ public:
 			personalitySeed);
 	}
 
+	inline void UploadPressureInjectionHalo(
+		vec2f const & centerPosition,
+		float flowMultiplier)
+	{
+		//
+		// Populate vertices
+		//
+
+		float const quadHalfSize = 7.0f / 2.0f; // Add some slack to account for transparency
+		float const left = centerPosition.x - quadHalfSize;
+		float const right = centerPosition.x + quadHalfSize;
+		float const top = centerPosition.y + quadHalfSize;
+		float const bottom = centerPosition.y - quadHalfSize;
+
+		// Triangle 1
+
+		mPressureInjectionHaloVertexBuffer.emplace_back(
+			vec2f(left, bottom),
+			vec2f(-1.0f, -1.0f),
+			flowMultiplier);
+
+		mPressureInjectionHaloVertexBuffer.emplace_back(
+			vec2f(left, top),
+			vec2f(-1.0f, 1.0f),
+			flowMultiplier);
+
+		mPressureInjectionHaloVertexBuffer.emplace_back(
+			vec2f(right, bottom),
+			vec2f(1.0f, -1.0f),
+			flowMultiplier);
+
+		// Triangle 2
+
+		mPressureInjectionHaloVertexBuffer.emplace_back(
+			vec2f(left, top),
+			vec2f(-1.0f, 1.0f),
+			flowMultiplier);
+
+		mPressureInjectionHaloVertexBuffer.emplace_back(
+			vec2f(right, bottom),
+			vec2f(1.0f, -1.0f),
+			flowMultiplier);
+
+		mPressureInjectionHaloVertexBuffer.emplace_back(
+			vec2f(right, top),
+			vec2f(1.0f, 1.0f),
+			flowMultiplier);
+	}
+
 	void UploadEnd();
 
 	void ProcessParameterChanges(RenderParameters const & renderParameters);
@@ -463,23 +512,26 @@ private:
 	void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
 	void ApplyDisplayUnitsSystemChanges(RenderParameters const & renderParameters);
 
-	void RenderPrepareTextNotifications();
-	void RenderDrawTextNotifications();
+	inline void RenderPrepareTextNotifications();
+	inline void RenderDrawTextNotifications();
 
-	void RenderPrepareTextureNotifications();
-	void RenderDrawTextureNotifications();
+	inline void RenderPrepareTextureNotifications();
+	inline void RenderDrawTextureNotifications();
 
-	void RenderPreparePhysicsProbePanel();
-	void RenderDrawPhysicsProbePanel();
+	inline void RenderPreparePhysicsProbePanel();
+	inline void RenderDrawPhysicsProbePanel();
 
-	void RenderPrepareHeatBlasterFlame();
-	void RenderDrawHeatBlasterFlame();
+	inline void RenderPrepareHeatBlasterFlame();
+	inline void RenderDrawHeatBlasterFlame();
 
-	void RenderPrepareFireExtinguisherSpray();
-	void RenderDrawFireExtinguisherSpray();
+	inline void RenderPrepareFireExtinguisherSpray();
+	inline void RenderDrawFireExtinguisherSpray();
 
-	void RenderPrepareBlastToolHalo();
-	void RenderDrawBlastToolHalo();
+	inline void RenderPrepareBlastToolHalo();
+	inline void RenderDrawBlastToolHalo();
+
+	inline void RenderPreparePressureInjectionHalo();
+	inline void RenderDrawPressureInjectionHalo();
 
 private:
 
@@ -604,6 +656,22 @@ private:
 			, haloSpacePosition(_haloSpacePosition)
 			, renderProgress(_renderProgress)
 			, personalitySeed(_personalitySeed)
+		{}
+	};
+
+	struct PressureInjectionHaloVertex
+	{
+		vec2f vertexPosition;
+		vec2f haloSpacePosition;
+		float flowMultiplier;
+
+		PressureInjectionHaloVertex(
+			vec2f _vertexPosition,
+			vec2f _haloSpacePosition,
+			float _flowMultiplier)
+			: vertexPosition(_vertexPosition)
+			, haloSpacePosition(_haloSpacePosition)
+			, flowMultiplier(_flowMultiplier)
 		{}
 	};
 
@@ -748,6 +816,10 @@ private:
 	GameOpenGLVAO mBlastToolHaloVAO;
 	std::vector<BlastToolHaloVertex> mBlastToolHaloVertexBuffer;
 	GameOpenGLVBO mBlastToolHaloVBO;
+
+	GameOpenGLVAO mPressureInjectionHaloVAO;
+	std::vector<PressureInjectionHaloVertex> mPressureInjectionHaloVertexBuffer;
+	GameOpenGLVBO mPressureInjectionHaloVBO;
 };
 
 }

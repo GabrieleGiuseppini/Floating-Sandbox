@@ -332,7 +332,7 @@ MainFrame::MainFrame(
         ADD_TOOL_MENUITEM(ID_FIRE_EXTINGUISHER_MENUITEM, _("Fire Extinguisher"), wxS("\tX"), "fire_extinguisher_cursor_up", OnFireExtinguisherMenuItemSelected);
         ADD_PLAIN_ACCELERATOR_KEY('X', ID_FIRE_EXTINGUISHER_MENUITEM);
 
-        ADD_TOOL_MENUITEM(ID_BLAST_TOOL_MENUITEM, _("Fire Blast"), wxS("\t8"), "blast_cursor_up_1", OnBlastToolMenuItemSelected);
+        ADD_TOOL_MENUITEM(ID_BLAST_TOOL_MENUITEM, _("Blast"), wxS("\t8"), "blast_cursor_up_1", OnBlastToolMenuItemSelected);
         ADD_PLAIN_ACCELERATOR_KEY('8', ID_BLAST_TOOL_MENUITEM);
 
         ADD_TOOL_MENUITEM(ID_ELECTRICSPARK_MENUITEM, _("Electric Spark"), wxS("\t7"), "electric_spark_cursor_up", OnElectricSparkToolMenuItemSelected);

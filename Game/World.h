@@ -20,6 +20,7 @@
 
 #include <GameCore/AABBSet.h>
 #include <GameCore/GameChronometer.h>
+#include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/TaskThreadPool.h>
 #include <GameCore/Vectors.h>
@@ -27,6 +28,7 @@
 #include <chrono>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <set>
 #include <vector>
 
@@ -253,7 +255,7 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 
-    bool InjectPressureAt(
+    std::optional<ToolApplicationLocus> InjectPressureAt(
         vec2f const & targetPos,
         float pressureQuantityMultiplier,
         GameParameters const & gameParameters);
