@@ -1473,7 +1473,7 @@
 	"rust_receptivity": 0.0,
         "sound_type": "Cloth",
         "specific_heat": 1172.304,
-        "stiffness": 0.009,
+        "stiffness": 0.05,
         "strength": 4.0,
         "template": {
             "column": 2,
