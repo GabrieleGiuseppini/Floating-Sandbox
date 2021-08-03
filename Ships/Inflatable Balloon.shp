@@ -3,5 +3,6 @@
 	"auto_texturization": { "mode": "material_textures" },
 	"ship_name":"Inflatable Balloon",
 	"year_built":"2021",
-	"internal_pressure": 1.35
+	"internal_pressure": 1.35,
+	"description": "This balloon is made of very flexible Mylar, allowing it to be expanded by injecting pressure in it. The balloon is pre-pressurized at 1.35 atmoshperes."
 }

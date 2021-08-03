@@ -993,14 +993,14 @@ Render:
 					+ Copy from cloth: stiffness and strength
 					+ Hull
 					+ Use real combustion properties
-				- Fix Mylar's weird bouncing on water
+				+ Fix Mylar's weird bouncing on water
 				= Make inflatable balloon
 					+ Inject pressure issue due to expanded graph and not finding particle: find triangle if can't find
 						+ If ok: nuke InjectPressureRadius setting, and use GameParameters::ToolSearchRadius directly at Ship::InjectPressureAt()
 					+ Internal pressure at start
-					- See if want to make it break at higher pressure by increasing stiffness of hull
-						- See then if can lower strength					
-					- Description
+					+ See if want to make it break at higher pressure by increasing stiffness of hull
+						X See then if can lower strength					
+					+ Description
 					- Issue with melting:
 						- See if due to *decay*
 						- Else, might add material setting to control the melt elongation fraction
