@@ -519,12 +519,14 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
                 mFactoryRestLengthBuffer[springIndex] * 2.0f));
     }
 
+    // TODOHERE: put in precalc'd buffer (never modified), ideally
+    // in same struct as some other quantities used exclusively here
     // The extra elongation tolerance due to melting:
     //  - For small factory tolerances (~0.1), we are keen to get up to many times that tolerance
     //  - For large factory tolerances (~5.0), we are keen to get up to fewer times that tolerance
     //    (i.e. allow smaller change in length)
     float constexpr MaxMeltingInducedTolerance = 20; // Was 20 up to 1.16.5
-    float constexpr MinMeltingInducedTolerance = 1.0f;
+    float constexpr MinMeltingInducedTolerance = 0.0f;
     float constexpr StartStrength = 0.3f; // At this strength, we allow max tolerance
     float constexpr EndStrength = 3.0f; // At this strength, we allow min tolerance
     float const springMaterialStrength = GetMaterialStrength(springIndex);
@@ -532,10 +534,6 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
         (MaxMeltingInducedTolerance - MinMeltingInducedTolerance)
         / (EndStrength - StartStrength)
         * (Clamp(springMaterialStrength, StartStrength, EndStrength) - StartStrength);
-
-    // TODOTEST
-    if (meltDepthFraction == 1.0f)
-        LogMessage("TODO: ", extraMeltingInducedTolerance, " str=", springMaterialStrength);
 
     mBreakingElongationBuffer[springIndex] =
         springMaterialStrength
@@ -545,8 +543,6 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
         * strengthIterationsAdjustment
         * springDecay
         * GetRestLength(springIndex) // To make strain comparison independent from rest length
-        // TODOTEST
-        //* (1.0f + 20.0f * meltDepthFraction); // When melting, springs are more tolerant to elongation
         * (1.0f + extraMeltingInducedTolerance * meltDepthFraction); // When melting, springs are more tolerant to elongation
 }
 

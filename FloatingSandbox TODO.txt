@@ -1001,9 +1001,13 @@ Render:
 					+ See if want to make it break at higher pressure by increasing stiffness of hull
 						X See then if can lower strength					
 					+ Description
-					- Issue with melting:
-						- See if due to *decay*
-						- Else, might add material setting to control the melt elongation fraction
+					= Issue with melting:
+						X See if due to *decay*
+						= Implement adaptive extra melting-induced tolerance
+							- Store in precacld buffer, once and for all (immutable), with:
+								- MaterialStiffness (!GetMaterialStiffness)
+								- MaterialStrength (!GetMaterialStrength)
+								- MaterialMeltingTemperature (!)
 				- Change Goodyear's hull to Mylar
 				- Then try to use Aluminium Sheet for tubing
 				- See if needs Hydrogen Structural vs Hydrogen Gaseous

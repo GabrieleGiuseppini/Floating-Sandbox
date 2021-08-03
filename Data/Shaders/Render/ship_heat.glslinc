@@ -3,7 +3,7 @@ vec3 get_heat_color(float vertexTemperature, float heatShift)
     float lowerRedTemp = (100.0 + 273.15) * heatShift;
     float lowerYellowTemp = (900.0 + 273.15);
     float lowerWhiteTemp = (1150.0 + 273.15);
-    float higherWhiteTemp = (1500.0 + 273.15);
+    float higherWhiteTemp = (1900.0 + 273.15); // Unrealistic, should be 1500
     
     vec3 redTint = mix(
         vec3(0.0, 0.0, 0.0), 
