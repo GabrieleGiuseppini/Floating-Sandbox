@@ -977,9 +977,11 @@ Render:
 					+ Shader
 					+ NotificationRenderContex: see disassembly for calls to RenderPrepare/Draw, and eventually inline
 					+ Direction
-				- Sound feedback
-					- Switch different types
-					- Tool: needs to remember which sound it was doing, in order to stop it
+				+ Sound feedback
+					+ Tool: needs to remember which sound it was doing, in order to stop it
+						+ See if fish tool structure serves the purpose
+					+ Sound
+				- Rethink locus flags?
 			+ Menu with text and icon
 			= Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
 				! Goodyear's current shell is currently normal cardboard (c1a46a)
@@ -991,7 +993,7 @@ Render:
 				= Make inflatable balloon
 					+ Inject pressure issue due to expanded graph and not finding particle: find triangle if can't find
 						+ If ok: nuke InjectPressureRadius setting, and use GameParameters::ToolSearchRadius directly at Ship::InjectPressureAt()
-					- Internal pressure at start
+					+ Internal pressure at start
 					- See if want to make it break at higher pressure by increasing stiffness of hull
 						- See then if can lower strength					
 					- Description

@@ -1525,51 +1525,72 @@ public:
 
     virtual void Deinitialize(InputState const & /*inputState*/) override
     {
-        // Stop sound
-        mSoundController->StopAirBubblesSound();
+        if (mCurrentAction.has_value())
+        {
+            // Stop sound
+            StopSound(*mCurrentAction);
+
+            mCurrentAction.reset();
+        }
     }
 
     virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
-        bool isEngaged;
+        // Calculate new state
+        std::optional<ActionType> newAction;
         if (inputState.IsLeftMouseDown)
         {
-            isEngaged = mGameController->InjectPressureAt(
+            auto const locus = mGameController->InjectPressureAt(
                 inputState.MousePosition,
-                inputState.IsShiftKeyDown ? -1.0f : 1.0f).has_value();
-        }
-        else
-        {
-            isEngaged = false;
-        }
+                inputState.IsShiftKeyDown ? -1.0f : 1.0f);
 
-        if (isEngaged)
-        {
-            if (!mIsEngaged)
+            if (locus.has_value())
             {
-                // State change
-                mIsEngaged = true;
+                if ((*locus & ToolApplicationLocus::Ship) == ToolApplicationLocus::Ship)
+                    newAction = ActionType::Pressure;
+                else if ((*locus & ToolApplicationLocus::World) == ToolApplicationLocus::World)
+                    newAction = ActionType::AirBubble;
+            }
+        }
 
+        // Transition state
+        bool doUpdateCursor = false;
+        if (newAction.has_value())
+        {
+            if (!mCurrentAction.has_value())
+            {
                 // Start sound
-                mSoundController->PlayAirBubblesSound();
+                StartSound(*newAction);
 
-                // Update cursor
-                SetCurrentCursor();
+                doUpdateCursor = true;
+            }
+            else
+            {
+                if (*newAction != *mCurrentAction)
+                {
+                    // Change sound
+                    StopSound(*mCurrentAction);
+                    StartSound(*newAction);
+                }
             }
         }
         else
         {
-            if (mIsEngaged)
+            if (mCurrentAction.has_value())
             {
-                // State change
-                mIsEngaged = false;
-
                 // Stop sound
-                mSoundController->StopAirBubblesSound();
+                StopSound(*mCurrentAction);
 
-                // Update cursor
-                SetCurrentCursor();
+                doUpdateCursor = true;
             }
+        }
+
+        mCurrentAction = newAction;
+
+        if (doUpdateCursor)
+        {
+            // Update cursor
+            SetCurrentCursor();
         }
     }
 
@@ -1583,11 +1604,53 @@ private:
 
     void SetCurrentCursor()
     {
-        mToolCursorManager.SetToolCursor(mIsEngaged ? mDownCursorImage : mUpCursorImage);
+        mToolCursorManager.SetToolCursor(mCurrentAction.has_value() ? mDownCursorImage : mUpCursorImage);
+    }
+
+    enum class ActionType
+    {
+        Pressure,
+        AirBubble
+    };
+
+    void StartSound(ActionType action)
+    {
+        switch (action)
+        {
+            case ActionType::AirBubble:
+            {
+                mSoundController->PlayAirBubblesSound();
+                break;
+            }
+
+            case ActionType::Pressure:
+            {
+                mSoundController->PlayPressureInjectionSound();
+                break;
+            }
+        }
+    }
+
+    void StopSound(ActionType action)
+    {
+        switch (action)
+        {
+            case ActionType::AirBubble:
+            {
+                mSoundController->StopAirBubblesSound();
+                break;
+            }
+
+            case ActionType::Pressure:
+            {
+                mSoundController->StopPressureInjectionSound();
+                break;
+            }
+        }
     }
 
     // Our state
-    bool mIsEngaged;
+    std::optional<ActionType> mCurrentAction;
 
     // The cursors
     wxImage const mUpCursorImage;

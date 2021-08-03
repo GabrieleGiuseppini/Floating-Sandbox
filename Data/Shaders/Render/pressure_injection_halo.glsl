@@ -62,7 +62,7 @@ void main()
         smoothstep(radius2 - THICKNESS / 2., radius2, d)
         - smoothstep(radius2, radius2 + THICKNESS / 2., d);
 
-    float whiteDepth = max(w1 * alpha1, w2 * alpha2) * .7;
+    float whiteDepth = max(w1 * alpha1, w2 * alpha2) * .55;
     
     vec4 c1 = vec4(whiteDepth, whiteDepth, whiteDepth, 1.); // white
     

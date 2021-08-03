@@ -175,6 +175,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::BlastToolSlow2;
     else if (Utils::CaseInsensitiveEquals(str, "BlastToolFast"))
         return SoundType::BlastToolFast;
+    else if (Utils::CaseInsensitiveEquals(str, "PressureInjection"))
+        return SoundType::PressureInjection;
     else if (Utils::CaseInsensitiveEquals(str, "Error"))
         return SoundType::Error;
     else

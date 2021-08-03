@@ -7,43 +7,6 @@
 
 #include <type_traits>
 
-//template<typename T = typename std::enable_if<std::is_enum<T>::value, T>::type>
-//class EnumFlags
-//{
-//public:
-//
-//    constexpr EnumFlags(T value)
-//        : mValue(value)
-//    {}
-//
-//    constexpr operator T() const { return mValue; }
-//
-//    constexpr explicit operator bool() const
-//    {
-//        return static_cast<std::underlying_type_t<T>>(val_) != 0;
-//    }
-//
-//private:
-//
-//    T mValue;
-//};
-//
-//template <typename T = typename std::enable_if<std::is_enum<T>::value, T>::type>
-//constexpr EnumFlags operator&(EnumFlags lhs, EnumFlags rhs)
-//{
-//    return static_cast<EnumFlags>(
-//        static_cast<typename std::underlying_type<T>::type>(lhs.mValue) &
-//        static_cast<typename std::underlying_type<T>::type>(rhs.mValue));
-//}
-//
-//template <typename T = typename std::enable_if<std::is_enum<T>::value, T>::type>
-//constexpr EnumFlags operator|(EnumFlags lhs, EnumFlags rhs)
-//{
-//    return static_cast<EnumFlags>(
-//        static_cast<typename std::underlying_type<T>::type>(lhs.mValue) |
-//        static_cast<typename std::underlying_type<T>::type>(rhs.mValue));
-//}
-
 template <typename T, bool = std::is_enum<T>::value>
 struct is_flag;
 

@@ -134,6 +134,9 @@ public:
     void PlayAirBubblesSound();
     void StopAirBubblesSound();
 
+    void PlayPressureInjectionSound();
+    void StopPressureInjectionSound();
+
     void PlayFloodHoseSound();
     void StopFloodHoseSound();
 
@@ -577,6 +580,7 @@ private:
     ContinuousSingleChoiceSound mDrawSound;
     ContinuousSingleChoiceSound mSwirlSound;
     ContinuousSingleChoiceSound mAirBubblesSound;
+    ContinuousSingleChoiceSound mPressureInjectionSound;
     ContinuousSingleChoiceSound mFloodHoseSound;
     ContinuousSingleChoiceSound mRepairStructureSound;
     ContinuousSingleChoiceSound mWaveMakerSound;

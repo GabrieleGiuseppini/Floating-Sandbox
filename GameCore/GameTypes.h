@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "EnumFlags.h"
 #include "Vectors.h"
 
 #include <picojson.h>
@@ -422,9 +423,14 @@ enum class HeatBlasterActionType
  */
 enum class ToolApplicationLocus
 {
-    Ship,
-    World
+    World = 1,
+    Ship = 2,
+
+    AboveWater = 4,
+    UnderWater = 8
 };
+
+template <> struct is_flag<ToolApplicationLocus> : std::true_type {};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Rendering

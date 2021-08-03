@@ -477,13 +477,15 @@ std::optional<ToolApplicationLocus> World::InjectPressureAt(
     // Stop at first ship that successfully injects pressure
     for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        if ((*it)->InjectPressureAt(
+        auto const applicationLocus = (*it)->InjectPressureAt(
             targetPos,
             pressureQuantityMultiplier,
-            gameParameters))
+            gameParameters);
+
+        if (applicationLocus.has_value())
         {
             // Found!
-            return ToolApplicationLocus::Ship;
+            return applicationLocus;
         }
 
         // No luck...
@@ -494,13 +496,15 @@ std::optional<ToolApplicationLocus> World::InjectPressureAt(
     // ...stop at first ship that successfully injects bubbles now
     for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        if ((*it)->InjectBubblesAt(
+        auto const applicationLocus = (*it)->InjectBubblesAt(
             targetPos,
             mCurrentSimulationTime,
-            gameParameters))
+            gameParameters);
+
+        if (applicationLocus.has_value())
         {
             // Found!
-            return ToolApplicationLocus::World;
+            return applicationLocus;
         }
 
         // No luck...

@@ -343,7 +343,7 @@ InjectPressureTool::InjectPressureTool(
         toolCursorManager,
         std::move(gameController),
         std::move(soundController))
-    , mIsEngaged(false)
+    , mCurrentAction(std::nullopt)
     , mUpCursorImage(WxHelpers::LoadCursorImage("air_tank_cursor_up", 12, 1, resourceLocator))
     , mDownCursorImage(WxHelpers::LoadCursorImage("air_tank_cursor_down", 12, 1, resourceLocator))
 {

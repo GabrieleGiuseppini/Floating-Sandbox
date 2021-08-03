@@ -960,13 +960,13 @@ std::optional<ToolApplicationLocus> GameController::InjectPressureAt(
 
     // Apply action
     assert(!!mWorld);
-    auto applicationLocus = mWorld->InjectPressureAt(
+    auto const applicationLocus = mWorld->InjectPressureAt(
         worldCoordinates,
         pressureQuantityMultiplier,
         mGameParameters);
 
     if (applicationLocus.has_value()
-        && *applicationLocus == ToolApplicationLocus::Ship)
+        && (*applicationLocus & ToolApplicationLocus::Ship) == ToolApplicationLocus::Ship)
     {
         // Draw notification (one frame only)
         mNotificationLayer.SetPressureInjectionHalo(

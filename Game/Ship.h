@@ -181,12 +181,12 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 
-    bool InjectBubblesAt(
+    std::optional<ToolApplicationLocus> InjectBubblesAt(
         vec2f const & targetPos,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-    bool InjectPressureAt(
+    std::optional<ToolApplicationLocus> InjectPressureAt(
         vec2f const & targetPos,
         float pressureQuantityMultiplier,
         GameParameters const & gameParameters);

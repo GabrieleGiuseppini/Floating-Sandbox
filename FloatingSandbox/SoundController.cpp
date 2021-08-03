@@ -65,6 +65,7 @@ SoundController::SoundController(
     , mDrawSound()
     , mSwirlSound()
     , mAirBubblesSound()
+    , mPressureInjectionSound()
     , mFloodHoseSound()
     , mRepairStructureSound()
     , mWaveMakerSound()
@@ -253,6 +254,14 @@ SoundController::SoundController(
             mAirBubblesSound.Initialize(
                 std::move(soundBuffer),
                 100.0f,
+                mMasterToolsVolume,
+                mMasterToolsMuted);
+        }
+        else if (soundType == SoundType::PressureInjection)
+        {
+            mPressureInjectionSound.Initialize(
+                std::move(soundBuffer),
+                60.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
         }
@@ -915,6 +924,7 @@ void SoundController::SetMasterToolsVolume(float volume)
     mDrawSound.SetMasterVolume(mMasterToolsVolume);
     mSwirlSound.SetMasterVolume(mMasterToolsVolume);
     mAirBubblesSound.SetMasterVolume(mMasterToolsVolume);
+    mPressureInjectionSound.SetMasterVolume(mMasterToolsVolume);
     mFloodHoseSound.SetMasterVolume(mMasterToolsVolume);
     mRepairStructureSound.SetMasterVolume(mMasterToolsVolume);
     mWaveMakerSound.SetMasterVolume(mMasterToolsVolume);
@@ -947,6 +957,7 @@ void SoundController::SetMasterToolsMuted(bool isMuted)
     mDrawSound.SetMuted(mMasterToolsMuted);
     mSwirlSound.SetMuted(mMasterToolsMuted);
     mAirBubblesSound.SetMuted(mMasterToolsMuted);
+    mPressureInjectionSound.SetMuted(mMasterToolsMuted);
     mFloodHoseSound.SetMuted(mMasterToolsMuted);
     mRepairStructureSound.SetMuted(mMasterToolsMuted);
     mWaveMakerSound.SetMuted(mMasterToolsMuted);
@@ -1145,6 +1156,16 @@ void SoundController::PlayAirBubblesSound()
 void SoundController::StopAirBubblesSound()
 {
     mAirBubblesSound.Stop();
+}
+
+void SoundController::PlayPressureInjectionSound()
+{
+    mPressureInjectionSound.Start();
+}
+
+void SoundController::StopPressureInjectionSound()
+{
+    mPressureInjectionSound.Stop();
 }
 
 void SoundController::PlayFloodHoseSound()
@@ -1375,6 +1396,7 @@ void SoundController::Reset()
     mDrawSound.Reset();
     mSwirlSound.Reset();
     mAirBubblesSound.Reset();
+    mPressureInjectionSound.Reset();
     mFloodHoseSound.Reset();
     mRepairStructureSound.Reset();
     mWaveMakerSound.Reset();

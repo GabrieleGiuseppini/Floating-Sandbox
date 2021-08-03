@@ -775,7 +775,7 @@ bool Ship::TogglePinAt(
         gameParameters);
 }
 
-bool Ship::InjectBubblesAt(
+std::optional<ToolApplicationLocus> Ship::InjectBubblesAt(
     vec2f const & targetPos,
     float currentSimulationTime,
     GameParameters const & gameParameters)
@@ -795,15 +795,15 @@ bool Ship::InjectBubblesAt(
             mMaxMaxPlaneId,
             gameParameters);
 
-        return true;
+        return ToolApplicationLocus::World | ToolApplicationLocus::UnderWater;
     }
     else
     {
-        return false;
+        return std::nullopt;
     }
 }
 
-bool Ship::InjectPressureAt(
+std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
     vec2f const & targetPos,
     float pressureQuantityMultiplier,
     GameParameters const & gameParameters)
@@ -820,7 +820,7 @@ bool Ship::InjectPressureAt(
     // Find closest (non-ephemeral) point in the radius
     //
 
-    float bestSquareDistance = gameParameters.ToolSearchRadius * gameParameters.ToolSearchRadius;
+    float bestSquareDistance = 1.2F;
     ElementIndex bestPointIndex = NoneElementIndex;
 
     for (auto const pointIndex : mPoints.RawShipPoints())
@@ -894,10 +894,14 @@ bool Ship::InjectPressureAt(
             bestPointIndex,
             std::max(mPoints.GetInternalPressure(bestPointIndex) + quantityOfPressureDelta, 0.0f));
 
-        return true;
+        return (mParentWorld.IsUnderwater(mPoints.GetPosition(bestPointIndex))
+            ? ToolApplicationLocus::UnderWater
+            : ToolApplicationLocus::AboveWater)
+            | ToolApplicationLocus::Ship;
+
     }
 
-    return false;
+    return std::nullopt;
 }
 
 bool Ship::FloodAt(
