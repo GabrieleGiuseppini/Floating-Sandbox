@@ -37,7 +37,7 @@ void main()
 {
     #define T 1.
     #define RADIUS 1.
-    #define THICKNESS .4
+    #define THICKNESS .5
 
     // Where in a half period
     float ht = fract(paramTime / (T / 2. * flowMultiplier));
@@ -62,7 +62,7 @@ void main()
         smoothstep(radius2 - THICKNESS / 2., radius2, d)
         - smoothstep(radius2, radius2 + THICKNESS / 2., d);
 
-    float whiteDepth = max(w1 * alpha1, w2 * alpha2) * .55;
+    float whiteDepth = max(w1 * alpha1, w2 * alpha2) * .5;
     
     vec4 c1 = vec4(whiteDepth, whiteDepth, whiteDepth, 1.); // white
     

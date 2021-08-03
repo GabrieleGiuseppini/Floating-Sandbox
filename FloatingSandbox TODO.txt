@@ -967,7 +967,7 @@ Render:
 					- At end sets mPostRepairGracePeriodMultiplier to 0.0
 					- Also at end, clears out whole dynamic forces buffer
 						- Remove ad-hoc setting of dynamic forces to zero
-			= Pressure tool:
+			+ Pressure tool:
 				+ Like Flood tool was before, but only acting on InternalPressure
 				+ Could repurpose bubble tool - does bubbles when no ship is found
 				+ Shift modifier
@@ -982,7 +982,7 @@ Render:
 						+ See if fish tool structure serves the purpose
 					+ Sound
 					+ See if makes sense to have pssst sound always
-				- Try with larger visual feedback
+				+ Try with larger visual feedback
 			+ Menu with text and icon
 			= Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
 				! Goodyear's current shell is currently normal cardboard (c1a46a)
