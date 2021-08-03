@@ -984,8 +984,8 @@ Render:
 					+ See if makes sense to have pssst sound always
 				+ Try with larger visual feedback
 				+ Not on hull
-				- Higher max flow
-					- Or test with also StaticPressureAdj at max
+				+ Higher max flow
+					+ Or higher UltraViolent mode
 			+ Menu with text and icon
 			= Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
 				! Goodyear's current shell is currently normal cardboard (c1a46a)

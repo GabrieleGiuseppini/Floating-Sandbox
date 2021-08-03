@@ -814,7 +814,7 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
         gameParameters.InjectPressureQuantity // Number of atm
         * GameParameters::AirPressureAtSeaLevel // Pressure of 1 atm
         * pressureQuantityMultiplier
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+        * (gameParameters.IsUltraViolentMode ? 1000.0f : 1.0f);
 
     //
     // Find closest (non-ephemeral) non-hull point in the radius
@@ -841,8 +841,7 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
         // of expansion might make it impossible for the tool to find a point, even when
         // in the ship.
         //
-        // If the point is inside a triangle, inject at the closest endpoint
-
+        // So if the point is inside a triangle, inject at the closest non-hull endpoint
         for (auto const & t : mTriangles)
         {
             auto const pointAIndex = mTriangles.GetPointAIndex(t);
