@@ -1527,9 +1527,7 @@ public:
     {
         if (mCurrentAction.has_value())
         {
-            // Stop sound
-            StopSound(*mCurrentAction);
-
+            StopSounds(*mCurrentAction);
             mCurrentAction.reset();
         }
     }
@@ -1559,18 +1557,25 @@ public:
         {
             if (!mCurrentAction.has_value())
             {
-                // Start sound
-                StartSound(*newAction);
+                // Start sounds
+                mSoundController->PlayPressureInjectionSound();
+                if (*newAction == ActionType::AirBubble)
+                {
+                    mSoundController->PlayAirBubblesSound();
+                }
 
                 doUpdateCursor = true;
             }
-            else
+            else if (*newAction != *mCurrentAction)
             {
-                if (*newAction != *mCurrentAction)
+                if (*mCurrentAction == ActionType::AirBubble)
                 {
-                    // Change sound
-                    StopSound(*mCurrentAction);
-                    StartSound(*newAction);
+                    mSoundController->StopAirBubblesSound();
+                }
+                else
+                {
+                    assert(*newAction == ActionType::AirBubble);
+                    mSoundController->PlayAirBubblesSound();
                 }
             }
         }
@@ -1578,8 +1583,8 @@ public:
         {
             if (mCurrentAction.has_value())
             {
-                // Stop sound
-                StopSound(*mCurrentAction);
+                // Stop sounds
+                StopSounds(*mCurrentAction);
 
                 doUpdateCursor = true;
             }
@@ -1613,39 +1618,13 @@ private:
         AirBubble
     };
 
-    void StartSound(ActionType action)
+    void StopSounds(ActionType action)
     {
-        switch (action)
+        mSoundController->StopPressureInjectionSound();
+
+        if (action == ActionType::AirBubble)
         {
-            case ActionType::AirBubble:
-            {
-                mSoundController->PlayAirBubblesSound();
-                break;
-            }
-
-            case ActionType::Pressure:
-            {
-                mSoundController->PlayPressureInjectionSound();
-                break;
-            }
-        }
-    }
-
-    void StopSound(ActionType action)
-    {
-        switch (action)
-        {
-            case ActionType::AirBubble:
-            {
-                mSoundController->StopAirBubblesSound();
-                break;
-            }
-
-            case ActionType::Pressure:
-            {
-                mSoundController->StopPressureInjectionSound();
-                break;
-            }
+            mSoundController->StopAirBubblesSound();
         }
     }
 

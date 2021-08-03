@@ -981,7 +981,8 @@ Render:
 					+ Tool: needs to remember which sound it was doing, in order to stop it
 						+ See if fish tool structure serves the purpose
 					+ Sound
-				- Rethink locus flags?
+					+ See if makes sense to have pssst sound always
+				- Try with larger visual feedback
 			+ Menu with text and icon
 			= Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
 				! Goodyear's current shell is currently normal cardboard (c1a46a)
