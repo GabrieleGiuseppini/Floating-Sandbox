@@ -994,20 +994,20 @@ Render:
 					+ Hull
 					+ Use real combustion properties
 				+ Fix Mylar's weird bouncing on water
-				= Make inflatable balloon
+				+ Make inflatable balloon
 					+ Inject pressure issue due to expanded graph and not finding particle: find triangle if can't find
 						+ If ok: nuke InjectPressureRadius setting, and use GameParameters::ToolSearchRadius directly at Ship::InjectPressureAt()
 					+ Internal pressure at start
 					+ See if want to make it break at higher pressure by increasing stiffness of hull
 						X See then if can lower strength					
 					+ Description
-					= Issue with melting:
+					+ Issue with melting:
 						X See if due to *decay*
-						= Implement adaptive extra melting-induced tolerance
-							- Store in precacld buffer, once and for all (immutable), with:
-								- MaterialStiffness (!GetMaterialStiffness)
-								- MaterialStrength (!GetMaterialStrength)
-								- MaterialMeltingTemperature (!)
+						+ Implement adaptive extra melting-induced tolerance
+							+ Store in precacld buffer, once and for all (immutable), with:
+								+ MaterialStiffness (!GetMaterialStiffness)
+								+ MaterialStrength (!GetMaterialStrength)
+								+ MaterialMeltingTemperature (!)
 				- Change Goodyear's hull to Mylar
 				- Then try to use Aluminium Sheet for tubing
 				- See if needs Hydrogen Structural vs Hydrogen Gaseous

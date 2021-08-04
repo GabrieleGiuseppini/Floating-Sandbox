@@ -94,6 +94,28 @@ private:
      */
     using SuperTrianglesVector = FixedSizeVector<ElementIndex, 2>;
 
+    /*
+     * Lump of properties that are commonly used together .
+     */
+    struct MaterialProperties
+    {
+        float MaterialStiffness;
+        float MaterialStrength;
+        float MaterialMeltingTemperature;
+        float ExtraMeltingInducedTolerance; // Pre-calcd
+
+        MaterialProperties(
+            float materialStiffness,
+            float materialStrength,
+            float materialMeltingTemperature,
+            float extraMeltingInducedTolerance)
+            : MaterialStiffness(materialStiffness)
+            , MaterialStrength(materialStrength)
+            , MaterialMeltingTemperature(materialMeltingTemperature)
+            , ExtraMeltingInducedTolerance(extraMeltingInducedTolerance)
+        {}
+    };
+
 public:
 
     Springs(
@@ -116,19 +138,17 @@ public:
         // Covering triangles
         , mCoveringTrianglesCountBuffer(mBufferElementCount, mElementCount, 0)
         // Physical
-        , mMaterialStrengthBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mBreakingElongationBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mMaterialStiffnessBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mFactoryRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mDynamicsCoefficientsBuffer(mBufferElementCount, mElementCount, DynamicsCoefficients(0.0f, 0.0f))
+        , mMaterialPropertiesBuffer(mBufferElementCount, mElementCount, MaterialProperties(0.0f, 0.0f, 0.0f, 0.0f))
         , mBaseStructuralMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
         , mIsRopeBuffer(mBufferElementCount, mElementCount, false)
         // Water
         , mWaterPermeabilityBuffer(mBufferElementCount, mElementCount, 0.0f)
         // Heat
         , mMaterialThermalConductivityBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mMaterialMeltingTemperatureBuffer(mBufferElementCount, mElementCount, 0.0f)
         // Stress
         , mIsStressedBuffer(mBufferElementCount, mElementCount, false)
         //////////////////////////////////
@@ -439,16 +459,6 @@ public:
     // Physical
     //
 
-    float GetMaterialStrength(ElementIndex springElementIndex) const
-    {
-        return mMaterialStrengthBuffer[springElementIndex];
-    }
-
-    float GetMaterialStiffness(ElementIndex springElementIndex) const
-    {
-        return mMaterialStiffnessBuffer[springElementIndex];
-    }
-
     float GetLength(
         ElementIndex springElementIndex,
         Points const & points) const
@@ -495,6 +505,26 @@ public:
         return mDynamicsCoefficientsBuffer.data();
     }
 
+    float GetMaterialStrength(ElementIndex springElementIndex) const
+    {
+        return mMaterialPropertiesBuffer[springElementIndex].MaterialStrength;
+    }
+
+    float GetMaterialStiffness(ElementIndex springElementIndex) const
+    {
+        return mMaterialPropertiesBuffer[springElementIndex].MaterialStiffness;
+    }
+
+    float GetMaterialMeltingTemperature(ElementIndex springElementIndex) const
+    {
+        return mMaterialPropertiesBuffer[springElementIndex].MaterialMeltingTemperature;
+    }
+
+    float GetExtraMeltingInducedTolerance(ElementIndex springElementIndex) const
+    {
+        return mMaterialPropertiesBuffer[springElementIndex].ExtraMeltingInducedTolerance;
+    }
+
     StructuralMaterial const & GetBaseStructuralMaterial(ElementIndex springElementIndex) const
     {
         // If this method is invoked, this is not a placeholder
@@ -530,11 +560,6 @@ public:
     float GetMaterialThermalConductivity(ElementIndex springElementIndex) const
     {
         return mMaterialThermalConductivityBuffer[springElementIndex];
-    }
-
-    float GetMaterialMeltingTemperature(ElementIndex springElementIndex) const
-    {
-        return mMaterialMeltingTemperatureBuffer[springElementIndex];
     }
 
     //
@@ -573,6 +598,23 @@ private:
         return
             4.0f
             / (1.0f + 3.0f * pow(numMechanicalDynamicsIterationsAdjustment, 1.3f));
+    }
+
+    static float CalculateExtraMeltingInducedTolerance(float strength)
+    {
+        // The extra elongation tolerance due to melting:
+        //  - For small factory tolerances (~0.1), we are keen to get up to many times that tolerance
+        //  - For large factory tolerances (~5.0), we are keen to get up to fewer times that tolerance
+        //    (i.e. allow smaller change in length)
+        float constexpr MaxMeltingInducedTolerance = 20; // Was 20 up to 1.16.5
+        float constexpr MinMeltingInducedTolerance = 0.0f;
+        float constexpr StartStrength = 0.3f; // At this strength, we allow max tolerance
+        float constexpr EndStrength = 3.0f; // At this strength, we allow min tolerance
+
+        return MaxMeltingInducedTolerance -
+            (MaxMeltingInducedTolerance - MinMeltingInducedTolerance)
+            / (EndStrength - StartStrength)
+            * (Clamp(strength, StartStrength, EndStrength) - StartStrength);
     }
 
     void UpdateForDecayAndTemperatureAndGameParameters(
@@ -635,12 +677,11 @@ private:
     // Physical
     //
 
-    Buffer<float> mMaterialStrengthBuffer;
     Buffer<float> mBreakingElongationBuffer;
-    Buffer<float> mMaterialStiffnessBuffer;
     Buffer<float> mFactoryRestLengthBuffer;
     Buffer<float> mRestLengthBuffer;
     Buffer<DynamicsCoefficients> mDynamicsCoefficientsBuffer;
+    Buffer<MaterialProperties> mMaterialPropertiesBuffer;
     Buffer<StructuralMaterial const *> mBaseStructuralMaterialBuffer;
     Buffer<bool> mIsRopeBuffer;
 
@@ -659,7 +700,6 @@ private:
     //
 
     Buffer<float> mMaterialThermalConductivityBuffer;
-    Buffer<float> mMaterialMeltingTemperatureBuffer;
 
     //
     // Stress

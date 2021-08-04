@@ -32,27 +32,35 @@ void Springs::Add(
     assert(coveringTrianglesCount >= superTriangles.size()); // Covering triangles count includes super triangles
     mCoveringTrianglesCountBuffer.emplace_back(coveringTrianglesCount);
 
-    // Strength is average
-    float const averageStrength =
-        (points.GetStrength(pointAIndex) + points.GetStrength(pointBIndex))
-        / 2.0f;
-    mMaterialStrengthBuffer.emplace_back(averageStrength);
-
     // Breaking elongation recalculated later
     mBreakingElongationBuffer.emplace_back(0.0f);
-
-    // Stiffness is average
-    float const stiffness =
-        (points.GetStructuralMaterial(pointAIndex).Stiffness + points.GetStructuralMaterial(pointBIndex).Stiffness)
-        / 2.0f;
-
-    mMaterialStiffnessBuffer.emplace_back(stiffness);
 
     mFactoryRestLengthBuffer.emplace_back((points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length());
     mRestLengthBuffer.emplace_back((points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length());
 
     // Dynamics coefficients recalculated later, but stiffness grows slowly and shrinks fast, hence we want to start high
     mDynamicsCoefficientsBuffer.emplace_back(std::numeric_limits<float>::max(), 0.0f);
+
+    // Stiffness is average
+    float const averageStiffness =
+        (points.GetStructuralMaterial(pointAIndex).Stiffness + points.GetStructuralMaterial(pointBIndex).Stiffness)
+        / 2.0f;
+
+    // Strength is average
+    float const averageStrength =
+        (points.GetStrength(pointAIndex) + points.GetStrength(pointBIndex))
+        / 2.0f;
+
+    // Melting temperature is average
+    float const averageMeltingTemperature =
+        (points.GetStructuralMaterial(pointAIndex).MeltingTemperature + points.GetStructuralMaterial(pointBIndex).MeltingTemperature)
+        / 2.0f;
+
+    mMaterialPropertiesBuffer.emplace_back(
+        averageStiffness,
+        averageStrength,
+        averageMeltingTemperature,
+        CalculateExtraMeltingInducedTolerance(averageStrength));
 
     // Base structural material is arbitrarily the weakest of the two;
     // only affects sound and name, anyway
@@ -73,10 +81,6 @@ void Springs::Add(
         (points.GetStructuralMaterial(pointAIndex).ThermalConductivity + points.GetStructuralMaterial(pointBIndex).ThermalConductivity)
         / 2.0f;
     mMaterialThermalConductivityBuffer.emplace_back(thermalConductivity);
-    float const meltingTemperature =
-        (points.GetStructuralMaterial(pointAIndex).MeltingTemperature + points.GetStructuralMaterial(pointBIndex).MeltingTemperature)
-        / 2.0f;
-    mMaterialMeltingTemperatureBuffer.emplace_back(meltingTemperature);
 
     mIsStressedBuffer.emplace_back(false);
 
@@ -519,31 +523,15 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
                 mFactoryRestLengthBuffer[springIndex] * 2.0f));
     }
 
-    // TODOHERE: put in precalc'd buffer (never modified), ideally
-    // in same struct as some other quantities used exclusively here
-    // The extra elongation tolerance due to melting:
-    //  - For small factory tolerances (~0.1), we are keen to get up to many times that tolerance
-    //  - For large factory tolerances (~5.0), we are keen to get up to fewer times that tolerance
-    //    (i.e. allow smaller change in length)
-    float constexpr MaxMeltingInducedTolerance = 20; // Was 20 up to 1.16.5
-    float constexpr MinMeltingInducedTolerance = 0.0f;
-    float constexpr StartStrength = 0.3f; // At this strength, we allow max tolerance
-    float constexpr EndStrength = 3.0f; // At this strength, we allow min tolerance
-    float const springMaterialStrength = GetMaterialStrength(springIndex);
-    float const extraMeltingInducedTolerance = MaxMeltingInducedTolerance -
-        (MaxMeltingInducedTolerance - MinMeltingInducedTolerance)
-        / (EndStrength - StartStrength)
-        * (Clamp(springMaterialStrength, StartStrength, EndStrength) - StartStrength);
-
     mBreakingElongationBuffer[springIndex] =
-        springMaterialStrength
+        GetMaterialStrength(springIndex)
         * strengthAdjustment
         * 0.839501f // Magic number: from 1.14, after #iterations increased from 24 to 30
         * 0.643389f // Magic number: in 1.15.2 we're shortened the simulation time step from 0.2 to 0.156
         * strengthIterationsAdjustment
         * springDecay
         * GetRestLength(springIndex) // To make strain comparison independent from rest length
-        * (1.0f + extraMeltingInducedTolerance * meltDepthFraction); // When melting, springs are more tolerant to elongation
+        * (1.0f + GetExtraMeltingInducedTolerance(springIndex) * meltDepthFraction); // When melting, springs are more tolerant to elongation
 }
 
 }
