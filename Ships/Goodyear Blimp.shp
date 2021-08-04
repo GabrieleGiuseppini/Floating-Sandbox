@@ -6,6 +6,7 @@
 	"ship_name":"Goodyear Blimp",
 	"created_by":"Michael Bozarth",
 	"year_built":"2016",
+	"internal_pressure":1.2,
 	"electrical_panel":{
 		"0": {"panel_x":-2, "panel_y":0, "label":"Engine Thrust"},
 		"1": {"panel_x":-1, "panel_y":0, "label":"Engine" },
