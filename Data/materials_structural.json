@@ -1525,7 +1525,7 @@
             "nominal_mass": 1390
         },
         "melting_temperature": 527.15,
-        "name": "Mylar Hull",
+        "name": "Mylar",
 	"rust_receptivity": 0.0,
         "sound_type": "Cloth",
         "specific_heat": 1172.304,
