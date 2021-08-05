@@ -1356,7 +1356,7 @@
         "name": "Hydrogen Gaseous",
 	"rust_receptivity": 0.0,
         "specific_heat": 14310.0,
-        "stiffness": 0.01,
+        "stiffness": 0.001,
         "strength": 3.0,
         "template": {
             "column": 3,

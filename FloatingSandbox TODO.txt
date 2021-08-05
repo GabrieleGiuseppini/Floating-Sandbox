@@ -1008,14 +1008,11 @@ Render:
 								+ MaterialStiffness (!GetMaterialStiffness)
 								+ MaterialStrength (!GetMaterialStrength)
 								+ MaterialMeltingTemperature (!)
-				- Change Goodyear's hull to Mylar
-				- Then try to use Aluminium Sheet for tubing
-				- See if needs Hydrogen Structural vs Hydrogen Gaseous
-					- Also for air then, SHOULD NOT matter which one is Unique, choose Gaseous if so
-				- Do other blimp as well
+				+ Change Goodyear's hull to Mylar
 				- Regenerate materials palette
 				- changelist, also for material
 					- Mention also other colors for materials, with total # from 170
+			- Create new "Hot Air Balloon" ship
 			+ Find right setting value and range for InternalPressure tool
 				+ Option 1: "Quantity" is really # of atmospheres
 					+ If it's atmospheres, say "Atmospheres" in tooltip
@@ -1028,7 +1025,7 @@ Render:
 					- PressureAtZero is subject to AirPressureAdjustment
 				+ Move Offset out of metadata
 				- See if should also add to Red October and Triton
-			- See if "subs" can be made of no-hull
+			- See if "subs" can be made of no-hull internally
 				- Test one one first to see if it's a win
 			- Optimizations:
 				- EqualizeInternalPressure:
