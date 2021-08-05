@@ -639,6 +639,136 @@ Render:
 				+ Redo panel for USCS
 				+ UI settings manager
 				+ PreferencesDialog
+		+ Another hydrostatic pressure attempt: Frontier: do not act on non-hull points, but then compensate net resultant force (and may be resultant torque as well)
+			+ Only on edges that are the center of three consecutive hull points
+			+ Try adaptive net_force/net_torque zeroing
+				+ See paper
+				+ Rewrite algo so pressure force stem multiplication is last step - use 1.0 for stems before that
+					+ Assert initially that dynamic forces is empty
+						+ Verify in Debug						
+				+ Best-each-time approach
+					+ See if can integrate minimization, i.e. not only lambda=0:
+						+ Calc net_total at both minimal-and-clamped lambdas, and use best of the two
+							+ Store lambda as bestLambda, to use when min found
+				+ Alternating approach:
+					+ 1. Find point that makes force closest to zero
+						+ When a tie (via tolerance, i.e. radius), compare also torque and choose one with torque being closest to zero
+					+ 2. Find point that makes torque closest to zero
+						+ When a tie (via tolerance, i.e. radius), compare also force and choose one with force being closest to zero
+					+ See if Red October still explodes: yes - but it was already exploding even before stem multiplication
+					+ Other lambdas
+				+ See why explodes
+					+ Should be order: Strain => Hydrostatic, but it's Hydrostatic => Strain
+					X See if last beta also exploded at high depth
+					+ See why pressureForceStem is so jumpy
+						+ It's because UpdateForStrains causes new frontiers and their AABBs are not initialized yet
+						+ Use geometric center
+					+ Abnormal force at frontier knots: due to pressure force stem multiplied twice
+				+ See if can initialize best'es with current nettorque/netforce
+					+ Calc average # of iterations, F, and T before and after
+						+ With numeric_limits::max: Hemisphere: 53/0.37/0.00... Triton: 8.4/0.05/0.00...
+						+ With current nettorque/netforce: Hemisphere: 42/0.7/0.00... Triton: 8.0/0.05/0.00...
+					+ Undo: we want to choose contributions > current net
+				+ Algo for optimization *and* avoidance of double stem (explosion)
+					+ 0a. Confirm by multiplying all DynamicForces by stem - once across all points
+					+ 0b. Take perf measurements (default_ship, depth -= 200): Update:4.90ms, ApplyHydrostaticPressureForces: 3.47%
+						Hesleden: Update:67.8ms, ApplyHydrostaticPressureForces: 6.27%
+					+ Copy exe
+					+ 1. Comment out current
+					+ 2. Move ApplyWorldForces after UpdateForStrains
+					+ 3. ApplyWorldSurfaceForces: calculate geometric center and store it with Frontier, together with AABB
+					+ 4. Buffer:
+						+ Struct member of Ship: HydrostaticPressureOnPoint
+							- ElementIndex PointIndex
+							- vec2f TorqueArm
+							- vec2f ForceVector
+						+ Buffer is owned by Ship, cctd'd at cctor of Ship
+						! Buffer can be populated for same point multiple times, each time for a different "surface" of a frontier
+					+ 5. Initial population of HydrostaticPressureOnPoint buffer:
+						! Allow particles that appear twice in same frontier to appear twice in buffer
+						+ Make loop inline
+					+ 6. Equalization
+					+ End: DynamicForces are only populated at end, by multiplying ForceVector with stem and adding to Points.DynamicForces
+					+ Optimize
+				+ Fix getting stuck at lambda=1:
+				+ Optimizations:
+					+ Start: Update=5.68ms, ApplyHydrostaticPressureForce=13.40% (LogMessage=7.88%)
+					+ See if "min-3-consecutive-hulls" is still needed
+						+ If decide to remove it, cleanup code
+					+ End: Update=4.66ms, ApplyHydrostaticPressureForce=1.57%; Hesleden: 64.5ms, 2.01%
+				+ Run in Debug
+				+ Remove exhaggerations
+			+ Test on melted long springs - after removing exhaggerations
+			X Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
+			+ Apply air pressure as well
+				! InternalPressure and hydrostatic pressure will never be zero - zero is really "somewhere" above MaxWorldHeight
+				! Pressure at ocean surface zero (aka "PressureAtZero") is == column of air above (atmospheric pressure at sea level)
+				+ Formulae class: implements formulae below
+					+ Calcs effective air density, given temperature
+					+ Cals effective water density, given temperature					
+					+ Calcs volumetric water pressure, given temperature - VolumetricWaterPressure
+					+ Calcs pure air pressure at height x - AirColumnPressure
+					+ Calcs pure water pressure at depth x - WaterColumnPressure
+					+ Calcs total pressure at height x - TotalColumnPressure
+						+ airColumnPressure(clamp(height)) + waterColumnPressure(clamp(depth))
+				+ @ ApplyHydrostaticPressure: 
+					+ PressureAtCenter from Formulae::TotalPressure
+					! Internal pressure counterbalance formula: denominator will never be zero
+				+ @ Internal pressure intake:
+					! Structural delta internal pressure and delta water are independent from each other
+					! Forced delta internal pressure only depends on water
+					+ Redo algo
+				+ @ Flood tool:
+					+ Use Formulae
+				+ SettingsDialog: tooltip of HydrostaticPressureAdjust: add "atmosphere"				
+			+ Try with internal pressure, again
+				+ Re-instate internal pressure code
+				+ Re-instate hull particles getting the average of all their non-hull neighbors
+				+ Commit
+				+ Use hull's internal pressure to counteract external pressure, at initial forceVector calculation
+					+ forceVector *= 1.0 - internalPressure(Pi)/externalPressure * adj
+				+ If goes thru: 
+					+ Do all the internal pressure sidework:
+						+ Flood tool
+							+ Remove pressure only if water has been removed - remove pressure by effective water wuantity removed
+							+ Test both incoming and outgoing
+						+ Make sure pumps play nicely
+							+ Pumping-in: internal pressure grows
+							+ Pumping out: internal pressure decreases
+						+ Rendering							
+					+ SettingsDialog: make new group with new setting for internal pressure "contribution"						
+					+ Optimize
+						+ EqualizeInternalPressure: try with local buffer remembering all we do in the first loop
+							+ Before: 4.96ms, 4%
+							+ After: 4.91ms, 2.73%
+			+ Internal pressure counterbalance:
+				+ Counterbalance adj = 1: reasonable (Titanic still breaks at depth)
+				+ See if can cheat and have "basically" counterbalance adj = 1, except at higher depths
+				+ Remember GameParameters default is now 1
+			+ Rearc settings:
+				+ HydrostaticPressureAdjustment: becomes StaticPressureAdjustment, in Mechanics
+					+ SettingsDialog: Mechanics, and exponential
+				+ HPCounterBalance: stays
+					+ SettingsDialog: merge with other water, and say "hydro"
+			+ Custom probe for net force
+			+ Explain counterbalance in tooltip
+			+ Changelist
+				+ Both (hydro)static pressure and internal pressure
+			+ Merge back into master
+			+ Mark internal pressure TODO item for internal pressure * as complete
+			+ Send for testing
+				+ Bump up version
+			+ Cleanup commented out code
+				= Make video first
+					+ "1: the basics"
+					+ With Triton large sinking slowly: "A hydrostatic pressure field consists of forces perpendicular to the exterior hull of the ship..."
+						"...but simulating it in a particle system is not as easy as it may sound."
+					+ ...
+					+ @ Titanic unequalized: "The problem becomes even more pronounced with bigger structures"
+					+ "2: iterative net effect minimization"
+					+ ...
+					+ Music				
+		+ Send for testing (build 4)
 		+ MaterialsDB rearc:
 			! 170 materials
 			+ Substitute N identical instances, in which only key color changes, with one instance having an _array_ of keys
@@ -825,137 +955,6 @@ Render:
 			- Finalization:
 				- Default parameter values based on slider steps
 
-		= Another hydrostatic pressure attempt: Frontier: do not act on non-hull points, but then compensate net resultant force (and may be resultant torque as well)
-			+ Only on edges that are the center of three consecutive hull points
-			+ Try adaptive net_force/net_torque zeroing
-				+ See paper
-				+ Rewrite algo so pressure force stem multiplication is last step - use 1.0 for stems before that
-					+ Assert initially that dynamic forces is empty
-						+ Verify in Debug						
-				+ Best-each-time approach
-					+ See if can integrate minimization, i.e. not only lambda=0:
-						+ Calc net_total at both minimal-and-clamped lambdas, and use best of the two
-							+ Store lambda as bestLambda, to use when min found
-				+ Alternating approach:
-					+ 1. Find point that makes force closest to zero
-						+ When a tie (via tolerance, i.e. radius), compare also torque and choose one with torque being closest to zero
-					+ 2. Find point that makes torque closest to zero
-						+ When a tie (via tolerance, i.e. radius), compare also force and choose one with force being closest to zero
-					+ See if Red October still explodes: yes - but it was already exploding even before stem multiplication
-					+ Other lambdas
-				+ See why explodes
-					+ Should be order: Strain => Hydrostatic, but it's Hydrostatic => Strain
-					X See if last beta also exploded at high depth
-					+ See why pressureForceStem is so jumpy
-						+ It's because UpdateForStrains causes new frontiers and their AABBs are not initialized yet
-						+ Use geometric center
-					+ Abnormal force at frontier knots: due to pressure force stem multiplied twice
-				+ See if can initialize best'es with current nettorque/netforce
-					+ Calc average # of iterations, F, and T before and after
-						+ With numeric_limits::max: Hemisphere: 53/0.37/0.00... Triton: 8.4/0.05/0.00...
-						+ With current nettorque/netforce: Hemisphere: 42/0.7/0.00... Triton: 8.0/0.05/0.00...
-					+ Undo: we want to choose contributions > current net
-				+ Algo for optimization *and* avoidance of double stem (explosion)
-					+ 0a. Confirm by multiplying all DynamicForces by stem - once across all points
-					+ 0b. Take perf measurements (default_ship, depth -= 200): Update:4.90ms, ApplyHydrostaticPressureForces: 3.47%
-						Hesleden: Update:67.8ms, ApplyHydrostaticPressureForces: 6.27%
-					+ Copy exe
-					+ 1. Comment out current
-					+ 2. Move ApplyWorldForces after UpdateForStrains
-					+ 3. ApplyWorldSurfaceForces: calculate geometric center and store it with Frontier, together with AABB
-					+ 4. Buffer:
-						+ Struct member of Ship: HydrostaticPressureOnPoint
-							- ElementIndex PointIndex
-							- vec2f TorqueArm
-							- vec2f ForceVector
-						+ Buffer is owned by Ship, cctd'd at cctor of Ship
-						! Buffer can be populated for same point multiple times, each time for a different "surface" of a frontier
-					+ 5. Initial population of HydrostaticPressureOnPoint buffer:
-						! Allow particles that appear twice in same frontier to appear twice in buffer
-						+ Make loop inline
-					+ 6. Equalization
-					+ End: DynamicForces are only populated at end, by multiplying ForceVector with stem and adding to Points.DynamicForces
-					+ Optimize
-				+ Fix getting stuck at lambda=1:
-				+ Optimizations:
-					+ Start: Update=5.68ms, ApplyHydrostaticPressureForce=13.40% (LogMessage=7.88%)
-					+ See if "min-3-consecutive-hulls" is still needed
-						+ If decide to remove it, cleanup code
-					+ End: Update=4.66ms, ApplyHydrostaticPressureForce=1.57%; Hesleden: 64.5ms, 2.01%
-				+ Run in Debug
-				+ Remove exhaggerations
-			+ Test on melted long springs - after removing exhaggerations
-			X Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
-			+ Apply air pressure as well
-				! InternalPressure and hydrostatic pressure will never be zero - zero is really "somewhere" above MaxWorldHeight
-				! Pressure at ocean surface zero (aka "PressureAtZero") is == column of air above (atmospheric pressure at sea level)
-				+ Formulae class: implements formulae below
-					+ Calcs effective air density, given temperature
-					+ Cals effective water density, given temperature					
-					+ Calcs volumetric water pressure, given temperature - VolumetricWaterPressure
-					+ Calcs pure air pressure at height x - AirColumnPressure
-					+ Calcs pure water pressure at depth x - WaterColumnPressure
-					+ Calcs total pressure at height x - TotalColumnPressure
-						+ airColumnPressure(clamp(height)) + waterColumnPressure(clamp(depth))
-				+ @ ApplyHydrostaticPressure: 
-					+ PressureAtCenter from Formulae::TotalPressure
-					! Internal pressure counterbalance formula: denominator will never be zero
-				+ @ Internal pressure intake:
-					! Structural delta internal pressure and delta water are independent from each other
-					! Forced delta internal pressure only depends on water
-					+ Redo algo
-				+ @ Flood tool:
-					+ Use Formulae
-				+ SettingsDialog: tooltip of HydrostaticPressureAdjust: add "atmosphere"				
-			+ Try with internal pressure, again
-				+ Re-instate internal pressure code
-				+ Re-instate hull particles getting the average of all their non-hull neighbors
-				+ Commit
-				+ Use hull's internal pressure to counteract external pressure, at initial forceVector calculation
-					+ forceVector *= 1.0 - internalPressure(Pi)/externalPressure * adj
-				+ If goes thru: 
-					+ Do all the internal pressure sidework:
-						+ Flood tool
-							+ Remove pressure only if water has been removed - remove pressure by effective water wuantity removed
-							+ Test both incoming and outgoing
-						+ Make sure pumps play nicely
-							+ Pumping-in: internal pressure grows
-							+ Pumping out: internal pressure decreases
-						+ Rendering							
-					+ SettingsDialog: make new group with new setting for internal pressure "contribution"						
-					+ Optimize
-						+ EqualizeInternalPressure: try with local buffer remembering all we do in the first loop
-							+ Before: 4.96ms, 4%
-							+ After: 4.91ms, 2.73%
-			+ Internal pressure counterbalance:
-				+ Counterbalance adj = 1: reasonable (Titanic still breaks at depth)
-				+ See if can cheat and have "basically" counterbalance adj = 1, except at higher depths
-				+ Remember GameParameters default is now 1
-			+ Rearc settings:
-				+ HydrostaticPressureAdjustment: becomes StaticPressureAdjustment, in Mechanics
-					+ SettingsDialog: Mechanics, and exponential
-				+ HPCounterBalance: stays
-					+ SettingsDialog: merge with other water, and say "hydro"
-			+ Custom probe for net force
-			+ Explain counterbalance in tooltip
-			+ Changelist
-				+ Both (hydro)static pressure and internal pressure
-			+ Merge back into master
-			+ Mark internal pressure TODO item for internal pressure * as complete
-			+ Send for testing
-				+ Bump up version
-			- Cleanup commented out code
-				= Make video first
-					+ "1: the basics"
-					+ With Triton large sinking slowly: "A hydrostatic pressure field consists of forces perpendicular to the exterior hull of the ship..."
-						"...but simulating it in a particle system is not as easy as it may sound."
-					+ ...
-					+ @ Titanic unequalized: "The problem becomes even more pronounced with bigger structures"
-					+ "2: iterative net effect minimization"
-					- TODOHERE 
-					- "3: internal pressure counterbalance"
-					- TODOHERE
-			
 
 		- Hydrostatic pressure follow-ups:
 			- Repair tool: 
@@ -1009,10 +1008,15 @@ Render:
 								+ MaterialStrength (!GetMaterialStrength)
 								+ MaterialMeltingTemperature (!)
 				+ Change Goodyear's hull to Mylar
+				- Do also other blimp
 				- Regenerate materials palette
 				- changelist, also for material
 					- Mention also other colors for materials, with total # from 170
+			- Add AirDensityAdjustment setting-ability
 			- Create new "Hot Air Balloon" ship
+				+ Make "Air Gaseous Hot" material
+				= Add HotAir material
+				- Make initial test first
 			+ Find right setting value and range for InternalPressure tool
 				+ Option 1: "Quantity" is really # of atmospheres
 					+ If it's atmospheres, say "Atmospheres" in tooltip
