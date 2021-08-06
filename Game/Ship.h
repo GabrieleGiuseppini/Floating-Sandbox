@@ -800,6 +800,10 @@ private:
     // already ran once with zero (so to zero out buffer)
     float mLastLuminiscenceAdjustmentDiffused;
 
+    // Normally at 1.0, set to 0.0 during repair to turn off updates that hinder the
+    // repair process
+    float mRepairGracePeriodMultiplier;
+
     //
     // Static pressure
     //

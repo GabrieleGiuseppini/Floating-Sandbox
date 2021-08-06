@@ -962,15 +962,16 @@ Render:
 				- DevIL: so's?
 
 		= Hydrostatic pressure follow-ups:
-			- Repair tool: 
-				- Ship has float mPostRepairGracePeriodMultiplier, from 0.0 to 1.0 - default is 1.0
-				- At end of update, converges towards 1.0 - with tolerance check to become 1.0
-				- Used at:
-					- ApplyStaticPressureForces for final multiplier of forces
-				- Repair():
-					- At end sets mPostRepairGracePeriodMultiplier to 0.0
-					- Also at end, clears out whole dynamic forces buffer
-						- Remove ad-hoc setting of dynamic forces to zero
+			+ Repair tool:
+				+ Ship has float mPostRepairGracePeriodMultiplier, from 0.0 to 1.0 - default is 1.0
+				+ At end of update, converges towards 1.0 - with tolerance check to become 1.0
+				+ Used at:
+					+ ApplyStaticPressureForces for final multiplier of forces
+				+ Test repair first
+				+ Repair():
+					+ At end sets mPostRepairGracePeriodMultiplier to 0.0
+					+ Also at end, clears out whole dynamic forces buffer
+						+ Remove ad-hoc setting of dynamic forces to zero
 			+ Pressure tool:
 				+ Like Flood tool was before, but only acting on InternalPressure
 				+ Could repurpose bubble tool - does bubbles when no ship is found
@@ -1017,6 +1018,7 @@ Render:
 				+ Regenerate materials palette
 				+ changelist, also for material
 					+ Mention also other colors for materials, with total # from 170
+			- Double-check hydrostatic pressure adjustment - has effect on Goodyear
 			- Add AirDensityAdjustment setting-ability
 			X Create new "Hot Air Balloon" ship
 			- Physics probe: internal pressure
@@ -1024,11 +1026,15 @@ Render:
 			+ Find right setting value and range for InternalPressure tool
 				+ Option 1: "Quantity" is really # of atmospheres
 					+ If it's atmospheres, say "Atmospheres" in tooltip
-			- See if need adjustment for air pressure
-				- Is it redundant - we have air density now? Do same as we do with water
+			- Finalize StaticPressureAdjustment
+				! No adjustment for air pressure, it is redundant - we have air density now, and it's the same with water
 				- Goal: high air pressure causes things to explode high up
 					! No need to extend counterbalance upwards
-				- If so: SettingsDialog		
+					- See if really need air pressure adjustment for this goal
+						- If so: SettingsDialog
+				- Rename "StaticPressureAdjustment" as "StaticPressureForceAdjustment"
+					- Code
+					- SettingsDialog
 			= Ship definition: add optional value for default internal pressure
 				= When not specified, it's PressureAtZero (calc'd via Formulae)
 					- PressureAtZero is subject to AirPressureAdjustment

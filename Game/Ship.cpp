@@ -108,6 +108,7 @@ Ship::Ship(
     , mIsSinking(false)
     , mWaterSplashedRunningAverage()
     , mLastLuminiscenceAdjustmentDiffused(-1.0f)
+    , mRepairGracePeriodMultiplier(1.0f)
     // Static pressure
     , mStaticPressureBuffer(mPoints.GetAlignedShipPointCount())
     , mStaticPressureNetForceMagnitudeSum(0.0f)
@@ -586,6 +587,20 @@ void Ship::Update(
     VerifyInvariants();
 
 #endif
+
+    ///////////////////////////////////////////////////////////////////
+    // Preparations for next step
+    ///////////////////////////////////////////////////////////////////
+
+    // Continue recovering from a repair
+    if (mRepairGracePeriodMultiplier != 1.0f)
+    {
+        mRepairGracePeriodMultiplier += 0.2f * (1.0f - mRepairGracePeriodMultiplier);
+        if (std::abs(1.0f - mRepairGracePeriodMultiplier) < 0.02f)
+        {
+            mRepairGracePeriodMultiplier = 1.0f;
+        }
+    }
 }
 
 void Ship::RenderUpload(Render::RenderContext & renderContext)
@@ -1609,7 +1624,11 @@ void Ship::ApplyStaticPressureForces(
     //    phantom forces and torques otherwise
     //
 
-    float const forceMultiplier = totalExternalPressure * gameParameters.StaticPressureAdjustment;
+    float const forceMultiplier =
+        totalExternalPressure
+        * gameParameters.StaticPressureAdjustment
+        * mRepairGracePeriodMultiplier; // Static pressure hinders the repair process
+
     size_t const particleCount = mStaticPressureBuffer.GetCurrentPopulatedSize();
     for (size_t hpi = 0; hpi < particleCount; ++hpi)
     {

@@ -1005,6 +1005,11 @@ public:
         mDynamicForceBuffer[pointElementIndex] += force;
     }
 
+    void ResetDynamicForces()
+    {
+        mDynamicForceBuffer.fill(vec2f::zero());
+    }
+
     vec2f const & GetStaticForce(ElementIndex pointElementIndex) const noexcept
     {
         return mStaticForceBuffer[pointElementIndex];

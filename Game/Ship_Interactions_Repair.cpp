@@ -151,6 +151,16 @@ void Ship::RepairAt(
             }
         }
     }
+
+    //
+    // Pass 5: make sure we don't destroy what we've repaired right away
+    //
+
+    // Reset dynamic forces
+    mPoints.ResetDynamicForces();
+
+    // Reset grace period
+    mRepairGracePeriodMultiplier = 0.0f;
 }
 
 void Ship::StraightenOneSpringChains(ElementIndex pointIndex)
