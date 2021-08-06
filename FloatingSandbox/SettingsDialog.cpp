@@ -601,7 +601,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                     SliderWidth,
                     SliderHeight,
                     _("Static Pressure Adjust"),
-                    _("Adjusts the static pressure exherted on the exterior of physical bodies."),
+                    _("Adjusts the static pressure exherted on the exterior of physical bodies. Set to zero to disable static pressure altogether."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::StaticPressureAdjustment, value);
