@@ -118,7 +118,7 @@ public:
             for (auto const & colorKey : colorKeys)
             {
                 // Get render color
-                rgbColor renderColor;
+                rgbColor renderColor = colorKey;
                 auto const & renderColorIt = materialObject.find("render_color");
                 if (materialObject.end() != renderColorIt)
                 {
@@ -135,10 +135,6 @@ public:
                     }
 
                     renderColor = Utils::Hex2RgbColor(renderColorIt->second.get<std::string>());
-                }
-                else
-                {
-                    renderColor = colorKey;
                 }
 
                 // Create instance of this material
