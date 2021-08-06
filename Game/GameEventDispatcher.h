@@ -34,6 +34,7 @@ public:
         , mLightFlickerEvents()
         , mSpringRepairedEvents()
         , mTriangleRepairedEvents()
+        , mPinToggledEvents()
         , mAirBubbleSurfacedEvents(0u)
         , mBombExplosionEvents()
         , mRCBombPingEvents()
@@ -543,10 +544,7 @@ public:
         bool isPinned,
         bool isUnderwater) override
     {
-        for (auto sink : mGenericSinks)
-        {
-            sink->OnPinToggled(isPinned, isUnderwater);
-        }
+        mPinToggledEvents.emplace(isPinned, isUnderwater);
     }
 
     void OnWaterTaken(float waterTaken) override
@@ -809,6 +807,11 @@ public:
                 sink->OnTriangleRepaired(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
             }
 
+            for (auto const & entry : mPinToggledEvents)
+            {
+                sink->OnPinToggled(std::get<0>(entry), std::get<1>(entry));
+            }
+
             if (mAirBubbleSurfacedEvents > 0)
             {
                 sink->OnAirBubbleSurfaced(mAirBubbleSurfacedEvents);
@@ -842,6 +845,7 @@ public:
 
         mSpringRepairedEvents.clear();
         mTriangleRepairedEvents.clear();
+        mPinToggledEvents.clear();
         mAirBubbleSurfacedEvents = 0u;
         mBombExplosionEvents.clear();
         mRCBombPingEvents.clear();
@@ -900,6 +904,7 @@ private:
     unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mSpringRepairedEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mTriangleRepairedEvents;
+    unordered_tuple_set<std::tuple<bool, bool>> mPinToggledEvents;
     unsigned int mAirBubbleSurfacedEvents;
     unordered_tuple_map<std::tuple<GadgetType, bool>, unsigned int> mBombExplosionEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mRCBombPingEvents;

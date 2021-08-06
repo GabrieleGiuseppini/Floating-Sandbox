@@ -850,6 +850,7 @@ Render:
 			+ Final params:
 				+ change density so 0.803 is new 1.0
 				+ 2, 0.6 (good for Triton)
+		+ Way to remove all pins (*)
 
 
 		= Ubuntu:
@@ -957,7 +958,9 @@ Render:
 		= Do some normal wrecks and decide on default static pressure adjust value
 			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
 			+ 0.242	
-			- See why Titanic is bunch of particles at 10Km: rotting?
+			= See why Titanic is bunch of particles at 10Km: rotting?
+				+ Full 10K fall w/out rotting: not pulverized, but quite shattered
+				- Full 10K fall with rotting:
 
 		- Hydrostatic pressure follow-ups:
 			- Repair tool: 
@@ -1021,6 +1024,7 @@ Render:
 				= Add HotAir material
 				- Make initial test first
 			- Physics probe: internal pressure
+				- USCS: lb/ft2 or lb/in2 (psi)
 			+ Find right setting value and range for InternalPressure tool
 				+ Option 1: "Quantity" is really # of atmospheres
 					+ If it's atmospheres, say "Atmospheres" in tooltip
@@ -1100,8 +1104,6 @@ Render:
 				- Generic textures
 				- Fonts
 				- Fishes
-
-		- Way to remove all pins (*)
 
 		- See explosions issue with Marine Electric (now on Desktop)
 
@@ -1924,9 +1926,6 @@ Render:
 
 	- Spread out spring coeffs' recalculations (*)
 		- For better look'n'feel
-
-	- Way to remove all pins (*)
-		- SHIFT to remove them all
 
 	- Water impact (*): water drag does not cause ships to break upon impact
 		= See if due to lack of square law: find law such that Titanic's dive is still the same, but higher velocities get higher drags
@@ -9011,6 +9010,10 @@ IF WX:
 					+ Hull particles do not partecipate in normal propagation, but get average instead of all neighboring particles
 		X Option 2: separate WaterPressure and AirPressure quantities, playing in tandem
 			X At any moment: total pressure at a particle is Water+Air
+	+ Way to remove all pins (*)
+		+ SHIFT to remove them all - unconditionally from *all* ships
+			+ World::RemoveAllPins()
+		+ Add to help
 
 
 

@@ -255,6 +255,8 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 
+    void RemoveAllPins();
+
     std::optional<ToolApplicationLocus> InjectPressureAt(
         vec2f const & targetPos,
         float pressureQuantityMultiplier,

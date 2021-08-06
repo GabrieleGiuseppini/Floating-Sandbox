@@ -952,6 +952,13 @@ void GameController::TogglePinAt(LogicalPixelCoordinates const & screenCoordinat
         mGameParameters);
 }
 
+void GameController::RemoveAllPins()
+{
+    // Apply action
+    assert(!!mWorld);
+    mWorld->RemoveAllPins();
+}
+
 std::optional<ToolApplicationLocus> GameController::InjectPressureAt(
     LogicalPixelCoordinates const & screenCoordinates,
     float pressureQuantityMultiplier)

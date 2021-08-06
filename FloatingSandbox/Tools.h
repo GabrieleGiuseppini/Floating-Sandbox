@@ -1495,8 +1495,16 @@ public:
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
-        // Toggle pin
-        mGameController->TogglePinAt(inputState.MousePosition);
+        if (!inputState.IsShiftKeyDown)
+        {
+            // Toggle pin
+            mGameController->TogglePinAt(inputState.MousePosition);
+        }
+        else
+        {
+            // Remove all pins
+            mGameController->RemoveAllPins();
+        }
     }
 
     virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}

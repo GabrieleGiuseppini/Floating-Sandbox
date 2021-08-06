@@ -137,6 +137,24 @@ public:
         return false;
     }
 
+    void RemoveAll()
+    {
+        for (auto it = mCurrentPinnedPoints.begin(); it != mCurrentPinnedPoints.end(); ++it)
+        {
+            assert(mShipPoints.IsPinned(*it));
+
+            // Unpin it
+            mShipPoints.Unpin(*it);
+
+            // Notify
+            mGameEventHandler->OnPinToggled(
+                false,
+                mParentWorld.IsUnderwater(mShipPoints.GetPosition(*it)));
+        }
+
+        mCurrentPinnedPoints.clear();
+    }
+
     //
     // Render
     //

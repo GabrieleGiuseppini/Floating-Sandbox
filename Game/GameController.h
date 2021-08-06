@@ -185,6 +185,7 @@ public:
     void DrawTo(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) override;
     void SwirlAt(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) override;
     void TogglePinAt(LogicalPixelCoordinates const & screenCoordinates) override;
+    void RemoveAllPins() override;
     std::optional<ToolApplicationLocus> InjectPressureAt(LogicalPixelCoordinates const & screenCoordinates, float pressureQuantityMultiplier) override;
     bool FloodAt(LogicalPixelCoordinates const & screenCoordinates, float waterQuantityMultiplier) override;
     void ToggleAntiMatterBombAt(LogicalPixelCoordinates const & screenCoordinates) override;

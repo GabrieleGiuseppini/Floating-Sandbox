@@ -181,6 +181,8 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 
+    void RemoveAllPins();
+
     std::optional<ToolApplicationLocus> InjectBubblesAt(
         vec2f const & targetPos,
         float currentSimulationTime,

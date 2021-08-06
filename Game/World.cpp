@@ -469,6 +469,14 @@ void World::TogglePinAt(
     }
 }
 
+void World::RemoveAllPins()
+{
+    for (auto & ship : mAllShips)
+    {
+        ship->RemoveAllPins();
+    }
+}
+
 std::optional<ToolApplicationLocus> World::InjectPressureAt(
     vec2f const & targetPos,
     float pressureQuantityMultiplier,

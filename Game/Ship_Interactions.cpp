@@ -775,6 +775,11 @@ bool Ship::TogglePinAt(
         gameParameters);
 }
 
+void Ship::RemoveAllPins()
+{
+    mPinnedPoints.RemoveAll();
+}
+
 std::optional<ToolApplicationLocus> Ship::InjectBubblesAt(
     vec2f const & targetPos,
     float currentSimulationTime,
