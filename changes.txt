@@ -26,6 +26,8 @@
 		- Expands and shrinks when internal pressure is regulated via the new "Inject Pressure" tool 
 		- The balloon is pre-pressurized at 1.35 atmospheres
 - Added new "internal pressure" property for ship files, specifying the internal pressure desired in the non-hull cavities of a ship
+- Added two new materials ("Mylar" and "Mylar Hull") for flexible inflatable balloons
+	- And in preparation for the upcoming ShipBuilder, added new colors for some existing materials, reaching a total of 188 structural materials
 - Added new horn sound - thanks to Officer TimCan!
 - ...and a few more small improvements here and there!
 

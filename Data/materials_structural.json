@@ -1246,7 +1246,7 @@
         "stiffness": 1.1,
         "strength": 0.06,
         "template": {
-            "column": 6,
+            "column": 7,
             "row": "80"
         },
 	"texture_name":"lego_1",
@@ -1316,7 +1316,6 @@
     {
         "color_key": "#CECECE",
         "combustion_type": "Explosion",
-	"description": "Hydrogen with structural properties that make it suitable for making structures.",
 	"explosive_combustion_radius": 1.0,
 	"explosive_combustion_strength": 100.0,
         "ignition_temperature": 773.15,
@@ -1326,41 +1325,14 @@
             "nominal_mass": 0.0813
         },
         "melting_temperature": 1000000.0,
-        "name": "Hydrogen Structural",
+        "name": "Hydrogen",
 	"rust_receptivity": 0.0,
         "specific_heat": 14310.0,
         "stiffness": 1.0,
         "strength": 1.0,
         "template": {
             "column": 2,
-            "row": "80|Hydrogen Structural"
-        },
-        "thermal_conductivity": 0.182,
-	"thermal_expansion_coefficient": 0.0036,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#DEDEDE",
-        "combustion_type": "Explosion",
-	"explosive_combustion_radius": 1.0,
-	"explosive_combustion_strength": 100.0,
-        "ignition_temperature": 773.15,
-        "is_hull": false,
-        "mass": {
-            "density": 1.0,
-            "nominal_mass": 0.0813
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Hydrogen Gaseous",
-	"rust_receptivity": 0.0,
-        "specific_heat": 14310.0,
-        "stiffness": 0.001,
-        "strength": 3.0,
-        "template": {
-            "column": 3,
-            "row": "80|Hydrogen Gaseous"
+            "row": "80|Hydrogen"
         },
         "thermal_conductivity": 0.182,
 	"thermal_expansion_coefficient": 0.0036,
