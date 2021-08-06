@@ -1396,7 +1396,7 @@ void Ship::ApplyStaticPressureForces(
         * (1.0f - SmoothStep(
             GameParameters::HalfMaxWorldHeight,
             GameParameters::HalfMaxWorldHeight * 2.0f,
-            depth + (1.0f - gameParameters.HydrostaticPressureCounterbalanceAdjustment) * GameParameters::HalfMaxWorldHeight * 2.0f));
+            depth + (1.0f - gameParameters.HydrostaticPressureCounterbalanceAdjustment) * GameParameters::HalfMaxWorldHeight * 2.0f) * Step(0.0f, depth));
 
     //
     // 1. Calculate geometry of forces and populate interim buffer

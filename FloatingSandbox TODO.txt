@@ -1018,7 +1018,7 @@ Render:
 				+ Regenerate materials palette
 				+ changelist, also for material
 					+ Mention also other colors for materials, with total # from 170
-			- Double-check hydrostatic pressure adjustment - has effect on Goodyear
+			+ Turn off hydrostatic pressure counterbalance adjustment when above water
 			- Add AirDensityAdjustment setting-ability
 			X Create new "Hot Air Balloon" ship
 			- Physics probe: internal pressure
