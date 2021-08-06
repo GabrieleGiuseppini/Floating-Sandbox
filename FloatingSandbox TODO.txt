@@ -850,6 +850,12 @@ Render:
 			+ Final params:
 				+ change density so 0.803 is new 1.0
 				+ 2, 0.6 (good for Triton)
+		+ Do some normal wrecks and decide on default static pressure adjust value
+			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
+			+ 0.242	
+			+ See why Titanic is bunch of particles at 10Km: rotting?
+				+ Full 10K fall w/out rotting: not pulverized, but quite shattered
+				+ Full 10K fall with rotting: half pulverized
 		+ Way to remove all pins (*)
 
 
@@ -955,14 +961,7 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		= Do some normal wrecks and decide on default static pressure adjust value
-			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
-			+ 0.242	
-			= See why Titanic is bunch of particles at 10Km: rotting?
-				+ Full 10K fall w/out rotting: not pulverized, but quite shattered
-				- Full 10K fall with rotting:
-
-		- Hydrostatic pressure follow-ups:
+		= Hydrostatic pressure follow-ups:
 			- Repair tool: 
 				- Ship has float mPostRepairGracePeriodMultiplier, from 0.0 to 1.0 - default is 1.0
 				- At end of update, converges towards 1.0 - with tolerance check to become 1.0
@@ -992,7 +991,7 @@ Render:
 				+ Higher max flow
 					+ Or higher UltraViolent mode
 			+ Menu with text and icon
-			= Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
+			+ Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
 				! Goodyear's current shell is currently normal cardboard (c1a46a)
 				+ New material: Mylar, of "cloth" sound type
 					+ Copy from cloth: stiffness and strength
@@ -1014,7 +1013,7 @@ Render:
 								+ MaterialStrength (!GetMaterialStrength)
 								+ MaterialMeltingTemperature (!)
 				+ Change Goodyear's hull to Mylar
-				- Do also other blimp
+				+ Do also other blimp
 				+ Regenerate materials palette
 				+ changelist, also for material
 					+ Mention also other colors for materials, with total # from 170
