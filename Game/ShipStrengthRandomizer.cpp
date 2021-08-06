@@ -23,7 +23,7 @@ static vec2i const OctantDirections[8] = {
 ShipStrengthRandomizer::ShipStrengthRandomizer()
     // Settings defaults
     : mDensityAdjustment(1.0f)
-    , mRandomizationExtent(0.6f)
+    , mRandomizationExtent(0.594f)
 {
 }
 
@@ -208,11 +208,12 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     // Generate cracks
     //
 
-    // Choose number of cracks
+    // Choose number of cracks: @ density=1 => we want # of cracks = half of largest dimension
     int const numberOfCracks = static_cast<int>(
         static_cast<float>(std::max(pointIndexMatrixRegionSize.x, pointIndexMatrixRegionSize.y))
         / 2.0f
-        * mDensityAdjustment);
+        * mDensityAdjustment
+        * 0.803); // Magic number
 
     for (int iCrack = 0; iCrack < numberOfCracks; ++iCrack)
     {

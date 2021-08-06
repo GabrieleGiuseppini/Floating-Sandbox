@@ -778,6 +778,78 @@ Render:
 			+ At load time, that one material becomes multiple materials (non-invertible transformation)
 			+ Coalesce already-existing materials
 			+ Update palette-generation script
+		+ Strength randomization
+			+ Visualize strength first to ensure we don't already have fault lines
+				+ New visualization mode
+					+ SettingsDialog
+			+ Inject: at ShipBuilder, after frontiers are created (i.e. almost at end); requires:
+				+ Frontier creation: needs to come after points but before Springs are created
+					+ Reasons in terms of SpringInfo's
+						+ See if can also reason in terms of PointInfo's
+				+ InjectCracks
+					+ Do basic
+					+ Try another crack algorithm
+						+ Batik
+							+ Finish region-relativity
+							+ Find better way of doing index math/relativity
+								+ vec2i @ vectors.h, replacing Matrix2Index and RectRegion
+								+ Batik takes vec2i as Origin and Span arguments
+							+ Convert also PointInfoMatrix to Matrix2
+								+ Remove unneeded structureImageSize args
+							+ Optimization (for e.g. BaseIII): initial random point is chosen on triangles
+							+ Update distance map after each crack
+							+ Density of cracks
+								+ Largest dimension (among W & H) / 4..8 
+								+ Use settings
+							+ Set points' strengths at end, by making distance map = struct{distance, bool}
+								+ Set strength only on points that have connected triangles
+								+ Use settings
+							+ Take & log running time
+								+ Ark: 62/63ms, max density
+							+ Consider optimizing for exclusive use of distance map, not point index matrix
+								+ "PixelMatrix" -> "DistanceMatrix"
+								+ And integral distances
+								+ Distance map init:
+									+ Init with 0 distance everywhere (will be the outside)
+									+ Set to +inf all vertices of triangles
+									+ Set to 0 for frontiers
+								+ During algo: avoid points with distance 0							
+								+ New time:72/73ms
+								+ Finalization:
+									+ Verify assembly for using lambda at UpdateDistances
+								+ See if time increase is due to matrix indexing
+								+ See what time increase is due to
+									+ New matrix: 68/69
+									+ float distances: 63/64
+						+ Finalization:
+							+ Skip randomization if any of the settings are zero
+							X Consider using original distance (the one set at distance map initialization time) for scaling strength
+								- Strength lowering is max at small distances, min at higher distances
+					+ Parameters from outside:
+						+ First off: refactor auto-texturization
+							+ "DefaultSettings" -> "CommonSettings"
+							+ Make ShipBuilder an instance of GameController, and make AutoTexturizer a member of ShipBuilder instead of GC
+								+ ShipBuilder exposes setters for AutoTexturizationCommonSettings
+						+ Then, make "ShipStrengthRandomizer" class
+							+ Also member of ShipBuilder
+							+ Dynamics of settings is same as AutoTexturization
+						+ Density
+						+ Magnitude (room for change)
+						+ Add to GamePreferences
+						+ Verify it is saved and loaded
+			+ Default parameter values based on slider steps
+			+ Test Titanic without breaking fault line: see if breaks by itself
+				+ Make new ship given that you are at it
+			X Checkout impact of sinking ship on sea floor; if gets pulverized, decrease weakening
+			+ Tests:
+				+ Paper
+				+ Cardboard
+				+ Blimps
+				+ Base
+				+ Ball of water and air
+			+ Final params:
+				+ change density so 0.803 is new 1.0
+				+ 2, 0.6 (good for Triton)
 
 
 		= Ubuntu:
@@ -882,79 +954,10 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		= Strength randomization
-			+ Visualize strength first to ensure we don't already have fault lines
-				+ New visualization mode
-					+ SettingsDialog
-			= Inject: at ShipBuilder, after frontiers are created (i.e. almost at end); requires:
-				+ Frontier creation: needs to come after points but before Springs are created
-					+ Reasons in terms of SpringInfo's
-						+ See if can also reason in terms of PointInfo's
-				= InjectCracks
-					+ Do basic
-					+ Try another crack algorithm
-						+ Batik
-							+ Finish region-relativity
-							+ Find better way of doing index math/relativity
-								+ vec2i @ vectors.h, replacing Matrix2Index and RectRegion
-								+ Batik takes vec2i as Origin and Span arguments
-							+ Convert also PointInfoMatrix to Matrix2
-								+ Remove unneeded structureImageSize args
-							+ Optimization (for e.g. BaseIII): initial random point is chosen on triangles
-							+ Update distance map after each crack
-							+ Density of cracks
-								+ Largest dimension (among W & H) / 4..8 
-								+ Use settings
-							+ Set points' strengths at end, by making distance map = struct{distance, bool}
-								+ Set strength only on points that have connected triangles
-								+ Use settings
-							+ Take & log running time
-								+ Ark: 62/63ms, max density
-							+ Consider optimizing for exclusive use of distance map, not point index matrix
-								+ "PixelMatrix" -> "DistanceMatrix"
-								+ And integral distances
-								+ Distance map init:
-									+ Init with 0 distance everywhere (will be the outside)
-									+ Set to +inf all vertices of triangles
-									+ Set to 0 for frontiers
-								+ During algo: avoid points with distance 0							
-								+ New time:72/73ms
-								+ Finalization:
-									+ Verify assembly for using lambda at UpdateDistances
-								+ See if time increase is due to matrix indexing
-								+ See what time increase is due to
-									+ New matrix: 68/69
-									+ float distances: 63/64
-						+ Finalization:
-							+ Skip randomization if any of the settings are zero
-							X Consider using original distance (the one set at distance map initialization time) for scaling strength
-								- Strength lowering is max at small distances, min at higher distances
-					+ Parameters from outside:
-						+ First off: refactor auto-texturization
-							+ "DefaultSettings" -> "CommonSettings"
-							+ Make ShipBuilder an instance of GameController, and make AutoTexturizer a member of ShipBuilder instead of GC
-								+ ShipBuilder exposes setters for AutoTexturizationCommonSettings
-						+ Then, make "ShipStrengthRandomizer" class
-							+ Also member of ShipBuilder
-							+ Dynamics of settings is same as AutoTexturization
-						+ Density
-						+ Magnitude (room for change)
-						+ Add to GamePreferences
-						+ Verify it is saved and loaded
-					= Test Titanic without breaking fault line: see if breaks by itself
-						+ Make new ship given that you are at it
-					- Checkout impact of sinking ship on sea floor; if gets pulverized, decrease weakening
-					= Tests:
-						- Paper
-						- Cardboard
-						- Blimps
-						- Base
-						- Ball of water and air
-					- Final params:
-						+ 2, 0.6 (good for Triton)
-			- Finalization:
-				- Default parameter values based on slider steps
-
+		= Do some normal wrecks and decide on default static pressure adjust value
+			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
+			+ 0.242	
+			- See why Titanic is bunch of particles at 10Km: rotting?
 
 		- Hydrostatic pressure follow-ups:
 			- Repair tool: 
@@ -966,7 +969,7 @@ Render:
 					- At end sets mPostRepairGracePeriodMultiplier to 0.0
 					- Also at end, clears out whole dynamic forces buffer
 						- Remove ad-hoc setting of dynamic forces to zero
-			= Pressure tool:
+			+ Pressure tool:
 				+ Like Flood tool was before, but only acting on InternalPressure
 				+ Could repurpose bubble tool - does bubbles when no ship is found
 				+ Shift modifier
@@ -1017,10 +1020,12 @@ Render:
 				+ Make "Air Gaseous Hot" material
 				= Add HotAir material
 				- Make initial test first
+			- Physics probe: internal pressure
 			+ Find right setting value and range for InternalPressure tool
 				+ Option 1: "Quantity" is really # of atmospheres
 					+ If it's atmospheres, say "Atmospheres" in tooltip
 			- See if need adjustment for air pressure
+				- Is it redundant - we have air density now? Do same as we do with water
 				- Goal: high air pressure causes things to explode high up
 					! No need to extend counterbalance upwards
 				- If so: SettingsDialog		
@@ -1036,11 +1041,6 @@ Render:
 					- See if can assign avg immediately
 					- Test perf: avoid if's with waterPermeability
 					- Test perf: merge EqualizeInternalPressure in UpdateWaterVelocities: EqualizeInternalPressureAndUpdateWaterVelocities
-
-		= Do some normal wrecks and decide on default static pressure adjust value
-			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
-			+ 0.242	
-			- See why Titanic is bunch of particles at 10Km: rotting?
 
 		- Settings for Electric Spark tool
 			- SettingsDialog
@@ -1123,9 +1123,8 @@ Render:
 					- OceanSurface::VelocityVector: direction=normal, magnitude=SWE velocity. With two options:
 						- A) SWE + Waves (i.e. full samples)
 						- B) Just SWE
-				- Option B: by point visit; all points in tiny band from depth 0, receive force...same as above....
-		
-		- Splash sounds at displacement: TOSPEC
+				- Option B: by point visit; all points in tiny band from depth 0, receive force...same as above....		
+			- Splash sounds at displacement: TOSPEC
 		
 		- Localization:
 			- IT

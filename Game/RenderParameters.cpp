@@ -15,7 +15,7 @@ RenderParameters::RenderParameters(
 	// World
 	, FlatSkyColor(0x87, 0xce, 0xfa) // (cornflower blue)
 	, OceanTransparency(0.8125f)
-	, OceanDarkeningRate(0.356993f)
+	, OceanDarkeningRate(0.12795731425285339f)
 	, OceanRenderMode(OceanRenderModeType::Texture)
 	, DepthOceanColorStart(0x4a, 0x84, 0x9f)
 	, DepthOceanColorEnd(0x00, 0x00, 0x00)

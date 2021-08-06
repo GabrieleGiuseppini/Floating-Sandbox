@@ -1213,7 +1213,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     },
                     std::make_unique<ExponentialSliderCore>(
                         mGameControllerSettingsOptions->GetMinSeaDepth(),
-                        300.0f,
+                        1000.0f, // Matches default depth so that the setting is round
                         mGameControllerSettingsOptions->GetMaxSeaDepth()));
 
                 oceanSizer->Add(
