@@ -1019,13 +1019,12 @@ Render:
 				+ changelist, also for material
 					+ Mention also other colors for materials, with total # from 170
 			+ Turn off hydrostatic pressure counterbalance adjustment when above water
-			= Add AirDensityAdjustment setting-ability
+			+ Add AirDensityAdjustment setting-ability
 				+ Nail down max
 				+ Fix zero
 				+ See if can increase max WaterDensityAdjustment (was: 4.0) - 10.0 is fine, 100.0 cool, but generates weird upward displacement
 					+ Fix upward displacement
 				+ changelist
-				- Need parameter smoothers?
 			+ Finalize StaticPressureAdjustment
 				! No adjustment for air pressure, it is redundant - we have air density now, and it's the same with water
 				+ Goal: high air pressure causes things to explode high up
@@ -1037,13 +1036,10 @@ Render:
 			+ Find right setting value and range for InternalPressure tool
 				+ Option 1: "Quantity" is really # of atmospheres
 					+ If it's atmospheres, say "Atmospheres" in tooltip
-			= Ship definition: add optional value for default internal pressure
+			+ Ship definition: add optional value for default internal pressure
 				= When not specified, it's PressureAtZero (calc'd via Formulae)
 					- PressureAtZero is subject to AirPressureAdjustment
 				+ Move Offset out of metadata
-				- See if should also add to Red October and Triton
-			- See if "subs" can be made of no-hull internally
-				- Test one one first to see if it's a win
 			- Optimizations:
 				- EqualizeInternalPressure:
 					- See if can assign avg immediately
