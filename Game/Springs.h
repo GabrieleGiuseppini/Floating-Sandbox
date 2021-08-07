@@ -553,11 +553,6 @@ public:
         mWaterPermeabilityBuffer[springElementIndex] = value;
     }
 
-    float const * GetWaterPermeabilityBuffer() const
-    {
-        return mWaterPermeabilityBuffer.data();
-    }
-
     //
     // Heat
     //

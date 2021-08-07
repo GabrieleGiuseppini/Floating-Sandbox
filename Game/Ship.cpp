@@ -2148,7 +2148,6 @@ void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
     float * restrict internalPressureBufferData = mPoints.GetInternalPressureBufferAsFloat();
     bool const * restrict isHullBufferData = mPoints.GetIsHullBuffer();
     auto const * restrict connectedSpringsBufferData = mPoints.GetConnectedSpringsBuffer();
-    float const * restrict waterPermeabilityBufferData = mSprings.GetWaterPermeabilityBuffer();
 
     for (auto pointIndex : mPoints.RawShipPoints()) // No need to visit ephemeral points as they have no springs
     {
@@ -2175,7 +2174,7 @@ void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
                 // We only consider outgoing pressure, not towards hull points
                 float const otherEndpointInternalPressure = internalPressureBufferData[otherEndpointIndex];
                 if (internalPressure > otherEndpointInternalPressure
-                    && waterPermeabilityBufferData[cs.SpringIndex] != 0.0f)
+                    && !isHullBufferData[otherEndpointIndex])
                 {
                     averageInternalPressure += otherEndpointInternalPressure;
                     targetEndpointsCount += 1.0f;
