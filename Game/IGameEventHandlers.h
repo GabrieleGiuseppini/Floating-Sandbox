@@ -401,7 +401,8 @@ struct IGenericGameEventHandler
     virtual void OnPhysicsProbeReading(
         vec2f const & /*velocity*/,
         float /*temperature*/,
-        float /*depth*/)
+        float /*depth*/,
+        float /*pressure*/)
     {
         // Default-implemented
     }

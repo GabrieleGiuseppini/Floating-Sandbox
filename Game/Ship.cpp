@@ -2150,7 +2150,7 @@ void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
 
     for (auto pointIndex : mPoints.RawShipPoints()) // No need to visit ephemeral points as they have no springs
     {
-        if (isHullBufferData[pointIndex])
+        if (!isHullBufferData[pointIndex])
         {
             //
             // Non-hull particle: flow its surplus pressure to its neighbors

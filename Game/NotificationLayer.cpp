@@ -584,7 +584,8 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 			notificationRenderContext.UploadPhysicsProbeReading(
 				mPhysicsProbeReadingStrings->Speed,
 				mPhysicsProbeReadingStrings->Temperature,
-				mPhysicsProbeReadingStrings->Depth);
+				mPhysicsProbeReadingStrings->Depth,
+				mPhysicsProbeReadingStrings->Pressure);
 		}
 		else
 		{
@@ -644,11 +645,13 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 void NotificationLayer::OnPhysicsProbeReading(
 	vec2f const & velocity,
 	float temperature,
-	float depth)
+	float depth,
+	float pressure)
 {
 	mPhysicsProbeReading.Speed = velocity.length();
 	mPhysicsProbeReading.Temperature = temperature;
 	mPhysicsProbeReading.Depth = depth;
+	mPhysicsProbeReading.Pressure = pressure;
 
 	RegeneratePhysicsProbeReadingStrings();
 }
@@ -687,6 +690,7 @@ void NotificationLayer::RegeneratePhysicsProbeReadingStrings()
 		float v{ 0.0f };
 		float t{ 0.0f };
 		float d{ 0.0f };
+		float p{ 0.0f };
 		switch (mDisplayUnitsSystem)
 		{
 			case UnitsSystem::SI_Celsius:
@@ -694,6 +698,7 @@ void NotificationLayer::RegeneratePhysicsProbeReadingStrings()
 				v = mPhysicsProbeReading.Speed;
 				t = mPhysicsProbeReading.Temperature - 273.15f;
 				d = mPhysicsProbeReading.Depth;
+				p = mPhysicsProbeReading.Pressure / GameParameters::AirPressureAtSeaLevel;
 				break;
 			}
 
@@ -702,6 +707,7 @@ void NotificationLayer::RegeneratePhysicsProbeReadingStrings()
 				v = mPhysicsProbeReading.Speed;
 				t = mPhysicsProbeReading.Temperature;
 				d = mPhysicsProbeReading.Depth;
+				p = mPhysicsProbeReading.Pressure / GameParameters::AirPressureAtSeaLevel;
 				break;
 			}
 
@@ -710,6 +716,7 @@ void NotificationLayer::RegeneratePhysicsProbeReadingStrings()
 				v = mPhysicsProbeReading.Speed * 3.28084f;
 				t = (mPhysicsProbeReading.Temperature - 273.15f) * 9.0f / 5.0f + 32.0f;
 				d = mPhysicsProbeReading.Depth * 3.28084f;
+				p = mPhysicsProbeReading.Pressure * 0.0001450377f;
 				break;
 			}
 		}
@@ -720,8 +727,7 @@ void NotificationLayer::RegeneratePhysicsProbeReadingStrings()
 			ss.fill('0');
 			ss << std::fixed << std::setprecision(1) << v;
 		}
-
-		std::string const speedStr = ss.str();
+		std::string speedStr = ss.str();
 
 		ss.str("");
 
@@ -729,18 +735,30 @@ void NotificationLayer::RegeneratePhysicsProbeReadingStrings()
 			ss.fill('0');
 			ss << std::fixed << std::setprecision(1) << t;
 		}
-
-		std::string const temperatureStr = ss.str();
+		std::string temperatureStr = ss.str();
 
 		ss.str("");
 
 		{
 			ss << std::fixed << std::setprecision(0) << d;
 		}
+		std::string depthStr = ss.str();
 
-		std::string const depthStr = ss.str();
+		ss.str("");
 
-		mPhysicsProbeReadingStrings.emplace(speedStr, temperatureStr, depthStr);
+		{
+			ss
+				<< std::fixed
+				<< (mDisplayUnitsSystem == UnitsSystem::USCS ? std::setprecision(0) : std::setprecision(1))
+				<< p;
+		}
+		std::string pressureStr = ss.str();
+
+		mPhysicsProbeReadingStrings.emplace(
+			std::move(speedStr),
+			std::move(temperatureStr),
+			std::move(depthStr),
+			std::move(pressureStr));
 
 		// Reading has to be uploaded
 		mArePhysicsProbeReadingStringsDirty = true;

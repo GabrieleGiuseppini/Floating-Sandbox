@@ -857,6 +857,90 @@ Render:
 				+ Full 10K fall w/out rotting: not pulverized, but quite shattered
 				+ Full 10K fall with rotting: half pulverized
 		+ Way to remove all pins (*)
+		+ Hydrostatic pressure follow-ups:
+			+ Repair tool:
+				+ Ship has float mPostRepairGracePeriodMultiplier, from 0.0 to 1.0 - default is 1.0
+				+ At end of update, converges towards 1.0 - with tolerance check to become 1.0
+				+ Used at:
+					+ ApplyStaticPressureForces for final multiplier of forces
+				+ Test repair first
+				+ Repair():
+					+ At end sets mPostRepairGracePeriodMultiplier to 0.0
+					+ Also at end, clears out whole dynamic forces buffer
+						+ Remove ad-hoc setting of dynamic forces to zero
+			+ Pressure tool:
+				+ Like Flood tool was before, but only acting on InternalPressure
+				+ Could repurpose bubble tool - does bubbles when no ship is found
+				+ Shift modifier
+				+ SettingsDialog - breakout tab, "Destructive Tools" and "Other Tools"
+				+ Help
+				+ Visual feedback
+					+ Shader
+					+ NotificationRenderContex: see disassembly for calls to RenderPrepare/Draw, and eventually inline
+					+ Direction
+				+ Sound feedback
+					+ Tool: needs to remember which sound it was doing, in order to stop it
+						+ See if fish tool structure serves the purpose
+					+ Sound
+					+ See if makes sense to have pssst sound always
+				+ Try with larger visual feedback
+				+ Not on hull
+				+ Higher max flow
+					+ Or higher UltraViolent mode
+			+ Menu with text and icon
+			+ Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
+				! Goodyear's current shell is currently normal cardboard (c1a46a)
+				+ New material: Mylar, of "cloth" sound type
+					+ Copy from cloth: stiffness and strength
+					+ Hull
+					+ Use real combustion properties
+				+ Fix Mylar's weird bouncing on water
+				+ Make inflatable balloon
+					+ Inject pressure issue due to expanded graph and not finding particle: find triangle if can't find
+						+ If ok: nuke InjectPressureRadius setting, and use GameParameters::ToolSearchRadius directly at Ship::InjectPressureAt()
+					+ Internal pressure at start
+					+ See if want to make it break at higher pressure by increasing stiffness of hull
+						X See then if can lower strength					
+					+ Description
+					+ Issue with melting:
+						X See if due to *decay*
+						+ Implement adaptive extra melting-induced tolerance
+							+ Store in precacld buffer, once and for all (immutable), with:
+								+ MaterialStiffness (!GetMaterialStiffness)
+								+ MaterialStrength (!GetMaterialStrength)
+								+ MaterialMeltingTemperature (!)
+				+ Change Goodyear's hull to Mylar
+				+ Do also other blimp
+				+ Regenerate materials palette
+				+ changelist, also for material
+					+ Mention also other colors for materials, with total # from 170
+			+ Turn off hydrostatic pressure counterbalance adjustment when above water
+			+ Add AirDensityAdjustment setting-ability
+				+ Nail down max
+				+ Fix zero
+				+ See if can increase max WaterDensityAdjustment (was: 4.0) - 10.0 is fine, 100.0 cool, but generates weird upward displacement
+					+ Fix upward displacement
+				+ changelist
+			+ Finalize StaticPressureAdjustment
+				! No adjustment for air pressure, it is redundant - we have air density now, and it's the same with water
+				+ Goal: high air pressure causes things to explode high up
+					! No need to extend counterbalance upwards
+				+ Rename "StaticPressureAdjustment" as "StaticPressureForceAdjustment"
+			X Create new "Hot Air Balloon" ship
+			+ Physics probe: internal pressure
+				+ USCS: psi
+			+ Find right setting value and range for InternalPressure tool
+				+ Option 1: "Quantity" is really # of atmospheres
+					+ If it's atmospheres, say "Atmospheres" in tooltip
+			+ Ship definition: add optional value for default internal pressure
+				= When not specified, it's PressureAtZero (calc'd via Formulae)
+					- PressureAtZero is subject to AirPressureAdjustment
+				+ Move Offset out of metadata
+			+ Optimizations:				
+				+ EqualizeInternalPressure:
+					+ Take perf now: 3.03% (default ship)
+					+ See if can assign avg immediately: YES, verified
+					+ Final perf: 1.43% (default ship)
 
 
 		= Ubuntu:
@@ -961,93 +1045,9 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		= Hydrostatic pressure follow-ups:
-			+ Repair tool:
-				+ Ship has float mPostRepairGracePeriodMultiplier, from 0.0 to 1.0 - default is 1.0
-				+ At end of update, converges towards 1.0 - with tolerance check to become 1.0
-				+ Used at:
-					+ ApplyStaticPressureForces for final multiplier of forces
-				+ Test repair first
-				+ Repair():
-					+ At end sets mPostRepairGracePeriodMultiplier to 0.0
-					+ Also at end, clears out whole dynamic forces buffer
-						+ Remove ad-hoc setting of dynamic forces to zero
-			+ Pressure tool:
-				+ Like Flood tool was before, but only acting on InternalPressure
-				+ Could repurpose bubble tool - does bubbles when no ship is found
-				+ Shift modifier
-				+ SettingsDialog - breakout tab, "Destructive Tools" and "Other Tools"
-				+ Help
-				+ Visual feedback
-					+ Shader
-					+ NotificationRenderContex: see disassembly for calls to RenderPrepare/Draw, and eventually inline
-					+ Direction
-				+ Sound feedback
-					+ Tool: needs to remember which sound it was doing, in order to stop it
-						+ See if fish tool structure serves the purpose
-					+ Sound
-					+ See if makes sense to have pssst sound always
-				+ Try with larger visual feedback
-				+ Not on hull
-				+ Higher max flow
-					+ Or higher UltraViolent mode
-			+ Menu with text and icon
-			+ Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
-				! Goodyear's current shell is currently normal cardboard (c1a46a)
-				+ New material: Mylar, of "cloth" sound type
-					+ Copy from cloth: stiffness and strength
-					+ Hull
-					+ Use real combustion properties
-				+ Fix Mylar's weird bouncing on water
-				+ Make inflatable balloon
-					+ Inject pressure issue due to expanded graph and not finding particle: find triangle if can't find
-						+ If ok: nuke InjectPressureRadius setting, and use GameParameters::ToolSearchRadius directly at Ship::InjectPressureAt()
-					+ Internal pressure at start
-					+ See if want to make it break at higher pressure by increasing stiffness of hull
-						X See then if can lower strength					
-					+ Description
-					+ Issue with melting:
-						X See if due to *decay*
-						+ Implement adaptive extra melting-induced tolerance
-							+ Store in precacld buffer, once and for all (immutable), with:
-								+ MaterialStiffness (!GetMaterialStiffness)
-								+ MaterialStrength (!GetMaterialStrength)
-								+ MaterialMeltingTemperature (!)
-				+ Change Goodyear's hull to Mylar
-				+ Do also other blimp
-				+ Regenerate materials palette
-				+ changelist, also for material
-					+ Mention also other colors for materials, with total # from 170
-			+ Turn off hydrostatic pressure counterbalance adjustment when above water
-			+ Add AirDensityAdjustment setting-ability
-				+ Nail down max
-				+ Fix zero
-				+ See if can increase max WaterDensityAdjustment (was: 4.0) - 10.0 is fine, 100.0 cool, but generates weird upward displacement
-					+ Fix upward displacement
-				+ changelist
-			+ Finalize StaticPressureAdjustment
-				! No adjustment for air pressure, it is redundant - we have air density now, and it's the same with water
-				+ Goal: high air pressure causes things to explode high up
-					! No need to extend counterbalance upwards
-				+ Rename "StaticPressureAdjustment" as "StaticPressureForceAdjustment"
-			X Create new "Hot Air Balloon" ship
-			- Physics probe: internal pressure
-				- USCS: lb/ft2 or lb/in2 (psi)
-			+ Find right setting value and range for InternalPressure tool
-				+ Option 1: "Quantity" is really # of atmospheres
-					+ If it's atmospheres, say "Atmospheres" in tooltip
-			+ Ship definition: add optional value for default internal pressure
-				= When not specified, it's PressureAtZero (calc'd via Formulae)
-					- PressureAtZero is subject to AirPressureAdjustment
-				+ Move Offset out of metadata
-			+ Optimizations:				
-				+ EqualizeInternalPressure:
-					+ Take perf now: 3.03% (default ship)
-					+ See if can assign avg immediately: YES, verified
-					+ Final perf: 1.43% (default ship)
-
 		- Settings for Electric Spark tool
 			- SettingsDialog
+			- And SHIFT: TODO
 
 		- More parallelization at Ship::Update
 
@@ -12620,6 +12620,7 @@ IF WX:
 					+ ClearPhysicsProbeReading
 					+ 7-segment font (including - and .)
 						+ DSEG7 Modern-Regular, bold, 16 [18x18, adjust .], normal AL, (242, 255, 0)
+						+ [Aug 2021] DSEG7 Modern-Regular, bold, 13 [15x15, adjust . as width modf=2], normal AL, (242, 255, 0)
 						+ Color?
 					+ Adjust panel: 
 						+ Larger backdrop for reading (eventually larger panel altogether)

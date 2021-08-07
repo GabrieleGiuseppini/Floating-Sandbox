@@ -14,6 +14,9 @@
 #include <optional>
 #include <vector>
 
+/*
+ * Dispatches events to multiple sinks, aggregating some events in the process.
+ */
 class GameEventDispatcher final
     : public ILifecycleGameEventHandler
     , public IStructuralGameEventHandler
@@ -587,14 +590,16 @@ public:
     void OnPhysicsProbeReading(
         vec2f const & velocity,
         float temperature,
-        float depth) override
+        float depth,
+        float pressure) override
     {
         for (auto sink : mGenericSinks)
         {
             sink->OnPhysicsProbeReading(
                 velocity,
                 temperature,
-                depth);
+                depth,
+                pressure);
         }
     }
 

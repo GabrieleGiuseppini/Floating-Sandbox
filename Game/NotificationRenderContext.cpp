@@ -948,9 +948,11 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
 
     // Hardcoded pixel offsets of readings in physics probe panel,
     // giving position of text's bottom-right corner
-    vec2f constexpr PhysicsProbePanelSpeedBottomRight(137.0f, 11.0f);
-    vec2f constexpr PhysicsProbePanelTemperatureBottomRight(295.0f, 11.0f);
-    vec2f constexpr PhysicsProbePanelDepthBottomRight(453.0f, 11.0f);
+    float constexpr PhysicsProbePanelTextBottomY = 10.0f;
+    vec2f constexpr PhysicsProbePanelSpeedBottomRight(101.0f, PhysicsProbePanelTextBottomY);
+    vec2f constexpr PhysicsProbePanelTemperatureBottomRight(235.0f, PhysicsProbePanelTextBottomY);
+    vec2f constexpr PhysicsProbePanelDepthBottomRight(371.0f, PhysicsProbePanelTextBottomY);
+    vec2f constexpr PhysicsProbePanelPressureBottomRight(506.0f, PhysicsProbePanelTextBottomY);
 
     for (auto const & textLine : context.TextLines)
     {
@@ -1017,6 +1019,19 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
                 linePositionNdc += vec2f(
                     -1.f + (PhysicsProbePanelDepthBottomRight.x - static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
                     -1.f + PhysicsProbePanelDepthBottomRight.y * mScreenToNdcY);
+
+                break;
+            }
+
+            case NotificationAnchorPositionType::PhysicsProbeReadingPressure:
+            {
+                auto const lineExtent = fontMetadata.CalculateTextLineScreenExtent(
+                    textLine.Text.c_str(),
+                    textLine.Text.length());
+
+                linePositionNdc += vec2f(
+                    -1.f + (PhysicsProbePanelPressureBottomRight.x - static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
+                    -1.f + PhysicsProbePanelPressureBottomRight.y * mScreenToNdcY);
 
                 break;
             }
