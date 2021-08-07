@@ -74,7 +74,7 @@ private:
     wxToggleButton * mUltraViolentToggleButton;
 
     // Ocean and Water
-    SliderControl<float> * mWaterDensitySlider;
+    SliderControl<float> * mWaterDensityAdjustmentSlider;
     SliderControl<float> * mWaterFrictionDragSlider;
     SliderControl<float> * mWaterPressureDragSlider;
     SliderControl<float> * mHydrostaticPressureCounterbalanceAdjustmentSlider;
@@ -108,6 +108,7 @@ private:
     SliderControl<std::chrono::minutes::rep> * mStormRateSlider;
 
     // Air and Sky
+    SliderControl<float> * mAirDensityAdjustmentSlider;
     SliderControl<float> * mAirFrictionDragSlider;
     SliderControl<float> * mAirPressureDragSlider;
     SliderControl<float> * mAirTemperatureSlider;

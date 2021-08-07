@@ -132,6 +132,8 @@ struct GameParameters
     // Air
 
     float AirDensityAdjustment;
+    static float constexpr MinAirDensityAdjustment = 0.001f;
+    static float constexpr MaxAirDensityAdjustment = 1000.0f;
 
     static float constexpr AirFrictionDragCoefficient = 0.003f;
 
@@ -148,8 +150,8 @@ struct GameParameters
     // Water
 
     float WaterDensityAdjustment;
-    static float constexpr MinWaterDensityAdjustment = 0.0f;
-    static float constexpr MaxWaterDensityAdjustment = 4.0f;
+    static float constexpr MinWaterDensityAdjustment = 0.001f;
+    static float constexpr MaxWaterDensityAdjustment = 100.0f;
 
     static float constexpr WaterFrictionDragCoefficient = 0.75f;
 

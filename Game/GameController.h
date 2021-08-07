@@ -315,6 +315,11 @@ public:
 
     // Air
 
+    float GetAirDensityAdjustment() const override { return mGameParameters.AirDensityAdjustment; }
+    void SetAirDensityAdjustment(float value) override { mGameParameters.AirDensityAdjustment = value; }
+    float GetMinAirDensityAdjustment() const override { return GameParameters::MinAirDensityAdjustment; }
+    float GetMaxAirDensityAdjustment() const override { return GameParameters::MaxAirDensityAdjustment; }
+
     float GetAirFrictionDragAdjustment() const override { return mGameParameters.AirFrictionDragAdjustment; }
     void SetAirFrictionDragAdjustment(float value) override { mGameParameters.AirFrictionDragAdjustment = value; }
     float GetMinAirFrictionDragAdjustment() const override { return GameParameters::MinAirFrictionDragAdjustment; }

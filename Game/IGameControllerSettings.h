@@ -50,6 +50,9 @@ struct IGameControllerSettings
 
     // Air
 
+    virtual float GetAirDensityAdjustment() const = 0;
+    virtual void SetAirDensityAdjustment(float value) = 0;
+
     virtual float GetAirFrictionDragAdjustment() const = 0;
     virtual void SetAirFrictionDragAdjustment(float value) = 0;
 

@@ -47,6 +47,9 @@ struct IGameControllerSettingsOptions
 
     // Air
 
+    virtual float GetMinAirDensityAdjustment() const = 0;
+    virtual float GetMaxAirDensityAdjustment() const = 0;
+
     virtual float GetMinAirFrictionDragAdjustment() const = 0;
     virtual float GetMaxAirFrictionDragAdjustment() const = 0;
 

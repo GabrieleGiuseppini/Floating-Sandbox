@@ -22,6 +22,7 @@ enum class GameSettings : size_t
     StaticPressureAdjustment,
 
     // Air
+    AirDensityAdjustment,
     AirFrictionDragAdjustment,
     AirPressureDragAdjustment,
 

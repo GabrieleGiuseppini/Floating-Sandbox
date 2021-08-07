@@ -1207,7 +1207,10 @@ void Ship::ApplyWorldSurfaceForces(
                     float constexpr Mass2 = 1000.0f;
                     float constexpr Impact2 = 25.0f;
 
-                    float const massImpact = Impact1 + (mPoints.GetMass(thisPointIndex) - Mass1) * (Impact2 - Impact1) / (Mass2 - Mass1);
+                    float const massImpact =
+                        Impact1 +
+                            (std::min(mPoints.GetMass(thisPointIndex), 1500.0f) - Mass1) // Avoid unrealistic displacement at very high masses
+                            * (Impact2 - Impact1) / (Mass2 - Mass1);
 
                     //
                     // Displacement

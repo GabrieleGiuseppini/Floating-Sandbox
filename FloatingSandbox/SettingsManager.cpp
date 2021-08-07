@@ -49,6 +49,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, StaticPressureAdjustment);
 
     // Air
+    ADD_GC_SETTING(float, AirDensityAdjustment);
     ADD_GC_SETTING(float, AirFrictionDragAdjustment);
     ADD_GC_SETTING(float, AirPressureDragAdjustment);
 

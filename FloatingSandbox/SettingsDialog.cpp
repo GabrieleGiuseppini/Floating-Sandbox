@@ -928,23 +928,24 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
 
             // Water Density
             {
-                mWaterDensitySlider = new SliderControl<float>(
+                mWaterDensityAdjustmentSlider = new SliderControl<float>(
                     waterBoxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
                     _("Density Adjust"),
-                    _("Adjusts the density of sea water, and thus the buoyancy it exerts on physical bodies."),
+                    _("Adjusts the density of sea water, and thus also the buoyancy it exerts on physical bodies."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::WaterDensityAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<LinearSliderCore>(
+                    std::make_unique<ExponentialSliderCore>(
                         mGameControllerSettingsOptions->GetMinWaterDensityAdjustment(),
+                        1.0f,
                         mGameControllerSettingsOptions->GetMaxWaterDensityAdjustment()));
 
                 waterSizer->Add(
-                    mWaterDensitySlider,
+                    mWaterDensityAdjustmentSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1954,6 +1955,32 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
         {
             wxGridBagSizer * airSizer = new wxGridBagSizer(0, 0);
 
+            // Air Density Adjust
+            {
+                mAirDensityAdjustmentSlider = new SliderControl<float>(
+                    airBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Density Adjust"),
+                    _("Adjusts the density of air, and thus also the buoyancy it exerts on physical bodies."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AirDensityAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinAirDensityAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxAirDensityAdjustment()));
+
+                airSizer->Add(
+                    mAirDensityAdjustmentSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             // Air Friction Drag
             {
                 mAirFrictionDragSlider = new SliderControl<float>(
@@ -1963,10 +1990,10 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     _("Friction Drag Adjust"),
                     _("Adjusts the frictional drag force (or 'skin' drag) exerted by air on physical bodies."),
                     [this](float value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::AirFrictionDragAdjustment, value);
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AirFrictionDragAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<ExponentialSliderCore>(
                         mGameControllerSettingsOptions->GetMinAirFrictionDragAdjustment(),
                         1.0f,
@@ -1974,7 +2001,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
                 airSizer->Add(
                     mAirFrictionDragSlider,
-                    wxGBPosition(0, 0),
+                    wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -1989,10 +2016,10 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     _("Pressure Drag Adjust"),
                     _("Adjusts the pressure drag force (or 'form' drag) exerted by air on physical bodies."),
                     [this](float value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::AirPressureDragAdjustment, value);
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AirPressureDragAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<ExponentialSliderCore>(
                         mGameControllerSettingsOptions->GetMinAirPressureDragAdjustment(),
                         1.0f,
@@ -2000,7 +2027,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
                 airSizer->Add(
                     mAirPressureDragSlider,
-                    wxGBPosition(0, 1),
+                    wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -2015,17 +2042,17 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     _("Temperature"),
                     _("The temperature of air (K)."),
                     [this](float value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::AirTemperature, value);
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AirTemperature, value);
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<LinearSliderCore>(
                         mGameControllerSettingsOptions->GetMinAirTemperature(),
                         mGameControllerSettingsOptions->GetMaxAirTemperature()));
 
                 airSizer->Add(
                     mAirTemperatureSlider,
-                    wxGBPosition(0, 2),
+                    wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -2050,7 +2077,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
                 airSizer->Add(
                     mAirBubbleDensitySlider,
-                    wxGBPosition(0, 3),
+                    wxGBPosition(0, 4),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -4928,7 +4955,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     // Water and Ocean
     //
 
-    mWaterDensitySlider->SetValue(settings.GetValue<float>(GameSettings::WaterDensityAdjustment));
+    mWaterDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterDensityAdjustment));
     mWaterFrictionDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterFrictionDragAdjustment));
     mWaterPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::WaterPressureDragAdjustment));
     mHydrostaticPressureCounterbalanceAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::HydrostaticPressureCounterbalanceAdjustment));
@@ -4971,6 +4998,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     // Air and Sky
     //
 
+    mAirDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::AirDensityAdjustment));
     mAirFrictionDragSlider->SetValue(settings.GetValue<float>(GameSettings::AirFrictionDragAdjustment));
     mAirPressureDragSlider->SetValue(settings.GetValue<float>(GameSettings::AirPressureDragAdjustment));
     mAirTemperatureSlider->SetValue(settings.GetValue<float>(GameSettings::AirTemperature));

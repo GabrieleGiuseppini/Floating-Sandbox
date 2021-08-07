@@ -57,8 +57,10 @@ public:
     {
         // While the real barometric formula is exponential, here we simplify it as linear:
         //      - Pressure is zero at y = MaxWorldHeight+10%
-        //      - Pressure is AirPressureAtSeaLvel at y = 0
-        float const seaLevelPressure = GameParameters::AirPressureAtSeaLevel * airDensity / GameParameters::AirMass;
+        //      - Pressure is AirPressureAtSeaLevel at y = 0
+        float const seaLevelPressure =
+            GameParameters::AirPressureAtSeaLevel
+            * (airDensity / GameParameters::AirMass); // Adjust for density, assuming linear relationship
         return seaLevelPressure
             * (GameParameters::HalfMaxWorldHeight * 1.1f - y) / (GameParameters::HalfMaxWorldHeight * 1.1f);
     }

@@ -1400,8 +1400,8 @@ Physics::Points ShipBuilder::CreatePoints(
     electricalElementInstanceIndices.reserve(pointInfos2.size());
 
     float const internalPressure =
-        physicsData.InternalPressure.value_or(1.0f) // Default internal pressure is 1 atm
-        * GameParameters::AirPressureAtSeaLevel; // TODO: use air pressure adjustment if we add it
+        physicsData.InternalPressure.value_or(1.0f) // Default internal pressure is 1atm
+        * GameParameters::AirPressureAtSeaLevel; // The ship's (initial) internal pressure is just relative to a constant 1 atm
 
     ElementIndex electricalElementCounter = 0;
     for (size_t p = 0; p < pointInfos2.size(); ++p)

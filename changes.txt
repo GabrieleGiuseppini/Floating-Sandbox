@@ -11,6 +11,8 @@
 	- Inject Pressure: increases or decreases the internal pressure of structures
 	- Blast: creates explosive force fields of different sizes and strengths
 	- Electric Spark: generates electric arcs on the surface of a ship
+- Made air density adjustable, and increased range of water density adjustment
+	- You can now get wild with both densities and see how they affect physical behaviors, including buoyancy, drag, and static pressure
 - Revisited physics of explosions
 	- ...and added yet another setting to adjust the power of bomb blasts
 - Reorganized Simulation Settings window
@@ -18,9 +20,9 @@
 - Physics probe panel may now be configured to be in the USCS system, and in the International system with Celsius degrees
 - Improved sound effects
 	- Also improved scheduling to reduce cacophony with widespread destruction
+- Changed default ocean depth to 1,000m
 - Added "direction lock" to slice tool - hitting the SHIFT key during a cut locks its direction
 - Improved rain
-- Changed default ocean depth to 1,000m
 - Added a few more ships, among which:
 	- Inflatable Balloon: demonstrates structures expanding with pressure
 		- Expands and shrinks when internal pressure is regulated via the new "Inject Pressure" tool 
