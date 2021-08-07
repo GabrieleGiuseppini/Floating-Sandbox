@@ -45,8 +45,8 @@ struct IGameControllerSettings
     virtual float GetRotAcceler8r() const = 0;
     virtual void SetRotAcceler8r(float value) = 0;
 
-    virtual float GetStaticPressureAdjustment() const = 0;
-    virtual void SetStaticPressureAdjustment(float value) = 0;
+    virtual float GetStaticPressureForceAdjustment() const = 0;
+    virtual void SetStaticPressureForceAdjustment(float value) = 0;
 
     // Air
 

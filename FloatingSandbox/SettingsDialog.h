@@ -63,7 +63,7 @@ private:
     SliderControl<float> * mMechanicalQualitySlider;
     SliderControl<float> * mStrengthSlider;
     SliderControl<float> * mGlobalDampingAdjustmentSlider;
-    SliderControl<float> * mStaticPressureAdjustmentSlider;
+    SliderControl<float> * mStaticPressureForceAdjustmentSlider;
     SliderControl<float> * mThermalConductivityAdjustmentSlider;
     SliderControl<float> * mHeatDissipationAdjustmentSlider;
     SliderControl<float> * mIgnitionTemperatureAdjustmentSlider;

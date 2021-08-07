@@ -308,10 +308,10 @@ public:
     float GetMinRotAcceler8r() const override { return GameParameters::MinRotAcceler8r; }
     float GetMaxRotAcceler8r() const override { return GameParameters::MaxRotAcceler8r; }
 
-    float GetStaticPressureAdjustment() const override { return mGameParameters.StaticPressureAdjustment; }
-    void SetStaticPressureAdjustment(float value) override { mGameParameters.StaticPressureAdjustment = value; }
-    float GetMinStaticPressureAdjustment() const override { return GameParameters::MinStaticPressureAdjustment; }
-    float GetMaxStaticPressureAdjustment() const override { return GameParameters::MaxStaticPressureAdjustment; }
+    float GetStaticPressureForceAdjustment() const override { return mGameParameters.StaticPressureForceAdjustment; }
+    void SetStaticPressureForceAdjustment(float value) override { mGameParameters.StaticPressureForceAdjustment = value; }
+    float GetMinStaticPressureForceAdjustment() const override { return GameParameters::MinStaticPressureForceAdjustment; }
+    float GetMaxStaticPressureForceAdjustment() const override { return GameParameters::MaxStaticPressureForceAdjustment; }
 
     // Air
 

@@ -19,7 +19,7 @@ enum class GameSettings : size_t
     SpringStrengthAdjustment,
     GlobalDampingAdjustment,
     RotAcceler8r,
-    StaticPressureAdjustment,
+    StaticPressureForceAdjustment,
 
     // Air
     AirDensityAdjustment,

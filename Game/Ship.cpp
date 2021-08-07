@@ -332,7 +332,7 @@ void Ship::Update(
     // Apply static pressure forces
     ///////////////////////////////////////////////////////////////////
 
-    if (gameParameters.StaticPressureAdjustment > 0.0f)
+    if (gameParameters.StaticPressureForceAdjustment > 0.0f)
     {
         ApplyStaticPressureForces(
             effectiveAirDensity,
@@ -1629,7 +1629,7 @@ void Ship::ApplyStaticPressureForces(
 
     float const forceMultiplier =
         totalExternalPressure
-        * gameParameters.StaticPressureAdjustment
+        * gameParameters.StaticPressureForceAdjustment
         * mRepairGracePeriodMultiplier; // Static pressure hinders the repair process
 
     size_t const particleCount = mStaticPressureBuffer.GetCurrentPopulatedSize();

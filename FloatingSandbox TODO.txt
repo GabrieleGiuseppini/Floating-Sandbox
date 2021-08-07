@@ -1024,21 +1024,19 @@ Render:
 				+ Fix zero
 				+ See if can increase max WaterDensityAdjustment (was: 4.0) - 10.0 is fine, 100.0 cool, but generates weird upward displacement
 					+ Fix upward displacement
-				- changelist
+				+ changelist
 				- Need parameter smoothers?
+			+ Finalize StaticPressureAdjustment
+				! No adjustment for air pressure, it is redundant - we have air density now, and it's the same with water
+				+ Goal: high air pressure causes things to explode high up
+					! No need to extend counterbalance upwards
+				+ Rename "StaticPressureAdjustment" as "StaticPressureForceAdjustment"
 			X Create new "Hot Air Balloon" ship
 			- Physics probe: internal pressure
 				- USCS: lb/ft2 or lb/in2 (psi)
 			+ Find right setting value and range for InternalPressure tool
 				+ Option 1: "Quantity" is really # of atmospheres
 					+ If it's atmospheres, say "Atmospheres" in tooltip
-			- Finalize StaticPressureAdjustment
-				! No adjustment for air pressure, it is redundant - we have air density now, and it's the same with water
-				+ Goal: high air pressure causes things to explode high up
-					! No need to extend counterbalance upwards
-				- Rename "StaticPressureAdjustment" as "StaticPressureForceAdjustment"
-					- Code
-					- SettingsDialog
 			= Ship definition: add optional value for default internal pressure
 				= When not specified, it's PressureAtZero (calc'd via Formulae)
 					- PressureAtZero is subject to AirPressureAdjustment

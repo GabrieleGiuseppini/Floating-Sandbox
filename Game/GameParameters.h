@@ -125,9 +125,9 @@ struct GameParameters
     static float constexpr MinRotAcceler8r = 0.0f;
     static float constexpr MaxRotAcceler8r = 1000.0f;
 
-    float StaticPressureAdjustment;
-    static float constexpr MinStaticPressureAdjustment = 0.0f;
-    static float constexpr MaxStaticPressureAdjustment = 20.0f;
+    float StaticPressureForceAdjustment;
+    static float constexpr MinStaticPressureForceAdjustment = 0.0f;
+    static float constexpr MaxStaticPressureForceAdjustment = 20.0f;
 
     // Air
 

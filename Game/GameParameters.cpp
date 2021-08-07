@@ -13,7 +13,7 @@ GameParameters::GameParameters()
     , SpringStrengthAdjustment(1.0f)
     , GlobalDampingAdjustment(1.0f)
     , RotAcceler8r(1.0f)
-    , StaticPressureAdjustment(1.0f)
+    , StaticPressureForceAdjustment(1.0f)
     // Air
     , AirDensityAdjustment(1.0f)
     , AirFrictionDragAdjustment(1.0f)

@@ -594,26 +594,26 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                     CellBorderInner);
             }
 
-            // Static pressure adjustment
+            // Static pressure force adjustment
             {
-                mStaticPressureAdjustmentSlider = new SliderControl<float>(
+                mStaticPressureForceAdjustmentSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
                     SliderWidth,
                     SliderHeight,
                     _("Static Pressure Adjust"),
-                    _("Adjusts the static pressure exherted on the exterior of physical bodies. Set to zero to disable static pressure altogether."),
+                    _("Adjusts the static pressure force exherted against the external hull of physical bodies. Set to zero to disable static pressure altogether."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::StaticPressureAdjustment, value);
+                        this->mLiveSettings.SetValue(GameSettings::StaticPressureForceAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions->GetMinStaticPressureAdjustment(),
+                        mGameControllerSettingsOptions->GetMinStaticPressureForceAdjustment(),
                         1.0f,
-                        mGameControllerSettingsOptions->GetMaxStaticPressureAdjustment()));
+                        mGameControllerSettingsOptions->GetMaxStaticPressureForceAdjustment()));
 
                 sizer->Add(
-                    mStaticPressureAdjustmentSlider,
+                    mStaticPressureForceAdjustmentSlider,
                     wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -4941,7 +4941,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mMechanicalQualitySlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
     mStrengthSlider->SetValue(settings.GetValue<float>(GameSettings::SpringStrengthAdjustment));
     mGlobalDampingAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::GlobalDampingAdjustment));
-    mStaticPressureAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StaticPressureAdjustment));
+    mStaticPressureForceAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StaticPressureForceAdjustment));
     mThermalConductivityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ThermalConductivityAdjustment));
     mHeatDissipationAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::HeatDissipationAdjustment));
     mIgnitionTemperatureAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::IgnitionTemperatureAdjustment));

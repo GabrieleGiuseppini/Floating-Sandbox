@@ -42,8 +42,8 @@ struct IGameControllerSettingsOptions
     virtual float GetMinRotAcceler8r() const = 0;
     virtual float GetMaxRotAcceler8r() const = 0;
 
-    virtual float GetMinStaticPressureAdjustment() const = 0;
-    virtual float GetMaxStaticPressureAdjustment() const = 0;
+    virtual float GetMinStaticPressureForceAdjustment() const = 0;
+    virtual float GetMaxStaticPressureForceAdjustment() const = 0;
 
     // Air
 
