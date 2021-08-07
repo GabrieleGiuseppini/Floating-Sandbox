@@ -1040,9 +1040,11 @@ Render:
 				= When not specified, it's PressureAtZero (calc'd via Formulae)
 					- PressureAtZero is subject to AirPressureAdjustment
 				+ Move Offset out of metadata
-			- Optimizations:
+			- Optimizations:				
 				- EqualizeInternalPressure:
-					- See if can assign avg immediately
+					- Take perf now: 3.03% (default ship)
+					- See if can assign avg immediately: YES, verified
+						- See if same can be done @ PropagateHeat
 					- Test perf: avoid if's with waterPermeability
 					- Test perf: merge EqualizeInternalPressure in UpdateWaterVelocities: EqualizeInternalPressureAndUpdateWaterVelocities
 

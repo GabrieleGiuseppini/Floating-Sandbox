@@ -1219,6 +1219,11 @@ public:
         mIsHullBuffer[pointElementIndex] = value;
     }
 
+    bool const * GetIsHullBuffer() const
+    {
+        return mIsHullBuffer.data();
+    }
+
     float GetMaterialWaterIntake(ElementIndex pointElementIndex) const
     {
         return mMaterialWaterIntakeBuffer[pointElementIndex];

@@ -2137,33 +2137,20 @@ void Ship::UpdatePressureAndWaterInflow(
 
 void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
 {
+    // Local cache of indices of other endpoints
+    FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint> otherEndpoints;
+
     //
     // For each (non-ephemeral) point, equalize its internal pressure with its
     // neighbors
     //
 
     float * restrict internalPressureBufferData = mPoints.GetInternalPressureBufferAsFloat();
-
-    struct CachedSpringData
-    {
-        ElementIndex OtherEndpointIndex;
-        float OtherEndpointInternalPressure;
-
-        CachedSpringData() = default;
-
-        CachedSpringData(
-            ElementIndex otherEndpointIndex,
-            float otherEndpointInternalPressure)
-            : OtherEndpointIndex(otherEndpointIndex)
-            , OtherEndpointInternalPressure(otherEndpointInternalPressure)
-        {}
-    };
-
-    FixedSizeVector<CachedSpringData, GameParameters::MaxSpringsPerPoint> cachedSpringData;
+    bool const * restrict isHullBufferData = mPoints.GetIsHullBuffer();
 
     for (auto pointIndex : mPoints.RawShipPoints()) // No need to visit ephemeral points as they have no springs
     {
-        if (!mPoints.GetIsHull(pointIndex))
+        if (isHullBufferData[pointIndex])
         {
             //
             // Non-hull particle: flow its surplus pressure to its neighbors
@@ -2191,9 +2178,7 @@ void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
                     averageInternalPressure += otherEndpointInternalPressure;
                     targetEndpointsCount += 1.0f;
 
-                    cachedSpringData.emplace_back(
-                        otherEndpointIndex,
-                        otherEndpointInternalPressure);
+                    otherEndpoints.emplace_back(otherEndpointIndex);
                 }
             }
 
@@ -2203,14 +2188,14 @@ void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
             // 2. Distribute surplus pressure
             //
 
-            for (auto const & targetSpring : cachedSpringData)
+            internalPressureBufferData[pointIndex] = averageInternalPressure;
+
+            for (auto const & otherEndpointIndex : otherEndpoints)
             {
-                float const outgoingDelta = averageInternalPressure - targetSpring.OtherEndpointInternalPressure;
-                internalPressureBufferData[pointIndex] -= outgoingDelta;
-                internalPressureBufferData[targetSpring.OtherEndpointIndex] += outgoingDelta;
+                internalPressureBufferData[otherEndpointIndex] = averageInternalPressure;
             }
 
-            cachedSpringData.clear();
+            otherEndpoints.clear();
         }
         else
         {
@@ -2225,7 +2210,7 @@ void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
             for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
             {
                 ElementIndex const otherEndpointIndex = cs.OtherEndpointIndex;
-                if (!mPoints.GetIsHull(otherEndpointIndex))
+                if (!isHullBufferData[otherEndpointIndex])
                 {
                     averageInternalPressure += internalPressureBufferData[otherEndpointIndex];
                     neighborsCount += 1.0f;
