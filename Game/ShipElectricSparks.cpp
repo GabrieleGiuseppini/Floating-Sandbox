@@ -28,6 +28,7 @@ ShipElectricSparks::ShipElectricSparks(
 bool ShipElectricSparks::ApplySparkAt(
     vec2f const & targetPos,
     std::uint64_t counter,
+    float lengthMultiplier,
     float currentSimulationTime,
     Points const & points,
     Springs const & springs,
@@ -56,6 +57,7 @@ bool ShipElectricSparks::ApplySparkAt(
         PropagateSparks(
             nearestPointIndex,
             counter,
+            lengthMultiplier,
             currentSimulationTime,
             points,
             springs,
@@ -114,6 +116,7 @@ void ShipElectricSparks::Upload(
 void ShipElectricSparks::PropagateSparks(
     ElementIndex const initialPointIndex,
     std::uint64_t counter,
+    float lengthMultiplier,
     float currentSimulationTime,
     Points const & points,
     Springs const & springs,
@@ -132,7 +135,10 @@ void ShipElectricSparks::PropagateSparks(
     size_t constexpr InitialArcsMax = 6;
     float constexpr ForkSpacingMin = 5.0f;
     float constexpr ForkSpacingMax = 10.0f;
-    float constexpr MaxEquivalentPathLength = 35.0f; // TODO: should this be based off total number of springs?
+    float const maxEquivalentPathLength =
+        17.0f // Magic number: max length of arc without tool modifier and default settings
+        * lengthMultiplier
+        * (gameParameters.IsUltraViolentMode ? 2.0f : 1.0f);
 
     // The information associated with a point that the next expansion will start from
     struct SparkPointToVisit
@@ -182,9 +188,9 @@ void ShipElectricSparks::PropagateSparks(
     // we won't create arcs longer than this at this interaction
     float const maxEquivalentPathLengthForThisInteraction = std::min(
         static_cast<float>(counter + 1),
-        MaxEquivalentPathLength);
+        maxEquivalentPathLength);
 
-    // Functor that calculates size of a sparkle, given its current path length and the distance of that path
+    // Functor that calculates size of a spark, given its current path length and the distance of that path
     // length from the maximum for this interaction:
     //  - When we're at the end of the path for this interaction: small size
     //  - When we're at the beginning of the path for this interaction: large size

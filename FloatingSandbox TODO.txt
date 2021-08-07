@@ -1045,9 +1045,9 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		- Settings for Electric Spark tool
-			- SettingsDialog
-			- And SHIFT: TODO
+		+ SHIFT for Electric Spark tool
+			+ Add SHIFT: length multiplier
+			- Help
 
 		- More parallelization at Ship::Update
 
@@ -1144,6 +1144,8 @@ Render:
 		// -----------------------------------------------------------------------
 
 		- ShipLoadDialog Toolbar (*)
+
+		- Help intro: add all new physics
 
 		- New tool 2: Punch
 			- Spec:

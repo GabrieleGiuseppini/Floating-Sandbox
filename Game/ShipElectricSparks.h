@@ -28,6 +28,7 @@ public:
     bool ApplySparkAt(
         vec2f const & targetPos,
         std::uint64_t counter,
+        float lengthMultiplier,
         float currentSimulationTime,
         Points const & points,
         Springs const & springs,
@@ -45,6 +46,7 @@ private:
     void PropagateSparks(
         ElementIndex initialPointIndex,
         std::uint64_t counter,
+        float lengthMultiplier,
         float currentSimulationTime,
         Points const & points,
         Springs const & springs,

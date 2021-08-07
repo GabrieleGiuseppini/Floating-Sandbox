@@ -2904,6 +2904,8 @@ public:
     {
         if (inputState.IsLeftMouseDown)
         {
+            float const interactionLengthMultiplier = (inputState.IsShiftKeyDown) ? 3.2f : 1.0f;
+
             if (mEngagementData.has_value())
             {
                 // We are currently engaged
@@ -2912,6 +2914,7 @@ public:
                 bool hasBeenApplied = mGameController->ApplyElectricSparkAt(
                     inputState.MousePosition,
                     ++(mEngagementData->CurrentCounter),
+                    mEngagementData->CurrentLengthMultiplier,
                     currentSimulationTime);
 
                 if (!hasBeenApplied)
@@ -2931,6 +2934,11 @@ public:
                         mSoundController->PlayElectricSparkSound(isUnderwater);
                         mEngagementData->IsUnderwater = isUnderwater;
                     }
+
+                    // Update towards target
+                    mEngagementData->CurrentLengthMultiplier +=
+                        0.18f
+                        * (interactionLengthMultiplier - mEngagementData->CurrentLengthMultiplier);
                 }
             }
             else
@@ -2941,6 +2949,7 @@ public:
                 bool hasBeenApplied = mGameController->ApplyElectricSparkAt(
                     inputState.MousePosition,
                     0,
+                    interactionLengthMultiplier,
                     currentSimulationTime);
 
                 if (hasBeenApplied)
@@ -2951,7 +2960,10 @@ public:
 
                     bool const isUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
 
-                    mEngagementData.emplace(0, isUnderwater);
+                    mEngagementData.emplace(
+                        0,  // counter
+                        interactionLengthMultiplier,
+                        isUnderwater);
 
                     mSoundController->PlayElectricSparkSound(isUnderwater);
 
@@ -3000,12 +3012,15 @@ private:
     struct EngagementData
     {
         std::uint64_t CurrentCounter;
+        float CurrentLengthMultiplier;
         bool IsUnderwater;
 
         EngagementData(
             std::uint64_t initialCounter,
+            float initialLengthMultiplier,
             bool isUnderwater)
             : CurrentCounter(initialCounter)
+            , CurrentLengthMultiplier(initialLengthMultiplier)
             , IsUnderwater(isUnderwater)
         {}
     };

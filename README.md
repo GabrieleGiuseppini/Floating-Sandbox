@@ -9,9 +9,9 @@ This game is a realistic two-dimensional particle system, which uses mass-spring
 The game is really a generic physics simulator that can be used to simulate just about any 2D floating rigid body under stress.
 
 As of now the simulator implements the following aspects of physics:
-- Classical mechanics - Hookean laws for springs, impacts with ocean floor
+- Classical mechanics - Hookean laws for springs, impacts
 - Thermodynamics - heat transfer, dissipation, combustion
-- Fluid dynamics - buoyancy, drag, hydrostatic pressure
+- Fluid dynamics - buoyancy, drag, hydrostatic and atmospheric pressure
 - Basic electrotechnics - conductivity
 
 <img src="https://i.imgur.com/kovxCty.png">

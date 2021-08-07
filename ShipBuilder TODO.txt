@@ -67,4 +67,6 @@
 		- L shaped: horizontal and vertical
 		- Ruler sticks to the canvas
 		- Only one ruler at a time
+	- Texture Generator:
+		- Makes larger image, with bilinear interpolation with alpha blending
 
