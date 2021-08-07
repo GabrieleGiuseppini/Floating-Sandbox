@@ -857,6 +857,7 @@ Render:
 				+ Full 10K fall w/out rotting: not pulverized, but quite shattered
 				+ Full 10K fall with rotting: half pulverized
 		+ Way to remove all pins (*)
+		+ Menu with text and icon
 		+ Hydrostatic pressure follow-ups:
 			+ Repair tool:
 				+ Ship has float mPostRepairGracePeriodMultiplier, from 0.0 to 1.0 - default is 1.0
@@ -886,8 +887,7 @@ Render:
 				+ Try with larger visual feedback
 				+ Not on hull
 				+ Higher max flow
-					+ Or higher UltraViolent mode
-			+ Menu with text and icon
+					+ Or higher UltraViolent mode			
 			+ Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
 				! Goodyear's current shell is currently normal cardboard (c1a46a)
 				+ New material: Mylar, of "cloth" sound type
@@ -1920,6 +1920,13 @@ Render:
 		- Requires "sources of light" feature
 
 - Dynamics:
+
+	- "Ground" material:
+		- Spec:
+			- It's just a material which stays in place and has no physical interaction. The idea is to help creating anchoring or any form of support for structures.
+			  This will allow people to make bridges or towers, etc... And of course, we could have underground bases anchored to the ground or whatever.
+			- Plus, given how you use textures already, perhaps there's a way to apply the ground texture on it as well
+			- Could be couple with ship+settings file, to also provide custom terrain
 
 	- Different scale for ships
 
