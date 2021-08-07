@@ -941,6 +941,9 @@ Render:
 					+ Take perf now: 3.03% (default ship)
 					+ See if can assign avg immediately: YES, verified
 					+ Final perf: 1.43% (default ship)
+		+ SHIFT for Electric Spark tool
+			+ Add SHIFT: length multiplier
+			+ Help
 
 
 		= Ubuntu:
@@ -1044,10 +1047,6 @@ Render:
 					- See if may statically link
 				- SFML: so's?
 				- DevIL: so's?
-
-		+ SHIFT for Electric Spark tool
-			+ Add SHIFT: length multiplier
-			- Help
 
 		- More parallelization at Ship::Update
 
