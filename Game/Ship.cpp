@@ -2147,6 +2147,8 @@ void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
 
     float * restrict internalPressureBufferData = mPoints.GetInternalPressureBufferAsFloat();
     bool const * restrict isHullBufferData = mPoints.GetIsHullBuffer();
+    auto const * restrict connectedSpringsBufferData = mPoints.GetConnectedSpringsBuffer();
+    float const * restrict waterPermeabilityBufferData = mSprings.GetWaterPermeabilityBuffer();
 
     for (auto pointIndex : mPoints.RawShipPoints()) // No need to visit ephemeral points as they have no springs
     {
@@ -2166,14 +2168,14 @@ void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
             float averageInternalPressure = internalPressure;
             float targetEndpointsCount = 1.0f;
 
-            for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+            for (auto const & cs : connectedSpringsBufferData[pointIndex].ConnectedSprings)
             {
                 ElementIndex const otherEndpointIndex = cs.OtherEndpointIndex;
 
                 // We only consider outgoing pressure, not towards hull points
                 float const otherEndpointInternalPressure = internalPressureBufferData[otherEndpointIndex];
                 if (internalPressure > otherEndpointInternalPressure
-                    && mSprings.GetWaterPermeability(cs.SpringIndex) != 0.0f)
+                    && waterPermeabilityBufferData[cs.SpringIndex] != 0.0f)
                 {
                     averageInternalPressure += otherEndpointInternalPressure;
                     targetEndpointsCount += 1.0f;
@@ -2207,7 +2209,7 @@ void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
             float averageInternalPressure = 0.0f;
             float neighborsCount = 0.0f;
 
-            for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
+            for (auto const & cs : connectedSpringsBufferData[pointIndex].ConnectedSprings)
             {
                 ElementIndex const otherEndpointIndex = cs.OtherEndpointIndex;
                 if (!isHullBufferData[otherEndpointIndex])

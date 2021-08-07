@@ -1042,11 +1042,11 @@ Render:
 				+ Move Offset out of metadata
 			- Optimizations:				
 				- EqualizeInternalPressure:
-					- Take perf now: 3.03% (default ship)
-					- See if can assign avg immediately: YES, verified
-						- See if same can be done @ PropagateHeat
-					- Test perf: avoid if's with waterPermeability
+					+ Take perf now: 3.03% (default ship)
+					= See if can assign avg immediately: YES, verified
 					- Test perf: merge EqualizeInternalPressure in UpdateWaterVelocities: EqualizeInternalPressureAndUpdateWaterVelocities
+					- See if can improve perf of heat as well with buffer tricks
+						- Take perf now: 
 
 		- Settings for Electric Spark tool
 			- SettingsDialog
