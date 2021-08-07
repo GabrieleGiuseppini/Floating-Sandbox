@@ -167,11 +167,6 @@ public:
 			// Generate quad
 			//
 
-			// Assuming all panels have equal dimensions
-			auto const & atlasFrame = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GenericLinearTextureGroups>(GenericLinearTextureGroups::PhysicsProbePanel, 0));
-			float const textureWidth = atlasFrame.TextureCoordinatesTopRight.x - atlasFrame.TextureCoordinatesBottomLeft.x;
-			float const textureHeight = atlasFrame.TextureCoordinatesTopRight.y - atlasFrame.TextureCoordinatesBottomLeft.y;
-
 			// First 1/3rd of open: grow vertically
 			// Last 2/3rds of open: grow horizontally
 
@@ -203,19 +198,24 @@ public:
 
 			float opening = isOpening ? 1.0f : 0.0f;
 
+			// Get texture NDC dimensions (assuming all panels have equal dimensions)
+			auto const & atlasFrame = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GenericLinearTextureGroups>(GenericLinearTextureGroups::PhysicsProbePanel, 0));
+			float const textureWidthNdc = atlasFrame.TextureCoordinatesTopRight.x - atlasFrame.TextureCoordinatesBottomLeft.x;
+			float const textureHeightNdc = atlasFrame.TextureCoordinatesTopRight.y - atlasFrame.TextureCoordinatesBottomLeft.y;
+
 			// Triangle 1
 
 			// Top-left
 			mPhysicsProbePanelVertexBuffer.emplace_back(
 				quadTopLeft,
-				vec2f(0.0f, textureHeight),
+				vec2f(0.0f, textureHeightNdc),
 				xLimits,
 				opening);
 
 			// Top-right
 			mPhysicsProbePanelVertexBuffer.emplace_back(
 				vec2f(quadBottomRight.x, quadTopLeft.y),
-				vec2f(textureWidth, textureHeight),
+				vec2f(textureWidthNdc, textureHeightNdc),
 				xLimits,
 				opening);
 
@@ -231,7 +231,7 @@ public:
 			// Top-right
 			mPhysicsProbePanelVertexBuffer.emplace_back(
 				vec2f(quadBottomRight.x, quadTopLeft.y),
-				vec2f(textureWidth, textureHeight),
+				vec2f(textureWidthNdc, textureHeightNdc),
 				xLimits,
 				opening);
 
@@ -245,7 +245,7 @@ public:
 			// Bottom-right
 			mPhysicsProbePanelVertexBuffer.emplace_back(
 				quadBottomRight,
-				vec2f(textureWidth, 0.0f),
+				vec2f(textureWidthNdc, 0.0f),
 				xLimits,
 				opening);
 		}
