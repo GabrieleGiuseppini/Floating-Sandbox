@@ -1519,11 +1519,6 @@ public:
         return mConnectedSpringsBuffer[pointElementIndex];
     }
 
-    auto const * GetConnectedSpringsBuffer() const
-    {
-        return mConnectedSpringsBuffer.data();
-    }
-
     void ConnectSpring(
         ElementIndex pointElementIndex,
         ElementIndex springElementIndex,
