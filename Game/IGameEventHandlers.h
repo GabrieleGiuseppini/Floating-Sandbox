@@ -383,6 +383,11 @@ struct IGenericGameEventHandler
         // Default-implemented
     }
 
+    virtual void OnWaterDisplaced(float /*waterDisplaced*/)
+    {
+        // Default-implemented
+    }
+
     virtual void OnAirBubbleSurfaced(unsigned int /*size*/)
     {
         // Default-implemented

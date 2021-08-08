@@ -27,6 +27,7 @@ float constexpr SawVolume = 50.0f;
 float constexpr SawedVolume = 80.0f;
 std::chrono::milliseconds constexpr SawedInertiaDuration = std::chrono::milliseconds(200);
 float constexpr WaveSplashTriggerSize = 0.5f;
+float constexpr WaterDisplacementTriggerSize = 0.5f;
 
 SoundController::SoundController(
     ResourceLocator const & resourceLocator,
@@ -42,6 +43,8 @@ SoundController::SoundController(
     , mPlayAirBubbleSurfaceSound(true)
     , mLastWaterSplashed(0.0f)
     , mCurrentWaterSplashedTrigger(WaveSplashTriggerSize)
+    , mLastWaterDisplaced(0.0f)
+    , mCurrentWaterDisplacedTrigger(WaterDisplacementTriggerSize)
     , mLastWindSpeedAbsoluteMagnitude(0.0f)
     , mWindVolumeRunningAverage()
     , mShipEnginesCount(0.0f)
@@ -530,7 +533,8 @@ SoundController::SoundController(
                 || soundType == SoundType::WatertightDoorOpened
                 || soundType == SoundType::Error
                 || soundType == SoundType::PhysicsProbePanelOpen
-                || soundType == SoundType::PhysicsProbePanelClose)
+                || soundType == SoundType::PhysicsProbePanelClose
+                || soundType == SoundType::WaterDisplacement)
         {
             //
             // - one-shot sound
@@ -1420,6 +1424,8 @@ void SoundController::Reset()
 
     mLastWaterSplashed = 0.0f;
     mCurrentWaterSplashedTrigger = WaveSplashTriggerSize;
+    mLastWaterDisplaced = 0.0f;
+    mCurrentWaterDisplacedTrigger = WaterDisplacementTriggerSize;
     mLastWindSpeedAbsoluteMagnitude = 0.0f;
     mWindVolumeRunningAverage.Reset();
     mShipEnginesCount = 0.0f;
@@ -1648,6 +1654,37 @@ void SoundController::OnWaterSplashed(float waterSplashed)
 
     // Starts automatically if volume greater than zero
     mWaterSplashSound.SetVolume(splashVolume);
+}
+
+void SoundController::OnWaterDisplaced(float waterDisplaced)
+{
+    // We only want to trigger a wave when the quantity of water displaced is growing...
+    if (waterDisplaced > mLastWaterDisplaced)
+    {
+        //...but only by discrete leaps
+        if (waterDisplaced > mCurrentWaterDisplacedTrigger)
+        {
+            // 20 * (-1 / 4^(0.03 * x) + 1)
+            float const waveVolume = 20.f * (-1.f / std::pow(4.0f, 0.03f * std::abs(waterDisplaced)) + 1.f);
+            LogMessage(waterDisplaced, " -> ", waveVolume);
+
+            PlayOneShotMultipleChoiceSound(
+                SoundType::WaterDisplacement,
+                SoundGroupType::Effects,
+                waveVolume,
+                true);
+
+            // Raise next trigger
+            mCurrentWaterDisplacedTrigger = waterDisplaced + WaterDisplacementTriggerSize;
+        }
+    }
+    else
+    {
+        // Lower trigger
+        mCurrentWaterDisplacedTrigger = waterDisplaced + WaterDisplacementTriggerSize;
+    }
+
+    mLastWaterDisplaced = waterDisplaced;
 }
 
 void SoundController::OnAirBubbleSurfaced(unsigned int size)

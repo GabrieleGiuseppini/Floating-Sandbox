@@ -253,6 +253,8 @@ public:
 
     void OnWaterSplashed(float waterSplashed) override;
 
+    void OnWaterDisplaced(float waterDisplaced) override;
+
     void OnAirBubbleSurfaced(unsigned int size) override;
 
     void OnWindSpeedUpdated(
@@ -490,6 +492,8 @@ private:
 
     float mLastWaterSplashed;
     float mCurrentWaterSplashedTrigger;
+    float mLastWaterDisplaced;
+    float mCurrentWaterDisplacedTrigger;
     float mLastWindSpeedAbsoluteMagnitude;
     RunningAverage<70> mWindVolumeRunningAverage;
     float mShipEnginesCount;

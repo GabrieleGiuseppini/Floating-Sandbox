@@ -1317,7 +1317,7 @@ void Ship::ApplyWorldSurfaceForces(
 
     if constexpr (DoDisplaceWater)
     {
-        mGameEventHandler->OnWaterSplashed(totalWaterDisplacement);
+        mGameEventHandler->OnWaterDisplaced(totalWaterDisplacement);
     }
 }
 

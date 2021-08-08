@@ -1048,11 +1048,12 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		- Splash sounds at displacement:
-			- Piggyback on water displacement factors, after all magnitude of splash sound depends on kinetic energy, ~= displacement magnitude
-				- Try then to use displacement magnitude directly, after normalizing it wrt its own max
+		= Splash sounds at displacement:
+			+ Piggyback on water displacement factors, after all magnitude of splash sound depends on kinetic energy, ~= displacement magnitude
+				+ Try then to use displacement magnitude directly, after normalizing it wrt its own max
 			+ Aggregate splash sound
-			- Test boths splashes - separately, and together
+			- Finalize volume formula
+				- Should bump up at higher displacement?
 
 		- More parallelism at Ship::Update
 

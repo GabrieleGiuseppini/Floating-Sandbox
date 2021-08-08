@@ -97,6 +97,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::WaterRush;
     else if (Utils::CaseInsensitiveEquals(str, "WaterSplash"))
         return SoundType::WaterSplash;
+    else if (Utils::CaseInsensitiveEquals(str, "WaterDisplacement"))
+        return SoundType::WaterDisplacement;
     else if (Utils::CaseInsensitiveEquals(str, "AirBubblesSurface"))
         return SoundType::AirBubblesSurface;
     else if (Utils::CaseInsensitiveEquals(str, "Wave"))

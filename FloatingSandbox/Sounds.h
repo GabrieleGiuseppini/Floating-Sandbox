@@ -73,6 +73,7 @@ enum class SoundType : uint32_t
     ShipNuclearAlarm1,
     WaterRush,
     WaterSplash,
+    WaterDisplacement,
     AirBubblesSurface,
     Wave,
     Wind,
