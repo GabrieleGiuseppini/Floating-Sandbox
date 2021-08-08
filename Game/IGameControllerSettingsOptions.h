@@ -67,6 +67,9 @@ struct IGameControllerSettingsOptions
     virtual float GetMinWaterPressureDragAdjustment() const = 0;
     virtual float GetMaxWaterPressureDragAdjustment() const = 0;
 
+    virtual float GetMinWaterImpactForceAdjustment() const = 0;
+    virtual float GetMaxWaterImpactForceAdjustment() const = 0;
+
     virtual float GetMinHydrostaticPressureCounterbalanceAdjustment() const = 0;
     virtual float GetMaxHydrostaticPressureCounterbalanceAdjustment() const = 0;
 

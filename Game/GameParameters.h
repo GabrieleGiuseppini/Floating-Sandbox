@@ -71,7 +71,7 @@ struct GameParameters
     // Tunable parameters
     //
 
-    // Dynamics
+    // General Dynamics
 
     // Fraction of a spring displacement that is removed during a spring relaxation
     // iteration. The remaining spring displacement is (1.0 - this fraction).
@@ -164,6 +164,10 @@ struct GameParameters
     float WaterPressureDragAdjustment;
     static float constexpr MinWaterPressureDragAdjustment = 0.0f;
     static float constexpr MaxWaterPressureDragAdjustment = 1000.0f;
+
+    float WaterImpactForceAdjustment;
+    static float constexpr MinWaterImpactForceAdjustment = 0.0f;
+    static float constexpr MaxWaterImpactForceAdjustment = 10.0f;
 
     float HydrostaticPressureCounterbalanceAdjustment;
     static float constexpr MinHydrostaticPressureCounterbalanceAdjustment = 0.0f;

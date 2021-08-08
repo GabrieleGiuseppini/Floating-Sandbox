@@ -70,6 +70,9 @@ struct IGameControllerSettings
     virtual float GetWaterPressureDragAdjustment() const = 0;
     virtual void SetWaterPressureDragAdjustment(float value) = 0;
 
+    virtual float GetWaterImpactForceAdjustment() const = 0;
+    virtual void SetWaterImpactForceAdjustment(float value) = 0;
+
     virtual float GetHydrostaticPressureCounterbalanceAdjustment() const = 0;
     virtual void SetHydrostaticPressureCounterbalanceAdjustment(float value) = 0;
 

@@ -944,7 +944,7 @@ Render:
 		+ SHIFT for Electric Spark tool
 			+ Add SHIFT: length multiplier
 			+ Help
-
+		+ Water Impact - when ship touches water for first time (*)
 
 		= Ubuntu:
 			+ Event polling issue:
@@ -1116,17 +1116,15 @@ Render:
 
 		- Send for testing
 			
-		= Frontier-enabled features:			
-			- Impact when ship touches water for first time (*)
+		+ Frontier-enabled features:
+			- Splash sounds at displacement: TOSPEC
 			- Transfer of momentum from waves
 				- Option A: by point visit; all points which were not underwater in previous step and are now (via double buffer for Points::CachedDepth), receive force
 				  proportional to OceanSurface::VelocityVector
 					- OceanSurface::VelocityVector: direction=normal, magnitude=SWE velocity. With two options:
 						- A) SWE + Waves (i.e. full samples)
 						- B) Just SWE
-				- Option B: by point visit; all points in tiny band from depth 0, receive force...same as above....		
-			- Splash sounds at displacement: TOSPEC
-		
+				- Option B: by point visit; all points in tiny band from depth 0, receive force...same as above....				
 		- Localization:
 			- IT
 				- Help
@@ -1934,21 +1932,6 @@ Render:
 
 	- Spread out spring coeffs' recalculations (*)
 		- For better look'n'feel
-
-	- Water impact (*): water drag does not cause ships to break upon impact
-		= See if due to lack of square law: find law such that Titanic's dive is still the same, but higher velocities get higher drags
-			+ dragCoefficient' * titanicVelocity = dragCoefficient'' * titanicVelocity^2
-			- Doesn't change the fact that airplanes break upon impact; multiplying drag forces x10 causes some almost reasonable crashing on impact, but sinking Titanic 
-			  slows down to 8m/s (from ~15m/s normally) - even with pressure=0 and drag=0
-				- Should we let go of the high Titanic sinking speed?
-		- Alternatively: ship breaks upon impact due to impact forces, not drag, so we should model that
-			- Using cached Points::Depth, and two buffers (old/new): inspect new to establish when point first touches water
-				- Then, heavily dependent on velocity, and normally on mass 
-					- And normal? Technically no, but try
-					- Some references:
-						- Impact depth: https://en.wikipedia.org/wiki/Impact_depth
-						- https://physics.stackexchange.com/questions/120036/force-of-an-impact-on-water?noredirect=1&lq=1
-						- https://wat.lewiscollard.com/archive/www.newton.dep.anl.gov/askasci/gen01/gen01790.htm
 
 	- Electric sparks: material-driven
 		- New "electrical conductivity" *structural* property - try to name it differently than the electrical property though
@@ -9022,6 +9005,21 @@ IF WX:
 		+ SHIFT to remove them all - unconditionally from *all* ships
 			+ World::RemoveAllPins()
 		+ Add to help
+	+ Water impact (*): water drag does not cause ships to break upon impact
+		X See if due to lack of square law: find law such that Titanic's dive is still the same, but higher velocities get higher drags
+			+ dragCoefficient' * titanicVelocity = dragCoefficient'' * titanicVelocity^2
+			x Doesn't change the fact that airplanes break upon impact; multiplying drag forces x10 causes some almost reasonable crashing on impact, but sinking Titanic 
+			  slows down to 8m/s (from ~15m/s normally) - even with pressure=0 and drag=0
+		+ Implement as multiplier of drag force, normally 1 but when old Points::CachedDepth==0 and new Points::CachedDepth > 0, then quite high, may be also with some additional dep'cy on velocity
+			+ Multiplier: (1-step(0, oldDepth)) * step(0, newDepth) == step(oldDepth, 0) * step(0, newDepth)
+			+ Optimize
+				+ Test both drag * impact
+			+ Setting: "WaterImpactForceAdjustment"
+				+ GameParameters
+				+ SettingsDialog
+				+ Nail down value & extremes
+			+ Test dependence on water density
+			+ changelist
 
 
 

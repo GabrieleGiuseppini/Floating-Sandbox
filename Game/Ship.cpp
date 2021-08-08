@@ -1021,6 +1021,14 @@ void Ship::ApplyWorldSurfaceForces(
         * (effectiveWaterDensity / GameParameters::WaterMass);
 
     //
+    // Water impact constants
+    //
+
+    float const waterImpactForceCoefficient =
+        gameParameters.WaterImpactForceAdjustment
+        * (effectiveWaterDensity / GameParameters::WaterMass); // Denser water, denser impact
+
+    //
     // Water displacement constants
     //
 
@@ -1094,12 +1102,15 @@ void Ship::ApplyWorldSurfaceForces(
                 ElementIndex const nextPointIndex = nextFrontierEdge.PointAIndex;
                 vec2f const nextPointPosition = mPoints.GetPosition(nextPointIndex);
 
+                // Get point depth (positive at greater depths, negative over-water)
+                float const thisPointDepth = newCachedPointDepths[thisPointIndex];
+
                 //
                 // Drag force
                 //
                 // We would like to use a square law (i.e. drag force proportional to square
                 // of velocity), but then particles at high velocities become subject to
-                // enormous forces, which, for small masses - such as cloth - means astronomical
+                // enormous forces, which, for small masses - such as cloth - mean astronomical
                 // accelerations.
                 //
                 // We have to recourse then, again, to a linear law:
@@ -1127,9 +1138,6 @@ void Ship::ApplyWorldSurfaceForces(
                     mPoints.GetMass(thisPointIndex) * velocityMagnitudeAlongNormal
                     / GameParameters::SimulationStepTimeDuration<float>;
 
-                // Get point depth (positive at greater depths, negative over-water)
-                float const thisPointDepth = newCachedPointDepths[thisPointIndex];
-
                 // Calculate drag coefficient: air or water, with soft transition
                 // to avoid discontinuities in drag force close to the air-water interface
                 float const dragCoefficient = Mix(
@@ -1137,19 +1145,37 @@ void Ship::ApplyWorldSurfaceForces(
                     waterPressureDragCoefficient,
                     Clamp(thisPointDepth, 0.0f, 1.0f));
 
-                // Calculate magnitude of drag force (opposite sign)
+                // Calculate magnitude of drag force (opposite sign), capped by max drag force
                 //  - C * |V| * cos(a) == - C * |V| * (Vn dot Nn) == -C * (V dot Nn)
-                float const dragForceMagnitude =
-                    dragCoefficient
-                    * velocityMagnitudeAlongNormal;
+                float const dragForceMagnitude = std::min(
+                    dragCoefficient * velocityMagnitudeAlongNormal,
+                    maxDragForceMagnitude);
 
-                // Final drag force - at this moment in the direction of the normal (i.e. outside)
-                vec2f const dragForce = surfaceNormal * std::min(dragForceMagnitude, maxDragForceMagnitude);
+                //
+                // Impact force
+                //
+                // Impact force is proportional to kinetic energy, and we only apply it
+                // when there's a discontinuity in the "underwaterness" of a frontier
+                // particle, i.e. when this is the first frame in which the particle
+                // gets underwater.
+                //
 
-                // Apply drag force
+                float const kineticEnergy =
+                    velocityMagnitudeAlongNormal * velocityMagnitudeAlongNormal
+                    * mPoints.GetMass(thisPointIndex);
+
+                float const waterImpactForceMagnitude =
+                    kineticEnergy
+                    * waterImpactForceCoefficient
+                    * Step(mPoints.GetCachedDepth(thisPointIndex), 0.0f) * Step(0.0f, newCachedPointDepths[thisPointIndex]);
+
+                //
+                // Apply drag and impact forces
+                //
+
                 mPoints.AddStaticForce(
                     thisPointIndex,
-                    -dragForce);
+                    -surfaceNormal * (dragForceMagnitude + waterImpactForceMagnitude));
 
                 //
                 // Water displacement
