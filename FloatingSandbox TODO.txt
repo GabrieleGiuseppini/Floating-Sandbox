@@ -1048,7 +1048,13 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		- More parallelization at Ship::Update
+		- Splash sounds at displacement:
+			- Piggyback on water displacement factors, after all magnitude of splash sound depends on kinetic energy, ~= displacement magnitude
+				- Try then to use displacement magnitude directly, after normalizing it wrt its own max
+			+ Aggregate splash sound
+			- Test boths splashes - separately, and together
+
+		- More parallelism at Ship::Update
 
 		- Spread out rotting:
 			! Now: at step 20/49
@@ -1060,6 +1066,8 @@ Render:
 				static constexpr int SpringDecayAndTemperaturePeriodStep = 34; - Spread out spring coeffs' recalculations (*)
 				static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
 				static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
+
+		- Night vision (*)
 
 		- bishobe64 in Credits?			
 
@@ -1116,15 +1124,6 @@ Render:
 
 		- Send for testing
 			
-		+ Frontier-enabled features:
-			- Splash sounds at displacement: TOSPEC
-			- Transfer of momentum from waves
-				- Option A: by point visit; all points which were not underwater in previous step and are now (via double buffer for Points::CachedDepth), receive force
-				  proportional to OceanSurface::VelocityVector
-					- OceanSurface::VelocityVector: direction=normal, magnitude=SWE velocity. With two options:
-						- A) SWE + Waves (i.e. full samples)
-						- B) Just SWE
-				- Option B: by point visit; all points in tiny band from depth 0, receive force...same as above....				
 		- Localization:
 			- IT
 				- Help
@@ -1150,8 +1149,6 @@ Render:
 					- Might want to try, at end, also from inside->out
 			- Impl:
 				- TODOHERE
-
-		- Water impact (*)
 
 		- Sound space (*)
 
@@ -1180,21 +1177,6 @@ Render:
 		- ShipRenderContext: see if may turn off Z-depth check @ triangles
 			- Check first on Dell if doing so would improve perf
 			- Check then if there are any artifacts when doing so
-
-		- Night vision (*)
-
-		- ARM issues:
-			+ See if can get rid of floorf ipv #include <cmath> + std::floor/sqrt/etc
-			+ Crash because SplashScreen not shown
-			+ Add XInitThreads if Linux: https://stackoverflow.com/questions/23585435/cannot-call-xinitthreads
-			+ Ask to test
-			= Unalignment exception with ship database file
-				- Ask to test
-			= Menus
-				+ Running without GameIteration: works
-				- Experiments:
-					-
-			+ Remove all TODOTEST logging
 
 		----------------------------------------------------------------------------------------
 
@@ -1918,6 +1900,14 @@ Render:
 		- Requires "sources of light" feature
 
 - Dynamics:
+
+	- Transfer of momentum from waves
+		- Option A: by point visit; all points which were not underwater in previous step and are now (via double buffer for Points::CachedDepth), receive force
+		  proportional to OceanSurface::VelocityVector
+			- OceanSurface::VelocityVector: direction=normal, magnitude=SWE velocity. With two options:
+				- A) SWE + Waves (i.e. full samples)
+				- B) Just SWE
+		- Option B: by point visit; all points in tiny band from depth 0, receive force...same as above....				
 
 	- "Ground" material:
 		- Spec:

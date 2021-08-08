@@ -1004,6 +1004,8 @@ void Ship::ApplyWorldSurfaceForces(
     GameParameters const & gameParameters,
     Geometry::AABBSet & externalAabbSet)
 {
+    float totalWaterDisplacement = 0.0f;
+
     //
     // Drag constants
     //
@@ -1048,7 +1050,7 @@ void Ship::ApplyWorldSurfaceForces(
     float const wdmQuadraticB = 2.0f * wdmY0 / wdmX0 - wdmLinearSlope;
 
     //
-    // Visit all frontiers and apply surface forces
+    // Visit all frontiers
     //
 
     for (FrontierId frontierId : mFrontiers.GetFrontierIds())
@@ -1251,6 +1253,8 @@ void Ship::ApplyWorldSurfaceForces(
                         * 0.02f; // Magic number
 
                     mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, displacement);
+
+                    totalWaterDisplacement += std::abs(displacement);
                 }
 
                 //
@@ -1309,6 +1313,11 @@ void Ship::ApplyWorldSurfaceForces(
         {
             externalAabbSet.Add(aabb);
         }
+    }
+
+    if constexpr (DoDisplaceWater)
+    {
+        mGameEventHandler->OnWaterSplashed(totalWaterDisplacement);
     }
 }
 

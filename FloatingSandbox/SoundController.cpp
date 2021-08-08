@@ -1611,8 +1611,10 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     // Trigger waves
     //
 
+    // We only want to trigger a wave when the quantity of water splashed is growing...
     if (waterSplashed > mLastWaterSplashed)
     {
+        //...but only by discrete leaps
         if (waterSplashed > mCurrentWaterSplashedTrigger)
         {
             // 10 * (-1 / 1.8^(0.08 * x) + 1)
@@ -1624,7 +1626,7 @@ void SoundController::OnWaterSplashed(float waterSplashed)
                 waveVolume,
                 true);
 
-            // Advance trigger
+            // Raise next trigger
             mCurrentWaterSplashedTrigger = waterSplashed + WaveSplashTriggerSize;
         }
     }

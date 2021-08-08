@@ -530,7 +530,7 @@ private:
         {
             // Shift key down
 
-            if (!mRotationCenter && !!mEngagedMovableObjectId)
+            if (!mRotationCenter && mEngagedMovableObjectId.has_value())
             {
                 //
                 // We're engaged and not in rotation mode yet
