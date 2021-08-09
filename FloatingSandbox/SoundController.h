@@ -457,7 +457,7 @@ private:
     void PlayOneShotSound(
         SoundType soundType,
         SoundGroupType soundGroupType,
-        sf::SoundBuffer * soundBuffer,
+        SoundFile const & soundBuffer,
         float volume,
         bool isInterruptible);
 
@@ -466,7 +466,7 @@ private:
         std::optional<StructuralMaterial::MaterialSoundType> material,
         std::optional<SizeType> size,
         SoundGroupType soundGroupType,
-        sf::SoundBuffer * soundBuffer,
+        SoundFile const & soundBuffer,
         float volume,
         bool isInterruptible);
 
@@ -531,6 +531,9 @@ private:
     {
         switch (soundType)
         {
+            case SoundType::WaterDisplacement:
+                // TODOTEST
+                return std::chrono::milliseconds(100);
             case SoundType::Break:
             case SoundType::Destroy:
             case SoundType::RepairSpring:

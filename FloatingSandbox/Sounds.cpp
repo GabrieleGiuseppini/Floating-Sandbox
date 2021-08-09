@@ -198,3 +198,17 @@ SizeType StrToSizeType(std::string const & str)
     else
         throw GameException("Unrecognized SizeType \"" + str + "\"");
 }
+
+std::unique_ptr<SoundFile> SoundFile::Load(std::filesystem::path const & soundFilePath)
+{
+    auto soundFile = std::make_unique<SoundFile>();
+
+    if (!soundFile->SoundBuffer.loadFromFile(soundFilePath.string()))
+    {
+        throw GameException("Cannot load sound \"" + soundFilePath.filename().string() + "\"");
+    }
+
+    soundFile->Filename = soundFilePath.filename().string();
+
+    return soundFile;
+}

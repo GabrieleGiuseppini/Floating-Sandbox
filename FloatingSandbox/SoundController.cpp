@@ -106,15 +106,10 @@ SoundController::SoundController(
             ProgressMessageType::LoadingSounds);
 
         //
-        // Load sound buffer
+        // Load sound file
         //
 
-        std::unique_ptr<sf::SoundBuffer> soundBuffer = std::make_unique<sf::SoundBuffer>();
-        if (!soundBuffer->loadFromFile(resourceLocator.GetSoundFilePath(soundName).string()))
-        {
-            throw GameException("Cannot load sound \"" + soundName + "\"");
-        }
-
+        std::unique_ptr<SoundFile> soundFile = SoundFile::Load(resourceLocator.GetSoundFilePath(soundName));
 
         //
         // Parse filename
@@ -142,7 +137,7 @@ SoundController::SoundController(
             {
                 assert(uMatch[2].str() == "underwater");
                 mSawUnderwaterSound.Initialize(
-                    std::move(soundBuffer),
+                    std::move(soundFile),
                     SawVolume,
                     mMasterToolsVolume,
                     mMasterToolsMuted);
@@ -150,7 +145,7 @@ SoundController::SoundController(
             else
             {
                 mSawAbovewaterSound.Initialize(
-                    std::move(soundBuffer),
+                    std::move(soundFile),
                     SawVolume,
                     mMasterToolsVolume,
                     mMasterToolsMuted);
@@ -169,7 +164,7 @@ SoundController::SoundController(
             {
                 assert(uMatch[2].str() == "underwater");
                 mElectricSparkUnderwaterSound.Initialize(
-                    std::move(soundBuffer),
+                    std::move(soundFile),
                     100.0f,
                     mMasterToolsVolume,
                     mMasterToolsMuted);
@@ -177,7 +172,7 @@ SoundController::SoundController(
             else
             {
                 mElectricSparkAbovewaterSound.Initialize(
-                    std::move(soundBuffer),
+                    std::move(soundFile),
                     100.0f,
                     mMasterToolsVolume,
                     mMasterToolsMuted);
@@ -186,7 +181,7 @@ SoundController::SoundController(
         else if (soundType == SoundType::Draw)
         {
             mDrawSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 100.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
@@ -208,14 +203,14 @@ SoundController::SoundController(
             if (StructuralMaterial::MaterialSoundType::Metal == materialSound)
             {
                 mSawedMetalSound.Initialize(
-                    std::move(soundBuffer),
+                    std::move(soundFile),
                     mMasterEffectsVolume,
                     mMasterEffectsMuted);
             }
             else
             {
                 mSawedWoodSound.Initialize(
-                    std::move(soundBuffer),
+                    std::move(soundFile),
                     mMasterEffectsVolume,
                     mMasterEffectsMuted);
             }
@@ -223,7 +218,7 @@ SoundController::SoundController(
         else if (soundType == SoundType::HeatBlasterCool)
         {
             mHeatBlasterCoolSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 60.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
@@ -231,7 +226,7 @@ SoundController::SoundController(
         else if (soundType == SoundType::HeatBlasterHeat)
         {
             mHeatBlasterHeatSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 60.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
@@ -239,7 +234,7 @@ SoundController::SoundController(
         else if (soundType == SoundType::FireExtinguisher)
         {
             mFireExtinguisherSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 80.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
@@ -247,7 +242,7 @@ SoundController::SoundController(
         else if (soundType == SoundType::Swirl)
         {
             mSwirlSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 100.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
@@ -255,7 +250,7 @@ SoundController::SoundController(
         else if (soundType == SoundType::AirBubbles)
         {
             mAirBubblesSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 100.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
@@ -263,7 +258,7 @@ SoundController::SoundController(
         else if (soundType == SoundType::PressureInjection)
         {
             mPressureInjectionSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 60.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
@@ -271,7 +266,7 @@ SoundController::SoundController(
         else if (soundType == SoundType::FloodHose)
         {
             mFloodHoseSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 100.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
@@ -279,7 +274,7 @@ SoundController::SoundController(
         else if (soundType == SoundType::RepairStructure)
         {
             mRepairStructureSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 100.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
@@ -287,7 +282,7 @@ SoundController::SoundController(
         else if (soundType == SoundType::WaveMaker)
         {
             mWaveMakerSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 20.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted,
@@ -297,7 +292,7 @@ SoundController::SoundController(
         else if (soundType == SoundType::FishScream)
         {
             mFishScareSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 100.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
@@ -305,27 +300,27 @@ SoundController::SoundController(
         else if (soundType == SoundType::FishShaker)
         {
             mFishFoodSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 40.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
         }
         else if (soundType == SoundType::BlastToolSlow1)
         {
-            mBlastToolSlow1Sound.Initialize(std::move(soundBuffer));
+            mBlastToolSlow1Sound.Initialize(std::move(soundFile));
         }
         else if (soundType == SoundType::BlastToolSlow2)
         {
-            mBlastToolSlow2Sound.Initialize(std::move(soundBuffer));
+            mBlastToolSlow2Sound.Initialize(std::move(soundFile));
         }
         else if (soundType == SoundType::BlastToolFast)
         {
-            mBlastToolFastSound.Initialize(std::move(soundBuffer));
+            mBlastToolFastSound.Initialize(std::move(soundFile));
         }
         else if (soundType == SoundType::WaterRush)
         {
             mWaterRushSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 100.0f,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
@@ -333,7 +328,7 @@ SoundController::SoundController(
         else if (soundType == SoundType::WaterSplash)
         {
             mWaterSplashSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 100.0f,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
@@ -341,14 +336,14 @@ SoundController::SoundController(
         else if (soundType == SoundType::AirBubblesSurface)
         {
             mAirBubblesSurfacingSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
         }
         else if (soundType == SoundType::Wind)
         {
             mWindSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 100.0f,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
@@ -356,7 +351,7 @@ SoundController::SoundController(
         else if (soundType == SoundType::Rain)
         {
             mRainSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 100.0f,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
@@ -364,7 +359,7 @@ SoundController::SoundController(
         else if (soundType == SoundType::FireBurning)
         {
             mFireBurningSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 100.0f,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted,
@@ -375,7 +370,7 @@ SoundController::SoundController(
         else if (soundType == SoundType::TimerBombSlowFuse)
         {
             mTimerBombSlowFuseSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 100.0f,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
@@ -383,7 +378,7 @@ SoundController::SoundController(
         else if (soundType == SoundType::TimerBombFastFuse)
         {
             mTimerBombFastFuseSound.Initialize(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 100.0f,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
@@ -442,7 +437,7 @@ SoundController::SoundController(
             //
 
             mMSUOneShotMultipleChoiceSounds[std::make_tuple(soundType, materialSound, sizeType, isUnderwater)]
-                .SoundBuffers.emplace_back(std::move(soundBuffer));
+                .Choices.emplace_back(std::move(soundFile));
         }
         else if (soundType == SoundType::LightningHit)
         {
@@ -468,7 +463,7 @@ SoundController::SoundController(
             //
 
             mMOneShotMultipleChoiceSounds[std::make_tuple(soundType, materialSound)]
-                .SoundBuffers.emplace_back(std::move(soundBuffer));
+                .Choices.emplace_back(std::move(soundFile));
         }
         else if (soundType == SoundType::LightFlicker)
         {
@@ -506,7 +501,7 @@ SoundController::SoundController(
             //
 
             mDslUOneShotMultipleChoiceSounds[std::make_tuple(soundType, durationType, isUnderwater)]
-                .SoundBuffers.emplace_back(std::move(soundBuffer));
+                .Choices.emplace_back(std::move(soundFile));
         }
         else if (soundType == SoundType::Wave
                 || soundType == SoundType::WindGust
@@ -554,7 +549,7 @@ SoundController::SoundController(
             //
 
             mOneShotMultipleChoiceSounds[std::make_tuple(soundType)]
-                .SoundBuffers.emplace_back(std::move(soundBuffer));
+                .Choices.emplace_back(std::move(soundFile));
         }
         else if (soundType == SoundType::AntiMatterBombContained)
         {
@@ -576,7 +571,7 @@ SoundController::SoundController(
             //
 
             mAntiMatterBombContainedSounds.AddAlternative(
-                std::move(soundBuffer),
+                std::move(soundFile),
                 100.0f,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
@@ -798,7 +793,7 @@ SoundController::SoundController(
             //
 
             mUOneShotMultipleChoiceSounds[std::make_tuple(soundType, isUnderwater)]
-                .SoundBuffers.emplace_back(std::move(soundBuffer));
+                .Choices.emplace_back(std::move(soundFile));
         }
     }
 }
@@ -1275,7 +1270,7 @@ void SoundController::PlayBlastToolSlow1Sound()
         PlayOneShotSound(
             SoundType::BlastToolSlow1,
             SoundGroupType::Tools,
-            mBlastToolSlow1Sound.SoundBuffer.get(),
+            *mBlastToolSlow1Sound.Choice,
             GetMasterToolsVolume(),
             false);
     }
@@ -1288,7 +1283,7 @@ void SoundController::PlayBlastToolSlow2Sound()
         PlayOneShotSound(
             SoundType::BlastToolSlow2,
             SoundGroupType::Tools,
-            mBlastToolSlow2Sound.SoundBuffer.get(),
+            *mBlastToolSlow2Sound.Choice,
             GetMasterToolsVolume(),
             false);
     }
@@ -1301,7 +1296,7 @@ void SoundController::PlayBlastToolFastSound()
         PlayOneShotSound(
             SoundType::BlastToolFast,
             SoundGroupType::Tools,
-            mBlastToolFastSound.SoundBuffer.get(),
+            *mBlastToolFastSound.Choice,
             GetMasterToolsVolume(),
             false);
     }
@@ -1666,6 +1661,8 @@ void SoundController::OnWaterDisplaced(float waterDisplaced)
         {
             // 20 * (-1 / 4^(0.03 * x) + 1)
             float const waveVolume = 20.f * (-1.f / std::pow(4.0f, 0.03f * std::abs(waterDisplaced)) + 1.f);
+
+            // TODOTEST
             LogMessage(waterDisplaced, " -> ", waveVolume);
 
             PlayOneShotMultipleChoiceSound(
@@ -2560,39 +2557,33 @@ void SoundController::ChooseAndPlayOneShotMultipleChoiceSound(
     bool isInterruptible)
 {
     //
-    // Choose sound buffer
+    // Choose sound file
     //
 
-    sf::SoundBuffer * chosenSoundBuffer = nullptr;
-
-    assert(!sound.SoundBuffers.empty());
-    if (1 == sound.SoundBuffers.size())
+    size_t chosenIndex;
+    if (1 == sound.Choices.size())
     {
         // Nothing to choose
-        chosenSoundBuffer = sound.SoundBuffers[0].get();
+        chosenIndex = 0;
     }
     else
     {
-        assert(sound.SoundBuffers.size() >= 2);
+        assert(sound.Choices.size() >= 2);
 
         // Choose randomly, but avoid choosing the last-chosen sound again
-        size_t chosenSoundIndex = GameRandomEngine::GetInstance().ChooseNew(
-            sound.SoundBuffers.size(),
+        chosenIndex = GameRandomEngine::GetInstance().ChooseNew(
+            sound.Choices.size(),
             sound.LastPlayedSoundIndex);
 
-        chosenSoundBuffer = sound.SoundBuffers[chosenSoundIndex].get();
-
-        sound.LastPlayedSoundIndex = chosenSoundIndex;
+        sound.LastPlayedSoundIndex = chosenIndex;
     }
-
-    assert(nullptr != chosenSoundBuffer);
 
     PlayOneShotSound(
         soundType,
         material,
         size,
         soundGroupType,
-        chosenSoundBuffer,
+        *sound.Choices[chosenIndex],
         volume,
         isInterruptible);
 }
@@ -2600,7 +2591,7 @@ void SoundController::ChooseAndPlayOneShotMultipleChoiceSound(
 void SoundController::PlayOneShotSound(
     SoundType soundType,
     SoundGroupType soundGroupType,
-    sf::SoundBuffer * soundBuffer,
+    SoundFile const & soundFile,
     float volume,
     bool isInterruptible)
 {
@@ -2609,7 +2600,7 @@ void SoundController::PlayOneShotSound(
         std::nullopt,
         std::nullopt,
         soundGroupType,
-        soundBuffer,
+        soundFile,
         volume,
         isInterruptible);
 }
@@ -2619,12 +2610,10 @@ void SoundController::PlayOneShotSound(
     std::optional<StructuralMaterial::MaterialSoundType> material,
     std::optional<SizeType> size,
     SoundGroupType soundGroupType,
-    sf::SoundBuffer * soundBuffer,
+    SoundFile const & soundFile,
     float volume,
     bool isInterruptible)
 {
-    assert(nullptr != soundBuffer);
-
     //
     // Make sure there isn't already a "fungible" sound that started playing too recently;
     // if there is, just add to its volume
@@ -2654,7 +2643,7 @@ void SoundController::PlayOneShotSound(
             else
             {
                 // Incorporate if it's exactly the same sound
-                doIncorporateWithExisting = (playingSound.Sound->getBuffer() == soundBuffer);
+                doIncorporateWithExisting = (playingSound.Sound->getBuffer() == &soundFile.SoundBuffer);
             }
 
             if (doIncorporateWithExisting)
@@ -2695,7 +2684,7 @@ void SoundController::PlayOneShotSound(
         case SoundGroupType::Effects:
         {
             sound = std::make_unique<GameSound>(
-                *soundBuffer,
+                soundFile,
                 volume,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
@@ -2706,7 +2695,7 @@ void SoundController::PlayOneShotSound(
         case SoundGroupType::Tools:
         {
             sound = std::make_unique<GameSound>(
-                *soundBuffer,
+                soundFile,
                 volume,
                 mMasterToolsVolume,
                 mMasterToolsMuted);

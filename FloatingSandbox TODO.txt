@@ -1052,8 +1052,24 @@ Render:
 			+ Piggyback on water displacement factors, after all magnitude of splash sound depends on kinetic energy, ~= displacement magnitude
 				+ Try then to use displacement magnitude directly, after normalizing it wrt its own max
 			+ Aggregate splash sound
-			- Finalize volume formula
-				- Should bump up at higher displacement?
+			+ See why doesn't sound like different sounds
+				x Try with minTimeDelta
+					! It's because the different sounds can start even within minTimeDelta
+			- Idea: two types of sounds played together
+				! Spec:
+					- More wave-like: predominant at low displacement
+						- Single sound
+					- More splash-like: predominant at high displacement
+						- The different sounds we have now, but different name: "displacementsplash"
+				- 1. Wave sound:
+					- Use current "wave" sound, but copied with different name: "displacementwave"
+						- No min time
+					- Nail down volume and threshold formula
+				- w. TODO
+			- Sound reorg:
+				+ SoundFile::Load -> uq_ptr<SoundFile>, w/SoundFile::SoundBuffer not uq_ptr
+				- SoundController: replace lists of continuous single-sound members with a map keyed by soundtype
+					- So can manage all at once at Reset, volume change, etc.
 
 		- More parallelism at Ship::Update
 

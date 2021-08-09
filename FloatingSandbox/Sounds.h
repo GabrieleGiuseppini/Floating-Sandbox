@@ -121,6 +121,23 @@ enum class SoundType : uint32_t
 
 SoundType StrToSoundType(std::string const & str);
 
+struct SoundFile
+{
+    sf::SoundBuffer SoundBuffer;
+    std::string Filename;
+
+    static std::unique_ptr<SoundFile> Load(std::filesystem::path const & soundFilePath);
+
+private:
+
+    ////SoundFile(
+    ////    std::unique_ptr<sf::SoundBuffer> soundBuffer,
+    ////    std::string const & filename)
+    ////    : SoundBuffer(std::move(soundBuffer))
+    ////    , Filename(filename)
+    ////{}
+};
+
 enum class SizeType : int
 {
     Min = 0,
@@ -134,7 +151,6 @@ enum class SizeType : int
 
 SizeType StrToSizeType(std::string const & str);
 
-
 enum class SoundStartMode
 {
     Immediate,
@@ -146,7 +162,6 @@ enum class SoundStopMode
     Immediate,
     WithFadeOut
 };
-
 
 /*
  * Our wrapper for sf::Sound.
@@ -161,13 +176,14 @@ class GameSound : public sf::Sound
 public:
 
     GameSound(
-        sf::SoundBuffer const & soundBuffer,
+        SoundFile const & soundFile,
         float volume,
         float masterVolume,
         bool isMuted,
         std::chrono::milliseconds timeToFadeIn = std::chrono::milliseconds::zero(),
         std::chrono::milliseconds timeToFadeOut = std::chrono::milliseconds::zero())
-        : sf::Sound(soundBuffer)
+        : sf::Sound(soundFile.SoundBuffer)
+        , mSoundFile(soundFile)
         , mIsPaused(false)
         , mDesiredPlayingStateAfterPause(false)
         , mVolume(volume)
@@ -227,6 +243,9 @@ public:
 
     void play() override
     {
+        // TODOTEST
+        LogMessage("Sound::play: ", mSoundFile.Filename);
+
         // Reset fade
         mFadeLevel = 1.0f;
         InternalSetVolume();
@@ -387,6 +406,8 @@ private:
 
 private:
 
+    SoundFile const & mSoundFile;
+
     bool mIsPaused;
 
     // The play state we want to be in after resuming from a pause:
@@ -414,13 +435,13 @@ private:
 struct ContinuousSound
 {
     ContinuousSound()
-        : mSoundBuffer()
+        : mSoundFile()
         , mSound()
     {
     }
 
     ContinuousSound(
-        std::unique_ptr<sf::SoundBuffer> soundBuffer,
+        std::unique_ptr<SoundFile> soundFile,
         float volume,
         float masterVolume,
         bool isMuted,
@@ -429,7 +450,7 @@ struct ContinuousSound
         : ContinuousSound()
     {
         Initialize(
-            std::move(soundBuffer),
+            std::move(soundFile),
             volume,
             masterVolume,
             isMuted,
@@ -438,7 +459,7 @@ struct ContinuousSound
     }
 
     void Initialize(
-        std::unique_ptr<sf::SoundBuffer> soundBuffer,
+        std::unique_ptr<SoundFile> soundFile,
         float volume,
         float masterVolume,
         bool isMuted,
@@ -448,9 +469,9 @@ struct ContinuousSound
     {
         assert(!mSoundBuffer && !mSound);
 
-        mSoundBuffer = std::move(soundBuffer);
+        mSoundFile = std::move(soundFile);
         mSound = std::make_unique<GameSound>(
-            *mSoundBuffer,
+            *mSoundFile,
             volume,
             masterVolume,
             isMuted,
@@ -573,7 +594,7 @@ struct ContinuousSound
     }
 
 private:
-    std::unique_ptr<sf::SoundBuffer> mSoundBuffer;
+    std::unique_ptr<SoundFile> mSoundFile;
     std::unique_ptr<GameSound> mSound;
 
     float mAggregateRate;
@@ -595,7 +616,7 @@ struct ContinuousInertialSound
 
     ContinuousInertialSound(
         std::chrono::milliseconds inertiaDuration,
-        std::unique_ptr<sf::SoundBuffer> soundBuffer,
+        std::unique_ptr<SoundFile> soundFile,
         float masterVolume,
         bool isMuted)
         : mContinuousSound()
@@ -603,18 +624,18 @@ struct ContinuousInertialSound
         , mHearableLastTime()
     {
         Initialize(
-            std::move(soundBuffer),
+            std::move(soundFile),
             masterVolume,
             isMuted);
     }
 
     void Initialize(
-        std::unique_ptr<sf::SoundBuffer> soundBuffer,
+        std::unique_ptr<SoundFile> soundFile,
         float masterVolume,
         bool isMuted)
     {
         mContinuousSound.Initialize(
-            std::move(soundBuffer),
+            std::move(soundFile),
             0.0f,
             masterVolume,
             isMuted);
@@ -707,12 +728,12 @@ struct ContinuousPulsedSound
     }
 
     void Initialize(
-        std::unique_ptr<sf::SoundBuffer> soundBuffer,
+        std::unique_ptr<SoundFile> soundFile,
         float masterVolume,
         bool isMuted)
     {
         mContinuousSound.Initialize(
-            std::move(soundBuffer),
+            std::move(soundFile),
             0.0f,
             masterVolume,
             isMuted);
@@ -1022,28 +1043,26 @@ private:
 
 struct OneShotMultipleChoiceSound
 {
-    std::vector<std::unique_ptr<sf::SoundBuffer>> SoundBuffers;
+    std::vector<std::unique_ptr<SoundFile>> Choices;
     size_t LastPlayedSoundIndex;
 
     OneShotMultipleChoiceSound()
-        : SoundBuffers()
+        : Choices()
         , LastPlayedSoundIndex(0u)
-    {
-    }
+    {}
 };
 
 struct OneShotSingleChoiceSound
 {
-    std::unique_ptr<sf::SoundBuffer> SoundBuffer;
+    std::unique_ptr<SoundFile> Choice;
 
     OneShotSingleChoiceSound()
-        : SoundBuffer()
-    {
-    }
+        : Choice()
+    {}
 
-    void Initialize(std::unique_ptr<sf::SoundBuffer> && soundBuffer)
+    void Initialize(std::unique_ptr<SoundFile> choice)
     {
-        SoundBuffer = std::move(soundBuffer);
+        Choice = std::move(choice);
     }
 };
 
@@ -1058,13 +1077,13 @@ public:
     {}
 
     void AddAlternative(
-        std::unique_ptr<sf::SoundBuffer> soundBuffer,
+        std::unique_ptr<SoundFile> soundFile,
         float volume,
         float masterVolume,
         bool isMuted)
     {
         mSoundAlternatives.emplace_back(
-            std::move(soundBuffer),
+            std::move(soundFile),
             volume,
             masterVolume,
             isMuted);
@@ -1208,7 +1227,7 @@ struct ContinuousSingleChoiceSound
     {}
 
     void Initialize(
-        std::unique_ptr<sf::SoundBuffer> soundBuffer,
+        std::unique_ptr<SoundFile> soundFile,
         float volume,
         float masterVolume,
         bool isMuted,
@@ -1217,7 +1236,7 @@ struct ContinuousSingleChoiceSound
         float aggregateRate = 0.3f)
     {
         mSound.Initialize(
-            std::move(soundBuffer),
+            std::move(soundFile),
             volume,
             masterVolume,
             isMuted,
