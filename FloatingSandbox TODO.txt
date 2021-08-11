@@ -1070,8 +1070,8 @@ Render:
 						+ If so: "WaterDisplacementWave"
 					- Make better sounds for WaterDisplacementWave: longer and cleaner tail
 						- Check first if the short and dirty tail is due to too many sounds
-					- Use current algo for waves
 					- See if can reduce frequency of sounds firing
+					- Finalize code for displacement waves
 				= 2. Splash sound:
 					+ Nuke old sounds, including types
 					+ New "WaterDisplacementSplash" sounds, with splashy sounds, not much wave

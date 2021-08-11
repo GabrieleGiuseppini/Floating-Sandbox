@@ -1694,7 +1694,7 @@ void SoundController::OnWaterDisplaced(float waterDisplaced)
     //float const waterDisplacementDerivative = waterDisplaced - mLastWaterDisplaced;
     float const waterDisplacementDerivative = std::abs(waterDisplaced) - std::abs(mLastWaterDisplaced);
 
-    LogMessage("TODOTEST: ", waterDisplaced, " deritative=", waterDisplacementDerivative, " (last=", std::abs(mLastWaterDisplaced), ")");
+    LogMessage("TODOTEST: ", waterDisplaced, " deritative=", waterDisplacementDerivative, " (lastWaterDisplaced=", std::abs(mLastWaterDisplaced), " lastDeriv=", mLastWaterDisplacedDerivative, ")");
 
     if (waterDisplacementDerivative > mLastWaterDisplacedDerivative)
     {
