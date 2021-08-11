@@ -73,7 +73,8 @@ enum class SoundType : uint32_t
     ShipNuclearAlarm1,
     WaterRush,
     WaterSplash,
-    WaterDisplacement,
+    WaterDisplacementSplash,
+    WaterDisplacementWave,
     AirBubblesSurface,
     Wave,
     Wind,
@@ -243,8 +244,7 @@ public:
 
     void play() override
     {
-        // TODOTEST
-        LogMessage("Sound::play: ", mSoundFile.Filename);
+        LogMessage("Sound::play(", mSoundFile.Filename, ")");
 
         // Reset fade
         mFadeLevel = 1.0f;

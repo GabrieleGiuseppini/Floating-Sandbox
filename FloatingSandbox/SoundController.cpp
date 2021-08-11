@@ -27,7 +27,7 @@ float constexpr SawVolume = 50.0f;
 float constexpr SawedVolume = 80.0f;
 std::chrono::milliseconds constexpr SawedInertiaDuration = std::chrono::milliseconds(200);
 float constexpr WaveSplashTriggerSize = 0.5f;
-float constexpr WaterDisplacementTriggerSize = 0.5f;
+float constexpr WaterDisplacementTriggerSize = 2.5f;
 
 SoundController::SoundController(
     ResourceLocator const & resourceLocator,
@@ -43,11 +43,12 @@ SoundController::SoundController(
     , mPlayAirBubbleSurfaceSound(true)
     , mLastWaterSplashed(0.0f)
     , mCurrentWaterSplashedTrigger(WaveSplashTriggerSize)
-    , mLastWaterDisplaced(0.0f)
-    , mCurrentWaterDisplacedTrigger(WaterDisplacementTriggerSize)
     , mLastWindSpeedAbsoluteMagnitude(0.0f)
     , mWindVolumeRunningAverage()
     , mShipEnginesCount(0.0f)
+    , mLastWaterDisplaced(0.0f)
+    , mCurrentWaterDisplacedTrigger(WaterDisplacementTriggerSize)
+    , mLastWaterDisplacedDerivative(0.0f)
     // One-shot sounds
     , mMSUOneShotMultipleChoiceSounds()
     , mMOneShotMultipleChoiceSounds()
@@ -529,7 +530,8 @@ SoundController::SoundController(
                 || soundType == SoundType::Error
                 || soundType == SoundType::PhysicsProbePanelOpen
                 || soundType == SoundType::PhysicsProbePanelClose
-                || soundType == SoundType::WaterDisplacement)
+                || soundType == SoundType::WaterDisplacementSplash
+                || soundType == SoundType::WaterDisplacementWave)
         {
             //
             // - one-shot sound
@@ -1653,35 +1655,77 @@ void SoundController::OnWaterSplashed(float waterSplashed)
 
 void SoundController::OnWaterDisplaced(float waterDisplaced)
 {
-    // We only want to trigger a wave when the quantity of water displaced is growing...
-    if (waterDisplaced > mLastWaterDisplaced)
-    {
-        //...but only by discrete leaps
-        if (waterDisplaced > mCurrentWaterDisplacedTrigger)
-        {
-            // 20 * (-1 / 4^(0.03 * x) + 1)
-            float const waveVolume = 20.f * (-1.f / std::pow(4.0f, 0.03f * std::abs(waterDisplaced)) + 1.f);
+    //
+    // Wave
+    //
 
-            // TODOTEST
-            LogMessage(waterDisplaced, " -> ", waveVolume);
+    ////// We only want to trigger a wave when the quantity of water displaced is growing...
+    ////if (waterDisplaced > mLastWaterDisplaced)
+    ////{
+    ////    //...but only by discrete leaps
+    ////    if (waterDisplaced > mCurrentWaterDisplacedTrigger)
+    ////    {
+    ////        // 10 * (-1 / 1.8^(0.08 * x) + 1)
+    ////        float const waveVolume = 10.f * (-1.f / std::pow(1.8f, 0.08f * std::abs(waterDisplaced)) + 1.f);
+
+    ////        // TODOTEST
+    ////        LogMessage(waterDisplaced, " -> ", waveVolume);
+
+    ////        PlayOneShotMultipleChoiceSound(
+    ////            SoundType::WaterDisplacementWave,
+    ////            SoundGroupType::Effects,
+    ////            waveVolume,
+    ////            true);
+
+    ////        // Raise next trigger
+    ////        mCurrentWaterDisplacedTrigger = waterDisplaced + WaterDisplacementTriggerSize;
+    ////    }
+    ////}
+    ////else
+    ////{
+    ////    // Lower trigger
+    ////    mCurrentWaterDisplacedTrigger = waterDisplaced + WaterDisplacementTriggerSize;
+    ////}
+
+    //
+    // Splash
+    //
+
+    //float const waterDisplacementDerivative = waterDisplaced - mLastWaterDisplaced;
+    float const waterDisplacementDerivative = std::abs(waterDisplaced) - std::abs(mLastWaterDisplaced);
+
+    LogMessage("TODOTEST: ", waterDisplaced, " deritative=", waterDisplacementDerivative, " (last=", std::abs(mLastWaterDisplaced), ")");
+
+    if (waterDisplacementDerivative > mLastWaterDisplacedDerivative)
+    {
+        if (waterDisplacementDerivative > 1.0f)
+        {
+            // 10 * (-1 / 1.8^(0.08 * x) + 1)
+            float const waveVolume = 10.f * (-1.f / std::pow(1.8f, 0.08f * std::abs(waterDisplaced)) + 1.f);
+
+            // TODOHERE
+            LogMessage("      -> ", waveVolume);
 
             PlayOneShotMultipleChoiceSound(
-                SoundType::WaterDisplacement,
+                SoundType::WaterDisplacementWave,
                 SoundGroupType::Effects,
                 waveVolume,
                 true);
 
-            // Raise next trigger
-            mCurrentWaterDisplacedTrigger = waterDisplaced + WaterDisplacementTriggerSize;
+            mLastWaterDisplaced = waterDisplaced;
+            mLastWaterDisplacedDerivative = waterDisplacementDerivative;
+        }
+        else
+        {
+            // Derivative not enough...
+            // ...accumulate this sample for the next iteration
         }
     }
     else
     {
-        // Lower trigger
-        mCurrentWaterDisplacedTrigger = waterDisplaced + WaterDisplacementTriggerSize;
+        mLastWaterDisplaced = waterDisplaced;
+        mLastWaterDisplacedDerivative = waterDisplacementDerivative;
     }
-
-    mLastWaterDisplaced = waterDisplaced;
 }
 
 void SoundController::OnAirBubbleSurfaced(unsigned int size)
@@ -2632,7 +2676,8 @@ void SoundController::PlayOneShotSound(
         {
             bool doIncorporateWithExisting = false;
 
-            if (soundType == SoundType::Break || soundType == SoundType::Stress)
+            if (soundType == SoundType::Break
+                || soundType == SoundType::Stress)
             {
                 // Incorporate if it's same material and same or greater size
                 doIncorporateWithExisting =

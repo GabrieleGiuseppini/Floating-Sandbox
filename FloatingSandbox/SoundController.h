@@ -492,11 +492,14 @@ private:
 
     float mLastWaterSplashed;
     float mCurrentWaterSplashedTrigger;
-    float mLastWaterDisplaced;
-    float mCurrentWaterDisplacedTrigger;
     float mLastWindSpeedAbsoluteMagnitude;
     RunningAverage<70> mWindVolumeRunningAverage;
     float mShipEnginesCount;
+
+    // Water displacement state
+    float mLastWaterDisplaced;
+    float mCurrentWaterDisplacedTrigger;
+    float mLastWaterDisplacedDerivative;
 
     //
     // One-Shot sounds
@@ -531,9 +534,6 @@ private:
     {
         switch (soundType)
         {
-            case SoundType::WaterDisplacement:
-                // TODOTEST
-                return std::chrono::milliseconds(100);
             case SoundType::Break:
             case SoundType::Destroy:
             case SoundType::RepairSpring:

@@ -1055,17 +1055,28 @@ Render:
 			+ See why doesn't sound like different sounds
 				x Try with minTimeDelta
 					! It's because the different sounds can start even within minTimeDelta
-			- Idea: two types of sounds played together
+			= Idea: two types of sounds played together
 				! Spec:
 					- More wave-like: predominant at low displacement
 						- Single sound
 					- More splash-like: predominant at high displacement
 						- The different sounds we have now, but different name: "displacementsplash"
-				- 1. Wave sound:
-					- Use current "wave" sound, but copied with different name: "displacementwave"
-						- No min time
-					- Nail down volume and threshold formula
-				- w. TODO
+				+ WaterDisplacementWave and WaterDisplacementSplash
+				= 1. Wave sound:
+					+ Use current wave sounds
+						+ Make sure name is proper generic "wave"
+						+ Make sure has no min time
+					+ See if can make sounds with shorter attack time
+						+ If so: "WaterDisplacementWave"
+					- Make better sounds for WaterDisplacementWave: longer and cleaner tail
+						- Check first if the short and dirty tail is due to too many sounds
+					- Use current algo for waves
+					- See if can reduce frequency of sounds firing
+				= 2. Splash sound:
+					+ Nuke old sounds, including types
+					+ New "WaterDisplacementSplash" sounds, with splashy sounds, not much wave
+					- Algo:
+						- TODOHERE: derivative doesn't work, keeps growing a lot
 			- Sound reorg:
 				+ SoundFile::Load -> uq_ptr<SoundFile>, w/SoundFile::SoundBuffer not uq_ptr
 				- SoundController: replace lists of continuous single-sound members with a map keyed by soundtype
