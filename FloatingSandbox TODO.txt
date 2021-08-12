@@ -1062,25 +1062,25 @@ Render:
 					- More splash-like: predominant at high displacement
 						- The different sounds we have now, but different name: "displacementsplash"
 				+ WaterDisplacementWave and WaterDisplacementSplash
-				= 1. Wave sound:
+				+ 1. Wave sound:
 					+ Use current wave sounds
 						+ Make sure name is proper generic "wave"
 						+ Make sure has no min time
 					+ See if can make sounds with shorter attack time
 						+ If so: "WaterDisplacementWave"
-					- Make better sounds for WaterDisplacementWave: longer and cleaner tail
-						- Check first if the short and dirty tail is due to too many sounds
-					- See if can reduce frequency of sounds firing
-					- Finalize code for displacement waves
+					+ See if can reduce frequency of sounds firing
+					+ Finalize code for displacement waves
 				= 2. Splash sound:
 					+ Nuke old sounds, including types
 					+ New "WaterDisplacementSplash" sounds, with splashy sounds, not much wave
-					- Algo:
-						- TODOHERE: derivative doesn't work, keeps growing a lot
+					= Algo:
+						= Derivative > 20
 			- Sound reorg:
 				+ SoundFile::Load -> uq_ptr<SoundFile>, w/SoundFile::SoundBuffer not uq_ptr
 				- SoundController: replace lists of continuous single-sound members with a map keyed by soundtype
 					- So can manage all at once at Reset, volume change, etc.
+
+		- Make sure we don't have custom probes; convert each to actual method
 
 		- More parallelism at Ship::Update
 

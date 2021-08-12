@@ -253,7 +253,7 @@ public:
 
     void OnWaterSplashed(float waterSplashed) override;
 
-    void OnWaterDisplaced(float waterDisplaced) override;
+    void OnWaterDisplaced(float waterDisplacedMagnitude) override;
 
     void OnAirBubbleSurfaced(unsigned int size) override;
 
@@ -497,9 +497,8 @@ private:
     float mShipEnginesCount;
 
     // Water displacement state
-    float mLastWaterDisplaced;
-    float mCurrentWaterDisplacedTrigger;
-    float mLastWaterDisplacedDerivative;
+    float mLastWaterDisplacedMagnitude;
+    float mLastWaterDisplacedMagnitudeDerivative;
 
     //
     // One-Shot sounds

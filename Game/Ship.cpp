@@ -1004,7 +1004,7 @@ void Ship::ApplyWorldSurfaceForces(
     GameParameters const & gameParameters,
     Geometry::AABBSet & externalAabbSet)
 {
-    float totalWaterDisplacement = 0.0f;
+    float totalWaterDisplacementMagnitude = 0.0f;
 
     //
     // Drag constants
@@ -1254,7 +1254,7 @@ void Ship::ApplyWorldSurfaceForces(
 
                     mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, displacement);
 
-                    totalWaterDisplacement += std::abs(displacement);
+                    totalWaterDisplacementMagnitude += std::abs(displacement);
                 }
 
                 //
@@ -1317,7 +1317,7 @@ void Ship::ApplyWorldSurfaceForces(
 
     if constexpr (DoDisplaceWater)
     {
-        mGameEventHandler->OnWaterDisplaced(totalWaterDisplacement);
+        mGameEventHandler->OnWaterDisplaced(totalWaterDisplacementMagnitude);
     }
 }
 

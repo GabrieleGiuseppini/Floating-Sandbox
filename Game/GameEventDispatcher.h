@@ -567,9 +567,9 @@ public:
         }
     }
 
-    void OnWaterDisplaced(float waterDisplaced) override
+    void OnWaterDisplaced(float waterDisplacedMagnitude) override
     {
-        mWaterDisplacedEvents += waterDisplaced;
+        mWaterDisplacedEvents += waterDisplacedMagnitude;
     }
 
     void OnAirBubbleSurfaced(unsigned int size) override

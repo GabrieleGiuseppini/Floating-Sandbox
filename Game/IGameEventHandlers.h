@@ -383,7 +383,7 @@ struct IGenericGameEventHandler
         // Default-implemented
     }
 
-    virtual void OnWaterDisplaced(float /*waterDisplaced*/)
+    virtual void OnWaterDisplaced(float /*waterDisplacedMagnitude*/)
     {
         // Default-implemented
     }
