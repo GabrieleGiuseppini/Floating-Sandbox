@@ -76,18 +76,22 @@ public:
 
     void UploadStart();
 
-    void UploadStarsStart(size_t starCount);
+    void UploadStarsStart(
+        size_t uploadCount,
+        size_t totalCount);
 
     inline void UploadStar(
-        float ndcX,
-        float ndcY,
+        size_t starIndex,
+        vec2f const & positionNdc,
         float brightness)
     {
+        assert(starIndex < mStarVertexBuffer.size());
+
         //
         // Populate vertex in buffer
         //
 
-        mStarVertexBuffer.emplace_back(ndcX, ndcY, brightness);
+        mStarVertexBuffer[starIndex] = StarVertex(positionNdc, brightness);
     }
 
     void UploadStarsEnd();
@@ -793,16 +797,13 @@ private:
 
     struct StarVertex
     {
-        float ndcX;
-        float ndcY;
+        vec2f positionNdc;
         float brightness;
 
         StarVertex(
-            float _ndcX,
-            float _ndcY,
+            vec2f const & _positionNdc,
             float _brightness)
-            : ndcX(_ndcX)
-            , ndcY(_ndcY)
+            : positionNdc(_positionNdc)
             , brightness(_brightness)
         {}
     };
@@ -1018,7 +1019,7 @@ private:
     //
 
     BoundedVector<StarVertex> mStarVertexBuffer;
-    bool mIsStarVertexBufferDirty;
+    size_t mDirtyStarsCount;
     GameOpenGLVBO mStarVBO;
     size_t mStarVBOAllocatedVertexSize;
 

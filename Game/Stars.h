@@ -9,6 +9,7 @@
 #include "RenderContext.h"
 
 #include <memory>
+#include <optional>
 
 namespace Physics
 {
@@ -17,63 +18,68 @@ class Stars
 {
 public:
 
-    Stars()
-        : mStars()
-        , mIsDirtyForRendering(false)
-    {}
+    Stars();
 
-    void Update(GameParameters const & gameParameters)
-    {
-        if (mStars.size() != gameParameters.NumberOfStars)
-        {
-            GenerateStars(gameParameters.NumberOfStars);
+    void Update(
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
-            mIsDirtyForRendering = true;
-        }
-    }
-
-    void Upload(Render::RenderContext & renderContext) const
-    {
-        if (mIsDirtyForRendering)
-        {
-            renderContext.UploadStarsStart(mStars.size());
-
-            for (auto const & star : mStars)
-            {
-                renderContext.UploadStar(star.ndcX, star.ndcY, star.brightness);
-            }
-
-            renderContext.UploadStarsEnd();
-
-            mIsDirtyForRendering = false;
-        }
-    }
+    void Upload(Render::RenderContext & renderContext) const;
 
 private:
 
-    void GenerateStars(unsigned int NumberOfStars);
+    void RegenerateStars(unsigned int numberOfStars);
+
+    struct MovingStarState;
+    bool UpdateMovingStarStateMachine(MovingStarState & state);
+
+    static MovingStarState MakeMovingStarState();
+
+    static float MakeNextMovingStarInterval();
 
 private:
 
     struct Star
     {
-        float ndcX;
-        float ndcY;
-        float brightness;
+        vec2f PositionNdc;
+        float Brightness;
 
         Star(
-            float _ndcX,
-            float _ndcY,
-            float _brightness)
-            : ndcX(_ndcX)
-            , ndcY(_ndcY)
-            , brightness(_brightness)
+            vec2f const & positionNdc,
+            float brightness)
+            : PositionNdc(positionNdc)
+            , Brightness(brightness)
         {}
     };
 
     std::vector<Star> mStars;
 
-    mutable bool mIsDirtyForRendering;
+    mutable std::optional<size_t> mStarCountDirtyForRendering;
+
+    //
+    // Moving stars state machine
+    //
+
+    struct MovingStarState
+    {
+        Star MovingStar;
+        vec2f Direction;
+        float Speed;
+        float Brightness;
+
+        MovingStarState(
+            vec2f const & startPosition,
+            float brightness,
+            vec2f const & direction,
+            float speed)
+            : MovingStar(startPosition, brightness)
+            , Direction(direction)
+            , Speed(speed)
+        {}
+    };
+
+    std::optional<MovingStarState> mCurrentMovingStarState;
+    float mNextMovingStarSimulationTime;
 };
 
 }

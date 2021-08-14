@@ -612,19 +612,21 @@ public:
 
     void UploadStart();
 
-    inline void UploadStarsStart(size_t starCount)
+    inline void UploadStarsStart(
+        size_t uploadCount,
+        size_t totalCount)
     {
-        mWorldRenderContext->UploadStarsStart(starCount);
+        mWorldRenderContext->UploadStarsStart(uploadCount, totalCount);
     }
 
     inline void UploadStar(
-        float ndcX,
-        float ndcY,
+        size_t starIndex,
+        vec2f const & positionNdc,
         float brightness)
     {
         mWorldRenderContext->UploadStar(
-            ndcX,
-            ndcY,
+            starIndex,
+            positionNdc,
             brightness);
     }
 

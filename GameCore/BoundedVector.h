@@ -65,6 +65,12 @@ public:
         return mBuffer[index];
     }
 
+    inline TElement & operator[](size_t index) noexcept
+    {
+        assert(index < mSize);
+        return mBuffer[index];
+    }
+
     inline TElement const & back() const noexcept
     {
         assert(mSize > 0);
@@ -93,16 +99,32 @@ public:
         mSize = maxSize;
     }
 
+    inline void ensure_size(size_t maxSize)
+    {
+        if (maxSize > mAllocatedSize)
+        {
+            internal_enlarge_and_copy(maxSize);
+        }
+
+        mSize = std::min(mSize, maxSize);
+    }
+
+    inline void ensure_size_fill(size_t maxSize)
+    {
+        if (maxSize > mAllocatedSize)
+        {
+            internal_enlarge_and_copy(maxSize);
+        }
+
+        mSize = maxSize;
+    }
+
     inline void grow_by(size_t additionalSize)
     {
         size_t totalRequiredSize = mSize + additionalSize;
         if (totalRequiredSize > mAllocatedSize)
         {
-            TElement * newBuffer = static_cast<TElement *>(std::malloc(sizeof(TElement) * totalRequiredSize));
-            memcpy(newBuffer, mBuffer.get(), mSize * sizeof(TElement));
-            mBuffer.reset(newBuffer);
-
-            mAllocatedSize = totalRequiredSize;
+            internal_enlarge_and_copy(totalRequiredSize);
         }
     }
 
@@ -140,6 +162,15 @@ private:
             mBuffer.reset(static_cast<TElement *>(std::malloc(sizeof(TElement) * maxSize)));
             mAllocatedSize = maxSize;
         }
+    }
+
+    inline void internal_enlarge_and_copy(size_t maxSize)
+    {
+        TElement * newBuffer = static_cast<TElement *>(std::malloc(sizeof(TElement) * maxSize));
+        memcpy(newBuffer, mBuffer.get(), mSize * sizeof(TElement));
+        mBuffer.reset(newBuffer);
+
+        mAllocatedSize = maxSize;
     }
 
     std::unique_ptr<TElement[], decltype(&std::free)> mBuffer;

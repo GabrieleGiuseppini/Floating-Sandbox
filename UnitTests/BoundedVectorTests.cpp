@@ -275,6 +275,76 @@ TEST(BoundedVectorTests, ResetFill)
     EXPECT_FALSE(vec.empty());
 }
 
+TEST(BoundedVectorTests, EnsureSize_Smaller)
+{
+    BoundedVector<int> vec(2);
+
+    vec.emplace_back(67);
+    vec.emplace_back(68);
+
+    EXPECT_EQ(2u, vec.size());
+    EXPECT_EQ(2u, vec.max_size());
+
+    vec.ensure_size(1);
+
+    EXPECT_EQ(1u, vec.size());
+    EXPECT_EQ(2u, vec.max_size());
+    EXPECT_EQ(67, vec[0]);
+}
+
+TEST(BoundedVectorTests, EnsureSize_Larger)
+{
+    BoundedVector<int> vec(2);
+
+    vec.emplace_back(67);
+    vec.emplace_back(68);
+
+    EXPECT_EQ(2u, vec.size());
+    EXPECT_EQ(2u, vec.max_size());
+
+    vec.ensure_size(3);
+
+    EXPECT_EQ(2u, vec.size());
+    EXPECT_EQ(3u, vec.max_size());
+    EXPECT_EQ(67, vec[0]);
+    EXPECT_EQ(68, vec[1]);
+}
+
+TEST(BoundedVectorTests, EnsureSizeFill_Smaller)
+{
+    BoundedVector<int> vec(2);
+
+    vec.emplace_back(67);
+    vec.emplace_back(68);
+
+    EXPECT_EQ(2u, vec.size());
+    EXPECT_EQ(2u, vec.max_size());
+
+    vec.ensure_size_fill(1);
+
+    EXPECT_EQ(1u, vec.size());
+    EXPECT_EQ(2u, vec.max_size());
+    EXPECT_EQ(67, vec[0]);
+}
+
+TEST(BoundedVectorTests, EnsureSizeFill_Larger)
+{
+    BoundedVector<int> vec(2);
+
+    vec.emplace_back(67);
+    vec.emplace_back(68);
+
+    EXPECT_EQ(2u, vec.size());
+    EXPECT_EQ(2u, vec.max_size());
+
+    vec.ensure_size_fill(3);
+
+    EXPECT_EQ(3u, vec.size());
+    EXPECT_EQ(3u, vec.max_size());
+    EXPECT_EQ(67, vec[0]);
+    EXPECT_EQ(68, vec[1]);
+}
+
 TEST(BoundedVectorTests, GrowBy_Larger)
 {
     BoundedVector<int> vec(2);

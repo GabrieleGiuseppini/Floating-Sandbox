@@ -37,7 +37,7 @@ World::World(
     , mAllAABBs()
 {
     // Initialize world pieces that need to be initialized now
-    mStars.Update(gameParameters);
+    mStars.Update(mCurrentSimulationTime, gameParameters);
     mStorm.Update(mCurrentSimulationTime, gameParameters);
     mWind.Update(mStorm.GetParameters(), gameParameters);
     mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
@@ -930,7 +930,7 @@ void World::Update(
     // Update all subsystems
     //
 
-    mStars.Update(gameParameters);
+    mStars.Update(mCurrentSimulationTime, gameParameters);
 
     mStorm.Update(mCurrentSimulationTime, gameParameters);
 

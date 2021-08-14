@@ -24,7 +24,7 @@ WorldRenderContext::WorldRenderContext(
     GlobalRenderContext const & globalRenderContext)
     // Buffers
     : mStarVertexBuffer()
-    , mIsStarVertexBufferDirty(true)
+    , mDirtyStarsCount(0)
     , mStarVBO()
     , mStarVBOAllocatedVertexSize(0u)
     , mLightningVertexBuffer()
@@ -590,15 +590,18 @@ void WorldRenderContext::UploadStart()
     mAABBVertexBuffer.clear();
 }
 
-void WorldRenderContext::UploadStarsStart(size_t starCount)
+void WorldRenderContext::UploadStarsStart(
+    size_t uploadCount,
+    size_t totalCount)
 {
     //
     // Stars are sticky: we upload them once in a while and
-    // continue drawing the same buffer
+    // continue drawing the same buffer, eventually updating
+    // a prefix of it
     //
 
-    mStarVertexBuffer.reset(starCount);
-    mIsStarVertexBufferDirty = true;
+    mStarVertexBuffer.ensure_size_fill(totalCount);
+    mDirtyStarsCount = uploadCount;
 }
 
 void WorldRenderContext::UploadStarsEnd()
@@ -758,13 +761,13 @@ void WorldRenderContext::ProcessParameterChanges(RenderParameters const & render
 
 void WorldRenderContext::RenderPrepareStars(RenderParameters const & /*renderParameters*/)
 {
-    if (mIsStarVertexBufferDirty)
+    if (mDirtyStarsCount > 0)
     {
         glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
 
         if (mStarVBOAllocatedVertexSize != mStarVertexBuffer.size())
         {
-            // Re-allocate VBO buffer and upload
+            // Re-allocate VBO buffer and upload entire buffer
             glBufferData(GL_ARRAY_BUFFER, mStarVertexBuffer.size() * sizeof(StarVertex), mStarVertexBuffer.data(), GL_STATIC_DRAW);
             CheckOpenGLError();
 
@@ -772,14 +775,14 @@ void WorldRenderContext::RenderPrepareStars(RenderParameters const & /*renderPar
         }
         else
         {
-            // No size change, just upload VBO buffer
-            glBufferSubData(GL_ARRAY_BUFFER, 0, mStarVertexBuffer.size() * sizeof(StarVertex), mStarVertexBuffer.data());
+            // No size change, just upload VBO buffer prefix
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mDirtyStarsCount * sizeof(StarVertex), mStarVertexBuffer.data());
             CheckOpenGLError();
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        mIsStarVertexBufferDirty = false;
+        mDirtyStarsCount = 0;
     }
 }
 

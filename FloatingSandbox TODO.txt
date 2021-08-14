@@ -2223,8 +2223,17 @@ Render:
 			- Texture is distorted depending on force field
 			- TBD: see moleskine
 
-	- Shooting stars
-		- Star "parks" always an extra star at (-1, -1)
+	- Satellite and shooting stars
+		- Stars "parks" always an extra star at (-1, -1)
+		+ (World)RenderContext: allow incremental upload of prefix of stars only
+		- State machines:
+			- Satellite
+			- Try shooting star (have Speed member)
+		- Test (all in Debug):
+			- Changing number of stars - including zero
+			- Changing number of stars while moving star is running
+			- Trigger when number of stars is zero
+				- Add LogMessage for trigger to verify
 
 	- Dynamite that may be thrown to the ship
 
