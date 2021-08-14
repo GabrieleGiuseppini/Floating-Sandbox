@@ -1074,8 +1074,7 @@ Render:
 				= 2. Splash sound:
 					+ Nuke old sounds, including types
 					+ New "WaterDisplacementSplash" sounds, with splashy sounds, not much wave
-					= Algo:
-						= Derivative > 20
+					+ Algo
 			- Sound reorg:
 				+ SoundFile::Load -> uq_ptr<SoundFile>, w/SoundFile::SoundBuffer not uq_ptr
 				- SoundController: replace lists of continuous single-sound members with a map keyed by soundtype

@@ -1664,42 +1664,42 @@ void SoundController::OnWaterDisplaced(float waterDisplacedMagnitude)
     // TODOTEST
     LogMessage("waterDisplacedMagnitude=", waterDisplacedMagnitude, " waterDisplacementMagnitudeDerivative=", waterDisplacementMagnitudeDerivative);
 
-    if (waterDisplacementMagnitudeDerivative > mLastWaterDisplacedMagnitudeDerivative)
-    {
-        // The derivative is growing, the curve is getting steeper
-        if (waterDisplacementMagnitudeDerivative > 0.5f)
-        {
-            // 10 * (-1 / 1.8^(0.08 * x) + 1)
-            float const waveVolume = 10.f * (-1.f / std::pow(1.8f, 0.08f * std::abs(waterDisplacedMagnitude)) + 1.f);
+    ////if (waterDisplacementMagnitudeDerivative > mLastWaterDisplacedMagnitudeDerivative)
+    ////{
+    ////    // The derivative is growing, the curve is getting steeper
+    ////    if (waterDisplacementMagnitudeDerivative > 0.5f)
+    ////    {
+    ////        // 10 * (-1 / 1.8^(0.08 * x) + 1)
+    ////        float const waveVolume = 10.f * (-1.f / std::pow(1.8f, 0.08f * std::abs(waterDisplacedMagnitude)) + 1.f);
 
-            LogMessage("Wave: ", waveVolume);
+    ////        LogMessage("Wave: ", waveVolume);
 
-            PlayOneShotMultipleChoiceSound(
-                SoundType::WaterDisplacementWave,
-                SoundGroupType::Effects,
-                waveVolume,
-                true);
-        }
-    }
+    ////        PlayOneShotMultipleChoiceSound(
+    ////            SoundType::WaterDisplacementWave,
+    ////            SoundGroupType::Effects,
+    ////            waveVolume,
+    ////            true);
+    ////    }
+    ////}
 
     //
     // Splash
     //
 
-    ////if (waterDisplacementMagnitudeDerivative > mLastWaterDisplacedMagnitudeDerivative
-    ////    && waterDisplacementMagnitudeDerivative > 10.0f)
-    ////{
-    ////    // 30 * (-1 / 1.2^(0.1 * x) + 1)
-    ////    float const splashVolume = 30.f * (-1.f / std::pow(1.2f, 0.1f * std::abs(waterDisplacedMagnitude)) + 1.f);
+    if (waterDisplacementMagnitudeDerivative > mLastWaterDisplacedMagnitudeDerivative
+        && waterDisplacementMagnitudeDerivative > 5.0f)
+    {
+        // 40 * (-1 / 1.2^(0.1 * x) + 1)
+        float const splashVolume = 7.0f + 40.f * (-1.f / std::pow(1.2f, 0.1f * std::abs(waterDisplacedMagnitude)) + 1.f);
 
-    ////    LogMessage("Splash: ", splashVolume);
+        LogMessage("Splash: ", splashVolume);
 
-    ////    PlayOneShotMultipleChoiceSound(
-    ////        SoundType::WaterDisplacementSplash,
-    ////        SoundGroupType::Effects,
-    ////        splashVolume,
-    ////        true);
-    ////}
+        PlayOneShotMultipleChoiceSound(
+            SoundType::WaterDisplacementSplash,
+            SoundGroupType::Effects,
+            splashVolume,
+            true);
+    }
 
     mLastWaterDisplacedMagnitude = waterDisplacedMagnitude;
     mLastWaterDisplacedMagnitudeDerivative = waterDisplacementMagnitudeDerivative;

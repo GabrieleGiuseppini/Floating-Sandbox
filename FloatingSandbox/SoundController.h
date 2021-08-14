@@ -541,6 +541,7 @@ private:
                 return std::chrono::milliseconds(200);
             case SoundType::Stress:
             case SoundType::TerrainAdjust:
+            case SoundType::WaterDisplacementSplash:
                 return std::chrono::milliseconds(700);
             default:
                 return std::chrono::milliseconds(0);
