@@ -1618,8 +1618,8 @@ void SoundController::OnWaterSplashed(float waterSplashed)
         //...but only by discrete leaps
         if (waterSplashed > mCurrentWaterSplashedTrigger)
         {
-            // 10 * (-1 / 1.8^(0.08 * x) + 1)
-            float const waveVolume = 10.f * (-1.f / std::pow(1.8f, 0.08f * std::min(1800.0f, std::abs(waterSplashed))) + 1.f);
+            // 10 * (1 - 1.8^(-0.08 * x))
+            float const waveVolume = 10.f * (1.0f - std::pow(1.8f, -0.08f * std::min(1800.0f, std::abs(waterSplashed))));
 
             PlayOneShotMultipleChoiceSound(
                 SoundType::Wave,
@@ -1644,8 +1644,8 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     // Adjust continuous splash sound
     //
 
-    // 12 * (-1 / 1.3^(0.01*x) + 1)
-    float splashVolume = 12.f * (-1.f / std::pow(1.3f, 0.01f * std::abs(waterSplashed)) + 1.f);
+    // 12 * (1 - 1.3^(-0.01*x))
+    float splashVolume = 12.f * (1.0f - std::pow(1.3f, -0.01f * std::abs(waterSplashed)));
     if (splashVolume < 1.0f)
         splashVolume = 0.0f;
 
@@ -1655,50 +1655,45 @@ void SoundController::OnWaterSplashed(float waterSplashed)
 
 void SoundController::OnWaterDisplaced(float waterDisplacedMagnitude)
 {
-    //
-    // Wave
-    //
+    assert(waterDisplacedMagnitude >= 0.0f);
 
     float const waterDisplacementMagnitudeDerivative = waterDisplacedMagnitude - mLastWaterDisplacedMagnitude;
 
-    // TODOTEST
-    LogMessage("waterDisplacedMagnitude=", waterDisplacedMagnitude, " waterDisplacementMagnitudeDerivative=", waterDisplacementMagnitudeDerivative);
-
-    ////if (waterDisplacementMagnitudeDerivative > mLastWaterDisplacedMagnitudeDerivative)
-    ////{
-    ////    // The derivative is growing, the curve is getting steeper
-    ////    if (waterDisplacementMagnitudeDerivative > 0.5f)
-    ////    {
-    ////        // 10 * (-1 / 1.8^(0.08 * x) + 1)
-    ////        float const waveVolume = 10.f * (-1.f / std::pow(1.8f, 0.08f * std::abs(waterDisplacedMagnitude)) + 1.f);
-
-    ////        LogMessage("Wave: ", waveVolume);
-
-    ////        PlayOneShotMultipleChoiceSound(
-    ////            SoundType::WaterDisplacementWave,
-    ////            SoundGroupType::Effects,
-    ////            waveVolume,
-    ////            true);
-    ////    }
-    ////}
-
-    //
-    // Splash
-    //
-
-    if (waterDisplacementMagnitudeDerivative > mLastWaterDisplacedMagnitudeDerivative
-        && waterDisplacementMagnitudeDerivative > 5.0f)
+    if (waterDisplacementMagnitudeDerivative > mLastWaterDisplacedMagnitudeDerivative)
     {
-        // 40 * (-1 / 1.2^(0.1 * x) + 1)
-        float const splashVolume = 7.0f + 40.f * (-1.f / std::pow(1.2f, 0.1f * std::abs(waterDisplacedMagnitude)) + 1.f);
+        // The derivative is growing, the curve is getting steeper
 
-        LogMessage("Splash: ", splashVolume);
+        if (waterDisplacementMagnitudeDerivative > 0.5f)
+        {
+            //
+            // Wave
+            //
 
-        PlayOneShotMultipleChoiceSound(
-            SoundType::WaterDisplacementSplash,
-            SoundGroupType::Effects,
-            splashVolume,
-            true);
+            // 10 * (1 - 1.8^(-0.08 * x))
+            float const waveVolume = 10.f * (1.0f - std::pow(1.8f, -0.08f * waterDisplacedMagnitude));
+
+            PlayOneShotMultipleChoiceSound(
+                SoundType::WaterDisplacementWave,
+                SoundGroupType::Effects,
+                waveVolume,
+                true);
+
+            if (waterDisplacementMagnitudeDerivative > 4.0f)
+            {
+                //
+                // Splash
+                //
+
+                // 40 * (1 - 1.2^(-0.1 * x))
+                float const splashVolume = 7.0f + 40.f * (1 - std::pow(1.2f, -0.1f * waterDisplacedMagnitude));
+
+                PlayOneShotMultipleChoiceSound(
+                    SoundType::WaterDisplacementSplash,
+                    SoundGroupType::Effects,
+                    splashVolume,
+                    true);
+            }
+        }
     }
 
     mLastWaterDisplacedMagnitude = waterDisplacedMagnitude;

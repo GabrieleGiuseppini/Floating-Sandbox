@@ -244,7 +244,7 @@ public:
 
     void play() override
     {
-        LogMessage("Sound::play(", mSoundFile.Filename, ")");
+        //LogMessage("Sound::play(", mSoundFile.Filename, ")");
 
         // Reset fade
         mFadeLevel = 1.0f;

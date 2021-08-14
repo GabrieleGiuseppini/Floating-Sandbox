@@ -35,9 +35,11 @@ ProbePanel::ProbePanel(wxWindow* parent)
     mCurrentUpdateDurationProbe = AddScalarTimeSeriesProbe(_("Update Time"), 200);
 
     mWaterTakenProbe = AddScalarTimeSeriesProbe(_("Water Inflow"), 120);
-    mWaterSplashProbe = AddScalarTimeSeriesProbe(_("Water Splash"), 200);
 
     mWindSpeedProbe = AddScalarTimeSeriesProbe(_("Wind Speed"), 200);
+
+    mStaticPressureNetForceProbe = AddScalarTimeSeriesProbe(_("Static Pressure Net Force"), 120);
+    mStaticPressureComplexityProbe = AddScalarTimeSeriesProbe(_("Static Pressure Complexity"), 120);
 
     //
     // Finalize
@@ -61,8 +63,9 @@ void ProbePanel::UpdateSimulation()
         mFrameRateProbe->UpdateSimulation();
         mCurrentUpdateDurationProbe->UpdateSimulation();
         mWaterTakenProbe->UpdateSimulation();
-        mWaterSplashProbe->UpdateSimulation();
         mWindSpeedProbe->UpdateSimulation();
+        mStaticPressureNetForceProbe->UpdateSimulation();
+        mStaticPressureComplexityProbe->UpdateSimulation();
 
         for (auto const & p : mCustomProbes)
         {
@@ -97,8 +100,9 @@ void ProbePanel::OnGameReset()
     mFrameRateProbe->Reset();
     mCurrentUpdateDurationProbe->Reset();
     mWaterTakenProbe->Reset();
-    mWaterSplashProbe->Reset();
     mWindSpeedProbe->Reset();
+    mStaticPressureNetForceProbe->Reset();
+    mStaticPressureComplexityProbe->Reset();
 
     for (auto const & p : mCustomProbes)
     {
@@ -109,11 +113,6 @@ void ProbePanel::OnGameReset()
 void ProbePanel::OnWaterTaken(float waterTaken)
 {
     mWaterTakenProbe->RegisterSample(waterTaken);
-}
-
-void ProbePanel::OnWaterSplashed(float waterSplashed)
-{
-    mWaterSplashProbe->RegisterSample(waterSplashed);
 }
 
 void ProbePanel::OnWindSpeedUpdated(
@@ -151,4 +150,12 @@ void ProbePanel::OnFrameRateUpdated(
 void ProbePanel::OnCurrentUpdateDurationUpdated(float currentUpdateDuration)
 {
     mCurrentUpdateDurationProbe->RegisterSample(currentUpdateDuration);
+}
+
+void ProbePanel::OnStaticPressureUpdated(
+    float netForce,
+    float complexity)
+{
+    mStaticPressureNetForceProbe->RegisterSample(netForce);
+    mStaticPressureComplexityProbe->RegisterSample(complexity);
 }

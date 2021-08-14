@@ -204,6 +204,18 @@ public:
         }
     }
 
+    void OnStaticPressureUpdated(
+        float netForce,
+        float complexity) override
+    {
+        for (auto sink : mStatisticsSinks)
+        {
+            sink->OnStaticPressureUpdated(
+                netForce,
+                complexity);
+        }
+    }
+
     //
     // Atmosphere
     //

@@ -945,6 +945,38 @@ Render:
 			+ Add SHIFT: length multiplier
 			+ Help
 		+ Water Impact - when ship touches water for first time (*)
+		+ Splash sounds at displacement:
+			+ Piggyback on water displacement factors, after all magnitude of splash sound depends on kinetic energy, ~= displacement magnitude
+				+ Try then to use displacement magnitude directly, after normalizing it wrt its own max
+			+ Aggregate splash sound
+			+ See why doesn't sound like different sounds
+				x Try with minTimeDelta
+					! It's because the different sounds can start even within minTimeDelta
+			+ Idea: two types of sounds played together
+				! Spec:
+					- More wave-like: predominant at low displacement
+						- Single sound
+					- More splash-like: predominant at high displacement
+						- The different sounds we have now, but different name: "displacementsplash"
+				+ WaterDisplacementWave and WaterDisplacementSplash
+				+ 1. Wave sound:
+					+ Use current wave sounds
+						+ Make sure name is proper generic "wave"
+						+ Make sure has no min time
+					+ See if can make sounds with shorter attack time
+						+ If so: "WaterDisplacementWave"
+					+ See if can reduce frequency of sounds firing
+					+ Finalize code for displacement waves
+					+ Try shorter sounds
+				+ 2. Splash sound:
+					+ Nuke old sounds, including types
+					+ New "WaterDisplacementSplash" sounds, with splashy sounds, not much wave
+					+ Algo
+			+ Sound reorg:
+				+ SoundFile::Load -> uq_ptr<SoundFile>, w/SoundFile::SoundBuffer not uq_ptr
+			+ Optimize
+			+ changelist
+		+ Make sure we don't have custom probes; convert each needed to actual method
 
 		= Ubuntu:
 			+ Event polling issue:
@@ -1048,41 +1080,10 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		= Splash sounds at displacement:
-			+ Piggyback on water displacement factors, after all magnitude of splash sound depends on kinetic energy, ~= displacement magnitude
-				+ Try then to use displacement magnitude directly, after normalizing it wrt its own max
-			+ Aggregate splash sound
-			+ See why doesn't sound like different sounds
-				x Try with minTimeDelta
-					! It's because the different sounds can start even within minTimeDelta
-			= Idea: two types of sounds played together
-				! Spec:
-					- More wave-like: predominant at low displacement
-						- Single sound
-					- More splash-like: predominant at high displacement
-						- The different sounds we have now, but different name: "displacementsplash"
-				+ WaterDisplacementWave and WaterDisplacementSplash
-				= 1. Wave sound:
-					+ Use current wave sounds
-						+ Make sure name is proper generic "wave"
-						+ Make sure has no min time
-					+ See if can make sounds with shorter attack time
-						+ If so: "WaterDisplacementWave"
-					+ See if can reduce frequency of sounds firing
-					+ Finalize code for displacement waves
-					+ Try shorter sounds
-				= 2. Splash sound:
-					+ Nuke old sounds, including types
-					+ New "WaterDisplacementSplash" sounds, with splashy sounds, not much wave
-					+ Algo
-			- Sound reorg:
-				+ SoundFile::Load -> uq_ptr<SoundFile>, w/SoundFile::SoundBuffer not uq_ptr
-				- SoundController: replace lists of continuous single-sound members with a map keyed by soundtype
-					- So can manage all at once at Reset, volume change, etc.
-
-		- Make sure we don't have custom probes; convert each needed to actual method
 
 		- Sky: satellites and shooting stars (*)
+
+		- Try replacing current water impact with per-particle impact
 
 		- More parallelism at Ship::Update
 

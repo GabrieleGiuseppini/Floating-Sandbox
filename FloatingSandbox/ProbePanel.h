@@ -47,13 +47,11 @@ public:
         gameController.RegisterGenericEventHandler(this);
     }
 
-    virtual void OnGameReset() override;
+    void OnGameReset() override;
 
-    virtual void OnWaterTaken(float waterTaken) override;
+    void OnWaterTaken(float waterTaken) override;
 
-    virtual void OnWaterSplashed(float waterSplashed) override;
-
-    virtual void OnWindSpeedUpdated(
+    void OnWindSpeedUpdated(
         float const zeroSpeedMagnitude,
         float const baseSpeedMagnitude,
         float const baseAndStormSpeedMagnitude,
@@ -61,15 +59,19 @@ public:
         float const maxSpeedMagnitude,
         vec2f const & windSpeed) override;
 
-    virtual void OnCustomProbe(
+    void OnCustomProbe(
         std::string const & name,
         float value) override;
 
-    virtual void OnFrameRateUpdated(
+    void OnFrameRateUpdated(
         float immediateFps,
         float averageFps) override;
 
-    virtual void OnCurrentUpdateDurationUpdated(float currentUpdateDuration) override;
+    void OnCurrentUpdateDurationUpdated(float currentUpdateDuration) override;
+
+    void OnStaticPressureUpdated(
+        float netForce,
+        float complexity) override;
 
 private:
 
@@ -93,7 +95,8 @@ private:
     std::unique_ptr<ScalarTimeSeriesProbeControl> mFrameRateProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mCurrentUpdateDurationProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mWaterTakenProbe;
-    std::unique_ptr<ScalarTimeSeriesProbeControl> mWaterSplashProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mWindSpeedProbe;
+    std::unique_ptr<ScalarTimeSeriesProbeControl> mStaticPressureNetForceProbe;
+    std::unique_ptr<ScalarTimeSeriesProbeControl> mStaticPressureComplexityProbe;
     std::unordered_map<std::string, std::unique_ptr<ScalarTimeSeriesProbeControl>> mCustomProbes;
 };

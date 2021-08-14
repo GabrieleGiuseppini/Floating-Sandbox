@@ -1361,11 +1361,8 @@ void Ship::ApplyStaticPressureForces(
     }
 
     // Publish stats
-    mGameEventHandler->OnCustomProbe(
-        "StaticPressure NetForce",
-        mStaticPressureNetForceMagnitudeSum / mStaticPressureNetForceMagnitudeCount);
-    mGameEventHandler->OnCustomProbe(
-        "StaticPressure Complexity",
+    mGameEventHandler->OnStaticPressureUpdated(
+        mStaticPressureNetForceMagnitudeSum / mStaticPressureNetForceMagnitudeCount,
         mStaticPressureIterationsPercentagesSum / mStaticPressureIterationsCount);
 }
 

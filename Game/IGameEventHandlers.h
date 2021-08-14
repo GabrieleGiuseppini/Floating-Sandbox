@@ -119,6 +119,13 @@ struct IStatisticsGameEventHandler
     {
         // Default-implemented
     }
+
+    virtual void OnStaticPressureUpdated(
+        float /*netForce*/,
+        float /*complexity*/)
+    {
+        // Default-implemented
+    }
 };
 
 struct IAtmosphereGameEventHandler
