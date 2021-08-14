@@ -1062,7 +1062,7 @@ Render:
 					- More splash-like: predominant at high displacement
 						- The different sounds we have now, but different name: "displacementsplash"
 				+ WaterDisplacementWave and WaterDisplacementSplash
-				+ 1. Wave sound:
+				= 1. Wave sound:
 					+ Use current wave sounds
 						+ Make sure name is proper generic "wave"
 						+ Make sure has no min time
@@ -1070,6 +1070,7 @@ Render:
 						+ If so: "WaterDisplacementWave"
 					+ See if can reduce frequency of sounds firing
 					+ Finalize code for displacement waves
+					- Try shorter sounds
 				= 2. Splash sound:
 					+ Nuke old sounds, including types
 					+ New "WaterDisplacementSplash" sounds, with splashy sounds, not much wave
@@ -1080,7 +1081,9 @@ Render:
 				- SoundController: replace lists of continuous single-sound members with a map keyed by soundtype
 					- So can manage all at once at Reset, volume change, etc.
 
-		- Make sure we don't have custom probes; convert each to actual method
+		- Make sure we don't have custom probes; convert each needed to actual method
+
+		- Sky: satellites and shooting stars (*)
 
 		- More parallelism at Ship::Update
 
