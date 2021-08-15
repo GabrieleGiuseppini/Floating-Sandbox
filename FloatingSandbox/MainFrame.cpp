@@ -202,12 +202,13 @@ MainFrame::MainFrame(
         wxMenuBar * mainMenuBar = new wxMenuBar();
 
 #ifdef __WXGTK__
-        // Note: we also build an accelerator table for plain keys because of https://trac.wxwidgets.org/ticket/17611
+        // Note: on GTK we build an accelerator table for plain keys because of https://trac.wxwidgets.org/ticket/17611
         std::vector<wxAcceleratorEntry> acceleratorEntries;
-#define ADD_PLAIN_ACCELERATOR_KEY(key, cmd) \
-        acceleratorEntries.emplace_back(wxACCEL_NORMAL, int((key)), (cmd));
+#define ADD_PLAIN_ACCELERATOR_KEY(key, menuItem) \
+        acceleratorEntries.emplace_back(wxACCEL_NORMAL, int((key)), (menuItem)->GetId(), (menuItem));
 #else
-#define ADD_PLAIN_ACCELERATOR_KEY(key, cmd)
+#define ADD_PLAIN_ACCELERATOR_KEY(key, menuItem) \
+        (void)menuItem;
 #endif
 
         // File
@@ -255,14 +256,14 @@ MainFrame::MainFrame(
         wxMenuItem * zoomInMenuItem = new wxMenuItem(controlsMenu, ID_ZOOM_IN_MENUITEM, _("Zoom In") + wxS("\t+"), wxEmptyString, wxITEM_NORMAL);
         controlsMenu->Append(zoomInMenuItem);
         Connect(ID_ZOOM_IN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomInMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('+', ID_ZOOM_IN_MENUITEM)
-        ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_ADD, ID_ZOOM_IN_MENUITEM)
+        ADD_PLAIN_ACCELERATOR_KEY('+', zoomInMenuItem)
+        ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_ADD, zoomInMenuItem)
 
         wxMenuItem * zoomOutMenuItem = new wxMenuItem(controlsMenu, ID_ZOOM_OUT_MENUITEM, _("Zoom Out") + wxS("\t-"), wxEmptyString, wxITEM_NORMAL);
         controlsMenu->Append(zoomOutMenuItem);
         Connect(ID_ZOOM_OUT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomOutMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY('-', ID_ZOOM_OUT_MENUITEM)
-        ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_SUBTRACT, ID_ZOOM_OUT_MENUITEM)
+        ADD_PLAIN_ACCELERATOR_KEY('-', zoomOutMenuItem)
+        ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_SUBTRACT, zoomOutMenuItem)
 
         wxMenuItem * amblientLightUpMenuItem = new wxMenuItem(controlsMenu, ID_AMBIENT_LIGHT_UP_MENUITEM, _("Bright Ambient Light") + wxS("\tPgUp"), wxEmptyString, wxITEM_NORMAL);
         controlsMenu->Append(amblientLightUpMenuItem);
@@ -276,7 +277,7 @@ MainFrame::MainFrame(
         controlsMenu->Append(mPauseMenuItem);
         Connect(ID_PAUSE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnPauseMenuItemSelected);
         mPauseMenuItem->Check(false);
-        ADD_PLAIN_ACCELERATOR_KEY(WXK_SPACE, ID_PAUSE_MENUITEM)
+        ADD_PLAIN_ACCELERATOR_KEY(WXK_SPACE, mPauseMenuItem)
 
         mStepMenuItem = new wxMenuItem(controlsMenu, ID_STEP_MENUITEM, _("Step") + wxS("\tEnter"), _("Step one frame at a time"), wxITEM_NORMAL);
         controlsMenu->Append(mStepMenuItem);
@@ -288,7 +289,7 @@ MainFrame::MainFrame(
         wxMenuItem * resetViewMenuItem = new wxMenuItem(controlsMenu, ID_RESET_VIEW_MENUITEM, _("Reset View") + wxS("\tHOME"), wxEmptyString, wxITEM_NORMAL);
         controlsMenu->Append(resetViewMenuItem);
         Connect(ID_RESET_VIEW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnResetViewMenuItemSelected);
-        ADD_PLAIN_ACCELERATOR_KEY(WXK_HOME, ID_RESET_VIEW_MENUITEM)
+        ADD_PLAIN_ACCELERATOR_KEY(WXK_HOME, resetViewMenuItem)
 
         mainMenuBar->Append(controlsMenu, _("&Controls"));
 
@@ -322,94 +323,144 @@ MainFrame::MainFrame(
             return toolMenuItem;\
         }();
 
-            ADD_TOOL_MENUITEM(ID_MOVE_MENUITEM, _("Move/Rotate"), wxS("\tM"), "move_cursor_up", OnMoveMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('M', ID_MOVE_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_MOVE_MENUITEM, _("Move/Rotate"), wxS("\tM"), "move_cursor_up", OnMoveMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('M', menuItem);
+            }
 
             ADD_TOOL_MENUITEM(ID_MOVE_ALL_MENUITEM, _("Move All/Rotate All"), wxS("\tALT+M"), "move_all_cursor_up", OnMoveAllMenuItemSelected);
 
-            ADD_TOOL_MENUITEM(ID_PICK_AND_PULL_MENUITEM, _("Pick-n-Pull"), wxS("\tK"), "pliers_cursor_up", OnPickAndPullMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('K', ID_PICK_AND_PULL_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_PICK_AND_PULL_MENUITEM, _("Pick-n-Pull"), wxS("\tK"), "pliers_cursor_up", OnPickAndPullMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('K', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_SMASH_MENUITEM, _("Smash"), wxS("\tS"), "smash_cursor_up", OnSmashMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('S', ID_SMASH_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_SMASH_MENUITEM, _("Smash"), wxS("\tS"), "smash_cursor_up", OnSmashMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('S', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_SLICE_MENUITEM, _("Slice"), wxS("\tL"), "chainsaw_cursor_up", OnSliceMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('L', ID_SLICE_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_SLICE_MENUITEM, _("Slice"), wxS("\tL"), "chainsaw_cursor_up", OnSliceMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('L', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_HEAT_BLASTER_MENUITEM, _("HeatBlaster/CoolBlaster"), wxS("\tH"), "heat_blaster_heat_cursor_up", OnHeatBlasterMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('H', ID_HEAT_BLASTER_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_HEAT_BLASTER_MENUITEM, _("HeatBlaster/CoolBlaster"), wxS("\tH"), "heat_blaster_heat_cursor_up", OnHeatBlasterMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('H', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_FIRE_EXTINGUISHER_MENUITEM, _("Fire Extinguisher"), wxS("\tX"), "fire_extinguisher_cursor_up", OnFireExtinguisherMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('X', ID_FIRE_EXTINGUISHER_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_FIRE_EXTINGUISHER_MENUITEM, _("Fire Extinguisher"), wxS("\tX"), "fire_extinguisher_cursor_up", OnFireExtinguisherMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('X', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_BLAST_TOOL_MENUITEM, _("Blast"), wxS("\t8"), "blast_cursor_up_1", OnBlastToolMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('8', ID_BLAST_TOOL_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_BLAST_TOOL_MENUITEM, _("Blast"), wxS("\t8"), "blast_cursor_up_1", OnBlastToolMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('8', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_ELECTRICSPARK_MENUITEM, _("Electric Spark"), wxS("\t7"), "electric_spark_cursor_up", OnElectricSparkToolMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('7', ID_ELECTRICSPARK_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_ELECTRICSPARK_MENUITEM, _("Electric Spark"), wxS("\t7"), "electric_spark_cursor_up", OnElectricSparkToolMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('7', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_GRAB_MENUITEM, _("Attract/Repel"), wxS("\tG"), "drag_cursor_up_plus", OnGrabMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('G', ID_GRAB_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_GRAB_MENUITEM, _("Attract/Repel"), wxS("\tG"), "drag_cursor_up_plus", OnGrabMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('G', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_SWIRL_MENUITEM, _("Swirl/Counterswirl"), wxS("\tW"), "swirl_cursor_up_cw", OnSwirlMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('W', ID_SWIRL_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_SWIRL_MENUITEM, _("Swirl/Counterswirl"), wxS("\tW"), "swirl_cursor_up_cw", OnSwirlMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('W', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_PIN_MENUITEM, _("Toggle Pin"), wxS("\tP"), "pin_cursor", OnPinMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('P', ID_PIN_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_PIN_MENUITEM, _("Toggle Pin"), wxS("\tP"), "pin_cursor", OnPinMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('P', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_INJECT_PRESSURE_MENUITEM, _("Inject Pressure"), wxS("\tB"), "air_tank_cursor_up", OnInjectPressureMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('B', ID_INJECT_PRESSURE_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_INJECT_PRESSURE_MENUITEM, _("Inject Pressure"), wxS("\tB"), "air_tank_cursor_up", OnInjectPressureMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('B', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_FLOOD_HOSE_MENUITEM, _("Flood/Dry"), wxS("\tF"), "flood_cursor_up", OnFloodHoseMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('F', ID_FLOOD_HOSE_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_FLOOD_HOSE_MENUITEM, _("Flood/Dry"), wxS("\tF"), "flood_cursor_up", OnFloodHoseMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('F', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_TIMERBOMB_MENUITEM, _("Toggle Timer Bomb"), wxS("\tT"), "timer_bomb_cursor", OnTimerBombMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('T', ID_TIMERBOMB_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_TIMERBOMB_MENUITEM, _("Toggle Timer Bomb"), wxS("\tT"), "timer_bomb_cursor", OnTimerBombMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('T', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_RCBOMB_MENUITEM, _("Toggle RC Bomb"), wxS("\tR"), "rc_bomb_cursor", OnRCBombMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('R', ID_RCBOMB_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_RCBOMB_MENUITEM, _("Toggle RC Bomb"), wxS("\tR"), "rc_bomb_cursor", OnRCBombMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('R', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_IMPACTBOMB_MENUITEM, _("Toggle Impact Bomb"), wxS("\tI"), "impact_bomb_cursor", OnImpactBombMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('I', ID_IMPACTBOMB_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_IMPACTBOMB_MENUITEM, _("Toggle Impact Bomb"), wxS("\tI"), "impact_bomb_cursor", OnImpactBombMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('I', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_ANTIMATTERBOMB_MENUITEM, _("Toggle Anti-Matter Bomb"), wxS("\tA"), "am_bomb_cursor", OnAntiMatterBombMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('A', ID_ANTIMATTERBOMB_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_ANTIMATTERBOMB_MENUITEM, _("Toggle Anti-Matter Bomb"), wxS("\tA"), "am_bomb_cursor", OnAntiMatterBombMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('A', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_THANOSSNAP_MENUITEM, _("Thanos' Snap"), wxS("\tQ"), "thanos_snap_cursor_up", OnThanosSnapMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('Q', ID_THANOSSNAP_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_THANOSSNAP_MENUITEM, _("Thanos' Snap"), wxS("\tQ"), "thanos_snap_cursor_up", OnThanosSnapMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('Q', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_WAVEMAKER_MENUITEM, _("WaveMaker"), wxS("\tV"), "wave_maker_cursor_up", OnWaveMakerMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('V', ID_WAVEMAKER_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_WAVEMAKER_MENUITEM, _("WaveMaker"), wxS("\tV"), "wave_maker_cursor_up", OnWaveMakerMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('V', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_ADJUSTTERRAIN_MENUITEM, _("Adjust Terrain"), wxS("\tJ"), "terrain_adjust_cursor_up", OnAdjustTerrainMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('J', ID_ADJUSTTERRAIN_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_ADJUSTTERRAIN_MENUITEM, _("Adjust Terrain"), wxS("\tJ"), "terrain_adjust_cursor_up", OnAdjustTerrainMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('J', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_REPAIRSTRUCTURE_MENUITEM, _("Repair"), wxS("\tE"), "repair_structure_cursor_up", OnRepairStructureMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('E', ID_REPAIRSTRUCTURE_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_REPAIRSTRUCTURE_MENUITEM, _("Repair"), wxS("\tE"), "repair_structure_cursor_up", OnRepairStructureMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('E', menuItem);
+            }
 
-            ADD_TOOL_MENUITEM(ID_SCRUB_MENUITEM, _("Scrub/Rot"), wxS("\tU"), "scrub_cursor_up", OnScrubMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('U', ID_SCRUB_MENUITEM);
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(ID_SCRUB_MENUITEM, _("Scrub/Rot"), wxS("\tU"), "scrub_cursor_up", OnScrubMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('U', menuItem);
+            }
 
-            mScareFishMenuItem = ADD_TOOL_MENUITEM(ID_SCAREFISH_MENUTEIM, _("Scare/Allure Fishes"), wxS("\tZ"), "megaphone_cursor_up", OnScareFishMenuItemSelected);
-            mScareFishMenuItem->Enable(false);
-            ADD_PLAIN_ACCELERATOR_KEY('Z', ID_SCAREFISH_MENUTEIM);
+            {
+                mScareFishMenuItem = ADD_TOOL_MENUITEM(ID_SCAREFISH_MENUTEIM, _("Scare/Allure Fishes"), wxS("\tZ"), "megaphone_cursor_up", OnScareFishMenuItemSelected);
+                mScareFishMenuItem->Enable(false);
+                ADD_PLAIN_ACCELERATOR_KEY('Z', mScareFishMenuItem);
+            }
 
             ADD_TOOL_MENUITEM(ID_PHYSICSPROBE_MENUITEM, _("Toggle Physics Probe"), wxS(""), "physics_probe_cursor", OnPhysicsProbeMenuItemSelected);
         }
 
         mToolsMenu->Append(new wxMenuItem(mToolsMenu, wxID_SEPARATOR));
 
-        mRCBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_RCBOMBDETONATE_MENUITEM, _("Detonate RC Bombs") + wxS("\tD"), wxEmptyString, wxITEM_NORMAL);
-        mToolsMenu->Append(mRCBombsDetonateMenuItem);
-        Connect(ID_RCBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRCBombDetonateMenuItemSelected);
-        mRCBombsDetonateMenuItem->Enable(false);
-        ADD_PLAIN_ACCELERATOR_KEY('D', ID_RCBOMBDETONATE_MENUITEM)
+        {
+            mRCBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_RCBOMBDETONATE_MENUITEM, _("Detonate RC Bombs") + wxS("\tD"), wxEmptyString, wxITEM_NORMAL);
+            mToolsMenu->Append(mRCBombsDetonateMenuItem);
+            Connect(ID_RCBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRCBombDetonateMenuItemSelected);
+            mRCBombsDetonateMenuItem->Enable(false);
+            ADD_PLAIN_ACCELERATOR_KEY('D', mRCBombsDetonateMenuItem)
+        }
 
-        mAntiMatterBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_ANTIMATTERBOMBDETONATE_MENUITEM, _("Detonate Anti-Matter Bombs") + wxS("\tN"), wxEmptyString, wxITEM_NORMAL);
-        mToolsMenu->Append(mAntiMatterBombsDetonateMenuItem);
-        Connect(ID_ANTIMATTERBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombDetonateMenuItemSelected);
-        mAntiMatterBombsDetonateMenuItem->Enable(false);
-        ADD_PLAIN_ACCELERATOR_KEY('N', ID_ANTIMATTERBOMBDETONATE_MENUITEM)
+        {
+            mAntiMatterBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_ANTIMATTERBOMBDETONATE_MENUITEM, _("Detonate Anti-Matter Bombs") + wxS("\tN"), wxEmptyString, wxITEM_NORMAL);
+            mToolsMenu->Append(mAntiMatterBombsDetonateMenuItem);
+            Connect(ID_ANTIMATTERBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombDetonateMenuItemSelected);
+            mAntiMatterBombsDetonateMenuItem->Enable(false);
+            ADD_PLAIN_ACCELERATOR_KEY('N', mAntiMatterBombsDetonateMenuItem)
+        }
 
         wxMenuItem * triggerTsunamiMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERTSUNAMI_MENUITEM, _("Trigger Tsunami"), wxEmptyString, wxITEM_NORMAL);
         mToolsMenu->Append(triggerTsunamiMenuItem);

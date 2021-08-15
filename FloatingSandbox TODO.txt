@@ -1002,12 +1002,19 @@ Render:
 				+ Walther first
 
 			= TheCrafters001: Real Hardware on a Live Linux USB Drive, OS: Linux Mint 20.1 (Ubuntu/Debian Based)
-				= Pausing is non-functional
-					+ When I check the pause option in the menu, it stays checked. For throughout most of that log I was playing with it checked. I think I managed to get it paused once, but it took a minute to get it unpaused.
-				= Changing tools using the keyboard, doesn't update the tools menu correctly. Clicking on the tool you were just using does nothing.
-				= Rotating Boats/Objects happens way too fast.
-				- Smashing a hole under the water, then reparing it, sometimes it still causes the ship/object to flood.
-				- Triggering Rouge Wave is non-functional
+				- Make fixes:
+					= Fix keyboard shortcut => menu checking
+						- Test:
+							- Pausing is non-functional: "When I check the pause option in the menu, it stays checked. For throughout most of that log I was playing with it checked. 
+							  I think I managed to get it paused once, but it took a minute to get it unpaused."
+							- Changing tools using the keyboard, doesn't update the tools menu correctly. Clicking on the tool you were just using does nothing.
+						- Remove Logging for diagnostics
+					= Rotating Boats/Objects happens way too fast.
+					- Smashing a hole under the water, then reparing it, sometimes it still causes the ship/object to flood.
+					- Triggering Rouge Wave is non-functional
+				- Add guy to credits
+					- Check if not already there
+					- Discord: give him feedback and ask alias for credits
 
 		= MAC:
 			= Full high-DPI path:
