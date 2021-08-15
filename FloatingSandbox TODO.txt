@@ -1008,8 +1008,8 @@ Render:
 							  I think I managed to get it paused once, but it took a minute to get it unpaused."
 							+ Changing tools using the keyboard, doesn't update the tools menu correctly. Clicking on the tool you were just using does nothing.
 						+ Remove Logging for diagnostics
-					= Rotating Boats/Objects happens way too fast
-						- Remove diagnostic logging
+					+ Rotating Boats/Objects happens way too fast
+						+ Remove diagnostic logging
 					- Smashing a hole under the water, then reparing it, sometimes it still causes the ship/object to flood.
 					- Triggering Rouge Wave is non-functional
 				- Add guy to credits
@@ -1095,7 +1095,7 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		- Fix issue with rotation: TODO: move first
+		- Fix issue with rotation: move first, and hit SHIFT during the move
 
 		= Night vision (*)
 

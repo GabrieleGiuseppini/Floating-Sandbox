@@ -707,9 +707,6 @@ void GameController::RotateBy(
     LogicalPixelCoordinates const & screenCenter,
     float inertialScreenDeltaY)
 {
-    // TODOTEST
-    LogMessage("TODOTEST: CanvasLogicalPixelSize().height=", mRenderContext->GetCanvasLogicalPixelSize().height);
-
     float const angle =
         2.0f * Pi<float>
         / static_cast<float>(mRenderContext->GetCanvasLogicalPixelSize().height)

@@ -312,9 +312,6 @@ public:
             }
             else
             {
-                LogMessage("TODOTEST: rawProgress=", rawProgress, " screenDeltaY=", newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y,
-                    " (newCurrentPosition=", newCurrentPosition, " mCurrentTrajectory->CurrentPosition=", mCurrentTrajectory->CurrentPosition);
-
                 // Rotate
                 mGameController->RotateBy(
                     mCurrentTrajectory->EngagedMovableObjectId,
