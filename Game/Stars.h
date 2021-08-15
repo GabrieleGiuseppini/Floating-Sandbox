@@ -30,12 +30,17 @@ private:
 
     void RegenerateStars(unsigned int numberOfStars);
 
+    struct Star;
     struct MovingStarState;
-    bool UpdateMovingStarStateMachine(MovingStarState & state);
 
-    static MovingStarState MakeMovingStarState();
+    MovingStarState MakeMovingStarStateMachine(float currentSimulationTime);
 
-    static float MakeNextMovingStarInterval();
+    bool UpdateMovingStarStateMachine(
+        MovingStarState & state,
+        float currentSimulationTime,
+        Star & movingStar);
+
+    static float CalculateNextMovingStarInterval();
 
 private:
 
@@ -62,19 +67,29 @@ private:
 
     struct MovingStarState
     {
-        Star MovingStar;
-        vec2f Direction;
-        float Speed;
+        enum class MovingStarType
+        {
+            Satellite,
+            ShootingStar
+        };
+
+        MovingStarType Type;
+        vec2f StartPosition;
+        vec2f Velocity;
         float Brightness;
+        float StartSimulationTime;
 
         MovingStarState(
+            MovingStarType type,
             vec2f const & startPosition,
+            vec2f const & velocity,
             float brightness,
-            vec2f const & direction,
-            float speed)
-            : MovingStar(startPosition, brightness)
-            , Direction(direction)
-            , Speed(speed)
+            float startSimulationTime)
+            : Type(type)
+            , StartPosition(startPosition)
+            , Velocity(velocity)
+            , Brightness(brightness)
+            , StartSimulationTime(startSimulationTime)
         {}
     };
 

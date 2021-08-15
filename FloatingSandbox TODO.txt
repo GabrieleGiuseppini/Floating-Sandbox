@@ -2223,12 +2223,13 @@ Render:
 			- Texture is distorted depending on force field
 			- TBD: see moleskine
 
-	- Satellite and shooting stars
-		- Stars "parks" always an extra star at (-1, -1)
+	= Satellites and shooting stars (*)
+		+ Stars "parks" always an extra star at (-1, -1)
 		+ (World)RenderContext: allow incremental upload of prefix of stars only
-		- State machines:
-			- Satellite
-			- Try shooting star (have Speed member)
+		= State machines:
+			= Satellite
+			= Shooting star
+			- Airplane
 		- Test (all in Debug):
 			- Changing number of stars - including zero
 			- Changing number of stars while moving star is running

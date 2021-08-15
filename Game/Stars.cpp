@@ -8,6 +8,7 @@
 #include <GameCore/GameRandomEngine.h>
 
 #include <cassert>
+#include <limits>
 
 namespace Physics {
 
@@ -16,9 +17,8 @@ Stars::Stars()
     , mStarCountDirtyForRendering()
     // Moving stars state machine
     , mCurrentMovingStarState()
-    , mNextMovingStarSimulationTime(0.0f + MakeNextMovingStarInterval())
+    , mNextMovingStarSimulationTime(std::numeric_limits<float>::max()) // Will be recalculated
 {
-    LogMessage("NEXT: ", mNextMovingStarSimulationTime);
 }
 
 void Stars::Update(
@@ -31,7 +31,21 @@ void Stars::Update(
 
     if (mStars.size() != gameParameters.NumberOfStars)
     {
+        size_t const oldSize = mStars.size();
+
         RegenerateStars(gameParameters.NumberOfStars);
+
+        if (oldSize == 0)
+        {
+            // Schedule next state machine
+            mNextMovingStarSimulationTime = currentSimulationTime + CalculateNextMovingStarInterval();
+        }
+        else if (gameParameters.NumberOfStars == 0)
+        {
+            // Clear state machine
+            mCurrentMovingStarState.reset();
+            mNextMovingStarSimulationTime = std::numeric_limits<float>::max();
+        }
     }
 
     //
@@ -40,8 +54,13 @@ void Stars::Update(
 
     if (mCurrentMovingStarState.has_value())
     {
+        assert(mStars.size() > 0);
+
         // Update current state machine
-        if (!UpdateMovingStarStateMachine(*mCurrentMovingStarState))
+        if (!UpdateMovingStarStateMachine(
+            *mCurrentMovingStarState,
+            currentSimulationTime,
+            mStars[0]))
         {
             LogMessage("END");
 
@@ -49,24 +68,18 @@ void Stars::Update(
             mCurrentMovingStarState.reset();
 
             // Schedule next state machine
-            mNextMovingStarSimulationTime = currentSimulationTime + MakeNextMovingStarInterval();
+            mNextMovingStarSimulationTime = currentSimulationTime + CalculateNextMovingStarInterval();
 
             LogMessage("NEXT: ", mNextMovingStarSimulationTime);
         }
     }
-    else
+    else if (currentSimulationTime > mNextMovingStarSimulationTime)
     {
         //
-        // See if it's time to kick off the state machine
+        // Kick off the state machine
         //
 
-        if (currentSimulationTime > mNextMovingStarSimulationTime)
-        {
-            // Start state machine
-            mCurrentMovingStarState = MakeMovingStarState();
-
-            LogMessage("START: ", mCurrentMovingStarState->Speed);
-        }
+        mCurrentMovingStarState = MakeMovingStarStateMachine(currentSimulationTime);
     }
 }
 
@@ -116,53 +129,117 @@ void Stars::RegenerateStars(unsigned int numberOfStars)
     mStarCountDirtyForRendering = numberOfStars;
 }
 
-bool Stars::UpdateMovingStarStateMachine(MovingStarState & state)
+Stars::MovingStarState Stars::MakeMovingStarStateMachine(float currentSimulationTime)
 {
-    auto & star = state.MovingStar;
-
-    star.PositionNdc += state.Direction * state.Speed * GameParameters::SimulationStepTimeDuration<float>;
-
-    // See if has left the screen
-    if (star.PositionNdc.x < 0.0f
-        || star.PositionNdc.x > 1.0f
-        || star.PositionNdc.y < 0.0f
-        || star.PositionNdc.y > 1.0f)
+    // TODOTEST
+    //if (GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f))
+    if (false)
     {
-        // Done
-        return false;
-    }
+        //
+        // Satellite
+        //
+        // - From left to right in a straight line, in the upper portion of the sky
 
-    if (!mStars.empty())
+        return MovingStarState(
+            MovingStarState::MovingStarType::Satellite,
+            vec2f(-1.0f, GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 0.98f)),
+            vec2f(0.05f, 0.0f),
+            GameRandomEngine::GetInstance().GenerateUniformReal(0.45f, 1.0f), // Brightness - constant
+            currentSimulationTime);
+    }
+    else
     {
-        mStars[0] = star;
+        //
+        // Shooting star
+        //
+        // - From top to bottom, converging towards the center of the screen
+        //
 
-        mStarCountDirtyForRendering = std::max(
-            size_t(1),
-            mStarCountDirtyForRendering.value_or(0));
+        float const startX = GameRandomEngine::GetInstance().GenerateUniformReal(-1.0f, 1.0f);
+        float const endX = GameRandomEngine::GetInstance().GenerateUniformReal(-0.15f, 0.15f);
+        vec2f const direction = vec2f(endX - startX, -1.0f).normalise();
+
+        return MovingStarState(
+            MovingStarState::MovingStarType::ShootingStar,
+            vec2f(startX, 1.0f),
+            direction * 0.8f,
+            GameRandomEngine::GetInstance().GenerateUniformReal(0.9f, 1.0f), // Brightness - max
+            currentSimulationTime);
     }
-
-    return true;
 }
 
-Stars::MovingStarState Stars::MakeMovingStarState()
+bool Stars::UpdateMovingStarStateMachine(
+    MovingStarState & state,
+    float currentSimulationTime,
+    Star & movingStar)
 {
-    float const speed = GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f)
-        ? 0.05f // Satellite
-        : 0.9f; // Shooting star
+    bool doContinue = true;
 
-    return MovingStarState(
-        vec2f::zero(),  // TODOTEST
-        GameRandomEngine::GetInstance().GenerateUniformReal(0.35f, +1.0f), // Brightness
-        vec2f(1.0f, 0.0f),  // TODOTEST
-        speed);
+    switch (state.Type)
+    {
+        case MovingStarState::MovingStarType::Satellite:
+        {
+            vec2f const newPosition =
+                state.StartPosition
+                + state.Velocity * (currentSimulationTime - state.StartSimulationTime);
+
+            movingStar.PositionNdc = newPosition;
+            movingStar.Brightness = state.Brightness;
+
+            if (newPosition.x > 1.0f)
+            {
+                doContinue = false;
+            }
+
+            break;
+        }
+
+        case MovingStarState::MovingStarType::ShootingStar:
+        {
+            vec2f const newPosition =
+                state.StartPosition
+                + state.Velocity * (currentSimulationTime - state.StartSimulationTime);
+
+            // Brightness parabole
+            float constexpr MidY = 0.5f;
+            float constexpr a = 1.0f / (MidY * (MidY - 1.0f));
+            float constexpr b = -a;
+            float const brightnessCoeff = a * newPosition.y * newPosition.y + b * newPosition.y;
+
+            movingStar.PositionNdc = newPosition;
+            movingStar.Brightness = state.Brightness * brightnessCoeff;
+
+            if (newPosition.y < 0.0f)
+            {
+                doContinue = false;
+            }
+
+            break;
+        }
+    }
+
+    if (!doContinue)
+    {
+        // Park the star
+        movingStar.PositionNdc = vec2f(-1.0f, -1.0f);
+        movingStar.Brightness = 0.0f;
+    }
+
+    // Remember to refresh the moving star
+    assert(mStars.size() > 0);
+    mStarCountDirtyForRendering = std::max(
+        size_t(1),
+        mStarCountDirtyForRendering.value_or(0));
+
+    return doContinue;
 }
 
-float Stars::MakeNextMovingStarInterval()
+float Stars::CalculateNextMovingStarInterval()
 {
-    // TODOTEST: GameParameters
-    float const rateSeconds = 2.0f;
+    // TODOTEST
+    float constexpr RateSeconds = 2.0f;
 
-    return GameRandomEngine::GetInstance().GenerateExponentialReal(1.0f / rateSeconds);
+    return GameRandomEngine::GetInstance().GenerateExponentialReal(1.0f / RateSeconds);
 }
 
 }
