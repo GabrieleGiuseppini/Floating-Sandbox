@@ -191,6 +191,8 @@ public:
 
     void SetCanvasLogicalPixelSize(LogicalPixelSize const & canvasSize)
     {
+        mCanvasLogicalPixelSize = canvasSize;
+
         mCanvasPhysicalPixelSize = PhysicalPixelSize(
             canvasSize.width * mLogicalToPhysicalPixelFactor,
             canvasSize.height * mLogicalToPhysicalPixelFactor);

@@ -1095,6 +1095,8 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
+		- Fix issue with rotation: TODO: move first
+
 		= Night vision (*)
 
 		- More parallelism at Ship::Update
