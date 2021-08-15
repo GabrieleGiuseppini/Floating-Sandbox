@@ -323,7 +323,7 @@ MainFrame::MainFrame(
         }();
 
             ADD_TOOL_MENUITEM(ID_MOVE_MENUITEM, _("Move/Rotate"), wxS("\tM"), "move_cursor_up", OnMoveMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY('K', ID_MOVE_MENUITEM);
+            ADD_PLAIN_ACCELERATOR_KEY('M', ID_MOVE_MENUITEM);
 
             ADD_TOOL_MENUITEM(ID_MOVE_ALL_MENUITEM, _("Move All/Rotate All"), wxS("\tALT+M"), "move_all_cursor_up", OnMoveAllMenuItemSelected);
 
@@ -2254,6 +2254,8 @@ void MainFrame::StartLowFrequencyTimer()
 
 void MainFrame::SetPaused(bool isPaused)
 {
+    LogMessage("TODOTEST: isPaused=", isPaused, " mPauseCount=", mPauseCount);
+
     if (isPaused)
     {
         if (0 == mPauseCount)
