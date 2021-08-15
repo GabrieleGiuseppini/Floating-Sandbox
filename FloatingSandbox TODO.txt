@@ -978,6 +978,8 @@ Render:
 			+ changelist
 		+ Make sure we don't have custom probes; convert each needed to actual method
 		+ Sky: satellites and shooting stars (*)
+		+ See explosions issue with Marine Electric (now on Desktop)
+			+ It's just too strong
 
 
 		= Ubuntu:
@@ -1082,7 +1084,7 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		- Try replacing current water impact with per-particle impact
+		= Night vision (*)
 
 		- More parallelism at Ship::Update
 
@@ -1097,12 +1099,35 @@ Render:
 				static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
 				static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
 
-		- Night vision (*)
+		- Test on Dell
+			- Test that these work: 
+				- Pressure crush
+				- ElectricSpark
+			- Perf:
+				- Before:
+				- After:
 
-		- bishobe64 in Credits?			
+		- Send for testing
+			
+		- Localization:
+			- IT
+				- Help
+				- Check out changed SettingsDialog strings
+			- ES
+				- Help
+				- Check out changed SettingsDialog strings
+			- RU
+				- Help
+				- Check out changed SettingsDialog strings
 
 		- New ships
 			- changelist
+
+		- Release 1.16.5
+
+		// -----------------------------------------------------------------------
+
+		- bishobe64 in Credits?			
 
 		- Test using normalize_approx in spring loop
 			- Verify gain on Dell
@@ -1141,33 +1166,6 @@ Render:
 				- Generic textures
 				- Fonts
 				- Fishes
-
-		- See explosions issue with Marine Electric (now on Desktop)
-
-		- Test on Dell
-			- Test that these work: 
-				- Pressure crush
-				- ElectricSpark
-			- Perf:
-				- Before:
-				- After:
-
-		- Send for testing
-			
-		- Localization:
-			- IT
-				- Help
-				- Check out changed SettingsDialog strings
-			- ES
-				- Help
-				- Check out changed SettingsDialog strings
-			- RU
-				- Help
-				- Check out changed SettingsDialog strings
-				
-		- Release 1.16.5
-
-		// -----------------------------------------------------------------------
 
 		- ShipLoadDialog Toolbar (*)
 
@@ -1816,8 +1814,9 @@ Render:
 	- Flames: make sampling resolution independent from dimensions
 		- Need to pass width and height of flame quad, and divide texture coords by these
 
-	- Night vision (*): ship is just not affected by ambient light
-		- RenderSettings & SettingsDialog
+	= Night vision (*): ship is just not affected by ambient light
+		- New float setting: Night TODOHERE
+		- RenderSettings & SettingsDialog (under normal "Rendering" section)
 		- ShipRenderContext:
 			- Upon Effective?/AmbientLightIntensity change *AND* upon change of this new render setting: set effective ambient light intensity
 

@@ -354,7 +354,7 @@ void ShipStrengthRandomizer::PropagateBatikCrack(
     BatikDistanceMatrix & distanceMatrix,
     TRandomEngine & randomEngine) const
 {
-    auto const directionPerturbationDistribution = std::uniform_int_distribution(-1, 1);
+    auto directionPerturbationDistribution = std::uniform_int_distribution(-1, 1);
 
     //
     // Propagate crack along descent derivative of distance, until a point
