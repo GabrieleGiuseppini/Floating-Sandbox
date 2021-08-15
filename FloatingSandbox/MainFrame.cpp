@@ -302,6 +302,7 @@ MainFrame::MainFrame(
         auto img2 = WxHelpers::RetintCursorImage(img, rgbColor(0x00, 0x90, 0x00));\
         toolMenuItem->SetBitmaps(wxBitmap(img2), wxBitmap(img));
 #else
+#define SET_BITMAP(img) \
         toolMenuItem->SetBitmap(wxBitmap(img));
 #endif
 
