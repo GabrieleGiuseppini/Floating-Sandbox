@@ -99,6 +99,7 @@ private:
     wxMenuItem * mPauseMenuItem;
     wxMenuItem * mStepMenuItem;
     wxMenu * mToolsMenu;
+    wxMenuItem * mSmashMenuItem;
     wxMenuItem * mScareFishMenuItem;
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mAntiMatterBombsDetonateMenuItem;
