@@ -364,6 +364,8 @@ private:
 
     void OnShipLoaded(std::filesystem::path shipFilePath);
 
+    wxAcceleratorEntry MakePlainAcceleratorKey(int key, wxMenuItem * menuItem);
+
 private:
 
     wxApp * const mMainApp;

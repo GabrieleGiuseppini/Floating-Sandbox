@@ -62,7 +62,6 @@ long const ID_PAUSE_MENUITEM = wxNewId();
 long const ID_STEP_MENUITEM = wxNewId();
 long const ID_RESET_VIEW_MENUITEM = wxNewId();
 
-long const ID_MOVE_MENUITEM = wxNewId();
 long const ID_MOVE_ALL_MENUITEM = wxNewId();
 long const ID_PICK_AND_PULL_MENUITEM = wxNewId();
 long const ID_SMASH_MENUITEM = wxNewId();
@@ -211,6 +210,16 @@ MainFrame::MainFrame(
         (void)menuItem;
 #endif
 
+#ifdef __WXGTK__
+#define ADD_PLAIN_ACCELERATOR_KEY2(key, menuItem) \
+        { \
+            acceleratorEntries.push_back(MakePlainAcceleratorKey(int((key)), (menuItem)));\
+        }
+#else
+#define ADD_PLAIN_ACCELERATOR_KEY2(key, menuItem) \
+        (void)menuItem;
+#endif
+
         // File
 
         wxMenu * fileMenu = new wxMenu();
@@ -323,9 +332,24 @@ MainFrame::MainFrame(
             return toolMenuItem;\
         }();
 
+#define ADD_TOOL_MENUITEM2(label, shortcut, bitmap_path, handler) \
+        [&]()\
+        {\
+            auto const id = wxNewId();\
+            wxMenuItem * toolMenuItem = new wxMenuItem(mToolsMenu, (id), (label) + (shortcut), wxEmptyString, wxITEM_RADIO);\
+            auto img1 = wxImage(\
+                resourceLocator.GetCursorFilePath((bitmap_path)).string(),\
+                wxBITMAP_TYPE_PNG);\
+            img1.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);\
+            SET_BITMAP(img1)\
+            mToolsMenu->Append(toolMenuItem);\
+            Connect((id), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::handler);\
+            return toolMenuItem;\
+        }();
+
             {
-                auto menuItem = ADD_TOOL_MENUITEM(ID_MOVE_MENUITEM, _("Move/Rotate"), wxS("\tM"), "move_cursor_up", OnMoveMenuItemSelected);
-                ADD_PLAIN_ACCELERATOR_KEY('M', menuItem);
+                auto menuItem = ADD_TOOL_MENUITEM2(_("Move/Rotate"), wxS("\tM"), "move_cursor_up", OnMoveMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY2('M', menuItem);
             }
 
             ADD_TOOL_MENUITEM(ID_MOVE_ALL_MENUITEM, _("Move All/Rotate All"), wxS("\tALT+M"), "move_all_cursor_up", OnMoveAllMenuItemSelected);
@@ -2401,4 +2425,27 @@ void MainFrame::OnShipLoaded(std::filesystem::path shipFilePath)
 
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetLastShipLoadedFilePath(mCurrentShipFilePath);
+}
+
+wxAcceleratorEntry MainFrame::MakePlainAcceleratorKey(int key, wxMenuItem * menuItem)
+{
+    auto const keyId = wxNewId();
+    wxAcceleratorEntry entry(wxACCEL_NORMAL, key, keyId);
+    this->Bind(
+        wxEVT_MENU,
+        [menuItem, this](wxCommandEvent &)
+        {
+            // Toggle menu - if it's checkable
+            if (menuItem->IsCheckable())
+            {
+                menuItem->Check(!menuItem->IsChecked());
+            }
+
+            // Fire menu event handler
+            wxCommandEvent evt(wxEVT_COMMAND_MENU_SELECTED, menuItem->GetId());
+            ::wxPostEvent(this, evt);
+        },
+        keyId);
+
+    return entry;
 }
