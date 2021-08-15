@@ -31,19 +31,19 @@ void Stars::Update(
 
     if (mStars.size() != gameParameters.NumberOfStars)
     {
-        size_t const oldSize = mStars.size();
-
         RegenerateStars(gameParameters.NumberOfStars);
 
-        if (oldSize == 0)
+        // Clear state machine
+        mCurrentMovingStarState.reset();
+
+        if (!mStars.empty())
         {
-            // Schedule next state machine
+            // Re-schedule next state machine
             mNextMovingStarSimulationTime = currentSimulationTime + CalculateNextMovingStarInterval();
         }
-        else if (gameParameters.NumberOfStars == 0)
+        else
         {
-            // Clear state machine
-            mCurrentMovingStarState.reset();
+            // Schedule state machine for NEVER
             mNextMovingStarSimulationTime = std::numeric_limits<float>::max();
         }
     }
@@ -62,15 +62,11 @@ void Stars::Update(
             currentSimulationTime,
             mStars[0]))
         {
-            LogMessage("END");
-
             // Done
             mCurrentMovingStarState.reset();
 
             // Schedule next state machine
             mNextMovingStarSimulationTime = currentSimulationTime + CalculateNextMovingStarInterval();
-
-            LogMessage("NEXT: ", mNextMovingStarSimulationTime);
         }
     }
     else if (currentSimulationTime > mNextMovingStarSimulationTime)
@@ -131,9 +127,7 @@ void Stars::RegenerateStars(unsigned int numberOfStars)
 
 Stars::MovingStarState Stars::MakeMovingStarStateMachine(float currentSimulationTime)
 {
-    // TODOTEST
-    //if (GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f))
-    if (false)
+    if (GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f))
     {
         //
         // Satellite
@@ -236,8 +230,7 @@ bool Stars::UpdateMovingStarStateMachine(
 
 float Stars::CalculateNextMovingStarInterval()
 {
-    // TODOTEST
-    float constexpr RateSeconds = 2.0f;
+    float constexpr RateSeconds = 10.0f;
 
     return GameRandomEngine::GetInstance().GenerateExponentialReal(1.0f / RateSeconds);
 }

@@ -467,7 +467,7 @@ struct ContinuousSound
         std::chrono::milliseconds timeToFadeOut = std::chrono::milliseconds::zero(),
         float aggregateRate = 0.3f)
     {
-        assert(!mSoundBuffer && !mSound);
+        assert(!mSoundFile && !mSound);
 
         mSoundFile = std::move(soundFile);
         mSound = std::make_unique<GameSound>(

@@ -977,6 +977,8 @@ Render:
 			+ Optimize
 			+ changelist
 		+ Make sure we don't have custom probes; convert each needed to actual method
+		+ Sky: satellites and shooting stars (*)
+
 
 		= Ubuntu:
 			+ Event polling issue:
@@ -1079,9 +1081,6 @@ Render:
 					- See if may statically link
 				- SFML: so's?
 				- DevIL: so's?
-
-
-		- Sky: satellites and shooting stars (*)
 
 		- Try replacing current water impact with per-particle impact
 
@@ -2222,19 +2221,6 @@ Render:
 		- Rendered (via option):
 			- Texture is distorted depending on force field
 			- TBD: see moleskine
-
-	= Satellites and shooting stars (*)
-		+ Stars "parks" always an extra star at (-1, -1)
-		+ (World)RenderContext: allow incremental upload of prefix of stars only
-		= State machines:
-			= Satellite
-			= Shooting star
-			- Airplane
-		- Test (all in Debug):
-			- Changing number of stars - including zero
-			- Changing number of stars while moving star is running
-			- Trigger when number of stars is zero
-				- Add LogMessage for trigger to verify
 
 	- Dynamite that may be thrown to the ship
 
@@ -9051,6 +9037,17 @@ IF WX:
 				+ Nail down value & extremes
 			+ Test dependence on water density
 			+ changelist
+	+ Satellites and shooting stars (*)
+		+ Stars "parks" always an extra star at (-1, -1)
+		+ (World)RenderContext: allow incremental upload of prefix of stars only
+		+ State machines:
+			+ Satellite
+			+ Shooting star
+		+ Test (all in Debug):
+			+ Changing number of stars - including zero
+			+ Changing number of stars while moving star is running
+				+ Add LogMessage for trigger to verify
+			+ Remove LogMessage
 
 
 
