@@ -297,6 +297,14 @@ MainFrame::MainFrame(
 
         mToolsMenu = new wxMenu();
 
+#ifdef __WXMSW__
+#define SET_BITMAP(img) \
+        auto img2 = WxHelpers::RetintCursorImage(img, rgbColor(0x00, 0x90, 0x00));\
+        toolMenuItem->SetBitmaps(wxBitmap(img2), wxBitmap(img));
+#else
+        toolMenuItem->SetBitmap(wxBitmap(img));
+#endif
+
 #define ADD_TOOL_MENUITEM(id, label, shortcut, bitmap_path, handler) \
         [&]()\
         {\
@@ -305,10 +313,9 @@ MainFrame::MainFrame(
                 resourceLocator.GetCursorFilePath((bitmap_path)).string(),\
                 wxBITMAP_TYPE_PNG);\
             img1.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);\
-            auto img2 = WxHelpers::RetintCursorImage(img1, rgbColor(0x00, 0x90, 0x00));\
-            toolMenuItem->SetBitmaps(wxBitmap(img2), wxBitmap(img1));\
+            SET_BITMAP(img1)\
             mToolsMenu->Append(toolMenuItem);\
-            Connect((id), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::##handler);\
+            Connect((id), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::handler);\
             return toolMenuItem;\
         }();
 
