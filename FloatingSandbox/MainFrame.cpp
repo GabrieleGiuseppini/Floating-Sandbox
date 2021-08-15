@@ -2284,8 +2284,6 @@ void MainFrame::StartLowFrequencyTimer()
 
 void MainFrame::SetPaused(bool isPaused)
 {
-    LogMessage("TODOTEST: isPaused=", isPaused, " mPauseCount=", mPauseCount);
-
     if (isPaused)
     {
         if (0 == mPauseCount)
