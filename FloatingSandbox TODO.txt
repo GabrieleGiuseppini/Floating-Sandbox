@@ -991,16 +991,15 @@ Render:
 			= Misc issues:
 				- Slider control is clipped
 				- MouseMove's are delayed and/or skipped
-				- The plain '+' key and the space bar don't work as shortcuts
+				- The plain '+' key doesn't work as shortcut
 			+ Build as RELEASE
 				+ See if have to set _DEBUG in CMake also for Linux, so it appears in BuildInfo
 					+ Test
 			+ README.md
 				+ Requirements: do different by OS
-			- Gather testers and send them tar.gz
+			= Gather testers and send them tar.gz
 				= gabe3333342323, ayjanu: sent friend requests
 				+ Walther first
-
 			= TheCrafters001: Real Hardware on a Live Linux USB Drive, OS: Linux Mint 20.1 (Ubuntu/Debian Based)
 				- Make fixes:
 					+ Fix keyboard shortcut => menu checking
@@ -1016,6 +1015,10 @@ Render:
 				- Add guy to credits
 					- Check if not already there
 					- Discord: give him feedback and ask alias for credits
+			- Test new feautures:
+				- Inflatable balloon popping
+				- ?
+			
 
 		= MAC:
 			= Full high-DPI path:
