@@ -980,6 +980,7 @@ Render:
 		+ Sky: satellites and shooting stars (*)
 		+ See explosions issue with Marine Electric (now on Desktop)
 			+ It's just too strong
+		+ Fix issue with rotation: move first, and hit SHIFT during the move
 
 
 		= Ubuntu:
@@ -1094,8 +1095,6 @@ Render:
 					- See if may statically link
 				- SFML: so's?
 				- DevIL: so's?
-
-		- Fix issue with rotation: move first, and hit SHIFT during the move
 
 		= Night vision (*)
 

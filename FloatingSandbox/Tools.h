@@ -540,6 +540,9 @@ private:
 
                 // Start rotation mode
                 mRotationCenter = inputState.MousePosition.ToFloat();
+
+                // Reset current trajectory, if any
+                mCurrentTrajectory.reset();
             }
         }
         else
@@ -554,6 +557,9 @@ private:
 
                 // Stop rotation mode
                 mRotationCenter.reset();
+
+                // Reset current trajectory, if any
+                mCurrentTrajectory.reset();
             }
         }
 
