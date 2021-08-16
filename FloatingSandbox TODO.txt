@@ -1017,7 +1017,9 @@ Render:
 			+ Test new feautures:
 				+ Inflatable balloon popping
 			
-		- Fix texture changer for electrical panel
+		= Fix texture changer for electrical panel
+			+ MSW
+			- Test on Ubuntu
 
 		- See windows timer/50fps thing
 			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html

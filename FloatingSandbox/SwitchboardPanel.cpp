@@ -99,7 +99,7 @@ SwitchboardPanel::SwitchboardPanel(
             return fp1.string() < fp2.string();
         });
 
-    mBackgroundSelectorPopup = std::make_unique<wxPopupTransientWindow>(this, wxBORDER_SIMPLE);
+    mBackgroundSelectorPopup = std::make_unique<wxPopupTransientWindow>(this, wxPU_CONTAINS_CONTROLS | wxBORDER_SIMPLE);
     {
         auto sizer = new wxBoxSizer(wxVERTICAL);
         {
