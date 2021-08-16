@@ -353,9 +353,9 @@ void OceanSurface::TriggerRogueWave(
     }
 
     // Choose height
-    float constexpr MaxRogueWaveHeight = 120.0f / SWEHeightFieldAmplification;
+    float constexpr MaxRogueWaveHeight = 200.0f / SWEHeightFieldAmplification;
     float const rogueWaveHeight = GameRandomEngine::GetInstance().GenerateUniformReal(
-        MaxRogueWaveHeight * 0.35f,
+        MaxRogueWaveHeight * 0.45f,
         MaxRogueWaveHeight)
         + SWEHeightFieldOffset;
 

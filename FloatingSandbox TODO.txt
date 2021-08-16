@@ -1002,7 +1002,7 @@ Render:
 				= gabe3333342323, ayjanu: sent friend requests
 				+ Walther first
 			= TheCrafters001: Real Hardware on a Live Linux USB Drive, OS: Linux Mint 20.1 (Ubuntu/Debian Based)
-				- Make fixes:
+				+ Make fixes:
 					+ Fix keyboard shortcut => menu checking
 						+ Test:
 							+ Pausing is non-functional: "When I check the pause option in the menu, it stays checked. For throughout most of that log I was playing with it checked. 
@@ -1011,15 +1011,18 @@ Render:
 						+ Remove Logging for diagnostics
 					+ Rotating Boats/Objects happens way too fast
 						+ Remove diagnostic logging
-					- Smashing a hole under the water, then reparing it, sometimes it still causes the ship/object to flood.
-					- Triggering Rouge Wave is non-functional
-				- Add guy to credits
-					- Check if not already there
+				- Add him to credits
 					- Discord: give him feedback and ask alias for credits
-			- Test new feautures:
-				- Inflatable balloon popping
-				- ?
+			+ Test new feautures:
+				+ Inflatable balloon popping
 			
+		- See windows timer/50fps thing
+			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html
+			+ @ 50fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
+			- Set to 15.625 or half of it + 1
+				- Unset @ end
+
+		- Try silting
 
 		= MAC:
 			= Full high-DPI path:

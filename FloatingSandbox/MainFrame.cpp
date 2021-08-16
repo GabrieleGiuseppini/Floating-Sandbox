@@ -1213,6 +1213,16 @@ void MainFrame::OnMainPanelKeyDown(wxKeyEvent & event)
 
 void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
 {
+    ////{
+    ////    static std::chrono::steady_clock::time_point lastGameTimerTriggerTimestamp = std::chrono::steady_clock::time_point::min();
+    ////    auto const now = std::chrono::steady_clock::now();
+    ////    if (lastGameTimerTriggerTimestamp != std::chrono::steady_clock::time_point::min())
+    ////    {
+    ////        LogMessage("Timer delay: ", std::chrono::duration_cast<std::chrono::microseconds>(now - lastGameTimerTriggerTimestamp).count());
+    ////    }
+    ////    lastGameTimerTriggerTimestamp = now;
+    ////}
+
     RunGameIteration();
 }
 
