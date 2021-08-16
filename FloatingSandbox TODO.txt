@@ -1011,11 +1011,14 @@ Render:
 						+ Remove Logging for diagnostics
 					+ Rotating Boats/Objects happens way too fast
 						+ Remove diagnostic logging
-				- Add him to credits
-					- Discord: give him feedback and ask alias for credits
+				+ Add him to credits
+					+ Discord: give him feedback and ask alias for credits: "TheCrafters001"
+				- Send him new beta
 			+ Test new feautures:
 				+ Inflatable balloon popping
 			
+		- Fix texture changer for electrical panel
+
 		- See windows timer/50fps thing
 			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html
 			+ @ 50fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
