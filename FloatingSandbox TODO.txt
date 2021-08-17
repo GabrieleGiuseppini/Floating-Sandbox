@@ -981,6 +981,9 @@ Render:
 		+ See explosions issue with Marine Electric (now on Desktop)
 			+ It's just too strong
 		+ Fix issue with rotation: move first, and hit SHIFT during the move
+		+ Fix texture changer for electrical panel
+			+ MSW
+			+ Test on Ubuntu
 
 
 		= Ubuntu:
@@ -993,6 +996,7 @@ Render:
 				- Slider control is clipped
 				- MouseMove's are delayed and/or skipped
 				- The plain '+' key doesn't work as shortcut
+				- The switchboard panel's background selection popup is crippled
 			+ Build as RELEASE
 				+ See if have to set _DEBUG in CMake also for Linux, so it appears in BuildInfo
 					+ Test
@@ -1017,17 +1021,16 @@ Render:
 			+ Test new feautures:
 				+ Inflatable balloon popping
 			
-		= Fix texture changer for electrical panel
-			+ MSW
-			- Test on Ubuntu
-
 		- See windows timer/50fps thing
 			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html
 			+ @ 50fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
 			- Set to 15.625 or half of it + 1
 				- Unset @ end
 
-		- Try silting
+		- Try silting:
+			- HandleCollisionsWithSeaFloor: position restore is scaled down when particle between 0 and SiltThickness below sea floor
+				- Scaling down is smaller (i.e. floor is harder) the closer to SiltThickness we get; linear might be jsut fine
+			- Then see what to do with velocity
 
 		= MAC:
 			= Full high-DPI path:
@@ -1149,6 +1152,8 @@ Render:
 
 		- bishobe64 in Credits?			
 
+		- Continuous Auto-focus (*)
+
 		- Test using normalize_approx in spring loop
 			- Verify gain on Dell
 
@@ -1230,6 +1235,13 @@ Render:
 
 		- Spring relaxation with intrinsics
 
+		- Try to optimize HandleCollisionsWithSeaFloor
+			- 1: we first calc if under floor, then take normal: verify assembly to check whether we calc integral index twice
+				+ Assembly shows we're calculating index twice
+				- Options to fix:
+					- Make function to calc index & dx, and then query by index & dx
+					- TODO: others
+
 		- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
 			- If it works: do "reshader" type of work (*)
 
@@ -1240,6 +1252,7 @@ Render:
 
 		- Test: re-try cache layout optimizations
 			- See current optimization's impact first with NOP optimization
+			- Check if simply ordering points by X makes it faster (because of improved ocean floor/ocean surface sampling locality)
 
 		- Splashes
 			- Option A) Ephemeral particles with own shader:
@@ -1296,7 +1309,7 @@ Render:
 
 		- Underwater currents (*)
 
-		- Continuous Auto-focus (*)
+		
 
 - Release template:
 	- Branch is merged into master (if applicable)
@@ -1856,6 +1869,14 @@ Render:
 			- Preferences setting for auto-focus (default is on)
 				- Also toggable at "Controls" menu
 			- Also works as "auto-focus at load"
+			- New spec:
+				- Turned off at view changes
+				- Orchestrated by ViewManager, member of GameController
+					- Contains RenderContext&, view parameter smoothers, and NotificationLayer&, managing all communication to these wrt view params
+				- Given resulting AABBs by GameController at own Update(), called after World::Update
+				- Communicates activation and (also unsolicited) de-activation via two new event handlers, subscribed by:
+					- MainFrame for option - or not, read at window opening? but won't catch changes
+					- GameController for notification texture
 		- Algo:
 			- Option 1:
 				- "Optimal" AABB is union of all AABBs
