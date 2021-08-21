@@ -294,21 +294,26 @@ void World::RepairAt(
     }
 }
 
-void World::SawThrough(
+bool World::SawThrough(
     vec2f const & startPos,
     vec2f const & endPos,
     bool isFirstSegment,
     GameParameters const & gameParameters)
 {
+    bool atLeastOneShipApplied = false;
+
     for (auto & ship : mAllShips)
     {
-        ship->SawThrough(
+        bool const isApplied = ship->SawThrough(
             startPos,
             endPos,
             isFirstSegment,
             mCurrentSimulationTime,
             gameParameters);
+        atLeastOneShipApplied |= isApplied;
     }
+
+    return atLeastOneShipApplied;
 }
 
 bool World::ApplyHeatBlasterAt(
@@ -321,7 +326,7 @@ bool World::ApplyHeatBlasterAt(
 
     for (auto & ship : mAllShips)
     {
-        bool isApplied = ship->ApplyHeatBlasterAt(
+        bool const isApplied = ship->ApplyHeatBlasterAt(
             targetPos,
             action,
             radius,

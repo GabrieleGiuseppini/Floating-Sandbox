@@ -788,7 +788,7 @@ void GameController::RepairAt(
         mGameParameters);
 }
 
-void GameController::SawThrough(
+bool GameController::SawThrough(
     LogicalPixelCoordinates const & startScreenCoordinates,
     LogicalPixelCoordinates const & endScreenCoordinates,
     bool isFirstSegment)
@@ -798,7 +798,7 @@ void GameController::SawThrough(
 
     // Apply action
     assert(!!mWorld);
-    mWorld->SawThrough(
+    return mWorld->SawThrough(
         startWorldCoordinates,
         endWorldCoordinates,
         isFirstSegment,

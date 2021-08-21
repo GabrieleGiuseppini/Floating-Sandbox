@@ -212,7 +212,7 @@ public:
         SequenceNumber repairStepId,
         GameParameters const & gameParameters);
 
-    void SawThrough(
+    bool SawThrough(
         vec2f const & startPos,
         vec2f const & endPos,
         bool isFirstSegment,

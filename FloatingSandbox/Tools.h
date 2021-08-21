@@ -932,7 +932,7 @@ public:
             auto const targetPosition = CalculateTargetPosition(inputState);
 
             // Saw
-            mGameController->SawThrough(
+            bool wasApplied = mGameController->SawThrough(
                 *mPreviousMousePos,
                 targetPosition,
                 mIsFirstSegment);
@@ -940,16 +940,22 @@ public:
             // Not anymore the first segment
             mIsFirstSegment = false;
 
-            // Check whether we still need to lock a direction
+            // Check whether we need to lock or unlock the direction
             if (inputState.IsShiftKeyDown
+                && wasApplied
                 && !mCurrentLockedDirection.has_value())
             {
-                auto const lastDirection = (targetPosition.ToFloat() - mPreviousMousePos->ToFloat());
-                auto const lastDirectionLength = lastDirection.length();
-                if (lastDirectionLength >= 1.5f)
+                vec2f const lastDirection = (targetPosition.ToFloat() - mPreviousMousePos->ToFloat());
+                float const lastDirectionLength = lastDirection.length();
+                if (lastDirectionLength >= 1.5f) // Some tolerance -- TODO: remove if locking change is good
                 {
                     mCurrentLockedDirection = lastDirection.normalise(lastDirectionLength);
                 }
+            }
+            else if (!inputState.IsShiftKeyDown
+                || !wasApplied)
+            {
+                mCurrentLockedDirection.reset();
             }
 
             // Remember the next previous mouse position

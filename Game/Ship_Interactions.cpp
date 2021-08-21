@@ -464,7 +464,7 @@ bool Ship::DestroyAt(
     return hasDestroyed;
 }
 
-void Ship::SawThrough(
+bool Ship::SawThrough(
     vec2f const & startPos,
     vec2f const & endPos,
     bool isFirstSegment,
@@ -526,6 +526,8 @@ void Ship::SawThrough(
     // Notify (including zero)
     mGameEventHandler->OnSawed(true, metalsSawed);
     mGameEventHandler->OnSawed(false, nonMetalsSawed);
+
+    return (metalsSawed > 0 || nonMetalsSawed > 0);
 }
 
 bool Ship::ApplyHeatBlasterAt(
@@ -1301,6 +1303,8 @@ bool Ship::QueryNearestPointAt(
         mPoints.Query(bestPointIndex);
         pointWasFound = true;
     }
+
+    mLastQueriedPointIndex = bestPointIndex;
 
 
     //

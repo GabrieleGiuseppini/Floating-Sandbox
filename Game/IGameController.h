@@ -96,7 +96,7 @@ struct IGameController
     virtual void Pull(ElementId elementId, LogicalPixelCoordinates const & screenTarget) = 0;
     virtual void DestroyAt(LogicalPixelCoordinates const & screenCoordinates, float radiusMultiplier) = 0;
     virtual void RepairAt(LogicalPixelCoordinates const & screenCoordinates, float radiusMultiplier, SequenceNumber repairStepId) = 0;
-    virtual void SawThrough(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates, bool isFirstSegment) = 0;
+    virtual bool SawThrough(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates, bool isFirstSegment) = 0;
     virtual bool ApplyHeatBlasterAt(LogicalPixelCoordinates const & screenCoordinates, HeatBlasterActionType action) = 0;
     virtual bool ExtinguishFireAt(LogicalPixelCoordinates const & screenCoordinates) = 0;
     virtual void ApplyBlastAt(LogicalPixelCoordinates const & screenCoordinates, float radiusMultiplier, float forceMultiplier, float renderProgress, float personalitySeed) = 0;
