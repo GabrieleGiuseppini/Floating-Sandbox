@@ -1355,18 +1355,11 @@ public:
 
     void Damage(ElementIndex pointElementIndex)
     {
-        // Start structural leaking if the point is originally hull
+        // Start structural leaking - but only if the point is originally not hull,
+        // as we never allow hull points to take water in
         if (!mMaterialsBuffer[pointElementIndex].Structural->IsHull)
         {
-            //
-            // Start structural leaking
-            //
-
-            // Set as leaking
-            mLeakingCompositeBuffer[pointElementIndex].LeakingSources.StructuralLeak = 1.0f;
-
-            // Randomize the initial water intaken, so that air bubbles won't come out all at the same moment
-            mCumulatedIntakenWater[pointElementIndex] = RandomizeCumulatedIntakenWater(mCurrentCumulatedIntakenWaterThresholdForAirBubbles);
+            SetStructurallyLeaking(pointElementIndex);
         }
 
         // Check if it's the first time we get damaged

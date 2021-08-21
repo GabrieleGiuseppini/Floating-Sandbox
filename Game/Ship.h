@@ -137,7 +137,7 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-    void SawThrough(
+    bool SawThrough(
         vec2f const & startPos,
         vec2f const & endPos,
         bool isFirstSegment,
@@ -805,6 +805,9 @@ private:
     // repair process
     float mRepairGracePeriodMultiplier;
 
+    // Index of last-queried point - used as an aid to debugging
+    ElementIndex mutable mLastQueriedPointIndex;
+
     //
     // Static pressure
     //
@@ -825,10 +828,11 @@ private:
         {}
     };
 
-    // Index is _not_ point index, this is simply a container
+    // Buffer of StaticPressureOnPoint structs, aiding static pressure calculations.
     //
-    // Note: may be populated for same point multiple times, once for each crossing of
-    // the frontier through that point
+    // Note: index in this buffer is _not_ point index, this is simply a container.
+    // Note: may be populated for the same point multiple times, once for each crossing of
+    // the frontier through that point.
     Buffer<StaticPressureOnPoint> mStaticPressureBuffer;
 
     // For statistics

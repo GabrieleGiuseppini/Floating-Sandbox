@@ -1854,7 +1854,7 @@ void Points::UploadEphemeralParticles(
 
                 // Calculate scale based on lifetime
                 float constexpr ScaleMax = 0.275f;
-                float constexpr ScaleMin = 0.1f;
+                float constexpr ScaleMin = 0.04f;
                 float const scale =
                     ScaleMin + (ScaleMax - ScaleMin) * LinearStep(0.0f, 2.0f, state.SimulationLifetime);
 

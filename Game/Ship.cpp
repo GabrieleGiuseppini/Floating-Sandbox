@@ -109,6 +109,7 @@ Ship::Ship(
     , mWaterSplashedRunningAverage()
     , mLastLuminiscenceAdjustmentDiffused(-1.0f)
     , mRepairGracePeriodMultiplier(1.0f)
+    , mLastQueriedPointIndex(NoneElementIndex)
     // Static pressure
     , mStaticPressureBuffer(mPoints.GetAlignedShipPointCount())
     , mStaticPressureNetForceMagnitudeSum(0.0f)
@@ -1859,16 +1860,28 @@ void Ship::HandleCollisionsWithSeaFloor(
                 // Impart final position and velocity
                 //
 
+                // TODOTEST
+                float const velocitySquared = pointVelocity.squareLength();
+                float const depth = mParentWorld.GetOceanFloorHeightAt(clampedX) - position.y;
+                float const siltingCoeff = (depth < 40.f)
+                    ? 0.5f + 0.5f * LinearStep(0.0f, 10.0f, velocitySquared)
+                    : 1.0f;
+
+                if (pointIndex == mLastQueriedPointIndex)
+                {
+                    LogMessage("velocitySquared=", velocitySquared, " siltingCoeff=", siltingCoeff);
+                }
+
                 // Move point back to where it was in the previous step,
                 // which is guaranteed to be more towards the outside
                 mPoints.SetPosition(
                     pointIndex,
-                    mPoints.GetPosition(pointIndex) - pointVelocity * dt);
+                    mPoints.GetPosition(pointIndex) - pointVelocity * dt * siltingCoeff);
 
                 // Set velocity to resultant collision velocity
                 mPoints.SetVelocity(
                     pointIndex,
-                    normalResponse + tangentialResponse);
+                    (normalResponse + tangentialResponse) * siltingCoeff);
             }
         }
     }
