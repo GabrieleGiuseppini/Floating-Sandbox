@@ -1856,21 +1856,16 @@ void Ship::HandleCollisionsWithSeaFloor(
                     tangentialVelocity
                     * inverseFriction;
 
-                //
-                // Impart final position and velocity
-                //
-
-                // TODOTEST
+                // Calculate silting coefficient
                 float const velocitySquared = pointVelocity.squareLength();
                 float const depth = mParentWorld.GetOceanFloorHeightAt(clampedX) - position.y;
                 float const siltingCoeff = (depth < 40.f)
-                    ? 0.5f + 0.5f * LinearStep(0.0f, 10.0f, velocitySquared)
+                    ? 0.25f + 0.75f * LinearStep(0.0f, 10.0f, velocitySquared)
                     : 1.0f;
 
-                if (pointIndex == mLastQueriedPointIndex)
-                {
-                    LogMessage("velocitySquared=", velocitySquared, " siltingCoeff=", siltingCoeff);
-                }
+                //
+                // Impart final position and velocity
+                //
 
                 // Move point back to where it was in the previous step,
                 // which is guaranteed to be more towards the outside
