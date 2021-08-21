@@ -6,6 +6,7 @@
 #pragma once
 
 #include "EnumFlags.h"
+#include "SysSpecifics.h"
 #include "Vectors.h"
 
 #include <picojson.h>
@@ -19,53 +20,7 @@
 #include <string>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-// Geometry
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*
- * Integral point's coordinates.
- */
-struct IntegralPoint
-{
-    int X;
-    int Y;
-
-    constexpr IntegralPoint(
-        int x,
-        int y)
-        : X(x)
-        , Y(y)
-    {}
-
-    IntegralPoint FlipY(int height) const
-    {
-        assert(height > Y);
-        return IntegralPoint(X, height - 1 - Y);
-    }
-
-    std::string ToString() const
-    {
-        std::stringstream ss;
-        ss << "(" << X << ", " << Y << ")";
-        return ss.str();
-    }
-};
-
-inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, IntegralPoint const & p)
-{
-    os << p.ToString();
-    return os;
-}
-
-/*
- * Octants, i.e. the direction of a spring connecting two neighbors.
- *
- * Octant 0 is E, octant 1 is SE, ..., Octant 7 is NE.
- */
-using Octant = std::int32_t;
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-// Data Structures
+// Basics
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -187,7 +142,7 @@ private:
 };
 
 template<typename TLocalObjectId, typename TTypeTag>
-inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, ObjectId<TLocalObjectId, TTypeTag> const & oid)
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, ObjectId<TLocalObjectId, TTypeTag> const & oid)
 {
     os << oid.ToString();
     return os;
@@ -195,15 +150,15 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, Objec
 
 namespace std {
 
-    template <typename TLocalObjectId, typename TTypeTag>
-    struct hash<ObjectId<TLocalObjectId, TTypeTag>>
+template <typename TLocalObjectId, typename TTypeTag>
+struct hash<ObjectId<TLocalObjectId, TTypeTag>>
+{
+    std::size_t operator()(ObjectId<TLocalObjectId, TTypeTag> const & objectId) const
     {
-        std::size_t operator()(ObjectId<TLocalObjectId, TTypeTag> const & objectId) const
-        {
-            return std::hash<ShipId>()(static_cast<uint16_t>(objectId.GetShipId()))
-                ^ std::hash<typename ObjectId<TLocalObjectId, TTypeTag>::LocalObjectId>()(objectId.GetLocalObjectId());
-        }
-    };
+        return std::hash<ShipId>()(static_cast<uint16_t>(objectId.GetShipId()))
+            ^ std::hash<typename ObjectId<TLocalObjectId, TTypeTag>::LocalObjectId>()(objectId.GetLocalObjectId());
+    }
+};
 
 }
 
@@ -294,6 +249,56 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, Sequ
 
     return os;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// Geometry
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ * Integral point's coordinates.
+ */
+struct IntegralPoint
+{
+    int X;
+    int Y;
+
+    constexpr IntegralPoint(
+        int x,
+        int y)
+        : X(x)
+        , Y(y)
+    {}
+
+    IntegralPoint FlipY(int height) const
+    {
+        assert(height > Y);
+        return IntegralPoint(X, height - 1 - Y);
+    }
+
+    std::string ToString() const
+    {
+        std::stringstream ss;
+        ss << "(" << X << ", " << Y << ")";
+        return ss.str();
+    }
+};
+
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, IntegralPoint const & p)
+{
+    os << p.ToString();
+    return os;
+}
+
+/*
+ * Octants, i.e. the direction of a spring connecting two neighbors.
+ *
+ * Octant 0 is E, octant 1 is SE, ..., Octant 7 is NE.
+ */
+using Octant = std::int32_t;
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// Game
+////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
  * Types of frontiers (duh).

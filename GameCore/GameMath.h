@@ -22,12 +22,12 @@ constexpr T Pi = T(3.1415926535897932385);
  *
  * As one would expect, FastTruncateToInt32(-7.6) == -7.
  */
-inline std::int32_t FastTruncateToInt32(float value) noexcept
+inline register_int_32 FastTruncateToInt32(float value) noexcept
 {
 #if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
     return _mm_cvtt_ss2si(_mm_load_ss(&value));
 #else
-    return static_cast<std::int32_t>(value);
+    return static_cast<register_int_32>(value);
 #endif
 }
 
@@ -38,12 +38,12 @@ inline std::int32_t FastTruncateToInt32(float value) noexcept
  *
  * As one would expect, FastTruncateInt64(-7.6) == -7.
  */
-inline std::int64_t FastTruncateToInt64(float value) noexcept
+inline register_int_64 FastTruncateToInt64(float value) noexcept
 {
 #if FS_IS_ARCHITECTURE_X86_64()
     return _mm_cvttss_si64(_mm_load_ss(&value));
 #else
-    return static_cast<std::int64_t>(value);
+    return static_cast<register_int_64>(value);
 #endif
 }
 
@@ -58,7 +58,7 @@ inline std::int64_t FastTruncateToInt64(float value) noexcept
  * As one would expect, FastTruncateToArchInt(-7.6) == -7.
  */
 
-inline auto FastTruncateToArchInt(float value) noexcept
+inline register_int FastTruncateToArchInt(float value) noexcept
 {
 #if FS_IS_REGISTER_WIDTH_32()
     return FastTruncateToInt32(value);

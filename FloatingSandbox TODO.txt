@@ -1041,15 +1041,23 @@ Render:
 				- Test underneath world min Y
 			+ Parameters and SettingsDialog @ OceanFloor
 			- Optimize
-				- Get % before (without silting) - Ark splattered on ocean floor: 
+				- Get perf before (without silting) 
+					- Ark splattered on ocean floor: %
+				- Export OceanFloor from parent world
+					- ...and see if below is still needed
 				- Sample ocean floor only once
-					- 1: we first calc if under floor, then take normal
+					- 1: we first check if under floor, then take normal
 						+ Assembly shows we're calculating index twice
-						- Options to fix:
-							- Make function to calc index & dx, and then query by index & dx
+						- Make function to calc index & dx, and then query by index & dx:
+							- BUT: still have to check if below, so: GetOceanFloorHeightAtIfUnderneath(...) -> bool, register_int, float
+								= New GameType: register_int, defined based on FS_IS_REGISTER_WIDTH_32/64
+									- Replace "auto" at all uses
+								- Check assembly for tuple
+							- GetOceanFloorHeightAt(integral index, dx)
+							- GetOceanFloorNormalAt(integral index, dx)
 					- Nuke IsUnderOceanFloor at end
 				- Verify assembly
-				- Get % after
+				- Get perf after
 
 		= MAC:
 			= Full high-DPI path:

@@ -74,6 +74,15 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+using register_int_32 = std::int32_t;
+using register_int_64 = std::int64_t;
+
+#if FS_IS_REGISTER_WIDTH_32()
+using register_int = register_int_32;
+#elif FS_IS_REGISTER_WIDTH_64()
+using register_int = register_int_64;
+#endif
+
 #define restrict __restrict
 
 template<typename T>
