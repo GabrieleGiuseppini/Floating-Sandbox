@@ -212,7 +212,7 @@ git clone https://github.com/GabrieleGiuseppini/Floating-Sandbox.git
 ```
 ### Configuring
 Before we build, we must tell Floating Sandbox where to find all of the libraries. To this end you'll have to craft a `UserSettings.cmake` file in Floating Sandbox's root directory, which populates variables containing the paths of all of the roots of the libraries we've been building so far.
-Luckily you're going to find a pre-cooked `UserSettings.example-linux.cmake` file in the root of the repo which, if yuo've been following these instructions verbatim, is ready for use; in that case, copy it as `UserSettings.cmake`:
+Luckily you're going to find a pre-cooked `UserSettings.example-linux.cmake` file in the root of the repo which, if you've been following these instructions verbatim, is ready for use; in that case, copy it as `UserSettings.cmake`:
 ```
 cd ~/git/Floating-Sandbox
 cp UserSettings.example-linux.cmake UserSettings.cmake

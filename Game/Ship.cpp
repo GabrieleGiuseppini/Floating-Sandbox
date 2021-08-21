@@ -1821,7 +1821,8 @@ void Ship::HandleCollisionsWithSeaFloor(
         // At this moment the point might be outside of world boundaries,
         // so better clamp its x before sampling ocean floor height
         float const clampedX = Clamp(position.x, -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth);
-        if (mParentWorld.IsUnderOceanFloor(clampedX, position.y))
+        float const underFloorDepth = mParentWorld.GetOceanFloorHeightAt(clampedX) - position.y;
+        if (underFloorDepth > 0.0f)
         {
             // Collision!
 
@@ -1858,8 +1859,7 @@ void Ship::HandleCollisionsWithSeaFloor(
 
                 // Calculate silting coefficient
                 float const velocitySquared = pointVelocity.squareLength();
-                float const depth = mParentWorld.GetOceanFloorHeightAt(clampedX) - position.y;
-                float const siltingCoeff = (depth < 40.f)
+                float const siltingCoeff = (underFloorDepth < 40.f)
                     ? 0.25f + 0.75f * LinearStep(0.0f, 10.0f, velocitySquared)
                     : 1.0f;
 
