@@ -1857,10 +1857,12 @@ void Ship::HandleCollisionsWithSeaFloor(
                     tangentialVelocity
                     * inverseFriction;
 
-                // Calculate silting coefficient
+                // Calculate silting coefficient:
+                //  0.0: freefall - with zero accumulation of velocity though
+                //  1.0: bounce
                 float const velocitySquared = pointVelocity.squareLength();
                 float const siltingCoeff = (underFloorDepth < 40.f)
-                    ? 0.25f + 0.75f * LinearStep(0.0f, 10.0f, velocitySquared)
+                    ? gameParameters.OceanFloorSiltHardness + (1.0f - gameParameters.OceanFloorSiltHardness) * LinearStep(0.0f, 10.0f, velocitySquared)
                     : 1.0f;
 
                 //

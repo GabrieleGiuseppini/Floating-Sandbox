@@ -587,6 +587,11 @@ public:
     float GetMinOceanFloorFriction() const override { return GameParameters::MinOceanFloorFriction; }
     float GetMaxOceanFloorFriction() const override { return GameParameters::MaxOceanFloorFriction; }
 
+    float GetOceanFloorSiltHardness() const override { return mGameParameters.OceanFloorSiltHardness; }
+    void SetOceanFloorSiltHardness(float value) override { mGameParameters.OceanFloorSiltHardness = value; }
+    float GetMinOceanFloorSiltHardness() const override { return GameParameters::MinOceanFloorSiltHardness; }
+    float GetMaxOceanFloorSiltHardness() const override { return GameParameters::MaxOceanFloorSiltHardness; }
+
     float GetDestroyRadius() const override { return mGameParameters.DestroyRadius; }
     void SetDestroyRadius(float value) override { mGameParameters.DestroyRadius = value; }
     float GetMinDestroyRadius() const override { return GameParameters::MinDestroyRadius; }

@@ -238,6 +238,9 @@ struct IGameControllerSettings
     virtual float GetOceanFloorFriction() const = 0;
     virtual void SetOceanFloorFriction(float value) = 0;
 
+    virtual float GetOceanFloorSiltHardness() const = 0;
+    virtual void SetOceanFloorSiltHardness(float value) = 0;
+
     virtual float GetDestroyRadius() const = 0;
     virtual void SetDestroyRadius(float value) = 0;
 

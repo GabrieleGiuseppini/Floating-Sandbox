@@ -1039,7 +1039,7 @@ Render:
 				+ Check what happens now with friction and elasticity
 					+ Verify wheels still roll
 				- Test underneath world min Y
-			- Parameters and SettingsDialog @ OceanFloor
+			+ Parameters and SettingsDialog @ OceanFloor
 			- Optimize
 				- Get % before (without silting) - Ark splattered on ocean floor: 
 				- Sample ocean floor only once

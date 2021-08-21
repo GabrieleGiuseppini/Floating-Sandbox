@@ -1140,6 +1140,53 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
     }
 
     //
+    // Ocean
+    //
+
+    {
+        wxStaticBoxSizer * oceanBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Ocean"));
+
+        {
+            wxGridBagSizer * oceanSizer = new wxGridBagSizer(0, 0);
+
+            // Ocean Depth
+            {
+                mOceanDepthSlider = new SliderControl<float>(
+                    oceanBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Depth"),
+                    _("The ocean depth (m)."),
+                    [this](float value)
+                {
+                    this->mLiveSettings.SetValue(GameSettings::SeaDepth, value);
+                    this->OnLiveSettingsChanged();
+                },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinSeaDepth(),
+                        1000.0f, // Matches default depth so that the setting is round
+                        mGameControllerSettingsOptions->GetMaxSeaDepth()));
+
+                oceanSizer->Add(
+                    mOceanDepthSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            oceanBoxSizer->Add(oceanSizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            oceanBoxSizer,
+            wxGBPosition(0, 7),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
     // Water Ingress
     //
 
@@ -1236,52 +1283,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             CellBorderOuter);
     }
 
-    //
-    // Ocean
-    //
 
-    {
-        wxStaticBoxSizer * oceanBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Ocean"));
-
-        {
-            wxGridBagSizer * oceanSizer = new wxGridBagSizer(0, 0);
-
-            // Ocean Depth
-            {
-                mOceanDepthSlider = new SliderControl<float>(
-                    oceanBoxSizer->GetStaticBox(),
-                    SliderWidth,
-                    SliderHeight,
-                    _("Depth"),
-                    _("The ocean depth (m)."),
-                    [this](float value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::SeaDepth, value);
-                    this->OnLiveSettingsChanged();
-                },
-                    std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions->GetMinSeaDepth(),
-                        1000.0f, // Matches default depth so that the setting is round
-                        mGameControllerSettingsOptions->GetMaxSeaDepth()));
-
-                oceanSizer->Add(
-                    mOceanDepthSlider,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            oceanBoxSizer->Add(oceanSizer, 1, wxALL, StaticBoxInsetMargin);
-        }
-
-        gridSizer->Add(
-            oceanBoxSizer,
-            wxGBPosition(1, 3),
-            wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
-            CellBorderOuter);
-    }
 
     //
     // Ocean Floor
@@ -1421,6 +1423,31 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Ocean Floor Silt Hardness
+            {
+                mOceanFloorSiltHardnessSlider = new SliderControl<float>(
+                    oceanFloorBoxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Silt Hardness"),
+                    _("Adjusts the hardness of the silt layer on top of the ocean floor, which slowly buries ship wrecks over time. Setting to 1.0 disables completely the simulation of silt."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::OceanFloorSiltHardness, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinOceanFloorSiltHardness(),
+                        mGameControllerSettingsOptions->GetMaxOceanFloorSiltHardness()));
+
+                oceanFloorSizer->Add(
+                    mOceanFloorSiltHardnessSlider,
+                    wxGBPosition(0, 4),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             oceanFloorSizer->AddGrowableRow(1);
 
             oceanFloorBoxSizer->Add(oceanFloorSizer, 1, wxALL, StaticBoxInsetMargin);
@@ -1428,8 +1455,8 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
 
         gridSizer->Add(
             oceanFloorBoxSizer,
-            wxGBPosition(1, 4),
-            wxGBSpan(1, 4),
+            wxGBPosition(1, 3),
+            wxGBSpan(1, 5),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -5016,6 +5043,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mOceanFloorDetailAmplificationSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorDetailAmplification));
     mOceanFloorElasticitySlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorElasticity));
     mOceanFloorFrictionSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorFriction));
+    mOceanFloorSiltHardnessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorSiltHardness));
     mRotAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RotAcceler8r));
 
     //
