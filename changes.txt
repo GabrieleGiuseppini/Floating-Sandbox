@@ -12,6 +12,7 @@
 	- Inject Pressure: increases or decreases the internal pressure of structures
 	- Blast: creates explosive force fields of different sizes and strengths
 	- Electric Spark: generates electric arcs on the surface of a ship
+- Added "silting" to the bottom of the ocean, allowing wrecks to lightly sink under the ocean floor over time
 - Made air density adjustable, and increased range of water density adjustment
 	- You can now get wild with both densities and see how they affect physical behaviors, including buoyancy, drag, and static pressure
 - Revisited physics of explosions

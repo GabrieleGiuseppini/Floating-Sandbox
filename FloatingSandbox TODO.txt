@@ -1035,7 +1035,7 @@ Render:
 					+ Verify wheels still roll
 				+ Test underneath world min Y in Debug
 			+ Parameters and SettingsDialog @ OceanFloor
-			= Optimize
+			+ Optimize
 				+ Get perf before (without silting) 
 					% default: 4.57%/4.85%
 					% Ark splattered: 5.76%/6.30%
@@ -1063,7 +1063,7 @@ Render:
 					% Ark splattered: 5.85%
 					Update ms Ark splattered: 10.3/10.4
 			- Check TimCan
-			- changelist
+			+ changelist
 
 		= MAC:
 			= Full high-DPI path:
