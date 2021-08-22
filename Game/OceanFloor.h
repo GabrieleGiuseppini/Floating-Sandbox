@@ -65,7 +65,7 @@ public:
         float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
 
         // Integral part
-        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+        register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
 
         // Fractional part within sample index and the next sample index
         float const sampleIndexDx = sampleIndexF - sampleIndexI;
@@ -78,33 +78,9 @@ public:
     }
 
     /*
-     * Assumption: x is in world boundaries.
+     * Assumption: x is within world boundaries.
      */
-    inline vec2f GetNormalAt(float x) const noexcept
-    {
-        assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
-
-        //
-        // Find sample index and use delta from next sample
-        //
-
-        // Fractional index in the sample array
-        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
-
-        // Integral part
-        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
-
-        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
-
-        return vec2f(
-            -mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue,
-            Dx).normalise();
-    }
-
-    /*
-     * Assumption: x is in world boundaries.
-     */
-    inline bool IsUnderOceanFloor(float x, float y) const noexcept
+    inline std::tuple<bool, float, register_int> GetHeightIfUnderneathAt(float x, float y) const noexcept
     {
         assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
 
@@ -116,26 +92,98 @@ public:
         float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
 
         // Integral part
-        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+        register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
         assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
 
         // Rough check (we allocate an extra sample just for this)
         if (y > mSamples[sampleIndexI].SampleValue && y > mSamples[sampleIndexI + 1].SampleValue)
         {
-            return false;
+            return std::make_tuple(false, 0.0f, sampleIndexI);
         }
 
         // Fractional part within sample index and the next sample index
         float const sampleIndexDx = sampleIndexF - sampleIndexI;
-
         assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
 
         float const sampleValue =
             mSamples[sampleIndexI].SampleValue
             + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
 
-        return y < sampleValue;
+        return std::make_tuple(y < sampleValue, sampleValue, sampleIndexI);
     }
+
+    /*
+     * Assumption: x is within world boundaries.
+     */
+    inline vec2f GetNormalAt(register_int sampleIndexI) const noexcept
+    {
+        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
+
+        return vec2f(
+            -mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue,
+            Dx).normalise();
+    }
+
+    ////// TODOOLD
+
+
+    /////*
+    //// * Assumption: x is in world boundaries.
+    //// */
+    ////inline vec2f GetNormalAt(float x) const noexcept
+    ////{
+    ////    assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
+
+    ////    //
+    ////    // Find sample index and use delta from next sample
+    ////    //
+
+    ////    // Fractional index in the sample array
+    ////    float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+
+    ////    // Integral part
+    ////    register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+    ////    assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
+
+    ////    return vec2f(
+    ////        -mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue,
+    ////        Dx).normalise();
+    ////}
+
+    /////*
+    //// * Assumption: x is in world boundaries.
+    //// */
+    ////inline bool IsUnderOceanFloor(float x, float y) const noexcept
+    ////{
+    ////    assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
+
+    ////    //
+    ////    // Find sample index and interpolate in-between that sample and the next
+    ////    //
+
+    ////    // Fractional index in the sample array
+    ////    float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+
+    ////    // Integral part
+    ////    register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+    ////    assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
+
+    ////    // Rough check (we allocate an extra sample just for this)
+    ////    if (y > mSamples[sampleIndexI].SampleValue && y > mSamples[sampleIndexI + 1].SampleValue)
+    ////    {
+    ////        return false;
+    ////    }
+
+    ////    // Fractional part within sample index and the next sample index
+    ////    float const sampleIndexDx = sampleIndexF - sampleIndexI;
+    ////    assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
+
+    ////    float const sampleValue =
+    ////        mSamples[sampleIndexI].SampleValue
+    ////        + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+
+    ////    return y < sampleValue;
+    ////}
 
 private:
 

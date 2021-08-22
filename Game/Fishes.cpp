@@ -873,8 +873,8 @@ void Fishes::UpdateDynamics(
 
         // Check ocean floor collision
         float const clampedX = Clamp(fishHeadPosition.x, -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth);
-        float const oceanFloorHeight = oceanFloor.GetHeightAt(clampedX);
-        if (fishHeadPosition.y <= oceanFloorHeight
+        if (auto const [isUnderneathFloor, oceanFloorHeight, oceanFloorIndexI] = oceanFloor.GetHeightIfUnderneathAt(clampedX, fishHeadPosition.y);
+            isUnderneathFloor // fishHeadPosition.y < oceanFloorHeight
             && fishHeadDepth > fishShoal.MaxWorldDimension * 2.0f)
         {
             //
@@ -882,7 +882,7 @@ void Fishes::UpdateDynamics(
             //
 
             // Calculate sea floor normal (positive points up, out)
-            vec2f const seaFloorNormal = oceanFloor.GetNormalAt(clampedX);
+            vec2f const seaFloorNormal = oceanFloor.GetNormalAt(oceanFloorIndexI);
 
             // Calculate the component of the fish's target velocity along the normal,
             // i.e. towards the outside of the floor...

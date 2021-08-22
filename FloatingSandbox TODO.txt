@@ -1038,25 +1038,31 @@ Render:
 					+ Use depth and absolute velocity
 				+ Check what happens now with friction and elasticity
 					+ Verify wheels still roll
-				- Test underneath world min Y
+				+ Test underneath world min Y in Debug
 			+ Parameters and SettingsDialog @ OceanFloor
-			- Optimize
-				- Get perf before (without silting) 
-					- Ark splattered on ocean floor: %
-				- Export OceanFloor from parent world
-					- ...and see if below is still needed
-				- Sample ocean floor only once
+			= Optimize
+				+ Get perf before (without silting) 
+					% default: 4.57%/4.85%
+					% Ark splattered: 5.76%/6.30%
+					Update ms Ark splattered: 10.08/10.20
+				= Export OceanFloor from parent world
+					+ Substitute ocean floor methods with export
+					X ...and see if below is still needed: check assembly
+					- Do same for ocean surface
+						- Moving three helpers to OceanSurface
+				- Try with approx_normalize
+				= Sample ocean floor only once
 					- 1: we first check if under floor, then take normal
 						+ Assembly shows we're calculating index twice
-						- Make function to calc index & dx, and then query by index & dx:
-							- BUT: still have to check if below, so: GetOceanFloorHeightAtIfUnderneath(...) -> bool, register_int, float
+						= Make function to calc index & dx, and then query by index & dx:
+							= BUT: still have to check if below, so: GetOceanFloorHeightIfUnderneath(...) -> bool, register_int, float
 								= New GameType: register_int, defined based on FS_IS_REGISTER_WIDTH_32/64
 									- Replace "auto" at all uses
-								- Check assembly for tuple
-							- GetOceanFloorHeightAt(integral index, dx)
-							- GetOceanFloorNormalAt(integral index, dx)
+								+ Check assembly for tuple
+							+ GetOceanFloorHeightAt(integral index, dx)
+							+ GetOceanFloorNormalAt(integral index, dx)
 					- Nuke IsUnderOceanFloor at end
-				- Verify assembly
+				+ Verify assembly
 				- Get perf after
 
 		= MAC:

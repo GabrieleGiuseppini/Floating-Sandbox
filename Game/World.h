@@ -94,28 +94,6 @@ public:
         mOceanSurface.DisplaceAt(x, yOffset);
     }
 
-    inline float GetOceanFloorHeightAt(float x) const noexcept
-    {
-        return mOceanFloor.GetHeightAt(x);
-    }
-
-    inline bool IsUnderOceanFloor(float x, float y) const noexcept
-    {
-        return mOceanFloor.IsUnderOceanFloor(x, y);
-    }
-
-    inline vec2f GetOceanFloorNormalAt(float x) const noexcept
-    {
-        return mOceanFloor.GetNormalAt(x);
-    }
-
-    inline void DisplaceOceanFloorAt(
-        float x,
-        float yOffset)
-    {
-        mOceanFloor.DisplaceAt(x, yOffset);
-    }
-
     inline void DisturbOceanAt(
         vec2f const & position,
         float fishScareRadius,
@@ -132,9 +110,9 @@ public:
         mFishes.TriggerWidespreadPanic(delay);
     }
 
-    inline vec2f const & GetCurrentWindSpeed() const
+    OceanFloor const & GetOceanFloor() const
     {
-        return mWind.GetCurrentWindSpeed();
+        return mOceanFloor;
     }
 
     inline void SetOceanFloorTerrain(OceanFloorTerrain const & oceanFloorTerrain)
@@ -145,6 +123,11 @@ public:
     inline OceanFloorTerrain const & GetOceanFloorTerrain() const
     {
         return mOceanFloor.GetTerrain();
+    }
+
+    inline vec2f const & GetCurrentWindSpeed() const
+    {
+        return mWind.GetCurrentWindSpeed();
     }
 
     //

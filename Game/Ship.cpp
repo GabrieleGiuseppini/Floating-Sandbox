@@ -1809,6 +1809,8 @@ void Ship::HandleCollisionsWithSeaFloor(
     float dt,
     GameParameters const & gameParameters)
 {
+    OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
+
     float const elasticityFactor = -gameParameters.OceanFloorElasticity;
     float const inverseFriction = 1.0f - gameParameters.OceanFloorFriction;
 
@@ -1821,8 +1823,8 @@ void Ship::HandleCollisionsWithSeaFloor(
         // At this moment the point might be outside of world boundaries,
         // so better clamp its x before sampling ocean floor height
         float const clampedX = Clamp(position.x, -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth);
-        float const underFloorDepth = mParentWorld.GetOceanFloorHeightAt(clampedX) - position.y;
-        if (underFloorDepth > 0.0f)
+        auto const [isUnderneathFloor, oceanFloorHeight, integralIndex] = oceanFloor.GetHeightIfUnderneathAt(clampedX, position.y);
+        if (isUnderneathFloor)
         {
             // Collision!
 
@@ -1834,7 +1836,7 @@ void Ship::HandleCollisionsWithSeaFloor(
 
             // Calculate sea floor anti-normal
             // (positive points down)
-            vec2f const seaFloorAntiNormal = -mParentWorld.GetOceanFloorNormalAt(clampedX);
+            vec2f const seaFloorAntiNormal = -oceanFloor.GetNormalAt(integralIndex);
 
             // Calculate the component of the point's velocity along the anti-normal,
             // i.e. towards the interior of the floor...
@@ -1861,7 +1863,7 @@ void Ship::HandleCollisionsWithSeaFloor(
                 //  0.0: freefall - with zero accumulation of velocity though
                 //  1.0: bounce
                 float const velocitySquared = pointVelocity.squareLength();
-                float const siltingCoeff = (underFloorDepth < 40.f)
+                float const siltingCoeff = (oceanFloorHeight - position.y < 40.f)
                     ? gameParameters.OceanFloorSiltHardness + (1.0f - gameParameters.OceanFloorSiltHardness) * LinearStep(0.0f, 10.0f, velocitySquared)
                     : 1.0f;
 
