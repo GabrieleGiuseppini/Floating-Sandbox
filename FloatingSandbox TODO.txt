@@ -1139,6 +1139,12 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
+		- Send for testing:
+			+ Win to testers
+			- Win to JohnSmith
+			+ Ubuntu to guy
+		- Bump up version
+
 		- Test on Dell
 			- Test that these work: 
 				- Pressure crush
@@ -1146,21 +1152,15 @@ Render:
 			- Perf:
 				- Before:
 				- After:
-
-		- Send for testing:
-			- Win to testers
-			- Win to JohnSmith
-			- Ubuntu to guy
-		- Bump up version
 			
 		- Localization:
-			- IT
+			= IT
 				+ Help
 				- Check out changed SettingsDialog strings
-			- ES
+			= ES
 				- Help
 				- Check out changed SettingsDialog strings
-			- RU
+			= RU
 				- Help
 				- Check out changed SettingsDialog strings
 
