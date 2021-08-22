@@ -1879,8 +1879,9 @@ Render:
 		- Need to pass width and height of flame quad, and divide texture coords by these
 
 	= Night vision (*): ship is just not affected by ambient light
-		- New float setting: Night TODOHERE
-		- RenderSettings & SettingsDialog (under normal "Rendering" section)
+		- New float setting: ShipAmbientLightSensitivity: 0.0 => fully visible at night; 1.0 => completely dark at night
+			- Formula: Param::EffectiveAmbientLightIntensity = (1.0 - ShipAmbientLightSensitivity) + ShipAmbientLightSensitivity * EffectiveAmbientLightIntensity
+			- RenderSettings & SettingsDialog (under normal "Rendering" section)
 		- ShipRenderContext:
 			- Upon Effective?/AmbientLightIntensity change *AND* upon change of this new render setting: set effective ambient light intensity
 

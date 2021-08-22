@@ -92,7 +92,6 @@ void main()
 #endif
 
 
-
 #if HEAT_RENDER_MODE != 1
     // Apply decay
     float originalLightness = dot(vec3(1.0/3.0), vertexCol.xyz);
