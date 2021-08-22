@@ -120,6 +120,7 @@ enum class GameSettings : size_t
     FlatSkyColor,
     OceanTransparency,
     OceanDarkeningRate,
+    ShipAmbientLightSensitivity,
     FlatLampLightColor,
     DefaultWaterColor,
     WaterContrast,

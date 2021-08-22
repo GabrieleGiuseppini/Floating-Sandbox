@@ -147,6 +147,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(rgbColor, FlatSkyColor);
     ADD_GC_SETTING(float, OceanTransparency);
     ADD_GC_SETTING(float, OceanDarkeningRate);
+    ADD_GC_SETTING(float, ShipAmbientLightSensitivity);
     ADD_GC_SETTING(rgbColor, FlatLampLightColor);
     ADD_GC_SETTING(rgbColor, DefaultWaterColor);
     ADD_GC_SETTING(float, WaterContrast);

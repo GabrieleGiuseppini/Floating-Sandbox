@@ -323,6 +323,9 @@ struct IGameControllerSettings
     virtual float GetOceanDarkeningRate() const = 0;
     virtual void SetOceanDarkeningRate(float value) = 0;
 
+    virtual float GetShipAmbientLightSensitivity() const = 0;
+    virtual void SetShipAmbientLightSensitivity(float value) = 0;
+
     virtual rgbColor const & GetFlatLampLightColor() const = 0;
     virtual void SetFlatLampLightColor(rgbColor const & color) = 0;
 

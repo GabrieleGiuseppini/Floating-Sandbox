@@ -718,6 +718,9 @@ public:
     float GetOceanDarkeningRate() const override { return mRenderContext->GetOceanDarkeningRate(); }
     void SetOceanDarkeningRate(float value) override { mRenderContext->SetOceanDarkeningRate(value); }
 
+    float GetShipAmbientLightSensitivity() const override { return mRenderContext->GetShipAmbientLightSensitivity(); }
+    void SetShipAmbientLightSensitivity(float value) override { mRenderContext->SetShipAmbientLightSensitivity(value); }
+
     rgbColor const & GetFlatLampLightColor() const override { return mRenderContext->GetFlatLampLightColor(); }
     void SetFlatLampLightColor(rgbColor const & color) override { mRenderContext->SetFlatLampLightColor(color); }
 

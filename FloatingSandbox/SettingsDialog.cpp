@@ -3883,9 +3883,9 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             CellBorderInner);
     }
 
-    // Heat
+    // Ship
     {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Heat"));
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Ship"));
 
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
@@ -3959,6 +3959,31 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Ambient Light Sensitivity
+            {
+                mShipAmbientLightSensitivitySlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderWidth,
+                    SliderHeight,
+                    _("Night Vision"),
+                    _("Controls the sensitivity of the ship to ambient light; lower values allow the ship to be visible also at night."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ShipAmbientLightSensitivity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                sizer->Add(
+                    mShipAmbientLightSensitivitySlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             // Flame size adjustment
             {
                 mShipFlameSizeAdjustmentSlider = new SliderControl<float>(
@@ -3978,7 +4003,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                 sizer->Add(
                     mShipFlameSizeAdjustmentSlider,
-                    wxGBPosition(0, 2),
+                    wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
                     wxALL,
                     CellBorderInner);
@@ -5225,6 +5250,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mHeatSensitivitySlider->SetValue(settings.GetValue<float>(GameSettings::HeatSensitivity));
     mHeatSensitivitySlider->Enable(heatRenderMode != HeatRenderModeType::None);
     mShipFlameSizeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipFlameSizeAdjustment));
+    mShipAmbientLightSensitivitySlider->SetValue(settings.GetValue<float>(GameSettings::ShipAmbientLightSensitivity));
 
     auto const defaultWaterColor = settings.GetValue<rgbColor>(GameSettings::DefaultWaterColor);
     mDefaultWaterColorPicker->SetColour(wxColor(defaultWaterColor.r, defaultWaterColor.g, defaultWaterColor.b));

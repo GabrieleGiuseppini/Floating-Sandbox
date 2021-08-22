@@ -26,6 +26,7 @@
 - Changed default ocean depth to 1,000m
 - Added "direction lock" to slice tool - hitting the SHIFT key during a cut locks its direction
 - Improved rain
+- Added "Night Vision" setting, allowing ships to be visible also at night
 - Added a few more ships, among which:
 	- Inflatable Balloon: demonstrates structures expanding with pressure
 		- Expands and shrinks when internal pressure is regulated via the new "Inject Pressure" tool 

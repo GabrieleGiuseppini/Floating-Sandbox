@@ -355,6 +355,17 @@ public:
     // Ship rendering properties
     //
 
+    float GetShipAmbientLightSensitivity() const
+    {
+        return mRenderParameters.ShipAmbientLightSensitivity;
+    }
+
+    void SetShipAmbientLightSensitivity(float shipAmbientLightSensitivity)
+    {
+        mRenderParameters.ShipAmbientLightSensitivity = shipAmbientLightSensitivity;
+        mRenderParameters.IsShipAmbientLightSensitivityDirty = true;
+    }
+
     rgbColor const & GetFlatLampLightColor() const
     {
         return mRenderParameters.FlatLampLightColor;

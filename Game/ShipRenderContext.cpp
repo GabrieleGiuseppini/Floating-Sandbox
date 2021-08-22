@@ -1014,6 +1014,7 @@ void ShipRenderContext::ProcessParameterChanges(RenderParameters const & renderP
     }
 
     if (renderParameters.IsEffectiveAmbientLightIntensityDirty
+        || renderParameters.IsShipAmbientLightSensitivityDirty
         || renderParameters.AreShipStructureRenderModeSelectorsDirty)
     {
         ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
@@ -2441,56 +2442,60 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
     // Set parameter in all programs
     //
 
+    float const effectiveAmbientLightIntensityParamValue =
+        (1.0f - renderParameters.ShipAmbientLightSensitivity)
+        + renderParameters.ShipAmbientLightSensitivity * renderParameters.EffectiveAmbientLightIntensity;
+
     if (renderParameters.HeatRenderMode != HeatRenderModeType::HeatOverlay)
     {
         mShaderManager.ActivateProgram(mShipPointsProgram);
         mShaderManager.SetProgramParameter<ProgramParameterType::EffectiveAmbientLightIntensity>(
             mShipPointsProgram,
-            renderParameters.EffectiveAmbientLightIntensity);
+            effectiveAmbientLightIntensityParamValue);
 
         mShaderManager.ActivateProgram(mShipRopesProgram);
         mShaderManager.SetProgramParameter<ProgramParameterType::EffectiveAmbientLightIntensity>(
             mShipRopesProgram,
-            renderParameters.EffectiveAmbientLightIntensity);
+            effectiveAmbientLightIntensityParamValue);
 
         mShaderManager.ActivateProgram(mShipSpringsProgram);
         mShaderManager.SetProgramParameter<ProgramParameterType::EffectiveAmbientLightIntensity>(
             mShipSpringsProgram,
-            renderParameters.EffectiveAmbientLightIntensity);
+            effectiveAmbientLightIntensityParamValue);
 
         mShaderManager.ActivateProgram(mShipTrianglesProgram);
         mShaderManager.SetProgramParameter<ProgramParameterType::EffectiveAmbientLightIntensity>(
             mShipTrianglesProgram,
-            renderParameters.EffectiveAmbientLightIntensity);
+            effectiveAmbientLightIntensityParamValue);
     }
 
     mShaderManager.ActivateProgram<ProgramType::ShipSpringsDecay>();
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsDecay, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
+        effectiveAmbientLightIntensityParamValue);
 
     mShaderManager.ActivateProgram<ProgramType::ShipSpringsInternalPressure>();
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsInternalPressure, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
+        effectiveAmbientLightIntensityParamValue);
 
     mShaderManager.ActivateProgram<ProgramType::ShipSpringsStrength>();
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsStrength, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
+        effectiveAmbientLightIntensityParamValue);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesDecay, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
+        effectiveAmbientLightIntensityParamValue);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesInternalPressure>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesInternalPressure, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
+        effectiveAmbientLightIntensityParamValue);
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesStrength>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesStrength, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
+        effectiveAmbientLightIntensityParamValue);
 
     mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
     mShaderManager.SetProgramParameter<ProgramType::ShipGenericMipMappedTextures, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
+        effectiveAmbientLightIntensityParamValue);
 }
 
 void ShipRenderContext::ApplyFlatLampLightColorChanges(RenderParameters const & renderParameters)

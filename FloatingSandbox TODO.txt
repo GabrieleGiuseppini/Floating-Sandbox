@@ -985,6 +985,8 @@ Render:
 			+ MSW
 			+ Test on Ubuntu
 		+ bishobe644 in Credits
+		+ Night vision (*)
+		+ Help intro: add all new physics
 
 
 		= Ubuntu:
@@ -1139,10 +1141,6 @@ Render:
 					- See if may statically link
 				- SFML: so's?
 				- DevIL: so's?
-
-		= Night vision (*)
-
-		- Help intro: add all new physics
 
 		- Test on Dell
 			- Test that these work: 
@@ -1878,19 +1876,13 @@ Render:
 	- Flames: make sampling resolution independent from dimensions
 		- Need to pass width and height of flame quad, and divide texture coords by these
 
-	= Night vision (*): ship is just not affected by ambient light
-		- New float setting: ShipAmbientLightSensitivity: 0.0 => fully visible at night; 1.0 => completely dark at night
-			- Formula: Param::EffectiveAmbientLightIntensity = (1.0 - ShipAmbientLightSensitivity) + ShipAmbientLightSensitivity * EffectiveAmbientLightIntensity
-			- RenderSettings & SettingsDialog (under normal "Rendering" section)
-		- ShipRenderContext:
-			- Upon Effective?/AmbientLightIntensity change *AND* upon change of this new render setting: set effective ambient light intensity
-
 	- Intro screen: the game's title falling into the sea and floating back up - interactive to a smaller extent, e.g.
 	  by just punching holes
 
 	- Background ships: just any of the other ships, that would sail in the background
 
 	- Fog
+		- Requires post-processing work
 
 	- Continuous auto-focus (*)
 		- Vision: once we have ships, make "Lock Ship in View" flag and move camera with ship's center
@@ -4529,6 +4521,15 @@ IF WX:
 			+ Run ApiTrace
 		+ changelist
 			+ "...incandescence is now visible..."
+	+ Night vision (*): ship is just not affected by ambient light
+		+ New float setting: ShipAmbientLightSensitivity: 0.0 => fully visible at night; 1.0 => completely dark at night
+			+ Formula: Param::EffectiveAmbientLightIntensity = (1.0 - ShipAmbientLightSensitivity) + ShipAmbientLightSensitivity * EffectiveAmbientLightIntensity
+			+ RenderParameters
+		+ SettingsDialog (under normal "Rendering" section)
+		+ ShipRenderContext:
+			+ Upon Effective?/AmbientLightIntensity change *AND* upon change of this new render setting: set effective ambient light intensity
+		+ Test
+		+ changelist
 
 
 + Gfx Optimizations:
