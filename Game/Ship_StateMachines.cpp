@@ -147,7 +147,7 @@ bool Ship::UpdateExplosionStateMachine(
         if (gameParameters.DoDisplaceWater)
         {
             // Explosion depth (positive when underwater)
-            float const explosionDepth = mParentWorld.GetDepth(centerPosition);
+            float const explosionDepth = mParentWorld.GetOceanSurface().GetDepth(centerPosition);
             float const absExplosionDepth = std::abs(explosionDepth);
 
             // No effect when abs depth greater than this

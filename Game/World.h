@@ -70,30 +70,6 @@ public:
 
     vec2f GetShipSize(ShipId shipId) const;
 
-    inline float GetOceanSurfaceHeightAt(float x) const noexcept
-    {
-        return mOceanSurface.GetHeightAt(x);
-    }
-
-    inline float GetDepth(vec2f const & position) const noexcept
-    {
-        return GetOceanSurfaceHeightAt(position.x) - position.y;
-    }
-
-    inline bool IsUnderwater(vec2f const & position) const noexcept
-    {
-        return GetDepth(position) > 0.0f;
-    }
-
-    bool IsUnderwater(ElementId elementId) const;
-
-    inline void DisplaceOceanSurfaceAt(
-        float x,
-        float yOffset)
-    {
-        mOceanSurface.DisplaceAt(x, yOffset);
-    }
-
     inline void DisturbOceanAt(
         vec2f const & position,
         float fishScareRadius,
@@ -108,6 +84,20 @@ public:
     inline void DisturbOcean(std::chrono::milliseconds delay)
     {
         mFishes.TriggerWidespreadPanic(delay);
+    }
+
+    OceanSurface const & GetOceanSurface() const
+    {
+        return mOceanSurface;
+    }
+
+    bool IsUnderwater(ElementId elementId) const;
+
+    inline void DisplaceOceanSurfaceAt(
+        float x,
+        float yOffset)
+    {
+        mOceanSurface.DisplaceAt(x, yOffset);
     }
 
     OceanFloor const & GetOceanFloor() const

@@ -89,6 +89,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("DioxCode (https://www.youtube.com/channel/UC7Fk3s8hw_CQydnOG4epYFQ)"), 0},
         {1, wxS("m2"), 0},
         {1, wxS("Oxurus"), 0},
+        {1, wxS("bishobe644"), 0},
         {1, wxS("TheCrafters001"), VMargin3},
 
         {0, _("TRANSLATION"), 0},

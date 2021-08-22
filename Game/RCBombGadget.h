@@ -104,7 +104,7 @@ private:
         ++mPingOnStepCounter;
 
         mGameEventHandler->OnRCBombPing(
-            mParentWorld.IsUnderwater(GetPosition()),
+            mParentWorld.GetOceanSurface().IsUnderwater(GetPosition()),
             1);
 
         // Schedule next transition

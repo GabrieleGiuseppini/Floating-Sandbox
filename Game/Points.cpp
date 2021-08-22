@@ -49,7 +49,7 @@ void Points::Add(
     mBuoyancyCoefficientsBuffer.emplace_back(CalculateBuoyancyCoefficients(
         structuralMaterial.BuoyancyVolumeFill,
         structuralMaterial.ThermalExpansionCoefficient));
-    mCachedDepthBuffer.emplace_back(mParentWorld.GetDepth(position));
+    mCachedDepthBuffer.emplace_back(mParentWorld.GetOceanSurface().GetDepth(position));
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
 
@@ -603,7 +603,7 @@ void Points::DestroyEphemeralParticle(
     // Fire destroy event
     mGameEventHandler->OnDestroy(
         GetStructuralMaterial(pointElementIndex),
-        mParentWorld.IsUnderwater(GetPosition(pointElementIndex)),
+        mParentWorld.GetOceanSurface().IsUnderwater(GetPosition(pointElementIndex)),
         1u);
 
     // Expire particle

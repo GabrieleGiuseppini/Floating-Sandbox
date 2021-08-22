@@ -69,7 +69,7 @@ public:
                 // Notify
                 mGameEventHandler->OnPinToggled(
                     false,
-                    mParentWorld.IsUnderwater(mShipPoints.GetPosition(*it)));
+                    mParentWorld.GetOceanSurface().IsUnderwater(mShipPoints.GetPosition(*it)));
 
                 // We're done
                 return true;
@@ -127,7 +127,7 @@ public:
             // Notify
             mGameEventHandler->OnPinToggled(
                 true,
-                mParentWorld.IsUnderwater(mShipPoints.GetPosition(nearestUnpinnedPointIndex)));
+                mParentWorld.GetOceanSurface().IsUnderwater(mShipPoints.GetPosition(nearestUnpinnedPointIndex)));
 
             // We're done
             return true;
@@ -149,7 +149,7 @@ public:
             // Notify
             mGameEventHandler->OnPinToggled(
                 false,
-                mParentWorld.IsUnderwater(mShipPoints.GetPosition(*it)));
+                mParentWorld.GetOceanSurface().IsUnderwater(mShipPoints.GetPosition(*it)));
         }
 
         mCurrentPinnedPoints.clear();

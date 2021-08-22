@@ -793,7 +793,7 @@ std::optional<ToolApplicationLocus> Ship::InjectBubblesAt(
         -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth,
         -GameParameters::HalfMaxWorldHeight, GameParameters::HalfMaxWorldHeight);
 
-    if (float const depth = mParentWorld.GetDepth(position);
+    if (float const depth = mParentWorld.GetOceanSurface().GetDepth(position);
         depth > 0.0f)
     {
         GenerateAirBubble(
@@ -910,7 +910,7 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
             bestPointIndex,
             std::max(mPoints.GetInternalPressure(bestPointIndex) + quantityOfPressureDelta, 0.0f));
 
-        return (mParentWorld.IsUnderwater(mPoints.GetPosition(bestPointIndex))
+        return (mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(bestPointIndex))
             ? ToolApplicationLocus::UnderWater
             : ToolApplicationLocus::AboveWater)
             | ToolApplicationLocus::Ship;
@@ -1150,7 +1150,7 @@ bool Ship::RotThrough(
                 // and more pronounced when the point is underwater or has water
                 //
 
-                float const decayCoeff = (mParentWorld.IsUnderwater(pointPosition) || mPoints.GetWater(pointIndex) >= 1.0f)
+                float const decayCoeff = (mParentWorld.GetOceanSurface().IsUnderwater(pointPosition) || mPoints.GetWater(pointIndex) >= 1.0f)
                     ? 0.0175f
                     : 0.010f;
 
@@ -1355,7 +1355,7 @@ std::optional<vec2f> Ship::FindSuitableLightningTarget() const
         {
             auto const & pos = mPoints.GetPosition(pointIndex);
 
-            if (!mParentWorld.IsUnderwater(pos))
+            if (!mParentWorld.GetOceanSurface().IsUnderwater(pos))
             {
                 candidatePositions.insert(
                     std::upper_bound(

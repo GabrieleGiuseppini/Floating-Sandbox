@@ -52,7 +52,7 @@ public:
         float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
 
         // Integral part
-        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+        register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
 
         // Fractional part within sample index and the next sample index
         float const sampleIndexDx = sampleIndexF - sampleIndexI;
@@ -62,6 +62,16 @@ public:
 
         return mSamples[sampleIndexI].SampleValue
             + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+    }
+
+    inline float GetDepth(vec2f const & position) const noexcept
+    {
+        return GetHeightAt(position.x) - position.y;
+    }
+
+    inline bool IsUnderwater(vec2f const & position) const noexcept
+    {
+        return GetDepth(position) > 0.0f;
     }
 
     /*
@@ -79,7 +89,7 @@ public:
         float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
 
         // Integral part
-        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+        register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
 
         assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
 
@@ -102,7 +112,7 @@ public:
         float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth + Dx / 2.0f) / Dx;
 
         // Integral part
-        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+        register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
 
         assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
 
@@ -129,7 +139,7 @@ private:
     {
         // Calculate sample index, minimizing error
         float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
-        auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF + 0.5f);
+        register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF + 0.5f);
         assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
 
         return sampleIndexI;

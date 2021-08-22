@@ -62,7 +62,7 @@ public:
 
     bool IsUnderwater(ElementIndex pointElementIndex) const
     {
-        return mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex));
+        return mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex));
     }
 
     void SetEventRecorder(EventRecorder * eventRecorder);

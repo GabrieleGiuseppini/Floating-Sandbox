@@ -1903,7 +1903,7 @@ void ElectricalElements::UpdateSinks(
                         vec2f const engineOffsetedPosition = enginePosition + engineOffset;
 
                         // New depth at offset
-                        float const offsetedEngineDepth = mParentWorld.GetDepth(engineOffsetedPosition);
+                        float const offsetedEngineDepth = mParentWorld.GetOceanSurface().GetDepth(engineOffsetedPosition);
 
                         // Sine perturbation - to make sure that water displacement keeps moving,
                         // otherwise big waves build up

@@ -116,7 +116,7 @@ void Springs::Destroy(
     {
         mGameEventHandler->OnBreak(
             GetBaseStructuralMaterial(springElementIndex),
-            mParentWorld.IsUnderwater(GetEndpointAPosition(springElementIndex, points)), // Arbitrary
+            mParentWorld.GetOceanSurface().IsUnderwater(GetEndpointAPosition(springElementIndex, points)), // Arbitrary
             1);
     }
 
@@ -277,6 +277,8 @@ void Springs::UpdateForStrains(
     float constexpr StrainHighWatermark = 0.5f; // Greater than this multiplier to be stressed
     float constexpr StrainLowWatermark = 0.08f; // Less than this multiplier to become non-stressed
 
+    OceanSurface const & oceanSurface = mParentWorld.GetOceanSurface();
+
     // Visit all springs
     for (ElementIndex s : *this)
     {
@@ -324,7 +326,7 @@ void Springs::UpdateForStrains(
                     // Notify stress
                     mGameEventHandler->OnStress(
                         GetBaseStructuralMaterial(s),
-                        mParentWorld.IsUnderwater(GetEndpointAPosition(s, points)), // Arbitrary
+                        oceanSurface.IsUnderwater(GetEndpointAPosition(s, points)), // Arbitrary
                         1);
                 }
             }

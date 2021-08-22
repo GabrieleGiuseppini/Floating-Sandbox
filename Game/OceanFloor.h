@@ -121,69 +121,8 @@ public:
 
         return vec2f(
             -mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue,
-            Dx).normalise();
+            Dx).normalise_approx();
     }
-
-    ////// TODOOLD
-
-
-    /////*
-    //// * Assumption: x is in world boundaries.
-    //// */
-    ////inline vec2f GetNormalAt(float x) const noexcept
-    ////{
-    ////    assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
-
-    ////    //
-    ////    // Find sample index and use delta from next sample
-    ////    //
-
-    ////    // Fractional index in the sample array
-    ////    float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
-
-    ////    // Integral part
-    ////    register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
-    ////    assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
-
-    ////    return vec2f(
-    ////        -mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue,
-    ////        Dx).normalise();
-    ////}
-
-    /////*
-    //// * Assumption: x is in world boundaries.
-    //// */
-    ////inline bool IsUnderOceanFloor(float x, float y) const noexcept
-    ////{
-    ////    assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
-
-    ////    //
-    ////    // Find sample index and interpolate in-between that sample and the next
-    ////    //
-
-    ////    // Fractional index in the sample array
-    ////    float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
-
-    ////    // Integral part
-    ////    register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
-    ////    assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
-
-    ////    // Rough check (we allocate an extra sample just for this)
-    ////    if (y > mSamples[sampleIndexI].SampleValue && y > mSamples[sampleIndexI + 1].SampleValue)
-    ////    {
-    ////        return false;
-    ////    }
-
-    ////    // Fractional part within sample index and the next sample index
-    ////    float const sampleIndexDx = sampleIndexF - sampleIndexI;
-    ////    assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
-
-    ////    float const sampleValue =
-    ////        mSamples[sampleIndexI].SampleValue
-    ////        + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
-
-    ////    return y < sampleValue;
-    ////}
 
 private:
 

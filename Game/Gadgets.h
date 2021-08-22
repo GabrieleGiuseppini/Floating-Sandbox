@@ -147,7 +147,7 @@ private:
             mGameEventHandler->OnGadgetPlaced(
                 gadget->GetId(),
                 gadget->GetType(),
-                mParentWorld.IsUnderwater(
+                mParentWorld.GetOceanSurface().IsUnderwater(
                     gadget->GetPosition()));
         }
 
@@ -173,7 +173,7 @@ private:
             mGameEventHandler->OnGadgetRemoved(
                 gadget.GetId(),
                 gadget.GetType(),
-                mParentWorld.IsUnderwater(gadget.GetPosition()));
+                mParentWorld.GetOceanSurface().IsUnderwater(gadget.GetPosition()));
         }
     }
 

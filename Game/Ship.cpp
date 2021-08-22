@@ -923,6 +923,8 @@ void Ship::ApplyWorldParticleForces(
         GameParameters::WaterFrictionDragCoefficient
         * gameParameters.WaterFrictionDragAdjustment;
 
+    OceanSurface const & oceanSurface = mParentWorld.GetOceanSurface();
+
     float * const restrict newCachedPointDepthsBuffer = newCachedPointDepths.data();
     vec2f * const restrict staticForcesBuffer = mPoints.GetStaticForceBufferAsVec2();
 
@@ -934,7 +936,7 @@ void Ship::ApplyWorldParticleForces(
         // Calculate and store depth
         //
 
-        newCachedPointDepthsBuffer[pointIndex] = mParentWorld.GetDepth(mPoints.GetPosition(pointIndex));
+        newCachedPointDepthsBuffer[pointIndex] = oceanSurface.GetDepth(mPoints.GetPosition(pointIndex));
 
         //
         // Calculate above/under-water coefficient
@@ -1409,7 +1411,7 @@ void Ship::ApplyStaticPressureForces(
     //
 
     vec2f const & geometricCenterPosition = frontier.GeometricCenterPosition;
-    float const oceanSurfaceY = mParentWorld.GetOceanSurfaceHeightAt(geometricCenterPosition.x);
+    float const oceanSurfaceY = mParentWorld.GetOceanSurface().GetHeightAt(geometricCenterPosition.x);
     float const depth = oceanSurfaceY - geometricCenterPosition.y;
 
     float const totalExternalPressure = Formulae::CalculateTotalPressureAt(
@@ -1814,6 +1816,9 @@ void Ship::HandleCollisionsWithSeaFloor(
     float const elasticityFactor = -gameParameters.OceanFloorElasticity;
     float const inverseFriction = 1.0f - gameParameters.OceanFloorFriction;
 
+    float const siltingFactor1 = gameParameters.OceanFloorSiltHardness;
+    float const siltingFactor2 = 1.0f - gameParameters.OceanFloorSiltHardness;
+
     for (auto pointIndex : mPoints)
     {
         auto const & position = mPoints.GetPosition(pointIndex);
@@ -1863,8 +1868,8 @@ void Ship::HandleCollisionsWithSeaFloor(
                 //  0.0: freefall - with zero accumulation of velocity though
                 //  1.0: bounce
                 float const velocitySquared = pointVelocity.squareLength();
-                float const siltingCoeff = (oceanFloorHeight - position.y < 40.f)
-                    ? gameParameters.OceanFloorSiltHardness + (1.0f - gameParameters.OceanFloorSiltHardness) * LinearStep(0.0f, 10.0f, velocitySquared)
+                float const siltingCoeff = (oceanFloorHeight - position.y < 40.f) // Just make sure won't ever get buried too deep
+                    ? siltingFactor1 + siltingFactor2 * LinearStep(0.0f, 10.0f, velocitySquared)
                     : 1.0f;
 
                 //
@@ -3198,7 +3203,7 @@ void Ship::GenerateDebris(
 
         vec2f const pointPosition = mPoints.GetPosition(pointElementIndex);
 
-        float const pointDepth = mParentWorld.GetDepth(pointPosition);
+        float const pointDepth = mParentWorld.GetOceanSurface().GetDepth(pointPosition);
 
         for (unsigned int d = 0; d < debrisParticleCount; ++d)
         {
@@ -3256,7 +3261,7 @@ void Ship::GenerateSparklesForCut(
 
         vec2f const sparklePosition = mSprings.GetMidpointPosition(springElementIndex, mPoints);
 
-        float const sparkleDepth = mParentWorld.GetDepth(sparklePosition);
+        float const sparkleDepth = mParentWorld.GetOceanSurface().GetDepth(sparklePosition);
 
         for (unsigned int d = 0; d < sparkleParticleCount; ++d)
         {
@@ -3305,7 +3310,7 @@ void Ship::GenerateSparklesForLightning(
 
     vec2f const sparklePosition = mPoints.GetPosition(pointElementIndex);
 
-    float const sparkleDepth = mParentWorld.GetDepth(sparklePosition);
+    float const sparkleDepth = mParentWorld.GetOceanSurface().GetDepth(sparklePosition);
 
     for (unsigned int d = 0; d < sparkleParticleCount; ++d)
     {
@@ -3416,7 +3421,7 @@ void Ship::HandlePointDetach(
             // Notify destroy
             mGameEventHandler->OnDestroy(
                 mPoints.GetStructuralMaterial(pointElementIndex),
-                mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex)),
+                mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
                 1);
         }
 
@@ -3607,7 +3612,7 @@ void Ship::HandleSpringRestore(
     auto const endpointAIndex = mSprings.GetEndpointAIndex(springElementIndex);
     mGameEventHandler->OnSpringRepaired(
         mPoints.GetStructuralMaterial(endpointAIndex),
-        mParentWorld.IsUnderwater(mPoints.GetPosition(endpointAIndex)),
+        mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(endpointAIndex)),
         1);
 
     // Remember our structure is now dirty
@@ -3709,7 +3714,7 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
     auto const endpointAIndex = mTriangles.GetPointAIndex(triangleElementIndex);
     mGameEventHandler->OnTriangleRepaired(
         mPoints.GetStructuralMaterial(endpointAIndex),
-        mParentWorld.IsUnderwater(mPoints.GetPosition(endpointAIndex)),
+        mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(endpointAIndex)),
         1);
 
     // Remember our structure is now dirty
@@ -3886,7 +3891,7 @@ void Ship::HandleWatertightDoorUpdated(
 
         // Fire event
         mGameEventHandler->OnWatertightDoorClosed(
-            mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex)),
+            mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
             1);
     }
     else
@@ -3897,7 +3902,7 @@ void Ship::HandleWatertightDoorUpdated(
 
         // Fire event
         mGameEventHandler->OnWatertightDoorOpened(
-            mParentWorld.IsUnderwater(mPoints.GetPosition(pointElementIndex)),
+            mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
             1);
     }
 }

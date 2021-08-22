@@ -157,7 +157,7 @@ public:
 
     float GetCurrentSimulationTime() const override { return mWorld->GetCurrentSimulationTime(); }
     float GetEffectiveAmbientLightIntensity() const override { return mRenderContext->GetEffectiveAmbientLightIntensity(); }
-    bool IsUnderwater(LogicalPixelCoordinates const & screenCoordinates) const override { return mWorld->IsUnderwater(ScreenToWorld(screenCoordinates)); }
+    bool IsUnderwater(LogicalPixelCoordinates const & screenCoordinates) const override { return mWorld->GetOceanSurface().IsUnderwater(ScreenToWorld(screenCoordinates)); }
     bool IsUnderwater(ElementId elementId) const override { return mWorld->IsUnderwater(elementId); }
 
     //
