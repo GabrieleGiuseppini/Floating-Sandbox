@@ -1027,6 +1027,11 @@ Render:
 					% Ark splattered: 5.85%
 					Update ms Ark splattered: 10.3/10.4
 			+ changelist
+		+ Send for testing:
+			+ Win to testers
+			+ Win to JohnSmith
+			+ Ubuntu to guy
+		+ Bump up version
 
 
 		= Ubuntu:
@@ -1138,12 +1143,6 @@ Render:
 					- See if may statically link
 				- SFML: so's?
 				- DevIL: so's?
-
-		- Send for testing:
-			+ Win to testers
-			- Win to JohnSmith
-			+ Ubuntu to guy
-		- Bump up version
 
 		- Test on Dell
 			- Test that these work: 

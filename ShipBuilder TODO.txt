@@ -69,4 +69,6 @@
 		- Only one ruler at a time
 	- Texture Generator:
 		- Makes larger image, with bilinear interpolation with alpha blending
+			- Ain't that what we've got already for the auto-texturizer?
+	- Selectable backgrounds
 
