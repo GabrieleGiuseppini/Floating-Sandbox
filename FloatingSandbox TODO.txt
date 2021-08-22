@@ -1155,7 +1155,7 @@ Render:
 			
 		- Localization:
 			- IT
-				- Help
+				+ Help
 				- Check out changed SettingsDialog strings
 			- ES
 				- Help

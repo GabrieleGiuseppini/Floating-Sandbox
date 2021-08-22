@@ -360,7 +360,7 @@ MainFrame::MainFrame(
             }
 
             {
-                auto menuItem = ADD_TOOL_MENUITEM(_("Inject Pressure"), wxS("\tB"), "air_tank_cursor_up", OnInjectPressureMenuItemSelected);
+                auto menuItem = ADD_TOOL_MENUITEM(_("Inject/Remove Pressure"), wxS("\tB"), "air_tank_cursor_up", OnInjectPressureMenuItemSelected);
                 ADD_PLAIN_ACCELERATOR_KEY('B', menuItem);
             }
 
