@@ -1,0 +1,36 @@
+{
+        "electrical_image" : "msc_opera_electrical.png.dat",
+	"structure_image":"msc_opera_structural.png.dat",
+        "texture_image":"msc_opera_ texture.png.dat",
+	"offset":{"x":0.0, "y":-8.0},
+	"ship_name":"M.S.C. Opera",
+	"created_by":"FER ZCL",
+	"year_built":"2004",
+	"electrical_panel":{
+
+		"1": {"panel_x":-3, "panel_y":0, "label":"Engine" },
+		"2": {"panel_x":-2, "panel_y":0, "label":"Engine" },
+
+		"5": {"panel_x":0, "panel_y":0, "label":"Horn" },
+		"19": {"panel_x":1, "panel_y":0, "label":"Pumps+Locks" },
+
+		"0": {"panel_x":-4, "panel_y":0, "label":"Generator", "is_hidden": true },
+		"20": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"21": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"22": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"23": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"24": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"25": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"26": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"27": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"28": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"30": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"31": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"32": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"33": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"34": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"35": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"36": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"37": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true }
+	}
+}

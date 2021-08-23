@@ -1164,7 +1164,21 @@ Render:
 				- Check out changed SettingsDialog strings
 
 		- New ships
-			- changelist
+			+ Test BeamierBoomer
+				+ Take: IJN_Mikasa.png, USS_C-13_Minneapolis.png
+				+ Add to credits: BeamierBoomer
+			+ PocketWatch
+				+ Take: SS Avain Pocket 1852, SS King Christian, Andrea Doria
+				+ Add to credits: Pocketwatch
+			+ Replace egg carrier - tested and works good
+			+ Test: den2006's front ships
+				+ Take them all - he confirms they're all his
+				+ Add to credits: Denis
+			= FERZCL's M.S. Costa Smeralda
+				- Take it, after he confirms texture credits
+			= Test: Kazindel
+				- Asked latest SpaceX and airplanes packs
+			+ At least 15 so far
 
 		- Release 1.16.5
 
