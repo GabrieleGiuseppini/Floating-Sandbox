@@ -5,6 +5,7 @@
 	- All in separate ShipBuilder namespace
 	- Own frame for UI
 	- Model, View, Controller architecture
+	- Reuses existing ResourceHelper, only need (at this moment) for separate resource directory and method is Shaders ("Game" and "ShipBuilder")
 	- On the "structure: pixels vs triangles", Wreno says fine to edit in pixel mode, and allow user to eventually _view_ also in triangle mode (but not necessarily edit)
 	- On the size: Wreno says "no fixed sized, allow whole world"
 
@@ -24,25 +25,44 @@
 		- Rendering of ship, all layers
 		- Fully OpenGL
 
-- ResourceHelper gets new methods for ShipBuilder resources
-
 - MainFrame:
 	- Created by game MainFrame at initialization, but kept hidden
-		- Via ShipBuilder::MainFrame::Create(IProgress)
+		- Via ShipBuilder::MainFrame::Create(IProgress, ...)
+	- Inherits FullScreen state and shares state changes (so, for example, if exits full screen in ShipBuilder, also Game has exited full screen)
+		- How to share state changes? 
+			- FullScreenManager class, shared_ptr in both
 	- Switching between two frames: 
-		- MainFrame owns ShipBulderFrame, ShipBulderFrame takes std::function(...ship...) "ReturnToGame" in cctor
+		- MainFrame owns ShipBulderFrame, ShipBulderFrame takes std::function(std::optional<...ship file path...>) "ReturnToGame" in cctor
 			- Latter may be null for stand-alone test executable
 		- Switch implemented via:
 			- MainFrame::SwitchToShipBuilder: invoked by MainFrame when user switches to ship builder
 				- Stops game loop
+					- Ideally not just "pause", but full "stop"
+						- GameController::Stop(), resumed only via call that takes ship
+							- Same mechanism also becomes used by ::MainFrame
 				- Hides self
-				- Invokes ShipBuilder::MainFrame::Open(...ship...)
+				- Invokes ShipBuilder::MainFrame::Open(...ship file path...)
 			- ShipBuilder::MainFrame::ReturnToGame: invoked by ShipBuilder::MainFrame when user returns to game
 				- Hides self
-				- Invokes std::function(...ship...) "ReturnToGame"
+				- Invokes std::function(std::optional<...ship file path...>) "ReturnToGame"
+	- Impl:
+		- Create(opengl initialization canvas, IProgress)
+		- Open(...ship file path...)
+		- TODOHERE
+	- Misc:
+		- Open(...) must set openGL context current on own canvas at first show (first show of entire process lifetime, no need to set it each time we're shown)
+		- Panning is via "losse" scrollbars around canvas
 
 - RenderContext:
-	- TODO: remember that OpenGL context needs to be created on canvas that is visible
+	- Single-threaded
+	- Initializes on same canvas that main frame initializes on
+		- So needs to be passed to SB::MainFrame's cctor
+		- TODO: after or before? Better before for less chance of side effects?
+			- Ideally other context is removed before new one is set
+			- See if can move global GameOpenGL initialization outside of Game RenderContext and into ::MainFrame initialization, before both
+	- Renders synchrnously, on-demand via SB::MainFrame::OnPaint()
+	- ViewModel:
+		- World coords is model pixel coords
 
 - UI architecture:
 	- Topmost toolbar:
@@ -53,6 +73,13 @@
 		- Structure layer:
 			- Pencil
 			- Mass changer
+
+- Controls (all under current UIControls):
+	- BitmapCheckbox (see if * exists)
+		! We'll re-use it for ShipLoadDialog
+	- ToolButton
+		! We'll use it for tools
+		- Takes callback for push, which takes wxPoint
 
 - Ship file format:
 	- Min FS version (.shp, .shp2)
@@ -67,7 +94,7 @@
 		- L shaped: horizontal and vertical
 		- Ruler sticks to the canvas
 		- Only one ruler at a time
-	- Texture Generator:
+	- Texture Generator for ship canvas:
 		- Makes larger image, with bilinear interpolation with alpha blending
 			- Ain't that what we've got already for the auto-texturizer?
 	- Selectable backgrounds
