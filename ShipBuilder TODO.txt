@@ -1,8 +1,10 @@
 - Gist:
-	- ShipBuilder project, slave of FloatingSandbox project
-	- ShipBuilderStandalone project, top-level project
-		- For testing ShipBuilder alone
-	- All in separate ShipBuilder namespace
+	- Code organization:
+		- ShipBuilderLib project, slave of FloatingSandbox project
+		- ShipBuilder project, top-level project for standalone SB UI
+			- For testing ShipBuilder alone
+			- Just MainApp basically
+		- All in separate ShipBuilder namespace
 	- Own frame for UI
 	- Model, View, Controller architecture
 	- Reuses existing ResourceHelper, only need (at this moment) for separate resource directory and method is Shaders ("Game" and "ShipBuilder")
@@ -14,7 +16,7 @@
 		- Very thin, calls into Controller for each interaction
 	- Controller
 		- Main Frame calls into Controller for each user interaction
-			- TODO: Controller->Main Frame callbacks?
+			- TODO: Controller->Main Frame callbacks? Via something like "IMainFrame" (TODO: better name)
 		- Maintains interaction state
 		- Maintains Undo stack
 		- Modifies Model
@@ -52,6 +54,12 @@
 	- Misc:
 		- Open(...) must set openGL context current on own canvas at first show (first show of entire process lifetime, no need to set it each time we're shown)
 		- Panning is via "losse" scrollbars around canvas
+			- Their range & properties (& position==thumb) need to be updated at:
+				- glCanvas resize
+				- Zoom changes
+				- Pan changes
+				- WorkCanvas resize (i.e. image resize)
+			- Try to make it so that if scrollbars really end up disappearing, we don't resize the glCanvas
 
 - RenderContext:
 	- Single-threaded
@@ -62,7 +70,17 @@
 			- See if can move global GameOpenGL initialization outside of Game RenderContext and into ::MainFrame initialization, before both
 	- Renders synchrnously, on-demand via SB::MainFrame::OnPaint()
 	- ViewModel:
+		- Terminology:
+			- WorkCanvas: has the pixel size of the structure (equivalent of ::World)
+			- WorkCoordinates (type @ ShipBuilderTypes)
+			- DisplayLogicalCanvas: has the logical display (window) size (equivalent of ::Logical)
+			- DisplayLogicalCoordinates: the logical display coordinates (type @ ShipBuilderTypes)
+			- DisplayPixelCanvas: has the pixel display (window) size (equivalent of ::Pixel)
+			- DisplayPixelCoordinates: the pixel display coordinates (type @ ShipBuilderTypes)
+		- Knows about work area (i.e. structure) size, for panning calculations
 		- World coords is model pixel coords
+		- Tells outside world of pan extent (for scrollbar width setting)
+			- Based on calc'd pixel (display) coords of four sides of work area
 
 - UI architecture:
 	- Topmost toolbar:
@@ -73,13 +91,23 @@
 		- Structure layer:
 			- Pencil
 			- Mass changer
+	- Main work area: glCanvas with "losse" scroll bars
 
-- Controls (all under current UIControls):
-	- BitmapCheckbox (see if * exists)
+- Controls:
+	- BitmapCheckbox (see if * exists) (@UIControls)
 		! We'll re-use it for ShipLoadDialog
-	- ToolButton
-		! We'll use it for tools
+	- PopupButton (@UIControls)
+		! We'll use it for popup tools
 		- Takes callback for push, which takes wxPoint
+	- MaterialsPalette (@ShipBuilder)
+		- TODO: in which project does this one go? It's not a common control, yet we don't want to create a separate ShipBuilderUIControls project?
+		- Column 1: scrollable vertical panel with bitmap button for selecting category
+		- Column 2: scrollable panel with rows and cols for selected category's materials
+		- Materials/DB changes:
+			- For each category, must have one selected as the "header" (shown in column 1)
+			- TODO: see if can keep rows and cols, or refactor it - we still want to be able to generate template image
+		- Opened on demand when clicking on Foreground (or "TODO1") and Background (or "TODO2") PopupButtons, taking material as argument
+			- And then sets focus on it
 
 - Ship file format:
 	- Min FS version (.shp, .shp2)

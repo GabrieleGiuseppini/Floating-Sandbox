@@ -1144,6 +1144,10 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
+		- Check Smith's feedback
+			= Explosions
+				- See better 1.0->Radius progress, instead of 1,1,1,1.2,....
+
 		- Test on Dell
 			- Test that these work: 
 				- Pressure crush
@@ -1163,7 +1167,7 @@ Render:
 				- Help
 				- Check out changed SettingsDialog strings
 
-		- New ships
+		= New ships
 			+ Test BeamierBoomer
 				+ Take: IJN_Mikasa.png, USS_C-13_Minneapolis.png
 				+ Add to credits: BeamierBoomer
@@ -1178,6 +1182,7 @@ Render:
 				- Take it, after he confirms texture credits
 			= Test: Kazindel
 				- Asked latest SpaceX and airplanes packs
+				- Credits: "Kazindel"
 			+ At least 15 so far
 
 		- Release 1.16.5
@@ -1187,6 +1192,7 @@ Render:
 		- See windows timer/50fps thing
 			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html
 			+ @ 50fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
+			+ @ 64fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
 			- Set to 15.625 or half of it + 1
 				- Unset @ end
 
@@ -1355,23 +1361,28 @@ Render:
 
 - Release template:
 	- Branch is merged into master (if applicable)
-	- MSI variables
-	- Commit & push
-	- 64-bit MSI
-		- Cleanup Install
-		- Build Install
-		- Make MSI
-		- Rename MSI
-		- Test upgrade from previous version
-	- 32-bit MSI
-		- Cleanup Install
-		- Build Install
-		- Make MSI
-		- Rename MSI
-		- Test clean install
-	- Get both installers tested:
-		- dev server
-		- bishobe644
+	- Windows
+		- MSI variables
+		- Commit & push
+		- 64-bit MSI
+			- Cleanup Install
+			- Build Install
+			- Make MSI
+			- Rename MSI
+			- Test upgrade from previous version
+		- 32-bit MSI
+			- Cleanup Install
+			- Build Install
+			- Make MSI
+			- Rename MSI
+			- Test clean install
+		- Get both installers tested on dev server
+	- Ubuntu
+		- pull 
+		- Build clean
+		- Make tar
+		- Smoke-test tar
+		- Get tar tested on dev server
 	- Wait for test results
 	- Cut tag on github
 	- Upload packages to GameJolt
@@ -1399,7 +1410,6 @@ Render:
 	- Portuguese: Kiko
 		- Add to credits: "Kiko", and change in other sections as well, and also in .shp files
 		- Fallback: The G a z e r W o l f
-
 	- Indonesian: Adli/Nobodyree
 		= Doing HTMLs
 		- Add to credits:
@@ -1422,6 +1432,7 @@ Render:
 		# An SR71 Habu: NotTelling
 		# JackMellon: JackTheBrickfilmMaker (Discord, https://drive.google.com/drive/folders/1isy3QiRzMfyu69v5M0gwD5tvBnYZMWXx)
 		# JonBrisby: Takara
+		# den2006: Denis
 	- Ship Packs:
 		+ Kiko's pack
 			+ Screenshots and description in PM
@@ -1474,8 +1485,6 @@ Render:
 				- Needs to sink vertically!
 			- Next ship made: "Turbentiy Banalniy"		
 		- To test and to choose from:
-			- FER ZCL ships
-				- Costa Concordia: just do electrical panel
 			- Architect Creations
 			- mrpasta444_ship_pack
 			- TheodoreRoosevelt
@@ -1485,13 +1494,6 @@ Render:
 				- Require .shp to limit initial sink
 			- Pac0master's Structures
 			- Ryanair's planes
-		- Savannah (Officer's)
-			- Add electricals
-		- S.S. Triatic
-			- Do ropes however
-		- SpaceX ships from KazindelProductions
-			- In own folder
-			- Credits: "Kazindel"
 
 - Marketing:
 	- Make new "demo" video
@@ -1500,9 +1502,6 @@ Render:
 	- GameJolt:
 		- Use new video as preview
 	- www.floatingsandbox.com:
-		- Issues: game doesn't start
-			- No GameJolt
-			- Run repair
 		- Embed GameJolt Widget
 
 - Suggestions to spec:

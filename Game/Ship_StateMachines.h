@@ -23,7 +23,6 @@ public:
     float const PersonalitySeed;
 
     float CurrentProgress;
-    bool IsFirstFrame;
     bool IsBlasting;
 
     ExplosionStateMachine(
@@ -44,7 +43,6 @@ public:
         , Type(type)
         , PersonalitySeed(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())
         , CurrentProgress(0.0f)
-        , IsFirstFrame(true)
         , IsBlasting(true)
     {}
 };

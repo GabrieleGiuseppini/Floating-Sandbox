@@ -47,9 +47,10 @@ bool Ship::UpdateExplosionStateMachine(
         // last for less time
         float const blastProgress = explosionStateMachine.CurrentProgress * 4.0f;
 
-        // Blast radius: from 0.0 to BlastRadius, linearly with progress
-        float const blastRadius =
-            explosionStateMachine.BlastRadius * std::min(1.0f, blastProgress);
+        // Blast radius: from 1.0 to BlastRadius, linearly with progress
+        float const blastRadius = std::max(
+            explosionStateMachine.BlastRadius * std::min(1.0f, blastProgress),
+            1.0f);
 
         //
         // Blast force and heat
@@ -72,7 +73,7 @@ bool Ship::UpdateExplosionStateMachine(
         ElementIndex closestPointIndex = NoneElementIndex;
 
         // Visit all points
-        for (auto pointIndex : mPoints)
+        for (auto const pointIndex : mPoints)
         {
             vec2f const pointRadius = mPoints.GetPosition(pointIndex) - centerPosition;
             float const squarePointDistance = pointRadius.squareLength();
@@ -122,7 +123,7 @@ bool Ship::UpdateExplosionStateMachine(
         // Eventually detach the closest point
         //
 
-        if (explosionStateMachine.IsFirstFrame
+        if (blastProgress == 0.0f // First frame
             && NoneElementIndex != closestPointIndex)
         {
             // Choose a detach velocity - using the same distribution as Debris
@@ -203,8 +204,6 @@ bool Ship::UpdateExplosionStateMachine(
             explosionStateMachine.IsBlasting = false;
         }
     }
-
-    explosionStateMachine.IsFirstFrame = false;
 
     return false;
 }
