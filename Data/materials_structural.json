@@ -1327,7 +1327,7 @@
         "melting_temperature": 1000000.0,
         "name": "Hydrogen",
 	"rust_receptivity": 0.0,
-	"sound_type": "Wood",
+	"sound_type": "Gas",
         "specific_heat": 14310.0,
         "stiffness": 1.0,
         "strength": 1.0,

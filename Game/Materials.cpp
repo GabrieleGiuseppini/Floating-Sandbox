@@ -106,6 +106,8 @@ StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType
         return MaterialSoundType::Cable;
     else if (Utils::CaseInsensitiveEquals(str, "Cloth"))
         return MaterialSoundType::Cloth;
+    else if (Utils::CaseInsensitiveEquals(str, "Gas"))
+        return MaterialSoundType::Gas;
     else if (Utils::CaseInsensitiveEquals(str, "Glass"))
         return MaterialSoundType::Glass;
     else if (Utils::CaseInsensitiveEquals(str, "Lego"))

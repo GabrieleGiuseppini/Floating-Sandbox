@@ -38,6 +38,7 @@ public:
         AirBubble,
         Cable,
         Cloth,
+        Gas,
         Glass,
         Lego,
         Metal,
