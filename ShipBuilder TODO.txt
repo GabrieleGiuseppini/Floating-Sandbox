@@ -128,4 +128,6 @@
 	- Selectable backgrounds
 	- LogDialog also used by ShipBuilder's MainFrame
 		- Move LogDialog to common UIControls
+	- TO-SPEC:
+		- What to do with background music when switching back and forth?
 

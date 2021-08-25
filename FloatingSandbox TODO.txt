@@ -1146,7 +1146,7 @@ Render:
 
 		= Check Smith's feedback
 			+ Explosions
-			- TODO: see others
+			- Air pressure sound volume (?)
 
 		- Test on Dell
 			- Test that these work: 
@@ -1156,15 +1156,15 @@ Render:
 				- Before:
 				- After:
 			
-		- Localization:
-			= IT
+		= Localization:
+			+ IT
 				+ Help
-				- Check out changed SettingsDialog strings
+				+ Check out changed SettingsDialog strings
 			= ES
 				- Help
 				- Check out changed SettingsDialog strings
 			= RU
-				- Help
+				+ Help
 				- Check out changed SettingsDialog strings
 
 		= New ships
