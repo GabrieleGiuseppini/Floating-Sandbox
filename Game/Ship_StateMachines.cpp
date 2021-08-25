@@ -48,9 +48,9 @@ bool Ship::UpdateExplosionStateMachine(
         float const blastProgress = explosionStateMachine.CurrentProgress * 4.0f;
 
         // Blast radius: from 1.0 to BlastRadius, linearly with progress
-        float const blastRadius = std::max(
-            explosionStateMachine.BlastRadius * std::min(1.0f, blastProgress),
-            1.0f);
+        float const blastRadius =
+            1.0f +
+            std::max(explosionStateMachine.BlastRadius - 1.0f, 0.0f) * std::min(1.0f, blastProgress);
 
         //
         // Blast force and heat

@@ -1144,9 +1144,9 @@ Render:
 				- SFML: so's?
 				- DevIL: so's?
 
-		- Check Smith's feedback
-			= Explosions
-				- See better 1.0->Radius progress, instead of 1,1,1,1.2,....
+		= Check Smith's feedback
+			+ Explosions
+			- TODO: see others
 
 		- Test on Dell
 			- Test that these work: 

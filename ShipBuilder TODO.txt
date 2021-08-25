@@ -126,4 +126,6 @@
 		- Makes larger image, with bilinear interpolation with alpha blending
 			- Ain't that what we've got already for the auto-texturizer?
 	- Selectable backgrounds
+	- LogDialog also used by ShipBuilder's MainFrame
+		- Move LogDialog to common UIControls
 
