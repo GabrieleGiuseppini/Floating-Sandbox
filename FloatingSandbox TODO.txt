@@ -1163,9 +1163,9 @@ Render:
 			= ES
 				- Help
 				- Check out changed SettingsDialog strings
-			= RU
+			+ RU
 				+ Help
-				- Check out changed SettingsDialog strings
+				+ Check out changed SettingsDialog strings
 
 		= New ships
 			+ Test BeamierBoomer
