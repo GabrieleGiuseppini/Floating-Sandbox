@@ -4,6 +4,25 @@ Current perf:
 1.16.5:
 - default ship:
 	- Old dell, RelWithDebInfo: FPS:30.65 UPD:19.5ms UPL:0.18ms RND:12.80ms
+- Perf analysis: default_ship, between 10s and 30s (run stopped after 20s displayed):
+	- GameController::RunGameIteration: 86.52%
+		- World::Update: 85.21%
+			- Ship::Update: 81.50%
+				- Ship::ApplySpringForces_BySprings: 56.98%
+				- Ship::UpdateWaterVelocities: 7.50%
+				- Ship::HandleCollisionsWithSeaFloor: 4.24%
+				- Ship::IntegrateAndResetSpringForces: 4.02%
+				- Ship::PropagateHeat: 2.48%
+				- Ship::EqualizeInternalPRessure: 2.02%
+				- Ship::ApplyWorldForces: 1.34%
+				- Springs::UpdateForStrains: 1.01%
+				- Ship::ApplyStaticPRessureForces: 0.02%
+				- Points::UpdateMasses: 0.33%
+				- Ship::TrimForWorldBounds: 0.31%
+				- Points::UpdateEphemeralParticles: 0.22%
+			- OceanSurface::GenerateSamples: 2.04%
+			- OceanSurface::Update: 1.42%
+		- World::RenderUpload: 1.08%
 =================================================
 1.16.4.next, during Hydrostatic pressure
 - default ship: Update=4.66ms
@@ -1045,117 +1064,6 @@ Render:
 				+ After: FPS:30.65 UPD:19.5ms UPL:0.18ms RND:12.80ms
 		+ Check Smith's feedback
 			+ Explosions
-
-
-		= Ubuntu:
-			+ Event polling issue:
-				+ Try: on Linux: 
-					+ if elapsed < 0: wxWakeUpIdle(), else SetTimer
-					+ OnIdle(): if mHasStartupTipBeenChecked && !timer.isArmed: invoke RunGameIteration
-			+ Keyboard shortcuts don't work
-			= Misc issues:
-				- Slider control is clipped
-				- MouseMove's are delayed and/or skipped
-				- The plain '+' key doesn't work as shortcut
-				- The switchboard panel's background selection popup is crippled
-			+ Build as RELEASE
-				+ See if have to set _DEBUG in CMake also for Linux, so it appears in BuildInfo
-					+ Test
-			+ README.md
-				+ Requirements: do different by OS
-			= Gather testers and send them tar.gz
-				= gabe3333342323, ayjanu: sent friend requests
-				+ Walther first
-			= TheCrafters001: Real Hardware on a Live Linux USB Drive, OS: Linux Mint 20.1 (Ubuntu/Debian Based)
-				+ Make fixes:
-					+ Fix keyboard shortcut => menu checking
-						+ Test:
-							+ Pausing is non-functional: "When I check the pause option in the menu, it stays checked. For throughout most of that log I was playing with it checked. 
-							  I think I managed to get it paused once, but it took a minute to get it unpaused."
-							+ Changing tools using the keyboard, doesn't update the tools menu correctly. Clicking on the tool you were just using does nothing.
-						+ Remove Logging for diagnostics
-					+ Rotating Boats/Objects happens way too fast
-						+ Remove diagnostic logging
-				+ Add him to credits
-					+ Discord: give him feedback and ask alias for credits: "TheCrafters001"
-				- Send him new beta
-			+ Test new feautures:
-				+ Inflatable balloon popping
-			
-		= MAC:
-			= Full high-DPI path:
-				! a) Window scaling: on a 2X DPI, a wxWindow of size (500, 500) would be (1000, 1000) on Mac and (500, 500) on Windows. To overcome this, use wxFrame->FromDIP:
-					  myFrame->SetClientSize(wxSize(400, 300));   -->   myFrame->SetClientSize(myFrame->FromDIP(wxSize(400, 300)));
-				! b) Physical pixels are never scaled, on any platform, and must be used when drawing graphics elements to ensure that the best possible resolution is used. 
-				     For example, all operations on wxGLCanvas use physical pixels. To convert between logical and physical pixels, you can use wxWindow::GetContentScaleFactor(): 
-				     this is a value greater than or equal to 1, so a value in logical pixels needs to be multiplied by it in order to obtain the value in physical pixels.
-				+ Tests:
-					+ With plist (i.e. full screen): ContentScaleFactor=1 DPIScaleFactor=1 100x100dip=100x100px
-					+ Without plist (i.e. 1/4th of screen): ContentScaleFactor=2 DPIScaleFactor=2 100x100dip=100x100px
-					+ See mouse coords: are they scaled or not scaled?
-						! Max is 1900, i.e. scaled
-						+ Remove TODOTEST @ MainFrame.cpp
-				+ Changes:
-					+ _PixelCoordinates and _PixelSize ("logical" and "physical" versions via usings & tag template param)
-						+ @ GameTypes, "Rendering" section
-					+ GameController::cctor / IGameController: all interface methods take/return coords of correct type (i.e. always the "window" ("logical") type)
-					+ RenderContext / ... / ViewModel: all methods take/return coords of correct type
-					+ RenderDeviceParameters: takes LogicalToPhysicalPixelFactor, passed down to ViewModel
-					+ ViewModel:
-						+ Stores LogicalToPhysicalPixelFactor for returning (and taking) "logical" types
-						+ Precalcs canvas width/height as "physical"
-					+ ToolController: mouse position in MouseState is in LogicalPixelCoordinates
-					+ Tools
-						+ _PixelXXX::From/ToFloat
-					+ MainFrame: pass ContentScaleFactor to RenderDeviceParameters
-					+ Tests:
-						+ Pan & increment from settings
-						+ Tools:
-							+ Rotation
-							+ MoveBy
-						+ Shaders: cross of light, interactive, texture notifications
-						+ Screenshot
-				+ ScreenToOffset with electrical panel
-					+ Add logging
-					+ Remove TODOTEST logging
-				+ Move BuildInfo generation to BuildInfo
-					+ Log
-					+ CreditsPanel
-				= Test setting glContext after resize
-					+ If works, add #ifdef for MAC 
-						+ Do it from RenderContext directly, @ ApplyCanvasSizeChanges
-							+ Callback binds to a new MainFrame's private method
-								+ std::atomic for pointer to canvas
-							+ Callback from RenderDeviceProperties goes back to being simply named
-							+ "RebindContext" call takes no args
-					= Take care also of resize's happening with splash screen
-				- MAC tests:
-					- Tools:
-						- Move tool
-						- Rotate tool 
-						- Smash tool
-					- Shaders:
-						- Cross of Light (i.e. in the AM bomb, the "halo" expanding at the beginning, and the final "cross" of light when the bomb explodes)
-						- HeatBlaster (make sure the flame is drawn at the right position)
-						- Mute notification (appears when you set sounds to mute in FS itself, make sure it appears on the bottom-righ side)
-							- Please send me a screenshot of this one
-						- PhysicsProbe (new tool, you'll find it under Tools) - should open a "panel" on the bottom-left side
-							- Please send me a screenshot of this one
-					- Screenshot (take a screenshot in-game and verify it's correct)
-						- Please send it to me together with an *external* screenshot
-					- Ship preview window
-						- Please send me a screenshot of this one
-					- Credits
-						- Please send me a screenshot of this one
-			+ Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
-			+ FPS: 13-14
-			= Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
-				+ Add log entry for current directory *and* for executable directory
-			- Packaging:
-				- wxWidgets so's
-					- See if may statically link
-				- SFML: so's?
-				- DevIL: so's?
 			
 		= Localization:
 			+ IT
@@ -1527,6 +1435,116 @@ Render:
 			- Pac0master's Structures
 			- Ryanair's planes
 
+- Ubuntu:
+	+ Event polling issue:
+		+ Try: on Linux: 
+			+ if elapsed < 0: wxWakeUpIdle(), else SetTimer
+			+ OnIdle(): if mHasStartupTipBeenChecked && !timer.isArmed: invoke RunGameIteration
+	+ Keyboard shortcuts don't work
+	= Misc issues:
+		- Slider control is clipped
+		- MouseMove's are delayed and/or skipped
+		- The plain '+' key doesn't work as shortcut
+		- The switchboard panel's background selection popup is crippled
+	+ Build as RELEASE
+		+ See if have to set _DEBUG in CMake also for Linux, so it appears in BuildInfo
+			+ Test
+	+ README.md
+		+ Requirements: do different by OS
+	= Gather testers and send them tar.gz
+		= gabe3333342323, ayjanu: sent friend requests
+		+ Walther first
+	= TheCrafters001: Real Hardware on a Live Linux USB Drive, OS: Linux Mint 20.1 (Ubuntu/Debian Based)
+		+ Make fixes:
+			+ Fix keyboard shortcut => menu checking
+				+ Test:
+					+ Pausing is non-functional: "When I check the pause option in the menu, it stays checked. For throughout most of that log I was playing with it checked. 
+					  I think I managed to get it paused once, but it took a minute to get it unpaused."
+					+ Changing tools using the keyboard, doesn't update the tools menu correctly. Clicking on the tool you were just using does nothing.
+				+ Remove Logging for diagnostics
+			+ Rotating Boats/Objects happens way too fast
+				+ Remove diagnostic logging
+		+ Add him to credits
+			+ Discord: give him feedback and ask alias for credits: "TheCrafters001"
+		- Send him new beta
+	+ Test new feautures:
+		+ Inflatable balloon popping
+	
+- MAC:
+	= Full high-DPI path:
+		! a) Window scaling: on a 2X DPI, a wxWindow of size (500, 500) would be (1000, 1000) on Mac and (500, 500) on Windows. To overcome this, use wxFrame->FromDIP:
+			  myFrame->SetClientSize(wxSize(400, 300));   -->   myFrame->SetClientSize(myFrame->FromDIP(wxSize(400, 300)));
+		! b) Physical pixels are never scaled, on any platform, and must be used when drawing graphics elements to ensure that the best possible resolution is used. 
+		     For example, all operations on wxGLCanvas use physical pixels. To convert between logical and physical pixels, you can use wxWindow::GetContentScaleFactor(): 
+		     this is a value greater than or equal to 1, so a value in logical pixels needs to be multiplied by it in order to obtain the value in physical pixels.
+		+ Tests:
+			+ With plist (i.e. full screen): ContentScaleFactor=1 DPIScaleFactor=1 100x100dip=100x100px
+			+ Without plist (i.e. 1/4th of screen): ContentScaleFactor=2 DPIScaleFactor=2 100x100dip=100x100px
+			+ See mouse coords: are they scaled or not scaled?
+				! Max is 1900, i.e. scaled
+				+ Remove TODOTEST @ MainFrame.cpp
+		+ Changes:
+			+ _PixelCoordinates and _PixelSize ("logical" and "physical" versions via usings & tag template param)
+				+ @ GameTypes, "Rendering" section
+			+ GameController::cctor / IGameController: all interface methods take/return coords of correct type (i.e. always the "window" ("logical") type)
+			+ RenderContext / ... / ViewModel: all methods take/return coords of correct type
+			+ RenderDeviceParameters: takes LogicalToPhysicalPixelFactor, passed down to ViewModel
+			+ ViewModel:
+				+ Stores LogicalToPhysicalPixelFactor for returning (and taking) "logical" types
+				+ Precalcs canvas width/height as "physical"
+			+ ToolController: mouse position in MouseState is in LogicalPixelCoordinates
+			+ Tools
+				+ _PixelXXX::From/ToFloat
+			+ MainFrame: pass ContentScaleFactor to RenderDeviceParameters
+			+ Tests:
+				+ Pan & increment from settings
+				+ Tools:
+					+ Rotation
+					+ MoveBy
+				+ Shaders: cross of light, interactive, texture notifications
+				+ Screenshot
+		+ ScreenToOffset with electrical panel
+			+ Add logging
+			+ Remove TODOTEST logging
+		+ Move BuildInfo generation to BuildInfo
+			+ Log
+			+ CreditsPanel
+		= Test setting glContext after resize
+			+ If works, add #ifdef for MAC 
+				+ Do it from RenderContext directly, @ ApplyCanvasSizeChanges
+					+ Callback binds to a new MainFrame's private method
+						+ std::atomic for pointer to canvas
+					+ Callback from RenderDeviceProperties goes back to being simply named
+					+ "RebindContext" call takes no args
+			= Take care also of resize's happening with splash screen
+		- MAC tests:
+			- Tools:
+				- Move tool
+				- Rotate tool 
+				- Smash tool
+			- Shaders:
+				- Cross of Light (i.e. in the AM bomb, the "halo" expanding at the beginning, and the final "cross" of light when the bomb explodes)
+				- HeatBlaster (make sure the flame is drawn at the right position)
+				- Mute notification (appears when you set sounds to mute in FS itself, make sure it appears on the bottom-righ side)
+					- Please send me a screenshot of this one
+				- PhysicsProbe (new tool, you'll find it under Tools) - should open a "panel" on the bottom-left side
+					- Please send me a screenshot of this one
+			- Screenshot (take a screenshot in-game and verify it's correct)
+				- Please send it to me together with an *external* screenshot
+			- Ship preview window
+				- Please send me a screenshot of this one
+			- Credits
+				- Please send me a screenshot of this one
+	+ Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
+	+ FPS: 13-14
+	= Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
+		+ Add log entry for current directory *and* for executable directory
+	- Packaging:
+		- wxWidgets so's
+			- See if may statically link
+		- SFML: so's?
+		- DevIL: so's?
+
 - Marketing:
 	- Make new "demo" video
 		- Contents:
@@ -1684,7 +1702,7 @@ Render:
 	- See if may upgrade SFML to master (~2.6) with OPUS support
 		- Then make all music OPUS
 	- Looped sounds (engines, bells, horns, etc.): make them OGG with built-in loop points (see https://rpgmaker.net/tutorials/1341/)
-	- SetEventRecorder dynamics between GameController/World/Ship
+	- Redo SetEventRecorder dynamics between GameController/World/Ship
 		- Also GameController::Reset() should clear all events
 
 
