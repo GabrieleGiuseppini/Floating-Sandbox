@@ -12,31 +12,41 @@
 	- On the size: Wreno says "no fixed sized, allow whole world"
 
 - Architecture:
-	- Main Frame: owns toolboxes, etc.
+
+	- MainFrame: IUserInterface
+	  |-------> Controller
+		    |------------------------------>View
+		    |---->ModelController
+			  |---->Model
+			  |------------------------>View
+
+	- MainFrame: owns toolboxes, etc.
 		- Very thin, calls into Controller for each interaction
+		- Implements IUserInterface with interface required by controller, e.g. UI state changes, mouse capture
 	- Controller
-		- Owns Model and View
+		- Owns ModelController and View
 		- Main Frame calls into Controller for each user interaction
-			- TODO: Controller->Main Frame callbacks? Via something like "IMainFrame" (TODO: better name)
+			- Controller->Main Frame callbacks via IUserInterface
 		- Maintains interaction state, implemented via Tools
 		- Maintains Undo stack
-		- Modifies Model
-		- Talks to View for:
-			- Model changes (model knows nothing of View)
-			- Tool interactions, e.g. tool visualizations (lines, paste mask, etc.)
+		- Modifies Model via ModelController
+		- Talks to View for tool interactions, e.g. tool visualizations (lines, paste mask, etc.)
+	- ModelController
+		- Owns Model, takes View
+		- Implements all interactions and algorithms (e.g. pencil, line, flood, paste, etc.) and uploads resulting changes from Model into View
 	- Model
-		- All data, almost no operations
-		- Modified by Controller
+		- All data, (almost) no operations (anemic), fully exported
+		- Modified by ModelController
 		- Knows nothing about view
 	- View
 		- Rendering of ship, all layers
+		- Rendering of tool interactions (e.g. marching ants, squares, etc.)
 		- Fully OpenGL
 	- Tools
 		- Implement state machines for interactions
 		- Receive input state events from Controller
-		- TODO: must be able to capture mouse
-		- TODO: must be able to call into controller (to make Model & View changes)
-		- TODO UNLESS: Tools is really Controller
+		- Have references to View and ModelController, so may act on them
+		- Has also reference to IUserInterface, e.g. to capture/release mouse
 
 - MainFrame:
 	- Created by game MainFrame at initialization, but kept hidden
