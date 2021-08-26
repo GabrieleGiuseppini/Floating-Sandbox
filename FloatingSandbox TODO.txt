@@ -1096,7 +1096,7 @@ Render:
 
 		- Release 1.16.5:
 			- Windows
-				- MSI variables
+				+ MSI variables
 				- Commit & push
 				- 64-bit MSI
 					- Cleanup Install
