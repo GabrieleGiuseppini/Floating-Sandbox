@@ -1,6 +1,10 @@
 =================================================
 Current perf:
 =================================================
+1.16.5:
+- default ship:
+	- Old dell, RelWithDebInfo: FPS:30.65 UPD:19.5ms UPL:0.18ms RND:12.80ms
+=================================================
 1.16.4.next, during Hydrostatic pressure
 - default ship: Update=4.66ms
 =================================================
@@ -1032,6 +1036,15 @@ Render:
 			+ Win to JohnSmith
 			+ Ubuntu to guy
 		+ Bump up version
+		+ Test on Dell
+			+ Test that these work: 
+				+ Pressure crush
+				+ ElectricSpark
+			+ Perf:
+				+ Before: FPS:30.2/30.6 UPD:18.9/19.6ms UPL:0.18ms RND:13.18ms
+				+ After: FPS:30.65 UPD:19.5ms UPL:0.18ms RND:12.80ms
+		+ Check Smith's feedback
+			+ Explosions
 
 
 		= Ubuntu:
@@ -1143,18 +1156,6 @@ Render:
 					- See if may statically link
 				- SFML: so's?
 				- DevIL: so's?
-
-		= Check Smith's feedback
-			+ Explosions
-			- Air pressure sound volume (?)
-
-		- Test on Dell
-			- Test that these work: 
-				- Pressure crush
-				- ElectricSpark
-			- Perf:
-				- Before:
-				- After:
 			
 		= Localization:
 			+ IT
@@ -1185,7 +1186,38 @@ Render:
 				- Credits: "Kazindel"
 			+ At least 15 so far
 
-		- Release 1.16.5
+		- Release 1.16.5:
+			- Windows
+				- MSI variables
+				- Commit & push
+				- 64-bit MSI
+					- Cleanup Install
+					- Build Install
+					- Make MSI
+					- Rename MSI
+					- Test upgrade from previous version
+				- 32-bit MSI
+					- Cleanup Install
+					- Build Install
+					- Make MSI
+					- Rename MSI
+					- Test clean install
+				- Get both installers tested on dev server
+			- Ubuntu
+				- pull 
+				- Build clean
+				- Make tar
+				- Smoke-test tar
+				- Get tar tested on dev server
+			- Wait for test results
+			- Cut tag on github
+			- Upload packages to GameJolt
+				- Report file as safe (https://gamejolt.com/privacy)
+				- Post
+			- www.floatingsandbox.com:
+				- Upload changes.txt
+					- Test w/old FS
+				- Update current version in FAQ
 
 		// -----------------------------------------------------------------------
 

@@ -12,20 +12,31 @@
 	- On the size: Wreno says "no fixed sized, allow whole world"
 
 - Architecture:
-	- Main Frame, toolboxes, etc.
+	- Main Frame: owns toolboxes, etc.
 		- Very thin, calls into Controller for each interaction
 	- Controller
+		- Owns Model and View
 		- Main Frame calls into Controller for each user interaction
 			- TODO: Controller->Main Frame callbacks? Via something like "IMainFrame" (TODO: better name)
-		- Maintains interaction state
+		- Maintains interaction state, implemented via Tools
 		- Maintains Undo stack
 		- Modifies Model
+		- Talks to View for:
+			- Model changes (model knows nothing of View)
+			- Tool interactions, e.g. tool visualizations (lines, paste mask, etc.)
 	- Model
 		- All data, almost no operations
 		- Modified by Controller
+		- Knows nothing about view
 	- View
 		- Rendering of ship, all layers
 		- Fully OpenGL
+	- Tools
+		- Implement state machines for interactions
+		- Receive input state events from Controller
+		- TODO: must be able to capture mouse
+		- TODO: must be able to call into controller (to make Model & View changes)
+		- TODO UNLESS: Tools is really Controller
 
 - MainFrame:
 	- Created by game MainFrame at initialization, but kept hidden
@@ -69,6 +80,8 @@
 			- Ideally other context is removed before new one is set
 			- See if can move global GameOpenGL initialization outside of Game RenderContext and into ::MainFrame initialization, before both
 	- Renders synchrnously, on-demand via SB::MainFrame::OnPaint()
+		- Except when we need animated tools, e.g. ants walking: for these we set a timer (in the order of 100's of ms) during the duration
+		  of the tool
 	- ViewModel:
 		- Terminology:
 			- WorkCanvas: has the pixel size of the structure (equivalent of ::World)
