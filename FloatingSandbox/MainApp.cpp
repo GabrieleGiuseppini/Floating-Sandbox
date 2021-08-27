@@ -8,10 +8,11 @@
 // The main application. This journey begins from here.
 //
 
-#include "LocalizationManager.h"
 #include "MainFrame.h"
 #include "UIPreferencesManager.h"
 #include "UnhandledExceptionHandler.h"
+
+#include <UILib/LocalizationManager.h>
 
 #include <Game/ResourceLocator.h>
 

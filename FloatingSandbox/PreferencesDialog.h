@@ -5,10 +5,10 @@
  ***************************************************************************************/
 #pragma once
 
-#include "LocalizationManager.h"
 #include "UIPreferencesManager.h"
 
-#include <UIControls/SliderControl.h>
+#include <UILib/SliderControl.h>
+#include <UILib/LocalizationManager.h>
 
 #include <wx/combobox.h>
 #include <wx/filepicker.h>

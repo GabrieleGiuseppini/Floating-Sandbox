@@ -12,7 +12,7 @@
 #include <Game/GameParameters.h>
 #include <Game/ImageFileTools.h>
 
-#include <UIControls/LayoutHelper.h>
+#include <UILib/LayoutHelper.h>
 
 #include <wx/clntdata.h>
 #include <wx/cursor.h>

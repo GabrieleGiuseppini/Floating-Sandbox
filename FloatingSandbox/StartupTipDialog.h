@@ -5,8 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
-#include "LocalizationManager.h"
 #include "UIPreferencesManager.h"
+
+#include <UILib/LocalizationManager.h>
 
 #include <Game/ResourceLocator.h>
 
