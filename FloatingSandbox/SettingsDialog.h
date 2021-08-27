@@ -7,7 +7,7 @@
 
 #include "SettingsManager.h"
 
-#include <UIControls/SliderControl.h>
+#include <UILib/SliderControl.h>
 
 #include <Game/IGameControllerSettingsOptions.h>
 #include <Game/ResourceLocator.h>

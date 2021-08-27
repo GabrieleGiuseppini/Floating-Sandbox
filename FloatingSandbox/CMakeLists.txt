@@ -8,8 +8,6 @@ set  (FLOATING_SANDBOX_SOURCES
 	EventTickerPanel.cpp
 	EventTickerPanel.h
 	GLCanvas.h
-	LocalizationManager.cpp
-	LocalizationManager.h
 	MainApp.cpp
 	MainFrame.cpp
 	MainFrame.h
@@ -56,8 +54,6 @@ set  (DIALOGS_SOURCES
 	DebugDialog.h
 	HelpDialog.cpp
 	HelpDialog.h
-	LoggingDialog.cpp
-	LoggingDialog.h
 	NewVersionDisplayDialog.cpp
 	NewVersionDisplayDialog.h
 	PreferencesDialog.cpp
@@ -105,7 +101,7 @@ target_link_libraries (FloatingSandbox
 	GameLib
 	GameOpenGLLib
 	GPUCalcLib
-	UIControlsLib
+	UILib
 	sfml-audio
 	sfml-network
 	sfml-system

@@ -6,8 +6,9 @@
 #pragma once
 
 #include "AudioController.h"
-#include "LocalizationManager.h"
 #include "MusicController.h"
+
+#include <UILib/LocalizationManager.h>
 
 #include <Game/IGameController.h>
 #include <Game/ResourceLocator.h>

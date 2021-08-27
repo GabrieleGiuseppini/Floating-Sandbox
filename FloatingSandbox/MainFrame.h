@@ -8,8 +8,6 @@
 #include "DebugDialog.h"
 #include "EventTickerPanel.h"
 #include "HelpDialog.h"
-#include "LocalizationManager.h"
-#include "LoggingDialog.h"
 #include "MusicController.h"
 #include "PreferencesDialog.h"
 #include "ProbePanel.h"
@@ -22,7 +20,9 @@
 #include "UIPreferencesManager.h"
 #include "UpdateChecker.h"
 
-#include <UIControls/UnFocusablePanel.h>
+#include <UILib/LocalizationManager.h>
+#include <UILib/LoggingDialog.h>
+#include <UILib/UnFocusablePanel.h>
 
 #include <Game/GameController.h>
 #include <Game/IGameEventHandlers.h>

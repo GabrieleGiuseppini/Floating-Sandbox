@@ -1,0 +1,32 @@
+
+#
+# UI library
+#
+
+set  (UI_LIB_SOURCES
+	BitmappedCheckbox.h
+	ElectricalElementControl.cpp
+	ElectricalElementControl.h
+	LayoutHelper.h
+	LocalizationManager.cpp
+	LocalizationManager.h
+	LoggingDialog.cpp
+	LoggingDialog.h
+	ScalarTimeSeriesProbeControl.cpp
+	ScalarTimeSeriesProbeControl.h	
+	SliderControl.h
+	UnFocusablePanel.h
+	UnFocusableScrollablePanel.h
+)
+
+source_group(" " FILES ${UI_LIB_SOURCES})
+
+add_library (UILib ${UI_LIB_SOURCES})
+
+target_include_directories(UILib PRIVATE .)
+target_include_directories(UILib PRIVATE ${wxWidgets_INCLUDE_DIRS})
+target_compile_definitions(UILib PRIVATE "${wxWidgets_DEFINITIONS}")
+target_link_libraries (UILib
+	GameCoreLib
+	${wxWidgets_LIBRARIES}
+	${ADDITIONAL_LIBRARIES})

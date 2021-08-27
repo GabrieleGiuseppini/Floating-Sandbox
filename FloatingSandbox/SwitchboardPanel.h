@@ -8,10 +8,10 @@
 #include "SoundController.h"
 #include "UIPreferencesManager.h"
 
-#include <UIControls/BitmappedCheckbox.h>
-#include <UIControls/ElectricalElementControl.h>
-#include <UIControls/UnFocusablePanel.h>
-#include <UIControls/UnFocusableScrollablePanel.h>
+#include <UILib/BitmappedCheckbox.h>
+#include <UILib/ElectricalElementControl.h>
+#include <UILib/UnFocusablePanel.h>
+#include <UILib/UnFocusableScrollablePanel.h>
 
 #include <Game/IGameController.h>
 #include <Game/IGameEventHandlers.h>

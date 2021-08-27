@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <UIControls/UnFocusablePanel.h>
+#include <UILib/UnFocusablePanel.h>
 
 #include <Game/IGameController.h>
 #include <Game/IGameEventHandlers.h>
