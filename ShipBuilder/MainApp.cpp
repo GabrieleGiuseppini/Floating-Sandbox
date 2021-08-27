@@ -17,8 +17,24 @@
 #include <wx/app.h>
 #include <wx/msgdlg.h>
 
-#include <optional>
-#include <string>
+#include <memory>
+
+#ifdef _DEBUG
+#ifdef _MSC_VER
+#include <signal.h>
+#include <stdlib.h>
+
+void SignalHandler(int signal)
+{
+    if (signal == SIGABRT)
+    {
+        // Break the VS debugger here
+        RaiseException(0x40010005, 0, 0, 0);
+    }
+}
+
+#endif
+#endif
 
 class MainApp : public wxApp
 {
@@ -84,9 +100,8 @@ bool MainApp::OnInit()
         // Image handlers
         wxInitAllImageHandlers();
 
-        // Language
-        std::optional<std::string> preferredLanguage = std::nullopt; // TODO: load language from Preferences here
-        mLocalizationManager = LocalizationManager::CreateInstance(preferredLanguage, *mResourceLocator);
+        // Language (system default)
+        mLocalizationManager = LocalizationManager::CreateInstance(std::nullopt, *mResourceLocator);
 
         //
         // Create frame
@@ -99,6 +114,8 @@ bool MainApp::OnInit()
         //
         // Run
         //
+
+        mMainFrame->Open();
 
         return true;
 
