@@ -40,6 +40,13 @@ private:
     wxPanel * CreateToolbarPanel();
     wxPanel * CreateWorkPanel();
 
+    void OnWorkCanvasResize(wxSizeEvent & event);
+    void OnWorkCanvasLeftDown(wxMouseEvent & event);
+    void OnWorkCanvasLeftUp(wxMouseEvent & event);
+    void OnWorkCanvasRightDown(wxMouseEvent & event);
+    void OnWorkCanvasRightUp(wxMouseEvent & event);
+    void OnWorkCanvasMouseMove(wxMouseEvent & event);
+    void OnWorkCanvasMouseWheel(wxMouseEvent & event);
     void OnQuit(wxCommandEvent & event);
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent & event);
 
@@ -59,6 +66,8 @@ private:
     //
 
     wxPanel * mMainPanel;
+    wxWindow * mWorkCanvas;
+    bool mIsMouseCapturedByWorkCanvas;
 
     //
     // Dialogs
