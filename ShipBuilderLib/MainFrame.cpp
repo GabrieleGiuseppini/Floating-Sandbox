@@ -8,8 +8,9 @@
 #include <GameCore/Log.h>
 #include <GameCore/Version.h>
 
+#include <GameOpenGL/GameOpenGL.h>
+
 #include <wx/gbsizer.h>
-#include <wx/glcanvas.h>
 #include <wx/sizer.h>
 
 #ifdef _MSC_VER
@@ -24,7 +25,8 @@ MainFrame::MainFrame(
     wxApp * mainApp,
     ResourceLocator const & resourceLocator,
     LocalizationManager const & localizationManager)
-    : mMainApp(mainApp)
+    : mIsStandAlone(true) // TODO
+    , mMainApp(mainApp)
     , mResourceLocator(resourceLocator)
     , mLocalizationManager(localizationManager)
     , mIsMouseCapturedByWorkCanvas(false)
@@ -116,6 +118,9 @@ MainFrame::MainFrame(
             0);
     }
 
+    gridSizer->AddGrowableCol(1);
+    gridSizer->AddGrowableCol(2);
+
     mMainPanel->SetSizer(gridSizer);
 
     //
@@ -138,10 +143,12 @@ MainFrame::MainFrame(
     {
         wxMenu * fileMenu = new wxMenu();
 
-        // TODO: only if standalone
-        wxMenuItem * quitMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Quit") + wxS("\tAlt-F4"), _("Quit the builder"), wxITEM_NORMAL);
-        fileMenu->Append(quitMenuItem);
-        Connect(quitMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnQuit);
+        if (mIsStandAlone)
+        {
+            wxMenuItem * quitMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Quit") + wxS("\tAlt-F4"), _("Quit the builder"), wxITEM_NORMAL);
+            fileMenu->Append(quitMenuItem);
+            Connect(quitMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnQuit);
+        }
 
         mainMenuBar->Append(fileMenu, _("&File"));
     }
@@ -171,6 +178,26 @@ MainFrame::MainFrame(
     wxAcceleratorTable accel(acceleratorEntries.size(), acceleratorEntries.data());
     SetAcceleratorTable(accel);
 #endif
+
+    //
+    // Create view
+    //
+
+    if (mIsStandAlone)
+    {
+        // Initialize OpenGL
+        GameOpenGL::InitOpenGL();
+    }
+
+    mView = std::make_unique<View>(
+        mWorkCanvas->GetContentScaleFactor(),
+        [this]()
+        {
+            //LogMessage("TODOTEST: Swapping buffers...");
+            mWorkCanvas->SwapBuffers();
+            //LogMessage("TODOTEST: ...buffers swapped.");
+        },
+        mResourceLocator);
 }
 
 void MainFrame::Open()
@@ -263,14 +290,19 @@ wxPanel * MainFrame::CreateWorkPanel()
 
     // GL Canvas
     {
+        //
+        // Create GL Canvas
+        //
+
         int glCanvasAttributes[] =
         {
             WX_GL_RGBA,
             WX_GL_DOUBLEBUFFER,
+            WX_GL_DEPTH_SIZE, 16,
             0, 0
         };
 
-        mWorkCanvas = new wxGLCanvas(panel, wxID_ANY, glCanvasAttributes);
+        mWorkCanvas = std::make_unique<wxGLCanvas>(panel, wxID_ANY, glCanvasAttributes);
 
         mWorkCanvas->Connect(wxEVT_SIZE, (wxObjectEventFunction)&MainFrame::OnWorkCanvasResize, 0, this);
         mWorkCanvas->Connect(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnWorkCanvasLeftDown, 0, this);
@@ -281,10 +313,17 @@ wxPanel * MainFrame::CreateWorkPanel()
         mWorkCanvas->Connect(wxEVT_MOUSEWHEEL, (wxObjectEventFunction)&MainFrame::OnWorkCanvasMouseWheel, 0, this);
 
         sizer->Add(
-            mWorkCanvas,
+            mWorkCanvas.get(),
             1, // Occupy all horizontal space
             wxEXPAND, // Stretch vertically as much as available
             0);
+
+        //
+        // Create GL context, and make it current on the canvas
+        //
+
+        mGLContext = std::make_unique<wxGLContext>(mWorkCanvas.get());
+        mGLContext->SetCurrent(*mWorkCanvas);
     }
 
     panel->SetSizer(sizer);
