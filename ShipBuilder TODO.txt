@@ -94,18 +94,20 @@
 			+ Rename UIControlsLib as "UILib"
 			+ Move LocalizationManager from FloatingSandbox into UILib
 			+ Move LoggingDialog to UILib
-		- cctor(...)
-			- For stand-alone
-			- Own SplashScreen, this time with wxSplashScreen, and glCanvas for initialization
-			- Invokes other TODOHERE: Create(opengl initialization canvas, IProgress)
-		- Make MainFrame with menu with:
-			- Quit (only in standalone mode)
-			- Open logging window
+			= cctor(...)
+				+ For stand-alone
+				- Own SplashScreen, this time with wxSplashScreen, and glCanvas for initialization
+				- Invokes other TODOHERE: Create(opengl initialization canvas, IProgress)
+			- Make MainFrame with menu with:
+				= Quit (only in standalone mode)
+				+ Open logging window
 		- 2
-		- Integrate with FloatingSandbox
-		- TODOHERE
-		- Open(...ship file path...)
-		- TODOHERE
+			- OpenGL Context (View)
+		- 3
+			- Integrate with FloatingSandbox
+			- TODOHERE
+			- Open(...ship file path...)
+			- TODOHERE
 
 - Tools:
 	- BaseTool:

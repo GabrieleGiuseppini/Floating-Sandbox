@@ -5,9 +5,11 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
+#include <GameCore/Log.h>
 #include <GameCore/Version.h>
 
 #include <wx/gbsizer.h>
+#include <wx/glcanvas.h>
 #include <wx/sizer.h>
 
 #ifdef _MSC_VER
@@ -25,6 +27,7 @@ MainFrame::MainFrame(
     : mMainApp(mainApp)
     , mResourceLocator(resourceLocator)
     , mLocalizationManager(localizationManager)
+    , mIsMouseCapturedByWorkCanvas(false)
 {
     Create(
         nullptr,
@@ -258,34 +261,109 @@ wxPanel * MainFrame::CreateWorkPanel()
 
     wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
 
+    // GL Canvas
     {
-        // TODO
-        /*
-    //
-    // Build OpenGL canvas - this is where we render the game to
-    //
+        int glCanvasAttributes[] =
+        {
+            WX_GL_RGBA,
+            WX_GL_DOUBLEBUFFER,
+            0, 0
+        };
 
-    mMainGLCanvas = std::make_unique<GLCanvas>(
-        mMainPanel,
-        ID_MAIN_CANVAS);
+        mWorkCanvas = new wxGLCanvas(panel, wxID_ANY, glCanvasAttributes);
 
-    mMainGLCanvas->Connect(wxEVT_SHOW, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasShow, 0, this);
-    mMainGLCanvas->Connect(wxEVT_PAINT, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasPaint, 0, this);
-    mMainGLCanvas->Connect(wxEVT_SIZE, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasResize, 0, this);
-    mMainGLCanvas->Connect(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasLeftDown, 0, this);
-    mMainGLCanvas->Connect(wxEVT_LEFT_UP, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasLeftUp, 0, this);
-    mMainGLCanvas->Connect(wxEVT_RIGHT_DOWN, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasRightDown, 0, this);
-    mMainGLCanvas->Connect(wxEVT_RIGHT_UP, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasRightUp, 0, this);
-    mMainGLCanvas->Connect(wxEVT_MOTION, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseMove, 0, this);
-    mMainGLCanvas->Connect(wxEVT_MOUSEWHEEL, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseWheel, 0, this);
-    mMainGLCanvas->Connect(wxEVT_MOUSE_CAPTURE_LOST, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasCaptureMouseLost, 0, this);
+        mWorkCanvas->Connect(wxEVT_SIZE, (wxObjectEventFunction)&MainFrame::OnWorkCanvasResize, 0, this);
+        mWorkCanvas->Connect(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnWorkCanvasLeftDown, 0, this);
+        mWorkCanvas->Connect(wxEVT_LEFT_UP, (wxObjectEventFunction)&MainFrame::OnWorkCanvasLeftUp, 0, this);
+        mWorkCanvas->Connect(wxEVT_RIGHT_DOWN, (wxObjectEventFunction)&MainFrame::OnWorkCanvasRightDown, 0, this);
+        mWorkCanvas->Connect(wxEVT_RIGHT_UP, (wxObjectEventFunction)&MainFrame::OnWorkCanvasRightUp, 0, this);
+        mWorkCanvas->Connect(wxEVT_MOTION, (wxObjectEventFunction)&MainFrame::OnWorkCanvasMouseMove, 0, this);
+        mWorkCanvas->Connect(wxEVT_MOUSEWHEEL, (wxObjectEventFunction)&MainFrame::OnWorkCanvasMouseWheel, 0, this);
 
-        */
+        sizer->Add(
+            mWorkCanvas,
+            1, // Occupy all horizontal space
+            wxEXPAND, // Stretch vertically as much as available
+            0);
     }
 
     panel->SetSizer(sizer);
 
     return panel;
+}
+
+void MainFrame::OnWorkCanvasResize(wxSizeEvent & event)
+{
+    LogMessage("OnWorkCanvasResize: ", event.GetSize().GetX(), "x", event.GetSize().GetY());
+
+    // TODO: fw to controller
+
+    event.Skip();
+}
+
+void MainFrame::OnWorkCanvasLeftDown(wxMouseEvent & /*event*/)
+{
+    // First of all, set focus on the canvas if it has lost it - we want
+    // it to receive all mouse events
+    if (!mWorkCanvas->HasFocus())
+    {
+        mWorkCanvas->SetFocus();
+    }
+
+    // TODO: fw to controller
+
+    // Hang on to the mouse for as long as the button is pressed
+    if (!mIsMouseCapturedByWorkCanvas)
+    {
+        mWorkCanvas->CaptureMouse();
+        mIsMouseCapturedByWorkCanvas = true;
+    }
+}
+
+void MainFrame::OnWorkCanvasLeftUp(wxMouseEvent & /*event*/)
+{
+    // We can now release the mouse
+    if (mIsMouseCapturedByWorkCanvas)
+    {
+        mWorkCanvas->ReleaseMouse();
+        mIsMouseCapturedByWorkCanvas = false;
+    }
+
+    // TODO: fw to controller
+}
+
+void MainFrame::OnWorkCanvasRightDown(wxMouseEvent & /*event*/)
+{
+    // TODO: fw to controller
+
+    // Hang on to the mouse for as long as the button is pressed
+    if (!mIsMouseCapturedByWorkCanvas)
+    {
+        mWorkCanvas->CaptureMouse();
+        mIsMouseCapturedByWorkCanvas = true;
+    }
+}
+
+void MainFrame::OnWorkCanvasRightUp(wxMouseEvent & /*event*/)
+{
+    // We can now release the mouse
+    if (mIsMouseCapturedByWorkCanvas)
+    {
+        mWorkCanvas->ReleaseMouse();
+        mIsMouseCapturedByWorkCanvas = false;
+    }
+
+    // TODO: fw to controller
+}
+
+void MainFrame::OnWorkCanvasMouseMove(wxMouseEvent & event)
+{
+    // TODO: fw to controller
+}
+
+void MainFrame::OnWorkCanvasMouseWheel(wxMouseEvent & event)
+{
+    // TODO: fw to controller
 }
 
 void MainFrame::OnQuit(wxCommandEvent & /*event*/)
