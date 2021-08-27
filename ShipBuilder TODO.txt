@@ -102,7 +102,9 @@
 				= Quit (only in standalone mode)
 				+ Open logging window
 		- 2
-			- OpenGL Context (View)
+			- Create OpenGL context (i.e. View)
+			- Make context current on canvas
+			- Do OpenGL initialization 
 		- 3
 			- Integrate with FloatingSandbox
 			- TODOHERE

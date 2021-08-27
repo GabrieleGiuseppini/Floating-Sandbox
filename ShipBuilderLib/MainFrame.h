@@ -5,15 +5,23 @@
  ***************************************************************************************/
 #pragma once
 
+#include "View.h"
+
 #include <UILib/LocalizationManager.h>
 #include <UILib/LoggingDialog.h>
 
 #include <Game/ResourceLocator.h>
 
+#include <GameOpenGL/GameOpenGL.h>
+
 #include <wx/app.h>
 #include <wx/frame.h>
+#include <wx/glcanvas.h> // Need to include this *after* our glad.h has been included,
+ // so that wxGLCanvas ends up *not* including the system's OpenGL header but glad's instead
 #include <wx/menu.h>
 #include <wx/panel.h>
+
+#include <memory>
 
 namespace ShipBuilder {
 
@@ -52,7 +60,10 @@ private:
 
 private:
 
+    bool const mIsStandAlone;
     wxApp * const mMainApp;
+
+    std::unique_ptr<View> mView;
 
     //
     // Helpers
@@ -66,7 +77,8 @@ private:
     //
 
     wxPanel * mMainPanel;
-    wxWindow * mWorkCanvas;
+    std::unique_ptr<wxGLCanvas> mWorkCanvas;
+    std::unique_ptr<wxGLContext> mGLContext;
     bool mIsMouseCapturedByWorkCanvas;
 
     //

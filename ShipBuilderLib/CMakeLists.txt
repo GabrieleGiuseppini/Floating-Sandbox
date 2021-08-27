@@ -6,6 +6,8 @@
 set  (SHIPBUILDER_LIB_SOURCES
 	MainFrame.h
 	MainFrame.cpp
+	View.h
+	View.cpp
 )
 
 source_group(" " FILES ${SHIPBUILDER_LIB_SOURCES})
