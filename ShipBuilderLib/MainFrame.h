@@ -6,14 +6,14 @@
 #pragma once
 
 #include <UILib/LocalizationManager.h>
+#include <UILib/LoggingDialog.h>
 
 #include <Game/ResourceLocator.h>
 
 #include <wx/app.h>
 #include <wx/frame.h>
 #include <wx/menu.h>
-#include <wx/sizer.h>
-#include <wx/timer.h>
+#include <wx/panel.h>
 
 namespace ShipBuilder {
 
@@ -27,7 +27,21 @@ public:
     MainFrame(
         wxApp * mainApp,
         ResourceLocator const & resourceLocator,
-        LocalizationManager & localizationManager);
+        LocalizationManager const & localizationManager);
+
+    void Open();
+
+private:
+
+    wxPanel * CreateFilePanel();
+    wxPanel * CreateToolSettingsPanel();
+    wxPanel * CreateGamePanel();
+    wxPanel * CreateViewPanel();
+    wxPanel * CreateToolbarPanel();
+    wxPanel * CreateWorkPanel();
+
+    void OnQuit(wxCommandEvent & event);
+    void OnOpenLogWindowMenuItemSelected(wxCommandEvent & event);
 
 private:
 
@@ -38,7 +52,19 @@ private:
     //
 
     ResourceLocator const & mResourceLocator;
-    LocalizationManager & mLocalizationManager;
+    LocalizationManager const & mLocalizationManager;
+
+    //
+    // UI
+    //
+
+    wxPanel * mMainPanel;
+
+    //
+    // Dialogs
+    //
+
+    std::unique_ptr<LoggingDialog> mLoggingDialog;
 };
 
 }

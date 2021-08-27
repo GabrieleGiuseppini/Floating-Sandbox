@@ -66,7 +66,7 @@
 		- How to share state changes? 
 			- FullScreenManager class, shared_ptr in both
 	- Switching between two frames: 
-		- MainFrame owns ShipBulderFrame, ShipBulderFrame takes std::function(std::optional<...ship file path...>) "ReturnToGame" in cctor
+		- MainFrame owns ShipBuilder::MainFrame, ShipBulder::MainFrame takes std::function(std::optional<...ship file path...>) "ReturnToGame" in cctor
 			- Latter may be null for stand-alone test executable
 		- Switch implemented via:
 			- MainFrame::SwitchToShipBuilder: invoked by MainFrame when user switches to ship builder
