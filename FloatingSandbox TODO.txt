@@ -1097,7 +1097,7 @@ Render:
 		- Release 1.16.5:
 			- Windows
 				+ MSI variables
-				- Commit & push
+				+ Commit & push
 				- 64-bit MSI
 					- Cleanup Install
 					- Build Install
@@ -1112,7 +1112,7 @@ Render:
 					- Test clean install
 				- Get both installers tested on dev server
 			- Ubuntu
-				- pull 
+				- Pull 
 				- Build clean
 				- Make tar
 				- Smoke-test tar
@@ -1302,7 +1302,7 @@ Render:
 - Release template:
 	- Branch is merged into master (if applicable)
 	- Windows
-		- MSI variables
+		- MSI variable
 		- Commit & push
 		- 64-bit MSI
 			- Cleanup Install
@@ -1318,7 +1318,7 @@ Render:
 			- Test clean install
 		- Get both installers tested on dev server
 	- Ubuntu
-		- pull 
+		- Pull 
 		- Build clean
 		- Make tar
 		- Smoke-test tar
