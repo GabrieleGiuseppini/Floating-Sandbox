@@ -14,12 +14,26 @@ Controller::Controller(
     , mView(view)
     , mInputState()
 {
-    // TODOHERE: figure out lifecycle of mModelController
-    // Create ModelController
+}
+
+void Controller::CreateNewShip()
+{
     mModelController = ModelController::CreateNew(
-        WorkSpaceSize(400, 200),
+        WorkSpaceSize(400, 200), // TODO: from preferences
         mUserInterface,
         mView);
+
+    OnNewModelController();
+}
+
+void Controller::LoadShip(std::filesystem::path const & shipFilePath)
+{
+    mModelController = ModelController::Load(
+        shipFilePath,
+        mUserInterface,
+        mView);
+
+    OnNewModelController();
 }
 
 void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition)
@@ -80,6 +94,16 @@ void Controller::OnShiftKeyUp()
     mInputState.IsShiftKeyDown = false;
 
     // TODO: FW to tool
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void Controller::OnNewModelController()
+{
+    // TODO: reset tool and pseudo-tools
+
+    // Tell UI
+    mUserInterface.OnWorkSpaceSizeChanged();
 }
 
 }

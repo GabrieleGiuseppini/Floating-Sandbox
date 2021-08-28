@@ -10,6 +10,7 @@
 #include "ModelController.h"
 #include "View.h"
 
+#include <filesystem>
 #include <memory>
 
 namespace ShipBuilder {
@@ -26,6 +27,10 @@ public:
         IUserInterface & userInterface,
         View & view);
 
+    void CreateNewShip();
+
+    void LoadShip(std::filesystem::path const & shipFilePath);
+
     void OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition);
     void OnLeftMouseDown();
     void OnLeftMouseUp();
@@ -36,10 +41,13 @@ public:
 
 private:
 
+    void OnNewModelController();
+
+private:
+
     IUserInterface & mUserInterface;
     View & mView;
 
-    // TODO: decide if member of uq_ptr
     std::unique_ptr<ModelController> mModelController;
 
     // Input state

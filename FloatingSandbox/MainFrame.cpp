@@ -83,6 +83,7 @@ long const ID_NORMAL_SCREEN_MENUITEM = wxNewId();
 long const ID_MUTE_MENUITEM = wxNewId();
 
 long const ID_SHIPBUILDER_NEWSHIP_MENUITEM = wxNewId();
+long const ID_SHIPBUILDER_EDITSHIP_MENUITEM = wxNewId();
 
 long const ID_HELP_MENUITEM = wxNewId();
 long const ID_ABOUT_MENUITEM = wxNewId();
@@ -240,13 +241,13 @@ MainFrame::MainFrame(
             ADD_PLAIN_ACCELERATOR_KEY('+', zoomInMenuItem);
             ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_ADD, zoomInMenuItem);
 
-                wxMenuItem * zoomOutMenuItem = new wxMenuItem(controlsMenu, ID_ZOOM_OUT_MENUITEM, _("Zoom Out") + wxS("\t-"), wxEmptyString, wxITEM_NORMAL);
+            wxMenuItem * zoomOutMenuItem = new wxMenuItem(controlsMenu, ID_ZOOM_OUT_MENUITEM, _("Zoom Out") + wxS("\t-"), wxEmptyString, wxITEM_NORMAL);
             controlsMenu->Append(zoomOutMenuItem);
             Connect(ID_ZOOM_OUT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomOutMenuItemSelected);
             ADD_PLAIN_ACCELERATOR_KEY('-', zoomOutMenuItem);
             ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_SUBTRACT, zoomOutMenuItem);
 
-                wxMenuItem * amblientLightUpMenuItem = new wxMenuItem(controlsMenu, ID_AMBIENT_LIGHT_UP_MENUITEM, _("Bright Ambient Light") + wxS("\tPgUp"), wxEmptyString, wxITEM_NORMAL);
+            wxMenuItem * amblientLightUpMenuItem = new wxMenuItem(controlsMenu, ID_AMBIENT_LIGHT_UP_MENUITEM, _("Bright Ambient Light") + wxS("\tPgUp"), wxEmptyString, wxITEM_NORMAL);
             controlsMenu->Append(amblientLightUpMenuItem);
             Connect(ID_AMBIENT_LIGHT_UP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAmbientLightUpMenuItemSelected);
 
@@ -537,9 +538,13 @@ MainFrame::MainFrame(
         {
             wxMenu * shipBuilderMenu = new wxMenu();
 
-            wxMenuItem * newShipMenuItem = new wxMenuItem(shipBuilderMenu, ID_SHIPBUILDER_NEWSHIP_MENUITEM, _("New Ship..."), _("Open the ShipBuilder to create a new ship"), wxITEM_NORMAL);
+            wxMenuItem * newShipMenuItem = new wxMenuItem(shipBuilderMenu, ID_SHIPBUILDER_NEWSHIP_MENUITEM, _("Create New Ship..."), _("Open the ShipBuilder to create a new ship"), wxITEM_NORMAL);
             shipBuilderMenu->Append(newShipMenuItem);
             Connect(ID_SHIPBUILDER_NEWSHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShipBuilderNewShipMenuItemSelected);
+
+            wxMenuItem * editShipMenuItem = new wxMenuItem(shipBuilderMenu, ID_SHIPBUILDER_EDITSHIP_MENUITEM, _("Edit This Ship..."), _("Open the ShipBuilder to edit the currently-loaded ship"), wxITEM_NORMAL);
+            shipBuilderMenu->Append(editShipMenuItem);
+            Connect(ID_SHIPBUILDER_EDITSHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShipBuilderEditShipMenuItemSelected);
 
             mainMenuBar->Append(shipBuilderMenu, _("&Ship Builder"));
         }
@@ -766,8 +771,6 @@ void MainFrame::OnSecretTypingDebug()
 
 void MainFrame::OnSecretTypingLoadBuiltInShip(int ship)
 {
-    ResetState();
-
     std::filesystem::path builtInShipFilePath;
     if (ship == 2)
         builtInShipFilePath = mResourceLocator.GetApril1stShipDefinitionFilePath();
@@ -776,10 +779,7 @@ void MainFrame::OnSecretTypingLoadBuiltInShip(int ship)
     else
         builtInShipFilePath = mResourceLocator.GetFallbackShipDefinitionFilePath();
 
-    mGameController->ResetAndLoadShip(builtInShipFilePath);
-
-    // Succeeded
-    OnShipLoaded(builtInShipFilePath);
+    LoadShip(builtInShipFilePath, false);
 }
 
 void MainFrame::OnSecretTypingGoToWorldEnd(int side)
@@ -1043,7 +1043,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             mMainApp,
             mResourceLocator,
             mLocalizationManager,
-            [this](std::filesystem::path const & shipFilePath)
+            [this](std::optional<std::filesystem::path> shipFilePath)
             {
                 this->SwitchFromShipBuilder(shipFilePath);
             });
@@ -1478,35 +1478,7 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
         // Load ship
         //
 
-        ResetState();
-
-        assert(!!mGameController);
-        try
-        {
-            auto const chosenShipFilePath = mShipLoadDialog->GetChosenShipFilepath();
-            auto shipMetadata = mGameController->ResetAndLoadShip(chosenShipFilePath);
-
-            // Succeeded
-            OnShipLoaded(chosenShipFilePath);
-
-            // Open description, if a description exists and the user allows
-            if (!!shipMetadata.Description
-                && mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad())
-            {
-                ShipDescriptionDialog shipDescriptionDialog(
-                    this,
-                    shipMetadata,
-                    true,
-                    *mUIPreferencesManager,
-                    mResourceLocator);
-
-                shipDescriptionDialog.ShowModal();
-            }
-        }
-        catch (std::exception const & ex)
-        {
-            OnError(ex.what(), false);
-        }
+        LoadShip(mShipLoadDialog->GetChosenShipFilepath(), true);
     }
 
     SetPaused(false);
@@ -1516,38 +1488,14 @@ void MainFrame::OnReloadCurrentShipMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!mCurrentShipFilePath.empty());
 
-    ResetState();
-
-    try
-    {
-        mGameController->ResetAndReloadShip(mCurrentShipFilePath);
-
-        // Succeeded
-        OnShipLoaded(mCurrentShipFilePath);
-    }
-    catch (std::exception const & ex)
-    {
-        OnError(ex.what(), false);
-    }
+    LoadShip(mCurrentShipFilePath, false);
 }
 
 void MainFrame::OnReloadPreviousShipMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!mPreviousShipFilePath.empty()); // Or else we wouldn't be here
 
-    ResetState();
-
-    try
-    {
-        mGameController->ResetAndReloadShip(mPreviousShipFilePath);
-
-        // Succeeded
-        OnShipLoaded(mPreviousShipFilePath);
-    }
-    catch (std::exception const & ex)
-    {
-        OnError(ex.what(), false);
-    }
+    LoadShip(mPreviousShipFilePath, false);
 }
 
 void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
@@ -2030,7 +1978,12 @@ void MainFrame::OnHelpMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::OnShipBuilderNewShipMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    SwitchToShipBuilder();
+    SwitchToShipBuilderForNewShip();
+}
+
+void MainFrame::OnShipBuilderEditShipMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    SwitchToShipBuilderForCurrentShip();
 }
 
 void MainFrame::OnAboutMenuItemSelected(wxCommandEvent & /*event*/)
@@ -2243,7 +2196,7 @@ void MainFrame::RunGameIteration()
 #endif
 }
 
-void MainFrame::ResetState()
+void MainFrame::ResetShipState()
 {
     assert(!!mSoundController);
     mSoundController->Reset();
@@ -2419,6 +2372,41 @@ std::filesystem::path MainFrame::ChooseDefaultShip(ResourceLocator const & resou
         return resourceLocator.GetDefaultShipDefinitionFilePath(); // Just default
 }
 
+void MainFrame::LoadShip(
+    std::filesystem::path const & shipFilePath,
+    bool isFromUser)
+{
+    ResetShipState();
+
+    assert(!!mGameController);
+    try
+    {
+        auto shipMetadata = mGameController->ResetAndLoadShip(shipFilePath);
+
+        // Succeeded
+        OnShipLoaded(shipFilePath);
+
+        // Open description, if a description exists and the user allows
+        if (isFromUser
+            && !!shipMetadata.Description
+            && mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad())
+        {
+            ShipDescriptionDialog shipDescriptionDialog(
+                this,
+                shipMetadata,
+                true,
+                *mUIPreferencesManager,
+                mResourceLocator);
+
+            shipDescriptionDialog.ShowModal();
+        }
+    }
+    catch (std::exception const & ex)
+    {
+        OnError(ex.what(), false);
+    }
+}
+
 void MainFrame::OnShipLoaded(std::filesystem::path shipFilePath)
 {
     //
@@ -2466,23 +2454,33 @@ wxAcceleratorEntry MainFrame::MakePlainAcceleratorKey(int key, wxMenuItem * menu
     return entry;
 }
 
-void MainFrame::SwitchToShipBuilder()
+void MainFrame::SwitchToShipBuilderForNewShip()
 {
-    // TODO: stop game loop; pausing is inadequate for a number of reasons:
-    // it shows "Paused"
-    // if we're already paused, we'll go back to unpaused
+    // Pause everything
     SetPaused(true);
 
     // Hide us
     Show(false);
 
-    // Open ShipBuilder frame
+    // Open ShipBuilder frame for new ship
     assert(mShipBuilderMainFrame);
-    // TODO: pass path to currently-loaded ship
-    mShipBuilderMainFrame->Open();
+    mShipBuilderMainFrame->OpenForNewShip();
 }
 
-void MainFrame::SwitchFromShipBuilder(std::filesystem::path const & shipFilePath)
+void MainFrame::SwitchToShipBuilderForCurrentShip()
+{
+    // Pause everything
+    SetPaused(true);
+
+    // Hide us
+    Show(false);
+
+    // Open ShipBuilder frame for editing current ship
+    assert(mShipBuilderMainFrame);
+    mShipBuilderMainFrame->OpenForShip(mCurrentShipFilePath);
+}
+
+void MainFrame::SwitchFromShipBuilder(std::optional<std::filesystem::path> shipFilePath)
 {
     // Show us
     Show(true);
@@ -2490,6 +2488,19 @@ void MainFrame::SwitchFromShipBuilder(std::filesystem::path const & shipFilePath
     // Make ourselves the topmost frame
     mMainApp->SetTopWindow(this);
 
-    // TODO: start game loop, with ship loading
+    mMainApp->Yield();
+
+    if (shipFilePath.has_value())
+    {
+        // Load the ship
+        LoadShip(*shipFilePath, false);
+    }
+    else
+    {
+        // Reload current ship
+        LoadShip(mCurrentShipFilePath, false);
+    }
+
+    // Restart
     SetPaused(false);
 }

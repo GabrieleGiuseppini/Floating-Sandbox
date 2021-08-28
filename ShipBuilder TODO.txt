@@ -68,13 +68,10 @@
 
 = MainFrame:
 	+ Created by game MainFrame at initialization, but kept hidden
-	- Inherits FullScreen state and shares state changes (so, for example, if exits full screen in ShipBuilder, also Game has exited full screen)
-		- How to share state changes? 
-			- FullScreenManager class, shared_ptr in both
-	= Switching between two frames: 
+	+ Switching between two frames: 
 		+ MainFrame owns ShipBuilder::MainFrame, ShipBulder::MainFrame takes std::function(...ship file path...) "ReturnToGame" in cctor
 			+ Latter may be null for stand-alone test executable
-		= Switch implemented via:
+		+ Switch implemented via:
 			- Game->ShipBuilder:
 				- Create New Ship...
 					- ::MainFrame::SwitchToShipBuilderForNewShip:
@@ -97,33 +94,17 @@
 					- If file path: GameController->ResetAndLoadShip(this ship file path)
 					- else: GameController->ResetAndLoadShip(current ship file path)
 
-			- TODOOLD:
-			= MainFrame::SwitchToShipBuilder: invoked by MainFrame when user switches to ship builder
-				- Stops game loop
-					- Ideally not just "pause", but full "stop"
-						- "pause" is inadequate for a number of reasons:
-							- it shows "Paused"
-							- if we're already paused, we'll go back to unpaused
-							- ...
-						- GameController::Stop(), resumed only via call that takes ship
-							- Same mechanism also becomes used by ::MainFrame
-				+ Hides self
-				= Invokes ShipBuilder::MainFrame::Open(...ship file path...)
-					+ Which makes self the top frame
-			+ ShipBuilder::MainFrame::ReturnToGame: invoked by ShipBuilder::MainFrame when user returns to game
-				+ Hides self
-				+ Invokes std::function(std::optional<...ship file path...>) "ReturnToGame"
-					+ Which makes self the top frame
 	- Panning is via "losse" scrollbars around canvas
+		- For testing, requires Edit->Ship Size
+			- For now: just add and then reduce, in circle, with static member
 		- Their range & properties (& position==thumb) need to be updated at:
 			- glCanvas resize
 			- Zoom changes
 			- Pan changes (including keys)
 			- WorkSpace resize (i.e. image resize)
 		- Scrollbars recalculated via private MainFrame::RecalculatePanning, which is invoked by:
-			- Self, @ glCanvas resize
+			+ Self, @ glCanvas resize
 			- Controller, @ Zoom, Pan, and WorkSpace resize - via IUserInterface
-		- Try to make it so that if scrollbars really end up disappearing, we don't resize the glCanvas
 	= Impl:
 		- Integrate with FloatingSandbox:
 			+ ::MainFrame: menu entry for invoking "new"
@@ -134,16 +115,11 @@
 				+ File menu item
 				+ Call SB::MainFrame::SwitchBackToGame, which hides self and calls functor
 					+ Functor does not take opt: always has a path
-			= SB::MainFrame: Quit and Go Back
+			+ SB::MainFrame: Quit and Go Back
 				+ Only if !StandAlone
 				+ File menu item
-				= Same return path as Save and Go Back, but with original ship path
-					- TODO: when do we know original ship path?
-			- Nail down what are the interface and the args between Game and ShipBuilder
-				- Ship: only path, never in-memory - to avoid risk of badly-saved ship
-					- Eventually save to temp file - or better, file in temp directory (so doesn't fill up disk)
-				- Open(...ship file path...)
 		- Click-And-Draw
+			- Panning (*)
 			- Complete ViewModel:
 				- Zoom
 					- From MainFrame: MouseWheel and +/-
@@ -151,32 +127,40 @@
 					- From MainFrame: scrollbars
 					- TODO: calc'ns
 				- Work area size
-					- TODO: who tells View?
+					- TODO: who tells View? If it needs to know...
 			- Rendering of texture
 
 	- Misc TODO's:
-		- GameController::Stop/Restart-with-ship-file-path:
-			- GameWallClock
-			- TODOHERE
 		- StatusBar:
 			- Icon for coords (like MSPaint)
 		- Nuke test shader: shader file, relative ShaderTypes
 		- Frame icons (whole "Resources" folder)
+		- Preferences:
+			- New ship size
+			- ...all tools' settings...
+			- TODO: spec
+		- Inherits FullScreen state and shares state changes (so, for example, if exits full screen in ShipBuilder, also Game has exited full screen)
+			- How to share state changes? 
+				- FullScreenManager class, shared_ptr in both
 
 - Controller:
 	- Methods to instantiate ModelController: 
-		- CreateNewShip()
-		- LoadShip(..)
-		- TODOHERE: need to refresh tool - shouldn't be better to nuke and re-create Controller altogether?
+		+ CreateNewShip()
+		+ LoadShip(..)
+		- OnNewModelController()
+			- Reset tools ("Initialize")
+			+ Recalc scrollbars
+			- ...			
 
 - ModelController:
 	- static factory methods:
-		- CreateNew
+		+ CreateNew
 		- CreateFromShip(shipFilePath)
 
 - Tools:
 	- BaseTool:
 		- Stores all protected references passed from cctors: IUserInterface, ModelController, View, SelectionManager
+		- Abstract methods from game - but all pure
 	- TODO: "pencil" tool
 	- TODO: "smaple" tool
 	- SelectionManager pseudo-tool:
