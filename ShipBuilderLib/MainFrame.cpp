@@ -28,9 +28,10 @@ namespace ShipBuilder {
 MainFrame::MainFrame(
     wxApp * mainApp,
     ResourceLocator const & resourceLocator,
-    LocalizationManager const & localizationManager)
-    : mIsStandAlone(true) // TODO
-    , mMainApp(mainApp)
+    LocalizationManager const & localizationManager,
+    std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor)
+    : mMainApp(mainApp)
+    , mReturnToGameFunctor(std::move(returnToGameFunctor))
     , mResourceLocator(resourceLocator)
     , mLocalizationManager(localizationManager)
     , mIsMouseCapturedByWorkCanvas(false)
@@ -164,7 +165,7 @@ MainFrame::MainFrame(
     {
         wxMenu * fileMenu = new wxMenu();
 
-        if (mIsStandAlone)
+        if (IsStandAlone())
         {
             wxMenuItem * quitMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Quit") + wxS("\tAlt-F4"), _("Quit the builder"), wxITEM_NORMAL);
             fileMenu->Append(quitMenuItem);
@@ -204,7 +205,7 @@ MainFrame::MainFrame(
     // Create view
     //
 
-    if (mIsStandAlone)
+    if (IsStandAlone())
     {
         // Initialize OpenGL
         GameOpenGL::InitOpenGL();

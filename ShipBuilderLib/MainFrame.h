@@ -18,18 +18,25 @@
 
 #include <wx/app.h>
 #include <wx/frame.h>
-#include <wx/glcanvas.h> // Need to include this *after* our glad.h has been included,
- // so that wxGLCanvas ends up *not* including the system's OpenGL header but glad's instead
+#include <wx/glcanvas.h> // Need to include this *after* our glad.h has been included, so that wxGLCanvas ends
+                         // up *not* including the system's OpenGL header but glad's instead
 #include <wx/menu.h>
 #include <wx/panel.h>
 #include <wx/statusbr.h>
 
+#include <filesystem>
+#include <functional>
 #include <memory>
+#include <optional>
 
 namespace ShipBuilder {
 
 /*
  * The main window of the ship builder GUI.
+ *
+ * - Owns Controller and View
+ * - Very thin, calls into Controller for each high-level interaction (e.g. new tool selected, tool setting changed) and for each mouse event
+ * - Implements IUserInterface with interface needed by Controller, e.g. to make UI state changes, to capture the mouse, to update visualization of undo stack
  */
 class MainFrame final : public wxFrame, public IUserInterface
 {
@@ -38,7 +45,8 @@ public:
     MainFrame(
         wxApp * mainApp,
         ResourceLocator const & resourceLocator,
-        LocalizationManager const & localizationManager);
+        LocalizationManager const & localizationManager,
+        std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor);
 
     void Open();
 
@@ -51,6 +59,11 @@ public:
     void DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coordinates) override;
 
 private:
+
+    bool IsStandAlone() const
+    {
+        return !mReturnToGameFunctor;
+    }
 
     wxPanel * CreateFilePanel(wxWindow * parent);
     wxPanel * CreateToolSettingsPanel(wxWindow * parent);
@@ -75,8 +88,13 @@ private:
 
 private:
 
-    bool const mIsStandAlone;
     wxApp * const mMainApp;
+
+    std::function<void(std::optional<std::filesystem::path>)> const mReturnToGameFunctor;
+
+    //
+    // Owned members
+    //
 
     std::unique_ptr<Controller> mController;
     std::unique_ptr<View> mView;
