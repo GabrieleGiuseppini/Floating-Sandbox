@@ -75,6 +75,29 @@
 		+ MainFrame owns ShipBuilder::MainFrame, ShipBulder::MainFrame takes std::function(...ship file path...) "ReturnToGame" in cctor
 			+ Latter may be null for stand-alone test executable
 		= Switch implemented via:
+			- Game->ShipBuilder:
+				- Create New Ship...
+					- ::MainFrame::SwitchToShipBuilderForNewShip:
+						- SB::MainFrame->OpenForNewShip()
+							- Controller->CreateNewShip()
+								- ModelController::CreateNew()
+				- Edit This Ship...
+					- ::MainFrame::SwitchToShipBuilderForCurrentShip:
+						- SB::MainFrame->OpenForShip(ship file path)
+							- Controller->LoadShip(ship file path)
+								- ModelController::Load()
+			- ShipBuilder->Game:
+				- Quit and Return:
+					- return-to-game-functor(std::nullopt)
+				- Save and Return:
+					- SB::MainFrame: SaveDialog -> filename or cancel operation
+						- Controller->SaveShip(ship file path)
+						- ::MainFrame::SwitchFromShipBuilder(ship file path)
+				- ::MainFrame::SwitchFromShipBuilder(optional ship file path)
+					- If file path: GameController->ResetAndLoadShip(this ship file path)
+					- else: GameController->ResetAndLoadShip(current ship file path)
+
+			- TODOOLD:
 			= MainFrame::SwitchToShipBuilder: invoked by MainFrame when user switches to ship builder
 				- Stops game loop
 					- Ideally not just "pause", but full "stop"

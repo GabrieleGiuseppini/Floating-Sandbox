@@ -171,6 +171,8 @@ MainFrame::MainFrame(
             wxMenuItem * saveAndGoBackMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save and Return to Game"), _("Save the current ship and return to the simulator"), wxITEM_NORMAL);
             fileMenu->Append(saveAndGoBackMenuItem);
             Connect(saveAndGoBackMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveAndGoBack);
+
+            saveAndGoBackMenuItem->Enable(false); // Only enabled when dirty
         }
 
         if (!IsStandAlone())
