@@ -7,7 +7,7 @@
 
 #include "MaterialDatabase.h"
 #include "ResourceLocator.h"
-#include "ShipBuildTypes.h"
+#include "ShipFactoryTypes.h"
 
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
@@ -29,8 +29,8 @@ public:
     RgbaImageData Texturize(
         std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings,
         ImageSize const & structureSize,
-        ShipBuildPointIndexMatrix const & pointMatrix, // One more point on each side, to avoid checking for boundaries
-        std::vector<ShipBuildPoint> const & points) const;
+        ShipFactoryPointIndexMatrix const & pointMatrix, // One more point on each side, to avoid checking for boundaries
+        std::vector<ShipFactoryPoint> const & points) const;
 
     //
     // Settings

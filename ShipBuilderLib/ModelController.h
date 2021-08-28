@@ -7,6 +7,7 @@
 
 #include "IUserInterface.h"
 #include "Model.h"
+#include "ShipBuilderTypes.h"
 #include "View.h"
 
 #include <memory>
@@ -20,7 +21,20 @@ class ModelController
 {
 public:
 
+    static std::unique_ptr<ModelController> CreateNew(
+        WorkSpaceSize const & workSpaceSize,
+        IUserInterface & userInterface,
+        View & view);
+
+    WorkSpaceSize const & GetWorkSpaceSize() const
+    {
+        return mModel.GetWorkSpaceSize();
+    }
+
+private:
+
     ModelController(
+        WorkSpaceSize const & workSpaceSize,
         IUserInterface & userInterface,
         View & view);
 
@@ -29,8 +43,7 @@ private:
     IUserInterface & mUserInterface;
     View & mView;
 
-    // TODO: decide if member of uq_ptr
-    std::unique_ptr<Model> mModel;
+    Model mModel;
 };
 
 }

@@ -32,13 +32,13 @@ set  (GAME_SOURCES
 	RenderDeviceProperties.h
 	ResourceLocator.cpp
 	ResourceLocator.h
-	ShipBuilder.cpp
-	ShipBuilder.h
-	ShipBuildTypes.h
 	ShipDefinition.cpp
 	ShipDefinition.h
 	ShipDefinitionFile.cpp
 	ShipDefinitionFile.h
+	ShipFactory.cpp
+	ShipFactory.h
+	ShipFactoryTypes.h
 	ShipPhysicsData.h
 	ShipMetadata.h
 	ShipPreview.cpp

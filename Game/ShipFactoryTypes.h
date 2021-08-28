@@ -20,14 +20,14 @@
 #include <vector>
 
 /*
- * Definitions of data structures related to ship building.
+ * Definitions of data structures related to ship making.
  *
- * These structures are shared between the ship builder and the ship post-processors.
+ * These structures are shared between the ship factory and the ship post-processors.
  */
 
-using ShipBuildPointIndexMatrix = Matrix2<std::optional<ElementIndex>>;
+using ShipFactoryPointIndexMatrix = Matrix2<std::optional<ElementIndex>>;
 
-struct ShipBuildPoint
+struct ShipFactoryPoint
 {
     std::optional<vec2i> OriginalDefinitionCoordinates; // In original image (y=0 @ bottom), from any of the layers that provide points
     std::optional<IntegralPoint> UserCoordinates; // For displaying messages to users
@@ -45,7 +45,7 @@ struct ShipBuildPoint
     std::vector<ElementIndex> ConnectedSprings1;
     std::vector<ElementIndex> ConnectedTriangles1;
 
-    ShipBuildPoint(
+    ShipFactoryPoint(
         std::optional<vec2i> originalDefinitionCoordinates,
         std::optional<IntegralPoint> userCoordinates,
         vec2f position,
@@ -89,7 +89,7 @@ private:
     }
 };
 
-struct ShipBuildSpring
+struct ShipFactorySpring
 {
     ElementIndex PointAIndex1;
     uint32_t PointAAngle;
@@ -101,7 +101,7 @@ struct ShipBuildSpring
 
     ElementCount CoveringTrianglesCount; // Triangles that cover this spring, not necessarily having is as an edge
 
-    ShipBuildSpring(
+    ShipFactorySpring(
         ElementIndex pointAIndex1,
         uint32_t pointAAngle,
         ElementIndex pointBIndex1,
@@ -116,7 +116,7 @@ struct ShipBuildSpring
     }
 };
 
-struct ShipBuildTriangle
+struct ShipFactoryTriangle
 {
     std::array<ElementIndex, 3> PointIndices1;
 
@@ -124,7 +124,7 @@ struct ShipBuildTriangle
 
     std::optional<ElementIndex> CoveredTraverseSpringIndex2;
 
-    ShipBuildTriangle(
+    ShipFactoryTriangle(
         std::array<ElementIndex, 3> const & pointIndices1)
         : PointIndices1(pointIndices1)
         , SubSprings2()
@@ -133,12 +133,12 @@ struct ShipBuildTriangle
     }
 };
 
-struct ShipBuildFrontier
+struct ShipFactoryFrontier
 {
     FrontierType Type;
     std::vector<ElementIndex> EdgeIndices2;
 
-    ShipBuildFrontier(
+    ShipFactoryFrontier(
         FrontierType type,
         std::vector<ElementIndex> && edgeIndices2)
         : Type(type)

@@ -60,8 +60,8 @@ void ShipTexturizer::VerifyMaterialDatabase(MaterialDatabase const & materialDat
 RgbaImageData ShipTexturizer::Texturize(
     std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings,
     ImageSize const & structureSize,
-    ShipBuildPointIndexMatrix const & pointMatrix, // One more point on each side, to avoid checking for boundaries
-    std::vector<ShipBuildPoint> const & points) const
+    ShipFactoryPointIndexMatrix const & pointMatrix, // One more point on each side, to avoid checking for boundaries
+    std::vector<ShipFactoryPoint> const & points) const
 {
     auto const startTime = std::chrono::steady_clock::now();
 

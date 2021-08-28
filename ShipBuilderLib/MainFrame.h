@@ -27,7 +27,6 @@
 #include <filesystem>
 #include <functional>
 #include <memory>
-#include <optional>
 
 namespace ShipBuilder {
 
@@ -46,7 +45,7 @@ public:
         wxApp * mainApp,
         ResourceLocator const & resourceLocator,
         LocalizationManager const & localizationManager,
-        std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor);
+        std::function<void(std::filesystem::path const &)> returnToGameFunctor);
 
     void Open();
 
@@ -59,11 +58,6 @@ public:
     void DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coordinates) override;
 
 private:
-
-    bool IsStandAlone() const
-    {
-        return !mReturnToGameFunctor;
-    }
 
     wxPanel * CreateFilePanel(wxWindow * parent);
     wxPanel * CreateToolSettingsPanel(wxWindow * parent);
@@ -83,14 +77,25 @@ private:
     void OnWorkCanvasCaptureMouseLost(wxMouseCaptureLostEvent & event);
     void OnWorkCanvasMouseLeftWindow(wxMouseEvent & event);
 
+    void OnSaveAndGoBack(wxCommandEvent & event);
+    void OnQuitAndGoBack(wxCommandEvent & event);
     void OnQuit(wxCommandEvent & event);
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent & event);
 
 private:
 
+    bool IsStandAlone() const
+    {
+        return !mReturnToGameFunctor;
+    }
+
+    void SwitchBackToGame(std::filesystem::path const & shipFilePath);
+
+private:
+
     wxApp * const mMainApp;
 
-    std::function<void(std::optional<std::filesystem::path>)> const mReturnToGameFunctor;
+    std::function<void(std::filesystem::path const &)> const mReturnToGameFunctor;
 
     //
     // Owned members
@@ -121,6 +126,12 @@ private:
     //
 
     std::unique_ptr<LoggingDialog> mLoggingDialog;
+
+    //
+    // State
+    //
+
+    std::filesystem::path mOriginalGameShipFilePath;
 };
 
 }

@@ -20,6 +20,8 @@
 #include "UIPreferencesManager.h"
 #include "UpdateChecker.h"
 
+#include <ShipBuilderLib/MainFrame.h>
+
 #include <UILib/LocalizationManager.h>
 #include <UILib/LoggingDialog.h>
 #include <UILib/UnFocusablePanel.h>
@@ -224,6 +226,7 @@ private:
     void OnNormalScreenMenuItemSelected(wxCommandEvent & event);
     void OnMuteMenuItemSelected(wxCommandEvent & event);
     void OnHelpMenuItemSelected(wxCommandEvent & event);
+    void OnShipBuilderNewShipMenuItemSelected(wxCommandEvent & event);
     void OnAboutMenuItemSelected(wxCommandEvent & event);
     void OnCheckForUpdatesMenuItemSelected(wxCommandEvent & event);
 
@@ -367,9 +370,15 @@ private:
 
     wxAcceleratorEntry MakePlainAcceleratorKey(int key, wxMenuItem * menuItem);
 
+    void SwitchToShipBuilder();
+
+    void SwitchFromShipBuilder(std::filesystem::path const & shipFilePath);
+
 private:
 
     wxApp * const mMainApp;
+
+    std::unique_ptr<ShipBuilder::MainFrame> mShipBuilderMainFrame;
 
     //
     // Helpers

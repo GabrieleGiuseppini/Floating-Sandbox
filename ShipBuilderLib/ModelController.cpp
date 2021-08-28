@@ -7,17 +7,26 @@
 
 namespace ShipBuilder {
 
+std::unique_ptr<ModelController> ModelController::CreateNew(
+    WorkSpaceSize const & workSpaceSize,
+    IUserInterface & userInterface,
+    View & view)
+{
+    return std::unique_ptr<ModelController>(
+        new ModelController(
+            workSpaceSize,
+            userInterface,
+            view));
+}
+
 ModelController::ModelController(
+    WorkSpaceSize const & workSpaceSize,
     IUserInterface & userInterface,
     View & view)
     : mUserInterface(userInterface)
     , mView(view)
+    , mModel(workSpaceSize)
 {
-    //
-    // Create Model
-    //
-
-    mModel = std::make_unique<Model>();
 }
 
 }
