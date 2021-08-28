@@ -101,18 +101,28 @@
 			+ Make MainFrame with menu with:
 				+ Quit (only in standalone mode)
 				+ Open logging window
-		= 2
+		+ 2
 			+ Create OpenGL context (i.e. View)
 				+ Hook Resize()
 			+ Make context current on canvas
 			+ Do OpenGL initialization 
-			- Do a meaningful rendering
+			+ Do a meaningful rendering
 				+ Rename Shaders structure
 		- 3
 			- Integrate with FloatingSandbox
 			- TODOHERE
 			- Open(...ship file path...)
 			- TODOHERE
+		- 4
+			- Complete ViewModel:
+				- Zoom
+				- Cam
+				- TODO: how to change both
+
+	- Misc TODO's:
+		- StatusBar:
+			- Icon for coords (like MSPaint)
+		- Nuke test shader: shader file, relative ShaderTypes
 
 - Tools:
 	- BaseTool:
@@ -140,7 +150,7 @@
 		- TODO: after or before? Better before for less chance of side effects?
 			- Ideally other context is removed before new one is set
 			- See if can move global GameOpenGL initialization outside of Game RenderContext and into ::MainFrame initialization, before both
-	- Renders synchrnously, on-demand via SB::MainFrame::OnPaint()
+	- Renders synchronously, on-demand via SB::MainFrame::OnPaint()
 		- Except when we need animated tools, e.g. ants walking: for these we set a timer (in the order of 100's of ms) during the duration
 		  of the tool
 	- ViewModel:

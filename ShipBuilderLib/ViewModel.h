@@ -84,6 +84,25 @@ public:
         return mOrthoMatrix;
     }
 
+    WorkSpaceCoordinates DisplayToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    {
+        // TODOHERE
+        /*
+        vec2f const worldCoordinates = vec2f(
+            Clamp(
+                (static_cast<float>(screenCoordinates.x * mLogicalToPhysicalPixelFactor) / static_cast<float>(mCanvasPhysicalPixelSize.width) - 0.5f) * mVisibleWorld.Width + mCam.x,
+                -GameParameters::HalfMaxWorldWidth,
+                GameParameters::HalfMaxWorldWidth),
+            Clamp(
+                (static_cast<float>(screenCoordinates.y * mLogicalToPhysicalPixelFactor) / static_cast<float>(mCanvasPhysicalPixelSize.height) - 0.5f) * -mVisibleWorld.Height + mCam.y,
+                -GameParameters::HalfMaxWorldHeight,
+                GameParameters::HalfMaxWorldHeight));
+
+        return worldCoordinates;
+        */
+        return WorkSpaceCoordinates(displayCoordinates.x, displayCoordinates.y);
+    }
+
 private:
 
     void RecalculateAttributes()

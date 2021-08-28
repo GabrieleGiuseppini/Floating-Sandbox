@@ -21,6 +21,8 @@
 #include "Resources/ShipBBB.xpm"
 #endif
 
+#include <sstream>
+
 namespace ShipBuilder {
 
 MainFrame::MainFrame(
@@ -123,6 +125,18 @@ MainFrame::MainFrame(
             0);
     }
 
+    {
+        mStatusBar = new wxStatusBar(mMainPanel, wxID_ANY, 0);
+        mStatusBar->SetFieldsCount(1);
+
+        gridSizer->Add(
+            mStatusBar,
+            wxGBPosition(3, 0),
+            wxGBSpan(1, 3),
+            wxEXPAND,
+            0);
+    }
+
     gridSizer->AddGrowableRow(1, 1);
     gridSizer->AddGrowableRow(2, 1);
     gridSizer->AddGrowableCol(1, 1);
@@ -206,11 +220,31 @@ MainFrame::MainFrame(
             mWorkCanvas->SwapBuffers();
         },
         mResourceLocator);
+
+    //
+    // Create controller
+    //
+
+    mController = std::make_unique<Controller>(
+        *this,
+        *mView);
 }
 
 void MainFrame::Open()
 {
     Show(true);
+}
+
+void MainFrame::DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coordinates)
+{
+    std::stringstream ss;
+
+    if (coordinates.has_value())
+    {
+        ss << coordinates->x << ", " << coordinates->y;
+    }
+
+    mStatusBar->SetStatusText(ss.str(), 0);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -380,6 +414,8 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
         mWorkCanvas->Connect(wxEVT_RIGHT_UP, (wxObjectEventFunction)&MainFrame::OnWorkCanvasRightUp, 0, this);
         mWorkCanvas->Connect(wxEVT_MOTION, (wxObjectEventFunction)&MainFrame::OnWorkCanvasMouseMove, 0, this);
         mWorkCanvas->Connect(wxEVT_MOUSEWHEEL, (wxObjectEventFunction)&MainFrame::OnWorkCanvasMouseWheel, 0, this);
+        mWorkCanvas->Connect(wxEVT_MOUSE_CAPTURE_LOST, (wxObjectEventFunction)&MainFrame::OnWorkCanvasCaptureMouseLost, 0, this);
+        mWorkCanvas->Connect(wxEVT_LEAVE_WINDOW, (wxObjectEventFunction)&MainFrame::OnWorkCanvasMouseLeftWindow, 0, this);
 
         sizer->Add(
             mWorkCanvas.get(),
@@ -400,7 +436,7 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
     return panel;
 }
 
-void MainFrame::OnWorkCanvasPaint(wxPaintEvent & event)
+void MainFrame::OnWorkCanvasPaint(wxPaintEvent & /*event*/)
 {
     LogMessage("OnWorkCanvasPaint");
 
@@ -434,7 +470,10 @@ void MainFrame::OnWorkCanvasLeftDown(wxMouseEvent & /*event*/)
         mWorkCanvas->SetFocus();
     }
 
-    // TODO: fw to controller
+    if (mController)
+    {
+        mController->OnLeftMouseDown();
+    }
 
     // Hang on to the mouse for as long as the button is pressed
     if (!mIsMouseCapturedByWorkCanvas)
@@ -453,12 +492,18 @@ void MainFrame::OnWorkCanvasLeftUp(wxMouseEvent & /*event*/)
         mIsMouseCapturedByWorkCanvas = false;
     }
 
-    // TODO: fw to controller
+    if (mController)
+    {
+        mController->OnLeftMouseUp();
+    }
 }
 
 void MainFrame::OnWorkCanvasRightDown(wxMouseEvent & /*event*/)
 {
-    // TODO: fw to controller
+    if (mController)
+    {
+        mController->OnRightMouseDown();
+    }
 
     // Hang on to the mouse for as long as the button is pressed
     if (!mIsMouseCapturedByWorkCanvas)
@@ -477,17 +522,37 @@ void MainFrame::OnWorkCanvasRightUp(wxMouseEvent & /*event*/)
         mIsMouseCapturedByWorkCanvas = false;
     }
 
-    // TODO: fw to controller
+    if (mController)
+    {
+        mController->OnRightMouseUp();
+    }
 }
 
 void MainFrame::OnWorkCanvasMouseMove(wxMouseEvent & event)
 {
-    // TODO: fw to controller
+    if (mController)
+    {
+        mController->OnMouseMove(DisplayLogicalCoordinates(event.GetX(), event.GetY()));
+    }
 }
 
 void MainFrame::OnWorkCanvasMouseWheel(wxMouseEvent & event)
 {
     // TODO: fw to controller
+}
+
+void MainFrame::OnWorkCanvasCaptureMouseLost(wxMouseCaptureLostEvent & /*event*/)
+{
+    // TODO: fw to controller, who will de-initialize the current tool
+    // (as if lmouseup)
+}
+
+void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & /*event*/)
+{
+    if (!mIsMouseCapturedByWorkCanvas)
+    {
+        this->DisplayToolCoordinates(std::nullopt);
+    }
 }
 
 void MainFrame::OnQuit(wxCommandEvent & /*event*/)

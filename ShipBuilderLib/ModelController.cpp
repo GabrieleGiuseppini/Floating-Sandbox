@@ -7,4 +7,17 @@
 
 namespace ShipBuilder {
 
+ModelController::ModelController(
+    IUserInterface & userInterface,
+    View & view)
+    : mUserInterface(userInterface)
+    , mView(view)
+{
+    //
+    // Create Model
+    //
+
+    mModel = std::make_unique<Model>();
+}
+
 }

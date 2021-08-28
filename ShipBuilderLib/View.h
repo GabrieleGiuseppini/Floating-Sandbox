@@ -40,6 +40,11 @@ public:
         RefreshOrthoMatrix();
     }
 
+    WorkSpaceCoordinates DisplayToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    {
+        return mViewModel.DisplayToWorkSpace(displayCoordinates);
+    }
+
 public:
 
     void Render();

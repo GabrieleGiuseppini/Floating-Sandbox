@@ -5,7 +5,12 @@
 ***************************************************************************************/
 #pragma once
 
+#include "InputState.h"
+#include "IUserInterface.h"
 #include "ModelController.h"
+#include "View.h"
+
+#include <memory>
 
 namespace ShipBuilder {
 
@@ -17,6 +22,28 @@ class Controller
 {
 public:
 
+    Controller(
+        IUserInterface & userInterface,
+        View & view);
+
+    void OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition);
+    void OnLeftMouseDown();
+    void OnLeftMouseUp();
+    void OnRightMouseDown();
+    void OnRightMouseUp();
+    void OnShiftKeyDown();
+    void OnShiftKeyUp();
+
+private:
+
+    IUserInterface & mUserInterface;
+    View & mView;
+
+    // TODO: decide if member of uq_ptr
+    std::unique_ptr<ModelController> mModelController;
+
+    // Input state
+    InputState mInputState;
 };
 
 }
