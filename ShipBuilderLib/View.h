@@ -5,14 +5,17 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ShaderTypes.h"
 #include "ShipBuilderTypes.h"
 #include "ViewModel.h"
 
 #include <Game/ResourceLocator.h>
 
 #include <GameOpenGL/GameOpenGL.h>
+#include <GameOpenGL/ShaderManager.h>
 
 #include <functional>
+#include <memory>
 
 namespace ShipBuilder {
 
@@ -33,6 +36,8 @@ public:
     void SetDisplayLogicalSize(DisplayLogicalSize const & logicalSize)
     {
         mViewModel.SetDisplayLogicalSize(logicalSize);
+
+        RefreshOrthoMatrix();
     }
 
 public:
@@ -41,8 +46,20 @@ public:
 
 private:
 
+    void RefreshOrthoMatrix();
+
+private:
+
     ViewModel mViewModel;
+    std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
     std::function<void()> const mSwapRenderBuffersFunction;
+
+    //
+    // VAOs
+    //
+
+    GameOpenGLVBO mTestVBO;
+    GameOpenGLVAO mTestVAO;
 };
 
 }

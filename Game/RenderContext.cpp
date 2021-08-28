@@ -139,7 +139,7 @@ RenderContext::RenderContext(
             // Load shader manager
             //
 
-            mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetRenderShadersRootPath());
+            mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetGameShadersRootPath());
         });
 
     progressCallback(0.1f, ProgressMessageType::InitializingNoise);
