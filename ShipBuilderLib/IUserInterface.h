@@ -5,32 +5,20 @@
 ***************************************************************************************/
 #pragma once
 
-#include "IUserInterface.h"
-#include "Model.h"
-#include "View.h"
+#include "ShipBuilderTypes.h"
 
-#include <memory>
+#include <optional>
 
 namespace ShipBuilder {
 
 /*
- * This class implements operations on the model.
+ * Interface of MainFrame that is seen by Controller and underneath.
  */
-class ModelController
+struct IUserInterface
 {
 public:
 
-    ModelController(
-        IUserInterface & userInterface,
-        View & view);
-
-private:
-
-    IUserInterface & mUserInterface;
-    View & mView;
-
-    // TODO: decide if member of uq_ptr
-    std::unique_ptr<Model> mModel;
+    virtual void DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coordinates) = 0;
 };
 
 }

@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #pragma once
 
+#include "Controller.h"
+#include "IUserInterface.h"
 #include "View.h"
 
 #include <UILib/LocalizationManager.h>
@@ -20,6 +22,7 @@
  // so that wxGLCanvas ends up *not* including the system's OpenGL header but glad's instead
 #include <wx/menu.h>
 #include <wx/panel.h>
+#include <wx/statusbr.h>
 
 #include <memory>
 
@@ -28,7 +31,7 @@ namespace ShipBuilder {
 /*
  * The main window of the ship builder GUI.
  */
-class MainFrame final : public wxFrame
+class MainFrame final : public wxFrame, public IUserInterface
 {
 public:
 
@@ -38,6 +41,14 @@ public:
         LocalizationManager const & localizationManager);
 
     void Open();
+
+public:
+
+    //
+    // IUserInterface
+    //
+
+    void DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coordinates) override;
 
 private:
 
@@ -56,6 +67,9 @@ private:
     void OnWorkCanvasRightUp(wxMouseEvent & event);
     void OnWorkCanvasMouseMove(wxMouseEvent & event);
     void OnWorkCanvasMouseWheel(wxMouseEvent & event);
+    void OnWorkCanvasCaptureMouseLost(wxMouseCaptureLostEvent & event);
+    void OnWorkCanvasMouseLeftWindow(wxMouseEvent & event);
+
     void OnQuit(wxCommandEvent & event);
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent & event);
 
@@ -64,6 +78,7 @@ private:
     bool const mIsStandAlone;
     wxApp * const mMainApp;
 
+    std::unique_ptr<Controller> mController;
     std::unique_ptr<View> mView;
 
     //
@@ -81,6 +96,7 @@ private:
     std::unique_ptr<wxGLCanvas> mWorkCanvas;
     std::unique_ptr<wxGLContext> mGLContext;
     bool mIsMouseCapturedByWorkCanvas;
+    wxStatusBar * mStatusBar;
 
     //
     // Dialogs
