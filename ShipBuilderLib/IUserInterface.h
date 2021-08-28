@@ -18,6 +18,9 @@ struct IUserInterface
 {
 public:
 
+    // Notifies of a change in the size of the model
+    virtual void OnWorkSpaceSizeChanged() = 0;
+
     virtual void DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coordinates) = 0;
 };
 

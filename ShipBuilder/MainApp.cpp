@@ -119,7 +119,7 @@ bool MainApp::OnInit()
         // Run
         //
 
-        mMainFrame->Open();
+        mMainFrame->OpenForNewShip();
 
         return true;
 

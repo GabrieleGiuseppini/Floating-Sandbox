@@ -22,6 +22,7 @@
                          // up *not* including the system's OpenGL header but glad's instead
 #include <wx/menu.h>
 #include <wx/panel.h>
+#include <wx/scrolbar.h>
 #include <wx/statusbr.h>
 
 #include <filesystem>
@@ -45,9 +46,11 @@ public:
         wxApp * mainApp,
         ResourceLocator const & resourceLocator,
         LocalizationManager const & localizationManager,
-        std::function<void(std::filesystem::path const &)> returnToGameFunctor);
+        std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor);
 
-    void Open();
+    void OpenForNewShip();
+
+    void OpenForShip(std::filesystem::path const & shipFilePath);
 
 public:
 
@@ -56,6 +59,8 @@ public:
     //
 
     void DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coordinates) override;
+
+    void OnWorkSpaceSizeChanged() override;
 
 private:
 
@@ -89,13 +94,17 @@ private:
         return !mReturnToGameFunctor;
     }
 
-    void SwitchBackToGame(std::filesystem::path const & shipFilePath);
+    void Open();
+
+    void SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath);
+
+    void RecalculatePanning();
 
 private:
 
     wxApp * const mMainApp;
 
-    std::function<void(std::filesystem::path const &)> const mReturnToGameFunctor;
+    std::function<void(std::optional<std::filesystem::path>)> const mReturnToGameFunctor;
 
     //
     // Owned members
@@ -118,6 +127,8 @@ private:
     wxPanel * mMainPanel;
     std::unique_ptr<wxGLCanvas> mWorkCanvas;
     std::unique_ptr<wxGLContext> mGLContext;
+    wxScrollBar * mWorkCanvasHScrollBar;
+    wxScrollBar * mWorkCanvasVScrollBar;
     bool mIsMouseCapturedByWorkCanvas;
     wxStatusBar * mStatusBar;
 

@@ -19,6 +19,19 @@ std::unique_ptr<ModelController> ModelController::CreateNew(
             view));
 }
 
+std::unique_ptr<ModelController> ModelController::Load(
+    std::filesystem::path const & shipFilePath,
+    IUserInterface & userInterface,
+    View & view)
+{
+    // TODOHERE
+    return std::unique_ptr<ModelController>(
+        new ModelController(
+            WorkSpaceSize(400, 200),
+            userInterface,
+            view));
+}
+
 ModelController::ModelController(
     WorkSpaceSize const & workSpaceSize,
     IUserInterface & userInterface,

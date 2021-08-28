@@ -227,6 +227,7 @@ private:
     void OnMuteMenuItemSelected(wxCommandEvent & event);
     void OnHelpMenuItemSelected(wxCommandEvent & event);
     void OnShipBuilderNewShipMenuItemSelected(wxCommandEvent & event);
+    void OnShipBuilderEditShipMenuItemSelected(wxCommandEvent & event);
     void OnAboutMenuItemSelected(wxCommandEvent & event);
     void OnCheckForUpdatesMenuItemSelected(wxCommandEvent & event);
 
@@ -348,7 +349,7 @@ private:
         }
     }
 
-    void ResetState();
+    void ResetShipState();
 
     void UpdateFrameTitle();
 
@@ -366,13 +367,19 @@ private:
 
     static std::filesystem::path ChooseDefaultShip(ResourceLocator const & resourceLocator);
 
+    void LoadShip(
+        std::filesystem::path const & shipFilePath,
+        bool isFromUser);
+
     void OnShipLoaded(std::filesystem::path shipFilePath);
 
     wxAcceleratorEntry MakePlainAcceleratorKey(int key, wxMenuItem * menuItem);
 
-    void SwitchToShipBuilder();
+    void SwitchToShipBuilderForNewShip();
 
-    void SwitchFromShipBuilder(std::filesystem::path const & shipFilePath);
+    void SwitchToShipBuilderForCurrentShip();
+
+    void SwitchFromShipBuilder(std::optional<std::filesystem::path> shipFilePath);
 
 private:
 

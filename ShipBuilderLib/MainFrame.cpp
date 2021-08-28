@@ -29,11 +29,13 @@ MainFrame::MainFrame(
     wxApp * mainApp,
     ResourceLocator const & resourceLocator,
     LocalizationManager const & localizationManager,
-    std::function<void(std::filesystem::path const &)> returnToGameFunctor)
+    std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor)
     : mMainApp(mainApp)
     , mReturnToGameFunctor(std::move(returnToGameFunctor))
     , mResourceLocator(resourceLocator)
     , mLocalizationManager(localizationManager)
+    , mWorkCanvasHScrollBar(nullptr)
+    , mWorkCanvasVScrollBar(nullptr)
     , mIsMouseCapturedByWorkCanvas(false)
 {
     Create(
@@ -248,13 +250,18 @@ MainFrame::MainFrame(
         *mView);
 }
 
-void MainFrame::Open()
+void MainFrame::OpenForNewShip()
 {
-    // Show us
-    Show(true);
+    mController->CreateNewShip();
 
-    // Make ourselves the topmost frame
-    mMainApp->SetTopWindow(this);
+    Open();
+}
+
+void MainFrame::OpenForShip(std::filesystem::path const & shipFilePath)
+{
+    mController->LoadShip(shipFilePath);
+
+    Open();
 }
 
 void MainFrame::DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coordinates)
@@ -267,6 +274,11 @@ void MainFrame::DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coord
     }
 
     mStatusBar->SetStatusText(ss.str(), 0);
+}
+
+void MainFrame::OnWorkSpaceSizeChanged()
+{
+    RecalculatePanning();
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -410,7 +422,7 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-    wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxFlexGridSizer * sizer = new wxFlexGridSizer(2, 2, 0, 0);
 
     // GL Canvas
     {
@@ -441,8 +453,8 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
 
         sizer->Add(
             mWorkCanvas.get(),
-            1, // Occupy all horizontal space
-            wxEXPAND, // Stretch vertically as much as available
+            1, // Occupy all space
+            wxEXPAND, // Stretch as much as available
             0);
 
         //
@@ -452,6 +464,35 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
         mGLContext = std::make_unique<wxGLContext>(mWorkCanvas.get());
         mGLContext->SetCurrent(*mWorkCanvas);
     }
+
+    // V-scrollbar
+
+    {
+        mWorkCanvasVScrollBar = new wxScrollBar(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSB_VERTICAL);
+        // TODO: connect
+
+        sizer->Add(
+            mWorkCanvasVScrollBar,
+            1, // Occupy all space
+            wxEXPAND, // Stretch as much as available
+            0);
+    }
+
+    // H-scrollbar
+
+    {
+        mWorkCanvasHScrollBar = new wxScrollBar(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSB_HORIZONTAL);
+        // TODO: connect
+
+        sizer->Add(
+            mWorkCanvasHScrollBar,
+            1, // Occupy all space
+            wxEXPAND, // Stretch as much as available
+            0);
+    }
+
+    sizer->AddGrowableCol(0);
+    sizer->AddGrowableRow(0);
 
     panel->SetSizer(sizer);
 
@@ -480,6 +521,9 @@ void MainFrame::OnWorkCanvasResize(wxSizeEvent & event)
                 event.GetSize().GetY()));
     }
 
+    RecalculatePanning();
+
+    // Allow resizing to occur, this is a hook
     event.Skip();
 }
 
@@ -579,14 +623,17 @@ void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & /*event*/)
 
 void MainFrame::OnSaveAndGoBack(wxCommandEvent & /*event*/)
 {
-    // TODO: save and provide new name
-    SwitchBackToGame("");
+    // TODO: SaveShipDialog
+    // TODO: if success: save via Controller::SaveShip() and provide new file path
+    // TODO: else: cancel operation (i.e. nop)
+
+    std::filesystem::path const TODOPath = mResourceLocator.GetInstalledShipFolderPath() / "Lifeboat.shp";
+    SwitchBackToGame(TODOPath);
 }
 
 void MainFrame::OnQuitAndGoBack(wxCommandEvent & /*event*/)
 {
-    // TODO: provide original path which was specified at open time
-    SwitchBackToGame("");
+    SwitchBackToGame(std::nullopt);
 }
 
 void MainFrame::OnQuit(wxCommandEvent & /*event*/)
@@ -605,14 +652,28 @@ void MainFrame::OnOpenLogWindowMenuItemSelected(wxCommandEvent & /*event*/)
     mLoggingDialog->Open();
 }
 
-void MainFrame::SwitchBackToGame(std::filesystem::path const & shipFilePath)
+void MainFrame::Open()
+{
+    // Show us
+    Show(true);
+
+    // Make ourselves the topmost frame
+    mMainApp->SetTopWindow(this);
+}
+
+void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath)
 {
     // Hide self
     Show(false);
 
     // Invoke functor to go back
     assert(mReturnToGameFunctor);
-    mReturnToGameFunctor(shipFilePath);
+    mReturnToGameFunctor(std::move(shipFilePath));
+}
+
+void MainFrame::RecalculatePanning()
+{
+    // TODOHERE
 }
 
 }

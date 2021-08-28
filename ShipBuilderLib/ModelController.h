@@ -10,6 +10,7 @@
 #include "ShipBuilderTypes.h"
 #include "View.h"
 
+#include <filesystem>
 #include <memory>
 
 namespace ShipBuilder {
@@ -23,6 +24,11 @@ public:
 
     static std::unique_ptr<ModelController> CreateNew(
         WorkSpaceSize const & workSpaceSize,
+        IUserInterface & userInterface,
+        View & view);
+
+    static std::unique_ptr<ModelController> Load(
+        std::filesystem::path const & shipFilePath,
         IUserInterface & userInterface,
         View & view);
 
