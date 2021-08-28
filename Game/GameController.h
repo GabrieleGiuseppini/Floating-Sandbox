@@ -19,7 +19,7 @@
 #include "RenderContext.h"
 #include "RenderDeviceProperties.h"
 #include "ResourceLocator.h"
-#include "ShipBuilder.h"
+#include "ShipFactory.h"
 #include "ShipMetadata.h"
 
 #include <GameCore/Colors.h>
@@ -255,18 +255,18 @@ public:
     // Ship building parameters
     //
 
-    ShipAutoTexturizationSettings const & GetShipAutoTexturizationSharedSettings() const override { return mShipBuilder.GetAutoTexturizationSharedSettings(); }
-    ShipAutoTexturizationSettings & GetShipAutoTexturizationSharedSettings() override { return mShipBuilder.GetAutoTexturizationSharedSettings(); }
-    void SetShipAutoTexturizationSharedSettings(ShipAutoTexturizationSettings const & value) override { mShipBuilder.SetAutoTexturizationSharedSettings(value); }
+    ShipAutoTexturizationSettings const & GetShipAutoTexturizationSharedSettings() const override { return mShipFactory.GetAutoTexturizationSharedSettings(); }
+    ShipAutoTexturizationSettings & GetShipAutoTexturizationSharedSettings() override { return mShipFactory.GetAutoTexturizationSharedSettings(); }
+    void SetShipAutoTexturizationSharedSettings(ShipAutoTexturizationSettings const & value) override { mShipFactory.SetAutoTexturizationSharedSettings(value); }
 
-    bool GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings() const override { return mShipBuilder.GetDoForceAutoTexturizationSharedSettingsOntoShipSettings(); }
-    void SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(bool value) override { mShipBuilder.SetDoForceAutoTexturizationSharedSettingsOntoShipSettings(value); }
+    bool GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings() const override { return mShipFactory.GetDoForceAutoTexturizationSharedSettingsOntoShipSettings(); }
+    void SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(bool value) override { mShipFactory.SetDoForceAutoTexturizationSharedSettingsOntoShipSettings(value); }
 
-    float GetShipStrengthRandomizationDensityAdjustment() const override { return mShipBuilder.GetShipStrengthRandomizationDensityAdjustment(); }
-    void SetShipStrengthRandomizationDensityAdjustment(float value) override { mShipBuilder.SetShipStrengthRandomizationDensityAdjustment(value); }
+    float GetShipStrengthRandomizationDensityAdjustment() const override { return mShipFactory.GetShipStrengthRandomizationDensityAdjustment(); }
+    void SetShipStrengthRandomizationDensityAdjustment(float value) override { mShipFactory.SetShipStrengthRandomizationDensityAdjustment(value); }
 
-    float GetShipStrengthRandomizationExtent() const override { return mShipBuilder.GetShipStrengthRandomizationExtent(); }
-    void SetShipStrengthRandomizationExtent(float value) { mShipBuilder.SetShipStrengthRandomizationExtent(value); }
+    float GetShipStrengthRandomizationExtent() const override { return mShipFactory.GetShipStrengthRandomizationExtent(); }
+    void SetShipStrengthRandomizationExtent(float value) { mShipFactory.SetShipStrengthRandomizationExtent(value); }
 
     /////////////////////////////////////////////////////////
     // IGameControllerSettings and IGameControllerSettingsOptions
@@ -901,7 +901,7 @@ private:
 
     std::shared_ptr<Render::RenderContext> mRenderContext;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
-    ShipBuilder mShipBuilder;
+    ShipFactory mShipFactory;
     NotificationLayer mNotificationLayer;
     std::unique_ptr<EventRecorder> mEventRecorder;
     std::shared_ptr<TaskThreadPool> mTaskThreadPool;

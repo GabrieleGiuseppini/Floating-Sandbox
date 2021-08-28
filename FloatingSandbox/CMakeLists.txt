@@ -101,6 +101,7 @@ target_link_libraries (FloatingSandbox
 	GameLib
 	GameOpenGLLib
 	GPUCalcLib
+	ShipBuilderLib
 	UILib
 	sfml-audio
 	sfml-network

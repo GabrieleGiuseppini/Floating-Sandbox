@@ -28,14 +28,14 @@ ShipStrengthRandomizer::ShipStrengthRandomizer()
 }
 
 void ShipStrengthRandomizer::RandomizeStrength(
-    ShipBuildPointIndexMatrix const & pointIndexMatrix,
+    ShipFactoryPointIndexMatrix const & pointIndexMatrix,
     vec2i const & pointIndexMatrixRegionOrigin,
     vec2i const & pointIndexMatrixRegionSize,
-    std::vector<ShipBuildPoint> & pointInfos2,
+    std::vector<ShipFactoryPoint> & pointInfos2,
     std::vector<ElementIndex> const & pointIndexRemap2,
-    std::vector<ShipBuildSpring> const & springInfos2,
-    std::vector<ShipBuildTriangle> const & triangleInfos1,
-    std::vector<ShipBuildFrontier> const & shipBuildFrontiers) const
+    std::vector<ShipFactorySpring> const & springInfos2,
+    std::vector<ShipFactoryTriangle> const & triangleInfos1,
+    std::vector<ShipFactoryFrontier> const & shipFactoryFrontiers) const
 {
     RandomizeStrength_Batik(
         pointIndexMatrix,
@@ -45,12 +45,12 @@ void ShipStrengthRandomizer::RandomizeStrength(
         pointIndexRemap2,
         springInfos2,
         triangleInfos1,
-        shipBuildFrontiers);
+        shipFactoryFrontiers);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ShipStrengthRandomizer::RandomizeStrength_Perlin(std::vector<ShipBuildPoint> & pointInfos2) const
+void ShipStrengthRandomizer::RandomizeStrength_Perlin(std::vector<ShipFactoryPoint> & pointInfos2) const
 {
     if (mDensityAdjustment == 0.0f
         || mRandomizationExtent == 0.0f)
@@ -122,14 +122,14 @@ void ShipStrengthRandomizer::RandomizeStrength_Perlin(std::vector<ShipBuildPoint
 }
 
 void ShipStrengthRandomizer::RandomizeStrength_Batik(
-    ShipBuildPointIndexMatrix const & pointIndexMatrix,
+    ShipFactoryPointIndexMatrix const & pointIndexMatrix,
     vec2i const & pointIndexMatrixRegionOrigin,
     vec2i const & pointIndexMatrixRegionSize,
-    std::vector<ShipBuildPoint> & pointInfos2,
+    std::vector<ShipFactoryPoint> & pointInfos2,
     std::vector<ElementIndex> const & pointIndexRemap2,
-    std::vector<ShipBuildSpring> const & springInfos2,
-    std::vector<ShipBuildTriangle> const & triangleInfos1,
-    std::vector<ShipBuildFrontier> const & shipBuildFrontiers) const
+    std::vector<ShipFactorySpring> const & springInfos2,
+    std::vector<ShipFactoryTriangle> const & triangleInfos1,
+    std::vector<ShipFactoryFrontier> const & shipFactoryFrontiers) const
 {
     if (mDensityAdjustment == 0.0f
         || mRandomizationExtent == 0.0f)
@@ -172,7 +172,7 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
         pointIndexMatrixRegionSize.y,
         BatikDistance(0.0f));
 
-    for (ShipBuildTriangle const & t : triangleInfos1)
+    for (ShipFactoryTriangle const & t : triangleInfos1)
     {
         for (ElementIndex pointIndex1 : t.PointIndices1)
         {
@@ -184,7 +184,7 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
         }
     }
 
-    for (ShipBuildFrontier const & frontier : shipBuildFrontiers)
+    for (ShipFactoryFrontier const & frontier : shipFactoryFrontiers)
     {
         for (ElementIndex springIndex2 : frontier.EdgeIndices2)
         {

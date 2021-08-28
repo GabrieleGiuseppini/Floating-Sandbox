@@ -29,7 +29,7 @@ MainFrame::MainFrame(
     wxApp * mainApp,
     ResourceLocator const & resourceLocator,
     LocalizationManager const & localizationManager,
-    std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor)
+    std::function<void(std::filesystem::path const &)> returnToGameFunctor)
     : mMainApp(mainApp)
     , mReturnToGameFunctor(std::move(returnToGameFunctor))
     , mResourceLocator(resourceLocator)
@@ -42,7 +42,8 @@ MainFrame::MainFrame(
         std::string(APPLICATION_NAME " ShipBuilder " APPLICATION_VERSION_SHORT_STR),
         wxDefaultPosition,
         wxDefaultSize,
-        wxDEFAULT_FRAME_STYLE | wxMAXIMIZE);
+        wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxRESIZE_BORDER | wxSYSTEM_MENU | wxCAPTION | wxCLIP_CHILDREN | wxMAXIMIZE
+        | (IsStandAlone() ? wxCLOSE_BOX : 0));
 
     SetIcon(wxICON(BBB_SHIP_ICON));
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
@@ -165,6 +166,20 @@ MainFrame::MainFrame(
     {
         wxMenu * fileMenu = new wxMenu();
 
+        if (!IsStandAlone())
+        {
+            wxMenuItem * saveAndGoBackMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save and Return to Game"), _("Save the current ship and return to the simulator"), wxITEM_NORMAL);
+            fileMenu->Append(saveAndGoBackMenuItem);
+            Connect(saveAndGoBackMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveAndGoBack);
+        }
+
+        if (!IsStandAlone())
+        {
+            wxMenuItem * quitAndGoBackMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Quit and Return to Game"), _("Discard the current ship and return to the simulator"), wxITEM_NORMAL);
+            fileMenu->Append(quitAndGoBackMenuItem);
+            Connect(quitAndGoBackMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnQuitAndGoBack);
+        }
+
         if (IsStandAlone())
         {
             wxMenuItem * quitMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Quit") + wxS("\tAlt-F4"), _("Quit the builder"), wxITEM_NORMAL);
@@ -233,7 +248,11 @@ MainFrame::MainFrame(
 
 void MainFrame::Open()
 {
+    // Show us
     Show(true);
+
+    // Make ourselves the topmost frame
+    mMainApp->SetTopWindow(this);
 }
 
 void MainFrame::DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coordinates)
@@ -556,6 +575,18 @@ void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & /*event*/)
     }
 }
 
+void MainFrame::OnSaveAndGoBack(wxCommandEvent & /*event*/)
+{
+    // TODO: save and provide new name
+    SwitchBackToGame("");
+}
+
+void MainFrame::OnQuitAndGoBack(wxCommandEvent & /*event*/)
+{
+    // TODO: provide original path which was specified at open time
+    SwitchBackToGame("");
+}
+
 void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 {
     // Close frame
@@ -570,6 +601,16 @@ void MainFrame::OnOpenLogWindowMenuItemSelected(wxCommandEvent & /*event*/)
     }
 
     mLoggingDialog->Open();
+}
+
+void MainFrame::SwitchBackToGame(std::filesystem::path const & shipFilePath)
+{
+    // Hide self
+    Show(false);
+
+    // Invoke functor to go back
+    assert(mReturnToGameFunctor);
+    mReturnToGameFunctor(shipFilePath);
 }
 
 }

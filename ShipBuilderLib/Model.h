@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ShipBuilderTypes.h"
+
 namespace ShipBuilder {
 
 /*
@@ -14,6 +16,16 @@ class Model
 {
 public:
 
+    Model(WorkSpaceSize const & workSpaceSize);
+
+    WorkSpaceSize const & GetWorkSpaceSize() const
+    {
+        return mWorkSpaceSize;
+    }
+
+private:
+
+    WorkSpaceSize mWorkSpaceSize;
 };
 
 }

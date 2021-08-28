@@ -80,7 +80,7 @@ GameController::GameController(
     // Doers
     , mRenderContext(std::move(renderContext))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
-    , mShipBuilder(resourceLocator)
+    , mShipFactory(resourceLocator)
     , mNotificationLayer(
         mGameParameters.IsUltraViolentMode,
         false /*loaded value will come later*/,
@@ -113,7 +113,7 @@ GameController::GameController(
     , mSkippedFirstStatPublishes(0)
 {
     // Verify materials' textures
-    mShipBuilder.VerifyMaterialDatabase(mMaterialDatabase);
+    mShipFactory.VerifyMaterialDatabase(mMaterialDatabase);
 
     // Register ourselves as event handler for the events we care about
     mGameEventDispatcher->RegisterLifecycleEventHandler(this);
@@ -295,12 +295,12 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
     ShipMetadata shipMetadata(shipDefinition.Metadata);
 
     //
-    // Build ship
+    // Produce ship
     //
 
     auto const shipId = mWorld->GetNextShipId();
 
-    auto [ship, textureImage] = mShipBuilder.Create(
+    auto [ship, textureImage] = mShipFactory.Create(
         shipId,
         *mWorld,
         std::move(shipDefinition),
@@ -1360,9 +1360,9 @@ ShipMetadata GameController::ResetAndLoadShip(
         mGameParameters,
         mRenderContext->GetVisibleWorld());
 
-    // Build ship
+    // Produce ship
     auto const shipId = newWorld->GetNextShipId();
-    auto [ship, textureImage] = mShipBuilder.Create(
+    auto [ship, textureImage] = mShipFactory.Create(
         shipId,
         *newWorld,
         std::move(shipDefinition),

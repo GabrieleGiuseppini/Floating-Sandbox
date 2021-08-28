@@ -7,4 +7,9 @@
 
 namespace ShipBuilder {
 
+Model::Model(WorkSpaceSize const & workSpaceSize)
+    : mWorkSpaceSize(workSpaceSize)
+{
+}
+
 }

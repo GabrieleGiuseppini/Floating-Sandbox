@@ -14,11 +14,10 @@ Controller::Controller(
     , mView(view)
     , mInputState()
 {
-    //
+    // TODOHERE: figure out lifecycle of mModelController
     // Create ModelController
-    //
-
-    mModelController = std::make_unique<ModelController>(
+    mModelController = ModelController::CreateNew(
+        WorkSpaceSize(400, 200),
         mUserInterface,
         mView);
 }
