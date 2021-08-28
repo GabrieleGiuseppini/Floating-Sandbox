@@ -107,7 +107,7 @@
 			+ Make context current on canvas
 			+ Do OpenGL initialization 
 			- Do a meaningful rendering
-				- Rename Shaders structure
+				+ Rename Shaders structure
 		- 3
 			- Integrate with FloatingSandbox
 			- TODOHERE

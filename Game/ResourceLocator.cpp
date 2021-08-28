@@ -252,9 +252,14 @@ std::filesystem::path ResourceLocator::GetHelpFilePath(
 // Shaders
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::filesystem::path ResourceLocator::GetRenderShadersRootPath() const
+std::filesystem::path ResourceLocator::GetGameShadersRootPath() const
 {
-    return MakeAbsolutePath(std::filesystem::path("Data")) / "Shaders" / "Render";
+    return MakeAbsolutePath(std::filesystem::path("Data")) / "Shaders" / "Game";
+}
+
+std::filesystem::path ResourceLocator::GetShipBuilderShadersRootPath() const
+{
+    return MakeAbsolutePath(std::filesystem::path("Data")) / "Shaders" / "ShipBuilder";
 }
 
 std::filesystem::path ResourceLocator::GetGPUCalcShadersRootPath() const

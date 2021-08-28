@@ -409,7 +409,6 @@ private:
         mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasPhysicalPixelSize.height) / mVisibleWorld.Height;
         mCanvasWidthToHeightRatio = static_cast<float>(mCanvasPhysicalPixelSize.width) / static_cast<float>(mCanvasPhysicalPixelSize.height);
 
-        //
         // Ortho Matrix:
         //
         //  2 / WrdW            0                   0                0

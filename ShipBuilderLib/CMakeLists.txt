@@ -4,8 +4,16 @@
 #
 
 set  (SHIPBUILDER_LIB_SOURCES
-	MainFrame.h
+	Controller.cpp
+	Controller.h
 	MainFrame.cpp
+	MainFrame.h
+	Model.cpp
+	Model.h
+	ModelController.cpp
+	ModelController.h
+	ShaderTypes.cpp
+	ShaderTypes.h
 	ShipBuilderTypes.h
 	View.h
 	View.cpp

@@ -121,7 +121,9 @@ public:
     // Shaders
     //
 
-    std::filesystem::path GetRenderShadersRootPath() const;
+    std::filesystem::path GetGameShadersRootPath() const;
+
+    std::filesystem::path GetShipBuilderShadersRootPath() const;
 
     std::filesystem::path GetGPUCalcShadersRootPath() const;
 

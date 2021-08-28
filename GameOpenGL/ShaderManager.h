@@ -174,7 +174,7 @@ public:
     }
 
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
-    inline void SetProgramParameter(float const(&value)[4][4])
+    inline void SetProgramParameter(float const (*value)[4])
     {
         SetProgramParameter<Parameter>(Program, value);
     }
@@ -182,7 +182,7 @@ public:
     template <typename Traits::ProgramParameterType Parameter>
     inline void SetProgramParameter(
         typename Traits::ProgramType program,
-        float const(&value)[4][4])
+        float const (*value)[4])
     {
         uint32_t const programIndex = static_cast<uint32_t>(program);
         uint32_t constexpr ParameterIndex = static_cast<uint32_t>(Parameter);
