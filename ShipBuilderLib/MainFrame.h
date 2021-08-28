@@ -41,13 +41,14 @@ public:
 
 private:
 
-    wxPanel * CreateFilePanel();
-    wxPanel * CreateToolSettingsPanel();
-    wxPanel * CreateGamePanel();
-    wxPanel * CreateViewPanel();
-    wxPanel * CreateToolbarPanel();
-    wxPanel * CreateWorkPanel();
+    wxPanel * CreateFilePanel(wxWindow * parent);
+    wxPanel * CreateToolSettingsPanel(wxWindow * parent);
+    wxPanel * CreateGamePanel(wxWindow * parent);
+    wxPanel * CreateViewPanel(wxWindow * parent);
+    wxPanel * CreateToolbarPanel(wxWindow * parent);
+    wxPanel * CreateWorkPanel(wxWindow * parent);
 
+    void OnWorkCanvasPaint(wxPaintEvent & event);
     void OnWorkCanvasResize(wxSizeEvent & event);
     void OnWorkCanvasLeftDown(wxMouseEvent & event);
     void OnWorkCanvasLeftUp(wxMouseEvent & event);

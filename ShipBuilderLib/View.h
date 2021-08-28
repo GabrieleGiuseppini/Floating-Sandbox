@@ -5,6 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ShipBuilderTypes.h"
+#include "ViewModel.h"
+
 #include <Game/ResourceLocator.h>
 
 #include <GameOpenGL/GameOpenGL.h>
@@ -22,9 +25,15 @@ class View
 public:
 
     View(
+        DisplayLogicalSize initialDisplaySize,
         int logicalToPhysicalPixelFactor,
         std::function<void()> swapRenderBuffersFunction,
         ResourceLocator const & resourceLocator);
+
+    void SetDisplayLogicalSize(DisplayLogicalSize const & logicalSize)
+    {
+        mViewModel.SetDisplayLogicalSize(logicalSize);
+    }
 
 public:
 
@@ -32,6 +41,7 @@ public:
 
 private:
 
+    ViewModel mViewModel;
     std::function<void()> const mSwapRenderBuffersFunction;
 };
 
