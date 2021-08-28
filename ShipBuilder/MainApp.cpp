@@ -107,7 +107,11 @@ bool MainApp::OnInit()
         // Create frame
         //
 
-        mMainFrame = new ShipBuilder::MainFrame(this, *mResourceLocator , *mLocalizationManager);
+        mMainFrame = new ShipBuilder::MainFrame(
+            this,
+            *mResourceLocator,
+            *mLocalizationManager,
+            {});
 
         SetTopWindow(mMainFrame);
 
