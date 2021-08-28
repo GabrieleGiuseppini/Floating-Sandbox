@@ -14,8 +14,8 @@
 - Architecture:
 
 	- MainFrame: IUserInterface
-	  |-------> Controller/Tools
-		    |------------------------------>View
+	  |------------------------------>View
+	  |-------> Controller/Tools		    
 		    |---->ModelController
 			  |---->Model
 			  |------------------------>View
@@ -76,9 +76,11 @@
 							- Same mechanism also becomes used by ::MainFrame
 				- Hides self
 				- Invokes ShipBuilder::MainFrame::Open(...ship file path...)
+					- Whicm makes self the top frame
 			- ShipBuilder::MainFrame::ReturnToGame: invoked by ShipBuilder::MainFrame when user returns to game
 				- Hides self
 				- Invokes std::function(std::optional<...ship file path...>) "ReturnToGame"
+					- Which makes self the top frame
 	- Misc:
 		- Open(...) must set openGL context current on own canvas at first show (first show of entire process lifetime, no need to set it each time we're shown)
 		- Panning is via "losse" scrollbars around canvas
@@ -90,21 +92,22 @@
 			- Try to make it so that if scrollbars really end up disappearing, we don't resize the glCanvas
 		- Icons (whole "Resources" folder)
 	- Impl:
-		- 1
+		+ 1
 			+ Rename UIControlsLib as "UILib"
 			+ Move LocalizationManager from FloatingSandbox into UILib
 			+ Move LoggingDialog to UILib
-			= cctor(...)
+			+ cctor(...)
 				+ For stand-alone
-				- Own SplashScreen, this time with wxSplashScreen, and glCanvas for initialization
-				- Invokes other TODOHERE: Create(opengl initialization canvas, IProgress)
-			- Make MainFrame with menu with:
-				= Quit (only in standalone mode)
+			+ Make MainFrame with menu with:
+				+ Quit (only in standalone mode)
 				+ Open logging window
-		- 2
-			- Create OpenGL context (i.e. View)
-			- Make context current on canvas
-			- Do OpenGL initialization 
+		= 2
+			+ Create OpenGL context (i.e. View)
+				+ Hook Resize()
+			+ Make context current on canvas
+			+ Do OpenGL initialization 
+			- Do a meaningful rendering
+				- Rename Shaders structure
 		- 3
 			- Integrate with FloatingSandbox
 			- TODOHERE
@@ -141,13 +144,13 @@
 		- Except when we need animated tools, e.g. ants walking: for these we set a timer (in the order of 100's of ms) during the duration
 		  of the tool
 	- ViewModel:
-		- Terminology:
-			- WorkCanvas: has the pixel size of the structure (equivalent of ::World)
-			- WorkCoordinates (type @ ShipBuilderTypes)
-			- DisplayLogicalCanvas: has the logical display (window) size (equivalent of ::Logical)
-			- DisplayLogicalCoordinates: the logical display coordinates (type @ ShipBuilderTypes)
-			- DisplayPixelCanvas: has the pixel display (window) size (equivalent of ::Pixel)
-			- DisplayPixelCoordinates: the pixel display coordinates (type @ ShipBuilderTypes)
+		+ Terminology:
+			+ WorkSpace: has the pixel size of the structure (equivalent of ::World)
+			+ WorkSpaceCoordinates (type @ ShipBuilderTypes)
+			+ DisplayLogical: has the logical display (window) size (equivalent of ::Logical)
+			+ DisplayLogicalCoordinates: the logical display coordinates (type @ ShipBuilderTypes)
+			+ DisplayPixel: has the pixel display (window) size (equivalent of ::Pixel)
+			+ DisplayPixelCoordinates: the pixel display coordinates (type @ ShipBuilderTypes)
 		- Knows about work area (i.e. structure) size, for panning calculations
 		- World coords is model pixel coords
 		- Tells outside world of pan extent (for scrollbar width setting)

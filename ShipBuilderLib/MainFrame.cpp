@@ -10,8 +10,10 @@
 
 #include <GameOpenGL/GameOpenGL.h>
 
+#include <wx/button.h>
 #include <wx/gbsizer.h>
 #include <wx/sizer.h>
+#include <wx/slider.h>
 
 #ifdef _MSC_VER
  // Nothing to do here - we use RC files
@@ -50,10 +52,13 @@ MainFrame::MainFrame(
 
     mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
+    // TODOTEST
+    mMainPanel->SetBackgroundColour(*wxCYAN);
+
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
     {
-        wxPanel * filePanel = CreateFilePanel();
+        wxPanel * filePanel = CreateFilePanel(mMainPanel);
 
         gridSizer->Add(
             filePanel,
@@ -64,7 +69,7 @@ MainFrame::MainFrame(
     }
 
     {
-        wxPanel * toolSettingsPanel = CreateToolSettingsPanel();
+        wxPanel * toolSettingsPanel = CreateToolSettingsPanel(mMainPanel);
 
         gridSizer->Add(
             toolSettingsPanel,
@@ -75,7 +80,7 @@ MainFrame::MainFrame(
     }
 
     {
-        wxPanel * gamePanel = CreateGamePanel();
+        wxPanel * gamePanel = CreateGamePanel(mMainPanel);
 
         gridSizer->Add(
             gamePanel,
@@ -86,7 +91,7 @@ MainFrame::MainFrame(
     }
 
     {
-        wxPanel * viewPanel = CreateViewPanel();
+        wxPanel * viewPanel = CreateViewPanel(mMainPanel);
 
         gridSizer->Add(
             viewPanel,
@@ -97,7 +102,7 @@ MainFrame::MainFrame(
     }
 
     {
-        wxPanel * toolbarPanel = CreateToolbarPanel();
+        wxPanel * toolbarPanel = CreateToolbarPanel(mMainPanel);
 
         gridSizer->Add(
             toolbarPanel,
@@ -108,7 +113,7 @@ MainFrame::MainFrame(
     }
 
     {
-        wxPanel * workPanel = CreateWorkPanel();
+        wxPanel * workPanel = CreateWorkPanel(mMainPanel);
 
         gridSizer->Add(
             workPanel,
@@ -118,8 +123,10 @@ MainFrame::MainFrame(
             0);
     }
 
-    gridSizer->AddGrowableCol(1);
-    gridSizer->AddGrowableCol(2);
+    gridSizer->AddGrowableRow(1, 1);
+    gridSizer->AddGrowableRow(2, 1);
+    gridSizer->AddGrowableCol(1, 1);
+    gridSizer->AddGrowableCol(2, 1);
 
     mMainPanel->SetSizer(gridSizer);
 
@@ -190,12 +197,13 @@ MainFrame::MainFrame(
     }
 
     mView = std::make_unique<View>(
+        DisplayLogicalSize(
+            mWorkCanvas->GetSize().GetWidth(),
+            mWorkCanvas->GetSize().GetHeight()),
         mWorkCanvas->GetContentScaleFactor(),
         [this]()
         {
-            //LogMessage("TODOTEST: Swapping buffers...");
             mWorkCanvas->SwapBuffers();
-            //LogMessage("TODOTEST: ...buffers swapped.");
         },
         mResourceLocator);
 }
@@ -207,84 +215,144 @@ void MainFrame::Open()
 
 /////////////////////////////////////////////////////////////////////
 
-wxPanel * MainFrame::CreateFilePanel()
+wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
 {
-    wxPanel * panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+    // TODOTEST
+    panel->SetBackgroundColour(*wxRED);
 
     wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
 
     {
-        // TODO
+        {
+            wxButton * button = new wxButton(panel, wxID_ANY, "Some");
+            sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
+        }
+
+        {
+            wxButton * button = new wxButton(panel, wxID_ANY, "File");
+            sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
+        }
+
+        {
+            wxButton * button = new wxButton(panel, wxID_ANY, "Button");
+            sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
+        }
     }
 
-    panel->SetSizer(sizer);
+    panel->SetSizerAndFit(sizer);
 
     return panel;
 }
 
-wxPanel * MainFrame::CreateToolSettingsPanel()
+wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
 {
-    wxPanel * panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+    // TODOTEST
+    panel->SetBackgroundColour(*wxBLUE);
 
     wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
 
     {
-        // TODO
+        {
+            wxButton * button = new wxButton(panel, wxID_ANY, "Some");
+            sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
+        }
+
+        {
+            wxButton * button = new wxButton(panel, wxID_ANY, "Tool");
+            sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
+        }
+
+        {
+            wxButton * button = new wxButton(panel, wxID_ANY, "Settings");
+            sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
+        }
     }
 
-    panel->SetSizer(sizer);
+    panel->SetSizerAndFit(sizer);
 
     return panel;
 }
 
-wxPanel * MainFrame::CreateGamePanel()
+wxPanel * MainFrame::CreateGamePanel(wxWindow * parent)
 {
-    wxPanel * panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+    // TODOTEST
+    panel->SetBackgroundColour(*wxGREEN);
 
     wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
 
     {
-        // TODO
+        {
+            wxButton * button = new wxButton(panel, wxID_ANY, "Return");
+            sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
+        }
+
+        {
+            wxButton * button = new wxButton(panel, wxID_ANY, "To Game");
+            sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
+        }
     }
 
-    panel->SetSizer(sizer);
+    panel->SetSizerAndFit(sizer);
 
     return panel;
 }
 
-wxPanel * MainFrame::CreateViewPanel()
+wxPanel * MainFrame::CreateViewPanel(wxWindow * parent)
 {
-    wxPanel * panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+    // TODOTEST
+    panel->SetBackgroundColour(*wxYELLOW);
 
     wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
 
     {
-        // TODO
+        {
+            wxSlider * slider = new wxSlider(panel, wxID_ANY, 0, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_VERTICAL);
+            sizer->Add(slider, 0, wxLEFT | wxRIGHT, 4);
+        }
     }
 
-    panel->SetSizer(sizer);
+    panel->SetSizerAndFit(sizer);
 
     return panel;
 }
 
-wxPanel * MainFrame::CreateToolbarPanel()
+wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 {
-    wxPanel * panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-    wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
+    // TODOTEST
+    panel->SetBackgroundColour(*wxLIGHT_GREY);
+
+    wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
 
     {
-        // TODO
+        {
+            wxButton * button = new wxButton(panel, wxID_ANY, "Some");
+            sizer->Add(button, 0, wxEXPAND | wxALL, 4);
+        }
+
+        {
+            wxButton * button = new wxButton(panel, wxID_ANY, "Tools");
+            sizer->Add(button, 0, wxEXPAND | wxALL, 4);
+        }
     }
 
-    panel->SetSizer(sizer);
+    panel->SetSizerAndFit(sizer);
 
     return panel;
 }
 
-wxPanel * MainFrame::CreateWorkPanel()
+wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
 {
-    wxPanel * panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
     wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
 
@@ -304,6 +372,7 @@ wxPanel * MainFrame::CreateWorkPanel()
 
         mWorkCanvas = std::make_unique<wxGLCanvas>(panel, wxID_ANY, glCanvasAttributes);
 
+        mWorkCanvas->Connect(wxEVT_PAINT, (wxObjectEventFunction)&MainFrame::OnWorkCanvasPaint, 0, this);
         mWorkCanvas->Connect(wxEVT_SIZE, (wxObjectEventFunction)&MainFrame::OnWorkCanvasResize, 0, this);
         mWorkCanvas->Connect(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnWorkCanvasLeftDown, 0, this);
         mWorkCanvas->Connect(wxEVT_LEFT_UP, (wxObjectEventFunction)&MainFrame::OnWorkCanvasLeftUp, 0, this);
@@ -331,11 +400,27 @@ wxPanel * MainFrame::CreateWorkPanel()
     return panel;
 }
 
+void MainFrame::OnWorkCanvasPaint(wxPaintEvent & event)
+{
+    LogMessage("OnWorkCanvasPaint");
+
+    if (mView)
+    {
+        mView->Render();
+    }
+}
+
 void MainFrame::OnWorkCanvasResize(wxSizeEvent & event)
 {
     LogMessage("OnWorkCanvasResize: ", event.GetSize().GetX(), "x", event.GetSize().GetY());
 
-    // TODO: fw to controller
+    if (mView)
+    {
+        mView->SetDisplayLogicalSize(
+            DisplayLogicalSize(
+                event.GetSize().GetX(),
+                event.GetSize().GetY()));
+    }
 
     event.Skip();
 }

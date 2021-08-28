@@ -12,10 +12,14 @@
 namespace ShipBuilder {
 
 View::View(
+    DisplayLogicalSize initialDisplaySize,
     int logicalToPhysicalPixelFactor,
     std::function<void()> swapRenderBuffersFunction,
     ResourceLocator const & resourceLocator)
-    : mSwapRenderBuffersFunction(swapRenderBuffersFunction)
+    : mViewModel(
+        initialDisplaySize,
+        logicalToPhysicalPixelFactor)
+    , mSwapRenderBuffersFunction(swapRenderBuffersFunction)
 {
     //
     // Initialize global OpenGL settings
@@ -41,9 +45,14 @@ void View::Render()
     // Initialize
     //
 
+    // Set viewport and scissor
+    glViewport(0, 0, mViewModel.GetDisplayPhysicalSize().width, mViewModel.GetDisplayPhysicalSize().height);
+
     // Clear canvas
     glClearColor(0.3f, 0.1f, 0.1f, 1.0f); // TODO
     glClear(GL_COLOR_BUFFER_BIT);
+
+    // TODOHERE
 
     // Flip the back buffer onto the screen
     mSwapRenderBuffersFunction();
