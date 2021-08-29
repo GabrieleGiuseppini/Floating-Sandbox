@@ -151,8 +151,15 @@
 	- BaseTool:
 		- Stores all protected references passed from cctors: IUserInterface, ModelController, View, SelectionManager
 		- Abstract methods from game - but all pure
-	- TODO: "pencil" tool
-	- TODO: "smaple" tool
+	- All tools:
+		- Pencil
+		- Eraser
+		- Flood
+		- Selection
+		- Sample
+		- Line
+		- Rectangle
+		- Ellipses
 	- SelectionManager pseudo-tool:
 		- Maintains current selection
 		- Not really a tool but a pseudo-tool

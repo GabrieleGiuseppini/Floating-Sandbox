@@ -6,6 +6,7 @@
 #include "MainFrame.h"
 
 #include <UILib/BitmapButton.h>
+#include <UILib/BitmapToggleButton.h>
 
 #include <GameCore/Log.h>
 #include <GameCore/Version.h>
@@ -16,6 +17,7 @@
 #include <wx/gbsizer.h>
 #include <wx/sizer.h>
 #include <wx/slider.h>
+#include <wx/tglbtn.h>
 
 #ifdef _MSC_VER
  // Nothing to do here - we use RC files
@@ -115,7 +117,7 @@ MainFrame::MainFrame(
             toolbarPanel,
             wxGBPosition(2, 0),
             wxGBSpan(1, 1),
-            0,
+            wxEXPAND | wxALIGN_TOP | wxALIGN_CENTER_HORIZONTAL,
             0);
     }
 
@@ -142,7 +144,7 @@ MainFrame::MainFrame(
             0);
     }
 
-    gridSizer->AddGrowableRow(1, 1);
+    //gridSizer->AddGrowableRow(1, 1);
     gridSizer->AddGrowableRow(2, 1);
     gridSizer->AddGrowableCol(1, 1);
     //gridSizer->AddGrowableCol(2, 1);
@@ -401,20 +403,63 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-    // TODOTEST
-    panel->SetBackgroundColour(*wxLIGHT_GREY);
+    wxGridBagSizer * sizer = new wxGridBagSizer(3, 3);
 
-    wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
+    // Tools
 
     {
+        // Pencil
         {
-            wxButton * button = new wxButton(panel, wxID_ANY, "Some");
-            sizer->Add(button, 0, wxEXPAND | wxALL, 4);
+            auto button = new BitmapToggleButton(
+                panel,
+                mResourceLocator.GetIconFilePath("pencil_icon"),
+                [this]()
+                {
+                    // TODOHERE
+                    //SetTool(ToolType::Pencil);
+                },
+                _T("Draw individual structure particles"));
+
+            sizer->Add(
+                button,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                0,
+                0);
         }
 
+        // Eraser
         {
-            wxButton * button = new wxButton(panel, wxID_ANY, "Tools");
-            sizer->Add(button, 0, wxEXPAND | wxALL, 4);
+            auto button = new BitmapToggleButton(
+                panel,
+                mResourceLocator.GetIconFilePath("eraser_icon"),
+                [this]()
+                {
+                    // TODOHERE
+                    //SetTool(ToolType::Eraser);
+                },
+                _T("Erase individual structure particles"));
+
+            sizer->Add(
+                button,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                0,
+                0);
+        }
+    }
+
+    // Palette
+
+    {
+        // Foreground
+        {
+            // TODOHERE
+        }
+
+        // Background
+        {
+            // TODOHERE
         }
     }
 
