@@ -106,18 +106,6 @@
 			+ Self, @ glCanvas resize
 			- Controller, @ Zoom, Pan, and WorkSpace resize - via IUserInterface
 	= Impl:
-		- Integrate with FloatingSandbox:
-			+ ::MainFrame: menu entry for invoking "new"
-				+ Call ::MainFrame::SwitchToShipBuilder
-			= SB::MainFrame: Save and Go Back
-				+ Only if !StandAlone
-				- Button 
-				+ File menu item
-				+ Call SB::MainFrame::SwitchBackToGame, which hides self and calls functor
-					+ Functor does not take opt: always has a path
-			+ SB::MainFrame: Quit and Go Back
-				+ Only if !StandAlone
-				+ File menu item
 		- Click-And-Draw
 			- Panning (*)
 			- Complete ViewModel:
@@ -133,6 +121,8 @@
 	- Misc TODO's:
 		- StatusBar:
 			- Icon for coords (like MSPaint)
+			- Selection size and icon
+			- WorkSpace size and icon
 		- Nuke test shader: shader file, relative ShaderTypes
 		- Frame icons (whole "Resources" folder)
 		- Preferences:

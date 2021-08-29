@@ -37,8 +37,6 @@ set  (FLOATING_SANDBOX_SOURCES
 	UnhandledExceptionHandler.h
 	UpdateChecker.cpp
 	UpdateChecker.h
-	WxHelpers.cpp
-	WxHelpers.h
 )
 
 set  (DIALOGS_SOURCES

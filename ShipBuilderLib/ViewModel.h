@@ -33,7 +33,7 @@ public:
     ViewModel(
         DisplayLogicalSize initialDisplaySize,
         int logicalToPhysicalPixelFactor)
-        : mZoom(1.0f)
+        : mZoom(1)
         , mCam(0.0f, 0.0f)
         , mLogicalToPhysicalPixelFactor(logicalToPhysicalPixelFactor)
         , mDisplayLogicalSize(initialDisplaySize)
@@ -108,12 +108,12 @@ private:
     void RecalculateAttributes()
     {
         // Ortho Matrix:
-        // TODO: zoom is here not taken into account, and we use display logical size in lieu of work space
+        // TODO: zoom is here not taken into account
         //
-        //  2 / WkW                0                      0                0
-        //  0                      2 / WkH                0                0
-        //  0                      0                      0                0
-        //  -2 * CamX / WkW - 1    -2 * CamY / WkH - 1    0                1
+        //  2 / DspW               0                       0                0
+        //  0                      2 / DspH                0                0
+        //  0                      0                       0                0
+        //  -2 * CamX / DspW - 1   -2 * CamY / DspH - 1    0                1
 
         // Recalculate Ortho Matrix cells (r, c)
         mOrthoMatrix[0][0] = 2.0f / static_cast<float>(mDisplayLogicalSize.width);
@@ -125,10 +125,10 @@ private:
 private:
 
     // Constants
-    static float constexpr MaxZoom = 1000.0f;
+    static unsigned int constexpr MaxZoom = 16;
 
     // Primary inputs
-    float mZoom; // How many display pixels are occupied by one work space pixel; always >= 1
+    unsigned int mZoom; // How many display pixels are occupied by one work space pixel; always >= 1
     vec2f mCam; // Work space coordinates of of work pixel that is visible at (0, 0) in display
     int const mLogicalToPhysicalPixelFactor;
     DisplayLogicalSize mDisplayLogicalSize;
