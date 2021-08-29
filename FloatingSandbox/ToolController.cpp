@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "ToolController.h"
 
-#include "WxHelpers.h"
+#include <UILib/WxHelpers.h>
 
 #include <GameCore/GameMath.h>
 #include <GameCore/Vectors.h>

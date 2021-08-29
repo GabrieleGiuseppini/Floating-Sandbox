@@ -64,8 +64,12 @@ GameController::GameController(
     MaterialDatabase && materialDatabase,
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
+    // World
+    : mFishSpeciesDatabase(std::move(fishSpeciesDatabase))
+    , mMaterialDatabase(std::move(materialDatabase))
+    , mWorld()
     // State machines
-    : mTsunamiNotificationStateMachine()
+    , mTsunamiNotificationStateMachine()
     , mThanosSnapStateMachines()
     , mDayLightCycleStateMachine()
     // State
@@ -80,7 +84,7 @@ GameController::GameController(
     // Doers
     , mRenderContext(std::move(renderContext))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
-    , mShipFactory(resourceLocator)
+    , mShipFactory(mMaterialDatabase, resourceLocator)
     , mNotificationLayer(
         mGameParameters.IsUltraViolentMode,
         false /*loaded value will come later*/,
@@ -88,16 +92,6 @@ GameController::GameController(
         mRenderContext->GetDisplayUnitsSystem(),
         mGameEventDispatcher)
     , mTaskThreadPool(std::make_shared<TaskThreadPool>())
-    // World
-    , mFishSpeciesDatabase(std::move(fishSpeciesDatabase))
-    , mMaterialDatabase(std::move(materialDatabase))
-    , mWorld(new Physics::World(
-        OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilePath()),
-        mFishSpeciesDatabase,
-        mGameEventDispatcher,
-        mTaskThreadPool,
-        mGameParameters,
-        mRenderContext->GetVisibleWorld()))
     // Smoothing
     , mFloatParameterSmoothers()
     , mZoomParameterSmoother()
@@ -112,8 +106,14 @@ GameController::GameController(
     , mLastPublishedTotalFrameCount(0u)
     , mSkippedFirstStatPublishes(0)
 {
-    // Verify materials' textures
-    mShipFactory.VerifyMaterialDatabase(mMaterialDatabase);
+    // Create world
+    mWorld = std::make_unique<Physics::World>(
+        OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilePath()),
+        mFishSpeciesDatabase,
+        mGameEventDispatcher,
+        mTaskThreadPool,
+        mGameParameters,
+        mRenderContext->GetVisibleWorld());
 
     // Register ourselves as event handler for the events we care about
     mGameEventDispatcher->RegisterLifecycleEventHandler(this);
@@ -304,7 +304,6 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
         shipId,
         *mWorld,
         std::move(shipDefinition),
-        mMaterialDatabase,
         mGameEventDispatcher,
         mTaskThreadPool,
         mGameParameters);
@@ -1366,7 +1365,6 @@ ShipMetadata GameController::ResetAndLoadShip(
         shipId,
         *newWorld,
         std::move(shipDefinition),
-        mMaterialDatabase,
         mGameEventDispatcher,
         mTaskThreadPool,
         mGameParameters);

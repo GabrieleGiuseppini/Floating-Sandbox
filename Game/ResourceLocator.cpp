@@ -61,9 +61,15 @@ std::filesystem::path ResourceLocator::GetTexturesRootFolderPath() const
     return MakeAbsolutePath(std::filesystem::path("Data")) / "Textures";
 }
 
-std::filesystem::path ResourceLocator::GetMaterialTexturesFolderPath() const
+// TODOTEST
+////std::filesystem::path ResourceLocator::GetMaterialTexturesFolderPath() const
+////{
+////    return GetTexturesRootFolderPath() / "Materials";
+////}
+
+std::filesystem::path ResourceLocator::GetMaterialTextureFilePath(std::string const & materialTextureName) const
 {
-    return GetTexturesRootFolderPath() / "Materials";
+    return GetTexturesRootFolderPath() / "Materials" / (materialTextureName + ".png");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

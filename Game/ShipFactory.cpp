@@ -41,22 +41,19 @@ static int const TessellationCircularOrderDirections[8][2] = {
 
 //////////////////////////////////////////////////////////////////////////////
 
-ShipFactory::ShipFactory(ResourceLocator const & resourceLocator)
-    : mShipStrengthRandomizer()
-    , mShipTexturizer(resourceLocator)
+ShipFactory::ShipFactory(
+    MaterialDatabase const & materialDatabase,
+    ResourceLocator const & resourceLocator)
+    : mMaterialDatabase(materialDatabase)
+    , mShipStrengthRandomizer()
+    , mShipTexturizer(materialDatabase, resourceLocator)
 {
-}
-
-void ShipFactory::VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const
-{
-    mShipTexturizer.VerifyMaterialDatabase(materialDatabase);
 }
 
 std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     ShipId shipId,
     World & parentWorld,
     ShipDefinition && shipDefinition,
-    MaterialDatabase const & materialDatabase,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     std::shared_ptr<TaskThreadPool> taskThreadPool,
     GameParameters const & gameParameters) const
@@ -102,7 +99,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         for (int y = 0; y < structureHeight; ++y)
         {
             MaterialDatabase::ColorKey const colorKey = shipDefinition.StructuralLayerImage.Data[x + y * structureWidth];
-            StructuralMaterial const * structuralMaterial = materialDatabase.FindStructuralMaterial(colorKey);
+            StructuralMaterial const * structuralMaterial = mMaterialDatabase.FindStructuralMaterial(colorKey);
             if (nullptr != structuralMaterial)
             {
                 float water = 0.0f;
@@ -113,7 +110,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
                 if (structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Water))
                 {
-                    structuralMaterial = &materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air);
+                    structuralMaterial = &mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air);
                     water = 1.0f;
                 }
 
@@ -143,7 +140,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
                 //
 
                 if (structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope)
-                    && !materialDatabase.IsUniqueStructuralMaterialColorKey(StructuralMaterial::MaterialUniqueType::Rope, colorKey))
+                    && !mMaterialDatabase.IsUniqueStructuralMaterialColorKey(StructuralMaterial::MaterialUniqueType::Rope, colorKey))
                 {
                     // Store in RopeSegments, using the color key as the color of the rope
                     RopeSegment & ropeSegment = ropeSegments[colorKey];
@@ -194,7 +191,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
             ropeSegments,
             pointInfos1,
             pointIndexMatrix,
-            materialDatabase,
+            mMaterialDatabase,
             shipDefinition.PhysicsData.Offset);
     }
 
@@ -216,7 +213,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
             pointInfos1,
             true, // isDedicatedElectricalLayer
             pointIndexMatrix,
-            materialDatabase);
+            mMaterialDatabase);
     }
     else
     {
@@ -226,7 +223,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
             pointInfos1,
             false, // isDedicatedElectricalLayer
             pointIndexMatrix,
-            materialDatabase);
+            mMaterialDatabase);
     }
 
     //
@@ -241,7 +238,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     AppendRopes(
         ropeSegments,
         shipDefinition.StructuralLayerImage.Size,
-        materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope),
+        mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope),
         pointInfos1,
         springInfos1,
         pointPairToSpringIndex1Map);
@@ -364,7 +361,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     Physics::Points points = CreatePoints(
         pointInfos2,
         parentWorld,
-        materialDatabase,
+        mMaterialDatabase,
         gameEventDispatcher,
         gameParameters,
         electricalElementInstanceIndices,
@@ -446,7 +443,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     auto ship = std::make_unique<Ship>(
         shipId,
         parentWorld,
-        materialDatabase,
+        mMaterialDatabase,
         std::move(gameEventDispatcher),
         std::move(taskThreadPool),
         std::move(points),

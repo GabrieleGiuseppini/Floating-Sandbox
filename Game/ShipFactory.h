@@ -36,15 +36,14 @@ class ShipFactory
 {
 public:
 
-    ShipFactory(ResourceLocator const & resourceLocator);
-
-    void VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const;
+    ShipFactory(
+        MaterialDatabase const & materialDatabase,
+        ResourceLocator const & resourceLocator);
 
     std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> Create(
         ShipId shipId,
         Physics::World & parentWorld,
         ShipDefinition && shipDefinition,
-        MaterialDatabase const & materialDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         std::shared_ptr<TaskThreadPool> taskThreadPool,
         GameParameters const & gameParameters) const;
@@ -414,6 +413,7 @@ private:
 
 private:
 
+    MaterialDatabase const & mMaterialDatabase;
     ShipStrengthRandomizer mShipStrengthRandomizer;
     ShipTexturizer mShipTexturizer;
 };

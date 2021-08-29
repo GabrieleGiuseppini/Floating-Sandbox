@@ -18,6 +18,8 @@
 size_t constexpr MaterialTextureCacheSizeHighWatermark = 40;
 size_t constexpr MaterialTextureCacheSizeLowWatermark = 25;
 
+std::string const MaterialTextureNameNone = "none";
+
 namespace /*anonymous*/ {
 
     inline float BidirMultiplyBlend(float x1, float x2)
@@ -28,33 +30,19 @@ namespace /*anonymous*/ {
     }
 }
 
-ShipTexturizer::ShipTexturizer(ResourceLocator const & resourceLocator)
+ShipTexturizer::ShipTexturizer(
+    MaterialDatabase const & materialDatabase,
+    ResourceLocator const & resourceLocator)
     // Here is where default settings live
     : mSharedSettings(
         ShipAutoTexturizationModeType::MaterialTextures,
         1.0f, // MaterialTextureMagnification
         0.0f) // MaterialTextureTransparency
     , mDoForceSharedSettingsOntoShipSettings(false)
-    , mMaterialTexturesFolderPath(resourceLocator.GetMaterialTexturesFolderPath())
-    , mMaterialTextureNameToTextureFilePathMap(MakeMaterialTextureNameToTextureFilePathMap(mMaterialTexturesFolderPath))
+    , mMaterialTextureNameToTextureFilePathMap(
+        MakeMaterialTextureNameToTextureFilePathMap(materialDatabase, resourceLocator))
     , mMaterialTextureCache()
 {
-}
-
-void ShipTexturizer::VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const
-{
-    for (auto const & entry : materialDatabase.GetStructuralMaterialsByColorKeys())
-    {
-        if (entry.second.MaterialTextureName.has_value())
-        {
-            if (mMaterialTextureNameToTextureFilePathMap.count(*entry.second.MaterialTextureName) == 0)
-            {
-                throw GameException(
-                    "Material texture name \"" + *entry.second.MaterialTextureName + "\""
-                    + " specified for material \"" + entry.second.Name + "\" is unknown");
-            }
-        }
-    }
 }
 
 RgbaImageData ShipTexturizer::Texturize(
@@ -200,25 +188,49 @@ RgbaImageData ShipTexturizer::Texturize(
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-std::unordered_map<std::string, std::filesystem::path> ShipTexturizer::MakeMaterialTextureNameToTextureFilePathMap(std::filesystem::path const materialTexturesFolderPath)
+std::unordered_map<std::string, std::filesystem::path> ShipTexturizer::MakeMaterialTextureNameToTextureFilePathMap(
+    MaterialDatabase const & materialDatabase,
+    ResourceLocator const & resourceLocator)
 {
     std::unordered_map<std::string, std::filesystem::path> materialTextureNameToTextureFilePath;
 
-    for (auto const & entryIt : std::filesystem::directory_iterator(materialTexturesFolderPath))
+    // Add "none" entry
     {
-        if (std::filesystem::is_regular_file(entryIt.path()))
-        {
-            // We only expect png's
-            if (entryIt.path().extension().string() == ".png")
-            {
-                std::string const textureName = entryIt.path().stem().string();
+        std::filesystem::path const materialTextureFilePath = resourceLocator.GetMaterialTextureFilePath(MaterialTextureNameNone);
 
-                assert(materialTextureNameToTextureFilePath.count(textureName) == 0);
-                materialTextureNameToTextureFilePath[textureName] = entryIt.path();
-            }
-            else
+        // Make sure file exists
+        if (!std::filesystem::exists(materialTextureFilePath)
+            || !std::filesystem::is_regular_file(materialTextureFilePath))
+        {
+            throw GameException(
+                "Cannot find material texture file for texture name \"" + MaterialTextureNameNone + "\"");
+        }
+
+        // Store mapping
+        materialTextureNameToTextureFilePath[MaterialTextureNameNone] = materialTextureFilePath;
+    }
+
+    // Add entries for all materials
+    for (auto const & entry : materialDatabase.GetStructuralMaterialsByColorKeys())
+    {
+        if (entry.second.MaterialTextureName.has_value())
+        {
+            std::string const & materialTextureName = *entry.second.MaterialTextureName;
+            if (materialTextureNameToTextureFilePath.count(materialTextureName) == 0)
             {
-                LogMessage("WARNING: found file \"" + entryIt.path().string() + "\" with unexpected extension while loading material textures");
+                std::filesystem::path const materialTextureFilePath = resourceLocator.GetMaterialTextureFilePath(materialTextureName);
+
+                // Make sure file exists
+                if (!std::filesystem::exists(materialTextureFilePath)
+                    || !std::filesystem::is_regular_file(materialTextureFilePath))
+                {
+                    throw GameException(
+                        "Cannot find material texture file for texture name \"" + *entry.second.MaterialTextureName + "\""
+                        + " specified for material \"" + entry.second.Name + "\"");
+                }
+
+                // Store mapping
+                materialTextureNameToTextureFilePath[materialTextureName] = materialTextureFilePath;
             }
         }
     }
@@ -234,7 +246,7 @@ float ShipTexturizer::MaterialTextureMagnificationToPixelConversionFactor(float 
 
 Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::optional<std::string> const & textureName) const
 {
-    std::string const actualTextureName = textureName.value_or("none");
+    std::string const actualTextureName = textureName.value_or(MaterialTextureNameNone);
 
     auto const & it = mMaterialTextureCache.find(actualTextureName);
     if (it != mMaterialTextureCache.end())
