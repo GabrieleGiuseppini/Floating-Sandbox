@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #include "SettingsDialog.h"
 
-#include "WxHelpers.h"
+#include <UILib/WxHelpers.h>
 
 #include <GameCore/ExponentialSliderCore.h>
 #include <GameCore/FixedTickSliderCore.h>

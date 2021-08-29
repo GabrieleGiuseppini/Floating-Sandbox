@@ -22,9 +22,9 @@ class ShipTexturizer
 {
 public:
 
-    ShipTexturizer(ResourceLocator const & resourceLocator);
-
-    void VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const;
+    ShipTexturizer(
+        MaterialDatabase const & materialDatabase,
+        ResourceLocator const & resourceLocator);
 
     RgbaImageData Texturize(
         std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings,
@@ -63,7 +63,9 @@ public:
 
 private:
 
-    static std::unordered_map<std::string, std::filesystem::path> MakeMaterialTextureNameToTextureFilePathMap(std::filesystem::path const materialTexturesFolderPath);
+    static std::unordered_map<std::string, std::filesystem::path> MakeMaterialTextureNameToTextureFilePathMap(
+        MaterialDatabase const & materialDatabase,
+        ResourceLocator const & resourceLocator);
 
     static float MaterialTextureMagnificationToPixelConversionFactor(float magnification);
 
@@ -90,8 +92,6 @@ private:
     //
     // Material textures
     //
-
-    std::filesystem::path const mMaterialTexturesFolderPath;
 
     std::unordered_map<std::string, std::filesystem::path> const mMaterialTextureNameToTextureFilePathMap;
 

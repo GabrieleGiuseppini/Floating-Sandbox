@@ -877,6 +877,16 @@ private:
 private:
 
     //
+    // The world
+    //
+
+    FishSpeciesDatabase mFishSpeciesDatabase;
+    MaterialDatabase mMaterialDatabase;
+
+    std::unique_ptr<Physics::World> mWorld;
+
+
+    //
     // Our current state
     //
 
@@ -905,16 +915,6 @@ private:
     NotificationLayer mNotificationLayer;
     std::unique_ptr<EventRecorder> mEventRecorder;
     std::shared_ptr<TaskThreadPool> mTaskThreadPool;
-
-
-    //
-    // The world
-    //
-
-    FishSpeciesDatabase mFishSpeciesDatabase;
-    MaterialDatabase mMaterialDatabase;
-
-    std::unique_ptr<Physics::World> mWorld;
 
 
     //

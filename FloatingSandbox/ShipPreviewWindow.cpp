@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "ShipPreviewWindow.h"
 
-#include "WxHelpers.h"
+#include <UILib/WxHelpers.h>
 
 #include <Game/ImageFileTools.h>
 #include <Game/ShipPreviewDirectoryManager.h>

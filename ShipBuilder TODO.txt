@@ -223,25 +223,24 @@
 		- MainFrame owns two instances: Structural and Electrical			
 		- Column 1: scrollable vertical panel with bitmap buttons for selecting category
 		- Column 2: scrollable panel with rows and cols for selected category's materials
-		- Materials/DB changes:
-			- For each category, must have one selected as the "header" (shown in column 1)
-			- TODO: see if can keep rows and cols, or refactor it - we still want to be able to generate template image
-			- PaletteMetadata:
-				- Category ("Metals", "Wood", ...)
-				- CategoryOrdinal (global ordinal of category, assumed to be the same for all materials of same category)
-				- CategoryGroup ("Iron", "Iron Hull", ...)
-				- CategoryGroupOrdinal(ordinal of CategoryGroup in Category, assumed to be the same for all materials of same category group)
-				- MaterialOrdinal (ordinal in CategoryGroup)
-				- TODO: find a better non-fully-denormalized way; separate palette metadata section in json with just ordinals?
-					- All categories and groups are strings (no enums) and verified to be in separate palette metadata section 
+		
 		- Opened on demand when clicking on Foreground/Background PopupButtons
 			- And then sets focus on material
 		- Impl:
-			- Rearc:
-				- MaterialsDB stores std::opt<full path> to material texture
-				- ShipTexturizer takes MaterialsDB in cttor - and not ResourceLocator
-					- Validates here that all exist
-				- Nuke validation
+			+ Rearc:
+				+ ShipTexturizer takes MaterialsDB in cttor - and not ResourceLocator
+					+ Validates here that all exist
+				+ Nuke validation
+			- Materials/DB changes:
+				- Each material has new PaletteCoordinates:
+					- Category ("Metal", "Wood", ...) (plain string, no enum)
+					- CategoryGroup ("Iron", "Iron Hull", ...) (plain string, no enum)
+					- MaterialOrdinal (ordinal in CategoryGroup)
+				- Then json has PaletteStructure:
+					- List of categories, in order of presentation
+					- For each category: list of category groups, in order of presentation
+				- Materials' PaletteCoordinates are verified to be in PaletteStructure
+				- Also do pyton script
 			- GameController exposes MaterialsDB const &
 			- cctor(MaterialsDB const &, MaterialsPalette::MaterialType, WorkbenchState &)
 			- Open(wxPoint, MaterialsPalette::SwathType) -> bool
