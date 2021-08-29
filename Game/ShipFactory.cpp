@@ -616,7 +616,7 @@ void ShipFactory::DecoratePointsWithElectricalMaterials(
                 // Store instance index, if material requires one
                 if (electricalMaterial->IsInstanced)
                 {
-                    pointInfos1[pointIndex].ElectricalElementInstanceIdx = MaterialDatabase::GetElectricalElementInstanceIndex(colorKey);
+                    pointInfos1[pointIndex].ElectricalElementInstanceIdx = MaterialDatabase::ExtractElectricalElementInstanceIndex(colorKey);
                 }
                 else
                 {

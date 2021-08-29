@@ -211,26 +211,32 @@ std::unordered_map<std::string, std::filesystem::path> ShipTexturizer::MakeMater
     }
 
     // Add entries for all materials
-    for (auto const & entry : materialDatabase.GetStructuralMaterialsByColorKeys())
+    for (auto const & category : materialDatabase.GetStructuralMaterialPalette().Categories)
     {
-        if (entry.second.MaterialTextureName.has_value())
+        for (auto const & subCategory : category.SubCategories)
         {
-            std::string const & materialTextureName = *entry.second.MaterialTextureName;
-            if (materialTextureNameToTextureFilePath.count(materialTextureName) == 0)
+            for (StructuralMaterial const & material : subCategory.Materials)
             {
-                std::filesystem::path const materialTextureFilePath = resourceLocator.GetMaterialTextureFilePath(materialTextureName);
-
-                // Make sure file exists
-                if (!std::filesystem::exists(materialTextureFilePath)
-                    || !std::filesystem::is_regular_file(materialTextureFilePath))
+                if (material.MaterialTextureName.has_value())
                 {
-                    throw GameException(
-                        "Cannot find material texture file for texture name \"" + *entry.second.MaterialTextureName + "\""
-                        + " specified for material \"" + entry.second.Name + "\"");
-                }
+                    std::string const & materialTextureName = *material.MaterialTextureName;
+                    if (materialTextureNameToTextureFilePath.count(materialTextureName) == 0)
+                    {
+                        std::filesystem::path const materialTextureFilePath = resourceLocator.GetMaterialTextureFilePath(materialTextureName);
 
-                // Store mapping
-                materialTextureNameToTextureFilePath[materialTextureName] = materialTextureFilePath;
+                        // Make sure file exists
+                        if (!std::filesystem::exists(materialTextureFilePath)
+                            || !std::filesystem::is_regular_file(materialTextureFilePath))
+                        {
+                            throw GameException(
+                                "Cannot find material texture file for texture name \"" + materialTextureName + "\""
+                                + " specified for material \"" + material.Name + "\"");
+                        }
+
+                        // Store mapping
+                        materialTextureNameToTextureFilePath[materialTextureName] = materialTextureFilePath;
+                    }
+                }
             }
         }
     }
