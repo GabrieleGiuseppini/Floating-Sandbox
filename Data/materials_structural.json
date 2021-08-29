@@ -13,8 +13,8 @@
         "name": "Iron Hull",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Iron Hull",
-		"category_group_ordinal": 0
+		"sub_category": "Iron Hull",
+		"sub_category_ordinal": 0
 	},
         "sound_type": "Metal",
         "specific_heat": 449.0,
@@ -40,8 +40,8 @@
         "name": "Structural Iron",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Structural Iron",
-		"category_group_ordinal": 0
+		"sub_category": "Structural Iron",
+		"sub_category_ordinal": 0
 	},
         "sound_type": "Metal",
         "specific_heat": 449.0,
@@ -67,8 +67,8 @@
         "name": "Iron",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Iron",
-		"category_group_ordinal": 0
+		"sub_category": "Iron",
+		"sub_category_ordinal": 0
 	},
         "sound_type": "Metal",
         "specific_heat": 449.0,
@@ -94,8 +94,8 @@
         "name": "Steel Hull",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Steel Hull",
-		"category_group_ordinal": 0
+		"sub_category": "Steel Hull",
+		"sub_category_ordinal": 0
 	},
         "sound_type": "Metal",
         "specific_heat": 490.0,
@@ -121,8 +121,8 @@
         "name": "Structural Steel",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Structural Steel",
-		"category_group_ordinal": 0
+		"sub_category": "Structural Steel",
+		"sub_category_ordinal": 0
 	},
         "sound_type": "Metal",
         "specific_heat": 490.0,
@@ -148,8 +148,8 @@
         "name": "Steel",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Steel",
-		"category_group_ordinal": 0
+		"sub_category": "Steel",
+		"sub_category_ordinal": 0
 	},
         "sound_type": "Metal",
         "specific_heat": 490.0,
@@ -175,8 +175,8 @@
         "name": "Titanium Hull",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Titanium Hull",
-		"category_group_ordinal": 0
+		"sub_category": "Titanium Hull",
+		"sub_category_ordinal": 0
 	},
         "sound_type": "Metal",
         "specific_heat": 523.0,
@@ -202,8 +202,8 @@
         "name": "Titanium",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Titanium",
-		"category_group_ordinal": 0
+		"sub_category": "Titanium",
+		"sub_category_ordinal": 0
 	},
         "sound_type": "Metal",
         "specific_heat": 523.0,
@@ -229,8 +229,8 @@
         "name": "Aluminium Hull",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Aluminium Hull",
-		"category_group_ordinal": 0
+		"sub_category": "Aluminium Hull",
+		"sub_category_ordinal": 0
 	},
         "sound_type": "Metal",
         "specific_heat": 897.0,
@@ -256,8 +256,8 @@
         "name": "Structural Aluminium",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Structural Aluminium",
-		"category_group_ordinal": 0
+		"sub_category": "Structural Aluminium",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#C8C8C8",
         "sound_type": "Metal",
@@ -284,8 +284,8 @@
         "name": "Aluminium",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Aluminium",
-		"category_group_ordinal": 0
+		"sub_category": "Aluminium",
+		"sub_category_ordinal": 0
 	},
         "sound_type": "Metal",
         "specific_heat": 897.0,
@@ -311,8 +311,8 @@
         "name": "Aluminium Cheap",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Aluminium Cheap",
-		"category_group_ordinal": 0
+		"sub_category": "Aluminium Cheap",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#EEEEEE",
         "sound_type": "Metal",
@@ -340,8 +340,8 @@
         "name": "Wood Hull",
 	"palette_coordinates": {
 		"category": "Wood",
-		"category_group": "Wood Hull",
-		"category_group_ordinal": 0
+		"sub_category": "Wood Hull",
+		"sub_category_ordinal": 0
 	},
         "sound_type": "Wood",
         "specific_heat": 300.0,
@@ -367,8 +367,8 @@
         "name": "Wood",
 	"palette_coordinates": {
 		"category": "Wood",
-		"category_group": "Wood",
-		"category_group_ordinal": 0
+		"sub_category": "Wood",
+		"sub_category_ordinal": 0
 	},
         "sound_type": "Wood",
         "specific_heat": 300.0,
@@ -394,8 +394,8 @@
         "name": "Cloth",
 	"palette_coordinates": {
 		"category": "Cloth",
-		"category_group": "Cloth",
-		"category_group_ordinal": 0
+		"sub_category": "Cloth",
+		"sub_category_ordinal": 0
 	},
         "sound_type": "Cloth",
         "specific_heat": 1400.0,
@@ -422,8 +422,8 @@
         "name": "Rope",
 	"palette_coordinates": {
 		"category": "Rope",
-		"category_group": "Rope",
-		"category_group_ordinal": 0
+		"sub_category": "Rope",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#000000",
         "sound_type": "Cable",
@@ -450,8 +450,8 @@
         "name": "Carbon Hull",
 	"palette_coordinates": {
 		"category": "Carbon",
-		"category_group": "Carbon Hull",
-		"category_group_ordinal": 0
+		"sub_category": "Carbon Hull",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#1A1A1A",
         "sound_type": "Wood",
@@ -477,8 +477,8 @@
         "name": "Carbon",
 	"palette_coordinates": {
 		"category": "Carbon",
-		"category_group": "Carbon",
-		"category_group_ordinal": 0
+		"sub_category": "Carbon",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#232323",
         "sound_type": "Wood",
@@ -507,8 +507,8 @@
         "name": "Diesel",
 	"palette_coordinates": {
 		"category": "Other Materials",
-		"category_group": "Diesel",
-		"category_group_ordinal": 0
+		"sub_category": "Diesel",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#1E1E1E",
         "sound_type": "Wood",
@@ -538,8 +538,8 @@
         "name": "Gunpowder Light",
 	"palette_coordinates": {
 		"category": "Other Materials",
-		"category_group": "Gunpowder Light",
-		"category_group_ordinal": 0
+		"sub_category": "Gunpowder Light",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#2E1E1E",
         "sound_type": "Rubber",
@@ -568,8 +568,8 @@
         "name": "Gunpowder Strong",
 	"palette_coordinates": {
 		"category": "Other Materials",
-		"category_group": "Gunpowder Strong",
-		"category_group_ordinal": 0
+		"sub_category": "Gunpowder Strong",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#2F1F1F",
         "sound_type": "Rubber",
@@ -596,8 +596,8 @@
         "name": "Aluminium Sheet Hull",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Aluminium Sheet Hull",
-		"category_group_ordinal": 0
+		"sub_category": "Aluminium Sheet Hull",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#C0C0C0",
         "sound_type": "Metal",
@@ -624,8 +624,8 @@
         "name": "Aluminium Sheet",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Aluminium Sheet",
-		"category_group_ordinal": 0
+		"sub_category": "Aluminium Sheet",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#D0D0D0",
         "sound_type": "Metal",
@@ -652,8 +652,8 @@
         "name": "Cardboard Hull",
 	"palette_coordinates": {
 		"category": "Cardboard and Paper",
-		"category_group": "Cardboard Hull",
-		"category_group_ordinal": 0
+		"sub_category": "Cardboard Hull",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#A88848",
 	"rust_receptivity": 10.0,
@@ -681,8 +681,8 @@
         "name": "Cardboard",
 	"palette_coordinates": {
 		"category": "Cardboard and Paper",
-		"category_group": "Cardboard",
-		"category_group_ordinal": 0
+		"sub_category": "Cardboard",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#C1A46A",
 	"rust_receptivity": 10.0,
@@ -712,8 +712,8 @@
         "name": "Paper Hull",
 	"palette_coordinates": {
 		"category": "Cardboard and Paper",
-		"category_group": "Paper Hull",
-		"category_group_ordinal": 0
+		"sub_category": "Paper Hull",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#F2F5F5",
 	"rust_receptivity": 10.0,
@@ -743,8 +743,8 @@
         "name": "Paper",
 	"palette_coordinates": {
 		"category": "Cardboard and Paper",
-		"category_group": "Paper",
-		"category_group_ordinal": 0
+		"sub_category": "Paper",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#FCFAFA",
 	"rust_receptivity": 10.0,
@@ -774,8 +774,8 @@
         "name": "Steel Red Cheap",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Steel Cheap",
-		"category_group_ordinal": 0
+		"sub_category": "Steel Cheap",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#D80E02",
         "sound_type": "Metal",
@@ -803,8 +803,8 @@
         "name": "Iron Cheap",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Iron Cheap",
-		"category_group_ordinal": 0
+		"sub_category": "Iron Cheap",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#1F1F1F",
         "sound_type": "Metal",
@@ -832,8 +832,8 @@
         "name": "Stainless Steel Hull",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Stainless Steel Hull",
-		"category_group_ordinal": 0
+		"sub_category": "Stainless Steel Hull",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#A2A2A2",
         "rust_receptivity": 0,
@@ -862,8 +862,8 @@
         "name": "Stainless Steel",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Stainless Steel",
-		"category_group_ordinal": 0
+		"sub_category": "Stainless Steel",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#E8E8E8",
         "rust_receptivity": 0,
@@ -892,8 +892,8 @@
         "name": "Double-Bottom Steel Red",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Double-Bottom Steel",
-		"category_group_ordinal": 0
+		"sub_category": "Double-Bottom Steel",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#A21000",
         "sound_type": "Metal",
@@ -920,8 +920,8 @@
         "name": "Double-Bottom Titanium Red",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Double-Bottom Titanium",
-		"category_group_ordinal": 0
+		"sub_category": "Double-Bottom Titanium",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#842005",
         "sound_type": "Metal",
@@ -948,8 +948,8 @@
         "name": "Double-Bottom Iron Red",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Double-Bottom Iron",
-		"category_group_ordinal": 0
+		"sub_category": "Double-Bottom Iron",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#7E0C00",
         "sound_type": "Metal",
@@ -976,8 +976,8 @@
         "name": "Double-Bottom Wood Red",
 	"palette_coordinates": {
 		"category": "Wood",
-		"category_group": "Double-Bottom Wood",
-		"category_group_ordinal": 0
+		"sub_category": "Double-Bottom Wood",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#9B3012",
         "sound_type": "Wood",
@@ -1005,8 +1005,8 @@
         "name": "Nails",
 	"palette_coordinates": {
 		"category": "Metal",
-		"category_group": "Nails",
-		"category_group_ordinal": 0
+		"sub_category": "Nails",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#545454",
         "sound_type": "Metal",
@@ -1032,8 +1032,8 @@
         "name": "Glass Hull",
 	"palette_coordinates": {
 		"category": "Glass",
-		"category_group": "Glass Hull",
-		"category_group_ordinal": 0
+		"sub_category": "Glass Hull",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#C1FFFF",
         "sound_type": "Glass",
@@ -1060,8 +1060,8 @@
         "name": "Glass",
 	"palette_coordinates": {
 		"category": "Glass",
-		"category_group": "Glass",
-		"category_group_ordinal": 0
+		"sub_category": "Glass",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#E5FFFF",
         "sound_type": "Glass",
@@ -1088,8 +1088,8 @@
         "name": "Rubber Hull Soft",
 	"palette_coordinates": {
 		"category": "Rubber",
-		"category_group": "Rubber Hull Soft",
-		"category_group_ordinal": 0
+		"sub_category": "Rubber Hull Soft",
+		"sub_category_ordinal": 0
 	},
         "rust_receptivity": 0,
         "sound_type": "Rubber",
@@ -1117,8 +1117,8 @@
         "name": "Rubber Soft",
 	"palette_coordinates": {
 		"category": "Rubber",
-		"category_group": "Rubber Soft",
-		"category_group_ordinal": 0
+		"sub_category": "Rubber Soft",
+		"sub_category_ordinal": 0
 	},
         "rust_receptivity": 0,
         "sound_type": "Rubber",
@@ -1146,8 +1146,8 @@
         "name": "Rubber Hull Hard",
 	"palette_coordinates": {
 		"category": "Rubber",
-		"category_group": "Rubber Hull Hard",
-		"category_group_ordinal": 0
+		"sub_category": "Rubber Hull Hard",
+		"sub_category_ordinal": 0
 	},
         "rust_receptivity": 0,
         "sound_type": "Rubber",
@@ -1174,8 +1174,8 @@
         "name": "Rubber Hard",
 	"palette_coordinates": {
 		"category": "Rubber",
-		"category_group": "Rubber Hard",
-		"category_group_ordinal": 0
+		"sub_category": "Rubber Hard",
+		"sub_category_ordinal": 0
 	},
         "rust_receptivity": 0,
         "sound_type": "Rubber",
@@ -1203,8 +1203,8 @@
         "name": "Fiberglass Hull",
 	"palette_coordinates": {
 		"category": "Plastic",
-		"category_group": "Fiberglass Hull",
-		"category_group_ordinal": 0
+		"sub_category": "Fiberglass Hull",
+		"sub_category_ordinal": 0
 	},
         "rust_receptivity": 0,
         "sound_type": "Plastic",
@@ -1231,8 +1231,8 @@
         "name": "Fiberglass",
 	"palette_coordinates": {
 		"category": "Plastic",
-		"category_group": "Fiberglass",
-		"category_group_ordinal": 0
+		"sub_category": "Fiberglass",
+		"sub_category_ordinal": 0
 	},
         "rust_receptivity": 0,
         "sound_type": "Plastic",
@@ -1259,8 +1259,8 @@
         "name": "LEGO Hull (ABS)",
 	"palette_coordinates": {
 		"category": "Plastic",
-		"category_group": "LEGO Hull (ABS)",
-		"category_group_ordinal": 0
+		"sub_category": "LEGO Hull (ABS)",
+		"sub_category_ordinal": 0
 	},
         "rust_receptivity": 0,
         "sound_type": "Lego",
@@ -1288,8 +1288,8 @@
         "name": "LEGO (ABS)",
 	"palette_coordinates": {
 		"category": "Plastic",
-		"category_group": "LEGO (ABS)",
-		"category_group_ordinal": 0
+		"sub_category": "LEGO (ABS)",
+		"sub_category_ordinal": 0
 	},
         "rust_receptivity": 0,
         "sound_type": "Lego",
@@ -1317,8 +1317,8 @@
         "name": "Water",
 	"palette_coordinates": {
 		"category": "Other Materials",
-		"category_group": "Water",
-		"category_group_ordinal": 0
+		"sub_category": "Water",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#F0F0F0",
         "sound_type": "AirBubble",
@@ -1346,8 +1346,8 @@
         "name": "Air",
 	"palette_coordinates": {
 		"category": "Other Materials",
-		"category_group": "Air",
-		"category_group_ordinal": 0
+		"sub_category": "Air",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#F0F0F0",
         "sound_type": "AirBubble",
@@ -1377,8 +1377,8 @@
         "name": "Hydrogen",
 	"palette_coordinates": {
 		"category": "Gas",
-		"category_group": "Hydrogen",
-		"category_group_ordinal": 0
+		"sub_category": "Hydrogen",
+		"sub_category_ordinal": 0
 	},
 	"rust_receptivity": 0.0,
 	"sound_type": "Gas",
@@ -1405,8 +1405,8 @@
         "name": "Concrete Hull",
 	"palette_coordinates": {
 		"category": "Concrete",
-		"category_group": "Concrete Hull",
-		"category_group_ordinal": 0
+		"sub_category": "Concrete Hull",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#909190",
 	"rust_receptivity": 0.2,
@@ -1435,8 +1435,8 @@
         "name": "Concrete",
 	"palette_coordinates": {
 		"category": "Concrete",
-		"category_group": "Concrete",
-		"category_group_ordinal": 0
+		"sub_category": "Concrete",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#BDBEBD",
 	"rust_receptivity": 0.3,
@@ -1465,8 +1465,8 @@
         "name": "Styrofoam Hull White",
 	"palette_coordinates": {
 		"category": "Plastic",
-		"category_group": "Styrofoam Hull",
-		"category_group_ordinal": 0
+		"sub_category": "Styrofoam Hull",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#E6E6E6",
 	"rust_receptivity": 0.0,
@@ -1496,8 +1496,8 @@
         "name": "Styrofoam White",
 	"palette_coordinates": {
 		"category": "Plastic",
-		"category_group": "Styrofoam",
-		"category_group_ordinal": 0
+		"sub_category": "Styrofoam",
+		"sub_category_ordinal": 0
 	},
         "render_color": "#EDEDED",
 	"rust_receptivity": 0.0,
@@ -1527,8 +1527,8 @@
         "name": "Mylar Hull",
 	"palette_coordinates": {
 		"category": "Plastic",
-		"category_group": "Mylar Hull",
-		"category_group_ordinal": 0
+		"sub_category": "Mylar Hull",
+		"sub_category_ordinal": 0
 	},
 	"rust_receptivity": 0.0,
         "sound_type": "Cloth",
@@ -1556,8 +1556,8 @@
         "name": "Mylar",
 	"palette_coordinates": {
 		"category": "Plastic",
-		"category_group": "Mylar",
-		"category_group_ordinal": 0
+		"sub_category": "Mylar",
+		"sub_category_ordinal": 0
 	},
 	"rust_receptivity": 0.0,
         "sound_type": "Cloth",
@@ -1719,7 +1719,7 @@
   "palette_categories": [
     {
 	"category": "Metal",
-        "groups": [
+        "sub_categories": [
 	  "Iron Hull",
 	  "Iron",
 	  "Steel Hull",
@@ -1729,7 +1729,7 @@
 
     {
 	"category": "Wood",
-        "groups": [
+        "sub_categories": [
 	  "Wood Hull",
 	  "Wood"
 	]

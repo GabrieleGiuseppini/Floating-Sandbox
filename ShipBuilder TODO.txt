@@ -62,6 +62,14 @@
 ----------------------------------------------------------------------------------------------------------
 
 - UI:
+	- Controls:
+		+ Button to save and go back to game (!StandaloneMode)
+		+ Button to quit and go back to game (!StandaloneMode)
+		- Button to Save (acts also as SaveAs for first save; menu however has also separate SaveAs)
+		- Undo stack
+		- Error (message) notification(s)
+		- Add electrical/texture/ropes layer
+		- Button to open ShipMetadata dialog
 	- StatusBar:
 		- Material under cursor
 			- Polled from Model by Tools (pencil, drop, ...) and communicated to IUserInterface
@@ -219,12 +227,11 @@
 		! We'll use it for popup tools
 		- Takes callback for push, which takes wxPoint
 		- Ideantical to BitmapButton, except for arg of callback
-	= MaterialsPalette (@ShipBuilder)
+	= MaterialsPalette (@ShipBuilder): wxPanel
 		- Templated on material type (Structural or Material)
 		- MainFrame owns two instances: Structural and Electrical			
 		- Column 1: scrollable vertical panel with bitmap buttons for selecting category
-		- Column 2: scrollable panel with rows and cols for selected category's materials
-		
+		- Column 2: scrollable panel with rows and cols for selected category's materials		
 		- Opened on demand when clicking on Foreground/Background PopupButtons
 			- And then sets focus on material
 		- Impl:
@@ -235,11 +242,12 @@
 			= Materials/DB changes:
 				+ Each material has new PaletteCoordinates:
 					+ Category ("Metal", "Wood", ...) (plain string, no enum)
-					+ CategoryGroup ("Iron", "Iron Hull", ...) (plain string, no enum)
-					+ MaterialOrdinal (ordinal in CategoryGroup)
+					+ SubCategory ("Iron", "Iron Hull", ...) (plain string, no enum)
+					+ MaterialOrdinal (ordinal in SubCategory)
 				+ Then json has PaletteStructure:
 					+ List of categories, in order of presentation
-					+ For each category: list of category groups, in order of presentation
+					+ For each category: list of sub-categories, in order of presentation
+				- TODOHERE: do we want materials organized internally as palette structure, + map ?
 				- Materials' PaletteCoordinates are verified to be in PaletteStructure at MaterialsDB load time
 					- Including ordinals' conflicts
 					- For each material, as they are deserialized
@@ -247,12 +255,19 @@
 				+ Multi-key materials: automagically increase ordinal at Material::Parse
 				- Also do at Electrical
 				- Python script
+			- ShipTexturizer exposes static helper method that does color-blending of material texture: (material texture file path, render color [check cur code]) -> rgbaImage
 			- GameController exposes MaterialsDB const &
 			- SB::MainFrame's cctor takes MaterialsDB
 				- Standalone app loads materials DB
 			- cctor(MaterialsDB const &, MaterialsPalette::MaterialRootType, WorkbenchState &)
+				- Build all panels as grids of static bmps (kinda like BitmapCheckbox)
 			- Open(wxPoint, MaterialsPalette::SwathType) -> bool
 				- If true: SB::MainFrame starts OnWorkbenchStateChanged cascade
+			- MaterialsPalette also exposes GetMaterialTexture(S/EMaterial*)->Bmp as a convenience method for FG and BG displayers
+				- So it remembers all bitmaps in a map, keyed by material*
+			- See if it takes so long that we need IProgress
+			- Are with properties of material under cursor
+			- Names of materials and sub-categories
 
 - Ship file format:
 	- Min FS version (.shp, .shp2)

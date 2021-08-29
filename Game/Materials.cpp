@@ -13,8 +13,8 @@ namespace /* anonymous */ {
     {
         MaterialPaletteCoordinatesType paletteCoordinates;
         paletteCoordinates.Category = Utils::GetMandatoryJsonMember<std::string>(paletteCoordinatesJson, "category");
-        paletteCoordinates.CategoryGroup = Utils::GetMandatoryJsonMember<std::string>(paletteCoordinatesJson, "category_group");
-        paletteCoordinates.CategoryGroupOrdinal = static_cast<unsigned int>(Utils::GetMandatoryJsonMember<int64_t>(paletteCoordinatesJson, "category_group_ordinal"));
+        paletteCoordinates.SubCategory = Utils::GetMandatoryJsonMember<std::string>(paletteCoordinatesJson, "sub_category");
+        paletteCoordinates.SubCategoryOrdinal = static_cast<unsigned int>(Utils::GetMandatoryJsonMember<int64_t>(paletteCoordinatesJson, "sub_category_ordinal"));
 
         return paletteCoordinates;
     }
@@ -90,7 +90,7 @@ StructuralMaterial StructuralMaterial::Create(
             }
 
             paletteCoordinates = DeserializePaletteCoordinates(*paletteCoordinatesJson);
-            paletteCoordinates->CategoryGroupOrdinal += ordinal;
+            paletteCoordinates->SubCategoryOrdinal += ordinal;
         }
 
         return StructuralMaterial(

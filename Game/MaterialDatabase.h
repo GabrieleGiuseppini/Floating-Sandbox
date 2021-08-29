@@ -150,13 +150,13 @@ private:
     struct PaletteCategory
     {
         std::string CategoryName;
-        std::vector<std::string> CategoryGroups;
+        std::vector<std::string> SubCategories;
 
         PaletteCategory(
             std::string && categoryName,
-            std::vector<std::string> && categoryGroups)
+            std::vector<std::string> && subCategories)
             : CategoryName(std::move(categoryName))
-            , CategoryGroups(std::move(categoryGroups))
+            , SubCategories(std::move(subCategories))
         {}
     };
 
@@ -190,15 +190,15 @@ private:
 
             std::string categoryName = Utils::GetMandatoryJsonMember<std::string>(categoryObj, "category");
 
-            std::vector<std::string> categoryGroups;
-            for (auto const & groupJson : Utils::GetMandatoryJsonArray(categoryObj, "groups"))
+            std::vector<std::string> subCategories;
+            for (auto const & subCategoryJson : Utils::GetMandatoryJsonArray(categoryObj, "sub_categories"))
             {
-                categoryGroups.emplace_back(Utils::GetJsonValueAs<std::string>(groupJson, "group"));
+                subCategories.emplace_back(Utils::GetJsonValueAs<std::string>(subCategoryJson, "sub_category"));
             }
 
             categories.emplace_back(
                 std::move(categoryName),
-                std::move(categoryGroups));
+                std::move(subCategories));
         }
 
         return categories;

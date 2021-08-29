@@ -17,8 +17,8 @@
 struct MaterialPaletteCoordinatesType
 {
     std::string Category;
-    std::string CategoryGroup;
-    unsigned int CategoryGroupOrdinal; // Ordinal in CategoryGroup
+    std::string SubCategory;
+    unsigned int SubCategoryOrdinal; // Ordinal in SubCategory
 };
 
 struct StructuralMaterial
