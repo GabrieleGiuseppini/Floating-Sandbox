@@ -978,7 +978,7 @@
   "palette_categories": [
     {
 	"category": "TODO",
-        "groups": [
+        "sub_categories": [
 	  "Iron Hull",
 	  "Iron",
 	  "Steel Hull",
@@ -988,7 +988,7 @@
 
     {
 	"category": "Wood",
-        "groups": [
+        "sub_categories": [
 	  "Wood Hull",
 	  "Wood"
 	]
