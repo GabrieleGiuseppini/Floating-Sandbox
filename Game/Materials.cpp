@@ -7,7 +7,22 @@
 
 #include <GameCore/Utils.h>
 
+namespace /* anonymous */ {
+
+    MaterialPaletteCoordinatesType DeserializePaletteCoordinates(picojson::object const & paletteCoordinatesJson)
+    {
+        MaterialPaletteCoordinatesType paletteCoordinates;
+        paletteCoordinates.Category = Utils::GetMandatoryJsonMember<std::string>(paletteCoordinatesJson, "category");
+        paletteCoordinates.CategoryGroup = Utils::GetMandatoryJsonMember<std::string>(paletteCoordinatesJson, "category_group");
+        paletteCoordinates.CategoryGroupOrdinal = static_cast<unsigned int>(Utils::GetMandatoryJsonMember<int64_t>(paletteCoordinatesJson, "category_group_ordinal"));
+
+        return paletteCoordinates;
+    }
+
+}
+
 StructuralMaterial StructuralMaterial::Create(
+    unsigned int ordinal,
     rgbColor const & renderColor,
     picojson::object const & structuralMaterialJson)
 {
@@ -63,6 +78,21 @@ StructuralMaterial StructuralMaterial::Create(
         float const windReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "wind_receptivity", 0.0);
         bool isLegacyElectrical = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_legacy_electrical", false);
 
+        // Palette coordinates
+
+        std::optional<MaterialPaletteCoordinatesType> paletteCoordinates;
+        auto const & paletteCoordinatesJson = Utils::GetOptionalJsonObject(structuralMaterialJson, "palette_coordinates");
+        if (!isLegacyElectrical)
+        {
+            if (!paletteCoordinatesJson.has_value())
+            {
+                throw GameException(std::string("Non-legacy-electrical material \"") + name + "\" doesn't have palette_coordinates member");
+            }
+
+            paletteCoordinates = DeserializePaletteCoordinates(*paletteCoordinatesJson);
+            paletteCoordinates->CategoryGroupOrdinal += ordinal;
+        }
+
         return StructuralMaterial(
             name,
             strength,
@@ -90,7 +120,9 @@ StructuralMaterial StructuralMaterial::Create(
             explosiveCombustionStrength,
             // Misc
             windReceptivity,
-            isLegacyElectrical);
+            isLegacyElectrical,
+            // Palette
+            paletteCoordinates);
     }
     catch (GameException const & ex)
     {
@@ -233,6 +265,11 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
             waterPumpNominalForce = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "water_pump_nominal_force");
         }
 
+        // Palette coordinates
+        // TODOTEST
+        //MaterialPaletteCoordinatesType paletteCoordinates = DeserializePaletteCoordinates(Utils::GetMandatoryJsonObject(electricalMaterialJson, "palette_coordinates"));
+        std::optional<MaterialPaletteCoordinatesType> paletteCoordinates;
+
         return ElectricalMaterial(
             name,
             electricalType,
@@ -253,7 +290,8 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
             engineResponsiveness,
             interactiveSwitchType,
             shipSoundType,
-            waterPumpNominalForce);
+            waterPumpNominalForce,
+            paletteCoordinates);
     }
     catch (GameException const & ex)
     {

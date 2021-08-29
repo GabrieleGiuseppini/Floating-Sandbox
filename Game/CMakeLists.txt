@@ -23,6 +23,7 @@ set  (GAME_SOURCES
 	ImageFileTools.h
 	Materials.cpp
 	Materials.h
+	MaterialDatabase.cpp
 	MaterialDatabase.h
 	NotificationLayer.cpp
 	NotificationLayer.h
