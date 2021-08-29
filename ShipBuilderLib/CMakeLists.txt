@@ -10,6 +10,8 @@ set  (SHIPBUILDER_LIB_SOURCES
 	IUserInterface.h
 	MainFrame.cpp
 	MainFrame.h
+	MaterialPalette.cpp
+	MaterialPalette.h
 	Model.cpp
 	Model.h
 	ModelController.cpp
@@ -20,6 +22,7 @@ set  (SHIPBUILDER_LIB_SOURCES
 	View.h
 	View.cpp
 	ViewModel.h
+	WorkbenchState.h
 )
 
 source_group(" " FILES ${SHIPBUILDER_LIB_SOURCES})
