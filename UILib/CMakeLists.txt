@@ -6,6 +6,7 @@
 set  (UI_LIB_SOURCES
 	BitmapButton.h
 	BitmappedCheckbox.h
+	BitmapToggleButton.h
 	ElectricalElementControl.cpp
 	ElectricalElementControl.h
 	LayoutHelper.h
