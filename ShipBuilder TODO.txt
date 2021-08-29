@@ -105,6 +105,14 @@
 		- Scrollbars recalculated via private MainFrame::RecalculatePanning, which is invoked by:
 			+ Self, @ glCanvas resize
 			- Controller, @ Zoom, Pan, and WorkSpace resize - via IUserInterface
+	- Tool toolbar:
+		- Depends on currently-selected layer:
+			- StructuralToolbar
+			- ElectricalToolbar
+	- View toolbar:
+		- Layer selector
+			- On change: switch toolbar type
+		- 1 slider + N checkboxes for the "other layers" to see on top of currently-edited layer, with that transparency
 	= Impl:
 		- Click-And-Draw
 			- Panning (*)
@@ -160,6 +168,7 @@
 		- Line
 		- Rectangle
 		- Ellipses
+		- Mass changer
 	- SelectionManager pseudo-tool:
 		- Maintains current selection
 		- Not really a tool but a pseudo-tool
@@ -199,31 +208,44 @@
 		- Tells outside world of pan extent (for scrollbar width setting)
 			- Based on calc'd pixel (display) coords of four sides of work area
 
-- UI architecture:
-	- Topmost toolbar:
-	- Above main working area: "tab-like" buttons for layers, including "+" to add layers, and horizontal sliding bar for transparency of currently-selected layer
-		- Or as Wreno: 1 slider + N checkboxes for the "other layers" to see on top of currently-edited layer, with that transparency
-	- Left toolbar: tools:
-		- Changes content depending on currently-selected layer
-		- Structure layer:
-			- Pencil
-			- Mass changer
-	- Main work area: glCanvas with "losse" scroll bars
+- WorkbenchState
+	- Populated at SB::MainFrame cctor from SB::PreferencesManager
+		- Except for materials: always default to "defaults"
 
 - Controls:
-	- BitmapCheckbox (see if * exists) (@UIControls)
+	+ BitmapCheckbox (see if * exists) (@UIControls)
 		! We'll re-use it for ShipLoadDialog
 	- PopupButton (@UIControls)
 		! We'll use it for popup tools
 		- Takes callback for push, which takes wxPoint
+		- Ideantical to BitmapButton, except for arg of callback
 	- MaterialsPalette (@ShipBuilder)
-		- Column 1: scrollable vertical panel with bitmap button for selecting category
+		- MainFrame owns two instances: Structural and Electrical			
+		- Column 1: scrollable vertical panel with bitmap buttons for selecting category
 		- Column 2: scrollable panel with rows and cols for selected category's materials
 		- Materials/DB changes:
 			- For each category, must have one selected as the "header" (shown in column 1)
 			- TODO: see if can keep rows and cols, or refactor it - we still want to be able to generate template image
-		- Opened on demand when clicking on Foreground (or "TODO1") and Background (or "TODO2") PopupButtons, taking material as argument
-			- And then sets focus on it
+			- PaletteMetadata:
+				- Category ("Metals", "Wood", ...)
+				- CategoryOrdinal (global ordinal of category, assumed to be the same for all materials of same category)
+				- CategoryGroup ("Iron", "Iron Hull", ...)
+				- CategoryGroupOrdinal(ordinal of CategoryGroup in Category, assumed to be the same for all materials of same category group)
+				- MaterialOrdinal (ordinal in CategoryGroup)
+				- TODO: find a better non-fully-denormalized way; separate palette metadata section in json with just ordinals?
+					- All categories and groups are strings (no enums) and verified to be in separate palette metadata section 
+		- Opened on demand when clicking on Foreground/Background PopupButtons
+			- And then sets focus on material
+		- Impl:
+			- Rearc:
+				- MaterialsDB stores std::opt<full path> to material texture
+				- ShipTexturizer takes MaterialsDB in cttor - and not ResourceLocator
+					- Validates here that all exist
+				- Nuke validation
+			- GameController exposes MaterialsDB const &
+			- cctor(MaterialsDB const &, MaterialsPalette::MaterialType, WorkbenchState &)
+			- Open(wxPoint, MaterialsPalette::SwathType) -> bool
+				- If true: SB::MainFrame starts OnWorkbenchStateChanged cascade
 
 - Ship file format:
 	- Min FS version (.shp, .shp2)
