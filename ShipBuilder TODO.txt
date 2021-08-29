@@ -219,7 +219,8 @@
 		! We'll use it for popup tools
 		- Takes callback for push, which takes wxPoint
 		- Ideantical to BitmapButton, except for arg of callback
-	- MaterialsPalette (@ShipBuilder)
+	= MaterialsPalette (@ShipBuilder)
+		- Templated on material type (Structural or Material)
 		- MainFrame owns two instances: Structural and Electrical			
 		- Column 1: scrollable vertical panel with bitmap buttons for selecting category
 		- Column 2: scrollable panel with rows and cols for selected category's materials
@@ -231,18 +232,25 @@
 				+ ShipTexturizer takes MaterialsDB in cttor - and not ResourceLocator
 					+ Validates here that all exist
 				+ Nuke validation
-			- Materials/DB changes:
-				- Each material has new PaletteCoordinates:
-					- Category ("Metal", "Wood", ...) (plain string, no enum)
-					- CategoryGroup ("Iron", "Iron Hull", ...) (plain string, no enum)
-					- MaterialOrdinal (ordinal in CategoryGroup)
-				- Then json has PaletteStructure:
-					- List of categories, in order of presentation
-					- For each category: list of category groups, in order of presentation
-				- Materials' PaletteCoordinates are verified to be in PaletteStructure
-				- Also do pyton script
+			= Materials/DB changes:
+				+ Each material has new PaletteCoordinates:
+					+ Category ("Metal", "Wood", ...) (plain string, no enum)
+					+ CategoryGroup ("Iron", "Iron Hull", ...) (plain string, no enum)
+					+ MaterialOrdinal (ordinal in CategoryGroup)
+				+ Then json has PaletteStructure:
+					+ List of categories, in order of presentation
+					+ For each category: list of category groups, in order of presentation
+				- Materials' PaletteCoordinates are verified to be in PaletteStructure at MaterialsDB load time
+					- Including ordinals' conflicts
+					- For each material, as they are deserialized
+						- Invert order: palette structure first
+				+ Multi-key materials: automagically increase ordinal at Material::Parse
+				- Also do at Electrical
+				- Python script
 			- GameController exposes MaterialsDB const &
-			- cctor(MaterialsDB const &, MaterialsPalette::MaterialType, WorkbenchState &)
+			- SB::MainFrame's cctor takes MaterialsDB
+				- Standalone app loads materials DB
+			- cctor(MaterialsDB const &, MaterialsPalette::MaterialRootType, WorkbenchState &)
 			- Open(wxPoint, MaterialsPalette::SwathType) -> bool
 				- If true: SB::MainFrame starts OnWorkbenchStateChanged cascade
 

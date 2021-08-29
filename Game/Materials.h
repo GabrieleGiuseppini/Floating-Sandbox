@@ -14,6 +14,13 @@
 #include <optional>
 #include <string>
 
+struct MaterialPaletteCoordinatesType
+{
+    std::string Category;
+    std::string CategoryGroup;
+    unsigned int CategoryGroupOrdinal; // Ordinal in CategoryGroup
+};
+
 struct StructuralMaterial
 {
 public:
@@ -84,9 +91,13 @@ public:
     float WindReceptivity;
     bool IsLegacyElectrical;
 
+    // Palette
+    std::optional<MaterialPaletteCoordinatesType> PaletteCoordinates;
+
 public:
 
     static StructuralMaterial Create(
+        unsigned int ordinal,
         rgbColor const & renderColor,
         picojson::object const & structuralMaterialJson);
 
@@ -144,7 +155,9 @@ public:
         float explosiveCombustionStrength,
         // Misc
         float windReceptivity,
-        bool isLegacyElectrical)
+        bool isLegacyElectrical,
+        // Palette
+        std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
         : Name(name)
         , Strength(strength)
         , NominalMass(nominalMass)
@@ -170,6 +183,7 @@ public:
         , ExplosiveCombustionStrength(explosiveCombustionStrength)
         , WindReceptivity(windReceptivity)
         , IsLegacyElectrical(isLegacyElectrical)
+        , PaletteCoordinates(paletteCoordinates)
     {}
 };
 
@@ -260,6 +274,9 @@ public:
     // Water pump
     float WaterPumpNominalForce;
 
+    // Palette
+    std::optional<MaterialPaletteCoordinatesType> PaletteCoordinates;
+
 public:
 
     static ElectricalMaterial Create(picojson::object const & electricalMaterialJson);
@@ -292,7 +309,8 @@ public:
         float engineResponsiveness,
         InteractiveSwitchElementType interactiveSwitchType,
         ShipSoundElementType shipSoundType,
-        float waterPumpNominalForce)
+        float waterPumpNominalForce,
+        std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
         : Name(name)
         , ElectricalType(electricalType)
         , IsSelfPowered(isSelfPowered)
@@ -314,6 +332,7 @@ public:
         , InteractiveSwitchType(interactiveSwitchType)
         , ShipSoundType(shipSoundType)
         , WaterPumpNominalForce(waterPumpNominalForce)
+        , PaletteCoordinates(paletteCoordinates)
     {
     }
 };

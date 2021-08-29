@@ -1,4 +1,5 @@
-[
+{
+  "materials": [
     {
         "color_key": "#FFE010",
 	"conducts_electricity": true,
@@ -972,5 +973,25 @@
             "row": "20|Misc"
         }
     }
+  ],
 
-]
+  "palette_categories": [
+    {
+	"category": "TODO",
+        "groups": [
+	  "Iron Hull",
+	  "Iron",
+	  "Steel Hull",
+	  "Steel"
+	]
+    },
+
+    {
+	"category": "Wood",
+        "groups": [
+	  "Wood Hull",
+	  "Wood"
+	]
+    }
+  ]
+}
