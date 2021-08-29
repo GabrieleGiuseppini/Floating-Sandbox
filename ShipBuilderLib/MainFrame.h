@@ -96,6 +96,10 @@ private:
 
     void Open();
 
+    void SaveAndSwitchBackToGame();
+
+    void QuitAndSwitchBackToGame();
+
     void SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath);
 
     void RecalculatePanning();

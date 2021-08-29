@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
+#include <UILib/BitmapButton.h>
+
 #include <GameCore/Log.h>
 #include <GameCore/Version.h>
 
@@ -22,6 +24,8 @@
 #endif
 
 #include <sstream>
+
+int constexpr ButtonMargin = 4;
 
 namespace ShipBuilder {
 
@@ -58,9 +62,6 @@ MainFrame::MainFrame(
 
     mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-    // TODOTEST
-    mMainPanel->SetBackgroundColour(*wxCYAN);
-
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
     {
@@ -70,7 +71,7 @@ MainFrame::MainFrame(
             filePanel,
             wxGBPosition(0, 0),
             wxGBSpan(1, 1),
-            0,
+            wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
             0);
     }
 
@@ -81,7 +82,7 @@ MainFrame::MainFrame(
             toolSettingsPanel,
             wxGBPosition(0, 1),
             wxGBSpan(1, 1),
-            0,
+            wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
             0);
     }
 
@@ -144,7 +145,7 @@ MainFrame::MainFrame(
     gridSizer->AddGrowableRow(1, 1);
     gridSizer->AddGrowableRow(2, 1);
     gridSizer->AddGrowableCol(1, 1);
-    gridSizer->AddGrowableCol(2, 1);
+    //gridSizer->AddGrowableCol(2, 1);
 
     mMainPanel->SetSizer(gridSizer);
 
@@ -287,19 +288,11 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-    // TODOTEST
-    panel->SetBackgroundColour(*wxRED);
-
     wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
 
     {
         {
             wxButton * button = new wxButton(panel, wxID_ANY, "Some");
-            sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
-        }
-
-        {
-            wxButton * button = new wxButton(panel, wxID_ANY, "File");
             sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
         }
 
@@ -317,9 +310,6 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
 wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-
-    // TODOTEST
-    panel->SetBackgroundColour(*wxBLUE);
 
     wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
 
@@ -349,20 +339,35 @@ wxPanel * MainFrame::CreateGamePanel(wxWindow * parent)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-    // TODOTEST
-    panel->SetBackgroundColour(*wxGREEN);
-
     wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
 
     {
+        if (!IsStandAlone())
         {
-            wxButton * button = new wxButton(panel, wxID_ANY, "Return");
-            sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
+            auto saveAndReturnToGameButton = new BitmapButton(
+                panel,
+                mResourceLocator.GetIconFilePath("save_and_return_to_game_button"),
+                [this]()
+                {
+                    SaveAndSwitchBackToGame();
+                },
+                _T("Save the current ship and return to the simulator"));
+
+            sizer->Add(saveAndReturnToGameButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, ButtonMargin);
         }
 
+        if (!IsStandAlone())
         {
-            wxButton * button = new wxButton(panel, wxID_ANY, "To Game");
-            sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
+            auto quitAndReturnToGameButton = new BitmapButton(
+                panel,
+                mResourceLocator.GetIconFilePath("quit_and_return_to_game_button"),
+                [this]()
+                {
+                    QuitAndSwitchBackToGame();
+                },
+                _T("Discard the current ship and return to the simulator"));
+
+            sizer->Add(quitAndReturnToGameButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, ButtonMargin);
         }
     }
 
@@ -623,17 +628,12 @@ void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & /*event*/)
 
 void MainFrame::OnSaveAndGoBack(wxCommandEvent & /*event*/)
 {
-    // TODO: SaveShipDialog
-    // TODO: if success: save via Controller::SaveShip() and provide new file path
-    // TODO: else: cancel operation (i.e. nop)
-
-    std::filesystem::path const TODOPath = mResourceLocator.GetInstalledShipFolderPath() / "Lifeboat.shp";
-    SwitchBackToGame(TODOPath);
+    SaveAndSwitchBackToGame();
 }
 
 void MainFrame::OnQuitAndGoBack(wxCommandEvent & /*event*/)
 {
-    SwitchBackToGame(std::nullopt);
+    QuitAndSwitchBackToGame();
 }
 
 void MainFrame::OnQuit(wxCommandEvent & /*event*/)
@@ -659,6 +659,21 @@ void MainFrame::Open()
 
     // Make ourselves the topmost frame
     mMainApp->SetTopWindow(this);
+}
+
+void MainFrame::SaveAndSwitchBackToGame()
+{
+    // TODO: SaveShipDialog
+    // TODO: if success: save via Controller::SaveShip() and provide new file path
+    // TODO: else: cancel operation (i.e. nop)
+
+    std::filesystem::path const TODOPath = mResourceLocator.GetInstalledShipFolderPath() / "Lifeboat.shp";
+    SwitchBackToGame(TODOPath);
+}
+
+void MainFrame::QuitAndSwitchBackToGame()
+{
+    SwitchBackToGame(std::nullopt);
 }
 
 void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath)

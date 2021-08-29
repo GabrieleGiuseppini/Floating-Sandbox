@@ -12,7 +12,8 @@
 #include "ShipDescriptionDialog.h"
 #include "StandardSystemPaths.h"
 #include "StartupTipDialog.h"
-#include "WxHelpers.h"
+
+#include <UILib/WxHelpers.h>
 
 #include <Game/ImageFileTools.h>
 
@@ -533,7 +534,7 @@ MainFrame::MainFrame(
             mainMenuBar->Append(optionsMenu, _("&Options"));
         }
 
-        // Ship Builder
+        // ShipBuilder
 
         {
             wxMenu * shipBuilderMenu = new wxMenu();
@@ -546,7 +547,7 @@ MainFrame::MainFrame(
             shipBuilderMenu->Append(editShipMenuItem);
             Connect(ID_SHIPBUILDER_EDITSHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShipBuilderEditShipMenuItemSelected);
 
-            mainMenuBar->Append(shipBuilderMenu, _("&Ship Builder"));
+            mainMenuBar->Append(shipBuilderMenu, _("&ShipBuilder"));
         }
 
         // Help

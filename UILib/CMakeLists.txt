@@ -4,6 +4,7 @@
 #
 
 set  (UI_LIB_SOURCES
+	BitmapButton.h
 	BitmappedCheckbox.h
 	ElectricalElementControl.cpp
 	ElectricalElementControl.h
@@ -17,6 +18,8 @@ set  (UI_LIB_SOURCES
 	SliderControl.h
 	UnFocusablePanel.h
 	UnFocusableScrollablePanel.h
+	WxHelpers.cpp
+	WxHelpers.h
 )
 
 source_group(" " FILES ${UI_LIB_SOURCES})
