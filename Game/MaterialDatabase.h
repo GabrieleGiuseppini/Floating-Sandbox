@@ -17,6 +17,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <optional>
 #include <string>
@@ -27,6 +28,38 @@ class MaterialDatabase
 public:
 
     using ColorKey = rgbColor;
+
+    template<typename TMaterial>
+    struct Palette
+    {
+        struct Category
+        {
+            struct SubCategory
+            {
+                std::string Name;
+                std::vector<std::reference_wrapper<TMaterial const>> Materials;
+
+                SubCategory(std::string const & name)
+                    : Name(name)
+                    , Materials()
+                {}
+            };
+
+            std::string Name;
+            std::vector<SubCategory> SubCategories;
+
+            Category(std::string const & name)
+                : Name(name)
+                , SubCategories()
+            {}
+        };
+
+        std::vector<Category> Categories;
+
+        static Palette Parse(picojson::array const & paletteCategoriesJson);
+
+        void InsertMaterial(TMaterial const & material, MaterialPaletteCoordinatesType const & paletteCoordinates);
+    };
 
 private:
 
@@ -69,9 +102,9 @@ public:
         return nullptr;
     }
 
-    auto const & GetStructuralMaterialsByColorKeys() const
+    Palette<StructuralMaterial> const & GetStructuralMaterialPalette() const
     {
-        return mStructuralMaterialMap;
+        return mStructuralMaterialPalette;
     }
 
     ElectricalMaterial const * FindElectricalMaterial(ColorKey const & colorKey) const
@@ -94,6 +127,11 @@ public:
         return nullptr;
     }
 
+    Palette<ElectricalMaterial> const & GetElectricalMaterialPalette() const
+    {
+        return mElectricalMaterialPalette;
+    }
+
     StructuralMaterial const & GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType uniqueType) const
     {
         assert(static_cast<size_t>(uniqueType) < mUniqueStructuralMaterials.size());
@@ -112,7 +150,7 @@ public:
         return colorKey == mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].first;
     }
 
-    static ElectricalElementInstanceIndex GetElectricalElementInstanceIndex(ColorKey const & colorKey)
+    static ElectricalElementInstanceIndex ExtractElectricalElementInstanceIndex(ColorKey const & colorKey)
     {
         static_assert(sizeof(ElectricalElementInstanceIndex) >= sizeof(ColorKey::data_type));
         return static_cast<ElectricalElementInstanceIndex>(colorKey.b);
@@ -147,73 +185,38 @@ private:
         }
     };
 
-    struct PaletteCategory
-    {
-        std::string CategoryName;
-        std::vector<std::string> SubCategories;
-
-        PaletteCategory(
-            std::string && categoryName,
-            std::vector<std::string> && subCategories)
-            : CategoryName(std::move(categoryName))
-            , SubCategories(std::move(subCategories))
-        {}
-    };
-
 private:
 
     MaterialDatabase(
         std::map<ColorKey, StructuralMaterial> structuralMaterialMap,
-        std::vector<PaletteCategory> structuralPaletteCategories,
+        Palette<StructuralMaterial> structuralMaterialPalette,
         std::map<ColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> nonInstancedElectricalMaterialMap,
         std::map<ColorKey, ElectricalMaterial, InstancedColorKeyComparer> instancedElectricalMaterialMap,
+        Palette<ElectricalMaterial> electricalMaterialPalette,
         UniqueStructuralMaterialsArray uniqueStructuralMaterials,
         float largestMass,
         float largestStrength)
         : mStructuralMaterialMap(std::move(structuralMaterialMap))
-        , mStructuralPaletteCategories(std::move(structuralPaletteCategories))
+        , mStructuralMaterialPalette(std::move(structuralMaterialPalette))
         , mNonInstancedElectricalMaterialMap(std::move(nonInstancedElectricalMaterialMap))
         , mInstancedElectricalMaterialMap(std::move(instancedElectricalMaterialMap))
+        , mElectricalMaterialPalette(std::move(electricalMaterialPalette))
         , mUniqueStructuralMaterials(uniqueStructuralMaterials)
         , mLargestMass(largestMass)
         , mLargestStrength(largestStrength)
     {
     }
 
-    static std::vector<PaletteCategory> ParsePaletteCategories(picojson::array const & paletteCategoriesJson)
-    {
-        std::vector<PaletteCategory> categories;
-
-        for (auto const & categoryJson : paletteCategoriesJson)
-        {
-            picojson::object const & categoryObj = Utils::GetJsonValueAs<picojson::object>(categoryJson, "palette_category");
-
-            std::string categoryName = Utils::GetMandatoryJsonMember<std::string>(categoryObj, "category");
-
-            std::vector<std::string> subCategories;
-            for (auto const & subCategoryJson : Utils::GetMandatoryJsonArray(categoryObj, "sub_categories"))
-            {
-                subCategories.emplace_back(Utils::GetJsonValueAs<std::string>(subCategoryJson, "sub_category"));
-            }
-
-            categories.emplace_back(
-                std::move(categoryName),
-                std::move(subCategories));
-        }
-
-        return categories;
-    }
-
 private:
 
     // Structural
     std::map<ColorKey, StructuralMaterial> mStructuralMaterialMap;
-    std::vector<PaletteCategory> mStructuralPaletteCategories;
+    Palette<StructuralMaterial> mStructuralMaterialPalette;
 
     // Electrical
     std::map<ColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> mNonInstancedElectricalMaterialMap;
     std::map<ColorKey, ElectricalMaterial, InstancedColorKeyComparer> mInstancedElectricalMaterialMap;
-    std::vector<PaletteCategory> mElectricalPaletteCategories;
+    Palette<ElectricalMaterial> mElectricalMaterialPalette;
 
     UniqueStructuralMaterialsArray mUniqueStructuralMaterials;
     float const mLargestMass;

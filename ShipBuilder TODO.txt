@@ -247,14 +247,16 @@
 				+ Then json has PaletteStructure:
 					+ List of categories, in order of presentation
 					+ For each category: list of sub-categories, in order of presentation
-				- TODOHERE: do we want materials organized internally as palette structure, + map ?
-				- Materials' PaletteCoordinates are verified to be in PaletteStructure at MaterialsDB load time
-					- Including ordinals' conflicts
-					- For each material, as they are deserialized
-						- Invert order: palette structure first
+				+ Materials' PaletteCoordinates are verified to be in PaletteStructure at MaterialsDB load time
+					+ Including ordinals' conflicts
+					+ For each material, as they are deserialized
+						+ Invert order: palette structure first
 				+ Multi-key materials: automagically increase ordinal at Material::Parse
 				- Also do at Electrical
 				- Python script
+			- Creation of control based on one of multiple groupings/pivoting
+				- By Category
+				- By Strength: TODO
 			- ShipTexturizer exposes static helper method that does color-blending of material texture: (material texture file path, render color [check cur code]) -> rgbaImage
 			- GameController exposes MaterialsDB const &
 			- SB::MainFrame's cctor takes MaterialsDB

@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "MaterialDatabase.h"
 
+#include <algorithm>
+
 MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirectory)
 {
     //
@@ -25,15 +27,17 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         throw GameException("Structural materials definition is not a JSON object");
     }
 
+    picojson::object const & structuralMaterialsRootObj = structuralMaterialsRoot.get<picojson::object>();
+
     float largestMass = 0.0f;
     float largestStrength = 0.0f;
 
     // Parse palette structure
-    std::vector<PaletteCategory> structuralPaletteCategories = ParsePaletteCategories(
-        Utils::GetMandatoryJsonArray(structuralMaterialsRoot.get<picojson::object>(), "palette_categories"));
+    Palette<StructuralMaterial> structuralMaterialPalette = Palette<StructuralMaterial>::Parse(
+        Utils::GetMandatoryJsonArray(structuralMaterialsRootObj, "palette_categories"));
 
     // Parse materials
-    picojson::array const & structuralMaterialsRootArray = Utils::GetMandatoryJsonArray(structuralMaterialsRoot.get<picojson::object>(), "materials");
+    picojson::array const & structuralMaterialsRootArray = Utils::GetMandatoryJsonArray(structuralMaterialsRootObj, "materials");
     for (auto const & materialElem : structuralMaterialsRootArray)
     {
         if (!materialElem.is<picojson::object>())
@@ -110,12 +114,6 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
                 renderColor,
                 materialObject);
 
-            // Validate palette coordinates
-            if (material.PaletteCoordinates.has_value())
-            {
-                // TODOHERE
-            }
-
             // Make sure there are no dupes
             if (structuralMaterialsMap.count(colorKey) != 0)
             {
@@ -127,6 +125,12 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
                 std::make_pair(
                     colorKey,
                     material));
+
+            // Add to palette
+            if (material.PaletteCoordinates.has_value())
+            {
+                structuralMaterialPalette.InsertMaterial(storedEntry.first->second, *material.PaletteCoordinates);
+            }
 
             // Check if it's a unique material, and if so, check for dupes and store it
             if (material.UniqueType.has_value())
@@ -183,12 +187,14 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         throw GameException("Structural materials definition is not a JSON object");
     }
 
+    picojson::object const & electricalMaterialsRootObj = electricalMaterialsRoot.get<picojson::object>();
+
     // Parse palette structure
-    std::vector<PaletteCategory> electricalPaletteCategories = ParsePaletteCategories(
-        Utils::GetMandatoryJsonArray(electricalMaterialsRoot.get<picojson::object>(), "palette_categories"));
+    Palette<ElectricalMaterial> electricalMaterialPalette = Palette<ElectricalMaterial>::Parse(
+        Utils::GetMandatoryJsonArray(electricalMaterialsRootObj, "palette_categories"));
 
     // Parse materials
-    picojson::array const & electricalMaterialsRootArray = Utils::GetMandatoryJsonArray(electricalMaterialsRoot.get<picojson::object>(), "materials");
+    picojson::array const & electricalMaterialsRootArray = Utils::GetMandatoryJsonArray(electricalMaterialsRootObj, "materials");
     for (auto const & materialElem : electricalMaterialsRootArray)
     {
         if (!materialElem.is<picojson::object>())
@@ -245,16 +251,109 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
             && (0 != nonInstancedElectricalMaterialsMap.count(kv.first)
                 || 0 != instancedElectricalMaterialsMap.count(kv.first)))
         {
-            throw GameException("color key of structural material \"" + kv.second.Name + "\" is also present among electrical materials");
+            throw GameException("Color key of structural material \"" + kv.second.Name + "\" is also present among electrical materials");
         }
     }
 
     return MaterialDatabase(
         std::move(structuralMaterialsMap),
-        std::move(structuralPaletteCategories),
+        std::move(structuralMaterialPalette),
         std::move(nonInstancedElectricalMaterialsMap),
         std::move(instancedElectricalMaterialsMap),
+        std::move(electricalMaterialPalette),
         uniqueStructuralMaterials,
         largestMass,
         largestStrength);
+}
+
+///////////////////////////////////////////////////////////////////////
+
+template<typename TMaterial>
+MaterialDatabase::Palette<TMaterial> MaterialDatabase::Palette<TMaterial>::Parse(picojson::array const & paletteCategoriesJson)
+{
+    Palette<TMaterial> palette;
+
+    for (auto const & categoryJson : paletteCategoriesJson)
+    {
+        picojson::object const & categoryObj = Utils::GetJsonValueAs<picojson::object>(categoryJson, "palette_category");
+
+        Category category(Utils::GetMandatoryJsonMember<std::string>(categoryObj, "category"));
+        for (auto const & subCategoryJson : Utils::GetMandatoryJsonArray(categoryObj, "sub_categories"))
+        {
+            category.SubCategories.emplace_back(Utils::GetJsonValueAs<std::string>(subCategoryJson, "sub_category"));
+        }
+
+        palette.Categories.emplace_back(std::move(category));
+    }
+
+    return palette;
+}
+
+template<typename TMaterial>
+void MaterialDatabase::Palette<TMaterial>::InsertMaterial(
+    TMaterial const & material,
+    MaterialPaletteCoordinatesType const & paletteCoordinates)
+{
+    //
+    // Find category
+    //
+
+    auto categoryIt = std::find_if(
+        Categories.begin(),
+        Categories.end(),
+        [&paletteCoordinates](Category const & c)
+        {
+            return c.Name == paletteCoordinates.Category;
+        });
+
+    if (categoryIt == Categories.end())
+    {
+        throw GameException("Category \"" + paletteCoordinates.Category + "\" of material \"" + material.Name + "\" is not a valid category");
+    }
+
+    Category & category = *categoryIt;
+
+    //
+    // Find sub-category
+    //
+
+    auto subCategoryIt = std::find_if(
+        category.SubCategories.begin(),
+        category.SubCategories.end(),
+        [&paletteCoordinates](typename Category::SubCategory const & s)
+        {
+            return s.Name == paletteCoordinates.SubCategory;
+        });
+
+    if (subCategoryIt == category.SubCategories.end())
+    {
+        throw GameException("Sub-category \"" + paletteCoordinates.SubCategory + "\" of material \""
+            + material.Name + "\" is not a valid sub-category of category \"" + paletteCoordinates.Category + "\"");
+    }
+
+    //
+    // Store material at righ position for its ordinal
+    //
+
+    auto const insertIt = std::lower_bound(
+        subCategoryIt->Materials.cbegin(),
+        subCategoryIt->Materials.cend(),
+        paletteCoordinates.SubCategoryOrdinal,
+        [](TMaterial const & m, auto const ordinal)
+        {
+            assert(m.PaletteCoordinates.has_value());
+            return m.PaletteCoordinates->SubCategoryOrdinal < ordinal;
+        });
+
+    if (insertIt != subCategoryIt->Materials.cend())
+    {
+        TMaterial const & conflictingMaterial = *insertIt;
+        assert(conflictingMaterial.PaletteCoordinates.has_value());
+        if (conflictingMaterial.PaletteCoordinates->SubCategoryOrdinal == paletteCoordinates.SubCategoryOrdinal)
+        {
+            throw GameException("Material \"" + material.Name + "\" has a palette category ordinal that conflicts with material \"" + conflictingMaterial.Name + "\"");
+        }
+    }
+
+    subCategoryIt->Materials.insert(insertIt, material);
 }
