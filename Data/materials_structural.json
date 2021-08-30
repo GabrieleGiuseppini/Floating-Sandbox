@@ -12,7 +12,7 @@
         "melting_temperature": 1588.15,
         "name": "Iron Hull",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Iron Hull",
 		"sub_category_ordinal": 0
 	},
@@ -39,7 +39,7 @@
         "melting_temperature": 1588.15,
         "name": "Structural Iron",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Structural Iron",
 		"sub_category_ordinal": 0
 	},
@@ -66,7 +66,7 @@
         "melting_temperature": 1588.15,
         "name": "Iron",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Iron",
 		"sub_category_ordinal": 0
 	},
@@ -93,7 +93,7 @@
         "melting_temperature": 1089.15,
         "name": "Steel Hull",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Steel Hull",
 		"sub_category_ordinal": 0
 	},
@@ -120,7 +120,7 @@
         "melting_temperature": 1089.15,
         "name": "Structural Steel",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Structural Steel",
 		"sub_category_ordinal": 0
 	},
@@ -147,7 +147,7 @@
         "melting_temperature": 1089.15,
         "name": "Steel",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Steel",
 		"sub_category_ordinal": 0
 	},
@@ -174,7 +174,7 @@
         "melting_temperature": 1941.15,
         "name": "Titanium Hull",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Titanium Hull",
 		"sub_category_ordinal": 0
 	},
@@ -201,7 +201,7 @@
         "melting_temperature": 1941.15,
         "name": "Titanium",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Titanium",
 		"sub_category_ordinal": 0
 	},
@@ -228,7 +228,7 @@
         "melting_temperature": 933.45,
         "name": "Aluminium Hull",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Aluminium Hull",
 		"sub_category_ordinal": 0
 	},
@@ -255,7 +255,7 @@
         "melting_temperature": 933.45,
         "name": "Structural Aluminium",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Structural Aluminium",
 		"sub_category_ordinal": 0
 	},
@@ -283,7 +283,7 @@
         "melting_temperature": 933.45,
         "name": "Aluminium",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Aluminium",
 		"sub_category_ordinal": 0
 	},
@@ -310,7 +310,7 @@
         "melting_temperature": 933.45,
         "name": "Aluminium Cheap",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Aluminium Cheap",
 		"sub_category_ordinal": 0
 	},
@@ -595,7 +595,7 @@
         "melting_temperature": 933.45,
         "name": "Aluminium Sheet Hull",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Aluminium Sheet Hull",
 		"sub_category_ordinal": 0
 	},
@@ -623,7 +623,7 @@
         "melting_temperature": 933.45,
         "name": "Aluminium Sheet",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Aluminium Sheet",
 		"sub_category_ordinal": 0
 	},
@@ -773,7 +773,7 @@
         "melting_temperature": 1089.15,
         "name": "Steel Red Cheap",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Steel Cheap",
 		"sub_category_ordinal": 0
 	},
@@ -802,7 +802,7 @@
         "melting_temperature": 1588.15,
         "name": "Iron Cheap",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Iron Cheap",
 		"sub_category_ordinal": 0
 	},
@@ -831,7 +831,7 @@
         "melting_temperature": 1089.15,
         "name": "Stainless Steel Hull",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Stainless Steel Hull",
 		"sub_category_ordinal": 0
 	},
@@ -861,7 +861,7 @@
         "melting_temperature": 1089.15,
         "name": "Stainless Steel",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Stainless Steel",
 		"sub_category_ordinal": 0
 	},
@@ -891,7 +891,7 @@
         "melting_temperature": 1089.15,
         "name": "Double-Bottom Steel Red",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Double-Bottom Steel",
 		"sub_category_ordinal": 0
 	},
@@ -919,7 +919,7 @@
         "melting_temperature": 1941.15,
         "name": "Double-Bottom Titanium Red",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Double-Bottom Titanium",
 		"sub_category_ordinal": 0
 	},
@@ -947,7 +947,7 @@
         "melting_temperature": 1588.15,
         "name": "Double-Bottom Iron Red",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Double-Bottom Iron",
 		"sub_category_ordinal": 0
 	},
@@ -1004,7 +1004,7 @@
         "melting_temperature": 505.05,
         "name": "Nails",
 	"palette_coordinates": {
-		"category": "Metal",
+		"category": "Metals",
 		"sub_category": "Nails",
 		"sub_category_ordinal": 0
 	},
@@ -1718,7 +1718,7 @@
 
   "palette_categories": [
     {
-	"category": "Metal",
+	"category": "Metals",
         "sub_categories": [
 	  "Iron",
 	  "Iron Hull",

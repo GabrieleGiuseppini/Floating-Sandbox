@@ -13,8 +13,8 @@
         "minimum_operating_temperature": 233.15, 
         "name": "High Lamp Watertight",
 	"palette_coordinates": {
-		"category": "Lamp",
-		"sub_category": "Lamp",
+		"category": "Lamps",
+		"sub_category": "Lamps",
 		"sub_category_ordinal": 0
 	},
         "wet_failure_rate": 0.0
@@ -32,8 +32,8 @@
         "minimum_operating_temperature": 233.15, 
         "name": "High Lamp", 
 	"palette_coordinates": {
-		"category": "Lamp",
-		"sub_category": "Lamp",
+		"category": "Lamps",
+		"sub_category": "Lamps",
 		"sub_category_ordinal": 1
 	},
         "wet_failure_rate": 4.5
@@ -51,8 +51,8 @@
         "minimum_operating_temperature": 233.15, 
         "name": "Low Lamp Watertight", 
 	"palette_coordinates": {
-		"category": "Lamp",
-		"sub_category": "Lamp",
+		"category": "Lamps",
+		"sub_category": "Lamps",
 		"sub_category_ordinal": 2
 	},
         "wet_failure_rate": 0.0
@@ -70,8 +70,8 @@
         "minimum_operating_temperature": 233.15, 
         "name": "Low Lamp", 
 	"palette_coordinates": {
-		"category": "Lamp",
-		"sub_category": "Lamp",
+		"category": "Lamps",
+		"sub_category": "Lamps",
 		"sub_category_ordinal": 3
 	},
         "wet_failure_rate": 3.0
@@ -89,8 +89,8 @@
         "minimum_operating_temperature": 173.15, 
         "name": "Heat-Resistant Lamp Watertight", 
         "palette_coordinates": {
-		"category": "Lamp",
-		"sub_category": "Lamp",
+		"category": "Lamps",
+		"sub_category": "Lamps",
 		"sub_category_ordinal": 4
 	},
         "wet_failure_rate": 0.0
@@ -109,8 +109,8 @@
         "minimum_operating_temperature": 233.15, 
         "name": "Porthole Watertight", 
 	"palette_coordinates": {
-		"category": "Lamp",
-		"sub_category": "Porthole",
+		"category": "Lamps",
+		"sub_category": "Portholes",
 		"sub_category_ordinal": 0
 	},
         "wet_failure_rate": 0.0
@@ -128,8 +128,8 @@
         "minimum_operating_temperature": 233.15, 
         "name": "Porthole", 
         "palette_coordinates": {
-		"category": "Lamp",
-		"sub_category": "Porthole",
+		"category": "Lamps",
+		"sub_category": "Portholes",
 		"sub_category_ordinal": 1
 	},
         "wet_failure_rate": 3.0
@@ -147,8 +147,8 @@
         "minimum_operating_temperature": 233.15, 
         "name": "Self-Powered High Lamp Watertight", 
         "palette_coordinates": {
-		"category": "Lamp",
-		"sub_category": "Self-Powered Lamp",
+		"category": "Lamps",
+		"sub_category": "Self-Powered Lamps",
 		"sub_category_ordinal": 0
 	},
         "wet_failure_rate": 0.0
@@ -166,8 +166,8 @@
         "minimum_operating_temperature": 233.15, 
         "name": "Self-Powered High Lamp", 
         "palette_coordinates": {
-		"category": "Lamp",
-		"sub_category": "Self-Powered Lamp",
+		"category": "Lamps",
+		"sub_category": "Self-Powered Lamps",
 		"sub_category_ordinal": 1
 	},
         "wet_failure_rate": 4.5
@@ -185,8 +185,8 @@
         "minimum_operating_temperature": 233.15, 
         "name": "Self-Powered Low Lamp Watertight", 
         "palette_coordinates": {
-		"category": "Lamp",
-		"sub_category": "Self-Powered Lamp",
+		"category": "Lamps",
+		"sub_category": "Self-Powered Lamps",
 		"sub_category_ordinal": 2
 	},
         "wet_failure_rate": 0.0
@@ -204,8 +204,8 @@
         "minimum_operating_temperature": 233.15, 
         "name": "Self-Powered Low Lamp", 
         "palette_coordinates": {
-		"category": "Lamp",
-		"sub_category": "Self-Powered Lamp",
+		"category": "Lamps",
+		"sub_category": "Self-Powered Lamps",
 		"sub_category_ordinal": 3
 	},
         "wet_failure_rate": 3.0
@@ -224,8 +224,8 @@
         "minimum_operating_temperature": 233.15, 
         "name": "Self-Powered Porthole Watertight", 
         "palette_coordinates": {
-		"category": "Lamp",
-		"sub_category": "Self-Powered Porthole",
+		"category": "Lamps",
+		"sub_category": "Self-Powered Portholes",
 		"sub_category_ordinal": 0
 	},
         "wet_failure_rate": 0.0
@@ -243,8 +243,8 @@
         "minimum_operating_temperature": 233.15, 
         "name": "Self-Powered Porthole", 
        "palette_coordinates": {
-		"category": "Lamp",
-		"sub_category": "Self-Powered Porthole",
+		"category": "Lamps",
+		"sub_category": "Self-Powered Portholes",
 		"sub_category_ordinal": 1
 	},
         "wet_failure_rate": 3.0
@@ -259,8 +259,8 @@
         "minimum_operating_temperature": 233.15, 
         "name": "Non-Instanced Generator", 
         "palette_coordinates": {
-		"category": "Generator",
-		"sub_category": "Generator",
+		"category": "Generators",
+		"sub_category": "Generators",
 		"sub_category_ordinal": 0
 	}
     }, 
@@ -274,8 +274,8 @@
         "minimum_operating_temperature": 233.15, 
         "name": "Generator",
         "palette_coordinates": {
-		"category": "Generator",
-		"sub_category": "Generator",
+		"category": "Generators",
+		"sub_category": "Generators",
 		"sub_category_ordinal": 1
 	}
     }, 
@@ -289,8 +289,8 @@
         "minimum_operating_temperature": 173.15, 
         "name": "Heat-Resistant Generator", 
         "palette_coordinates": {
-		"category": "Generator",
-		"sub_category": "Generator",
+		"category": "Generators",
+		"sub_category": "Generators",
 		"sub_category_ordinal": 2
 	}
     }, 
@@ -305,8 +305,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "Electrical Cable", 
         "palette_coordinates": {
-		"category": "Cable",
-		"sub_category": "Cable",
+		"category": "Cables",
+		"sub_category": "Cables",
 		"sub_category_ordinal": 0
 	}
     },
@@ -319,12 +319,7 @@
 	"is_legacy_electrical": true,
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
-        "name": "Electrical Cable Hull", 
-        "palette_coordinates": {
-		"category": "Cable",
-		"sub_category": "Cable Hull",
-		"sub_category_ordinal": 0
-	}
+        "name": "Electrical Cable Hull"
     }, 
     
 
@@ -339,8 +334,8 @@
         "minimum_operating_temperature": 173.15,
         "name": "Interactive Toggle Switch ON",
         "palette_coordinates": {
-		"category": "Switch",
-		"sub_category": "Interactive Switch",
+		"category": "Switches",
+		"sub_category": "Interactive Switches",
 		"sub_category_ordinal": 0
 	}
     }, 
@@ -355,8 +350,8 @@
         "minimum_operating_temperature": 173.15,
         "name": "Interactive Toggle Switch OFF",
         "palette_coordinates": {
-		"category": "Switch",
-		"sub_category": "Interactive Switch",
+		"category": "Switches",
+		"sub_category": "Interactive Switches",
 		"sub_category_ordinal": 1
 	}
     }, 
@@ -372,8 +367,8 @@
         "minimum_operating_temperature": 173.15,
         "name": "Interactive Push Switch ON",
         "palette_coordinates": {
-		"category": "Switch",
-		"sub_category": "Push Switch",
+		"category": "Switches",
+		"sub_category": "Push Switches",
 		"sub_category_ordinal": 0
 	}
     }, 
@@ -388,8 +383,8 @@
         "minimum_operating_temperature": 173.15,
         "name": "Interactive Push Switch OFF",
         "palette_coordinates": {
-		"category": "Switch",
-		"sub_category": "Push Switch",
+		"category": "Switches",
+		"sub_category": "Push Switches",
 		"sub_category_ordinal": 1
 	}
     }, 
@@ -404,8 +399,8 @@
         "minimum_operating_temperature": 173.15,
         "name": "Water Sensing Switch ON",
         "palette_coordinates": {
-		"category": "Switch",
-		"sub_category": "Water Switch",
+		"category": "Switches",
+		"sub_category": "Water Switches",
 		"sub_category_ordinal": 0
 	}
     }, 
@@ -419,8 +414,8 @@
         "minimum_operating_temperature": 173.15,
         "name": "Water Sensing Switch OFF",
         "palette_coordinates": {
-		"category": "Switch",
-		"sub_category": "Water Switch",
+		"category": "Switches",
+		"sub_category": "Water Switches",
 		"sub_category_ordinal": 1
 	}
     },
@@ -435,8 +430,8 @@
         "minimum_operating_temperature": 173.15,
         "name": "Non-Instanced Water Sensing Switch ON",
         "palette_coordinates": {
-		"category": "Switch",
-		"sub_category": "Water Switch",
+		"category": "Switches",
+		"sub_category": "Water Switches",
 		"sub_category_ordinal": 2
 	}
     }, 
@@ -450,8 +445,8 @@
         "minimum_operating_temperature": 173.15,
         "name": "Non-Instanced Water Sensing Switch OFF",
         "palette_coordinates": {
-		"category": "Switch",
-		"sub_category": "Water Switch",
+		"category": "Switches",
+		"sub_category": "Water Switches",
 		"sub_category_ordinal": 3
 	}
     },
@@ -473,8 +468,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "50HP Outboard Engine R/L", 
 	"palette_coordinates": {
-		"category": "Engine",
-		"sub_category": "Outboard Engine",
+		"category": "Engines",
+		"sub_category": "Outboard Engines",
 		"sub_category_ordinal": 0
 	}
     },
@@ -494,8 +489,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "130HP Outboard Engine R/L", 
         "palette_coordinates": {
-		"category": "Engine",
-		"sub_category": "Outboard Engine",
+		"category": "Engines",
+		"sub_category": "Outboard Engines",
 		"sub_category_ordinal": 1
 	}
     },
@@ -515,8 +510,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "230HP Outboard Engine R/L", 
         "palette_coordinates": {
-		"category": "Engine",
-		"sub_category": "Outboard Engine",
+		"category": "Engines",
+		"sub_category": "Outboard Engines",
 		"sub_category_ordinal": 2
 	}
     },
@@ -536,8 +531,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "400HP Outboard Engine R/L", 
         "palette_coordinates": {
-		"category": "Engine",
-		"sub_category": "Outboard Engine",
+		"category": "Engines",
+		"sub_category": "Outboard Engines",
 		"sub_category_ordinal": 3
 	}
     },
@@ -557,8 +552,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "600HP Outboard Engine R/L", 
         "palette_coordinates": {
-		"category": "Engine",
-		"sub_category": "Outboard Engine",
+		"category": "Engines",
+		"sub_category": "Outboard Engines",
 		"sub_category_ordinal": 4
 	}
     },
@@ -577,8 +572,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "1000HP Outboard Engine R/L", 
         "palette_coordinates": {
-		"category": "Engine",
-		"sub_category": "Outboard Engine",
+		"category": "Engines",
+		"sub_category": "Outboard Engines",
 		"sub_category_ordinal": 5
 	}
     },
@@ -597,8 +592,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "600HP Outboard Engine U/D", 
         "palette_coordinates": {
-		"category": "Engine",
-		"sub_category": "Outboard Engine",
+		"category": "Engines",
+		"sub_category": "Outboard Engines",
 		"sub_category_ordinal": 6
 	}
     },
@@ -619,8 +614,8 @@
         "minimum_operating_temperature": 173.15,
         "name": "Engine Controller", 
         "palette_coordinates": {
-		"category": "Engine",
-		"sub_category": "Engine Controller",
+		"category": "Engines",
+		"sub_category": "Engine Controllers",
 		"sub_category_ordinal": 0
 	}
     },
@@ -640,8 +635,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "1000HP Diesel Engine R/L", 
         "palette_coordinates": {
-		"category": "Engine",
-		"sub_category": "Diesel Engine",
+		"category": "Engines",
+		"sub_category": "Diesel Engines",
 		"sub_category_ordinal": 0
 	}
     },
@@ -660,8 +655,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "2000HP Diesel Engine R/L", 
         "palette_coordinates": {
-		"category": "Engine",
-		"sub_category": "Diesel Engine",
+		"category": "Engines",
+		"sub_category": "Diesel Engines",
 		"sub_category_ordinal": 1
 	}
     },
@@ -680,8 +675,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "6000HP Diesel Engine R/L", 
         "palette_coordinates": {
-		"category": "Engine",
-		"sub_category": "Diesel Engine",
+		"category": "Engines",
+		"sub_category": "Diesel Engines",
 		"sub_category_ordinal": 2
 	}
     },
@@ -701,8 +696,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "550HP Steam Engine R/L", 
         "palette_coordinates": {
-		"category": "Engine",
-		"sub_category": "Steam Engine",
+		"category": "Engines",
+		"sub_category": "Steam Engines",
 		"sub_category_ordinal": 0
 	}
     },
@@ -722,8 +717,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "1300HP Steam Engine R/L", 
         "palette_coordinates": {
-		"category": "Engine",
-		"sub_category": "Steam Engine",
+		"category": "Engines",
+		"sub_category": "Steam Engines",
 		"sub_category_ordinal": 1
 	}
     },
@@ -743,8 +738,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "1300HP Steam Engine U/D", 
         "palette_coordinates": {
-		"category": "Engine",
-		"sub_category": "Steam Engine",
+		"category": "Engines",
+		"sub_category": "Steam Engines",
 		"sub_category_ordinal": 2
 	}
     },
@@ -764,8 +759,8 @@
         "minimum_operating_temperature": 0.0, 
         "name": "4000HP Steam Engine R/L", 
         "palette_coordinates": {
-		"category": "Engine",
-		"sub_category": "Steam Engine",
+		"category": "Engines",
+		"sub_category": "Steam Engines",
 		"sub_category_ordinal": 3
 	}
     },
@@ -785,8 +780,8 @@
         "name": "Horn 1", 
 	"ship_sound_type": "Horn1",
         "palette_coordinates": {
-		"category": "Sound",
-		"sub_category": "Horn",
+		"category": "Sounds",
+		"sub_category": "Horns",
 		"sub_category_ordinal": 0
 	}
     },
@@ -803,8 +798,8 @@
         "name": "Horn 2", 
 	"ship_sound_type": "Horn2",
         "palette_coordinates": {
-		"category": "Sound",
-		"sub_category": "Horn",
+		"category": "Sounds",
+		"sub_category": "Horns",
 		"sub_category_ordinal": 1
 	}
     },
@@ -821,8 +816,8 @@
         "name": "Horn 3", 
 	"ship_sound_type": "Horn3",
         "palette_coordinates": {
-		"category": "Sound",
-		"sub_category": "Horn",
+		"category": "Sounds",
+		"sub_category": "Horns",
 		"sub_category_ordinal": 2
 	}
     },
@@ -839,8 +834,8 @@
         "name": "Horn 4", 
 	"ship_sound_type": "Horn4",
         "palette_coordinates": {
-		"category": "Sound",
-		"sub_category": "Horn",
+		"category": "Sounds",
+		"sub_category": "Horns",
 		"sub_category_ordinal": 3
 	}
     },
@@ -857,8 +852,8 @@
         "name": "Bell 1", 
 	"ship_sound_type": "Bell1",
         "palette_coordinates": {
-		"category": "Sound",
-		"sub_category": "Bell",
+		"category": "Sounds",
+		"sub_category": "Bells",
 		"sub_category_ordinal": 0
 	}
     },
@@ -875,8 +870,8 @@
         "name": "Bell 2", 
 	"ship_sound_type": "Bell2",
         "palette_coordinates": {
-		"category": "Sound",
-		"sub_category": "Bell",
+		"category": "Sounds",
+		"sub_category": "Bells",
 		"sub_category_ordinal": 1
 	}
     },
@@ -893,8 +888,8 @@
         "name": "Klaxon 1", 
 	"ship_sound_type": "Klaxon1",
         "palette_coordinates": {
-		"category": "Sound",
-		"sub_category": "Klaxon",
+		"category": "Sounds",
+		"sub_category": "Klaxons",
 		"sub_category_ordinal": 0
 	}
     },
@@ -911,8 +906,8 @@
         "name": "Klaxon 1", 
 	"ship_sound_type": "NuclearAlarm1",
         "palette_coordinates": {
-		"category": "Sound",
-		"sub_category": "Nuclear Alarm",
+		"category": "Sounds",
+		"sub_category": "Nuclear Alarms",
 		"sub_category_ordinal": 0
 	}
     },
@@ -927,7 +922,7 @@
         "name": "Heating Element 100KW", 
         "palette_coordinates": {
 		"category": "Other Elements",
-		"sub_category": "Heating Element",
+		"sub_category": "Heating Elements",
 		"sub_category_ordinal": 0
 	}
     }, 
@@ -941,7 +936,7 @@
         "name": "Heating Element 10MW", 
         "palette_coordinates": {
 		"category": "Other Elements",
-		"sub_category": "Heating Element",
+		"sub_category": "Heating Elements",
 		"sub_category_ordinal": 1
 	}
     }, 
@@ -958,7 +953,7 @@
 	"particle_emission_rate": 0.05,
         "palette_coordinates": {
 		"category": "Other Elements",
-		"sub_category": "Smoke Emitter",
+		"sub_category": "Smoke Emitters",
 		"sub_category_ordinal": 0
 	}
     },
@@ -975,7 +970,7 @@
         "name": "Power Monitor", 
         "palette_coordinates": {
 		"category": "Other Elements",
-		"sub_category": "Power Monitor",
+		"sub_category": "Power Monitors",
 		"sub_category_ordinal": 0
 	}
     },
@@ -992,7 +987,7 @@
         "name": "Water Pump In", 
         "palette_coordinates": {
 		"category": "Other Elements",
-		"sub_category": "Water Pump",
+		"sub_category": "Water Pumps",
 		"sub_category_ordinal": 0
 	},
 	"water_pump_nominal_force": 3.0
@@ -1010,7 +1005,7 @@
         "name": "Water Pump Out", 
         "palette_coordinates": {
 		"category": "Other Elements",
-		"sub_category": "Water Pump",
+		"sub_category": "Water Pumps",
 		"sub_category_ordinal": 1
 	},
 	"water_pump_nominal_force": -3.0
@@ -1028,7 +1023,7 @@
         "name": "Watertight Door", 
         "palette_coordinates": {
 		"category": "Other Elements",
-		"sub_category": "Watertight Door",
+		"sub_category": "Watertight Doors",
 		"sub_category_ordinal": 0
 	}
     }
@@ -1036,61 +1031,60 @@
 
   "palette_categories": [
     {
-	"category": "Generator",
+	"category": "Generators",
         "sub_categories": [
-	  "Generator"
+	  "Generators"
 	]
     },
     {
-	"category": "Cable",
+	"category": "Cables",
         "sub_categories": [
-	  "Cable",
-	  "Cable Hull"
+	  "Cables"
 	]
     },
     {
-	"category": "Switch",
+	"category": "Switches",
         "sub_categories": [
-	  "Interactive Switch",
-	  "Push Switch",
-	  "Water Switch"
+	  "Interactive Switches",
+	  "Push Switches",
+	  "Water Switches"
 	]
     },
     {
-	"category": "Lamp",
+	"category": "Lamps",
         "sub_categories": [
-	  "Lamp",
-	  "Self-Powered Lamp",
-	  "Porthole",
-	  "Self-Powered Porthole"
+	  "Lamps",
+	  "Self-Powered Lamps",
+	  "Portholes",
+	  "Self-Powered Portholes"
 	]
     },
     {
-	"category": "Engine",
+	"category": "Engines",
         "sub_categories": [
-	  "Outboard Engine",
-	  "Diesel Engine",
-	  "Steam Engine",
-	  "Engine Controller"
+	  "Outboard Engines",
+	  "Diesel Engines",
+	  "Steam Engines",
+	  "Engine Controllers"
 	]
     },
     {
-	"category": "Sound",
+	"category": "Sounds",
         "sub_categories": [
-	  "Horn",
-	  "Bell",
-	  "Klaxon",
-	  "Nuclear Alarm"
+	  "Horns",
+	  "Bells",
+	  "Klaxons",
+	  "Nuclear Alarms"
 	]
     },
     {
 	"category": "Other Elements",
         "sub_categories": [
-	  "Heating Element",
-	  "Smoke Emitter",
-	  "Power Monitor",
-	  "Water Pump",
-	  "Watertight Door"
+	  "Heating Elements",
+	  "Smoke Emitters",
+	  "Power Monitors",
+	  "Water Pumps",
+	  "Watertight Doors"
 	]
     }
   ]
