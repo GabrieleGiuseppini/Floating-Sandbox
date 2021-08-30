@@ -11,11 +11,12 @@
         "luminiscence": 1.0, 
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
-        "name": "High Lamp Watertight", 
-        "template": {
-            "column": "0|High Lamp WT", 
-            "row": "0|Lamps"
-        }, 
+        "name": "High Lamp Watertight",
+	"palette_coordinates": {
+		"category": "Lamp",
+		"sub_category": "Lamp",
+		"sub_category_ordinal": 0
+	},
         "wet_failure_rate": 0.0
     }, 
     {
@@ -30,10 +31,11 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "High Lamp", 
-        "template": {
-            "column": "1|High Lamp", 
-            "row": "0|Lamps"
-        }, 
+	"palette_coordinates": {
+		"category": "Lamp",
+		"sub_category": "Lamp",
+		"sub_category_ordinal": 1
+	},
         "wet_failure_rate": 4.5
     }, 
     {
@@ -48,10 +50,11 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Low Lamp Watertight", 
-        "template": {
-            "column": "2|Low Lamp WT", 
-            "row": "0|Lamps"
-        }, 
+	"palette_coordinates": {
+		"category": "Lamp",
+		"sub_category": "Lamp",
+		"sub_category_ordinal": 2
+	},
         "wet_failure_rate": 0.0
     }, 
     {
@@ -66,12 +69,33 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Low Lamp", 
-        "template": {
-            "column": "3|Low Lamp", 
-            "row": "0|Lamps"
-        }, 
+	"palette_coordinates": {
+		"category": "Lamp",
+		"sub_category": "Lamp",
+		"sub_category_ordinal": 3
+	},
         "wet_failure_rate": 3.0
     }, 
+    {
+        "color_key": "#FFE018",
+	"conducts_electricity": true,
+        "electrical_type": "Lamp", 
+        "heat_generated": 2400.0, 
+        "is_self_powered": false, 
+        "light_color": "#FFFF40", 
+        "light_spread": 9.0, 
+        "luminiscence": 1.0, 
+        "maximum_operating_temperature": 698.15, 
+        "minimum_operating_temperature": 173.15, 
+        "name": "Heat-Resistant Lamp Watertight", 
+        "palette_coordinates": {
+		"category": "Lamp",
+		"sub_category": "Lamp",
+		"sub_category_ordinal": 4
+	},
+        "wet_failure_rate": 0.0
+    }, 
+
     {
         "color_key": "#EFE010",
 	"conducts_electricity": true,
@@ -84,10 +108,11 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Porthole Watertight", 
-        "template": {
-            "column": "4|Porthole WT", 
-            "row": "0|Lamps"
-        }, 
+	"palette_coordinates": {
+		"category": "Lamp",
+		"sub_category": "Porthole",
+		"sub_category_ordinal": 0
+	},
         "wet_failure_rate": 0.0
     }, 
     {
@@ -102,10 +127,11 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Porthole", 
-        "template": {
-            "column": "5|Porthole", 
-            "row": "0|Lamps"
-        }, 
+        "palette_coordinates": {
+		"category": "Lamp",
+		"sub_category": "Porthole",
+		"sub_category_ordinal": 1
+	},
         "wet_failure_rate": 3.0
     }, 
     {
@@ -120,10 +146,11 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Self-Powered High Lamp Watertight", 
-        "template": {
-            "column": "0|High Lamp WT", 
-            "row": "1|Self-Powered Lamps"
-        }, 
+        "palette_coordinates": {
+		"category": "Lamp",
+		"sub_category": "Self-Powered Lamp",
+		"sub_category_ordinal": 0
+	},
         "wet_failure_rate": 0.0
     }, 
     {
@@ -138,10 +165,11 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Self-Powered High Lamp", 
-        "template": {
-            "column": "1|High Lamp", 
-            "row": "1|Self-Powered Lamps"
-        }, 
+        "palette_coordinates": {
+		"category": "Lamp",
+		"sub_category": "Self-Powered Lamp",
+		"sub_category_ordinal": 1
+	},
         "wet_failure_rate": 4.5
     }, 
     {
@@ -156,10 +184,11 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Self-Powered Low Lamp Watertight", 
-        "template": {
-            "column": "2|Low Lamp WT", 
-            "row": "1|Self-Powered Lamps"
-        }, 
+        "palette_coordinates": {
+		"category": "Lamp",
+		"sub_category": "Self-Powered Lamp",
+		"sub_category_ordinal": 2
+	},
         "wet_failure_rate": 0.0
     }, 
     {
@@ -174,12 +203,14 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Self-Powered Low Lamp", 
-        "template": {
-            "column": "3|Low Lamp", 
-            "row": "1|Self-Powered Lamps"
-        }, 
+        "palette_coordinates": {
+		"category": "Lamp",
+		"sub_category": "Self-Powered Lamp",
+		"sub_category_ordinal": 3
+	},
         "wet_failure_rate": 3.0
     }, 
+    
     {
         "color_key": "#EFFF00",
 	"conducts_electricity": true,
@@ -192,10 +223,11 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Self-Powered Porthole Watertight", 
-        "template": {
-            "column": "4|Porthole WT", 
-            "row": "1|Self-Powered Lamps"
-        }, 
+        "palette_coordinates": {
+		"category": "Lamp",
+		"sub_category": "Self-Powered Porthole",
+		"sub_category_ordinal": 0
+	},
         "wet_failure_rate": 0.0
     }, 
     {
@@ -210,10 +242,11 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Self-Powered Porthole", 
-        "template": {
-            "column": "5|Porthole", 
-            "row": "1|Self-Powered Lamps"
-        }, 
+       "palette_coordinates": {
+		"category": "Lamp",
+		"sub_category": "Self-Powered Porthole",
+		"sub_category_ordinal": 1
+	},
         "wet_failure_rate": 3.0
     }, 
     {
@@ -225,10 +258,11 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Non-Instanced Generator", 
-        "template": {
-            "column": "0|NI Generator", 
-            "row": "5|Generators"
-        }
+        "palette_coordinates": {
+		"category": "Generator",
+		"sub_category": "Generator",
+		"sub_category_ordinal": 0
+	}
     }, 
     {
         "color_key": "#FC1800",
@@ -239,10 +273,11 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Generator",
-        "template": {
-            "column": "1|Generator", 
-            "row": "5|Generators"
-        }
+        "palette_coordinates": {
+		"category": "Generator",
+		"sub_category": "Generator",
+		"sub_category_ordinal": 1
+	}
     }, 
     {
         "color_key": "#FC1010",
@@ -253,29 +288,13 @@
         "maximum_operating_temperature": 698.15, 
         "minimum_operating_temperature": 173.15, 
         "name": "Heat-Resistant Generator", 
-        "template": {
-            "column": "2|HR Generator", 
-            "row": "5|Generators"
-        }
+        "palette_coordinates": {
+		"category": "Generator",
+		"sub_category": "Generator",
+		"sub_category_ordinal": 2
+	}
     }, 
-    {
-        "color_key": "#FFE018",
-	"conducts_electricity": true,
-        "electrical_type": "Lamp", 
-        "heat_generated": 2400.0, 
-        "is_self_powered": false, 
-        "light_color": "#FFFF40", 
-        "light_spread": 9.0, 
-        "luminiscence": 1.0, 
-        "maximum_operating_temperature": 698.15, 
-        "minimum_operating_temperature": 173.15, 
-        "name": "Heat-Resistant Lamp Watertight", 
-        "template": {
-            "column": "6|HR Lamp WT", 
-            "row": "0|Lamps"
-        }, 
-        "wet_failure_rate": 0.0
-    }, 
+    
 
     {
         "color_key": "#700000",
@@ -285,10 +304,11 @@
         "maximum_operating_temperature": 1000000.0, 
         "minimum_operating_temperature": 0.0, 
         "name": "Electrical Cable", 
-        "template": {
-            "column": "0|Cable", 
-            "row": "6|Cables"
-        }
+        "palette_coordinates": {
+		"category": "Cable",
+		"sub_category": "Cable",
+		"sub_category_ordinal": 0
+	}
     },
     {
         "color_key": "#4C0000",
@@ -300,10 +320,11 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Electrical Cable Hull", 
-        "template": {
-            "column": "1|Cable Hull", 
-            "row": "6|Cables"
-        }
+        "palette_coordinates": {
+		"category": "Cable",
+		"sub_category": "Cable Hull",
+		"sub_category_ordinal": 0
+	}
     }, 
     
 
@@ -317,10 +338,11 @@
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
         "name": "Interactive Toggle Switch ON",
-        "template": {
-            "column": "0|Toggle Switch ON",
-            "row": "8|Switches"
-        }
+        "palette_coordinates": {
+		"category": "Switch",
+		"sub_category": "Interactive Switch",
+		"sub_category_ordinal": 0
+	}
     }, 
     {
         "color_key": "#104000",
@@ -332,10 +354,11 @@
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
         "name": "Interactive Toggle Switch OFF",
-        "template": {
-            "column": "1|Toggle Switch OFF",
-            "row": "8|Switches"
-        }
+        "palette_coordinates": {
+		"category": "Switch",
+		"sub_category": "Interactive Switch",
+		"sub_category_ordinal": 1
+	}
     }, 
 
     {
@@ -348,10 +371,11 @@
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
         "name": "Interactive Push Switch ON",
-        "template": {
-            "column": "2|Push Switch ON",
-            "row": "8|Switches"
-        }
+        "palette_coordinates": {
+		"category": "Switch",
+		"sub_category": "Push Switch",
+		"sub_category_ordinal": 0
+	}
     }, 
     {
         "color_key": "#184800",
@@ -363,10 +387,11 @@
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
         "name": "Interactive Push Switch OFF",
-        "template": {
-            "column": "3|Push Switch OFF",
-            "row": "8|Switches"
-        }
+        "palette_coordinates": {
+		"category": "Switch",
+		"sub_category": "Push Switch",
+		"sub_category_ordinal": 1
+	}
     }, 
 
     {
@@ -378,10 +403,11 @@
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
         "name": "Water Sensing Switch ON",
-        "template": {
-            "column": "4|Water Switch ON",
-            "row": "8|Switches"
-        }
+        "palette_coordinates": {
+		"category": "Switch",
+		"sub_category": "Water Switch",
+		"sub_category_ordinal": 0
+	}
     }, 
     {
         "color_key": "#186000",
@@ -392,10 +418,11 @@
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
         "name": "Water Sensing Switch OFF",
-        "template": {
-            "column": "5|Water Switch OFF",
-            "row": "8|Switches"
-        }
+        "palette_coordinates": {
+		"category": "Switch",
+		"sub_category": "Water Switch",
+		"sub_category_ordinal": 1
+	}
     },
 
     {
@@ -407,10 +434,11 @@
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
         "name": "Non-Instanced Water Sensing Switch ON",
-        "template": {
-            "column": "6|NI Water Switch ON",
-            "row": "8|Switches"
-        }
+        "palette_coordinates": {
+		"category": "Switch",
+		"sub_category": "Water Switch",
+		"sub_category_ordinal": 2
+	}
     }, 
     {
         "color_key": "#187000",
@@ -421,10 +449,11 @@
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
         "name": "Non-Instanced Water Sensing Switch OFF",
-        "template": {
-            "column": "7|NI Water Switch OFF",
-            "row": "8|Switches"
-        }
+        "palette_coordinates": {
+		"category": "Switch",
+		"sub_category": "Water Switch",
+		"sub_category_ordinal": 3
+	}
     },
 
 
@@ -443,10 +472,11 @@
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
         "name": "50HP Outboard Engine R/L", 
-        "template": {
-            "column": "0|50HP Outboard R/L",
-            "row": "10|Outboard Engines"
-        }
+	"palette_coordinates": {
+		"category": "Engine",
+		"sub_category": "Outboard Engine",
+		"sub_category_ordinal": 0
+	}
     },
 
     {
@@ -463,10 +493,11 @@
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
         "name": "130HP Outboard Engine R/L", 
-        "template": {
-            "column": "1|130HP Outboard R/L",
-            "row": "10|Outboard Engines"
-        }
+        "palette_coordinates": {
+		"category": "Engine",
+		"sub_category": "Outboard Engine",
+		"sub_category_ordinal": 1
+	}
     },
 
     {
@@ -483,10 +514,11 @@
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
         "name": "230HP Outboard Engine R/L", 
-        "template": {
-            "column": "2|230HP Outboard R/L",
-            "row": "10|Outboard Engines"
-        }
+        "palette_coordinates": {
+		"category": "Engine",
+		"sub_category": "Outboard Engine",
+		"sub_category_ordinal": 2
+	}
     },
 
     {
@@ -503,10 +535,11 @@
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
         "name": "400HP Outboard Engine R/L", 
-        "template": {
-            "column": "3|400HP Outboard R/L",
-            "row": "10|Outboard Engines"
-        }
+        "palette_coordinates": {
+		"category": "Engine",
+		"sub_category": "Outboard Engine",
+		"sub_category_ordinal": 3
+	}
     },
 
     {
@@ -523,10 +556,11 @@
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
         "name": "600HP Outboard Engine R/L", 
-        "template": {
-            "column": "4|600HP Outboard R/L",
-            "row": "10|Outboard Engines"
-        }
+        "palette_coordinates": {
+		"category": "Engine",
+		"sub_category": "Outboard Engine",
+		"sub_category_ordinal": 4
+	}
     },
     {
         "color_key": "#30E900",
@@ -542,10 +576,11 @@
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
         "name": "1000HP Outboard Engine R/L", 
-        "template": {
-            "column": "5|1000HP Outboard R/L",
-            "row": "10|Outboard Engines"
-        }
+        "palette_coordinates": {
+		"category": "Engine",
+		"sub_category": "Outboard Engine",
+		"sub_category_ordinal": 5
+	}
     },
     {
         "color_key": "#30EA00",
@@ -561,10 +596,11 @@
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
         "name": "600HP Outboard Engine U/D", 
-        "template": {
-            "column": "6|1000HP Outboard U/D",
-            "row": "10|Outboard Engines"
-        }
+        "palette_coordinates": {
+		"category": "Engine",
+		"sub_category": "Outboard Engine",
+		"sub_category_ordinal": 6
+	}
     },
 
 
@@ -582,10 +618,11 @@
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
         "name": "Engine Controller", 
-        "template": {
-            "column": "0|Engine Controller", 
-            "row": "12|Misc Engines"
-        }
+        "palette_coordinates": {
+		"category": "Engine",
+		"sub_category": "Engine Controller",
+		"sub_category_ordinal": 0
+	}
     },
 
     {
@@ -602,10 +639,11 @@
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
         "name": "1000HP Diesel Engine R/L", 
-        "template": {
-            "column": "1|1000HP Diesel R/L",
-            "row": "12|Misc Engines"
-        }
+        "palette_coordinates": {
+		"category": "Engine",
+		"sub_category": "Diesel Engine",
+		"sub_category_ordinal": 0
+	}
     },
     {
         "color_key": "#30EC00",
@@ -621,10 +659,11 @@
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
         "name": "2000HP Diesel Engine R/L", 
-        "template": {
-            "column": "2|2000HP Diesel R/L",
-            "row": "12|Misc Engines"
-        }
+        "palette_coordinates": {
+		"category": "Engine",
+		"sub_category": "Diesel Engine",
+		"sub_category_ordinal": 1
+	}
     },
     {
         "color_key": "#30ED00",
@@ -640,10 +679,11 @@
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
         "name": "6000HP Diesel Engine R/L", 
-        "template": {
-            "column": "3|6000HP Diesel R/L",
-            "row": "12|Misc Engines"
-        }
+        "palette_coordinates": {
+		"category": "Engine",
+		"sub_category": "Diesel Engine",
+		"sub_category_ordinal": 2
+	}
     },
 
     {
@@ -660,10 +700,11 @@
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
         "name": "550HP Steam Engine R/L", 
-        "template": {
-            "column": "4|550HP Steam R/L",
-            "row": "12|Misc Engines"
-        }
+        "palette_coordinates": {
+		"category": "Engine",
+		"sub_category": "Steam Engine",
+		"sub_category_ordinal": 0
+	}
     },
 
     {
@@ -680,10 +721,11 @@
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
         "name": "1300HP Steam Engine R/L", 
-        "template": {
-            "column": "5|1300HP Steam R/L",
-            "row": "12|Misc Engines"
-        }
+        "palette_coordinates": {
+		"category": "Engine",
+		"sub_category": "Steam Engine",
+		"sub_category_ordinal": 1
+	}
     },
 
     {
@@ -700,10 +742,11 @@
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
         "name": "1300HP Steam Engine U/D", 
-        "template": {
-            "column": "6|1300HP Steam U/D",
-            "row": "12|Misc Engines"
-        }
+        "palette_coordinates": {
+		"category": "Engine",
+		"sub_category": "Steam Engine",
+		"sub_category_ordinal": 2
+	}
     },
 
     {
@@ -720,10 +763,11 @@
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
         "name": "4000HP Steam Engine R/L", 
-        "template": {
-            "column": "7|4000HP Steam R/L",
-            "row": "12|Misc Engines"
-        }
+        "palette_coordinates": {
+		"category": "Engine",
+		"sub_category": "Steam Engine",
+		"sub_category_ordinal": 3
+	}
     },
 
 
@@ -740,10 +784,11 @@
         "minimum_operating_temperature": 0.0, 
         "name": "Horn 1", 
 	"ship_sound_type": "Horn1",
-        "template": {
-            "column": 0, 
-            "row": "15|Horns"
-        }
+        "palette_coordinates": {
+		"category": "Sound",
+		"sub_category": "Horn",
+		"sub_category_ordinal": 0
+	}
     },
 
     {
@@ -757,10 +802,11 @@
         "minimum_operating_temperature": 0.0, 
         "name": "Horn 2", 
 	"ship_sound_type": "Horn2",
-        "template": {
-            "column": 1, 
-            "row": "15|Horns"
-        }
+        "palette_coordinates": {
+		"category": "Sound",
+		"sub_category": "Horn",
+		"sub_category_ordinal": 1
+	}
     },
 
     {
@@ -774,10 +820,11 @@
         "minimum_operating_temperature": 0.0, 
         "name": "Horn 3", 
 	"ship_sound_type": "Horn3",
-        "template": {
-            "column": 2, 
-            "row": "15|Horns"
-        }
+        "palette_coordinates": {
+		"category": "Sound",
+		"sub_category": "Horn",
+		"sub_category_ordinal": 2
+	}
     },
 
     {
@@ -791,10 +838,11 @@
         "minimum_operating_temperature": 0.0, 
         "name": "Horn 4", 
 	"ship_sound_type": "Horn4",
-        "template": {
-            "column": 3, 
-            "row": "15|Horns"
-        }
+        "palette_coordinates": {
+		"category": "Sound",
+		"sub_category": "Horn",
+		"sub_category_ordinal": 3
+	}
     },
 
     {
@@ -808,10 +856,11 @@
         "minimum_operating_temperature": 0.0, 
         "name": "Bell 1", 
 	"ship_sound_type": "Bell1",
-        "template": {
-            "column": 4, 
-            "row": "15|Bells"
-        }
+        "palette_coordinates": {
+		"category": "Sound",
+		"sub_category": "Bell",
+		"sub_category_ordinal": 0
+	}
     },
 
     {
@@ -825,10 +874,11 @@
         "minimum_operating_temperature": 0.0, 
         "name": "Bell 2", 
 	"ship_sound_type": "Bell2",
-        "template": {
-            "column": 5, 
-            "row": "15|Bells"
-        }
+        "palette_coordinates": {
+		"category": "Sound",
+		"sub_category": "Bell",
+		"sub_category_ordinal": 1
+	}
     },
 
     {
@@ -842,10 +892,11 @@
         "minimum_operating_temperature": 0.0, 
         "name": "Klaxon 1", 
 	"ship_sound_type": "Klaxon1",
-        "template": {
-            "column": 6, 
-            "row": "15|Klaxon"
-        }
+        "palette_coordinates": {
+		"category": "Sound",
+		"sub_category": "Klaxon",
+		"sub_category_ordinal": 0
+	}
     },
 
 	{
@@ -859,10 +910,11 @@
         "minimum_operating_temperature": 0.0, 
         "name": "Klaxon 1", 
 	"ship_sound_type": "NuclearAlarm1",
-        "template": {
-            "column": 7, 
-            "row": "15|Nuclear Alarm"
-        }
+        "palette_coordinates": {
+		"category": "Sound",
+		"sub_category": "Nuclear Alarm",
+		"sub_category_ordinal": 0
+	}
     },
 
     {
@@ -873,10 +925,11 @@
         "maximum_operating_temperature": 1783.15, 
         "minimum_operating_temperature": 173.15, 
         "name": "Heating Element 100KW", 
-        "template": {
-            "column": "0|Heating Element 100KW", 
-            "row": "20|Misc"
-        }
+        "palette_coordinates": {
+		"category": "Other Elements",
+		"sub_category": "Heating Element",
+		"sub_category_ordinal": 0
+	}
     }, 
     {
         "color_key": "#FC3030",
@@ -886,10 +939,11 @@
         "maximum_operating_temperature": 1783.15, 
         "minimum_operating_temperature": 173.15, 
         "name": "Heating Element 10MW", 
-        "template": {
-            "column": "1|Heating Element 10MW", 
-            "row": "20|Misc"
-        }
+        "palette_coordinates": {
+		"category": "Other Elements",
+		"sub_category": "Heating Element",
+		"sub_category_ordinal": 1
+	}
     }, 
 
     {
@@ -902,10 +956,11 @@
         "minimum_operating_temperature": 0.0, 
         "name": "Smoke Emitter", 
 	"particle_emission_rate": 0.05,
-        "template": {
-            "column": "2|Smoke Emitter", 
-            "row": "20|Misc"
-        }
+        "palette_coordinates": {
+		"category": "Other Elements",
+		"sub_category": "Smoke Emitter",
+		"sub_category_ordinal": 0
+	}
     },
 
     {
@@ -918,10 +973,11 @@
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
         "name": "Power Monitor", 
-        "template": {
-            "column": "3|Power Monitor", 
-            "row": "20|Misc"
-        }
+        "palette_coordinates": {
+		"category": "Other Elements",
+		"sub_category": "Power Monitor",
+		"sub_category_ordinal": 0
+	}
     },
 
     {
@@ -934,10 +990,11 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Water Pump In", 
-        "template": {
-            "column": "4|Water Pump In", 
-            "row": "20|Misc"
-        },
+        "palette_coordinates": {
+		"category": "Other Elements",
+		"sub_category": "Water Pump",
+		"sub_category_ordinal": 0
+	},
 	"water_pump_nominal_force": 3.0
     },
 
@@ -951,10 +1008,11 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Water Pump Out", 
-        "template": {
-            "column": "5|Water Pump Out", 
-            "row": "20|Misc"
-        },
+        "palette_coordinates": {
+		"category": "Other Elements",
+		"sub_category": "Water Pump",
+		"sub_category_ordinal": 1
+	},
 	"water_pump_nominal_force": -3.0
     },
 
@@ -968,29 +1026,71 @@
         "maximum_operating_temperature": 398.15, 
         "minimum_operating_temperature": 233.15, 
         "name": "Watertight Door", 
-        "template": {
-            "column": "6|Watertight Door",
-            "row": "20|Misc"
-        }
+        "palette_coordinates": {
+		"category": "Other Elements",
+		"sub_category": "Watertight Door",
+		"sub_category_ordinal": 0
+	}
     }
   ],
 
   "palette_categories": [
     {
-	"category": "TODO",
+	"category": "Generator",
         "sub_categories": [
-	  "Iron Hull",
-	  "Iron",
-	  "Steel Hull",
-	  "Steel"
+	  "Generator"
 	]
     },
-
     {
-	"category": "Wood",
+	"category": "Cable",
         "sub_categories": [
-	  "Wood Hull",
-	  "Wood"
+	  "Cable",
+	  "Cable Hull"
+	]
+    },
+    {
+	"category": "Switch",
+        "sub_categories": [
+	  "Interactive Switch",
+	  "Push Switch",
+	  "Water Switch"
+	]
+    },
+    {
+	"category": "Lamp",
+        "sub_categories": [
+	  "Lamp",
+	  "Self-Powered Lamp",
+	  "Porthole",
+	  "Self-Powered Porthole"
+	]
+    },
+    {
+	"category": "Engine",
+        "sub_categories": [
+	  "Outboard Engine",
+	  "Diesel Engine",
+	  "Steam Engine",
+	  "Engine Controller"
+	]
+    },
+    {
+	"category": "Sound",
+        "sub_categories": [
+	  "Horn",
+	  "Bell",
+	  "Klaxon",
+	  "Nuclear Alarm"
+	]
+    },
+    {
+	"category": "Other Elements",
+        "sub_categories": [
+	  "Heating Element",
+	  "Smoke Emitter",
+	  "Power Monitor",
+	  "Water Pump",
+	  "Watertight Door"
 	]
     }
   ]

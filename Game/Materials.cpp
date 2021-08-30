@@ -266,9 +266,7 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
         }
 
         // Palette coordinates
-        // TODOTEST
-        //MaterialPaletteCoordinatesType paletteCoordinates = DeserializePaletteCoordinates(Utils::GetMandatoryJsonObject(electricalMaterialJson, "palette_coordinates"));
-        std::optional<MaterialPaletteCoordinatesType> paletteCoordinates;
+        MaterialPaletteCoordinatesType paletteCoordinates = DeserializePaletteCoordinates(Utils::GetMandatoryJsonObject(electricalMaterialJson, "palette_coordinates"));
 
         return ElectricalMaterial(
             name,

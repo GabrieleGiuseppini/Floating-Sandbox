@@ -1316,7 +1316,7 @@
         "melting_temperature": 1000000.0,
         "name": "Water",
 	"palette_coordinates": {
-		"category": "Other Materials",
+		"category": "Elements",
 		"sub_category": "Water",
 		"sub_category_ordinal": 0
 	},
@@ -1345,7 +1345,7 @@
         "melting_temperature": 1000000.0,
         "name": "Air",
 	"palette_coordinates": {
-		"category": "Other Materials",
+		"category": "Elements",
 		"sub_category": "Air",
 		"sub_category_ordinal": 0
 	},
@@ -1376,7 +1376,7 @@
         "melting_temperature": 1000000.0,
         "name": "Hydrogen",
 	"palette_coordinates": {
-		"category": "Gas",
+		"category": "Elements",
 		"sub_category": "Hydrogen",
 		"sub_category_ordinal": 0
 	},
@@ -1720,18 +1720,127 @@
     {
 	"category": "Metal",
         "sub_categories": [
-	  "Iron Hull",
 	  "Iron",
+	  "Iron Hull",
+	  "Double-Bottom Iron",
+	  "Structural Iron",
+	  "Iron Cheap",
+	  "Steel",
 	  "Steel Hull",
-	  "Steel"
+	  "Stainless Steel",
+	  "Stainless Steel Hull",
+	  "Double-Bottom Steel",
+	  "Structural Steel",
+	  "Steel Cheap",
+	  "Titanium",
+	  "Titanium Hull",
+	  "Double-Bottom Titanium",
+	  "Aluminium",
+	  "Aluminium Hull",
+	  "Structural Aluminium",
+	  "Aluminium Sheet",
+	  "Aluminium Sheet Hull",
+	  "Aluminium Cheap",
+	  "Nails"
 	]
     },
 
     {
 	"category": "Wood",
         "sub_categories": [
+	  "Wood",
 	  "Wood Hull",
-	  "Wood"
+	  "Double-Bottom Wood"
+	]
+    },
+
+    {
+	"category": "Plastic",
+        "sub_categories": [
+	  "Fiberglass",
+	  "Fiberglass Hull",
+	  "LEGO (ABS)",
+	  "LEGO Hull (ABS)",
+	  "Mylar",
+	  "Mylar Hull",
+	  "Styrofoam",
+	  "Styrofoam Hull"
+	]
+    },
+
+    {
+	"category": "Rubber",
+        "sub_categories": [
+	  "Rubber Soft",
+	  "Rubber Hard",
+	  "Rubber Hull Soft",
+	  "Rubber Hull Hard"
+	]
+    },
+
+    {
+	"category": "Glass",
+        "sub_categories": [
+	  "Glass",
+	  "Glass Hull"
+	]
+    },
+
+    {
+	"category": "Carbon",
+        "sub_categories": [
+	  "Carbon",
+	  "Carbon Hull"
+	]
+    },
+
+    {
+	"category": "Concrete",
+        "sub_categories": [
+	  "Concrete",
+	  "Concrete Hull"
+	]
+    },
+
+    {
+	"category": "Cloth",
+        "sub_categories": [
+	  "Cloth"
+	]
+    },
+
+    {
+	"category": "Cardboard and Paper",
+        "sub_categories": [
+	  "Cardboard",
+	  "Cardboard Hull",
+	  "Paper",
+	  "Paper Hull"
+	]
+    },
+
+    {
+	"category": "Rope",
+        "sub_categories": [
+	  "Rope"
+	]
+    },
+
+    {
+	"category": "Elements",
+        "sub_categories": [
+	  "Air",
+	  "Hydrogen",
+	  "Water"
+	]
+    },
+
+    {
+	"category": "Other Materials",
+        "sub_categories": [
+	  "Diesel",
+	  "Gunpowder Light",
+	  "Gunpowder Strong"
 	]
     }
   ]

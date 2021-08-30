@@ -252,6 +252,7 @@
 					+ For each material, as they are deserialized
 						+ Invert order: palette structure first
 				+ Multi-key materials: automagically increase ordinal at Material::Parse
+				- Make sure each cat & sub-cat has a material
 				- Complete structural json palette
 				- Also do at Electrical
 				- Python script
@@ -266,8 +267,8 @@
 				- It remembers all bitmaps/images in a map, keyed by material*
 					- These are also exposed via GetMaterialTexture(S/EMaterial*)->Bmp/Imag as a convenience method for FG and BG swaths
 			- Open(wxPoint, GameTypes::Material(Root|Swatch)Type, WorkbenchState &) -> bool
-				- Selects the one from WorkbenchState
-				- If true: has changed, and then SB::MainFrame starts OnWorkbenchStateChanged cascade
+				- Begins selection with the one from WorkbenchState
+				- If returns true: has changed, and then SB::MainFrame starts OnWorkbenchStateChanged cascade
 			- See if it takes so long that we need IProgress
 			- Area with properties of material under cursor
 			- Names of materials and sub-categories
