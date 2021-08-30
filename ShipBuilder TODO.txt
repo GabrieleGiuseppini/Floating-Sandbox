@@ -255,11 +255,16 @@
 				+ Make sure each cat & sub-cat has a material
 				+ Complete structural json palette
 				+ Also do at Electrical
-				- Python script
-			- ShipTexturizer exposes static helper method that does color-blending of one tile of material texture: (material texture file path, render color [check cur code]) -> rgbaImage
+				= Python script
 			- GameController exposes MaterialsDB const &
 			- SB::MainFrame's cctor takes MaterialsDB
 				- Standalone app loads materials DB
+			- TODO: should ShipTexturizer be exported and usable by ShipBuilder in general?
+				- Note: can also have own instance - but then it'd waste memory...
+				- Note: could also be owned by GameController (like MaterialDB, right?) and passed down to ShipBuilder
+			- ShipTexturizer exposes static helper method that does color-blending of one tile of material texture: (material texture file path, render color [check cur code]) -> rgbaImage
+				- TODO: if we end up passing down the instance, then it's not a static method, but an instance method instead
+				- This method also needs to take custom texturization settings
 			- Test if TransientPopup is right choice, rather than dialog
 				- Make Fore & Back swaths, for the time being with silly bitmaps
 			- cctor(MaterialsDB const &, GameTypes::Material(Root|Swatch)Type /*TODO:needed? , WorkbenchState &*/)
