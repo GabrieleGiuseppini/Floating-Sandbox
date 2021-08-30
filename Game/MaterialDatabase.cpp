@@ -210,7 +210,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         ColorKey const colorKey = Utils::Hex2RgbColor(
             Utils::GetMandatoryJsonMember<std::string>(materialObject, "color_key"));
 
-        ElectricalMaterial const material = ElectricalMaterial::Create(materialObject);
+        ElectricalMaterial const material = ElectricalMaterial::Create(0, materialObject);
 
         // Make sure there are no dupes
         if (nonInstancedElectricalMaterialsMap.count(colorKey) != 0

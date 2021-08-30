@@ -252,9 +252,9 @@
 					+ For each material, as they are deserialized
 						+ Invert order: palette structure first
 				+ Multi-key materials: automagically increase ordinal at Material::Parse
-				- Make sure each cat & sub-cat has a material
-				- Complete structural json palette
-				- Also do at Electrical
+				+ Make sure each cat & sub-cat has a material
+				+ Complete structural json palette
+				+ Also do at Electrical
 				- Python script
 			- ShipTexturizer exposes static helper method that does color-blending of one tile of material texture: (material texture file path, render color [check cur code]) -> rgbaImage
 			- GameController exposes MaterialsDB const &

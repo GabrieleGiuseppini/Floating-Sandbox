@@ -166,7 +166,9 @@ StructuralMaterial::MaterialCombustionType StructuralMaterial::StrToMaterialComb
         throw GameException("Unrecognized MaterialCombustionType \"" + str + "\"");
 }
 
-ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electricalMaterialJson)
+ElectricalMaterial ElectricalMaterial::Create(
+    unsigned int ordinal,
+    picojson::object const & electricalMaterialJson)
 {
     std::string name = Utils::GetMandatoryJsonMember<std::string>(electricalMaterialJson, "name");
 
@@ -266,7 +268,13 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
         }
 
         // Palette coordinates
-        MaterialPaletteCoordinatesType paletteCoordinates = DeserializePaletteCoordinates(Utils::GetMandatoryJsonObject(electricalMaterialJson, "palette_coordinates"));
+        std::optional<MaterialPaletteCoordinatesType> paletteCoordinates;
+        auto const & paletteCoordinatesJson = Utils::GetOptionalJsonObject(electricalMaterialJson, "palette_coordinates");
+        if (paletteCoordinatesJson.has_value())
+        {
+            paletteCoordinates = DeserializePaletteCoordinates(*paletteCoordinatesJson);
+            paletteCoordinates->SubCategoryOrdinal += ordinal;
+        }
 
         return ElectricalMaterial(
             name,

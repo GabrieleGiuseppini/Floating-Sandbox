@@ -279,7 +279,9 @@ public:
 
 public:
 
-    static ElectricalMaterial Create(picojson::object const & electricalMaterialJson);
+    static ElectricalMaterial Create(
+        unsigned int ordinal,
+        picojson::object const & electricalMaterialJson);
 
     static ElectricalElementType StrToElectricalElementType(std::string const & str);
 
