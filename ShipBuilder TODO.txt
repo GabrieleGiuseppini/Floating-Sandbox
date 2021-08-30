@@ -227,7 +227,7 @@
 		! We'll use it for popup tools
 		- Takes callback for push, which takes wxPoint
 		- Ideantical to BitmapButton, except for arg of callback
-	= MaterialsPalette (@ShipBuilder): wxPanel
+	= MaterialsPalettePicker (@ShipBuilder): wxPanel
 		- Templated on material type (Structural or Material)
 		- MainFrame owns two instances: Structural and Electrical			
 		- Column 1: scrollable vertical panel with bitmap buttons for selecting category
@@ -252,23 +252,24 @@
 					+ For each material, as they are deserialized
 						+ Invert order: palette structure first
 				+ Multi-key materials: automagically increase ordinal at Material::Parse
+				- Complete structural json palette
 				- Also do at Electrical
 				- Python script
-			- Creation of control based on one of multiple groupings/pivoting
-				- By Category
-				- By Strength: TODO
-			- ShipTexturizer exposes static helper method that does color-blending of material texture: (material texture file path, render color [check cur code]) -> rgbaImage
+			- ShipTexturizer exposes static helper method that does color-blending of one tile of material texture: (material texture file path, render color [check cur code]) -> rgbaImage
 			- GameController exposes MaterialsDB const &
 			- SB::MainFrame's cctor takes MaterialsDB
 				- Standalone app loads materials DB
-			- cctor(MaterialsDB const &, MaterialsPalette::MaterialRootType, WorkbenchState &)
+			- Test if TransientPopup is right choice, rather than dialog
+				- Make Fore & Back swaths, for the time being with silly bitmaps
+			- cctor(MaterialsDB const &, GameTypes::Material(Root|Swatch)Type /*TODO:needed? , WorkbenchState &*/)
 				- Build all panels as grids of static bmps (kinda like BitmapCheckbox)
-			- Open(wxPoint, MaterialsPalette::SwathType) -> bool
-				- If true: SB::MainFrame starts OnWorkbenchStateChanged cascade
-			- MaterialsPalette also exposes GetMaterialTexture(S/EMaterial*)->Bmp as a convenience method for FG and BG displayers
-				- So it remembers all bitmaps in a map, keyed by material*
+				- It remembers all bitmaps/images in a map, keyed by material*
+					- These are also exposed via GetMaterialTexture(S/EMaterial*)->Bmp/Imag as a convenience method for FG and BG swaths
+			- Open(wxPoint, GameTypes::Material(Root|Swatch)Type, WorkbenchState &) -> bool
+				- Selects the one from WorkbenchState
+				- If true: has changed, and then SB::MainFrame starts OnWorkbenchStateChanged cascade
 			- See if it takes so long that we need IProgress
-			- Are with properties of material under cursor
+			- Area with properties of material under cursor
 			- Names of materials and sub-categories
 
 - Ship file format:
