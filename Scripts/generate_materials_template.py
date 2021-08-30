@@ -55,47 +55,33 @@ def main():
     # Visit all rows
     for sub_category in palette:
 
-        #  --- Colors ---
-        html += "<tr>"
+        color_row_html = ""
+        data_row_html = ""
+
         # Title
-        html += "<td valign='middle' align='right' style='padding-right:5px;font-size:10px;'>" + sub_category[0] + "</td>"
-        # Colors
+        color_row_html += "<td valign='middle' align='right' style='padding-right:5px;font-size:10px;'>" + sub_category[0] + "</td>"
+        data_row_html += "<td></td>"
+        
         for m in sub_category[1]:
-            color_key = m["color_key"]
-            if not isinstance(color_key, list):
-                color_key = [color_key]
-            for c in color_key:
-                html += "<td bgcolor='" + c + "'class='border_top' style='width: 50px;'>&nbsp;</td>"
-        html += "</tr>"
 
-        '''
-        # --- Name ---
-        html += "<tr>"
-        html += "<td></td>"
-        for m in sub_category[1]:
+            # Normalize color key
             color_key = m["color_key"]
             if not isinstance(color_key, list):
                 color_key = [color_key]
-            for c in color_key:
-                html += "<td style='font-size:8px;'>" + m["name"] + "</td>"
-        html += "</tr>"
-        '''
 
-        # --- Data ---
-        html += "<tr>"
-        html += "<td></td>"
-        for m in sub_category[1]:
-            color_key = m["color_key"]
-            if not isinstance(color_key, list):
-                color_key = [color_key]
+            # Process all colors
             for c in color_key:
-                html += "<td style='font-size:9px;vertical-align:top'>"
+                # --- Color ---
+                color_row_html += "<td bgcolor='" + c + "'class='border_top' style='width: 50px;'>&nbsp;</td>"
+                # --- Data ---
+                data_row_html += "<td style='font-size:9px;vertical-align:top'>"
                 if is_structural:
-                    html += "{:.2f}".format(m["mass"]["nominal_mass"] * m["mass"]["density"]) + "|" + str(m["strength"]) + "|" + str(m["stiffness"])
+                    data_row_html += "{:.2f}".format(m["mass"]["nominal_mass"] * m["mass"]["density"]) + "|" + str(m["strength"]) + "|" + str(m["stiffness"])
                 else:
-                    html += m["name"]
-                html += "</td>"
-        html += "</tr>"
+                    data_row_html += m["name"]
+                data_row_html += "</td>"
+
+        html += "<tr>" + color_row_html + "</tr><tr>" + data_row_html + "</tr>"
         
     html += "</table>";
     html += "</body></html>";
