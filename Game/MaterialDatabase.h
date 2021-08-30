@@ -59,6 +59,8 @@ public:
         static Palette Parse(picojson::array const & paletteCategoriesJson);
 
         void InsertMaterial(TMaterial const & material, MaterialPaletteCoordinatesType const & paletteCoordinates);
+
+        void CheckComplete();
     };
 
 private:

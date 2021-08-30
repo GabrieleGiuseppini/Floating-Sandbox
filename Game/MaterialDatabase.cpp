@@ -172,6 +172,9 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         }
     }
 
+    // Make sure the palette is fully-populated
+    structuralMaterialPalette.CheckComplete();
+
     //
     // Electrical materials
     //
@@ -209,12 +212,6 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
 
         ElectricalMaterial const material = ElectricalMaterial::Create(materialObject);
 
-        // Validate palette coordinates
-        if (material.PaletteCoordinates.has_value())
-        {
-            // TODOHERE
-        }
-
         // Make sure there are no dupes
         if (nonInstancedElectricalMaterialsMap.count(colorKey) != 0
             || instancedElectricalMaterialsMap.count(colorKey) != 0)
@@ -225,19 +222,35 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         // Store
         if (material.IsInstanced)
         {
-            instancedElectricalMaterialsMap.emplace(
+            auto const storedEntry = instancedElectricalMaterialsMap.emplace(
                 std::make_pair(
                     colorKey,
                     material));
+
+            // Add to palette
+            if (material.PaletteCoordinates.has_value())
+            {
+                electricalMaterialPalette.InsertMaterial(storedEntry.first->second, *material.PaletteCoordinates);
+            }
         }
         else
         {
-            nonInstancedElectricalMaterialsMap.emplace(
+            auto const storedEntry = nonInstancedElectricalMaterialsMap.emplace(
                 std::make_pair(
                     colorKey,
                     material));
+
+            // Add to palette
+            if (material.PaletteCoordinates.has_value())
+            {
+                electricalMaterialPalette.InsertMaterial(storedEntry.first->second, *material.PaletteCoordinates);
+            }
         }
     }
+
+    // Make sure the palette is fully-populated
+    electricalMaterialPalette.CheckComplete();
+
 
     //
     // Make sure there are no structural materials whose key appears
@@ -356,4 +369,26 @@ void MaterialDatabase::Palette<TMaterial>::InsertMaterial(
     }
 
     subCategoryIt->Materials.insert(insertIt, material);
+}
+
+template<typename TMaterial>
+void MaterialDatabase::Palette<TMaterial>::CheckComplete()
+{
+    for (auto const & category : Categories)
+    {
+        if (category.SubCategories.empty())
+        {
+            throw GameException("Material palette category \"" + category.Name + "\" is empty");
+        }
+        else
+        {
+            for (auto const & subCategory : category.SubCategories)
+            {
+                if (subCategory.Materials.empty())
+                {
+                    throw GameException("Material palette sub-category \"" + subCategory.Name + "\" of category \"" + category.Name + "\" is empty");
+                }
+            }
+        }
+    }
 }
