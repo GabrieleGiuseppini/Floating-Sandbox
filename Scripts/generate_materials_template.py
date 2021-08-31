@@ -28,14 +28,14 @@ def main():
     # Read palette
     #
 
-    # palette element: sub-category name, [material]
+    # palette element: (category, [(sub-category name, [material])])
     palette = []
-
     for category_obj in root_obj["palette_categories"]:
         category_name = category_obj["category"]
+        sub_categories = []
         for sub_category_name in category_obj["sub_categories"]:
-            materials = get_subcategory_materials(sub_category_name, root_obj)
-            palette.append((sub_category_name, materials))
+            sub_categories.append((sub_category_name, get_subcategory_materials(sub_category_name, root_obj)))
+        palette.append((category_name, sub_categories))
             
     #
     # Generate HTML
@@ -52,36 +52,37 @@ def main():
 
     html += "<table style='border: 1px solid black' cellpadding=0 cellspacing={}>".format(spacing)
 
-    # Visit all rows
-    for sub_category in palette:
+    # Visit palette
+    for category in palette:
+        for sub_category in category[1]:
 
-        color_row_html = ""
-        data_row_html = ""
+            color_row_html = ""
+            data_row_html = ""
 
-        # Title
-        color_row_html += "<td valign='middle' align='right' style='padding-right:5px;font-size:10px;'>" + sub_category[0] + "</td>"
-        data_row_html += "<td></td>"
-        
-        for m in sub_category[1]:
+            # Title
+            color_row_html += "<td valign='middle' align='right' style='padding-right:5px;font-size:10px;'>" + sub_category[0] + "</td>"
+            data_row_html += "<td></td>"
+            
+            for m in sub_category[1]:
 
-            # Normalize color key
-            color_key = m["color_key"]
-            if not isinstance(color_key, list):
-                color_key = [color_key]
+                # Normalize color key
+                color_key = m["color_key"]
+                if not isinstance(color_key, list):
+                    color_key = [color_key]
 
-            # Process all colors
-            for c in color_key:
-                # --- Color ---
-                color_row_html += "<td bgcolor='" + c + "'class='border_top' style='width: 50px;'>&nbsp;</td>"
-                # --- Data ---
-                data_row_html += "<td style='font-size:9px;vertical-align:top'>"
-                if is_structural:
-                    data_row_html += "{:.2f}".format(m["mass"]["nominal_mass"] * m["mass"]["density"]) + "|" + str(m["strength"]) + "|" + str(m["stiffness"])
-                else:
-                    data_row_html += m["name"]
-                data_row_html += "</td>"
+                # Process all colors
+                for c in color_key:
+                    # --- Color ---
+                    color_row_html += "<td bgcolor='" + c + "'class='border_top' style='width: 50px;'>&nbsp;</td>"
+                    # --- Data ---
+                    data_row_html += "<td style='font-size:9px;vertical-align:top'>"
+                    if is_structural:
+                        data_row_html += "{:.2f}".format(m["mass"]["nominal_mass"] * m["mass"]["density"]) + "|" + str(m["strength"]) + "|" + str(m["stiffness"])
+                    else:
+                        data_row_html += m["name"]
+                    data_row_html += "</td>"
 
-        html += "<tr>" + color_row_html + "</tr><tr>" + data_row_html + "</tr>"
+            html += "<tr>" + color_row_html + "</tr><tr>" + data_row_html + "</tr>"
         
     html += "</table>";
     html += "</body></html>";
