@@ -135,10 +135,6 @@
 			- Rendering of texture
 
 	- Misc TODO's:
-		- StatusBar:
-			- Icon for coords (like MSPaint)
-			- Selection size and icon
-			- WorkSpace size and icon
 		- Nuke test shader: shader file, relative ShaderTypes
 		- Frame icons (whole "Resources" folder)
 		- Preferences:
@@ -148,6 +144,18 @@
 		- Inherits FullScreen state and shares state changes (so, for example, if exits full screen in ShipBuilder, also Game has exited full screen)
 			- How to share state changes? 
 				- FullScreenManager class, shared_ptr in both
+				- Looked at at each Game<->ShipBuilder switch
+
+- StatusBar:
+	- Own class
+	- Areas:
+		- Canvas:
+			- Coords and icon
+			- Selection size and icon
+			- WorkSpace size and icon
+		- Ship:
+			- Coord and icon
+			- Ship size and icon
 
 - Controller:
 	- Methods to instantiate ModelController: 
@@ -217,6 +225,8 @@
 			- Based on calc'd pixel (display) coords of four sides of work area
 
 - WorkbenchState
+	- Independent from model - exclusively tools-related settings
+		- So no need to reset/change/update at new model creation
 	- Populated at SB::MainFrame cctor from SB::PreferencesManager
 		- Except for materials: always default to "defaults"
 
@@ -255,19 +265,19 @@
 				+ Make sure each cat & sub-cat has a material
 				+ Complete structural json palette
 				+ Also do at Electrical
-				= Python script
+				+ Python script
 			- GameController exposes MaterialsDB const &
 			- SB::MainFrame's cctor takes MaterialsDB
 				- Standalone app loads materials DB
-			- TODO: should ShipTexturizer be exported and usable by ShipBuilder in general?
-				- Note: can also have own instance - but then it'd waste memory...
-				- Note: could also be owned by GameController (like MaterialDB, right?) and passed down to ShipBuilder
-			- ShipTexturizer exposes static helper method that does color-blending of one tile of material texture: (material texture file path, render color [check cur code]) -> rgbaImage
-				- TODO: if we end up passing down the instance, then it's not a static method, but an instance method instead
-				- This method also needs to take custom texturization settings
+			- ShipTexturizer: owned by GameController (like MaterialDB, right?) and passed down to ShipBuilder
+				- Then exposed by GameController
+				- Then taken in SB::MainFrame's cctor
+				- Standalone app creates ShipTexturizer
+			- ShipTexturizer exposes new instance method that does color-blending of one tile of material texture: (material texture name, render color) -> rgbaImage
+				- This method also needs to take custom texturization settings, but for material swaths we pass nullopt (using shared settings then)
 			- Test if TransientPopup is right choice, rather than dialog
 				- Make Fore & Back swaths, for the time being with silly bitmaps
-			- cctor(MaterialsDB const &, GameTypes::Material(Root|Swatch)Type /*TODO:needed? , WorkbenchState &*/)
+			- cctor(MaterialsDB const &, GameTypes::Material(Root|Swatch)Type)
 				- Build all panels as grids of static bmps (kinda like BitmapCheckbox)
 				- It remembers all bitmaps/images in a map, keyed by material*
 					- These are also exposed via GetMaterialTexture(S/EMaterial*)->Bmp/Imag as a convenience method for FG and BG swaths
