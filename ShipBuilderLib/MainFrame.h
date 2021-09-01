@@ -7,7 +7,9 @@
 
 #include "Controller.h"
 #include "IUserInterface.h"
+#include "MaterialPalette.h"
 #include "View.h"
+#include "WorkbenchState.h"
 
 #include <UILib/LocalizationManager.h>
 #include <UILib/LoggingDialog.h>
@@ -25,6 +27,7 @@
 #include <wx/menu.h>
 #include <wx/panel.h>
 #include <wx/scrolbar.h>
+#include <wx/statbmp.h>
 #include <wx/statusbr.h>
 
 #include <filesystem>
@@ -108,6 +111,8 @@ private:
 
     void RecalculatePanning();
 
+    void SyncWorkbenchStateToUI();
+
 private:
 
     wxApp * const mMainApp;
@@ -135,11 +140,17 @@ private:
     //
 
     wxPanel * mMainPanel;
+    // Toolbar panel
+    wxStaticBitmap * mForegroundMaterialStaticBitmap;
+    wxStaticBitmap * mBackgroundMaterialStaticBitmap;
+    // Work panel
     std::unique_ptr<wxGLCanvas> mWorkCanvas;
     std::unique_ptr<wxGLContext> mGLContext;
     wxScrollBar * mWorkCanvasHScrollBar;
     wxScrollBar * mWorkCanvasVScrollBar;
-    bool mIsMouseCapturedByWorkCanvas;
+
+    // Misc
+    std::unique_ptr<MaterialPalette> mMaterialPalette;
     wxStatusBar * mStatusBar;
 
     //
@@ -149,9 +160,16 @@ private:
     std::unique_ptr<LoggingDialog> mLoggingDialog;
 
     //
-    // State
+    // UI state
     //
 
+    bool mIsMouseCapturedByWorkCanvas;
+
+    //
+    // Abstract state
+    //
+
+    WorkbenchState mWorkbenchState;
     std::filesystem::path mOriginalGameShipFilePath;
 };
 

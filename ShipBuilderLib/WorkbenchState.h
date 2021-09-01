@@ -6,24 +6,21 @@
 #pragma once
 
 #include <Game/Materials.h>
+#include <Game/MaterialDatabase.h>
 
 namespace ShipBuilder {
 
 /*
  * This class aggregates the current state of the shipbuilder work tools.
+ * It is completely independent from the model - is holds exclusively
+ * tools-related settings, so ther is no need to reset/change/update
+ * at creation of new models.
  */
 class WorkbenchState
 {
 public:
 
-    WorkbenchState(
-        StructuralMaterial const * initialForegroundStructuralMaterial,
-        ElectricalMaterial const * initialForegroundElectricalMaterial)
-        : mForegroundStructuralMaterial(initialForegroundStructuralMaterial)
-        , mBackgroundStructuralMaterial(nullptr)
-        , mForegroundElectricalMaterial(initialForegroundElectricalMaterial)
-        , mBackgroundElectricalMaterial(nullptr)
-    {}
+    WorkbenchState(MaterialDatabase const & materialDatabase);
 
     StructuralMaterial const * GetForegroundStructuralMaterial() const
     {

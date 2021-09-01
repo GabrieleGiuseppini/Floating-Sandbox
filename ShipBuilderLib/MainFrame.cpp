@@ -5,13 +5,14 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
-#include <UILib/BitmapButton.h>
-#include <UILib/BitmapToggleButton.h>
-
 #include <GameCore/Log.h>
 #include <GameCore/Version.h>
 
 #include <GameOpenGL/GameOpenGL.h>
+
+#include <UILib/BitmapButton.h>
+#include <UILib/BitmapToggleButton.h>
+#include <UILib/WxHelpers.h>
 
 #include <wx/button.h>
 #include <wx/gbsizer.h>
@@ -46,7 +47,9 @@ MainFrame::MainFrame(
     , mShipTexturizer(shipTexturizer)
     , mWorkCanvasHScrollBar(nullptr)
     , mWorkCanvasVScrollBar(nullptr)
+    // State
     , mIsMouseCapturedByWorkCanvas(false)
+    , mWorkbenchState(materialDatabase)
 {
     Create(
         nullptr,
@@ -63,7 +66,7 @@ MainFrame::MainFrame(
     Centre();
 
     //
-    // Setup UI
+    // Setup main frame
     //
 
     mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
@@ -148,10 +151,8 @@ MainFrame::MainFrame(
             0);
     }
 
-    //gridSizer->AddGrowableRow(1, 1);
     gridSizer->AddGrowableRow(2, 1);
     gridSizer->AddGrowableCol(1, 1);
-    //gridSizer->AddGrowableCol(2, 1);
 
     mMainPanel->SetSizer(gridSizer);
 
@@ -228,6 +229,14 @@ MainFrame::MainFrame(
 #endif
 
     //
+    // Setup material palette
+    //
+
+    mMaterialPalette = std::make_unique<MaterialPalette>(
+        mMaterialDatabase,
+        mShipTexturizer);
+
+    //
     // Create view
     //
 
@@ -253,8 +262,15 @@ MainFrame::MainFrame(
     //
 
     mController = std::make_unique<Controller>(
-        *this,
-        *mView);
+        *mView,
+        mWorkbenchState,
+        *this);
+
+    //
+    // Initialize UI
+    //
+
+    SyncWorkbenchStateToUI();
 }
 
 void MainFrame::OpenForNewShip()
@@ -407,11 +423,13 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-    wxGridBagSizer * sizer = new wxGridBagSizer(3, 3);
+    wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
 
     // Tools
 
     {
+        wxGridBagSizer * toolsSizer = new wxGridBagSizer(3, 3);
+
         // Pencil
         {
             auto button = new BitmapToggleButton(
@@ -424,7 +442,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 },
                 _T("Draw individual structure particles"));
 
-            sizer->Add(
+            toolsSizer->Add(
                 button,
                 wxGBPosition(0, 0),
                 wxGBSpan(1, 1),
@@ -444,27 +462,65 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 },
                 _T("Erase individual structure particles"));
 
-            sizer->Add(
+            toolsSizer->Add(
                 button,
                 wxGBPosition(0, 1),
                 wxGBSpan(1, 1),
                 0,
                 0);
         }
+
+        sizer->Add(
+            toolsSizer,
+            0,
+            wxALIGN_CENTER_HORIZONTAL,
+            0);
     }
+
+    sizer->AddSpacer(15);
 
     // Palette
 
     {
+        wxBoxSizer * paletteSizer = new wxBoxSizer(wxVERTICAL);
+
         // Foreground
         {
-            // TODOHERE
+            mForegroundMaterialStaticBitmap = new wxStaticBitmap(
+                panel,
+                wxID_ANY,
+                WxHelpers::MakeEmptyBitmap(),
+                wxDefaultPosition, wxDefaultSize,
+                wxBORDER_SUNKEN);
+
+            paletteSizer->Add(
+                mForegroundMaterialStaticBitmap,
+                0,
+                0,
+                0);
         }
 
         // Background
         {
-            // TODOHERE
+            mBackgroundMaterialStaticBitmap = new wxStaticBitmap(
+                panel,
+                wxID_ANY,
+                WxHelpers::MakeEmptyBitmap(),
+                wxDefaultPosition, wxDefaultSize,
+                wxBORDER_SUNKEN);
+
+            paletteSizer->Add(
+                mBackgroundMaterialStaticBitmap,
+                0,
+                0,
+                0);
         }
+
+        sizer->Add(
+            paletteSizer,
+            0,
+            wxALIGN_CENTER_HORIZONTAL,
+            0);
     }
 
     panel->SetSizerAndFit(sizer);
@@ -738,6 +794,16 @@ void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePa
 void MainFrame::RecalculatePanning()
 {
     // TODOHERE
+}
+
+void MainFrame::SyncWorkbenchStateToUI()
+{
+    // Populate swaths in Toolbar
+    // TODOHERE
+    //wxStaticBitmap * mForegroundMaterialStaticBitmap;
+    //wxStaticBitmap * mBackgroundMaterialStaticBitmap;
+
+    // TODO: Populate settings in ToolSettings toolbar
 }
 
 }
