@@ -64,6 +64,11 @@ public:
 
 public:
 
+    MaterialDatabase const & GetMaterialDatabase() const
+    {
+        return mMaterialDatabase;
+    }
+
     /////////////////////////////////////////////////////////
     // IGameController
     /////////////////////////////////////////////////////////

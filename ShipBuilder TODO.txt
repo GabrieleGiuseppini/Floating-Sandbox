@@ -227,8 +227,12 @@
 - WorkbenchState
 	- Independent from model - exclusively tools-related settings
 		- So no need to reset/change/update at new model creation
-	- Populated at SB::MainFrame cctor from SB::PreferencesManager
-		- Except for materials: always default to "defaults"
+	- cctor: (MaterialsDB, SB::PreferencesManager)
+		- FW and BG materials: always "defaults" from MaterialsDB
+		- other settings: loaded from SB::PreferencesManager
+	- SB::MainFrame::SyncWorkbenchStateToUI
+		- Populate swaths in Tools toolbar
+		- Populate settings in ToolSettings toolbar
 
 - Controls:
 	+ BitmapCheckbox (see if * exists) (@UIControls)
@@ -249,7 +253,7 @@
 				+ ShipTexturizer takes MaterialsDB in cttor - and not ResourceLocator
 					+ Validates here that all exist
 				+ Nuke validation
-			= Materials/DB changes:
+			+ Materials/DB changes:
 				+ Each material has new PaletteCoordinates:
 					+ Category ("Metal", "Wood", ...) (plain string, no enum)
 					+ SubCategory ("Iron", "Iron Hull", ...) (plain string, no enum)
@@ -266,18 +270,21 @@
 				+ Complete structural json palette
 				+ Also do at Electrical
 				+ Python script
-			- GameController exposes MaterialsDB const &
-			- SB::MainFrame's cctor takes MaterialsDB
-				- Standalone app loads materials DB
-			- ShipTexturizer: owned by GameController (like MaterialDB, right?) and passed down to ShipBuilder
-				- Then exposed by GameController
+			+ GameController exposes MaterialsDB const &
+			- ShipTexturizer (and StrengthRandomizer): owned by GameController (like MaterialDB) and passed down to ShipBuilder
+				- ShipBuilder takes them in cctor
+					- No more settings methods for texturizer & randomizer
+				- Then, ShipTexturizer exposed by GameController
 				- Then taken in SB::MainFrame's cctor
-				- Standalone app creates ShipTexturizer
-			- ShipTexturizer exposes new instance method that does color-blending of one tile of material texture: (material texture name, render color) -> rgbaImage
+			- SB::MainFrame has two ::Create():
+				- One takes MaterialsDB & ShipTexturizer
+				- One not - loads MaterialsDB, creates ShipTexturizer, and calls other
+			- ShipTexturizer exposes new instance method that does color-blending of one tile of material texture: (material &) -> rgbaImage
 				- This method also needs to take custom texturization settings, but for material swaths we pass nullopt (using shared settings then)
+			- Make For & Back swaths
+				- Do WorkbenchState (*)
 			- Test if TransientPopup is right choice, rather than dialog
-				- Make Fore & Back swaths, for the time being with silly bitmaps
-			- cctor(MaterialsDB const &, GameTypes::Material(Root|Swatch)Type)
+			- cctor(MaterialsDB const &, GameTypes::Material(Swath|TODO)Type)
 				- Build all panels as grids of static bmps (kinda like BitmapCheckbox)
 				- It remembers all bitmaps/images in a map, keyed by material*
 					- These are also exposed via GetMaterialTexture(S/EMaterial*)->Bmp/Imag as a convenience method for FG and BG swaths
@@ -292,7 +299,8 @@
 	- Min FS version (.shp, .shp2)
 		- Ideally it should be a "set" of versions, including the Materials' DB versions which live in the json so to be easily editable manually
 	- "File lock" which disallows editing
-		- Password from user -> Hash in file
+		- Password from user; salted -> Hash in file
+		- Verify hash matches when editing
 	- Also includes sounds
 		- Extract from other "TODO" .txt file
 
