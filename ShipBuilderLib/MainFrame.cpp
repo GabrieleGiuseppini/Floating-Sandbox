@@ -35,11 +35,15 @@ MainFrame::MainFrame(
     wxApp * mainApp,
     ResourceLocator const & resourceLocator,
     LocalizationManager const & localizationManager,
+    MaterialDatabase const & materialDatabase,
+    ShipTexturizer const & shipTexturizer,
     std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor)
     : mMainApp(mainApp)
     , mReturnToGameFunctor(std::move(returnToGameFunctor))
     , mResourceLocator(resourceLocator)
     , mLocalizationManager(localizationManager)
+    , mMaterialDatabase(materialDatabase)
+    , mShipTexturizer(shipTexturizer)
     , mWorkCanvasHScrollBar(nullptr)
     , mWorkCanvasVScrollBar(nullptr)
     , mIsMouseCapturedByWorkCanvas(false)

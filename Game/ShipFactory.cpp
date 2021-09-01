@@ -43,10 +43,11 @@ static int const TessellationCircularOrderDirections[8][2] = {
 
 ShipFactory::ShipFactory(
     MaterialDatabase const & materialDatabase,
-    ResourceLocator const & resourceLocator)
+    ShipTexturizer const & shipTexturizer,
+    ShipStrengthRandomizer const & shipStrengthRandomizer)
     : mMaterialDatabase(materialDatabase)
-    , mShipStrengthRandomizer()
-    , mShipTexturizer(materialDatabase, resourceLocator)
+    , mShipTexturizer(shipTexturizer)
+    , mShipStrengthRandomizer(shipStrengthRandomizer)
 {
 }
 

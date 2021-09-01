@@ -1044,6 +1044,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             mMainApp,
             mResourceLocator,
             mLocalizationManager,
+            mGameController->GetMaterialDatabase(),
+            mGameController->GetShipTexturizer(),
             [this](std::optional<std::filesystem::path> shipFilePath)
             {
                 this->SwitchFromShipBuilder(shipFilePath);

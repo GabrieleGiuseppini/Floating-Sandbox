@@ -271,17 +271,15 @@
 				+ Also do at Electrical
 				+ Python script
 			+ GameController exposes MaterialsDB const &
-			- ShipTexturizer (and StrengthRandomizer): owned by GameController (like MaterialDB) and passed down to ShipBuilder
-				- ShipBuilder takes them in cctor
-					- No more settings methods for texturizer & randomizer
-				- Then, ShipTexturizer exposed by GameController
-				- Then taken in SB::MainFrame's cctor
-			- SB::MainFrame has two ::Create():
-				- One takes MaterialsDB & ShipTexturizer
-				- One not - loads MaterialsDB, creates ShipTexturizer, and calls other
+			+ ShipTexturizer (and StrengthRandomizer): owned by GameController (like MaterialDB) and passed down to ShipBuilder
+				+ ShipBuilder takes them in cctor
+					+ No more settings methods for texturizer & randomizer
+				+ Then, ShipTexturizer exposed by GameController
+			+ SB::MainFrame cctor
+			+ SB::MainApp loads MaterialsDB & ShipTexturizer
 			- ShipTexturizer exposes new instance method that does color-blending of one tile of material texture: (material &) -> rgbaImage
 				- This method also needs to take custom texturization settings, but for material swaths we pass nullopt (using shared settings then)
-			- Make For & Back swaths
+			- Make Fore & Back swaths
 				- Do WorkbenchState (*)
 			- Test if TransientPopup is right choice, rather than dialog
 			- cctor(MaterialsDB const &, GameTypes::Material(Swath|TODO)Type)

@@ -12,7 +12,9 @@
 
 #include <UILib/LocalizationManager.h>
 
+#include <Game/MaterialDatabase.h>
 #include <Game/ResourceLocator.h>
+#include <Game/ShipTexturizer.h>
 
 #include <wx/app.h>
 #include <wx/msgdlg.h>
@@ -49,13 +51,14 @@ private:
     ShipBuilder::MainFrame * mMainFrame;
     std::unique_ptr<ResourceLocator> mResourceLocator;
     std::unique_ptr<LocalizationManager> mLocalizationManager;
+    std::unique_ptr<MaterialDatabase> mMaterialDatabase;
+    std::unique_ptr<ShipTexturizer> mShipTexturizer;
 };
 
 IMPLEMENT_APP(MainApp);
 
 MainApp::MainApp()
     : mMainFrame(nullptr)
-    , mLocalizationManager()
 {
 }
 
@@ -104,6 +107,15 @@ bool MainApp::OnInit()
         mLocalizationManager = LocalizationManager::CreateInstance(std::nullopt, *mResourceLocator);
 
         //
+        // Initialize helpers
+        //
+
+        mMaterialDatabase = std::make_unique<MaterialDatabase>(std::move(MaterialDatabase::Load(*mResourceLocator)));
+        mShipTexturizer = std::make_unique<ShipTexturizer>(
+            *mMaterialDatabase,
+            *mResourceLocator);
+
+        //
         // Create frame
         //
 
@@ -111,6 +123,8 @@ bool MainApp::OnInit()
             this,
             *mResourceLocator,
             *mLocalizationManager,
+            *mMaterialDatabase,
+            *mShipTexturizer,
             {});
 
         SetTopWindow(mMainFrame);
