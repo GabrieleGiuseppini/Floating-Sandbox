@@ -78,6 +78,9 @@ private:
     wxPanel * CreateToolbarPanel(wxWindow * parent);
     wxPanel * CreateWorkPanel(wxWindow * parent);
 
+    void OnForegroundMaterialSwath(wxMouseEvent & event);
+    void OnBackgroundMaterialSwath(wxMouseEvent & event);
+
     void OnWorkCanvasPaint(wxPaintEvent & event);
     void OnWorkCanvasResize(wxSizeEvent & event);
     void OnWorkCanvasLeftDown(wxMouseEvent & event);
@@ -140,16 +143,19 @@ private:
     //
 
     wxPanel * mMainPanel;
+
     // Toolbar panel
     wxStaticBitmap * mForegroundMaterialStaticBitmap;
     wxStaticBitmap * mBackgroundMaterialStaticBitmap;
+
     // Work panel
     std::unique_ptr<wxGLCanvas> mWorkCanvas;
     std::unique_ptr<wxGLContext> mGLContext;
     wxScrollBar * mWorkCanvasHScrollBar;
     wxScrollBar * mWorkCanvasVScrollBar;
 
-    // Misc
+    // Misc UI elements
+    // TODO: two members - structural and electrical
     std::unique_ptr<MaterialPalette> mMaterialPalette;
     wxStatusBar * mStatusBar;
 
