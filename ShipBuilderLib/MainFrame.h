@@ -69,6 +69,8 @@ public:
 
     void OnWorkSpaceSizeChanged() override;
 
+    void OnWorkbenchStateChanged() override;
+
 private:
 
     wxPanel * CreateFilePanel(wxWindow * parent);

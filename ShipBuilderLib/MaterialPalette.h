@@ -6,7 +6,6 @@
 #pragma once
 
 #include "ShipBuilderTypes.h"
-#include "WorkbenchState.h"
 
 #include <GameCore/GameTypes.h>
 #include <Game/MaterialDatabase.h>
@@ -21,12 +20,9 @@ public:
 
     MaterialPalette(
         MaterialDatabase const & materialDatabase,
-        ShipTexturizer const & shipTexturizer,
-        WorkbenchState & workbenchState);
+        ShipTexturizer const & shipTexturizer);
 
 private:
-
-    WorkbenchState & mWorkbenchState;
 };
 
 }

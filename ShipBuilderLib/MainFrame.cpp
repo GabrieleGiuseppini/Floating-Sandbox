@@ -234,13 +234,15 @@ MainFrame::MainFrame(
 
     mStructuralMaterialPalette = std::make_unique<MaterialPalette<MaterialLayerType::Structural>>(
         mMaterialDatabase,
-        mShipTexturizer,
-        mWorkbenchState);
+        mShipTexturizer);
+
+    // TODO: connect w/custom event
 
     mElectricalMaterialPalette = std::make_unique<MaterialPalette<MaterialLayerType::Electrical>>(
         mMaterialDatabase,
-        mShipTexturizer,
-        mWorkbenchState);
+        mShipTexturizer);
+
+    // TODO: connect w/custom event
 
     //
     // Create view
@@ -308,6 +310,11 @@ void MainFrame::DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coord
 void MainFrame::OnWorkSpaceSizeChanged()
 {
     RecalculatePanning();
+}
+
+void MainFrame::OnWorkbenchStateChanged()
+{
+    SyncWorkbenchStateToUI();
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -622,13 +629,11 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
 void MainFrame::OnForegroundMaterialSwath(wxMouseEvent & event)
 {
     // TODO: open mMaterialPalette
-    // If returns true: has changed workbenchState, so start OnWorkbenchStateChanged cascade
 }
 
 void MainFrame::OnBackgroundMaterialSwath(wxMouseEvent & event)
 {
     // TODO: open mMaterialPalette
-    // If returns true: has changed workbenchState, so start OnWorkbenchStateChanged cascade
 }
 
 void MainFrame::OnWorkCanvasPaint(wxPaintEvent & /*event*/)

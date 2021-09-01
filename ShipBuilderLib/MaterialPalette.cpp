@@ -10,9 +10,7 @@ namespace ShipBuilder {
 template<MaterialLayerType TMaterialLayerType>
 MaterialPalette<TMaterialLayerType>::MaterialPalette(
     MaterialDatabase const & materialDatabase,
-    ShipTexturizer const & shipTexturizer,
-    WorkbenchState & workbenchState)
-    : mWorkbenchState(workbenchState)
+    ShipTexturizer const & shipTexturizer)
 {
     // TODO
 }
