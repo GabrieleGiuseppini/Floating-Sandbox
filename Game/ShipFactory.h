@@ -8,7 +8,6 @@
 #include "GameParameters.h"
 #include "MaterialDatabase.h"
 #include "Physics.h"
-#include "ResourceLocator.h"
 #include "ShipDefinition.h"
 #include "ShipFactoryTypes.h"
 #include "ShipStrengthRandomizer.h"
@@ -38,7 +37,8 @@ public:
 
     ShipFactory(
         MaterialDatabase const & materialDatabase,
-        ResourceLocator const & resourceLocator);
+        ShipTexturizer const & shipTexturizer,
+        ShipStrengthRandomizer const & shipStrengthRandomizer);
 
     std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> Create(
         ShipId shipId,
@@ -47,19 +47,6 @@ public:
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         std::shared_ptr<TaskThreadPool> taskThreadPool,
         GameParameters const & gameParameters) const;
-
-    ShipAutoTexturizationSettings const & GetAutoTexturizationSharedSettings() const { return mShipTexturizer.GetSharedSettings(); }
-
-    ShipAutoTexturizationSettings & GetAutoTexturizationSharedSettings() { return mShipTexturizer.GetSharedSettings(); }
-
-    void SetAutoTexturizationSharedSettings(ShipAutoTexturizationSettings const & sharedSettings) { mShipTexturizer.SetSharedSettings(sharedSettings); }
-    bool GetDoForceAutoTexturizationSharedSettingsOntoShipSettings() const { return mShipTexturizer.GetDoForceSharedSettingsOntoShipSettings(); }
-    void SetDoForceAutoTexturizationSharedSettingsOntoShipSettings(bool value) { mShipTexturizer.SetDoForceSharedSettingsOntoShipSettings(value); }
-
-    float GetShipStrengthRandomizationDensityAdjustment() const { return mShipStrengthRandomizer.GetDensityAdjustment(); }
-    void SetShipStrengthRandomizationDensityAdjustment(float value) { mShipStrengthRandomizer.SetDensityAdjustment(value); }
-    float GetShipStrengthRandomizationExtent() const { return mShipStrengthRandomizer.GetRandomizationExtent(); }
-    void SetShipStrengthRandomizationExtent(float value) { mShipStrengthRandomizer.SetRandomizationExtent(value); }
 
 private:
 
@@ -414,6 +401,6 @@ private:
 private:
 
     MaterialDatabase const & mMaterialDatabase;
-    ShipStrengthRandomizer mShipStrengthRandomizer;
-    ShipTexturizer mShipTexturizer;
+    ShipTexturizer const & mShipTexturizer;
+    ShipStrengthRandomizer const & mShipStrengthRandomizer;
 };

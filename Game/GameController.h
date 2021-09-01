@@ -69,6 +69,16 @@ public:
         return mMaterialDatabase;
     }
 
+    ShipTexturizer const & GetShipTexturizer() const
+    {
+        return mShipTexturizer;
+    }
+
+    ShipStrengthRandomizer const & GetShipStrengthRandomizer() const
+    {
+        return mShipStrengthRandomizer;
+    }
+
     /////////////////////////////////////////////////////////
     // IGameController
     /////////////////////////////////////////////////////////
@@ -257,21 +267,21 @@ public:
     void SetDisplayUnitsSystem(UnitsSystem value) override { mRenderContext->SetDisplayUnitsSystem(value); mNotificationLayer.SetDisplayUnitsSystem(value); }
 
     //
-    // Ship building parameters
+    // Ship factory parameters
     //
 
-    ShipAutoTexturizationSettings const & GetShipAutoTexturizationSharedSettings() const override { return mShipFactory.GetAutoTexturizationSharedSettings(); }
-    ShipAutoTexturizationSettings & GetShipAutoTexturizationSharedSettings() override { return mShipFactory.GetAutoTexturizationSharedSettings(); }
-    void SetShipAutoTexturizationSharedSettings(ShipAutoTexturizationSettings const & value) override { mShipFactory.SetAutoTexturizationSharedSettings(value); }
+    ShipAutoTexturizationSettings const & GetShipAutoTexturizationSharedSettings() const override { return mShipTexturizer.GetSharedSettings(); }
+    ShipAutoTexturizationSettings & GetShipAutoTexturizationSharedSettings() override { return mShipTexturizer.GetSharedSettings(); }
+    void SetShipAutoTexturizationSharedSettings(ShipAutoTexturizationSettings const & value) override { mShipTexturizer.SetSharedSettings(value); }
 
-    bool GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings() const override { return mShipFactory.GetDoForceAutoTexturizationSharedSettingsOntoShipSettings(); }
-    void SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(bool value) override { mShipFactory.SetDoForceAutoTexturizationSharedSettingsOntoShipSettings(value); }
+    bool GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings() const override { return mShipTexturizer.GetDoForceSharedSettingsOntoShipSettings(); }
+    void SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(bool value) override { mShipTexturizer.SetDoForceSharedSettingsOntoShipSettings(value); }
 
-    float GetShipStrengthRandomizationDensityAdjustment() const override { return mShipFactory.GetShipStrengthRandomizationDensityAdjustment(); }
-    void SetShipStrengthRandomizationDensityAdjustment(float value) override { mShipFactory.SetShipStrengthRandomizationDensityAdjustment(value); }
+    float GetShipStrengthRandomizationDensityAdjustment() const override { return mShipStrengthRandomizer.GetDensityAdjustment(); }
+    void SetShipStrengthRandomizationDensityAdjustment(float value) override { mShipStrengthRandomizer.SetDensityAdjustment(value); }
 
-    float GetShipStrengthRandomizationExtent() const override { return mShipFactory.GetShipStrengthRandomizationExtent(); }
-    void SetShipStrengthRandomizationExtent(float value) { mShipFactory.SetShipStrengthRandomizationExtent(value); }
+    float GetShipStrengthRandomizationExtent() const override { return mShipStrengthRandomizer.GetRandomizationExtent(); }
+    void SetShipStrengthRandomizationExtent(float value) { mShipStrengthRandomizer.SetRandomizationExtent(value); }
 
     /////////////////////////////////////////////////////////
     // IGameControllerSettings and IGameControllerSettingsOptions
@@ -885,10 +895,21 @@ private:
     // The world
     //
 
+    std::unique_ptr<Physics::World> mWorld;
+
     FishSpeciesDatabase mFishSpeciesDatabase;
     MaterialDatabase mMaterialDatabase;
 
-    std::unique_ptr<Physics::World> mWorld;
+
+    //
+    // Ship factory
+    //
+
+
+
+    ShipStrengthRandomizer mShipStrengthRandomizer;
+    ShipTexturizer mShipTexturizer;
+    ShipFactory mShipFactory;
 
 
     //
@@ -916,7 +937,6 @@ private:
 
     std::shared_ptr<Render::RenderContext> mRenderContext;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
-    ShipFactory mShipFactory;
     NotificationLayer mNotificationLayer;
     std::unique_ptr<EventRecorder> mEventRecorder;
     std::shared_ptr<TaskThreadPool> mTaskThreadPool;

@@ -65,9 +65,13 @@ GameController::GameController(
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
     // World
-    : mFishSpeciesDatabase(std::move(fishSpeciesDatabase))
+    : mWorld()
+    , mFishSpeciesDatabase(std::move(fishSpeciesDatabase))
     , mMaterialDatabase(std::move(materialDatabase))
-    , mWorld()
+    // Ship factory
+    , mShipStrengthRandomizer()
+    , mShipTexturizer(mMaterialDatabase, resourceLocator)
+    , mShipFactory(mMaterialDatabase, mShipTexturizer, mShipStrengthRandomizer)
     // State machines
     , mTsunamiNotificationStateMachine()
     , mThanosSnapStateMachines()
@@ -84,7 +88,6 @@ GameController::GameController(
     // Doers
     , mRenderContext(std::move(renderContext))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
-    , mShipFactory(mMaterialDatabase, resourceLocator)
     , mNotificationLayer(
         mGameParameters.IsUltraViolentMode,
         false /*loaded value will come later*/,

@@ -12,7 +12,9 @@
 #include <UILib/LocalizationManager.h>
 #include <UILib/LoggingDialog.h>
 
+#include <Game/MaterialDatabase.h>
 #include <Game/ResourceLocator.h>
+#include <Game/ShipTexturizer.h>
 
 #include <GameOpenGL/GameOpenGL.h>
 
@@ -46,6 +48,8 @@ public:
         wxApp * mainApp,
         ResourceLocator const & resourceLocator,
         LocalizationManager const & localizationManager,
+        MaterialDatabase const & materialDatabase,
+        ShipTexturizer const & shipTexturizer,
         std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor);
 
     void OpenForNewShip();
@@ -123,6 +127,8 @@ private:
 
     ResourceLocator const & mResourceLocator;
     LocalizationManager const & mLocalizationManager;
+    MaterialDatabase const & mMaterialDatabase;
+    ShipTexturizer const & mShipTexturizer;
 
     //
     // UI
