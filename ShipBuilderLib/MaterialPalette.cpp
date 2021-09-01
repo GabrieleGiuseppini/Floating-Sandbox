@@ -7,7 +7,8 @@
 
 namespace ShipBuilder {
 
-MaterialPalette::MaterialPalette(
+template<MaterialLayerType TMaterialLayerType>
+MaterialPalette<TMaterialLayerType>::MaterialPalette(
     MaterialDatabase const & materialDatabase,
     ShipTexturizer const & shipTexturizer,
     WorkbenchState & workbenchState)
@@ -15,5 +16,12 @@ MaterialPalette::MaterialPalette(
 {
     // TODO
 }
+
+//
+// Explicit specializations for all material layers
+//
+
+template class MaterialPalette<MaterialLayerType::Structural>;
+template class MaterialPalette<MaterialLayerType::Electrical>;
 
 }

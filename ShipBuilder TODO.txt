@@ -239,8 +239,8 @@
 		- Takes callback for push, which takes wxPoint
 		- Ideantical to BitmapButton, except for arg of callback
 	= MaterialsPalettePicker (@ShipBuilder): wxPanel
-		- Templated on material type (Structural or Material)
-		- MainFrame owns two instances: Structural and Electrical			
+		+ Templated on material type (Structural or Material)
+		+ MainFrame owns two instances: Structural and Electrical			
 		- Column 1: scrollable vertical panel with bitmap buttons for selecting category
 		- Column 2: scrollable panel with rows and cols for selected category's materials		
 		- Opened on demand when clicking on Foreground/Background PopupButtons
@@ -274,16 +274,19 @@
 				+ Then, ShipTexturizer exposed by GameController
 			+ SB::MainFrame cctor
 			+ SB::MainApp loads MaterialsDB & ShipTexturizer
-			- ShipTexturizer exposes new instance method that does color-blending of one tile of material texture: (material &) -> rgbaImage
+			- ShipTexturizer exposes new instance method that does color-blending of one tile of material texture: (size, material &) -> rgbaImage
 				- This method also needs to take custom texturization settings, but for material swaths we pass nullopt (using shared settings then)
-			- Make Fore & Back swaths
-				+ Do WorkbenchState (*)
-				- Implement SB::MainFrame::SyncWorkbenchStateToUI for swaths, with ShipTexturizer's new method
-			- cctor(MaterialsDB const &, GameTypes::Material(TODO)Type == TemplateArg, ShipBuilderTypes::MaterialBrushType(Fore|Back))
+			- cctor(MaterialsDB const &, GameTypes::MaterialLayerType == TemplateArg, ...)
 				- Build all panels as grids of static bmps (kinda like BitmapCheckbox)
+					- Include "empty" category for no-brush case
 				- It remembers all bitmaps/images in a map, keyed by material*
 					- These are also exposed via GetMaterialTexture(S/EMaterial*)->Bmp/Imag as a convenience method for FG and BG swaths
-			- Open(wxPoint, GameTypes::Material(Root|Swatch)Type, WorkbenchState &) -> bool
+					- Include nullptr with white bitmap - still creatable via ShipTexturizer
+			- Make Fore & Back swaths in MainFrame
+				+ Do WorkbenchState (*)
+				- CreateToolbar(): create internally two panels (structural and electrical, members of MainFrame), each with own pair of swaths
+				- Implement SB::MainFrame::SyncWorkbenchStateToUI for swaths, using material templates' convenience method to get bitmaps and populate in swaths
+			- Open(wxPoint, ShipBuilderTypes::MaterialBrushType(Fore|Back), WorkbenchState &) -> bool
 				- Begins selection with the one from WorkbenchState
 				- If returns true: has changed, and then SB::MainFrame starts OnWorkbenchStateChanged cascade
 			- On selection:
@@ -292,7 +295,7 @@
 			- Test if TransientPopup is right choice, rather than dialog
 			- See if it takes so long that we need IProgress
 			- Area with properties of material under cursor
-			- Names of materials and sub-categories
+			- Display names of materials and sub-categories, and basic info (depending on Structural, or Electrical+ElecElementType)
 
 - Ship file format:
 	- Min FS version (.shp, .shp2)
