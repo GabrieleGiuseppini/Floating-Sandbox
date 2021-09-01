@@ -9,7 +9,9 @@ namespace ShipBuilder {
 
 MaterialPalette::MaterialPalette(
     MaterialDatabase const & materialDatabase,
-    ShipTexturizer const & shipTexturizer)
+    ShipTexturizer const & shipTexturizer,
+    WorkbenchState & workbenchState)
+    : mWorkbenchState(workbenchState)
 {
     // TODO
 }

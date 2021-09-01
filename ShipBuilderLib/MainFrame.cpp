@@ -234,7 +234,8 @@ MainFrame::MainFrame(
 
     mMaterialPalette = std::make_unique<MaterialPalette>(
         mMaterialDatabase,
-        mShipTexturizer);
+        mShipTexturizer,
+        mWorkbenchState);
 
     //
     // Create view
@@ -493,6 +494,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 wxDefaultPosition, wxDefaultSize,
                 wxBORDER_SUNKEN);
 
+            mForegroundMaterialStaticBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnForegroundMaterialSwath, this);
+
             paletteSizer->Add(
                 mForegroundMaterialStaticBitmap,
                 0,
@@ -508,6 +511,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 WxHelpers::MakeEmptyBitmap(),
                 wxDefaultPosition, wxDefaultSize,
                 wxBORDER_SUNKEN);
+
+            mBackgroundMaterialStaticBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnBackgroundMaterialSwath, this);
 
             paletteSizer->Add(
                 mBackgroundMaterialStaticBitmap,
@@ -607,6 +612,18 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
     panel->SetSizer(sizer);
 
     return panel;
+}
+
+void MainFrame::OnForegroundMaterialSwath(wxMouseEvent & event)
+{
+    // TODO: open mMaterialPalette
+    // If returns true: has changed workbenchState, so start OnWorkbenchStateChanged cascade
+}
+
+void MainFrame::OnBackgroundMaterialSwath(wxMouseEvent & event)
+{
+    // TODO: open mMaterialPalette
+    // If returns true: has changed workbenchState, so start OnWorkbenchStateChanged cascade
 }
 
 void MainFrame::OnWorkCanvasPaint(wxPaintEvent & /*event*/)

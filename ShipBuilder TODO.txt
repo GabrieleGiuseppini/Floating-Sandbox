@@ -279,13 +279,16 @@
 			- Make Fore & Back swaths
 				+ Do WorkbenchState (*)
 				- Implement SB::MainFrame::SyncWorkbenchStateToUI for swaths, with ShipTexturizer's new method
-			- cctor(MaterialsDB const &, GameTypes::Material(Swath|TODO)Type)
+			- cctor(MaterialsDB const &, GameTypes::Material(TODO)Type == TemplateArg, ShipBuilderTypes::MaterialBrushType(Fore|Back))
 				- Build all panels as grids of static bmps (kinda like BitmapCheckbox)
 				- It remembers all bitmaps/images in a map, keyed by material*
 					- These are also exposed via GetMaterialTexture(S/EMaterial*)->Bmp/Imag as a convenience method for FG and BG swaths
 			- Open(wxPoint, GameTypes::Material(Root|Swatch)Type, WorkbenchState &) -> bool
 				- Begins selection with the one from WorkbenchState
 				- If returns true: has changed, and then SB::MainFrame starts OnWorkbenchStateChanged cascade
+			- On selection:
+				- set material in WorkbenchState
+				- return true
 			- Test if TransientPopup is right choice, rather than dialog
 			- See if it takes so long that we need IProgress
 			- Area with properties of material under cursor

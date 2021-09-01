@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "WorkbenchState.h"
+
 #include <Game/MaterialDatabase.h>
 #include <Game/ShipTexturizer.h>
 
@@ -16,9 +18,12 @@ public:
 
     MaterialPalette(
         MaterialDatabase const & materialDatabase,
-        ShipTexturizer const & shipTexturizer);
+        ShipTexturizer const & shipTexturizer,
+        WorkbenchState & workbenchState);
 
 private:
+
+    WorkbenchState & mWorkbenchState;
 };
 
 }
