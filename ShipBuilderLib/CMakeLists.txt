@@ -22,6 +22,7 @@ set  (SHIPBUILDER_LIB_SOURCES
 	View.h
 	View.cpp
 	ViewModel.h
+	WorkbenchState.cpp
 	WorkbenchState.h
 )
 

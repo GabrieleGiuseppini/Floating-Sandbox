@@ -5,9 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
-#include "WorkbenchState.h"
-
 #include <Game/MaterialDatabase.h>
+#include <Game/ShipTexturizer.h>
 
 namespace ShipBuilder {
 
@@ -17,11 +16,9 @@ public:
 
     MaterialPalette(
         MaterialDatabase const & materialDatabase,
-        WorkbenchState & workbenchState);
+        ShipTexturizer const & shipTexturizer);
 
 private:
-
-    WorkbenchState & mWorkbenchState;
 };
 
 }

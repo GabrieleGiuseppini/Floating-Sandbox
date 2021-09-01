@@ -24,6 +24,9 @@
 		- Owns Controller and View
 		- Very thin, calls into Controller for each high-level interaction (e.g. SelectTool(.), OnWorkbenchStateChanged(.))
 		- Implements IUserInterface with interface required by controller, e.g. UI state changes, mouse capture, undo stack visualization
+		- Owns WorkbenchState
+			- Candidate for saved settings
+			- Contains foreground and background materials, and settings for all tools
 	- Controller
 		- Owns ModelController, takes reference to View
 		- Main Frame calls into Controller for each user interaction, including button clicks
@@ -32,9 +35,6 @@
 		- Maintains interaction state, implemented via Tools
 		- Owns SelectionManager pseudo-tool
 		- Owns ClipboardManager pseudo-tool
-		- Owns WorkbenchState
-			- Candidate for saved settings
-			- Contains foreground and background materials, and settings for all tools
 	- ModelController
 		- Owns Model, takes reference to View
 		- Implements all interactions and algorithms (e.g. pencil, line, flood, paste, etc.) and uploads resulting changes from Model into View
@@ -225,14 +225,11 @@
 			- Based on calc'd pixel (display) coords of four sides of work area
 
 - WorkbenchState
-	- Independent from model - exclusively tools-related settings
-		- So no need to reset/change/update at new model creation
-	- cctor: (MaterialsDB, SB::PreferencesManager)
-		- FW and BG materials: always "defaults" from MaterialsDB
+	+ Independent from model - exclusively tools-related settings
+		+ So no need to reset/change/update at new model creation
+	= cctor: (MaterialsDB, SB::PreferencesManager)
+		+ FW and BG materials: always "defaults" from MaterialsDB
 		- other settings: loaded from SB::PreferencesManager
-	- SB::MainFrame::SyncWorkbenchStateToUI
-		- Populate swaths in Tools toolbar
-		- Populate settings in ToolSettings toolbar
 
 - Controls:
 	+ BitmapCheckbox (see if * exists) (@UIControls)
@@ -280,8 +277,8 @@
 			- ShipTexturizer exposes new instance method that does color-blending of one tile of material texture: (material &) -> rgbaImage
 				- This method also needs to take custom texturization settings, but for material swaths we pass nullopt (using shared settings then)
 			- Make Fore & Back swaths
-				- Do WorkbenchState (*)
-			- Test if TransientPopup is right choice, rather than dialog
+				+ Do WorkbenchState (*)
+				- Implement SB::MainFrame::SyncWorkbenchStateToUI for swaths, with ShipTexturizer's new method
 			- cctor(MaterialsDB const &, GameTypes::Material(Swath|TODO)Type)
 				- Build all panels as grids of static bmps (kinda like BitmapCheckbox)
 				- It remembers all bitmaps/images in a map, keyed by material*
@@ -289,6 +286,7 @@
 			- Open(wxPoint, GameTypes::Material(Root|Swatch)Type, WorkbenchState &) -> bool
 				- Begins selection with the one from WorkbenchState
 				- If returns true: has changed, and then SB::MainFrame starts OnWorkbenchStateChanged cascade
+			- Test if TransientPopup is right choice, rather than dialog
 			- See if it takes so long that we need IProgress
 			- Area with properties of material under cursor
 			- Names of materials and sub-categories

@@ -8,10 +8,14 @@
 namespace ShipBuilder {
 
 Controller::Controller(
-    IUserInterface & userInterface,
-    View & view)
-    : mUserInterface(userInterface)
-    , mView(view)
+    View & view,
+    WorkbenchState & workbenchState,
+    IUserInterface & userInterface)
+    : mView(view)
+    , mModelController()
+    , mWorkbenchState(workbenchState)
+    , mUserInterface(userInterface)
+    //
     , mInputState()
 {
 }

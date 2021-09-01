@@ -9,6 +9,7 @@
 #include "IUserInterface.h"
 #include "ModelController.h"
 #include "View.h"
+#include "WorkbenchState.h"
 
 #include <filesystem>
 #include <memory>
@@ -24,8 +25,9 @@ class Controller
 public:
 
     Controller(
-        IUserInterface & userInterface,
-        View & view);
+        View & view,
+        WorkbenchState & workbenchState,
+        IUserInterface & userInterface);
 
     void CreateNewShip();
 
@@ -45,10 +47,11 @@ private:
 
 private:
 
-    IUserInterface & mUserInterface;
     View & mView;
-
     std::unique_ptr<ModelController> mModelController;
+
+    WorkbenchState & mWorkbenchState;
+    IUserInterface & mUserInterface;
 
     // Input state
     InputState mInputState;
