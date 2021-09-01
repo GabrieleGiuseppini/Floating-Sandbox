@@ -229,10 +229,15 @@ MainFrame::MainFrame(
 #endif
 
     //
-    // Setup material palette
+    // Setup material palettes
     //
 
-    mMaterialPalette = std::make_unique<MaterialPalette>(
+    mStructuralMaterialPalette = std::make_unique<MaterialPalette<MaterialLayerType::Structural>>(
+        mMaterialDatabase,
+        mShipTexturizer,
+        mWorkbenchState);
+
+    mElectricalMaterialPalette = std::make_unique<MaterialPalette<MaterialLayerType::Electrical>>(
         mMaterialDatabase,
         mShipTexturizer,
         mWorkbenchState);

@@ -301,6 +301,15 @@ using Octant = std::int32_t;
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
+ * The different material layers.
+ */
+enum class MaterialLayerType
+{
+    Structural,
+    Electrical
+};
+
+/*
  * Types of frontiers (duh).
  */
 enum class FrontierType
