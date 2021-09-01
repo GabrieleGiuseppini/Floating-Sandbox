@@ -276,22 +276,20 @@
 			+ SB::MainApp loads MaterialsDB & ShipTexturizer
 			- ShipTexturizer exposes new instance method that does color-blending of one tile of material texture: (size, material &) -> rgbaImage
 				- This method also needs to take custom texturization settings, but for material swaths we pass nullopt (using shared settings then)
-			- cctor(MaterialsDB const &, GameTypes::MaterialLayerType == TemplateArg, ...)
-				- Build all panels as grids of static bmps (kinda like BitmapCheckbox)
-					- Include "empty" category for no-brush case
-				- It remembers all bitmaps/images in a map, keyed by material*
-					- These are also exposed via GetMaterialTexture(S/EMaterial*)->Bmp/Imag as a convenience method for FG and BG swaths
-					- Include nullptr with white bitmap - still creatable via ShipTexturizer
 			- Make Fore & Back swaths in MainFrame
 				+ Do WorkbenchState (*)
 				- CreateToolbar(): create internally two panels (structural and electrical, members of MainFrame), each with own pair of swaths
-				- Implement SB::MainFrame::SyncWorkbenchStateToUI for swaths, using material templates' convenience method to get bitmaps and populate in swaths
-			- Open(wxPoint, ShipBuilderTypes::MaterialBrushType(Fore|Back), WorkbenchState &) -> bool
+				- Implement SB::MainFrame::SyncWorkbenchStateToUI for swaths, using ShipTexturizer method to make bitmaps and populate in swaths
+			- cctor(MaterialsDB const &, GameTypes::MaterialLayerType == TemplateArg, ...)
+				- Build all panels as grids of static bmps (kinda like BitmapCheckbox)
+					- Include "empty" category for no-brush case
+			- Open(wxPoint, wxRect referenceArea (absolute rect of work canvas), ShipBuilderTypes::MaterialPlaneType(Fore|Back), WorkbenchState &)
 				- Begins selection with the one from WorkbenchState
-				- If returns true: has changed, and then SB::MainFrame starts OnWorkbenchStateChanged cascade
 			- On selection:
-				- set material in WorkbenchState
-				- return true
+				- Fire event - one of Structural|Electrical, with (TMaterial *, MaterialPlaneType) args
+				- SB::MainFrame receival:
+					- set material in WorkbenchState
+					- start OnWorkbenchStateChanged cascade, i.e. call SyncWorkbenchStateToUI
 			- Test if TransientPopup is right choice, rather than dialog
 			- See if it takes so long that we need IProgress
 			- Area with properties of material under cursor
