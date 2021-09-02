@@ -164,8 +164,8 @@ private:
     wxScrollBar * mWorkCanvasVScrollBar;
 
     // Misc UI elements
-    std::unique_ptr<MaterialPalette<MaterialLayerType::Structural>> mStructuralMaterialPalette;
-    std::unique_ptr<MaterialPalette<MaterialLayerType::Electrical>> mElectricalMaterialPalette;
+    std::unique_ptr<MaterialPalette<StructuralMaterial>> mStructuralMaterialPalette;
+    std::unique_ptr<MaterialPalette<ElectricalMaterial>> mElectricalMaterialPalette;
     wxStatusBar * mStatusBar;
 
     //

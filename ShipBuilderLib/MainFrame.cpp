@@ -243,15 +243,19 @@ MainFrame::MainFrame(
     // Setup material palettes
     //
 
-    mStructuralMaterialPalette = std::make_unique<MaterialPalette<MaterialLayerType::Structural>>(
-        mMaterialDatabase,
-        mShipTexturizer);
+    mStructuralMaterialPalette = std::make_unique<MaterialPalette<StructuralMaterial>>(
+        this,
+        mMaterialDatabase.GetStructuralMaterialPalette(),
+        mShipTexturizer,
+        mResourceLocator);
 
     // TODO: connect w/custom event
 
-    mElectricalMaterialPalette = std::make_unique<MaterialPalette<MaterialLayerType::Electrical>>(
-        mMaterialDatabase,
-        mShipTexturizer);
+    mElectricalMaterialPalette = std::make_unique<MaterialPalette<ElectricalMaterial>>(
+        this,
+        mMaterialDatabase.GetElectricalMaterialPalette(),
+        mShipTexturizer,
+        mResourceLocator);
 
     // TODO: connect w/custom event
 
@@ -787,7 +791,7 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
 void MainFrame::OnStructuralForegroundMaterialSelector(wxMouseEvent & event)
 {
     mStructuralMaterialPalette->Open(
-        event.GetPosition(),
+        ClientToScreen(event.GetPosition()),
         mWorkCanvas->GetScreenRect(),
         MaterialPlaneType::Foreground,
         mWorkbenchState.GetStructuralForegroundMaterial());
