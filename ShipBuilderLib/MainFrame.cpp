@@ -27,6 +27,7 @@
 #include "Resources/ShipBBB.xpm"
 #endif
 
+#include <cassert>
 #include <sstream>
 
 
@@ -531,7 +532,12 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
                     wxBORDER_SUNKEN);
 
-                mStructuralForegroundMaterialSelector->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnStructuralForegroundMaterialSelector, this);
+                mStructuralForegroundMaterialSelector->Bind(
+                    wxEVT_LEFT_DOWN,
+                    [this](wxMouseEvent & event)
+                    {
+                        OpenMaterialPalette(event, MaterialLayerType::Structural, MaterialPlaneType::Foreground);
+                    });
 
                 paletteSizer->Add(
                     mStructuralForegroundMaterialSelector,
@@ -552,7 +558,12 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
                     wxBORDER_SUNKEN);
 
-                mStructuralBackgroundMaterialSelector->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnStructuralBackgroundMaterialSelector, this);
+                mStructuralBackgroundMaterialSelector->Bind(
+                    wxEVT_LEFT_DOWN,
+                    [this](wxMouseEvent & event)
+                    {
+                        OpenMaterialPalette(event, MaterialLayerType::Structural, MaterialPlaneType::Background);
+                    });
 
                 paletteSizer->Add(
                     mStructuralBackgroundMaterialSelector,
@@ -656,7 +667,12 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
                     wxBORDER_SUNKEN);
 
-                mElectricalForegroundMaterialSelector->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnElectricalForegroundMaterialSelector, this);
+                mElectricalForegroundMaterialSelector->Bind(
+                    wxEVT_LEFT_DOWN,
+                    [this](wxMouseEvent & event)
+                    {
+                        OpenMaterialPalette(event, MaterialLayerType::Electrical, MaterialPlaneType::Foreground);
+                    });
 
                 paletteSizer->Add(
                     mElectricalForegroundMaterialSelector,
@@ -677,7 +693,12 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
                     wxBORDER_SUNKEN);
 
-                mElectricalBackgroundMaterialSelector->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnElectricalBackgroundMaterialSelector, this);
+                mElectricalForegroundMaterialSelector->Bind(
+                    wxEVT_LEFT_DOWN,
+                    [this](wxMouseEvent & event)
+                    {
+                        OpenMaterialPalette(event, MaterialLayerType::Electrical, MaterialPlaneType::Background);
+                    });
 
                 paletteSizer->Add(
                     mElectricalBackgroundMaterialSelector,
@@ -786,42 +807,6 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
     panel->SetSizer(sizer);
 
     return panel;
-}
-
-void MainFrame::OnStructuralForegroundMaterialSelector(wxMouseEvent & event)
-{
-    mStructuralMaterialPalette->Open(
-        ClientToScreen(event.GetPosition()),
-        mWorkCanvas->GetScreenRect(),
-        MaterialPlaneType::Foreground,
-        mWorkbenchState.GetStructuralForegroundMaterial());
-}
-
-void MainFrame::OnStructuralBackgroundMaterialSelector(wxMouseEvent & event)
-{
-    mStructuralMaterialPalette->Open(
-        event.GetPosition(),
-        mWorkCanvas->GetScreenRect(),
-        MaterialPlaneType::Background,
-        mWorkbenchState.GetStructuralBackgroundMaterial());
-}
-
-void MainFrame::OnElectricalForegroundMaterialSelector(wxMouseEvent & event)
-{
-    mElectricalMaterialPalette->Open(
-        event.GetPosition(),
-        mWorkCanvas->GetScreenRect(),
-        MaterialPlaneType::Foreground,
-        mWorkbenchState.GetElectricalForegroundMaterial());
-}
-
-void MainFrame::OnElectricalBackgroundMaterialSelector(wxMouseEvent & event)
-{
-    mElectricalMaterialPalette->Open(
-        event.GetPosition(),
-        mWorkCanvas->GetScreenRect(),
-        MaterialPlaneType::Background,
-        mWorkbenchState.GetElectricalBackgroundMaterial());
 }
 
 void MainFrame::OnWorkCanvasPaint(wxPaintEvent & /*event*/)
@@ -1015,7 +1000,7 @@ void MainFrame::SyncWorkbenchStateToUI()
 {
     // Populate swaths in toolbars
     {
-        static std::string const EmptyMaterialName = "Empty";
+        static std::string const ClearMaterialName = "Clear";
 
         auto const * foreStructuralMaterial = mWorkbenchState.GetStructuralForegroundMaterial();
         if (foreStructuralMaterial != nullptr)
@@ -1032,7 +1017,7 @@ void MainFrame::SyncWorkbenchStateToUI()
         else
         {
             mStructuralForegroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
-            mStructuralForegroundMaterialSelector->SetToolTip(EmptyMaterialName);
+            mStructuralForegroundMaterialSelector->SetToolTip(ClearMaterialName);
         }
 
         auto const * backStructuralMaterial = mWorkbenchState.GetStructuralBackgroundMaterial();
@@ -1050,7 +1035,7 @@ void MainFrame::SyncWorkbenchStateToUI()
         else
         {
             mStructuralBackgroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
-            mStructuralBackgroundMaterialSelector->SetToolTip(EmptyMaterialName);
+            mStructuralBackgroundMaterialSelector->SetToolTip(ClearMaterialName);
         }
 
         auto const * foreElectricalMaterial = mWorkbenchState.GetElectricalForegroundMaterial();
@@ -1066,7 +1051,7 @@ void MainFrame::SyncWorkbenchStateToUI()
         else
         {
             mElectricalForegroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
-            mElectricalForegroundMaterialSelector->SetToolTip(EmptyMaterialName);
+            mElectricalForegroundMaterialSelector->SetToolTip(ClearMaterialName);
         }
 
         auto const * backElectricalMaterial = mWorkbenchState.GetElectricalBackgroundMaterial();
@@ -1082,11 +1067,43 @@ void MainFrame::SyncWorkbenchStateToUI()
         else
         {
             mElectricalBackgroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
-            mElectricalBackgroundMaterialSelector->SetToolTip(EmptyMaterialName);
+            mElectricalBackgroundMaterialSelector->SetToolTip(ClearMaterialName);
         }
     }
 
     // TODO: Populate settings in ToolSettings toolbar
+}
+
+void MainFrame::OpenMaterialPalette(
+    wxMouseEvent const & event,
+    MaterialLayerType layer,
+    MaterialPlaneType plane)
+{
+    wxWindow * referenceWindow = dynamic_cast<wxWindow *>(event.GetEventObject());
+    if (nullptr == referenceWindow)
+        return;
+
+    auto const position = referenceWindow->ClientToScreen(event.GetPosition());
+    auto const referenceRect = referenceWindow->GetScreenRect();
+
+    if (layer == MaterialLayerType::Structural)
+    {
+        mStructuralMaterialPalette->Open(
+            position,
+            referenceRect,
+            plane,
+            mWorkbenchState.GetStructuralForegroundMaterial());
+    }
+    else
+    {
+        assert(layer == MaterialLayerType::Electrical);
+
+        mElectricalMaterialPalette->Open(
+            position,
+            referenceRect,
+            plane,
+            mWorkbenchState.GetElectricalForegroundMaterial());
+    }
 }
 
 }
