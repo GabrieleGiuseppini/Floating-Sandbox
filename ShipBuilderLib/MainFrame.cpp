@@ -289,6 +289,9 @@ MainFrame::MainFrame(
     // Initialize UI
     //
 
+    // TODO: this will have to be done by another "Sync" call, based on view panel settings
+    mElectricalToolbarPanel->Show(false);
+
     SyncWorkbenchStateToUI();
 }
 
@@ -426,9 +429,6 @@ wxPanel * MainFrame::CreateViewPanel(wxWindow * parent)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-    // TODOTEST
-    panel->SetBackgroundColour(*wxYELLOW);
-
     wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
 
     {
@@ -449,109 +449,252 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
     wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
 
-    // Tools
+    //
+    // Structural toolbar
+    //
 
     {
-        wxGridBagSizer * toolsSizer = new wxGridBagSizer(3, 3);
+        mStructuralToolbarPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-        // Pencil
+        wxBoxSizer * structuralToolbarSizer = new wxBoxSizer(wxVERTICAL);
+
+        // Tools
+
         {
-            auto button = new BitmapToggleButton(
-                panel,
-                mResourceLocator.GetIconFilePath("pencil_icon"),
-                [this]()
-                {
-                    // TODOHERE
-                    //SetTool(ToolType::Pencil);
-                },
-                _T("Draw individual structure particles"));
+            wxGridBagSizer * toolsSizer = new wxGridBagSizer(3, 3);
 
-            toolsSizer->Add(
-                button,
-                wxGBPosition(0, 0),
-                wxGBSpan(1, 1),
+            // Pencil
+            {
+                auto button = new BitmapToggleButton(
+                    mStructuralToolbarPanel,
+                    mResourceLocator.GetIconFilePath("pencil_icon"),
+                    [this]()
+                    {
+                        // TODOHERE
+                        //SetTool(ToolType::Pencil);
+                    },
+                    _T("Draw individual structure particles"));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Eraser
+            {
+                auto button = new BitmapToggleButton(
+                    mStructuralToolbarPanel,
+                    mResourceLocator.GetIconFilePath("eraser_icon"),
+                    [this]()
+                    {
+                        // TODOHERE
+                        //SetTool(ToolType::Eraser);
+                    },
+                    _T("Erase individual structure particles"));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            structuralToolbarSizer->Add(
+                toolsSizer,
                 0,
+                wxALIGN_CENTER_HORIZONTAL,
                 0);
         }
 
-        // Eraser
-        {
-            auto button = new BitmapToggleButton(
-                panel,
-                mResourceLocator.GetIconFilePath("eraser_icon"),
-                [this]()
-                {
-                    // TODOHERE
-                    //SetTool(ToolType::Eraser);
-                },
-                _T("Erase individual structure particles"));
+        structuralToolbarSizer->AddSpacer(15);
 
-            toolsSizer->Add(
-                button,
-                wxGBPosition(0, 1),
-                wxGBSpan(1, 1),
+        // Swaths
+
+        {
+            wxBoxSizer * paletteSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Foreground
+            {
+                mStructuralForegroundMaterialSelector = new wxStaticBitmap(
+                    mStructuralToolbarPanel,
+                    wxID_ANY,
+                    WxHelpers::MakeEmptyBitmap(),
+                    wxDefaultPosition,
+                    wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
+                    wxBORDER_SUNKEN);
+
+                mStructuralForegroundMaterialSelector->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnStructuralForegroundMaterialSelector, this);
+
+                paletteSizer->Add(
+                    mStructuralForegroundMaterialSelector,
+                    0,
+                    0,
+                    0);
+            }
+
+            paletteSizer->AddSpacer(8);
+
+            // Background
+            {
+                mStructuralBackgroundMaterialSelector = new wxStaticBitmap(
+                    mStructuralToolbarPanel,
+                    wxID_ANY,
+                    WxHelpers::MakeEmptyBitmap(),
+                    wxDefaultPosition,
+                    wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
+                    wxBORDER_SUNKEN);
+
+                mStructuralBackgroundMaterialSelector->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnStructuralBackgroundMaterialSelector, this);
+
+                paletteSizer->Add(
+                    mStructuralBackgroundMaterialSelector,
+                    0,
+                    0,
+                    0);
+            }
+
+            structuralToolbarSizer->Add(
+                paletteSizer,
                 0,
+                wxALIGN_CENTER_HORIZONTAL,
                 0);
         }
+
+        mStructuralToolbarPanel->SetSizerAndFit(structuralToolbarSizer);
 
         sizer->Add(
-            toolsSizer,
+            mStructuralToolbarPanel,
             0,
-            wxALIGN_CENTER_HORIZONTAL,
+            0,
             0);
     }
 
-    sizer->AddSpacer(15);
 
-    // Swaths
+    //
+    // Electrical toolbar
+    //
 
     {
-        wxBoxSizer * paletteSizer = new wxBoxSizer(wxVERTICAL);
+        mElectricalToolbarPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-        // Foreground
+        wxBoxSizer * electricalToolbarSizer = new wxBoxSizer(wxVERTICAL);
+
+        // Tools
+
         {
-            mStructuralForegroundMaterialSelector = new wxStaticBitmap(
-                panel,
-                wxID_ANY,
-                WxHelpers::MakeEmptyBitmap(),
-                wxDefaultPosition,
-                wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
-                wxBORDER_SUNKEN);
+            wxGridBagSizer * toolsSizer = new wxGridBagSizer(3, 3);
 
-            mStructuralForegroundMaterialSelector->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnForegroundMaterialSwathClick, this);
+            // Pencil
+            {
+                auto button = new BitmapToggleButton(
+                    mElectricalToolbarPanel,
+                    mResourceLocator.GetIconFilePath("pencil_icon"),
+                    [this]()
+                    {
+                        // TODOHERE
+                        //SetTool(ToolType::Pencil);
+                    },
+                    _T("Draw individual electrical elements"));
 
-            paletteSizer->Add(
-                mStructuralForegroundMaterialSelector,
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Eraser
+            {
+                auto button = new BitmapToggleButton(
+                    mElectricalToolbarPanel,
+                    mResourceLocator.GetIconFilePath("eraser_icon"),
+                    [this]()
+                    {
+                        // TODOHERE
+                        //SetTool(ToolType::Eraser);
+                    },
+                    _T("Erase individual electrical elements"));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            electricalToolbarSizer->Add(
+                toolsSizer,
                 0,
-                0,
+                wxALIGN_CENTER_HORIZONTAL,
                 0);
         }
 
-        paletteSizer->AddSpacer(8);
+        electricalToolbarSizer->AddSpacer(15);
 
-        // Background
+        // Swaths
+
         {
-            mStructuralBackgroundMaterialSelector = new wxStaticBitmap(
-                panel,
-                wxID_ANY,
-                WxHelpers::MakeEmptyBitmap(),
-                wxDefaultPosition,
-                wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
-                wxBORDER_SUNKEN);
+            wxBoxSizer * paletteSizer = new wxBoxSizer(wxVERTICAL);
 
-            mStructuralBackgroundMaterialSelector->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnBackgroundMaterialSwathClick, this);
+            // Foreground
+            {
+                mElectricalForegroundMaterialSelector = new wxStaticBitmap(
+                    mElectricalToolbarPanel,
+                    wxID_ANY,
+                    WxHelpers::MakeEmptyBitmap(),
+                    wxDefaultPosition,
+                    wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
+                    wxBORDER_SUNKEN);
 
-            paletteSizer->Add(
-                mStructuralBackgroundMaterialSelector,
+                mElectricalForegroundMaterialSelector->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnElectricalForegroundMaterialSelector, this);
+
+                paletteSizer->Add(
+                    mElectricalForegroundMaterialSelector,
+                    0,
+                    0,
+                    0);
+            }
+
+            paletteSizer->AddSpacer(8);
+
+            // Background
+            {
+                mElectricalBackgroundMaterialSelector = new wxStaticBitmap(
+                    mElectricalToolbarPanel,
+                    wxID_ANY,
+                    WxHelpers::MakeEmptyBitmap(),
+                    wxDefaultPosition,
+                    wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
+                    wxBORDER_SUNKEN);
+
+                mElectricalBackgroundMaterialSelector->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnElectricalBackgroundMaterialSelector, this);
+
+                paletteSizer->Add(
+                    mElectricalBackgroundMaterialSelector,
+                    0,
+                    0,
+                    0);
+            }
+
+            electricalToolbarSizer->Add(
+                paletteSizer,
                 0,
-                0,
+                wxALIGN_CENTER_HORIZONTAL,
                 0);
         }
+
+        mElectricalToolbarPanel->SetSizerAndFit(electricalToolbarSizer);
 
         sizer->Add(
-            paletteSizer,
+            mElectricalToolbarPanel,
             0,
-            wxALIGN_CENTER_HORIZONTAL,
+            0,
             0);
     }
 
@@ -641,14 +784,40 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
     return panel;
 }
 
-void MainFrame::OnForegroundMaterialSwathClick(wxMouseEvent & event)
+void MainFrame::OnStructuralForegroundMaterialSelector(wxMouseEvent & event)
 {
-    // TODO: open mMaterialPalette
+    mStructuralMaterialPalette->Open(
+        event.GetPosition(),
+        mWorkCanvas->GetScreenRect(),
+        MaterialPlaneType::Foreground,
+        mWorkbenchState.GetStructuralForegroundMaterial());
 }
 
-void MainFrame::OnBackgroundMaterialSwathClick(wxMouseEvent & event)
+void MainFrame::OnStructuralBackgroundMaterialSelector(wxMouseEvent & event)
 {
-    // TODO: open mMaterialPalette
+    mStructuralMaterialPalette->Open(
+        event.GetPosition(),
+        mWorkCanvas->GetScreenRect(),
+        MaterialPlaneType::Background,
+        mWorkbenchState.GetStructuralBackgroundMaterial());
+}
+
+void MainFrame::OnElectricalForegroundMaterialSelector(wxMouseEvent & event)
+{
+    mElectricalMaterialPalette->Open(
+        event.GetPosition(),
+        mWorkCanvas->GetScreenRect(),
+        MaterialPlaneType::Foreground,
+        mWorkbenchState.GetElectricalForegroundMaterial());
+}
+
+void MainFrame::OnElectricalBackgroundMaterialSelector(wxMouseEvent & event)
+{
+    mElectricalMaterialPalette->Open(
+        event.GetPosition(),
+        mWorkCanvas->GetScreenRect(),
+        MaterialPlaneType::Background,
+        mWorkbenchState.GetElectricalBackgroundMaterial());
 }
 
 void MainFrame::OnWorkCanvasPaint(wxPaintEvent & /*event*/)
@@ -844,7 +1013,7 @@ void MainFrame::SyncWorkbenchStateToUI()
     {
         static std::string const EmptyMaterialName = "Empty";
 
-        auto const * foreStructuralMaterial = mWorkbenchState.GetForegroundStructuralMaterial();
+        auto const * foreStructuralMaterial = mWorkbenchState.GetStructuralForegroundMaterial();
         if (foreStructuralMaterial != nullptr)
         {
             wxBitmap foreStructuralBitmap = WxHelpers::MakeBitmap(
@@ -862,7 +1031,7 @@ void MainFrame::SyncWorkbenchStateToUI()
             mStructuralForegroundMaterialSelector->SetToolTip(EmptyMaterialName);
         }
 
-        auto const * backStructuralMaterial = mWorkbenchState.GetBackgroundStructuralMaterial();
+        auto const * backStructuralMaterial = mWorkbenchState.GetStructuralBackgroundMaterial();
         if (backStructuralMaterial != nullptr)
         {
             wxBitmap backStructuralBitmap = WxHelpers::MakeBitmap(
@@ -880,10 +1049,37 @@ void MainFrame::SyncWorkbenchStateToUI()
             mStructuralBackgroundMaterialSelector->SetToolTip(EmptyMaterialName);
         }
 
-        // TODO: electrical: make WxHelpers helper for matte bitmap
-        // TODOHERE
-        //wxStaticBitmap * mForegroundMaterialStaticBitmap;
-        //wxStaticBitmap * mBackgroundMaterialStaticBitmap;
+        auto const * foreElectricalMaterial = mWorkbenchState.GetElectricalForegroundMaterial();
+        if (foreElectricalMaterial != nullptr)
+        {
+            wxBitmap foreElectricalBitmap = WxHelpers::MakeMatteBitmap(
+                rgbaColor(foreElectricalMaterial->RenderColor),
+                MaterialSwathSize);
+
+            mElectricalForegroundMaterialSelector->SetBitmap(foreElectricalBitmap);
+            mElectricalForegroundMaterialSelector->SetToolTip(foreElectricalMaterial->Name);
+        }
+        else
+        {
+            mElectricalForegroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
+            mElectricalForegroundMaterialSelector->SetToolTip(EmptyMaterialName);
+        }
+
+        auto const * backElectricalMaterial = mWorkbenchState.GetElectricalBackgroundMaterial();
+        if (backElectricalMaterial != nullptr)
+        {
+            wxBitmap backElectricalBitmap = WxHelpers::MakeMatteBitmap(
+                rgbaColor(backElectricalMaterial->RenderColor),
+                MaterialSwathSize);
+
+            mElectricalBackgroundMaterialSelector->SetBitmap(backElectricalBitmap);
+            mElectricalBackgroundMaterialSelector->SetToolTip(backElectricalMaterial->Name);
+        }
+        else
+        {
+            mElectricalBackgroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
+            mElectricalBackgroundMaterialSelector->SetToolTip(EmptyMaterialName);
+        }
     }
 
     // TODO: Populate settings in ToolSettings toolbar

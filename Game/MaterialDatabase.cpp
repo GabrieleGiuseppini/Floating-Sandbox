@@ -86,12 +86,13 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         // Process all color keys
         for (size_t iColorKey = 0; iColorKey < colorKeys.size(); ++iColorKey)
         {
+            // Get color key
             rgbColor const colorKey = colorKeys[iColorKey];
 
             // Get/make render color
             rgbColor renderColor = colorKey;
-            auto const & renderColorIt = materialObject.find("render_color");
-            if (materialObject.end() != renderColorIt)
+            if (auto const & renderColorIt = materialObject.find("render_color");
+                materialObject.end() != renderColorIt)
             {
                 // The material carries its own render color
 
@@ -207,10 +208,27 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
 
         picojson::object const & materialObject = materialElem.get<picojson::object>();
 
+        // Get color key
         ColorKey const colorKey = Utils::Hex2RgbColor(
             Utils::GetMandatoryJsonMember<std::string>(materialObject, "color_key"));
 
-        ElectricalMaterial const material = ElectricalMaterial::Create(0, materialObject);
+        // Get/make render color
+        rgbColor renderColor = colorKey;
+        if (auto const & renderColorIt = materialObject.find("render_color");
+            materialObject.end() != renderColorIt)
+        {
+            if (!renderColorIt->second.is<std::string>())
+            {
+                throw GameException("Error parsing JSON: member \"render_color\" is not of type 'string'");
+            }
+
+            renderColor = Utils::Hex2RgbColor(renderColorIt->second.get<std::string>());
+        }
+
+        ElectricalMaterial const material = ElectricalMaterial::Create(
+            0,
+            renderColor,
+            materialObject);
 
         // Make sure there are no dupes
         if (nonInstancedElectricalMaterialsMap.count(colorKey) != 0

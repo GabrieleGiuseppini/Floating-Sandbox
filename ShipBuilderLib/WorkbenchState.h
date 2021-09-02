@@ -22,52 +22,52 @@ public:
 
     WorkbenchState(MaterialDatabase const & materialDatabase);
 
-    StructuralMaterial const * GetForegroundStructuralMaterial() const
+    StructuralMaterial const * GetStructuralForegroundMaterial() const
     {
-        return mForegroundStructuralMaterial;
+        return mStructuralForegroundMaterial;
     }
 
-    void SetForegroundStructuralMaterial(StructuralMaterial const * material)
+    void SetStructuralForegroundMaterial(StructuralMaterial const * material)
     {
-        mForegroundStructuralMaterial = material;
+        mStructuralForegroundMaterial = material;
     }
 
-    StructuralMaterial const * GetBackgroundStructuralMaterial() const
+    StructuralMaterial const * GetStructuralBackgroundMaterial() const
     {
-        return mBackgroundStructuralMaterial;
+        return mStructuralBackgroundMaterial;
     }
 
-    void SetBackgroundStructuralMaterial(StructuralMaterial const * material)
+    void SetStructuralBackgroundMaterial(StructuralMaterial const * material)
     {
-        mBackgroundStructuralMaterial = material;
+        mStructuralBackgroundMaterial = material;
     }
 
-    ElectricalMaterial const * GetForegroundElectricalMaterial() const
+    ElectricalMaterial const * GetElectricalForegroundMaterial() const
     {
-        return mForegroundElectricalMaterial;
+        return mElectricalForegroundMaterial;
     }
 
-    void SetForegroundElectricalMaterial(ElectricalMaterial const * material)
+    void SetElectricalForegroundMaterial(ElectricalMaterial const * material)
     {
-        mForegroundElectricalMaterial = material;
+        mElectricalForegroundMaterial = material;
     }
 
-    ElectricalMaterial const * GetBackgroundElectricalMaterial() const
+    ElectricalMaterial const * GetElectricalBackgroundMaterial() const
     {
-        return mBackgroundElectricalMaterial;
+        return mElectricalBackgroundMaterial;
     }
 
-    void SetBackgroundElectricalMaterial(ElectricalMaterial const * material)
+    void SetElectricalBackgroundMaterial(ElectricalMaterial const * material)
     {
-        mBackgroundElectricalMaterial = material;
+        mElectricalBackgroundMaterial = material;
     }
 
 private:
 
-    StructuralMaterial const * mForegroundStructuralMaterial;
-    StructuralMaterial const * mBackgroundStructuralMaterial;
-    ElectricalMaterial const * mForegroundElectricalMaterial;
-    ElectricalMaterial const * mBackgroundElectricalMaterial;
+    StructuralMaterial const * mStructuralForegroundMaterial;
+    StructuralMaterial const * mStructuralBackgroundMaterial;
+    ElectricalMaterial const * mElectricalForegroundMaterial;
+    ElectricalMaterial const * mElectricalBackgroundMaterial;
 
 };
 

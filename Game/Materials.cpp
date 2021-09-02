@@ -100,7 +100,6 @@ StructuralMaterial StructuralMaterial::Create(
             density,
             buoyancyVolumeFill,
             stiffness,
-            renderColor.toVec4f(1.0f),
             uniqueType,
             materialSound,
             materialTextureName,
@@ -122,6 +121,7 @@ StructuralMaterial StructuralMaterial::Create(
             windReceptivity,
             isLegacyElectrical,
             // Palette
+            renderColor.toVec4f(1.0f),
             paletteCoordinates);
     }
     catch (GameException const & ex)
@@ -168,6 +168,7 @@ StructuralMaterial::MaterialCombustionType StructuralMaterial::StrToMaterialComb
 
 ElectricalMaterial ElectricalMaterial::Create(
     unsigned int ordinal,
+    rgbColor const & renderColor,
     picojson::object const & electricalMaterialJson)
 {
     std::string name = Utils::GetMandatoryJsonMember<std::string>(electricalMaterialJson, "name");
@@ -297,6 +298,7 @@ ElectricalMaterial ElectricalMaterial::Create(
             interactiveSwitchType,
             shipSoundType,
             waterPumpNominalForce,
+            renderColor.toVec4f(1.0f),
             paletteCoordinates);
     }
     catch (GameException const & ex)

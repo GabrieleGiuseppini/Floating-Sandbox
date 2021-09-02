@@ -62,7 +62,6 @@ public:
     float Density;
     float BuoyancyVolumeFill;
     float Stiffness;
-    vec4f RenderColor;
 
     std::optional<MaterialUniqueType> UniqueType;
 
@@ -92,6 +91,7 @@ public:
     bool IsLegacyElectrical;
 
     // Palette
+    vec4f RenderColor;
     std::optional<MaterialPaletteCoordinatesType> PaletteCoordinates;
 
 public:
@@ -134,7 +134,6 @@ public:
         float density,
         float buoyancyVolumeFill,
         float stiffness,
-        vec4f renderColor,
         std::optional<MaterialUniqueType> uniqueType,
         std::optional<MaterialSoundType> materialSound,
         std::optional<std::string> materialTextureName,
@@ -157,6 +156,7 @@ public:
         float windReceptivity,
         bool isLegacyElectrical,
         // Palette
+        vec4f renderColor,
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
         : Name(name)
         , Strength(strength)
@@ -164,7 +164,6 @@ public:
         , Density(density)
         , BuoyancyVolumeFill(buoyancyVolumeFill)
         , Stiffness(stiffness)
-        , RenderColor(renderColor)
         , UniqueType(uniqueType)
         , MaterialSound(materialSound)
         , MaterialTextureName(materialTextureName)
@@ -183,6 +182,7 @@ public:
         , ExplosiveCombustionStrength(explosiveCombustionStrength)
         , WindReceptivity(windReceptivity)
         , IsLegacyElectrical(isLegacyElectrical)
+        , RenderColor(renderColor)
         , PaletteCoordinates(paletteCoordinates)
     {}
 };
@@ -275,12 +275,14 @@ public:
     float WaterPumpNominalForce;
 
     // Palette
+    vec4f RenderColor;
     std::optional<MaterialPaletteCoordinatesType> PaletteCoordinates;
 
 public:
 
     static ElectricalMaterial Create(
         unsigned int ordinal,
+        rgbColor const & renderColor,
         picojson::object const & electricalMaterialJson);
 
     static ElectricalElementType StrToElectricalElementType(std::string const & str);
@@ -312,6 +314,7 @@ public:
         InteractiveSwitchElementType interactiveSwitchType,
         ShipSoundElementType shipSoundType,
         float waterPumpNominalForce,
+        vec4f renderColor,
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
         : Name(name)
         , ElectricalType(electricalType)
@@ -334,6 +337,7 @@ public:
         , InteractiveSwitchType(interactiveSwitchType)
         , ShipSoundType(shipSoundType)
         , WaterPumpNominalForce(waterPumpNominalForce)
+        , RenderColor(renderColor)
         , PaletteCoordinates(paletteCoordinates)
     {
     }
