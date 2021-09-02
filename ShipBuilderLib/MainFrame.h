@@ -80,8 +80,8 @@ private:
     wxPanel * CreateToolbarPanel(wxWindow * parent);
     wxPanel * CreateWorkPanel(wxWindow * parent);
 
-    void OnForegroundMaterialSwath(wxMouseEvent & event);
-    void OnBackgroundMaterialSwath(wxMouseEvent & event);
+    void OnForegroundMaterialSwathClick(wxMouseEvent & event);
+    void OnBackgroundMaterialSwathClick(wxMouseEvent & event);
 
     void OnWorkCanvasPaint(wxPaintEvent & event);
     void OnWorkCanvasResize(wxSizeEvent & event);
@@ -147,8 +147,11 @@ private:
     wxPanel * mMainPanel;
 
     // Toolbar panel
-    wxStaticBitmap * mForegroundMaterialStaticBitmap;
-    wxStaticBitmap * mBackgroundMaterialStaticBitmap;
+    wxStaticBitmap * mStructuralForegroundMaterialSelector;
+    wxStaticBitmap * mStructuralBackgroundMaterialSelector;
+    wxStaticBitmap * mElectricalForegroundMaterialSelector;
+    wxStaticBitmap * mElectricalBackgroundMaterialSelector;
+    wxBitmap mNullMaterialBitmap;
 
     // Work panel
     std::unique_ptr<wxGLCanvas> mWorkCanvas;

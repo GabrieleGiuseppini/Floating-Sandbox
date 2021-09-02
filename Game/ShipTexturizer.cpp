@@ -78,7 +78,7 @@ RgbaImageData ShipTexturizer::Texturize(
         ? mSharedSettings
         : *shipDefinitionSettings;
 
-    float const materialTextureWorldToPixelConversionFactor =
+    float const worldToMaterialTexturePixelConversionFactor =
         MaterialTextureMagnificationToPixelConversionFactor(settings.MaterialTextureMagnification);
 
     float const materialTextureAlpha = 1.0f - settings.MaterialTextureTransparency;
@@ -150,8 +150,8 @@ RgbaImageData ShipTexturizer::Texturize(
                     {
                         vec3f const bumpMapSample = SampleTexture(
                             materialTexture,
-                            worldX * materialTextureWorldToPixelConversionFactor,
-                            worldY * materialTextureWorldToPixelConversionFactor);
+                            worldX * worldToMaterialTexturePixelConversionFactor,
+                            worldY * worldToMaterialTexturePixelConversionFactor);
 
                         ////// Vanilla multiply blending
                         ////vec3f const resultantColor(
@@ -248,6 +248,67 @@ float ShipTexturizer::MaterialTextureMagnificationToPixelConversionFactor(float 
 {
     // Magic number
     return 1.0f / (0.08f * magnification);
+}
+
+RgbaImageData ShipTexturizer::MakeTextureSample(
+    std::optional<ShipAutoTexturizationSettings> const & settings,
+    ImageSize const & sampleSize,
+    rgbaColor const & renderColor,
+    std::optional<std::string> const & textureName) const
+{
+    assert(sampleSize.Width >= 2); // We'll split the width in half
+
+    // Use shared settings if no settings have been provided
+    ShipAutoTexturizationSettings const & effectiveSettings = !settings.has_value()
+        ? mSharedSettings
+        : *settings;
+
+    // Create output image
+    auto sampleData = std::make_unique<rgbaColor[]>(sampleSize.GetPixelCount());
+
+    // Get bump map texture and render color
+    Vec3fImageData const & materialTexture = GetMaterialTexture(textureName);
+    vec3f const renderPixelColorF = renderColor.toVec3f();
+
+    // Calculate constants
+    float const sampleToMaterialTexturePixelConversionFactor = 1.0f / (0.35f * effectiveSettings.MaterialTextureMagnification);
+    float const materialTextureAlpha = 1.0f - effectiveSettings.MaterialTextureTransparency;
+
+    //
+    // Fill quad with color multiply-blended with "bump map" texture
+    //
+
+    for (int y = 0; y < sampleSize.Height; ++y)
+    {
+        int const targetQuadOffset = y * sampleSize.Width;
+
+        for (int x = 0; x < sampleSize.Width / 2; ++x)
+        {
+            vec3f const bumpMapSample = SampleTexture(
+                materialTexture,
+                static_cast<float>(x) * sampleToMaterialTexturePixelConversionFactor,
+                static_cast<float>(sampleSize.Height - 1 - y) * sampleToMaterialTexturePixelConversionFactor);
+
+            // Bi-directional multiply blending
+            vec3f const resultantColorF(
+                BidirMultiplyBlend(renderPixelColorF.x, bumpMapSample.x),
+                BidirMultiplyBlend(renderPixelColorF.y, bumpMapSample.y),
+                BidirMultiplyBlend(renderPixelColorF.z, bumpMapSample.z));
+
+            // Store resultant color to the left side, using structure's alpha channel value,
+            // and blended with transparency
+            sampleData[targetQuadOffset + x] = rgbaColor(
+                Mix(renderPixelColorF,
+                    resultantColorF,
+                    materialTextureAlpha),
+                renderColor.a);
+
+            // Store instead raw render color to the right side
+            sampleData[targetQuadOffset + x + sampleSize.Width / 2] = renderColor;
+        }
+    }
+
+    return RgbaImageData(sampleSize, std::move(sampleData));
 }
 
 Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::optional<std::string> const & textureName) const

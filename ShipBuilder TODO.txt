@@ -274,12 +274,14 @@
 				+ Then, ShipTexturizer exposed by GameController
 			+ SB::MainFrame cctor
 			+ SB::MainApp loads MaterialsDB & ShipTexturizer
-			- ShipTexturizer exposes new instance method that does color-blending of one tile of material texture: (size, material &) -> rgbaImage
-				- This method also needs to take custom texturization settings, but for material swaths we pass nullopt (using shared settings then)
+			= ShipTexturizer exposes new instance method that does color-blending of one tile of material texture: (size, material &) -> rgbaImage
+				+ This method also needs to take custom texturization settings, but for material swaths we pass nullopt (using shared settings then)
 			- Make Fore & Back swaths in MainFrame
 				+ Do WorkbenchState (*)
 				- CreateToolbar(): create internally two panels (structural and electrical, members of MainFrame), each with own pair of swaths
 				- Implement SB::MainFrame::SyncWorkbenchStateToUI for swaths, using ShipTexturizer method to make bitmaps and populate in swaths
+					+ Do preloaded "null" bitmap
+					- Update tooltip for swaths with material name
 			- cctor(MaterialsDB const &, GameTypes::MaterialLayerType == TemplateArg, ...)
 				- Build all panels as grids of static bmps (kinda like BitmapCheckbox)
 					- Include "empty" category for no-brush case
