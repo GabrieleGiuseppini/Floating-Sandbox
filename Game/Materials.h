@@ -7,6 +7,7 @@
 
 #include <GameCore/Colors.h>
 #include <GameCore/GameException.h>
+#include <GameCore/GameTypes.h>
 #include <GameCore/Vectors.h>
 
 #include <picojson.h>
@@ -24,6 +25,8 @@ struct MaterialPaletteCoordinatesType
 struct StructuralMaterial
 {
 public:
+
+    static MaterialLayerType constexpr Layer = MaterialLayerType::Structural;
 
     enum class MaterialCombustionType
     {
@@ -190,6 +193,8 @@ public:
 struct ElectricalMaterial
 {
 public:
+
+    static MaterialLayerType constexpr Layer = MaterialLayerType::Electrical;
 
     enum class ElectricalElementType
     {
