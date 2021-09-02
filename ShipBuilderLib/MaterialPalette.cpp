@@ -98,8 +98,10 @@ MaterialPalette<TMaterial>::MaterialPalette(
             }
         }
 
-        // "empty" category
+        // "clear" category
         {
+            static std::string const ClearMaterialName = "Clear";
+
             // Create category button
             {
                 wxToggleButton * categoryButton = new wxToggleButton(categoryListPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
@@ -110,7 +112,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
                         CategoryButtonSize,
                         resourceLocator));
 
-                categoryButton->SetToolTip("Empty");
+                categoryButton->SetToolTip(ClearMaterialName);
 
                 categoryListSizer->Add(
                     categoryButton,
@@ -123,7 +125,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
 
             // Create label
             {
-                wxStaticText * label = new wxStaticText(categoryListPanel, wxID_ANY, "Empty");
+                wxStaticText * label = new wxStaticText(categoryListPanel, wxID_ANY, ClearMaterialName);
 
                 categoryListSizer->Add(
                     label,

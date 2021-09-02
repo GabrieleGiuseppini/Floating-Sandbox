@@ -80,11 +80,6 @@ private:
     wxPanel * CreateToolbarPanel(wxWindow * parent);
     wxPanel * CreateWorkPanel(wxWindow * parent);
 
-    void OnStructuralForegroundMaterialSelector(wxMouseEvent & event);
-    void OnStructuralBackgroundMaterialSelector(wxMouseEvent & event);
-    void OnElectricalForegroundMaterialSelector(wxMouseEvent & event);
-    void OnElectricalBackgroundMaterialSelector(wxMouseEvent & event);
-
     void OnWorkCanvasPaint(wxPaintEvent & event);
     void OnWorkCanvasResize(wxSizeEvent & event);
     void OnWorkCanvasLeftDown(wxMouseEvent & event);
@@ -119,6 +114,11 @@ private:
     void RecalculatePanning();
 
     void SyncWorkbenchStateToUI();
+
+    void OpenMaterialPalette(
+        wxMouseEvent const & event,
+        MaterialLayerType layer,
+        MaterialPlaneType plane);
 
 private:
 

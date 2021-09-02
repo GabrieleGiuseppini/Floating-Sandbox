@@ -180,7 +180,9 @@
 		- Abstract methods from game - but all pure
 	- All tools:
 		- Pencil
+			- Settings: Size
 		- Eraser
+			- Settings: Size
 		- Flood
 		- Selection
 		- Sample
@@ -286,10 +288,11 @@
 					+ Do preloaded "null" bitmap
 					+ Update tooltip for swaths with material name
 				+ Do also electrical
-			- cctor(MaterialsDB const &, GameTypes::MaterialLayerType == TemplateArg, ...)
+			= cctor(MaterialsDB const &, GameTypes::MaterialLayerType == TemplateArg, ...)
 				- Build all panels as grids of static bmps (kinda like BitmapCheckbox)
-					- Include "empty" category for no-brush case
-			- Open(wxPoint, wxRect referenceArea (absolute rect of work canvas), ShipBuilderTypes::MaterialPlaneType(Fore|Back), Material const *)
+					+ Include "empty" category for no-brush case
+			= Open(wxPoint, wxRect referenceArea (absolute rect of work canvas), ShipBuilderTypes::MaterialPlaneType(Fore|Back), Material const *)
+				- Positionate self
 				- Begins selection with the one from WorkbenchState
 			- On selection:
 				- Fire event - one of Structural|Electrical, with (TMaterial *, MaterialPlaneType) args
