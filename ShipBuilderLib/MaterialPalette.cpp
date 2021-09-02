@@ -11,8 +11,19 @@ template<MaterialLayerType TMaterialLayerType>
 MaterialPalette<TMaterialLayerType>::MaterialPalette(
     MaterialDatabase const & materialDatabase,
     ShipTexturizer const & shipTexturizer)
+    : mCurrentPlaneType()
 {
     // TODO
+}
+
+template<MaterialLayerType TMaterialLayerType>
+void MaterialPalette<TMaterialLayerType>::Open(
+    wxPoint const & position,
+    wxRect const & referenceArea,
+    MaterialPlaneType planeType,
+    Material const * initialMaterial)
+{
+    // tODOHERE
 }
 
 //

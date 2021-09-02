@@ -15,19 +15,19 @@ WorkbenchState::WorkbenchState(MaterialDatabase const & materialDatabase)
     assert(!materialDatabase.GetStructuralMaterialPalette().Categories.empty()
         && !materialDatabase.GetStructuralMaterialPalette().Categories[0].SubCategories.empty()
         && !materialDatabase.GetStructuralMaterialPalette().Categories[0].SubCategories[0].Materials.empty());
-    mForegroundStructuralMaterial = &(materialDatabase.GetStructuralMaterialPalette().Categories[0].SubCategories[0].Materials[0].get());
+    mStructuralForegroundMaterial = &(materialDatabase.GetStructuralMaterialPalette().Categories[0].SubCategories[0].Materials[0].get());
 
     // Default structural background material: none
-    mBackgroundStructuralMaterial = nullptr;
+    mStructuralBackgroundMaterial = nullptr;
 
     // Default electrical foreground material: first electrical material
     assert(!materialDatabase.GetElectricalMaterialPalette().Categories.empty()
         && !materialDatabase.GetElectricalMaterialPalette().Categories[0].SubCategories.empty()
         && !materialDatabase.GetElectricalMaterialPalette().Categories[0].SubCategories[0].Materials.empty());
-    mForegroundElectricalMaterial = &(materialDatabase.GetElectricalMaterialPalette().Categories[0].SubCategories[0].Materials[0].get());
+    mElectricalForegroundMaterial = &(materialDatabase.GetElectricalMaterialPalette().Categories[0].SubCategories[0].Materials[0].get());
 
     // Default electrical background material: none
-    mBackgroundElectricalMaterial = nullptr;
+    mElectricalBackgroundMaterial = nullptr;
 }
 
 }

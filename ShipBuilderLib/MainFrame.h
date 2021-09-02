@@ -80,8 +80,10 @@ private:
     wxPanel * CreateToolbarPanel(wxWindow * parent);
     wxPanel * CreateWorkPanel(wxWindow * parent);
 
-    void OnForegroundMaterialSwathClick(wxMouseEvent & event);
-    void OnBackgroundMaterialSwathClick(wxMouseEvent & event);
+    void OnStructuralForegroundMaterialSelector(wxMouseEvent & event);
+    void OnStructuralBackgroundMaterialSelector(wxMouseEvent & event);
+    void OnElectricalForegroundMaterialSelector(wxMouseEvent & event);
+    void OnElectricalBackgroundMaterialSelector(wxMouseEvent & event);
 
     void OnWorkCanvasPaint(wxPaintEvent & event);
     void OnWorkCanvasResize(wxSizeEvent & event);
@@ -147,8 +149,10 @@ private:
     wxPanel * mMainPanel;
 
     // Toolbar panel
+    wxPanel * mStructuralToolbarPanel;
     wxStaticBitmap * mStructuralForegroundMaterialSelector;
     wxStaticBitmap * mStructuralBackgroundMaterialSelector;
+    wxPanel * mElectricalToolbarPanel;
     wxStaticBitmap * mElectricalForegroundMaterialSelector;
     wxStaticBitmap * mElectricalBackgroundMaterialSelector;
     wxBitmap mNullMaterialBitmap;

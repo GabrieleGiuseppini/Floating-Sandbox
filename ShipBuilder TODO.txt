@@ -135,6 +135,9 @@
 			- Rendering of texture
 
 	- Misc TODO's:
+		- Redo tools' icons: shadow must be transparent
+		- Toolbar:
+			- Need to untoggle others when one is toggle (i.e. radio behavior)
 		- Nuke test shader: shader file, relative ShaderTypes
 		- Frame icons (whole "Resources" folder)
 		- Preferences:
@@ -144,7 +147,7 @@
 		- Inherits FullScreen state and shares state changes (so, for example, if exits full screen in ShipBuilder, also Game has exited full screen)
 			- How to share state changes? 
 				- FullScreenManager class, shared_ptr in both
-				- Looked at at each Game<->ShipBuilder switch
+				- Looked at at each Game<->ShipBuilder switch by receiver
 
 - StatusBar:
 	- Own class
@@ -274,18 +277,19 @@
 				+ Then, ShipTexturizer exposed by GameController
 			+ SB::MainFrame cctor
 			+ SB::MainApp loads MaterialsDB & ShipTexturizer
-			= ShipTexturizer exposes new instance method that does color-blending of one tile of material texture: (size, material &) -> rgbaImage
+			+ ShipTexturizer exposes new instance method that does color-blending of one tile of material texture: (size, material &) -> rgbaImage
 				+ This method also needs to take custom texturization settings, but for material swaths we pass nullopt (using shared settings then)
-			- Make Fore & Back swaths in MainFrame
+			+ Make Fore & Back swaths in MainFrame
 				+ Do WorkbenchState (*)
-				- CreateToolbar(): create internally two panels (structural and electrical, members of MainFrame), each with own pair of swaths
-				- Implement SB::MainFrame::SyncWorkbenchStateToUI for swaths, using ShipTexturizer method to make bitmaps and populate in swaths
+				+ CreateToolbar(): create internally two panels (structural and electrical, members of MainFrame), each with own pair of swaths
+				+ Implement SB::MainFrame::SyncWorkbenchStateToUI for swaths, using ShipTexturizer method to make bitmaps and populate in swaths
 					+ Do preloaded "null" bitmap
-					- Update tooltip for swaths with material name
+					+ Update tooltip for swaths with material name
+				+ Do also electrical
 			- cctor(MaterialsDB const &, GameTypes::MaterialLayerType == TemplateArg, ...)
 				- Build all panels as grids of static bmps (kinda like BitmapCheckbox)
 					- Include "empty" category for no-brush case
-			- Open(wxPoint, wxRect referenceArea (absolute rect of work canvas), ShipBuilderTypes::MaterialPlaneType(Fore|Back), WorkbenchState &)
+			- Open(wxPoint, wxRect referenceArea (absolute rect of work canvas), ShipBuilderTypes::MaterialPlaneType(Fore|Back), Material const *)
 				- Begins selection with the one from WorkbenchState
 			- On selection:
 				- Fire event - one of Structural|Electrical, with (TMaterial *, MaterialPlaneType) args
