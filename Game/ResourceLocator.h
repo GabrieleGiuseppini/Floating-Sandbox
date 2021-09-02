@@ -38,9 +38,6 @@ public:
 
     std::filesystem::path GetTexturesRootFolderPath() const;
 
-    // TODOTEST
-    //std::filesystem::path GetMaterialTexturesFolderPath() const;
-
     std::filesystem::path GetMaterialTextureFilePath(std::string const & materialTextureName) const;
 
 

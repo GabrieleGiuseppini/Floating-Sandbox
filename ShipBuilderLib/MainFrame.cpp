@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
+#include <GameCore/ImageSize.h>
 #include <GameCore/Log.h>
 #include <GameCore/Version.h>
 
@@ -28,7 +29,11 @@
 
 #include <sstream>
 
+
 int constexpr ButtonMargin = 4;
+
+ImageSize constexpr MaterialSwathSize(80, 100);
+
 
 namespace ShipBuilder {
 
@@ -64,6 +69,12 @@ MainFrame::MainFrame(
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
     Maximize();
     Centre();
+
+    //
+    // Load static bitmaps
+    //
+
+    mNullMaterialBitmap = WxHelpers::LoadBitmap("null_material", MaterialSwathSize, mResourceLocator);
 
     //
     // Setup main frame
@@ -492,42 +503,46 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
     sizer->AddSpacer(15);
 
-    // Palette
+    // Swaths
 
     {
         wxBoxSizer * paletteSizer = new wxBoxSizer(wxVERTICAL);
 
         // Foreground
         {
-            mForegroundMaterialStaticBitmap = new wxStaticBitmap(
+            mStructuralForegroundMaterialSelector = new wxStaticBitmap(
                 panel,
                 wxID_ANY,
                 WxHelpers::MakeEmptyBitmap(),
-                wxDefaultPosition, wxDefaultSize,
+                wxDefaultPosition,
+                wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
                 wxBORDER_SUNKEN);
 
-            mForegroundMaterialStaticBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnForegroundMaterialSwath, this);
+            mStructuralForegroundMaterialSelector->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnForegroundMaterialSwathClick, this);
 
             paletteSizer->Add(
-                mForegroundMaterialStaticBitmap,
+                mStructuralForegroundMaterialSelector,
                 0,
                 0,
                 0);
         }
 
+        paletteSizer->AddSpacer(8);
+
         // Background
         {
-            mBackgroundMaterialStaticBitmap = new wxStaticBitmap(
+            mStructuralBackgroundMaterialSelector = new wxStaticBitmap(
                 panel,
                 wxID_ANY,
                 WxHelpers::MakeEmptyBitmap(),
-                wxDefaultPosition, wxDefaultSize,
+                wxDefaultPosition,
+                wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
                 wxBORDER_SUNKEN);
 
-            mBackgroundMaterialStaticBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnBackgroundMaterialSwath, this);
+            mStructuralBackgroundMaterialSelector->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnBackgroundMaterialSwathClick, this);
 
             paletteSizer->Add(
-                mBackgroundMaterialStaticBitmap,
+                mStructuralBackgroundMaterialSelector,
                 0,
                 0,
                 0);
@@ -626,12 +641,12 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
     return panel;
 }
 
-void MainFrame::OnForegroundMaterialSwath(wxMouseEvent & event)
+void MainFrame::OnForegroundMaterialSwathClick(wxMouseEvent & event)
 {
     // TODO: open mMaterialPalette
 }
 
-void MainFrame::OnBackgroundMaterialSwath(wxMouseEvent & event)
+void MainFrame::OnBackgroundMaterialSwathClick(wxMouseEvent & event)
 {
     // TODO: open mMaterialPalette
 }
@@ -825,10 +840,51 @@ void MainFrame::RecalculatePanning()
 
 void MainFrame::SyncWorkbenchStateToUI()
 {
-    // Populate swaths in Toolbar
-    // TODOHERE
-    //wxStaticBitmap * mForegroundMaterialStaticBitmap;
-    //wxStaticBitmap * mBackgroundMaterialStaticBitmap;
+    // Populate swaths in toolbars
+    {
+        static std::string const EmptyMaterialName = "Empty";
+
+        auto const * foreStructuralMaterial = mWorkbenchState.GetForegroundStructuralMaterial();
+        if (foreStructuralMaterial != nullptr)
+        {
+            wxBitmap foreStructuralBitmap = WxHelpers::MakeBitmap(
+                mShipTexturizer.MakeTextureSample(
+                    std::nullopt, // Use shared settings
+                    MaterialSwathSize,
+                    *foreStructuralMaterial));
+
+            mStructuralForegroundMaterialSelector->SetBitmap(foreStructuralBitmap);
+            mStructuralForegroundMaterialSelector->SetToolTip(foreStructuralMaterial->Name);
+        }
+        else
+        {
+            mStructuralForegroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
+            mStructuralForegroundMaterialSelector->SetToolTip(EmptyMaterialName);
+        }
+
+        auto const * backStructuralMaterial = mWorkbenchState.GetBackgroundStructuralMaterial();
+        if (backStructuralMaterial != nullptr)
+        {
+            wxBitmap backStructuralBitmap = WxHelpers::MakeBitmap(
+                mShipTexturizer.MakeTextureSample(
+                    std::nullopt, // Use shared settings
+                    MaterialSwathSize,
+                    *backStructuralMaterial));
+
+            mStructuralBackgroundMaterialSelector->SetBitmap(backStructuralBitmap);
+            mStructuralBackgroundMaterialSelector->SetToolTip(backStructuralMaterial->Name);
+        }
+        else
+        {
+            mStructuralBackgroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
+            mStructuralBackgroundMaterialSelector->SetToolTip(EmptyMaterialName);
+        }
+
+        // TODO: electrical: make WxHelpers helper for matte bitmap
+        // TODOHERE
+        //wxStaticBitmap * mForegroundMaterialStaticBitmap;
+        //wxStaticBitmap * mBackgroundMaterialStaticBitmap;
+    }
 
     // TODO: Populate settings in ToolSettings toolbar
 }

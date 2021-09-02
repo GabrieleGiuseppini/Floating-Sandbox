@@ -32,6 +32,19 @@ public:
         ShipFactoryPointIndexMatrix const & pointMatrix, // One more point on each side, to avoid checking for boundaries
         std::vector<ShipFactoryPoint> const & points) const;
 
+    template<typename TMaterial>
+    RgbaImageData MakeTextureSample(
+        std::optional<ShipAutoTexturizationSettings> const & settings,
+        ImageSize const & sampleSize,
+        TMaterial const & material) const
+    {
+        return MakeTextureSample(
+            settings,
+            sampleSize,
+            rgbaColor(material.RenderColor),
+            material.MaterialTextureName);
+    }
+
     //
     // Settings
     //
@@ -68,6 +81,12 @@ private:
         ResourceLocator const & resourceLocator);
 
     static float MaterialTextureMagnificationToPixelConversionFactor(float magnification);
+
+    RgbaImageData MakeTextureSample(
+        std::optional<ShipAutoTexturizationSettings> const & settings,
+        ImageSize const & sampleSize,
+        rgbaColor const & renderColor,
+        std::optional<std::string> const & textureName) const;
 
     inline Vec3fImageData const & GetMaterialTexture(std::optional<std::string> const & textureName) const;
 

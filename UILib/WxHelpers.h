@@ -9,6 +9,7 @@
 
 #include <GameCore/Colors.h>
 #include <GameCore/ImageData.h>
+#include <GameCore/ImageSize.h>
 
 #include <wx/cursor.h>
 #include <wx/generic/statbmpg.h>
@@ -19,7 +20,20 @@
 
 namespace WxHelpers
 {
+    wxBitmap LoadBitmap(
+        std::string const & bitmapName,
+        ResourceLocator const & resourceLocator);
+
+    wxBitmap LoadBitmap(
+        std::string const & bitmapName,
+        ImageSize const & size,
+        ResourceLocator const & resourceLocator);
+
     wxBitmap MakeBitmap(RgbaImageData const & imageData);
+
+    wxBitmap MakeMatteBitmap(
+        rgbaColor const & color,
+        ImageSize const & size);
 
     wxBitmap MakeEmptyBitmap();
 

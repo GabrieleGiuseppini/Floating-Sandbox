@@ -13,6 +13,28 @@
 #include <cstdlib>
 #include <stdexcept>
 
+wxBitmap WxHelpers::LoadBitmap(
+    std::string const & bitmapName,
+    ResourceLocator const & resourceLocator)
+{
+    return wxBitmap(resourceLocator.GetBitmapFilePath(bitmapName).string(), wxBITMAP_TYPE_PNG);
+}
+
+wxBitmap WxHelpers::LoadBitmap(
+    std::string const & bitmapName,
+    ImageSize const & size,
+    ResourceLocator const & resourceLocator)
+{
+    if (size.Width == 0 || size.Height == 0)
+    {
+        throw std::runtime_error("Cannot create bitmap with one zero dimension");
+    }
+
+    wxImage image(resourceLocator.GetBitmapFilePath(bitmapName).string(), wxBITMAP_TYPE_PNG);
+    image.Rescale(size.Width, size.Height, wxIMAGE_QUALITY_HIGH);
+    return wxBitmap(image);
+}
+
 wxBitmap WxHelpers::MakeBitmap(RgbaImageData const & imageData)
 {
     if (imageData.Size.Width == 0 || imageData.Size.Height == 0)
@@ -50,6 +72,50 @@ wxBitmap WxHelpers::MakeBitmap(RgbaImageData const & imageData)
             writeIt.Green() = readIt->g * readIt->a / 256;
             writeIt.Blue() = readIt->b * readIt->a / 256;
             writeIt.Alpha() = readIt->a;
+        }
+
+        // Move write iterator to next row
+        writeIt = rowStart;
+        writeIt.OffsetY(pixelData, -1);
+    }
+
+    return bitmap;
+}
+
+wxBitmap WxHelpers::MakeMatteBitmap(
+    rgbaColor const & color,
+    ImageSize const & size)
+{
+    if (size.Width == 0 || size.Height == 0)
+    {
+        throw std::runtime_error("Cannot create bitmap with one zero dimension");
+    }
+
+    wxBitmap bitmap;
+    bitmap.Create(size.Width, size.Height, 32);
+
+    wxPixelData<wxBitmap, wxAlphaPixelFormat> pixelData(bitmap);
+    if (!pixelData)
+    {
+        throw std::runtime_error("Cannot get bitmap pixel data");
+    }
+
+    assert(pixelData.GetWidth() == size.Width);
+    assert(pixelData.GetHeight() == size.Height);
+
+    auto writeIt = pixelData.GetPixels();
+    writeIt.OffsetY(pixelData, size.Height - 1);
+    for (int y = 0; y < size.Height; ++y)
+    {
+        // Save current iterator
+        auto rowStart = writeIt;
+
+        for (int x = 0; x < size.Width; ++x, ++writeIt)
+        {
+            writeIt.Red() = color.r;
+            writeIt.Green() = color.g;
+            writeIt.Blue() = color.b;
+            writeIt.Alpha() = color.a;
         }
 
         // Move write iterator to next row
