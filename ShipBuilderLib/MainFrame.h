@@ -95,6 +95,8 @@ private:
     void OnQuitAndGoBack(wxCommandEvent & event);
     void OnQuit(wxCommandEvent & event);
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent & event);
+    void OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent & event);
+    void OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent & event);
 
 private:
 

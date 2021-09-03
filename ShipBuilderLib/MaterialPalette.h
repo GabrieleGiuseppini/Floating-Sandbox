@@ -8,6 +8,8 @@
 #include "ShipBuilderTypes.h"
 
 #include <GameCore/GameTypes.h>
+#include <GameCore/ImageSize.h>
+
 #include <Game/Materials.h>
 #include <Game/MaterialDatabase.h>
 #include <Game/ResourceLocator.h>
@@ -99,12 +101,25 @@ private:
 
     wxPanel * CreateCategoryPanel(
         wxWindow * parent,
-        typename MaterialDatabase::Palette<TMaterial>::Category const & materialCategory);
+        typename MaterialDatabase::Palette<TMaterial>::Category const & materialCategory,
+        ShipTexturizer const & shipTexturizer);
+
+    wxToggleButton * CreateMaterialButton(
+        wxWindow * parent,
+        ImageSize const & size,
+        TMaterial const & material,
+        ShipTexturizer const & shipTexturizer);
+
+    void SelectMaterial(TMaterial const * material);
+
+    void OnMaterialSelected(TMaterial const * material);
 
 private:
 
+    MaterialDatabase::Palette<TMaterial> const & mMaterialPalette;
+
     // The sizer holding the category list and all of the category panels
-    // [category list, margin spacer, cat 1 panel, cat 2 panel, ...]
+    // [category list, cat 1 panel, cat 2 panel, ...]
     wxSizer * mSizer;
 
     // The category list panel and its sizer
