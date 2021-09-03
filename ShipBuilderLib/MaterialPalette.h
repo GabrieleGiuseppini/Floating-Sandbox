@@ -92,7 +92,6 @@ public:
         ResourceLocator const & resourceLocator);
 
     void Open(
-        wxPoint const & position,
         wxRect const & referenceArea,
         MaterialPlaneType planeType,
         TMaterial const * initialMaterial);
@@ -131,6 +130,9 @@ private:
 
     // Category panels; one for each category
     std::vector<wxPanel *> mCategoryPanels;
+
+    // Material buttons for each category panel
+    std::vector<std::vector<wxToggleButton *>> mMaterialButtons;
 
     std::optional<MaterialPlaneType> mCurrentPlane;
 };

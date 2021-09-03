@@ -188,6 +188,7 @@
 		- Sample
 		- Line
 		- Rectangle
+			- Settings: FillWithFore|FillWithBack|NoFill; Size
 		- Ellipses
 		- Mass changer
 	- SelectionManager pseudo-tool:
@@ -245,10 +246,10 @@
 		- Ideantical to BitmapButton, except for arg of callback
 	= MaterialsPalettePicker (@ShipBuilder): wxPanel
 		+ Templated on material type (Structural or Material)
-		+ MainFrame owns two instances: Structural and Electrical			
-		- Column 1: scrollable vertical panel with bitmap buttons for selecting category
-		- Column 2: scrollable panel with rows and cols for selected category's materials		
-		- Opened on demand when clicking on Foreground/Background PopupButtons
+		! MainFrame owns two instances: Structural and Electrical			
+		! Column 1: scrollable vertical panel with bitmap buttons for selecting category
+		! Column 2: scrollable panel with rows and cols for selected category's materials		
+		! Opened on demand when clicking on Foreground/Background PopupButtons
 			- And then sets focus on material
 		- Impl:
 			+ Rearc:
@@ -301,6 +302,7 @@
 				- Begins selection with the one from WorkbenchState
 					- TODO: how to find material among all buttons:
 						- Vector of vectors of buttons, each with material in objectdata
+					- Scroll CategoryList so that selected one is in view
 			+ Category selection:
 				+ Select panel
 			+ On selection:
@@ -309,14 +311,13 @@
 				+ SB::MainFrame receival:
 					+ set material in WorkbenchState
 					+ start OnWorkbenchStateChanged cascade, i.e. call SyncWorkbenchStateToUI
-			- Test if TransientPopup is right choice, rather than dialog
-			- See if it takes so long to initialize SB::MainFrame that we need IProgress
 			- CategoryPanel:
 				- Make it so that width of cols is fixed, not dictated by labels
 					- Proper wrapping of labels
 				- Area with properties of material under cursor
 					- Hook mouse enter/leave event
 				- Display names of materials and sub-categories, and basic info (depending on Structural, or Electrical+ElecElementType)
+			
 
 - Ship file format:
 	- Min FS version (.shp, .shp2)
@@ -338,6 +339,7 @@
 		- Makes larger image, with bilinear interpolation with alpha blending
 			- Ain't that what we've got already for the auto-texturizer?
 	- Selectable backgrounds
+	- See if it takes so long to initialize SB::MainFrame that we need IProgress
 	- TO-SPEC:
 		- What to do with background music when switching back and forth?
 
