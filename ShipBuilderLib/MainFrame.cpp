@@ -250,7 +250,7 @@ MainFrame::MainFrame(
         mShipTexturizer,
         mResourceLocator);
 
-    // TODO: connect w/custom event
+    mStructuralMaterialPalette->Bind(fsEVT_STRUCTURAL_MATERIAL_SELECTED, &MainFrame::OnStructuralMaterialSelected, this);
 
     mElectricalMaterialPalette = std::make_unique<MaterialPalette<ElectricalMaterial>>(
         this,
@@ -258,7 +258,7 @@ MainFrame::MainFrame(
         mShipTexturizer,
         mResourceLocator);
 
-    // TODO: connect w/custom event
+    mElectricalMaterialPalette->Bind(fsEVT_ELECTRICAL_MATERIAL_SELECTED, &MainFrame::OnElectricalMaterialSelected, this);
 
     //
     // Create view
@@ -955,6 +955,16 @@ void MainFrame::OnOpenLogWindowMenuItemSelected(wxCommandEvent & /*event*/)
     }
 
     mLoggingDialog->Open();
+}
+
+void MainFrame::OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent & event)
+{
+    // TODOHERE
+}
+
+void MainFrame::OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent & event)
+{
+    // TODOHERE
 }
 
 void MainFrame::Open()

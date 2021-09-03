@@ -5,18 +5,18 @@
 ***************************************************************************************/
 #include "MaterialPalette.h"
 
-#include <GameCore/ImageSize.h>
 #include <GameCore/Log.h>
 
 #include <UILib/WxHelpers.h>
 
+#include <wx/gbsizer.h>
 #include <wx/scrolwin.h>
 
 #include <cassert>
-
+#include <sstream>
 
 ImageSize constexpr CategoryButtonSize(80, 60);
-
+ImageSize constexpr PaletteButtonSize(80, 60);
 
 namespace ShipBuilder {
 
@@ -27,9 +27,17 @@ MaterialPalette<TMaterial>::MaterialPalette(
     ShipTexturizer const & shipTexturizer,
     ResourceLocator const & resourceLocator)
     : wxPopupTransientWindow(parent, wxPU_CONTAINS_CONTROLS | wxBORDER_SIMPLE)
+    , mMaterialPalette(materialPalette)
     , mCurrentPlaneType()
 {
     SetBackgroundColour(wxColour("WHITE"));
+
+    {
+        auto font = GetFont();
+        font.SetPointSize(font.GetPointSize() - 2);
+
+        SetFont(font);
+    }
 
     mSizer = new wxBoxSizer(wxHORIZONTAL);
 
@@ -52,32 +60,19 @@ MaterialPalette<TMaterial>::MaterialPalette(
                 //    break;
                 // Take first material
                 assert(category.SubCategories.size() > 0 && category.SubCategories[0].Materials.size() > 0);
-                TMaterial const & material = category.SubCategories[0].Materials[0];
+                TMaterial const & categoryHeadMaterial = category.SubCategories[0].Materials[0];
 
                 // Create category button
                 {
-                    wxToggleButton * categoryButton = new wxToggleButton(mCategoryListPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+                    wxToggleButton * categoryButton = CreateMaterialButton(mCategoryListPanel, CategoryButtonSize, categoryHeadMaterial, shipTexturizer);
 
-                    if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
-                    {
-                        categoryButton->SetBitmap(
-                            WxHelpers::MakeBitmap(
-                                shipTexturizer.MakeTextureSample(
-                                    std::nullopt, // Use shared settings
-                                    CategoryButtonSize,
-                                    material)));
-                    }
-                    else
-                    {
-                        static_assert(TMaterial::Layer == MaterialLayerType::Electrical);
-
-                        categoryButton->SetBitmap(
-                            WxHelpers::MakeMatteBitmap(
-                                rgbaColor(material.RenderColor),
-                                CategoryButtonSize));
-                    }
-
-                    categoryButton->SetToolTip(category.Name);
+                    categoryButton->Bind(
+                        wxEVT_LEFT_DOWN,
+                        [this, categoryHeadMaterial](wxMouseEvent & /*event*/)
+                        {
+                            // Select head material
+                            SelectMaterial(&categoryHeadMaterial);
+                        });
 
                     mCategoryListSizer->Add(
                         categoryButton,
@@ -116,7 +111,12 @@ MaterialPalette<TMaterial>::MaterialPalette(
                             CategoryButtonSize,
                             resourceLocator));
 
-                    categoryButton->SetToolTip(ClearMaterialName);
+                    categoryButton->Bind(
+                        wxEVT_LEFT_DOWN,
+                        [this](wxMouseEvent & /*event*/)
+                        {
+                            OnMaterialSelected(nullptr);
+                        });
 
                     mCategoryListSizer->Add(
                         categoryButton,
@@ -155,18 +155,14 @@ MaterialPalette<TMaterial>::MaterialPalette(
         {
             wxPanel * categoryPanel = CreateCategoryPanel(
                 this,
-                category);
-
-            // TODOHERE
+                category,
+                shipTexturizer);
 
             mSizer->Add(
                 categoryPanel,
                 0,
                 0,
                 0);
-
-            // Start hidden
-            mSizer->Hide(categoryPanel);
 
             mCategoryPanels.push_back(categoryPanel);
         }
@@ -182,8 +178,8 @@ void MaterialPalette<TMaterial>::Open(
     MaterialPlaneType planeType,
     TMaterial const * initialMaterial)
 {
-    // Select specified material
-    // TODO
+    // Select material
+    SelectMaterial(initialMaterial);
 
     // Position and dimension
     SetPosition(referenceArea.GetLeftTop());
@@ -202,13 +198,232 @@ void MaterialPalette<TMaterial>::Open(
 template<typename TMaterial>
 wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
     wxWindow * parent,
-    typename MaterialDatabase::Palette<TMaterial>::Category const & materialCategory)
+    typename MaterialDatabase::Palette<TMaterial>::Category const & materialCategory,
+    ShipTexturizer const & shipTexturizer)
 {
-    wxPanel * categoryPanel = new wxPanel(parent);
+    int constexpr RowsPerSubcategory = (TMaterial::Layer == MaterialLayerType::Structural ? 3 : 2);
 
-    // TODOHERE
+    wxScrolledWindow * categoryPanel = new wxScrolledWindow(parent);
+    categoryPanel->SetScrollRate(5, 5);
+
+    wxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
+
+    {
+        wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+
+        gridSizer->SetFlexibleDirection(wxVERTICAL);
+        gridSizer->SetNonFlexibleGrowMode(wxFLEX_GROWMODE_ALL);
+
+        for (size_t iSubCategory = 0; iSubCategory < materialCategory.SubCategories.size(); ++iSubCategory)
+        {
+            auto const & subCategory = materialCategory.SubCategories[iSubCategory];
+
+            // Sub-category Name
+            /*
+            {
+                wxStaticText * subCategoryNameLabel = new wxStaticText(categoryPanel, wxID_ANY, subCategory.Name);
+
+                subCategoryNameLabel->Wrap(PaletteButtonSize.Width);
+
+                gridSizer->Add(
+                    subCategoryNameLabel,
+                    wxGBPosition(iSubCategory * RowsPerSubcategory, 0),
+                    wxGBSpan(RowsPerSubcategory, 1),
+                    wxEXPAND | wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL,
+                    0);
+            }
+            */
+
+            // Materials
+            for (size_t iMaterial = 0; iMaterial < subCategory.Materials.size(); ++iMaterial)
+            {
+                TMaterial const & material = subCategory.Materials[iMaterial].get();
+
+                // Button
+                {
+                    wxToggleButton * categoryButton = CreateMaterialButton(categoryPanel, PaletteButtonSize, material, shipTexturizer);
+
+                    categoryButton->Bind(
+                        wxEVT_LEFT_DOWN,
+                        [this, material](wxMouseEvent & /*event*/)
+                        {
+                            OnMaterialSelected(&material);
+                        });
+
+                    gridSizer->Add(
+                        categoryButton,
+                        wxGBPosition(iSubCategory * RowsPerSubcategory, iMaterial),
+                        wxGBSpan(1, 1),
+                        wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+                        0);
+                }
+
+                // Name
+                {
+                    wxStaticText * nameLabel = new wxStaticText(categoryPanel, wxID_ANY, material.Name);
+
+                    gridSizer->Add(
+                        nameLabel,
+                        wxGBPosition(iSubCategory * RowsPerSubcategory + 1, iMaterial),
+                        wxGBSpan(1, 1),
+                        wxALIGN_CENTER_HORIZONTAL | wxALIGN_TOP,
+                        0);
+                }
+
+                // Data
+                if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
+                {
+                    std::stringstream ss;
+
+                    ss << std::fixed << std::setprecision(2)
+                        << "Mass: " << material.GetMass()
+                        << " Strength: " << material.Strength;
+
+                    wxStaticText * dataLabel = new wxStaticText(categoryPanel, wxID_ANY, ss.str());
+
+                    gridSizer->Add(
+                        dataLabel,
+                        wxGBPosition(iSubCategory * RowsPerSubcategory + 2, iMaterial),
+                        wxGBSpan(1, 1),
+                        wxALIGN_CENTER_HORIZONTAL | wxALIGN_TOP,
+                        0);
+                }
+            }
+        }
+
+        sizer->Add(gridSizer, 0, wxALL, 4);
+    }
+
+    categoryPanel->SetSizerAndFit(sizer);
 
     return categoryPanel;
+}
+
+template<typename TMaterial>
+wxToggleButton * MaterialPalette<TMaterial>::CreateMaterialButton(
+    wxWindow * parent,
+    ImageSize const & size,
+    TMaterial const & material,
+    ShipTexturizer const & shipTexturizer)
+{
+    wxToggleButton * categoryButton = new wxToggleButton(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+
+    if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
+    {
+        categoryButton->SetBitmap(
+            WxHelpers::MakeBitmap(
+                shipTexturizer.MakeTextureSample(
+                    std::nullopt, // Use shared settings
+                    size,
+                    material)));
+    }
+    else
+    {
+        static_assert(TMaterial::Layer == MaterialLayerType::Electrical);
+
+        categoryButton->SetBitmap(
+            WxHelpers::MakeMatteBitmap(
+                rgbaColor(material.RenderColor),
+                size));
+    }
+
+    return categoryButton;
+}
+
+template<typename TMaterial>
+void MaterialPalette<TMaterial>::SelectMaterial(TMaterial const * material)
+{
+    //
+    // Find category index
+    //
+
+    size_t iCategoryToSelect = 0;
+
+    if (material != nullptr)
+    {
+        assert(material->PaletteCoordinates.has_value());
+
+        // Select specified material
+        for (size_t iCategory = 0; iCategory < mMaterialPalette.Categories.size(); ++iCategory)
+        {
+            auto const & category = mMaterialPalette.Categories[iCategory];
+            if (category.Name == material->PaletteCoordinates->Category)
+            {
+                iCategoryToSelect = iCategory;
+                break;
+            }
+        }
+    }
+    else
+    {
+        // "Clear" material
+        iCategoryToSelect = mMaterialPalette.Categories.size();
+    }
+
+    Freeze();
+
+    //
+    // Select category button
+    //
+
+    for (size_t i = 0; i < mCategoryButtons.size(); ++i)
+    {
+        mCategoryButtons[i]->SetValue(i == iCategoryToSelect);
+    }
+
+    //
+    // Select category panel
+    //
+
+    for (size_t i = 0; i < mCategoryPanels.size(); ++i)
+    {
+        mSizer->Show(
+            mCategoryPanels[i],
+            i == iCategoryToSelect);
+
+        // TODO: select right toggle button
+    }
+
+    Layout();
+
+    // Resize ourselves now
+    mSizer->SetSizeHints(this);
+    Fit();
+
+    Thaw();
+}
+
+template<typename TMaterial>
+void MaterialPalette<TMaterial>::OnMaterialSelected(TMaterial const * material)
+{
+    assert(mCurrentPlaneType.has_value());
+
+    // Fire event
+    if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
+    {
+        ProcessWindowEvent(
+            fsStructuralMaterialSelectedEvent(
+                fsEVT_STRUCTURAL_MATERIAL_SELECTED,
+                this->GetId(),
+                material,
+                *mCurrentPlaneType));
+    }
+    else
+    {
+        assert(TMaterial::Layer == MaterialLayerType::Electrical);
+
+        ProcessWindowEvent(
+            fsElectricalMaterialSelectedEvent(
+                fsEVT_ELECTRICAL_MATERIAL_SELECTED,
+                this->GetId(),
+                material,
+                *mCurrentPlaneType));
+    }
+
+    // Close ourselves
+    Dismiss();
+
+    mCurrentPlaneType.reset();
 }
 
 //

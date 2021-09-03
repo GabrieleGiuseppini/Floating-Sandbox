@@ -288,23 +288,34 @@
 					+ Do preloaded "null" bitmap
 					+ Update tooltip for swaths with material name
 				+ Do also electrical
-			= cctor(MaterialsDB const &, GameTypes::MaterialLayerType == TemplateArg, ...)
-				- Build all panels as grids of static bmps (kinda like BitmapCheckbox)
+			+ cctor(MaterialsDB const &, GameTypes::MaterialLayerType == TemplateArg, ...)
+				= Build all panels as grids of static bmps (kinda like BitmapCheckbox)
 					+ Include "empty" category for no-brush case
 					+ Store sizer for "hiding tricks" to ensure one panel at a time
-					- Fix margin/scrollbar thing
+					+ Fix margin/scrollbar thing
+					+ V and H scrollbars at each category panel
+						+ With adjustment @ Open()					
 			= Open(wxPoint, wxRect referenceArea (absolute rect of work canvas), ShipBuilderTypes::MaterialPlaneType(Fore|Back), Material const *)
 				+ Positionate and resize self
+				+ Hides all category panels except the one
 				- Begins selection with the one from WorkbenchState
-			- On selection:
-				- Fire event - one of Structural|Electrical, with (TMaterial *, MaterialPlaneType) args
-				- SB::MainFrame receival:
+					- TODO: how to find material among all buttons
+			+ Category selection:
+				+ Select panel
+			= On selection:
+				+ Fire event - one of Structural|Electrical, with (TMaterial *, MaterialPlaneType) args
+				+ Close
+				= SB::MainFrame receival:
 					- set material in WorkbenchState
 					- start OnWorkbenchStateChanged cascade, i.e. call SyncWorkbenchStateToUI
 			- Test if TransientPopup is right choice, rather than dialog
-			- See if it takes so long that we need IProgress
-			- Area with properties of material under cursor
-			- Display names of materials and sub-categories, and basic info (depending on Structural, or Electrical+ElecElementType)
+			- See if it takes so long to initialize SB::MainFrame that we need IProgress
+			- CategoryPanel:
+				- Make it so that width of cols is fixed, not dictated by labels
+					- Proper wrapping of labels
+				- Area with properties of material under cursor
+					- Hook mouse enter/leave event
+				- Display names of materials and sub-categories, and basic info (depending on Structural, or Electrical+ElecElementType)
 
 - Ship file format:
 	- Min FS version (.shp, .shp2)
@@ -316,6 +327,8 @@
 		- Extract from other "TODO" .txt file
 
 - Misc:
+	- Localization:
+		- See if can do separate extraction into separate file, which then is loaded at all times by LocalizationManager together with the other one 
 	- Ruler: pick a scale (pixels to meter of original ship), then you choose how long the ruler
 		- L shaped: horizontal and vertical
 		- Ruler sticks to the canvas
