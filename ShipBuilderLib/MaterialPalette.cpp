@@ -10,7 +10,6 @@
 #include <UILib/WxHelpers.h>
 
 #include <wx/gbsizer.h>
-#include <wx/scrolwin.h>
 
 #include <cassert>
 #include <sstream>
@@ -47,7 +46,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
     // Category list
     {
         mCategoryListPanel = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
-        dynamic_cast<wxScrolledWindow *>(mCategoryListPanel)->SetScrollRate(0, 5);
+        mCategoryListPanel->SetScrollRate(0, 5);
 
         mCategoryListSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -74,7 +73,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
                         [this, categoryHeadMaterial](wxMouseEvent & /*event*/)
                         {
                             // Select head material
-                            SelectMaterial(&categoryHeadMaterial);
+                            SetMaterialSelected(&categoryHeadMaterial, false);
                         });
 
                     mCategoryListSizer->Add(
@@ -88,7 +87,8 @@ MaterialPalette<TMaterial>::MaterialPalette(
 
                 // Create label
                 {
-                    wxStaticText * label = new wxStaticText(mCategoryListPanel, wxID_ANY, category.Name);
+                    wxStaticText * label = new wxStaticText(mCategoryListPanel, wxID_ANY, category.Name,
+                        wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
 
                     mCategoryListSizer->Add(
                         label,
@@ -118,7 +118,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
                         wxEVT_LEFT_DOWN,
                         [this](wxMouseEvent & /*event*/)
                         {
-                            OnMaterialSelected(nullptr);
+                            OnMaterialClicked(nullptr);
                         });
 
                     mCategoryListSizer->Add(
@@ -183,8 +183,8 @@ void MaterialPalette<TMaterial>::Open(
     // Remember current plane for this session
     mCurrentPlane = planeType;
 
-    // Select material
-    SelectMaterial(initialMaterial);
+    // Select material, scorlling to it
+    SetMaterialSelected(initialMaterial, true);
 
     // Position and dimension
     SetPosition(referenceArea.GetLeftTop());
@@ -207,7 +207,11 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
     ShipTexturizer const & shipTexturizer)
 {
     // Make sure we have room for this category in the list of material buttons
-    mMaterialButtons.emplace();
+    mMaterialButtons.resize(mMaterialButtons.size() + 1);
+
+    // Make data font
+    auto dataFont = GetFont();
+    dataFont.SetPointSize(dataFont.GetPointSize() - 1);
 
     //
     // Create panel
@@ -250,17 +254,17 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
             // Materials
             for (size_t iMaterial = 0; iMaterial < subCategory.Materials.size(); ++iMaterial)
             {
-                TMaterial const & material = subCategory.Materials[iMaterial].get();
+                TMaterial const * material = (&subCategory.Materials[iMaterial].get());
 
                 // Button
                 {
-                    wxToggleButton * materialButton = CreateMaterialButton(categoryPanel, PaletteButtonSize, material, shipTexturizer);
+                    wxToggleButton * materialButton = CreateMaterialButton(categoryPanel, PaletteButtonSize, *material, shipTexturizer);
 
                     materialButton->Bind(
                         wxEVT_LEFT_DOWN,
                         [this, material](wxMouseEvent & /*event*/)
                         {
-                            OnMaterialSelected(&material);
+                            OnMaterialClicked(material);
                         });
 
                     gridSizer->Add(
@@ -270,14 +274,16 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
                         wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
                         0);
 
-                    // Store button
-                    materialButton->SetClientData(const_cast<void *>(reinterpret_cast<void const *>(&material)));
+                    // Remember button
+                    materialButton->SetClientData(const_cast<void *>(reinterpret_cast<void const *>(material)));
                     mMaterialButtons.back().push_back(materialButton);
                 }
 
                 // Name
                 {
-                    wxStaticText * nameLabel = new wxStaticText(categoryPanel, wxID_ANY, material.Name);
+                    wxStaticText * nameLabel = new wxStaticText(categoryPanel, wxID_ANY, material->Name,
+                        wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+                    nameLabel->Wrap(PaletteButtonSize.Width);
 
                     gridSizer->Add(
                         nameLabel,
@@ -293,17 +299,19 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
                     std::stringstream ss;
 
                     ss << std::fixed << std::setprecision(2)
-                        << "Mass: " << material.GetMass()
-                        << " Strength: " << material.Strength;
+                        << "M:" << material->GetMass()
+                        << " | S=" << material->Strength;
 
-                    wxStaticText * dataLabel = new wxStaticText(categoryPanel, wxID_ANY, ss.str());
+                    wxStaticText * dataLabel = new wxStaticText(categoryPanel, wxID_ANY, ss.str(),
+                        wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+                    dataLabel->SetFont(dataFont);
 
                     gridSizer->Add(
                         dataLabel,
                         wxGBPosition(iSubCategory * RowsPerSubcategory + 2, iMaterial),
                         wxGBSpan(1, 1),
-                        wxALIGN_CENTER_HORIZONTAL | wxALIGN_TOP,
-                        0);
+                        wxALIGN_CENTER_HORIZONTAL | wxALIGN_TOP | wxBOTTOM,
+                        8);
                 }
             }
         }
@@ -348,59 +356,71 @@ wxToggleButton * MaterialPalette<TMaterial>::CreateMaterialButton(
 }
 
 template<typename TMaterial>
-void MaterialPalette<TMaterial>::SelectMaterial(TMaterial const * material)
+void MaterialPalette<TMaterial>::SetMaterialSelected(
+    TMaterial const * material,
+    bool doScrollCategoryList)
 {
+    Freeze();
+
     //
-    // Find category index
+    // Select category button and unselect all others
     //
 
-    size_t iCategoryToSelect = 0;
+    size_t iCategorySelected = 0;
 
     if (material != nullptr)
     {
         assert(material->PaletteCoordinates.has_value());
 
-        // Select specified material
+        // Find category index
         for (size_t iCategory = 0; iCategory < mMaterialPalette.Categories.size(); ++iCategory)
         {
             auto const & category = mMaterialPalette.Categories[iCategory];
             if (category.Name == material->PaletteCoordinates->Category)
             {
-                iCategoryToSelect = iCategory;
+                iCategorySelected = iCategory;
                 break;
             }
         }
     }
     else
     {
-        // "Clear" material
-        iCategoryToSelect = mMaterialPalette.Categories.size();
+        // Use "Clear" category
+        iCategorySelected = mMaterialPalette.Categories.size();
     }
 
-    Freeze();
-
-    //
-    // Select category button
-    //
-
+    // Select category button and deselect others
     for (size_t i = 0; i < mCategoryButtons.size(); ++i)
     {
-        mCategoryButtons[i]->SetValue(i == iCategoryToSelect);
+        mCategoryButtons[i]->SetValue(i == iCategorySelected);
+    }
+
+    if (doScrollCategoryList)
+    {
+        // Make sure category list is scrolled so that button is visible
+        auto const categoryButtonPosition = mCategoryButtons[iCategorySelected]->GetPosition();
+        // TODOHERE
+        LogMessage("TODOHERE: ", categoryButtonPosition.y);
     }
 
     //
-    // Select category panel
+    // Select category panel, its material, and unselect all other materials
     //
 
     for (size_t i = 0; i < mCategoryPanels.size(); ++i)
     {
-        mSizer->Show(
-            mCategoryPanels[i],
-            i == iCategoryToSelect);
-
-        for (auto * button : mMaterialButtons[i])
+        if (i == iCategorySelected)
         {
-            button->SetValue(button->GetClientData() == material);
+            mSizer->Show(mCategoryPanels[i], true);
+
+            for (auto * button : mMaterialButtons[iCategorySelected])
+            {
+                button->SetValue(button->GetClientData() == material);
+            }
+        }
+        else
+        {
+            mSizer->Show(mCategoryPanels[i], false);
         }
     }
 
@@ -414,7 +434,7 @@ void MaterialPalette<TMaterial>::SelectMaterial(TMaterial const * material)
 }
 
 template<typename TMaterial>
-void MaterialPalette<TMaterial>::OnMaterialSelected(TMaterial const * material)
+void MaterialPalette<TMaterial>::OnMaterialClicked(TMaterial const * material)
 {
     assert(mCurrentPlane.has_value());
 
