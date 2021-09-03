@@ -299,15 +299,16 @@
 				+ Positionate and resize self
 				+ Hides all category panels except the one
 				- Begins selection with the one from WorkbenchState
-					- TODO: how to find material among all buttons
+					- TODO: how to find material among all buttons:
+						- Vector of vectors of buttons, each with material in objectdata
 			+ Category selection:
 				+ Select panel
-			= On selection:
+			+ On selection:
 				+ Fire event - one of Structural|Electrical, with (TMaterial *, MaterialPlaneType) args
 				+ Close
-				= SB::MainFrame receival:
-					- set material in WorkbenchState
-					- start OnWorkbenchStateChanged cascade, i.e. call SyncWorkbenchStateToUI
+				+ SB::MainFrame receival:
+					+ set material in WorkbenchState
+					+ start OnWorkbenchStateChanged cascade, i.e. call SyncWorkbenchStateToUI
 			- Test if TransientPopup is right choice, rather than dialog
 			- See if it takes so long to initialize SB::MainFrame that we need IProgress
 			- CategoryPanel:
