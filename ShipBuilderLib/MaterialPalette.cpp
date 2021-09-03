@@ -176,13 +176,11 @@ MaterialPalette<TMaterial>::MaterialPalette(
 
 template<typename TMaterial>
 void MaterialPalette<TMaterial>::Open(
-    wxPoint const & position,
     wxRect const & referenceArea,
     MaterialPlaneType planeType,
     TMaterial const * initialMaterial)
 {
     // Remember current plane for this session
-    assert(!mCurrentPlane.has_value());
     mCurrentPlane = planeType;
 
     // Select material
@@ -208,12 +206,20 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
     typename MaterialDatabase::Palette<TMaterial>::Category const & materialCategory,
     ShipTexturizer const & shipTexturizer)
 {
-    int constexpr RowsPerSubcategory = (TMaterial::Layer == MaterialLayerType::Structural ? 3 : 2);
+    // Make sure we have room for this category in the list of material buttons
+    mMaterialButtons.emplace();
 
+    //
+    // Create panel
+    //
+
+    // Create panel
     wxScrolledWindow * categoryPanel = new wxScrolledWindow(parent);
     categoryPanel->SetScrollRate(5, 5);
 
-    wxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
+    int constexpr RowsPerSubcategory = (TMaterial::Layer == MaterialLayerType::Structural ? 3 : 2);
+
+    wxSizer * sizer = new wxBoxSizer(wxHORIZONTAL); // Just to add a margin
 
     {
         wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
@@ -248,9 +254,9 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
 
                 // Button
                 {
-                    wxToggleButton * categoryButton = CreateMaterialButton(categoryPanel, PaletteButtonSize, material, shipTexturizer);
+                    wxToggleButton * materialButton = CreateMaterialButton(categoryPanel, PaletteButtonSize, material, shipTexturizer);
 
-                    categoryButton->Bind(
+                    materialButton->Bind(
                         wxEVT_LEFT_DOWN,
                         [this, material](wxMouseEvent & /*event*/)
                         {
@@ -258,11 +264,15 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
                         });
 
                     gridSizer->Add(
-                        categoryButton,
+                        materialButton,
                         wxGBPosition(iSubCategory * RowsPerSubcategory, iMaterial),
                         wxGBSpan(1, 1),
                         wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
                         0);
+
+                    // Store button
+                    materialButton->SetClientData(const_cast<void *>(reinterpret_cast<void const *>(&material)));
+                    mMaterialButtons.back().push_back(materialButton);
                 }
 
                 // Name
@@ -388,7 +398,10 @@ void MaterialPalette<TMaterial>::SelectMaterial(TMaterial const * material)
             mCategoryPanels[i],
             i == iCategoryToSelect);
 
-        // TODO: select right toggle button
+        for (auto * button : mMaterialButtons[i])
+        {
+            button->SetValue(button->GetClientData() == material);
+        }
     }
 
     Layout();
@@ -431,9 +444,6 @@ void MaterialPalette<TMaterial>::OnMaterialSelected(TMaterial const * material)
 
     // Close ourselves
     Dismiss();
-
-    // Forget plane for this session
-    mCurrentPlane.reset();
 }
 
 //

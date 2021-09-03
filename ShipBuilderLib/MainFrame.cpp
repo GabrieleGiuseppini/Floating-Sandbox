@@ -1113,26 +1113,27 @@ void MainFrame::OpenMaterialPalette(
     if (nullptr == referenceWindow)
         return;
 
-    auto const position = referenceWindow->ClientToScreen(event.GetPosition());
     auto const referenceRect = mWorkCanvas->GetScreenRect();
 
     if (layer == MaterialLayerType::Structural)
     {
         mStructuralMaterialPalette->Open(
-            position,
             referenceRect,
             plane,
-            mWorkbenchState.GetStructuralForegroundMaterial());
+            plane == MaterialPlaneType::Foreground
+                ? mWorkbenchState.GetStructuralForegroundMaterial()
+                : mWorkbenchState.GetStructuralBackgroundMaterial());
     }
     else
     {
         assert(layer == MaterialLayerType::Electrical);
 
         mElectricalMaterialPalette->Open(
-            position,
             referenceRect,
             plane,
-            mWorkbenchState.GetElectricalForegroundMaterial());
+            plane == MaterialPlaneType::Foreground
+                ? mWorkbenchState.GetElectricalForegroundMaterial()
+                : mWorkbenchState.GetElectricalBackgroundMaterial());
     }
 }
 
