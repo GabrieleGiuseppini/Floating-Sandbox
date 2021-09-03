@@ -44,6 +44,8 @@ MaterialPalette<TMaterial>::MaterialPalette(
         {
             wxBoxSizer * verticalListSizer = new wxBoxSizer(wxVERTICAL);
 
+            verticalListSizer->AddSpacer(4);
+
             // All material categories
             int TODO = 0;
             for (auto const & category : materialPalette.Categories)
@@ -146,14 +148,6 @@ MaterialPalette<TMaterial>::MaterialPalette(
                 0);
         }
 
-        // Spacer for V scrollbar (dynamic)
-        {
-            assert(mCategoryListSizer->GetItemCount() == 1);
-
-            // TODOTEST
-            mCategoryListSizer->AddSpacer(0);
-        }
-
         mCategoryListPanel->SetSizerAndFit(mCategoryListSizer);
 
         mSizer->Add(
@@ -202,19 +196,9 @@ void MaterialPalette<TMaterial>::Open(
     SetMaxSize(referenceArea.GetSize());
     Fit();
 
-    // Enable or disable spacing depending on whether the
-    // category list has the vertical scrollbar or not
-    LogMessage("TODO: HasScrollbar=", mCategoryListPanel->HasScrollbar(wxVERTICAL));
-    //assert(mCategoryListSizer->GetItemCount() == 2);
-    ////mCategoryListSizer->Replace(
-    ////    1,
-    ////    new wxSizerItem(mCategoryListPanel->HasScrollbar(wxVERTICAL) ? 18 : 0, 0));
-    ////mCategoryListSizer->Insert(
-    ////    1,
-    ////    new wxSizerItem(mCategoryListPanel->HasScrollbar(wxVERTICAL) ? 18 : 0, 0));
-
-    mCategoryListSizer->SetSizeHints(mCategoryListPanel); // TODO
-    Layout(); // TODO: see if can remove earlier Fit()
+    // Take care of appearing vertical scrollbar
+    mCategoryListSizer->SetSizeHints(mCategoryListPanel);
+    Layout();
     Fit();
 
     // Open
