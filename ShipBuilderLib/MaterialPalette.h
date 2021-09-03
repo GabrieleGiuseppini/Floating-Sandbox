@@ -15,6 +15,7 @@
 
 #include <wx/wx.h>
 #include <wx/popupwin.h>
+#include <wx/sizer.h>
 #include <wx/tglbtn.h>
 
 #include <optional>
@@ -96,13 +97,27 @@ public:
 
 private:
 
-    // All categories + 1 ("empty")
+    wxPanel * CreateCategoryPanel(
+        wxWindow * parent,
+        typename MaterialDatabase::Palette<TMaterial>::Category const & materialCategory);
+
+private:
+
+    // The sizer holding the category list and all of the category panels
+    // [category list, margin spacer, cat 1 panel, cat 2 panel, ...]
+    wxSizer * mSizer;
+
+    // The category list panel and its sizer
+    wxPanel * mCategoryListPanel;
+    wxSizer * mCategoryListSizer;
+
+    // Category buttons in the category list; one for each category + 1 ("clear")
     std::vector<wxToggleButton *> mCategoryButtons;
 
-    std::optional<MaterialPlaneType> mCurrentPlaneType;
+    // Category panels; one for each category
+    std::vector<wxPanel *> mCategoryPanels;
 
-    // TODOTEST
-    wxPanel * mCategoryPanelTODOTEST;
+    std::optional<MaterialPlaneType> mCurrentPlaneType;
 };
 
 }
