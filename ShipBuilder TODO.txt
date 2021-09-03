@@ -311,10 +311,9 @@
 					+ set material in WorkbenchState
 					+ start OnWorkbenchStateChanged cascade, i.e. call SyncWorkbenchStateToUI
 			- CategoryPanel:
-				- Make it so that width of cols is fixed, not dictated by labels
+				+ Make it so that width of cols is fixed, not dictated by labels
 					+ Name: wrap
-					= Shorter data strings
-						- Split into two separate labels, L<< and R>>
+					+ Shorter data strings
 				- Area with properties of material under cursor
 					- Hook mouse enter/leave event on each button
 					- Display basic info (depending on Structural, or Electrical+ElecElementType)
