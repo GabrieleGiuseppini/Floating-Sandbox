@@ -1084,7 +1084,7 @@ void MainFrame::OpenMaterialPalette(
         return;
 
     auto const position = referenceWindow->ClientToScreen(event.GetPosition());
-    auto const referenceRect = referenceWindow->GetScreenRect();
+    auto const referenceRect = mWorkCanvas->GetScreenRect();
 
     if (layer == MaterialLayerType::Structural)
     {

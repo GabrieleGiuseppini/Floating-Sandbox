@@ -100,6 +100,9 @@ private:
     std::vector<wxToggleButton *> mCategoryButtons;
 
     std::optional<MaterialPlaneType> mCurrentPlaneType;
+
+    // TODOTEST
+    wxPanel * mCategoryPanelTODOTEST;
 };
 
 }
