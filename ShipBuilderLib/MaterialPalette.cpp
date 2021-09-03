@@ -38,13 +38,11 @@ MaterialPalette<TMaterial>::MaterialPalette(
         mCategoryListPanel = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
         dynamic_cast<wxScrolledWindow *>(mCategoryListPanel)->SetScrollRate(0, 5);
 
-        mCategoryListSizer = new wxBoxSizer(wxHORIZONTAL);
+        mCategoryListSizer = new wxBoxSizer(wxVERTICAL);
 
         // List
         {
-            wxBoxSizer * verticalListSizer = new wxBoxSizer(wxVERTICAL);
-
-            verticalListSizer->AddSpacer(4);
+            mCategoryListSizer->AddSpacer(4);
 
             // All material categories
             int TODO = 0;
@@ -81,7 +79,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
 
                     categoryButton->SetToolTip(category.Name);
 
-                    verticalListSizer->Add(
+                    mCategoryListSizer->Add(
                         categoryButton,
                         0,
                         wxALIGN_CENTER_HORIZONTAL,
@@ -94,14 +92,14 @@ MaterialPalette<TMaterial>::MaterialPalette(
                 {
                     wxStaticText * label = new wxStaticText(mCategoryListPanel, wxID_ANY, category.Name);
 
-                    verticalListSizer->Add(
+                    mCategoryListSizer->Add(
                         label,
                         0,
                         wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
                         3);
                 }
 
-                verticalListSizer->AddSpacer(10);
+                mCategoryListSizer->AddSpacer(10);
             }
 
             // "Clear" category
@@ -120,7 +118,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
 
                     categoryButton->SetToolTip(ClearMaterialName);
 
-                    verticalListSizer->Add(
+                    mCategoryListSizer->Add(
                         categoryButton,
                         0,
                         wxALIGN_CENTER_HORIZONTAL,
@@ -133,19 +131,13 @@ MaterialPalette<TMaterial>::MaterialPalette(
                 {
                     wxStaticText * label = new wxStaticText(mCategoryListPanel, wxID_ANY, ClearMaterialName);
 
-                    verticalListSizer->Add(
+                    mCategoryListSizer->Add(
                         label,
                         0,
                         wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
                         3);
                 }
             }
-
-            mCategoryListSizer->Add(
-                verticalListSizer,
-                0,
-                0,
-                0);
         }
 
         mCategoryListPanel->SetSizerAndFit(mCategoryListSizer);
@@ -164,6 +156,8 @@ MaterialPalette<TMaterial>::MaterialPalette(
             wxPanel * categoryPanel = CreateCategoryPanel(
                 this,
                 category);
+
+            // TODOHERE
 
             mSizer->Add(
                 categoryPanel,
