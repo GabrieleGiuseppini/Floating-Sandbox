@@ -11,7 +11,6 @@
 #include <UILib/WxHelpers.h>
 
 #include <wx/scrolwin.h>
-#include <wx/sizer.h>
 
 #include <cassert>
 
@@ -32,125 +31,160 @@ MaterialPalette<TMaterial>::MaterialPalette(
 {
     SetBackgroundColour(wxColour("WHITE"));
 
-    wxBoxSizer * mainSizer = new wxBoxSizer(wxHORIZONTAL);
+    mSizer = new wxBoxSizer(wxHORIZONTAL);
 
     // Category list
     {
-        wxScrolledWindow * categoryListPanel = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
-        categoryListPanel->SetScrollRate(0, 5);
+        mCategoryListPanel = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
+        dynamic_cast<wxScrolledWindow *>(mCategoryListPanel)->SetScrollRate(0, 5);
 
-        wxBoxSizer * categoryListSizer = new wxBoxSizer(wxVERTICAL);
+        mCategoryListSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        // All material categories
-        for (auto const & category : materialPalette.Categories)
+        // List
         {
-            // Take first material
-            assert(category.SubCategories.size() > 0 && category.SubCategories[0].Materials.size() > 0);
-            TMaterial const & material = category.SubCategories[0].Materials[0];
+            wxBoxSizer * verticalListSizer = new wxBoxSizer(wxVERTICAL);
 
-            // Create category button
+            // All material categories
+            int TODO = 0;
+            for (auto const & category : materialPalette.Categories)
             {
-                wxToggleButton * categoryButton = new wxToggleButton(categoryListPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+                //if (TODO++ > 5)
+                //    break;
+                // Take first material
+                assert(category.SubCategories.size() > 0 && category.SubCategories[0].Materials.size() > 0);
+                TMaterial const & material = category.SubCategories[0].Materials[0];
 
-                if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
+                // Create category button
                 {
-                    categoryButton->SetBitmap(
-                        WxHelpers::MakeBitmap(
-                            shipTexturizer.MakeTextureSample(
-                                std::nullopt, // Use shared settings
-                                CategoryButtonSize,
-                                material)));
+                    wxToggleButton * categoryButton = new wxToggleButton(mCategoryListPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+
+                    if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
+                    {
+                        categoryButton->SetBitmap(
+                            WxHelpers::MakeBitmap(
+                                shipTexturizer.MakeTextureSample(
+                                    std::nullopt, // Use shared settings
+                                    CategoryButtonSize,
+                                    material)));
+                    }
+                    else
+                    {
+                        static_assert(TMaterial::Layer == MaterialLayerType::Electrical);
+
+                        categoryButton->SetBitmap(
+                            WxHelpers::MakeMatteBitmap(
+                                rgbaColor(material.RenderColor),
+                                CategoryButtonSize));
+                    }
+
+                    categoryButton->SetToolTip(category.Name);
+
+                    verticalListSizer->Add(
+                        categoryButton,
+                        0,
+                        wxALIGN_CENTER_HORIZONTAL,
+                        0);
+
+                    mCategoryButtons.push_back(categoryButton);
                 }
-                else
+
+                // Create label
                 {
-                    static_assert(TMaterial::Layer == MaterialLayerType::Electrical);
+                    wxStaticText * label = new wxStaticText(mCategoryListPanel, wxID_ANY, category.Name);
 
-                    categoryButton->SetBitmap(
-                        WxHelpers::MakeMatteBitmap(
-                            rgbaColor(material.RenderColor),
-                            CategoryButtonSize));
+                    verticalListSizer->Add(
+                        label,
+                        0,
+                        wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
+                        3);
                 }
 
-                categoryButton->SetToolTip(category.Name);
-
-                categoryListSizer->Add(
-                    categoryButton,
-                    0,
-                    wxALIGN_CENTER_HORIZONTAL,
-                    0);
-
-                mCategoryButtons.push_back(categoryButton);
+                verticalListSizer->AddSpacer(10);
             }
 
-            // Create label
+            // "Clear" category
             {
-                wxStaticText * label = new wxStaticText(categoryListPanel, wxID_ANY, category.Name);
+                static std::string const ClearMaterialName = "Clear";
 
-                categoryListSizer->Add(
-                    label,
-                    0,
-                    wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
-                    3);
+                // Create category button
+                {
+                    wxToggleButton * categoryButton = new wxToggleButton(mCategoryListPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+
+                    categoryButton->SetBitmap(
+                        WxHelpers::LoadBitmap(
+                            "null_material",
+                            CategoryButtonSize,
+                            resourceLocator));
+
+                    categoryButton->SetToolTip(ClearMaterialName);
+
+                    verticalListSizer->Add(
+                        categoryButton,
+                        0,
+                        wxALIGN_CENTER_HORIZONTAL,
+                        0);
+
+                    mCategoryButtons.push_back(categoryButton);
+                }
+
+                // Create label
+                {
+                    wxStaticText * label = new wxStaticText(mCategoryListPanel, wxID_ANY, ClearMaterialName);
+
+                    verticalListSizer->Add(
+                        label,
+                        0,
+                        wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
+                        3);
+                }
             }
 
-            categoryListSizer->AddSpacer(10);
-
-            // Create palette panel for this category
-            {
-
-                // tODOHERE
-            }
+            mCategoryListSizer->Add(
+                verticalListSizer,
+                0,
+                0,
+                0);
         }
 
-        // "clear" category
+        // Spacer for V scrollbar (dynamic)
         {
-            static std::string const ClearMaterialName = "Clear";
+            assert(mCategoryListSizer->GetItemCount() == 1);
 
-            // Create category button
-            {
-                wxToggleButton * categoryButton = new wxToggleButton(categoryListPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-
-                categoryButton->SetBitmap(
-                    WxHelpers::LoadBitmap(
-                        "null_material",
-                        CategoryButtonSize,
-                        resourceLocator));
-
-                categoryButton->SetToolTip(ClearMaterialName);
-
-                categoryListSizer->Add(
-                    categoryButton,
-                    0,
-                    wxALIGN_CENTER_HORIZONTAL,
-                    0);
-
-                mCategoryButtons.push_back(categoryButton);
-            }
-
-            // Create label
-            {
-                wxStaticText * label = new wxStaticText(categoryListPanel, wxID_ANY, ClearMaterialName);
-
-                categoryListSizer->Add(
-                    label,
-                    0,
-                    wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
-                    3);
-            }
+            // TODOTEST
+            mCategoryListSizer->AddSpacer(0);
         }
 
-        categoryListPanel->SetSizerAndFit(categoryListSizer);
+        mCategoryListPanel->SetSizerAndFit(mCategoryListSizer);
 
-        mainSizer->Add(
-            categoryListPanel,
+        mSizer->Add(
+            mCategoryListPanel,
             0,
             wxEXPAND,
             0);
-
-        mCategoryPanelTODOTEST = categoryListPanel;
     }
 
-    SetSizerAndFit(mainSizer);
+    // Category panels
+    {
+        for (auto const & category : materialPalette.Categories)
+        {
+            wxPanel * categoryPanel = CreateCategoryPanel(
+                this,
+                category);
+
+            mSizer->Add(
+                categoryPanel,
+                0,
+                0,
+                0);
+
+            // Start hidden
+            mSizer->Hide(categoryPanel);
+
+            mCategoryPanels.push_back(categoryPanel);
+        }
+    }
+
+    SetSizerAndFit(mSizer);
 }
 
 template<typename TMaterial>
@@ -168,8 +202,35 @@ void MaterialPalette<TMaterial>::Open(
     SetMaxSize(referenceArea.GetSize());
     Fit();
 
+    // Enable or disable spacing depending on whether the
+    // category list has the vertical scrollbar or not
+    LogMessage("TODO: HasScrollbar=", mCategoryListPanel->HasScrollbar(wxVERTICAL));
+    //assert(mCategoryListSizer->GetItemCount() == 2);
+    ////mCategoryListSizer->Replace(
+    ////    1,
+    ////    new wxSizerItem(mCategoryListPanel->HasScrollbar(wxVERTICAL) ? 18 : 0, 0));
+    ////mCategoryListSizer->Insert(
+    ////    1,
+    ////    new wxSizerItem(mCategoryListPanel->HasScrollbar(wxVERTICAL) ? 18 : 0, 0));
+
+    mCategoryListSizer->SetSizeHints(mCategoryListPanel); // TODO
+    Layout(); // TODO: see if can remove earlier Fit()
+    Fit();
+
     // Open
     Popup();
+}
+
+template<typename TMaterial>
+wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
+    wxWindow * parent,
+    typename MaterialDatabase::Palette<TMaterial>::Category const & materialCategory)
+{
+    wxPanel * categoryPanel = new wxPanel(parent);
+
+    // TODOHERE
+
+    return categoryPanel;
 }
 
 //
