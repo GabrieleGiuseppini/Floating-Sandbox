@@ -300,7 +300,8 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
 
                     ss << std::fixed << std::setprecision(2)
                         << "M:" << material->GetMass()
-                        << " | S=" << material->Strength;
+                        << "    "
+                        << "S:" << material->Strength;
 
                     wxStaticText * dataLabel = new wxStaticText(categoryPanel, wxID_ANY, ss.str(),
                         wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
