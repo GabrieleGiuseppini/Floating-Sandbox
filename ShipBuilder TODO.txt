@@ -299,9 +299,8 @@
 			= Open(wxPoint, wxRect referenceArea (absolute rect of work canvas), ShipBuilderTypes::MaterialPlaneType(Fore|Back), Material const *)
 				+ Positionate and resize self
 				+ Hides all category panels except the one
-				- Begins selection with the one from WorkbenchState
-					- TODO: how to find material among all buttons:
-						- Vector of vectors of buttons, each with material in objectdata
+				= Begins selection with the one from WorkbenchState
+					+ Vector of vectors of buttons, each with material in objectdata
 					- Scroll CategoryList so that selected one is in view
 			+ Category selection:
 				+ Select panel
@@ -313,10 +312,12 @@
 					+ start OnWorkbenchStateChanged cascade, i.e. call SyncWorkbenchStateToUI
 			- CategoryPanel:
 				- Make it so that width of cols is fixed, not dictated by labels
-					- Proper wrapping of labels
+					+ Name: wrap
+					= Shorter data strings
+						- Split into two separate labels, L<< and R>>
 				- Area with properties of material under cursor
-					- Hook mouse enter/leave event
-				- Display names of materials and sub-categories, and basic info (depending on Structural, or Electrical+ElecElementType)
+					- Hook mouse enter/leave event on each button
+					- Display basic info (depending on Structural, or Electrical+ElecElementType)
 			
 
 - Ship file format:

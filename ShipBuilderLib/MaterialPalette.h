@@ -17,6 +17,7 @@
 
 #include <wx/wx.h>
 #include <wx/popupwin.h>
+#include <wx/scrolwin.h>
 #include <wx/sizer.h>
 #include <wx/tglbtn.h>
 
@@ -109,9 +110,11 @@ private:
         TMaterial const & material,
         ShipTexturizer const & shipTexturizer);
 
-    void SelectMaterial(TMaterial const * material);
+    void SetMaterialSelected(
+        TMaterial const * material,
+        bool doScrollCategoryList);
 
-    void OnMaterialSelected(TMaterial const * material);
+    void OnMaterialClicked(TMaterial const * material);
 
 private:
 
@@ -122,7 +125,7 @@ private:
     wxSizer * mSizer;
 
     // The category list panel and its sizer
-    wxPanel * mCategoryListPanel;
+    wxScrolledWindow * mCategoryListPanel;
     wxSizer * mCategoryListSizer;
 
     // Category buttons in the category list; one for each category + 1 ("clear")
