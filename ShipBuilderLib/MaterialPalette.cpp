@@ -15,10 +15,13 @@
 #include <cassert>
 #include <sstream>
 
+namespace ShipBuilder {
+
+wxDEFINE_EVENT(fsEVT_STRUCTURAL_MATERIAL_SELECTED, fsStructuralMaterialSelectedEvent);
+wxDEFINE_EVENT(fsEVT_ELECTRICAL_MATERIAL_SELECTED, fsElectricalMaterialSelectedEvent);
+
 ImageSize constexpr CategoryButtonSize(80, 60);
 ImageSize constexpr PaletteButtonSize(80, 60);
-
-namespace ShipBuilder {
 
 template<typename TMaterial>
 MaterialPalette<TMaterial>::MaterialPalette(
@@ -28,7 +31,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
     ResourceLocator const & resourceLocator)
     : wxPopupTransientWindow(parent, wxPU_CONTAINS_CONTROLS | wxBORDER_SIMPLE)
     , mMaterialPalette(materialPalette)
-    , mCurrentPlaneType()
+    , mCurrentPlane()
 {
     SetBackgroundColour(wxColour("WHITE"));
 
@@ -178,6 +181,10 @@ void MaterialPalette<TMaterial>::Open(
     MaterialPlaneType planeType,
     TMaterial const * initialMaterial)
 {
+    // Remember current plane for this session
+    assert(!mCurrentPlane.has_value());
+    mCurrentPlane = planeType;
+
     // Select material
     SelectMaterial(initialMaterial);
 
@@ -396,34 +403,37 @@ void MaterialPalette<TMaterial>::SelectMaterial(TMaterial const * material)
 template<typename TMaterial>
 void MaterialPalette<TMaterial>::OnMaterialSelected(TMaterial const * material)
 {
-    assert(mCurrentPlaneType.has_value());
+    assert(mCurrentPlane.has_value());
 
     // Fire event
     if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
     {
-        ProcessWindowEvent(
-            fsStructuralMaterialSelectedEvent(
-                fsEVT_STRUCTURAL_MATERIAL_SELECTED,
-                this->GetId(),
-                material,
-                *mCurrentPlaneType));
+        auto event = fsStructuralMaterialSelectedEvent(
+            fsEVT_STRUCTURAL_MATERIAL_SELECTED,
+            this->GetId(),
+            material,
+            *mCurrentPlane);
+
+        ProcessWindowEvent(event);
     }
     else
     {
         assert(TMaterial::Layer == MaterialLayerType::Electrical);
 
-        ProcessWindowEvent(
-            fsElectricalMaterialSelectedEvent(
-                fsEVT_ELECTRICAL_MATERIAL_SELECTED,
-                this->GetId(),
-                material,
-                *mCurrentPlaneType));
+        auto event = fsElectricalMaterialSelectedEvent(
+            fsEVT_ELECTRICAL_MATERIAL_SELECTED,
+            this->GetId(),
+            material,
+            *mCurrentPlane);
+
+        ProcessWindowEvent(event);
     }
 
     // Close ourselves
     Dismiss();
 
-    mCurrentPlaneType.reset();
+    // Forget plane for this session
+    mCurrentPlane.reset();
 }
 
 //

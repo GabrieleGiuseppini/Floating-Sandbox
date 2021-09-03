@@ -132,7 +132,7 @@ private:
     // Category panels; one for each category
     std::vector<wxPanel *> mCategoryPanels;
 
-    std::optional<MaterialPlaneType> mCurrentPlaneType;
+    std::optional<MaterialPlaneType> mCurrentPlane;
 };
 
 }

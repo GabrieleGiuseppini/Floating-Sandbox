@@ -959,12 +959,32 @@ void MainFrame::OnOpenLogWindowMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent & event)
 {
-    // TODOHERE
+    if (event.GetMaterialPlane() == MaterialPlaneType::Foreground)
+    {
+        mWorkbenchState.SetStructuralForegroundMaterial(event.GetMaterial());
+    }
+    else
+    {
+        assert(event.GetMaterialPlane() == MaterialPlaneType::Background);
+        mWorkbenchState.SetStructuralBackgroundMaterial(event.GetMaterial());
+    }
+
+    SyncWorkbenchStateToUI();
 }
 
 void MainFrame::OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent & event)
 {
-    // TODOHERE
+    if (event.GetMaterialPlane() == MaterialPlaneType::Foreground)
+    {
+        mWorkbenchState.SetElectricalForegroundMaterial(event.GetMaterial());
+    }
+    else
+    {
+        assert(event.GetMaterialPlane() == MaterialPlaneType::Background);
+        mWorkbenchState.SetElectricalBackgroundMaterial(event.GetMaterial());
+    }
+
+    SyncWorkbenchStateToUI();
 }
 
 void MainFrame::Open()
