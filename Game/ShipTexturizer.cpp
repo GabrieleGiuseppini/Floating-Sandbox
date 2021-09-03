@@ -271,7 +271,7 @@ RgbaImageData ShipTexturizer::MakeTextureSample(
     vec3f const renderPixelColorF = renderColor.toVec3f();
 
     // Calculate constants
-    float const sampleToMaterialTexturePixelConversionFactor = 1.0f / (0.35f * effectiveSettings.MaterialTextureMagnification);
+    float const sampleToMaterialTexturePixelConversionFactor = 1.0f / effectiveSettings.MaterialTextureMagnification;
     float const materialTextureAlpha = 1.0f - effectiveSettings.MaterialTextureTransparency;
 
     //
@@ -287,7 +287,7 @@ RgbaImageData ShipTexturizer::MakeTextureSample(
             vec3f const bumpMapSample = SampleTexture(
                 materialTexture,
                 static_cast<float>(x) * sampleToMaterialTexturePixelConversionFactor,
-                static_cast<float>(sampleSize.Height - 1 - y) * sampleToMaterialTexturePixelConversionFactor);
+                static_cast<float>(y) * sampleToMaterialTexturePixelConversionFactor);
 
             // Bi-directional multiply blending
             vec3f const resultantColorF(

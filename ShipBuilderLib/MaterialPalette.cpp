@@ -6,6 +6,7 @@
 #include "MaterialPalette.h"
 
 #include <GameCore/ImageSize.h>
+#include <GameCore/Log.h>
 
 #include <UILib/WxHelpers.h>
 
@@ -15,7 +16,7 @@
 #include <cassert>
 
 
-ImageSize constexpr CategoryButtonSize(60, 80);
+ImageSize constexpr CategoryButtonSize(80, 60);
 
 
 namespace ShipBuilder {
@@ -35,7 +36,8 @@ MaterialPalette<TMaterial>::MaterialPalette(
 
     // Category list
     {
-        wxScrolledWindow * categoryListPanel = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+        wxScrolledWindow * categoryListPanel = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
+        categoryListPanel->SetScrollRate(0, 5);
 
         wxBoxSizer * categoryListSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -87,9 +89,11 @@ MaterialPalette<TMaterial>::MaterialPalette(
                 categoryListSizer->Add(
                     label,
                     0,
-                    wxBOTTOM | wxALIGN_CENTER_HORIZONTAL,
-                    10);
+                    wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
+                    3);
             }
+
+            categoryListSizer->AddSpacer(10);
 
             // Create palette panel for this category
             {
@@ -130,8 +134,8 @@ MaterialPalette<TMaterial>::MaterialPalette(
                 categoryListSizer->Add(
                     label,
                     0,
-                    wxBOTTOM | wxALIGN_CENTER_HORIZONTAL,
-                    10);
+                    wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
+                    3);
             }
         }
 
@@ -142,6 +146,8 @@ MaterialPalette<TMaterial>::MaterialPalette(
             0,
             wxEXPAND,
             0);
+
+        mCategoryPanelTODOTEST = categoryListPanel;
     }
 
     SetSizerAndFit(mainSizer);
@@ -154,8 +160,15 @@ void MaterialPalette<TMaterial>::Open(
     MaterialPlaneType planeType,
     TMaterial const * initialMaterial)
 {
-    // TODOHERE
-    SetPosition(position);
+    // Select specified material
+    // TODO
+
+    // Position and dimension
+    SetPosition(referenceArea.GetLeftTop());
+    SetMaxSize(referenceArea.GetSize());
+    Fit();
+
+    // Open
     Popup();
 }
 
