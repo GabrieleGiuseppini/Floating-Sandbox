@@ -73,7 +73,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
                         [this, categoryHeadMaterial](wxMouseEvent & /*event*/)
                         {
                             // Select head material
-                            SetMaterialSelected(&categoryHeadMaterial, false);
+                            SetMaterialSelected(&categoryHeadMaterial);
                         });
 
                     mCategoryListSizer->Add(
@@ -183,8 +183,8 @@ void MaterialPalette<TMaterial>::Open(
     // Remember current plane for this session
     mCurrentPlane = planeType;
 
-    // Select material, scorlling to it
-    SetMaterialSelected(initialMaterial, true);
+    // Select material
+    SetMaterialSelected(initialMaterial);
 
     // Position and dimension
     SetPosition(referenceArea.GetLeftTop());
@@ -357,9 +357,7 @@ wxToggleButton * MaterialPalette<TMaterial>::CreateMaterialButton(
 }
 
 template<typename TMaterial>
-void MaterialPalette<TMaterial>::SetMaterialSelected(
-    TMaterial const * material,
-    bool doScrollCategoryList)
+void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
 {
     Freeze();
 
@@ -394,14 +392,6 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(
     for (size_t i = 0; i < mCategoryButtons.size(); ++i)
     {
         mCategoryButtons[i]->SetValue(i == iCategorySelected);
-    }
-
-    if (doScrollCategoryList)
-    {
-        // Make sure category list is scrolled so that button is visible
-        auto const categoryButtonPosition = mCategoryButtons[iCategorySelected]->GetPosition();
-        // TODOHERE
-        LogMessage("TODOHERE: ", categoryButtonPosition.y);
     }
 
     //
