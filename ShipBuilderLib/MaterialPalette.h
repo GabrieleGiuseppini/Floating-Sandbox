@@ -110,9 +110,7 @@ private:
         TMaterial const & material,
         ShipTexturizer const & shipTexturizer);
 
-    void SetMaterialSelected(
-        TMaterial const * material,
-        bool doScrollCategoryList);
+    void SetMaterialSelected(TMaterial const * material);
 
     void OnMaterialClicked(TMaterial const * material);
 

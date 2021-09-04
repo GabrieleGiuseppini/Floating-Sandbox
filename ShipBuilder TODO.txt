@@ -117,10 +117,15 @@
 		- Depends on currently-selected layer:
 			- StructuralToolbar
 			- ElectricalToolbar
-	- View toolbar:
+	- Layers toolbar:
+		- Rename
+		- TODOHERE *
 		- Layer selector
 			- On change: switch toolbar type
 		- 1 slider + N checkboxes for the "other layers" to see on top of currently-edited layer, with that transparency
+		- ReconciliateLayersToolbarWithModel:
+			- Slider, Selector, -: only enabled if > 1 layers
+			- +: only enabled if < max layers
 	= Impl:
 		- Click-And-Draw
 			- Panning (*)
@@ -296,12 +301,11 @@
 					+ Fix margin/scrollbar thing
 					+ V and H scrollbars at each category panel
 						+ With adjustment @ Open()					
-			= Open(wxPoint, wxRect referenceArea (absolute rect of work canvas), ShipBuilderTypes::MaterialPlaneType(Fore|Back), Material const *)
+			+ Open(wxPoint, wxRect referenceArea (absolute rect of work canvas), ShipBuilderTypes::MaterialPlaneType(Fore|Back), Material const *)
 				+ Positionate and resize self
 				+ Hides all category panels except the one
-				= Begins selection with the one from WorkbenchState
+				+ Begins selection with the one from WorkbenchState
 					+ Vector of vectors of buttons, each with material in objectdata
-					- Scroll CategoryList so that selected one is in view
 			+ Category selection:
 				+ Select panel
 			+ On selection:
@@ -310,13 +314,17 @@
 				+ SB::MainFrame receival:
 					+ set material in WorkbenchState
 					+ start OnWorkbenchStateChanged cascade, i.e. call SyncWorkbenchStateToUI
-			- CategoryPanel:
+			= CategoryPanel:
 				+ Make it so that width of cols is fixed, not dictated by labels
 					+ Name: wrap
 					+ Shorter data strings
 				- Area with properties of material under cursor
+					- Try with popup first
 					- Hook mouse enter/leave event on each button
-					- Display basic info (depending on Structural, or Electrical+ElecElementType)
+					- Display basic info (depending on Structural, or Electrical+ElecElementType) in a ListCtrl\Report
+			- Test also Electrical
+				- View toolbar ("Layers Toolbar") *
+			- Do profiling to find low-hanging fruit
 			
 
 - Ship file format:
