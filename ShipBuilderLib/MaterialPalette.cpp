@@ -213,8 +213,8 @@ MaterialPalette<TMaterial>::MaterialPalette(
 
                 rVSizer->Add(
                     hSizer,
-                    0,
-                    0,
+                    0, // Retain vertical size
+                    wxEXPAND, // Expand horizontally
                     0);
             }
             else
@@ -225,8 +225,8 @@ MaterialPalette<TMaterial>::MaterialPalette(
 
                 rVSizer->Add(
                     mElectricalMaterialPropertyGrid,
-                    0,
-                    0,
+                    0, // Retain vertical size
+                    wxEXPAND, // Expand horizontally
                     0);
             }
         }
@@ -253,6 +253,9 @@ void MaterialPalette<TMaterial>::Open(
     // Position and dimension
     SetPosition(referenceArea.GetLeftTop());
     SetMaxSize(referenceArea.GetSize());
+
+    // Clear material properties
+    PopulateMaterialProperties(nullptr);
 
     // Select material - and open right category panel
     SetMaterialSelected(initialMaterial, false);
@@ -541,39 +544,46 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
 {
     if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
     {
-        // TODOHERE: clear all values when material is null
         if (material == nullptr)
         {
-            return;
+            for (int iGrid = 0; iGrid < 2; ++iGrid)
+            {
+                for (auto it = mStructuralMaterialPropertyGrids[iGrid]->GetIterator(); !it.AtEnd(); ++it)
+                {
+                    it.GetProperty()->SetValueToUnspecified();
+                }
+            }
         }
-
-        mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Mass", material->GetMass());
-        mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Strength", material->Strength);
-        mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Stiffness", material->Stiffness);
-        mStructuralMaterialPropertyGrids[0]->SetPropertyValue("IsHull", material->IsHull);
-        mStructuralMaterialPropertyGrids[0]->SetPropertyValue("BuoyancyVolumeFill", material->BuoyancyVolumeFill);
-        mStructuralMaterialPropertyGrids[0]->SetPropertyValue("RustReceptivity", material->RustReceptivity);
-
-        switch (material->CombustionType)
+        else
         {
-            case StructuralMaterial::MaterialCombustionType::Combustion:
+            mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Mass", material->GetMass());
+            mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Strength", material->Strength);
+            mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Stiffness", material->Stiffness);
+            mStructuralMaterialPropertyGrids[0]->SetPropertyValue("IsHull", material->IsHull);
+            mStructuralMaterialPropertyGrids[0]->SetPropertyValue("BuoyancyVolumeFill", material->BuoyancyVolumeFill);
+            mStructuralMaterialPropertyGrids[0]->SetPropertyValue("RustReceptivity", material->RustReceptivity);
+
+            switch (material->CombustionType)
             {
-                mStructuralMaterialPropertyGrids[1]->SetPropertyValue("CombustionType", _T("Combustion"));
-                break;
+                case StructuralMaterial::MaterialCombustionType::Combustion:
+                {
+                    mStructuralMaterialPropertyGrids[1]->SetPropertyValue("CombustionType", _T("Combustion"));
+                    break;
+                }
+
+                case StructuralMaterial::MaterialCombustionType::Explosion:
+                {
+                    mStructuralMaterialPropertyGrids[1]->SetPropertyValue("CombustionType", _T("Explosion"));
+                    break;
+                }
             }
 
-            case StructuralMaterial::MaterialCombustionType::Explosion:
-            {
-                mStructuralMaterialPropertyGrids[1]->SetPropertyValue("CombustionType", _T("Explosion"));
-                break;
-            }
+            mStructuralMaterialPropertyGrids[1]->SetPropertyValue("IgnitionTemperature", material->IgnitionTemperature);
+            mStructuralMaterialPropertyGrids[1]->SetPropertyValue("MeltingTemperature", material->MeltingTemperature);
+            mStructuralMaterialPropertyGrids[1]->SetPropertyValue("SpecificHeat", material->SpecificHeat);
+            mStructuralMaterialPropertyGrids[1]->SetPropertyValue("ThermalConductivity", material->ThermalConductivity);
+            mStructuralMaterialPropertyGrids[1]->SetPropertyValue("ThermalExpansionCoefficient", material->ThermalExpansionCoefficient);
         }
-
-        mStructuralMaterialPropertyGrids[1]->SetPropertyValue("IgnitionTemperature", material->IgnitionTemperature);
-        mStructuralMaterialPropertyGrids[1]->SetPropertyValue("MeltingTemperature", material->MeltingTemperature);
-        mStructuralMaterialPropertyGrids[1]->SetPropertyValue("SpecificHeat", material->SpecificHeat);
-        mStructuralMaterialPropertyGrids[1]->SetPropertyValue("ThermalConductivity", material->ThermalConductivity);
-        mStructuralMaterialPropertyGrids[1]->SetPropertyValue("ThermalExpansionCoefficient", material->ThermalExpansionCoefficient);
     }
     else
     {

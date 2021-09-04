@@ -320,10 +320,11 @@
 					+ Shorter data strings
 				= Redo cat panels as simple panels, all embedded in a wxScrolled ("categoryPanelsContainer") that is immediate child of root
 					+ With HSizer used for hiding
+					- Fix: category panels don't want to grow H
 				- Area with properties of material under cursor
-					- Hook mouse enter/leave event on each button
+					+ Hook mouse enter/leave event on each button
+					- Fix: extra room underneath
 					- Try monotype font
-					- Empty cells: make all properties *string*
 			- Test also Electrical
 				- Do View toolbar ("Layers Toolbar") *
 			- Do profiling to find low-hanging fruit
