@@ -118,7 +118,9 @@ private:
 
     void PopulateMaterialProperties(TMaterial const * material);
 
-    void SetMaterialSelected(TMaterial const * material);
+    void SetMaterialSelected(
+        TMaterial const * material,
+        bool doReLayout);
 
     void OnMaterialClicked(TMaterial const * material);
 
@@ -128,21 +130,34 @@ private:
 
     wxSizer * mRootSizer;
 
-    // The sizer holding the category panels
-    wxSizer * mCategoryPanelsSizer;
+    //
+    // Category list
+    //
 
     // The category list panel and its sizer
     wxScrolledWindow * mCategoryListPanel;
-    wxSizer * mCategoryListSizer;
+    wxSizer * mCategoryListPanelSizer;
 
     // Category buttons in the category list; one for each category + 1 ("clear")
     std::vector<wxToggleButton *> mCategoryButtons;
+
+    //
+    // Category panels
+    //
+
+    // All category panels are in this container
+    wxScrolledWindow * mCategoryPanelsContainer;
+    wxSizer * mCategoryPanelsContainerSizer;
 
     // Category panels; one for each category
     std::vector<wxPanel *> mCategoryPanels;
 
     // Material buttons for each category panel
     std::vector<std::vector<wxToggleButton *>> mMaterialButtons;
+
+    //
+    // Material properties
+    //
 
     // Material properties
     std::array<wxPropertyGrid *, 2> mStructuralMaterialPropertyGrids;
