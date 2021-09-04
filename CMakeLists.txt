@@ -68,7 +68,7 @@ endif()
 
 message(STATUS "wxWidgets_ROOT:" ${wxWidgets_ROOT})
 
-find_package(wxWidgets REQUIRED base gl core html)
+find_package(wxWidgets REQUIRED base gl core html propgrid)
 
 #
 # DevIL
@@ -308,6 +308,7 @@ message (STATUS "c Flags Debug:" ${CMAKE_C_FLAGS_DEBUG})
 message (STATUS "exe Linker Flags Release:" ${CMAKE_EXE_LINKER_FLAGS_RELEASE})
 message (STATUS "exe Linker Flags RelWithDebInfo:" ${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO})
 message (STATUS "exe Linker Flags Debug:" ${CMAKE_EXE_LINKER_FLAGS_DEBUG})
+message (STATUS "wxWidgets libraries:" "${wxWidgets_LIBRARIES}")
 message (STATUS "Additional libraries:" "${ADDITIONAL_LIBRARIES}")
 message (STATUS "Install directory:" ${CMAKE_INSTALL_PREFIX})
 message (STATUS "-----------------------------------------------------")
