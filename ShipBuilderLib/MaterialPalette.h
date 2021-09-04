@@ -17,10 +17,12 @@
 
 #include <wx/wx.h>
 #include <wx/popupwin.h>
+#include <wx/propgrid/propgrid.h>
 #include <wx/scrolwin.h>
 #include <wx/sizer.h>
 #include <wx/tglbtn.h>
 
+#include <array>
 #include <optional>
 #include <vector>
 
@@ -110,6 +112,12 @@ private:
         TMaterial const & material,
         ShipTexturizer const & shipTexturizer);
 
+    std::array<wxPropertyGrid *, 2> CreateStructuralMaterialPropertyGrids(wxWindow * parent);
+
+    wxPropertyGrid * CreateElectricalMaterialPropertyGrid(wxWindow * parent);
+
+    void PopulateMaterialProperties(TMaterial const * material);
+
     void SetMaterialSelected(TMaterial const * material);
 
     void OnMaterialClicked(TMaterial const * material);
@@ -118,9 +126,10 @@ private:
 
     MaterialDatabase::Palette<TMaterial> const & mMaterialPalette;
 
-    // The sizer holding the category list and all of the category panels
-    // [category list, cat 1 panel, cat 2 panel, ...]
-    wxSizer * mSizer;
+    wxSizer * mRootSizer;
+
+    // The sizer holding the category panels
+    wxSizer * mCategoryPanelsSizer;
 
     // The category list panel and its sizer
     wxScrolledWindow * mCategoryListPanel;
@@ -134,6 +143,15 @@ private:
 
     // Material buttons for each category panel
     std::vector<std::vector<wxToggleButton *>> mMaterialButtons;
+
+    // Material properties
+    std::array<wxPropertyGrid *, 2> mStructuralMaterialPropertyGrids;
+    wxPropertyGrid * mElectricalMaterialPropertyGrid;
+    TMaterial const * mCurrentMaterialInPropertyGrid;
+
+    //
+    // State
+    //
 
     std::optional<MaterialPlaneType> mCurrentPlane;
 };

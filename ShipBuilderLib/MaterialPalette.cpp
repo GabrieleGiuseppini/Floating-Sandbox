@@ -10,6 +10,7 @@
 #include <UILib/WxHelpers.h>
 
 #include <wx/gbsizer.h>
+#include <wx/statline.h>
 
 #include <cassert>
 #include <sstream>
@@ -30,6 +31,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
     ResourceLocator const & resourceLocator)
     : wxPopupTransientWindow(parent, wxPU_CONTAINS_CONTROLS | wxBORDER_SIMPLE)
     , mMaterialPalette(materialPalette)
+    , mCurrentMaterialInPropertyGrid(nullptr)
     , mCurrentPlane()
 {
     SetBackgroundColour(wxColour("WHITE"));
@@ -41,7 +43,15 @@ MaterialPalette<TMaterial>::MaterialPalette(
         SetFont(font);
     }
 
-    mSizer = new wxBoxSizer(wxHORIZONTAL);
+    //
+    // Build UI
+    //
+    //               |
+    // Category List |   Category Panel 1 | Category Panel 2 | ...
+    //               |              Material Properties
+    //
+
+    mRootSizer = new wxBoxSizer(wxHORIZONTAL);
 
     // Category list
     {
@@ -145,33 +155,99 @@ MaterialPalette<TMaterial>::MaterialPalette(
 
         mCategoryListPanel->SetSizerAndFit(mCategoryListSizer);
 
-        mSizer->Add(
+        mRootSizer->Add(
             mCategoryListPanel,
             0,
             wxEXPAND,
             0);
     }
 
-    // Category panels
+    // Category panels and material properties
     {
-        for (auto const & category : materialPalette.Categories)
+        wxSizer * rVSizer = new wxBoxSizer(wxVERTICAL);
+
+        // Category panels
         {
-            wxPanel * categoryPanel = CreateCategoryPanel(
-                this,
-                category,
-                shipTexturizer);
+            mCategoryPanelsSizer = new wxBoxSizer(wxHORIZONTAL);
 
-            mSizer->Add(
-                categoryPanel,
-                0,
-                0,
+            for (auto const & category : materialPalette.Categories)
+            {
+                wxPanel * categoryPanel = CreateCategoryPanel(
+                    this,
+                    category,
+                    shipTexturizer);
+
+                mCategoryPanelsSizer->Add(
+                    categoryPanel,
+                    0,
+                    0,
+                    0);
+
+                mCategoryPanels.push_back(categoryPanel);
+            }
+
+            rVSizer->Add(
+                mCategoryPanelsSizer,
+                1,
+                wxEXPAND,
                 0);
-
-            mCategoryPanels.push_back(categoryPanel);
         }
+
+        rVSizer->AddStretchSpacer(1);
+
+        // TODOTEST
+        // Separator
+        ////{
+        ////    wxStaticLine * line = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL);
+
+        ////    rVSizer->Add(
+        ////        line,
+        ////        0,
+        ////        wxEXPAND,
+        ////        0);
+        ////}
+
+        // Material property grid(s)
+        {
+            if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
+            {
+                wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
+
+                {
+                    mStructuralMaterialPropertyGrids = CreateStructuralMaterialPropertyGrids(this);
+
+                    hSizer->Add(mStructuralMaterialPropertyGrids[0], 0, 0, 0);
+                    hSizer->Add(mStructuralMaterialPropertyGrids[1], 0, 0, 0);
+                }
+
+                rVSizer->Add(
+                    hSizer,
+                    0,
+                    0,
+                    0);
+            }
+            else
+            {
+                assert(TMaterial::Layer == MaterialLayerType::Electrical);
+
+                mElectricalMaterialPropertyGrid = CreateElectricalMaterialPropertyGrid(this);
+
+                rVSizer->Add(
+                    mElectricalMaterialPropertyGrid,
+                    0,
+                    0,
+                    0);
+            }
+        }
+
+        mRootSizer->Add(
+            rVSizer,
+            1,
+            wxEXPAND | wxALIGN_LEFT,
+            0);
     }
 
-    SetSizerAndFit(mSizer);
+    SetSizerAndFit(mRootSizer);
 }
 
 template<typename TMaterial>
@@ -260,11 +336,37 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
                 {
                     wxToggleButton * materialButton = CreateMaterialButton(categoryPanel, PaletteButtonSize, *material, shipTexturizer);
 
+                    // Bind mouse click
                     materialButton->Bind(
                         wxEVT_LEFT_DOWN,
                         [this, material](wxMouseEvent & /*event*/)
                         {
                             OnMaterialClicked(material);
+                        });
+
+                    // Bind mouse enter
+                    materialButton->Bind(
+                        wxEVT_ENTER_WINDOW,
+                        [this, material, materialButton](wxMouseEvent & event)
+                        {
+                            LogMessage("TODOTEST: Enter:", reinterpret_cast<intptr_t>(material));
+
+                            PopulateMaterialProperties(material);
+                            mCurrentMaterialInPropertyGrid = material;
+                        });
+
+                    // Bind mouse leave
+                    materialButton->Bind(
+                        wxEVT_LEAVE_WINDOW,
+                        [this, material](wxMouseEvent & /*event*/)
+                        {
+                            if (material == mCurrentMaterialInPropertyGrid)
+                            {
+                                LogMessage("TODOTEST: Leave:", reinterpret_cast<intptr_t>(material));
+
+                                mCurrentMaterialInPropertyGrid = nullptr;
+                                PopulateMaterialProperties(nullptr);
+                            }
                         });
 
                     gridSizer->Add(
@@ -356,6 +458,183 @@ wxToggleButton * MaterialPalette<TMaterial>::CreateMaterialButton(
     return categoryButton;
 }
 
+namespace /* anonymous */ {
+
+wxPropertyGrid * CreatePropertyGrid(wxWindow * parent)
+{
+    return new wxPropertyGrid(parent, wxID_ANY, wxDefaultPosition, wxSize(300, -1),
+        wxPG_DEFAULT_STYLE | wxPG_STATIC_LAYOUT);
+}
+
+wxPGProperty * AddFloatProperty(
+    wxPropertyGrid * pg,
+    wxString const & name,
+    wxString const & label)
+{
+    wxPGProperty * property = pg->Append(new wxFloatProperty(label, name));
+
+    property->SetAttribute("Precision", 2);
+    property->ChangeFlag(wxPG_PROP_NOEDITOR, true);
+    pg->SetPropertyReadOnly(property);
+
+    return property;
+}
+
+wxPGProperty * AddBoolProperty(
+    wxPropertyGrid * pg,
+    wxString const & name,
+    wxString const & label)
+{
+    wxPGProperty * property = pg->Append(new wxBoolProperty(label, name));
+
+    property->ChangeFlag(wxPG_PROP_NOEDITOR, true);
+    pg->SetPropertyReadOnly(property);
+
+    return property;
+}
+
+wxPGProperty * AddStringProperty(
+    wxPropertyGrid * pg,
+    wxString const & name,
+    wxString const & label)
+{
+    wxPGProperty * property = pg->Append(new wxStringProperty(label, name));
+
+    property->ChangeFlag(wxPG_PROP_NOEDITOR, true);
+    pg->SetPropertyReadOnly(property);
+
+    return property;
+}
+
+}
+
+template<typename TMaterial>
+std::array<wxPropertyGrid *, 2> MaterialPalette<TMaterial>::CreateStructuralMaterialPropertyGrids(wxWindow * parent)
+{
+    std::array<wxPropertyGrid *, 2> pgs;
+
+    pgs[0] = CreatePropertyGrid(parent);
+    pgs[1] = CreatePropertyGrid(parent);
+
+    AddFloatProperty(pgs[0], "Mass", _("Mass (Kg)"));
+    AddFloatProperty(pgs[0], "Strength", _("Strength"));
+    AddFloatProperty(pgs[0], "Stiffness", _("Stiffness"));
+    AddBoolProperty(pgs[0], "IsHull", _("Hull"));
+    AddFloatProperty(pgs[0], "BuoyancyVolumeFill", _("Buoyancy"));
+    AddFloatProperty(pgs[0], "RustReceptivity", _("Rust Receptivity"));
+
+    pgs[0]->FitColumns();
+
+    AddStringProperty(pgs[1], "CombustionType", _("Combustion Type"));
+    AddFloatProperty(pgs[1], "IgnitionTemperature", _("Ignition Temperature (K)"));
+    AddFloatProperty(pgs[1], "MeltingTemperature", _("Melting Temperature (K)"));
+    AddFloatProperty(pgs[1], "SpecificHeat", _("Specific Heat (J/(Kg*K))"));
+    AddFloatProperty(pgs[1], "ThermalConductivity", _("Thermal Conductivity (W/(m*K))"));
+    AddFloatProperty(pgs[1], "ThermalExpansionCoefficient", _("Thermal Expansion Coefficient (1/K)"));
+
+    pgs[1]->FitColumns();
+
+    return pgs;
+}
+
+template<typename TMaterial>
+wxPropertyGrid * MaterialPalette<TMaterial>::CreateElectricalMaterialPropertyGrid(wxWindow * parent)
+{
+    return CreatePropertyGrid(parent);
+}
+
+template<typename TMaterial>
+void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * material)
+{
+    if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
+    {
+        // TODOHERE: clear all values when material is null
+        if (material == nullptr)
+        {
+            return;
+        }
+
+        mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Mass", material->GetMass());
+        mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Strength", material->Strength);
+        mStructuralMaterialPropertyGrids[0]->SetPropertyValue("Stiffness", material->Stiffness);
+        mStructuralMaterialPropertyGrids[0]->SetPropertyValue("IsHull", material->IsHull);
+        mStructuralMaterialPropertyGrids[0]->SetPropertyValue("BuoyancyVolumeFill", material->BuoyancyVolumeFill);
+        mStructuralMaterialPropertyGrids[0]->SetPropertyValue("RustReceptivity", material->RustReceptivity);
+
+        switch (material->CombustionType)
+        {
+            case StructuralMaterial::MaterialCombustionType::Combustion:
+            {
+                mStructuralMaterialPropertyGrids[1]->SetPropertyValue("CombustionType", _T("Combustion"));
+                break;
+            }
+
+            case StructuralMaterial::MaterialCombustionType::Explosion:
+            {
+                mStructuralMaterialPropertyGrids[1]->SetPropertyValue("CombustionType", _T("Explosion"));
+                break;
+            }
+        }
+
+        mStructuralMaterialPropertyGrids[1]->SetPropertyValue("IgnitionTemperature", material->IgnitionTemperature);
+        mStructuralMaterialPropertyGrids[1]->SetPropertyValue("MeltingTemperature", material->MeltingTemperature);
+        mStructuralMaterialPropertyGrids[1]->SetPropertyValue("SpecificHeat", material->SpecificHeat);
+        mStructuralMaterialPropertyGrids[1]->SetPropertyValue("ThermalConductivity", material->ThermalConductivity);
+        mStructuralMaterialPropertyGrids[1]->SetPropertyValue("ThermalExpansionCoefficient", material->ThermalExpansionCoefficient);
+    }
+    else
+    {
+        assert(TMaterial::Layer == MaterialLayerType::Electrical);
+
+        mElectricalMaterialPropertyGrid->Clear();
+
+        switch (material->ElectricalType)
+        {
+            case ElectricalMaterial::ElectricalElementType::Engine:
+            {
+                // TODO
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::Generator:
+            {
+                // TODO
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::Lamp:
+            {
+                // TODO
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::WaterPump:
+            {
+                // TODO
+                break;
+            }
+
+            default:
+            {
+                break;
+            }
+        }
+
+        {
+            auto prop = AddBoolProperty(mElectricalMaterialPropertyGrid, "IsSelfPowered", _("Self-Powered"));
+            mElectricalMaterialPropertyGrid->SetPropertyValue(prop, material->IsSelfPowered);
+        }
+
+
+        {
+            auto prop = AddFloatProperty(mElectricalMaterialPropertyGrid, "HeatGenerated", _("Heat Generated (KJ/s)"));
+            mElectricalMaterialPropertyGrid->SetPropertyValue(prop, material->HeatGenerated);
+        }
+
+        mElectricalMaterialPropertyGrid->FitColumns();
+    }
+}
+
 template<typename TMaterial>
 void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
 {
@@ -402,7 +681,7 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
     {
         if (i == iCategorySelected)
         {
-            mSizer->Show(mCategoryPanels[i], true);
+            mCategoryPanelsSizer->Show(mCategoryPanels[i], true);
 
             for (auto * button : mMaterialButtons[iCategorySelected])
             {
@@ -411,14 +690,14 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
         }
         else
         {
-            mSizer->Show(mCategoryPanels[i], false);
+            mCategoryPanelsSizer->Show(mCategoryPanels[i], false);
         }
     }
 
     Layout();
 
     // Resize ourselves now
-    mSizer->SetSizeHints(this);
+    mRootSizer->SetSizeHints(this);
     Fit();
 
     Thaw();
