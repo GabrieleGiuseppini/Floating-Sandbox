@@ -47,8 +47,8 @@ MaterialPalette<TMaterial>::MaterialPalette(
     // Build UI
     //
     //               |
-    // Category List |   Category Panel 1 | Category Panel 2 | ...
-    //               |              Material Properties
+    // Category List |   Category Panels Container
+    //               |     Material Properties
     //
 
     mRootSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -58,11 +58,11 @@ MaterialPalette<TMaterial>::MaterialPalette(
         mCategoryListPanel = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
         mCategoryListPanel->SetScrollRate(0, 5);
 
-        mCategoryListSizer = new wxBoxSizer(wxVERTICAL);
+        mCategoryListPanelSizer = new wxBoxSizer(wxVERTICAL);
 
         // List
         {
-            mCategoryListSizer->AddSpacer(4);
+            mCategoryListPanelSizer->AddSpacer(4);
 
             // All material categories
             int TODO = 0;
@@ -83,10 +83,10 @@ MaterialPalette<TMaterial>::MaterialPalette(
                         [this, categoryHeadMaterial](wxMouseEvent & /*event*/)
                         {
                             // Select head material
-                            SetMaterialSelected(&categoryHeadMaterial);
+                            SetMaterialSelected(&categoryHeadMaterial, true);
                         });
 
-                    mCategoryListSizer->Add(
+                    mCategoryListPanelSizer->Add(
                         categoryButton,
                         0,
                         wxALIGN_CENTER_HORIZONTAL,
@@ -100,14 +100,14 @@ MaterialPalette<TMaterial>::MaterialPalette(
                     wxStaticText * label = new wxStaticText(mCategoryListPanel, wxID_ANY, category.Name,
                         wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
 
-                    mCategoryListSizer->Add(
+                    mCategoryListPanelSizer->Add(
                         label,
                         0,
                         wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
                         3);
                 }
 
-                mCategoryListSizer->AddSpacer(10);
+                mCategoryListPanelSizer->AddSpacer(10);
             }
 
             // "Clear" category
@@ -131,7 +131,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
                             OnMaterialClicked(nullptr);
                         });
 
-                    mCategoryListSizer->Add(
+                    mCategoryListPanelSizer->Add(
                         categoryButton,
                         0,
                         wxALIGN_CENTER_HORIZONTAL,
@@ -144,7 +144,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
                 {
                     wxStaticText * label = new wxStaticText(mCategoryListPanel, wxID_ANY, ClearMaterialName);
 
-                    mCategoryListSizer->Add(
+                    mCategoryListPanelSizer->Add(
                         label,
                         0,
                         wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
@@ -153,7 +153,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
             }
         }
 
-        mCategoryListPanel->SetSizerAndFit(mCategoryListSizer);
+        mCategoryListPanel->SetSizerAndFit(mCategoryListPanelSizer);
 
         mRootSizer->Add(
             mCategoryListPanel,
@@ -168,16 +168,19 @@ MaterialPalette<TMaterial>::MaterialPalette(
 
         // Category panels
         {
-            mCategoryPanelsSizer = new wxBoxSizer(wxHORIZONTAL);
+            mCategoryPanelsContainer = new wxScrolledWindow(this);
+            mCategoryPanelsContainer->SetScrollRate(5, 5);
+
+            mCategoryPanelsContainerSizer = new wxBoxSizer(wxHORIZONTAL);
 
             for (auto const & category : materialPalette.Categories)
             {
                 wxPanel * categoryPanel = CreateCategoryPanel(
-                    this,
+                    mCategoryPanelsContainer,
                     category,
                     shipTexturizer);
 
-                mCategoryPanelsSizer->Add(
+                mCategoryPanelsContainerSizer->Add(
                     categoryPanel,
                     0,
                     0,
@@ -186,26 +189,14 @@ MaterialPalette<TMaterial>::MaterialPalette(
                 mCategoryPanels.push_back(categoryPanel);
             }
 
+            mCategoryPanelsContainer->SetSizer(mCategoryPanelsContainerSizer);
+
             rVSizer->Add(
-                mCategoryPanelsSizer,
-                1,
-                wxEXPAND,
+                mCategoryPanelsContainer,
+                1, // Take all V space available
+                wxEXPAND, // Also expand horizontally
                 0);
         }
-
-        rVSizer->AddStretchSpacer(1);
-
-        // TODOTEST
-        // Separator
-        ////{
-        ////    wxStaticLine * line = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL);
-
-        ////    rVSizer->Add(
-        ////        line,
-        ////        0,
-        ////        wxEXPAND,
-        ////        0);
-        ////}
 
         // Material property grid(s)
         {
@@ -259,16 +250,19 @@ void MaterialPalette<TMaterial>::Open(
     // Remember current plane for this session
     mCurrentPlane = planeType;
 
-    // Select material
-    SetMaterialSelected(initialMaterial);
-
     // Position and dimension
     SetPosition(referenceArea.GetLeftTop());
     SetMaxSize(referenceArea.GetSize());
+
+    // Select material - and open right category panel
+    SetMaterialSelected(initialMaterial, false);
+
+    // Fit new category panel
+    Layout();
     Fit();
 
-    // Take care of appearing vertical scrollbar
-    mCategoryListSizer->SetSizeHints(mCategoryListPanel);
+    // Take care of appearing vertical scrollbar in the category list
+    mCategoryListPanelSizer->SetSizeHints(mCategoryListPanel);
     Layout();
     Fit();
 
@@ -294,8 +288,7 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
     //
 
     // Create panel
-    wxScrolledWindow * categoryPanel = new wxScrolledWindow(parent);
-    categoryPanel->SetScrollRate(5, 5);
+    wxPanel * categoryPanel = new wxPanel(parent);
 
     int constexpr RowsPerSubcategory = (TMaterial::Layer == MaterialLayerType::Structural ? 3 : 2);
 
@@ -636,7 +629,9 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
 }
 
 template<typename TMaterial>
-void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
+void MaterialPalette<TMaterial>::SetMaterialSelected(
+    TMaterial const * material,
+    bool doLayout)
 {
     Freeze();
 
@@ -681,7 +676,7 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
     {
         if (i == iCategorySelected)
         {
-            mCategoryPanelsSizer->Show(mCategoryPanels[i], true);
+            mCategoryPanelsContainerSizer->Show(mCategoryPanels[i], true);
 
             for (auto * button : mMaterialButtons[iCategorySelected])
             {
@@ -690,15 +685,18 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
         }
         else
         {
-            mCategoryPanelsSizer->Show(mCategoryPanels[i], false);
+            mCategoryPanelsContainerSizer->Show(mCategoryPanels[i], false);
         }
     }
 
-    Layout();
+    if (doLayout)
+    {
+        Layout();
 
-    // Resize ourselves now
-    mRootSizer->SetSizeHints(this);
-    Fit();
+        // Resize ourselves now
+        mRootSizer->SetSizeHints(this);
+        Fit();
+    }
 
     Thaw();
 }

@@ -319,12 +319,13 @@
 					+ Name: wrap
 					+ Shorter data strings
 				- Redo cat panels as simple panels, all embedded in a wxScrolled ("categoryPanelsContainer") that is immediate child of root
+					- With HSizer used for hiding
 				- Area with properties of material under cursor
 					- Hook mouse enter/leave event on each button
 					- Try monotype font
-					- Display basic info (depending on Structural, or Electrical+ElecElementType) in a ListCtrl\Report
+					- Empty cells: make all properties *string*
 			- Test also Electrical
-				- View toolbar ("Layers Toolbar") *
+				- Do View toolbar ("Layers Toolbar") *
 			- Do profiling to find low-hanging fruit
 			
 
