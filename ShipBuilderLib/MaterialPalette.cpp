@@ -68,8 +68,8 @@ MaterialPalette<TMaterial>::MaterialPalette(
             int TODO = 0;
             for (auto const & category : materialPalette.Categories)
             {
-                //if (TODO++ > 5)
-                //    break;
+                ////if (TODO++ > 5)
+                ////    break;
                 // Take first material
                 assert(category.SubCategories.size() > 0 && category.SubCategories[0].Materials.size() > 0);
                 TMaterial const & categoryHeadMaterial = category.SubCategories[0].Materials[0];
@@ -259,12 +259,12 @@ void MaterialPalette<TMaterial>::Open(
 
     // Fit new category panel
     Layout();
-    Fit();
+    mRootSizer->SetSizeHints(this);
 
     // Take care of appearing vertical scrollbar in the category list
     mCategoryListPanelSizer->SetSizeHints(mCategoryListPanel);
+    // Given that the category list has resized, re-layout from the root
     Layout();
-    Fit();
 
     // Open
     Popup();
@@ -691,11 +691,14 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(
 
     if (doLayout)
     {
-        Layout();
+        ////Layout();
 
-        // Resize ourselves now
+        ////// Resize ourselves now
+        ////mRootSizer->SetSizeHints(this);
+        ////Fit();
+
+        Layout();
         mRootSizer->SetSizeHints(this);
-        Fit();
     }
 
     Thaw();

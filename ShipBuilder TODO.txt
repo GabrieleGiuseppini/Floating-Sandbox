@@ -318,8 +318,8 @@
 				+ Make it so that width of cols is fixed, not dictated by labels
 					+ Name: wrap
 					+ Shorter data strings
-				- Redo cat panels as simple panels, all embedded in a wxScrolled ("categoryPanelsContainer") that is immediate child of root
-					- With HSizer used for hiding
+				= Redo cat panels as simple panels, all embedded in a wxScrolled ("categoryPanelsContainer") that is immediate child of root
+					+ With HSizer used for hiding
 				- Area with properties of material under cursor
 					- Hook mouse enter/leave event on each button
 					- Try monotype font
