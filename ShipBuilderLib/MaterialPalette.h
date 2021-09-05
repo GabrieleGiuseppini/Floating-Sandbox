@@ -118,9 +118,7 @@ private:
 
     void PopulateMaterialProperties(TMaterial const * material);
 
-    void SetMaterialSelected(
-        TMaterial const * material,
-        bool doReLayout);
+    void SetMaterialSelected(TMaterial const * material);
 
     void OnMaterialClicked(TMaterial const * material);
 

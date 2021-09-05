@@ -83,7 +83,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
                         [this, categoryHeadMaterial](wxMouseEvent & /*event*/)
                         {
                             // Select head material
-                            SetMaterialSelected(&categoryHeadMaterial, true);
+                            SetMaterialSelected(&categoryHeadMaterial);
                         });
 
                     mCategoryListPanelSizer->Add(
@@ -258,16 +258,16 @@ void MaterialPalette<TMaterial>::Open(
     PopulateMaterialProperties(nullptr);
 
     // Select material - and open right category panel
-    SetMaterialSelected(initialMaterial, false);
-
-    // Fit new category panel
-    Layout();
-    mRootSizer->SetSizeHints(this);
+    SetMaterialSelected(initialMaterial);
 
     // Take care of appearing vertical scrollbar in the category list
     mCategoryListPanelSizer->SetSizeHints(mCategoryListPanel);
     // Given that the category list has resized, re-layout from the root
     Layout();
+
+    // Resize ourselves now to take into account category list change
+    mRootSizer->SetSizeHints(this);
+    LogMessage("SetMaterialSelected: container W(E)=", mCategoryPanelsContainer->GetSize().x);
 
     // Open
     Popup();
@@ -662,9 +662,7 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
 }
 
 template<typename TMaterial>
-void MaterialPalette<TMaterial>::SetMaterialSelected(
-    TMaterial const * material,
-    bool doLayout)
+void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
 {
     Freeze();
 
@@ -709,12 +707,13 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(
     {
         if (i == iCategorySelected)
         {
+            // This is the panel we want to be shown
+
+            // Make it visible
             mCategoryPanelsContainerSizer->Show(mCategoryPanels[i], true);
 
-            // TODOTEST
-            // Make our container as wide as this panel
-            mCategoryPanelsContainer->SetSize(mCategoryPanels[i]->GetSize());
-
+            // Deselect all the material buttons of this panel, except
+            // for the selected material's
             for (auto * button : mMaterialButtons[iCategorySelected])
             {
                 button->SetValue(button->GetClientData() == material);
@@ -726,17 +725,22 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(
         }
     }
 
-    if (doLayout)
-    {
-        ////Layout();
+    // Make our container as wide as the visible panel - plus some slack for the scrollbars,
+    // will eventually shrink
+    auto const visiblePanelWidth = mCategoryPanels[iCategorySelected]->GetSize().x;
+    // TODOTEST
+    //mCategoryPanelsContainer->SetMinSize(wxSize(visiblePanelWidth + 32, -1));
+    mCategoryPanelsContainer->SetMinSize(wxSize(visiblePanelWidth, -1));
 
-        ////// Resize ourselves now
-        ////mRootSizer->SetSizeHints(this);
-        ////Fit();
+    // Make visibility changes in the container effective
+    mCategoryPanelsContainerSizer->Layout();
 
-        Layout();
-        mRootSizer->SetSizeHints(this);
-    }
+    // Resize whole popup now that category panel has changed its size
+    Layout();
+    mRootSizer->SetSizeHints(this); // this->Fit() and this->SetSizeHints
+
+    // TODOTEST
+    LogMessage("SetMaterialSelected: container W(END)=", mCategoryPanelsContainer->GetSize().x);
 
     Thaw();
 }

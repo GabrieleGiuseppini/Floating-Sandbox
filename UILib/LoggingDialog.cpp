@@ -28,7 +28,7 @@ LoggingDialog::LoggingDialog(wxWindow * parent)
 		wxID_ANY,
 		_("Logging"),
 		wxDefaultPosition,
-        wxSize(800, 250),
+        wxSize(600, 600),
 		wxCAPTION | wxCLOSE_BOX | wxRESIZE_BORDER | wxMINIMIZE_BOX | wxFRAME_SHAPED,
 		wxS("Logging Window"));
 
