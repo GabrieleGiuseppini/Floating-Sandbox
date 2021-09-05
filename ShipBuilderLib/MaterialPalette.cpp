@@ -198,6 +198,8 @@ MaterialPalette<TMaterial>::MaterialPalette(
                 0);
         }
 
+        rVSizer->AddSpacer(5);
+
         // Material property grid(s)
         {
             if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
@@ -207,8 +209,10 @@ MaterialPalette<TMaterial>::MaterialPalette(
                 {
                     mStructuralMaterialPropertyGrids = CreateStructuralMaterialPropertyGrids(this);
 
+                    hSizer->AddStretchSpacer(1);
                     hSizer->Add(mStructuralMaterialPropertyGrids[0], 0, 0, 0);
                     hSizer->Add(mStructuralMaterialPropertyGrids[1], 0, 0, 0);
+                    hSizer->AddStretchSpacer(1);
                 }
 
                 rVSizer->Add(
@@ -734,11 +738,8 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
     auto const visiblePanelWidth = mCategoryPanels[iCategorySelected]->GetSize().x;
     mCategoryPanelsContainer->SetMinSize(wxSize(visiblePanelWidth, -1));
 
-    // Make visibility changes in the container effective
-    mCategoryPanelsContainerSizer->Layout();
-
     // Resize whole popup now that category panel has changed its size
-    Layout();
+    Layout(); // Will make visibility changes in the container effective
     mRootSizer->SetSizeHints(this); // this->Fit() and this->SetSizeHints
 
     if (mCategoryPanelsContainer->HasScrollbar(wxVERTICAL))
