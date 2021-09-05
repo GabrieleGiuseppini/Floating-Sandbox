@@ -322,11 +322,8 @@
 					+ With HSizer used for hiding
 					- Fix: category panels don't want to grow H
 						- Do another minimal example
-				- Area with properties of material under cursor
+				= Area with properties of material under cursor
 					+ Hook mouse enter/leave event on each button
-					- Fix: extra room underneath
-						+ Do minimap example
-						= Ask forum
 					- Try monotype font
 			- Test also Electrical
 				- Do View toolbar ("Layers Toolbar") *

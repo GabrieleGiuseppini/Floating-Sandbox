@@ -456,10 +456,33 @@ wxToggleButton * MaterialPalette<TMaterial>::CreateMaterialButton(
 
 namespace /* anonymous */ {
 
+class fsPropertyGridWithoutFooter : public wxPropertyGrid
+{
+public:
+
+    fsPropertyGridWithoutFooter(
+        wxWindow * parent,
+        wxSize const & size,
+        long style)
+        : wxPropertyGrid(
+            parent,
+            wxID_ANY,
+            wxDefaultPosition,
+            size,
+            style)
+    {}
+
+    wxSize DoGetBestSize() const override
+    {
+        auto size = wxPropertyGrid::DoGetBestSize();
+        size.y -= 36;
+        return size;
+    }
+};
+
 wxPropertyGrid * CreatePropertyGrid(wxWindow * parent)
 {
-    return new wxPropertyGrid(parent, wxID_ANY, wxDefaultPosition, wxSize(300, -1),
-        wxPG_DEFAULT_STYLE | wxPG_STATIC_LAYOUT);
+    return new fsPropertyGridWithoutFooter(parent, wxSize(300, -1), wxPG_DEFAULT_STYLE | wxPG_STATIC_LAYOUT);
 }
 
 wxPGProperty * AddFloatProperty(
