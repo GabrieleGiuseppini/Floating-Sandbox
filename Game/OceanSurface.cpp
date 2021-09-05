@@ -381,7 +381,7 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
 {
     static_assert(DetailType == OceanRenderDetailType::Basic || DetailType == OceanRenderDetailType::Detailed);
 
-    int64_t constexpr DetailXOffsetSamples = 2; // # of (whole) samples that the detailed planes are offset by
+    register_int constexpr DetailXOffsetSamples = 2; // # of (whole) samples that the detailed planes are offset by
 
     float constexpr MidPlaneDamp = 0.8f;
     float constexpr BackPlaneDamp = 0.45f;
@@ -474,12 +474,12 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
                 // re-using the fractional part that we've already calculated for sampleIndexX
                 //
 
-                auto const indexBack = std::max(currentSampleIndexI - DetailXOffsetSamples * 2, int64_t(0));
+                auto const indexBack = std::max(currentSampleIndexI - DetailXOffsetSamples * 2, register_int(0));
                 float const sampleBack =
                     mSamples[indexBack].SampleValue
                     + mSamples[indexBack].SampleValuePlusOneMinusSampleValue * currentSampleIndexDx;
 
-                auto const indexMid = std::max(currentSampleIndexI - DetailXOffsetSamples, int64_t(0));
+                auto const indexMid = std::max(currentSampleIndexI - DetailXOffsetSamples, register_int(0));
                 float const sampleMid =
                     mSamples[indexMid].SampleValue
                     + mSamples[indexMid].SampleValuePlusOneMinusSampleValue * currentSampleIndexDx;
@@ -509,12 +509,12 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
             // We do one extra iteration as the number of slices is the number of quads, and the last vertical
             // quad side must be at the end of the width
 
-            auto const indexBack = std::max(currentSampleIndexI - DetailXOffsetSamples * 2, int64_t(0));
+            auto const indexBack = std::max(currentSampleIndexI - DetailXOffsetSamples * 2, register_int(0));
             float const sampleBack =
                 mSamples[indexBack].SampleValue
                 + mSamples[indexBack].SampleValuePlusOneMinusSampleValue * currentSampleIndexDx;
 
-            auto const indexMid = std::max(currentSampleIndexI - DetailXOffsetSamples, int64_t(0));
+            auto const indexMid = std::max(currentSampleIndexI - DetailXOffsetSamples, register_int(0));
             float const sampleMid =
                 mSamples[indexMid].SampleValue
                 + mSamples[indexMid].SampleValuePlusOneMinusSampleValue * currentSampleIndexDx;
@@ -549,15 +549,15 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
             {
                 renderContext.UploadOceanBasic(
                     sampleIndexWorldX,
-                    mSamples[leftmostSampleIndex + static_cast<int64_t>(s)].SampleValue);
+                    mSamples[leftmostSampleIndex + static_cast<register_int>(s)].SampleValue);
             }
             else
             {
                 renderContext.UploadOceanDetailed(
                     sampleIndexWorldX,
-                    mSamples[std::max(leftmostSampleIndex + static_cast<int64_t>(s) - DetailXOffsetSamples * 2, int64_t(0))].SampleValue * BackPlaneDamp,
-                    mSamples[std::max(leftmostSampleIndex + static_cast<int64_t>(s) - DetailXOffsetSamples, int64_t(0))].SampleValue * MidPlaneDamp,
-                    mSamples[leftmostSampleIndex + static_cast<int64_t>(s)].SampleValue,
+                    mSamples[std::max(leftmostSampleIndex + static_cast<register_int>(s) - DetailXOffsetSamples * 2, register_int(0))].SampleValue * BackPlaneDamp,
+                    mSamples[std::max(leftmostSampleIndex + static_cast<register_int>(s) - DetailXOffsetSamples, register_int(0))].SampleValue * MidPlaneDamp,
+                    mSamples[leftmostSampleIndex + static_cast<register_int>(s)].SampleValue,
                     0.0f); // No need to worry with second derivative in zoom-in case
             }
         }

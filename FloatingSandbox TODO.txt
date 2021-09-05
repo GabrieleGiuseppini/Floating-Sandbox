@@ -1090,29 +1090,30 @@ Render:
 				+ Take it, after he confirms texture credits
 			+ At least 15 so far
 
-		- Release 1.16.5:
-			- Windows
+		= Release 1.16.5:
+			= Windows
 				+ MSI variables
 				+ Commit & push
-				- 64-bit MSI
-					- Cleanup Install
-					- Build Install
-					- Make MSI
-					- Rename MSI
-					- Test upgrade from previous version
-				- 32-bit MSI
-					- Cleanup Install
-					- Build Install
-					- Make MSI
-					- Rename MSI
-					- Test clean install
-				- Get both installers tested on dev server
-			- Ubuntu
-				- Pull 
-				- Build clean
-				- Make tar
-				- Smoke-test tar
-				- Get tar tested on dev server
+				+ 64-bit MSI
+					+ Cleanup Install
+					+ Build Install
+					+ Make MSI
+					+ Rename MSI
+					+ Test upgrade from previous version
+				+ 32-bit MSI
+					+ Cleanup Install
+					+ Build Install
+					+ Make MSI
+					+ Rename MSI
+					+ Test clean install
+				= Get both installers tested on dev server
+			= Ubuntu
+				+ Pull 
+				+ Build clean
+				+ Make tar ("cd floating-sandbox && tar -cvf ../FloatingSandbox-1.16.5-x64.tar . && cd -")
+				+ Smoke-test tar ("tar -xf FloatingSandbox-1.16.5-x64.tar")
+				+ Zip tar
+				= Get tar tested on dev server
 			- Wait for test results
 			- Cut tag on github
 			- Upload packages to GameJolt
@@ -1129,8 +1130,6 @@ Render:
 			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html
 			+ @ 50fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
 			+ @ 64fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
-			- Set to 15.625 or half of it + 1
-				- Unset @ end
 
 		- More parallelism at Ship::Update
 
@@ -1316,8 +1315,9 @@ Render:
 	- Ubuntu
 		- Pull 
 		- Build clean
-		- Make tar
-		- Smoke-test tar
+		- Make tar ("cd floating-sandbox && tar -cvf ../FloatingSandbox-1.16.5-x64.tar . && cd -")
+		- Smoke-test tar ("tar -xf FloatingSandbox-1.16.5-x64.tar")
+		- Zip tar
 		- Get tar tested on dev server
 	- Wait for test results
 	- Cut tag on github
