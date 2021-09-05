@@ -18,7 +18,6 @@
 #include <wx/button.h>
 #include <wx/gbsizer.h>
 #include <wx/sizer.h>
-#include <wx/slider.h>
 #include <wx/tglbtn.h>
 
 #ifdef _MSC_VER
@@ -30,13 +29,16 @@
 #include <cassert>
 #include <sstream>
 
+namespace ShipBuilder {
+
 
 int constexpr ButtonMargin = 4;
 
 ImageSize constexpr MaterialSwathSize(80, 100);
 
+int const MinLayerTransparency = 0;
+int constexpr MaxLayerTransparency = 100;
 
-namespace ShipBuilder {
 
 MainFrame::MainFrame(
     wxApp * mainApp,
@@ -119,14 +121,14 @@ MainFrame::MainFrame(
     }
 
     {
-        wxPanel * viewPanel = CreateViewPanel(mMainPanel);
+        wxPanel * layersPanel = CreateLayersPanel(mMainPanel, resourceLocator);
 
         gridSizer->Add(
-            viewPanel,
+            layersPanel,
             wxGBPosition(1, 0),
             wxGBSpan(1, 1),
-            0,
-            0);
+            wxALIGN_CENTER_HORIZONTAL | wxTOP | wxBOTTOM,
+            40);
     }
 
     {
@@ -405,7 +407,7 @@ wxPanel * MainFrame::CreateGamePanel(wxWindow * parent)
                 {
                     SaveAndSwitchBackToGame();
                 },
-                _T("Save the current ship and return to the simulator"));
+                _("Save the current ship and return to the simulator"));
 
             sizer->Add(saveAndReturnToGameButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, ButtonMargin);
         }
@@ -419,7 +421,7 @@ wxPanel * MainFrame::CreateGamePanel(wxWindow * parent)
                 {
                     QuitAndSwitchBackToGame();
                 },
-                _T("Discard the current ship and return to the simulator"));
+                _("Discard the current ship and return to the simulator"));
 
             sizer->Add(quitAndReturnToGameButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, ButtonMargin);
         }
@@ -430,20 +432,72 @@ wxPanel * MainFrame::CreateGamePanel(wxWindow * parent)
     return panel;
 }
 
-wxPanel * MainFrame::CreateViewPanel(wxWindow * parent)
+wxPanel * MainFrame::CreateLayersPanel(
+    wxWindow * parent,
+    ResourceLocator const & resourceLocator)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-    wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer * rootVSizer = new wxBoxSizer(wxVERTICAL);
 
     {
+        // Layer selector
         {
-            wxSlider * slider = new wxSlider(panel, wxID_ANY, 0, 0, 10, wxDefaultPosition, wxDefaultSize, wxSL_VERTICAL);
-            sizer->Add(slider, 0, wxLEFT | wxRIGHT, 4);
+            mLayerSelector = new wxBitmapComboBox(panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_READONLY);
+
+            mLayerSelector->Append(
+                _("Structural"),
+                WxHelpers::LoadBitmap("info", resourceLocator)); // TODO
+
+            mLayerSelector->Append(
+                _("Electrical"),
+                WxHelpers::LoadBitmap("info", resourceLocator)); // TODO
+
+            mLayerSelector->Append(
+                _("Texture"),
+                WxHelpers::LoadBitmap("info", resourceLocator)); // TODO
+
+            mLayerSelector->Append(
+                _("Ropes"),
+                WxHelpers::LoadBitmap("info", resourceLocator)); // TODO
+
+            mLayerSelector->Bind(
+                wxEVT_COMBOBOX,
+                [this](wxCommandEvent & event)
+                {
+                    // TODO
+                    LogMessage("Layer selected: ", event.GetInt());
+                });
+
+            rootVSizer->Add(
+                mLayerSelector,
+                0,
+                wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        // Other layers transparency slider
+        {
+            mOtherLayersTransparencySlider = new wxSlider(panel, wxID_ANY, MinLayerTransparency, MinLayerTransparency, MaxLayerTransparency,
+                wxDefaultPosition, wxDefaultSize, wxSL_VERTICAL | wxSL_INVERSE);
+
+            mOtherLayersTransparencySlider->Bind(
+                wxEVT_SLIDER,
+                [this](wxCommandEvent & /*event*/)
+                {
+                    // TODO
+                    LogMessage("Other layers transparency changed: ", mOtherLayersTransparencySlider->GetValue());
+                });
+
+            rootVSizer->Add(
+                mOtherLayersTransparencySlider,
+                0,
+                wxALIGN_CENTER_HORIZONTAL,
+                0);
         }
     }
 
-    panel->SetSizerAndFit(sizer);
+    panel->SetSizerAndFit(rootVSizer);
 
     return panel;
 }
@@ -478,7 +532,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                         // TODOHERE
                         //SetTool(ToolType::Pencil);
                     },
-                    _T("Draw individual structure particles"));
+                    _("Draw individual structure particles"));
 
                 toolsSizer->Add(
                     button,
@@ -498,7 +552,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                         // TODOHERE
                         //SetTool(ToolType::Eraser);
                     },
-                    _T("Erase individual structure particles"));
+                    _("Erase individual structure particles"));
 
                 toolsSizer->Add(
                     button,
@@ -613,7 +667,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                         // TODOHERE
                         //SetTool(ToolType::Pencil);
                     },
-                    _T("Draw individual electrical elements"));
+                    _("Draw individual electrical elements"));
 
                 toolsSizer->Add(
                     button,
@@ -633,7 +687,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                         // TODOHERE
                         //SetTool(ToolType::Eraser);
                     },
-                    _T("Erase individual electrical elements"));
+                    _("Erase individual electrical elements"));
 
                 toolsSizer->Add(
                     button,

@@ -21,12 +21,14 @@
 #include <GameOpenGL/GameOpenGL.h>
 
 #include <wx/app.h>
+#include <wx/bmpcbox.h>
 #include <wx/frame.h>
 #include <wx/glcanvas.h> // Need to include this *after* our glad.h has been included, so that wxGLCanvas ends
                          // up *not* including the system's OpenGL header but glad's instead
 #include <wx/menu.h>
 #include <wx/panel.h>
 #include <wx/scrolbar.h>
+#include <wx/slider.h>
 #include <wx/statbmp.h>
 #include <wx/statusbr.h>
 
@@ -76,7 +78,7 @@ private:
     wxPanel * CreateFilePanel(wxWindow * parent);
     wxPanel * CreateToolSettingsPanel(wxWindow * parent);
     wxPanel * CreateGamePanel(wxWindow * parent);
-    wxPanel * CreateViewPanel(wxWindow * parent);
+    wxPanel * CreateLayersPanel(wxWindow * parent, ResourceLocator const & resourceLocator);
     wxPanel * CreateToolbarPanel(wxWindow * parent);
     wxPanel * CreateWorkPanel(wxWindow * parent);
 
@@ -158,6 +160,10 @@ private:
     wxStaticBitmap * mElectricalForegroundMaterialSelector;
     wxStaticBitmap * mElectricalBackgroundMaterialSelector;
     wxBitmap mNullMaterialBitmap;
+
+    // Layers panel
+    wxBitmapComboBox * mLayerSelector;
+    wxSlider * mOtherLayersTransparencySlider;
 
     // Work panel
     std::unique_ptr<wxGLCanvas> mWorkCanvas;

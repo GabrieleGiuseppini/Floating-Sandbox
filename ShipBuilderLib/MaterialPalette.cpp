@@ -162,11 +162,11 @@ MaterialPalette<TMaterial>::MaterialPalette(
             0);
     }
 
-    // Category panels and material properties
+    // Category panel container and material properties
     {
         wxSizer * rVSizer = new wxBoxSizer(wxVERTICAL);
 
-        // Category panels
+        // Category panel container
         {
             mCategoryPanelsContainer = new wxScrolledWindow(this);
             mCategoryPanelsContainer->SetScrollRate(5, 5);
@@ -516,7 +516,7 @@ std::array<wxPropertyGrid *, 2> MaterialPalette<TMaterial>::CreateStructuralMate
     AddFloatProperty(pgs[0], "Strength", _("Strength"));
     AddFloatProperty(pgs[0], "Stiffness", _("Stiffness"));
     AddBoolProperty(pgs[0], "IsHull", _("Hull"));
-    AddFloatProperty(pgs[0], "BuoyancyVolumeFill", _("Buoyancy"));
+    AddFloatProperty(pgs[0], "BuoyancyVolumeFill", _("Buoyant Volume"));
     AddFloatProperty(pgs[0], "RustReceptivity", _("Rust Receptivity"));
 
     pgs[0]->FitColumns();
@@ -567,13 +567,13 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
             {
                 case StructuralMaterial::MaterialCombustionType::Combustion:
                 {
-                    mStructuralMaterialPropertyGrids[1]->SetPropertyValue("CombustionType", _T("Combustion"));
+                    mStructuralMaterialPropertyGrids[1]->SetPropertyValue("CombustionType", _("Combustion"));
                     break;
                 }
 
                 case StructuralMaterial::MaterialCombustionType::Explosion:
                 {
-                    mStructuralMaterialPropertyGrids[1]->SetPropertyValue("CombustionType", _T("Explosion"));
+                    mStructuralMaterialPropertyGrids[1]->SetPropertyValue("CombustionType", _("Explosion"));
                     break;
                 }
             }
@@ -687,6 +687,10 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(
         if (i == iCategorySelected)
         {
             mCategoryPanelsContainerSizer->Show(mCategoryPanels[i], true);
+
+            // TODOTEST
+            // Make our container as wide as this panel
+            mCategoryPanelsContainer->SetSize(mCategoryPanels[i]->GetSize());
 
             for (auto * button : mMaterialButtons[iCategorySelected])
             {
