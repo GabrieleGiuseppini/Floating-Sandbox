@@ -314,16 +314,15 @@
 				+ SB::MainFrame receival:
 					+ set material in WorkbenchState
 					+ start OnWorkbenchStateChanged cascade, i.e. call SyncWorkbenchStateToUI
-			= CategoryPanel:
+			+ CategoryPanel:
 				+ Make it so that width of cols is fixed, not dictated by labels
 					+ Name: wrap
 					+ Shorter data strings
 				+ Redo cat panels as simple panels, all embedded in a wxScrolled ("categoryPanelsContainer") that is immediate child of root
 					+ With HSizer used for hiding
 					+ Fix: category panels don't want to grow H
-				= Area with properties of material under cursor
+				+ Area with properties of material under cursor
 					+ Hook mouse enter/leave event on each button
-					- Try monotype font
 			- Test also Electrical
 				- Do View toolbar ("Layers Toolbar") *
 			- Do profiling to find low-hanging fruit
