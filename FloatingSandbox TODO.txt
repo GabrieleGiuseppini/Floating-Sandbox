@@ -1065,18 +1065,17 @@ Render:
 		+ Check Smith's feedback
 			+ Explosions
 			
-		= Localization:
+		+ Localization:
 			+ IT
 				+ Help
 				+ Check out changed SettingsDialog strings
-			= ES
-				- Help
-				- Check out changed SettingsDialog strings
+			+ ES
+				+ Help
+				+ Check out changed SettingsDialog strings
 			+ RU
 				+ Help
 				+ Check out changed SettingsDialog strings
-
-		= New ships
+		+ New ships
 			+ Test BeamierBoomer
 				+ Take: IJN_Mikasa.png, USS_C-13_Minneapolis.png
 				+ Add to credits: BeamierBoomer
@@ -1087,11 +1086,8 @@ Render:
 			+ Test: den2006's front ships
 				+ Take them all - he confirms they're all his
 				+ Add to credits: Denis
-			= FERZCL's M.S. Costa Smeralda
-				- Take it, after he confirms texture credits
-			= Test: Kazindel
-				- Asked latest SpaceX and airplanes packs
-				- Credits: "Kazindel"
+			+ FERZCL's M.S. Costa Smeralda
+				+ Take it, after he confirms texture credits
 			+ At least 15 so far
 
 		- Release 1.16.5:
@@ -1434,6 +1430,10 @@ Render:
 				- Require .shp to limit initial sink
 			- Pac0master's Structures
 			- Ryanair's planes
+			- Kazindel
+				+ Asked latest SpaceX and airplanes packs
+				- Credits: "Kazindel"
+
 
 - Ubuntu:
 	+ Event polling issue:

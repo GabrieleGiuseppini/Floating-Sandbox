@@ -36,6 +36,7 @@
 	- And in preparation for the upcoming ShipBuilder, added new colors for some existing materials, reaching a total of 188 structural materials
 - Added new horn sound - thanks to Officer TimCan!
 - ...and a few more small improvements here and there!
+- Musical theme for this release: And One, entire discography
 
 1.16.3
 - Implemented coupling of physical bodies with water surface (finally! Been wanting to do this for years...)

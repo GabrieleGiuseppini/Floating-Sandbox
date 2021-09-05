@@ -1,0 +1,47 @@
+{
+        "electrical_image" : "ms_costa_smeralda_electrical.png.dat",
+        "structure_image":"ms_costa_smeralda_structural.png.dat",
+	"texture_image":"ms_costa_smeralda_texture.png.dat",
+	"offset":{"x":0.0, "y":-14.0},
+	"ship_name":"M.S. Costa Smeralda",
+	"created_by":"FER ZCL",
+	"year_built":"2019",
+	"electrical_panel":{
+
+		"1": {"panel_x":-4, "panel_y":0, "label":"Engines" },
+		"2": {"panel_x":-3, "panel_y":0, "label":"Engine #1" },
+		"3": {"panel_x":-2, "panel_y":0, "label":"Engine #2" },
+
+		"4": {"panel_x":0, "panel_y":0, "label":"Horn" },
+		"19": {"panel_x":1, "panel_y":0, "label":"Pumps+Locks" },
+
+		"0": {"panel_x":-4, "panel_y":0, "label":"Generator", "is_hidden": true },
+		"20": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"21": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"22": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"23": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"24": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"25": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"26": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"27": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"28": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"29": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"30": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"31": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"32": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },		
+		"33": {"panel_x":-4, "panel_y":0, "label":"WTDoor", "is_hidden": true },
+		"35": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"36": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"37": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"38": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"39": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"40": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"41": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"42": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"43": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"44": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"45": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true },
+		"46": {"panel_x":-4, "panel_y":0, "label":"Pump", "is_hidden": true }
+		
+	}
+}
