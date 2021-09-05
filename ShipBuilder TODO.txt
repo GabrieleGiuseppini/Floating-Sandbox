@@ -322,6 +322,8 @@
 					+ With HSizer used for hiding
 					- Fix: category panels don't want to grow H
 						- Do another minimal example
+							- ScrolledWin's BestVirtualSize is always the size of the contained visible panel
+							- ScrolledWin's BestSize is always 16, 16 - which is minSize + scrollbars
 				= Area with properties of material under cursor
 					+ Hook mouse enter/leave event on each button
 					- Try monotype font
