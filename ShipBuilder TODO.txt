@@ -117,15 +117,15 @@
 		- Depends on currently-selected layer:
 			- StructuralToolbar
 			- ElectricalToolbar
-	- Layers toolbar:
-		- Rename
-		- TODOHERE *
+	= Layers toolbar:
+		+ Rename
 		- Layer selector
 			- On change: switch toolbar type
-		- 1 slider + N checkboxes for the "other layers" to see on top of currently-edited layer, with that transparency
+		- Adding/removing layers: TODO
 		- ReconciliateLayersToolbarWithModel:
 			- Slider, Selector, -: only enabled if > 1 layers
 			- +: only enabled if < max layers
+		- Do icons for layers
 	= Impl:
 		- Click-And-Draw
 			- Panning (*)
@@ -321,9 +321,12 @@
 				= Redo cat panels as simple panels, all embedded in a wxScrolled ("categoryPanelsContainer") that is immediate child of root
 					+ With HSizer used for hiding
 					- Fix: category panels don't want to grow H
+						- Do another minimal example
 				- Area with properties of material under cursor
 					+ Hook mouse enter/leave event on each button
 					- Fix: extra room underneath
+						+ Do minimap example
+						= Ask forum
 					- Try monotype font
 			- Test also Electrical
 				- Do View toolbar ("Layers Toolbar") *
