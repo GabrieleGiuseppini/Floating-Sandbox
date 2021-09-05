@@ -257,17 +257,15 @@ void MaterialPalette<TMaterial>::Open(
     // Clear material properties
     PopulateMaterialProperties(nullptr);
 
-    // Select material - and open right category panel
+    // Select material - showing its category panel
     SetMaterialSelected(initialMaterial);
 
     // Take care of appearing vertical scrollbar in the category list
     mCategoryListPanelSizer->SetSizeHints(mCategoryListPanel);
-    // Given that the category list has resized, re-layout from the root
-    Layout();
+    Layout(); // Given that the category list has resized, re-layout from the root
 
-    // Resize ourselves now to take into account category list change
+    // Resize ourselves now to take into account category list resize
     mRootSizer->SetSizeHints(this);
-    LogMessage("SetMaterialSelected: container W(E)=", mCategoryPanelsContainer->GetSize().x);
 
     // Open
     Popup();
@@ -345,8 +343,6 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
                         wxEVT_ENTER_WINDOW,
                         [this, material, materialButton](wxMouseEvent & event)
                         {
-                            LogMessage("TODOTEST: Enter:", reinterpret_cast<intptr_t>(material));
-
                             PopulateMaterialProperties(material);
                             mCurrentMaterialInPropertyGrid = material;
                         });
@@ -358,8 +354,6 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
                         {
                             if (material == mCurrentMaterialInPropertyGrid)
                             {
-                                LogMessage("TODOTEST: Leave:", reinterpret_cast<intptr_t>(material));
-
                                 mCurrentMaterialInPropertyGrid = nullptr;
                                 PopulateMaterialProperties(nullptr);
                             }
@@ -567,6 +561,9 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
 {
     if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
     {
+        mStructuralMaterialPropertyGrids[0]->Freeze();
+        mStructuralMaterialPropertyGrids[1]->Freeze();
+
         if (material == nullptr)
         {
             for (int iGrid = 0; iGrid < 2; ++iGrid)
@@ -607,10 +604,15 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
             mStructuralMaterialPropertyGrids[1]->SetPropertyValue("ThermalConductivity", material->ThermalConductivity);
             mStructuralMaterialPropertyGrids[1]->SetPropertyValue("ThermalExpansionCoefficient", material->ThermalExpansionCoefficient);
         }
+
+        mStructuralMaterialPropertyGrids[0]->Thaw();
+        mStructuralMaterialPropertyGrids[1]->Thaw();
     }
     else
     {
         assert(TMaterial::Layer == MaterialLayerType::Electrical);
+
+        mElectricalMaterialPropertyGrid->Freeze();
 
         mElectricalMaterialPropertyGrid->Clear();
 
@@ -658,6 +660,8 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
         }
 
         mElectricalMaterialPropertyGrid->FitColumns();
+
+        mElectricalMaterialPropertyGrid->Thaw();
     }
 }
 
@@ -728,8 +732,6 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
     // Make our container as wide as the visible panel - plus some slack for the scrollbars,
     // will eventually shrink
     auto const visiblePanelWidth = mCategoryPanels[iCategorySelected]->GetSize().x;
-    // TODOTEST
-    //mCategoryPanelsContainer->SetMinSize(wxSize(visiblePanelWidth + 32, -1));
     mCategoryPanelsContainer->SetMinSize(wxSize(visiblePanelWidth, -1));
 
     // Make visibility changes in the container effective
@@ -739,8 +741,16 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
     Layout();
     mRootSizer->SetSizeHints(this); // this->Fit() and this->SetSizeHints
 
-    // TODOTEST
-    LogMessage("SetMaterialSelected: container W(END)=", mCategoryPanelsContainer->GetSize().x);
+    if (mCategoryPanelsContainer->HasScrollbar(wxVERTICAL))
+    {
+        // Take scrollbars into account
+        auto const scrollbarWidth = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X, mCategoryPanelsContainer);
+        mCategoryPanelsContainer->SetMinSize(wxSize(visiblePanelWidth + scrollbarWidth, -1));
+
+        // Resize whole popup now that category panel has changed its size
+        Layout();
+        mRootSizer->SetSizeHints(this); // this->Fit() and this->SetSizeHints
+    }
 
     Thaw();
 }
