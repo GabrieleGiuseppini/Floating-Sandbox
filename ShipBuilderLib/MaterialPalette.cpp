@@ -711,14 +711,18 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
     // Select category panel, its material, and unselect all other materials
     //
 
+    wxPanel * selectedCategoryPanel = nullptr;
+
     for (size_t i = 0; i < mCategoryPanels.size(); ++i)
     {
         if (i == iCategorySelected)
         {
             // This is the panel we want to be shown
 
+            selectedCategoryPanel = mCategoryPanels[i];
+
             // Make it visible
-            mCategoryPanelsContainerSizer->Show(mCategoryPanels[i], true);
+            mCategoryPanelsContainerSizer->Show(selectedCategoryPanel, true);
 
             // Deselect all the material buttons of this panel, except
             // for the selected material's
@@ -735,8 +739,11 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
 
     // Make our container as wide as the visible panel - plus some slack for the scrollbars,
     // will eventually shrink
-    auto const visiblePanelWidth = mCategoryPanels[iCategorySelected]->GetSize().x;
-    mCategoryPanelsContainer->SetMinSize(wxSize(visiblePanelWidth, -1));
+    if (selectedCategoryPanel != nullptr)
+    {
+        auto const visiblePanelWidth = selectedCategoryPanel->GetSize().x;
+        mCategoryPanelsContainer->SetMinSize(wxSize(visiblePanelWidth, -1));
+    }
 
     // Resize whole popup now that category panel has changed its size
     Layout(); // Will make visibility changes in the container effective
@@ -745,8 +752,11 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
     if (mCategoryPanelsContainer->HasScrollbar(wxVERTICAL))
     {
         // Take scrollbars into account
-        auto const scrollbarWidth = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X, mCategoryPanelsContainer);
-        mCategoryPanelsContainer->SetMinSize(wxSize(visiblePanelWidth + scrollbarWidth, -1));
+        if (selectedCategoryPanel != nullptr)
+        {
+            auto const scrollbarWidth = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X, mCategoryPanelsContainer);
+            mCategoryPanelsContainer->SetMinSize(wxSize(selectedCategoryPanel->GetSize().x + scrollbarWidth, -1));
+        }
 
         // Resize whole popup now that category panel has changed its size
         Layout();
