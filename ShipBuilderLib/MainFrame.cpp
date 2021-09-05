@@ -997,6 +997,9 @@ void MainFrame::OnQuitAndGoBack(wxCommandEvent & /*event*/)
 
 void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 {
+    mStructuralMaterialPalette->Close();
+    mElectricalMaterialPalette->Close();
+
     // Close frame
     Close();
 }
