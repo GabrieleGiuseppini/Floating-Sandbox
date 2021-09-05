@@ -276,6 +276,12 @@ void MaterialPalette<TMaterial>::Open(
 }
 
 template<typename TMaterial>
+void MaterialPalette<TMaterial>::Close()
+{
+    Dismiss();
+}
+
+template<typename TMaterial>
 wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
     wxWindow * parent,
     typename MaterialDatabase::Palette<TMaterial>::Category const & materialCategory,

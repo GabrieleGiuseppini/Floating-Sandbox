@@ -99,6 +99,8 @@ public:
         MaterialPlaneType planeType,
         TMaterial const * initialMaterial);
 
+    void Close();
+
 private:
 
     wxPanel * CreateCategoryPanel(

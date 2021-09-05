@@ -119,11 +119,13 @@
 			- ElectricalToolbar
 	= Layers toolbar:
 		+ Rename
+		- Rearc UI:
+			- TODOHERE
 		- Layer selector
 			- On change: switch toolbar type
 		- Adding/removing layers: TODO
 		- ReconciliateLayersToolbarWithModel:
-			- Slider, Selector, -: only enabled if > 1 layers
+			- Slider, Selector, -: only enabled if > 1 layers (Controller.GetModelController().GetModel().HasExtraLayers())
 			- +: only enabled if < max layers
 		- Do icons for layers
 	= Impl:
