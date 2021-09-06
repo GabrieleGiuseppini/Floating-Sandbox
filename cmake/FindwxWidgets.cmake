@@ -741,7 +741,7 @@ else()
     find_program(wxWidgets_CONFIG_EXECUTABLE
       NAMES $ENV{WX_CONFIG} wx-config wx-config-3.1 wx-config-3.0 wx-config-2.9 wx-config-2.8
       DOC "Location of wxWidgets library configuration provider binary (wx-config)."
-      ONLY_CMAKE_FIND_ROOT_PATH
+      #ONLY_CMAKE_FIND_ROOT_PATH
       )
 
     if(wxWidgets_CONFIG_EXECUTABLE)
