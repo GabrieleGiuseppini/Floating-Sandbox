@@ -1091,7 +1091,7 @@ Render:
 			+ At least 15 so far
 
 		= Release 1.16.5:
-			= Windows
+			+ Windows
 				+ MSI variables
 				+ Commit & push
 				+ 64-bit MSI
@@ -1106,25 +1106,35 @@ Render:
 					+ Make MSI
 					+ Rename MSI
 					+ Test clean install
-				= Get both installers tested on dev server
-			= Ubuntu
+				+ Get both installers tested on dev server
+			+ Ubuntu
 				+ Pull 
 				+ Build clean
 				+ Make tar ("cd floating-sandbox && tar -cvf ../FloatingSandbox-1.16.5-x64.tar . && cd -")
 				+ Smoke-test tar ("tar -xf FloatingSandbox-1.16.5-x64.tar")
 				+ Zip tar
-				= Get tar tested on dev server
-			- Wait for test results
-			- Cut tag on github
-			- Upload packages to GameJolt
-				- Report file as safe (https://gamejolt.com/privacy)
-				- Post
+				+ Get tar tested on dev server
+			+ Wait for test results
+			+ Cut tag on github
+			+ Upload packages to GameJolt
+				+ Report file as safe (https://gamejolt.com/privacy)
+				+ Post
+				+ Edit description and add Ubuntu
 			- www.floatingsandbox.com:
 				- Upload changes.txt
 					- Test w/old FS
-				- Update current version in FAQ
+				+ Update current version in FAQ
+				+ Add Ubuntu to versions
+
+		+ Fix derivative in ocean shader
 
 		// -----------------------------------------------------------------------
+
+		+ Change version minor
+		+ Nuke Ship Editor request for help from Readme
+		- Commit and push
+
+		- Preferences flag for starting full-screen
 
 		- See windows timer/50fps thing
 			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html
@@ -1153,11 +1163,11 @@ Render:
 			- Sharing VBOs in VAOs: 
 				- https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo
 				- https://stackoverflow.com/questions/23542355/using-a-vertex-buffer-in-two-different-vertex-array-objects
-				- Idea: one single "TriangleQuads" VBO for all render contexts, created and initialized in GlobalRenderContext, and passed
+				- Idea: one single "TriangleQuadIndexSeries" VBO for all render contexts, created and initialized in GlobalRenderContext, and passed
 				  to all child contextes via cctor
-					- New class in OpenGL lib: TriangleQuadsSeriesVBO
+					- New class in OpenGL lib: TriangleQuadIndexSeriesVBO
 						- Wraps VBO (private) and local buffer (BoundedVector, private)
-							- VBO created in static factory (read below, instance of TriangleQuadsSeriesVBO is deferred-init'd as uq_ptr)
+							- VBO created in static factory (read below, instance of TriangleQuadIndexSeriesVBO is deferred-init'd as uq_ptr)
 						- Exposes void ensure_size(# of quads)
 							- If # of quads > current: enlarge & populate local buffer, flag as dirty
 							- Starts empty

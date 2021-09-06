@@ -9,7 +9,7 @@ vec4 CalculateOceanPlaneColor(
     // We use the second derivative to offset the border width vertically
     //
     
-    float dWorld = dFdy(yWorld); // World per pixel
+    float dWorld = abs(dFdy(yWorld)); // World per pixel
     float basalBorderWidth = 1.5 * dWorld; // pixels
 
 #ifdef RENDER_ALL_PLANES

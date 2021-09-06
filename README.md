@@ -78,10 +78,8 @@ Over the years I've been writing down OS-specific build steps:
 - [Ubuntu](https://github.com/GabrieleGiuseppini/Floating-Sandbox/BUILD-Ubuntu.md)
 
 # Contributing
-At this moment I'm looking for volunteers for three specific tasks: creating a "Ship Editor" for the game, creating new ships, and building the game on non-Windows platforms.
+At this moment I'm looking for volunteers for two specific tasks: creating new ships, and building the game on non-Windows platforms.
 
-With the "Ship Editor" a user would be able to craft a ship from nothing, picking materials out of a dictionary, laying out ropes, and adjusting texture maps to the ship's structure. The UI would also provide feedback on the current buoyancy of the ship and its mass center. Contact me if you'd like to apply! You need to know C++ as most of the physics code you'll use in the UI will come straight from the game's core library.
+If you like building ships and you are making nice models, I'd like to collect your ships - and whatever other bodies you can imagine floating and sinking in water! Just send your ships to me and you'll get a proper *thank you* in the About dialog!
 
-If you're more on the graphics side, instead, I'd like to collect your ships - and whatever other bodies you can imagine floating and sinking in water! Just send your ships to me and you'll get a proper *thank you* in the About dialog!
-
-Finally, I'm looking for builders for non-Windows platforms. I'll also gladly accept any code contributions that may be necessary to ensure the project builds on multiple platforms.
+Also, I'm looking for builders for non-Windows platforms. I'll also gladly accept any code contributions that may be necessary to ensure the project builds on multiple platforms.
