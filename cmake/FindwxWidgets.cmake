@@ -737,15 +737,14 @@ else()
     #-----------------------------------------------------------------
     # UNIX: Start actual work.
     #-----------------------------------------------------------------
-    # Support cross-compiling, only search in the target platform.
-    message(STATUS "CMAKE_FIND_APPBUNDLE: " ${CMAKE_FIND_APPBUNDLE})
-    message(STATUS "CMAKE_FIND_FRAMEWORK: " ${CMAKE_FIND_FRAMEWORK})
-    message(STATUS "wxWidgets_ROOT: " ${wxWidgets_ROOT})
+    # Support cross-compiling, only search in the target platform.    
     find_program(wxWidgets_CONFIG_EXECUTABLE
       NAMES $ENV{WX_CONFIG} wx-config wx-config-3.1 wx-config-3.0 wx-config-2.9 wx-config-2.8
       DOC "Location of wxWidgets library configuration provider binary (wx-config)."
       ONLY_CMAKE_FIND_ROOT_PATH
       )
+
+    message(STATUS "wxWidgets_CONFIG_EXECUTABLE: " ${wxWidgets_CONFIG_EXECUTABLE})
 
     if(wxWidgets_CONFIG_EXECUTABLE)
       set(wxWidgets_FOUND TRUE)
