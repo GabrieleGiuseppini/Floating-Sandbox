@@ -66,11 +66,15 @@ endif()
 # wxWidgets
 #
 
+message(STATUS "wxWidgets_ROOT:" ${wxWidgets_ROOT})
+
 find_package(wxWidgets REQUIRED base gl core html)
 
 #
 # DevIL
 #
+
+message(STATUS "DevIL_ROOT_DIR:" ${DevIL_ROOT_DIR})
 
 find_package(DevIL REQUIRED)
 
@@ -86,6 +90,8 @@ endif()
 #
 # SFML
 #
+
+message(STATUS "SFML_DIR:" ${SFML_DIR})
 
 if(FS_USE_STATIC_LIBS)
 	if(NOT WIN32) # No real reason, other than I'm slightly nervous to embed SFML code in FloatingSandbox.exe		

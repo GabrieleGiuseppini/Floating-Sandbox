@@ -22,7 +22,7 @@
 #
 # ::
 #
-#   wxWidgets_ROOT_DIR      - Base wxWidgets directory
+#   wxWidgets_ROOT          - Base wxWidgets directory
 #                             (e.g., C:/wxWidgets-2.6.3).
 #   wxWidgets_LIB_DIR       - Path to wxWidgets libraries
 #                             (e.g., C:/wxWidgets-2.6.3/lib/vc_lib).
@@ -431,10 +431,10 @@ if(wxWidgets_FIND_STYLE STREQUAL "win32")
   #-------------------------------------------------------------------
 
   # Look for an installation tree.
-  find_path(wxWidgets_ROOT_DIR
+  find_path(wxWidgets_ROOT
     NAMES include/wx/wx.h
     PATHS
-      ENV wxWidgets_ROOT_DIR
+      ENV wxWidgets_ROOT
       ENV WXWIN
       "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\wxWidgets_is1;Inno Setup: App Path]"  # WX 2.6.x
       C:/
@@ -479,10 +479,10 @@ if(wxWidgets_FIND_STYLE STREQUAL "win32")
     DOC "wxWidgets base/installation directory"
     )
 
-  # If wxWidgets_ROOT_DIR changed, clear lib dir.
-  if(NOT WX_ROOT_DIR STREQUAL wxWidgets_ROOT_DIR)
-    set(WX_ROOT_DIR ${wxWidgets_ROOT_DIR}
-        CACHE INTERNAL "wxWidgets_ROOT_DIR")
+  # If wxWidgets_ROOT changed, clear lib dir.
+  if(NOT WX_ROOT_DIR STREQUAL wxWidgets_ROOT)
+    set(WX_ROOT_DIR ${wxWidgets_ROOT}
+        CACHE INTERNAL "wxWidgets_ROOT")
     set(wxWidgets_LIB_DIR "wxWidgets_LIB_DIR-NOTFOUND"
         CACHE PATH "Cleared." FORCE)
   endif()
@@ -976,7 +976,7 @@ find_package_handle_standard_args(wxWidgets
 # Resource file compiler.
 find_program(wxWidgets_wxrc_EXECUTABLE
   NAMES $ENV{WXRC_CMD} wxrc
-  PATHS ${wxWidgets_ROOT_DIR}/utils/wxrc/vc_msw
+  PATHS ${wxWidgets_ROOT}/utils/wxrc/vc_msw
   DOC "Location of wxWidgets resource file compiler binary (wxrc)"
   )
 
