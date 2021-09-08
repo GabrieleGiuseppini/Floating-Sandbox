@@ -2021,6 +2021,10 @@ void MainFrame::RunGameIteration()
         auto const outcome = mUpdateChecker->GetOutcome();
         if (outcome.has_value())
         {
+            // Forget about the update check
+            // (immediately, to prevent OnIdle events firing while the dialog is open to re-enter here)
+            mUpdateChecker.reset();
+
             // Check completed...
             // ...check if it's an interesting new version
             if (outcome->OutcomeType == UpdateChecker::UpdateCheckOutcomeType::HasVersion
@@ -2039,9 +2043,6 @@ void MainFrame::RunGameIteration()
 
                 dlg.ShowModal();
             }
-
-            // Forget about the update check
-            mUpdateChecker.reset();
         }
     }
 

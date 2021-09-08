@@ -1090,7 +1090,7 @@ Render:
 				+ Take it, after he confirms texture credits
 			+ At least 15 so far
 
-		= Release 1.16.5:
+		+ Release 1.16.5:
 			+ Windows
 				+ MSI variables
 				+ Commit & push
@@ -1121,8 +1121,7 @@ Render:
 				+ Post
 				+ Edit description and add Ubuntu
 			- www.floatingsandbox.com:
-				- Upload changes.txt
-					- Test w/old FS
+				X Upload changes.txt
 				+ Update current version in FAQ
 				+ Add Ubuntu to versions
 
@@ -1151,16 +1150,14 @@ Render:
 				+ Smoke-test tar ("tar -xf FloatingSandbox-1.16.5-x64.tar")
 				+ Zip tar
 			+ Wait for test results
-			- Commit & push
-			- Cut tag on github
-			- Upload packages to GameJolt
-				- Report file as safe (https://gamejolt.com/privacy)
-				- Post
+			+ Commit & push
+			+ Cut tag on github
+			+ Upload packages to GameJolt
 			- www.floatingsandbox.com:
 				- Upload changes.txt
 					- Change top version to 1.16.6
 					- Test w/old FS
-				- Update current version in FAQ
+				+ Update current version in FAQ
 
 		// -----------------------------------------------------------------------
 
@@ -2417,13 +2414,17 @@ Render:
 	- Stars with database
 		- python script to generate binary maps for N and S emispheres
 
-	- Torpedoes and missiles
+	- Torpedoes and missiles and mines
 		- "You place one down and click where it speeds off to and explodes at. Basically a moving bomb that explodes
 		   when it reaches a destination, be that under water, or on the water."
 		- "Missiles: like before, but above water"
-		- Requires collision detection
+		- Doesn't require collision detection right away; would detonate:
+			- By button
+			- By proximity with an AABB
+			- (w/collision detection) by collision
 		- Might either have own propulsion or follow a vector specified with click-and-drag
 		- Also other objects might be launched with click-and-drag
+		- Ideally, have their own physical body - kinda like (or exactly like) another ship
 
 	- Ripple: "basically you click and hold somewhere on the ship, and when you let go, it sends a ripple into the ship, weak points might tear,
 	  or start getting damaged, etc."
