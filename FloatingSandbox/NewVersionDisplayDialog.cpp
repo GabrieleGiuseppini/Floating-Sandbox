@@ -41,7 +41,7 @@ NewVersionDisplayDialog::NewVersionDisplayDialog(
 #endif // wxUSE_STATLINE
 
     {
-        wxButton * goToDownloadPageButton = new wxButton(this, wxID_ANY, _("Go to the Download Page!"), wxDefaultPosition, wxSize(160, -1));
+        wxButton * goToDownloadPageButton = new wxButton(this, wxID_ANY, _("Go to the Download Page!"), wxDefaultPosition, wxDefaultSize);
         goToDownloadPageButton->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&NewVersionDisplayDialog::OnGoToDownloadPageButtonClicked, this);
 
         topSizer->Add(goToDownloadPageButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 10);
