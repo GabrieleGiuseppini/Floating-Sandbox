@@ -22,8 +22,6 @@ CheckForUpdatesDialog::CheckForUpdatesDialog(
         wxDefaultSize,
         wxCAPTION | wxFRAME_SHAPED | wxSTAY_ON_TOP)
 {
-    wxSize const PanelSize(360, 80);
-
     mPanelSizer = new wxBoxSizer(wxVERTICAL);
 
 
@@ -32,28 +30,30 @@ CheckForUpdatesDialog::CheckForUpdatesDialog(
     //
 
     {
-        mCheckingPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, PanelSize);
-
-        wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
-
-        vSizer->AddStretchSpacer(1);
+        mCheckingPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
         {
-            auto label = new wxStaticText(mCheckingPanel, wxID_ANY, _("Checking for updates..."), wxDefaultPosition,
-                wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
+            wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
-            vSizer->Add(label, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);
+            vSizer->AddStretchSpacer(1);
+
+            {
+                auto label = new wxStaticText(mCheckingPanel, wxID_ANY, _("Checking for updates..."), wxDefaultPosition,
+                    wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
+
+                vSizer->Add(label, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);
+            }
+
+            {
+                mCheckingGauge = new wxGauge(mCheckingPanel, wxID_ANY, 20, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL);
+
+                vSizer->Add(mCheckingGauge, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);
+            }
+
+            vSizer->AddStretchSpacer(1);
+
+            mCheckingPanel->SetSizer(vSizer);
         }
-
-        {
-            mCheckingGauge = new wxGauge(mCheckingPanel, wxID_ANY, 20, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL);
-
-            vSizer->Add(mCheckingGauge, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);
-        }
-
-        vSizer->AddStretchSpacer(1);
-
-        mCheckingPanel->SetSizer(vSizer);
 
         mPanelSizer->Add(mCheckingPanel, 0, wxALIGN_CENTER_HORIZONTAL);
     }
@@ -63,29 +63,31 @@ CheckForUpdatesDialog::CheckForUpdatesDialog(
     //
 
     {
-        mNoUpdatePanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, PanelSize);
-
-        wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
-
-        vSizer->AddStretchSpacer(1);
+        mNoUpdatePanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
         {
-            mNoUpdateMessage = new wxStaticText(mNoUpdatePanel, wxID_ANY, wxEmptyString, wxDefaultPosition,
-                wxSize(-1, 30), wxALIGN_CENTER_HORIZONTAL);
+            wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
-            vSizer->Add(mNoUpdateMessage, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);
+            vSizer->AddStretchSpacer(1);
+
+            {
+                mNoUpdateMessage = new wxStaticText(mNoUpdatePanel, wxID_ANY, wxEmptyString, wxDefaultPosition,
+                    wxSize(-1, 30), wxALIGN_CENTER_HORIZONTAL);
+
+                vSizer->Add(mNoUpdateMessage, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);
+            }
+
+            {
+                wxButton * okButton = new wxButton(mNoUpdatePanel, wxID_CANCEL, _("OK"));
+                okButton->SetDefault();
+
+                vSizer->Add(okButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);
+            }
+
+            vSizer->AddStretchSpacer(1);
+
+            mNoUpdatePanel->SetSizer(vSizer);
         }
-
-        {
-            wxButton * okButton = new wxButton(mNoUpdatePanel, wxID_CANCEL, _("OK"));
-            okButton->SetDefault();
-
-            vSizer->Add(okButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);
-        }
-
-        vSizer->AddStretchSpacer(1);
-
-        mNoUpdatePanel->SetSizer(vSizer);
 
         mPanelSizer->Add(mNoUpdatePanel, 0, wxALIGN_CENTER_HORIZONTAL);
     }
@@ -190,7 +192,12 @@ void CheckForUpdatesDialog::ShowNoUpdateMessage(wxString const & message)
     mNoUpdateMessage->SetLabelText(message);
     mNoUpdateMessage->Fit();
 
+    Freeze();
+
     mPanelSizer->Hide(mCheckingPanel);
     mPanelSizer->Show(mNoUpdatePanel);
-    mPanelSizer->Layout();
+    Fit();
+    Centre();
+
+    Thaw();
 }
