@@ -22,7 +22,7 @@ CheckForUpdatesDialog::CheckForUpdatesDialog(
         wxDefaultSize,
         wxCAPTION | wxFRAME_SHAPED | wxSTAY_ON_TOP)
 {
-    SetMinSize(wxSize(200, -1));
+    SetMinSize(wxSize(300, -1));
 
     mPanelSizer = new wxBoxSizer(wxVERTICAL);
 
