@@ -66,7 +66,7 @@ endif()
 # wxWidgets
 #
 
-message(STATUS "wxWidgets_ROOT:" ${wxWidgets_ROOT})
+essage(STATUS "wxWidgets_ROOT:" ${wxWidgets_ROOT})
 
 find_package(wxWidgets REQUIRED base gl core html propgrid)
 
