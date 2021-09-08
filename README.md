@@ -75,7 +75,7 @@ In order to build the game, you will need the following dependencies:
 A custom `UserSettings.cmake` may be used in order to configure the locations of all dependencies. If you want to use it, copy the `UserSettings.example-<platform>.cmake` example file to `UserSettings.cmake` and adapt it to your setup. In case you do not want to use this file, you can use the example to get an overview of all CMake variables you might need to use to configure the dependencies.
 
 Over the years I've been writing down OS-specific build steps:
-- [Ubuntu](https://github.com/GabrieleGiuseppini/Floating-Sandbox/BUILD-Ubuntu.md)
+- [Ubuntu](https://github.com/GabrieleGiuseppini/Floating-Sandbox/blob/master/BUILD-Ubuntu.md)
 
 # Contributing
 At this moment I'm looking for volunteers for two specific tasks: creating new ships, and building the game on non-Windows platforms.

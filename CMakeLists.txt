@@ -91,7 +91,7 @@ endif()
 # SFML
 #
 
-message(STATUS "SFML_DIR:" ${SFML_DIR})
+message(STATUS "SFML_ROOT:" ${SFML_ROOT})
 
 if(FS_USE_STATIC_LIBS)
 	if(NOT WIN32) # No real reason, other than I'm slightly nervous to embed SFML code in FloatingSandbox.exe		
@@ -107,7 +107,7 @@ if(WIN32)
 
 	find_path(SFML_BIN_DIR
 		NAMES sfml-system-2.dll openal32.dll
-		HINTS ${SFML_DIR}/../../../
+		HINTS ${SFML_ROOT}/../../../
 		PATH_SUFFIXES SFML bin)
 
 	if(NOT EXISTS "${SFML_BIN_DIR}")

@@ -310,889 +310,11 @@ Render:
 ====================================================
 
 - Roadmap:
-	- 1.16.5:		
-		+ Make branch
-		+ Bump up version
-		+ Cleanup TODO list
-		+ Wix: delete Data folder on install
-			+ https://www.hass.de/content/wix-how-use-removefolderex-your-xml-scripts
-		+ Debris:
-			+ When ship has water all over the place, debris particles start life without water and thus look too different than surroundings - at least for first 0.5 seconds
-		+ Fix Gadgets: 
-			+ Opposite assert at Gadgets::Update
-			+ Each gadget must detach itself when expiring from state machine
-			+ Test with vectors after bomb explosion (and thus disappearance)
-		+ Rework explosion dynamics: they are too inconsistent at this moment
-			+ RenderSetting: DrawExplosions, exactly like DrawFlames
-				+ Rendering
-				+ SettingsDialog, @ "Advanced Settings"
-			+ Ship::ExplosionStateMachine:
-				+ Factor that calcs blastProgress from CurrentProgress: 3.0 -> 4.0
-			+ GameParams: bomb blast radius ~= 6
-			+ Ship::ForceFields:
-				+ Good force: 
-					mPoints.GetNonSpringForce(pointIndex) +=
-							pointRadius.normalise(std::sqrt(squarePointDistance))
-							/ std::max(std::sqrt(squarePointDistance), 1.0f)
-							* strength
-							* 40000.0f // Magic number
-							;
-			+ Test with blast force on _all_ particles - not only just the ship ones
-			+ Heat: lower heat at higher distances from center?
-				+ Then see if it might make more sense to nuke ApplyBastForceField and put its code directly in explosion state machine
-			+ Ultraviolent mode: changes all 3 (Radius, BlastForce, Heat)
-				+ Expose BombBlastForceAdjustment first
-				+ Do @ each bomb
-			+ Tests:
-				+ 3 Bombs
-				+ Explosive combustion
-				+ Blimp
-				+ All: also with Ultra-Violent mode
-				+ Bomb blast radius min/max
-			+ changelist
-			+ Send to Pac0 & John Smith
-			X Try with scaling up forces with masses
-			X See if need heat blast to be larger, in order to catch fire on the rim
-		+ Whole OceanSurface: use FixedSizeBuffer's instead of std::unique_ptr<float[]>'s
-			+ Perf measurements:
-				+ Before: UPD=4.89/4.90
-				+ After: same
-			+ Run in DEBUG
-			+ Check assembly
-		+ Cut tool
-			+ See issue
-				+ Try 0.25 instead of 1.0
-			+ Do "SHIFT lock"
-		+ New tool: Blast
-			! Spec:
-				+ Same force field as Explosion state machine
-				+ Hitting SHIFT makes it faster and stronger
-			+ Impl:
-				+ Cursor
-					+ Cursor 1 and cursor 2
-				+ Tool:
-					+ When hitting:
-						+ Cursor disappears
-						+ Sound starts (depending on SHIFT)
-						+ Tool's state machine starts
-							+ Speed and strength depend on SHIFT
-						+ End of blast doesn't change anything - only mouseup does
-							+ ...and at mouseup, cursor reappears
-					X Decide what to do during phase paused
-					+ Finalize durations - seem a bit too long now
-				+ Physics
-				+ Shader: 
-					+ Link between IGameController::TODOBlast and NotificationLayer->Context
-					+ Basic shader
-					+ Advanced shader, option 1: different blending: whiteish overlay expanding, thicker on rim
-						+ Provide progress
-						+ Do blending
-						+ Add personality
-					+ See if it needs noise
-				+ Sounds:
-					+ Sounds normal
-					+ Sound faster
-				+ Disturb ocean surface
-					+ At World
-				+ SettingsDialog:
-					+ Refactor: 
-						+ Fonts
-						+ 1: new SettingsDialog
-							+ Take all screenshots
-							+ Do
-								+ Try using StaticBoxSizer instead of static boxes
-								+ See to center notebook panels that are less wide
-								+ Fix single checkbox + slider vertical cell
-									+ Set size of row == constant, taken from button
-								+ Move UltraViolent to first panel
-								+ Rendering panel
-								+ Sound and Advanced Settings
-									+ Add:
-										+ GenerateSparkles (New box)
-										+ GenerateDebris
-										+ Draw HeatBlaster Flame (Extra Draw Options)
-								+ Settings Management
-								+ Multiline notebook
-								+ Nuke settings:
-									+ air bubbles displace waves: honor global displacement instead
-									+ generate air bubbles: use zero density
-							+ Nuke old source files and old code in remaining source file						
-						+ 2: Shorten labels
-							+ Fluids: remove redundant "Water" 
-							+ Remove other redundant parts of labels
-							X "Adjust" -> "%" ?
-						+ Final test
-					+ BlastToolRadius
-					+ BlastToolForceAdjustment
-					+ merge
-				+ Finalize all three current default radii
-				+ Finalize maxima of all settings, & ultra-violent mode			
-			+ changelist
-			+ Update help
-		+ Change rot tool with UV mode
-		+ New rain: https://www.shadertoy.com/view/tttyDB
-			+ Do
-			+ Wind rearc:
-				+ Wind uploads speed vector to RenderContext
-				+ RenderContext calcs magnitude, runs avg, and if different dispatches to WorldRenderContext and to each ShipRenderContext
-				+ WorldRenderContext: 
-					+ UploadWind: store and set dirty, both as "RainWindAngle"
-					+ RenderPrepareRain: only if will be drawing rain: pick up dirty flag, set param, and clear flag
-				+ ShipRenderContext:
-					+ UploadWind: store and set dirty, both as "FlameWindAngle"
-					+ RenderPrepareFlames: only if will be drawing flames: pick up dirty flag, set param, and clear flag
-				+ RenderContext::Reset: 
-					+ Reset average
-						! Enough, as next wind upload would generate different value than current member value and thus trigger param set's
-				+ Stop uploading wind with flames
-					+ Nuke Ship::mWindSpeedMagnitudeToRender
-				+ Tests (also across reloads)
-					+ Flame
-					+ Rain
-			+ Wind magnitude
-				+ More vertical at beginning and less horizontal at max
-					! Wind speed magnitude during storm: 60-125
-					+ Function we want: 60 => 0.1, 120 => 0.8
-			+ Check spatial density
-			+ Check density dynamics: goes from zero to max too quickly
-				+ See if MaxRainDensity calc'd at Storm needs to be adjusted - see progression from no rain to max rain, and also setting
-			+ Test viewport size change
-			+ Test perf drop on Dell - simply perf during storm before and after
-				+ Old: 30fps/12-13msRND, Storm: 18fps/35msRND
-				+ New: Storm: 18/35 @ 2:20
-			+ Changelist
-		+ Interim localization (help + po)
-			+ IT
-			+ ES
-			+ RU
-		+ Fix "cycle of sounds" issue with sounds
-			+ Limit stress and break sounds' proximity *regardless* of chosen buffer
-				+ But allow greater size
-			+ Cut initial silence @ all break sounds
-			+ AddVolume becomes exponential: v' = v + (100-v) * dv
-				+ Remove exponential from InternalSetVolume
-			X See if break's minTime might be lowered
-			+ Medium<->Large boundary
-			+ Double-check sounds
-				+ Metal; replace:
-					+ break_metal_large_2
-					+ break_metal_large_3
-					+ break_metal_large_underwater_5
-					+ stress_metal_large_underwater_1 (clicks)
-				+ Wood
-				+ break_glass_small_1
-			+ Take new wood stress sounds
-			+ More stress metal sounds, to dilute "cycle of sounds"
-		+ Cached depths (*)
-			+ 1.16.3: Titanic: 7.92, now: 7.65
-			+ Check perf on old Dell:
-				+ Before: 29.6/29.9 FPS, 20.04/20.2 UPD
-				+ After: 30.4/30.5 FPS, 18.8/19.1 UPD
-		+ Larger world
-			+ GameParameters
-				+ Double size
-			+ Restrict tsunami creation area so that it won't travel more than 5k
-				+ Or alternatively, lower its height
-			+ Check rogue waves as well
-			+ OceanFloor
-				+ Keep # of samples
-				+ Double the width of default ocean floor so that it's more dense
-					+ Add more to the left and to the right
-					+ Also change depth at middle so that it fits with new bumpiness and it's ~-283
-						+ Or simply change the bumpiness frequency or phase, whichever looks best
-				+ Test Mariana's Trench
-			+ OceanSurface				
-				+ Fix manual waves
-					+ Try to re-instate full SWEs
-						X If works, see if can put back tsunami's parameters
-					+ Look back at SWEs (*)
-						+ changelist
-							+ Improving the stability of a simple formulation of the shallow water equations for 2D flood modeling, https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2011WR011570,
-							  de Almeida et al (2012)
-				+ Double # of samples
-				+ See if Update() becomes too heavy
-			+ changelist		
-		+ Send for testing
-			+ bishobe64 as tester
-				+ Invite
-		+ Bump up version
-		+ OpenGL optimizations
-			+ Clear color
-			+ Perf: 5.88/5.90
-			+ All dirty flags at RenderParameters
-				+ See assembly
-			+ Edge springs
-				+ See how heavy: quite
-				+ Springs has new ElementCount member, CoveringTrianglesCount
-					+ Triangles: need new immutable container, "CoveredSprings", similar to SubSprings - so to act at Triangle::Destroy later
-					+ Springs::Upload: consider this count instead of count of SuperTriangles
-					+ Populated by ShipBuilder with same triangles as in SuperTriangles, plus covering triangles for traverse springs
-						+ Triangles::CoveredSprings
-						+ Springs::CoveringTrianglesCount
-					+ Maintained at Triangle Destroy and Repair
-						+ Should be exactly as with SuperTriangles container, but updating only counts
-			+ Profiling w/Basic
-				+ Ocean SOLs (35% + 30%)
-					! (https://developer.nvidia.com/blog/the-peak-performance-analysis-method-for-optimizing-any-gpu-workload/)
-					+ starting TEX=44.9
-					+ Tests:
-						+ Texture format: no alpha
-			+ Profiling w/Bubbles
-			+ Perf: 5.68/5.71
-			+ Old dell: 
-				+ Before: 30.4 (19.0, 12-13)
-				+ After: 31.9 (19.1, 11.8)
-		+ Add whistle: pipe_steam_whistle_for_fs.mp3
-			+ changelist
-		+ See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
-		+ Force rendering: avoid rendering expired ephemeral particles
-			+ Transform ShipRenderContext::UploadVectors from a one-time Upload call with batch to a Start/NxUpload/End call pattern,
-			  with Start() doing the reserve() call we currently do at the one-time Upload call
-		+ Pressure implosions / pressure crush (*)			
-		+ See issue with ocean texture shading: texture coords change depending on cam: repro with pause and high zoom
-		X See if also on Windows "High Quality Rendering" of water is faster than normal
-		+ Test optimization: ApplyWorldSurfaceForces: only consider *external* frontiers
-			! No drag, no displacement for internal frontiers. We are fine with it
-			+ Test Base III before: UPD=17.30ms, plus weird water displacement
-			+ Test Base III after: UPD=16.9ms, no more weird water displacement
-			+ If ok:
-				+ Remove checks for type==External @ AABB updating
-		+ Electric Spark tool
-			+ Infrastructure (tool, sound, cursor)
-			+ Rendering
-				+ ShipRenderContext machinery
-					+ Rethink: it's bad that we continuously flag vertex buffer as dirty: it can be assumed to be always dirty when it's not empty;
-					  use same strategy then that we use for...clouds?
-				+ Shader
-				+ Ship::Upload
-					+ New Ship buffer: ElectricSpark, simple std::vector
-						+ Reset at first update that was not preceded by the interaction
-						+ Uploaded by Ship::Upload
-			+ Redo rendering:
-				+ Rendering struct contains immediately positions, rather than indices
-					! We'd save on normalizations
-					! It might also be better visually, allowing for sparks to "leave" the structure
-				+ Starting point, ending point
-				+ Direction
-				+ Previous index or None (opt size_t)
-				+ Review if all PointsToVisit members and RenderSparkle members are needed
-			+ Fix sea disappearing: Titanic with strength=max engineThrust=max and sparkled engine, hitting ocean floor spike
-				+ Test with clamping absVerticalVelocity to 10000 or 20000
-			+ Fix juncture
-				+ Previous and Next normalized vectors need to be passed to each Upload()
-				+ Optimize locally
-				+ Wireframe
-				X Fix fork: substitute "nextDirection" with "nextL/RDirection"
-					+ R is direction with min cross product
-					+ L is direction with max cross product
-					+ Both default-init'd with max/min limit
-				+ Fix sharp angles (Goodyear test): clamp to 0.01
-			+ Interaction
-				+ Spark expansion logic
-					+ Issue with parallel arms: see if reintroducing third-best helps
-					+ Try with alignment being exclusively on original spring
-					+ Change prob's:
-						+ Fork: less absolute but more uniform along path
-						+ Reroute: slightly more prob when distance~1
-					X Fork probabilities: try with using pv.EquivalentPathSinceLastFork
-					+ Fork probabilities: try with pre-calculated EquivalentPathLengthToNextFork
-						+ Value = uniform(min, max), calculated at emplace time
-					X After fork, proceed in both new directions
-				+ Interactions: private OnPointElectrified(...):
-					+ Takes also ElectricalElements
-					+ Driven by interaction: upon energizing a point, calls into ElectricalElements
-					+ Heat
-						+ Depends on size of incoming, cumulative
-						+ Lower the dependency on size (goal: longer to catch fire at center, more read hot at periphery)
-							+ Avoid too much heat on central point: pass strength, and make it inversely proportional to size
-					+ Rotting
-						+ Depends on size of incoming, cumulative
-					+ Interactions with ElectricalElements:
-						! Call causes same "damage" to selected types of electrical elements as EMP tool (*), i.e. stores simulation timestamp in 
-						  state of that electrical element, make it not working for a limited period of time
-							! For each non-destroyed generator|pump|sounder|etc. that is in radius:
-								! XYZ.state.DisabledEndTimestamp = now + small random variation
-							! ElectricalElements::Update: generator|pump|sounder|etc.:
-								! If now >= XYZ.state.DisabledEndTimestamp: XYZ.state.DisabledEndTimestamp.reset()
-							! ElectricalElements::UpdateSource/Sink/Whatever:
-								! XYZ is off if XYZ.state.DisabledEndTimestamp.has_value()
-						+ Generator
-						+ Lamp
-							+ Sound controller: flicker sound should have some inertia
-						+ Engine (on/off is from generator though, so only thrust here)
-							+ EngineState: SuperElectrificationEndTimestamp
-								+ Set at OnElectricSpark
-								+ Checked for expiration at beginning of engines update loop
-								+ Checked for ON-ness and thrust multiply at engine state management
-					+ Gadgets
-						+ Replace OnNeighborhoodDisturbed() with OnElectricSpark(pointIndex), & precise check for index
-							+ Undo OnPointDetached change
-			+ Shader:
-				+ Different ratio of inner white vs. body
-				+ Wider halo (linear? linear+smoothstep?)
-			+ Test:
-				+ Disconnected components
-			+ Nuke EMP tool in this spec
-			+ changelist
-		+ Move ExternalPressure calc'n from Spring loop to right after that
-			+ Test resultant net and torque before & after, with "Basic Shapes"
-		+ Tests:
-			+ Dynamic forces visualization
-		+ Clear dynamic forces at position-changing interactions
-		+ Add depth to physics probe
-			+ Reading
-				+ Interface
-				+ Gadget
-				+ Notification layer & display
-			+ Do triple-system while you're at it ("SI (Kelvin)", "SI (Celsius)", "USCS")
-				+ UnitsSystem GameType enum
-				+ GameController-owned setting: "DisplayUnitsSystem"
-					+ Storage
-					+ Setters/Getters
-						+ Setter: Tell NotificationLayer
-				+ NotificationLayer:
-					+ Own translation of reading into text
-					+ On change:
-						+ GameController's setter also tells RenderContext, who then sets parameter as dirty and NotificationLayer picks it up and passes it via a parameter at ProcessParameterChanges
-							+ Shader: get and use AtlasTile1LeftBottomTextureCoordinates parameter
-							+ NotificationRenderContext::UploadPanel: use texture-agnostic coords
-						+ Re-publish reading - requires storing current raw values:
-							+ OnReading -> StoreRawValues -> (Make Strings? &&) Make dirty -> Strings made at upload?
-							+ OnChange -> (Make Strings? &&) Make dirty -> Strings made at upload?
-				+ Redo panel for USCS
-				+ UI settings manager
-				+ PreferencesDialog
-		+ Another hydrostatic pressure attempt: Frontier: do not act on non-hull points, but then compensate net resultant force (and may be resultant torque as well)
-			+ Only on edges that are the center of three consecutive hull points
-			+ Try adaptive net_force/net_torque zeroing
-				+ See paper
-				+ Rewrite algo so pressure force stem multiplication is last step - use 1.0 for stems before that
-					+ Assert initially that dynamic forces is empty
-						+ Verify in Debug						
-				+ Best-each-time approach
-					+ See if can integrate minimization, i.e. not only lambda=0:
-						+ Calc net_total at both minimal-and-clamped lambdas, and use best of the two
-							+ Store lambda as bestLambda, to use when min found
-				+ Alternating approach:
-					+ 1. Find point that makes force closest to zero
-						+ When a tie (via tolerance, i.e. radius), compare also torque and choose one with torque being closest to zero
-					+ 2. Find point that makes torque closest to zero
-						+ When a tie (via tolerance, i.e. radius), compare also force and choose one with force being closest to zero
-					+ See if Red October still explodes: yes - but it was already exploding even before stem multiplication
-					+ Other lambdas
-				+ See why explodes
-					+ Should be order: Strain => Hydrostatic, but it's Hydrostatic => Strain
-					X See if last beta also exploded at high depth
-					+ See why pressureForceStem is so jumpy
-						+ It's because UpdateForStrains causes new frontiers and their AABBs are not initialized yet
-						+ Use geometric center
-					+ Abnormal force at frontier knots: due to pressure force stem multiplied twice
-				+ See if can initialize best'es with current nettorque/netforce
-					+ Calc average # of iterations, F, and T before and after
-						+ With numeric_limits::max: Hemisphere: 53/0.37/0.00... Triton: 8.4/0.05/0.00...
-						+ With current nettorque/netforce: Hemisphere: 42/0.7/0.00... Triton: 8.0/0.05/0.00...
-					+ Undo: we want to choose contributions > current net
-				+ Algo for optimization *and* avoidance of double stem (explosion)
-					+ 0a. Confirm by multiplying all DynamicForces by stem - once across all points
-					+ 0b. Take perf measurements (default_ship, depth -= 200): Update:4.90ms, ApplyHydrostaticPressureForces: 3.47%
-						Hesleden: Update:67.8ms, ApplyHydrostaticPressureForces: 6.27%
-					+ Copy exe
-					+ 1. Comment out current
-					+ 2. Move ApplyWorldForces after UpdateForStrains
-					+ 3. ApplyWorldSurfaceForces: calculate geometric center and store it with Frontier, together with AABB
-					+ 4. Buffer:
-						+ Struct member of Ship: HydrostaticPressureOnPoint
-							- ElementIndex PointIndex
-							- vec2f TorqueArm
-							- vec2f ForceVector
-						+ Buffer is owned by Ship, cctd'd at cctor of Ship
-						! Buffer can be populated for same point multiple times, each time for a different "surface" of a frontier
-					+ 5. Initial population of HydrostaticPressureOnPoint buffer:
-						! Allow particles that appear twice in same frontier to appear twice in buffer
-						+ Make loop inline
-					+ 6. Equalization
-					+ End: DynamicForces are only populated at end, by multiplying ForceVector with stem and adding to Points.DynamicForces
-					+ Optimize
-				+ Fix getting stuck at lambda=1:
-				+ Optimizations:
-					+ Start: Update=5.68ms, ApplyHydrostaticPressureForce=13.40% (LogMessage=7.88%)
-					+ See if "min-3-consecutive-hulls" is still needed
-						+ If decide to remove it, cleanup code
-					+ End: Update=4.66ms, ApplyHydrostaticPressureForce=1.57%; Hesleden: 64.5ms, 2.01%
-				+ Run in Debug
-				+ Remove exhaggerations
-			+ Test on melted long springs - after removing exhaggerations
-			X Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
-			+ Apply air pressure as well
-				! InternalPressure and hydrostatic pressure will never be zero - zero is really "somewhere" above MaxWorldHeight
-				! Pressure at ocean surface zero (aka "PressureAtZero") is == column of air above (atmospheric pressure at sea level)
-				+ Formulae class: implements formulae below
-					+ Calcs effective air density, given temperature
-					+ Cals effective water density, given temperature					
-					+ Calcs volumetric water pressure, given temperature - VolumetricWaterPressure
-					+ Calcs pure air pressure at height x - AirColumnPressure
-					+ Calcs pure water pressure at depth x - WaterColumnPressure
-					+ Calcs total pressure at height x - TotalColumnPressure
-						+ airColumnPressure(clamp(height)) + waterColumnPressure(clamp(depth))
-				+ @ ApplyHydrostaticPressure: 
-					+ PressureAtCenter from Formulae::TotalPressure
-					! Internal pressure counterbalance formula: denominator will never be zero
-				+ @ Internal pressure intake:
-					! Structural delta internal pressure and delta water are independent from each other
-					! Forced delta internal pressure only depends on water
-					+ Redo algo
-				+ @ Flood tool:
-					+ Use Formulae
-				+ SettingsDialog: tooltip of HydrostaticPressureAdjust: add "atmosphere"				
-			+ Try with internal pressure, again
-				+ Re-instate internal pressure code
-				+ Re-instate hull particles getting the average of all their non-hull neighbors
-				+ Commit
-				+ Use hull's internal pressure to counteract external pressure, at initial forceVector calculation
-					+ forceVector *= 1.0 - internalPressure(Pi)/externalPressure * adj
-				+ If goes thru: 
-					+ Do all the internal pressure sidework:
-						+ Flood tool
-							+ Remove pressure only if water has been removed - remove pressure by effective water wuantity removed
-							+ Test both incoming and outgoing
-						+ Make sure pumps play nicely
-							+ Pumping-in: internal pressure grows
-							+ Pumping out: internal pressure decreases
-						+ Rendering							
-					+ SettingsDialog: make new group with new setting for internal pressure "contribution"						
-					+ Optimize
-						+ EqualizeInternalPressure: try with local buffer remembering all we do in the first loop
-							+ Before: 4.96ms, 4%
-							+ After: 4.91ms, 2.73%
-			+ Internal pressure counterbalance:
-				+ Counterbalance adj = 1: reasonable (Titanic still breaks at depth)
-				+ See if can cheat and have "basically" counterbalance adj = 1, except at higher depths
-				+ Remember GameParameters default is now 1
-			+ Rearc settings:
-				+ HydrostaticPressureAdjustment: becomes StaticPressureAdjustment, in Mechanics
-					+ SettingsDialog: Mechanics, and exponential
-				+ HPCounterBalance: stays
-					+ SettingsDialog: merge with other water, and say "hydro"
-			+ Custom probe for net force
-			+ Explain counterbalance in tooltip
-			+ Changelist
-				+ Both (hydro)static pressure and internal pressure
-			+ Merge back into master
-			+ Mark internal pressure TODO item for internal pressure * as complete
-			+ Send for testing
-				+ Bump up version
-			+ Cleanup commented out code
-				= Make video first
-					+ "1: the basics"
-					+ With Triton large sinking slowly: "A hydrostatic pressure field consists of forces perpendicular to the exterior hull of the ship..."
-						"...but simulating it in a particle system is not as easy as it may sound."
-					+ ...
-					+ @ Titanic unequalized: "The problem becomes even more pronounced with bigger structures"
-					+ "2: iterative net effect minimization"
-					+ ...
-					+ Music				
-		+ Send for testing (build 4)
-		+ MaterialsDB rearc:
-			! 170 materials
-			+ Substitute N identical instances, in which only key color changes, with one instance having an _array_ of keys
-				+ The key element in json may be either a string or an array of strings
-				+ When it's an array of strings, there can't be a RenderColor element
-				+ A missing RenderColor means it's the same as KeyColor
-			+ At load time, that one material becomes multiple materials (non-invertible transformation)
-			+ Coalesce already-existing materials
-			+ Update palette-generation script
-		+ Strength randomization
-			+ Visualize strength first to ensure we don't already have fault lines
-				+ New visualization mode
-					+ SettingsDialog
-			+ Inject: at ShipBuilder, after frontiers are created (i.e. almost at end); requires:
-				+ Frontier creation: needs to come after points but before Springs are created
-					+ Reasons in terms of SpringInfo's
-						+ See if can also reason in terms of PointInfo's
-				+ InjectCracks
-					+ Do basic
-					+ Try another crack algorithm
-						+ Batik
-							+ Finish region-relativity
-							+ Find better way of doing index math/relativity
-								+ vec2i @ vectors.h, replacing Matrix2Index and RectRegion
-								+ Batik takes vec2i as Origin and Span arguments
-							+ Convert also PointInfoMatrix to Matrix2
-								+ Remove unneeded structureImageSize args
-							+ Optimization (for e.g. BaseIII): initial random point is chosen on triangles
-							+ Update distance map after each crack
-							+ Density of cracks
-								+ Largest dimension (among W & H) / 4..8 
-								+ Use settings
-							+ Set points' strengths at end, by making distance map = struct{distance, bool}
-								+ Set strength only on points that have connected triangles
-								+ Use settings
-							+ Take & log running time
-								+ Ark: 62/63ms, max density
-							+ Consider optimizing for exclusive use of distance map, not point index matrix
-								+ "PixelMatrix" -> "DistanceMatrix"
-								+ And integral distances
-								+ Distance map init:
-									+ Init with 0 distance everywhere (will be the outside)
-									+ Set to +inf all vertices of triangles
-									+ Set to 0 for frontiers
-								+ During algo: avoid points with distance 0							
-								+ New time:72/73ms
-								+ Finalization:
-									+ Verify assembly for using lambda at UpdateDistances
-								+ See if time increase is due to matrix indexing
-								+ See what time increase is due to
-									+ New matrix: 68/69
-									+ float distances: 63/64
-						+ Finalization:
-							+ Skip randomization if any of the settings are zero
-							X Consider using original distance (the one set at distance map initialization time) for scaling strength
-								- Strength lowering is max at small distances, min at higher distances
-					+ Parameters from outside:
-						+ First off: refactor auto-texturization
-							+ "DefaultSettings" -> "CommonSettings"
-							+ Make ShipBuilder an instance of GameController, and make AutoTexturizer a member of ShipBuilder instead of GC
-								+ ShipBuilder exposes setters for AutoTexturizationCommonSettings
-						+ Then, make "ShipStrengthRandomizer" class
-							+ Also member of ShipBuilder
-							+ Dynamics of settings is same as AutoTexturization
-						+ Density
-						+ Magnitude (room for change)
-						+ Add to GamePreferences
-						+ Verify it is saved and loaded
-			+ Default parameter values based on slider steps
-			+ Test Titanic without breaking fault line: see if breaks by itself
-				+ Make new ship given that you are at it
-			X Checkout impact of sinking ship on sea floor; if gets pulverized, decrease weakening
-			+ Tests:
-				+ Paper
-				+ Cardboard
-				+ Blimps
-				+ Base
-				+ Ball of water and air
-			+ Final params:
-				+ change density so 0.803 is new 1.0
-				+ 2, 0.6 (good for Triton)
-		+ Do some normal wrecks and decide on default static pressure adjust value
-			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
-			+ 0.242	
-			+ See why Titanic is bunch of particles at 10Km: rotting?
-				+ Full 10K fall w/out rotting: not pulverized, but quite shattered
-				+ Full 10K fall with rotting: half pulverized
-		+ Way to remove all pins (*)
-		+ Menu with text and icon
-		+ Hydrostatic pressure follow-ups:
-			+ Repair tool:
-				+ Ship has float mPostRepairGracePeriodMultiplier, from 0.0 to 1.0 - default is 1.0
-				+ At end of update, converges towards 1.0 - with tolerance check to become 1.0
-				+ Used at:
-					+ ApplyStaticPressureForces for final multiplier of forces
-				+ Test repair first
-				+ Repair():
-					+ At end sets mPostRepairGracePeriodMultiplier to 0.0
-					+ Also at end, clears out whole dynamic forces buffer
-						+ Remove ad-hoc setting of dynamic forces to zero
-			+ Pressure tool:
-				+ Like Flood tool was before, but only acting on InternalPressure
-				+ Could repurpose bubble tool - does bubbles when no ship is found
-				+ Shift modifier
-				+ SettingsDialog - breakout tab, "Destructive Tools" and "Other Tools"
-				+ Help
-				+ Visual feedback
-					+ Shader
-					+ NotificationRenderContex: see disassembly for calls to RenderPrepare/Draw, and eventually inline
-					+ Direction
-				+ Sound feedback
-					+ Tool: needs to remember which sound it was doing, in order to stop it
-						+ See if fish tool structure serves the purpose
-					+ Sound
-					+ See if makes sense to have pssst sound always
-				+ Try with larger visual feedback
-				+ Not on hull
-				+ Higher max flow
-					+ Or higher UltraViolent mode			
-			+ Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
-				! Goodyear's current shell is currently normal cardboard (c1a46a)
-				+ New material: Mylar, of "cloth" sound type
-					+ Copy from cloth: stiffness and strength
-					+ Hull
-					+ Use real combustion properties
-				+ Fix Mylar's weird bouncing on water
-				+ Make inflatable balloon
-					+ Inject pressure issue due to expanded graph and not finding particle: find triangle if can't find
-						+ If ok: nuke InjectPressureRadius setting, and use GameParameters::ToolSearchRadius directly at Ship::InjectPressureAt()
-					+ Internal pressure at start
-					+ See if want to make it break at higher pressure by increasing stiffness of hull
-						X See then if can lower strength					
-					+ Description
-					+ Issue with melting:
-						X See if due to *decay*
-						+ Implement adaptive extra melting-induced tolerance
-							+ Store in precacld buffer, once and for all (immutable), with:
-								+ MaterialStiffness (!GetMaterialStiffness)
-								+ MaterialStrength (!GetMaterialStrength)
-								+ MaterialMeltingTemperature (!)
-				+ Change Goodyear's hull to Mylar
-				+ Do also other blimp
-				+ Regenerate materials palette
-				+ changelist, also for material
-					+ Mention also other colors for materials, with total # from 170
-			+ Turn off hydrostatic pressure counterbalance adjustment when above water
-			+ Add AirDensityAdjustment setting-ability
-				+ Nail down max
-				+ Fix zero
-				+ See if can increase max WaterDensityAdjustment (was: 4.0) - 10.0 is fine, 100.0 cool, but generates weird upward displacement
-					+ Fix upward displacement
-				+ changelist
-			+ Finalize StaticPressureAdjustment
-				! No adjustment for air pressure, it is redundant - we have air density now, and it's the same with water
-				+ Goal: high air pressure causes things to explode high up
-					! No need to extend counterbalance upwards
-				+ Rename "StaticPressureAdjustment" as "StaticPressureForceAdjustment"
-			X Create new "Hot Air Balloon" ship
-			+ Physics probe: internal pressure
-				+ USCS: psi
-			+ Find right setting value and range for InternalPressure tool
-				+ Option 1: "Quantity" is really # of atmospheres
-					+ If it's atmospheres, say "Atmospheres" in tooltip
-			+ Ship definition: add optional value for default internal pressure
-				+ When not specified, it's PressureAtZero (calc'd via Formulae)
-				+ Move Offset out of metadata
-			+ Optimizations:				
-				+ EqualizeInternalPressure:
-					+ Take perf now: 3.03% (default ship)
-					+ See if can assign avg immediately: YES, verified
-					+ Final perf: 1.43% (default ship)
-		+ SHIFT for Electric Spark tool
-			+ Add SHIFT: length multiplier
-			+ Help
-		+ Water Impact - when ship touches water for first time (*)
-		+ Splash sounds at displacement:
-			+ Piggyback on water displacement factors, after all magnitude of splash sound depends on kinetic energy, ~= displacement magnitude
-				+ Try then to use displacement magnitude directly, after normalizing it wrt its own max
-			+ Aggregate splash sound
-			+ See why doesn't sound like different sounds
-				x Try with minTimeDelta
-					! It's because the different sounds can start even within minTimeDelta
-			+ Idea: two types of sounds played together
-				! Spec:
-					- More wave-like: predominant at low displacement
-						- Single sound
-					- More splash-like: predominant at high displacement
-						- The different sounds we have now, but different name: "displacementsplash"
-				+ WaterDisplacementWave and WaterDisplacementSplash
-				+ 1. Wave sound:
-					+ Use current wave sounds
-						+ Make sure name is proper generic "wave"
-						+ Make sure has no min time
-					+ See if can make sounds with shorter attack time
-						+ If so: "WaterDisplacementWave"
-					+ See if can reduce frequency of sounds firing
-					+ Finalize code for displacement waves
-					+ Try shorter sounds
-				+ 2. Splash sound:
-					+ Nuke old sounds, including types
-					+ New "WaterDisplacementSplash" sounds, with splashy sounds, not much wave
-					+ Algo
-			+ Sound reorg:
-				+ SoundFile::Load -> uq_ptr<SoundFile>, w/SoundFile::SoundBuffer not uq_ptr
-			+ Optimize
-			+ changelist
-		+ Make sure we don't have custom probes; convert each needed to actual method
-		+ Sky: satellites and shooting stars (*)
-		+ See explosions issue with Marine Electric (now on Desktop)
-			+ It's just too strong
-		+ Fix issue with rotation: move first, and hit SHIFT during the move
-		+ Fix texture changer for electrical panel
-			+ MSW
-			+ Test on Ubuntu
-		+ bishobe644 in Credits
-		+ Night vision (*)
-		+ Help intro: add all new physics
-		+ Silting:
-			+ HandleCollisionsWithSeaFloor: position restore is scaled down when particle between 0 and SiltThickness below sea floor
-				+ Scaling down is smaller (i.e. floor is harder) the closer to SiltThickness we get; linear might be jsut fine
-				+ Then see what to do with velocity
-				+ Work in progress:
-					+ float const siltingCoeff = (depth < 40.f) ? 0.5f : 1.0f;
-						+ 0.5 looks good - but limits bouncing, 0.75 does nothing
-					! See if without silting things were less...brokey when hitting the ocean floor
-					+ Use depth and absolute velocity
-				+ Check what happens now with friction and elasticity
-					+ Verify wheels still roll
-				+ Test underneath world min Y in Debug
-			+ Parameters and SettingsDialog @ OceanFloor
-			+ Optimize
-				+ Get perf before (without silting) 
-					% default: 4.57%/4.85%
-					% Ark splattered: 5.76%/6.30%
-					Update ms Ark splattered: 10.2/10.3
-				+ Export OceanFloor from parent world
-					+ Substitute ocean floor methods with export
-					X ...and see if below is still needed: check assembly
-					+ Do same for ocean surface
-						+ Moving three helpers to OceanSurface
-				+ Try with approx_normalize
-				+ Sample ocean floor only once
-					+ 1: we first check if under floor, then take normal
-						+ Assembly shows we're calculating index twice
-						+ Make function to calc index & dx, and then query by index & dx:
-							+ BUT: still have to check if below, so: GetOceanFloorHeightIfUnderneath(...) -> bool, register_int, float
-								+ New GameType: register_int, defined based on FS_IS_REGISTER_WIDTH_32/64
-									+ Replace "auto" at all uses
-								+ Check assembly for tuple
-							+ GetOceanFloorHeightAt(integral index, dx)
-							+ GetOceanFloorNormalAt(integral index, dx)
-					+ Nuke old code @ World.h, OceanSurface.h, OceanFloor.h
-				+ Verify assembly
-				+ Get perf after
-					% default: 4.34%/4.39%
-					% Ark splattered: 5.85%
-					Update ms Ark splattered: 10.3/10.4
-			+ changelist
-		+ Send for testing:
-			+ Win to testers
-			+ Win to JohnSmith
-			+ Ubuntu to guy
-		+ Bump up version
-		+ Test on Dell
-			+ Test that these work: 
-				+ Pressure crush
-				+ ElectricSpark
-			+ Perf:
-				+ Before: FPS:30.2/30.6 UPD:18.9/19.6ms UPL:0.18ms RND:13.18ms
-				+ After: FPS:30.65 UPD:19.5ms UPL:0.18ms RND:12.80ms
-		+ Check Smith's feedback
-			+ Explosions
-			
-		+ Localization:
-			+ IT
-				+ Help
-				+ Check out changed SettingsDialog strings
-			+ ES
-				+ Help
-				+ Check out changed SettingsDialog strings
-			+ RU
-				+ Help
-				+ Check out changed SettingsDialog strings
-		+ New ships
-			+ Test BeamierBoomer
-				+ Take: IJN_Mikasa.png, USS_C-13_Minneapolis.png
-				+ Add to credits: BeamierBoomer
-			+ PocketWatch
-				+ Take: SS Avain Pocket 1852, SS King Christian, Andrea Doria
-				+ Add to credits: Pocketwatch
-			+ Replace egg carrier - tested and works good
-			+ Test: den2006's front ships
-				+ Take them all - he confirms they're all his
-				+ Add to credits: Denis
-			+ FERZCL's M.S. Costa Smeralda
-				+ Take it, after he confirms texture credits
-			+ At least 15 so far
-		+ Release 1.16.5:
-			+ Windows
-				+ MSI variables
-				+ Commit & push
-				+ 64-bit MSI
-					+ Cleanup Install
-					+ Build Install
-					+ Make MSI
-					+ Rename MSI
-					+ Test upgrade from previous version
-				+ 32-bit MSI
-					+ Cleanup Install
-					+ Build Install
-					+ Make MSI
-					+ Rename MSI
-					+ Test clean install
-				+ Get both installers tested on dev server
-			+ Ubuntu
-				+ Pull 
-				+ Build clean
-				+ Make tar ("cd floating-sandbox && tar -cvf ../FloatingSandbox-1.16.5-x64.tar . && cd -")
-				+ Smoke-test tar ("tar -xf FloatingSandbox-1.16.5-x64.tar")
-				+ Zip tar
-				+ Get tar tested on dev server
-			+ Wait for test results
-			+ Cut tag on github
-			+ Upload packages to GameJolt
-				+ Report file as safe (https://gamejolt.com/privacy)
-				+ Post
-				+ Edit description and add Ubuntu
-			- www.floatingsandbox.com:
-				X Upload changes.txt
-				+ Update current version in FAQ
-				+ Add Ubuntu to versions
-		+ Fix derivative in ocean shader
-		+ Release 1.16.6
-			+ Windows
-				+ MSI variable
-				+ 64-bit MSI
-					+ Cleanup Install
-					+ Build Install
-					+ Make MSI
-					+ Rename MSI
-					+ Test upgrade from previous version
-				+ 32-bit MSI
-					+ Cleanup Install
-					+ Build Install
-					+ Make MSI
-					+ Rename MSI
-					+ Test clean install
-				+ Get both installers tested
-			+ Ubuntu
-				+ Pull 
-				+ Build clean
-				+ Make tar ("cd floating-sandbox && tar -cvf ../FloatingSandbox-1.16.5-x64.tar . && cd -")
-				+ Smoke-test tar ("tar -xf FloatingSandbox-1.16.5-x64.tar")
-				+ Zip tar
-			+ Wait for test results
-			+ Commit & push
-			+ Cut tag on github
-			+ Upload packages to GameJolt
-			+ www.floatingsandbox.com:
-				+ Update current version in FAQ
-		+ Fix UpdateDialog re-entrant code
-			+ Verify Ubuntu
-		+ Update version to 1.16.7
-		- Release 1.16.7:
-			+ Update changes.txt to 1.16.7
-			- Windows
-				+ MSI variable
-				- Commit & push
-				- 64-bit MSI
-					+ Cleanup Install
-					+ Build Install
-					- Make MSI
-					- Rename MSI
-					- Test upgrade from previous version
-				- 32-bit MSI
-					+ Cleanup Install
-					+ Build Install
-					- Make MSI
-					- Rename MSI
-					- Test clean install
-			+ Ubuntu
-				+ Pull 
-				+ Build clean
-				+ Make tar ("cd floating-sandbox && tar -cvf ../FloatingSandbox-1.16.5-x64.tar . && cd -")
-				+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../FloatingSandbox*.tar.gz . && tar -xf FloatingSandbox*.tar.gz")
-				+ Zip tar
-			- Cut tag on github
-			- Upload packages to GameJolt
-				- Report file as safe (https://gamejolt.com/privacy)
-				- Post
-			- www.floatingsandbox.com:
-				- Update current version in FAQ
-
-		// -----------------------------------------------------------------------
-
-		- Change version minor
+	- 1.16.8:
+		+ Change version minor
 		+ Nuke Ship Editor request for help from Readme
-		- Commit and push
-
 		- FindSFML
-			- Windows
+			+ Windows
 			- Ubuntu
 
 		- Preferences flag for starting full-screen
@@ -1386,9 +508,9 @@ Render:
 	- Ubuntu
 		- Pull 
 		- Build clean
-		- Make tar ("cd floating-sandbox && tar -cvf ../FloatingSandbox-1.16.5-x64.tar . && cd -")
+		- Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
 		- Zip tar
-		- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../FloatingSandbox*.tar.gz . && tar -xf FloatingSandbox*.tar.gz")
+		- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
 		- Get tar tested on dev server
 	- Wait for test results
 	- Cut tag on github
@@ -13229,5 +12351,879 @@ IF WX:
 				+ Upload changes.txt
 					+ Test w/old FS
 				+ Update current version in FAQ
+	+ 1.16.5:		
+		+ Make branch
+		+ Bump up version
+		+ Cleanup TODO list
+		+ Wix: delete Data folder on install
+			+ https://www.hass.de/content/wix-how-use-removefolderex-your-xml-scripts
+		+ Debris:
+			+ When ship has water all over the place, debris particles start life without water and thus look too different than surroundings - at least for first 0.5 seconds
+		+ Fix Gadgets: 
+			+ Opposite assert at Gadgets::Update
+			+ Each gadget must detach itself when expiring from state machine
+			+ Test with vectors after bomb explosion (and thus disappearance)
+		+ Rework explosion dynamics: they are too inconsistent at this moment
+			+ RenderSetting: DrawExplosions, exactly like DrawFlames
+				+ Rendering
+				+ SettingsDialog, @ "Advanced Settings"
+			+ Ship::ExplosionStateMachine:
+				+ Factor that calcs blastProgress from CurrentProgress: 3.0 -> 4.0
+			+ GameParams: bomb blast radius ~= 6
+			+ Ship::ForceFields:
+				+ Good force: 
+					mPoints.GetNonSpringForce(pointIndex) +=
+							pointRadius.normalise(std::sqrt(squarePointDistance))
+							/ std::max(std::sqrt(squarePointDistance), 1.0f)
+							* strength
+							* 40000.0f // Magic number
+							;
+			+ Test with blast force on _all_ particles - not only just the ship ones
+			+ Heat: lower heat at higher distances from center?
+				+ Then see if it might make more sense to nuke ApplyBastForceField and put its code directly in explosion state machine
+			+ Ultraviolent mode: changes all 3 (Radius, BlastForce, Heat)
+				+ Expose BombBlastForceAdjustment first
+				+ Do @ each bomb
+			+ Tests:
+				+ 3 Bombs
+				+ Explosive combustion
+				+ Blimp
+				+ All: also with Ultra-Violent mode
+				+ Bomb blast radius min/max
+			+ changelist
+			+ Send to Pac0 & John Smith
+			X Try with scaling up forces with masses
+			X See if need heat blast to be larger, in order to catch fire on the rim
+		+ Whole OceanSurface: use FixedSizeBuffer's instead of std::unique_ptr<float[]>'s
+			+ Perf measurements:
+				+ Before: UPD=4.89/4.90
+				+ After: same
+			+ Run in DEBUG
+			+ Check assembly
+		+ Cut tool
+			+ See issue
+				+ Try 0.25 instead of 1.0
+			+ Do "SHIFT lock"
+		+ New tool: Blast
+			! Spec:
+				+ Same force field as Explosion state machine
+				+ Hitting SHIFT makes it faster and stronger
+			+ Impl:
+				+ Cursor
+					+ Cursor 1 and cursor 2
+				+ Tool:
+					+ When hitting:
+						+ Cursor disappears
+						+ Sound starts (depending on SHIFT)
+						+ Tool's state machine starts
+							+ Speed and strength depend on SHIFT
+						+ End of blast doesn't change anything - only mouseup does
+							+ ...and at mouseup, cursor reappears
+					X Decide what to do during phase paused
+					+ Finalize durations - seem a bit too long now
+				+ Physics
+				+ Shader: 
+					+ Link between IGameController::TODOBlast and NotificationLayer->Context
+					+ Basic shader
+					+ Advanced shader, option 1: different blending: whiteish overlay expanding, thicker on rim
+						+ Provide progress
+						+ Do blending
+						+ Add personality
+					+ See if it needs noise
+				+ Sounds:
+					+ Sounds normal
+					+ Sound faster
+				+ Disturb ocean surface
+					+ At World
+				+ SettingsDialog:
+					+ Refactor: 
+						+ Fonts
+						+ 1: new SettingsDialog
+							+ Take all screenshots
+							+ Do
+								+ Try using StaticBoxSizer instead of static boxes
+								+ See to center notebook panels that are less wide
+								+ Fix single checkbox + slider vertical cell
+									+ Set size of row == constant, taken from button
+								+ Move UltraViolent to first panel
+								+ Rendering panel
+								+ Sound and Advanced Settings
+									+ Add:
+										+ GenerateSparkles (New box)
+										+ GenerateDebris
+										+ Draw HeatBlaster Flame (Extra Draw Options)
+								+ Settings Management
+								+ Multiline notebook
+								+ Nuke settings:
+									+ air bubbles displace waves: honor global displacement instead
+									+ generate air bubbles: use zero density
+							+ Nuke old source files and old code in remaining source file						
+						+ 2: Shorten labels
+							+ Fluids: remove redundant "Water" 
+							+ Remove other redundant parts of labels
+							X "Adjust" -> "%" ?
+						+ Final test
+					+ BlastToolRadius
+					+ BlastToolForceAdjustment
+					+ merge
+				+ Finalize all three current default radii
+				+ Finalize maxima of all settings, & ultra-violent mode			
+			+ changelist
+			+ Update help
+		+ Change rot tool with UV mode
+		+ New rain: https://www.shadertoy.com/view/tttyDB
+			+ Do
+			+ Wind rearc:
+				+ Wind uploads speed vector to RenderContext
+				+ RenderContext calcs magnitude, runs avg, and if different dispatches to WorldRenderContext and to each ShipRenderContext
+				+ WorldRenderContext: 
+					+ UploadWind: store and set dirty, both as "RainWindAngle"
+					+ RenderPrepareRain: only if will be drawing rain: pick up dirty flag, set param, and clear flag
+				+ ShipRenderContext:
+					+ UploadWind: store and set dirty, both as "FlameWindAngle"
+					+ RenderPrepareFlames: only if will be drawing flames: pick up dirty flag, set param, and clear flag
+				+ RenderContext::Reset: 
+					+ Reset average
+						! Enough, as next wind upload would generate different value than current member value and thus trigger param set's
+				+ Stop uploading wind with flames
+					+ Nuke Ship::mWindSpeedMagnitudeToRender
+				+ Tests (also across reloads)
+					+ Flame
+					+ Rain
+			+ Wind magnitude
+				+ More vertical at beginning and less horizontal at max
+					! Wind speed magnitude during storm: 60-125
+					+ Function we want: 60 => 0.1, 120 => 0.8
+			+ Check spatial density
+			+ Check density dynamics: goes from zero to max too quickly
+				+ See if MaxRainDensity calc'd at Storm needs to be adjusted - see progression from no rain to max rain, and also setting
+			+ Test viewport size change
+			+ Test perf drop on Dell - simply perf during storm before and after
+				+ Old: 30fps/12-13msRND, Storm: 18fps/35msRND
+				+ New: Storm: 18/35 @ 2:20
+			+ Changelist
+		+ Interim localization (help + po)
+			+ IT
+			+ ES
+			+ RU
+		+ Fix "cycle of sounds" issue with sounds
+			+ Limit stress and break sounds' proximity *regardless* of chosen buffer
+				+ But allow greater size
+			+ Cut initial silence @ all break sounds
+			+ AddVolume becomes exponential: v' = v + (100-v) * dv
+				+ Remove exponential from InternalSetVolume
+			X See if break's minTime might be lowered
+			+ Medium<->Large boundary
+			+ Double-check sounds
+				+ Metal; replace:
+					+ break_metal_large_2
+					+ break_metal_large_3
+					+ break_metal_large_underwater_5
+					+ stress_metal_large_underwater_1 (clicks)
+				+ Wood
+				+ break_glass_small_1
+			+ Take new wood stress sounds
+			+ More stress metal sounds, to dilute "cycle of sounds"
+		+ Cached depths (*)
+			+ 1.16.3: Titanic: 7.92, now: 7.65
+			+ Check perf on old Dell:
+				+ Before: 29.6/29.9 FPS, 20.04/20.2 UPD
+				+ After: 30.4/30.5 FPS, 18.8/19.1 UPD
+		+ Larger world
+			+ GameParameters
+				+ Double size
+			+ Restrict tsunami creation area so that it won't travel more than 5k
+				+ Or alternatively, lower its height
+			+ Check rogue waves as well
+			+ OceanFloor
+				+ Keep # of samples
+				+ Double the width of default ocean floor so that it's more dense
+					+ Add more to the left and to the right
+					+ Also change depth at middle so that it fits with new bumpiness and it's ~-283
+						+ Or simply change the bumpiness frequency or phase, whichever looks best
+				+ Test Mariana's Trench
+			+ OceanSurface				
+				+ Fix manual waves
+					+ Try to re-instate full SWEs
+						X If works, see if can put back tsunami's parameters
+					+ Look back at SWEs (*)
+						+ changelist
+							+ Improving the stability of a simple formulation of the shallow water equations for 2D flood modeling, https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2011WR011570,
+							  de Almeida et al (2012)
+				+ Double # of samples
+				+ See if Update() becomes too heavy
+			+ changelist		
+		+ Send for testing
+			+ bishobe64 as tester
+				+ Invite
+		+ Bump up version
+		+ OpenGL optimizations
+			+ Clear color
+			+ Perf: 5.88/5.90
+			+ All dirty flags at RenderParameters
+				+ See assembly
+			+ Edge springs
+				+ See how heavy: quite
+				+ Springs has new ElementCount member, CoveringTrianglesCount
+					+ Triangles: need new immutable container, "CoveredSprings", similar to SubSprings - so to act at Triangle::Destroy later
+					+ Springs::Upload: consider this count instead of count of SuperTriangles
+					+ Populated by ShipBuilder with same triangles as in SuperTriangles, plus covering triangles for traverse springs
+						+ Triangles::CoveredSprings
+						+ Springs::CoveringTrianglesCount
+					+ Maintained at Triangle Destroy and Repair
+						+ Should be exactly as with SuperTriangles container, but updating only counts
+			+ Profiling w/Basic
+				+ Ocean SOLs (35% + 30%)
+					! (https://developer.nvidia.com/blog/the-peak-performance-analysis-method-for-optimizing-any-gpu-workload/)
+					+ starting TEX=44.9
+					+ Tests:
+						+ Texture format: no alpha
+			+ Profiling w/Bubbles
+			+ Perf: 5.68/5.71
+			+ Old dell: 
+				+ Before: 30.4 (19.0, 12-13)
+				+ After: 31.9 (19.1, 11.8)
+		+ Add whistle: pipe_steam_whistle_for_fs.mp3
+			+ changelist
+		+ See if can get SHIFT key state via ProcessKeyDown/Up instead of hack at GameTimer
+		+ Force rendering: avoid rendering expired ephemeral particles
+			+ Transform ShipRenderContext::UploadVectors from a one-time Upload call with batch to a Start/NxUpload/End call pattern,
+			  with Start() doing the reserve() call we currently do at the one-time Upload call
+		+ Pressure implosions / pressure crush (*)			
+		+ See issue with ocean texture shading: texture coords change depending on cam: repro with pause and high zoom
+		X See if also on Windows "High Quality Rendering" of water is faster than normal
+		+ Test optimization: ApplyWorldSurfaceForces: only consider *external* frontiers
+			! No drag, no displacement for internal frontiers. We are fine with it
+			+ Test Base III before: UPD=17.30ms, plus weird water displacement
+			+ Test Base III after: UPD=16.9ms, no more weird water displacement
+			+ If ok:
+				+ Remove checks for type==External @ AABB updating
+		+ Electric Spark tool
+			+ Infrastructure (tool, sound, cursor)
+			+ Rendering
+				+ ShipRenderContext machinery
+					+ Rethink: it's bad that we continuously flag vertex buffer as dirty: it can be assumed to be always dirty when it's not empty;
+					  use same strategy then that we use for...clouds?
+				+ Shader
+				+ Ship::Upload
+					+ New Ship buffer: ElectricSpark, simple std::vector
+						+ Reset at first update that was not preceded by the interaction
+						+ Uploaded by Ship::Upload
+			+ Redo rendering:
+				+ Rendering struct contains immediately positions, rather than indices
+					! We'd save on normalizations
+					! It might also be better visually, allowing for sparks to "leave" the structure
+				+ Starting point, ending point
+				+ Direction
+				+ Previous index or None (opt size_t)
+				+ Review if all PointsToVisit members and RenderSparkle members are needed
+			+ Fix sea disappearing: Titanic with strength=max engineThrust=max and sparkled engine, hitting ocean floor spike
+				+ Test with clamping absVerticalVelocity to 10000 or 20000
+			+ Fix juncture
+				+ Previous and Next normalized vectors need to be passed to each Upload()
+				+ Optimize locally
+				+ Wireframe
+				X Fix fork: substitute "nextDirection" with "nextL/RDirection"
+					+ R is direction with min cross product
+					+ L is direction with max cross product
+					+ Both default-init'd with max/min limit
+				+ Fix sharp angles (Goodyear test): clamp to 0.01
+			+ Interaction
+				+ Spark expansion logic
+					+ Issue with parallel arms: see if reintroducing third-best helps
+					+ Try with alignment being exclusively on original spring
+					+ Change prob's:
+						+ Fork: less absolute but more uniform along path
+						+ Reroute: slightly more prob when distance~1
+					X Fork probabilities: try with using pv.EquivalentPathSinceLastFork
+					+ Fork probabilities: try with pre-calculated EquivalentPathLengthToNextFork
+						+ Value = uniform(min, max), calculated at emplace time
+					X After fork, proceed in both new directions
+				+ Interactions: private OnPointElectrified(...):
+					+ Takes also ElectricalElements
+					+ Driven by interaction: upon energizing a point, calls into ElectricalElements
+					+ Heat
+						+ Depends on size of incoming, cumulative
+						+ Lower the dependency on size (goal: longer to catch fire at center, more read hot at periphery)
+							+ Avoid too much heat on central point: pass strength, and make it inversely proportional to size
+					+ Rotting
+						+ Depends on size of incoming, cumulative
+					+ Interactions with ElectricalElements:
+						! Call causes same "damage" to selected types of electrical elements as EMP tool (*), i.e. stores simulation timestamp in 
+						  state of that electrical element, make it not working for a limited period of time
+							! For each non-destroyed generator|pump|sounder|etc. that is in radius:
+								! XYZ.state.DisabledEndTimestamp = now + small random variation
+							! ElectricalElements::Update: generator|pump|sounder|etc.:
+								! If now >= XYZ.state.DisabledEndTimestamp: XYZ.state.DisabledEndTimestamp.reset()
+							! ElectricalElements::UpdateSource/Sink/Whatever:
+								! XYZ is off if XYZ.state.DisabledEndTimestamp.has_value()
+						+ Generator
+						+ Lamp
+							+ Sound controller: flicker sound should have some inertia
+						+ Engine (on/off is from generator though, so only thrust here)
+							+ EngineState: SuperElectrificationEndTimestamp
+								+ Set at OnElectricSpark
+								+ Checked for expiration at beginning of engines update loop
+								+ Checked for ON-ness and thrust multiply at engine state management
+					+ Gadgets
+						+ Replace OnNeighborhoodDisturbed() with OnElectricSpark(pointIndex), & precise check for index
+							+ Undo OnPointDetached change
+			+ Shader:
+				+ Different ratio of inner white vs. body
+				+ Wider halo (linear? linear+smoothstep?)
+			+ Test:
+				+ Disconnected components
+			+ Nuke EMP tool in this spec
+			+ changelist
+		+ Move ExternalPressure calc'n from Spring loop to right after that
+			+ Test resultant net and torque before & after, with "Basic Shapes"
+		+ Tests:
+			+ Dynamic forces visualization
+		+ Clear dynamic forces at position-changing interactions
+		+ Add depth to physics probe
+			+ Reading
+				+ Interface
+				+ Gadget
+				+ Notification layer & display
+			+ Do triple-system while you're at it ("SI (Kelvin)", "SI (Celsius)", "USCS")
+				+ UnitsSystem GameType enum
+				+ GameController-owned setting: "DisplayUnitsSystem"
+					+ Storage
+					+ Setters/Getters
+						+ Setter: Tell NotificationLayer
+				+ NotificationLayer:
+					+ Own translation of reading into text
+					+ On change:
+						+ GameController's setter also tells RenderContext, who then sets parameter as dirty and NotificationLayer picks it up and passes it via a parameter at ProcessParameterChanges
+							+ Shader: get and use AtlasTile1LeftBottomTextureCoordinates parameter
+							+ NotificationRenderContext::UploadPanel: use texture-agnostic coords
+						+ Re-publish reading - requires storing current raw values:
+							+ OnReading -> StoreRawValues -> (Make Strings? &&) Make dirty -> Strings made at upload?
+							+ OnChange -> (Make Strings? &&) Make dirty -> Strings made at upload?
+				+ Redo panel for USCS
+				+ UI settings manager
+				+ PreferencesDialog
+		+ Another hydrostatic pressure attempt: Frontier: do not act on non-hull points, but then compensate net resultant force (and may be resultant torque as well)
+			+ Only on edges that are the center of three consecutive hull points
+			+ Try adaptive net_force/net_torque zeroing
+				+ See paper
+				+ Rewrite algo so pressure force stem multiplication is last step - use 1.0 for stems before that
+					+ Assert initially that dynamic forces is empty
+						+ Verify in Debug						
+				+ Best-each-time approach
+					+ See if can integrate minimization, i.e. not only lambda=0:
+						+ Calc net_total at both minimal-and-clamped lambdas, and use best of the two
+							+ Store lambda as bestLambda, to use when min found
+				+ Alternating approach:
+					+ 1. Find point that makes force closest to zero
+						+ When a tie (via tolerance, i.e. radius), compare also torque and choose one with torque being closest to zero
+					+ 2. Find point that makes torque closest to zero
+						+ When a tie (via tolerance, i.e. radius), compare also force and choose one with force being closest to zero
+					+ See if Red October still explodes: yes - but it was already exploding even before stem multiplication
+					+ Other lambdas
+				+ See why explodes
+					+ Should be order: Strain => Hydrostatic, but it's Hydrostatic => Strain
+					X See if last beta also exploded at high depth
+					+ See why pressureForceStem is so jumpy
+						+ It's because UpdateForStrains causes new frontiers and their AABBs are not initialized yet
+						+ Use geometric center
+					+ Abnormal force at frontier knots: due to pressure force stem multiplied twice
+				+ See if can initialize best'es with current nettorque/netforce
+					+ Calc average # of iterations, F, and T before and after
+						+ With numeric_limits::max: Hemisphere: 53/0.37/0.00... Triton: 8.4/0.05/0.00...
+						+ With current nettorque/netforce: Hemisphere: 42/0.7/0.00... Triton: 8.0/0.05/0.00...
+					+ Undo: we want to choose contributions > current net
+				+ Algo for optimization *and* avoidance of double stem (explosion)
+					+ 0a. Confirm by multiplying all DynamicForces by stem - once across all points
+					+ 0b. Take perf measurements (default_ship, depth -= 200): Update:4.90ms, ApplyHydrostaticPressureForces: 3.47%
+						Hesleden: Update:67.8ms, ApplyHydrostaticPressureForces: 6.27%
+					+ Copy exe
+					+ 1. Comment out current
+					+ 2. Move ApplyWorldForces after UpdateForStrains
+					+ 3. ApplyWorldSurfaceForces: calculate geometric center and store it with Frontier, together with AABB
+					+ 4. Buffer:
+						+ Struct member of Ship: HydrostaticPressureOnPoint
+							- ElementIndex PointIndex
+							- vec2f TorqueArm
+							- vec2f ForceVector
+						+ Buffer is owned by Ship, cctd'd at cctor of Ship
+						! Buffer can be populated for same point multiple times, each time for a different "surface" of a frontier
+					+ 5. Initial population of HydrostaticPressureOnPoint buffer:
+						! Allow particles that appear twice in same frontier to appear twice in buffer
+						+ Make loop inline
+					+ 6. Equalization
+					+ End: DynamicForces are only populated at end, by multiplying ForceVector with stem and adding to Points.DynamicForces
+					+ Optimize
+				+ Fix getting stuck at lambda=1:
+				+ Optimizations:
+					+ Start: Update=5.68ms, ApplyHydrostaticPressureForce=13.40% (LogMessage=7.88%)
+					+ See if "min-3-consecutive-hulls" is still needed
+						+ If decide to remove it, cleanup code
+					+ End: Update=4.66ms, ApplyHydrostaticPressureForce=1.57%; Hesleden: 64.5ms, 2.01%
+				+ Run in Debug
+				+ Remove exhaggerations
+			+ Test on melted long springs - after removing exhaggerations
+			X Try moving dynamic force to last spring iteration, so it gets integrated and springs might break before propagation
+			+ Apply air pressure as well
+				! InternalPressure and hydrostatic pressure will never be zero - zero is really "somewhere" above MaxWorldHeight
+				! Pressure at ocean surface zero (aka "PressureAtZero") is == column of air above (atmospheric pressure at sea level)
+				+ Formulae class: implements formulae below
+					+ Calcs effective air density, given temperature
+					+ Cals effective water density, given temperature					
+					+ Calcs volumetric water pressure, given temperature - VolumetricWaterPressure
+					+ Calcs pure air pressure at height x - AirColumnPressure
+					+ Calcs pure water pressure at depth x - WaterColumnPressure
+					+ Calcs total pressure at height x - TotalColumnPressure
+						+ airColumnPressure(clamp(height)) + waterColumnPressure(clamp(depth))
+				+ @ ApplyHydrostaticPressure: 
+					+ PressureAtCenter from Formulae::TotalPressure
+					! Internal pressure counterbalance formula: denominator will never be zero
+				+ @ Internal pressure intake:
+					! Structural delta internal pressure and delta water are independent from each other
+					! Forced delta internal pressure only depends on water
+					+ Redo algo
+				+ @ Flood tool:
+					+ Use Formulae
+				+ SettingsDialog: tooltip of HydrostaticPressureAdjust: add "atmosphere"				
+			+ Try with internal pressure, again
+				+ Re-instate internal pressure code
+				+ Re-instate hull particles getting the average of all their non-hull neighbors
+				+ Commit
+				+ Use hull's internal pressure to counteract external pressure, at initial forceVector calculation
+					+ forceVector *= 1.0 - internalPressure(Pi)/externalPressure * adj
+				+ If goes thru: 
+					+ Do all the internal pressure sidework:
+						+ Flood tool
+							+ Remove pressure only if water has been removed - remove pressure by effective water wuantity removed
+							+ Test both incoming and outgoing
+						+ Make sure pumps play nicely
+							+ Pumping-in: internal pressure grows
+							+ Pumping out: internal pressure decreases
+						+ Rendering							
+					+ SettingsDialog: make new group with new setting for internal pressure "contribution"						
+					+ Optimize
+						+ EqualizeInternalPressure: try with local buffer remembering all we do in the first loop
+							+ Before: 4.96ms, 4%
+							+ After: 4.91ms, 2.73%
+			+ Internal pressure counterbalance:
+				+ Counterbalance adj = 1: reasonable (Titanic still breaks at depth)
+				+ See if can cheat and have "basically" counterbalance adj = 1, except at higher depths
+				+ Remember GameParameters default is now 1
+			+ Rearc settings:
+				+ HydrostaticPressureAdjustment: becomes StaticPressureAdjustment, in Mechanics
+					+ SettingsDialog: Mechanics, and exponential
+				+ HPCounterBalance: stays
+					+ SettingsDialog: merge with other water, and say "hydro"
+			+ Custom probe for net force
+			+ Explain counterbalance in tooltip
+			+ Changelist
+				+ Both (hydro)static pressure and internal pressure
+			+ Merge back into master
+			+ Mark internal pressure TODO item for internal pressure * as complete
+			+ Send for testing
+				+ Bump up version
+			+ Cleanup commented out code
+				= Make video first
+					+ "1: the basics"
+					+ With Triton large sinking slowly: "A hydrostatic pressure field consists of forces perpendicular to the exterior hull of the ship..."
+						"...but simulating it in a particle system is not as easy as it may sound."
+					+ ...
+					+ @ Titanic unequalized: "The problem becomes even more pronounced with bigger structures"
+					+ "2: iterative net effect minimization"
+					+ ...
+					+ Music				
+		+ Send for testing (build 4)
+		+ MaterialsDB rearc:
+			! 170 materials
+			+ Substitute N identical instances, in which only key color changes, with one instance having an _array_ of keys
+				+ The key element in json may be either a string or an array of strings
+				+ When it's an array of strings, there can't be a RenderColor element
+				+ A missing RenderColor means it's the same as KeyColor
+			+ At load time, that one material becomes multiple materials (non-invertible transformation)
+			+ Coalesce already-existing materials
+			+ Update palette-generation script
+		+ Strength randomization
+			+ Visualize strength first to ensure we don't already have fault lines
+				+ New visualization mode
+					+ SettingsDialog
+			+ Inject: at ShipBuilder, after frontiers are created (i.e. almost at end); requires:
+				+ Frontier creation: needs to come after points but before Springs are created
+					+ Reasons in terms of SpringInfo's
+						+ See if can also reason in terms of PointInfo's
+				+ InjectCracks
+					+ Do basic
+					+ Try another crack algorithm
+						+ Batik
+							+ Finish region-relativity
+							+ Find better way of doing index math/relativity
+								+ vec2i @ vectors.h, replacing Matrix2Index and RectRegion
+								+ Batik takes vec2i as Origin and Span arguments
+							+ Convert also PointInfoMatrix to Matrix2
+								+ Remove unneeded structureImageSize args
+							+ Optimization (for e.g. BaseIII): initial random point is chosen on triangles
+							+ Update distance map after each crack
+							+ Density of cracks
+								+ Largest dimension (among W & H) / 4..8 
+								+ Use settings
+							+ Set points' strengths at end, by making distance map = struct{distance, bool}
+								+ Set strength only on points that have connected triangles
+								+ Use settings
+							+ Take & log running time
+								+ Ark: 62/63ms, max density
+							+ Consider optimizing for exclusive use of distance map, not point index matrix
+								+ "PixelMatrix" -> "DistanceMatrix"
+								+ And integral distances
+								+ Distance map init:
+									+ Init with 0 distance everywhere (will be the outside)
+									+ Set to +inf all vertices of triangles
+									+ Set to 0 for frontiers
+								+ During algo: avoid points with distance 0							
+								+ New time:72/73ms
+								+ Finalization:
+									+ Verify assembly for using lambda at UpdateDistances
+								+ See if time increase is due to matrix indexing
+								+ See what time increase is due to
+									+ New matrix: 68/69
+									+ float distances: 63/64
+						+ Finalization:
+							+ Skip randomization if any of the settings are zero
+							X Consider using original distance (the one set at distance map initialization time) for scaling strength
+								- Strength lowering is max at small distances, min at higher distances
+					+ Parameters from outside:
+						+ First off: refactor auto-texturization
+							+ "DefaultSettings" -> "CommonSettings"
+							+ Make ShipBuilder an instance of GameController, and make AutoTexturizer a member of ShipBuilder instead of GC
+								+ ShipBuilder exposes setters for AutoTexturizationCommonSettings
+						+ Then, make "ShipStrengthRandomizer" class
+							+ Also member of ShipBuilder
+							+ Dynamics of settings is same as AutoTexturization
+						+ Density
+						+ Magnitude (room for change)
+						+ Add to GamePreferences
+						+ Verify it is saved and loaded
+			+ Default parameter values based on slider steps
+			+ Test Titanic without breaking fault line: see if breaks by itself
+				+ Make new ship given that you are at it
+			X Checkout impact of sinking ship on sea floor; if gets pulverized, decrease weakening
+			+ Tests:
+				+ Paper
+				+ Cardboard
+				+ Blimps
+				+ Base
+				+ Ball of water and air
+			+ Final params:
+				+ change density so 0.803 is new 1.0
+				+ 2, 0.6 (good for Triton)
+		+ Do some normal wrecks and decide on default static pressure adjust value
+			X First of all: try randomizing pressure with square of random: N, generates phantom forces and torques
+			+ 0.242	
+			+ See why Titanic is bunch of particles at 10Km: rotting?
+				+ Full 10K fall w/out rotting: not pulverized, but quite shattered
+				+ Full 10K fall with rotting: half pulverized
+		+ Way to remove all pins (*)
+		+ Menu with text and icon
+		+ Hydrostatic pressure follow-ups:
+			+ Repair tool:
+				+ Ship has float mPostRepairGracePeriodMultiplier, from 0.0 to 1.0 - default is 1.0
+				+ At end of update, converges towards 1.0 - with tolerance check to become 1.0
+				+ Used at:
+					+ ApplyStaticPressureForces for final multiplier of forces
+				+ Test repair first
+				+ Repair():
+					+ At end sets mPostRepairGracePeriodMultiplier to 0.0
+					+ Also at end, clears out whole dynamic forces buffer
+						+ Remove ad-hoc setting of dynamic forces to zero
+			+ Pressure tool:
+				+ Like Flood tool was before, but only acting on InternalPressure
+				+ Could repurpose bubble tool - does bubbles when no ship is found
+				+ Shift modifier
+				+ SettingsDialog - breakout tab, "Destructive Tools" and "Other Tools"
+				+ Help
+				+ Visual feedback
+					+ Shader
+					+ NotificationRenderContex: see disassembly for calls to RenderPrepare/Draw, and eventually inline
+					+ Direction
+				+ Sound feedback
+					+ Tool: needs to remember which sound it was doing, in order to stop it
+						+ See if fish tool structure serves the purpose
+					+ Sound
+					+ See if makes sense to have pssst sound always
+				+ Try with larger visual feedback
+				+ Not on hull
+				+ Higher max flow
+					+ Or higher UltraViolent mode			
+			+ Blimps might need a hull, of a new material that's structurally not different than their current shell, but just hull - and may be less strong
+				! Goodyear's current shell is currently normal cardboard (c1a46a)
+				+ New material: Mylar, of "cloth" sound type
+					+ Copy from cloth: stiffness and strength
+					+ Hull
+					+ Use real combustion properties
+				+ Fix Mylar's weird bouncing on water
+				+ Make inflatable balloon
+					+ Inject pressure issue due to expanded graph and not finding particle: find triangle if can't find
+						+ If ok: nuke InjectPressureRadius setting, and use GameParameters::ToolSearchRadius directly at Ship::InjectPressureAt()
+					+ Internal pressure at start
+					+ See if want to make it break at higher pressure by increasing stiffness of hull
+						X See then if can lower strength					
+					+ Description
+					+ Issue with melting:
+						X See if due to *decay*
+						+ Implement adaptive extra melting-induced tolerance
+							+ Store in precacld buffer, once and for all (immutable), with:
+								+ MaterialStiffness (!GetMaterialStiffness)
+								+ MaterialStrength (!GetMaterialStrength)
+								+ MaterialMeltingTemperature (!)
+				+ Change Goodyear's hull to Mylar
+				+ Do also other blimp
+				+ Regenerate materials palette
+				+ changelist, also for material
+					+ Mention also other colors for materials, with total # from 170
+			+ Turn off hydrostatic pressure counterbalance adjustment when above water
+			+ Add AirDensityAdjustment setting-ability
+				+ Nail down max
+				+ Fix zero
+				+ See if can increase max WaterDensityAdjustment (was: 4.0) - 10.0 is fine, 100.0 cool, but generates weird upward displacement
+					+ Fix upward displacement
+				+ changelist
+			+ Finalize StaticPressureAdjustment
+				! No adjustment for air pressure, it is redundant - we have air density now, and it's the same with water
+				+ Goal: high air pressure causes things to explode high up
+					! No need to extend counterbalance upwards
+				+ Rename "StaticPressureAdjustment" as "StaticPressureForceAdjustment"
+			X Create new "Hot Air Balloon" ship
+			+ Physics probe: internal pressure
+				+ USCS: psi
+			+ Find right setting value and range for InternalPressure tool
+				+ Option 1: "Quantity" is really # of atmospheres
+					+ If it's atmospheres, say "Atmospheres" in tooltip
+			+ Ship definition: add optional value for default internal pressure
+				+ When not specified, it's PressureAtZero (calc'd via Formulae)
+				+ Move Offset out of metadata
+			+ Optimizations:				
+				+ EqualizeInternalPressure:
+					+ Take perf now: 3.03% (default ship)
+					+ See if can assign avg immediately: YES, verified
+					+ Final perf: 1.43% (default ship)
+		+ SHIFT for Electric Spark tool
+			+ Add SHIFT: length multiplier
+			+ Help
+		+ Water Impact - when ship touches water for first time (*)
+		+ Splash sounds at displacement:
+			+ Piggyback on water displacement factors, after all magnitude of splash sound depends on kinetic energy, ~= displacement magnitude
+				+ Try then to use displacement magnitude directly, after normalizing it wrt its own max
+			+ Aggregate splash sound
+			+ See why doesn't sound like different sounds
+				x Try with minTimeDelta
+					! It's because the different sounds can start even within minTimeDelta
+			+ Idea: two types of sounds played together
+				! Spec:
+					- More wave-like: predominant at low displacement
+						- Single sound
+					- More splash-like: predominant at high displacement
+						- The different sounds we have now, but different name: "displacementsplash"
+				+ WaterDisplacementWave and WaterDisplacementSplash
+				+ 1. Wave sound:
+					+ Use current wave sounds
+						+ Make sure name is proper generic "wave"
+						+ Make sure has no min time
+					+ See if can make sounds with shorter attack time
+						+ If so: "WaterDisplacementWave"
+					+ See if can reduce frequency of sounds firing
+					+ Finalize code for displacement waves
+					+ Try shorter sounds
+				+ 2. Splash sound:
+					+ Nuke old sounds, including types
+					+ New "WaterDisplacementSplash" sounds, with splashy sounds, not much wave
+					+ Algo
+			+ Sound reorg:
+				+ SoundFile::Load -> uq_ptr<SoundFile>, w/SoundFile::SoundBuffer not uq_ptr
+			+ Optimize
+			+ changelist
+		+ Make sure we don't have custom probes; convert each needed to actual method
+		+ Sky: satellites and shooting stars (*)
+		+ See explosions issue with Marine Electric (now on Desktop)
+			+ It's just too strong
+		+ Fix issue with rotation: move first, and hit SHIFT during the move
+		+ Fix texture changer for electrical panel
+			+ MSW
+			+ Test on Ubuntu
+		+ bishobe644 in Credits
+		+ Night vision (*)
+		+ Help intro: add all new physics
+		+ Silting:
+			+ HandleCollisionsWithSeaFloor: position restore is scaled down when particle between 0 and SiltThickness below sea floor
+				+ Scaling down is smaller (i.e. floor is harder) the closer to SiltThickness we get; linear might be jsut fine
+				+ Then see what to do with velocity
+				+ Work in progress:
+					+ float const siltingCoeff = (depth < 40.f) ? 0.5f : 1.0f;
+						+ 0.5 looks good - but limits bouncing, 0.75 does nothing
+					! See if without silting things were less...brokey when hitting the ocean floor
+					+ Use depth and absolute velocity
+				+ Check what happens now with friction and elasticity
+					+ Verify wheels still roll
+				+ Test underneath world min Y in Debug
+			+ Parameters and SettingsDialog @ OceanFloor
+			+ Optimize
+				+ Get perf before (without silting) 
+					% default: 4.57%/4.85%
+					% Ark splattered: 5.76%/6.30%
+					Update ms Ark splattered: 10.2/10.3
+				+ Export OceanFloor from parent world
+					+ Substitute ocean floor methods with export
+					X ...and see if below is still needed: check assembly
+					+ Do same for ocean surface
+						+ Moving three helpers to OceanSurface
+				+ Try with approx_normalize
+				+ Sample ocean floor only once
+					+ 1: we first check if under floor, then take normal
+						+ Assembly shows we're calculating index twice
+						+ Make function to calc index & dx, and then query by index & dx:
+							+ BUT: still have to check if below, so: GetOceanFloorHeightIfUnderneath(...) -> bool, register_int, float
+								+ New GameType: register_int, defined based on FS_IS_REGISTER_WIDTH_32/64
+									+ Replace "auto" at all uses
+								+ Check assembly for tuple
+							+ GetOceanFloorHeightAt(integral index, dx)
+							+ GetOceanFloorNormalAt(integral index, dx)
+					+ Nuke old code @ World.h, OceanSurface.h, OceanFloor.h
+				+ Verify assembly
+				+ Get perf after
+					% default: 4.34%/4.39%
+					% Ark splattered: 5.85%
+					Update ms Ark splattered: 10.3/10.4
+			+ changelist
+		+ Send for testing:
+			+ Win to testers
+			+ Win to JohnSmith
+			+ Ubuntu to guy
+		+ Bump up version
+		+ Test on Dell
+			+ Test that these work: 
+				+ Pressure crush
+				+ ElectricSpark
+			+ Perf:
+				+ Before: FPS:30.2/30.6 UPD:18.9/19.6ms UPL:0.18ms RND:13.18ms
+				+ After: FPS:30.65 UPD:19.5ms UPL:0.18ms RND:12.80ms
+		+ Check Smith's feedback
+			+ Explosions
+			
+		+ Localization:
+			+ IT
+				+ Help
+				+ Check out changed SettingsDialog strings
+			+ ES
+				+ Help
+				+ Check out changed SettingsDialog strings
+			+ RU
+				+ Help
+				+ Check out changed SettingsDialog strings
+		+ New ships
+			+ Test BeamierBoomer
+				+ Take: IJN_Mikasa.png, USS_C-13_Minneapolis.png
+				+ Add to credits: BeamierBoomer
+			+ PocketWatch
+				+ Take: SS Avain Pocket 1852, SS King Christian, Andrea Doria
+				+ Add to credits: Pocketwatch
+			+ Replace egg carrier - tested and works good
+			+ Test: den2006's front ships
+				+ Take them all - he confirms they're all his
+				+ Add to credits: Denis
+			+ FERZCL's M.S. Costa Smeralda
+				+ Take it, after he confirms texture credits
+			+ At least 15 so far
+		+ Release 1.16.5:
+			+ Windows
+				+ MSI variables
+				+ Commit & push
+				+ 64-bit MSI
+					+ Cleanup Install
+					+ Build Install
+					+ Make MSI
+					+ Rename MSI
+					+ Test upgrade from previous version
+				+ 32-bit MSI
+					+ Cleanup Install
+					+ Build Install
+					+ Make MSI
+					+ Rename MSI
+					+ Test clean install
+				+ Get both installers tested on dev server
+			+ Ubuntu
+				+ Pull 
+				+ Build clean
+				+ Make tar ("cd floating-sandbox && tar -cvf ../FloatingSandbox-1.16.5-x64.tar . && cd -")
+				+ Smoke-test tar ("tar -xf FloatingSandbox-1.16.5-x64.tar")
+				+ Zip tar
+				+ Get tar tested on dev server
+			+ Wait for test results
+			+ Cut tag on github
+			+ Upload packages to GameJolt
+				+ Report file as safe (https://gamejolt.com/privacy)
+				+ Post
+				+ Edit description and add Ubuntu
+			- www.floatingsandbox.com:
+				X Upload changes.txt
+				+ Update current version in FAQ
+				+ Add Ubuntu to versions
+		+ Fix derivative in ocean shader
+		+ Release 1.16.6
+			+ Windows
+				+ MSI variable
+				+ 64-bit MSI
+					+ Cleanup Install
+					+ Build Install
+					+ Make MSI
+					+ Rename MSI
+					+ Test upgrade from previous version
+				+ 32-bit MSI
+					+ Cleanup Install
+					+ Build Install
+					+ Make MSI
+					+ Rename MSI
+					+ Test clean install
+				+ Get both installers tested
+			+ Ubuntu
+				+ Pull 
+				+ Build clean
+				+ Make tar ("cd floating-sandbox && tar -cvf ../FloatingSandbox-1.16.5-x64.tar . && cd -")
+				+ Smoke-test tar ("tar -xf FloatingSandbox-1.16.5-x64.tar")
+				+ Zip tar
+			+ Wait for test results
+			+ Commit & push
+			+ Cut tag on github
+			+ Upload packages to GameJolt
+			+ www.floatingsandbox.com:
+				+ Update current version in FAQ
+		+ Fix UpdateDialog re-entrant code
+			+ Verify Ubuntu
+		+ Update version to 1.16.7
+		+ Release 1.16.7:
+			+ Update changes.txt to 1.16.7
+			+ Windows
+				+ MSI variable
+				+ Commit & push
+				+ 64-bit MSI
+					+ Cleanup Install
+					+ Build Install
+					+ Make MSI
+					+ Rename MSI
+					+ Test upgrade from previous version
+				+ 32-bit MSI
+					+ Cleanup Install
+					+ Build Install
+					+ Make MSI
+					+ Rename MSI
+					+ Test clean install
+			+ Ubuntu
+				+ Pull 
+				+ Build clean
+				+ Make tar ("cd floating-sandbox && tar -cvf ../FloatingSandbox-1.16.5-x64.tar . && cd -")
+				+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../FloatingSandbox*.tar.gz . && tar -xf FloatingSandbox*.tar.gz")
+				+ Zip tar
+			+ Cut tag on github
+			+ Upload packages to GameJolt
+				+ Post
+			+ www.floatingsandbox.com:
+				+ Update current version in FAQ
+			+ Announce on Discord server
 
 
