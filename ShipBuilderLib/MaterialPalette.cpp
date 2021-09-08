@@ -282,6 +282,38 @@ void MaterialPalette<TMaterial>::Close()
     Dismiss();
 }
 
+class MaterialCategoryPanel : public wxPanel
+{
+public:
+
+    MaterialCategoryPanel(wxWindow * parent)
+        : wxPanel(parent)
+        , mIsLayoutLocked(false)
+    {}
+
+    void LockLayout(bool isLocked = true)
+    {
+        mIsLayoutLocked = isLocked;
+    }
+
+    virtual bool Layout() override
+    {
+        if (!mIsLayoutLocked)
+        {
+            return wxPanel::Layout();
+        }
+        else
+        {
+            // Layout has been locked, don't do it again
+            return false;
+        }
+    }
+
+private:
+
+    bool mIsLayoutLocked;
+};
+
 template<typename TMaterial>
 wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
     wxWindow * parent,
@@ -300,7 +332,7 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
     //
 
     // Create panel
-    wxPanel * categoryPanel = new wxPanel(parent);
+    MaterialCategoryPanel * categoryPanel = new MaterialCategoryPanel(parent);
 
     int constexpr RowsPerSubcategory = (TMaterial::Layer == MaterialLayerType::Structural ? 3 : 2);
 
@@ -315,22 +347,6 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
         for (size_t iSubCategory = 0; iSubCategory < materialCategory.SubCategories.size(); ++iSubCategory)
         {
             auto const & subCategory = materialCategory.SubCategories[iSubCategory];
-
-            // Sub-category Name
-            /*
-            {
-                wxStaticText * subCategoryNameLabel = new wxStaticText(categoryPanel, wxID_ANY, subCategory.Name);
-
-                subCategoryNameLabel->Wrap(PaletteButtonSize.Width);
-
-                gridSizer->Add(
-                    subCategoryNameLabel,
-                    wxGBPosition(iSubCategory * RowsPerSubcategory, 0),
-                    wxGBSpan(RowsPerSubcategory, 1),
-                    wxEXPAND | wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL,
-                    0);
-            }
-            */
 
             // Materials
             for (size_t iMaterial = 0; iMaterial < subCategory.Materials.size(); ++iMaterial)
@@ -425,6 +441,10 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
 
     categoryPanel->SetSizerAndFit(sizer);
 
+    // Lock the layout now - we won't ever be resized, hence there's no need
+    // to layout over and over multiple times
+    categoryPanel->LockLayout();
+
     return categoryPanel;
 }
 
@@ -461,11 +481,11 @@ wxToggleButton * MaterialPalette<TMaterial>::CreateMaterialButton(
 
 namespace /* anonymous */ {
 
-class fsPropertyGridWithoutFooter : public wxPropertyGrid
+class MaterialPropertyGrid : public wxPropertyGrid
 {
 public:
 
-    fsPropertyGridWithoutFooter(
+    MaterialPropertyGrid(
         wxWindow * parent,
         wxSize const & size,
         long style)
@@ -480,14 +500,14 @@ public:
     wxSize DoGetBestSize() const override
     {
         auto size = wxPropertyGrid::DoGetBestSize();
-        size.y -= 36;
+        size.y -= 36; // wxWidgets up to 3.1.4 has a harcoded "+40" here, which generates an ugly footer
         return size;
     }
 };
 
 wxPropertyGrid * CreatePropertyGrid(wxWindow * parent)
 {
-    return new fsPropertyGridWithoutFooter(parent, wxSize(300, -1), wxPG_DEFAULT_STYLE | wxPG_STATIC_LAYOUT);
+    return new MaterialPropertyGrid(parent, wxSize(300, -1), wxPG_DEFAULT_STYLE | wxPG_STATIC_LAYOUT);
 }
 
 wxPGProperty * AddFloatProperty(

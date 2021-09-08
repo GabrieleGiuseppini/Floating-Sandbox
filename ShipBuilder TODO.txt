@@ -326,13 +326,11 @@
 					+ Fix: category panels don't want to grow H
 				+ Area with properties of material under cursor
 					+ Hook mouse enter/leave event on each button
-			- See if can subclass MaterialPaletteCategoryPanel to prevent unnecessary Layout()
-				- RealLayout() // called explicitly at creation
-				- or: LockLayout(bool lock=true)
+			+ See if can subclass MaterialPaletteCategoryPanel to prevent unnecessary Layout()
+				+ LockLayout(bool lock=true)
 			+ Use wxWindowUpdateLocker instead of Freeze/Thaw
 			- Test also Electrical
 				- Do View toolbar ("Layers Toolbar") *
-			- Do profiling to find low-hanging fruit
 			
 
 - Ship file format:
