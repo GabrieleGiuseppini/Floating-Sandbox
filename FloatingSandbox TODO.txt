@@ -1128,6 +1128,40 @@ Render:
 
 		+ Fix derivative in ocean shader
 
+		= Release 1.16.6
+			+ Windows
+				+ MSI variable
+				+ 64-bit MSI
+					+ Cleanup Install
+					+ Build Install
+					+ Make MSI
+					+ Rename MSI
+					+ Test upgrade from previous version
+				+ 32-bit MSI
+					+ Cleanup Install
+					+ Build Install
+					+ Make MSI
+					+ Rename MSI
+					+ Test clean install
+				+ Get both installers tested
+			+ Ubuntu
+				+ Pull 
+				+ Build clean
+				+ Make tar ("cd floating-sandbox && tar -cvf ../FloatingSandbox-1.16.5-x64.tar . && cd -")
+				+ Smoke-test tar ("tar -xf FloatingSandbox-1.16.5-x64.tar")
+				+ Zip tar
+			+ Wait for test results
+			- Commit & push
+			- Cut tag on github
+			- Upload packages to GameJolt
+				- Report file as safe (https://gamejolt.com/privacy)
+				- Post
+			- www.floatingsandbox.com:
+				- Upload changes.txt
+					- Change top version to 1.16.6
+					- Test w/old FS
+				- Update current version in FAQ
+
 		// -----------------------------------------------------------------------
 
 		+ Change version minor
@@ -1335,9 +1369,10 @@ Render:
 		- Report file as safe (https://gamejolt.com/privacy)
 		- Post
 	- www.floatingsandbox.com:
+		- Update current version in FAQ
+		- Wait a day or two
 		- Upload changes.txt
 			- Test w/old FS
-		- Update current version in FAQ
 
 - Localization:
 	- Italian:
