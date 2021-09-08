@@ -1,4 +1,4 @@
-1.16.6
+1.16.7
 - Added simulation of *pressure*
 	- Underwater structures are subject to hydrostatic pressure, aka "Pressure Crush"
 	- Abovewater structures are subject to atmospheric pressure, decreasing with altitude

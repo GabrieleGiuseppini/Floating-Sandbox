@@ -1156,6 +1156,7 @@ Render:
 			- Verify Ubuntu
 		+ Update version to 1.16.7
 		- Release 1.16.7:
+			+ Update changes.txt to 1.16.7
 			- Windows
 				- MSI variable
 				- Commit & push
