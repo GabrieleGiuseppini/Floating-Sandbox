@@ -1089,7 +1089,6 @@ Render:
 			+ FERZCL's M.S. Costa Smeralda
 				+ Take it, after he confirms texture credits
 			+ At least 15 so far
-
 		+ Release 1.16.5:
 			+ Windows
 				+ MSI variables
@@ -1124,10 +1123,8 @@ Render:
 				X Upload changes.txt
 				+ Update current version in FAQ
 				+ Add Ubuntu to versions
-
 		+ Fix derivative in ocean shader
-
-		= Release 1.16.6
+		+ Release 1.16.6
 			+ Windows
 				+ MSI variable
 				+ 64-bit MSI
@@ -1153,11 +1150,39 @@ Render:
 			+ Commit & push
 			+ Cut tag on github
 			+ Upload packages to GameJolt
-			- www.floatingsandbox.com:
-				- Upload changes.txt
-					- Change top version to 1.16.6
-					- Test w/old FS
+			+ www.floatingsandbox.com:
 				+ Update current version in FAQ
+		= Fix UpdateDialog re-entrant code
+			- Verify Ubuntu
+		+ Update version to 1.16.7
+		- Release 1.16.7:
+			- Windows
+				- MSI variable
+				- Commit & push
+				- 64-bit MSI
+					- Cleanup Install
+					- Build Install
+					- Make MSI
+					- Rename MSI
+					- Test upgrade from previous version
+				- 32-bit MSI
+					- Cleanup Install
+					- Build Install
+					- Make MSI
+					- Rename MSI
+					- Test clean install
+			- Ubuntu
+				- Pull 
+				- Build clean
+				- Make tar ("cd floating-sandbox && tar -cvf ../FloatingSandbox-1.16.5-x64.tar . && cd -")
+				- Smoke-test tar ("tar -xf FloatingSandbox-1.16.5-x64.tar")
+				- Zip tar
+			- Cut tag on github
+			- Upload packages to GameJolt
+				- Report file as safe (https://gamejolt.com/privacy)
+				- Post
+			- www.floatingsandbox.com:
+				- Update current version in FAQ
 
 		// -----------------------------------------------------------------------
 
