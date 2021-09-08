@@ -61,6 +61,14 @@
 
 ----------------------------------------------------------------------------------------------------------
 
+- Workflows:
+	- Create New Ship (@menu, @file panel)
+		- GameController::CreateNew()
+	- Create New Ship From TExture (@menu, @file panel)
+		- GameController::CreateNewFromTexture()
+	- Load Ship (@menu, @file panel)
+		- GameController::Load()
+
 - UI:
 	- Controls:
 		+ Button to save and go back to game (!StandaloneMode)
@@ -168,6 +176,7 @@
 			- Ship size and icon
 
 - Controller:
+	- TODOHERE: Allow MainFrame to live without controller
 	- Methods to instantiate ModelController: 
 		+ CreateNewShip()
 		+ LoadShip(..)
@@ -325,6 +334,10 @@
 					+ Fix: category panels don't want to grow H
 				+ Area with properties of material under cursor
 					+ Hook mouse enter/leave event on each button
+			- See if can subclass MaterialPaletteCategoryPanel to prevent unnecessary Layout()
+				- RealLayout() // called explicitly at creation
+				- or: LockLayout(bool lock=true)
+			+ Use wxWindowUpdateLocker instead of Freeze/Thaw
 			- Test also Electrical
 				- Do View toolbar ("Layers Toolbar") *
 			- Do profiling to find low-hanging fruit

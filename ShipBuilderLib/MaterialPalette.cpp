@@ -11,6 +11,7 @@
 
 #include <wx/gbsizer.h>
 #include <wx/statline.h>
+#include <wx/wupdlock.h>
 
 #include <cassert>
 #include <sstream>
@@ -678,7 +679,7 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
 template<typename TMaterial>
 void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
 {
-    Freeze();
+    wxWindowUpdateLocker locker(this);
 
     //
     // Select category button and unselect all others
@@ -768,8 +769,6 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
         Layout();
         mRootSizer->SetSizeHints(this); // this->Fit() and this->SetSizeHints
     }
-
-    Thaw();
 }
 
 template<typename TMaterial>
