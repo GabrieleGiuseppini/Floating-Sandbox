@@ -313,9 +313,9 @@ Render:
 	- 1.16.8:
 		+ Change version minor
 		+ Nuke Ship Editor request for help from Readme
-		- FindSFML
+		+ FindSFML
 			+ Windows
-			- Ubuntu
+			+ Ubuntu
 
 		- Preferences flag for starting full-screen
 
