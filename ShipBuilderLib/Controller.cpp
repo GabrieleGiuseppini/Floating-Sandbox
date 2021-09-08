@@ -7,37 +7,59 @@
 
 namespace ShipBuilder {
 
-Controller::Controller(
+std::unique_ptr<Controller> Controller::CreateNew(
     View & view,
     WorkbenchState & workbenchState,
     IUserInterface & userInterface)
-    : mView(view)
-    , mModelController()
+{
+    auto modelController = ModelController::CreateNew(
+        WorkSpaceSize(400, 200), // TODO: from preferences
+        view,
+        userInterface);
+
+    std::unique_ptr<Controller> controller = std::unique_ptr<Controller>(
+        new Controller(
+            std::move(modelController),
+            view,
+            workbenchState,
+            userInterface));
+
+    return controller;
+}
+
+std::unique_ptr<Controller> Controller::LoadShip(
+    std::filesystem::path const & shipFilePath,
+    View & view,
+    WorkbenchState & workbenchState,
+    IUserInterface & userInterface)
+{
+    auto modelController = ModelController::Load(
+        shipFilePath,
+        view,
+        userInterface);
+
+    std::unique_ptr<Controller> controller = std::unique_ptr<Controller>(
+        new Controller(
+            std::move(modelController),
+            view,
+            workbenchState,
+            userInterface));
+
+    return controller;
+}
+
+Controller::Controller(
+    std::unique_ptr<ModelController> modelController,
+    View & view,
+    WorkbenchState & workbenchState,
+    IUserInterface & userInterface)
+    : mModelController(std::move(modelController))
+    , mView(view)
     , mWorkbenchState(workbenchState)
     , mUserInterface(userInterface)
     //
     , mInputState()
 {
-}
-
-void Controller::CreateNewShip()
-{
-    mModelController = ModelController::CreateNew(
-        WorkSpaceSize(400, 200), // TODO: from preferences
-        mUserInterface,
-        mView);
-
-    OnNewModelController();
-}
-
-void Controller::LoadShip(std::filesystem::path const & shipFilePath)
-{
-    mModelController = ModelController::Load(
-        shipFilePath,
-        mUserInterface,
-        mView);
-
-    OnNewModelController();
 }
 
 void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition)
@@ -101,13 +123,5 @@ void Controller::OnShiftKeyUp()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-void Controller::OnNewModelController()
-{
-    // TODO: reset tool and pseudo-tools
-
-    // Tell UI
-    mUserInterface.OnWorkSpaceSizeChanged();
-}
 
 }

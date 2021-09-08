@@ -284,15 +284,6 @@ MainFrame::MainFrame(
         mResourceLocator);
 
     //
-    // Create controller
-    //
-
-    mController = std::make_unique<Controller>(
-        *mView,
-        mWorkbenchState,
-        *this);
-
-    //
     // Initialize UI
     //
 
@@ -304,15 +295,32 @@ MainFrame::MainFrame(
 
 void MainFrame::OpenForNewShip()
 {
-    mController->CreateNewShip();
+    // Create controller
+    mController = Controller::CreateNew(
+        *mView,
+        mWorkbenchState,
+        *this);
 
+    // Adjust UI
+    SyncControllerToUI();
+
+    // Open ourselves
     Open();
 }
 
 void MainFrame::OpenForShip(std::filesystem::path const & shipFilePath)
 {
-    mController->LoadShip(shipFilePath);
+    // Create controller
+    mController = Controller::LoadShip(
+        shipFilePath,
+        *mView,
+        mWorkbenchState,
+        *this);
 
+    // Adjust UI
+    SyncControllerToUI();
+
+    // Open ourselves
     Open();
 }
 
@@ -1070,6 +1078,9 @@ void MainFrame::QuitAndSwitchBackToGame()
 
 void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath)
 {
+    // Let go of controller
+    mController.reset();
+
     // Hide self
     Show(false);
 
@@ -1081,6 +1092,11 @@ void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePa
 void MainFrame::RecalculatePanning()
 {
     // TODOHERE
+}
+
+void MainFrame::SyncControllerToUI()
+{
+    // TODO: scrollbars of work canvas
 }
 
 void MainFrame::SyncWorkbenchStateToUI()

@@ -24,13 +24,13 @@ public:
 
     static std::unique_ptr<ModelController> CreateNew(
         WorkSpaceSize const & workSpaceSize,
-        IUserInterface & userInterface,
-        View & view);
+        View & view,
+        IUserInterface & userInterface);
 
     static std::unique_ptr<ModelController> Load(
         std::filesystem::path const & shipFilePath,
-        IUserInterface & userInterface,
-        View & view);
+        View & view,
+        IUserInterface & userInterface);
 
     WorkSpaceSize const & GetWorkSpaceSize() const
     {
@@ -41,13 +41,13 @@ private:
 
     ModelController(
         WorkSpaceSize const & workSpaceSize,
-        IUserInterface & userInterface,
-        View & view);
+        View & view,
+        IUserInterface & userInterface);
 
 private:
 
-    IUserInterface & mUserInterface;
     View & mView;
+    IUserInterface & mUserInterface;
 
     Model mModel;
 };

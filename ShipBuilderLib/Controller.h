@@ -24,14 +24,16 @@ class Controller
 {
 public:
 
-    Controller(
+    static std::unique_ptr<Controller> CreateNew(
         View & view,
         WorkbenchState & workbenchState,
         IUserInterface & userInterface);
 
-    void CreateNewShip();
-
-    void LoadShip(std::filesystem::path const & shipFilePath);
+    static std::unique_ptr<Controller> LoadShip(
+        std::filesystem::path const & shipFilePath,
+        View & view,
+        WorkbenchState & workbenchState,
+        IUserInterface & userInterface);
 
     void OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition);
     void OnLeftMouseDown();
@@ -43,7 +45,11 @@ public:
 
 private:
 
-    void OnNewModelController();
+    Controller(
+        std::unique_ptr<ModelController> modelController,
+        View & view,
+        WorkbenchState & workbenchState,
+        IUserInterface & userInterface);
 
 private:
 

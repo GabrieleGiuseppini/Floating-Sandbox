@@ -176,19 +176,11 @@
 			- Ship size and icon
 
 - Controller:
-	- TODOHERE: Allow MainFrame to live without controller
-	- Methods to instantiate ModelController: 
-		+ CreateNewShip()
-		+ LoadShip(..)
-		- OnNewModelController()
-			- Reset tools ("Initialize")
-			+ Recalc scrollbars
-			- ...			
 
 - ModelController:
 	- static factory methods:
 		+ CreateNew
-		- CreateFromShip(shipFilePath)
+		- Load(shipFilePath)
 
 - Tools:
 	- BaseTool:

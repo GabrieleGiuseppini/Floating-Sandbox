@@ -9,35 +9,35 @@ namespace ShipBuilder {
 
 std::unique_ptr<ModelController> ModelController::CreateNew(
     WorkSpaceSize const & workSpaceSize,
-    IUserInterface & userInterface,
-    View & view)
+    View & view,
+    IUserInterface & userInterface)
 {
     return std::unique_ptr<ModelController>(
         new ModelController(
             workSpaceSize,
-            userInterface,
-            view));
+            view,
+            userInterface));
 }
 
 std::unique_ptr<ModelController> ModelController::Load(
     std::filesystem::path const & shipFilePath,
-    IUserInterface & userInterface,
-    View & view)
+    View & view,
+    IUserInterface & userInterface)
 {
     // TODOHERE
     return std::unique_ptr<ModelController>(
         new ModelController(
             WorkSpaceSize(400, 200),
-            userInterface,
-            view));
+            view,
+            userInterface));
 }
 
 ModelController::ModelController(
     WorkSpaceSize const & workSpaceSize,
-    IUserInterface & userInterface,
-    View & view)
-    : mUserInterface(userInterface)
-    , mView(view)
+    View & view,
+    IUserInterface & userInterface)
+    : mView(view)
+    , mUserInterface(userInterface)
     , mModel(workSpaceSize)
 {
 }

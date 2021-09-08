@@ -117,6 +117,8 @@ private:
 
     void RecalculatePanning();
 
+    void SyncControllerToUI();
+
     void SyncWorkbenchStateToUI();
 
     void OpenMaterialPalette(
