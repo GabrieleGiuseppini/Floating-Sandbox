@@ -37,6 +37,13 @@ public:
         return mModel.GetWorkSpaceSize();
     }
 
+    LayerType GetPrimaryLayer() const
+    {
+        return mPrimaryLayer;
+    }
+
+    void SelectPrimaryLayer(LayerType primaryLayer);
+
 private:
 
     ModelController(
@@ -50,6 +57,12 @@ private:
     IUserInterface & mUserInterface;
 
     Model mModel;
+
+    //
+    // State
+    //
+
+    LayerType mPrimaryLayer;
 };
 
 }

@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "ModelController.h"
 
+#include <cassert>
+
 namespace ShipBuilder {
 
 std::unique_ptr<ModelController> ModelController::CreateNew(
@@ -39,7 +41,18 @@ ModelController::ModelController(
     : mView(view)
     , mUserInterface(userInterface)
     , mModel(workSpaceSize)
+    // State
+    , mPrimaryLayer(LayerType::Structural)
 {
+    // TODOHERE
+    //assert(mModel->HasLayer(LayerType::Structural));
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+void ModelController::SelectPrimaryLayer(LayerType primaryLayer)
+{
+    mPrimaryLayer = primaryLayer;
 }
 
 }

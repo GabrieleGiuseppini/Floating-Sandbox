@@ -20,7 +20,7 @@ public:
         wxWindow * parent,
         std::filesystem::path const & bitmapFilePath,
         std::function<void()> onClickHandler,
-        wxString const & toolTipLabel)
+        wxString const & toolTipLabel = "")
         : wxToggleButton(
             parent,
             wxID_ANY,
@@ -36,7 +36,7 @@ public:
             SetToolTip(toolTipLabel);
 
         Bind(
-            wxEVT_BUTTON,
+            wxEVT_TOGGLEBUTTON,
             [onClickHandler](wxCommandEvent & /*event*/)
             {
                 onClickHandler();

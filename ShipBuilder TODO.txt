@@ -127,15 +127,17 @@
 			- ElectricalToolbar
 	= Layers toolbar:
 		+ Rename
-		- Rearc UI:
-			- TODOHERE
-		- Layer selector
-			- On change: switch toolbar type
-		- Adding/removing layers: TODO
-		- ReconciliateLayersToolbarWithModel:
-			- Slider, Selector, -: only enabled if > 1 layers (Controller.GetModelController().GetModel().HasExtraLayers())
-			- +: only enabled if < max layers
-		- Do icons for layers
+		= UI:
+			+ Redo with buttons
+			= Do icons for layers
+				- Try different "selected" vs "deselected" image
+			- Hook buttons' events
+		- MainFrame helpers:
+			= OnPrimaryLayerSelected(LayerType)
+				- TODO
+			= ReconciliateLayersToolbar:
+				- Slider: only enabled if > 1 layers
+			- TODO: figure out better way of updating UI things based on changes
 	= Impl:
 		- Click-And-Draw
 			- Panning (*)
@@ -150,11 +152,10 @@
 			- Rendering of texture
 
 	- Misc TODO's:
-		- Redo tools' icons: shadow must be transparent
 		- Toolbar:
 			- Need to untoggle others when one is toggle (i.e. radio behavior)
 		- Nuke test shader: shader file, relative ShaderTypes
-		- Frame icons (whole "Resources" folder)
+		- App icons (whole "Resources" folder)
 		- Preferences:
 			- New ship size
 			- ...all tools' settings...
@@ -329,6 +330,11 @@
 			+ See if can subclass MaterialPaletteCategoryPanel to prevent unnecessary Layout()
 				+ LockLayout(bool lock=true)
 			+ Use wxWindowUpdateLocker instead of Freeze/Thaw
+			- Do layout locking also at category list panel
+			- Material descriptions
+				- json + Material class
+				- Text area underneath property grid
+					- Methods: "SetMaterialProperties" instead of "SetMaterialPropertyGrid"
 			- Test also Electrical
 				- Do View toolbar ("Layers Toolbar") *
 			

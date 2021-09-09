@@ -8,8 +8,19 @@
 #include <GameCore/Vectors.h>
 
 #include <cmath>
+#include <cstdint>
 
 namespace ShipBuilder {
+
+enum class LayerType : std::uint32_t
+{
+    Structural = 0,
+    Electrical,
+    Texture,
+    Ropes,
+
+    _Last = Ropes
+};
 
 enum class MaterialPlaneType
 {

@@ -20,13 +20,14 @@ public:
         wxWindow * parent,
         std::filesystem::path const & bitmapFilePath,
         std::function<void()> onClickHandler,
-        wxString const & toolTipLabel)
+        wxString const & toolTipLabel = "")
         : wxButton(
             parent,
             wxID_ANY,
             wxEmptyString,
             wxDefaultPosition,
-            wxDefaultSize)
+            wxDefaultSize,
+            wxBU_EXACTFIT)
     {
         auto img = wxImage(bitmapFilePath.string(), wxBITMAP_TYPE_PNG);
         SetBitmap(wxBitmap(img));

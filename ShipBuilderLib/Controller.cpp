@@ -62,6 +62,15 @@ Controller::Controller(
 {
 }
 
+void Controller::SelectPrimaryLayer(LayerType primaryLayer)
+{
+    // Tell model controller
+    mModelController->SelectPrimaryLayer(primaryLayer);
+
+    // Reset tools
+    // TODO
+}
+
 void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition)
 {
     // Update input state

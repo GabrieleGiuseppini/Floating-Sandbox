@@ -11,6 +11,8 @@
 #include "View.h"
 #include "WorkbenchState.h"
 
+#include <UILib/BitmapButton.h>
+#include <UILib/BitmapToggleButton.h>
 #include <UILib/LocalizationManager.h>
 #include <UILib/LoggingDialog.h>
 
@@ -21,7 +23,6 @@
 #include <GameOpenGL/GameOpenGL.h>
 
 #include <wx/app.h>
-#include <wx/bmpcbox.h>
 #include <wx/frame.h>
 #include <wx/glcanvas.h> // Need to include this *after* our glad.h has been included, so that wxGLCanvas ends
                          // up *not* including the system's OpenGL header but glad's instead
@@ -32,6 +33,7 @@
 #include <wx/statbmp.h>
 #include <wx/statusbr.h>
 
+#include <array>
 #include <filesystem>
 #include <functional>
 #include <memory>
@@ -100,6 +102,8 @@ private:
     void OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent & event);
     void OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent & event);
 
+    void OnPrimaryLayerSelected(LayerType primaryLayer);
+
 private:
 
     bool IsStandAlone() const
@@ -115,11 +119,11 @@ private:
 
     void SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath);
 
-    void RecalculatePanning();
-
     void SyncControllerToUI();
 
-    void SyncWorkbenchStateToUI();
+    void RecalculateWorkCanvasPanning();
+
+    void ReconciliateUIWithWorkbenchState();
 
     void OpenMaterialPalette(
         wxMouseEvent const & event,
@@ -164,8 +168,12 @@ private:
     wxBitmap mNullMaterialBitmap;
 
     // Layers panel
-    wxBitmapComboBox * mLayerSelector;
-    wxSlider * mOtherLayersTransparencySlider;
+    std::array<BitmapToggleButton *, static_cast<size_t>(LayerType::_Last) + 1> mLayerSelectButtons;
+    std::array<BitmapButton *, static_cast<size_t>(LayerType::_Last) + 1> mLayerNewButtons;
+    std::array<BitmapButton *, static_cast<size_t>(LayerType::_Last) + 1> mLayerOpenButtons;
+    std::array<BitmapButton *, static_cast<size_t>(LayerType::_Last) + 1> mLayerSaveButtons;
+    std::array<BitmapButton *, static_cast<size_t>(LayerType::_Last) + 1> mLayerDeleteButtons;
+    wxSlider * mOtherLayersOpacitySlider;
 
     // Work panel
     std::unique_ptr<wxGLCanvas> mWorkCanvas;

@@ -8,6 +8,7 @@
 #include "InputState.h"
 #include "IUserInterface.h"
 #include "ModelController.h"
+#include "ShipBuilderTypes.h"
 #include "View.h"
 #include "WorkbenchState.h"
 
@@ -34,6 +35,13 @@ public:
         View & view,
         WorkbenchState & workbenchState,
         IUserInterface & userInterface);
+
+    ModelController const & GetModelController() const
+    {
+        return *mModelController;
+    }
+
+    void SelectPrimaryLayer(LayerType primaryLayer);
 
     void OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition);
     void OnLeftMouseDown();
