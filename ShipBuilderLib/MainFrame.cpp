@@ -314,7 +314,7 @@ void MainFrame::OpenForNewShip()
         *this);
 
     // Adjust UI
-    SyncControllerToUI();
+    ReconciliateUI();
 
     // Open ourselves
     Open();
@@ -330,7 +330,7 @@ void MainFrame::OpenForShip(std::filesystem::path const & shipFilePath)
         *this);
 
     // Adjust UI
-    SyncControllerToUI();
+    ReconciliateUI();
 
     // Open ourselves
     Open();
@@ -463,7 +463,7 @@ wxPanel * MainFrame::CreateLayersPanel(
             wxGridBagSizer * layerManagerSizer = new wxGridBagSizer(0, 0);
 
             {
-                auto const createButtonRow = [&](LayerType layer)
+                auto const createButtonRow = [&](LayerType layer, int iRow)
                 {
                     size_t iLayer = static_cast<size_t>(layer);
 
@@ -506,13 +506,14 @@ wxPanel * MainFrame::CreateLayersPanel(
                             resourceLocator.GetBitmapFilePath(buttonBitmapName),
                             [this, layer]()
                             {
-                                OnPrimaryLayerSelected(layer);
+                                mController->SelectPrimaryLayer(layer);
+                                ReconciliateUIWithPrimaryLayerSelection();
                             },
                             buttonTooltip);
 
                         layerManagerSizer->Add(
                             selectorButton,
-                            wxGBPosition(iLayer * 3, 0),
+                            wxGBPosition(iRow * 3, 0),
                             wxGBSpan(2, 1),
                             wxALIGN_CENTER_VERTICAL,
                             0);
@@ -530,14 +531,44 @@ wxPanel * MainFrame::CreateLayersPanel(
                                 resourceLocator.GetBitmapFilePath("new_layer_button"),
                                 [this, layer]()
                                 {
-                                    // TODO
-                                    LogMessage("New layer ", static_cast<uint32_t>(layer));
+                                    switch (layer)
+                                    {
+                                        case LayerType::Electrical:
+                                        {
+                                            mController->NewElectricalLayer();
+                                            break;
+                                        }
+
+                                        case LayerType::Ropes:
+                                        {
+                                            mController->NewRopesLayer();
+                                            break;
+                                        }
+
+                                        case LayerType::Structural:
+                                        {
+                                            mController->NewStructuralLayer();
+                                            break;
+                                        }
+
+                                        case LayerType::Texture:
+                                        {
+                                            assert(false);
+                                            break;
+                                        }
+                                    }
+
+                                    ReconciliateUIWithLayerPresence();
+
+                                    // Switch primary layer to this one
+                                    mController->SelectPrimaryLayer(layer);
+                                    ReconciliateUIWithPrimaryLayerSelection();
                                 },
                                 "Make a new empty layer");
 
                             layerManagerSizer->Add(
                                 newButton,
-                                wxGBPosition(iLayer * 3, 1),
+                                wxGBPosition(iRow * 3, 1),
                                 wxGBSpan(1, 1),
                                 wxLEFT | wxRIGHT,
                                 10);
@@ -546,8 +577,6 @@ wxPanel * MainFrame::CreateLayersPanel(
                         {
                             newButton = nullptr;
                         }
-
-                        mLayerNewButtons[iLayer] = newButton;
                     }
 
                     {
@@ -563,12 +592,73 @@ wxPanel * MainFrame::CreateLayersPanel(
 
                         layerManagerSizer->Add(
                             loadButton,
-                            wxGBPosition(iLayer * 3 + 1, 1),
+                            wxGBPosition(iRow * 3 + 1, 1),
                             wxGBSpan(1, 1),
                             wxLEFT | wxRIGHT,
                             10);
+                    }
 
-                        mLayerOpenButtons[iLayer] = loadButton;
+                    {
+                        BitmapButton * deleteButton;
+
+                        if (layer != LayerType::Structural)
+                        {
+                            deleteButton = new BitmapButton(
+                                panel,
+                                resourceLocator.GetBitmapFilePath("delete_layer_button"),
+                                [this, layer]()
+                                {
+                                    switch (layer)
+                                    {
+                                        case LayerType::Electrical:
+                                        {
+                                            mController->RemoveElectricalLayer();
+                                            break;
+                                        }
+
+                                        case LayerType::Ropes:
+                                        {
+                                            mController->RemoveRopesLayer();
+                                            break;
+                                        }
+
+                                        case LayerType::Structural:
+                                        {
+                                            assert(false);
+                                            break;
+                                        }
+
+                                        case LayerType::Texture:
+                                        {
+                                            mController->RemoveTextureLayer();
+                                            break;
+                                        }
+                                    }
+
+                                    ReconciliateUIWithLayerPresence();
+
+                                    // Switch primary layer if it was this one
+                                    if (mController->GetPrimaryLayer() == layer)
+                                    {
+                                        mController->SelectPrimaryLayer(LayerType::Structural);
+                                        ReconciliateUIWithPrimaryLayerSelection();
+                                    }
+                                },
+                                "Remove this layer");
+
+                            layerManagerSizer->Add(
+                                deleteButton,
+                                wxGBPosition(iRow * 3, 2),
+                                wxGBSpan(1, 1),
+                                0,
+                                0);
+                        }
+                        else
+                        {
+                            deleteButton = nullptr;
+                        }
+
+                        mLayerDeleteButtons[iLayer] = deleteButton;
                     }
 
                     {
@@ -584,7 +674,7 @@ wxPanel * MainFrame::CreateLayersPanel(
 
                         layerManagerSizer->Add(
                             saveButton,
-                            wxGBPosition(iLayer * 3, 2),
+                            wxGBPosition(iRow * 3 + 1, 2),
                             wxGBSpan(1, 1),
                             0,
                             0);
@@ -592,55 +682,22 @@ wxPanel * MainFrame::CreateLayersPanel(
                         mLayerSaveButtons[iLayer] = saveButton;
                     }
 
-                    {
-                        BitmapButton * deleteButton;
-
-                        if (layer != LayerType::Structural)
-                        {
-                            deleteButton = new BitmapButton(
-                                panel,
-                                resourceLocator.GetBitmapFilePath("delete_layer_button"),
-                                [this, layer]()
-                                {
-                                    // TODO
-                                    LogMessage("Delete layer ", static_cast<uint32_t>(layer));
-                                },
-                                "Remove this layer");
-
-                            layerManagerSizer->Add(
-                                deleteButton,
-                                wxGBPosition(iLayer * 3 + 1, 2),
-                                wxGBSpan(1, 1),
-                                0,
-                                0);
-                        }
-                        else
-                        {
-                            deleteButton = nullptr;
-                        }
-
-                        mLayerDeleteButtons[iLayer] = deleteButton;
-                    }
-
                     // Spacer
-                    if (layer != LayerType::_Last)
-                    {
-                        layerManagerSizer->Add(
-                            new wxGBSizerItem(
-                                -1,
-                                12,
-                                wxGBPosition(iLayer * 3 + 2, 0),
-                                wxGBSpan(1, static_cast<int>(LayerType::_Last) + 1)));
-                    }
+                    layerManagerSizer->Add(
+                        new wxGBSizerItem(
+                            -1,
+                            12,
+                            wxGBPosition(iRow * 3 + 2, 0),
+                            wxGBSpan(1, static_cast<int>(LayerType::_Last) + 1)));
                 };
 
-                createButtonRow(LayerType::Structural);
+                createButtonRow(LayerType::Structural, 0);
 
-                createButtonRow(LayerType::Electrical);
+                createButtonRow(LayerType::Electrical, 1);
 
-                createButtonRow(LayerType::Ropes);
+                createButtonRow(LayerType::Ropes, 2);
 
-                createButtonRow(LayerType::Texture);
+                createButtonRow(LayerType::Texture, 3);
             }
 
             rootVSizer->Add(
@@ -1220,15 +1277,6 @@ void MainFrame::OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent &
     ReconciliateUIWithWorkbenchState();
 }
 
-void MainFrame::OnPrimaryLayerSelected(LayerType primaryLayer)
-{
-    // Tell controller
-    mController->SelectPrimaryLayer(primaryLayer);
-
-    // Reconciliate UI
-    SyncControllerToUI();
-}
-
 void MainFrame::Open()
 {
     // Show us
@@ -1266,43 +1314,47 @@ void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePa
     mReturnToGameFunctor(std::move(shipFilePath));
 }
 
-void MainFrame::SyncControllerToUI()
+void MainFrame::OpenMaterialPalette(
+    wxMouseEvent const & event,
+    MaterialLayerType layer,
+    MaterialPlaneType plane)
+{
+    wxWindow * referenceWindow = dynamic_cast<wxWindow *>(event.GetEventObject());
+    if (nullptr == referenceWindow)
+        return;
+
+    auto const referenceRect = mWorkCanvas->GetScreenRect();
+
+    if (layer == MaterialLayerType::Structural)
+    {
+        mStructuralMaterialPalette->Open(
+            referenceRect,
+            plane,
+            plane == MaterialPlaneType::Foreground
+            ? mWorkbenchState.GetStructuralForegroundMaterial()
+            : mWorkbenchState.GetStructuralBackgroundMaterial());
+    }
+    else
+    {
+        assert(layer == MaterialLayerType::Electrical);
+
+        mElectricalMaterialPalette->Open(
+            referenceRect,
+            plane,
+            plane == MaterialPlaneType::Foreground
+            ? mWorkbenchState.GetElectricalForegroundMaterial()
+            : mWorkbenchState.GetElectricalBackgroundMaterial());
+    }
+}
+
+void MainFrame::ReconciliateUI()
 {
     assert(!!mController);
 
     // TODO: scrollbars of work canvas
 
-    //
-    // Layers toolbar
-    //
-
-    // Select/Deselect selection buttons <-> primary layer
-    // Activate/Deactivate operation buttons <-> primary layers
-    uint32_t const iPrimaryLayer = static_cast<uint32_t>(mController->GetModelController().GetPrimaryLayer());
-    for (uint32_t iLayer = 0; iLayer <= static_cast<uint32_t>(LayerType::_Last); ++iLayer)
-    {
-        mLayerSelectButtons[iLayer]->SetValue(iLayer == iPrimaryLayer);
-
-        if (mLayerNewButtons[iLayer] != nullptr)
-            mLayerNewButtons[iLayer]->Enable(iLayer == iPrimaryLayer);
-
-        if (mLayerOpenButtons[iLayer] != nullptr)
-            mLayerOpenButtons[iLayer]->Enable(iLayer == iPrimaryLayer);
-
-        if (mLayerSaveButtons[iLayer] != nullptr)
-            mLayerSaveButtons[iLayer]->Enable(iLayer == iPrimaryLayer);
-
-        if (mLayerDeleteButtons[iLayer] != nullptr)
-            mLayerDeleteButtons[iLayer]->Enable(iLayer == iPrimaryLayer);
-    }
-
-    //
-    // Tools bar
-    //
-
-    // Show/hide Toolbar based on currently-selected (i.e. primary) layer
-    // TODO: this will have to be done by another "Sync" call, based on view panel settings
-    mElectricalToolbarPanel->Show(false);
+    ReconciliateUIWithPrimaryLayerSelection();
+    ReconciliateUIWithLayerPresence();
 
     //
     // Workbench state
@@ -1314,6 +1366,73 @@ void MainFrame::SyncControllerToUI()
 void MainFrame::RecalculateWorkCanvasPanning()
 {
     // TODO
+}
+
+void MainFrame::ReconciliateUIWithPrimaryLayerSelection()
+{
+    assert(!!mController);
+
+    // Toggle select buttons <-> primary layer
+    assert(mController->GetModelController().GetModel().HasLayer(mController->GetPrimaryLayer()));
+    uint32_t const iPrimaryLayer = static_cast<uint32_t>(mController->GetPrimaryLayer());
+    for (uint32_t iLayer = 0; iLayer <= static_cast<uint32_t>(LayerType::_Last); ++iLayer)
+    {
+        bool const isSelected = (iLayer == iPrimaryLayer);
+        if (mLayerSelectButtons[iLayer]->GetValue() != isSelected)
+        {
+            mLayerSelectButtons[iLayer]->SetValue(isSelected);
+
+            if (isSelected)
+            {
+                mLayerSelectButtons[iLayer]->SetFocus(); // Prevent other random buttons for getting focus
+            }
+        }
+    }
+
+    // Toggle toolbar
+    // TODO: have array of panels, and also store sizer
+    // TODOHERE
+    // Show/hide Toolbar based on currently-selected (i.e. primary) layer
+    mElectricalToolbarPanel->Show(false);
+}
+
+void MainFrame::ReconciliateUIWithLayerPresence()
+{
+    assert(!!mController);
+
+    //
+    // Rules
+    //
+    // Presence button: if HasLayer
+    // New, Load: always
+    // Delete, Save: if HasLayer
+    // Slider: only enabled if > 1 layers
+    //
+
+    auto const & model = mController->GetModelController().GetModel();
+
+    for (uint32_t iLayer = 0; iLayer <= static_cast<uint32_t>(LayerType::_Last); ++iLayer)
+    {
+        bool const hasLayer = model.HasLayer(static_cast<LayerType>(iLayer));
+
+        mLayerSelectButtons[iLayer]->Enable(hasLayer);
+
+        if (mLayerSaveButtons[iLayer] != nullptr
+            && mLayerSaveButtons[iLayer]->IsEnabled() != hasLayer)
+        {
+            mLayerSaveButtons[iLayer]->Enable(hasLayer);
+        }
+
+        if (mLayerDeleteButtons[iLayer] != nullptr
+            && mLayerDeleteButtons[iLayer]->IsEnabled() != hasLayer)
+        {
+            mLayerDeleteButtons[iLayer]->Enable(hasLayer);
+        }
+    }
+
+    mOtherLayersOpacitySlider->Enable(model.HasExtraLayers());
+
+    mLayerSelectButtons[static_cast<size_t>(mController->GetPrimaryLayer())]->SetFocus(); // Prevent other random buttons for getting focus
 }
 
 void MainFrame::ReconciliateUIWithWorkbenchState()
@@ -1392,39 +1511,6 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
     }
 
     // TODO: Populate settings in ToolSettings toolbar
-}
-
-void MainFrame::OpenMaterialPalette(
-    wxMouseEvent const & event,
-    MaterialLayerType layer,
-    MaterialPlaneType plane)
-{
-    wxWindow * referenceWindow = dynamic_cast<wxWindow *>(event.GetEventObject());
-    if (nullptr == referenceWindow)
-        return;
-
-    auto const referenceRect = mWorkCanvas->GetScreenRect();
-
-    if (layer == MaterialLayerType::Structural)
-    {
-        mStructuralMaterialPalette->Open(
-            referenceRect,
-            plane,
-            plane == MaterialPlaneType::Foreground
-                ? mWorkbenchState.GetStructuralForegroundMaterial()
-                : mWorkbenchState.GetStructuralBackgroundMaterial());
-    }
-    else
-    {
-        assert(layer == MaterialLayerType::Electrical);
-
-        mElectricalMaterialPalette->Open(
-            referenceRect,
-            plane,
-            plane == MaterialPlaneType::Foreground
-                ? mWorkbenchState.GetElectricalForegroundMaterial()
-                : mWorkbenchState.GetElectricalBackgroundMaterial());
-    }
 }
 
 }

@@ -127,17 +127,33 @@
 			- ElectricalToolbar
 	= Layers toolbar:
 		+ Rename
+		- MainFrame and Controller logic:
+			+ Move primaryLayer from ModelController to Controller
+			+ Controller::NewXYZLayer/SetXYZLayer(LayerType/content) => Model::... => Model::mLayerPresenceMap[]
+				+ Model::HasLayer(LayerType) => ModelController::GetModel()
+			! UI consistency rules:
+				! Things enabled if model has layers (Model::HasLayer(LayerType))
+					! New, Load: always [nop]
+					! Delete, Save: if HasLayer
+					! Slider: only enabled if > 1 layers
+					! Toggle button itself: if HasLayer
+			= Events rearc:
+				= Primary button: set in Controller, then ReconciliateUIWithPrimaryLayerSelection
+					+ Other toggle buttons (radio)
+					- Set toolbar panel visibility
+						- Have array with panels
+							- Ropes toolbar: tools, no swath
+							- Texture toolbar: TODOHERE
+				+ ReconciliateUIWithLayerPresence()
+					+ Toggle button
+					+ Delete, Save
+					+ Slider
+					
 		= UI:
 			+ Redo with buttons
 			= Do icons for layers
-				- Try different "selected" vs "deselected" image
+				- Try different "selected" vs "deselected" image vs "hover"
 			- Hook buttons' events
-		- MainFrame helpers:
-			= OnPrimaryLayerSelected(LayerType)
-				- TODO
-			= ReconciliateLayersToolbar:
-				- Slider: only enabled if > 1 layers
-			- TODO: figure out better way of updating UI things based on changes
 	= Impl:
 		- Click-And-Draw
 			- Panning (*)

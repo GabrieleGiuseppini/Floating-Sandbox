@@ -36,9 +36,29 @@ public:
         WorkbenchState & workbenchState,
         IUserInterface & userInterface);
 
+    void NewStructuralLayer();
+    void SetStructuralLayer(/*TODO*/);
+
+    void NewElectricalLayer();
+    void SetElectricalLayer(/*TODO*/);
+    void RemoveElectricalLayer();
+
+    void NewRopesLayer();
+    void SetRopesLayer(/*TODO*/);
+    void RemoveRopesLayer();
+
+    void NewTextureLayer();
+    void SetTextureLayer(/*TODO*/);
+    void RemoveTextureLayer();
+
     ModelController const & GetModelController() const
     {
         return *mModelController;
+    }
+
+    LayerType GetPrimaryLayer() const
+    {
+        return mPrimaryLayer;
     }
 
     void SelectPrimaryLayer(LayerType primaryLayer);
@@ -69,6 +89,12 @@ private:
 
     // Input state
     InputState mInputState;
+
+    //
+    // State
+    //
+
+    LayerType mPrimaryLayer;
 };
 
 }

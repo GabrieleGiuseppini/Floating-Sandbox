@@ -32,17 +32,30 @@ public:
         View & view,
         IUserInterface & userInterface);
 
+    void NewStructuralLayer();
+    void SetStructuralLayer(/*TODO*/);
+
+    void NewElectricalLayer();
+    void SetElectricalLayer(/*TODO*/);
+    void RemoveElectricalLayer();
+
+    void NewRopesLayer();
+    void SetRopesLayer(/*TODO*/);
+    void RemoveRopesLayer();
+
+    void NewTextureLayer();
+    void SetTextureLayer(/*TODO*/);
+    void RemoveTextureLayer();
+
+    Model const & GetModel() const
+    {
+        return mModel;
+    }
+
     WorkSpaceSize const & GetWorkSpaceSize() const
     {
         return mModel.GetWorkSpaceSize();
     }
-
-    LayerType GetPrimaryLayer() const
-    {
-        return mPrimaryLayer;
-    }
-
-    void SelectPrimaryLayer(LayerType primaryLayer);
 
 private:
 
@@ -57,12 +70,6 @@ private:
     IUserInterface & mUserInterface;
 
     Model mModel;
-
-    //
-    // State
-    //
-
-    LayerType mPrimaryLayer;
 };
 
 }

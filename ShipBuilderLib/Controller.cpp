@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "Controller.h"
 
+#include <cassert>
+
 namespace ShipBuilder {
 
 std::unique_ptr<Controller> Controller::CreateNew(
@@ -57,15 +59,72 @@ Controller::Controller(
     , mView(view)
     , mWorkbenchState(workbenchState)
     , mUserInterface(userInterface)
-    //
     , mInputState()
+    // State
+    , mPrimaryLayer(LayerType::Structural)
 {
+    // TODOHERE
+    //assert(mModel->HasLayer(LayerType::Structural));
+}
+
+void Controller::NewStructuralLayer()
+{
+    mModelController->NewStructuralLayer();
+}
+
+void Controller::SetStructuralLayer(/*TODO*/)
+{
+    mModelController->SetStructuralLayer();
+}
+
+void Controller::NewElectricalLayer()
+{
+    mModelController->NewElectricalLayer();
+}
+
+void Controller::SetElectricalLayer(/*TODO*/)
+{
+    mModelController->SetElectricalLayer();
+}
+
+void Controller::RemoveElectricalLayer()
+{
+    mModelController->RemoveElectricalLayer();
+}
+
+void Controller::NewRopesLayer()
+{
+    mModelController->NewRopesLayer();
+}
+
+void Controller::SetRopesLayer(/*TODO*/)
+{
+    mModelController->SetRopesLayer();
+}
+
+void Controller::RemoveRopesLayer()
+{
+    mModelController->RemoveRopesLayer();
+}
+
+void Controller::NewTextureLayer()
+{
+    mModelController->NewTextureLayer();
+}
+
+void Controller::SetTextureLayer(/*TODO*/)
+{
+    mModelController->SetTextureLayer();
+}
+
+void Controller::RemoveTextureLayer()
+{
+    mModelController->RemoveTextureLayer();
 }
 
 void Controller::SelectPrimaryLayer(LayerType primaryLayer)
 {
-    // Tell model controller
-    mModelController->SelectPrimaryLayer(primaryLayer);
+    mPrimaryLayer = primaryLayer;
 
     // Reset tools
     // TODO

@@ -102,8 +102,6 @@ private:
     void OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent & event);
     void OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent & event);
 
-    void OnPrimaryLayerSelected(LayerType primaryLayer);
-
 private:
 
     bool IsStandAlone() const
@@ -119,16 +117,24 @@ private:
 
     void SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath);
 
-    void SyncControllerToUI();
-
-    void RecalculateWorkCanvasPanning();
-
-    void ReconciliateUIWithWorkbenchState();
-
     void OpenMaterialPalette(
         wxMouseEvent const & event,
         MaterialLayerType layer,
         MaterialPlaneType plane);
+
+    //
+    // UI Consistency
+    //
+
+    void ReconciliateUI();
+
+    void RecalculateWorkCanvasPanning();
+
+    void ReconciliateUIWithPrimaryLayerSelection();
+
+    void ReconciliateUIWithLayerPresence();
+
+    void ReconciliateUIWithWorkbenchState();
 
 private:
 
@@ -169,8 +175,6 @@ private:
 
     // Layers panel
     std::array<BitmapToggleButton *, static_cast<size_t>(LayerType::_Last) + 1> mLayerSelectButtons;
-    std::array<BitmapButton *, static_cast<size_t>(LayerType::_Last) + 1> mLayerNewButtons;
-    std::array<BitmapButton *, static_cast<size_t>(LayerType::_Last) + 1> mLayerOpenButtons;
     std::array<BitmapButton *, static_cast<size_t>(LayerType::_Last) + 1> mLayerSaveButtons;
     std::array<BitmapButton *, static_cast<size_t>(LayerType::_Last) + 1> mLayerDeleteButtons;
     wxSlider * mOtherLayersOpacitySlider;

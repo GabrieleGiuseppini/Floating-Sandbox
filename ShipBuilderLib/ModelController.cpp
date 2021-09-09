@@ -34,6 +34,61 @@ std::unique_ptr<ModelController> ModelController::Load(
             userInterface));
 }
 
+void ModelController::NewStructuralLayer()
+{
+    mModel.NewStructuralLayer();
+}
+
+void ModelController::SetStructuralLayer(/*TODO*/)
+{
+    mModel.SetStructuralLayer();
+}
+
+void ModelController::NewElectricalLayer()
+{
+    mModel.NewElectricalLayer();
+}
+
+void ModelController::SetElectricalLayer(/*TODO*/)
+{
+    mModel.SetElectricalLayer();
+}
+
+void ModelController::RemoveElectricalLayer()
+{
+    mModel.RemoveElectricalLayer();
+}
+
+void ModelController::NewRopesLayer()
+{
+    mModel.NewRopesLayer();
+}
+
+void ModelController::SetRopesLayer(/*TODO*/)
+{
+    mModel.SetRopesLayer();
+}
+
+void ModelController::RemoveRopesLayer()
+{
+    mModel.RemoveRopesLayer();
+}
+
+void ModelController::NewTextureLayer()
+{
+    mModel.NewTextureLayer();
+}
+
+void ModelController::SetTextureLayer(/*TODO*/)
+{
+    mModel.SetTextureLayer();
+}
+
+void ModelController::RemoveTextureLayer()
+{
+    mModel.RemoveTextureLayer();
+}
+
 ModelController::ModelController(
     WorkSpaceSize const & workSpaceSize,
     View & view,
@@ -41,18 +96,9 @@ ModelController::ModelController(
     : mView(view)
     , mUserInterface(userInterface)
     , mModel(workSpaceSize)
-    // State
-    , mPrimaryLayer(LayerType::Structural)
 {
-    // TODOHERE
-    //assert(mModel->HasLayer(LayerType::Structural));
 }
 
 ///////////////////////////////////////////////////////////////////////////
-
-void ModelController::SelectPrimaryLayer(LayerType primaryLayer)
-{
-    mPrimaryLayer = primaryLayer;
-}
 
 }
