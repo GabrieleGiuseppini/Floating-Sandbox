@@ -56,14 +56,16 @@ MaterialPalette<TMaterial>::MaterialPalette(
 
     // Category list
     {
-        mCategoryListPanel = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
+        int constexpr Margin = 4;
+
+        mCategoryListPanel = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL | wxBORDER_SIMPLE);
         mCategoryListPanel->SetScrollRate(0, 5);
 
         mCategoryListPanelSizer = new wxBoxSizer(wxVERTICAL);
 
         // List
         {
-            mCategoryListPanelSizer->AddSpacer(4);
+            mCategoryListPanelSizer->AddSpacer(Margin);
 
             // All material categories
             int TODO = 0;
@@ -90,8 +92,8 @@ MaterialPalette<TMaterial>::MaterialPalette(
                     mCategoryListPanelSizer->Add(
                         categoryButton,
                         0,
-                        wxALIGN_CENTER_HORIZONTAL,
-                        0);
+                        wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
+                        Margin);
 
                     mCategoryButtons.push_back(categoryButton);
                 }
@@ -105,7 +107,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
                         label,
                         0,
                         wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
-                        3);
+                        Margin);
                 }
 
                 mCategoryListPanelSizer->AddSpacer(10);
@@ -135,8 +137,8 @@ MaterialPalette<TMaterial>::MaterialPalette(
                     mCategoryListPanelSizer->Add(
                         categoryButton,
                         0,
-                        wxALIGN_CENTER_HORIZONTAL,
-                        0);
+                        wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
+                        Margin);
 
                     mCategoryButtons.push_back(categoryButton);
                 }
@@ -149,7 +151,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
                         label,
                         0,
                         wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
-                        3);
+                        Margin);
                 }
             }
         }

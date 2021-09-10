@@ -434,6 +434,8 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
             sizer->Add(button, 0, wxALL, ButtonMargin);
         }
 
+        sizer->AddStretchSpacer();
+
         // Load ship
         {
             auto button = new BitmapButton(
@@ -448,6 +450,8 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
 
             sizer->Add(button, 0, wxALL, ButtonMargin);
         }
+
+        sizer->AddStretchSpacer();
 
         // Save ship
         {
