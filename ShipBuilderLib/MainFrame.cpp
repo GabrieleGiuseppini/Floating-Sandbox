@@ -91,37 +91,19 @@ MainFrame::MainFrame(
 
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
+    // File panel
     {
-        wxSizer * tmpVSizer = new wxBoxSizer(wxVERTICAL);
-
-        {
-            wxPanel * filePanel = CreateFilePanel(mMainPanel);
-
-            tmpVSizer->Add(
-                filePanel,
-                0,
-                0,
-                0);
-        }
-
-        {
-            wxStaticLine * line = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
-
-            tmpVSizer->Add(
-                line,
-                0,
-                wxEXPAND,
-                0);
-        }
+        wxPanel * filePanel = CreateFilePanel(mMainPanel);
 
         gridSizer->Add(
-            tmpVSizer,
+            filePanel,
             wxGBPosition(0, 0),
             wxGBSpan(1, 1),
             wxEXPAND | wxALIGN_CENTER_HORIZONTAL,
             0);
     }
 
+    // Tool settings panel
     {
         wxPanel * toolSettingsPanel = CreateToolSettingsPanel(mMainPanel);
 
@@ -133,6 +115,7 @@ MainFrame::MainFrame(
             0);
     }
 
+    // Game panel
     {
         wxPanel * gamePanel = CreateGamePanel(mMainPanel);
 
@@ -144,8 +127,19 @@ MainFrame::MainFrame(
             0);
     }
 
+    // Layers panel
     {
         wxSizer * tmpVSizer = new wxBoxSizer(wxVERTICAL);
+
+        {
+            wxStaticLine * line = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
+
+            tmpVSizer->Add(
+                line,
+                0,
+                wxEXPAND,
+                0);
+        }
 
         {
             wxPanel * layersPanel = CreateLayersPanel(mMainPanel);

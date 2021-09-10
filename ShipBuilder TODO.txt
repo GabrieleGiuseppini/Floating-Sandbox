@@ -152,8 +152,6 @@
 		+ UI:
 			+ Redo with buttons
 			+ Do icons for layers
-	- Panels:
-		- Fix static line width issue at File toolbar
 
 	= Impl:
 		- Click-And-Draw
@@ -162,7 +160,7 @@
 				- Zoom
 					- From MainFrame: MouseWheel and +/-
 				- Cam
-					- From MainFrame: scrollbars
+					- From MainFrame: scrollbars and arrow keys
 					- TODO: calc'ns
 				- Work area size
 					- TODO: who tells View? If it needs to know...
@@ -354,7 +352,7 @@
 				- Text area underneath property grid
 					- Methods: "SetMaterialProperties" instead of "SetMaterialPropertyGrid"
 			- Test also Electrical
-				- Do View toolbar ("Layers Toolbar") *
+				+ Do View toolbar ("Layers Toolbar") *
 			
 
 - Ship file format:
