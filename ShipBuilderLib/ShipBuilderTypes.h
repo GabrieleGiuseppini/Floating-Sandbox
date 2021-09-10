@@ -96,6 +96,13 @@ struct _IntegralCoordinates
             && this->y == other.y;
     }
 
+    inline _IntegralCoordinates<TTag> operator+(_IntegralSize<TTag> const & sz) const
+    {
+        return _IntegralCoordinates<TTag>(
+            this->x + sz.width,
+            this->y + sz.height);
+    }
+
     inline _IntegralSize<TTag> operator-(_IntegralCoordinates<TTag> const & other) const
     {
         return _IntegralSize<TTag>(

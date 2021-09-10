@@ -63,6 +63,12 @@ public:
 
     void SelectPrimaryLayer(LayerType primaryLayer);
 
+    void AddZoom(int deltaZoom);
+
+    void PanCamera(int deltaX, int deltaY);
+
+    void ResetView();
+
     void OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition);
     void OnLeftMouseDown();
     void OnLeftMouseUp();

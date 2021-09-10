@@ -129,6 +129,28 @@ void Controller::SelectPrimaryLayer(LayerType primaryLayer)
     // TODO
 }
 
+void Controller::AddZoom(int deltaZoom)
+{
+    mView.SetZoom(mView.GetZoom() + deltaZoom);
+
+    mUserInterface.RefreshView();
+}
+
+void Controller::PanCamera(int deltaX, int deltaY)
+{
+    mView.SetCameraWorkSpacePosition(mView.GetCameraWorkSpacePosition() + WorkSpaceSize(deltaX, deltaY));
+
+    mUserInterface.RefreshView();
+}
+
+void Controller::ResetView()
+{
+    mView.SetZoom(0);
+    mView.SetCameraWorkSpacePosition(WorkSpaceCoordinates(0, 0));
+
+    mUserInterface.RefreshView();
+}
+
 void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition)
 {
     // Update input state

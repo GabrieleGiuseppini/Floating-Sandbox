@@ -281,6 +281,33 @@ MainFrame::MainFrame(
         mainMenuBar->Append(editMenu, _("&Edit"));
     }
 
+    // View
+
+    {
+        wxMenu * viewMenu = new wxMenu();
+
+        wxMenuItem * zoomInMenuItem = new wxMenuItem(viewMenu, wxID_ANY, _("Zoom In") + wxS("\t+"), wxEmptyString, wxITEM_NORMAL);
+        viewMenu->Append(zoomInMenuItem);
+        Connect(zoomInMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomIn);
+        ADD_PLAIN_ACCELERATOR_KEY('+', zoomInMenuItem);
+        ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_ADD, zoomInMenuItem);
+
+        wxMenuItem * zoomOutMenuItem = new wxMenuItem(viewMenu, wxID_ANY, _("Zoom Out") + wxS("\t-"), wxEmptyString, wxITEM_NORMAL);
+        viewMenu->Append(zoomOutMenuItem);
+        Connect(zoomOutMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomOut);
+        ADD_PLAIN_ACCELERATOR_KEY('-', zoomOutMenuItem);
+        ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_SUBTRACT, zoomOutMenuItem);
+
+        viewMenu->Append(new wxMenuItem(viewMenu, wxID_SEPARATOR));
+
+        wxMenuItem * resetViewMenuItem = new wxMenuItem(viewMenu, wxID_ANY, _("Reset View") + wxS("\tHOME"), wxEmptyString, wxITEM_NORMAL);
+        viewMenu->Append(resetViewMenuItem);
+        Connect(resetViewMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnResetView);
+        ADD_PLAIN_ACCELERATOR_KEY(WXK_HOME, resetViewMenuItem);
+
+        mainMenuBar->Append(viewMenu, _("&View"));
+    }
+
     // Options
     {
         wxMenu * optionsMenu = new wxMenu();
@@ -376,6 +403,11 @@ void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
 //
 // IUserInterface
 //
+
+void MainFrame::RefreshView()
+{
+    Refresh();
+}
 
 void MainFrame::OnModelDirtyChanged(bool isDirty)
 {
@@ -1406,7 +1438,11 @@ void MainFrame::OnWorkCanvasMouseMove(wxMouseEvent & event)
 
 void MainFrame::OnWorkCanvasMouseWheel(wxMouseEvent & event)
 {
-    // TODO: fw to controller
+    if (mController)
+    {
+        // TODO: verify
+        mController->AddZoom(event.GetWheelRotation() > 0 ? 1 : -1);
+    }
 }
 
 void MainFrame::OnWorkCanvasCaptureMouseLost(wxMouseCaptureLostEvent & /*event*/)
@@ -1509,6 +1545,24 @@ void MainFrame::OnClose(wxCloseEvent & event)
     }
 
     event.Skip();
+}
+
+void MainFrame::OnZoomIn(wxCommandEvent & /*event*/)
+{
+    assert(!!mController);
+    mController->AddZoom(1);
+}
+
+void MainFrame::OnZoomOut(wxCommandEvent & /*event*/)
+{
+    assert(!!mController);
+    mController->AddZoom(-1);
+}
+
+void MainFrame::OnResetView(wxCommandEvent & /*event*/)
+{
+    assert(!!mController);
+    mController->ResetView();
 }
 
 void MainFrame::OnOpenLogWindowMenuItemSelected(wxCommandEvent & /*event*/)

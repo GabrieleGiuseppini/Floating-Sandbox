@@ -52,7 +52,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
     //               |     Material Properties
     //
 
-    mRootSizer = new wxBoxSizer(wxHORIZONTAL);
+    mRootHSizer = new wxBoxSizer(wxHORIZONTAL);
 
     // Category list
     {
@@ -68,12 +68,8 @@ MaterialPalette<TMaterial>::MaterialPalette(
             mCategoryListPanelSizer->AddSpacer(Margin);
 
             // All material categories
-            int TODO = 0;
             for (auto const & category : materialPalette.Categories)
             {
-                ////if (TODO++ > 5)
-                ////    break;
-                // Take first material
                 assert(category.SubCategories.size() > 0 && category.SubCategories[0].Materials.size() > 0);
                 TMaterial const & categoryHeadMaterial = category.SubCategories[0].Materials[0];
 
@@ -158,7 +154,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
 
         mCategoryListPanel->SetSizerAndFit(mCategoryListPanelSizer);
 
-        mRootSizer->Add(
+        mRootHSizer->Add(
             mCategoryListPanel,
             0,
             wxEXPAND,
@@ -205,47 +201,42 @@ MaterialPalette<TMaterial>::MaterialPalette(
 
         // Material property grid(s)
         {
-            if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
-            {
-                wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
+            wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
 
+            {
+                hSizer->AddStretchSpacer(1);
+                if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
                 {
                     mStructuralMaterialPropertyGrids = CreateStructuralMaterialPropertyGrids(this);
-
-                    hSizer->AddStretchSpacer(1);
                     hSizer->Add(mStructuralMaterialPropertyGrids[0], 0, 0, 0);
                     hSizer->Add(mStructuralMaterialPropertyGrids[1], 0, 0, 0);
-                    hSizer->AddStretchSpacer(1);
+                }
+                else
+                {
+                    assert(TMaterial::Layer == MaterialLayerType::Electrical);
+
+                    mElectricalMaterialPropertyGrid = CreateElectricalMaterialPropertyGrid(this);
+                    hSizer->Add(mElectricalMaterialPropertyGrid, 0, 0, 0);
                 }
 
-                rVSizer->Add(
-                    hSizer,
-                    0, // Retain vertical size
-                    wxEXPAND, // Expand horizontally
-                    0);
+                hSizer->AddStretchSpacer(1);
             }
-            else
-            {
-                assert(TMaterial::Layer == MaterialLayerType::Electrical);
 
-                mElectricalMaterialPropertyGrid = CreateElectricalMaterialPropertyGrid(this);
-
-                rVSizer->Add(
-                    mElectricalMaterialPropertyGrid,
-                    0, // Retain vertical size
-                    wxEXPAND, // Expand horizontally
-                    0);
-            }
+            rVSizer->Add(
+                hSizer,
+                0, // Retain vertical size
+                wxEXPAND, // Expand horizontally
+                0);
         }
 
-        mRootSizer->Add(
+        mRootHSizer->Add(
             rVSizer,
             1,
             wxEXPAND | wxALIGN_LEFT,
             0);
     }
 
-    SetSizerAndFit(mRootSizer);
+    SetSizerAndFit(mRootHSizer);
 }
 
 template<typename TMaterial>
@@ -272,7 +263,7 @@ void MaterialPalette<TMaterial>::Open(
     Layout(); // Given that the category list has resized, re-layout from the root
 
     // Resize ourselves now to take into account category list resize
-    mRootSizer->SetSizeHints(this);
+    mRootHSizer->SetSizeHints(this);
 
     // Open
     Popup();
@@ -786,7 +777,7 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
 
     // Resize whole popup now that category panel has changed its size
     Layout(); // Will make visibility changes in the container effective
-    mRootSizer->SetSizeHints(this); // this->Fit() and this->SetSizeHints
+    mRootHSizer->SetSizeHints(this); // this->Fit() and this->SetSizeHints
 
     if (mCategoryPanelsContainer->HasScrollbar(wxVERTICAL))
     {
@@ -799,7 +790,7 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
 
         // Resize whole popup now that category panel has changed its size
         Layout();
-        mRootSizer->SetSizeHints(this); // this->Fit() and this->SetSizeHints
+        mRootHSizer->SetSizeHints(this); // this->Fit() and this->SetSizeHints
     }
 }
 

@@ -33,6 +33,26 @@ public:
         std::function<void()> swapRenderBuffersFunction,
         ResourceLocator const & resourceLocator);
 
+    int GetZoom() const
+    {
+        return mViewModel.GetZoom();
+    }
+
+    int SetZoom(int zoom)
+    {
+        return mViewModel.SetZoom(zoom);
+    }
+
+    WorkSpaceCoordinates const & GetCameraWorkSpacePosition() const
+    {
+        return mViewModel.GetCameraWorkSpacePosition();
+    }
+
+    WorkSpaceCoordinates const & SetCameraWorkSpacePosition(WorkSpaceCoordinates const & pos)
+    {
+        return mViewModel.SetCameraWorkSpacePosition(pos);
+    }
+
     void SetDisplayLogicalSize(DisplayLogicalSize const & logicalSize)
     {
         mViewModel.SetDisplayLogicalSize(logicalSize);

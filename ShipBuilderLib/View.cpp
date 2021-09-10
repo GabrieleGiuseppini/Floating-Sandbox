@@ -50,7 +50,6 @@ View::View(
     // Initialize test VAO
     //
 
-
     {
         GLuint tmpGLuint;
 

@@ -18,6 +18,8 @@ struct IUserInterface
 {
 public:
 
+    virtual void RefreshView() = 0;
+
     // Notifies of a (possible) change in the dirtiness of the model
     virtual void OnModelDirtyChanged(bool isDirty) = 0;
 

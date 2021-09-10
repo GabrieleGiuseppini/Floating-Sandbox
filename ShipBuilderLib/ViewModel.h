@@ -8,6 +8,7 @@
 #include "ShipBuilderTypes.h"
 
 #include <algorithm>
+#include <cmath>
 
 namespace ShipBuilder {
 
@@ -34,7 +35,7 @@ public:
         DisplayLogicalSize initialDisplaySize,
         int logicalToPhysicalPixelFactor)
         : mZoom(1)
-        , mCam(0.0f, 0.0f)
+        , mCam(0, 0)
         , mLogicalToPhysicalPixelFactor(logicalToPhysicalPixelFactor)
         , mDisplayLogicalSize(initialDisplaySize)
         , mDisplayPhysicalSize(
@@ -59,6 +60,34 @@ public:
         RecalculateAttributes();
     }
 
+    int GetZoom() const
+    {
+        return mZoom;
+    }
+
+    int SetZoom(int zoom)
+    {
+        mZoom = Clamp(zoom, MinZoom, MaxZoom);
+
+        RecalculateAttributes();
+
+        return mZoom;
+    }
+
+    WorkSpaceCoordinates const & GetCameraWorkSpacePosition() const
+    {
+        return mCam;
+    }
+
+    WorkSpaceCoordinates const & SetCameraWorkSpacePosition(WorkSpaceCoordinates const & pos)
+    {
+        mCam = pos;
+
+        RecalculateAttributes();
+
+        return mCam;
+    }
+
     DisplayPhysicalSize const & GetDisplayPhysicalSize() const
     {
         return mDisplayPhysicalSize;
@@ -72,11 +101,30 @@ public:
             logicalSize.width * mLogicalToPhysicalPixelFactor,
             logicalSize.height * mLogicalToPhysicalPixelFactor);
 
-        // TODO
-        //// Adjust zoom so that the new visible world dimensions are contained within the maximum
-        ////SetZoom(mZoom);
-
         RecalculateAttributes();
+    }
+
+    WorkSpaceCoordinates GetVisibleWorkSpaceOrigin() const
+    {
+        // TODOHERE
+        return WorkSpaceCoordinates(0, 0);
+    }
+
+    WorkSpaceSize GetVisibleWorkSpaceSize() const
+    {
+        // TODOHERE
+        return WorkSpaceSize(10, 10);
+    }
+
+    //
+    // Coordinate transformations
+    //
+
+    WorkSpaceCoordinates DisplayToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    {
+        return WorkSpaceCoordinates(
+            static_cast<int>(std::round(static_cast<float>(displayCoordinates.x) * mZoomFactor)),
+            static_cast<int>(std::round(static_cast<float>(displayCoordinates.y) * mZoomFactor)));
     }
 
     ProjectionMatrix const & GetOrthoMatrix() const
@@ -84,57 +132,48 @@ public:
         return mOrthoMatrix;
     }
 
-    WorkSpaceCoordinates DisplayToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
-    {
-        // TODOHERE
-        /*
-        vec2f const worldCoordinates = vec2f(
-            Clamp(
-                (static_cast<float>(screenCoordinates.x * mLogicalToPhysicalPixelFactor) / static_cast<float>(mCanvasPhysicalPixelSize.width) - 0.5f) * mVisibleWorld.Width + mCam.x,
-                -GameParameters::HalfMaxWorldWidth,
-                GameParameters::HalfMaxWorldWidth),
-            Clamp(
-                (static_cast<float>(screenCoordinates.y * mLogicalToPhysicalPixelFactor) / static_cast<float>(mCanvasPhysicalPixelSize.height) - 0.5f) * -mVisibleWorld.Height + mCam.y,
-                -GameParameters::HalfMaxWorldHeight,
-                GameParameters::HalfMaxWorldHeight));
-
-        return worldCoordinates;
-        */
-        return WorkSpaceCoordinates(displayCoordinates.x, displayCoordinates.y);
-    }
-
 private:
 
     void RecalculateAttributes()
     {
+        // Zoom factor
+        mZoomFactor = std::ldexp(1.0f, -mZoom);
+
         // Ortho Matrix:
-        // TODO: zoom is here not taken into account
+        //  WorkCoordinates * OrthoMatrix => NDC (-1.0, +1.0)
         //
-        //  2 / DspW               0                       0                0
-        //  0                      2 / DspH                0                0
-        //  0                      0                       0                0
-        //  -2 * CamX / DspW - 1   -2 * CamY / DspH - 1    0                1
+        // SDsp is display scaled by zoom
+        //
+        //  2 / SDspW                0                        0                0
+        //  0                        2 / SDspH                0                0
+        //  0                        0                        0                0
+        //  -2 * CamX / SDspW - 1    -2 * CamY / SDspH - 1    0                1
+
+        float const sDspW = static_cast<float>(mDisplayPhysicalSize.width) * mZoomFactor;
+        float const sDspH = static_cast<float>(mDisplayPhysicalSize.height) * mZoomFactor;
 
         // Recalculate Ortho Matrix cells (r, c)
-        mOrthoMatrix[0][0] = 2.0f / static_cast<float>(mDisplayLogicalSize.width);
-        mOrthoMatrix[1][1] = 2.0f / static_cast<float>(mDisplayLogicalSize.height);
-        mOrthoMatrix[3][0] = -2.0f * mCam.x / static_cast<float>(mDisplayLogicalSize.width) - 1.0f;
-        mOrthoMatrix[3][1] = -2.0f * mCam.y / static_cast<float>(mDisplayLogicalSize.height) - 1.0f;
+        mOrthoMatrix[0][0] = 2.0f / sDspW;
+        mOrthoMatrix[1][1] = 2.0f / sDspH;
+        mOrthoMatrix[3][0] = -2.0f * mCam.x / sDspW - 1.0f;
+        mOrthoMatrix[3][1] = -2.0f * mCam.y / sDspH - 1.0f;
     }
 
 private:
 
     // Constants
-    static unsigned int constexpr MaxZoom = 16;
+    static int constexpr MaxZoom = 16;
+    static int constexpr MinZoom = -8;
 
     // Primary inputs
-    unsigned int mZoom; // How many display pixels are occupied by one work space pixel; always >= 1
-    vec2f mCam; // Work space coordinates of of work pixel that is visible at (0, 0) in display
+    int mZoom; // >=0: display pixels occupied by one work space pixel
+    WorkSpaceCoordinates mCam; // Work space coordinates of of work pixel that is visible at (0, 0) in display
     int const mLogicalToPhysicalPixelFactor;
     DisplayLogicalSize mDisplayLogicalSize;
     DisplayPhysicalSize mDisplayPhysicalSize;
 
     // Calculated attributes
+    float mZoomFactor; // DisplayPhysical = Work * ZoomFactor
     ProjectionMatrix mOrthoMatrix;
 };
 

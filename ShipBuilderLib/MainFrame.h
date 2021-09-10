@@ -69,6 +69,8 @@ public:
     // IUserInterface
     //
 
+    void RefreshView() override;
+
     void OnModelDirtyChanged(bool isDirty) override;
 
     void OnWorkSpaceSizeChanged() override;
@@ -104,6 +106,9 @@ private:
     void OnQuitAndGoBack(wxCommandEvent & event);
     void OnQuit(wxCommandEvent & event);
     void OnClose(wxCloseEvent & event);
+    void OnZoomIn(wxCommandEvent & event);
+    void OnZoomOut(wxCommandEvent & event);
+    void OnResetView(wxCommandEvent & event);
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent & event);
     void OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent & event);
     void OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent & event);

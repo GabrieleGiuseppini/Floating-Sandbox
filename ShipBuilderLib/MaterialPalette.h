@@ -128,7 +128,7 @@ private:
 
     MaterialDatabase::Palette<TMaterial> const & mMaterialPalette;
 
-    wxSizer * mRootSizer;
+    wxSizer * mRootHSizer;
 
     //
     // Category list

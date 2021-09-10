@@ -155,12 +155,11 @@
 
 	= Impl:
 		- Click-And-Draw
-			- Panning (*)
 			- Complete ViewModel:
-				- Zoom
-					- From MainFrame: MouseWheel and +/-
+				= Zoom
+					= From MainFrame: MouseWheel and +/-
 				- Cam
-					- From MainFrame: scrollbars and arrow keys
+					- From MainFrame: scrollbars
 					- TODO: calc'ns
 				- Work area size
 					- TODO: who tells View? If it needs to know...
@@ -241,7 +240,7 @@
 	- Renders synchronously, on-demand via SB::MainFrame::OnPaint()
 		- Except when we need animated tools, e.g. ants walking: for these we set a timer (in the order of 100's of ms) during the duration
 		  of the tool
-	- ViewModel:
+	= ViewModel:
 		+ Terminology:
 			+ WorkSpace: has the pixel size of the structure (equivalent of ::World)
 			+ WorkSpaceCoordinates (type @ ShipBuilderTypes)
@@ -249,10 +248,8 @@
 			+ DisplayLogicalCoordinates: the logical display coordinates (type @ ShipBuilderTypes)
 			+ DisplayPixel: has the pixel display (window) size (equivalent of ::Pixel)
 			+ DisplayPixelCoordinates: the pixel display coordinates (type @ ShipBuilderTypes)
-		- Knows about work area (i.e. structure) size, for panning calculations
-			- TODO: or not? Whoever needs panning calc'ns might get away with ScreenToWorld/etc., knowing WorkSpace size
-		- World coords is model pixel coords
-		- Tells outside world of pan extent (for scrollbar width setting)
+		+ World coords is model pixel coords, i.e. WorkSpace
+		= Tells outside world of pan extent (for scrollbar width setting)
 			- Based on calc'd pixel (display) coords of four sides of work area
 
 - WorkbenchState
@@ -346,13 +343,13 @@
 			+ See if can subclass MaterialPaletteCategoryPanel to prevent unnecessary Layout()
 				+ LockLayout(bool lock=true)
 			+ Use wxWindowUpdateLocker instead of Freeze/Thaw
-			- Do layout locking also at category list panel
 			- Material descriptions
 				- json + Material class
 				- Text area underneath property grid
 					- Methods: "SetMaterialProperties" instead of "SetMaterialPropertyGrid"
 			- Test also Electrical
 				+ Do View toolbar ("Layers Toolbar") *
+				- Finish property grid(s): TODOHERE
 			
 
 - Ship file format:
