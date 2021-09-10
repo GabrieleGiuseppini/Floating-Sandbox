@@ -21,7 +21,7 @@ std::unique_ptr<ModelController> ModelController::CreateNew(
             userInterface));
 }
 
-std::unique_ptr<ModelController> ModelController::Load(
+std::unique_ptr<ModelController> ModelController::CreateFromLoad(
     std::filesystem::path const & shipFilePath,
     View & view,
     IUserInterface & userInterface)
@@ -34,60 +34,6 @@ std::unique_ptr<ModelController> ModelController::Load(
             userInterface));
 }
 
-void ModelController::NewStructuralLayer()
-{
-    mModel.NewStructuralLayer();
-}
-
-void ModelController::SetStructuralLayer(/*TODO*/)
-{
-    mModel.SetStructuralLayer();
-}
-
-void ModelController::NewElectricalLayer()
-{
-    mModel.NewElectricalLayer();
-}
-
-void ModelController::SetElectricalLayer(/*TODO*/)
-{
-    mModel.SetElectricalLayer();
-}
-
-void ModelController::RemoveElectricalLayer()
-{
-    mModel.RemoveElectricalLayer();
-}
-
-void ModelController::NewRopesLayer()
-{
-    mModel.NewRopesLayer();
-}
-
-void ModelController::SetRopesLayer(/*TODO*/)
-{
-    mModel.SetRopesLayer();
-}
-
-void ModelController::RemoveRopesLayer()
-{
-    mModel.RemoveRopesLayer();
-}
-
-void ModelController::NewTextureLayer()
-{
-    mModel.NewTextureLayer();
-}
-
-void ModelController::SetTextureLayer(/*TODO*/)
-{
-    mModel.SetTextureLayer();
-}
-
-void ModelController::RemoveTextureLayer()
-{
-    mModel.RemoveTextureLayer();
-}
 
 ModelController::ModelController(
     WorkSpaceSize const & workSpaceSize,
@@ -97,6 +43,84 @@ ModelController::ModelController(
     , mUserInterface(userInterface)
     , mModel(workSpaceSize)
 {
+    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
+}
+
+void ModelController::NewStructuralLayer()
+{
+    mModel.NewStructuralLayer();
+
+    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
+}
+
+void ModelController::SetStructuralLayer(/*TODO*/)
+{
+    mModel.SetStructuralLayer();
+
+    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
+}
+
+void ModelController::NewElectricalLayer()
+{
+    mModel.NewElectricalLayer();
+
+    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
+}
+
+void ModelController::SetElectricalLayer(/*TODO*/)
+{
+    mModel.SetElectricalLayer();
+
+    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
+}
+
+void ModelController::RemoveElectricalLayer()
+{
+    mModel.RemoveElectricalLayer();
+
+    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
+}
+
+void ModelController::NewRopesLayer()
+{
+    mModel.NewRopesLayer();
+
+    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
+}
+
+void ModelController::SetRopesLayer(/*TODO*/)
+{
+    mModel.SetRopesLayer();
+
+    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
+}
+
+void ModelController::RemoveRopesLayer()
+{
+    mModel.RemoveRopesLayer();
+
+    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
+}
+
+void ModelController::NewTextureLayer()
+{
+    mModel.NewTextureLayer();
+
+    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
+}
+
+void ModelController::SetTextureLayer(/*TODO*/)
+{
+    mModel.SetTextureLayer();
+
+    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
+}
+
+void ModelController::RemoveTextureLayer()
+{
+    mModel.RemoveTextureLayer();
+
+    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 ///////////////////////////////////////////////////////////////////////////

@@ -61,7 +61,7 @@ public:
 
     void OpenForNewShip();
 
-    void OpenForShip(std::filesystem::path const & shipFilePath);
+    void OpenForLoadShip(std::filesystem::path const & shipFilePath);
 
 public:
 
@@ -69,18 +69,20 @@ public:
     // IUserInterface
     //
 
-    void DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coordinates) override;
+    void OnModelDirtyChanged(bool isDirty) override;
 
     void OnWorkSpaceSizeChanged() override;
 
     void OnWorkbenchStateChanged() override;
+
+    void DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coordinates) override;
 
 private:
 
     wxPanel * CreateFilePanel(wxWindow * parent);
     wxPanel * CreateToolSettingsPanel(wxWindow * parent);
     wxPanel * CreateGamePanel(wxWindow * parent);
-    wxPanel * CreateLayersPanel(wxWindow * parent, ResourceLocator const & resourceLocator);
+    wxPanel * CreateLayersPanel(wxWindow * parent);
     wxPanel * CreateToolbarPanel(wxWindow * parent);
     wxPanel * CreateWorkPanel(wxWindow * parent);
 
@@ -95,9 +97,13 @@ private:
     void OnWorkCanvasCaptureMouseLost(wxMouseCaptureLostEvent & event);
     void OnWorkCanvasMouseLeftWindow(wxMouseEvent & event);
 
+    void OnNewShip(wxCommandEvent & event);
+    void OnLoadShip(wxCommandEvent & event);
+    void OnSaveShip(wxCommandEvent & event);
     void OnSaveAndGoBack(wxCommandEvent & event);
     void OnQuitAndGoBack(wxCommandEvent & event);
     void OnQuit(wxCommandEvent & event);
+    void OnClose(wxCloseEvent & event);
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent & event);
     void OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent & event);
     void OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent & event);
@@ -122,11 +128,15 @@ private:
         MaterialLayerType layer,
         MaterialPlaneType plane);
 
+    bool AskUserIfSure(wxString caption);
+
     //
     // UI Consistency
     //
 
     void ReconciliateUI();
+
+    void ReconciliateUIWithModelDirtiness(bool isDirty);
 
     void RecalculateWorkCanvasPanning();
 
@@ -164,6 +174,11 @@ private:
 
     wxPanel * mMainPanel;
 
+    // File panel
+    wxMenuItem * mSaveShipMenuItem;
+    wxMenuItem * mSaveAndGoBackMenuItem;
+    BitmapButton * mSaveShipButton;
+
     // Toolbar panel
     wxPanel * mStructuralToolbarPanel;
     wxStaticBitmap * mStructuralForegroundMaterialSelector;
@@ -174,9 +189,9 @@ private:
     wxBitmap mNullMaterialBitmap;
 
     // Layers panel
-    std::array<BitmapToggleButton *, static_cast<size_t>(LayerType::_Last) + 1> mLayerSelectButtons;
-    std::array<BitmapButton *, static_cast<size_t>(LayerType::_Last) + 1> mLayerSaveButtons;
-    std::array<BitmapButton *, static_cast<size_t>(LayerType::_Last) + 1> mLayerDeleteButtons;
+    std::array<BitmapToggleButton *, LayerCount> mLayerSelectButtons;
+    std::array<BitmapButton *, LayerCount> mLayerSaveButtons;
+    std::array<BitmapButton *, LayerCount> mLayerDeleteButtons;
     wxSlider * mOtherLayersOpacitySlider;
 
     // Work panel

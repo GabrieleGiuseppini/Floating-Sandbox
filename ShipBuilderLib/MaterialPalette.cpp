@@ -368,7 +368,7 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
                     // Bind mouse enter
                     materialButton->Bind(
                         wxEVT_ENTER_WINDOW,
-                        [this, material, materialButton](wxMouseEvent & event)
+                        [this, material, materialButton](wxMouseEvent & /*event*/)
                         {
                             PopulateMaterialProperties(material);
                             mCurrentMaterialInPropertyGrid = material;

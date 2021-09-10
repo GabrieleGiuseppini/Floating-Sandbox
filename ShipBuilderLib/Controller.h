@@ -30,7 +30,7 @@ public:
         WorkbenchState & workbenchState,
         IUserInterface & userInterface);
 
-    static std::unique_ptr<Controller> LoadShip(
+    static std::unique_ptr<Controller> CreateFromLoad(
         std::filesystem::path const & shipFilePath,
         View & view,
         WorkbenchState & workbenchState,

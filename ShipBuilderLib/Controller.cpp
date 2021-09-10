@@ -29,13 +29,13 @@ std::unique_ptr<Controller> Controller::CreateNew(
     return controller;
 }
 
-std::unique_ptr<Controller> Controller::LoadShip(
+std::unique_ptr<Controller> Controller::CreateFromLoad(
     std::filesystem::path const & shipFilePath,
     View & view,
     WorkbenchState & workbenchState,
     IUserInterface & userInterface)
 {
-    auto modelController = ModelController::Load(
+    auto modelController = ModelController::CreateFromLoad(
         shipFilePath,
         view,
         userInterface);
@@ -63,8 +63,7 @@ Controller::Controller(
     // State
     , mPrimaryLayer(LayerType::Structural)
 {
-    // TODOHERE
-    //assert(mModel->HasLayer(LayerType::Structural));
+    assert(mModelController->GetModel().HasLayer(LayerType::Structural));
 }
 
 void Controller::NewStructuralLayer()

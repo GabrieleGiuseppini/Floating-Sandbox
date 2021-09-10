@@ -18,6 +18,9 @@ struct IUserInterface
 {
 public:
 
+    // Notifies of a (possible) change in the dirtiness of the model
+    virtual void OnModelDirtyChanged(bool isDirty) = 0;
+
     // Notifies of a change in the size of the model
     virtual void OnWorkSpaceSizeChanged() = 0;
 

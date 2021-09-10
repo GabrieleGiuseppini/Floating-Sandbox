@@ -17,6 +17,7 @@
 
 #include <wx/button.h>
 #include <wx/gbsizer.h>
+#include <wx/msgdlg.h>
 #include <wx/sizer.h>
 #include <wx/statline.h>
 #include <wx/tglbtn.h>
@@ -69,6 +70,8 @@ MainFrame::MainFrame(
         wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxRESIZE_BORDER | wxSYSTEM_MENU | wxCAPTION | wxCLIP_CHILDREN | wxMAXIMIZE
         | (IsStandAlone() ? wxCLOSE_BOX : 0));
 
+    Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnClose, this);
+
     SetIcon(wxICON(BBB_SHIP_ICON));
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
     Maximize();
@@ -89,13 +92,33 @@ MainFrame::MainFrame(
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
     {
-        wxPanel * filePanel = CreateFilePanel(mMainPanel);
+        wxSizer * tmpVSizer = new wxBoxSizer(wxVERTICAL);
+
+        {
+            wxPanel * filePanel = CreateFilePanel(mMainPanel);
+
+            tmpVSizer->Add(
+                filePanel,
+                0,
+                0,
+                0);
+        }
+
+        {
+            wxStaticLine * line = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
+
+            tmpVSizer->Add(
+                line,
+                0,
+                wxEXPAND,
+                0);
+        }
 
         gridSizer->Add(
-            filePanel,
+            tmpVSizer,
             wxGBPosition(0, 0),
             wxGBSpan(1, 1),
-            wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+            wxEXPAND | wxALIGN_CENTER_HORIZONTAL,
             0);
     }
 
@@ -125,7 +148,7 @@ MainFrame::MainFrame(
         wxSizer * tmpVSizer = new wxBoxSizer(wxVERTICAL);
 
         {
-            wxPanel * layersPanel = CreateLayersPanel(mMainPanel, resourceLocator);
+            wxPanel * layersPanel = CreateLayersPanel(mMainPanel);
 
             tmpVSizer->Add(
                 layersPanel,
@@ -148,7 +171,7 @@ MainFrame::MainFrame(
             tmpVSizer,
             wxGBPosition(1, 0),
             wxGBSpan(1, 1),
-            wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALIGN_CENTER_HORIZONTAL,
             0);
     }
 
@@ -211,13 +234,33 @@ MainFrame::MainFrame(
     {
         wxMenu * fileMenu = new wxMenu();
 
+        {
+            wxMenuItem * newShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("New Ship\tCtrl+N"), _("Create a new empty ship"), wxITEM_NORMAL);
+            fileMenu->Append(newShipMenuItem);
+            Connect(newShipMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnNewShip);
+        }
+
+        {
+            wxMenuItem * loadShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Load Ship\tCtrl+O"), _("Load a ship"), wxITEM_NORMAL);
+            fileMenu->Append(loadShipMenuItem);
+            Connect(loadShipMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnLoadShip);
+        }
+
+        {
+            mSaveShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship\tCtrl+S"), _("Save the current ship"), wxITEM_NORMAL);
+            fileMenu->Append(mSaveShipMenuItem);
+            Connect(mSaveShipMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveShip);
+        }
+
         if (!IsStandAlone())
         {
-            wxMenuItem * saveAndGoBackMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save and Return to Game"), _("Save the current ship and return to the simulator"), wxITEM_NORMAL);
-            fileMenu->Append(saveAndGoBackMenuItem);
-            Connect(saveAndGoBackMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveAndGoBack);
-
-            saveAndGoBackMenuItem->Enable(false); // Only enabled when dirty
+            mSaveAndGoBackMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save and Return to Game"), _("Save the current ship and return to the simulator"), wxITEM_NORMAL);
+            fileMenu->Append(mSaveAndGoBackMenuItem);
+            Connect(mSaveAndGoBackMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveAndGoBack);
+        }
+        else
+        {
+            mSaveAndGoBackMenuItem = nullptr;
         }
 
         if (!IsStandAlone())
@@ -320,10 +363,10 @@ void MainFrame::OpenForNewShip()
     Open();
 }
 
-void MainFrame::OpenForShip(std::filesystem::path const & shipFilePath)
+void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
 {
     // Create controller
-    mController = Controller::LoadShip(
+    mController = Controller::CreateFromLoad(
         shipFilePath,
         *mView,
         mWorkbenchState,
@@ -334,6 +377,25 @@ void MainFrame::OpenForShip(std::filesystem::path const & shipFilePath)
 
     // Open ourselves
     Open();
+}
+
+//
+// IUserInterface
+//
+
+void MainFrame::OnModelDirtyChanged(bool isDirty)
+{
+    ReconciliateUIWithModelDirtiness(isDirty);
+}
+
+void MainFrame::OnWorkSpaceSizeChanged()
+{
+    RecalculateWorkCanvasPanning();
+}
+
+void MainFrame::OnWorkbenchStateChanged()
+{
+    ReconciliateUIWithWorkbenchState();
 }
 
 void MainFrame::DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coordinates)
@@ -348,16 +410,6 @@ void MainFrame::DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coord
     mStatusBar->SetStatusText(ss.str(), 0);
 }
 
-void MainFrame::OnWorkSpaceSizeChanged()
-{
-    RecalculateWorkCanvasPanning();
-}
-
-void MainFrame::OnWorkbenchStateChanged()
-{
-    ReconciliateUIWithWorkbenchState();
-}
-
 /////////////////////////////////////////////////////////////////////
 
 wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
@@ -367,9 +419,49 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
     wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
 
     {
+        // New ship
         {
-            wxButton * button = new wxButton(panel, wxID_ANY, "Button");
-            sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
+            auto button = new BitmapButton(
+                panel,
+                mResourceLocator.GetIconFilePath("new_ship_button"),
+                [this]()
+                {
+                    wxCommandEvent dummy;
+                    OnNewShip(dummy);
+                },
+                _("Create a new empty ship"));
+
+            sizer->Add(button, 0, wxALL, ButtonMargin);
+        }
+
+        // Load ship
+        {
+            auto button = new BitmapButton(
+                panel,
+                mResourceLocator.GetIconFilePath("load_ship_button"),
+                [this]()
+                {
+                    wxCommandEvent dummy;
+                    OnNewShip(dummy);
+                },
+                _("Load a ship"));
+
+            sizer->Add(button, 0, wxALL, ButtonMargin);
+        }
+
+        // Save ship
+        {
+            mSaveShipButton = new BitmapButton(
+                panel,
+                mResourceLocator.GetIconFilePath("save_ship_button"),
+                [this]()
+                {
+                    wxCommandEvent dummy;
+                    OnSaveShip(dummy);
+                },
+                _("Save the current ship"));
+
+            sizer->Add(mSaveShipButton, 0, wxALL, ButtonMargin);
         }
     }
 
@@ -447,9 +539,7 @@ wxPanel * MainFrame::CreateGamePanel(wxWindow * parent)
     return panel;
 }
 
-wxPanel * MainFrame::CreateLayersPanel(
-    wxWindow * parent,
-    ResourceLocator const & resourceLocator)
+wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
@@ -503,7 +593,7 @@ wxPanel * MainFrame::CreateLayersPanel(
 
                         auto * selectorButton = new BitmapToggleButton(
                             panel,
-                            resourceLocator.GetBitmapFilePath(buttonBitmapName),
+                            mResourceLocator.GetBitmapFilePath(buttonBitmapName),
                             [this, layer]()
                             {
                                 mController->SelectPrimaryLayer(layer);
@@ -528,7 +618,7 @@ wxPanel * MainFrame::CreateLayersPanel(
                         {
                             newButton = new BitmapButton(
                                 panel,
-                                resourceLocator.GetBitmapFilePath("new_layer_button"),
+                                mResourceLocator.GetBitmapFilePath("new_layer_button"),
                                 [this, layer]()
                                 {
                                     switch (layer)
@@ -582,7 +672,7 @@ wxPanel * MainFrame::CreateLayersPanel(
                     {
                         auto * loadButton = new BitmapButton(
                             panel,
-                            resourceLocator.GetBitmapFilePath("open_layer_button"),
+                            mResourceLocator.GetBitmapFilePath("open_layer_button"),
                             [this, layer]()
                             {
                                 // TODO
@@ -605,7 +695,7 @@ wxPanel * MainFrame::CreateLayersPanel(
                         {
                             deleteButton = new BitmapButton(
                                 panel,
-                                resourceLocator.GetBitmapFilePath("delete_layer_button"),
+                                mResourceLocator.GetBitmapFilePath("delete_layer_button"),
                                 [this, layer]()
                                 {
                                     switch (layer)
@@ -664,7 +754,7 @@ wxPanel * MainFrame::CreateLayersPanel(
                     {
                         auto * saveButton = new BitmapButton(
                             panel,
-                            resourceLocator.GetBitmapFilePath("save_layer_button"),
+                            mResourceLocator.GetBitmapFilePath("save_layer_button"),
                             [this, layer]()
                             {
                                 // TODO
@@ -688,7 +778,7 @@ wxPanel * MainFrame::CreateLayersPanel(
                             -1,
                             12,
                             wxGBPosition(iRow * 3 + 2, 0),
-                            wxGBSpan(1, static_cast<int>(LayerType::_Last) + 1)));
+                            wxGBSpan(1, LayerCount)));
                 };
 
                 createButtonRow(LayerType::Structural, 0);
@@ -1218,6 +1308,39 @@ void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & /*event*/)
     }
 }
 
+void MainFrame::OnNewShip(wxCommandEvent & /*event*/)
+{
+    if (mController->GetModelController().GetModel().GetIsDirty())
+    {
+        // Ask user if they really want
+        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
+        {
+            return;
+        }
+    }
+
+    // TODO
+}
+
+void MainFrame::OnLoadShip(wxCommandEvent & /*event*/)
+{
+    if (mController->GetModelController().GetModel().GetIsDirty())
+    {
+        // Ask user if they really want
+        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
+        {
+            return;
+        }
+    }
+
+    // TODO
+}
+
+void MainFrame::OnSaveShip(wxCommandEvent & /*event*/)
+{
+    // TODO
+}
+
 void MainFrame::OnSaveAndGoBack(wxCommandEvent & /*event*/)
 {
     SaveAndSwitchBackToGame();
@@ -1225,16 +1348,49 @@ void MainFrame::OnSaveAndGoBack(wxCommandEvent & /*event*/)
 
 void MainFrame::OnQuitAndGoBack(wxCommandEvent & /*event*/)
 {
+    if (mController->GetModelController().GetModel().GetIsDirty())
+    {
+        // Ask user if they really want
+        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
+        {
+            return;
+        }
+    }
+
     QuitAndSwitchBackToGame();
 }
 
 void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 {
+    if (mController->GetModelController().GetModel().GetIsDirty())
+    {
+        // Ask user if they really want
+        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
+        {
+            return;
+        }
+    }
+
     mStructuralMaterialPalette->Close();
     mElectricalMaterialPalette->Close();
 
     // Close frame
     Close();
+}
+
+void MainFrame::OnClose(wxCloseEvent & event)
+{
+    if (event.CanVeto() && mController->GetModelController().GetModel().GetIsDirty())
+    {
+        // Ask user if they really want
+        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
+        {
+            event.Veto();
+            return;
+        }
+    }
+
+    event.Skip();
 }
 
 void MainFrame::OnOpenLogWindowMenuItemSelected(wxCommandEvent & /*event*/)
@@ -1347,12 +1503,19 @@ void MainFrame::OpenMaterialPalette(
     }
 }
 
+bool MainFrame::AskUserIfSure(wxString caption)
+{
+    int result = wxMessageBox(_("Are you sure you want to discard your changes?"), _("Are You Sure?"), wxOK | wxCANCEL);
+    return (result == wxOK);
+}
+
 void MainFrame::ReconciliateUI()
 {
     assert(!!mController);
 
     // TODO: scrollbars of work canvas
 
+    ReconciliateUIWithModelDirtiness(mController->GetModelController().GetModel().GetIsDirty());
     ReconciliateUIWithPrimaryLayerSelection();
     ReconciliateUIWithLayerPresence();
 
@@ -1361,6 +1524,25 @@ void MainFrame::ReconciliateUI()
     //
 
     ReconciliateUIWithWorkbenchState();
+}
+
+void MainFrame::ReconciliateUIWithModelDirtiness(bool isDirty)
+{
+    if (mSaveShipMenuItem->IsEnabled() != isDirty)
+    {
+        mSaveShipMenuItem->Enable(isDirty);
+    }
+
+    if (mSaveAndGoBackMenuItem != nullptr
+        && mSaveAndGoBackMenuItem->IsEnabled() != isDirty)
+    {
+        mSaveAndGoBackMenuItem->Enable(false);
+    }
+
+    if (mSaveShipButton->IsEnabled() != isDirty)
+    {
+        mSaveShipButton->Enable(isDirty);
+    }
 }
 
 void MainFrame::RecalculateWorkCanvasPanning()
@@ -1375,7 +1557,7 @@ void MainFrame::ReconciliateUIWithPrimaryLayerSelection()
     // Toggle select buttons <-> primary layer
     assert(mController->GetModelController().GetModel().HasLayer(mController->GetPrimaryLayer()));
     uint32_t const iPrimaryLayer = static_cast<uint32_t>(mController->GetPrimaryLayer());
-    for (uint32_t iLayer = 0; iLayer <= static_cast<uint32_t>(LayerType::_Last); ++iLayer)
+    for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
     {
         bool const isSelected = (iLayer == iPrimaryLayer);
         if (mLayerSelectButtons[iLayer]->GetValue() != isSelected)
@@ -1411,7 +1593,7 @@ void MainFrame::ReconciliateUIWithLayerPresence()
 
     auto const & model = mController->GetModelController().GetModel();
 
-    for (uint32_t iLayer = 0; iLayer <= static_cast<uint32_t>(LayerType::_Last); ++iLayer)
+    for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
     {
         bool const hasLayer = model.HasLayer(static_cast<LayerType>(iLayer));
 

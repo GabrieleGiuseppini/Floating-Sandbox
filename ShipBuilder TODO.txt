@@ -123,11 +123,13 @@
 			- Controller, @ Zoom, Pan, and WorkSpace resize - via IUserInterface
 	- Tool toolbar:
 		- Depends on currently-selected layer:
-			- StructuralToolbar
-			- ElectricalToolbar
+			+ StructuralToolbar
+			+ ElectricalToolbar
+			- RopesToolbar
+			- TextureToolbar (empty?)
 	= Layers toolbar:
 		+ Rename
-		- MainFrame and Controller logic:
+		= MainFrame and Controller logic:
 			+ Move primaryLayer from ModelController to Controller
 			+ Controller::NewXYZLayer/SetXYZLayer(LayerType/content) => Model::... => Model::mLayerPresenceMap[]
 				+ Model::HasLayer(LayerType) => ModelController::GetModel()
@@ -148,6 +150,11 @@
 					+ Toggle button
 					+ Delete, Save
 					+ Slider
+			+ Dirtiness
+				+ Framework
+				+ New button - w/dirty check for asking 
+				+ Open button - w/dirty check for asking
+				+ Save button - enabled only if dirty
 					
 		= UI:
 			+ Redo with buttons

@@ -17,10 +17,10 @@ enum class LayerType : std::uint32_t
     Structural = 0,
     Electrical,
     Texture,
-    Ropes,
-
-    _Last = Ropes
+    Ropes
 };
+
+size_t constexpr LayerCount = static_cast<size_t>(LayerType::Ropes) + 1;
 
 enum class MaterialPlaneType
 {

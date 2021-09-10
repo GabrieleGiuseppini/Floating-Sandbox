@@ -27,7 +27,7 @@ public:
         View & view,
         IUserInterface & userInterface);
 
-    static std::unique_ptr<ModelController> Load(
+    static std::unique_ptr<ModelController> CreateFromLoad(
         std::filesystem::path const & shipFilePath,
         View & view,
         IUserInterface & userInterface);

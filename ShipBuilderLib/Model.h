@@ -47,7 +47,7 @@ public:
 
     bool HasExtraLayers() const
     {
-        for (size_t iLayer = static_cast<size_t>(LayerType::Structural) + 1; iLayer <= static_cast<uint32_t>(LayerType::_Last); ++iLayer)
+        for (size_t iLayer = 0; iLayer < LayerCount; ++iLayer)
         {
             if (mLayerPresenceMap[iLayer])
                 return true;
@@ -56,12 +56,27 @@ public:
         return false;
     }
 
+    bool GetIsDirty() const
+    {
+        return mIsDirty;
+    }
+
+private:
+
+    void RecalculateGlobalIsDirty();
+
+    void ClearIsDirty();
+
 private:
 
     WorkSpaceSize mWorkSpaceSize;
 
     // Layer presence map (cached)
-    std::array<bool, static_cast<size_t>(LayerType::_Last) + 1> mLayerPresenceMap;
+    std::array<bool, LayerCount> mLayerPresenceMap;
+
+    // Dirty map and global flag
+    std::array<bool, LayerCount> mLayerDirtinessMap;
+    bool mIsDirty; // Cached version of above
 };
 
 }
