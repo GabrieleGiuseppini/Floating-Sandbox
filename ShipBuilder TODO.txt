@@ -121,15 +121,9 @@
 		- Scrollbars recalculated via private MainFrame::RecalculatePanning, which is invoked by:
 			+ Self, @ glCanvas resize
 			- Controller, @ Zoom, Pan, and WorkSpace resize - via IUserInterface
-	- Tool toolbar:
-		- Depends on currently-selected layer:
-			+ StructuralToolbar
-			+ ElectricalToolbar
-			- RopesToolbar
-			- TextureToolbar (empty?)
-	= Layers toolbar:
+	+ Layers toolbar:
 		+ Rename
-		= MainFrame and Controller logic:
+		+ MainFrame and Controller logic:
 			+ Move primaryLayer from ModelController to Controller
 			+ Controller::NewXYZLayer/SetXYZLayer(LayerType/content) => Model::... => Model::mLayerPresenceMap[]
 				+ Model::HasLayer(LayerType) => ModelController::GetModel()
@@ -139,13 +133,13 @@
 					! Delete, Save: if HasLayer
 					! Slider: only enabled if > 1 layers
 					! Toggle button itself: if HasLayer
-			= Events rearc:
-				= Primary button: set in Controller, then ReconciliateUIWithPrimaryLayerSelection
+			+ Events rearc:
+				+ Primary button: set in Controller, then ReconciliateUIWithPrimaryLayerSelection
 					+ Other toggle buttons (radio)
-					- Set toolbar panel visibility
-						- Have array with panels
-							- Ropes toolbar: tools, no swath
-							- Texture toolbar: TODOHERE
+					+ Set toolbar panel visibility
+						+ Have array with panels
+							+ Ropes toolbar: tools, no swath
+							+ Texture toolbar: empty
 				+ ReconciliateUIWithLayerPresence()
 					+ Toggle button
 					+ Delete, Save
@@ -154,13 +148,13 @@
 				+ Framework
 				+ New button - w/dirty check for asking 
 				+ Open button - w/dirty check for asking
-				+ Save button - enabled only if dirty
-					
-		= UI:
+				+ Save button - enabled only if dirty					
+		+ UI:
 			+ Redo with buttons
-			= Do icons for layers
-				- Try different "selected" vs "deselected" image vs "hover"
-			- Hook buttons' events
+			+ Do icons for layers
+	- Panels:
+		- Fix static line width issue at File toolbar
+
 	= Impl:
 		- Click-And-Draw
 			- Panning (*)
@@ -176,7 +170,8 @@
 
 	- Misc TODO's:
 		- Toolbar:
-			- Need to untoggle others when one is toggle (i.e. radio behavior)
+			- Untoggle other buttons when one tool is toggled (i.e. radio behavior)
+				- @ ReconciliateUIWithSelectedTool
 		- Nuke test shader: shader file, relative ShaderTypes
 		- App icons (whole "Resources" folder)
 		- Preferences:

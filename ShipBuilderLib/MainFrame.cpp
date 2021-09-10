@@ -965,7 +965,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         mToolbarPanelsSizer->Add(
             structuralToolbarPanel,
             0,
-            0,
+            wxALIGN_CENTER_HORIZONTAL,
             0);
 
         // Store toolbar panel
@@ -1102,7 +1102,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         mToolbarPanelsSizer->Add(
             electricalToolbarPanel,
             0,
-            0,
+            wxALIGN_CENTER_HORIZONTAL,
             0);
 
         // Store toolbar panel
@@ -1125,7 +1125,23 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
             // Rope
             {
-                // TODO
+                auto button = new BitmapToggleButton(
+                    ropesToolbarPanel,
+                    // TODO
+                    mResourceLocator.GetIconFilePath("pencil_icon"),
+                    [this]()
+                    {
+                        // TODOHERE
+                        //SetTool(ToolType::Eraser);
+                    },
+                    _("Draw ropes"));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
             }
 
             // Eraser
@@ -1160,7 +1176,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         mToolbarPanelsSizer->Add(
             ropesToolbarPanel,
             0,
-            0,
+            wxALIGN_CENTER_HORIZONTAL,
             0);
 
         // Store toolbar panel
@@ -1198,7 +1214,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         mToolbarPanelsSizer->Add(
             textureToolbarPanel,
             0,
-            0,
+            wxALIGN_CENTER_HORIZONTAL,
             0);
 
         // Store toolbar panel
