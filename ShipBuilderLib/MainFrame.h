@@ -180,10 +180,10 @@ private:
     BitmapButton * mSaveShipButton;
 
     // Toolbar panel
-    wxPanel * mStructuralToolbarPanel;
+    wxSizer * mToolbarPanelsSizer;
+    std::array<wxPanel *, LayerCount> mToolbarPanels;
     wxStaticBitmap * mStructuralForegroundMaterialSelector;
     wxStaticBitmap * mStructuralBackgroundMaterialSelector;
-    wxPanel * mElectricalToolbarPanel;
     wxStaticBitmap * mElectricalForegroundMaterialSelector;
     wxStaticBitmap * mElectricalBackgroundMaterialSelector;
     wxBitmap mNullMaterialBitmap;

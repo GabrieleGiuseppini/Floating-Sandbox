@@ -645,52 +645,62 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
 
         mElectricalMaterialPropertyGrid->Freeze();
 
-        mElectricalMaterialPropertyGrid->Clear();
-
-        switch (material->ElectricalType)
+        if (material == nullptr)
         {
-            case ElectricalMaterial::ElectricalElementType::Engine:
+            for (auto it = mElectricalMaterialPropertyGrid->GetIterator(); !it.AtEnd(); ++it)
             {
-                // TODO
-                break;
-            }
-
-            case ElectricalMaterial::ElectricalElementType::Generator:
-            {
-                // TODO
-                break;
-            }
-
-            case ElectricalMaterial::ElectricalElementType::Lamp:
-            {
-                // TODO
-                break;
-            }
-
-            case ElectricalMaterial::ElectricalElementType::WaterPump:
-            {
-                // TODO
-                break;
-            }
-
-            default:
-            {
-                break;
+                it.GetProperty()->SetValueToUnspecified();
             }
         }
-
+        else
         {
-            auto prop = AddBoolProperty(mElectricalMaterialPropertyGrid, "IsSelfPowered", _("Self-Powered"));
-            mElectricalMaterialPropertyGrid->SetPropertyValue(prop, material->IsSelfPowered);
+            mElectricalMaterialPropertyGrid->Clear();
+
+            switch (material->ElectricalType)
+            {
+                case ElectricalMaterial::ElectricalElementType::Engine:
+                {
+                    // TODO
+                    break;
+                }
+
+                case ElectricalMaterial::ElectricalElementType::Generator:
+                {
+                    // TODO
+                    break;
+                }
+
+                case ElectricalMaterial::ElectricalElementType::Lamp:
+                {
+                    // TODO
+                    break;
+                }
+
+                case ElectricalMaterial::ElectricalElementType::WaterPump:
+                {
+                    // TODO
+                    break;
+                }
+
+                default:
+                {
+                    break;
+                }
+            }
+
+            {
+                auto prop = AddBoolProperty(mElectricalMaterialPropertyGrid, "IsSelfPowered", _("Self-Powered"));
+                mElectricalMaterialPropertyGrid->SetPropertyValue(prop, material->IsSelfPowered);
+            }
+
+
+            {
+                auto prop = AddFloatProperty(mElectricalMaterialPropertyGrid, "HeatGenerated", _("Heat Generated (KJ/s)"));
+                mElectricalMaterialPropertyGrid->SetPropertyValue(prop, material->HeatGenerated);
+            }
+
+            mElectricalMaterialPropertyGrid->FitColumns();
         }
-
-
-        {
-            auto prop = AddFloatProperty(mElectricalMaterialPropertyGrid, "HeatGenerated", _("Heat Generated (KJ/s)"));
-            mElectricalMaterialPropertyGrid->SetPropertyValue(prop, material->HeatGenerated);
-        }
-
-        mElectricalMaterialPropertyGrid->FitColumns();
 
         mElectricalMaterialPropertyGrid->Thaw();
     }

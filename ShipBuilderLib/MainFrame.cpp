@@ -827,16 +827,16 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-    wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
+    mToolbarPanelsSizer = new wxBoxSizer(wxVERTICAL);
 
-    sizer->AddSpacer(6);
+    mToolbarPanelsSizer->AddSpacer(6);
 
     //
     // Structural toolbar
     //
 
     {
-        mStructuralToolbarPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+        wxPanel * structuralToolbarPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
         wxBoxSizer * structuralToolbarSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -848,7 +848,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             // Pencil
             {
                 auto button = new BitmapToggleButton(
-                    mStructuralToolbarPanel,
+                    structuralToolbarPanel,
                     mResourceLocator.GetIconFilePath("pencil_icon"),
                     [this]()
                     {
@@ -868,7 +868,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             // Eraser
             {
                 auto button = new BitmapToggleButton(
-                    mStructuralToolbarPanel,
+                    structuralToolbarPanel,
                     mResourceLocator.GetIconFilePath("eraser_icon"),
                     [this]()
                     {
@@ -902,7 +902,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             // Foreground
             {
                 mStructuralForegroundMaterialSelector = new wxStaticBitmap(
-                    mStructuralToolbarPanel,
+                    structuralToolbarPanel,
                     wxID_ANY,
                     WxHelpers::MakeEmptyBitmap(),
                     wxDefaultPosition,
@@ -928,7 +928,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             // Background
             {
                 mStructuralBackgroundMaterialSelector = new wxStaticBitmap(
-                    mStructuralToolbarPanel,
+                    structuralToolbarPanel,
                     wxID_ANY,
                     WxHelpers::MakeEmptyBitmap(),
                     wxDefaultPosition,
@@ -956,22 +956,24 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 0);
         }
 
-        mStructuralToolbarPanel->SetSizerAndFit(structuralToolbarSizer);
+        structuralToolbarPanel->SetSizerAndFit(structuralToolbarSizer);
 
-        sizer->Add(
-            mStructuralToolbarPanel,
+        mToolbarPanelsSizer->Add(
+            structuralToolbarPanel,
             0,
             0,
             0);
-    }
 
+        // Store toolbar panel
+        mToolbarPanels[static_cast<size_t>(LayerType::Structural)] = structuralToolbarPanel;
+    }
 
     //
     // Electrical toolbar
     //
 
     {
-        mElectricalToolbarPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+        wxPanel * electricalToolbarPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
         wxBoxSizer * electricalToolbarSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -983,7 +985,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             // Pencil
             {
                 auto button = new BitmapToggleButton(
-                    mElectricalToolbarPanel,
+                    electricalToolbarPanel,
                     mResourceLocator.GetIconFilePath("pencil_icon"),
                     [this]()
                     {
@@ -1003,7 +1005,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             // Eraser
             {
                 auto button = new BitmapToggleButton(
-                    mElectricalToolbarPanel,
+                    electricalToolbarPanel,
                     mResourceLocator.GetIconFilePath("eraser_icon"),
                     [this]()
                     {
@@ -1012,12 +1014,12 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     },
                     _("Erase individual electrical elements"));
 
-                toolsSizer->Add(
-                    button,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
-                    0,
-                    0);
+                    toolsSizer->Add(
+                        button,
+                        wxGBPosition(0, 1),
+                        wxGBSpan(1, 1),
+                        0,
+                        0);
             }
 
             electricalToolbarSizer->Add(
@@ -1037,7 +1039,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             // Foreground
             {
                 mElectricalForegroundMaterialSelector = new wxStaticBitmap(
-                    mElectricalToolbarPanel,
+                    electricalToolbarPanel,
                     wxID_ANY,
                     WxHelpers::MakeEmptyBitmap(),
                     wxDefaultPosition,
@@ -1063,14 +1065,14 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             // Background
             {
                 mElectricalBackgroundMaterialSelector = new wxStaticBitmap(
-                    mElectricalToolbarPanel,
+                    electricalToolbarPanel,
                     wxID_ANY,
                     WxHelpers::MakeEmptyBitmap(),
                     wxDefaultPosition,
                     wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
                     wxBORDER_SUNKEN);
 
-                mElectricalForegroundMaterialSelector->Bind(
+                mElectricalBackgroundMaterialSelector->Bind(
                     wxEVT_LEFT_DOWN,
                     [this](wxMouseEvent & event)
                     {
@@ -1091,16 +1093,115 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 0);
         }
 
-        mElectricalToolbarPanel->SetSizerAndFit(electricalToolbarSizer);
+        electricalToolbarPanel->SetSizerAndFit(electricalToolbarSizer);
 
-        sizer->Add(
-            mElectricalToolbarPanel,
+        mToolbarPanelsSizer->Add(
+            electricalToolbarPanel,
             0,
             0,
             0);
+
+        // Store toolbar panel
+        mToolbarPanels[static_cast<size_t>(LayerType::Electrical)] = electricalToolbarPanel;
     }
 
-    panel->SetSizerAndFit(sizer);
+    //
+    // Ropes toolbar
+    //
+
+    {
+        wxPanel * ropesToolbarPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+        wxBoxSizer * ropesToolbarSizer = new wxBoxSizer(wxVERTICAL);
+
+        // Tools
+
+        {
+            wxGridBagSizer * toolsSizer = new wxGridBagSizer(3, 3);
+
+            // Rope
+            {
+                // TODO
+            }
+
+            // Eraser
+            {
+                auto button = new BitmapToggleButton(
+                    ropesToolbarPanel,
+                    mResourceLocator.GetIconFilePath("eraser_icon"),
+                    [this]()
+                    {
+                        // TODOHERE
+                        //SetTool(ToolType::Eraser);
+                    },
+                    _("Erase rope endpoints"));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            ropesToolbarSizer->Add(
+                toolsSizer,
+                0,
+                wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        ropesToolbarPanel->SetSizerAndFit(ropesToolbarSizer);
+
+        mToolbarPanelsSizer->Add(
+            ropesToolbarPanel,
+            0,
+            0,
+            0);
+
+        // Store toolbar panel
+        mToolbarPanels[static_cast<size_t>(LayerType::Ropes)] = ropesToolbarPanel;
+    }
+
+    //
+    // Texture toolbar
+    //
+
+    {
+        wxPanel * textureToolbarPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+        wxBoxSizer * textureToolbarSizer = new wxBoxSizer(wxVERTICAL);
+
+        // Tools
+
+        {
+            wxGridBagSizer * toolsSizer = new wxGridBagSizer(3, 3);
+
+            // Move
+            {
+                // TODO
+            }
+
+            textureToolbarSizer->Add(
+                toolsSizer,
+                0,
+                wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        textureToolbarPanel->SetSizerAndFit(textureToolbarSizer);
+
+        mToolbarPanelsSizer->Add(
+            textureToolbarPanel,
+            0,
+            0,
+            0);
+
+        // Store toolbar panel
+        mToolbarPanels[static_cast<size_t>(LayerType::Texture)] = textureToolbarPanel;
+    }
+
+    panel->SetSizerAndFit(mToolbarPanelsSizer);
 
     return panel;
 }
@@ -1362,6 +1463,8 @@ void MainFrame::OnQuitAndGoBack(wxCommandEvent & /*event*/)
 
 void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 {
+    // TODOTEST: might not need the following as our Close event takes care of it
+    /*
     if (mController->GetModelController().GetModel().GetIsDirty())
     {
         // Ask user if they really want
@@ -1373,6 +1476,7 @@ void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 
     mStructuralMaterialPalette->Close();
     mElectricalMaterialPalette->Close();
+    */
 
     // Close frame
     Close();
@@ -1554,7 +1658,8 @@ void MainFrame::ReconciliateUIWithPrimaryLayerSelection()
 {
     assert(!!mController);
 
-    // Toggle select buttons <-> primary layer
+    // Toggle <select buttons, tool panels> <-> primary layer
+    bool hasToggledToolPanel = false;
     assert(mController->GetModelController().GetModel().HasLayer(mController->GetPrimaryLayer()));
     uint32_t const iPrimaryLayer = static_cast<uint32_t>(mController->GetPrimaryLayer());
     for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
@@ -1569,13 +1674,19 @@ void MainFrame::ReconciliateUIWithPrimaryLayerSelection()
                 mLayerSelectButtons[iLayer]->SetFocus(); // Prevent other random buttons for getting focus
             }
         }
+
+        if (mToolbarPanelsSizer->IsShown(mToolbarPanels[iLayer]) != isSelected)
+        {
+            mToolbarPanelsSizer->Show(mToolbarPanels[iLayer], isSelected);
+            hasToggledToolPanel = true;
+        }
     }
 
-    // Toggle toolbar
-    // TODO: have array of panels, and also store sizer
-    // TODOHERE
-    // Show/hide Toolbar based on currently-selected (i.e. primary) layer
-    mElectricalToolbarPanel->Show(false);
+    if (hasToggledToolPanel)
+    {
+        mToolbarPanelsSizer->Layout();
+        //Layout();
+    }
 }
 
 void MainFrame::ReconciliateUIWithLayerPresence()
