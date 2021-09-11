@@ -13,6 +13,7 @@
 #include <GameCore/ImageData.h>
 
 #include <array>
+#include <cassert>
 #include <memory>
 
 namespace ShipBuilder {
@@ -65,6 +66,12 @@ public:
     bool GetIsDirty() const
     {
         return mIsDirty;
+    }
+
+    RgbaImageData const & GetStructuralRenderColorTexture() const
+    {
+        assert(!!mStructuralRenderColorTexture);
+        return *mStructuralRenderColorTexture;
     }
 
 private:

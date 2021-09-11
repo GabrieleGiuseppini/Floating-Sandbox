@@ -134,9 +134,47 @@ void View::UploadStructuralRenderColorTexture(RgbaImageData const & texture)
     // Create vertices
     //
 
+    float const fWidth = static_cast<float>(texture.Size.Width);
+    float const fHeight = static_cast<float>(texture.Size.Height);
+
+    // TODO: need only a local buffer, this doesn't have to be a member;
+    // however, need a way to tell Render() that there *is* a texture to draw...simple boolean?
     mStructuralRenderColorTextureVertexBuffer.clear();
 
-    // TODOHERE
+    // Dead-center offsets
+    float const dx = 1.0f / (2.0f * fWidth);
+    float const dy = 1.0f / (2.0f * fHeight);
+
+    // Top-left
+    mStructuralRenderColorTextureVertexBuffer.emplace_back(
+        vec2f(0.0f, 0.0f),
+        vec2f(dx, 1.0f - dy));
+
+    // Bottom-left
+    mStructuralRenderColorTextureVertexBuffer.emplace_back(
+        vec2f(0.0f, fHeight),
+        vec2f(dx, dy));
+
+    // Top-right
+    mStructuralRenderColorTextureVertexBuffer.emplace_back(
+        vec2f(fWidth, 0.0f),
+        vec2f(1.0f - dx, 1.0f - dy));
+
+    // Bottom-right
+    mStructuralRenderColorTextureVertexBuffer.emplace_back(
+        vec2f(fWidth, fHeight),
+        vec2f(1.0f - dx, dy));
+
+    //
+    // Upload vertices
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mStructuralRenderTextureColorVBO);
+
+    glBufferData(GL_ARRAY_BUFFER, mStructuralRenderColorTextureVertexBuffer.size() * sizeof(TextureVertex), mStructuralRenderColorTextureVertexBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void View::Render()

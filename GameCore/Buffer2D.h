@@ -24,11 +24,12 @@ public:
         int height,
         TElement defaultValue)
         : Size(width, height)
+        , mLinearSize(width * height)
     {
-        Data = std::make_unique<TElement[]>(width * height);
+        Data = std::make_unique<TElement[]>(mLinearSize);
         std::fill(
             Data.get(),
-            Data.get() + (width * height),
+            Data.get() + mLinearSize,
             defaultValue);
     }
 
@@ -38,6 +39,7 @@ public:
         std::unique_ptr<TElement[]> data)
         : Size(width, height)
         , Data(std::move(data))
+        , mLinearSize(width * height)
     {
     }
 
@@ -46,12 +48,14 @@ public:
         std::unique_ptr<TElement[]> data)
         : Size(size)
         , Data(std::move(data))
+        , mLinearSize(size.Width * size.Height)
     {
     }
 
     Buffer2D(Buffer2D && other) noexcept
         : Size(other.Size)
         , Data(std::move(other.Data))
+        , mLinearSize(other.mLinearSize)
     {
     }
 
@@ -59,11 +63,12 @@ public:
     {
         Size = other.Size;
         Data = std::move(other.Data);
+        mLinearSize = other.mLinearSize;
     }
 
     size_t GetByteSize() const
     {
-        return static_cast<size_t>(Size.Width * Size.Height) * sizeof(TElement);
+        return mLinearSize * sizeof(TElement);
     }
 
     TElement & operator[](vec2i const & index)
@@ -74,6 +79,14 @@ public:
     TElement const & operator[](vec2i const & index) const
     {
         assert(index.IsInRect(Size));
-        return Data[index.y * Size.Width + index.x];
+
+        size_t const linearIndex = index.y * Size.Width + index.x;
+        assert(linearIndex < mLinearSize);
+
+        return Data[linearIndex];
     }
+
+private:
+
+    size_t const mLinearSize;
 };

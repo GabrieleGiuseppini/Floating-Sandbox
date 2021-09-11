@@ -140,7 +140,6 @@ private:
     GameOpenGLTexture mStructuralRenderTextureOpenGLHandle;
 
     std::vector<TextureVertex> mStructuralRenderColorTextureVertexBuffer;
-    std::optional<ImageSize> mStructuralRenderColorTextureSize;
 };
 
 }

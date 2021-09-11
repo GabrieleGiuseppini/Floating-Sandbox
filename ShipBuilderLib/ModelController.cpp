@@ -150,7 +150,7 @@ void ModelController::RemoveTextureLayer()
 
 void ModelController::UploadStructuralRenderColorTextureToView()
 {
-    // TODOHERE
+    mView.UploadStructuralRenderColorTexture(mModel.GetStructuralRenderColorTexture());
 }
 
 }

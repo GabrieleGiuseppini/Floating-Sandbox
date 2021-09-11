@@ -167,8 +167,11 @@
 				- Work area size
 					- TODO: who tells View? If it needs to know...
 			= Rendering of texture
-				= Upload from Controller/...
-				- Generation of vertices
+				+ Upload from Controller/...
+				+ Generation of vertices
+				- View maintains flags to enable individual render "planes" (e.g. structural render color, texture, etc.)
+					- So that ModelController can always upload textures and data, without knowing anything about layer selections
+				- TODOHERE: decide how textures (e.g. structural render color) are maintained between model and view: ImageData or Buffer2D?
 
 	- Misc TODO's:
 		- Toolbar:
