@@ -156,22 +156,18 @@
 	= Impl:
 		= Click-And-Draw
 			= Complete ViewModel:
-				+ Zoom
-					+ From MainFrame: MouseWheel and +/-
-				- Cam
-					- From MainFrame: scrollbars
-				- Calc'ns:
-					- Cam scrolls by one work pixel at a time
+				- Margin:
 					- Margin has always the same logical/physical pixel width: the # of physical pixels used by one work pixel at max zoom
-						- So when zoom is not max zoom, margin is multiple work pixels
-			= Rendering of texture
-				- Do Margin
+					- So when zoom is not max zoom, margin is multiple work pixels
+				- Visible WorkSpace calculations
+				- MainFrame: scrollbar re-configuration
+			- Pencil tool
 
 	- Misc TODO's:
 		- Toolbar:
 			- Untoggle other buttons when one tool is toggled (i.e. radio behavior)
 				- @ ReconciliateUIWithSelectedTool
-		- Nuke test shader: shader file, relative ShaderTypes
+					- Need array of ALL buttons (ToolType) - assuming structural tool enum values are separate from electrical
 		- App icons (whole "Resources" folder)
 		- Preferences:
 			- New ship size
