@@ -167,10 +167,7 @@
 			= Rendering of texture
 				+ Upload from Controller/...
 				+ Generation of vertices
-				- Fix zoom
-					- Should we start with zero?
-				- Fix view model/rendering position
-					- Double-check whether dead pixel is needed
+				- Check dead pixel
 				- View maintains flags to enable individual render "planes" (e.g. structural render color, texture, etc.)
 					- So that ModelController can always upload textures and data, without knowing anything about layer selections
 

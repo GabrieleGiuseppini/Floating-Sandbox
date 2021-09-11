@@ -34,7 +34,7 @@ public:
     ViewModel(
         DisplayLogicalSize initialDisplaySize,
         int logicalToPhysicalPixelFactor)
-        : mZoom(1)
+        : mZoom(0)
         , mCam(0, 0)
         , mLogicalToPhysicalPixelFactor(logicalToPhysicalPixelFactor)
         , mDisplayLogicalSize(initialDisplaySize)
@@ -140,23 +140,26 @@ private:
         mZoomFactor = std::ldexp(1.0f, -mZoom);
 
         // Ortho Matrix:
-        //  WorkCoordinates * OrthoMatrix => NDC (-1.0, +1.0)
+        //  WorkCoordinates * OrthoMatrix => NDC
+        //
+        //  Work: (0, W/H) (positive right-bottom)
+        //  NDC : (-1.0, +1.0) (positive right-top)
         //
         // SDsp is display scaled by zoom
         //
         //  2 / SDspW                0                        0                0
-        //  0                        2 / SDspH                0                0
+        //  0                        -2 / SDspH               0                0
         //  0                        0                        0                0
-        //  -2 * CamX / SDspW - 1    -2 * CamY / SDspH - 1    0                1
+        //  -2 * CamX / SDspW - 1    2 * CamY / SDspH + 1     0                1
 
         float const sDspW = static_cast<float>(mDisplayPhysicalSize.width) * mZoomFactor;
         float const sDspH = static_cast<float>(mDisplayPhysicalSize.height) * mZoomFactor;
 
         // Recalculate Ortho Matrix cells (r, c)
         mOrthoMatrix[0][0] = 2.0f / sDspW;
-        mOrthoMatrix[1][1] = 2.0f / sDspH;
+        mOrthoMatrix[1][1] = -2.0f / sDspH;
         mOrthoMatrix[3][0] = -2.0f * mCam.x / sDspW - 1.0f;
-        mOrthoMatrix[3][1] = -2.0f * mCam.y / sDspH - 1.0f;
+        mOrthoMatrix[3][1] = 2.0f * mCam.y / sDspH + 1.0f;
     }
 
 private:
