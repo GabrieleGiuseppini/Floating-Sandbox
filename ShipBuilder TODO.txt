@@ -343,14 +343,13 @@
 			+ See if can subclass MaterialPaletteCategoryPanel to prevent unnecessary Layout()
 				+ LockLayout(bool lock=true)
 			+ Use wxWindowUpdateLocker instead of Freeze/Thaw
+			+ Test also Electrical
+				+ Do View toolbar ("Layers Toolbar") *
+				+ Finish property grid(s)
 			- Material descriptions
 				- json + Material class
 				- Text area underneath property grid
-					- Methods: "SetMaterialProperties" instead of "SetMaterialPropertyGrid"
-			- Test also Electrical
-				+ Do View toolbar ("Layers Toolbar") *
-				- Finish property grid(s): TODOHERE
-			
+					- Methods: "SetMaterialProperties" instead of "SetMaterialPropertyGrid"			
 
 - Ship file format:
 	- Min FS version (.shp, .shp2)

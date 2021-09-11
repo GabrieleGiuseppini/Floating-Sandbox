@@ -583,7 +583,6 @@ std::array<wxPropertyGrid *, 2> MaterialPalette<TMaterial>::CreateElectricalMate
     pgs[0] = CreatePropertyGrid(parent);
     pgs[1] = CreatePropertyGrid(parent);
 
-    AddStringProperty(pgs[0], "Type", _("Type"));
     AddBoolProperty(pgs[0], "IsSelfPowered", _("Self-Powered"));
     AddBoolProperty(pgs[0], "ConductsElectricity", _("Conductive"));
     AddFloatProperty(pgs[0], "HeatGenerated", _("Heat Generated (KJ/s)"));
@@ -675,20 +674,22 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
             mElectricalMaterialPropertyGrids[0]->SetPropertyValue("IsInstanced", material->IsInstanced);
 
             mElectricalMaterialPropertyGrids[1]->Clear();
-            int grid1PropertyCount = 0;
+
+            auto typeProp = AddStringProperty(mElectricalMaterialPropertyGrids[1], "Type", _("Type"));
+            int grid1PropertyCount = 1;
 
             // Type-specific
             switch (material->ElectricalType)
             {
                 case ElectricalMaterial::ElectricalElementType::Cable:
                 {
-                    mElectricalMaterialPropertyGrids[0]->SetPropertyValue("Type", _("Cable"));
+                    typeProp->SetValue(_("Cable"));
                     break;
                 }
 
                 case ElectricalMaterial::ElectricalElementType::Engine:
                 {
-                    mElectricalMaterialPropertyGrids[0]->SetPropertyValue("Type", _("Engine"));
+                    typeProp->SetValue(_("Engine"));
 
                     {
                         auto prop = AddStringProperty(mElectricalMaterialPropertyGrids[1], "EngineType", _("Engine Type"));
@@ -732,19 +733,19 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
 
                 case ElectricalMaterial::ElectricalElementType::EngineController:
                 {
-                    mElectricalMaterialPropertyGrids[0]->SetPropertyValue("Type", _("Engine Controller"));
+                    typeProp->SetValue(_("Engine Controller"));
                     break;
                 }
 
                 case ElectricalMaterial::ElectricalElementType::Generator:
                 {
-                    mElectricalMaterialPropertyGrids[0]->SetPropertyValue("Type", _("Generator"));
+                    typeProp->SetValue(_("Generator"));
                     break;
                 }
 
                 case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
                 {
-                    mElectricalMaterialPropertyGrids[0]->SetPropertyValue("Type", _("Interactive Switch"));
+                    typeProp->SetValue(_("Interactive Switch"));
 
                     {
                         auto prop = AddStringProperty(mElectricalMaterialPropertyGrids[1], "SwitchType", _("Switch Type"));
@@ -770,7 +771,7 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
 
                 case ElectricalMaterial::ElectricalElementType::Lamp:
                 {
-                    mElectricalMaterialPropertyGrids[0]->SetPropertyValue("Type", _("Lamp"));
+                    typeProp->SetValue(_("Lamp"));
 
                     {
                         auto prop = AddFloatProperty(mElectricalMaterialPropertyGrids[1], "Luminiscence", _("Luminescence"));
@@ -795,25 +796,25 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
 
                 case ElectricalMaterial::ElectricalElementType::OtherSink:
                 {
-                    mElectricalMaterialPropertyGrids[0]->SetPropertyValue("Type", _("Other Sink"));
+                    typeProp->SetValue(_("Other Sink"));
                     break;
                 }
 
                 case ElectricalMaterial::ElectricalElementType::PowerMonitor:
                 {
-                    mElectricalMaterialPropertyGrids[0]->SetPropertyValue("Type", _("Power Monitor"));
+                    typeProp->SetValue(_("Power Monitor"));
                     break;
                 }
 
                 case ElectricalMaterial::ElectricalElementType::ShipSound:
                 {
-                    mElectricalMaterialPropertyGrids[0]->SetPropertyValue("Type", _("Sound Emitter"));
+                    typeProp->SetValue(_("Sound Emitter"));
                     break;
                 }
 
                 case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
                 {
-                    mElectricalMaterialPropertyGrids[0]->SetPropertyValue("Type", _("Smoke Emitter"));
+                    typeProp->SetValue(_("Smoke Emitter"));
 
                     {
                         auto prop = AddFloatProperty(mElectricalMaterialPropertyGrids[1], "ParticleEmissionRate", _("Emission Rate"));
@@ -826,7 +827,7 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
 
                 case ElectricalMaterial::ElectricalElementType::WaterPump:
                 {
-                    mElectricalMaterialPropertyGrids[0]->SetPropertyValue("Type", _("Water Pump"));
+                    typeProp->SetValue(_("Water Pump"));
 
                     {
                         auto prop = AddFloatProperty(mElectricalMaterialPropertyGrids[1], "WaterPumpNominalForce", _("Nominal Force"));
@@ -839,19 +840,19 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
 
                 case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
                 {
-                    mElectricalMaterialPropertyGrids[0]->SetPropertyValue("Type", _("Water Switch"));
+                    typeProp->SetValue(_("Water Switch"));
                     break;
                 }
 
                 case ElectricalMaterial::ElectricalElementType::WatertightDoor:
                 {
-                    mElectricalMaterialPropertyGrids[0]->SetPropertyValue("Type", _("Watertight Door"));
+                    typeProp->SetValue(_("Watertight Door"));
                     break;
                 }
             }
 
             // Fill-in second grid with dummy properties
-            for (; grid1PropertyCount < 5; ++grid1PropertyCount)
+            for (; grid1PropertyCount < 4; ++grid1PropertyCount)
             {
                 AddStringProperty(mElectricalMaterialPropertyGrids[1], std::string("Dummy") + std::to_string(grid1PropertyCount), _(""));
             }
