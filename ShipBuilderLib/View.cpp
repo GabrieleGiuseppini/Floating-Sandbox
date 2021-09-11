@@ -9,8 +9,6 @@
 #include <GameCore/Log.h>
 #include <GameCore/SysSpecifics.h>
 
-#include <vector>
-
 namespace ShipBuilder {
 
 View::View(
@@ -23,6 +21,8 @@ View::View(
         logicalToPhysicalPixelFactor)
     , mShaderManager()
     , mSwapRenderBuffersFunction(swapRenderBuffersFunction)
+    //////////////////////////////////
+    , mHasStructuralRenderColorTexture(false)
 {
     //
     // Initialize global OpenGL settings
@@ -51,32 +51,6 @@ View::View(
     //
 
     mShaderManager->ActivateTexture<ProgramParameterType::Texture1>();
-
-    //
-    // Initialize test VAO
-    //
-
-    {
-        GLuint tmpGLuint;
-
-        // Create VAO
-        glGenVertexArrays(1, &tmpGLuint);
-        mTestVAO = tmpGLuint;
-        glBindVertexArray(*mTestVAO);
-        CheckOpenGLError();
-
-        // Create VBO
-        glGenBuffers(1, &tmpGLuint);
-        mTestVBO = tmpGLuint;
-
-        // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mTestVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Test));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Test), 2, GL_FLOAT, GL_FALSE, sizeof(vec2f), (void *)0);
-        CheckOpenGLError();
-
-        glBindVertexArray(0);
-    }
 
     //
     // Initialize Structural Render Color Texture VAO
@@ -137,27 +111,25 @@ void View::UploadStructuralRenderColorTexture(RgbaImageData const & texture)
     float const fWidth = static_cast<float>(texture.Size.Width);
     float const fHeight = static_cast<float>(texture.Size.Height);
 
-    // TODO: need only a local buffer, this doesn't have to be a member;
-    // however, need a way to tell Render() that there *is* a texture to draw...simple boolean?
-    mStructuralRenderColorTextureVertexBuffer.clear();
+    std::array<TextureVertex, 4> vertexBuffer;
 
     // Top-left
-    mStructuralRenderColorTextureVertexBuffer.emplace_back(
+    vertexBuffer[0] = TextureVertex(
         vec2f(0.0f, 0.0f),
         vec2f(0.0f, 1.0f));
 
     // Bottom-left
-    mStructuralRenderColorTextureVertexBuffer.emplace_back(
+    vertexBuffer[1] = TextureVertex(
         vec2f(0.0f, fHeight),
         vec2f(0.0f, 0.0f));
 
     // Top-right
-    mStructuralRenderColorTextureVertexBuffer.emplace_back(
+    vertexBuffer[2] = TextureVertex(
         vec2f(fWidth, 0.0f),
         vec2f(1.0f, 1.0f));
 
     // Bottom-right
-    mStructuralRenderColorTextureVertexBuffer.emplace_back(
+    vertexBuffer[3] = TextureVertex(
         vec2f(fWidth, fHeight),
         vec2f(1.0f, 0.0f));
 
@@ -166,11 +138,15 @@ void View::UploadStructuralRenderColorTexture(RgbaImageData const & texture)
     //
 
     glBindBuffer(GL_ARRAY_BUFFER, *mStructuralRenderTextureColorVBO);
-
-    glBufferData(GL_ARRAY_BUFFER, mStructuralRenderColorTextureVertexBuffer.size() * sizeof(TextureVertex), mStructuralRenderColorTextureVertexBuffer.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(TextureVertex), vertexBuffer.data(), GL_STATIC_DRAW);
     CheckOpenGLError();
-
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //
+    // Remember we have this texture
+    //
+
+    mHasStructuralRenderColorTexture = true;
 }
 
 void View::Render()
@@ -184,38 +160,11 @@ void View::Render()
 
     // Clear canvas
     // TODO: this becomes drawing the background texture
-    glClearColor(0.3f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // TODOTEST
-    // Draw test quad
-    {
-        std::vector<vec2f> buffer;
-
-        // TODO: for this test we're using display physical size in lieu of WorkSpace size
-        float const h = static_cast<float>(mViewModel.GetDisplayPhysicalSize().height);
-        float const w = static_cast<float>(mViewModel.GetDisplayPhysicalSize().width);
-        buffer.emplace_back(0.0f, h);
-        buffer.emplace_back(0.0f, 0.0f);
-        buffer.emplace_back(w, h);
-        buffer.emplace_back(0.0f, 0.0f);
-        buffer.emplace_back(w, h);
-        buffer.emplace_back(w, 0.0f);
-
-        glBindBuffer(GL_ARRAY_BUFFER, *mTestVBO);
-        glBufferData(GL_ARRAY_BUFFER, buffer.size() * sizeof(vec2f), buffer.data(), GL_DYNAMIC_DRAW);
-        CheckOpenGLError();
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        glBindVertexArray(*mTestVAO);
-        mShaderManager->ActivateProgram<ProgramType::Test>();
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(buffer.size()));
-        CheckOpenGLError();
-        glBindVertexArray(0);
-    }
-
     // Structural Render Color Texture
-    if (!mStructuralRenderColorTextureVertexBuffer.empty())
+    if (mHasStructuralRenderColorTexture)
     {
         // Activate generic Texture program
         mShaderManager->ActivateProgram<ProgramType::Texture>();
@@ -229,7 +178,7 @@ void View::Render()
         // Bind VAO
         glBindVertexArray(*mStructuralRenderTextureColorVAO);
 
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(mStructuralRenderColorTextureVertexBuffer.size()));
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -244,10 +193,6 @@ void View::Render()
 void View::RefreshOrthoMatrix()
 {
     auto const orthoMatrix = mViewModel.GetOrthoMatrix();
-
-    mShaderManager->ActivateProgram<ProgramType::Test>();
-    mShaderManager->SetProgramParameter<ProgramType::Test, ProgramParameterType::OrthoMatrix>(
-        orthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::Texture>();
     mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::OrthoMatrix>(

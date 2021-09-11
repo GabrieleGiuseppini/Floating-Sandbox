@@ -15,9 +15,7 @@ namespace ShipBuilder {
 ProgramType ShaderFilenameToProgramType(std::string const & str)
 {
     std::string lstr = Utils::ToLower(str);
-    if (lstr == "test")
-        return ProgramType::Test;
-    else if (lstr == "texture")
+    if (lstr == "texture")
         return ProgramType::Texture;
     else
         throw GameException("Unrecognized program \"" + str + "\"");
@@ -27,8 +25,6 @@ std::string ProgramTypeToStr(ProgramType program)
 {
     switch (program)
     {
-        case ProgramType::Test:
-            return "Test";
         case ProgramType::Texture:
             return "Texture";
     }
@@ -63,9 +59,7 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str)
 {
-    if (Utils::CaseInsensitiveEquals(str, "Test"))
-        return VertexAttributeType::Test;
-    else if (Utils::CaseInsensitiveEquals(str, "Texture"))
+    if (Utils::CaseInsensitiveEquals(str, "Texture"))
         return VertexAttributeType::Texture;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");

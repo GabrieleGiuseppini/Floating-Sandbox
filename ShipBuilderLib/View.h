@@ -17,6 +17,7 @@
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
 
+#include <array>
 #include <functional>
 #include <memory>
 #include <vector>
@@ -56,7 +57,7 @@ public:
         return mViewModel.GetCameraWorkSpacePosition();
     }
 
-    WorkSpaceCoordinates const & SetCameraWorkSpacePosition(WorkSpaceCoordinates const & pos)
+    WorkSpaceCoordinates SetCameraWorkSpacePosition(WorkSpaceCoordinates const & pos)
     {
         auto const newPos = mViewModel.SetCameraWorkSpacePosition(pos);
 
@@ -113,6 +114,8 @@ private:
         vec2f positionWork; // Work space
         vec2f textureCoords; // Texture space
 
+        TextureVertex() = default;
+
         TextureVertex(
             vec2f const & _positionWork,
             vec2f _textureCoords)
@@ -128,18 +131,12 @@ private:
     // Rendering
     //
 
-    // Test
-
-    GameOpenGLVAO mTestVAO;
-    GameOpenGLVBO mTestVBO;
-
     // Structural Render Color Texture
 
     GameOpenGLVAO mStructuralRenderTextureColorVAO;
     GameOpenGLVBO mStructuralRenderTextureColorVBO;
     GameOpenGLTexture mStructuralRenderTextureOpenGLHandle;
-
-    std::vector<TextureVertex> mStructuralRenderColorTextureVertexBuffer;
+    bool mHasStructuralRenderColorTexture;
 };
 
 }

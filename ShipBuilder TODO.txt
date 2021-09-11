@@ -156,20 +156,16 @@
 	= Impl:
 		= Click-And-Draw
 			= Complete ViewModel:
-				= Zoom
-					= From MainFrame: MouseWheel and +/-
+				+ Zoom
+					+ From MainFrame: MouseWheel and +/-
 				- Cam
 					- From MainFrame: scrollbars
-					- Calc'ns:
-						- Cam scrolls by one work pixel at a time
-						- Margin has always the same logical/physical pixel width: the # of physical pixels used by one work pixel at max zoom
-							- So when zoom is not max zoom, margin is multiple work pixels
+				- Calc'ns:
+					- Cam scrolls by one work pixel at a time
+					- Margin has always the same logical/physical pixel width: the # of physical pixels used by one work pixel at max zoom
+						- So when zoom is not max zoom, margin is multiple work pixels
 			= Rendering of texture
-				+ Upload from Controller/...
-				+ Generation of vertices
-				- Check dead pixel
-				- View maintains flags to enable individual render "planes" (e.g. structural render color, texture, etc.)
-					- So that ModelController can always upload textures and data, without knowing anything about layer selections
+				- Do Margin
 
 	- Misc TODO's:
 		- Toolbar:
