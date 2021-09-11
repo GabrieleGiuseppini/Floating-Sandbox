@@ -11,6 +11,7 @@ set  (SOURCES
 	BootSettings.h
 	BoundedVector.h
 	Buffer.h
+	Buffer2D.h
 	BufferAllocator.h
 	BuildInfo.h
 	CircularList.h

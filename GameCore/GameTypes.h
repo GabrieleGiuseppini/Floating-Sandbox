@@ -283,6 +283,22 @@ struct IntegralPoint
     }
 };
 
+/*
+ * Integral rectangular sizes.
+ */
+struct Integral2DSize
+{
+    int Width;
+    int Height;
+
+    constexpr Integral2DSize(
+        int width,
+        int height)
+        : Width(width)
+        , Height(height)
+    {}
+};
+
 inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, IntegralPoint const & p)
 {
     os << p.ToString();

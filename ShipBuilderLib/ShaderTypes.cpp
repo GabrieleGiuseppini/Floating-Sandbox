@@ -17,6 +17,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
     std::string lstr = Utils::ToLower(str);
     if (lstr == "test")
         return ProgramType::Test;
+    else if (lstr == "texture")
+        return ProgramType::Texture;
     else
         throw GameException("Unrecognized program \"" + str + "\"");
 }
@@ -25,8 +27,10 @@ std::string ProgramTypeToStr(ProgramType program)
 {
     switch (program)
     {
-    case ProgramType::Test:
-        return "Test";
+        case ProgramType::Test:
+            return "Test";
+        case ProgramType::Texture:
+            return "Texture";
     }
 
     assert(false);
@@ -37,6 +41,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
 {
     if (str == "OrthoMatrix")
         return ProgramParameterType::OrthoMatrix;
+    else if (str == "Texture1")
+        return ProgramParameterType::Texture1;
     else
         throw GameException("Unrecognized program parameter \"" + str + "\"");
 }
@@ -45,8 +51,10 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
 {
     switch (programParameter)
     {
-    case ProgramParameterType::OrthoMatrix:
-        return "OrthoMatrix";
+        case ProgramParameterType::OrthoMatrix:
+            return "OrthoMatrix";
+        case ProgramParameterType::Texture1:
+            return "Texture1";
     }
 
     assert(false);
@@ -57,6 +65,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
 {
     if (Utils::CaseInsensitiveEquals(str, "Test"))
         return VertexAttributeType::Test;
+    else if (Utils::CaseInsensitiveEquals(str, "Texture"))
+        return VertexAttributeType::Texture;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }

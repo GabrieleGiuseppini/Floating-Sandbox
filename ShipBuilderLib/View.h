@@ -11,11 +11,15 @@
 
 #include <Game/ResourceLocator.h>
 
+#include <GameCore/Colors.h>
+#include <GameCore/ImageData.h>
+
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
 
 #include <functional>
 #include <memory>
+#include <vector>
 
 namespace ShipBuilder {
 
@@ -40,7 +44,11 @@ public:
 
     int SetZoom(int zoom)
     {
-        return mViewModel.SetZoom(zoom);
+        auto const newZoom = mViewModel.SetZoom(zoom);
+
+        RefreshOrthoMatrix();
+
+        return newZoom;
     }
 
     WorkSpaceCoordinates const & GetCameraWorkSpacePosition() const
@@ -50,7 +58,11 @@ public:
 
     WorkSpaceCoordinates const & SetCameraWorkSpacePosition(WorkSpaceCoordinates const & pos)
     {
-        return mViewModel.SetCameraWorkSpacePosition(pos);
+        auto const newPos = mViewModel.SetCameraWorkSpacePosition(pos);
+
+        RefreshOrthoMatrix();
+
+        return newPos;
     }
 
     void SetDisplayLogicalSize(DisplayLogicalSize const & logicalSize)
@@ -67,6 +79,17 @@ public:
 
 public:
 
+    //
+    // Structural Render Color Texture
+    //
+
+    // Sticky, always drawn
+    void UploadStructuralRenderColorTexture(RgbaImageData const & texture);
+
+    // TODO: update method as well
+
+public:
+
     void Render();
 
 private:
@@ -80,11 +103,44 @@ private:
     std::function<void()> const mSwapRenderBuffersFunction;
 
     //
-    // VAOs
+    // Types
     //
 
-    GameOpenGLVBO mTestVBO;
+#pragma pack(push, 1)
+
+    struct TextureVertex
+    {
+        vec2f positionWork; // Work space
+        vec2f textureCoords; // Texture space
+
+        TextureVertex(
+            vec2f const & _positionWork,
+            vec2f _textureCoords)
+            : positionWork(_positionWork)
+            , textureCoords(_textureCoords)
+        {}
+    };
+
+#pragma pack(pop)
+
+
+    //
+    // Rendering
+    //
+
+    // Test
+
     GameOpenGLVAO mTestVAO;
+    GameOpenGLVBO mTestVBO;
+
+    // Structural Render Color Texture
+
+    GameOpenGLVAO mStructuralRenderTextureColorVAO;
+    GameOpenGLVBO mStructuralRenderTextureColorVBO;
+    GameOpenGLTexture mStructuralRenderTextureOpenGLHandle;
+
+    std::vector<TextureVertex> mStructuralRenderColorTextureVertexBuffer;
+    std::optional<ImageSize> mStructuralRenderColorTextureSize;
 };
 
 }

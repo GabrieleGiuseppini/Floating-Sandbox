@@ -12,7 +12,8 @@ namespace ShipBuilder {
 Model::Model(WorkSpaceSize const & workSpaceSize)
     : mWorkSpaceSize(workSpaceSize)
 {
-    // TODO: initialize structural layer
+    // Initialize structural layer
+    MakeNewEmptyStructuralLayer(mWorkSpaceSize);
 
     // Initialize presence map
     mLayerPresenceMap.fill(false);
@@ -24,7 +25,7 @@ Model::Model(WorkSpaceSize const & workSpaceSize)
 
 void Model::NewStructuralLayer()
 {
-    // TODO
+    MakeNewEmptyStructuralLayer(mWorkSpaceSize);
 
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
     mLayerDirtinessMap[static_cast<size_t>(LayerType::Structural)] = true;
@@ -124,4 +125,21 @@ void Model::ClearIsDirty()
     mIsDirty = false;
 }
 
+void Model::MakeNewEmptyStructuralLayer(WorkSpaceSize const & size)
+{
+    mStructuralMaterialMatrix = std::make_unique<Buffer2D<StructuralMaterial const *>>(
+        size.width,
+        size.height,
+        nullptr);
+
+    std::unique_ptr<rgbaColor[]> renderColorData = std::make_unique<rgbaColor[]>(size.width * size.height);
+    std::fill(
+        renderColorData.get(),
+        renderColorData.get() + (size.width * size.height),
+        rgbaColor(0, 0, 0, 0));
+    mStructuralRenderColorTexture = std::make_unique<RgbaImageData>(
+        size.width,
+        size.height,
+        std::move(renderColorData));
+}
 }

@@ -223,7 +223,7 @@ public:
         std::string const & attributeName);
 
     static void UploadTexture(
-        RgbaImageData texture,
+        RgbaImageData const & texture,
         GLint internalFormat = GL_RGBA);
 
     static void UploadMipmappedTexture(

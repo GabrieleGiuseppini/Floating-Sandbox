@@ -64,6 +64,8 @@ private:
         View & view,
         IUserInterface & userInterface);
 
+    void UploadStructuralRenderColorTextureToView();
+
 private:
 
     View & mView;

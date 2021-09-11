@@ -47,6 +47,12 @@ View::View(
     mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetShipBuilderShadersRootPath());
 
     //
+    // Activate texture units
+    //
+
+    mShaderManager->ActivateTexture<ProgramParameterType::Texture1>();
+
+    //
     // Initialize test VAO
     //
 
@@ -71,6 +77,66 @@ View::View(
 
         glBindVertexArray(0);
     }
+
+    //
+    // Initialize Structural Render Color Texture VAO
+    //
+
+    {
+        GLuint tmpGLuint;
+
+        // Create VAO
+        glGenVertexArrays(1, &tmpGLuint);
+        mStructuralRenderTextureColorVAO = tmpGLuint;
+        glBindVertexArray(*mStructuralRenderTextureColorVAO);
+        CheckOpenGLError();
+
+        // Create VBO
+        glGenBuffers(1, &tmpGLuint);
+        mStructuralRenderTextureColorVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mStructuralRenderTextureColorVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+
+        // Create texture OpenGL handle
+        glGenTextures(1, &tmpGLuint);
+        mStructuralRenderTextureOpenGLHandle = tmpGLuint;
+
+        // Configure texture
+        glBindTexture(GL_TEXTURE_2D, *mStructuralRenderTextureOpenGLHandle);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        CheckOpenGLError();
+    }
+}
+
+void View::UploadStructuralRenderColorTexture(RgbaImageData const & texture)
+{
+    //
+    // Upload texture
+    //
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mStructuralRenderTextureOpenGLHandle);
+    CheckOpenGLError();
+
+    // Upload texture
+    GameOpenGL::UploadTexture(texture);
+
+    //
+    // Create vertices
+    //
+
+    mStructuralRenderColorTextureVertexBuffer.clear();
+
+    // TODOHERE
 }
 
 void View::Render()
@@ -83,7 +149,8 @@ void View::Render()
     glViewport(0, 0, mViewModel.GetDisplayPhysicalSize().width, mViewModel.GetDisplayPhysicalSize().height);
 
     // Clear canvas
-    glClearColor(0.3f, 0.1f, 0.1f, 1.0f); // TODO
+    // TODO: this becomes drawing the background texture
+    glClearColor(0.3f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     // TODOTEST
@@ -113,6 +180,27 @@ void View::Render()
         glBindVertexArray(0);
     }
 
+    // Structural Render Color Texture
+    if (!mStructuralRenderColorTextureVertexBuffer.empty())
+    {
+        // Activate generic Texture program
+        mShaderManager->ActivateProgram<ProgramType::Texture>();
+
+        // Bind this texture
+        glBindTexture(GL_TEXTURE_2D, *mStructuralRenderTextureOpenGLHandle);
+
+        // Set texture in shader
+        mShaderManager->SetTextureParameters<ProgramType::Texture>();
+
+        // Bind VAO
+        glBindVertexArray(*mStructuralRenderTextureColorVAO);
+
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(mStructuralRenderColorTextureVertexBuffer.size()));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
     // Flip the back buffer onto the screen
     mSwapRenderBuffersFunction();
 }
@@ -125,6 +213,10 @@ void View::RefreshOrthoMatrix()
 
     mShaderManager->ActivateProgram<ProgramType::Test>();
     mShaderManager->SetProgramParameter<ProgramType::Test, ProgramParameterType::OrthoMatrix>(
+        orthoMatrix);
+
+    mShaderManager->ActivateProgram<ProgramType::Texture>();
+    mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 }
 

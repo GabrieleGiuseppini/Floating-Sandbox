@@ -252,7 +252,7 @@ void GameOpenGL::BindAttributeLocation(
 }
 
 void GameOpenGL::UploadTexture(
-    RgbaImageData texture,
+    RgbaImageData const & texture,
     GLint internalFormat)
 {
     glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, texture.Size.Width, texture.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.Data.get());

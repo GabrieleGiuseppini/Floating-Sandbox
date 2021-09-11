@@ -26,7 +26,6 @@ StructuralMaterial MakeStructuralMaterial(std::string name)
         1.0f,
         1.0f,
         1.0f,
-        vec4f::zero(),
         std::nullopt,
         std::nullopt, // Sound
         "TestMaterial",
@@ -47,7 +46,10 @@ StructuralMaterial MakeStructuralMaterial(std::string name)
         0.0f, // Strength
         // Misc
         1.0f,
-        false);
+        false,
+        // Palette
+        vec4f::zero(),
+        std::nullopt);
 }
 
 /////////////////////////////////////////////////////////////////

@@ -7,7 +7,13 @@
 
 #include "ShipBuilderTypes.h"
 
+#include <Game/Materials.h>
+
+#include <GameCore/Buffer2D.h>
+#include <GameCore/ImageData.h>
+
 #include <array>
+#include <memory>
 
 namespace ShipBuilder {
 
@@ -67,9 +73,22 @@ private:
 
     void ClearIsDirty();
 
+    void MakeNewEmptyStructuralLayer(WorkSpaceSize const & size);
+
 private:
 
     WorkSpaceSize mWorkSpaceSize;
+
+    //
+    // Structural Layer
+    //
+
+    std::unique_ptr<Buffer2D<StructuralMaterial const *>> mStructuralMaterialMatrix;
+    std::unique_ptr<RgbaImageData> mStructuralRenderColorTexture;
+
+    //
+    // Misc state
+    //
 
     // Layer presence map (cached)
     std::array<bool, LayerCount> mLayerPresenceMap;

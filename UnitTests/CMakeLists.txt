@@ -21,6 +21,7 @@ set (UNIT_TEST_SOURCES
 	AlgorithmsTests.cpp
 	BoundedVectorTests.cpp
 	BufferTests.cpp
+	Buffer2DTests.cpp
 	CircularListTests.cpp
 	EnumFlagsTests.cpp
 	FixedSizeVectorTests.cpp
@@ -64,7 +65,7 @@ target_link_libraries (UnitTests
 	GameCoreLib
 	GameLib
 	GPUCalcLib
-	UIControlsLib
+	UILib
 	${OPENGL_LIBRARIES}
 	gmock
 	gtest

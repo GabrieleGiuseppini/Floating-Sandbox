@@ -34,7 +34,6 @@ std::unique_ptr<ModelController> ModelController::CreateFromLoad(
             userInterface));
 }
 
-
 ModelController::ModelController(
     WorkSpaceSize const & workSpaceSize,
     View & view,
@@ -44,11 +43,15 @@ ModelController::ModelController(
     , mModel(workSpaceSize)
 {
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
+
+    UploadStructuralRenderColorTextureToView();
 }
 
 void ModelController::NewStructuralLayer()
 {
     mModel.NewStructuralLayer();
+
+    UploadStructuralRenderColorTextureToView();
 
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
@@ -57,12 +60,16 @@ void ModelController::SetStructuralLayer(/*TODO*/)
 {
     mModel.SetStructuralLayer();
 
+    UploadStructuralRenderColorTextureToView();
+
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::NewElectricalLayer()
 {
     mModel.NewElectricalLayer();
+
+    // TODO: upload to view
 
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
@@ -71,12 +78,16 @@ void ModelController::SetElectricalLayer(/*TODO*/)
 {
     mModel.SetElectricalLayer();
 
+    // TODO: upload to view
+
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::RemoveElectricalLayer()
 {
     mModel.RemoveElectricalLayer();
+
+    // TODO: upload to view
 
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
@@ -85,12 +96,16 @@ void ModelController::NewRopesLayer()
 {
     mModel.NewRopesLayer();
 
+    // TODO: upload to view
+
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::SetRopesLayer(/*TODO*/)
 {
     mModel.SetRopesLayer();
+
+    // TODO: upload to view
 
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
@@ -99,12 +114,16 @@ void ModelController::RemoveRopesLayer()
 {
     mModel.RemoveRopesLayer();
 
+    // TODO: upload to view
+
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::NewTextureLayer()
 {
     mModel.NewTextureLayer();
+
+    // TODO: upload to view
 
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
@@ -113,6 +132,8 @@ void ModelController::SetTextureLayer(/*TODO*/)
 {
     mModel.SetTextureLayer();
 
+    // TODO: upload to view
+
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
@@ -120,9 +141,16 @@ void ModelController::RemoveTextureLayer()
 {
     mModel.RemoveTextureLayer();
 
+    // TODO: upload to view
+
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 ///////////////////////////////////////////////////////////////////////////
+
+void ModelController::UploadStructuralRenderColorTextureToView()
+{
+    // TODOHERE
+}
 
 }

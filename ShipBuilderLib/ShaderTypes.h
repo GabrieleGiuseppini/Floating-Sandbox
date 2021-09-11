@@ -19,8 +19,9 @@ namespace ShipBuilder {
 enum class ProgramType
 {
     Test = 0,
+    Texture,
 
-    _Last = Test
+    _Last = Texture
 };
 
 ProgramType ShaderFilenameToProgramType(std::string const & str);
@@ -30,9 +31,10 @@ std::string ProgramTypeToStr(ProgramType program);
 enum class ProgramParameterType : uint8_t
 {
     OrthoMatrix = 0,
+    Texture1,
 
-    _FirstTexture = OrthoMatrix,
-    _LastTexture = OrthoMatrix
+    _FirstTexture = Texture1,
+    _LastTexture = Texture1
 };
 
 ProgramParameterType StrToProgramParameterType(std::string const & str);
@@ -45,6 +47,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter);
 enum class VertexAttributeType : GLuint
 {
     Test = 0,
+
+    Texture = 0
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);
