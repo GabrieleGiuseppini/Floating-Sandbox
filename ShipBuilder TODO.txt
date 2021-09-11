@@ -193,13 +193,6 @@
 			- Coord and icon
 			- Ship size and icon
 
-- Controller:
-
-- ModelController:
-	- static factory methods:
-		+ CreateNew
-		- Load(shipFilePath)
-
 - Tools:
 	- BaseTool:
 		- Stores all protected references passed from cctors: IUserInterface, ModelController, View, SelectionManager

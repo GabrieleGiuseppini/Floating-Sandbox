@@ -77,7 +77,7 @@ public:
 
     void OnWorkbenchStateChanged() override;
 
-    void DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coordinates) override;
+    void OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coordinates) override;
 
 private:
 

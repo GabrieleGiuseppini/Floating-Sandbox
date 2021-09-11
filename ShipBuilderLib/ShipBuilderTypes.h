@@ -116,6 +116,12 @@ struct _IntegralCoordinates
             static_cast<float>(x),
             static_cast<float>(y));
     }
+
+    template<typename TRect>
+    bool IsInRect(TRect const & rect) const
+    {
+        return x >= 0 && x < rect.width && y >= 0 && y < rect.height;
+    }
 };
 
 using WorkSpaceCoordinates = _IntegralCoordinates<struct WorkSpaceTag>;

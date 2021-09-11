@@ -76,6 +76,7 @@ public:
     void OnRightMouseUp();
     void OnShiftKeyDown();
     void OnShiftKeyUp();
+    void OnMouseOut();
 
 private:
 

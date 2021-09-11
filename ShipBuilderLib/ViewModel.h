@@ -123,8 +123,8 @@ public:
     WorkSpaceCoordinates DisplayToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
         return WorkSpaceCoordinates(
-            static_cast<int>(std::round(static_cast<float>(displayCoordinates.x) * mZoomFactor)),
-            static_cast<int>(std::round(static_cast<float>(displayCoordinates.y) * mZoomFactor)));
+            static_cast<int>(std::floor(static_cast<float>(displayCoordinates.x) * mZoomFactor)),
+            static_cast<int>(std::floor(static_cast<float>(displayCoordinates.y) * mZoomFactor)));
     }
 
     ProjectionMatrix const & GetOrthoMatrix() const

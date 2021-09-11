@@ -157,10 +157,26 @@ void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPositi
     mInputState.PreviousMousePosition = mInputState.MousePosition;
     mInputState.MousePosition = mouseScreenPosition;
 
-    // TODO: FW to tool
+    // Calculate work coordinates
+    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.DisplayToWorkSpace(mouseScreenPosition);
 
-    // Tell UI
-    mUserInterface.DisplayToolCoordinates(mView.DisplayToWorkSpace(mInputState.MousePosition));
+    // TODO: should we detect in<->out transitions an tell tool?
+
+    // Check if within work canvas
+    if (mouseWorkSpaceCoordinates.IsInRect(mModelController->GetWorkSpaceSize()))
+    {
+        // TODO: FW to tool
+
+        // Tell UI
+        mUserInterface.OnToolCoordinatesChanged(mouseWorkSpaceCoordinates);
+    }
+    else
+    {
+        // TODO: what to tell tool? Should we detect in<->out transitions?
+
+        // Tell UI
+        mUserInterface.OnToolCoordinatesChanged(std::nullopt);
+    }
 }
 
 void Controller::OnLeftMouseDown()
@@ -209,6 +225,14 @@ void Controller::OnShiftKeyUp()
     mInputState.IsShiftKeyDown = false;
 
     // TODO: FW to tool
+}
+
+void Controller::OnMouseOut()
+{
+    // TODO: reset tool
+
+    // Tell UI
+    mUserInterface.OnToolCoordinatesChanged(std::nullopt);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -424,7 +424,7 @@ void MainFrame::OnWorkbenchStateChanged()
     ReconciliateUIWithWorkbenchState();
 }
 
-void MainFrame::DisplayToolCoordinates(std::optional<WorkSpaceCoordinates> coordinates)
+void MainFrame::OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coordinates)
 {
     std::stringstream ss;
 
@@ -1440,22 +1440,26 @@ void MainFrame::OnWorkCanvasMouseWheel(wxMouseEvent & event)
 {
     if (mController)
     {
-        // TODO: verify
         mController->AddZoom(event.GetWheelRotation() > 0 ? 1 : -1);
     }
 }
 
 void MainFrame::OnWorkCanvasCaptureMouseLost(wxMouseCaptureLostEvent & /*event*/)
 {
-    // TODO: fw to controller, who will de-initialize the current tool
-    // (as if lmouseup)
+    if (mController)
+    {
+        mController->OnMouseOut();
+    }
 }
 
 void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & /*event*/)
 {
     if (!mIsMouseCapturedByWorkCanvas)
     {
-        this->DisplayToolCoordinates(std::nullopt);
+        if (mController)
+        {
+            mController->OnMouseOut();
+        }
     }
 }
 
