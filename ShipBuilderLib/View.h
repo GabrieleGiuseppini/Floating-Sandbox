@@ -73,6 +73,16 @@ public:
         RefreshOrthoMatrix();
     }
 
+    WorkSpaceCoordinates GetVisibleWorkSpaceOrigin() const
+    {
+        return mViewModel.GetVisibleWorkSpaceOrigin();
+    }
+
+    WorkSpaceSize GetVisibleWorkSpaceSize() const
+    {
+        return mViewModel.GetVisibleWorkSpaceSize();
+    }
+
     WorkSpaceCoordinates DisplayToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
         return mViewModel.DisplayToWorkSpace(displayCoordinates);

@@ -26,6 +26,9 @@ public:
     // Notifies of a change in the size of the model
     virtual void OnWorkSpaceSizeChanged() = 0;
 
+    // Notifies of a change in the view model geometry
+    virtual void OnViewModelChanged() = 0;
+
     // Notifies of a change in any member of the workbench state
     virtual void OnWorkbenchStateChanged() = 0;
 

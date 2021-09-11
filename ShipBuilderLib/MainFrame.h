@@ -75,6 +75,8 @@ public:
 
     void OnWorkSpaceSizeChanged() override;
 
+    void OnViewModelChanged() override;
+
     void OnWorkbenchStateChanged() override;
 
     void OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coordinates) override;

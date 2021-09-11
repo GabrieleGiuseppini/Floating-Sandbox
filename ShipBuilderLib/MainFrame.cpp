@@ -416,6 +416,11 @@ void MainFrame::OnModelDirtyChanged(bool isDirty)
 
 void MainFrame::OnWorkSpaceSizeChanged()
 {
+    // TODO: status bar
+}
+
+void MainFrame::OnViewModelChanged()
+{
     RecalculateWorkCanvasPanning();
 }
 
@@ -1724,6 +1729,7 @@ void MainFrame::ReconciliateUIWithModelDirtiness(bool isDirty)
 void MainFrame::RecalculateWorkCanvasPanning()
 {
     // TODO
+    LogMessage("TODO: VisibleWorkSpaceOrigin=", mView->GetVisibleWorkSpaceOrigin().ToString(), " GetVisibleWorkSpaceSize=", mView->GetVisibleWorkSpaceSize().ToString());
 }
 
 void MainFrame::ReconciliateUIWithPrimaryLayerSelection()

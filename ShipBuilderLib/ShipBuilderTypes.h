@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <cstdint>
+#include <sstream>
 
 namespace ShipBuilder {
 
@@ -64,6 +65,13 @@ struct _IntegralSize
             static_cast<float>(width),
             static_cast<float>(height));
     }
+
+    std::string ToString() const
+    {
+        std::stringstream ss;
+        ss << "(" << width << ", " << height << ")";
+        return ss.str();
+    }
 };
 
 using WorkSpaceSize = _IntegralSize<struct WorkSpaceTag>;
@@ -110,6 +118,12 @@ struct _IntegralCoordinates
             this->y - other.y);
     }
 
+    template<typename TRect>
+    bool IsInRect(TRect const & rect) const
+    {
+        return x >= 0 && x < rect.width && y >= 0 && y < rect.height;
+    }
+
     vec2f ToFloat() const
     {
         return vec2f(
@@ -117,10 +131,11 @@ struct _IntegralCoordinates
             static_cast<float>(y));
     }
 
-    template<typename TRect>
-    bool IsInRect(TRect const & rect) const
+    std::string ToString() const
     {
-        return x >= 0 && x < rect.width && y >= 0 && y < rect.height;
+        std::stringstream ss;
+        ss << "(" << x << ", " << y << ")";
+        return ss.str();
     }
 };
 

@@ -133,6 +133,8 @@ void Controller::AddZoom(int deltaZoom)
 {
     mView.SetZoom(mView.GetZoom() + deltaZoom);
 
+    RefreshToolCoordinateDisplay();
+    mUserInterface.OnViewModelChanged();
     mUserInterface.RefreshView();
 }
 
@@ -140,6 +142,8 @@ void Controller::PanCamera(int deltaX, int deltaY)
 {
     mView.SetCameraWorkSpacePosition(mView.GetCameraWorkSpacePosition() + WorkSpaceSize(deltaX, deltaY));
 
+    RefreshToolCoordinateDisplay();
+    mUserInterface.OnViewModelChanged();
     mUserInterface.RefreshView();
 }
 
@@ -148,6 +152,8 @@ void Controller::ResetView()
     mView.SetZoom(0);
     mView.SetCameraWorkSpacePosition(WorkSpaceCoordinates(0, 0));
 
+    RefreshToolCoordinateDisplay();
+    mUserInterface.OnViewModelChanged();
     mUserInterface.RefreshView();
 }
 
@@ -158,7 +164,7 @@ void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPositi
     mInputState.MousePosition = mouseScreenPosition;
 
     // Calculate work coordinates
-    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.DisplayToWorkSpace(mouseScreenPosition);
+    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.DisplayToWorkSpace(mInputState.MousePosition);
 
     // TODO: should we detect in<->out transitions an tell tool?
 
@@ -166,17 +172,13 @@ void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPositi
     if (mouseWorkSpaceCoordinates.IsInRect(mModelController->GetWorkSpaceSize()))
     {
         // TODO: FW to tool
-
-        // Tell UI
-        mUserInterface.OnToolCoordinatesChanged(mouseWorkSpaceCoordinates);
     }
     else
     {
         // TODO: what to tell tool? Should we detect in<->out transitions?
-
-        // Tell UI
-        mUserInterface.OnToolCoordinatesChanged(std::nullopt);
     }
+
+    RefreshToolCoordinateDisplay();
 }
 
 void Controller::OnLeftMouseDown()
@@ -236,5 +238,21 @@ void Controller::OnMouseOut()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void Controller::RefreshToolCoordinateDisplay()
+{
+    // Calculate work coordinates
+    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.DisplayToWorkSpace(mInputState.MousePosition);
+
+    // Check if within work canvas
+    if (mouseWorkSpaceCoordinates.IsInRect(mModelController->GetWorkSpaceSize()))
+    {
+        mUserInterface.OnToolCoordinatesChanged(mouseWorkSpaceCoordinates);
+    }
+    else
+    {
+        mUserInterface.OnToolCoordinatesChanged(std::nullopt);
+    }
+}
 
 }

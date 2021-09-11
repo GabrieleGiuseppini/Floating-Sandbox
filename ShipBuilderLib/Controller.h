@@ -86,6 +86,8 @@ private:
         WorkbenchState & workbenchState,
         IUserInterface & userInterface);
 
+    void RefreshToolCoordinateDisplay();
+
 private:
 
     View & mView;
