@@ -116,7 +116,7 @@ private:
 
     std::array<wxPropertyGrid *, 2> CreateStructuralMaterialPropertyGrids(wxWindow * parent);
 
-    wxPropertyGrid * CreateElectricalMaterialPropertyGrid(wxWindow * parent);
+    std::array<wxPropertyGrid *, 2> CreateElectricalMaterialPropertyGrids(wxWindow * parent);
 
     void PopulateMaterialProperties(TMaterial const * material);
 
@@ -161,7 +161,7 @@ private:
 
     // Material properties
     std::array<wxPropertyGrid *, 2> mStructuralMaterialPropertyGrids;
-    wxPropertyGrid * mElectricalMaterialPropertyGrid;
+    std::array<wxPropertyGrid *, 2> mElectricalMaterialPropertyGrids;
     TMaterial const * mCurrentMaterialInPropertyGrid;
 
     //
