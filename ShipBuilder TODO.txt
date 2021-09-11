@@ -154,8 +154,8 @@
 			+ Do icons for layers
 
 	= Impl:
-		- Click-And-Draw
-			- Complete ViewModel:
+		= Click-And-Draw
+			= Complete ViewModel:
 				= Zoom
 					= From MainFrame: MouseWheel and +/-
 				- Cam
@@ -164,14 +164,15 @@
 						- Cam scrolls by one work pixel at a time
 						- Margin has always the same logical/physical pixel width: the # of physical pixels used by one work pixel at max zoom
 							- So when zoom is not max zoom, margin is multiple work pixels
-				- Work area size
-					- TODO: who tells View? If it needs to know...
 			= Rendering of texture
 				+ Upload from Controller/...
 				+ Generation of vertices
+				- Fix zoom
+					- Should we start with zero?
+				- Fix view model/rendering position
+					- Double-check whether dead pixel is needed
 				- View maintains flags to enable individual render "planes" (e.g. structural render color, texture, etc.)
 					- So that ModelController can always upload textures and data, without knowing anything about layer selections
-				- TODOHERE: decide how textures (e.g. structural render color) are maintained between model and view: ImageData or Buffer2D?
 
 	- Misc TODO's:
 		- Toolbar:

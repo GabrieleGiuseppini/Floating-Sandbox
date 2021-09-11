@@ -141,29 +141,25 @@ void View::UploadStructuralRenderColorTexture(RgbaImageData const & texture)
     // however, need a way to tell Render() that there *is* a texture to draw...simple boolean?
     mStructuralRenderColorTextureVertexBuffer.clear();
 
-    // Dead-center offsets
-    float const dx = 1.0f / (2.0f * fWidth);
-    float const dy = 1.0f / (2.0f * fHeight);
-
     // Top-left
     mStructuralRenderColorTextureVertexBuffer.emplace_back(
         vec2f(0.0f, 0.0f),
-        vec2f(dx, 1.0f - dy));
+        vec2f(0.0f, 1.0f));
 
     // Bottom-left
     mStructuralRenderColorTextureVertexBuffer.emplace_back(
         vec2f(0.0f, fHeight),
-        vec2f(dx, dy));
+        vec2f(0.0f, 0.0f));
 
     // Top-right
     mStructuralRenderColorTextureVertexBuffer.emplace_back(
         vec2f(fWidth, 0.0f),
-        vec2f(1.0f - dx, 1.0f - dy));
+        vec2f(1.0f, 1.0f));
 
     // Bottom-right
     mStructuralRenderColorTextureVertexBuffer.emplace_back(
         vec2f(fWidth, fHeight),
-        vec2f(1.0f - dx, dy));
+        vec2f(1.0f, 0.0f));
 
     //
     // Upload vertices

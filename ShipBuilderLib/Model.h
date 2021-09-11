@@ -25,6 +25,11 @@ class Model
 {
 public:
 
+    template<typename TMaterial>
+    using MaterialBuffer = Buffer2D<TMaterial const *, Integral2DSize>;
+
+public:
+
     Model(WorkSpaceSize const & workSpaceSize);
 
     void NewStructuralLayer();
@@ -90,7 +95,7 @@ private:
     // Structural Layer
     //
 
-    std::unique_ptr<Buffer2D<StructuralMaterial const *>> mStructuralMaterialMatrix;
+    std::unique_ptr<MaterialBuffer<StructuralMaterial>> mStructuralMaterialMatrix;
     std::unique_ptr<RgbaImageData> mStructuralRenderColorTexture;
 
     //

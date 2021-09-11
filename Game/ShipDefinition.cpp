@@ -19,7 +19,7 @@ ShipDefinition ShipDefinition::Load(std::filesystem::path const & filepath)
     // Load images
     //
 
-    ImageData structuralImage = ImageFileTools::LoadImageRgb(sdf.StructuralLayerImageFilePath);
+    RgbImageData structuralImage = ImageFileTools::LoadImageRgb(sdf.StructuralLayerImageFilePath);
 
     std::optional<RgbImageData> ropesLayerImage;
     if (sdf.RopesLayerImageFilePath.has_value())

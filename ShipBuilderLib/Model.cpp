@@ -129,38 +129,30 @@ void Model::MakeNewEmptyStructuralLayer(WorkSpaceSize const & size)
 {
     // Material
 
-    mStructuralMaterialMatrix = std::make_unique<Buffer2D<StructuralMaterial const *>>(
+    mStructuralMaterialMatrix = std::make_unique<MaterialBuffer<StructuralMaterial>>(
         size.width,
         size.height,
-        nullptr);
+        nullptr); // No material
 
     // Render color
 
-    std::unique_ptr<rgbaColor[]> renderColorData = std::make_unique<rgbaColor[]>(size.width * size.height);
-
-    // Initialize as fully transparent
-    std::fill(
-        renderColorData.get(),
-        renderColorData.get() + (size.width * size.height),
-        rgbaColor(0, 0, 0, 0));
+    mStructuralRenderColorTexture = std::make_unique<RgbaImageData>(
+        size.width,
+        size.height,
+        rgbaColor::zero()); // Fully transparent
 
     // TODOTEST: initialize with checker pattern
-    for (size_t y = 0; y < size.height; ++y)
+    for (int y = 0; y < size.height; ++y)
     {
-        for (size_t x = 0; x < size.width; ++x)
+        for (int x = 0; x < size.width; ++x)
         {
-            renderColorData[y * size.width + x] = rgbaColor(
+            (*mStructuralRenderColorTexture)[vec2i(x, y)] = rgbaColor(
                 (x % 2) ? 255 : 0,
                 (x % 2) ? 0 : 255,
                 0,
                 255);
         }
     }
-
-    mStructuralRenderColorTexture = std::make_unique<RgbaImageData>(
-        size.width,
-        size.height,
-        std::move(renderColorData));
 }
 
 }

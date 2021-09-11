@@ -4,7 +4,7 @@
 
 TEST(Buffer2DTests, FillCctor)
 {
-    Buffer2D<int> buffer(10, 20, 242);
+    Buffer2D<int, Integral2DSize> buffer(10, 20, 242);
 
     EXPECT_EQ(buffer.Size.Width, 10);
     EXPECT_EQ(buffer.Size.Height, 20);
@@ -15,7 +15,7 @@ TEST(Buffer2DTests, FillCctor)
 
 TEST(Buffer2DTests, Indexing)
 {
-    Buffer2D<int> buffer(10, 20, 242);
+    Buffer2D<int, Integral2DSize> buffer(10, 20, 242);
 
     buffer[vec2i(7, 9)] = 42;
 

@@ -11,12 +11,14 @@
 #include <algorithm>
 #include <memory>
 
-template <typename TElement>
+template <typename TElement, typename TSize>
 struct Buffer2D
 {
 public:
 
-    Integral2DSize const Size;
+    using element_type = TElement;
+
+    TSize const Size;
     std::unique_ptr<TElement[]> Data;
 
     Buffer2D(
@@ -44,7 +46,7 @@ public:
     }
 
     Buffer2D(
-        Integral2DSize size,
+        TSize size,
         std::unique_ptr<TElement[]> data)
         : Size(size)
         , Data(std::move(data))
@@ -69,6 +71,16 @@ public:
     size_t GetByteSize() const
     {
         return mLinearSize * sizeof(TElement);
+    }
+
+    std::unique_ptr<Buffer2D> MakeCopy() const
+    {
+        auto newData = std::make_unique<TElement[]>(mLinearSize);
+        std::memcpy(newData.get(), Data.get(), mLinearSize * sizeof(TElement));
+
+        return std::make_unique<Buffer2D>(
+            Size,
+            std::move(newData));
     }
 
     TElement & operator[](vec2i const & index)

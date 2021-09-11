@@ -2480,7 +2480,7 @@ void MainFrame::SwitchToShipBuilderForCurrentShip()
 
     // Open ShipBuilder frame for editing current ship
     assert(mShipBuilderMainFrame);
-    mShipBuilderMainFrame->OpenForShip(mCurrentShipFilePath);
+    mShipBuilderMainFrame->OpenForLoadShip(mCurrentShipFilePath);
 }
 
 void MainFrame::SwitchFromShipBuilder(std::optional<std::filesystem::path> shipFilePath)
