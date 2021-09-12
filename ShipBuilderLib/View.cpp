@@ -48,13 +48,13 @@ View::View(
     mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetShipBuilderShadersRootPath());
 
     // Set texture samplers in programs
-    mShaderManager->ActivateProgram<ProgramType::BackgroundTexture>();
-    mShaderManager->SetTextureParameters<ProgramType::BackgroundTexture>();
     mShaderManager->ActivateProgram<ProgramType::Texture>();
     mShaderManager->SetTextureParameters<ProgramType::Texture>();
+    mShaderManager->ActivateProgram<ProgramType::TextureNdc>();
+    mShaderManager->SetTextureParameters<ProgramType::TextureNdc>();
 
     //
-    // Initialize Background texture
+    // Initialize Background texture and VAO
     //
 
     {
@@ -100,7 +100,7 @@ View::View(
     }
 
     //
-    // Initialize Structural Render Color texture
+    // Initialize Structural Render Color texture and VAO
     //
 
     {
@@ -280,14 +280,14 @@ void View::Render()
     if (mHasBackgroundTexture)
     {
         // Set this texture in the shader's sampler
-        mShaderManager->ActivateTexture<ProgramParameterType::BackgroundTexture>();
+        mShaderManager->ActivateTexture<ProgramParameterType::BackgroundTextureUnit>();
         glBindTexture(GL_TEXTURE_2D, *mBackgroundTextureOpenGLHandle);
 
         // Bind VAO
         glBindVertexArray(*mBackgroundTextureVAO);
 
         // Activate program
-        mShaderManager->ActivateProgram<ProgramType::BackgroundTexture>();
+        mShaderManager->ActivateProgram<ProgramType::TextureNdc>();
 
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         CheckOpenGLError();
@@ -305,7 +305,7 @@ void View::Render()
     if (mHasStructuralRenderColorTexture)
     {
         // Set this texture in the shader's sampler
-        mShaderManager->ActivateTexture<ProgramParameterType::Texture1>();
+        mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
         glBindTexture(GL_TEXTURE_2D, *mStructuralRenderColorTextureOpenGLHandle);
 
         // Bind VAO

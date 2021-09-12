@@ -317,6 +317,8 @@ Render:
 			+ Windows
 			+ Ubuntu
 
+		- Fix slice tool + SHIFT (no locking at all)
+
 		- Preferences flag for starting full-screen
 
 		- See windows timer/50fps thing

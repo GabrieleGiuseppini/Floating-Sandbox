@@ -1,13 +1,3 @@
-- Background texture:
-	- SetBackgroundTexture(rgbaImage)
-		- Quad is full screen wide, but height depends on texture's aspect ratio
-	- New texture unit
-	- Texture is set to tiled
-	- ViewModel::CalculateBackgroundOrthoMatrix(texture dimensions)
-		- Recalc'd and given to shader at canvas size change, but not at zoom and at cam
-		- TODO: may be not, just NDC?
-	- New shader
-
 - Click-And-Draw usecase:
 	- Pencil tool (*)
 

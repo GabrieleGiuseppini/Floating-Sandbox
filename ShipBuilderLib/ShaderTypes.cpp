@@ -15,10 +15,10 @@ namespace ShipBuilder {
 ProgramType ShaderFilenameToProgramType(std::string const & str)
 {
     std::string lstr = Utils::ToLower(str);
-    if (lstr == "background_texture")
-        return ProgramType::BackgroundTexture;
-    else if (lstr == "texture")
+    if (lstr == "texture")
         return ProgramType::Texture;
+    else if (lstr == "texture_ndc")
+        return ProgramType::TextureNdc;
     else
         throw GameException("Unrecognized program \"" + str + "\"");
 }
@@ -27,10 +27,10 @@ std::string ProgramTypeToStr(ProgramType program)
 {
     switch (program)
     {
-        case ProgramType::BackgroundTexture:
-            return "BackgroundTexture";
         case ProgramType::Texture:
             return "Texture";
+        case ProgramType::TextureNdc:
+            return "TextureNdc";
     }
 
     assert(false);
@@ -41,10 +41,10 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
 {
     if (str == "OrthoMatrix")
         return ProgramParameterType::OrthoMatrix;
-    else if (str == "BackgroundTexture")
-        return ProgramParameterType::BackgroundTexture;
-    else if (str == "Texture1")
-        return ProgramParameterType::Texture1;
+    else if (str == "BackgroundTextureUnit")
+        return ProgramParameterType::BackgroundTextureUnit;
+    else if (str == "TextureUnit1")
+        return ProgramParameterType::TextureUnit1;
     else
         throw GameException("Unrecognized program parameter \"" + str + "\"");
 }
@@ -55,10 +55,10 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
     {
         case ProgramParameterType::OrthoMatrix:
             return "OrthoMatrix";
-        case ProgramParameterType::BackgroundTexture:
-            return "BackgroundTexture";
-        case ProgramParameterType::Texture1:
-            return "Texture1";
+        case ProgramParameterType::BackgroundTextureUnit:
+            return "BackgroundTextureUnit";
+        case ProgramParameterType::TextureUnit1:
+            return "TextureUnit1";
     }
 
     assert(false);

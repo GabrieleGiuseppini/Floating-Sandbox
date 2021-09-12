@@ -24,9 +24,9 @@ void main()
 in vec2 vertexTextureCoordinates;
 
 // The texture
-uniform sampler2D paramBackgroundTexture;
+uniform sampler2D paramBackgroundTextureUnit;
 
 void main()
 {
-    gl_FragColor = texture2D(paramBackgroundTexture, vertexTextureCoordinates);
+    gl_FragColor = texture2D(paramBackgroundTextureUnit, vertexTextureCoordinates);
 } 

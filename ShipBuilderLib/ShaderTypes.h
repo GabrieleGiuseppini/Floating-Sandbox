@@ -18,10 +18,10 @@ namespace ShipBuilder {
 
 enum class ProgramType
 {
-    BackgroundTexture = 0,
-    Texture = 1,
+    Texture = 0,
+    TextureNdc = 1,
 
-    _Last = Texture
+    _Last = TextureNdc
 };
 
 ProgramType ShaderFilenameToProgramType(std::string const & str);
@@ -32,12 +32,12 @@ enum class ProgramParameterType : uint8_t
 {
     OrthoMatrix = 0,
 
-    // Textures
-    BackgroundTexture,
-    Texture1,
+    // Texture units
+    BackgroundTextureUnit,
+    TextureUnit1,
 
-    _FirstTexture = BackgroundTexture,
-    _LastTexture = Texture1
+    _FirstTexture = BackgroundTextureUnit,
+    _LastTexture = TextureUnit1
 };
 
 ProgramParameterType StrToProgramParameterType(std::string const & str);
