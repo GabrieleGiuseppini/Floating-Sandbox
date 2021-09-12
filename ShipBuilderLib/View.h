@@ -27,6 +27,9 @@ namespace ShipBuilder {
 /*
  * This class is the entry point of the entire OpenGL rendering subsystem, providing
  * the API for rendering, which is agnostic about the render platform implementation.
+ *
+ * All uploads are sticky, and thus need to be explicitly "undone" when they shouldn't
+ * be drawn anymore.
  */
 class View
 {
@@ -131,16 +134,19 @@ private:
 
 #pragma pack(pop)
 
-
     //
     // Rendering
     //
 
-    // Structural Render Color Texture
+    // Background texture
+    GameOpenGLVAO mBackgroundVAO;
+    GameOpenGLVBO mBackgroundVBO;
+    bool mHasBackgroundTexture;
 
-    GameOpenGLVAO mStructuralRenderTextureColorVAO;
-    GameOpenGLVBO mStructuralRenderTextureColorVBO;
-    GameOpenGLTexture mStructuralRenderTextureOpenGLHandle;
+    // Structural Render Color Texture
+    GameOpenGLVAO mStructuralRenderColorTextureVAO;
+    GameOpenGLVBO mStructuralRenderColorTextureVBO;
+    GameOpenGLTexture mStructuralRenderColorTextureOpenGLHandle;
     bool mHasStructuralRenderColorTexture;
 };
 

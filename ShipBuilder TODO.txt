@@ -5,8 +5,8 @@
 	- Texture is set to tiled
 	- ViewModel::CalculateBackgroundOrthoMatrix(texture dimensions)
 		- Recalc'd and given to shader at canvas size change, but not at zoom and at cam
+		- TODO: may be not, just NDC?
 	- New shader
-
 
 - Click-And-Draw usecase:
 	- Pencil tool (*)
@@ -24,7 +24,6 @@
 			- @ ReconciliateUIWithSelectedTool
 				- Need array of ALL buttons (ToolType) - assuming structural tool enum values are separate from electrical
 	- App icons (whole "Resources" folder)
-
 
 ================================================================================================================================================================================
 
