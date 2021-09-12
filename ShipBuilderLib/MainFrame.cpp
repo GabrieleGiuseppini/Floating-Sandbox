@@ -88,12 +88,12 @@ MainFrame::MainFrame(
     //
     // Row 0: [File Panel] [Tool Settings] [Game Panel]
     // Row 1: [Layers Panel]  |  [Work Canvas]
-    // Row 2: [Toolbar Panel] |
-    // Row 3: [           Status Bar                  ]
+    //        [Toolbar Panel] |
+    // Row 2: [           Status Bar                  ]
 
     mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+    wxSizer * mainVSizer = new wxBoxSizer(wxVERTICAL);
 
     // Row 0
     {
@@ -136,109 +136,117 @@ MainFrame::MainFrame(
                 0);
         }
 
-        gridSizer->Add(
+        mainVSizer->Add(
             row0HSizer,
-            wxGBPosition(0, 0),
-            wxGBSpan(1, 2),
-            wxEXPAND,
+            0,
+            wxEXPAND, // Expand horizontally
             0);
     }
 
-    // Layers panel
+    // Row 1
     {
-        wxSizer * tmpVSizer = new wxBoxSizer(wxVERTICAL);
+        wxBoxSizer * row1HSizer = new wxBoxSizer(wxHORIZONTAL);
 
+        // Col 0
         {
-            wxStaticLine * line = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
+            wxBoxSizer * row1Col0VSizer = new wxBoxSizer(wxVERTICAL);
 
-            tmpVSizer->Add(
-                line,
+            // Layers panel
+            {
+                wxSizer * tmpVSizer = new wxBoxSizer(wxVERTICAL);
+
+                {
+                    wxStaticLine * line = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
+
+                    tmpVSizer->Add(
+                        line,
+                        0,
+                        wxEXPAND,
+                        0);
+                }
+
+                {
+                    wxPanel * layersPanel = CreateLayersPanel(mMainPanel);
+
+                    tmpVSizer->Add(
+                        layersPanel,
+                        0,
+                        wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
+                        4);
+                }
+
+                {
+                    wxStaticLine * line = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
+
+                    tmpVSizer->Add(
+                        line,
+                        0,
+                        wxEXPAND,
+                        0);
+                }
+
+                row1Col0VSizer->Add(
+                    tmpVSizer,
+                    0,
+                    0,
+                    0);
+            }
+
+            // Toolbar panel
+            {
+                wxPanel * toolbarPanel = CreateToolbarPanel(mMainPanel);
+
+                row1Col0VSizer->Add(
+                    toolbarPanel,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            row1HSizer->Add(
+                row1Col0VSizer,
                 0,
-                wxEXPAND,
+                0,
                 0);
         }
 
+        // Col 1
         {
-            wxPanel * layersPanel = CreateLayersPanel(mMainPanel);
+            // Work panel
+            {
+                wxPanel * workPanel = CreateWorkPanel(mMainPanel);
 
-            tmpVSizer->Add(
-                layersPanel,
-                0,
-                wxLEFT | wxRIGHT,
-                4);
+                row1HSizer->Add(
+                    workPanel,
+                    1, // Use all available H space
+                    wxEXPAND, // Also expand vertically
+                    0);
+            }
         }
 
-        {
-            wxStaticLine * line = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
-
-            tmpVSizer->Add(
-                line,
-                0,
-                wxEXPAND,
-                0);
-        }
-
-        gridSizer->Add(
-            tmpVSizer,
-            wxGBPosition(1, 0),
-            wxGBSpan(1, 1),
-            wxEXPAND | wxALIGN_CENTER_HORIZONTAL,
+        mainVSizer->Add(
+            row1HSizer,
+            1, // Take all vertical room
+            wxEXPAND, // Expand horizontally
             0);
     }
 
-    // Toolbar panel
+    // Row 2
     {
-        wxPanel * toolbarPanel = CreateToolbarPanel(mMainPanel);
-
-        gridSizer->Add(
-            toolbarPanel,
-            wxGBPosition(2, 0),
-            wxGBSpan(1, 1),
-            wxALIGN_TOP | wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
-            4);
-    }
-
-    // Work panel
-    {
-        wxPanel * workPanel = CreateWorkPanel(mMainPanel);
-
-        gridSizer->Add(
-            workPanel,
-            wxGBPosition(1, 1),
-            wxGBSpan(2, 1),
-            wxEXPAND,
-            0);
-    }
-
-    // Status bar
-    {
-        wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
-
+        // Status bar
         {
             mStatusBar = new wxStatusBar(mMainPanel, wxID_ANY, 0);
             mStatusBar->SetFieldsCount(1);
 
-            hSizer->Add(
+            mainVSizer->Add(
                 mStatusBar,
-                1,
                 0,
+                wxEXPAND, // Expand horizontally
                 0);
         }
-
-        hSizer->Fit(mStatusBar);
-
-        gridSizer->Add(
-            hSizer,
-            wxGBPosition(3, 0),
-            wxGBSpan(1, 2),
-            wxEXPAND,
-            0);
     }
 
-    gridSizer->AddGrowableRow(2, 1);
-    gridSizer->AddGrowableCol(1, 1);
-
-    mMainPanel->SetSizer(gridSizer);
+    mMainPanel->SetSizer(mainVSizer);
 
     //
     // Setup menu
