@@ -11,6 +11,8 @@
 
 #include <GameOpenGL/GameOpenGL.h>
 
+#include <Game/ImageFileTools.h>
+
 #include <UILib/BitmapButton.h>
 #include <UILib/BitmapToggleButton.h>
 #include <UILib/WxHelpers.h>
@@ -407,6 +409,10 @@ MainFrame::MainFrame(
             mWorkCanvas->SwapBuffers();
         },
         mResourceLocator);
+
+    mView->UploadBackgroundTexture(
+        ImageFileTools::LoadImageRgba(
+            mResourceLocator.GetBitmapFilePath("shipbuilder_background")));
 }
 
 void MainFrame::OpenForNewShip()

@@ -93,6 +93,9 @@ public:
     //
 
     // Sticky, always drawn
+    void UploadBackgroundTexture(RgbaImageData && texture);
+
+    // Sticky, always drawn
     void UploadStructuralRenderColorTexture(RgbaImageData const & texture);
 
     // TODO: update method as well
@@ -132,6 +135,21 @@ private:
         {}
     };
 
+    struct TextureNdcVertex
+    {
+        vec2f positionNdc;
+        vec2f textureCoords; // Texture space
+
+        TextureNdcVertex() = default;
+
+        TextureNdcVertex(
+            vec2f const & _positionNdc,
+            vec2f _textureCoords)
+            : positionNdc(_positionNdc)
+            , textureCoords(_textureCoords)
+        {}
+    };
+
 #pragma pack(pop)
 
     //
@@ -139,8 +157,9 @@ private:
     //
 
     // Background texture
-    GameOpenGLVAO mBackgroundVAO;
-    GameOpenGLVBO mBackgroundVBO;
+    GameOpenGLVAO mBackgroundTextureVAO;
+    GameOpenGLVBO mBackgroundTextureVBO;
+    GameOpenGLTexture mBackgroundTextureOpenGLHandle;
     bool mHasBackgroundTexture;
 
     // Structural Render Color Texture
