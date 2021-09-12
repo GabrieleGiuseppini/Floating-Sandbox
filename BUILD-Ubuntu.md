@@ -242,4 +242,8 @@ drwxr-xr-x  2 gg gg      4096 mei 23 15:57 Guides/
 -rw-r--r--  1 gg gg     12903 mei 23 14:43 README.md
 drwxr-xr-x  2 gg gg     57344 mei 23 15:57 Ships/
 ```
-To start the game, go into that directory and launch `FloatingSandbox`. Enjoy!
+To start the game, go into that directory and launch `FloatingSandbox`. 
+
+Note that many Linux distributions nowadays use Wayland for their desktop environments, and Floating Sandbox will encounter an error when launching. To rectify this, set the environment variable "GDK_BACKEND" to "x11".
+
+Enjoy!
