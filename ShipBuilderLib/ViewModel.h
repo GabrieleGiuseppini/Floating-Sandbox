@@ -110,7 +110,7 @@ public:
         return WorkSpaceCoordinates(0, 0);
     }
 
-    WorkSpaceSize GetVisibleWorkSpaceSize() const
+    WorkSpaceSize GetCameraRange() const
     {
         // TODOHERE
         return WorkSpaceSize(10, 10);
@@ -137,13 +137,19 @@ private:
     void RecalculateAttributes()
     {
         // Zoom factor
-        mZoomFactor = std::ldexp(1.0f, -mZoom);
+        mZoomFactor = CalculateZoomFactor(mZoom);
+
+        // Margin work size
+        mMarginWorkSize = 8.0f * mZoomFactor;
 
         // Ortho Matrix:
         //  WorkCoordinates * OrthoMatrix => NDC
         //
         //  Work: (0, W/H) (positive right-bottom)
         //  NDC : (-1.0, +1.0) (positive right-top)
+        //
+        // We add a (left, top) margin whose physical pixel size equals the physical pixel
+        // size if one work space pixel at max zoom
         //
         // SDsp is display scaled by zoom
         //
@@ -158,15 +164,20 @@ private:
         // Recalculate Ortho Matrix cells (r, c)
         mOrthoMatrix[0][0] = 2.0f / sDspW;
         mOrthoMatrix[1][1] = -2.0f / sDspH;
-        mOrthoMatrix[3][0] = -2.0f * mCam.x / sDspW - 1.0f;
-        mOrthoMatrix[3][1] = 2.0f * mCam.y / sDspH + 1.0f;
+        mOrthoMatrix[3][0] = -2.0f * (mCam.x - mMarginWorkSize) / sDspW - 1.0f;
+        mOrthoMatrix[3][1] = 2.0f * (mCam.y - mMarginWorkSize) / sDspH + 1.0f;
+    }
+
+    static float CalculateZoomFactor(int zoom)
+    {
+        return std::ldexp(1.0f, -zoom);
     }
 
 private:
 
     // Constants
-    static int constexpr MaxZoom = 16;
-    static int constexpr MinZoom = -8;
+    static int constexpr MaxZoom = 6;
+    static int constexpr MinZoom = -3;
 
     // Primary inputs
     int mZoom; // >=0: display pixels occupied by one work space pixel
@@ -176,7 +187,8 @@ private:
     DisplayPhysicalSize mDisplayPhysicalSize;
 
     // Calculated attributes
-    float mZoomFactor; // DisplayPhysical = Work * ZoomFactor
+    float mZoomFactor; // DisplayPhysical is Work * ZoomFactor; ZoomFactor = # physical pixels for 1 work pixel
+    float mMarginWorkSize; // Work size of margin
     ProjectionMatrix mOrthoMatrix;
 };
 

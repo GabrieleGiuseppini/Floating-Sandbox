@@ -1729,7 +1729,7 @@ void MainFrame::ReconciliateUIWithModelDirtiness(bool isDirty)
 void MainFrame::RecalculateWorkCanvasPanning()
 {
     // TODO
-    LogMessage("TODO: VisibleWorkSpaceOrigin=", mView->GetVisibleWorkSpaceOrigin().ToString(), " GetVisibleWorkSpaceSize=", mView->GetVisibleWorkSpaceSize().ToString());
+    LogMessage("TODO: VisibleWorkSpaceOrigin=", mView->GetVisibleWorkSpaceOrigin().ToString(), " CameraRange=", mView->GetCameraRange().ToString());
 }
 
 void MainFrame::ReconciliateUIWithPrimaryLayerSelection()

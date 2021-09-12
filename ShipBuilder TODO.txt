@@ -156,10 +156,8 @@
 	= Impl:
 		= Click-And-Draw
 			= Complete ViewModel:
-				- Margin:
-					- Margin has always the same logical/physical pixel width: the # of physical pixels used by one work pixel at max zoom
-					- So when zoom is not max zoom, margin is multiple work pixels
-				- Visible WorkSpace calculations
+				TODOHERE
+				- Cam range calculations
 				- MainFrame: scrollbar re-configuration
 			- Pencil tool
 

@@ -78,9 +78,9 @@ public:
         return mViewModel.GetVisibleWorkSpaceOrigin();
     }
 
-    WorkSpaceSize GetVisibleWorkSpaceSize() const
+    WorkSpaceSize GetCameraRange() const
     {
-        return mViewModel.GetVisibleWorkSpaceSize();
+        return mViewModel.GetCameraRange();
     }
 
     WorkSpaceCoordinates DisplayToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
