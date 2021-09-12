@@ -67,7 +67,7 @@ endif()
 # Copy files
 #
 
-message (STATUS "Copying data files...")
+message (STATUS "Copying data files for ShipBuilder...")
 
 file(COPY "${CMAKE_SOURCE_DIR}/Data"
 	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Debug")

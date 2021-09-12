@@ -137,7 +137,7 @@ endif()
 # Copy files
 #
 
-message (STATUS "Copying data files and runtime files...")
+message (STATUS "Copying data files and runtime files for FloatingSandbox...")
 
 file(COPY "${CMAKE_SOURCE_DIR}/Data" "${CMAKE_SOURCE_DIR}/Ships"
 	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Debug")
