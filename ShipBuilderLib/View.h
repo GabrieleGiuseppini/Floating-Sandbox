@@ -73,14 +73,14 @@ public:
         RefreshOrthoMatrix();
     }
 
-    WorkSpaceCoordinates GetVisibleWorkSpaceOrigin() const
+    WorkSpaceCoordinates GetCameraPanPosition() const
     {
-        return mViewModel.GetVisibleWorkSpaceOrigin();
+        return mViewModel.GetCameraPanPosition();
     }
 
-    WorkSpaceSize GetCameraRange() const
+    WorkSpaceSize GetCameraPanRange(WorkSpaceSize const & targetArea) const
     {
-        return mViewModel.GetCameraRange();
+        return mViewModel.GetCameraPanRange(targetArea);
     }
 
     WorkSpaceCoordinates DisplayToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const

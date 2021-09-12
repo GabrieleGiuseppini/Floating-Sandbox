@@ -104,16 +104,25 @@ public:
         RecalculateAttributes();
     }
 
-    WorkSpaceCoordinates GetVisibleWorkSpaceOrigin() const
+    WorkSpaceCoordinates GetCameraPanPosition() const
     {
-        // TODOHERE
-        return WorkSpaceCoordinates(0, 0);
+        ////return WorkSpaceCoordinates(
+        ////    mCam.x - static_cast<int>(mMarginWorkSize),
+        ////    mCam.y - static_cast<int>(mMarginWorkSize));
+        return mCam;
     }
 
-    WorkSpaceSize GetCameraRange() const
+    WorkSpaceSize GetCameraPanRange(WorkSpaceSize const & targetArea) const
     {
-        // TODOHERE
-        return WorkSpaceSize(10, 10);
+        int const rangeX = std::max(
+            (targetArea.width + static_cast<int>(2.0f * mMarginWorkSize)) - DisplayToWorkSpace(mDisplayPhysicalSize.width),
+            0);
+
+        int const rangeY = std::max(
+            (targetArea.height + static_cast<int>(2.0f * mMarginWorkSize)) - DisplayToWorkSpace(mDisplayPhysicalSize.height),
+            0);
+
+        return WorkSpaceSize(rangeX, rangeY);
     }
 
     //
@@ -123,8 +132,13 @@ public:
     WorkSpaceCoordinates DisplayToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
         return WorkSpaceCoordinates(
-            static_cast<int>(std::floor(static_cast<float>(displayCoordinates.x) * mZoomFactor)),
-            static_cast<int>(std::floor(static_cast<float>(displayCoordinates.y) * mZoomFactor)));
+            DisplayToWorkSpace(displayCoordinates.x),
+            DisplayToWorkSpace(displayCoordinates.y));
+    }
+
+    int DisplayToWorkSpace(int size) const
+    {
+        return static_cast<int>(std::floor(static_cast<float>(size) * mZoomFactor));
     }
 
     ProjectionMatrix const & GetOrthoMatrix() const
@@ -164,8 +178,8 @@ private:
         // Recalculate Ortho Matrix cells (r, c)
         mOrthoMatrix[0][0] = 2.0f / sDspW;
         mOrthoMatrix[1][1] = -2.0f / sDspH;
-        mOrthoMatrix[3][0] = -2.0f * (mCam.x - mMarginWorkSize) / sDspW - 1.0f;
-        mOrthoMatrix[3][1] = 2.0f * (mCam.y - mMarginWorkSize) / sDspH + 1.0f;
+        mOrthoMatrix[3][0] = -2.0f * (static_cast<float>(mCam.x) - mMarginWorkSize) / sDspW - 1.0f;
+        mOrthoMatrix[3][1] = 2.0f * (static_cast<float>(mCam.y) - mMarginWorkSize) / sDspH + 1.0f;
     }
 
     static float CalculateZoomFactor(int zoom)
@@ -187,7 +201,7 @@ private:
     DisplayPhysicalSize mDisplayPhysicalSize;
 
     // Calculated attributes
-    float mZoomFactor; // DisplayPhysical is Work * ZoomFactor; ZoomFactor = # physical pixels for 1 work pixel
+    float mZoomFactor; // DisplayPhysical is Work / ZoomFactor; ZoomFactor = # work pixels for 1 display pixel
     float mMarginWorkSize; // Work size of margin
     ProjectionMatrix mOrthoMatrix;
 };

@@ -1728,8 +1728,27 @@ void MainFrame::ReconciliateUIWithModelDirtiness(bool isDirty)
 
 void MainFrame::RecalculateWorkCanvasPanning()
 {
-    // TODO
-    LogMessage("TODO: VisibleWorkSpaceOrigin=", mView->GetVisibleWorkSpaceOrigin().ToString(), " CameraRange=", mView->GetCameraRange().ToString());
+    if (mController)
+    {
+        WorkSpaceSize const workSpaceSize = mController->GetModelController().GetWorkSpaceSize();
+        WorkSpaceCoordinates const scrollPos = mView->GetCameraPanPosition();
+        WorkSpaceSize const scrollRange = mView->GetCameraPanRange(workSpaceSize);
+
+        LogMessage("TODOTEST: scrollPos=", scrollPos.ToString(), " scrollRange=", scrollRange.ToString());
+
+        mWorkCanvasHScrollBar->SetScrollbar(
+            scrollPos.x, // position
+            workSpaceSize.width, // thumb == visible portion
+            scrollRange.width, // range == whole virtual size,
+            workSpaceSize.width); // page size  == thumb
+
+        mWorkCanvasVScrollBar->SetScrollbar(
+            scrollPos.y, // position
+            workSpaceSize.height, // thumb == visible portion
+            scrollRange.height, // range == whole virtual size,
+            workSpaceSize.height); // page size  == thumb
+
+    }
 }
 
 void MainFrame::ReconciliateUIWithPrimaryLayerSelection()

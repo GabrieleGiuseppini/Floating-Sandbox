@@ -162,6 +162,7 @@
 			- Pencil tool
 
 	- Misc TODO's:
+		- Bug: resizing frame does not resize left column vertically accordingly
 		- Toolbar:
 			- Untoggle other buttons when one tool is toggled (i.e. radio behavior)
 				- @ ReconciliateUIWithSelectedTool
