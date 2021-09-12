@@ -194,7 +194,7 @@ MainFrame::MainFrame(
             toolbarPanel,
             wxGBPosition(2, 0),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALIGN_TOP | wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
+            wxALIGN_TOP | wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
             4);
     }
 
