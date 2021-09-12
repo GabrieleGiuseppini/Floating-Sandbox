@@ -266,7 +266,7 @@ public:
     void SetShipStrengthRandomizationDensityAdjustment(float value) override { mShipBuilder.SetShipStrengthRandomizationDensityAdjustment(value); }
 
     float GetShipStrengthRandomizationExtent() const override { return mShipBuilder.GetShipStrengthRandomizationExtent(); }
-    void SetShipStrengthRandomizationExtent(float value) { mShipBuilder.SetShipStrengthRandomizationExtent(value); }
+    void SetShipStrengthRandomizationExtent(float value) override { mShipBuilder.SetShipStrengthRandomizationExtent(value); }
 
     /////////////////////////////////////////////////////////
     // IGameControllerSettings and IGameControllerSettingsOptions
