@@ -169,6 +169,7 @@ MainFrame::MainFrame(
             0);
     }
 
+    // Toolbar panel
     {
         wxPanel * toolbarPanel = CreateToolbarPanel(mMainPanel);
 
@@ -180,6 +181,7 @@ MainFrame::MainFrame(
             4);
     }
 
+    // Work panel
     {
         wxPanel * workPanel = CreateWorkPanel(mMainPanel);
 
@@ -1308,7 +1310,18 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
 
     {
         mWorkCanvasVScrollBar = new wxScrollBar(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSB_VERTICAL);
-        // TODO: connect
+
+        mWorkCanvasVScrollBar->Bind(
+            wxEVT_SCROLL_THUMBTRACK,
+            [this](wxScrollEvent & /*event*/)
+            {
+                if (mController)
+                {
+                    mController->SetCamera(
+                        mWorkCanvasHScrollBar->GetThumbPosition(),
+                        mWorkCanvasVScrollBar->GetThumbPosition());
+                }
+            });
 
         sizer->Add(
             mWorkCanvasVScrollBar,
@@ -1321,7 +1334,18 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
 
     {
         mWorkCanvasHScrollBar = new wxScrollBar(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSB_HORIZONTAL);
-        // TODO: connect
+
+        mWorkCanvasHScrollBar->Bind(
+            wxEVT_SCROLL_THUMBTRACK,
+            [this](wxScrollEvent & /*event*/)
+            {
+                if (mController)
+                {
+                    mController->SetCamera(
+                        mWorkCanvasHScrollBar->GetThumbPosition(),
+                        mWorkCanvasVScrollBar->GetThumbPosition());
+                }
+            });
 
         sizer->Add(
             mWorkCanvasHScrollBar,
@@ -1522,21 +1546,6 @@ void MainFrame::OnQuitAndGoBack(wxCommandEvent & /*event*/)
 
 void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 {
-    // TODOTEST: might not need the following as our Close event takes care of it
-    /*
-    if (mController->GetModelController().GetModel().GetIsDirty())
-    {
-        // Ask user if they really want
-        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
-        {
-            return;
-        }
-    }
-
-    mStructuralMaterialPalette->Close();
-    mElectricalMaterialPalette->Close();
-    */
-
     // Close frame
     Close();
 }
@@ -1694,16 +1703,10 @@ void MainFrame::ReconciliateUI()
 {
     assert(!!mController);
 
-    // TODO: scrollbars of work canvas
-
     ReconciliateUIWithModelDirtiness(mController->GetModelController().GetModel().GetIsDirty());
+    RecalculateWorkCanvasPanning();
     ReconciliateUIWithPrimaryLayerSelection();
     ReconciliateUIWithLayerPresence();
-
-    //
-    // Workbench state
-    //
-
     ReconciliateUIWithWorkbenchState();
 }
 
@@ -1730,24 +1733,29 @@ void MainFrame::RecalculateWorkCanvasPanning()
 {
     if (mController)
     {
-        WorkSpaceSize const workSpaceSize = mController->GetModelController().GetWorkSpaceSize();
-        WorkSpaceCoordinates const scrollPos = mView->GetCameraPanPosition();
-        WorkSpaceSize const scrollRange = mView->GetCameraPanRange(workSpaceSize);
+        //
+        // We populate the scollbar with work space coordinates
+        //
 
-        LogMessage("TODOTEST: scrollPos=", scrollPos.ToString(), " scrollRange=", scrollRange.ToString());
+        WorkSpaceSize const workSpaceSize = mController->GetModelController().GetWorkSpaceSize();
+        WorkSpaceCoordinates const cameraPos = mView->GetCameraWorkSpacePosition();
+        WorkSpaceSize const scrollRange = mView->GetCameraPanRange();
+
+        // Visible portion of workspace
+        int const thumbX = std::min(workSpaceSize.width, scrollRange.width);
+        int const thumbY = std::min(workSpaceSize.height, scrollRange.height);
 
         mWorkCanvasHScrollBar->SetScrollbar(
-            scrollPos.x, // position
-            workSpaceSize.width, // thumb == visible portion
-            scrollRange.width, // range == whole virtual size,
-            workSpaceSize.width); // page size  == thumb
+            cameraPos.x, // position
+            thumbX,
+            workSpaceSize.width, // range == whole size
+            thumbX); // page size  == thumb
 
         mWorkCanvasVScrollBar->SetScrollbar(
-            scrollPos.y, // position
-            workSpaceSize.height, // thumb == visible portion
-            scrollRange.height, // range == whole virtual size,
-            workSpaceSize.height); // page size  == thumb
-
+            cameraPos.y, // position
+            thumbY,
+            workSpaceSize.height, // range == whole size
+            thumbY); // page size  == thumb
     }
 }
 

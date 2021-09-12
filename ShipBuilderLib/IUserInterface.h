@@ -32,6 +32,7 @@ public:
     // Notifies of a change in any member of the workbench state
     virtual void OnWorkbenchStateChanged() = 0;
 
+    // Notifies of a change in the tool coordinates to display
     virtual void OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coordinates) = 0;
 };
 

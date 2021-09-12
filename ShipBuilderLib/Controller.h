@@ -65,7 +65,7 @@ public:
 
     void AddZoom(int deltaZoom);
 
-    void PanCamera(int deltaX, int deltaY);
+    void SetCamera(int camX, int camY);
 
     void ResetView();
 

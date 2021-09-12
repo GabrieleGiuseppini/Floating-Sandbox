@@ -155,10 +155,6 @@
 
 	= Impl:
 		= Click-And-Draw
-			= Complete ViewModel:
-				TODOHERE
-				- Cam range calculations
-				- MainFrame: scrollbar re-configuration
 			- Pencil tool
 
 	- Misc TODO's:
@@ -189,6 +185,8 @@
 			- Ship size and icon
 
 - Tools:
+	! Most tools should pan when the (captured) mouse is outside of the canvas
+		- IUserInterface::OnViewCameraChanged()
 	- BaseTool:
 		- Stores all protected references passed from cctors: IUserInterface, ModelController, View, SelectionManager
 		- Abstract methods from game - but all pure
@@ -230,7 +228,7 @@
 	- Renders synchronously, on-demand via SB::MainFrame::OnPaint()
 		- Except when we need animated tools, e.g. ants walking: for these we set a timer (in the order of 100's of ms) during the duration
 		  of the tool
-	= ViewModel:
+	+ ViewModel:
 		+ Terminology:
 			+ WorkSpace: has the pixel size of the structure (equivalent of ::World)
 			+ WorkSpaceCoordinates (type @ ShipBuilderTypes)
@@ -239,8 +237,7 @@
 			+ DisplayPixel: has the pixel display (window) size (equivalent of ::Pixel)
 			+ DisplayPixelCoordinates: the pixel display coordinates (type @ ShipBuilderTypes)
 		+ World coords is model pixel coords, i.e. WorkSpace
-		= Tells outside world of pan extent (for scrollbar width setting)
-			- Based on calc'd pixel (display) coords of four sides of work area
+		+ Tells outside world of pan extent (for scrollbar width setting)
 
 - WorkbenchState
 	+ Independent from model - exclusively tools-related settings

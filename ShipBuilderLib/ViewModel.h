@@ -104,41 +104,24 @@ public:
         RecalculateAttributes();
     }
 
-    WorkSpaceCoordinates GetCameraPanPosition() const
+    WorkSpaceSize GetCameraPanRange() const
     {
-        ////return WorkSpaceCoordinates(
-        ////    mCam.x - static_cast<int>(mMarginWorkSize),
-        ////    mCam.y - static_cast<int>(mMarginWorkSize));
-        return mCam;
-    }
+        // Return work space that fits entirely in current display, considering margins
 
-    WorkSpaceSize GetCameraPanRange(WorkSpaceSize const & targetArea) const
-    {
-        int const rangeX = std::max(
-            (targetArea.width + static_cast<int>(2.0f * mMarginWorkSize)) - DisplayToWorkSpace(mDisplayPhysicalSize.width),
-            0);
-
-        int const rangeY = std::max(
-            (targetArea.height + static_cast<int>(2.0f * mMarginWorkSize)) - DisplayToWorkSpace(mDisplayPhysicalSize.height),
-            0);
-
-        return WorkSpaceSize(rangeX, rangeY);
+        return WorkSpaceSize(
+            DisplayLogicalToWorkSpace(mDisplayLogicalSize.width) - static_cast<int>(2.0f * mMarginWorkSize),
+            DisplayLogicalToWorkSpace(mDisplayLogicalSize.height) - static_cast<int>(2.0f * mMarginWorkSize));
     }
 
     //
     // Coordinate transformations
     //
 
-    WorkSpaceCoordinates DisplayToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    WorkSpaceCoordinates DisplayLogicalToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
         return WorkSpaceCoordinates(
-            DisplayToWorkSpace(displayCoordinates.x),
-            DisplayToWorkSpace(displayCoordinates.y));
-    }
-
-    int DisplayToWorkSpace(int size) const
-    {
-        return static_cast<int>(std::floor(static_cast<float>(size) * mZoomFactor));
+            DisplayLogicalToWorkSpace(displayCoordinates.x),
+            DisplayLogicalToWorkSpace(displayCoordinates.y));
     }
 
     ProjectionMatrix const & GetOrthoMatrix() const
@@ -185,6 +168,16 @@ private:
     static float CalculateZoomFactor(int zoom)
     {
         return std::ldexp(1.0f, -zoom);
+    }
+
+    int DisplayLogicalToWorkSpace(int size) const
+    {
+        return static_cast<int>(std::floor(static_cast<float>(size) * mZoomFactor));
+    }
+
+    float WorkSpaceToDisplayLogical(int size) const
+    {
+        return static_cast<float>(size) / mZoomFactor;
     }
 
 private:

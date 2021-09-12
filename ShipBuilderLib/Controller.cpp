@@ -138,9 +138,9 @@ void Controller::AddZoom(int deltaZoom)
     mUserInterface.RefreshView();
 }
 
-void Controller::PanCamera(int deltaX, int deltaY)
+void Controller::SetCamera(int camX, int camY)
 {
-    mView.SetCameraWorkSpacePosition(mView.GetCameraWorkSpacePosition() + WorkSpaceSize(deltaX, deltaY));
+    mView.SetCameraWorkSpacePosition(WorkSpaceCoordinates(camX, camY));
 
     RefreshToolCoordinateDisplay();
     mUserInterface.OnViewModelChanged();
@@ -164,7 +164,7 @@ void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPositi
     mInputState.MousePosition = mouseScreenPosition;
 
     // Calculate work coordinates
-    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.DisplayToWorkSpace(mInputState.MousePosition);
+    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.DisplayLogicalToWorkSpace(mInputState.MousePosition);
 
     // TODO: should we detect in<->out transitions an tell tool?
 
@@ -242,7 +242,7 @@ void Controller::OnMouseOut()
 void Controller::RefreshToolCoordinateDisplay()
 {
     // Calculate work coordinates
-    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.DisplayToWorkSpace(mInputState.MousePosition);
+    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.DisplayLogicalToWorkSpace(mInputState.MousePosition);
 
     // Check if within work canvas
     if (mouseWorkSpaceCoordinates.IsInRect(mModelController->GetWorkSpaceSize()))
