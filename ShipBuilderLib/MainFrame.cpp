@@ -1811,6 +1811,8 @@ void MainFrame::RecalculateWorkCanvasPanning()
         int const thumbX = std::min(workSpaceSize.width, scrollRange.width);
         int const thumbY = std::min(workSpaceSize.height, scrollRange.height);
 
+        LogMessage("TODOTEST: scrollRange=(", scrollRange.ToString(), ") Cam=(", cameraPos.ToString(), ")");
+
         mWorkCanvasHScrollBar->SetScrollbar(
             cameraPos.x, // position
             thumbX,

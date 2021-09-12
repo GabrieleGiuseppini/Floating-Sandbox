@@ -106,7 +106,7 @@ public:
 
     WorkSpaceSize GetCameraPanRange() const
     {
-        // Return work space that fits entirely in current display, considering margins
+        // Return work space that fits entirely in current display, including margins
 
         return WorkSpaceSize(
             DisplayPhysicalToWorkSpace(mDisplayLogicalSize.width * mLogicalToPhysicalPixelFactor - MarginDisplayPhysicalSize * 2),
@@ -133,11 +133,11 @@ private:
 
     void RecalculateAttributes()
     {
-        // Zoom factor
-        mZoomFactor = CalculateZoomFactor(mZoom);
+        // Display physicial => Work factor
+        mDisplayPhysicalToWorkSpaceFactor = CalculateZoomFactor(mZoom);
 
         // Margin work size
-        mMarginWorkSize = MarginDisplayPhysicalSize * mZoomFactor;
+        mMarginWorkSize = MarginDisplayPhysicalSize * mDisplayPhysicalToWorkSpaceFactor;
 
         // Ortho Matrix:
         //  WorkCoordinates * OrthoMatrix => NDC
@@ -155,8 +155,8 @@ private:
         //  0                        0                        0                0
         //  -2 * CamX / SDspW - 1    2 * CamY / SDspH + 1     0                1
 
-        float const sDspW = static_cast<float>(mDisplayPhysicalSize.width) * mZoomFactor;
-        float const sDspH = static_cast<float>(mDisplayPhysicalSize.height) * mZoomFactor;
+        float const sDspW = static_cast<float>(mDisplayPhysicalSize.width) * mDisplayPhysicalToWorkSpaceFactor;
+        float const sDspH = static_cast<float>(mDisplayPhysicalSize.height) * mDisplayPhysicalToWorkSpaceFactor;
 
         // Recalculate Ortho Matrix cells (r, c)
         mOrthoMatrix[0][0] = 2.0f / sDspW;
@@ -172,13 +172,13 @@ private:
 
     int DisplayPhysicalToWorkSpace(int size) const
     {
-        return static_cast<int>(std::floor(static_cast<float>(size) * mZoomFactor));
+        return static_cast<int>(std::floor(static_cast<float>(size) * mDisplayPhysicalToWorkSpaceFactor));
     }
 
     template<typename TValue>
     float WorkSpaceToDisplayLogical(TValue size) const
     {
-        return static_cast<float>(size) / mZoomFactor;
+        return static_cast<float>(size) / mDisplayPhysicalToWorkSpaceFactor;
     }
 
 private:
@@ -196,7 +196,7 @@ private:
     DisplayPhysicalSize mDisplayPhysicalSize;
 
     // Calculated attributes
-    float mZoomFactor; // DisplayPhysical is Work / ZoomFactor; ZoomFactor = # work pixels for 1 display pixel
+    float mDisplayPhysicalToWorkSpaceFactor; // # work pixels for 1 display pixel
     float mMarginWorkSize; // Work size of margin
     ProjectionMatrix mOrthoMatrix;
 };

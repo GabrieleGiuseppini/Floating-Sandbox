@@ -1,7 +1,10 @@
 
+- After changing zoom, also pan needs to change
 
 - Click-And-Draw usecase:
 	- Pencil tool (*)
+
+- Scroll events: not capturing arrow keys
 
 - Materials palette:
 	- Material descriptions
