@@ -47,6 +47,12 @@ View::View(
 
     mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetShipBuilderShadersRootPath());
 
+    // Set texture in programs
+    mShaderManager->ActivateProgram<ProgramType::BackgroundTexture>();
+    mShaderManager->SetTextureParameters<ProgramType::BackgroundTexture>();
+    mShaderManager->ActivateProgram<ProgramType::Texture>();
+    mShaderManager->SetTextureParameters<ProgramType::Texture>();
+
     //
     // Initialize Background texture
     //
@@ -58,23 +64,18 @@ View::View(
         // Texture
         //
 
-        mShaderManager->ActivateTexture<ProgramParameterType::BackgroundTexture>();
-
         // Create texture OpenGL handle
         glGenTextures(1, &tmpGLuint);
         mBackgroundTextureOpenGLHandle = tmpGLuint;
 
         // Configure texture
+        mShaderManager->ActivateTexture<ProgramParameterType::BackgroundTexture>();
         glBindTexture(GL_TEXTURE_2D, *mBackgroundTextureOpenGLHandle);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         CheckOpenGLError();
-
-        // Set texture in program
-        mShaderManager->ActivateProgram<ProgramType::BackgroundTexture>();
-        mShaderManager->SetTextureParameters<ProgramType::BackgroundTexture>();
 
         //
         // VAO
@@ -110,23 +111,18 @@ View::View(
         // Texture
         //
 
-        mShaderManager->ActivateTexture<ProgramParameterType::Texture1>();
-
         // Create texture OpenGL handle
         glGenTextures(1, &tmpGLuint);
         mStructuralRenderColorTextureOpenGLHandle = tmpGLuint;
 
         // Configure texture
+        mShaderManager->ActivateTexture<ProgramParameterType::Texture1>(); // TODOHERE
         glBindTexture(GL_TEXTURE_2D, *mStructuralRenderColorTextureOpenGLHandle);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         CheckOpenGLError();
-
-        // Set texture in programs
-        mShaderManager->ActivateProgram<ProgramType::Texture>();
-        mShaderManager->SetTextureParameters<ProgramType::Texture>();
 
         //
         // VAO
@@ -223,7 +219,7 @@ void View::UploadStructuralRenderColorTexture(RgbaImageData const & texture)
     //
 
     // Bind texture
-    mShaderManager->ActivateTexture<ProgramParameterType::Texture1>();
+    mShaderManager->ActivateTexture<ProgramParameterType::Texture1>(); // TODOHERE: this should be dynamic
     glBindTexture(GL_TEXTURE_2D, *mStructuralRenderColorTextureOpenGLHandle);
     CheckOpenGLError();
 
@@ -308,14 +304,6 @@ void View::Render()
     // Structural Render Color texture
     if (mHasStructuralRenderColorTexture)
     {
-        // Bind this texture
-        //glBindTexture(GL_TEXTURE_2D, *mStructuralRenderColorTextureOpenGLHandle);
-
-        // Set texture in shader
-        // TODOHERE
-        //mShaderManager->ActivateTexture<ProgramParameterType::Texture1>();
-        //mShaderManager->SetTextureParameters<ProgramType::Texture>();
-
         // Bind VAO
         glBindVertexArray(*mStructuralRenderColorTextureVAO);
 
