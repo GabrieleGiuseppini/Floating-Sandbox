@@ -1,3 +1,6 @@
+TODO
+- Fixed "slice lock"
+
 1.16.7
 - Added simulation of *pressure*
 	- Underwater structures are subject to hydrostatic pressure, aka "Pressure Crush"

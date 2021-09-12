@@ -932,7 +932,7 @@ public:
             auto const targetPosition = CalculateTargetPosition(inputState);
 
             // Saw
-            bool wasApplied = mGameController->SawThrough(
+            mGameController->SawThrough(
                 *mPreviousMousePos,
                 targetPosition,
                 mIsFirstSegment);
@@ -942,7 +942,6 @@ public:
 
             // Check whether we need to lock or unlock the direction
             if (inputState.IsShiftKeyDown
-                && wasApplied
                 && !mCurrentLockedDirection.has_value())
             {
                 vec2f const lastDirection = (targetPosition.ToFloat() - mPreviousMousePos->ToFloat());
@@ -952,8 +951,7 @@ public:
                     mCurrentLockedDirection = lastDirection.normalise(lastDirectionLength);
                 }
             }
-            else if (!inputState.IsShiftKeyDown
-                || !wasApplied)
+            else if (!inputState.IsShiftKeyDown)
             {
                 mCurrentLockedDirection.reset();
             }

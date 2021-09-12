@@ -221,6 +221,6 @@ private:
     Palette<ElectricalMaterial> mElectricalMaterialPalette;
 
     UniqueStructuralMaterialsArray mUniqueStructuralMaterials;
-    float const mLargestMass;
-    float const mLargestStrength;
+    float mLargestMass;
+    float mLargestStrength;
 };
