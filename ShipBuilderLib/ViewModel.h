@@ -109,19 +109,19 @@ public:
         // Return work space that fits entirely in current display, considering margins
 
         return WorkSpaceSize(
-            DisplayLogicalToWorkSpace(mDisplayLogicalSize.width) - static_cast<int>(2.0f * mMarginWorkSize),
-            DisplayLogicalToWorkSpace(mDisplayLogicalSize.height) - static_cast<int>(2.0f * mMarginWorkSize));
+            DisplayPhysicalToWorkSpace(mDisplayLogicalSize.width * mLogicalToPhysicalPixelFactor - MarginDisplayPhysicalSize * 2),
+            DisplayPhysicalToWorkSpace(mDisplayLogicalSize.height * mLogicalToPhysicalPixelFactor - MarginDisplayPhysicalSize * 2));
     }
 
     //
     // Coordinate transformations
     //
 
-    WorkSpaceCoordinates DisplayLogicalToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    WorkSpaceCoordinates ScreenToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
         return WorkSpaceCoordinates(
-            DisplayLogicalToWorkSpace(displayCoordinates.x),
-            DisplayLogicalToWorkSpace(displayCoordinates.y));
+            DisplayPhysicalToWorkSpace(displayCoordinates.x * mLogicalToPhysicalPixelFactor - MarginDisplayPhysicalSize) + mCam.x,
+            DisplayPhysicalToWorkSpace(displayCoordinates.y * mLogicalToPhysicalPixelFactor - MarginDisplayPhysicalSize) + mCam.y);
     }
 
     ProjectionMatrix const & GetOrthoMatrix() const
@@ -137,7 +137,7 @@ private:
         mZoomFactor = CalculateZoomFactor(mZoom);
 
         // Margin work size
-        mMarginWorkSize = 8.0f * mZoomFactor;
+        mMarginWorkSize = MarginDisplayPhysicalSize * mZoomFactor;
 
         // Ortho Matrix:
         //  WorkCoordinates * OrthoMatrix => NDC
@@ -170,12 +170,13 @@ private:
         return std::ldexp(1.0f, -zoom);
     }
 
-    int DisplayLogicalToWorkSpace(int size) const
+    int DisplayPhysicalToWorkSpace(int size) const
     {
         return static_cast<int>(std::floor(static_cast<float>(size) * mZoomFactor));
     }
 
-    float WorkSpaceToDisplayLogical(int size) const
+    template<typename TValue>
+    float WorkSpaceToDisplayLogical(TValue size) const
     {
         return static_cast<float>(size) / mZoomFactor;
     }
@@ -185,6 +186,7 @@ private:
     // Constants
     static int constexpr MaxZoom = 6;
     static int constexpr MinZoom = -3;
+    static int constexpr MarginDisplayPhysicalSize = 8;
 
     // Primary inputs
     int mZoom; // >=0: display pixels occupied by one work space pixel

@@ -1,3 +1,5 @@
+
+
 - Click-And-Draw usecase:
 	- Pencil tool (*)
 
@@ -71,7 +73,7 @@
 		- Take references to View and ModelController
 		- Modify Model via ModelController
 		- Instruct View for tool interactions, e.g. tool visualizations (lines, paste mask, etc.)
-		- Have also reference to IUserInterface, e.g. to capture/release mouse, visualize Undo stack
+		- Have also reference to IUserInterface, e.g. to capture/release mouse
 
 ----------------------------------------------------------------------------------------------------------
 
@@ -162,6 +164,12 @@
 			+ DisplayPixelCoordinates: the pixel display coordinates (type @ ShipBuilderTypes)
 		+ World coords is model pixel coords, i.e. WorkSpace
 		+ Tells outside world of pan extent (for scrollbar width setting)
+	- Primitives:
+		+ Background text
+		+ Structural RenderColor Texture
+		- Electrical RenderColor Texture
+		- Pseudo-cursor
+			- One of many types; removed with a single call
 
 
 - WorkbenchState

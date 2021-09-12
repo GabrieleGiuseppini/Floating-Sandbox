@@ -81,9 +81,9 @@ public:
         return mViewModel.GetCameraPanRange();
     }
 
-    WorkSpaceCoordinates DisplayLogicalToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    WorkSpaceCoordinates ScreenToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
-        return mViewModel.DisplayLogicalToWorkSpace(displayCoordinates);
+        return mViewModel.ScreenToWorkSpace(displayCoordinates);
     }
 
 public:

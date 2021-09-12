@@ -178,9 +178,9 @@ void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPositi
     mInputState.MousePosition = mouseScreenPosition;
 
     // Calculate work coordinates
-    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.DisplayLogicalToWorkSpace(mInputState.MousePosition);
+    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.ScreenToWorkSpace(mInputState.MousePosition);
 
-    // TODO: should we detect in<->out transitions an tell tool?
+    // TODO: should we detect in<->out transitions and tell tool?
 
     // Check if within work canvas
     if (mouseWorkSpaceCoordinates.IsInRect(mModelController->GetWorkSpaceSize()))
@@ -256,7 +256,7 @@ void Controller::OnMouseOut()
 void Controller::RefreshToolCoordinateDisplay()
 {
     // Calculate work coordinates
-    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.DisplayLogicalToWorkSpace(mInputState.MousePosition);
+    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.ScreenToWorkSpace(mInputState.MousePosition);
 
     // Check if within work canvas
     if (mouseWorkSpaceCoordinates.IsInRect(mModelController->GetWorkSpaceSize()))
