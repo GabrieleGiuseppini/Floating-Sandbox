@@ -86,44 +86,61 @@ MainFrame::MainFrame(
     //
     // Setup main frame
     //
+    // Row 0: [File Panel] [Tool Settings] [Game Panel]
+    // Row 1: [Layers Panel]  |  [Work Canvas]
+    // Row 2: [Toolbar Panel] |
+    // Row 3: [           Status Bar                  ]
 
     mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
-    // File panel
+    // Row 0
     {
-        wxPanel * filePanel = CreateFilePanel(mMainPanel);
+        wxBoxSizer * row0HSizer = new wxBoxSizer(wxHORIZONTAL);
+
+        // File panel
+        {
+            wxPanel * filePanel = CreateFilePanel(mMainPanel);
+
+            row0HSizer->Add(
+                filePanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+        }
+
+        row0HSizer->AddStretchSpacer(1);
+
+        // Tool settings panel
+        {
+            wxPanel * toolSettingsPanel = CreateToolSettingsPanel(mMainPanel);
+
+            row0HSizer->Add(
+                toolSettingsPanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+        }
+
+        row0HSizer->AddStretchSpacer(1);
+
+        // Game panel
+        {
+            wxPanel * gamePanel = CreateGamePanel(mMainPanel);
+
+            row0HSizer->Add(
+                gamePanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+        }
 
         gridSizer->Add(
-            filePanel,
+            row0HSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 1),
-            wxEXPAND | wxALIGN_CENTER_HORIZONTAL,
-            0);
-    }
-
-    // Tool settings panel
-    {
-        wxPanel * toolSettingsPanel = CreateToolSettingsPanel(mMainPanel);
-
-        gridSizer->Add(
-            toolSettingsPanel,
-            wxGBPosition(0, 1),
-            wxGBSpan(1, 1),
-            wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
-            0);
-    }
-
-    // Game panel
-    {
-        wxPanel * gamePanel = CreateGamePanel(mMainPanel);
-
-        gridSizer->Add(
-            gamePanel,
-            wxGBPosition(0, 2),
-            wxGBSpan(1, 1),
-            0,
+            wxGBSpan(1, 2),
+            wxEXPAND,
             0);
     }
 
@@ -188,19 +205,32 @@ MainFrame::MainFrame(
         gridSizer->Add(
             workPanel,
             wxGBPosition(1, 1),
-            wxGBSpan(2, 2),
+            wxGBSpan(2, 1),
             wxEXPAND,
             0);
     }
 
+    // Status bar
     {
-        mStatusBar = new wxStatusBar(mMainPanel, wxID_ANY, 0);
-        mStatusBar->SetFieldsCount(1);
+        wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
+
+        {
+            mStatusBar = new wxStatusBar(mMainPanel, wxID_ANY, 0);
+            mStatusBar->SetFieldsCount(1);
+
+            hSizer->Add(
+                mStatusBar,
+                1,
+                0,
+                0);
+        }
+
+        hSizer->Fit(mStatusBar);
 
         gridSizer->Add(
-            mStatusBar,
+            hSizer,
             wxGBPosition(3, 0),
-            wxGBSpan(1, 3),
+            wxGBSpan(1, 2),
             wxEXPAND,
             0);
     }
