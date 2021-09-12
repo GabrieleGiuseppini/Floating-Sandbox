@@ -78,9 +78,6 @@
 		- Error (message) notification(s)
 		- Add electrical/texture/ropes layer
 		- Button to open ShipMetadata dialog
-	- StatusBar:
-		- Material under cursor
-			- Polled from Model by Tools (pencil, drop, ...) and communicated to IUserInterface
 
 = MainFrame:
 	+ Created by game MainFrame at initialization, but kept hidden
@@ -118,7 +115,7 @@
 			- Zoom changes
 			- Pan changes (including keys)
 			- WorkSpace resize (i.e. image resize)
-		- Scrollbars recalculated via private MainFrame::RecalculatePanning, which is invoked by:
+		= Scrollbars recalculated via private MainFrame::RecalculatePanning, which is invoked by:
 			+ Self, @ glCanvas resize
 			- Controller, @ Zoom, Pan, and WorkSpace resize - via IUserInterface
 	+ Layers toolbar:
@@ -164,14 +161,8 @@
 				- @ ReconciliateUIWithSelectedTool
 					- Need array of ALL buttons (ToolType) - assuming structural tool enum values are separate from electrical
 		- App icons (whole "Resources" folder)
-		- Preferences:
-			- New ship size
-			- ...all tools' settings...
-			- TODO: spec
-		- Inherits FullScreen state and shares state changes (so, for example, if exits full screen in ShipBuilder, also Game has exited full screen)
-			- How to share state changes? 
-				- FullScreenManager class, shared_ptr in both
-				- Looked at at each Game<->ShipBuilder switch by receiver
+		- Background texture
+			- Requires TextureManager, and subfolders of Textures: "Game" and "ShipBuilder"
 
 - StatusBar:
 	- Own class
@@ -180,8 +171,10 @@
 			- Coords and icon
 			- Selection size and icon
 			- WorkSpace size and icon
-		- Ship:
-			- Coord and icon
+			- Material under cursor (for ?)
+		- Ship: (i.e. ship measurements) 
+			- Need UnitsSystem in Preferences
+			- Coords and icon
 			- Ship size and icon
 
 - Tools:
@@ -197,6 +190,8 @@
 			- Settings: Size
 		- Flood
 		- Selection
+			- Implements selection interaction and rendering of visual feedback *during the interaction only*
+			- Takes SelectionManager ref (like all tools, part of the ITool interface), and populates it upon confirmation of selection made
 		- Sample
 		- Line
 		- Rectangle
@@ -209,9 +204,6 @@
 		- Takes View so that it can instruct it to render marching ants
 			- Is not responsible for drawing of temporary selection while the user is making it, that is the Selection tool
 		- Read by ClipboardManager pseudo-tool to make clip
-	- Selection tool:
-		- Implements selection interaction and rendering of visual feedback *during the interaction only*
-		- Takes SelectionManager ref (like all tools, part of the ITool interface), and populates it upon confirmation of selection made
 	- ClipboardManager pseudo-tool:
 		- Maintains clip
 		- Implements operations: Copy, Cut, Paste
@@ -228,6 +220,7 @@
 	- Renders synchronously, on-demand via SB::MainFrame::OnPaint()
 		- Except when we need animated tools, e.g. ants walking: for these we set a timer (in the order of 100's of ms) during the duration
 		  of the tool
+			- via an IUserInterface method, and another call to stop it ("SetAutoRender(bool)")
 	+ ViewModel:
 		+ Terminology:
 			+ WorkSpace: has the pixel size of the structure (equivalent of ::World)
@@ -249,10 +242,6 @@
 - Controls:
 	+ BitmapCheckbox (see if * exists) (@UIControls)
 		! We'll re-use it for ShipLoadDialog
-	- PopupButton (@UIControls)
-		! We'll use it for popup tools
-		- Takes callback for push, which takes wxPoint
-		- Ideantical to BitmapButton, except for arg of callback
 	= MaterialsPalettePicker (@ShipBuilder): wxPanel
 		+ Templated on material type (Structural or Material)
 		! MainFrame owns two instances: Structural and Electrical			
@@ -357,8 +346,16 @@
 	- Texture Generator for ship canvas:
 		- Makes larger image, with bilinear interpolation with alpha blending
 			- Ain't that what we've got already for the auto-texturizer?
-	- Selectable backgrounds
+	- Selectable backgrounds		
 	- See if it takes so long to initialize SB::MainFrame that we need IProgress
+		- Preferences:
+			- New ship size
+			- ...all tools' settings...
+			- TODO: spec
+		- Inherits FullScreen state and shares state changes (so, for example, if exits full screen in ShipBuilder, also Game has exited full screen)
+			- How to share state changes? 
+				- FullScreenManager class, shared_ptr in both
+				- Looked at at each Game<->ShipBuilder switch by receiver
 	- TO-SPEC:
 		- What to do with background music when switching back and forth?
 
