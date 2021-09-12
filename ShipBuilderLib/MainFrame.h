@@ -79,7 +79,11 @@ public:
 
     void OnWorkbenchStateChanged() override;
 
+    void OnCurrentToolChanged(std::optional<ToolType> tool) override;
+
     void OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coordinates) override;
+
+    void ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & workCanvasDisplayLogicalCoordinates) override;
 
 private:
 
@@ -186,20 +190,21 @@ private:
     wxMenuItem * mSaveAndGoBackMenuItem;
     BitmapButton * mSaveShipButton;
 
-    // Toolbar panel
-    wxSizer * mToolbarPanelsSizer;
-    std::array<wxPanel *, LayerCount> mToolbarPanels;
-    wxStaticBitmap * mStructuralForegroundMaterialSelector;
-    wxStaticBitmap * mStructuralBackgroundMaterialSelector;
-    wxStaticBitmap * mElectricalForegroundMaterialSelector;
-    wxStaticBitmap * mElectricalBackgroundMaterialSelector;
-    wxBitmap mNullMaterialBitmap;
-
     // Layers panel
     std::array<BitmapToggleButton *, LayerCount> mLayerSelectButtons;
     std::array<BitmapButton *, LayerCount> mLayerSaveButtons;
     std::array<BitmapButton *, LayerCount> mLayerDeleteButtons;
     wxSlider * mOtherLayersOpacitySlider;
+
+    // Toolbar panel
+    wxSizer * mToolbarPanelsSizer;
+    std::array<wxPanel *, LayerCount> mToolbarPanels;
+    std::array<BitmapToggleButton *, static_cast<size_t>(ToolType::_Last) + 1> mToolButtons;
+    wxStaticBitmap * mStructuralForegroundMaterialSelector;
+    wxStaticBitmap * mStructuralBackgroundMaterialSelector;
+    wxStaticBitmap * mElectricalForegroundMaterialSelector;
+    wxStaticBitmap * mElectricalBackgroundMaterialSelector;
+    wxBitmap mNullMaterialBitmap;
 
     // Work panel
     std::unique_ptr<wxGLCanvas> mWorkCanvas;

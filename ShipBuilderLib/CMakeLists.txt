@@ -3,7 +3,7 @@
 # ShipBuilder library
 #
 
-set  (SHIPBUILDER_LIB_SOURCES
+set (SHIPBUILDER_LIB_SOURCES
 	Controller.cpp
 	Controller.h
 	InputState.h
@@ -26,9 +26,17 @@ set  (SHIPBUILDER_LIB_SOURCES
 	WorkbenchState.h
 )
 
-source_group(" " FILES ${SHIPBUILDER_LIB_SOURCES})
+set (TOOLS_SOURCES
+	Tools/BaseTool.cpp
+	Tools/BaseTool.h
+	Tools/SelectionManager.cpp
+	Tools/SelectionManager.h
+)
 
-add_library (ShipBuilderLib ${SHIPBUILDER_LIB_SOURCES})
+source_group(" " FILES ${SHIPBUILDER_LIB_SOURCES})
+source_group("Tools" FILES ${TOOLS_SOURCES})
+
+add_library (ShipBuilderLib ${SHIPBUILDER_LIB_SOURCES} ${TOOLS_SOURCES})
 
 target_include_directories(ShipBuilderLib PRIVATE .)
 target_include_directories(ShipBuilderLib PRIVATE ${wxWidgets_INCLUDE_DIRS})

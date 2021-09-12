@@ -32,8 +32,14 @@ public:
     // Notifies of a change in any member of the workbench state
     virtual void OnWorkbenchStateChanged() = 0;
 
+    // Notifies of a change in the currently-selected tool
+    virtual void OnCurrentToolChanged(std::optional<ToolType> tool) = 0;
+
     // Notifies of a change in the tool coordinates to display
     virtual void OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coordinates) = 0;
+
+    // Scrolls the work canvas to ensure the specified logical coordinates are visible
+    virtual void ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & workCanvasDisplayLogicalCoordinates) = 0;
 };
 
 }

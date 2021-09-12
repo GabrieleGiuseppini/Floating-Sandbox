@@ -8,11 +8,6 @@
 			- Methods: "SetMaterialProperties" instead of "SetMaterialPropertyGrid"			
 
 - MainFrame TODO's:
-	+ Bug: resizing frame does not resize left column vertically accordingly
-	- Toolbar:
-		- Untoggle other buttons when one tool is toggled (i.e. radio behavior)
-			- @ ReconciliateUIWithSelectedTool
-				- Need array of ALL buttons (ToolType) - assuming structural tool enum values are separate from electrical
 	- App icons (whole "Resources" folder)
 
 ================================================================================================================================================================================
@@ -114,9 +109,9 @@
 
 - Tools:
 	! Most tools should pan when the (captured) mouse is outside of the canvas
-		- IUserInterface::OnViewCameraChanged()
+		- Via BaseTool::ScrollIntoViewIfNeeded, which simply forwards to IUserInterface::ScrollIntoViewIfNeeded(display logical)
 	- BaseTool:
-		- Stores all protected references passed from cctors: IUserInterface, ModelController, View, SelectionManager
+		+ Stores all protected references passed from cctors: IUserInterface, ModelController, View, SelectionManager
 		- Abstract methods from game - but all pure
 	- All tools:
 		- Pencil
@@ -139,6 +134,7 @@
 		- Takes View so that it can instruct it to render marching ants
 			- Is not responsible for drawing of temporary selection while the user is making it, that is the Selection tool
 		- Read by ClipboardManager pseudo-tool to make clip
+		- TODO: templated on layer type?
 	- ClipboardManager pseudo-tool:
 		- Maintains clip
 		- Implements operations: Copy, Cut, Paste

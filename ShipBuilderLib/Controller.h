@@ -14,6 +14,7 @@
 
 #include <filesystem>
 #include <memory>
+#include <optional>
 
 namespace ShipBuilder {
 
@@ -36,6 +37,11 @@ public:
         WorkbenchState & workbenchState,
         IUserInterface & userInterface);
 
+    ModelController const & GetModelController() const
+    {
+        return *mModelController;
+    }
+
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
 
@@ -51,11 +57,6 @@ public:
     void SetTextureLayer(/*TODO*/);
     void RemoveTextureLayer();
 
-    ModelController const & GetModelController() const
-    {
-        return *mModelController;
-    }
-
     LayerType GetPrimaryLayer() const
     {
         return mPrimaryLayer;
@@ -66,6 +67,8 @@ public:
     void AddZoom(int deltaZoom);
     void SetCamera(int camX, int camY);
     void ResetView();
+
+    void SetTool(std::optional<ToolType> tool);
 
     void OnWorkCanvasResized(DisplayLogicalSize const & newSize);
 

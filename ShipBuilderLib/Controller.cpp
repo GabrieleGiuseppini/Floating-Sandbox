@@ -125,8 +125,8 @@ void Controller::SelectPrimaryLayer(LayerType primaryLayer)
 {
     mPrimaryLayer = primaryLayer;
 
-    // Reset tools
-    // TODO
+    // Reset current tool
+    SetTool(std::nullopt);
 }
 
 void Controller::AddZoom(int deltaZoom)
@@ -155,6 +155,14 @@ void Controller::ResetView()
     RefreshToolCoordinateDisplay();
     mUserInterface.OnViewModelChanged();
     mUserInterface.RefreshView();
+}
+
+void Controller::SetTool(std::optional<ToolType> tool)
+{
+    // TODOHERE
+
+    // Notify UI
+    mUserInterface.OnCurrentToolChanged(tool);
 }
 
 void Controller::OnWorkCanvasResized(DisplayLogicalSize const & newSize)

@@ -13,6 +13,17 @@
 
 namespace ShipBuilder {
 
+enum class ToolType : std::uint32_t
+{
+    StructuralPencil,
+    StructuralEraser,
+    ElectricalPencil,
+    ElectricalEraser,
+    RopesEraser,
+
+    _Last = RopesEraser
+};
+
 enum class LayerType : std::uint32_t
 {
     Structural = 0,
@@ -30,7 +41,7 @@ enum class MaterialPlaneType
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-// Rendering
+// Geometry
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 template<typename TTag>

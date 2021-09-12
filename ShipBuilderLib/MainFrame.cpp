@@ -476,6 +476,20 @@ void MainFrame::OnWorkbenchStateChanged()
     ReconciliateUIWithWorkbenchState();
 }
 
+void MainFrame::OnCurrentToolChanged(std::optional<ToolType> tool)
+{
+    // Select this tool's button and unselect the others
+    for (size_t i = 0; i < mToolButtons.size(); ++i)
+    {
+        bool const isSelected = (tool.has_value() && i == static_cast<size_t>(*tool));
+
+        if (mToolButtons[i]->GetValue() != isSelected)
+        {
+            mToolButtons[i]->SetValue(isSelected);
+        }
+    }
+}
+
 void MainFrame::OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coordinates)
 {
     std::stringstream ss;
@@ -486,6 +500,15 @@ void MainFrame::OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coo
     }
 
     mStatusBar->SetStatusText(ss.str(), 0);
+}
+
+void MainFrame::ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & workCanvasDisplayLogicalCoordinates)
+{
+    // TODOTEST
+    LogMessage("TODOTEST: MainFrame::ScrollIntoViewIfNeeded(", workCanvasDisplayLogicalCoordinates.ToString(), ") WorkCanvasSize=(",
+        mWorkCanvas->GetSize().GetWidth(), ", ", mWorkCanvas->GetSize().GetHeight());
+
+    // TODO: if we have to scroll, invoke Controller::PanCamera which will notify us back
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -913,6 +936,26 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
     mToolbarPanelsSizer->AddSpacer(6);
 
+    auto const makeToolButton = [this](
+        ToolType tool,
+        wxPanel * toolbarPanel,
+        std::string iconName,
+        wxString tooltip) -> BitmapToggleButton *
+    {
+        auto button = new BitmapToggleButton(
+            toolbarPanel,
+            mResourceLocator.GetIconFilePath(iconName),
+            [this, tool]()
+            {
+                mController->SetTool(tool);
+            },
+            tooltip);
+
+        mToolButtons[static_cast<size_t>(tool)] = button;
+
+        return button;
+    };
+
     //
     // Structural toolbar
     //
@@ -929,14 +972,10 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
             // Pencil
             {
-                auto button = new BitmapToggleButton(
+                auto button = makeToolButton(
+                    ToolType::StructuralPencil,
                     structuralToolbarPanel,
-                    mResourceLocator.GetIconFilePath("pencil_icon"),
-                    [this]()
-                    {
-                        // TODOHERE
-                        //SetTool(ToolType::Pencil);
-                    },
+                    "pencil_icon",
                     _("Draw individual structure particles"));
 
                 toolsSizer->Add(
@@ -949,14 +988,10 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
             // Eraser
             {
-                auto button = new BitmapToggleButton(
+                auto button = makeToolButton(
+                    ToolType::StructuralEraser,
                     structuralToolbarPanel,
-                    mResourceLocator.GetIconFilePath("eraser_icon"),
-                    [this]()
-                    {
-                        // TODOHERE
-                        //SetTool(ToolType::Eraser);
-                    },
+                    "eraser_icon",
                     _("Erase individual structure particles"));
 
                 toolsSizer->Add(
@@ -1066,14 +1101,10 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
             // Pencil
             {
-                auto button = new BitmapToggleButton(
+                auto button = makeToolButton(
+                    ToolType::ElectricalPencil,
                     electricalToolbarPanel,
-                    mResourceLocator.GetIconFilePath("pencil_icon"),
-                    [this]()
-                    {
-                        // TODOHERE
-                        //SetTool(ToolType::Pencil);
-                    },
+                    "pencil_icon",
                     _("Draw individual electrical elements"));
 
                 toolsSizer->Add(
@@ -1086,22 +1117,18 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
             // Eraser
             {
-                auto button = new BitmapToggleButton(
+                auto button = makeToolButton(
+                    ToolType::ElectricalEraser,
                     electricalToolbarPanel,
-                    mResourceLocator.GetIconFilePath("eraser_icon"),
-                    [this]()
-                    {
-                        // TODOHERE
-                        //SetTool(ToolType::Eraser);
-                    },
+                    "eraser_icon",
                     _("Erase individual electrical elements"));
 
-                    toolsSizer->Add(
-                        button,
-                        wxGBPosition(0, 1),
-                        wxGBSpan(1, 1),
-                        0,
-                        0);
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
             }
 
             electricalToolbarSizer->Add(
@@ -1224,14 +1251,10 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
             // Eraser
             {
-                auto button = new BitmapToggleButton(
+                auto button = makeToolButton(
+                    ToolType::RopesEraser,
                     ropesToolbarPanel,
-                    mResourceLocator.GetIconFilePath("eraser_icon"),
-                    [this]()
-                    {
-                        // TODOHERE
-                        //SetTool(ToolType::Eraser);
-                    },
+                    "eraser_icon",
                     _("Erase rope endpoints"));
 
                 toolsSizer->Add(
