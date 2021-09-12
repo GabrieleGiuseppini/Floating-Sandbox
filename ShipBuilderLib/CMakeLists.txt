@@ -29,6 +29,8 @@ set (SHIPBUILDER_LIB_SOURCES
 set (TOOLS_SOURCES
 	Tools/BaseTool.cpp
 	Tools/BaseTool.h
+	Tools/PencilTool.cpp
+	Tools/PencilTool.h
 	Tools/SelectionManager.cpp
 	Tools/SelectionManager.h
 )

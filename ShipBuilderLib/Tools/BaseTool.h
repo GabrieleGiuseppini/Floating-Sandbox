@@ -21,6 +21,8 @@ class BaseTool
 {
 public:
 
+    virtual ~BaseTool() = default;
+
     //
     // Event handlers
     //
