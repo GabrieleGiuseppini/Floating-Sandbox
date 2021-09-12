@@ -418,6 +418,7 @@ void MainFrame::OnModelDirtyChanged(bool isDirty)
 
 void MainFrame::OnWorkSpaceSizeChanged()
 {
+    RecalculateWorkCanvasPanning();
     // TODO: status bar
 }
 
@@ -1376,15 +1377,13 @@ void MainFrame::OnWorkCanvasResize(wxSizeEvent & event)
 {
     LogMessage("OnWorkCanvasResize: ", event.GetSize().GetX(), "x", event.GetSize().GetY());
 
-    if (mView)
+    if (mController)
     {
-        mView->SetDisplayLogicalSize(
+        mController->OnWorkCanvasResized(
             DisplayLogicalSize(
                 event.GetSize().GetX(),
                 event.GetSize().GetY()));
     }
-
-    RecalculateWorkCanvasPanning();
 
     // Allow resizing to occur, this is a hook
     event.Skip();

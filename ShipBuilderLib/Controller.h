@@ -64,10 +64,10 @@ public:
     void SelectPrimaryLayer(LayerType primaryLayer);
 
     void AddZoom(int deltaZoom);
-
     void SetCamera(int camX, int camY);
-
     void ResetView();
+
+    void OnWorkCanvasResized(DisplayLogicalSize const & newSize);
 
     void OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition);
     void OnLeftMouseDown();

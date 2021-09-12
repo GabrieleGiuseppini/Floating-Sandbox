@@ -110,14 +110,15 @@
 	- Panning is via "losse" scrollbars around canvas
 		- For testing, requires Edit->Ship Size
 			- For now: just add and then reduce, in circle, with static member
-		- Their range & properties (& position==thumb) need to be updated at:
-			- glCanvas resize
-			- Zoom changes
-			- Pan changes (including keys)
-			- WorkSpace resize (i.e. image resize)
-		= Scrollbars recalculated via private MainFrame::RecalculatePanning, which is invoked by:
+		+ Their range & properties (& position==thumb) need to be updated at:
+			+ glCanvas resize
+			+ Zoom changes
+			+ Pan changes (including keys)
+			+ WorkSpace resize (i.e. image resize)
+		+ Scrollbars recalculated via private MainFrame::RecalculatePanning, which is invoked by:
 			+ Self, @ glCanvas resize
-			- Controller, @ Zoom, Pan, and WorkSpace resize - via IUserInterface
+			+ Controller, @ Zoom, Pan, WorkSpace resize  - via IUserInterface
+
 	+ Layers toolbar:
 		+ Rename
 		+ MainFrame and Controller logic:
@@ -161,8 +162,6 @@
 				- @ ReconciliateUIWithSelectedTool
 					- Need array of ALL buttons (ToolType) - assuming structural tool enum values are separate from electrical
 		- App icons (whole "Resources" folder)
-		- Background texture
-			- Requires TextureManager, and subfolders of Textures: "Game" and "ShipBuilder"
 
 - StatusBar:
 	- Own class
@@ -231,6 +230,16 @@
 			+ DisplayPixelCoordinates: the pixel display coordinates (type @ ShipBuilderTypes)
 		+ World coords is model pixel coords, i.e. WorkSpace
 		+ Tells outside world of pan extent (for scrollbar width setting)
+	- Background texture:
+		- SetBackgroundTexture(rgbaImage)
+			- Quad is full screen wide, but height depends on texture's aspect ratio
+		- Requires TextureManager, and subfolders of Textures: "Game" and "ShipBuilder"
+		- New texture unit
+		- Texture is set to tiled
+		- ViewModel::CalculateBackgroundOrthoMatrix(texture dimensions)
+			- Recalc'd and given to shader at canvas size change, but not at zoom and at cam
+		- New shader
+
 
 - WorkbenchState
 	+ Independent from model - exclusively tools-related settings

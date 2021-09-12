@@ -157,6 +157,12 @@ void Controller::ResetView()
     mUserInterface.RefreshView();
 }
 
+void Controller::OnWorkCanvasResized(DisplayLogicalSize const & newSize)
+{
+    mView.SetDisplayLogicalSize(newSize);
+    mUserInterface.OnViewModelChanged();
+}
+
 void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition)
 {
     // Update input state
