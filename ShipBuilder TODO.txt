@@ -1,3 +1,33 @@
+- Background texture:
+	- SetBackgroundTexture(rgbaImage)
+		- Quad is full screen wide, but height depends on texture's aspect ratio
+	- New texture unit
+	- Texture is set to tiled
+	- ViewModel::CalculateBackgroundOrthoMatrix(texture dimensions)
+		- Recalc'd and given to shader at canvas size change, but not at zoom and at cam
+	- New shader
+
+
+- Click-And-Draw usecase:
+	- Pencil tool (*)
+
+- Materials palette:
+	- Material descriptions
+		- json + Material class
+		- Text area underneath property grid
+			- Methods: "SetMaterialProperties" instead of "SetMaterialPropertyGrid"			
+
+- MainFrame TODO's:
+	- Bug: resizing frame does not resize left column vertically accordingly
+	- Toolbar:
+		- Untoggle other buttons when one tool is toggled (i.e. radio behavior)
+			- @ ReconciliateUIWithSelectedTool
+				- Need array of ALL buttons (ToolType) - assuming structural tool enum values are separate from electrical
+	- App icons (whole "Resources" folder)
+
+
+================================================================================================================================================================================
+
 - Gist:
 	- Code organization:
 		- ShipBuilderLib project, slave of FloatingSandbox project
@@ -69,99 +99,16 @@
 	- Load Ship (@menu, @file panel)
 		- GameController::Load()
 
-- UI:
-	- Controls:
-		+ Button to save and go back to game (!StandaloneMode)
-		+ Button to quit and go back to game (!StandaloneMode)
-		- Button to Save (acts also as SaveAs for first save; menu however has also separate SaveAs)
-		- Undo stack
-		- Error (message) notification(s)
-		- Add electrical/texture/ropes layer
-		- Button to open ShipMetadata dialog
+- UI Controls:
+	+ Button to save and go back to game (!StandaloneMode)
+	+ Button to quit and go back to game (!StandaloneMode)
+	- Button to Save (acts also as SaveAs for first save; menu however has also separate SaveAs)
+	- Undo stack
+	- Error (message) notification(s)
+	+ Add electrical/texture/ropes layer
+	- Button to open ShipMetadata dialog
+	- Resize button (canvas resize)
 
-= MainFrame:
-	+ Created by game MainFrame at initialization, but kept hidden
-	+ Switching between two frames: 
-		+ MainFrame owns ShipBuilder::MainFrame, ShipBulder::MainFrame takes std::function(...ship file path...) "ReturnToGame" in cctor
-			+ Latter may be null for stand-alone test executable
-		+ Switch implemented via:
-			- Game->ShipBuilder:
-				- Create New Ship...
-					- ::MainFrame::SwitchToShipBuilderForNewShip:
-						- SB::MainFrame->OpenForNewShip()
-							- Controller->CreateNewShip()
-								- ModelController::CreateNew()
-				- Edit This Ship...
-					- ::MainFrame::SwitchToShipBuilderForCurrentShip:
-						- SB::MainFrame->OpenForShip(ship file path)
-							- Controller->LoadShip(ship file path)
-								- ModelController::Load()
-			- ShipBuilder->Game:
-				- Quit and Return:
-					- return-to-game-functor(std::nullopt)
-				- Save and Return:
-					- SB::MainFrame: SaveDialog -> filename or cancel operation
-						- Controller->SaveShip(ship file path)
-						- ::MainFrame::SwitchFromShipBuilder(ship file path)
-				- ::MainFrame::SwitchFromShipBuilder(optional ship file path)
-					- If file path: GameController->ResetAndLoadShip(this ship file path)
-					- else: GameController->ResetAndLoadShip(current ship file path)
-
-	- Panning is via "losse" scrollbars around canvas
-		- For testing, requires Edit->Ship Size
-			- For now: just add and then reduce, in circle, with static member
-		+ Their range & properties (& position==thumb) need to be updated at:
-			+ glCanvas resize
-			+ Zoom changes
-			+ Pan changes (including keys)
-			+ WorkSpace resize (i.e. image resize)
-		+ Scrollbars recalculated via private MainFrame::RecalculatePanning, which is invoked by:
-			+ Self, @ glCanvas resize
-			+ Controller, @ Zoom, Pan, WorkSpace resize  - via IUserInterface
-
-	+ Layers toolbar:
-		+ Rename
-		+ MainFrame and Controller logic:
-			+ Move primaryLayer from ModelController to Controller
-			+ Controller::NewXYZLayer/SetXYZLayer(LayerType/content) => Model::... => Model::mLayerPresenceMap[]
-				+ Model::HasLayer(LayerType) => ModelController::GetModel()
-			! UI consistency rules:
-				! Things enabled if model has layers (Model::HasLayer(LayerType))
-					! New, Load: always [nop]
-					! Delete, Save: if HasLayer
-					! Slider: only enabled if > 1 layers
-					! Toggle button itself: if HasLayer
-			+ Events rearc:
-				+ Primary button: set in Controller, then ReconciliateUIWithPrimaryLayerSelection
-					+ Other toggle buttons (radio)
-					+ Set toolbar panel visibility
-						+ Have array with panels
-							+ Ropes toolbar: tools, no swath
-							+ Texture toolbar: empty
-				+ ReconciliateUIWithLayerPresence()
-					+ Toggle button
-					+ Delete, Save
-					+ Slider
-			+ Dirtiness
-				+ Framework
-				+ New button - w/dirty check for asking 
-				+ Open button - w/dirty check for asking
-				+ Save button - enabled only if dirty					
-		+ UI:
-			+ Redo with buttons
-			+ Do icons for layers
-
-	= Impl:
-		= Click-And-Draw
-			- Pencil tool
-
-	- Misc TODO's:
-		- Bug: resizing frame does not resize left column vertically accordingly
-		- Toolbar:
-			- Untoggle other buttons when one tool is toggled (i.e. radio behavior)
-				- @ ReconciliateUIWithSelectedTool
-					- Need array of ALL buttons (ToolType) - assuming structural tool enum values are separate from electrical
-		- App icons (whole "Resources" folder)
 
 - StatusBar:
 	- Own class
@@ -230,15 +177,6 @@
 			+ DisplayPixelCoordinates: the pixel display coordinates (type @ ShipBuilderTypes)
 		+ World coords is model pixel coords, i.e. WorkSpace
 		+ Tells outside world of pan extent (for scrollbar width setting)
-	- Background texture:
-		- SetBackgroundTexture(rgbaImage)
-			- Quad is full screen wide, but height depends on texture's aspect ratio
-		- Requires TextureManager, and subfolders of Textures: "Game" and "ShipBuilder"
-		- New texture unit
-		- Texture is set to tiled
-		- ViewModel::CalculateBackgroundOrthoMatrix(texture dimensions)
-			- Recalc'd and given to shader at canvas size change, but not at zoom and at cam
-		- New shader
 
 
 - WorkbenchState
@@ -247,94 +185,6 @@
 	= cctor: (MaterialsDB, SB::PreferencesManager)
 		+ FW and BG materials: always "defaults" from MaterialsDB
 		- other settings: loaded from SB::PreferencesManager
-
-- Controls:
-	+ BitmapCheckbox (see if * exists) (@UIControls)
-		! We'll re-use it for ShipLoadDialog
-	= MaterialsPalettePicker (@ShipBuilder): wxPanel
-		+ Templated on material type (Structural or Material)
-		! MainFrame owns two instances: Structural and Electrical			
-		! Column 1: scrollable vertical panel with bitmap buttons for selecting category
-		! Column 2: scrollable panel with rows and cols for selected category's materials		
-		! Opened on demand when clicking on Foreground/Background PopupButtons
-			- And then sets focus on material
-		- Impl:
-			+ Rearc:
-				+ ShipTexturizer takes MaterialsDB in cttor - and not ResourceLocator
-					+ Validates here that all exist
-				+ Nuke validation
-			+ Materials/DB changes:
-				+ Each material has new PaletteCoordinates:
-					+ Category ("Metal", "Wood", ...) (plain string, no enum)
-					+ SubCategory ("Iron", "Iron Hull", ...) (plain string, no enum)
-					+ MaterialOrdinal (ordinal in SubCategory)
-				+ Then json has PaletteStructure:
-					+ List of categories, in order of presentation
-					+ For each category: list of sub-categories, in order of presentation
-				+ Materials' PaletteCoordinates are verified to be in PaletteStructure at MaterialsDB load time
-					+ Including ordinals' conflicts
-					+ For each material, as they are deserialized
-						+ Invert order: palette structure first
-				+ Multi-key materials: automagically increase ordinal at Material::Parse
-				+ Make sure each cat & sub-cat has a material
-				+ Complete structural json palette
-				+ Also do at Electrical
-				+ Python script
-			+ GameController exposes MaterialsDB const &
-			+ ShipTexturizer (and StrengthRandomizer): owned by GameController (like MaterialDB) and passed down to ShipBuilder
-				+ ShipBuilder takes them in cctor
-					+ No more settings methods for texturizer & randomizer
-				+ Then, ShipTexturizer exposed by GameController
-			+ SB::MainFrame cctor
-			+ SB::MainApp loads MaterialsDB & ShipTexturizer
-			+ ShipTexturizer exposes new instance method that does color-blending of one tile of material texture: (size, material &) -> rgbaImage
-				+ This method also needs to take custom texturization settings, but for material swaths we pass nullopt (using shared settings then)
-			+ Make Fore & Back swaths in MainFrame
-				+ Do WorkbenchState (*)
-				+ CreateToolbar(): create internally two panels (structural and electrical, members of MainFrame), each with own pair of swaths
-				+ Implement SB::MainFrame::SyncWorkbenchStateToUI for swaths, using ShipTexturizer method to make bitmaps and populate in swaths
-					+ Do preloaded "null" bitmap
-					+ Update tooltip for swaths with material name
-				+ Do also electrical
-			+ cctor(MaterialsDB const &, GameTypes::MaterialLayerType == TemplateArg, ...)
-				= Build all panels as grids of static bmps (kinda like BitmapCheckbox)
-					+ Include "empty" category for no-brush case
-					+ Store sizer for "hiding tricks" to ensure one panel at a time
-					+ Fix margin/scrollbar thing
-					+ V and H scrollbars at each category panel
-						+ With adjustment @ Open()					
-			+ Open(wxPoint, wxRect referenceArea (absolute rect of work canvas), ShipBuilderTypes::MaterialPlaneType(Fore|Back), Material const *)
-				+ Positionate and resize self
-				+ Hides all category panels except the one
-				+ Begins selection with the one from WorkbenchState
-					+ Vector of vectors of buttons, each with material in objectdata
-			+ Category selection:
-				+ Select panel
-			+ On selection:
-				+ Fire event - one of Structural|Electrical, with (TMaterial *, MaterialPlaneType) args
-				+ Close
-				+ SB::MainFrame receival:
-					+ set material in WorkbenchState
-					+ start OnWorkbenchStateChanged cascade, i.e. call SyncWorkbenchStateToUI
-			+ CategoryPanel:
-				+ Make it so that width of cols is fixed, not dictated by labels
-					+ Name: wrap
-					+ Shorter data strings
-				+ Redo cat panels as simple panels, all embedded in a wxScrolled ("categoryPanelsContainer") that is immediate child of root
-					+ With HSizer used for hiding
-					+ Fix: category panels don't want to grow H
-				+ Area with properties of material under cursor
-					+ Hook mouse enter/leave event on each button
-			+ See if can subclass MaterialPaletteCategoryPanel to prevent unnecessary Layout()
-				+ LockLayout(bool lock=true)
-			+ Use wxWindowUpdateLocker instead of Freeze/Thaw
-			+ Test also Electrical
-				+ Do View toolbar ("Layers Toolbar") *
-				+ Finish property grid(s)
-			- Material descriptions
-				- json + Material class
-				- Text area underneath property grid
-					- Methods: "SetMaterialProperties" instead of "SetMaterialPropertyGrid"			
 
 - Ship file format:
 	- Min FS version (.shp, .shp2)
