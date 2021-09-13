@@ -52,11 +52,6 @@ public:
         return mModel;
     }
 
-    WorkSpaceSize const & GetWorkSpaceSize() const
-    {
-        return mModel.GetWorkSpaceSize();
-    }
-
 private:
 
     ModelController(

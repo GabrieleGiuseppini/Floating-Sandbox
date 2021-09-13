@@ -32,6 +32,7 @@ public:
 public:
 
     ViewModel(
+        WorkSpaceSize initialWorkSpaceSize,
         DisplayLogicalSize initialDisplaySize,
         int logicalToPhysicalPixelFactor)
         : mZoom(0)
@@ -41,6 +42,7 @@ public:
         , mDisplayPhysicalSize(
             initialDisplaySize.width * logicalToPhysicalPixelFactor,
             initialDisplaySize.height * logicalToPhysicalPixelFactor)
+        , mWorkSpaceSize(initialWorkSpaceSize)
     {
         //
         // Initialize ortho matrix
@@ -71,6 +73,13 @@ public:
 
         RecalculateAttributes();
 
+        // Recalculate pan limits
+        // TODOHERE - all of this in helper
+
+        // Adjust camera if necessary
+        // TODOHERE
+        // TODO: and call RecalcOrthoMatrix if necessary
+
         return mZoom;
     }
 
@@ -86,6 +95,14 @@ public:
         RecalculateAttributes();
 
         return mCam;
+    }
+
+    void SetWorkSpaceSize(WorkSpaceSize const & size)
+    {
+        mWorkSpaceSize = size;
+
+        // TODOHERE: recalculate pan limits
+        // TODO: exactly same as SetZoom -> move all of that to helper
     }
 
     DisplayPhysicalSize const & GetDisplayPhysicalSize() const
@@ -194,6 +211,7 @@ private:
     int const mLogicalToPhysicalPixelFactor;
     DisplayLogicalSize mDisplayLogicalSize;
     DisplayPhysicalSize mDisplayPhysicalSize;
+    WorkSpaceSize mWorkSpaceSize;
 
     // Calculated attributes
     float mDisplayPhysicalToWorkSpaceFactor; // # work pixels for 1 display pixel

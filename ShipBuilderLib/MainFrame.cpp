@@ -400,6 +400,7 @@ MainFrame::MainFrame(
     }
 
     mView = std::make_unique<View>(
+        WorkSpaceSize(0, 0), // We don't have a workspace yet
         DisplayLogicalSize(
             mWorkCanvas->GetSize().GetWidth(),
             mWorkCanvas->GetSize().GetHeight()),
@@ -462,7 +463,13 @@ void MainFrame::OnModelDirtyChanged(bool isDirty)
 
 void MainFrame::OnWorkSpaceSizeChanged()
 {
+    // Notify view of new workspace size
+    // Note: might cause a view model change that would not be
+    // notified via OnViewModelChanged
+    mView->SetWorkSpaceSize(mController->GetModelController().GetModel().GetWorkSpaceSize());
+
     RecalculateWorkCanvasPanning();
+
     // TODO: status bar
 }
 
@@ -1803,7 +1810,7 @@ void MainFrame::RecalculateWorkCanvasPanning()
         // We populate the scollbar with work space coordinates
         //
 
-        WorkSpaceSize const workSpaceSize = mController->GetModelController().GetWorkSpaceSize();
+        WorkSpaceSize const workSpaceSize = mController->GetModelController().GetModel().GetWorkSpaceSize();
         WorkSpaceCoordinates const cameraPos = mView->GetCameraWorkSpacePosition();
         WorkSpaceSize const scrollRange = mView->GetCameraPanRange();
 

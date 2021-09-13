@@ -36,6 +36,7 @@ class View
 public:
 
     View(
+        WorkSpaceSize initialWorkSpaceSize,
         DisplayLogicalSize initialDisplaySize,
         int logicalToPhysicalPixelFactor,
         std::function<void()> swapRenderBuffersFunction,
@@ -67,6 +68,11 @@ public:
         RefreshOrthoMatrix();
 
         return newPos;
+    }
+
+    void SetWorkSpaceSize(WorkSpaceSize const & size)
+    {
+        mViewModel->SetWorkSpaceSize(size);
     }
 
     void SetDisplayLogicalSize(DisplayLogicalSize const & logicalSize)
