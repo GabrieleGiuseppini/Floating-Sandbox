@@ -72,7 +72,7 @@ public:
 
     void SetWorkSpaceSize(WorkSpaceSize const & size)
     {
-        mViewModel->SetWorkSpaceSize(size);
+        mViewModel.SetWorkSpaceSize(size);
     }
 
     void SetDisplayLogicalSize(DisplayLogicalSize const & logicalSize)

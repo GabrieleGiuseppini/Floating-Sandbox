@@ -146,11 +146,17 @@ void Model::MakeNewEmptyStructuralLayer(WorkSpaceSize const & size)
     {
         for (int x = 0; x < size.width; ++x)
         {
-            (*mStructuralRenderColorTexture)[vec2i(x, y)] = rgbaColor(
-                (x % 2) ? 255 : 0,
-                (x % 2) ? 0 : 255,
-                0,
-                255);
+            rgbaColor color;
+            if (x == 0 || x == size.width - 1 || y == 0 || y == size.height - 1)
+                color = rgbaColor(0, 0, 255, 255);
+            else
+                color = rgbaColor(
+                    ((x + y) % 2) ? 255 : 0,
+                    ((x + y) % 2) ? 0 : 255,
+                    0,
+                    255);
+
+            (*mStructuralRenderColorTexture)[vec2i(x, y)] = color;
         }
     }
 }

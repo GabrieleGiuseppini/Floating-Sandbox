@@ -126,8 +126,8 @@ public:
         // Return work space that fits entirely in current display, including margins
 
         return WorkSpaceSize(
-            DisplayPhysicalToWorkSpace(mDisplayLogicalSize.width * mLogicalToPhysicalPixelFactor - MarginDisplayPhysicalSize * 2),
-            DisplayPhysicalToWorkSpace(mDisplayLogicalSize.height * mLogicalToPhysicalPixelFactor - MarginDisplayPhysicalSize * 2));
+            DisplayPhysicalToWorkSpace(mDisplayLogicalSize.width * mLogicalToPhysicalPixelFactor) - MarginDisplayWorkSize * 2,
+            DisplayPhysicalToWorkSpace(mDisplayLogicalSize.height * mLogicalToPhysicalPixelFactor) - MarginDisplayWorkSize * 2);
     }
 
     //
@@ -137,8 +137,8 @@ public:
     WorkSpaceCoordinates ScreenToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
         return WorkSpaceCoordinates(
-            DisplayPhysicalToWorkSpace(displayCoordinates.x * mLogicalToPhysicalPixelFactor - MarginDisplayPhysicalSize) + mCam.x,
-            DisplayPhysicalToWorkSpace(displayCoordinates.y * mLogicalToPhysicalPixelFactor - MarginDisplayPhysicalSize) + mCam.y);
+            DisplayPhysicalToWorkSpace(displayCoordinates.x * mLogicalToPhysicalPixelFactor) - MarginDisplayWorkSize + mCam.x,
+            DisplayPhysicalToWorkSpace(displayCoordinates.y * mLogicalToPhysicalPixelFactor) - MarginDisplayWorkSize + mCam.y);
     }
 
     ProjectionMatrix const & GetOrthoMatrix() const
@@ -152,9 +152,6 @@ private:
     {
         // Display physicial => Work factor
         mDisplayPhysicalToWorkSpaceFactor = CalculateZoomFactor(mZoom);
-
-        // Margin work size
-        mMarginWorkSize = MarginDisplayPhysicalSize * mDisplayPhysicalToWorkSpaceFactor;
 
         // Ortho Matrix:
         //  WorkCoordinates * OrthoMatrix => NDC
@@ -178,8 +175,8 @@ private:
         // Recalculate Ortho Matrix cells (r, c)
         mOrthoMatrix[0][0] = 2.0f / sDspW;
         mOrthoMatrix[1][1] = -2.0f / sDspH;
-        mOrthoMatrix[3][0] = -2.0f * (static_cast<float>(mCam.x) - mMarginWorkSize) / sDspW - 1.0f;
-        mOrthoMatrix[3][1] = 2.0f * (static_cast<float>(mCam.y) - mMarginWorkSize) / sDspH + 1.0f;
+        mOrthoMatrix[3][0] = -2.0f * (static_cast<float>(mCam.x) - MarginDisplayWorkSize) / sDspW - 1.0f;
+        mOrthoMatrix[3][1] = 2.0f * (static_cast<float>(mCam.y) - MarginDisplayWorkSize) / sDspH + 1.0f;
     }
 
     static float CalculateZoomFactor(int zoom)
@@ -203,7 +200,7 @@ private:
     // Constants
     static int constexpr MaxZoom = 6;
     static int constexpr MinZoom = -3;
-    static int constexpr MarginDisplayPhysicalSize = 8;
+    static int constexpr MarginDisplayWorkSize = 1;
 
     // Primary inputs
     int mZoom; // >=0: display pixels occupied by one work space pixel
@@ -215,7 +212,6 @@ private:
 
     // Calculated attributes
     float mDisplayPhysicalToWorkSpaceFactor; // # work pixels for 1 display pixel
-    float mMarginWorkSize; // Work size of margin
     ProjectionMatrix mOrthoMatrix;
 };
 

@@ -183,7 +183,7 @@ void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPositi
     // TODO: should we detect in<->out transitions and tell tool?
 
     // Check if within work canvas
-    if (mouseWorkSpaceCoordinates.IsInRect(mModelController->GetWorkSpaceSize()))
+    if (mouseWorkSpaceCoordinates.IsInRect(mModelController->GetModel().GetWorkSpaceSize()))
     {
         // TODO: FW to tool
     }
@@ -259,7 +259,7 @@ void Controller::RefreshToolCoordinateDisplay()
     WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.ScreenToWorkSpace(mInputState.MousePosition);
 
     // Check if within work canvas
-    if (mouseWorkSpaceCoordinates.IsInRect(mModelController->GetWorkSpaceSize()))
+    if (mouseWorkSpaceCoordinates.IsInRect(mModelController->GetModel().GetWorkSpaceSize()))
     {
         mUserInterface.OnToolCoordinatesChanged(mouseWorkSpaceCoordinates);
     }
