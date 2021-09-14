@@ -425,6 +425,7 @@ void MainFrame::OpenForNewShip()
         *this);
 
     // Adjust UI
+    // TODO: sure? won't controller cause
     ReconciliateUI();
 
     // Open ourselves
@@ -441,6 +442,7 @@ void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
         *this);
 
     // Adjust UI
+    // TODO: sure? won't controller cause
     ReconciliateUI();
 
     // Open ourselves
@@ -454,6 +456,16 @@ void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
 void MainFrame::RefreshView()
 {
     Refresh();
+}
+
+void MainFrame::OnLayerPresenceChanged()
+{
+    ReconciliateUIWithLayerPresence();
+}
+
+void MainFrame::OnPrimaryLayerChanged(LayerType primaryLayer)
+{
+    ReconciliateUIWithPrimaryLayerSelection(primaryLayer);
 }
 
 void MainFrame::OnModelDirtyChanged(bool isDirty)
@@ -709,7 +721,6 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                             [this, layer]()
                             {
                                 mController->SelectPrimaryLayer(layer);
-                                ReconciliateUIWithPrimaryLayerSelection();
                             },
                             buttonTooltip);
 
@@ -760,11 +771,8 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                         }
                                     }
 
-                                    ReconciliateUIWithLayerPresence();
-
                                     // Switch primary layer to this one
                                     mController->SelectPrimaryLayer(layer);
-                                    ReconciliateUIWithPrimaryLayerSelection();
                                 },
                                 "Make a new empty layer");
 
@@ -837,13 +845,10 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                         }
                                     }
 
-                                    ReconciliateUIWithLayerPresence();
-
                                     // Switch primary layer if it was this one
                                     if (mController->GetPrimaryLayer() == layer)
                                     {
                                         mController->SelectPrimaryLayer(LayerType::Structural);
-                                        ReconciliateUIWithPrimaryLayerSelection();
                                     }
                                 },
                                 "Remove this layer");
@@ -1237,16 +1242,11 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
             // Rope
             {
-                auto button = new BitmapToggleButton(
+                auto button = makeToolButton(
+                    ToolType::RopesHarness,
                     ropesToolbarPanel,
-                    // TODO
-                    mResourceLocator.GetIconFilePath("pencil_icon"),
-                    [this]()
-                    {
-                        // TODOHERE
-                        //SetTool(ToolType::Eraser);
-                    },
-                    _("Draw ropes"));
+                    "pencil_icon", // // TODOHERE
+                    _("Draw a rope between two endpoints"));
 
                 toolsSizer->Add(
                     button,
@@ -1778,7 +1778,7 @@ void MainFrame::ReconciliateUI()
 
     ReconciliateUIWithModelDirtiness(mController->GetModelController().GetModel().GetIsDirty());
     RecalculateWorkCanvasPanning();
-    ReconciliateUIWithPrimaryLayerSelection();
+    ReconciliateUIWithPrimaryLayerSelection(mController->GetPrimaryLayer());
     ReconciliateUIWithLayerPresence();
     ReconciliateUIWithWorkbenchState();
 }
@@ -1828,14 +1828,14 @@ void MainFrame::RecalculateWorkCanvasPanning()
     }
 }
 
-void MainFrame::ReconciliateUIWithPrimaryLayerSelection()
+void MainFrame::ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer)
 {
     assert(!!mController);
 
     // Toggle <select buttons, tool panels> <-> primary layer
     bool hasToggledToolPanel = false;
-    assert(mController->GetModelController().GetModel().HasLayer(mController->GetPrimaryLayer()));
-    uint32_t const iPrimaryLayer = static_cast<uint32_t>(mController->GetPrimaryLayer());
+    assert(mController->GetModelController().GetModel().HasLayer(primaryLayer));
+    uint32_t const iPrimaryLayer = static_cast<uint32_t>(primaryLayer);
     for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
     {
         bool const isSelected = (iLayer == iPrimaryLayer);
@@ -1859,7 +1859,6 @@ void MainFrame::ReconciliateUIWithPrimaryLayerSelection()
     if (hasToggledToolPanel)
     {
         mToolbarPanelsSizer->Layout();
-        //Layout();
     }
 }
 

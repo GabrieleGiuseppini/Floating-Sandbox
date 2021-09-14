@@ -64,6 +64,9 @@ Controller::Controller(
     , mPrimaryLayer(LayerType::Structural)
 {
     assert(mModelController->GetModel().HasLayer(LayerType::Structural));
+
+    mUserInterface.OnPrimaryLayerChanged();
+    mUserInterface.OnCurrentToolChanged();
 }
 
 void Controller::NewStructuralLayer()
@@ -127,6 +130,8 @@ void Controller::SelectPrimaryLayer(LayerType primaryLayer)
 
     // Reset current tool
     SetTool(std::nullopt);
+
+    mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
 }
 
 void Controller::AddZoom(int deltaZoom)

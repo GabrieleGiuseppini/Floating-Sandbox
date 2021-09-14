@@ -20,6 +20,12 @@ public:
 
     virtual void RefreshView() = 0;
 
+    // Notifies of a (possible) change in the presence of a layer
+    virtual void OnLayerPresenceChanged() = 0;
+
+    // Notifies of a (possible) change in the primary layer
+    virtual void OnPrimaryLayerChanged(LayerType primaryLayer) = 0;
+
     // Notifies of a (possible) change in the dirtiness of the model
     virtual void OnModelDirtyChanged(bool isDirty) = 0;
 

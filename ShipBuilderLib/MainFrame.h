@@ -71,6 +71,10 @@ public:
 
     void RefreshView() override;
 
+    void OnLayerPresenceChanged() override;
+
+    void OnPrimaryLayerChanged(LayerType primaryLayer) override;
+
     void OnModelDirtyChanged(bool isDirty) override;
 
     void OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize) override;
@@ -151,7 +155,7 @@ private:
 
     void RecalculateWorkCanvasPanning();
 
-    void ReconciliateUIWithPrimaryLayerSelection();
+    void ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer);
 
     void ReconciliateUIWithLayerPresence();
 

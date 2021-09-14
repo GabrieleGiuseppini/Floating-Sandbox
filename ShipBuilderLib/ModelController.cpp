@@ -42,6 +42,7 @@ ModelController::ModelController(
     , mUserInterface(userInterface)
     , mModel(workSpaceSize)
 {
+    mUserInterface.OnLayerPresenceChanged();
     mUserInterface.OnWorkSpaceSizeChanged(mModel.GetWorkSpaceSize());
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 
@@ -50,10 +51,13 @@ ModelController::ModelController(
 
 void ModelController::NewStructuralLayer()
 {
+    assert(mModel.HasLayer(LayerType::Structural));
+
     mModel.NewStructuralLayer();
 
     UploadStructuralRenderColorTextureToView();
 
+    mUserInterface.OnLayerPresenceChanged();
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
@@ -72,11 +76,14 @@ void ModelController::NewElectricalLayer()
 
     // TODO: upload to view
 
+    mUserInterface.OnLayerPresenceChanged();
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::SetElectricalLayer(/*TODO*/)
 {
+    assert(mModel.HasLayer(LayerType::Electrical));
+
     mModel.SetElectricalLayer();
 
     // TODO: upload to view
@@ -86,10 +93,13 @@ void ModelController::SetElectricalLayer(/*TODO*/)
 
 void ModelController::RemoveElectricalLayer()
 {
+    assert(mModel.HasLayer(LayerType::Electrical));
+
     mModel.RemoveElectricalLayer();
 
     // TODO: upload to view
 
+    mUserInterface.OnLayerPresenceChanged();
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
@@ -99,11 +109,14 @@ void ModelController::NewRopesLayer()
 
     // TODO: upload to view
 
+    mUserInterface.OnLayerPresenceChanged();
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::SetRopesLayer(/*TODO*/)
 {
+    assert(mModel.HasLayer(LayerType::Ropes));
+
     mModel.SetRopesLayer();
 
     // TODO: upload to view
@@ -113,10 +126,13 @@ void ModelController::SetRopesLayer(/*TODO*/)
 
 void ModelController::RemoveRopesLayer()
 {
+    assert(mModel.HasLayer(LayerType::Ropes));
+
     mModel.RemoveRopesLayer();
 
     // TODO: upload to view
 
+    mUserInterface.OnLayerPresenceChanged();
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
@@ -126,11 +142,14 @@ void ModelController::NewTextureLayer()
 
     // TODO: upload to view
 
+    mUserInterface.OnLayerPresenceChanged();
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::SetTextureLayer(/*TODO*/)
 {
+    assert(mModel.HasLayer(LayerType::Texture));
+
     mModel.SetTextureLayer();
 
     // TODO: upload to view
@@ -140,10 +159,13 @@ void ModelController::SetTextureLayer(/*TODO*/)
 
 void ModelController::RemoveTextureLayer()
 {
+    assert(mModel.HasLayer(LayerType::Texture));
+
     mModel.RemoveTextureLayer();
 
     // TODO: upload to view
 
+    mUserInterface.OnLayerPresenceChanged();
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 

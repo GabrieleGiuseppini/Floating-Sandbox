@@ -19,6 +19,7 @@ enum class ToolType : std::uint32_t
     StructuralEraser,
     ElectricalPencil,
     ElectricalEraser,
+    RopesHarness,
     RopesEraser,
 
     _Last = RopesEraser
