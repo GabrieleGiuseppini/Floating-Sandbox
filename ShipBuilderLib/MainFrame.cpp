@@ -460,6 +460,22 @@ void MainFrame::RefreshView()
     Refresh();
 }
 
+void MainFrame::OnViewModelChanged()
+{
+    if (mController)
+    {
+        RecalculateWorkCanvasPanning();
+    }
+}
+
+void MainFrame::OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize)
+{
+    if (mController)
+    {
+        ReconciliateUIWithWorkSpaceSize(workSpaceSize);
+    }
+}
+
 void MainFrame::OnLayerPresenceChanged()
 {
     if (mController)
@@ -481,26 +497,6 @@ void MainFrame::OnModelDirtyChanged(bool isDirty)
     if (mController)
     {
         ReconciliateUIWithModelDirtiness(isDirty);
-    }
-}
-
-void MainFrame::OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize)
-{
-    // Notify view of new workspace size
-    // Note: might cause a view model change that would not be
-    // notified via OnViewModelChanged
-    mView->SetWorkSpaceSize(workSpaceSize);
-
-    RecalculateWorkCanvasPanning();
-
-    // TODO: status bar
-}
-
-void MainFrame::OnViewModelChanged()
-{
-    if (mController)
-    {
-        RecalculateWorkCanvasPanning();
     }
 }
 
@@ -1788,16 +1784,55 @@ bool MainFrame::AskUserIfSure(wxString caption)
     return (result == wxOK);
 }
 
+void MainFrame::RecalculateWorkCanvasPanning()
+{
+    assert(mView);
+
+    //
+    // We populate the scollbar with work space coordinates
+    //
+
+    WorkSpaceCoordinates const cameraPos = mView->GetCameraWorkSpacePosition();
+    WorkSpaceSize const cameraThumbSize = mView->GetCameraThumbSize();
+    WorkSpaceSize const cameraRange = mView->GetCameraRange();
+
+    mWorkCanvasHScrollBar->SetScrollbar(
+        cameraPos.x,
+        cameraThumbSize.width,
+        cameraRange.width,
+        cameraThumbSize.width); // page size  == thumb
+
+    mWorkCanvasVScrollBar->SetScrollbar(
+        cameraPos.y,
+        cameraThumbSize.height,
+        cameraRange.height,
+        cameraThumbSize.height); // page size  == thumb
+}
+
 void MainFrame::ReconciliateUI()
 {
     assert(!!mController);
 
     ReconciliateUIWithLayerPresence();
+    ReconciliateUIWithWorkSpaceSize(mController->GetModelController().GetModel().GetWorkSpaceSize());
     ReconciliateUIWithPrimaryLayerSelection(mController->GetPrimaryLayer());
     ReconciliateUIWithModelDirtiness(mController->GetModelController().GetModel().GetIsDirty());
-    RecalculateWorkCanvasPanning();
     ReconciliateUIWithWorkbenchState();
     ReconciliateUIWithSelectedTool(mController->GetTool());
+}
+
+void MainFrame::ReconciliateUIWithWorkSpaceSize(WorkSpaceSize const & workSpaceSize)
+{
+    assert(mController);
+
+    // Notify view of new workspace size
+    // Note: might cause a view model change that would not be
+    // notified via OnViewModelChanged
+    mView->SetWorkSpaceSize(workSpaceSize);
+
+    RecalculateWorkCanvasPanning();
+
+    // TODO: status bar
 }
 
 void MainFrame::ReconciliateUIWithLayerPresence()
@@ -1892,31 +1927,6 @@ void MainFrame::ReconciliateUIWithModelDirtiness(bool isDirty)
     {
         mSaveShipButton->Enable(isDirty);
     }
-}
-
-void MainFrame::RecalculateWorkCanvasPanning()
-{
-    assert(mView);
-
-    //
-    // We populate the scollbar with work space coordinates
-    //
-
-    WorkSpaceCoordinates const cameraPos = mView->GetCameraWorkSpacePosition();
-    WorkSpaceSize const cameraThumbSize = mView->GetCameraThumbSize();
-    WorkSpaceSize const cameraRange = mView->GetCameraRange();
-
-    mWorkCanvasHScrollBar->SetScrollbar(
-        cameraPos.x,
-        cameraThumbSize.width,
-        cameraRange.width,
-        cameraThumbSize.width); // page size  == thumb
-
-    mWorkCanvasVScrollBar->SetScrollbar(
-        cameraPos.y,
-        cameraThumbSize.height,
-        cameraRange.height,
-        cameraThumbSize.height); // page size  == thumb
 }
 
 void MainFrame::ReconciliateUIWithWorkbenchState()

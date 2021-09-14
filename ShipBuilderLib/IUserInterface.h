@@ -21,6 +21,12 @@ public:
 
     virtual void RefreshView() = 0;
 
+    // Notifies of a change in the view model geometry
+    virtual void OnViewModelChanged() = 0;
+
+    // Notifies of a change in the size of the model
+    virtual void OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize) = 0;
+
     // Notifies of a (possible) change in the presence of a layer
     virtual void OnLayerPresenceChanged() = 0;
 
@@ -29,12 +35,6 @@ public:
 
     // Notifies of a (possible) change in the dirtiness of the model
     virtual void OnModelDirtyChanged(bool isDirty) = 0;
-
-    // Notifies of a change in the size of the model
-    virtual void OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize) = 0;
-
-    // Notifies of a change in the view model geometry
-    virtual void OnViewModelChanged() = 0;
 
     // Notifies of a change in any member of the workbench state
     virtual void OnWorkbenchStateChanged() = 0;

@@ -71,15 +71,15 @@ public:
 
     void RefreshView() override;
 
+    void OnViewModelChanged() override;
+
+    void OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize) override;
+
     void OnLayerPresenceChanged() override;
 
     void OnPrimaryLayerChanged(LayerType primaryLayer) override;
 
     void OnModelDirtyChanged(bool isDirty) override;
-
-    void OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize) override;
-
-    void OnViewModelChanged() override;
 
     void OnWorkbenchStateChanged() override;
 
@@ -145,19 +145,21 @@ private:
 
     bool AskUserIfSure(wxString caption);
 
+    void RecalculateWorkCanvasPanning();
+
     //
     // UI Consistency
     //
 
     void ReconciliateUI();
 
+    void ReconciliateUIWithWorkSpaceSize(WorkSpaceSize const & workSpaceSize);
+
     void ReconciliateUIWithLayerPresence();
 
     void ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer);
 
     void ReconciliateUIWithModelDirtiness(bool isDirty);
-
-    void RecalculateWorkCanvasPanning();
 
     void ReconciliateUIWithWorkbenchState();
 

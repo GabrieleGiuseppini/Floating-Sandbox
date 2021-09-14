@@ -1,12 +1,5 @@
 
-- MainFrame should delegate as much as possible to Controller, and be notified via IUserInterface
-	+ Primary layer selection
-	+ Layer presence changes
-	+ Tool selection
-	+ Fix problem with initial controller creation
-		+ Put GameController guard in front of all IUserInterface callbacks, and assert's at Reconciliate
-	- Should RecalculatePanning become ReconciliateUIWithWorkSpaceSize, and we also guard OnWorkspaceSizeChanged with Controller?
-
++ MainFrame should delegate as much as possible to Controller, and be notified via IUserInterface
 - Similarly, see if can remove IUserInterface from ModelController
 
 - Scroll events: not capturing arrow keys
