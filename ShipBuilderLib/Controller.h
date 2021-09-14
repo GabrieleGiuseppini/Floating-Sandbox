@@ -12,7 +12,6 @@
 #include "View.h"
 #include "WorkbenchState.h"
 
-#include <filesystem>
 #include <memory>
 #include <optional>
 
@@ -31,8 +30,8 @@ public:
         WorkbenchState & workbenchState,
         IUserInterface & userInterface);
 
-    static std::unique_ptr<Controller> CreateFromLoad(
-        std::filesystem::path const & shipFilePath,
+    static std::unique_ptr<Controller> CreateForShip(
+        /* TODO: loaded ship ,*/
         View & view,
         WorkbenchState & workbenchState,
         IUserInterface & userInterface);
@@ -57,18 +56,15 @@ public:
     void SetTextureLayer(/*TODO*/);
     void RemoveTextureLayer();
 
-    LayerType GetPrimaryLayer() const
-    {
-        return mPrimaryLayer;
-    }
-
+    LayerType GetPrimaryLayer() const;
     void SelectPrimaryLayer(LayerType primaryLayer);
+
+    std::optional<ToolType> GetTool() const;
+    void SetTool(std::optional<ToolType> tool);
 
     void AddZoom(int deltaZoom);
     void SetCamera(int camX, int camY);
     void ResetView();
-
-    void SetTool(std::optional<ToolType> tool);
 
     void OnWorkCanvasResized(DisplayLogicalSize const & newSize);
 

@@ -21,8 +21,8 @@ std::unique_ptr<ModelController> ModelController::CreateNew(
             userInterface));
 }
 
-std::unique_ptr<ModelController> ModelController::CreateFromLoad(
-    std::filesystem::path const & shipFilePath,
+std::unique_ptr<ModelController> ModelController::CreateForShip(
+    /* TODO: loaded ship ,*/
     View & view,
     IUserInterface & userInterface)
 {
@@ -43,8 +43,8 @@ ModelController::ModelController(
     , mModel(workSpaceSize)
 {
     mUserInterface.OnLayerPresenceChanged();
-    mUserInterface.OnWorkSpaceSizeChanged(mModel.GetWorkSpaceSize());
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
+    mUserInterface.OnWorkSpaceSizeChanged(mModel.GetWorkSpaceSize());
 
     UploadStructuralRenderColorTextureToView();
 }

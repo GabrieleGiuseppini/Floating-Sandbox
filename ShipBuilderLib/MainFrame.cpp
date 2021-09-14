@@ -418,15 +418,14 @@ MainFrame::MainFrame(
 
 void MainFrame::OpenForNewShip()
 {
-    // Create controller
+    // Shut off UI updated during new controller creation
+    mController.reset();
+
+    // Create controller - will fire UI reconciliations
     mController = Controller::CreateNew(
         *mView,
         mWorkbenchState,
         *this);
-
-    // Adjust UI
-    // TODO: sure? won't controller cause
-    ReconciliateUI();
 
     // Open ourselves
     Open();
@@ -434,16 +433,19 @@ void MainFrame::OpenForNewShip()
 
 void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
 {
-    // Create controller
-    mController = Controller::CreateFromLoad(
-        shipFilePath,
+    // Load ship
+    // TODO: we load the ship here, so errors may occur while we still have a controller;
+    // then, pass loaded data to Controller
+
+    // Shut off UI updated during new controller creation
+    mController.reset();
+
+    // Create controller - will fire UI reconciliations
+    mController = Controller::CreateForShip(
+        /* TODO: loaded ship ,*/
         *mView,
         mWorkbenchState,
         *this);
-
-    // Adjust UI
-    // TODO: sure? won't controller cause
-    ReconciliateUI();
 
     // Open ourselves
     Open();
@@ -460,17 +462,26 @@ void MainFrame::RefreshView()
 
 void MainFrame::OnLayerPresenceChanged()
 {
-    ReconciliateUIWithLayerPresence();
+    if (mController)
+    {
+        ReconciliateUIWithLayerPresence();
+    }
 }
 
 void MainFrame::OnPrimaryLayerChanged(LayerType primaryLayer)
 {
-    ReconciliateUIWithPrimaryLayerSelection(primaryLayer);
+    if (mController)
+    {
+        ReconciliateUIWithPrimaryLayerSelection(primaryLayer);
+    }
 }
 
 void MainFrame::OnModelDirtyChanged(bool isDirty)
 {
-    ReconciliateUIWithModelDirtiness(isDirty);
+    if (mController)
+    {
+        ReconciliateUIWithModelDirtiness(isDirty);
+    }
 }
 
 void MainFrame::OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize)
@@ -487,25 +498,25 @@ void MainFrame::OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize)
 
 void MainFrame::OnViewModelChanged()
 {
-    RecalculateWorkCanvasPanning();
+    if (mController)
+    {
+        RecalculateWorkCanvasPanning();
+    }
 }
 
 void MainFrame::OnWorkbenchStateChanged()
 {
-    ReconciliateUIWithWorkbenchState();
+    if (mController)
+    {
+        ReconciliateUIWithWorkbenchState();
+    }
 }
 
 void MainFrame::OnCurrentToolChanged(std::optional<ToolType> tool)
 {
-    // Select this tool's button and unselect the others
-    for (size_t i = 0; i < mToolButtons.size(); ++i)
+    if (mController)
     {
-        bool const isSelected = (tool.has_value() && i == static_cast<size_t>(*tool));
-
-        if (mToolButtons[i]->GetValue() != isSelected)
-        {
-            mToolButtons[i]->SetValue(isSelected);
-        }
+        ReconciliateUIWithSelectedTool(tool);
     }
 }
 
@@ -1698,6 +1709,11 @@ void MainFrame::OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent &
 
 void MainFrame::Open()
 {
+    assert(mController);
+
+    // Sync UI
+    ReconciliateUI();
+
     // Show us
     Show(true);
 
@@ -1776,61 +1792,56 @@ void MainFrame::ReconciliateUI()
 {
     assert(!!mController);
 
+    ReconciliateUIWithLayerPresence();
+    ReconciliateUIWithPrimaryLayerSelection(mController->GetPrimaryLayer());
     ReconciliateUIWithModelDirtiness(mController->GetModelController().GetModel().GetIsDirty());
     RecalculateWorkCanvasPanning();
-    ReconciliateUIWithPrimaryLayerSelection(mController->GetPrimaryLayer());
-    ReconciliateUIWithLayerPresence();
     ReconciliateUIWithWorkbenchState();
+    ReconciliateUIWithSelectedTool(mController->GetTool());
 }
 
-void MainFrame::ReconciliateUIWithModelDirtiness(bool isDirty)
+void MainFrame::ReconciliateUIWithLayerPresence()
 {
-    if (mSaveShipMenuItem->IsEnabled() != isDirty)
+    assert(mController);
+
+    Model const & model = mController->GetModelController().GetModel();
+
+    //
+    // Rules
+    //
+    // Presence button: if HasLayer
+    // New, Load: always
+    // Delete, Save: if HasLayer
+    // Slider: only enabled if > 1 layers
+    //
+
+    for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
     {
-        mSaveShipMenuItem->Enable(isDirty);
+        bool const hasLayer = model.HasLayer(static_cast<LayerType>(iLayer));
+
+        mLayerSelectButtons[iLayer]->Enable(hasLayer);
+
+        if (mLayerSaveButtons[iLayer] != nullptr
+            && mLayerSaveButtons[iLayer]->IsEnabled() != hasLayer)
+        {
+            mLayerSaveButtons[iLayer]->Enable(hasLayer);
+        }
+
+        if (mLayerDeleteButtons[iLayer] != nullptr
+            && mLayerDeleteButtons[iLayer]->IsEnabled() != hasLayer)
+        {
+            mLayerDeleteButtons[iLayer]->Enable(hasLayer);
+        }
     }
 
-    if (mSaveAndGoBackMenuItem != nullptr
-        && mSaveAndGoBackMenuItem->IsEnabled() != isDirty)
-    {
-        mSaveAndGoBackMenuItem->Enable(false);
-    }
+    mOtherLayersOpacitySlider->Enable(model.HasExtraLayers());
 
-    if (mSaveShipButton->IsEnabled() != isDirty)
-    {
-        mSaveShipButton->Enable(isDirty);
-    }
-}
-
-void MainFrame::RecalculateWorkCanvasPanning()
-{
-    if (mController)
-    {
-        //
-        // We populate the scollbar with work space coordinates
-        //
-
-        WorkSpaceCoordinates const cameraPos = mView->GetCameraWorkSpacePosition();
-        WorkSpaceSize const cameraThumbSize = mView->GetCameraThumbSize();
-        WorkSpaceSize const cameraRange = mView->GetCameraRange();
-
-        mWorkCanvasHScrollBar->SetScrollbar(
-            cameraPos.x,
-            cameraThumbSize.width,
-            cameraRange.width,
-            cameraThumbSize.width); // page size  == thumb
-
-        mWorkCanvasVScrollBar->SetScrollbar(
-            cameraPos.y,
-            cameraThumbSize.height,
-            cameraRange.height,
-            cameraThumbSize.height); // page size  == thumb
-    }
+    mLayerSelectButtons[static_cast<size_t>(mController->GetPrimaryLayer())]->SetFocus(); // Prevent other random buttons for getting focus
 }
 
 void MainFrame::ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer)
 {
-    assert(!!mController);
+    assert(mController);
 
     // Toggle <select buttons, tool panels> <-> primary layer
     bool hasToggledToolPanel = false;
@@ -1862,47 +1873,56 @@ void MainFrame::ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer)
     }
 }
 
-void MainFrame::ReconciliateUIWithLayerPresence()
+void MainFrame::ReconciliateUIWithModelDirtiness(bool isDirty)
 {
-    assert(!!mController);
+    assert(mController);
 
-    //
-    // Rules
-    //
-    // Presence button: if HasLayer
-    // New, Load: always
-    // Delete, Save: if HasLayer
-    // Slider: only enabled if > 1 layers
-    //
-
-    auto const & model = mController->GetModelController().GetModel();
-
-    for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
+    if (mSaveShipMenuItem->IsEnabled() != isDirty)
     {
-        bool const hasLayer = model.HasLayer(static_cast<LayerType>(iLayer));
-
-        mLayerSelectButtons[iLayer]->Enable(hasLayer);
-
-        if (mLayerSaveButtons[iLayer] != nullptr
-            && mLayerSaveButtons[iLayer]->IsEnabled() != hasLayer)
-        {
-            mLayerSaveButtons[iLayer]->Enable(hasLayer);
-        }
-
-        if (mLayerDeleteButtons[iLayer] != nullptr
-            && mLayerDeleteButtons[iLayer]->IsEnabled() != hasLayer)
-        {
-            mLayerDeleteButtons[iLayer]->Enable(hasLayer);
-        }
+        mSaveShipMenuItem->Enable(isDirty);
     }
 
-    mOtherLayersOpacitySlider->Enable(model.HasExtraLayers());
+    if (mSaveAndGoBackMenuItem != nullptr
+        && mSaveAndGoBackMenuItem->IsEnabled() != isDirty)
+    {
+        mSaveAndGoBackMenuItem->Enable(false);
+    }
 
-    mLayerSelectButtons[static_cast<size_t>(mController->GetPrimaryLayer())]->SetFocus(); // Prevent other random buttons for getting focus
+    if (mSaveShipButton->IsEnabled() != isDirty)
+    {
+        mSaveShipButton->Enable(isDirty);
+    }
+}
+
+void MainFrame::RecalculateWorkCanvasPanning()
+{
+    assert(mView);
+
+    //
+    // We populate the scollbar with work space coordinates
+    //
+
+    WorkSpaceCoordinates const cameraPos = mView->GetCameraWorkSpacePosition();
+    WorkSpaceSize const cameraThumbSize = mView->GetCameraThumbSize();
+    WorkSpaceSize const cameraRange = mView->GetCameraRange();
+
+    mWorkCanvasHScrollBar->SetScrollbar(
+        cameraPos.x,
+        cameraThumbSize.width,
+        cameraRange.width,
+        cameraThumbSize.width); // page size  == thumb
+
+    mWorkCanvasVScrollBar->SetScrollbar(
+        cameraPos.y,
+        cameraThumbSize.height,
+        cameraRange.height,
+        cameraThumbSize.height); // page size  == thumb
 }
 
 void MainFrame::ReconciliateUIWithWorkbenchState()
 {
+    assert(mController);
+
     // Populate swaths in toolbars
     {
         static std::string const ClearMaterialName = "Clear";
@@ -1977,6 +1997,22 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
     }
 
     // TODO: Populate settings in ToolSettings toolbar
+}
+
+void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
+{
+    assert(mController);
+
+    // Select this tool's button and unselect the others
+    for (size_t i = 0; i < mToolButtons.size(); ++i)
+    {
+        bool const isSelected = (tool.has_value() && i == static_cast<size_t>(*tool));
+
+        if (mToolButtons[i]->GetValue() != isSelected)
+        {
+            mToolButtons[i]->SetValue(isSelected);
+        }
+    }
 }
 
 }

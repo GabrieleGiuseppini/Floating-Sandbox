@@ -10,7 +10,6 @@
 #include "ShipBuilderTypes.h"
 #include "View.h"
 
-#include <filesystem>
 #include <memory>
 
 namespace ShipBuilder {
@@ -27,8 +26,8 @@ public:
         View & view,
         IUserInterface & userInterface);
 
-    static std::unique_ptr<ModelController> CreateFromLoad(
-        std::filesystem::path const & shipFilePath,
+    static std::unique_ptr<ModelController> CreateForShip(
+        /* TODO: loaded ship ,*/
         View & view,
         IUserInterface & userInterface);
 

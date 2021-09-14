@@ -151,15 +151,17 @@ private:
 
     void ReconciliateUI();
 
+    void ReconciliateUIWithLayerPresence();
+
+    void ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer);
+
     void ReconciliateUIWithModelDirtiness(bool isDirty);
 
     void RecalculateWorkCanvasPanning();
 
-    void ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer);
-
-    void ReconciliateUIWithLayerPresence();
-
     void ReconciliateUIWithWorkbenchState();
+
+    void ReconciliateUIWithSelectedTool(std::optional<ToolType> tool);
 
 private:
 

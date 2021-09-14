@@ -29,14 +29,14 @@ std::unique_ptr<Controller> Controller::CreateNew(
     return controller;
 }
 
-std::unique_ptr<Controller> Controller::CreateFromLoad(
-    std::filesystem::path const & shipFilePath,
+std::unique_ptr<Controller> Controller::CreateForShip(
+    /* TODO: loaded ship ,*/
     View & view,
     WorkbenchState & workbenchState,
     IUserInterface & userInterface)
 {
-    auto modelController = ModelController::CreateFromLoad(
-        shipFilePath,
+    auto modelController = ModelController::CreateForShip(
+        /* TODO: loaded ship ,*/
         view,
         userInterface);
 
@@ -62,11 +62,12 @@ Controller::Controller(
     , mInputState()
     // State
     , mPrimaryLayer(LayerType::Structural)
+    // TODO: current tool is "none"
 {
     assert(mModelController->GetModel().HasLayer(LayerType::Structural));
 
-    mUserInterface.OnPrimaryLayerChanged();
-    mUserInterface.OnCurrentToolChanged();
+    mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
+    mUserInterface.OnCurrentToolChanged(std::nullopt);
 }
 
 void Controller::NewStructuralLayer()
@@ -124,6 +125,11 @@ void Controller::RemoveTextureLayer()
     mModelController->RemoveTextureLayer();
 }
 
+LayerType Controller::GetPrimaryLayer() const
+{
+    return mPrimaryLayer;
+}
+
 void Controller::SelectPrimaryLayer(LayerType primaryLayer)
 {
     mPrimaryLayer = primaryLayer;
@@ -132,6 +138,20 @@ void Controller::SelectPrimaryLayer(LayerType primaryLayer)
     SetTool(std::nullopt);
 
     mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
+}
+
+std::optional<ToolType> Controller::GetTool() const
+{
+    // TODOHERE
+    return std::nullopt;
+}
+
+void Controller::SetTool(std::optional<ToolType> tool)
+{
+    // TODOHERE
+
+    // Notify UI
+    mUserInterface.OnCurrentToolChanged(tool);
 }
 
 void Controller::AddZoom(int deltaZoom)
@@ -160,14 +180,6 @@ void Controller::ResetView()
     RefreshToolCoordinateDisplay();
     mUserInterface.OnViewModelChanged();
     mUserInterface.RefreshView();
-}
-
-void Controller::SetTool(std::optional<ToolType> tool)
-{
-    // TODOHERE
-
-    // Notify UI
-    mUserInterface.OnCurrentToolChanged(tool);
 }
 
 void Controller::OnWorkCanvasResized(DisplayLogicalSize const & newSize)

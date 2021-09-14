@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Model.h"
 #include "ShipBuilderTypes.h"
 
 #include <optional>
