@@ -1810,30 +1810,21 @@ void MainFrame::RecalculateWorkCanvasPanning()
         // We populate the scollbar with work space coordinates
         //
 
-        // TODOHERE
-
         WorkSpaceCoordinates const cameraPos = mView->GetCameraWorkSpacePosition();
-        WorkSpaceSize const workSpaceSize = mController->GetModelController().GetModel().GetWorkSpaceSize();
-        WorkSpaceSize const visibleWorkSpaceSize = mView->GetVisibleWorkSpaceSize();
-        WorkSpaceSize const cameraRange = mView->GetCameraPanRange();
-
-        // Visible portion of workspace
-        int const thumbX = std::min(workSpaceSize.width + 2, visibleWorkSpaceSize.width);
-        int const thumbY = std::min(workSpaceSize.height + 2, visibleWorkSpaceSize.height);
-
-        LogMessage("TODOTEST: Thumb=(", thumbX, ", ", thumbY, ") Range=(", workSpaceSize.width + 2, ", ", workSpaceSize.height + 2, ")");
+        WorkSpaceSize const cameraThumbSize = mView->GetCameraThumbSize();
+        WorkSpaceSize const cameraRange = mView->GetCameraRange();
 
         mWorkCanvasHScrollBar->SetScrollbar(
-            cameraPos.x, // position
-            thumbX,
-            workSpaceSize.width + 2, // range
-            thumbX); // page size  == thumb
+            cameraPos.x,
+            cameraThumbSize.width,
+            cameraRange.width,
+            cameraThumbSize.width); // page size  == thumb
 
         mWorkCanvasVScrollBar->SetScrollbar(
-            cameraPos.y, // position
-            thumbY,
-            workSpaceSize.height + 2, // range
-            thumbY); // page size  == thumb
+            cameraPos.y,
+            cameraThumbSize.height,
+            cameraRange.height,
+            cameraThumbSize.height); // page size  == thumb
     }
 }
 

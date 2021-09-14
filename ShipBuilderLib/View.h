@@ -82,9 +82,14 @@ public:
         RefreshOrthoMatrix();
     }
 
-    WorkSpaceSize GetCameraPanRange() const
+    WorkSpaceSize GetCameraRange() const
     {
-        return mViewModel.GetCameraPanRange();
+        return mViewModel.GetCameraRange();
+    }
+
+    WorkSpaceSize GetCameraThumbSize() const
+    {
+        return mViewModel.GetCameraThumbSize();
     }
 
     WorkSpaceSize GetVisibleWorkSpaceSize() const

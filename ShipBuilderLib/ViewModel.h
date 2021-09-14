@@ -85,7 +85,9 @@ public:
 
     WorkSpaceCoordinates const & SetCameraWorkSpacePosition(WorkSpaceCoordinates const & pos)
     {
-        mCam = pos;
+        mCam = WorkSpaceCoordinates(
+            std::min(pos.x, mCamLimits.width),
+            std::min(pos.y, mCamLimits.height));
 
         RecalculateAttributes();
 
@@ -115,17 +117,22 @@ public:
         RecalculateAttributes();
     }
 
-    WorkSpaceSize GetCameraPanRange() const
+    WorkSpaceSize GetCameraRange() const
     {
-        // TODOTEST
-        /*
-        // Return work space that fits entirely in current display, including margins
+        WorkSpaceSize const visibleWorkSpaceSize = GetVisibleWorkSpaceSize();
 
         return WorkSpaceSize(
-            DisplayPhysicalToWorkSpace(mDisplayLogicalSize.width * mLogicalToPhysicalPixelFactor) - MarginDisplayWorkSize * 2,
-            DisplayPhysicalToWorkSpace(mDisplayLogicalSize.height * mLogicalToPhysicalPixelFactor) - MarginDisplayWorkSize * 2);
-        */
-        return mCamLimits;
+            mWorkSpaceSize.width + MarginDisplayWorkSize * 2,
+            mWorkSpaceSize.height + MarginDisplayWorkSize * 2);
+    }
+
+    WorkSpaceSize GetCameraThumbSize() const
+    {
+        WorkSpaceSize const visibleWorkSpaceSize = GetVisibleWorkSpaceSize();
+
+        return WorkSpaceSize(
+            std::min(mWorkSpaceSize.width + MarginDisplayWorkSize * 2, visibleWorkSpaceSize.width),
+            std::min(mWorkSpaceSize.height + MarginDisplayWorkSize * 2, visibleWorkSpaceSize.height));
     }
 
     WorkSpaceSize GetVisibleWorkSpaceSize() const
@@ -166,9 +173,6 @@ private:
             std::max(
                 (2 + mWorkSpaceSize.height) - DisplayPhysicalToWorkSpace(mDisplayPhysicalSize.height),
                 0));
-
-        // TODOTEST
-        LogMessage("TODOTEST: DisplayPhysicalSize=", mDisplayPhysicalSize.ToString(), " DisplayPhysicalToWorkSpaceFactor=", mDisplayPhysicalToWorkSpaceFactor, " CamLimits=", mCamLimits.ToString());
 
         // Adjust camera accordingly
         mCam = WorkSpaceCoordinates(

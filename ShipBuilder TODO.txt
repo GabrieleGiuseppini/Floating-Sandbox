@@ -1,10 +1,5 @@
 
-= After changing zoom, also pan needs to change
-	+ Done by ViewModel, by calculating (as attributes) pan range based on work area size
-		+ ViewModel need work area size
-	- Pan range also exported for scrollbar, who just become on camera coords - TODO: Thumb?
-
-- MainFrame whould delegate as much as possible to Controller, and be notified via IUserInterface
+- MainFrame should delegate as much as possible to Controller, and be notified via IUserInterface
 	- Primary layer selection
 	- See if others
 
