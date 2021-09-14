@@ -24,7 +24,7 @@ public:
     virtual void OnModelDirtyChanged(bool isDirty) = 0;
 
     // Notifies of a change in the size of the model
-    virtual void OnWorkSpaceSizeChanged() = 0;
+    virtual void OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize) = 0;
 
     // Notifies of a change in the view model geometry
     virtual void OnViewModelChanged() = 0;

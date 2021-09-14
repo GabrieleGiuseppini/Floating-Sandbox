@@ -43,6 +43,8 @@ public:
             initialDisplaySize.width * logicalToPhysicalPixelFactor,
             initialDisplaySize.height * logicalToPhysicalPixelFactor)
         , mWorkSpaceSize(initialWorkSpaceSize)
+        , mDisplayPhysicalToWorkSpaceFactor(0) // Will be recalculated
+        , mCamLimits(0, 0) // Will be recalculated
     {
         //
         // Initialize ortho matrix
@@ -73,13 +75,6 @@ public:
 
         RecalculateAttributes();
 
-        // Recalculate pan limits
-        // TODOHERE - all of this in helper
-
-        // Adjust camera if necessary
-        // TODOHERE
-        // TODO: and call RecalcOrthoMatrix if necessary
-
         return mZoom;
     }
 
@@ -101,8 +96,7 @@ public:
     {
         mWorkSpaceSize = size;
 
-        // TODOHERE: recalculate pan limits
-        // TODO: exactly same as SetZoom -> move all of that to helper
+        RecalculateAttributes();
     }
 
     DisplayPhysicalSize const & GetDisplayPhysicalSize() const
@@ -123,11 +117,22 @@ public:
 
     WorkSpaceSize GetCameraPanRange() const
     {
+        // TODOTEST
+        /*
         // Return work space that fits entirely in current display, including margins
 
         return WorkSpaceSize(
             DisplayPhysicalToWorkSpace(mDisplayLogicalSize.width * mLogicalToPhysicalPixelFactor) - MarginDisplayWorkSize * 2,
             DisplayPhysicalToWorkSpace(mDisplayLogicalSize.height * mLogicalToPhysicalPixelFactor) - MarginDisplayWorkSize * 2);
+        */
+        return mCamLimits;
+    }
+
+    WorkSpaceSize GetVisibleWorkSpaceSize() const
+    {
+        return WorkSpaceSize(
+            DisplayPhysicalToWorkSpace(mDisplayPhysicalSize.width),
+            DisplayPhysicalToWorkSpace(mDisplayPhysicalSize.height));
     }
 
     //
@@ -152,6 +157,23 @@ private:
     {
         // Display physicial => Work factor
         mDisplayPhysicalToWorkSpaceFactor = CalculateZoomFactor(mZoom);
+
+        // Recalculate pan limits
+        mCamLimits = WorkSpaceSize(
+            std::max(
+                (2 + mWorkSpaceSize.width) - DisplayPhysicalToWorkSpace(mDisplayPhysicalSize.width),
+                0),
+            std::max(
+                (2 + mWorkSpaceSize.height) - DisplayPhysicalToWorkSpace(mDisplayPhysicalSize.height),
+                0));
+
+        // TODOTEST
+        LogMessage("TODOTEST: DisplayPhysicalSize=", mDisplayPhysicalSize.ToString(), " DisplayPhysicalToWorkSpaceFactor=", mDisplayPhysicalToWorkSpaceFactor, " CamLimits=", mCamLimits.ToString());
+
+        // Adjust camera accordingly
+        mCam = WorkSpaceCoordinates(
+            std::min(mCam.x, mCamLimits.width),
+            std::min(mCam.y, mCamLimits.height));
 
         // Ortho Matrix:
         //  WorkCoordinates * OrthoMatrix => NDC
@@ -212,6 +234,7 @@ private:
 
     // Calculated attributes
     float mDisplayPhysicalToWorkSpaceFactor; // # work pixels for 1 display pixel
+    WorkSpaceSize mCamLimits;
     ProjectionMatrix mOrthoMatrix;
 };
 

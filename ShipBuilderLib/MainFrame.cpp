@@ -461,12 +461,12 @@ void MainFrame::OnModelDirtyChanged(bool isDirty)
     ReconciliateUIWithModelDirtiness(isDirty);
 }
 
-void MainFrame::OnWorkSpaceSizeChanged()
+void MainFrame::OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize)
 {
     // Notify view of new workspace size
     // Note: might cause a view model change that would not be
     // notified via OnViewModelChanged
-    mView->SetWorkSpaceSize(mController->GetModelController().GetModel().GetWorkSpaceSize());
+    mView->SetWorkSpaceSize(workSpaceSize);
 
     RecalculateWorkCanvasPanning();
 
@@ -1810,26 +1810,29 @@ void MainFrame::RecalculateWorkCanvasPanning()
         // We populate the scollbar with work space coordinates
         //
 
-        WorkSpaceSize const workSpaceSize = mController->GetModelController().GetModel().GetWorkSpaceSize();
+        // TODOHERE
+
         WorkSpaceCoordinates const cameraPos = mView->GetCameraWorkSpacePosition();
-        WorkSpaceSize const scrollRange = mView->GetCameraPanRange();
+        WorkSpaceSize const workSpaceSize = mController->GetModelController().GetModel().GetWorkSpaceSize();
+        WorkSpaceSize const visibleWorkSpaceSize = mView->GetVisibleWorkSpaceSize();
+        WorkSpaceSize const cameraRange = mView->GetCameraPanRange();
 
         // Visible portion of workspace
-        int const thumbX = std::min(workSpaceSize.width, scrollRange.width);
-        int const thumbY = std::min(workSpaceSize.height, scrollRange.height);
+        int const thumbX = std::min(workSpaceSize.width + 2, visibleWorkSpaceSize.width);
+        int const thumbY = std::min(workSpaceSize.height + 2, visibleWorkSpaceSize.height);
 
-        LogMessage("TODOTEST: scrollRange=(", scrollRange.ToString(), ") Cam=(", cameraPos.ToString(), ")");
+        LogMessage("TODOTEST: Thumb=(", thumbX, ", ", thumbY, ") Range=(", workSpaceSize.width + 2, ", ", workSpaceSize.height + 2, ")");
 
         mWorkCanvasHScrollBar->SetScrollbar(
             cameraPos.x, // position
             thumbX,
-            workSpaceSize.width, // range == whole size
+            workSpaceSize.width + 2, // range
             thumbX); // page size  == thumb
 
         mWorkCanvasVScrollBar->SetScrollbar(
             cameraPos.y, // position
             thumbY,
-            workSpaceSize.height, // range == whole size
+            workSpaceSize.height + 2, // range
             thumbY); // page size  == thumb
     }
 }

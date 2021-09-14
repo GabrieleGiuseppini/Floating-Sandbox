@@ -42,6 +42,7 @@ ModelController::ModelController(
     , mUserInterface(userInterface)
     , mModel(workSpaceSize)
 {
+    mUserInterface.OnWorkSpaceSizeChanged(mModel.GetWorkSpaceSize());
     mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 
     UploadStructuralRenderColorTextureToView();

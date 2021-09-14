@@ -1,23 +1,26 @@
 
-- After changing zoom, also pan needs to change
-	- Done by ViewModel, by calculating (as attributes) pan range based on work area size
-		- ViewModel need work area size
+= After changing zoom, also pan needs to change
+	+ Done by ViewModel, by calculating (as attributes) pan range based on work area size
+		+ ViewModel need work area size
 	- Pan range also exported for scrollbar, who just become on camera coords - TODO: Thumb?
 
-- Click-And-Draw usecase:
-	- Pencil tool (*)
+- MainFrame whould delegate as much as possible to Controller, and be notified via IUserInterface
+	- Primary layer selection
+	- See if others
 
 - Scroll events: not capturing arrow keys
 	- Do we need wxSCROLL_CHANGED as well?
+
+- Click-And-Draw usecase:
+	- Pencil tool (*)
 
 - Materials palette:
 	- Material descriptions
 		- json + Material class
 		- Text area underneath property grid
 			- Methods: "SetMaterialProperties" instead of "SetMaterialPropertyGrid"			
-
-- MainFrame TODO's:
-	- App icons (whole "Resources" folder)
+			
+- App icons (whole "Resources" folder)
 
 ================================================================================================================================================================================
 
@@ -196,6 +199,8 @@
 		- Extract from other "TODO" .txt file
 
 - Misc:
+	- When primary layer is other than Texture, render texture layer in texturization mode (as opposed to simple texture-sample mode, i.e. nearest neighbor)
+		- This is assuming that ShipTexturizer mocks closely enough tessellation
 	- Localization:
 		- See if can do separate extraction into separate file, which then is loaded at all times by LocalizationManager together with the other one 
 	- Ruler: pick a scale (pixels to meter of original ship), then you choose how long the ruler

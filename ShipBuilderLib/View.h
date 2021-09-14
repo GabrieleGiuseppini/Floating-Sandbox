@@ -87,6 +87,11 @@ public:
         return mViewModel.GetCameraPanRange();
     }
 
+    WorkSpaceSize GetVisibleWorkSpaceSize() const
+    {
+        return mViewModel.GetVisibleWorkSpaceSize();
+    }
+
     WorkSpaceCoordinates ScreenToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
         return mViewModel.ScreenToWorkSpace(displayCoordinates);

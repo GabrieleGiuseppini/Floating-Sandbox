@@ -73,7 +73,7 @@ public:
 
     void OnModelDirtyChanged(bool isDirty) override;
 
-    void OnWorkSpaceSizeChanged() override;
+    void OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize) override;
 
     void OnViewModelChanged() override;
 
