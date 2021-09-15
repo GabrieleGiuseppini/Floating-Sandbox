@@ -418,9 +418,6 @@ MainFrame::MainFrame(
 
 void MainFrame::OpenForNewShip()
 {
-    // Shut off UI updated during new controller creation
-    mController.reset();
-
     // Create controller - will fire UI reconciliations
     mController = Controller::CreateNew(
         *mView,
@@ -436,9 +433,6 @@ void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
     // Load ship
     // TODO: we load the ship here, so errors may occur while we still have a controller;
     // then, pass loaded data to Controller
-
-    // Shut off UI updated during new controller creation
-    mController.reset();
 
     // Create controller - will fire UI reconciliations
     mController = Controller::CreateForShip(
@@ -1824,11 +1818,6 @@ void MainFrame::ReconciliateUI()
 void MainFrame::ReconciliateUIWithWorkSpaceSize(WorkSpaceSize const & workSpaceSize)
 {
     assert(mController);
-
-    // Notify view of new workspace size
-    // Note: might cause a view model change that would not be
-    // notified via OnViewModelChanged
-    mView->SetWorkSpaceSize(workSpaceSize);
 
     RecalculateWorkCanvasPanning();
 

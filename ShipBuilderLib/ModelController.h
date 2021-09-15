@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "IUserInterface.h"
 #include "Model.h"
 #include "ShipBuilderTypes.h"
 #include "View.h"
@@ -23,13 +22,11 @@ public:
 
     static std::unique_ptr<ModelController> CreateNew(
         WorkSpaceSize const & workSpaceSize,
-        View & view,
-        IUserInterface & userInterface);
+        View & view);
 
     static std::unique_ptr<ModelController> CreateForShip(
         /* TODO: loaded ship ,*/
-        View & view,
-        IUserInterface & userInterface);
+        View & view);
 
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
@@ -55,15 +52,13 @@ private:
 
     ModelController(
         WorkSpaceSize const & workSpaceSize,
-        View & view,
-        IUserInterface & userInterface);
+        View & view);
 
     void UploadStructuralRenderColorTextureToView();
 
 private:
 
     View & mView;
-    IUserInterface & mUserInterface;
 
     Model mModel;
 };

@@ -11,41 +11,31 @@ namespace ShipBuilder {
 
 std::unique_ptr<ModelController> ModelController::CreateNew(
     WorkSpaceSize const & workSpaceSize,
-    View & view,
-    IUserInterface & userInterface)
+    View & view)
 {
     return std::unique_ptr<ModelController>(
         new ModelController(
             workSpaceSize,
-            view,
-            userInterface));
+            view));
 }
 
 std::unique_ptr<ModelController> ModelController::CreateForShip(
     /* TODO: loaded ship ,*/
-    View & view,
-    IUserInterface & userInterface)
+    View & view)
 {
     // TODOHERE
     return std::unique_ptr<ModelController>(
         new ModelController(
             WorkSpaceSize(400, 200),
-            view,
-            userInterface));
+            view));
 }
 
 ModelController::ModelController(
     WorkSpaceSize const & workSpaceSize,
-    View & view,
-    IUserInterface & userInterface)
+    View & view)
     : mView(view)
-    , mUserInterface(userInterface)
     , mModel(workSpaceSize)
 {
-    mUserInterface.OnLayerPresenceChanged();
-    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
-    mUserInterface.OnWorkSpaceSizeChanged(mModel.GetWorkSpaceSize());
-
     UploadStructuralRenderColorTextureToView();
 }
 
@@ -56,9 +46,6 @@ void ModelController::NewStructuralLayer()
     mModel.NewStructuralLayer();
 
     UploadStructuralRenderColorTextureToView();
-
-    mUserInterface.OnLayerPresenceChanged();
-    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::SetStructuralLayer(/*TODO*/)
@@ -66,8 +53,6 @@ void ModelController::SetStructuralLayer(/*TODO*/)
     mModel.SetStructuralLayer();
 
     UploadStructuralRenderColorTextureToView();
-
-    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::NewElectricalLayer()
@@ -75,9 +60,6 @@ void ModelController::NewElectricalLayer()
     mModel.NewElectricalLayer();
 
     // TODO: upload to view
-
-    mUserInterface.OnLayerPresenceChanged();
-    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::SetElectricalLayer(/*TODO*/)
@@ -87,8 +69,6 @@ void ModelController::SetElectricalLayer(/*TODO*/)
     mModel.SetElectricalLayer();
 
     // TODO: upload to view
-
-    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::RemoveElectricalLayer()
@@ -98,9 +78,6 @@ void ModelController::RemoveElectricalLayer()
     mModel.RemoveElectricalLayer();
 
     // TODO: upload to view
-
-    mUserInterface.OnLayerPresenceChanged();
-    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::NewRopesLayer()
@@ -108,9 +85,6 @@ void ModelController::NewRopesLayer()
     mModel.NewRopesLayer();
 
     // TODO: upload to view
-
-    mUserInterface.OnLayerPresenceChanged();
-    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::SetRopesLayer(/*TODO*/)
@@ -120,8 +94,6 @@ void ModelController::SetRopesLayer(/*TODO*/)
     mModel.SetRopesLayer();
 
     // TODO: upload to view
-
-    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::RemoveRopesLayer()
@@ -131,9 +103,6 @@ void ModelController::RemoveRopesLayer()
     mModel.RemoveRopesLayer();
 
     // TODO: upload to view
-
-    mUserInterface.OnLayerPresenceChanged();
-    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::NewTextureLayer()
@@ -141,9 +110,6 @@ void ModelController::NewTextureLayer()
     mModel.NewTextureLayer();
 
     // TODO: upload to view
-
-    mUserInterface.OnLayerPresenceChanged();
-    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::SetTextureLayer(/*TODO*/)
@@ -153,8 +119,6 @@ void ModelController::SetTextureLayer(/*TODO*/)
     mModel.SetTextureLayer();
 
     // TODO: upload to view
-
-    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 void ModelController::RemoveTextureLayer()
@@ -164,9 +128,6 @@ void ModelController::RemoveTextureLayer()
     mModel.RemoveTextureLayer();
 
     // TODO: upload to view
-
-    mUserInterface.OnLayerPresenceChanged();
-    mUserInterface.OnModelDirtyChanged(mModel.GetIsDirty());
 }
 
 ///////////////////////////////////////////////////////////////////////////

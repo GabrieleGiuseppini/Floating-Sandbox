@@ -56,6 +56,8 @@ public:
     void SetTextureLayer(/*TODO*/);
     void RemoveTextureLayer();
 
+    void ResizeWorkspace(WorkSpaceSize const & newSize);
+
     LayerType GetPrimaryLayer() const;
     void SelectPrimaryLayer(LayerType primaryLayer);
 

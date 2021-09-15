@@ -1,12 +1,10 @@
 
-+ MainFrame should delegate as much as possible to Controller, and be notified via IUserInterface
-- Similarly, see if can remove IUserInterface from ModelController
-
 - Scroll events: not capturing arrow keys
 	- Do we need wxSCROLL_CHANGED as well?
 
 - Click-And-Draw usecase:
 	- Pencil tool (*)
+	- Drop tool
 
 - Materials palette:
 	- Material descriptions
@@ -206,14 +204,16 @@
 			- Ain't that what we've got already for the auto-texturizer?
 	- Selectable backgrounds		
 	- See if it takes so long to initialize SB::MainFrame that we need IProgress
-		- Preferences:
-			- New ship size
-			- ...all tools' settings...
-			- TODO: spec
-		- Inherits FullScreen state and shares state changes (so, for example, if exits full screen in ShipBuilder, also Game has exited full screen)
-			- How to share state changes? 
-				- FullScreenManager class, shared_ptr in both
-				- Looked at at each Game<->ShipBuilder switch by receiver
+	- Preferences:
+		- New ship size
+		- ...all tools' settings...
+		- TODO: spec
+	- Inherits FullScreen state and shares state changes (so, for example, if exits full screen in ShipBuilder, also Game has exited full screen)
+		- How to share state changes? 
+			- FullScreenManager class, shared_ptr in both
+			- Looked at at each Game<->ShipBuilder switch by receiver
+	- Save ship default filesystem location: new SystemPAths (under Documents)
+		- ShipLoadDialog: second "Home" location for switching to it
 	- TO-SPEC:
 		- What to do with background music when switching back and forth?
 

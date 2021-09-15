@@ -16,8 +16,7 @@ std::unique_ptr<Controller> Controller::CreateNew(
 {
     auto modelController = ModelController::CreateNew(
         WorkSpaceSize(400, 200), // TODO: from preferences
-        view,
-        userInterface);
+        view);
 
     std::unique_ptr<Controller> controller = std::unique_ptr<Controller>(
         new Controller(
@@ -37,8 +36,7 @@ std::unique_ptr<Controller> Controller::CreateForShip(
 {
     auto modelController = ModelController::CreateForShip(
         /* TODO: loaded ship ,*/
-        view,
-        userInterface);
+        view);
 
     std::unique_ptr<Controller> controller = std::unique_ptr<Controller>(
         new Controller(
@@ -64,6 +62,9 @@ Controller::Controller(
     , mPrimaryLayer(LayerType::Structural)
     // TODO: current tool is "none"
 {
+    // Notify view of workspace size
+    mView.SetWorkSpaceSize(mModelController->GetModel().GetWorkSpaceSize());
+
     assert(mModelController->GetModel().HasLayer(LayerType::Structural));
 
     mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
@@ -73,56 +74,97 @@ Controller::Controller(
 void Controller::NewStructuralLayer()
 {
     mModelController->NewStructuralLayer();
+
+    mUserInterface.OnLayerPresenceChanged();
+    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
 
 void Controller::SetStructuralLayer(/*TODO*/)
 {
     mModelController->SetStructuralLayer();
+
+    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
 
 void Controller::NewElectricalLayer()
 {
     mModelController->NewElectricalLayer();
+
+    mUserInterface.OnLayerPresenceChanged();
+    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
 
 void Controller::SetElectricalLayer(/*TODO*/)
 {
     mModelController->SetElectricalLayer();
+
+    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
 
 void Controller::RemoveElectricalLayer()
 {
     mModelController->RemoveElectricalLayer();
+
+    mUserInterface.OnLayerPresenceChanged();
+    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
 
 void Controller::NewRopesLayer()
 {
     mModelController->NewRopesLayer();
+
+    mUserInterface.OnLayerPresenceChanged();
+    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
 
 void Controller::SetRopesLayer(/*TODO*/)
 {
     mModelController->SetRopesLayer();
+
+    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
 
 void Controller::RemoveRopesLayer()
 {
     mModelController->RemoveRopesLayer();
+
+    mUserInterface.OnLayerPresenceChanged();
+    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
 
 void Controller::NewTextureLayer()
 {
     mModelController->NewTextureLayer();
+
+    mUserInterface.OnLayerPresenceChanged();
+    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
 
 void Controller::SetTextureLayer(/*TODO*/)
 {
     mModelController->SetTextureLayer();
+
+    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
 
 void Controller::RemoveTextureLayer()
 {
     mModelController->RemoveTextureLayer();
+
+    mUserInterface.OnLayerPresenceChanged();
+    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
+}
+
+void Controller::ResizeWorkspace(WorkSpaceSize const & newSize)
+{
+    // TODO: tell ModelController
+
+    // Notify view of new workspace size
+    // Note: might cause a view model change that would not be
+    // notified via OnViewModelChanged
+    mView.SetWorkSpaceSize(newSize);
+
+    mUserInterface.OnWorkSpaceSizeChanged(newSize);
 }
 
 LayerType Controller::GetPrimaryLayer() const
