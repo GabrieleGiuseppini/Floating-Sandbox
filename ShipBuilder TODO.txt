@@ -1,5 +1,5 @@
 
-- Click-And-Draw usecase:
+- Click-And-Draw use case:
 	- Pencil tool (*)
 	- Drop tool
 

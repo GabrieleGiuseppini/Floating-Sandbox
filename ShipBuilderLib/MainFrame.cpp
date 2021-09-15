@@ -771,9 +771,6 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                             break;
                                         }
                                     }
-
-                                    // Switch primary layer to this one
-                                    mController->SelectPrimaryLayer(layer);
                                 },
                                 "Make a new empty layer");
 
@@ -844,12 +841,6 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                             mController->RemoveTextureLayer();
                                             break;
                                         }
-                                    }
-
-                                    // Switch primary layer if it was this one
-                                    if (mController->GetPrimaryLayer() == layer)
-                                    {
-                                        mController->SelectPrimaryLayer(LayerType::Structural);
                                     }
                                 },
                                 "Remove this layer");

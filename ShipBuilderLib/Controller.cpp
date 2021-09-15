@@ -77,6 +77,9 @@ void Controller::NewStructuralLayer()
 
     mUserInterface.OnLayerPresenceChanged();
     mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
+
+    // Switch primary layer to this one
+    SelectPrimaryLayer(LayerType::Structural);
 }
 
 void Controller::SetStructuralLayer(/*TODO*/)
@@ -92,6 +95,9 @@ void Controller::NewElectricalLayer()
 
     mUserInterface.OnLayerPresenceChanged();
     mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
+
+    // Switch primary layer to this one
+    SelectPrimaryLayer(LayerType::Electrical);
 }
 
 void Controller::SetElectricalLayer(/*TODO*/)
@@ -105,6 +111,12 @@ void Controller::RemoveElectricalLayer()
 {
     mModelController->RemoveElectricalLayer();
 
+    // Switch primary layer to structural if it was this one
+    if (mPrimaryLayer == LayerType::Electrical)
+    {
+        SelectPrimaryLayer(LayerType::Structural);
+    }
+
     mUserInterface.OnLayerPresenceChanged();
     mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
@@ -115,6 +127,9 @@ void Controller::NewRopesLayer()
 
     mUserInterface.OnLayerPresenceChanged();
     mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
+
+    // Switch primary layer to this one
+    SelectPrimaryLayer(LayerType::Ropes);
 }
 
 void Controller::SetRopesLayer(/*TODO*/)
@@ -128,13 +143,11 @@ void Controller::RemoveRopesLayer()
 {
     mModelController->RemoveRopesLayer();
 
-    mUserInterface.OnLayerPresenceChanged();
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
-}
-
-void Controller::NewTextureLayer()
-{
-    mModelController->NewTextureLayer();
+    // Switch primary layer to structural if it was this one
+    if (mPrimaryLayer == LayerType::Ropes)
+    {
+        SelectPrimaryLayer(LayerType::Structural);
+    }
 
     mUserInterface.OnLayerPresenceChanged();
     mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
@@ -150,6 +163,12 @@ void Controller::SetTextureLayer(/*TODO*/)
 void Controller::RemoveTextureLayer()
 {
     mModelController->RemoveTextureLayer();
+
+    // Switch primary layer to structural if it was this one
+    if (mPrimaryLayer == LayerType::Texture)
+    {
+        SelectPrimaryLayer(LayerType::Structural);
+    }
 
     mUserInterface.OnLayerPresenceChanged();
     mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
