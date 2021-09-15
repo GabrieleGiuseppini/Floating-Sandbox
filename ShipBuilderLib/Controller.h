@@ -20,6 +20,8 @@ namespace ShipBuilder {
 /*
  * This class implements the core of the ShipBuilder logic. It orchestrates interactions between
  * UI, View, and Model.
+ *
+ * It is the only actor that acts on the ModelController, and the only actor that acts on the UI.
  */
 class Controller
 {

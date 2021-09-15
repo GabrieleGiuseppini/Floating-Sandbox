@@ -1382,6 +1382,16 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
         mGLContext->SetCurrent(*mWorkCanvas);
     }
 
+    auto const onScroll = [this]()
+    {
+        if (mController)
+        {
+            mController->SetCamera(
+                mWorkCanvasHScrollBar->GetThumbPosition(),
+                mWorkCanvasVScrollBar->GetThumbPosition());
+        }
+    };
+
     // V-scrollbar
 
     {
@@ -1389,14 +1399,16 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
 
         mWorkCanvasVScrollBar->Bind(
             wxEVT_SCROLL_THUMBTRACK,
-            [this](wxScrollEvent & /*event*/)
+            [onScroll](wxScrollEvent & /*event*/)
             {
-                if (mController)
-                {
-                    mController->SetCamera(
-                        mWorkCanvasHScrollBar->GetThumbPosition(),
-                        mWorkCanvasVScrollBar->GetThumbPosition());
-                }
+                onScroll();
+            });
+
+        mWorkCanvasVScrollBar->Bind(
+            wxEVT_SCROLL_CHANGED,
+            [onScroll](wxScrollEvent & /*event*/)
+            {
+                onScroll();
             });
 
         sizer->Add(
@@ -1413,14 +1425,16 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
 
         mWorkCanvasHScrollBar->Bind(
             wxEVT_SCROLL_THUMBTRACK,
-            [this](wxScrollEvent & /*event*/)
+            [onScroll](wxScrollEvent & /*event*/)
             {
-                if (mController)
-                {
-                    mController->SetCamera(
-                        mWorkCanvasHScrollBar->GetThumbPosition(),
-                        mWorkCanvasVScrollBar->GetThumbPosition());
-                }
+                onScroll();
+            });
+
+        mWorkCanvasHScrollBar->Bind(
+            wxEVT_SCROLL_CHANGED,
+            [onScroll](wxScrollEvent & /*event*/)
+            {
+                onScroll();
             });
 
         sizer->Add(

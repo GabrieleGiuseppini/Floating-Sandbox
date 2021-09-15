@@ -1,7 +1,4 @@
 
-- Scroll events: not capturing arrow keys
-	- Do we need wxSCROLL_CHANGED as well?
-
 - Click-And-Draw usecase:
 	- Pencil tool (*)
 	- Drop tool
