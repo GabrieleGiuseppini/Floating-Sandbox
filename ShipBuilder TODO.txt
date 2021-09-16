@@ -1,11 +1,20 @@
 
+- Copy descriptions into classes
+
 - Click-And-Draw use case:
 	- Pencil tool (*)
 	- Drop tool
 
+- Resize workflow
+	- Button - in File panel, slightly separated from the File buttons
+	- Click -> Dialog for Canvas Centering/Clipping -> Controller -> ...TODO...
+
+- TODO: should we move the "X-and-back-to-game" buttons to the File panel as well, nuking that rightmost panel?
+
 - Materials palette:
 	- Material descriptions
 		- json + Material class
+			- TODO: what to do with localization?
 		- Text area underneath property grid
 			- Methods: "SetMaterialProperties" instead of "SetMaterialPropertyGrid"			
 			
@@ -42,19 +51,20 @@
 		- Owns WorkbenchState
 			- Candidate for saved settings
 			- Contains foreground and background materials, and settings for all tools
+		- Implements ship load/save logic, giving/getting whole ShipDefinition to/from ModelController
 	- Controller
 		- Owns ModelController, takes reference to View
 		- Main Frame calls into Controller for each user interaction, including button clicks
 			- Controller->Main Frame callbacks via IUserInterface
 		- Maintains UI state (e.g. grid toggle, visible layers), instructing View
+		- Maintains Undo stack (not individual entries), and orchestrates undo stack visualization with IUserInterface
 		- Maintains interaction state, implemented via Tools
 		- Owns SelectionManager pseudo-tool
 		- Owns ClipboardManager pseudo-tool
 	- ModelController
 		- Owns Model, takes reference to View
-		- Implements all interactions and algorithms (e.g. pencil, line, flood, paste, etc.) and uploads resulting changes from Model into View
-		- Implements ship load/save logic, populating/reading Model
-		- Maintains Undo stack, and orchestrates undo stack visualization with IUserInterface
+		- Implements all interactions and algorithms (e.g. pencil, line, flood, paste, etc.), uploading resulting changes from Model into View,
+		  and creating Undo stack entries		
 	- Model
 		- All data, (almost) no operations (anemic), fully exported
 		- Modified by ModelController
@@ -65,6 +75,7 @@
 		- Rendering of tool interactions (e.g. marching ants, squares, etc.)
 		- Fully OpenGL
 	- Tools
+		- "Extensions" of Controller
 		- Implement state machines for interactions, including visual notifications (marching ants, paste mask, etc.)
 		- Take references to WorkbenchState and SelectionManager (at tool initialization time)
 			- SelectionManager so that Selection tool can save selection to it
@@ -111,6 +122,11 @@
 - Tools:
 	! Most tools should pan when the (captured) mouse is outside of the canvas
 		- Via BaseTool::ScrollIntoViewIfNeeded, which simply forwards to IUserInterface::ScrollIntoViewIfNeeded(display logical)
+	- Edit interactions:
+		- ModelController::BeginEdit()
+		- ModelController::XYZ(e.g. write one pixel, one or multiple times, or lines, or flood, etc.)
+		- ModelController::EndEdit() -> IUndoEntry
+			- ModelController talks to View here for Model-specific visualization - but NOT for tool-specific visualizations (that is the Tool's responsibility)
 	- BaseTool:
 		+ Stores all protected references passed from cctors: IUserInterface, ModelController, View, SelectionManager
 		- Abstract methods from game - but all pure
