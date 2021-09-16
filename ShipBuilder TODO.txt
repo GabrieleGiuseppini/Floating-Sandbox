@@ -1,15 +1,20 @@
 
-- Copy descriptions into classes
-
 - Click-And-Draw use case:
 	- Pencil tool (*)
+		- View:
+			- Upload method for texture *region*
+		- UndoStack.h/cpp, w/IUndoEntry interface w/UndoEntryType enum
+		- ...
+
 	- Drop tool
 
-- Resize workflow
+- Resize workflow:
 	- Button - in File panel, slightly separated from the File buttons
 	- Click -> Dialog for Canvas Centering/Clipping -> Controller -> ...TODO...
+	- TODO: should we move the "X-and-back-to-game" buttons to the File panel as well, nuking that rightmost panel?
 
-- TODO: should we move the "X-and-back-to-game" buttons to the File panel as well, nuking that rightmost panel?
+- Grid view:
+	- TODO: where is the toggle button? Need new top panel area? Re-design top panel area?
 
 - Materials palette:
 	- Material descriptions
@@ -69,7 +74,7 @@
 		- All data, (almost) no operations (anemic), fully exported
 		- Modified by ModelController
 		- Knows nothing about view
-		- IsDirty flag
+		- IsDirty tracking
 	- View
 		- Rendering of ship, all layers
 		- Rendering of tool interactions (e.g. marching ants, squares, etc.)

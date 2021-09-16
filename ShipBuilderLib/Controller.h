@@ -22,6 +22,15 @@ namespace ShipBuilder {
  * UI, View, and Model.
  *
  * It is the only actor that acts on the ModelController, and the only actor that acts on the UI.
+ *
+ * - Owns ModelController, takes reference to View
+ * - Main Frame calls into Controller for each user interaction, including button clicks
+ *      - Controller->Main Frame callbacks via IUserInterface
+ * - Maintains UI state (e.g. grid toggle, visible layers), instructing View
+ * - Maintains Undo stack (not individual entries), and orchestrates undo stack visualization with IUserInterface
+ * - Maintains interaction state, implemented via Tools
+ * - Owns SelectionManager pseudo-tool
+ * - Owns ClipboardManager pseudo-tool
  */
 class Controller
 {

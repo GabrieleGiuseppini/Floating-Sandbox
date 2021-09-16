@@ -16,6 +16,17 @@ namespace ShipBuilder {
 
 /*
  * Base class for all tools.
+ *
+ * Tools:
+ * - "Extensions" of Controller
+ * - Implement state machines for interactions, including visual notifications (marching ants, paste mask, etc.)
+ * - Take references to WorkbenchState and SelectionManager (at tool initialization time)
+ *     - SelectionManager so that Selection tool can save selection to it
+ * - Receive input state events from Controller, and notifications of WorkbenchState changed
+ * - Take references to View and ModelController
+ * - Modify Model via ModelController
+ * - Instruct View for tool interactions, e.g. tool visualizations (lines, paste mask, etc.)
+ * - Have also reference to IUserInterface, e.g. to capture/release mouse
  */
 class BaseTool
 {

@@ -20,6 +20,11 @@ namespace ShipBuilder {
 
 /*
  * This is an anemic object model containing the whole representation of the ship being built.
+ *
+ * - All data, (almost) no operations (anemic), fully exported
+ * - Modified by ModelController
+ * - Knows nothing about view
+ * - IsDirty tracking
  */
 class Model
 {
