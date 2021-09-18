@@ -8,18 +8,15 @@ https://gamejolt.com/x/permalink/comment/11457002
 			- Action is done, but only *applied* if in rect (obviously) 
 				- e.g. pencil: simply doesn't write if out (obviously)
 				- e.g. line: line endpoint follows mouse even if out, but line drawn is only within rect (obviously)
+		- Should also take care of functionality current in pencil tool, i.e. checking if mouse position is within rect, and
+		  transforming mouse coords into work space coords
 	- Impl:
 		- TODOHERE
 
 - Click-And-Draw use case:
 	- Pencil tool (*)
 		+ UndoStack.h/cpp, w/IUndoEntry interface w/UndoEntryType enum
-		= Controller machinery for tools:
-			- Forward mouse events to tool
-				- TODOHERE: in-workspace strategy
-					- Tool's cursor must be set depending on in/out; ideally this is done by Controller
-					- TODO: should tool take all mouse events, and deal with in/out-workspace itself, or should Controller do that instead?
-						- Remember: OnMouseDown might happen outside, then mouse moved inside => we'd lose the mouse down
+		+ Controller: forward mouse events to tool
 		- View:
 			- Upload method for texture *region*
 		- EditAction for it

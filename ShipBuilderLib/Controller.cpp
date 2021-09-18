@@ -277,23 +277,10 @@ void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPositi
     mInputState.PreviousMousePosition = mInputState.MousePosition;
     mInputState.MousePosition = mouseScreenPosition;
 
-    // Calculate work coordinates
-    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.ScreenToWorkSpace(mInputState.MousePosition);
-
-    // TODOHERE
-    // TODO: should we detect in<->out transitions and tell tool?
-
-    // Check if within work canvas
-    if (mouseWorkSpaceCoordinates.IsInRect(mModelController->GetModel().GetWorkSpaceSize()))
+    // Forward to tool
+    if (mCurrentTool)
     {
-        if (mCurrentTool)
-        {
-            mCurrentTool->OnMouseMove(mInputState);
-        }
-    }
-    else
-    {
-        // TODO: what to tell tool? Should we detect in<->out transitions?
+        mCurrentTool->OnMouseMove(mInputState);
     }
 
     RefreshToolCoordinatesDisplay();
@@ -304,7 +291,7 @@ void Controller::OnLeftMouseDown()
     // Update input state
     mInputState.IsLeftMouseDown = true;
 
-    // TODO: should we do this only if in rect?
+    // Forward to tool
     if (mCurrentTool)
     {
         mCurrentTool->OnLeftMouseDown(mInputState);
@@ -316,7 +303,7 @@ void Controller::OnLeftMouseUp()
     // Update input state
     mInputState.IsLeftMouseDown = false;
 
-    // TODO: should we do this only if in rect?
+    // Forward to tool
     if (mCurrentTool)
     {
         mCurrentTool->OnLeftMouseUp(mInputState);
@@ -328,7 +315,7 @@ void Controller::OnRightMouseDown()
     // Update input state
     mInputState.IsRightMouseDown = true;
 
-    // TODO: should we do this only if in rect?
+    // Forward to tool
     if (mCurrentTool)
     {
         mCurrentTool->OnRightMouseDown(mInputState);
@@ -340,7 +327,7 @@ void Controller::OnRightMouseUp()
     // Update input state
     mInputState.IsRightMouseDown = false;
 
-    // TODO: should we do this only if in rect?
+    // Forward to tool
     if (mCurrentTool)
     {
         mCurrentTool->OnRightMouseUp(mInputState);
@@ -352,7 +339,7 @@ void Controller::OnShiftKeyDown()
     // Update input state
     mInputState.IsShiftKeyDown = true;
 
-    // TODO: should we do this only if in rect?
+    // Forward to tool
     if (mCurrentTool)
     {
         mCurrentTool->OnShiftKeyDown(mInputState);
@@ -364,7 +351,7 @@ void Controller::OnShiftKeyUp()
     // Update input state
     mInputState.IsShiftKeyDown = false;
 
-    // TODO: should we do this only if in rect?
+    // Forward to tool
     if (mCurrentTool)
     {
         mCurrentTool->OnShiftKeyUp(mInputState);

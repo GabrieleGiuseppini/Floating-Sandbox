@@ -59,31 +59,52 @@ ElectricalPencilTool::ElectricalPencilTool(
 template<LayerType Layer>
 void PencilTool<Layer>::OnMouseMove(InputState const & inputState)
 {
-    if (inputState.IsLeftMouseDown)
+    // Calculate work coordinates
+    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.ScreenToWorkSpace(inputState.MousePosition);
+
+    // Check if within work canvas
+    if (mouseWorkSpaceCoordinates.IsInRect(mModelController.GetModel().GetWorkSpaceSize()))
     {
-        ApplyEditAt(inputState.MousePosition, MaterialPlaneType::Foreground);
-    }
-    else if (inputState.IsRightMouseDown)
-    {
-        ApplyEditAt(inputState.MousePosition, MaterialPlaneType::Background);
+        if (inputState.IsLeftMouseDown)
+        {
+            ApplyEditAt(mouseWorkSpaceCoordinates, MaterialPlaneType::Foreground);
+        }
+        else if (inputState.IsRightMouseDown)
+        {
+            ApplyEditAt(mouseWorkSpaceCoordinates, MaterialPlaneType::Background);
+        }
     }
 }
 
 template<LayerType Layer>
 void PencilTool<Layer>::OnLeftMouseDown(InputState const & inputState)
 {
-    ApplyEditAt(inputState.MousePosition, MaterialPlaneType::Foreground);
+    // Calculate work coordinates
+    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.ScreenToWorkSpace(inputState.MousePosition);
+
+    // Check if within work canvas
+    if (mouseWorkSpaceCoordinates.IsInRect(mModelController.GetModel().GetWorkSpaceSize()))
+    {
+        ApplyEditAt(mouseWorkSpaceCoordinates, MaterialPlaneType::Foreground);
+    }
 }
 
 template<LayerType Layer>
 void PencilTool<Layer>::OnRightMouseDown(InputState const & inputState)
 {
-    ApplyEditAt(inputState.MousePosition, MaterialPlaneType::Background);
+    // Calculate work coordinates
+    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.ScreenToWorkSpace(inputState.MousePosition);
+
+    // Check if within work canvas
+    if (mouseWorkSpaceCoordinates.IsInRect(mModelController.GetModel().GetWorkSpaceSize()))
+    {
+        ApplyEditAt(mouseWorkSpaceCoordinates, MaterialPlaneType::Background);
+    }
 }
 
 template<LayerType Layer>
 void PencilTool<Layer>::ApplyEditAt(
-    DisplayLogicalCoordinates const & position,
+    WorkSpaceCoordinates const & position,
     MaterialPlaneType plane)
 {
     // TODOHERE
