@@ -3,7 +3,7 @@
 * Created:				2021-09-12
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "BaseTool.h"
+#include "Tool.h"
 
 namespace ShipBuilder {
 

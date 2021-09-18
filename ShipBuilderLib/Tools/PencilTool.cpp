@@ -11,15 +11,13 @@ template<LayerType Layer>
 PencilTool<Layer>::PencilTool(
     ToolType toolType,
     ModelController & modelController,
-    SelectionManager & selectionManager,
     WorkbenchState const & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)
-    : BaseTool(
+    : Tool(
         toolType,
         modelController,
-        selectionManager,
         workbenchState,
         userInterface,
         view)
@@ -28,7 +26,6 @@ PencilTool<Layer>::PencilTool(
 
 StructuralPencilTool::StructuralPencilTool(
     ModelController & modelController,
-    SelectionManager & selectionManager,
     WorkbenchState const & workbenchState,
     IUserInterface & userInterface,
     View & view,
@@ -36,7 +33,6 @@ StructuralPencilTool::StructuralPencilTool(
     : PencilTool(
         ToolType::StructuralPencil,
         modelController,
-        selectionManager,
         workbenchState,
         userInterface,
         view,
@@ -45,7 +41,6 @@ StructuralPencilTool::StructuralPencilTool(
 
 ElectricalPencilTool::ElectricalPencilTool(
     ModelController & modelController,
-    SelectionManager & selectionManager,
     WorkbenchState const & workbenchState,
     IUserInterface & userInterface,
     View & view,
@@ -53,7 +48,6 @@ ElectricalPencilTool::ElectricalPencilTool(
     : PencilTool(
         ToolType::ElectricalPencil,
         modelController,
-        selectionManager,
         workbenchState,
         userInterface,
         view,
@@ -91,6 +85,7 @@ void PencilTool<Layer>::ApplyEditAt(
     MaterialPlaneType plane)
 {
     // TODOHERE
+    LogMessage("TODOTEST: PencilTool::ApplyEditAt: ", position.ToString(), " plane=", static_cast<int>(plane));
 }
 
 }

@@ -14,7 +14,8 @@ namespace ShipBuilder {
 std::unique_ptr<Controller> Controller::CreateNew(
     View & view,
     WorkbenchState & workbenchState,
-    IUserInterface & userInterface)
+    IUserInterface & userInterface,
+    ResourceLocator const & resourceLocator)
 {
     auto modelController = ModelController::CreateNew(
         WorkSpaceSize(400, 200), // TODO: from preferences
@@ -25,7 +26,8 @@ std::unique_ptr<Controller> Controller::CreateNew(
             std::move(modelController),
             view,
             workbenchState,
-            userInterface));
+            userInterface,
+            resourceLocator));
 
     return controller;
 }
@@ -34,7 +36,8 @@ std::unique_ptr<Controller> Controller::CreateForShip(
     /* TODO: loaded ship ,*/
     View & view,
     WorkbenchState & workbenchState,
-    IUserInterface & userInterface)
+    IUserInterface & userInterface,
+    ResourceLocator const & resourceLocator)
 {
     auto modelController = ModelController::CreateForShip(
         /* TODO: loaded ship ,*/
@@ -45,7 +48,8 @@ std::unique_ptr<Controller> Controller::CreateForShip(
             std::move(modelController),
             view,
             workbenchState,
-            userInterface));
+            userInterface,
+            resourceLocator));
 
     return controller;
 }
@@ -54,15 +58,17 @@ Controller::Controller(
     std::unique_ptr<ModelController> modelController,
     View & view,
     WorkbenchState & workbenchState,
-    IUserInterface & userInterface)
+    IUserInterface & userInterface,
+    ResourceLocator const & resourceLocator)
     : mModelController(std::move(modelController))
     , mView(view)
     , mWorkbenchState(workbenchState)
     , mUserInterface(userInterface)
+    , mResourceLocator(resourceLocator)
     , mInputState()
     // State
     , mPrimaryLayer(LayerType::Structural)
-    // TODO: current tool is "none"
+    , mCurrentTool(MakeTool(ToolType::StructuralPencil))
 {
     // Notify view of workspace size
     mView.SetWorkSpaceSize(mModelController->GetModel().GetWorkSpaceSize());
@@ -70,7 +76,7 @@ Controller::Controller(
     assert(mModelController->GetModel().HasLayer(LayerType::Structural));
 
     mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
-    mUserInterface.OnCurrentToolChanged(std::nullopt);
+    mUserInterface.OnCurrentToolChanged(mCurrentTool->GetType());
 }
 
 void Controller::NewStructuralLayer()
@@ -198,6 +204,8 @@ void Controller::SelectPrimaryLayer(LayerType primaryLayer)
     mPrimaryLayer = primaryLayer;
 
     // Reset current tool
+    // TODO: might actually want to select the "primary tool" for the layer
+    // (i.e. probably the pencil, in all cases)
     SetTool(std::nullopt);
 
     mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
@@ -205,13 +213,21 @@ void Controller::SelectPrimaryLayer(LayerType primaryLayer)
 
 std::optional<ToolType> Controller::GetTool() const
 {
-    // TODOHERE
-    return std::nullopt;
+    return mCurrentTool
+        ? mCurrentTool->GetType()
+        : std::optional<ToolType>();
 }
 
 void Controller::SetTool(std::optional<ToolType> tool)
 {
-    // TODOHERE
+    // Nuke old tool
+    mCurrentTool.reset();
+
+    // Make new tool
+    if (tool.has_value())
+    {
+        mCurrentTool = MakeTool(*tool);
+    }
 
     // Notify UI
     mUserInterface.OnCurrentToolChanged(tool);
@@ -265,7 +281,10 @@ void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPositi
     // Check if within work canvas
     if (mouseWorkSpaceCoordinates.IsInRect(mModelController->GetModel().GetWorkSpaceSize()))
     {
-        // TODO: FW to tool
+        if (mCurrentTool)
+        {
+            mCurrentTool->OnMouseMove(mInputState);
+        }
     }
     else
     {
@@ -280,7 +299,11 @@ void Controller::OnLeftMouseDown()
     // Update input state
     mInputState.IsLeftMouseDown = true;
 
-    // TODO: FW to tool
+    // TODO: should we do this only if in rect?
+    if (mCurrentTool)
+    {
+        mCurrentTool->OnLeftMouseDown(mInputState);
+    }
 }
 
 void Controller::OnLeftMouseUp()
@@ -288,7 +311,11 @@ void Controller::OnLeftMouseUp()
     // Update input state
     mInputState.IsLeftMouseDown = false;
 
-    // TODO: FW to tool
+    // TODO: should we do this only if in rect?
+    if (mCurrentTool)
+    {
+        mCurrentTool->OnLeftMouseUp(mInputState);
+    }
 }
 
 void Controller::OnRightMouseDown()
@@ -296,7 +323,11 @@ void Controller::OnRightMouseDown()
     // Update input state
     mInputState.IsRightMouseDown = true;
 
-    // TODO: FW to tool
+    // TODO: should we do this only if in rect?
+    if (mCurrentTool)
+    {
+        mCurrentTool->OnRightMouseDown(mInputState);
+    }
 }
 
 void Controller::OnRightMouseUp()
@@ -304,7 +335,11 @@ void Controller::OnRightMouseUp()
     // Update input state
     mInputState.IsRightMouseDown = false;
 
-    // TODO: FW to tool
+    // TODO: should we do this only if in rect?
+    if (mCurrentTool)
+    {
+        mCurrentTool->OnRightMouseUp(mInputState);
+    }
 }
 
 void Controller::OnShiftKeyDown()
@@ -312,7 +347,11 @@ void Controller::OnShiftKeyDown()
     // Update input state
     mInputState.IsShiftKeyDown = true;
 
-    // TODO: FW to tool
+    // TODO: should we do this only if in rect?
+    if (mCurrentTool)
+    {
+        mCurrentTool->OnShiftKeyDown(mInputState);
+    }
 }
 
 void Controller::OnShiftKeyUp()
@@ -320,7 +359,11 @@ void Controller::OnShiftKeyUp()
     // Update input state
     mInputState.IsShiftKeyDown = false;
 
-    // TODO: FW to tool
+    // TODO: should we do this only if in rect?
+    if (mCurrentTool)
+    {
+        mCurrentTool->OnShiftKeyUp(mInputState);
+    }
 }
 
 void Controller::OnMouseOut()
@@ -332,6 +375,25 @@ void Controller::OnMouseOut()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
+{
+    switch (toolType)
+    {
+        // TODOHERE: other types
+
+        case ToolType::StructuralPencil:
+        {
+            return std::make_unique<StructuralPencilTool>(
+                *mModelController,
+                mWorkbenchState,
+                mUserInterface,
+                mView,
+                mResourceLocator);
+        }
+    }
+    // TODOHERE
+}
 
 void Controller::RefreshToolCoordinateDisplay()
 {

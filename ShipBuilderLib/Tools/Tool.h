@@ -8,7 +8,6 @@
 #include "InputState.h"
 #include "IUserInterface.h"
 #include "ModelController.h"
-#include "SelectionManager.h"
 #include "ShipBuilderTypes.h"
 #include "WorkbenchState.h"
 #include "View.h"
@@ -29,11 +28,16 @@ namespace ShipBuilder {
  * - Instruct View for tool interactions, e.g. tool visualizations (lines, paste mask, etc.)
  * - Have also reference to IUserInterface, e.g. to capture/release mouse
  */
-class BaseTool
+class Tool
 {
 public:
 
-    virtual ~BaseTool() = default;
+    virtual ~Tool() = default;
+
+    ToolType GetType() const
+    {
+        return mToolType;
+    }
 
     //
     // Event handlers
@@ -50,16 +54,14 @@ public:
 
 protected:
 
-    BaseTool(
+    Tool(
         ToolType toolType,
         ModelController & modelController,
-        SelectionManager & selectionManager,
         WorkbenchState const & workbenchState,
         IUserInterface & userInterface,
         View & view)
         : mToolType(toolType)
         , mModelController(modelController)
-        , mSelectionManager(selectionManager)
         , mWorkbenchState(workbenchState)
         , mUserInterface(userInterface)
         , mView(view)
@@ -80,7 +82,6 @@ protected:
     ToolType const mToolType;
 
     ModelController & mModelController;
-    SelectionManager & mSelectionManager;
     WorkbenchState const & mWorkbenchState;
     IUserInterface & mUserInterface;
     View & mView;

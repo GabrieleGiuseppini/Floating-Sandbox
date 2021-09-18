@@ -423,7 +423,8 @@ void MainFrame::OpenForNewShip()
     mController = Controller::CreateNew(
         *mView,
         mWorkbenchState,
-        *this);
+        *this,
+        mResourceLocator);
 
     // Open ourselves
     Open();
@@ -440,7 +441,8 @@ void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
         /* TODO: loaded ship ,*/
         *mView,
         mWorkbenchState,
-        *this);
+        *this,
+        mResourceLocator);
 
     // Open ourselves
     Open();

@@ -11,8 +11,9 @@
 #include "ShipBuilderTypes.h"
 #include "View.h"
 #include "WorkbenchState.h"
+#include "Tools/Tool.h"
 
-#include "Tools/BaseTool.h"
+#include <Game/ResourceLocator.h>
 
 #include <memory>
 #include <optional>
@@ -41,13 +42,15 @@ public:
     static std::unique_ptr<Controller> CreateNew(
         View & view,
         WorkbenchState & workbenchState,
-        IUserInterface & userInterface);
+        IUserInterface & userInterface,
+        ResourceLocator const & resourceLocator);
 
     static std::unique_ptr<Controller> CreateForShip(
         /* TODO: loaded ship ,*/
         View & view,
         WorkbenchState & workbenchState,
-        IUserInterface & userInterface);
+        IUserInterface & userInterface,
+        ResourceLocator const & resourceLocator);
 
     ModelController const & GetModelController() const
     {
@@ -97,7 +100,10 @@ private:
         std::unique_ptr<ModelController> modelController,
         View & view,
         WorkbenchState & workbenchState,
-        IUserInterface & userInterface);
+        IUserInterface & userInterface,
+        ResourceLocator const & resourceLocator);
+
+    std::unique_ptr<Tool> MakeTool(ToolType toolType);
 
     void RefreshToolCoordinateDisplay();
 
@@ -109,6 +115,8 @@ private:
     WorkbenchState & mWorkbenchState;
     IUserInterface & mUserInterface;
 
+    ResourceLocator const & mResourceLocator;
+
     // Input state
     InputState mInputState;
 
@@ -117,6 +125,8 @@ private:
     //
 
     LayerType mPrimaryLayer;
+
+    std::unique_ptr<Tool> mCurrentTool;
 };
 
 }

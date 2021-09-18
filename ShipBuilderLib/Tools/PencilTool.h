@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "BaseTool.h"
+#include "Tool.h"
 
 #include <Game/Materials.h>
 #include <Game/ResourceLocator.h>
@@ -15,14 +15,13 @@
 namespace ShipBuilder {
 
 template<LayerType Layer>
-class PencilTool : public BaseTool
+class PencilTool : public Tool
 {
 protected:
 
     PencilTool(
         ToolType toolType,
         ModelController & modelController,
-        SelectionManager & selectionManager,
         WorkbenchState const & workbenchState,
         IUserInterface & userInterface,
         View & view,
@@ -54,7 +53,6 @@ public:
 
     StructuralPencilTool(
         ModelController & modelController,
-        SelectionManager & selectionManager,
         WorkbenchState const & workbenchState,
         IUserInterface & userInterface,
         View & view,
@@ -67,7 +65,6 @@ public:
 
     ElectricalPencilTool(
         ModelController & modelController,
-        SelectionManager & selectionManager,
         WorkbenchState const & workbenchState,
         IUserInterface & userInterface,
         View & view,
