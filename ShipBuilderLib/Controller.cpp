@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "Controller.h"
 
+#include "Tools/PencilTool.h"
+
 #include <cassert>
 
 namespace ShipBuilder {

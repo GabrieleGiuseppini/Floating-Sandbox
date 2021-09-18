@@ -18,6 +18,7 @@
 #include <UILib/WxHelpers.h>
 
 #include <wx/button.h>
+#include <wx/cursor.h>
 #include <wx/gbsizer.h>
 #include <wx/msgdlg.h>
 #include <wx/sizer.h>
@@ -520,6 +521,11 @@ void MainFrame::OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coo
     }
 
     mStatusBar->SetStatusText(ss.str(), 0);
+}
+
+void MainFrame::SetCursor(wxImage const & cursorImage)
+{
+    mWorkCanvas->SetCursor(wxCursor(cursorImage));
 }
 
 void MainFrame::ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & workCanvasDisplayLogicalCoordinates)

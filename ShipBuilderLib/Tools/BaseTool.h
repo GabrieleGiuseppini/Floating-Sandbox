@@ -10,6 +10,7 @@
 #include "ModelController.h"
 #include "SelectionManager.h"
 #include "ShipBuilderTypes.h"
+#include "WorkbenchState.h"
 #include "View.h"
 
 namespace ShipBuilder {
@@ -38,14 +39,14 @@ public:
     // Event handlers
     //
 
-    virtual void OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition) = 0;
-    virtual void OnLeftMouseDown() = 0;
-    virtual void OnLeftMouseUp() = 0;
-    virtual void OnRightMouseDown() = 0;
-    virtual void OnRightMouseUp() = 0;
-    virtual void OnShiftKeyDown() = 0;
-    virtual void OnShiftKeyUp() = 0;
-    virtual void OnMouseOut() = 0;
+    virtual void OnMouseMove(InputState const & inputState) = 0;
+    virtual void OnLeftMouseDown(InputState const & inputState) = 0;
+    virtual void OnLeftMouseUp(InputState const & inputState) = 0;
+    virtual void OnRightMouseDown(InputState const & inputState) = 0;
+    virtual void OnRightMouseUp(InputState const & inputState) = 0;
+    virtual void OnShiftKeyDown(InputState const & inputState) = 0;
+    virtual void OnShiftKeyUp(InputState const & inputState) = 0;
+    virtual void OnMouseOut(InputState const & inputState) = 0;
 
 protected:
 
@@ -53,14 +54,21 @@ protected:
         ToolType toolType,
         ModelController & modelController,
         SelectionManager & selectionManager,
+        WorkbenchState const & workbenchState,
         IUserInterface & userInterface,
         View & view)
         : mToolType(toolType)
         , mModelController(modelController)
         , mSelectionManager(selectionManager)
+        , mWorkbenchState(workbenchState)
         , mUserInterface(userInterface)
         , mView(view)
     {}
+
+    void SetCursor(wxImage const & cursorImage)
+    {
+        mUserInterface.SetCursor(cursorImage);
+    }
 
     void ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & mouseScreenPosition)
     {
@@ -73,6 +81,7 @@ protected:
 
     ModelController & mModelController;
     SelectionManager & mSelectionManager;
+    WorkbenchState const & mWorkbenchState;
     IUserInterface & mUserInterface;
     View & mView;
 };

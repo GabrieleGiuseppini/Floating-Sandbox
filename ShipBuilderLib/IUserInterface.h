@@ -8,6 +8,8 @@
 #include "Model.h"
 #include "ShipBuilderTypes.h"
 
+#include <wx/image.h>
+
 #include <optional>
 
 namespace ShipBuilder {
@@ -44,6 +46,10 @@ public:
 
     // Notifies of a change in the tool coordinates to display
     virtual void OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coordinates) = 0;
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    virtual void SetCursor(wxImage const & cursorImage) = 0;
 
     // Scrolls the work canvas to ensure the specified logical coordinates are visible
     virtual void ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & workCanvasDisplayLogicalCoordinates) = 0;

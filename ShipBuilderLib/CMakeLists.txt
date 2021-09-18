@@ -6,6 +6,8 @@
 set (SHIPBUILDER_LIB_SOURCES
 	Controller.cpp
 	Controller.h
+	EditAction.cpp
+	EditAction.h
 	InputState.h
 	IUserInterface.h
 	MainFrame.cpp
@@ -16,11 +18,15 @@ set (SHIPBUILDER_LIB_SOURCES
 	Model.h
 	ModelController.cpp
 	ModelController.h
+	SelectionManager.cpp	
+	SelectionManager.h
 	ShaderTypes.cpp
 	ShaderTypes.h
 	ShipBuilderTypes.h
-	View.h
+	UndoStack.cpp
+	UndoStack.h
 	View.cpp
+	View.h
 	ViewModel.h
 	WorkbenchState.cpp
 	WorkbenchState.h
@@ -31,8 +37,6 @@ set (TOOLS_SOURCES
 	Tools/BaseTool.h
 	Tools/PencilTool.cpp
 	Tools/PencilTool.h
-	Tools/SelectionManager.cpp
-	Tools/SelectionManager.h
 )
 
 source_group(" " FILES ${SHIPBUILDER_LIB_SOURCES})

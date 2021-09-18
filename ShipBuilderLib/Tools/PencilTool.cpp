@@ -7,30 +7,90 @@
 
 namespace ShipBuilder {
 
+template<LayerType Layer>
+PencilTool<Layer>::PencilTool(
+    ToolType toolType,
+    ModelController & modelController,
+    SelectionManager & selectionManager,
+    WorkbenchState const & workbenchState,
+    IUserInterface & userInterface,
+    View & view,
+    ResourceLocator const & resourceLocator)
+    : BaseTool(
+        toolType,
+        modelController,
+        selectionManager,
+        workbenchState,
+        userInterface,
+        view)
+    , mCursorImage(WxHelpers::LoadCursorImage("pencil_cursor", 1, 29, resourceLocator))
+{}
+
 StructuralPencilTool::StructuralPencilTool(
     ModelController & modelController,
     SelectionManager & selectionManager,
+    WorkbenchState const & workbenchState,
     IUserInterface & userInterface,
-    View & view)
+    View & view,
+    ResourceLocator const & resourceLocator)
     : PencilTool(
         ToolType::StructuralPencil,
         modelController,
         selectionManager,
+        workbenchState,
         userInterface,
-        view)
+        view,
+        resourceLocator)
 {}
 
 ElectricalPencilTool::ElectricalPencilTool(
     ModelController & modelController,
     SelectionManager & selectionManager,
+    WorkbenchState const & workbenchState,
     IUserInterface & userInterface,
-    View & view)
+    View & view,
+    ResourceLocator const & resourceLocator)
     : PencilTool(
         ToolType::ElectricalPencil,
         modelController,
         selectionManager,
+        workbenchState,
         userInterface,
-        view)
+        view,
+        resourceLocator)
 {}
+
+template<LayerType Layer>
+void PencilTool<Layer>::OnMouseMove(InputState const & inputState)
+{
+    if (inputState.IsLeftMouseDown)
+    {
+        ApplyEditAt(inputState.MousePosition, MaterialPlaneType::Foreground);
+    }
+    else if (inputState.IsRightMouseDown)
+    {
+        ApplyEditAt(inputState.MousePosition, MaterialPlaneType::Background);
+    }
+}
+
+template<LayerType Layer>
+void PencilTool<Layer>::OnLeftMouseDown(InputState const & inputState)
+{
+    ApplyEditAt(inputState.MousePosition, MaterialPlaneType::Foreground);
+}
+
+template<LayerType Layer>
+void PencilTool<Layer>::OnRightMouseDown(InputState const & inputState)
+{
+    ApplyEditAt(inputState.MousePosition, MaterialPlaneType::Background);
+}
+
+template<LayerType Layer>
+void PencilTool<Layer>::ApplyEditAt(
+    DisplayLogicalCoordinates const & position,
+    MaterialPlaneType plane)
+{
+    // TODOHERE
+}
 
 }

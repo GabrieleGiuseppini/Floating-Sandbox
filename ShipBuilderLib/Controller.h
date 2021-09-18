@@ -12,6 +12,8 @@
 #include "View.h"
 #include "WorkbenchState.h"
 
+#include "Tools/BaseTool.h"
+
 #include <memory>
 #include <optional>
 

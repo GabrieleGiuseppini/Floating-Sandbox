@@ -1,12 +1,15 @@
 
 - Click-And-Draw use case:
 	- Pencil tool (*)
+		+ UndoStack.h/cpp, w/IUndoEntry interface w/UndoEntryType enum
+		- Controller machinery for tools:
+			- TODOHERE
 		- View:
 			- Upload method for texture *region*
-		- UndoStack.h/cpp, w/IUndoEntry interface w/UndoEntryType enum
 		- ...
 
 	- Drop tool
+
 
 - Resize workflow:
 	- Button - in File panel, slightly separated from the File buttons
@@ -124,19 +127,49 @@
 			- Coords and icon
 			- Ship size and icon
 
+- Edit/Undo:
+	- Every edit action (pencil, line, flood, paste, rectangle, eraser, etc.) is atomically implemented by one function call in ModelController
+	- Args of it are in an "EditAction" struct (base + derived hierarchy)
+	- EditAction works with double-dispatch, exposing an Apply() taking ModelController to act on it
+	- Undo entries:
+		- UndoEntry is not a hierarchy anymore
+		- It contains two EditAction's: UndoEditAction and RedoEditAction
+			- e.g. after pencil or flood: contains StructuralRegionEditAction x 2
+		- Exposes:
+			- string GetTitle()
+			- std::uint64_t GetCost()
+			- void Undo(ModelController &)
+			- void Redo(ModelController &)		
+	- Previews:
+		- Spec:
+			- Tools like line, square, paste, translate, etc. draw a preview of how the Model looks like if the tool is "confirmed"
+			- Workflow is:
+				- Left down: start
+				- Move: each movement shows "as if" it were confirmed there
+				- One of these:
+					- Confirm: same as last shown
+					- Abort (ESC): back to original
+		- Impl:
+			- TODOHERE
+	- ModelController:
+		- Edit(EditAction) -> uq_ptr<UndoEntry>
+			- Clear previews - TODO
+			- EditAction::Apply(this) -> uq_ptr<EditAction> (for undo)
+			- Update view
+			- Bake UndoEntry
+		- Apply(EditAction) -> None
+			- EditAction::Apply(this) -> uq_ptr<EditAction> (for undo) -> thrown away
+		- Apply(EditAction[]) -> None
+			- For each: Apply(EditAction)
+
 - Tools:
 	! Most tools should pan when the (captured) mouse is outside of the canvas
 		- Via BaseTool::ScrollIntoViewIfNeeded, which simply forwards to IUserInterface::ScrollIntoViewIfNeeded(display logical)
-	- Edit interactions:
-		- ModelController::BeginEdit()
-		- ModelController::XYZ(e.g. write one pixel, one or multiple times, or lines, or flood, etc.)
-		- ModelController::EndEdit() -> IUndoEntry
-			- ModelController talks to View here for Model-specific visualization - but NOT for tool-specific visualizations (that is the Tool's responsibility)
-	- BaseTool:
+	+ BaseTool:
 		+ Stores all protected references passed from cctors: IUserInterface, ModelController, View, SelectionManager
-		- Abstract methods from game - but all pure
+		+ Same abstract methods from game - but all pure
 	- All tools:
-		- Pencil
+		= Pencil
 			- Settings: Size
 		- Eraser
 			- Settings: Size
@@ -149,6 +182,7 @@
 		- Rectangle
 			- Settings: FillWithFore|FillWithBack|NoFill; Size
 		- Ellipses
+		- Translate
 		- Mass changer
 	- SelectionManager pseudo-tool:
 		- Maintains current selection
@@ -161,6 +195,7 @@
 		- Maintains clip
 		- Implements operations: Copy, Cut, Paste
 			- TODO: who should be responsible for the interactions during Paste? See Photoshop and Paint
+				- A different, unselectable tool?
 		- Talks with IUserInterface to enable/disable menus
 
 - RenderContext:
