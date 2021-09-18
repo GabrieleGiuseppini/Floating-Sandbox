@@ -31,7 +31,7 @@ class Model
 public:
 
     template<typename TMaterial>
-    using MaterialBuffer = Buffer2D<TMaterial const *, Integral2DSize>;
+    using MaterialBuffer = Buffer2D<TMaterial const *, IntegralSize>;
 
 public:
 
@@ -78,9 +78,19 @@ public:
         return mIsDirty;
     }
 
+    MaterialBuffer<StructuralMaterial> & GetStructuralMaterialMatrix()
+    {
+        return *mStructuralMaterialMatrix;
+    }
+
     RgbaImageData const & GetStructuralRenderColorTexture() const
     {
         assert(!!mStructuralRenderColorTexture);
+        return *mStructuralRenderColorTexture;
+    }
+
+    RgbaImageData & GetStructuralRenderColorTexture()
+    {
         return *mStructuralRenderColorTexture;
     }
 

@@ -5,7 +5,10 @@
 ***************************************************************************************/
 #pragma once
 
+#include "EditAction.h"
 #include "ShipBuilderTypes.h"
+
+#include <memory>
 
 namespace ShipBuilder {
 
@@ -15,6 +18,23 @@ namespace ShipBuilder {
 class UndoEntry
 {
 public:
+
+    UndoEntry(
+        std::unique_ptr<EditAction> undoEditAction,
+        std::unique_ptr<EditAction> redoEditAction)
+        : mUndoEditAction(std::move(undoEditAction))
+        , mRedoEditAction(std::move(redoEditAction))
+    {}
+
+private:
+
+    std::unique_ptr<EditAction> mUndoEditAction;
+    std::unique_ptr<EditAction> mRedoEditAction;
+};
+
+class UndoStack
+{
+    // TODO
 };
 
 }

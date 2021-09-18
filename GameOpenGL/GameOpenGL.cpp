@@ -251,15 +251,28 @@ void GameOpenGL::BindAttributeLocation(
     }
 }
 
-void GameOpenGL::UploadTexture(
-    RgbaImageData const & texture,
-    GLint internalFormat)
+void GameOpenGL::UploadTexture(RgbaImageData const & texture)
 {
-    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, texture.Size.Width, texture.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.Data.get());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.Size.Width, texture.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.Data.get());
     GLenum glError = glGetError();
     if (GL_NO_ERROR != glError)
     {
         throw GameException("Error uploading texture onto GPU: " + std::to_string(glError));
+    }
+}
+
+void GameOpenGL::UploadTextureRegion(
+    rgbaColor const * textureData,
+    int xOffset,
+    int yOffset,
+    int width,
+    int height)
+{
+    glTexSubImage2D(GL_TEXTURE_2D, 0, xOffset, yOffset, width, height, GL_RGBA, GL_UNSIGNED_BYTE, textureData);
+    GLenum glError = glGetError();
+    if (GL_NO_ERROR != glError)
+    {
+        throw GameException("Error uploading texture region onto GPU: " + std::to_string(glError));
     }
 }
 

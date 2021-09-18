@@ -104,15 +104,19 @@ public:
 
 public:
 
-    //
-    // Structural Render Color Texture
-    //
-
     // Sticky, always drawn
     void UploadBackgroundTexture(RgbaImageData && texture);
 
-    // Sticky, always drawn
-    void UploadStructuralRenderColorTexture(RgbaImageData const & texture);
+    // Sticky
+    void UploadStructuralTexture(RgbaImageData const & texture);
+
+    // Sticky
+    void UpdateStructuralTextureRegion(
+        RgbaImageData const & texture,
+        int xOffset,
+        int yOffset,
+        int width,
+        int height);
 
     // TODO: update method as well
 
@@ -178,11 +182,11 @@ private:
     GameOpenGLTexture mBackgroundTextureOpenGLHandle;
     bool mHasBackgroundTexture;
 
-    // Structural Render Color Texture
-    GameOpenGLVAO mStructuralRenderColorTextureVAO;
-    GameOpenGLVBO mStructuralRenderColorTextureVBO;
-    GameOpenGLTexture mStructuralRenderColorTextureOpenGLHandle;
-    bool mHasStructuralRenderColorTexture;
+    // Structural texture
+    GameOpenGLVAO mStructuralTextureVAO;
+    GameOpenGLVBO mStructuralTextureVBO;
+    GameOpenGLTexture mStructuralTextureOpenGLHandle;
+    bool mHasStructuralTexture;
 };
 
 }

@@ -36,7 +36,35 @@ ModelController::ModelController(
     : mView(view)
     , mModel(workSpaceSize)
 {
-    UploadStructuralRenderColorTextureToView();
+    UploadStructuralLayerToView();
+}
+
+std::unique_ptr<UndoEntry> ModelController::Edit(EditAction const & action)
+{
+    // Clear previews for all layers
+    // TODO
+
+    // Apply action
+    std::unique_ptr<UndoEntry> undoEntry = action.Apply(*this);
+
+    // Update view
+    // TODOHERE: perf test
+    UploadStructuralLayerToView();
+
+    return undoEntry;
+}
+
+void ModelController::Apply(EditAction const & action)
+{
+    action.Apply(*this);
+}
+
+void ModelController::Apply(std::vector<EditAction> const & actions)
+{
+    for (auto const & action : actions)
+    {
+        Apply(action);
+    }
 }
 
 void ModelController::NewStructuralLayer()
@@ -45,15 +73,16 @@ void ModelController::NewStructuralLayer()
 
     mModel.NewStructuralLayer();
 
-    UploadStructuralRenderColorTextureToView();
+    UploadStructuralLayerToView();
 }
 
 void ModelController::SetStructuralLayer(/*TODO*/)
 {
     mModel.SetStructuralLayer();
 
-    UploadStructuralRenderColorTextureToView();
+    UploadStructuralLayerToView();
 }
+
 
 void ModelController::NewElectricalLayer()
 {
@@ -130,11 +159,72 @@ void ModelController::RemoveTextureLayer()
     // TODO: upload to view
 }
 
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Structural
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ModelController::UploadStructuralRenderColorTextureToView()
+std::unique_ptr<EditAction> ModelController::StructuralRegionFill(
+    StructuralMaterial const * material,
+    WorkSpaceCoordinates const & origin,
+    WorkSpaceSize const & size)
 {
-    mView.UploadStructuralRenderColorTexture(mModel.GetStructuralRenderColorTexture());
+    //
+    // Create undo edit action
+    //
+
+    // TODOHERE: need simple "region of materials"
+    std::unique_ptr<EditAction> undoEditAction;
+
+    //
+    // Fill
+    //
+
+    Model::MaterialBuffer<StructuralMaterial> & structuralMaterialMatrix = mModel.GetStructuralMaterialMatrix();
+    RgbaImageData & structuralRenderColorTexture = mModel.GetStructuralRenderColorTexture();
+
+    rgbaColor const renderColor = material != nullptr
+        ? rgbaColor(material->RenderColor)
+        : rgbaColor(255, 255, 255, 0);
+
+    for (int y = origin.y; y < origin.y + size.height; ++y)
+    {
+        for (int x = origin.x; x < origin.x + size.width; ++x)
+        {
+            vec2i const coords = vec2i(x, y);
+
+            structuralMaterialMatrix[coords] = material;
+            structuralRenderColorTexture[coords] = renderColor;
+        }
+    }
+
+    return undoEditAction;
 }
+
+void ModelController::UploadStructuralLayerToView()
+{
+    mView.UploadStructuralTexture(mModel.GetStructuralRenderColorTexture());
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Electrical
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+std::unique_ptr<EditAction> ModelController::ElectricalRegionFill(
+    ElectricalMaterial const * material,
+    WorkSpaceCoordinates const & origin,
+    WorkSpaceSize const & size)
+{
+    // TODO
+    return nullptr;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Ropes
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Texture
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 }

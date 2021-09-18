@@ -257,22 +257,22 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, Sequ
 /*
  * Integral point's coordinates.
  */
-struct IntegralPoint
+struct IntegralPointCoordinates
 {
     int X;
     int Y;
 
-    constexpr IntegralPoint(
+    constexpr IntegralPointCoordinates(
         int x,
         int y)
         : X(x)
         , Y(y)
     {}
 
-    IntegralPoint FlipY(int height) const
+    IntegralPointCoordinates FlipY(int height) const
     {
         assert(height > Y);
-        return IntegralPoint(X, height - 1 - Y);
+        return IntegralPointCoordinates(X, height - 1 - Y);
     }
 
     std::string ToString() const
@@ -286,12 +286,12 @@ struct IntegralPoint
 /*
  * Integral rectangular sizes.
  */
-struct Integral2DSize
+struct IntegralSize
 {
     int Width;
     int Height;
 
-    constexpr Integral2DSize(
+    constexpr IntegralSize(
         int width,
         int height)
         : Width(width)
@@ -299,7 +299,7 @@ struct Integral2DSize
     {}
 };
 
-inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, IntegralPoint const & p)
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, IntegralPointCoordinates const & p)
 {
     os << p.ToString();
     return os;
@@ -425,12 +425,12 @@ DurationShortLongType StrToDurationShortLongType(std::string const & str);
  */
 struct ElectricalPanelElementMetadata
 {
-    std::optional<IntegralPoint> PanelCoordinates;
+    std::optional<IntegralPointCoordinates> PanelCoordinates;
     std::optional<std::string> Label;
     bool IsHidden;
 
     ElectricalPanelElementMetadata(
-        std::optional<IntegralPoint> panelCoordinates,
+        std::optional<IntegralPointCoordinates> panelCoordinates,
         std::optional<std::string> label,
         bool isHidden)
         : PanelCoordinates(std::move(panelCoordinates))

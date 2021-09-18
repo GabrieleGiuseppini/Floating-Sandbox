@@ -125,7 +125,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
                 pointInfos1.emplace_back(
                     vec2i(x, y),
-                    IntegralPoint(x, y).FlipY(structureHeight),
+                    IntegralPointCoordinates(x, y).FlipY(structureHeight),
                     vec2f(
                         static_cast<float>(x) - halfWidth,
                         static_cast<float>(y)) + shipDefinition.PhysicsData.Offset,
@@ -149,7 +149,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
                     {
                         throw GameException(
                             "More than two \"" + Utils::RgbColor2Hex(colorKey) + "\" rope endpoints found at "
-                            + IntegralPoint(x, y).FlipY(structureHeight).ToString());
+                            + IntegralPointCoordinates(x, y).FlipY(structureHeight).ToString());
                     }
                 }
 
@@ -493,7 +493,7 @@ void ShipFactory::AppendRopeEndpoints(
             if (colorKey != BackgroundColorKey)
             {
                 vec2i const matrixPointIndex(x + 1, y + 1);
-                auto const pointCoords = IntegralPoint(x, y);
+                auto const pointCoords = IntegralPointCoordinates(x, y);
 
                 // Check whether we have a structural point here
                 ElementIndex pointIndex;
@@ -583,7 +583,7 @@ void ShipFactory::DecoratePointsWithElectricalMaterials(
                 {
                     throw GameException(
                         "Cannot find electrical material for color key \"" + Utils::RgbColor2Hex(colorKey)
-                        + "\" of pixel found at " + IntegralPoint(x, y).FlipY(height).ToString()
+                        + "\" of pixel found at " + IntegralPointCoordinates(x, y).FlipY(height).ToString()
                         + " in the " + (isDedicatedElectricalLayer ? "electrical" : "structural")
                         + " layer image");
                 }
@@ -605,7 +605,7 @@ void ShipFactory::DecoratePointsWithElectricalMaterials(
                 {
                     throw GameException(
                         "The electrical layer image specifies an electrical material at "
-                        + IntegralPoint(x, y).FlipY(height).ToString()
+                        + IntegralPointCoordinates(x, y).FlipY(height).ToString()
                         + ", but no pixel may be found at those coordinates in the structural layer image");
                 }
 
@@ -631,7 +631,7 @@ void ShipFactory::DecoratePointsWithElectricalMaterials(
     // Check for duplicate electrical element instance indices
     //
 
-    std::map<ElectricalElementInstanceIndex, IntegralPoint> seenInstanceIndicesToUserCoords;
+    std::map<ElectricalElementInstanceIndex, IntegralPointCoordinates> seenInstanceIndicesToUserCoords;
     for (auto const & pi : pointInfos1)
     {
         if (nullptr != pi.ElectricalMtl

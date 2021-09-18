@@ -77,7 +77,7 @@ NotificationRenderContext::NotificationRenderContext(
             static_cast<float>(fonts[f].Texture.Size.Width),
             static_cast<float>(fonts[f].Texture.Size.Height),
             false,
-            IntegralPoint(0, 0),
+            IntegralPointCoordinates(0, 0),
             vec2f::zero(),
             TextureFrameId<FontTextureGroups>(
                 FontTextureGroups::Font,

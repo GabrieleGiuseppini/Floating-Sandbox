@@ -23,11 +23,11 @@ public:
     struct LayoutElement
     {
         TElement Element;
-        std::optional<IntegralPoint> Coordinates;
+        std::optional<IntegralPointCoordinates> Coordinates;
 
         LayoutElement(
             TElement const & element,
-            std::optional<IntegralPoint> const & coordinates)
+            std::optional<IntegralPointCoordinates> const & coordinates)
             : Element(element)
             , Coordinates(coordinates)
         {}

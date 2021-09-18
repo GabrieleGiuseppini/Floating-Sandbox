@@ -1,6 +1,62 @@
 https://gamejolt.com/x/permalink/comment/11457002
 
-- Controller/Tools/WorkSpace canvas strategy:
+- Edit/Undo:
+	- Every edit action (pencil, line, flood, paste, rectangle, eraser, etc.) is atomically implemented by one function call in ModelController
+	- Args of it are also in an "EditAction" struct (base + derived hierarchy)
+	- EditAction works with double-dispatch, exposing an Apply() taking ModelController to act on it
+	- Undo entries:
+		- UndoEntry is not a hierarchy; it contains two EditAction's: UndoEditAction and RedoEditAction
+			- e.g. after pencil or flood: contains StructuralRegionEditAction x 2
+		- Exposes:
+			- string GetTitle()
+			- std::uint64_t GetCost()
+			- void Undo(ModelController &)
+			- void Redo(ModelController &)		
+
+- ModelController:
+	- Edit(EditAction) -> uq_ptr<UndoEntry>
+		- Clear previews - TODO
+		- EditAction::Apply(this) -> uq_ptr<EditAction> (for undo)
+		- Update view - TODOHERE: this needs to be done by the actual implementation? see perf
+			- If ok: nuke View::UpdateStructuralLayerTexture(.)
+		- Bake UndoEntry
+	- Apply(EditAction) -> None
+		- EditAction::Apply(this) -> uq_ptr<EditAction> (for undo) -> thrown away
+	- Apply(EditAction[]) -> None
+		- For each: Apply(EditAction)
+
+- Click-And-Draw use case:
+	- Pencil tool (*)
+		+ UndoStack.h/cpp, w/IUndoEntry interface w/UndoEntryType enum
+		+ Controller: forward mouse events to tool
+		+ View:
+			+ Upload method for texture *region*
+		= EditAction for it
+			- Nail down Y coordinates
+		- Hook UndoEntry to UndoStack
+		- Undo stack: owned by Controller, given to Tool
+			- Tool's action to write into UndoStock and IUserInterface notification
+			- IUserInterface notification: Undo and Redo menu items
+			- MainFrame: on Undo/Redo, call into Controller::TODO:undo/redo
+			- Controller::TODO:undo/redo
+	- Line tool
+		- Previews
+	- Eraser tool
+	- Strategy for other tools' enums - to make it work for now
+
+- Previews:
+	- Spec:
+		- Tools like line, square, paste, translate, etc. draw a preview of how the Model looks like if the tool is "confirmed"
+		- Workflow is:
+			- Left down: start
+			- Move: each movement shows "as if" it were confirmed there
+			- One of these:
+				- Confirm: same as last shown
+				- Abort (ESC): back to original
+	- Impl:
+		- TODOHERE
+
+- Controller/Tools/WorkSpace/Mouse canvas strategy:
 	- Spec:
 		- When mouse is not down, cursor changes depending on whether or not mouse is inside rect
 		- At left down, tool "captures mouse" and from that moment:
@@ -13,24 +69,6 @@ https://gamejolt.com/x/permalink/comment/11457002
 	- Impl:
 		- TODOHERE
 
-- Click-And-Draw use case:
-	- Pencil tool (*)
-		+ UndoStack.h/cpp, w/IUndoEntry interface w/UndoEntryType enum
-		+ Controller: forward mouse events to tool
-		- View:
-			- Upload method for texture *region*
-		- EditAction for it
-			- Including Undo
-		- Undo stack: ownership and menu items
-			- TODO: UI?
-	- Drop tool
-	- Eraser tool
-	- Strategy for other tools' enums - to make it work for now
-
-- Redo view:
-	- Layer's texture is always one, e.g. "StructuralLayer"
-	- It's the LayerView settings that tell the ModelController what to put in that texture
-
 - Resize workflow:
 	- Button - in File panel, slightly separated from the File buttons
 	- Click -> Dialog for Canvas Centering/Clipping -> Controller -> ...TODO...
@@ -38,6 +76,8 @@ https://gamejolt.com/x/permalink/comment/11457002
 
 - Grid view:
 	- TODO: where is the toggle button? Need new top panel area? Re-design top panel area?
+
+- Undo stack visualization: underneath toolbar?
 
 - Materials palette:
 	- Material descriptions
@@ -146,41 +186,6 @@ https://gamejolt.com/x/permalink/comment/11457002
 			- Need UnitsSystem in Preferences
 			- Coords and icon
 			- Ship size and icon
-
-- Edit/Undo:
-	- Every edit action (pencil, line, flood, paste, rectangle, eraser, etc.) is atomically implemented by one function call in ModelController
-	- Args of it are in an "EditAction" struct (base + derived hierarchy)
-	- EditAction works with double-dispatch, exposing an Apply() taking ModelController to act on it
-	- Undo entries:
-		- UndoEntry is not a hierarchy anymore
-		- It contains two EditAction's: UndoEditAction and RedoEditAction
-			- e.g. after pencil or flood: contains StructuralRegionEditAction x 2
-		- Exposes:
-			- string GetTitle()
-			- std::uint64_t GetCost()
-			- void Undo(ModelController &)
-			- void Redo(ModelController &)		
-	- Previews:
-		- Spec:
-			- Tools like line, square, paste, translate, etc. draw a preview of how the Model looks like if the tool is "confirmed"
-			- Workflow is:
-				- Left down: start
-				- Move: each movement shows "as if" it were confirmed there
-				- One of these:
-					- Confirm: same as last shown
-					- Abort (ESC): back to original
-		- Impl:
-			- TODOHERE
-	- ModelController:
-		- Edit(EditAction) -> uq_ptr<UndoEntry>
-			- Clear previews - TODO
-			- EditAction::Apply(this) -> uq_ptr<EditAction> (for undo)
-			- Update view
-			- Bake UndoEntry
-		- Apply(EditAction) -> None
-			- EditAction::Apply(this) -> uq_ptr<EditAction> (for undo) -> thrown away
-		- Apply(EditAction[]) -> None
-			- For each: Apply(EditAction)
 
 - Tools:
 	! Most tools should pan when the (captured) mouse is outside of the canvas

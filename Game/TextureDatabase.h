@@ -50,7 +50,7 @@ struct TextureFrameMetadata
 
     // Anchor point: when this texture is requested to be drawn at a specific
     // world coordinate, that is the coordinate of this point, in frame (pixel) coordinates
-    IntegralPoint AnchorCenter;
+    IntegralPointCoordinates AnchorCenter;
 
     // Anchor point in in texture frame coordinates scaled to world coordinates
     // (i.e. [0.0, 1.0] * WorldWidth/Height)
@@ -67,7 +67,7 @@ struct TextureFrameMetadata
         float worldWidth,
         float worldHeight,
         bool hasOwnAmbientLight,
-        IntegralPoint const & anchorCenter,
+        IntegralPointCoordinates const & anchorCenter,
         vec2f const & anchorCenterWorld,
         TextureFrameId<TextureGroups> frameId,
         std::string const & frameName)

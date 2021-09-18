@@ -30,7 +30,7 @@ using ShipFactoryPointIndexMatrix = Matrix2<std::optional<ElementIndex>>;
 struct ShipFactoryPoint
 {
     std::optional<vec2i> OriginalDefinitionCoordinates; // In original image (y=0 @ bottom), from any of the layers that provide points
-    std::optional<IntegralPoint> UserCoordinates; // For displaying messages to users
+    std::optional<IntegralPointCoordinates> UserCoordinates; // For displaying messages to users
     vec2f Position;
     vec2f TextureCoordinates;
     vec4f RenderColor;
@@ -47,7 +47,7 @@ struct ShipFactoryPoint
 
     ShipFactoryPoint(
         std::optional<vec2i> originalDefinitionCoordinates,
-        std::optional<IntegralPoint> userCoordinates,
+        std::optional<IntegralPointCoordinates> userCoordinates,
         vec2f position,
         vec2f textureCoordinates,
         vec4f renderColor,

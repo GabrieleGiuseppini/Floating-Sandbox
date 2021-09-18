@@ -7,8 +7,8 @@
 
 namespace ShipBuilder {
 
-template<LayerType Layer>
-PencilTool<Layer>::PencilTool(
+template<typename TMaterial>
+PencilTool<TMaterial>::PencilTool(
     ToolType toolType,
     ModelController & modelController,
     WorkbenchState const & workbenchState,
@@ -56,8 +56,8 @@ ElectricalPencilTool::ElectricalPencilTool(
         resourceLocator)
 {}
 
-template<LayerType Layer>
-void PencilTool<Layer>::OnMouseMove(InputState const & inputState)
+template<typename TMaterial>
+void PencilTool<TMaterial>::OnMouseMove(InputState const & inputState)
 {
     // Calculate work coordinates
     WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.ScreenToWorkSpace(inputState.MousePosition);
@@ -76,8 +76,8 @@ void PencilTool<Layer>::OnMouseMove(InputState const & inputState)
     }
 }
 
-template<LayerType Layer>
-void PencilTool<Layer>::OnLeftMouseDown(InputState const & inputState)
+template<typename TMaterial>
+void PencilTool<TMaterial>::OnLeftMouseDown(InputState const & inputState)
 {
     // Calculate work coordinates
     WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.ScreenToWorkSpace(inputState.MousePosition);
@@ -89,8 +89,8 @@ void PencilTool<Layer>::OnLeftMouseDown(InputState const & inputState)
     }
 }
 
-template<LayerType Layer>
-void PencilTool<Layer>::OnRightMouseDown(InputState const & inputState)
+template<typename TMaterial>
+void PencilTool<TMaterial>::OnRightMouseDown(InputState const & inputState)
 {
     // Calculate work coordinates
     WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.ScreenToWorkSpace(inputState.MousePosition);
@@ -102,13 +102,29 @@ void PencilTool<Layer>::OnRightMouseDown(InputState const & inputState)
     }
 }
 
-template<LayerType Layer>
-void PencilTool<Layer>::ApplyEditAt(
+template<typename TMaterial>
+void PencilTool<TMaterial>::ApplyEditAt(
     WorkSpaceCoordinates const & position,
     MaterialPlaneType plane)
 {
-    // TODOHERE
+    // TODOTEST
     LogMessage("TODOTEST: PencilTool::ApplyEditAt: ", position.ToString(), " plane=", static_cast<int>(plane));
+
+    auto const editAction = MaterialRegionFillEditAction(
+        plane == MaterialPlaneType::Foreground
+        ? mWorkbenchState.GetStructuralForegroundMaterial()
+        : mWorkbenchState.GetStructuralBackgroundMaterial(),
+        position,
+        WorkSpaceSize(1, 1));
+
+    auto undoEntry = mModelController.Edit(editAction);
+
+    // TODO: hook with undo stack
+
+    // TODO: publish dirtyness
+
+    // Force refresh
+    mUserInterface.RefreshView();
 }
 
 }

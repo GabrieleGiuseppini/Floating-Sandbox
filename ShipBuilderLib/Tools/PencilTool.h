@@ -14,7 +14,7 @@
 
 namespace ShipBuilder {
 
-template<LayerType Layer>
+template<typename TMaterial>
 class PencilTool : public Tool
 {
 protected:
@@ -49,7 +49,7 @@ private:
     wxImage mCursorImage;
 };
 
-class StructuralPencilTool : public PencilTool<LayerType::Structural>
+class StructuralPencilTool : public PencilTool<StructuralMaterial>
 {
 public:
 
@@ -61,7 +61,7 @@ public:
         ResourceLocator const & resourceLocator);
 };
 
-class ElectricalPencilTool : public PencilTool<LayerType::Electrical>
+class ElectricalPencilTool : public PencilTool<ElectricalMaterial>
 {
 public:
 
