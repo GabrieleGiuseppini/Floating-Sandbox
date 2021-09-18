@@ -1,3 +1,16 @@
+https://gamejolt.com/x/permalink/comment/11457002
+
+
+- Controller/Tools/WorkSpace canvas strategy:
+	- Spec:
+		- When mouse is not down, cursor changes depending on whether or not mouse is inside rect
+		- At left down, tool "captures mouse" and from that moment:
+			- Cursor stays even when mouse is out (while normally, when left is not down, cursor would change to normal)
+			- Action is done, but only *applied* if in rect (obviously) 
+				- e.g. pencil: simply doesn't write if out (obviously)
+				- e.g. line: line endpoint follows mouse even if out, but line drawn is only within rect (obviously)
+	- Impl:
+		- TODOHERE
 
 - Click-And-Draw use case:
 	- Pencil tool (*)
@@ -18,6 +31,9 @@
 	- Eraser tool
 	- Strategy for other tools' enums - to make it work for now
 
+- Redo view:
+	- Layer's texture is always one, e.g. "StructuralLayer"
+	- It's the LayerView settings that tell the ModelController what to put in that texture
 
 - Resize workflow:
 	- Button - in File panel, slightly separated from the File buttons
@@ -93,8 +109,8 @@
 	- Tools
 		- "Extensions" of Controller
 		- Implement state machines for interactions, including visual notifications (marching ants, paste mask, etc.)
-		- Take references to WorkbenchState and SelectionManager (at tool initialization time)
-			- SelectionManager so that Selection tool can save selection to it
+		- Take references to WorkbenchState (at tool initialization time)
+		- Selection tool Take references to SelectionManager (at tool initialization time), so that it can save selection to it
 		- Receive input state events from Controller, and notifications of WorkbenchState changed
 		- Take references to View and ModelController
 		- Modify Model via ModelController
@@ -173,8 +189,8 @@
 - Tools:
 	! Most tools should pan when the (captured) mouse is outside of the canvas
 		- Via BaseTool::ScrollIntoViewIfNeeded, which simply forwards to IUserInterface::ScrollIntoViewIfNeeded(display logical)
-	+ BaseTool:
-		+ Stores all protected references passed from cctors: IUserInterface, ModelController, View, SelectionManager
+	+ Tool:
+		+ Stores all protected references passed from cctors: IUserInterface, ModelController, View
 		+ Same abstract methods from game - but all pure
 	- All tools:
 		= Pencil
@@ -184,7 +200,7 @@
 		- Flood
 		- Selection
 			- Implements selection interaction and rendering of visual feedback *during the interaction only*
-			- Takes SelectionManager ref (like all tools, part of the ITool interface), and populates it upon confirmation of selection made
+			- Takes SelectionManager ref in its cctor, and populates it upon confirmation of selection made
 		- Sample
 		- Line
 		- Rectangle

@@ -959,7 +959,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             mResourceLocator.GetIconFilePath(iconName),
             [this, tool]()
             {
-                mController->SetTool(tool);
+                mController->SetCurrentTool(tool);
             },
             tooltip);
 
@@ -1825,7 +1825,7 @@ void MainFrame::ReconciliateUI()
     ReconciliateUIWithPrimaryLayerSelection(mController->GetPrimaryLayer());
     ReconciliateUIWithModelDirtiness(mController->GetModelController().GetModel().GetIsDirty());
     ReconciliateUIWithWorkbenchState();
-    ReconciliateUIWithSelectedTool(mController->GetTool());
+    ReconciliateUIWithSelectedTool(mController->GetCurrentTool());
 }
 
 void MainFrame::ReconciliateUIWithWorkSpaceSize(WorkSpaceSize const & workSpaceSize)

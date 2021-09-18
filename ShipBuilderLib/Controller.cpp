@@ -206,19 +206,19 @@ void Controller::SelectPrimaryLayer(LayerType primaryLayer)
     // Reset current tool
     // TODO: might actually want to select the "primary tool" for the layer
     // (i.e. probably the pencil, in all cases)
-    SetTool(std::nullopt);
+    SetCurrentTool(std::nullopt);
 
     mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
 }
 
-std::optional<ToolType> Controller::GetTool() const
+std::optional<ToolType> Controller::GetCurrentTool() const
 {
     return mCurrentTool
         ? mCurrentTool->GetType()
         : std::optional<ToolType>();
 }
 
-void Controller::SetTool(std::optional<ToolType> tool)
+void Controller::SetCurrentTool(std::optional<ToolType> tool)
 {
     // Nuke old tool
     mCurrentTool.reset();
@@ -276,6 +276,7 @@ void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPositi
     // Calculate work coordinates
     WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.ScreenToWorkSpace(mInputState.MousePosition);
 
+    // TODOHERE
     // TODO: should we detect in<->out transitions and tell tool?
 
     // Check if within work canvas
@@ -368,7 +369,15 @@ void Controller::OnShiftKeyUp()
 
 void Controller::OnMouseOut()
 {
-    // TODO: reset tool
+    // Reset tool
+    {
+        auto const oldTool = GetCurrentTool();
+        mCurrentTool.reset();
+        if (oldTool.has_value())
+        {
+            mCurrentTool = MakeTool(*oldTool);
+        }
+    }
 
     // Tell UI
     mUserInterface.OnToolCoordinatesChanged(std::nullopt);
@@ -380,7 +389,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
 {
     switch (toolType)
     {
-        // TODOHERE: other types
+        // TODOHERE: other tool types
 
         case ToolType::StructuralPencil:
         {
@@ -392,7 +401,6 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mResourceLocator);
         }
     }
-    // TODOHERE
 }
 
 void Controller::RefreshToolCoordinateDisplay()

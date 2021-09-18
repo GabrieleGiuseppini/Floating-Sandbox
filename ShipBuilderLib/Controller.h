@@ -76,8 +76,8 @@ public:
     LayerType GetPrimaryLayer() const;
     void SelectPrimaryLayer(LayerType primaryLayer);
 
-    std::optional<ToolType> GetTool() const;
-    void SetTool(std::optional<ToolType> tool);
+    std::optional<ToolType> GetCurrentTool() const;
+    void SetCurrentTool(std::optional<ToolType> tool);
 
     void AddZoom(int deltaZoom);
     void SetCamera(int camX, int camY);
