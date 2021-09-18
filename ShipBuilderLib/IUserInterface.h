@@ -49,7 +49,9 @@ public:
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    virtual void SetCursor(wxImage const & cursorImage) = 0;
+    virtual void SetToolCursor(wxImage const & cursorImage) = 0;
+
+    virtual void ResetToolCursor() = 0;
 
     // Scrolls the work canvas to ensure the specified logical coordinates are visible
     virtual void ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & workCanvasDisplayLogicalCoordinates) = 0;

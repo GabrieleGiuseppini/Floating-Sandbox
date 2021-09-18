@@ -203,7 +203,7 @@ void Controller::SelectPrimaryLayer(LayerType primaryLayer)
 {
     mPrimaryLayer = primaryLayer;
 
-    // Reset current tool
+    // Reset current tool to none
     // TODO: might actually want to select the "primary tool" for the layer
     // (i.e. probably the pencil, in all cases)
     SetCurrentTool(std::nullopt);
@@ -220,13 +220,17 @@ std::optional<ToolType> Controller::GetCurrentTool() const
 
 void Controller::SetCurrentTool(std::optional<ToolType> tool)
 {
-    // Nuke old tool
+    // Nuke current tool
     mCurrentTool.reset();
 
-    // Make new tool
     if (tool.has_value())
     {
         mCurrentTool = MakeTool(*tool);
+    }
+    else
+    {
+        // Relinquish cursor
+        mUserInterface.ResetToolCursor();
     }
 
     // Notify UI
@@ -370,13 +374,9 @@ void Controller::OnShiftKeyUp()
 void Controller::OnMouseOut()
 {
     // Reset tool
+    if (mCurrentTool)
     {
-        auto const oldTool = GetCurrentTool();
-        mCurrentTool.reset();
-        if (oldTool.has_value())
-        {
-            mCurrentTool = MakeTool(*oldTool);
-        }
+        mCurrentTool->Reset();
     }
 
     // Tell UI

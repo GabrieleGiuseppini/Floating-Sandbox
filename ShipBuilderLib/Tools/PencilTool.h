@@ -27,6 +27,8 @@ protected:
         View & view,
         ResourceLocator const & resourceLocator);
 
+    void Reset() override {}
+
     void OnMouseMove(InputState const & inputState) override;
     void OnLeftMouseDown(InputState const & inputState) override;
     void OnLeftMouseUp(InputState const & /*inputState*/) override {};

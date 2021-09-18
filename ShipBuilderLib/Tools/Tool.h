@@ -39,6 +39,8 @@ public:
         return mToolType;
     }
 
+    virtual void Reset() = 0;
+
     //
     // Event handlers
     //
@@ -69,7 +71,7 @@ protected:
 
     void SetCursor(wxImage const & cursorImage)
     {
-        mUserInterface.SetCursor(cursorImage);
+        mUserInterface.SetToolCursor(cursorImage);
     }
 
     void ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & mouseScreenPosition)

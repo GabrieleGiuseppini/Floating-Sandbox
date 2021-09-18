@@ -525,9 +525,14 @@ void MainFrame::OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coo
     mStatusBar->SetStatusText(ss.str(), 0);
 }
 
-void MainFrame::SetCursor(wxImage const & cursorImage)
+void MainFrame::SetToolCursor(wxImage const & cursorImage)
 {
     mWorkCanvas->SetCursor(wxCursor(cursorImage));
+}
+
+void MainFrame::ResetToolCursor()
+{
+    mWorkCanvas->SetCursor(wxNullCursor);
 }
 
 void MainFrame::ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & workCanvasDisplayLogicalCoordinates)

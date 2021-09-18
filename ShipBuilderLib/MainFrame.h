@@ -89,7 +89,9 @@ public:
 
     void OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coordinates) override;
 
-    void SetCursor(wxImage const & cursorImage) override;
+    void SetToolCursor(wxImage const & cursorImage) override;
+
+    void ResetToolCursor() override;
 
     void ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & workCanvasDisplayLogicalCoordinates) override;
 

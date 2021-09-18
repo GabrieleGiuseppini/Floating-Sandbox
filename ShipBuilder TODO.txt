@@ -1,6 +1,5 @@
 https://gamejolt.com/x/permalink/comment/11457002
 
-
 - Controller/Tools/WorkSpace canvas strategy:
 	- Spec:
 		- When mouse is not down, cursor changes depending on whether or not mouse is inside rect

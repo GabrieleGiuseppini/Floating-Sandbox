@@ -22,7 +22,9 @@ PencilTool<Layer>::PencilTool(
         userInterface,
         view)
     , mCursorImage(WxHelpers::LoadCursorImage("pencil_cursor", 1, 29, resourceLocator))
-{}
+{
+    SetCursor(mCursorImage);
+}
 
 StructuralPencilTool::StructuralPencilTool(
     ModelController & modelController,
