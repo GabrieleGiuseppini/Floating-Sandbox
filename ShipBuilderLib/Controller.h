@@ -105,7 +105,7 @@ private:
 
     std::unique_ptr<Tool> MakeTool(ToolType toolType);
 
-    void RefreshToolCoordinateDisplay();
+    void RefreshToolCoordinatesDisplay();
 
 private:
 

@@ -241,7 +241,7 @@ void Controller::AddZoom(int deltaZoom)
 {
     mView.SetZoom(mView.GetZoom() + deltaZoom);
 
-    RefreshToolCoordinateDisplay();
+    RefreshToolCoordinatesDisplay();
     mUserInterface.OnViewModelChanged();
     mUserInterface.RefreshView();
 }
@@ -250,7 +250,7 @@ void Controller::SetCamera(int camX, int camY)
 {
     mView.SetCameraWorkSpacePosition(WorkSpaceCoordinates(camX, camY));
 
-    RefreshToolCoordinateDisplay();
+    RefreshToolCoordinatesDisplay();
     mUserInterface.OnViewModelChanged();
     mUserInterface.RefreshView();
 }
@@ -260,7 +260,7 @@ void Controller::ResetView()
     mView.SetZoom(0);
     mView.SetCameraWorkSpacePosition(WorkSpaceCoordinates(0, 0));
 
-    RefreshToolCoordinateDisplay();
+    RefreshToolCoordinatesDisplay();
     mUserInterface.OnViewModelChanged();
     mUserInterface.RefreshView();
 }
@@ -296,7 +296,7 @@ void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPositi
         // TODO: what to tell tool? Should we detect in<->out transitions?
     }
 
-    RefreshToolCoordinateDisplay();
+    RefreshToolCoordinatesDisplay();
 }
 
 void Controller::OnLeftMouseDown()
@@ -403,7 +403,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
     }
 }
 
-void Controller::RefreshToolCoordinateDisplay()
+void Controller::RefreshToolCoordinatesDisplay()
 {
     // Calculate work coordinates
     WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.ScreenToWorkSpace(mInputState.MousePosition);
