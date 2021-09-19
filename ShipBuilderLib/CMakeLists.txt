@@ -6,8 +6,6 @@
 set (SHIPBUILDER_LIB_SOURCES
 	Controller.cpp
 	Controller.h
-	EditAction.cpp
-	EditAction.h
 	InputState.h
 	IUserInterface.h
 	MainFrame.cpp

@@ -286,17 +286,23 @@ struct IntegralPointCoordinates
 /*
  * Integral rectangular sizes.
  */
-struct IntegralSize
+struct Integral2DSize
 {
     int Width;
     int Height;
 
-    constexpr IntegralSize(
+    constexpr Integral2DSize(
         int width,
         int height)
         : Width(width)
         , Height(height)
     {}
+
+    bool operator==(Integral2DSize const & other) const
+    {
+        return Width == other.Width
+            && Height == other.Height;
+    }
 };
 
 inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, IntegralPointCoordinates const & p)

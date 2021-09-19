@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include <GameCore/Buffer2D.h>
 #include <GameCore/Vectors.h>
 
 #include <cmath>
@@ -154,5 +155,12 @@ struct _IntegralCoordinates
 using WorkSpaceCoordinates = _IntegralCoordinates<struct WorkSpaceTag>;
 using DisplayLogicalCoordinates = _IntegralCoordinates<struct DisplayLogicalTag>;
 using DisplayPhysicalCoordinates = _IntegralCoordinates<struct DisplayPhysicalTag>;
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// Model
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename TMaterial>
+using MaterialBuffer = Buffer2D<TMaterial const *, WorkSpaceSize>;
 
 }

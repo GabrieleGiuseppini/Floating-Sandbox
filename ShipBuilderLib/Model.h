@@ -30,11 +30,6 @@ class Model
 {
 public:
 
-    template<typename TMaterial>
-    using MaterialBuffer = Buffer2D<TMaterial const *, IntegralSize>;
-
-public:
-
     Model(WorkSpaceSize const & workSpaceSize);
 
     void NewStructuralLayer();

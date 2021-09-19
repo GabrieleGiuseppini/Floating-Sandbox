@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "EditAction.h"
 #include "Model.h"
 #include "ShipBuilderTypes.h"
 #include "UndoStack.h"
@@ -35,18 +34,22 @@ public:
         /* TODO: loaded ship ,*/
         View & view);
 
-    std::unique_ptr<UndoEntry> Edit(EditAction const & action);
-
-    void Apply(EditAction const & action);
-
-    void Apply(std::vector<EditAction> const & actions);
-
     //
     // Structural
     //
 
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
+
+    std::unique_ptr<UndoEntry> StructuralRegionFill(
+        StructuralMaterial const * material,
+        WorkSpaceCoordinates const & origin,
+        WorkSpaceSize const & size);
+
+    std::unique_ptr<UndoEntry> StructuralRegionReplace(
+        MaterialBuffer<StructuralMaterial> const & region,
+        WorkSpaceCoordinates const & origin,
+        WorkSpaceSize const & size);
 
     //
     // Electrical
@@ -55,6 +58,16 @@ public:
     void NewElectricalLayer();
     void SetElectricalLayer(/*TODO*/);
     void RemoveElectricalLayer();
+
+    std::unique_ptr<UndoEntry> ElectricalRegionFill(
+        ElectricalMaterial const * material,
+        WorkSpaceCoordinates const & origin,
+        WorkSpaceSize const & size);
+
+    std::unique_ptr<UndoEntry> ElectricalRegionReplace(
+        MaterialBuffer<ElectricalMaterial> const & region,
+        WorkSpaceCoordinates const & origin,
+        WorkSpaceSize const & size);
 
     //
     // Ropes
@@ -83,36 +96,7 @@ private:
         WorkSpaceSize const & workSpaceSize,
         View & view);
 
-    //
-    // Structural
-    //
-
-// TODOTEST
-public:
-
-    std::unique_ptr<EditAction> StructuralRegionFill(
-        StructuralMaterial const * material,
-        WorkSpaceCoordinates const & origin,
-        WorkSpaceSize const & size);
-
     void UploadStructuralLayerToView();
-
-    //
-    // Electrical
-    //
-
-    std::unique_ptr<EditAction> ElectricalRegionFill(
-        ElectricalMaterial const * material,
-        WorkSpaceCoordinates const & origin,
-        WorkSpaceSize const & size);
-
-    //
-    // Ropes
-    //
-
-    //
-    // Texture
-    //
 
 private:
 

@@ -83,12 +83,36 @@ public:
             std::move(newData));
     }
 
-    TElement & operator[](vec2i const & index)
+    template<typename TCoordinates>
+    std::unique_ptr<Buffer2D> MakeCopy(
+        TCoordinates const & regionOrigin,
+        TSize const & regionSize)
+    {
+        auto newData = std::make_unique<TElement[]>(regionSize.Width * regionSize.Height);
+        for (int targetY = 0; targetY < regionSize.Height; ++targetY)
+        {
+            int const sourceLinearIndex = (targetY + regionOrigin.y) * Size.Width + regionOrigin.x;
+            int const targetLinearIndex = targetY * regionSize.Width;
+
+            std::memcpy(
+                newData.get() + targetLinearIndex,
+                Data.get() + sourceLinearIndex,
+                regionSize.Width * sizeof(TElement));
+        }
+
+        return std::make_unique<Buffer2D>(
+            regionSize,
+            std::move(newData));
+    }
+
+    template<typename TCoordinates>
+    TElement & operator[](TCoordinates const & index)
     {
         return const_cast<TElement &>((static_cast<Buffer2D const &>(*this))[index]);
     }
 
-    TElement const & operator[](vec2i const & index) const
+    template<typename TCoordinates>
+    TElement const & operator[](TCoordinates const & index) const
     {
         assert(index.IsInRect(Size));
 

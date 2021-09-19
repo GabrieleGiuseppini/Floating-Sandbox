@@ -2,17 +2,18 @@ https://gamejolt.com/x/permalink/comment/11457002
 
 - Nail down Y coordinates
 	- Load Ship
+		- ShipFactory: static helper: file-> material matrix + rope segments
 		- MainFrame::LoadShip -> Definition -> pass definition to ModelController (via Controller)
 
 - EditAction/Undo:
-	- Every edit action (pencil, line, flood, paste, rectangle, eraser, etc.) is atomically implemented by one *explicit* function call in ModelController
-	- UndoEntry contains two undo actions: UndoEditAction and RedoEditAction, part of a (shallow) hierarchy containing:
-		- Regions
+	+ Every edit action (pencil, line, flood, paste, rectangle, eraser, etc.) is atomically implemented by one *explicit* function call in ModelController
+	+ UndoEntry contains two undo actions: UndoEditAction and RedoEditAction, part of a (shallow) hierarchy containing:
+		+ Regions
 		- Resize
 		- etc.
-	- Undo last night's work
-		- Nuke EditAction altogether
-	- Do UndoAction hierarchy
+	+ Undo last night's work
+		+ Nuke EditAction altogether
+	+ Do UndoAction hierarchy
 	- UndoEntry exposes:
 		- string GetTitle()
 		- std::uint64_t GetCost()
