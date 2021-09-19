@@ -210,7 +210,6 @@ void View::UploadBackgroundTexture(RgbaImageData && texture)
     mHasBackgroundTexture = true;
 }
 
-
 void View::UploadStructuralTexture(RgbaImageData const & texture)
 {
     //

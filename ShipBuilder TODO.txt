@@ -1,11 +1,8 @@
 https://gamejolt.com/x/permalink/comment/11457002
 
-- Nail down Y coordinates
-	- Load Ship
-		- ShipFactory: static helper: file-> material matrix + rope segments
-		- MainFrame::LoadShip -> Definition -> pass definition to ModelController (via Controller)
+- Fix region update
 
-= EditAction/Undo:
++ EditAction/Undo:
 	+ Every edit action (pencil, line, flood, paste, rectangle, eraser, etc.) is atomically implemented by one *explicit* function call in ModelController
 	+ UndoEntry contains two undo actions: UndoEditAction and RedoEditAction, part of a (shallow) hierarchy containing:
 		+ Regions
@@ -27,8 +24,11 @@ https://gamejolt.com/x/permalink/comment/11457002
 				- Tool makes clone of entire region at mouse down
 				- At each pixel edit, tool updates region's origin and size
 				- At mouse up, tool makes UndoEntry with clone of material region 
-					- Model::MakeStructuralLayerBackup() -> TODO: something that may be later "regionized" (restricted)
-					- Restored via ModelController::RestoreStructuralLayer(...region...)
+					- Model::MakeStructuralLayerBackup() -> LayerBackup
+						- LayerBackup: may be later "regionized" (restricted)
+						- TODOHERE: hierarchy?
+						- Model::Restore(ModelBackup)
+					- Restored via ModelController::Restore(ModelBackup)
 				- ModelController::XXXRegionFill does not return UndoEntry anymore
 		- Hook UndoEntry to UndoStack
 		- Undo stack: owned by Controller, given to Tool
@@ -46,6 +46,10 @@ https://gamejolt.com/x/permalink/comment/11457002
 		- Previews (*)
 	- Eraser tool
 	- Strategy for other tools' enums - to make it work for now
+
+- Load Ship
+	- ShipFactory: static helper: file-> "Todo" == matrices of information (Structural:material*, Electrical:material* + instanceId, Ropes:TODO, Texture:rgbaColor)
+	- MainFrame::LoadShip -> Definition -> pass definition to ModelController (via Controller) -> ShipFactory's static helper -> "TODO" -> own matrices
 
 - Previews:
 	- Spec:

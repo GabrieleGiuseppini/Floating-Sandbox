@@ -96,7 +96,6 @@ std::unique_ptr<UndoEntry> ModelController::StructuralRegionFill(
         }
     }
 
-
     // Update view
     UploadStructuralLayerToView(origin, size);
 

@@ -454,7 +454,10 @@ void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
 
 void MainFrame::RefreshView()
 {
-    Refresh();
+    if (mWorkCanvas)
+    {
+        mWorkCanvas->Refresh();
+    }
 }
 
 void MainFrame::OnViewModelChanged()
@@ -519,7 +522,12 @@ void MainFrame::OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coo
 
     if (coordinates.has_value())
     {
-        ss << coordinates->x << ", " << coordinates->y;
+        if (mController)
+        {
+            // Flip coordinates: we show zero at top, just to be consistent with drawing software
+            int const y = mController->GetModelController().GetModel().GetWorkSpaceSize().height - 1 - coordinates->y;
+            ss << coordinates->x << ", " << y;
+        }
     }
 
     mStatusBar->SetStatusText(ss.str(), 0);

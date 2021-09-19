@@ -152,7 +152,7 @@ struct _IntegralCoordinates
     }
 };
 
-using WorkSpaceCoordinates = _IntegralCoordinates<struct WorkSpaceTag>;
+using WorkSpaceCoordinates = _IntegralCoordinates<struct WorkSpaceTag>; // Y=0 at bottom
 using DisplayLogicalCoordinates = _IntegralCoordinates<struct DisplayLogicalTag>;
 using DisplayPhysicalCoordinates = _IntegralCoordinates<struct DisplayPhysicalTag>;
 

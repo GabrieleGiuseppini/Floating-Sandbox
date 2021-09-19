@@ -57,8 +57,11 @@ std::string rgbaColor::toString() const
 
     ss << std::hex << std::setfill('0') << std::setw(2)
         << static_cast<unsigned int>(r)
+        << std::hex << std::setfill('0') << std::setw(2)
         << static_cast<unsigned int>(g)
+        << std::hex << std::setfill('0') << std::setw(2)
         << static_cast<unsigned int>(b)
+        << std::hex << std::setfill('0') << std::setw(2)
         << static_cast<unsigned int>(a);
 
     return ss.str();

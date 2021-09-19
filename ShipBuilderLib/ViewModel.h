@@ -150,7 +150,7 @@ public:
     {
         return WorkSpaceCoordinates(
             DisplayPhysicalToWorkSpace(displayCoordinates.x * mLogicalToPhysicalPixelFactor) - MarginDisplayWorkSize + mCam.x,
-            DisplayPhysicalToWorkSpace(displayCoordinates.y * mLogicalToPhysicalPixelFactor) - MarginDisplayWorkSize + mCam.y);
+            mWorkSpaceSize.height - 1 - (DisplayPhysicalToWorkSpace(displayCoordinates.y * mLogicalToPhysicalPixelFactor) - MarginDisplayWorkSize + mCam.y));
     }
 
     ProjectionMatrix const & GetOrthoMatrix() const
