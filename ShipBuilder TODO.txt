@@ -25,9 +25,10 @@ https://gamejolt.com/x/permalink/comment/11457002
 			- Nail down Y coordinates
 			- Undo: only baked and added at mouse up, containing whole affected region
 				- Tool makes clone of entire region at mouse down
-				- At each pixel edit, tool updates region origin and size
+				- At each pixel edit, tool updates region's origin and size
 				- At mouse up, tool makes UndoEntry with clone of material region 
-					- TODO: who is responsible for making clone of material region?
+					- Model::MakeStructuralLayerBackup() -> TODO: something that may be later "regionized" (restricted)
+					- Restored via ModelController::RestoreStructuralLayer(...region...)
 				- ModelController::XXXRegionFill does not return UndoEntry anymore
 		- Hook UndoEntry to UndoStack
 		- Undo stack: owned by Controller, given to Tool
