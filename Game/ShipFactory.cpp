@@ -106,7 +106,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
                 float water = 0.0f;
 
                 //
-                // Transform water point to air point+water
+                // Transform water point to air point + water
                 //
 
                 if (structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Water))
@@ -478,7 +478,6 @@ void ShipFactory::AppendRopeEndpoints(
     float const halfWidth = static_cast<float>(width) / 2.0f;
     int const height = ropeLayerImage.Size.Height;
 
-    MaterialDatabase::ColorKey constexpr BackgroundColorKey = { 0xff, 0xff, 0xff };
     StructuralMaterial const & ropeMaterial = materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope);
 
     for (int x = 0; x < width; ++x)
@@ -490,7 +489,7 @@ void ShipFactory::AppendRopeEndpoints(
             MaterialDatabase::ColorKey colorKey = ropeLayerImage.Data[x + y * width];
 
             // Check if background
-            if (colorKey != BackgroundColorKey)
+            if (colorKey != MaterialDatabase::EmptyMaterialColorKey)
             {
                 vec2i const matrixPointIndex(x + 1, y + 1);
                 auto const pointCoords = IntegralPointCoordinates(x, y);
@@ -560,8 +559,6 @@ void ShipFactory::DecoratePointsWithElectricalMaterials(
     int const width = layerImage.Size.Width;
     int const height = layerImage.Size.Height;
 
-    constexpr MaterialDatabase::ColorKey BackgroundColorKey = { 0xff, 0xff, 0xff };
-
     for (int x = 0; x < width; ++x)
     {
         // From bottom to top
@@ -579,7 +576,7 @@ void ShipFactory::DecoratePointsWithElectricalMaterials(
                 //
 
                 if (isDedicatedElectricalLayer
-                    && colorKey != BackgroundColorKey)
+                    && colorKey != MaterialDatabase::EmptyMaterialColorKey)
                 {
                     throw GameException(
                         "Cannot find electrical material for color key \"" + Utils::RgbColor2Hex(colorKey)
