@@ -66,9 +66,6 @@ std::unique_ptr<UndoEntry> ModelController::StructuralRegionFill(
     WorkSpaceCoordinates const & origin,
     WorkSpaceSize const & size)
 {
-    // Clear previews for all layers
-    // TODO
-
     //
     // Create undo edit action
     //

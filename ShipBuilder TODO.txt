@@ -14,19 +14,6 @@ https://gamejolt.com/x/permalink/comment/11457002
 	+ Undo last night's work
 		+ Nuke EditAction altogether
 	+ Do UndoAction hierarchy
-	- UndoEntry exposes:
-		- string GetTitle()
-		- std::uint64_t GetCost()
-		- void Undo(ModelController &)
-			- Double-dispatch: invokes ModelController::method_for_region_or_resize, with isLast flag for view update
-		- void Redo(ModelController &)		
-
-= ModelController:
-	= StructuralRegionFillEtc(...args...) -> uq_ptr<UndoEntry>
-		- Clear previews - via private method
-		+ Do stuff
-		+ Update view
-		+ Bake and return UndoEntry
 
 - Click-And-Draw use case:
 	- Pencil tool (*)
@@ -36,14 +23,26 @@ https://gamejolt.com/x/permalink/comment/11457002
 			+ Upload method for texture *region*
 		= EditAction for it
 			- Nail down Y coordinates
+			- Undo: only baked and added at mouse up, containing whole affected region
+				- Tool makes clone of entire region at mouse down
+				- At each pixel edit, tool updates region origin and size
+				- At mouse up, tool makes UndoEntry with clone of material region 
+					- TODO: who is responsible for making clone of material region?
+				- ModelController::XXXRegionFill does not return UndoEntry anymore
 		- Hook UndoEntry to UndoStack
 		- Undo stack: owned by Controller, given to Tool
-			- Tool's action to write into UndoStock and IUserInterface notification
+			- Tool's action writes into UndoStack and invokes IUserInterface notification
 			- IUserInterface notification: Undo and Redo menu items
 			- MainFrame: on Undo/Redo, call into Controller::TODO:undo/redo
 			- Controller::TODO:undo/redo
+		- UndoEntry exposes:
+			- string GetTitle()
+			- std::uint64_t GetCost()
+			- void Undo(ModelController &)
+				- Double-dispatch: invokes ModelController::method_for_region_or_resize, with isLast flag for view update
+			- void Redo(ModelController &)		
 	- Line tool
-		- Previews
+		- Previews (*)
 	- Eraser tool
 	- Strategy for other tools' enums - to make it work for now
 
