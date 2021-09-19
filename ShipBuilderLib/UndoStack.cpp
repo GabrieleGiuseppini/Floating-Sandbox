@@ -17,7 +17,7 @@ void MaterialRegionUndoEditAction<TMaterial>::Apply(ModelController & modelContr
     if constexpr (std::is_same<StructuralMaterial, TMaterial>())
     {
         modelController.StructuralRegionReplace(
-            mRegion,
+            *mRegion,
             mOrigin);
     }
     else
@@ -25,7 +25,7 @@ void MaterialRegionUndoEditAction<TMaterial>::Apply(ModelController & modelContr
         static_assert(std::is_same<ElectricalMaterial, TMaterial>());
 
         modelController.ElectricalRegionReplace(
-            mRegion,
+            *mRegion,
             mOrigin);
     }
 }

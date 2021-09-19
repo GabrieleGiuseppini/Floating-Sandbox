@@ -396,7 +396,7 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
                 {
                     wxStaticText * nameLabel = new wxStaticText(categoryPanel, wxID_ANY, material->Name,
                         wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
-                    nameLabel->Wrap(PaletteButtonSize.Width);
+                    nameLabel->Wrap(PaletteButtonSize.width);
 
                     gridSizer->Add(
                         nameLabel,

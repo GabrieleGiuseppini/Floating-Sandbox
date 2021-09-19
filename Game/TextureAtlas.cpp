@@ -65,7 +65,7 @@ int TextureAtlasMetadata<TextureGroups>::GetMaxDimension() const
         {
             return std::max(
                 minDimension,
-                std::max(frameMd.FrameMetadata.Size.Width, frameMd.FrameMetadata.Size.Height));
+                std::max(frameMd.FrameMetadata.Size.width, frameMd.FrameMetadata.Size.height));
         });
 }
 
@@ -136,8 +136,8 @@ template <typename TextureGroups>
 void TextureAtlasMetadata<TextureGroups>::Serialize(picojson::object & root) const
 {
     picojson::object size;
-    size["width"] = picojson::value(static_cast<std::int64_t>(mSize.Width));
-    size["height"] = picojson::value(static_cast<std::int64_t>(mSize.Height));
+    size["width"] = picojson::value(static_cast<std::int64_t>(mSize.width));
+    size["height"] = picojson::value(static_cast<std::int64_t>(mSize.height));
     root["size"] = picojson::value(size);
 
     root["options"] = picojson::value(static_cast<std::int64_t>(mOptions));
@@ -301,8 +301,8 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
         sortedTextureInfos.end(),
         [](TextureInfo const & a, TextureInfo const & b)
         {
-            return a.Size.Height > b.Size.Height
-                || (a.Size.Height == b.Size.Height && a.Size.Width > b.Size.Width);
+            return a.Size.height > b.Size.height
+                || (a.Size.height == b.Size.height && a.Size.width > b.Size.width);
         });
 
 
@@ -313,7 +313,7 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
     uint64_t totalArea = 0;
     for (auto const & ti : sortedTextureInfos)
     {
-        totalArea += static_cast<uint64_t>(ti.Size.Width * ti.Size.Height);
+        totalArea += static_cast<uint64_t>(ti.Size.width * ti.Size.height);
     }
 
     // Square root of area, floor'd to next power of two, minimized
@@ -351,9 +351,9 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
         {
             Position const currentPosition = positionStack.back();
 
-            if (currentPosition.x + t.Size.Width < atlasWidth   // Fits at current position
+            if (currentPosition.x + t.Size.width < atlasWidth   // Fits at current position
                 || positionStack.size() == 1                    // We can't backtrack
-                || (ceil_power_of_two(currentPosition.x + t.Size.Width) - atlasWidth) <= (ceil_power_of_two(positionStack.front().y + t.Size.Height) - atlasHeight)) // Extra W <= Extra H
+                || (ceil_power_of_two(currentPosition.x + t.Size.width) - atlasWidth) <= (ceil_power_of_two(positionStack.front().y + t.Size.height) - atlasHeight)) // Extra W <= Extra H
             {
                 // Put it at the current location
                 texturePositions.emplace_back(
@@ -362,26 +362,26 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
                     currentPosition.y);
 
                 if (positionStack.size() == 1
-                    || currentPosition.y + t.Size.Height < std::next(positionStack.rbegin())->y)
+                    || currentPosition.y + t.Size.height < std::next(positionStack.rbegin())->y)
                 {
                     // Move current location up to top
-                    positionStack.back().y += t.Size.Height;
+                    positionStack.back().y += t.Size.height;
                 }
                 else
                 {
                     // Current location is completed
-                    assert(currentPosition.y + t.Size.Height == std::next(positionStack.rbegin())->y);
+                    assert(currentPosition.y + t.Size.height == std::next(positionStack.rbegin())->y);
 
                     // Pop it from stack
                     positionStack.pop_back();
                 }
 
                 // Add new location to the right of this tile
-                positionStack.emplace_back(currentPosition.x + t.Size.Width, currentPosition.y);
+                positionStack.emplace_back(currentPosition.x + t.Size.width, currentPosition.y);
 
                 // Adjust atlas dimensions
-                atlasWidth = ceil_power_of_two(std::max(atlasWidth, currentPosition.x + t.Size.Width));
-                atlasHeight = ceil_power_of_two(std::max(atlasHeight, currentPosition.y + t.Size.Height));
+                atlasWidth = ceil_power_of_two(std::max(atlasWidth, currentPosition.x + t.Size.width));
+                atlasHeight = ceil_power_of_two(std::max(atlasHeight, currentPosition.y + t.Size.height));
 
                 // We are done with this tile
                 break;
@@ -426,8 +426,8 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
         sortedTextureInfos.end(),
         [](TextureInfo const & a, TextureInfo const & b)
         {
-            return a.Size.Height > b.Size.Height
-                || (a.Size.Height == b.Size.Height && a.Size.Width > b.Size.Width);
+            return a.Size.height > b.Size.height
+                || (a.Size.height == b.Size.height && a.Size.width > b.Size.width);
         });
 
 
@@ -439,13 +439,13 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
     for (auto const & ti : sortedTextureInfos)
     {
         // Verify tile dimensions are powers of two
-        if (ti.Size.Width != ceil_power_of_two(ti.Size.Width)
-            || ti.Size.Height != ceil_power_of_two(ti.Size.Height))
+        if (ti.Size.width != ceil_power_of_two(ti.Size.width)
+            || ti.Size.height != ceil_power_of_two(ti.Size.height))
         {
             throw GameException("Dimensions of texture frame \"" + ti.FrameId.ToString() + "\" are not a power of two");
         }
 
-        totalArea += static_cast<uint64_t>(ti.Size.Width * ti.Size.Height);
+        totalArea += static_cast<uint64_t>(ti.Size.width * ti.Size.height);
     }
 
     // Square root of area, floor'd to next power of two, minimized
@@ -483,9 +483,9 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
         {
             Position const currentPosition = positionStack.back();
 
-            if (currentPosition.x + t.Size.Width < atlasWidth   // Fits at current position
+            if (currentPosition.x + t.Size.width < atlasWidth   // Fits at current position
                 || positionStack.size() == 1                    // We can't backtrack
-                || (ceil_power_of_two(currentPosition.x + t.Size.Width) - atlasWidth) <= (ceil_power_of_two(positionStack.front().y + t.Size.Height) - atlasHeight)) // Extra W <= Extra H
+                || (ceil_power_of_two(currentPosition.x + t.Size.width) - atlasWidth) <= (ceil_power_of_two(positionStack.front().y + t.Size.height) - atlasHeight)) // Extra W <= Extra H
             {
                 // Put it at the current location
                 texturePositions.emplace_back(
@@ -494,26 +494,26 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
                     currentPosition.y);
 
                 if (positionStack.size() == 1
-                    || currentPosition.y + t.Size.Height < std::next(positionStack.rbegin())->y)
+                    || currentPosition.y + t.Size.height < std::next(positionStack.rbegin())->y)
                 {
                     // Move current location up to top
-                    positionStack.back().y += t.Size.Height;
+                    positionStack.back().y += t.Size.height;
                 }
                 else
                 {
                     // Current location is completed
-                    assert(currentPosition.y + t.Size.Height == std::next(positionStack.rbegin())->y);
+                    assert(currentPosition.y + t.Size.height == std::next(positionStack.rbegin())->y);
 
                     // Pop it from stack
                     positionStack.pop_back();
                 }
 
                 // Add new location to the right of this tile
-                positionStack.emplace_back(currentPosition.x + t.Size.Width, currentPosition.y);
+                positionStack.emplace_back(currentPosition.x + t.Size.width, currentPosition.y);
 
                 // Adjust atlas dimensions
-                atlasWidth = ceil_power_of_two(std::max(atlasWidth, currentPosition.x + t.Size.Width));
-                atlasHeight = ceil_power_of_two(std::max(atlasHeight, currentPosition.y + t.Size.Height));
+                atlasWidth = ceil_power_of_two(std::max(atlasWidth, currentPosition.x + t.Size.width));
+                atlasHeight = ceil_power_of_two(std::max(atlasHeight, currentPosition.y + t.Size.height));
 
                 // We are done with this tile
                 break;
@@ -557,8 +557,8 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
         throw GameException("Regular texture atlas cannot consist of an empty set of texture frames");
     }
 
-    int const frameWidth = inputTextureInfos[0].Size.Width;
-    int const frameHeight = inputTextureInfos[0].Size.Height;
+    int const frameWidth = inputTextureInfos[0].Size.width;
+    int const frameHeight = inputTextureInfos[0].Size.height;
     if (frameWidth != ceil_power_of_two(frameWidth)
         || frameHeight != ceil_power_of_two(frameHeight))
     {
@@ -568,8 +568,8 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
     for (auto const & ti : inputTextureInfos)
     {
         // Verify tile dimensions are powers of two
-        if (ti.Size.Width != frameWidth
-            || ti.Size.Height != frameHeight)
+        if (ti.Size.width != frameWidth
+            || ti.Size.height != frameHeight)
         {
             throw GameException("Dimensions of texture frame \"" + ti.FrameId.ToString() + "\" differ from the dimensions of the other frames");
         }
@@ -618,11 +618,11 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
     std::function<TextureFrame<TextureGroups>(TextureFrameId<TextureGroups> const &)> frameLoader,
     ProgressCallback const & progressCallback)
 {
-    float const dx = 0.5f / static_cast<float>(specification.AtlasSize.Width);
-    float const dy = 0.5f / static_cast<float>(specification.AtlasSize.Height);
+    float const dx = 0.5f / static_cast<float>(specification.AtlasSize.width);
+    float const dy = 0.5f / static_cast<float>(specification.AtlasSize.height);
 
     // Allocate image
-    size_t const imagePoints = specification.AtlasSize.Width * specification.AtlasSize.Height;
+    size_t const imagePoints = specification.AtlasSize.width * specification.AtlasSize.height;
     std::unique_ptr<rgbaColor[]> atlasImage(new rgbaColor[imagePoints]);
 
     // Fill image - transparent black
@@ -649,8 +649,8 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
             texturePosition.FrameBottomY);
 
         // Calculate frame dimensions in texture space
-        float const textureSpaceFrameWidth = static_cast<float>(textureFrame.TextureData.Size.Width) / static_cast<float>(specification.AtlasSize.Width);
-        float const textureSpaceFrameHeight = static_cast<float>(textureFrame.TextureData.Size.Height) / static_cast<float>(specification.AtlasSize.Height);
+        float const textureSpaceFrameWidth = static_cast<float>(textureFrame.TextureData.Size.width) / static_cast<float>(specification.AtlasSize.width);
+        float const textureSpaceFrameHeight = static_cast<float>(textureFrame.TextureData.Size.height) / static_cast<float>(specification.AtlasSize.height);
 
         // Store texture metadata
         frameMetadata.emplace_back(
@@ -658,16 +658,16 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
             textureSpaceFrameHeight,
             // Bottom-left
             vec2f(
-                dx + static_cast<float>(texturePosition.FrameLeftX) / static_cast<float>(specification.AtlasSize.Width),
-                dy + static_cast<float>(texturePosition.FrameBottomY) / static_cast<float>(specification.AtlasSize.Height)),
+                dx + static_cast<float>(texturePosition.FrameLeftX) / static_cast<float>(specification.AtlasSize.width),
+                dy + static_cast<float>(texturePosition.FrameBottomY) / static_cast<float>(specification.AtlasSize.height)),
             // Anchor center
             vec2f(
-                dx + static_cast<float>(texturePosition.FrameLeftX + textureFrame.Metadata.AnchorCenter.X) / static_cast<float>(specification.AtlasSize.Width),
-                dy + static_cast<float>(texturePosition.FrameBottomY + textureFrame.Metadata.AnchorCenter.Y) / static_cast<float>(specification.AtlasSize.Height)),
+                dx + static_cast<float>(texturePosition.FrameLeftX + textureFrame.Metadata.AnchorCenter.x) / static_cast<float>(specification.AtlasSize.width),
+                dy + static_cast<float>(texturePosition.FrameBottomY + textureFrame.Metadata.AnchorCenter.y) / static_cast<float>(specification.AtlasSize.height)),
             // Top-right
             vec2f(
-                static_cast<float>(texturePosition.FrameLeftX + textureFrame.TextureData.Size.Width) / static_cast<float>(specification.AtlasSize.Width) - dx,
-                static_cast<float>(texturePosition.FrameBottomY + textureFrame.TextureData.Size.Height) / static_cast<float>(specification.AtlasSize.Height) - dy),
+                static_cast<float>(texturePosition.FrameLeftX + textureFrame.TextureData.Size.width) / static_cast<float>(specification.AtlasSize.width) - dx,
+                static_cast<float>(texturePosition.FrameBottomY + textureFrame.TextureData.Size.height) / static_cast<float>(specification.AtlasSize.height) - dy),
             texturePosition.FrameLeftX,
             texturePosition.FrameBottomY,
             textureFrame.Metadata);
@@ -704,14 +704,14 @@ void TextureAtlasBuilder<TextureGroups>::CopyImage(
     int destinationBottomY)
 {
     // From bottom to top
-    for (int y = 0; y < sourceImageSize.Height; ++y)
+    for (int y = 0; y < sourceImageSize.height; ++y)
     {
         // From left to right
-        size_t const srcIndex = y * sourceImageSize.Width;
-        size_t const dstIndex = (destinationBottomY + y) * destImageSize.Width + destinationLeftX;
+        size_t const srcIndex = y * sourceImageSize.width;
+        size_t const dstIndex = (destinationBottomY + y) * destImageSize.width + destinationLeftX;
         std::copy_n(
             &(sourceImage[srcIndex]),
-            sourceImageSize.Width,
+            sourceImageSize.width,
             &(destImage[dstIndex]));
     }
 }

@@ -323,9 +323,9 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     // Randomize strengths
     //
 
-    for (int x = 0; x < distanceMatrix.Width; ++x)
+    for (int x = 0; x < distanceMatrix.width; ++x)
     {
-        for (int y = 0; y < distanceMatrix.Height; ++y)
+        for (int y = 0; y < distanceMatrix.height; ++y)
         {
             vec2i const pointCoords(x, y);
 
@@ -451,9 +451,9 @@ void ShipStrengthRandomizer::UpdateBatikDistances(BatikDistanceMatrix & distance
     };
 
     // Top-Left -> Bottom-Right
-    for (int x = 0; x < distanceMatrix.Width; ++x)
+    for (int x = 0; x < distanceMatrix.width; ++x)
     {
-        for (int y = distanceMatrix.Height - 1; y >= 0; --y)
+        for (int y = distanceMatrix.height - 1; y >= 0; --y)
         {
             vec2i const idx(x, y);
 
@@ -466,9 +466,9 @@ void ShipStrengthRandomizer::UpdateBatikDistances(BatikDistanceMatrix & distance
     }
 
     // Bottom-Right -> Top-Left
-    for (int x = distanceMatrix.Width - 1; x >= 0; --x)
+    for (int x = distanceMatrix.width - 1; x >= 0; --x)
     {
-        for (int y = 0; y < distanceMatrix.Height; ++y)
+        for (int y = 0; y < distanceMatrix.height; ++y)
         {
             vec2i const idx(x, y);
 

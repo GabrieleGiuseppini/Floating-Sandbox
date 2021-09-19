@@ -6,8 +6,8 @@ TEST(Buffer2DTests, FillCctor)
 {
     Buffer2D<int, Integral2DSize> buffer(10, 20, 242);
 
-    EXPECT_EQ(buffer.Size.Width, 10);
-    EXPECT_EQ(buffer.Size.Height, 20);
+    EXPECT_EQ(buffer.Size.width, 10);
+    EXPECT_EQ(buffer.Size.height, 20);
 
     EXPECT_EQ(buffer[vec2i(0, 0)], 242);
     EXPECT_EQ(buffer[vec2i(9, 19)], 242);

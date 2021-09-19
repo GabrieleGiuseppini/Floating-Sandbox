@@ -5,7 +5,7 @@ https://gamejolt.com/x/permalink/comment/11457002
 		- ShipFactory: static helper: file-> material matrix + rope segments
 		- MainFrame::LoadShip -> Definition -> pass definition to ModelController (via Controller)
 
-- EditAction/Undo:
+= EditAction/Undo:
 	+ Every edit action (pencil, line, flood, paste, rectangle, eraser, etc.) is atomically implemented by one *explicit* function call in ModelController
 	+ UndoEntry contains two undo actions: UndoEditAction and RedoEditAction, part of a (shallow) hierarchy containing:
 		+ Regions
@@ -21,23 +21,12 @@ https://gamejolt.com/x/permalink/comment/11457002
 			- Double-dispatch: invokes ModelController::method_for_region_or_resize, with isLast flag for view update
 		- void Redo(ModelController &)		
 
-- ModelController:
-	- StructuralRegionFillEtc(...args...) -> uq_ptr<UndoEntry>
+= ModelController:
+	= StructuralRegionFillEtc(...args...) -> uq_ptr<UndoEntry>
 		- Clear previews - via private method
-		- Do stuff
-		- Update view
-		- Bake and return UndoEntry
-	- TODOOLD
-	- Edit(EditAction) -> uq_ptr<UndoEntry>
-		- Clear previews - TODO
-		- EditAction::Apply(this) -> uq_ptr<EditAction> (for undo)
-		- Update view - TODOHERE: this needs to be done by the actual implementation? see perf
-			- If ok: nuke View::UpdateStructuralLayerTexture(.)
-		- Bake UndoEntry
-	- Apply(EditAction) -> None
-		- EditAction::Apply(this) -> uq_ptr<EditAction> (for undo) -> thrown away
-	- Apply(EditAction[]) -> None
-		- For each: Apply(EditAction)
+		+ Do stuff
+		+ Update view
+		+ Bake and return UndoEntry
 
 - Click-And-Draw use case:
 	- Pencil tool (*)

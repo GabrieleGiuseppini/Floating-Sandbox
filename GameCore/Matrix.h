@@ -14,24 +14,24 @@
 template<typename TValue>
 struct Matrix2
 {
-    int const Width;
-    int const Height;
+    int const width;
+    int const height;
 
     Matrix2(
-        int width,
-        int height)
+        int _width,
+        int _height)
         : Matrix2(
-            width,
-            height,
+            _width,
+            _height,
             TValue())
     {}
 
     Matrix2(
-        int width,
-        int height,
+        int _width,
+        int _height,
         TValue defaultValue)
-        : Width(width)
-        , Height(height)
+        : width(_width)
+        , height(_height)
         , mColumns(nullptr)
         , mMatrixStorage(nullptr)
     {

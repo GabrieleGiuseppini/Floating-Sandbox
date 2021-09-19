@@ -139,7 +139,7 @@ Font Font::Load(
     int height = *(reinterpret_cast<int *>(header.get() + 6));
     ImageSize textureSize(width, height);
 
-    assert(fileSize - HeaderSize == static_cast<size_t>(4 * textureSize.Width * textureSize.Height));
+    assert(fileSize - HeaderSize == static_cast<size_t>(4 * textureSize.width * textureSize.height));
 
     // Read cell size
     width = *(reinterpret_cast<int *>(header.get() + 10));
@@ -156,7 +156,7 @@ Font Font::Load(
         FontMetadata(
             cellSize,
             glyphWidths,
-            textureSize.Width / cellSize.Width),
+            textureSize.width / cellSize.width),
         RgbaImageData(
             textureSize,
             std::move(textureData)));

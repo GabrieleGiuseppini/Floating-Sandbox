@@ -65,8 +65,8 @@ public:
         {
             if (!!(element.Coordinates))
             {
-                maxDecoratedX = std::max(maxDecoratedX, abs(element.Coordinates->X));
-                maxDecoratedY = std::max(maxDecoratedY, element.Coordinates->Y);
+                maxDecoratedX = std::max(maxDecoratedX, abs(element.Coordinates->x));
+                maxDecoratedY = std::max(maxDecoratedY, element.Coordinates->y);
                 decoratedElements.emplace_back(element);
             }
             else
@@ -167,8 +167,8 @@ public:
             [](auto const & lhs, auto const & rhs)
             {
                 assert(!!(lhs.Coordinates));
-                return lhs.Coordinates->Y < rhs.Coordinates->Y
-                    || (lhs.Coordinates->Y == rhs.Coordinates->Y && lhs.Coordinates->X < rhs.Coordinates->X);
+                return lhs.Coordinates->y < rhs.Coordinates->y
+                    || (lhs.Coordinates->y == rhs.Coordinates->y && lhs.Coordinates->x < rhs.Coordinates->x);
             });
 
         //
@@ -186,8 +186,8 @@ public:
 
                 std::optional<TElement> positionElement;
                 if (decoratedIt != decoratedElements.cend()
-                    && h == decoratedIt->Coordinates->Y
-                    && col >= decoratedIt->Coordinates->X)
+                    && h == decoratedIt->Coordinates->y
+                    && col >= decoratedIt->Coordinates->x)
                 {
                     // Position a decorated element
                     positionElement = decoratedIt->Element;

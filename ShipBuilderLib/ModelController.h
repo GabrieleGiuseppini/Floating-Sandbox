@@ -48,8 +48,7 @@ public:
 
     std::unique_ptr<UndoEntry> StructuralRegionReplace(
         MaterialBuffer<StructuralMaterial> const & region,
-        WorkSpaceCoordinates const & origin,
-        WorkSpaceSize const & size);
+        WorkSpaceCoordinates const & origin);
 
     //
     // Electrical
@@ -66,8 +65,7 @@ public:
 
     std::unique_ptr<UndoEntry> ElectricalRegionReplace(
         MaterialBuffer<ElectricalMaterial> const & region,
-        WorkSpaceCoordinates const & origin,
-        WorkSpaceSize const & size);
+        WorkSpaceCoordinates const & origin);
 
     //
     // Ropes
@@ -97,6 +95,10 @@ private:
         View & view);
 
     void UploadStructuralLayerToView();
+
+    void UploadStructuralLayerToView(
+        WorkSpaceCoordinates const & origin,
+        WorkSpaceSize const & size);
 
 private:
 

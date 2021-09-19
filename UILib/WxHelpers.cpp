@@ -25,25 +25,25 @@ wxBitmap WxHelpers::LoadBitmap(
     ImageSize const & size,
     ResourceLocator const & resourceLocator)
 {
-    if (size.Width == 0 || size.Height == 0)
+    if (size.width == 0 || size.height == 0)
     {
         throw std::runtime_error("Cannot create bitmap with one zero dimension");
     }
 
     wxImage image(resourceLocator.GetBitmapFilePath(bitmapName).string(), wxBITMAP_TYPE_PNG);
-    image.Rescale(size.Width, size.Height, wxIMAGE_QUALITY_HIGH);
+    image.Rescale(size.width, size.height, wxIMAGE_QUALITY_HIGH);
     return wxBitmap(image);
 }
 
 wxBitmap WxHelpers::MakeBitmap(RgbaImageData const & imageData)
 {
-    if (imageData.Size.Width == 0 || imageData.Size.Height == 0)
+    if (imageData.Size.width == 0 || imageData.Size.height == 0)
     {
         throw std::runtime_error("Cannot create bitmap with one zero dimension");
     }
 
     wxBitmap bitmap;
-    bitmap.Create(imageData.Size.Width, imageData.Size.Height, 32);
+    bitmap.Create(imageData.Size.width, imageData.Size.height, 32);
 
     wxPixelData<wxBitmap, wxAlphaPixelFormat> pixelData(bitmap);
     if (!pixelData)
@@ -51,18 +51,18 @@ wxBitmap WxHelpers::MakeBitmap(RgbaImageData const & imageData)
         throw std::runtime_error("Cannot get bitmap pixel data");
     }
 
-    assert(pixelData.GetWidth() == imageData.Size.Width);
-    assert(pixelData.GetHeight() == imageData.Size.Height);
+    assert(pixelData.GetWidth() == imageData.Size.width);
+    assert(pixelData.GetHeight() == imageData.Size.height);
 
     rgbaColor const * readIt = imageData.Data.get();
     auto writeIt = pixelData.GetPixels();
-    writeIt.OffsetY(pixelData, imageData.Size.Height - 1);
-    for (int y = 0; y < imageData.Size.Height; ++y)
+    writeIt.OffsetY(pixelData, imageData.Size.height - 1);
+    for (int y = 0; y < imageData.Size.height; ++y)
     {
         // Save current iterator
         auto rowStart = writeIt;
 
-        for (int x = 0; x < imageData.Size.Width; ++x, ++readIt, ++writeIt)
+        for (int x = 0; x < imageData.Size.width; ++x, ++readIt, ++writeIt)
         {
             // We have to pre-multiply r, g, and b by alpha,
             // see https://forums.wxwidgets.org/viewtopic.php?f=1&t=46322,
@@ -86,13 +86,13 @@ wxBitmap WxHelpers::MakeMatteBitmap(
     rgbaColor const & color,
     ImageSize const & size)
 {
-    if (size.Width == 0 || size.Height == 0)
+    if (size.width == 0 || size.height == 0)
     {
         throw std::runtime_error("Cannot create bitmap with one zero dimension");
     }
 
     wxBitmap bitmap;
-    bitmap.Create(size.Width, size.Height, 32);
+    bitmap.Create(size.width, size.height, 32);
 
     wxPixelData<wxBitmap, wxAlphaPixelFormat> pixelData(bitmap);
     if (!pixelData)
@@ -100,17 +100,17 @@ wxBitmap WxHelpers::MakeMatteBitmap(
         throw std::runtime_error("Cannot get bitmap pixel data");
     }
 
-    assert(pixelData.GetWidth() == size.Width);
-    assert(pixelData.GetHeight() == size.Height);
+    assert(pixelData.GetWidth() == size.width);
+    assert(pixelData.GetHeight() == size.height);
 
     auto writeIt = pixelData.GetPixels();
-    writeIt.OffsetY(pixelData, size.Height - 1);
-    for (int y = 0; y < size.Height; ++y)
+    writeIt.OffsetY(pixelData, size.height - 1);
+    for (int y = 0; y < size.height; ++y)
     {
         // Save current iterator
         auto rowStart = writeIt;
 
-        for (int x = 0; x < size.Width; ++x, ++writeIt)
+        for (int x = 0; x < size.width; ++x, ++writeIt)
         {
             writeIt.Red() = color.r;
             writeIt.Green() = color.g;

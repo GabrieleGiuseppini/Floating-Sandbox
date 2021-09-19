@@ -61,9 +61,9 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 {
     auto const totalStartTime = std::chrono::steady_clock::now();
 
-    int const structureWidth = shipDefinition.StructuralLayerImage.Size.Width;
+    int const structureWidth = shipDefinition.StructuralLayerImage.Size.width;
     float const halfWidth = static_cast<float>(structureWidth) / 2.0f;
-    int const structureHeight = shipDefinition.StructuralLayerImage.Size.Height;
+    int const structureHeight = shipDefinition.StructuralLayerImage.Size.height;
 
     // ShipFactoryPoint's
     std::vector<ShipFactoryPoint> pointInfos1;
@@ -435,7 +435,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         triangles);
 #endif
 
-    LogMessage("ShipFactory: Created ship: W=", shipDefinition.StructuralLayerImage.Size.Width, ", H=", shipDefinition.StructuralLayerImage.Size.Height, ", ",
+    LogMessage("ShipFactory: Created ship: W=", shipDefinition.StructuralLayerImage.Size.width, ", H=", shipDefinition.StructuralLayerImage.Size.height, ", ",
         points.GetRawShipPointCount(), "/", points.GetBufferElementCount(), "buf points, ",
         springs.GetElementCount(), " springs, ", triangles.GetElementCount(), " triangles, ",
         electricalElements.GetElementCount(), " electrical elements, ",
@@ -474,9 +474,9 @@ void ShipFactory::AppendRopeEndpoints(
     MaterialDatabase const & materialDatabase,
     vec2f const & shipOffset) const
 {
-    int const width = ropeLayerImage.Size.Width;
+    int const width = ropeLayerImage.Size.width;
     float const halfWidth = static_cast<float>(width) / 2.0f;
-    int const height = ropeLayerImage.Size.Height;
+    int const height = ropeLayerImage.Size.height;
 
     StructuralMaterial const & ropeMaterial = materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope);
 
@@ -556,8 +556,8 @@ void ShipFactory::DecoratePointsWithElectricalMaterials(
     ShipFactoryPointIndexMatrix const & pointIndexMatrix,
     MaterialDatabase const & materialDatabase) const
 {
-    int const width = layerImage.Size.Width;
-    int const height = layerImage.Size.Height;
+    int const width = layerImage.Size.width;
+    int const height = layerImage.Size.height;
 
     for (int x = 0; x < width; ++x)
     {
@@ -902,13 +902,13 @@ void ShipFactory::CreateShipElementInfos(
     leakingPointsCount = 0;
 
     // From bottom to top - excluding extras at boundaries
-    for (int y = 1; y < pointIndexMatrix.Height - 1; ++y)
+    for (int y = 1; y < pointIndexMatrix.height - 1; ++y)
     {
         // We're starting a new row, so we're not in a ship now
         bool isInShip = false;
 
         // From left to right - excluding extras at boundaries
-        for (int x = 1; x < pointIndexMatrix.Width - 1; ++x)
+        for (int x = 1; x < pointIndexMatrix.width - 1; ++x)
         {
             if (!!pointIndexMatrix[{x, y}])
             {
@@ -1112,13 +1112,13 @@ std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
     std::set<ElementIndex> frontierEdges2;
 
     // From left to right, skipping padding columns
-    for (int x = 1; x < pointIndexMatrix.Width - 1; ++x)
+    for (int x = 1; x < pointIndexMatrix.width - 1; ++x)
     {
         // Frontierable points are points on border edges of triangles
         bool isInFrontierablePointsRegion = false;
 
         // From bottom to top, skipping padding columns
-        for (int y = 1; y < pointIndexMatrix.Height - 1; ++y)
+        for (int y = 1; y < pointIndexMatrix.height - 1; ++y)
         {
             if (isInFrontierablePointsRegion)
             {
@@ -1852,7 +1852,7 @@ ShipFactory::ReorderingResults ShipFactory::ReorderPointsAndSpringsOptimally_Str
     std::vector<ElementIndex> springIndexRemap(springInfos1.size(), NoneElementIndex);
 
     // From top to bottom, starting at second row from top (i.e. first real row)
-    for (int y = pointIndexMatrix.Height - 1; y >= 1; y -= (StripeLength - 1))
+    for (int y = pointIndexMatrix.height - 1; y >= 1; y -= (StripeLength - 1))
     {
         ReorderPointsAndSpringsOptimally_Stripes_Stripe<StripeLength>(
             y,
@@ -1949,7 +1949,7 @@ void ShipFactory::ReorderPointsAndSpringsOptimally_Stripes_Stripe(
     std::vector<ElementIndex> stripePointIndices1;
 
     // From left to right, start at first real col
-    for (int x1 = 1; x1 < pointIndexMatrix.Width - 1; ++x1)
+    for (int x1 = 1; x1 < pointIndexMatrix.width - 1; ++x1)
     {
         //
         // 1. Build sets of indices of points left and right of the stripe
@@ -2039,7 +2039,7 @@ ShipFactory::ReorderingResults ShipFactory::ReorderPointsAndSpringsOptimally_Blo
 
     // From top to bottom, starting at second row from top (i.e. first real row),
     // skipping one row of points to ensure full squares
-    for (int y = pointIndexMatrix.Height - 1; y >= 1; y -= 2)
+    for (int y = pointIndexMatrix.height - 1; y >= 1; y -= 2)
     {
         ReorderPointsAndSpringsOptimally_Blocks_Row(
             y,
@@ -2138,7 +2138,7 @@ void ShipFactory::ReorderPointsAndSpringsOptimally_Blocks_Row(
     std::vector<ElementIndex> squarePointIndices1;
 
     // From left to right, start at first real col
-    for (int x = 1; x < pointIndexMatrix.Width - 1; ++x)
+    for (int x = 1; x < pointIndexMatrix.width - 1; ++x)
     {
         squarePointIndices1.clear();
 
@@ -2225,13 +2225,13 @@ ShipFactory::ReorderingResults ShipFactory::ReorderPointsAndSpringsOptimally_Til
     std::vector<ElementIndex> springIndexRemap(springInfos1.size(), NoneElementIndex);
 
     // From bottom to top
-    for (int y = 1; y < pointIndexMatrix.Height - 1; y += BlockSize)
+    for (int y = 1; y < pointIndexMatrix.height - 1; y += BlockSize)
     {
-        for (int x = 1; x < pointIndexMatrix.Width - 1; x += BlockSize)
+        for (int x = 1; x < pointIndexMatrix.width - 1; x += BlockSize)
         {
-            for (int y2 = 0; y2 < BlockSize && y + y2 < pointIndexMatrix.Height - 1; ++y2)
+            for (int y2 = 0; y2 < BlockSize && y + y2 < pointIndexMatrix.height - 1; ++y2)
             {
-                for (int x2 = 0; x2 < BlockSize && x + x2 < pointIndexMatrix.Width - 1; ++x2)
+                for (int x2 = 0; x2 < BlockSize && x + x2 < pointIndexMatrix.width - 1; ++x2)
                 {
                     if (!!pointIndexMatrix[{x + x2, y + y2}])
                     {

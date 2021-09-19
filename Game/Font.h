@@ -48,7 +48,7 @@ public:
     template<typename TChar>
 	inline int GetGlyphScreenHeight(TChar /*ch*/) const
 	{
-		return mCellSize.Height;
+		return mCellSize.height;
 	}
 
     /*
@@ -64,7 +64,7 @@ public:
      */
     inline int GetCellScreenWidth() const
     {
-        return mCellSize.Width;
+        return mCellSize.width;
     }
 
     /*
@@ -72,7 +72,7 @@ public:
      */
     inline int GetCellScreenHeight() const
     {
-        return mCellSize.Width;
+        return mCellSize.width;
     }
 
 	/*
@@ -88,7 +88,7 @@ public:
         for (size_t c = 0; c < length; ++c)
             width += mGlyphWidths[static_cast<size_t>(text[c])];
 
-        return ImageSize(width, mCellSize.Height);
+        return ImageSize(width, mCellSize.height);
     }
 
 private:

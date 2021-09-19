@@ -147,12 +147,12 @@ private:
         CoordType y,
         ImageSize const & imageSize) const
     {
-        float const deadCenterOffsetX = 0.5f / static_cast<float>(imageSize.Width);
-        float const deadCenterOffsetY = 0.5f / static_cast<float>(imageSize.Height);
+        float const deadCenterOffsetX = 0.5f / static_cast<float>(imageSize.width);
+        float const deadCenterOffsetY = 0.5f / static_cast<float>(imageSize.height);
 
         return vec2f(
-            static_cast<float>(x) / static_cast<float>(imageSize.Width) + deadCenterOffsetX,
-            static_cast<float>(y) / static_cast<float>(imageSize.Height) + deadCenterOffsetY);
+            static_cast<float>(x) / static_cast<float>(imageSize.width) + deadCenterOffsetX,
+            static_cast<float>(y) / static_cast<float>(imageSize.height) + deadCenterOffsetY);
     }
 
     void AppendRopeEndpoints(

@@ -1040,7 +1040,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     wxID_ANY,
                     WxHelpers::MakeEmptyBitmap(),
                     wxDefaultPosition,
-                    wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
+                    wxSize(MaterialSwathSize.width, MaterialSwathSize.height),
                     wxBORDER_SUNKEN);
 
                 mStructuralForegroundMaterialSelector->Bind(
@@ -1066,7 +1066,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     wxID_ANY,
                     WxHelpers::MakeEmptyBitmap(),
                     wxDefaultPosition,
-                    wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
+                    wxSize(MaterialSwathSize.width, MaterialSwathSize.height),
                     wxBORDER_SUNKEN);
 
                 mStructuralBackgroundMaterialSelector->Bind(
@@ -1169,7 +1169,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     wxID_ANY,
                     WxHelpers::MakeEmptyBitmap(),
                     wxDefaultPosition,
-                    wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
+                    wxSize(MaterialSwathSize.width, MaterialSwathSize.height),
                     wxBORDER_SUNKEN);
 
                 mElectricalForegroundMaterialSelector->Bind(
@@ -1195,7 +1195,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     wxID_ANY,
                     WxHelpers::MakeEmptyBitmap(),
                     wxDefaultPosition,
-                    wxSize(MaterialSwathSize.Width, MaterialSwathSize.Height),
+                    wxSize(MaterialSwathSize.width, MaterialSwathSize.height),
                     wxBORDER_SUNKEN);
 
                 mElectricalBackgroundMaterialSelector->Bind(

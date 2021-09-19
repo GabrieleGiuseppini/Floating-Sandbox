@@ -62,7 +62,7 @@ RgbaImageData ShipTexturizer::Texturize(
     // and no more than 32 times the original size
     //
 
-    int const maxDimension = std::max(structureSize.Width, structureSize.Height);
+    int const maxDimension = std::max(structureSize.width, structureSize.height);
     assert(maxDimension > 0);
 
     int const magnificationFactor = std::min(32, std::max(1, 4096 / maxDimension));
@@ -87,11 +87,11 @@ RgbaImageData ShipTexturizer::Texturize(
     // Create texture
     //
 
-    auto newImageData = std::make_unique<rgbaColor[]>(textureSize.GetPixelCount());
+    auto newImageData = std::make_unique<rgbaColor[]>(textureSize.GetLinearCount());
 
-    for (int y = 1; y <= structureSize.Height; ++y)
+    for (int y = 1; y <= structureSize.height; ++y)
     {
-        for (int x = 1; x <= structureSize.Width; ++x)
+        for (int x = 1; x <= structureSize.width; ++x)
         {
             vec2i const pixelCoords(x, y);
 
@@ -112,7 +112,7 @@ RgbaImageData ShipTexturizer::Texturize(
                 {
                     int const quadOffset =
                         (x - 1) * magnificationFactor
-                        + ((y - 1) * magnificationFactor + yy) * textureSize.Width;
+                        + ((y - 1) * magnificationFactor + yy) * textureSize.width;
 
                     for (int xx = 0; xx < magnificationFactor; ++xx)
                     {
@@ -138,12 +138,12 @@ RgbaImageData ShipTexturizer::Texturize(
                 // Fill quad with color multiply-blended with "bump map" texture
                 //
 
-                int const baseTargetQuadOffset = ((x - 1) + (y - 1) * textureSize.Width) * magnificationFactor;
+                int const baseTargetQuadOffset = ((x - 1) + (y - 1) * textureSize.width) * magnificationFactor;
 
                 float worldY = static_cast<float>(y - 1);
                 for (int yy = 0; yy < magnificationFactor; ++yy, worldY += magnificationFactorInvF)
                 {
-                    int const targetQuadOffset = baseTargetQuadOffset + yy * textureSize.Width;
+                    int const targetQuadOffset = baseTargetQuadOffset + yy * textureSize.width;
 
                     float worldX = static_cast<float>(x - 1);
                     for (int xx = 0; xx < magnificationFactor; ++xx, worldX += magnificationFactorInvF)
@@ -256,7 +256,7 @@ RgbaImageData ShipTexturizer::MakeTextureSample(
     rgbaColor const & renderColor,
     std::optional<std::string> const & textureName) const
 {
-    assert(sampleSize.Width >= 2); // We'll split the width in half
+    assert(sampleSize.width >= 2); // We'll split the width in half
 
     // Use shared settings if no settings have been provided
     ShipAutoTexturizationSettings const & effectiveSettings = !settings.has_value()
@@ -264,7 +264,7 @@ RgbaImageData ShipTexturizer::MakeTextureSample(
         : *settings;
 
     // Create output image
-    auto sampleData = std::make_unique<rgbaColor[]>(sampleSize.GetPixelCount());
+    auto sampleData = std::make_unique<rgbaColor[]>(sampleSize.GetLinearCount());
 
     // Get bump map texture and render color
     Vec3fImageData const & materialTexture = GetMaterialTexture(textureName);
@@ -278,11 +278,11 @@ RgbaImageData ShipTexturizer::MakeTextureSample(
     // Fill quad with color multiply-blended with "bump map" texture
     //
 
-    for (int y = 0; y < sampleSize.Height; ++y)
+    for (int y = 0; y < sampleSize.height; ++y)
     {
-        int const targetQuadOffset = y * sampleSize.Width;
+        int const targetQuadOffset = y * sampleSize.width;
 
-        for (int x = 0; x < sampleSize.Width / 2; ++x)
+        for (int x = 0; x < sampleSize.width / 2; ++x)
         {
             vec3f const bumpMapSample = SampleTexture(
                 materialTexture,
@@ -304,7 +304,7 @@ RgbaImageData ShipTexturizer::MakeTextureSample(
                 renderColor.a);
 
             // Store instead raw render color to the right side
-            sampleData[targetQuadOffset + x + sampleSize.Width / 2] = renderColor;
+            sampleData[targetQuadOffset + x + sampleSize.width / 2] = renderColor;
         }
     }
 
@@ -401,31 +401,31 @@ vec3f ShipTexturizer::SampleTexture(
     float const pixelDy = pixelY - pixelYI;
 
     // Wrap integral coordinates
-    pixelXI %= static_cast<decltype(pixelXI)>(texture.Size.Width);
-    pixelYI %= static_cast<decltype(pixelYI)>(texture.Size.Height);
+    pixelXI %= static_cast<decltype(pixelXI)>(texture.Size.width);
+    pixelYI %= static_cast<decltype(pixelYI)>(texture.Size.height);
 
-    assert(pixelXI >= 0 && pixelXI < texture.Size.Width);
+    assert(pixelXI >= 0 && pixelXI < texture.Size.width);
     assert(pixelDx >= 0.0f && pixelDx < 1.0f);
-    assert(pixelYI >= 0 && pixelYI < texture.Size.Height);
+    assert(pixelYI >= 0 && pixelYI < texture.Size.height);
     assert(pixelDy >= 0.0f && pixelDy < 1.0f);
 
     //
     // Bilinear
     //
 
-    int const nextPixelXI = (pixelXI + 1) % static_cast<decltype(pixelXI)>(texture.Size.Width);
-    int const nextPixelYI = (pixelYI + 1) % static_cast<decltype(pixelYI)>(texture.Size.Height);
+    int const nextPixelXI = (pixelXI + 1) % static_cast<decltype(pixelXI)>(texture.Size.width);
+    int const nextPixelYI = (pixelYI + 1) % static_cast<decltype(pixelYI)>(texture.Size.height);
 
     // Linear interpolation between x samples at bottom
     vec3f const interpolatedXColorBottom = Mix(
-        texture.Data[pixelXI + pixelYI * texture.Size.Width],
-        texture.Data[nextPixelXI + pixelYI * texture.Size.Width],
+        texture.Data[pixelXI + pixelYI * texture.Size.width],
+        texture.Data[nextPixelXI + pixelYI * texture.Size.width],
         pixelDx);
 
     // Linear interpolation between x samples at top
     vec3f const interpolatedXColorTop = Mix(
-        texture.Data[pixelXI + nextPixelYI * texture.Size.Width],
-        texture.Data[nextPixelXI + nextPixelYI * texture.Size.Width],
+        texture.Data[pixelXI + nextPixelYI * texture.Size.width],
+        texture.Data[nextPixelXI + nextPixelYI * texture.Size.width],
         pixelDx);
 
     // Linear interpolation between two vertical samples

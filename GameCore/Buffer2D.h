@@ -50,7 +50,7 @@ public:
         std::unique_ptr<TElement[]> data)
         : Size(size)
         , Data(std::move(data))
-        , mLinearSize(size.Width * size.Height)
+        , mLinearSize(size.width * size.height)
     {
     }
 
@@ -88,16 +88,16 @@ public:
         TCoordinates const & regionOrigin,
         TSize const & regionSize)
     {
-        auto newData = std::make_unique<TElement[]>(regionSize.Width * regionSize.Height);
-        for (int targetY = 0; targetY < regionSize.Height; ++targetY)
+        auto newData = std::make_unique<TElement[]>(regionSize.width * regionSize.height);
+        for (int targetY = 0; targetY < regionSize.height; ++targetY)
         {
-            int const sourceLinearIndex = (targetY + regionOrigin.y) * Size.Width + regionOrigin.x;
-            int const targetLinearIndex = targetY * regionSize.Width;
+            int const sourceLinearIndex = (targetY + regionOrigin.y) * Size.width + regionOrigin.x;
+            int const targetLinearIndex = targetY * regionSize.width;
 
             std::memcpy(
                 newData.get() + targetLinearIndex,
                 Data.get() + sourceLinearIndex,
-                regionSize.Width * sizeof(TElement));
+                regionSize.width * sizeof(TElement));
         }
 
         return std::make_unique<Buffer2D>(
@@ -116,7 +116,7 @@ public:
     {
         assert(index.IsInRect(Size));
 
-        size_t const linearIndex = index.y * Size.Width + index.x;
+        size_t const linearIndex = index.y * Size.width + index.x;
         assert(linearIndex < mLinearSize);
 
         return Data[linearIndex];

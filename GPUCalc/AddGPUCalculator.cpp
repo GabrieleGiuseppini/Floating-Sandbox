@@ -53,10 +53,10 @@ AddGPUCalculator::AddGPUCalculator(
         mFrameSize = ImageSize(maxWidth, mWholeRows + (mRemainderCols > 0 ? 1 : 0));
     }
 
-    mRemainderColsInputBufferByteOffset = mFrameSize.Width * mWholeRows * 4 * sizeof(float);
+    mRemainderColsInputBufferByteOffset = mFrameSize.width * mWholeRows * 4 * sizeof(float);
 
     LogMessage(
-        "AddGPUCalculator: FrameSize=", mFrameSize.Width, "x", mFrameSize.Height,
+        "AddGPUCalculator: FrameSize=", mFrameSize.width, "x", mFrameSize.height,
         ", WholeRows=", mWholeRows, ", RemainderCols=", mRemainderCols);
 
 
@@ -67,7 +67,7 @@ AddGPUCalculator::AddGPUCalculator(
     this->ActivateOpenGLContext();
 
     // Set viewport size
-    glViewport(0, 0, mFrameSize.Width, mFrameSize.Height);
+    glViewport(0, 0, mFrameSize.width, mFrameSize.height);
     CheckOpenGLError();
 
     // Set polygon mode
@@ -103,7 +103,7 @@ AddGPUCalculator::AddGPUCalculator(
     glBindTexture(GL_TEXTURE_2D, *mInputTextures[0]);
     CheckOpenGLError();
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, mFrameSize.Width, mFrameSize.Height, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, mFrameSize.width, mFrameSize.height, 0, GL_RGBA, GL_FLOAT, nullptr);
     CheckOpenGLError();
 
     // Make sure we don't do any fancy filtering
@@ -125,7 +125,7 @@ AddGPUCalculator::AddGPUCalculator(
     glBindTexture(GL_TEXTURE_2D, *mInputTextures[1]);
     CheckOpenGLError();
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, mFrameSize.Width, mFrameSize.Height, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, mFrameSize.width, mFrameSize.height, 0, GL_RGBA, GL_FLOAT, nullptr);
     CheckOpenGLError();
 
     // Make sure we don't do any fancy filtering
@@ -162,8 +162,8 @@ AddGPUCalculator::AddGPUCalculator(
     glRenderbufferStorage(
         GL_RENDERBUFFER,
         GL_RGBA32F,
-        mFrameSize.Width,
-        mFrameSize.Height);
+        mFrameSize.width,
+        mFrameSize.height);
     CheckOpenGLError();
 
     // Attach color buffer to FBO
@@ -248,7 +248,7 @@ void AddGPUCalculator::Run(
             GL_TEXTURE_2D,
             0,                              // Level
             0, 0,                           // X offset, Y offset
-            mFrameSize.Width, mWholeRows,   // Width, Height
+            mFrameSize.width, mWholeRows,   // Width, Height
             GL_RGBA, GL_FLOAT,
             a);
 
@@ -280,7 +280,7 @@ void AddGPUCalculator::Run(
             GL_TEXTURE_2D,
             0,                              // Level
             0, 0,                           // X offset, Y offset
-            mFrameSize.Width, mWholeRows,   // Width, Height
+            mFrameSize.width, mWholeRows,   // Width, Height
             GL_RGBA, GL_FLOAT,
             b);
 
@@ -317,7 +317,7 @@ void AddGPUCalculator::Run(
     {
         glReadPixels(
             0, 0,
-            mFrameSize.Width, mWholeRows,
+            mFrameSize.width, mWholeRows,
             GL_RGBA, GL_FLOAT,
             result);
 

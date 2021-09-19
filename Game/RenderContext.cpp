@@ -300,8 +300,8 @@ void RenderContext::Reset()
 void RenderContext::ValidateShipTexture(RgbaImageData const & texture) const
 {
     // Check texture against max texture size
-    if (texture.Size.Width > GameOpenGL::MaxTextureSize
-        || texture.Size.Height > GameOpenGL::MaxTextureSize)
+    if (texture.Size.width > GameOpenGL::MaxTextureSize
+        || texture.Size.height > GameOpenGL::MaxTextureSize)
     {
         throw GameException("We are sorry, but this ship's texture image is too large for your graphics card.");
     }

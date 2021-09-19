@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "PencilTool.h"
 
+#include <type_traits>
+
 namespace ShipBuilder {
 
 template<typename TMaterial>
@@ -110,18 +112,33 @@ void PencilTool<TMaterial>::ApplyEditAt(
     // TODOTEST
     LogMessage("TODOTEST: PencilTool::ApplyEditAt: ", position.ToString(), " plane=", static_cast<int>(plane));
 
-    auto const editAction = MaterialRegionFillEditAction(
-        plane == MaterialPlaneType::Foreground
-        ? mWorkbenchState.GetStructuralForegroundMaterial()
-        : mWorkbenchState.GetStructuralBackgroundMaterial(),
-        position,
-        WorkSpaceSize(1, 1));
+    std::unique_ptr<UndoEntry> undoEntry;
 
-    auto undoEntry = mModelController.Edit(editAction);
+    if constexpr (std::is_same<TMaterial, StructuralMaterial>())
+    {
+        undoEntry = mModelController.StructuralRegionFill(
+            plane == MaterialPlaneType::Foreground
+            ? mWorkbenchState.GetStructuralForegroundMaterial()
+            : mWorkbenchState.GetStructuralBackgroundMaterial(),
+            position,
+            WorkSpaceSize(1, 1));
+    }
+    else
+    {
+        static_assert(std::is_same<TMaterial, ElectricalMaterial>());
+
+        undoEntry = mModelController.ElectricalRegionFill(
+            plane == MaterialPlaneType::Foreground
+            ? mWorkbenchState.GetElectricalForegroundMaterial()
+            : mWorkbenchState.GetElectricalBackgroundMaterial(),
+            position,
+            WorkSpaceSize(1, 1));
+    }
 
     // TODO: hook with undo stack
 
-    // TODO: publish dirtyness
+    // Notify we're dirty now
+    mUserInterface.OnModelDirtyChanged(mModelController.GetModel().GetIsDirty());
 
     // Force view refresh
     mUserInterface.RefreshView();

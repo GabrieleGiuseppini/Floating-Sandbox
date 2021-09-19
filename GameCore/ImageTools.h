@@ -38,24 +38,24 @@ public:
         float x,
         float y)
     {
-        assert(x >= 0.0f && x <= static_cast<float>(imageData.Size.Width));
-        assert(y >= 0.0f && y <= static_cast<float>(imageData.Size.Height));
+        assert(x >= 0.0f && x <= static_cast<float>(imageData.Size.width));
+        assert(y >= 0.0f && y <= static_cast<float>(imageData.Size.height));
 
         auto ix = FastTruncateToArchInt(x);
         float fx = x - static_cast<float>(ix);
         auto iy = FastTruncateToArchInt(y);
         float fy = y - static_cast<float>(iy);
 
-        vec4f resulty1 = imageData.Data[iy * imageData.Size.Width + ix].toVec4f() * (1.0f - fx);
-        if (ix < imageData.Size.Width - 1)
-            resulty1 += imageData.Data[iy * imageData.Size.Width + ix + 1].toVec4f() * fx;
+        vec4f resulty1 = imageData.Data[iy * imageData.Size.width + ix].toVec4f() * (1.0f - fx);
+        if (ix < imageData.Size.width - 1)
+            resulty1 += imageData.Data[iy * imageData.Size.width + ix + 1].toVec4f() * fx;
 
         vec4f resulty2 = vec4f::zero();
-        if (iy < imageData.Size.Height - 1)
+        if (iy < imageData.Size.height - 1)
         {
-            resulty2 = imageData.Data[(iy + 1) * imageData.Size.Width + ix].toVec4f() * (1.0f - fx);
-            if (ix < imageData.Size.Width - 1)
-                resulty2 += imageData.Data[(iy + 1) * imageData.Size.Width + ix + 1].toVec4f() * fx;
+            resulty2 = imageData.Data[(iy + 1) * imageData.Size.width + ix].toVec4f() * (1.0f - fx);
+            if (ix < imageData.Size.width - 1)
+                resulty2 += imageData.Data[(iy + 1) * imageData.Size.width + ix + 1].toVec4f() * fx;
         }
 
         return resulty1 * (1.0f - fy) + resulty2 * fy;
@@ -106,7 +106,7 @@ private:
         std::function<bool(TColor const &)> isSpace)
     {
         // We do not handle empty images (for now...)
-        assert(imageData.Size.Width > 0 && imageData.Size.Height > 0);
+        assert(imageData.Size.width > 0 && imageData.Size.height > 0);
 
         //
         // Calculate bounding box
@@ -115,12 +115,12 @@ private:
         auto readBuffer = imageData.Data.get();
 
         int minY;
-        for (minY = 0; minY < imageData.Size.Height; ++minY)
+        for (minY = 0; minY < imageData.Size.height; ++minY)
         {
-            int lineOffset = minY * imageData.Size.Width;
+            int lineOffset = minY * imageData.Size.width;
 
             bool hasData = false;
-            for (int x = 0; !hasData && x < imageData.Size.Width; ++x)
+            for (int x = 0; !hasData && x < imageData.Size.width; ++x)
             {
                 hasData = !isSpace(readBuffer[lineOffset + x]);
             }
@@ -130,7 +130,7 @@ private:
         }
 
         // If empty, return empty image
-        if (minY == imageData.Size.Height)
+        if (minY == imageData.Size.height)
         {
             return ImageData<TColor>(
                 ImageSize(0, 0),
@@ -138,12 +138,12 @@ private:
         }
 
         int maxY;
-        for (maxY = imageData.Size.Height - 1; maxY >= 0; --maxY)
+        for (maxY = imageData.Size.height - 1; maxY >= 0; --maxY)
         {
-            int lineOffset = maxY * imageData.Size.Width;
+            int lineOffset = maxY * imageData.Size.width;
 
             bool hasData = false;
-            for (int x = 0; !hasData && x < imageData.Size.Width; ++x)
+            for (int x = 0; !hasData && x < imageData.Size.width; ++x)
             {
                 hasData = !isSpace(readBuffer[lineOffset + x]);
             }
@@ -153,10 +153,10 @@ private:
         }
 
         int minX;
-        for (minX = 0; minX < imageData.Size.Width; ++minX)
+        for (minX = 0; minX < imageData.Size.width; ++minX)
         {
             bool hasData = false;
-            for (int y = 0, lineOffset = 0; !hasData && y < imageData.Size.Height; ++y, lineOffset += imageData.Size.Width)
+            for (int y = 0, lineOffset = 0; !hasData && y < imageData.Size.height; ++y, lineOffset += imageData.Size.width)
             {
                 hasData = !isSpace(readBuffer[lineOffset + minX]);
             }
@@ -166,10 +166,10 @@ private:
         }
 
         int maxX;
-        for (maxX = imageData.Size.Width - 1; maxX >= 0; --maxX)
+        for (maxX = imageData.Size.width - 1; maxX >= 0; --maxX)
         {
             bool hasData = false;
-            for (int y = 0, lineOffset = 0; !hasData && y < imageData.Size.Height; ++y, lineOffset += imageData.Size.Width)
+            for (int y = 0, lineOffset = 0; !hasData && y < imageData.Size.height; ++y, lineOffset += imageData.Size.width)
             {
                 hasData = !isSpace(readBuffer[lineOffset + maxX]);
             }
@@ -178,12 +178,12 @@ private:
                 break;
         }
 
-        assert(minY < imageData.Size.Height && maxY >= 0 && minX < imageData.Size.Width && maxX >= 0
+        assert(minY < imageData.Size.height && maxY >= 0 && minX < imageData.Size.width && maxX >= 0
                 && minY <= maxY && minX <= maxX);
 
         // Check if we really need to trim
-        if (minX > 0 || maxX < imageData.Size.Width - 1
-            || minY > 0 || maxY < imageData.Size.Height - 1)
+        if (minX > 0 || maxX < imageData.Size.width - 1
+            || minY > 0 || maxY < imageData.Size.height - 1)
         {
             //
             // Create trimmed version, in-place
@@ -194,9 +194,9 @@ private:
 
             TColor * buffer = imageData.Data.get();
 
-            for (int srcY = minY, dstY = 0, srcLineOffset = minY * imageData.Size.Width, dstLineOffset = 0;
+            for (int srcY = minY, dstY = 0, srcLineOffset = minY * imageData.Size.width, dstLineOffset = 0;
                 dstY < newHeight;
-                ++srcY, ++dstY, srcLineOffset += imageData.Size.Width, dstLineOffset += newWidth)
+                ++srcY, ++dstY, srcLineOffset += imageData.Size.width, dstLineOffset += newWidth)
             {
                 for (int srcX = minX, dstX = 0;
                     dstX < newWidth;

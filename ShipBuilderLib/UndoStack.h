@@ -40,7 +40,7 @@ class MaterialRegionUndoEditAction final : public UndoEditAction
 public:
 
     MaterialRegionUndoEditAction(
-        MaterialBuffer<TMaterial> && region,
+        std::unique_ptr<MaterialBuffer<TMaterial>> && region,
         WorkSpaceCoordinates const & origin)
         : mRegion(std::move(region))
         , mOrigin(origin)
@@ -50,7 +50,7 @@ public:
 
 private:
 
-    MaterialBuffer<TMaterial> mRegion;
+    std::unique_ptr<MaterialBuffer<TMaterial>> mRegion;
     WorkSpaceCoordinates mOrigin;
 };
 

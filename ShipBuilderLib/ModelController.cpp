@@ -81,7 +81,7 @@ std::unique_ptr<UndoEntry> ModelController::StructuralRegionFill(
     // Fill
     //
 
-    Model::MaterialBuffer<StructuralMaterial> & structuralMaterialMatrix = mModel.GetStructuralMaterialMatrix();
+    MaterialBuffer<StructuralMaterial> & structuralMaterialMatrix = mModel.GetStructuralMaterialMatrix();
     RgbaImageData & structuralRenderColorTexture = mModel.GetStructuralRenderColorTexture();
 
     rgbaColor const renderColor = material != nullptr
@@ -101,17 +101,25 @@ std::unique_ptr<UndoEntry> ModelController::StructuralRegionFill(
 
 
     // Update view
-    // TODOHERE: perf test
-    UploadStructuralLayerToView();
+    UploadStructuralLayerToView(origin, size);
 
-    return undoEntry;
+    //
+    // Bake undo entry
+    //
 
+    return std::make_unique<UndoEntry>(
+        std::move(undoEditAction),
+        std::make_unique<MaterialRegionUndoEditAction<StructuralMaterial>>(
+            mModel.GetStructuralMaterialMatrix().MakeCopy(origin, size),
+            origin));
+}
 
-
-
-
-
-    return undoEditAction;
+std::unique_ptr<UndoEntry> ModelController::StructuralRegionReplace(
+    MaterialBuffer<StructuralMaterial> const & region,
+    WorkSpaceCoordinates const & origin)
+{
+    // TODOHERE
+    return nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -143,12 +151,20 @@ void ModelController::RemoveElectricalLayer()
     // TODO: upload to view
 }
 
-std::unique_ptr<EditAction> ModelController::ElectricalRegionFill(
+std::unique_ptr<UndoEntry> ModelController::ElectricalRegionFill(
     ElectricalMaterial const * material,
     WorkSpaceCoordinates const & origin,
     WorkSpaceSize const & size)
 {
     // TODO
+    return nullptr;
+}
+
+std::unique_ptr<UndoEntry> ModelController::ElectricalRegionReplace(
+    MaterialBuffer<ElectricalMaterial> const & region,
+    WorkSpaceCoordinates const & origin)
+{
+    // TODOHERE
     return nullptr;
 }
 
@@ -215,6 +231,18 @@ void ModelController::RemoveTextureLayer()
 void ModelController::UploadStructuralLayerToView()
 {
     mView.UploadStructuralTexture(mModel.GetStructuralRenderColorTexture());
+}
+
+void ModelController::UploadStructuralLayerToView(
+    WorkSpaceCoordinates const & origin,
+    WorkSpaceSize const & size)
+{
+    mView.UpdateStructuralTextureRegion(
+        mModel.GetStructuralRenderColorTexture(),
+        origin.x,
+        origin.y,
+        size.width,
+        size.height);
 }
 
 }

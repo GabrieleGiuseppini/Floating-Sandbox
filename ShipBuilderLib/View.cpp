@@ -169,7 +169,7 @@ void View::UploadBackgroundTexture(RgbaImageData && texture)
     // rather than the screen's
 
     float const textureBottom =
-        -(static_cast<float>(texture.Size.Height) - static_cast<float>(mViewModel.GetDisplayPhysicalSize().height))
+        -(static_cast<float>(texture.Size.height) - static_cast<float>(mViewModel.GetDisplayPhysicalSize().height))
             / static_cast<float>(mViewModel.GetDisplayPhysicalSize().height);
 
     std::array<TextureNdcVertex, 4> vertexBuffer;
@@ -228,8 +228,8 @@ void View::UploadStructuralTexture(RgbaImageData const & texture)
     // Create vertices
     //
 
-    float const fWidth = static_cast<float>(texture.Size.Width);
-    float const fHeight = static_cast<float>(texture.Size.Height);
+    float const fWidth = static_cast<float>(texture.Size.width);
+    float const fHeight = static_cast<float>(texture.Size.height);
 
     std::array<TextureVertex, 4> vertexBuffer;
 

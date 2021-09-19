@@ -745,7 +745,7 @@ public:
     template<typename TRect>
     bool IsInRect(TRect const & rect) const
     {
-        return x >= 0 && x < rect.Width && y >= 0 && y < rect.Height;
+        return x >= 0 && x < rect.width && y >= 0 && y < rect.height;
     }
 
     std::string toString() const;

@@ -82,8 +82,8 @@ RgbaImageData ImageFileTools::LoadImageRgbaAndMagnify(
             [magnificationFactor](ImageSize const & originalImageSize)
             {
                 return ImageSize(
-                    originalImageSize.Width * magnificationFactor,
-                    originalImageSize.Height * magnificationFactor);
+                    originalImageSize.width * magnificationFactor,
+                    originalImageSize.height * magnificationFactor);
             },
             ILU_NEAREST));
 }
@@ -103,8 +103,8 @@ RgbaImageData ImageFileTools::LoadImageRgbaAndResize(
                     resizedWidth,
                     static_cast<int>(
                         round(
-                            static_cast<float>(originalImageSize.Height)
-                            / static_cast<float>(originalImageSize.Width)
+                            static_cast<float>(originalImageSize.height)
+                            / static_cast<float>(originalImageSize.width)
                             * static_cast<float>(resizedWidth))));
             },
             ILU_BILINEAR));
@@ -215,15 +215,15 @@ ImageData<TColor> ImageFileTools::InternalLoadImageAndResize(
         ResizeInfo(
             [maxSize](ImageSize const & originalImageSize)
             {
-                float wShrinkFactor = static_cast<float>(maxSize.Width) / static_cast<float>(originalImageSize.Width);
-                float hShrinkFactor = static_cast<float>(maxSize.Height) / static_cast<float>(originalImageSize.Height);
+                float wShrinkFactor = static_cast<float>(maxSize.width) / static_cast<float>(originalImageSize.width);
+                float hShrinkFactor = static_cast<float>(maxSize.height) / static_cast<float>(originalImageSize.height);
                 float shrinkFactor = std::min(
                     std::min(wShrinkFactor, hShrinkFactor),
                     1.0f);
 
                 return ImageSize(
-                    static_cast<int>(round(static_cast<float>(originalImageSize.Width) * shrinkFactor)),
-                    static_cast<int>(round(static_cast<float>(originalImageSize.Height) * shrinkFactor)));
+                    static_cast<int>(round(static_cast<float>(originalImageSize.width) * shrinkFactor)),
+                    static_cast<int>(round(static_cast<float>(originalImageSize.height) * shrinkFactor)));
             },
             ILU_BILINEAR));
 }
@@ -287,7 +287,7 @@ ImageData<TColor> ImageFileTools::InternalLoadImage(
 
         auto newImageSize = resizeInfo->ResizeHandler(imageSize);
 
-        if (!iluScale(newImageSize.Width, newImageSize.Height, depth))
+        if (!iluScale(newImageSize.width, newImageSize.height, depth))
         {
             ILint devilError = ilGetError();
             std::string devilErrorMessage(iluErrorString(devilError));
@@ -303,8 +303,8 @@ ImageData<TColor> ImageFileTools::InternalLoadImage(
     //
 
     ILubyte const * imageData = ilGetData();
-    auto data = std::make_unique<TColor[]>(imageSize.Width * imageSize.Height);
-    std::memcpy(static_cast<void*>(data.get()), imageData, imageSize.Width * imageSize.Height * bpp);
+    auto data = std::make_unique<TColor[]>(imageSize.width * imageSize.height);
+    std::memcpy(static_cast<void*>(data.get()), imageData, imageSize.width * imageSize.height * bpp);
 
     //
     // Delete image
@@ -332,8 +332,8 @@ void ImageFileTools::InternalSaveImage(
     ilBindImage(imghandle);
 
     ilTexImage(
-        imageSize.Width,
-        imageSize.Height,
+        imageSize.width,
+        imageSize.height,
         1,
         static_cast<ILubyte>(bpp),
         format,

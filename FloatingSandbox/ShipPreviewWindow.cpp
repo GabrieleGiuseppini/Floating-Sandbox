@@ -410,7 +410,7 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 infoTile.OriginalDescription1 = std::move(descriptionLabelText1);
                 infoTile.Description1Size.reset();
 
-                int const metres = message->GetShipPreview().OriginalSize.Width;
+                int const metres = message->GetShipPreview().OriginalSize.width;
                 int const feet = static_cast<int>(std::round(3.28f * metres));
                 std::string descriptionLabelText2 =
                     std::to_string(metres)

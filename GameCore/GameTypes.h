@@ -257,59 +257,119 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, Sequ
 /*
  * Integral point's coordinates.
  */
+
+#pragma pack(push, 1)
+
 struct IntegralPointCoordinates
 {
-    int X;
-    int Y;
+    int x;
+    int y;
 
     constexpr IntegralPointCoordinates(
-        int x,
-        int y)
-        : X(x)
-        , Y(y)
+        int _x,
+        int _y)
+        : x(_x)
+        , y(_y)
     {}
 
     IntegralPointCoordinates FlipY(int height) const
     {
-        assert(height > Y);
-        return IntegralPointCoordinates(X, height - 1 - Y);
+        assert(height > y);
+        return IntegralPointCoordinates(x, height - 1 - y);
     }
 
     std::string ToString() const
     {
         std::stringstream ss;
-        ss << "(" << X << ", " << Y << ")";
+        ss << "(" << x << ", " << y << ")";
         return ss.str();
     }
 };
 
+#pragma pack(pop)
+
 /*
  * Integral rectangular sizes.
  */
+
+#pragma pack(push, 1)
+
 struct Integral2DSize
 {
-    int Width;
-    int Height;
+    int width;
+    int height;
+
+    inline static Integral2DSize Zero()
+    {
+        return Integral2DSize(0, 0);
+    }
 
     constexpr Integral2DSize(
-        int width,
-        int height)
-        : Width(width)
-        , Height(height)
+        int _width,
+        int _height)
+        : width(_width)
+        , height(_height)
     {}
 
     bool operator==(Integral2DSize const & other) const
     {
-        return Width == other.Width
-            && Height == other.Height;
+        return width == other.width
+            && height == other.height;
+    }
+
+    bool operator!=(Integral2DSize const & other) const
+    {
+        return !(*this == other);
+    }
+
+    inline Integral2DSize operator*(int factor) const
+    {
+        return Integral2DSize(
+            this->width * factor,
+            this->height * factor);
+    }
+
+    inline int GetLinearCount() const
+    {
+        return this->width * this->height;
+    }
+
+    inline Integral2DSize Union(Integral2DSize const & other) const
+    {
+        return Integral2DSize(
+            std::max(this->width, other.width),
+            std::max(this->height, other.height));
+    }
+
+    inline Integral2DSize Intersection(Integral2DSize const & other) const
+    {
+        return Integral2DSize(
+            std::min(this->width, other.width),
+            std::min(this->height, other.height));
+    }
+
+    std::string ToString() const
+    {
+        std::stringstream ss;
+        ss << width << "x" << height;
+        return ss.str();
     }
 };
+
+#pragma pack(pop)
 
 inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, IntegralPointCoordinates const & p)
 {
     os << p.ToString();
     return os;
 }
+
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, Integral2DSize const & is)
+{
+    os << is.ToString();
+    return os;
+}
+
 
 /*
  * Octants, i.e. the direction of a spring connecting two neighbors.
