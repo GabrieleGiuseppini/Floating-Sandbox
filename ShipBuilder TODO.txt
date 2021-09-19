@@ -1,19 +1,32 @@
 https://gamejolt.com/x/permalink/comment/11457002
 
-- Edit/Undo:
-	- Every edit action (pencil, line, flood, paste, rectangle, eraser, etc.) is atomically implemented by one function call in ModelController
-	- Args of it are also in an "EditAction" struct (base + derived hierarchy)
-	- EditAction works with double-dispatch, exposing an Apply() taking ModelController to act on it
-	- Undo entries:
-		- UndoEntry is not a hierarchy; it contains two EditAction's: UndoEditAction and RedoEditAction
-			- e.g. after pencil or flood: contains StructuralRegionEditAction x 2
-		- Exposes:
-			- string GetTitle()
-			- std::uint64_t GetCost()
-			- void Undo(ModelController &)
-			- void Redo(ModelController &)		
+- Nail down Y coordinates
+	- Load Ship
+		- MainFrame::LoadShip -> Definition -> pass definition to ModelController (via Controller)
+
+- EditAction/Undo:
+	- Every edit action (pencil, line, flood, paste, rectangle, eraser, etc.) is atomically implemented by one *explicit* function call in ModelController
+	- UndoEntry contains two undo actions: UndoEditAction and RedoEditAction, part of a (shallow) hierarchy containing:
+		- Regions
+		- Resize
+		- etc.
+	- Undo last night's work
+		- Nuke EditAction altogether
+	- Do UndoAction hierarchy
+	- UndoEntry exposes:
+		- string GetTitle()
+		- std::uint64_t GetCost()
+		- void Undo(ModelController &)
+			- Double-dispatch: invokes ModelController::method_for_region_or_resize, with isLast flag for view update
+		- void Redo(ModelController &)		
 
 - ModelController:
+	- StructuralRegionFillEtc(...args...) -> uq_ptr<UndoEntry>
+		- Clear previews - via private method
+		- Do stuff
+		- Update view
+		- Bake and return UndoEntry
+	- TODOOLD
 	- Edit(EditAction) -> uq_ptr<UndoEntry>
 		- Clear previews - TODO
 		- EditAction::Apply(this) -> uq_ptr<EditAction> (for undo)

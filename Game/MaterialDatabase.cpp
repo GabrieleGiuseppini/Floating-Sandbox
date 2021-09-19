@@ -115,6 +115,12 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
                 renderColor,
                 materialObject);
 
+            // Make sure color key does not match the "empty" color key
+            if (colorKey == EmptyMaterialColorKey)
+            {
+                throw GameException("Structural material \"" + material.Name + "\" has the same color key as the \"empty material\"");
+            }
+
             // Make sure there are no dupes
             if (structuralMaterialsMap.count(colorKey) != 0)
             {
@@ -225,10 +231,17 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
             renderColor = Utils::Hex2RgbColor(renderColorIt->second.get<std::string>());
         }
 
+        // Create instance of this material
         ElectricalMaterial const material = ElectricalMaterial::Create(
             0,
             renderColor,
             materialObject);
+
+        // Make sure color key does not match the "empty" color key
+        if (colorKey == EmptyMaterialColorKey)
+        {
+            throw GameException("Electrical material \"" + material.Name + "\" has the same color key as the \"empty material\"");
+        }
 
         // Make sure there are no dupes
         if (nonInstancedElectricalMaterialsMap.count(colorKey) != 0

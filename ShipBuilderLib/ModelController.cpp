@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "ModelController.h"
 
+#include <Game/MaterialDatabase.h>
+
 #include <cassert>
 
 namespace ShipBuilder {
@@ -184,7 +186,7 @@ std::unique_ptr<EditAction> ModelController::StructuralRegionFill(
 
     rgbaColor const renderColor = material != nullptr
         ? rgbaColor(material->RenderColor)
-        : rgbaColor(255, 255, 255, 0);
+        : rgbaColor(MaterialDatabase::EmptyMaterialColorKey, 255);
 
     for (int y = origin.y; y < origin.y + size.height; ++y)
     {

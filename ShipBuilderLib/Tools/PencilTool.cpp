@@ -123,7 +123,7 @@ void PencilTool<TMaterial>::ApplyEditAt(
 
     // TODO: publish dirtyness
 
-    // Force refresh
+    // Force view refresh
     mUserInterface.RefreshView();
 }
 

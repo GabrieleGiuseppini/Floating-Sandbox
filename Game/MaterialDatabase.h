@@ -29,6 +29,8 @@ public:
 
     using ColorKey = rgbColor;
 
+    static ColorKey constexpr EmptyMaterialColorKey = ColorKey(255, 255, 255);
+
     template<typename TMaterial>
     struct Palette
     {

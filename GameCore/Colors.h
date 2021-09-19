@@ -153,6 +153,16 @@ public:
     {
     }
 
+    inline constexpr rgbaColor(
+        rgbColor const & c,
+        uint8_t _a)
+        : r(c.r)
+        , g(c.g)
+        , b(c.b)
+        , a(_a)
+    {
+    }
+
     inline constexpr explicit rgbaColor(vec4f const & c)
         : r(static_cast<uint8_t>(c.x * 255.0f + 0.5f))
         , g(static_cast<uint8_t>(c.y * 255.0f + 0.5f))
