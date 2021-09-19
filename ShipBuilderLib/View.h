@@ -112,7 +112,7 @@ public:
 
     // Sticky
     void UpdateStructuralTextureRegion(
-        RgbaImageData const & texture,
+        rgbaColor const * regionPixels,
         int xOffset,
         int yOffset,
         int width,

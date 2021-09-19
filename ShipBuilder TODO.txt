@@ -1,17 +1,5 @@
 https://gamejolt.com/x/permalink/comment/11457002
 
-- Fix region update
-
-+ EditAction/Undo:
-	+ Every edit action (pencil, line, flood, paste, rectangle, eraser, etc.) is atomically implemented by one *explicit* function call in ModelController
-	+ UndoEntry contains two undo actions: UndoEditAction and RedoEditAction, part of a (shallow) hierarchy containing:
-		+ Regions
-		- Resize
-		- etc.
-	+ Undo last night's work
-		+ Nuke EditAction altogether
-	+ Do UndoAction hierarchy
-
 - Click-And-Draw use case:
 	- Pencil tool (*)
 		+ UndoStack.h/cpp, w/IUndoEntry interface w/UndoEntryType enum
@@ -19,15 +7,19 @@ https://gamejolt.com/x/permalink/comment/11457002
 		+ View:
 			+ Upload method for texture *region*
 		= EditAction for it
-			- Nail down Y coordinates
 			- Undo: only baked and added at mouse up, containing whole affected region
-				- Tool makes clone of entire region at mouse down
-				- At each pixel edit, tool updates region's origin and size
-				- At mouse up, tool makes UndoEntry with clone of material region 
+				- Spec:
+					- Tool makes clone of entire region at mouse down
+					- At each pixel edit, tool updates region's origin and size
+					- At mouse up, tool makes UndoEntry with clone of material region 
+				- Impl:
+					- TODO: LayerBackup: for all layers? Hierarchy on LayerType, base has...?
+					- Tool has std::opt<InteractionState> with AABBi and clone of entire region (LayerBackup)
+					- At mouse up, tool makes UndoEntry with clone of material region 
 					- Model::MakeStructuralLayerBackup() -> LayerBackup
 						- LayerBackup: may be later "regionized" (restricted)
-						- TODOHERE: hierarchy?
-						- Model::Restore(ModelBackup)
+						- Hierarchy on LayerType
+						- Model::Restore(LayerBackup)
 					- Restored via ModelController::Restore(ModelBackup)
 				- ModelController::XXXRegionFill does not return UndoEntry anymore
 		- Hook UndoEntry to UndoStack

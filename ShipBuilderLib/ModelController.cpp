@@ -96,8 +96,22 @@ std::unique_ptr<UndoEntry> ModelController::StructuralRegionFill(
         }
     }
 
+    //
     // Update view
-    UploadStructuralLayerToView(origin, size);
+    //
+
+    if (size.height == 1)
+    {
+        // Just one row - upload partial
+        UploadStructuralLayerRowToView(
+            origin,
+            size.width);
+    }
+    else
+    {
+        // More than one row - upload whole
+        UploadStructuralLayerToView();
+    }
 
     //
     // Bake undo entry
@@ -229,16 +243,18 @@ void ModelController::UploadStructuralLayerToView()
     mView.UploadStructuralTexture(mModel.GetStructuralRenderColorTexture());
 }
 
-void ModelController::UploadStructuralLayerToView(
+void ModelController::UploadStructuralLayerRowToView(
     WorkSpaceCoordinates const & origin,
-    WorkSpaceSize const & size)
+    int width)
 {
+    int const linearOffset = origin.y * mModel.GetWorkSpaceSize().width + origin.x;
+
     mView.UpdateStructuralTextureRegion(
-        mModel.GetStructuralRenderColorTexture(),
+        &(mModel.GetStructuralRenderColorTexture().Data[linearOffset]),
         origin.x,
         origin.y,
-        size.width,
-        size.height);
+        width,
+        1);
 }
 
 }

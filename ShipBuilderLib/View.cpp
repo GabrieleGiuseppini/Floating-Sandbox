@@ -269,7 +269,7 @@ void View::UploadStructuralTexture(RgbaImageData const & texture)
 }
 
 void View::UpdateStructuralTextureRegion(
-    RgbaImageData const & texture,
+    rgbaColor const * regionPixels,
     int xOffset,
     int yOffset,
     int width,
@@ -281,7 +281,7 @@ void View::UpdateStructuralTextureRegion(
 
     // Upload texture region
     GameOpenGL::UploadTextureRegion(
-        texture.Data.get(),
+        regionPixels,
         xOffset,
         yOffset,
         width,

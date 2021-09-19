@@ -96,9 +96,9 @@ private:
 
     void UploadStructuralLayerToView();
 
-    void UploadStructuralLayerToView(
+    void UploadStructuralLayerRowToView(
         WorkSpaceCoordinates const & origin,
-        WorkSpaceSize const & size);
+        int width);
 
 private:
 
