@@ -259,12 +259,14 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, Sequ
 template<typename TIntegralTag>
 struct _IntegralSize
 {
-    int width;
-    int height;
+    using integral_type = int;
+
+    integral_type width;
+    integral_type height;
 
     constexpr _IntegralSize(
-        int _width,
-        int _height)
+        integral_type _width,
+        integral_type _height)
         : width(_width)
         , height(_height)
     {}
@@ -272,8 +274,8 @@ struct _IntegralSize
     static _IntegralSize<TIntegralTag> FromFloat(vec2f const & vec)
     {
         return _IntegralSize<TIntegralTag>(
-            static_cast<int>(std::round(vec.x)),
-            static_cast<int>(std::round(vec.y)));
+            static_cast<integral_type>(std::round(vec.x)),
+            static_cast<integral_type>(std::round(vec.y)));
     }
 
     inline bool operator==(_IntegralSize<TIntegralTag> const & other) const
@@ -287,7 +289,7 @@ struct _IntegralSize
         return !(*this == other);
     }
 
-    inline _IntegralSize<TIntegralTag> operator*(int factor) const
+    inline _IntegralSize<TIntegralTag> operator*(integral_type factor) const
     {
         return _IntegralSize<TIntegralTag>(
             this->width * factor,
@@ -341,12 +343,14 @@ using DisplayPhysicalSize = _IntegralSize<struct DisplayPhysicalTag>;
 template<typename TIntegralTag>
 struct _IntegralCoordinates
 {
-    int x;
-    int y;
+    using integral_type = int;
 
-    _IntegralCoordinates(
-        int _x,
-        int _y)
+    integral_type x;
+    integral_type y;
+
+    constexpr _IntegralCoordinates(
+        integral_type _x,
+        integral_type _y)
         : x(_x)
         , y(_y)
     {}
@@ -354,8 +358,8 @@ struct _IntegralCoordinates
     static _IntegralCoordinates<TIntegralTag> FromFloat(vec2f const & vec)
     {
         return _IntegralCoordinates<TIntegralTag>(
-            static_cast<int>(std::round(vec.x)),
-            static_cast<int>(std::round(vec.y)));
+            static_cast<integral_type>(std::round(vec.x)),
+            static_cast<integral_type>(std::round(vec.y)));
     }
 
     inline bool operator==(_IntegralCoordinates<TIntegralTag> const & other) const
@@ -389,7 +393,7 @@ struct _IntegralCoordinates
         return x >= 0 && x < rect.width && y >= 0 && y < rect.height;
     }
 
-    _IntegralCoordinates<TIntegralTag> FlipY(int height) const
+    _IntegralCoordinates<TIntegralTag> FlipY(integral_type height) const
     {
         assert(height > y);
         return _IntegralCoordinates<TIntegralTag>(x, height - 1 - y);

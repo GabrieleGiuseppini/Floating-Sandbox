@@ -7,8 +7,8 @@ https://gamejolt.com/x/permalink/comment/11457002
 + SB::ViewModel: ortho matrix: see again why ShipSpace says positive bottom
 	+ Anchor to the top
 
-- Buffer2D: see if can have b[x][y]
-	- Unit tests
+= Buffer2D: see if can have b[x][y]
+	+ Unit tests
 	- Nuke all forced vec2i() conversions
 		- StrengthRandomizer
 		- ShipBuilder::ModelController
