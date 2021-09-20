@@ -182,27 +182,27 @@ private:
         // Ortho Matrix:
         //  ShipCoordinates * OrthoMatrix => NDC
         //
-        //  Ship: (0, W/H) (positive right-bottom) // TODOHERE
-        //  NDC : (-1.0, +1.0) (positive right-top)
+        //  Ship: (0, W), (0, H) (positive right-top)
+        //  NDC : (-1.0, -1.0 + 2W/DisplayW), (+1.0 - 2H/DisplayH, +1.0) (positive right-top)
         //
         // We add a (left, top) margin whose physical pixel size equals the physical pixel
-        // size if one ship space pixel at max zoom
+        // size if one ship space pixel at max zoom.
         //
-        // SDsp is display scaled by zoom
+        // SDsp is display scaled by zoom.
         //
-        //  2 / SDspW                0                        0                0
-        //  0                        -2 / SDspH               0                0
-        //  0                        0                        0                0
-        //  -2 * CamX / SDspW - 1    2 * CamY / SDspH + 1     0                1
+        //  2 / SDspW                0                               0                0
+        //  0                        2 / SDspH                       0                0
+        //  0                        0                               0                0
+        //  -2 * CamX / SDspW - 1    1 - 2 * (H - CamY) / SDspH      0                1
 
         float const sDspW = static_cast<float>(mDisplayPhysicalSize.width) * mDisplayPhysicalToShipSpaceFactor;
         float const sDspH = static_cast<float>(mDisplayPhysicalSize.height) * mDisplayPhysicalToShipSpaceFactor;
 
         // Recalculate Ortho Matrix cells (r, c)
         mOrthoMatrix[0][0] = 2.0f / sDspW;
-        mOrthoMatrix[1][1] = -2.0f / sDspH;
+        mOrthoMatrix[1][1] = 2.0f / sDspH;
         mOrthoMatrix[3][0] = -2.0f * (static_cast<float>(mCam.x) - MarginDisplayShipSize) / sDspW - 1.0f;
-        mOrthoMatrix[3][1] = 2.0f * (static_cast<float>(mCam.y) - MarginDisplayShipSize) / sDspH + 1.0f;
+        mOrthoMatrix[3][1] = 1.0f - 2.0f * static_cast<float>(mShipSize.height - mCam.y) / sDspH;
     }
 
     static float CalculateZoomFactor(int zoom)

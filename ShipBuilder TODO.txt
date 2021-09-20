@@ -1,11 +1,11 @@
 https://gamejolt.com/x/permalink/comment/11457002
 
-= Move/merge integral coords/size from shipbuilder to game
++ Move/merge integral coords/size from shipbuilder to game
 	+ Game: "ShipSpace" and "DisplayPhysical/Logical"		
 	+ ShipBuilder
-	- ShipFactoryTypes: replace vec2i with IntegralCoordinates - or any other more appropriate coord
 
-- SB::ViewModel: ortho matrix: see again why ShipSpace says positive bottom
++ SB::ViewModel: ortho matrix: see again why ShipSpace says positive bottom
+	+ Anchor to the top
 
 - Buffer2D: see if can have b[x][y]
 	- Unit tests
@@ -13,16 +13,24 @@ https://gamejolt.com/x/permalink/comment/11457002
 		- StrengthRandomizer
 		- ShipBuilder::ModelController
 
+- GameTypes: "layer buffer" types
+	- StructuralLayerBuffer == Buffer2D<StructuralElement>
+		- StructuralElement = <StructuralMaterial*>
+	- ElectricalLayerBuffer == Buffer2D<ElectricalElement>
+		- ElectricalMaterial = <ElectricalMaterial*, instance ID>
+	- RopesLayerBuffer == Buffer2D<RopeElement>
+		- RopeElement = <StructuralMaterial*, EndPointID, OtherEndpointCoords>
+	- TextureLayerBuffer == Buffer2D<rgbaColor>
+- Use at ShipFactory
+	- ShipFactoryTypes::ShipFactoryPoint: nuke vec2i and replace with ShipSpaceCoordinates (and user-facing coords being ImageCoordinates)
+
+- See if can nuke Matrix2
+
+----------------------
+
 - Undo hierarchy:
 	- TODO: the below @ Game
-	- We have four layer buffer types (all @ ShipBuilderTypes), an instance of each is owned by Model (as uq_ptr)
-		- StructuralLayerBuffer == Buffer2D<StructuralElement>
-			- StructuralElement = <StructuralMaterial>
-		- ElectricalLayerBuffer == Buffer2D<ElectricalElement>
-			- ElectricalMaterial = <ElectricalMaterial, instance ID>
-		- RopesLayerBuffer == Buffer2D<RopeElement>
-			- RopeElement = <RopeEndpointsPair>
-		- TextureLayerBuffer == Buffer2D<rgbaColor>
+	- Model contains the four new layer buffer types (as uq_ptr)
 	- There are also four subtypes of UndoEditAction, together with e.g. "resize" or "all layers"
 		- These four are all implemented via a single templated class, templated on TLayerElement
 		- Apply() invokes one of ModelController::RestoreStructural/Electrical/Ropes/TextureLayer, with constexpr switch
@@ -49,6 +57,7 @@ https://gamejolt.com/x/permalink/comment/11457002
 							- Buffer2D: has method to be "regionized" (restricted)
 							- ModelController::RestoreStructuralLayer(StructuralLayerBuffer)
 						- Then release mouse
+						- The set Model::StructuralLayer as dirty
 					- Restored via ModelController::RestoreStructuralLayer(StructuralLayerBuffer)
 				- ModelController::XXXRegionFill does not return UndoEntry anymore
 		- Hook UndoEntry to UndoStack
