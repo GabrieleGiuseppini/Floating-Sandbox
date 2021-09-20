@@ -37,7 +37,6 @@ set  (SOURCES
 	GameTypes.h
 	GameWallClock.h
 	ImageData.h
-	ImageSize.h
 	ImageTools.cpp
 	ImageTools.h
 	IntegralLinearSliderCore.h

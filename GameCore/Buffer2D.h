@@ -11,14 +11,18 @@
 #include <algorithm>
 #include <memory>
 
-template <typename TElement, typename TSize>
+template <typename TElement, typename TIntegralTag>
 struct Buffer2D
 {
 public:
 
     using element_type = TElement;
+    using coordinates_type = _IntegralCoordinates<TIntegralTag>;
+    using size_type = _IntegralSize<TIntegralTag>;
 
-    TSize const Size;
+public:
+
+    size_type const Size;
     std::unique_ptr<TElement[]> Data;
 
     Buffer2D(
@@ -46,7 +50,7 @@ public:
     }
 
     Buffer2D(
-        TSize size,
+        size_type size,
         std::unique_ptr<TElement[]> data)
         : Size(size)
         , Data(std::move(data))
@@ -83,10 +87,9 @@ public:
             std::move(newData));
     }
 
-    template<typename TCoordinates>
     std::unique_ptr<Buffer2D> MakeCopy(
-        TCoordinates const & regionOrigin,
-        TSize const & regionSize)
+        coordinates_type const & regionOrigin,
+        size_type const & regionSize)
     {
         auto newData = std::make_unique<TElement[]>(regionSize.width * regionSize.height);
         for (int targetY = 0; targetY < regionSize.height; ++targetY)
@@ -105,14 +108,12 @@ public:
             std::move(newData));
     }
 
-    template<typename TCoordinates>
-    TElement & operator[](TCoordinates const & index)
+    TElement & operator[](coordinates_type const & index)
     {
         return const_cast<TElement &>((static_cast<Buffer2D const &>(*this))[index]);
     }
 
-    template<typename TCoordinates>
-    TElement const & operator[](TCoordinates const & index) const
+    TElement const & operator[](coordinates_type const & index) const
     {
         assert(index.IsInRect(Size));
 

@@ -31,7 +31,6 @@
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
-#include <GameCore/ImageSize.h>
 #include <GameCore/ProgressCallback.h>
 #include <GameCore/RunningAverage.h>
 #include <GameCore/SysSpecifics.h>
@@ -115,19 +114,19 @@ public:
         return mRenderParameters.View.GetVisibleWorld();
     }
 
-    LogicalPixelSize const & GetCanvasLogicalPixelSize() const
+    DisplayLogicalSize const & GetCanvasLogicalSize() const
     {
-        return mRenderParameters.View.GetCanvasLogicalPixelSize();
+        return mRenderParameters.View.GetCanvasLogicalSize();
     }
 
-    PhysicalPixelSize const & GetCanvasPhysicalPixelSize() const
+    DisplayPhysicalSize const & GetCanvasPhysicalSize() const
     {
-        return mRenderParameters.View.GetCanvasPhysicalPixelSize();
+        return mRenderParameters.View.GetCanvasPhysicalSize();
     }
 
-    void SetCanvasLogicalPixelSize(LogicalPixelSize const & canvasSize)
+    void SetCanvasLogicalSize(DisplayLogicalSize const & canvasSize)
     {
-        mRenderParameters.View.SetCanvasLogicalPixelSize(canvasSize);
+        mRenderParameters.View.SetCanvasLogicalSize(canvasSize);
         mRenderParameters.IsViewDirty = true;
         mRenderParameters.IsCanvasSizeDirty = true;
     }
@@ -565,12 +564,12 @@ public:
     // Screen <-> World transformations
     //
 
-    inline vec2f ScreenToWorld(LogicalPixelCoordinates const & screenCoordinates) const
+    inline vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const
     {
         return mRenderParameters.View.ScreenToWorld(screenCoordinates);
     }
 
-    inline vec2f ScreenOffsetToWorldOffset(LogicalPixelSize const & screenOffset) const
+    inline vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const
     {
         return mRenderParameters.View.ScreenOffsetToWorldOffset(screenOffset);
     }

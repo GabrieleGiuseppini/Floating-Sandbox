@@ -9,7 +9,6 @@
 
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
-#include <GameCore/ImageSize.h>
 
 #include <cstdint>
 
@@ -93,8 +92,8 @@ struct RenderParameters
     bool IsDisplayUnitsSystemDirty;
 
     RenderParameters(
-        LogicalPixelSize const & initialCanvasSize,
-        int logicalToPhysicalPixelFactor);
+        DisplayLogicalSize const & initialCanvasSize,
+        int logicalToPhysicalDisplayFactor);
 
     RenderParameters TakeSnapshotAndClear();
 };

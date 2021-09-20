@@ -16,8 +16,8 @@ namespace ShipBuilder {
  * This class maintains the logic for transformations between the various coordinates.
  *
  * Terminology:
- *  - WorkSpace: has the pixel size of the structure (equivalent of ::World)
- *  - WorkSpaceCoordinates
+ *  - ShipSpace: has the pixel size of the structure (equivalent of ::World)
+ *  - ShipSpaceCoordinates
  *  - DisplayLogical: has the logical display (window) size (equivalent of ::Logical)
  *  - DisplayLogicalCoordinates: the logical display coordinates (type @ ShipBuilderTypes)
  *  - DisplayPixel: has the pixel display (window) size (equivalent of ::Pixel)
@@ -32,7 +32,7 @@ public:
 public:
 
     ViewModel(
-        WorkSpaceSize initialWorkSpaceSize,
+        ShipSpaceSize initialShipSize,
         DisplayLogicalSize initialDisplaySize,
         int logicalToPhysicalPixelFactor)
         : mZoom(0)
@@ -42,8 +42,8 @@ public:
         , mDisplayPhysicalSize(
             initialDisplaySize.width * logicalToPhysicalPixelFactor,
             initialDisplaySize.height * logicalToPhysicalPixelFactor)
-        , mWorkSpaceSize(initialWorkSpaceSize)
-        , mDisplayPhysicalToWorkSpaceFactor(0) // Will be recalculated
+        , mShipSize(initialShipSize)
+        , mDisplayPhysicalToShipSpaceFactor(0) // Will be recalculated
         , mCamLimits(0, 0) // Will be recalculated
     {
         //
@@ -78,14 +78,14 @@ public:
         return mZoom;
     }
 
-    WorkSpaceCoordinates const & GetCameraWorkSpacePosition() const
+    ShipSpaceCoordinates const & GetCameraShipSpacePosition() const
     {
         return mCam;
     }
 
-    WorkSpaceCoordinates const & SetCameraWorkSpacePosition(WorkSpaceCoordinates const & pos)
+    ShipSpaceCoordinates const & SetCameraShipSpacePosition(ShipSpaceCoordinates const & pos)
     {
-        mCam = WorkSpaceCoordinates(
+        mCam = ShipSpaceCoordinates(
             std::min(pos.x, mCamLimits.width),
             std::min(pos.y, mCamLimits.height));
 
@@ -94,9 +94,9 @@ public:
         return mCam;
     }
 
-    void SetWorkSpaceSize(WorkSpaceSize const & size)
+    void SetShipSize(ShipSpaceSize const & size)
     {
-        mWorkSpaceSize = size;
+        mShipSize = size;
 
         RecalculateAttributes();
     }
@@ -117,40 +117,40 @@ public:
         RecalculateAttributes();
     }
 
-    WorkSpaceSize GetCameraRange() const
+    ShipSpaceSize GetCameraRange() const
     {
-        WorkSpaceSize const visibleWorkSpaceSize = GetVisibleWorkSpaceSize();
+        ShipSpaceSize const visibleShipSpaceSize = GetVisibleShipSpaceSize();
 
-        return WorkSpaceSize(
-            mWorkSpaceSize.width + MarginDisplayWorkSize * 2,
-            mWorkSpaceSize.height + MarginDisplayWorkSize * 2);
+        return ShipSpaceSize(
+            mShipSize.width + MarginDisplayShipSize * 2,
+            mShipSize.height + MarginDisplayShipSize * 2);
     }
 
-    WorkSpaceSize GetCameraThumbSize() const
+    ShipSpaceSize GetCameraThumbSize() const
     {
-        WorkSpaceSize const visibleWorkSpaceSize = GetVisibleWorkSpaceSize();
+        ShipSpaceSize const visibleShipSpaceSize = GetVisibleShipSpaceSize();
 
-        return WorkSpaceSize(
-            std::min(mWorkSpaceSize.width + MarginDisplayWorkSize * 2, visibleWorkSpaceSize.width),
-            std::min(mWorkSpaceSize.height + MarginDisplayWorkSize * 2, visibleWorkSpaceSize.height));
+        return ShipSpaceSize(
+            std::min(mShipSize.width + MarginDisplayShipSize * 2, visibleShipSpaceSize.width),
+            std::min(mShipSize.height + MarginDisplayShipSize * 2, visibleShipSpaceSize.height));
     }
 
-    WorkSpaceSize GetVisibleWorkSpaceSize() const
+    ShipSpaceSize GetVisibleShipSpaceSize() const
     {
-        return WorkSpaceSize(
-            DisplayPhysicalToWorkSpace(mDisplayPhysicalSize.width),
-            DisplayPhysicalToWorkSpace(mDisplayPhysicalSize.height));
+        return ShipSpaceSize(
+            DisplayPhysicalToShipSpace(mDisplayPhysicalSize.width),
+            DisplayPhysicalToShipSpace(mDisplayPhysicalSize.height));
     }
 
     //
     // Coordinate transformations
     //
 
-    WorkSpaceCoordinates ScreenToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    ShipSpaceCoordinates ScreenToShipSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
-        return WorkSpaceCoordinates(
-            DisplayPhysicalToWorkSpace(displayCoordinates.x * mLogicalToPhysicalPixelFactor) - MarginDisplayWorkSize + mCam.x,
-            mWorkSpaceSize.height - 1 - (DisplayPhysicalToWorkSpace(displayCoordinates.y * mLogicalToPhysicalPixelFactor) - MarginDisplayWorkSize + mCam.y));
+        return ShipSpaceCoordinates(
+            DisplayPhysicalToShipSpace(displayCoordinates.x * mLogicalToPhysicalPixelFactor) - MarginDisplayShipSize + mCam.x,
+            mShipSize.height - 1 - (DisplayPhysicalToShipSpace(displayCoordinates.y * mLogicalToPhysicalPixelFactor) - MarginDisplayShipSize + mCam.y));
     }
 
     ProjectionMatrix const & GetOrthoMatrix() const
@@ -162,31 +162,31 @@ private:
 
     void RecalculateAttributes()
     {
-        // Display physicial => Work factor
-        mDisplayPhysicalToWorkSpaceFactor = CalculateZoomFactor(mZoom);
+        // Display physicial => Ship factor
+        mDisplayPhysicalToShipSpaceFactor = CalculateZoomFactor(mZoom);
 
         // Recalculate pan limits
-        mCamLimits = WorkSpaceSize(
+        mCamLimits = ShipSpaceSize(
             std::max(
-                (2 + mWorkSpaceSize.width) - DisplayPhysicalToWorkSpace(mDisplayPhysicalSize.width),
+                (2 + mShipSize.width) - DisplayPhysicalToShipSpace(mDisplayPhysicalSize.width),
                 0),
             std::max(
-                (2 + mWorkSpaceSize.height) - DisplayPhysicalToWorkSpace(mDisplayPhysicalSize.height),
+                (2 + mShipSize.height) - DisplayPhysicalToShipSpace(mDisplayPhysicalSize.height),
                 0));
 
         // Adjust camera accordingly
-        mCam = WorkSpaceCoordinates(
+        mCam = ShipSpaceCoordinates(
             std::min(mCam.x, mCamLimits.width),
             std::min(mCam.y, mCamLimits.height));
 
         // Ortho Matrix:
-        //  WorkCoordinates * OrthoMatrix => NDC
+        //  ShipCoordinates * OrthoMatrix => NDC
         //
-        //  Work: (0, W/H) (positive right-bottom)
+        //  Ship: (0, W/H) (positive right-bottom) // TODOHERE
         //  NDC : (-1.0, +1.0) (positive right-top)
         //
         // We add a (left, top) margin whose physical pixel size equals the physical pixel
-        // size if one work space pixel at max zoom
+        // size if one ship space pixel at max zoom
         //
         // SDsp is display scaled by zoom
         //
@@ -195,14 +195,14 @@ private:
         //  0                        0                        0                0
         //  -2 * CamX / SDspW - 1    2 * CamY / SDspH + 1     0                1
 
-        float const sDspW = static_cast<float>(mDisplayPhysicalSize.width) * mDisplayPhysicalToWorkSpaceFactor;
-        float const sDspH = static_cast<float>(mDisplayPhysicalSize.height) * mDisplayPhysicalToWorkSpaceFactor;
+        float const sDspW = static_cast<float>(mDisplayPhysicalSize.width) * mDisplayPhysicalToShipSpaceFactor;
+        float const sDspH = static_cast<float>(mDisplayPhysicalSize.height) * mDisplayPhysicalToShipSpaceFactor;
 
         // Recalculate Ortho Matrix cells (r, c)
         mOrthoMatrix[0][0] = 2.0f / sDspW;
         mOrthoMatrix[1][1] = -2.0f / sDspH;
-        mOrthoMatrix[3][0] = -2.0f * (static_cast<float>(mCam.x) - MarginDisplayWorkSize) / sDspW - 1.0f;
-        mOrthoMatrix[3][1] = 2.0f * (static_cast<float>(mCam.y) - MarginDisplayWorkSize) / sDspH + 1.0f;
+        mOrthoMatrix[3][0] = -2.0f * (static_cast<float>(mCam.x) - MarginDisplayShipSize) / sDspW - 1.0f;
+        mOrthoMatrix[3][1] = 2.0f * (static_cast<float>(mCam.y) - MarginDisplayShipSize) / sDspH + 1.0f;
     }
 
     static float CalculateZoomFactor(int zoom)
@@ -210,15 +210,15 @@ private:
         return std::ldexp(1.0f, -zoom);
     }
 
-    int DisplayPhysicalToWorkSpace(int size) const
+    int DisplayPhysicalToShipSpace(int size) const
     {
-        return static_cast<int>(std::floor(static_cast<float>(size) * mDisplayPhysicalToWorkSpaceFactor));
+        return static_cast<int>(std::floor(static_cast<float>(size) * mDisplayPhysicalToShipSpaceFactor));
     }
 
     template<typename TValue>
-    float WorkSpaceToDisplayLogical(TValue size) const
+    float ShipSpaceToDisplayLogical(TValue size) const
     {
-        return static_cast<float>(size) / mDisplayPhysicalToWorkSpaceFactor;
+        return static_cast<float>(size) / mDisplayPhysicalToShipSpaceFactor;
     }
 
 private:
@@ -226,19 +226,19 @@ private:
     // Constants
     static int constexpr MaxZoom = 6;
     static int constexpr MinZoom = -3;
-    static int constexpr MarginDisplayWorkSize = 1;
+    static int constexpr MarginDisplayShipSize = 1;
 
     // Primary inputs
-    int mZoom; // >=0: display pixels occupied by one work space pixel
-    WorkSpaceCoordinates mCam; // Work space coordinates of of work pixel that is visible at (0, 0) in display
+    int mZoom; // >=0: display pixels occupied by one ship space pixel
+    ShipSpaceCoordinates mCam; // Ship space coordinates of of ship pixel that is visible at (0, 0) in display
     int const mLogicalToPhysicalPixelFactor;
     DisplayLogicalSize mDisplayLogicalSize;
     DisplayPhysicalSize mDisplayPhysicalSize;
-    WorkSpaceSize mWorkSpaceSize;
+    ShipSpaceSize mShipSize;
 
     // Calculated attributes
-    float mDisplayPhysicalToWorkSpaceFactor; // # work pixels for 1 display pixel
-    WorkSpaceSize mCamLimits;
+    float mDisplayPhysicalToShipSpaceFactor; // # ship pixels for 1 display pixel
+    ShipSpaceSize mCamLimits;
     ProjectionMatrix mOrthoMatrix;
 };
 

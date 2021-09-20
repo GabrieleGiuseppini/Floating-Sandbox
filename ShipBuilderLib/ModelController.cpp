@@ -12,12 +12,12 @@
 namespace ShipBuilder {
 
 std::unique_ptr<ModelController> ModelController::CreateNew(
-    WorkSpaceSize const & workSpaceSize,
+    ShipSpaceSize const & shipSpaceSize,
     View & view)
 {
     return std::unique_ptr<ModelController>(
         new ModelController(
-            workSpaceSize,
+            shipSpaceSize,
             view));
 }
 
@@ -28,15 +28,15 @@ std::unique_ptr<ModelController> ModelController::CreateForShip(
     // TODOHERE
     return std::unique_ptr<ModelController>(
         new ModelController(
-            WorkSpaceSize(400, 200),
+            ShipSpaceSize(400, 200),
             view));
 }
 
 ModelController::ModelController(
-    WorkSpaceSize const & workSpaceSize,
+    ShipSpaceSize const & shipSpaceSize,
     View & view)
     : mView(view)
-    , mModel(workSpaceSize)
+    , mModel(shipSpaceSize)
 {
     UploadStructuralLayerToView();
 }
@@ -63,8 +63,8 @@ void ModelController::SetStructuralLayer(/*TODO*/)
 
 std::unique_ptr<UndoEntry> ModelController::StructuralRegionFill(
     StructuralMaterial const * material,
-    WorkSpaceCoordinates const & origin,
-    WorkSpaceSize const & size)
+    ShipSpaceCoordinates const & origin,
+    ShipSpaceSize const & size)
 {
     //
     // Create undo edit action
@@ -89,10 +89,9 @@ std::unique_ptr<UndoEntry> ModelController::StructuralRegionFill(
     {
         for (int x = origin.x; x < origin.x + size.width; ++x)
         {
-            vec2i const coords = vec2i(x, y);
-
-            structuralMaterialMatrix[coords] = material;
-            structuralRenderColorTexture[coords] = renderColor;
+            // TODO: see if can use [][]
+            structuralMaterialMatrix[ShipSpaceCoordinates(x, y)] = material;
+            structuralRenderColorTexture[ImageCoordinates(x, y)] = renderColor;
         }
     }
 
@@ -126,7 +125,7 @@ std::unique_ptr<UndoEntry> ModelController::StructuralRegionFill(
 
 std::unique_ptr<UndoEntry> ModelController::StructuralRegionReplace(
     MaterialBuffer<StructuralMaterial> const & region,
-    WorkSpaceCoordinates const & origin)
+    ShipSpaceCoordinates const & origin)
 {
     // TODOHERE
     return nullptr;
@@ -163,8 +162,8 @@ void ModelController::RemoveElectricalLayer()
 
 std::unique_ptr<UndoEntry> ModelController::ElectricalRegionFill(
     ElectricalMaterial const * material,
-    WorkSpaceCoordinates const & origin,
-    WorkSpaceSize const & size)
+    ShipSpaceCoordinates const & origin,
+    ShipSpaceSize const & size)
 {
     // TODO
     return nullptr;
@@ -172,7 +171,7 @@ std::unique_ptr<UndoEntry> ModelController::ElectricalRegionFill(
 
 std::unique_ptr<UndoEntry> ModelController::ElectricalRegionReplace(
     MaterialBuffer<ElectricalMaterial> const & region,
-    WorkSpaceCoordinates const & origin)
+    ShipSpaceCoordinates const & origin)
 {
     // TODOHERE
     return nullptr;
@@ -244,10 +243,10 @@ void ModelController::UploadStructuralLayerToView()
 }
 
 void ModelController::UploadStructuralLayerRowToView(
-    WorkSpaceCoordinates const & origin,
+    ShipSpaceCoordinates const & origin,
     int width)
 {
-    int const linearOffset = origin.y * mModel.GetWorkSpaceSize().width + origin.x;
+    int const linearOffset = origin.y * mModel.GetShipSize().width + origin.x;
 
     mView.UpdateStructuralTextureRegion(
         &(mModel.GetStructuralRenderColorTexture().Data[linearOffset]),

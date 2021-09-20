@@ -157,7 +157,7 @@ ShipDefinitionFile ShipDefinitionFile::Load(std::filesystem::path definitionFile
                     std::piecewise_construct,
                     std::forward_as_tuple(instanceIndex),
                     std::forward_as_tuple(
-                        panelX.has_value() ? IntegralPointCoordinates(int(*panelX), int(*panelY)) : std::optional<IntegralPointCoordinates>(),
+                        panelX.has_value() ? IntegralCoordinates(int(*panelX), int(*panelY)) : std::optional<IntegralCoordinates>(),
                         label,
                         isHidden));
 

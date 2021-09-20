@@ -41,7 +41,7 @@ public:
 
     MaterialRegionUndoEditAction(
         std::unique_ptr<MaterialBuffer<TMaterial>> && region,
-        WorkSpaceCoordinates const & origin)
+        ShipSpaceCoordinates const & origin)
         : mRegion(std::move(region))
         , mOrigin(origin)
     {}
@@ -51,7 +51,7 @@ public:
 private:
 
     std::unique_ptr<MaterialBuffer<TMaterial>> mRegion;
-    WorkSpaceCoordinates mOrigin;
+    ShipSpaceCoordinates mOrigin;
 };
 
 /*

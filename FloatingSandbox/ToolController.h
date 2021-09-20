@@ -80,7 +80,7 @@ public:
     // Getters
     //
 
-    LogicalPixelCoordinates const & GetMouseScreenCoordinates() const
+    DisplayLogicalCoordinates const & GetMouseScreenCoordinates() const
     {
         return mInputState.MousePosition;
     }
@@ -89,7 +89,7 @@ public:
     // External event handlers
     //
 
-    void OnMouseMove(LogicalPixelCoordinates const & mouseScreenPosition);
+    void OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition);
 
     void OnLeftMouseDown();
 

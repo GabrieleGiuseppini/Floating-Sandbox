@@ -61,19 +61,19 @@ ElectricalPencilTool::ElectricalPencilTool(
 template<typename TMaterial>
 void PencilTool<TMaterial>::OnMouseMove(InputState const & inputState)
 {
-    // Calculate work coordinates
-    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.ScreenToWorkSpace(inputState.MousePosition);
+    // Calculate ship coordinates
+    ShipSpaceCoordinates mouseShipSpaceCoordinates = mView.ScreenToShipSpace(inputState.MousePosition);
 
-    // Check if within work canvas
-    if (mouseWorkSpaceCoordinates.IsInRect(mModelController.GetModel().GetWorkSpaceSize()))
+    // Check if within ship canvas
+    if (mouseShipSpaceCoordinates.IsInRect(mModelController.GetModel().GetShipSize()))
     {
         if (inputState.IsLeftMouseDown)
         {
-            ApplyEditAt(mouseWorkSpaceCoordinates, MaterialPlaneType::Foreground);
+            ApplyEditAt(mouseShipSpaceCoordinates, MaterialPlaneType::Foreground);
         }
         else if (inputState.IsRightMouseDown)
         {
-            ApplyEditAt(mouseWorkSpaceCoordinates, MaterialPlaneType::Background);
+            ApplyEditAt(mouseShipSpaceCoordinates, MaterialPlaneType::Background);
         }
     }
 }
@@ -81,32 +81,32 @@ void PencilTool<TMaterial>::OnMouseMove(InputState const & inputState)
 template<typename TMaterial>
 void PencilTool<TMaterial>::OnLeftMouseDown(InputState const & inputState)
 {
-    // Calculate work coordinates
-    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.ScreenToWorkSpace(inputState.MousePosition);
+    // Calculate ship coordinates
+    ShipSpaceCoordinates mouseShipSpaceCoordinates = mView.ScreenToShipSpace(inputState.MousePosition);
 
-    // Check if within work canvas
-    if (mouseWorkSpaceCoordinates.IsInRect(mModelController.GetModel().GetWorkSpaceSize()))
+    // Check if within ship canvas
+    if (mouseShipSpaceCoordinates.IsInRect(mModelController.GetModel().GetShipSize()))
     {
-        ApplyEditAt(mouseWorkSpaceCoordinates, MaterialPlaneType::Foreground);
+        ApplyEditAt(mouseShipSpaceCoordinates, MaterialPlaneType::Foreground);
     }
 }
 
 template<typename TMaterial>
 void PencilTool<TMaterial>::OnRightMouseDown(InputState const & inputState)
 {
-    // Calculate work coordinates
-    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.ScreenToWorkSpace(inputState.MousePosition);
+    // Calculate ship coordinates
+    ShipSpaceCoordinates mouseShipSpaceCoordinates = mView.ScreenToShipSpace(inputState.MousePosition);
 
-    // Check if within work canvas
-    if (mouseWorkSpaceCoordinates.IsInRect(mModelController.GetModel().GetWorkSpaceSize()))
+    // Check if within ship canvas
+    if (mouseShipSpaceCoordinates.IsInRect(mModelController.GetModel().GetShipSize()))
     {
-        ApplyEditAt(mouseWorkSpaceCoordinates, MaterialPlaneType::Background);
+        ApplyEditAt(mouseShipSpaceCoordinates, MaterialPlaneType::Background);
     }
 }
 
 template<typename TMaterial>
 void PencilTool<TMaterial>::ApplyEditAt(
-    WorkSpaceCoordinates const & position,
+    ShipSpaceCoordinates const & position,
     MaterialPlaneType plane)
 {
     // TODOTEST
@@ -121,7 +121,7 @@ void PencilTool<TMaterial>::ApplyEditAt(
             ? mWorkbenchState.GetStructuralForegroundMaterial()
             : mWorkbenchState.GetStructuralBackgroundMaterial(),
             position,
-            WorkSpaceSize(1, 1));
+            ShipSpaceSize(1, 1));
     }
     else
     {
@@ -132,7 +132,7 @@ void PencilTool<TMaterial>::ApplyEditAt(
             ? mWorkbenchState.GetElectricalForegroundMaterial()
             : mWorkbenchState.GetElectricalBackgroundMaterial(),
             position,
-            WorkSpaceSize(1, 1));
+            ShipSpaceSize(1, 1));
     }
 
     // TODO: hook with undo stack

@@ -8,9 +8,9 @@
 namespace Render {
 
 RenderParameters::RenderParameters(
-	LogicalPixelSize const & initialCanvasSize,
-	int logicalToPhysicalPixelFactor)
-	: View(1.0f, vec2f::zero(), initialCanvasSize, logicalToPhysicalPixelFactor)
+	DisplayLogicalSize const & initialCanvasSize,
+	int logicalToPhysicalDisplayFactor)
+	: View(1.0f, vec2f::zero(), initialCanvasSize, logicalToPhysicalDisplayFactor)
 	, EffectiveAmbientLightIntensity(1.0f) // Calculated
 	// World
 	, FlatSkyColor(0x87, 0xce, 0xfa) // (cornflower blue)

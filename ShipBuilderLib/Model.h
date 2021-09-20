@@ -30,7 +30,7 @@ class Model
 {
 public:
 
-    Model(WorkSpaceSize const & workSpaceSize);
+    Model(ShipSpaceSize const & shipSize);
 
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
@@ -47,9 +47,9 @@ public:
     void SetTextureLayer(/*TODO*/);
     void RemoveTextureLayer();
 
-    WorkSpaceSize const & GetWorkSpaceSize() const
+    ShipSpaceSize const & GetShipSize() const
     {
-        return mWorkSpaceSize;
+        return mShipSize;
     }
 
     bool HasLayer(LayerType layer) const
@@ -95,11 +95,11 @@ private:
 
     void ClearIsDirty();
 
-    void MakeNewEmptyStructuralLayer(WorkSpaceSize const & size);
+    void MakeNewEmptyStructuralLayer(ShipSpaceSize const & size);
 
 private:
 
-    WorkSpaceSize mWorkSpaceSize;
+    ShipSpaceSize mShipSize;
 
     //
     // Structural Layer

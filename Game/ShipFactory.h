@@ -14,7 +14,6 @@
 #include "ShipTexturizer.h"
 
 #include <GameCore/GameTypes.h>
-#include <GameCore/ImageSize.h>
 #include <GameCore/TaskThreadPool.h>
 
 #include <algorithm>

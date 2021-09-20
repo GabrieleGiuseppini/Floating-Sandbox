@@ -6,6 +6,7 @@
 #pragma once
 
 #include <GameCore/Buffer2D.h>
+#include <GameCore/GameTypes.h>
 #include <GameCore/Vectors.h>
 
 #include <cmath>
@@ -43,124 +44,10 @@ enum class MaterialPlaneType
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-// Geometry
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-template<typename TTag>
-struct _IntegralSize
-{
-    int width;
-    int height;
-
-    _IntegralSize(
-        int _width,
-        int _height)
-        : width(_width)
-        , height(_height)
-    {}
-
-    static _IntegralSize<TTag> FromFloat(vec2f const & vec)
-    {
-        return _IntegralSize<TTag>(
-            static_cast<int>(std::round(vec.x)),
-            static_cast<int>(std::round(vec.y)));
-    }
-
-    inline bool operator==(_IntegralSize<TTag> const & other) const
-    {
-        return this->width == other.width
-            && this->height == other.height;
-    }
-
-    vec2f ToFloat() const
-    {
-        return vec2f(
-            static_cast<float>(width),
-            static_cast<float>(height));
-    }
-
-    std::string ToString() const
-    {
-        std::stringstream ss;
-        ss << "(" << width << ", " << height << ")";
-        return ss.str();
-    }
-};
-
-using WorkSpaceSize = _IntegralSize<struct WorkSpaceTag>;
-using DisplayLogicalSize = _IntegralSize<struct DisplayLogicalTag>;
-using DisplayPhysicalSize = _IntegralSize<struct DisplayPhysicalTag>;
-
-template<typename TTag>
-struct _IntegralCoordinates
-{
-    int x;
-    int y;
-
-    _IntegralCoordinates(
-        int _x,
-        int _y)
-        : x(_x)
-        , y(_y)
-    {}
-
-    static _IntegralCoordinates<TTag> FromFloat(vec2f const & vec)
-    {
-        return _IntegralCoordinates<TTag>(
-            static_cast<int>(std::round(vec.x)),
-            static_cast<int>(std::round(vec.y)));
-    }
-
-    inline bool operator==(_IntegralCoordinates<TTag> const & other) const
-    {
-        return this->x == other.x
-            && this->y == other.y;
-    }
-
-    inline _IntegralCoordinates<TTag> operator+(_IntegralSize<TTag> const & sz) const
-    {
-        return _IntegralCoordinates<TTag>(
-            this->x + sz.width,
-            this->y + sz.height);
-    }
-
-    inline _IntegralSize<TTag> operator-(_IntegralCoordinates<TTag> const & other) const
-    {
-        return _IntegralSize<TTag>(
-            this->x - other.x,
-            this->y - other.y);
-    }
-
-    template<typename TRect>
-    bool IsInRect(TRect const & rect) const
-    {
-        return x >= 0 && x < rect.width && y >= 0 && y < rect.height;
-    }
-
-    vec2f ToFloat() const
-    {
-        return vec2f(
-            static_cast<float>(x),
-            static_cast<float>(y));
-    }
-
-    std::string ToString() const
-    {
-        std::stringstream ss;
-        ss << "(" << x << ", " << y << ")";
-        return ss.str();
-    }
-};
-
-using WorkSpaceCoordinates = _IntegralCoordinates<struct WorkSpaceTag>; // Y=0 at bottom
-using DisplayLogicalCoordinates = _IntegralCoordinates<struct DisplayLogicalTag>;
-using DisplayPhysicalCoordinates = _IntegralCoordinates<struct DisplayPhysicalTag>;
-
-////////////////////////////////////////////////////////////////////////////////////////////////
 // Model
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 template<typename TMaterial>
-using MaterialBuffer = Buffer2D<TMaterial const *, WorkSpaceSize>;
+using MaterialBuffer = Buffer2D<TMaterial const *, ShipSpaceTag>;
 
 }

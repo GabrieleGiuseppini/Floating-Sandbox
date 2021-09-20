@@ -87,7 +87,7 @@ RgbaImageData ShipTexturizer::Texturize(
     // Create texture
     //
 
-    auto newImageData = std::make_unique<rgbaColor[]>(textureSize.GetLinearCount());
+    auto newImageData = std::make_unique<rgbaColor[]>(textureSize.GetLinearSize());
 
     for (int y = 1; y <= structureSize.height; ++y)
     {
@@ -264,7 +264,7 @@ RgbaImageData ShipTexturizer::MakeTextureSample(
         : *settings;
 
     // Create output image
-    auto sampleData = std::make_unique<rgbaColor[]>(sampleSize.GetLinearCount());
+    auto sampleData = std::make_unique<rgbaColor[]>(sampleSize.GetLinearSize());
 
     // Get bump map texture and render color
     Vec3fImageData const & materialTexture = GetMaterialTexture(textureName);

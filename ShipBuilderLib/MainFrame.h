@@ -75,7 +75,7 @@ public:
 
     void OnViewModelChanged() override;
 
-    void OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize) override;
+    void OnShipSizeChanged(ShipSpaceSize const & shipSize) override;
 
     void OnLayerPresenceChanged() override;
 
@@ -87,7 +87,7 @@ public:
 
     void OnCurrentToolChanged(std::optional<ToolType> tool) override;
 
-    void OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coordinates) override;
+    void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates) override;
 
     void SetToolCursor(wxImage const & cursorImage) override;
 
@@ -159,7 +159,7 @@ private:
 
     void ReconciliateUI();
 
-    void ReconciliateUIWithWorkSpaceSize(WorkSpaceSize const & workSpaceSize);
+    void ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize);
 
     void ReconciliateUIWithLayerPresence();
 

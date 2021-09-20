@@ -8,7 +8,6 @@
 #include "ShipBuilderTypes.h"
 
 #include <GameCore/GameTypes.h>
-#include <GameCore/ImageSize.h>
 
 #include <Game/Materials.h>
 #include <Game/MaterialDatabase.h>

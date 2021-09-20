@@ -5,7 +5,6 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
-#include <GameCore/ImageSize.h>
 #include <GameCore/Log.h>
 #include <GameCore/Version.h>
 
@@ -401,7 +400,7 @@ MainFrame::MainFrame(
     }
 
     mView = std::make_unique<View>(
-        WorkSpaceSize(0, 0), // We don't have a workspace yet
+        ShipSpaceSize(0, 0), // We don't have a ship yet
         DisplayLogicalSize(
             mWorkCanvas->GetSize().GetWidth(),
             mWorkCanvas->GetSize().GetHeight()),
@@ -468,11 +467,11 @@ void MainFrame::OnViewModelChanged()
     }
 }
 
-void MainFrame::OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize)
+void MainFrame::OnShipSizeChanged(ShipSpaceSize const & shipSize)
 {
     if (mController)
     {
-        ReconciliateUIWithWorkSpaceSize(workSpaceSize);
+        ReconciliateUIWithShipSize(shipSize);
     }
 }
 
@@ -516,7 +515,7 @@ void MainFrame::OnCurrentToolChanged(std::optional<ToolType> tool)
     }
 }
 
-void MainFrame::OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coordinates)
+void MainFrame::OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates)
 {
     std::stringstream ss;
 
@@ -525,8 +524,8 @@ void MainFrame::OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coo
         if (mController)
         {
             // Flip coordinates: we show zero at top, just to be consistent with drawing software
-            int const y = mController->GetModelController().GetModel().GetWorkSpaceSize().height - 1 - coordinates->y;
-            ss << coordinates->x << ", " << y;
+            coordinates->FlipY(mController->GetModelController().GetModel().GetShipSize().height);
+            ss << coordinates->x << ", " << coordinates->y;
         }
     }
 
@@ -1812,9 +1811,9 @@ void MainFrame::RecalculateWorkCanvasPanning()
     // We populate the scollbar with work space coordinates
     //
 
-    WorkSpaceCoordinates const cameraPos = mView->GetCameraWorkSpacePosition();
-    WorkSpaceSize const cameraThumbSize = mView->GetCameraThumbSize();
-    WorkSpaceSize const cameraRange = mView->GetCameraRange();
+    ShipSpaceCoordinates const cameraPos = mView->GetCameraShipSpacePosition();
+    ShipSpaceSize const cameraThumbSize = mView->GetCameraThumbSize();
+    ShipSpaceSize const cameraRange = mView->GetCameraRange();
 
     mWorkCanvasHScrollBar->SetScrollbar(
         cameraPos.x,
@@ -1834,14 +1833,14 @@ void MainFrame::ReconciliateUI()
     assert(!!mController);
 
     ReconciliateUIWithLayerPresence();
-    ReconciliateUIWithWorkSpaceSize(mController->GetModelController().GetModel().GetWorkSpaceSize());
+    ReconciliateUIWithShipSize(mController->GetModelController().GetModel().GetShipSize());
     ReconciliateUIWithPrimaryLayerSelection(mController->GetPrimaryLayer());
     ReconciliateUIWithModelDirtiness(mController->GetModelController().GetModel().GetIsDirty());
     ReconciliateUIWithWorkbenchState();
     ReconciliateUIWithSelectedTool(mController->GetCurrentTool());
 }
 
-void MainFrame::ReconciliateUIWithWorkSpaceSize(WorkSpaceSize const & workSpaceSize)
+void MainFrame::ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize)
 {
     assert(mController);
 

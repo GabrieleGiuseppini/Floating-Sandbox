@@ -18,7 +18,7 @@ std::unique_ptr<Controller> Controller::CreateNew(
     ResourceLocator const & resourceLocator)
 {
     auto modelController = ModelController::CreateNew(
-        WorkSpaceSize(400, 200), // TODO: from preferences
+        ShipSpaceSize(400, 200), // TODO: from preferences
         view);
 
     std::unique_ptr<Controller> controller = std::unique_ptr<Controller>(
@@ -71,7 +71,7 @@ Controller::Controller(
     , mCurrentTool(MakeTool(ToolType::StructuralPencil))
 {
     // Notify view of workspace size
-    mView.SetWorkSpaceSize(mModelController->GetModel().GetWorkSpaceSize());
+    mView.SetShipSize(mModelController->GetModel().GetShipSize());
 
     assert(mModelController->GetModel().HasLayer(LayerType::Structural));
 
@@ -182,16 +182,16 @@ void Controller::RemoveTextureLayer()
     mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
 
-void Controller::ResizeWorkspace(WorkSpaceSize const & newSize)
+void Controller::ResizeShip(ShipSpaceSize const & newSize)
 {
     // TODO: tell ModelController
 
-    // Notify view of new workspace size
+    // Notify view of new size
     // Note: might cause a view model change that would not be
     // notified via OnViewModelChanged
-    mView.SetWorkSpaceSize(newSize);
+    mView.SetShipSize(newSize);
 
-    mUserInterface.OnWorkSpaceSizeChanged(newSize);
+    mUserInterface.OnShipSizeChanged(newSize);
 }
 
 LayerType Controller::GetPrimaryLayer() const
@@ -248,7 +248,7 @@ void Controller::AddZoom(int deltaZoom)
 
 void Controller::SetCamera(int camX, int camY)
 {
-    mView.SetCameraWorkSpacePosition(WorkSpaceCoordinates(camX, camY));
+    mView.SetCameraShipSpacePosition(ShipSpaceCoordinates(camX, camY));
 
     RefreshToolCoordinatesDisplay();
     mUserInterface.OnViewModelChanged();
@@ -258,7 +258,7 @@ void Controller::SetCamera(int camX, int camY)
 void Controller::ResetView()
 {
     mView.SetZoom(0);
-    mView.SetCameraWorkSpacePosition(WorkSpaceCoordinates(0, 0));
+    mView.SetCameraShipSpacePosition(ShipSpaceCoordinates(0, 0));
 
     RefreshToolCoordinatesDisplay();
     mUserInterface.OnViewModelChanged();
@@ -392,13 +392,13 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
 
 void Controller::RefreshToolCoordinatesDisplay()
 {
-    // Calculate work coordinates
-    WorkSpaceCoordinates mouseWorkSpaceCoordinates = mView.ScreenToWorkSpace(mInputState.MousePosition);
+    // Calculate ship coordinates
+    ShipSpaceCoordinates mouseShipSpaceCoordinates = mView.ScreenToShipSpace(mInputState.MousePosition);
 
-    // Check if within work canvas
-    if (mouseWorkSpaceCoordinates.IsInRect(mModelController->GetModel().GetWorkSpaceSize()))
+    // Check if within ship canvas
+    if (mouseShipSpaceCoordinates.IsInRect(mModelController->GetModel().GetShipSize()))
     {
-        mUserInterface.OnToolCoordinatesChanged(mouseWorkSpaceCoordinates);
+        mUserInterface.OnToolCoordinatesChanged(mouseShipSpaceCoordinates);
     }
     else
     {

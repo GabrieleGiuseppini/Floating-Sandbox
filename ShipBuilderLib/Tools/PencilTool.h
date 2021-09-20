@@ -41,7 +41,7 @@ protected:
 private:
 
     void ApplyEditAt(
-        WorkSpaceCoordinates const & position,
+        ShipSpaceCoordinates const & position,
         MaterialPlaneType plane);
 
 private:

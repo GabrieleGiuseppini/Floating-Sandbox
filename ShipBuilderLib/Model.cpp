@@ -9,11 +9,11 @@
 
 namespace ShipBuilder {
 
-Model::Model(WorkSpaceSize const & workSpaceSize)
-    : mWorkSpaceSize(workSpaceSize)
+Model::Model(ShipSpaceSize const & shipSize)
+    : mShipSize(shipSize)
 {
     // Initialize structural layer
-    MakeNewEmptyStructuralLayer(mWorkSpaceSize);
+    MakeNewEmptyStructuralLayer(mShipSize);
 
     // Initialize presence map
     mLayerPresenceMap.fill(false);
@@ -25,7 +25,7 @@ Model::Model(WorkSpaceSize const & workSpaceSize)
 
 void Model::NewStructuralLayer()
 {
-    MakeNewEmptyStructuralLayer(mWorkSpaceSize);
+    MakeNewEmptyStructuralLayer(mShipSize);
 
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
     mLayerDirtinessMap[static_cast<size_t>(LayerType::Structural)] = true;
@@ -125,7 +125,7 @@ void Model::ClearIsDirty()
     mIsDirty = false;
 }
 
-void Model::MakeNewEmptyStructuralLayer(WorkSpaceSize const & size)
+void Model::MakeNewEmptyStructuralLayer(ShipSpaceSize const & size)
 {
     // Material
 
@@ -156,7 +156,7 @@ void Model::MakeNewEmptyStructuralLayer(WorkSpaceSize const & size)
                     0,
                     255);
 
-            (*mStructuralRenderColorTexture)[vec2i(x, y)] = color;
+            (*mStructuralRenderColorTexture)[ImageCoordinates(x, y)] = color;
         }
     }
 }

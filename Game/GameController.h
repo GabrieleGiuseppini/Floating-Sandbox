@@ -27,7 +27,6 @@
 #include <GameCore/GameTypes.h>
 #include <GameCore/GameWallClock.h>
 #include <GameCore/ImageData.h>
-#include <GameCore/ImageSize.h>
 #include <GameCore/ParameterSmoother.h>
 #include <GameCore/ProgressCallback.h>
 #include <GameCore/StrongTypeDef.h>
@@ -172,51 +171,51 @@ public:
 
     float GetCurrentSimulationTime() const override { return mWorld->GetCurrentSimulationTime(); }
     float GetEffectiveAmbientLightIntensity() const override { return mRenderContext->GetEffectiveAmbientLightIntensity(); }
-    bool IsUnderwater(LogicalPixelCoordinates const & screenCoordinates) const override { return mWorld->GetOceanSurface().IsUnderwater(ScreenToWorld(screenCoordinates)); }
+    bool IsUnderwater(DisplayLogicalCoordinates const & screenCoordinates) const override { return mWorld->GetOceanSurface().IsUnderwater(ScreenToWorld(screenCoordinates)); }
     bool IsUnderwater(ElementId elementId) const override { return mWorld->IsUnderwater(elementId); }
 
     //
     // Interactions
     //
 
-    void ScareFish(LogicalPixelCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
-    void AttractFish(LogicalPixelCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
+    void ScareFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
+    void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
 
-    void PickObjectToMove(LogicalPixelCoordinates const & screenCoordinates, std::optional<ElementId> & elementId) override;
-    void PickObjectToMove(LogicalPixelCoordinates const & screenCoordinates, std::optional<ShipId> & shipId) override;
-    void MoveBy(ElementId elementId, LogicalPixelSize const & screenOffset, LogicalPixelSize const & inertialScreenOffset) override;
-    void MoveBy(ShipId shipId, LogicalPixelSize const & screenOffset, LogicalPixelSize const & inertialScreenOffset) override;
-    void RotateBy(ElementId elementId, float screenDeltaY, LogicalPixelCoordinates const & screenCenter, float inertialScreenDeltaY) override;
-    void RotateBy(ShipId shipId, float screenDeltaY, LogicalPixelCoordinates const & screenCenter, float intertialScreenDeltaY) override;
-    std::optional<ElementId> PickObjectForPickAndPull(LogicalPixelCoordinates const & screenCoordinates) override;
-    void Pull(ElementId elementId, LogicalPixelCoordinates const & screenTarget) override;
-    void DestroyAt(LogicalPixelCoordinates const & screenCoordinates, float radiusMultiplier) override;
-    void RepairAt(LogicalPixelCoordinates const & screenCoordinates, float radiusMultiplier, SequenceNumber repairStepId) override;
-    bool SawThrough(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates, bool isFirstSegment) override;
-    bool ApplyHeatBlasterAt(LogicalPixelCoordinates const & screenCoordinates, HeatBlasterActionType action) override;
-    bool ExtinguishFireAt(LogicalPixelCoordinates const & screenCoordinates) override;
-    void ApplyBlastAt(LogicalPixelCoordinates const & screenCoordinates, float radiusMultiplier, float forceMultiplier, float renderProgress, float personalitySeed) override;
-    bool ApplyElectricSparkAt(LogicalPixelCoordinates const & screenCoordinates, std::uint64_t counter, float lengthMultiplier, float currentSimulationTime) override;
-    void DrawTo(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) override;
-    void SwirlAt(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) override;
-    void TogglePinAt(LogicalPixelCoordinates const & screenCoordinates) override;
+    void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ElementId> & elementId) override;
+    void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ShipId> & shipId) override;
+    void MoveBy(ElementId elementId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) override;
+    void MoveBy(ShipId shipId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) override;
+    void RotateBy(ElementId elementId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float inertialScreenDeltaY) override;
+    void RotateBy(ShipId shipId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float intertialScreenDeltaY) override;
+    std::optional<ElementId> PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates) override;
+    void Pull(ElementId elementId, DisplayLogicalCoordinates const & screenTarget) override;
+    void DestroyAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier) override;
+    void RepairAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier, SequenceNumber repairStepId) override;
+    bool SawThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates, bool isFirstSegment) override;
+    bool ApplyHeatBlasterAt(DisplayLogicalCoordinates const & screenCoordinates, HeatBlasterActionType action) override;
+    bool ExtinguishFireAt(DisplayLogicalCoordinates const & screenCoordinates) override;
+    void ApplyBlastAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier, float forceMultiplier, float renderProgress, float personalitySeed) override;
+    bool ApplyElectricSparkAt(DisplayLogicalCoordinates const & screenCoordinates, std::uint64_t counter, float lengthMultiplier, float currentSimulationTime) override;
+    void DrawTo(DisplayLogicalCoordinates const & screenCoordinates, float strengthFraction) override;
+    void SwirlAt(DisplayLogicalCoordinates const & screenCoordinates, float strengthFraction) override;
+    void TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void RemoveAllPins() override;
-    std::optional<ToolApplicationLocus> InjectPressureAt(LogicalPixelCoordinates const & screenCoordinates, float pressureQuantityMultiplier) override;
-    bool FloodAt(LogicalPixelCoordinates const & screenCoordinates, float waterQuantityMultiplier) override;
-    void ToggleAntiMatterBombAt(LogicalPixelCoordinates const & screenCoordinates) override;
-    void ToggleImpactBombAt(LogicalPixelCoordinates const & screenCoordinates) override;
-    void TogglePhysicsProbeAt(LogicalPixelCoordinates const & screenCoordinates) override;
-    void ToggleRCBombAt(LogicalPixelCoordinates const & screenCoordinates) override;
-    void ToggleTimerBombAt(LogicalPixelCoordinates const & screenCoordinates) override;
+    std::optional<ToolApplicationLocus> InjectPressureAt(DisplayLogicalCoordinates const & screenCoordinates, float pressureQuantityMultiplier) override;
+    bool FloodAt(DisplayLogicalCoordinates const & screenCoordinates, float waterQuantityMultiplier) override;
+    void ToggleAntiMatterBombAt(DisplayLogicalCoordinates const & screenCoordinates) override;
+    void ToggleImpactBombAt(DisplayLogicalCoordinates const & screenCoordinates) override;
+    void TogglePhysicsProbeAt(DisplayLogicalCoordinates const & screenCoordinates) override;
+    void ToggleRCBombAt(DisplayLogicalCoordinates const & screenCoordinates) override;
+    void ToggleTimerBombAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void DetonateRCBombs() override;
     void DetonateAntiMatterBombs() override;
-    void AdjustOceanSurfaceTo(std::optional<LogicalPixelCoordinates> const & screenCoordinates) override;
-    std::optional<bool> AdjustOceanFloorTo(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates) override;
-    bool ScrubThrough(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates) override;
-    bool RotThrough(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates) override;
-    void ApplyThanosSnapAt(LogicalPixelCoordinates const & screenCoordinates) override;
-    std::optional<ElementId> GetNearestPointAt(LogicalPixelCoordinates const & screenCoordinates) const override;
-    void QueryNearestPointAt(LogicalPixelCoordinates const & screenCoordinates) const override;
+    void AdjustOceanSurfaceTo(std::optional<DisplayLogicalCoordinates> const & screenCoordinates) override;
+    std::optional<bool> AdjustOceanFloorTo(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
+    bool ScrubThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
+    bool RotThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
+    void ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates) override;
+    std::optional<ElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
+    void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
 
     void TriggerTsunami() override;
     void TriggerRogueWave() override;
@@ -240,15 +239,15 @@ public:
     // Render controls
     //
 
-    void SetCanvasSize(LogicalPixelSize const & canvasSize) override;
-    void Pan(LogicalPixelSize const & screenOffset) override;
-    void PanImmediate(LogicalPixelSize const & screenOffset) override;
+    void SetCanvasSize(DisplayLogicalSize const & canvasSize) override;
+    void Pan(DisplayLogicalSize const & screenOffset) override;
+    void PanImmediate(DisplayLogicalSize const & screenOffset) override;
     void PanToWorldEnd(int side) override;
     void ResetPan() override;
     void AdjustZoom(float amount) override;
     void ResetZoom() override;
-    vec2f ScreenToWorld(LogicalPixelCoordinates const & screenCoordinates) const override;
-    vec2f ScreenOffsetToWorldOffset(LogicalPixelSize const & screenOffset) const override;
+    vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const override;
+    vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const override;
 
     //
     // UI parameters

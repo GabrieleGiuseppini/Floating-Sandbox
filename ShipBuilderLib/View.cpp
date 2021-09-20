@@ -12,13 +12,13 @@
 namespace ShipBuilder {
 
 View::View(
-    WorkSpaceSize initialWorkSpaceSize,
+    ShipSpaceSize initialShipSpaceSize,
     DisplayLogicalSize initialDisplaySize,
     int logicalToPhysicalPixelFactor,
     std::function<void()> swapRenderBuffersFunction,
     ResourceLocator const & resourceLocator)
     : mViewModel(
-        initialWorkSpaceSize,
+        initialShipSpaceSize,
         initialDisplaySize,
         logicalToPhysicalPixelFactor)
     , mShaderManager()
