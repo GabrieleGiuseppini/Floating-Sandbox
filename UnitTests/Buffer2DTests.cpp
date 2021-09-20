@@ -24,17 +24,6 @@ TEST(Buffer2DTests, Indexing_WithCoordinates)
     EXPECT_EQ(buffer[IntegralCoordinates(9, 19)], 242);
 }
 
-TEST(Buffer2DTests, Indexing_DoubleIndex)
-{
-    Buffer2D<int, IntegralTag> buffer(10, 20, 242);
-
-    buffer[7][9] = 42;
-
-    EXPECT_EQ(buffer[0][0], 242);
-    EXPECT_EQ(buffer[7][9], 42);
-    EXPECT_EQ(buffer[9][19], 242);
-}
-
 TEST(Buffer2DTests, MakeCopy_Whole)
 {
     Buffer2D<int, IntegralTag> buffer(4, 4, 0);

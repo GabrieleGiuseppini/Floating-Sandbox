@@ -108,20 +108,6 @@ public:
             std::move(newData));
     }
 
-    TElement const * operator[](typename coordinates_type::integral_type rowIndex) const
-    {
-        assert(rowIndex >= 0 && rowIndex < Size.height);
-
-        return &(Data[rowIndex * Size.width]);
-    }
-
-    TElement * operator[](typename coordinates_type::integral_type rowIndex)
-    {
-        assert(rowIndex >= 0 && rowIndex < Size.height);
-
-        return &(Data[rowIndex * Size.width]);
-    }
-
     TElement & operator[](coordinates_type const & index)
     {
         return const_cast<TElement &>((static_cast<Buffer2D const &>(*this))[index]);

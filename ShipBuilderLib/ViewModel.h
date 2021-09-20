@@ -202,7 +202,7 @@ private:
         mOrthoMatrix[0][0] = 2.0f / sDspW;
         mOrthoMatrix[1][1] = 2.0f / sDspH;
         mOrthoMatrix[3][0] = -2.0f * (static_cast<float>(mCam.x) - MarginDisplayShipSize) / sDspW - 1.0f;
-        mOrthoMatrix[3][1] = 1.0f - 2.0f * static_cast<float>(mShipSize.height - mCam.y) / sDspH;
+        mOrthoMatrix[3][1] = 1.0f - 2.0f * static_cast<float>(mShipSize.height - mCam.y + MarginDisplayShipSize) / sDspH;
     }
 
     static float CalculateZoomFactor(int zoom)
