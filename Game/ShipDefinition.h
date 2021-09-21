@@ -16,7 +16,7 @@
 /*
 * The complete definition of a ship.
 */
-struct ShipDefinition
+struct ShipDefinition final
 {
 public:
 

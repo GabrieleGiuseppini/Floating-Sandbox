@@ -65,8 +65,16 @@ static constexpr PlaneId NonePlaneId = std::numeric_limits<PlaneId>::max();
  *
  * Comparable and ordered. Start from 0.
  */
-using ElectricalElementInstanceIndex = std::uint8_t; // Max 255 instances
+using ElectricalElementInstanceIndex = std::uint8_t; // Max 254 instances
 static constexpr ElectricalElementInstanceIndex NoneElectricalElementInstanceIndex = std::numeric_limits<ElectricalElementInstanceIndex>::max();
+
+/*
+ * IDs of pairs of rope endpoints.
+ *
+ * Comparable and ordered. Start from 0.
+ */
+using RopeId = std::uint32_t;
+static constexpr RopeId NoneRopeId = std::numeric_limits<RopeId>::max();
 
 /*
  * Frontier identifiers.

@@ -7,10 +7,8 @@
 
 #include "Buffer2D.h"
 #include "Colors.h"
+#include "GameTypes.h"
 #include "Vectors.h"
-
-#include <cstring>
-#include <memory>
 
 template <typename TColor>
 using ImageData = Buffer2D<TColor, struct ImageTag>;

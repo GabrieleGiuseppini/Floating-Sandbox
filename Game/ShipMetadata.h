@@ -15,7 +15,7 @@
 /*
  * Metadata for a ship.
  */
-struct ShipMetadata
+struct ShipMetadata final
 {
 public:
 

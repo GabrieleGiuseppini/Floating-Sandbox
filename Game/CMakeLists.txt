@@ -21,6 +21,7 @@ set  (GAME_SOURCES
 	IGameEventHandlers.h
 	ImageFileTools.cpp
 	ImageFileTools.h
+	LayerBuffers.h
 	Materials.cpp
 	Materials.h
 	MaterialDatabase.cpp
@@ -40,8 +41,9 @@ set  (GAME_SOURCES
 	ShipFactory.cpp
 	ShipFactory.h
 	ShipFactoryTypes.h
-	ShipPhysicsData.h
+	ShipMaterialization.h
 	ShipMetadata.h
+	ShipPhysicsData.h
 	ShipPreview.cpp
 	ShipPreview.h
 	ShipPreviewDirectoryManager.cpp

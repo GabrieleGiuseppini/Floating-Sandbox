@@ -7,24 +7,31 @@ https://gamejolt.com/x/permalink/comment/11457002
 + SB::ViewModel: ortho matrix: see again why ShipSpace says positive bottom
 	+ Anchor to the top
 
-- GameTypes (TODO: can't be, needs Buffer2D which now depends on GameTypes - unless we extract IntegralSpace.h): "layer buffer" types
-	- StructuralLayerBuffer == Buffer2D<StructuralElement, ShipSpace>
-		- StructuralElement = <StructuralMaterial*>
-	- ElectricalLayerBuffer == Buffer2D<ElectricalElement, ShipSpace>
-		- ElectricalMaterial = <ElectricalMaterial*, instance ID>
-	- RopesLayerBuffer == Buffer2D<RopeElement, ShipSpace>
-		- RopeElement = <StructuralMaterial*, endpoint ID>
-	- TextureLayerBuffer == Buffer2D<rgbaColor, ImageSpace>
++ LayerBuffer.h: "layer buffer" types
+	+ StructuralLayerBuffer == Buffer2D<StructuralElement, ShipSpace>
+		+ StructuralElement = <StructuralMaterial*>
+	+ ElectricalLayerBuffer == Buffer2D<ElectricalElement, ShipSpace>
+		+ ElectricalMaterial = <ElectricalMaterial*, instance ID>
+	+ RopesLayerBuffer == Buffer2D<RopeElement, ShipSpace>
+		+ RopeElement = <StructuralMaterial*, endpoint ID>
+	+ TextureLayerBuffer == Buffer2D<rgbaColor, ImageSpace>
 
 - Use "layer buffers" at ShipFactory
 	- ShipMaterialization class (@GameLib): four buffers
 	- static ShipFactory::MaterializeShip(...) -> ShipMaterialization
+		- See first if can make whole ShipFactory static again
 		- Also includes filling-in Ropes from rope endpoints found in structure
 			- Throw on conflicts, like (should be) now
 		- Also includes filling-in Electrical from electrical materials found in structure
 			- Throw on conflicts, like (should be) now
 	- ShipFactory::WhateverNow(): use MaterializeShip to get ShipMaterialization and continue from there
 		- Given that you're at it: ShipFactoryTypes::ShipFactoryPoint: nuke vec2i and replace with ShipSpaceCoordinates (and user-facing coords being ImageCoordinates)
+	- Test:
+		- Structural ropes
+		- Native ropes
+		- Structural electrical
+		- Native electrical
+		- Texture
 
 - See if can nuke Matrix2
 

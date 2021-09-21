@@ -13,7 +13,7 @@
 /*
  * Physics data for a ship.
  */
-struct ShipPhysicsData
+struct ShipPhysicsData final
 {
 public:
 
