@@ -7,7 +7,7 @@ https://gamejolt.com/x/permalink/comment/11457002
 + SB::ViewModel: ortho matrix: see again why ShipSpace says positive bottom
 	+ Anchor to the top
 
-- GameTypes: "layer buffer" types
+- GameTypes (TODO: can't be, needs Buffer2D which now depends on GameTypes - unless we extract IntegralSpace.h): "layer buffer" types
 	- StructuralLayerBuffer == Buffer2D<StructuralElement, ShipSpace>
 		- StructuralElement = <StructuralMaterial*>
 	- ElectricalLayerBuffer == Buffer2D<ElectricalElement, ShipSpace>
@@ -17,13 +17,13 @@ https://gamejolt.com/x/permalink/comment/11457002
 	- TextureLayerBuffer == Buffer2D<rgbaColor, ImageSpace>
 
 - Use "layer buffers" at ShipFactory
-	- ShipMaterialized class (@GameLib): four buffers
-	- static ShipFactory::MaterializeShip(...) -> ShipMaterialized
+	- ShipMaterialization class (@GameLib): four buffers
+	- static ShipFactory::MaterializeShip(...) -> ShipMaterialization
 		- Also includes filling-in Ropes from rope endpoints found in structure
 			- Throw on conflicts, like (should be) now
 		- Also includes filling-in Electrical from electrical materials found in structure
 			- Throw on conflicts, like (should be) now
-	- ShipFactory::WhateverNow(): use MaterializeShip to get ShipMaterialized and continue from there
+	- ShipFactory::WhateverNow(): use MaterializeShip to get ShipMaterialization and continue from there
 		- Given that you're at it: ShipFactoryTypes::ShipFactoryPoint: nuke vec2i and replace with ShipSpaceCoordinates (and user-facing coords being ImageCoordinates)
 
 - See if can nuke Matrix2
@@ -34,9 +34,9 @@ https://gamejolt.com/x/permalink/comment/11457002
 
 ----------------------
 
-- Undo hierarchy:there are four subtypes of UndoEditAction - for each of the "layer buffer" types - on top of e.g. "resize" and "all layers"
-	- These four are all implemented via a single templated class, templated on TLayerBuffer (or on LayerType, using type traits (see below) to map to LayerBuffer type)
-	- Apply() invokes one of ModelController::RestoreStructural/Electrical/Ropes/TextureLayer, with constexpr switch
+- Undo hierarchy: there are four subtypes of UndoEditAction - for each of the "layer buffer" types - on top of e.g. "resize" and "all layers"
+	- These four are all implemented via a single templated class, templated on TLayerBuffer
+	- Apply() invokes Controller::RestoreLayer(TLayerBuffer const &, origin)
 
 - Click-And-Draw use case:
 	- Pencil tool (*)
@@ -72,9 +72,9 @@ https://gamejolt.com/x/permalink/comment/11457002
 		- UndoEntry exposes:
 			- string GetTitle()
 			- std::uint64_t GetCost()
-			- void Undo(ModelController &)
-				- Double-dispatch: invokes ModelController::method_for_region_or_resize, with isLast flag for view update
-			- void Redo(ModelController &)		
+			- void Undo(Controller &)
+				- Double-dispatch: invokes Controller::method_for_region_or_resize, with isLast flag for view update
+			- void Redo(Controller &)		
 	- Line tool
 		- Previews (*)
 	- Eraser tool
@@ -309,6 +309,7 @@ https://gamejolt.com/x/permalink/comment/11457002
 		- Extract from other "TODO" .txt file
 
 - Misc:
+	- MSPaint cursors: C:\windows\systemresources\mspaint.exe.mun
 	- When primary layer is other than Texture, render texture layer in texturization mode (as opposed to simple texture-sample mode, i.e. nearest neighbor)
 		- This is assuming that ShipTexturizer mocks closely enough tessellation
 	- Localization:

@@ -6,7 +6,6 @@
 #pragma once
 
 #include "GameTypes.h"
-#include "Vectors.h"
 
 #include <algorithm>
 #include <memory>
