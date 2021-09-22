@@ -15,11 +15,11 @@ ShipMaterialization ShipDeSerializer::LoadShip(
     std::filesystem::path const & shipFilePath,
     MaterialDatabase const & materialDatabase)
 {
-    if (Utils::CaseInsensitiveEquals(shipFilePath.extension().string(), ".png"))
+    if (IsPngFileType(shipFilePath))
     {
         return LoadShipPng(shipFilePath, materialDatabase);
     }
-    else if (Utils::CaseInsensitiveEquals(shipFilePath.extension().string(), ".ship"))
+    else if (IsShpFileType(shipFilePath))
     {
         return LoadShipShp(shipFilePath, materialDatabase);
     }
@@ -27,6 +27,39 @@ ShipMaterialization ShipDeSerializer::LoadShip(
     {
         throw GameException("Ship filename \"" + shipFilePath.filename().string() + "\" is not recognized as a valid ship file");
     }
+}
+
+ShipPreview ShipDeSerializer::LoadShipPreview(std::filesystem::path const & shipFilePath)
+{
+    if (IsPngFileType(shipFilePath))
+    {
+        return LoadShipPreviewPng(shipFilePath);
+    }
+    else if (IsShpFileType(shipFilePath))
+    {
+        return LoadShipPreviewShp(shipFilePath);
+    }
+    else
+    {
+        throw GameException("Ship filename \"" + shipFilePath.filename().string() + "\" is not recognized as a valid ship file");
+    }
+}
+
+void ShipDeSerializer::SaveShip(
+    ShipMaterialization const & shipDefinition,
+    std::filesystem::path const & shipFilePath)
+{
+    // TODOHERE
+}
+
+bool ShipDeSerializer::IsPngFileType(std::filesystem::path const & shipFilePath)
+{
+    return Utils::CaseInsensitiveEquals(shipFilePath.extension().string(), ".png");
+}
+
+bool ShipDeSerializer::IsShpFileType(std::filesystem::path const & shipFilePath)
+{
+    return Utils::CaseInsensitiveEquals(shipFilePath.extension().string(), ".shp");
 }
 
 ShipMaterialization ShipDeSerializer::LoadShipPng(
@@ -44,14 +77,73 @@ ShipMaterialization ShipDeSerializer::LoadShipPng(
         materialDatabase);
 }
 
+ShipPreview ShipDeSerializer::LoadShipPreviewPng(std::filesystem::path const & shipFilePath)
+{
+    auto const imageSize = ImageFileTools::GetImageSize(shipFilePath);
+
+    return ShipPreview(
+        shipFilePath,
+        ShipSpaceSize(imageSize.width, imageSize.height),
+        ShipMetadata(shipFilePath.stem().string()),
+        false, // isHD
+        false); // hasElectricals
+}
+
 ShipMaterialization ShipDeSerializer::LoadShipShp(
     std::filesystem::path const & shipFilePath,
     MaterialDatabase const & materialDatabase)
 {
-    //
-    // Load JSON file
-    //
+    JsonDefinition const & jsonDefinition = LoadJsonDefinitionShp(shipFilePath);
 
+    return LoadFromDefinitionImageFilePaths(
+        jsonDefinition.StructuralLayerImageFilePath,
+        jsonDefinition.ElectricalLayerImageFilePath,
+        jsonDefinition.RopesLayerImageFilePath,
+        jsonDefinition.TextureLayerImageFilePath,
+        jsonDefinition.Metadata,
+        jsonDefinition.PhysicsData,
+        jsonDefinition.AutoTexturizationSettings,
+        materialDatabase);
+}
+
+ShipPreview ShipDeSerializer::LoadShipPreviewShp(std::filesystem::path const & shipFilePath)
+{
+    JsonDefinition const & jsonDefinition = LoadJsonDefinitionShp(shipFilePath);
+
+    std::filesystem::path previewImageFilePath;
+    bool isHD = false;
+    bool hasElectricals = false;
+    if (jsonDefinition.TextureLayerImageFilePath.has_value())
+    {
+        // Use the ship's texture as its preview
+        previewImageFilePath = *(jsonDefinition.TextureLayerImageFilePath);
+
+        // Categorize as HD, unless instructed not to do so
+        if (!jsonDefinition.Metadata.DoHideHDInPreview)
+            isHD = true;
+    }
+    else
+    {
+        // Preview is from structural image
+        previewImageFilePath = jsonDefinition.StructuralLayerImageFilePath;
+    }
+
+    // Check whether it has electricals, unless instructed not to do so
+    if (!jsonDefinition.Metadata.DoHideElectricalsInPreview)
+        hasElectricals = jsonDefinition.ElectricalLayerImageFilePath.has_value();
+
+    ImageSize const structuralImageSize = ImageFileTools::GetImageSize(jsonDefinition.StructuralLayerImageFilePath);
+
+    return ShipPreview(
+        previewImageFilePath,
+        ShipSpaceSize(structuralImageSize.width, structuralImageSize.height), // Ship size is from structural image
+        jsonDefinition.Metadata,
+        isHD,
+        hasElectricals);
+}
+
+ShipDeSerializer::JsonDefinition ShipDeSerializer::LoadJsonDefinitionShp(std::filesystem::path const & shipFilePath)
+{
     std::filesystem::path const basePath = shipFilePath.parent_path();
 
     picojson::value root = Utils::ParseJSONFile(shipFilePath.string());
@@ -202,7 +294,7 @@ ShipMaterialization ShipDeSerializer::LoadShipShp(
         }
     }
 
-    return LoadFromDefinitionImageFilePaths(
+    return JsonDefinition(
         basePath / std::filesystem::path(structuralLayerImageFilePathStr),
         electricalLayerImageFilePathStr.has_value()
             ? basePath / std::filesystem::path(*electricalLayerImageFilePathStr)
@@ -225,8 +317,7 @@ ShipMaterialization ShipDeSerializer::LoadShipShp(
         ShipPhysicsData(
             offset,
             internalPressure),
-        autoTexturizationSettings,
-        materialDatabase);
+        autoTexturizationSettings);
 }
 
 ShipMaterialization ShipDeSerializer::LoadFromDefinitionImageFilePaths(

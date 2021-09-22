@@ -53,26 +53,25 @@ https://gamejolt.com/x/permalink/comment/11457002
 			- This is where we're fine with doing the "legacy" tricks, and with e.g. inserting missing structural materials for rope endpoints in the ropes layer
 	= Impl:
 		+ ShipMaterialization also carries all attributes of ShipDefinition
-		= ShipDeserializer
+		= ShipDeserializer			
 			= Load(filepath, MaterialDB) -> ShipMaterialization
 				+ ShipMaterialization functionality currently in ShipFactory should move to ship deserializer, for formats "png" and "shp"
 					+ This is where we're fine with doing the "legacy" tricks, and with e.g. inserting missing structural materials for rope endpoints in the ropes layer
 				= png
 				= shp
-			- LoadPreview(filepath, MaterialDB) -> ShipPreview
-				- png
-				- shp
-			- Save(ShipMaterialization, filepath)
-				- NOP at the moment
-		- Also add ShipPreview functionality to ShipDeSerializer
-			- See exactly how it's used
-		- Nuke ShipDefinition, ShipDefinitionFile
+			= LoadPreview(filepath, MaterialDB) -> ShipPreview
+				= png
+				= shp
+			+ Save(ShipMaterialization, filepath)
+				+ NOP at the moment
+		- Nuke ShipPreview.cpp
+		- Nuke ShipDefinition.*, ShipDefinitionFile.*
 		- "ShipMaterialization" -> "ShipDefinition"
-		- Use ShipDeSerializer		
+		- Use ShipDeSerializer ipv ShipDefinition::Load
 		- ShipFactory:
-			- Nuke MaterializeShip code, just begin with ShipMaterialization as arg
+			- Nuke MaterializeShip code, just begin with ShipMaterialization (now ShipDefinition) as arg
 
-- Model contains the four new layer buffer types (as uq_ptr)
+- Model contains the four new layer buffer types (1 as member, 3 as uq_ptr)
 
 - Merge into shipbuilder
 
