@@ -16,24 +16,40 @@ https://gamejolt.com/x/permalink/comment/11457002
 		+ RopeElement = <StructuralMaterial*, endpoint ID>
 	+ TextureLayerBuffer == Buffer2D<rgbaColor, ImageSpace>
 
-- Use "layer buffers" at ShipFactory
+= Use "layer buffers" at ShipFactory
 	+ ShipMaterialization class (@GameLib): four buffers
-	- static ShipFactory::MaterializeShip(...) -> ShipMaterialization
+	+ static ShipFactory::MaterializeShip(...) -> ShipMaterialization
 		+ See first if can make whole ShipFactory static again
-		- Also includes filling-in Ropes from rope endpoints found in structure
-			- Throw on conflicts, like (should be) now
-		- Also includes filling-in Electrical from electrical materials found in structure
-			- Throw on conflicts, like (should be) now
+		+ Also includes filling-in Ropes from rope endpoints found in structure (legacy)
+			+ Throw on conflicts, like (should be) now
+		+ Also includes filling-in Electrical from electrical materials found in structure (legacy)
+			+ Throw on conflicts, like (should be) now
 	- ShipFactory::WhateverNow(): use MaterializeShip to get ShipMaterialization and continue from there
 		- Given that you're at it: ShipFactoryTypes::ShipFactoryPoint: nuke vec2i and replace with ShipSpaceCoordinates (and user-facing coords being ImageCoordinates)
 	- Test:
-		- Structural ropes
-		- Native ropes
-		- Structural electrical
-		- Native electrical
-		- Texture
+		- Basic:
+			- Legacy ropes
+			- Native ropes
+			- Legacy+Native ropes
+			- Legacy electrical
+			- Native electrical
+			- Legacy+Native electrical
+			- Texture
+		- Corner cases:
+			- Ropes:
+				- Too many endpoints for same Rope ID
+					- All legacy
+					- Some legacy, some ropes layer
+					- All ropes layer
+		- Both auto-texturization settings
+		- Perf (before & after)
 
 - See if can nuke Matrix2
+
+- Ship De/Serialization
+	- Ultimate ship definition consists of LayerBuffers, not images (except for Texture obviously)
+	- ShipMaterialization functionality currently in ShipFactory should move to ship deserializer, for formats "png" and "shp"
+		- This is where we're fine with doing the "legacy" tricks, and with e.g. inserting missing structural materials for rope endpoints in the ropes layer
 
 - Model contains the four new layer buffer types (as uq_ptr)
 

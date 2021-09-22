@@ -54,54 +54,60 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 {
     auto const totalStartTime = std::chrono::steady_clock::now();
 
-    int const structureWidth = shipDefinition.StructuralLayerImage.Size.width;
-    float const halfWidth = static_cast<float>(structureWidth) / 2.0f;
-    int const structureHeight = shipDefinition.StructuralLayerImage.Size.height;
+    //
+    // Materialize ship
+    //
+
+    ShipMaterialization materializedShip = MaterializeShip(
+        shipDefinition,
+        materialDatabase);
+
+    //
+    // Create texture, if needed
+    //
+
+    RgbaImageData textureImage = materializedShip.TextureLayer
+        ? std::move(*materializedShip.TextureLayer) // Use provided texture
+        : shipTexturizer.Texturize(
+            shipDefinition.AutoTexturizationSettings,
+            materializedShip.StructuralLayer); // Auto-texturize
+
+    //
+    // Process materialized ship layer and:
+    // - Create ShipFactoryPoint's for each particle
+    // - Build a 2D matrix containing indices to the particles
+    //
+
+    float const halfShipWidth = static_cast<float>(materializedShip.Size.width) / 2.0f;
 
     // ShipFactoryPoint's
     std::vector<ShipFactoryPoint> pointInfos1;
 
-    // ShipFactorySpring's
-    std::vector<ShipFactorySpring> springInfos1;
-
-    // RopeSegment's, indexed by the rope color key
-    std::map<MaterialDatabase::ColorKey, RopeSegment> ropeSegments;
-
-    // ShipFactoryTriangle's
-    std::vector<ShipFactoryTriangle> triangleInfos;
-
-    //
-    // Process structural layer points and:
-    // - Identify all points, calculate texture coordinates, and create ShipFactoryPoint's for them
-    // - Build a 2D matrix containing indices to the points above
-    // - Identify rope endpoints on structural layer, and create RopeSegment's for them
-    //
-
     // Matrix of points - we allocate 2 extra dummy rows and cols - around - to avoid checking for boundaries
-    ShipFactoryPointIndexMatrix pointIndexMatrix(structureWidth + 2, structureHeight + 2);
+    ShipFactoryPointIndexMatrix pointIndexMatrix(materializedShip.Size.width + 2, materializedShip.Size.height + 2);
 
     // Region of actual content
-    int minX = structureWidth;
+    int minX = materializedShip.Size.width;
     int maxX = 0;
-    int minY = structureHeight;
+    int minY = materializedShip.Size.height;
     int maxY = 0;
 
     // Visit all columns
-    for (int x = 0; x < structureWidth; ++x)
+    for (int x = 0; x < materializedShip.Size.width; ++x)
     {
         // From bottom to top
-        for (int y = 0; y < structureHeight; ++y)
+        for (int y = 0; y < materializedShip.Size.height; ++y)
         {
-            MaterialDatabase::ColorKey const colorKey = shipDefinition.StructuralLayerImage.Data[x + y * structureWidth];
-            StructuralMaterial const * structuralMaterial = materialDatabase.FindStructuralMaterial(colorKey);
+            ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
+            StructuralElement const & structuralElement = materializedShip.StructuralLayer[coords];
+            StructuralMaterial const * structuralMaterial = structuralElement.Material;
             if (nullptr != structuralMaterial)
             {
-                float water = 0.0f;
-
                 //
                 // Transform water point to air point + water
                 //
 
+                float water = 0.0f;
                 if (structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Water))
                 {
                     structuralMaterial = &(materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air));
@@ -116,34 +122,27 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
                 pointIndexMatrix[{x + 1, y + 1}] = static_cast<ElementIndex>(pointIndex);
 
+                bool const isRopePoint = (!!materializedShip.RopesLayer) && (*materializedShip.RopesLayer)[coords].Material != nullptr;
+
                 pointInfos1.emplace_back(
                     vec2i(x, y),
-                    IntegralCoordinates(x, y).FlipY(structureHeight),
+                    IntegralCoordinates(x, y).FlipY(materializedShip.Size.height),
                     vec2f(
-                        static_cast<float>(x) - halfWidth,
+                        static_cast<float>(x) - halfShipWidth,
                         static_cast<float>(y)) + shipDefinition.PhysicsData.Offset,
-                    MakeTextureCoordinates(x, y, shipDefinition.StructuralLayerImage.Size),
-                    structuralMaterial->RenderColor,
+                    MakeTextureCoordinates(x, y, materializedShip.Size),
+                    structuralElement.RenderColor,
                     *structuralMaterial,
-                    structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope),
+                    isRopePoint,
                     structuralMaterial->Strength,
                     water);
 
-                //
-                // Check if it's a (custom) rope endpoint
-                //
-
-                if (structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope)
-                    && !materialDatabase.IsUniqueStructuralMaterialColorKey(StructuralMaterial::MaterialUniqueType::Rope, colorKey))
+                // Eventually decorate with electrical layer information
+                if (materializedShip.ElectricalLayer
+                    && (*materializedShip.ElectricalLayer)[coords].Material != nullptr)
                 {
-                    // Store in RopeSegments, using the color key as the color of the rope
-                    RopeSegment & ropeSegment = ropeSegments[colorKey];
-                    if (!ropeSegment.SetEndpoint(pointIndex, colorKey))
-                    {
-                        throw GameException(
-                            "More than two \"" + Utils::RgbColor2Hex(colorKey) + "\" rope endpoints found at "
-                            + IntegralCoordinates(x, y).FlipY(structureHeight).ToString());
-                    }
+                    pointInfos1.back().ElectricalMtl = (*materializedShip.ElectricalLayer)[coords].Material;
+                    pointInfos1.back().ElectricalElementInstanceIdx = (*materializedShip.ElectricalLayer)[coords].InstanceIndex;
                 }
 
                 //
@@ -162,63 +161,13 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         }
     }
 
-    if (pointInfos1.empty())
-    {
-        throw GameException("The ship structure contains no pixels that may be recognized as structural material");
-    }
-
     //
-    // Process the rope layer - if any - and append rope endpoints
+    // Process the rope layer and extract vector of rope endpoints
     //
 
-    if (!!(shipDefinition.RopesLayerImage))
-    {
-        // Make sure dimensions match
-        if (shipDefinition.RopesLayerImage->Size != shipDefinition.StructuralLayerImage.Size)
-        {
-            throw GameException("The size of the image used for the ropes layer must match the size of the image used for the structural layer");
-        }
-
-        // Append rope endpoints
-        AppendRopeEndpoints(
-            *(shipDefinition.RopesLayerImage),
-            ropeSegments,
-            pointInfos1,
-            pointIndexMatrix,
-            materialDatabase,
-            shipDefinition.PhysicsData.Offset);
-    }
-
-    //
-    // Process the electrical layer - if any - and decorate existing points with electrical materials
-    //
-
-    if (!!(shipDefinition.ElectricalLayerImage))
-    {
-        // Make sure dimensions match
-        if (shipDefinition.ElectricalLayerImage->Size != shipDefinition.StructuralLayerImage.Size)
-        {
-            throw GameException("The size of the image used for the electrical layer must match the size of the image used for the structural layer");
-        }
-
-        // Decorate points with electrical materials from the electrical layer
-        DecoratePointsWithElectricalMaterials(
-            *(shipDefinition.ElectricalLayerImage),
-            pointInfos1,
-            true, // isDedicatedElectricalLayer
-            pointIndexMatrix,
-            materialDatabase);
-    }
-    else
-    {
-        // Decorate points with electrical materials from the structural layer
-        DecoratePointsWithElectricalMaterials(
-            shipDefinition.StructuralLayerImage,
-            pointInfos1,
-            false, // isDedicatedElectricalLayer
-            pointIndexMatrix,
-            materialDatabase);
-    }
+    std::vector<RopeSegment> const ropeSegments = ExtractRopeSegments(
+        materializedShip,
+        pointIndexMatrix);
 
     //
     // Process all identified rope endpoints and:
@@ -227,12 +176,13 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     //      - And populating the point pair -> spring index 1 map
     //
 
+    std::vector<ShipFactorySpring> springInfos1;
+
     PointPairToIndexMap pointPairToSpringIndex1Map;
 
     AppendRopes(
         ropeSegments,
-        shipDefinition.StructuralLayerImage.Size,
-        materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope),
+        materializedShip.Size,
         pointInfos1,
         springInfos1,
         pointPairToSpringIndex1Map);
@@ -244,6 +194,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     //      - And populate the point pair -> spring index 1 map
     //  - Do tessellation and create ShipFactoryTriangle's
     //
+
+    std::vector<ShipFactoryTriangle> triangleInfos;
 
     size_t leakingPointsCount;
 
@@ -406,18 +358,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         springs);
 
     //
-    // Create texture, if needed
-    //
-
-    RgbaImageData textureImage = shipDefinition.TextureLayerImage.has_value()
-        ? std::move(*shipDefinition.TextureLayerImage) // Use provided texture
-        : shipTexturizer.Texturize(
-            shipDefinition.AutoTexturizationSettings,
-            shipDefinition.StructuralLayerImage.Size,
-            pointIndexMatrix,
-            pointInfos1); // Auto-texturize
-
-    //
     // We're done!
     //
 
@@ -428,7 +368,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         triangles);
 #endif
 
-    LogMessage("ShipFactory: Created ship: W=", shipDefinition.StructuralLayerImage.Size.width, ", H=", shipDefinition.StructuralLayerImage.Size.height, ", ",
+    LogMessage("ShipFactory: Created ship: W=", materializedShip.Size.width, ", H=", materializedShip.Size.height, ", ",
         points.GetRawShipPointCount(), "/", points.GetBufferElementCount(), "buf points, ",
         springs.GetElementCount(), " springs, ", triangles.GetElementCount(), " triangles, ",
         electricalElements.GetElementCount(), " electrical elements, ",
@@ -455,208 +395,407 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         std::move(textureImage));
 }
 
+ShipMaterialization ShipFactory::MaterializeShip(
+    ShipDefinition & shipDefinition,
+    MaterialDatabase const & materialDatabase)
+{
+    ShipSpaceSize const shipSize(
+        shipDefinition.StructuralLayerImage.Size.width,
+        shipDefinition.StructuralLayerImage.Size.height);
+
+    // Create layer buffers in any case - even though we might not need some
+    StructuralLayerBuffer structuralLayer(shipSize);
+    bool hasStructuralElements = false;
+    ElectricalLayerBuffer electricalLayer(shipSize);
+    bool hasElectricalElements = false;
+    RopesLayerBuffer ropesLayer(shipSize);
+    bool hasRopeElements = false;
+    std::unique_ptr<TextureLayerBuffer> textureLayer = shipDefinition.TextureLayerImage.has_value()
+        ? std::make_unique<TextureLayerBuffer>(std::move(*shipDefinition.TextureLayerImage))
+        : nullptr;
+
+    // Table remembering rope endpoints
+    std::map<MaterialDatabase::ColorKey, RopeId> ropeIdsByColorKey;
+
+    // Assignment of rope IDs
+    RopeId nextRopeId = 0;
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    // 1. Process structural layer, eventually creating electrical and rope elements from legacy
+    //    specifications
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ropeIdsByColorKey.clear();
+
+    // Visit all columns
+    for (int x = 0; x < shipSize.width; ++x)
+    {
+        // From bottom to top
+        for (int y = 0; y < shipSize.height; ++y)
+        {
+            ImageCoordinates const imageCoords(x, y);
+
+            // Lookup structural material
+            MaterialDatabase::ColorKey const colorKey = shipDefinition.StructuralLayerImage[imageCoords];
+            StructuralMaterial const * structuralMaterial = materialDatabase.FindStructuralMaterial(colorKey);
+            if (nullptr != structuralMaterial)
+            {
+                ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
+
+                // Store structural element
+                structuralLayer[coords] = StructuralElement(
+                    structuralMaterial,
+                    rgbaColor(structuralMaterial->RenderColor, 255));
+
+                //
+                // Check if it's also a legacy electrical element
+                //
+
+                ElectricalMaterial const * const electricalMaterial = materialDatabase.FindElectricalMaterial(colorKey);
+                if (nullptr != electricalMaterial)
+                {
+                    // Cannot have instanced elements in legacy mode
+                    assert(!electricalMaterial->IsInstanced);
+
+                    // Store electrical element
+                    electricalLayer[coords] = ElectricalElement(
+                        electricalMaterial,
+                        NoneElectricalElementInstanceIndex);
+
+                    // Remember we have seen at least one electrical element
+                    hasElectricalElements = true;
+                }
+
+                //
+                // Check if it's a legacy rope endpoint
+                //
+
+                if (structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope)
+                    && !materialDatabase.IsUniqueStructuralMaterialColorKey(StructuralMaterial::MaterialUniqueType::Rope, colorKey))
+                {
+                    // Check if it's the first or the second endpoint for the rope
+                    RopeId ropeId;
+                    auto searchIt = ropeIdsByColorKey.find(colorKey);
+                    if (searchIt == ropeIdsByColorKey.end())
+                    {
+                        // First time we see the rope color key
+                        ropeId = nextRopeId++;
+                        ropeIdsByColorKey[colorKey] = ropeId;
+                    }
+                    else if (searchIt->second != NoneRopeId)
+                    {
+                        // Second time we see the rope color key
+                        ropeId = searchIt->second;
+                        // Mark as "complete"
+                        searchIt->second = NoneRopeId;
+                    }
+                    else
+                    {
+                        // Too many rope endpoints for this color key
+                        throw GameException(
+                            "More than two rope endpoints for rope color \"" + colorKey.toString() + "\", detected at "
+                            + imageCoords.FlipY(shipSize.height).ToString());
+                    }
+
+                    // Store rope element
+                    rgbaColor const ropeColor = rgbaColor(colorKey, 255);
+                    ropesLayer[coords] = RopeElement(structuralMaterial, ropeId, ropeColor);
+
+                    // Remember we have seen at least one rope element
+                    hasRopeElements = true;
+                }
+
+                // Remember we have seen at least one structural element
+                hasStructuralElements = true;
+            }
+        }
+    }
+
+    // Make sure we have at least one structural element
+    if (!hasStructuralElements)
+    {
+        throw GameException("The ship structure contains no pixels that may be recognized as structural material");
+    }
+
+    // Make sure all rope endpoints are matched
+    {
+        auto const unmatchedSrchIt = std::find_if(
+            ropeIdsByColorKey.cbegin(),
+            ropeIdsByColorKey.cend(),
+            [](auto const & entry)
+            {
+                return entry.second != NoneRopeId;
+            });
+
+        if (unmatchedSrchIt != ropeIdsByColorKey.cend())
+        {
+            throw GameException("Rope endpoint with color key \"" + unmatchedSrchIt->first.toString() + "\" is unmatched");
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    // 2. Process ropes layer - if any - adding rope elements, and eventually structural elements
+    //    where the rope endpoints are
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if (shipDefinition.RopesLayerImage.has_value())
+    {
+        // Make sure dimensions match
+        if (shipDefinition.RopesLayerImage->Size != shipDefinition.StructuralLayerImage.Size)
+        {
+            throw GameException("The size of the image used for the ropes layer must match the size of the image used for the structural layer");
+        }
+
+        StructuralMaterial const & standardRopeMaterial = materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope);
+
+        ropeIdsByColorKey.clear();
+
+        // Visit all columns
+        for (int x = 0; x < shipSize.width; ++x)
+        {
+            // From bottom to top
+            for (int y = 0; y < shipSize.height; ++y)
+            {
+                // Check if it's a rope endpoint: iff different than background
+                ImageCoordinates const imageCoords(x, y);
+                MaterialDatabase::ColorKey colorKey = (*shipDefinition.RopesLayerImage)[imageCoords];
+                if (colorKey != MaterialDatabase::EmptyMaterialColorKey)
+                {
+                    //
+                    // It's a rope endpoint
+                    //
+
+                    ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
+
+                    rgbaColor const ropeColor = rgbaColor(colorKey, 255);
+
+                    // Make sure we don't have a rope already with an endpoint here
+                    if (ropesLayer[coords].Material != nullptr)
+                    {
+                        throw GameException("There is already a rope endpoint at " + imageCoords.FlipY(shipSize.height).ToString());
+                    }
+
+                    // Ensure there is a structural element here, and color it with the rope's color
+                    if (structuralLayer[coords].Material == nullptr)
+                    {
+                        // Insert a structural element for the rope, using the rope's color
+                        structuralLayer[coords] = StructuralElement(
+                            &standardRopeMaterial,
+                            ropeColor);
+                    }
+                    else
+                    {
+                        // Change endpoint's color to match the rope's - or else the spring will look bad
+                        structuralLayer[coords].RenderColor = ropeColor;
+                    }
+
+                    // Check if it's the first or the second endpoint for the rope
+                    RopeId ropeId;
+                    auto searchIt = ropeIdsByColorKey.find(colorKey);
+                    if (searchIt == ropeIdsByColorKey.end())
+                    {
+                        // First time we see the rope color key
+                        ropeId = nextRopeId++;
+                        ropeIdsByColorKey[colorKey] = ropeId;
+                    }
+                    else if (searchIt->second != NoneRopeId)
+                    {
+                        // Second time we see the rope color key
+                        ropeId = searchIt->second;
+                        // Mark as "complete"
+                        searchIt->second = NoneRopeId;
+                    }
+                    else
+                    {
+                        // Too many rope endpoints for this color key
+                        throw GameException(
+                            "More than two rope endpoints for rope color \"" + colorKey.toString() + "\", detected at "
+                            + imageCoords.FlipY(shipSize.height).ToString());
+                    }
+
+                    // Store rope element
+                    ropesLayer[coords] = RopeElement(
+                        &standardRopeMaterial,
+                        ropeId,
+                        ropeColor);
+
+                    // Remember we have seen at least one rope element
+                    hasRopeElements = true;
+                }
+            }
+        }
+
+        // Make sure all rope endpoints are matched
+        {
+            auto const unmatchedSrchIt = std::find_if(
+                ropeIdsByColorKey.cbegin(),
+                ropeIdsByColorKey.cend(),
+                [](auto const & entry)
+                {
+                    return entry.second != NoneRopeId;
+                });
+
+            if (unmatchedSrchIt != ropeIdsByColorKey.cend())
+            {
+                throw GameException("Rope endpoint with color key \"" + unmatchedSrchIt->first.toString() + "\" is unmatched");
+            }
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    // 3. Process electrical layer - if any
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if (shipDefinition.ElectricalLayerImage.has_value())
+    {
+        // Make sure dimensions match
+        if (shipDefinition.ElectricalLayerImage->Size != shipDefinition.StructuralLayerImage.Size)
+        {
+            throw GameException("The size of the image used for the electrical layer must match the size of the image used for the structural layer");
+        }
+
+        std::map<ElectricalElementInstanceIndex, ImageCoordinates> seenInstanceIndicesToImageCoords;
+
+        // Visit all columns
+        for (int x = 0; x < shipSize.width; ++x)
+        {
+            // From bottom to top
+            for (int y = 0; y < shipSize.height; ++y)
+            {
+                // Check if it's an electrical material: iff different than background
+                ImageCoordinates const imageCoords(x, y);
+                MaterialDatabase::ColorKey colorKey = (*shipDefinition.ElectricalLayerImage)[imageCoords];
+                if (colorKey != MaterialDatabase::EmptyMaterialColorKey)
+                {
+                    //
+                    // It's an electrical material
+                    //
+
+                    ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
+
+                    // Get material
+                    ElectricalMaterial const * const electricalMaterial = materialDatabase.FindElectricalMaterial(colorKey);
+                    if (electricalMaterial == nullptr)
+                    {
+                        throw GameException(
+                            "Color key \"" + Utils::RgbColor2Hex(colorKey)
+                            + "\" of pixel found at " + imageCoords.FlipY(shipSize.height).ToString()
+                            + " in the electrical layer image");
+                    }
+
+                    // Make sure we have a structural point here
+                    if (structuralLayer[coords].Material == nullptr)
+                    {
+                        throw GameException(
+                            "The electrical layer image specifies an electrical material at "
+                            + imageCoords.FlipY(shipSize.height).ToString()
+                            + ", but no pixel may be found at those coordinates in the structural layer image");
+                    }
+
+                    // Extract instance index, if material requires one
+                    ElectricalElementInstanceIndex instanceIndex;
+                    if (electricalMaterial->IsInstanced)
+                    {
+                        instanceIndex = MaterialDatabase::ExtractElectricalElementInstanceIndex(colorKey);
+
+                        // Make sure instance ID is not dupe
+                        auto const searchIt = seenInstanceIndicesToImageCoords.find(instanceIndex);
+                        if (searchIt != seenInstanceIndicesToImageCoords.end())
+                        {
+                            throw GameException(
+                                "Found two electrical elements with instance ID \""
+                                + std::to_string(instanceIndex)
+                                + "\" in the electrical layer image, at " + searchIt->second.FlipY(shipSize.height).ToString()
+                                + " and at " + imageCoords.FlipY(shipSize.height).ToString() + "; "
+                                + " make sure that all instanced elements"
+                                + " have unique values for the blue component of their color codes!");
+                        }
+                        else
+                        {
+                            // First time we see it
+                            seenInstanceIndicesToImageCoords.emplace(
+                                instanceIndex,
+                                imageCoords);
+                        }
+                    }
+                    else
+                    {
+                        instanceIndex = NoneElectricalElementInstanceIndex;
+                    }
+
+                    // Store electrical element
+                    electricalLayer[coords] = ElectricalElement(
+                        electricalMaterial,
+                        instanceIndex);
+
+                    // Remember we have seen at least one electrical element
+                    hasElectricalElements = true;
+                }
+            }
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Bake materialized ship
+    return ShipMaterialization(
+        shipSize,
+        std::move(structuralLayer),
+        hasElectricalElements ? std::make_unique<ElectricalLayerBuffer>(std::move(electricalLayer)) : nullptr,
+        hasRopeElements ? std::make_unique<RopesLayerBuffer>(std::move(ropesLayer)) : nullptr,
+        std::move(textureLayer));
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Building helpers
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ShipFactory::AppendRopeEndpoints(
-    RgbImageData const & ropeLayerImage,
-    std::map<MaterialDatabase::ColorKey, RopeSegment> & ropeSegments,
-    std::vector<ShipFactoryPoint> & pointInfos1,
-    ShipFactoryPointIndexMatrix & pointIndexMatrix,
-    MaterialDatabase const & materialDatabase,
-    vec2f const & shipOffset)
+std::vector<ShipFactory::RopeSegment> ShipFactory::ExtractRopeSegments(
+    ShipMaterialization const & materializedShip,
+    ShipFactoryPointIndexMatrix const & pointIndexMatrix)
 {
-    int const width = ropeLayerImage.Size.width;
-    float const halfWidth = static_cast<float>(width) / 2.0f;
-    int const height = ropeLayerImage.Size.height;
+    std::map<RopeId, RopeSegment> ropeIdsToRopeSegmentMap;
 
-    StructuralMaterial const & ropeMaterial = materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope);
-
-    for (int x = 0; x < width; ++x)
+    if (materializedShip.RopesLayer)
     {
-        // From bottom to top
-        for (int y = 0; y < height; ++y)
+        for (int x = 0; x < materializedShip.Size.width; ++x)
         {
-            // Get color
-            MaterialDatabase::ColorKey colorKey = ropeLayerImage.Data[x + y * width];
-
-            // Check if background
-            if (colorKey != MaterialDatabase::EmptyMaterialColorKey)
+            for (int y = 0; y < materializedShip.Size.height; ++y)
             {
-                vec2i const matrixPointIndex(x + 1, y + 1);
-                auto const pointCoords = IntegralCoordinates(x, y);
-
-                // Check whether we have a structural point here
-                ElementIndex pointIndex;
-                if (!pointIndexMatrix[matrixPointIndex])
+                auto const coords = ShipSpaceCoordinates(x, y);
+                RopeElement const & ropeElement = (*materializedShip.RopesLayer)[coords];
+                if (ropeElement.Material != nullptr)
                 {
-                    // Make a point
-                    pointIndex = static_cast<ElementIndex>(pointInfos1.size());
-                    pointInfos1.emplace_back(
-                        vec2i(x, y),
-                        pointCoords.FlipY(height),
-                        vec2f(
-                            static_cast<float>(x) - halfWidth,
-                            static_cast<float>(y))
-                        + shipOffset,
-                        MakeTextureCoordinates(x, y, ropeLayerImage.Size),
-                        colorKey.toVec4f(1.0f),
-                        ropeMaterial,
-                        true, // IsRope
-                        ropeMaterial.Strength,
-                        0.0f); // Water
+                    // Get point index
+                    assert(pointIndexMatrix[vec2i(x + 1, y + 1)].has_value());
+                    ElementIndex const pointIndex = *pointIndexMatrix[vec2i(x + 1, y + 1)];
 
-                    pointIndexMatrix[matrixPointIndex] = pointIndex;
-                }
-                else
-                {
-                    pointIndex = *(pointIndexMatrix[matrixPointIndex]);
-                }
-
-                // Make sure we don't have a rope already with an endpoint here
-                for (auto const & [srchColorKey, srchRopeSegment] : ropeSegments)
-                {
-                    if (pointIndex == srchRopeSegment.PointAIndex1
-                        || pointIndex == srchRopeSegment.PointBIndex1)
-                    {
-                        throw GameException("There is already a rope at point " + pointCoords.FlipY(height).ToString());
-                    }
-                }
-
-                // Store in RopeSegments
-                RopeSegment & ropeSegment = ropeSegments[colorKey];
-                if (!ropeSegment.SetEndpoint(pointIndex, colorKey))
-                {
-                    throw GameException(
-                        "More than two \"" + Utils::RgbColor2Hex(colorKey) + "\" rope endpoints found at "
-                        + pointCoords.FlipY(height).ToString() + " in the rope layer image");
-                }
-
-                // Change endpoint's color to match the rope's - or else the spring will look bad,
-                // and make it a rope point so that the first spring segment is a rope spring
-                pointInfos1[pointIndex].RenderColor = colorKey.toVec4f(1.0f);
-                pointInfos1[pointIndex].IsRope = true;
-            }
-        }
-    }
-}
-
-void ShipFactory::DecoratePointsWithElectricalMaterials(
-    RgbImageData const & layerImage,
-    std::vector<ShipFactoryPoint> & pointInfos1,
-    bool isDedicatedElectricalLayer,
-    ShipFactoryPointIndexMatrix const & pointIndexMatrix,
-    MaterialDatabase const & materialDatabase)
-{
-    int const width = layerImage.Size.width;
-    int const height = layerImage.Size.height;
-
-    for (int x = 0; x < width; ++x)
-    {
-        // From bottom to top
-        for (int y = 0; y < height; ++y)
-        {
-            // Get color
-            MaterialDatabase::ColorKey const & colorKey = layerImage.Data[x + y * width];
-
-            // Check if it's an electrical material
-            ElectricalMaterial const * const electricalMaterial = materialDatabase.FindElectricalMaterial(colorKey);
-            if (nullptr == electricalMaterial)
-            {
-                //
-                // Not an electrical material
-                //
-
-                if (isDedicatedElectricalLayer
-                    && colorKey != MaterialDatabase::EmptyMaterialColorKey)
-                {
-                    throw GameException(
-                        "Cannot find electrical material for color key \"" + Utils::RgbColor2Hex(colorKey)
-                        + "\" of pixel found at " + IntegralCoordinates(x, y).FlipY(height).ToString()
-                        + " in the " + (isDedicatedElectricalLayer ? "electrical" : "structural")
-                        + " layer image");
-                }
-                else
-                {
-                    // Just ignore
-                }
-            }
-            else
-            {
-                vec2i const matrixPointIndex(x + 1, y + 1);
-
-                //
-                // Electrical material found on this particle
-                //
-
-                // Make sure we have a structural point here
-                if (!pointIndexMatrix[matrixPointIndex])
-                {
-                    throw GameException(
-                        "The electrical layer image specifies an electrical material at "
-                        + IntegralCoordinates(x, y).FlipY(height).ToString()
-                        + ", but no pixel may be found at those coordinates in the structural layer image");
-                }
-
-                // Store electrical material
-                auto const pointIndex = *(pointIndexMatrix[matrixPointIndex]);
-                assert(nullptr == pointInfos1[pointIndex].ElectricalMtl);
-                pointInfos1[pointIndex].ElectricalMtl = electricalMaterial;
-
-                // Store instance index, if material requires one
-                if (electricalMaterial->IsInstanced)
-                {
-                    pointInfos1[pointIndex].ElectricalElementInstanceIdx = MaterialDatabase::ExtractElectricalElementInstanceIndex(colorKey);
-                }
-                else
-                {
-                    assert(pointInfos1[pointIndex].ElectricalElementInstanceIdx == NoneElectricalElementInstanceIndex);
+                    // Store in RopeSegments
+                    assert(ropeElement.Id != NoneRopeId);
+                    RopeSegment & ropeSegment = ropeIdsToRopeSegmentMap[ropeElement.Id];
+                    ropeSegment.SetEndpoint(pointIndex, ropeElement.Material, ropeElement.RenderColor);
                 }
             }
         }
     }
 
-    //
-    // Check for duplicate electrical element instance indices
-    //
+    std::vector<RopeSegment> ropeSegments;
 
-    std::map<ElectricalElementInstanceIndex, IntegralCoordinates> seenInstanceIndicesToUserCoords;
-    for (auto const & pi : pointInfos1)
-    {
-        if (nullptr != pi.ElectricalMtl
-            && pi.ElectricalMtl->IsInstanced)
+    std::transform(
+        ropeIdsToRopeSegmentMap.cbegin(),
+        ropeIdsToRopeSegmentMap.cend(),
+        std::back_inserter(ropeSegments),
+        [](auto const & mapEntry)
         {
-            auto searchIt = seenInstanceIndicesToUserCoords.find(pi.ElectricalElementInstanceIdx);
-            if (searchIt != seenInstanceIndicesToUserCoords.end())
-            {
-                // Dupe
+            return mapEntry.second;
+        });
 
-                assert(pi.UserCoordinates.has_value()); // Instanced electricals come from layers
-
-                throw GameException(
-                    "Found two electrical elements with instance ID \""
-                    + std::to_string(pi.ElectricalElementInstanceIdx)
-                    + "\" in the electrical layer image, at " + pi.UserCoordinates->ToString()
-                    + " and at " + searchIt->second.ToString() + "; "
-                    + " make sure that all instanced elements"
-                    + " have unique values for the blue component of their color codes!");
-            }
-            else
-            {
-                // First time we see it
-                seenInstanceIndicesToUserCoords.emplace(
-                    pi.ElectricalElementInstanceIdx,
-                    *(pi.UserCoordinates));
-            }
-        }
-    }
+    return ropeSegments;
 }
 
 void ShipFactory::AppendRopes(
-    std::map<MaterialDatabase::ColorKey, RopeSegment> const & ropeSegments,
-    ImageSize const & structureImageSize,
-    StructuralMaterial const & ropeMaterial,
+    std::vector<RopeSegment> const & ropeSegments,
+    ShipSpaceSize const & shipSize,
     std::vector<ShipFactoryPoint> & pointInfos1,
     std::vector<ShipFactorySpring> & springInfos1,
     PointPairToIndexMap & pointPairToSpringIndex1Map)
@@ -667,21 +806,10 @@ void ShipFactory::AppendRopes(
     //
 
     // Visit all RopeSegment's
-    for (auto const & ropeSegmentEntry : ropeSegments)
+    for (auto const & ropeSegment : ropeSegments)
     {
-        auto const & ropeSegment = ropeSegmentEntry.second;
-
-        // Make sure we've got both endpoints
         assert(NoneElementIndex != ropeSegment.PointAIndex1);
-        if (NoneElementIndex == ropeSegment.PointBIndex1)
-        {
-            throw GameException(
-                std::string("Only one rope endpoint found with color key <")
-                + Utils::RgbColor2Hex(ropeSegmentEntry.first)
-                + "> (at "
-                + (pointInfos1[ropeSegment.PointAIndex1].UserCoordinates.has_value() ? pointInfos1[ropeSegment.PointAIndex1].UserCoordinates->ToString() : "?")
-                +")");
-        }
+        assert(NoneElementIndex != ropeSegment.PointBIndex1);
 
         // No need to lay a rope if the points are adjacent - as there will be a rope anyway
         if (pointInfos1[ropeSegment.PointAIndex1].OriginalDefinitionCoordinates.has_value()
@@ -696,8 +824,8 @@ void ShipFactory::AppendRopes(
         }
 
         // Get endpoint (world) positions
-        vec2f startPos = pointInfos1[ropeSegment.PointAIndex1].Position;
-        vec2f endPos = pointInfos1[ropeSegment.PointBIndex1].Position;
+        vec2f const startPos = pointInfos1[ropeSegment.PointAIndex1].Position;
+        vec2f const endPos = pointInfos1[ropeSegment.PointBIndex1].Position;
 
         // Get endpoint electrical materials
 
@@ -804,6 +932,8 @@ void ShipFactory::AppendRopes(
                 break;
             }
 
+            bool const isFirstHalf = fabs(curW - startW) <= halfW;
+
             // Create position
             vec2f newPosition;
             if (widestIsX)
@@ -831,19 +961,20 @@ void ShipFactory::AppendRopes(
             (void)isInserted;
 
             // Add ShipFactoryPoint
+            StructuralMaterial const & ropeMaterial = isFirstHalf ? *(ropeSegment.PointAMaterial) : *(ropeSegment.PointBMaterial);
             pointInfos1.emplace_back(
                 std::nullopt,
                 std::nullopt,
                 newPosition,
-                MakeTextureCoordinates(newPosition.x, newPosition.y, structureImageSize),
-                ropeSegment.RopeColorKey.toVec4f(1.0f),
+                MakeTextureCoordinates(newPosition.x, newPosition.y, shipSize),
+                isFirstHalf ? ropeSegment.PointARenderColor : ropeSegment.PointBRenderColor,
                 ropeMaterial,
                 true, // IsRope
                 ropeMaterial.Strength,
                 0.0f); // Water
 
             // Set electrical material
-            pointInfos1.back().ElectricalMtl = (fabs(curW - startW) <= halfW)
+            pointInfos1.back().ElectricalMtl = isFirstHalf
                 ? startElectricalMaterial // First half
                 : endElectricalMaterial; // Second half
 

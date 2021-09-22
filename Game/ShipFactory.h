@@ -10,6 +10,7 @@
 #include "Physics.h"
 #include "ShipDefinition.h"
 #include "ShipFactoryTypes.h"
+#include "ShipMaterialization.h"
 #include "ShipStrengthRandomizer.h"
 #include "ShipTexturizer.h"
 
@@ -45,45 +46,9 @@ public:
         std::shared_ptr<TaskThreadPool> taskThreadPool,
         GameParameters const & gameParameters);
 
-private:
-
-    struct RopeSegment
-    {
-        ElementIndex PointAIndex1;
-        ElementIndex PointBIndex1;
-
-        MaterialDatabase::ColorKey RopeColorKey;
-
-        RopeSegment()
-            : PointAIndex1(NoneElementIndex)
-            , PointBIndex1(NoneElementIndex)
-            , RopeColorKey()
-        {
-        }
-
-        bool SetEndpoint(
-            ElementIndex pointIndex1,
-            MaterialDatabase::ColorKey ropeColorKey)
-        {
-            if (NoneElementIndex == PointAIndex1)
-            {
-                PointAIndex1 = pointIndex1;
-                RopeColorKey = ropeColorKey;
-                return true;
-            }
-            else if (NoneElementIndex == PointBIndex1)
-            {
-                PointBIndex1 = pointIndex1;
-                assert(RopeColorKey == ropeColorKey);
-                return true;
-            }
-            else
-            {
-                // Too many
-                return false;
-            }
-        }
-    };
+    static ShipMaterialization MaterializeShip(
+        ShipDefinition & shipDefinition,
+        MaterialDatabase const & materialDatabase);
 
 private:
 
@@ -121,6 +86,47 @@ private:
 
     using PointPairToIndexMap = std::unordered_map<PointPair, ElementIndex, PointPair::Hasher>;
 
+    struct RopeSegment
+    {
+        ElementIndex PointAIndex1;
+        ElementIndex PointBIndex1;
+        StructuralMaterial const * PointAMaterial;
+        StructuralMaterial const * PointBMaterial;
+        rgbaColor PointARenderColor;
+        rgbaColor PointBRenderColor;
+
+        RopeSegment()
+            : PointAIndex1(NoneElementIndex)
+            , PointBIndex1(NoneElementIndex)
+            , PointAMaterial(nullptr)
+            , PointBMaterial(nullptr)
+            , PointARenderColor()
+            , PointBRenderColor()
+        {
+        }
+
+        void SetEndpoint(
+            ElementIndex pointIndex1,
+            StructuralMaterial const * material,
+            rgbaColor const & renderColor)
+        {
+            if (NoneElementIndex == PointAIndex1)
+            {
+                PointAIndex1 = pointIndex1;
+                PointAMaterial = material;
+                PointARenderColor = renderColor;
+            }
+            else
+            {
+                assert(NoneElementIndex == PointBIndex1);
+
+                PointBIndex1 = pointIndex1;
+                PointBMaterial = material;
+                PointBRenderColor = renderColor;
+            }
+        }
+    };
+
     static inline bool IsConnectedToNonRopePoints(
         ElementIndex pointIndex,
         std::vector<ShipFactoryPoint> const & pointInfos1,
@@ -142,35 +148,23 @@ private:
     static inline vec2f MakeTextureCoordinates(
         CoordType x,
         CoordType y,
-        ImageSize const & imageSize)
+        ShipSpaceSize const & shipSize)
     {
-        float const deadCenterOffsetX = 0.5f / static_cast<float>(imageSize.width);
-        float const deadCenterOffsetY = 0.5f / static_cast<float>(imageSize.height);
+        float const deadCenterOffsetX = 0.5f / static_cast<float>(shipSize.width);
+        float const deadCenterOffsetY = 0.5f / static_cast<float>(shipSize.height);
 
         return vec2f(
-            static_cast<float>(x) / static_cast<float>(imageSize.width) + deadCenterOffsetX,
-            static_cast<float>(y) / static_cast<float>(imageSize.height) + deadCenterOffsetY);
+            static_cast<float>(x) / static_cast<float>(shipSize.width) + deadCenterOffsetX,
+            static_cast<float>(y) / static_cast<float>(shipSize.height) + deadCenterOffsetY);
     }
 
-    static void AppendRopeEndpoints(
-        RgbImageData const & ropeLayerImage,
-        std::map<MaterialDatabase::ColorKey, RopeSegment> & ropeSegments,
-        std::vector<ShipFactoryPoint> & pointInfos1,
-        ShipFactoryPointIndexMatrix & pointIndexMatrix,
-        MaterialDatabase const & materialDatabase,
-        vec2f const & shipOffset);
-
-    static void DecoratePointsWithElectricalMaterials(
-        RgbImageData const & layerImage,
-        std::vector<ShipFactoryPoint> & pointInfos1,
-        bool isDedicatedElectricalLayer,
-        ShipFactoryPointIndexMatrix const & pointIndexMatrix,
-        MaterialDatabase const & materialDatabase);
+    static std::vector<RopeSegment> ExtractRopeSegments(
+        ShipMaterialization const & materializedShip,
+        ShipFactoryPointIndexMatrix const & pointIndexMatrix);
 
     static void AppendRopes(
-        std::map<MaterialDatabase::ColorKey, RopeSegment> const & ropeSegments,
-        ImageSize const & structureImageSize,
-        StructuralMaterial const & ropeMaterial,
+        std::vector<RopeSegment> const & ropeSegments,
+        ShipSpaceSize const & shipSize,
         std::vector<ShipFactoryPoint> & pointInfos1,
         std::vector<ShipFactorySpring> & springInfos1,
         PointPairToIndexMap & pointPairToSpringIndex1Map);

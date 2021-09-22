@@ -11,8 +11,22 @@
 
 struct ShipMaterialization
 {
-    std::unique_ptr<StructuralLayerBuffer> StructuralLayer;
+    ShipSpaceSize Size;
+    StructuralLayerBuffer StructuralLayer;
     std::unique_ptr<ElectricalLayerBuffer> ElectricalLayer;
     std::unique_ptr<RopesLayerBuffer> RopesLayer;
     std::unique_ptr<TextureLayerBuffer> TextureLayer;
+
+    ShipMaterialization(
+        ShipSpaceSize const & size,
+        StructuralLayerBuffer && structuralLayer,
+        std::unique_ptr<ElectricalLayerBuffer> && electricalLayer,
+        std::unique_ptr<RopesLayerBuffer> && ropesLayer,
+        std::unique_ptr<TextureLayerBuffer> && textureLayer)
+        : Size(size)
+        , StructuralLayer(std::move(structuralLayer))
+        , ElectricalLayer(std::move(electricalLayer))
+        , RopesLayer(std::move(ropesLayer))
+        , TextureLayer(std::move(textureLayer))
+    {}
 };

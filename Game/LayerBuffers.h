@@ -14,13 +14,18 @@
 struct StructuralElement
 {
     StructuralMaterial const * Material;
+    rgbaColor RenderColor;
 
     StructuralElement()
         : Material(nullptr)
+        , RenderColor()
     {}
 
-    explicit StructuralElement(StructuralMaterial const * material)
+    explicit StructuralElement(
+        StructuralMaterial const * material,
+        rgbaColor const & renderColor)
         : Material(material)
+        , RenderColor(renderColor)
     {}
 };
 
@@ -50,17 +55,21 @@ struct RopeElement
 {
     StructuralMaterial const * Material;
     RopeId Id;
+    rgbaColor RenderColor;
 
     RopeElement()
         : Material(nullptr)
         , Id(NoneRopeId)
+        , RenderColor()
     {}
 
     RopeElement(
         StructuralMaterial const * material,
-        RopeId id)
+        RopeId id,
+        rgbaColor const & renderColor)
         : Material(material)
         , Id(id)
+        , RenderColor(renderColor)
     {}
 };
 

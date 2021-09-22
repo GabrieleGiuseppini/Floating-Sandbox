@@ -33,7 +33,7 @@ struct ShipFactoryPoint
     std::optional<IntegralCoordinates> UserCoordinates; // For displaying messages to users
     vec2f Position;
     vec2f TextureCoordinates;
-    vec4f RenderColor;
+    rgbaColor RenderColor;
     StructuralMaterial const& StructuralMtl;
     bool IsRope;
     bool IsLeaking;
@@ -50,7 +50,7 @@ struct ShipFactoryPoint
         std::optional<IntegralCoordinates> userCoordinates,
         vec2f position,
         vec2f textureCoordinates,
-        vec4f renderColor,
+        rgbaColor renderColor,
         StructuralMaterial const& structuralMtl,
         bool isRope,
         float strength,

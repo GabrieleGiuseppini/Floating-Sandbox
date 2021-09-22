@@ -1991,7 +1991,7 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
         if (foreElectricalMaterial != nullptr)
         {
             wxBitmap foreElectricalBitmap = WxHelpers::MakeMatteBitmap(
-                rgbaColor(foreElectricalMaterial->RenderColor),
+                rgbaColor(foreElectricalMaterial->RenderColor, 255),
                 MaterialSwathSize);
 
             mElectricalForegroundMaterialSelector->SetBitmap(foreElectricalBitmap);
@@ -2007,7 +2007,7 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
         if (backElectricalMaterial != nullptr)
         {
             wxBitmap backElectricalBitmap = WxHelpers::MakeMatteBitmap(
-                rgbaColor(backElectricalMaterial->RenderColor),
+                rgbaColor(backElectricalMaterial->RenderColor, 255),
                 MaterialSwathSize);
 
             mElectricalBackgroundMaterialSelector->SetBitmap(backElectricalBitmap);

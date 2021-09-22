@@ -24,6 +24,17 @@ public:
     size_type const Size;
     std::unique_ptr<TElement[]> Data;
 
+    Buffer2D(size_type size)
+        : Size(size)
+        , mLinearSize(size.GetLinearSize())
+    {
+        Data = std::make_unique<TElement[]>(mLinearSize);
+        std::fill(
+            Data.get(),
+            Data.get() + mLinearSize,
+            TElement());
+    }
+
     Buffer2D(
         int width,
         int height,

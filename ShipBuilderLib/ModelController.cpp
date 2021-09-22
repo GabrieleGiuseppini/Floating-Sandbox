@@ -82,7 +82,7 @@ std::unique_ptr<UndoEntry> ModelController::StructuralRegionFill(
     RgbaImageData & structuralRenderColorTexture = mModel.GetStructuralRenderColorTexture();
 
     rgbaColor const renderColor = material != nullptr
-        ? rgbaColor(material->RenderColor)
+        ? rgbaColor(material->RenderColor, 255)
         : rgbaColor(MaterialDatabase::EmptyMaterialColorKey, 255);
 
     for (int y = origin.y; y < origin.y + size.height; ++y)

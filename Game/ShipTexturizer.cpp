@@ -47,11 +47,11 @@ ShipTexturizer::ShipTexturizer(
 
 RgbaImageData ShipTexturizer::Texturize(
     std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings,
-    ImageSize const & structureSize,
-    ShipFactoryPointIndexMatrix const & pointMatrix, // One more point on each side, to avoid checking for boundaries
-    std::vector<ShipFactoryPoint> const & points) const
+    StructuralLayerBuffer const & structuralLayer) const
 {
     auto const startTime = std::chrono::steady_clock::now();
+
+    ShipSpaceSize const shipSize = structuralLayer.Size;
 
     // Zero-out cache usage counts
     ResetMaterialTextureCacheUseCounts();
@@ -62,13 +62,15 @@ RgbaImageData ShipTexturizer::Texturize(
     // and no more than 32 times the original size
     //
 
-    int const maxDimension = std::max(structureSize.width, structureSize.height);
+    int const maxDimension = std::max(shipSize.width, shipSize.height);
     assert(maxDimension > 0);
 
     int const magnificationFactor = std::min(32, std::max(1, 4096 / maxDimension));
     float const magnificationFactorInvF = 1.0f / static_cast<float>(magnificationFactor);
 
-    ImageSize const textureSize = structureSize * magnificationFactor;
+    ImageSize const textureSize = ImageSize(
+        shipSize.width * magnificationFactor,
+        shipSize.height * magnificationFactor);
 
     //
     // Prepare constants
@@ -89,19 +91,20 @@ RgbaImageData ShipTexturizer::Texturize(
 
     auto newImageData = std::make_unique<rgbaColor[]>(textureSize.GetLinearSize());
 
-    for (int y = 1; y <= structureSize.height; ++y)
+    for (int y = 0; y < shipSize.height; ++y)
     {
-        for (int x = 1; x <= structureSize.width; ++x)
+        for (int x = 0; x < shipSize.width; ++x)
         {
-            vec2i const pixelCoords(x, y);
+            ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
 
             // Get structure pixel color
-            rgbaColor const structurePixelColor = pointMatrix[pixelCoords].has_value()
-                ? rgbaColor(points[*pointMatrix[pixelCoords]].StructuralMtl.RenderColor)
+            StructuralMaterial const * structuralMaterial = structuralLayer[coords].Material;
+            rgbaColor const structurePixelColor = structuralMaterial != nullptr
+                ? structuralLayer[coords].RenderColor
                 : rgbaColor::zero(); // Fully transparent
 
             if (settings.Mode == ShipAutoTexturizationModeType::FlatStructure
-                || !pointMatrix[pixelCoords].has_value())
+                || structuralMaterial == nullptr)
             {
                 //
                 // Flat structure
@@ -111,8 +114,8 @@ RgbaImageData ShipTexturizer::Texturize(
                 for (int yy = 0; yy < magnificationFactor; ++yy)
                 {
                     int const quadOffset =
-                        (x - 1) * magnificationFactor
-                        + ((y - 1) * magnificationFactor + yy) * textureSize.width;
+                        x * magnificationFactor
+                        + (y * magnificationFactor + yy) * textureSize.width;
 
                     for (int xx = 0; xx < magnificationFactor; ++xx)
                     {
@@ -131,21 +134,21 @@ RgbaImageData ShipTexturizer::Texturize(
                 vec3f const structurePixelColorF = structurePixelColor.toVec3f();
 
                 // Get bump map texture
-                assert(pointMatrix[pixelCoords].has_value());
-                Vec3fImageData const & materialTexture = GetMaterialTexture(points[*pointMatrix[pixelCoords]].StructuralMtl.MaterialTextureName);
+                assert(structuralMaterial != nullptr);
+                Vec3fImageData const & materialTexture = GetMaterialTexture(structuralMaterial->MaterialTextureName);
 
                 //
                 // Fill quad with color multiply-blended with "bump map" texture
                 //
 
-                int const baseTargetQuadOffset = ((x - 1) + (y - 1) * textureSize.width) * magnificationFactor;
+                int const baseTargetQuadOffset = (x + y * textureSize.width) * magnificationFactor;
 
-                float worldY = static_cast<float>(y - 1);
+                float worldY = static_cast<float>(y);
                 for (int yy = 0; yy < magnificationFactor; ++yy, worldY += magnificationFactorInvF)
                 {
                     int const targetQuadOffset = baseTargetQuadOffset + yy * textureSize.width;
 
-                    float worldX = static_cast<float>(x - 1);
+                    float worldX = static_cast<float>(x);
                     for (int xx = 0; xx < magnificationFactor; ++xx, worldX += magnificationFactorInvF)
                     {
                         vec3f const bumpMapSample = SampleTexture(
@@ -180,7 +183,7 @@ RgbaImageData ShipTexturizer::Texturize(
 
     LogMessage("ShipTexturizer: completed auto-texturization:",
         " materialTextureMagnification=", settings.MaterialTextureMagnification,
-        " structureSize=", structureSize, " textureSize=", textureSize, " magFactor=", magnificationFactor,
+        " shipSize=", shipSize, " textureSize=", textureSize, " magFactor=", magnificationFactor,
         " time=", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startTime).count(), "us");
 
     return RgbaImageData(textureSize, std::move(newImageData));
