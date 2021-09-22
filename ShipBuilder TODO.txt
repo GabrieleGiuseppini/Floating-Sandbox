@@ -16,7 +16,7 @@ https://gamejolt.com/x/permalink/comment/11457002
 		+ RopeElement = <StructuralMaterial*, endpoint ID>
 	+ TextureLayerBuffer == Buffer2D<rgbaColor, ImageSpace>
 
-= Use "layer buffers" at ShipFactory
++ Use "layer buffers" at ShipFactory
 	+ ShipMaterialization class (@GameLib): four buffers
 	+ static ShipFactory::MaterializeShip(...) -> ShipMaterialization
 		+ See first if can make whole ShipFactory static again
@@ -26,7 +26,7 @@ https://gamejolt.com/x/permalink/comment/11457002
 			+ Throw on conflicts, like (should be) now
 	+ ShipFactory::WhateverNow(): use MaterializeShip to get ShipMaterialization and continue from there
 		+ Given that you're at it: ShipFactoryTypes::ShipFactoryPoint: nuke vec2i and replace with ShipSpaceCoordinates (and user-facing coords being ImageCoordinates)
-	= Test:
+	+ Test:
 		+ Basic:
 			+ Legacy ropes
 			+ Native ropes
@@ -40,7 +40,9 @@ https://gamejolt.com/x/permalink/comment/11457002
 				+ All legacy
 				+ All native
 		+ Both auto-texturization settings
-		- Perf (before & after)
+		+ Perf (before & after)
+			+ Before: ~100ms (factory including auto-text)
+			+ After: ~110ms
 
 - Check if also old code asserted on Szerszen cargo for hull
 	- Fix assert if so
