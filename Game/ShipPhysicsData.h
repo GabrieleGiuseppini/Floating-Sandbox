@@ -8,8 +8,6 @@
 #include <GameCore/GameTypes.h>
 #include <GameCore/Vectors.h>
 
-#include <optional>
-
 /*
  * Physics data for a ship.
  */
@@ -18,11 +16,11 @@ struct ShipPhysicsData final
 public:
 
     vec2f Offset;
-    std::optional<float> InternalPressure; // atm
+    float InternalPressure; // atm
 
     ShipPhysicsData(
         vec2f offset,
-        std::optional<float> internalPressure)
+        float internalPressure)
         : Offset(std::move(offset))
         , InternalPressure(internalPressure)
     {
@@ -30,7 +28,7 @@ public:
 
     ShipPhysicsData()
         : Offset(vec2f::zero())
-        , InternalPressure()
+        , InternalPressure(1.0f)
     {}
 
     ShipPhysicsData(ShipPhysicsData const & other) = default;

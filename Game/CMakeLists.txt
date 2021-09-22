@@ -38,6 +38,8 @@ set  (GAME_SOURCES
 	ShipDefinition.h
 	ShipDefinitionFile.cpp
 	ShipDefinitionFile.h
+	ShipDeSerializer.cpp
+	ShipDeSerializer.h
 	ShipFactory.cpp
 	ShipFactory.h
 	ShipFactoryTypes.h

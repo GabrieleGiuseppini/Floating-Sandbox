@@ -46,12 +46,31 @@ https://gamejolt.com/x/permalink/comment/11457002
 
 + Check if also old code asserted on Szerszen cargo for hull
 
-- See if can nuke Matrix2
-
-- Ship De/Serialization
-	- Ultimate ship definition consists of LayerBuffers, not images (except for Texture obviously)
-	- ShipMaterialization functionality currently in ShipFactory should move to ship deserializer, for formats "png" and "shp"
-		- This is where we're fine with doing the "legacy" tricks, and with e.g. inserting missing structural materials for rope endpoints in the ropes layer
+= Ship De/Serialization
+	! Spec:
+		- Ultimate ship definition consists of LayerBuffers, not images (except for Texture obviously)
+		- ShipMaterialization functionality currently in ShipFactory should move to ship deserializer, for formats "png" and "shp"
+			- This is where we're fine with doing the "legacy" tricks, and with e.g. inserting missing structural materials for rope endpoints in the ropes layer
+	= Impl:
+		+ ShipMaterialization also carries all attributes of ShipDefinition
+		= ShipDeserializer
+			= Load(filepath, MaterialDB) -> ShipMaterialization
+				+ ShipMaterialization functionality currently in ShipFactory should move to ship deserializer, for formats "png" and "shp"
+					+ This is where we're fine with doing the "legacy" tricks, and with e.g. inserting missing structural materials for rope endpoints in the ropes layer
+				= png
+				= shp
+			- LoadPreview(filepath, MaterialDB) -> ShipPreview
+				- png
+				- shp
+			- Save(ShipMaterialization, filepath)
+				- NOP at the moment
+		- Also add ShipPreview functionality to ShipDeSerializer
+			- See exactly how it's used
+		- Nuke ShipDefinition, ShipDefinitionFile
+		- "ShipMaterialization" -> "ShipDefinition"
+		- Use ShipDeSerializer		
+		- ShipFactory:
+			- Nuke MaterializeShip code, just begin with ShipMaterialization as arg
 
 - Model contains the four new layer buffer types (as uq_ptr)
 
