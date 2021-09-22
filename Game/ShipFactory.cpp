@@ -125,7 +125,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
                 bool const isRopePoint = (!!materializedShip.RopesLayer) && (*materializedShip.RopesLayer)[coords].Material != nullptr;
 
                 pointInfos1.emplace_back(
-                    vec2i(x, y),
+                    coords,
                     IntegralCoordinates(x, y).FlipY(materializedShip.Size.height),
                     vec2f(
                         static_cast<float>(x) - halfShipWidth,
@@ -812,11 +812,11 @@ void ShipFactory::AppendRopes(
         assert(NoneElementIndex != ropeSegment.PointBIndex1);
 
         // No need to lay a rope if the points are adjacent - as there will be a rope anyway
-        if (pointInfos1[ropeSegment.PointAIndex1].OriginalDefinitionCoordinates.has_value()
-            && pointInfos1[ropeSegment.PointBIndex1].OriginalDefinitionCoordinates.has_value())
+        if (pointInfos1[ropeSegment.PointAIndex1].DefinitionCoordinates.has_value()
+            && pointInfos1[ropeSegment.PointBIndex1].DefinitionCoordinates.has_value())
         {
-            if (abs(pointInfos1[ropeSegment.PointAIndex1].OriginalDefinitionCoordinates->x - pointInfos1[ropeSegment.PointBIndex1].OriginalDefinitionCoordinates->x) <= 1
-                && abs(pointInfos1[ropeSegment.PointAIndex1].OriginalDefinitionCoordinates->y - pointInfos1[ropeSegment.PointBIndex1].OriginalDefinitionCoordinates->y) <= 1)
+            if (abs(pointInfos1[ropeSegment.PointAIndex1].DefinitionCoordinates->x - pointInfos1[ropeSegment.PointBIndex1].DefinitionCoordinates->x) <= 1
+                && abs(pointInfos1[ropeSegment.PointAIndex1].DefinitionCoordinates->y - pointInfos1[ropeSegment.PointBIndex1].DefinitionCoordinates->y) <= 1)
             {
                 // No need to lay a rope
                 continue;

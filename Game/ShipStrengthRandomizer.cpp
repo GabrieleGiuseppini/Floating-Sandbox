@@ -176,10 +176,10 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     {
         for (ElementIndex pointIndex1 : t.PointIndices1)
         {
-            auto const & coords = pointInfos2[pointIndexRemap2[pointIndex1]].OriginalDefinitionCoordinates;
+            auto const & coords = pointInfos2[pointIndexRemap2[pointIndex1]].DefinitionCoordinates;
             if (coords.has_value())
             {
-                distanceMatrix[*coords + vec2i(1, 1) - pointIndexMatrixRegionOrigin].Distance = std::numeric_limits<float>::max();
+                distanceMatrix[vec2i(coords->x + 1, coords->y + 1) - pointIndexMatrixRegionOrigin].Distance = std::numeric_limits<float>::max();
             }
         }
     }
@@ -189,17 +189,17 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
         for (ElementIndex springIndex2 : frontier.EdgeIndices2)
         {
             auto const pointAIndex2 = pointIndexRemap2[springInfos2[springIndex2].PointAIndex1];
-            auto const & coordsA = pointInfos2[pointAIndex2].OriginalDefinitionCoordinates;
+            auto const & coordsA = pointInfos2[pointAIndex2].DefinitionCoordinates;
             if (coordsA.has_value())
             {
-                distanceMatrix[*coordsA + vec2i(1, 1) - pointIndexMatrixRegionOrigin].Distance = 0.0f;
+                distanceMatrix[vec2i(coordsA->x + 1, coordsA->y + 1) - pointIndexMatrixRegionOrigin].Distance = 0.0f;
             }
 
             auto const pointBIndex2 = pointIndexRemap2[springInfos2[springIndex2].PointBIndex1];
-            auto const & coordsB = pointInfos2[pointBIndex2].OriginalDefinitionCoordinates;
+            auto const & coordsB = pointInfos2[pointBIndex2].DefinitionCoordinates;
             if (coordsB.has_value())
             {
-                distanceMatrix[*coordsB + vec2i(1, 1) - pointIndexMatrixRegionOrigin].Distance = 0.0f;
+                distanceMatrix[vec2i(coordsB->x + 1, coordsB->y + 1) - pointIndexMatrixRegionOrigin].Distance = 0.0f;
             }
         }
     }
@@ -229,10 +229,12 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
 
         auto const randomDraw = pointChoiceDistribution(randomEngine);
         ElementIndex const startingPointIndex2 = pointIndexRemap2[triangleInfos1[randomDraw / 3].PointIndices1[randomDraw % 3]];
-        if (!pointInfos2[startingPointIndex2].OriginalDefinitionCoordinates.has_value())
+        if (!pointInfos2[startingPointIndex2].DefinitionCoordinates.has_value())
             continue;
 
-        vec2i startingPointCoords = *pointInfos2[startingPointIndex2].OriginalDefinitionCoordinates + vec2i(1, 1) - pointIndexMatrixRegionOrigin;
+        vec2i startingPointCoords =
+            vec2i(pointInfos2[startingPointIndex2].DefinitionCoordinates->x + 1, pointInfos2[startingPointIndex2].DefinitionCoordinates->y + 1)
+            - pointIndexMatrixRegionOrigin;
         assert(startingPointCoords.IsInRect(distanceMatrix));
 
         // Navigate in distance map to find local maximum

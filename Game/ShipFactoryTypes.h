@@ -29,7 +29,7 @@ using ShipFactoryPointIndexMatrix = Matrix2<std::optional<ElementIndex>>;
 
 struct ShipFactoryPoint
 {
-    std::optional<vec2i> OriginalDefinitionCoordinates; // In original image (y=0 @ bottom), from any of the layers that provide points
+    std::optional<ShipSpaceCoordinates> DefinitionCoordinates; // From any of the layers that provide points
     std::optional<IntegralCoordinates> UserCoordinates; // For displaying messages to users
     vec2f Position;
     vec2f TextureCoordinates;
@@ -46,7 +46,7 @@ struct ShipFactoryPoint
     std::vector<ElementIndex> ConnectedTriangles1;
 
     ShipFactoryPoint(
-        std::optional<vec2i> originalDefinitionCoordinates,
+        std::optional<ShipSpaceCoordinates> definitionCoordinates,
         std::optional<IntegralCoordinates> userCoordinates,
         vec2f position,
         vec2f textureCoordinates,
@@ -55,7 +55,7 @@ struct ShipFactoryPoint
         bool isRope,
         float strength,
         float water)
-        : OriginalDefinitionCoordinates(originalDefinitionCoordinates)
+        : DefinitionCoordinates(definitionCoordinates)
         , UserCoordinates(userCoordinates)
         , Position(position)
         , TextureCoordinates(textureCoordinates)

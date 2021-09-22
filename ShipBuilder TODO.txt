@@ -24,8 +24,8 @@ https://gamejolt.com/x/permalink/comment/11457002
 			+ Throw on conflicts, like (should be) now
 		+ Also includes filling-in Electrical from electrical materials found in structure (legacy)
 			+ Throw on conflicts, like (should be) now
-	- ShipFactory::WhateverNow(): use MaterializeShip to get ShipMaterialization and continue from there
-		- Given that you're at it: ShipFactoryTypes::ShipFactoryPoint: nuke vec2i and replace with ShipSpaceCoordinates (and user-facing coords being ImageCoordinates)
+	+ ShipFactory::WhateverNow(): use MaterializeShip to get ShipMaterialization and continue from there
+		+ Given that you're at it: ShipFactoryTypes::ShipFactoryPoint: nuke vec2i and replace with ShipSpaceCoordinates (and user-facing coords being ImageCoordinates)
 	- Test:
 		- Basic:
 			- Legacy ropes
