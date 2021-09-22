@@ -19,7 +19,7 @@ https://gamejolt.com/x/permalink/comment/11457002
 - Use "layer buffers" at ShipFactory
 	+ ShipMaterialization class (@GameLib): four buffers
 	- static ShipFactory::MaterializeShip(...) -> ShipMaterialization
-		- See first if can make whole ShipFactory static again
+		+ See first if can make whole ShipFactory static again
 		- Also includes filling-in Ropes from rope endpoints found in structure
 			- Throw on conflicts, like (should be) now
 		- Also includes filling-in Electrical from electrical materials found in structure

@@ -908,7 +908,6 @@ private:
 
     ShipStrengthRandomizer mShipStrengthRandomizer;
     ShipTexturizer mShipTexturizer;
-    ShipFactory mShipFactory;
 
 
     //

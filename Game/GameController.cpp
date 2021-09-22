@@ -71,7 +71,6 @@ GameController::GameController(
     // Ship factory
     , mShipStrengthRandomizer()
     , mShipTexturizer(mMaterialDatabase, resourceLocator)
-    , mShipFactory(mMaterialDatabase, mShipTexturizer, mShipStrengthRandomizer)
     // State machines
     , mTsunamiNotificationStateMachine()
     , mThanosSnapStateMachines()
@@ -303,10 +302,13 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
 
     auto const shipId = mWorld->GetNextShipId();
 
-    auto [ship, textureImage] = mShipFactory.Create(
+    auto [ship, textureImage] = ShipFactory::Create(
         shipId,
         *mWorld,
         std::move(shipDefinition),
+        mMaterialDatabase,
+        mShipTexturizer,
+        mShipStrengthRandomizer,
         mGameEventDispatcher,
         mTaskThreadPool,
         mGameParameters);
@@ -1364,10 +1366,13 @@ ShipMetadata GameController::ResetAndLoadShip(
 
     // Produce ship
     auto const shipId = newWorld->GetNextShipId();
-    auto [ship, textureImage] = mShipFactory.Create(
+    auto [ship, textureImage] = ShipFactory::Create(
         shipId,
         *newWorld,
         std::move(shipDefinition),
+        mMaterialDatabase,
+        mShipTexturizer,
+        mShipStrengthRandomizer,
         mGameEventDispatcher,
         mTaskThreadPool,
         mGameParameters);
