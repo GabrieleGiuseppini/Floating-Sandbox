@@ -11,5 +11,8 @@
 
 struct ShipMaterialization
 {
-    // TODO
+    std::unique_ptr<StructuralLayerBuffer> StructuralLayer;
+    std::unique_ptr<ElectricalLayerBuffer> ElectricalLayer;
+    std::unique_ptr<RopesLayerBuffer> RopesLayer;
+    std::unique_ptr<TextureLayerBuffer> TextureLayer;
 };
