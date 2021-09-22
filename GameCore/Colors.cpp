@@ -26,12 +26,10 @@ std::string rgbColor::toString() const
 {
     std::stringstream ss;
 
-    ss << std::hex << std::setfill('0') << std::setw(2)
-        << static_cast<unsigned int>(r)
-        << ' '
-        << static_cast<unsigned int>(g)
-        << ' '
-        << static_cast<unsigned int>(b);
+    ss << std::hex << std::setfill('0')
+        << std::setw(2) << static_cast<unsigned int>(r)
+        << std::setw(2) << static_cast<unsigned int>(g)
+        << std::setw(2) << static_cast<unsigned int>(b);
 
     return ss.str();
 }
@@ -55,14 +53,11 @@ std::string rgbaColor::toString() const
 {
     std::stringstream ss;
 
-    ss << std::hex << std::setfill('0') << std::setw(2)
-        << static_cast<unsigned int>(r)
-        << std::hex << std::setfill('0') << std::setw(2)
-        << static_cast<unsigned int>(g)
-        << std::hex << std::setfill('0') << std::setw(2)
-        << static_cast<unsigned int>(b)
-        << std::hex << std::setfill('0') << std::setw(2)
-        << static_cast<unsigned int>(a);
+    ss << std::hex << std::setfill('0')
+        << std::setw(2) << static_cast<unsigned int>(r)
+        << std::setw(2) << static_cast<unsigned int>(g)
+        << std::setw(2) << static_cast<unsigned int>(b)
+        << std::setw(2) << static_cast<unsigned int>(a);
 
     return ss.str();
 }

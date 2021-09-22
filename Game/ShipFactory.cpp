@@ -126,7 +126,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
                 pointInfos1.emplace_back(
                     coords,
-                    IntegralCoordinates(x, y).FlipY(materializedShip.Size.height),
                     vec2f(
                         static_cast<float>(x) - halfShipWidth,
                         static_cast<float>(y)) + shipDefinition.PhysicsData.Offset,
@@ -963,7 +962,6 @@ void ShipFactory::AppendRopes(
             // Add ShipFactoryPoint
             StructuralMaterial const & ropeMaterial = isFirstHalf ? *(ropeSegment.PointAMaterial) : *(ropeSegment.PointBMaterial);
             pointInfos1.emplace_back(
-                std::nullopt,
                 std::nullopt,
                 newPosition,
                 MakeTextureCoordinates(newPosition.x, newPosition.y, shipSize),

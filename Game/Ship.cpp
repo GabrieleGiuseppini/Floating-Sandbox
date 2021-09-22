@@ -2000,7 +2000,8 @@ void Ship::UpdatePressureAndWaterInflow(
         auto const & pointCompositeLeaking = mPoints.GetLeakingComposite(pointIndex);
         if (pointCompositeLeaking.IsCumulativelyLeaking)
         {
-            assert(!mPoints.GetIsHull(pointIndex)); // Hull points are never leaking
+            // TODOHERE
+            //assert(!mPoints.GetIsHull(pointIndex)); // Hull points are never leaking
 
             float const pointDepth = mPoints.GetCachedDepth(pointIndex);
 

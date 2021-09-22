@@ -26,23 +26,24 @@ https://gamejolt.com/x/permalink/comment/11457002
 			+ Throw on conflicts, like (should be) now
 	+ ShipFactory::WhateverNow(): use MaterializeShip to get ShipMaterialization and continue from there
 		+ Given that you're at it: ShipFactoryTypes::ShipFactoryPoint: nuke vec2i and replace with ShipSpaceCoordinates (and user-facing coords being ImageCoordinates)
-	- Test:
-		- Basic:
-			- Legacy ropes
-			- Native ropes
-			- Legacy+Native ropes
-			- Legacy electrical
-			- Native electrical
-			- Legacy+Native electrical
-			- Texture
-		- Corner cases:
-			- Ropes:
-				- Too many endpoints for same Rope ID
-					- All legacy
-					- Some legacy, some ropes layer
-					- All ropes layer
-		- Both auto-texturization settings
+	= Test:
+		+ Basic:
+			+ Legacy ropes
+			+ Native ropes
+			X Legacy+Native ropes
+			+ Legacy electrical
+			+ Native electrical
+			X Legacy+Native electrical
+			+ Texture
+		+ Corner cases:
+			+ Ropes: too many endpoints for same Rope ID
+				+ All legacy
+				+ All native
+		+ Both auto-texturization settings
 		- Perf (before & after)
+
+- Check if also old code asserted on Szerszen cargo for hull
+	- Fix assert if so
 
 - See if can nuke Matrix2
 
