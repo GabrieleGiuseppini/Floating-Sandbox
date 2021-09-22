@@ -122,8 +122,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
                 pointIndexMatrix[{x + 1, y + 1}] = static_cast<ElementIndex>(pointIndex);
 
-                bool const isRopePoint = (!!materializedShip.RopesLayer) && (*materializedShip.RopesLayer)[coords].Material != nullptr;
-
                 pointInfos1.emplace_back(
                     coords,
                     vec2f(
@@ -132,7 +130,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
                     MakeTextureCoordinates(x, y, materializedShip.Size),
                     structuralElement.RenderColor,
                     *structuralMaterial,
-                    isRopePoint,
+                    structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope),
                     structuralMaterial->Strength,
                     water);
 

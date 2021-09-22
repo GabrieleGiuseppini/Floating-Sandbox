@@ -44,8 +44,7 @@ https://gamejolt.com/x/permalink/comment/11457002
 			+ Before: ~100ms (factory including auto-text)
 			+ After: ~110ms
 
-- Check if also old code asserted on Szerszen cargo for hull
-	- Fix assert if so
++ Check if also old code asserted on Szerszen cargo for hull
 
 - See if can nuke Matrix2
 
