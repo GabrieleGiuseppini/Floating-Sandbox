@@ -11,15 +11,15 @@
 
 #include <memory>
 
-ShipMaterialization ShipDeSerializer::LoadShip(
+ShipDefinition ShipDeSerializer::LoadShip(
     std::filesystem::path const & shipFilePath,
     MaterialDatabase const & materialDatabase)
 {
-    if (IsPngFileType(shipFilePath))
+    if (IsPngShipDefinitionFile(shipFilePath))
     {
         return LoadShipPng(shipFilePath, materialDatabase);
     }
-    else if (IsShpFileType(shipFilePath))
+    else if (IsShpShipDefinitionFile(shipFilePath))
     {
         return LoadShipShp(shipFilePath, materialDatabase);
     }
@@ -31,11 +31,11 @@ ShipMaterialization ShipDeSerializer::LoadShip(
 
 ShipPreview ShipDeSerializer::LoadShipPreview(std::filesystem::path const & shipFilePath)
 {
-    if (IsPngFileType(shipFilePath))
+    if (IsPngShipDefinitionFile(shipFilePath))
     {
         return LoadShipPreviewPng(shipFilePath);
     }
-    else if (IsShpFileType(shipFilePath))
+    else if (IsShpShipDefinitionFile(shipFilePath))
     {
         return LoadShipPreviewShp(shipFilePath);
     }
@@ -46,23 +46,23 @@ ShipPreview ShipDeSerializer::LoadShipPreview(std::filesystem::path const & ship
 }
 
 void ShipDeSerializer::SaveShip(
-    ShipMaterialization const & shipDefinition,
+    ShipDefinition const & shipDefinition,
     std::filesystem::path const & shipFilePath)
 {
     // TODOHERE
 }
 
-bool ShipDeSerializer::IsPngFileType(std::filesystem::path const & shipFilePath)
+bool ShipDeSerializer::IsPngShipDefinitionFile(std::filesystem::path const & shipFilePath)
 {
     return Utils::CaseInsensitiveEquals(shipFilePath.extension().string(), ".png");
 }
 
-bool ShipDeSerializer::IsShpFileType(std::filesystem::path const & shipFilePath)
+bool ShipDeSerializer::IsShpShipDefinitionFile(std::filesystem::path const & shipFilePath)
 {
     return Utils::CaseInsensitiveEquals(shipFilePath.extension().string(), ".shp");
 }
 
-ShipMaterialization ShipDeSerializer::LoadShipPng(
+ShipDefinition ShipDeSerializer::LoadShipPng(
     std::filesystem::path const & shipFilePath,
     MaterialDatabase const & materialDatabase)
 {
@@ -89,7 +89,7 @@ ShipPreview ShipDeSerializer::LoadShipPreviewPng(std::filesystem::path const & s
         false); // hasElectricals
 }
 
-ShipMaterialization ShipDeSerializer::LoadShipShp(
+ShipDefinition ShipDeSerializer::LoadShipShp(
     std::filesystem::path const & shipFilePath,
     MaterialDatabase const & materialDatabase)
 {
@@ -320,7 +320,7 @@ ShipDeSerializer::JsonDefinition ShipDeSerializer::LoadJsonDefinitionShp(std::fi
         autoTexturizationSettings);
 }
 
-ShipMaterialization ShipDeSerializer::LoadFromDefinitionImageFilePaths(
+ShipDefinition ShipDeSerializer::LoadFromDefinitionImageFilePaths(
     std::filesystem::path const & structuralLayerImageFilePath,
     std::optional<std::filesystem::path> const & electricalLayerImageFilePath,
     std::optional<std::filesystem::path> const & ropesLayerImageFilePath,
@@ -393,7 +393,7 @@ ShipMaterialization ShipDeSerializer::LoadFromDefinitionImageFilePaths(
         materialDatabase);
 }
 
-ShipMaterialization ShipDeSerializer::LoadFromDefinitionImages(
+ShipDefinition ShipDeSerializer::LoadFromDefinitionImages(
     RgbImageData && structuralLayerImage,
     std::optional<RgbImageData> && electricalLayerImage,
     std::optional<RgbImageData> && ropesLayerImage,
@@ -741,8 +741,8 @@ ShipMaterialization ShipDeSerializer::LoadFromDefinitionImages(
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Bake materialized ship
-    return ShipMaterialization(
+    // Bake definition
+    return ShipDefinition(
         shipSize,
         std::move(structuralLayer),
         hasElectricalElements ? std::make_unique<ElectricalLayerBuffer>(std::move(electricalLayer)) : nullptr,

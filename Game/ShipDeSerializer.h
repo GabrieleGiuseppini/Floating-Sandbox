@@ -6,7 +6,7 @@
 #pragma once
 
 #include "MaterialDatabase.h"
-#include "ShipMaterialization.h"
+#include "ShipDefinition.h"
 #include "ShipPreview.h"
 
 #include <GameCore/ImageData.h>
@@ -22,22 +22,20 @@ class ShipDeSerializer
 {
 public:
 
-    /* TODOHERE
     static bool IsShipDefinitionFile(std::filesystem::path const & filepath)
     {
-        return Utils::CaseInsensitiveEquals(filepath.extension().string(), ".shp")
-            || Utils::CaseInsensitiveEquals(filepath.extension().string(), ".png");
+        return IsPngShipDefinitionFile(filepath)
+            || IsShpShipDefinitionFile(filepath);
     }
-    */
 
-    static ShipMaterialization LoadShip(
+    static ShipDefinition LoadShip(
         std::filesystem::path const & shipFilePath,
         MaterialDatabase const & materialDatabase);
 
     static ShipPreview LoadShipPreview(std::filesystem::path const & shipFilePath);
 
     static void SaveShip(
-        ShipMaterialization const & shipDefinition,
+        ShipDefinition const & shipDefinition,
         std::filesystem::path const & shipFilePath);
 
 private:
@@ -70,17 +68,17 @@ private:
         {}
     };
 
-    static bool IsPngFileType(std::filesystem::path const & shipFilePath);
+    static bool IsPngShipDefinitionFile(std::filesystem::path const & shipFilePath);
 
-    static bool IsShpFileType(std::filesystem::path const & shipFilePath);
+    static bool IsShpShipDefinitionFile(std::filesystem::path const & shipFilePath);
 
-    static ShipMaterialization LoadShipPng(
+    static ShipDefinition LoadShipPng(
         std::filesystem::path const & shipFilePath,
         MaterialDatabase const & materialDatabase);
 
     static ShipPreview LoadShipPreviewPng(std::filesystem::path const & shipFilePath);
 
-    static ShipMaterialization LoadShipShp(
+    static ShipDefinition LoadShipShp(
         std::filesystem::path const & shipFilePath,
         MaterialDatabase const & materialDatabase);
 
@@ -88,7 +86,7 @@ private:
 
     static JsonDefinition LoadJsonDefinitionShp(std::filesystem::path const & shipFilePath);
 
-    static ShipMaterialization LoadFromDefinitionImageFilePaths(
+    static ShipDefinition LoadFromDefinitionImageFilePaths(
         std::filesystem::path const & structuralLayerImageFilePath,
         std::optional<std::filesystem::path> const & electricalLayerImageFilePath,
         std::optional<std::filesystem::path> const & ropesLayerImageFilePath,
@@ -98,7 +96,7 @@ private:
         std::optional<ShipAutoTexturizationSettings> const & autoTexturizationSettings,
         MaterialDatabase const & materialDatabase);
 
-    static ShipMaterialization LoadFromDefinitionImages(
+    static ShipDefinition LoadFromDefinitionImages(
         RgbImageData && structuralLayerImage,
         std::optional<RgbImageData> && electricalLayerImage,
         std::optional<RgbImageData> && ropesLayerImage,

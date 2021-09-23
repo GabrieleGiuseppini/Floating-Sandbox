@@ -34,19 +34,14 @@ set  (GAME_SOURCES
 	RenderDeviceProperties.h
 	ResourceLocator.cpp
 	ResourceLocator.h
-	ShipDefinition.cpp
-	ShipDefinition.h
-	ShipDefinitionFile.cpp
-	ShipDefinitionFile.h
 	ShipDeSerializer.cpp
 	ShipDeSerializer.h
 	ShipFactory.cpp
 	ShipFactory.h
 	ShipFactoryTypes.h
-	ShipMaterialization.h
+	ShipDefinition.h
 	ShipMetadata.h
 	ShipPhysicsData.h
-	ShipPreview.cpp
 	ShipPreview.h
 	ShipPreviewDirectoryManager.cpp
 	ShipPreviewDirectoryManager.h

@@ -46,39 +46,44 @@ https://gamejolt.com/x/permalink/comment/11457002
 
 + Check if also old code asserted on Szerszen cargo for hull
 
-= Ship De/Serialization
++ Ship De/Serialization
 	! Spec:
 		- Ultimate ship definition consists of LayerBuffers, not images (except for Texture obviously)
 		- ShipMaterialization functionality currently in ShipFactory should move to ship deserializer, for formats "png" and "shp"
 			- This is where we're fine with doing the "legacy" tricks, and with e.g. inserting missing structural materials for rope endpoints in the ropes layer
-	= Impl:
+	+ Impl:
 		+ ShipMaterialization also carries all attributes of ShipDefinition
-		= ShipDeserializer			
-			= Load(filepath, MaterialDB) -> ShipMaterialization
+		+ ShipDeserializer			
+			+ Load(filepath, MaterialDB) -> ShipMaterialization
 				+ ShipMaterialization functionality currently in ShipFactory should move to ship deserializer, for formats "png" and "shp"
 					+ This is where we're fine with doing the "legacy" tricks, and with e.g. inserting missing structural materials for rope endpoints in the ropes layer
-				= png
-				= shp
-			= LoadPreview(filepath, MaterialDB) -> ShipPreview
-				= png
-				= shp
+				+ png
+				+ shp
+			+ LoadPreview(filepath, MaterialDB) -> ShipPreview
+				+ png
+				+ shp
 			+ Save(ShipMaterialization, filepath)
 				+ NOP at the moment
-		- Nuke ShipPreview.cpp
-		- Nuke ShipDefinition.*, ShipDefinitionFile.*
-		- "ShipMaterialization" -> "ShipDefinition"
-		- Use ShipDeSerializer ipv ShipDefinition::Load
-		- ShipFactory:
-			- Nuke MaterializeShip code, just begin with ShipMaterialization (now ShipDefinition) as arg
+		+ Nuke ShipPreview.cpp
+		+ Nuke ShipDefinition.*, ShipDefinitionFile.*
+		+ "ShipMaterialization" -> "ShipDefinition"
+		+ Use ShipDeSerializer ipv ShipDefinition::Load
+			+ ShipDefinition
+			+ ShipPreview
+		+ ShipFactory:
+			+ Nuke MaterializeShip code, just begin with ShipMaterialization (now ShipDefinition) as arg
 
 - Model contains the four new layer buffer types (1 as member, 3 as uq_ptr)
 
 - Merge into shipbuilder
 
+- Build on Ubuntu
+
 ----------------------
 
 - Undo hierarchy: there are four subtypes of UndoEditAction - for each of the "layer buffer" types - on top of e.g. "resize" and "all layers"
 	- These four are all implemented via a single templated class, templated on TLayerBuffer
+		- Contains TLayerBuffer and origin
 	- Apply() invokes Controller::RestoreLayer(TLayerBuffer const &, origin)
 
 - Click-And-Draw use case:
@@ -124,8 +129,6 @@ https://gamejolt.com/x/permalink/comment/11457002
 	- Strategy for other tools' enums - to make it work for now
 
 - Load Ship
-	- ShipFactory: static helper: file-> "Todo" == matrices of information (Structural:material*, Electrical:material* + instanceId, Ropes:TODO, Texture:rgbaColor)
-	- MainFrame::LoadShip -> Definition -> pass definition to ModelController (via Controller) -> ShipFactory's static helper -> "TODO" -> own matrices
 
 - Previews:
 	- Spec:
@@ -156,6 +159,35 @@ https://gamejolt.com/x/permalink/comment/11457002
 	- Button - in File panel, slightly separated from the File buttons
 	- Click -> Dialog for Canvas Centering/Clipping -> Controller -> ...TODO...
 	- TODO: should we move the "X-and-back-to-game" buttons to the File panel as well, nuking that rightmost panel?
+
+- Import/Export:
+	- Load ship:
+		- .png, .shp, .shp2
+	- Save ship:
+		- .shp2
+		- .png, if only structural (for now, as long as we don't lose information like now)
+			- Same as StructuralLayer export
+	- Structural:
+		- Import from:
+			- .png, .shp, .shp2 (load whole and throw away)
+		- Export to .png (for now, as long as we don't lose information like now)
+			- TODO: machinery for StructuralLayerBuffer -> ImageData
+			- Same like save ship when only structural
+	- Electrical:
+		- Import:
+			- .shp, .shp2 (load whole and throw away)
+		- No export (can save .shp2 and import from there)
+	- Ropes:
+		- Import:
+			- .shp, .shp2 (load whole and throw away)
+		- No export (can save .shp2 and import from there)
+	- Texture:
+		- Import:
+			- .png
+				- Ad-hoc code using ImageFileTools
+			- .shp, .shp2 (load whole and throw away)
+		- No export (just useless at this moment)
+
 
 - Grid view:
 	- TODO: where is the toggle button? Need new top panel area? Re-design top panel area?

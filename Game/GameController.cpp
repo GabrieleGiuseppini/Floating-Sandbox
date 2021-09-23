@@ -6,6 +6,7 @@
 #include "GameController.h"
 
 #include "ComputerCalibration.h"
+#include "ShipDeSerializer.h"
 
 #include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
@@ -287,11 +288,11 @@ ShipMetadata GameController::ResetAndReloadShip(std::filesystem::path const & sh
 ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitionFilepath)
 {
     // Load ship definition
-    auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
+    auto shipDefinition = ShipDeSerializer::LoadShip(shipDefinitionFilepath, mMaterialDatabase);
 
     // Pre-validate ship's texture, if any
-    if (shipDefinition.TextureLayerImage.has_value())
-        mRenderContext->ValidateShipTexture(*shipDefinition.TextureLayerImage);
+    if (shipDefinition.TextureLayer)
+        mRenderContext->ValidateShipTexture(*shipDefinition.TextureLayer);
 
     // Remember metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);
@@ -1346,11 +1347,11 @@ ShipMetadata GameController::ResetAndLoadShip(
     assert(!!mWorld);
 
     // Load ship definition
-    auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
+    auto shipDefinition = ShipDeSerializer::LoadShip(shipDefinitionFilepath, mMaterialDatabase);
 
     // Pre-validate ship's texture
-    if (shipDefinition.TextureLayerImage.has_value())
-        mRenderContext->ValidateShipTexture(*shipDefinition.TextureLayerImage);
+    if (shipDefinition.TextureLayer)
+        mRenderContext->ValidateShipTexture(*shipDefinition.TextureLayer);
 
     // Save metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);

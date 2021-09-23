@@ -10,7 +10,6 @@
 #include "Physics.h"
 #include "ShipDefinition.h"
 #include "ShipFactoryTypes.h"
-#include "ShipMaterialization.h"
 #include "ShipStrengthRandomizer.h"
 #include "ShipTexturizer.h"
 
@@ -45,10 +44,6 @@ public:
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         std::shared_ptr<TaskThreadPool> taskThreadPool,
         GameParameters const & gameParameters);
-
-    static ShipMaterialization MaterializeShip(
-        ShipDefinition & shipDefinition,
-        MaterialDatabase const & materialDatabase);
 
 private:
 
@@ -159,7 +154,7 @@ private:
     }
 
     static std::vector<RopeSegment> ExtractRopeSegments(
-        ShipMaterialization const & materializedShip,
+        ShipDefinition const & shipDefinition,
         ShipFactoryPointIndexMatrix const & pointIndexMatrix);
 
     static void AppendRopes(

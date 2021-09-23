@@ -8,6 +8,7 @@
 #include <UILib/WxHelpers.h>
 
 #include <Game/ImageFileTools.h>
+#include <Game/ShipDeSerializer.h>
 #include <Game/ShipPreviewDirectoryManager.h>
 
 #include <GameCore/GameException.h>
@@ -988,7 +989,7 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
         try
         {
             // Load preview
-            auto shipPreview = ShipPreview::Load(shipFilePaths[iShip]);
+            auto shipPreview = ShipDeSerializer::LoadShipPreview(shipFilePaths[iShip]);
 
             // Load preview image
             auto shipPreviewImage = previewDirectoryManager->LoadPreviewImage(shipPreview, PreviewImageSize);
