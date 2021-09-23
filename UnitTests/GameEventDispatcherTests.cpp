@@ -21,6 +21,7 @@ StructuralMaterial MakeStructuralMaterial(std::string name)
 {
     return StructuralMaterial(
         name,
+        rgbColor::zero(),
         1.0f,
         1.0f,
         1.0f,
@@ -48,7 +49,6 @@ StructuralMaterial MakeStructuralMaterial(std::string name)
         1.0f,
         false,
         // Palette
-        vec4f::zero(),
         std::nullopt);
 }
 

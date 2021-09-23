@@ -2,12 +2,12 @@
 
 #include "gtest/gtest.h"
 
-TEST(VersionTest, CurrentVersion)
+TEST(VersionTests, CurrentVersion)
 {
     EXPECT_EQ(Version::CurrentVersion().ToString(), APPLICATION_VERSION_LONG_STR);
 }
 
-TEST(VersionTest, Operators)
+TEST(VersionTests, Operators)
 {
     Version v1(5, 6, 7, 8);
 
@@ -37,14 +37,14 @@ TEST(VersionTest, Operators)
     EXPECT_TRUE(v1 >= Version(5, 6, 7, 7));
 }
 
-TEST(VersionTest, ToString)
+TEST(VersionTests, ToString)
 {
     Version v1(5, 6, 0, 8);
 
     EXPECT_EQ(v1.ToString(), "5.6.0.8");
 }
 
-TEST(VersionTest, FromString_Good)
+TEST(VersionTests, FromString_Good)
 {
     EXPECT_EQ(Version(5, 6, 0, 8), Version::FromString("5.6.0.8"));
     EXPECT_EQ(Version(5, 6, 0, 8), Version::FromString("5.6.0.8\n"));
@@ -54,7 +54,7 @@ TEST(VersionTest, FromString_Good)
     EXPECT_EQ(Version(500, 60, 40, 80), Version::FromString("500.60.40.80"));
 }
 
-TEST(VersionTest, FromString_Bad)
+TEST(VersionTests, FromString_Bad)
 {
     EXPECT_THROW(
         Version::FromString(""),
