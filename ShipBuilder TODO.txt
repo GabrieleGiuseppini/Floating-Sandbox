@@ -128,7 +128,42 @@ https://gamejolt.com/x/permalink/comment/11457002
 	- Eraser tool
 	- Strategy for other tools' enums - to make it work for now
 
-- Load Ship
+= New/Load/Save Ship
+	- Move ShipLoadDialog/etc. under UILib
+	+ New
+		+ UI: menu + button
+		+ Always enabled
+		+ Asks user if model dirty
+		+ Invoke DoNewShip()
+	= Load
+		+ UI: menu + button
+		+ Always enabled
+		+ Asks user if model dirty
+		- Open file load dialog
+			- .png, .shp, .shp2
+		- If OK: invoke DoLoadShip(selected filename)
+	+ Save:
+		+ UI: menu + button 
+		+ Only enabled when dirty
+		+ if !mCurrentFilename: invokes SaveAs(); else: invokes private SaveShip(mCurrentFilename)
+	= SaveAs:
+		+ UI: menu + button
+		+ Only enabled when dirty
+		- Open file save dialog
+			- .shp2
+			- .png, if only structural (for now, as long as we don't lose information like now)
+				- Same as StructuralLayer export
+		- If OK:
+			- Invoke private SaveShip(selected filename)
+		
+	- DoNewShip:
+		- TODO
+	- DoLoadShip	
+		- TODO
+		- Store filename as mCurrentFilename
+	- DoSaveShip:
+		- TODO
+		- Store filename as mCurrentFilename
 
 - Previews:
 	- Spec:
@@ -161,12 +196,6 @@ https://gamejolt.com/x/permalink/comment/11457002
 	- TODO: should we move the "X-and-back-to-game" buttons to the File panel as well, nuking that rightmost panel?
 
 - Import/Export:
-	- Load ship:
-		- .png, .shp, .shp2
-	- Save ship:
-		- .shp2
-		- .png, if only structural (for now, as long as we don't lose information like now)
-			- Same as StructuralLayer export
 	- Structural:
 		- Import from:
 			- .png, .shp, .shp2 (load whole and throw away)

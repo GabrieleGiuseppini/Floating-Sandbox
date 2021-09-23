@@ -290,13 +290,19 @@ MainFrame::MainFrame(
 
         if (!IsStandAlone())
         {
-            mSaveAndGoBackMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save and Return to Game"), _("Save the current ship and return to the simulator"), wxITEM_NORMAL);
+            mSaveAndGoBackMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship and Return to Game"), _("Save the current ship and return to the simulator"), wxITEM_NORMAL);
             fileMenu->Append(mSaveAndGoBackMenuItem);
             Connect(mSaveAndGoBackMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveAndGoBack);
         }
         else
         {
             mSaveAndGoBackMenuItem = nullptr;
+        }
+
+        {
+            mSaveShipAsMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship As"), _("Save the current ship in a different file"), wxITEM_NORMAL);
+            fileMenu->Append(mSaveShipAsMenuItem);
+            Connect(mSaveShipAsMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveShipAs);
         }
 
         if (!IsStandAlone())
@@ -418,12 +424,8 @@ MainFrame::MainFrame(
 
 void MainFrame::OpenForNewShip()
 {
-    // Create controller - will fire UI reconciliations
-    mController = Controller::CreateNew(
-        *mView,
-        mWorkbenchState,
-        *this,
-        mResourceLocator);
+    // New ship
+    DoNewShip();
 
     // Open ourselves
     Open();
@@ -432,16 +434,7 @@ void MainFrame::OpenForNewShip()
 void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
 {
     // Load ship
-    // TODO: we load the ship here, so errors may occur while we still have a controller;
-    // then, pass loaded data to Controller
-
-    // Create controller - will fire UI reconciliations
-    mController = Controller::CreateForShip(
-        /* TODO: loaded ship ,*/
-        *mView,
-        mWorkbenchState,
-        *this,
-        mResourceLocator);
+    DoLoadShip(shipFilePath);
 
     // Open ourselves
     Open();
@@ -567,8 +560,7 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
                 mResourceLocator.GetIconFilePath("new_ship_button"),
                 [this]()
                 {
-                    wxCommandEvent dummy;
-                    OnNewShip(dummy);
+                    NewShip();
                 },
                 _("Create a new empty ship"));
 
@@ -584,8 +576,7 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
                 mResourceLocator.GetIconFilePath("load_ship_button"),
                 [this]()
                 {
-                    wxCommandEvent dummy;
-                    OnNewShip(dummy);
+                    LoadShip();
                 },
                 _("Load a ship"));
 
@@ -601,12 +592,27 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
                 mResourceLocator.GetIconFilePath("save_ship_button"),
                 [this]()
                 {
-                    wxCommandEvent dummy;
-                    OnSaveShip(dummy);
+                    SaveShip();
                 },
                 _("Save the current ship"));
 
             sizer->Add(mSaveShipButton, 0, wxALL, ButtonMargin);
+        }
+
+        sizer->AddStretchSpacer();
+
+        // Save As ship
+        {
+            mSaveShipAsButton = new BitmapButton(
+                panel,
+                mResourceLocator.GetIconFilePath("save_ship_as_button"),
+                [this]()
+                {
+                    SaveShipAs();
+                },
+                _("Save the current ship in a different file"));
+
+            sizer->Add(mSaveShipAsButton, 0, wxALL, ButtonMargin);
         }
     }
 
@@ -1593,35 +1599,22 @@ void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & /*event*/)
 
 void MainFrame::OnNewShip(wxCommandEvent & /*event*/)
 {
-    if (mController->GetModelController().GetModel().GetIsDirty())
-    {
-        // Ask user if they really want
-        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
-        {
-            return;
-        }
-    }
-
-    // TODO
+    NewShip();
 }
 
 void MainFrame::OnLoadShip(wxCommandEvent & /*event*/)
 {
-    if (mController->GetModelController().GetModel().GetIsDirty())
-    {
-        // Ask user if they really want
-        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
-        {
-            return;
-        }
-    }
-
-    // TODO
+    LoadShip();
 }
 
-void MainFrame::OnSaveShip(wxCommandEvent & /*event*/)
+void MainFrame::OnSaveShip(wxCommandEvent & event)
 {
-    // TODO
+    SaveShip();
+}
+
+void MainFrame::OnSaveShipAs(wxCommandEvent & /*event*/)
+{
+    SaveShipAs();
 }
 
 void MainFrame::OnSaveAndGoBack(wxCommandEvent & /*event*/)
@@ -1726,9 +1719,6 @@ void MainFrame::Open()
 {
     assert(mController);
 
-    // Sync UI
-    ReconciliateUI();
-
     // Show us
     Show(true);
 
@@ -1736,14 +1726,66 @@ void MainFrame::Open()
     mMainApp->SetTopWindow(this);
 }
 
+void MainFrame::NewShip()
+{
+    if (mController->GetModelController().GetModel().GetIsDirty())
+    {
+        // Ask user if they really want
+        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
+        {
+            return;
+        }
+    }
+
+    DoNewShip();
+}
+
+void MainFrame::LoadShip()
+{
+    if (mController->GetModelController().GetModel().GetIsDirty())
+    {
+        // Ask user if they really want
+        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
+        {
+            return;
+        }
+    }
+
+    // TODOHERE:
+    ////- Open file load dialog
+    ////    - If OK : DoLoadShip(selected filename);
+}
+
+bool MainFrame::SaveShip()
+{
+    if (!mCurrentShipFilePath.has_value())
+    {
+        return SaveShipAs();
+    }
+    else
+    {
+        DoSaveShip(*mCurrentShipFilePath);
+        return true;
+    }
+}
+
+bool MainFrame::SaveShipAs()
+{
+    // TODOHERE:
+    ////- Open file save dialog
+    ////    - If OK : DoSaveShip(selected filename); return true;
+    ////    - Else  : return false;
+}
+
 void MainFrame::SaveAndSwitchBackToGame()
 {
-    // TODO: SaveShipDialog
-    // TODO: if success: save via Controller::SaveShip() and provide new file path
-    // TODO: else: cancel operation (i.e. nop)
-
-    std::filesystem::path const TODOPath = mResourceLocator.GetInstalledShipFolderPath() / "Lifeboat.shp";
-    SwitchBackToGame(TODOPath);
+    // Save/SaveAs
+    if (SaveShip())
+    {
+        // Return
+        assert(mCurrentShipFilePath.has_value());
+        SwitchBackToGame(*mCurrentShipFilePath);
+    }
 }
 
 void MainFrame::QuitAndSwitchBackToGame()
@@ -1801,6 +1843,51 @@ bool MainFrame::AskUserIfSure(wxString caption)
 {
     int result = wxMessageBox(_("Are you sure you want to discard your changes?"), _("Are You Sure?"), wxOK | wxCANCEL);
     return (result == wxOK);
+}
+
+void MainFrame::DoNewShip()
+{
+    // Start with no filename
+    mCurrentShipFilePath.reset();
+
+    // Create controller (won't fire UI reconciliations)
+    mController = Controller::CreateNew(
+        *mView,
+        mWorkbenchState,
+        *this,
+        mResourceLocator);
+
+    // Reconciliate UI
+    ReconciliateUI();
+}
+
+void MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
+{
+    // TODOHERE
+
+    // TODO: after loaded:
+
+    ////// reset mCurrentShipFilePath
+
+    ////// Create controller (won't fire UI reconciliations)
+    ////mController = Controller::CreateForShip(
+    ////    /* TODO: loaded ship ,*/
+    ////    *mView,
+    ////    mWorkbenchState,
+    ////    *this,
+    ////    mResourceLocator);
+
+    // Reconciliate UI
+    ReconciliateUI();
+}
+
+void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)
+{
+    // TODOHERE
+
+    // TODO: after saved:
+
+    //// TODO: reset mCurrentShipFilePath
 }
 
 void MainFrame::RecalculateWorkCanvasPanning()
@@ -1937,9 +2024,19 @@ void MainFrame::ReconciliateUIWithModelDirtiness(bool isDirty)
         mSaveAndGoBackMenuItem->Enable(false);
     }
 
+    if (mSaveShipAsMenuItem->IsEnabled() != isDirty)
+    {
+        mSaveShipAsMenuItem->Enable(isDirty);
+    }
+
     if (mSaveShipButton->IsEnabled() != isDirty)
     {
         mSaveShipButton->Enable(isDirty);
+    }
+
+    if (mSaveShipAsButton->IsEnabled() != isDirty)
+    {
+        mSaveShipAsButton->Enable(isDirty);
     }
 }
 

@@ -118,6 +118,7 @@ private:
     void OnNewShip(wxCommandEvent & event);
     void OnLoadShip(wxCommandEvent & event);
     void OnSaveShip(wxCommandEvent & event);
+    void OnSaveShipAs(wxCommandEvent & event);
     void OnSaveAndGoBack(wxCommandEvent & event);
     void OnQuitAndGoBack(wxCommandEvent & event);
     void OnQuit(wxCommandEvent & event);
@@ -138,6 +139,14 @@ private:
 
     void Open();
 
+    void NewShip();
+
+    void LoadShip();
+
+    bool SaveShip();
+
+    bool SaveShipAs();
+
     void SaveAndSwitchBackToGame();
 
     void QuitAndSwitchBackToGame();
@@ -150,6 +159,12 @@ private:
         MaterialPlaneType plane);
 
     bool AskUserIfSure(wxString caption);
+
+    void DoNewShip();
+
+    void DoLoadShip(std::filesystem::path const & shipFilePath);
+
+    void DoSaveShip(std::filesystem::path const & shipFilePath);
 
     void RecalculateWorkCanvasPanning();
 
@@ -201,8 +216,10 @@ private:
 
     // File panel
     wxMenuItem * mSaveShipMenuItem;
+    wxMenuItem * mSaveShipAsMenuItem;
     wxMenuItem * mSaveAndGoBackMenuItem;
     BitmapButton * mSaveShipButton;
+    BitmapButton * mSaveShipAsButton;
 
     // Layers panel
     std::array<BitmapToggleButton *, LayerCount> mLayerSelectButtons;
@@ -248,7 +265,7 @@ private:
     //
 
     WorkbenchState mWorkbenchState;
-    std::filesystem::path mOriginalGameShipFilePath;
+    std::optional<std::filesystem::path> mCurrentShipFilePath;
 };
 
 }
