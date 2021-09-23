@@ -74,9 +74,8 @@ https://gamejolt.com/x/permalink/comment/11457002
 			+ Nuke MaterializeShip code, just begin with ShipMaterialization (now ShipDefinition) as arg
 
 - Review whole need of ropes creating structural endpoints @ load type from .shp files
-	- Really needed?
-	- Can it be done by ShipFactory::AddRopes all the time?
-	- And subsequently, the need for StructuralElement to have RenderColor
+	- Do at ShipFactory::Create() within the first pass on Ropes (i.e. ExtractRopeSegments)
+	- And subsequently, check the need for StructuralElement to have RenderColor
 
 - Model contains the four new layer buffer types (1 as member, 3 as uq_ptr)
 
@@ -318,19 +317,21 @@ https://gamejolt.com/x/permalink/comment/11457002
 	- Button to Save (acts also as SaveAs for first save; menu however has also separate SaveAs)
 	- Undo stack
 	- Error (message) notification(s)
+		- StatusBar w/tooltip?
 	+ Add electrical/texture/ropes layer
 	- Button to open ShipMetadata dialog
 	- Resize button (canvas resize)
 
 
 - StatusBar:
-	- Own class
+	+ Own class
 	- Areas:
 		- Canvas:
 			- Coords and icon
-			- Selection size and icon
 			- WorkSpace size and icon
-			- Material under cursor (for ?)
+			- Selection/line/rect/etc. size and icon			
+			- Material under cursor (for drop tool)
+			- Warning icon (w/tooltip)
 		- Ship: (i.e. ship measurements) 
 			- Need UnitsSystem in Preferences
 			- Coords and icon

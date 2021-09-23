@@ -236,7 +236,7 @@ MainFrame::MainFrame(
     {
         // Status bar
         {
-            mStatusBar = new StatusBar(mMainPanel);
+            mStatusBar = new StatusBar(mMainPanel, mResourceLocator);
 
             mainVSizer->Add(
                 mStatusBar,

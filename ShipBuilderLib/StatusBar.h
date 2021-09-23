@@ -5,8 +5,11 @@
 ***************************************************************************************/
 #pragma once
 
+#include <Game/ResourceLocator.h>
+
 #include <GameCore/GameTypes.h>
 
+#include <wx/statbmp.h>
 #include <wx/statusbr.h>
 
 #include <optional>
@@ -17,12 +20,19 @@ class StatusBar : public wxStatusBar
 {
 public:
 
-    StatusBar(wxWindow * parent);
+    StatusBar(
+        wxWindow * parent,
+        ResourceLocator const & resourceLocator);
 
     void SetToolCoordinates(std::optional<ShipSpaceCoordinates> coordinates);
 
 private:
 
+    void OnResize(wxSizeEvent & event);
+
+private:
+
+    // TODO: static bitmaps
 };
 
 }

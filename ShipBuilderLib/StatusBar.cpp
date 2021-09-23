@@ -5,15 +5,27 @@
 ***************************************************************************************/
 #include "StatusBar.h"
 
+#include <GameCore/Log.h>
+
 #include <sstream>
 
 namespace ShipBuilder {
 
-StatusBar::StatusBar(wxWindow * parent)
-    : wxStatusBar(parent, wxID_ANY, 0)
+StatusBar::StatusBar(
+    wxWindow * parent,
+    ResourceLocator const & resourceLocator)
+    : wxStatusBar(parent, wxID_ANY, wxSTB_ELLIPSIZE_END)
 {
-    // TODOHERE
+    Connect(wxEVT_SIZE, (wxObjectEventFunction)&StatusBar::OnResize, 0, this);
+
+    // TODOHERE: use SetStatusWidths, and add all fields here
     SetFieldsCount(1);
+
+    //
+    // Create controls
+    //
+
+    // TODOHERE: create bitmaps all at 0,0, without sizer
 }
 
 void StatusBar::SetToolCoordinates(std::optional<ShipSpaceCoordinates> coordinates)
@@ -26,6 +38,17 @@ void StatusBar::SetToolCoordinates(std::optional<ShipSpaceCoordinates> coordinat
     }
 
     SetStatusText(ss.str(), 0);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void StatusBar::OnResize(wxSizeEvent & event)
+{
+    LogMessage("OnStatusBarResize: ", event.GetSize().GetX(), "x", event.GetSize().GetY());
+
+    // TODOHERE: re-position all our custom controls
+
+    event.Skip();
 }
 
 }
