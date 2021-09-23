@@ -39,8 +39,8 @@ struct ShipDefinition
         , ElectricalLayer(std::move(electricalLayer))
         , RopesLayer(std::move(ropesLayer))
         , TextureLayer(std::move(textureLayer))
-        , AutoTexturizationSettings(std::move(autoTexturizationSettings))
-        , Metadata(std::move(metadata))
-        , PhysicsData(std::move(physicsData))
+        , AutoTexturizationSettings(autoTexturizationSettings)
+        , Metadata(metadata)
+        , PhysicsData(physicsData)
     {}
 };

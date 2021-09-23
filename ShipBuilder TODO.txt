@@ -73,6 +73,11 @@ https://gamejolt.com/x/permalink/comment/11457002
 		+ ShipFactory:
 			+ Nuke MaterializeShip code, just begin with ShipMaterialization (now ShipDefinition) as arg
 
+- Review whole need of ropes creating structural endpoints @ load type from .shp files
+	- Really needed?
+	- Can it be done by ShipFactory::AddRopes all the time?
+	- And subsequently, the need for StructuralElement to have RenderColor
+
 - Model contains the four new layer buffer types (1 as member, 3 as uq_ptr)
 
 - Merge into shipbuilder
@@ -404,6 +409,8 @@ https://gamejolt.com/x/permalink/comment/11457002
 		- other settings: loaded from SB::PreferencesManager
 
 - Ship file format:
+	- Fixed endianness
+		- See https://github.com/voidah/archive/blob/master/archive.h
 	- Min FS version (.shp, .shp2)
 		- Ideally it should be a "set" of versions, including the Materials' DB versions which live in the json so to be easily editable manually
 	- "File lock" which disallows editing

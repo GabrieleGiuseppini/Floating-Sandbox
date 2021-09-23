@@ -168,7 +168,7 @@ SettingsSerializationContext::SettingsSerializationContext(
     PersistedSettingsKey const & settingsKey,
     std::string const & description,
     SettingsStorage & storage)
-    : mSettingsKey(std::move(settingsKey))
+    : mSettingsKey(settingsKey)
     , mStorage(storage)
     , mSettingsJson()
 {
@@ -202,7 +202,7 @@ SettingsSerializationContext::~SettingsSerializationContext()
 SettingsDeserializationContext::SettingsDeserializationContext(
     PersistedSettingsKey const & settingsKey,
     SettingsStorage const & storage)
-    : mSettingsKey(std::move(settingsKey))
+    : mSettingsKey(settingsKey)
     , mStorage(storage)
     , mSettingsRoot()
     , mSettingsVersion(Version::CurrentVersion())

@@ -1775,6 +1775,7 @@ bool MainFrame::SaveShipAs()
     ////- Open file save dialog
     ////    - If OK : DoSaveShip(selected filename); return true;
     ////    - Else  : return false;
+    return false;
 }
 
 void MainFrame::SaveAndSwitchBackToGame()
@@ -1888,6 +1889,7 @@ void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)
     // TODO: after saved:
 
     //// TODO: reset mCurrentShipFilePath
+    // Clear dirtyness
 }
 
 void MainFrame::RecalculateWorkCanvasPanning()
