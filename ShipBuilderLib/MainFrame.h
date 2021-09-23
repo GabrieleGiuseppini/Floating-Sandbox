@@ -8,6 +8,7 @@
 #include "Controller.h"
 #include "IUserInterface.h"
 #include "MaterialPalette.h"
+#include "StatusBar.h"
 #include "View.h"
 #include "WorkbenchState.h"
 
@@ -31,7 +32,6 @@
 #include <wx/scrolbar.h>
 #include <wx/slider.h>
 #include <wx/statbmp.h>
-#include <wx/statusbr.h>
 
 #include <array>
 #include <filesystem>
@@ -246,7 +246,7 @@ private:
     // Misc UI elements
     std::unique_ptr<MaterialPalette<StructuralMaterial>> mStructuralMaterialPalette;
     std::unique_ptr<MaterialPalette<ElectricalMaterial>> mElectricalMaterialPalette;
-    wxStatusBar * mStatusBar;
+    StatusBar * mStatusBar;
 
     //
     // Dialogs

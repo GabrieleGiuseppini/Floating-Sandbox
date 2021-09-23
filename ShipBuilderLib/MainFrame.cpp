@@ -31,7 +31,6 @@
 #endif
 
 #include <cassert>
-#include <sstream>
 
 namespace ShipBuilder {
 
@@ -237,8 +236,7 @@ MainFrame::MainFrame(
     {
         // Status bar
         {
-            mStatusBar = new wxStatusBar(mMainPanel, wxID_ANY, 0);
-            mStatusBar->SetFieldsCount(1);
+            mStatusBar = new StatusBar(mMainPanel);
 
             mainVSizer->Add(
                 mStatusBar,
@@ -510,19 +508,20 @@ void MainFrame::OnCurrentToolChanged(std::optional<ToolType> tool)
 
 void MainFrame::OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates)
 {
-    std::stringstream ss;
-
     if (coordinates.has_value())
     {
         if (mController)
         {
             // Flip coordinates: we show zero at top, just to be consistent with drawing software
             coordinates->FlipY(mController->GetModelController().GetModel().GetShipSize().height);
-            ss << coordinates->x << ", " << coordinates->y;
+        }
+        else
+        {
+            coordinates.reset();
         }
     }
 
-    mStatusBar->SetStatusText(ss.str(), 0);
+    mStatusBar->SetToolCoordinates(coordinates);
 }
 
 void MainFrame::SetToolCursor(wxImage const & cursorImage)
