@@ -132,7 +132,8 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     std::vector<ShipFactoryFrontier> const & shipFactoryFrontiers) const
 {
     if (mDensityAdjustment == 0.0f
-        || mRandomizationExtent == 0.0f)
+        || mRandomizationExtent == 0.0f
+        || triangleInfos1.empty())
     {
         // Nothing to do
         return;
@@ -154,7 +155,7 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     std::seed_seq seq({ 1, 242, 19730528 });
     std::ranlux48_base randomEngine(seq);
 
-    std::uniform_int_distribution<size_t> pointChoiceDistribution(0, triangleInfos1.size() * 3);
+    std::uniform_int_distribution<size_t> pointChoiceDistribution(0, triangleInfos1.size() * 3 - 1);
 
     //
     // Initialize distance map with distances from frontiers and outside
