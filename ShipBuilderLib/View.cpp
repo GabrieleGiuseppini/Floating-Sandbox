@@ -12,13 +12,13 @@
 namespace ShipBuilder {
 
 View::View(
-    WorkSpaceSize initialWorkSpaceSize,
+    ShipSpaceSize initialShipSpaceSize,
     DisplayLogicalSize initialDisplaySize,
     int logicalToPhysicalPixelFactor,
     std::function<void()> swapRenderBuffersFunction,
     ResourceLocator const & resourceLocator)
     : mViewModel(
-        initialWorkSpaceSize,
+        initialShipSpaceSize,
         initialDisplaySize,
         logicalToPhysicalPixelFactor)
     , mShaderManager()
@@ -174,25 +174,25 @@ void View::UploadBackgroundTexture(RgbaImageData && texture)
 
     std::array<TextureNdcVertex, 4> vertexBuffer;
 
-    // Top-left
-    vertexBuffer[0] = TextureNdcVertex(
-        vec2f(-1.0f, 1.0f),
-        vec2f(0.0f, 1.0f));
-
     // Bottom-left
-    vertexBuffer[1] = TextureNdcVertex(
+    vertexBuffer[0] = TextureNdcVertex(
         vec2f(-1.0f, -1.0f),
         vec2f(0.0f, textureBottom));
 
-    // Top-right
-    vertexBuffer[2] = TextureNdcVertex(
-        vec2f(1.0f, 1.0f),
-        vec2f(1.0f, 1.0f));
+    // Top-left
+    vertexBuffer[1] = TextureNdcVertex(
+        vec2f(-1.0f, 1.0f),
+        vec2f(0.0f, 1.0f));
 
     // Bottom-right
-    vertexBuffer[3] = TextureNdcVertex(
+    vertexBuffer[2] = TextureNdcVertex(
         vec2f(1.0f, -1.0f),
         vec2f(1.0f, textureBottom));
+
+    // Top-right
+    vertexBuffer[3] = TextureNdcVertex(
+        vec2f(1.0f, 1.0f),
+        vec2f(1.0f, 1.0f));
 
     //
     // Upload vertices
@@ -232,25 +232,25 @@ void View::UploadStructuralTexture(RgbaImageData const & texture)
 
     std::array<TextureVertex, 4> vertexBuffer;
 
-    // Top-left
+    // Bottom-left
     vertexBuffer[0] = TextureVertex(
         vec2f(0.0f, 0.0f),
-        vec2f(0.0f, 1.0f));
-
-    // Bottom-left
-    vertexBuffer[1] = TextureVertex(
-        vec2f(0.0f, fHeight),
         vec2f(0.0f, 0.0f));
 
-    // Top-right
-    vertexBuffer[2] = TextureVertex(
-        vec2f(fWidth, 0.0f),
-        vec2f(1.0f, 1.0f));
+    // Top-left
+    vertexBuffer[1] = TextureVertex(
+        vec2f(0.0f, fHeight),
+        vec2f(0.0f, 1.0f));
 
     // Bottom-right
+    vertexBuffer[2] = TextureVertex(
+        vec2f(fWidth, 0.0f),
+        vec2f(1.0f, 0.0f));
+
+    // Top-right
     vertexBuffer[3] = TextureVertex(
         vec2f(fWidth, fHeight),
-        vec2f(1.0f, 0.0f));
+        vec2f(1.0f, 1.0f));
 
     //
     // Upload vertices

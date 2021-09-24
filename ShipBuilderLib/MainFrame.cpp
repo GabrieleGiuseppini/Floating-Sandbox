@@ -5,7 +5,6 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
-#include <GameCore/ImageSize.h>
 #include <GameCore/Log.h>
 #include <GameCore/Version.h>
 
@@ -32,7 +31,6 @@
 #endif
 
 #include <cassert>
-#include <sstream>
 
 namespace ShipBuilder {
 
@@ -238,8 +236,7 @@ MainFrame::MainFrame(
     {
         // Status bar
         {
-            mStatusBar = new wxStatusBar(mMainPanel, wxID_ANY, 0);
-            mStatusBar->SetFieldsCount(1);
+            mStatusBar = new StatusBar(mMainPanel, mResourceLocator);
 
             mainVSizer->Add(
                 mStatusBar,
@@ -291,13 +288,19 @@ MainFrame::MainFrame(
 
         if (!IsStandAlone())
         {
-            mSaveAndGoBackMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save and Return to Game"), _("Save the current ship and return to the simulator"), wxITEM_NORMAL);
+            mSaveAndGoBackMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship and Return to Game"), _("Save the current ship and return to the simulator"), wxITEM_NORMAL);
             fileMenu->Append(mSaveAndGoBackMenuItem);
             Connect(mSaveAndGoBackMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveAndGoBack);
         }
         else
         {
             mSaveAndGoBackMenuItem = nullptr;
+        }
+
+        {
+            mSaveShipAsMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship As"), _("Save the current ship in a different file"), wxITEM_NORMAL);
+            fileMenu->Append(mSaveShipAsMenuItem);
+            Connect(mSaveShipAsMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveShipAs);
         }
 
         if (!IsStandAlone())
@@ -401,7 +404,7 @@ MainFrame::MainFrame(
     }
 
     mView = std::make_unique<View>(
-        WorkSpaceSize(0, 0), // We don't have a workspace yet
+        ShipSpaceSize(0, 0), // We don't have a ship yet
         DisplayLogicalSize(
             mWorkCanvas->GetSize().GetWidth(),
             mWorkCanvas->GetSize().GetHeight()),
@@ -419,12 +422,8 @@ MainFrame::MainFrame(
 
 void MainFrame::OpenForNewShip()
 {
-    // Create controller - will fire UI reconciliations
-    mController = Controller::CreateNew(
-        *mView,
-        mWorkbenchState,
-        *this,
-        mResourceLocator);
+    // New ship
+    DoNewShip();
 
     // Open ourselves
     Open();
@@ -433,16 +432,7 @@ void MainFrame::OpenForNewShip()
 void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
 {
     // Load ship
-    // TODO: we load the ship here, so errors may occur while we still have a controller;
-    // then, pass loaded data to Controller
-
-    // Create controller - will fire UI reconciliations
-    mController = Controller::CreateForShip(
-        /* TODO: loaded ship ,*/
-        *mView,
-        mWorkbenchState,
-        *this,
-        mResourceLocator);
+    DoLoadShip(shipFilePath);
 
     // Open ourselves
     Open();
@@ -468,11 +458,11 @@ void MainFrame::OnViewModelChanged()
     }
 }
 
-void MainFrame::OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize)
+void MainFrame::OnShipSizeChanged(ShipSpaceSize const & shipSize)
 {
     if (mController)
     {
-        ReconciliateUIWithWorkSpaceSize(workSpaceSize);
+        ReconciliateUIWithShipSize(shipSize);
     }
 }
 
@@ -516,21 +506,22 @@ void MainFrame::OnCurrentToolChanged(std::optional<ToolType> tool)
     }
 }
 
-void MainFrame::OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coordinates)
+void MainFrame::OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates)
 {
-    std::stringstream ss;
-
     if (coordinates.has_value())
     {
         if (mController)
         {
             // Flip coordinates: we show zero at top, just to be consistent with drawing software
-            int const y = mController->GetModelController().GetModel().GetWorkSpaceSize().height - 1 - coordinates->y;
-            ss << coordinates->x << ", " << y;
+            coordinates->FlipY(mController->GetModelController().GetModel().GetShipSize().height);
+        }
+        else
+        {
+            coordinates.reset();
         }
     }
 
-    mStatusBar->SetStatusText(ss.str(), 0);
+    mStatusBar->SetToolCoordinates(coordinates);
 }
 
 void MainFrame::SetToolCursor(wxImage const & cursorImage)
@@ -568,8 +559,7 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
                 mResourceLocator.GetIconFilePath("new_ship_button"),
                 [this]()
                 {
-                    wxCommandEvent dummy;
-                    OnNewShip(dummy);
+                    NewShip();
                 },
                 _("Create a new empty ship"));
 
@@ -585,8 +575,7 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
                 mResourceLocator.GetIconFilePath("load_ship_button"),
                 [this]()
                 {
-                    wxCommandEvent dummy;
-                    OnNewShip(dummy);
+                    LoadShip();
                 },
                 _("Load a ship"));
 
@@ -602,12 +591,27 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
                 mResourceLocator.GetIconFilePath("save_ship_button"),
                 [this]()
                 {
-                    wxCommandEvent dummy;
-                    OnSaveShip(dummy);
+                    SaveShip();
                 },
                 _("Save the current ship"));
 
             sizer->Add(mSaveShipButton, 0, wxALL, ButtonMargin);
+        }
+
+        sizer->AddStretchSpacer();
+
+        // Save As ship
+        {
+            mSaveShipAsButton = new BitmapButton(
+                panel,
+                mResourceLocator.GetIconFilePath("save_ship_as_button"),
+                [this]()
+                {
+                    SaveShipAs();
+                },
+                _("Save the current ship in a different file"));
+
+            sizer->Add(mSaveShipAsButton, 0, wxALL, ButtonMargin);
         }
     }
 
@@ -1594,35 +1598,22 @@ void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & /*event*/)
 
 void MainFrame::OnNewShip(wxCommandEvent & /*event*/)
 {
-    if (mController->GetModelController().GetModel().GetIsDirty())
-    {
-        // Ask user if they really want
-        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
-        {
-            return;
-        }
-    }
-
-    // TODO
+    NewShip();
 }
 
 void MainFrame::OnLoadShip(wxCommandEvent & /*event*/)
 {
-    if (mController->GetModelController().GetModel().GetIsDirty())
-    {
-        // Ask user if they really want
-        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
-        {
-            return;
-        }
-    }
-
-    // TODO
+    LoadShip();
 }
 
-void MainFrame::OnSaveShip(wxCommandEvent & /*event*/)
+void MainFrame::OnSaveShip(wxCommandEvent & event)
 {
-    // TODO
+    SaveShip();
+}
+
+void MainFrame::OnSaveShipAs(wxCommandEvent & /*event*/)
+{
+    SaveShipAs();
 }
 
 void MainFrame::OnSaveAndGoBack(wxCommandEvent & /*event*/)
@@ -1727,9 +1718,6 @@ void MainFrame::Open()
 {
     assert(mController);
 
-    // Sync UI
-    ReconciliateUI();
-
     // Show us
     Show(true);
 
@@ -1737,14 +1725,67 @@ void MainFrame::Open()
     mMainApp->SetTopWindow(this);
 }
 
+void MainFrame::NewShip()
+{
+    if (mController->GetModelController().GetModel().GetIsDirty())
+    {
+        // Ask user if they really want
+        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
+        {
+            return;
+        }
+    }
+
+    DoNewShip();
+}
+
+void MainFrame::LoadShip()
+{
+    if (mController->GetModelController().GetModel().GetIsDirty())
+    {
+        // Ask user if they really want
+        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
+        {
+            return;
+        }
+    }
+
+    // TODOHERE:
+    ////- Open file load dialog
+    ////    - If OK : DoLoadShip(selected filename);
+}
+
+bool MainFrame::SaveShip()
+{
+    if (!mCurrentShipFilePath.has_value())
+    {
+        return SaveShipAs();
+    }
+    else
+    {
+        DoSaveShip(*mCurrentShipFilePath);
+        return true;
+    }
+}
+
+bool MainFrame::SaveShipAs()
+{
+    // TODOHERE:
+    ////- Open file save dialog
+    ////    - If OK : DoSaveShip(selected filename); return true;
+    ////    - Else  : return false;
+    return false;
+}
+
 void MainFrame::SaveAndSwitchBackToGame()
 {
-    // TODO: SaveShipDialog
-    // TODO: if success: save via Controller::SaveShip() and provide new file path
-    // TODO: else: cancel operation (i.e. nop)
-
-    std::filesystem::path const TODOPath = mResourceLocator.GetInstalledShipFolderPath() / "Lifeboat.shp";
-    SwitchBackToGame(TODOPath);
+    // Save/SaveAs
+    if (SaveShip())
+    {
+        // Return
+        assert(mCurrentShipFilePath.has_value());
+        SwitchBackToGame(*mCurrentShipFilePath);
+    }
 }
 
 void MainFrame::QuitAndSwitchBackToGame()
@@ -1804,6 +1845,52 @@ bool MainFrame::AskUserIfSure(wxString caption)
     return (result == wxOK);
 }
 
+void MainFrame::DoNewShip()
+{
+    // Start with no filename
+    mCurrentShipFilePath.reset();
+
+    // Create controller (won't fire UI reconciliations)
+    mController = Controller::CreateNew(
+        *mView,
+        mWorkbenchState,
+        *this,
+        mResourceLocator);
+
+    // Reconciliate UI
+    ReconciliateUI();
+}
+
+void MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
+{
+    // TODOHERE
+
+    // TODO: after loaded:
+
+    ////// reset mCurrentShipFilePath
+
+    ////// Create controller (won't fire UI reconciliations)
+    ////mController = Controller::CreateForShip(
+    ////    /* TODO: loaded ship ,*/
+    ////    *mView,
+    ////    mWorkbenchState,
+    ////    *this,
+    ////    mResourceLocator);
+
+    // Reconciliate UI
+    ReconciliateUI();
+}
+
+void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)
+{
+    // TODOHERE
+
+    // TODO: after saved:
+
+    //// TODO: reset mCurrentShipFilePath
+    // Clear dirtyness
+}
+
 void MainFrame::RecalculateWorkCanvasPanning()
 {
     assert(mView);
@@ -1812,9 +1899,9 @@ void MainFrame::RecalculateWorkCanvasPanning()
     // We populate the scollbar with work space coordinates
     //
 
-    WorkSpaceCoordinates const cameraPos = mView->GetCameraWorkSpacePosition();
-    WorkSpaceSize const cameraThumbSize = mView->GetCameraThumbSize();
-    WorkSpaceSize const cameraRange = mView->GetCameraRange();
+    ShipSpaceCoordinates const cameraPos = mView->GetCameraShipSpacePosition();
+    ShipSpaceSize const cameraThumbSize = mView->GetCameraThumbSize();
+    ShipSpaceSize const cameraRange = mView->GetCameraRange();
 
     mWorkCanvasHScrollBar->SetScrollbar(
         cameraPos.x,
@@ -1834,14 +1921,14 @@ void MainFrame::ReconciliateUI()
     assert(!!mController);
 
     ReconciliateUIWithLayerPresence();
-    ReconciliateUIWithWorkSpaceSize(mController->GetModelController().GetModel().GetWorkSpaceSize());
+    ReconciliateUIWithShipSize(mController->GetModelController().GetModel().GetShipSize());
     ReconciliateUIWithPrimaryLayerSelection(mController->GetPrimaryLayer());
     ReconciliateUIWithModelDirtiness(mController->GetModelController().GetModel().GetIsDirty());
     ReconciliateUIWithWorkbenchState();
     ReconciliateUIWithSelectedTool(mController->GetCurrentTool());
 }
 
-void MainFrame::ReconciliateUIWithWorkSpaceSize(WorkSpaceSize const & workSpaceSize)
+void MainFrame::ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize)
 {
     assert(mController);
 
@@ -1938,9 +2025,19 @@ void MainFrame::ReconciliateUIWithModelDirtiness(bool isDirty)
         mSaveAndGoBackMenuItem->Enable(false);
     }
 
+    if (mSaveShipAsMenuItem->IsEnabled() != isDirty)
+    {
+        mSaveShipAsMenuItem->Enable(isDirty);
+    }
+
     if (mSaveShipButton->IsEnabled() != isDirty)
     {
         mSaveShipButton->Enable(isDirty);
+    }
+
+    if (mSaveShipAsButton->IsEnabled() != isDirty)
+    {
+        mSaveShipAsButton->Enable(isDirty);
     }
 }
 
@@ -1992,7 +2089,7 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
         if (foreElectricalMaterial != nullptr)
         {
             wxBitmap foreElectricalBitmap = WxHelpers::MakeMatteBitmap(
-                rgbaColor(foreElectricalMaterial->RenderColor),
+                rgbaColor(foreElectricalMaterial->RenderColor, 255),
                 MaterialSwathSize);
 
             mElectricalForegroundMaterialSelector->SetBitmap(foreElectricalBitmap);
@@ -2008,7 +2105,7 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
         if (backElectricalMaterial != nullptr)
         {
             wxBitmap backElectricalBitmap = WxHelpers::MakeMatteBitmap(
-                rgbaColor(backElectricalMaterial->RenderColor),
+                rgbaColor(backElectricalMaterial->RenderColor, 255),
                 MaterialSwathSize);
 
             mElectricalBackgroundMaterialSelector->SetBitmap(backElectricalBitmap);

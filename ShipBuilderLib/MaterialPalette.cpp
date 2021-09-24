@@ -466,7 +466,7 @@ wxToggleButton * MaterialPalette<TMaterial>::CreateMaterialButton(
 
         categoryButton->SetBitmap(
             WxHelpers::MakeMatteBitmap(
-                rgbaColor(material.RenderColor),
+                rgbaColor(material.RenderColor, 255),
                 size));
     }
 

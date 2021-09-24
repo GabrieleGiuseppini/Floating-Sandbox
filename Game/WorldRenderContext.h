@@ -23,7 +23,6 @@
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
-#include <GameCore/ImageSize.h>
 #include <GameCore/Vectors.h>
 
 #include <array>

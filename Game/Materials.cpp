@@ -95,6 +95,7 @@ StructuralMaterial StructuralMaterial::Create(
 
         return StructuralMaterial(
             name,
+            renderColor,
             strength,
             nominalMass,
             density,
@@ -121,7 +122,6 @@ StructuralMaterial StructuralMaterial::Create(
             windReceptivity,
             isLegacyElectrical,
             // Palette
-            renderColor.toVec4f(1.0f),
             paletteCoordinates);
     }
     catch (GameException const & ex)
@@ -279,6 +279,7 @@ ElectricalMaterial ElectricalMaterial::Create(
 
         return ElectricalMaterial(
             name,
+            renderColor,
             electricalType,
             isSelfPowered,
             conductsElectricity,
@@ -298,7 +299,6 @@ ElectricalMaterial ElectricalMaterial::Create(
             interactiveSwitchType,
             shipSoundType,
             waterPumpNominalForce,
-            renderColor.toVec4f(1.0f),
             paletteCoordinates);
     }
     catch (GameException const & ex)

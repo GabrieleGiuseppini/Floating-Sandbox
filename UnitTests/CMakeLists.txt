@@ -23,6 +23,7 @@ set (UNIT_TEST_SOURCES
 	BufferTests.cpp
 	Buffer2DTests.cpp
 	CircularListTests.cpp
+	ColorsTests.cpp
 	EnumFlagsTests.cpp
 	FixedSizeVectorTests.cpp
 	FloatingPointTests.cpp

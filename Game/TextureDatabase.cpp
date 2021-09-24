@@ -57,7 +57,7 @@ TextureFrameMetadata<TextureGroups> TextureFrameMetadata<TextureGroups>::Deseria
     bool hasOwnAmbientLight = root.at("has_own_ambient_light").get<bool>();
 
     picojson::object const & anchorCenterJson = root.at("anchor_center").get<picojson::object>();
-    IntegralPointCoordinates anchorCenter(
+    ImageCoordinates anchorCenter(
         static_cast<int>(anchorCenterJson.at("x").get<int64_t>()),
         static_cast<int>(anchorCenterJson.at("y").get<int64_t>()));
 
@@ -316,7 +316,7 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                                 worldWidth,
                                 worldHeight,
                                 hasOwnAmbientLight,
-                                IntegralPointCoordinates(
+                                ImageCoordinates(
                                     anchorX,
                                     anchorY),
                                 vec2f(

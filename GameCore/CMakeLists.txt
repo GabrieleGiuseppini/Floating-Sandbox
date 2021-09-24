@@ -37,11 +37,10 @@ set  (SOURCES
 	GameTypes.h
 	GameWallClock.h
 	ImageData.h
-	ImageSize.h
 	ImageTools.cpp
 	ImageTools.h
 	IntegralLinearSliderCore.h
-	ISliderCore.h
+	ISliderCore.h	
 	LinearSliderCore.cpp
 	LinearSliderCore.h
 	Log.cpp

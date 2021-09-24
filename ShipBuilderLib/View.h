@@ -36,7 +36,7 @@ class View
 public:
 
     View(
-        WorkSpaceSize initialWorkSpaceSize,
+        ShipSpaceSize initialShipSpaceSize,
         DisplayLogicalSize initialDisplaySize,
         int logicalToPhysicalPixelFactor,
         std::function<void()> swapRenderBuffersFunction,
@@ -56,23 +56,23 @@ public:
         return newZoom;
     }
 
-    WorkSpaceCoordinates const & GetCameraWorkSpacePosition() const
+    ShipSpaceCoordinates const & GetCameraShipSpacePosition() const
     {
-        return mViewModel.GetCameraWorkSpacePosition();
+        return mViewModel.GetCameraShipSpacePosition();
     }
 
-    WorkSpaceCoordinates SetCameraWorkSpacePosition(WorkSpaceCoordinates const & pos)
+    ShipSpaceCoordinates SetCameraShipSpacePosition(ShipSpaceCoordinates const & pos)
     {
-        auto const newPos = mViewModel.SetCameraWorkSpacePosition(pos);
+        auto const newPos = mViewModel.SetCameraShipSpacePosition(pos);
 
         RefreshOrthoMatrix();
 
         return newPos;
     }
 
-    void SetWorkSpaceSize(WorkSpaceSize const & size)
+    void SetShipSize(ShipSpaceSize const & size)
     {
-        mViewModel.SetWorkSpaceSize(size);
+        mViewModel.SetShipSize(size);
     }
 
     void SetDisplayLogicalSize(DisplayLogicalSize const & logicalSize)
@@ -82,24 +82,24 @@ public:
         RefreshOrthoMatrix();
     }
 
-    WorkSpaceSize GetCameraRange() const
+    ShipSpaceSize GetCameraRange() const
     {
         return mViewModel.GetCameraRange();
     }
 
-    WorkSpaceSize GetCameraThumbSize() const
+    ShipSpaceSize GetCameraThumbSize() const
     {
         return mViewModel.GetCameraThumbSize();
     }
 
-    WorkSpaceSize GetVisibleWorkSpaceSize() const
+    ShipSpaceSize GetVisibleShipSpaceSize() const
     {
-        return mViewModel.GetVisibleWorkSpaceSize();
+        return mViewModel.GetVisibleShipSpaceSize();
     }
 
-    WorkSpaceCoordinates ScreenToWorkSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    ShipSpaceCoordinates ScreenToShipSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
-        return mViewModel.ScreenToWorkSpace(displayCoordinates);
+        return mViewModel.ScreenToShipSpace(displayCoordinates);
     }
 
 public:
@@ -142,15 +142,15 @@ private:
 
     struct TextureVertex
     {
-        vec2f positionWork; // Work space
+        vec2f positionShip; // Ship space
         vec2f textureCoords; // Texture space
 
         TextureVertex() = default;
 
         TextureVertex(
-            vec2f const & _positionWork,
+            vec2f const & _positionShip,
             vec2f _textureCoords)
-            : positionWork(_positionWork)
+            : positionShip(_positionShip)
             , textureCoords(_textureCoords)
         {}
     };

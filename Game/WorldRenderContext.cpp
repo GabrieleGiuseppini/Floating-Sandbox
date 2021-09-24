@@ -444,7 +444,7 @@ void WorldRenderContext::InitializeCloudTextures(ResourceLocator const & resourc
         AtlasOptions::None,
         [](float, ProgressMessageType) {});
 
-    LogMessage("Cloud texture atlas size: ", cloudTextureAtlas.AtlasData.Size.ToString());
+    LogMessage("Cloud texture atlas size: ", cloudTextureAtlas.AtlasData.Size);
 
     mShaderManager.ActivateTexture<ProgramParameterType::CloudsAtlasTexture>();
 
@@ -537,7 +537,7 @@ void WorldRenderContext::InitializeFishTextures(ResourceLocator const & resource
         AtlasOptions::None,
         [](float, ProgressMessageType) {});
 
-    LogMessage("Fish texture atlas size: ", fishTextureAtlas.AtlasData.Size.ToString());
+    LogMessage("Fish texture atlas size: ", fishTextureAtlas.AtlasData.Size);
 
     mShaderManager.ActivateTexture<ProgramParameterType::FishesAtlasTexture>();
 
@@ -1467,8 +1467,8 @@ void WorldRenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderP
     // Set shader parameters
 
     vec2f const viewportSize = vec2f(
-        static_cast<float>(view.GetCanvasPhysicalPixelSize().width),
-        static_cast<float>(view.GetCanvasPhysicalPixelSize().height));
+        static_cast<float>(view.GetCanvasPhysicalSize().width),
+        static_cast<float>(view.GetCanvasPhysicalSize().height));
 
     mShaderManager.ActivateProgram<ProgramType::CrossOfLight>();
     mShaderManager.SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::ViewportSize>(

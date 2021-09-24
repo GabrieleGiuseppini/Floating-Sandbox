@@ -5,15 +5,18 @@
 ***************************************************************************************/
 #include "Model.h"
 
+#include <Game/MaterialDatabase.h>
+
 #include <algorithm>
 
 namespace ShipBuilder {
 
-Model::Model(WorkSpaceSize const & workSpaceSize)
-    : mWorkSpaceSize(workSpaceSize)
+Model::Model(ShipSpaceSize const & shipSize)
+    : mShipSize(shipSize)
+    , mStructuralLayerBuffer()
 {
     // Initialize structural layer
-    MakeNewEmptyStructuralLayer(mWorkSpaceSize);
+    MakeNewStructuralLayer(mShipSize);
 
     // Initialize presence map
     mLayerPresenceMap.fill(false);
@@ -25,7 +28,7 @@ Model::Model(WorkSpaceSize const & workSpaceSize)
 
 void Model::NewStructuralLayer()
 {
-    MakeNewEmptyStructuralLayer(mWorkSpaceSize);
+    MakeNewStructuralLayer(mShipSize);
 
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
     mLayerDirtinessMap[static_cast<size_t>(LayerType::Structural)] = true;
@@ -125,23 +128,18 @@ void Model::ClearIsDirty()
     mIsDirty = false;
 }
 
-void Model::MakeNewEmptyStructuralLayer(WorkSpaceSize const & size)
+void Model::MakeNewStructuralLayer(ShipSpaceSize const & size)
 {
-    // Material
-
-    mStructuralMaterialMatrix = std::make_unique<MaterialBuffer<StructuralMaterial>>(
-        size.width,
-        size.height,
-        nullptr); // No material
-
-    // Render color
+    mStructuralLayerBuffer = std::make_unique<StructuralLayerBuffer>(
+        size,
+        StructuralElement(nullptr)); // No material
 
     mStructuralRenderColorTexture = std::make_unique<RgbaImageData>(
         size.width,
         size.height,
-        rgbaColor::zero()); // Fully transparent
+        rgbaColor(MaterialDatabase::EmptyMaterialColorKey, 255));
 
-    // TODOTEST: initialize with checker pattern
+    // TODOTEST: initializing with checker pattern
     for (int y = 0; y < size.height; ++y)
     {
         for (int x = 0; x < size.width; ++x)
@@ -156,7 +154,7 @@ void Model::MakeNewEmptyStructuralLayer(WorkSpaceSize const & size)
                     0,
                     255);
 
-            (*mStructuralRenderColorTexture)[vec2i(x, y)] = color;
+            (*mStructuralRenderColorTexture)[ImageCoordinates(x, y)] = color;
         }
     }
 }

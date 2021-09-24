@@ -71,7 +71,7 @@ public:
     void SetTextureLayer(/*TODO*/);
     void RemoveTextureLayer();
 
-    void ResizeWorkspace(WorkSpaceSize const & newSize);
+    void ResizeShip(ShipSpaceSize const & newSize);
 
     LayerType GetPrimaryLayer() const;
     void SelectPrimaryLayer(LayerType primaryLayer);

@@ -21,6 +21,8 @@ set (SHIPBUILDER_LIB_SOURCES
 	ShaderTypes.cpp
 	ShaderTypes.h
 	ShipBuilderTypes.h
+	StatusBar.cpp
+	StatusBar.h
 	UndoStack.cpp
 	UndoStack.h
 	View.cpp

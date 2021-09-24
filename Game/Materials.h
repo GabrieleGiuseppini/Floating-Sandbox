@@ -60,6 +60,7 @@ public:
 public:
 
     std::string Name;
+    rgbColor RenderColor;
     float Strength;
     float NominalMass;
     float Density;
@@ -94,7 +95,6 @@ public:
     bool IsLegacyElectrical;
 
     // Palette
-    vec4f RenderColor;
     std::optional<MaterialPaletteCoordinatesType> PaletteCoordinates;
 
 public:
@@ -132,6 +132,7 @@ public:
 
     StructuralMaterial(
         std::string name,
+        rgbColor const & renderColor,
         float strength,
         float nominalMass,
         float density,
@@ -159,9 +160,9 @@ public:
         float windReceptivity,
         bool isLegacyElectrical,
         // Palette
-        vec4f renderColor,
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
         : Name(name)
+        , RenderColor(renderColor)
         , Strength(strength)
         , NominalMass(nominalMass)
         , Density(density)
@@ -185,7 +186,6 @@ public:
         , ExplosiveCombustionStrength(explosiveCombustionStrength)
         , WindReceptivity(windReceptivity)
         , IsLegacyElectrical(isLegacyElectrical)
-        , RenderColor(renderColor)
         , PaletteCoordinates(paletteCoordinates)
     {}
 };
@@ -241,6 +241,7 @@ public:
 public:
 
     std::string Name;
+    rgbColor RenderColor;
 
     ElectricalElementType ElectricalType;
 
@@ -280,7 +281,6 @@ public:
     float WaterPumpNominalForce;
 
     // Palette
-    vec4f RenderColor;
     std::optional<MaterialPaletteCoordinatesType> PaletteCoordinates;
 
 public:
@@ -300,6 +300,7 @@ public:
 
     ElectricalMaterial(
         std::string name,
+        rgbColor const & renderColor,
         ElectricalElementType electricalType,
         bool isSelfPowered,
         bool conductsElectricity,
@@ -319,9 +320,9 @@ public:
         InteractiveSwitchElementType interactiveSwitchType,
         ShipSoundElementType shipSoundType,
         float waterPumpNominalForce,
-        vec4f renderColor,
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
         : Name(name)
+        , RenderColor(renderColor)
         , ElectricalType(electricalType)
         , IsSelfPowered(isSelfPowered)
         , ConductsElectricity(conductsElectricity)
@@ -342,7 +343,6 @@ public:
         , InteractiveSwitchType(interactiveSwitchType)
         , ShipSoundType(shipSoundType)
         , WaterPumpNominalForce(waterPumpNominalForce)
-        , RenderColor(renderColor)
         , PaletteCoordinates(paletteCoordinates)
     {
     }

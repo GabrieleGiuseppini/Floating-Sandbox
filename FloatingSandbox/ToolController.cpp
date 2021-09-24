@@ -216,7 +216,7 @@ ToolController::ToolController(
     this->SetTool(initialToolType);
 }
 
-void ToolController::OnMouseMove(LogicalPixelCoordinates const & mouseScreenPosition)
+void ToolController::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition)
 {
     // Update input state
     mInputState.PreviousMousePosition = mInputState.MousePosition;
@@ -228,7 +228,7 @@ void ToolController::OnMouseMove(LogicalPixelCoordinates const & mouseScreenPosi
         // Perform our pan tool
 
         // Pan (opposite direction)
-        LogicalPixelSize screenOffset = mInputState.PreviousMousePosition - mInputState.MousePosition;
+        DisplayLogicalSize screenOffset = mInputState.PreviousMousePosition - mInputState.MousePosition;
         mGameController->PanImmediate(screenOffset);
     }
     else

@@ -19,7 +19,6 @@
 
 #include <GameCore/BootSettings.h>
 #include <GameCore/GameException.h>
-#include <GameCore/ImageSize.h>
 #include <GameCore/Log.h>
 #include <GameCore/Utils.h>
 #include <GameCore/Version.h>
@@ -664,7 +663,7 @@ bool MainFrame::ProcessKeyDown(
         if (!!mGameController && !!mUIPreferencesManager)
         {
             // Left
-            mGameController->Pan(LogicalPixelSize(-mUIPreferencesManager->GetPanIncrement(), 0));
+            mGameController->Pan(DisplayLogicalSize(-mUIPreferencesManager->GetPanIncrement(), 0));
             return true;
         }
     }
@@ -673,7 +672,7 @@ bool MainFrame::ProcessKeyDown(
         if (!!mGameController && !!mUIPreferencesManager)
         {
             // Up
-            mGameController->Pan(LogicalPixelSize(0, -mUIPreferencesManager->GetPanIncrement()));
+            mGameController->Pan(DisplayLogicalSize(0, -mUIPreferencesManager->GetPanIncrement()));
             return true;
         }
     }
@@ -682,7 +681,7 @@ bool MainFrame::ProcessKeyDown(
         if (!!mGameController && !!mUIPreferencesManager)
         {
             // Right
-            mGameController->Pan(LogicalPixelSize(mUIPreferencesManager->GetPanIncrement(), 0));
+            mGameController->Pan(DisplayLogicalSize(mUIPreferencesManager->GetPanIncrement(), 0));
             return true;
         }
     }
@@ -691,7 +690,7 @@ bool MainFrame::ProcessKeyDown(
         if (!!mGameController && !!mUIPreferencesManager)
         {
             // Down
-            mGameController->Pan(LogicalPixelSize(0, mUIPreferencesManager->GetPanIncrement()));
+            mGameController->Pan(DisplayLogicalSize(0, mUIPreferencesManager->GetPanIncrement()));
             return true;
         }
     }
@@ -848,7 +847,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     {
         mGameController = GameController::Create(
             RenderDeviceProperties(
-                LogicalPixelSize(
+                DisplayLogicalSize(
                     mMainGLCanvas->GetSize().GetWidth(),
                     mMainGLCanvas->GetSize().GetHeight()),
                 mMainGLCanvas->GetContentScaleFactor(),
@@ -1363,7 +1362,7 @@ void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
         && event.GetSize().GetY() > 0)
     {
         mGameController->SetCanvasSize(
-            LogicalPixelSize(
+            DisplayLogicalSize(
                 event.GetSize().GetX(),
                 event.GetSize().GetY()));
     }
@@ -1435,7 +1434,7 @@ void MainFrame::OnMainGLCanvasMouseMove(wxMouseEvent & event)
 {
     assert(!!mToolController);
     mToolController->OnMouseMove(
-        LogicalPixelCoordinates(
+        DisplayLogicalCoordinates(
             event.GetX(),
             event.GetY()));
 }

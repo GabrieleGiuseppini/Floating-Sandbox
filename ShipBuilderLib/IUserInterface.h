@@ -27,7 +27,7 @@ public:
     virtual void OnViewModelChanged() = 0;
 
     // Notifies of a change in the size of the model
-    virtual void OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize) = 0;
+    virtual void OnShipSizeChanged(ShipSpaceSize const & shipSpaceSize) = 0;
 
     // Notifies of a (possible) change in the presence of a layer
     virtual void OnLayerPresenceChanged() = 0;
@@ -45,7 +45,7 @@ public:
     virtual void OnCurrentToolChanged(std::optional<ToolType> tool) = 0;
 
     // Notifies of a change in the tool coordinates to display
-    virtual void OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coordinates) = 0;
+    virtual void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates) = 0;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

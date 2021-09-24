@@ -26,8 +26,8 @@ void PixelCoordsTest::InternalRun()
 
     for (size_t i = 0; i < mDataPoints; ++i)
     {
-        int iRow = static_cast<int>(i) / calculator->GetFrameSize().Width;
-        int iCol = static_cast<int>(i) - iRow * calculator->GetFrameSize().Width;
+        int iRow = static_cast<int>(i) / calculator->GetFrameSize().width;
+        int iCol = static_cast<int>(i) - iRow * calculator->GetFrameSize().width;
 
         TEST_VERIFY(results[i].x == static_cast<float>(iCol) + 0.5f);
         TEST_VERIFY(results[i].y == static_cast<float>(iRow) + 0.5f);

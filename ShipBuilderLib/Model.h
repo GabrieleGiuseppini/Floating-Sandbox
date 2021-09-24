@@ -7,9 +7,9 @@
 
 #include "ShipBuilderTypes.h"
 
+#include <Game/LayerBuffers.h>
 #include <Game/Materials.h>
 
-#include <GameCore/Buffer2D.h>
 #include <GameCore/ImageData.h>
 
 #include <array>
@@ -30,7 +30,7 @@ class Model
 {
 public:
 
-    Model(WorkSpaceSize const & workSpaceSize);
+    Model(ShipSpaceSize const & shipSize);
 
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
@@ -47,9 +47,9 @@ public:
     void SetTextureLayer(/*TODO*/);
     void RemoveTextureLayer();
 
-    WorkSpaceSize const & GetWorkSpaceSize() const
+    ShipSpaceSize const & GetShipSize() const
     {
-        return mWorkSpaceSize;
+        return mShipSize;
     }
 
     bool HasLayer(LayerType layer) const
@@ -73,19 +73,21 @@ public:
         return mIsDirty;
     }
 
-    MaterialBuffer<StructuralMaterial> & GetStructuralMaterialMatrix()
+    StructuralLayerBuffer & GetStructuralLayerBuffer()
     {
-        return *mStructuralMaterialMatrix;
+        assert(mStructuralLayerBuffer);
+        return *mStructuralLayerBuffer;
     }
 
     RgbaImageData const & GetStructuralRenderColorTexture() const
     {
-        assert(!!mStructuralRenderColorTexture);
+        assert(mStructuralRenderColorTexture);
         return *mStructuralRenderColorTexture;
     }
 
     RgbaImageData & GetStructuralRenderColorTexture()
     {
+        assert(mStructuralRenderColorTexture);
         return *mStructuralRenderColorTexture;
     }
 
@@ -95,17 +97,19 @@ private:
 
     void ClearIsDirty();
 
-    void MakeNewEmptyStructuralLayer(WorkSpaceSize const & size);
+    void MakeNewStructuralLayer(ShipSpaceSize const & size);
 
 private:
 
-    WorkSpaceSize mWorkSpaceSize;
+    ShipSpaceSize mShipSize;
 
     //
     // Structural Layer
     //
 
-    std::unique_ptr<MaterialBuffer<StructuralMaterial>> mStructuralMaterialMatrix;
+    std::unique_ptr<StructuralLayerBuffer> mStructuralLayerBuffer;
+
+    // Derived buffers
     std::unique_ptr<RgbaImageData> mStructuralRenderColorTexture;
 
     //

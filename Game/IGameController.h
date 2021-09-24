@@ -76,51 +76,51 @@ struct IGameController
 
     virtual float GetCurrentSimulationTime() const = 0;
     virtual float GetEffectiveAmbientLightIntensity() const = 0;
-    virtual bool IsUnderwater(LogicalPixelCoordinates const & screenCoordinates) const = 0;
+    virtual bool IsUnderwater(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual bool IsUnderwater(ElementId elementId) const = 0;
 
     //
     // Interactions
     //
 
-    virtual void ScareFish(LogicalPixelCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
-    virtual void AttractFish(LogicalPixelCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
+    virtual void ScareFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
+    virtual void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
 
-    virtual void PickObjectToMove(LogicalPixelCoordinates const & screenCoordinates, std::optional<ElementId> & elementId) = 0;
-    virtual void PickObjectToMove(LogicalPixelCoordinates const & screenCoordinates, std::optional<ShipId> & shipId) = 0;
-    virtual void MoveBy(ElementId elementId, LogicalPixelSize const & screenOffset, LogicalPixelSize const & inertialScreenOffset) = 0;
-    virtual void MoveBy(ShipId shipId, LogicalPixelSize const & screenOffset, LogicalPixelSize const & inertialScreenOffset) = 0;
-    virtual void RotateBy(ElementId elementId, float screenDeltaY, LogicalPixelCoordinates const & screenCenter, float inertialScreenDeltaY) = 0;
-    virtual void RotateBy(ShipId shipId, float screenDeltaY, LogicalPixelCoordinates const & screenCenter, float intertialScreenDeltaY) = 0;
-    virtual std::optional<ElementId> PickObjectForPickAndPull(LogicalPixelCoordinates const & screenCoordinates) = 0;
-    virtual void Pull(ElementId elementId, LogicalPixelCoordinates const & screenTarget) = 0;
-    virtual void DestroyAt(LogicalPixelCoordinates const & screenCoordinates, float radiusMultiplier) = 0;
-    virtual void RepairAt(LogicalPixelCoordinates const & screenCoordinates, float radiusMultiplier, SequenceNumber repairStepId) = 0;
-    virtual bool SawThrough(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates, bool isFirstSegment) = 0;
-    virtual bool ApplyHeatBlasterAt(LogicalPixelCoordinates const & screenCoordinates, HeatBlasterActionType action) = 0;
-    virtual bool ExtinguishFireAt(LogicalPixelCoordinates const & screenCoordinates) = 0;
-    virtual void ApplyBlastAt(LogicalPixelCoordinates const & screenCoordinates, float radiusMultiplier, float forceMultiplier, float renderProgress, float personalitySeed) = 0;
-    virtual bool ApplyElectricSparkAt(LogicalPixelCoordinates const & screenCoordinates, std::uint64_t counter, float lengthMultiplier, float currentSimulationTime) = 0;
-    virtual void DrawTo(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) = 0;
-    virtual void SwirlAt(LogicalPixelCoordinates const & screenCoordinates, float strengthFraction) = 0;
-    virtual void TogglePinAt(LogicalPixelCoordinates const & screenCoordinates) = 0;
+    virtual void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ElementId> & elementId) = 0;
+    virtual void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ShipId> & shipId) = 0;
+    virtual void MoveBy(ElementId elementId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) = 0;
+    virtual void MoveBy(ShipId shipId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) = 0;
+    virtual void RotateBy(ElementId elementId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float inertialScreenDeltaY) = 0;
+    virtual void RotateBy(ShipId shipId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float intertialScreenDeltaY) = 0;
+    virtual std::optional<ElementId> PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates) = 0;
+    virtual void Pull(ElementId elementId, DisplayLogicalCoordinates const & screenTarget) = 0;
+    virtual void DestroyAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier) = 0;
+    virtual void RepairAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier, SequenceNumber repairStepId) = 0;
+    virtual bool SawThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates, bool isFirstSegment) = 0;
+    virtual bool ApplyHeatBlasterAt(DisplayLogicalCoordinates const & screenCoordinates, HeatBlasterActionType action) = 0;
+    virtual bool ExtinguishFireAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
+    virtual void ApplyBlastAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier, float forceMultiplier, float renderProgress, float personalitySeed) = 0;
+    virtual bool ApplyElectricSparkAt(DisplayLogicalCoordinates const & screenCoordinates, std::uint64_t counter, float lengthMultiplier, float currentSimulationTime) = 0;
+    virtual void DrawTo(DisplayLogicalCoordinates const & screenCoordinates, float strengthFraction) = 0;
+    virtual void SwirlAt(DisplayLogicalCoordinates const & screenCoordinates, float strengthFraction) = 0;
+    virtual void TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
     virtual void RemoveAllPins() = 0;
-    virtual std::optional<ToolApplicationLocus> InjectPressureAt(LogicalPixelCoordinates const & screenCoordinates, float pressureQuantityMultiplier) = 0;
-    virtual bool FloodAt(LogicalPixelCoordinates const & screenCoordinates, float waterQuantityMultiplier) = 0;
-    virtual void ToggleAntiMatterBombAt(LogicalPixelCoordinates const & screenCoordinates) = 0;
-    virtual void ToggleImpactBombAt(LogicalPixelCoordinates const & screenCoordinates) = 0;
-    virtual void TogglePhysicsProbeAt(LogicalPixelCoordinates const & screenCoordinates) = 0;
-    virtual void ToggleRCBombAt(LogicalPixelCoordinates const & screenCoordinates) = 0;
-    virtual void ToggleTimerBombAt(LogicalPixelCoordinates const & screenCoordinates) = 0;
+    virtual std::optional<ToolApplicationLocus> InjectPressureAt(DisplayLogicalCoordinates const & screenCoordinates, float pressureQuantityMultiplier) = 0;
+    virtual bool FloodAt(DisplayLogicalCoordinates const & screenCoordinates, float waterQuantityMultiplier) = 0;
+    virtual void ToggleAntiMatterBombAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
+    virtual void ToggleImpactBombAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
+    virtual void TogglePhysicsProbeAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
+    virtual void ToggleRCBombAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
+    virtual void ToggleTimerBombAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
     virtual void DetonateRCBombs() = 0;
     virtual void DetonateAntiMatterBombs() = 0;
-    virtual void AdjustOceanSurfaceTo(std::optional<LogicalPixelCoordinates> const & screenCoordinates) = 0;
-    virtual std::optional<bool> AdjustOceanFloorTo(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates) = 0;
-    virtual bool ScrubThrough(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates) = 0;
-    virtual bool RotThrough(LogicalPixelCoordinates const & startScreenCoordinates, LogicalPixelCoordinates const & endScreenCoordinates) = 0;
-    virtual void ApplyThanosSnapAt(LogicalPixelCoordinates const & screenCoordinates) = 0;
-    virtual std::optional<ElementId> GetNearestPointAt(LogicalPixelCoordinates const & screenCoordinates) const = 0;
-    virtual void QueryNearestPointAt(LogicalPixelCoordinates const & screenCoordinates) const = 0;
+    virtual void AdjustOceanSurfaceTo(std::optional<DisplayLogicalCoordinates> const & screenCoordinates) = 0;
+    virtual std::optional<bool> AdjustOceanFloorTo(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) = 0;
+    virtual bool ScrubThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) = 0;
+    virtual bool RotThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) = 0;
+    virtual void ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
+    virtual std::optional<ElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
+    virtual void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
 
     virtual void TriggerTsunami() = 0;
     virtual void TriggerRogueWave() = 0;
@@ -144,15 +144,15 @@ struct IGameController
     // Rendering controls
     //
 
-    virtual void SetCanvasSize(LogicalPixelSize const & canvasSize) = 0;
-    virtual void Pan(LogicalPixelSize const & screenOffset) = 0;
-    virtual void PanImmediate(LogicalPixelSize const & screenOffset) = 0;
+    virtual void SetCanvasSize(DisplayLogicalSize const & canvasSize) = 0;
+    virtual void Pan(DisplayLogicalSize const & screenOffset) = 0;
+    virtual void PanImmediate(DisplayLogicalSize const & screenOffset) = 0;
     virtual void PanToWorldEnd(int side) = 0;
     virtual void ResetPan() = 0;
     virtual void AdjustZoom(float amount) = 0;
     virtual void ResetZoom() = 0;
-    virtual vec2f ScreenToWorld(LogicalPixelCoordinates const & screenCoordinates) const = 0;
-    virtual vec2f ScreenOffsetToWorldOffset(LogicalPixelSize const & screenOffset) const = 0;
+    virtual vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
+    virtual vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const = 0;
 
     //
     // UI parameters

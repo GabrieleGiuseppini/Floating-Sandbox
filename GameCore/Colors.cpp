@@ -10,28 +10,27 @@
 
 rgbColor rgbColor::fromString(std::string const & str)
 {
-    std::stringstream ss(str);
-    ss << std::hex << std::setfill('0') << std::setw(2);
-
-    unsigned int r, g, b;
-    ss >> r >> g >> b;
+    unsigned int components[3];
+    for (int i = 0; i < 3; ++i)
+    {
+        std::stringstream ss(str.substr(i * 2, 2));
+        ss >> std::hex >> std::setfill('0') >> std::setw(2) >> components[i];
+    }
 
     return rgbColor(
-        static_cast<rgbColor::data_type>(r),
-        static_cast<rgbColor::data_type>(g),
-        static_cast<rgbColor::data_type>(b));
+        static_cast<rgbColor::data_type>(components[0]),
+        static_cast<rgbColor::data_type>(components[1]),
+        static_cast<rgbColor::data_type>(components[2]));
 }
 
 std::string rgbColor::toString() const
 {
     std::stringstream ss;
 
-    ss << std::hex << std::setfill('0') << std::setw(2)
-        << static_cast<unsigned int>(r)
-        << ' '
-        << static_cast<unsigned int>(g)
-        << ' '
-        << static_cast<unsigned int>(b);
+    ss << std::hex << std::setfill('0')
+        << std::setw(2) << static_cast<unsigned int>(r)
+        << std::setw(2) << static_cast<unsigned int>(g)
+        << std::setw(2) << static_cast<unsigned int>(b);
 
     return ss.str();
 }
@@ -55,14 +54,11 @@ std::string rgbaColor::toString() const
 {
     std::stringstream ss;
 
-    ss << std::hex << std::setfill('0') << std::setw(2)
-        << static_cast<unsigned int>(r)
-        << std::hex << std::setfill('0') << std::setw(2)
-        << static_cast<unsigned int>(g)
-        << std::hex << std::setfill('0') << std::setw(2)
-        << static_cast<unsigned int>(b)
-        << std::hex << std::setfill('0') << std::setw(2)
-        << static_cast<unsigned int>(a);
+    ss << std::hex << std::setfill('0')
+        << std::setw(2) << static_cast<unsigned int>(r)
+        << std::setw(2) << static_cast<unsigned int>(g)
+        << std::setw(2) << static_cast<unsigned int>(b)
+        << std::setw(2) << static_cast<unsigned int>(a);
 
     return ss.str();
 }

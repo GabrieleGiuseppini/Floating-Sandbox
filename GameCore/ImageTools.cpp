@@ -10,7 +10,7 @@ void ImageTools::BlendWithColor(
     rgbColor const & color,
     float alpha)
 {
-    size_t const pixelCount = imageData.Size.GetLinearCount();
+    size_t const pixelCount = imageData.Size.GetLinearSize();
     for (size_t i = 0; i < pixelCount; ++i)
     {
         imageData.Data[i] = imageData.Data[i].mix(color, alpha);
@@ -44,7 +44,7 @@ void ImageTools::Overlay(
 
 void ImageTools::AlphaPreMultiply(RgbaImageData & imageData)
 {
-    size_t const pixelCount = imageData.Size.GetLinearCount();
+    size_t const pixelCount = imageData.Size.GetLinearSize();
     for (size_t i = 0; i < pixelCount; ++i)
     {
         imageData.Data[i].alpha_multiply();
@@ -57,7 +57,7 @@ RgbaImageData ImageTools::Truncate(
 {
     ImageSize const finalImageSize = imageSize.Intersection(imageData.Size);
 
-    std::unique_ptr<rgbaColor[]> newImageData = std::make_unique<rgbaColor[]>(finalImageSize.GetLinearCount());
+    std::unique_ptr<rgbaColor[]> newImageData = std::make_unique<rgbaColor[]>(finalImageSize.GetLinearSize());
 
     for (int r = 0; r < finalImageSize.height; ++r)
     {
@@ -74,7 +74,7 @@ RgbaImageData ImageTools::Truncate(
 
 RgbImageData ImageTools::ToRgb(RgbaImageData const & imageData)
 {
-    std::unique_ptr<rgbColor[]> newImageData = std::make_unique<rgbColor[]>(imageData.Size.GetLinearCount());
+    std::unique_ptr<rgbColor[]> newImageData = std::make_unique<rgbColor[]>(imageData.Size.GetLinearSize());
 
     for (int r = 0; r < imageData.Size.height; ++r)
     {
@@ -90,7 +90,7 @@ RgbImageData ImageTools::ToRgb(RgbaImageData const & imageData)
 
 RgbImageData ImageTools::ToAlpha(RgbaImageData const & imageData)
 {
-    std::unique_ptr<rgbColor[]> newImageData = std::make_unique<rgbColor[]>(imageData.Size.GetLinearCount());
+    std::unique_ptr<rgbColor[]> newImageData = std::make_unique<rgbColor[]>(imageData.Size.GetLinearSize());
 
     for (int r = 0; r < imageData.Size.height; ++r)
     {
@@ -108,7 +108,7 @@ RgbImageData ImageTools::ToAlpha(RgbaImageData const & imageData)
 
 Vec3fImageData ImageTools::ToVec3f(RgbImageData const & imageData)
 {
-    auto const pixelCount = imageData.Size.GetLinearCount();
+    auto const pixelCount = imageData.Size.GetLinearSize();
 
     std::unique_ptr<vec3f[]> convertedData = std::make_unique<vec3f[]>(pixelCount);
 

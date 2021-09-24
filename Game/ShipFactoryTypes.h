@@ -29,11 +29,10 @@ using ShipFactoryPointIndexMatrix = Matrix2<std::optional<ElementIndex>>;
 
 struct ShipFactoryPoint
 {
-    std::optional<vec2i> OriginalDefinitionCoordinates; // In original image (y=0 @ bottom), from any of the layers that provide points
-    std::optional<IntegralPointCoordinates> UserCoordinates; // For displaying messages to users
+    std::optional<ShipSpaceCoordinates> DefinitionCoordinates; // From any of the layers that provide points
     vec2f Position;
     vec2f TextureCoordinates;
-    vec4f RenderColor;
+    rgbaColor RenderColor;
     StructuralMaterial const& StructuralMtl;
     bool IsRope;
     bool IsLeaking;
@@ -46,23 +45,22 @@ struct ShipFactoryPoint
     std::vector<ElementIndex> ConnectedTriangles1;
 
     ShipFactoryPoint(
-        std::optional<vec2i> originalDefinitionCoordinates,
-        std::optional<IntegralPointCoordinates> userCoordinates,
+        std::optional<ShipSpaceCoordinates> definitionCoordinates,
         vec2f position,
         vec2f textureCoordinates,
-        vec4f renderColor,
+        rgbaColor renderColor,
         StructuralMaterial const& structuralMtl,
         bool isRope,
+        bool isLeaking,
         float strength,
         float water)
-        : OriginalDefinitionCoordinates(originalDefinitionCoordinates)
-        , UserCoordinates(userCoordinates)
+        : DefinitionCoordinates(definitionCoordinates)
         , Position(position)
         , TextureCoordinates(textureCoordinates)
         , RenderColor(renderColor)
         , StructuralMtl(structuralMtl)
         , IsRope(isRope)
-        , IsLeaking(isRope ? true : false) // Ropes leak by default
+        , IsLeaking(isLeaking)
         , Strength(strength)
         , Water(water)
         , ElectricalMtl(nullptr)

@@ -6,6 +6,7 @@
 #pragma once
 
 #include "GameMath.h"
+#include "GameTypes.h"
 #include "ImageData.h"
 #include "Vectors.h"
 

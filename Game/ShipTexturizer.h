@@ -5,9 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
+#include "LayerBuffers.h"
 #include "MaterialDatabase.h"
 #include "ResourceLocator.h"
-#include "ShipFactoryTypes.h"
 
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
@@ -28,9 +28,7 @@ public:
 
     RgbaImageData Texturize(
         std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings,
-        ImageSize const & structureSize,
-        ShipFactoryPointIndexMatrix const & pointMatrix, // One more point on each side, to avoid checking for boundaries
-        std::vector<ShipFactoryPoint> const & points) const;
+        StructuralLayerBuffer const & structuralLayer) const;
 
     template<typename TMaterial>
     RgbaImageData MakeTextureSample(
@@ -41,7 +39,7 @@ public:
         return MakeTextureSample(
             settings,
             sampleSize,
-            rgbaColor(material.RenderColor),
+            rgbaColor(material.RenderColor, 255),
             material.MaterialTextureName);
     }
 

@@ -10,8 +10,6 @@
 
 #include <GameOpenGL/ShaderManager.h>
 
-#include <GameCore/ImageSize.h>
-
 #include <cassert>
 #include <filesystem>
 #include <memory>

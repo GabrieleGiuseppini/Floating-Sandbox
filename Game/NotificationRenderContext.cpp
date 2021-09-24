@@ -77,7 +77,7 @@ NotificationRenderContext::NotificationRenderContext(
             static_cast<float>(fonts[f].Texture.Size.width),
             static_cast<float>(fonts[f].Texture.Size.height),
             false,
-            IntegralPointCoordinates(0, 0),
+            ImageCoordinates(0, 0),
             vec2f::zero(),
             TextureFrameId<FontTextureGroups>(
                 FontTextureGroups::Font,
@@ -519,8 +519,8 @@ void NotificationRenderContext::ApplyCanvasSizeChanges(RenderParameters const & 
     auto const & view = renderParameters.View;
 
     // Recalculate screen -> NDC conversion factors
-    mScreenToNdcX = 2.0f / static_cast<float>(view.GetCanvasPhysicalPixelSize().width);
-    mScreenToNdcY = 2.0f / static_cast<float>(view.GetCanvasPhysicalPixelSize().height);
+    mScreenToNdcX = 2.0f / static_cast<float>(view.GetCanvasPhysicalSize().width);
+    mScreenToNdcY = 2.0f / static_cast<float>(view.GetCanvasPhysicalSize().height);
 
     // Make sure we re-calculate (and re-upload) all text vertices
     // at the next iteration

@@ -4,7 +4,7 @@
 #define out varying
 
 // Inputs
-in vec4 inTexture; // Vertex position (work space), Texture coords (texture space)
+in vec4 inTexture; // Vertex position (ship space), Texture coords (texture space)
 
 // Outputs
 out vec2 vertexTextureCoordinates;

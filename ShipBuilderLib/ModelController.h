@@ -27,7 +27,7 @@ class ModelController
 public:
 
     static std::unique_ptr<ModelController> CreateNew(
-        WorkSpaceSize const & workSpaceSize,
+        ShipSpaceSize const & shipSpaceSize,
         View & view);
 
     static std::unique_ptr<ModelController> CreateForShip(
@@ -43,12 +43,12 @@ public:
 
     std::unique_ptr<UndoEntry> StructuralRegionFill(
         StructuralMaterial const * material,
-        WorkSpaceCoordinates const & origin,
-        WorkSpaceSize const & size);
+        ShipSpaceCoordinates const & origin,
+        ShipSpaceSize const & size);
 
     std::unique_ptr<UndoEntry> StructuralRegionReplace(
         MaterialBuffer<StructuralMaterial> const & region,
-        WorkSpaceCoordinates const & origin);
+        ShipSpaceCoordinates const & origin);
 
     //
     // Electrical
@@ -60,12 +60,12 @@ public:
 
     std::unique_ptr<UndoEntry> ElectricalRegionFill(
         ElectricalMaterial const * material,
-        WorkSpaceCoordinates const & origin,
-        WorkSpaceSize const & size);
+        ShipSpaceCoordinates const & origin,
+        ShipSpaceSize const & size);
 
     std::unique_ptr<UndoEntry> ElectricalRegionReplace(
         MaterialBuffer<ElectricalMaterial> const & region,
-        WorkSpaceCoordinates const & origin);
+        ShipSpaceCoordinates const & origin);
 
     //
     // Ropes
@@ -91,13 +91,13 @@ public:
 private:
 
     ModelController(
-        WorkSpaceSize const & workSpaceSize,
+        ShipSpaceSize const & shipSpaceSize,
         View & view);
 
     void UploadStructuralLayerToView();
 
     void UploadStructuralLayerRowToView(
-        WorkSpaceCoordinates const & origin,
+        ShipSpaceCoordinates const & origin,
         int width);
 
 private:

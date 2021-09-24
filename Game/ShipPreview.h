@@ -5,9 +5,12 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ImageFileTools.h"
 #include "ShipMetadata.h"
 
+#include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
+#include <GameCore/ImageTools.h>
 
 #include <filesystem>
 
@@ -19,23 +22,14 @@ struct ShipPreview
 public:
 
     std::filesystem::path PreviewImageFilePath;
-    ImageSize OriginalSize;
+    ShipSpaceSize OriginalSize;
     ShipMetadata Metadata;
     bool IsHD;
     bool HasElectricals;
 
-    static ShipPreview Load(std::filesystem::path const & filepath);
-
-    ShipPreview (ShipPreview && other) = default;
-    ShipPreview & operator=(ShipPreview && other) = default;
-
-    RgbaImageData LoadPreviewImage(ImageSize const & maxSize) const;
-
-private:
-
     ShipPreview(
         std::filesystem::path const & previewImageFilePath,
-        ImageSize const & originalSize,
+        ShipSpaceSize const & originalSize,
         ShipMetadata const & metadata,
         bool isHD,
         bool hasElectricals)
@@ -45,5 +39,19 @@ private:
         , IsHD(isHD)
         , HasElectricals(hasElectricals)
     {
+    }
+
+    ShipPreview(ShipPreview && other) = default;
+    ShipPreview & operator=(ShipPreview && other) = default;
+
+    RgbaImageData LoadPreviewImage(ImageSize const & maxSize) const
+    {
+        // Load
+        auto previewImage = ImageFileTools::LoadImageRgbaAndResize(
+            PreviewImageFilePath,
+            maxSize);
+
+        // Trim
+        return ImageTools::TrimWhiteOrTransparent(std::move(previewImage));
     }
 };

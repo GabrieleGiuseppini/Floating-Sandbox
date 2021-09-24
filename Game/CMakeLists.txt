@@ -21,6 +21,7 @@ set  (GAME_SOURCES
 	IGameEventHandlers.h
 	ImageFileTools.cpp
 	ImageFileTools.h
+	LayerBuffers.h
 	Materials.cpp
 	Materials.h
 	MaterialDatabase.cpp
@@ -33,16 +34,14 @@ set  (GAME_SOURCES
 	RenderDeviceProperties.h
 	ResourceLocator.cpp
 	ResourceLocator.h
-	ShipDefinition.cpp
-	ShipDefinition.h
-	ShipDefinitionFile.cpp
-	ShipDefinitionFile.h
+	ShipDeSerializer.cpp
+	ShipDeSerializer.h
 	ShipFactory.cpp
 	ShipFactory.h
 	ShipFactoryTypes.h
-	ShipPhysicsData.h
+	ShipDefinition.h
 	ShipMetadata.h
-	ShipPreview.cpp
+	ShipPhysicsData.h
 	ShipPreview.h
 	ShipPreviewDirectoryManager.cpp
 	ShipPreviewDirectoryManager.h

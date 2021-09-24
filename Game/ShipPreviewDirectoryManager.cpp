@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "ShipPreviewDirectoryManager.h"
 
-#include "ShipDefinitionFile.h"
+#include "ShipDeSerializer.h"
 
 #include <GameCore/Log.h>
 
@@ -50,7 +50,7 @@ std::vector<std::filesystem::path> ShipPreviewDirectoryManager::EnumerateShipFil
         std::back_inserter(shipFilePaths),
         [](auto const & filePath)
         {
-            return ShipDefinitionFile::IsShipDefinitionFile(filePath);
+            return ShipDeSerializer::IsShipDefinitionFile(filePath);
         });
 
     //

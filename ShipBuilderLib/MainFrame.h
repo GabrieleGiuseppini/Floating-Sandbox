@@ -8,6 +8,7 @@
 #include "Controller.h"
 #include "IUserInterface.h"
 #include "MaterialPalette.h"
+#include "StatusBar.h"
 #include "View.h"
 #include "WorkbenchState.h"
 
@@ -31,7 +32,6 @@
 #include <wx/scrolbar.h>
 #include <wx/slider.h>
 #include <wx/statbmp.h>
-#include <wx/statusbr.h>
 
 #include <array>
 #include <filesystem>
@@ -75,7 +75,7 @@ public:
 
     void OnViewModelChanged() override;
 
-    void OnWorkSpaceSizeChanged(WorkSpaceSize const & workSpaceSize) override;
+    void OnShipSizeChanged(ShipSpaceSize const & shipSize) override;
 
     void OnLayerPresenceChanged() override;
 
@@ -87,7 +87,7 @@ public:
 
     void OnCurrentToolChanged(std::optional<ToolType> tool) override;
 
-    void OnToolCoordinatesChanged(std::optional<WorkSpaceCoordinates> coordinates) override;
+    void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates) override;
 
     void SetToolCursor(wxImage const & cursorImage) override;
 
@@ -118,6 +118,7 @@ private:
     void OnNewShip(wxCommandEvent & event);
     void OnLoadShip(wxCommandEvent & event);
     void OnSaveShip(wxCommandEvent & event);
+    void OnSaveShipAs(wxCommandEvent & event);
     void OnSaveAndGoBack(wxCommandEvent & event);
     void OnQuitAndGoBack(wxCommandEvent & event);
     void OnQuit(wxCommandEvent & event);
@@ -138,6 +139,14 @@ private:
 
     void Open();
 
+    void NewShip();
+
+    void LoadShip();
+
+    bool SaveShip();
+
+    bool SaveShipAs();
+
     void SaveAndSwitchBackToGame();
 
     void QuitAndSwitchBackToGame();
@@ -151,6 +160,12 @@ private:
 
     bool AskUserIfSure(wxString caption);
 
+    void DoNewShip();
+
+    void DoLoadShip(std::filesystem::path const & shipFilePath);
+
+    void DoSaveShip(std::filesystem::path const & shipFilePath);
+
     void RecalculateWorkCanvasPanning();
 
     //
@@ -159,7 +174,7 @@ private:
 
     void ReconciliateUI();
 
-    void ReconciliateUIWithWorkSpaceSize(WorkSpaceSize const & workSpaceSize);
+    void ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize);
 
     void ReconciliateUIWithLayerPresence();
 
@@ -201,8 +216,10 @@ private:
 
     // File panel
     wxMenuItem * mSaveShipMenuItem;
+    wxMenuItem * mSaveShipAsMenuItem;
     wxMenuItem * mSaveAndGoBackMenuItem;
     BitmapButton * mSaveShipButton;
+    BitmapButton * mSaveShipAsButton;
 
     // Layers panel
     std::array<BitmapToggleButton *, LayerCount> mLayerSelectButtons;
@@ -229,7 +246,7 @@ private:
     // Misc UI elements
     std::unique_ptr<MaterialPalette<StructuralMaterial>> mStructuralMaterialPalette;
     std::unique_ptr<MaterialPalette<ElectricalMaterial>> mElectricalMaterialPalette;
-    wxStatusBar * mStatusBar;
+    StatusBar * mStatusBar;
 
     //
     // Dialogs
@@ -248,7 +265,7 @@ private:
     //
 
     WorkbenchState mWorkbenchState;
-    std::filesystem::path mOriginalGameShipFilePath;
+    std::optional<std::filesystem::path> mCurrentShipFilePath;
 };
 
 }
