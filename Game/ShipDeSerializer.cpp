@@ -447,9 +447,7 @@ ShipDefinition ShipDeSerializer::LoadFromDefinitionImages(
                 ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
 
                 // Store structural element
-                structuralLayer[coords] = StructuralElement(
-                    structuralMaterial,
-                    rgbaColor(structuralMaterial->RenderColor, 255));
+                structuralLayer[coords] = StructuralElement(structuralMaterial);
 
                 //
                 // Check if it's also a legacy electrical element

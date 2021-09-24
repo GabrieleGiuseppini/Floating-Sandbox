@@ -73,15 +73,15 @@ https://gamejolt.com/x/permalink/comment/11457002
 		+ ShipFactory:
 			+ Nuke MaterializeShip code, just begin with ShipMaterialization (now ShipDefinition) as arg
 
-= Review whole need of ropes creating structural endpoints @ load type from .shp files
++ Review whole need of ropes creating structural endpoints @ load type from .shp files
 	+ Do at ShipFactory::Create() within the first pass on Ropes (i.e. ExtractRopeSegments => PostProcessRopesLayer())
 		+ Fix Szerszen
 		+ Fix hull assert
 		+ Fix RopesTest for Frontiers crash
-	- And subsequently, check the need for StructuralElement to have RenderColor
+	+ And subsequently, check the need for StructuralElement to have RenderColor
 
 - Auto-zoom on new ModelController
-	- By Controller at each "new" ModelController (New, Load) that is also not a new Controller
+	- TODOHERE: By Controller at each "new" ModelController (New, Load) that is also not a new Controller
 	- MainFrame::ReconciliateUI: also reconciliate status bar with workspace size *and* zoom
 
 - StatusBar with wxPanel (*)

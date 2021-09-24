@@ -14,18 +14,13 @@
 struct StructuralElement
 {
     StructuralMaterial const * Material;
-    rgbaColor RenderColor;
 
     StructuralElement()
         : Material(nullptr)
-        , RenderColor()
     {}
 
-    explicit StructuralElement(
-        StructuralMaterial const * material,
-        rgbaColor const & renderColor)
+    explicit StructuralElement(StructuralMaterial const * material)
         : Material(material)
-        , RenderColor(renderColor)
     {}
 };
 

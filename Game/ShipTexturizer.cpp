@@ -100,7 +100,7 @@ RgbaImageData ShipTexturizer::Texturize(
             // Get structure pixel color
             StructuralMaterial const * structuralMaterial = structuralLayer[coords].Material;
             rgbaColor const structurePixelColor = structuralMaterial != nullptr
-                ? structuralLayer[coords].RenderColor
+                ? rgbaColor(structuralMaterial->RenderColor, 255)
                 : rgbaColor::zero(); // Fully transparent
 
             if (settings.Mode == ShipAutoTexturizationModeType::FlatStructure
