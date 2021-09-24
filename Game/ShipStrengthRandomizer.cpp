@@ -236,7 +236,7 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
         vec2i startingPointCoords =
             vec2i(pointInfos2[startingPointIndex2].DefinitionCoordinates->x + 1, pointInfos2[startingPointIndex2].DefinitionCoordinates->y + 1)
             - pointIndexMatrixRegionOrigin;
-        assert(startingPointCoords.IsInRect(distanceMatrix));
+        assert(startingPointCoords.IsInSize(distanceMatrix));
 
         // Navigate in distance map to find local maximum
         while (true)
@@ -246,7 +246,7 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
             for (int octant = 0; octant < 8; ++octant)
             {
                 vec2i const candidateCoords = startingPointCoords + OctantDirections[octant];
-                if (candidateCoords.IsInRect(distanceMatrix)
+                if (candidateCoords.IsInSize(distanceMatrix)
                     && distanceMatrix[candidateCoords].Distance > maxDistance)
                 {
                     maxDistance = distanceMatrix[candidateCoords].Distance;
@@ -273,7 +273,7 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
         for (Octant octant = 0; octant < 8; ++octant)
         {
             vec2i const candidateCoords = startingPointCoords + OctantDirections[octant];
-            if (candidateCoords.IsInRect(distanceMatrix))
+            if (candidateCoords.IsInSize(distanceMatrix))
             {
                 float const delta = distanceMatrix[startingPointCoords].Distance - distanceMatrix[candidateCoords].Distance;
                 if (delta >= maxDelta)
@@ -305,7 +305,7 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
                 [&](Octant candidateOctant)
                 {
                     vec2i const candidateCoords = startingPointCoords + OctantDirections[candidateOctant];
-                    return candidateCoords.IsInRect(distanceMatrix);
+                    return candidateCoords.IsInSize(distanceMatrix);
                 });
 
             if (oppositeOctant.has_value())
@@ -389,7 +389,7 @@ void ShipStrengthRandomizer::PropagateBatikCrack(
         for (Octant octant = 0; octant < 8; ++octant)
         {
             vec2i const candidateCoords = p + OctantDirections[octant];
-            if (candidateCoords.IsInRect(distanceMatrix))
+            if (candidateCoords.IsInSize(distanceMatrix))
             {
                 float const delta = distanceMatrix[p].Distance - distanceMatrix[candidateCoords].Distance;
                 if (delta >= maxDelta)
@@ -416,7 +416,7 @@ void ShipStrengthRandomizer::PropagateBatikCrack(
             [&](Octant candidateOctant)
             {
                 vec2i const candidateCoords = p + OctantDirections[candidateOctant];
-                return candidateCoords.IsInRect(distanceMatrix);
+                return candidateCoords.IsInSize(distanceMatrix);
             });
 
         //
@@ -446,7 +446,7 @@ void ShipStrengthRandomizer::UpdateBatikDistances(BatikDistanceMatrix & distance
     auto const updateDistanceFromOctant = [&distanceMatrix](vec2i const & idx, Octant const & octant)
     {
         vec2i const nidx = idx + OctantDirections[octant];
-        if (nidx.IsInRect(distanceMatrix)
+        if (nidx.IsInSize(distanceMatrix)
             && distanceMatrix[nidx].Distance + 1.0f < distanceMatrix[idx].Distance)
         {
             distanceMatrix[idx].Distance = distanceMatrix[nidx].Distance + 1.0f;

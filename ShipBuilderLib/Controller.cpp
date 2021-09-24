@@ -396,7 +396,7 @@ void Controller::RefreshToolCoordinatesDisplay()
     ShipSpaceCoordinates mouseShipSpaceCoordinates = mView.ScreenToShipSpace(mInputState.MousePosition);
 
     // Check if within ship canvas
-    if (mouseShipSpaceCoordinates.IsInRect(mModelController->GetModel().GetShipSize()))
+    if (mouseShipSpaceCoordinates.IsInSize(mModelController->GetModel().GetShipSize()))
     {
         mUserInterface.OnToolCoordinatesChanged(mouseShipSpaceCoordinates);
     }

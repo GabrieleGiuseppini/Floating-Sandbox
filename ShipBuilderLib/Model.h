@@ -7,9 +7,9 @@
 
 #include "ShipBuilderTypes.h"
 
+#include <Game/LayerBuffers.h>
 #include <Game/Materials.h>
 
-#include <GameCore/Buffer2D.h>
 #include <GameCore/ImageData.h>
 
 #include <array>
@@ -73,19 +73,21 @@ public:
         return mIsDirty;
     }
 
-    MaterialBuffer<StructuralMaterial> & GetStructuralMaterialMatrix()
+    StructuralLayerBuffer & GetStructuralLayerBuffer()
     {
-        return *mStructuralMaterialMatrix;
+        assert(mStructuralLayerBuffer);
+        return *mStructuralLayerBuffer;
     }
 
     RgbaImageData const & GetStructuralRenderColorTexture() const
     {
-        assert(!!mStructuralRenderColorTexture);
+        assert(mStructuralRenderColorTexture);
         return *mStructuralRenderColorTexture;
     }
 
     RgbaImageData & GetStructuralRenderColorTexture()
     {
+        assert(mStructuralRenderColorTexture);
         return *mStructuralRenderColorTexture;
     }
 
@@ -95,7 +97,7 @@ private:
 
     void ClearIsDirty();
 
-    void MakeNewEmptyStructuralLayer(ShipSpaceSize const & size);
+    void MakeNewStructuralLayer(ShipSpaceSize const & size);
 
 private:
 
@@ -105,7 +107,9 @@ private:
     // Structural Layer
     //
 
-    std::unique_ptr<MaterialBuffer<StructuralMaterial>> mStructuralMaterialMatrix;
+    std::unique_ptr<StructuralLayerBuffer> mStructuralLayerBuffer;
+
+    // Derived buffers
     std::unique_ptr<RgbaImageData> mStructuralRenderColorTexture;
 
     //

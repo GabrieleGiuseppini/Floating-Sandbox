@@ -25,14 +25,18 @@ public:
     std::unique_ptr<TElement[]> Data;
 
     Buffer2D(size_type size)
-        : Size(size)
-        , mLinearSize(size.GetLinearSize())
+        : Buffer2D(size, TElement())
     {
-        Data = std::make_unique<TElement[]>(mLinearSize);
-        std::fill(
-            Data.get(),
-            Data.get() + mLinearSize,
-            TElement());
+    }
+
+    Buffer2D(
+        size_type size,
+        TElement const & defaultValue)
+        : Buffer2D(
+            size.width,
+            size.height,
+            defaultValue)
+    {
     }
 
     Buffer2D(
@@ -50,21 +54,22 @@ public:
     }
 
     Buffer2D(
+        size_type size,
+        std::unique_ptr<TElement[]> data)
+        : Buffer2D(
+            size.width,
+            size.height,
+            std::move(data))
+    {
+    }
+
+    Buffer2D(
         int width,
         int height,
         std::unique_ptr<TElement[]> data)
         : Size(width, height)
         , Data(std::move(data))
         , mLinearSize(width * height)
-    {
-    }
-
-    Buffer2D(
-        size_type size,
-        std::unique_ptr<TElement[]> data)
-        : Size(size)
-        , Data(std::move(data))
-        , mLinearSize(size.width * size.height)
     {
     }
 
@@ -125,7 +130,7 @@ public:
 
     TElement const & operator[](coordinates_type const & index) const
     {
-        assert(index.IsInRect(Size));
+        assert(index.IsInSize(Size));
 
         size_t const linearIndex = index.y * Size.width + index.x;
         assert(linearIndex < mLinearSize);

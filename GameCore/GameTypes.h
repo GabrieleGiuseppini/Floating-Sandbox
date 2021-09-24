@@ -333,7 +333,7 @@ struct _IntegralSize
     std::string ToString() const
     {
         std::stringstream ss;
-        ss << "(" << width << ", " << height << ")";
+        ss << "(" << width << " x " << height << ")";
         return ss.str();
     }
 };
@@ -395,10 +395,10 @@ struct _IntegralCoordinates
             this->y - other.y);
     }
 
-    template<typename TRect>
-    bool IsInRect(TRect const & rect) const
+    template<typename TSize>
+    bool IsInSize(TSize const & size) const
     {
-        return x >= 0 && x < rect.width && y >= 0 && y < rect.height;
+        return x >= 0 && x < size.width && y >= 0 && y < size.height;
     }
 
     _IntegralCoordinates<TIntegralTag> FlipY(integral_type height) const
@@ -429,6 +429,27 @@ using ImageCoordinates = _IntegralCoordinates<struct ImageTag>; // Image
 using ShipSpaceCoordinates = _IntegralCoordinates<struct ShipSpaceTag>; // Y=0 at bottom
 using DisplayLogicalCoordinates = _IntegralCoordinates<struct DisplayLogicalTag>; // Y=0 at top
 using DisplayPhysicalCoordinates = _IntegralCoordinates<struct DisplayPhysicalTag>; // Y=0 at top
+
+template<typename TIntegralTag>
+struct _IntegralRect
+{
+    _IntegralCoordinates<TIntegralTag> origin;
+    _IntegralSize<TIntegralTag> size;
+
+    constexpr _IntegralRect(
+        _IntegralCoordinates<TIntegralTag> const & _origin,
+        _IntegralSize<TIntegralTag> const & _size)
+        : origin(_origin)
+        , size(_size)
+    {}
+
+    std::string ToString() const
+    {
+        std::stringstream ss;
+        ss << "(" << origin.x << ", " << origin.y << " -> " << size.width << " x " << size.height << ")";
+        return ss.str();
+    }
+};
 
 template<typename TTag>
 inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _IntegralCoordinates<TTag> const & p)

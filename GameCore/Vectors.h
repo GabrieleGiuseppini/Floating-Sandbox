@@ -742,10 +742,10 @@ public:
         return vec2i(-y, x);
     }
 
-    template<typename TRect>
-    bool IsInRect(TRect const & rect) const
+    template<typename TSize>
+    bool IsInSize(TSize const & size) const
     {
-        return x >= 0 && x < rect.width && y >= 0 && y < rect.height;
+        return x >= 0 && x < size.width && y >= 0 && y < size.height;
     }
 
     std::string toString() const;

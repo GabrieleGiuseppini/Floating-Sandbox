@@ -47,8 +47,6 @@ ModelController::ModelController(
 
 void ModelController::NewStructuralLayer()
 {
-    assert(mModel.HasLayer(LayerType::Structural));
-
     mModel.NewStructuralLayer();
 
     UploadStructuralLayerToView();
@@ -66,6 +64,9 @@ std::unique_ptr<UndoEntry> ModelController::StructuralRegionFill(
     ShipSpaceCoordinates const & origin,
     ShipSpaceSize const & size)
 {
+    // TODOHERE
+    return nullptr;
+    /*
     //
     // Create undo edit action
     //
@@ -121,6 +122,7 @@ std::unique_ptr<UndoEntry> ModelController::StructuralRegionFill(
         std::make_unique<MaterialRegionUndoEditAction<StructuralMaterial>>(
             mModel.GetStructuralMaterialMatrix().MakeCopy(origin, size),
             origin));
+    */
 }
 
 std::unique_ptr<UndoEntry> ModelController::StructuralRegionReplace(

@@ -2,9 +2,20 @@
 
 #include "gtest/gtest.h"
 
-TEST(Buffer2DTests, FillCctor)
+TEST(Buffer2DTests, FillCctor_Size)
 {
-    Buffer2D<int, IntegralTag> buffer(10, 20, 242);
+    Buffer2D<int, struct IntegralTag> buffer(IntegralRectSize(10, 20), 242);
+
+    EXPECT_EQ(buffer.Size.width, 10);
+    EXPECT_EQ(buffer.Size.height, 20);
+
+    EXPECT_EQ(buffer[IntegralCoordinates(0, 0)], 242);
+    EXPECT_EQ(buffer[IntegralCoordinates(9, 19)], 242);
+}
+
+TEST(Buffer2DTests, FillCctor_Dimensions)
+{
+    Buffer2D<int, struct IntegralTag> buffer(10, 20, 242);
 
     EXPECT_EQ(buffer.Size.width, 10);
     EXPECT_EQ(buffer.Size.height, 20);
@@ -15,7 +26,7 @@ TEST(Buffer2DTests, FillCctor)
 
 TEST(Buffer2DTests, Indexing_WithCoordinates)
 {
-    Buffer2D<int, IntegralTag> buffer(10, 20, 242);
+    Buffer2D<int, struct IntegralTag> buffer(10, 20, 242);
 
     buffer[IntegralCoordinates(7, 9)] = 42;
 
@@ -26,7 +37,7 @@ TEST(Buffer2DTests, Indexing_WithCoordinates)
 
 TEST(Buffer2DTests, MakeCopy_Whole)
 {
-    Buffer2D<int, IntegralTag> buffer(4, 4, 0);
+    Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
 
     int iVal = 100;
     for (int y = 0; y < 4; ++y)
@@ -51,7 +62,7 @@ TEST(Buffer2DTests, MakeCopy_Whole)
 
 TEST(Buffer2DTests, MakeCopy_Region)
 {
-    Buffer2D<int, IntegralTag> buffer(4, 4, 0);
+    Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
 
     int iVal = 100;
     for (int y = 0; y < 4; ++y)

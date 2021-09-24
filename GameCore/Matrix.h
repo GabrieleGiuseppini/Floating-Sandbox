@@ -68,7 +68,7 @@ struct Matrix2
 
     TValue const & operator[](vec2i const & index) const
     {
-        assert(index.IsInRect(*this));
+        assert(index.IsInSize(*this));
         return mColumns[index.x][index.y];
     }
 

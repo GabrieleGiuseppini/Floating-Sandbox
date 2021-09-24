@@ -80,17 +80,9 @@ https://gamejolt.com/x/permalink/comment/11457002
 		+ Fix RopesTest for Frontiers crash
 	+ And subsequently, check the need for StructuralElement to have RenderColor
 
-- Auto-zoom on new ModelController
-	- TODOHERE: By Controller at each "new" ModelController (New, Load) that is also not a new Controller
-	- MainFrame::ReconciliateUI: also reconciliate status bar with workspace size *and* zoom
-
-- StatusBar with wxPanel (*)
-
-- Model contains the four new layer buffer types (1 as member, 3 as uq_ptr)
++ Model contains the four new layer buffer types (1 as member, 3 as uq_ptr)
 
 - Merge into shipbuilder
-
-- Build on Ubuntu
 
 ----------------------
 
@@ -171,12 +163,24 @@ https://gamejolt.com/x/permalink/comment/11457002
 		
 	- DoNewShip:
 		- TODO
-	- DoLoadShip	
+	- DoLoadShip:
 		- TODO
 		- Store filename as mCurrentFilename
 	- DoSaveShip:
 		- TODO
 		- Store filename as mCurrentFilename
+
+- Auto-zoom on new ModelController
+	- By Controller, at each of the two loads, and at the create-new (not at model-new)
+		- Via ViewModel->CalculateIdealZoom() const -> zoom
+		- Only invokes IUserInterface when it's not a new controller though
+			- And the IUserInterface call is basically OnWorkspaceSizeChange, renamed to XOnViewModelChangedXTODO
+		- In the other cases, verify MainFrame calls ReconciliateUI by itself
+	- MainFrame::ReconciliateUI: also reconciliate status bar with workspace size (@ReconciliateWithWorkSpaceSize) *and* zoom
+
+- StatusBar with wxPanel (*)
+
+- Build on Ubuntu
 
 - Previews:
 	- Spec:

@@ -65,7 +65,7 @@ void PencilTool<TMaterial>::OnMouseMove(InputState const & inputState)
     ShipSpaceCoordinates mouseShipSpaceCoordinates = mView.ScreenToShipSpace(inputState.MousePosition);
 
     // Check if within ship canvas
-    if (mouseShipSpaceCoordinates.IsInRect(mModelController.GetModel().GetShipSize()))
+    if (mouseShipSpaceCoordinates.IsInSize(mModelController.GetModel().GetShipSize()))
     {
         if (inputState.IsLeftMouseDown)
         {
@@ -85,7 +85,7 @@ void PencilTool<TMaterial>::OnLeftMouseDown(InputState const & inputState)
     ShipSpaceCoordinates mouseShipSpaceCoordinates = mView.ScreenToShipSpace(inputState.MousePosition);
 
     // Check if within ship canvas
-    if (mouseShipSpaceCoordinates.IsInRect(mModelController.GetModel().GetShipSize()))
+    if (mouseShipSpaceCoordinates.IsInSize(mModelController.GetModel().GetShipSize()))
     {
         ApplyEditAt(mouseShipSpaceCoordinates, MaterialPlaneType::Foreground);
     }
@@ -98,7 +98,7 @@ void PencilTool<TMaterial>::OnRightMouseDown(InputState const & inputState)
     ShipSpaceCoordinates mouseShipSpaceCoordinates = mView.ScreenToShipSpace(inputState.MousePosition);
 
     // Check if within ship canvas
-    if (mouseShipSpaceCoordinates.IsInRect(mModelController.GetModel().GetShipSize()))
+    if (mouseShipSpaceCoordinates.IsInSize(mModelController.GetModel().GetShipSize()))
     {
         ApplyEditAt(mouseShipSpaceCoordinates, MaterialPlaneType::Background);
     }
