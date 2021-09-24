@@ -51,6 +51,7 @@ struct ShipFactoryPoint
         rgbaColor renderColor,
         StructuralMaterial const& structuralMtl,
         bool isRope,
+        bool isLeaking,
         float strength,
         float water)
         : DefinitionCoordinates(definitionCoordinates)
@@ -59,7 +60,7 @@ struct ShipFactoryPoint
         , RenderColor(renderColor)
         , StructuralMtl(structuralMtl)
         , IsRope(isRope)
-        , IsLeaking(isRope ? true : false) // Ropes leak by default
+        , IsLeaking(isLeaking)
         , Strength(strength)
         , Water(water)
         , ElectricalMtl(nullptr)

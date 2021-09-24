@@ -73,9 +73,18 @@ https://gamejolt.com/x/permalink/comment/11457002
 		+ ShipFactory:
 			+ Nuke MaterializeShip code, just begin with ShipMaterialization (now ShipDefinition) as arg
 
-- Review whole need of ropes creating structural endpoints @ load type from .shp files
-	- Do at ShipFactory::Create() within the first pass on Ropes (i.e. ExtractRopeSegments)
+= Review whole need of ropes creating structural endpoints @ load type from .shp files
+	+ Do at ShipFactory::Create() within the first pass on Ropes (i.e. ExtractRopeSegments => PostProcessRopesLayer())
+		+ Fix Szerszen
+		+ Fix hull assert
+		+ Fix RopesTest for Frontiers crash
 	- And subsequently, check the need for StructuralElement to have RenderColor
+
+- Auto-zoom on new ModelController
+	- By Controller at each "new" ModelController (New, Load) that is also not a new Controller
+	- MainFrame::ReconciliateUI: also reconciliate status bar with workspace size *and* zoom
+
+- StatusBar with wxPanel (*)
 
 - Model contains the four new layer buffer types (1 as member, 3 as uq_ptr)
 
@@ -325,17 +334,18 @@ https://gamejolt.com/x/permalink/comment/11457002
 
 - StatusBar:
 	+ Own class
+	- Try making it a wxPanel rather than a wxStatusBar
+	- Cctor and Set(.) for UnitsSystem
+		- From SB::MainFrame cctor
+		- And store tools coords, ship size, etc. for re-populating on change
 	- Areas:
 		- Canvas:
-			- Coords and icon
-			- WorkSpace size and icon
-			- Selection/line/rect/etc. size and icon			
+			- Coords and icon (x,y), w/meters/feet as well
+			- WorkSpace size and icon (wxh), w/meters/feet as well
+			- Selection/line/rect/etc. size and icon (wxh), w/meters/feet as well
+			- Zoom (%)
 			- Material under cursor (for drop tool)
 			- Warning icon (w/tooltip)
-		- Ship: (i.e. ship measurements) 
-			- Need UnitsSystem in Preferences
-			- Coords and icon
-			- Ship size and icon
 
 - Tools:
 	! Most tools should pan when the (captured) mouse is outside of the canvas

@@ -515,12 +515,6 @@ ShipDefinition ShipDeSerializer::LoadFromDefinitionImages(
         }
     }
 
-    // Make sure we have at least one structural element
-    if (!hasStructuralElements)
-    {
-        throw GameException("The ship structure contains no pixels that may be recognized as structural material");
-    }
-
     // Make sure all rope endpoints are matched
     {
         auto const unmatchedSrchIt = std::find_if(
@@ -538,8 +532,7 @@ ShipDefinition ShipDeSerializer::LoadFromDefinitionImages(
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
-    // 2. Process ropes layer - if any - adding rope elements, and eventually structural elements
-    //    where the rope endpoints are
+    // 2. Process ropes layer - if any - creating rope elements
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     if (ropesLayerImage.has_value())
@@ -577,20 +570,6 @@ ShipDefinition ShipDeSerializer::LoadFromDefinitionImages(
                     if (ropesLayer[coords].Material != nullptr)
                     {
                         throw GameException("There is already a rope endpoint at " + imageCoords.FlipY(shipSize.height).ToString());
-                    }
-
-                    // Ensure there is a structural element here, and color it with the rope's color
-                    if (structuralLayer[coords].Material == nullptr)
-                    {
-                        // Insert a structural element for the rope, using the rope's color
-                        structuralLayer[coords] = StructuralElement(
-                            &standardRopeMaterial,
-                            ropeColor);
-                    }
-                    else
-                    {
-                        // Change endpoint's color to match the rope's - or else the spring will look bad
-                        structuralLayer[coords].RenderColor = ropeColor;
                     }
 
                     // Check if it's the first or the second endpoint for the rope
@@ -687,13 +666,14 @@ ShipDefinition ShipDeSerializer::LoadFromDefinitionImages(
                             + " in the electrical layer image");
                     }
 
-                    // Make sure we have a structural point here
-                    if (structuralLayer[coords].Material == nullptr)
+                    // Make sure we have a structural point here, or a rope endpoint
+                    if (structuralLayer[coords].Material == nullptr
+                        && ropesLayer[coords].Material == nullptr)
                     {
                         throw GameException(
                             "The electrical layer image specifies an electrical material at "
                             + imageCoords.FlipY(shipSize.height).ToString()
-                            + ", but no pixel may be found at those coordinates in the structural layer image");
+                            + ", but no pixel may be found at those coordinates in either the structural or the ropes layer image");
                     }
 
                     // Extract instance index, if material requires one
@@ -740,6 +720,12 @@ ShipDefinition ShipDeSerializer::LoadFromDefinitionImages(
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Make sure we have at least one structural or rope element
+    if (!hasStructuralElements && !hasRopeElements)
+    {
+        throw GameException("The ship structure contains no pixels that may be recognized as structural material");
+    }
 
     // Bake definition
     return ShipDefinition(

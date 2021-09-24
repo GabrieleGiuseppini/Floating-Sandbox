@@ -55,18 +55,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     auto const totalStartTime = std::chrono::steady_clock::now();
 
     //
-    // Create texture, if needed
-    //
-
-    RgbaImageData textureImage = shipDefinition.TextureLayer
-        ? std::move(*shipDefinition.TextureLayer) // Use provided texture
-        : shipTexturizer.Texturize(
-            shipDefinition.AutoTexturizationSettings,
-            shipDefinition.StructuralLayer); // Auto-texturize
-
-    //
     // Process materialized ship layer and:
-    // - Create ShipFactoryPoint's for each particle
+    // - Create ShipFactoryPoint's for each particle, including ropes' endpoints
     // - Build a 2D matrix containing indices to the particles
     //
 
@@ -91,8 +81,35 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         for (int y = 0; y < shipDefinition.Size.height; ++y)
         {
             ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
-            StructuralElement const & structuralElement = shipDefinition.StructuralLayer[coords];
-            StructuralMaterial const * structuralMaterial = structuralElement.Material;
+
+            // Get structural material - and render color
+            StructuralMaterial const * structuralMaterial = shipDefinition.StructuralLayer[coords].Material;
+            rgbaColor structuralMaterialRenderColor = (structuralMaterial != nullptr) ? rgbaColor(structuralMaterial->RenderColor, 255) : rgbaColor::zero();
+            bool isStructuralMaterialRope = (structuralMaterial != nullptr) ? structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope) : false;
+            bool isStructuralMaterialLeaking = (structuralMaterial != nullptr) ? structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope) : false;
+
+            // Check if there's a rope endpoint here
+            if (shipDefinition.RopesLayer && (*shipDefinition.RopesLayer)[coords].Material != nullptr)
+            {
+                //
+                // There is a rope endpoint here
+                //
+
+                if (structuralMaterial == nullptr)
+                {
+                    // Make a structural element for this endpoint
+                    structuralMaterial = &materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope);
+                    isStructuralMaterialLeaking = true; // Ropes leak by default
+                }
+
+                // Change endpoint's color to match the rope's - or else the spring will look bad
+                structuralMaterialRenderColor = (*shipDefinition.RopesLayer)[coords].RenderColor;
+
+                // Make it a rope point so that the first spring segment is a rope spring
+                isStructuralMaterialRope = true;
+            }
+
+            // Check if there's a structural element here
             if (nullptr != structuralMaterial)
             {
                 //
@@ -120,9 +137,10 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
                         static_cast<float>(x) - halfShipWidth,
                         static_cast<float>(y)) + shipDefinition.PhysicsData.Offset,
                     MakeTextureCoordinates(x, y, shipDefinition.Size),
-                    structuralElement.RenderColor,
+                    structuralMaterialRenderColor,
                     *structuralMaterial,
-                    structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope),
+                    isStructuralMaterialRope,
+                    isStructuralMaterialLeaking,
                     structuralMaterial->Strength,
                     water);
 
@@ -347,6 +365,16 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         springs);
 
     //
+    // Create texture, if needed
+    //
+
+    RgbaImageData textureImage = shipDefinition.TextureLayer
+        ? std::move(*shipDefinition.TextureLayer) // Use provided texture
+        : shipTexturizer.Texturize(
+            shipDefinition.AutoTexturizationSettings,
+            shipDefinition.StructuralLayer); // Auto-texturize
+
+    //
     // We're done!
     //
 
@@ -404,6 +432,10 @@ std::vector<ShipFactory::RopeSegment> ShipFactory::ExtractRopeSegments(
                 RopeElement const & ropeElement = (*shipDefinition.RopesLayer)[coords];
                 if (ropeElement.Material != nullptr)
                 {
+                    //
+                    // It's a rope endpoint
+                    //
+
                     // Get point index
                     assert(pointIndexMatrix[vec2i(x + 1, y + 1)].has_value());
                     ElementIndex const pointIndex = *pointIndexMatrix[vec2i(x + 1, y + 1)];
@@ -607,6 +639,7 @@ void ShipFactory::AppendRopes(
                 isFirstHalf ? ropeSegment.PointARenderColor : ropeSegment.PointBRenderColor,
                 ropeMaterial,
                 true, // IsRope
+                true, // Ropes leak by default
                 ropeMaterial.Strength,
                 0.0f); // Water
 
