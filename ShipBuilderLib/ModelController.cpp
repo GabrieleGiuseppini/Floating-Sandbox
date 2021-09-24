@@ -54,16 +54,20 @@ void ModelController::NewStructuralLayer()
 
 void ModelController::SetStructuralLayer(/*TODO*/)
 {
+    assert(mModel.HasLayer(LayerType::Structural));
+
     mModel.SetStructuralLayer();
 
     UploadStructuralLayerToView();
 }
 
-std::unique_ptr<UndoEntry> ModelController::StructuralRegionFill(
+std::unique_ptr<UndoAction> ModelController::StructuralRegionFill(
     StructuralMaterial const * material,
     ShipSpaceCoordinates const & origin,
     ShipSpaceSize const & size)
 {
+    assert(mModel.HasLayer(LayerType::Structural));
+
     // TODOHERE
     return nullptr;
     /*
@@ -125,12 +129,13 @@ std::unique_ptr<UndoEntry> ModelController::StructuralRegionFill(
     */
 }
 
-std::unique_ptr<UndoEntry> ModelController::StructuralRegionReplace(
-    MaterialBuffer<StructuralMaterial> const & region,
+void ModelController::StructuralRegionReplace(
+    StructuralLayerBuffer const & layerBufferRegion,
     ShipSpaceCoordinates const & origin)
 {
+    assert(mModel.HasLayer(LayerType::Structural));
+
     // TODOHERE
-    return nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -162,7 +167,7 @@ void ModelController::RemoveElectricalLayer()
     // TODO: upload to view
 }
 
-std::unique_ptr<UndoEntry> ModelController::ElectricalRegionFill(
+std::unique_ptr<UndoAction> ModelController::ElectricalRegionFill(
     ElectricalMaterial const * material,
     ShipSpaceCoordinates const & origin,
     ShipSpaceSize const & size)
@@ -171,12 +176,13 @@ std::unique_ptr<UndoEntry> ModelController::ElectricalRegionFill(
     return nullptr;
 }
 
-std::unique_ptr<UndoEntry> ModelController::ElectricalRegionReplace(
-    MaterialBuffer<ElectricalMaterial> const & region,
+void ModelController::ElectricalRegionReplace(
+    ElectricalLayerBuffer const & layerBufferRegion,
     ShipSpaceCoordinates const & origin)
 {
+    assert(mModel.HasLayer(LayerType::Electrical));
+
     // TODOHERE
-    return nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

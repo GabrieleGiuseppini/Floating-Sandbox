@@ -13,6 +13,7 @@
 #include "WorkbenchState.h"
 #include "Tools/Tool.h"
 
+#include <Game/LayerBuffers.h>
 #include <Game/ResourceLocator.h>
 
 #include <memory>
@@ -59,17 +60,29 @@ public:
 
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
+    void RestoreLayerBufferRegion(
+        StructuralLayerBuffer const & layerBufferRegion,
+        ShipSpaceCoordinates const & origin);
 
     void NewElectricalLayer();
     void SetElectricalLayer(/*TODO*/);
     void RemoveElectricalLayer();
+    void RestoreLayerBufferRegion(
+        ElectricalLayerBuffer const & layerBufferRegion,
+        ShipSpaceCoordinates const & origin);
 
     void NewRopesLayer();
     void SetRopesLayer(/*TODO*/);
     void RemoveRopesLayer();
+    void RestoreLayerBufferRegion(
+        RopesLayerBuffer const & layerBufferRegion,
+        ShipSpaceCoordinates const & origin);
 
     void SetTextureLayer(/*TODO*/);
     void RemoveTextureLayer();
+    void RestoreLayerBufferRegion(
+        TextureLayerBuffer const & layerBufferRegion,
+        ShipSpaceCoordinates const & origin);
 
     void ResizeShip(ShipSpaceSize const & newSize);
 

@@ -1,133 +1,56 @@
 https://gamejolt.com/x/permalink/comment/11457002
 
-+ Move/merge integral coords/size from shipbuilder to game
-	+ Game: "ShipSpace" and "DisplayPhysical/Logical"		
-	+ ShipBuilder
 
-+ SB::ViewModel: ortho matrix: see again why ShipSpace says positive bottom
-	+ Anchor to the top
++ Undo hierarchy: there are four subtypes of UndoEditAction - for each of the "layer buffer" types - on top of e.g. "resize" and "all layers"
+	+ These four are all implemented via a single templated class, templated on TLayerBuffer
+		+ Contains TLayerBuffer and origin
+	+ Apply() invokes Controller::RestoreLayer(TLayerBuffer const &, origin)
 
-+ LayerBuffer.h: "layer buffer" types
-	+ StructuralLayerBuffer == Buffer2D<StructuralElement, ShipSpace>
-		+ StructuralElement = <StructuralMaterial*>
-	+ ElectricalLayerBuffer == Buffer2D<ElectricalElement, ShipSpace>
-		+ ElectricalMaterial = <ElectricalMaterial*, instance ID>
-	+ RopesLayerBuffer == Buffer2D<RopeElement, ShipSpace>
-		+ RopeElement = <StructuralMaterial*, endpoint ID>
-	+ TextureLayerBuffer == Buffer2D<rgbaColor, ImageSpace>
-
-+ Use "layer buffers" at ShipFactory
-	+ ShipMaterialization class (@GameLib): four buffers
-	+ static ShipFactory::MaterializeShip(...) -> ShipMaterialization
-		+ See first if can make whole ShipFactory static again
-		+ Also includes filling-in Ropes from rope endpoints found in structure (legacy)
-			+ Throw on conflicts, like (should be) now
-		+ Also includes filling-in Electrical from electrical materials found in structure (legacy)
-			+ Throw on conflicts, like (should be) now
-	+ ShipFactory::WhateverNow(): use MaterializeShip to get ShipMaterialization and continue from there
-		+ Given that you're at it: ShipFactoryTypes::ShipFactoryPoint: nuke vec2i and replace with ShipSpaceCoordinates (and user-facing coords being ImageCoordinates)
-	+ Test:
-		+ Basic:
-			+ Legacy ropes
-			+ Native ropes
-			X Legacy+Native ropes
-			+ Legacy electrical
-			+ Native electrical
-			X Legacy+Native electrical
-			+ Texture
-		+ Corner cases:
-			+ Ropes: too many endpoints for same Rope ID
-				+ All legacy
-				+ All native
-		+ Both auto-texturization settings
-		+ Perf (before & after)
-			+ Before: ~100ms (factory including auto-text)
-			+ After: ~110ms
-
-+ Check if also old code asserted on Szerszen cargo for hull
-
-+ Ship De/Serialization
-	! Spec:
-		- Ultimate ship definition consists of LayerBuffers, not images (except for Texture obviously)
-		- ShipMaterialization functionality currently in ShipFactory should move to ship deserializer, for formats "png" and "shp"
-			- This is where we're fine with doing the "legacy" tricks, and with e.g. inserting missing structural materials for rope endpoints in the ropes layer
-	+ Impl:
-		+ ShipMaterialization also carries all attributes of ShipDefinition
-		+ ShipDeserializer			
-			+ Load(filepath, MaterialDB) -> ShipMaterialization
-				+ ShipMaterialization functionality currently in ShipFactory should move to ship deserializer, for formats "png" and "shp"
-					+ This is where we're fine with doing the "legacy" tricks, and with e.g. inserting missing structural materials for rope endpoints in the ropes layer
-				+ png
-				+ shp
-			+ LoadPreview(filepath, MaterialDB) -> ShipPreview
-				+ png
-				+ shp
-			+ Save(ShipMaterialization, filepath)
-				+ NOP at the moment
-		+ Nuke ShipPreview.cpp
-		+ Nuke ShipDefinition.*, ShipDefinitionFile.*
-		+ "ShipMaterialization" -> "ShipDefinition"
-		+ Use ShipDeSerializer ipv ShipDefinition::Load
-			+ ShipDefinition
-			+ ShipPreview
-		+ ShipFactory:
-			+ Nuke MaterializeShip code, just begin with ShipMaterialization (now ShipDefinition) as arg
-
-+ Review whole need of ropes creating structural endpoints @ load type from .shp files
-	+ Do at ShipFactory::Create() within the first pass on Ropes (i.e. ExtractRopeSegments => PostProcessRopesLayer())
-		+ Fix Szerszen
-		+ Fix hull assert
-		+ Fix RopesTest for Frontiers crash
-	+ And subsequently, check the need for StructuralElement to have RenderColor
-
-+ Model contains the four new layer buffer types (1 as member, 3 as uq_ptr)
-
-- Merge into shipbuilder
-
-----------------------
-
-- Undo hierarchy: there are four subtypes of UndoEditAction - for each of the "layer buffer" types - on top of e.g. "resize" and "all layers"
-	- These four are all implemented via a single templated class, templated on TLayerBuffer
-		- Contains TLayerBuffer and origin
-	- Apply() invokes Controller::RestoreLayer(TLayerBuffer const &, origin)
-
-- Click-And-Draw use case:
+= Click-And-Draw use case:
 	- Pencil tool (*)
 		+ UndoStack.h/cpp, w/IUndoEntry interface w/UndoEntryType enum
 		+ Controller: forward mouse events to tool
 		+ View:
 			+ Upload method for texture *region*
-		= EditAction for it
-			- Undo: only baked and added at mouse up, containing whole affected region
-				- Spec:
-					- Tool makes clone of entire region at mouse down
-					- At each pixel edit, tool updates region's origin and size
-					- At mouse up, tool makes UndoEntry with clone of material region 
-				- Impl:
-					- Pencil tool stays templated on LayerType
-					- Tool has std::opt<InteractionState> with AABBi (TODO: or new class) and clone of entire region
-						- LayerTypeTraits<LayerType> gives type of LayerBuffer
-					- At mouse down: capture mouse
-					- At mouse up, tool makes UndoEntry with clone of material region 
-						- Model::CloneStructuralLayer() -> StructuralLayerBuffer
-							- Buffer2D: has method to be "regionized" (restricted)
-							- ModelController::RestoreStructuralLayer(StructuralLayerBuffer)
-						- Then release mouse
-						- The set Model::StructuralLayer as dirty
-					- Restored via ModelController::RestoreStructuralLayer(StructuralLayerBuffer)
-				- ModelController::XXXRegionFill does not return UndoEntry anymore
+		- Application: undo is only baked and added at mouse up, containing whole affected region
+			! Spec:
+				- Tool makes clone of entire region at mouse down
+				- At each pixel edit, tool updates region's origin and size
+				- At mouse up, tool makes UndoEntry with clone of material region 
+			- Impl:
+				- Pencil tool stays templated on LayerType
+				- Tool has std::opt<InteractionState> with ShipSpaceRect and clone of entire region
+					- LayerTypeTraits<LayerType> gives type of LayerBuffer					
+				- At mouse down: 
+					- Model::CloneStructuralLayerBuffer() -> StructuralLayerBuffer
+					- Then capture mouse
+				- At mouse up, tool makes UndoEntry with clipped clone of material region 
+					- Buffer2D has method to be "regionized" (restricted)
+						- Unit tests
+					- Then release mouse
+					- Then set Model::StructuralLayer as dirty (**)
+						- TODO: who owns dirty? Controller or ModelController or Model?
+				- Restored via ModelController::RestoreStructuralLayer(StructuralLayerBuffer)
+			- ModelController::XXXRegionFill does not return UndoEntry anymore
 		- Hook UndoEntry to UndoStack
 		- Undo stack: owned by Controller, given to Tool
 			- Tool's action writes into UndoStack and invokes IUserInterface notification
 			- IUserInterface notification: Undo and Redo menu items
 			- MainFrame: on Undo/Redo, call into Controller::TODO:undo/redo
 			- Controller::TODO:undo/redo
-		- UndoEntry exposes:
-			- string GetTitle()
-			- std::uint64_t GetCost()
-			- void Undo(Controller &)
-				- Double-dispatch: invokes Controller::method_for_region_or_resize, with isLast flag for view update
-			- void Redo(Controller &)		
+		+ UndoEntry exposes:
+			+ string GetTitle()
+			+ std::uint64_t GetCost()
+			+ void Apply(Controller &)
+				+ Double-dispatch
+		- Controller::RestoreLayerBufferRegion(...) X 4:
+			= Invoke ModelController::StructuralRegionReplace(...)
+				+ assert model has layer
+				- Do
+				- Recalc derived
+			- Mark layer as dirty (**)
+			= Notify IUserInterface of dirtyness
+			- Do other layers as well
 	- Line tool
 		- Previews (*)
 	- Eraser tool
@@ -461,4 +384,97 @@ https://gamejolt.com/x/permalink/comment/11457002
 		- ShipLoadDialog: second "Home" location for switching to it
 	- TO-SPEC:
 		- What to do with background music when switching back and forth?
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+DONE
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
++ Move/merge integral coords/size from shipbuilder to game
+	+ Game: "ShipSpace" and "DisplayPhysical/Logical"		
+	+ ShipBuilder
+
++ SB::ViewModel: ortho matrix: see again why ShipSpace says positive bottom
+	+ Anchor to the top
+
++ LayerBuffer.h: "layer buffer" types
+	+ StructuralLayerBuffer == Buffer2D<StructuralElement, ShipSpace>
+		+ StructuralElement = <StructuralMaterial*>
+	+ ElectricalLayerBuffer == Buffer2D<ElectricalElement, ShipSpace>
+		+ ElectricalMaterial = <ElectricalMaterial*, instance ID>
+	+ RopesLayerBuffer == Buffer2D<RopeElement, ShipSpace>
+		+ RopeElement = <StructuralMaterial*, endpoint ID>
+	+ TextureLayerBuffer == Buffer2D<rgbaColor, ImageSpace>
+
++ Use "layer buffers" at ShipFactory
+	+ ShipMaterialization class (@GameLib): four buffers
+	+ static ShipFactory::MaterializeShip(...) -> ShipMaterialization
+		+ See first if can make whole ShipFactory static again
+		+ Also includes filling-in Ropes from rope endpoints found in structure (legacy)
+			+ Throw on conflicts, like (should be) now
+		+ Also includes filling-in Electrical from electrical materials found in structure (legacy)
+			+ Throw on conflicts, like (should be) now
+	+ ShipFactory::WhateverNow(): use MaterializeShip to get ShipMaterialization and continue from there
+		+ Given that you're at it: ShipFactoryTypes::ShipFactoryPoint: nuke vec2i and replace with ShipSpaceCoordinates (and user-facing coords being ImageCoordinates)
+	+ Test:
+		+ Basic:
+			+ Legacy ropes
+			+ Native ropes
+			X Legacy+Native ropes
+			+ Legacy electrical
+			+ Native electrical
+			X Legacy+Native electrical
+			+ Texture
+		+ Corner cases:
+			+ Ropes: too many endpoints for same Rope ID
+				+ All legacy
+				+ All native
+		+ Both auto-texturization settings
+		+ Perf (before & after)
+			+ Before: ~100ms (factory including auto-text)
+			+ After: ~110ms
+
++ Check if also old code asserted on Szerszen cargo for hull
+
++ Ship De/Serialization
+	! Spec:
+		- Ultimate ship definition consists of LayerBuffers, not images (except for Texture obviously)
+		- ShipMaterialization functionality currently in ShipFactory should move to ship deserializer, for formats "png" and "shp"
+			- This is where we're fine with doing the "legacy" tricks, and with e.g. inserting missing structural materials for rope endpoints in the ropes layer
+	+ Impl:
+		+ ShipMaterialization also carries all attributes of ShipDefinition
+		+ ShipDeserializer			
+			+ Load(filepath, MaterialDB) -> ShipMaterialization
+				+ ShipMaterialization functionality currently in ShipFactory should move to ship deserializer, for formats "png" and "shp"
+					+ This is where we're fine with doing the "legacy" tricks, and with e.g. inserting missing structural materials for rope endpoints in the ropes layer
+				+ png
+				+ shp
+			+ LoadPreview(filepath, MaterialDB) -> ShipPreview
+				+ png
+				+ shp
+			+ Save(ShipMaterialization, filepath)
+				+ NOP at the moment
+		+ Nuke ShipPreview.cpp
+		+ Nuke ShipDefinition.*, ShipDefinitionFile.*
+		+ "ShipMaterialization" -> "ShipDefinition"
+		+ Use ShipDeSerializer ipv ShipDefinition::Load
+			+ ShipDefinition
+			+ ShipPreview
+		+ ShipFactory:
+			+ Nuke MaterializeShip code, just begin with ShipMaterialization (now ShipDefinition) as arg
+
++ Review whole need of ropes creating structural endpoints @ load type from .shp files
+	+ Do at ShipFactory::Create() within the first pass on Ropes (i.e. ExtractRopeSegments => PostProcessRopesLayer())
+		+ Fix Szerszen
+		+ Fix hull assert
+		+ Fix RopesTest for Frontiers crash
+	+ And subsequently, check the need for StructuralElement to have RenderColor
+
++ Model contains the four new layer buffer types (1 as member, 3 as uq_ptr)
+
++ Merge into shipbuilder
+
+----------------------
 

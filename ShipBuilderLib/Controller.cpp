@@ -97,6 +97,17 @@ void Controller::SetStructuralLayer(/*TODO*/)
     mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
 
+void Controller::RestoreLayerBufferRegion(
+    StructuralLayerBuffer const & layerBufferRegion,
+    ShipSpaceCoordinates const & origin)
+{
+    mModelController->StructuralRegionReplace(layerBufferRegion, origin);
+
+    // TODOHERE: mark layer as dirty
+
+    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
+}
+
 void Controller::NewElectricalLayer()
 {
     mModelController->NewElectricalLayer();
@@ -127,6 +138,13 @@ void Controller::RemoveElectricalLayer()
 
     mUserInterface.OnLayerPresenceChanged();
     mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
+}
+
+void Controller::RestoreLayerBufferRegion(
+    ElectricalLayerBuffer const & layerBufferRegion,
+    ShipSpaceCoordinates const & origin)
+{
+    // TODOHERE
 }
 
 void Controller::NewRopesLayer()
@@ -161,6 +179,13 @@ void Controller::RemoveRopesLayer()
     mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
 
+void Controller::RestoreLayerBufferRegion(
+    RopesLayerBuffer const & layerBufferRegion,
+    ShipSpaceCoordinates const & origin)
+{
+    // TODOHERE
+}
+
 void Controller::SetTextureLayer(/*TODO*/)
 {
     mModelController->SetTextureLayer();
@@ -180,6 +205,13 @@ void Controller::RemoveTextureLayer()
 
     mUserInterface.OnLayerPresenceChanged();
     mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
+}
+
+void Controller::RestoreLayerBufferRegion(
+    TextureLayerBuffer const & layerBufferRegion,
+    ShipSpaceCoordinates const & origin)
+{
+    // TODOHERE
 }
 
 void Controller::ResizeShip(ShipSpaceSize const & newSize)

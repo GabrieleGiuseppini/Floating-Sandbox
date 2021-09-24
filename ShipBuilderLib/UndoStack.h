@@ -7,16 +7,14 @@
 
 #include "ShipBuilderTypes.h"
 
-#include <Game/Materials.h>
+#include <Game/LayerBuffers.h>
 
-#include <GameCore/Buffer2D.h>
-
-#include <memory>
+#include <string>
 
 namespace ShipBuilder {
 
 // Forward declarations
-class ModelController;
+class Controller;
 
 /*
  * Base class of the hierarchy of undo actions.
@@ -25,53 +23,61 @@ class ModelController;
  * - Material region replace
  * - Resize
  */
-class UndoEditAction
+class UndoAction
 {
 public:
 
-    virtual ~UndoEditAction() = default;
+    virtual ~UndoAction() = default;
 
-    virtual void Apply(ModelController & modelController) const = 0;
+    std::string const & GetTitle() const
+    {
+        return mTitle;
+    }
+
+    size_t GetCost() const
+    {
+        return mCost;
+    }
+
+    virtual void Apply(Controller & controller) const = 0;
+
+protected:
+
+    UndoAction(
+        std::string const & title,
+        size_t cost)
+        : mTitle(title)
+        , mCost(cost)
+    {}
+
+private:
+
+    std::string const mTitle;
+    size_t const mCost;
 };
 
-template<typename TMaterial>
-class MaterialRegionUndoEditAction final : public UndoEditAction
+template<typename TLayerBuffer>
+class LayerBufferRegionUndoAction final : public UndoAction
 {
 public:
 
-    MaterialRegionUndoEditAction(
-        std::unique_ptr<MaterialBuffer<TMaterial>> && region,
+    LayerBufferRegionUndoAction(
+        std::string const & title,
+        TLayerBuffer && layerBufferRegion,
         ShipSpaceCoordinates const & origin)
-        : mRegion(std::move(region))
+        : UndoAction(
+            title,
+            layerBufferRegion.GetLinearSize())
+        , mLayerBufferRegion(std::move(layerBufferRegion))
         , mOrigin(origin)
     {}
 
-    void Apply(ModelController & modelController) const override;
+    void Apply(Controller & controller) const override;
 
 private:
 
-    std::unique_ptr<MaterialBuffer<TMaterial>> mRegion;
+    TLayerBuffer mLayerBufferRegion;
     ShipSpaceCoordinates mOrigin;
-};
-
-/*
- * This object wraps the information to Undo and Redo individual edit actions.
- */
-class UndoEntry final
-{
-public:
-
-    UndoEntry(
-        std::unique_ptr<UndoEditAction> undoEditAction,
-        std::unique_ptr<UndoEditAction> redoEditAction)
-        : mUndoEditAction(std::move(undoEditAction))
-        , mRedoEditAction(std::move(redoEditAction))
-    {}
-
-private:
-
-    std::unique_ptr<UndoEditAction> mUndoEditAction;
-    std::unique_ptr<UndoEditAction> mRedoEditAction;
 };
 
 class UndoStack

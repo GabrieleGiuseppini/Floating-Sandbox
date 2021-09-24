@@ -5,33 +5,14 @@
 ***************************************************************************************/
 #include "UndoStack.h"
 
-#include "ModelController.h"
-
-#include <type_traits>
+#include "Controller.h"
 
 namespace ShipBuilder {
 
-template<typename TMaterial>
-void MaterialRegionUndoEditAction<TMaterial>::Apply(ModelController & modelController) const
+template<typename TLayerBuffer>
+void LayerBufferRegionUndoAction<TLayerBuffer>::Apply(Controller & controller) const
 {
-    if constexpr (std::is_same<StructuralMaterial, TMaterial>())
-    {
-        modelController.StructuralRegionReplace(
-            *mRegion,
-            mOrigin);
-    }
-    else
-    {
-        static_assert(std::is_same<ElectricalMaterial, TMaterial>());
-
-        modelController.ElectricalRegionReplace(
-            *mRegion,
-            mOrigin);
-    }
+    controller.RestoreLayerBufferRegion(mLayerBufferRegion, mOrigin);
 }
-
-// All template specializations
-template class MaterialRegionUndoEditAction<StructuralMaterial>;
-template class MaterialRegionUndoEditAction<ElectricalMaterial>;
 
 }

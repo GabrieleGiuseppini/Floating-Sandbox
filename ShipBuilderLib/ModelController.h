@@ -41,13 +41,13 @@ public:
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
 
-    std::unique_ptr<UndoEntry> StructuralRegionFill(
+    std::unique_ptr<UndoAction> StructuralRegionFill(
         StructuralMaterial const * material,
         ShipSpaceCoordinates const & origin,
         ShipSpaceSize const & size);
 
-    std::unique_ptr<UndoEntry> StructuralRegionReplace(
-        MaterialBuffer<StructuralMaterial> const & region,
+    void StructuralRegionReplace(
+        StructuralLayerBuffer const & layerBufferRegion,
         ShipSpaceCoordinates const & origin);
 
     //
@@ -58,13 +58,13 @@ public:
     void SetElectricalLayer(/*TODO*/);
     void RemoveElectricalLayer();
 
-    std::unique_ptr<UndoEntry> ElectricalRegionFill(
+    std::unique_ptr<UndoAction> ElectricalRegionFill(
         ElectricalMaterial const * material,
         ShipSpaceCoordinates const & origin,
         ShipSpaceSize const & size);
 
-    std::unique_ptr<UndoEntry> ElectricalRegionReplace(
-        MaterialBuffer<ElectricalMaterial> const & region,
+    void ElectricalRegionReplace(
+        ElectricalLayerBuffer const & layerBufferRegion,
         ShipSpaceCoordinates const & origin);
 
     //
