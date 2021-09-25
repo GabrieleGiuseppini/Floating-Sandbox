@@ -1,15 +1,15 @@
 https://gamejolt.com/x/permalink/comment/11457002
 
 
-= Undo
++ Undo
 	+ Hierarchy: there are four subtypes of UndoEditAction - for each of the "layer buffer" types - on top of e.g. "resize" and "all layers"
 		+ These four are all implemented via a single templated class, templated on TLayerBuffer
 			+ Contains TLayerBuffer and origin
 		+ Apply() invokes Controller::RestoreLayer(TLayerBuffer const &, origin)
-	= Dirtyness:
+	+ Dirtyness:
 		+ Model::DirtyState == {array, metadata, ...}, w/=operator
 		+ Base UndoAction has DirtyState member, given via cctor & exposed via getter
-		- Controller::Undo() (**)
+		+ Controller::Undo()
 
 
 = Click-And-Draw use case:
@@ -37,13 +37,14 @@ https://gamejolt.com/x/permalink/comment/11457002
 					X Then set Model::StructuralLayer as dirty
 			+ ModelController::XXXRegionFill does not return UndoEntry anymore
 		+ See if OnMouseOut at Tool is really needed
-		- Undo stack: owned by Controller, given to Tool
-			- Tool's action writes into UndoStack and invokes IUserInterface notification
-			- IUserInterface notification: Undo menu item
-			- MainFrame: on Undo, call into Controller::Undo()
-			- Controller::Undo:  (**)
-				- Calls UndoAction::Apply(this)
-				- Restores dirty state
+		= Undo stack:
+			+ Owned by Controller, given to Tool
+			+ Tool's action writes into UndoStack and invokes IUserInterface notification
+			+ IUserInterface notification: Undo menu item
+			+ MainFrame: on Undo, call into Controller::Undo()
+			= Controller::Undo:
+				= Calls UndoAction::Apply(this)
+				= Restores dirty state
 		+ UndoEntry exposes:
 			+ string GetTitle()
 			+ std::uint64_t GetCost()

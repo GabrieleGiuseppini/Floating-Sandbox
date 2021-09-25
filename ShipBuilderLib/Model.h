@@ -107,6 +107,11 @@ public:
         return mDirtyState;
     }
 
+    void SetDirtyState(DirtyState const & dirtyState)
+    {
+        mDirtyState = dirtyState;
+    }
+
     bool GetIsDirty() const
     {
         return mDirtyState.GlobalIsDirty;

@@ -38,6 +38,11 @@ public:
         mModel.SetIsDirty(layer);
     }
 
+    void RestoreDirtyState(Model::DirtyState const & dirtyState)
+    {
+        mModel.SetDirtyState(dirtyState);
+    }
+
     //
     // Structural
     //

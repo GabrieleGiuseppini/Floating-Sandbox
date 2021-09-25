@@ -8,6 +8,7 @@
 #include "InputState.h"
 #include "IUserInterface.h"
 #include "ModelController.h"
+#include "UndoStack.h"
 #include "ShipBuilderTypes.h"
 #include "View.h"
 #include "WorkbenchState.h"
@@ -92,6 +93,9 @@ public:
     std::optional<ToolType> GetCurrentTool() const;
     void SetCurrentTool(std::optional<ToolType> tool);
 
+    bool CanUndo() const;
+    void Undo();
+
     void AddZoom(int deltaZoom);
     void SetCamera(int camX, int camY);
     void ResetView();
@@ -124,7 +128,7 @@ private:
 
     View & mView;
     std::unique_ptr<ModelController> mModelController;
-
+    UndoStack mUndoStack;
     WorkbenchState & mWorkbenchState;
     IUserInterface & mUserInterface;
 

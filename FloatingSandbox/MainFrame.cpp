@@ -222,7 +222,7 @@ MainFrame::MainFrame(
 
             fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
 
-            wxMenuItem * quitMenuItem = new wxMenuItem(fileMenu, ID_QUIT_MENUITEM, _("Quit") + wxS("\tAlt-F4"), _("Quit the game"), wxITEM_NORMAL);
+            wxMenuItem * quitMenuItem = new wxMenuItem(fileMenu, ID_QUIT_MENUITEM, _("Quit") + wxS("\tAlt+F4"), _("Quit the game"), wxITEM_NORMAL);
             fileMenu->Append(quitMenuItem);
             Connect(ID_QUIT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnQuit);
 

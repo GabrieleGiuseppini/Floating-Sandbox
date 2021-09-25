@@ -13,6 +13,7 @@ template<LayerType TLayerType>
 PencilTool<TLayerType>::PencilTool(
     ToolType toolType,
     ModelController & modelController,
+    UndoStack & undoStack,
     WorkbenchState const & workbenchState,
     IUserInterface & userInterface,
     View & view,
@@ -20,6 +21,7 @@ PencilTool<TLayerType>::PencilTool(
     : Tool(
         toolType,
         modelController,
+        undoStack,
         workbenchState,
         userInterface,
         view)
@@ -31,6 +33,7 @@ PencilTool<TLayerType>::PencilTool(
 
 StructuralPencilTool::StructuralPencilTool(
     ModelController & modelController,
+    UndoStack & undoStack,
     WorkbenchState const & workbenchState,
     IUserInterface & userInterface,
     View & view,
@@ -38,6 +41,7 @@ StructuralPencilTool::StructuralPencilTool(
     : PencilTool(
         ToolType::StructuralPencil,
         modelController,
+        undoStack,
         workbenchState,
         userInterface,
         view,
@@ -46,6 +50,7 @@ StructuralPencilTool::StructuralPencilTool(
 
 ElectricalPencilTool::ElectricalPencilTool(
     ModelController & modelController,
+    UndoStack & undoStack,
     WorkbenchState const & workbenchState,
     IUserInterface & userInterface,
     View & view,
@@ -53,6 +58,7 @@ ElectricalPencilTool::ElectricalPencilTool(
     : PencilTool(
         ToolType::ElectricalPencil,
         modelController,
+        undoStack,
         workbenchState,
         userInterface,
         view,
@@ -126,26 +132,23 @@ void PencilTool<TLayer>::CheckStartEngagement(InputState const & inputState)
     // Start engagement
     //
 
-    MaterialPlaneType const plane = inputState.IsLeftMouseDown
-        ? MaterialPlaneType::Foreground
-        : MaterialPlaneType::Background;
-
+    std::unique_ptr<typename LayerTypeTraits<TLayer>::buffer_type> originalRegionClone;
     if constexpr (TLayer == LayerType::Structural)
     {
-        mEngagementData.emplace(
-            plane,
-            mModelController.GetModel().CloneStructuralLayerBuffer(),
-            coords);
+        originalRegionClone = mModelController.GetModel().CloneStructuralLayerBuffer();
     }
     else
     {
         static_assert(TLayer == LayerType::Electrical);
 
-        mEngagementData.emplace(
-            plane,
-            mModelController.GetModel().CloneElectricalLayerBuffer(),
-            coords);
+        originalRegionClone = mModelController.GetModel().CloneElectricalLayerBuffer();
     }
+
+    mEngagementData.emplace(
+        inputState.IsLeftMouseDown ? MaterialPlaneType::Foreground : MaterialPlaneType::Background,
+        std::move(originalRegionClone),
+        coords,
+        mModelController.GetModel().GetDirtyState());
 }
 
 template<LayerType TLayer>
@@ -161,13 +164,15 @@ void PencilTool<TLayer>::CheckEndEngagement()
     // Create undo action
     //
 
-    auto clippedRegionClone = mEngagementData->RegionClone->MakeCopy(mEngagementData->EditRegion);
+    auto clippedRegionClone = mEngagementData->OriginalRegionClone->MakeCopy(mEngagementData->EditRegion);
 
     auto undoAction = std::make_unique<LayerBufferRegionUndoAction<typename LayerTypeTraits<TLayer>::buffer_type>>(
         _("Pencil"),
-        mModelController.GetModel().GetDirtyState(),
+        mEngagementData->OriginalDirtyState,
         std::move(*clippedRegionClone),
         mEngagementData->EditRegion.origin);
+
+    PushUndoAction(std::move(undoAction));
 
     // Reset engagement
     mEngagementData.reset();

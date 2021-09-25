@@ -61,6 +61,7 @@ Controller::Controller(
     IUserInterface & userInterface,
     ResourceLocator const & resourceLocator)
     : mModelController(std::move(modelController))
+    , mUndoStack()
     , mView(view)
     , mWorkbenchState(workbenchState)
     , mUserInterface(userInterface)
@@ -294,6 +295,28 @@ void Controller::SetCurrentTool(std::optional<ToolType> tool)
     mUserInterface.OnCurrentToolChanged(tool);
 }
 
+bool Controller::CanUndo() const
+{
+    return !mUndoStack.IsEmpty();
+}
+
+void Controller::Undo()
+{
+    assert(CanUndo());
+
+    auto undoAction = mUndoStack.Pop();
+
+    // Apply action
+    undoAction->ApplyAction(*this);
+
+    // Restore dirtyness
+    mModelController->RestoreDirtyState(undoAction->GetOriginalDirtyState());
+    mUserInterface.OnModelDirtyChanged();
+
+    // Update undo state
+    mUserInterface.OnUndoStackStateChanged();
+}
+
 void Controller::AddZoom(int deltaZoom)
 {
     mView.SetZoom(mView.GetZoom() + deltaZoom);
@@ -439,6 +462,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         {
             return std::make_unique<StructuralPencilTool>(
                 *mModelController,
+                mUndoStack,
                 mWorkbenchState,
                 mUserInterface,
                 mView,

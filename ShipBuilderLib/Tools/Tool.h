@@ -59,11 +59,13 @@ protected:
     Tool(
         ToolType toolType,
         ModelController & modelController,
+        UndoStack & undoStack,
         WorkbenchState const & workbenchState,
         IUserInterface & userInterface,
         View & view)
         : mToolType(toolType)
         , mModelController(modelController)
+        , mUndoStack(undoStack)
         , mWorkbenchState(workbenchState)
         , mUserInterface(userInterface)
         , mView(view)
@@ -85,11 +87,18 @@ protected:
         mUserInterface.OnModelDirtyChanged();
     }
 
+    void PushUndoAction(std::unique_ptr<UndoAction> && undoAction)
+    {
+        mUndoStack.Push(std::move(undoAction));
+        mUserInterface.OnUndoStackStateChanged();
+    }
+
 protected:
 
     ToolType const mToolType;
 
     ModelController & mModelController;
+    UndoStack & mUndoStack;
     WorkbenchState const & mWorkbenchState;
     IUserInterface & mUserInterface;
     View & mView;

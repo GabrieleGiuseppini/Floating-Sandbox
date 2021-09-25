@@ -12,6 +12,8 @@
 
 #include <wx/string.h>
 
+#include <deque>
+#include <memory>
 #include <string>
 
 namespace ShipBuilder {
@@ -95,7 +97,29 @@ private:
 
 class UndoStack
 {
-    // TODO
+public:
+
+    UndoStack()
+        : mStack()
+        , mTotalCost(0)
+    {}
+
+    bool IsEmpty() const
+    {
+        return mStack.empty();
+    }
+
+    void Push(std::unique_ptr<UndoAction> && undoAction);
+
+    std::unique_ptr<UndoAction> Pop();
+
+private:
+
+    static size_t constexpr MaxEntries = 20;
+    static size_t constexpr MaxCost = (1000 * 1000) * 20;
+
+    std::deque<std::unique_ptr<UndoAction>> mStack;
+    size_t mTotalCost;
 };
 
 }

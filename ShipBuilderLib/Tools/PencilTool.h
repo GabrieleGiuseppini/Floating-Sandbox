@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Model.h"
 #include "Tool.h"
 
 #include <Game/LayerBuffers.h>
@@ -28,6 +29,7 @@ protected:
     PencilTool(
         ToolType toolType,
         ModelController & modelController,
+        UndoStack & undoStack,
         WorkbenchState const & workbenchState,
         IUserInterface & userInterface,
         View & view,
@@ -59,18 +61,23 @@ private:
         MaterialPlaneType const Plane;
 
         // Clone of region
-        std::unique_ptr<typename LayerTypeTraits<TLayer>::buffer_type> RegionClone;
+        std::unique_ptr<typename LayerTypeTraits<TLayer>::buffer_type> OriginalRegionClone;
 
         // Rectangle of edit operation
         ShipSpaceRect EditRegion;
 
+        // Dirty state
+        Model::DirtyState OriginalDirtyState;
+
         EngagementData(
             MaterialPlaneType plane,
-            std::unique_ptr<typename LayerTypeTraits<TLayer>::buffer_type> && regionClone,
-            ShipSpaceCoordinates const & initialPosition)
+            std::unique_ptr<typename LayerTypeTraits<TLayer>::buffer_type> && originalRegionClone,
+            ShipSpaceCoordinates const & initialPosition,
+            Model::DirtyState const & dirtyState)
             : Plane(plane)
-            , RegionClone(std::move(regionClone))
+            , OriginalRegionClone(std::move(originalRegionClone))
             , EditRegion(initialPosition)
+            , OriginalDirtyState(dirtyState)
         {}
     };
 
@@ -86,6 +93,7 @@ public:
 
     StructuralPencilTool(
         ModelController & modelController,
+        UndoStack & undoStack,
         WorkbenchState const & workbenchState,
         IUserInterface & userInterface,
         View & view,
@@ -98,6 +106,7 @@ public:
 
     ElectricalPencilTool(
         ModelController & modelController,
+        UndoStack & undoStack,
         WorkbenchState const & workbenchState,
         IUserInterface & userInterface,
         View & view,

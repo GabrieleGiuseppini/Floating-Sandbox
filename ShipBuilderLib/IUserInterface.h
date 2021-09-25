@@ -7,6 +7,7 @@
 
 #include "Model.h"
 #include "ShipBuilderTypes.h"
+#include "UndoStack.h"
 
 #include <wx/image.h>
 
@@ -43,6 +44,9 @@ public:
 
     // Notifies of a change in the currently-selected tool
     virtual void OnCurrentToolChanged(std::optional<ToolType> tool) = 0;
+
+    // Notifies of a change in the state of the undo stack
+    virtual void OnUndoStackStateChanged() = 0;
 
     // Notifies of a change in the tool coordinates to display
     virtual void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates) = 0;

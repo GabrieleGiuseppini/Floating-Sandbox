@@ -87,6 +87,8 @@ public:
 
     void OnCurrentToolChanged(std::optional<ToolType> tool) override;
 
+    void OnUndoStackStateChanged() override;
+
     void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates) override;
 
     void SetToolCursor(wxImage const & cursorImage) override;
@@ -122,6 +124,7 @@ private:
     void OnSaveAndGoBack(wxCommandEvent & event);
     void OnQuitAndGoBack(wxCommandEvent & event);
     void OnQuit(wxCommandEvent & event);
+    void OnUndo(wxCommandEvent & event);
     void OnClose(wxCloseEvent & event);
     void OnZoomIn(wxCommandEvent & event);
     void OnZoomOut(wxCommandEvent & event);
@@ -186,6 +189,8 @@ private:
 
     void ReconciliateUIWithSelectedTool(std::optional<ToolType> tool);
 
+    void ReconciliateUIWithUndoStackState();
+
 private:
 
     wxApp * const mMainApp;
@@ -214,10 +219,13 @@ private:
 
     wxPanel * mMainPanel;
 
-    // File panel
+    // Menu
     wxMenuItem * mSaveShipMenuItem;
     wxMenuItem * mSaveShipAsMenuItem;
     wxMenuItem * mSaveAndGoBackMenuItem;
+    wxMenuItem * mUndoMenuItem;
+
+    // File panel
     BitmapButton * mSaveShipButton;
     BitmapButton * mSaveShipAsButton;
 

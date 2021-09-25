@@ -312,7 +312,7 @@ MainFrame::MainFrame(
 
         if (IsStandAlone())
         {
-            wxMenuItem * quitMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Quit") + wxS("\tAlt-F4"), _("Quit the builder"), wxITEM_NORMAL);
+            wxMenuItem * quitMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Quit") + wxS("\tAlt+F4"), _("Quit the builder"), wxITEM_NORMAL);
             fileMenu->Append(quitMenuItem);
             Connect(quitMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnQuit);
         }
@@ -323,6 +323,12 @@ MainFrame::MainFrame(
     // Edit
     {
         wxMenu * editMenu = new wxMenu();
+
+        {
+            mUndoMenuItem = new wxMenuItem(editMenu, wxID_ANY, _("Undo") + wxS("\tCtrl+Z"), _("Undo the last edit operation"), wxITEM_NORMAL);
+            editMenu->Append(mUndoMenuItem);
+            Connect(mUndoMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnUndo);
+        }
 
         mainMenuBar->Append(editMenu, _("&Edit"));
     }
@@ -503,6 +509,14 @@ void MainFrame::OnCurrentToolChanged(std::optional<ToolType> tool)
     if (mController)
     {
         ReconciliateUIWithSelectedTool(tool);
+    }
+}
+
+void MainFrame::OnUndoStackStateChanged()
+{
+    if (mController)
+    {
+        ReconciliateUIWithUndoStackState();
     }
 }
 
@@ -1470,8 +1484,6 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
 
 void MainFrame::OnWorkCanvasPaint(wxPaintEvent & /*event*/)
 {
-    LogMessage("OnWorkCanvasPaint");
-
     if (mView)
     {
         mView->Render();
@@ -1639,6 +1651,11 @@ void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 {
     // Close frame
     Close();
+}
+
+void MainFrame::OnUndo(wxCommandEvent & /*event*/)
+{
+    mController->Undo();
 }
 
 void MainFrame::OnClose(wxCloseEvent & event)
@@ -1926,6 +1943,7 @@ void MainFrame::ReconciliateUI()
     ReconciliateUIWithModelDirtiness();
     ReconciliateUIWithWorkbenchState();
     ReconciliateUIWithSelectedTool(mController->GetCurrentTool());
+    ReconciliateUIWithUndoStackState();
 }
 
 void MainFrame::ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize)
@@ -2136,6 +2154,17 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
         {
             mToolButtons[i]->SetValue(isSelected);
         }
+    }
+}
+
+void MainFrame::ReconciliateUIWithUndoStackState()
+{
+    assert(mController);
+
+    bool const canUndo = mController->CanUndo();
+    if (mUndoMenuItem->IsEnabled() != canUndo)
+    {
+        mUndoMenuItem->Enable(canUndo);
     }
 }
 
