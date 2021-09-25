@@ -1,6 +1,5 @@
 https://gamejolt.com/x/permalink/comment/11457002
 
-
 + Undo
 	+ Hierarchy: there are four subtypes of UndoEditAction - for each of the "layer buffer" types - on top of e.g. "resize" and "all layers"
 		+ These four are all implemented via a single templated class, templated on TLayerBuffer
@@ -66,10 +65,7 @@ https://gamejolt.com/x/permalink/comment/11457002
 	- Eraser tool
 	- Strategy for other tools' enums - to make it work for now
 
-- Washout background
-	- And, do we want some shading around ShipSpace canvas?
-
-- See if GameTypes::MaterialLayerType is still needed
+- Do we want some shading around ShipSpace canvas?
 
 = New/Load/Save Ship
 	- Move ShipLoadDialog/etc. under UILib
@@ -105,7 +101,9 @@ https://gamejolt.com/x/permalink/comment/11457002
 		+ Do
 		+ Store filename as mCurrentFilename
 	- DoSaveShip:
-		- TODO
+		- ShipDeSerializer:
+			- SaveStructuralLayerImage(StructuralLayerBuffer const &, ...)
+			- Save(ShipDefinition const &)
 		- Store filename as mCurrentFilename
 
 - Auto-zoom on new ModelController
