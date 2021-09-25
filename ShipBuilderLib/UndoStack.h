@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Model.h"
 #include "ShipBuilderTypes.h"
 
 #include <Game/LayerBuffers.h>
@@ -41,21 +42,29 @@ public:
         return mCost;
     }
 
-    virtual void Apply(Controller & controller) const = 0;
+    Model::DirtyState const & GetOriginalDirtyState() const
+    {
+        return mOriginalDirtyState;
+    }
+
+    virtual void ApplyAction(Controller & controller) const = 0;
 
 protected:
 
     UndoAction(
         wxString const & title,
-        size_t cost)
+        size_t cost,
+        Model::DirtyState const & originalDirtyState)
         : mTitle(title)
         , mCost(cost)
+        , mOriginalDirtyState(originalDirtyState)
     {}
 
 private:
 
     wxString const mTitle;
     size_t const mCost;
+    Model::DirtyState const mOriginalDirtyState; // The model's dirty state that was in effect when the edit action being undode was applied
 };
 
 template<typename TLayerBuffer>
@@ -65,16 +74,18 @@ public:
 
     LayerBufferRegionUndoAction(
         wxString const & title,
+        Model::DirtyState const & originalDirtyState,
         TLayerBuffer && layerBufferRegion,
         ShipSpaceCoordinates const & origin)
         : UndoAction(
             title,
-            layerBufferRegion.GetByteSize())
+            layerBufferRegion.GetByteSize(),
+            originalDirtyState)
         , mLayerBufferRegion(std::move(layerBufferRegion))
         , mOrigin(origin)
     {}
 
-    void Apply(Controller & controller) const override;
+    void ApplyAction(Controller & controller) const override;
 
 private:
 

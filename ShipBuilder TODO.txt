@@ -6,9 +6,10 @@ https://gamejolt.com/x/permalink/comment/11457002
 		+ These four are all implemented via a single templated class, templated on TLayerBuffer
 			+ Contains TLayerBuffer and origin
 		+ Apply() invokes Controller::RestoreLayer(TLayerBuffer const &, origin)
-	- Dirtyness:
-		- Model::DirtyState == {array, metadata, ...}, w/=operator
-		- Base UndoAction has DirtyState member, given via cctor & exposed via getter
+	= Dirtyness:
+		+ Model::DirtyState == {array, metadata, ...}, w/=operator
+		+ Base UndoAction has DirtyState member, given via cctor & exposed via getter
+		- Controller::Undo() (**)
 
 
 = Click-And-Draw use case:
@@ -29,19 +30,18 @@ https://gamejolt.com/x/permalink/comment/11457002
 				+ At mouse down: 
 					+ Model::CloneStructuralLayerBuffer() -> StructuralLayerBuffer
 					X Then capture mouse
-				+At mouse up, tool makes UndoEntry with clipped clone of material region 
+				+ At mouse up, tool makes UndoEntry with clipped clone of material region 
 					+ Buffer2D has method to be "regionized" (restricted)
 						+ Unit tests
 					X Then release mouse
 					X Then set Model::StructuralLayer as dirty
 			+ ModelController::XXXRegionFill does not return UndoEntry anymore
 		+ See if OnMouseOut at Tool is really needed
-		- Hook UndoEntry to UndoStack
 		- Undo stack: owned by Controller, given to Tool
 			- Tool's action writes into UndoStack and invokes IUserInterface notification
-			- IUserInterface notification: Undo and Redo menu items
-			- MainFrame: on Undoo, call into Controller::Undo()
-			- Controller::Undo: 
+			- IUserInterface notification: Undo menu item
+			- MainFrame: on Undo, call into Controller::Undo()
+			- Controller::Undo:  (**)
 				- Calls UndoAction::Apply(this)
 				- Restores dirty state
 		+ UndoEntry exposes:

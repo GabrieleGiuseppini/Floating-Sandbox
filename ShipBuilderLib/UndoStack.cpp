@@ -10,7 +10,7 @@
 namespace ShipBuilder {
 
 template<typename TLayerBuffer>
-void LayerBufferRegionUndoAction<TLayerBuffer>::Apply(Controller & controller) const
+void LayerBufferRegionUndoAction<TLayerBuffer>::ApplyAction(Controller & controller) const
 {
     controller.RestoreLayerBufferRegion(mLayerBufferRegion, mOrigin);
 }

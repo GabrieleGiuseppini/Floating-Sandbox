@@ -7,13 +7,12 @@
 
 #include <Game/MaterialDatabase.h>
 
-#include <algorithm>
-
 namespace ShipBuilder {
 
 Model::Model(ShipSpaceSize const & shipSize)
     : mShipSize(shipSize)
     , mStructuralLayerBuffer()
+    , mDirtyState()
 {
     // Initialize structural layer
     MakeNewStructuralLayer(mShipSize);
@@ -21,10 +20,6 @@ Model::Model(ShipSpaceSize const & shipSize)
     // Initialize presence map
     mLayerPresenceMap.fill(false);
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
-
-    // Initialize dirtiness
-    mLayerDirtinessMap.fill(false);
-    mIsDirty = false;
 }
 
 std::unique_ptr<StructuralLayerBuffer> Model::CloneStructuralLayerBuffer() const
@@ -118,16 +113,6 @@ void Model::RemoveTextureLayer()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-void Model::RecalculateGlobalIsDirty()
-{
-    mIsDirty = std::find(
-        mLayerDirtinessMap.cbegin(),
-        mLayerDirtinessMap.cend(),
-        true) != mLayerDirtinessMap.cend()
-        ? true
-        : false;
-}
 
 void Model::MakeNewStructuralLayer(ShipSpaceSize const & size)
 {

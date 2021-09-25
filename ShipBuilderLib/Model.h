@@ -12,6 +12,7 @@
 
 #include <GameCore/ImageData.h>
 
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <memory>
@@ -29,6 +30,36 @@ namespace ShipBuilder {
  */
 class Model
 {
+public:
+
+    struct DirtyState
+    {
+        std::array<bool, LayerCount> IsLayerDirtyMap;
+        bool IsMetadataDirty;
+
+        bool GlobalIsDirty;
+
+        DirtyState()
+            : IsLayerDirtyMap()
+            , IsMetadataDirty(false)
+            , GlobalIsDirty(false)
+        {
+            IsLayerDirtyMap.fill(false);
+        }
+
+        DirtyState & operator=(DirtyState const & other) = default;
+
+        void RecalculateGlobalIsDirty()
+        {
+            GlobalIsDirty = std::find(
+                IsLayerDirtyMap.cbegin(),
+                IsLayerDirtyMap.cend(),
+                true) != IsLayerDirtyMap.cend()
+                ? true
+                : false;
+        }
+    };
+
 public:
 
     Model(ShipSpaceSize const & shipSize);
@@ -71,32 +102,36 @@ public:
         return false;
     }
 
+    DirtyState const & GetDirtyState() const
+    {
+        return mDirtyState;
+    }
+
     bool GetIsDirty() const
     {
-        return mIsDirty;
+        return mDirtyState.GlobalIsDirty;
     }
 
     bool GetIsDirty(LayerType layer) const
     {
-        return mLayerDirtinessMap[static_cast<size_t>(layer)];
+        return mDirtyState.IsLayerDirtyMap[static_cast<size_t>(layer)];
     }
 
     void SetIsDirty(LayerType layer)
     {
-        mLayerDirtinessMap[static_cast<size_t>(layer)] = true;
-        mIsDirty = true;
+        mDirtyState.IsLayerDirtyMap[static_cast<size_t>(layer)] = true;
+        mDirtyState.GlobalIsDirty = true;
     }
 
     void ClearIsDirty()
     {
-        mLayerDirtinessMap.fill(false);
-        mIsDirty = false;
+        mDirtyState = DirtyState();
     }
 
     void ClearIsDirty(LayerType layer)
     {
-        mLayerDirtinessMap[static_cast<size_t>(layer)] = false;
-        RecalculateGlobalIsDirty();
+        mDirtyState.IsLayerDirtyMap[static_cast<size_t>(layer)] = false;
+        mDirtyState.RecalculateGlobalIsDirty();
     }
 
     StructuralLayerBuffer & GetStructuralLayerBuffer()
@@ -118,8 +153,6 @@ public:
     }
 
 private:
-
-    void RecalculateGlobalIsDirty();
 
     void MakeNewStructuralLayer(ShipSpaceSize const & size);
 
@@ -143,9 +176,8 @@ private:
     // Layer presence map (cached)
     std::array<bool, LayerCount> mLayerPresenceMap;
 
-    // Dirty map and global flag
-    std::array<bool, LayerCount> mLayerDirtinessMap;
-    bool mIsDirty; // Cached version of above
+    // Dirty state
+    DirtyState mDirtyState;
 };
 
 }

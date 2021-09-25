@@ -165,6 +165,7 @@ void PencilTool<TLayer>::CheckEndEngagement()
 
     auto undoAction = std::make_unique<LayerBufferRegionUndoAction<typename LayerTypeTraits<TLayer>::buffer_type>>(
         _("Pencil"),
+        mModelController.GetModel().GetDirtyState(),
         std::move(*clippedRegionClone),
         mEngagementData->EditRegion.origin);
 
