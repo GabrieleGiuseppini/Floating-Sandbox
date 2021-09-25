@@ -73,10 +73,14 @@ Controller::Controller(
     , mPrimaryLayer(LayerType::Structural)
     , mCurrentTool(MakeTool(ToolType::StructuralPencil))
 {
-    // Notify view of workspace size
+    // We assume we start with at least a structural layer
+    assert(mModelController->GetModel().HasLayer(LayerType::Structural));
+
+    // Tell view new workspace size
     mView.SetShipSize(mModelController->GetModel().GetShipSize());
 
-    assert(mModelController->GetModel().HasLayer(LayerType::Structural));
+    // Set ideal zoom
+    mView.SetZoom(mView.CalculateIdealZoom());
 
     mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
     mUserInterface.OnCurrentToolChanged(mCurrentTool->GetType());

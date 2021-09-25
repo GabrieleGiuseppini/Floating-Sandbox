@@ -78,6 +78,26 @@ public:
         return mZoom;
     }
 
+    float CalculateIdealZoom() const
+    {
+        // Zoom>=0: display pixels occupied by one ship space pixel
+        int idealZoom = 0;
+        for (int candidateZoom = 1; candidateZoom <= MaxZoom; ++candidateZoom)
+        {
+            // Check if ship size fits with this zoom
+            float const physicalWidth = static_cast<float>(mShipSize.width + MarginDisplayShipSize * 2) / CalculateDisplayPhysicalToShipSpaceFactor(candidateZoom);
+            if (physicalWidth > mDisplayPhysicalSize.width)
+            {
+                break;
+            }
+
+            // Still good
+            idealZoom = candidateZoom;
+        }
+
+        return idealZoom;
+    }
+
     ShipSpaceCoordinates const & GetCameraShipSpacePosition() const
     {
         return mCam;
@@ -163,7 +183,7 @@ private:
     void RecalculateAttributes()
     {
         // Display physicial => Ship factor
-        mDisplayPhysicalToShipSpaceFactor = CalculateZoomFactor(mZoom);
+        mDisplayPhysicalToShipSpaceFactor = CalculateDisplayPhysicalToShipSpaceFactor(mZoom);
 
         // Recalculate pan limits
         mCamLimits = ShipSpaceSize(
@@ -205,7 +225,7 @@ private:
         mOrthoMatrix[3][1] = 1.0f - 2.0f * static_cast<float>(mShipSize.height - mCam.y + MarginDisplayShipSize) / sDspH;
     }
 
-    static float CalculateZoomFactor(int zoom)
+    static float CalculateDisplayPhysicalToShipSpaceFactor(int zoom)
     {
         return std::ldexp(1.0f, -zoom);
     }

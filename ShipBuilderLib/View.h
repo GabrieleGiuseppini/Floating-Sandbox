@@ -56,6 +56,11 @@ public:
         return newZoom;
     }
 
+    float CalculateIdealZoom() const
+    {
+        return mViewModel.CalculateIdealZoom();
+    }
+
     ShipSpaceCoordinates const & GetCameraShipSpacePosition() const
     {
         return mViewModel.GetCameraShipSpacePosition();

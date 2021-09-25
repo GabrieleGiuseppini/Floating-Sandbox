@@ -10,6 +10,15 @@ https://gamejolt.com/x/permalink/comment/11457002
 		+ Base UndoAction has DirtyState member, given via cctor & exposed via getter
 		+ Controller::Undo()
 
++ Auto-zoom on new ModelController
+	+ By Controller, at cctor (i.e. after CreateNew() and CreateForShip())
+		+ Via ViewModel->CalculateIdealZoom() const -> zoom, then set in ViewModel
+
+- Grid view:
+	- Button right of transparency slider
+	- Controller->View
+	- View takes it in cctor
+
 = Click-And-Draw use case:
 	= Pencil tool (*)
 		+ UndoStack.h/cpp, w/IUndoEntry interface w/UndoEntryType enum
@@ -105,13 +114,6 @@ https://gamejolt.com/x/permalink/comment/11457002
 			- Save(ShipDefinition const &)
 		- Store filename as mCurrentFilename
 
-- Auto-zoom on new ModelController
-	- By Controller, at cctor (i.e. after CreateNew() and CreateForShip())
-		- Via ViewModel->CalculateIdealZoom() const -> zoom, then set in ViewModel
-		- TODOOLD
-			- Only invokes IUserInterface::OnViewModelChanged when it's not a new controller though
-			- In the other cases, verify MainFrame calls ReconciliateUI by itself	
-
 - Build on Ubuntu
 
 - Previews:
@@ -166,9 +168,6 @@ https://gamejolt.com/x/permalink/comment/11457002
 			- .shp, .shp2 (load whole and throw away)
 		- No export (just useless at this moment)
 
-
-- Grid view:
-	- TODO: where is the toggle button? Need new top panel area? Re-design top panel area?
 
 - Undo stack visualization: underneath toolbar?
 
@@ -286,9 +285,9 @@ https://gamejolt.com/x/permalink/comment/11457002
 			- WorkSpace size and icon (wxh), w/meters/feet as well
 			- Selection/line/rect/etc. size and icon (wxh), w/meters/feet as well
 			- Zoom (%)
-				- MainFrame: OnViewModelChanged calls a new ReconciliateUIWithViewModel(), which does:
-					- StatusBar: set zoom
-					- RecalculateWorkCanvasPanning
+				+ MainFrame: OnViewModelChanged calls a new ReconciliateUIWithViewModel(), which does:
+					+ StatusBar: set zoom
+					+ RecalculateWorkCanvasPanning
 			- Material under cursor (for drop tool)
 			- Warning icon (w/tooltip)
 

@@ -462,7 +462,7 @@ void MainFrame::OnViewModelChanged()
 {
     if (mController)
     {
-        RecalculateWorkCanvasPanning();
+        ReconciliateUIWithViewModel();
     }
 }
 
@@ -1969,6 +1969,7 @@ void MainFrame::SetFrameTitle(std::string const & shipName, bool isDirty)
 void MainFrame::ReconciliateUI()
 {
     assert(mController);
+    ReconciliateUIWithViewModel();
     ReconciliateUIWithShipMetadata(mController->GetModelController().GetModel().GetShipMetadata());
     ReconciliateUIWithLayerPresence();
     ReconciliateUIWithShipSize(mController->GetModelController().GetModel().GetShipSize());
@@ -1980,6 +1981,13 @@ void MainFrame::ReconciliateUI()
 
     assert(mWorkCanvas);
     mWorkCanvas->Refresh();
+}
+
+void MainFrame::ReconciliateUIWithViewModel()
+{
+    RecalculateWorkCanvasPanning();
+
+    // TODO: set zoom in StatusBar
 }
 
 void MainFrame::ReconciliateUIWithShipMetadata(ShipMetadata const & shipMetadata)

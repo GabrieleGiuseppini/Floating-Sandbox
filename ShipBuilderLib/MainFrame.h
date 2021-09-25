@@ -183,6 +183,8 @@ private:
 
     void ReconciliateUI();
 
+    void ReconciliateUIWithViewModel();
+
     void ReconciliateUIWithShipMetadata(ShipMetadata const & shipMetadata);
 
     void ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize);
