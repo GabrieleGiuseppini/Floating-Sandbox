@@ -10,7 +10,6 @@ https://gamejolt.com/x/permalink/comment/11457002
 		+ Base UndoAction has DirtyState member, given via cctor & exposed via getter
 		+ Controller::Undo()
 
-
 = Click-And-Draw use case:
 	= Pencil tool (*)
 		+ UndoStack.h/cpp, w/IUndoEntry interface w/UndoEntryType enum
@@ -56,7 +55,7 @@ https://gamejolt.com/x/permalink/comment/11457002
 				+ Recalc derived
 			+ Mark layer as dirty
 			+ Notify IUserInterface of dirtyness
-		- See if need to fill-in mouse pointer jumps
+		- Fill-in mouse pointer jumps
 		- Tool settings: size
 			- Passing to ModelController is almost all done; it's the preview that we need to figure out: do we want a preview?
 				- May be we say that the Pencil tool has no size, and the Brush tool has a size instead?
@@ -107,14 +106,11 @@ https://gamejolt.com/x/permalink/comment/11457002
 		- Store filename as mCurrentFilename
 
 - Auto-zoom on new ModelController
-	- By Controller, at each of the two loads, and at the create-new (not at model-new)
-		- Via ViewModel->CalculateIdealZoom() const -> zoom
-		- Only invokes IUserInterface when it's not a new controller though
-			- And the IUserInterface call is basically OnWorkspaceSizeChange, renamed to XOnViewModelChangedXTODO
-		- In the other cases, verify MainFrame calls ReconciliateUI by itself
-	- MainFrame::ReconciliateUI: also reconciliate status bar with workspace size (@ReconciliateWithWorkSpaceSize) *and* zoom
-
-- StatusBar with wxPanel (*)
+	- By Controller, at cctor (i.e. after CreateNew() and CreateForShip())
+		- Via ViewModel->CalculateIdealZoom() const -> zoom, then set in ViewModel
+		- TODOOLD
+			- Only invokes IUserInterface::OnViewModelChanged when it's not a new controller though
+			- In the other cases, verify MainFrame calls ReconciliateUI by itself	
 
 - Build on Ubuntu
 
@@ -283,13 +279,16 @@ https://gamejolt.com/x/permalink/comment/11457002
 	- Try making it a wxPanel rather than a wxStatusBar
 	- Cctor and Set(.) for UnitsSystem
 		- From SB::MainFrame cctor
-		- And store tools coords, ship size, etc. for re-populating on change
+		- And store tools coords, ship size, etc. for re-populating on change	
 	- Areas:
 		- Canvas:
 			- Coords and icon (x,y), w/meters/feet as well
 			- WorkSpace size and icon (wxh), w/meters/feet as well
 			- Selection/line/rect/etc. size and icon (wxh), w/meters/feet as well
 			- Zoom (%)
+				- MainFrame: OnViewModelChanged calls a new ReconciliateUIWithViewModel(), which does:
+					- StatusBar: set zoom
+					- RecalculateWorkCanvasPanning
 			- Material under cursor (for drop tool)
 			- Warning icon (w/tooltip)
 

@@ -26,7 +26,7 @@ PencilTool<TLayerType>::PencilTool(
         userInterface,
         view)
     , mEngagementData()
-    , mCursorImage(WxHelpers::LoadCursorImage("pencil_cursor", 1, 29, resourceLocator))
+    , mCursorImage(WxHelpers::LoadCursorImage("pencil_cursor", 2, 22, resourceLocator))
 {
     SetCursor(mCursorImage);
 }
