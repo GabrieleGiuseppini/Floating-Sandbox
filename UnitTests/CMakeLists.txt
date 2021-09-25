@@ -30,6 +30,7 @@ set (UNIT_TEST_SOURCES
 	GameEventDispatcherTests.cpp
 	GameGeometryTests.cpp
 	GameMathTests.cpp
+	IntegralSystemTests.cpp
 	LayoutHelperTests.cpp
 	main.cpp
 	Matrix2Tests.cpp

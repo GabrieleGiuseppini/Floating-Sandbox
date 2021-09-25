@@ -81,7 +81,7 @@ public:
 
     void OnPrimaryLayerChanged(LayerType primaryLayer) override;
 
-    void OnModelDirtyChanged(bool isDirty) override;
+    void OnModelDirtyChanged() override;
 
     void OnWorkbenchStateChanged() override;
 
@@ -180,7 +180,7 @@ private:
 
     void ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer);
 
-    void ReconciliateUIWithModelDirtiness(bool isDirty);
+    void ReconciliateUIWithModelDirtiness();
 
     void ReconciliateUIWithWorkbenchState();
 

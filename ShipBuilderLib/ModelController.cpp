@@ -38,6 +38,10 @@ ModelController::ModelController(
     : mView(view)
     , mModel(shipSpaceSize)
 {
+    // Model is not dirty now
+    assert(!mModel.GetIsDirty());
+
+    // Upload view
     UploadStructuralLayerToView();
 }
 
@@ -61,29 +65,14 @@ void ModelController::SetStructuralLayer(/*TODO*/)
     UploadStructuralLayerToView();
 }
 
-std::unique_ptr<UndoAction> ModelController::StructuralRegionFill(
+void ModelController::StructuralRegionFill(
     StructuralMaterial const * material,
     ShipSpaceCoordinates const & origin,
     ShipSpaceSize const & size)
 {
     assert(mModel.HasLayer(LayerType::Structural));
 
-    // TODOHERE
-    return nullptr;
-    /*
-    //
-    // Create undo edit action
-    //
-
-    std::unique_ptr<UndoEditAction> undoEditAction = std::make_unique<MaterialRegionUndoEditAction<StructuralMaterial>>(
-        mModel.GetStructuralMaterialMatrix().MakeCopy(origin, size),
-        origin);
-
-    //
-    // Fill
-    //
-
-    MaterialBuffer<StructuralMaterial> & structuralMaterialMatrix = mModel.GetStructuralMaterialMatrix();
+    StructuralLayerBuffer & structuralLayerBuffer = mModel.GetStructuralLayerBuffer();
     RgbaImageData & structuralRenderColorTexture = mModel.GetStructuralRenderColorTexture();
 
     rgbaColor const renderColor = material != nullptr
@@ -94,8 +83,7 @@ std::unique_ptr<UndoAction> ModelController::StructuralRegionFill(
     {
         for (int x = origin.x; x < origin.x + size.width; ++x)
         {
-            // TODO: see if can use [][]
-            structuralMaterialMatrix[ShipSpaceCoordinates(x, y)] = material;
+            structuralLayerBuffer[ShipSpaceCoordinates(x, y)].Material = material;
             structuralRenderColorTexture[ImageCoordinates(x, y)] = renderColor;
         }
     }
@@ -116,17 +104,6 @@ std::unique_ptr<UndoAction> ModelController::StructuralRegionFill(
         // More than one row - upload whole
         UploadStructuralLayerToView();
     }
-
-    //
-    // Bake undo entry
-    //
-
-    return std::make_unique<UndoEntry>(
-        std::move(undoEditAction),
-        std::make_unique<MaterialRegionUndoEditAction<StructuralMaterial>>(
-            mModel.GetStructuralMaterialMatrix().MakeCopy(origin, size),
-            origin));
-    */
 }
 
 void ModelController::StructuralRegionReplace(
@@ -167,13 +144,12 @@ void ModelController::RemoveElectricalLayer()
     // TODO: upload to view
 }
 
-std::unique_ptr<UndoAction> ModelController::ElectricalRegionFill(
+void ModelController::ElectricalRegionFill(
     ElectricalMaterial const * material,
     ShipSpaceCoordinates const & origin,
     ShipSpaceSize const & size)
 {
-    // TODO
-    return nullptr;
+    // TODOHERE - copy from Structural
 }
 
 void ModelController::ElectricalRegionReplace(

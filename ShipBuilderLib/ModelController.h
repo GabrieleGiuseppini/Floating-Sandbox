@@ -7,7 +7,6 @@
 
 #include "Model.h"
 #include "ShipBuilderTypes.h"
-#include "UndoStack.h"
 #include "View.h"
 
 #include <Game/Materials.h>
@@ -34,6 +33,11 @@ public:
         /* TODO: loaded ship ,*/
         View & view);
 
+    void SetLayerDirty(LayerType layer)
+    {
+        mModel.SetIsDirty(layer);
+    }
+
     //
     // Structural
     //
@@ -41,7 +45,7 @@ public:
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
 
-    std::unique_ptr<UndoAction> StructuralRegionFill(
+    void StructuralRegionFill(
         StructuralMaterial const * material,
         ShipSpaceCoordinates const & origin,
         ShipSpaceSize const & size);
@@ -58,7 +62,7 @@ public:
     void SetElectricalLayer(/*TODO*/);
     void RemoveElectricalLayer();
 
-    std::unique_ptr<UndoAction> ElectricalRegionFill(
+    void ElectricalRegionFill(
         ElectricalMaterial const * material,
         ShipSpaceCoordinates const & origin,
         ShipSpaceSize const & size);

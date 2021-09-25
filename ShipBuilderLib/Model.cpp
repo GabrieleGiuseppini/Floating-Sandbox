@@ -23,16 +23,22 @@ Model::Model(ShipSpaceSize const & shipSize)
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
 
     // Initialize dirtiness
-    ClearIsDirty();
+    mLayerDirtinessMap.fill(false);
+    mIsDirty = false;
+}
+
+std::unique_ptr<StructuralLayerBuffer> Model::CloneStructuralLayerBuffer() const
+{
+    assert(mStructuralLayerBuffer);
+    return mStructuralLayerBuffer->MakeCopy();
 }
 
 void Model::NewStructuralLayer()
 {
     MakeNewStructuralLayer(mShipSize);
 
+    // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
-    mLayerDirtinessMap[static_cast<size_t>(LayerType::Structural)] = true;
-    mIsDirty = true;
 }
 
 void Model::SetStructuralLayer(/*TODO*/)
@@ -40,13 +46,20 @@ void Model::SetStructuralLayer(/*TODO*/)
     // TODO
 }
 
+std::unique_ptr<ElectricalLayerBuffer> Model::CloneElectricalLayerBuffer() const
+{
+    // TODO
+    return nullptr;
+    ////assert(mElectricalLayerBuffer);
+    ////return mElectricalLayerBuffer->MakeCopy();
+}
+
 void Model::NewElectricalLayer()
 {
     // TODO
 
+    // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = true;
-    mLayerDirtinessMap[static_cast<size_t>(LayerType::Electrical)] = true;
-    mIsDirty = true;
 }
 
 void Model::SetElectricalLayer(/*TODO*/)
@@ -58,18 +71,16 @@ void Model::RemoveElectricalLayer()
 {
     // TODO
 
+    // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = false;
-    mLayerDirtinessMap[static_cast<size_t>(LayerType::Electrical)] = true;
-    mIsDirty = true;
 }
 
 void Model::NewRopesLayer()
 {
     // TODO
 
+    // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Ropes)] = true;
-    mLayerDirtinessMap[static_cast<size_t>(LayerType::Ropes)] = true;
-    mIsDirty = true;
 }
 
 void Model::SetRopesLayer(/*TODO*/)
@@ -81,18 +92,16 @@ void Model::RemoveRopesLayer()
 {
     // TODO
 
+    // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Ropes)] = false;
-    mLayerDirtinessMap[static_cast<size_t>(LayerType::Ropes)] = true;
-    mIsDirty = true;
 }
 
 void Model::NewTextureLayer()
 {
     // TODO
 
+    // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Texture)] = true;
-    mLayerDirtinessMap[static_cast<size_t>(LayerType::Texture)] = true;
-    mIsDirty = true;
 }
 
 void Model::SetTextureLayer(/*TODO*/)
@@ -104,9 +113,8 @@ void Model::RemoveTextureLayer()
 {
     // TODO
 
+    // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Texture)] = false;
-    mLayerDirtinessMap[static_cast<size_t>(LayerType::Texture)] = true;
-    mIsDirty = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,13 +127,6 @@ void Model::RecalculateGlobalIsDirty()
         true) != mLayerDirtinessMap.cend()
         ? true
         : false;
-}
-
-// TODO: to be invoked by oursevels when we're saved
-void Model::ClearIsDirty()
-{
-    mLayerDirtinessMap.fill(false);
-    mIsDirty = false;
 }
 
 void Model::MakeNewStructuralLayer(ShipSpaceSize const & size)

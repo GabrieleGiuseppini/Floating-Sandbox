@@ -15,4 +15,11 @@ void LayerBufferRegionUndoAction<TLayerBuffer>::Apply(Controller & controller) c
     controller.RestoreLayerBufferRegion(mLayerBufferRegion, mOrigin);
 }
 
+//
+// Explicit specializations
+//
+
+template class LayerBufferRegionUndoAction<StructuralLayerBuffer>;
+template class LayerBufferRegionUndoAction<ElectricalLayerBuffer>;
+
 }

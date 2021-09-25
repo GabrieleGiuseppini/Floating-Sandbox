@@ -443,6 +443,34 @@ struct _IntegralRect
         , size(_size)
     {}
 
+    constexpr _IntegralRect(_IntegralCoordinates<TIntegralTag> const & _origin)
+        : origin(_origin)
+        , size(1, 1)
+    {}
+
+    void UpdateWith(_IntegralCoordinates<TIntegralTag> const & point)
+    {
+        if (point.x < origin.x)
+        {
+            size.width += origin.x - point.x;
+            origin.x = point.x;
+        }
+        else if (point.x > origin.x + size.width)
+        {
+            size.width = point.x - origin.x;
+        }
+
+        if (point.y < origin.y)
+        {
+            size.height += origin.y - point.y;
+            origin.y = point.y;
+        }
+        else if (point.y > origin.y + size.height)
+        {
+            size.height = point.y - origin.y;
+        }
+    }
+
     std::string ToString() const
     {
         std::stringstream ss;
@@ -450,6 +478,10 @@ struct _IntegralRect
         return ss.str();
     }
 };
+
+using IntegralRect = _IntegralRect<struct IntegralTag>;
+using ImageRect = _IntegralRect<struct ImageTag>;
+using ShipSpaceRect = _IntegralRect<struct ShipSpaceTag>;
 
 template<typename TTag>
 inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _IntegralCoordinates<TTag> const & p)
@@ -475,6 +507,17 @@ using Octant = std::int32_t;
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Game
 ////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ * The different layers.
+ */
+enum class LayerType : std::uint32_t
+{
+    Structural = 0,
+    Electrical,
+    Texture,
+    Ropes
+};
 
 /*
  * The different material layers.

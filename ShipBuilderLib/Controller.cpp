@@ -82,9 +82,11 @@ Controller::Controller(
 void Controller::NewStructuralLayer()
 {
     mModelController->NewStructuralLayer();
-
     mUserInterface.OnLayerPresenceChanged();
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
+
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Structural);
+    mUserInterface.OnModelDirtyChanged();
 
     // Switch primary layer to this one
     SelectPrimaryLayer(LayerType::Structural);
@@ -93,8 +95,11 @@ void Controller::NewStructuralLayer()
 void Controller::SetStructuralLayer(/*TODO*/)
 {
     mModelController->SetStructuralLayer();
+    mUserInterface.OnLayerPresenceChanged();
 
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Structural);
+    mUserInterface.OnModelDirtyChanged();
 }
 
 void Controller::RestoreLayerBufferRegion(
@@ -103,17 +108,19 @@ void Controller::RestoreLayerBufferRegion(
 {
     mModelController->StructuralRegionReplace(layerBufferRegion, origin);
 
-    // TODOHERE: mark layer as dirty
-
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Structural);
+    mUserInterface.OnModelDirtyChanged();
 }
 
 void Controller::NewElectricalLayer()
 {
     mModelController->NewElectricalLayer();
-
     mUserInterface.OnLayerPresenceChanged();
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
+
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Electrical);
+    mUserInterface.OnModelDirtyChanged();
 
     // Switch primary layer to this one
     SelectPrimaryLayer(LayerType::Electrical);
@@ -122,37 +129,44 @@ void Controller::NewElectricalLayer()
 void Controller::SetElectricalLayer(/*TODO*/)
 {
     mModelController->SetElectricalLayer();
+    mUserInterface.OnLayerPresenceChanged();
 
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Electrical);
+    mUserInterface.OnModelDirtyChanged();
 }
 
 void Controller::RemoveElectricalLayer()
 {
     mModelController->RemoveElectricalLayer();
+    mUserInterface.OnLayerPresenceChanged();
+
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Electrical);
+    mUserInterface.OnModelDirtyChanged();
 
     // Switch primary layer to structural if it was this one
     if (mPrimaryLayer == LayerType::Electrical)
     {
         SelectPrimaryLayer(LayerType::Structural);
     }
-
-    mUserInterface.OnLayerPresenceChanged();
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
 
 void Controller::RestoreLayerBufferRegion(
     ElectricalLayerBuffer const & layerBufferRegion,
     ShipSpaceCoordinates const & origin)
 {
-    // TODOHERE
+    // TODOHERE: copy from Structural
 }
 
 void Controller::NewRopesLayer()
 {
     mModelController->NewRopesLayer();
-
     mUserInterface.OnLayerPresenceChanged();
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
+
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Ropes);
+    mUserInterface.OnModelDirtyChanged();
 
     // Switch primary layer to this one
     SelectPrimaryLayer(LayerType::Ropes);
@@ -161,62 +175,73 @@ void Controller::NewRopesLayer()
 void Controller::SetRopesLayer(/*TODO*/)
 {
     mModelController->SetRopesLayer();
+    mUserInterface.OnLayerPresenceChanged();
 
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Ropes);
+    mUserInterface.OnModelDirtyChanged();
 }
 
 void Controller::RemoveRopesLayer()
 {
     mModelController->RemoveRopesLayer();
+    mUserInterface.OnLayerPresenceChanged();
+
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Ropes);
+    mUserInterface.OnModelDirtyChanged();
 
     // Switch primary layer to structural if it was this one
     if (mPrimaryLayer == LayerType::Ropes)
     {
         SelectPrimaryLayer(LayerType::Structural);
     }
-
-    mUserInterface.OnLayerPresenceChanged();
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
 
 void Controller::RestoreLayerBufferRegion(
     RopesLayerBuffer const & layerBufferRegion,
     ShipSpaceCoordinates const & origin)
 {
-    // TODOHERE
+    // TODOHERE: copy from structural
 }
 
 void Controller::SetTextureLayer(/*TODO*/)
 {
     mModelController->SetTextureLayer();
+    mUserInterface.OnLayerPresenceChanged();
 
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Texture);
+    mUserInterface.OnModelDirtyChanged();
 }
 
 void Controller::RemoveTextureLayer()
 {
     mModelController->RemoveTextureLayer();
+    mUserInterface.OnLayerPresenceChanged();
+
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Texture);
+    mUserInterface.OnModelDirtyChanged();
 
     // Switch primary layer to structural if it was this one
     if (mPrimaryLayer == LayerType::Texture)
     {
         SelectPrimaryLayer(LayerType::Structural);
     }
-
-    mUserInterface.OnLayerPresenceChanged();
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel().GetIsDirty());
 }
 
 void Controller::RestoreLayerBufferRegion(
     TextureLayerBuffer const & layerBufferRegion,
     ShipSpaceCoordinates const & origin)
 {
-    // TODOHERE
+    // TODOHERE: copy from structural
 }
 
 void Controller::ResizeShip(ShipSpaceSize const & newSize)
 {
     // TODO: tell ModelController
+    // TODO: update dirtyness (of all present layers)
 
     // Notify view of new size
     // Note: might cause a view model change that would not be

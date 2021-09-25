@@ -482,11 +482,11 @@ void MainFrame::OnPrimaryLayerChanged(LayerType primaryLayer)
     }
 }
 
-void MainFrame::OnModelDirtyChanged(bool isDirty)
+void MainFrame::OnModelDirtyChanged()
 {
     if (mController)
     {
-        ReconciliateUIWithModelDirtiness(isDirty);
+        ReconciliateUIWithModelDirtiness();
     }
 }
 
@@ -1923,7 +1923,7 @@ void MainFrame::ReconciliateUI()
     ReconciliateUIWithLayerPresence();
     ReconciliateUIWithShipSize(mController->GetModelController().GetModel().GetShipSize());
     ReconciliateUIWithPrimaryLayerSelection(mController->GetPrimaryLayer());
-    ReconciliateUIWithModelDirtiness(mController->GetModelController().GetModel().GetIsDirty());
+    ReconciliateUIWithModelDirtiness();
     ReconciliateUIWithWorkbenchState();
     ReconciliateUIWithSelectedTool(mController->GetCurrentTool());
 }
@@ -2010,9 +2010,11 @@ void MainFrame::ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer)
     }
 }
 
-void MainFrame::ReconciliateUIWithModelDirtiness(bool isDirty)
+void MainFrame::ReconciliateUIWithModelDirtiness()
 {
     assert(mController);
+
+    bool const isDirty = mController->GetModelController().GetModel().GetIsDirty();
 
     if (mSaveShipMenuItem->IsEnabled() != isDirty)
     {

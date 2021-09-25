@@ -36,7 +36,7 @@ public:
     virtual void OnPrimaryLayerChanged(LayerType primaryLayer) = 0;
 
     // Notifies of a (possible) change in the dirtiness of the model
-    virtual void OnModelDirtyChanged(bool isDirty) = 0;
+    virtual void OnModelDirtyChanged() = 0;
 
     // Notifies of a change in any member of the workbench state
     virtual void OnWorkbenchStateChanged() = 0;

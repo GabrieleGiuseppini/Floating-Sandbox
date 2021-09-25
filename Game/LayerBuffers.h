@@ -11,6 +11,10 @@
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
 
+template <LayerType TLayer>
+struct LayerTypeTraits
+{};
+
 struct StructuralElement
 {
     StructuralMaterial const * Material;
@@ -25,6 +29,12 @@ struct StructuralElement
 };
 
 using StructuralLayerBuffer = Buffer2D<StructuralElement, struct ShipSpaceTag>;
+
+template <>
+struct LayerTypeTraits<LayerType::Structural>
+{
+    using buffer_type = StructuralLayerBuffer;
+};
 
 struct ElectricalElement
 {
@@ -45,6 +55,12 @@ struct ElectricalElement
 };
 
 using ElectricalLayerBuffer = Buffer2D<ElectricalElement, struct ShipSpaceTag>;
+
+template <>
+struct LayerTypeTraits<LayerType::Electrical>
+{
+    using buffer_type = ElectricalLayerBuffer;
+};
 
 struct RopeElement
 {
@@ -70,4 +86,16 @@ struct RopeElement
 
 using RopesLayerBuffer = Buffer2D<RopeElement, struct ShipSpaceTag>;
 
+template <>
+struct LayerTypeTraits<LayerType::Ropes>
+{
+    using buffer_type = RopesLayerBuffer;
+};
+
 using TextureLayerBuffer = Buffer2D<rgbaColor, struct ImageTag>;
+
+template <>
+struct LayerTypeTraits<LayerType::Texture>
+{
+    using buffer_type = TextureLayerBuffer;
+};

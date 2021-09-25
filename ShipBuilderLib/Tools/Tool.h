@@ -9,6 +9,7 @@
 #include "IUserInterface.h"
 #include "ModelController.h"
 #include "ShipBuilderTypes.h"
+#include "UndoStack.h"
 #include "WorkbenchState.h"
 #include "View.h"
 
@@ -77,6 +78,12 @@ protected:
     void ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & mouseScreenPosition)
     {
         mUserInterface.ScrollIntoViewIfNeeded(mouseScreenPosition);
+    }
+
+    void SetLayerDirty(LayerType layer)
+    {
+        mModelController.SetLayerDirty(layer);
+        mUserInterface.OnModelDirtyChanged();
     }
 
 protected:

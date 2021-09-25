@@ -102,24 +102,22 @@ public:
             std::move(newData));
     }
 
-    std::unique_ptr<Buffer2D> MakeCopy(
-        coordinates_type const & regionOrigin,
-        size_type const & regionSize)
+    std::unique_ptr<Buffer2D> MakeCopy(_IntegralRect<TIntegralTag> const & regionRect)
     {
-        auto newData = std::make_unique<TElement[]>(regionSize.width * regionSize.height);
-        for (int targetY = 0; targetY < regionSize.height; ++targetY)
+        auto newData = std::make_unique<TElement[]>(regionRect.size.width * regionRect.size.height);
+        for (int targetY = 0; targetY < regionRect.size.height; ++targetY)
         {
-            int const sourceLinearIndex = (targetY + regionOrigin.y) * Size.width + regionOrigin.x;
-            int const targetLinearIndex = targetY * regionSize.width;
+            int const sourceLinearIndex = (targetY + regionRect.origin.y) * Size.width + regionRect.origin.x;
+            int const targetLinearIndex = targetY * regionRect.size.width;
 
             std::memcpy(
                 newData.get() + targetLinearIndex,
                 Data.get() + sourceLinearIndex,
-                regionSize.width * sizeof(TElement));
+                regionRect.size.width * sizeof(TElement));
         }
 
         return std::make_unique<Buffer2D>(
-            regionSize,
+            regionRect.size,
             std::move(newData));
     }
 

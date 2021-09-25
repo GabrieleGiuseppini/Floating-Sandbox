@@ -1,10 +1,15 @@
 https://gamejolt.com/x/permalink/comment/11457002
 
 
-+ Undo hierarchy: there are four subtypes of UndoEditAction - for each of the "layer buffer" types - on top of e.g. "resize" and "all layers"
-	+ These four are all implemented via a single templated class, templated on TLayerBuffer
-		+ Contains TLayerBuffer and origin
-	+ Apply() invokes Controller::RestoreLayer(TLayerBuffer const &, origin)
+= Undo
+	+ Hierarchy: there are four subtypes of UndoEditAction - for each of the "layer buffer" types - on top of e.g. "resize" and "all layers"
+		+ These four are all implemented via a single templated class, templated on TLayerBuffer
+			+ Contains TLayerBuffer and origin
+		+ Apply() invokes Controller::RestoreLayer(TLayerBuffer const &, origin)
+	- Dirtyness:
+		- Model::DirtyState == {array, metadata, ...}, w/=operator
+		- Base UndoAction has DirtyState member, given via cctor & exposed via getter
+
 
 = Click-And-Draw use case:
 	- Pencil tool (*)
@@ -12,32 +17,33 @@ https://gamejolt.com/x/permalink/comment/11457002
 		+ Controller: forward mouse events to tool
 		+ View:
 			+ Upload method for texture *region*
-		- Application: undo is only baked and added at mouse up, containing whole affected region
+		+ Application: undo is only baked and added at mouse up, containing whole affected region
 			! Spec:
-				- Tool makes clone of entire region at mouse down
-				- At each pixel edit, tool updates region's origin and size
-				- At mouse up, tool makes UndoEntry with clone of material region 
-			- Impl:
-				- Pencil tool stays templated on LayerType
-				- Tool has std::opt<InteractionState> with ShipSpaceRect and clone of entire region
-					- LayerTypeTraits<LayerType> gives type of LayerBuffer					
-				- At mouse down: 
-					- Model::CloneStructuralLayerBuffer() -> StructuralLayerBuffer
-					- Then capture mouse
-				- At mouse up, tool makes UndoEntry with clipped clone of material region 
-					- Buffer2D has method to be "regionized" (restricted)
-						- Unit tests
-					- Then release mouse
-					- Then set Model::StructuralLayer as dirty (**)
-						- TODO: who owns dirty? Controller or ModelController or Model?
-				- Restored via ModelController::RestoreStructuralLayer(StructuralLayerBuffer)
-			- ModelController::XXXRegionFill does not return UndoEntry anymore
+				+ Tool makes clone of entire region at mouse down
+				+ At each pixel edit, tool updates region's origin and size
+				+ At mouse up, tool makes UndoEntry with clone of material region 
+			+ Impl:
+				+ Pencil tool is templated on LayerType
+				+ Tool has std::opt<InteractionState> with ShipSpaceRect and clone of entire region
+					+ LayerTypeTraits<LayerType> gives type of LayerBuffer					
+				+ At mouse down: 
+					+ Model::CloneStructuralLayerBuffer() -> StructuralLayerBuffer
+					X Then capture mouse
+				+At mouse up, tool makes UndoEntry with clipped clone of material region 
+					+ Buffer2D has method to be "regionized" (restricted)
+						+ Unit tests
+					X Then release mouse
+					X Then set Model::StructuralLayer as dirty
+			+ ModelController::XXXRegionFill does not return UndoEntry anymore
+		- See if OnMouseOut at Tool is really needed
 		- Hook UndoEntry to UndoStack
 		- Undo stack: owned by Controller, given to Tool
 			- Tool's action writes into UndoStack and invokes IUserInterface notification
 			- IUserInterface notification: Undo and Redo menu items
-			- MainFrame: on Undo/Redo, call into Controller::TODO:undo/redo
-			- Controller::TODO:undo/redo
+			- MainFrame: on Undoo, call into Controller::Undo()
+			- Controller::Undo: 
+				- Calls UndoAction::Apply(this)
+				- Restores dirty state
 		+ UndoEntry exposes:
 			+ string GetTitle()
 			+ std::uint64_t GetCost()
@@ -55,6 +61,8 @@ https://gamejolt.com/x/permalink/comment/11457002
 		- Previews (*)
 	- Eraser tool
 	- Strategy for other tools' enums - to make it work for now
+
+- See if GameTypes::MaterialLayerType is still needed
 
 = New/Load/Save Ship
 	- Move ShipLoadDialog/etc. under UILib
@@ -246,6 +254,12 @@ https://gamejolt.com/x/permalink/comment/11457002
 		- GameController::CreateNewFromTexture()
 	- Load Ship (@menu, @file panel)
 		- GameController::Load()
+
+- Dirtyness:
+	- Storage is at Model
+		- Include metadata
+	- Manipulated by Controller via ModelController methods
+		- So Controller notifies IUserInterface
 
 - UI Controls:
 	+ Button to save and go back to game (!StandaloneMode)

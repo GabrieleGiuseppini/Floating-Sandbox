@@ -73,7 +73,10 @@ TEST(Buffer2DTests, MakeCopy_Region)
         }
     }
 
-    auto const bufferCopy = buffer.MakeCopy(IntegralCoordinates(1, 1), IntegralRectSize(2, 2));
+    auto const bufferCopy = buffer.MakeCopy(
+        IntegralRect(
+            { 1, 1 },
+            { 2, 2 }));
 
     ASSERT_EQ(IntegralRectSize(2, 2), bufferCopy->Size);
 

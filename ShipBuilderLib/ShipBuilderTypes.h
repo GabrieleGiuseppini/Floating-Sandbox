@@ -27,14 +27,6 @@ enum class ToolType : std::uint32_t
     _Last = RopesEraser
 };
 
-enum class LayerType : std::uint32_t
-{
-    Structural = 0,
-    Electrical,
-    Texture,
-    Ropes
-};
-
 size_t constexpr LayerCount = static_cast<size_t>(LayerType::Ropes) + 1;
 
 enum class MaterialPlaneType

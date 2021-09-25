@@ -9,6 +9,8 @@
 
 #include <Game/LayerBuffers.h>
 
+#include <wx/string.h>
+
 #include <string>
 
 namespace ShipBuilder {
@@ -29,7 +31,7 @@ public:
 
     virtual ~UndoAction() = default;
 
-    std::string const & GetTitle() const
+    wxString const & GetTitle() const
     {
         return mTitle;
     }
@@ -44,7 +46,7 @@ public:
 protected:
 
     UndoAction(
-        std::string const & title,
+        wxString const & title,
         size_t cost)
         : mTitle(title)
         , mCost(cost)
@@ -52,7 +54,7 @@ protected:
 
 private:
 
-    std::string const mTitle;
+    wxString const mTitle;
     size_t const mCost;
 };
 
@@ -62,12 +64,12 @@ class LayerBufferRegionUndoAction final : public UndoAction
 public:
 
     LayerBufferRegionUndoAction(
-        std::string const & title,
+        wxString const & title,
         TLayerBuffer && layerBufferRegion,
         ShipSpaceCoordinates const & origin)
         : UndoAction(
             title,
-            layerBufferRegion.GetLinearSize())
+            layerBufferRegion.GetByteSize())
         , mLayerBufferRegion(std::move(layerBufferRegion))
         , mOrigin(origin)
     {}

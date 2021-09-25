@@ -9,8 +9,8 @@
 
 namespace ShipBuilder {
 
-template<typename TMaterial>
-PencilTool<TMaterial>::PencilTool(
+template<LayerType TLayerType>
+PencilTool<TLayerType>::PencilTool(
     ToolType toolType,
     ModelController & modelController,
     WorkbenchState const & workbenchState,
@@ -23,6 +23,7 @@ PencilTool<TMaterial>::PencilTool(
         workbenchState,
         userInterface,
         view)
+    , mEngagementData()
     , mCursorImage(WxHelpers::LoadCursorImage("pencil_cursor", 1, 29, resourceLocator))
 {
     SetCursor(mCursorImage);
@@ -58,87 +59,171 @@ ElectricalPencilTool::ElectricalPencilTool(
         resourceLocator)
 {}
 
-template<typename TMaterial>
-void PencilTool<TMaterial>::OnMouseMove(InputState const & inputState)
+template<LayerType TLayer>
+void PencilTool<TLayer>::Reset()
 {
-    // Calculate ship coordinates
-    ShipSpaceCoordinates mouseShipSpaceCoordinates = mView.ScreenToShipSpace(inputState.MousePosition);
+    mEngagementData.reset();
+}
 
-    // Check if within ship canvas
-    if (mouseShipSpaceCoordinates.IsInSize(mModelController.GetModel().GetShipSize()))
+template<LayerType TLayer>
+void PencilTool<TLayer>::OnMouseMove(InputState const & inputState)
+{
+    CheckStartEngagement(inputState);
+    CheckEdit(inputState);
+}
+
+template<LayerType TLayer>
+void PencilTool<TLayer>::OnLeftMouseDown(InputState const & inputState)
+{
+    CheckStartEngagement(inputState);
+    CheckEdit(inputState);
+}
+
+template<LayerType TLayer>
+void PencilTool<TLayer>::OnLeftMouseUp(InputState const & /*inputState*/)
+{
+    CheckEndEngagement();
+}
+
+template<LayerType TLayer>
+void PencilTool<TLayer>::OnRightMouseDown(InputState const & inputState)
+{
+    CheckStartEngagement(inputState);
+    CheckEdit(inputState);
+}
+
+template<LayerType TLayer>
+void PencilTool<TLayer>::OnRightMouseUp(InputState const & /*inputState*/)
+{
+    CheckEndEngagement();
+}
+
+template<LayerType TLayer>
+void PencilTool<TLayer>::OnMouseOut(InputState const & /*inputState*/)
+{
+    CheckEndEngagement();
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+template<LayerType TLayer>
+void PencilTool<TLayer>::CheckStartEngagement(InputState const & inputState)
+{
+    if (!inputState.IsLeftMouseDown && !inputState.IsRightMouseDown)
     {
-        if (inputState.IsLeftMouseDown)
-        {
-            ApplyEditAt(mouseShipSpaceCoordinates, MaterialPlaneType::Foreground);
-        }
-        else if (inputState.IsRightMouseDown)
-        {
-            ApplyEditAt(mouseShipSpaceCoordinates, MaterialPlaneType::Background);
-        }
+        // Not an engagement action, ignore
+        return;
+    }
+
+    if (mEngagementData.has_value())
+    {
+        // Already engaged, ignore
+        return;
+    }
+
+    ShipSpaceCoordinates const coords = mView.ScreenToShipSpace(inputState.MousePosition);
+    if (!coords.IsInSize(mModelController.GetModel().GetShipSize()))
+    {
+        // Outside ship, ignore
+        return;
+    }
+
+    //
+    // Start engagement
+    //
+
+    MaterialPlaneType const plane = inputState.IsLeftMouseDown
+        ? MaterialPlaneType::Foreground
+        : MaterialPlaneType::Background;
+
+    if constexpr (TLayer == LayerType::Structural)
+    {
+        mEngagementData.emplace(
+            plane,
+            mModelController.GetModel().CloneStructuralLayerBuffer(),
+            coords);
+    }
+    else
+    {
+        static_assert(TLayer == LayerType::Electrical);
+
+        mEngagementData.emplace(
+            plane,
+            mModelController.GetModel().CloneElectricalLayerBuffer(),
+            coords);
     }
 }
 
-template<typename TMaterial>
-void PencilTool<TMaterial>::OnLeftMouseDown(InputState const & inputState)
+template<LayerType TLayer>
+void PencilTool<TLayer>::CheckEndEngagement()
 {
-    // Calculate ship coordinates
-    ShipSpaceCoordinates mouseShipSpaceCoordinates = mView.ScreenToShipSpace(inputState.MousePosition);
-
-    // Check if within ship canvas
-    if (mouseShipSpaceCoordinates.IsInSize(mModelController.GetModel().GetShipSize()))
+    if (!mEngagementData.has_value())
     {
-        ApplyEditAt(mouseShipSpaceCoordinates, MaterialPlaneType::Foreground);
+        // Not engaged, ignore
+        return;
     }
+
+    //
+    // Create undo action
+    //
+
+    auto clippedRegionClone = mEngagementData->RegionClone->MakeCopy(mEngagementData->EditRegion);
+
+    auto undoAction = std::make_unique<LayerBufferRegionUndoAction<typename LayerTypeTraits<TLayer>::buffer_type>>(
+        _("Pencil"),
+        std::move(*clippedRegionClone),
+        mEngagementData->EditRegion.origin);
+
+    // Reset engagement
+    mEngagementData.reset();
 }
 
-template<typename TMaterial>
-void PencilTool<TMaterial>::OnRightMouseDown(InputState const & inputState)
+template<LayerType TLayer>
+void PencilTool<TLayer>::CheckEdit(InputState const & inputState)
 {
-    // Calculate ship coordinates
-    ShipSpaceCoordinates mouseShipSpaceCoordinates = mView.ScreenToShipSpace(inputState.MousePosition);
-
-    // Check if within ship canvas
-    if (mouseShipSpaceCoordinates.IsInSize(mModelController.GetModel().GetShipSize()))
+    if (!mEngagementData.has_value())
     {
-        ApplyEditAt(mouseShipSpaceCoordinates, MaterialPlaneType::Background);
+        // Not engaged, ignore
+        return;
     }
-}
 
-template<typename TMaterial>
-void PencilTool<TMaterial>::ApplyEditAt(
-    ShipSpaceCoordinates const & position,
-    MaterialPlaneType plane)
-{
-    // TODOTEST
-    LogMessage("TODOTEST: PencilTool::ApplyEditAt: ", position.ToString(), " plane=", static_cast<int>(plane));
-
-    std::unique_ptr<UndoEntry> undoEntry;
-
-    if constexpr (std::is_same<TMaterial, StructuralMaterial>())
+    ShipSpaceCoordinates const coords = mView.ScreenToShipSpace(inputState.MousePosition);
+    if (!coords.IsInSize(mModelController.GetModel().GetShipSize()))
     {
-        undoEntry = mModelController.StructuralRegionFill(
-            plane == MaterialPlaneType::Foreground
+        // Outside ship, ignore
+        return;
+    }
+
+    //
+    // Apply edit
+    //
+
+    if constexpr (TLayer == LayerType::Structural)
+    {
+        mModelController.StructuralRegionFill(
+            mEngagementData->Plane == MaterialPlaneType::Foreground
             ? mWorkbenchState.GetStructuralForegroundMaterial()
             : mWorkbenchState.GetStructuralBackgroundMaterial(),
-            position,
+            coords,
             ShipSpaceSize(1, 1));
     }
     else
     {
-        static_assert(std::is_same<TMaterial, ElectricalMaterial>());
+        static_assert(TLayer == LayerType::Electrical);
 
-        undoEntry = mModelController.ElectricalRegionFill(
-            plane == MaterialPlaneType::Foreground
+        mModelController.ElectricalRegionFill(
+            mEngagementData->Plane == MaterialPlaneType::Foreground
             ? mWorkbenchState.GetElectricalForegroundMaterial()
             : mWorkbenchState.GetElectricalBackgroundMaterial(),
-            position,
+            coords,
             ShipSpaceSize(1, 1));
     }
 
-    // TODO: hook with undo stack
+    // Update edit region
+    mEngagementData->EditRegion.UpdateWith(coords);
 
-    // Notify we're dirty now
-    mUserInterface.OnModelDirtyChanged(mModelController.GetModel().GetIsDirty());
+    // Mark layer as dirty
+    SetLayerDirty(TLayer);
 
     // Force view refresh
     mUserInterface.RefreshView();
