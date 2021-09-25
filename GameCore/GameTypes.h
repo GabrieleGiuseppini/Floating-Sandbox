@@ -455,9 +455,9 @@ struct _IntegralRect
             size.width += origin.x - point.x;
             origin.x = point.x;
         }
-        else if (point.x > origin.x + size.width)
+        else if (point.x >= origin.x + size.width)
         {
-            size.width = point.x - origin.x;
+            size.width = point.x - origin.x + 1;
         }
 
         if (point.y < origin.y)
@@ -465,9 +465,9 @@ struct _IntegralRect
             size.height += origin.y - point.y;
             origin.y = point.y;
         }
-        else if (point.y > origin.y + size.height)
+        else if (point.y >= origin.y + size.height)
         {
-            size.height = point.y - origin.y;
+            size.height = point.y - origin.y + 1;
         }
     }
 

@@ -50,21 +50,24 @@ https://gamejolt.com/x/permalink/comment/11457002
 			+ std::uint64_t GetCost()
 			+ void Apply(Controller &)
 				+ Double-dispatch
-		= Controller::RestoreLayerBufferRegion(...) X 4:
+		+ Controller::RestoreLayerBufferRegion(...) X 4:
 			+ Invoke ModelController::StructuralRegionReplace(...)
 				+ assert model has layer
 				+ Do
 				+ Recalc derived
 			+ Mark layer as dirty
 			+ Notify IUserInterface of dirtyness
-			- Double-check the one-off at undo->restore
-			- Do other layers as well
+		- See if need to fill-in mouse pointer jumps
+		- Tool settings: size
+			- Passing to ModelController is almost all done; it's the preview that we need to figure out: do we want a preview?
+				- May be we say that the Pencil tool has no size, and the Brush tool has a size instead?
 	- Line tool
 		- Previews (*)
 	- Eraser tool
 	- Strategy for other tools' enums - to make it work for now
 
 - Washout background
+	- And, do we want some shading around ShipSpace canvas?
 
 - See if GameTypes::MaterialLayerType is still needed
 
@@ -96,11 +99,11 @@ https://gamejolt.com/x/permalink/comment/11457002
 		- If OK:
 			- Invoke private SaveShip(selected filename)
 		
-	- DoNewShip:
-		- TODO
-	- DoLoadShip:
-		- TODO
-		- Store filename as mCurrentFilename
+	= DoNewShip:
+		+ Do
+	= DoLoadShip:
+		+ Do
+		+ Store filename as mCurrentFilename
 	- DoSaveShip:
 		- TODO
 		- Store filename as mCurrentFilename
@@ -312,8 +315,7 @@ https://gamejolt.com/x/permalink/comment/11457002
 		- Rectangle
 			- Settings: FillWithFore|FillWithBack|NoFill; Size
 		- Ellipses
-		- Translate
-		- Mass changer
+		- Translate (aka move)
 	- SelectionManager pseudo-tool:
 		- Maintains current selection
 		- Not really a tool but a pseudo-tool
