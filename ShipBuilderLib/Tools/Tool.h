@@ -53,7 +53,6 @@ public:
     virtual void OnRightMouseUp(InputState const & inputState) = 0;
     virtual void OnShiftKeyDown(InputState const & inputState) = 0;
     virtual void OnShiftKeyUp(InputState const & inputState) = 0;
-    virtual void OnMouseOut(InputState const & inputState) = 0;
 
 protected:
 

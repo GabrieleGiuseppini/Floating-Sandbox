@@ -12,7 +12,7 @@ https://gamejolt.com/x/permalink/comment/11457002
 
 
 = Click-And-Draw use case:
-	- Pencil tool (*)
+	= Pencil tool (*)
 		+ UndoStack.h/cpp, w/IUndoEntry interface w/UndoEntryType enum
 		+ Controller: forward mouse events to tool
 		+ View:
@@ -35,7 +35,7 @@ https://gamejolt.com/x/permalink/comment/11457002
 					X Then release mouse
 					X Then set Model::StructuralLayer as dirty
 			+ ModelController::XXXRegionFill does not return UndoEntry anymore
-		- See if OnMouseOut at Tool is really needed
+		+ See if OnMouseOut at Tool is really needed
 		- Hook UndoEntry to UndoStack
 		- Undo stack: owned by Controller, given to Tool
 			- Tool's action writes into UndoStack and invokes IUserInterface notification

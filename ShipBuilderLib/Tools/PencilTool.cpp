@@ -98,12 +98,6 @@ void PencilTool<TLayer>::OnRightMouseUp(InputState const & /*inputState*/)
     CheckEndEngagement();
 }
 
-template<LayerType TLayer>
-void PencilTool<TLayer>::OnMouseOut(InputState const & /*inputState*/)
-{
-    CheckEndEngagement();
-}
-
 //////////////////////////////////////////////////////////////////////////////
 
 template<LayerType TLayer>

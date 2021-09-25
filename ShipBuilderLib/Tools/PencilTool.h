@@ -42,7 +42,6 @@ protected:
     void OnRightMouseUp(InputState const & inputState) override;
     void OnShiftKeyDown(InputState const & /*inputState*/) override {}
     void OnShiftKeyUp(InputState const & /*inputState*/) override {}
-    void OnMouseOut(InputState const & inputState) override;
 
 private:
 
