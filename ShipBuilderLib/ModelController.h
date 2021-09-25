@@ -10,6 +10,7 @@
 #include "View.h"
 
 #include <Game/Materials.h>
+#include <Game/ShipDefinition.h>
 
 #include <GameCore/GameTypes.h>
 
@@ -27,10 +28,11 @@ public:
 
     static std::unique_ptr<ModelController> CreateNew(
         ShipSpaceSize const & shipSpaceSize,
+        std::string const & shipName,
         View & view);
 
     static std::unique_ptr<ModelController> CreateForShip(
-        /* TODO: loaded ship ,*/
+        ShipDefinition && shipDefinition,
         View & view);
 
     void SetLayerDirty(LayerType layer)
@@ -52,8 +54,7 @@ public:
 
     void StructuralRegionFill(
         StructuralMaterial const * material,
-        ShipSpaceCoordinates const & origin,
-        ShipSpaceSize const & size);
+        ShipSpaceRect const & region);
 
     void StructuralRegionReplace(
         StructuralLayerBuffer const & layerBufferRegion,
@@ -69,8 +70,7 @@ public:
 
     void ElectricalRegionFill(
         ElectricalMaterial const * material,
-        ShipSpaceCoordinates const & origin,
-        ShipSpaceSize const & size);
+        ShipSpaceRect const & region);
 
     void ElectricalRegionReplace(
         ElectricalLayerBuffer const & layerBufferRegion,
@@ -100,8 +100,12 @@ public:
 private:
 
     ModelController(
-        ShipSpaceSize const & shipSpaceSize,
+        Model && model,
         View & view);
+
+    static void RepopulateDerivedStructuralData(
+        Model & model,
+        ShipSpaceRect const & region);
 
     void UploadStructuralLayerToView();
 

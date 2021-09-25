@@ -25,7 +25,9 @@ public:
     std::unique_ptr<TElement[]> Data;
 
     Buffer2D(size_type size)
-        : Buffer2D(size, TElement())
+        : Buffer2D(
+            size,
+            TElement())
     {
     }
 
@@ -36,6 +38,16 @@ public:
             size.width,
             size.height,
             defaultValue)
+    {
+    }
+
+    Buffer2D(
+        int width,
+        int height)
+        : Buffer2D(
+            width,
+            height,
+            TElement())
     {
     }
 
@@ -92,6 +104,21 @@ public:
         return mLinearSize * sizeof(TElement);
     }
 
+    TElement & operator[](coordinates_type const & index)
+    {
+        return const_cast<TElement &>((static_cast<Buffer2D const &>(*this))[index]);
+    }
+
+    TElement const & operator[](coordinates_type const & index) const
+    {
+        assert(index.IsInSize(Size));
+
+        size_t const linearIndex = index.y * Size.width + index.x;
+        assert(linearIndex < mLinearSize);
+
+        return Data[linearIndex];
+    }
+
     std::unique_ptr<Buffer2D> MakeCopy() const
     {
         auto newData = std::make_unique<TElement[]>(mLinearSize);
@@ -121,19 +148,23 @@ public:
             std::move(newData));
     }
 
-    TElement & operator[](coordinates_type const & index)
+    void Blit(
+        Buffer2D const & sourceRegion,
+        _IntegralCoordinates<TIntegralTag> const & origin)
     {
-        return const_cast<TElement &>((static_cast<Buffer2D const &>(*this))[index]);
-    }
+        assert(origin.x + sourceRegion.Size.width <= Size.width);
+        assert(origin.y + sourceRegion.Size.height <= Size.height);
 
-    TElement const & operator[](coordinates_type const & index) const
-    {
-        assert(index.IsInSize(Size));
+        for (int sourceY = 0; sourceY < sourceRegion.Size.height; ++sourceY)
+        {
+            int const sourceLinearIndex = sourceY * sourceRegion.Size.width;
+            int const targetLinearIndex = (origin.y + sourceY) * Size.width + origin.x;
 
-        size_t const linearIndex = index.y * Size.width + index.x;
-        assert(linearIndex < mLinearSize);
-
-        return Data[linearIndex];
+            std::memcpy(
+                Data.get() + targetLinearIndex,
+                sourceRegion.Data.get() + sourceLinearIndex,
+                sourceRegion.Size.width * sizeof(TElement));
+        }
     }
 
 private:

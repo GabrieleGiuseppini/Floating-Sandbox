@@ -16,9 +16,11 @@
 
 #include <Game/LayerBuffers.h>
 #include <Game/ResourceLocator.h>
+#include <Game/ShipDefinition.h>
 
 #include <memory>
 #include <optional>
+#include <string>
 
 namespace ShipBuilder {
 
@@ -42,13 +44,14 @@ class Controller
 public:
 
     static std::unique_ptr<Controller> CreateNew(
+        std::string const & shipName,
         View & view,
         WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         ResourceLocator const & resourceLocator);
 
     static std::unique_ptr<Controller> CreateForShip(
-        /* TODO: loaded ship ,*/
+        ShipDefinition && shipDefinition,
         View & view,
         WorkbenchState & workbenchState,
         IUserInterface & userInterface,

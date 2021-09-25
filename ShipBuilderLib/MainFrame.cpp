@@ -11,6 +11,7 @@
 #include <GameOpenGL/GameOpenGL.h>
 
 #include <Game/ImageFileTools.h>
+#include <Game/ShipDeSerializer.h>
 
 #include <UILib/BitmapButton.h>
 #include <UILib/BitmapToggleButton.h>
@@ -429,7 +430,8 @@ MainFrame::MainFrame(
 void MainFrame::OpenForNewShip()
 {
     // New ship
-    DoNewShip();
+    // TODO: date in ship name, via static helper method
+    DoNewShip("MyShip-TODO");
 
     // Open ourselves
     Open();
@@ -461,6 +463,14 @@ void MainFrame::OnViewModelChanged()
     if (mController)
     {
         RecalculateWorkCanvasPanning();
+    }
+}
+
+void MainFrame::OnShipMetadataChanged(ShipMetadata const & shipMetadata)
+{
+    if (mController)
+    {
+        ReconciliateUIWithShipMetadata(shipMetadata);
     }
 }
 
@@ -1753,7 +1763,8 @@ void MainFrame::NewShip()
         }
     }
 
-    DoNewShip();
+    // TODO: date in ship name, via static helper method
+    DoNewShip("MyShip-TODO");
 }
 
 void MainFrame::LoadShip()
@@ -1862,17 +1873,23 @@ bool MainFrame::AskUserIfSure(wxString caption)
     return (result == wxOK);
 }
 
-void MainFrame::DoNewShip()
+void MainFrame::ShowError(std::string const & message)
 {
-    // Start with no filename
-    mCurrentShipFilePath.reset();
+    wxMessageBox(message, _("Maritime Disaster"), wxICON_ERROR);
+}
 
-    // Create controller (won't fire UI reconciliations)
+void MainFrame::DoNewShip(std::string const & shipName)
+{
+    // Initialize controller (won't fire UI reconciliations)
     mController = Controller::CreateNew(
+        shipName,
         *mView,
         mWorkbenchState,
         *this,
         mResourceLocator);
+
+    // Reset current ship filename
+    mCurrentShipFilePath.reset();
 
     // Reconciliate UI
     ReconciliateUI();
@@ -1880,22 +1897,29 @@ void MainFrame::DoNewShip()
 
 void MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
 {
-    // TODOHERE
+    try
+    {
+        // Load ship
+        ShipDefinition shipDefinition = ShipDeSerializer::LoadShip(shipFilePath, mMaterialDatabase);
 
-    // TODO: after loaded:
+        // Initialize controller with ship
+        mController = Controller::CreateForShip(
+            std::move(shipDefinition),
+            *mView,
+            mWorkbenchState,
+            *this,
+            mResourceLocator);
 
-    ////// reset mCurrentShipFilePath
+        // Remember file path
+        mCurrentShipFilePath = shipFilePath;
 
-    ////// Create controller (won't fire UI reconciliations)
-    ////mController = Controller::CreateForShip(
-    ////    /* TODO: loaded ship ,*/
-    ////    *mView,
-    ////    mWorkbenchState,
-    ////    *this,
-    ////    mResourceLocator);
-
-    // Reconciliate UI
-    ReconciliateUI();
+        // Reconciliate UI
+        ReconciliateUI();
+    }
+    catch (std::runtime_error const & exc)
+    {
+        ShowError(exc.what());
+    }
 }
 
 void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)
@@ -1933,10 +1957,19 @@ void MainFrame::RecalculateWorkCanvasPanning()
         cameraThumbSize.height); // page size  == thumb
 }
 
+void MainFrame::SetFrameTitle(std::string const & shipName, bool isDirty)
+{
+    std::string frameTitle = shipName;
+    if (isDirty)
+        frameTitle += "*";
+
+    SetTitle(frameTitle);
+}
+
 void MainFrame::ReconciliateUI()
 {
-    assert(!!mController);
-
+    assert(mController);
+    ReconciliateUIWithShipMetadata(mController->GetModelController().GetModel().GetShipMetadata());
     ReconciliateUIWithLayerPresence();
     ReconciliateUIWithShipSize(mController->GetModelController().GetModel().GetShipSize());
     ReconciliateUIWithPrimaryLayerSelection(mController->GetPrimaryLayer());
@@ -1944,6 +1977,14 @@ void MainFrame::ReconciliateUI()
     ReconciliateUIWithWorkbenchState();
     ReconciliateUIWithSelectedTool(mController->GetCurrentTool());
     ReconciliateUIWithUndoStackState();
+
+    assert(mWorkCanvas);
+    mWorkCanvas->Refresh();
+}
+
+void MainFrame::ReconciliateUIWithShipMetadata(ShipMetadata const & shipMetadata)
+{
+    SetFrameTitle(shipMetadata.ShipName, mController->GetModelController().GetModel().GetIsDirty());
 }
 
 void MainFrame::ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize)
@@ -2059,6 +2100,8 @@ void MainFrame::ReconciliateUIWithModelDirtiness()
     {
         mSaveShipAsButton->Enable(isDirty);
     }
+
+    SetFrameTitle(mController->GetModelController().GetModel().GetShipMetadata().ShipName, isDirty);
 }
 
 void MainFrame::ReconciliateUIWithWorkbenchState()

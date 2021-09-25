@@ -9,6 +9,7 @@
 
 #include <Game/LayerBuffers.h>
 #include <Game/Materials.h>
+#include <Game/ShipDefinition.h>
 
 #include <GameCore/ImageData.h>
 
@@ -16,6 +17,7 @@
 #include <array>
 #include <cassert>
 #include <memory>
+#include <string>
 
 namespace ShipBuilder {
 
@@ -62,16 +64,20 @@ public:
 
 public:
 
-    Model(ShipSpaceSize const & shipSize);
+    explicit Model(
+        ShipSpaceSize const & shipSize,
+        std::string const & shipName);
 
-    std::unique_ptr<StructuralLayerBuffer> CloneStructuralLayerBuffer() const;
+    explicit Model(ShipDefinition && shipDefinition);
+
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
+    std::unique_ptr<StructuralLayerBuffer> CloneStructuralLayerBuffer() const;
 
-    std::unique_ptr<ElectricalLayerBuffer> CloneElectricalLayerBuffer() const;
     void NewElectricalLayer();
     void SetElectricalLayer(/*TODO*/);
     void RemoveElectricalLayer();
+    std::unique_ptr<ElectricalLayerBuffer> CloneElectricalLayerBuffer() const;
 
     void NewRopesLayer();
     void SetRopesLayer(/*TODO*/);
@@ -84,6 +90,16 @@ public:
     ShipSpaceSize const & GetShipSize() const
     {
         return mShipSize;
+    }
+
+    ShipMetadata const & GetShipMetadata() const
+    {
+        return mShipMetadata;
+    }
+
+    void SetShipMetadata(ShipMetadata const & shipMetadata)
+    {
+        mShipMetadata = shipMetadata;
     }
 
     bool HasLayer(LayerType layer) const
@@ -159,11 +175,15 @@ public:
 
 private:
 
-    void MakeNewStructuralLayer(ShipSpaceSize const & size);
+    static std::unique_ptr<StructuralLayerBuffer> MakeNewStructuralLayer(ShipSpaceSize const & shipSize);
+
+    void InitializeDerivedStructuralData();
 
 private:
 
     ShipSpaceSize mShipSize;
+
+    ShipMetadata mShipMetadata;
 
     //
     // Structural Layer

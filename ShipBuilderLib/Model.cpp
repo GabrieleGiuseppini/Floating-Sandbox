@@ -9,28 +9,43 @@
 
 namespace ShipBuilder {
 
-Model::Model(ShipSpaceSize const & shipSize)
+Model::Model(
+    ShipSpaceSize const & shipSize,
+    std::string const & shipName)
     : mShipSize(shipSize)
-    , mStructuralLayerBuffer()
+    , mShipMetadata(shipName)
+    , mStructuralLayerBuffer(MakeNewStructuralLayer(mShipSize))
+    // TODO: other layers
     , mDirtyState()
 {
-    // Initialize structural layer
-    MakeNewStructuralLayer(mShipSize);
+    // Initialize derived structural data
+    InitializeDerivedStructuralData();
 
     // Initialize presence map
     mLayerPresenceMap.fill(false);
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
 }
 
-std::unique_ptr<StructuralLayerBuffer> Model::CloneStructuralLayerBuffer() const
+Model::Model(ShipDefinition && shipDefinition)
+    : mShipSize(shipDefinition.Size)
+    , mShipMetadata(shipDefinition.Metadata)
+    , mStructuralLayerBuffer(new StructuralLayerBuffer(std::move(shipDefinition.StructuralLayer)))
+    // TODO: other layers
+    , mDirtyState()
 {
-    assert(mStructuralLayerBuffer);
-    return mStructuralLayerBuffer->MakeCopy();
+    // Initialize derived structural data
+    InitializeDerivedStructuralData();
+
+    // Initialize presence map
+    mLayerPresenceMap.fill(false);
+    mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
 }
 
 void Model::NewStructuralLayer()
 {
-    MakeNewStructuralLayer(mShipSize);
+    // Reset layer
+    mStructuralLayerBuffer = MakeNewStructuralLayer(mShipSize);
+    InitializeDerivedStructuralData();
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
@@ -41,12 +56,10 @@ void Model::SetStructuralLayer(/*TODO*/)
     // TODO
 }
 
-std::unique_ptr<ElectricalLayerBuffer> Model::CloneElectricalLayerBuffer() const
+std::unique_ptr<StructuralLayerBuffer> Model::CloneStructuralLayerBuffer() const
 {
-    // TODO
-    return nullptr;
-    ////assert(mElectricalLayerBuffer);
-    ////return mElectricalLayerBuffer->MakeCopy();
+    assert(mStructuralLayerBuffer);
+    return mStructuralLayerBuffer->MakeCopy();
 }
 
 void Model::NewElectricalLayer()
@@ -68,6 +81,14 @@ void Model::RemoveElectricalLayer()
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = false;
+}
+
+std::unique_ptr<ElectricalLayerBuffer> Model::CloneElectricalLayerBuffer() const
+{
+    // TODO
+    return nullptr;
+    ////assert(mElectricalLayerBuffer);
+    ////return mElectricalLayerBuffer->MakeCopy();
 }
 
 void Model::NewRopesLayer()
@@ -114,35 +135,16 @@ void Model::RemoveTextureLayer()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Model::MakeNewStructuralLayer(ShipSpaceSize const & size)
+std::unique_ptr<StructuralLayerBuffer> Model::MakeNewStructuralLayer(ShipSpaceSize const & shipSize)
 {
-    mStructuralLayerBuffer = std::make_unique<StructuralLayerBuffer>(
-        size,
+    return std::make_unique<StructuralLayerBuffer>(
+        shipSize,
         StructuralElement(nullptr)); // No material
+}
 
-    mStructuralRenderColorTexture = std::make_unique<RgbaImageData>(
-        size.width,
-        size.height,
-        rgbaColor(MaterialDatabase::EmptyMaterialColorKey, 255));
-
-    // TODOTEST: initializing with checker pattern
-    for (int y = 0; y < size.height; ++y)
-    {
-        for (int x = 0; x < size.width; ++x)
-        {
-            rgbaColor color;
-            if (x == 0 || x == size.width - 1 || y == 0 || y == size.height - 1)
-                color = rgbaColor(0, 0, 255, 255);
-            else
-                color = rgbaColor(
-                    ((x + y) % 2) ? 255 : 0,
-                    ((x + y) % 2) ? 0 : 255,
-                    0,
-                    255);
-
-            (*mStructuralRenderColorTexture)[ImageCoordinates(x, y)] = color;
-        }
-    }
+void Model::InitializeDerivedStructuralData()
+{
+    mStructuralRenderColorTexture = std::make_unique<RgbaImageData>(mShipSize.width, mShipSize.height);
 }
 
 }

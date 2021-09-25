@@ -37,31 +37,34 @@ https://gamejolt.com/x/permalink/comment/11457002
 					X Then set Model::StructuralLayer as dirty
 			+ ModelController::XXXRegionFill does not return UndoEntry anymore
 		+ See if OnMouseOut at Tool is really needed
-		= Undo stack:
+		+ Undo stack:
 			+ Owned by Controller, given to Tool
 			+ Tool's action writes into UndoStack and invokes IUserInterface notification
 			+ IUserInterface notification: Undo menu item
 			+ MainFrame: on Undo, call into Controller::Undo()
-			= Controller::Undo:
-				= Calls UndoAction::Apply(this)
-				= Restores dirty state
+			+ Controller::Undo:
+				+ Calls UndoAction::Apply(this)
+				+ Restores dirty state
 		+ UndoEntry exposes:
 			+ string GetTitle()
 			+ std::uint64_t GetCost()
 			+ void Apply(Controller &)
 				+ Double-dispatch
-		- Controller::RestoreLayerBufferRegion(...) X 4:
-			= Invoke ModelController::StructuralRegionReplace(...)
+		= Controller::RestoreLayerBufferRegion(...) X 4:
+			+ Invoke ModelController::StructuralRegionReplace(...)
 				+ assert model has layer
-				- Do
-				- Recalc derived
-			- Mark layer as dirty (**)
-			= Notify IUserInterface of dirtyness
+				+ Do
+				+ Recalc derived
+			+ Mark layer as dirty
+			+ Notify IUserInterface of dirtyness
+			- Double-check the one-off at undo->restore
 			- Do other layers as well
 	- Line tool
 		- Previews (*)
 	- Eraser tool
 	- Strategy for other tools' enums - to make it work for now
+
+- Washout background
 
 - See if GameTypes::MaterialLayerType is still needed
 

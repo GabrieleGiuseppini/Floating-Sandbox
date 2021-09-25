@@ -12,6 +12,7 @@
 namespace ShipBuilder {
 
 std::unique_ptr<Controller> Controller::CreateNew(
+    std::string const & shipName,
     View & view,
     WorkbenchState & workbenchState,
     IUserInterface & userInterface,
@@ -19,6 +20,7 @@ std::unique_ptr<Controller> Controller::CreateNew(
 {
     auto modelController = ModelController::CreateNew(
         ShipSpaceSize(400, 200), // TODO: from preferences
+        shipName,
         view);
 
     std::unique_ptr<Controller> controller = std::unique_ptr<Controller>(
@@ -33,14 +35,14 @@ std::unique_ptr<Controller> Controller::CreateNew(
 }
 
 std::unique_ptr<Controller> Controller::CreateForShip(
-    /* TODO: loaded ship ,*/
+    ShipDefinition && shipDefinition,
     View & view,
     WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     ResourceLocator const & resourceLocator)
 {
     auto modelController = ModelController::CreateForShip(
-        /* TODO: loaded ship ,*/
+        std::move(shipDefinition),
         view);
 
     std::unique_ptr<Controller> controller = std::unique_ptr<Controller>(
@@ -315,6 +317,9 @@ void Controller::Undo()
 
     // Update undo state
     mUserInterface.OnUndoStackStateChanged();
+
+    // Force view refresh
+    mUserInterface.RefreshView();
 }
 
 void Controller::AddZoom(int deltaZoom)

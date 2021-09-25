@@ -75,6 +75,8 @@ public:
 
     void OnViewModelChanged() override;
 
+    void OnShipMetadataChanged(ShipMetadata const & shipMetadata) override;
+
     void OnShipSizeChanged(ShipSpaceSize const & shipSize) override;
 
     void OnLayerPresenceChanged() override;
@@ -163,7 +165,9 @@ private:
 
     bool AskUserIfSure(wxString caption);
 
-    void DoNewShip();
+    void ShowError(std::string const & message);
+
+    void DoNewShip(std::string const & shipName);
 
     void DoLoadShip(std::filesystem::path const & shipFilePath);
 
@@ -171,11 +175,15 @@ private:
 
     void RecalculateWorkCanvasPanning();
 
+    void SetFrameTitle(std::string const & shipName, bool isDirty);
+
     //
     // UI Consistency
     //
 
     void ReconciliateUI();
+
+    void ReconciliateUIWithShipMetadata(ShipMetadata const & shipMetadata);
 
     void ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize);
 

@@ -13,30 +13,36 @@ namespace ShipBuilder {
 
 std::unique_ptr<ModelController> ModelController::CreateNew(
     ShipSpaceSize const & shipSpaceSize,
+    std::string const & shipName,
     View & view)
 {
+    Model model = Model(shipSpaceSize, shipName);
+    RepopulateDerivedStructuralData(model, { ShipSpaceCoordinates(0, 0), model.GetShipSize() });
+
     return std::unique_ptr<ModelController>(
         new ModelController(
-            shipSpaceSize,
+            std::move(model),
             view));
 }
 
 std::unique_ptr<ModelController> ModelController::CreateForShip(
-    /* TODO: loaded ship ,*/
+    ShipDefinition && shipDefinition,
     View & view)
 {
-    // TODOHERE
+    Model model = Model(std::move(shipDefinition));
+    RepopulateDerivedStructuralData(model, { ShipSpaceCoordinates(0, 0), model.GetShipSize() });
+
     return std::unique_ptr<ModelController>(
         new ModelController(
-            ShipSpaceSize(400, 200),
+            std::move(model),
             view));
 }
 
 ModelController::ModelController(
-    ShipSpaceSize const & shipSpaceSize,
+    Model && model,
     View & view)
     : mView(view)
-    , mModel(shipSpaceSize)
+    , mModel(std::move(model))
 {
     // Model is not dirty now
     assert(!mModel.GetIsDirty());
@@ -67,37 +73,37 @@ void ModelController::SetStructuralLayer(/*TODO*/)
 
 void ModelController::StructuralRegionFill(
     StructuralMaterial const * material,
-    ShipSpaceCoordinates const & origin,
-    ShipSpaceSize const & size)
+    ShipSpaceRect const & region)
 {
     assert(mModel.HasLayer(LayerType::Structural));
 
+    //
+    // Update model
+    //
+
     StructuralLayerBuffer & structuralLayerBuffer = mModel.GetStructuralLayerBuffer();
-    RgbaImageData & structuralRenderColorTexture = mModel.GetStructuralRenderColorTexture();
 
-    rgbaColor const renderColor = material != nullptr
-        ? rgbaColor(material->RenderColor, 255)
-        : rgbaColor(MaterialDatabase::EmptyMaterialColorKey, 255);
-
-    for (int y = origin.y; y < origin.y + size.height; ++y)
+    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
     {
-        for (int x = origin.x; x < origin.x + size.width; ++x)
+        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
         {
             structuralLayerBuffer[ShipSpaceCoordinates(x, y)].Material = material;
-            structuralRenderColorTexture[ImageCoordinates(x, y)] = renderColor;
         }
     }
+
+    // Update derived data
+    RepopulateDerivedStructuralData(mModel, region);
 
     //
     // Update view
     //
 
-    if (size.height == 1)
+    if (region.size.height == 1)
     {
         // Just one row - upload partial
         UploadStructuralLayerRowToView(
-            origin,
-            size.width);
+            region.origin,
+            region.size.width);
     }
     else
     {
@@ -112,7 +118,24 @@ void ModelController::StructuralRegionReplace(
 {
     assert(mModel.HasLayer(LayerType::Structural));
 
-    // TODOHERE
+    //
+    // Update model
+    //
+
+    mModel.GetStructuralLayerBuffer().Blit(
+        layerBufferRegion,
+        origin);
+
+    // Update derived data
+    RepopulateDerivedStructuralData(
+        mModel,
+        { origin, layerBufferRegion.Size });
+
+    //
+    // Update view
+    //
+
+    UploadStructuralLayerToView();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -146,8 +169,7 @@ void ModelController::RemoveElectricalLayer()
 
 void ModelController::ElectricalRegionFill(
     ElectricalMaterial const * material,
-    ShipSpaceCoordinates const & origin,
-    ShipSpaceSize const & size)
+    ShipSpaceRect const & region)
 {
     // TODOHERE - copy from Structural
 }
@@ -220,6 +242,47 @@ void ModelController::RemoveTextureLayer()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ModelController::RepopulateDerivedStructuralData(
+    Model & model,
+    ShipSpaceRect const & region)
+{
+    rgbaColor const emptyColor = rgbaColor(MaterialDatabase::EmptyMaterialColorKey, 255);
+
+    StructuralLayerBuffer const & structuralLayerBuffer = model.GetStructuralLayerBuffer();
+    RgbaImageData & structuralRenderColorTexture = model.GetStructuralRenderColorTexture();
+
+    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
+    {
+        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
+        {
+            auto const structuralMaterial = structuralLayerBuffer[{x, y}].Material;
+
+            structuralRenderColorTexture[{x, y}] = structuralMaterial != nullptr
+                ? rgbaColor(structuralMaterial->RenderColor, 255)
+                : emptyColor;
+        }
+    }
+
+    ////// TEST: initializing with checker pattern
+    ////for (int y = 0; y < size.height; ++y)
+    ////{
+    ////    for (int x = 0; x < size.width; ++x)
+    ////    {
+    ////        rgbaColor color;
+    ////        if (x == 0 || x == size.width - 1 || y == 0 || y == size.height - 1)
+    ////            color = rgbaColor(0, 0, 255, 255);
+    ////        else
+    ////            color = rgbaColor(
+    ////                ((x + y) % 2) ? 255 : 0,
+    ////                ((x + y) % 2) ? 0 : 255,
+    ////                0,
+    ////                255);
+
+    ////        (*mStructuralRenderColorTexture)[ImageCoordinates(x, y)] = color;
+    ////    }
+    ////}
+}
 
 void ModelController::UploadStructuralLayerToView()
 {

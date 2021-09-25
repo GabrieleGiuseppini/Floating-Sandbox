@@ -204,8 +204,7 @@ void PencilTool<TLayer>::CheckEdit(InputState const & inputState)
             mEngagementData->Plane == MaterialPlaneType::Foreground
             ? mWorkbenchState.GetStructuralForegroundMaterial()
             : mWorkbenchState.GetStructuralBackgroundMaterial(),
-            coords,
-            ShipSpaceSize(1, 1));
+            { coords, ShipSpaceSize(1, 1) });
     }
     else
     {
@@ -215,8 +214,7 @@ void PencilTool<TLayer>::CheckEdit(InputState const & inputState)
             mEngagementData->Plane == MaterialPlaneType::Foreground
             ? mWorkbenchState.GetElectricalForegroundMaterial()
             : mWorkbenchState.GetElectricalBackgroundMaterial(),
-            coords,
-            ShipSpaceSize(1, 1));
+            { coords, ShipSpaceSize(1, 1) });
     }
 
     // Update edit region
