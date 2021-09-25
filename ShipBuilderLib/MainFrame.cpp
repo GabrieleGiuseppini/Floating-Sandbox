@@ -955,21 +955,68 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                 0);
         }
 
-        // Other layers opacity slider
+        // Misc
         {
-            mOtherLayersOpacitySlider = new wxSlider(panel, wxID_ANY, (MinLayerTransparency + MaxLayerTransparency) / 2, MinLayerTransparency, MaxLayerTransparency,
-                wxDefaultPosition, wxDefaultSize, wxSL_VERTICAL | wxSL_INVERSE);
+            wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
 
-            mOtherLayersOpacitySlider->Bind(
-                wxEVT_SLIDER,
-                [this](wxCommandEvent & /*event*/)
+            // Other layers opacity slider
+            {
+                mOtherLayersOpacitySlider = new wxSlider(panel, wxID_ANY, (MinLayerTransparency + MaxLayerTransparency) / 2, MinLayerTransparency, MaxLayerTransparency,
+                    wxDefaultPosition, wxDefaultSize, wxSL_VERTICAL | wxSL_INVERSE);
+
+                mOtherLayersOpacitySlider->Bind(
+                    wxEVT_SLIDER,
+                    [this](wxCommandEvent & /*event*/)
+                    {
+                        // TODO
+                        LogMessage("Other layers opacity changed: ", mOtherLayersOpacitySlider->GetValue());
+                    });
+
+                hSizer->Add(
+                    mOtherLayersOpacitySlider,
+                    0, // Retain horizontal width
+                    wxEXPAND | wxALIGN_TOP, // Expand vertically
+                    0);
+            }
+
+            // View modifiers
+            {
+                wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+                // View grid button
                 {
-                    // TODO
-                    LogMessage("Other layers opacity changed: ", mOtherLayersOpacitySlider->GetValue());
-                });
+                    auto bitmap = WxHelpers::LoadBitmap("view_grid_button", mResourceLocator);
+                    auto viewGridButton = new wxBitmapToggleButton(panel, wxID_ANY, bitmap);
+                    auto buttonSize = bitmap.GetSize();
+                    buttonSize.IncBy(4, 4);
+                    viewGridButton->SetMaxSize(buttonSize);
+                    viewGridButton->SetToolTip(_("Enable/Disable the visual guides."));
+                    viewGridButton->Bind(
+                        wxEVT_TOGGLEBUTTON,
+                        [this, viewGridButton](wxCommandEvent & event)
+                        {
+                            assert(mController);
+                            mController->EnableVisualGrid(event.IsChecked());
+
+                            DeviateFocus();
+                        });
+
+                    vSizer->Add(
+                        viewGridButton,
+                        0, // Retain vertical width
+                        wxALIGN_CENTER_HORIZONTAL, // Do not expand vertically
+                        0);
+                }
+
+                hSizer->Add(
+                    vSizer,
+                    0, // Retain horizontal width
+                    wxEXPAND | wxALIGN_TOP, // Expand vertically
+                    0);
+            }
 
             rootVSizer->Add(
-                mOtherLayersOpacitySlider,
+                hSizer,
                 0,
                 wxALIGN_CENTER_HORIZONTAL,
                 0);
@@ -1964,6 +2011,13 @@ void MainFrame::SetFrameTitle(std::string const & shipName, bool isDirty)
         frameTitle += "*";
 
     SetTitle(frameTitle);
+}
+
+void MainFrame::DeviateFocus()
+{
+    // Set focus on primary layer buttn
+    uint32_t const iPrimaryLayer = static_cast<uint32_t>(mController->GetPrimaryLayer());
+    mLayerSelectButtons[iPrimaryLayer]->SetFocus();
 }
 
 void MainFrame::ReconciliateUI()

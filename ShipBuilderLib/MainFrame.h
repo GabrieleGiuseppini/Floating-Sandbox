@@ -177,6 +177,8 @@ private:
 
     void SetFrameTitle(std::string const & shipName, bool isDirty);
 
+    void DeviateFocus();
+
     //
     // UI Consistency
     //

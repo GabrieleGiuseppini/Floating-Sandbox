@@ -354,6 +354,11 @@ void Controller::ResetView()
     mUserInterface.RefreshView();
 }
 
+void Controller::EnableVisualGrid(bool doEnable)
+{
+    mView.EnableVisualGrid(doEnable);
+}
+
 void Controller::OnWorkCanvasResized(DisplayLogicalSize const & newSize)
 {
     mView.SetDisplayLogicalSize(newSize);

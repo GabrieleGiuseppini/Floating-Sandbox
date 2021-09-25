@@ -148,6 +148,11 @@ View::View(
     }
 }
 
+void View::EnableVisualGrid(bool doEnable)
+{
+    // TODOHERE
+}
+
 void View::UploadBackgroundTexture(RgbaImageData && texture)
 {
     //

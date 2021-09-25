@@ -109,6 +109,8 @@ public:
 
 public:
 
+    void EnableVisualGrid(bool doEnable);
+
     // Sticky, always drawn
     void UploadBackgroundTexture(RgbaImageData && texture);
 

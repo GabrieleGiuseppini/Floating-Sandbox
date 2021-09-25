@@ -103,6 +103,8 @@ public:
     void SetCamera(int camX, int camY);
     void ResetView();
 
+    void EnableVisualGrid(bool doEnable);
+
     void OnWorkCanvasResized(DisplayLogicalSize const & newSize);
 
     void OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition);
