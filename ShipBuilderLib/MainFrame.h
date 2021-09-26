@@ -102,8 +102,8 @@ public:
 private:
 
     wxPanel * CreateFilePanel(wxWindow * parent);
+    wxPanel * CreateShipSettingsPanel(wxWindow * parent);
     wxPanel * CreateToolSettingsPanel(wxWindow * parent);
-    wxPanel * CreateGamePanel(wxWindow * parent);
     wxPanel * CreateLayersPanel(wxWindow * parent);
     wxPanel * CreateToolbarPanel(wxWindow * parent);
     wxPanel * CreateWorkPanel(wxWindow * parent);

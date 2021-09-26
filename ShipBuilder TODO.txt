@@ -1,4 +1,5 @@
 https://gamejolt.com/x/permalink/comment/11457002
+https://gamejolt.com/x/permalink/comment/11511458
 
 + Undo
 	+ Hierarchy: there are four subtypes of UndoEditAction - for each of the "layer buffer" types - on top of e.g. "resize" and "all layers"
@@ -19,6 +20,56 @@ https://gamejolt.com/x/permalink/comment/11457002
 	+ Controller->View
 	+ View takes it in cctor
 	+ Shader
+
++ Toolbar rearc:
+	+ File panel
+	+ Ship settings panel
+		+ Resize
+		+ Ship metadata
+	+ Tool settings panel
+	+ Check in-game
+
+= New/Load/Save Ship
+	- Move ShipLoadDialog/etc. under UILib
+	+ New
+		+ UI: menu + button
+		+ Always enabled
+		+ Asks user if model dirty
+		+ Invoke DoNewShip()
+	= Load
+		+ UI: menu + button
+		+ Always enabled
+		+ Asks user if model dirty
+		- Open file load dialog
+			- .png, .shp, .shp2
+		- If OK: invoke DoLoadShip(selected filename)
+	+ Save:
+		+ UI: menu + button 
+		+ Only enabled when dirty
+		+ if !mCurrentFilename: invokes SaveAs(); else: invokes private SaveShip(mCurrentFilename)
+	= SaveAs:
+		+ UI: menu + button
+		+ Only enabled when dirty
+		- Open file save dialog
+			- .shp2
+			- .png, if only structural (for now, as long as we don't lose information like now)
+				- Same as StructuralLayer export
+		- If OK:
+			- Invoke private SaveShip(selected filename)
+		
+	= DoNewShip:
+		+ Do
+	= DoLoadShip:
+		+ Do
+		+ Store filename as mCurrentFilename
+	- DoSaveShip:
+		- If saving to .png and there's anything more than just structural (metadata, layers, etc.) that would get lost, ask user if sure
+		- ShipDeSerializer:
+			- SaveStructuralLayerImage(StructuralLayerBuffer const &, ...)
+			- Save(ShipDefinition const &)
+		- Store filename as mCurrentFilename
+
+
 
 = Click-And-Draw use case:
 	= Pencil tool (*)
@@ -88,45 +139,6 @@ https://gamejolt.com/x/permalink/comment/11457002
 
 - Do we want some shading around ShipSpace canvas?
 
-= New/Load/Save Ship
-	- Move ShipLoadDialog/etc. under UILib
-	+ New
-		+ UI: menu + button
-		+ Always enabled
-		+ Asks user if model dirty
-		+ Invoke DoNewShip()
-	= Load
-		+ UI: menu + button
-		+ Always enabled
-		+ Asks user if model dirty
-		- Open file load dialog
-			- .png, .shp, .shp2
-		- If OK: invoke DoLoadShip(selected filename)
-	+ Save:
-		+ UI: menu + button 
-		+ Only enabled when dirty
-		+ if !mCurrentFilename: invokes SaveAs(); else: invokes private SaveShip(mCurrentFilename)
-	= SaveAs:
-		+ UI: menu + button
-		+ Only enabled when dirty
-		- Open file save dialog
-			- .shp2
-			- .png, if only structural (for now, as long as we don't lose information like now)
-				- Same as StructuralLayer export
-		- If OK:
-			- Invoke private SaveShip(selected filename)
-		
-	= DoNewShip:
-		+ Do
-	= DoLoadShip:
-		+ Do
-		+ Store filename as mCurrentFilename
-	- DoSaveShip:
-		- ShipDeSerializer:
-			- SaveStructuralLayerImage(StructuralLayerBuffer const &, ...)
-			- Save(ShipDefinition const &)
-		- Store filename as mCurrentFilename
-
 - Build on Ubuntu
 
 - Previews:
@@ -155,9 +167,8 @@ https://gamejolt.com/x/permalink/comment/11457002
 		- TODOHERE
 
 - Resize workflow:
-	- Button - in File panel, slightly separated from the File buttons
+	+ Button - in Ship Settings panel, slightly separated from the File buttons
 	- Click -> Dialog for Canvas Centering/Clipping -> Controller -> ...TODO...
-	- TODO: should we move the "X-and-back-to-game" buttons to the File panel as well, nuking that rightmost panel?
 
 - Import/Export:
 	- Structural:

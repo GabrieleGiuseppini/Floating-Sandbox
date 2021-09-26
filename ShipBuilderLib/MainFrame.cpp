@@ -88,7 +88,7 @@ MainFrame::MainFrame(
     //
     // Setup main frame
     //
-    // Row 0: [File Panel] [Tool Settings] [Game Panel]
+    // Row 0: [File Panel] [Ship Settings] [Tool Settings]
     // Row 1: [Layers Panel]  |  [Work Canvas]
     //        [Toolbar Panel] |
     // Row 2: [           Status Bar                  ]
@@ -112,7 +112,38 @@ MainFrame::MainFrame(
                 0);
         }
 
-        row0HSizer->AddStretchSpacer(1);
+        // Spacer
+        {
+            wxStaticLine * vLine = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL);
+
+            row0HSizer->Add(
+                vLine,
+                0,
+                wxEXPAND | wxLEFT | wxRIGHT,
+                2 * ButtonMargin);
+        }
+
+        // Ship settings panel
+        {
+            wxPanel * shipSettingsPanel = CreateShipSettingsPanel(mMainPanel);
+
+            row0HSizer->Add(
+                shipSettingsPanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+        }
+
+        // Spacer
+        {
+            wxStaticLine * vLine = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL);
+
+            row0HSizer->Add(
+                vLine,
+                0,
+                wxEXPAND | wxLEFT | wxRIGHT,
+                2 * ButtonMargin);
+        }
 
         // Tool settings panel
         {
@@ -120,19 +151,6 @@ MainFrame::MainFrame(
 
             row0HSizer->Add(
                 toolSettingsPanel,
-                0,
-                wxALIGN_CENTER_VERTICAL,
-                0);
-        }
-
-        row0HSizer->AddStretchSpacer(1);
-
-        // Game panel
-        {
-            wxPanel * gamePanel = CreateGamePanel(mMainPanel);
-
-            row0HSizer->Add(
-                gamePanel,
                 0,
                 wxALIGN_CENTER_VERTICAL,
                 0);
@@ -638,6 +656,77 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
 
             sizer->Add(mSaveShipAsButton, 0, wxALL, ButtonMargin);
         }
+
+        // Save and return to game
+        if (!IsStandAlone())
+        {
+            auto saveAndReturnToGameButton = new BitmapButton(
+                panel,
+                mResourceLocator.GetIconFilePath("save_and_return_to_game_button"),
+                [this]()
+                {
+                    SaveAndSwitchBackToGame();
+                },
+                _("Save the current ship and return to the simulator"));
+
+            sizer->Add(saveAndReturnToGameButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, ButtonMargin);
+        }
+
+        // Quit and return to game
+        if (!IsStandAlone())
+        {
+            auto quitAndReturnToGameButton = new BitmapButton(
+                panel,
+                mResourceLocator.GetIconFilePath("quit_and_return_to_game_button"),
+                [this]()
+                {
+                    QuitAndSwitchBackToGame();
+                },
+                _("Discard the current ship and return to the simulator"));
+
+            sizer->Add(quitAndReturnToGameButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, ButtonMargin);
+        }
+    }
+
+    panel->SetSizerAndFit(sizer);
+
+    return panel;
+}
+
+wxPanel * MainFrame::CreateShipSettingsPanel(wxWindow * parent)
+{
+    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+    wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
+
+    {
+        // Resize button
+        {
+            auto button = new BitmapButton(
+                panel,
+                mResourceLocator.GetIconFilePath("resize_button"),
+                [this]()
+                {
+                    // TODOHERE
+                },
+                _("Change the size of the ship canvas"));
+
+            sizer->Add(button, 0, wxALL, ButtonMargin);
+        }
+
+        // Metadata button
+        {
+            auto button = new BitmapButton(
+                panel,
+                mResourceLocator.GetIconFilePath("metadata_button"),
+                [this]()
+                {
+                    // TODOHERE
+                },
+                _("Edit the ship properties"));
+
+            sizer->Add(button, 0, wxALL, ButtonMargin);
+        }
     }
 
     panel->SetSizerAndFit(sizer);
@@ -665,47 +754,6 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
         {
             wxButton * button = new wxButton(panel, wxID_ANY, "Settings");
             sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
-        }
-    }
-
-    panel->SetSizerAndFit(sizer);
-
-    return panel;
-}
-
-wxPanel * MainFrame::CreateGamePanel(wxWindow * parent)
-{
-    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-
-    wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
-
-    {
-        if (!IsStandAlone())
-        {
-            auto saveAndReturnToGameButton = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("save_and_return_to_game_button"),
-                [this]()
-                {
-                    SaveAndSwitchBackToGame();
-                },
-                _("Save the current ship and return to the simulator"));
-
-            sizer->Add(saveAndReturnToGameButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, ButtonMargin);
-        }
-
-        if (!IsStandAlone())
-        {
-            auto quitAndReturnToGameButton = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("quit_and_return_to_game_button"),
-                [this]()
-                {
-                    QuitAndSwitchBackToGame();
-                },
-                _("Discard the current ship and return to the simulator"));
-
-            sizer->Add(quitAndReturnToGameButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, ButtonMargin);
         }
     }
 
@@ -1693,15 +1741,6 @@ void MainFrame::OnSaveAndGoBack(wxCommandEvent & /*event*/)
 
 void MainFrame::OnQuitAndGoBack(wxCommandEvent & /*event*/)
 {
-    if (mController->GetModelController().GetModel().GetIsDirty())
-    {
-        // Ask user if they really want
-        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
-        {
-            return;
-        }
-    }
-
     QuitAndSwitchBackToGame();
 }
 
@@ -1866,6 +1905,15 @@ void MainFrame::SaveAndSwitchBackToGame()
 
 void MainFrame::QuitAndSwitchBackToGame()
 {
+    if (mController->GetModelController().GetModel().GetIsDirty())
+    {
+        // Ask user if they really want
+        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
+        {
+            return;
+        }
+    }
+
     SwitchBackToGame(std::nullopt);
 }
 
