@@ -60,10 +60,11 @@ https://gamejolt.com/x/permalink/comment/11511458
 	= SaveAs:
 		+ UI: menu + button
 		+ Only enabled when dirty
-		- Open file save dialog
-			- .shp2
-		- If OK:
-			- Invoke private SaveShip(selected filename)
+		= Open file save dialog for .shp2
+			- TODO: we have an issue: different goals, same dialog instance
+			- TODO: associate file extensions: get them from ShipDeSerializer
+		+ If OK:
+			+ Invoke private SaveShip(selected filename)
 		
 	= DoNewShip:
 		+ Do

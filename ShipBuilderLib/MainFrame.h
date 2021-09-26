@@ -8,6 +8,7 @@
 #include "Controller.h"
 #include "IUserInterface.h"
 #include "MaterialPalette.h"
+#include "SaveShipDialog.h"
 #include "StatusBar.h"
 #include "View.h"
 #include "WorkbenchState.h"
@@ -272,6 +273,7 @@ private:
     // Dialogs
     //
 
+    std::unique_ptr<SaveShipDialog> mSaveShipDialog;
     std::unique_ptr<LoggingDialog> mLoggingDialog;
 
     //

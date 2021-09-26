@@ -317,7 +317,7 @@ MainFrame::MainFrame(
         }
 
         {
-            mSaveShipAsMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship As"), _("Save the current ship in a different file"), wxITEM_NORMAL);
+            mSaveShipAsMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship As"), _("Save the current ship to a different file"), wxITEM_NORMAL);
             fileMenu->Append(mSaveShipAsMenuItem);
             Connect(mSaveShipAsMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveShipAs);
         }
@@ -652,7 +652,7 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
                 {
                     SaveShipAs();
                 },
-                _("Save the current ship in a different file"));
+                _("Save the current ship to a different file"));
 
             sizer->Add(mSaveShipAsButton, 0, wxALL, ButtonMargin);
         }
@@ -1885,11 +1885,26 @@ bool MainFrame::SaveShip()
 
 bool MainFrame::SaveShipAs()
 {
-    // TODOHERE:
-    ////- Open file save dialog
-    ////    - If OK : DoSaveShip(selected filename); return true;
-    ////    - Else  : return false;
-    return false;
+    // Open ship save dialog
+    if (!mSaveShipDialog)
+    {
+        mSaveShipDialog = std::make_unique<SaveShipDialog>(
+            this,
+            mController->GetModelController().GetModel().GetShipMetadata().ShipName,
+            SaveShipDialog::SaveGoalType::FullShip);
+    }
+
+    auto const res = mSaveShipDialog->ShowModal();
+    if (res == wxID_CANCEL)
+    {
+        // Nothing to do
+        return false;
+    }
+
+    // Save ship
+    auto const shipFilePath = std::filesystem::path(mSaveShipDialog->GetPath().ToStdString());
+    DoSaveShip(shipFilePath);
+    return true;
 }
 
 void MainFrame::SaveAndSwitchBackToGame()
