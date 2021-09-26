@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "UnhandledExceptionHandler.h"
 
-#include "StandardSystemPaths.h"
+#include <UILib/StandardSystemPaths.h>
 
 #include <GameCore/Log.h>
 #include <GameCore/Utils.h>

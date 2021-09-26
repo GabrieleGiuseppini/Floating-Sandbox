@@ -12,6 +12,32 @@
 
 StandardSystemPaths * StandardSystemPaths::mSingleInstance = nullptr;
 
+StandardSystemPaths::StandardSystemPaths()
+{
+    // Ensure directories that we need exist
+    auto const userShipFolderPath = GetUserShipFolderPath();
+    if (!std::filesystem::exists(userShipFolderPath))
+    {
+        try
+        {
+            std::filesystem::create_directories(userShipFolderPath);
+        }
+        catch (...)
+        {
+            // Ignore
+        }
+    }
+}
+
+std::filesystem::path StandardSystemPaths::GetUserShipFolderPath() const
+{
+    auto documentsFolder = wxStandardPaths::Get().GetUserDir(wxStandardPaths::Dir::Dir_Documents);
+
+    return std::filesystem::path(documentsFolder.ToStdString())
+        / ApplicationName // Without version - we want this to be sticky across upgrades
+        / "Ships";
+}
+
 std::filesystem::path StandardSystemPaths::GetUserPicturesGameFolderPath() const
 {
     auto picturesFolder = wxStandardPaths::Get().GetUserDir(wxStandardPaths::Dir::Dir_Pictures);

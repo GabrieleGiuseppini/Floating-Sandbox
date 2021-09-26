@@ -9,9 +9,9 @@
 #include "BootSettingsDialog.h"
 #include "CheckForUpdatesDialog.h"
 #include "NewVersionDisplayDialog.h"
-#include "StandardSystemPaths.h"
 #include "StartupTipDialog.h"
 
+#include <UILib/StandardSystemPaths.h>
 #include <UILib/ShipDescriptionDialog.h>
 #include <UILib/WxHelpers.h>
 
@@ -969,8 +969,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     mUIPreferencesManager = std::make_shared<UIPreferencesManager>(
         mGameController,
         mLocalizationManager,
-        mMusicController,
-        mResourceLocator);
+        mMusicController);
 
     ReconcileWithUIPreferences();
 
@@ -1466,12 +1465,11 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
     {
         mShipLoadDialog = std::make_unique<ShipLoadDialog>(
             this,
-            mUIPreferencesManager->GetShipLoadDirectories(),
             mResourceLocator);
     }
 
     // Open dialog
-    auto res = mShipLoadDialog->ShowModal();
+    auto res = mShipLoadDialog->ShowModal(mUIPreferencesManager->GetShipLoadDirectories());
 
     // Process result
     if (res == wxID_OK)
@@ -1480,11 +1478,11 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
         // Load ship
         //
 
-        LoadShip(mShipLoadDialog->GetChosenShipFilepath(), true);
+        auto const shipFilePath = mShipLoadDialog->GetChosenShipFilepath();
+        LoadShip(shipFilePath, true);
 
         // Store directory in preferences
-        auto const dir = mShipLoadDialog->GetChosenShipFilepath().parent_path();
-        mUIPreferencesManager->AddShipLoadDirectory(dir);
+        mUIPreferencesManager->AddShipLoadDirectory(shipFilePath.parent_path());
     }
 
     SetPaused(false);

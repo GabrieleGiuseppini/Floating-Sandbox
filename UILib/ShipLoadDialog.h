@@ -25,12 +25,11 @@ public:
 
     ShipLoadDialog(
         wxWindow* parent,
-        std::vector<std::filesystem::path> const & shipLoadDirectories,
         ResourceLocator const & resourceLocator);
 
 	virtual ~ShipLoadDialog();
 
-    virtual int ShowModal() override;
+    int ShowModal(std::vector<std::filesystem::path> const & shipLoadDirectories);
 
     std::filesystem::path GetChosenShipFilepath() const
     {
@@ -48,7 +47,8 @@ private:
     void OnShipSearchCtrlSearchBtn(wxCommandEvent & event);
     void OnShipSearchCtrlCancelBtn(wxCommandEvent & event);
     void OnSearchNextButtonClicked(wxCommandEvent & event);
-    void OnHomeDirButtonClicked(wxCommandEvent & event);
+    void OnStandardHomeDirButtonClicked(wxCommandEvent & event);
+    void OnUserHomeDirButtonClicked(wxCommandEvent & event);
     void OnInfoButtonClicked(wxCommandEvent & event);
     void OnLoadButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
@@ -59,15 +59,15 @@ private:
 
 private:
 
+    using wxDialog::ShowModal;
     virtual void EndModal(int retCode) override;
 
     void StartShipSearch();
-    void RepopulateRecentDirectoriesComboBox();
+    void RepopulateRecentDirectoriesComboBox(std::vector<std::filesystem::path> const & shipLoadDirectories);
 
 private:
 
 	wxWindow * const mParent;
-    std::vector<std::filesystem::path> const mShipLoadDirectories;
     ResourceLocator const & mResourceLocator;
 
     wxGenericDirCtrl * mDirCtrl;
@@ -79,6 +79,9 @@ private:
     wxBitmapButton * mSearchNextButton;
 
 private:
+
+    std::filesystem::path const mStandardInstalledShipFolderPath;
+    std::filesystem::path const mUserShipFolderPath;
 
     std::optional<ShipMetadata> mSelectedShipMetadata;
     std::optional<std::filesystem::path> mSelectedShipFilepath;

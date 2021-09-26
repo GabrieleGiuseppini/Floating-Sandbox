@@ -11,7 +11,6 @@
 #include <UILib/LocalizationManager.h>
 
 #include <Game/IGameController.h>
-#include <Game/ResourceLocator.h>
 
 #include <GameCore/GameTypes.h>
 #include <GameCore/Version.h>
@@ -35,8 +34,7 @@ public:
     UIPreferencesManager(
         std::shared_ptr<IGameController> gameController,
         LocalizationManager & localizationManager,
-        std::shared_ptr<MusicController> musicController,
-        ResourceLocator const & resourceLocator);
+        std::shared_ptr<MusicController> musicController);
 
     ~UIPreferencesManager();
 
@@ -51,25 +49,11 @@ public:
 
     void AddShipLoadDirectory(std::filesystem::path shipLoadDirectory)
     {
-        // We always have the default ship directory in the first position
-        assert(mShipLoadDirectories.size() >= 1);
-
-        if (shipLoadDirectory != mShipLoadDirectories[0])
+        // Check if it's in already
+        if (std::find(mShipLoadDirectories.cbegin(), mShipLoadDirectories.cend(), shipLoadDirectory) == mShipLoadDirectories.cend())
         {
-            // Check if we have one already
-            for (auto it = mShipLoadDirectories.begin(); it != mShipLoadDirectories.end(); ++it)
-            {
-                if (*it == shipLoadDirectory)
-                {
-                    // Move it to second place
-                    std::rotate(std::next(mShipLoadDirectories.begin()), it, it + 1);
-
-                    return;
-                }
-            }
-
-            // Add to second place
-            mShipLoadDirectories.insert(std::next(mShipLoadDirectories.cbegin()), shipLoadDirectory);
+            // Add in front
+            mShipLoadDirectories.insert(mShipLoadDirectories.cbegin(), shipLoadDirectory);
         }
     }
 
@@ -409,8 +393,6 @@ private:
     void SavePreferences() const;
 
 private:
-
-    std::filesystem::path const mDefaultShipLoadDirectory;
 
     // The owners/storage of our properties
     std::shared_ptr<IGameController> mGameController;

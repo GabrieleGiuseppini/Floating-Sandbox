@@ -24,6 +24,8 @@ set  (UI_LIB_SOURCES
 	ShipPreviewWindow.cpp
 	ShipPreviewWindow.h
 	SliderControl.h
+	StandardSystemPaths.cpp
+	StandardSystemPaths.h
 	UnFocusablePanel.h
 	UnFocusableScrollablePanel.h
 	WxHelpers.cpp

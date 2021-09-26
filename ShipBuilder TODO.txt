@@ -30,15 +30,16 @@ https://gamejolt.com/x/permalink/comment/11511458
 	+ Check in-game
 
 = New/Load/Save Ship
-	= Move ShipLoadDialog/etc. under UILib
-		- Test from game:
-			- Last directory is added to both ComboBox and UIPreferences
-				- Yes when loaded
+	+ Move ShipLoadDialog/etc. under UILib
+		+ Test from game:
+			+ Last directory is added to both ComboBox and UIPreferences
+				+ Yes when loaded
 				+ No when not loaded
 			+ Show ship descriptions:
 				+ Works in dialog
 				+ Works at load
 				+ User may override
+		+ Second home button
 	+ New
 		+ UI: menu + button
 		+ Always enabled
@@ -49,7 +50,8 @@ https://gamejolt.com/x/permalink/comment/11511458
 		+ Always enabled
 		+ Asks user if model dirty
 		- Open file load dialog
-			- .png, .shp, .shp2
+			- .png, .shp
+			- .shp2
 		- If OK: invoke DoLoadShip(selected filename)
 	+ Save:
 		+ UI: menu + button 
@@ -74,6 +76,7 @@ https://gamejolt.com/x/permalink/comment/11511458
 		- Store filename as mCurrentFilename
 
 
+- AskUserIfSure: Yes/No buttons
 
 = Click-And-Draw use case:
 	= Pencil tool (*)
@@ -142,8 +145,6 @@ https://gamejolt.com/x/permalink/comment/11511458
 	- Strategy for other tools' enums - to make it work for now
 
 - Do we want some shading around ShipSpace canvas?
-
-- Build on Ubuntu
 
 - Previews:
 	- Spec:
@@ -401,6 +402,9 @@ https://gamejolt.com/x/permalink/comment/11511458
 	- Also includes sounds
 		- Extract from other "TODO" .txt file
 
+- Ubuntu:
+	- Test User Ships folder
+
 - Misc:
 	- When primary layer is other than Texture, render texture layer in texturization mode (as opposed to simple texture-sample mode, i.e. nearest neighbor)
 		- This is assuming that ShipTexturizer mocks closely enough tessellation
@@ -423,8 +427,6 @@ https://gamejolt.com/x/permalink/comment/11511458
 		- How to share state changes? 
 			- FullScreenManager class, shared_ptr in both
 			- Looked at at each Game<->ShipBuilder switch by receiver
-	- Save ship default filesystem location: new SystemPAths (under Documents)
-		- ShipLoadDialog: second "Home" location for switching to it
 	- TO-SPEC:
 		- What to do with background music when switching back and forth?
 

@@ -5,9 +5,12 @@
 ***************************************************************************************/
 #include "ShipLoadDialog.h"
 
+#include "StandardSystemPaths.h"
+
 #include <GameCore/Log.h>
 
 #include <UILib/ShipDescriptionDialog.h>
+#include <UILib/WxHelpers.h>
 
 #include <wx/sizer.h>
 
@@ -16,11 +19,11 @@ constexpr int MaxDirComboWidth = 650;
 
 ShipLoadDialog::ShipLoadDialog(
     wxWindow * parent,
-    std::vector<std::filesystem::path> const & shipLoadDirectories,
     ResourceLocator const & resourceLocator)
 	: mParent(parent)
-    , mShipLoadDirectories(shipLoadDirectories)
     , mResourceLocator(resourceLocator)
+    , mStandardInstalledShipFolderPath(resourceLocator.GetInstalledShipFolderPath())
+    , mUserShipFolderPath(StandardSystemPaths::GetInstance().GetUserShipFolderPath())
 {
 	Create(
 		mParent,
@@ -52,8 +55,6 @@ ShipLoadDialog::ShipLoadDialog(
 
         // Directory tree
         {
-            assert(!mShipLoadDirectories.empty());
-
             LogMessage("ShipLoadDialog::cctor(): creating wxGenericDirCtrl...");
 
             auto const minSize = wxSize(MinDirCtrlWidth, 680);
@@ -61,7 +62,7 @@ ShipLoadDialog::ShipLoadDialog(
             mDirCtrl = new wxGenericDirCtrl(
                 this,
                 wxID_ANY,
-                mShipLoadDirectories.front().string(),
+                "", // Start with empty dir
                 wxDefaultPosition,
                 minSize,
                 wxDIRCTRL_DIR_ONLY);
@@ -156,14 +157,27 @@ ShipLoadDialog::ShipLoadDialog(
 
             hComboSizer->AddSpacer(4);
 
-            // HomeDir button
+            // Standard HomeDir button
+            {
+                wxBitmapButton * homeDirButton = new wxBitmapButton(this, wxID_ANY,
+                    WxHelpers::LoadBitmap("home", resourceLocator), wxDefaultPosition, wxDefaultSize);
+                homeDirButton->SetToolTip(_("Go to the default Ships folder"));
+                homeDirButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnStandardHomeDirButtonClicked, this);
 
-            wxBitmap homeBitmap(mResourceLocator.GetIconFilePath("home").string(), wxBITMAP_TYPE_PNG);
-            wxBitmapButton * homeDirButton = new wxBitmapButton(this, wxID_ANY, homeBitmap, wxDefaultPosition, wxDefaultSize);
-            homeDirButton->SetToolTip(_("Go to the default Ships folder"));
-            homeDirButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnHomeDirButtonClicked, this);
+                hComboSizer->Add(homeDirButton, 0, wxALIGN_CENTRE_VERTICAL);
+            }
 
-            hComboSizer->Add(homeDirButton, 0, wxALIGN_CENTRE_VERTICAL);
+            hComboSizer->AddSpacer(4);
+
+            // User HomeDir button
+            {
+                wxBitmapButton * homeDirButton = new wxBitmapButton(this, wxID_ANY,
+                    WxHelpers::LoadBitmap("home_user", resourceLocator), wxDefaultPosition, wxDefaultSize);
+                homeDirButton->SetToolTip(_("Go to your Ships folder"));
+                homeDirButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnUserHomeDirButtonClicked, this);
+
+                hComboSizer->Add(homeDirButton, 0, wxALIGN_CENTRE_VERTICAL);
+            }
 
             gridSizer->Add(hComboSizer, 1, wxALIGN_LEFT | wxEXPAND | wxALL);
         }
@@ -262,7 +276,7 @@ ShipLoadDialog::~ShipLoadDialog()
 {
 }
 
-int ShipLoadDialog::ShowModal()
+int ShipLoadDialog::ShowModal(std::vector<std::filesystem::path> const & shipLoadDirectories)
 {
     // Reset our current ship selection
     mSelectedShipMetadata.reset();
@@ -277,23 +291,8 @@ int ShipLoadDialog::ShowModal()
     mShipSearchCtrl->Clear();
     mSearchNextButton->Enable(false);
 
-
-    //
-    // Load settings from preferences, if needed
-    //
-
-    if (mRecentDirectoriesComboBox->GetCount() == 0)
-    {
-        RepopulateRecentDirectoriesComboBox();
-
-        assert(mRecentDirectoriesComboBox->GetCount() > 0);
-
-        // Set the first one everywhere
-        auto dir = mRecentDirectoriesComboBox->GetStrings().front();
-        mDirCtrl->SetPath(dir);
-        mRecentDirectoriesComboBox->SetValue(dir);
-    }
-
+    // Populate recent directories
+    RepopulateRecentDirectoriesComboBox(shipLoadDirectories);
 
     //
     // Initialize preview panel
@@ -370,12 +369,23 @@ void ShipLoadDialog::OnSearchNextButtonClicked(wxCommandEvent & /*event*/)
     mShipPreviewWindow->Search(searchString.ToStdString());
 }
 
-void ShipLoadDialog::OnHomeDirButtonClicked(wxCommandEvent & /*event*/)
+void ShipLoadDialog::OnStandardHomeDirButtonClicked(wxCommandEvent & /*event*/)
 {
-    assert(!mRecentDirectoriesComboBox->IsListEmpty());
+    assert(mRecentDirectoriesComboBox->GetCount() >= 1);
 
     // Change combo
     mRecentDirectoriesComboBox->Select(0);
+
+    // Change dir tree
+    mDirCtrl->SetPath(mRecentDirectoriesComboBox->GetValue()); // Will send its own event
+}
+
+void ShipLoadDialog::OnUserHomeDirButtonClicked(wxCommandEvent & /*event*/)
+{
+    assert(mRecentDirectoriesComboBox->GetCount() >= 2);
+
+    // Change combo
+    mRecentDirectoriesComboBox->Select(1);
 
     // Change dir tree
     mDirCtrl->SetPath(mRecentDirectoriesComboBox->GetValue()); // Will send its own event
@@ -439,12 +449,6 @@ void ShipLoadDialog::OnShipFileChosen(std::filesystem::path shipFilepath)
 {
     LogMessage("ShipLoadDialog::OnShipFileChosen: ", shipFilepath);
 
-    // Re-populate combo box
-    RepopulateRecentDirectoriesComboBox();
-
-    // Select this directory in the combo box
-    mRecentDirectoriesComboBox->SetValue(shipFilepath.parent_path().string());
-
     // Store path
     mChosenShipFilepath = shipFilepath;
 
@@ -476,16 +480,42 @@ void ShipLoadDialog::StartShipSearch()
     mSearchNextButton->Enable(found);
 }
 
-void ShipLoadDialog::RepopulateRecentDirectoriesComboBox()
+void ShipLoadDialog::RepopulateRecentDirectoriesComboBox(std::vector<std::filesystem::path> const & shipLoadDirectories)
 {
-    assert(!mShipLoadDirectories.empty());
+    // Get currently-selected directory
+    wxString const currentlySelectedDir = mDirCtrl->GetPath();
 
+    // Clear recent directories combo box
     mRecentDirectoriesComboBox->Clear();
-    for (auto const & dir : mShipLoadDirectories)
+
+    // Add standard paths - always at first places
+    mRecentDirectoriesComboBox->Append(mStandardInstalledShipFolderPath.string());
+    mRecentDirectoriesComboBox->Append(mUserShipFolderPath.string());
+
+    // Add all other paths
+    for (auto const & dir : shipLoadDirectories)
     {
-        if (std::filesystem::exists(dir))
+        if (std::filesystem::exists(dir)
+            && dir != mStandardInstalledShipFolderPath
+            && dir != mUserShipFolderPath)
         {
+            assert(mRecentDirectoriesComboBox->FindString(dir.string()) == wxNOT_FOUND);
             mRecentDirectoriesComboBox->Append(dir.string());
         }
     }
+
+    // Re-select currently-selected directory, as long as it's in the list of recent directories
+    wxString dirToSelect;
+    if (!currentlySelectedDir.empty()
+        && mRecentDirectoriesComboBox->FindString(currentlySelectedDir) != wxNOT_FOUND)
+    {
+        dirToSelect = currentlySelectedDir;
+    }
+    else
+    {
+        dirToSelect = mRecentDirectoriesComboBox->GetString(0);
+    }
+
+    mDirCtrl->SetPath(dirToSelect);
+    mRecentDirectoriesComboBox->SetValue(dirToSelect);
 }

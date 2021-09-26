@@ -23,8 +23,6 @@ set  (FLOATING_SANDBOX_SOURCES
 	SoundController.h
 	Sounds.cpp
 	Sounds.h
-	StandardSystemPaths.cpp
-	StandardSystemPaths.h
 	SwitchboardPanel.cpp
 	SwitchboardPanel.h
 	ToolController.cpp

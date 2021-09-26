@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "UIPreferencesManager.h"
 
-#include "StandardSystemPaths.h"
+#include <UILib/StandardSystemPaths.h>
 
 #include <Game/ResourceLocator.h>
 
@@ -14,10 +14,8 @@
 UIPreferencesManager::UIPreferencesManager(
     std::shared_ptr<IGameController> gameController,
     LocalizationManager & localizationManager,
-    std::shared_ptr<MusicController> musicController,
-    ResourceLocator const & resourceLocator)
-    : mDefaultShipLoadDirectory(resourceLocator.GetInstalledShipFolderPath())
-    , mGameController(std::move(gameController))
+    std::shared_ptr<MusicController> musicController)
+    : mGameController(std::move(gameController))
     , mLocalizationManager(localizationManager)
     , mMusicController(std::move(musicController))
 {
@@ -25,7 +23,6 @@ UIPreferencesManager::UIPreferencesManager(
     // Set defaults for our preferences
     //
 
-    mShipLoadDirectories.push_back(mDefaultShipLoadDirectory);
     mLastShipLoadedFilePath.clear();
     mReloadLastLoadedShipOnStartup = false;
 
@@ -124,11 +121,8 @@ void UIPreferencesManager::LoadPreferences()
         {
             mShipLoadDirectories.clear();
 
-            // Make sure default ship directory is always at the top
-            mShipLoadDirectories.push_back(mDefaultShipLoadDirectory);
-
             auto shipLoadDirectories = shipLoadDirectoriesIt->second.get<picojson::array>();
-            for (auto shipLoadDirectory : shipLoadDirectories)
+            for (auto const shipLoadDirectory : shipLoadDirectories)
             {
                 if (shipLoadDirectory.is<std::string>())
                 {
@@ -136,10 +130,10 @@ void UIPreferencesManager::LoadPreferences()
 
                     // Make sure dir still exists, and it's not in the vector already
                     if (std::filesystem::exists(shipLoadDirectoryPath)
-                        && mShipLoadDirectories.cend() == std::find(
+                        && std::find(
                             mShipLoadDirectories.cbegin(),
                             mShipLoadDirectories.cend(),
-                            shipLoadDirectoryPath))
+                            shipLoadDirectoryPath) == mShipLoadDirectories.cend())
                     {
                         mShipLoadDirectories.push_back(shipLoadDirectoryPath);
                     }

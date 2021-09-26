@@ -22,6 +22,8 @@ public:
         return *mSingleInstance;
     }
 
+    std::filesystem::path GetUserShipFolderPath() const;
+
     std::filesystem::path GetUserPicturesGameFolderPath() const;
 
     std::filesystem::path GetUserGameRootFolderPath() const;
@@ -32,8 +34,7 @@ public:
 
 private:
 
-    StandardSystemPaths()
-    {}
+    StandardSystemPaths();
 
     static StandardSystemPaths * mSingleInstance;
 };
