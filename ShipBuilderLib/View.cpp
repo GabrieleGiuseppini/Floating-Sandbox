@@ -15,6 +15,7 @@ View::View(
     ShipSpaceSize initialShipSpaceSize,
     DisplayLogicalSize initialDisplaySize,
     int logicalToPhysicalPixelFactor,
+    bool isGridEnabled,
     std::function<void()> swapRenderBuffersFunction,
     ResourceLocator const & resourceLocator)
     : mViewModel(
@@ -26,6 +27,7 @@ View::View(
     //////////////////////////////////
     , mHasBackgroundTexture(false)
     , mHasStructuralTexture(false)
+    , mIsGridEnabled(isGridEnabled)
 {
     //
     // Initialize global OpenGL settings
@@ -146,11 +148,44 @@ View::View(
 
         glBindVertexArray(0);
     }
+
+    //
+    // Initialize Grid
+    //
+
+    {
+        GLuint tmpGLuint;
+
+        //
+        // VAO
+        //
+
+        // Create VAO
+        glGenVertexArrays(1, &tmpGLuint);
+        mGridVAO = tmpGLuint;
+        glBindVertexArray(*mGridVAO);
+        CheckOpenGLError();
+
+        // Create VBO
+        glGenBuffers(1, &tmpGLuint);
+        mGridVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mGridVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Grid));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Grid), 4, GL_FLOAT, GL_FALSE, sizeof(GridVertex), (void *)0);
+        CheckOpenGLError();
+
+        // Upload grid vertices
+        // TODOHERE
+
+        glBindVertexArray(0);
+    }
 }
 
 void View::EnableVisualGrid(bool doEnable)
 {
-    // TODOHERE
+    mIsGridEnabled = doEnable;
 }
 
 void View::UploadBackgroundTexture(RgbaImageData && texture)
@@ -315,14 +350,13 @@ void View::Render()
         // Activate program
         mShaderManager->ActivateProgram<ProgramType::TextureNdc>();
 
+        // Draw
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         CheckOpenGLError();
-
-        glBindVertexArray(0);
     }
     else
     {
-        // Clear canvas
+        // Just clear canvas
         glClearColor(0.985f, 0.985f, 0.985f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
@@ -340,11 +374,27 @@ void View::Render()
         // Activate program
         mShaderManager->ActivateProgram<ProgramType::Texture>();
 
+        // Draw
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         CheckOpenGLError();
-
-        glBindVertexArray(0);
     }
+
+    // Grid
+    if (mIsGridEnabled)
+    {
+        // Bind VAO
+        glBindVertexArray(*mGridVAO);
+
+        // Activate program
+        mShaderManager->ActivateProgram<ProgramType::Grid>();
+
+        // Draw
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        CheckOpenGLError();
+    }
+
+    // Unbind VAOs
+    glBindVertexArray(0);
 
     // Flip the back buffer onto the screen
     mSwapRenderBuffersFunction();
@@ -352,13 +402,82 @@ void View::Render()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void View::RefreshOrthoMatrix()
+void View::OnViewModelUpdated()
 {
+    //
+    // Grid
+    //
+
+    UpdateGrid();
+
+    //
+    // Ortho matrix
+    //
+
     auto const orthoMatrix = mViewModel.GetOrthoMatrix();
+
+    mShaderManager->ActivateProgram<ProgramType::Grid>();
+    mShaderManager->SetProgramParameter<ProgramType::Grid, ProgramParameterType::OrthoMatrix>(
+        orthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::Texture>();
     mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
+}
+
+void View::UpdateGrid()
+{
+    //
+    // Calculate vertex attributes
+    //
+
+    // Ship space
+    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
+    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
+    DisplayPhysicalSize const shipPixelSize = mViewModel.ShipSpaceSizeToPhyisicalDisplaySize(mViewModel.GetShipSize());
+    float const pixelWidth = static_cast<float>(shipPixelSize.width);
+    float const pixelHeight = static_cast<float>(shipPixelSize.height);
+
+    std::array<GridVertex, 4> vertexBuffer;
+
+    // Notes:
+    //  - Grid origin is in upper-left corner
+
+    // Bottom-left
+    vertexBuffer[0] = GridVertex(
+        vec2f(0.0f, 0.0f),
+        vec2f(0.0f, pixelHeight));
+
+    // Top-left
+    vertexBuffer[1] = GridVertex(
+        vec2f(0.0f, shipHeight),
+        vec2f(0.0f, 0.0f));
+
+    // Bottom-right
+    vertexBuffer[2] = GridVertex(
+        vec2f(shipWidth, 0.0f),
+        vec2f(pixelWidth, pixelHeight));
+
+    // Top-right
+    vertexBuffer[3] = GridVertex(
+        vec2f(shipWidth, shipHeight),
+        vec2f(pixelWidth, 0.0f));
+
+    // Upload vertices
+    glBindBuffer(GL_ARRAY_BUFFER, *mGridVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(GridVertex), vertexBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //
+    // Calculate step size
+    //
+
+    float const pixelStepSize = mViewModel.CalculateGridPhysicalPixelStepSize();
+
+    mShaderManager->ActivateProgram<ProgramType::Grid>();
+    mShaderManager->SetProgramParameter<ProgramType::Grid, ProgramParameterType::PixelStep>(
+        pixelStepSize);
 }
 
 }

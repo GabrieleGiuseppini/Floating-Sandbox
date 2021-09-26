@@ -18,8 +18,9 @@ namespace ShipBuilder {
 
 enum class ProgramType
 {
-    Texture = 0,
-    TextureNdc = 1,
+    Grid = 0,
+    Texture,
+    TextureNdc,
 
     _Last = TextureNdc
 };
@@ -31,6 +32,7 @@ std::string ProgramTypeToStr(ProgramType program);
 enum class ProgramParameterType : uint8_t
 {
     OrthoMatrix = 0,
+    PixelStep,
 
     // Texture units
     BackgroundTextureUnit,
@@ -49,8 +51,9 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter);
  */
 enum class VertexAttributeType : GLuint
 {
-    Texture = 0,
-    TextureNdc = 1
+    Grid = 0,
+    Texture,
+    TextureNdc
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);

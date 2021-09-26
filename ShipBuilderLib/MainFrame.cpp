@@ -416,6 +416,7 @@ MainFrame::MainFrame(
             mWorkCanvas->GetSize().GetWidth(),
             mWorkCanvas->GetSize().GetHeight()),
         mWorkCanvas->GetContentScaleFactor(),
+        false, // Grid enabled
         [this]()
         {
             mWorkCanvas->SwapBuffers();

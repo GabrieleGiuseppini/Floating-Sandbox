@@ -78,7 +78,7 @@ public:
         return mZoom;
     }
 
-    float CalculateIdealZoom() const
+    int CalculateIdealZoom() const
     {
         // Zoom>=0: display pixels occupied by one ship space pixel
         int idealZoom = 0;
@@ -98,6 +98,14 @@ public:
         return idealZoom;
     }
 
+    float CalculateGridPhysicalPixelStepSize() const
+    {
+        // Calculate grid step size based on current zoom;
+        // we don't want the grid spacing to get too small
+        float const stepSize = 1.0f / mDisplayPhysicalToShipSpaceFactor;
+        return std::max(stepSize, 8.0f);
+    }
+
     ShipSpaceCoordinates const & GetCameraShipSpacePosition() const
     {
         return mCam;
@@ -112,6 +120,11 @@ public:
         RecalculateAttributes();
 
         return mCam;
+    }
+
+    ShipSpaceSize const & GetShipSize() const
+    {
+        return mShipSize;
     }
 
     void SetShipSize(ShipSpaceSize const & size)
@@ -171,6 +184,13 @@ public:
         return ShipSpaceCoordinates(
             DisplayPhysicalToShipSpace(displayCoordinates.x * mLogicalToPhysicalPixelFactor) - MarginDisplayShipSize + mCam.x,
             mShipSize.height - 1 - (DisplayPhysicalToShipSpace(displayCoordinates.y * mLogicalToPhysicalPixelFactor) - MarginDisplayShipSize + mCam.y));
+    }
+
+    DisplayPhysicalSize ShipSpaceSizeToPhyisicalDisplaySize(ShipSpaceSize const & size)
+    {
+        return DisplayPhysicalSize(
+            static_cast<int>(ShipSpaceToDisplayLogical(static_cast<float>(size.width)) * mLogicalToPhysicalPixelFactor),
+            static_cast<int>(ShipSpaceToDisplayLogical(static_cast<float>(size.height)) * mLogicalToPhysicalPixelFactor));
     }
 
     ProjectionMatrix const & GetOrthoMatrix() const

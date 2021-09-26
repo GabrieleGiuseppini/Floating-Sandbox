@@ -39,6 +39,7 @@ public:
         ShipSpaceSize initialShipSpaceSize,
         DisplayLogicalSize initialDisplaySize,
         int logicalToPhysicalPixelFactor,
+        bool isGridEnabled,
         std::function<void()> swapRenderBuffersFunction,
         ResourceLocator const & resourceLocator);
 
@@ -51,12 +52,12 @@ public:
     {
         auto const newZoom = mViewModel.SetZoom(zoom);
 
-        RefreshOrthoMatrix();
+        OnViewModelUpdated();
 
         return newZoom;
     }
 
-    float CalculateIdealZoom() const
+    int CalculateIdealZoom() const
     {
         return mViewModel.CalculateIdealZoom();
     }
@@ -70,7 +71,7 @@ public:
     {
         auto const newPos = mViewModel.SetCameraShipSpacePosition(pos);
 
-        RefreshOrthoMatrix();
+        OnViewModelUpdated();
 
         return newPos;
     }
@@ -84,7 +85,7 @@ public:
     {
         mViewModel.SetDisplayLogicalSize(logicalSize);
 
-        RefreshOrthoMatrix();
+        OnViewModelUpdated();
     }
 
     ShipSpaceSize GetCameraRange() const
@@ -133,7 +134,9 @@ public:
 
 private:
 
-    void RefreshOrthoMatrix();
+    void OnViewModelUpdated();
+
+    void UpdateGrid();
 
 private:
 
@@ -146,6 +149,21 @@ private:
     //
 
 #pragma pack(push, 1)
+
+    struct GridVertex
+    {
+        vec2f positionShip; // Ship space
+        vec2f positionPixel; // Pixel space
+
+        GridVertex() = default;
+
+        GridVertex(
+            vec2f const & _positionShip,
+            vec2f _positionPixel)
+            : positionShip(_positionShip)
+            , positionPixel(_positionPixel)
+        {}
+    };
 
     struct TextureVertex
     {
@@ -194,6 +212,11 @@ private:
     GameOpenGLVBO mStructuralTextureVBO;
     GameOpenGLTexture mStructuralTextureOpenGLHandle;
     bool mHasStructuralTexture;
+
+    // Grid
+    GameOpenGLVAO mGridVAO;
+    GameOpenGLVBO mGridVBO;
+    bool mIsGridEnabled;
 };
 
 }

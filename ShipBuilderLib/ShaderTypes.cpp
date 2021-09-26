@@ -15,7 +15,9 @@ namespace ShipBuilder {
 ProgramType ShaderFilenameToProgramType(std::string const & str)
 {
     std::string lstr = Utils::ToLower(str);
-    if (lstr == "texture")
+    if (lstr == "grid")
+        return ProgramType::Grid;
+    else if (lstr == "texture")
         return ProgramType::Texture;
     else if (lstr == "texture_ndc")
         return ProgramType::TextureNdc;
@@ -27,6 +29,8 @@ std::string ProgramTypeToStr(ProgramType program)
 {
     switch (program)
     {
+        case ProgramType::Grid:
+            return "Grid";
         case ProgramType::Texture:
             return "Texture";
         case ProgramType::TextureNdc:
@@ -39,8 +43,11 @@ std::string ProgramTypeToStr(ProgramType program)
 
 ProgramParameterType StrToProgramParameterType(std::string const & str)
 {
+
     if (str == "OrthoMatrix")
         return ProgramParameterType::OrthoMatrix;
+    else if (str == "PixelStep")
+        return ProgramParameterType::PixelStep;
     else if (str == "BackgroundTextureUnit")
         return ProgramParameterType::BackgroundTextureUnit;
     else if (str == "TextureUnit1")
@@ -55,6 +62,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
     {
         case ProgramParameterType::OrthoMatrix:
             return "OrthoMatrix";
+        case ProgramParameterType::PixelStep:
+            return "PixelStep";
         case ProgramParameterType::BackgroundTextureUnit:
             return "BackgroundTextureUnit";
         case ProgramParameterType::TextureUnit1:
@@ -67,7 +76,9 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str)
 {
-    if (Utils::CaseInsensitiveEquals(str, "Texture"))
+    if (Utils::CaseInsensitiveEquals(str, "Grid"))
+        return VertexAttributeType::Grid;
+    else if (Utils::CaseInsensitiveEquals(str, "Texture"))
         return VertexAttributeType::Texture;
     else if (Utils::CaseInsensitiveEquals(str, "TextureNdc"))
         return VertexAttributeType::TextureNdc;
