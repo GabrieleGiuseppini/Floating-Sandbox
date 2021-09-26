@@ -16,7 +16,13 @@ set  (UI_LIB_SOURCES
 	LoggingDialog.cpp
 	LoggingDialog.h
 	ScalarTimeSeriesProbeControl.cpp
-	ScalarTimeSeriesProbeControl.h	
+	ScalarTimeSeriesProbeControl.h
+	ShipDescriptionDialog.cpp
+	ShipDescriptionDialog.h
+	ShipLoadDialog.cpp
+	ShipLoadDialog.h
+	ShipPreviewWindow.cpp
+	ShipPreviewWindow.h
 	SliderControl.h
 	UnFocusablePanel.h
 	UnFocusableScrollablePanel.h

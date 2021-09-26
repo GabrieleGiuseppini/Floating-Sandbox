@@ -16,9 +16,8 @@ ShipDescriptionDialog::ShipDescriptionDialog(
     wxWindow* parent,
     ShipMetadata const & shipMetadata,
     bool isAutomatic,
-    UIPreferencesManager & uiPreferencesManager,
     ResourceLocator const & resourceLocator)
-    : mUIPreferencesManager(uiPreferencesManager)
+    : mShowDescriptionsUserPreference(std::nullopt)
 {
     Create(
         parent,
@@ -67,7 +66,7 @@ ShipDescriptionDialog::ShipDescriptionDialog(
             wxEVT_CHECKBOX,
             [this](wxCommandEvent & event)
             {
-                mUIPreferencesManager.SetShowShipDescriptionsAtShipLoad(!event.IsChecked());
+                mShowDescriptionsUserPreference = !event.IsChecked();
             });
 
         topSizer->Add(dontChk, 0, wxLEFT | wxRIGHT | wxALIGN_LEFT, 10);

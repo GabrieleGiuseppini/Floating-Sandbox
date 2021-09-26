@@ -5,9 +5,9 @@
 ***************************************************************************************/
 #include "ShipLoadDialog.h"
 
-#include "ShipDescriptionDialog.h"
-
 #include <GameCore/Log.h>
+
+#include <UILib/ShipDescriptionDialog.h>
 
 #include <wx/sizer.h>
 
@@ -16,10 +16,10 @@ constexpr int MaxDirComboWidth = 650;
 
 ShipLoadDialog::ShipLoadDialog(
     wxWindow * parent,
-    UIPreferencesManager & uiPreferencesManager,
+    std::vector<std::filesystem::path> const & shipLoadDirectories,
     ResourceLocator const & resourceLocator)
 	: mParent(parent)
-    , mUIPreferencesManager(uiPreferencesManager)
+    , mShipLoadDirectories(shipLoadDirectories)
     , mResourceLocator(resourceLocator)
 {
 	Create(
@@ -52,7 +52,7 @@ ShipLoadDialog::ShipLoadDialog(
 
         // Directory tree
         {
-            assert(!mUIPreferencesManager.GetShipLoadDirectories().empty());
+            assert(!mShipLoadDirectories.empty());
 
             LogMessage("ShipLoadDialog::cctor(): creating wxGenericDirCtrl...");
 
@@ -61,7 +61,7 @@ ShipLoadDialog::ShipLoadDialog(
             mDirCtrl = new wxGenericDirCtrl(
                 this,
                 wxID_ANY,
-                mUIPreferencesManager.GetShipLoadDirectories().front().string(),
+                mShipLoadDirectories.front().string(),
                 wxDefaultPosition,
                 minSize,
                 wxDIRCTRL_DIR_ONLY);
@@ -372,7 +372,7 @@ void ShipLoadDialog::OnSearchNextButtonClicked(wxCommandEvent & /*event*/)
 
 void ShipLoadDialog::OnHomeDirButtonClicked(wxCommandEvent & /*event*/)
 {
-    assert(mUIPreferencesManager.GetShipLoadDirectories().size() >= 1);
+    assert(!mRecentDirectoriesComboBox->IsListEmpty());
 
     // Change combo
     mRecentDirectoriesComboBox->Select(0);
@@ -391,7 +391,6 @@ void ShipLoadDialog::OnInfoButtonClicked(wxCommandEvent & /*event*/)
             this,
             *mSelectedShipMetadata,
             false,
-            mUIPreferencesManager,
             mResourceLocator);
 
         shipDescriptionDialog.ShowModal();
@@ -440,15 +439,11 @@ void ShipLoadDialog::OnShipFileChosen(std::filesystem::path shipFilepath)
 {
     LogMessage("ShipLoadDialog::OnShipFileChosen: ", shipFilepath);
 
-    // Store directory in preferences
-    auto dir = shipFilepath.parent_path();
-    mUIPreferencesManager.AddShipLoadDirectory(dir);
-
     // Re-populate combo box
     RepopulateRecentDirectoriesComboBox();
 
     // Select this directory in the combo box
-    mRecentDirectoriesComboBox->SetValue(dir.string());
+    mRecentDirectoriesComboBox->SetValue(shipFilepath.parent_path().string());
 
     // Store path
     mChosenShipFilepath = shipFilepath;
@@ -483,10 +478,10 @@ void ShipLoadDialog::StartShipSearch()
 
 void ShipLoadDialog::RepopulateRecentDirectoriesComboBox()
 {
-    assert(!mUIPreferencesManager.GetShipLoadDirectories().empty());
+    assert(!mShipLoadDirectories.empty());
 
     mRecentDirectoriesComboBox->Clear();
-    for (auto dir : mUIPreferencesManager.GetShipLoadDirectories())
+    for (auto const & dir : mShipLoadDirectories)
     {
         if (std::filesystem::exists(dir))
         {

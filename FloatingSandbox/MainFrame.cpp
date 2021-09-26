@@ -9,10 +9,10 @@
 #include "BootSettingsDialog.h"
 #include "CheckForUpdatesDialog.h"
 #include "NewVersionDisplayDialog.h"
-#include "ShipDescriptionDialog.h"
 #include "StandardSystemPaths.h"
 #include "StartupTipDialog.h"
 
+#include <UILib/ShipDescriptionDialog.h>
 #include <UILib/WxHelpers.h>
 
 #include <Game/ImageFileTools.h>
@@ -1466,7 +1466,7 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
     {
         mShipLoadDialog = std::make_unique<ShipLoadDialog>(
             this,
-            *mUIPreferencesManager,
+            mUIPreferencesManager->GetShipLoadDirectories(),
             mResourceLocator);
     }
 
@@ -1481,6 +1481,10 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
         //
 
         LoadShip(mShipLoadDialog->GetChosenShipFilepath(), true);
+
+        // Store directory in preferences
+        auto const dir = mShipLoadDialog->GetChosenShipFilepath().parent_path();
+        mUIPreferencesManager->AddShipLoadDirectory(dir);
     }
 
     SetPaused(false);
@@ -2397,10 +2401,16 @@ void MainFrame::LoadShip(
                 this,
                 shipMetadata,
                 true,
-                *mUIPreferencesManager,
                 mResourceLocator);
 
             shipDescriptionDialog.ShowModal();
+
+            // Store user preference, in case they made a choice
+            auto const showDescriptionsUserPreference = shipDescriptionDialog.GetShowDescriptionsUserPreference();
+            if (showDescriptionsUserPreference.has_value())
+            {
+                mUIPreferencesManager->SetShowShipDescriptionsAtShipLoad(*showDescriptionsUserPreference);
+            }
         }
     }
     catch (std::exception const & ex)

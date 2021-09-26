@@ -5,12 +5,13 @@
 ***************************************************************************************/
 #pragma once
 
-#include "UIPreferencesManager.h"
-
+#include <Game/ResourceLocator.h>
 #include <Game/ShipMetadata.h>
 
 #include <wx/custombgwin.h>
 #include <wx/dialog.h>
+
+#include <optional>
 
 class ShipDescriptionDialog : public wxCustomBackgroundWindow<wxDialog>
 {
@@ -20,10 +21,14 @@ public:
         wxWindow* parent,
         ShipMetadata const & shipMetadata,
         bool isAutomatic,
-        UIPreferencesManager & uiPreferencesManager,
         ResourceLocator const & resourceLocator);
 
     virtual ~ShipDescriptionDialog();
+
+    std::optional<bool> GetShowDescriptionsUserPreference() const
+    {
+        return mShowDescriptionsUserPreference;
+    }
 
 private:
 
@@ -31,5 +36,5 @@ private:
 
 private:
 
-    UIPreferencesManager & mUIPreferencesManager;
+    std::optional<bool> mShowDescriptionsUserPreference;
 };

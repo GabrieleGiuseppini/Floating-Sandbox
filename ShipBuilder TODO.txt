@@ -30,7 +30,15 @@ https://gamejolt.com/x/permalink/comment/11511458
 	+ Check in-game
 
 = New/Load/Save Ship
-	- Move ShipLoadDialog/etc. under UILib
+	= Move ShipLoadDialog/etc. under UILib
+		- Test from game:
+			- Last directory is added to both ComboBox and UIPreferences
+				- Yes when loaded
+				+ No when not loaded
+			+ Show ship descriptions:
+				+ Works in dialog
+				+ Works at load
+				+ User may override
 	+ New
 		+ UI: menu + button
 		+ Always enabled
@@ -52,8 +60,6 @@ https://gamejolt.com/x/permalink/comment/11511458
 		+ Only enabled when dirty
 		- Open file save dialog
 			- .shp2
-			- .png, if only structural (for now, as long as we don't lose information like now)
-				- Same as StructuralLayer export
 		- If OK:
 			- Invoke private SaveShip(selected filename)
 		
@@ -63,9 +69,7 @@ https://gamejolt.com/x/permalink/comment/11511458
 		+ Do
 		+ Store filename as mCurrentFilename
 	- DoSaveShip:
-		- If saving to .png and there's anything more than just structural (metadata, layers, etc.) that would get lost, ask user if sure
 		- ShipDeSerializer:
-			- SaveStructuralLayerImage(StructuralLayerBuffer const &, ...)
 			- Save(ShipDefinition const &)
 		- Store filename as mCurrentFilename
 
@@ -174,9 +178,9 @@ https://gamejolt.com/x/permalink/comment/11511458
 	- Structural:
 		- Import from:
 			- .png, .shp, .shp2 (load whole and throw away)
-		- Export to .png (for now, as long as we don't lose information like now)
-			- TODO: machinery for StructuralLayerBuffer -> ImageData
-			- Same like save ship when only structural
+		- Export to .png
+			- ShipDeSerializer:
+				- SaveStructuralLayerImage(StructuralLayerBuffer const &, ...)
 	- Electrical:
 		- Import:
 			- .shp, .shp2 (load whole and throw away)
@@ -398,7 +402,6 @@ https://gamejolt.com/x/permalink/comment/11511458
 		- Extract from other "TODO" .txt file
 
 - Misc:
-	- MSPaint cursors: C:\windows\systemresources\mspaint.exe.mun
 	- When primary layer is other than Texture, render texture layer in texturization mode (as opposed to simple texture-sample mode, i.e. nearest neighbor)
 		- This is assuming that ShipTexturizer mocks closely enough tessellation
 	- Localization:

@@ -58,12 +58,6 @@ set  (DIALOGS_SOURCES
 	PreferencesDialog.h
 	SettingsDialog.cpp
 	SettingsDialog.h
-	ShipDescriptionDialog.cpp
-	ShipDescriptionDialog.h
-	ShipLoadDialog.cpp
-	ShipLoadDialog.h
-	ShipPreviewWindow.cpp
-	ShipPreviewWindow.h
 	SplashScreenDialog.cpp
 	SplashScreenDialog.h
 	StartupTipDialog.cpp

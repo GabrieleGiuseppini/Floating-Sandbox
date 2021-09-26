@@ -13,7 +13,6 @@
 #include "ProbePanel.h"
 #include "SettingsDialog.h"
 #include "SettingsManager.h"
-#include "ShipLoadDialog.h"
 #include "SoundController.h"
 #include "SwitchboardPanel.h"
 #include "ToolController.h"
@@ -24,6 +23,7 @@
 
 #include <UILib/LocalizationManager.h>
 #include <UILib/LoggingDialog.h>
+#include <UILib/ShipLoadDialog.h>
 #include <UILib/UnFocusablePanel.h>
 
 #include <Game/GameController.h>

@@ -6,7 +6,6 @@
 #pragma once
 
 #include "ShipPreviewWindow.h"
-#include "UIPreferencesManager.h"
 
 #include <Game/ResourceLocator.h>
 
@@ -18,6 +17,7 @@
 #include <filesystem>
 #include <optional>
 #include <string>
+#include <vector>
 
 class ShipLoadDialog : public wxDialog
 {
@@ -25,7 +25,7 @@ public:
 
     ShipLoadDialog(
         wxWindow* parent,
-        UIPreferencesManager & uiPreferencesManager,
+        std::vector<std::filesystem::path> const & shipLoadDirectories,
         ResourceLocator const & resourceLocator);
 
 	virtual ~ShipLoadDialog();
@@ -67,7 +67,7 @@ private:
 private:
 
 	wxWindow * const mParent;
-    UIPreferencesManager & mUIPreferencesManager;
+    std::vector<std::filesystem::path> const mShipLoadDirectories;
     ResourceLocator const & mResourceLocator;
 
     wxGenericDirCtrl * mDirCtrl;
