@@ -16,13 +16,13 @@ set (SHIPBUILDER_LIB_SOURCES
 	Model.h
 	ModelController.cpp
 	ModelController.h
-	SaveShipDialog.cpp
-	SaveShipDialog.h
 	SelectionManager.cpp	
 	SelectionManager.h
 	ShaderTypes.cpp
 	ShaderTypes.h
 	ShipBuilderTypes.h
+	ShipSaveDialog.cpp
+	ShipSaveDialog.h
 	StatusBar.cpp
 	StatusBar.h
 	UndoStack.cpp

@@ -57,12 +57,10 @@ https://gamejolt.com/x/permalink/comment/11511458
 		+ UI: menu + button 
 		+ Only enabled when dirty
 		+ if !mCurrentFilename: invokes SaveAs(); else: invokes private SaveShip(mCurrentFilename)
-	= SaveAs:
+	+ SaveAs:
 		+ UI: menu + button
 		+ Only enabled when dirty
-		= Open file save dialog for .shp2
-			- TODO: we have an issue: different goals, same dialog instance
-			- TODO: associate file extensions: get them from ShipDeSerializer
+		+ Open file save dialog for .shp2
 		+ If OK:
 			+ Invoke private SaveShip(selected filename)
 		
@@ -395,11 +393,12 @@ https://gamejolt.com/x/permalink/comment/11511458
 - Ship file format:
 	- Fixed endianness
 		- See https://github.com/voidah/archive/blob/master/archive.h
-	- Min FS version (.shp, .shp2)
-		- Ideally it should be a "set" of versions, including the Materials' DB versions which live in the json so to be easily editable manually
+	- FS version
+		- Only used for warnings in case materials not found and cur version > file version
 	- "File lock" which disallows editing
 		- Password from user; salted -> Hash in file
 		- Verify hash matches when editing
+			- Algo at ShipDeSerializer via static helper methods
 	- Also includes sounds
 		- Extract from other "TODO" .txt file
 

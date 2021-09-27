@@ -15,13 +15,13 @@ ShipDefinition ShipDeSerializer::LoadShip(
     std::filesystem::path const & shipFilePath,
     MaterialDatabase const & materialDatabase)
 {
-    if (IsPngShipDefinitionFile(shipFilePath))
+    if (IsImageDefinitionFile(shipFilePath))
     {
-        return LoadShipPng(shipFilePath, materialDatabase);
+        return LoadImageDefinition(shipFilePath, materialDatabase);
     }
-    else if (IsShpShipDefinitionFile(shipFilePath))
+    else if (IsLegacyShpShipDefinitionFile(shipFilePath))
     {
-        return LoadShipShp(shipFilePath, materialDatabase);
+        return LoadLegacyShpShipDefinition(shipFilePath, materialDatabase);
     }
     else
     {
@@ -31,13 +31,13 @@ ShipDefinition ShipDeSerializer::LoadShip(
 
 ShipPreview ShipDeSerializer::LoadShipPreview(std::filesystem::path const & shipFilePath)
 {
-    if (IsPngShipDefinitionFile(shipFilePath))
+    if (IsImageDefinitionFile(shipFilePath))
     {
-        return LoadShipPreviewPng(shipFilePath);
+        return LoadShipPreviewFromImageDefinitionFile(shipFilePath);
     }
-    else if (IsShpShipDefinitionFile(shipFilePath))
+    else if (IsLegacyShpShipDefinitionFile(shipFilePath))
     {
-        return LoadShipPreviewShp(shipFilePath);
+        return LoadShipPreviewFromLegacyShpShipDefinition(shipFilePath);
     }
     else
     {
@@ -52,17 +52,17 @@ void ShipDeSerializer::SaveShip(
     // TODOHERE
 }
 
-bool ShipDeSerializer::IsPngShipDefinitionFile(std::filesystem::path const & shipFilePath)
+bool ShipDeSerializer::IsImageDefinitionFile(std::filesystem::path const & shipFilePath)
 {
-    return Utils::CaseInsensitiveEquals(shipFilePath.extension().string(), ".png");
+    return Utils::CaseInsensitiveEquals(shipFilePath.extension().string(), GetImageDefinitionFileExtension());
 }
 
-bool ShipDeSerializer::IsShpShipDefinitionFile(std::filesystem::path const & shipFilePath)
+bool ShipDeSerializer::IsLegacyShpShipDefinitionFile(std::filesystem::path const & shipFilePath)
 {
-    return Utils::CaseInsensitiveEquals(shipFilePath.extension().string(), ".shp");
+    return Utils::CaseInsensitiveEquals(shipFilePath.extension().string(), GetLegacyShpShipDefinitionFileExtension());
 }
 
-ShipDefinition ShipDeSerializer::LoadShipPng(
+ShipDefinition ShipDeSerializer::LoadImageDefinition(
     std::filesystem::path const & shipFilePath,
     MaterialDatabase const & materialDatabase)
 {
@@ -77,7 +77,7 @@ ShipDefinition ShipDeSerializer::LoadShipPng(
         materialDatabase);
 }
 
-ShipPreview ShipDeSerializer::LoadShipPreviewPng(std::filesystem::path const & shipFilePath)
+ShipPreview ShipDeSerializer::LoadShipPreviewFromImageDefinitionFile(std::filesystem::path const & shipFilePath)
 {
     auto const imageSize = ImageFileTools::GetImageSize(shipFilePath);
 
@@ -89,11 +89,11 @@ ShipPreview ShipDeSerializer::LoadShipPreviewPng(std::filesystem::path const & s
         false); // hasElectricals
 }
 
-ShipDefinition ShipDeSerializer::LoadShipShp(
+ShipDefinition ShipDeSerializer::LoadLegacyShpShipDefinition(
     std::filesystem::path const & shipFilePath,
     MaterialDatabase const & materialDatabase)
 {
-    JsonDefinition const & jsonDefinition = LoadJsonDefinitionShp(shipFilePath);
+    JsonDefinition const & jsonDefinition = LoadLegacyShpShipDefinitionJson(shipFilePath);
 
     return LoadFromDefinitionImageFilePaths(
         jsonDefinition.StructuralLayerImageFilePath,
@@ -106,9 +106,9 @@ ShipDefinition ShipDeSerializer::LoadShipShp(
         materialDatabase);
 }
 
-ShipPreview ShipDeSerializer::LoadShipPreviewShp(std::filesystem::path const & shipFilePath)
+ShipPreview ShipDeSerializer::LoadShipPreviewFromLegacyShpShipDefinition(std::filesystem::path const & shipFilePath)
 {
-    JsonDefinition const & jsonDefinition = LoadJsonDefinitionShp(shipFilePath);
+    JsonDefinition const & jsonDefinition = LoadLegacyShpShipDefinitionJson(shipFilePath);
 
     std::filesystem::path previewImageFilePath;
     bool isHD = false;
@@ -142,7 +142,7 @@ ShipPreview ShipDeSerializer::LoadShipPreviewShp(std::filesystem::path const & s
         hasElectricals);
 }
 
-ShipDeSerializer::JsonDefinition ShipDeSerializer::LoadJsonDefinitionShp(std::filesystem::path const & shipFilePath)
+ShipDeSerializer::JsonDefinition ShipDeSerializer::LoadLegacyShpShipDefinitionJson(std::filesystem::path const & shipFilePath)
 {
     std::filesystem::path const basePath = shipFilePath.parent_path();
 

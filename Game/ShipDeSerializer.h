@@ -22,10 +22,25 @@ class ShipDeSerializer
 {
 public:
 
+    static std::string GetImageDefinitionFileExtension()
+    {
+        return ".png";
+    }
+
+    static std::string GetShipDefinitionFileExtension()
+    {
+        return ".shp2";
+    }
+
+    static std::string GetLegacyShpShipDefinitionFileExtension()
+    {
+        return ".shp";
+    }
+
     static bool IsShipDefinitionFile(std::filesystem::path const & filepath)
     {
-        return IsPngShipDefinitionFile(filepath)
-            || IsShpShipDefinitionFile(filepath);
+        return IsImageDefinitionFile(filepath)
+            || IsLegacyShpShipDefinitionFile(filepath);
     }
 
     static ShipDefinition LoadShip(
@@ -68,23 +83,23 @@ private:
         {}
     };
 
-    static bool IsPngShipDefinitionFile(std::filesystem::path const & shipFilePath);
+    static bool IsImageDefinitionFile(std::filesystem::path const & shipFilePath);
 
-    static bool IsShpShipDefinitionFile(std::filesystem::path const & shipFilePath);
+    static bool IsLegacyShpShipDefinitionFile(std::filesystem::path const & shipFilePath);
 
-    static ShipDefinition LoadShipPng(
+    static ShipDefinition LoadImageDefinition(
         std::filesystem::path const & shipFilePath,
         MaterialDatabase const & materialDatabase);
 
-    static ShipPreview LoadShipPreviewPng(std::filesystem::path const & shipFilePath);
+    static ShipPreview LoadShipPreviewFromImageDefinitionFile(std::filesystem::path const & shipFilePath);
 
-    static ShipDefinition LoadShipShp(
+    static ShipDefinition LoadLegacyShpShipDefinition(
         std::filesystem::path const & shipFilePath,
         MaterialDatabase const & materialDatabase);
 
-    static ShipPreview LoadShipPreviewShp(std::filesystem::path const & shipFilePath);
+    static ShipPreview LoadShipPreviewFromLegacyShpShipDefinition(std::filesystem::path const & shipFilePath);
 
-    static JsonDefinition LoadJsonDefinitionShp(std::filesystem::path const & shipFilePath);
+    static JsonDefinition LoadLegacyShpShipDefinitionJson(std::filesystem::path const & shipFilePath);
 
     static ShipDefinition LoadFromDefinitionImageFilePaths(
         std::filesystem::path const & structuralLayerImageFilePath,

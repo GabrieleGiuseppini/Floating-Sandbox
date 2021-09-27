@@ -11,11 +11,11 @@
 
 namespace ShipBuilder {
 
-class SaveShipDialog : public wxFileDialog
+class ShipSaveDialog : public wxFileDialog
 {
 public:
 
-	enum class SaveGoalType
+	enum class GoalType
 	{
 		FullShip,
 		StructuralLayer
@@ -23,10 +23,15 @@ public:
 
 public:
 
-	SaveShipDialog(
-		wxWindow * parent,
+	ShipSaveDialog(wxWindow * parent);
+
+	int ShowModal(
 		std::string const & shipName,
-		SaveGoalType goal);
+		GoalType goal);
+
+private:
+
+	using wxFileDialog::ShowModal;
 };
 
 }

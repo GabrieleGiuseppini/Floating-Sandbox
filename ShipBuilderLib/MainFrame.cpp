@@ -1886,15 +1886,15 @@ bool MainFrame::SaveShip()
 bool MainFrame::SaveShipAs()
 {
     // Open ship save dialog
-    if (!mSaveShipDialog)
+    if (!mShipSaveDialog)
     {
-        mSaveShipDialog = std::make_unique<SaveShipDialog>(
-            this,
-            mController->GetModelController().GetModel().GetShipMetadata().ShipName,
-            SaveShipDialog::SaveGoalType::FullShip);
+        mShipSaveDialog = std::make_unique<ShipSaveDialog>(this);
     }
 
-    auto const res = mSaveShipDialog->ShowModal();
+    auto const res = mShipSaveDialog->ShowModal(
+        mController->GetModelController().GetModel().GetShipMetadata().ShipName,
+        ShipSaveDialog::GoalType::FullShip);
+
     if (res == wxID_CANCEL)
     {
         // Nothing to do
@@ -1902,7 +1902,7 @@ bool MainFrame::SaveShipAs()
     }
 
     // Save ship
-    auto const shipFilePath = std::filesystem::path(mSaveShipDialog->GetPath().ToStdString());
+    auto const shipFilePath = std::filesystem::path(mShipSaveDialog->GetPath().ToStdString());
     DoSaveShip(shipFilePath);
     return true;
 }
