@@ -1724,7 +1724,7 @@ void MainFrame::OnLoadShip(wxCommandEvent & /*event*/)
     LoadShip();
 }
 
-void MainFrame::OnSaveShip(wxCommandEvent & event)
+void MainFrame::OnSaveShip(wxCommandEvent & /*event*/)
 {
     SaveShip();
 }
@@ -1760,8 +1760,19 @@ void MainFrame::OnClose(wxCloseEvent & event)
     if (event.CanVeto() && mController->GetModelController().GetModel().GetIsDirty())
     {
         // Ask user if they really want
-        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
+        int result = AskUserIfSave(_("Do you want to save your changes before continuing?"));
+        if (result == wxYES)
         {
+            if (!SaveShip())
+            {
+                // Changed their mind
+                result = wxCANCEL;
+            }
+        }
+
+        if (result == wxCANCEL)
+        {
+            // Changed their mind
             event.Veto();
             return;
         }
@@ -1844,8 +1855,19 @@ void MainFrame::NewShip()
     if (mController->GetModelController().GetModel().GetIsDirty())
     {
         // Ask user if they really want
-        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
+        int result = AskUserIfSave(_("Do you want to save your changes before continuing?"));
+        if (result == wxYES)
         {
+            if (!SaveShip())
+            {
+                // Changed their mind
+                result = wxCANCEL;
+            }
+        }
+
+        if (result == wxCANCEL)
+        {
+            // Changed their mind
             return;
         }
     }
@@ -1859,8 +1881,19 @@ void MainFrame::LoadShip()
     if (mController->GetModelController().GetModel().GetIsDirty())
     {
         // Ask user if they really want
-        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
+        int result = AskUserIfSave(_("Do you want to save your changes before continuing?"));
+        if (result == wxYES)
         {
+            if (!SaveShip())
+            {
+                // Changed their mind
+                result = wxCANCEL;
+            }
+        }
+
+        if (result == wxCANCEL)
+        {
+            // Changed their mind
             return;
         }
     }
@@ -1939,8 +1972,19 @@ void MainFrame::QuitAndSwitchBackToGame()
     if (mController->GetModelController().GetModel().GetIsDirty())
     {
         // Ask user if they really want
-        if (!AskUserIfSure(_("Are you sure you want to discard your changes?")))
+        int result = AskUserIfSave(_("Do you want to save your changes before continuing?"));
+        if (result == wxYES)
         {
+            if (!SaveShip())
+            {
+                // Changed their mind
+                result = wxCANCEL;
+            }
+        }
+
+        if (result == wxCANCEL)
+        {
+            // Changed their mind
             return;
         }
     }
@@ -1998,6 +2042,12 @@ bool MainFrame::AskUserIfSure(wxString caption)
 {
     int result = wxMessageBox(caption, ApplicationName, wxICON_EXCLAMATION | wxOK | wxCANCEL | wxCENTRE);
     return (result == wxOK);
+}
+
+int MainFrame::AskUserIfSave(wxString caption)
+{
+    int result = wxMessageBox(caption, ApplicationName, wxICON_EXCLAMATION | wxYES_NO | wxCANCEL | wxCENTRE);
+    return result;
 }
 
 void MainFrame::ShowError(std::string const & message)

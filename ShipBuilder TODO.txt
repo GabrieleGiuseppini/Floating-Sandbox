@@ -29,6 +29,10 @@ https://gamejolt.com/x/permalink/comment/11511458
 	+ Tool settings panel
 	+ Check in-game
 
++ Replace "Yes/No are you sure" with "Do you want to save your changes before continuing?" -> Yes, No, Cancel
+	+ "AskUserIfSure" -> "AskUserIfSave" => returns int (wxID_YES, wxID_NO, wxID_CANCEL)
+	+ On yes, call SaveShip(), and if the latter returns false, take the Cancel route
+
 = New/Load/Save Ship
 	+ Move ShipLoadDialog/etc. under UILib
 		+ Test from game:
@@ -75,9 +79,6 @@ https://gamejolt.com/x/permalink/comment/11511458
 		- Also do load for .shp2
 			- ShipLoadDialog wildcards
 			- ShipDeSerializer
-
-- Replace "Yes/No are you sure" with "Do you want to save your changes before continuing?" -> Yes, No, Cancel
-	- On yes, call SaveShip(), and if the latter returns false, take the Cancel route
 
 = Click-And-Draw use case:
 	= Pencil tool (*)

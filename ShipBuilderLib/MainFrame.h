@@ -168,6 +168,8 @@ private:
 
     bool AskUserIfSure(wxString caption);
 
+    int AskUserIfSave(wxString caption);
+
     void ShowError(std::string const & message);
 
     void DoNewShip(std::string const & shipName);
