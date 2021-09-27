@@ -1865,9 +1865,23 @@ void MainFrame::LoadShip()
         }
     }
 
-    // TODOHERE:
-    ////- Open file load dialog
-    ////    - If OK : DoLoadShip(selected filename);
+    // Open ship load dialog
+
+    if (!mShipLoadDialog)
+    {
+        mShipLoadDialog = std::make_unique<ShipLoadDialog>(
+            this,
+            mResourceLocator);
+    }
+
+    auto const res = mShipLoadDialog->ShowModal(mShipLoadDirectories);
+
+    if (res == wxID_OK)
+    {
+        // Load ship
+        auto const shipFilePath = mShipLoadDialog->GetChosenShipFilepath();
+        DoLoadShip(shipFilePath);
+    }
 }
 
 bool MainFrame::SaveShip()
@@ -1886,6 +1900,7 @@ bool MainFrame::SaveShip()
 bool MainFrame::SaveShipAs()
 {
     // Open ship save dialog
+
     if (!mShipSaveDialog)
     {
         mShipSaveDialog = std::make_unique<ShipSaveDialog>(this);
@@ -1895,16 +1910,17 @@ bool MainFrame::SaveShipAs()
         mController->GetModelController().GetModel().GetShipMetadata().ShipName,
         ShipSaveDialog::GoalType::FullShip);
 
-    if (res == wxID_CANCEL)
+    if (res == wxID_OK)
     {
-        // Nothing to do
+        // Save ship
+        auto const shipFilePath = mShipSaveDialog->GetChosenShipFilepath();
+        DoSaveShip(shipFilePath);
+        return true;
+    }
+    else
+    {
         return false;
     }
-
-    // Save ship
-    auto const shipFilePath = std::filesystem::path(mShipSaveDialog->GetPath().ToStdString());
-    DoSaveShip(shipFilePath);
-    return true;
 }
 
 void MainFrame::SaveAndSwitchBackToGame()

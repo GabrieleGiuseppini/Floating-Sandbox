@@ -8,7 +8,6 @@
 #include "Controller.h"
 #include "IUserInterface.h"
 #include "MaterialPalette.h"
-#include "ShipSaveDialog.h"
 #include "StatusBar.h"
 #include "View.h"
 #include "WorkbenchState.h"
@@ -17,6 +16,8 @@
 #include <UILib/BitmapToggleButton.h>
 #include <UILib/LocalizationManager.h>
 #include <UILib/LoggingDialog.h>
+#include <UILib/ShipLoadDialog.h>
+#include <UILib/ShipSaveDialog.h>
 
 #include <Game/MaterialDatabase.h>
 #include <Game/ResourceLocator.h>
@@ -38,6 +39,7 @@
 #include <filesystem>
 #include <functional>
 #include <memory>
+#include <vector>
 
 namespace ShipBuilder {
 
@@ -273,6 +275,7 @@ private:
     // Dialogs
     //
 
+    std::unique_ptr<ShipLoadDialog> mShipLoadDialog;
     std::unique_ptr<ShipSaveDialog> mShipSaveDialog;
     std::unique_ptr<LoggingDialog> mLoggingDialog;
 
@@ -283,11 +286,12 @@ private:
     bool mIsMouseCapturedByWorkCanvas;
 
     //
-    // Abstract state
+    // State
     //
 
     WorkbenchState mWorkbenchState;
     std::optional<std::filesystem::path> mCurrentShipFilePath;
+    std::vector<std::filesystem::path> mShipLoadDirectories;
 };
 
 }

@@ -23,6 +23,8 @@ set  (UI_LIB_SOURCES
 	ShipLoadDialog.h
 	ShipPreviewWindow.cpp
 	ShipPreviewWindow.h
+	ShipSaveDialog.cpp
+	ShipSaveDialog.h
 	SliderControl.h
 	StandardSystemPaths.cpp
 	StandardSystemPaths.h

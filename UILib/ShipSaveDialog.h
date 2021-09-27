@@ -7,6 +7,7 @@
 
 #include <wx/filedlg.h>
 
+#include <filesystem>
 #include <string>
 
 namespace ShipBuilder {
@@ -28,6 +29,11 @@ public:
 	int ShowModal(
 		std::string const & shipName,
 		GoalType goal);
+
+	std::filesystem::path GetChosenShipFilepath() const
+	{
+		return std::filesystem::path(GetPath().ToStdString());
+	}
 
 private:
 

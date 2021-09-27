@@ -49,10 +49,9 @@ https://gamejolt.com/x/permalink/comment/11511458
 		+ UI: menu + button
 		+ Always enabled
 		+ Asks user if model dirty
-		- Open file load dialog
-			- .png, .shp
-			- .shp2
-		- If OK: invoke DoLoadShip(selected filename)
+		+ Open file load dialog
+		+ If OK: invoke DoLoadShip(selected filename)
+		- TEST: in Game, 2 dialogs
 	+ Save:
 		+ UI: menu + button 
 		+ Only enabled when dirty
