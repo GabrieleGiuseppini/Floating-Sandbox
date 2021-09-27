@@ -1996,7 +1996,7 @@ void MainFrame::OpenMaterialPalette(
 
 bool MainFrame::AskUserIfSure(wxString caption)
 {
-    int result = wxMessageBox(_("Are you sure you want to discard your changes?"), _("Are You Sure?"), wxOK | wxCANCEL);
+    int result = wxMessageBox(caption, ApplicationName, wxICON_EXCLAMATION | wxOK | wxCANCEL | wxCENTRE);
     return (result == wxOK);
 }
 
