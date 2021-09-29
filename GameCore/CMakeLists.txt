@@ -52,6 +52,7 @@ set  (SOURCES
 	PrecalculatedFunction.h
 	ProgressCallback.h
 	RunningAverage.h
+	SerializationBuffer.h
 	Settings.cpp
 	Settings.h
 	StrongTypeDef.h

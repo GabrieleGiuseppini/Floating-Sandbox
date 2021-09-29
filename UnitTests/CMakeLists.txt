@@ -37,6 +37,7 @@ set (UNIT_TEST_SOURCES
 	MemoryStreamsTests.cpp
 	ParameterSmootherTests.cpp
 	PrecalculatedFunctionTests.cpp
+	SerializationBufferTests.cpp
 	SettingsTests.cpp
 	ShaderManagerTests.cpp
 	ShipPreviewDirectoryManagerTests.cpp
