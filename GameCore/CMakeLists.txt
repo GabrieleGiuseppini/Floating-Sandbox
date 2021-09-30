@@ -20,6 +20,7 @@ set  (SOURCES
 	DeSerializationBuffer.h
 	ElementContainer.h
 	ElementIndexRangeIterator.h
+	BigEndian.h
 	EnumFlags.h
 	ExponentialSliderCore.cpp
 	ExponentialSliderCore.h
