@@ -17,6 +17,7 @@ set  (SOURCES
 	CircularList.h
 	Colors.cpp
 	Colors.h
+	DeSerializationBuffer.h
 	ElementContainer.h
 	ElementIndexRangeIterator.h
 	EnumFlags.h
@@ -51,8 +52,7 @@ set  (SOURCES
 	PrecalculatedFunction.cpp
 	PrecalculatedFunction.h
 	ProgressCallback.h
-	RunningAverage.h
-	SerializationBuffer.h
+	RunningAverage.h	
 	Settings.cpp
 	Settings.h
 	StrongTypeDef.h

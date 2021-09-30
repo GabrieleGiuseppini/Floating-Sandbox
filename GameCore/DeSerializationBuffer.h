@@ -10,11 +10,11 @@
 #include <cstring>
 #include <memory>
 
-class SerializationBuffer
+class DeSerializationBuffer
 {
 public:
 
-    SerializationBuffer(size_t capacity)
+    DeSerializationBuffer(size_t capacity)
         : mSize(0)
         , mAllocatedSize(capacity)
     {

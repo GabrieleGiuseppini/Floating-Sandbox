@@ -24,6 +24,7 @@ set (UNIT_TEST_SOURCES
 	Buffer2DTests.cpp
 	CircularListTests.cpp
 	ColorsTests.cpp
+	DeSerializationBufferTests.cpp
 	EnumFlagsTests.cpp
 	FixedSizeVectorTests.cpp
 	FloatingPointTests.cpp
@@ -37,7 +38,6 @@ set (UNIT_TEST_SOURCES
 	MemoryStreamsTests.cpp
 	ParameterSmootherTests.cpp
 	PrecalculatedFunctionTests.cpp
-	SerializationBufferTests.cpp
 	SettingsTests.cpp
 	ShaderManagerTests.cpp
 	ShipPreviewDirectoryManagerTests.cpp

@@ -1,4 +1,4 @@
-#include <GameCore/SerializationBuffer.h>
+#include <GameCore/DeSerializationBuffer.h>
 
 #include "gtest/gtest.h"
 
@@ -15,9 +15,9 @@ struct TestElement
 
 #pragma pack(pop)
 
-TEST(SerializationBufferTests, ReserveAndAdvance)
+TEST(DeSerializationBufferTests, ReserveAndAdvance)
 {
-    SerializationBuffer b(4);
+    DeSerializationBuffer b(4);
 
     ASSERT_EQ(b.GetSize(), 0);
 
@@ -64,9 +64,9 @@ TEST(SerializationBufferTests, ReserveAndAdvance)
     EXPECT_EQ(verifyElement2->c, 18193);
 }
 
-TEST(SerializationBufferTests, Append_Struct)
+TEST(DeSerializationBufferTests, Append_Struct)
 {
-    SerializationBuffer b(512);
+    DeSerializationBuffer b(512);
 
     // Simulate writing an image
 
@@ -103,9 +103,9 @@ TEST(SerializationBufferTests, Append_Struct)
     EXPECT_EQ(verifyElement2->c, 1109);
 }
 
-TEST(SerializationBufferTests, Append_Bytes)
+TEST(DeSerializationBufferTests, Append_Bytes)
 {
-    SerializationBuffer b(512);
+    DeSerializationBuffer b(512);
 
     // 1
 
@@ -136,9 +136,9 @@ TEST(SerializationBufferTests, Append_Bytes)
     EXPECT_EQ(b.GetData()[7], 19);
 }
 
-TEST(SerializationBufferTests, Receive)
+TEST(DeSerializationBufferTests, Receive)
 {
-    SerializationBuffer b(512);
+    DeSerializationBuffer b(512);
 
     // Simulate writing an image
 
