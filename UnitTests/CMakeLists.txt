@@ -19,13 +19,13 @@ set_property(
 set (UNIT_TEST_SOURCES
 	AABBTests.cpp
 	AlgorithmsTests.cpp
-	BigEndianTests.cpp
 	BoundedVectorTests.cpp
 	BufferTests.cpp
 	Buffer2DTests.cpp
 	CircularListTests.cpp
 	ColorsTests.cpp
 	DeSerializationBufferTests.cpp
+	EndianTests.cpp
 	EnumFlagsTests.cpp
 	FixedSizeVectorTests.cpp
 	FloatingPointTests.cpp

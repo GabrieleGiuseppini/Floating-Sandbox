@@ -1,18 +1,31 @@
-#include <GameCore/BigEndian.h>
+#include <GameCore/Endian.h>
+
+#include <GameCore/SysSpecifics.h>
 
 #include "gtest/gtest.h"
 
 #include <limits>
 
-TEST(BigEndianTests, uint16_t_TODO)
-{
-    unsigned char bigEndianBuffer[] = { 0x01, 0x04 };
+#if FS_IS_ARCHITECTURE_X86_64() || FS_IS_ARCHITECTURE_X86_32()
 
-    std::uint16_t value = *(reinterpret_cast<std::uint16_t *>(bigEndianBuffer));
-    EXPECT_EQ(value, uint16_t(0x0401));
+TEST(EndianTests, uint16_t_Nativex86_vs_LittleEndianess)
+{
+    {
+        unsigned char bigEndianBuffer[] = { 0x01, 0x04 };
+        std::uint16_t value = *(reinterpret_cast<std::uint16_t *>(bigEndianBuffer));
+        EXPECT_EQ(value, uint16_t(0x0401));
+    }
+
+    {
+        std::uint16_t sourceValue = 0x0401;
+        std::uint16_t value = LittleEndian<std::uint16_t>::Read(reinterpret_cast<unsigned char const *>(&sourceValue));
+        EXPECT_EQ(value, sourceValue);
+    }
 }
 
-TEST(BigEndianTests, uint16_t_Read)
+#endif
+
+TEST(EndianTests, uint16_t_Read_Big)
 {
     {
         unsigned char bigEndianBuffer[] = { 0x01, 0x04 };
@@ -33,7 +46,7 @@ TEST(BigEndianTests, uint16_t_Read)
     }
 }
 
-TEST(BigEndianTests, uint16_t_Write)
+TEST(EndianTests, uint16_t_Write)
 {
     unsigned char bigEndianBuffer[4];
 
@@ -62,7 +75,7 @@ TEST(BigEndianTests, uint16_t_Write)
     }
 }
 
-TEST(BigEndianTests, uint32_t_Read)
+TEST(EndianTests, uint32_t_Read)
 {
     {
         unsigned char bigEndianBuffer[] = { 0x01, 0x04, 0xff, 0x0a };
@@ -83,7 +96,7 @@ TEST(BigEndianTests, uint32_t_Read)
     }
 }
 
-class BigEndianFloatTest : public testing::TestWithParam<float>
+class EndianFloatTest : public testing::TestWithParam<float>
 {
 public:
     virtual void SetUp() {}
@@ -91,8 +104,8 @@ public:
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    BigEndianTests,
-    BigEndianFloatTest,
+    EndianTests,
+    EndianFloatTest,
     ::testing::Values(
         1.0f,
         -1.0f,
@@ -102,7 +115,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::numeric_limits<float>::lowest()
     ));
 
-TEST_P(BigEndianFloatTest, float_WriteRead)
+TEST_P(EndianFloatTest, float_WriteRead)
 {
     unsigned char bigEndianBuffer[4];
 
