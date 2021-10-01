@@ -15,6 +15,8 @@ struct TestElement
 
 #pragma pack(pop)
 
+// TODO: copies with growth
+
 TEST(DeSerializationBufferTests, ReserveAndAdvance)
 {
     DeSerializationBuffer b(4);
