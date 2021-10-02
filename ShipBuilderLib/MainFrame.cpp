@@ -2101,12 +2101,21 @@ void MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
 
 void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)
 {
-    // TODOHERE
+    assert(mController);
 
-    // TODO: after saved:
+    // Get ship definition
+    auto shipDefinition = mController->GetModelController().MakeShipDefinition();
 
-    //// TODO: reset mCurrentShipFilePath
+    // Save ship
+    ShipDeSerializer::SaveShip(
+        shipDefinition,
+        shipFilePath);
+
+    // Reset current ship file path
+    mCurrentShipFilePath = shipFilePath;
+
     // Clear dirtyness
+    mController->ClearModelDirty();
 }
 
 void MainFrame::RecalculateWorkCanvasPanning()

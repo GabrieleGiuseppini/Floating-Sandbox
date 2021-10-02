@@ -6,6 +6,7 @@
 #include "ShipDeSerializer.h"
 
 #include "ImageFileTools.h"
+#include "ShipDefinitionDeSerializer.h"
 
 #include <GameCore/GameException.h>
 
@@ -15,7 +16,11 @@ ShipDefinition ShipDeSerializer::LoadShip(
     std::filesystem::path const & shipFilePath,
     MaterialDatabase const & materialDatabase)
 {
-    if (IsImageDefinitionFile(shipFilePath))
+    if (IsShipDefinitionFile(shipFilePath))
+    {
+        return ShipDefinitionDeSerializer::Load(shipFilePath);
+    }
+    else if (IsImageDefinitionFile(shipFilePath))
     {
         return LoadImageDefinition(shipFilePath, materialDatabase);
     }
@@ -31,7 +36,11 @@ ShipDefinition ShipDeSerializer::LoadShip(
 
 ShipPreview ShipDeSerializer::LoadShipPreview(std::filesystem::path const & shipFilePath)
 {
-    if (IsImageDefinitionFile(shipFilePath))
+    if (IsShipDefinitionFile(shipFilePath))
+    {
+        return ShipDefinitionDeSerializer::LoadPreview(shipFilePath);
+    }
+    else if (IsImageDefinitionFile(shipFilePath))
     {
         return LoadShipPreviewFromImageDefinitionFile(shipFilePath);
     }
@@ -49,7 +58,16 @@ void ShipDeSerializer::SaveShip(
     ShipDefinition const & shipDefinition,
     std::filesystem::path const & shipFilePath)
 {
-    // TODOHERE
+    ShipDefinitionDeSerializer::Save(
+        shipDefinition,
+        shipFilePath);
+}
+
+///////////////////////////////////////////////////////
+
+bool ShipDeSerializer::IsShipDefinitionFile(std::filesystem::path const & shipFilePath)
+{
+    return Utils::CaseInsensitiveEquals(shipFilePath.extension().string(), GetShipDefinitionFileExtension());
 }
 
 bool ShipDeSerializer::IsImageDefinitionFile(std::filesystem::path const & shipFilePath)
@@ -736,3 +754,7 @@ ShipDefinition ShipDeSerializer::LoadFromDefinitionImages(
         physicsData,
         autoTexturizationSettings);
 }
+
+///////////////////////////////////////////////////////
+// .shp2
+///////////////////////////////////////////////////////

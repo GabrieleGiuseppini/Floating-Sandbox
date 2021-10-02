@@ -40,6 +40,22 @@ public:
 };
 
 template<typename TEndianess>
+class Endian<std::uint8_t, TEndianess>
+{
+public:
+
+    static uint8_t Read(unsigned char const * ptr) noexcept
+    {
+        return *(reinterpret_cast<std::uint8_t const *>(ptr));
+    }
+
+    static void Write(std::uint8_t const & value, unsigned char * ptr) noexcept
+    {
+        *reinterpret_cast<std::uint8_t *>(ptr) = value;
+    }
+};
+
+template<typename TEndianess>
 class Endian<std::uint16_t, TEndianess>
 {
 public:

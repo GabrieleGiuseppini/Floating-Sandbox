@@ -62,6 +62,8 @@ public:
         return *mModelController;
     }
 
+    void ClearModelDirty();
+
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
     void RestoreLayerBufferRegion(

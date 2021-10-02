@@ -86,6 +86,12 @@ Controller::Controller(
     mUserInterface.OnCurrentToolChanged(mCurrentTool->GetType());
 }
 
+void Controller::ClearModelDirty()
+{
+    mModelController->ClearIsDirty();
+    mUserInterface.OnModelDirtyChanged();
+}
+
 void Controller::NewStructuralLayer()
 {
     mModelController->NewStructuralLayer();

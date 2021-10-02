@@ -50,7 +50,7 @@ std::vector<std::filesystem::path> ShipPreviewDirectoryManager::EnumerateShipFil
         std::back_inserter(shipFilePaths),
         [](auto const & filePath)
         {
-            return ShipDeSerializer::IsShipDefinitionFile(filePath);
+            return ShipDeSerializer::IsAnyShipDefinitionFile(filePath);
         });
 
     //

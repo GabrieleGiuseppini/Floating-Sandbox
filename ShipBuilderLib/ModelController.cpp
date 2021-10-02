@@ -51,6 +51,21 @@ ModelController::ModelController(
     UploadStructuralLayerToView();
 }
 
+ShipDefinition ModelController::MakeShipDefinition() const
+{
+    auto structuralLayerBuffer = mModel.CloneStructuralLayerBuffer();
+
+    return ShipDefinition(
+        mModel.GetShipSize(),
+        std::move(*structuralLayerBuffer),
+        nullptr, // TODOHERE
+        nullptr, // TODOHERE
+        nullptr, // TODOHERE
+        mModel.GetShipMetadata(),
+        ShipPhysicsData(), // TODOHERE
+        std::nullopt);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Structural
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -72,13 +72,33 @@ https://gamejolt.com/x/permalink/comment/11511458
 	+ DoLoadShip:
 		+ Do
 		+ Store filename as mCurrentFilename
-	- DoSaveShip:
-		- ShipDeSerializer:
-			- Save(ShipDefinition const &)
-		- Store filename as mCurrentFilename
+	= DoSaveShip:
+		- TODOHERE: Decide if should incorporate PhysicsData nad AutoTexturizationSettings in Metadata
+		= ShipDeSerializer::Save(ShipDefinition const &)
+			+ Header
+			- Metadata
+				- TODOHERE: depends on decision aove
+				- Unit tests
+			- Structural layer
+			- Electrical layer
+			- Ropes layer
+			- Texture layer
+				- Using DevIL lump or stream
+			- Password hash
+				- TODOHERE: decide workflow
+		+ Store filename as mCurrentFilename
 		- Also do load for .shp2
 			- ShipLoadDialog wildcards
-			- ShipDeSerializer
+			- ShipDeSerializer::Load():
+				- Header: check
+				- Metadata
+				- Structural layer
+				- Electrical layer
+				- Ropes layer
+				- Texture layer
+					- Using DevIL lump or stream
+				- Password hash
+
 
 = Click-And-Draw use case:
 	= Pencil tool (*)
@@ -394,15 +414,16 @@ https://gamejolt.com/x/permalink/comment/11511458
 		+ FW and BG materials: always "defaults" from MaterialsDB
 		- other settings: loaded from SB::PreferencesManager
 
-- Ship file format:
-	- Fixed endianness
-		- See https://github.com/voidah/archive/blob/master/archive.h
+= Ship file format:
+	+ Fixed endianness
+		+ See https://github.com/voidah/archive/blob/master/archive.h
 	- FS version
 		- Only used for warnings in case materials not found and cur version > file version
 	- "File lock" which disallows editing
 		- Password from user; salted -> Hash in file
 		- Verify hash matches when editing
 			- Algo at ShipDeSerializer via static helper methods
+		- Workflow at a) ShipBuilder::Open and b) Game::EditInShipBuilder
 	- Also includes sounds
 		- Extract from other "TODO" .txt file
 

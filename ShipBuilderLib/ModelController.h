@@ -35,6 +35,8 @@ public:
         ShipDefinition && shipDefinition,
         View & view);
 
+    ShipDefinition MakeShipDefinition() const;
+
     void SetLayerDirty(LayerType layer)
     {
         mModel.SetIsDirty(layer);
@@ -43,6 +45,11 @@ public:
     void RestoreDirtyState(Model::DirtyState const & dirtyState)
     {
         mModel.SetDirtyState(dirtyState);
+    }
+
+    void ClearIsDirty()
+    {
+        mModel.ClearIsDirty();
     }
 
     //

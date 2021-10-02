@@ -12,6 +12,7 @@
 #include <GameCore/ImageData.h>
 #include <GameCore/Utils.h>
 
+#include <cstdint>
 #include <filesystem>
 #include <optional>
 
@@ -22,14 +23,14 @@ class ShipDeSerializer
 {
 public:
 
-    static std::string GetImageDefinitionFileExtension()
-    {
-        return ".png";
-    }
-
     static std::string GetShipDefinitionFileExtension()
     {
         return ".shp2";
+    }
+
+    static std::string GetImageDefinitionFileExtension()
+    {
+        return ".png";
     }
 
     static std::string GetLegacyShpShipDefinitionFileExtension()
@@ -37,9 +38,10 @@ public:
         return ".shp";
     }
 
-    static bool IsShipDefinitionFile(std::filesystem::path const & filepath)
+    static bool IsAnyShipDefinitionFile(std::filesystem::path const & filepath)
     {
-        return IsImageDefinitionFile(filepath)
+        return IsShipDefinitionFile(filepath)
+            || IsImageDefinitionFile(filepath)
             || IsLegacyShpShipDefinitionFile(filepath);
     }
 
@@ -82,6 +84,8 @@ private:
             , AutoTexturizationSettings(autoTexturizationSettings)
         {}
     };
+
+    static bool IsShipDefinitionFile(std::filesystem::path const & shipFilePath);
 
     static bool IsImageDefinitionFile(std::filesystem::path const & shipFilePath);
 
