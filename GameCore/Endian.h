@@ -14,7 +14,7 @@ public:
 
     static bool ShouldSwap()
     {
-        static const uint16_t swapTest = 1;
+        static uint16_t const swapTest = 1;
         return (*((char *)&swapTest) == 1);
     }
 };
