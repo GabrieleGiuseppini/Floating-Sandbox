@@ -123,6 +123,47 @@ public:
 };
 
 template<typename TEndianess>
+class Endian<std::uint64_t, TEndianess>
+{
+public:
+
+    static uint64_t Read(unsigned char const * ptr) noexcept
+    {
+        if (TEndianess::ShouldSwap())
+        {
+            return (static_cast<std::uint64_t>(ptr[0]) << 56) | (static_cast<std::uint64_t>(ptr[1]) << 48)
+                | (static_cast<std::uint64_t>(ptr[2]) << 40) | (static_cast<std::uint64_t>(ptr[3]) << 32)
+                | (static_cast<std::uint64_t>(ptr[4]) << 24) | (static_cast<std::uint64_t>(ptr[5] << 16))
+                | (static_cast<std::uint64_t>(ptr[6]) << 8) | static_cast<std::uint64_t>(ptr[7]);
+        }
+        else
+        {
+            return *(reinterpret_cast<std::uint64_t const *>(ptr));
+        }
+    }
+
+    static void Write(std::uint64_t const & value, unsigned char * ptr) noexcept
+    {
+        if (TEndianess::ShouldSwap())
+        {
+            unsigned char const * vPtr = reinterpret_cast<unsigned char const *>(&value);
+            ptr[0] = vPtr[7];
+            ptr[1] = vPtr[6];
+            ptr[2] = vPtr[5];
+            ptr[3] = vPtr[4];
+            ptr[4] = vPtr[3];
+            ptr[5] = vPtr[2];
+            ptr[6] = vPtr[1];
+            ptr[7] = vPtr[0];
+        }
+        else
+        {
+            *reinterpret_cast<std::uint64_t *>(ptr) = value;
+        }
+    }
+};
+
+template<typename TEndianess>
 class Endian<float, TEndianess>
 {
 public:

@@ -73,31 +73,34 @@ https://gamejolt.com/x/permalink/comment/11511458
 		+ Do
 		+ Store filename as mCurrentFilename
 	= DoSaveShip:
-		- TODOHERE: Decide if should incorporate PhysicsData nad AutoTexturizationSettings in Metadata
+		- Preview workflow:
+			- ShipPreview from .shp2 contains .shp2 filepath itself
+			- ShipPreview::LoadPreviewImage: if type is shp2, call ShipDefinitionFormatDeSerializer::LoadPreviewImage(filepath)
+					- Then do the resize via ImageTools
+				- else: type can only be png, throw if not
+				- Then, extra logic				
 		= ShipDeSerializer::Save(ShipDefinition const &)
 			+ Header
-			- Metadata
-				- TODOHERE: depends on decision aove
+			= Metadata
+				+ Contains PasswordHash
 				- Unit tests
 			- Structural layer
+				- Using DevIL lump, See https://github.com/DentonW/DevIL/blob/master/DevIL/src-IL/src/il_io.cpp#L2490
 			- Electrical layer
+				- ...
 			- Ropes layer
 			- Texture layer
-				- Using DevIL lump or stream
-			- Password hash
-				- TODOHERE: decide workflow
+				- Using DevIL lump, see https://github.com/DentonW/DevIL/blob/master/DevIL/src-IL/src/il_io.cpp#L2490
+			- PhysicsData
+			- AutoTexturizationSettings
 		+ Store filename as mCurrentFilename
 		- Also do load for .shp2
 			- ShipLoadDialog wildcards
 			- ShipDeSerializer::Load():
-				- Header: check
+				- Header: check (via helper)
 				- Metadata
-				- Structural layer
-				- Electrical layer
-				- Ropes layer
-				- Texture layer
-					- Using DevIL lump or stream
-				- Password hash
+				- ...
+				- Verify tail
 
 
 = Click-And-Draw use case:
@@ -420,10 +423,12 @@ https://gamejolt.com/x/permalink/comment/11511458
 	- FS version
 		- Only used for warnings in case materials not found and cur version > file version
 	- "File lock" which disallows editing
-		- Password from user; salted -> Hash in file
-		- Verify hash matches when editing
-			- Algo at ShipDeSerializer via static helper methods
-		- Workflow at a) ShipBuilder::Open and b) Game::EditInShipBuilder
+		! Password from user; salted -> Hash in Metadata
+		! Verify hash matches when editing
+		- Hash algo at ShipDeSerializer via static helper method
+		- Workflows
+			- Save: ShipDeSerializer::CalculatePasswordHash(password): +salt => hash (new GameType) => in metadata
+			- ShipBuilder::Open and Game::EditInShipBuilder: After load, ShipDeSerializer::CalculatePasswordHash(password) => check with metadata
 	- Also includes sounds
 		- Extract from other "TODO" .txt file
 

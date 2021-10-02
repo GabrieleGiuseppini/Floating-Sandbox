@@ -6,7 +6,7 @@
 #include "ShipDeSerializer.h"
 
 #include "ImageFileTools.h"
-#include "ShipDefinitionDeSerializer.h"
+#include "ShipDefinitionFormatDeSerializer.h"
 
 #include <GameCore/GameException.h>
 
@@ -18,7 +18,7 @@ ShipDefinition ShipDeSerializer::LoadShip(
 {
     if (IsShipDefinitionFile(shipFilePath))
     {
-        return ShipDefinitionDeSerializer::Load(shipFilePath);
+        return ShipDefinitionFormatDeSerializer::Load(shipFilePath);
     }
     else if (IsImageDefinitionFile(shipFilePath))
     {
@@ -38,7 +38,7 @@ ShipPreview ShipDeSerializer::LoadShipPreview(std::filesystem::path const & ship
 {
     if (IsShipDefinitionFile(shipFilePath))
     {
-        return ShipDefinitionDeSerializer::LoadPreview(shipFilePath);
+        return ShipDefinitionFormatDeSerializer::LoadPreview(shipFilePath);
     }
     else if (IsImageDefinitionFile(shipFilePath))
     {
@@ -58,7 +58,7 @@ void ShipDeSerializer::SaveShip(
     ShipDefinition const & shipDefinition,
     std::filesystem::path const & shipFilePath)
 {
-    ShipDefinitionDeSerializer::Save(
+    ShipDefinitionFormatDeSerializer::Save(
         shipDefinition,
         shipFilePath);
 }
@@ -331,7 +331,8 @@ ShipDeSerializer::JsonDefinition ShipDeSerializer::LoadLegacyShpShipDefinitionJs
             description,
             electricalPanelMetadata,
             doHideElectricalsInPreview,
-            doHideHDInPreview),
+            doHideHDInPreview,
+            std::nullopt), // Password
         ShipPhysicsData(
             offset,
             internalPressure),

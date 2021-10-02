@@ -34,6 +34,8 @@ public:
     bool DoHideElectricalsInPreview;
     bool DoHideHDInPreview;
 
+    std::optional<PasswordHash> Password;
+
     explicit ShipMetadata(std::string shipName)
         : ShipName(std::move(shipName))
         , Author()
@@ -43,6 +45,7 @@ public:
         , ElectricalPanelMetadata()
         , DoHideElectricalsInPreview(false)
         , DoHideHDInPreview(false)
+        , Password()
     {
     }
 
@@ -54,7 +57,8 @@ public:
         std::optional<std::string> description,
         std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> electricalPanelMetadata,
         bool doHideElectricalsInPreview,
-        bool doHideHDInPreview)
+        bool doHideHDInPreview,
+        std::optional<PasswordHash> password)
         : ShipName(std::move(shipName))
         , Author(std::move(author))
         , ArtCredits(std::move(artCredits))
@@ -63,6 +67,7 @@ public:
         , ElectricalPanelMetadata(std::move(electricalPanelMetadata))
         , DoHideElectricalsInPreview(doHideElectricalsInPreview)
         , DoHideHDInPreview(doHideHDInPreview)
+        , Password(password)
     {
     }
 

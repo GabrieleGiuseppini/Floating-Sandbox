@@ -16,7 +16,7 @@
 /*
  * All the logic to load and save ships from and to .shp2 files.
  */
-class ShipDefinitionDeSerializer
+class ShipDefinitionFormatDeSerializer
 {
 public:
 
@@ -40,14 +40,42 @@ private:
         RopesLayer = 3,
         TextureLayer = 4,
         Metadata = 5,
-        PasswordHash = 6
+        PhysicsData = 6,
+        AutoTexturizationSettings = 7,
+
+        Tail = 0xffffffff
+    };
+
+    enum class MetadataTagType : std::uint32_t
+    {
+        // Numeric values are serialized in ship files, changing them will result
+        // in ship files being un-deserializable!
+
+        ShipName = 1,
+        Author = 2,
+        ArtCredits = 3,
+        YearBuilt = 4,
+        Description = 5,
+        ElectricalPanelMetadata = 6,
+        Password = 7
     };
 
 private:
 
-    static void WriteHeader(DeSerializationBuffer<BigEndianess> & buffer);
+    static void AppendHeader(DeSerializationBuffer<BigEndianess> & buffer);
 
-    static void WriteMetadata(
+    static void AppendMetadata(
         ShipMetadata const & metadata,
         DeSerializationBuffer<BigEndianess> & buffer);
+
+    template<typename T>
+    static size_t AppendMetadataEntry(
+        ShipDefinitionFormatDeSerializer::MetadataTagType tag,
+        T const & value,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+private:
+
+    friend class ShipDefinitionFormatDeSerializerTests_Metadata_Full_WithoutElectricalPanel_Test;
+    friend class ShipDefinitionFormatDeSerializerTests_Metadata_Minimal_WithoutElectricalPanel_Test;
 };

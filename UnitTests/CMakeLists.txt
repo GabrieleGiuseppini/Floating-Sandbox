@@ -41,7 +41,7 @@ set (UNIT_TEST_SOURCES
 	PrecalculatedFunctionTests.cpp
 	SettingsTests.cpp
 	ShaderManagerTests.cpp
-	ShipDefinitionDeSerializerTests.cpp
+	ShipDefinitionFormatDeSerializerTests.cpp
 	ShipPreviewDirectoryManagerTests.cpp
 	SliderCoreTests.cpp
 	StrongTypeDefTests.cpp

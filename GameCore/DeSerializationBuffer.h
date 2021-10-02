@@ -130,6 +130,9 @@ public:
         // Serialize chars
         std::memcpy(mBuffer.get() + mSize + sizeof(std::uint32_t), value.data(), length);
 
+        // Advance
+        mSize += requiredSize;
+
         return requiredSize;
     }
 

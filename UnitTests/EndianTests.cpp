@@ -167,6 +167,48 @@ TEST(EndianTests, uint32_t_Read_Little)
     }
 }
 
+TEST(EndianTests, uint64_t_Read_Big)
+{
+    {
+        unsigned char endianBuffer[] = { 0x01, 0x04, 0xff, 0x0a, 0x02, 0x09, 0xaa, 0x04 };
+        std::uint64_t value = BigEndian<std::uint64_t>::Read(endianBuffer);
+        EXPECT_EQ(value, uint64_t(0x0104ff0a0209aa04));
+    }
+
+    {
+        unsigned char endianBuffer[] = { 0xff, 0x00, 0x01, 0x02, 0xaa, 0xbb, 0xcc, 0xdd };
+        std::uint64_t value = BigEndian<std::uint64_t>::Read(endianBuffer);
+        EXPECT_EQ(value, uint64_t(0xff000102aabbccdd));
+    }
+
+    {
+        unsigned char endianBuffer[] = { 0x00, 0x01, 0x02, 0x0f, 0x05, 0x77, 0xaa, 0xff };
+        std::uint64_t value = BigEndian<std::uint64_t>::Read(endianBuffer);
+        EXPECT_EQ(value, uint64_t(0x0001020f0577aaff));
+    }
+}
+
+TEST(EndianTests, uint64_t_Read_Little)
+{
+    {
+        unsigned char endianBuffer[] = { 0x01, 0x04, 0xff, 0x0a, 0x02, 0x09, 0xaa, 0x04 };
+        std::uint64_t value = LittleEndian<std::uint64_t>::Read(endianBuffer);
+        EXPECT_EQ(value, uint64_t(0x04aa09020aff0401));
+    }
+
+    {
+        unsigned char endianBuffer[] = { 0xff, 0x00, 0x01, 0x02, 0xaa, 0xbb, 0xcc, 0xdd };
+        std::uint64_t value = LittleEndian<std::uint64_t>::Read(endianBuffer);
+        EXPECT_EQ(value, uint64_t(0xddccbbaa020100ff));
+    }
+
+    {
+        unsigned char endianBuffer[] = { 0x00, 0x01, 0x02, 0x0f, 0x05, 0x77, 0xaa, 0xff };
+        std::uint64_t value = LittleEndian<std::uint64_t>::Read(endianBuffer);
+        EXPECT_EQ(value, uint64_t(0xffaa77050f020100));
+    }
+}
+
 class EndianFloatTest_Big : public testing::TestWithParam<float>
 {
 public:
