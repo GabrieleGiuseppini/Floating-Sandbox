@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 
 /*
  * All the logic to load and save ships from and to .shp2 files.
@@ -77,9 +78,18 @@ private:
 
     // Write
 
-    static void AppendFileHeader(DeSerializationBuffer<BigEndianess> & buffer);
+    static void AppendFileHeader(
+        std::ofstream & outputFile,
+        DeSerializationBuffer<BigEndianess> & buffer);
 
-    static void AppendMetadata(
+    template<typename TSectionAppender>
+    static void AppendSection(
+        std::ofstream & outputFile,
+        std::uint32_t tag,
+        TSectionAppender const & sectionAppender,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static size_t AppendMetadata(
         ShipMetadata const & metadata,
         DeSerializationBuffer<BigEndianess> & buffer);
 
@@ -89,11 +99,14 @@ private:
         T const & value,
         DeSerializationBuffer<BigEndianess> & buffer);
 
-    static void AppendFileTail(DeSerializationBuffer<BigEndianess> & buffer);
-
     // Read
 
     static std::ifstream OpenFileForRead(std::filesystem::path const & shipFilePath);
+
+    static void ReadIntoBuffer(
+        std::ifstream & inputFile,
+        DeSerializationBuffer<BigEndianess> & buffer,
+        size_t size);
 
     static void ReadFileHeader(
         std::ifstream & inputFile,
@@ -108,9 +121,7 @@ private:
         size_t offset);
 
     static void ReadMetadata(
-        std::ifstream & inputFile,
         DeSerializationBuffer<BigEndianess> & buffer,
-        size_t size,
         ShipMetadata & metadata);
 
     static void ThrowInvalidFile();

@@ -41,7 +41,8 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(std::filesystem::path cons
         {
             case static_cast<uint32_t>(MainSectionTagType::Metadata):
             {
-                ReadMetadata(inputFile, buffer, sectionHeader.SectionBodySize, shipMetadata);
+                ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
+                ReadMetadata(buffer, shipMetadata);
 
                 break;
             }
@@ -58,7 +59,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(std::filesystem::path cons
                 LogMessage("WARNING: Unrecognized main section tag ", sectionHeader.Tag);
 
                 // Skip section
-                inputFile.seekg(sectionHeader.Tag, std::ios_base::cur);
+                inputFile.seekg(sectionHeader.SectionBodySize, std::ios_base::cur);
 
                 break;
             }
@@ -114,19 +115,17 @@ void ShipDefinitionFormatDeSerializer::Save(
     // Write header
     //
 
-    buffer.Reset();
-
-    AppendFileHeader(buffer);
-    outputFile.write(reinterpret_cast<char const *>(buffer.GetData()), buffer.GetSize());
+    AppendFileHeader(outputFile, buffer);
 
     //
     // Write metadata
     //
 
-    buffer.Reset();
-
-    AppendMetadata(shipDefinition.Metadata, buffer);
-    outputFile.write(reinterpret_cast<char const *>(buffer.GetData()), buffer.GetSize());
+    AppendSection(
+        outputFile,
+        static_cast<std::uint32_t>(MainSectionTagType::Metadata),
+        [&]() { return AppendMetadata(shipDefinition.Metadata, buffer); },
+        buffer);
 
     // TODOHERE: other sections
 
@@ -134,10 +133,11 @@ void ShipDefinitionFormatDeSerializer::Save(
     // Write tail
     //
 
-    buffer.Reset();
-
-    AppendFileTail(buffer);
-    outputFile.write(reinterpret_cast<char const *>(buffer.GetData()), buffer.GetSize());
+    AppendSection(
+        outputFile,
+        static_cast<std::uint32_t>(MainSectionTagType::Tail),
+        [&]() { return 0; },
+        buffer);
 
     //
     // Close file
@@ -170,8 +170,12 @@ static_assert(sizeof(FileHeader) == 32);
 
 // Write
 
-void ShipDefinitionFormatDeSerializer::AppendFileHeader(DeSerializationBuffer<BigEndianess> & buffer)
+void ShipDefinitionFormatDeSerializer::AppendFileHeader(
+    std::ofstream & outputFile,
+    DeSerializationBuffer<BigEndianess> & buffer)
 {
+    buffer.Reset();
+
     static_assert(sizeof(HeaderTitle) == 24 + 1);
 
     std::memcpy(
@@ -187,16 +191,39 @@ void ShipDefinitionFormatDeSerializer::AppendFileHeader(DeSerializationBuffer<Bi
     buffer.Append<std::uint8_t>(0);
 
     assert(buffer.GetSize() == sizeof(FileHeader));
+
+    outputFile.write(reinterpret_cast<char const *>(buffer.GetData()), buffer.GetSize());
 }
 
-void ShipDefinitionFormatDeSerializer::AppendMetadata(
+template<typename TSectionBodyAppender>
+static void ShipDefinitionFormatDeSerializer::AppendSection(
+    std::ofstream & outputFile,
+    std::uint32_t tag,
+    TSectionBodyAppender const & sectionBodyAppender,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    buffer.Reset();
+
+    // Tag
+    buffer.Append(tag);
+
+    // SectionBodySize
+    size_t const sectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+
+    // SectionBody
+    size_t const sectionBodySize = sectionBodyAppender();
+
+    // SectionBodySize, again
+    buffer.WriteAt(static_cast<std::uint32_t>(sectionBodySize), sectionBodySizeIndex);
+
+    // Serialize
+    outputFile.write(reinterpret_cast<char const *>(buffer.GetData()), buffer.GetSize());
+}
+
+size_t ShipDefinitionFormatDeSerializer::AppendMetadata(
     ShipMetadata const & metadata,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
-    buffer.Append(static_cast<std::uint32_t>(MainSectionTagType::Metadata));
-
-    size_t const headerSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
-
     size_t sectionBodySize = 0;
 
     {
@@ -253,14 +280,11 @@ void ShipDefinitionFormatDeSerializer::AppendMetadata(
 
     // Tail
     {
-        sectionBodySize += AppendMetadataEntry(
-            MetadataTagType::Tail,
-            std::uint32_t(0),
-            buffer);
+        buffer.Append(static_cast<std::uint32_t>(MetadataTagType::Tail));
+        buffer.Append(static_cast<std::uint32_t>(0));
     }
 
-    // Populate hader
-    buffer.WriteAt(static_cast<std::uint32_t>(sectionBodySize), headerSizeIndex);
+    return sectionBodySize;
 }
 
 template<typename T>
@@ -277,12 +301,6 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadataEntry(
     return sizeof(std::uint32_t) + sizeof(std::uint32_t) + valueSize;
 }
 
-void ShipDefinitionFormatDeSerializer::AppendFileTail(DeSerializationBuffer<BigEndianess> & buffer)
-{
-    buffer.Append(static_cast<uint32_t>(MainSectionTagType::Tail));
-    buffer.Append(static_cast<uint32_t>(0));
-}
-
 // Read
 
 std::ifstream ShipDefinitionFormatDeSerializer::OpenFileForRead(std::filesystem::path const & shipFilePath)
@@ -292,18 +310,28 @@ std::ifstream ShipDefinitionFormatDeSerializer::OpenFileForRead(std::filesystem:
         std::ios_base::in | std::ios_base::binary);
 }
 
-void ShipDefinitionFormatDeSerializer::ReadFileHeader(
+void ShipDefinitionFormatDeSerializer::ReadIntoBuffer(
     std::ifstream & inputFile,
-    DeSerializationBuffer<BigEndianess> & buffer)
+    DeSerializationBuffer<BigEndianess> & buffer,
+    size_t size)
 {
     buffer.Reset();
 
-    auto ptr = buffer.Receive(sizeof(FileHeader));
-    inputFile.read(reinterpret_cast<char *>(ptr), sizeof(FileHeader));
+    inputFile.read(
+        reinterpret_cast<char *>(buffer.Receive(size)),
+        size);
+
     if (!inputFile)
     {
         ThrowInvalidFile();
     }
+}
+
+void ShipDefinitionFormatDeSerializer::ReadFileHeader(
+    std::ifstream & inputFile,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    ReadIntoBuffer(inputFile, buffer, sizeof(FileHeader));
 
     if (std::memcmp(buffer.GetData(), HeaderTitle, sizeof(FileHeader::Title))
         || buffer.ReadAt<std::uint8_t>(offsetof(FileHeader, FileFormatVersion)) > CurrentFileFormatVersion)
@@ -316,15 +344,7 @@ ShipDefinitionFormatDeSerializer::SectionHeader ShipDefinitionFormatDeSerializer
     std::ifstream & inputFile,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
-    buffer.Reset();
-
-    auto ptr = buffer.Receive(sizeof(SectionHeader));
-    inputFile.read(reinterpret_cast<char *>(ptr), sizeof(SectionHeader));
-    if (!inputFile)
-    {
-        ThrowInvalidFile();
-    }
-
+    ReadIntoBuffer(inputFile, buffer, sizeof(SectionHeader));
     return ReadSectionHeader(buffer, 0);
 }
 
@@ -339,20 +359,9 @@ ShipDefinitionFormatDeSerializer::SectionHeader ShipDefinitionFormatDeSerializer
 }
 
 void ShipDefinitionFormatDeSerializer::ReadMetadata(
-    std::ifstream & inputFile,
     DeSerializationBuffer<BigEndianess> & buffer,
-    size_t size,
     ShipMetadata & metadata)
 {
-    buffer.Reset();
-
-    auto ptr = buffer.Receive(size);
-    inputFile.read(reinterpret_cast<char *>(ptr), size);
-    if (!inputFile)
-    {
-        ThrowInvalidFile();
-    }
-
     // Read all tags
     for (size_t offset = 0;;)
     {
@@ -413,10 +422,6 @@ void ShipDefinitionFormatDeSerializer::ReadMetadata(
             {
                 // Unrecognized tag
                 LogMessage("WARNING: Unrecognized metadata tag ", sectionHeader.Tag);
-
-                // Skip section
-                inputFile.seekg(sectionHeader.Tag, std::ios_base::cur);
-
                 break;
             }
         }
