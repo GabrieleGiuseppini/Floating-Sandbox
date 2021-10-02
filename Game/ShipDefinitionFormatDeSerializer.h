@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <fstream>
 
 /*
  * All the logic to load and save ships from and to .shp2 files.
@@ -30,7 +31,17 @@ public:
 
 private:
 
-    enum class SectionTagType : std::uint32_t
+#pragma pack(push, 1)
+
+    struct SectionHeader
+    {
+        std::uint32_t Tag;
+        std::uint32_t SectionBodySize; // Excluding header
+    };
+
+#pragma pack(pop)
+
+    enum class MainSectionTagType : std::uint32_t
     {
         // Numeric values are serialized in ship files, changing them will result
         // in ship files being un-deserializable!
@@ -57,12 +68,16 @@ private:
         YearBuilt = 4,
         Description = 5,
         ElectricalPanelMetadata = 6,
-        Password = 7
+        Password = 7,
+
+        Tail = 0xffffffff
     };
 
 private:
 
-    static void AppendHeader(DeSerializationBuffer<BigEndianess> & buffer);
+    // Write
+
+    static void AppendFileHeader(DeSerializationBuffer<BigEndianess> & buffer);
 
     static void AppendMetadata(
         ShipMetadata const & metadata,
@@ -73,6 +88,32 @@ private:
         ShipDefinitionFormatDeSerializer::MetadataTagType tag,
         T const & value,
         DeSerializationBuffer<BigEndianess> & buffer);
+
+    static void AppendFileTail(DeSerializationBuffer<BigEndianess> & buffer);
+
+    // Read
+
+    static std::ifstream OpenFileForRead(std::filesystem::path const & shipFilePath);
+
+    static void ReadFileHeader(
+        std::ifstream & inputFile,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static SectionHeader ReadSectionHeader(
+        std::ifstream & inputFile,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static SectionHeader ReadSectionHeader(
+        DeSerializationBuffer<BigEndianess> const & buffer,
+        size_t offset);
+
+    static void ReadMetadata(
+        std::ifstream & inputFile,
+        DeSerializationBuffer<BigEndianess> & buffer,
+        size_t size,
+        ShipMetadata & metadata);
+
+    static void ThrowInvalidFile();
 
 private:
 

@@ -154,7 +154,7 @@ public:
      * Reads a value from the specified index.
      */
     template<typename T>
-    T ReadAt(size_t index)
+    T ReadAt(size_t index) const
     {
         assert(index + sizeof(T) <= mAllocatedSize);
 
@@ -165,7 +165,7 @@ public:
      * Reads a string at the specified index.
      */
     template<>
-    std::string ReadAt<std::string>(size_t index)
+    std::string ReadAt<std::string>(size_t index) const
     {
         // Read length
         assert(index + sizeof(std::uint32_t) <= mAllocatedSize);

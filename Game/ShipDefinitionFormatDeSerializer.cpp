@@ -6,24 +6,83 @@
 #include "ShipDefinitionFormatDeSerializer.h"
 
 #include <GameCore/GameException.h>
+#include <GameCore/Log.h>
 #include <GameCore/Version.h>
 
 #include <cassert>
-#include <fstream>
+#include <cstddef>
 
 ShipDefinition ShipDefinitionFormatDeSerializer::Load(std::filesystem::path const & shipFilePath)
 {
+    DeSerializationBuffer<BigEndianess> buffer(256);
+
+    //
+    // Open file
+    //
+
+    std::ifstream inputFile = OpenFileForRead(shipFilePath);
+
+    //
+    // Read header
+    //
+
+    ReadFileHeader(inputFile, buffer);
+
+    //
+    // Read and process sections
+    //
+
+    ShipMetadata shipMetadata = ShipMetadata(shipFilePath.filename().string());
+
+    while (true)
+    {
+        SectionHeader const sectionHeader = ReadSectionHeader(inputFile, buffer);
+        switch (sectionHeader.Tag)
+        {
+            case static_cast<uint32_t>(MainSectionTagType::Metadata):
+            {
+                ReadMetadata(inputFile, buffer, sectionHeader.SectionBodySize, shipMetadata);
+
+                break;
+            }
+
+            case static_cast<uint32_t>(MainSectionTagType::Tail) :
+            {
+                // We're done
+                break;
+            }
+
+            default:
+            {
+                // Unrecognized tag
+                LogMessage("WARNING: Unrecognized main section tag ", sectionHeader.Tag);
+
+                // Skip section
+                inputFile.seekg(sectionHeader.Tag, std::ios_base::cur);
+
+                break;
+            }
+        }
+
+        if (sectionHeader.Tag == static_cast<uint32_t>(MainSectionTagType::Tail))
+        {
+            // We're done
+            break;
+        }
+    }
+
+
     // TODOTEST
     StructuralLayerBuffer sBuf(ShipSpaceSize(10, 10));
     return ShipDefinition(
-        ShipSpaceSize(10, 10),
-        std::move(sBuf),
-        nullptr,
-        nullptr,
-        nullptr,
-        ShipMetadata("foo"),
-        ShipPhysicsData(),
-        std::nullopt);
+        ShipSpaceSize(10, 10), // TODO
+        std::move(sBuf), // TODO
+        nullptr, // TODO
+        nullptr, // TODO
+        nullptr, // TODO
+        shipMetadata,
+        ShipPhysicsData(), // TODO
+        std::nullopt); // TODO
 }
 
 ShipPreview ShipDefinitionFormatDeSerializer::LoadPreview(std::filesystem::path const & shipFilePath)
@@ -57,7 +116,7 @@ void ShipDefinitionFormatDeSerializer::Save(
 
     buffer.Reset();
 
-    AppendHeader(buffer);
+    AppendFileHeader(buffer);
     outputFile.write(reinterpret_cast<char const *>(buffer.GetData()), buffer.GetSize());
 
     //
@@ -76,8 +135,8 @@ void ShipDefinitionFormatDeSerializer::Save(
     //
 
     buffer.Reset();
-    buffer.Append(static_cast<uint32_t>(SectionTagType::Tail));
-    buffer.Append(static_cast<uint32_t>(SectionTagType::Tail));
+
+    AppendFileTail(buffer);
     outputFile.write(reinterpret_cast<char const *>(buffer.GetData()), buffer.GetSize());
 
     //
@@ -94,7 +153,9 @@ unsigned char const HeaderTitle[] = "FLOATING SANDBOX SHIP\x1a\x00\x00";
 
 uint8_t constexpr CurrentFileFormatVersion = 1;
 
-struct Header
+#pragma pack(push, 1)
+
+struct FileHeader
 {
     char Title[24];
     std::uint16_t FloatingSandboxVersionMin;
@@ -103,13 +164,13 @@ struct Header
     char Pad[3];
 };
 
-struct SectionHeader
-{
-    std::uint32_t SectionTagType;
-    std::uint32_t SectionBodySize; // Excluding header
-};
+static_assert(sizeof(FileHeader) == 32);
 
-void ShipDefinitionFormatDeSerializer::AppendHeader(DeSerializationBuffer<BigEndianess> & buffer)
+#pragma pack(pop)
+
+// Write
+
+void ShipDefinitionFormatDeSerializer::AppendFileHeader(DeSerializationBuffer<BigEndianess> & buffer)
 {
     static_assert(sizeof(HeaderTitle) == 24 + 1);
 
@@ -125,14 +186,14 @@ void ShipDefinitionFormatDeSerializer::AppendHeader(DeSerializationBuffer<BigEnd
     buffer.Append<std::uint8_t>(0);
     buffer.Append<std::uint8_t>(0);
 
-    assert(buffer.GetSize() == 32);
+    assert(buffer.GetSize() == sizeof(FileHeader));
 }
 
 void ShipDefinitionFormatDeSerializer::AppendMetadata(
     ShipMetadata const & metadata,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
-    buffer.Append(static_cast<std::uint32_t>(SectionTagType::Metadata));
+    buffer.Append(static_cast<std::uint32_t>(MainSectionTagType::Metadata));
 
     size_t const headerSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
 
@@ -190,6 +251,14 @@ void ShipDefinitionFormatDeSerializer::AppendMetadata(
             buffer);
     }
 
+    // Tail
+    {
+        sectionBodySize += AppendMetadataEntry(
+            MetadataTagType::Tail,
+            std::uint32_t(0),
+            buffer);
+    }
+
     // Populate hader
     buffer.WriteAt(static_cast<std::uint32_t>(sectionBodySize), headerSizeIndex);
 }
@@ -206,4 +275,163 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadataEntry(
     buffer.WriteAt(static_cast<std::uint32_t>(valueSize), valueSizeIndex);
 
     return sizeof(std::uint32_t) + sizeof(std::uint32_t) + valueSize;
+}
+
+void ShipDefinitionFormatDeSerializer::AppendFileTail(DeSerializationBuffer<BigEndianess> & buffer)
+{
+    buffer.Append(static_cast<uint32_t>(MainSectionTagType::Tail));
+    buffer.Append(static_cast<uint32_t>(0));
+}
+
+// Read
+
+std::ifstream ShipDefinitionFormatDeSerializer::OpenFileForRead(std::filesystem::path const & shipFilePath)
+{
+    return std::ifstream(
+        shipFilePath,
+        std::ios_base::in | std::ios_base::binary);
+}
+
+void ShipDefinitionFormatDeSerializer::ReadFileHeader(
+    std::ifstream & inputFile,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    buffer.Reset();
+
+    auto ptr = buffer.Receive(sizeof(FileHeader));
+    inputFile.read(reinterpret_cast<char *>(ptr), sizeof(FileHeader));
+    if (!inputFile)
+    {
+        ThrowInvalidFile();
+    }
+
+    if (std::memcmp(buffer.GetData(), HeaderTitle, sizeof(FileHeader::Title))
+        || buffer.ReadAt<std::uint8_t>(offsetof(FileHeader, FileFormatVersion)) > CurrentFileFormatVersion)
+    {
+        ThrowInvalidFile();
+    }
+}
+
+ShipDefinitionFormatDeSerializer::SectionHeader ShipDefinitionFormatDeSerializer::ReadSectionHeader(
+    std::ifstream & inputFile,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    buffer.Reset();
+
+    auto ptr = buffer.Receive(sizeof(SectionHeader));
+    inputFile.read(reinterpret_cast<char *>(ptr), sizeof(SectionHeader));
+    if (!inputFile)
+    {
+        ThrowInvalidFile();
+    }
+
+    return ReadSectionHeader(buffer, 0);
+}
+
+ShipDefinitionFormatDeSerializer::SectionHeader ShipDefinitionFormatDeSerializer::ReadSectionHeader(
+    DeSerializationBuffer<BigEndianess> const & buffer,
+    size_t offset)
+{
+    return SectionHeader{
+        buffer.ReadAt<std::uint32_t>(offset),
+        buffer.ReadAt<std::uint32_t>(offset + sizeof(std::uint32_t))
+    };
+}
+
+void ShipDefinitionFormatDeSerializer::ReadMetadata(
+    std::ifstream & inputFile,
+    DeSerializationBuffer<BigEndianess> & buffer,
+    size_t size,
+    ShipMetadata & metadata)
+{
+    buffer.Reset();
+
+    auto ptr = buffer.Receive(size);
+    inputFile.read(reinterpret_cast<char *>(ptr), size);
+    if (!inputFile)
+    {
+        ThrowInvalidFile();
+    }
+
+    // Read all tags
+    for (size_t offset = 0;;)
+    {
+        SectionHeader const sectionHeader = ReadSectionHeader(buffer, offset);
+        offset += sizeof(SectionHeader);
+
+        switch (sectionHeader.Tag)
+        {
+            case static_cast<uint32_t>(MetadataTagType::ArtCredits):
+            {
+                metadata.ArtCredits = buffer.ReadAt<std::string>(offset);
+                break;
+            }
+
+            case static_cast<uint32_t>(MetadataTagType::Author) :
+            {
+                metadata.Author = buffer.ReadAt<std::string>(offset);
+                break;
+            }
+
+            case static_cast<uint32_t>(MetadataTagType::Description) :
+            {
+                metadata.Description = buffer.ReadAt<std::string>(offset);
+                break;
+            }
+
+            case static_cast<uint32_t>(MetadataTagType::ElectricalPanelMetadata) :
+            {
+                // TODOHERE
+                break;
+            }
+
+            case static_cast<uint32_t>(MetadataTagType::Password) :
+            {
+                metadata.Password = static_cast<PasswordHash>(buffer.ReadAt<std::uint64_t>(offset));
+                break;
+            }
+
+            case static_cast<uint32_t>(MetadataTagType::ShipName) :
+            {
+                metadata.ShipName = buffer.ReadAt<std::string>(offset);
+                break;
+            }
+
+            case static_cast<uint32_t>(MetadataTagType::YearBuilt) :
+            {
+                metadata.YearBuilt = buffer.ReadAt<std::string>(offset);
+                break;
+            }
+
+            case static_cast<uint32_t>(MetadataTagType::Tail):
+            {
+                // We're done
+                break;
+            }
+
+            default:
+            {
+                // Unrecognized tag
+                LogMessage("WARNING: Unrecognized metadata tag ", sectionHeader.Tag);
+
+                // Skip section
+                inputFile.seekg(sectionHeader.Tag, std::ios_base::cur);
+
+                break;
+            }
+        }
+
+        if (sectionHeader.Tag == static_cast<uint32_t>(MetadataTagType::Tail))
+        {
+            // We're done
+            break;
+        }
+
+        offset += sectionHeader.SectionBodySize;
+    }
+}
+
+void ShipDefinitionFormatDeSerializer::ThrowInvalidFile()
+{
+    throw GameException("The file is not a valid ship definition file");
 }
