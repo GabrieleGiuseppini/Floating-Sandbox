@@ -282,18 +282,16 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadata(
         {
             valueSize += buffer.Append(static_cast<std::uint8_t>(entry.first));
 
-            valueSize += buffer.Append(std::uint8_t(entry.second.PanelCoordinates.has_value() ? 1 : 0));
+            valueSize += buffer.Append(entry.second.PanelCoordinates.has_value());
             if (entry.second.PanelCoordinates.has_value())
             {
-                valueSize += buffer.Append(std::uint8_t(1));
                 valueSize += buffer.Append(static_cast<std::uint8_t>(entry.second.PanelCoordinates->x));
                 valueSize += buffer.Append(static_cast<std::uint8_t>(entry.second.PanelCoordinates->y));
             }
 
-            valueSize += buffer.Append(std::uint8_t(entry.second.Label.has_value() ? 1 : 0));
+            valueSize += buffer.Append(entry.second.Label.has_value());
             if (entry.second.Label.has_value())
             {
-                valueSize += buffer.Append(std::uint8_t(1));
                 valueSize += buffer.Append(*entry.second.Label);
             }
 
@@ -383,8 +381,11 @@ void ShipDefinitionFormatDeSerializer::ReadFileHeader(
 {
     ReadIntoBuffer(inputFile, buffer, sizeof(FileHeader));
 
+    std::uint8_t fileFormatVersion;
+    buffer.ReadAt<std::uint8_t>(offsetof(FileHeader, FileFormatVersion), fileFormatVersion);
+
     if (std::memcmp(buffer.GetData(), HeaderTitle, sizeof(FileHeader::Title))
-        || buffer.ReadAt<std::uint8_t>(offsetof(FileHeader, FileFormatVersion)) > CurrentFileFormatVersion)
+        || fileFormatVersion > CurrentFileFormatVersion)
     {
         ThrowInvalidFile();
     }
@@ -402,9 +403,15 @@ ShipDefinitionFormatDeSerializer::SectionHeader ShipDefinitionFormatDeSerializer
     DeSerializationBuffer<BigEndianess> const & buffer,
     size_t offset)
 {
+    std::uint32_t tag;
+    size_t const sz1 = buffer.ReadAt<std::uint32_t>(offset, tag);
+
+    std::uint32_t sectionBodySize;
+    buffer.ReadAt<std::uint32_t>(offset + sz1, sectionBodySize);
+
     return SectionHeader{
-        buffer.ReadAt<std::uint32_t>(offset),
-        buffer.ReadAt<std::uint32_t>(offset + sizeof(std::uint32_t))
+        tag,
+        sectionBodySize
     };
 }
 
@@ -422,48 +429,93 @@ void ShipDefinitionFormatDeSerializer::ReadMetadata(
         {
             case static_cast<uint32_t>(MetadataTagType::ArtCredits):
             {
-                metadata.ArtCredits = buffer.ReadAt<std::string>(offset);
+                std::string tmpStr;
+                buffer.ReadAt<std::string>(offset, tmpStr);
+                metadata.ArtCredits = tmpStr;
+
                 break;
             }
 
             case static_cast<uint32_t>(MetadataTagType::Author) :
             {
-                metadata.Author = buffer.ReadAt<std::string>(offset);
+                std::string tmpStr;
+                buffer.ReadAt<std::string>(offset, tmpStr);
+                metadata.Author = tmpStr;
+
                 break;
             }
 
             case static_cast<uint32_t>(MetadataTagType::Description) :
             {
-                metadata.Description = buffer.ReadAt<std::string>(offset);
+                std::string tmpStr;
+                buffer.ReadAt<std::string>(offset, tmpStr);
+                metadata.Description = tmpStr;
+
                 break;
             }
 
             case static_cast<uint32_t>(MetadataTagType::DoHideElectricalsInPreview) :
             {
-                metadata.DoHideElectricalsInPreview = buffer.ReadAt<bool>(offset);
+                buffer.ReadAt<bool>(offset, metadata.DoHideElectricalsInPreview);
                 break;
             }
 
             case static_cast<uint32_t>(MetadataTagType::DoHideHDInPreview) :
             {
-                metadata.DoHideHDInPreview = buffer.ReadAt<bool>(offset);
+                buffer.ReadAt<bool>(offset, metadata.DoHideHDInPreview);
                 break;
             }
 
             case static_cast<uint32_t>(MetadataTagType::ElectricalPanelMetadataV1) :
             {
+                metadata.ElectricalPanelMetadata.clear();
+
                 size_t elecPanelOffset = offset;
 
-                std::uint16_t entryCount = buffer.ReadAt<std::uint16_t>(elecPanelOffset);
+                std::uint16_t entryCount;
+                elecPanelOffset += buffer.ReadAt<std::uint16_t>(elecPanelOffset, entryCount);
+
                 for (int i = 0; i < entryCount; ++i)
                 {
-                    ElectricalElementInstanceIndex instanceIndex = static_cast<ElectricalElementInstanceIndex>(buffer.ReadAt<std::uint8_t>(elecPanelOffset));
-                    // TODOHERE
-                    // std::uint8_t PanelCoordsHasValue
-                    // (uint8_t, uint8_t) coords
-                    // std::uint8_t LabelHasValue
-                    // (string) label
-                    // bool isHidden
+                    std::uint8_t instanceIndex;
+                    elecPanelOffset += buffer.ReadAt<std::uint8_t>(elecPanelOffset, instanceIndex);
+
+                    std::optional<IntegralCoordinates> panelCoordinates;
+                    bool panelCoordsHasValue;
+                    elecPanelOffset += buffer.ReadAt<bool>(elecPanelOffset, panelCoordsHasValue);
+                    if (panelCoordsHasValue)
+                    {
+                        uint8_t x, y;
+                        elecPanelOffset += buffer.ReadAt<std::uint8_t>(elecPanelOffset, x);
+                        elecPanelOffset += buffer.ReadAt<std::uint8_t>(elecPanelOffset, y);
+
+                        panelCoordinates = IntegralCoordinates(static_cast<int>(int8_t(x)), static_cast<int>(int8_t(y)));
+                    }
+
+                    std::optional<std::string> label;
+                    bool labelHasValue;
+                    elecPanelOffset += buffer.ReadAt<bool>(elecPanelOffset, labelHasValue);
+                    if (labelHasValue)
+                    {
+                        std::string labelStr;
+                        elecPanelOffset += buffer.ReadAt<std::string>(elecPanelOffset, labelStr);
+                        label = labelStr;
+                    }
+
+                    bool isHidden;
+                    elecPanelOffset += buffer.ReadAt<bool>(elecPanelOffset, isHidden);
+
+                    auto const res = metadata.ElectricalPanelMetadata.try_emplace(
+                        static_cast<ElectricalElementInstanceIndex>(instanceIndex),
+                        ElectricalPanelElementMetadata(
+                            panelCoordinates,
+                            label,
+                            isHidden));
+
+                    if (!res.second)
+                    {
+                        LogMessage("WARNING: Duplicate electrical element instance index \"", instanceIndex, "\"");
+                    }
                 }
 
                 break;
@@ -471,19 +523,26 @@ void ShipDefinitionFormatDeSerializer::ReadMetadata(
 
             case static_cast<uint32_t>(MetadataTagType::Password) :
             {
-                metadata.Password = static_cast<PasswordHash>(buffer.ReadAt<std::uint64_t>(offset));
+                std::uint64_t password;
+                buffer.ReadAt<std::uint64_t>(offset, password);
+                metadata.Password = static_cast<PasswordHash>(password);
+
                 break;
             }
 
             case static_cast<uint32_t>(MetadataTagType::ShipName) :
             {
-                metadata.ShipName = buffer.ReadAt<std::string>(offset);
+                buffer.ReadAt<std::string>(offset, metadata.ShipName);
+
                 break;
             }
 
             case static_cast<uint32_t>(MetadataTagType::YearBuilt) :
             {
-                metadata.YearBuilt = buffer.ReadAt<std::string>(offset);
+                std::string tmpStr;
+                buffer.ReadAt<std::string>(offset, tmpStr);
+                metadata.YearBuilt = tmpStr;
+
                 break;
             }
 

@@ -23,17 +23,20 @@ TEST(DeSerializationBufferTests, BigEndian_uint16_AppendAndRead)
     DeSerializationBuffer<BigEndianess> b(16);
 
     uint16_t sourceVal1 = 0x0412;
-    size_t sz1 = b.Append<std::uint16_t>(sourceVal1);
+    size_t const sourceSize1 = b.Append<std::uint16_t>(sourceVal1);
+    EXPECT_EQ(sourceSize1, sizeof(std::uint16_t));
 
     uint16_t sourceVal2 = 0xff01;
-    size_t sz2 = b.Append<std::uint16_t>(sourceVal2);
+    size_t const sourceSize2 = b.Append<std::uint16_t>(sourceVal2);
+    EXPECT_EQ(sourceSize2, sizeof(std::uint16_t));
 
-    uint16_t targetVal1 = b.ReadAt<std::uint16_t>(0);
-    uint16_t targetVal2 = b.ReadAt<std::uint16_t>(sizeof(std::uint16_t));
-
+    uint16_t targetVal1;
+    size_t const sz1 = b.ReadAt<std::uint16_t>(0, targetVal1);
     EXPECT_EQ(sz1, sizeof(std::uint16_t));
     EXPECT_EQ(sourceVal1, targetVal1);
 
+    uint16_t targetVal2;
+    size_t const sz2 = b.ReadAt<std::uint16_t>(sz1, targetVal2);
     EXPECT_EQ(sz2, sizeof(std::uint16_t));
     EXPECT_EQ(sourceVal2, targetVal2);
 }
@@ -46,10 +49,12 @@ TEST(DeSerializationBufferTests, BigEndian_uint16_WriteAtAndRead)
     ASSERT_EQ(idx, 0);
 
     uint16_t sourceVal = 0x0412;
-    size_t sz = b.WriteAt<std::uint16_t>(sourceVal, idx);
-    uint16_t targetVal = b.ReadAt<std::uint16_t>(0);
+    size_t const sourceSize = b.WriteAt<std::uint16_t>(sourceVal, idx);
+    EXPECT_EQ(sourceSize, sizeof(std::uint16_t));
 
-    EXPECT_EQ(sz, sizeof(std::uint16_t));
+    uint16_t targetVal;
+    size_t const targetSize = b.ReadAt<std::uint16_t>(0, targetVal);
+    EXPECT_EQ(targetSize, sizeof(std::uint16_t));
     EXPECT_EQ(sourceVal, targetVal);
 }
 
@@ -58,10 +63,12 @@ TEST(DeSerializationBufferTests, BigEndian_uint32_AppendAndRead)
     DeSerializationBuffer<BigEndianess> b(16);
 
     uint32_t sourceVal = 0xffaa0088;
-    size_t sz = b.Append<std::uint32_t>(sourceVal);
-    uint32_t targetVal = b.ReadAt<std::uint32_t>(0);
+    size_t const sourceSize = b.Append<std::uint32_t>(sourceVal);
+    EXPECT_EQ(sourceSize, sizeof(std::uint32_t));
 
-    EXPECT_EQ(sz, sizeof(std::uint32_t));
+    uint32_t targetVal;
+    size_t const targetSize = b.ReadAt<std::uint32_t>(0, targetVal);
+    EXPECT_EQ(targetSize, sizeof(std::uint32_t));
     EXPECT_EQ(sourceVal, targetVal);
 }
 
@@ -73,10 +80,12 @@ TEST(DeSerializationBufferTests, BigEndian_uint32_WriteAtAndRead)
     ASSERT_EQ(idx, 0);
 
     uint32_t sourceVal = 0xff001122;
-    size_t sz = b.WriteAt<std::uint32_t>(sourceVal, idx);
-    uint32_t targetVal = b.ReadAt<std::uint32_t>(0);
+    size_t const sourceSize = b.WriteAt<std::uint32_t>(sourceVal, idx);
+    EXPECT_EQ(sourceSize, sizeof(std::uint32_t));
 
-    EXPECT_EQ(sz, sizeof(std::uint32_t));
+    uint32_t targetVal;
+    size_t const targetSize = b.ReadAt<std::uint32_t>(0, targetVal);
+    EXPECT_EQ(targetSize, sizeof(std::uint32_t));
     EXPECT_EQ(sourceVal, targetVal);
 }
 
@@ -85,18 +94,21 @@ TEST(DeSerializationBufferTests, BigEndian_uint64_AppendAndRead)
     DeSerializationBuffer<BigEndianess> b(2);
 
     uint64_t sourceVal1 = 0x1122334455667788;
-    size_t sz1 = b.Append<std::uint64_t>(sourceVal1);
+    size_t const sourceSize1 = b.Append<std::uint64_t>(sourceVal1);
+    EXPECT_EQ(sourceSize1, sizeof(std::uint64_t));
 
     uint64_t sourceVal2 = 0xffeeddccbbaa9988;
-    size_t sz2 = b.Append<std::uint64_t>(sourceVal2);
+    size_t const sourceSize2 = b.Append<std::uint64_t>(sourceVal2);
+    EXPECT_EQ(sourceSize2, sizeof(std::uint64_t));
 
-    uint64_t targetVal1 = b.ReadAt<std::uint64_t>(0);
-    uint64_t targetVal2 = b.ReadAt<std::uint64_t>(sizeof(std::uint64_t));
-
-    EXPECT_EQ(sz1, sizeof(std::uint64_t));
+    uint64_t targetVal1;
+    size_t const targetSize1 = b.ReadAt<std::uint64_t>(0, targetVal1);
+    EXPECT_EQ(targetSize1, sizeof(std::uint64_t));
     EXPECT_EQ(sourceVal1, targetVal1);
 
-    EXPECT_EQ(sz2, sizeof(std::uint64_t));
+    uint64_t targetVal2;
+    size_t const targetSize2 = b.ReadAt<std::uint64_t>(sourceSize1, targetVal2);
+    EXPECT_EQ(targetSize2, sizeof(std::uint64_t));
     EXPECT_EQ(sourceVal2, targetVal2);
 }
 
@@ -105,18 +117,21 @@ TEST(DeSerializationBufferTests, BigEndian_float_AppendAndRead)
     DeSerializationBuffer<BigEndianess> b(16);
 
     float sourceVal1 = 0.125f;
-    size_t sz1 = b.Append<float>(sourceVal1);
+    size_t const sourceSize1 = b.Append<float>(sourceVal1);
+    EXPECT_EQ(sourceSize1, sizeof(float));
 
     float sourceVal2 = -4.0f;
-    size_t sz2 = b.Append<float>(sourceVal2);
+    size_t const sourceSize2 = b.Append<float>(sourceVal2);
+    EXPECT_EQ(sourceSize2, sizeof(float));
 
-    float targetVal1 = b.ReadAt<float>(0);
-    float targetVal2 = b.ReadAt<float>(sizeof(float));
-
-    EXPECT_EQ(sz1, sizeof(float));
+    float targetVal1;
+    size_t const targetSize1 = b.ReadAt<float>(0, targetVal1);
+    EXPECT_EQ(targetSize1, sizeof(float));
     EXPECT_EQ(sourceVal1, targetVal1);
 
-    EXPECT_EQ(sz2, sizeof(float));
+    float targetVal2;
+    size_t const targetSize2 = b.ReadAt<float>(sourceSize1, targetVal2);
+    EXPECT_EQ(targetSize2, sizeof(float));
     EXPECT_EQ(sourceVal2, targetVal2);
 }
 
@@ -128,10 +143,12 @@ TEST(DeSerializationBufferTests, BigEndian_float_WriteAtAndRead)
     ASSERT_EQ(idx, 0);
 
     float sourceVal = 4.25f;
-    size_t sz = b.WriteAt<float>(sourceVal, idx);
-    float targetVal = b.ReadAt<float>(0);
+    size_t const sourceSize = b.WriteAt<float>(sourceVal, idx);
+    EXPECT_EQ(sourceSize, sizeof(float));
 
-    EXPECT_EQ(sz, sizeof(float));
+    float targetVal;
+    size_t const targetSize = b.ReadAt<float>(0, targetVal);
+    EXPECT_EQ(targetSize, sizeof(float));
     EXPECT_EQ(sourceVal, targetVal);
 }
 
@@ -140,18 +157,21 @@ TEST(DeSerializationBufferTests, BigEndian_string_AppendAndRead)
     DeSerializationBuffer<BigEndianess> b(16);
 
     std::string sourceVal1 = "Test1";
-    size_t sz1 = b.Append<std::string>(sourceVal1);
+    size_t const sourceSize1 = b.Append<std::string>(sourceVal1);
+    EXPECT_EQ(sourceSize1, sizeof(uint32_t) + 5);
 
     std::string sourceVal2 = "FloatingSandbast";
-    size_t sz2 = b.Append<std::string>(sourceVal2);
+    size_t const sourceSize2 = b.Append<std::string>(sourceVal2);
+    EXPECT_EQ(sourceSize2, sizeof(uint32_t) + 16);
 
-    std::string targetVal1 = b.ReadAt<std::string>(0);
-    std::string targetVal2 = b.ReadAt<std::string>(sz1);
-
-    EXPECT_EQ(sz1, sizeof(uint32_t) + 5);
+    std::string targetVal1;
+    size_t const targetSize1 = b.ReadAt<std::string>(0, targetVal1);
+    EXPECT_EQ(targetSize1, sizeof(uint32_t) + 5);
     EXPECT_EQ(sourceVal1, targetVal1);
 
-    EXPECT_EQ(sz2, sizeof(uint32_t) + 16);
+    std::string targetVal2;
+    size_t const targetSize2 = b.ReadAt<std::string>(sourceSize1, targetVal2);
+    EXPECT_EQ(targetSize2, sizeof(uint32_t) + 16);
     EXPECT_EQ(sourceVal2, targetVal2);
 }
 
@@ -202,22 +222,25 @@ TEST(DeSerializationBufferTests, BigEndian_CopiesWhenGrowing)
     DeSerializationBuffer<BigEndianess> b(6);
 
     uint32_t sourceVal1 = 0xffaa0088;
-    size_t sz1 = b.Append<std::uint32_t>(sourceVal1);
+    size_t const sourceSize1 = b.Append<std::uint32_t>(sourceVal1);
 
     uint32_t sourceVal2 = 0x12345678;
-    size_t sz2 = b.Append<std::uint32_t>(sourceVal2);
+    size_t const sourceSize2 = b.Append<std::uint32_t>(sourceVal2);
 
-    uint32_t sourceVal3 = 0x89abcdef;
-    size_t sz3 = b.Append<std::uint32_t>(sourceVal3);
+    uint32_t const sourceVal3 = 0x89abcdef;
+    size_t sourceSize3 = b.Append<std::uint32_t>(sourceVal3);
 
-    uint32_t targetVal = b.ReadAt<std::uint32_t>(0);
+    uint32_t targetVal;
+    b.ReadAt<std::uint32_t>(0, targetVal);
     EXPECT_EQ(sourceVal1, targetVal);
-    targetVal = b.ReadAt<std::uint32_t>(0 + sz1);
+
+    b.ReadAt<std::uint32_t>(0 + sourceSize1, targetVal);
     EXPECT_EQ(sourceVal2, targetVal);
-    targetVal = b.ReadAt<std::uint32_t>(0 + sz1 + sz2);
+
+    b.ReadAt<std::uint32_t>(0 + sourceSize1 + sourceSize2, targetVal);
     EXPECT_EQ(sourceVal3, targetVal);
 
-    EXPECT_EQ(sz3, 4);
+    EXPECT_EQ(sourceSize3, sizeof(std::uint32_t));
 }
 
 TEST(DeSerializationBufferTests, Append_Bytes)

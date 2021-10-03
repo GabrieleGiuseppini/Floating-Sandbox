@@ -87,9 +87,7 @@ public:
     {
         assert(index + sizeof(T) < mAllocatedSize);
 
-        Endian<T, TEndianess>::Write(value, mBuffer.get() + index);
-
-        return sizeof(T);
+        return Endian<T, TEndianess>::Write(value, mBuffer.get() + index);
     }
 
     /*
@@ -104,12 +102,13 @@ public:
         EnsureMayAppend(mSize + requiredSize);
 
         // Append
-        Endian<T, TEndianess>::Write(value, mBuffer.get() + mSize);
+        size_t const sz = Endian<T, TEndianess>::Write(value, mBuffer.get() + mSize);
+        assert(sz == requiredSize);
 
         // Advance
-        mSize += requiredSize;
+        mSize += sz;
 
-        return requiredSize;
+        return sz;
     }
 
     /*
@@ -125,10 +124,12 @@ public:
 
         // Append len
         std::uint32_t const length = static_cast<std::uint32_t>(value.length());
-        Endian<std::uint32_t, TEndianess>::Write(length, mBuffer.get() + mSize);
+        size_t const sz1 = Endian<std::uint32_t, TEndianess>::Write(length, mBuffer.get() + mSize);
+        assert(sz1 == sizeof(std::uint32_t));
 
         // Serialize chars
-        std::memcpy(mBuffer.get() + mSize + sizeof(std::uint32_t), value.data(), length);
+        std::memcpy(mBuffer.get() + mSize + sz1, value.data(), length);
+        assert(sz1 + length == requiredSize);
 
         // Advance
         mSize += requiredSize;
@@ -138,8 +139,9 @@ public:
 
     /*
      * Appends the specified data, and advances.
+     * Returns the number of bytes written.
      */
-    void Append(unsigned char const * data, size_t size)
+    size_t Append(unsigned char const * data, size_t size)
     {
         EnsureMayAppend(mSize + size);
 
@@ -148,34 +150,39 @@ public:
 
         // Advance
         mSize += size;
+
+        return size;
     }
 
     /*
      * Reads a value from the specified index.
+     * Returns the number of bytes read.
      */
     template<typename T>
-    T ReadAt(size_t index) const
+    size_t ReadAt(size_t index, T & value) const
     {
         assert(index + sizeof(T) <= mAllocatedSize);
 
-        return Endian<T, TEndianess>::Read(mBuffer.get() + index);
+        return Endian<T, TEndianess>::Read(mBuffer.get() + index, value);
     }
 
     /*
      * Reads a string at the specified index.
      */
     template<>
-    std::string ReadAt<std::string>(size_t index) const
+    size_t ReadAt<std::string>(size_t index, std::string & value) const
     {
         // Read length
         assert(index + sizeof(std::uint32_t) <= mAllocatedSize);
-        std::uint32_t length = Endian<std::uint32_t, TEndianess>::Read(mBuffer.get() + index);
+        std::uint32_t length;
+        size_t const sz1 = Endian<std::uint32_t, TEndianess>::Read(mBuffer.get() + index, length);
+        assert(sz1 == sizeof(std::uint32_t));
 
         // Read bytes
         assert(index + sizeof(std::uint32_t) + length <= mAllocatedSize);
-        std::string retVal = std::string(reinterpret_cast<char const *>(mBuffer.get()) + index + sizeof(std::uint32_t), length);
+        value = std::string(reinterpret_cast<char const *>(mBuffer.get()) + index + sz1, length);
 
-        return retVal;
+        return sz1 + length;
     }
 
     void Reset()

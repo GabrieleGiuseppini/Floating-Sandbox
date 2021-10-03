@@ -81,10 +81,7 @@ https://gamejolt.com/x/permalink/comment/11511458
 				- Then, extra logic				
 		= ShipDeSerializer::Save(ShipDefinition const &)
 			+ Header
-			= Metadata
-				+ Contains PasswordHash
-				- Electrical panel: yet another layer of tags
-				- Unit tests
+			+ Metadata
 			- Structural layer
 				- Pure buffer
 			- Electrical layer
