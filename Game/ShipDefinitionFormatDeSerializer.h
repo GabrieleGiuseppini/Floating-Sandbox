@@ -70,6 +70,8 @@ private:
         Description = 5,
         ElectricalPanelMetadata = 6,
         Password = 7,
+        DoHideElectricalsInPreview = 8,
+        DoHideHDInPreview = 9,
 
         Tail = 0xffffffff
     };

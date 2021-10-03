@@ -202,6 +202,22 @@ public:
     }
 };
 
+template<typename TEndianess>
+class Endian<bool, TEndianess>
+{
+public:
+
+    static bool Read(unsigned char const * ptr) noexcept
+    {
+        return static_cast<bool>(*ptr);
+    }
+
+    static void Write(bool const & value, unsigned char * ptr) noexcept
+    {
+        *ptr = static_cast<unsigned char>(value);
+    }
+};
+
 template <typename T>
 using BigEndian = Endian<T, BigEndianess>;
 

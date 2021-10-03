@@ -83,6 +83,7 @@ https://gamejolt.com/x/permalink/comment/11511458
 			+ Header
 			= Metadata
 				+ Contains PasswordHash
+				- Electrical panel: yet another layer of tags
 				- Unit tests
 			- Structural layer
 				- Using DevIL lump, See https://github.com/DentonW/DevIL/blob/master/DevIL/src-IL/src/il_io.cpp#L2490

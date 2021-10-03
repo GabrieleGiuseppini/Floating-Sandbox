@@ -15,6 +15,8 @@ TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Full_WithoutElectricalPanel
     sourceMd.Password = 0x1122334455667788;
     sourceMd.ShipName = "Best ship";
     sourceMd.YearBuilt = "2020-2021";
+    sourceMd.DoHideElectricalsInPreview = true;
+    sourceMd.DoHideHDInPreview = false;
 
     ShipDefinitionFormatDeSerializer::AppendMetadata(sourceMd, buffer);
 
@@ -29,6 +31,8 @@ TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Full_WithoutElectricalPanel
     EXPECT_EQ(sourceMd.Password, targetMd.Password);
     EXPECT_EQ(sourceMd.ShipName, targetMd.ShipName);
     EXPECT_EQ(sourceMd.YearBuilt, targetMd.YearBuilt);
+    EXPECT_EQ(sourceMd.DoHideElectricalsInPreview, targetMd.DoHideElectricalsInPreview);
+    EXPECT_EQ(sourceMd.DoHideHDInPreview, targetMd.DoHideHDInPreview);
 }
 
 TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Minimal_WithoutElectricalPanel)
@@ -51,6 +55,8 @@ TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Minimal_WithoutElectricalPa
     EXPECT_FALSE(sourceMd.Password.has_value());
     EXPECT_EQ(sourceMd.ShipName, targetMd.ShipName);
     EXPECT_FALSE(sourceMd.YearBuilt.has_value());
+    EXPECT_FALSE(sourceMd.DoHideElectricalsInPreview);
+    EXPECT_FALSE(sourceMd.DoHideHDInPreview);
 }
 
 // TODO: electrical panel 

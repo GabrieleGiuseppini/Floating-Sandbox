@@ -209,6 +209,36 @@ TEST(EndianTests, uint64_t_Read_Little)
     }
 }
 
+TEST(EndianTests, bool_Read_Big)
+{
+    {
+        unsigned char endianBuffer[] = { 0x01 };
+        bool value = BigEndian<bool>::Read(endianBuffer);
+        EXPECT_EQ(value, true);
+    }
+
+    {
+        unsigned char endianBuffer[] = { 0x00 };
+        bool value = BigEndian<bool>::Read(endianBuffer);
+        EXPECT_EQ(value, false);
+    }
+}
+
+TEST(EndianTests, bool_Read_Little)
+{
+    {
+        unsigned char endianBuffer[] = { 0x01 };
+        bool value = BigEndian<bool>::Read(endianBuffer);
+        EXPECT_EQ(value, true);
+    }
+
+    {
+        unsigned char endianBuffer[] = { 0x00 };
+        bool value = BigEndian<bool>::Read(endianBuffer);
+        EXPECT_EQ(value, false);
+    }
+}
+
 class EndianFloatTest_Big : public testing::TestWithParam<float>
 {
 public:

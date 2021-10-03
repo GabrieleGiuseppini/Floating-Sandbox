@@ -278,6 +278,20 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadata(
             buffer);
     }
 
+    {
+        sectionBodySize += AppendMetadataEntry(
+            MetadataTagType::DoHideElectricalsInPreview,
+            metadata.DoHideElectricalsInPreview,
+            buffer);
+    }
+
+    {
+        sectionBodySize += AppendMetadataEntry(
+            MetadataTagType::DoHideHDInPreview,
+            metadata.DoHideHDInPreview,
+            buffer);
+    }
+
     // Tail
     {
         buffer.Append(static_cast<std::uint32_t>(MetadataTagType::Tail));
@@ -385,6 +399,18 @@ void ShipDefinitionFormatDeSerializer::ReadMetadata(
             case static_cast<uint32_t>(MetadataTagType::Description) :
             {
                 metadata.Description = buffer.ReadAt<std::string>(offset);
+                break;
+            }
+
+            case static_cast<uint32_t>(MetadataTagType::DoHideElectricalsInPreview) :
+            {
+                metadata.DoHideElectricalsInPreview = buffer.ReadAt<bool>(offset);
+                break;
+            }
+
+            case static_cast<uint32_t>(MetadataTagType::DoHideHDInPreview) :
+            {
+                metadata.DoHideHDInPreview = buffer.ReadAt<bool>(offset);
                 break;
             }
 
