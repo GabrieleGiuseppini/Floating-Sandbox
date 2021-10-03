@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Colors.h"
 #include "EnumFlags.h"
 #include "SysSpecifics.h"
 #include "Vectors.h"
@@ -510,6 +511,13 @@ using Octant = std::int32_t;
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Game
 ////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ * The color key of materials.
+ */
+using MaterialColorKey = rgbColor;
+
+static MaterialColorKey constexpr EmptyMaterialColorKey = MaterialColorKey(255, 255, 255);
 
 /*
  * The different layers.

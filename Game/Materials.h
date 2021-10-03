@@ -59,6 +59,8 @@ public:
 
 public:
 
+    MaterialColorKey ColorKey;
+
     std::string Name;
     rgbColor RenderColor;
     float Strength;
@@ -100,6 +102,7 @@ public:
 public:
 
     static StructuralMaterial Create(
+        MaterialColorKey const & colorKey,
         unsigned int ordinal,
         rgbColor const & renderColor,
         picojson::object const & structuralMaterialJson);
@@ -131,6 +134,7 @@ public:
     }
 
     StructuralMaterial(
+        MaterialColorKey const & colorKey,
         std::string name,
         rgbColor const & renderColor,
         float strength,
@@ -161,7 +165,8 @@ public:
         bool isLegacyElectrical,
         // Palette
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
-        : Name(name)
+        : ColorKey(colorKey)
+        , Name(name)
         , RenderColor(renderColor)
         , Strength(strength)
         , NominalMass(nominalMass)
@@ -240,6 +245,8 @@ public:
 
 public:
 
+    MaterialColorKey ColorKey;
+
     std::string Name;
     rgbColor RenderColor;
 
@@ -286,6 +293,7 @@ public:
 public:
 
     static ElectricalMaterial Create(
+        MaterialColorKey const & colorKey,
         unsigned int ordinal,
         rgbColor const & renderColor,
         picojson::object const & electricalMaterialJson);
@@ -299,6 +307,7 @@ public:
     static ShipSoundElementType StrToShipSoundElementType(std::string const & str);
 
     ElectricalMaterial(
+        MaterialColorKey const & colorKey,
         std::string name,
         rgbColor const & renderColor,
         ElectricalElementType electricalType,
@@ -321,7 +330,8 @@ public:
         ShipSoundElementType shipSoundType,
         float waterPumpNominalForce,
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
-        : Name(name)
+        : ColorKey(colorKey)
+        , Name(name)
         , RenderColor(renderColor)
         , ElectricalType(electricalType)
         , IsSelfPowered(isSelfPowered)

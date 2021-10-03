@@ -5,7 +5,9 @@
 ***************************************************************************************/
 #include "ShipDefinitionFormatDeSerializer.h"
 
+#include <GameCore/Colors.h>
 #include <GameCore/GameException.h>
+#include <GameCore/GameTypes.h>
 #include <GameCore/Log.h>
 #include <GameCore/Version.h>
 
@@ -32,6 +34,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(std::filesystem::path cons
     // Read and process sections
     //
 
+    std::unique_ptr<StructuralLayerBuffer> structuralLayer;
     ShipMetadata shipMetadata = ShipMetadata(shipFilePath.filename().string());
 
     while (true)
@@ -46,6 +49,16 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(std::filesystem::path cons
 
                 break;
             }
+
+            case static_cast<uint32_t>(MainSectionTagType::StructuralLayer):
+            {
+                ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
+                ReadStructuralLayer(buffer, structuralLayer);
+
+                break;
+            }
+
+            // TODOHERE: other sections
 
             case static_cast<uint32_t>(MainSectionTagType::Tail) :
             {
@@ -72,12 +85,22 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(std::filesystem::path cons
         }
     }
 
+    // Close file
+    inputFile.close();
 
-    // TODOTEST
-    StructuralLayerBuffer sBuf(ShipSpaceSize(10, 10));
+    //
+    // Ensure all the required sections have been seen
+    //
+
+    if (!structuralLayer)
+    {
+        ThrowInvalidFile();
+    }
+
+
     return ShipDefinition(
-        ShipSpaceSize(10, 10), // TODO
-        std::move(sBuf), // TODO
+        structuralLayer->Size,
+        std::move(*structuralLayer),
         nullptr, // TODO
         nullptr, // TODO
         nullptr, // TODO
@@ -125,6 +148,16 @@ void ShipDefinitionFormatDeSerializer::Save(
         outputFile,
         static_cast<std::uint32_t>(MainSectionTagType::Metadata),
         [&]() { return AppendMetadata(shipDefinition.Metadata, buffer); },
+        buffer);
+
+    //
+    // Write structural layer
+    //
+
+    AppendSection(
+        outputFile,
+        static_cast<std::uint32_t>(MainSectionTagType::StructuralLayer),
+        [&]() { return AppendStructuralLayer(shipDefinition.StructuralLayer, buffer); },
         buffer);
 
     // TODOHERE: other sections
@@ -349,6 +382,39 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadataEntry(
     return sizeof(std::uint32_t) + sizeof(std::uint32_t) + valueSize;
 }
 
+size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer(
+    StructuralLayerBuffer const & structuralLayer,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    size_t sectionBodySize = 0;
+
+    // Size
+    sectionBodySize += buffer.Append(static_cast<std::uint32_t>(structuralLayer.Size.width));
+    sectionBodySize += buffer.Append(static_cast<std::uint32_t>(structuralLayer.Size.height));
+
+    // KeyColor buffer
+    size_t const layerLinearSize = structuralLayer.Size.GetLinearSize();
+    size_t const keyColorBufferSize = layerLinearSize * sizeof(rgbColor);
+    rgbColor * keyColorBuffer = reinterpret_cast<rgbColor *>(buffer.Receive(keyColorBufferSize));
+    sectionBodySize += keyColorBufferSize;
+
+    // Populate buffer
+    StructuralElement const * structuralElementBuffer = structuralLayer.Data.get();
+    for (size_t i = 0; i < layerLinearSize; ++i)
+    {
+        if (structuralElementBuffer[i].Material == nullptr)
+        {
+            keyColorBuffer[i] = EmptyMaterialColorKey;
+        }
+        else
+        {
+            keyColorBuffer[i] = structuralElementBuffer[i].Material->ColorKey;
+        }
+    }
+
+    return sectionBodySize;
+}
+
 // Read
 
 std::ifstream ShipDefinitionFormatDeSerializer::OpenFileForRead(std::filesystem::path const & shipFilePath)
@@ -568,6 +634,13 @@ void ShipDefinitionFormatDeSerializer::ReadMetadata(
 
         offset += sectionHeader.SectionBodySize;
     }
+}
+
+void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
+    DeSerializationBuffer<BigEndianess> & buffer,
+    std::unique_ptr<StructuralLayerBuffer> & structuralLayer)
+{
+    // TODOHERE
 }
 
 void ShipDefinitionFormatDeSerializer::ThrowInvalidFile()

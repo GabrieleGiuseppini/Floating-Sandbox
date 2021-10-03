@@ -81,9 +81,16 @@ https://gamejolt.com/x/permalink/comment/11511458
 				- Then, extra logic				
 		= ShipDeSerializer::Save(ShipDefinition const &)
 			+ Header
-			+ Metadata
+			= Metadata
+				= Electrical panel
+					- Review, including:
+						- Coords being int
+					- See if can enlarge instance index
+						- Check all code
+						- At legacy: int8->new_type
 			- Structural layer
 				- Pure buffer
+				- RLE?
 			- Electrical layer
 				- Pure buffer
 			- Ropes layer

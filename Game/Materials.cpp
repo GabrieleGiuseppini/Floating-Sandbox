@@ -22,6 +22,7 @@ namespace /* anonymous */ {
 }
 
 StructuralMaterial StructuralMaterial::Create(
+    MaterialColorKey const & colorKey,
     unsigned int ordinal,
     rgbColor const & renderColor,
     picojson::object const & structuralMaterialJson)
@@ -94,6 +95,7 @@ StructuralMaterial StructuralMaterial::Create(
         }
 
         return StructuralMaterial(
+            colorKey,
             name,
             renderColor,
             strength,
@@ -167,6 +169,7 @@ StructuralMaterial::MaterialCombustionType StructuralMaterial::StrToMaterialComb
 }
 
 ElectricalMaterial ElectricalMaterial::Create(
+    MaterialColorKey const & colorKey,
     unsigned int ordinal,
     rgbColor const & renderColor,
     picojson::object const & electricalMaterialJson)
@@ -278,6 +281,7 @@ ElectricalMaterial ElectricalMaterial::Create(
         }
 
         return ElectricalMaterial(
+            colorKey,
             name,
             renderColor,
             electricalType,

@@ -5,8 +5,6 @@
 ***************************************************************************************/
 #include "ModelController.h"
 
-#include <Game/MaterialDatabase.h>
-
 #include <cassert>
 
 namespace ShipBuilder {
@@ -262,7 +260,7 @@ void ModelController::RepopulateDerivedStructuralData(
     Model & model,
     ShipSpaceRect const & region)
 {
-    rgbaColor const emptyColor = rgbaColor(MaterialDatabase::EmptyMaterialColorKey, 255);
+    rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 255);
 
     StructuralLayerBuffer const & structuralLayerBuffer = model.GetStructuralLayerBuffer();
     RgbaImageData & structuralRenderColorTexture = model.GetStructuralRenderColorTexture();

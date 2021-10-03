@@ -14,6 +14,7 @@
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <memory>
 
 /*
  * All the logic to load and save ships from and to .shp2 files.
@@ -101,6 +102,10 @@ private:
         T const & value,
         DeSerializationBuffer<BigEndianess> & buffer);
 
+    static size_t AppendStructuralLayer(
+        StructuralLayerBuffer const & structuralLayer,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
     // Read
 
     static std::ifstream OpenFileForRead(std::filesystem::path const & shipFilePath);
@@ -125,6 +130,10 @@ private:
     static void ReadMetadata(
         DeSerializationBuffer<BigEndianess> & buffer,
         ShipMetadata & metadata);
+
+    static void ReadStructuralLayer(
+        DeSerializationBuffer<BigEndianess> & buffer,
+        std::unique_ptr<StructuralLayerBuffer> & structuralLayer);
 
     static void ThrowInvalidFile();
 

@@ -13,7 +13,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     // Structural
     //
 
-    std::map<ColorKey, StructuralMaterial> structuralMaterialsMap;
+    std::map<MaterialColorKey, StructuralMaterial> structuralMaterialsMap;
     UniqueStructuralMaterialsArray uniqueStructuralMaterials;
 
     for (size_t i = 0; i < uniqueStructuralMaterials.size(); ++i)
@@ -48,7 +48,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         picojson::object const & materialObject = materialElem.get<picojson::object>();
 
         // Normalize color keys
-        std::vector<ColorKey> colorKeys;
+        std::vector<MaterialColorKey> colorKeys;
         {
             auto const & memberIt = materialObject.find("color_key");
             if (materialObject.end() == memberIt)
@@ -111,6 +111,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
 
             // Create instance of this material
             StructuralMaterial const material = StructuralMaterial::Create(
+                colorKey,
                 static_cast<unsigned int>(iColorKey),
                 renderColor,
                 materialObject);
@@ -186,8 +187,8 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     // Electrical materials
     //
 
-    std::map<ColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> nonInstancedElectricalMaterialsMap;
-    std::map<ColorKey, ElectricalMaterial, InstancedColorKeyComparer> instancedElectricalMaterialsMap;
+    std::map<MaterialColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> nonInstancedElectricalMaterialsMap;
+    std::map<MaterialColorKey, ElectricalMaterial, InstancedColorKeyComparer> instancedElectricalMaterialsMap;
 
     picojson::value const electricalMaterialsRoot = Utils::ParseJSONFile(
         materialsRootDirectory / "materials_electrical.json");
@@ -215,7 +216,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         picojson::object const & materialObject = materialElem.get<picojson::object>();
 
         // Get color key
-        ColorKey const colorKey = Utils::Hex2RgbColor(
+        MaterialColorKey const colorKey = Utils::Hex2RgbColor(
             Utils::GetMandatoryJsonMember<std::string>(materialObject, "color_key"));
 
         // Get/make render color
@@ -233,6 +234,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
 
         // Create instance of this material
         ElectricalMaterial const material = ElectricalMaterial::Create(
+            colorKey,
             0,
             renderColor,
             materialObject);

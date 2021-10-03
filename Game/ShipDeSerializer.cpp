@@ -438,7 +438,7 @@ ShipDefinition ShipDeSerializer::LoadFromDefinitionImages(
         : nullptr;
 
     // Table remembering rope endpoints
-    std::map<MaterialDatabase::ColorKey, RopeId> ropeIdsByColorKey;
+    std::map<MaterialColorKey, RopeId> ropeIdsByColorKey;
 
     // Assignment of rope IDs
     RopeId nextRopeId = 0;
@@ -459,7 +459,7 @@ ShipDefinition ShipDeSerializer::LoadFromDefinitionImages(
             ImageCoordinates const imageCoords(x, y);
 
             // Lookup structural material
-            MaterialDatabase::ColorKey const colorKey = structuralLayerImage[imageCoords];
+            MaterialColorKey const colorKey = structuralLayerImage[imageCoords];
             StructuralMaterial const * structuralMaterial = materialDatabase.FindStructuralMaterial(colorKey);
             if (nullptr != structuralMaterial)
             {
@@ -572,8 +572,8 @@ ShipDefinition ShipDeSerializer::LoadFromDefinitionImages(
             {
                 // Check if it's a rope endpoint: iff different than background
                 ImageCoordinates const imageCoords(x, y);
-                MaterialDatabase::ColorKey colorKey = (*ropesLayerImage)[imageCoords];
-                if (colorKey != MaterialDatabase::EmptyMaterialColorKey)
+                MaterialColorKey colorKey = (*ropesLayerImage)[imageCoords];
+                if (colorKey != EmptyMaterialColorKey)
                 {
                     //
                     // It's a rope endpoint
@@ -664,8 +664,8 @@ ShipDefinition ShipDeSerializer::LoadFromDefinitionImages(
             {
                 // Check if it's an electrical material: iff different than background
                 ImageCoordinates const imageCoords(x, y);
-                MaterialDatabase::ColorKey colorKey = (*electricalLayerImage)[imageCoords];
-                if (colorKey != MaterialDatabase::EmptyMaterialColorKey)
+                MaterialColorKey colorKey = (*electricalLayerImage)[imageCoords];
+                if (colorKey != EmptyMaterialColorKey)
                 {
                     //
                     // It's an electrical material

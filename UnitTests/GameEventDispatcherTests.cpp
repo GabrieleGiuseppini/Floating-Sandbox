@@ -20,6 +20,7 @@ using MockHandler = StrictMock<_MockGameEventHandler>;
 StructuralMaterial MakeStructuralMaterial(std::string name)
 {
     return StructuralMaterial(
+        rgbColor(1, 2, 3),
         name,
         rgbColor::zero(),
         1.0f,

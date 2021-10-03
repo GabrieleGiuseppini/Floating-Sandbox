@@ -27,10 +27,6 @@ class MaterialDatabase
 {
 public:
 
-    using ColorKey = rgbColor;
-
-    static ColorKey constexpr EmptyMaterialColorKey = ColorKey(255, 255, 255);
-
     template<typename TMaterial>
     struct Palette
     {
@@ -67,7 +63,7 @@ public:
 
 private:
 
-    using UniqueStructuralMaterialsArray = std::array<std::pair<ColorKey, StructuralMaterial const *>, static_cast<size_t>(StructuralMaterial::MaterialUniqueType::_Last) + 1>;
+    using UniqueStructuralMaterialsArray = std::array<std::pair<MaterialColorKey, StructuralMaterial const *>, static_cast<size_t>(StructuralMaterial::MaterialUniqueType::_Last) + 1>;
 
     static constexpr auto RopeUniqueMaterialIndex = static_cast<size_t>(StructuralMaterial::MaterialUniqueType::Rope);
 
@@ -86,7 +82,7 @@ public:
 
     static MaterialDatabase Load(std::filesystem::path materialsRootDirectory);
 
-    StructuralMaterial const * FindStructuralMaterial(ColorKey const & colorKey) const
+    StructuralMaterial const * FindStructuralMaterial(MaterialColorKey const & colorKey) const
     {
         if (auto srchIt = mStructuralMaterialMap.find(colorKey);
             srchIt != mStructuralMaterialMap.end())
@@ -111,7 +107,7 @@ public:
         return mStructuralMaterialPalette;
     }
 
-    ElectricalMaterial const * FindElectricalMaterial(ColorKey const & colorKey) const
+    ElectricalMaterial const * FindElectricalMaterial(MaterialColorKey const & colorKey) const
     {
         // Try non-instanced first
         if (auto srchIt = mNonInstancedElectricalMaterialMap.find(colorKey);
@@ -146,7 +142,7 @@ public:
 
     bool IsUniqueStructuralMaterialColorKey(
         StructuralMaterial::MaterialUniqueType uniqueType,
-        ColorKey const & colorKey) const
+        MaterialColorKey const & colorKey) const
     {
         assert(static_cast<size_t>(uniqueType) < mUniqueStructuralMaterials.size());
         assert(nullptr != mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].second);
@@ -154,9 +150,9 @@ public:
         return colorKey == mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].first;
     }
 
-    static ElectricalElementInstanceIndex ExtractElectricalElementInstanceIndex(ColorKey const & colorKey)
+    static ElectricalElementInstanceIndex ExtractElectricalElementInstanceIndex(MaterialColorKey const & colorKey)
     {
-        static_assert(sizeof(ElectricalElementInstanceIndex) >= sizeof(ColorKey::data_type));
+        static_assert(sizeof(ElectricalElementInstanceIndex) >= sizeof(MaterialColorKey::data_type));
         return static_cast<ElectricalElementInstanceIndex>(colorKey.b);
     }
 
@@ -174,7 +170,7 @@ private:
 
     struct NonInstancedColorKeyComparer
     {
-        size_t operator()(ColorKey const & lhs, ColorKey const & rhs) const
+        size_t operator()(MaterialColorKey const & lhs, MaterialColorKey const & rhs) const
         {
             return lhs < rhs;
         }
@@ -182,7 +178,7 @@ private:
 
     struct InstancedColorKeyComparer
     {
-        size_t operator()(ColorKey const & lhs, ColorKey const & rhs) const
+        size_t operator()(MaterialColorKey const & lhs, MaterialColorKey const & rhs) const
         {
             return lhs.r < rhs.r
                 || (lhs.r == rhs.r && lhs.g < rhs.g);
@@ -192,10 +188,10 @@ private:
 private:
 
     MaterialDatabase(
-        std::map<ColorKey, StructuralMaterial> structuralMaterialMap,
+        std::map<MaterialColorKey, StructuralMaterial> structuralMaterialMap,
         Palette<StructuralMaterial> structuralMaterialPalette,
-        std::map<ColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> nonInstancedElectricalMaterialMap,
-        std::map<ColorKey, ElectricalMaterial, InstancedColorKeyComparer> instancedElectricalMaterialMap,
+        std::map<MaterialColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> nonInstancedElectricalMaterialMap,
+        std::map<MaterialColorKey, ElectricalMaterial, InstancedColorKeyComparer> instancedElectricalMaterialMap,
         Palette<ElectricalMaterial> electricalMaterialPalette,
         UniqueStructuralMaterialsArray uniqueStructuralMaterials,
         float largestMass,
@@ -214,12 +210,12 @@ private:
 private:
 
     // Structural
-    std::map<ColorKey, StructuralMaterial> mStructuralMaterialMap;
+    std::map<MaterialColorKey, StructuralMaterial> mStructuralMaterialMap;
     Palette<StructuralMaterial> mStructuralMaterialPalette;
 
     // Electrical
-    std::map<ColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> mNonInstancedElectricalMaterialMap;
-    std::map<ColorKey, ElectricalMaterial, InstancedColorKeyComparer> mInstancedElectricalMaterialMap;
+    std::map<MaterialColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> mNonInstancedElectricalMaterialMap;
+    std::map<MaterialColorKey, ElectricalMaterial, InstancedColorKeyComparer> mInstancedElectricalMaterialMap;
     Palette<ElectricalMaterial> mElectricalMaterialPalette;
 
     UniqueStructuralMaterialsArray mUniqueStructuralMaterials;
