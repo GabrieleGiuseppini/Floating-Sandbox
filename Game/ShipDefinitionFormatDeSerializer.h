@@ -68,7 +68,7 @@ private:
         ArtCredits = 3,
         YearBuilt = 4,
         Description = 5,
-        ElectricalPanelMetadata = 6,
+        ElectricalPanelMetadataV1 = 6,
         Password = 7,
         DoHideElectricalsInPreview = 8,
         DoHideHDInPreview = 9,
@@ -132,4 +132,5 @@ private:
 
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_Full_WithoutElectricalPanel_Test;
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_Minimal_WithoutElectricalPanel_Test;
+    friend class ShipDefinitionFormatDeSerializerTests_Metadata_ElectricalPanel_Test;
 };

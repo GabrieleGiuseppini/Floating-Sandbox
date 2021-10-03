@@ -59,4 +59,67 @@ TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Minimal_WithoutElectricalPa
     EXPECT_FALSE(sourceMd.DoHideHDInPreview);
 }
 
-// TODO: electrical panel 
+TEST(ShipDefinitionFormatDeSerializerTests, Metadata_ElectricalPanel)
+{
+    DeSerializationBuffer<BigEndianess> buffer(256);
+
+    // Write
+
+    ElectricalPanelElementMetadata elem1 = ElectricalPanelElementMetadata(
+        std::nullopt,
+        std::nullopt,
+        true);
+
+    ElectricalPanelElementMetadata elem2 = ElectricalPanelElementMetadata(
+        IntegralCoordinates(3, 242),
+        std::nullopt,
+        false);
+
+    ElectricalPanelElementMetadata elem3 = ElectricalPanelElementMetadata(
+        std::nullopt,
+        "Foo bar",
+        true);
+
+    ElectricalPanelElementMetadata elem4 = ElectricalPanelElementMetadata(
+        IntegralCoordinates(13, 2242),
+        "Foobar 2",
+        false);
+
+    ShipMetadata sourceMd("Test ship");
+    sourceMd.ElectricalPanelMetadata[8] = elem1;
+    sourceMd.ElectricalPanelMetadata[0] = elem2;
+    sourceMd.ElectricalPanelMetadata[18] = elem3;
+    sourceMd.ElectricalPanelMetadata[234] = elem4;
+    ShipDefinitionFormatDeSerializer::AppendMetadata(sourceMd, buffer);
+
+    // Read
+
+    ShipMetadata targetMd("Foo");
+    ShipDefinitionFormatDeSerializer::ReadMetadata(buffer, targetMd);
+
+    ASSERT_EQ(4, targetMd.ElectricalPanelMetadata.size());
+
+    ASSERT_TRUE(targetMd.ElectricalPanelMetadata.find(8) != targetMd.ElectricalPanelMetadata.end());
+    EXPECT_FALSE(targetMd.ElectricalPanelMetadata[8].PanelCoordinates.has_value());
+    EXPECT_FALSE(targetMd.ElectricalPanelMetadata[8].Label.has_value());
+    EXPECT_TRUE(targetMd.ElectricalPanelMetadata[8].IsHidden);
+
+    ASSERT_TRUE(targetMd.ElectricalPanelMetadata.find(0) != targetMd.ElectricalPanelMetadata.end());
+    ASSERT_TRUE(targetMd.ElectricalPanelMetadata[0].PanelCoordinates.has_value());
+    EXPECT_EQ(*targetMd.ElectricalPanelMetadata[0].PanelCoordinates, IntegralCoordinates(3, 242));
+    EXPECT_FALSE(targetMd.ElectricalPanelMetadata[0].Label.has_value());
+    EXPECT_FALSE(targetMd.ElectricalPanelMetadata[0].IsHidden);
+
+    ASSERT_TRUE(targetMd.ElectricalPanelMetadata.find(18) != targetMd.ElectricalPanelMetadata.end());
+    EXPECT_FALSE(targetMd.ElectricalPanelMetadata[18].PanelCoordinates.has_value());
+    ASSERT_TRUE(targetMd.ElectricalPanelMetadata[18].Label.has_value());
+    EXPECT_EQ(*targetMd.ElectricalPanelMetadata[18].Label, "Foo bar");
+    EXPECT_TRUE(targetMd.ElectricalPanelMetadata[18].IsHidden);
+
+    ASSERT_TRUE(targetMd.ElectricalPanelMetadata.find(234) != targetMd.ElectricalPanelMetadata.end());
+    ASSERT_TRUE(targetMd.ElectricalPanelMetadata[234].PanelCoordinates.has_value());
+    EXPECT_EQ(*targetMd.ElectricalPanelMetadata[234].PanelCoordinates, IntegralCoordinates(13, 2242));
+    ASSERT_TRUE(targetMd.ElectricalPanelMetadata[234].Label.has_value());
+    EXPECT_EQ(*targetMd.ElectricalPanelMetadata[234].Label, "Foo bar");
+    EXPECT_FALSE(targetMd.ElectricalPanelMetadata[234].IsHidden);
+}

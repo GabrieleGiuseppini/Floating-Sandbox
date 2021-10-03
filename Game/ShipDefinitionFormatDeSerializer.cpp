@@ -267,7 +267,43 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadata(
 
     if (!metadata.ElectricalPanelMetadata.empty())
     {
-        // TODOHERE
+        // Tag and size
+        buffer.Append(static_cast<std::uint32_t>(MetadataTagType::ElectricalPanelMetadataV1));
+        size_t const valueSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+
+        size_t valueSize = 0;
+
+        // Number of entries
+        std::uint16_t count = static_cast<std::uint16_t>(metadata.ElectricalPanelMetadata.size());
+        valueSize += buffer.Append(count);
+
+        // Entries
+        for (auto const & entry : metadata.ElectricalPanelMetadata)
+        {
+            valueSize += buffer.Append(static_cast<std::uint8_t>(entry.first));
+
+            valueSize += buffer.Append(std::uint8_t(entry.second.PanelCoordinates.has_value() ? 1 : 0));
+            if (entry.second.PanelCoordinates.has_value())
+            {
+                valueSize += buffer.Append(std::uint8_t(1));
+                valueSize += buffer.Append(static_cast<std::uint8_t>(entry.second.PanelCoordinates->x));
+                valueSize += buffer.Append(static_cast<std::uint8_t>(entry.second.PanelCoordinates->y));
+            }
+
+            valueSize += buffer.Append(std::uint8_t(entry.second.Label.has_value() ? 1 : 0));
+            if (entry.second.Label.has_value())
+            {
+                valueSize += buffer.Append(std::uint8_t(1));
+                valueSize += buffer.Append(*entry.second.Label);
+            }
+
+            valueSize += buffer.Append(entry.second.IsHidden);
+        }
+
+        // Store size
+        buffer.WriteAt(static_cast<std::uint32_t>(valueSize), valueSizeIndex);
+
+        sectionBodySize += sizeof(std::uint32_t) + sizeof(std::uint32_t) + valueSize;
     }
 
     if (metadata.Password.has_value())
@@ -414,9 +450,22 @@ void ShipDefinitionFormatDeSerializer::ReadMetadata(
                 break;
             }
 
-            case static_cast<uint32_t>(MetadataTagType::ElectricalPanelMetadata) :
+            case static_cast<uint32_t>(MetadataTagType::ElectricalPanelMetadataV1) :
             {
-                // TODOHERE
+                size_t elecPanelOffset = offset;
+
+                std::uint16_t entryCount = buffer.ReadAt<std::uint16_t>(elecPanelOffset);
+                for (int i = 0; i < entryCount; ++i)
+                {
+                    ElectricalElementInstanceIndex instanceIndex = static_cast<ElectricalElementInstanceIndex>(buffer.ReadAt<std::uint8_t>(elecPanelOffset));
+                    // TODOHERE
+                    // std::uint8_t PanelCoordsHasValue
+                    // (uint8_t, uint8_t) coords
+                    // std::uint8_t LabelHasValue
+                    // (string) label
+                    // bool isHidden
+                }
+
                 break;
             }
 
