@@ -193,6 +193,60 @@ TEST(EndianTests, uint32_t_Read_Little)
     }
 }
 
+TEST(EndianTests, int32_t_Read_Big)
+{
+    {
+        unsigned char endianBuffer[] = { 0x01, 0x04, 0xff, 0x0a };
+        std::int32_t value;
+        size_t sz = BigEndian<std::int32_t>::Read(endianBuffer, value);
+        EXPECT_EQ(sz, sizeof(std::int32_t));
+        EXPECT_EQ(value, int32_t(0x0104ff0a));
+    }
+
+    {
+        unsigned char endianBuffer[] = { 0xff, 0x00, 0x01, 0x02 };
+        std::int32_t value;
+        size_t sz = BigEndian<std::int32_t>::Read(endianBuffer, value);
+        EXPECT_EQ(sz, sizeof(std::int32_t));
+        EXPECT_EQ(value, int32_t(0xff000102));
+    }
+
+    {
+        unsigned char endianBuffer[] = { 0x00, 0x01, 0x02, 0xff };
+        std::int32_t value;
+        size_t sz = BigEndian<std::int32_t>::Read(endianBuffer, value);
+        EXPECT_EQ(sz, sizeof(std::int32_t));
+        EXPECT_EQ(value, int32_t(0x000102ff));
+    }
+}
+
+TEST(EndianTests, int32_t_Read_Little)
+{
+    {
+        unsigned char endianBuffer[] = { 0x01, 0x04, 0xff, 0x0a };
+        std::int32_t value;
+        size_t sz = LittleEndian<std::int32_t>::Read(endianBuffer, value);
+        EXPECT_EQ(sz, sizeof(std::int32_t));
+        EXPECT_EQ(value, int32_t(0x0aff0401));
+    }
+
+    {
+        unsigned char endianBuffer[] = { 0xff, 0x00, 0x01, 0x02 };
+        std::int32_t value;
+        size_t sz = LittleEndian<std::int32_t>::Read(endianBuffer, value);
+        EXPECT_EQ(sz, sizeof(std::int32_t));
+        EXPECT_EQ(value, int32_t(0x020100ff));
+    }
+
+    {
+        unsigned char endianBuffer[] = { 0x00, 0x01, 0x02, 0xff };
+        std::int32_t value;
+        size_t sz = LittleEndian<std::int32_t>::Read(endianBuffer, value);
+        EXPECT_EQ(sz, sizeof(std::int32_t));
+        EXPECT_EQ(value, int32_t(0xff020100));
+    }
+}
+
 TEST(EndianTests, uint64_t_Read_Big)
 {
     {

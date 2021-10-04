@@ -133,6 +133,26 @@ public:
 };
 
 template<typename TEndianess>
+class Endian<std::int32_t, TEndianess>
+{
+public:
+
+    static size_t Read(unsigned char const * ptr, std::int32_t & value) noexcept
+    {
+        std::uint32_t uValue;
+        size_t const sz = Endian<std::uint32_t, TEndianess>::Read(ptr, uValue);
+        value = static_cast<std::int32_t>(uValue);
+        return sz;
+    }
+
+    static size_t Write(std::int32_t const & value, unsigned char * ptr) noexcept
+    {
+        std::uint32_t const uValue = static_cast<std::uint32_t>(value);
+        return Endian<std::uint32_t, TEndianess>::Write(uValue, ptr);
+    }
+};
+
+template<typename TEndianess>
 class Endian<std::uint64_t, TEndianess>
 {
 public:

@@ -300,11 +300,11 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadata(
 
     if (!metadata.ElectricalPanelMetadata.empty())
     {
+        size_t valueSize = 0;
+
         // Tag and size
         buffer.Append(static_cast<std::uint32_t>(MetadataTagType::ElectricalPanelMetadataV1));
         size_t const valueSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
-
-        size_t valueSize = 0;
 
         // Number of entries
         std::uint16_t count = static_cast<std::uint16_t>(metadata.ElectricalPanelMetadata.size());
@@ -313,13 +313,13 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadata(
         // Entries
         for (auto const & entry : metadata.ElectricalPanelMetadata)
         {
-            valueSize += buffer.Append(static_cast<std::uint8_t>(entry.first));
+            valueSize += buffer.Append(static_cast<std::uint32_t>(entry.first));
 
             valueSize += buffer.Append(entry.second.PanelCoordinates.has_value());
             if (entry.second.PanelCoordinates.has_value())
             {
-                valueSize += buffer.Append(static_cast<std::uint8_t>(entry.second.PanelCoordinates->x));
-                valueSize += buffer.Append(static_cast<std::uint8_t>(entry.second.PanelCoordinates->y));
+                valueSize += buffer.Append(static_cast<std::int32_t>(entry.second.PanelCoordinates->x));
+                valueSize += buffer.Append(static_cast<std::int32_t>(entry.second.PanelCoordinates->y));
             }
 
             valueSize += buffer.Append(entry.second.Label.has_value());
@@ -538,24 +538,27 @@ void ShipDefinitionFormatDeSerializer::ReadMetadata(
 
                 size_t elecPanelOffset = offset;
 
+                // Number of entries
                 std::uint16_t entryCount;
                 elecPanelOffset += buffer.ReadAt<std::uint16_t>(elecPanelOffset, entryCount);
 
+                // Entries
                 for (int i = 0; i < entryCount; ++i)
                 {
-                    std::uint8_t instanceIndex;
-                    elecPanelOffset += buffer.ReadAt<std::uint8_t>(elecPanelOffset, instanceIndex);
+                    std::uint32_t instanceIndex;
+                    elecPanelOffset += buffer.ReadAt<std::uint32_t>(elecPanelOffset, instanceIndex);
 
                     std::optional<IntegralCoordinates> panelCoordinates;
                     bool panelCoordsHasValue;
                     elecPanelOffset += buffer.ReadAt<bool>(elecPanelOffset, panelCoordsHasValue);
                     if (panelCoordsHasValue)
                     {
-                        uint8_t x, y;
-                        elecPanelOffset += buffer.ReadAt<std::uint8_t>(elecPanelOffset, x);
-                        elecPanelOffset += buffer.ReadAt<std::uint8_t>(elecPanelOffset, y);
+                        int32_t x;
+                        elecPanelOffset += buffer.ReadAt<std::int32_t>(elecPanelOffset, x);
+                        int32_t y;
+                        elecPanelOffset += buffer.ReadAt<std::int32_t>(elecPanelOffset, y);
 
-                        panelCoordinates = IntegralCoordinates(static_cast<int>(int8_t(x)), static_cast<int>(int8_t(y)));
+                        panelCoordinates = IntegralCoordinates(static_cast<int>(x), static_cast<int>(y));
                     }
 
                     std::optional<std::string> label;

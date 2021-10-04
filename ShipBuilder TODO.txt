@@ -73,21 +73,17 @@ https://gamejolt.com/x/permalink/comment/11511458
 		+ Do
 		+ Store filename as mCurrentFilename
 	= DoSaveShip:
-		- Preview workflow:
+		- Ship Preview workflow:
 			- ShipPreview from .shp2 contains .shp2 filepath itself
 			- ShipPreview::LoadPreviewImage: if type is shp2, call ShipDefinitionFormatDeSerializer::LoadPreviewImage(filepath)
 					- Then do the resize via ImageTools
 				- else: type can only be png, throw if not
 				- Then, extra logic				
 		= ShipDeSerializer::Save(ShipDefinition const &)
+			- Exception for FS version >
+			- DeSerializationBuffer: double size at grow, up to 128K
 			+ Header
-			= Metadata
-				= Electrical panel
-					- Review, including:
-						- Coords being int
-					- See if can enlarge instance index
-						- Check all code
-						- At legacy: int8->new_type
+			+ Metadata
 			- Structural layer
 				- Pure buffer
 				- RLE?

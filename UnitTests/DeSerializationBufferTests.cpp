@@ -89,6 +89,34 @@ TEST(DeSerializationBufferTests, BigEndian_uint32_WriteAtAndRead)
     EXPECT_EQ(sourceVal, targetVal);
 }
 
+TEST(DeSerializationBufferTests, BigEndian_int32_AppendAndRead_Positive)
+{
+    DeSerializationBuffer<BigEndianess> b(16);
+
+    int32_t sourceVal = 456;
+    size_t const sourceSize = b.Append<std::int32_t>(sourceVal);
+    EXPECT_EQ(sourceSize, sizeof(std::int32_t));
+
+    int32_t targetVal;
+    size_t const targetSize = b.ReadAt<std::int32_t>(0, targetVal);
+    EXPECT_EQ(targetSize, sizeof(std::int32_t));
+    EXPECT_EQ(sourceVal, targetVal);
+}
+
+TEST(DeSerializationBufferTests, BigEndian_int32_AppendAndRead_Negative)
+{
+    DeSerializationBuffer<BigEndianess> b(16);
+
+    int32_t sourceVal = -456;
+    size_t const sourceSize = b.Append<std::int32_t>(sourceVal);
+    EXPECT_EQ(sourceSize, sizeof(std::int32_t));
+
+    int32_t targetVal;
+    size_t const targetSize = b.ReadAt<std::int32_t>(0, targetVal);
+    EXPECT_EQ(targetSize, sizeof(std::int32_t));
+    EXPECT_EQ(sourceVal, targetVal);
+}
+
 TEST(DeSerializationBufferTests, BigEndian_uint64_AppendAndRead)
 {
     DeSerializationBuffer<BigEndianess> b(2);
