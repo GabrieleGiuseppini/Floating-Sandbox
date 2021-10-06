@@ -142,4 +142,7 @@ private:
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_Full_WithoutElectricalPanel_Test;
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_Minimal_WithoutElectricalPanel_Test;
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_ElectricalPanel_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_MidSize_Uniform_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_LargeSize_Uniform_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_MidSize_Heterogeneous_Test;
 };

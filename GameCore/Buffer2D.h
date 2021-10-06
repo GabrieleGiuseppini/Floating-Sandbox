@@ -24,7 +24,7 @@ public:
     size_type const Size;
     std::unique_ptr<TElement[]> Data;
 
-    Buffer2D(size_type size)
+    explicit Buffer2D(size_type size)
         : Buffer2D(
             size,
             TElement())

@@ -197,6 +197,12 @@ private:
         size_t requiredAllocatedSize = mSize + newSize;
         if (requiredAllocatedSize > mAllocatedSize)
         {
+            if (requiredAllocatedSize < 128 * 1024
+                && requiredAllocatedSize < mAllocatedSize * 2)
+            {
+                requiredAllocatedSize = mAllocatedSize * 2;
+            }
+
             unsigned char * newBuffer = new unsigned char[requiredAllocatedSize];
             std::memcpy(newBuffer, mBuffer.get(), mSize);
             mBuffer.reset(newBuffer);

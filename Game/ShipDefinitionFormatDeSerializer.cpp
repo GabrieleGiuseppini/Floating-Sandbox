@@ -388,29 +388,43 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer(
 {
     size_t sectionBodySize = 0;
 
-    // Size
+    // Append 2D size
     sectionBodySize += buffer.Append(static_cast<std::uint32_t>(structuralLayer.Size.width));
     sectionBodySize += buffer.Append(static_cast<std::uint32_t>(structuralLayer.Size.height));
 
-    // KeyColor buffer
-    size_t const layerLinearSize = structuralLayer.Size.GetLinearSize();
-    size_t const keyColorBufferSize = layerLinearSize * sizeof(rgbColor);
-    rgbColor * keyColorBuffer = reinterpret_cast<rgbColor *>(buffer.Receive(keyColorBufferSize));
-    sectionBodySize += keyColorBufferSize;
+    //
+    // Encode layer with RLE of RGB color key buffer
+    //
 
-    // Populate buffer
+    size_t const layerLinearSize = structuralLayer.Size.GetLinearSize();
+    DeSerializationBuffer<BigEndianess> rleBuffer(layerLinearSize * sizeof(MaterialColorKey)); // Upper bound
+
     StructuralElement const * structuralElementBuffer = structuralLayer.Data.get();
-    for (size_t i = 0; i < layerLinearSize; ++i)
+    for (size_t i = 0; i < layerLinearSize; /*incremented in loop*/)
     {
-        if (structuralElementBuffer[i].Material == nullptr)
-        {
-            keyColorBuffer[i] = EmptyMaterialColorKey;
-        }
-        else
-        {
-            keyColorBuffer[i] = structuralElementBuffer[i].Material->ColorKey;
-        }
+        // Count consecutive identical values
+        auto const material = structuralElementBuffer[i].Material;
+        ++i;
+        std::uint16_t materialCount = 1;
+        for (;
+            i < layerLinearSize
+            && structuralElementBuffer[i].Material == material
+            && materialCount < std::numeric_limits<var_uint16_t>::max().value();
+            ++i, ++materialCount);
+
+        // Serialize
+        rleBuffer.Append<var_uint16_t>(var_uint16_t(materialCount));
+        MaterialColorKey const colorKey = material == nullptr ? EmptyMaterialColorKey : material->ColorKey;
+        rleBuffer.Append(reinterpret_cast<unsigned char const *>(&colorKey), sizeof(MaterialColorKey));
     }
+
+    //
+    // Serialize RLE buffer
+    //
+
+    sectionBodySize += buffer.Append(
+        rleBuffer.GetData(),
+        rleBuffer.GetSize());
 
     return sectionBodySize;
 }

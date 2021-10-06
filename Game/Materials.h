@@ -193,6 +193,40 @@ public:
         , IsLegacyElectrical(isLegacyElectrical)
         , PaletteCoordinates(paletteCoordinates)
     {}
+
+    // For tests
+    StructuralMaterial(
+        MaterialColorKey const & colorKey,
+        std::string name,
+        rgbColor const & renderColor)
+        : ColorKey(colorKey)
+        , Name(name)
+        , RenderColor(renderColor)
+        , Strength(1.0f)
+        , NominalMass(1.0f)
+        , Density(1.0f)
+        , BuoyancyVolumeFill(1.0f)
+        , Stiffness(1.0f)
+        , UniqueType(std::nullopt)
+        , MaterialSound(std::nullopt)
+        , MaterialTextureName(std::nullopt)
+        , IsHull(false)
+        , WaterIntake(1.0f)
+        , WaterDiffusionSpeed(1.0f)
+        , WaterRetention(1.0f)
+        , RustReceptivity(1.0f)
+        , IgnitionTemperature(200.0f)
+        , MeltingTemperature(200.0f)
+        , ThermalConductivity(1.0f)
+        , ThermalExpansionCoefficient(1.0f)
+        , SpecificHeat(1.0f)
+        , CombustionType(MaterialCombustionType::Combustion)
+        , ExplosiveCombustionRadius(1.0f)
+        , ExplosiveCombustionStrength(1.0f)
+        , WindReceptivity(1.0f)
+        , IsLegacyElectrical(false)
+        , PaletteCoordinates(std::nullopt)
+    {}
 };
 
 struct ElectricalMaterial
