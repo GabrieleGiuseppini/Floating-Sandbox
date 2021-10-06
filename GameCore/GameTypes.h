@@ -262,17 +262,38 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, Sequ
 // Password hash
 using PasswordHash = size_t;
 
-// Variable-length 16-bit unsigned integer.
-// Just a type tag, mostly for use for limits and de/serializations.
-struct var_uint16_t;
+// Variable-length 16-bit unsigned integer
+struct var_uint16_t
+{
+public:
+
+    static std::uint16_t constexpr MaxValue = 0x03fff;
+
+    std::uint16_t value() const
+    {
+        return mValue;
+    }
+
+    var_uint16_t() = default;
+
+    constexpr explicit var_uint16_t(std::uint16_t value)
+        : mValue(value)
+    {
+        assert(value <= MaxValue);
+    }
+
+private:
+
+    std::uint16_t mValue;
+};
 
 namespace std {
     template<> class numeric_limits<var_uint16_t>
     {
     public:
-        static constexpr std::uint16_t min() { return 0; };
-        static constexpr std::uint16_t max() { return 0x03fff; };
-        static constexpr std::uint16_t lowest() { return min(); };
+        static constexpr var_uint16_t min() { return var_uint16_t(0); };
+        static constexpr var_uint16_t max() { return var_uint16_t(var_uint16_t::MaxValue); };
+        static constexpr var_uint16_t lowest() { return min(); };
     };
 }
 

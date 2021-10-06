@@ -143,9 +143,9 @@ TEST(EndianTests, var_uint16_t_WriteRead_Big)
 {
     unsigned char buffer[2];
 
-    for (std::uint16_t sourceValue = 0; sourceValue <= std::numeric_limits<var_uint16_t>::max(); ++sourceValue)
+    for (std::uint16_t sourceValue = 0; sourceValue <= std::numeric_limits<var_uint16_t>::max().value(); ++sourceValue)
     {
-        size_t const writeSize = BigEndian<var_uint16_t>::Write(sourceValue, buffer);
+        size_t const writeSize = BigEndian<var_uint16_t>::Write(var_uint16_t(sourceValue), buffer);
         if (sourceValue <= 0x7f)
         {
             ASSERT_EQ(writeSize, 1);
@@ -155,10 +155,10 @@ TEST(EndianTests, var_uint16_t_WriteRead_Big)
             ASSERT_EQ(writeSize, 2);
         }
 
-        std::uint16_t readValue;
+        var_uint16_t readValue;
         size_t const readSize = BigEndian<var_uint16_t>::Read(buffer, readValue);
         ASSERT_EQ(readSize, writeSize);
-        EXPECT_EQ(readValue, sourceValue);
+        EXPECT_EQ(readValue.value(), sourceValue);
     }
 }
 
@@ -166,9 +166,9 @@ TEST(EndianTests, var_uint16_t_WriteRead_Little)
 {
     unsigned char buffer[2];
 
-    for (std::uint16_t sourceValue = 0; sourceValue <= std::numeric_limits<var_uint16_t>::max(); ++sourceValue)
+    for (std::uint16_t sourceValue = 0; sourceValue <= std::numeric_limits<var_uint16_t>::max().value(); ++sourceValue)
     {
-        size_t const writeSize = LittleEndian<var_uint16_t>::Write(sourceValue, buffer);
+        size_t const writeSize = LittleEndian<var_uint16_t>::Write(var_uint16_t(sourceValue), buffer);
         if (sourceValue <= 0x7f)
         {
             ASSERT_EQ(writeSize, 1);
@@ -178,10 +178,10 @@ TEST(EndianTests, var_uint16_t_WriteRead_Little)
             ASSERT_EQ(writeSize, 2);
         }
 
-        std::uint16_t readValue;
+        var_uint16_t readValue;
         size_t const readSize = LittleEndian<var_uint16_t>::Read(buffer, readValue);
         ASSERT_EQ(readSize, writeSize);
-        EXPECT_EQ(readValue, sourceValue);
+        EXPECT_EQ(readValue.value(), sourceValue);
     }
 }
 

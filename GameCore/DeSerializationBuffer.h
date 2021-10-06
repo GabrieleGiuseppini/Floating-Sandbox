@@ -103,7 +103,7 @@ public:
 
         // Append
         size_t const sz = Endian<T, TEndianess>::Write(value, mBuffer.get() + mSize);
-        assert(sz == requiredSize);
+        assert(sz <= requiredSize);
 
         // Advance
         mSize += sz;
@@ -125,16 +125,16 @@ public:
         // Append len
         std::uint32_t const length = static_cast<std::uint32_t>(value.length());
         size_t const sz1 = Endian<std::uint32_t, TEndianess>::Write(length, mBuffer.get() + mSize);
-        assert(sz1 == sizeof(std::uint32_t));
+        assert(sz1 <= sizeof(std::uint32_t));
 
         // Serialize chars
         std::memcpy(mBuffer.get() + mSize + sz1, value.data(), length);
-        assert(sz1 + length == requiredSize);
+        assert(sz1 + length <= requiredSize);
 
         // Advance
-        mSize += requiredSize;
+        mSize += sz1 + length;
 
-        return requiredSize;
+        return sz1 + length;
     }
 
     /*
