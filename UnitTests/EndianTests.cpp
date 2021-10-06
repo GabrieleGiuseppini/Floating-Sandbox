@@ -139,6 +139,52 @@ TEST(EndianTests, uint16_t_Write_Little)
     }
 }
 
+TEST(EndianTests, var_uint16_t_WriteRead_Big)
+{
+    unsigned char buffer[2];
+
+    for (std::uint16_t sourceValue = 0; sourceValue <= std::numeric_limits<var_uint16_t>::max(); ++sourceValue)
+    {
+        size_t const writeSize = BigEndian<var_uint16_t>::Write(sourceValue, buffer);
+        if (sourceValue <= 0x7f)
+        {
+            ASSERT_EQ(writeSize, 1);
+        }
+        else
+        {
+            ASSERT_EQ(writeSize, 2);
+        }
+
+        std::uint16_t readValue;
+        size_t const readSize = BigEndian<var_uint16_t>::Read(buffer, readValue);
+        ASSERT_EQ(readSize, writeSize);
+        EXPECT_EQ(readValue, sourceValue);
+    }
+}
+
+TEST(EndianTests, var_uint16_t_WriteRead_Little)
+{
+    unsigned char buffer[2];
+
+    for (std::uint16_t sourceValue = 0; sourceValue <= std::numeric_limits<var_uint16_t>::max(); ++sourceValue)
+    {
+        size_t const writeSize = LittleEndian<var_uint16_t>::Write(sourceValue, buffer);
+        if (sourceValue <= 0x7f)
+        {
+            ASSERT_EQ(writeSize, 1);
+        }
+        else
+        {
+            ASSERT_EQ(writeSize, 2);
+        }
+
+        std::uint16_t readValue;
+        size_t const readSize = LittleEndian<var_uint16_t>::Read(buffer, readValue);
+        ASSERT_EQ(readSize, writeSize);
+        EXPECT_EQ(readValue, sourceValue);
+    }
+}
+
 TEST(EndianTests, uint32_t_Read_Big)
 {
     {

@@ -80,13 +80,16 @@ https://gamejolt.com/x/permalink/comment/11511458
 				- else: type can only be png, throw if not
 				- Then, extra logic				
 		= ShipDeSerializer::Save(ShipDefinition const &)
-			- Exception for FS version >
+			- Exception for FS version > and one missing material - own type, translated into localized message @ catcher
 			- DeSerializationBuffer: double size at grow, up to 128K
 			+ Header
 			+ Metadata
 			- Structural layer
 				- Pure buffer
-				- RLE?
+				- RLE with variable-length "u 16-bit" count encoding
+					- DeSerializationBuffer::Read/Write VarUInt16
+					+ Orig: 216Kb
+					- Compressed: 
 			- Electrical layer
 				- Pure buffer
 			- Ropes layer

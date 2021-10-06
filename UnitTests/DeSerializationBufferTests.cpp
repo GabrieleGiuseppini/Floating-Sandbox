@@ -203,6 +203,25 @@ TEST(DeSerializationBufferTests, BigEndian_string_AppendAndRead)
     EXPECT_EQ(sourceVal2, targetVal2);
 }
 
+TEST(DeSerializationBufferTests, BigEndian_var_uint16_AppendAndRead)
+{
+    DeSerializationBuffer<BigEndianess> b(16);
+
+    uint16_t sourceVal1 = 0x0412;
+    size_t const sourceSize1 = b.Append<var_uint16_t>(sourceVal1);
+
+    uint16_t sourceVal2 = 0x01fff;
+    size_t const sourceSize2 = b.Append<var_uint16_t>(sourceVal2);
+
+    uint16_t targetVal1;
+    size_t const sz1 = b.ReadAt<var_uint16_t>(0, targetVal1);
+    EXPECT_EQ(sourceVal1, targetVal1);
+
+    uint16_t targetVal2;
+    b.ReadAt<var_uint16_t>(sz1, targetVal2);
+    EXPECT_EQ(sourceVal2, targetVal2);
+}
+
 TEST(DeSerializationBufferTests, BigEndian_ReserveAndAdvance_Struct)
 {
     DeSerializationBuffer<BigEndianess> b(4);

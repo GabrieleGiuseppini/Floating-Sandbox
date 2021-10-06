@@ -5,8 +5,11 @@
  ***************************************************************************************/
 #pragma once
 
+#include "GameTypes.h"
+
 #include <algorithm>
 #include <cstdint>
+#include <limits>
 
 class BigEndianess
 {
@@ -257,6 +260,51 @@ public:
         return sizeof(unsigned char);
     }
 };
+
+template<typename TEndianess>
+class Endian<var_uint16_t, TEndianess>
+{
+public:
+
+    //
+    // Note: here we have the same behavior regardless of big vs little endianess
+
+    static size_t Read(unsigned char const * ptr, std::uint16_t & value) noexcept
+    {
+        std::uint8_t const value1 = static_cast<std::uint8_t>(ptr[0]);
+        if (value1 <= 0x7f)
+        {
+            value = static_cast<std::uint16_t>(value1);
+            return sizeof(std::uint8_t);
+        }
+        else
+        {
+            std::uint8_t const value2 = static_cast<std::uint8_t>(ptr[1]);
+            value = static_cast<std::uint16_t>(value1 & 0x7f)
+                | (static_cast<std::uint16_t>(value2) << 7);
+            return sizeof(std::uint16_t);
+        }
+    }
+
+    static size_t Write(std::uint16_t const & value, unsigned char * ptr) noexcept
+    {
+        assert(value >= std::numeric_limits<var_uint16_t>::min() && value <= std::numeric_limits<var_uint16_t>::max());
+
+        if (value <= 0x7f)
+        {
+            ptr[0] = static_cast<unsigned char>(static_cast<std::uint8_t>(value));
+            return sizeof(std::uint8_t);
+        }
+        else
+        {
+            ptr[0] = static_cast<unsigned char>(static_cast<std::uint8_t>(0x80 | (value & 0x7f)));
+            ptr[1] = static_cast<unsigned char>(static_cast<std::uint8_t>(value >> 7));
+            return sizeof(std::uint16_t);
+        }
+    }
+};
+
+////////////////////////////////////////////////////////////////
 
 template <typename T>
 using BigEndian = Endian<T, BigEndianess>;
