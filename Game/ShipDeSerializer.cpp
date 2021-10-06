@@ -18,7 +18,7 @@ ShipDefinition ShipDeSerializer::LoadShip(
 {
     if (IsShipDefinitionFile(shipFilePath))
     {
-        return ShipDefinitionFormatDeSerializer::Load(shipFilePath);
+        return ShipDefinitionFormatDeSerializer::Load(shipFilePath, materialDatabase);
     }
     else if (IsImageDefinitionFile(shipFilePath))
     {

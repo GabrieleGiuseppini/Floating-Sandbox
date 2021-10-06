@@ -168,6 +168,7 @@ public:
 
     /*
      * Reads a string at the specified index.
+     * Returns the number of bytes read.
      */
     template<>
     size_t ReadAt<std::string>(size_t index, std::string & value) const
@@ -185,6 +186,19 @@ public:
         return sz1 + length;
     }
 
+    /*
+     * Reads bytes at the specified index.
+     * Returns the number of bytes read.
+     */
+    size_t ReadAt(size_t index, unsigned char * ptr, size_t count) const
+    {
+        assert(index + count <= mAllocatedSize);
+
+        std::memcpy(ptr, mBuffer.get() + index, count);
+
+        return count;
+    }
+
     void Reset()
     {
         mSize = 0;
@@ -192,9 +206,9 @@ public:
 
 private:
 
-    void EnsureMayAppend(size_t newSize)
+    void EnsureMayAppend(size_t additionalSize)
     {
-        size_t requiredAllocatedSize = mSize + newSize;
+        size_t requiredAllocatedSize = mSize + additionalSize;
         if (requiredAllocatedSize > mAllocatedSize)
         {
             if (requiredAllocatedSize < 128 * 1024

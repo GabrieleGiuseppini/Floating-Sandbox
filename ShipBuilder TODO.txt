@@ -79,20 +79,26 @@ https://gamejolt.com/x/permalink/comment/11511458
 					- Then do the resize via ImageTools
 				- else: type can only be png, throw if not
 				- Then, extra logic				
+			- Preview is image chunk saved at ship save time
 		= ShipDeSerializer::Save(ShipDefinition const &)
-			- Exception for FS version > and one missing material - own type, translated into localized message @ catcher
-			= DeSerializationBuffer: double size at grow, up to 128K
+			- Rearc exceptions:
+				- Unrecognized file format 
+					- Normal GameException
+				- File format not supported in this version (i.e. recognized but different version/invalid/missing material)
+					- Own type, translated into localized message (@LocalizationManager) @ catcher
+				- Test both
 			+ Header
 			+ Metadata
 			= Structural layer
-				= RLE with variable-length "u 16-bit" count encoding
+				+ RLE with variable-length "u 16-bit" count encoding
 					+ DeSerializationBuffer::Read/Write VarUInt16
 					+ Orig: 216Kb
 					+ Compressed: 30.8Kb
-				- Read
-				- See if having a Buffer2D cctor that doesn't initialize at all, would speed up
+				= Read
+					- Then complete unit tests
 			- Electrical layer
 				- Pure buffer
+				- Review MaterialDatabase's electrical material maps: make one map
 			- Ropes layer
 				- Pure buffer
 			- Texture layer

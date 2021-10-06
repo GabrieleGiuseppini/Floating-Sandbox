@@ -9,12 +9,13 @@
 #include <GameCore/GameException.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/Log.h>
-#include <GameCore/Version.h>
 
 #include <cassert>
 #include <cstddef>
 
-ShipDefinition ShipDefinitionFormatDeSerializer::Load(std::filesystem::path const & shipFilePath)
+ShipDefinition ShipDefinitionFormatDeSerializer::Load(
+    std::filesystem::path const & shipFilePath,
+    MaterialDatabase const & materialDatabase)
 {
     DeSerializationBuffer<BigEndianess> buffer(256);
 
@@ -28,7 +29,8 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(std::filesystem::path cons
     // Read header
     //
 
-    ReadFileHeader(inputFile, buffer);
+    MajorMinorVersion fileFloatingSandboxVersion;
+    ReadFileHeader(inputFile, fileFloatingSandboxVersion, buffer);
 
     //
     // Read and process sections
@@ -53,7 +55,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(std::filesystem::path cons
             case static_cast<uint32_t>(MainSectionTagType::StructuralLayer):
             {
                 ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
-                ReadStructuralLayer(buffer, structuralLayer);
+                ReadStructuralLayer(buffer, materialDatabase.GetStructuralMaterialMap(), structuralLayer);
 
                 break;
             }
@@ -457,6 +459,7 @@ void ShipDefinitionFormatDeSerializer::ReadIntoBuffer(
 
 void ShipDefinitionFormatDeSerializer::ReadFileHeader(
     std::ifstream & inputFile,
+    MajorMinorVersion & fileFloatingSandboxVersion,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
     ReadIntoBuffer(inputFile, buffer, sizeof(FileHeader));
@@ -469,6 +472,14 @@ void ShipDefinitionFormatDeSerializer::ReadFileHeader(
     {
         ThrowInvalidFile();
     }
+
+    // Read FS version
+    std::uint16_t majorVersion;
+    buffer.ReadAt<std::uint16_t>(offsetof(FileHeader, FloatingSandboxVersionMaj), majorVersion);
+    std::uint16_t minorVersion;
+    buffer.ReadAt<std::uint16_t>(offsetof(FileHeader, FloatingSandboxVersionMin), minorVersion);
+
+    fileFloatingSandboxVersion = MajorMinorVersion(static_cast<int>(majorVersion), static_cast<int>(minorVersion));
 }
 
 ShipDefinitionFormatDeSerializer::SectionHeader ShipDefinitionFormatDeSerializer::ReadSectionHeader(
@@ -496,7 +507,7 @@ ShipDefinitionFormatDeSerializer::SectionHeader ShipDefinitionFormatDeSerializer
 }
 
 void ShipDefinitionFormatDeSerializer::ReadMetadata(
-    DeSerializationBuffer<BigEndianess> & buffer,
+    DeSerializationBuffer<BigEndianess> const & buffer,
     ShipMetadata & metadata)
 {
     // Read all tags
@@ -654,10 +665,60 @@ void ShipDefinitionFormatDeSerializer::ReadMetadata(
 }
 
 void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
-    DeSerializationBuffer<BigEndianess> & buffer,
-    std::unique_ptr<StructuralLayerBuffer> & structuralLayer)
+    DeSerializationBuffer<BigEndianess> const & buffer,
+    MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
+    std::unique_ptr<StructuralLayerBuffer> & structuralLayerBuffer)
 {
-    // TODOHERE
+    size_t readOffset = 0;
+
+    // Read 2D size
+    std::uint32_t width;
+    readOffset += buffer.ReadAt(readOffset, width);
+    std::uint32_t height;
+    readOffset += buffer.ReadAt(readOffset, height);
+    ShipSpaceSize const shipSize(width, height);
+
+    // Allocate buffer
+    structuralLayerBuffer.reset(new StructuralLayerBuffer(shipSize));
+
+    // Decode RLE buffer
+    size_t writeOffset = 0;
+    StructuralElement * structuralLayerWrite = structuralLayerBuffer->Data.get();
+    for (; readOffset < buffer.GetSize(); /*incremented in loop*/)
+    {
+        // Count
+        var_uint16_t count;
+        readOffset += buffer.ReadAt(readOffset, count);
+
+        // ColorKey value
+        MaterialColorKey colorKey;
+        readOffset += buffer.ReadAt(readOffset, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
+
+        // Lookup material
+        StructuralMaterial const * material;
+        if (colorKey == EmptyMaterialColorKey)
+        {
+            material = nullptr;
+        }
+        else
+        {
+            auto const materialIt = materialMap.find(colorKey);
+            if (materialIt == materialMap.cend())
+            {
+                // TODOHERE: if not found, throw ad-hoc exception (declared @ this class' public), containing FS version from header
+            }
+
+            material = &(materialIt->second);
+        }
+
+        // Fill material
+        for (std::uint16_t i = 0; i < count.value(); ++i, ++writeOffset)
+        {
+            structuralLayerWrite[writeOffset].Material = material;
+        }
+    }
+
+    assert(writeOffset == shipSize.GetLinearSize());
 }
 
 void ShipDefinitionFormatDeSerializer::ThrowInvalidFile()

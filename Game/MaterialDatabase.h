@@ -61,6 +61,9 @@ public:
         void CheckComplete();
     };
 
+    template<typename TMaterial>
+    using MaterialMap = std::map<MaterialColorKey, TMaterial>;
+
 private:
 
     using UniqueStructuralMaterialsArray = std::array<std::pair<MaterialColorKey, StructuralMaterial const *>, static_cast<size_t>(StructuralMaterial::MaterialUniqueType::_Last) + 1>;
@@ -100,6 +103,11 @@ public:
 
         // No luck
         return nullptr;
+    }
+
+    MaterialMap<StructuralMaterial> const & GetStructuralMaterialMap() const
+    {
+        return mStructuralMaterialMap;
     }
 
     Palette<StructuralMaterial> const & GetStructuralMaterialPalette() const
@@ -188,7 +196,7 @@ private:
 private:
 
     MaterialDatabase(
-        std::map<MaterialColorKey, StructuralMaterial> structuralMaterialMap,
+        MaterialMap<StructuralMaterial> structuralMaterialMap,
         Palette<StructuralMaterial> structuralMaterialPalette,
         std::map<MaterialColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> nonInstancedElectricalMaterialMap,
         std::map<MaterialColorKey, ElectricalMaterial, InstancedColorKeyComparer> instancedElectricalMaterialMap,
@@ -210,7 +218,7 @@ private:
 private:
 
     // Structural
-    std::map<MaterialColorKey, StructuralMaterial> mStructuralMaterialMap;
+    MaterialMap<StructuralMaterial> mStructuralMaterialMap;
     Palette<StructuralMaterial> mStructuralMaterialPalette;
 
     // Electrical

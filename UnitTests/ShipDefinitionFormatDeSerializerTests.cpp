@@ -141,7 +141,7 @@ protected:
                 i + 1,
                 i);
 
-            MaterialMap.try_emplace(
+            TestMaterialMap.try_emplace(
                 colorKey,
                 StructuralMaterial(
                     colorKey,
@@ -150,85 +150,99 @@ protected:
         }
     }
 
-    std::map<MaterialColorKey, StructuralMaterial> MaterialMap;
+    void VerifyDeserializedStructuralLayer(
+        StructuralLayerBuffer const & sourceStructuralLayerBuffer,
+        DeSerializationBuffer<BigEndianess> & buffer)
+    {
+        std::unique_ptr<StructuralLayerBuffer> targetStructuralLayerBuffer;
+        ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
+            buffer,
+            TestMaterialMap,
+            targetStructuralLayerBuffer);
+
+        EXPECT_EQ(targetStructuralLayerBuffer->Size, sourceStructuralLayerBuffer.Size);
+        ASSERT_EQ(targetStructuralLayerBuffer->GetByteSize(), sourceStructuralLayerBuffer.GetByteSize());
+        EXPECT_EQ(
+            std::memcmp(
+                targetStructuralLayerBuffer->Data.get(),
+                sourceStructuralLayerBuffer.Data.get(),
+                targetStructuralLayerBuffer->GetByteSize()),
+            0);
+    }
+
+    std::map<MaterialColorKey, StructuralMaterial> TestMaterialMap;
 };
 
-TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, MidSize_Uniform)
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, VariousSizes_Uniform)
 {
-    StructuralLayerBuffer structuralLayerBuffer({ 10, 12 }, StructuralElement(nullptr));
+    for (int iParam = 1; iParam < 16384 * 2 + 1; ++iParam)
+    {
+        StructuralLayerBuffer sourceStructuralLayerBuffer(
+            ShipSpaceSize(iParam, 1),
+            StructuralElement(nullptr)); // Empty
 
-    DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(structuralLayerBuffer, buffer);
+        ASSERT_EQ(sourceStructuralLayerBuffer.Size.GetLinearSize(), iParam);
 
-    // Verify size
-    std::uint32_t width, height;
-    size_t idx = buffer.ReadAt(0, width);
-    idx += buffer.ReadAt(idx, height);
-    ASSERT_EQ(width, uint32_t(10));
-    ASSERT_EQ(height, uint32_t(12));
+        DeSerializationBuffer<BigEndianess> buffer(256);
+        ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayerBuffer, buffer);
 
-    //
-    // Verify RLE:
-    //  120 times: EmptyMaterialKey
-    //
+        // Verify ship size
+        std::uint32_t width, height;
+        size_t idx = buffer.ReadAt(0, width);
+        idx += buffer.ReadAt(idx, height);
+        ASSERT_EQ(width, uint32_t(iParam));
+        ASSERT_EQ(height, uint32_t(1));
 
-    // Count
-    var_uint16_t count;
-    idx += buffer.ReadAt(idx, count);
-    ASSERT_EQ(count.value(), 120);
+        //
+        // Verify RLE:
+        //  16383 times: EmptyMaterialKey
+        //  16383 times: EmptyMaterialKey
+        //  ...
+        //      n times: EmptyMaterialKey
+        //
 
-    // Value
-    MaterialColorKey colorKey;
-    std::memcpy(&colorKey, buffer.GetData() + idx, sizeof(MaterialColorKey));
-    idx += sizeof(MaterialColorKey);
-    EXPECT_EQ(colorKey, EmptyMaterialColorKey);
+        int iRunSize = iParam;
+        while (iRunSize >= 16383)
+        {
+            // Count
+            var_uint16_t fullCount;
+            idx += buffer.ReadAt(idx, fullCount);
+            ASSERT_EQ(fullCount.value(), 16383);
 
-    // Buffer is done
-    EXPECT_EQ(idx, buffer.GetSize());
-}
+            // Value
+            MaterialColorKey fullColorKey;
+            idx += buffer.ReadAt(idx, reinterpret_cast<unsigned char *>(&fullColorKey), sizeof(fullColorKey));
+            EXPECT_EQ(fullColorKey, EmptyMaterialColorKey);
 
-TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, LargeSize_Uniform)
-{
-    StructuralLayerBuffer structuralLayerBuffer({ 256, 64 }, StructuralElement(nullptr));
+            iRunSize -= 16383;
+        }
 
-    DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(structuralLayerBuffer, buffer);
+        ASSERT_LE(iRunSize, 16383);
 
-    // Verify size
-    std::uint32_t width, height;
-    size_t idx = buffer.ReadAt(0, width);
-    idx += buffer.ReadAt(idx, height);
-    ASSERT_EQ(width, uint32_t(256));
-    ASSERT_EQ(height, uint32_t(64));
+        if (iRunSize > 0)
+        {
+            // Count
+            var_uint16_t partialCount;
+            idx += buffer.ReadAt(idx, partialCount);
+            ASSERT_EQ(partialCount.value(), static_cast<std::uint16_t>(iRunSize));
 
-    //
-    // Verify RLE:
-    //  16383 times: EmptyMaterialKey
-    //      1 times: EmptyMaterialKey
-    //
+            // Value
+            MaterialColorKey partialColorKey;
+            idx += buffer.ReadAt(idx, reinterpret_cast<unsigned char *>(&partialColorKey), sizeof(partialColorKey));
+            EXPECT_EQ(partialColorKey, EmptyMaterialColorKey);
+        }
 
-    // Count
-    var_uint16_t count;
-    idx += buffer.ReadAt(idx, count);
-    ASSERT_EQ(count.value(), 16383);
+        // Buffer is done
+        EXPECT_EQ(idx, buffer.GetSize());
 
-    // Value
-    MaterialColorKey colorKey;
-    std::memcpy(&colorKey, buffer.GetData() + idx, sizeof(MaterialColorKey));
-    idx += sizeof(MaterialColorKey);
-    EXPECT_EQ(colorKey, EmptyMaterialColorKey);
+        //
+        // Verify may be read
+        //
 
-    // Count
-    idx += buffer.ReadAt(idx, count);
-    ASSERT_EQ(count.value(), 1);
-
-    // Value
-    std::memcpy(&colorKey, buffer.GetData() + idx, sizeof(MaterialColorKey));
-    idx += sizeof(MaterialColorKey);
-    EXPECT_EQ(colorKey, EmptyMaterialColorKey);
-
-    // Buffer is done
-    EXPECT_EQ(idx, buffer.GetSize());
+        VerifyDeserializedStructuralLayer(
+            sourceStructuralLayerBuffer,
+            buffer);
+    }
 }
 
 TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, MidSize_Heterogeneous)
@@ -236,8 +250,8 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, MidSize_Hete
     // Linearize materials
     std::vector<StructuralMaterial const *> materials;
     std::transform(
-        MaterialMap.cbegin(),
-        MaterialMap.cend(),
+        TestMaterialMap.cbegin(),
+        TestMaterialMap.cend(),
         std::back_inserter(materials),
         [](auto const & entry)
         {
@@ -245,15 +259,15 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, MidSize_Hete
         });
 
     // Populate structural layer buffer
-    StructuralLayerBuffer structuralLayerBuffer(ShipSpaceSize(10, 12));
-    for (size_t i = 0; i < structuralLayerBuffer.Size.GetLinearSize(); ++i)
+    StructuralLayerBuffer sourceStructuralLayerBuffer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceStructuralLayerBuffer.Size.GetLinearSize(); ++i)
     {
-        structuralLayerBuffer.Data[i].Material = materials[i % materials.size()];
+        sourceStructuralLayerBuffer.Data[i].Material = materials[i % materials.size()];
     }
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(structuralLayerBuffer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayerBuffer, buffer);
 
     // Verify size
     std::uint32_t width, height;
@@ -266,7 +280,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, MidSize_Hete
     // Verify RLE
     //
 
-    for (size_t i = 0; i < structuralLayerBuffer.Size.GetLinearSize(); ++i)
+    for (size_t i = 0; i < sourceStructuralLayerBuffer.Size.GetLinearSize(); ++i)
     {
         // Count
         var_uint16_t count;
@@ -275,11 +289,20 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, MidSize_Hete
 
         // Value
         MaterialColorKey colorKey;
-        std::memcpy(&colorKey, buffer.GetData() + idx, sizeof(MaterialColorKey));
-        idx += sizeof(MaterialColorKey);
+        idx += buffer.ReadAt(idx, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
         EXPECT_EQ(colorKey, materials[i % materials.size()]->ColorKey);
     }
 
     // Buffer is done
     EXPECT_EQ(idx, buffer.GetSize());
+
+    //
+    // Verify may be read
+    //
+
+    VerifyDeserializedStructuralLayer(
+        sourceStructuralLayerBuffer,
+        buffer);
 }
+
+// TODOHERE: all sizes, just write+read

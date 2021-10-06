@@ -5,15 +5,18 @@
 ***************************************************************************************/
 #pragma once
 
+#include "MaterialDatabase.h"
 #include "ShipDefinition.h"
 #include "ShipPreview.h"
 
 #include <GameCore/DeSerializationBuffer.h>
+#include <GameCore/Version.h>
 
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <map>
 #include <memory>
 
 /*
@@ -23,7 +26,9 @@ class ShipDefinitionFormatDeSerializer
 {
 public:
 
-    static ShipDefinition Load(std::filesystem::path const & shipFilePath);
+    static ShipDefinition Load(
+        std::filesystem::path const & shipFilePath,
+        MaterialDatabase const & materialDatabase);
 
     static ShipPreview LoadPreview(std::filesystem::path const & shipFilePath);
 
@@ -55,6 +60,7 @@ private:
         Metadata = 5,
         PhysicsData = 6,
         AutoTexturizationSettings = 7,
+        Preview = 8,
 
         Tail = 0xffffffff
     };
@@ -117,6 +123,7 @@ private:
 
     static void ReadFileHeader(
         std::ifstream & inputFile,
+        MajorMinorVersion & fileFloatingSandboxVersion,
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static SectionHeader ReadSectionHeader(
@@ -128,21 +135,22 @@ private:
         size_t offset);
 
     static void ReadMetadata(
-        DeSerializationBuffer<BigEndianess> & buffer,
+        DeSerializationBuffer<BigEndianess> const & buffer,
         ShipMetadata & metadata);
 
     static void ReadStructuralLayer(
-        DeSerializationBuffer<BigEndianess> & buffer,
-        std::unique_ptr<StructuralLayerBuffer> & structuralLayer);
+        DeSerializationBuffer<BigEndianess> const & buffer,
+        MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
+        std::unique_ptr<StructuralLayerBuffer> & structuralLayerBuffer);
 
     static void ThrowInvalidFile();
 
 private:
 
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests;
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_Full_WithoutElectricalPanel_Test;
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_Minimal_WithoutElectricalPanel_Test;
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_ElectricalPanel_Test;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_MidSize_Uniform_Test;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_LargeSize_Uniform_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_VariousSizes_Uniform_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_MidSize_Heterogeneous_Test;
 };

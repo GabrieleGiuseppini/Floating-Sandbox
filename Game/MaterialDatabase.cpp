@@ -13,7 +13,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     // Structural
     //
 
-    std::map<MaterialColorKey, StructuralMaterial> structuralMaterialsMap;
+    MaterialMap<StructuralMaterial> structuralMaterialMap;
     UniqueStructuralMaterialsArray uniqueStructuralMaterials;
 
     for (size_t i = 0; i < uniqueStructuralMaterials.size(); ++i)
@@ -123,13 +123,13 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
             }
 
             // Make sure there are no dupes
-            if (structuralMaterialsMap.count(colorKey) != 0)
+            if (structuralMaterialMap.count(colorKey) != 0)
             {
                 throw GameException("Structural material \"" + material.Name + "\" has a duplicate color key");
             }
 
             // Store
-            auto const storedEntry = structuralMaterialsMap.emplace(
+            auto const storedEntry = structuralMaterialMap.emplace(
                 std::make_pair(
                     colorKey,
                     material));
@@ -170,7 +170,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     }
 
     // Make sure there are no clashes with indexed rope colors
-    for (auto const & entry : structuralMaterialsMap)
+    for (auto const & entry : structuralMaterialMap)
     {
         if ((!entry.second.UniqueType || StructuralMaterial::MaterialUniqueType::Rope != *(entry.second.UniqueType))
             && entry.first.r == uniqueStructuralMaterials[RopeUniqueMaterialIndex].first.r
@@ -291,7 +291,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     // materials
     //
 
-    for (auto const & kv : structuralMaterialsMap)
+    for (auto const & kv : structuralMaterialMap)
     {
         if (!kv.second.IsLegacyElectrical
             && (0 != nonInstancedElectricalMaterialsMap.count(kv.first)
@@ -302,7 +302,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     }
 
     return MaterialDatabase(
-        std::move(structuralMaterialsMap),
+        std::move(structuralMaterialMap),
         std::move(structuralMaterialPalette),
         std::move(nonInstancedElectricalMaterialsMap),
         std::move(instancedElectricalMaterialsMap),

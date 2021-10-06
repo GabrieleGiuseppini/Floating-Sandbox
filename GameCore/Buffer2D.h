@@ -26,9 +26,18 @@ public:
 
     explicit Buffer2D(size_type size)
         : Buffer2D(
-            size,
-            TElement())
+            size.width,
+            size.height)
     {
+    }
+
+    Buffer2D(
+        int width,
+        int height)
+        : Size(width, height)
+        , mLinearSize(width * height)
+    {
+        Data = std::make_unique<TElement[]>(mLinearSize);
     }
 
     Buffer2D(
@@ -38,16 +47,6 @@ public:
             size.width,
             size.height,
             defaultValue)
-    {
-    }
-
-    Buffer2D(
-        int width,
-        int height)
-        : Buffer2D(
-            width,
-            height,
-            TElement())
     {
     }
 
