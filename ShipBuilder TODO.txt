@@ -78,15 +78,34 @@ https://gamejolt.com/x/permalink/comment/11511458
 			- ShipPreview::LoadPreviewImage: if type is shp2, call ShipDefinitionFormatDeSerializer::LoadPreviewImage(filepath)
 					- Then do the resize via ImageTools
 				- else: type can only be png, throw if not
-				- Then, extra logic				
-			- Preview is image chunk saved at ship save time
+				- Then resize and trim (@ where it's now)
+			- Preview is own tag, image chunk saved at ship save time - but only if there's no texture
+				- Order of chunks:
+					- If has texture: metadata, texture, ...
+					- Else: metadata, preview, ...
 		= ShipDeSerializer::Save(ShipDefinition const &)
 			- Rearc exceptions:
-				- Unrecognized file format 
-					- Normal GameException
-				- File format not supported in this version (i.e. recognized but different version/invalid/missing material)
-					- Own type, translated into localized message (@LocalizationManager) @ catcher
-				- Test both
+				- GameCore/LocalizableGameException
+					- With enum
+					- Exception contains enum and string array
+					- LocalizationManager::MakeErrorMessage(LocalizableGameException const &)
+						- Formats
+				- Individual methods throw directly LocalizableGameException, no post-processing
+					- DeSerializer becomes instance; members:
+						- file FS version
+						- tmpBuffer
+				- Errors:
+					- Unrecognized file format 
+						- "Not a recognized ship file"
+					- On material not found:
+						- If file FS version > current:
+							- TODO
+						Else:
+							- TODO
+					- On recognized but different file_format_version/invalid constraints:
+						- TODO
+				- Unit tests for all exceptions
+				- Test both w/localized strings
 			+ Header
 			+ Metadata
 			= Structural layer
@@ -95,7 +114,10 @@ https://gamejolt.com/x/permalink/comment/11511458
 					+ Orig: 216Kb
 					+ Compressed: 30.8Kb
 				= Read
-					- Then complete unit tests
+					+ Then complete unit tests
+					- See to make it more efficient
+						+ fill 
+						- Reuse member temp buffer
 			- Electrical layer
 				- Pure buffer
 				- Review MaterialDatabase's electrical material maps: make one map
@@ -180,6 +202,8 @@ https://gamejolt.com/x/permalink/comment/11511458
 		- Previews (*)
 	- Eraser tool
 	- Strategy for other tools' enums - to make it work for now
+
+- Make sure loading a ship w/legacy electricals makes up an electrical layer
 
 - Add some shading around ShipSpace canvas
 	- TODO

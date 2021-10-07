@@ -60,7 +60,6 @@ private:
         Metadata = 5,
         PhysicsData = 6,
         AutoTexturizationSettings = 7,
-        Preview = 8,
 
         Tail = 0xffffffff
     };

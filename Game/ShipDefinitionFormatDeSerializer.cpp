@@ -10,6 +10,7 @@
 #include <GameCore/GameTypes.h>
 #include <GameCore/Log.h>
 
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 
@@ -404,9 +405,11 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer(
     StructuralElement const * structuralElementBuffer = structuralLayer.Data.get();
     for (size_t i = 0; i < layerLinearSize; /*incremented in loop*/)
     {
-        // Count consecutive identical values
-        auto const material = structuralElementBuffer[i].Material;
+        // Get the material at this positioj
+        auto const * material = structuralElementBuffer[i].Material;
         ++i;
+
+        // Count consecutive identical values
         std::uint16_t materialCount = 1;
         for (;
             i < layerLinearSize
@@ -712,10 +715,13 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
         }
 
         // Fill material
-        for (std::uint16_t i = 0; i < count.value(); ++i, ++writeOffset)
-        {
-            structuralLayerWrite[writeOffset].Material = material;
-        }
+        std::fill_n(
+            structuralLayerWrite + writeOffset,
+            count.value(),
+            StructuralElement(material));
+
+        // Advance
+        writeOffset += count.value();
     }
 
     assert(writeOffset == shipSize.GetLinearSize());
