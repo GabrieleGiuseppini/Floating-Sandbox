@@ -1,10 +1,61 @@
 #include <Game/ShipDefinitionFormatDeSerializer.h>
 
+#include <GameCore/UserGameException.h>
+
 #include "gtest/gtest.h"
 
 #include <algorithm>
 #include <map>
 #include <vector>
+
+TEST(ShipDefinitionFormatDeSerializerTests, FileHeader)
+{
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendFileHeader(buffer);
+    buffer.WriteAt(std::uint8_t(200), offsetof(ShipDefinitionFormatDeSerializer::FileHeader, FileFormatVersion));
+
+    std::uint16_t fsVersionMaj;
+    buffer.ReadAt(offsetof(ShipDefinitionFormatDeSerializer::FileHeader, FloatingSandboxVersionMaj), fsVersionMaj);
+    EXPECT_EQ(fsVersionMaj, Version::CurrentVersion().GetMajor());
+
+    std::uint16_t fsVersionMin;
+    buffer.ReadAt(offsetof(ShipDefinitionFormatDeSerializer::FileHeader, FloatingSandboxVersionMin), fsVersionMin);
+    EXPECT_EQ(fsVersionMin, Version::CurrentVersion().GetMinor());
+}
+
+TEST(ShipDefinitionFormatDeSerializerTests, FileHeader_UnrecognizedHeader)
+{
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    buffer.ReserveAndAdvance(sizeof(ShipDefinitionFormatDeSerializer::SectionHeader));
+    buffer.WriteAt(std::uint32_t(0xaabbccdd), 0);
+
+    try
+    {
+        ShipDefinitionFormatDeSerializer::ReadFileHeader(buffer);
+        FAIL();
+    }
+    catch (UserGameException const & exc)
+    {
+        EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::UnrecognizedShipFile);
+    }
+}
+
+TEST(ShipDefinitionFormatDeSerializerTests, FileHeader_UnsupportedFileFormatVersion)
+{
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendFileHeader(buffer);
+    buffer.WriteAt(std::uint8_t(200), offsetof(ShipDefinitionFormatDeSerializer::FileHeader, FileFormatVersion));
+
+    try
+    {
+        ShipDefinitionFormatDeSerializer::ReadFileHeader(buffer);
+        FAIL();
+    }
+    catch (UserGameException const & exc)
+    {
+        EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::UnsupportedShipFile);
+    }
+}
 
 TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Full_WithoutElectricalPanel)
 {
@@ -155,8 +206,10 @@ protected:
         DeSerializationBuffer<BigEndianess> & buffer)
     {
         std::unique_ptr<StructuralLayerBuffer> targetStructuralLayerBuffer;
+        ShipDefinitionFormatDeSerializer::DeserializationContext deserializationContext(1, 0);
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
+            deserializationContext,
             TestMaterialMap,
             targetStructuralLayerBuffer);
 

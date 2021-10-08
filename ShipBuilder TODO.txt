@@ -84,28 +84,37 @@ https://gamejolt.com/x/permalink/comment/11511458
 					- If has texture: metadata, texture, ...
 					- Else: metadata, preview, ...
 		= ShipDeSerializer::Save(ShipDefinition const &)
-			- Rearc exceptions:
-				- GameCore/LocalizableGameException
-					- With enum
-					- Exception contains enum and string array
-					- LocalizationManager::MakeErrorMessage(LocalizableGameException const &)
-						- Formats
-				- Individual methods throw directly LocalizableGameException, no post-processing
-					- DeSerializer becomes instance; members:
-						- file FS version
-						- tmpBuffer
+			= Rearc exceptions:
+				= GameCore/UserGameException
+					+ With enum
+					+ Exception contains enum and string array
+					+ LocalizationManager::MakeErrorMessage(LocalizableGameException const &)
+						+ Formats
+					+ Catch-&-localize @ callers
+						- Game
+						+ ShipBuilder
+						- Preview
+				+ Individual methods throw directly LocalizableGameException, no post-processing
+					+ DeSerializationContext: private class with file FS version, stored as pair of integers
+						+ Nuke MajorMinorVersion class
 				- Errors:
-					- Unrecognized file format 
-						- "Not a recognized ship file"
+					+ Unrecognized file format 
+						+ "Not a recognized ship file"
 					- On material not found:
 						- If file FS version > current:
 							- TODO
 						Else:
 							- TODO
-					- On recognized but different file_format_version/invalid constraints:
-						- TODO
-				- Unit tests for all exceptions
+					+ On recognized but different file_format_version/invalid constraints:
+						+ "Not a valid ship file"
+				= Unit tests for all exceptions
+					+ Header
+					- Unrecognized material in structural layer
+					- Missing mandatory layers
+						- Need file?
 				- Test both w/localized strings
+					- Game
+					- ShipBuilder
 			+ Header
 			+ Metadata
 			= Structural layer

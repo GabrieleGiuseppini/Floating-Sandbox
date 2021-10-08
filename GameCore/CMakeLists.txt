@@ -67,6 +67,7 @@ set  (SOURCES
 	TruncatedPriorityQueue.h
 	TupleKeys.h
 	UniqueBuffer.h
+	UserGameException.h
 	Utils.cpp
 	Utils.h	
 	Vectors.cpp

@@ -170,7 +170,7 @@ private:
 
     int AskUserIfSave(wxString caption);
 
-    void ShowError(std::string const & message);
+    void ShowError(wxString const & message);
 
     void DoNewShip(std::string const & shipName);
 

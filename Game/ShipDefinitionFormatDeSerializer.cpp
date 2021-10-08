@@ -9,10 +9,20 @@
 #include <GameCore/GameException.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/Log.h>
+#include <GameCore/UserGameException.h>
 
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <utility>
+
+namespace {
+
+unsigned char const HeaderTitle[] = "FLOATING SANDBOX SHIP\x1a\x00\x00";
+
+uint8_t constexpr CurrentFileFormatVersion = 1;
+
+}
 
 ShipDefinition ShipDefinitionFormatDeSerializer::Load(
     std::filesystem::path const & shipFilePath,
@@ -30,8 +40,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
     // Read header
     //
 
-    MajorMinorVersion fileFloatingSandboxVersion;
-    ReadFileHeader(inputFile, fileFloatingSandboxVersion, buffer);
+    DeserializationContext deserializationContext = ReadFileHeader(inputFile, buffer);
 
     //
     // Read and process sections
@@ -56,7 +65,11 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
             case static_cast<uint32_t>(MainSectionTagType::StructuralLayer):
             {
                 ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
-                ReadStructuralLayer(buffer, materialDatabase.GetStructuralMaterialMap(), structuralLayer);
+                ReadStructuralLayer(
+                    buffer,
+                    deserializationContext,
+                    materialDatabase.GetStructuralMaterialMap(),
+                    structuralLayer);
 
                 break;
             }
@@ -97,7 +110,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
 
     if (!structuralLayer)
     {
-        ThrowInvalidFile();
+        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
     }
 
 
@@ -185,51 +198,7 @@ void ShipDefinitionFormatDeSerializer::Save(
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-unsigned char const HeaderTitle[] = "FLOATING SANDBOX SHIP\x1a\x00\x00";
-
-uint8_t constexpr CurrentFileFormatVersion = 1;
-
-#pragma pack(push, 1)
-
-struct FileHeader
-{
-    char Title[24];
-    std::uint16_t FloatingSandboxVersionMin;
-    std::uint16_t FloatingSandboxVersionMaj;
-    std::uint8_t FileFormatVersion;
-    char Pad[3];
-};
-
-static_assert(sizeof(FileHeader) == 32);
-
-#pragma pack(pop)
-
 // Write
-
-void ShipDefinitionFormatDeSerializer::AppendFileHeader(
-    std::ofstream & outputFile,
-    DeSerializationBuffer<BigEndianess> & buffer)
-{
-    buffer.Reset();
-
-    static_assert(sizeof(HeaderTitle) == 24 + 1);
-
-    std::memcpy(
-        buffer.Receive(24),
-        HeaderTitle,
-        24);
-
-    buffer.Append<std::uint16_t>(APPLICATION_VERSION_MAJOR);
-    buffer.Append<std::uint16_t>(APPLICATION_VERSION_MINOR);
-    buffer.Append<std::uint8_t>(CurrentFileFormatVersion);
-    buffer.Append<std::uint8_t>(0);
-    buffer.Append<std::uint8_t>(0);
-    buffer.Append<std::uint8_t>(0);
-
-    assert(buffer.GetSize() == sizeof(FileHeader));
-
-    outputFile.write(reinterpret_cast<char const *>(buffer.GetData()), buffer.GetSize());
-}
 
 template<typename TSectionBodyAppender>
 static void ShipDefinitionFormatDeSerializer::AppendSection(
@@ -254,6 +223,35 @@ static void ShipDefinitionFormatDeSerializer::AppendSection(
 
     // Serialize
     outputFile.write(reinterpret_cast<char const *>(buffer.GetData()), buffer.GetSize());
+}
+
+void ShipDefinitionFormatDeSerializer::AppendFileHeader(
+    std::ofstream & outputFile,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    AppendFileHeader(buffer);
+    outputFile.write(reinterpret_cast<char const *>(buffer.GetData()), buffer.GetSize());
+}
+
+void ShipDefinitionFormatDeSerializer::AppendFileHeader(DeSerializationBuffer<BigEndianess> & buffer)
+{
+    buffer.Reset();
+
+    static_assert(sizeof(HeaderTitle) == 24 + 1);
+
+    std::memcpy(
+        buffer.Receive(24),
+        HeaderTitle,
+        24);
+
+    buffer.Append<std::uint16_t>(APPLICATION_VERSION_MAJOR);
+    buffer.Append<std::uint16_t>(APPLICATION_VERSION_MINOR);
+    buffer.Append<std::uint8_t>(CurrentFileFormatVersion);
+    buffer.Append<std::uint8_t>(0);
+    buffer.Append<std::uint8_t>(0);
+    buffer.Append<std::uint8_t>(0);
+
+    assert(buffer.GetSize() == sizeof(FileHeader));
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendMetadata(
@@ -443,6 +441,22 @@ std::ifstream ShipDefinitionFormatDeSerializer::OpenFileForRead(std::filesystem:
         std::ios_base::in | std::ios_base::binary);
 }
 
+void ShipDefinitionFormatDeSerializer::ThrowMaterialNotFound(DeserializationContext const & deserializationContext)
+{
+    auto const currentVersion = Version::CurrentVersion();
+    if (std::tuple(static_cast<std::uint16_t>(currentVersion.GetMajor()), static_cast<std::uint16_t>(currentVersion.GetMinor()))
+        < std::tuple(deserializationContext.FileFSVersionMaj, deserializationContext.FileFSVersionMin))
+    {
+        throw UserGameException(
+            UserGameException::MessageIdType::LoadShipMaterialNotFoundLaterVersion,
+            { std::to_string(deserializationContext.FileFSVersionMaj) + "." + std::to_string(deserializationContext.FileFSVersionMin) });
+    }
+    else
+    {
+        throw UserGameException(UserGameException::MessageIdType::LoadShipMaterialNotFoundSameVersion);
+    }
+}
+
 void ShipDefinitionFormatDeSerializer::ReadIntoBuffer(
     std::ifstream & inputFile,
     DeSerializationBuffer<BigEndianess> & buffer,
@@ -456,33 +470,8 @@ void ShipDefinitionFormatDeSerializer::ReadIntoBuffer(
 
     if (!inputFile)
     {
-        ThrowInvalidFile();
+        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
     }
-}
-
-void ShipDefinitionFormatDeSerializer::ReadFileHeader(
-    std::ifstream & inputFile,
-    MajorMinorVersion & fileFloatingSandboxVersion,
-    DeSerializationBuffer<BigEndianess> & buffer)
-{
-    ReadIntoBuffer(inputFile, buffer, sizeof(FileHeader));
-
-    std::uint8_t fileFormatVersion;
-    buffer.ReadAt<std::uint8_t>(offsetof(FileHeader, FileFormatVersion), fileFormatVersion);
-
-    if (std::memcmp(buffer.GetData(), HeaderTitle, sizeof(FileHeader::Title))
-        || fileFormatVersion > CurrentFileFormatVersion)
-    {
-        ThrowInvalidFile();
-    }
-
-    // Read FS version
-    std::uint16_t majorVersion;
-    buffer.ReadAt<std::uint16_t>(offsetof(FileHeader, FloatingSandboxVersionMaj), majorVersion);
-    std::uint16_t minorVersion;
-    buffer.ReadAt<std::uint16_t>(offsetof(FileHeader, FloatingSandboxVersionMin), minorVersion);
-
-    fileFloatingSandboxVersion = MajorMinorVersion(static_cast<int>(majorVersion), static_cast<int>(minorVersion));
 }
 
 ShipDefinitionFormatDeSerializer::SectionHeader ShipDefinitionFormatDeSerializer::ReadSectionHeader(
@@ -507,6 +496,50 @@ ShipDefinitionFormatDeSerializer::SectionHeader ShipDefinitionFormatDeSerializer
         tag,
         sectionBodySize
     };
+}
+
+ShipDefinitionFormatDeSerializer::DeserializationContext ShipDefinitionFormatDeSerializer::ReadFileHeader(
+    std::ifstream & inputFile,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    buffer.Reset();
+
+    inputFile.read(
+        reinterpret_cast<char *>(buffer.Receive(sizeof(FileHeader))),
+        sizeof(FileHeader));
+
+    if (!inputFile)
+    {
+        throw UserGameException(UserGameException::MessageIdType::UnrecognizedShipFile);
+    }
+
+    return ReadFileHeader(buffer);
+}
+
+ShipDefinitionFormatDeSerializer::DeserializationContext ShipDefinitionFormatDeSerializer::ReadFileHeader(DeSerializationBuffer<BigEndianess> & buffer)
+{
+    std::uint8_t fileFormatVersion;
+    buffer.ReadAt<std::uint8_t>(offsetof(FileHeader, FileFormatVersion), fileFormatVersion);
+
+    if (std::memcmp(buffer.GetData(), HeaderTitle, sizeof(FileHeader::Title)))
+    {
+        throw UserGameException(UserGameException::MessageIdType::UnrecognizedShipFile);
+    }
+
+    if (fileFormatVersion > CurrentFileFormatVersion)
+    {
+        throw UserGameException(UserGameException::MessageIdType::UnsupportedShipFile);
+    }
+
+    // Read FS version
+    std::uint16_t majorVersion;
+    buffer.ReadAt<std::uint16_t>(offsetof(FileHeader, FloatingSandboxVersionMaj), majorVersion);
+    std::uint16_t minorVersion;
+    buffer.ReadAt<std::uint16_t>(offsetof(FileHeader, FloatingSandboxVersionMin), minorVersion);
+
+    return DeserializationContext(
+        majorVersion,
+        minorVersion);
 }
 
 void ShipDefinitionFormatDeSerializer::ReadMetadata(
@@ -669,6 +702,7 @@ void ShipDefinitionFormatDeSerializer::ReadMetadata(
 
 void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
     DeSerializationBuffer<BigEndianess> const & buffer,
+    DeserializationContext & deserializationContext,
     MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
     std::unique_ptr<StructuralLayerBuffer> & structuralLayerBuffer)
 {
@@ -708,7 +742,7 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             auto const materialIt = materialMap.find(colorKey);
             if (materialIt == materialMap.cend())
             {
-                // TODOHERE: if not found, throw ad-hoc exception (declared @ this class' public), containing FS version from header
+                ThrowMaterialNotFound(deserializationContext);
             }
 
             material = &(materialIt->second);
@@ -725,9 +759,4 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
     }
 
     assert(writeOffset == shipSize.GetLinearSize());
-}
-
-void ShipDefinitionFormatDeSerializer::ThrowInvalidFile()
-{
-    throw GameException("The file is not a valid ship definition file");
 }

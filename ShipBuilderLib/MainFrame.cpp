@@ -6,6 +6,7 @@
 #include "MainFrame.h"
 
 #include <GameCore/Log.h>
+#include <GameCore/UserGameException.h>
 #include <GameCore/Version.h>
 
 #include <GameOpenGL/GameOpenGL.h>
@@ -2050,7 +2051,7 @@ int MainFrame::AskUserIfSave(wxString caption)
     return result;
 }
 
-void MainFrame::ShowError(std::string const & message)
+void MainFrame::ShowError(wxString const & message)
 {
     wxMessageBox(message, _("Maritime Disaster"), wxICON_ERROR);
 }
@@ -2092,6 +2093,10 @@ void MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
 
         // Reconciliate UI
         ReconciliateUI();
+    }
+    catch (UserGameException const & exc)
+    {
+        ShowError(mLocalizationManager.MakeErrorMessage(exc));
     }
     catch (std::runtime_error const & exc)
     {

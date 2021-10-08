@@ -7,6 +7,8 @@
 
 #include <Game/ResourceLocator.h>
 
+#include <GameCore/UserGameException.h>
+
 #include <wx/intl.h>
 
 #include <memory>
@@ -78,6 +80,8 @@ public:
     {
         return mAvailableLanguages;
     }
+
+    wxString MakeErrorMessage(UserGameException const & exception) const;
 
 private:
 

@@ -10,6 +10,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
@@ -113,6 +114,16 @@ public:
         return !(l < r);
     }
 
+    int GetMajor() const
+    {
+        return mMajor;
+    }
+
+    int GetMinor() const
+    {
+        return mMinor;
+    }
+
     static Version FromString(std::string const & str)
     {
         static std::regex VersionRegex(R"(^\s*(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?\s*$)");
@@ -167,89 +178,6 @@ private:
     int mMinor;
     int mPatch;
     int mBuild;
-};
-
-#pragma pack(pop)
-
-#pragma pack(push, 1)
-
-class MajorMinorVersion
-{
-public:
-
-    static MajorMinorVersion CurrentVersion()
-    {
-        return MajorMinorVersion(
-            APPLICATION_VERSION_MAJOR,
-            APPLICATION_VERSION_MINOR);
-    }
-
-    MajorMinorVersion()
-        : mMajor(0)
-        , mMinor(0)
-    {
-    }
-
-    MajorMinorVersion(
-        int major,
-        int minor)
-        : mMajor(major)
-        , mMinor(minor)
-    {}
-
-    MajorMinorVersion(MajorMinorVersion const & other) = default;
-    MajorMinorVersion(MajorMinorVersion && other) = default;
-
-    MajorMinorVersion & operator=(MajorMinorVersion const & other) = default;
-    MajorMinorVersion & operator=(MajorMinorVersion && other) = default;
-
-    friend inline bool operator==(MajorMinorVersion const & l, MajorMinorVersion const & r)
-    {
-        return l.mMajor == r.mMajor
-            && l.mMinor == r.mMinor;
-    }
-
-    friend inline bool operator!=(MajorMinorVersion const & l, MajorMinorVersion const & r)
-    {
-        return !(l == r);
-    }
-
-    friend inline bool operator<(MajorMinorVersion const & l, MajorMinorVersion const & r)
-    {
-        return std::tie(l.mMajor, l.mMinor)
-            < std::tie(r.mMajor, r.mMinor);
-    }
-
-    friend inline bool operator>(MajorMinorVersion const & l, MajorMinorVersion const & r)
-    {
-        return r < l;
-    }
-
-    friend inline bool operator<=(MajorMinorVersion const & l, MajorMinorVersion const & r)
-    {
-        return !(l > r);
-    }
-
-    friend inline bool operator>=(MajorMinorVersion const & l, MajorMinorVersion const & r)
-    {
-        return !(l < r);
-    }
-
-    std::string ToString() const
-    {
-        std::stringstream ss;
-
-        ss
-            << mMajor << "."
-            << mMinor;
-
-        return ss.str();
-    }
-
-private:
-
-    int mMajor;
-    int mMinor;
 };
 
 #pragma pack(pop)
