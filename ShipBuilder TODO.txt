@@ -85,36 +85,26 @@ https://gamejolt.com/x/permalink/comment/11511458
 					- Else: metadata, preview, ...
 		= ShipDeSerializer::Save(ShipDefinition const &)
 			= Rearc exceptions:
-				= GameCore/UserGameException
+				+ GameCore/UserGameException
 					+ With enum
 					+ Exception contains enum and string array
 					+ LocalizationManager::MakeErrorMessage(LocalizableGameException const &)
 						+ Formats
 					+ Catch-&-localize @ callers
-						- Game
+						+ Game
 						+ ShipBuilder
-						- Preview
+						+ Preview
 				+ Individual methods throw directly LocalizableGameException, no post-processing
 					+ DeSerializationContext: private class with file FS version, stored as pair of integers
 						+ Nuke MajorMinorVersion class
-				- Errors:
-					+ Unrecognized file format 
-						+ "Not a recognized ship file"
-					- On material not found:
-						- If file FS version > current:
-							- TODO
-						Else:
-							- TODO
-					+ On recognized but different file_format_version/invalid constraints:
-						+ "Not a valid ship file"
 				= Unit tests for all exceptions
 					+ Header
-					- Unrecognized material in structural layer
-					- Missing mandatory layers
-						- Need file?
-				- Test both w/localized strings
-					- Game
-					- ShipBuilder
+					+ Unrecognized material in structural layer
+				+ Test all w/localized strings
+					- Preview
+						- After preview workflow
+					+ Game
+					+ ShipBuilder
 			+ Header
 			+ Metadata
 			= Structural layer
@@ -140,8 +130,8 @@ https://gamejolt.com/x/permalink/comment/11511458
 		- Also do load for .shp2
 			- ShipLoadDialog wildcards
 			- ShipDeSerializer::Load():
-				- Header: check (via helper)
-				- Metadata
+				+ Header: check (via helper)
+				+ Metadata
 				- ...
 				- Verify tail
 

@@ -37,6 +37,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, FileHeader_UnrecognizedHeader)
     catch (UserGameException const & exc)
     {
         EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::UnrecognizedShipFile);
+        EXPECT_TRUE(exc.Parameters.empty());
     }
 }
 
@@ -44,7 +45,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, FileHeader_UnsupportedFileFormatVers
 {
     DeSerializationBuffer<BigEndianess> buffer(256);
     ShipDefinitionFormatDeSerializer::AppendFileHeader(buffer);
-    buffer.WriteAt(std::uint8_t(200), offsetof(ShipDefinitionFormatDeSerializer::FileHeader, FileFormatVersion));
+    buffer.WriteAt(std::uint16_t(200), offsetof(ShipDefinitionFormatDeSerializer::FileHeader, FileFormatVersion));
 
     try
     {
@@ -54,6 +55,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, FileHeader_UnsupportedFileFormatVers
     catch (UserGameException const & exc)
     {
         EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::UnsupportedShipFile);
+        EXPECT_TRUE(exc.Parameters.empty());
     }
 }
 
@@ -358,4 +360,89 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, MidSize_Hete
         buffer);
 }
 
-// TODOHERE: all sizes, just write+read
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, UnrecognizedMaterial_SameVersion)
+{
+    StructuralMaterial unrecognizedMaterial = StructuralMaterial(
+        rgbColor(0x12, 0x34, 0x56),
+        "Unrecognized Material",
+        rgbColor(0x12, 0x34, 0x56));
+
+    // Populate structural layer buffer
+    StructuralLayerBuffer sourceStructuralLayerBuffer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceStructuralLayerBuffer.Size.GetLinearSize(); ++i)
+    {
+        sourceStructuralLayerBuffer.Data[i].Material = &unrecognizedMaterial;
+    }
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayerBuffer, buffer);
+
+    //
+    // Verify exception
+    //
+
+    try
+    {
+        std::unique_ptr<StructuralLayerBuffer> targetStructuralLayerBuffer;
+        ShipDefinitionFormatDeSerializer::DeserializationContext deserializationContext(
+            Version::CurrentVersion().GetMajor(),
+            Version::CurrentVersion().GetMinor());
+        ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
+            buffer,
+            deserializationContext,
+            TestMaterialMap,
+            targetStructuralLayerBuffer);
+
+        FAIL();
+    }
+    catch (UserGameException const & exc)
+    {
+        EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFoundSameVersion);
+        EXPECT_TRUE(exc.Parameters.empty());
+    }
+}
+
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, UnrecognizedMaterial_LaterVersion)
+{
+    StructuralMaterial unrecognizedMaterial = StructuralMaterial(
+        rgbColor(0x12, 0x34, 0x56),
+        "Unrecognized Material",
+        rgbColor(0x12, 0x34, 0x56));
+
+    // Populate structural layer buffer
+    StructuralLayerBuffer sourceStructuralLayerBuffer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceStructuralLayerBuffer.Size.GetLinearSize(); ++i)
+    {
+        sourceStructuralLayerBuffer.Data[i].Material = &unrecognizedMaterial;
+    }
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayerBuffer, buffer);
+
+    //
+    // Verify exception
+    //
+
+    try
+    {
+        std::unique_ptr<StructuralLayerBuffer> targetStructuralLayerBuffer;
+        ShipDefinitionFormatDeSerializer::DeserializationContext deserializationContext(
+            2999,
+            4);
+        ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
+            buffer,
+            deserializationContext,
+            TestMaterialMap,
+            targetStructuralLayerBuffer);
+
+        FAIL();
+    }
+    catch (UserGameException const & exc)
+    {
+        EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFoundLaterVersion);
+        ASSERT_FALSE(exc.Parameters.empty());
+        EXPECT_EQ(exc.Parameters[0], "2999.4");
+    }
+}

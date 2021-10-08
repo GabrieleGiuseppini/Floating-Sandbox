@@ -1000,10 +1000,6 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
                     iShip,
                     std::move(shipPreview),
                     std::move(shipPreviewImage)));
-
-            // Removed with ship preview database
-            //// Take it easy a bit
-            ////std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
         catch (std::exception const & ex)
         {
@@ -1013,7 +1009,7 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
             QueueThreadToPanelMessage(
                 ThreadToPanelMessage::MakePreviewErrorMessage(
                     iShip,
-                    ex.what()));
+                    "Cannot load preview"));
 
             LogMessage("PreviewThread::ScanDirectory(): ...error notified.");
 

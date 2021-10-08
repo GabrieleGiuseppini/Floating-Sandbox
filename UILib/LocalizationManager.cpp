@@ -132,31 +132,31 @@ wxString LocalizationManager::MakeErrorMessage(UserGameException const & excepti
     {
         case UserGameException::MessageIdType::UnrecognizedShipFile:
         {
-            errorMessage = _("This file is not a Floating Sandbox ship file");
+            errorMessage = _("This file is not a Floating Sandbox ship file.");
             break;
         }
 
         case UserGameException::MessageIdType::InvalidShipFile:
         {
-            errorMessage = _("This file is not a valid ship file - it may be corrupted or damaged");
+            errorMessage = _("This file is not a valid ship file - it may be corrupted or damaged.");
             break;
         }
 
         case UserGameException::MessageIdType::UnsupportedShipFile:
         {
-            errorMessage = _("This ship has been created with a newer version of Floating Sandbox, and it cannot be loaded with this version. Upgrade Floating Sandbox to the newest release");
+            errorMessage = _("This ship has been created with a newer version of Floating Sandbox, and it cannot be loaded with this version. Upgrade Floating Sandbox to the newest release.");
             break;
         }
 
         case UserGameException::MessageIdType::LoadShipMaterialNotFoundLaterVersion:
         {
-            errorMessage = _("This ship cannot be loaded because it has unrecognized materials. Upgrade Floating Sandbox to at least Floating Sandbox %s");
+            errorMessage = _("This ship cannot be loaded because it has unrecognized materials from a newer release. Upgrade Floating Sandbox to at least Floating Sandbox %1.");
             break;
         }
 
         case UserGameException::MessageIdType::LoadShipMaterialNotFoundSameVersion:
         {
-            errorMessage = _("This ship cannot be loaded because it has unrecognized materials - it was likely created with a non-standard release of Floating Sandbox");
+            errorMessage = _("This ship cannot be loaded because it has unrecognized materials - it was likely created with a non-standard release of Floating Sandbox.");
             break;
         }
     }
@@ -165,8 +165,8 @@ wxString LocalizationManager::MakeErrorMessage(UserGameException const & excepti
     {
         for (size_t s = 0; s < exception.Parameters.size(); ++s)
         {
-            wxString strPlaceholder = wxString::Format("%%%d", (s + 1));
-            errorMessage.Replace(strPlaceholder, exception.Parameters[s]);
+            wxString strPlaceholder = wxString::Format("%%%d", static_cast<int>(s + 1));
+            errorMessage.Replace(strPlaceholder, wxString(exception.Parameters[s]));
         }
     }
 

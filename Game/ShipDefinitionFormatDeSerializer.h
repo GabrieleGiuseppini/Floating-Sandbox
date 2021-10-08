@@ -51,8 +51,8 @@ private:
         char Title[24];
         std::uint16_t FloatingSandboxVersionMaj;
         std::uint16_t FloatingSandboxVersionMin;
-        std::uint8_t FileFormatVersion;
-        char Pad[3];
+        std::uint16_t FileFormatVersion;
+        char Pad[2];
     };
 
     static_assert(sizeof(FileHeader) == 32);
@@ -95,12 +95,12 @@ private:
 
     struct DeserializationContext
     {
-        std::uint16_t const FileFSVersionMaj;
-        std::uint16_t const FileFSVersionMin;
+        int const FileFSVersionMaj;
+        int const FileFSVersionMin;
 
         DeserializationContext(
-            std::uint16_t fileFSVersionMaj,
-            std::uint16_t fileFSVersionMin)
+            int fileFSVersionMaj,
+            int fileFSVersionMin)
             : FileFSVersionMaj(fileFSVersionMaj)
             , FileFSVersionMin(fileFSVersionMin)
         {}
@@ -184,4 +184,6 @@ private:
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_VariousSizes_Uniform_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_MidSize_Heterogeneous_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_UnrecognizedMaterial_SameVersion_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_UnrecognizedMaterial_LaterVersion_Test;
 };

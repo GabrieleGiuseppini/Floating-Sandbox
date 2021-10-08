@@ -354,7 +354,7 @@ private:
     void UpdateFrameTitle();
 
     void OnError(
-        std::string const & message,
+        wxString const & message,
         bool die);
 
     void PostGameStepTimer(std::chrono::milliseconds duration);

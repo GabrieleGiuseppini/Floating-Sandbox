@@ -246,8 +246,7 @@ void ShipDefinitionFormatDeSerializer::AppendFileHeader(DeSerializationBuffer<Bi
 
     buffer.Append<std::uint16_t>(APPLICATION_VERSION_MAJOR);
     buffer.Append<std::uint16_t>(APPLICATION_VERSION_MINOR);
-    buffer.Append<std::uint8_t>(CurrentFileFormatVersion);
-    buffer.Append<std::uint8_t>(0);
+    buffer.Append<std::uint16_t>(CurrentFileFormatVersion);
     buffer.Append<std::uint8_t>(0);
     buffer.Append<std::uint8_t>(0);
 
@@ -304,7 +303,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadata(
         size_t valueSize = 0;
 
         // Tag and size
-        buffer.Append(static_cast<std::uint32_t>(MetadataTagType::ElectricalPanelMetadataV1));
+        valueSize += buffer.Append(static_cast<std::uint32_t>(MetadataTagType::ElectricalPanelMetadataV1));
         size_t const valueSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
 
         // Number of entries
@@ -362,8 +361,9 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadata(
 
     // Tail
     {
-        buffer.Append(static_cast<std::uint32_t>(MetadataTagType::Tail));
-        buffer.Append(static_cast<std::uint32_t>(0));
+        sectionBodySize += buffer.Append(static_cast<std::uint32_t>(MetadataTagType::Tail));
+        sectionBodySize += buffer.Append(static_cast<std::uint32_t>(0));
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
     }
 
     return sectionBodySize;
@@ -380,7 +380,8 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadataEntry(
     size_t const valueSize = buffer.Append(value);
     buffer.WriteAt(static_cast<std::uint32_t>(valueSize), valueSizeIndex);
 
-    return sizeof(std::uint32_t) + sizeof(std::uint32_t) + valueSize;
+    static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+    return sizeof(SectionHeader) + valueSize;
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer(
@@ -444,7 +445,7 @@ std::ifstream ShipDefinitionFormatDeSerializer::OpenFileForRead(std::filesystem:
 void ShipDefinitionFormatDeSerializer::ThrowMaterialNotFound(DeserializationContext const & deserializationContext)
 {
     auto const currentVersion = Version::CurrentVersion();
-    if (std::tuple(static_cast<std::uint16_t>(currentVersion.GetMajor()), static_cast<std::uint16_t>(currentVersion.GetMinor()))
+    if (std::tuple(currentVersion.GetMajor(), currentVersion.GetMinor())
         < std::tuple(deserializationContext.FileFSVersionMaj, deserializationContext.FileFSVersionMin))
     {
         throw UserGameException(
@@ -518,14 +519,13 @@ ShipDefinitionFormatDeSerializer::DeserializationContext ShipDefinitionFormatDeS
 
 ShipDefinitionFormatDeSerializer::DeserializationContext ShipDefinitionFormatDeSerializer::ReadFileHeader(DeSerializationBuffer<BigEndianess> & buffer)
 {
-    std::uint8_t fileFormatVersion;
-    buffer.ReadAt<std::uint8_t>(offsetof(FileHeader, FileFormatVersion), fileFormatVersion);
-
     if (std::memcmp(buffer.GetData(), HeaderTitle, sizeof(FileHeader::Title)))
     {
         throw UserGameException(UserGameException::MessageIdType::UnrecognizedShipFile);
     }
 
+    std::uint16_t fileFormatVersion;
+    buffer.ReadAt<std::uint16_t>(offsetof(FileHeader, FileFormatVersion), fileFormatVersion);
     if (fileFormatVersion > CurrentFileFormatVersion)
     {
         throw UserGameException(UserGameException::MessageIdType::UnsupportedShipFile);
@@ -538,8 +538,8 @@ ShipDefinitionFormatDeSerializer::DeserializationContext ShipDefinitionFormatDeS
     buffer.ReadAt<std::uint16_t>(offsetof(FileHeader, FloatingSandboxVersionMin), minorVersion);
 
     return DeserializationContext(
-        majorVersion,
-        minorVersion);
+        static_cast<int>(majorVersion),
+        static_cast<int>(minorVersion));
 }
 
 void ShipDefinitionFormatDeSerializer::ReadMetadata(

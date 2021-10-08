@@ -2236,7 +2236,7 @@ void MainFrame::UpdateFrameTitle()
 }
 
 void MainFrame::OnError(
-    std::string const & message,
+    wxString const & message,
     bool die)
 {
     //
@@ -2410,6 +2410,10 @@ void MainFrame::LoadShip(
                 mUIPreferencesManager->SetShowShipDescriptionsAtShipLoad(*showDescriptionsUserPreference);
             }
         }
+    }
+    catch (UserGameException const & exc)
+    {
+        OnError(mLocalizationManager.MakeErrorMessage(exc), false);
     }
     catch (std::exception const & ex)
     {
