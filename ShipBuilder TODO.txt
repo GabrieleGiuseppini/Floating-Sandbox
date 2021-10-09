@@ -73,17 +73,19 @@ https://gamejolt.com/x/permalink/comment/11511458
 		+ Do
 		+ Store filename as mCurrentFilename
 	= DoSaveShip:
-		- Ship Preview workflow:
+		= Ship Preview workflow:
 			+ ShipDeSerializer: split out legacy into own class
 			+ ShipDeSerializer: LoadShipPreviewData() and LoadShipPreviewImage(ShipPreviewData const &)
 			+ ShipPreview ("ShipPreviewData") from .shp2 contains .shp2 filepath itself
 			+ ShipDeSerializer::LoadShipPreviewImage: if type is shp2, call ShipDefinitionFormatDeSerializer::LoadPreviewImage(filepath)
 				+ else: type can only be png (throw if not) - call legacy LoadPreviewImage() which loads image
 				+ Then resize and trim (like it was @ ShipPreview)
-			- .shp2 format: preview is own tag, image chunk saved at ship save time - but only if there's no texture
-				- Order of chunks:
-					= If has texture: metadata, texture, ...
+			= .shp2 format: preview is own tag, image chunk saved at ship save time - but only if there's no texture
+				= Order of chunks:
+					+ If has texture: metadata, texture, ...
 					- Else: metadata, preview, ...
+				- Do LoadPreview
+					- TODO: see if can have one single main loop for the three load calls
 		= ShipDeSerializer::Save(ShipDefinition const &)
 			= Rearc exceptions:
 				+ GameCore/UserGameException
@@ -137,9 +139,6 @@ https://gamejolt.com/x/permalink/comment/11511458
 				+ Metadata
 				- ...
 				- Verify tail
-
-- MainFrame::Save: BUG: if ship was loaded e.g. from .shp, hitting Save saves it silently to the same file, as .shp2
-	- mCurrentShipFilePath should never be set to a non-.shp2 file path
 
 = Click-And-Draw use case:
 	= Pencil tool (*)

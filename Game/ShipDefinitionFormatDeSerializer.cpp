@@ -48,8 +48,9 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
     // Read and process sections
     //
 
-    std::unique_ptr<StructuralLayerBuffer> structuralLayer;
     ShipMetadata shipMetadata = ShipMetadata(shipFilePath.filename().string());
+    std::unique_ptr<StructuralLayerBuffer> structuralLayer;
+    std::unique_ptr<TextureLayerBuffer> textureLayer;
 
     while (true)
     {
@@ -80,6 +81,17 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     deserializationContext,
                     materialDatabase.GetStructuralMaterialMap(),
                     structuralLayer);
+
+                break;
+            }
+
+            case static_cast<uint32_t>(MainSectionTagType::TextureLayer_PNG) :
+            {
+                ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
+                RgbaImageData image = ReadPngImage(buffer);
+
+                // Make texture out of this image
+                textureLayer = std::make_unique<RgbaImageData>(std::move(image));
 
                 break;
             }
@@ -129,7 +141,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
         std::move(*structuralLayer),
         nullptr, // TODO
         nullptr, // TODO
-        nullptr, // TODO
+        std::move(textureLayer),
         shipMetadata,
         ShipPhysicsData(), // TODO
         std::nullopt); // TODO
@@ -564,6 +576,11 @@ ShipDefinitionFormatDeSerializer::SectionHeader ShipDefinitionFormatDeSerializer
         tag,
         sectionBodySize
     };
+}
+
+RgbaImageData ShipDefinitionFormatDeSerializer::ReadPngImage(DeSerializationBuffer<BigEndianess> & buffer)
+{
+    return ImageFileTools::DecodePngImage(buffer);
 }
 
 ShipDefinitionFormatDeSerializer::DeserializationContext ShipDefinitionFormatDeSerializer::ReadFileHeader(

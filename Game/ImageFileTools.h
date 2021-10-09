@@ -29,10 +29,6 @@ public:
     static RgbaImageData LoadImageRgbaAndResize(std::filesystem::path const & filepath, ImageSize const & maxSize);
     static RgbImageData LoadImageRgbAndResize(std::filesystem::path const & filepath, ImageSize const & maxSize);
 
-    static size_t EncodePngImage(
-        RgbaImageData const & image,
-        DeSerializationBuffer<BigEndianess> & buffer);
-
     static void SaveImage(
         std::filesystem::path filepath,
         RgbaImageData const & image);
@@ -41,11 +37,21 @@ public:
         std::filesystem::path filepath,
         RgbImageData const & image);
 
+    static RgbaImageData DecodePngImage(DeSerializationBuffer<BigEndianess> const & buffer);
+
+    static size_t EncodePngImage(
+        RgbaImageData const & image,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
 private:
 
     static void CheckInitialized();
 
-    static unsigned int InternalLoadImage(std::filesystem::path const & filepath);
+    static unsigned int InternalOpenImage(std::filesystem::path const & filepath);
+
+    static unsigned int InternalOpenImage(
+        DeSerializationBuffer<BigEndianess> const & buffer,
+        unsigned int imageType);
 
     struct ResizeInfo
     {
@@ -69,6 +75,13 @@ private:
     template <typename TColor>
     static ImageData<TColor> InternalLoadImage(
         std::filesystem::path const & filepath,
+        int targetFormat,
+        int targetOrigin,
+        std::optional<ResizeInfo> resizeInfo);
+
+    template <typename TColor>
+    static ImageData<TColor> InternalLoadImage(
+        unsigned int imageHandle,
         int targetFormat,
         int targetOrigin,
         std::optional<ResizeInfo> resizeInfo);

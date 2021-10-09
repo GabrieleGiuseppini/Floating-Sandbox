@@ -172,6 +172,8 @@ private:
         DeSerializationBuffer<BigEndianess> const & buffer,
         size_t offset);
 
+    static RgbaImageData ReadPngImage(DeSerializationBuffer<BigEndianess> & buffer);
+
     static DeserializationContext ReadFileHeader(
         std::ifstream & inputFile,
         DeSerializationBuffer<BigEndianess> & buffer);
