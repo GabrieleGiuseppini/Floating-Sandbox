@@ -308,11 +308,11 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadata(
 
     if (!metadata.ElectricalPanelMetadata.empty())
     {
-        size_t valueSize = 0;
-
         // Tag and size
-        valueSize += buffer.Append(static_cast<std::uint32_t>(MetadataTagType::ElectricalPanelMetadataV1));
+        buffer.Append(static_cast<std::uint32_t>(MetadataTagType::ElectricalPanelMetadataV1));
         size_t const valueSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+
+        size_t valueSize = 0;
 
         // Number of entries
         std::uint16_t count = static_cast<std::uint16_t>(metadata.ElectricalPanelMetadata.size());
