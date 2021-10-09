@@ -401,61 +401,63 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
                 auto & infoTile = mInfoTiles[message->GetShipIndex()];
 
-                infoTile.Bitmap = MakeBitmap(message->GetShipPreviewImage());
-                infoTile.IsHD = message->GetShipPreview().IsHD;
-                infoTile.HasElectricals = message->GetShipPreview().HasElectricals;
+                ShipPreviewData const & shipPreviewData = message->GetShipPreviewData();
 
-                std::string descriptionLabelText1 = message->GetShipPreview().Metadata.ShipName;
-                if (message->GetShipPreview().Metadata.YearBuilt.has_value())
-                    descriptionLabelText1 += " (" + *(message->GetShipPreview().Metadata.YearBuilt) + ")";
+                infoTile.Bitmap = MakeBitmap(message->GetShipPreviewImage());
+                infoTile.IsHD = shipPreviewData.IsHD;
+                infoTile.HasElectricals = shipPreviewData.HasElectricals;
+
+                std::string descriptionLabelText1 = shipPreviewData.Metadata.ShipName;
+                if (shipPreviewData.Metadata.YearBuilt.has_value())
+                    descriptionLabelText1 += " (" + *(shipPreviewData.Metadata.YearBuilt) + ")";
                 infoTile.OriginalDescription1 = std::move(descriptionLabelText1);
                 infoTile.Description1Size.reset();
 
-                int const metres = message->GetShipPreview().OriginalSize.width;
+                int const metres = shipPreviewData.ShipSize.width;
                 int const feet = static_cast<int>(std::round(3.28f * metres));
                 std::string descriptionLabelText2 =
                     std::to_string(metres)
                     + "m/"
                     + std::to_string(feet)
                     + "ft";
-                if (message->GetShipPreview().Metadata.Author.has_value())
-                    descriptionLabelText2 += " - by " + *(message->GetShipPreview().Metadata.Author);
+                if (shipPreviewData.Metadata.Author.has_value())
+                    descriptionLabelText2 += " - by " + *(shipPreviewData.Metadata.Author);
                 infoTile.OriginalDescription2 = std::move(descriptionLabelText2);
                 infoTile.Description2Size.reset();
 
-                if (message->GetShipPreview().Metadata.ArtCredits.has_value())
-                    infoTile.OriginalDescription3 = "Art by " + *(message->GetShipPreview().Metadata.ArtCredits);
+                if (shipPreviewData.Metadata.ArtCredits.has_value())
+                    infoTile.OriginalDescription3 = "Art by " + *(shipPreviewData.Metadata.ArtCredits);
                 infoTile.Description3Size.reset();
 
-                infoTile.Metadata.emplace(message->GetShipPreview().Metadata);
+                infoTile.Metadata.emplace(shipPreviewData.Metadata);
 
                 // Add ship name to search map
                 infoTile.SearchStrings.push_back(
                     Utils::ToLower(
-                        message->GetShipPreview().Metadata.ShipName));
+                        shipPreviewData.Metadata.ShipName));
 
                 // Add author to search map
-                if (message->GetShipPreview().Metadata.Author.has_value())
+                if (shipPreviewData.Metadata.Author.has_value())
                 {
                     infoTile.SearchStrings.push_back(
                         Utils::ToLower(
-                            *(message->GetShipPreview().Metadata.Author)));
+                            *(shipPreviewData.Metadata.Author)));
                 }
 
                 // Add art credits to search map
-                if (message->GetShipPreview().Metadata.ArtCredits.has_value())
+                if (shipPreviewData.Metadata.ArtCredits.has_value())
                 {
                     infoTile.SearchStrings.push_back(
                         Utils::ToLower(
-                            *(message->GetShipPreview().Metadata.ArtCredits)));
+                            *(shipPreviewData.Metadata.ArtCredits)));
                 }
 
                 // Add ship year to search map
-                if (message->GetShipPreview().Metadata.YearBuilt.has_value())
+                if (shipPreviewData.Metadata.YearBuilt.has_value())
                 {
                     infoTile.SearchStrings.push_back(
                         Utils::ToLower(
-                            *(message->GetShipPreview().Metadata.YearBuilt)));
+                            *(shipPreviewData.Metadata.YearBuilt)));
                 }
 
                 // Remember we need to refresh now
@@ -988,17 +990,17 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
 
         try
         {
-            // Load preview
-            auto shipPreview = ShipDeSerializer::LoadShipPreview(shipFilePaths[iShip]);
+            // Load preview data
+            auto shipPreviewData = ShipDeSerializer::LoadShipPreviewData(shipFilePaths[iShip]);
 
             // Load preview image
-            auto shipPreviewImage = previewDirectoryManager->LoadPreviewImage(shipPreview, PreviewImageSize);
+            auto shipPreviewImage = previewDirectoryManager->LoadPreviewImage(shipPreviewData, PreviewImageSize);
 
             // Notify
             QueueThreadToPanelMessage(
                 ThreadToPanelMessage::MakePreviewReadyMessage(
                     iShip,
-                    std::move(shipPreview),
+                    std::move(shipPreviewData),
                     std::move(shipPreviewImage)));
         }
         catch (std::exception const & ex)

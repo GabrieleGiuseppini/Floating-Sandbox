@@ -6,7 +6,7 @@
 #pragma once
 
 #include <Game/ResourceLocator.h>
-#include <Game/ShipPreview.h>
+#include <Game/ShipPreviewData.h>
 
 #include <GameCore/ImageData.h>
 
@@ -423,12 +423,12 @@ private:
 
         static std::unique_ptr<ThreadToPanelMessage> MakePreviewReadyMessage(
             size_t shipIndex,
-            ShipPreview && shipPreview,
+            ShipPreviewData && shipPreviewData,
             RgbaImageData && shipPreviewImage)
         {
             std::unique_ptr<ThreadToPanelMessage> msg(new ThreadToPanelMessage(MessageType::PreviewReady));
             msg->mShipIndex = shipIndex;
-            msg->mShipPreview.emplace(std::move(shipPreview));
+            msg->mShipPreviewData.emplace(std::move(shipPreviewData));
             msg->mShipPreviewImage.emplace(std::move(shipPreviewImage));
             return msg;
         }
@@ -480,9 +480,9 @@ private:
             return *mShipIndex;
         }
 
-        ShipPreview const & GetShipPreview()
+        ShipPreviewData const & GetShipPreviewData()
         {
-            return *mShipPreview;
+            return *mShipPreviewData;
         }
 
         RgbaImageData const & GetShipPreviewImage()
@@ -498,7 +498,7 @@ private:
             , mScannedShipFilepaths()
             , mErrorMessage()
             , mShipIndex()
-            , mShipPreview()
+            , mShipPreviewData()
             , mShipPreviewImage()
         {}
 
@@ -508,7 +508,7 @@ private:
         std::vector<std::filesystem::path> mScannedShipFilepaths;
         std::string mErrorMessage;
         std::optional<size_t> mShipIndex;
-        std::optional<ShipPreview> mShipPreview;
+        std::optional<ShipPreviewData> mShipPreviewData;
         std::optional<RgbaImageData> mShipPreviewImage;
     };
 

@@ -7,9 +7,10 @@
 
 #include "MaterialDatabase.h"
 #include "ShipDefinition.h"
-#include "ShipPreview.h"
+#include "ShipPreviewData.h"
 
 #include <GameCore/DeSerializationBuffer.h>
+#include <GameCore/ImageData.h>
 #include <GameCore/Version.h>
 
 #include <cstdint>
@@ -30,7 +31,11 @@ public:
         std::filesystem::path const & shipFilePath,
         MaterialDatabase const & materialDatabase);
 
-    static ShipPreview LoadPreview(std::filesystem::path const & shipFilePath);
+    static ShipPreviewData LoadPreviewData(std::filesystem::path const & shipFilePath);
+
+    static RgbaImageData LoadPreviewImage(
+        std::filesystem::path const & previewFilePath,
+        ImageSize const & maxSize);
 
     static void Save(
         ShipDefinition const & shipDefinition,

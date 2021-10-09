@@ -125,15 +125,23 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
         std::nullopt); // TODO
 }
 
-ShipPreview ShipDefinitionFormatDeSerializer::LoadPreview(std::filesystem::path const & shipFilePath)
+ShipPreviewData ShipDefinitionFormatDeSerializer::LoadPreviewData(std::filesystem::path const & shipFilePath)
 {
     // TODOTEST
-    return ShipPreview(
+    return ShipPreviewData(
         shipFilePath,
         ShipSpaceSize(10, 10),
         ShipMetadata("foo"),
         false,
         false);
+}
+
+RgbaImageData ShipDefinitionFormatDeSerializer::LoadPreviewImage(
+    std::filesystem::path const & previewFilePath,
+    ImageSize const & maxSize)
+{
+    // TODOHERE
+    return RgbaImageData(maxSize);
 }
 
 void ShipDefinitionFormatDeSerializer::Save(

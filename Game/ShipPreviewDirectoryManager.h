@@ -6,7 +6,7 @@
 #pragma once
 
 #include "ShipDefinition.h"
-#include "ShipPreview.h"
+#include "ShipPreviewData.h"
 #include "ShipPreviewImageDatabase.h"
 
 #include <GameCore/FileSystem.h>
@@ -35,7 +35,7 @@ public:
     std::vector<std::filesystem::path> EnumerateShipFilePaths() const;
 
     RgbaImageData LoadPreviewImage(
-        ShipPreview const & shipPreview,
+        ShipPreviewData const & shipPreview,
         ImageSize const & maxImageSize);
 
     void Commit(bool isVisitCompleted);

@@ -42,9 +42,11 @@ set  (GAME_SOURCES
 	ShipFactory.h
 	ShipFactoryTypes.h
 	ShipDefinition.h
+	ShipLegacyFormatDeSerializer.cpp
+	ShipLegacyFormatDeSerializer.h
 	ShipMetadata.h
 	ShipPhysicsData.h
-	ShipPreview.h
+	ShipPreviewData.h
 	ShipPreviewDirectoryManager.cpp
 	ShipPreviewDirectoryManager.h
 	ShipPreviewImageDatabase.cpp

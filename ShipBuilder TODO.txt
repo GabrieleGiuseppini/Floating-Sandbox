@@ -74,12 +74,13 @@ https://gamejolt.com/x/permalink/comment/11511458
 		+ Store filename as mCurrentFilename
 	= DoSaveShip:
 		- Ship Preview workflow:
-			- ShipPreview from .shp2 contains .shp2 filepath itself
-			- ShipPreview::LoadPreviewImage: if type is shp2, call ShipDefinitionFormatDeSerializer::LoadPreviewImage(filepath)
-					- Then do the resize via ImageTools
-				- else: type can only be png, throw if not
-				- Then resize and trim (@ where it's now)
-			- Preview is own tag, image chunk saved at ship save time - but only if there's no texture
+			+ ShipDeSerializer: split out legacy into own class
+			+ ShipDeSerializer: LoadShipPreviewData() and LoadShipPreviewImage(ShipPreviewData const &)
+			+ ShipPreview ("ShipPreviewData") from .shp2 contains .shp2 filepath itself
+			+ ShipDeSerializer::LoadShipPreviewImage: if type is shp2, call ShipDefinitionFormatDeSerializer::LoadPreviewImage(filepath)
+				+ else: type can only be png (throw if not) - call legacy LoadPreviewImage() which loads image
+				+ Then resize and trim (like it was @ ShipPreview)
+			- .shp2 format: preview is own tag, image chunk saved at ship save time - but only if there's no texture
 				- Order of chunks:
 					- If has texture: metadata, texture, ...
 					- Else: metadata, preview, ...
@@ -97,7 +98,7 @@ https://gamejolt.com/x/permalink/comment/11511458
 				+ Individual methods throw directly LocalizableGameException, no post-processing
 					+ DeSerializationContext: private class with file FS version, stored as pair of integers
 						+ Nuke MajorMinorVersion class
-				= Unit tests for all exceptions
+				+ Unit tests for all exceptions
 					+ Header
 					+ Unrecognized material in structural layer
 				+ Test all w/localized strings
@@ -107,6 +108,8 @@ https://gamejolt.com/x/permalink/comment/11511458
 					+ ShipBuilder
 			+ Header
 			+ Metadata
+			- Ship size section
+				- And no size at buffers
 			= Structural layer
 				+ RLE with variable-length "u 16-bit" count encoding
 					+ DeSerializationBuffer::Read/Write VarUInt16
