@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include <GameCore/DeSerializationBuffer.h>
 #include <GameCore/ImageData.h>
 
 #include <filesystem>
@@ -27,6 +28,10 @@ public:
     static RgbaImageData LoadImageRgbaAndResize(std::filesystem::path const & filepath, int resizedWidth);
     static RgbaImageData LoadImageRgbaAndResize(std::filesystem::path const & filepath, ImageSize const & maxSize);
     static RgbImageData LoadImageRgbAndResize(std::filesystem::path const & filepath, ImageSize const & maxSize);
+
+    static size_t EncodePngImage(
+        RgbaImageData const & image,
+        DeSerializationBuffer<BigEndianess> & buffer);
 
     static void SaveImage(
         std::filesystem::path filepath,

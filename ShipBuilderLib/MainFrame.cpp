@@ -1964,6 +1964,7 @@ void MainFrame::SaveAndSwitchBackToGame()
     {
         // Return
         assert(mCurrentShipFilePath.has_value());
+        assert(ShipDeSerializer::IsShipDefinitionFile(*mCurrentShipFilePath));
         SwitchBackToGame(*mCurrentShipFilePath);
     }
 }
@@ -2088,8 +2089,15 @@ void MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
             *this,
             mResourceLocator);
 
-        // Remember file path
-        mCurrentShipFilePath = shipFilePath;
+        // Remember file path - but only if it's a definition file in the "official" format, not a legacy one
+        if (ShipDeSerializer::IsShipDefinitionFile(shipFilePath))
+        {
+            mCurrentShipFilePath = shipFilePath;
+        }
+        else
+        {
+            mCurrentShipFilePath.reset();
+        }
 
         // Reconciliate UI
         ReconciliateUI();
@@ -2110,6 +2118,8 @@ void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)
 
     // Get ship definition
     auto shipDefinition = mController->GetModelController().MakeShipDefinition();
+
+    assert(ShipDeSerializer::IsShipDefinitionFile(shipFilePath));
 
     // Save ship
     ShipDeSerializer::SaveShip(

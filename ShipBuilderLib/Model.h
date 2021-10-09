@@ -86,6 +86,7 @@ public:
     void NewTextureLayer();
     void SetTextureLayer(/*TODO*/);
     void RemoveTextureLayer();
+    std::unique_ptr<TextureLayerBuffer> CloneTextureLayerBuffer() const;
 
     ShipSpaceSize const & GetShipSize() const
     {
@@ -109,7 +110,7 @@ public:
 
     bool HasExtraLayers() const
     {
-        for (size_t iLayer = 0; iLayer < LayerCount; ++iLayer)
+        for (size_t iLayer = 1; iLayer < LayerCount; ++iLayer)
         {
             if (mLayerPresenceMap[iLayer])
                 return true;
@@ -173,6 +174,12 @@ public:
         return *mStructuralRenderColorTexture;
     }
 
+    TextureLayerBuffer const & GetTextureLayerBuffer() const
+    {
+        assert(mTextureLayerBuffer);
+        return *mTextureLayerBuffer;
+    }
+
 private:
 
     static std::unique_ptr<StructuralLayerBuffer> MakeNewStructuralLayer(ShipSpaceSize const & shipSize);
@@ -186,13 +193,19 @@ private:
     ShipMetadata mShipMetadata;
 
     //
-    // Structural Layer
+    // Structural layer
     //
 
     std::unique_ptr<StructuralLayerBuffer> mStructuralLayerBuffer;
 
     // Derived buffers
     std::unique_ptr<RgbaImageData> mStructuralRenderColorTexture;
+
+    //
+    // Texture layer
+    //
+
+    std::unique_ptr<TextureLayerBuffer> mTextureLayerBuffer;
 
     //
     // Misc state

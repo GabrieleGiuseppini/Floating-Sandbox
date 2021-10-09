@@ -37,6 +37,8 @@ public:
         return ".shp";
     }
 
+    static bool IsShipDefinitionFile(std::filesystem::path const & shipFilePath);
+
     static bool IsAnyShipDefinitionFile(std::filesystem::path const & filepath)
     {
         return IsShipDefinitionFile(filepath)
@@ -59,8 +61,6 @@ public:
         std::filesystem::path const & shipFilePath);
 
 private:
-
-    static bool IsShipDefinitionFile(std::filesystem::path const & shipFilePath);
 
     static bool IsImageDefinitionFile(std::filesystem::path const & shipFilePath);
 

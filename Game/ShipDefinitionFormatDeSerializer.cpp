@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "ShipDefinitionFormatDeSerializer.h"
 
+#include "ImageFileTools.h"
+
 #include <GameCore/Colors.h>
 #include <GameCore/GameException.h>
 #include <GameCore/GameTypes.h>
@@ -54,7 +56,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
         SectionHeader const sectionHeader = ReadSectionHeader(inputFile, buffer);
         switch (sectionHeader.Tag)
         {
-            case static_cast<uint32_t>(MainSectionTagType::ShipSize) :
+            case static_cast<uint32_t>(MainSectionTagType::ShipSize):
             {
                 ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
                 ReadShipSize(buffer, deserializationContext);
@@ -192,6 +194,27 @@ void ShipDefinitionFormatDeSerializer::Save(
         [&]() { return AppendMetadata(shipDefinition.Metadata, buffer); },
         buffer);
 
+    if (shipDefinition.TextureLayer)
+    {
+        //
+        // Write texture
+        //
+
+        AppendSection(
+            outputFile,
+            static_cast<std::uint32_t>(MainSectionTagType::TextureLayer_PNG),
+            [&]() { return AppendPngImage(*shipDefinition.TextureLayer, buffer); },
+            buffer);
+    }
+    else
+    {
+        //
+        // Make and write a preview image
+        //
+
+        // TODOHERE
+    }
+
     //
     // Write structural layer
     //
@@ -249,6 +272,15 @@ static void ShipDefinitionFormatDeSerializer::AppendSection(
 
     // Serialize
     outputFile.write(reinterpret_cast<char const *>(buffer.GetData()), buffer.GetSize());
+}
+
+size_t ShipDefinitionFormatDeSerializer::AppendPngImage(
+    RgbaImageData const & rawImageData,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    return ImageFileTools::EncodePngImage(
+        rawImageData,
+        buffer);
 }
 
 void ShipDefinitionFormatDeSerializer::AppendFileHeader(
@@ -340,7 +372,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadata(
     if (!metadata.ElectricalPanelMetadata.empty())
     {
         // Tag and size
-        buffer.Append(static_cast<std::uint32_t>(MetadataTagType::ElectricalPanelMetadataV1));
+        buffer.Append(static_cast<std::uint32_t>(MetadataTagType::ElectricalPanelMetadata_V1));
         size_t const valueSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
 
         size_t valueSize = 0;
@@ -613,7 +645,7 @@ void ShipDefinitionFormatDeSerializer::ReadMetadata(
                 break;
             }
 
-            case static_cast<uint32_t>(MetadataTagType::Author) :
+            case static_cast<uint32_t>(MetadataTagType::Author):
             {
                 std::string tmpStr;
                 buffer.ReadAt<std::string>(offset, tmpStr);
@@ -622,7 +654,7 @@ void ShipDefinitionFormatDeSerializer::ReadMetadata(
                 break;
             }
 
-            case static_cast<uint32_t>(MetadataTagType::Description) :
+            case static_cast<uint32_t>(MetadataTagType::Description):
             {
                 std::string tmpStr;
                 buffer.ReadAt<std::string>(offset, tmpStr);
@@ -631,19 +663,19 @@ void ShipDefinitionFormatDeSerializer::ReadMetadata(
                 break;
             }
 
-            case static_cast<uint32_t>(MetadataTagType::DoHideElectricalsInPreview) :
+            case static_cast<uint32_t>(MetadataTagType::DoHideElectricalsInPreview):
             {
                 buffer.ReadAt<bool>(offset, metadata.DoHideElectricalsInPreview);
                 break;
             }
 
-            case static_cast<uint32_t>(MetadataTagType::DoHideHDInPreview) :
+            case static_cast<uint32_t>(MetadataTagType::DoHideHDInPreview):
             {
                 buffer.ReadAt<bool>(offset, metadata.DoHideHDInPreview);
                 break;
             }
 
-            case static_cast<uint32_t>(MetadataTagType::ElectricalPanelMetadataV1) :
+            case static_cast<uint32_t>(MetadataTagType::ElectricalPanelMetadata_V1):
             {
                 metadata.ElectricalPanelMetadata.clear();
 
@@ -701,7 +733,7 @@ void ShipDefinitionFormatDeSerializer::ReadMetadata(
                 break;
             }
 
-            case static_cast<uint32_t>(MetadataTagType::Password) :
+            case static_cast<uint32_t>(MetadataTagType::Password):
             {
                 std::uint64_t password;
                 buffer.ReadAt<std::uint64_t>(offset, password);
@@ -710,14 +742,14 @@ void ShipDefinitionFormatDeSerializer::ReadMetadata(
                 break;
             }
 
-            case static_cast<uint32_t>(MetadataTagType::ShipName) :
+            case static_cast<uint32_t>(MetadataTagType::ShipName):
             {
                 buffer.ReadAt<std::string>(offset, metadata.ShipName);
 
                 break;
             }
 
-            case static_cast<uint32_t>(MetadataTagType::YearBuilt) :
+            case static_cast<uint32_t>(MetadataTagType::YearBuilt):
             {
                 std::string tmpStr;
                 buffer.ReadAt<std::string>(offset, tmpStr);

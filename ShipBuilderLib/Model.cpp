@@ -16,6 +16,7 @@ Model::Model(
     , mShipMetadata(shipName)
     , mStructuralLayerBuffer(MakeNewStructuralLayer(mShipSize))
     // TODO: other layers
+    , mTextureLayerBuffer() // None
     , mDirtyState()
 {
     // Initialize derived structural data
@@ -31,6 +32,7 @@ Model::Model(ShipDefinition && shipDefinition)
     , mShipMetadata(shipDefinition.Metadata)
     , mStructuralLayerBuffer(new StructuralLayerBuffer(std::move(shipDefinition.StructuralLayer)))
     // TODO: other layers
+    , mTextureLayerBuffer(std::move(shipDefinition.TextureLayer))
     , mDirtyState()
 {
     // Initialize derived structural data
@@ -39,6 +41,8 @@ Model::Model(ShipDefinition && shipDefinition)
     // Initialize presence map
     mLayerPresenceMap.fill(false);
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
+    // TODO: other layers
+    mLayerPresenceMap[static_cast<size_t>(LayerType::Texture)] = (mTextureLayerBuffer != nullptr);
 }
 
 void Model::NewStructuralLayer()
@@ -127,10 +131,16 @@ void Model::SetTextureLayer(/*TODO*/)
 
 void Model::RemoveTextureLayer()
 {
-    // TODO
+    mTextureLayerBuffer.reset();
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Texture)] = false;
+}
+
+std::unique_ptr<TextureLayerBuffer> Model::CloneTextureLayerBuffer() const
+{
+    assert(mTextureLayerBuffer);
+    return mTextureLayerBuffer->MakeCopy();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

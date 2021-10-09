@@ -72,7 +72,7 @@ private:
         StructuralLayer = 1,
         ElectricalLayer = 2,
         RopesLayer = 3,
-        TextureLayer = 4,
+        TextureLayer_PNG = 4,
         Metadata = 5,
         PhysicsData = 6,
         AutoTexturizationSettings = 7,
@@ -91,7 +91,7 @@ private:
         ArtCredits = 3,
         YearBuilt = 4,
         Description = 5,
-        ElectricalPanelMetadataV1 = 6,
+        ElectricalPanelMetadata_V1 = 6,
         Password = 7,
         DoHideElectricalsInPreview = 8,
         DoHideHDInPreview = 9,
@@ -123,6 +123,10 @@ private:
         std::ofstream & outputFile,
         std::uint32_t tag,
         TSectionAppender const & sectionAppender,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static size_t AppendPngImage(
+        RgbaImageData const & rawImageDAta,
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static void AppendFileHeader(

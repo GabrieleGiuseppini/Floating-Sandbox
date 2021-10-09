@@ -51,14 +51,12 @@ ModelController::ModelController(
 
 ShipDefinition ModelController::MakeShipDefinition() const
 {
-    auto structuralLayerBuffer = mModel.CloneStructuralLayerBuffer();
-
     return ShipDefinition(
         mModel.GetShipSize(),
-        std::move(*structuralLayerBuffer),
+        std::move(*mModel.CloneStructuralLayerBuffer()),
         nullptr, // TODOHERE
         nullptr, // TODOHERE
-        nullptr, // TODOHERE
+        mModel.CloneTextureLayerBuffer(),
         mModel.GetShipMetadata(),
         ShipPhysicsData(), // TODOHERE
         std::nullopt);

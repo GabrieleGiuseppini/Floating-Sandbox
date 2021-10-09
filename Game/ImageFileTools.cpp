@@ -130,6 +130,39 @@ RgbImageData ImageFileTools::LoadImageRgbAndResize(
         maxSize);
 }
 
+size_t ImageFileTools::EncodePngImage(
+    RgbaImageData const & image,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    CheckInitialized();
+
+    ILuint imghandle;
+    ilGenImages(1, &imghandle);
+    ilBindImage(imghandle);
+
+    ilTexImage(
+        image.Size.width,
+        image.Size.height,
+        1,
+        static_cast<ILubyte>(4), // bpp
+        IL_RGBA,
+        IL_UNSIGNED_BYTE,
+        const_cast<void *>(reinterpret_cast<void const *>(image.Data.get())));
+
+    // Get required size
+    auto const requiredSize = ilSaveL(IL_PNG, nullptr, 0);
+
+    // Reserve room and advance
+    void * buf = reinterpret_cast<void *>(buffer.Receive(static_cast<size_t>(requiredSize)));
+
+    // Encode to buffer
+    ilSaveL(IL_PNG, buf, requiredSize);
+
+    ilDeleteImage(imghandle);
+
+    return static_cast<size_t>(requiredSize);
+}
+
 void ImageFileTools::SaveImage(
     std::filesystem::path filepath,
     RgbaImageData const & image)

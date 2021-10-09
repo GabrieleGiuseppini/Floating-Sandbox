@@ -82,7 +82,7 @@ https://gamejolt.com/x/permalink/comment/11511458
 				+ Then resize and trim (like it was @ ShipPreview)
 			- .shp2 format: preview is own tag, image chunk saved at ship save time - but only if there's no texture
 				- Order of chunks:
-					- If has texture: metadata, texture, ...
+					= If has texture: metadata, texture, ...
 					- Else: metadata, preview, ...
 		= ShipDeSerializer::Save(ShipDefinition const &)
 			= Rearc exceptions:
@@ -138,6 +138,8 @@ https://gamejolt.com/x/permalink/comment/11511458
 				- ...
 				- Verify tail
 
+- MainFrame::Save: BUG: if ship was loaded e.g. from .shp, hitting Save saves it silently to the same file, as .shp2
+	- mCurrentShipFilePath should never be set to a non-.shp2 file path
 
 = Click-And-Draw use case:
 	= Pencil tool (*)

@@ -14,6 +14,11 @@
 
 #include <memory>
 
+bool ShipDeSerializer::IsShipDefinitionFile(std::filesystem::path const & shipFilePath)
+{
+    return Utils::CaseInsensitiveEquals(shipFilePath.extension().string(), GetShipDefinitionFileExtension());
+}
+
 ShipDefinition ShipDeSerializer::LoadShip(
     std::filesystem::path const & shipFilePath,
     MaterialDatabase const & materialDatabase)
@@ -78,11 +83,6 @@ void ShipDeSerializer::SaveShip(
 }
 
 ///////////////////////////////////////////////////////
-
-bool ShipDeSerializer::IsShipDefinitionFile(std::filesystem::path const & shipFilePath)
-{
-    return Utils::CaseInsensitiveEquals(shipFilePath.extension().string(), GetShipDefinitionFileExtension());
-}
 
 bool ShipDeSerializer::IsImageDefinitionFile(std::filesystem::path const & shipFilePath)
 {
