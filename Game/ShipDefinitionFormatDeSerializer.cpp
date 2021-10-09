@@ -224,7 +224,11 @@ void ShipDefinitionFormatDeSerializer::Save(
         // Make and write a preview image
         //
 
-        // TODOHERE
+        AppendSection(
+            outputFile,
+            static_cast<std::uint32_t>(MainSectionTagType::Preview_PNG),
+            [&]() { return AppendPngPreview(shipDefinition.StructuralLayer, buffer); },
+            buffer);
     }
 
     //
@@ -510,6 +514,37 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer(
         rleBuffer.GetSize());
 
     return sectionBodySize;
+}
+
+size_t ShipDefinitionFormatDeSerializer::AppendPngPreview(
+    StructuralLayerBuffer const & structuralLayer,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    //
+    // Make preview
+    //
+
+    RgbaImageData previewRawData = RgbaImageData(ImageSize(structuralLayer.Size.width, structuralLayer.Size.height));
+
+    std::transform(
+        structuralLayer.Data.get(),
+        structuralLayer.Data.get() + structuralLayer.Size.GetLinearSize(),
+        previewRawData.Data.get(),
+        [](StructuralElement const & element) -> rgbaColor
+        {
+            if (element.Material != nullptr)
+                return rgbaColor(element.Material->RenderColor, 255);
+            else
+                return rgbaColor(EmptyMaterialColorKey, 255);
+        });
+
+    //
+    // Append preview
+    //
+
+    return AppendPngImage(
+        previewRawData,
+        buffer);
 }
 
 // Read

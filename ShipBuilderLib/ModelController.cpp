@@ -56,7 +56,9 @@ ShipDefinition ModelController::MakeShipDefinition() const
         std::move(*mModel.CloneStructuralLayerBuffer()),
         nullptr, // TODOHERE
         nullptr, // TODOHERE
-        mModel.CloneTextureLayerBuffer(),
+        mModel.HasLayer(LayerType::Texture)
+            ? mModel.CloneTextureLayerBuffer()
+            : nullptr,
         mModel.GetShipMetadata(),
         ShipPhysicsData(), // TODOHERE
         std::nullopt);

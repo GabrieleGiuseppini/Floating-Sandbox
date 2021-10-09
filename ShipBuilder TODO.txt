@@ -83,9 +83,9 @@ https://gamejolt.com/x/permalink/comment/11511458
 			= .shp2 format: preview is own tag, image chunk saved at ship save time - but only if there's no texture
 				= Order of chunks:
 					+ If has texture: metadata, texture, ...
-					- Else: metadata, preview, ...
+					= Else: metadata, preview, ...
 				- Do LoadPreview
-					- TODO: see if can have one single main loop for the three load calls
+					= TODO: see if can have one single main loop for the three load calls
 		= ShipDeSerializer::Save(ShipDefinition const &)
 			= Rearc exceptions:
 				+ GameCore/UserGameException
@@ -139,6 +139,10 @@ https://gamejolt.com/x/permalink/comment/11511458
 				+ Metadata
 				- ...
 				- Verify tail
+
+- SB::MainFrame: SaveAs should always be enabled
+	- MenuItem
+	- Button
 
 = Click-And-Draw use case:
 	= Pencil tool (*)

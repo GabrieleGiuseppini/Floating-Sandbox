@@ -77,6 +77,7 @@ private:
         PhysicsData = 6,
         AutoTexturizationSettings = 7,
         ShipSize = 8,
+        Preview_PNG = 9,
 
         Tail = 0xffffffff
     };
@@ -150,6 +151,10 @@ private:
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static size_t AppendStructuralLayer(
+        StructuralLayerBuffer const & structuralLayer,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static size_t AppendPngPreview(
         StructuralLayerBuffer const & structuralLayer,
         DeSerializationBuffer<BigEndianess> & buffer);
 
