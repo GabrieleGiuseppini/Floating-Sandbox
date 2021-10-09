@@ -85,7 +85,8 @@ https://gamejolt.com/x/permalink/comment/11511458
 					+ If has texture: metadata, texture, ...
 					= Else: metadata, preview, ...
 				- Do LoadPreview
-					= TODO: see if can have one single main loop for the three load calls
+					+ Have one single main loop for the three load calls
+			- See if may cleanup ImageFileTools
 		= ShipDeSerializer::Save(ShipDefinition const &)
 			= Rearc exceptions:
 				+ GameCore/UserGameException
@@ -139,6 +140,27 @@ https://gamejolt.com/x/permalink/comment/11511458
 				+ Metadata
 				- ...
 				- Verify tail
+
+- Save/Load extra tasks:
+	- Replace ShipSize with struct ("ShipAttributes") having ship size, hasTexture, hasElectricals
+		- Think of also having FS version in it, so that this replaces DeSerializationContext
+		- Read as a mandatory, initial section with one of N tags
+
+- Preview trimming:
+	- Consider plan:
+		- We trim and resize for all formats, but trimming is done before resize
+			- TODO: how?
+	- Consider plan:
+		- We don't trim anymore for .png and .shp
+		- We trim .shp2 at preview creation (save time)
+
+- ShipLoadDialog: doesn't catch new file
+	- It's because at open we don't scan directory unless we've changed directory
+	- Solution:
+		- At open, if haven't changed dir, build map of <filepath, last_modif> 
+		- Then compare map with same map built at PreviewReady handling
+			- Requires message to also contain last_modif
+		- If changed: follow path used by directory changed
 
 = Click-And-Draw use case:
 	= Pencil tool (*)

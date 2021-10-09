@@ -39,6 +39,10 @@ public:
 
     static RgbaImageData DecodePngImage(DeSerializationBuffer<BigEndianess> const & buffer);
 
+    static RgbaImageData DecodePngImageAndResize(
+        DeSerializationBuffer<BigEndianess> const & buffer,
+        ImageSize const & maxSize);
+
     static size_t EncodePngImage(
         RgbaImageData const & image,
         DeSerializationBuffer<BigEndianess> & buffer);
@@ -92,6 +96,10 @@ private:
         int bpp,
         int format,
         std::filesystem::path filepath);
+
+    static RgbaImageData InternalDecodePngImage(
+        DeSerializationBuffer<BigEndianess> const & buffer,
+        std::optional<ResizeInfo> resizeInfo);
 
 private:
 

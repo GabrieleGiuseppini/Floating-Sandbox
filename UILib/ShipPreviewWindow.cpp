@@ -139,7 +139,7 @@ void ShipPreviewWindow::SetDirectory(std::filesystem::path const & directoryPath
     if (directoryPath != mCurrentlyCompletedDirectory)
     {
         //
-        // Stop thread's scan (if thread it's running)
+        // Stop thread's scan (if thread is running)
         //
 
         if (mPreviewThread.joinable())

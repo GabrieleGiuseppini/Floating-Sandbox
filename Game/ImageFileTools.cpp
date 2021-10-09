@@ -156,15 +156,31 @@ void ImageFileTools::SaveImage(
 
 RgbaImageData ImageFileTools::DecodePngImage(DeSerializationBuffer<BigEndianess> const & buffer)
 {
-    ILuint imageHandle = InternalOpenImage(
+    return InternalDecodePngImage(
         buffer,
-        IL_PNG);
-
-    return InternalLoadImage<rgbaColor>(
-        imageHandle,
-        IL_RGBA,
-        IL_ORIGIN_LOWER_LEFT,
         std::nullopt);
+}
+
+RgbaImageData ImageFileTools::DecodePngImageAndResize(
+    DeSerializationBuffer<BigEndianess> const & buffer,
+    ImageSize const & maxSize)
+{
+    return InternalDecodePngImage(
+        buffer,
+        ResizeInfo(
+            [maxSize](ImageSize const & originalImageSize)
+            {
+                float wShrinkFactor = static_cast<float>(maxSize.width) / static_cast<float>(originalImageSize.width);
+                float hShrinkFactor = static_cast<float>(maxSize.height) / static_cast<float>(originalImageSize.height);
+                float shrinkFactor = std::min(
+                    std::min(wShrinkFactor, hShrinkFactor),
+                    1.0f);
+
+                return ImageSize(
+                    static_cast<int>(round(static_cast<float>(originalImageSize.width) * shrinkFactor)),
+                    static_cast<int>(round(static_cast<float>(originalImageSize.height) * shrinkFactor)));
+            },
+            ILU_BILINEAR));
 }
 
 size_t ImageFileTools::EncodePngImage(
@@ -430,4 +446,19 @@ void ImageFileTools::InternalSaveImage(
     ilSave(IL_PNG, filepath.string().c_str());
 
     ilDeleteImage(imghandle);
+}
+
+RgbaImageData ImageFileTools::InternalDecodePngImage(
+    DeSerializationBuffer<BigEndianess> const & buffer,
+    std::optional<ResizeInfo> resizeInfo)
+{
+    ILuint imageHandle = InternalOpenImage(
+        buffer,
+        IL_PNG);
+
+    return InternalLoadImage<rgbaColor>(
+        imageHandle,
+        IL_RGBA,
+        IL_ORIGIN_LOWER_LEFT,
+        resizeInfo);
 }

@@ -102,15 +102,16 @@ private:
 
     struct DeserializationContext
     {
+        std::string const ShipFilename;
         int const FileFSVersionMaj;
         int const FileFSVersionMin;
 
-        std::optional<ShipSpaceSize> ShipSize;
-
         DeserializationContext(
+            std::string shipFilename,
             int fileFSVersionMaj,
             int fileFSVersionMin)
-            : FileFSVersionMaj(fileFSVersionMaj)
+            : ShipFilename(std::move(shipFilename))
+            , FileFSVersionMaj(fileFSVersionMaj)
             , FileFSVersionMin(fileFSVersionMin)
         {}
     };
@@ -160,6 +161,11 @@ private:
 
     // Read
 
+    template<typename SectionHandler>
+    static void Parse(
+        std::filesystem::path const & shipFilePath,
+        SectionHandler const & sectionHandler);
+
     static std::ifstream OpenFileForRead(std::filesystem::path const & shipFilePath);
 
     static void ThrowMaterialNotFound(DeserializationContext const & deserializationContext);
@@ -179,24 +185,29 @@ private:
 
     static RgbaImageData ReadPngImage(DeSerializationBuffer<BigEndianess> & buffer);
 
+    static RgbaImageData ReadPngImageAndResize(
+        DeSerializationBuffer<BigEndianess> & buffer,
+        ImageSize const & maxSize);
+
     static DeserializationContext ReadFileHeader(
         std::ifstream & inputFile,
+        std::string shipFilename,
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static DeserializationContext ReadFileHeader(
-        DeSerializationBuffer<BigEndianess> & buffer);
+        DeSerializationBuffer<BigEndianess> & buffer,
+        std::string shipFilename);
 
-    static void ReadShipSize(
+    static ShipSpaceSize ReadShipSize(DeSerializationBuffer<BigEndianess> const & buffer);
+
+    static ShipMetadata ReadMetadata(
         DeSerializationBuffer<BigEndianess> const & buffer,
         DeserializationContext & deserializationContext);
-
-    static void ReadMetadata(
-        DeSerializationBuffer<BigEndianess> const & buffer,
-        ShipMetadata & metadata);
 
     static void ReadStructuralLayer(
         DeSerializationBuffer<BigEndianess> const & buffer,
         DeserializationContext & deserializationContext,
+        ShipSpaceSize const & shipSize,
         MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
         std::unique_ptr<StructuralLayerBuffer> & structuralLayerBuffer);
 
