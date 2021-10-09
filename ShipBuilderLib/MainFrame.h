@@ -238,13 +238,11 @@ private:
 
     // Menu
     wxMenuItem * mSaveShipMenuItem;
-    wxMenuItem * mSaveShipAsMenuItem;
     wxMenuItem * mSaveAndGoBackMenuItem;
     wxMenuItem * mUndoMenuItem;
 
     // File panel
     BitmapButton * mSaveShipButton;
-    BitmapButton * mSaveShipAsButton;
 
     // Layers panel
     std::array<BitmapToggleButton *, LayerCount> mLayerSelectButtons;

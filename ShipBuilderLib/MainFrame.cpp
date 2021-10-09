@@ -318,9 +318,9 @@ MainFrame::MainFrame(
         }
 
         {
-            mSaveShipAsMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship As"), _("Save the current ship to a different file"), wxITEM_NORMAL);
-            fileMenu->Append(mSaveShipAsMenuItem);
-            Connect(mSaveShipAsMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveShipAs);
+            wxMenuItem * saveShipAsMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship As"), _("Save the current ship to a different file"), wxITEM_NORMAL);
+            fileMenu->Append(saveShipAsMenuItem);
+            Connect(saveShipAsMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveShipAs);
         }
 
         if (!IsStandAlone())
@@ -646,7 +646,7 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
 
         // Save As ship
         {
-            mSaveShipAsButton = new BitmapButton(
+            auto button = new BitmapButton(
                 panel,
                 mResourceLocator.GetIconFilePath("save_ship_as_button"),
                 [this]()
@@ -655,7 +655,7 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
                 },
                 _("Save the current ship to a different file"));
 
-            sizer->Add(mSaveShipAsButton, 0, wxALL, ButtonMargin);
+            sizer->Add(button, 0, wxALL, ButtonMargin);
         }
 
         // Save and return to game
@@ -2302,19 +2302,9 @@ void MainFrame::ReconciliateUIWithModelDirtiness()
         mSaveAndGoBackMenuItem->Enable(false);
     }
 
-    if (mSaveShipAsMenuItem->IsEnabled() != isDirty)
-    {
-        mSaveShipAsMenuItem->Enable(isDirty);
-    }
-
     if (mSaveShipButton->IsEnabled() != isDirty)
     {
         mSaveShipButton->Enable(isDirty);
-    }
-
-    if (mSaveShipAsButton->IsEnabled() != isDirty)
-    {
-        mSaveShipAsButton->Enable(isDirty);
     }
 
     SetFrameTitle(mController->GetModelController().GetModel().GetShipMetadata().ShipName, isDirty);

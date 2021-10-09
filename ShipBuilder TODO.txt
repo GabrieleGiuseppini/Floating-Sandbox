@@ -140,10 +140,6 @@ https://gamejolt.com/x/permalink/comment/11511458
 				- ...
 				- Verify tail
 
-- SB::MainFrame: SaveAs should always be enabled
-	- MenuItem
-	- Button
-
 = Click-And-Draw use case:
 	= Pencil tool (*)
 		+ UndoStack.h/cpp, w/IUndoEntry interface w/UndoEntryType enum
