@@ -108,8 +108,8 @@ https://gamejolt.com/x/permalink/comment/11511458
 					+ ShipBuilder
 			+ Header
 			+ Metadata
-			- Ship size section
-				- And no size at buffers
+			+ Ship size section
+				+ And no size at buffers
 			= Structural layer
 				+ RLE with variable-length "u 16-bit" count encoding
 					+ DeSerializationBuffer::Read/Write VarUInt16

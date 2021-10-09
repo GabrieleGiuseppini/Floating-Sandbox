@@ -209,6 +209,7 @@ protected:
     {
         std::unique_ptr<StructuralLayerBuffer> targetStructuralLayerBuffer;
         ShipDefinitionFormatDeSerializer::DeserializationContext deserializationContext(1, 0);
+        deserializationContext.ShipSize = sourceStructuralLayerBuffer.Size;
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
             deserializationContext,
@@ -241,13 +242,6 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, VariousSizes
         DeSerializationBuffer<BigEndianess> buffer(256);
         ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayerBuffer, buffer);
 
-        // Verify ship size
-        std::uint32_t width, height;
-        size_t idx = buffer.ReadAt(0, width);
-        idx += buffer.ReadAt(idx, height);
-        ASSERT_EQ(width, uint32_t(iParam));
-        ASSERT_EQ(height, uint32_t(1));
-
         //
         // Verify RLE:
         //  16383 times: EmptyMaterialKey
@@ -256,6 +250,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, VariousSizes
         //      n times: EmptyMaterialKey
         //
 
+        size_t idx = 0;
         int iRunSize = iParam;
         while (iRunSize >= 16383)
         {
@@ -324,16 +319,11 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, MidSize_Hete
     DeSerializationBuffer<BigEndianess> buffer(256);
     ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayerBuffer, buffer);
 
-    // Verify size
-    std::uint32_t width, height;
-    size_t idx = buffer.ReadAt(0, width);
-    idx += buffer.ReadAt(idx, height);
-    ASSERT_EQ(width, uint32_t(10));
-    ASSERT_EQ(height, uint32_t(12));
-
     //
     // Verify RLE
     //
+
+    size_t idx = 0;
 
     for (size_t i = 0; i < sourceStructuralLayerBuffer.Size.GetLinearSize(); ++i)
     {
@@ -388,6 +378,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, Unrecognized
         ShipDefinitionFormatDeSerializer::DeserializationContext deserializationContext(
             Version::CurrentVersion().GetMajor(),
             Version::CurrentVersion().GetMinor());
+        deserializationContext.ShipSize = sourceStructuralLayerBuffer.Size;
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
             deserializationContext,
@@ -431,6 +422,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, Unrecognized
         ShipDefinitionFormatDeSerializer::DeserializationContext deserializationContext(
             2999,
             4);
+        deserializationContext.ShipSize = sourceStructuralLayerBuffer.Size;
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
             deserializationContext,

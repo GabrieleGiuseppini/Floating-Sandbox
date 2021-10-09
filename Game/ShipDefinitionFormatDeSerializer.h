@@ -76,6 +76,7 @@ private:
         Metadata = 5,
         PhysicsData = 6,
         AutoTexturizationSettings = 7,
+        ShipSize = 8,
 
         Tail = 0xffffffff
     };
@@ -103,6 +104,8 @@ private:
         int const FileFSVersionMaj;
         int const FileFSVersionMin;
 
+        std::optional<ShipSpaceSize> ShipSize;
+
         DeserializationContext(
             int fileFSVersionMaj,
             int fileFSVersionMin)
@@ -127,6 +130,10 @@ private:
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static void AppendFileHeader(DeSerializationBuffer<BigEndianess> & buffer);
+
+    static size_t AppendShipSize(
+        ShipSpaceSize const & shipSize,
+        DeSerializationBuffer<BigEndianess> & buffer);
 
     static size_t AppendMetadata(
         ShipMetadata const & metadata,
@@ -167,6 +174,10 @@ private:
 
     static DeserializationContext ReadFileHeader(
         DeSerializationBuffer<BigEndianess> & buffer);
+
+    static void ReadShipSize(
+        DeSerializationBuffer<BigEndianess> const & buffer,
+        DeserializationContext & deserializationContext);
 
     static void ReadMetadata(
         DeSerializationBuffer<BigEndianess> const & buffer,
