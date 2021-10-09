@@ -55,7 +55,7 @@ ImageSize ImageFileTools::GetImageSize(std::filesystem::path const & filepath)
 RgbaImageData ImageFileTools::LoadImageRgba(std::filesystem::path const & filepath)
 {
     return InternalLoadImage<rgbaColor>(
-        filepath,
+        InternalOpenImage(filepath),
         IL_RGBA,
         IL_ORIGIN_LOWER_LEFT,
         std::nullopt);
@@ -64,7 +64,7 @@ RgbaImageData ImageFileTools::LoadImageRgba(std::filesystem::path const & filepa
 RgbImageData ImageFileTools::LoadImageRgb(std::filesystem::path const & filepath)
 {
     return InternalLoadImage<rgbColor>(
-        filepath,
+        InternalOpenImage(filepath),
         IL_RGB,
         IL_ORIGIN_LOWER_LEFT,
         std::nullopt);
@@ -75,7 +75,7 @@ RgbaImageData ImageFileTools::LoadImageRgbaAndMagnify(
     int magnificationFactor)
 {
     return InternalLoadImage<rgbaColor>(
-        filepath,
+        InternalOpenImage(filepath),
         IL_RGBA,
         IL_ORIGIN_LOWER_LEFT,
         ResizeInfo(
@@ -93,7 +93,7 @@ RgbaImageData ImageFileTools::LoadImageRgbaAndResize(
     int resizedWidth)
 {
     return InternalLoadImage<rgbaColor>(
-        filepath,
+        InternalOpenImage(filepath),
         IL_RGBA,
         IL_ORIGIN_LOWER_LEFT,
         ResizeInfo(
@@ -115,7 +115,7 @@ RgbaImageData ImageFileTools::LoadImageRgbaAndResize(
     ImageSize const & maxSize)
 {
     return InternalLoadImageAndResize<rgbaColor>(
-        filepath,
+        InternalOpenImage(filepath),
         IL_RGBA,
         maxSize);
 }
@@ -125,7 +125,7 @@ RgbImageData ImageFileTools::LoadImageRgbAndResize(
     ImageSize const & maxSize)
 {
     return InternalLoadImageAndResize<rgbColor>(
-        filepath,
+        InternalOpenImage(filepath),
         IL_RGB,
         maxSize);
 }
@@ -156,8 +156,10 @@ void ImageFileTools::SaveImage(
 
 RgbaImageData ImageFileTools::DecodePngImage(DeSerializationBuffer<BigEndianess> const & buffer)
 {
-    return InternalDecodePngImage(
-        buffer,
+    return InternalLoadImage<rgbaColor>(
+        InternalOpenImage(buffer, IL_PNG),
+        IL_RGBA,
+        IL_ORIGIN_LOWER_LEFT,
         std::nullopt);
 }
 
@@ -165,22 +167,10 @@ RgbaImageData ImageFileTools::DecodePngImageAndResize(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ImageSize const & maxSize)
 {
-    return InternalDecodePngImage(
-        buffer,
-        ResizeInfo(
-            [maxSize](ImageSize const & originalImageSize)
-            {
-                float wShrinkFactor = static_cast<float>(maxSize.width) / static_cast<float>(originalImageSize.width);
-                float hShrinkFactor = static_cast<float>(maxSize.height) / static_cast<float>(originalImageSize.height);
-                float shrinkFactor = std::min(
-                    std::min(wShrinkFactor, hShrinkFactor),
-                    1.0f);
-
-                return ImageSize(
-                    static_cast<int>(round(static_cast<float>(originalImageSize.width) * shrinkFactor)),
-                    static_cast<int>(round(static_cast<float>(originalImageSize.height) * shrinkFactor)));
-            },
-            ILU_BILINEAR));
+    return InternalLoadImageAndResize<rgbaColor>(
+        InternalOpenImage(buffer, IL_PNG),
+        IL_RGBA,
+        maxSize);
 }
 
 size_t ImageFileTools::EncodePngImage(
@@ -296,12 +286,12 @@ unsigned int ImageFileTools::InternalOpenImage(
 
 template <typename TColor>
 ImageData<TColor> ImageFileTools::InternalLoadImageAndResize(
-    std::filesystem::path const & filepath,
+    unsigned int imageHandle,
     int targetFormat,
     ImageSize const & maxSize)
 {
     return InternalLoadImage<TColor>(
-        filepath,
+        imageHandle,
         targetFormat,
         IL_ORIGIN_LOWER_LEFT,
         ResizeInfo(
@@ -318,26 +308,6 @@ ImageData<TColor> ImageFileTools::InternalLoadImageAndResize(
                     static_cast<int>(round(static_cast<float>(originalImageSize.height) * shrinkFactor)));
             },
             ILU_BILINEAR));
-}
-
-template <typename TColor>
-ImageData<TColor> ImageFileTools::InternalLoadImage(
-    std::filesystem::path const & filepath,
-    int targetFormat,
-    int targetOrigin,
-    std::optional<ResizeInfo> resizeInfo)
-{
-    //
-    // Load image
-    //
-
-    ILuint const imageHandle = InternalOpenImage(filepath);
-
-    return InternalLoadImage<TColor>(
-        imageHandle,
-        targetFormat,
-        targetOrigin,
-        resizeInfo);
 }
 
 template <typename TColor>
@@ -446,19 +416,4 @@ void ImageFileTools::InternalSaveImage(
     ilSave(IL_PNG, filepath.string().c_str());
 
     ilDeleteImage(imghandle);
-}
-
-RgbaImageData ImageFileTools::InternalDecodePngImage(
-    DeSerializationBuffer<BigEndianess> const & buffer,
-    std::optional<ResizeInfo> resizeInfo)
-{
-    ILuint imageHandle = InternalOpenImage(
-        buffer,
-        IL_PNG);
-
-    return InternalLoadImage<rgbaColor>(
-        imageHandle,
-        IL_RGBA,
-        IL_ORIGIN_LOWER_LEFT,
-        resizeInfo);
 }

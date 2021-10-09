@@ -73,22 +73,21 @@ https://gamejolt.com/x/permalink/comment/11511458
 		+ Do
 		+ Store filename as mCurrentFilename
 	= DoSaveShip:
-		= Ship Preview workflow:
+		+ Ship Preview workflow:
 			+ ShipDeSerializer: split out legacy into own class
 			+ ShipDeSerializer: LoadShipPreviewData() and LoadShipPreviewImage(ShipPreviewData const &)
 			+ ShipPreview ("ShipPreviewData") from .shp2 contains .shp2 filepath itself
 			+ ShipDeSerializer::LoadShipPreviewImage: if type is shp2, call ShipDefinitionFormatDeSerializer::LoadPreviewImage(filepath)
 				+ else: type can only be png (throw if not) - call legacy LoadPreviewImage() which loads image
 				+ Then resize and trim (like it was @ ShipPreview)
-			= .shp2 format: preview is own tag, image chunk saved at ship save time - but only if there's no texture
-				= Order of chunks:
+			+ .shp2 format: preview is own tag, image chunk saved at ship save time - but only if there's no texture
+				+ Order of chunks:
 					+ If has texture: metadata, texture, ...
-					= Else: metadata, preview, ...
-				- Do LoadPreview
+					+ Else: metadata, preview, ...
+				+ Do LoadPreview
 					+ Have one single main loop for the three load calls
-			- See if may cleanup ImageFileTools
 		= ShipDeSerializer::Save(ShipDefinition const &)
-			= Rearc exceptions:
+			+ Rearc exceptions:
 				+ GameCore/UserGameException
 					+ With enum
 					+ Exception contains enum and string array
@@ -105,8 +104,6 @@ https://gamejolt.com/x/permalink/comment/11511458
 					+ Header
 					+ Unrecognized material in structural layer
 				+ Test all w/localized strings
-					- Preview
-						- After preview workflow
 					+ Game
 					+ ShipBuilder
 			+ Header
@@ -123,6 +120,9 @@ https://gamejolt.com/x/permalink/comment/11511458
 					- See to make it more efficient
 						+ fill 
 						- Reuse member temp buffer
+			- Replace ShipSize with struct ("ShipAttributes") having ship size, hasTexture, hasElectricals
+				- Think of also having FS version in it, so that this replaces DeSerializationContext
+				- Read as a mandatory, initial section with one of N tags
 			- Electrical layer
 				- Pure buffer
 				- Review MaterialDatabase's electrical material maps: make one map
@@ -140,11 +140,6 @@ https://gamejolt.com/x/permalink/comment/11511458
 				+ Metadata
 				- ...
 				- Verify tail
-
-- Save/Load extra tasks:
-	- Replace ShipSize with struct ("ShipAttributes") having ship size, hasTexture, hasElectricals
-		- Think of also having FS version in it, so that this replaces DeSerializationContext
-		- Read as a mandatory, initial section with one of N tags
 
 - Preview trimming:
 	- Consider plan:

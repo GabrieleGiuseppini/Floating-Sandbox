@@ -72,16 +72,9 @@ private:
 
     template <typename TColor>
     static ImageData<TColor> InternalLoadImageAndResize(
-        std::filesystem::path const & filepath,
+        unsigned int imageHandle,
         int targetFormat,
         ImageSize const & maxSize);
-
-    template <typename TColor>
-    static ImageData<TColor> InternalLoadImage(
-        std::filesystem::path const & filepath,
-        int targetFormat,
-        int targetOrigin,
-        std::optional<ResizeInfo> resizeInfo);
 
     template <typename TColor>
     static ImageData<TColor> InternalLoadImage(
@@ -96,10 +89,6 @@ private:
         int bpp,
         int format,
         std::filesystem::path filepath);
-
-    static RgbaImageData InternalDecodePngImage(
-        DeSerializationBuffer<BigEndianess> const & buffer,
-        std::optional<ResizeInfo> resizeInfo);
 
 private:
 
