@@ -136,6 +136,7 @@ private:
 
     void OnViewModelUpdated();
 
+    void UpdateCanvasBorder();
     void UpdateGrid();
 
 private:
@@ -162,6 +163,19 @@ private:
             vec2f _positionPixel)
             : positionShip(_positionShip)
             , positionPixel(_positionPixel)
+        {}
+    };
+
+    struct CanvasBorderVertex
+    {
+        vec2f positionShip; // Ship space
+
+        CanvasBorderVertex() = default;
+
+        CanvasBorderVertex(
+            float _x,
+            float _y)
+            : positionShip(_x, _y)
         {}
     };
 
@@ -206,6 +220,10 @@ private:
     GameOpenGLVBO mBackgroundTextureVBO;
     GameOpenGLTexture mBackgroundTextureOpenGLHandle;
     bool mHasBackgroundTexture;
+
+    // Canvas border
+    GameOpenGLVAO mCanvasBorderVAO;
+    GameOpenGLVBO mCanvasBorderVBO;
 
     // Structural texture
     GameOpenGLVAO mStructuralTextureVAO;

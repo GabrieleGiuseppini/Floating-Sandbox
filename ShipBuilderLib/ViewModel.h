@@ -186,7 +186,12 @@ public:
             mShipSize.height - 1 - (DisplayPhysicalToShipSpace(displayCoordinates.y * mLogicalToPhysicalPixelFactor) - MarginDisplayShipSize + mCam.y));
     }
 
-    DisplayPhysicalSize ShipSpaceSizeToPhyisicalDisplaySize(ShipSpaceSize const & size)
+    float GetShipSpaceForOnePhysicalDisplayPixel() const
+    {
+        return mDisplayPhysicalToShipSpaceFactor;
+    }
+
+    DisplayPhysicalSize ShipSpaceSizeToPhysicalDisplaySize(ShipSpaceSize const & size)
     {
         return DisplayPhysicalSize(
             static_cast<int>(ShipSpaceToDisplayLogical(static_cast<float>(size.width)) * mLogicalToPhysicalPixelFactor),

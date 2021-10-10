@@ -15,7 +15,9 @@ namespace ShipBuilder {
 ProgramType ShaderFilenameToProgramType(std::string const & str)
 {
     std::string lstr = Utils::ToLower(str);
-    if (lstr == "grid")
+    if (lstr == "canvas_border")
+        return ProgramType::CanvasBorder;
+    else if (lstr == "grid")
         return ProgramType::Grid;
     else if (lstr == "texture")
         return ProgramType::Texture;
@@ -29,6 +31,8 @@ std::string ProgramTypeToStr(ProgramType program)
 {
     switch (program)
     {
+        case ProgramType::CanvasBorder:
+            return "CanvasBorder";
         case ProgramType::Grid:
             return "Grid";
         case ProgramType::Texture:
@@ -76,7 +80,9 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str)
 {
-    if (Utils::CaseInsensitiveEquals(str, "Grid"))
+    if (Utils::CaseInsensitiveEquals(str, "CanvasBorder"))
+        return VertexAttributeType::CanvasBorder;
+    else if (Utils::CaseInsensitiveEquals(str, "Grid"))
         return VertexAttributeType::Grid;
     else if (Utils::CaseInsensitiveEquals(str, "Texture"))
         return VertexAttributeType::Texture;

@@ -18,7 +18,8 @@ namespace ShipBuilder {
 
 enum class ProgramType
 {
-    Grid = 0,
+    CanvasBorder = 0,
+    Grid,
     Texture,
     TextureNdc,
 
@@ -51,7 +52,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter);
  */
 enum class VertexAttributeType : GLuint
 {
-    Grid = 0,
+    CanvasBorder = 0,
+    Grid,
     Texture,
     TextureNdc
 };

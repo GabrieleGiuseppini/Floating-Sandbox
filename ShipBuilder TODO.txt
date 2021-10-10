@@ -74,9 +74,6 @@
 	- Tests:
 		- Make sure loading a ship w/legacy electricals makes up an electrical layer, and saving it saves the electricals
 
-- Add some shading around ShipSpace canvas
-	- TODO
-
 - Controller/Tools/WorkSpace/Mouse canvas strategy:
 	- TODO: see if a new strategy is really needed - isn't current strategy acceptable?
 	- Spec:
@@ -619,6 +616,10 @@ DONE
 				+ Metadata
 				+ ...
 				+ Verify tail
+
++ Add some shading around ShipSpace canvas
+	+ Four 1-pixel-wide quads drawn with matte color (black)
+	+ If we use the same ortho matrix, we need to calc the ship space size of 1 pixel
 
 ----------------------
 
