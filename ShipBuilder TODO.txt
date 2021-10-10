@@ -117,16 +117,13 @@ https://gamejolt.com/x/permalink/comment/11511458
 			+ Preview
 				+ Trim in-place
 				+ Make sure image trimming happens only for legacy
-			= Structural layer
+			+ Structural layer
 				+ RLE with variable-length "u 16-bit" count encoding
 					+ DeSerializationBuffer::Read/Write VarUInt16
 					+ Orig: 216Kb
 					+ Compressed: 30.8Kb
-				= Read
+				+ Read
 					+ Then complete unit tests
-					- See to make it more efficient
-						+ fill 
-						- Reuse member temp buffer
 			- Electrical layer
 				- Pure buffer
 				- Review MaterialDatabase's electrical material maps: make one map
@@ -138,12 +135,12 @@ https://gamejolt.com/x/permalink/comment/11511458
 			- AutoTexturizationSettings
 		+ Store filename as mCurrentFilename
 		- Also do load for .shp2
-			- ShipLoadDialog wildcards
+			+ ShipLoadDialog wildcards
 			- ShipDeSerializer::Load():
 				+ Header: check (via helper)
 				+ Metadata
 				- ...
-				- Verify tail
+				+ Verify tail
 
 - ShipLoadDialog: doesn't catch new file
 	- It's because at open we don't scan directory unless we've changed directory

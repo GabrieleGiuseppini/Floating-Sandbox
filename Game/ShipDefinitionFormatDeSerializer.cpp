@@ -40,6 +40,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
     std::optional<ShipMetadata> shipMetadata;
     std::unique_ptr<StructuralLayerBuffer> structuralLayer;
     std::unique_ptr<TextureLayerBuffer> textureLayer;
+    bool hasSeenTail = false;
 
     Parse(
         shipFilePath,
@@ -96,7 +97,8 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
 
                 case static_cast<uint32_t>(MainSectionTagType::Tail) :
                 {
-                    // We're done
+                    hasSeenTail = true;
+
                     break;
                 }
 
@@ -120,7 +122,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
     // Ensure all the required sections have been seen
     //
 
-    if (!shipAttributes.has_value() || !shipMetadata.has_value() || !structuralLayer)
+    if (!shipAttributes.has_value() || !shipMetadata.has_value() || !structuralLayer || !hasSeenTail)
     {
         throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
     }
@@ -820,6 +822,7 @@ void ShipDefinitionFormatDeSerializer::Parse(
             break;
         }
 
+        // Exit when we see the tail
         if (sectionHeader.Tag == static_cast<uint32_t>(MainSectionTagType::Tail))
         {
             // We're done
