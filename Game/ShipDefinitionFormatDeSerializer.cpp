@@ -688,22 +688,91 @@ size_t ShipDefinitionFormatDeSerializer::AppendPngPreview(
     DeSerializationBuffer<BigEndianess> & buffer)
 {
     //
+    // Calculate trimmed quad
+    //
+
+    int minY;
+    {
+        bool hasData = false;
+        for (minY = 0; !hasData && minY < structuralLayer.Size.height; ++minY)
+        {
+            for (int x = 0; !hasData && x < structuralLayer.Size.width; ++x)
+            {
+                hasData = structuralLayer[{x, minY}].Material != nullptr;
+            }
+
+            if (hasData)
+                break;
+        }
+    }
+
+    int maxY;
+    {
+        bool hasData = false;
+        for (maxY = structuralLayer.Size.height - 1; !hasData && maxY > minY; --maxY)
+        {
+            for (int x = 0; !hasData && x < structuralLayer.Size.width; ++x)
+            {
+                hasData = structuralLayer[{x, maxY}].Material != nullptr;
+            }
+
+            if (hasData)
+                break;
+        }
+    }
+
+    int minX;
+    {
+        bool hasData = false;
+        for (minX = 0; minX < structuralLayer.Size.width; ++minX)
+        {
+            for (int y = 0; !hasData && y < structuralLayer.Size.height; ++y)
+            {
+                hasData = structuralLayer[{minX, y}].Material != nullptr;
+            }
+
+            if (hasData)
+                break;
+        }
+    }
+
+    int maxX;
+    {
+        bool hasData = false;
+        for (maxX = structuralLayer.Size.width - 1; maxX > minX; --maxX)
+        {
+            for (int y = 0; !hasData && y < structuralLayer.Size.height; ++y)
+            {
+                hasData = structuralLayer[{maxX, y}].Material != nullptr;
+            }
+
+            if (hasData)
+                break;
+        }
+    }
+
+    assert(minY <= structuralLayer.Size.height && maxY >= 0 && minX <= structuralLayer.Size.width && maxX >= 0);
+
+    ImageSize const trimmedSize = ImageSize(
+        std::max(maxX - minX + 1, 0),
+        std::max(maxY - minY + 1, 0));
+
+    //
     // Make preview
     //
 
-    RgbaImageData previewRawData = RgbaImageData(ImageSize(structuralLayer.Size.width, structuralLayer.Size.height));
+    RgbaImageData previewRawData = RgbaImageData(trimmedSize);
 
-    std::transform(
-        structuralLayer.Data.get(),
-        structuralLayer.Data.get() + structuralLayer.Size.GetLinearSize(),
-        previewRawData.Data.get(),
-        [](StructuralElement const & element) -> rgbaColor
+    for (int y = 0; y < trimmedSize.height; ++y)
+    {
+        for (int x = 0; x < trimmedSize.width; ++x)
         {
-            if (element.Material != nullptr)
-                return rgbaColor(element.Material->RenderColor, 255);
-            else
-                return rgbaColor(EmptyMaterialColorKey, 255);
-        });
+            StructuralElement const & element = structuralLayer[{x + minX, y + minY}];
+            previewRawData[{x, y}] = element.Material != nullptr
+                ? rgbaColor(element.Material->RenderColor, 255)
+                : rgbaColor(EmptyMaterialColorKey, 255);
+        }
+    }
 
     //
     // Append preview

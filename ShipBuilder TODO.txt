@@ -114,9 +114,9 @@ https://gamejolt.com/x/permalink/comment/11511458
 				+ As a section, made of sub-sections
 				+ Section is checked for presence before use, and sub-sections are checked for presence before constructing ShipFoundamentals
 				+ Unit tests
-			= Preview
-				- Trim in-place
-				- Make sure image trimming happens only for legacy
+			+ Preview
+				+ Trim in-place
+				+ Make sure image trimming happens only for legacy
 			= Structural layer
 				+ RLE with variable-length "u 16-bit" count encoding
 					+ DeSerializationBuffer::Read/Write VarUInt16

@@ -7,6 +7,7 @@
 #include "ImageFileTools.h"
 
 #include <GameCore/GameException.h>
+#include <GameCore/ImageTools.h>
 #include <GameCore/Utils.h>
 
 #include <memory>
@@ -95,9 +96,12 @@ RgbaImageData ShipLegacyFormatDeSerializer::LoadPreviewImage(
     std::filesystem::path const & previewFilePath,
     ImageSize const & maxSize)
 {
-    return ImageFileTools::LoadImageRgbaAndResize(
+    RgbaImageData previewImage = ImageFileTools::LoadImageRgbaAndResize(
         previewFilePath,
         maxSize);
+
+    // Trim
+    return ImageTools::TrimWhiteOrTransparent(std::move(previewImage));
 }
 
 ///////////////////////////////////////////////////////

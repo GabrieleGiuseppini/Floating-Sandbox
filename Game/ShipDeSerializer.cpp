@@ -10,7 +10,6 @@
 #include "ShipLegacyFormatDeSerializer.h"
 
 #include <GameCore/GameException.h>
-#include <GameCore/ImageTools.h>
 
 #include <memory>
 
@@ -65,12 +64,9 @@ RgbaImageData ShipDeSerializer::LoadShipPreviewImage(
     ShipPreviewData const & previewData,
     ImageSize const & maxSize)
 {
-    RgbaImageData previewImage = IsShipDefinitionFile(previewData.PreviewFilePath)
+    return IsShipDefinitionFile(previewData.PreviewFilePath)
         ? ShipDefinitionFormatDeSerializer::LoadPreviewImage(previewData.PreviewFilePath, maxSize)
         : ShipLegacyFormatDeSerializer::LoadPreviewImage(previewData.PreviewFilePath, maxSize);
-
-    // Trim
-    return ImageTools::TrimWhiteOrTransparent(std::move(previewImage));
 }
 
 void ShipDeSerializer::SaveShip(
