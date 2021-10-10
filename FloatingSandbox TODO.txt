@@ -1623,6 +1623,12 @@ Render:
 		- How to Guide
 
 - UI:
+	- Automatic contrast for the cursor, e.g. for when it's at depth
+
+	- Searchbar for settings
+
+	- Settings window: would be better to just have the settings properly minimize and have it be visible either when you use the button or search for it in the taskbar,
+	  rather than the current annoying behavior
 
 	- Also "clock time since last reload" would be helpful
 		- Add two Game Preferences checkboxes to select each

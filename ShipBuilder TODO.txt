@@ -1,114 +1,4 @@
-https://gamejolt.com/x/permalink/comment/11457002
-https://gamejolt.com/x/permalink/comment/11511458
 
-= New/Load/Save Ship
-	+ Move ShipLoadDialog/etc. under UILib
-		+ Test from game:
-			+ Last directory is added to both ComboBox and UIPreferences
-				+ Yes when loaded
-				+ No when not loaded
-			+ Show ship descriptions:
-				+ Works in dialog
-				+ Works at load
-				+ User may override
-		+ Second home button
-	+ New
-		+ UI: menu + button
-		+ Always enabled
-		+ Asks user if model dirty
-		+ Invoke DoNewShip()
-	+ Load
-		+ UI: menu + button
-		+ Always enabled
-		+ Asks user if model dirty
-		+ Open file load dialog
-		+ If OK: invoke DoLoadShip(selected filename)
-		+ TEST: in Game, 2 dialogs
-	+ Save:
-		+ UI: menu + button 
-		+ Only enabled when dirty
-		+ if !mCurrentFilename: invokes SaveAs(); else: invokes private SaveShip(mCurrentFilename)
-	+ SaveAs:
-		+ UI: menu + button
-		+ Only enabled when dirty
-		+ Open file save dialog for .shp2
-		+ If OK:
-			+ Invoke private SaveShip(selected filename)
-		
-	+ DoNewShip:
-		+ Do
-	+ DoLoadShip:
-		+ Do
-		+ Store filename as mCurrentFilename
-	= DoSaveShip:
-		+ Ship Preview workflow:
-			+ ShipDeSerializer: split out legacy into own class
-			+ ShipDeSerializer: LoadShipPreviewData() and LoadShipPreviewImage(ShipPreviewData const &)
-			+ ShipPreview ("ShipPreviewData") from .shp2 contains .shp2 filepath itself
-			+ ShipDeSerializer::LoadShipPreviewImage: if type is shp2, call ShipDefinitionFormatDeSerializer::LoadPreviewImage(filepath)
-				+ else: type can only be png (throw if not) - call legacy LoadPreviewImage() which loads image
-				+ Then resize and trim (like it was @ ShipPreview)
-			+ .shp2 format: preview is own tag, image chunk saved at ship save time - but only if there's no texture
-				+ Order of chunks:
-					+ If has texture: metadata, texture, ...
-					+ Else: metadata, preview, ...
-				+ Do LoadPreview
-					+ Have one single main loop for the three load calls
-		= ShipDeSerializer::Save(ShipDefinition const &)
-			+ Rearc exceptions:
-				+ GameCore/UserGameException
-					+ With enum
-					+ Exception contains enum and string array
-					+ LocalizationManager::MakeErrorMessage(LocalizableGameException const &)
-						+ Formats
-					+ Catch-&-localize @ callers
-						+ Game
-						+ ShipBuilder
-						+ Preview
-				+ Individual methods throw directly LocalizableGameException, no post-processing
-					+ DeSerializationContext: private class with file FS version, stored as pair of integers
-						+ Nuke MajorMinorVersion class
-				+ Unit tests for all exceptions
-					+ Header
-					+ Unrecognized material in structural layer
-				+ Test all w/localized strings
-					+ Game
-					+ ShipBuilder
-			+ Header
-			+ Metadata
-			+ Ship size section
-				+ And no size at buffers
-			+ Replace ShipSize with struct ("ShipAttributes" or "ShipFoundamentals") having ship size, hasTexture, hasElectricals, FS version
-				+ As a section, made of sub-sections
-				+ Section is checked for presence before use, and sub-sections are checked for presence before constructing ShipFoundamentals
-				+ Unit tests
-			+ Preview
-				+ Trim in-place
-				+ Make sure image trimming happens only for legacy
-			+ Structural layer
-				+ RLE with variable-length "u 16-bit" count encoding
-					+ DeSerializationBuffer::Read/Write VarUInt16
-					+ Orig: 216Kb
-					+ Compressed: 30.8Kb
-				+ Read
-					+ Then complete unit tests
-			- Electrical layer
-				- Pure buffer
-				- Review MaterialDatabase's electrical material maps: make one map
-			- Ropes layer
-				- Pure buffer
-			- Texture layer
-				- Using DevIL lump, see https://github.com/DentonW/DevIL/blob/master/DevIL/src-IL/src/il_io.cpp#L2490
-			- PhysicsData
-			- AutoTexturizationSettings
-		+ Store filename as mCurrentFilename
-		- Also do load for .shp2
-			+ ShipLoadDialog wildcards
-			- ShipDeSerializer::Load():
-				+ Header: check (via helper)
-				+ Metadata
-				- ...
-				+ Verify tail
 
 = Click-And-Draw use case:
 	= Pencil tool (*)
@@ -155,9 +45,9 @@ https://gamejolt.com/x/permalink/comment/11511458
 				+ Recalc derived
 			+ Mark layer as dirty
 			+ Notify IUserInterface of dirtyness
-		- Fill-in mouse pointer jumps
-			- Function that takes two integral endpoints and calculates line path, at GameGeometry.h
-				- UnitTests
+		= Fill-in mouse pointer jumps
+			+ Function that takes two integral endpoints and calculates line path, at GameGeometry.h
+				+ UnitTests
 			- Use it at PencilTool::CheckEdit:
 				- EnagementData has optional<ShipSpaceCoords> previousEngagement
 				- When we leave CheckEdit because out of bounds, we reset previousEngagement
@@ -171,29 +61,27 @@ https://gamejolt.com/x/permalink/comment/11511458
 			- Passing to ModelController is almost all done; it's the preview that we need to figure out: do we want a preview?
 				- May be we say that the Pencil tool has no size, and the Brush tool has a size instead?
 				- Or, we just don't do a preview for Pencil?
-	- Line tool
-		- Previews (*)
-	- Eraser tool
 	- Strategy for other tools' enums - to make it work for now
 
-- Make sure loading a ship w/legacy electricals makes up an electrical layer
+- Complete Load/Save/Model
+	- Load/Save each of:
+		- Electrical layer
+			- Pure buffer
+			- Review MaterialDatabase's electrical material maps: make one map
+		- Ropes layer
+			- Pure buffer
+		- Texture layer
+			- Using DevIL lump, see https://github.com/DentonW/DevIL/blob/master/DevIL/src-IL/src/il_io.cpp#L2490
+		- PhysicsData
+		- AutoTexturizationSettings
+	- Tests:
+		- Make sure loading a ship w/legacy electricals makes up an electrical layer, and saving it saves the electricals
 
 - Add some shading around ShipSpace canvas
 	- TODO
 
-- Previews:
-	- Spec:
-		- Tools like line, square, paste, translate, etc. draw a preview of how the Model looks like if the tool is "confirmed"
-		- Workflow is:
-			- Left down: start
-			- Move: each movement shows "as if" it were confirmed there
-			- One of these:
-				- Confirm: same as last shown
-				- Abort (ESC): back to original
-	- Impl:
-		- TODOHERE
-
 - Controller/Tools/WorkSpace/Mouse canvas strategy:
+	- TODO: see if a new strategy is really needed - isn't current strategy acceptable?
 	- Spec:
 		- When mouse is not down, cursor changes depending on whether or not mouse is inside rect
 		- At left down, tool "captures mouse" and from that moment:
@@ -205,10 +93,6 @@ https://gamejolt.com/x/permalink/comment/11511458
 		  transforming mouse coords into work space coords
 	- Impl:
 		- TODOHERE
-
-- Resize workflow:
-	+ Button - in Ship Settings panel, slightly separated from the File buttons
-	- Click -> Dialog for Canvas Centering/Clipping -> Controller -> ...TODO...
 
 - Import/Export:
 	- Structural:
@@ -232,8 +116,44 @@ https://gamejolt.com/x/permalink/comment/11511458
 			- .shp, .shp2 (load whole and throw away)
 		- No export (just useless at this moment)
 
+- Send for testing
+
+- Metadata edit workflow:
+	- ShipPropertiesEditDialog
+	- Dialog::Open takes Controller &, Metadata const &, PhysicsProperties const &, etc.
+		- Populates all controls
+		- Flags each control as being not dirty
+	- Editing a field flags it as being dirty
+	- At OK:
+		- For each of Metadata, PhysicsProperties, etc:
+			- Check if any of this area's controls are dirty; if so:
+				- Construct new Metadata, PhysicsProperties, etc.
+				- Call Controller::ReplaceMetadata(&&), etc.
+					- Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
+
+- Resize workflow:
+	+ Button - in Ship Settings panel, slightly separated from the File buttons
+	- Click -> Dialog for Canvas Centering/Clipping -> Controller -> ...TODO...
+
+- Other tools:
+	- Line tool
+		- Previews (*)
+	- Eraser tool
+
 
 - Undo stack visualization: underneath toolbar?
+
+- Previews:
+	- Spec:
+		- Tools like line, square, paste, translate, etc. draw a preview of how the Model looks like if the tool is "confirmed"
+		- Workflow is:
+			- Left down: start
+			- Move: each movement shows "as if" it were confirmed there
+			- Then:
+				- Confirm: same as last shown
+				- Abort (ESC): back to original
+	- Impl:
+		- TODOHERE
 
 - Materials palette:
 	- Material descriptions
@@ -466,6 +386,7 @@ https://gamejolt.com/x/permalink/comment/11511458
 		- How to share state changes? 
 			- FullScreenManager class, shared_ptr in both
 			- Looked at at each Game<->ShipBuilder switch by receiver
+	- Windows installer (or ShipBuilder::MainFrame cctor): on Windows, register shell icon handler for .shp2 files
 	- TO-SPEC:
 		- What to do with background music when switching back and forth?
 
@@ -601,6 +522,106 @@ DONE
 		+ If changed: follow same path as if directory changed
 		+ Also: make snapshot as above, and then also passes it to thread as replacement of thread's first step
 			+ Move ShipPreviewDirectoryManager::EnumerateShipFilePaths to here basically, improving it as we may avoid storing files if not ship files
+
++ New/Load/Save Ship
+	+ Move ShipLoadDialog/etc. under UILib
+		+ Test from game:
+			+ Last directory is added to both ComboBox and UIPreferences
+				+ Yes when loaded
+				+ No when not loaded
+			+ Show ship descriptions:
+				+ Works in dialog
+				+ Works at load
+				+ User may override
+		+ Second home button
+	+ New
+		+ UI: menu + button
+		+ Always enabled
+		+ Asks user if model dirty
+		+ Invoke DoNewShip()
+	+ Load
+		+ UI: menu + button
+		+ Always enabled
+		+ Asks user if model dirty
+		+ Open file load dialog
+		+ If OK: invoke DoLoadShip(selected filename)
+		+ TEST: in Game, 2 dialogs
+	+ Save:
+		+ UI: menu + button 
+		+ Only enabled when dirty
+		+ if !mCurrentFilename: invokes SaveAs(); else: invokes private SaveShip(mCurrentFilename)
+	+ SaveAs:
+		+ UI: menu + button
+		+ Only enabled when dirty
+		+ Open file save dialog for .shp2
+		+ If OK:
+			+ Invoke private SaveShip(selected filename)
+		
+	+ DoNewShip:
+		+ Do
+	+ DoLoadShip:
+		+ Do
+		+ Store filename as mCurrentFilename
+	+ DoSaveShip:
+		+ Ship Preview workflow:
+			+ ShipDeSerializer: split out legacy into own class
+			+ ShipDeSerializer: LoadShipPreviewData() and LoadShipPreviewImage(ShipPreviewData const &)
+			+ ShipPreview ("ShipPreviewData") from .shp2 contains .shp2 filepath itself
+			+ ShipDeSerializer::LoadShipPreviewImage: if type is shp2, call ShipDefinitionFormatDeSerializer::LoadPreviewImage(filepath)
+				+ else: type can only be png (throw if not) - call legacy LoadPreviewImage() which loads image
+				+ Then resize and trim (like it was @ ShipPreview)
+			+ .shp2 format: preview is own tag, image chunk saved at ship save time - but only if there's no texture
+				+ Order of chunks:
+					+ If has texture: metadata, texture, ...
+					+ Else: metadata, preview, ...
+				+ Do LoadPreview
+					+ Have one single main loop for the three load calls
+		+ ShipDeSerializer::Save(ShipDefinition const &)
+			+ Rearc exceptions:
+				+ GameCore/UserGameException
+					+ With enum
+					+ Exception contains enum and string array
+					+ LocalizationManager::MakeErrorMessage(LocalizableGameException const &)
+						+ Formats
+					+ Catch-&-localize @ callers
+						+ Game
+						+ ShipBuilder
+						+ Preview
+				+ Individual methods throw directly LocalizableGameException, no post-processing
+					+ DeSerializationContext: private class with file FS version, stored as pair of integers
+						+ Nuke MajorMinorVersion class
+				+ Unit tests for all exceptions
+					+ Header
+					+ Unrecognized material in structural layer
+				+ Test all w/localized strings
+					+ Game
+					+ ShipBuilder
+			+ Header
+			+ Metadata
+			+ Ship size section
+				+ And no size at buffers
+			+ Replace ShipSize with struct ("ShipAttributes" or "ShipFoundamentals") having ship size, hasTexture, hasElectricals, FS version
+				+ As a section, made of sub-sections
+				+ Section is checked for presence before use, and sub-sections are checked for presence before constructing ShipFoundamentals
+				+ Unit tests
+			+ Preview
+				+ Trim in-place
+				+ Make sure image trimming happens only for legacy
+			+ Structural layer
+				+ RLE with variable-length "u 16-bit" count encoding
+					+ DeSerializationBuffer::Read/Write VarUInt16
+					+ Orig: 216Kb
+					+ Compressed: 30.8Kb
+				+ Read
+					+ Then complete unit tests
+		+ Store filename as mCurrentFilename
+		+ Also do load for .shp2
+			+ ShipLoadDialog wildcards
+			+ ShipDeSerializer::Load():
+				+ Header: check (via helper)
+				+ Metadata
+				+ ...
+				+ Verify tail
 
 ----------------------
 
