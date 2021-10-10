@@ -108,7 +108,7 @@ inline bool IsPointInTriangle(
  * through integral coordinates.
  */
 template<typename _TIntegralTag, typename TVisitor>
-inline void CalculateLinePath(
+inline void GenerateLinePath(
     _IntegralCoordinates<_TIntegralTag> const & startPoint,
     _IntegralCoordinates<_TIntegralTag> const & endPoint,
     TVisitor const & visitor)

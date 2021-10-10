@@ -45,18 +45,15 @@
 				+ Recalc derived
 			+ Mark layer as dirty
 			+ Notify IUserInterface of dirtyness
-		= Fill-in mouse pointer jumps
+		+ Fill-in mouse pointer jumps
 			+ Function that takes two integral endpoints and calculates line path, at GameGeometry.h
 				+ UnitTests
-			- Use it at PencilTool::CheckEdit:
-				- EnagementData has optional<ShipSpaceCoords> previousEngagement
-				- When we leave CheckEdit because out of bounds, we reset previousEngagement
-				- At application:
-					- If we have previousEngagement:
-						- Do RegionFill along the path
-					- Else:
-						- Do as now (RegionFill)
-				- After we apply the edit, we set previousEngagement
+			+ Use it at PencilTool::CheckEdit:
+				+ EnagementData has optional<ShipSpaceCoords> previousEngagement
+				+ When we leave CheckEdit because out of bounds, we reset previousEngagement
+				+ At application:
+					+ Do RegionFill along the path
+				+ After we apply the edit, we set previousEngagement
 		- Tool settings: size
 			- Passing to ModelController is almost all done; it's the preview that we need to figure out: do we want a preview?
 				- May be we say that the Pencil tool has no size, and the Brush tool has a size instead?

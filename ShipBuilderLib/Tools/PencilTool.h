@@ -69,6 +69,9 @@ private:
         // Dirty state
         Model::DirtyState OriginalDirtyState;
 
+        // Position of previous engagement (when this is second, third, etc.)
+        std::optional<ShipSpaceCoordinates> PreviousEngagementPosition;
+
         EngagementData(
             MaterialPlaneType plane,
             std::unique_ptr<typename LayerTypeTraits<TLayer>::buffer_type> && originalRegionClone,
@@ -78,6 +81,7 @@ private:
             , OriginalRegionClone(std::move(originalRegionClone))
             , EditRegion(initialPosition)
             , OriginalDirtyState(dirtyState)
+            , PreviousEngagementPosition()
         {}
     };
 

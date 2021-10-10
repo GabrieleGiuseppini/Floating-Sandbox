@@ -123,11 +123,11 @@ TEST_P(IsPointInTriangleTest, PositiveAndNegativeTests)
     EXPECT_EQ(result, std::get<4>(GetParam()));
 }
 
-TEST(GeometryTests, CalculateLinePath_Distance0)
+TEST(GeometryTests, GenerateLinePath_Distance0)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    CalculateLinePath(
+    GenerateLinePath(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(3, 5),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -139,11 +139,11 @@ TEST(GeometryTests, CalculateLinePath_Distance0)
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
 }
 
-TEST(GeometryTests, CalculateLinePath_Distance1)
+TEST(GeometryTests, GenerateLinePath_Distance1)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    CalculateLinePath(
+    GenerateLinePath(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(4, 6),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -156,11 +156,11 @@ TEST(GeometryTests, CalculateLinePath_Distance1)
     EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(4, 6));
 }
 
-TEST(GeometryTests, CalculateLinePath_Distance2_Diagonal)
+TEST(GeometryTests, GenerateLinePath_Distance2_Diagonal)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    CalculateLinePath(
+    GenerateLinePath(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(5, 7),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -174,11 +174,11 @@ TEST(GeometryTests, CalculateLinePath_Distance2_Diagonal)
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(5, 7));
 }
 
-TEST(GeometryTests, CalculateLinePath_Distance2_VerticalDown)
+TEST(GeometryTests, GenerateLinePath_Distance2_VerticalDown)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    CalculateLinePath(
+    GenerateLinePath(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(3, 7),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -192,11 +192,11 @@ TEST(GeometryTests, CalculateLinePath_Distance2_VerticalDown)
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(3, 7));
 }
 
-TEST(GeometryTests, CalculateLinePath_Distance2_VerticalUp)
+TEST(GeometryTests, GenerateLinePath_Distance2_VerticalUp)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    CalculateLinePath(
+    GenerateLinePath(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(3, 3),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -210,11 +210,11 @@ TEST(GeometryTests, CalculateLinePath_Distance2_VerticalUp)
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(3, 3));
 }
 
-TEST(GeometryTests, CalculateLinePath_Distance2_HorizontalLeft)
+TEST(GeometryTests, GenerateLinePath_Distance2_HorizontalLeft)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    CalculateLinePath(
+    GenerateLinePath(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(1, 5),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -228,11 +228,11 @@ TEST(GeometryTests, CalculateLinePath_Distance2_HorizontalLeft)
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(1, 5));
 }
 
-TEST(GeometryTests, CalculateLinePath_Distance2_HorizontalRight)
+TEST(GeometryTests, GenerateLinePath_Distance2_HorizontalRight)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    CalculateLinePath(
+    GenerateLinePath(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(5, 5),
         [&generatedCoordinates](IntegralCoordinates const & pt)

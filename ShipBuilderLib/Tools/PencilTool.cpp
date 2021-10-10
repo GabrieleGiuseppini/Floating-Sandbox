@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "PencilTool.h"
 
+#include <GameCore/GameGeometry.h>
+
 #include <type_traits>
 
 namespace ShipBuilder {
@@ -191,6 +193,10 @@ void PencilTool<TLayer>::CheckEdit(InputState const & inputState)
     if (!coords.IsInSize(mModelController.GetModel().GetShipSize()))
     {
         // Outside ship, ignore
+
+        // Reset previous engagement
+        mEngagementData->PreviousEngagementPosition.reset();
+
         return;
     }
 
@@ -198,33 +204,49 @@ void PencilTool<TLayer>::CheckEdit(InputState const & inputState)
     // Apply edit
     //
 
-    if constexpr (TLayer == LayerType::Structural)
-    {
-        mModelController.StructuralRegionFill(
-            mEngagementData->Plane == MaterialPlaneType::Foreground
-            ? mWorkbenchState.GetStructuralForegroundMaterial()
-            : mWorkbenchState.GetStructuralBackgroundMaterial(),
-            { coords, ShipSpaceSize(1, 1) });
-    }
-    else
-    {
-        static_assert(TLayer == LayerType::Electrical);
+    assert(!mEngagementData->PreviousEngagementPosition.has_value() || mEngagementData->PreviousEngagementPosition->IsInSize(mModelController.GetModel().GetShipSize()));
+    assert(coords.IsInSize(mModelController.GetModel().GetShipSize()));
 
-        mModelController.ElectricalRegionFill(
-            mEngagementData->Plane == MaterialPlaneType::Foreground
-            ? mWorkbenchState.GetElectricalForegroundMaterial()
-            : mWorkbenchState.GetElectricalBackgroundMaterial(),
-            { coords, ShipSpaceSize(1, 1) });
-    }
+    GenerateLinePath(
+        mEngagementData->PreviousEngagementPosition.has_value()
+            ? *mEngagementData->PreviousEngagementPosition
+            : coords,
+        coords,
+        [this](ShipSpaceCoordinates const & pos)
+        {
+            assert(pos.IsInSize(mModelController.GetModel().GetShipSize()));
 
-    // Update edit region
-    mEngagementData->EditRegion.UpdateWith(coords);
+            if constexpr (TLayer == LayerType::Structural)
+            {
+                mModelController.StructuralRegionFill(
+                    mEngagementData->Plane == MaterialPlaneType::Foreground
+                    ? mWorkbenchState.GetStructuralForegroundMaterial()
+                    : mWorkbenchState.GetStructuralBackgroundMaterial(),
+                    { pos, ShipSpaceSize(1, 1) });
+            }
+            else
+            {
+                static_assert(TLayer == LayerType::Electrical);
+
+                mModelController.ElectricalRegionFill(
+                    mEngagementData->Plane == MaterialPlaneType::Foreground
+                    ? mWorkbenchState.GetElectricalForegroundMaterial()
+                    : mWorkbenchState.GetElectricalBackgroundMaterial(),
+                    { pos, ShipSpaceSize(1, 1) });
+            }
+
+            // Update edit region
+            mEngagementData->EditRegion.UpdateWith(pos);
+        });
 
     // Mark layer as dirty
     SetLayerDirty(TLayer);
 
     // Force view refresh
     mUserInterface.RefreshView();
+
+    // Update previous engagement
+    mEngagementData->PreviousEngagementPosition = coords;
 }
 
 }
