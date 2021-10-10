@@ -127,7 +127,6 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
         throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
     }
 
-
     return ShipDefinition(
         shipAttributes->ShipSize,
         std::move(*structuralLayer),
@@ -223,7 +222,7 @@ RgbaImageData ShipDefinitionFormatDeSerializer::LoadPreviewImage(
                     ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
                     previewImage.emplace(ReadPngImageAndResize(buffer, maxSize));
 
-                    LogMessage("Gotten preview from texture layer");
+                    LogMessage("ShipDefinitionFormatDeSerializer: returning preview from texture layer section");
 
                     break;
                 }
@@ -233,7 +232,7 @@ RgbaImageData ShipDefinitionFormatDeSerializer::LoadPreviewImage(
                     ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
                     previewImage.emplace(ReadPngImageAndResize(buffer, maxSize));
 
-                    LogMessage("Gotten preview from preview");
+                    LogMessage("ShipDefinitionFormatDeSerializer: returning preview from preview section");
 
                     break;
                 }

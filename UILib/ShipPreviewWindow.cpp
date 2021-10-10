@@ -44,7 +44,7 @@ ShipPreviewWindow::ShipPreviewWindow(
     , mPollQueueTimer()
     , mInfoTiles()
     , mSelectedInfoTileIndex()
-    , mCurrentlyCompletedDirectory()
+    , mCurrentlyCompletedDirectorySnapshot()
     //
     , mPreviewThread()
     , mPanelToThreadMessage()
@@ -135,9 +135,23 @@ void ShipPreviewWindow::SetDirectory(std::filesystem::path const & directoryPath
 {
     LogMessage("ShipPreviewWindow::SetDirectory(", directoryPath.string(), ")");
 
-    // Check if different than current
-    if (directoryPath != mCurrentlyCompletedDirectory)
+    // Build set of files
+    auto directoryFiles = EnumerateShipFiles(directoryPath);
+
+    // Check if we're moving to a new directory, or if not, if there's
+    // a change in the current directory
+    if (!mCurrentlyCompletedDirectorySnapshot.has_value()
+        || directoryPath != mCurrentlyCompletedDirectorySnapshot->DirectoryPath
+        || mCurrentlyCompletedDirectorySnapshot->Files != directoryFiles)
     {
+        LogMessage("ShipPreviewWindow::SetDirectory(", directoryPath.string(), "): change detected");
+
+        //
+        // Create directory snapshot
+        //
+
+        DirectorySnapshot directorySnapshot = DirectorySnapshot(directoryPath, std::move(directoryFiles));
+
         //
         // Stop thread's scan (if thread is running)
         //
@@ -161,9 +175,9 @@ void ShipPreviewWindow::SetDirectory(std::filesystem::path const & directoryPath
                 mThreadToPanelScanInterruptAckEvent.wait(
                     lock,
                     [this]()
-                    {
-                        return mThreadToPanelScanInterruptAck;
-                    });
+                {
+                    return mThreadToPanelScanInterruptAck;
+                });
 
                 lock.unlock();
             }
@@ -173,19 +187,25 @@ void ShipPreviewWindow::SetDirectory(std::filesystem::path const & directoryPath
         // Change directory
         //
 
-        mCurrentlyCompletedDirectory.reset();
+        mCurrentlyCompletedDirectorySnapshot.reset();
 
-        // Clear state
-        mInfoTiles.clear();
+        // Reset info tiles
+        ResetInfoTiles(directorySnapshot);
+
+        // Clear selection
         mSelectedInfoTileIndex.reset();
 
         // Start thread's scan (if thread is not running now, it'll pick it up when it starts)
         {
             std::lock_guard<std::mutex> lock(mPanelToThreadMessageMutex);
 
-            mPanelToThreadMessage.reset(new PanelToThreadMessage(PanelToThreadMessage::MakeSetDirectoryMessage(directoryPath)));
+            mPanelToThreadMessage.reset(new PanelToThreadMessage(PanelToThreadMessage::MakeSetDirectoryMessage(std::move(directorySnapshot))));
             mPanelToThreadMessageEvent.notify_one();
         }
+    }
+    else
+    {
+        LogMessage("ShipPreviewWindow::SetDirectory(", directoryPath.string(), "): no change detected");
     }
 }
 
@@ -357,35 +377,6 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
         switch (message->GetMessageType())
         {
-            case ThreadToPanelMessage::MessageType::DirScanCompleted:
-            {
-                LogMessage("ShipPreviewPanel::Poll: Processing DirScanCompleted...");
-
-                mInfoTiles.clear();
-                mInfoTiles.reserve(message->GetScannedShipFilepaths().size());
-
-                for (size_t s = 0; s < message->GetScannedShipFilepaths().size(); ++s)
-                {
-                    mInfoTiles.emplace_back(
-                        mWaitBitmap,
-                        message->GetScannedShipFilepaths()[s]);
-
-                    // Add ship filename to search map
-                    mInfoTiles[s].SearchStrings.push_back(
-                        Utils::ToLower(
-                            message->GetScannedShipFilepaths()[s].filename().string()));
-                }
-
-                // Recalculate geometry
-                RecalculateGeometry(mClientSize, static_cast<int>(mInfoTiles.size()));
-
-                LogMessage("ShipPreviewPanel::Poll: ...DirScanCompleted processed.");
-
-                doRefresh = true;
-
-                break;
-            }
-
             case ThreadToPanelMessage::MessageType::DirScanError:
             {
                 throw GameException(message->GetErrorMessage());
@@ -481,10 +472,10 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
             case ThreadToPanelMessage::MessageType::PreviewCompleted:
             {
-                LogMessage("ShipPreviewPanel::OnPollQueueTimer: PreviewCompleted for ", message->GetScannedDirectoryPath().string());
+                LogMessage("ShipPreviewPanel::OnPollQueueTimer: PreviewCompleted for ", message->GetDirectorySnapshot().DirectoryPath.string());
 
-                // Remember the current directory, now that it's complete
-                mCurrentlyCompletedDirectory = message->GetScannedDirectoryPath();
+                // Remember the current snapshot, now that it's complete
+                mCurrentlyCompletedDirectorySnapshot.emplace(std::move(message->GetDirectorySnapshot()));
 
                 break;
             }
@@ -541,6 +532,80 @@ void ShipPreviewWindow::Choose(size_t infoTileIndex)
         mInfoTiles[infoTileIndex].ShipFilepath);
 
     ProcessWindowEvent(event);
+}
+
+void ShipPreviewWindow::ResetInfoTiles(DirectorySnapshot const & directorySnapshot)
+{
+    LogMessage("TODOTEST: ShipPreviewPanel::ResetInfoTiles start...");
+
+    mInfoTiles.clear();
+    mInfoTiles.reserve(directorySnapshot.Files.size());
+
+    for (auto const & fileEntry : directorySnapshot.Files)
+    {
+        mInfoTiles.emplace_back(
+            mWaitBitmap,
+            fileEntry.first);
+
+        // Add ship filename to search map
+        mInfoTiles.back().SearchStrings.push_back(
+            Utils::ToLower(
+                fileEntry.first.filename().string()));
+    }
+
+    // Recalculate geometry
+    RecalculateGeometry(mClientSize, static_cast<int>(mInfoTiles.size()));
+
+    LogMessage("TODOTEST: ShipPreviewPanel::ResetInfoTiles ...end.");
+
+    Refresh();
+}
+
+std::map<std::filesystem::path, std::filesystem::file_time_type> ShipPreviewWindow::EnumerateShipFiles(std::filesystem::path const & directoryPath)
+{
+    std::map<std::filesystem::path, std::filesystem::file_time_type> map;
+
+    LogMessage("ShipPreviewWindow::EnumerateShipFiles(", directoryPath.string(), "): start...");
+
+    // Be robust to users messing up
+    if (std::filesystem::exists(directoryPath)
+        && std::filesystem::is_directory(directoryPath))
+    {
+        auto directoryIterator = std::filesystem::directory_iterator(
+            directoryPath,
+            std::filesystem::directory_options::skip_permission_denied | std::filesystem::directory_options::follow_directory_symlink);
+
+        for (auto const & entryIt : directoryIterator)
+        {
+            try
+            {
+                auto const entryFilepath = entryIt.path();
+
+                if (std::filesystem::is_regular_file(entryFilepath)
+                    && ShipDeSerializer::IsAnyShipDefinitionFile(entryFilepath))
+                {
+                    // Make sure the filename may be converted to the local codepage
+                    // (see https://developercommunity.visualstudio.com/content/problem/721120/stdfilesystempathgeneric-string-throws-an-exceptio.html)
+                    std::string _ = entryFilepath.filename().string();
+                    (void)_;
+
+                    map.try_emplace(
+                        entryFilepath,
+                        std::filesystem::last_write_time(entryFilepath));
+                }
+            }
+            catch (std::exception const & ex)
+            {
+                LogMessage("Ignoring a file directory entry due to error: ", ex.what());
+
+                // Ignore this file
+            }
+        }
+    }
+
+    LogMessage("ShipPreviewWindow::EnumerateShipFiles(", directoryPath.string(), "): ...found ", map.size(), " ship files.");
+
+    return map;
 }
 
 wxBitmap ShipPreviewWindow::MakeBitmap(RgbaImageData const & shipPreviewImage) const
@@ -919,7 +984,7 @@ void ShipPreviewWindow::RunPreviewThread()
 
             try
             {
-                ScanDirectory(message->GetDirectoryPath());
+                ScanDirectory(std::move(message->GetDirectorySnapshot()));
             }
             catch (std::exception const & ex)
             {
@@ -955,27 +1020,18 @@ void ShipPreviewWindow::RunPreviewThread()
     LogMessage("PreviewThread::Exit");
 }
 
-void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPath)
+void ShipPreviewWindow::ScanDirectory(DirectorySnapshot && directorySnapshot)
 {
-    LogMessage("PreviewThread::ScanDirectory(", directoryPath.string(), "): processing...");
+    LogMessage("PreviewThread::ScanDirectory(", directorySnapshot.DirectoryPath.string(), "): processing...");
 
-    auto previewDirectoryManager = ShipPreviewDirectoryManager::Create(directoryPath);
-
-    //
-    // Get list of ship files and fire event
-    //
-
-    std::vector<std::filesystem::path> shipFilePaths = previewDirectoryManager->EnumerateShipFilePaths();
-
-    QueueThreadToPanelMessage(
-        ThreadToPanelMessage::MakeDirScanCompletedMessage(
-            shipFilePaths));
+    auto previewDirectoryManager = ShipPreviewDirectoryManager::Create(directorySnapshot.DirectoryPath);
 
     //
     // Process all files and create previews
     //
 
-    for (size_t iShip = 0; iShip < shipFilePaths.size(); ++iShip)
+    size_t iShip = 0;
+    for (auto fileIt = directorySnapshot.Files.cbegin(); fileIt != directorySnapshot.Files.cend(); ++fileIt, ++iShip)
     {
         // Check whether we have been interrupted
         if (!!mPanelToThreadMessage)
@@ -991,7 +1047,7 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
         try
         {
             // Load preview data
-            auto shipPreviewData = ShipDeSerializer::LoadShipPreviewData(shipFilePaths[iShip]);
+            auto shipPreviewData = ShipDeSerializer::LoadShipPreviewData(fileIt->first);
 
             // Load preview image
             auto shipPreviewImage = previewDirectoryManager->LoadPreviewImage(shipPreviewData, PreviewImageSize);
@@ -1026,7 +1082,7 @@ void ShipPreviewWindow::ScanDirectory(std::filesystem::path const & directoryPat
 
     QueueThreadToPanelMessage(
         ThreadToPanelMessage::MakePreviewCompletedMessage(
-            directoryPath));
+            std::move(directorySnapshot)));
 
     //
     // Commit - with a full visit

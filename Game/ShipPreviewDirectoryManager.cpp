@@ -32,44 +32,6 @@ std::unique_ptr<ShipPreviewDirectoryManager> ShipPreviewDirectoryManager::Create
             PersistedShipPreviewImageDatabase::Load(directoryPath / DatabaseFileName, fileSystem)));
 }
 
-std::vector<std::filesystem::path> ShipPreviewDirectoryManager::EnumerateShipFilePaths() const
-{
-    std::vector<std::filesystem::path> shipFilePaths;
-
-    //
-    // Enumerate files
-    //
-
-    LogMessage("ShipPreviewDirectoryManager::EnumerateShipFilePaths(): start");
-
-    auto allFilePaths = mFileSystem->ListFiles(mDirectoryPath);
-
-    std::copy_if(
-        allFilePaths.cbegin(),
-        allFilePaths.cend(),
-        std::back_inserter(shipFilePaths),
-        [](auto const & filePath)
-        {
-            return ShipDeSerializer::IsAnyShipDefinitionFile(filePath);
-        });
-
-    //
-    // Sort by filename
-    //
-
-    std::sort(
-        shipFilePaths.begin(),
-        shipFilePaths.end(),
-        [](auto const & a, auto const & b) -> bool
-        {
-            return a.filename().compare(b.filename()) < 0;
-        });
-
-    LogMessage("ShipPreviewDirectoryManager::EnumerateShipFilePaths(): end (", shipFilePaths.size(), " files)");
-
-    return shipFilePaths;
-}
-
 RgbaImageData ShipPreviewDirectoryManager::LoadPreviewImage(
     ShipPreviewData const & previewData,
     ImageSize const & maxImageSize)

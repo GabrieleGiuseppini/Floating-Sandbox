@@ -13,9 +13,11 @@
 #include <wx/timer.h>
 #include <wx/wx.h>
 
+#include <cassert>
 #include <condition_variable>
 #include <deque>
 #include <filesystem>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -152,7 +154,6 @@ public:
     static int constexpr FilenameLabelHeight = 7;
     static int constexpr FilenameLabelBottomMargin = 0;
 
-
     //
     // InfoTile
     //
@@ -174,7 +175,6 @@ public:
 
     static int constexpr HorizontalMarginMin = 4;
     static int constexpr VerticalMargin = 8;
-
 
     //
     // Grid
@@ -222,9 +222,68 @@ private:
 
 private:
 
+    struct DirectorySnapshot
+    {
+        std::filesystem::path DirectoryPath;
+        std::map<std::filesystem::path, std::filesystem::file_time_type> Files;
+
+        DirectorySnapshot(
+            std::filesystem::path const & directoryPath,
+            std::map<std::filesystem::path, std::filesystem::file_time_type> && files)
+            : DirectoryPath(directoryPath)
+            , Files(std::move(files))
+        {}
+    };
+
+    struct InfoTile
+    {
+        wxBitmap Bitmap;
+        bool IsHD;
+        bool HasElectricals;
+        std::string OriginalDescription1;
+        std::string OriginalDescription2;
+        std::string OriginalDescription3;
+        std::filesystem::path ShipFilepath;
+
+        wxString Description1;
+        std::optional<wxSize> Description1Size;
+        wxString Description2;
+        std::optional<wxSize> Description2Size;
+        wxString Description3;
+        std::optional<wxSize> Description3Size;
+        wxString Filename;
+        std::optional<wxSize> FilenameSize;
+
+        int Col;
+        int Row;
+        wxRect RectVirtual;
+
+        std::optional<ShipMetadata> Metadata;
+
+        std::vector<std::string> SearchStrings;
+
+        InfoTile(
+            wxBitmap bitmap,
+            std::filesystem::path const & shipFilepath)
+            : Bitmap(bitmap)
+            , IsHD(false)
+            , HasElectricals(false)
+            , OriginalDescription1()
+            , OriginalDescription2()
+            , OriginalDescription3()
+            , ShipFilepath(shipFilepath)
+        {}
+    };
+
+private:
+
     void Select(size_t infoTileIndex);
 
     void Choose(size_t infoTileIndex);
+
+    void ResetInfoTiles(DirectorySnapshot const & directorySnapshot);
+
+    static std::map<std::filesystem::path, std::filesystem::file_time_type> EnumerateShipFiles(std::filesystem::path const & directoryPath);
 
     wxBitmap MakeBitmap(RgbaImageData const & shipPreviewImage) const;
 
@@ -267,46 +326,6 @@ private:
 
     std::unique_ptr<wxTimer> mPollQueueTimer;
 
-    struct InfoTile
-    {
-        wxBitmap Bitmap;
-        bool IsHD;
-        bool HasElectricals;
-        std::string OriginalDescription1;
-        std::string OriginalDescription2;
-        std::string OriginalDescription3;
-        std::filesystem::path ShipFilepath;
-
-        wxString Description1;
-        std::optional<wxSize> Description1Size;
-        wxString Description2;
-        std::optional<wxSize> Description2Size;
-        wxString Description3;
-        std::optional<wxSize> Description3Size;
-        wxString Filename;
-        std::optional<wxSize> FilenameSize;
-
-        int Col;
-        int Row;
-        wxRect RectVirtual;
-
-        std::optional<ShipMetadata> Metadata;
-
-        std::vector<std::string> SearchStrings;
-
-        InfoTile(
-            wxBitmap bitmap,
-            std::filesystem::path const & shipFilepath)
-            : Bitmap(bitmap)
-            , IsHD(false)
-            , HasElectricals(false)
-            , OriginalDescription1()
-            , OriginalDescription2()
-            , OriginalDescription3()
-            , ShipFilepath(shipFilepath)
-        {}
-    };
-
     // The info tiles currently populated
     std::vector<InfoTile> mInfoTiles;
 
@@ -314,7 +333,7 @@ private:
     std::optional<size_t> mSelectedInfoTileIndex;
 
     // When set, indicates that the preview of this directory is completed
-    std::optional<std::filesystem::path> mCurrentlyCompletedDirectory;
+    std::optional<DirectorySnapshot> mCurrentlyCompletedDirectorySnapshot;
 
     ////////////////////////////////////////////////
     // Preview Thread
@@ -323,7 +342,7 @@ private:
     std::thread mPreviewThread;
 
     void RunPreviewThread();
-    void ScanDirectory(std::filesystem::path const & directoryPath);
+    void ScanDirectory(DirectorySnapshot && directorySnapshot);
 
     //
     // Panel-to-Thread communication
@@ -340,24 +359,24 @@ private:
             Exit
         };
 
-        static PanelToThreadMessage MakeSetDirectoryMessage(std::filesystem::path const & directoryPath)
+        static PanelToThreadMessage MakeSetDirectoryMessage(DirectorySnapshot && directorySnapshot)
         {
-            return PanelToThreadMessage(MessageType::SetDirectory, directoryPath);
+            return PanelToThreadMessage(MessageType::SetDirectory, std::move(directorySnapshot));
         }
 
         static PanelToThreadMessage MakeInterruptScanMessage()
         {
-            return PanelToThreadMessage(MessageType::InterruptScan, std::filesystem::path());
+            return PanelToThreadMessage(MessageType::InterruptScan, std::nullopt);
         }
 
         static PanelToThreadMessage MakeExitMessage()
         {
-            return PanelToThreadMessage(MessageType::Exit, std::filesystem::path());
+            return PanelToThreadMessage(MessageType::Exit, std::nullopt);
         }
 
         PanelToThreadMessage(PanelToThreadMessage && other) noexcept
             : mMessageType(other.mMessageType)
-            , mDirectoryPath(std::move(other.mDirectoryPath))
+            , mDirectorySnapshot(std::move(other.mDirectorySnapshot))
         {}
 
         MessageType GetMessageType() const
@@ -365,22 +384,28 @@ private:
             return mMessageType;
         }
 
-        std::filesystem::path const & GetDirectoryPath() const
+        DirectorySnapshot const & GetDirectorySnapshot() const
         {
-            return mDirectoryPath;
+            assert(mDirectorySnapshot.has_value());
+            return *mDirectorySnapshot;
+        }
+
+        DirectorySnapshot && GetDirectorySnapshot()
+        {
+            return std::move(*mDirectorySnapshot);
         }
 
     private:
 
         PanelToThreadMessage(
             MessageType messageType,
-            std::filesystem::path const & directoryPath)
+            std::optional<DirectorySnapshot> && directorySnapshot)
             : mMessageType(messageType)
-            , mDirectoryPath(directoryPath)
+            , mDirectorySnapshot(std::move(directorySnapshot))
         {}
 
         MessageType const mMessageType;
-        std::filesystem::path mDirectoryPath;
+        std::optional<DirectorySnapshot> mDirectorySnapshot;
     };
 
     // Single message holder - thread only cares about last message
@@ -400,19 +425,11 @@ private:
 
         enum class MessageType
         {
-            DirScanCompleted,
             DirScanError,
             PreviewReady,
             PreviewError,
             PreviewCompleted
         };
-
-        static std::unique_ptr<ThreadToPanelMessage> MakeDirScanCompletedMessage(std::vector<std::filesystem::path> scannedShipFilepaths)
-        {
-            std::unique_ptr<ThreadToPanelMessage> msg(new ThreadToPanelMessage(MessageType::DirScanCompleted));
-            msg->mScannedShipFilepaths = std::move(scannedShipFilepaths);
-            return msg;
-        }
 
         static std::unique_ptr<ThreadToPanelMessage> MakeDirScanErrorMessage(std::string errorMessage)
         {
@@ -443,10 +460,10 @@ private:
             return msg;
         }
 
-        static std::unique_ptr<ThreadToPanelMessage> MakePreviewCompletedMessage(std::filesystem::path scannedDirectoryPath)
+        static std::unique_ptr<ThreadToPanelMessage> MakePreviewCompletedMessage(DirectorySnapshot && directorySnapshot)
         {
             std::unique_ptr<ThreadToPanelMessage> msg(new ThreadToPanelMessage(MessageType::PreviewCompleted));
-            msg->mScannedDirectoryPath = std::move(scannedDirectoryPath);
+            msg->mDirectorySnapshot.emplace(std::move(directorySnapshot));
             return msg;
         }
 
@@ -459,14 +476,10 @@ private:
             return mMessageType;
         }
 
-        std::filesystem::path const & GetScannedDirectoryPath() const
+        DirectorySnapshot const & GetDirectorySnapshot() const
         {
-            return mScannedDirectoryPath;
-        }
-
-        std::vector<std::filesystem::path> const & GetScannedShipFilepaths() const
-        {
-            return mScannedShipFilepaths;
+            assert(mDirectorySnapshot.has_value());
+            return *mDirectorySnapshot;
         }
 
         std::string const & GetErrorMessage() const
@@ -494,8 +507,7 @@ private:
 
         ThreadToPanelMessage(MessageType messageType)
             : mMessageType(messageType)
-            , mScannedDirectoryPath()
-            , mScannedShipFilepaths()
+            , mDirectorySnapshot()
             , mErrorMessage()
             , mShipIndex()
             , mShipPreviewData()
@@ -504,8 +516,7 @@ private:
 
         MessageType mMessageType;
 
-        std::filesystem::path mScannedDirectoryPath;
-        std::vector<std::filesystem::path> mScannedShipFilepaths;
+        std::optional<DirectorySnapshot> mDirectorySnapshot;
         std::string mErrorMessage;
         std::optional<size_t> mShipIndex;
         std::optional<ShipPreviewData> mShipPreviewData;

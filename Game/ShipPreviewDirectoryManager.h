@@ -28,12 +28,6 @@ public:
         std::filesystem::path const & directoryPath,
         std::shared_ptr<IFileSystem> fileSystem);
 
-    /*
-     * Gets a list of all files in this directory that are ships. The files
-     * are sorted by filename.
-     */
-    std::vector<std::filesystem::path> EnumerateShipFilePaths() const;
-
     RgbaImageData LoadPreviewImage(
         ShipPreviewData const & shipPreview,
         ImageSize const & maxImageSize);
