@@ -110,6 +110,13 @@ https://gamejolt.com/x/permalink/comment/11511458
 			+ Metadata
 			+ Ship size section
 				+ And no size at buffers
+			+ Replace ShipSize with struct ("ShipAttributes" or "ShipFoundamentals") having ship size, hasTexture, hasElectricals, FS version
+				+ As a section, made of sub-sections
+				+ Section is checked for presence before use, and sub-sections are checked for presence before constructing ShipFoundamentals
+				+ Unit tests
+			= Preview
+				- Trim in-place
+				- Make sure image trimming happens only for legacy
 			= Structural layer
 				+ RLE with variable-length "u 16-bit" count encoding
 					+ DeSerializationBuffer::Read/Write VarUInt16
@@ -120,9 +127,6 @@ https://gamejolt.com/x/permalink/comment/11511458
 					- See to make it more efficient
 						+ fill 
 						- Reuse member temp buffer
-			- Replace ShipSize with struct ("ShipAttributes") having ship size, hasTexture, hasElectricals
-				- Think of also having FS version in it, so that this replaces DeSerializationContext
-				- Read as a mandatory, initial section with one of N tags
 			- Electrical layer
 				- Pure buffer
 				- Review MaterialDatabase's electrical material maps: make one map
@@ -141,21 +145,15 @@ https://gamejolt.com/x/permalink/comment/11511458
 				- ...
 				- Verify tail
 
-- Preview trimming:
-	- Consider plan:
-		- We trim and resize for all formats, but trimming is done before resize
-			- TODO: how?
-	- Consider plan:
-		- We don't trim anymore for .png and .shp
-		- We trim .shp2 at preview creation (save time)
-
 - ShipLoadDialog: doesn't catch new file
 	- It's because at open we don't scan directory unless we've changed directory
 	- Solution:
-		- At open, if haven't changed dir, build map of <filepath, last_modif> 
+		- At open, if haven't changed dir, build map (ordered) of <filepath, last_modif> 
 		- Then compare map with same map built at PreviewReady handling
 			- Requires message to also contain last_modif
-		- If changed: follow path used by directory changed
+		- If changed: follow same path as if directory changed
+		- OR: makes snapshot as above, and then also passes it to thread as replacement of thread's first step
+			- Move ShipPreviewDirectoryManager::EnumerateShipFilePaths to here basically, improving it as we may avoid storing files if not ship files
 
 = Click-And-Draw use case:
 	= Pencil tool (*)

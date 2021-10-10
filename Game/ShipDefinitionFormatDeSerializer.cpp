@@ -36,21 +36,21 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
     // Read and process sections
     //
 
-    std::optional<ShipSpaceSize> shipSize;
+    std::optional<ShipAttributes> shipAttributes;
     std::optional<ShipMetadata> shipMetadata;
     std::unique_ptr<StructuralLayerBuffer> structuralLayer;
     std::unique_ptr<TextureLayerBuffer> textureLayer;
 
     Parse(
         shipFilePath,
-        [&](SectionHeader const & sectionHeader, DeserializationContext & deserializationContext, std::ifstream & inputFile) -> bool
+        [&](SectionHeader const & sectionHeader, std::ifstream & inputFile) -> bool
         {
             switch (sectionHeader.Tag)
             {
-                case static_cast<uint32_t>(MainSectionTagType::ShipSize) :
+                case static_cast<uint32_t>(MainSectionTagType::ShipAttributes) :
                 {
                     ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
-                    shipSize = ReadShipSize(buffer);
+                    shipAttributes = ReadShipAttributes(buffer);
 
                     break;
                 }
@@ -58,7 +58,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                 case static_cast<uint32_t>(MainSectionTagType::Metadata) :
                 {
                     ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
-                    shipMetadata = ReadMetadata(buffer, deserializationContext);
+                    shipMetadata = ReadMetadata(buffer);
 
                     break;
                 }
@@ -66,7 +66,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                 case static_cast<uint32_t>(MainSectionTagType::StructuralLayer) :
                 {
                     // Make sure we've already gotten the ship size
-                    if (!shipSize.has_value())
+                    if (!shipAttributes.has_value())
                     {
                         throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
                     }
@@ -74,8 +74,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
                     ReadStructuralLayer(
                         buffer,
-                        deserializationContext,
-                        *shipSize,
+                        *shipAttributes,
                         materialDatabase.GetStructuralMaterialMap(),
                         structuralLayer);
 
@@ -121,14 +120,14 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
     // Ensure all the required sections have been seen
     //
 
-    if (!shipSize.has_value() || !shipMetadata.has_value() || !structuralLayer)
+    if (!shipAttributes.has_value() || !shipMetadata.has_value() || !structuralLayer)
     {
         throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
     }
 
 
     return ShipDefinition(
-        *shipSize,
+        shipAttributes->ShipSize,
         std::move(*structuralLayer),
         nullptr, // TODO
         nullptr, // TODO
@@ -146,27 +145,27 @@ ShipPreviewData ShipDefinitionFormatDeSerializer::LoadPreviewData(std::filesyste
     // Read and process sections
     //
 
+    std::optional<ShipAttributes> shipAttributes;
     std::optional<ShipMetadata> shipMetadata;
-    std::optional<ShipSpaceSize> shipSize;
 
     Parse(
         shipFilePath,
-        [&](SectionHeader const & sectionHeader, DeserializationContext & deserializationContext, std::ifstream & inputFile) -> bool
+        [&](SectionHeader const & sectionHeader, std::ifstream & inputFile) -> bool
         {
             switch (sectionHeader.Tag)
             {
-                case static_cast<uint32_t>(MainSectionTagType::ShipSize) :
+                case static_cast<uint32_t>(MainSectionTagType::ShipAttributes):
                 {
                     ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
-                    shipSize = ReadShipSize(buffer);
+                    shipAttributes = ReadShipAttributes(buffer);
 
                     break;
                 }
 
-                case static_cast<uint32_t>(MainSectionTagType::Metadata) :
+                case static_cast<uint32_t>(MainSectionTagType::Metadata):
                 {
                     ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
-                    shipMetadata = ReadMetadata(buffer, deserializationContext);
+                    shipMetadata = ReadMetadata(buffer);
 
                     break;
                 }
@@ -180,20 +179,23 @@ ShipPreviewData ShipDefinitionFormatDeSerializer::LoadPreviewData(std::filesyste
                 }
             }
 
-            return shipSize.has_value() && shipMetadata.has_value();
+            return shipAttributes.has_value() && shipMetadata.has_value();
         });
 
-    if (!shipSize.has_value() || !shipMetadata.has_value())
+    if (!shipAttributes.has_value() || !shipMetadata.has_value())
     {
         throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
     }
 
+    bool const isHD = shipAttributes->HasTextureLayer && !shipMetadata->DoHideHDInPreview;
+    bool const hasElectricals = shipAttributes->HasElectricalLayer && !shipMetadata->DoHideElectricalsInPreview;
+
     return ShipPreviewData(
         shipFilePath,
-        *shipSize,
+        shipAttributes->ShipSize,
         *shipMetadata,
-        false, // TODO - also do same logic @ legacy for hiding (based off metadata)
-        false); // TODO - also do same logic @ legacy for hiding (based off metadata)
+        isHD,
+        hasElectricals);
 }
 
 RgbaImageData ShipDefinitionFormatDeSerializer::LoadPreviewImage(
@@ -210,7 +212,7 @@ RgbaImageData ShipDefinitionFormatDeSerializer::LoadPreviewImage(
 
     Parse(
         previewFilePath,
-        [&](SectionHeader const & sectionHeader, DeserializationContext & /*deserializationContext*/, std::ifstream & inputFile) -> bool
+        [&](SectionHeader const & sectionHeader, std::ifstream & inputFile) -> bool
         {
             switch (sectionHeader.Tag)
             {
@@ -275,13 +277,20 @@ void ShipDefinitionFormatDeSerializer::Save(
     AppendFileHeader(outputFile, buffer);
 
     //
-    // Write ship size
+    // Write ship attributes
     //
+
+    ShipAttributes const shipAttributes = ShipAttributes(
+        APPLICATION_VERSION_MAJOR,
+        APPLICATION_VERSION_MINOR,
+        shipDefinition.StructuralLayer.Size,
+        shipDefinition.TextureLayer != nullptr,
+        shipDefinition.ElectricalLayer != nullptr);
 
     AppendSection(
         outputFile,
-        static_cast<std::uint32_t>(MainSectionTagType::ShipSize),
-        [&]() { return AppendShipSize(shipDefinition.StructuralLayer.Size, buffer); },
+        static_cast<std::uint32_t>(MainSectionTagType::ShipAttributes),
+        [&]() { return AppendShipAttributes(shipAttributes, buffer); },
         buffer);
 
     //
@@ -406,26 +415,96 @@ void ShipDefinitionFormatDeSerializer::AppendFileHeader(DeSerializationBuffer<Bi
         HeaderTitle,
         24);
 
-    buffer.Append<std::uint16_t>(APPLICATION_VERSION_MAJOR);
-    buffer.Append<std::uint16_t>(APPLICATION_VERSION_MINOR);
     buffer.Append<std::uint16_t>(CurrentFileFormatVersion);
+    buffer.Append<std::uint8_t>(0);
+    buffer.Append<std::uint8_t>(0);
+    buffer.Append<std::uint8_t>(0);
+    buffer.Append<std::uint8_t>(0);
     buffer.Append<std::uint8_t>(0);
     buffer.Append<std::uint8_t>(0);
 
     assert(buffer.GetSize() == sizeof(FileHeader));
 }
 
-size_t ShipDefinitionFormatDeSerializer::AppendShipSize(
-    ShipSpaceSize const & shipSize,
+size_t ShipDefinitionFormatDeSerializer::AppendShipAttributes(
+    ShipAttributes const & shipAttributes,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
     size_t sectionBodySize = 0;
 
-    // Append 2D size
-    sectionBodySize += buffer.Append(static_cast<std::uint32_t>(shipSize.width));
-    sectionBodySize += buffer.Append(static_cast<std::uint32_t>(shipSize.height));
+    // FS version
+    {
+        // Tag and size
+        buffer.Append(static_cast<std::uint32_t>(ShipAttributesTagType::FSVersion));
+        size_t const valueSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+
+        size_t valueSize = 0;
+
+        valueSize += buffer.Append(static_cast<uint16_t>(shipAttributes.FileFSVersionMaj));
+        valueSize += buffer.Append(static_cast<uint16_t>(shipAttributes.FileFSVersionMin));
+
+        // Store size
+        buffer.WriteAt(static_cast<std::uint32_t>(valueSize), valueSizeIndex);
+
+        sectionBodySize += sizeof(std::uint32_t) + sizeof(std::uint32_t) + valueSize;
+    }
+
+    // Ship size
+    {
+        // Tag and size
+        buffer.Append(static_cast<std::uint32_t>(ShipAttributesTagType::ShipSize));
+        size_t const valueSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+
+        size_t valueSize = 0;
+
+        valueSize += buffer.Append(static_cast<std::uint32_t>(shipAttributes.ShipSize.width));
+        valueSize += buffer.Append(static_cast<std::uint32_t>(shipAttributes.ShipSize.height));
+
+        // Store size
+        buffer.WriteAt(static_cast<std::uint32_t>(valueSize), valueSizeIndex);
+
+        sectionBodySize += sizeof(std::uint32_t) + sizeof(std::uint32_t) + valueSize;
+    }
+
+    // Has texture layer
+    {
+        sectionBodySize += AppendShipAttributesEntry(
+            ShipAttributesTagType::HasTextureLayer,
+            shipAttributes.HasTextureLayer,
+            buffer);
+    }
+
+    // Has electrical layer
+    {
+        sectionBodySize += AppendShipAttributesEntry(
+            ShipAttributesTagType::HasElectricalLayer,
+            shipAttributes.HasElectricalLayer,
+            buffer);
+    }
+
+    // Tail
+    {
+        sectionBodySize += buffer.Append(static_cast<std::uint32_t>(ShipAttributesTagType::Tail));
+        sectionBodySize += buffer.Append(static_cast<std::uint32_t>(0));
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+    }
 
     return sectionBodySize;
+}
+
+template<typename T>
+size_t ShipDefinitionFormatDeSerializer::AppendShipAttributesEntry(
+    ShipDefinitionFormatDeSerializer::ShipAttributesTagType tag,
+    T const & value,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    buffer.Append(static_cast<std::uint32_t>(tag));
+    size_t const valueSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+    size_t const valueSize = buffer.Append(value);
+    buffer.WriteAt(static_cast<std::uint32_t>(valueSize), valueSizeIndex);
+
+    static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+    return sizeof(SectionHeader) + valueSize;
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendMetadata(
@@ -654,7 +733,7 @@ void ShipDefinitionFormatDeSerializer::Parse(
     // Read header
     //
 
-    DeserializationContext deserializationContext = ReadFileHeader(inputFile, shipFilePath.filename().stem().string(), buffer);
+    ReadFileHeader(inputFile, buffer);
 
     //
     // Read and process sections
@@ -666,7 +745,7 @@ void ShipDefinitionFormatDeSerializer::Parse(
         SectionHeader const sectionHeader = ReadSectionHeader(inputFile, buffer);
 
         // Handle section
-        if (sectionHandler(sectionHeader, deserializationContext, inputFile))
+        if (sectionHandler(sectionHeader, inputFile))
         {
             // We're done
             break;
@@ -690,15 +769,15 @@ std::ifstream ShipDefinitionFormatDeSerializer::OpenFileForRead(std::filesystem:
         std::ios_base::in | std::ios_base::binary);
 }
 
-void ShipDefinitionFormatDeSerializer::ThrowMaterialNotFound(DeserializationContext const & deserializationContext)
+void ShipDefinitionFormatDeSerializer::ThrowMaterialNotFound(ShipAttributes const & shipAttributes)
 {
     auto const currentVersion = Version::CurrentVersion();
     if (std::tuple(currentVersion.GetMajor(), currentVersion.GetMinor())
-        < std::tuple(deserializationContext.FileFSVersionMaj, deserializationContext.FileFSVersionMin))
+        < std::tuple(shipAttributes.FileFSVersionMaj, shipAttributes.FileFSVersionMin))
     {
         throw UserGameException(
             UserGameException::MessageIdType::LoadShipMaterialNotFoundLaterVersion,
-            { std::to_string(deserializationContext.FileFSVersionMaj) + "." + std::to_string(deserializationContext.FileFSVersionMin) });
+            { std::to_string(shipAttributes.FileFSVersionMaj) + "." + std::to_string(shipAttributes.FileFSVersionMin) });
     }
     else
     {
@@ -759,9 +838,8 @@ RgbaImageData ShipDefinitionFormatDeSerializer::ReadPngImageAndResize(
     return ImageFileTools::DecodePngImageAndResize(buffer, maxSize);
 }
 
-ShipDefinitionFormatDeSerializer::DeserializationContext ShipDefinitionFormatDeSerializer::ReadFileHeader(
+void ShipDefinitionFormatDeSerializer::ReadFileHeader(
     std::ifstream & inputFile,
-    std::string shipFilename,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
     buffer.Reset();
@@ -775,12 +853,10 @@ ShipDefinitionFormatDeSerializer::DeserializationContext ShipDefinitionFormatDeS
         throw UserGameException(UserGameException::MessageIdType::UnrecognizedShipFile);
     }
 
-    return ReadFileHeader(buffer, shipFilename);
+    return ReadFileHeader(buffer);
 }
 
-ShipDefinitionFormatDeSerializer::DeserializationContext ShipDefinitionFormatDeSerializer::ReadFileHeader(
-    DeSerializationBuffer<BigEndianess> & buffer,
-    std::string shipFilename)
+void ShipDefinitionFormatDeSerializer::ReadFileHeader(DeSerializationBuffer<BigEndianess> & buffer)
 {
     if (std::memcmp(buffer.GetData(), HeaderTitle, sizeof(FileHeader::Title)))
     {
@@ -793,37 +869,110 @@ ShipDefinitionFormatDeSerializer::DeserializationContext ShipDefinitionFormatDeS
     {
         throw UserGameException(UserGameException::MessageIdType::UnsupportedShipFile);
     }
-
-    // Read FS version
-    std::uint16_t majorVersion;
-    buffer.ReadAt<std::uint16_t>(offsetof(FileHeader, FloatingSandboxVersionMaj), majorVersion);
-    std::uint16_t minorVersion;
-    buffer.ReadAt<std::uint16_t>(offsetof(FileHeader, FloatingSandboxVersionMin), minorVersion);
-
-    return DeserializationContext(
-        std::move(shipFilename),
-        static_cast<int>(majorVersion),
-        static_cast<int>(minorVersion));
 }
 
-ShipSpaceSize ShipDefinitionFormatDeSerializer::ReadShipSize(DeSerializationBuffer<BigEndianess> const & buffer)
+ShipDefinitionFormatDeSerializer::ShipAttributes ShipDefinitionFormatDeSerializer::ReadShipAttributes(DeSerializationBuffer<BigEndianess> const & buffer)
 {
-    size_t readOffset = 0;
+    std::optional<std::tuple<std::uint16_t, std::uint16_t>> fsVersion;
+    std::optional<ShipSpaceSize> shipSize;
+    std::optional<bool> hasTextureLayer;
+    std::optional<bool> hasElectricalLayer;
 
-    // Read 2D size
-    std::uint32_t width;
-    readOffset += buffer.ReadAt(readOffset, width);
-    std::uint32_t height;
-    readOffset += buffer.ReadAt(readOffset, height);
+    // Read all tags
+    for (size_t offset = 0;;)
+    {
+        SectionHeader const sectionHeader = ReadSectionHeader(buffer, offset);
+        offset += sizeof(SectionHeader);
 
-    return ShipSpaceSize(width, height);
+        switch (sectionHeader.Tag)
+        {
+            case static_cast<uint32_t>(ShipAttributesTagType::FSVersion):
+            {
+                std::uint16_t versionMaj;
+                offset += buffer.ReadAt<std::uint16_t>(offset, versionMaj);
+
+                std::uint16_t versionMin;
+                offset += buffer.ReadAt<std::uint16_t>(offset, versionMin);
+
+                fsVersion.emplace(std::make_tuple(versionMaj, versionMin));
+
+                break;
+            }
+
+            case static_cast<uint32_t>(ShipAttributesTagType::ShipSize):
+            {
+                std::uint32_t width;
+                offset += buffer.ReadAt<std::uint32_t>(offset, width);
+
+                std::uint32_t height;
+                offset += buffer.ReadAt<std::uint32_t>(offset, height);
+
+                shipSize.emplace(static_cast<ShipSpaceSize::integral_type>(width), static_cast<ShipSpaceSize::integral_type>(height));
+
+                break;
+            }
+
+            case static_cast<uint32_t>(ShipAttributesTagType::HasTextureLayer):
+            {
+                bool hasTextureLayerValue;
+                offset += buffer.ReadAt<bool>(offset, hasTextureLayerValue);
+
+                hasTextureLayer.emplace(hasTextureLayerValue);
+
+                break;
+            }
+
+            case static_cast<uint32_t>(ShipAttributesTagType::HasElectricalLayer):
+            {
+                bool hasElectricalLayerValue;
+                offset += buffer.ReadAt<bool>(offset, hasElectricalLayerValue);
+
+                hasElectricalLayer.emplace(hasElectricalLayerValue);
+
+                break;
+            }
+
+            case static_cast<uint32_t>(ShipAttributesTagType::Tail):
+            {
+                // We're done
+                break;
+            }
+
+            default:
+            {
+                // Unrecognized tag
+                LogMessage("WARNING: Unrecognized ship attributes tag ", sectionHeader.Tag);
+
+                // Skip it
+                offset += sectionHeader.SectionBodySize;
+
+                break;
+            }
+        }
+
+        if (sectionHeader.Tag == static_cast<uint32_t>(ShipAttributesTagType::Tail))
+        {
+            // We're done
+            break;
+        }
+    }
+
+    if (!fsVersion.has_value() || !shipSize.has_value() || !hasTextureLayer.has_value() || !hasElectricalLayer.has_value())
+    {
+        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+    }
+
+    return ShipAttributes(
+        std::get<0>(*fsVersion),
+        std::get<1>(*fsVersion),
+        *shipSize,
+        *hasTextureLayer,
+        *hasElectricalLayer);
 }
 
-ShipMetadata ShipDefinitionFormatDeSerializer::ReadMetadata(
-    DeSerializationBuffer<BigEndianess> const & buffer,
-    DeserializationContext & deserializationContext)
+ShipMetadata ShipDefinitionFormatDeSerializer::ReadMetadata(DeSerializationBuffer<BigEndianess> const & buffer)
 {
-    ShipMetadata metadata(deserializationContext.ShipFilename);
+    ShipMetadata metadata("Unknown");
 
     // Read all tags
     for (size_t offset = 0;;)
@@ -983,15 +1132,14 @@ ShipMetadata ShipDefinitionFormatDeSerializer::ReadMetadata(
 
 void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
     DeSerializationBuffer<BigEndianess> const & buffer,
-    DeserializationContext & deserializationContext,
-    ShipSpaceSize const & shipSize,
+    ShipAttributes const & shipAttributes,
     MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
     std::unique_ptr<StructuralLayerBuffer> & structuralLayerBuffer)
 {
     size_t readOffset = 0;
 
     // Allocate buffer
-    structuralLayerBuffer.reset(new StructuralLayerBuffer(shipSize));
+    structuralLayerBuffer.reset(new StructuralLayerBuffer(shipAttributes.ShipSize));
 
     // Decode RLE buffer
     size_t writeOffset = 0;
@@ -1017,7 +1165,7 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             auto const materialIt = materialMap.find(colorKey);
             if (materialIt == materialMap.cend())
             {
-                ThrowMaterialNotFound(deserializationContext);
+                ThrowMaterialNotFound(shipAttributes);
             }
 
             material = &(materialIt->second);
@@ -1033,5 +1181,5 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
         writeOffset += count.value();
     }
 
-    assert(writeOffset == shipSize.GetLinearSize());
+    assert(writeOffset == shipAttributes.ShipSize.GetLinearSize());
 }

@@ -12,15 +12,11 @@ TEST(ShipDefinitionFormatDeSerializerTests, FileHeader)
 {
     DeSerializationBuffer<BigEndianess> buffer(256);
     ShipDefinitionFormatDeSerializer::AppendFileHeader(buffer);
-    buffer.WriteAt(std::uint8_t(200), offsetof(ShipDefinitionFormatDeSerializer::FileHeader, FileFormatVersion));
+    buffer.WriteAt(std::uint16_t(200), offsetof(ShipDefinitionFormatDeSerializer::FileHeader, FileFormatVersion));
 
-    std::uint16_t fsVersionMaj;
-    buffer.ReadAt(offsetof(ShipDefinitionFormatDeSerializer::FileHeader, FloatingSandboxVersionMaj), fsVersionMaj);
-    EXPECT_EQ(fsVersionMaj, Version::CurrentVersion().GetMajor());
-
-    std::uint16_t fsVersionMin;
-    buffer.ReadAt(offsetof(ShipDefinitionFormatDeSerializer::FileHeader, FloatingSandboxVersionMin), fsVersionMin);
-    EXPECT_EQ(fsVersionMin, Version::CurrentVersion().GetMinor());
+    std::uint16_t fileFormatVersion;
+    buffer.ReadAt(offsetof(ShipDefinitionFormatDeSerializer::FileHeader, FileFormatVersion), fileFormatVersion);
+    EXPECT_EQ(fileFormatVersion, 200);
 }
 
 TEST(ShipDefinitionFormatDeSerializerTests, FileHeader_UnrecognizedHeader)
@@ -59,6 +55,32 @@ TEST(ShipDefinitionFormatDeSerializerTests, FileHeader_UnsupportedFileFormatVers
     }
 }
 
+TEST(ShipDefinitionFormatDeSerializerTests, ShipAttributes)
+{
+    DeSerializationBuffer<BigEndianess> buffer(256);
+
+    // Write
+
+    ShipDefinitionFormatDeSerializer::ShipAttributes sourceShipAttributes(
+        200,
+        14,
+        ShipSpaceSize(242, 409),
+        true,
+        false);
+
+    ShipDefinitionFormatDeSerializer::AppendShipAttributes(sourceShipAttributes, buffer);
+
+    // Read
+
+    ShipDefinitionFormatDeSerializer::ShipAttributes const targetShipAttributes = ShipDefinitionFormatDeSerializer::ReadShipAttributes(buffer);
+
+    EXPECT_EQ(sourceShipAttributes.FileFSVersionMaj, targetShipAttributes.FileFSVersionMaj);
+    EXPECT_EQ(sourceShipAttributes.FileFSVersionMin, targetShipAttributes.FileFSVersionMin);
+    EXPECT_EQ(sourceShipAttributes.ShipSize, targetShipAttributes.ShipSize);
+    EXPECT_EQ(sourceShipAttributes.HasTextureLayer, targetShipAttributes.HasTextureLayer);
+    EXPECT_EQ(sourceShipAttributes.HasElectricalLayer, targetShipAttributes.HasElectricalLayer);
+}
+
 TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Full_WithoutElectricalPanel)
 {
     DeSerializationBuffer<BigEndianess> buffer(256);
@@ -79,8 +101,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Full_WithoutElectricalPanel
 
     // Read
 
-    ShipMetadata targetMd("Foo");
-    ShipDefinitionFormatDeSerializer::ReadMetadata(buffer, targetMd);
+    ShipMetadata const targetMd = ShipDefinitionFormatDeSerializer::ReadMetadata(buffer);
 
     EXPECT_EQ(sourceMd.ArtCredits, targetMd.ArtCredits);
     EXPECT_EQ(sourceMd.Author, targetMd.Author);
@@ -103,8 +124,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Minimal_WithoutElectricalPa
 
     // Read
 
-    ShipMetadata targetMd("Foo");
-    ShipDefinitionFormatDeSerializer::ReadMetadata(buffer, targetMd);
+    ShipMetadata const targetMd = ShipDefinitionFormatDeSerializer::ReadMetadata(buffer);
 
     EXPECT_FALSE(sourceMd.ArtCredits.has_value());
     EXPECT_FALSE(sourceMd.Author.has_value());
@@ -151,8 +171,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, Metadata_ElectricalPanel)
 
     // Read
 
-    ShipMetadata targetMd("Foo");
-    ShipDefinitionFormatDeSerializer::ReadMetadata(buffer, targetMd);
+    ShipMetadata const targetMd = ShipDefinitionFormatDeSerializer::ReadMetadata(buffer);
 
     ASSERT_EQ(4, targetMd.ElectricalPanelMetadata.size());
 
@@ -208,11 +227,10 @@ protected:
         DeSerializationBuffer<BigEndianess> & buffer)
     {
         std::unique_ptr<StructuralLayerBuffer> targetStructuralLayerBuffer;
-        ShipDefinitionFormatDeSerializer::DeserializationContext deserializationContext(1, 0);
-        deserializationContext.ShipSize = sourceStructuralLayerBuffer.Size;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(1, 16, sourceStructuralLayerBuffer.Size, false, false);
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
-            deserializationContext,
+            shipAttributes,
             TestMaterialMap,
             targetStructuralLayerBuffer);
 
@@ -375,13 +393,13 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, Unrecognized
     try
     {
         std::unique_ptr<StructuralLayerBuffer> targetStructuralLayerBuffer;
-        ShipDefinitionFormatDeSerializer::DeserializationContext deserializationContext(
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
             Version::CurrentVersion().GetMajor(),
-            Version::CurrentVersion().GetMinor());
-        deserializationContext.ShipSize = sourceStructuralLayerBuffer.Size;
+            Version::CurrentVersion().GetMinor(),
+            sourceStructuralLayerBuffer.Size, false, false);
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
-            deserializationContext,
+            shipAttributes,
             TestMaterialMap,
             targetStructuralLayerBuffer);
 
@@ -419,13 +437,13 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, Unrecognized
     try
     {
         std::unique_ptr<StructuralLayerBuffer> targetStructuralLayerBuffer;
-        ShipDefinitionFormatDeSerializer::DeserializationContext deserializationContext(
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
             2999,
-            4);
-        deserializationContext.ShipSize = sourceStructuralLayerBuffer.Size;
+            4,
+            sourceStructuralLayerBuffer.Size, false, false);
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
-            deserializationContext,
+            shipAttributes,
             TestMaterialMap,
             targetStructuralLayerBuffer);
 

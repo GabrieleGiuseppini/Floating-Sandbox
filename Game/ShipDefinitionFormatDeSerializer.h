@@ -54,10 +54,8 @@ private:
     struct FileHeader
     {
         char Title[24];
-        std::uint16_t FloatingSandboxVersionMaj;
-        std::uint16_t FloatingSandboxVersionMin;
         std::uint16_t FileFormatVersion;
-        char Pad[2];
+        char Pad[6];
     };
 
     static_assert(sizeof(FileHeader) == 32);
@@ -76,7 +74,7 @@ private:
         Metadata = 5,
         PhysicsData = 6,
         AutoTexturizationSettings = 7,
-        ShipSize = 8,
+        ShipAttributes = 8,
         Preview_PNG = 9,
 
         Tail = 0xffffffff
@@ -100,20 +98,39 @@ private:
         Tail = 0xffffffff
     };
 
-    struct DeserializationContext
+    struct ShipAttributes
     {
-        std::string const ShipFilename;
-        int const FileFSVersionMaj;
-        int const FileFSVersionMin;
+        int FileFSVersionMaj;
+        int FileFSVersionMin;
+        ShipSpaceSize ShipSize;
+        bool HasTextureLayer;
+        bool HasElectricalLayer;
 
-        DeserializationContext(
-            std::string shipFilename,
+        ShipAttributes(
             int fileFSVersionMaj,
-            int fileFSVersionMin)
-            : ShipFilename(std::move(shipFilename))
-            , FileFSVersionMaj(fileFSVersionMaj)
+            int fileFSVersionMin,
+            ShipSpaceSize shipSize,
+            bool hasTextureLayer,
+            bool hasElectricalLayer)
+            : FileFSVersionMaj(fileFSVersionMaj)
             , FileFSVersionMin(fileFSVersionMin)
+            , ShipSize(shipSize)
+            , HasTextureLayer(hasTextureLayer)
+            , HasElectricalLayer(hasElectricalLayer)
         {}
+    };
+
+    enum class ShipAttributesTagType : std::uint32_t
+    {
+        // Numeric values are serialized in ship files, changing them will result
+        // in ship files being un-deserializable!
+
+        FSVersion = 1,
+        ShipSize = 2,
+        HasTextureLayer = 3,
+        HasElectricalLayer = 4,
+
+        Tail = 0xffffffff
     };
 
 private:
@@ -137,8 +154,14 @@ private:
 
     static void AppendFileHeader(DeSerializationBuffer<BigEndianess> & buffer);
 
-    static size_t AppendShipSize(
-        ShipSpaceSize const & shipSize,
+    static size_t AppendShipAttributes(
+        ShipAttributes const & shipAttributes,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    template<typename T>
+    static size_t AppendShipAttributesEntry(
+        ShipDefinitionFormatDeSerializer::ShipAttributesTagType tag,
+        T const & value,
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static size_t AppendMetadata(
@@ -168,7 +191,7 @@ private:
 
     static std::ifstream OpenFileForRead(std::filesystem::path const & shipFilePath);
 
-    static void ThrowMaterialNotFound(DeserializationContext const & deserializationContext);
+    static void ThrowMaterialNotFound(ShipAttributes const & shipAttributes);
 
     static void ReadIntoBuffer(
         std::ifstream & inputFile,
@@ -189,25 +212,19 @@ private:
         DeSerializationBuffer<BigEndianess> & buffer,
         ImageSize const & maxSize);
 
-    static DeserializationContext ReadFileHeader(
+    static void ReadFileHeader(
         std::ifstream & inputFile,
-        std::string shipFilename,
         DeSerializationBuffer<BigEndianess> & buffer);
 
-    static DeserializationContext ReadFileHeader(
-        DeSerializationBuffer<BigEndianess> & buffer,
-        std::string shipFilename);
+    static void ReadFileHeader(DeSerializationBuffer<BigEndianess> & buffer);
 
-    static ShipSpaceSize ReadShipSize(DeSerializationBuffer<BigEndianess> const & buffer);
+    static ShipAttributes ReadShipAttributes(DeSerializationBuffer<BigEndianess> const & buffer);
 
-    static ShipMetadata ReadMetadata(
-        DeSerializationBuffer<BigEndianess> const & buffer,
-        DeserializationContext & deserializationContext);
+    static ShipMetadata ReadMetadata(DeSerializationBuffer<BigEndianess> const & buffer);
 
     static void ReadStructuralLayer(
         DeSerializationBuffer<BigEndianess> const & buffer,
-        DeserializationContext & deserializationContext,
-        ShipSpaceSize const & shipSize,
+        ShipAttributes const & shipAttributes,
         MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
         std::unique_ptr<StructuralLayerBuffer> & structuralLayerBuffer);
 
@@ -216,6 +233,7 @@ private:
     friend class ShipDefinitionFormatDeSerializerTests_FileHeader_Test;
     friend class ShipDefinitionFormatDeSerializerTests_FileHeader_UnrecognizedHeader_Test;
     friend class ShipDefinitionFormatDeSerializerTests_FileHeader_UnsupportedFileFormatVersion_Test;
+    friend class ShipDefinitionFormatDeSerializerTests_ShipAttributes_Test;
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_Full_WithoutElectricalPanel_Test;
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_Minimal_WithoutElectricalPanel_Test;
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_ElectricalPanel_Test;
