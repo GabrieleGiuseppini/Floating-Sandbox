@@ -739,26 +739,40 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-    wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
+    mToolSettingsPanelsSizer = new wxBoxSizer(wxHORIZONTAL);
+
+    mToolSettingsPanelsSizer->AddStretchSpacer(1);
 
     {
+        // Structural pencil
         {
-            wxButton * button = new wxButton(panel, wxID_ANY, "Some");
-            sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
-        }
+            wxPanel * tsPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-        {
-            wxButton * button = new wxButton(panel, wxID_ANY, "Tool");
-            sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
-        }
+            wxBoxSizer * tsSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        {
-            wxButton * button = new wxButton(panel, wxID_ANY, "Settings");
-            sizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
+            {
+                // TODOHERE
+                wxButton * button = new wxButton(tsPanel, wxID_ANY, "Some");
+                tsSizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
+            }
+
+            tsPanel->SetSizerAndFit(tsSizer);
+
+            mToolSettingsPanelsSizer->Add(
+                tsPanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+
+            mToolSettingsPanels.emplace_back(
+                ToolType::StructuralPencil,
+                tsPanel);
         }
     }
 
-    panel->SetSizerAndFit(sizer);
+    mToolSettingsPanelsSizer->AddStretchSpacer(1);
+
+    panel->SetSizerAndFit(mToolSettingsPanelsSizer);
 
     return panel;
 }
@@ -2404,6 +2418,16 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
             mToolButtons[i]->SetValue(isSelected);
         }
     }
+
+    // Show this tool's settings panel and hide the others
+    for (auto const & entry : mToolSettingsPanels)
+    {
+        bool const isSelected = (std::get<0>(entry) == *tool);
+
+        mToolSettingsPanelsSizer->Show(std::get<1>(entry), isSelected);
+    }
+
+    mToolSettingsPanelsSizer->Layout();
 }
 
 void MainFrame::ReconciliateUIWithUndoStackState()

@@ -50,7 +50,7 @@ namespace ShipBuilder {
  * - Very thin, calls into Controller for each high-level interaction (e.g. new tool selected, tool setting changed) and for each mouse event
  * - Implements IUserInterface with interface needed by Controller, e.g. to make UI state changes, to capture the mouse, to update visualization of undo stack
  * - Owns WorkbenchState
- * - Implements ship load/save logic, giving/getting whole ShipDefinition to/from ModelController
+ * - Implements ship load/save, giving/getting whole ShipDefinition to/from ModelController
  */
 class MainFrame final : public wxFrame, public IUserInterface
 {
@@ -243,6 +243,10 @@ private:
 
     // File panel
     BitmapButton * mSaveShipButton;
+
+    // Tool settings panel
+    wxSizer * mToolSettingsPanelsSizer;
+    std::vector<std::tuple<ToolType, wxPanel *>> mToolSettingsPanels;
 
     // Layers panel
     std::array<BitmapToggleButton *, LayerCount> mLayerSelectButtons;

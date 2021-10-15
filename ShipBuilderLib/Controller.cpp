@@ -479,6 +479,19 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
     {
         // TODOHERE: other tool types
 
+        case ToolType::StructuralEraser:
+        {
+            // TODOHERE
+            // TODOTEST
+            return std::make_unique<StructuralPencilTool>(
+                *mModelController,
+                mUndoStack,
+                mWorkbenchState,
+                mUserInterface,
+                mView,
+                mResourceLocator);
+        }
+
         case ToolType::StructuralPencil:
         {
             return std::make_unique<StructuralPencilTool>(
