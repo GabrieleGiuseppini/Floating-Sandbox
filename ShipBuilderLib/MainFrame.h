@@ -111,6 +111,15 @@ private:
     wxPanel * CreateToolbarPanel(wxWindow * parent);
     wxPanel * CreateWorkPanel(wxWindow * parent);
 
+    wxPanel * CreateToolSettingsToolSizePanel(
+        wxWindow * parent,
+        wxString const & label,
+        wxString const & tooltip,
+        std::uint32_t minValue,
+        std::uint32_t maxValue,
+        std::uint32_t currentValue,
+        std::function<void(std::uint32_t)> onValue);
+
     void OnWorkCanvasPaint(wxPaintEvent & event);
     void OnWorkCanvasResize(wxSizeEvent & event);
     void OnWorkCanvasLeftDown(wxMouseEvent & event);

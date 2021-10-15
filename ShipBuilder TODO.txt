@@ -1,7 +1,7 @@
 https://gamejolt.com/x/permalink/comment/11730705
 
 = Click-And-Draw use case:
-	= Pencil tool (*)
+	= Structural Pencil tool (*)
 		+ UndoStack.h/cpp, w/IUndoEntry interface w/UndoEntryType enum
 		+ Controller: forward mouse events to tool
 		+ View:
@@ -54,17 +54,21 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ At application:
 					+ Do RegionFill along the path
 				+ After we apply the edit, we set previousEngagement
-		- Tool settings: size
-			- Passing to ModelController is almost all done; it's the preview that we need to figure out: do we want a preview?
-				- May be we say that the Pencil tool has no size, and the Brush tool has a size instead?
-				- Or, we just don't do a preview for Pencil?
+		= Tool settings: size
+			+ Size panel
+			- PencilTool: use size
+			- Preview: <from Moleskine>
+	- Structural Eraser tool:
+		- Reuse pencil tool, with extra template arg
 	- Strategy for other tools' enums - to make it work for now
+		- Dummy tool?
 
 - Complete Load/Save/Model
+	- Finalize storage of all other ship definition members in Model
 	- Load/Save each of:
 		- Electrical layer
 			- Pure buffer
-			- Review MaterialDatabase's electrical material maps: make one map
+			- Review MaterialDatabase's electrical material maps: make one map?
 		- Ropes layer
 			- Pure buffer
 		- Texture layer

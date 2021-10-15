@@ -28,6 +28,12 @@ WorkbenchState::WorkbenchState(MaterialDatabase const & materialDatabase)
 
     // Default electrical background material: none
     mElectricalBackgroundMaterial = nullptr;
+
+    //
+    // Default tool settings
+    //
+
+    mStructuralPencilToolSize = 1;
 }
 
 }

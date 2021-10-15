@@ -8,6 +8,8 @@
 #include <Game/Materials.h>
 #include <Game/MaterialDatabase.h>
 
+#include <cstdint>
+
 namespace ShipBuilder {
 
 /*
@@ -62,6 +64,16 @@ public:
         mElectricalBackgroundMaterial = material;
     }
 
+    std::uint32_t GetStructuralPencilToolSize() const
+    {
+        return mStructuralPencilToolSize;
+    }
+
+    void SetStructuralPencilToolSize(std::uint32_t value)
+    {
+        mStructuralPencilToolSize = value;
+    }
+
 private:
 
     StructuralMaterial const * mStructuralForegroundMaterial;
@@ -69,6 +81,7 @@ private:
     ElectricalMaterial const * mElectricalForegroundMaterial;
     ElectricalMaterial const * mElectricalBackgroundMaterial;
 
+    std::uint32_t mStructuralPencilToolSize;
 };
 
 }

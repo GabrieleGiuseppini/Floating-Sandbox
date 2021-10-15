@@ -16,6 +16,7 @@
 
 #include <UILib/BitmapButton.h>
 #include <UILib/BitmapToggleButton.h>
+#include <UILib/EditSpinBox.h>
 #include <UILib/WxHelpers.h>
 
 #include <wx/button.h>
@@ -152,7 +153,7 @@ MainFrame::MainFrame(
 
             row0HSizer->Add(
                 toolSettingsPanel,
-                0,
+                1, // Expand horizontally
                 wxALIGN_CENTER_VERTICAL,
                 0);
         }
@@ -737,26 +738,28 @@ wxPanel * MainFrame::CreateShipSettingsPanel(wxWindow * parent)
 
 wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
 {
+    std::uint32_t MaxPencilSize = 8;
+
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
     mToolSettingsPanelsSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    mToolSettingsPanelsSizer->AddStretchSpacer(1);
+    mToolSettingsPanelsSizer->AddSpacer(20);
 
     {
         // Structural pencil
         {
-            wxPanel * tsPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-
-            wxBoxSizer * tsSizer = new wxBoxSizer(wxHORIZONTAL);
-
-            {
-                // TODOHERE
-                wxButton * button = new wxButton(tsPanel, wxID_ANY, "Some");
-                tsSizer->Add(button, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
-            }
-
-            tsPanel->SetSizerAndFit(tsSizer);
+            wxPanel * tsPanel = CreateToolSettingsToolSizePanel(
+                panel,
+                _("Pencil size:"),
+                _("The size of the pencil tool."),
+                1,
+                MaxPencilSize,
+                mWorkbenchState.GetStructuralPencilToolSize(),
+                [this](std::uint32_t value)
+                {
+                    mWorkbenchState.SetStructuralPencilToolSize(value);
+                });
 
             mToolSettingsPanelsSizer->Add(
                 tsPanel,
@@ -1602,6 +1605,54 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
 
     return panel;
 }
+
+wxPanel * MainFrame::CreateToolSettingsToolSizePanel(
+    wxWindow * parent,
+    wxString const & label,
+    wxString const & tooltip,
+    std::uint32_t minValue,
+    std::uint32_t maxValue,
+    std::uint32_t currentValue,
+    std::function<void(std::uint32_t)> onValue)
+{
+    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+    wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
+
+    // Label
+    {
+        auto * staticText = new wxStaticText(panel, wxID_ANY, label);
+
+        sizer->Add(
+            staticText,
+            0,
+            wxALIGN_CENTER_VERTICAL,
+            4);
+    }
+
+    {
+        EditSpinBox<std::uint32_t> * editSpinBox = new EditSpinBox<std::uint32_t>(
+            panel,
+            40,
+            minValue,
+            maxValue,
+            currentValue,
+            tooltip,
+            std::move(onValue));
+
+        sizer->Add(
+            editSpinBox,
+            0,
+            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
+            4);
+    }
+
+    panel->SetSizerAndFit(sizer);
+
+    return panel;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 void MainFrame::OnWorkCanvasPaint(wxPaintEvent & /*event*/)
 {

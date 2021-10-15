@@ -8,6 +8,7 @@ set  (UI_LIB_SOURCES
 	BitmappedCheckbox.h
 	BitmapPopupButton.h
 	BitmapToggleButton.h
+	EditSpinBox.h
 	ElectricalElementControl.cpp
 	ElectricalElementControl.h
 	LayoutHelper.h
@@ -28,6 +29,7 @@ set  (UI_LIB_SOURCES
 	SliderControl.h
 	StandardSystemPaths.cpp
 	StandardSystemPaths.h
+	TextValidators.h
 	UnFocusablePanel.h
 	UnFocusableScrollablePanel.h
 	WxHelpers.cpp
