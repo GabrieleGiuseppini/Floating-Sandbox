@@ -135,8 +135,9 @@ void ModelController::StructuralRegionReplace(
     // Update model
     //
 
-    mModel.GetStructuralLayerBuffer().Blit(
+    mModel.GetStructuralLayerBuffer().BlitFromRegion(
         layerBufferRegion,
+        { {0, 0}, layerBufferRegion.Size },
         origin);
 
     // Update derived data

@@ -58,6 +58,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Size panel
 			- PencilTool: use size
 			- Preview: <from Moleskine>
+			- View: terminology: "StructuralVisualizationTexture"
 	+ Structural Eraser tool:
 		+ Reuse pencil tool, with extra template arg
 	- Strategy for other tools' enums - to make it work for now

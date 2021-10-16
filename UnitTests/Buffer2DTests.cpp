@@ -91,45 +91,6 @@ TEST(Buffer2DTests, MakeCopy_Region)
     }
 }
 
-TEST(Buffer2DTests, Blit)
-{
-    Buffer2D<int, struct IntegralTag> targetBuffer(10, 20, 242);
-
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 3);
-
-    int val = 11;
-    for (int y = 0; y < 3; ++y)
-    {
-        for (int x = 0; x < 2; ++x)
-        {
-            sourceBuffer[{x, y}] = val++;
-        }
-    }
-
-    targetBuffer.Blit(sourceBuffer, { 3, 4 });
-
-    ASSERT_EQ(targetBuffer.Size, IntegralRectSize(10, 20));
-
-    val = 11;
-    for (int y = 0; y < 20; ++y)
-    {
-        for (int x = 0; x < 10; ++x)
-        {
-            int expectedValue;
-            if (x < 3 || x >= 5 || y < 4 || y >= 7)
-            {
-                expectedValue = 242;
-            }
-            else
-            {
-                expectedValue = val++;
-            }
-
-            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], expectedValue);
-        }
-    }
-}
-
 TEST(Buffer2DTests, BlitFromRegion_WholeSource_ToOrigin)
 {
     // Prepare source

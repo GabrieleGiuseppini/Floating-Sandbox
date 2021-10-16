@@ -147,26 +147,6 @@ public:
             std::move(newData));
     }
 
-    // TODO: see if may be nuked
-    void Blit(
-        Buffer2D const & sourceRegion,
-        _IntegralCoordinates<TIntegralTag> const & origin)
-    {
-        assert(origin.x + sourceRegion.Size.width <= Size.width);
-        assert(origin.y + sourceRegion.Size.height <= Size.height);
-
-        for (int sourceY = 0; sourceY < sourceRegion.Size.height; ++sourceY)
-        {
-            int const sourceLinearIndex = sourceY * sourceRegion.Size.width;
-            int const targetLinearIndex = (origin.y + sourceY) * Size.width + origin.x;
-
-            std::memcpy(
-                Data.get() + targetLinearIndex,
-                sourceRegion.Data.get() + sourceLinearIndex,
-                sourceRegion.Size.width * sizeof(TElement));
-        }
-    }
-
     void BlitFromRegion(
         Buffer2D const & source,
         _IntegralRect<TIntegralTag> const & sourceRegion,
