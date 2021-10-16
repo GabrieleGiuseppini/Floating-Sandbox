@@ -501,30 +501,23 @@ struct _IntegralRect
             && origin.y + size.height <= container.origin.y + container.size.height;
     }
 
-    void UpdateWith(_IntegralCoordinates<TIntegralTag> const & point)
+    void UnionWith(_IntegralRect<TIntegralTag> const & other)
     {
-        if (point.x < origin.x)
-        {
-            size.width += origin.x - point.x;
-            origin.x = point.x;
-        }
-        else if (point.x >= origin.x + size.width)
-        {
-            size.width = point.x - origin.x + 1;
-        }
+        auto const newOrigin = _IntegralCoordinates<TIntegralTag>(
+            std::min(origin.x, other.origin.x),
+            std::min(origin.y, other.origin.y));
 
-        if (point.y < origin.y)
-        {
-            size.height += origin.y - point.y;
-            origin.y = point.y;
-        }
-        else if (point.y >= origin.y + size.height)
-        {
-            size.height = point.y - origin.y + 1;
-        }
+        auto const newSize = _IntegralSize<TIntegralTag>(
+            std::max(origin.x + size.width, other.origin.x + other.size.width) - newOrigin.x,
+            std::max(origin.y + size.height, other.origin.y + other.size.height) - newOrigin.y);
+
+        assert(newSize.width >= 0 && newSize.height >= 0);
+
+        origin = newOrigin;
+        size = newSize;
     }
 
-    std::optional<_IntegralRect<TIntegralTag>> IntersectWith(_IntegralRect<TIntegralTag> const & other) const
+    std::optional<_IntegralRect<TIntegralTag>> MakeIntersectionWith(_IntegralRect<TIntegralTag> const & other) const
     {
         auto const newOrigin = _IntegralCoordinates<TIntegralTag>(
             std::max(origin.x, other.origin.x),

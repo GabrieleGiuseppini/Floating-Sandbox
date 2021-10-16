@@ -56,7 +56,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ After we apply the edit, we set previousEngagement
 		= Tool settings: size
 			+ Size panel
-			- PencilTool: use size
+			+ PencilTool: use size
 			- Preview: <from Moleskine>
 			- View: terminology: "StructuralVisualizationTexture"
 	+ Structural Eraser tool:

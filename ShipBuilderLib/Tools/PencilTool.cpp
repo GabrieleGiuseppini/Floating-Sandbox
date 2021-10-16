@@ -223,6 +223,7 @@ void PencilTool<TLayer, IsEraser>::CheckEdit(InputState const & inputState)
         return;
     }
 
+    // TODO: now with applicableRegion, this is wrong
     ShipSpaceCoordinates const coords = mView.ScreenToShipSpace(inputState.MousePosition);
     if (!coords.IsInSize(mModelController.GetModel().GetShipSize()))
     {
@@ -241,8 +242,9 @@ void PencilTool<TLayer, IsEraser>::CheckEdit(InputState const & inputState)
     assert(!mEngagementData->PreviousEngagementPosition.has_value() || mEngagementData->PreviousEngagementPosition->IsInSize(mModelController.GetModel().GetShipSize()));
     assert(coords.IsInSize(mModelController.GetModel().GetShipSize()));
 
+    // Calculate fill element and pencil size
     typename LayerTypeTraits<TLayer>::buffer_type::element_type fillElement;
-    std::uint32_t pencilSize;
+    int pencilSize;
     if constexpr (!IsEraser)
     {
         if constexpr (TLayer == LayerType::Structural)
@@ -253,7 +255,7 @@ void PencilTool<TLayer, IsEraser>::CheckEdit(InputState const & inputState)
                     : mWorkbenchState.GetStructuralBackgroundMaterial()
             };
 
-            pencilSize = mWorkbenchState.GetStructuralPencilToolSize();
+            pencilSize = static_cast<int>(mWorkbenchState.GetStructuralPencilToolSize());
         }
         else
         {
@@ -275,7 +277,7 @@ void PencilTool<TLayer, IsEraser>::CheckEdit(InputState const & inputState)
         {
             fillElement = { nullptr };
 
-            pencilSize = mWorkbenchState.GetStructuralEraserToolSize();
+            pencilSize = static_cast<int>(mWorkbenchState.GetStructuralEraserToolSize());
         }
         else
         {
@@ -287,8 +289,7 @@ void PencilTool<TLayer, IsEraser>::CheckEdit(InputState const & inputState)
         }
     }
 
-    std::unique_ptr<typename LayerTypeTraits<TLayer>::buffer_type> originalRegionClone;
-
+    // Fill
     GenerateLinePath(
         mEngagementData->PreviousEngagementPosition.has_value()
             ? *mEngagementData->PreviousEngagementPosition
@@ -296,27 +297,28 @@ void PencilTool<TLayer, IsEraser>::CheckEdit(InputState const & inputState)
         coords,
         [&](ShipSpaceCoordinates const & pos)
         {
-            // TODOHERE: calc applicable rect intersecting pencil with workspace size
-
-            assert(pos.IsInSize(mModelController.GetModel().GetShipSize()));
-
-            if constexpr (TLayer == LayerType::Structural)
+            // Calc applicable rect intersecting pencil with workspace size
+            auto const applicableRect = ShipSpaceRect(pos, { pencilSize, pencilSize }).MakeIntersectionWith({ { 0, 0 }, mModelController.GetModel().GetShipSize() });
+            if (applicableRect)
             {
-                mModelController.StructuralRegionFill(
-                    fillElement,
-                    { pos, ShipSpaceSize(1, 1) });
-            }
-            else
-            {
-                static_assert(TLayer == LayerType::Electrical);
+                if constexpr (TLayer == LayerType::Structural)
+                {
+                    mModelController.StructuralRegionFill(
+                        fillElement,
+                        *applicableRect);
+                }
+                else
+                {
+                    static_assert(TLayer == LayerType::Electrical);
 
-                mModelController.ElectricalRegionFill(
-                    fillElement,
-                    { pos, ShipSpaceSize(1, 1) });
-            }
+                    mModelController.ElectricalRegionFill(
+                        fillElement,
+                        *applicableRect);
+                }
 
-            // Update edit region
-            mEngagementData->EditRegion.UpdateWith(pos);
+                // Update edit region
+                mEngagementData->EditRegion.UnionWith(*applicableRect);
+            }
         });
 
     // Mark layer as dirty
