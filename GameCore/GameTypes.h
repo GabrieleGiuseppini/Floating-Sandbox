@@ -487,6 +487,12 @@ struct _IntegralRect
         , size(1, 1)
     {}
 
+    inline bool operator==(_IntegralRect<TIntegralTag> const & other) const
+    {
+        return origin == other.origin
+            && size == other.size;
+    }
+
     void UpdateWith(_IntegralCoordinates<TIntegralTag> const & point)
     {
         if (point.x < origin.x)
@@ -507,6 +513,28 @@ struct _IntegralRect
         else if (point.y >= origin.y + size.height)
         {
             size.height = point.y - origin.y + 1;
+        }
+    }
+
+    std::optional<_IntegralRect<TIntegralTag>> IntersectWith(_IntegralRect<TIntegralTag> const & other) const
+    {
+        auto const newOrigin = _IntegralCoordinates<TIntegralTag>(
+            std::max(origin.x, other.origin.x),
+            std::max(origin.y, other.origin.y));
+
+        auto const newSize = _IntegralSize<TIntegralTag>(
+            std::min(size.width - (newOrigin.x - origin.x), other.size.width - (newOrigin.x - other.origin.x)),
+            std::min(size.height - (newOrigin.y - origin.y), other.size.height - (newOrigin.y - other.origin.y)));
+
+        if (newSize.width <= 0 || newSize.height <= 0)
+        {
+            return std::nullopt;
+        }
+        else
+        {
+            return _IntegralRect<TIntegralTag>(
+                newOrigin,
+                newSize);
         }
     }
 

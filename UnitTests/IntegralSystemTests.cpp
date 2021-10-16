@@ -121,3 +121,49 @@ TEST(IntegralSystemTests, IntegralRect_UpdateWith_Bottom_ByOne)
     EXPECT_EQ(foo.size.width, 4);
     EXPECT_EQ(foo.size.height, 3);
 }
+
+class IntersectionTest_NonEmpty : public testing::TestWithParam<std::tuple<IntegralRect, IntegralRect, IntegralRect>>
+{
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    IntegralSystemTests,
+    IntersectionTest_NonEmpty,
+    ::testing::Values(
+        std::make_tuple<IntegralRect, IntegralRect, IntegralRect>({ {3, 4}, {4, 4} }, { {4, 5}, {2, 2} }, { {4, 5},  {2, 2} }),
+        std::make_tuple<IntegralRect, IntegralRect, IntegralRect>({ {4, 5}, {2, 2} }, { {3, 4}, {4, 4} }, { {4, 5},  {2, 2} }),
+        std::make_tuple<IntegralRect, IntegralRect, IntegralRect>({ {3, 4}, {2, 2} }, { {4, 5}, {2, 2} }, { {4, 5},  {1, 1} })
+    ));
+
+TEST_P(IntersectionTest_NonEmpty, IntersectionTest_NonEmpty)
+{
+    auto const result = std::get<0>(GetParam()).IntersectWith(std::get<1>(GetParam()));
+
+    ASSERT_TRUE(result);
+    EXPECT_EQ(*result, std::get<2>(GetParam()));
+}
+
+class IntersectionTest_Empty : public testing::TestWithParam<std::tuple<IntegralRect, IntegralRect>>
+{
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    IntegralSystemTests,
+    IntersectionTest_Empty,
+    ::testing::Values(
+        // new x at size
+        std::make_tuple<IntegralRect, IntegralRect>({ {3, 4}, {2, 2} }, { {5, 5}, {1, 2} }),
+        // new y at size
+        std::make_tuple<IntegralRect, IntegralRect>({ {3, 4}, {2, 2} }, { {6, 6}, {1, 2} }),
+        std::make_tuple<IntegralRect, IntegralRect>({ {3, 4}, {2, 2} }, { {5, 5}, {1, 2} }),
+        std::make_tuple<IntegralRect, IntegralRect>({ {3, 4}, {0, 0} }, { {5, 5}, {1, 2} }),
+        std::make_tuple<IntegralRect, IntegralRect>({ {3, 4}, {2, 2} }, { {5, 6}, {1, 2} }),
+        std::make_tuple<IntegralRect, IntegralRect>({ {3, 4}, {2, 2} }, { {15, 15}, {1, 2} })
+    ));
+
+TEST_P(IntersectionTest_Empty, IntersectionTest_NonEmpty)
+{
+    auto const result = std::get<0>(GetParam()).IntersectWith(std::get<1>(GetParam()));
+
+    EXPECT_FALSE(result);
+}
