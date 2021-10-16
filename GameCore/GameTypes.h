@@ -493,6 +493,14 @@ struct _IntegralRect
             && size == other.size;
     }
 
+    bool IsContainedInRect(_IntegralRect<TIntegralTag> const & container) const
+    {
+        return origin.x >= container.origin.x
+            && origin.y >= container.origin.y
+            && origin.x + size.width <= container.origin.x + container.size.width
+            && origin.y + size.height <= container.origin.y + container.size.height;
+    }
+
     void UpdateWith(_IntegralCoordinates<TIntegralTag> const & point)
     {
         if (point.x < origin.x)

@@ -2,6 +2,30 @@
 
 #include "gtest/gtest.h"
 
+class IntegralRect_IsContainedInRect : public testing::TestWithParam<std::tuple<IntegralRect, IntegralRect, bool>>
+{
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    IntegralSystemTests,
+    IntegralRect_IsContainedInRect,
+    ::testing::Values(
+        std::make_tuple<IntegralRect, IntegralRect, bool>({ {5, 5}, {1, 1} }, { {3, 4}, {3, 2} }, true),
+        std::make_tuple<IntegralRect, IntegralRect, bool>({ {5, 5}, {2, 2} }, { {5, 5}, {2, 2} }, true),
+        std::make_tuple<IntegralRect, IntegralRect, bool>({ {5, 5}, {0, 0} }, { {4, 4}, {2, 2} }, true),
+        std::make_tuple<IntegralRect, IntegralRect, bool>({ {2, 3}, {1, 2} }, { {0, 2}, {4, 4} }, true),
+        std::make_tuple<IntegralRect, IntegralRect, bool>({ {2, 3}, {2, 2} }, { {3, 3}, {4, 4} }, false),
+        std::make_tuple<IntegralRect, IntegralRect, bool>({ {2, 3}, {2, 2} }, { {2, 4}, {4, 4} }, false),
+        std::make_tuple<IntegralRect, IntegralRect, bool>({ {2, 3}, {2, 2} }, { {2, 3}, {1, 1} }, false)
+    ));
+
+TEST_P(IntegralRect_IsContainedInRect, IntegralRect_IsContainedInRect)
+{
+    auto const result = std::get<0>(GetParam()).IsContainedInRect(std::get<1>(GetParam()));
+
+    EXPECT_EQ(result, std::get<2>(GetParam()));
+}
+
 TEST(IntegralSystemTests, IntegralRect_UpdateWith_Left)
 {
     IntegralRect foo({ 5, 10 }, { 4, 8 });

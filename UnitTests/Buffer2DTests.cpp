@@ -129,3 +129,133 @@ TEST(Buffer2DTests, Blit)
         }
     }
 }
+
+TEST(Buffer2DTests, BlitFromRegion_WholeSource_ToOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 3);
+    int val = 100;
+    for (int y = 0; y < 3; ++y)
+    {
+        for (int x = 0; x < 2; ++x)
+        {
+            sourceBuffer[{x, y}] = val++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(10, 20, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { {0, 0}, sourceBuffer.Size },
+        { 0, 0 });
+
+    // Verify
+    val = 100;
+    for (int y = 0; y < 20; ++y)
+    {
+        for (int x = 0; x < 10; ++x)
+        {
+            int expectedValue;
+            if (x >= 2 || y >= 3)
+            {
+                expectedValue = 242;
+            }
+            else
+            {
+                expectedValue = val++;
+            }
+
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], expectedValue);
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_WholeSource_ToOffset)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 3);
+    int val = 100;
+    for (int y = 0; y < 3; ++y)
+    {
+        for (int x = 0; x < 2; ++x)
+        {
+            sourceBuffer[{x, y}] = val++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(10, 20, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { {0, 0}, sourceBuffer.Size },
+        { 4, 7 });
+
+    // Verify
+    val = 100;
+    for (int y = 0; y < 20; ++y)
+    {
+        for (int x = 0; x < 10; ++x)
+        {
+            int expectedValue;
+            if (x < 4 || x >= 4 + 2 || y < 7 || y >= 7 + 3)
+            {
+                expectedValue = 242;
+            }
+            else
+            {
+                expectedValue = val++;
+            }
+
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], expectedValue);
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_PortionOfSource_ToOffset)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 4);
+    int val = 100;
+    for (int y = 0; y < 4; ++y)
+    {
+        for (int x = 0; x < 4; ++x)
+        {
+            sourceBuffer[{x, y}] = val++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(10, 20, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { {1, 1}, {2, 2} },
+        { 4, 7 });
+
+    // Verify
+    int expectedVals[] = { 105, 106, 109, 110 };
+    int iExpectedVal = 0;
+    for (int y = 0; y < 20; ++y)
+    {
+        for (int x = 0; x < 10; ++x)
+        {
+            int expectedValue;
+            if (x < 4 || x >= 4 + 2 || y < 7 || y >= 7 + 2)
+            {
+                expectedValue = 242;
+            }
+            else
+            {
+                expectedValue = expectedVals[iExpectedVal++];
+            }
+
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], expectedValue);
+        }
+    }
+}

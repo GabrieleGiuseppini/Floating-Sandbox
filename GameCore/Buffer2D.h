@@ -147,6 +147,7 @@ public:
             std::move(newData));
     }
 
+    // TODO: see if may be nuked
     void Blit(
         Buffer2D const & sourceRegion,
         _IntegralCoordinates<TIntegralTag> const & origin)
@@ -163,6 +164,29 @@ public:
                 Data.get() + targetLinearIndex,
                 sourceRegion.Data.get() + sourceLinearIndex,
                 sourceRegion.Size.width * sizeof(TElement));
+        }
+    }
+
+    void BlitFromRegion(
+        Buffer2D const & source,
+        _IntegralRect<TIntegralTag> const & sourceRegion,
+        _IntegralCoordinates<TIntegralTag> const & targetOrigin)
+    {
+        // The source region is entirely in the source buffer
+        assert(sourceRegion.IsContainedInRect({ {0, 0}, source.Size }));
+
+        // The target origin plus the region size are within this buffer
+        assert(_IntegralRect<TIntegralTag>(targetOrigin, sourceRegion.size).IsContainedInRect({ {0, 0}, Size }));
+
+        for (int sourceRegionY = 0; sourceRegionY < sourceRegion.size.height; ++sourceRegionY)
+        {
+            int const sourceLinearIndex = (sourceRegion.origin.y + sourceRegionY) * source.Size.width + sourceRegion.origin.x;
+            int const targetLinearIndex = (targetOrigin.y + sourceRegionY) * Size.width + targetOrigin.x;
+
+            std::memcpy(
+                Data.get() + targetLinearIndex,
+                source.Data.get() + sourceLinearIndex,
+                sourceRegion.size.width * sizeof(TElement));
         }
     }
 
