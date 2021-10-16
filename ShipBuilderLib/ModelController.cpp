@@ -85,7 +85,7 @@ void ModelController::SetStructuralLayer(/*TODO*/)
 }
 
 void ModelController::StructuralRegionFill(
-    StructuralMaterial const * material,
+    StructuralElement const & element,
     ShipSpaceRect const & region)
 {
     assert(mModel.HasLayer(LayerType::Structural));
@@ -100,7 +100,7 @@ void ModelController::StructuralRegionFill(
     {
         for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
         {
-            structuralLayerBuffer[ShipSpaceCoordinates(x, y)].Material = material;
+            structuralLayerBuffer[ShipSpaceCoordinates(x, y)] = element;
         }
     }
 
@@ -181,7 +181,7 @@ void ModelController::RemoveElectricalLayer()
 }
 
 void ModelController::ElectricalRegionFill(
-    ElectricalMaterial const * material,
+    ElectricalElement const & element,
     ShipSpaceRect const & region)
 {
     // TODOHERE - copy from Structural

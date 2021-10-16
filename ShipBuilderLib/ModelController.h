@@ -60,7 +60,7 @@ public:
     void SetStructuralLayer(/*TODO*/);
 
     void StructuralRegionFill(
-        StructuralMaterial const * material,
+        StructuralElement const & element,
         ShipSpaceRect const & region);
 
     void StructuralRegionReplace(
@@ -76,7 +76,7 @@ public:
     void RemoveElectricalLayer();
 
     void ElectricalRegionFill(
-        ElectricalMaterial const * material,
+        ElectricalElement const & element,
         ShipSpaceRect const & region);
 
     void ElectricalRegionReplace(

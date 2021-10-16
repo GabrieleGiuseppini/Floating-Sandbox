@@ -479,11 +479,31 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
     {
         // TODOHERE: other tool types
 
+        case ToolType::ElectricalEraser:
+        {
+            return std::make_unique<ElectricalEraserTool>(
+                *mModelController,
+                mUndoStack,
+                mWorkbenchState,
+                mUserInterface,
+                mView,
+                mResourceLocator);
+        }
+
+        case ToolType::ElectricalPencil:
+        {
+            return std::make_unique<ElectricalPencilTool>(
+                *mModelController,
+                mUndoStack,
+                mWorkbenchState,
+                mUserInterface,
+                mView,
+                mResourceLocator);
+        }
+
         case ToolType::StructuralEraser:
         {
-            // TODOHERE
-            // TODOTEST
-            return std::make_unique<StructuralPencilTool>(
+            return std::make_unique<StructuralEraserTool>(
                 *mModelController,
                 mUndoStack,
                 mWorkbenchState,

@@ -21,7 +21,7 @@
 
 namespace ShipBuilder {
 
-template<LayerType TLayer>
+template<LayerType TLayer, bool IsEraser>
 class PencilTool : public Tool
 {
 protected:
@@ -91,7 +91,7 @@ private:
     wxImage mCursorImage;
 };
 
-class StructuralPencilTool : public PencilTool<LayerType::Structural>
+class StructuralPencilTool : public PencilTool<LayerType::Structural, false>
 {
 public:
 
@@ -104,11 +104,37 @@ public:
         ResourceLocator const & resourceLocator);
 };
 
-class ElectricalPencilTool : public PencilTool<LayerType::Electrical>
+class ElectricalPencilTool : public PencilTool<LayerType::Electrical, false>
 {
 public:
 
     ElectricalPencilTool(
+        ModelController & modelController,
+        UndoStack & undoStack,
+        WorkbenchState const & workbenchState,
+        IUserInterface & userInterface,
+        View & view,
+        ResourceLocator const & resourceLocator);
+};
+
+class StructuralEraserTool : public PencilTool<LayerType::Structural, true>
+{
+public:
+
+    StructuralEraserTool(
+        ModelController & modelController,
+        UndoStack & undoStack,
+        WorkbenchState const & workbenchState,
+        IUserInterface & userInterface,
+        View & view,
+        ResourceLocator const & resourceLocator);
+};
+
+class ElectricalEraserTool : public PencilTool<LayerType::Electrical, true>
+{
+public:
+
+    ElectricalEraserTool(
         ModelController & modelController,
         UndoStack & undoStack,
         WorkbenchState const & workbenchState,

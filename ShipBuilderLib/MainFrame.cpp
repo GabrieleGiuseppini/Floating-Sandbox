@@ -771,6 +771,31 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
                 ToolType::StructuralPencil,
                 tsPanel);
         }
+
+        // Structural eraser
+        {
+            wxPanel * tsPanel = CreateToolSettingsToolSizePanel(
+                panel,
+                _("Eraser size:"),
+                _("The size of the eraser tool."),
+                1,
+                MaxPencilSize,
+                mWorkbenchState.GetStructuralEraserToolSize(),
+                [this](std::uint32_t value)
+                {
+                    mWorkbenchState.SetStructuralEraserToolSize(value);
+                });
+
+            mToolSettingsPanelsSizer->Add(
+                tsPanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+
+            mToolSettingsPanels.emplace_back(
+                ToolType::StructuralEraser,
+                tsPanel);
+        }
     }
 
     mToolSettingsPanelsSizer->AddStretchSpacer(1);

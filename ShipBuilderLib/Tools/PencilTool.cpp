@@ -11,8 +11,8 @@
 
 namespace ShipBuilder {
 
-template<LayerType TLayerType>
-PencilTool<TLayerType>::PencilTool(
+template<LayerType TLayerType, bool IsEraser>
+PencilTool<TLayerType, IsEraser>::PencilTool(
     ToolType toolType,
     ModelController & modelController,
     UndoStack & undoStack,
@@ -67,49 +67,83 @@ ElectricalPencilTool::ElectricalPencilTool(
         resourceLocator)
 {}
 
-template<LayerType TLayer>
-void PencilTool<TLayer>::Reset()
+StructuralEraserTool::StructuralEraserTool(
+    ModelController & modelController,
+    UndoStack & undoStack,
+    WorkbenchState const & workbenchState,
+    IUserInterface & userInterface,
+    View & view,
+    ResourceLocator const & resourceLocator)
+    : PencilTool(
+        ToolType::StructuralEraser,
+        modelController,
+        undoStack,
+        workbenchState,
+        userInterface,
+        view,
+        resourceLocator)
+{}
+
+ElectricalEraserTool::ElectricalEraserTool(
+    ModelController & modelController,
+    UndoStack & undoStack,
+    WorkbenchState const & workbenchState,
+    IUserInterface & userInterface,
+    View & view,
+    ResourceLocator const & resourceLocator)
+    : PencilTool(
+        ToolType::ElectricalEraser,
+        modelController,
+        undoStack,
+        workbenchState,
+        userInterface,
+        view,
+        resourceLocator)
+{}
+
+template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::Reset()
 {
     mEngagementData.reset();
 }
 
-template<LayerType TLayer>
-void PencilTool<TLayer>::OnMouseMove(InputState const & inputState)
+template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::OnMouseMove(InputState const & inputState)
 {
     CheckStartEngagement(inputState);
     CheckEdit(inputState);
 }
 
-template<LayerType TLayer>
-void PencilTool<TLayer>::OnLeftMouseDown(InputState const & inputState)
+template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::OnLeftMouseDown(InputState const & inputState)
 {
     CheckStartEngagement(inputState);
     CheckEdit(inputState);
 }
 
-template<LayerType TLayer>
-void PencilTool<TLayer>::OnLeftMouseUp(InputState const & /*inputState*/)
+template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::OnLeftMouseUp(InputState const & /*inputState*/)
 {
     CheckEndEngagement();
 }
 
-template<LayerType TLayer>
-void PencilTool<TLayer>::OnRightMouseDown(InputState const & inputState)
+template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::OnRightMouseDown(InputState const & inputState)
 {
     CheckStartEngagement(inputState);
     CheckEdit(inputState);
 }
 
-template<LayerType TLayer>
-void PencilTool<TLayer>::OnRightMouseUp(InputState const & /*inputState*/)
+template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::OnRightMouseUp(InputState const & /*inputState*/)
 {
     CheckEndEngagement();
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<LayerType TLayer>
-void PencilTool<TLayer>::CheckStartEngagement(InputState const & inputState)
+template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::CheckStartEngagement(InputState const & inputState)
 {
     if (!inputState.IsLeftMouseDown && !inputState.IsRightMouseDown)
     {
@@ -153,8 +187,8 @@ void PencilTool<TLayer>::CheckStartEngagement(InputState const & inputState)
         mModelController.GetModel().GetDirtyState());
 }
 
-template<LayerType TLayer>
-void PencilTool<TLayer>::CheckEndEngagement()
+template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::CheckEndEngagement()
 {
     if (!mEngagementData.has_value())
     {
@@ -180,8 +214,8 @@ void PencilTool<TLayer>::CheckEndEngagement()
     mEngagementData.reset();
 }
 
-template<LayerType TLayer>
-void PencilTool<TLayer>::CheckEdit(InputState const & inputState)
+template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::CheckEdit(InputState const & inputState)
 {
     if (!mEngagementData.has_value())
     {
@@ -207,21 +241,69 @@ void PencilTool<TLayer>::CheckEdit(InputState const & inputState)
     assert(!mEngagementData->PreviousEngagementPosition.has_value() || mEngagementData->PreviousEngagementPosition->IsInSize(mModelController.GetModel().GetShipSize()));
     assert(coords.IsInSize(mModelController.GetModel().GetShipSize()));
 
+    typename LayerTypeTraits<TLayer>::buffer_type::element_type fillElement;
+    std::uint32_t pencilSize;
+    if constexpr (!IsEraser)
+    {
+        if constexpr (TLayer == LayerType::Structural)
+        {
+            fillElement = {
+                mEngagementData->Plane == MaterialPlaneType::Foreground
+                    ? mWorkbenchState.GetStructuralForegroundMaterial()
+                    : mWorkbenchState.GetStructuralBackgroundMaterial()
+            };
+
+            pencilSize = mWorkbenchState.GetStructuralPencilToolSize();
+        }
+        else
+        {
+            static_assert(TLayer == LayerType::Electrical);
+
+            fillElement = {
+                mEngagementData->Plane == MaterialPlaneType::Foreground
+                    ? mWorkbenchState.GetElectricalForegroundMaterial()
+                    : mWorkbenchState.GetElectricalBackgroundMaterial(),
+                NoneElectricalElementInstanceIndex
+            };
+
+            pencilSize = 1;
+        }
+    }
+    else
+    {
+        if constexpr (TLayer == LayerType::Structural)
+        {
+            fillElement = { nullptr };
+
+            pencilSize = mWorkbenchState.GetStructuralEraserToolSize();
+        }
+        else
+        {
+            static_assert(TLayer == LayerType::Electrical);
+
+            fillElement = { nullptr, NoneElectricalElementInstanceIndex };
+
+            pencilSize = 1;
+        }
+    }
+
+    std::unique_ptr<typename LayerTypeTraits<TLayer>::buffer_type> originalRegionClone;
+
     GenerateLinePath(
         mEngagementData->PreviousEngagementPosition.has_value()
             ? *mEngagementData->PreviousEngagementPosition
             : coords,
         coords,
-        [this](ShipSpaceCoordinates const & pos)
+        [&](ShipSpaceCoordinates const & pos)
         {
+            // TODOHERE: calc applicable rect intersecting pencil with workspace size
+
             assert(pos.IsInSize(mModelController.GetModel().GetShipSize()));
 
             if constexpr (TLayer == LayerType::Structural)
             {
                 mModelController.StructuralRegionFill(
-                    mEngagementData->Plane == MaterialPlaneType::Foreground
-                    ? mWorkbenchState.GetStructuralForegroundMaterial()
-                    : mWorkbenchState.GetStructuralBackgroundMaterial(),
+                    fillElement,
                     { pos, ShipSpaceSize(1, 1) });
             }
             else
@@ -229,9 +311,7 @@ void PencilTool<TLayer>::CheckEdit(InputState const & inputState)
                 static_assert(TLayer == LayerType::Electrical);
 
                 mModelController.ElectricalRegionFill(
-                    mEngagementData->Plane == MaterialPlaneType::Foreground
-                    ? mWorkbenchState.GetElectricalForegroundMaterial()
-                    : mWorkbenchState.GetElectricalBackgroundMaterial(),
+                    fillElement,
                     { pos, ShipSpaceSize(1, 1) });
             }
 

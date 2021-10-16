@@ -74,6 +74,16 @@ public:
         mStructuralPencilToolSize = value;
     }
 
+    std::uint32_t GetStructuralEraserToolSize() const
+    {
+        return mStructuralEraserToolSize;
+    }
+
+    void SetStructuralEraserToolSize(std::uint32_t value)
+    {
+        mStructuralEraserToolSize = value;
+    }
+
 private:
 
     StructuralMaterial const * mStructuralForegroundMaterial;
@@ -82,6 +92,7 @@ private:
     ElectricalMaterial const * mElectricalBackgroundMaterial;
 
     std::uint32_t mStructuralPencilToolSize;
+    std::uint32_t mStructuralEraserToolSize;
 };
 
 }
