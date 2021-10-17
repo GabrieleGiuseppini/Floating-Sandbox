@@ -24,16 +24,7 @@ namespace ShipBuilder {
 template<LayerType TLayer, bool IsEraser>
 class PencilTool : public Tool
 {
-protected:
-
-    PencilTool(
-        ToolType toolType,
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState const & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
-        ResourceLocator const & resourceLocator);
+public:
 
     void Reset() override;
 
@@ -45,23 +36,54 @@ protected:
     void OnShiftKeyDown(InputState const & /*inputState*/) override {}
     void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
+protected:
+
+    PencilTool(
+        ToolType toolType,
+        ModelController & modelController,
+        UndoStack & undoStack,
+        WorkbenchState const & workbenchState,
+        IUserInterface & userInterface,
+        View & view,
+        ResourceLocator const & resourceLocator);
+
 private:
 
-    void CheckStartEngagement(InputState const & inputState);
+    using LayerElementType = typename LayerTypeTraits<TLayer>::buffer_type::element_type;
 
-    void CheckEndEngagement();
+private:
 
+    void TakeOriginalLayerBufferClone();
+
+    void StartEngagement(InputState const & inputState);
+
+    void DoEdit(InputState const & inputState);
+
+    void EndEngagement();
+
+    // TODOOLD
     void CheckEdit(InputState const & inputState);
 
+    void MendTempVisualization();
+
+    std::optional<ShipSpaceRect> CalculateApplicableRect(ShipSpaceCoordinates const & coords) const;
+
+    int GetPencilSize() const;
+
+    LayerElementType GetFillElement(MaterialPlaneType plane) const;
+
 private:
+
+    // Original layer buffer
+    std::unique_ptr<typename LayerTypeTraits<TLayer>::buffer_type> mOriginalLayerBufferClone;
+
+    // Ship region dirtied so far with temporary visualization
+    std::optional<ShipSpaceRect> mTempVisualizationDirtyShipRegion;
 
     struct EngagementData
     {
         // Plane of the engagement
         MaterialPlaneType const Plane;
-
-        // Clone of region
-        std::unique_ptr<typename LayerTypeTraits<TLayer>::buffer_type> OriginalRegionClone;
 
         // Rectangle of edit operation
         ShipSpaceRect EditRegion;
@@ -74,11 +96,9 @@ private:
 
         EngagementData(
             MaterialPlaneType plane,
-            std::unique_ptr<typename LayerTypeTraits<TLayer>::buffer_type> && originalRegionClone,
             ShipSpaceCoordinates const & initialPosition,
             Model::DirtyState const & dirtyState)
             : Plane(plane)
-            , OriginalRegionClone(std::move(originalRegionClone))
             , EditRegion(initialPosition)
             , OriginalDirtyState(dirtyState)
             , PreviousEngagementPosition()

@@ -130,7 +130,10 @@ void Controller::RestoreLayerBufferRegion(
     StructuralLayerBuffer const & layerBufferRegion,
     ShipSpaceCoordinates const & origin)
 {
-    mModelController->StructuralRegionReplace(layerBufferRegion, origin);
+    mModelController->StructuralRegionReplace(
+        layerBufferRegion,
+        { {0, 0}, layerBufferRegion.Size},
+        origin);
 
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Structural);

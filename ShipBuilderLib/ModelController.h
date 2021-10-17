@@ -74,8 +74,9 @@ public:
         ShipSpaceRect const & region);
 
     void StructuralRegionReplace(
-        StructuralLayerBuffer const & layerBufferRegion,
-        ShipSpaceCoordinates const & origin);
+        StructuralLayerBuffer const & sourceLayerBufferRegion,
+        ShipSpaceRect const & sourceRegion,
+        ShipSpaceCoordinates const & targetOrigin);
 
     //
     // Electrical
@@ -90,8 +91,9 @@ public:
         ShipSpaceRect const & region);
 
     void ElectricalRegionReplace(
-        ElectricalLayerBuffer const & layerBufferRegion,
-        ShipSpaceCoordinates const & origin);
+        ElectricalLayerBuffer const & sourceLayerBufferRegion,
+        ShipSpaceRect const & sourceRegion,
+        ShipSpaceCoordinates const & targetOrigin);
 
     //
     // Ropes

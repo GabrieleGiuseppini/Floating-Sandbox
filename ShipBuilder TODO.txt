@@ -73,7 +73,14 @@ https://gamejolt.com/x/permalink/comment/11730705
 					! Sequence is: update (@MC), upload (@C)
 					+ View::HasStructural/.../Texture() -> bool
 					+ MC::Upload: if MC !have && view.has => View::RemoveStructural/.../Texture()
-			- Preview: <from Moleskine>
+			= Preview: 
+				= <from Moleskine>
+				- FIX: undo
+				- FIX: changing view (zoom/scroll) doesn't update tool's visualization
+					- Tool::OnViewChange
+						- We do exactly as MouseMovement
+				- Verify L/R buttons transitions happen before mouse move
+			- Anchor
 	+ Structural Eraser tool:
 		+ Reuse pencil tool, with extra template arg
 	- Strategy for other tools' enums - to make it work for now
@@ -94,6 +101,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- TODOHERE
 
 - Electrical layer:
+	- PencilTool: fix instance index given to fill
 	- TODOHERE: some basics
 
 - Finalize design of Ropes layer

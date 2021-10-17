@@ -49,9 +49,6 @@ ModelController::ModelController(
     UpdateElectricalLayerVisualization(wholeShipSpace);
     UpdateRopesLayerVisualization(wholeShipSpace);
     UpdateTextureLayerVisualization(wholeShipSpace);
-
-    // Upload visualization
-    UploadVisualization();
 }
 
 ShipDefinition ModelController::MakeShipDefinition() const
@@ -155,8 +152,9 @@ void ModelController::StructuralRegionFill(
 }
 
 void ModelController::StructuralRegionReplace(
-    StructuralLayerBuffer const & layerBufferRegion,
-    ShipSpaceCoordinates const & origin)
+    StructuralLayerBuffer const & sourceLayerBufferRegion,
+    ShipSpaceRect const & sourceRegion,
+    ShipSpaceCoordinates const & targetOrigin)
 {
     assert(mModel.HasLayer(LayerType::Structural));
 
@@ -165,15 +163,15 @@ void ModelController::StructuralRegionReplace(
     //
 
     mModel.GetStructuralLayerBuffer().BlitFromRegion(
-        layerBufferRegion,
-        { {0, 0}, layerBufferRegion.Size },
-        origin);
+        sourceLayerBufferRegion,
+        sourceRegion,
+        targetOrigin);
 
     //
     // Update visualization
     //
 
-    UpdateStructuralLayerVisualization({ origin, layerBufferRegion.Size });
+    UpdateStructuralLayerVisualization({ targetOrigin, sourceRegion.size });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -214,8 +212,9 @@ void ModelController::ElectricalRegionFill(
 }
 
 void ModelController::ElectricalRegionReplace(
-    ElectricalLayerBuffer const & layerBufferRegion,
-    ShipSpaceCoordinates const & origin)
+    ElectricalLayerBuffer const & sourceLayerBufferRegion,
+    ShipSpaceRect const & sourceRegion,
+    ShipSpaceCoordinates const & targetOrigin)
 {
     assert(mModel.HasLayer(LayerType::Electrical));
 

@@ -337,8 +337,12 @@ void View::UploadStructuralLayerVisualizationTexture(RgbaImageData const & textu
     // Create vertices
     //
 
-    float const fWidth = static_cast<float>(texture.Size.width);
-    float const fHeight = static_cast<float>(texture.Size.height);
+    // TODOTEST
+    //float const fWidth = static_cast<float>(texture.Size.width);
+    //float const fHeight = static_cast<float>(texture.Size.height);
+
+    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
+    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
 
     std::array<TextureVertex, 4> vertexBuffer;
 
@@ -349,17 +353,17 @@ void View::UploadStructuralLayerVisualizationTexture(RgbaImageData const & textu
 
     // Top-left
     vertexBuffer[1] = TextureVertex(
-        vec2f(0.0f, fHeight),
+        vec2f(0.0f, shipHeight),
         vec2f(0.0f, 1.0f));
 
     // Bottom-right
     vertexBuffer[2] = TextureVertex(
-        vec2f(fWidth, 0.0f),
+        vec2f(shipWidth, 0.0f),
         vec2f(1.0f, 0.0f));
 
     // Top-right
     vertexBuffer[3] = TextureVertex(
-        vec2f(fWidth, fHeight),
+        vec2f(shipWidth, shipHeight),
         vec2f(1.0f, 1.0f));
 
     //
