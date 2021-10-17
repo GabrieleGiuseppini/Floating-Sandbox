@@ -57,7 +57,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 		= Tool settings: size
 			+ Size panel
 			+ PencilTool: use size
-			= Rearc layer visualization
+			+ Rearc layer visualization
 				+ Move buffers from Model into ModelController
 					+ Add to model controller
 					+ Remove from Model
@@ -69,9 +69,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Ask ModelController to upload visualization (which is based on dirtyness of visualization buffers)
 					+ Ask UIInterface to Refresh()
 				+ View: terminology: "StructuralLayerVisualizationTexture"
-				- Rethink removal of layers: need to trigger "turning off" of View textures
-					- Sequence is: update (@MC), upload (@C)
-					- See if can redo as truth-intent
+				+ Rethink removal of layers: need to trigger "turning off" of View textures
+					! Sequence is: update (@MC), upload (@C)
+					+ View::HasStructural/.../Texture() -> bool
+					+ MC::Upload: if MC !have && view.has => View::RemoveStructural/.../Texture()
 			- Preview: <from Moleskine>
 	+ Structural Eraser tool:
 		+ Reuse pencil tool, with extra template arg

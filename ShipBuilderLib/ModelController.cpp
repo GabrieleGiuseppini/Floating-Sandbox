@@ -72,7 +72,8 @@ ShipDefinition ModelController::MakeShipDefinition() const
 void ModelController::UploadVisualization()
 {
     //
-    // Upload visualizations that are dirty
+    // Upload visualizations that are dirty, and
+    // remove visualizations that are not needed
     //
 
     if (mDirtyStructuralLayerVisualizationRegion.has_value())
@@ -83,12 +84,24 @@ void ModelController::UploadVisualization()
         mDirtyStructuralLayerVisualizationRegion.reset();
     }
 
-    if (mDirtyElectricalLayerVisualizationRegion.has_value())
+    if (mElectricalLayerVisualizationTexture)
     {
-        assert(mElectricalLayerVisualizationTexture);
-        // TODO: upload to view
+        // TODOHERE: sync presence wrt View
+        if (mDirtyElectricalLayerVisualizationRegion.has_value())
+        {
+            mView.UploadElectricalLayerVisualizationTexture(*mElectricalLayerVisualizationTexture);
 
-        mDirtyElectricalLayerVisualizationRegion.reset();
+            mDirtyElectricalLayerVisualizationRegion.reset();
+        }
+    }
+    else
+    {
+        assert(!mDirtyElectricalLayerVisualizationRegion.has_value());
+
+        if (mView.HasElectricalLayerVisualizationTexture())
+        {
+            mView.RemoveElectricalLayerVisualizationTexture();
+        }
     }
 
     // TODO: other layers

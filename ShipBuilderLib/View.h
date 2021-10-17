@@ -115,16 +115,38 @@ public:
     // Sticky, always drawn
     void UploadBackgroundTexture(RgbaImageData && texture);
 
-    // Sticky
+    //
+    // Structural (all sticky)
+    //
+
     void UploadStructuralLayerVisualizationTexture(RgbaImageData const & texture);
 
-    // Sticky
     void UpdateStructuralLayerVisualizationTexture(
         rgbaColor const * regionPixels,
         int xOffset,
         int yOffset,
         int width,
         int height);
+
+    //
+    // Electrical (all sticky)
+    //
+
+    void UploadElectricalLayerVisualizationTexture(RgbaImageData const & texture);
+
+    void UpdateElectricalLayerVisualizationTexture(
+        rgbaColor const * regionPixels,
+        int xOffset,
+        int yOffset,
+        int width,
+        int height);
+
+    void RemoveElectricalLayerVisualizationTexture();
+
+    bool HasElectricalLayerVisualizationTexture() const
+    {
+        return mHasElectricalTexture;
+    }
 
 public:
 
@@ -228,6 +250,12 @@ private:
     GameOpenGLVBO mStructuralTextureVBO;
     GameOpenGLTexture mStructuralTextureOpenGLHandle;
     bool mHasStructuralTexture;
+
+    // Electrical texture
+    GameOpenGLVAO mElectricalTextureVAO;
+    GameOpenGLVBO mElectricalTextureVBO;
+    GameOpenGLTexture mElectricalTextureOpenGLHandle;
+    bool mHasElectricalTexture;
 
     // Grid
     GameOpenGLVAO mGridVAO;

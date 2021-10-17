@@ -27,6 +27,7 @@ View::View(
     //////////////////////////////////
     , mHasBackgroundTexture(false)
     , mHasStructuralTexture(false)
+    , mHasElectricalTexture(false)
     , mIsGridEnabled(isGridEnabled)
 {
     //
@@ -168,6 +169,52 @@ View::View(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mStructuralTextureVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+    //
+    // Initialize Electrical texture and VAO
+    //
+
+    {
+        GLuint tmpGLuint;
+
+        //
+        // Texture
+        //
+
+        // Create texture OpenGL handle
+        glGenTextures(1, &tmpGLuint);
+        mElectricalTextureOpenGLHandle = tmpGLuint;
+
+        // Configure texture
+        glBindTexture(GL_TEXTURE_2D, *mElectricalTextureOpenGLHandle);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        CheckOpenGLError();
+
+        //
+        // VAO
+        //
+
+        // Create VAO
+        glGenVertexArrays(1, &tmpGLuint);
+        mElectricalTextureVAO = tmpGLuint;
+        glBindVertexArray(*mElectricalTextureVAO);
+        CheckOpenGLError();
+
+        // Create VBO
+        glGenBuffers(1, &tmpGLuint);
+        mElectricalTextureVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mElectricalTextureVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
@@ -351,6 +398,89 @@ void View::UpdateStructuralLayerVisualizationTexture(
         height);
 }
 
+void View::UploadElectricalLayerVisualizationTexture(RgbaImageData const & texture)
+{
+    //
+    // Upload texture
+    //
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mElectricalTextureOpenGLHandle);
+    CheckOpenGLError();
+
+    // Upload texture
+    GameOpenGL::UploadTexture(texture);
+
+    //
+    // Create vertices
+    //
+
+    float const fWidth = static_cast<float>(texture.Size.width);
+    float const fHeight = static_cast<float>(texture.Size.height);
+
+    std::array<TextureVertex, 4> vertexBuffer;
+
+    // Bottom-left
+    vertexBuffer[0] = TextureVertex(
+        vec2f(0.0f, 0.0f),
+        vec2f(0.0f, 0.0f));
+
+    // Top-left
+    vertexBuffer[1] = TextureVertex(
+        vec2f(0.0f, fHeight),
+        vec2f(0.0f, 1.0f));
+
+    // Bottom-right
+    vertexBuffer[2] = TextureVertex(
+        vec2f(fWidth, 0.0f),
+        vec2f(1.0f, 0.0f));
+
+    // Top-right
+    vertexBuffer[3] = TextureVertex(
+        vec2f(fWidth, fHeight),
+        vec2f(1.0f, 1.0f));
+
+    //
+    // Upload vertices
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mElectricalTextureVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(TextureVertex), vertexBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //
+    // Remember we have this texture
+    //
+
+    mHasElectricalTexture = true;
+}
+
+void View::UpdateElectricalLayerVisualizationTexture(
+    rgbaColor const * regionPixels,
+    int xOffset,
+    int yOffset,
+    int width,
+    int height)
+{
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mElectricalTextureOpenGLHandle);
+    CheckOpenGLError();
+
+    // Upload texture region
+    GameOpenGL::UploadTextureRegion(
+        regionPixels,
+        xOffset,
+        yOffset,
+        width,
+        height);
+}
+
+void View::RemoveElectricalLayerVisualizationTexture()
+{
+    mHasElectricalTexture = false;
+}
+
 void View::Render()
 {
     //
@@ -397,7 +527,6 @@ void View::Render()
         CheckOpenGLError();
     }
 
-
     // Structural texture
     if (mHasStructuralTexture)
     {
@@ -407,6 +536,24 @@ void View::Render()
 
         // Bind VAO
         glBindVertexArray(*mStructuralTextureVAO);
+
+        // Activate program
+        mShaderManager->ActivateProgram<ProgramType::Texture>();
+
+        // Draw
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        CheckOpenGLError();
+    }
+
+    // Electrical texture
+    if (mHasElectricalTexture)
+    {
+        // Set this texture in the shader's sampler
+        mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+        glBindTexture(GL_TEXTURE_2D, *mElectricalTextureOpenGLHandle);
+
+        // Bind VAO
+        glBindVertexArray(*mElectricalTextureVAO);
 
         // Activate program
         mShaderManager->ActivateProgram<ProgramType::Texture>();
