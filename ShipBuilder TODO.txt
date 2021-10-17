@@ -76,10 +76,27 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Preview: <from Moleskine>
 	+ Structural Eraser tool:
 		+ Reuse pencil tool, with extra template arg
-	- Electrical layer:
-		- TODOHERE: some basics
 	- Strategy for other tools' enums - to make it work for now
-		- Dummy tool?
+		- Nuk 'em
+
+- Controller/Tools/WorkSpace/Mouse canvas strategy:
+	- TODO: see if a new strategy is really needed - isn't current strategy acceptable?
+	- Spec:
+		- When mouse is not down, cursor changes depending on whether or not mouse is inside rect
+		- At left down, tool "captures mouse" and from that moment:
+			- Cursor stays even when mouse is out (while normally, when left is not down, cursor would change to normal)
+			- Action is done, but only *applied* if in rect (obviously) 
+				- e.g. pencil: simply doesn't write if out (obviously)
+				- e.g. line: line endpoint follows mouse even if out, but line drawn is only within rect (obviously)
+		- Should also take care of functionality current in pencil tool, i.e. checking if mouse position is within rect, and
+		  transforming mouse coords into work space coords
+	- Impl:
+		- TODOHERE
+
+- Electrical layer:
+	- TODOHERE: some basics
+
+- Finalize design of Ropes layer
 
 - Complete Load/Save/Model
 	- Finalize storage of all other ship definition members in Model
@@ -95,20 +112,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- AutoTexturizationSettings
 	- Tests:
 		- Make sure loading a ship w/legacy electricals makes up an electrical layer, and saving it saves the electricals
-
-- Controller/Tools/WorkSpace/Mouse canvas strategy:
-	- TODO: see if a new strategy is really needed - isn't current strategy acceptable?
-	- Spec:
-		- When mouse is not down, cursor changes depending on whether or not mouse is inside rect
-		- At left down, tool "captures mouse" and from that moment:
-			- Cursor stays even when mouse is out (while normally, when left is not down, cursor would change to normal)
-			- Action is done, but only *applied* if in rect (obviously) 
-				- e.g. pencil: simply doesn't write if out (obviously)
-				- e.g. line: line endpoint follows mouse even if out, but line drawn is only within rect (obviously)
-		- Should also take care of functionality current in pencil tool, i.e. checking if mouse position is within rect, and
-		  transforming mouse coords into work space coords
-	- Impl:
-		- TODOHERE
 
 - Import/Export:
 	- Structural:
@@ -131,6 +134,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 				- Ad-hoc code using ImageFileTools
 			- .shp, .shp2 (load whole and throw away)
 		- No export (just useless at this moment)
+	- Notes:
+		- Any import from .shp2 requires password
 
 - Send for testing
 
@@ -365,8 +370,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 = Ship file format:
 	+ Fixed endianness
 		+ See https://github.com/voidah/archive/blob/master/archive.h
-	- FS version
-		- Only used for warnings in case materials not found and cur version > file version
+	+ FS version
+		+ Only used for warnings in case materials not found and cur version > file version
 	- "File lock" which disallows editing
 		! Password from user; salted -> Hash in Metadata
 		! Verify hash matches when editing
@@ -376,6 +381,21 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- ShipBuilder::Open and Game::EditInShipBuilder: After load, ShipDeSerializer::CalculatePasswordHash(password) => check with metadata
 	- Also includes sounds
 		- Extract from other "TODO" .txt file
+
+- Visualization modes:
+	- There's always a structural visualization mode, depends on texture as well
+		- Choices:
+			- Particle
+			- Auto-Texturization (only if no texture layer exists)
+	- Then, electrical, when present, has own on top of that
+		- Choices:
+			- Particle
+			- Circuit (long-term)
+	- Ropes:
+		- Lines
+	- Texture:
+		- Matte
+		- With structural mesh
 
 - Ubuntu:
 	- Test User Ships folder
