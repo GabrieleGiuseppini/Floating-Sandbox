@@ -15,7 +15,6 @@ std::unique_ptr<ModelController> ModelController::CreateNew(
     View & view)
 {
     Model model = Model(shipSpaceSize, shipName);
-    RepopulateDerivedStructuralData(model, { ShipSpaceCoordinates(0, 0), model.GetShipSize() });
 
     return std::unique_ptr<ModelController>(
         new ModelController(
@@ -28,7 +27,6 @@ std::unique_ptr<ModelController> ModelController::CreateForShip(
     View & view)
 {
     Model model = Model(std::move(shipDefinition));
-    RepopulateDerivedStructuralData(model, { ShipSpaceCoordinates(0, 0), model.GetShipSize() });
 
     return std::unique_ptr<ModelController>(
         new ModelController(
@@ -45,8 +43,15 @@ ModelController::ModelController(
     // Model is not dirty now
     assert(!mModel.GetIsDirty());
 
-    // Upload view
-    UploadStructuralLayerToView();
+    // Prepare all visualizations
+    ShipSpaceRect const wholeShipSpace = ShipSpaceRect({ 0, 0 }, mModel.GetShipSize());
+    UpdateStructuralLayerVisualization(wholeShipSpace);
+    UpdateElectricalLayerVisualization(wholeShipSpace);
+    UpdateRopesLayerVisualization(wholeShipSpace);
+    UpdateTextureLayerVisualization(wholeShipSpace);
+
+    // Upload visualization
+    UploadVisualization();
 }
 
 ShipDefinition ModelController::MakeShipDefinition() const
@@ -64,6 +69,31 @@ ShipDefinition ModelController::MakeShipDefinition() const
         std::nullopt);
 }
 
+void ModelController::UploadVisualization()
+{
+    //
+    // Upload visualizations that are dirty
+    //
+
+    if (mDirtyStructuralLayerVisualizationRegion.has_value())
+    {
+        assert(mStructuralLayerVisualizationTexture);
+        mView.UploadStructuralLayerVisualizationTexture(*mStructuralLayerVisualizationTexture);
+
+        mDirtyStructuralLayerVisualizationRegion.reset();
+    }
+
+    if (mDirtyElectricalLayerVisualizationRegion.has_value())
+    {
+        assert(mElectricalLayerVisualizationTexture);
+        // TODO: upload to view
+
+        mDirtyElectricalLayerVisualizationRegion.reset();
+    }
+
+    // TODO: other layers
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Structural
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,7 +102,7 @@ void ModelController::NewStructuralLayer()
 {
     mModel.NewStructuralLayer();
 
-    UploadStructuralLayerToView();
+    UpdateStructuralLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
 }
 
 void ModelController::SetStructuralLayer(/*TODO*/)
@@ -81,7 +111,7 @@ void ModelController::SetStructuralLayer(/*TODO*/)
 
     mModel.SetStructuralLayer();
 
-    UploadStructuralLayerToView();
+    UpdateStructuralLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
 }
 
 void ModelController::StructuralRegionFill(
@@ -104,25 +134,11 @@ void ModelController::StructuralRegionFill(
         }
     }
 
-    // Update derived data
-    RepopulateDerivedStructuralData(mModel, region);
-
     //
-    // Update view
+    // Update visualization
     //
 
-    if (region.size.height == 1)
-    {
-        // Just one row - upload partial
-        UploadStructuralLayerRowToView(
-            region.origin,
-            region.size.width);
-    }
-    else
-    {
-        // More than one row - upload whole
-        UploadStructuralLayerToView();
-    }
+    UpdateStructuralLayerVisualization(region);
 }
 
 void ModelController::StructuralRegionReplace(
@@ -140,16 +156,11 @@ void ModelController::StructuralRegionReplace(
         { {0, 0}, layerBufferRegion.Size },
         origin);
 
-    // Update derived data
-    RepopulateDerivedStructuralData(
-        mModel,
-        { origin, layerBufferRegion.Size });
-
     //
-    // Update view
+    // Update visualization
     //
 
-    UploadStructuralLayerToView();
+    UpdateStructuralLayerVisualization({ origin, layerBufferRegion.Size });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -160,7 +171,7 @@ void ModelController::NewElectricalLayer()
 {
     mModel.NewElectricalLayer();
 
-    // TODO: upload to view
+    UpdateElectricalLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
 }
 
 void ModelController::SetElectricalLayer(/*TODO*/)
@@ -169,7 +180,7 @@ void ModelController::SetElectricalLayer(/*TODO*/)
 
     mModel.SetElectricalLayer();
 
-    // TODO: upload to view
+    UpdateElectricalLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
 }
 
 void ModelController::RemoveElectricalLayer()
@@ -178,7 +189,8 @@ void ModelController::RemoveElectricalLayer()
 
     mModel.RemoveElectricalLayer();
 
-    // TODO: upload to view
+    mElectricalLayerVisualizationTexture.reset();
+    mDirtyElectricalLayerVisualizationRegion.reset();
 }
 
 void ModelController::ElectricalRegionFill(
@@ -194,7 +206,7 @@ void ModelController::ElectricalRegionReplace(
 {
     assert(mModel.HasLayer(LayerType::Electrical));
 
-    // TODOHERE
+    // TODOHERE - copy from Structural
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -205,7 +217,7 @@ void ModelController::NewRopesLayer()
 {
     mModel.NewRopesLayer();
 
-    // TODO: upload to view
+    UpdateRopesLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
 }
 
 void ModelController::SetRopesLayer(/*TODO*/)
@@ -214,7 +226,7 @@ void ModelController::SetRopesLayer(/*TODO*/)
 
     mModel.SetRopesLayer();
 
-    // TODO: upload to view
+    UpdateRopesLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
 }
 
 void ModelController::RemoveRopesLayer()
@@ -223,7 +235,7 @@ void ModelController::RemoveRopesLayer()
 
     mModel.RemoveRopesLayer();
 
-    // TODO: upload to view
+    // TODO: remove visualization members
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -234,7 +246,7 @@ void ModelController::NewTextureLayer()
 {
     mModel.NewTextureLayer();
 
-    // TODO: upload to view
+    UpdateTextureLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
 }
 
 void ModelController::SetTextureLayer(/*TODO*/)
@@ -243,7 +255,7 @@ void ModelController::SetTextureLayer(/*TODO*/)
 
     mModel.SetTextureLayer();
 
-    // TODO: upload to view
+    UpdateTextureLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
 }
 
 void ModelController::RemoveTextureLayer()
@@ -252,19 +264,32 @@ void ModelController::RemoveTextureLayer()
 
     mModel.RemoveTextureLayer();
 
-    // TODO: upload to view
+    // TODO: remove visualization members
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ModelController::RepopulateDerivedStructuralData(
-    Model & model,
-    ShipSpaceRect const & region)
+void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & region)
 {
+    assert(mModel.HasLayer(LayerType::Structural));
+
+    // Make sure we have a texture
+    if (!mStructuralLayerVisualizationTexture)
+    {
+        mStructuralLayerVisualizationTexture = std::make_unique<RgbaImageData>(mModel.GetShipSize().width, mModel.GetShipSize().height);
+    }
+
+    assert(mStructuralLayerVisualizationTexture->Size.width == mModel.GetShipSize().width
+        && mStructuralLayerVisualizationTexture->Size.height == mModel.GetShipSize().height);
+
+    // Update visualization
+
+    // TODO: check current visualization settings and decide how to visualize
+
     rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 255);
 
-    StructuralLayerBuffer const & structuralLayerBuffer = model.GetStructuralLayerBuffer();
-    RgbaImageData & structuralRenderColorTexture = model.GetStructuralRenderColorTexture();
+    StructuralLayerBuffer const & structuralLayerBuffer = mModel.GetStructuralLayerBuffer();
+    RgbaImageData & structuralRenderColorTexture = *mStructuralLayerVisualizationTexture;
 
     for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
     {
@@ -278,43 +303,55 @@ void ModelController::RepopulateDerivedStructuralData(
         }
     }
 
-    ////// TEST: initializing with checker pattern
-    ////for (int y = 0; y < size.height; ++y)
-    ////{
-    ////    for (int x = 0; x < size.width; ++x)
-    ////    {
-    ////        rgbaColor color;
-    ////        if (x == 0 || x == size.width - 1 || y == 0 || y == size.height - 1)
-    ////            color = rgbaColor(0, 0, 255, 255);
-    ////        else
-    ////            color = rgbaColor(
-    ////                ((x + y) % 2) ? 255 : 0,
-    ////                ((x + y) % 2) ? 0 : 255,
-    ////                0,
-    ////                255);
-
-    ////        (*mStructuralRenderColorTexture)[ImageCoordinates(x, y)] = color;
-    ////    }
-    ////}
+    // Remember dirty region
+    ImageRect const imageRegion = ImageRect({ region.origin.x, region.origin.y }, { region.size.width, region.size.height });
+    if (!mDirtyStructuralLayerVisualizationRegion.has_value())
+    {
+        mDirtyStructuralLayerVisualizationRegion = imageRegion;
+    }
+    else
+    {
+        mDirtyStructuralLayerVisualizationRegion->UnionWith(imageRegion);
+    }
 }
 
-void ModelController::UploadStructuralLayerToView()
+void ModelController::UpdateElectricalLayerVisualization(ShipSpaceRect const & region)
 {
-    mView.UploadStructuralTexture(mModel.GetStructuralRenderColorTexture());
+    if (!mModel.HasLayer(LayerType::Electrical))
+    {
+        return;
+    }
+
+    // Make sure we have a texture
+    if (!mElectricalLayerVisualizationTexture)
+    {
+        mElectricalLayerVisualizationTexture = std::make_unique<RgbaImageData>(mModel.GetShipSize().width, mModel.GetShipSize().height);
+    }
+
+    assert(mElectricalLayerVisualizationTexture->Size.width == mModel.GetShipSize().width
+        && mElectricalLayerVisualizationTexture->Size.height == mModel.GetShipSize().height);
+
+    // TODO
 }
 
-void ModelController::UploadStructuralLayerRowToView(
-    ShipSpaceCoordinates const & origin,
-    int width)
+void ModelController::UpdateRopesLayerVisualization(ShipSpaceRect const & region)
 {
-    int const linearOffset = origin.y * mModel.GetShipSize().width + origin.x;
+    if (!mModel.HasLayer(LayerType::Ropes))
+    {
+        return;
+    }
 
-    mView.UpdateStructuralTextureRegion(
-        &(mModel.GetStructuralRenderColorTexture().Data[linearOffset]),
-        origin.x,
-        origin.y,
-        width,
-        1);
+    // TODO
+}
+
+void ModelController::UpdateTextureLayerVisualization(ShipSpaceRect const & region)
+{
+    if (!mModel.HasLayer(LayerType::Texture))
+    {
+        return;
+    }
+
+    // TODO
 }
 
 }

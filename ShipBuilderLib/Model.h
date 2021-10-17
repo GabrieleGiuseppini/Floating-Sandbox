@@ -11,8 +11,6 @@
 #include <Game/Materials.h>
 #include <Game/ShipDefinition.h>
 
-#include <GameCore/ImageData.h>
-
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -162,18 +160,6 @@ public:
         return *mStructuralLayerBuffer;
     }
 
-    RgbaImageData const & GetStructuralRenderColorTexture() const
-    {
-        assert(mStructuralRenderColorTexture);
-        return *mStructuralRenderColorTexture;
-    }
-
-    RgbaImageData & GetStructuralRenderColorTexture()
-    {
-        assert(mStructuralRenderColorTexture);
-        return *mStructuralRenderColorTexture;
-    }
-
     TextureLayerBuffer const & GetTextureLayerBuffer() const
     {
         assert(mTextureLayerBuffer);
@@ -184,8 +170,6 @@ private:
 
     static std::unique_ptr<StructuralLayerBuffer> MakeNewStructuralLayer(ShipSpaceSize const & shipSize);
 
-    void InitializeDerivedStructuralData();
-
 private:
 
     ShipSpaceSize mShipSize;
@@ -193,17 +177,10 @@ private:
     ShipMetadata mShipMetadata;
 
     //
-    // Structural layer
+    // Layers
     //
 
     std::unique_ptr<StructuralLayerBuffer> mStructuralLayerBuffer;
-
-    // Derived buffers
-    std::unique_ptr<RgbaImageData> mStructuralRenderColorTexture;
-
-    //
-    // Texture layer
-    //
 
     std::unique_ptr<TextureLayerBuffer> mTextureLayerBuffer;
 

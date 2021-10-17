@@ -273,7 +273,7 @@ void View::UploadBackgroundTexture(RgbaImageData && texture)
     mHasBackgroundTexture = true;
 }
 
-void View::UploadStructuralTexture(RgbaImageData const & texture)
+void View::UploadStructuralLayerVisualizationTexture(RgbaImageData const & texture)
 {
     //
     // Upload texture
@@ -331,7 +331,7 @@ void View::UploadStructuralTexture(RgbaImageData const & texture)
     mHasStructuralTexture = true;
 }
 
-void View::UpdateStructuralTextureRegion(
+void View::UpdateStructuralLayerVisualizationTexture(
     rgbaColor const * regionPixels,
     int xOffset,
     int yOffset,

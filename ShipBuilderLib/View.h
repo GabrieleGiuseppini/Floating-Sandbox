@@ -116,17 +116,15 @@ public:
     void UploadBackgroundTexture(RgbaImageData && texture);
 
     // Sticky
-    void UploadStructuralTexture(RgbaImageData const & texture);
+    void UploadStructuralLayerVisualizationTexture(RgbaImageData const & texture);
 
     // Sticky
-    void UpdateStructuralTextureRegion(
+    void UpdateStructuralLayerVisualizationTexture(
         rgbaColor const * regionPixels,
         int xOffset,
         int yOffset,
         int width,
         int height);
-
-    // TODO: update method as well
 
 public:
 

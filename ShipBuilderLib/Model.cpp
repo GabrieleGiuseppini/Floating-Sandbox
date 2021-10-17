@@ -19,9 +19,6 @@ Model::Model(
     , mTextureLayerBuffer() // None
     , mDirtyState()
 {
-    // Initialize derived structural data
-    InitializeDerivedStructuralData();
-
     // Initialize presence map
     mLayerPresenceMap.fill(false);
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
@@ -35,9 +32,6 @@ Model::Model(ShipDefinition && shipDefinition)
     , mTextureLayerBuffer(std::move(shipDefinition.TextureLayer))
     , mDirtyState()
 {
-    // Initialize derived structural data
-    InitializeDerivedStructuralData();
-
     // Initialize presence map
     mLayerPresenceMap.fill(false);
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
@@ -49,7 +43,6 @@ void Model::NewStructuralLayer()
 {
     // Reset layer
     mStructuralLayerBuffer = MakeNewStructuralLayer(mShipSize);
-    InitializeDerivedStructuralData();
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
@@ -150,11 +143,6 @@ std::unique_ptr<StructuralLayerBuffer> Model::MakeNewStructuralLayer(ShipSpaceSi
     return std::make_unique<StructuralLayerBuffer>(
         shipSize,
         StructuralElement(nullptr)); // No material
-}
-
-void Model::InitializeDerivedStructuralData()
-{
-    mStructuralRenderColorTexture = std::make_unique<RgbaImageData>(mShipSize.width, mShipSize.height);
 }
 
 }

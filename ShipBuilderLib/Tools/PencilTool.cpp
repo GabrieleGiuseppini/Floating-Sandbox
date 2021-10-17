@@ -298,7 +298,9 @@ void PencilTool<TLayer, IsEraser>::CheckEdit(InputState const & inputState)
         [&](ShipSpaceCoordinates const & pos)
         {
             // Calc applicable rect intersecting pencil with workspace size
-            auto const applicableRect = ShipSpaceRect(pos, { pencilSize, pencilSize }).MakeIntersectionWith({ { 0, 0 }, mModelController.GetModel().GetShipSize() });
+            auto const applicableRect =
+                ShipSpaceRect(pos, { pencilSize, pencilSize })
+                .MakeIntersectionWith({ { 0, 0 }, mModelController.GetModel().GetShipSize() });
             if (applicableRect)
             {
                 if constexpr (TLayer == LayerType::Structural)
@@ -324,7 +326,8 @@ void PencilTool<TLayer, IsEraser>::CheckEdit(InputState const & inputState)
     // Mark layer as dirty
     SetLayerDirty(TLayer);
 
-    // Force view refresh
+    // Refresh model visualization
+    mModelController.UploadVisualization();
     mUserInterface.RefreshView();
 
     // Update previous engagement

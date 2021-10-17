@@ -13,8 +13,10 @@
 #include <Game/ShipDefinition.h>
 
 #include <GameCore/GameTypes.h>
+#include <GameCore/ImageData.h>
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace ShipBuilder {
@@ -35,6 +37,12 @@ public:
         ShipDefinition && shipDefinition,
         View & view);
 
+
+    Model const & GetModel() const
+    {
+        return mModel;
+    }
+
     ShipDefinition MakeShipDefinition() const;
 
     void SetLayerDirty(LayerType layer)
@@ -51,6 +59,8 @@ public:
     {
         mModel.ClearIsDirty();
     }
+
+    void UploadVisualization();
 
     //
     // Structural
@@ -99,32 +109,37 @@ public:
     void SetTextureLayer(/*TODO*/);
     void RemoveTextureLayer();
 
-    Model const & GetModel() const
-    {
-        return mModel;
-    }
-
 private:
 
     ModelController(
         Model && model,
         View & view);
 
-    static void RepopulateDerivedStructuralData(
-        Model & model,
-        ShipSpaceRect const & region);
+    void UpdateStructuralLayerVisualization(ShipSpaceRect const & region);
 
-    void UploadStructuralLayerToView();
+    void UpdateElectricalLayerVisualization(ShipSpaceRect const & region);
 
-    void UploadStructuralLayerRowToView(
-        ShipSpaceCoordinates const & origin,
-        int width);
+    void UpdateRopesLayerVisualization(ShipSpaceRect const & region);
+
+    void UpdateTextureLayerVisualization(ShipSpaceRect const & region);
 
 private:
 
     View & mView;
 
     Model mModel;
+
+    //
+    // Visualizations
+    //
+
+    std::unique_ptr<RgbaImageData> mStructuralLayerVisualizationTexture;
+    std::optional<ImageRect> mDirtyStructuralLayerVisualizationRegion;
+
+    std::unique_ptr<RgbaImageData> mElectricalLayerVisualizationTexture;
+    std::optional<ImageRect> mDirtyElectricalLayerVisualizationRegion;
+
+    // TODO: other layers
 };
 
 }

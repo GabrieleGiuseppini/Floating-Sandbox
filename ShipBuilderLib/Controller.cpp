@@ -82,8 +82,12 @@ Controller::Controller(
     // Set ideal zoom
     mView.SetZoom(mView.CalculateIdealZoom());
 
+    // Notify our initializations
     mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
     mUserInterface.OnCurrentToolChanged(mCurrentTool->GetType());
+
+    // Upload layers visualization
+    mModelController->UploadVisualization();
 }
 
 void Controller::ClearModelDirty()
@@ -97,22 +101,29 @@ void Controller::NewStructuralLayer()
     mModelController->NewStructuralLayer();
     mUserInterface.OnLayerPresenceChanged();
 
+    // Switch primary layer to this one
+    SelectPrimaryLayer(LayerType::Structural);
+
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Structural);
     mUserInterface.OnModelDirtyChanged();
 
-    // Switch primary layer to this one
-    SelectPrimaryLayer(LayerType::Structural);
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
 }
 
 void Controller::SetStructuralLayer(/*TODO*/)
 {
-    mModelController->SetStructuralLayer();
-    mUserInterface.OnLayerPresenceChanged();
+    mModelController->SetStructuralLayer(/*TODO*/);
 
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Structural);
     mUserInterface.OnModelDirtyChanged();
+
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
 }
 
 void Controller::RestoreLayerBufferRegion(
@@ -124,6 +135,10 @@ void Controller::RestoreLayerBufferRegion(
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Structural);
     mUserInterface.OnModelDirtyChanged();
+
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
 }
 
 void Controller::NewElectricalLayer()
@@ -131,22 +146,29 @@ void Controller::NewElectricalLayer()
     mModelController->NewElectricalLayer();
     mUserInterface.OnLayerPresenceChanged();
 
+    // Switch primary layer to this one
+    SelectPrimaryLayer(LayerType::Electrical);
+
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Electrical);
     mUserInterface.OnModelDirtyChanged();
 
-    // Switch primary layer to this one
-    SelectPrimaryLayer(LayerType::Electrical);
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
 }
 
 void Controller::SetElectricalLayer(/*TODO*/)
 {
     mModelController->SetElectricalLayer();
-    mUserInterface.OnLayerPresenceChanged();
 
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Electrical);
     mUserInterface.OnModelDirtyChanged();
+
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
 }
 
 void Controller::RemoveElectricalLayer()
@@ -154,15 +176,19 @@ void Controller::RemoveElectricalLayer()
     mModelController->RemoveElectricalLayer();
     mUserInterface.OnLayerPresenceChanged();
 
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Electrical);
-    mUserInterface.OnModelDirtyChanged();
-
     // Switch primary layer to structural if it was this one
     if (mPrimaryLayer == LayerType::Electrical)
     {
         SelectPrimaryLayer(LayerType::Structural);
     }
+
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Electrical);
+    mUserInterface.OnModelDirtyChanged();
+
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
 }
 
 void Controller::RestoreLayerBufferRegion(
@@ -177,22 +203,29 @@ void Controller::NewRopesLayer()
     mModelController->NewRopesLayer();
     mUserInterface.OnLayerPresenceChanged();
 
+    // Switch primary layer to this one
+    SelectPrimaryLayer(LayerType::Ropes);
+
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Ropes);
     mUserInterface.OnModelDirtyChanged();
 
-    // Switch primary layer to this one
-    SelectPrimaryLayer(LayerType::Ropes);
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
 }
 
 void Controller::SetRopesLayer(/*TODO*/)
 {
     mModelController->SetRopesLayer();
-    mUserInterface.OnLayerPresenceChanged();
 
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Ropes);
     mUserInterface.OnModelDirtyChanged();
+
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
 }
 
 void Controller::RemoveRopesLayer()
@@ -200,15 +233,19 @@ void Controller::RemoveRopesLayer()
     mModelController->RemoveRopesLayer();
     mUserInterface.OnLayerPresenceChanged();
 
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Ropes);
-    mUserInterface.OnModelDirtyChanged();
-
     // Switch primary layer to structural if it was this one
     if (mPrimaryLayer == LayerType::Ropes)
     {
         SelectPrimaryLayer(LayerType::Structural);
     }
+
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Ropes);
+    mUserInterface.OnModelDirtyChanged();
+
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
 }
 
 void Controller::RestoreLayerBufferRegion(
@@ -226,6 +263,10 @@ void Controller::SetTextureLayer(/*TODO*/)
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Texture);
     mUserInterface.OnModelDirtyChanged();
+
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
 }
 
 void Controller::RemoveTextureLayer()
@@ -233,15 +274,19 @@ void Controller::RemoveTextureLayer()
     mModelController->RemoveTextureLayer();
     mUserInterface.OnLayerPresenceChanged();
 
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Texture);
-    mUserInterface.OnModelDirtyChanged();
-
     // Switch primary layer to structural if it was this one
     if (mPrimaryLayer == LayerType::Texture)
     {
         SelectPrimaryLayer(LayerType::Structural);
     }
+
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Texture);
+    mUserInterface.OnModelDirtyChanged();
+
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
 }
 
 void Controller::RestoreLayerBufferRegion(
@@ -254,6 +299,7 @@ void Controller::RestoreLayerBufferRegion(
 void Controller::ResizeShip(ShipSpaceSize const & newSize)
 {
     // TODO: tell ModelController
+    // TODO: update layers visualization
     // TODO: update dirtyness (of all present layers)
 
     // Notify view of new size
@@ -279,6 +325,10 @@ void Controller::SelectPrimaryLayer(LayerType primaryLayer)
     SetCurrentTool(std::nullopt);
 
     mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
+
+    // TODO: *update* layers visualization at controller
+    // TODO: *upload* "                                "
+    // TODO: view refresh
 }
 
 std::optional<ToolType> Controller::GetCurrentTool() const
@@ -319,6 +369,7 @@ void Controller::Undo()
     auto undoAction = mUndoStack.Pop();
 
     // Apply action
+    // TODOHERE
     undoAction->ApplyAction(*this);
 
     // Restore dirtyness
@@ -327,9 +378,6 @@ void Controller::Undo()
 
     // Update undo state
     mUserInterface.OnUndoStackStateChanged();
-
-    // Force view refresh
-    mUserInterface.RefreshView();
 }
 
 void Controller::AddZoom(int deltaZoom)

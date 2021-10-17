@@ -2498,7 +2498,7 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
     // Show this tool's settings panel and hide the others
     for (auto const & entry : mToolSettingsPanels)
     {
-        bool const isSelected = (std::get<0>(entry) == *tool);
+        bool const isSelected = (tool.has_value() && std::get<0>(entry) == *tool);
 
         mToolSettingsPanelsSizer->Show(std::get<1>(entry), isSelected);
     }
