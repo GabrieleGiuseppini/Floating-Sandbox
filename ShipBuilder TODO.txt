@@ -77,8 +77,13 @@ https://gamejolt.com/x/permalink/comment/11730705
 				= <from Moleskine>
 				- FIX: undo
 				- FIX: changing view (zoom/scroll) doesn't update tool's visualization
-					- Tool::OnViewChange
-						- We do exactly as MouseMovement
+					- Controller calls MouseMove
+						- We do exactly as MouseMove
+					= Also at undo: Controller calls Tool::OnUndo(inputState)
+						+ We do Reset(inputState) which does MouseMove
+						- FIX: before controller writes into model (at Undo, but also anywhere else), tool has to mend temp visualization
+							- Then, after that, tool has to restart temp visualization
+							- Replace Tool::OnUndo() with this new API
 				- Verify L/R buttons transitions happen before mouse move
 			- Anchor
 	+ Structural Eraser tool:
