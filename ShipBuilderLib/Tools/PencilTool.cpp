@@ -192,16 +192,14 @@ void PencilTool<TLayer, IsEraser>::OnLeftMouseDown()
         assert(!mTempVisualizationDirtyShipRegion);
     }
 
-    ShipSpaceCoordinates const mouseCoords = mUserInterface.GetMouseCoordinates();
-
     if (!mEngagementData)
     {
-        StartEngagement(mouseCoords, StrongTypedFalse<IsRightMouseButton>);
+        StartEngagement(StrongTypedFalse<IsRightMouseButton>);
 
         assert(mEngagementData);
     }
 
-    DoEdit(mouseCoords);
+    DoEdit(mUserInterface.GetMouseCoordinates());
 }
 
 template<LayerType TLayer, bool IsEraser>
@@ -229,16 +227,14 @@ void PencilTool<TLayer, IsEraser>::OnRightMouseDown()
         assert(!mTempVisualizationDirtyShipRegion);
     }
 
-    ShipSpaceCoordinates const mouseCoords = mUserInterface.GetMouseCoordinates();
-
     if (!mEngagementData)
     {
-        StartEngagement(mouseCoords, StrongTypedTrue<IsRightMouseButton>);
+        StartEngagement(StrongTypedTrue<IsRightMouseButton>);
 
         assert(mEngagementData);
     }
 
-    DoEdit(mouseCoords);
+    DoEdit(mUserInterface.GetMouseCoordinates());
 }
 
 template<LayerType TLayer, bool IsEraser>
@@ -289,15 +285,12 @@ void PencilTool<TLayer, IsEraser>::TakeOriginalLayerBufferClone()
 }
 
 template<LayerType TLayer, bool IsEraser>
-void PencilTool<TLayer, IsEraser>::StartEngagement(
-    ShipSpaceCoordinates const & mouseCoordinates,
-    StrongTypedBool<struct IsRightMouseButton> isRightButton)
+void PencilTool<TLayer, IsEraser>::StartEngagement(StrongTypedBool<struct IsRightMouseButton> isRightButton)
 {
     assert(!mEngagementData);
 
     mEngagementData.emplace(
         isRightButton ? MaterialPlaneType::Background : MaterialPlaneType::Foreground,
-        mouseCoordinates,
         mModelController.GetModel().GetDirtyState());
 }
 
@@ -340,7 +333,14 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
                 auto const old = mEngagementData->EditRegion;
 
                 // Update edit region
-                mEngagementData->EditRegion.UnionWith(*applicableRect);
+                if (!mEngagementData->EditRegion)
+                {
+                    mEngagementData->EditRegion = *applicableRect;
+                }
+                else
+                {
+                    mEngagementData->EditRegion->UnionWith(*applicableRect);
+                }
 
                 hasEdited = true;
             }
@@ -365,19 +365,22 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
 {
     assert(mEngagementData);
 
-    //
-    // Create undo action
-    //
+    if (mEngagementData->EditRegion)
+    {
+        //
+        // Create undo action
+        //
 
-    auto clippedRegionClone = mOriginalLayerBufferClone->MakeCopy(mEngagementData->EditRegion);
+        auto clippedRegionClone = mOriginalLayerBufferClone->MakeCopy(*mEngagementData->EditRegion);
 
-    auto undoAction = std::make_unique<LayerBufferRegionUndoAction<typename LayerTypeTraits<TLayer>::buffer_type>>(
-        IsEraser ? _("Eraser Tool") : _("Pencil Tool"),
-        mEngagementData->OriginalDirtyState,
-        std::move(*clippedRegionClone),
-        mEngagementData->EditRegion.origin);
+        auto undoAction = std::make_unique<LayerBufferRegionUndoAction<typename LayerTypeTraits<TLayer>::buffer_type>>(
+            IsEraser ? _("Eraser Tool") : _("Pencil Tool"),
+            mEngagementData->OriginalDirtyState,
+            std::move(*clippedRegionClone),
+            mEngagementData->EditRegion->origin);
 
-    PushUndoAction(std::move(undoAction));
+        PushUndoAction(std::move(undoAction));
+    }
 
     //
     // Reset engagement

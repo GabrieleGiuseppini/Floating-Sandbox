@@ -57,9 +57,7 @@ private:
 
     void TakeOriginalLayerBufferClone();
 
-    void StartEngagement(
-        ShipSpaceCoordinates const & mouseCoordinates,
-        StrongTypedBool<struct IsRightMouseButton> isRightButton);
+    void StartEngagement(StrongTypedBool<struct IsRightMouseButton> isRightButton);
 
     void DoEdit(ShipSpaceCoordinates const & mouseCoordinates);
 
@@ -89,7 +87,7 @@ private:
         MaterialPlaneType const Plane;
 
         // Rectangle of edit operation
-        ShipSpaceRect EditRegion;
+        std::optional<ShipSpaceRect> EditRegion;
 
         // Dirty state
         Model::DirtyState OriginalDirtyState;
@@ -99,10 +97,9 @@ private:
 
         EngagementData(
             MaterialPlaneType plane,
-            ShipSpaceCoordinates const & initialPosition,
             Model::DirtyState const & dirtyState)
             : Plane(plane)
-            , EditRegion(initialPosition)
+            , EditRegion()
             , OriginalDirtyState(dirtyState)
             , PreviousEngagementPosition()
         {}
