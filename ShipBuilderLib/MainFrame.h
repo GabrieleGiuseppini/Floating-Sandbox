@@ -96,7 +96,7 @@ public:
 
     void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates) override;
 
-    DisplayLogicalCoordinates GetMouseCoordinates() const override;
+    ShipSpaceCoordinates GetMouseCoordinates() const override;
 
     void SetToolCursor(wxImage const & cursorImage) override;
 

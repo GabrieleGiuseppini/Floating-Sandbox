@@ -56,7 +56,7 @@ public:
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    virtual DisplayLogicalCoordinates GetMouseCoordinates() const = 0;
+    virtual ShipSpaceCoordinates GetMouseCoordinates() const = 0;
 
     virtual void SetToolCursor(wxImage const & cursorImage) = 0;
 

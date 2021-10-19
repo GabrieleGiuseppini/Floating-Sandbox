@@ -68,7 +68,6 @@ Controller::Controller(
     , mWorkbenchState(workbenchState)
     , mUserInterface(userInterface)
     , mResourceLocator(resourceLocator)
-    , mInputState()
     // State
     , mPrimaryLayer(LayerType::Structural)
     , mCurrentToolType(ToolType::StructuralPencil)
@@ -398,7 +397,7 @@ void Controller::AddZoom(int deltaZoom)
     // Tell tool about the new mouse (ship space) position
     if (mCurrentTool)
     {
-        mCurrentTool->OnMouseMove(mInputState);
+        mCurrentTool->OnMouseMove(mUserInterface.GetMouseCoordinates());
     }
 
     RefreshToolCoordinatesDisplay();
@@ -413,7 +412,7 @@ void Controller::SetCamera(int camX, int camY)
     // Tell tool about the new mouse (ship space) position
     if (mCurrentTool)
     {
-        mCurrentTool->OnMouseMove(mInputState);
+        mCurrentTool->OnMouseMove(mUserInterface.GetMouseCoordinates());
     }
 
     RefreshToolCoordinatesDisplay();
@@ -429,7 +428,7 @@ void Controller::ResetView()
     // Tell tool about the new mouse (ship space) position
     if (mCurrentTool)
     {
-        mCurrentTool->OnMouseMove(mInputState);
+        mCurrentTool->OnMouseMove(mUserInterface.GetMouseCoordinates());
     }
 
     RefreshToolCoordinatesDisplay();
@@ -444,7 +443,7 @@ void Controller::OnWorkCanvasResized(DisplayLogicalSize const & newSize)
     // Tell tool about the new mouse (ship space) position
     if (mCurrentTool)
     {
-        mCurrentTool->OnMouseMove(mInputState);
+        mCurrentTool->OnMouseMove(mUserInterface.GetMouseCoordinates());
     }
 
     mUserInterface.OnViewModelChanged();
@@ -456,16 +455,12 @@ void Controller::EnableVisualGrid(bool doEnable)
     mUserInterface.RefreshView();
 }
 
-void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition)
+void Controller::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates)
 {
-    // Update input state
-    mInputState.PreviousMousePosition = mInputState.MousePosition;
-    mInputState.MousePosition = mouseScreenPosition;
-
     // Forward to tool
     if (mCurrentTool)
     {
-        mCurrentTool->OnMouseMove(mInputState);
+        mCurrentTool->OnMouseMove(mouseCoordinates);
     }
 
     RefreshToolCoordinatesDisplay();
@@ -473,73 +468,55 @@ void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPositi
 
 void Controller::OnLeftMouseDown()
 {
-    // Update input state
-    mInputState.IsLeftMouseDown = true;
-
     // Forward to tool
     if (mCurrentTool)
     {
-        mCurrentTool->OnLeftMouseDown(mInputState);
+        mCurrentTool->OnLeftMouseDown();
     }
 }
 
 void Controller::OnLeftMouseUp()
 {
-    // Update input state
-    mInputState.IsLeftMouseDown = false;
-
     // Forward to tool
     if (mCurrentTool)
     {
-        mCurrentTool->OnLeftMouseUp(mInputState);
+        mCurrentTool->OnLeftMouseUp();
     }
 }
 
 void Controller::OnRightMouseDown()
 {
-    // Update input state
-    mInputState.IsRightMouseDown = true;
-
     // Forward to tool
     if (mCurrentTool)
     {
-        mCurrentTool->OnRightMouseDown(mInputState);
+        mCurrentTool->OnRightMouseDown();
     }
 }
 
 void Controller::OnRightMouseUp()
 {
-    // Update input state
-    mInputState.IsRightMouseDown = false;
-
     // Forward to tool
     if (mCurrentTool)
     {
-        mCurrentTool->OnRightMouseUp(mInputState);
+        mCurrentTool->OnRightMouseUp();
     }
 }
 
 void Controller::OnShiftKeyDown()
 {
-    // Update input state
-    mInputState.IsShiftKeyDown = true;
-
     // Forward to tool
     if (mCurrentTool)
     {
-        mCurrentTool->OnShiftKeyDown(mInputState);
+        mCurrentTool->OnShiftKeyDown();
     }
 }
 
 void Controller::OnShiftKeyUp()
 {
-    // Update input state
-    mInputState.IsShiftKeyDown = false;
-
     // Forward to tool
     if (mCurrentTool)
     {
-        mCurrentTool->OnShiftKeyUp(mInputState);
+        mCurrentTool->OnShiftKeyUp();
     }
 }
 
@@ -625,7 +602,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
 void Controller::RefreshToolCoordinatesDisplay()
 {
     // Calculate ship coordinates
-    ShipSpaceCoordinates mouseShipSpaceCoordinates = mView.ScreenToShipSpace(mInputState.MousePosition);
+    ShipSpaceCoordinates mouseShipSpaceCoordinates = mUserInterface.GetMouseCoordinates();
 
     // Check if within ship canvas
     if (mouseShipSpaceCoordinates.IsInSize(mModelController->GetModel().GetShipSize()))

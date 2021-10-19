@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "InputState.h"
 #include "IUserInterface.h"
 #include "ModelController.h"
 #include "UndoStack.h"
@@ -109,7 +108,7 @@ public:
 
     void EnableVisualGrid(bool doEnable);
 
-    void OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition);
+    void OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates);
     void OnLeftMouseDown();
     void OnLeftMouseUp();
     void OnRightMouseDown();
@@ -144,9 +143,6 @@ private:
     IUserInterface & mUserInterface;
 
     ResourceLocator const & mResourceLocator;
-
-    // Input state
-    InputState mInputState;
 
     //
     // State

@@ -570,7 +570,7 @@ void MainFrame::OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coo
     mStatusBar->SetToolCoordinates(coordinates);
 }
 
-DisplayLogicalCoordinates MainFrame::GetMouseCoordinates() const
+ShipSpaceCoordinates MainFrame::GetMouseCoordinates() const
 {
     wxMouseState const mouseState = wxGetMouseState();
     int x = mouseState.GetX();
@@ -580,7 +580,7 @@ DisplayLogicalCoordinates MainFrame::GetMouseCoordinates() const
     assert(mWorkCanvas);
     mWorkCanvas->ScreenToClient(&x, &y);
 
-    return DisplayLogicalCoordinates(x, y);
+    return mView->ScreenToShipSpace({ x, y });
 }
 
 void MainFrame::SetToolCursor(wxImage const & cursorImage)
@@ -1719,8 +1719,6 @@ void MainFrame::OnWorkCanvasResize(wxSizeEvent & event)
 
 void MainFrame::OnWorkCanvasLeftDown(wxMouseEvent & /*event*/)
 {
-    LogMessage("TODOTEST:OnWorkCanvasLeftDown");
-
     // First of all, set focus on the canvas if it has lost it - we want
     // it to receive all mouse events
     if (!mWorkCanvas->HasFocus())
@@ -1790,7 +1788,7 @@ void MainFrame::OnWorkCanvasMouseMove(wxMouseEvent & event)
 {
     if (mController)
     {
-        mController->OnMouseMove(DisplayLogicalCoordinates(event.GetX(), event.GetY()));
+        mController->OnMouseMove(mView->ScreenToShipSpace({ event.GetX(), event.GetY() }));
     }
 }
 

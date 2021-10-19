@@ -15,6 +15,7 @@
 #include <UILib/WxHelpers.h>
 
 #include <GameCore/GameTypes.h>
+#include <GameCore/StrongTypeDef.h>
 
 #include <memory>
 #include <optional>
@@ -28,13 +29,13 @@ public:
 
     ~PencilTool();
 
-    void OnMouseMove(InputState const & inputState) override;
-    void OnLeftMouseDown(InputState const & inputState) override;
-    void OnLeftMouseUp(InputState const & inputState) override;
-    void OnRightMouseDown(InputState const & inputState) override;
-    void OnRightMouseUp(InputState const & inputState) override;
-    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    void OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates) override;
+    void OnLeftMouseDown() override;
+    void OnLeftMouseUp() override;
+    void OnRightMouseDown() override;
+    void OnRightMouseUp() override;
+    void OnShiftKeyDown() override {}
+    void OnShiftKeyUp() override {}
     void OnUncapturedMouseOut() override;
 
 protected:
@@ -56,14 +57,13 @@ private:
 
     void TakeOriginalLayerBufferClone();
 
-    void StartEngagement(InputState const & inputState);
+    void StartEngagement(
+        ShipSpaceCoordinates const & mouseCoordinates,
+        StrongTypedBool<struct IsRightMouseButton> isRightButton);
 
-    void DoEdit(InputState const & inputState);
+    void DoEdit(ShipSpaceCoordinates const & mouseCoordinates);
 
     void EndEngagement();
-
-    // TODOOLD
-    void CheckEdit(InputState const & inputState);
 
     void DoTempVisualization(ShipSpaceRect const & affectedRect);
 

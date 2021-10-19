@@ -5,13 +5,14 @@
 ***************************************************************************************/
 #pragma once
 
-#include "InputState.h"
 #include "IUserInterface.h"
 #include "ModelController.h"
 #include "ShipBuilderTypes.h"
 #include "UndoStack.h"
 #include "WorkbenchState.h"
 #include "View.h"
+
+#include <GameCore/GameTypes.h>
 
 namespace ShipBuilder {
 
@@ -44,13 +45,13 @@ public:
     // Event handlers
     //
 
-    virtual void OnMouseMove(InputState const & inputState) = 0;
-    virtual void OnLeftMouseDown(InputState const & inputState) = 0;
-    virtual void OnLeftMouseUp(InputState const & inputState) = 0;
-    virtual void OnRightMouseDown(InputState const & inputState) = 0;
-    virtual void OnRightMouseUp(InputState const & inputState) = 0;
-    virtual void OnShiftKeyDown(InputState const & inputState) = 0;
-    virtual void OnShiftKeyUp(InputState const & inputState) = 0;
+    virtual void OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates) = 0;
+    virtual void OnLeftMouseDown() = 0;
+    virtual void OnLeftMouseUp() = 0;
+    virtual void OnRightMouseDown() = 0;
+    virtual void OnRightMouseUp() = 0;
+    virtual void OnShiftKeyDown() = 0;
+    virtual void OnShiftKeyUp() = 0;
     virtual void OnUncapturedMouseOut() = 0;
 
 protected:

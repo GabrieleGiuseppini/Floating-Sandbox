@@ -110,8 +110,7 @@ PencilTool<TLayerType, IsEraser>::PencilTool(
     //
 
     // Calculate affected rect
-    ShipSpaceCoordinates const mouseCoords = mView.ScreenToShipSpace(mUserInterface.GetMouseCoordinates());
-    std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(mouseCoords);
+    std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(mUserInterface.GetMouseCoordinates());
 
     // Apply (temporary) change
     if (affectedRect)
@@ -143,7 +142,7 @@ PencilTool<TLayer, IsEraser>::~PencilTool()
 }
 
 template<LayerType TLayer, bool IsEraser>
-void PencilTool<TLayer, IsEraser>::OnMouseMove(InputState const & inputState)
+void PencilTool<TLayer, IsEraser>::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates)
 {
     // Assuming L/R button transitions already communicated
 
@@ -162,8 +161,7 @@ void PencilTool<TLayer, IsEraser>::OnMouseMove(InputState const & inputState)
         }
 
         // Calculate affected rect
-        ShipSpaceCoordinates const mouseCoords = mView.ScreenToShipSpace(inputState.MousePosition);
-        std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(mouseCoords);
+        std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(mouseCoordinates);
 
         // Apply (temporary) change
         if (affectedRect)
@@ -179,12 +177,12 @@ void PencilTool<TLayer, IsEraser>::OnMouseMove(InputState const & inputState)
     }
     else
     {
-        DoEdit(inputState);
+        DoEdit(mouseCoordinates);
     }
 }
 
 template<LayerType TLayer, bool IsEraser>
-void PencilTool<TLayer, IsEraser>::OnLeftMouseDown(InputState const & inputState)
+void PencilTool<TLayer, IsEraser>::OnLeftMouseDown()
 {
     // Restore temp visualization
     if (mTempVisualizationDirtyShipRegion)
@@ -194,18 +192,20 @@ void PencilTool<TLayer, IsEraser>::OnLeftMouseDown(InputState const & inputState
         assert(!mTempVisualizationDirtyShipRegion);
     }
 
+    ShipSpaceCoordinates const mouseCoords = mUserInterface.GetMouseCoordinates();
+
     if (!mEngagementData)
     {
-        StartEngagement(inputState);
+        StartEngagement(mouseCoords, StrongTypedFalse<IsRightMouseButton>);
 
         assert(mEngagementData);
     }
 
-    DoEdit(inputState);
+    DoEdit(mouseCoords);
 }
 
 template<LayerType TLayer, bool IsEraser>
-void PencilTool<TLayer, IsEraser>::OnLeftMouseUp(InputState const & /*inputState*/)
+void PencilTool<TLayer, IsEraser>::OnLeftMouseUp()
 {
     if (mEngagementData)
     {
@@ -219,7 +219,7 @@ void PencilTool<TLayer, IsEraser>::OnLeftMouseUp(InputState const & /*inputState
 }
 
 template<LayerType TLayer, bool IsEraser>
-void PencilTool<TLayer, IsEraser>::OnRightMouseDown(InputState const & inputState)
+void PencilTool<TLayer, IsEraser>::OnRightMouseDown()
 {
     // Restore temp visualization
     if (mTempVisualizationDirtyShipRegion)
@@ -229,18 +229,20 @@ void PencilTool<TLayer, IsEraser>::OnRightMouseDown(InputState const & inputStat
         assert(!mTempVisualizationDirtyShipRegion);
     }
 
+    ShipSpaceCoordinates const mouseCoords = mUserInterface.GetMouseCoordinates();
+
     if (!mEngagementData)
     {
-        StartEngagement(inputState);
+        StartEngagement(mouseCoords, StrongTypedTrue<IsRightMouseButton>);
 
         assert(mEngagementData);
     }
 
-    DoEdit(inputState);
+    DoEdit(mouseCoords);
 }
 
 template<LayerType TLayer, bool IsEraser>
-void PencilTool<TLayer, IsEraser>::OnRightMouseUp(InputState const & /*inputState*/)
+void PencilTool<TLayer, IsEraser>::OnRightMouseUp()
 {
     if (mEngagementData)
     {
@@ -287,25 +289,22 @@ void PencilTool<TLayer, IsEraser>::TakeOriginalLayerBufferClone()
 }
 
 template<LayerType TLayer, bool IsEraser>
-void PencilTool<TLayer, IsEraser>::StartEngagement(InputState const & inputState)
+void PencilTool<TLayer, IsEraser>::StartEngagement(
+    ShipSpaceCoordinates const & mouseCoordinates,
+    StrongTypedBool<struct IsRightMouseButton> isRightButton)
 {
-    assert(inputState.IsLeftMouseDown || inputState.IsRightMouseDown);
     assert(!mEngagementData);
 
-    ShipSpaceCoordinates const coords = mView.ScreenToShipSpace(inputState.MousePosition);
-
     mEngagementData.emplace(
-        inputState.IsLeftMouseDown ? MaterialPlaneType::Foreground : MaterialPlaneType::Background,
-        coords,
+        isRightButton ? MaterialPlaneType::Background : MaterialPlaneType::Foreground,
+        mouseCoordinates,
         mModelController.GetModel().GetDirtyState());
 }
 
 template<LayerType TLayer, bool IsEraser>
-void PencilTool<TLayer, IsEraser>::DoEdit(InputState const & inputState)
+void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoordinates)
 {
     assert(mEngagementData);
-
-    ShipSpaceCoordinates const mouseCoords = mView.ScreenToShipSpace(inputState.MousePosition);
 
     int const pencilSize = GetPencilSize();
     LayerElementType const fillElement = GetFillElement(mEngagementData->Plane);
@@ -315,8 +314,8 @@ void PencilTool<TLayer, IsEraser>::DoEdit(InputState const & inputState)
     GenerateLinePath(
         mEngagementData->PreviousEngagementPosition.has_value()
             ? *mEngagementData->PreviousEngagementPosition
-            : mouseCoords,
-        mouseCoords,
+            : mouseCoordinates,
+        mouseCoordinates,
         [&](ShipSpaceCoordinates const & pos)
         {
             // Calc applicable rect intersecting pencil with workspace size
@@ -358,7 +357,7 @@ void PencilTool<TLayer, IsEraser>::DoEdit(InputState const & inputState)
     mUserInterface.RefreshView();
 
     // Update previous engagement
-    mEngagementData->PreviousEngagementPosition = mouseCoords;
+    mEngagementData->PreviousEngagementPosition = mouseCoordinates;
 }
 
 template<LayerType TLayer, bool IsEraser>
@@ -393,85 +392,6 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
     TakeOriginalLayerBufferClone();
 
     assert(!mTempVisualizationDirtyShipRegion);
-}
-
-// TODO: nuke
-template<LayerType TLayer, bool IsEraser>
-void PencilTool<TLayer, IsEraser>::CheckEdit(InputState const & inputState)
-{
-    if (!mEngagementData.has_value())
-    {
-        // Not engaged, ignore
-        return;
-    }
-
-    // TODO: now with applicableRegion, this is wrong
-    ShipSpaceCoordinates const coords = mView.ScreenToShipSpace(inputState.MousePosition);
-    if (!coords.IsInSize(mModelController.GetModel().GetShipSize()))
-    {
-        // Outside ship, ignore
-
-        // Reset previous engagement
-        mEngagementData->PreviousEngagementPosition.reset();
-
-        return;
-    }
-
-    //
-    // Apply edit
-    //
-
-    assert(!mEngagementData->PreviousEngagementPosition.has_value() || mEngagementData->PreviousEngagementPosition->IsInSize(mModelController.GetModel().GetShipSize()));
-    assert(coords.IsInSize(mModelController.GetModel().GetShipSize()));
-
-    int const pencilSize = GetPencilSize();
-
-    // Calculate fill element
-    LayerElementType const fillElement = GetFillElement(mEngagementData->Plane);
-
-    // Fill
-    GenerateLinePath(
-        mEngagementData->PreviousEngagementPosition.has_value()
-            ? *mEngagementData->PreviousEngagementPosition
-            : coords,
-        coords,
-        [&](ShipSpaceCoordinates const & pos)
-        {
-            // Calc applicable rect intersecting pencil with workspace size
-            auto const applicableRect =
-                ShipSpaceRect(pos, { pencilSize, pencilSize })
-                .MakeIntersectionWith({ { 0, 0 }, mModelController.GetModel().GetShipSize() });
-            if (applicableRect)
-            {
-                if constexpr (TLayer == LayerType::Structural)
-                {
-                    mModelController.StructuralRegionFill(
-                        fillElement,
-                        *applicableRect);
-                }
-                else
-                {
-                    static_assert(TLayer == LayerType::Electrical);
-
-                    mModelController.ElectricalRegionFill(
-                        fillElement,
-                        *applicableRect);
-                }
-
-                // Update edit region
-                mEngagementData->EditRegion.UnionWith(*applicableRect);
-            }
-        });
-
-    // Mark layer as dirty
-    SetLayerDirty(TLayer);
-
-    // Refresh model visualization
-    mModelController.UploadVisualization();
-    mUserInterface.RefreshView();
-
-    // Update previous engagement
-    mEngagementData->PreviousEngagementPosition = coords;
 }
 
 template<LayerType TLayer, bool IsEraser>

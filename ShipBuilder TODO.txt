@@ -74,12 +74,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ View::HasStructural/.../Texture() -> bool
 					+ MC::Upload: if MC !have && view.has => View::RemoveStructural/.../Texture()
 			= Preview: 
-				= <from Moleskine>
-				= FIX: changing view (zoom/scroll) doesn't update tool's visualization
-					= Controller calls MouseMove
-						+ We do exactly as MouseMove
-					- FIX: click on scrollbar causes "view change" hence a MouseMove on tool, but using the last known input state
-				- Verify L/R buttons transitions happen before mouse move
+				+ <from Moleskine>
+				- FIX: click on scrollbar causes "view change" hence a MouseMove on tool
 			- Anchor
 	+ Structural Eraser tool:
 		+ Reuse pencil tool, with extra template arg
