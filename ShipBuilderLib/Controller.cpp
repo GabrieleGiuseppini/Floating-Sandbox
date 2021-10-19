@@ -71,7 +71,8 @@ Controller::Controller(
     , mInputState()
     // State
     , mPrimaryLayer(LayerType::Structural)
-    , mCurrentTool(MakeTool(ToolType::StructuralPencil))
+    , mCurrentToolType(ToolType::StructuralPencil)
+    , mCurrentTool()
 {
     // We assume we start with at least a structural layer
     assert(mModelController->GetModel().HasLayer(LayerType::Structural));
@@ -84,10 +85,13 @@ Controller::Controller(
 
     // Notify our initializations
     mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
-    mUserInterface.OnCurrentToolChanged(mCurrentTool->GetType());
+    mUserInterface.OnCurrentToolChanged(*mCurrentToolType);
 
     // Upload layers visualization
     mModelController->UploadVisualization();
+
+    // Create tool (might upload dirty visualization already)
+    mCurrentTool = MakeTool(*mCurrentToolType);
 }
 
 void Controller::ClearModelDirty()
@@ -336,19 +340,19 @@ void Controller::SelectPrimaryLayer(LayerType primaryLayer)
 
 std::optional<ToolType> Controller::GetCurrentTool() const
 {
-    return mCurrentTool
-        ? mCurrentTool->GetType()
-        : std::optional<ToolType>();
+    return mCurrentToolType;
 }
 
 void Controller::SetCurrentTool(std::optional<ToolType> tool)
 {
     // Nuke current tool
+    mCurrentToolType.reset();
     mCurrentTool.reset();
 
     if (tool.has_value())
     {
-        mCurrentTool = MakeTool(*tool);
+        mCurrentToolType = tool;
+        mCurrentTool = MakeTool(*mCurrentToolType);
     }
     else
     {
@@ -357,7 +361,7 @@ void Controller::SetCurrentTool(std::optional<ToolType> tool)
     }
 
     // Notify UI
-    mUserInterface.OnCurrentToolChanged(tool);
+    mUserInterface.OnCurrentToolChanged(mCurrentToolType);
 }
 
 bool Controller::CanUndo() const
@@ -369,10 +373,11 @@ void Controller::Undo()
 {
     assert(CanUndo());
 
-    auto undoAction = mUndoStack.Pop();
+    // Remove tool
+    StopTool();
 
     // Apply action
-    // TODOHERE
+    auto undoAction = mUndoStack.Pop();
     undoAction->ApplyAction(*this);
 
     // Restore dirtyness
@@ -381,11 +386,20 @@ void Controller::Undo()
 
     // Update undo state
     mUserInterface.OnUndoStackStateChanged();
+
+    // Restart tool
+    StartTool();
 }
 
 void Controller::AddZoom(int deltaZoom)
 {
     mView.SetZoom(mView.GetZoom() + deltaZoom);
+
+    // Tell tool about the new mouse (ship space) position
+    if (mCurrentTool)
+    {
+        mCurrentTool->OnMouseMove(mInputState);
+    }
 
     RefreshToolCoordinatesDisplay();
     mUserInterface.OnViewModelChanged();
@@ -395,6 +409,12 @@ void Controller::AddZoom(int deltaZoom)
 void Controller::SetCamera(int camX, int camY)
 {
     mView.SetCameraShipSpacePosition(ShipSpaceCoordinates(camX, camY));
+
+    // Tell tool about the new mouse (ship space) position
+    if (mCurrentTool)
+    {
+        mCurrentTool->OnMouseMove(mInputState);
+    }
 
     RefreshToolCoordinatesDisplay();
     mUserInterface.OnViewModelChanged();
@@ -406,21 +426,34 @@ void Controller::ResetView()
     mView.SetZoom(0);
     mView.SetCameraShipSpacePosition(ShipSpaceCoordinates(0, 0));
 
+    // Tell tool about the new mouse (ship space) position
+    if (mCurrentTool)
+    {
+        mCurrentTool->OnMouseMove(mInputState);
+    }
+
     RefreshToolCoordinatesDisplay();
     mUserInterface.OnViewModelChanged();
-    mUserInterface.RefreshView();
-}
-
-void Controller::EnableVisualGrid(bool doEnable)
-{
-    mView.EnableVisualGrid(doEnable);
     mUserInterface.RefreshView();
 }
 
 void Controller::OnWorkCanvasResized(DisplayLogicalSize const & newSize)
 {
     mView.SetDisplayLogicalSize(newSize);
+
+    // Tell tool about the new mouse (ship space) position
+    if (mCurrentTool)
+    {
+        mCurrentTool->OnMouseMove(mInputState);
+    }
+
     mUserInterface.OnViewModelChanged();
+}
+
+void Controller::EnableVisualGrid(bool doEnable)
+{
+    mView.EnableVisualGrid(doEnable);
+    mUserInterface.RefreshView();
 }
 
 void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition)
@@ -510,12 +543,12 @@ void Controller::OnShiftKeyUp()
     }
 }
 
-void Controller::OnMouseOut()
+void Controller::OnUncapturedMouseOut()
 {
-    // Reset tool
+    // Forward to tool
     if (mCurrentTool)
     {
-        mCurrentTool->Reset();
+        mCurrentTool->OnUncapturedMouseOut();
     }
 
     // Tell UI
@@ -523,6 +556,19 @@ void Controller::OnMouseOut()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void Controller::StopTool()
+{
+    mCurrentTool.reset();
+}
+
+void Controller::StartTool()
+{
+    if (mCurrentToolType.has_value())
+    {
+        mCurrentTool = MakeTool(*mCurrentToolType);
+    }
+}
 
 std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
 {

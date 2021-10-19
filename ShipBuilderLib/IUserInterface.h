@@ -56,6 +56,8 @@ public:
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    virtual DisplayLogicalCoordinates GetMouseCoordinates() const = 0;
+
     virtual void SetToolCursor(wxImage const & cursorImage) = 0;
 
     virtual void ResetToolCursor() = 0;

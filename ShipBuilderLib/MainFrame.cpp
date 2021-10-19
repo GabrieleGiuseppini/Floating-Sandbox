@@ -26,6 +26,7 @@
 #include <wx/sizer.h>
 #include <wx/statline.h>
 #include <wx/tglbtn.h>
+#include <wx/utils.h>
 
 #ifdef _MSC_VER
  // Nothing to do here - we use RC files
@@ -567,6 +568,19 @@ void MainFrame::OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coo
     }
 
     mStatusBar->SetToolCoordinates(coordinates);
+}
+
+DisplayLogicalCoordinates MainFrame::GetMouseCoordinates() const
+{
+    wxMouseState const mouseState = wxGetMouseState();
+    int x = mouseState.GetX();
+    int y = mouseState.GetY();
+
+    // Convert to work canvas coordinates
+    assert(mWorkCanvas);
+    mWorkCanvas->ScreenToClient(&x, &y);
+
+    return DisplayLogicalCoordinates(x, y);
 }
 
 void MainFrame::SetToolCursor(wxImage const & cursorImage)
@@ -1705,6 +1719,8 @@ void MainFrame::OnWorkCanvasResize(wxSizeEvent & event)
 
 void MainFrame::OnWorkCanvasLeftDown(wxMouseEvent & /*event*/)
 {
+    LogMessage("TODOTEST:OnWorkCanvasLeftDown");
+
     // First of all, set focus on the canvas if it has lost it - we want
     // it to receive all mouse events
     if (!mWorkCanvas->HasFocus())
@@ -1790,17 +1806,17 @@ void MainFrame::OnWorkCanvasCaptureMouseLost(wxMouseCaptureLostEvent & /*event*/
 {
     if (mController)
     {
-        mController->OnMouseOut();
+        mController->OnUncapturedMouseOut();
     }
 }
 
-void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & /*event*/)
+void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & event)
 {
     if (!mIsMouseCapturedByWorkCanvas)
     {
         if (mController)
         {
-            mController->OnMouseOut();
+            mController->OnUncapturedMouseOut();
         }
     }
 }
@@ -1868,6 +1884,12 @@ void MainFrame::OnClose(wxCloseEvent & event)
             return;
         }
     }
+
+    // Nuke controller, now that all dependencies are still alive
+    mController.reset();
+
+    // Nuke view, now that the OpenGL context still works
+    mView.reset();
 
     event.Skip();
 }

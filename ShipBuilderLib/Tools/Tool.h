@@ -40,8 +40,6 @@ public:
         return mToolType;
     }
 
-    virtual void Reset() = 0;
-
     //
     // Event handlers
     //
@@ -53,6 +51,7 @@ public:
     virtual void OnRightMouseUp(InputState const & inputState) = 0;
     virtual void OnShiftKeyDown(InputState const & inputState) = 0;
     virtual void OnShiftKeyUp(InputState const & inputState) = 0;
+    virtual void OnUncapturedMouseOut() = 0;
 
 protected:
 

@@ -105,9 +105,9 @@ public:
     void SetCamera(int camX, int camY);
     void ResetView();
 
-    void EnableVisualGrid(bool doEnable);
-
     void OnWorkCanvasResized(DisplayLogicalSize const & newSize);
+
+    void EnableVisualGrid(bool doEnable);
 
     void OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPosition);
     void OnLeftMouseDown();
@@ -116,7 +116,7 @@ public:
     void OnRightMouseUp();
     void OnShiftKeyDown();
     void OnShiftKeyUp();
-    void OnMouseOut();
+    void OnUncapturedMouseOut();
 
 private:
 
@@ -126,6 +126,10 @@ private:
         WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         ResourceLocator const & resourceLocator);
+
+    void StopTool();
+
+    void StartTool();
 
     std::unique_ptr<Tool> MakeTool(ToolType toolType);
 
@@ -150,6 +154,7 @@ private:
 
     LayerType mPrimaryLayer;
 
+    std::optional<ToolType> mCurrentToolType;
     std::unique_ptr<Tool> mCurrentTool;
 };
 

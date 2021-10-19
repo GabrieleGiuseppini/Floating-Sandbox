@@ -96,6 +96,8 @@ public:
 
     void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates) override;
 
+    DisplayLogicalCoordinates GetMouseCoordinates() const override;
+
     void SetToolCursor(wxImage const & cursorImage) override;
 
     void ResetToolCursor() override;
@@ -227,8 +229,8 @@ private:
     // Owned members
     //
 
-    std::unique_ptr<Controller> mController;
     std::unique_ptr<View> mView;
+    std::unique_ptr<Controller> mController;
 
     //
     // Helpers

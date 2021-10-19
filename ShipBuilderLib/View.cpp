@@ -337,10 +337,6 @@ void View::UploadStructuralLayerVisualizationTexture(RgbaImageData const & textu
     // Create vertices
     //
 
-    // TODOTEST
-    //float const fWidth = static_cast<float>(texture.Size.width);
-    //float const fHeight = static_cast<float>(texture.Size.height);
-
     float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
     float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
 

@@ -102,11 +102,32 @@ PencilTool<TLayerType, IsEraser>::PencilTool(
 {
     SetCursor(mCursorImage);
 
-    Reset();
+    // Take original layer clone
+    TakeOriginalLayerBufferClone();
+
+    //
+    // Do temp visualization
+    //
+
+    // Calculate affected rect
+    ShipSpaceCoordinates const mouseCoords = mView.ScreenToShipSpace(mUserInterface.GetMouseCoordinates());
+    std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(mouseCoords);
+
+    // Apply (temporary) change
+    if (affectedRect)
+    {
+        DoTempVisualization(*affectedRect);
+
+        assert(mTempVisualizationDirtyShipRegion);
+
+        // Visualize
+        mModelController.UploadVisualization();
+        mUserInterface.RefreshView();
+    }
 }
 
 template<LayerType TLayer, bool IsEraser>
-void PencilTool<TLayer, IsEraser>::Reset()
+PencilTool<TLayer, IsEraser>::~PencilTool()
 {
     // Mend our temporary visualization, if any
     if (mTempVisualizationDirtyShipRegion)
@@ -119,12 +140,6 @@ void PencilTool<TLayer, IsEraser>::Reset()
         mModelController.UploadVisualization();
         mUserInterface.RefreshView();
     }
-
-    // Reset original layer clone
-    TakeOriginalLayerBufferClone();
-
-    // Reset engagement data
-    mEngagementData.reset();
 }
 
 template<LayerType TLayer, bool IsEraser>
@@ -135,9 +150,10 @@ void PencilTool<TLayer, IsEraser>::OnMouseMove(InputState const & inputState)
     if (!mEngagementData)
     {
         //
-        // Restore temp visualization
+        // Temp visualization
         //
 
+        // Restore previous temp visualization
         if (mTempVisualizationDirtyShipRegion)
         {
             MendTempVisualization();
@@ -145,44 +161,19 @@ void PencilTool<TLayer, IsEraser>::OnMouseMove(InputState const & inputState)
             assert(!mTempVisualizationDirtyShipRegion);
         }
 
-        //
         // Calculate affected rect
-        //
-
         ShipSpaceCoordinates const mouseCoords = mView.ScreenToShipSpace(inputState.MousePosition);
         std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(mouseCoords);
 
-        //
         // Apply (temporary) change
-        //
-
         if (affectedRect)
         {
-            // No buttons, hence choosing foreground plane
-            LayerElementType const fillElement = GetFillElement(MaterialPlaneType::Foreground);
+            DoTempVisualization(*affectedRect);
 
-            if constexpr (TLayer == LayerType::Structural)
-            {
-                mModelController.StructuralRegionFill(
-                    fillElement,
-                    *affectedRect);
-            }
-            else
-            {
-                static_assert(TLayer == LayerType::Electrical);
-
-                mModelController.ElectricalRegionFill(
-                    fillElement,
-                    *affectedRect);
-            }
-
-            mTempVisualizationDirtyShipRegion = affectedRect;
+            assert(mTempVisualizationDirtyShipRegion);
         }
 
-        //
         // Visualize
-        //
-
         mModelController.UploadVisualization();
         mUserInterface.RefreshView();
     }
@@ -262,6 +253,22 @@ void PencilTool<TLayer, IsEraser>::OnRightMouseUp(InputState const & /*inputStat
     // already has the edit (as permanent)
 }
 
+template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::OnUncapturedMouseOut()
+{
+    // Mend our temporary visualization, if any
+    if (mTempVisualizationDirtyShipRegion)
+    {
+        MendTempVisualization();
+
+        assert(!mTempVisualizationDirtyShipRegion);
+
+        // Visualize
+        mModelController.UploadVisualization();
+        mUserInterface.RefreshView();
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 template<LayerType TLayer, bool IsEraser>
@@ -303,7 +310,8 @@ void PencilTool<TLayer, IsEraser>::DoEdit(InputState const & inputState)
     int const pencilSize = GetPencilSize();
     LayerElementType const fillElement = GetFillElement(mEngagementData->Plane);
 
-    // Fill
+    bool hasEdited = false;
+
     GenerateLinePath(
         mEngagementData->PreviousEngagementPosition.has_value()
             ? *mEngagementData->PreviousEngagementPosition
@@ -330,13 +338,20 @@ void PencilTool<TLayer, IsEraser>::DoEdit(InputState const & inputState)
                         *applicableRect);
                 }
 
+                auto const old = mEngagementData->EditRegion;
+
                 // Update edit region
                 mEngagementData->EditRegion.UnionWith(*applicableRect);
+
+                hasEdited = true;
             }
         });
 
-    // Mark layer as dirty
-    SetLayerDirty(TLayer);
+    if (hasEdited)
+    {
+        // Mark layer as dirty
+        SetLayerDirty(TLayer);
+    }
 
     // Refresh model visualization
     mModelController.UploadVisualization();
@@ -358,7 +373,7 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
     auto clippedRegionClone = mOriginalLayerBufferClone->MakeCopy(mEngagementData->EditRegion);
 
     auto undoAction = std::make_unique<LayerBufferRegionUndoAction<typename LayerTypeTraits<TLayer>::buffer_type>>(
-        _("Pencil"),
+        IsEraser ? _("Eraser Tool") : _("Pencil Tool"),
         mEngagementData->OriginalDirtyState,
         std::move(*clippedRegionClone),
         mEngagementData->EditRegion.origin);
@@ -380,6 +395,7 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
     assert(!mTempVisualizationDirtyShipRegion);
 }
 
+// TODO: nuke
 template<LayerType TLayer, bool IsEraser>
 void PencilTool<TLayer, IsEraser>::CheckEdit(InputState const & inputState)
 {
@@ -456,6 +472,30 @@ void PencilTool<TLayer, IsEraser>::CheckEdit(InputState const & inputState)
 
     // Update previous engagement
     mEngagementData->PreviousEngagementPosition = coords;
+}
+
+template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::DoTempVisualization(ShipSpaceRect const & affectedRect)
+{
+    // No buttons, hence choosing foreground plane
+    LayerElementType const fillElement = GetFillElement(MaterialPlaneType::Foreground);
+
+    if constexpr (TLayer == LayerType::Structural)
+    {
+        mModelController.StructuralRegionFill(
+            fillElement,
+            affectedRect);
+    }
+    else
+    {
+        static_assert(TLayer == LayerType::Electrical);
+
+        mModelController.ElectricalRegionFill(
+            fillElement,
+            affectedRect);
+    }
+
+    mTempVisualizationDirtyShipRegion = affectedRect;
 }
 
 template<LayerType TLayer, bool IsEraser>

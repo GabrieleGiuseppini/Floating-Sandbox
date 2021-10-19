@@ -26,7 +26,7 @@ class PencilTool : public Tool
 {
 public:
 
-    void Reset() override;
+    ~PencilTool();
 
     void OnMouseMove(InputState const & inputState) override;
     void OnLeftMouseDown(InputState const & inputState) override;
@@ -35,6 +35,7 @@ public:
     void OnRightMouseUp(InputState const & inputState) override;
     void OnShiftKeyDown(InputState const & /*inputState*/) override {}
     void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    void OnUncapturedMouseOut() override;
 
 protected:
 
@@ -63,6 +64,8 @@ private:
 
     // TODOOLD
     void CheckEdit(InputState const & inputState);
+
+    void DoTempVisualization(ShipSpaceRect const & affectedRect);
 
     void MendTempVisualization();
 
