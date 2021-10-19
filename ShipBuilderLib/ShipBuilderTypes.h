@@ -21,10 +21,8 @@ enum class ToolType : std::uint32_t
     StructuralEraser,
     ElectricalPencil,
     ElectricalEraser,
-    RopesHarness,
-    RopesEraser,
 
-    _Last = RopesEraser
+    _Last = ElectricalEraser
 };
 
 size_t constexpr LayerCount = static_cast<size_t>(LayerType::Ropes) + 1;

@@ -597,6 +597,9 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mResourceLocator);
         }
     }
+
+    assert(false);
+    return nullptr;
 }
 
 void Controller::RefreshToolCoordinatesDisplay()

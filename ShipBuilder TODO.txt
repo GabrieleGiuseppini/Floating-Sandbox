@@ -79,8 +79,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Anchor
 	+ Structural Eraser tool:
 		+ Reuse pencil tool, with extra template arg
-	- Strategy for other tools' enums - to make it work for now
-		- Nuk 'em
 
 - Controller/Tools/WorkSpace/Mouse canvas strategy:
 	- TODO: see if a new strategy is really needed - isn't current strategy acceptable?

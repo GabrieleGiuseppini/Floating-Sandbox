@@ -1434,6 +1434,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         {
             wxGridBagSizer * toolsSizer = new wxGridBagSizer(3, 3);
 
+            /* TODOHERE
             // Rope
             {
                 auto button = makeToolButton(
@@ -1465,6 +1466,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0,
                     0);
             }
+            */
 
             ropesToolbarSizer->Add(
                 toolsSizer,
