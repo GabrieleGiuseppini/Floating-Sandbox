@@ -34,6 +34,8 @@ set  (GAME_SOURCES
 	RenderDeviceProperties.h
 	ResourceLocator.cpp
 	ResourceLocator.h
+	ShipAutoTexturizationSettings.cpp
+	ShipAutoTexturizationSettings.h
 	ShipDefinitionFormatDeSerializer.cpp
 	ShipDefinitionFormatDeSerializer.h
 	ShipDeSerializer.cpp

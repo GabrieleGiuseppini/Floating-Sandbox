@@ -26,6 +26,7 @@ public:
     {
     }
 
+    // Defaults
     ShipPhysicsData()
         : Offset(vec2f::zero())
         , InternalPressure(1.0f)

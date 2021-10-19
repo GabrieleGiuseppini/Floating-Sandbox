@@ -36,12 +36,14 @@ public:
     {
         std::array<bool, LayerCount> IsLayerDirtyMap;
         bool IsMetadataDirty;
+        bool IsPhysicsDataDirty;
 
         bool GlobalIsDirty;
 
         DirtyState()
             : IsLayerDirtyMap()
             , IsMetadataDirty(false)
+            , IsPhysicsDataDirty(false)
             , GlobalIsDirty(false)
         {
             IsLayerDirtyMap.fill(false);
@@ -99,6 +101,22 @@ public:
     void SetShipMetadata(ShipMetadata const & shipMetadata)
     {
         mShipMetadata = shipMetadata;
+
+        mDirtyState.IsMetadataDirty = true;
+        mDirtyState.GlobalIsDirty = true;
+    }
+
+    ShipPhysicsData const & GetShipPhysicsData() const
+    {
+        return mShipPhysicsData;
+    }
+
+    void SetShipPhysicsData(ShipPhysicsData const & shipPhysicsData)
+    {
+        mShipPhysicsData = shipPhysicsData;
+
+        mDirtyState.IsPhysicsDataDirty = true;
+        mDirtyState.GlobalIsDirty = true;
     }
 
     bool HasLayer(LayerType layer) const
@@ -175,6 +193,7 @@ private:
     ShipSpaceSize mShipSize;
 
     ShipMetadata mShipMetadata;
+    ShipPhysicsData mShipPhysicsData;
 
     //
     // Layers

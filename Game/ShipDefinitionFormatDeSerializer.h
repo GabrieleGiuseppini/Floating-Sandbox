@@ -62,42 +62,6 @@ private:
 
 #pragma pack(pop)
 
-    enum class MainSectionTagType : std::uint32_t
-    {
-        // Numeric values are serialized in ship files, changing them will result
-        // in ship files being un-deserializable!
-
-        StructuralLayer = 1,
-        ElectricalLayer = 2,
-        RopesLayer = 3,
-        TextureLayer_PNG = 4,
-        Metadata = 5,
-        PhysicsData = 6,
-        AutoTexturizationSettings = 7,
-        ShipAttributes = 8,
-        Preview_PNG = 9,
-
-        Tail = 0xffffffff
-    };
-
-    enum class MetadataTagType : std::uint32_t
-    {
-        // Numeric values are serialized in ship files, changing them will result
-        // in ship files being un-deserializable!
-
-        ShipName = 1,
-        Author = 2,
-        ArtCredits = 3,
-        YearBuilt = 4,
-        Description = 5,
-        ElectricalPanelMetadata_V1 = 6,
-        Password = 7,
-        DoHideElectricalsInPreview = 8,
-        DoHideHDInPreview = 9,
-
-        Tail = 0xffffffff
-    };
-
     struct ShipAttributes
     {
         int FileFSVersionMaj;
@@ -120,6 +84,24 @@ private:
         {}
     };
 
+    enum class MainSectionTagType : std::uint32_t
+    {
+        // Numeric values are serialized in ship files, changing them will result
+        // in ship files being un-deserializable!
+
+        StructuralLayer = 1,
+        ElectricalLayer = 2,
+        RopesLayer = 3,
+        TextureLayer_PNG = 4,
+        Metadata = 5,
+        PhysicsData = 6,
+        AutoTexturizationSettings = 7,
+        ShipAttributes = 8,
+        Preview_PNG = 9,
+
+        Tail = 0xffffffff
+    };
+
     enum class ShipAttributesTagType : std::uint32_t
     {
         // Numeric values are serialized in ship files, changing them will result
@@ -129,6 +111,36 @@ private:
         ShipSize = 2,
         HasTextureLayer = 3,
         HasElectricalLayer = 4,
+
+        Tail = 0xffffffff
+    };
+
+    enum class MetadataTagType : std::uint32_t
+    {
+        // Numeric values are serialized in ship files, changing them will result
+        // in ship files being un-deserializable!
+
+        ShipName = 1,
+        Author = 2,
+        ArtCredits = 3,
+        YearBuilt = 4,
+        Description = 5,
+        ElectricalPanelMetadata_V1 = 6,
+        Password = 7,
+        DoHideElectricalsInPreview = 8,
+        DoHideHDInPreview = 9,
+
+        Tail = 0xffffffff
+    };
+
+    enum class PhysicsDataTagType : std::uint32_t
+    {
+        // Numeric values are serialized in ship files, changing them will result
+        // in ship files being un-deserializable!
+
+        OffsetX = 1,
+        OffsetY = 2,
+        InternalPressure = 3,
 
         Tail = 0xffffffff
     };
@@ -171,6 +183,16 @@ private:
     template<typename T>
     static size_t AppendMetadataEntry(
         ShipDefinitionFormatDeSerializer::MetadataTagType tag,
+        T const & value,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static size_t AppendPhysicsData(
+        ShipPhysicsData const & physicsData,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    template<typename T>
+    static size_t AppendPhysicsDataEntry(
+        ShipDefinitionFormatDeSerializer::PhysicsDataTagType tag,
         T const & value,
         DeSerializationBuffer<BigEndianess> & buffer);
 
@@ -222,6 +244,8 @@ private:
 
     static ShipMetadata ReadMetadata(DeSerializationBuffer<BigEndianess> const & buffer);
 
+    static ShipPhysicsData ReadPhysicsData(DeSerializationBuffer<BigEndianess> const & buffer);
+
     static void ReadStructuralLayer(
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
@@ -237,6 +261,7 @@ private:
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_Full_WithoutElectricalPanel_Test;
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_Minimal_WithoutElectricalPanel_Test;
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_ElectricalPanel_Test;
+    friend class ShipDefinitionFormatDeSerializerTests_PhysicsData_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_VariousSizes_Uniform_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_MidSize_Heterogeneous_Test;

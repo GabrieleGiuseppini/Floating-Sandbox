@@ -8,6 +8,7 @@
 #include "EventRecorder.h"
 #include "IGameEventHandlers.h"
 #include "ResourceLocator.h"
+#include "ShipAutoTexturizationSettings.h"
 #include "ShipMetadata.h"
 
 #include <GameCore/Colors.h>

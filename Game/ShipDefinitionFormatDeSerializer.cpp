@@ -38,6 +38,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
 
     std::optional<ShipAttributes> shipAttributes;
     std::optional<ShipMetadata> shipMetadata;
+    ShipPhysicsData shipPhysicsData;
     std::unique_ptr<StructuralLayerBuffer> structuralLayer;
     std::unique_ptr<TextureLayerBuffer> textureLayer;
     bool hasSeenTail = false;
@@ -60,6 +61,14 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                 {
                     ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
                     shipMetadata = ReadMetadata(buffer);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(MainSectionTagType::PhysicsData) :
+                {
+                    ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
+                    shipPhysicsData = ReadPhysicsData(buffer);
 
                     break;
                 }
@@ -134,7 +143,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
         nullptr, // TODO
         std::move(textureLayer),
         *shipMetadata,
-        ShipPhysicsData(), // TODO
+        shipPhysicsData,
         std::nullopt); // TODO
 }
 
@@ -340,6 +349,16 @@ void ShipDefinitionFormatDeSerializer::Save(
         buffer);
 
     // TODOHERE: other sections
+
+    //
+    // Write physics data
+    //
+
+    AppendSection(
+        outputFile,
+        static_cast<std::uint32_t>(MainSectionTagType::PhysicsData),
+        [&]() { return AppendPhysicsData(shipDefinition.PhysicsData, buffer); },
+        buffer);
 
     //
     // Write tail
@@ -627,6 +646,58 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadata(
 template<typename T>
 size_t ShipDefinitionFormatDeSerializer::AppendMetadataEntry(
     ShipDefinitionFormatDeSerializer::MetadataTagType tag,
+    T const & value,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    buffer.Append(static_cast<std::uint32_t>(tag));
+    size_t const valueSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+    size_t const valueSize = buffer.Append(value);
+    buffer.WriteAt(static_cast<std::uint32_t>(valueSize), valueSizeIndex);
+
+    static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+    return sizeof(SectionHeader) + valueSize;
+}
+
+size_t ShipDefinitionFormatDeSerializer::AppendPhysicsData(
+    ShipPhysicsData const & physicsData,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    size_t sectionBodySize = 0;
+
+    {
+        sectionBodySize += AppendPhysicsDataEntry(
+            PhysicsDataTagType::OffsetX,
+            physicsData.Offset.x,
+            buffer);
+    }
+
+    {
+        sectionBodySize += AppendPhysicsDataEntry(
+            PhysicsDataTagType::OffsetY,
+            physicsData.Offset.y,
+            buffer);
+    }
+
+    {
+        sectionBodySize += AppendPhysicsDataEntry(
+            PhysicsDataTagType::InternalPressure,
+            physicsData.InternalPressure,
+            buffer);
+    }
+
+    // Tail
+    {
+        sectionBodySize += buffer.Append(static_cast<std::uint32_t>(PhysicsDataTagType::Tail));
+        sectionBodySize += buffer.Append(static_cast<std::uint32_t>(0));
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+    }
+
+    return sectionBodySize;
+}
+
+template<typename T>
+size_t ShipDefinitionFormatDeSerializer::AppendPhysicsDataEntry(
+    ShipDefinitionFormatDeSerializer::PhysicsDataTagType tag,
     T const & value,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
@@ -1199,6 +1270,65 @@ ShipMetadata ShipDefinitionFormatDeSerializer::ReadMetadata(DeSerializationBuffe
     }
 
     return metadata;
+}
+
+ShipPhysicsData ShipDefinitionFormatDeSerializer::ReadPhysicsData(DeSerializationBuffer<BigEndianess> const & buffer)
+{
+    ShipPhysicsData physicsData;
+
+    // Read all tags
+    for (size_t offset = 0;;)
+    {
+        SectionHeader const sectionHeader = ReadSectionHeader(buffer, offset);
+        offset += sizeof(SectionHeader);
+
+        switch (sectionHeader.Tag)
+        {
+            case static_cast<uint32_t>(PhysicsDataTagType::OffsetX):
+            {
+                buffer.ReadAt<float>(offset, physicsData.Offset.x);
+
+                break;
+            }
+
+            case static_cast<uint32_t>(PhysicsDataTagType::OffsetY) :
+            {
+                buffer.ReadAt<float>(offset, physicsData.Offset.y);
+
+                break;
+            }
+
+            case static_cast<uint32_t>(PhysicsDataTagType::InternalPressure) :
+            {
+                buffer.ReadAt<float>(offset, physicsData.InternalPressure);
+
+                break;
+            }
+
+            case static_cast<uint32_t>(MetadataTagType::Tail) :
+            {
+                // We're done
+                break;
+            }
+
+            default:
+            {
+                // Unrecognized tag
+                LogMessage("WARNING: Unrecognized physics data tag ", sectionHeader.Tag);
+                break;
+            }
+        }
+
+        if (sectionHeader.Tag == static_cast<uint32_t>(PhysicsDataTagType::Tail))
+        {
+            // We're done
+            break;
+        }
+
+        offset += sectionHeader.SectionBodySize;
+    }
+
+    return physicsData;
 }
 
 void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(

@@ -8,6 +8,7 @@
 #include "LayerBuffers.h"
 #include "MaterialDatabase.h"
 #include "ResourceLocator.h"
+#include "ShipAutoTexturizationSettings.h"
 
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>

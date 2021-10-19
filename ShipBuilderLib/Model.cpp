@@ -14,6 +14,7 @@ Model::Model(
     std::string const & shipName)
     : mShipSize(shipSize)
     , mShipMetadata(shipName)
+    , mShipPhysicsData()
     , mStructuralLayerBuffer(MakeNewStructuralLayer(mShipSize))
     // TODO: other layers
     , mTextureLayerBuffer() // None
@@ -27,6 +28,7 @@ Model::Model(
 Model::Model(ShipDefinition && shipDefinition)
     : mShipSize(shipDefinition.Size)
     , mShipMetadata(shipDefinition.Metadata)
+    , mShipPhysicsData(shipDefinition.PhysicsData)
     , mStructuralLayerBuffer(new StructuralLayerBuffer(std::move(shipDefinition.StructuralLayer)))
     // TODO: other layers
     , mTextureLayerBuffer(std::move(shipDefinition.TextureLayer))

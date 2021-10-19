@@ -97,7 +97,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Pure buffer
 		- Texture layer
 			- Using DevIL lump, see https://github.com/DentonW/DevIL/blob/master/DevIL/src-IL/src/il_io.cpp#L2490
-		- PhysicsData
+		+ PhysicsData
 		- AutoTexturizationSettings
 	- Tests:
 		- Make sure loading a ship w/legacy electricals makes up an electrical layer, and saving it saves the electricals

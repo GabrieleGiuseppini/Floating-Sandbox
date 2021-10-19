@@ -200,6 +200,23 @@ TEST(ShipDefinitionFormatDeSerializerTests, Metadata_ElectricalPanel)
     EXPECT_FALSE(targetMd.ElectricalPanelMetadata.at(234).IsHidden);
 }
 
+TEST(ShipDefinitionFormatDeSerializerTests, PhysicsData)
+{
+    DeSerializationBuffer<BigEndianess> buffer(256);
+
+    // Write
+
+    ShipPhysicsData sourcePd(vec2f(0.75f, 256.0f), 242.0f);
+    ShipDefinitionFormatDeSerializer::AppendPhysicsData(sourcePd, buffer);
+
+    // Read
+
+    ShipPhysicsData const targetPd = ShipDefinitionFormatDeSerializer::ReadPhysicsData(buffer);
+
+    EXPECT_EQ(targetPd.Offset, targetPd.Offset);
+    EXPECT_EQ(targetPd.InternalPressure, targetPd.InternalPressure);
+}
+
 class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests : public testing::Test
 {
 protected:

@@ -6,6 +6,7 @@
 #pragma once
 
 #include "LayerBuffers.h"
+#include "ShipAutoTexturizationSettings.h"
 #include "ShipMetadata.h"
 #include "ShipPhysicsData.h"
 

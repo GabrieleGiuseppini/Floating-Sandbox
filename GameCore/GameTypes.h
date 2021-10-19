@@ -747,32 +747,10 @@ template <> struct is_flag<ToolApplicationLocus> : std::true_type {};
 /*
  * The different auto-texturization modes for ships that don't have a texture layer.
  */
-enum class ShipAutoTexturizationModeType : std::int64_t
+enum class ShipAutoTexturizationModeType
 {
     FlatStructure = 1,      // Builds texture using structural materials' RenderColor
     MaterialTextures = 2    // Builds texture using materials' "Bump Maps"
-};
-
-/*
- * Ship auto-texturization settings.
- */
-struct ShipAutoTexturizationSettings
-{
-    ShipAutoTexturizationModeType Mode;
-    float MaterialTextureMagnification;
-    float MaterialTextureTransparency;
-
-    ShipAutoTexturizationSettings(
-        ShipAutoTexturizationModeType mode,
-        float materialTextureMagnification,
-        float materialTextureTransparency)
-        : Mode(mode)
-        , MaterialTextureMagnification(materialTextureMagnification)
-        , MaterialTextureTransparency(materialTextureTransparency)
-    {}
-
-    static ShipAutoTexturizationSettings FromJSON(picojson::object const & jsonObject);
-    picojson::object ToJSON() const;
 };
 
 /*
