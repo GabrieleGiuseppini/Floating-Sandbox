@@ -75,14 +75,31 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ MC::Upload: if MC !have && view.has => View::RemoveStructural/.../Texture()
 			= Preview: 
 				+ <from Moleskine>
+				- OnCaptureLost: reset tool
+					- Instead of current implementation
+				- Tool cctor: checks IUserInterface::IsMouseInWorkCanvas, based on actual hit test				
+				- OnMouseEnter: Nothing (remove)
+				+ OnMouseLeave: forwarded only if not captured (by WorkCanvas)
+					+ Tool: Mend temp visualization
 				- FIX: click on scrollbar causes "view change" hence a MouseMove on tool
+					- Controller::SetCamera: only do mouse move if mouse *in* work canvas, and *not* captured by any scrollbar
+						- TODO: do we need to mend at least?
 			- Anchor
 	+ Structural Eraser tool:
 		+ Reuse pencil tool, with extra template arg
 
+- Mattia makes ship
+
+- Tests:
+	- Ships with unicode chars in metadata
+
 - Electrical layer:
 	- PencilTool: fix instance index given to fill
-		- Strategy for instance ID assignment: TODOHERE
+		- Strategy for instance ID assignment: fully assigned by ModelController
+			- Primitives are at particle level, only w/material as arg, and ModelController assigns ID
+				- Strategy to ensure only consecutive IDs, OR only "initial" ones (even if scattered): TODO
+			- Only primitive that will be different: region replace
+				- Carefully compare before & after to retain instance ids, create new ones, or reclaim old ones
 	- TODOHERE: some basics
 
 - Finalize design of Ropes layer
@@ -128,8 +145,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 - Send for testing
 
-- Metadata edit workflow:
-	- ShipPropertiesEditDialog
+= Metadata edit workflow:
+	+ ShipPropertiesEditDialog
 	- Dialog::Open takes Controller &, Metadata const &, PhysicsProperties const &, etc.
 		- Populates all controls
 		- Flags each control as being not dirty

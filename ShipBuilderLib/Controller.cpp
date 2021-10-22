@@ -395,7 +395,8 @@ void Controller::AddZoom(int deltaZoom)
     mView.SetZoom(mView.GetZoom() + deltaZoom);
 
     // Tell tool about the new mouse (ship space) position
-    if (mCurrentTool)
+    if (mUserInterface.IsMouseInWorkCanvas()
+        && mCurrentTool)
     {
         mCurrentTool->OnMouseMove(mUserInterface.GetMouseCoordinates());
     }
@@ -410,7 +411,8 @@ void Controller::SetCamera(int camX, int camY)
     mView.SetCameraShipSpacePosition(ShipSpaceCoordinates(camX, camY));
 
     // Tell tool about the new mouse (ship space) position
-    if (mCurrentTool)
+    if (mUserInterface.IsMouseInWorkCanvas()
+        && mCurrentTool)
     {
         mCurrentTool->OnMouseMove(mUserInterface.GetMouseCoordinates());
     }
@@ -426,7 +428,8 @@ void Controller::ResetView()
     mView.SetCameraShipSpacePosition(ShipSpaceCoordinates(0, 0));
 
     // Tell tool about the new mouse (ship space) position
-    if (mCurrentTool)
+    if (mUserInterface.IsMouseInWorkCanvas()
+        && mCurrentTool)
     {
         mCurrentTool->OnMouseMove(mUserInterface.GetMouseCoordinates());
     }
@@ -441,7 +444,8 @@ void Controller::OnWorkCanvasResized(DisplayLogicalSize const & newSize)
     mView.SetDisplayLogicalSize(newSize);
 
     // Tell tool about the new mouse (ship space) position
-    if (mCurrentTool)
+    if (mUserInterface.IsMouseInWorkCanvas()
+        && mCurrentTool)
     {
         mCurrentTool->OnMouseMove(mUserInterface.GetMouseCoordinates());
     }

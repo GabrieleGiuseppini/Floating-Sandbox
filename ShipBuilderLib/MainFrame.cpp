@@ -291,19 +291,19 @@ MainFrame::MainFrame(
         wxMenu * fileMenu = new wxMenu();
 
         {
-            wxMenuItem * newShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("New Ship\tCtrl+N"), _("Create a new empty ship"), wxITEM_NORMAL);
+            wxMenuItem * newShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("New Ship") + wxS("\tCtrl+N"), _("Create a new empty ship"), wxITEM_NORMAL);
             fileMenu->Append(newShipMenuItem);
             Connect(newShipMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnNewShip);
         }
 
         {
-            wxMenuItem * loadShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Load Ship\tCtrl+O"), _("Load a ship"), wxITEM_NORMAL);
+            wxMenuItem * loadShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Load Ship") + wxS("\tCtrl+O"), _("Load a ship"), wxITEM_NORMAL);
             fileMenu->Append(loadShipMenuItem);
             Connect(loadShipMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnLoadShip);
         }
 
         {
-            mSaveShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship\tCtrl+S"), _("Save the current ship"), wxITEM_NORMAL);
+            mSaveShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship") + wxS("\tCtrl+S"), _("Save the current ship"), wxITEM_NORMAL);
             fileMenu->Append(mSaveShipMenuItem);
             Connect(mSaveShipMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveShip);
         }
@@ -345,6 +345,12 @@ MainFrame::MainFrame(
     // Edit
     {
         wxMenu * editMenu = new wxMenu();
+
+        {
+            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Ship Properties") + wxS("\tCtrl+P"), _("Change the ship settings"), wxITEM_NORMAL);
+            editMenu->Append(menuItem);
+            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShipProperties);
+        }
 
         {
             mUndoMenuItem = new wxMenuItem(editMenu, wxID_ANY, _("Undo") + wxS("\tCtrl+Z"), _("Undo the last edit operation"), wxITEM_NORMAL);
@@ -583,6 +589,25 @@ ShipSpaceCoordinates MainFrame::GetMouseCoordinates() const
     return mView->ScreenToShipSpace({ x, y });
 }
 
+bool MainFrame::IsMouseInWorkCanvas() const
+{
+    wxMouseState const mouseState = wxGetMouseState();
+    int x = mouseState.GetX();
+    int y = mouseState.GetY();
+
+    // Convert to work canvas coordinates
+    assert(mWorkCanvas);
+    mWorkCanvas->ScreenToClient(&x, &y);
+
+    // TODOTEST
+    int width, height;
+    mWorkCanvas->GetClientSize(&width, &height);
+    auto const todotest = mWorkCanvas->HitTest(x, y);
+    LogMessage("TODOTEST: ", x, ", ", y, " (", width, ", ", height, "): ", todotest);
+
+    return mWorkCanvas->HitTest(x, y) == wxHT_WINDOW_INSIDE;
+}
+
 void MainFrame::SetToolCursor(wxImage const & cursorImage)
 {
     mWorkCanvas->SetCursor(wxCursor(cursorImage));
@@ -737,7 +762,7 @@ wxPanel * MainFrame::CreateShipSettingsPanel(wxWindow * parent)
                 mResourceLocator.GetIconFilePath("metadata_button"),
                 [this]()
                 {
-                    // TODOHERE
+                OpenShipProperties();
                 },
                 _("Edit the ship properties"));
 
@@ -1562,6 +1587,8 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
         mWorkCanvas->Connect(wxEVT_MOUSEWHEEL, (wxObjectEventFunction)&MainFrame::OnWorkCanvasMouseWheel, 0, this);
         mWorkCanvas->Connect(wxEVT_MOUSE_CAPTURE_LOST, (wxObjectEventFunction)&MainFrame::OnWorkCanvasCaptureMouseLost, 0, this);
         mWorkCanvas->Connect(wxEVT_LEAVE_WINDOW, (wxObjectEventFunction)&MainFrame::OnWorkCanvasMouseLeftWindow, 0, this);
+        // TODOTEST
+        mWorkCanvas->Connect(wxEVT_ENTER_WINDOW, (wxObjectEventFunction)&MainFrame::OnWorkCanvasMouseEnteredWindow, 0, this);
 
         sizer->Add(
             mWorkCanvas.get(),
@@ -1736,6 +1763,7 @@ void MainFrame::OnWorkCanvasLeftDown(wxMouseEvent & /*event*/)
     // Hang on to the mouse for as long as the button is pressed
     if (!mIsMouseCapturedByWorkCanvas)
     {
+        LogMessage("TODOTEST: Captured");
         mWorkCanvas->CaptureMouse();
         mIsMouseCapturedByWorkCanvas = true;
     }
@@ -1748,6 +1776,8 @@ void MainFrame::OnWorkCanvasLeftUp(wxMouseEvent & /*event*/)
     {
         mWorkCanvas->ReleaseMouse();
         mIsMouseCapturedByWorkCanvas = false;
+
+        LogMessage("TODOTEST: Released");
     }
 
     if (mController)
@@ -1766,6 +1796,8 @@ void MainFrame::OnWorkCanvasRightDown(wxMouseEvent & /*event*/)
     // Hang on to the mouse for as long as the button is pressed
     if (!mIsMouseCapturedByWorkCanvas)
     {
+        LogMessage("TODOTEST: Captured");
+
         mWorkCanvas->CaptureMouse();
         mIsMouseCapturedByWorkCanvas = true;
     }
@@ -1778,6 +1810,8 @@ void MainFrame::OnWorkCanvasRightUp(wxMouseEvent & /*event*/)
     {
         mWorkCanvas->ReleaseMouse();
         mIsMouseCapturedByWorkCanvas = false;
+
+        LogMessage("TODOTEST: Released");
     }
 
     if (mController)
@@ -1804,14 +1838,19 @@ void MainFrame::OnWorkCanvasMouseWheel(wxMouseEvent & event)
 
 void MainFrame::OnWorkCanvasCaptureMouseLost(wxMouseCaptureLostEvent & /*event*/)
 {
+    LogMessage("TODOTEST: CaptureMouseLost");
+
     if (mController)
     {
+
         mController->OnUncapturedMouseOut();
     }
 }
 
-void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & event)
+void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & /*event*/)
 {
+    LogMessage("TODOTEST: LeftWindow (captured=", mIsMouseCapturedByWorkCanvas, ")");
+
     if (!mIsMouseCapturedByWorkCanvas)
     {
         if (mController)
@@ -1819,6 +1858,11 @@ void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & event)
             mController->OnUncapturedMouseOut();
         }
     }
+}
+
+void MainFrame::OnWorkCanvasMouseEnteredWindow(wxMouseEvent & /*event*/)
+{
+    LogMessage("TODOTEST: EnteredWindow (captured=", mIsMouseCapturedByWorkCanvas, ")");
 }
 
 void MainFrame::OnNewShip(wxCommandEvent & /*event*/)
@@ -1857,11 +1901,6 @@ void MainFrame::OnQuit(wxCommandEvent & /*event*/)
     Close();
 }
 
-void MainFrame::OnUndo(wxCommandEvent & /*event*/)
-{
-    mController->Undo();
-}
-
 void MainFrame::OnClose(wxCloseEvent & event)
 {
     if (event.CanVeto() && mController->GetModelController().GetModel().GetIsDirty())
@@ -1892,6 +1931,16 @@ void MainFrame::OnClose(wxCloseEvent & event)
     mView.reset();
 
     event.Skip();
+}
+
+void MainFrame::OnShipProperties(wxCommandEvent & /*event*/)
+{
+    OpenShipProperties();
+}
+
+void MainFrame::OnUndo(wxCommandEvent & /*event*/)
+{
+    mController->Undo();
 }
 
 void MainFrame::OnZoomIn(wxCommandEvent & /*event*/)
@@ -2117,6 +2166,21 @@ void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePa
     // Invoke functor to go back
     assert(mReturnToGameFunctor);
     mReturnToGameFunctor(std::move(shipFilePath));
+}
+
+void MainFrame::OpenShipProperties()
+{
+    if (!mShipPropertiesEditDialog)
+    {
+        mShipPropertiesEditDialog = std::make_unique<ShipPropertiesEditDialog>(this);
+    }
+
+    mShipPropertiesEditDialog->ShowModal(
+        *mController,
+        mController->GetModelController().GetModel().GetShipMetadata(),
+        mController->GetModelController().GetModel().GetShipPhysicsData(),
+        // TODOTEST: take from model
+        std::nullopt);
 }
 
 void MainFrame::OpenMaterialPalette(

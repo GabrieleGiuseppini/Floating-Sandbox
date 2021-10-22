@@ -8,6 +8,7 @@
 #include "Controller.h"
 #include "IUserInterface.h"
 #include "MaterialPalette.h"
+#include "ShipPropertiesEditDialog.h"
 #include "StatusBar.h"
 #include "View.h"
 #include "WorkbenchState.h"
@@ -98,6 +99,8 @@ public:
 
     ShipSpaceCoordinates GetMouseCoordinates() const override;
 
+    bool IsMouseInWorkCanvas() const override;
+
     void SetToolCursor(wxImage const & cursorImage) override;
 
     void ResetToolCursor() override;
@@ -132,6 +135,7 @@ private:
     void OnWorkCanvasMouseWheel(wxMouseEvent & event);
     void OnWorkCanvasCaptureMouseLost(wxMouseCaptureLostEvent & event);
     void OnWorkCanvasMouseLeftWindow(wxMouseEvent & event);
+    void OnWorkCanvasMouseEnteredWindow(wxMouseEvent & event);
 
     void OnNewShip(wxCommandEvent & event);
     void OnLoadShip(wxCommandEvent & event);
@@ -140,8 +144,9 @@ private:
     void OnSaveAndGoBack(wxCommandEvent & event);
     void OnQuitAndGoBack(wxCommandEvent & event);
     void OnQuit(wxCommandEvent & event);
-    void OnUndo(wxCommandEvent & event);
     void OnClose(wxCloseEvent & event);
+    void OnShipProperties(wxCommandEvent & event);
+    void OnUndo(wxCommandEvent & event);
     void OnZoomIn(wxCommandEvent & event);
     void OnZoomOut(wxCommandEvent & event);
     void OnResetView(wxCommandEvent & event);
@@ -171,6 +176,8 @@ private:
     void QuitAndSwitchBackToGame();
 
     void SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath);
+
+    void OpenShipProperties();
 
     void OpenMaterialPalette(
         wxMouseEvent const & event,
@@ -293,6 +300,7 @@ private:
     std::unique_ptr<ShipLoadDialog> mShipLoadDialog;
     std::unique_ptr<ShipSaveDialog> mShipSaveDialog;
     std::unique_ptr<LoggingDialog> mLoggingDialog;
+    std::unique_ptr<ShipPropertiesEditDialog> mShipPropertiesEditDialog;
 
     //
     // UI state
