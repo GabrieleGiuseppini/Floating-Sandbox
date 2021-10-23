@@ -1,5 +1,7 @@
 https://gamejolt.com/x/permalink/comment/11730705
 
+- Default ship name (remove TODO)
+
 - Mattia makes ship
 
 - Tests:
@@ -59,14 +61,31 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 = Metadata edit workflow:
 	+ ShipPropertiesEditDialog
-	- Dialog::Open takes Controller &, Metadata const &, PhysicsProperties const &, etc.
+	= Dialog::Open takes Controller &, Metadata const &, PhysicsProperties const &, etc.
+		+ Pass bool HasTexture (to enable ArtCredits)
+		+ opt<struct> mSessionData
 		- Populates all controls
 		- Flags each control as being not dirty
 	- Editing a field flags it as being dirty
+	= Ship name
+		- TODO: nail down ship name change & file name change
+	+ Author(s)
+	- Art Credits
+		- Enabled only if HasTexture
+		- ModelController: nuke ArtCredits upon texture removal? Or simply not cook it in final ShipDefinition?
+		- At OK: populated only if HasTexture (though should be empty by then)
+	+ Year Built
+	- Edit Password
+		- Extra condition on enabling OK button: no password, or two password fields match
+		- Workflow:
+			- TODOHERE
+	- Description
+		- Separate tab?
 	- At OK:
 		- For each of Metadata, PhysicsProperties, etc:
 			- Check if any of this area's controls are dirty; if so:
 				- Construct new Metadata, PhysicsProperties, etc.
+					- Set optionals to nullopt if trimmer field is empty
 				- Call Controller::ReplaceMetadata(&&), etc.
 					- Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
 

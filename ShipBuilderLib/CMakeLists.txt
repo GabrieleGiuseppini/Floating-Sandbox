@@ -20,6 +20,8 @@ set (SHIPBUILDER_LIB_SOURCES
 	ShaderTypes.cpp
 	ShaderTypes.h
 	ShipBuilderTypes.h
+	ShipCanvasResizeDialog.cpp
+	ShipCanvasResizeDialog.h
 	ShipPropertiesEditDialog.cpp
 	ShipPropertiesEditDialog.h
 	StatusBar.cpp

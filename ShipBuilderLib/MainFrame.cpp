@@ -347,7 +347,13 @@ MainFrame::MainFrame(
         wxMenu * editMenu = new wxMenu();
 
         {
-            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Ship Properties") + wxS("\tCtrl+P"), _("Change the ship settings"), wxITEM_NORMAL);
+            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Resize Ship") + wxS("\tCtrl+R"), _("Resize the ship"), wxITEM_NORMAL);
+            editMenu->Append(menuItem);
+            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShipCanvasResize);
+        }
+
+        {
+            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Ship Properties") + wxS("\tCtrl+P"), _("Edit the ship properties"), wxITEM_NORMAL);
             editMenu->Append(menuItem);
             Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShipProperties);
         }
@@ -756,9 +762,9 @@ wxPanel * MainFrame::CreateShipSettingsPanel(wxWindow * parent)
                 mResourceLocator.GetIconFilePath("resize_button"),
                 [this]()
                 {
-                    // TODOHERE
+                    OpenShipCanvasResize();
                 },
-                _("Change the size of the ship canvas"));
+                _("Resize the ship"));
 
             sizer->Add(button, 0, wxALL, ButtonMargin);
         }
@@ -770,7 +776,7 @@ wxPanel * MainFrame::CreateShipSettingsPanel(wxWindow * parent)
                 mResourceLocator.GetIconFilePath("metadata_button"),
                 [this]()
                 {
-                OpenShipProperties();
+                    OpenShipProperties();
                 },
                 _("Edit the ship properties"));
 
@@ -1939,6 +1945,11 @@ void MainFrame::OnClose(wxCloseEvent & event)
     event.Skip();
 }
 
+void MainFrame::OnShipCanvasResize(wxCommandEvent & /*event*/)
+{
+    OpenShipCanvasResize();
+}
+
 void MainFrame::OnShipProperties(wxCommandEvent & /*event*/)
 {
     OpenShipProperties();
@@ -2174,11 +2185,21 @@ void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePa
     mReturnToGameFunctor(std::move(shipFilePath));
 }
 
+void MainFrame::OpenShipCanvasResize()
+{
+    if (!mShipCanvasResizeDialog)
+    {
+        mShipCanvasResizeDialog = std::make_unique<ShipCanvasResizeDialog>(this, mResourceLocator);
+    }
+
+    mShipCanvasResizeDialog->ShowModal(*mController);
+}
+
 void MainFrame::OpenShipProperties()
 {
     if (!mShipPropertiesEditDialog)
     {
-        mShipPropertiesEditDialog = std::make_unique<ShipPropertiesEditDialog>(this);
+        mShipPropertiesEditDialog = std::make_unique<ShipPropertiesEditDialog>(this, mResourceLocator);
     }
 
     mShipPropertiesEditDialog->ShowModal(
@@ -2186,7 +2207,8 @@ void MainFrame::OpenShipProperties()
         mController->GetModelController().GetModel().GetShipMetadata(),
         mController->GetModelController().GetModel().GetShipPhysicsData(),
         // TODOTEST: take from model
-        std::nullopt);
+        std::nullopt,
+        mController->GetModelController().GetModel().HasLayer(LayerType::Texture));
 }
 
 void MainFrame::OpenMaterialPalette(

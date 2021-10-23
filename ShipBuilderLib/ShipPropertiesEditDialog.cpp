@@ -5,20 +5,24 @@
  ***************************************************************************************/
 #include "ShipPropertiesEditDialog.h"
 
-#include <wx/gbsizer.h>
+#include <UILib/WxHelpers.h>
+
+#include <wx/gbsizer.h> // TODO
 #include <wx/notebook.h>
+#include <wx/sizer.h>
+#include <wx/statbmp.h>
 #include <wx/stattext.h>
 
 #include <cassert>
 
 namespace ShipBuilder {
 
-static constexpr int Border = 10;
-static int constexpr CellBorderOuter = 4;
-static int constexpr StaticBoxInsetMargin = 10;
-static int constexpr StaticBoxTopMargin = 7;
+int const VerticalSeparatorSize = 20;
 
-ShipPropertiesEditDialog::ShipPropertiesEditDialog(wxWindow * parent)
+ShipPropertiesEditDialog::ShipPropertiesEditDialog(
+    wxWindow * parent,
+    ResourceLocator const & resourceLocator)
+    : mResourceLocator(resourceLocator)
 {
     Create(
         parent,
@@ -45,6 +49,14 @@ ShipPropertiesEditDialog::ShipPropertiesEditDialog(wxWindow * parent)
         PopulateMetadataPanel(panel);
 
         notebook->AddPage(panel, _("Metadata"));
+    }
+
+    {
+        auto panel = new wxPanel(notebook);
+
+        PopulateDescriptionPanel(panel);
+
+        notebook->AddPage(panel, _("Description"));
     }
 
     {
@@ -108,24 +120,33 @@ void ShipPropertiesEditDialog::ShowModal(
     Controller & controller,
     ShipMetadata const & shipMetadata,
     ShipPhysicsData const & shipPhysicsData,
-    std::optional<ShipAutoTexturizationSettings> const & shipAutoTexturizationSettings)
+    std::optional<ShipAutoTexturizationSettings> const & shipAutoTexturizationSettings,
+    bool hasTexture)
 {
-    Initialize(
+    mSessionData.emplace(
+        controller,
         shipMetadata,
         shipPhysicsData,
-        shipAutoTexturizationSettings);
+        shipAutoTexturizationSettings,
+        hasTexture);
+
+    InitializeUI();
 
     wxDialog::ShowModal();
 }
 
 void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
 {
-    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+    int const EditBoxWidth = 150;
+
+    wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+    auto explanationFont = panel->GetFont();
+    explanationFont.SetPointSize(explanationFont.GetPointSize() - 2);
+    explanationFont.SetStyle(wxFontStyle::wxFONTSTYLE_ITALIC);
 
     // Ship name
     {
-        wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
-
         {
             auto label = new wxStaticText(panel, wxID_ANY, _("Ship Name"), wxDefaultPosition, wxDefaultSize,
                 wxALIGN_CENTER);
@@ -146,9 +167,6 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
                 wxEVT_TEXT,
                 [this](wxCommandEvent & /*event*/)
                 {
-                    // TODO
-                    LogMessage("TODOHERE: IsModified=", mShipNameTextCtrl->IsModified());
-
                     OnDirty();
                 });
 
@@ -159,50 +177,140 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
             vSizer->Add(mShipNameTextCtrl, 0, wxALL | wxEXPAND, 0);
         }
 
-        gridSizer->Add(
-            vSizer,
-            wxGBPosition(0, 0),
-            wxGBSpan(1, 1), // TODO: all cols
-            wxEXPAND | wxALL,
-            CellBorderOuter);
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Name of the ship, e.g. \"R.M.S. Titanic\""), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            label->SetFont(explanationFont);
+
+            vSizer->Add(label, 0, wxALL | wxEXPAND, 0);
+        }
+    }
+
+    vSizer->AddSpacer(VerticalSeparatorSize);
+
+    // Author(s)
+    {
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Author(s)"), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            vSizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+        }
+
+        {
+            mShipAuthorTextCtrl = new wxTextCtrl(
+                panel,
+                wxID_ANY,
+                wxEmptyString,
+                wxDefaultPosition,
+                wxSize(EditBoxWidth, -1),
+                wxTE_CENTRE);
+
+            mShipAuthorTextCtrl->Bind(
+                wxEVT_TEXT,
+                [this](wxCommandEvent & /*event*/)
+                {
+                    OnDirty();
+                });
+
+            vSizer->Add(mShipAuthorTextCtrl, 0, wxALL | wxEXPAND, 0);
+        }
+
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Author(s), e.g. \"Ellen Ripley; David Gahan\""), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            label->SetFont(explanationFont);
+
+            vSizer->Add(label, 0, wxALL | wxEXPAND, 0);
+        }
+    }
+
+    // TODO: Art Credits
+
+    vSizer->AddSpacer(VerticalSeparatorSize);
+
+    // Year Built
+    {
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Year Built"), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            vSizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+        }
+
+        {
+            mYearBuiltTextCtrl = new wxTextCtrl(
+                panel,
+                wxID_ANY,
+                wxEmptyString,
+                wxDefaultPosition,
+                wxSize(100, -1),
+                wxTE_CENTRE);
+
+            mYearBuiltTextCtrl->Bind(
+                wxEVT_TEXT,
+                [this](wxCommandEvent & /*event*/)
+                {
+                    OnDirty();
+                });
+
+            vSizer->Add(mYearBuiltTextCtrl, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 0);
+        }
+
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Year in which the ship was built, e.g. \"1911\""), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            label->SetFont(explanationFont);
+
+            vSizer->Add(label, 0, wxALL | wxEXPAND, 0);
+        }
     }
 
     // TODO
 
-    // Finalize panel
+    panel->SetSizer(vSizer);
+}
 
-    for (int c = 0; c < gridSizer->GetCols(); ++c)
-        gridSizer->AddGrowableCol(c);
+void ShipPropertiesEditDialog::PopulateDescriptionPanel(wxPanel * panel)
+{
+    wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
-    panel->SetSizer(gridSizer);
+    // TODO
+    {
+        auto temp = new wxStaticBitmap(panel, wxID_ANY, WxHelpers::LoadBitmap("under_construction_large", mResourceLocator));
+        vSizer->Add(temp, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 0);
+    }
+
+    panel->SetSizer(vSizer);
 }
 
 void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
 {
-    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+    wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
     // TODO
+    {
+        auto temp = new wxStaticBitmap(panel, wxID_ANY, WxHelpers::LoadBitmap("under_construction_large", mResourceLocator));
+        vSizer->Add(temp, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 0);
+    }
 
-    // Finalize panel
-
-    for (int c = 0; c < gridSizer->GetCols(); ++c)
-        gridSizer->AddGrowableCol(c);
-
-    panel->SetSizer(gridSizer);
+    panel->SetSizer(vSizer);
 }
 
 void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
 {
-    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+    wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
     // TODO
+    {
+        auto temp = new wxStaticBitmap(panel, wxID_ANY, WxHelpers::LoadBitmap("under_construction_large", mResourceLocator));
+        vSizer->Add(temp, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 0);
+    }
 
-    // Finalize panel
-
-    for (int c = 0; c < gridSizer->GetCols(); ++c)
-        gridSizer->AddGrowableCol(c);
-
-    panel->SetSizer(gridSizer);
+    panel->SetSizer(vSizer);
 }
 
 void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
@@ -210,24 +318,31 @@ void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
     // TODO: inspect dirty flags and communicate parts to Controller
     // mShipNameTextCtrl->IsModified()
 
+    mSessionData.reset();
     EndModal(0);
 }
 
 void ShipPropertiesEditDialog::OnCancelButton(wxCommandEvent & /*event*/)
 {
+    mSessionData.reset();
     EndModal(-1);
 }
 
-void ShipPropertiesEditDialog::Initialize(
-    ShipMetadata const & shipMetadata,
-    ShipPhysicsData const & shipPhysicsData,
-    std::optional<ShipAutoTexturizationSettings> const & shipAutoTexturizationSettings)
+void ShipPropertiesEditDialog::InitializeUI()
 {
+    assert(mSessionData);
+
     //
     // Metadata
     //
 
-    mShipNameTextCtrl->ChangeValue(shipMetadata.ShipName);
+    mShipNameTextCtrl->ChangeValue(mSessionData->Metadata.ShipName);
+
+    mShipAuthorTextCtrl->ChangeValue(mSessionData->Metadata.Author.value_or(""));
+
+    // TODO
+
+    mYearBuiltTextCtrl->ChangeValue(mSessionData->Metadata.YearBuilt.value_or(""));
 
     // TODO
 
@@ -252,6 +367,8 @@ void ShipPropertiesEditDialog::Initialize(
 
 void ShipPropertiesEditDialog::OnDirty()
 {
+    // We assume at least one of the controls is dirty
+
     if (!mOkButton->IsEnabled())
     {
         mOkButton->Enable(true);

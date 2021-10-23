@@ -8,6 +8,7 @@
 #include "Controller.h"
 #include "IUserInterface.h"
 #include "MaterialPalette.h"
+#include "ShipCanvasResizeDialog.h"
 #include "ShipPropertiesEditDialog.h"
 #include "StatusBar.h"
 #include "View.h"
@@ -145,6 +146,7 @@ private:
     void OnQuitAndGoBack(wxCommandEvent & event);
     void OnQuit(wxCommandEvent & event);
     void OnClose(wxCloseEvent & event);
+    void OnShipCanvasResize(wxCommandEvent & event);
     void OnShipProperties(wxCommandEvent & event);
     void OnUndo(wxCommandEvent & event);
     void OnZoomIn(wxCommandEvent & event);
@@ -176,6 +178,8 @@ private:
     void QuitAndSwitchBackToGame();
 
     void SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath);
+
+    void OpenShipCanvasResize();
 
     void OpenShipProperties();
 
@@ -300,6 +304,7 @@ private:
     std::unique_ptr<ShipLoadDialog> mShipLoadDialog;
     std::unique_ptr<ShipSaveDialog> mShipSaveDialog;
     std::unique_ptr<LoggingDialog> mLoggingDialog;
+    std::unique_ptr<ShipCanvasResizeDialog> mShipCanvasResizeDialog;
     std::unique_ptr<ShipPropertiesEditDialog> mShipPropertiesEditDialog;
 
     //
