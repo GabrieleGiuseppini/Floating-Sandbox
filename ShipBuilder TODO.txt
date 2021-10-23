@@ -73,7 +73,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 					! Sequence is: update (@MC), upload (@C)
 					+ View::HasStructural/.../Texture() -> bool
 					+ MC::Upload: if MC !have && view.has => View::RemoveStructural/.../Texture()
-			= Preview: 
+			+ Preview: 
 				+ <from Moleskine>
 				+ OnCaptureLost: reset tool
 					+ Instead of current implementation
@@ -81,9 +81,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ OnMouseEnter: Nothing (remove)
 				+ OnMouseLeave: forwarded only if not captured (by WorkCanvas)
 					+ Tool: Mend temp visualization
-				- FIX: click on scrollbar causes "view change" hence a MouseMove on tool
-					- Controller::SetCamera: only do mouse move if mouse *in* work canvas, and *not* captured by any scrollbar
-						- TODO: do we need to mend at least?
+				+ FIX: click on scrollbar causes "view change" hence a MouseMove on tool
+					+ Controller::SetCamera: only do mouse move if mouse *in* work canvas, and *not* captured by any scrollbar
 			- Anchor
 	+ Structural Eraser tool:
 		+ Reuse pencil tool, with extra template arg

@@ -591,6 +591,11 @@ ShipSpaceCoordinates MainFrame::GetMouseCoordinates() const
 
 std::optional<ShipSpaceCoordinates> MainFrame::GetMouseCoordinatesIfInWorkCanvas() const
 {
+    //
+    // This function basically simulates the mouse<->focused window logic, returning mouse
+    // coordinates only if the work canvas would legitimately receive a mouse event
+    //
+
     wxMouseState const mouseState = wxGetMouseState();
     int x = mouseState.GetX();
     int y = mouseState.GetY();
@@ -599,8 +604,8 @@ std::optional<ShipSpaceCoordinates> MainFrame::GetMouseCoordinatesIfInWorkCanvas
     assert(mWorkCanvas);
     mWorkCanvas->ScreenToClient(&x, &y);
 
-    // Check if in canvas
-    if (mWorkCanvas->HitTest(x, y) == wxHT_WINDOW_INSIDE
+    // Check if in canvas (but not captured by scrollbars), or if simply captured
+    if ((mWorkCanvas->HitTest(x, y) == wxHT_WINDOW_INSIDE && !mWorkCanvasHScrollBar->HasCapture() && !mWorkCanvasVScrollBar->HasCapture())
         || mIsMouseCapturedByWorkCanvas)
     {
         return mView->ScreenToShipSpace({ x, y });
