@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <cctype>
 #include <chrono>
 #include <cstdint>
@@ -426,9 +427,43 @@ namespace Utils
         std::time_t now_c = std::chrono::system_clock::to_time_t(now);
 
         std::stringstream ss;
-        ss << std::put_time(std::localtime(&now_c), "%Y%m%d%H%M%S");
+        ss << std::put_time(std::localtime(&now_c), "%Y%m%d_%H%M%S");
 
         return ss.str();
+    }
+
+    inline std::string MakeFilenameSafeString(std::string const & str)
+    {
+        // Make sure the filename may be converted to the local codepage
+        // (see https://developercommunity.visualstudio.com/content/problem/721120/stdfilesystempathgeneric-string-throws-an-exceptio.html)
+
+        // Go char by char and only add safe chars
+
+        std::string result;
+
+        for (size_t i = 0; i < str.length(); ++i)
+        {
+            if (str[i] != '\\' && str[i] != '/' && str[i] != ':')
+            {
+                std::string const charString = str.substr(i, 1);
+                std::string const strTest = result + charString;
+
+                try
+                {
+                    std::string _ = std::filesystem::path(strTest).filename().string();
+                    (void)_;
+
+                    // Safe, keep it
+                    result += charString;
+                }
+                catch (...)
+                {
+                    // Skip it
+                }
+            }
+        }
+
+        return result;
     }
 
     ////////////////////////////////////////////////////////

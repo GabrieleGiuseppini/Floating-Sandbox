@@ -7,6 +7,7 @@
 
 #include <GameCore/Log.h>
 #include <GameCore/UserGameException.h>
+#include <GameCore/Utils.h>
 #include <GameCore/Version.h>
 
 #include <GameOpenGL/GameOpenGL.h>
@@ -464,8 +465,7 @@ MainFrame::MainFrame(
 void MainFrame::OpenForNewShip()
 {
     // New ship
-    // TODO: date in ship name, via static helper method
-    DoNewShip("MyShip-TODO");
+    DoNewShip();
 
     // Open ourselves
     Open();
@@ -2094,8 +2094,7 @@ void MainFrame::NewShip()
         }
     }
 
-    // TODO: date in ship name, via static helper method
-    DoNewShip("MyShip-TODO");
+    DoNewShip();
 }
 
 void MainFrame::LoadShip()
@@ -2304,8 +2303,11 @@ void MainFrame::ShowError(wxString const & message)
     wxMessageBox(message, _("Maritime Disaster"), wxICON_ERROR);
 }
 
-void MainFrame::DoNewShip(std::string const & shipName)
+void MainFrame::DoNewShip()
 {
+    // Make name
+    std::string const shipName = "MyShip-" + Utils::MakeNowDateAndTimeString();
+
     // Initialize controller (won't fire UI reconciliations)
     mController = Controller::CreateNew(
         shipName,

@@ -55,6 +55,7 @@ set (UNIT_TEST_SOURCES
 	UniqueBufferTests.cpp
 	Utils.cpp
 	Utils.h
+	UtilsTests.cpp
 	VectorsTests.cpp
 	VersionTests.cpp
 )

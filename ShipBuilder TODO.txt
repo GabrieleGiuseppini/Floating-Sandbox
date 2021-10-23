@@ -1,10 +1,9 @@
 https://gamejolt.com/x/permalink/comment/11730705
 
-- Default ship name (remove TODO)
-
-= Controller::NewXYZLayer: reset tool, like Undo
-	- Refactor all actions into helper methods
-	- RAII tool stop/restart?
++ Default ship name (remove TODO)
+	+ Use date & time
+	+ Helper to make filename (in Utils)
+	+ Use it when opening SaveAs
 
 - Mattia makes ship
 
@@ -62,6 +61,21 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Notes:
 		- Any import from .shp2 requires password
 
+- New/Set/Remove layers:
+	- New:
+		- Make internal helper templated on LayerType, with all code
+			- RAII tool stop/restart?
+		- Additions:
+			- Undo
+	- Set:
+		- Make internal helper templated on LayerType, with all code
+		- Additions:
+			- Undo
+	- Remove:
+		- Make internal helper templated on LayerType, with all code
+		- Additions:
+			- Undo
+
 - At selection of new primary layer (in Controller): select first tool
 
 - Send for testing
@@ -75,7 +89,15 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Flags each control as being not dirty
 	- Editing a field flags it as being dirty
 	= Ship name
-		- TODO: nail down ship name change & file name change
+		- TODO: nail down ship name change & file name change - VERIFY BELOW
+			- MainFrame: compare output of MakeFilename() on new ship name with current filename, and if different && there is a current:
+				- Ask rename
+					- If yes:
+						- Rename file (filesystem)
+						- Change current
+					- If no:
+						- If has a current: clear current (and Save will become SaveAs)
+						- If has no current: Save is already set to become SaveAs, we're OK
 	+ Author(s)
 	- Art Credits
 		- Enabled only if HasTexture

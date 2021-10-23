@@ -194,7 +194,7 @@ private:
 
     void ShowError(wxString const & message);
 
-    void DoNewShip(std::string const & shipName);
+    void DoNewShip();
 
     void DoLoadShip(std::filesystem::path const & shipFilePath);
 
