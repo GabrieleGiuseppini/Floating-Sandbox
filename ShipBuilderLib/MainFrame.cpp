@@ -876,6 +876,7 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                 {
                     size_t iLayer = static_cast<size_t>(layer);
 
+                    // Selector
                     {
                         std::string buttonBitmapName;
                         wxString buttonTooltip;
@@ -929,6 +930,7 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                         mLayerSelectButtons[iLayer] = selectorButton;
                     }
 
+                    // New
                     {
                         BitmapButton * newButton;
 
@@ -955,7 +957,17 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
                                         case LayerType::Structural:
                                         {
+                                            if (mController->GetModelController().GetModel().GetIsDirty(LayerType::Structural))
+                                            {
+                                                if (!AskUserIfSure(_("The current changes to the structural layer will be lost; are you sure you want to continue?")))
+                                                {
+                                                    // Changed their mind
+                                                    return;
+                                                }
+                                            }
+
                                             mController->NewStructuralLayer();
+
                                             break;
                                         }
 
@@ -966,7 +978,7 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                         }
                                     }
                                 },
-                                "Make a new empty layer");
+                                _("Add or clean the layer."));
 
                             layerManagerSizer->Add(
                                 newButton,
@@ -981,25 +993,45 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                         }
                     }
 
+                    // Import
                     {
-                        auto * loadButton = new BitmapButton(
+                        wxString buttonTooltip;
+                        switch (layer)
+                        {
+                            case LayerType::Electrical:
+                            case LayerType::Ropes:
+                            {
+                                buttonTooltip = _("Import this layer from another ship.");
+                                break;
+                            }
+
+                            case LayerType::Structural:
+                            case LayerType::Texture:
+                            {
+                                buttonTooltip = _("Import this layer from another ship or from an image file.");
+                                break;
+                            }
+                        }
+
+                        auto * importButton = new BitmapButton(
                             panel,
                             mResourceLocator.GetBitmapFilePath("open_layer_button"),
                             [this, layer]()
                             {
                                 // TODO
-                                LogMessage("Open layer ", static_cast<uint32_t>(layer));
+                                LogMessage("Import layer ", static_cast<uint32_t>(layer));
                             },
-                            "Import this layer from a file");
+                            buttonTooltip);
 
                         layerManagerSizer->Add(
-                            loadButton,
+                            importButton,
                             wxGBPosition(iRow * 3 + 1, 1),
                             wxGBSpan(1, 1),
                             wxLEFT | wxRIGHT,
                             10);
                     }
 
+                    // Delete
                     {
                         BitmapButton * deleteButton;
 
@@ -1037,7 +1069,7 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                         }
                                     }
                                 },
-                                "Remove this layer");
+                                _("Remove this layer."));
 
                             layerManagerSizer->Add(
                                 deleteButton,
@@ -1054,25 +1086,36 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                         mLayerDeleteButtons[iLayer] = deleteButton;
                     }
 
+                    // Export
                     {
-                        auto * saveButton = new BitmapButton(
-                            panel,
-                            mResourceLocator.GetBitmapFilePath("save_layer_button"),
-                            [this, layer]()
-                            {
-                                // TODO
-                                LogMessage("Save layer ", static_cast<uint32_t>(layer));
-                            },
-                            "Export this layer to a file");
+                        BitmapButton * exportButton;
 
-                        layerManagerSizer->Add(
-                            saveButton,
-                            wxGBPosition(iRow * 3 + 1, 2),
-                            wxGBSpan(1, 1),
-                            0,
-                            0);
+                        if (layer == LayerType::Structural
+                            || layer == LayerType::Texture)
+                        {
+                            exportButton = new BitmapButton(
+                                panel,
+                                mResourceLocator.GetBitmapFilePath("save_layer_button"),
+                                [this, layer]()
+                                {
+                                    // TODO
+                                    LogMessage("Export layer ", static_cast<uint32_t>(layer));
+                                },
+                                _("Export this layer to a file."));
 
-                        mLayerSaveButtons[iLayer] = saveButton;
+                            layerManagerSizer->Add(
+                                exportButton,
+                                wxGBPosition(iRow * 3 + 1, 2),
+                                wxGBSpan(1, 1),
+                                0,
+                                0);
+                        }
+                        else
+                        {
+                            exportButton = nullptr;
+                        }
+
+                        mLayerExportButtons[iLayer] = exportButton;
                     }
 
                     // Spacer
@@ -2437,10 +2480,10 @@ void MainFrame::ReconciliateUIWithLayerPresence()
 
         mLayerSelectButtons[iLayer]->Enable(hasLayer);
 
-        if (mLayerSaveButtons[iLayer] != nullptr
-            && mLayerSaveButtons[iLayer]->IsEnabled() != hasLayer)
+        if (mLayerExportButtons[iLayer] != nullptr
+            && mLayerExportButtons[iLayer]->IsEnabled() != hasLayer)
         {
-            mLayerSaveButtons[iLayer]->Enable(hasLayer);
+            mLayerExportButtons[iLayer]->Enable(hasLayer);
         }
 
         if (mLayerDeleteButtons[iLayer] != nullptr

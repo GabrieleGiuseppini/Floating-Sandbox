@@ -101,6 +101,10 @@ void Controller::ClearModelDirty()
 
 void Controller::NewStructuralLayer()
 {
+    // Remove tool
+    StopTool();
+
+    // Make new layer
     mModelController->NewStructuralLayer();
     mUserInterface.OnLayerPresenceChanged();
 
@@ -114,10 +118,17 @@ void Controller::NewStructuralLayer()
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
+
+    // Restart tool
+    StartTool();
 }
 
 void Controller::SetStructuralLayer(/*TODO*/)
 {
+    // Remove tool
+    StopTool();
+
+    // Update layer
     mModelController->SetStructuralLayer(/*TODO*/);
 
     // Update dirtyness
@@ -127,12 +138,17 @@ void Controller::SetStructuralLayer(/*TODO*/)
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
+
+    // Restart tool
+    StartTool();
 }
 
 void Controller::RestoreLayerBufferRegion(
     StructuralLayerBuffer const & layerBufferRegion,
     ShipSpaceCoordinates const & origin)
 {
+    // Note: this is invoked from undo's double-dispatch, that's why it doesn't worry about tool
+
     mModelController->StructuralRegionReplace(
         layerBufferRegion,
         { {0, 0}, layerBufferRegion.Size},
@@ -149,6 +165,10 @@ void Controller::RestoreLayerBufferRegion(
 
 void Controller::NewElectricalLayer()
 {
+    // Remove tool
+    StopTool();
+
+    // Make new layer
     mModelController->NewElectricalLayer();
     mUserInterface.OnLayerPresenceChanged();
 
@@ -162,10 +182,17 @@ void Controller::NewElectricalLayer()
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
+
+    // Restart tool
+    StartTool();
 }
 
 void Controller::SetElectricalLayer(/*TODO*/)
 {
+    // Remove tool
+    StopTool();
+
+    // Update layer
     mModelController->SetElectricalLayer();
 
     // Update dirtyness
@@ -175,10 +202,17 @@ void Controller::SetElectricalLayer(/*TODO*/)
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
+
+    // Restart tool
+    StartTool();
 }
 
 void Controller::RemoveElectricalLayer()
 {
+    // Remove tool
+    StopTool();
+
+    // Remove layer
     mModelController->RemoveElectricalLayer();
     mUserInterface.OnLayerPresenceChanged();
 
@@ -195,6 +229,9 @@ void Controller::RemoveElectricalLayer()
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
+
+    // Restart tool
+    StartTool();
 }
 
 void Controller::RestoreLayerBufferRegion(
@@ -206,6 +243,10 @@ void Controller::RestoreLayerBufferRegion(
 
 void Controller::NewRopesLayer()
 {
+    // Remove tool
+    StopTool();
+
+    // Make new layer
     mModelController->NewRopesLayer();
     mUserInterface.OnLayerPresenceChanged();
 
@@ -219,10 +260,17 @@ void Controller::NewRopesLayer()
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
+
+    // Restart tool
+    StartTool();
 }
 
 void Controller::SetRopesLayer(/*TODO*/)
 {
+    // Remove tool
+    StopTool();
+
+    // Update layer
     mModelController->SetRopesLayer();
 
     // Update dirtyness
@@ -232,10 +280,17 @@ void Controller::SetRopesLayer(/*TODO*/)
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
+
+    // Restart tool
+    StartTool();
 }
 
 void Controller::RemoveRopesLayer()
 {
+    // Remove tool
+    StopTool();
+
+    // Remove layer
     mModelController->RemoveRopesLayer();
     mUserInterface.OnLayerPresenceChanged();
 
@@ -252,6 +307,9 @@ void Controller::RemoveRopesLayer()
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
+
+    // Restart tool
+    StartTool();
 }
 
 void Controller::RestoreLayerBufferRegion(
@@ -263,6 +321,10 @@ void Controller::RestoreLayerBufferRegion(
 
 void Controller::SetTextureLayer(/*TODO*/)
 {
+    // Remove tool
+    StopTool();
+
+    // Update layer
     mModelController->SetTextureLayer();
     mUserInterface.OnLayerPresenceChanged();
 
@@ -273,10 +335,17 @@ void Controller::SetTextureLayer(/*TODO*/)
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
+
+    // Restart tool
+    StartTool();
 }
 
 void Controller::RemoveTextureLayer()
 {
+    // Remove tool
+    StopTool();
+
+    // Remove layer
     mModelController->RemoveTextureLayer();
     mUserInterface.OnLayerPresenceChanged();
 
@@ -293,6 +362,9 @@ void Controller::RemoveTextureLayer()
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
+
+    // Restart tool
+    StartTool();
 }
 
 void Controller::RestoreLayerBufferRegion(
@@ -304,6 +376,7 @@ void Controller::RestoreLayerBufferRegion(
 
 void Controller::ResizeShip(ShipSpaceSize const & newSize)
 {
+    // TODO: reset tool
     // TODO: tell ModelController
     // TODO: update layers visualization
     // TODO: update dirtyness (of all present layers)
@@ -323,18 +396,21 @@ LayerType Controller::GetPrimaryLayer() const
 
 void Controller::SelectPrimaryLayer(LayerType primaryLayer)
 {
-    mPrimaryLayer = primaryLayer;
+    if (primaryLayer != mPrimaryLayer)
+    {
+        mPrimaryLayer = primaryLayer;
 
-    // Reset current tool to none
-    // TODO: might actually want to select the "primary tool" for the layer
-    // (i.e. probably the pencil, in all cases)
-    SetCurrentTool(std::nullopt);
+        // Reset current tool to none
+        // TODO: might actually want to select the "primary tool" for the layer
+        // (i.e. probably the pencil, in all cases)
+        SetCurrentTool(std::nullopt);
 
-    mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
+        mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
 
-    // TODO: *update* layers visualization at controller
-    // TODO: *upload* "                                "
-    // TODO: view refresh
+        // TODO: *update* layers visualization at controller
+        // TODO: *upload* "                                "
+        // TODO: view refresh
+    }
 }
 
 std::optional<ToolType> Controller::GetCurrentTool() const

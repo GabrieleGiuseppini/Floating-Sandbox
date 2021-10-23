@@ -2,6 +2,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 - Default ship name (remove TODO)
 
+= Controller::NewXYZLayer: reset tool, like Undo
+	- Refactor all actions into helper methods
+	- RAII tool stop/restart?
+
 - Mattia makes ship
 
 - Tests:
@@ -43,19 +47,22 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Electrical:
 		- Import:
 			- .shp, .shp2 (load whole and throw away)
-		- No export (can save .shp2 and import from there)
+		+ No export (can save .shp2 and import from there)
 	- Ropes:
 		- Import:
 			- .shp, .shp2 (load whole and throw away)
-		- No export (can save .shp2 and import from there)
+		+ No export (can save .shp2 and import from there)
 	- Texture:
 		- Import:
 			- .png
 				- Ad-hoc code using ImageFileTools
 			- .shp, .shp2 (load whole and throw away)
-		- No export (just useless at this moment)
+		- Export to .png (though quite useless at this moment)
+			- Ad-hoc code using ImageFileTools
 	- Notes:
 		- Any import from .shp2 requires password
+
+- At selection of new primary layer (in Controller): select first tool
 
 - Send for testing
 

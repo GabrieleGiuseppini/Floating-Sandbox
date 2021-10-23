@@ -272,7 +272,7 @@ private:
 
     // Layers panel
     std::array<BitmapToggleButton *, LayerCount> mLayerSelectButtons;
-    std::array<BitmapButton *, LayerCount> mLayerSaveButtons;
+    std::array<BitmapButton *, LayerCount> mLayerExportButtons;
     std::array<BitmapButton *, LayerCount> mLayerDeleteButtons;
     wxSlider * mOtherLayersOpacitySlider;
 
