@@ -58,7 +58,7 @@ public:
 
     virtual ShipSpaceCoordinates GetMouseCoordinates() const = 0;
 
-    virtual bool IsMouseInWorkCanvas() const = 0;
+    virtual std::optional<ShipSpaceCoordinates> GetMouseCoordinatesIfInWorkCanvas() const = 0;
 
     virtual void SetToolCursor(wxImage const & cursorImage) = 0;
 

@@ -105,23 +105,24 @@ PencilTool<TLayerType, IsEraser>::PencilTool(
     // Take original layer clone
     TakeOriginalLayerBufferClone();
 
-    //
-    // Do temp visualization
-    //
-
-    // Calculate affected rect
-    std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(mUserInterface.GetMouseCoordinates());
-
-    // Apply (temporary) change
-    if (affectedRect)
+    // Check if we need to immediately do a visualization
+    auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
+    if (mouseCoordinates)
     {
-        DoTempVisualization(*affectedRect);
+        // Calculate affected rect
+        std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(*mouseCoordinates);
 
-        assert(mTempVisualizationDirtyShipRegion);
+        // Apply (temporary) change
+        if (affectedRect)
+        {
+            DoTempVisualization(*affectedRect);
 
-        // Visualize
-        mModelController.UploadVisualization();
-        mUserInterface.RefreshView();
+            assert(mTempVisualizationDirtyShipRegion);
+
+            // Visualize
+            mModelController.UploadVisualization();
+            mUserInterface.RefreshView();
+        }
     }
 }
 

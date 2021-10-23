@@ -589,7 +589,7 @@ ShipSpaceCoordinates MainFrame::GetMouseCoordinates() const
     return mView->ScreenToShipSpace({ x, y });
 }
 
-bool MainFrame::IsMouseInWorkCanvas() const
+std::optional<ShipSpaceCoordinates> MainFrame::GetMouseCoordinatesIfInWorkCanvas() const
 {
     wxMouseState const mouseState = wxGetMouseState();
     int x = mouseState.GetX();
@@ -599,13 +599,16 @@ bool MainFrame::IsMouseInWorkCanvas() const
     assert(mWorkCanvas);
     mWorkCanvas->ScreenToClient(&x, &y);
 
-    // TODOTEST
-    int width, height;
-    mWorkCanvas->GetClientSize(&width, &height);
-    auto const todotest = mWorkCanvas->HitTest(x, y);
-    LogMessage("TODOTEST: ", x, ", ", y, " (", width, ", ", height, "): ", todotest);
-
-    return mWorkCanvas->HitTest(x, y) == wxHT_WINDOW_INSIDE;
+    // Check if in canvas
+    if (mWorkCanvas->HitTest(x, y) == wxHT_WINDOW_INSIDE
+        || mIsMouseCapturedByWorkCanvas)
+    {
+        return mView->ScreenToShipSpace({ x, y });
+    }
+    else
+    {
+        return std::nullopt;
+    }
 }
 
 void MainFrame::SetToolCursor(wxImage const & cursorImage)
@@ -1587,7 +1590,6 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
         mWorkCanvas->Connect(wxEVT_MOUSEWHEEL, (wxObjectEventFunction)&MainFrame::OnWorkCanvasMouseWheel, 0, this);
         mWorkCanvas->Connect(wxEVT_MOUSE_CAPTURE_LOST, (wxObjectEventFunction)&MainFrame::OnWorkCanvasCaptureMouseLost, 0, this);
         mWorkCanvas->Connect(wxEVT_LEAVE_WINDOW, (wxObjectEventFunction)&MainFrame::OnWorkCanvasMouseLeftWindow, 0, this);
-        // TODOTEST
         mWorkCanvas->Connect(wxEVT_ENTER_WINDOW, (wxObjectEventFunction)&MainFrame::OnWorkCanvasMouseEnteredWindow, 0, this);
 
         sizer->Add(
@@ -1842,8 +1844,7 @@ void MainFrame::OnWorkCanvasCaptureMouseLost(wxMouseCaptureLostEvent & /*event*/
 
     if (mController)
     {
-
-        mController->OnUncapturedMouseOut();
+        mController->OnMouseCaptureLost();
     }
 }
 

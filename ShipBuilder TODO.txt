@@ -75,10 +75,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ MC::Upload: if MC !have && view.has => View::RemoveStructural/.../Texture()
 			= Preview: 
 				+ <from Moleskine>
-				- OnCaptureLost: reset tool
-					- Instead of current implementation
-				- Tool cctor: checks IUserInterface::IsMouseInWorkCanvas, based on actual hit test				
-				- OnMouseEnter: Nothing (remove)
+				+ OnCaptureLost: reset tool
+					+ Instead of current implementation
+				+ Tool cctor: checks IUserInterface::IsMouseInWorkCanvas, based on actual hit test				
+				+ OnMouseEnter: Nothing (remove)
 				+ OnMouseLeave: forwarded only if not captured (by WorkCanvas)
 					+ Tool: Mend temp visualization
 				- FIX: click on scrollbar causes "view change" hence a MouseMove on tool

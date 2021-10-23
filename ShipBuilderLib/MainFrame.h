@@ -99,7 +99,7 @@ public:
 
     ShipSpaceCoordinates GetMouseCoordinates() const override;
 
-    bool IsMouseInWorkCanvas() const override;
+    std::optional<ShipSpaceCoordinates> GetMouseCoordinatesIfInWorkCanvas() const override;
 
     void SetToolCursor(wxImage const & cursorImage) override;
 

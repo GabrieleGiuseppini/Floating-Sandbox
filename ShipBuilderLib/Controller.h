@@ -116,6 +116,7 @@ public:
     void OnShiftKeyDown();
     void OnShiftKeyUp();
     void OnUncapturedMouseOut();
+    void OnMouseCaptureLost();
 
 private:
 
