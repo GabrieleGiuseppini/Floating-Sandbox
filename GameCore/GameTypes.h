@@ -434,6 +434,13 @@ struct _IntegralCoordinates
             this->y - other.y);
     }
 
+    inline _IntegralCoordinates<TIntegralTag> operator-(_IntegralSize<TIntegralTag> const & offset) const
+    {
+        return _IntegralCoordinates<TIntegralTag>(
+            this->x - offset.width,
+            this->y - offset.height);
+    }
+
     template<typename TSize>
     bool IsInSize(TSize const & size) const
     {

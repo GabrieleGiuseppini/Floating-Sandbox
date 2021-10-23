@@ -2,6 +2,15 @@
 
 #include "gtest/gtest.h"
 
+TEST(IntegralSystemTests, Algebra_CoordsMinusSize)
+{
+    IntegralCoordinates coords = { 10, 15 };
+    IntegralRectSize offset = { 2, 3 };
+
+    IntegralCoordinates result = coords - offset;
+    EXPECT_EQ(result, IntegralCoordinates(8, 12));
+}
+
 class IntegralRect_IsContainedInRect : public testing::TestWithParam<std::tuple<IntegralRect, IntegralRect, bool>>
 {
 };

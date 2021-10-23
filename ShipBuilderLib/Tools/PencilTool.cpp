@@ -452,10 +452,14 @@ void PencilTool<TLayer, IsEraser>::MendTempVisualization()
 template<LayerType TLayer, bool IsEraser>
 std::optional<ShipSpaceRect> PencilTool<TLayer, IsEraser>::CalculateApplicableRect(ShipSpaceCoordinates const & coords) const
 {
-    int const pencilSize = GetPencilSize();
+    // Anchor in the middle, and vertically from top
 
-    // CODEWORK: anchor
-    return ShipSpaceRect(coords, { pencilSize, pencilSize })
+    int const pencilSize = GetPencilSize();
+    int const topLeftPencilSize =  (pencilSize - 1) / 2;
+
+    ShipSpaceCoordinates const origin = ShipSpaceCoordinates(coords.x, coords.y - (pencilSize - 1));
+
+    return ShipSpaceRect(origin - ShipSpaceSize(topLeftPencilSize, -topLeftPencilSize), { pencilSize, pencilSize })
         .MakeIntersectionWith({ { 0, 0 }, mModelController.GetModel().GetShipSize() });
 }
 
