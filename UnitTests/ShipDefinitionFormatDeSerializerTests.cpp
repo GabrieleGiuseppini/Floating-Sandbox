@@ -559,7 +559,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, MidSize_NonI
         idx += buffer.ReadAt(idx, count);
         EXPECT_EQ(count.value(), 1);
 
-        // Value
+        // RGB key
         MaterialColorKey colorKey;
         idx += buffer.ReadAt(idx, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
         EXPECT_EQ(colorKey, materials[i % 100]->ColorKey);
@@ -614,10 +614,15 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, MidSize_Inst
         idx += buffer.ReadAt(idx, count);
         EXPECT_EQ(count.value(), 1);
 
-        // Value
+        // RGB key
         MaterialColorKey colorKey;
         idx += buffer.ReadAt(idx, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
-        EXPECT_EQ(colorKey, materials[i % 100]->ColorKey);
+        EXPECT_EQ(colorKey, materials[100 + i % 100]->ColorKey);
+
+        // InstanceId
+        var_uint16_t instanceId;
+        idx += buffer.ReadAt(idx, instanceId);
+        EXPECT_EQ(static_cast<ElectricalElementInstanceIndex>(instanceId.value()), ElectricalElementInstanceIndex(i));
     }
 
     // Buffer is done

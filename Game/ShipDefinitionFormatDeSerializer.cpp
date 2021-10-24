@@ -758,21 +758,23 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer(
     StructuralElement const * structuralElementBuffer = structuralLayer.Data.get();
     for (size_t i = 0; i < layerLinearSize; /*incremented in loop*/)
     {
-        // Get the material at this positioj
-        auto const * material = structuralElementBuffer[i].Material;
+        // Get the element at this position
+        StructuralElement const & structuralElement = structuralElementBuffer[i];
         ++i;
 
         // Count consecutive identical values
         std::uint16_t materialCount = 1;
         for (;
             i < layerLinearSize
-            && structuralElementBuffer[i].Material == material
+            && structuralElementBuffer[i] == structuralElement
             && materialCount < std::numeric_limits<var_uint16_t>::max().value();
             ++i, ++materialCount);
 
-        // Serialize
+        // Serialize count
         rleBuffer.Append<var_uint16_t>(var_uint16_t(materialCount));
-        MaterialColorKey const colorKey = material == nullptr ? EmptyMaterialColorKey : material->ColorKey;
+
+        // Serialize RGB color key
+        MaterialColorKey const colorKey = (structuralElement.Material == nullptr) ? EmptyMaterialColorKey : structuralElement.Material->ColorKey;
         rleBuffer.Append(reinterpret_cast<unsigned char const *>(&colorKey), sizeof(MaterialColorKey));
     }
 
@@ -788,38 +790,46 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer(
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer(
-    // TODOHERE
-    StructuralLayerBuffer const & structuralLayer,
+    ElectricalLayerBuffer const & electricalLayer,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
     size_t sectionBodySize = 0;
 
     //
-    // Encode layer with RLE of RGB color key buffer
+    // Encode layer with RLE of <RGB color key, instance ID> buffer
     //
 
-    size_t const layerLinearSize = structuralLayer.Size.GetLinearSize();
-    DeSerializationBuffer<BigEndianess> rleBuffer(layerLinearSize * sizeof(MaterialColorKey)); // Upper bound
+    size_t const layerLinearSize = electricalLayer.Size.GetLinearSize();
+    DeSerializationBuffer<BigEndianess> rleBuffer(layerLinearSize * (sizeof(MaterialColorKey) + sizeof(std::uint16_t))); // Upper bound
 
-    StructuralElement const * structuralElementBuffer = structuralLayer.Data.get();
+    ElectricalElement const * electricalElementBuffer = electricalLayer.Data.get();
     for (size_t i = 0; i < layerLinearSize; /*incremented in loop*/)
     {
-        // Get the material at this positioj
-        auto const * material = structuralElementBuffer[i].Material;
+        // Get the element at this position
+        ElectricalElement const & electricalElement = electricalElementBuffer[i];
         ++i;
 
         // Count consecutive identical values
         std::uint16_t materialCount = 1;
         for (;
             i < layerLinearSize
-            && structuralElementBuffer[i].Material == material
+            && electricalElementBuffer[i] == electricalElement
             && materialCount < std::numeric_limits<var_uint16_t>::max().value();
             ++i, ++materialCount);
 
-        // Serialize
+        // Serialize count
         rleBuffer.Append<var_uint16_t>(var_uint16_t(materialCount));
-        MaterialColorKey const colorKey = material == nullptr ? EmptyMaterialColorKey : material->ColorKey;
+
+        // Serialize RGB key
+        MaterialColorKey const colorKey = (electricalElement.Material == nullptr) ? EmptyMaterialColorKey : electricalElement.Material->ColorKey;
         rleBuffer.Append(reinterpret_cast<unsigned char const *>(&colorKey), sizeof(MaterialColorKey));
+
+        // Serialize instance index - only if instanced
+        if (electricalElement.Material->IsInstanced)
+        {
+            static_assert(sizeof(ElectricalElementInstanceIndex) <= sizeof(std::uint16_t));
+            rleBuffer.Append<var_uint16_t>(var_uint16_t(electricalElement.InstanceIndex));
+        }
     }
 
     //
@@ -1425,11 +1435,11 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
     StructuralElement * structuralLayerWrite = structuralLayerBuffer->Data.get();
     for (; readOffset < buffer.GetSize(); /*incremented in loop*/)
     {
-        // Count
+        // Deserialize count
         var_uint16_t count;
         readOffset += buffer.ReadAt(readOffset, count);
 
-        // ColorKey value
+        // Deserialize colorKey value
         MaterialColorKey colorKey;
         readOffset += buffer.ReadAt(readOffset, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
 
@@ -1466,30 +1476,29 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
 void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
-    // TODOHERE
-    MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
-    std::unique_ptr<StructuralLayerBuffer> & structuralLayerBuffer)
+    MaterialDatabase::MaterialMap<ElectricalMaterial> const & materialMap,
+    std::unique_ptr<ElectricalLayerBuffer> & electricalLayerBuffer)
 {
     size_t readOffset = 0;
 
     // Allocate buffer
-    structuralLayerBuffer.reset(new StructuralLayerBuffer(shipAttributes.ShipSize));
+    electricalLayerBuffer.reset(new ElectricalLayerBuffer(shipAttributes.ShipSize));
 
     // Decode RLE buffer
     size_t writeOffset = 0;
-    StructuralElement * structuralLayerWrite = structuralLayerBuffer->Data.get();
+    ElectricalElement * electricalLayerWrite = electricalLayerBuffer->Data.get();
     for (; readOffset < buffer.GetSize(); /*incremented in loop*/)
     {
-        // Count
+        // Deserialize count
         var_uint16_t count;
         readOffset += buffer.ReadAt(readOffset, count);
 
-        // ColorKey value
+        // Deserialize colorKey value
         MaterialColorKey colorKey;
         readOffset += buffer.ReadAt(readOffset, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
 
         // Lookup material
-        StructuralMaterial const * material;
+        ElectricalMaterial const * material;
         if (colorKey == EmptyMaterialColorKey)
         {
             material = nullptr;
@@ -1505,11 +1514,24 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
             material = &(materialIt->second);
         }
 
+        // Deserialize instanceID - only if instanced
+        ElectricalElementInstanceIndex instanceId;
+        if (material->IsInstanced)
+        {
+            var_uint16_t instanceIdTmp;
+            readOffset += buffer.ReadAt(readOffset, instanceIdTmp);
+            instanceId = static_cast<ElectricalElementInstanceIndex>(instanceIdTmp.value());
+        }
+        else
+        {
+            instanceId = NoneElectricalElementInstanceIndex;
+        }
+
         // Fill material
         std::fill_n(
-            structuralLayerWrite + writeOffset,
+            electricalLayerWrite + writeOffset,
             count.value(),
-            StructuralElement(material));
+            ElectricalElement(material, instanceId));
 
         // Advance
         writeOffset += count.value();

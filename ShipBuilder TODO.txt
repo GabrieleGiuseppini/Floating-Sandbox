@@ -5,9 +5,17 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Helper to make filename (in Utils)
 	+ Use it when opening SaveAs
 
-- Electrical layer:
-	- Load and Save at DeSerializer
-		- Review MaterialDatabase's electrical material maps: make one map?
+= Electrical layer:
+	+ Load and Save at DeSerializer
+		+ Review MaterialDatabase's electrical material maps: make one map?
+			+ Test:
+				+ Load png ship with legacy electrical materials
+				+ Load .shp ship with instanced and non-instanced materials
+	- ShipBuilder: hook load->Model
+	- ShipBuilder: hook Model->save
+		- Tests:
+		- Make sure loading a ship w/legacy electricals makes up an electrical layer, and saving it saves the electricals
+	- TODOHERE
 	- PencilTool: fix instance index given to fill
 		- Strategy for instance ID assignment: fully assigned by ModelController
 			- Primitives are at particle level, only w/material as arg, and ModelController assigns ID
@@ -23,7 +31,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 - Tests:
 	- Ships with unicode chars in metadata, show well in dialog
 
-
 - Finalize design of Ropes layer
 
 - Complete Load/Save/Model
@@ -38,8 +45,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Using DevIL lump, see https://github.com/DentonW/DevIL/blob/master/DevIL/src-IL/src/il_io.cpp#L2490
 		+ PhysicsData
 		- AutoTexturizationSettings
-	- Tests:
-		- Make sure loading a ship w/legacy electricals makes up an electrical layer, and saving it saves the electricals
 
 - Import/Export:
 	- Structural:

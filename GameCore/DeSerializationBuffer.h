@@ -167,6 +167,18 @@ public:
     }
 
     /*
+     * Reads a value from the specified index.
+     * Returns the number of bytes read.
+     */
+    template<>
+    size_t ReadAt<var_uint16_t>(size_t index, var_uint16_t & value) const
+    {
+        assert(index + 1 <= mAllocatedSize);
+
+        return Endian<var_uint16_t, TEndianess>::Read(mBuffer.get() + index, value);
+    }
+
+    /*
      * Reads a string at the specified index.
      * Returns the number of bytes read.
      */

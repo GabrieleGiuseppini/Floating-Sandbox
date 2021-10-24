@@ -187,8 +187,8 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     // Electrical materials
     //
 
-    std::map<MaterialColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> nonInstancedElectricalMaterialsMap;
-    std::map<MaterialColorKey, ElectricalMaterial, InstancedColorKeyComparer> instancedElectricalMaterialsMap;
+    MaterialMap<ElectricalMaterial> electricalMaterialsMap;
+    std::map<MaterialColorKey, ElectricalMaterial const *, InstancedColorKeyComparer> instancedElectricalMaterialsMap;
 
     picojson::value const electricalMaterialsRoot = Utils::ParseJSONFile(
         materialsRootDirectory / "materials_electrical.json");
@@ -246,38 +246,31 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         }
 
         // Make sure there are no dupes
-        if (nonInstancedElectricalMaterialsMap.count(colorKey) != 0
+        if (electricalMaterialsMap.count(colorKey) != 0
             || instancedElectricalMaterialsMap.count(colorKey) != 0)
         {
             throw GameException("Electrical material \"" + material.Name + "\" has a duplicate color key");
         }
 
         // Store
+        auto const storedEntry = electricalMaterialsMap.emplace(
+            std::make_pair(
+                colorKey,
+                material));
+
+        // Add to palette
+        if (material.PaletteCoordinates.has_value())
+        {
+            electricalMaterialPalette.InsertMaterial(storedEntry.first->second, *material.PaletteCoordinates);
+        }
+
         if (material.IsInstanced)
         {
-            auto const storedEntry = instancedElectricalMaterialsMap.emplace(
+            // Add also to instanced material map, for legacy r+g lookup
+            instancedElectricalMaterialsMap.emplace(
                 std::make_pair(
                     colorKey,
-                    material));
-
-            // Add to palette
-            if (material.PaletteCoordinates.has_value())
-            {
-                electricalMaterialPalette.InsertMaterial(storedEntry.first->second, *material.PaletteCoordinates);
-            }
-        }
-        else
-        {
-            auto const storedEntry = nonInstancedElectricalMaterialsMap.emplace(
-                std::make_pair(
-                    colorKey,
-                    material));
-
-            // Add to palette
-            if (material.PaletteCoordinates.has_value())
-            {
-                electricalMaterialPalette.InsertMaterial(storedEntry.first->second, *material.PaletteCoordinates);
-            }
+                    &(storedEntry.first->second)));
         }
     }
 
@@ -294,7 +287,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     for (auto const & kv : structuralMaterialMap)
     {
         if (!kv.second.IsLegacyElectrical
-            && (0 != nonInstancedElectricalMaterialsMap.count(kv.first)
+            && (0 != electricalMaterialsMap.count(kv.first)
                 || 0 != instancedElectricalMaterialsMap.count(kv.first)))
         {
             throw GameException("Color key of structural material \"" + kv.second.Name + "\" is also present among electrical materials");
@@ -304,7 +297,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     return MaterialDatabase(
         std::move(structuralMaterialMap),
         std::move(structuralMaterialPalette),
-        std::move(nonInstancedElectricalMaterialsMap),
+        std::move(electricalMaterialsMap),
         std::move(instancedElectricalMaterialsMap),
         std::move(electricalMaterialPalette),
         uniqueStructuralMaterials,

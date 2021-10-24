@@ -66,7 +66,7 @@ static constexpr PlaneId NonePlaneId = std::numeric_limits<PlaneId>::max();
  *
  * Comparable and ordered. Start from 0.
  */
-using ElectricalElementInstanceIndex = std::uint32_t;
+using ElectricalElementInstanceIndex = std::uint16_t;
 static constexpr ElectricalElementInstanceIndex NoneElectricalElementInstanceIndex = std::numeric_limits<ElectricalElementInstanceIndex>::max();
 
 /*

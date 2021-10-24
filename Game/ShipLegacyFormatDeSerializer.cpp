@@ -619,8 +619,8 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
 
                     ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
 
-                    // Get material
-                    ElectricalMaterial const * const electricalMaterial = materialDatabase.FindElectricalMaterial(colorKey);
+                    // Get material (matching instanced elements on r and g only)
+                    ElectricalMaterial const * const electricalMaterial = materialDatabase.FindElectricalMaterialLegacy(colorKey);
                     if (electricalMaterial == nullptr)
                     {
                         throw GameException(

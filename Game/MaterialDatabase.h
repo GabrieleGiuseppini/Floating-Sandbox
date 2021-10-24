@@ -115,19 +115,14 @@ public:
         return mStructuralMaterialPalette;
     }
 
+    // ------------------------
+
     ElectricalMaterial const * FindElectricalMaterial(MaterialColorKey const & colorKey) const
     {
-        // Try non-instanced first
-        if (auto srchIt = mNonInstancedElectricalMaterialMap.find(colorKey);
-            srchIt != mNonInstancedElectricalMaterialMap.end())
+        if (auto srchIt = mElectricalMaterialMap.find(colorKey);
+            srchIt != mElectricalMaterialMap.end())
         {
-            return &(srchIt->second);
-        }
-
-        // Try instanced now
-        if (auto srchIt = mInstancedElectricalMaterialMap.find(colorKey);
-            srchIt != mInstancedElectricalMaterialMap.end())
-        {
+            // Found color key verbatim!
             return &(srchIt->second);
         }
 
@@ -135,10 +130,38 @@ public:
         return nullptr;
     }
 
+    ElectricalMaterial const * FindElectricalMaterialLegacy(MaterialColorKey const & colorKey) const
+    {
+        // Try verbatim first
+        ElectricalMaterial const * verbatimMatch = FindElectricalMaterial(colorKey);
+        if (verbatimMatch != nullptr)
+        {
+            // Found!
+            return verbatimMatch;
+        }
+
+        // Try just instanced now (i.e. matching on r and g only)
+        if (auto srchIt = mInstancedElectricalMaterialMap.find(colorKey);
+            srchIt != mInstancedElectricalMaterialMap.end())
+        {
+            return srchIt->second;
+        }
+
+        // No luck
+        return nullptr;
+    }
+
+    MaterialMap<ElectricalMaterial> const & GetElectricalMaterialMap() const
+    {
+        return mElectricalMaterialMap;
+    }
+
     Palette<ElectricalMaterial> const & GetElectricalMaterialPalette() const
     {
         return mElectricalMaterialPalette;
     }
+
+    // ------------------------
 
     StructuralMaterial const & GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType uniqueType) const
     {
@@ -176,14 +199,6 @@ public:
 
 private:
 
-    struct NonInstancedColorKeyComparer
-    {
-        size_t operator()(MaterialColorKey const & lhs, MaterialColorKey const & rhs) const
-        {
-            return lhs < rhs;
-        }
-    };
-
     struct InstancedColorKeyComparer
     {
         size_t operator()(MaterialColorKey const & lhs, MaterialColorKey const & rhs) const
@@ -198,15 +213,15 @@ private:
     MaterialDatabase(
         MaterialMap<StructuralMaterial> structuralMaterialMap,
         Palette<StructuralMaterial> structuralMaterialPalette,
-        std::map<MaterialColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> nonInstancedElectricalMaterialMap,
-        std::map<MaterialColorKey, ElectricalMaterial, InstancedColorKeyComparer> instancedElectricalMaterialMap,
+        MaterialMap<ElectricalMaterial> electricalMaterialMap,
+        std::map<MaterialColorKey, ElectricalMaterial const *, InstancedColorKeyComparer> instancedElectricalMaterialMap,
         Palette<ElectricalMaterial> electricalMaterialPalette,
         UniqueStructuralMaterialsArray uniqueStructuralMaterials,
         float largestMass,
         float largestStrength)
         : mStructuralMaterialMap(std::move(structuralMaterialMap))
         , mStructuralMaterialPalette(std::move(structuralMaterialPalette))
-        , mNonInstancedElectricalMaterialMap(std::move(nonInstancedElectricalMaterialMap))
+        , mElectricalMaterialMap(std::move(electricalMaterialMap))
         , mInstancedElectricalMaterialMap(std::move(instancedElectricalMaterialMap))
         , mElectricalMaterialPalette(std::move(electricalMaterialPalette))
         , mUniqueStructuralMaterials(uniqueStructuralMaterials)
@@ -222,8 +237,8 @@ private:
     Palette<StructuralMaterial> mStructuralMaterialPalette;
 
     // Electrical
-    std::map<MaterialColorKey, ElectricalMaterial, NonInstancedColorKeyComparer> mNonInstancedElectricalMaterialMap;
-    std::map<MaterialColorKey, ElectricalMaterial, InstancedColorKeyComparer> mInstancedElectricalMaterialMap;
+    MaterialMap<ElectricalMaterial> mElectricalMaterialMap;
+    std::map<MaterialColorKey, ElectricalMaterial const *, InstancedColorKeyComparer> mInstancedElectricalMaterialMap; // Redundant map for (legacy) instanced material lookup
     Palette<ElectricalMaterial> mElectricalMaterialPalette;
 
     UniqueStructuralMaterialsArray mUniqueStructuralMaterials;
