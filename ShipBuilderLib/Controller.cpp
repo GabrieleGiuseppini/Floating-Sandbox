@@ -193,7 +193,7 @@ void Controller::SetElectricalLayer(/*TODO*/)
     StopTool();
 
     // Update layer
-    mModelController->SetElectricalLayer();
+    mModelController->SetElectricalLayer(/*TODO*/);
 
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Electrical);
@@ -238,7 +238,20 @@ void Controller::RestoreLayerBufferRegion(
     ElectricalLayerBuffer const & layerBufferRegion,
     ShipSpaceCoordinates const & origin)
 {
-    // TODOHERE: copy from Structural
+    // Note: this is invoked from undo's double-dispatch, that's why it doesn't worry about tool
+
+    mModelController->ElectricalRegionReplace(
+        layerBufferRegion,
+        { {0, 0}, layerBufferRegion.Size },
+        origin);
+
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Electrical);
+    mUserInterface.OnModelDirtyChanged();
+
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
 }
 
 void Controller::NewRopesLayer()
@@ -271,7 +284,7 @@ void Controller::SetRopesLayer(/*TODO*/)
     StopTool();
 
     // Update layer
-    mModelController->SetRopesLayer();
+    mModelController->SetRopesLayer(/*TODO*/);
 
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Ropes);
@@ -325,7 +338,7 @@ void Controller::SetTextureLayer(/*TODO*/)
     StopTool();
 
     // Update layer
-    mModelController->SetTextureLayer();
+    mModelController->SetTextureLayer(/*TODO*/);
     mUserInterface.OnLayerPresenceChanged();
 
     // Update dirtyness

@@ -178,6 +178,12 @@ public:
         return *mStructuralLayerBuffer;
     }
 
+    ElectricalLayerBuffer & GetElectricalLayerBuffer()
+    {
+        assert(mElectricalLayerBuffer);
+        return *mElectricalLayerBuffer;
+    }
+
     TextureLayerBuffer const & GetTextureLayerBuffer() const
     {
         assert(mTextureLayerBuffer);
@@ -186,7 +192,9 @@ public:
 
 private:
 
-    static std::unique_ptr<StructuralLayerBuffer> MakeNewStructuralLayer(ShipSpaceSize const & shipSize);
+    static std::unique_ptr<StructuralLayerBuffer> MakeNewEmptyStructuralLayer(ShipSpaceSize const & shipSize);
+
+    static std::unique_ptr<ElectricalLayerBuffer> MakeNewEmptyElectricalLayer(ShipSpaceSize const & shipSize);
 
 private:
 
@@ -200,6 +208,8 @@ private:
     //
 
     std::unique_ptr<StructuralLayerBuffer> mStructuralLayerBuffer;
+
+    std::unique_ptr<ElectricalLayerBuffer> mElectricalLayerBuffer;
 
     std::unique_ptr<TextureLayerBuffer> mTextureLayerBuffer;
 

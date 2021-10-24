@@ -877,6 +877,8 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
             {
                 auto const createButtonRow = [&](LayerType layer, int iRow)
                 {
+                    wxString const sureQuestion = _("The current changes to the layer will be lost; are you sure you want to continue?");
+
                     size_t iLayer = static_cast<size_t>(layer);
 
                     // Selector
@@ -942,19 +944,39 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                             newButton = new BitmapButton(
                                 panel,
                                 mResourceLocator.GetBitmapFilePath("new_layer_button"),
-                                [this, layer]()
+                                [this, layer, &sureQuestion]()
                                 {
                                     switch (layer)
                                     {
                                         case LayerType::Electrical:
                                         {
+                                            if (mController->GetModelController().GetModel().GetIsDirty(LayerType::Electrical))
+                                            {
+                                                if (!AskUserIfSure(sureQuestion))
+                                                {
+                                                    // Changed their mind
+                                                    return;
+                                                }
+                                            }
+
                                             mController->NewElectricalLayer();
+
                                             break;
                                         }
 
                                         case LayerType::Ropes:
                                         {
+                                            if (mController->GetModelController().GetModel().GetIsDirty(LayerType::Ropes))
+                                            {
+                                                if (!AskUserIfSure(sureQuestion))
+                                                {
+                                                    // Changed their mind
+                                                    return;
+                                                }
+                                            }
+
                                             mController->NewRopesLayer();
+
                                             break;
                                         }
 
@@ -962,7 +984,7 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                         {
                                             if (mController->GetModelController().GetModel().GetIsDirty(LayerType::Structural))
                                             {
-                                                if (!AskUserIfSure(_("The current changes to the structural layer will be lost; are you sure you want to continue?")))
+                                                if (!AskUserIfSure(sureQuestion))
                                                 {
                                                     // Changed their mind
                                                     return;
@@ -998,6 +1020,8 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
                     // Import
                     {
+                        // TODO: also here ask user if sure when the layer is dirty
+
                         wxString buttonTooltip;
                         switch (layer)
                         {
@@ -1043,19 +1067,39 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                             deleteButton = new BitmapButton(
                                 panel,
                                 mResourceLocator.GetBitmapFilePath("delete_layer_button"),
-                                [this, layer]()
+                                [this, layer, &sureQuestion]()
                                 {
                                     switch (layer)
                                     {
                                         case LayerType::Electrical:
                                         {
+                                            if (mController->GetModelController().GetModel().GetIsDirty(LayerType::Electrical))
+                                            {
+                                                if (!AskUserIfSure(sureQuestion))
+                                                {
+                                                    // Changed their mind
+                                                    return;
+                                                }
+                                            }
+
                                             mController->RemoveElectricalLayer();
+
                                             break;
                                         }
 
                                         case LayerType::Ropes:
                                         {
+                                            if (mController->GetModelController().GetModel().GetIsDirty(LayerType::Ropes))
+                                            {
+                                                if (!AskUserIfSure(sureQuestion))
+                                                {
+                                                    // Changed their mind
+                                                    return;
+                                                }
+                                            }
+
                                             mController->RemoveRopesLayer();
+
                                             break;
                                         }
 
@@ -1067,7 +1111,17 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
                                         case LayerType::Texture:
                                         {
+                                            if (mController->GetModelController().GetModel().GetIsDirty(LayerType::Texture))
+                                            {
+                                                if (!AskUserIfSure(sureQuestion))
+                                                {
+                                                    // Changed their mind
+                                                    return;
+                                                }
+                                            }
+
                                             mController->RemoveTextureLayer();
+
                                             break;
                                         }
                                     }

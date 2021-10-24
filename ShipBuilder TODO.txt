@@ -5,26 +5,50 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Helper to make filename (in Utils)
 	+ Use it when opening SaveAs
 
+- Eraser cursor
+
 = Electrical layer:
 	+ Load and Save at DeSerializer
 		+ Review MaterialDatabase's electrical material maps: make one map?
 			+ Test:
 				+ Load png ship with legacy electrical materials
 				+ Load .shp ship with instanced and non-instanced materials
-	- ShipBuilder: hook load->Model
-	- ShipBuilder: hook Model->save
-		- Tests:
-		- Make sure loading a ship w/legacy electricals makes up an electrical layer, and saving it saves the electricals
-	- TODOHERE
-	- PencilTool: fix instance index given to fill
-		- Strategy for instance ID assignment: fully assigned by ModelController
-			- Primitives are at particle level, only w/material as arg, and ModelController assigns ID
-				- Strategy to ensure only consecutive IDs, OR only "initial" ones (even if scattered): TODO
-			- Only primitive that will be different: region replace
-				- Carefully compare before & after to retain instance ids, create new ones, or reclaim old ones
-	- New/Update/Remove layer
+	= Full electrical layer support, like structural
+		+ Model
+		+ ModelController
+		+ Controller
+		+ Undo
+		+ PencilTool
+		+ MainFrame
+			+ Hook load->Model
+			+ Hook Model->save
+			+ LayerPanel
+		+ View
+			+ Electrical texture parallel
+		- Tests: 
+			- Make sure loading a ship w/legacy electricals makes up an electrical layer, and saving it saves the electricals
+	- PencilTool: 
+		- Fix instance index given to fill: strategy for instance ID assignment: fully assigned by ModelController
+			- All primitives invokes internal WriteElectricalParticle(.)
+				- Carefully compare before & after to retain instance ids, create new ones, or reclaim old ones			
+					- Strategy to ensure only consecutive IDs, OR only "initial" ones (even if scattered): TODO
+				- Also increments count of electrical particles (for later analysis)
+					- Count initialized - via RecalculateElectricalParticleCount() - at cctor,New,Set,Remove
+						- RecalculateElectricalParticleCount():
+							- count = 0
+							- if buffer != nullptr: count
+		- Require structure behind fill?
+	- Tests:
+		- PencilTool
+		- PencilTool + Undo
+	- View: other layers' opacity  (NO visualization type! (yet))
 
-- UnderConstructionDialog
+- At selection of new primary layer (in Controller): select first tool
+
+- Eraser square?
+
+= UnderConstructionDialog
+	- Do at remaining layer buttons
 
 - Mattia makes ship
 
@@ -86,8 +110,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Additions:
 			- Undo
 
-- At selection of new primary layer (in Controller): select first tool
-
 - Send for testing
 
 = Metadata edit workflow:
@@ -139,25 +161,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 
 - Undo stack visualization: underneath toolbar?
-
-- Previews:
-	- Spec:
-		- Tools like line, square, paste, translate, etc. draw a preview of how the Model looks like if the tool is "confirmed"
-		- Workflow is:
-			- Left down: start
-			- Move: each movement shows "as if" it were confirmed there
-			- Then:
-				- Confirm: same as last shown
-				- Abort (ESC): back to original
-	- Impl:
-		- TODOHERE
-
-- Materials palette:
-	- Material descriptions
-		- json + Material class
-			- TODO: what to do with localization?
-		- Text area underneath property grid
-			- Methods: "SetMaterialProperties" instead of "SetMaterialPropertyGrid"			
 			
 - App icons (whole "Resources" folder)
 
@@ -279,16 +282,17 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Stores all protected references passed from cctors: IUserInterface, ModelController, View
 		+ Same abstract methods from game - but all pure
 	- All tools:
-		= Pencil
-			- Settings: Size
-		- Eraser
-			- Settings: Size
+		+ Pencil (S, E)
+			+ Settings: Size
+		+ Eraser (S, E)
+			+ Settings: Size
 		- Flood
 		- Selection
 			- Implements selection interaction and rendering of visual feedback *during the interaction only*
 			- Takes SelectionManager ref in its cctor, and populates it upon confirmation of selection made
 		- Sample
 		- Line
+			- ESC to stop 
 		- Rectangle
 			- Settings: FillWithFore|FillWithBack|NoFill; Size
 		- Ellipses
@@ -359,17 +363,18 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Extract from other "TODO" .txt file
 
 - Visualization modes:
-	- There's always a structural visualization mode, depends on texture as well
+	- Each layer has a visualization mode (TODO: confirm with below)
+	- There's always a structural visualization mode, which depends on texture as well
 		- Choices:
 			- Particle
 			- Auto-Texturization (only if no texture layer exists)
-	- Then, electrical, when present, has own on top of that
+	- Then, electrical, when present, has own on top of the others
 		- Choices:
 			- Particle
 			- Circuit (long-term)
-	- Ropes:
+	- Ropes, when present, has own on top of the others
 		- Lines
-	- Texture:
+	- Texture, when present, has own on top of the others
 		- Matte
 		- With structural mesh
 

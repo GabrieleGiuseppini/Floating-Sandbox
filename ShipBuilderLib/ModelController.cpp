@@ -56,14 +56,16 @@ ShipDefinition ModelController::MakeShipDefinition() const
     return ShipDefinition(
         mModel.GetShipSize(),
         std::move(*mModel.CloneStructuralLayerBuffer()),
-        nullptr, // TODOHERE
+        mModel.HasLayer(LayerType::Electrical)
+            ? mModel.CloneElectricalLayerBuffer()
+            : nullptr,
         nullptr, // TODOHERE
         mModel.HasLayer(LayerType::Texture)
             ? mModel.CloneTextureLayerBuffer()
             : nullptr,
         mModel.GetShipMetadata(),
-        ShipPhysicsData(), // TODOHERE
-        std::nullopt);
+        mModel.GetShipPhysicsData(),
+        std::nullopt); // TODOHERE
 }
 
 void ModelController::UploadVisualization()
@@ -83,7 +85,6 @@ void ModelController::UploadVisualization()
 
     if (mElectricalLayerVisualizationTexture)
     {
-        // TODOHERE: sync presence wrt View
         if (mDirtyElectricalLayerVisualizationRegion.has_value())
         {
             mView.UploadElectricalLayerVisualizationTexture(*mElectricalLayerVisualizationTexture);
@@ -101,7 +102,7 @@ void ModelController::UploadVisualization()
         }
     }
 
-    // TODO: other layers
+    // TODOHERE: other layers
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -200,6 +201,8 @@ void ModelController::RemoveElectricalLayer()
 
     mModel.RemoveElectricalLayer();
 
+    assert(!mModel.HasLayer(LayerType::Electrical));
+
     mElectricalLayerVisualizationTexture.reset();
     mDirtyElectricalLayerVisualizationRegion.reset();
 }
@@ -208,7 +211,28 @@ void ModelController::ElectricalRegionFill(
     ElectricalElement const & element,
     ShipSpaceRect const & region)
 {
-    // TODOHERE - copy from Structural
+    assert(mModel.HasLayer(LayerType::Electrical));
+
+    //
+    // Update model
+    //
+
+    ElectricalLayerBuffer & electricalLayerBuffer = mModel.GetElectricalLayerBuffer();
+
+    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
+    {
+        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
+        {
+            // TODO: in reality, this method will only take a material - we will assign instance IDs ourselves
+            electricalLayerBuffer[ShipSpaceCoordinates(x, y)] = element;
+        }
+    }
+
+    //
+    // Update visualization
+    //
+
+    UpdateElectricalLayerVisualization(region);
 }
 
 void ModelController::ElectricalRegionReplace(
@@ -218,7 +242,23 @@ void ModelController::ElectricalRegionReplace(
 {
     assert(mModel.HasLayer(LayerType::Electrical));
 
-    // TODOHERE - copy from Structural
+    //
+    // Update model
+    //
+
+    // TODO: in reality, we will re-assign instance IDs by carefully comparing
+    // before & after to retain instance ids, create new ones, or reclaim old ones
+
+    mModel.GetElectricalLayerBuffer().BlitFromRegion(
+        sourceLayerBufferRegion,
+        sourceRegion,
+        targetOrigin);
+
+    //
+    // Update visualization
+    //
+
+    UpdateElectricalLayerVisualization({ targetOrigin, sourceRegion.size });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -298,7 +338,7 @@ void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & r
 
     // TODO: check current visualization settings and decide how to visualize
 
-    rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 255);
+    rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 255); // Fully opaque
 
     StructuralLayerBuffer const & structuralLayerBuffer = mModel.GetStructuralLayerBuffer();
     RgbaImageData & structuralRenderColorTexture = *mStructuralLayerVisualizationTexture;
@@ -343,7 +383,37 @@ void ModelController::UpdateElectricalLayerVisualization(ShipSpaceRect const & r
     assert(mElectricalLayerVisualizationTexture->Size.width == mModel.GetShipSize().width
         && mElectricalLayerVisualizationTexture->Size.height == mModel.GetShipSize().height);
 
-    // TODO
+    // Update visualization
+
+    // TODO: check current visualization settings and decide how to visualize
+
+    rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 0); // Fully transparent
+
+    ElectricalLayerBuffer const & electricalLayerBuffer = mModel.GetElectricalLayerBuffer();
+    RgbaImageData & electricalRenderColorTexture = *mElectricalLayerVisualizationTexture;
+
+    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
+    {
+        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
+        {
+            auto const electricalMaterial = electricalLayerBuffer[{x, y}].Material;
+
+            electricalRenderColorTexture[{x, y}] = electricalMaterial != nullptr
+                ? rgbaColor(electricalMaterial->RenderColor, 255)
+                : emptyColor;
+        }
+    }
+
+    // Remember dirty region
+    ImageRect const imageRegion = ImageRect({ region.origin.x, region.origin.y }, { region.size.width, region.size.height });
+    if (!mDirtyElectricalLayerVisualizationRegion.has_value())
+    {
+        mDirtyElectricalLayerVisualizationRegion = imageRegion;
+    }
+    else
+    {
+        mDirtyElectricalLayerVisualizationRegion->UnionWith(imageRegion);
+    }
 }
 
 void ModelController::UpdateRopesLayerVisualization(ShipSpaceRect const & region)
