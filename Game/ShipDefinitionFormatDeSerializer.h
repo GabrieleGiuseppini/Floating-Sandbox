@@ -200,6 +200,10 @@ private:
         StructuralLayerBuffer const & structuralLayer,
         DeSerializationBuffer<BigEndianess> & buffer);
 
+    static size_t AppendElectricalLayer(
+        ElectricalLayerBuffer const & electricalLayer,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
     static size_t AppendPngPreview(
         StructuralLayerBuffer const & structuralLayer,
         DeSerializationBuffer<BigEndianess> & buffer);
@@ -252,6 +256,12 @@ private:
         MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
         std::unique_ptr<StructuralLayerBuffer> & structuralLayerBuffer);
 
+    static void ReadElectricalLayer(
+        DeSerializationBuffer<BigEndianess> const & buffer,
+        ShipAttributes const & shipAttributes,
+        MaterialDatabase::MaterialMap<ElectricalMaterial> const & materialMap,
+        std::unique_ptr<ElectricalLayerBuffer> & electricalLayerBuffer);
+
 private:
 
     friend class ShipDefinitionFormatDeSerializerTests_FileHeader_Test;
@@ -267,4 +277,10 @@ private:
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_MidSize_Heterogeneous_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_UnrecognizedMaterial_SameVersion_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_UnrecognizedMaterial_LaterVersion_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests_MidSize_NonInstanced_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests_MidSize_Instanced_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests_UnrecognizedMaterial_SameVersion_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests_UnrecognizedMaterial_LaterVersion_Test;
+
 };

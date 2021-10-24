@@ -390,4 +390,37 @@ public:
         , PaletteCoordinates(paletteCoordinates)
     {
     }
+
+    // For tests
+    ElectricalMaterial(
+        MaterialColorKey const & colorKey,
+        std::string name,
+        rgbColor const & renderColor,
+        bool isInstanced)
+        : ColorKey(colorKey)
+        , Name(name)
+        , RenderColor(renderColor)
+        , ElectricalType(ElectricalElementType::Cable)
+        , IsSelfPowered(false)
+        , ConductsElectricity(true)
+        , Luminiscence(1.0f)
+        , LightColor(vec4f::zero())
+        , LightSpread(1.0f)
+        , WetFailureRate(0.0f)
+        , HeatGenerated(0.0f)
+        , MinimumOperatingTemperature(0.0f)
+        , MaximumOperatingTemperature(1000.0f)
+        , ParticleEmissionRate(1.0f)
+        //
+        , IsInstanced(isInstanced)
+        , EngineType(EngineElementType::Diesel)
+        , EngineCCWDirection(1.0f)
+        , EnginePower(1.0f)
+        , EngineResponsiveness(1.0f)
+        , InteractiveSwitchType(InteractiveSwitchElementType::Push)
+        , ShipSoundType(ShipSoundElementType::Bell1)
+        , WaterPumpNominalForce(0.0f)
+        , PaletteCoordinates(std::nullopt)
+    {
+    }
 };

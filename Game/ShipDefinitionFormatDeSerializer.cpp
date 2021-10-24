@@ -40,6 +40,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
     std::optional<ShipMetadata> shipMetadata;
     ShipPhysicsData shipPhysicsData;
     std::unique_ptr<StructuralLayerBuffer> structuralLayer;
+    std::unique_ptr<ElectricalLayerBuffer> electricalLayer;
     std::unique_ptr<TextureLayerBuffer> textureLayer;
     bool hasSeenTail = false;
 
@@ -87,6 +88,24 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                         *shipAttributes,
                         materialDatabase.GetStructuralMaterialMap(),
                         structuralLayer);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(MainSectionTagType::ElectricalLayer) :
+                {
+                    // Make sure we've already gotten the ship size
+                    if (!shipAttributes.has_value())
+                    {
+                        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+                    }
+
+                    ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
+                    ReadElectricalLayer(
+                        buffer,
+                        *shipAttributes,
+                        materialDatabase.GetElectricalMaterialMap(),
+                        electricalLayer);
 
                     break;
                 }
@@ -139,7 +158,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
     return ShipDefinition(
         shipAttributes->ShipSize,
         std::move(*structuralLayer),
-        nullptr, // TODO
+        std::move(electricalLayer),
         nullptr, // TODO
         std::move(textureLayer),
         *shipMetadata,
@@ -347,6 +366,19 @@ void ShipDefinitionFormatDeSerializer::Save(
         static_cast<std::uint32_t>(MainSectionTagType::StructuralLayer),
         [&]() { return AppendStructuralLayer(shipDefinition.StructuralLayer, buffer); },
         buffer);
+
+    //
+    // Write electrical layer
+    //
+
+    if (shipDefinition.ElectricalLayer)
+    {
+        AppendSection(
+            outputFile,
+            static_cast<std::uint32_t>(MainSectionTagType::ElectricalLayer),
+            [&]() { return AppendElectricalLayer(*shipDefinition.ElectricalLayer, buffer); },
+            buffer);
+    }
 
     // TODOHERE: other sections
 
@@ -711,6 +743,52 @@ size_t ShipDefinitionFormatDeSerializer::AppendPhysicsDataEntry(
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer(
+    StructuralLayerBuffer const & structuralLayer,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    size_t sectionBodySize = 0;
+
+    //
+    // Encode layer with RLE of RGB color key buffer
+    //
+
+    size_t const layerLinearSize = structuralLayer.Size.GetLinearSize();
+    DeSerializationBuffer<BigEndianess> rleBuffer(layerLinearSize * sizeof(MaterialColorKey)); // Upper bound
+
+    StructuralElement const * structuralElementBuffer = structuralLayer.Data.get();
+    for (size_t i = 0; i < layerLinearSize; /*incremented in loop*/)
+    {
+        // Get the material at this positioj
+        auto const * material = structuralElementBuffer[i].Material;
+        ++i;
+
+        // Count consecutive identical values
+        std::uint16_t materialCount = 1;
+        for (;
+            i < layerLinearSize
+            && structuralElementBuffer[i].Material == material
+            && materialCount < std::numeric_limits<var_uint16_t>::max().value();
+            ++i, ++materialCount);
+
+        // Serialize
+        rleBuffer.Append<var_uint16_t>(var_uint16_t(materialCount));
+        MaterialColorKey const colorKey = material == nullptr ? EmptyMaterialColorKey : material->ColorKey;
+        rleBuffer.Append(reinterpret_cast<unsigned char const *>(&colorKey), sizeof(MaterialColorKey));
+    }
+
+    //
+    // Serialize RLE buffer
+    //
+
+    sectionBodySize += buffer.Append(
+        rleBuffer.GetData(),
+        rleBuffer.GetSize());
+
+    return sectionBodySize;
+}
+
+size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer(
+    // TODOHERE
     StructuralLayerBuffer const & structuralLayer,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
@@ -1334,6 +1412,61 @@ ShipPhysicsData ShipDefinitionFormatDeSerializer::ReadPhysicsData(DeSerializatio
 void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
+    MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
+    std::unique_ptr<StructuralLayerBuffer> & structuralLayerBuffer)
+{
+    size_t readOffset = 0;
+
+    // Allocate buffer
+    structuralLayerBuffer.reset(new StructuralLayerBuffer(shipAttributes.ShipSize));
+
+    // Decode RLE buffer
+    size_t writeOffset = 0;
+    StructuralElement * structuralLayerWrite = structuralLayerBuffer->Data.get();
+    for (; readOffset < buffer.GetSize(); /*incremented in loop*/)
+    {
+        // Count
+        var_uint16_t count;
+        readOffset += buffer.ReadAt(readOffset, count);
+
+        // ColorKey value
+        MaterialColorKey colorKey;
+        readOffset += buffer.ReadAt(readOffset, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
+
+        // Lookup material
+        StructuralMaterial const * material;
+        if (colorKey == EmptyMaterialColorKey)
+        {
+            material = nullptr;
+        }
+        else
+        {
+            auto const materialIt = materialMap.find(colorKey);
+            if (materialIt == materialMap.cend())
+            {
+                ThrowMaterialNotFound(shipAttributes);
+            }
+
+            material = &(materialIt->second);
+        }
+
+        // Fill material
+        std::fill_n(
+            structuralLayerWrite + writeOffset,
+            count.value(),
+            StructuralElement(material));
+
+        // Advance
+        writeOffset += count.value();
+    }
+
+    assert(writeOffset == shipAttributes.ShipSize.GetLinearSize());
+}
+
+void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
+    DeSerializationBuffer<BigEndianess> const & buffer,
+    ShipAttributes const & shipAttributes,
+    // TODOHERE
     MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
     std::unique_ptr<StructuralLayerBuffer> & structuralLayerBuffer)
 {

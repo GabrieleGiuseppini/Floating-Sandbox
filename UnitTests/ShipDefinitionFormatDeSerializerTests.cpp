@@ -473,3 +473,252 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, Unrecognized
         EXPECT_EQ(exc.Parameters[0], "2999.4");
     }
 }
+
+class ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests : public testing::Test
+{
+protected:
+
+    void SetUp()
+    {
+        for (std::uint8_t i = 0; i < 200; ++i)
+        {
+            MaterialColorKey colorKey(
+                i + 2,
+                i + 1,
+                i);
+
+            TestMaterialMap.try_emplace(
+                colorKey,
+                ElectricalMaterial(
+                    colorKey,
+                    "Material " + std::to_string(i),
+                    colorKey,
+                    i >= 100));
+        }
+    }
+
+    void VerifyDeserializedElectricalLayer(
+        ElectricalLayerBuffer const & sourceElectricalLayerBuffer,
+        DeSerializationBuffer<BigEndianess> & buffer)
+    {
+        std::unique_ptr<ElectricalLayerBuffer> targetElectricalLayerBuffer;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(1, 16, sourceElectricalLayerBuffer.Size, false, false);
+        ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
+            buffer,
+            shipAttributes,
+            TestMaterialMap,
+            targetElectricalLayerBuffer);
+
+        EXPECT_EQ(targetElectricalLayerBuffer->Size, sourceElectricalLayerBuffer.Size);
+        ASSERT_EQ(targetElectricalLayerBuffer->GetByteSize(), sourceElectricalLayerBuffer.GetByteSize());
+        EXPECT_EQ(
+            std::memcmp(
+                targetElectricalLayerBuffer->Data.get(),
+                sourceElectricalLayerBuffer.Data.get(),
+                targetElectricalLayerBuffer->GetByteSize()),
+            0);
+    }
+
+    std::map<MaterialColorKey, ElectricalMaterial> TestMaterialMap;
+};
+
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, MidSize_NonInstanced)
+{
+    // Linearize materials
+    std::vector<ElectricalMaterial const *> materials;
+    std::transform(
+        TestMaterialMap.cbegin(),
+        TestMaterialMap.cend(),
+        std::back_inserter(materials),
+        [](auto const & entry)
+        {
+            return &(entry.second);
+        });
+
+    // Populate electrical layer buffer with non-instanced materials
+    ElectricalLayerBuffer sourceElectricalLayerBuffer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceElectricalLayerBuffer.Size.GetLinearSize(); ++i)
+    {
+        sourceElectricalLayerBuffer.Data[i] = ElectricalElement(materials[i % 100], NoneElectricalElementInstanceIndex);
+    }
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayerBuffer, buffer);
+
+    //
+    // Verify RLE
+    //
+
+    size_t idx = 0;
+
+    for (size_t i = 0; i < sourceElectricalLayerBuffer.Size.GetLinearSize(); ++i)
+    {
+        // Count
+        var_uint16_t count;
+        idx += buffer.ReadAt(idx, count);
+        EXPECT_EQ(count.value(), 1);
+
+        // Value
+        MaterialColorKey colorKey;
+        idx += buffer.ReadAt(idx, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
+        EXPECT_EQ(colorKey, materials[i % 100]->ColorKey);
+    }
+
+    // Buffer is done
+    EXPECT_EQ(idx, buffer.GetSize());
+
+    //
+    // Verify may be read
+    //
+
+    VerifyDeserializedElectricalLayer(
+        sourceElectricalLayerBuffer,
+        buffer);
+}
+
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, MidSize_Instanced)
+{
+    // Linearize materials
+    std::vector<ElectricalMaterial const *> materials;
+    std::transform(
+        TestMaterialMap.cbegin(),
+        TestMaterialMap.cend(),
+        std::back_inserter(materials),
+        [](auto const & entry)
+        {
+            return &(entry.second);
+        });
+
+    // Populate electrical layer buffer with non-instanced materials
+    ElectricalLayerBuffer sourceElectricalLayerBuffer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceElectricalLayerBuffer.Size.GetLinearSize(); ++i)
+    {
+        sourceElectricalLayerBuffer.Data[i] = ElectricalElement(materials[100 + i % 100], ElectricalElementInstanceIndex(i));
+    }
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayerBuffer, buffer);
+
+    //
+    // Verify RLE
+    //
+
+    size_t idx = 0;
+
+    for (size_t i = 0; i < sourceElectricalLayerBuffer.Size.GetLinearSize(); ++i)
+    {
+        // Count
+        var_uint16_t count;
+        idx += buffer.ReadAt(idx, count);
+        EXPECT_EQ(count.value(), 1);
+
+        // Value
+        MaterialColorKey colorKey;
+        idx += buffer.ReadAt(idx, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
+        EXPECT_EQ(colorKey, materials[i % 100]->ColorKey);
+    }
+
+    // Buffer is done
+    EXPECT_EQ(idx, buffer.GetSize());
+
+    //
+    // Verify may be read
+    //
+
+    VerifyDeserializedElectricalLayer(
+        sourceElectricalLayerBuffer,
+        buffer);
+}
+
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, UnrecognizedMaterial_SameVersion)
+{
+    ElectricalMaterial unrecognizedMaterial = ElectricalMaterial(
+        rgbColor(0x12, 0x34, 0x56),
+        "Unrecognized Material",
+        rgbColor(0x12, 0x34, 0x56),
+        false);
+
+    // Populate electrical layer buffer
+    ElectricalLayerBuffer sourceElectricalLayerBuffer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceElectricalLayerBuffer.Size.GetLinearSize(); ++i)
+    {
+        sourceElectricalLayerBuffer.Data[i] = ElectricalElement(&unrecognizedMaterial, NoneElectricalElementInstanceIndex);
+    }
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayerBuffer, buffer);
+
+    //
+    // Verify exception
+    //
+
+    try
+    {
+        std::unique_ptr<ElectricalLayerBuffer> targetElectricalLayerBuffer;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
+            Version::CurrentVersion().GetMajor(),
+            Version::CurrentVersion().GetMinor(),
+            sourceElectricalLayerBuffer.Size, false, false);
+        ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
+            buffer,
+            shipAttributes,
+            TestMaterialMap,
+            targetElectricalLayerBuffer);
+
+        FAIL();
+    }
+    catch (UserGameException const & exc)
+    {
+        EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFoundSameVersion);
+        EXPECT_TRUE(exc.Parameters.empty());
+    }
+}
+
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, UnrecognizedMaterial_LaterVersion)
+{
+    ElectricalMaterial unrecognizedMaterial = ElectricalMaterial(
+        rgbColor(0x12, 0x34, 0x56),
+        "Unrecognized Material",
+        rgbColor(0x12, 0x34, 0x56),
+        false);
+
+    // Populate electrical layer buffer
+    ElectricalLayerBuffer sourceElectricalLayerBuffer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceElectricalLayerBuffer.Size.GetLinearSize(); ++i)
+    {
+        sourceElectricalLayerBuffer.Data[i] = ElectricalElement(&unrecognizedMaterial, NoneElectricalElementInstanceIndex);
+    }
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayerBuffer, buffer);
+
+    //
+    // Verify exception
+    //
+
+    try
+    {
+        std::unique_ptr<ElectricalLayerBuffer> targetElectricalLayerBuffer;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
+            2999,
+            4,
+            sourceElectricalLayerBuffer.Size, false, false);
+        ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
+            buffer,
+            shipAttributes,
+            TestMaterialMap,
+            targetElectricalLayerBuffer);
+
+        FAIL();
+    }
+    catch (UserGameException const & exc)
+    {
+        EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFoundLaterVersion);
+        ASSERT_FALSE(exc.Parameters.empty());
+        EXPECT_EQ(exc.Parameters[0], "2999.4");
+    }
+}

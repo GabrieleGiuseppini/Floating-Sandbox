@@ -5,21 +5,24 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Helper to make filename (in Utils)
 	+ Use it when opening SaveAs
 
-- UnderConstructionDialog
-
-- Mattia makes ship
-
-- Tests:
-	- Ships with unicode chars in metadata
-
 - Electrical layer:
+	- Load and Save at DeSerializer
+		- Review MaterialDatabase's electrical material maps: make one map?
 	- PencilTool: fix instance index given to fill
 		- Strategy for instance ID assignment: fully assigned by ModelController
 			- Primitives are at particle level, only w/material as arg, and ModelController assigns ID
 				- Strategy to ensure only consecutive IDs, OR only "initial" ones (even if scattered): TODO
 			- Only primitive that will be different: region replace
 				- Carefully compare before & after to retain instance ids, create new ones, or reclaim old ones
-	- TODOHERE: some basics
+	- New/Update/Remove layer
+
+- UnderConstructionDialog
+
+- Mattia makes ship
+
+- Tests:
+	- Ships with unicode chars in metadata, show well in dialog
+
 
 - Finalize design of Ropes layer
 
@@ -28,7 +31,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Load/Save each of:
 		- Electrical layer
 			- Pure buffer
-			- Review MaterialDatabase's electrical material maps: make one map?
+			
 		- Ropes layer
 			- Pure buffer
 		- Texture layer
