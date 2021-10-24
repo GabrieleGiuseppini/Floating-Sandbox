@@ -18,6 +18,7 @@
 #include <UILib/BitmapButton.h>
 #include <UILib/BitmapToggleButton.h>
 #include <UILib/EditSpinBox.h>
+#include <UILib/UnderConstructionDialog.h>
 #include <UILib/WxHelpers.h>
 
 #include <wx/button.h>
@@ -358,6 +359,8 @@ MainFrame::MainFrame(
             editMenu->Append(menuItem);
             Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShipProperties);
         }
+
+        editMenu->Append(new wxMenuItem(editMenu, wxID_SEPARATOR));
 
         {
             mUndoMenuItem = new wxMenuItem(editMenu, wxID_ANY, _("Undo") + wxS("\tCtrl+Z"), _("Undo the last edit operation"), wxITEM_NORMAL);
@@ -1019,7 +1022,7 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                             [this, layer]()
                             {
                                 // TODO
-                                LogMessage("Import layer ", static_cast<uint32_t>(layer));
+                                UnderConstructionDialog::Show(this, mResourceLocator);
                             },
                             buttonTooltip);
 
@@ -1099,7 +1102,7 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                 [this, layer]()
                                 {
                                     // TODO
-                                    LogMessage("Export layer ", static_cast<uint32_t>(layer));
+                                    UnderConstructionDialog::Show(this, mResourceLocator);
                                 },
                                 _("Export this layer to a file."));
 

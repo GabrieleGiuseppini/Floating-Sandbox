@@ -30,6 +30,8 @@ set  (UI_LIB_SOURCES
 	StandardSystemPaths.cpp
 	StandardSystemPaths.h
 	TextValidators.h
+	UnderConstructionDialog.cpp
+	UnderConstructionDialog.h
 	UnFocusablePanel.h
 	UnFocusableScrollablePanel.h
 	WxHelpers.cpp
