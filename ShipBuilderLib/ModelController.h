@@ -118,6 +118,8 @@ private:
         Model && model,
         View & view);
 
+    void InitializeElectricalLayer();
+
     inline void WriteElectricalParticle(
         ShipSpaceCoordinates const & coords,
         ElectricalMaterial const * material);
@@ -141,6 +143,7 @@ private:
     //
 
     ElectricalElementInstanceIndexFactory mElectricalElementInstanceIndexFactory;
+    size_t mElectricalParticleCount;
 
     //
     // Visualizations

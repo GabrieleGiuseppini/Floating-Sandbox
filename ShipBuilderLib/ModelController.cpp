@@ -40,9 +40,13 @@ ModelController::ModelController(
     : mView(view)
     , mModel(std::move(model))
     , mElectricalElementInstanceIndexFactory()
+    , mElectricalParticleCount(0)
 {
     // Model is not dirty now
     assert(!mModel.GetIsDirty());
+
+    // Initialize layers
+    InitializeElectricalLayer();
 
     // Prepare all visualizations
     ShipSpaceRect const wholeShipSpace = ShipSpaceRect({ 0, 0 }, mModel.GetShipSize());
@@ -184,7 +188,7 @@ void ModelController::NewElectricalLayer()
 {
     mModel.NewElectricalLayer();
 
-    mElectricalElementInstanceIndexFactory.Reset();
+    InitializeElectricalLayer();
 
     UpdateElectricalLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
 }
@@ -195,8 +199,7 @@ void ModelController::SetElectricalLayer(/*TODO*/)
 
     mModel.SetElectricalLayer(/*TODO*/);
 
-    // TODO: depending on how we set layer
-    //mElectricalElementInstanceIndexFactory.Reset();
+    InitializeElectricalLayer();
 
     UpdateElectricalLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
 }
@@ -209,7 +212,7 @@ void ModelController::RemoveElectricalLayer()
 
     assert(!mModel.HasLayer(LayerType::Electrical));
 
-    mElectricalElementInstanceIndexFactory.Reset();
+    InitializeElectricalLayer();
 
     mElectricalLayerVisualizationTexture.reset();
     mDirtyElectricalLayerVisualizationRegion.reset();
@@ -245,6 +248,8 @@ void ModelController::ElectricalRegionReplace(
     ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetOrigin)
 {
+    // TODOHERE
+
     assert(mModel.HasLayer(LayerType::Electrical));
 
     //
@@ -335,6 +340,34 @@ void ModelController::RemoveTextureLayer()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void ModelController::InitializeElectricalLayer()
+{
+    // Reset factory
+    mElectricalElementInstanceIndexFactory.Reset();
+
+    // Reset particle count
+    mElectricalParticleCount = 0;
+
+    if (mModel.HasLayer(LayerType::Electrical))
+    {
+        // Register existing instance indices with factory, and initialize running analysis
+        ElectricalLayerBuffer const & electricalLayerBuffer = mModel.GetElectricalLayerBuffer();
+        for (size_t i = 0; i < electricalLayerBuffer.Size.GetLinearSize(); ++i)
+        {
+            if (electricalLayerBuffer.Data[i].Material != nullptr)
+            {
+                ++mElectricalParticleCount;
+
+                if (electricalLayerBuffer.Data[i].Material->IsInstanced)
+                {
+                    assert(electricalLayerBuffer.Data[i].InstanceIndex != NoneElectricalElementInstanceIndex);
+                    mElectricalElementInstanceIndexFactory.RegisterIndex(electricalLayerBuffer.Data[i].InstanceIndex);
+                }
+            }
+        }
+    }
+}
+
 void ModelController::WriteElectricalParticle(
     ShipSpaceCoordinates const & coords,
     ElectricalMaterial const * material)
@@ -347,25 +380,48 @@ void ModelController::WriteElectricalParticle(
 
     ElectricalLayerBuffer & electricalLayerBuffer = mModel.GetElectricalLayerBuffer();
 
-    ElectricalElementInstanceIndex instanceIndex = NoneElectricalElementInstanceIndex;
-
     auto const & oldElement = electricalLayerBuffer[coords];
-    if (oldElement.Material == nullptr)
+
+    ElectricalElementInstanceIndex instanceIndex;
+    if (oldElement.Material == nullptr
+        || !oldElement.Material->IsInstanced)
     {
         if (material != nullptr
             && material->IsInstanced)
         {
+            // New instanced element...
+
+            // ...new instance index
             instanceIndex = mElectricalElementInstanceIndexFactory.MakeNewIndex();
         }
+        else
+        {
+            // None instanced...
+
+            // ...keep it none
+            instanceIndex = NoneElectricalElementInstanceIndex;
+        }
     }
-    else if (oldElement.Material->IsInstanced)
+    else
     {
+        assert(oldElement.Material->IsInstanced);
         assert(oldElement.InstanceIndex != NoneElectricalElementInstanceIndex);
 
         if (material == nullptr
             || !material->IsInstanced)
         {
+            // Old instanced, new one not...
+
+            // ...disappeared instance index
             mElectricalElementInstanceIndexFactory.DisposeIndex(oldElement.InstanceIndex);
+            instanceIndex = NoneElectricalElementInstanceIndex;
+        }
+        else
+        {
+            // Both instanced...
+
+            // ...keep old instanceIndex
+            instanceIndex = oldElement.InstanceIndex;
         }
     }
 

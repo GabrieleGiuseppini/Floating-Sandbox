@@ -27,52 +27,46 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Electrical texture parallel
 		- Tests: 
 			- Make sure loading a ship w/legacy electricals makes up an electrical layer, and saving it saves the electricals
-	= PencilTool: 
-		- Split Fill primitive in two: one is "ForTempVisualization", invoking WriteParticle so that it does not do running analysis
+	= PencilTool: 		
 		= Fix instance index given to fill: strategy for instance ID assignment: fully assigned by ModelController
 			= All primitives invoke internal WriteElectricalParticle(.)
-				+ Carefully compare before & after to retain instance ids, create new ones, or reclaim old ones			
+				= Carefully compare before & after to retain instance ids, create new ones, or reclaim old ones			
 					! Strategy to ensure only consecutive IDs, OR only "initial" ones (even if scattered): use ElectricalElementInstanceIndexFactory, member of ModelController
 					- Re-write:
-						- ModelController cctor(def):
-							- Visit electrical layer and register existing instance indices w/factory
-								- Do in helper method, which also takes care of Factory::Reset()
-									- "InitializeElectricalLayer(uq_ptr<layer>)", sets and does the elec analysis initialization below
+						+ ModelController cctor(def):
+							+ Visit electrical layer and register existing instance indices w/factory
+								+ Do in helper method, which also takes care of Factory::Reset()
+									+ "InitializeElectricalLayer()", sets and does the elec analysis initialization below
 							! Metadata::ElectricalPanelMetadata is already consistent
 						- New:
-							- Factory::Reset()
-							- Clear Metadata::ElectricalPanelMetadata
-						- Set (Load): 
-							- Needs to take also Metadata::ElectricalPanelMetadata, together with Elec layer
-							- Visit electrical layer and register existing instance indices w/factory
-								- Do in helper method, which also takes care of Factory::Reset()
-						- Others?
-						- Does Undo need to save also Metadata::ElectricalPanelMetadata?
-							- No, if changes to Metadata::ElectricalPanelMetadata are also in Undo entries
-								- We'd go back to a consistent state when walking back the undo stack
-						- WriteElectricalParticle:
-							- TODO: do we need to keep instance IDs?
-				= Primitives:
-					= Pencil
-					= Undo
-				- Also increments count of electrical particles (for later analysis)
-					- Count initialized - via InitializeElectricalAnalysis() - at cctor,New,Set,Remove
-						- InitializeElectricalAnalysis():
-							- count = 0
-							- if buffer != nullptr: count
+							+ Factory::Reset()
+							- Clear Metadata::ElectricalPanelMetadata (OR NOT, not needed if EPM is in layer)
+						= Set (Load): 
+							- Needs to take also Metadata::ElectricalPanelMetadata, together with Elec layer (OR NOT, not needed if EPM is in layer)
+							+ Visit electrical layer and register existing instance indices w/factory
+								+ Do in helper method, which also takes care of Factory::Reset()
+						= Remove:
+							+ Factory::Reset()
+							- Clear Metadata::ElectricalPanelMetadata (OR NOT, not needed if EPM is in layer)
+						+ ElectricalRegionFill						
+				- Also keeps count of electrical particles (for later analysis)
+					+ Count initialized - via InitializeElectricalAnalysis() - at cctor,New,Set,Remove
+						+ InitializeElectricalAnalysis():
+							+ count = 0
+							+ if buffer != nullptr: count
+					- Keep count updated
 				! Technically, also does running analysis
 				! Also takes care of electrical panel: new/removed/updated-type components
 				- Do we want also StructuralFill to take material instead of element?
-			- Reset factory at:
-				+ New()
-				- Set() (or not, depends on whether we set via move or via copying pixel-by-pixel)
-				- Remove()
-				- 
 		- Require structure behind fill? - Validations, write from Moleskine in own section
 		- Try: do not make line if instanced electrical element
+	- Split Fill primitive in two: one is "ForTempVisualization", invoking WriteParticle so that it does not do running analysis
+	- ElectricalLayer contains ElectricalPanelMetadata
+		- LegacyDeser: json is parsed in two phases
 	- Undo of electrical must also contain whole ElectricalPanelMetadata
-		- Split UndoEntry in two, not templated
-	- Thin if ElectricalLayer should contain ElectricalPanelMetadata
+		- Split UndoEntry in two, not templated	
+		- TODO: ElectricalRegionReplace/Undo/TempVisualization: running analyses
+			- Should it simply Initialize?
 	- Tests:
 		- PencilTool
 		- PencilTool + Undo
