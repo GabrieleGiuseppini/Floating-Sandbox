@@ -382,6 +382,7 @@ void ModelController::WriteElectricalParticle(
 
     auto const & oldElement = electricalLayerBuffer[coords];
 
+    // Decide instance index
     ElectricalElementInstanceIndex instanceIndex;
     if (oldElement.Material == nullptr
         || !oldElement.Material->IsInstanced)
@@ -425,9 +426,27 @@ void ModelController::WriteElectricalParticle(
         }
     }
 
-    LogMessage("TODOTEST: WriteElectricalParticle: InstanceId=", instanceIndex);
+    // Update electrical element count
+    if (material != nullptr)
+    {
+        if (oldElement.Material == nullptr)
+        {
+            ++mElectricalParticleCount;
+        }
+    }
+    else
+    {
+        if (oldElement.Material != nullptr)
+        {
+            assert(mElectricalParticleCount > 0);
+            --mElectricalParticleCount;
+        }
+    }
 
+    // Store
     electricalLayerBuffer[coords] = ElectricalElement(material, instanceIndex);
+
+    LogMessage("TODOTEST: WriteElectricalParticle: InstanceId=", instanceIndex, " ElectricalParticleCount=", mElectricalParticleCount);
 }
 
 void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & region)
