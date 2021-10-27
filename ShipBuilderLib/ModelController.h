@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ElectricalElementInstanceIndexFactory.h"
 #include "Model.h"
 #include "ShipBuilderTypes.h"
 #include "View.h"
@@ -70,8 +71,8 @@ public:
     void SetStructuralLayer(/*TODO*/);
 
     void StructuralRegionFill(
-        StructuralElement const & element,
-        ShipSpaceRect const & region);
+        ShipSpaceRect const & region,
+        StructuralElement const & element);
 
     void StructuralRegionReplace(
         StructuralLayerBuffer const & sourceLayerBufferRegion,
@@ -87,8 +88,8 @@ public:
     void RemoveElectricalLayer();
 
     void ElectricalRegionFill(
-        ElectricalElement const & element,
-        ShipSpaceRect const & region);
+        ShipSpaceRect const & region,
+        ElectricalMaterial const * material);
 
     void ElectricalRegionReplace(
         ElectricalLayerBuffer const & sourceLayerBufferRegion,
@@ -117,6 +118,10 @@ private:
         Model && model,
         View & view);
 
+    inline void WriteElectricalParticle(
+        ShipSpaceCoordinates const & coords,
+        ElectricalMaterial const * material);
+
     void UpdateStructuralLayerVisualization(ShipSpaceRect const & region);
 
     void UpdateElectricalLayerVisualization(ShipSpaceRect const & region);
@@ -130,6 +135,12 @@ private:
     View & mView;
 
     Model mModel;
+
+    //
+    // Auxiliary layers' members
+    //
+
+    ElectricalElementInstanceIndexFactory mElectricalElementInstanceIndexFactory;
 
     //
     // Visualizations

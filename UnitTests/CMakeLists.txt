@@ -25,6 +25,7 @@ set (UNIT_TEST_SOURCES
 	CircularListTests.cpp
 	ColorsTests.cpp
 	DeSerializationBufferTests.cpp
+	ElectricalElementInstanceIndexFactoryTests.cpp
 	EndianTests.cpp
 	EnumFlagsTests.cpp
 	FixedSizeVectorTests.cpp
@@ -71,6 +72,7 @@ target_link_libraries (UnitTests
 	GameCoreLib
 	GameLib
 	GPUCalcLib
+	ShipBuilderLib
 	UILib
 	${OPENGL_LIBRARIES}
 	gmock

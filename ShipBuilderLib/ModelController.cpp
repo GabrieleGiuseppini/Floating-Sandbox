@@ -39,6 +39,7 @@ ModelController::ModelController(
     View & view)
     : mView(view)
     , mModel(std::move(model))
+    , mElectricalElementInstanceIndexFactory()
 {
     // Model is not dirty now
     assert(!mModel.GetIsDirty());
@@ -126,8 +127,8 @@ void ModelController::SetStructuralLayer(/*TODO*/)
 }
 
 void ModelController::StructuralRegionFill(
-    StructuralElement const & element,
-    ShipSpaceRect const & region)
+    ShipSpaceRect const & region,
+    StructuralElement const & element)
 {
     assert(mModel.HasLayer(LayerType::Structural));
 
@@ -183,6 +184,8 @@ void ModelController::NewElectricalLayer()
 {
     mModel.NewElectricalLayer();
 
+    mElectricalElementInstanceIndexFactory.Reset();
+
     UpdateElectricalLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
 }
 
@@ -190,7 +193,10 @@ void ModelController::SetElectricalLayer(/*TODO*/)
 {
     assert(mModel.HasLayer(LayerType::Electrical));
 
-    mModel.SetElectricalLayer();
+    mModel.SetElectricalLayer(/*TODO*/);
+
+    // TODO: depending on how we set layer
+    //mElectricalElementInstanceIndexFactory.Reset();
 
     UpdateElectricalLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
 }
@@ -203,13 +209,15 @@ void ModelController::RemoveElectricalLayer()
 
     assert(!mModel.HasLayer(LayerType::Electrical));
 
+    mElectricalElementInstanceIndexFactory.Reset();
+
     mElectricalLayerVisualizationTexture.reset();
     mDirtyElectricalLayerVisualizationRegion.reset();
 }
 
 void ModelController::ElectricalRegionFill(
-    ElectricalElement const & element,
-    ShipSpaceRect const & region)
+    ShipSpaceRect const & region,
+    ElectricalMaterial const * material)
 {
     assert(mModel.HasLayer(LayerType::Electrical));
 
@@ -217,14 +225,11 @@ void ModelController::ElectricalRegionFill(
     // Update model
     //
 
-    ElectricalLayerBuffer & electricalLayerBuffer = mModel.GetElectricalLayerBuffer();
-
     for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
     {
         for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
         {
-            // TODO: in reality, this method will only take a material - we will assign instance IDs ourselves
-            electricalLayerBuffer[ShipSpaceCoordinates(x, y)] = element;
+            WriteElectricalParticle(ShipSpaceCoordinates(x, y), material);
         }
     }
 
@@ -246,13 +251,22 @@ void ModelController::ElectricalRegionReplace(
     // Update model
     //
 
-    // TODO: in reality, we will re-assign instance IDs by carefully comparing
-    // before & after to retain instance ids, create new ones, or reclaim old ones
+    // The source region is entirely in the source buffer
+    assert(sourceRegion.IsContainedInRect({ {0, 0}, sourceLayerBufferRegion.Size }));
 
-    mModel.GetElectricalLayerBuffer().BlitFromRegion(
-        sourceLayerBufferRegion,
-        sourceRegion,
-        targetOrigin);
+    // The target origin plus the region size are within this buffer
+    assert(ShipSpaceRect(targetOrigin, sourceRegion.size).IsContainedInRect({ {0, 0}, mModel.GetElectricalLayerBuffer().Size }));
+
+    ElectricalLayerBuffer & targetElectricalLayerBuffer = mModel.GetElectricalLayerBuffer();
+
+    for (int y = 0; y < sourceRegion.size.height; ++y)
+    {
+        for (int x = 0; x < sourceRegion.size.width; ++x)
+        {
+            targetElectricalLayerBuffer[{targetOrigin.x + x, targetOrigin.y + y }]
+                = sourceLayerBufferRegion[{sourceRegion.origin.x + x, sourceRegion.origin.y + y}];
+        }
+    }
 
     //
     // Update visualization
@@ -320,6 +334,45 @@ void ModelController::RemoveTextureLayer()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ModelController::WriteElectricalParticle(
+    ShipSpaceCoordinates const & coords,
+    ElectricalMaterial const * material)
+{
+    //
+    // FutureWork:
+    // - Here we will also implement running analyses, e.g. update the count of particles
+    // - Here we will also take care of electrical panel: new/removed/updated-type components
+    //
+
+    ElectricalLayerBuffer & electricalLayerBuffer = mModel.GetElectricalLayerBuffer();
+
+    ElectricalElementInstanceIndex instanceIndex = NoneElectricalElementInstanceIndex;
+
+    auto const & oldElement = electricalLayerBuffer[coords];
+    if (oldElement.Material == nullptr)
+    {
+        if (material != nullptr
+            && material->IsInstanced)
+        {
+            instanceIndex = mElectricalElementInstanceIndexFactory.MakeNewIndex();
+        }
+    }
+    else if (oldElement.Material->IsInstanced)
+    {
+        assert(oldElement.InstanceIndex != NoneElectricalElementInstanceIndex);
+
+        if (material == nullptr
+            || !material->IsInstanced)
+        {
+            mElectricalElementInstanceIndexFactory.DisposeIndex(oldElement.InstanceIndex);
+        }
+    }
+
+    LogMessage("TODOTEST: WriteElectricalParticle: InstanceId=", instanceIndex);
+
+    electricalLayerBuffer[coords] = ElectricalElement(material, instanceIndex);
+}
 
 void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & region)
 {

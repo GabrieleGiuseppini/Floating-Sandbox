@@ -40,6 +40,7 @@ using StructuralLayerBuffer = Buffer2D<StructuralElement, struct ShipSpaceTag>;
 template <>
 struct LayerTypeTraits<LayerType::Structural>
 {
+    using material_type = StructuralMaterial;
     using buffer_type = StructuralLayerBuffer;
 };
 
@@ -78,6 +79,7 @@ using ElectricalLayerBuffer = Buffer2D<ElectricalElement, struct ShipSpaceTag>;
 template <>
 struct LayerTypeTraits<LayerType::Electrical>
 {
+    using material_type = ElectricalMaterial;
     using buffer_type = ElectricalLayerBuffer;
 };
 

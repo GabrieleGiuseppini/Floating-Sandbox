@@ -51,7 +51,7 @@ protected:
 
 private:
 
-    using LayerElementType = typename LayerTypeTraits<TLayer>::buffer_type::element_type;
+    using LayerMaterialType = typename LayerTypeTraits<TLayer>::material_type;
 
 private:
 
@@ -71,7 +71,7 @@ private:
 
     int GetPencilSize() const;
 
-    LayerElementType GetFillElement(MaterialPlaneType plane) const;
+    inline LayerMaterialType const * GetFillMaterial(MaterialPlaneType plane) const;
 
 private:
 

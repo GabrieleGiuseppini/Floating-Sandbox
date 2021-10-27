@@ -98,8 +98,17 @@ PencilTool<TLayerType, IsEraser>::PencilTool(
     , mOriginalLayerBufferClone()
     , mTempVisualizationDirtyShipRegion()
     , mEngagementData()
-    , mCursorImage(WxHelpers::LoadCursorImage("pencil_cursor", 2, 22, resourceLocator))
+    , mCursorImage()
 {
+    if constexpr (IsEraser)
+    {
+        mCursorImage = WxHelpers::LoadCursorImage("eraser_cursor", 8, 27, resourceLocator);
+    }
+    else
+    {
+        mCursorImage = WxHelpers::LoadCursorImage("pencil_cursor", 2, 22, resourceLocator);
+    }
+
     SetCursor(mCursorImage);
 
     // Take original layer clone
@@ -301,7 +310,7 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
     assert(mEngagementData);
 
     int const pencilSize = GetPencilSize();
-    LayerElementType const fillElement = GetFillElement(mEngagementData->Plane);
+    LayerMaterialType const * const fillMaterial = GetFillMaterial(mEngagementData->Plane);
 
     bool hasEdited = false;
 
@@ -319,16 +328,16 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
                 if constexpr (TLayer == LayerType::Structural)
                 {
                     mModelController.StructuralRegionFill(
-                        fillElement,
-                        *applicableRect);
+                        *applicableRect,
+                        StructuralElement(fillMaterial));
                 }
                 else
                 {
                     static_assert(TLayer == LayerType::Electrical);
 
                     mModelController.ElectricalRegionFill(
-                        fillElement,
-                        *applicableRect);
+                        *applicableRect,
+                        fillMaterial);
                 }
 
                 auto const old = mEngagementData->EditRegion;
@@ -402,21 +411,21 @@ template<LayerType TLayer, bool IsEraser>
 void PencilTool<TLayer, IsEraser>::DoTempVisualization(ShipSpaceRect const & affectedRect)
 {
     // No buttons, hence choosing foreground plane
-    LayerElementType const fillElement = GetFillElement(MaterialPlaneType::Foreground);
+    LayerMaterialType const * fillMaterial = GetFillMaterial(MaterialPlaneType::Foreground);
 
     if constexpr (TLayer == LayerType::Structural)
     {
         mModelController.StructuralRegionFill(
-            fillElement,
-            affectedRect);
+            affectedRect,
+            StructuralElement(fillMaterial));
     }
     else
     {
         static_assert(TLayer == LayerType::Electrical);
 
         mModelController.ElectricalRegionFill(
-            fillElement,
-            affectedRect);
+            affectedRect,
+            fillMaterial);
     }
 
     mTempVisualizationDirtyShipRegion = affectedRect;
@@ -495,40 +504,28 @@ int PencilTool<TLayer, IsEraser>::GetPencilSize() const
 }
 
 template<LayerType TLayer, bool IsEraser>
-typename PencilTool<TLayer, IsEraser>::LayerElementType PencilTool<TLayer, IsEraser>::GetFillElement(MaterialPlaneType plane) const
+typename PencilTool<TLayer, IsEraser>::LayerMaterialType const * PencilTool<TLayer, IsEraser>::GetFillMaterial(MaterialPlaneType plane) const
 {
     if constexpr (!IsEraser)
     {
         if constexpr (TLayer == LayerType::Structural)
         {
-            return LayerElementType(
-                plane == MaterialPlaneType::Foreground
-                    ? mWorkbenchState.GetStructuralForegroundMaterial()
-                    : mWorkbenchState.GetStructuralBackgroundMaterial());
+            return plane == MaterialPlaneType::Foreground
+                ? mWorkbenchState.GetStructuralForegroundMaterial()
+                : mWorkbenchState.GetStructuralBackgroundMaterial();
         }
         else
         {
             static_assert(TLayer == LayerType::Electrical);
 
-            return LayerElementType(
-                plane == MaterialPlaneType::Foreground
-                    ? mWorkbenchState.GetElectricalForegroundMaterial()
-                    : mWorkbenchState.GetElectricalBackgroundMaterial(),
-                NoneElectricalElementInstanceIndex); // TODOHERE
+            return plane == MaterialPlaneType::Foreground
+                ? mWorkbenchState.GetElectricalForegroundMaterial()
+                : mWorkbenchState.GetElectricalBackgroundMaterial();
         }
     }
     else
     {
-        if constexpr (TLayer == LayerType::Structural)
-        {
-            return LayerElementType(nullptr);
-        }
-        else
-        {
-            static_assert(TLayer == LayerType::Electrical);
-
-            return LayerElementType(nullptr, NoneElectricalElementInstanceIndex);
-        }
+        return nullptr;
     }
 }
 
