@@ -125,10 +125,9 @@ private:
         ArtCredits = 3,
         YearBuilt = 4,
         Description = 5,
-        ElectricalPanelMetadata_V1 = 6,
-        Password = 7,
-        DoHideElectricalsInPreview = 8,
-        DoHideHDInPreview = 9,
+        Password = 6,
+        DoHideElectricalsInPreview = 7,
+        DoHideHDInPreview = 8,
 
         Tail = 0xffffffff
     };
@@ -145,6 +144,27 @@ private:
         Tail = 0xffffffff
     };
 
+    enum class StructuralLayerTagType : std::uint32_t
+    {
+        // Numeric values are serialized in ship files, changing them will result
+        // in ship files being un-deserializable!
+
+        Buffer = 1,
+
+        Tail = 0xffffffff
+    };
+
+    enum class ElectricalLayerTagType : std::uint32_t
+    {
+        // Numeric values are serialized in ship files, changing them will result
+        // in ship files being un-deserializable!
+
+        Buffer = 1,
+        Panel = 2,
+
+        Tail = 0xffffffff
+    };
+
 private:
 
     // Write
@@ -157,7 +177,7 @@ private:
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static size_t AppendPngImage(
-        RgbaImageData const & rawImageDAta,
+        RgbaImageData const & rawImageData,
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static void AppendFileHeader(
@@ -197,15 +217,27 @@ private:
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static size_t AppendStructuralLayer(
-        StructuralLayerBuffer const & structuralLayer,
+        StructuralLayerData const & structuralLayer,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static size_t AppendStructuralLayerBuffer(
+        Buffer2D<StructuralElement, struct ShipSpaceTag> const & structuralLayerBuffer,
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static size_t AppendElectricalLayer(
-        ElectricalLayerBuffer const & electricalLayer,
+        ElectricalLayerData const & electricalLayer,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static size_t AppendElectricalLayerBuffer(
+        Buffer2D<ElectricalElement, struct ShipSpaceTag> const & electricalLayerBuffer,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static size_t AppendElectricalLayerPanel(
+        ElectricalPanelMetadata const & electricalPanel,
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static size_t AppendPngPreview(
-        StructuralLayerBuffer const & structuralLayer,
+        StructuralLayerData const & structuralLayer,
         DeSerializationBuffer<BigEndianess> & buffer);
 
     // Read
@@ -254,13 +286,13 @@ private:
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
         MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
-        std::unique_ptr<StructuralLayerBuffer> & structuralLayerBuffer);
+        std::unique_ptr<StructuralLayerData> & structuralLayer);
 
     static void ReadElectricalLayer(
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
         MaterialDatabase::MaterialMap<ElectricalMaterial> const & materialMap,
-        std::unique_ptr<ElectricalLayerBuffer> & electricalLayerBuffer);
+        std::unique_ptr<ElectricalLayerData> & electricalLayer);
 
 private:
 
@@ -268,19 +300,18 @@ private:
     friend class ShipDefinitionFormatDeSerializerTests_FileHeader_UnrecognizedHeader_Test;
     friend class ShipDefinitionFormatDeSerializerTests_FileHeader_UnsupportedFileFormatVersion_Test;
     friend class ShipDefinitionFormatDeSerializerTests_ShipAttributes_Test;
-    friend class ShipDefinitionFormatDeSerializerTests_Metadata_Full_WithoutElectricalPanel_Test;
-    friend class ShipDefinitionFormatDeSerializerTests_Metadata_Minimal_WithoutElectricalPanel_Test;
-    friend class ShipDefinitionFormatDeSerializerTests_Metadata_ElectricalPanel_Test;
+    friend class ShipDefinitionFormatDeSerializerTests_Metadata_Full_Test;
+    friend class ShipDefinitionFormatDeSerializerTests_Metadata_Minimal_Test;
     friend class ShipDefinitionFormatDeSerializerTests_PhysicsData_Test;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_VariousSizes_Uniform_Test;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_MidSize_Heterogeneous_Test;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_UnrecognizedMaterial_SameVersion_Test;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests_UnrecognizedMaterial_LaterVersion_Test;
-    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests;
-    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests_MidSize_NonInstanced_Test;
-    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests_MidSize_Instanced_Test;
-    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests_UnrecognizedMaterial_SameVersion_Test;
-    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests_UnrecognizedMaterial_LaterVersion_Test;
-
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_VariousSizes_Uniform_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_MidSize_Heterogeneous_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_UnrecognizedMaterial_SameVersion_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_UnrecognizedMaterial_LaterVersion_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_MidSize_NonInstanced_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_MidSize_Instanced_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_ElectricalPanel_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_UnrecognizedMaterial_SameVersion_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_UnrecognizedMaterial_LaterVersion_Test;
 };

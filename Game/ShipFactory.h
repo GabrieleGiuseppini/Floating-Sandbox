@@ -229,7 +229,7 @@ private:
         Physics::Points const & points,
         Physics::Springs const & springs,
         std::vector<ElectricalElementInstanceIndex> const & electricalElementInstanceIndices,
-        std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> const & panelMetadata,
+        ElectricalPanelMetadata const & panelMetadata,
         ShipId shipId,
         Physics::World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,

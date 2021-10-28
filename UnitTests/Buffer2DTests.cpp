@@ -35,7 +35,7 @@ TEST(Buffer2DTests, Indexing_WithCoordinates)
     EXPECT_EQ(buffer[IntegralCoordinates(9, 19)], 242);
 }
 
-TEST(Buffer2DTests, MakeCopy_Whole)
+TEST(Buffer2DTests, Clone_Whole)
 {
     Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
 
@@ -48,19 +48,19 @@ TEST(Buffer2DTests, MakeCopy_Whole)
         }
     }
 
-    auto const bufferCopy = buffer.MakeCopy();
+    auto const bufferClone = buffer.Clone();
     iVal = 100;
     for (int y = 0; y < 4; ++y)
     {
         for (int x = 0; x < 4; ++x)
         {
-            EXPECT_EQ(buffer[IntegralCoordinates(x, y)], iVal);
+            EXPECT_EQ(bufferClone[IntegralCoordinates(x, y)], iVal);
             ++iVal;
         }
     }
 }
 
-TEST(Buffer2DTests, MakeCopy_Region)
+TEST(Buffer2DTests, Clone_Region)
 {
     Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
 
@@ -73,19 +73,19 @@ TEST(Buffer2DTests, MakeCopy_Region)
         }
     }
 
-    auto const bufferCopy = buffer.MakeCopy(
+    auto const bufferClone = buffer.CloneRegion(
         IntegralRect(
             { 1, 1 },
             { 2, 2 }));
 
-    ASSERT_EQ(IntegralRectSize(2, 2), bufferCopy->Size);
+    ASSERT_EQ(IntegralRectSize(2, 2), bufferClone.Size);
 
     for (int y = 0; y < 2; ++y)
     {
         iVal = 100 + (y + 1) * 4 + 1;
         for (int x = 0; x < 2; ++x)
         {
-            EXPECT_EQ((*bufferCopy)[IntegralCoordinates(x, y)], iVal);
+            EXPECT_EQ(bufferClone[IntegralCoordinates(x, y)], iVal);
             ++iVal;
         }
     }

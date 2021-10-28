@@ -7,7 +7,7 @@
 
 #include "ShipBuilderTypes.h"
 
-#include <Game/LayerBuffers.h>
+#include <Game/Layers.h>
 #include <Game/Materials.h>
 #include <Game/ShipDefinition.h>
 
@@ -72,21 +72,22 @@ public:
 
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
-    std::unique_ptr<StructuralLayerBuffer> CloneStructuralLayerBuffer() const;
+    std::unique_ptr<StructuralLayerData> CloneStructuralLayer() const;
 
     void NewElectricalLayer();
     void SetElectricalLayer(/*TODO*/);
     void RemoveElectricalLayer();
-    std::unique_ptr<ElectricalLayerBuffer> CloneElectricalLayerBuffer() const;
+    std::unique_ptr<ElectricalLayerData> CloneElectricalLayer() const;
 
     void NewRopesLayer();
     void SetRopesLayer(/*TODO*/);
     void RemoveRopesLayer();
+    // TODO: clone()
 
     void NewTextureLayer();
     void SetTextureLayer(/*TODO*/);
     void RemoveTextureLayer();
-    std::unique_ptr<TextureLayerBuffer> CloneTextureLayerBuffer() const;
+    std::unique_ptr<TextureLayerData> CloneTextureLayer() const;
 
     ShipSpaceSize const & GetShipSize() const
     {
@@ -172,29 +173,29 @@ public:
         mDirtyState.RecalculateGlobalIsDirty();
     }
 
-    StructuralLayerBuffer & GetStructuralLayerBuffer()
+    StructuralLayerData & GetStructuralLayer()
     {
-        assert(mStructuralLayerBuffer);
-        return *mStructuralLayerBuffer;
+        assert(mStructuralLayer);
+        return *mStructuralLayer;
     }
 
-    ElectricalLayerBuffer & GetElectricalLayerBuffer()
+    ElectricalLayerData & GetElectricalLayer()
     {
-        assert(mElectricalLayerBuffer);
-        return *mElectricalLayerBuffer;
+        assert(mElectricalLayer);
+        return *mElectricalLayer;
     }
 
-    TextureLayerBuffer const & GetTextureLayerBuffer() const
+    TextureLayerData const & GetTextureLayer() const
     {
-        assert(mTextureLayerBuffer);
-        return *mTextureLayerBuffer;
+        assert(mTextureLayer);
+        return *mTextureLayer;
     }
 
 private:
 
-    static std::unique_ptr<StructuralLayerBuffer> MakeNewEmptyStructuralLayer(ShipSpaceSize const & shipSize);
+    static std::unique_ptr<StructuralLayerData> MakeNewEmptyStructuralLayer(ShipSpaceSize const & shipSize);
 
-    static std::unique_ptr<ElectricalLayerBuffer> MakeNewEmptyElectricalLayer(ShipSpaceSize const & shipSize);
+    static std::unique_ptr<ElectricalLayerData> MakeNewEmptyElectricalLayer(ShipSpaceSize const & shipSize);
 
 private:
 
@@ -207,11 +208,11 @@ private:
     // Layers
     //
 
-    std::unique_ptr<StructuralLayerBuffer> mStructuralLayerBuffer;
+    std::unique_ptr<StructuralLayerData> mStructuralLayer;
 
-    std::unique_ptr<ElectricalLayerBuffer> mElectricalLayerBuffer;
+    std::unique_ptr<ElectricalLayerData> mElectricalLayer;
 
-    std::unique_ptr<TextureLayerBuffer> mTextureLayerBuffer;
+    std::unique_ptr<TextureLayerData> mTextureLayer;
 
     //
     // Misc state

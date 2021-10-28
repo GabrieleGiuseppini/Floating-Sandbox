@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "LayerBuffers.h"
+#include "Layers.h"
 #include "MaterialDatabase.h"
 #include "ResourceLocator.h"
 #include "ShipAutoTexturizationSettings.h"
@@ -29,7 +29,7 @@ public:
 
     RgbaImageData Texturize(
         std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings,
-        StructuralLayerBuffer const & structuralLayer) const;
+        StructuralLayerData const & structuralLayer) const;
 
     template<typename TMaterial>
     RgbaImageData MakeTextureSample(

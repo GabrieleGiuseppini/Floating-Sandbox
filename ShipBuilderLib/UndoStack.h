@@ -8,7 +8,7 @@
 #include "Model.h"
 #include "ShipBuilderTypes.h"
 
-#include <Game/LayerBuffers.h>
+#include <Game/Layers.h>
 
 #include <wx/string.h>
 
@@ -69,21 +69,21 @@ private:
     Model::DirtyState const mOriginalDirtyState; // The model's dirty state that was in effect when the edit action being undode was applied
 };
 
-template<typename TLayerBuffer>
-class LayerBufferRegionUndoAction final : public UndoAction
+template<typename TLayer>
+class LayerRegionUndoAction final : public UndoAction
 {
 public:
 
-    LayerBufferRegionUndoAction(
+    LayerRegionUndoAction(
         wxString const & title,
         Model::DirtyState const & originalDirtyState,
-        TLayerBuffer && layerBufferRegion,
+        TLayer && layerRegion,
         ShipSpaceCoordinates const & origin)
         : UndoAction(
             title,
-            layerBufferRegion.GetByteSize(),
+            layerRegion.Buffer.GetByteSize(),
             originalDirtyState)
-        , mLayerBufferRegion(std::move(layerBufferRegion))
+        , mLayerRegion(std::move(layerRegion))
         , mOrigin(origin)
     {}
 
@@ -91,7 +91,7 @@ public:
 
 private:
 
-    TLayerBuffer mLayerBufferRegion;
+    TLayer mLayerRegion;
     ShipSpaceCoordinates mOrigin;
 };
 

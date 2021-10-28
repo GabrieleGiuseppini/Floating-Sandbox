@@ -10,7 +10,6 @@
 
 #include <optional>
 #include <string>
-#include <map>
 
 /*
  * Metadata for a ship.
@@ -29,8 +28,6 @@ public:
 
     std::optional<std::string> Description;
 
-    std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> ElectricalPanelMetadata;
-
     bool DoHideElectricalsInPreview;
     bool DoHideHDInPreview;
 
@@ -42,7 +39,6 @@ public:
         , ArtCredits()
         , YearBuilt()
         , Description()
-        , ElectricalPanelMetadata()
         , DoHideElectricalsInPreview(false)
         , DoHideHDInPreview(false)
         , Password()
@@ -55,7 +51,6 @@ public:
         std::optional<std::string> artCredits,
         std::optional<std::string> yearBuilt,
         std::optional<std::string> description,
-        std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> electricalPanelMetadata,
         bool doHideElectricalsInPreview,
         bool doHideHDInPreview,
         std::optional<PasswordHash> password)
@@ -64,7 +59,6 @@ public:
         , ArtCredits(std::move(artCredits))
         , YearBuilt(std::move(yearBuilt))
         , Description(std::move(description))
-        , ElectricalPanelMetadata(std::move(electricalPanelMetadata))
         , DoHideElectricalsInPreview(doHideElectricalsInPreview)
         , DoHideHDInPreview(doHideHDInPreview)
         , Password(password)

@@ -118,17 +118,17 @@ public:
         return Data[linearIndex];
     }
 
-    std::unique_ptr<Buffer2D> MakeCopy() const
+    Buffer2D Clone() const
     {
         auto newData = std::make_unique<TElement[]>(mLinearSize);
         std::memcpy(newData.get(), Data.get(), mLinearSize * sizeof(TElement));
 
-        return std::make_unique<Buffer2D>(
+        return Buffer2D(
             Size,
             std::move(newData));
     }
 
-    std::unique_ptr<Buffer2D> MakeCopy(_IntegralRect<TIntegralTag> const & regionRect)
+    Buffer2D CloneRegion(_IntegralRect<TIntegralTag> const & regionRect) const
     {
         auto newData = std::make_unique<TElement[]>(regionRect.size.width * regionRect.size.height);
         for (int targetY = 0; targetY < regionRect.size.height; ++targetY)
@@ -142,7 +142,7 @@ public:
                 regionRect.size.width * sizeof(TElement));
         }
 
-        return std::make_unique<Buffer2D>(
+        return Buffer2D(
             regionRect.size,
             std::move(newData));
     }

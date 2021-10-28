@@ -21,7 +21,7 @@ set  (GAME_SOURCES
 	IGameEventHandlers.h
 	ImageFileTools.cpp
 	ImageFileTools.h
-	LayerBuffers.h
+	Layers.h
 	Materials.cpp
 	Materials.h
 	MaterialDatabase.cpp

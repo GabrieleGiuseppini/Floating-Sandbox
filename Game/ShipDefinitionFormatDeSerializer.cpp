@@ -39,9 +39,9 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
     std::optional<ShipAttributes> shipAttributes;
     std::optional<ShipMetadata> shipMetadata;
     ShipPhysicsData shipPhysicsData;
-    std::unique_ptr<StructuralLayerBuffer> structuralLayer;
-    std::unique_ptr<ElectricalLayerBuffer> electricalLayer;
-    std::unique_ptr<TextureLayerBuffer> textureLayer;
+    std::unique_ptr<StructuralLayerData> structuralLayer;
+    std::unique_ptr<ElectricalLayerData> electricalLayer;
+    std::unique_ptr<TextureLayerData> textureLayer;
     bool hasSeenTail = false;
 
     Parse(
@@ -116,7 +116,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     RgbaImageData image = ReadPngImage(buffer);
 
                     // Make texture out of this image
-                    textureLayer = std::make_unique<RgbaImageData>(std::move(image));
+                    textureLayer = std::make_unique<TextureLayerData>(std::move(image));
 
                     break;
                 }
@@ -312,7 +312,7 @@ void ShipDefinitionFormatDeSerializer::Save(
     ShipAttributes const shipAttributes = ShipAttributes(
         APPLICATION_VERSION_MAJOR,
         APPLICATION_VERSION_MINOR,
-        shipDefinition.StructuralLayer.Size,
+        shipDefinition.StructuralLayer.Buffer.Size,
         shipDefinition.TextureLayer != nullptr,
         shipDefinition.ElectricalLayer != nullptr);
 
@@ -341,7 +341,7 @@ void ShipDefinitionFormatDeSerializer::Save(
         AppendSection(
             outputFile,
             static_cast<std::uint32_t>(MainSectionTagType::TextureLayer_PNG),
-            [&]() { return AppendPngImage(*shipDefinition.TextureLayer, buffer); },
+            [&]() { return AppendPngImage(shipDefinition.TextureLayer->Buffer, buffer); },
             buffer);
     }
     else
@@ -468,6 +468,7 @@ void ShipDefinitionFormatDeSerializer::AppendFileHeader(DeSerializationBuffer<Bi
         24);
 
     buffer.Append<std::uint16_t>(CurrentFileFormatVersion);
+    // Padding
     buffer.Append<std::uint8_t>(0);
     buffer.Append<std::uint8_t>(0);
     buffer.Append<std::uint8_t>(0);
@@ -604,45 +605,6 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadata(
             buffer);
     }
 
-    if (!metadata.ElectricalPanelMetadata.empty())
-    {
-        // Tag and size
-        buffer.Append(static_cast<std::uint32_t>(MetadataTagType::ElectricalPanelMetadata_V1));
-        size_t const valueSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
-
-        size_t valueSize = 0;
-
-        // Number of entries
-        std::uint16_t count = static_cast<std::uint16_t>(metadata.ElectricalPanelMetadata.size());
-        valueSize += buffer.Append(count);
-
-        // Entries
-        for (auto const & entry : metadata.ElectricalPanelMetadata)
-        {
-            valueSize += buffer.Append(static_cast<std::uint32_t>(entry.first));
-
-            valueSize += buffer.Append(entry.second.PanelCoordinates.has_value());
-            if (entry.second.PanelCoordinates.has_value())
-            {
-                valueSize += buffer.Append(static_cast<std::int32_t>(entry.second.PanelCoordinates->x));
-                valueSize += buffer.Append(static_cast<std::int32_t>(entry.second.PanelCoordinates->y));
-            }
-
-            valueSize += buffer.Append(entry.second.Label.has_value());
-            if (entry.second.Label.has_value())
-            {
-                valueSize += buffer.Append(*entry.second.Label);
-            }
-
-            valueSize += buffer.Append(entry.second.IsHidden);
-        }
-
-        // Store size
-        buffer.WriteAt(static_cast<std::uint32_t>(valueSize), valueSizeIndex);
-
-        sectionBodySize += sizeof(std::uint32_t) + sizeof(std::uint32_t) + valueSize;
-    }
-
     if (metadata.Password.has_value())
     {
         sectionBodySize += AppendMetadataEntry(
@@ -743,19 +705,61 @@ size_t ShipDefinitionFormatDeSerializer::AppendPhysicsDataEntry(
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer(
-    StructuralLayerBuffer const & structuralLayer,
+    StructuralLayerData const & structuralLayer,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
     size_t sectionBodySize = 0;
 
     //
+    // Buffer
+    //
+
+    {
+        buffer.Append(static_cast<uint32_t>(StructuralLayerTagType::Buffer));
+        size_t const subSectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+        sectionBodySize += sizeof(SectionHeader);
+
+        // Body
+        size_t const subSectionBodySize = AppendStructuralLayerBuffer(
+            structuralLayer.Buffer,
+            buffer);
+
+        buffer.WriteAt(static_cast<std::uint32_t>(subSectionBodySize), subSectionBodySizeIndex);
+
+        sectionBodySize += subSectionBodySize;
+    }
+
+    //
+    // Tail
+    //
+
+    {
+        buffer.Append(static_cast<uint32_t>(StructuralLayerTagType::Tail));
+        buffer.Append<std::uint32_t>(0);
+
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+        sectionBodySize += sizeof(SectionHeader);
+    }
+
+    return sectionBodySize;
+}
+
+size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayerBuffer(
+    Buffer2D<StructuralElement, struct ShipSpaceTag> const & structuralLayerBuffer,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    size_t subSectionBodySize = 0;
+
+    //
     // Encode layer with RLE of RGB color key buffer
     //
 
-    size_t const layerLinearSize = structuralLayer.Size.GetLinearSize();
+    size_t const layerLinearSize = structuralLayerBuffer.Size.GetLinearSize();
     DeSerializationBuffer<BigEndianess> rleBuffer(layerLinearSize * sizeof(MaterialColorKey)); // Upper bound
 
-    StructuralElement const * structuralElementBuffer = structuralLayer.Data.get();
+    StructuralElement const * structuralElementBuffer = structuralLayerBuffer.Data.get();
     for (size_t i = 0; i < layerLinearSize; /*incremented in loop*/)
     {
         // Get the element at this position
@@ -782,27 +786,91 @@ size_t ShipDefinitionFormatDeSerializer::AppendStructuralLayer(
     // Serialize RLE buffer
     //
 
-    sectionBodySize += buffer.Append(
+    subSectionBodySize += buffer.Append(
         rleBuffer.GetData(),
         rleBuffer.GetSize());
 
-    return sectionBodySize;
+    return subSectionBodySize;
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer(
-    ElectricalLayerBuffer const & electricalLayer,
+    ElectricalLayerData const & electricalLayer,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
     size_t sectionBodySize = 0;
 
     //
+    // Buffer
+    //
+
+    {
+        buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType::Buffer));
+        size_t const sectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+        sectionBodySize += sizeof(SectionHeader);
+
+        // Body
+        size_t const subSectionBodySize = AppendElectricalLayerBuffer(
+            electricalLayer.Buffer,
+            buffer);
+
+        buffer.WriteAt(static_cast<std::uint32_t>(subSectionBodySize), sectionBodySizeIndex);
+
+        sectionBodySize += subSectionBodySize;
+    }
+
+    //
+    // Electrical panel
+    //
+
+    if (!electricalLayer.Panel.empty())
+    {
+        buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType::Panel));
+        size_t const sectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+        sectionBodySize += sizeof(SectionHeader);
+
+        // Body
+        size_t const subSectionBodySize = AppendElectricalLayerPanel(
+            electricalLayer.Panel,
+            buffer);
+
+        buffer.WriteAt(static_cast<std::uint32_t>(subSectionBodySize), sectionBodySizeIndex);
+
+        sectionBodySize += subSectionBodySize;
+    }
+
+    //
+    // Tail
+    //
+
+    {
+        buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType::Tail));
+        buffer.Append<std::uint32_t>(0);
+
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+        sectionBodySize += sizeof(SectionHeader);
+    }
+
+    return sectionBodySize;
+}
+
+size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayerBuffer(
+    Buffer2D<ElectricalElement, struct ShipSpaceTag> const & electricalLayerBuffer,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    size_t subSectionBodySize = 0;
+
+    //
     // Encode layer with RLE of <RGB color key, instance ID> buffer
     //
 
-    size_t const layerLinearSize = electricalLayer.Size.GetLinearSize();
+    size_t const layerLinearSize = electricalLayerBuffer.Size.GetLinearSize();
     DeSerializationBuffer<BigEndianess> rleBuffer(layerLinearSize * (sizeof(MaterialColorKey) + sizeof(std::uint16_t))); // Upper bound
 
-    ElectricalElement const * electricalElementBuffer = electricalLayer.Data.get();
+    ElectricalElement const * electricalElementBuffer = electricalLayerBuffer.Data.get();
     for (size_t i = 0; i < layerLinearSize; /*incremented in loop*/)
     {
         // Get the element at this position
@@ -836,29 +904,65 @@ size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer(
     // Serialize RLE buffer
     //
 
-    sectionBodySize += buffer.Append(
+    subSectionBodySize += buffer.Append(
         rleBuffer.GetData(),
         rleBuffer.GetSize());
 
-    return sectionBodySize;
+    return subSectionBodySize;
+}
+
+size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayerPanel(
+    ElectricalPanelMetadata const & electricalPanel,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    size_t subSectionBodySize = 0;
+
+    // Number of entries
+    std::uint16_t count = static_cast<std::uint16_t>(electricalPanel.size());
+    subSectionBodySize += buffer.Append(count);
+
+    // Entries
+    for (auto const & entry : electricalPanel)
+    {
+        subSectionBodySize += buffer.Append(static_cast<std::uint32_t>(entry.first));
+
+        subSectionBodySize += buffer.Append(entry.second.PanelCoordinates.has_value());
+        if (entry.second.PanelCoordinates.has_value())
+        {
+            subSectionBodySize += buffer.Append(static_cast<std::int32_t>(entry.second.PanelCoordinates->x));
+            subSectionBodySize += buffer.Append(static_cast<std::int32_t>(entry.second.PanelCoordinates->y));
+        }
+
+        subSectionBodySize += buffer.Append(entry.second.Label.has_value());
+        if (entry.second.Label.has_value())
+        {
+            subSectionBodySize += buffer.Append(*entry.second.Label);
+        }
+
+        subSectionBodySize += buffer.Append(entry.second.IsHidden);
+    }
+
+    return subSectionBodySize;
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendPngPreview(
-    StructuralLayerBuffer const & structuralLayer,
+    StructuralLayerData const & structuralLayer,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
     //
     // Calculate trimmed quad
     //
 
+    auto const bufferSize = structuralLayer.Buffer.Size;
+
     int minY;
     {
         bool hasData = false;
-        for (minY = 0; !hasData && minY < structuralLayer.Size.height; ++minY)
+        for (minY = 0; !hasData && minY < bufferSize.height; ++minY)
         {
-            for (int x = 0; !hasData && x < structuralLayer.Size.width; ++x)
+            for (int x = 0; !hasData && x < bufferSize.width; ++x)
             {
-                hasData = structuralLayer[{x, minY}].Material != nullptr;
+                hasData = structuralLayer.Buffer[{x, minY}].Material != nullptr;
             }
 
             if (hasData)
@@ -869,11 +973,11 @@ size_t ShipDefinitionFormatDeSerializer::AppendPngPreview(
     int maxY;
     {
         bool hasData = false;
-        for (maxY = structuralLayer.Size.height - 1; !hasData && maxY > minY; --maxY)
+        for (maxY = bufferSize.height - 1; !hasData && maxY > minY; --maxY)
         {
-            for (int x = 0; !hasData && x < structuralLayer.Size.width; ++x)
+            for (int x = 0; !hasData && x < bufferSize.width; ++x)
             {
-                hasData = structuralLayer[{x, maxY}].Material != nullptr;
+                hasData = structuralLayer.Buffer[{x, maxY}].Material != nullptr;
             }
 
             if (hasData)
@@ -884,11 +988,11 @@ size_t ShipDefinitionFormatDeSerializer::AppendPngPreview(
     int minX;
     {
         bool hasData = false;
-        for (minX = 0; minX < structuralLayer.Size.width; ++minX)
+        for (minX = 0; minX < bufferSize.width; ++minX)
         {
-            for (int y = 0; !hasData && y < structuralLayer.Size.height; ++y)
+            for (int y = 0; !hasData && y < bufferSize.height; ++y)
             {
-                hasData = structuralLayer[{minX, y}].Material != nullptr;
+                hasData = structuralLayer.Buffer[{minX, y}].Material != nullptr;
             }
 
             if (hasData)
@@ -899,11 +1003,11 @@ size_t ShipDefinitionFormatDeSerializer::AppendPngPreview(
     int maxX;
     {
         bool hasData = false;
-        for (maxX = structuralLayer.Size.width - 1; maxX > minX; --maxX)
+        for (maxX = bufferSize.width - 1; maxX > minX; --maxX)
         {
-            for (int y = 0; !hasData && y < structuralLayer.Size.height; ++y)
+            for (int y = 0; !hasData && y < bufferSize.height; ++y)
             {
-                hasData = structuralLayer[{maxX, y}].Material != nullptr;
+                hasData = structuralLayer.Buffer[{maxX, y}].Material != nullptr;
             }
 
             if (hasData)
@@ -911,7 +1015,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendPngPreview(
         }
     }
 
-    assert(minY <= structuralLayer.Size.height && maxY >= 0 && minX <= structuralLayer.Size.width && maxX >= 0);
+    assert(minY <= bufferSize.height && maxY >= 0 && minX <= bufferSize.width && maxX >= 0);
 
     ImageSize const trimmedSize = ImageSize(
         std::max(maxX - minX + 1, 0),
@@ -927,7 +1031,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendPngPreview(
     {
         for (int x = 0; x < trimmedSize.width; ++x)
         {
-            StructuralElement const & element = structuralLayer[{x + minX, y + minY}];
+            StructuralElement const & element = structuralLayer.Buffer[{x + minX, y + minY}];
             previewRawData[{x, y}] = element.Material != nullptr
                 ? rgbaColor(element.Material->RenderColor, 255)
                 : rgbaColor(EmptyMaterialColorKey, 255);
@@ -1251,64 +1355,6 @@ ShipMetadata ShipDefinitionFormatDeSerializer::ReadMetadata(DeSerializationBuffe
                 break;
             }
 
-            case static_cast<uint32_t>(MetadataTagType::ElectricalPanelMetadata_V1):
-            {
-                metadata.ElectricalPanelMetadata.clear();
-
-                size_t elecPanelOffset = offset;
-
-                // Number of entries
-                std::uint16_t entryCount;
-                elecPanelOffset += buffer.ReadAt<std::uint16_t>(elecPanelOffset, entryCount);
-
-                // Entries
-                for (int i = 0; i < entryCount; ++i)
-                {
-                    std::uint32_t instanceIndex;
-                    elecPanelOffset += buffer.ReadAt<std::uint32_t>(elecPanelOffset, instanceIndex);
-
-                    std::optional<IntegralCoordinates> panelCoordinates;
-                    bool panelCoordsHasValue;
-                    elecPanelOffset += buffer.ReadAt<bool>(elecPanelOffset, panelCoordsHasValue);
-                    if (panelCoordsHasValue)
-                    {
-                        int32_t x;
-                        elecPanelOffset += buffer.ReadAt<std::int32_t>(elecPanelOffset, x);
-                        int32_t y;
-                        elecPanelOffset += buffer.ReadAt<std::int32_t>(elecPanelOffset, y);
-
-                        panelCoordinates = IntegralCoordinates(static_cast<int>(x), static_cast<int>(y));
-                    }
-
-                    std::optional<std::string> label;
-                    bool labelHasValue;
-                    elecPanelOffset += buffer.ReadAt<bool>(elecPanelOffset, labelHasValue);
-                    if (labelHasValue)
-                    {
-                        std::string labelStr;
-                        elecPanelOffset += buffer.ReadAt<std::string>(elecPanelOffset, labelStr);
-                        label = labelStr;
-                    }
-
-                    bool isHidden;
-                    elecPanelOffset += buffer.ReadAt<bool>(elecPanelOffset, isHidden);
-
-                    auto const res = metadata.ElectricalPanelMetadata.try_emplace(
-                        static_cast<ElectricalElementInstanceIndex>(instanceIndex),
-                        ElectricalPanelElementMetadata(
-                            panelCoordinates,
-                            label,
-                            isHidden));
-
-                    if (!res.second)
-                    {
-                        LogMessage("WARNING: Duplicate electrical element instance index \"", instanceIndex, "\"");
-                    }
-                }
-
-                break;
-            }
-
             case static_cast<uint32_t>(MetadataTagType::Password):
             {
                 std::uint64_t password;
@@ -1423,119 +1469,249 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
     MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
-    std::unique_ptr<StructuralLayerBuffer> & structuralLayerBuffer)
+    std::unique_ptr<StructuralLayerData> & structuralLayer)
 {
     size_t readOffset = 0;
 
     // Allocate buffer
-    structuralLayerBuffer.reset(new StructuralLayerBuffer(shipAttributes.ShipSize));
+    structuralLayer.reset(new StructuralLayerData(shipAttributes.ShipSize));
 
-    // Decode RLE buffer
-    size_t writeOffset = 0;
-    StructuralElement * structuralLayerWrite = structuralLayerBuffer->Data.get();
-    for (; readOffset < buffer.GetSize(); /*incremented in loop*/)
+    // Read all tags
+    while (true)
     {
-        // Deserialize count
-        var_uint16_t count;
-        readOffset += buffer.ReadAt(readOffset, count);
+        SectionHeader const sectionHeader = ReadSectionHeader(buffer, readOffset);
+        readOffset += sizeof(SectionHeader);
 
-        // Deserialize colorKey value
-        MaterialColorKey colorKey;
-        readOffset += buffer.ReadAt(readOffset, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
-
-        // Lookup material
-        StructuralMaterial const * material;
-        if (colorKey == EmptyMaterialColorKey)
+        switch (sectionHeader.Tag)
         {
-            material = nullptr;
-        }
-        else
-        {
-            auto const materialIt = materialMap.find(colorKey);
-            if (materialIt == materialMap.cend())
+            case static_cast<uint32_t>(StructuralLayerTagType::Buffer) :
             {
-                ThrowMaterialNotFound(shipAttributes);
+                // Decode RLE buffer
+                size_t writeOffset = 0;
+                StructuralElement * structuralLayerWrite = structuralLayer->Buffer.Data.get();
+                for (size_t bufferReadOffset = 0; bufferReadOffset < sectionHeader.SectionBodySize; /*incremented in loop*/)
+                {
+                    // Deserialize count
+                    var_uint16_t count;
+                    bufferReadOffset += buffer.ReadAt(readOffset + bufferReadOffset, count);
+
+                    // Deserialize colorKey value
+                    MaterialColorKey colorKey;
+                    bufferReadOffset += buffer.ReadAt(readOffset + bufferReadOffset, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
+
+                    // Lookup material
+                    StructuralMaterial const * material;
+                    if (colorKey == EmptyMaterialColorKey)
+                    {
+                        material = nullptr;
+                    }
+                    else
+                    {
+                        auto const materialIt = materialMap.find(colorKey);
+                        if (materialIt == materialMap.cend())
+                        {
+                            ThrowMaterialNotFound(shipAttributes);
+                        }
+
+                        material = &(materialIt->second);
+                    }
+
+                    // Fill material
+                    std::fill_n(
+                        structuralLayerWrite + writeOffset,
+                        count.value(),
+                        StructuralElement(material));
+
+                    // Advance
+                    writeOffset += count.value();
+                }
+
+                assert(writeOffset == shipAttributes.ShipSize.GetLinearSize());
+
+                break;
             }
 
-            material = &(materialIt->second);
+            case static_cast<uint32_t>(StructuralLayerTagType::Tail) :
+            {
+                // We're done
+                break;
+            }
+
+            default:
+            {
+                // Unrecognized tag
+                LogMessage("WARNING: Unrecognized structural tag ", sectionHeader.Tag);
+                break;
+            }
         }
 
-        // Fill material
-        std::fill_n(
-            structuralLayerWrite + writeOffset,
-            count.value(),
-            StructuralElement(material));
+        if (sectionHeader.Tag == static_cast<uint32_t>(StructuralLayerTagType::Tail))
+        {
+            // We're done
+            break;
+        }
 
-        // Advance
-        writeOffset += count.value();
+        readOffset += sectionHeader.SectionBodySize;
     }
-
-    assert(writeOffset == shipAttributes.ShipSize.GetLinearSize());
 }
 
 void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
     MaterialDatabase::MaterialMap<ElectricalMaterial> const & materialMap,
-    std::unique_ptr<ElectricalLayerBuffer> & electricalLayerBuffer)
+    std::unique_ptr<ElectricalLayerData> & electricalLayer)
 {
     size_t readOffset = 0;
 
     // Allocate buffer
-    electricalLayerBuffer.reset(new ElectricalLayerBuffer(shipAttributes.ShipSize));
+    electricalLayer.reset(new ElectricalLayerData(shipAttributes.ShipSize));
 
-    // Decode RLE buffer
-    size_t writeOffset = 0;
-    ElectricalElement * electricalLayerWrite = electricalLayerBuffer->Data.get();
-    for (; readOffset < buffer.GetSize(); /*incremented in loop*/)
+    // Read all tags
+    while (true)
     {
-        // Deserialize count
-        var_uint16_t count;
-        readOffset += buffer.ReadAt(readOffset, count);
+        SectionHeader const sectionHeader = ReadSectionHeader(buffer, readOffset);
+        readOffset += sizeof(SectionHeader);
 
-        // Deserialize colorKey value
-        MaterialColorKey colorKey;
-        readOffset += buffer.ReadAt(readOffset, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
-
-        // Lookup material
-        ElectricalMaterial const * material;
-        if (colorKey == EmptyMaterialColorKey)
+        switch (sectionHeader.Tag)
         {
-            material = nullptr;
-        }
-        else
-        {
-            auto const materialIt = materialMap.find(colorKey);
-            if (materialIt == materialMap.cend())
+            case static_cast<uint32_t>(ElectricalLayerTagType::Buffer) :
             {
-                ThrowMaterialNotFound(shipAttributes);
+                // Decode RLE buffer
+                size_t writeOffset = 0;
+                ElectricalElement * electricalLayerWrite = electricalLayer->Buffer.Data.get();
+                for (size_t bufferReadOffset = 0; bufferReadOffset < sectionHeader.SectionBodySize; /*incremented in loop*/)
+                {
+                    // Deserialize count
+                    var_uint16_t count;
+                    bufferReadOffset += buffer.ReadAt(readOffset + bufferReadOffset, count);
+
+                    // Deserialize colorKey value
+                    MaterialColorKey colorKey;
+                    bufferReadOffset += buffer.ReadAt(readOffset + bufferReadOffset, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
+
+                    // Lookup material
+                    ElectricalMaterial const * material;
+                    if (colorKey == EmptyMaterialColorKey)
+                    {
+                        material = nullptr;
+                    }
+                    else
+                    {
+                        auto const materialIt = materialMap.find(colorKey);
+                        if (materialIt == materialMap.cend())
+                        {
+                            ThrowMaterialNotFound(shipAttributes);
+                        }
+
+                        material = &(materialIt->second);
+                    }
+
+                    // Deserialize instanceID - only if instanced
+                    ElectricalElementInstanceIndex instanceId;
+                    if (material->IsInstanced)
+                    {
+                        var_uint16_t instanceIdTmp;
+                        bufferReadOffset += buffer.ReadAt(readOffset + bufferReadOffset, instanceIdTmp);
+                        instanceId = static_cast<ElectricalElementInstanceIndex>(instanceIdTmp.value());
+                    }
+                    else
+                    {
+                        instanceId = NoneElectricalElementInstanceIndex;
+                    }
+
+                    // Fill material
+                    std::fill_n(
+                        electricalLayerWrite + writeOffset,
+                        count.value(),
+                        ElectricalElement(material, instanceId));
+
+                    // Advance
+                    writeOffset += count.value();
+                }
+
+                assert(writeOffset == shipAttributes.ShipSize.GetLinearSize());
+
+                break;
             }
 
-            material = &(materialIt->second);
+            case static_cast<uint32_t>(ElectricalLayerTagType::Panel) :
+            {
+                electricalLayer->Panel.clear();
+
+                size_t elecPanelReadOffset = readOffset;
+
+                // Number of entries
+                std::uint16_t entryCount;
+                elecPanelReadOffset += buffer.ReadAt<std::uint16_t>(elecPanelReadOffset, entryCount);
+
+                // Entries
+                for (int i = 0; i < entryCount; ++i)
+                {
+                    std::uint32_t instanceIndex;
+                    elecPanelReadOffset += buffer.ReadAt<std::uint32_t>(elecPanelReadOffset, instanceIndex);
+
+                    std::optional<IntegralCoordinates> panelCoordinates;
+                    bool panelCoordsHasValue;
+                    elecPanelReadOffset += buffer.ReadAt<bool>(elecPanelReadOffset, panelCoordsHasValue);
+                    if (panelCoordsHasValue)
+                    {
+                        int32_t x;
+                        elecPanelReadOffset += buffer.ReadAt<std::int32_t>(elecPanelReadOffset, x);
+                        int32_t y;
+                        elecPanelReadOffset += buffer.ReadAt<std::int32_t>(elecPanelReadOffset, y);
+
+                        panelCoordinates = IntegralCoordinates(static_cast<int>(x), static_cast<int>(y));
+                    }
+
+                    std::optional<std::string> label;
+                    bool labelHasValue;
+                    elecPanelReadOffset += buffer.ReadAt<bool>(elecPanelReadOffset, labelHasValue);
+                    if (labelHasValue)
+                    {
+                        std::string labelStr;
+                        elecPanelReadOffset += buffer.ReadAt<std::string>(elecPanelReadOffset, labelStr);
+                        label = labelStr;
+                    }
+
+                    bool isHidden;
+                    elecPanelReadOffset += buffer.ReadAt<bool>(elecPanelReadOffset, isHidden);
+
+                    auto const res = electricalLayer->Panel.try_emplace(
+                        static_cast<ElectricalElementInstanceIndex>(instanceIndex),
+                        ElectricalPanelElementMetadata(
+                            panelCoordinates,
+                            label,
+                            isHidden));
+
+                    if (!res.second)
+                    {
+                        LogMessage("WARNING: Duplicate electrical element instance index \"", instanceIndex, "\"");
+                    }
+                }
+
+                break;
+            }
+
+            case static_cast<uint32_t>(ElectricalLayerTagType::Tail) :
+            {
+                // We're done
+                break;
+            }
+
+            default:
+            {
+                // Unrecognized tag
+                LogMessage("WARNING: Unrecognized electrical tag ", sectionHeader.Tag);
+                break;
+            }
         }
 
-        // Deserialize instanceID - only if instanced
-        ElectricalElementInstanceIndex instanceId;
-        if (material->IsInstanced)
+        if (sectionHeader.Tag == static_cast<uint32_t>(ElectricalLayerTagType::Tail))
         {
-            var_uint16_t instanceIdTmp;
-            readOffset += buffer.ReadAt(readOffset, instanceIdTmp);
-            instanceId = static_cast<ElectricalElementInstanceIndex>(instanceIdTmp.value());
-        }
-        else
-        {
-            instanceId = NoneElectricalElementInstanceIndex;
+            // We're done
+            break;
         }
 
-        // Fill material
-        std::fill_n(
-            electricalLayerWrite + writeOffset,
-            count.value(),
-            ElectricalElement(material, instanceId));
-
-        // Advance
-        writeOffset += count.value();
+        readOffset += sectionHeader.SectionBodySize;
     }
-
-    assert(writeOffset == shipAttributes.ShipSize.GetLinearSize());
 }

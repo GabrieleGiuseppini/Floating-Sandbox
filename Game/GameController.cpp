@@ -292,7 +292,7 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
 
     // Pre-validate ship's texture, if any
     if (shipDefinition.TextureLayer)
-        mRenderContext->ValidateShipTexture(*shipDefinition.TextureLayer);
+        mRenderContext->ValidateShipTexture(shipDefinition.TextureLayer->Buffer);
 
     // Remember metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);
@@ -1351,7 +1351,7 @@ ShipMetadata GameController::ResetAndLoadShip(
 
     // Pre-validate ship's texture
     if (shipDefinition.TextureLayer)
-        mRenderContext->ValidateShipTexture(*shipDefinition.TextureLayer);
+        mRenderContext->ValidateShipTexture(shipDefinition.TextureLayer->Buffer);
 
     // Save metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);

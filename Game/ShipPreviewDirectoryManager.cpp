@@ -74,7 +74,7 @@ RgbaImageData ShipPreviewDirectoryManager::LoadPreviewImage(
         mNewDatabase.Add(
             previewImageFilename,
             previewImageFileLastModified,
-            previewImage.MakeCopy());
+            std::make_unique<RgbaImageData>(previewImage.Clone()));
 
         return previewImage;
     }

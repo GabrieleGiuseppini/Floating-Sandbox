@@ -11,18 +11,18 @@
 
 namespace ShipBuilder {
 
-template<typename TLayerBuffer>
-void LayerBufferRegionUndoAction<TLayerBuffer>::ApplyAction(Controller & controller) const
+template<typename TLayer>
+void LayerRegionUndoAction<TLayer>::ApplyAction(Controller & controller) const
 {
-    controller.RestoreLayerBufferRegion(mLayerBufferRegion, mOrigin);
+    controller.RestoreLayerRegion(mLayerRegion, mOrigin);
 }
 
 //
 // Explicit specializations
 //
 
-template class LayerBufferRegionUndoAction<StructuralLayerBuffer>;
-template class LayerBufferRegionUndoAction<ElectricalLayerBuffer>;
+template class LayerRegionUndoAction<StructuralLayerData>;
+template class LayerRegionUndoAction<ElectricalLayerData>;
 
 void UndoStack::Push(std::unique_ptr<UndoAction> && undoAction)
 {

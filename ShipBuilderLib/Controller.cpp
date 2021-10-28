@@ -143,15 +143,15 @@ void Controller::SetStructuralLayer(/*TODO*/)
     StartTool();
 }
 
-void Controller::RestoreLayerBufferRegion(
-    StructuralLayerBuffer const & layerBufferRegion,
+void Controller::RestoreLayerRegion(
+    StructuralLayerData const & layerRegion,
     ShipSpaceCoordinates const & origin)
 {
     // Note: this is invoked from undo's double-dispatch, that's why it doesn't worry about tool
 
-    mModelController->StructuralRegionReplace(
-        layerBufferRegion,
-        { {0, 0}, layerBufferRegion.Size},
+    mModelController->StructuralLayerRegionReplace(
+        layerRegion,
+        { {0, 0}, layerRegion.Buffer.Size},
         origin);
 
     // Update dirtyness
@@ -234,15 +234,15 @@ void Controller::RemoveElectricalLayer()
     StartTool();
 }
 
-void Controller::RestoreLayerBufferRegion(
-    ElectricalLayerBuffer const & layerBufferRegion,
+void Controller::RestoreLayerRegion(
+    ElectricalLayerData const & layerRegion,
     ShipSpaceCoordinates const & origin)
 {
     // Note: this is invoked from undo's double-dispatch, that's why it doesn't worry about tool
 
-    mModelController->ElectricalRegionReplace(
-        layerBufferRegion,
-        { {0, 0}, layerBufferRegion.Size },
+    mModelController->ElectricalLayerRegionReplace(
+        layerRegion,
+        { {0, 0}, layerRegion.Buffer.Size },
         origin);
 
     // Update dirtyness
@@ -325,8 +325,8 @@ void Controller::RemoveRopesLayer()
     StartTool();
 }
 
-void Controller::RestoreLayerBufferRegion(
-    RopesLayerBuffer const & layerBufferRegion,
+void Controller::RestoreLayerRegion(
+    RopesLayerData const & layerRegion,
     ShipSpaceCoordinates const & origin)
 {
     // TODOHERE: copy from structural
@@ -380,8 +380,8 @@ void Controller::RemoveTextureLayer()
     StartTool();
 }
 
-void Controller::RestoreLayerBufferRegion(
-    TextureLayerBuffer const & layerBufferRegion,
+void Controller::RestoreLayerRegion(
+    TextureLayerData const & layerRegion,
     ShipSpaceCoordinates const & origin)
 {
     // TODOHERE: copy from structural

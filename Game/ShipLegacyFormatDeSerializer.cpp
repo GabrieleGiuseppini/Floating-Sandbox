@@ -19,6 +19,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadShipFromImageDefinition(
     return LoadFromDefinitionImageFilePaths(
         shipFilePath,
         std::nullopt, // Electrical
+        ElectricalPanelMetadata(),
         std::nullopt, // Ropes
         std::nullopt, // Texture
         ShipMetadata(shipFilePath.stem().string()),
@@ -31,11 +32,12 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadShipFromLegacyShpShipDefinition
     std::filesystem::path const & shipFilePath,
     MaterialDatabase const & materialDatabase)
 {
-    JsonDefinition const & jsonDefinition = LoadLegacyShpShipDefinitionJson(shipFilePath);
+    JsonDefinition jsonDefinition = LoadLegacyShpShipDefinitionJson(shipFilePath);
 
     return LoadFromDefinitionImageFilePaths(
         jsonDefinition.StructuralLayerImageFilePath,
         jsonDefinition.ElectricalLayerImageFilePath,
+        std::move(jsonDefinition.ElectricalPanel),
         jsonDefinition.RopesLayerImageFilePath,
         jsonDefinition.TextureLayerImageFilePath,
         jsonDefinition.Metadata,
@@ -227,7 +229,7 @@ ShipLegacyFormatDeSerializer::JsonDefinition ShipLegacyFormatDeSerializer::LoadL
     // Electrical panel metadata
     //
 
-    std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> electricalPanelMetadata;
+    ElectricalPanelMetadata electricalPanel;
     std::optional<picojson::object> const electricalPanelMetadataObject = Utils::GetOptionalJsonObject(definitionJson, "electrical_panel");
     if (!!electricalPanelMetadataObject)
     {
@@ -245,7 +247,7 @@ ShipLegacyFormatDeSerializer::JsonDefinition ShipLegacyFormatDeSerializer::LoadL
             auto const label = Utils::GetOptionalJsonMember<std::string>(elementMetadataObject, "label");
             auto const isHidden = Utils::GetOptionalJsonMember<bool>(elementMetadataObject, "is_hidden", false);
 
-            auto const res = electricalPanelMetadata.emplace(
+            auto const res = electricalPanel.emplace(
                 std::piecewise_construct,
                 std::forward_as_tuple(instanceIndex),
                 std::forward_as_tuple(
@@ -263,6 +265,7 @@ ShipLegacyFormatDeSerializer::JsonDefinition ShipLegacyFormatDeSerializer::LoadL
         electricalLayerImageFilePathStr.has_value()
             ? basePath / std::filesystem::path(*electricalLayerImageFilePathStr)
             : std::optional<std::filesystem::path>(std::nullopt),
+        std::move(electricalPanel),
         ropesLayerImageFilePathStr.has_value()
             ? basePath / std::filesystem::path(*ropesLayerImageFilePathStr)
             : std::optional<std::filesystem::path>(std::nullopt),
@@ -275,7 +278,6 @@ ShipLegacyFormatDeSerializer::JsonDefinition ShipLegacyFormatDeSerializer::LoadL
             artCredits,
             yearBuilt,
             description,
-            electricalPanelMetadata,
             doHideElectricalsInPreview,
             doHideHDInPreview,
             std::nullopt), // Password
@@ -288,6 +290,7 @@ ShipLegacyFormatDeSerializer::JsonDefinition ShipLegacyFormatDeSerializer::LoadL
 ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImageFilePaths(
     std::filesystem::path const & structuralLayerImageFilePath,
     std::optional<std::filesystem::path> const & electricalLayerImageFilePath,
+    ElectricalPanelMetadata && electricalPanel,
     std::optional<std::filesystem::path> const & ropesLayerImageFilePath,
     std::optional<std::filesystem::path> const & textureLayerImageFilePath,
     ShipMetadata const & metadata,
@@ -350,6 +353,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImageFilePaths(
     return LoadFromDefinitionImages(
         std::move(structuralLayerImage),
         std::move(electricalLayerImage),
+        std::move(electricalPanel),
         std::move(ropesLayerImage),
         std::move(textureLayerImage),
         metadata,
@@ -361,6 +365,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImageFilePaths(
 ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
     RgbImageData && structuralLayerImage,
     std::optional<RgbImageData> && electricalLayerImage,
+    ElectricalPanelMetadata && electricalPanel,
     std::optional<RgbImageData> && ropesLayerImage,
     std::optional<RgbaImageData> && textureLayerImage,
     ShipMetadata const & metadata,
@@ -372,15 +377,15 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
         structuralLayerImage.Size.width,
         structuralLayerImage.Size.height);
 
-    // Create layer buffers in any case - even though we might not need some
-    StructuralLayerBuffer structuralLayer(shipSize);
+    // Create layers in any case - even though we might not need some
+    StructuralLayerData structuralLayer(shipSize);
     bool hasStructuralElements = false;
-    ElectricalLayerBuffer electricalLayer(shipSize);
+    ElectricalLayerData electricalLayer(shipSize, std::move(electricalPanel));
     bool hasElectricalElements = false;
-    RopesLayerBuffer ropesLayer(shipSize);
+    RopesLayerData ropesLayer(shipSize);
     bool hasRopeElements = false;
-    std::unique_ptr<TextureLayerBuffer> textureLayer = textureLayerImage.has_value()
-        ? std::make_unique<TextureLayerBuffer>(std::move(*textureLayerImage))
+    std::unique_ptr<TextureLayerData> textureLayer = textureLayerImage.has_value()
+        ? std::make_unique<TextureLayerData>(std::move(*textureLayerImage))
         : nullptr;
 
     // Table remembering rope endpoints
@@ -412,7 +417,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
                 ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
 
                 // Store structural element
-                structuralLayer[coords] = StructuralElement(structuralMaterial);
+                structuralLayer.Buffer[coords] = StructuralElement(structuralMaterial);
 
                 //
                 // Check if it's also a legacy electrical element
@@ -425,7 +430,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
                     assert(!electricalMaterial->IsInstanced);
 
                     // Store electrical element
-                    electricalLayer[coords] = ElectricalElement(
+                    electricalLayer.Buffer[coords] = ElectricalElement(
                         electricalMaterial,
                         NoneElectricalElementInstanceIndex);
 
@@ -466,7 +471,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
 
                     // Store rope element
                     rgbaColor const ropeColor = rgbaColor(colorKey, 255);
-                    ropesLayer[coords] = RopeElement(structuralMaterial, ropeId, ropeColor);
+                    ropesLayer.Buffer[coords] = RopeElement(structuralMaterial, ropeId, ropeColor);
 
                     // Remember we have seen at least one rope element
                     hasRopeElements = true;
@@ -530,7 +535,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
                     rgbaColor const ropeColor = rgbaColor(colorKey, 255);
 
                     // Make sure we don't have a rope already with an endpoint here
-                    if (ropesLayer[coords].Material != nullptr)
+                    if (ropesLayer.Buffer[coords].Material != nullptr)
                     {
                         throw GameException("There is already a rope endpoint at " + imageCoords.FlipY(shipSize.height).ToString());
                     }
@@ -560,7 +565,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
                     }
 
                     // Store rope element
-                    ropesLayer[coords] = RopeElement(
+                    ropesLayer.Buffer[coords] = RopeElement(
                         &standardRopeMaterial,
                         ropeId,
                         ropeColor);
@@ -630,8 +635,8 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
                     }
 
                     // Make sure we have a structural point here, or a rope endpoint
-                    if (structuralLayer[coords].Material == nullptr
-                        && ropesLayer[coords].Material == nullptr)
+                    if (structuralLayer.Buffer[coords].Material == nullptr
+                        && ropesLayer.Buffer[coords].Material == nullptr)
                     {
                         throw GameException(
                             "The electrical layer image specifies an electrical material at "
@@ -671,7 +676,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
                     }
 
                     // Store electrical element
-                    electricalLayer[coords] = ElectricalElement(
+                    electricalLayer.Buffer[coords] = ElectricalElement(
                         electricalMaterial,
                         instanceIndex);
 
@@ -694,8 +699,8 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
     return ShipDefinition(
         shipSize,
         std::move(structuralLayer),
-        hasElectricalElements ? std::make_unique<ElectricalLayerBuffer>(std::move(electricalLayer)) : nullptr,
-        hasRopeElements ? std::make_unique<RopesLayerBuffer>(std::move(ropesLayer)) : nullptr,
+        hasElectricalElements ? std::make_unique<ElectricalLayerData>(std::move(electricalLayer)) : nullptr,
+        hasRopeElements ? std::make_unique<RopesLayerData>(std::move(ropesLayer)) : nullptr,
         std::move(textureLayer),
         metadata,
         physicsData,

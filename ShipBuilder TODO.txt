@@ -53,25 +53,48 @@ https://gamejolt.com/x/permalink/comment/11730705
 				! Technically, also does running analysis
 				! Also takes care of electrical panel: new/removed/updated-type components						
 		
-	- Redo:
+	= Re-do:
 		- Spec:
 			- Temp visualization (Fill and Mend) should not update analyses, nor EPM, nor instance IDs
 			- Actual committed action (e.g. fill) should update analyses, EPM, and instance IDs
 			- Undo: should replace EPM as well, and re-initialize analyses
 		- Impl:
-			- ElectricalLayer contains ElectricalPanelMetadata
-				- LegacyDeser: json is parsed in two phases
-				- ModelController cctor(def): make sure EPM is stored
-				- New: make sure EPM is zerod
-				- Set: make sure new EPM is stored
-				- Remove: make sure EPM is nuked
-			- Undo of electrical must also contain whole ElectricalPanelMetadata
-				- Split UndoEntry in two, not templated	
-			- TODOOLD:
-			- Split Fill primitive in two: one is "ForTempVisualization", invoking WriteParticle so that it does not do running analysis
+			= ElectricalLayer contains ElectricalPanelMetadata
+				+ "LayerBuffer" -> "Layer" (source file name and type names)
+				+ Take map element and map using from GameTypes
+				+ Remove EPM from ShipMetadata
+				+ LegacyDeser: json is parsed in two phases
+				= De/Ser:
+					+ ElectricalLayer has sub-tags (Buffer and ElectricalPanelMetadata)
+						+ Unit tests
+					- String tag values?
+				- ModelController:
+					- cctor(def): make sure EPM is stored
+					- New: make sure EPM is zerod
+					- Set: make sure new EPM is stored
+					- Remove: make sure EPM is nuked
+			- UndoEntry of electrical must also contain whole ElectricalPanelMetadata
+				- It's Layer + Origin
+				- Should also fly with Structural
+			- TODO: see if it flies:
+			- Fill and Mend/Replace are split in two:
+				- FillElectricalLayerRegionForTempVisualization and RestoreElectricalLayerRegionForTempVisualization: 
+					- Just populate layer buffer; do not update analyses, nor EPM, nor instance IDs
+					- NOTE: "ForTempVisualization" -> ForEphemeralVisualization
+					- Maintain boolean for asserting at Fill and at RestoreElectricalLayerRegionForTempVisualization
+				- Fill:
+					- Populates layer buffer, and updates analyses, EPM, and instance IDs
+						- Via WriteElectricalParticle(.)
+				- RestoreElectricalLayer: for undo only
+					- Takes also EPM (by val, moving all over the place) (or simply by Layer, arg together with Origin)
+					- Blits layer region
+					- Re-initializes layer (analyses, and instance IDs - EPM already reset)
+					- Replaces EPM in own layer (by move)
+				- Replace(.) goes
+	- Refactor StructuralRegionReplace in the same way (w/WriteStructuralParticle, mending/replace, etc.)
+		- StructuralFill also takes material* instead of element
 
-	- Do we want StructuralFill to also take material* instead of element?
-	- Require structure behind fill? - Validations, write from Moleskine in own section
+	- Require structure behind fill? - Yes, later at validations, write from Moleskine in own section
 	- Tests:
 		- PencilTool
 		- PencilTool + Undo

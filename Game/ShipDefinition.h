@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "LayerBuffers.h"
+#include "Layers.h"
 #include "ShipAutoTexturizationSettings.h"
 #include "ShipMetadata.h"
 #include "ShipPhysicsData.h"
@@ -17,10 +17,10 @@ struct ShipDefinition
 {
     ShipSpaceSize Size;
 
-    StructuralLayerBuffer StructuralLayer;
-    std::unique_ptr<ElectricalLayerBuffer> ElectricalLayer;
-    std::unique_ptr<RopesLayerBuffer> RopesLayer;
-    std::unique_ptr<TextureLayerBuffer> TextureLayer;
+    StructuralLayerData StructuralLayer;
+    std::unique_ptr<ElectricalLayerData> ElectricalLayer;
+    std::unique_ptr<RopesLayerData> RopesLayer;
+    std::unique_ptr<TextureLayerData> TextureLayer;
 
     std::optional<ShipAutoTexturizationSettings> const AutoTexturizationSettings;
     ShipMetadata Metadata;
@@ -28,10 +28,10 @@ struct ShipDefinition
 
     ShipDefinition(
         ShipSpaceSize const & size,
-        StructuralLayerBuffer && structuralLayer,
-        std::unique_ptr<ElectricalLayerBuffer> && electricalLayer,
-        std::unique_ptr<RopesLayerBuffer> && ropesLayer,
-        std::unique_ptr<TextureLayerBuffer> && textureLayer,
+        StructuralLayerData && structuralLayer,
+        std::unique_ptr<ElectricalLayerData> && electricalLayer,
+        std::unique_ptr<RopesLayerData> && ropesLayer,
+        std::unique_ptr<TextureLayerData> && textureLayer,
         ShipMetadata const & metadata,
         ShipPhysicsData const & physicsData,
         std::optional<ShipAutoTexturizationSettings> const & autoTexturizationSettings)

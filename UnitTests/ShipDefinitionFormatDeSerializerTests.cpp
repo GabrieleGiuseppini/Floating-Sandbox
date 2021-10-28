@@ -81,7 +81,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, ShipAttributes)
     EXPECT_EQ(sourceShipAttributes.HasElectricalLayer, targetShipAttributes.HasElectricalLayer);
 }
 
-TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Full_WithoutElectricalPanel)
+TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Full)
 {
     DeSerializationBuffer<BigEndianess> buffer(256);
 
@@ -113,7 +113,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Full_WithoutElectricalPanel
     EXPECT_EQ(sourceMd.DoHideHDInPreview, targetMd.DoHideHDInPreview);
 }
 
-TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Minimal_WithoutElectricalPanel)
+TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Minimal)
 {
     DeSerializationBuffer<BigEndianess> buffer(256);
 
@@ -136,70 +136,6 @@ TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Minimal_WithoutElectricalPa
     EXPECT_FALSE(sourceMd.DoHideHDInPreview);
 }
 
-TEST(ShipDefinitionFormatDeSerializerTests, Metadata_ElectricalPanel)
-{
-    DeSerializationBuffer<BigEndianess> buffer(256);
-
-    // Write
-
-    ElectricalPanelElementMetadata elem1 = ElectricalPanelElementMetadata(
-        std::nullopt,
-        std::nullopt,
-        true);
-
-    ElectricalPanelElementMetadata elem2 = ElectricalPanelElementMetadata(
-        IntegralCoordinates(3, 127),
-        std::nullopt,
-        false);
-
-    ElectricalPanelElementMetadata elem3 = ElectricalPanelElementMetadata(
-        std::nullopt,
-        "Foo bar",
-        true);
-
-    ElectricalPanelElementMetadata elem4 = ElectricalPanelElementMetadata(
-        IntegralCoordinates(13, -45),
-        "Foobar 2",
-        false);
-
-    ShipMetadata sourceMd("Test ship");
-    sourceMd.ElectricalPanelMetadata.emplace(ElectricalElementInstanceIndex(8), elem1);
-    sourceMd.ElectricalPanelMetadata.emplace(ElectricalElementInstanceIndex(0), elem2);
-    sourceMd.ElectricalPanelMetadata.emplace(ElectricalElementInstanceIndex(18), elem3);
-    sourceMd.ElectricalPanelMetadata.emplace(ElectricalElementInstanceIndex(234), elem4);
-    ShipDefinitionFormatDeSerializer::AppendMetadata(sourceMd, buffer);
-
-    // Read
-
-    ShipMetadata const targetMd = ShipDefinitionFormatDeSerializer::ReadMetadata(buffer);
-
-    ASSERT_EQ(4, targetMd.ElectricalPanelMetadata.size());
-
-    ASSERT_TRUE(targetMd.ElectricalPanelMetadata.find(8) != targetMd.ElectricalPanelMetadata.end());
-    EXPECT_FALSE(targetMd.ElectricalPanelMetadata.at(8).PanelCoordinates.has_value());
-    EXPECT_FALSE(targetMd.ElectricalPanelMetadata.at(8).Label.has_value());
-    EXPECT_TRUE(targetMd.ElectricalPanelMetadata.at(8).IsHidden);
-
-    ASSERT_TRUE(targetMd.ElectricalPanelMetadata.find(0) != targetMd.ElectricalPanelMetadata.end());
-    ASSERT_TRUE(targetMd.ElectricalPanelMetadata.at(0).PanelCoordinates.has_value());
-    EXPECT_EQ(*targetMd.ElectricalPanelMetadata.at(0).PanelCoordinates, IntegralCoordinates(3, 127));
-    EXPECT_FALSE(targetMd.ElectricalPanelMetadata.at(0).Label.has_value());
-    EXPECT_FALSE(targetMd.ElectricalPanelMetadata.at(0).IsHidden);
-
-    ASSERT_TRUE(targetMd.ElectricalPanelMetadata.find(18) != targetMd.ElectricalPanelMetadata.end());
-    EXPECT_FALSE(targetMd.ElectricalPanelMetadata.at(18).PanelCoordinates.has_value());
-    ASSERT_TRUE(targetMd.ElectricalPanelMetadata.at(18).Label.has_value());
-    EXPECT_EQ(*targetMd.ElectricalPanelMetadata.at(18).Label, "Foo bar");
-    EXPECT_TRUE(targetMd.ElectricalPanelMetadata.at(18).IsHidden);
-
-    ASSERT_TRUE(targetMd.ElectricalPanelMetadata.find(234) != targetMd.ElectricalPanelMetadata.end());
-    ASSERT_TRUE(targetMd.ElectricalPanelMetadata.at(234).PanelCoordinates.has_value());
-    EXPECT_EQ(*targetMd.ElectricalPanelMetadata.at(234).PanelCoordinates, IntegralCoordinates(13, -45));
-    ASSERT_TRUE(targetMd.ElectricalPanelMetadata.at(234).Label.has_value());
-    EXPECT_EQ(*targetMd.ElectricalPanelMetadata.at(234).Label, "Foobar 2");
-    EXPECT_FALSE(targetMd.ElectricalPanelMetadata.at(234).IsHidden);
-}
-
 TEST(ShipDefinitionFormatDeSerializerTests, PhysicsData)
 {
     DeSerializationBuffer<BigEndianess> buffer(256);
@@ -217,7 +153,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, PhysicsData)
     EXPECT_EQ(targetPd.InternalPressure, targetPd.InternalPressure);
 }
 
-class ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests : public testing::Test
+class ShipDefinitionFormatDeSerializer_StructuralLayerTests : public testing::Test
 {
 protected:
 
@@ -240,42 +176,43 @@ protected:
     }
 
     void VerifyDeserializedStructuralLayer(
-        StructuralLayerBuffer const & sourceStructuralLayerBuffer,
+        StructuralLayerData const & sourceStructuralLayer,
         DeSerializationBuffer<BigEndianess> & buffer)
     {
-        std::unique_ptr<StructuralLayerBuffer> targetStructuralLayerBuffer;
-        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(1, 16, sourceStructuralLayerBuffer.Size, false, false);
+        std::unique_ptr<StructuralLayerData> targetStructuralLayer;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(1, 16, sourceStructuralLayer.Buffer.Size, false, false);
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
             shipAttributes,
             TestMaterialMap,
-            targetStructuralLayerBuffer);
+            targetStructuralLayer);
 
-        EXPECT_EQ(targetStructuralLayerBuffer->Size, sourceStructuralLayerBuffer.Size);
-        ASSERT_EQ(targetStructuralLayerBuffer->GetByteSize(), sourceStructuralLayerBuffer.GetByteSize());
+        EXPECT_EQ(targetStructuralLayer->Buffer.Size, sourceStructuralLayer.Buffer.Size);
+        ASSERT_EQ(targetStructuralLayer->Buffer.GetByteSize(), sourceStructuralLayer.Buffer.GetByteSize());
         EXPECT_EQ(
             std::memcmp(
-                targetStructuralLayerBuffer->Data.get(),
-                sourceStructuralLayerBuffer.Data.get(),
-                targetStructuralLayerBuffer->GetByteSize()),
+                targetStructuralLayer->Buffer.Data.get(),
+                sourceStructuralLayer.Buffer.Data.get(),
+                targetStructuralLayer->Buffer.GetByteSize()),
             0);
     }
 
     std::map<MaterialColorKey, StructuralMaterial> TestMaterialMap;
 };
 
-TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, VariousSizes_Uniform)
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, VariousSizes_Uniform)
 {
     for (int iParam = 1; iParam < 16384 * 2 + 1; ++iParam)
     {
-        StructuralLayerBuffer sourceStructuralLayerBuffer(
-            ShipSpaceSize(iParam, 1),
-            StructuralElement(nullptr)); // Empty
+        StructuralLayerData sourceStructuralLayer(
+            Buffer2D<StructuralElement, struct ShipSpaceTag>(
+                ShipSpaceSize(iParam, 1),
+                StructuralElement(nullptr))); // Empty
 
-        ASSERT_EQ(sourceStructuralLayerBuffer.Size.GetLinearSize(), iParam);
+        ASSERT_EQ(sourceStructuralLayer.Buffer.Size.GetLinearSize(), iParam);
 
         DeSerializationBuffer<BigEndianess> buffer(256);
-        ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayerBuffer, buffer);
+        ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayer, buffer);
 
         //
         // Verify RLE:
@@ -285,7 +222,8 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, VariousSizes
         //      n times: EmptyMaterialKey
         //
 
-        size_t idx = 0;
+        size_t idx = sizeof(ShipDefinitionFormatDeSerializer::SectionHeader); // Skip Buffer header
+
         int iRunSize = iParam;
         while (iRunSize >= 16383)
         {
@@ -317,6 +255,8 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, VariousSizes
             EXPECT_EQ(partialColorKey, EmptyMaterialColorKey);
         }
 
+        idx += sizeof(ShipDefinitionFormatDeSerializer::SectionHeader); // Skip Tail
+
         // Buffer is done
         EXPECT_EQ(idx, buffer.GetSize());
 
@@ -325,12 +265,12 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, VariousSizes
         //
 
         VerifyDeserializedStructuralLayer(
-            sourceStructuralLayerBuffer,
+            sourceStructuralLayer,
             buffer);
     }
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, MidSize_Heterogeneous)
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, MidSize_Heterogeneous)
 {
     // Linearize materials
     std::vector<StructuralMaterial const *> materials;
@@ -343,24 +283,24 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, MidSize_Hete
             return &(entry.second);
         });
 
-    // Populate structural layer buffer
-    StructuralLayerBuffer sourceStructuralLayerBuffer(ShipSpaceSize(10, 12));
-    for (size_t i = 0; i < sourceStructuralLayerBuffer.Size.GetLinearSize(); ++i)
+    // Populate structural layer
+    StructuralLayerData sourceStructuralLayer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceStructuralLayer.Buffer.Size.GetLinearSize(); ++i)
     {
-        sourceStructuralLayerBuffer.Data[i].Material = materials[i % materials.size()];
+        sourceStructuralLayer.Buffer.Data[i].Material = materials[i % materials.size()];
     }
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayerBuffer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayer, buffer);
 
     //
     // Verify RLE
     //
 
-    size_t idx = 0;
+    size_t idx = sizeof(ShipDefinitionFormatDeSerializer::SectionHeader); // Skip Buffer header
 
-    for (size_t i = 0; i < sourceStructuralLayerBuffer.Size.GetLinearSize(); ++i)
+    for (size_t i = 0; i < sourceStructuralLayer.Buffer.Size.GetLinearSize(); ++i)
     {
         // Count
         var_uint16_t count;
@@ -373,6 +313,8 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, MidSize_Hete
         EXPECT_EQ(colorKey, materials[i % materials.size()]->ColorKey);
     }
 
+    idx += sizeof(ShipDefinitionFormatDeSerializer::SectionHeader); // Skip Tail
+
     // Buffer is done
     EXPECT_EQ(idx, buffer.GetSize());
 
@@ -381,27 +323,27 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, MidSize_Hete
     //
 
     VerifyDeserializedStructuralLayer(
-        sourceStructuralLayerBuffer,
+        sourceStructuralLayer,
         buffer);
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, UnrecognizedMaterial_SameVersion)
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMaterial_SameVersion)
 {
     StructuralMaterial unrecognizedMaterial = StructuralMaterial(
         rgbColor(0x12, 0x34, 0x56),
         "Unrecognized Material",
         rgbColor(0x12, 0x34, 0x56));
 
-    // Populate structural layer buffer
-    StructuralLayerBuffer sourceStructuralLayerBuffer(ShipSpaceSize(10, 12));
-    for (size_t i = 0; i < sourceStructuralLayerBuffer.Size.GetLinearSize(); ++i)
+    // Populate structural layer
+    StructuralLayerData sourceStructuralLayer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceStructuralLayer.Buffer.Size.GetLinearSize(); ++i)
     {
-        sourceStructuralLayerBuffer.Data[i].Material = &unrecognizedMaterial;
+        sourceStructuralLayer.Buffer.Data[i].Material = &unrecognizedMaterial;
     }
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayerBuffer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayer, buffer);
 
     //
     // Verify exception
@@ -409,16 +351,16 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, Unrecognized
 
     try
     {
-        std::unique_ptr<StructuralLayerBuffer> targetStructuralLayerBuffer;
+        std::unique_ptr<StructuralLayerData> targetStructuralLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
             Version::CurrentVersion().GetMajor(),
             Version::CurrentVersion().GetMinor(),
-            sourceStructuralLayerBuffer.Size, false, false);
+            sourceStructuralLayer.Buffer.Size, false, false);
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
             shipAttributes,
             TestMaterialMap,
-            targetStructuralLayerBuffer);
+            targetStructuralLayer);
 
         FAIL();
     }
@@ -429,23 +371,23 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, Unrecognized
     }
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, UnrecognizedMaterial_LaterVersion)
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMaterial_LaterVersion)
 {
     StructuralMaterial unrecognizedMaterial = StructuralMaterial(
         rgbColor(0x12, 0x34, 0x56),
         "Unrecognized Material",
         rgbColor(0x12, 0x34, 0x56));
 
-    // Populate structural layer buffer
-    StructuralLayerBuffer sourceStructuralLayerBuffer(ShipSpaceSize(10, 12));
-    for (size_t i = 0; i < sourceStructuralLayerBuffer.Size.GetLinearSize(); ++i)
+    // Populate structural layer
+    StructuralLayerData sourceStructuralLayer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceStructuralLayer.Buffer.Size.GetLinearSize(); ++i)
     {
-        sourceStructuralLayerBuffer.Data[i].Material = &unrecognizedMaterial;
+        sourceStructuralLayer.Buffer.Data[i].Material = &unrecognizedMaterial;
     }
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayerBuffer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayer, buffer);
 
     //
     // Verify exception
@@ -453,16 +395,16 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, Unrecognized
 
     try
     {
-        std::unique_ptr<StructuralLayerBuffer> targetStructuralLayerBuffer;
+        std::unique_ptr<StructuralLayerData> targetStructuralLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
             2999,
             4,
-            sourceStructuralLayerBuffer.Size, false, false);
+            sourceStructuralLayer.Buffer.Size, false, false);
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
             shipAttributes,
             TestMaterialMap,
-            targetStructuralLayerBuffer);
+            targetStructuralLayer);
 
         FAIL();
     }
@@ -474,7 +416,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerBufferTests, Unrecognized
     }
 }
 
-class ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests : public testing::Test
+class ShipDefinitionFormatDeSerializer_ElectricalLayerTests : public testing::Test
 {
 protected:
 
@@ -498,31 +440,44 @@ protected:
     }
 
     void VerifyDeserializedElectricalLayer(
-        ElectricalLayerBuffer const & sourceElectricalLayerBuffer,
+        ElectricalLayerData const & sourceElectricalLayer,
         DeSerializationBuffer<BigEndianess> & buffer)
     {
-        std::unique_ptr<ElectricalLayerBuffer> targetElectricalLayerBuffer;
-        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(1, 16, sourceElectricalLayerBuffer.Size, false, false);
+        std::unique_ptr<ElectricalLayerData> targetElectricalLayer;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(1, 16, sourceElectricalLayer.Buffer.Size, false, false);
         ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
             buffer,
             shipAttributes,
             TestMaterialMap,
-            targetElectricalLayerBuffer);
+            targetElectricalLayer);
 
-        EXPECT_EQ(targetElectricalLayerBuffer->Size, sourceElectricalLayerBuffer.Size);
-        ASSERT_EQ(targetElectricalLayerBuffer->GetByteSize(), sourceElectricalLayerBuffer.GetByteSize());
+        // Buffer
+        EXPECT_EQ(targetElectricalLayer->Buffer.Size, sourceElectricalLayer.Buffer.Size);
+        ASSERT_EQ(targetElectricalLayer->Buffer.GetByteSize(), sourceElectricalLayer.Buffer.GetByteSize());
         EXPECT_EQ(
             std::memcmp(
-                targetElectricalLayerBuffer->Data.get(),
-                sourceElectricalLayerBuffer.Data.get(),
-                targetElectricalLayerBuffer->GetByteSize()),
+                targetElectricalLayer->Buffer.Data.get(),
+                sourceElectricalLayer.Buffer.Data.get(),
+                targetElectricalLayer->Buffer.GetByteSize()),
             0);
+
+        // Panel
+        ASSERT_EQ(targetElectricalLayer->Panel.size(), sourceElectricalLayer.Panel.size());
+        for (auto const & sourceEntry : sourceElectricalLayer.Panel)
+        {
+            ASSERT_TRUE(targetElectricalLayer->Panel.count(sourceEntry.first) == 1);
+
+            auto const & targetElement = targetElectricalLayer->Panel.at(sourceEntry.first);
+            EXPECT_EQ(targetElement.Label, sourceEntry.second.Label);
+            EXPECT_EQ(targetElement.PanelCoordinates, sourceEntry.second.PanelCoordinates);
+            EXPECT_EQ(targetElement.IsHidden, sourceEntry.second.IsHidden);
+        }
     }
 
     std::map<MaterialColorKey, ElectricalMaterial> TestMaterialMap;
 };
 
-TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, MidSize_NonInstanced)
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, MidSize_NonInstanced)
 {
     // Linearize materials
     std::vector<ElectricalMaterial const *> materials;
@@ -535,24 +490,24 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, MidSize_NonI
             return &(entry.second);
         });
 
-    // Populate electrical layer buffer with non-instanced materials
-    ElectricalLayerBuffer sourceElectricalLayerBuffer(ShipSpaceSize(10, 12));
-    for (size_t i = 0; i < sourceElectricalLayerBuffer.Size.GetLinearSize(); ++i)
+    // Populate electrical layer with non-instanced materials
+    ElectricalLayerData sourceElectricalLayer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize(); ++i)
     {
-        sourceElectricalLayerBuffer.Data[i] = ElectricalElement(materials[i % 100], NoneElectricalElementInstanceIndex);
+        sourceElectricalLayer.Buffer.Data[i] = ElectricalElement(materials[i % 100], NoneElectricalElementInstanceIndex);
     }
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayerBuffer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayer, buffer);
 
     //
     // Verify RLE
     //
 
-    size_t idx = 0;
+    size_t idx = sizeof(ShipDefinitionFormatDeSerializer::SectionHeader); // Skip Buffer header
 
-    for (size_t i = 0; i < sourceElectricalLayerBuffer.Size.GetLinearSize(); ++i)
+    for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize(); ++i)
     {
         // Count
         var_uint16_t count;
@@ -565,6 +520,8 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, MidSize_NonI
         EXPECT_EQ(colorKey, materials[i % 100]->ColorKey);
     }
 
+    idx += sizeof(ShipDefinitionFormatDeSerializer::SectionHeader); // Skip Tail
+
     // Buffer is done
     EXPECT_EQ(idx, buffer.GetSize());
 
@@ -573,11 +530,11 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, MidSize_NonI
     //
 
     VerifyDeserializedElectricalLayer(
-        sourceElectricalLayerBuffer,
+        sourceElectricalLayer,
         buffer);
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, MidSize_Instanced)
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, MidSize_Instanced)
 {
     // Linearize materials
     std::vector<ElectricalMaterial const *> materials;
@@ -590,24 +547,24 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, MidSize_Inst
             return &(entry.second);
         });
 
-    // Populate electrical layer buffer with non-instanced materials
-    ElectricalLayerBuffer sourceElectricalLayerBuffer(ShipSpaceSize(10, 12));
-    for (size_t i = 0; i < sourceElectricalLayerBuffer.Size.GetLinearSize(); ++i)
+    // Populate electrical layer with instanced materials
+    ElectricalLayerData sourceElectricalLayer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize(); ++i)
     {
-        sourceElectricalLayerBuffer.Data[i] = ElectricalElement(materials[100 + i % 100], ElectricalElementInstanceIndex(i));
+        sourceElectricalLayer.Buffer.Data[i] = ElectricalElement(materials[100 + i % 100], ElectricalElementInstanceIndex(i));
     }
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayerBuffer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayer, buffer);
 
     //
     // Verify RLE
     //
 
-    size_t idx = 0;
+    size_t idx = sizeof(ShipDefinitionFormatDeSerializer::SectionHeader); // Skip Buffer header
 
-    for (size_t i = 0; i < sourceElectricalLayerBuffer.Size.GetLinearSize(); ++i)
+    for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize(); ++i)
     {
         // Count
         var_uint16_t count;
@@ -625,6 +582,8 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, MidSize_Inst
         EXPECT_EQ(static_cast<ElectricalElementInstanceIndex>(instanceId.value()), ElectricalElementInstanceIndex(i));
     }
 
+    idx += sizeof(ShipDefinitionFormatDeSerializer::SectionHeader); // Skip Tail
+
     // Buffer is done
     EXPECT_EQ(idx, buffer.GetSize());
 
@@ -633,11 +592,71 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, MidSize_Inst
     //
 
     VerifyDeserializedElectricalLayer(
-        sourceElectricalLayerBuffer,
+        sourceElectricalLayer,
         buffer);
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, UnrecognizedMaterial_SameVersion)
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, ElectricalPanel)
+{
+    // Linearize materials
+    std::vector<ElectricalMaterial const *> materials;
+    std::transform(
+        TestMaterialMap.cbegin(),
+        TestMaterialMap.cend(),
+        std::back_inserter(materials),
+        [](auto const & entry)
+        {
+            return &(entry.second);
+        });
+
+    // Populate electrical layer with instanced materials
+    ElectricalLayerData sourceElectricalLayer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        sourceElectricalLayer.Buffer.Data[i] = ElectricalElement(materials[100 + i % 100], ElectricalElementInstanceIndex(i));
+    }
+
+    // Populate electrical panel
+
+    ElectricalPanelElementMetadata elem1 = ElectricalPanelElementMetadata(
+        std::nullopt,
+        std::nullopt,
+        true);
+
+    ElectricalPanelElementMetadata elem2 = ElectricalPanelElementMetadata(
+        IntegralCoordinates(3, 127),
+        std::nullopt,
+        false);
+
+    ElectricalPanelElementMetadata elem3 = ElectricalPanelElementMetadata(
+        std::nullopt,
+        "Foo bar",
+        true);
+
+    ElectricalPanelElementMetadata elem4 = ElectricalPanelElementMetadata(
+        IntegralCoordinates(13, -45),
+        "Foobar 2",
+        false);
+
+    sourceElectricalLayer.Panel.emplace(ElectricalElementInstanceIndex(8), elem1);
+    sourceElectricalLayer.Panel.emplace(ElectricalElementInstanceIndex(0), elem2);
+    sourceElectricalLayer.Panel.emplace(ElectricalElementInstanceIndex(18), elem3);
+    sourceElectricalLayer.Panel.emplace(ElectricalElementInstanceIndex(234), elem4);
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayer, buffer);
+
+    //
+    // Verify may be read
+    //
+
+    VerifyDeserializedElectricalLayer(
+        sourceElectricalLayer,
+        buffer);
+}
+
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMaterial_SameVersion)
 {
     ElectricalMaterial unrecognizedMaterial = ElectricalMaterial(
         rgbColor(0x12, 0x34, 0x56),
@@ -645,16 +664,16 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, Unrecognized
         rgbColor(0x12, 0x34, 0x56),
         false);
 
-    // Populate electrical layer buffer
-    ElectricalLayerBuffer sourceElectricalLayerBuffer(ShipSpaceSize(10, 12));
-    for (size_t i = 0; i < sourceElectricalLayerBuffer.Size.GetLinearSize(); ++i)
+    // Populate electrical layer
+    ElectricalLayerData sourceElectricalLayer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize(); ++i)
     {
-        sourceElectricalLayerBuffer.Data[i] = ElectricalElement(&unrecognizedMaterial, NoneElectricalElementInstanceIndex);
+        sourceElectricalLayer.Buffer.Data[i] = ElectricalElement(&unrecognizedMaterial, NoneElectricalElementInstanceIndex);
     }
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayerBuffer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayer, buffer);
 
     //
     // Verify exception
@@ -662,16 +681,16 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, Unrecognized
 
     try
     {
-        std::unique_ptr<ElectricalLayerBuffer> targetElectricalLayerBuffer;
+        std::unique_ptr<ElectricalLayerData> targetElectricalLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
             Version::CurrentVersion().GetMajor(),
             Version::CurrentVersion().GetMinor(),
-            sourceElectricalLayerBuffer.Size, false, false);
+            sourceElectricalLayer.Buffer.Size, false, false);
         ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
             buffer,
             shipAttributes,
             TestMaterialMap,
-            targetElectricalLayerBuffer);
+            targetElectricalLayer);
 
         FAIL();
     }
@@ -682,7 +701,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, Unrecognized
     }
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, UnrecognizedMaterial_LaterVersion)
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMaterial_LaterVersion)
 {
     ElectricalMaterial unrecognizedMaterial = ElectricalMaterial(
         rgbColor(0x12, 0x34, 0x56),
@@ -690,16 +709,16 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, Unrecognized
         rgbColor(0x12, 0x34, 0x56),
         false);
 
-    // Populate electrical layer buffer
-    ElectricalLayerBuffer sourceElectricalLayerBuffer(ShipSpaceSize(10, 12));
-    for (size_t i = 0; i < sourceElectricalLayerBuffer.Size.GetLinearSize(); ++i)
+    // Populate electrical layer
+    ElectricalLayerData sourceElectricalLayer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize(); ++i)
     {
-        sourceElectricalLayerBuffer.Data[i] = ElectricalElement(&unrecognizedMaterial, NoneElectricalElementInstanceIndex);
+        sourceElectricalLayer.Buffer.Data[i] = ElectricalElement(&unrecognizedMaterial, NoneElectricalElementInstanceIndex);
     }
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);
-    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayerBuffer, buffer);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayer, buffer);
 
     //
     // Verify exception
@@ -707,16 +726,16 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerBufferTests, Unrecognized
 
     try
     {
-        std::unique_ptr<ElectricalLayerBuffer> targetElectricalLayerBuffer;
+        std::unique_ptr<ElectricalLayerData> targetElectricalLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
             2999,
             4,
-            sourceElectricalLayerBuffer.Size, false, false);
+            sourceElectricalLayer.Buffer.Size, false, false);
         ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
             buffer,
             shipAttributes,
             TestMaterialMap,
-            targetElectricalLayerBuffer);
+            targetElectricalLayer);
 
         FAIL();
     }

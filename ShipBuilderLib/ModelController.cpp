@@ -60,13 +60,13 @@ ShipDefinition ModelController::MakeShipDefinition() const
 {
     return ShipDefinition(
         mModel.GetShipSize(),
-        std::move(*mModel.CloneStructuralLayerBuffer()),
+        std::move(*mModel.CloneStructuralLayer()),
         mModel.HasLayer(LayerType::Electrical)
-            ? mModel.CloneElectricalLayerBuffer()
+            ? mModel.CloneElectricalLayer()
             : nullptr,
         nullptr, // TODOHERE
         mModel.HasLayer(LayerType::Texture)
-            ? mModel.CloneTextureLayerBuffer()
+            ? mModel.CloneTextureLayer()
             : nullptr,
         mModel.GetShipMetadata(),
         mModel.GetShipPhysicsData(),
@@ -140,7 +140,7 @@ void ModelController::StructuralRegionFill(
     // Update model
     //
 
-    StructuralLayerBuffer & structuralLayerBuffer = mModel.GetStructuralLayerBuffer();
+    auto & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
 
     for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
     {
@@ -157,8 +157,8 @@ void ModelController::StructuralRegionFill(
     UpdateStructuralLayerVisualization(region);
 }
 
-void ModelController::StructuralRegionReplace(
-    StructuralLayerBuffer const & sourceLayerBufferRegion,
+void ModelController::StructuralLayerRegionReplace(
+    StructuralLayerData const & sourceLayerRegion,
     ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetOrigin)
 {
@@ -168,8 +168,8 @@ void ModelController::StructuralRegionReplace(
     // Update model
     //
 
-    mModel.GetStructuralLayerBuffer().BlitFromRegion(
-        sourceLayerBufferRegion,
+    mModel.GetStructuralLayer().Buffer.BlitFromRegion(
+        sourceLayerRegion.Buffer,
         sourceRegion,
         targetOrigin);
 
@@ -243,8 +243,8 @@ void ModelController::ElectricalRegionFill(
     UpdateElectricalLayerVisualization(region);
 }
 
-void ModelController::ElectricalRegionReplace(
-    ElectricalLayerBuffer const & sourceLayerBufferRegion,
+void ModelController::ElectricalLayerRegionReplace(
+    ElectricalLayerData const & sourceLayerRegion,
     ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetOrigin)
 {
@@ -257,19 +257,20 @@ void ModelController::ElectricalRegionReplace(
     //
 
     // The source region is entirely in the source buffer
-    assert(sourceRegion.IsContainedInRect({ {0, 0}, sourceLayerBufferRegion.Size }));
+    assert(sourceRegion.IsContainedInRect({ {0, 0}, sourceLayerRegion.Buffer.Size }));
 
     // The target origin plus the region size are within this buffer
-    assert(ShipSpaceRect(targetOrigin, sourceRegion.size).IsContainedInRect({ {0, 0}, mModel.GetElectricalLayerBuffer().Size }));
+    assert(ShipSpaceRect(targetOrigin, sourceRegion.size).IsContainedInRect({ {0, 0}, mModel.GetElectricalLayer().Buffer.Size }));
 
-    ElectricalLayerBuffer & targetElectricalLayerBuffer = mModel.GetElectricalLayerBuffer();
+    auto & sourceElectricalLayerBufferRegion = sourceLayerRegion.Buffer;
+    auto & targetElectricalLayerBuffer = mModel.GetElectricalLayer().Buffer;
 
     for (int y = 0; y < sourceRegion.size.height; ++y)
     {
         for (int x = 0; x < sourceRegion.size.width; ++x)
         {
             targetElectricalLayerBuffer[{targetOrigin.x + x, targetOrigin.y + y }]
-                = sourceLayerBufferRegion[{sourceRegion.origin.x + x, sourceRegion.origin.y + y}];
+                = sourceElectricalLayerBufferRegion[{sourceRegion.origin.x + x, sourceRegion.origin.y + y}];
         }
     }
 
@@ -351,7 +352,7 @@ void ModelController::InitializeElectricalLayer()
     if (mModel.HasLayer(LayerType::Electrical))
     {
         // Register existing instance indices with factory, and initialize running analysis
-        ElectricalLayerBuffer const & electricalLayerBuffer = mModel.GetElectricalLayerBuffer();
+        auto const & electricalLayerBuffer = mModel.GetElectricalLayer().Buffer;
         for (size_t i = 0; i < electricalLayerBuffer.Size.GetLinearSize(); ++i)
         {
             if (electricalLayerBuffer.Data[i].Material != nullptr)
@@ -378,7 +379,7 @@ void ModelController::WriteElectricalParticle(
     // - Here we will also take care of electrical panel: new/removed/updated-type components
     //
 
-    ElectricalLayerBuffer & electricalLayerBuffer = mModel.GetElectricalLayerBuffer();
+    auto & electricalLayerBuffer = mModel.GetElectricalLayer().Buffer;
 
     auto const & oldElement = electricalLayerBuffer[coords];
 
@@ -468,7 +469,7 @@ void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & r
 
     rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 255); // Fully opaque
 
-    StructuralLayerBuffer const & structuralLayerBuffer = mModel.GetStructuralLayerBuffer();
+    auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
     RgbaImageData & structuralRenderColorTexture = *mStructuralLayerVisualizationTexture;
 
     for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
@@ -517,7 +518,7 @@ void ModelController::UpdateElectricalLayerVisualization(ShipSpaceRect const & r
 
     rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 0); // Fully transparent
 
-    ElectricalLayerBuffer const & electricalLayerBuffer = mModel.GetElectricalLayerBuffer();
+    auto const & electricalLayerBuffer = mModel.GetElectricalLayer().Buffer;
     RgbaImageData & electricalRenderColorTexture = *mElectricalLayerVisualizationTexture;
 
     for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)

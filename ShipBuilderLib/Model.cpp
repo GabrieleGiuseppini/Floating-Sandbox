@@ -15,10 +15,10 @@ Model::Model(
     : mShipSize(shipSize)
     , mShipMetadata(shipName)
     , mShipPhysicsData()
-    , mStructuralLayerBuffer(MakeNewEmptyStructuralLayer(mShipSize))
-    , mElectricalLayerBuffer()
-    // TODO: rope layer
-    , mTextureLayerBuffer() // None
+    , mStructuralLayer(MakeNewEmptyStructuralLayer(mShipSize))
+    , mElectricalLayer()
+    // TODO: ropes layer
+    , mTextureLayer() // None
     , mDirtyState()
 {
     // Initialize presence map
@@ -30,24 +30,24 @@ Model::Model(ShipDefinition && shipDefinition)
     : mShipSize(shipDefinition.Size)
     , mShipMetadata(shipDefinition.Metadata)
     , mShipPhysicsData(shipDefinition.PhysicsData)
-    , mStructuralLayerBuffer(new StructuralLayerBuffer(std::move(shipDefinition.StructuralLayer)))
-    , mElectricalLayerBuffer(std::move(shipDefinition.ElectricalLayer))
+    , mStructuralLayer(new StructuralLayerData(std::move(shipDefinition.StructuralLayer)))
+    , mElectricalLayer(std::move(shipDefinition.ElectricalLayer))
     // TODO: other layers
-    , mTextureLayerBuffer(std::move(shipDefinition.TextureLayer))
+    , mTextureLayer(std::move(shipDefinition.TextureLayer))
     , mDirtyState()
 {
     // Initialize presence map
     mLayerPresenceMap.fill(false);
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
-    mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = (mElectricalLayerBuffer != nullptr);
+    mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = (mElectricalLayer != nullptr);
     // TODO: other layers
-    mLayerPresenceMap[static_cast<size_t>(LayerType::Texture)] = (mTextureLayerBuffer != nullptr);
+    mLayerPresenceMap[static_cast<size_t>(LayerType::Texture)] = (mTextureLayer != nullptr);
 }
 
 void Model::NewStructuralLayer()
 {
     // Reset layer
-    mStructuralLayerBuffer = MakeNewEmptyStructuralLayer(mShipSize);
+    mStructuralLayer = MakeNewEmptyStructuralLayer(mShipSize);
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
@@ -58,16 +58,16 @@ void Model::SetStructuralLayer(/*TODO*/)
     // TODO
 }
 
-std::unique_ptr<StructuralLayerBuffer> Model::CloneStructuralLayerBuffer() const
+std::unique_ptr<StructuralLayerData> Model::CloneStructuralLayer() const
 {
-    assert(mStructuralLayerBuffer);
-    return mStructuralLayerBuffer->MakeCopy();
+    assert(mStructuralLayer);
+    return mStructuralLayer->Clone();
 }
 
 void Model::NewElectricalLayer()
 {
     // Reset layer
-    mElectricalLayerBuffer = MakeNewEmptyElectricalLayer(mShipSize);
+    mElectricalLayer = MakeNewEmptyElectricalLayer(mShipSize);
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = true;
@@ -81,16 +81,16 @@ void Model::SetElectricalLayer(/*TODO*/)
 void Model::RemoveElectricalLayer()
 {
     // Remove layer
-    mElectricalLayerBuffer.reset();
+    mElectricalLayer.reset();
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = false;
 }
 
-std::unique_ptr<ElectricalLayerBuffer> Model::CloneElectricalLayerBuffer() const
+std::unique_ptr<ElectricalLayerData> Model::CloneElectricalLayer() const
 {
-    assert(mElectricalLayerBuffer);
-    return mElectricalLayerBuffer->MakeCopy();
+    assert(mElectricalLayer);
+    return mElectricalLayer->Clone();
 }
 
 void Model::NewRopesLayer()
@@ -130,30 +130,30 @@ void Model::SetTextureLayer(/*TODO*/)
 void Model::RemoveTextureLayer()
 {
     // Remove layer
-    mTextureLayerBuffer.reset();
+    mTextureLayer.reset();
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Texture)] = false;
 }
 
-std::unique_ptr<TextureLayerBuffer> Model::CloneTextureLayerBuffer() const
+std::unique_ptr<TextureLayerData> Model::CloneTextureLayer() const
 {
-    assert(mTextureLayerBuffer);
-    return mTextureLayerBuffer->MakeCopy();
+    assert(mTextureLayer);
+    return mTextureLayer->Clone();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::unique_ptr<StructuralLayerBuffer> Model::MakeNewEmptyStructuralLayer(ShipSpaceSize const & shipSize)
+std::unique_ptr<StructuralLayerData> Model::MakeNewEmptyStructuralLayer(ShipSpaceSize const & shipSize)
 {
-    return std::make_unique<StructuralLayerBuffer>(
+    return std::make_unique<StructuralLayerData>(
         shipSize,
         StructuralElement(nullptr)); // No material
 }
 
-std::unique_ptr<ElectricalLayerBuffer> Model::MakeNewEmptyElectricalLayer(ShipSpaceSize const & shipSize)
+std::unique_ptr<ElectricalLayerData> Model::MakeNewEmptyElectricalLayer(ShipSpaceSize const & shipSize)
 {
-    return std::make_unique<ElectricalLayerBuffer>(
+    return std::make_unique<ElectricalLayerData>(
         shipSize,
         ElectricalElement(nullptr, NoneElectricalElementInstanceIndex)); // No material
 }

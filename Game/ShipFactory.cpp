@@ -83,13 +83,13 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
             ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
 
             // Get structural material - and render color
-            StructuralMaterial const * structuralMaterial = shipDefinition.StructuralLayer[coords].Material;
+            StructuralMaterial const * structuralMaterial = shipDefinition.StructuralLayer.Buffer[coords].Material;
             rgbaColor structuralMaterialRenderColor = (structuralMaterial != nullptr) ? rgbaColor(structuralMaterial->RenderColor, 255) : rgbaColor::zero();
             bool isStructuralMaterialRope = (structuralMaterial != nullptr) ? structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope) : false;
             bool isStructuralMaterialLeaking = (structuralMaterial != nullptr) ? structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope) : false;
 
             // Check if there's a rope endpoint here
-            if (shipDefinition.RopesLayer && (*shipDefinition.RopesLayer)[coords].Material != nullptr)
+            if (shipDefinition.RopesLayer && shipDefinition.RopesLayer->Buffer[coords].Material != nullptr)
             {
                 //
                 // There is a rope endpoint here
@@ -103,7 +103,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
                 }
 
                 // Change endpoint's color to match the rope's - or else the spring will look bad
-                structuralMaterialRenderColor = (*shipDefinition.RopesLayer)[coords].RenderColor;
+                structuralMaterialRenderColor = shipDefinition.RopesLayer->Buffer[coords].RenderColor;
 
                 // Make it a rope point so that the first spring segment is a rope spring
                 isStructuralMaterialRope = true;
@@ -145,11 +145,10 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
                     water);
 
                 // Eventually decorate with electrical layer information
-                if (shipDefinition.ElectricalLayer
-                    && (*shipDefinition.ElectricalLayer)[coords].Material != nullptr)
+                if (shipDefinition.ElectricalLayer && shipDefinition.ElectricalLayer->Buffer[coords].Material != nullptr)
                 {
-                    pointInfos1.back().ElectricalMtl = (*shipDefinition.ElectricalLayer)[coords].Material;
-                    pointInfos1.back().ElectricalElementInstanceIdx = (*shipDefinition.ElectricalLayer)[coords].InstanceIndex;
+                    pointInfos1.back().ElectricalMtl = shipDefinition.ElectricalLayer->Buffer[coords].Material;
+                    pointInfos1.back().ElectricalElementInstanceIdx = shipDefinition.ElectricalLayer->Buffer[coords].InstanceIndex;
                 }
 
                 //
@@ -349,7 +348,9 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         points,
         springs,
         electricalElementInstanceIndices,
-        shipDefinition.Metadata.ElectricalPanelMetadata,
+        shipDefinition.ElectricalLayer != nullptr
+            ? shipDefinition.ElectricalLayer->Panel
+            : ElectricalPanelMetadata(),
         shipId,
         parentWorld,
         gameEventDispatcher,
@@ -369,7 +370,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     //
 
     RgbaImageData textureImage = shipDefinition.TextureLayer
-        ? std::move(*shipDefinition.TextureLayer) // Use provided texture
+        ? std::move(shipDefinition.TextureLayer->Buffer) // Use provided texture
         : shipTexturizer.Texturize(
             shipDefinition.AutoTexturizationSettings,
             shipDefinition.StructuralLayer); // Auto-texturize
@@ -429,7 +430,7 @@ std::vector<ShipFactory::RopeSegment> ShipFactory::ExtractRopeSegments(
             for (int y = 0; y < shipDefinition.Size.height; ++y)
             {
                 auto const coords = ShipSpaceCoordinates(x, y);
-                RopeElement const & ropeElement = (*shipDefinition.RopesLayer)[coords];
+                RopeElement const & ropeElement = shipDefinition.RopesLayer->Buffer[coords];
                 if (ropeElement.Material != nullptr)
                 {
                     //
@@ -1441,7 +1442,7 @@ ElectricalElements ShipFactory::CreateElectricalElements(
     Physics::Points const & points,
     Physics::Springs const & springs,
     std::vector<ElectricalElementInstanceIndex> const & electricalElementInstanceIndices,
-    std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> const & panelMetadata,
+    ElectricalPanelMetadata const & panelMetadata,
     ShipId shipId,
     Physics::World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,

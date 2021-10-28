@@ -8,7 +8,7 @@
 #include "Model.h"
 #include "Tool.h"
 
-#include <Game/LayerBuffers.h>
+#include <Game/Layers.h>
 #include <Game/Materials.h>
 #include <Game/ResourceLocator.h>
 
@@ -55,7 +55,7 @@ private:
 
 private:
 
-    void TakeOriginalLayerBufferClone();
+    void TakeOriginalLayerClone();
 
     void StartEngagement(StrongTypedBool<struct IsRightMouseButton> isRightButton);
 
@@ -75,8 +75,8 @@ private:
 
 private:
 
-    // Original layer buffer
-    std::unique_ptr<typename LayerTypeTraits<TLayer>::buffer_type> mOriginalLayerBufferClone;
+    // Original layer
+    std::unique_ptr<typename LayerTypeTraits<TLayer>::layer_data_type> mOriginalLayerClone;
 
     // Ship region dirtied so far with temporary visualization
     std::optional<ShipSpaceRect> mTempVisualizationDirtyShipRegion;

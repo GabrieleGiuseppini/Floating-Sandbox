@@ -47,11 +47,11 @@ ShipTexturizer::ShipTexturizer(
 
 RgbaImageData ShipTexturizer::Texturize(
     std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings,
-    StructuralLayerBuffer const & structuralLayer) const
+    StructuralLayerData const & structuralLayer) const
 {
     auto const startTime = std::chrono::steady_clock::now();
 
-    ShipSpaceSize const shipSize = structuralLayer.Size;
+    ShipSpaceSize const shipSize = structuralLayer.Buffer.Size;
 
     // Zero-out cache usage counts
     ResetMaterialTextureCacheUseCounts();
@@ -98,7 +98,7 @@ RgbaImageData ShipTexturizer::Texturize(
             ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
 
             // Get structure pixel color
-            StructuralMaterial const * structuralMaterial = structuralLayer[coords].Material;
+            StructuralMaterial const * structuralMaterial = structuralLayer.Buffer[coords].Material;
             rgbaColor const structurePixelColor = structuralMaterial != nullptr
                 ? rgbaColor(structuralMaterial->RenderColor, 255)
                 : rgbaColor::zero(); // Fully transparent

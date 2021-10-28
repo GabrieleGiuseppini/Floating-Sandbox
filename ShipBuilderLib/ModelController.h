@@ -74,8 +74,8 @@ public:
         ShipSpaceRect const & region,
         StructuralElement const & element);
 
-    void StructuralRegionReplace(
-        StructuralLayerBuffer const & sourceLayerBufferRegion,
+    void StructuralLayerRegionReplace(
+        StructuralLayerData const & sourceLayerRegion,
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetOrigin);
 
@@ -91,8 +91,8 @@ public:
         ShipSpaceRect const & region,
         ElectricalMaterial const * material);
 
-    void ElectricalRegionReplace(
-        ElectricalLayerBuffer const & sourceLayerBufferRegion,
+    void ElectricalLayerRegionReplace(
+        ElectricalLayerData const & sourceLayerRegion,
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetOrigin);
 
