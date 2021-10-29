@@ -202,7 +202,7 @@ protected:
 
 TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, VariousSizes_Uniform)
 {
-    for (int iParam = 1; iParam < 16384 * 2 + 1; ++iParam)
+    for (int iParam = 1; iParam < 16384 * 2 + 1;)
     {
         StructuralLayerData sourceStructuralLayer(
             Buffer2D<StructuralElement, struct ShipSpaceTag>(
@@ -267,6 +267,18 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, VariousSizes_Unifo
         VerifyDeserializedStructuralLayer(
             sourceStructuralLayer,
             buffer);
+
+        //
+        // Jump to next size
+        //
+
+        int iStep;
+        if ((iParam < 3) || (iParam >= 16384 - 20 && iParam < 16384 + 20) || (iParam >= 16384 * 2 - 40))
+            iStep = 1;
+        else
+            iStep = 10;
+
+        iParam += iStep;
     }
 }
 
