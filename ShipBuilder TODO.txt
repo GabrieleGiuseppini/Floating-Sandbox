@@ -74,9 +74,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 					- New: make sure EPM is zerod
 					- Set: make sure new EPM is stored
 					- Remove: make sure EPM is nuked
-			- UndoEntry of electrical must also contain whole ElectricalPanelMetadata
-				- It's Layer + Origin
-				- Should also fly with Structural
+			+ UndoEntry of electrical must also contain whole ElectricalPanelMetadata
+				+ It's Layer + Origin
+				+ Should also fly with Structural
 			- TODO: see if it flies:
 			- Fill and Mend/Replace are split in two:
 				- FillElectricalLayerRegionForTempVisualization and RestoreElectricalLayerRegionForTempVisualization: 
