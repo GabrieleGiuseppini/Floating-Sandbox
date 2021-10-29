@@ -20,6 +20,9 @@
 #include <map>
 #include <memory>
 
+#define MAKE_TAG(ch1, ch2, ch3, ch4) \
+    std::uint32_t( ((ch1 & 0xff) << 24) | ((ch2 & 0xff) << 16) | ((ch3 & 0xff) << 8) | (ch4 & 0xff) )
+
 /*
  * All the logic to load and save ships from and to .shp2 files.
  */
@@ -89,15 +92,15 @@ private:
         // Numeric values are serialized in ship files, changing them will result
         // in ship files being un-deserializable!
 
-        StructuralLayer = 1,
-        ElectricalLayer = 2,
-        RopesLayer = 3,
-        TextureLayer_PNG = 4,
-        Metadata = 5,
-        PhysicsData = 6,
-        AutoTexturizationSettings = 7,
-        ShipAttributes = 8,
-        Preview_PNG = 9,
+        StructuralLayer = MAKE_TAG('S', 'T', 'R', '1'),
+        ElectricalLayer = MAKE_TAG('E', 'L', 'C', '1'),
+        RopesLayer = MAKE_TAG('R', 'P', 'S', '1'),
+        TextureLayer_PNG = MAKE_TAG('T', 'X', 'P', '1'),
+        Metadata = MAKE_TAG('M', 'E', 'T', '1'),
+        PhysicsData = MAKE_TAG('P', 'H', 'S', '1'),
+        AutoTexturizationSettings = MAKE_TAG('A', 'T', 'X', '1'),
+        ShipAttributes = MAKE_TAG('A', 'T', 'T', '1'),
+        Preview_PNG = MAKE_TAG('P', 'V', 'P', '1'),
 
         Tail = 0xffffffff
     };
@@ -107,10 +110,10 @@ private:
         // Numeric values are serialized in ship files, changing them will result
         // in ship files being un-deserializable!
 
-        FSVersion = 1,
-        ShipSize = 2,
-        HasTextureLayer = 3,
-        HasElectricalLayer = 4,
+        FSVersion = MAKE_TAG('F', 'S', 'V', '1'),
+        ShipSize = MAKE_TAG('S', 'I', 'X', '1'),
+        HasTextureLayer = MAKE_TAG('H', 'T', 'X', '1'),
+        HasElectricalLayer = MAKE_TAG('H', 'E', 'L', '1'),
 
         Tail = 0xffffffff
     };
@@ -120,14 +123,14 @@ private:
         // Numeric values are serialized in ship files, changing them will result
         // in ship files being un-deserializable!
 
-        ShipName = 1,
-        Author = 2,
-        ArtCredits = 3,
-        YearBuilt = 4,
-        Description = 5,
-        Password = 6,
-        DoHideElectricalsInPreview = 7,
-        DoHideHDInPreview = 8,
+        ShipName = MAKE_TAG('N', 'A', 'M', '1'),
+        Author = MAKE_TAG('A', 'U', 'T', '1'),
+        ArtCredits = MAKE_TAG('A', 'C', 'R', '1'),
+        YearBuilt = MAKE_TAG('Y', 'R', 'B', '1'),
+        Description = MAKE_TAG('D', 'E', 'S', '1'),
+        Password = MAKE_TAG('P', 'P', 'P', '1'),
+        DoHideElectricalsInPreview = MAKE_TAG('H', 'E', 'P', '1'),
+        DoHideHDInPreview = MAKE_TAG('H', 'H', 'P', '1'),
 
         Tail = 0xffffffff
     };
@@ -137,9 +140,9 @@ private:
         // Numeric values are serialized in ship files, changing them will result
         // in ship files being un-deserializable!
 
-        OffsetX = 1,
-        OffsetY = 2,
-        InternalPressure = 3,
+        OffsetX = MAKE_TAG('O', 'F', 'X', '1'),
+        OffsetY = MAKE_TAG('O', 'F', 'Y', '1'),
+        InternalPressure = MAKE_TAG('I', 'P', 'R', '1'),
 
         Tail = 0xffffffff
     };
@@ -149,7 +152,7 @@ private:
         // Numeric values are serialized in ship files, changing them will result
         // in ship files being un-deserializable!
 
-        Buffer = 1,
+        Buffer = MAKE_TAG('B', 'U', 'F', '1'),
 
         Tail = 0xffffffff
     };
@@ -159,8 +162,8 @@ private:
         // Numeric values are serialized in ship files, changing them will result
         // in ship files being un-deserializable!
 
-        Buffer = 1,
-        Panel = 2,
+        Buffer = MAKE_TAG('B', 'U', 'F', '1'),
+        Panel = MAKE_TAG('P', 'N', 'L', '1'),
 
         Tail = 0xffffffff
     };

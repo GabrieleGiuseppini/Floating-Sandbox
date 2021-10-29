@@ -64,10 +64,11 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Take map element and map using from GameTypes
 				+ Remove EPM from ShipMetadata
 				+ LegacyDeser: json is parsed in two phases
-				= De/Ser:
+				+ De/Ser:
 					+ ElectricalLayer has sub-tags (Buffer and ElectricalPanelMetadata)
 						+ Unit tests
-					- String tag values?
+					+ String tag values?
+						+ 'S', 'T', 'C', '1' => S << 24 + T << 16 + C << 8 + '1'
 				- ModelController:
 					- cctor(def): make sure EPM is stored
 					- New: make sure EPM is zerod
@@ -96,6 +97,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 	- Require structure behind fill? - Yes, later at validations, write from Moleskine in own section
 	- Tests:
+		- Can load electrical and has panel
 		- PencilTool
 		- PencilTool + Undo
 		- Make sure loading a ship w/legacy electricals makes up an electrical layer, and saving it saves the electricals
