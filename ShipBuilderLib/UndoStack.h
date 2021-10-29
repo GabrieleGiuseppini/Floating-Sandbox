@@ -49,7 +49,7 @@ public:
         return mOriginalDirtyState;
     }
 
-    virtual void ApplyAction(Controller & controller) const = 0;
+    virtual void ApplyAndConsume(Controller & controller) = 0;
 
 protected:
 
@@ -87,7 +87,7 @@ public:
         , mOrigin(origin)
     {}
 
-    void ApplyAction(Controller & controller) const override;
+    void ApplyAndConsume(Controller & controller) override;
 
 private:
 

@@ -72,9 +72,18 @@ public:
 
     void StructuralRegionFill(
         ShipSpaceRect const & region,
-        StructuralElement const & element);
+        StructuralMaterial const * material);
 
-    void StructuralLayerRegionReplace(
+    void RestoreStructuralLayer(
+        StructuralLayerData && sourceLayerRegion,
+        ShipSpaceRect const & sourceRegion,
+        ShipSpaceCoordinates const & targetOrigin);
+
+    void StructuralRegionFillForEphemeralVisualization(
+        ShipSpaceRect const & region,
+        StructuralMaterial const * material);
+
+    void RestoreStructuralLayerRegionForEphemeralVisualization(
         StructuralLayerData const & sourceLayerRegion,
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetOrigin);
@@ -91,7 +100,16 @@ public:
         ShipSpaceRect const & region,
         ElectricalMaterial const * material);
 
-    void ElectricalLayerRegionReplace(
+    void RestoreElectricalLayer(
+        ElectricalLayerData && sourceLayerRegion,
+        ShipSpaceRect const & sourceRegion,
+        ShipSpaceCoordinates const & targetOrigin);
+
+    void ElectricalRegionFillForEphemeralVisualization(
+        ShipSpaceRect const & region,
+        ElectricalMaterial const * material);
+
+    void RestoreElectricalLayerRegionForEphemeralVisualization(
         ElectricalLayerData const & sourceLayerRegion,
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetOrigin);
@@ -118,7 +136,13 @@ private:
         Model && model,
         View & view);
 
+    void InitializeStructuralLayer();
+
     void InitializeElectricalLayer();
+
+    inline void WriteStructuralParticle(
+        ShipSpaceCoordinates const & coords,
+        StructuralMaterial const * material);
 
     inline void WriteElectricalParticle(
         ShipSpaceCoordinates const & coords,
@@ -142,6 +166,7 @@ private:
     // Auxiliary layers' members
     //
 
+
     ElectricalElementInstanceIndexFactory mElectricalElementInstanceIndexFactory;
     size_t mElectricalParticleCount;
 
@@ -156,6 +181,13 @@ private:
     std::optional<ImageRect> mDirtyElectricalLayerVisualizationRegion;
 
     // TODO: other layers
+
+    //
+    // Debugging
+    //
+
+    bool mIsStructuralLayerInEphemeralVisualization;
+    bool mIsElectricalLayerInEphemeralVisualization;
 };
 
 }

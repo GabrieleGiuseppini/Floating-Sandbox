@@ -76,6 +76,7 @@ void Model::NewElectricalLayer()
 void Model::SetElectricalLayer(/*TODO*/)
 {
     // TODO
+    // TODO: make sure also electrical panel is copied (moved) with LayerData
 }
 
 void Model::RemoveElectricalLayer()

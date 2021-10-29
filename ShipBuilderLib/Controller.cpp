@@ -144,13 +144,13 @@ void Controller::SetStructuralLayer(/*TODO*/)
 }
 
 void Controller::RestoreLayerRegion(
-    StructuralLayerData const & layerRegion,
+    StructuralLayerData && layerRegion,
     ShipSpaceCoordinates const & origin)
 {
     // Note: this is invoked from undo's double-dispatch, that's why it doesn't worry about tool
 
-    mModelController->StructuralLayerRegionReplace(
-        layerRegion,
+    mModelController->RestoreStructuralLayer(
+        std::move(layerRegion),
         { {0, 0}, layerRegion.Buffer.Size},
         origin);
 
@@ -235,13 +235,13 @@ void Controller::RemoveElectricalLayer()
 }
 
 void Controller::RestoreLayerRegion(
-    ElectricalLayerData const & layerRegion,
+    ElectricalLayerData && layerRegion,
     ShipSpaceCoordinates const & origin)
 {
     // Note: this is invoked from undo's double-dispatch, that's why it doesn't worry about tool
 
-    mModelController->ElectricalLayerRegionReplace(
-        layerRegion,
+    mModelController->RestoreElectricalLayer(
+        std::move(layerRegion),
         { {0, 0}, layerRegion.Buffer.Size },
         origin);
 
@@ -466,7 +466,7 @@ void Controller::Undo()
 
     // Apply action
     auto undoAction = mUndoStack.Pop();
-    undoAction->ApplyAction(*this);
+    undoAction->ApplyAndConsume(*this);
 
     // Restore dirtyness
     mModelController->RestoreDirtyState(undoAction->GetOriginalDirtyState());

@@ -41,11 +41,15 @@ ModelController::ModelController(
     , mModel(std::move(model))
     , mElectricalElementInstanceIndexFactory()
     , mElectricalParticleCount(0)
+    /////
+    , mIsStructuralLayerInEphemeralVisualization(false)
+    , mIsElectricalLayerInEphemeralVisualization(false)
 {
     // Model is not dirty now
     assert(!mModel.GetIsDirty());
 
     // Initialize layers
+    InitializeStructuralLayer();
     InitializeElectricalLayer();
 
     // Prepare all visualizations
@@ -118,7 +122,11 @@ void ModelController::NewStructuralLayer()
 {
     mModel.NewStructuralLayer();
 
+    InitializeStructuralLayer();
+
     UpdateStructuralLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
+
+    mIsStructuralLayerInEphemeralVisualization = false;
 }
 
 void ModelController::SetStructuralLayer(/*TODO*/)
@@ -127,26 +135,30 @@ void ModelController::SetStructuralLayer(/*TODO*/)
 
     mModel.SetStructuralLayer();
 
+    InitializeStructuralLayer();
+
     UpdateStructuralLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
+
+    mIsStructuralLayerInEphemeralVisualization = false;
 }
 
 void ModelController::StructuralRegionFill(
     ShipSpaceRect const & region,
-    StructuralElement const & element)
+    StructuralMaterial const * material)
 {
     assert(mModel.HasLayer(LayerType::Structural));
+
+    assert(!mIsStructuralLayerInEphemeralVisualization);
 
     //
     // Update model
     //
 
-    auto & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
-
     for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
     {
         for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
         {
-            structuralLayerBuffer[ShipSpaceCoordinates(x, y)] = element;
+            WriteStructuralParticle(ShipSpaceCoordinates(x, y), material);
         }
     }
 
@@ -157,15 +169,80 @@ void ModelController::StructuralRegionFill(
     UpdateStructuralLayerVisualization(region);
 }
 
-void ModelController::StructuralLayerRegionReplace(
+void ModelController::RestoreStructuralLayer(
+    StructuralLayerData && sourceLayerRegion,
+    ShipSpaceRect const & sourceRegion,
+    ShipSpaceCoordinates const & targetOrigin)
+{
+    assert(mModel.HasLayer(LayerType::Structural));
+
+    assert(!mIsStructuralLayerInEphemeralVisualization);
+
+    //
+    // Restore model
+    //
+
+    mModel.GetStructuralLayer().Buffer.BlitFromRegion(
+        sourceLayerRegion.Buffer,
+        sourceRegion,
+        targetOrigin);
+
+    //
+    // Re-initialize layer (analyses)
+    //
+
+    InitializeStructuralLayer();
+
+    //
+    // Update visualization
+    //
+
+    UpdateStructuralLayerVisualization({ targetOrigin, sourceRegion.size });
+}
+
+void ModelController::StructuralRegionFillForEphemeralVisualization(
+    ShipSpaceRect const & region,
+    StructuralMaterial const * material)
+{
+    assert(mModel.HasLayer(LayerType::Structural));
+
+    assert(!mIsStructuralLayerInEphemeralVisualization);
+
+    //
+    // Update model with just material - no analyses
+    //
+
+    auto & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
+
+    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
+    {
+        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
+        {
+            structuralLayerBuffer[ShipSpaceCoordinates(x, y)].Material = material;
+        }
+    }
+
+    //
+    // Update visualization
+    //
+
+    UpdateStructuralLayerVisualization(region);
+
+    // Remember we are in temp visualization now
+    mIsStructuralLayerInEphemeralVisualization = true;
+}
+
+void ModelController::RestoreStructuralLayerRegionForEphemeralVisualization(
     StructuralLayerData const & sourceLayerRegion,
     ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetOrigin)
 {
     assert(mModel.HasLayer(LayerType::Structural));
 
+    assert(mIsStructuralLayerInEphemeralVisualization);
+
     //
-    // Update model
+    // Restore model, and nothing else
     //
 
     mModel.GetStructuralLayer().Buffer.BlitFromRegion(
@@ -178,6 +255,9 @@ void ModelController::StructuralLayerRegionReplace(
     //
 
     UpdateStructuralLayerVisualization({ targetOrigin, sourceRegion.size });
+
+    // Remember we are not anymore in temp visualization
+    mIsStructuralLayerInEphemeralVisualization = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -191,6 +271,8 @@ void ModelController::NewElectricalLayer()
     InitializeElectricalLayer();
 
     UpdateElectricalLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
+
+    mIsElectricalLayerInEphemeralVisualization = false;
 }
 
 void ModelController::SetElectricalLayer(/*TODO*/)
@@ -202,6 +284,8 @@ void ModelController::SetElectricalLayer(/*TODO*/)
     InitializeElectricalLayer();
 
     UpdateElectricalLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
+
+    mIsElectricalLayerInEphemeralVisualization = false;
 }
 
 void ModelController::RemoveElectricalLayer()
@@ -216,6 +300,8 @@ void ModelController::RemoveElectricalLayer()
 
     mElectricalLayerVisualizationTexture.reset();
     mDirtyElectricalLayerVisualizationRegion.reset();
+
+    mIsElectricalLayerInEphemeralVisualization = false;
 }
 
 void ModelController::ElectricalRegionFill(
@@ -223,6 +309,8 @@ void ModelController::ElectricalRegionFill(
     ElectricalMaterial const * material)
 {
     assert(mModel.HasLayer(LayerType::Electrical));
+
+    assert(!mIsElectricalLayerInEphemeralVisualization);
 
     //
     // Update model
@@ -243,19 +331,90 @@ void ModelController::ElectricalRegionFill(
     UpdateElectricalLayerVisualization(region);
 }
 
-void ModelController::ElectricalLayerRegionReplace(
+void ModelController::RestoreElectricalLayer(
+    ElectricalLayerData && sourceLayerRegion,
+    ShipSpaceRect const & sourceRegion,
+    ShipSpaceCoordinates const & targetOrigin)
+{
+    assert(mModel.HasLayer(LayerType::Electrical));
+
+    assert(!mIsElectricalLayerInEphemeralVisualization);
+
+    //
+    // Restore model
+    //
+
+    mModel.GetElectricalLayer().Buffer.BlitFromRegion(
+        sourceLayerRegion.Buffer,
+        sourceRegion,
+        targetOrigin);
+
+    mModel.GetElectricalLayer().Panel = std::move(sourceLayerRegion.Panel);
+
+    //
+    // Re-initialize layer (analyses and instance IDs)
+    //
+
+    InitializeElectricalLayer();
+
+    //
+    // Update visualization
+    //
+
+    UpdateElectricalLayerVisualization({ targetOrigin, sourceRegion.size });
+}
+
+void ModelController::ElectricalRegionFillForEphemeralVisualization(
+    ShipSpaceRect const & region,
+    ElectricalMaterial const * material)
+{
+    assert(mModel.HasLayer(LayerType::Electrical));
+
+    assert(!mIsElectricalLayerInEphemeralVisualization);
+
+    //
+    // Update model just with material - no instance ID, no analyses, no panel
+    //
+
+    auto & electricalLayerBuffer = mModel.GetElectricalLayer().Buffer;
+
+    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
+    {
+        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
+        {
+            electricalLayerBuffer[ShipSpaceCoordinates(x, y)].Material = material;
+        }
+    }
+
+    //
+    // Update visualization
+    //
+
+    UpdateElectricalLayerVisualization(region);
+
+    // Remember we are in temp visualization now
+    mIsElectricalLayerInEphemeralVisualization = true;
+}
+
+void ModelController::RestoreElectricalLayerRegionForEphemeralVisualization(
     ElectricalLayerData const & sourceLayerRegion,
     ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetOrigin)
 {
-    // TODOHERE
-
     assert(mModel.HasLayer(LayerType::Electrical));
 
+    assert(mIsElectricalLayerInEphemeralVisualization);
+
     //
-    // Update model
+    // Restore model, and nothing else
     //
 
+    mModel.GetElectricalLayer().Buffer.BlitFromRegion(
+        sourceLayerRegion.Buffer,
+        sourceRegion,
+        targetOrigin);
+
+    /* TODOOLD
     // The source region is entirely in the source buffer
     assert(sourceRegion.IsContainedInRect({ {0, 0}, sourceLayerRegion.Buffer.Size }));
 
@@ -273,12 +432,16 @@ void ModelController::ElectricalLayerRegionReplace(
                 = sourceElectricalLayerBufferRegion[{sourceRegion.origin.x + x, sourceRegion.origin.y + y}];
         }
     }
+    */
 
     //
     // Update visualization
     //
 
     UpdateElectricalLayerVisualization({ targetOrigin, sourceRegion.size });
+
+    // Remember we are not anymore in temp visualization
+    mIsElectricalLayerInEphemeralVisualization = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -341,6 +504,11 @@ void ModelController::RemoveTextureLayer()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void ModelController::InitializeStructuralLayer()
+{
+    // FUTUREWORK
+}
+
 void ModelController::InitializeElectricalLayer()
 {
     // Reset factory
@@ -367,6 +535,19 @@ void ModelController::InitializeElectricalLayer()
             }
         }
     }
+}
+
+void ModelController::WriteStructuralParticle(
+    ShipSpaceCoordinates const & coords,
+    StructuralMaterial const * material)
+{
+    //
+    // FutureWork:
+    // - Here we will also implement running analyses
+    //
+
+    auto & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
+    structuralLayerBuffer[coords] = StructuralElement(material);
 }
 
 void ModelController::WriteElectricalParticle(

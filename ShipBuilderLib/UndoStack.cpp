@@ -12,9 +12,9 @@
 namespace ShipBuilder {
 
 template<typename TLayer>
-void LayerRegionUndoAction<TLayer>::ApplyAction(Controller & controller) const
+void LayerRegionUndoAction<TLayer>::ApplyAndConsume(Controller & controller)
 {
-    controller.RestoreLayerRegion(mLayerRegion, mOrigin);
+    controller.RestoreLayerRegion(std::move(mLayerRegion), mOrigin);
 }
 
 //

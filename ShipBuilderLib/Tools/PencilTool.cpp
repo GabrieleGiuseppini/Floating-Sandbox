@@ -329,7 +329,7 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
                 {
                     mModelController.StructuralRegionFill(
                         *applicableRect,
-                        StructuralElement(fillMaterial));
+                        fillMaterial);
                 }
                 else
                 {
@@ -415,15 +415,15 @@ void PencilTool<TLayer, IsEraser>::DoTempVisualization(ShipSpaceRect const & aff
 
     if constexpr (TLayer == LayerType::Structural)
     {
-        mModelController.StructuralRegionFill(
+        mModelController.StructuralRegionFillForEphemeralVisualization(
             affectedRect,
-            StructuralElement(fillMaterial));
+            fillMaterial);
     }
     else
     {
         static_assert(TLayer == LayerType::Electrical);
 
-        mModelController.ElectricalRegionFill(
+        mModelController.ElectricalRegionFillForEphemeralVisualization(
             affectedRect,
             fillMaterial);
     }
@@ -440,7 +440,7 @@ void PencilTool<TLayer, IsEraser>::MendTempVisualization()
 
     if constexpr (TLayer == LayerType::Structural)
     {
-        mModelController.StructuralLayerRegionReplace(
+        mModelController.RestoreStructuralLayerRegionForEphemeralVisualization(
             *mOriginalLayerClone,
             *mTempVisualizationDirtyShipRegion,
             mTempVisualizationDirtyShipRegion->origin);
@@ -449,7 +449,7 @@ void PencilTool<TLayer, IsEraser>::MendTempVisualization()
     {
         static_assert(TLayer == LayerType::Electrical);
 
-        mModelController.ElectricalLayerRegionReplace(
+        mModelController.RestoreElectricalLayerRegionForEphemeralVisualization(
             *mOriginalLayerClone,
             *mTempVisualizationDirtyShipRegion,
             mTempVisualizationDirtyShipRegion->origin);

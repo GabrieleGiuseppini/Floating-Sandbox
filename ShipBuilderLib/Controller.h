@@ -66,14 +66,14 @@ public:
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
     void RestoreLayerRegion(
-        StructuralLayerData const & layerRegion,
+        StructuralLayerData && layerRegion,
         ShipSpaceCoordinates const & origin);
 
     void NewElectricalLayer();
     void SetElectricalLayer(/*TODO*/);
     void RemoveElectricalLayer();
     void RestoreLayerRegion(
-        ElectricalLayerData const & layerRegion,
+        ElectricalLayerData && layerRegion,
         ShipSpaceCoordinates const & origin);
 
     void NewRopesLayer();
