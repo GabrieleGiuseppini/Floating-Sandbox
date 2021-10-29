@@ -103,12 +103,16 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- PencilTool + Undo
 		- Make sure loading a ship w/legacy electricals makes up an electrical layer, and saving it saves the electricals
 	- Try: do not make line if instanced electrical element
-	- View: other layers' opacity  (NO visualization type! (yet))
-		- View::Set...: stores member
-		- Set param in shader at each use of the shader (i.e. at each layer rendering)
-			- Based on mPrimaryLayer
-				- Do setter and call setter from Controller, prior to visualization update
-		- Controller must refresh (just) rendering (not whole ModelController visualization!)
+	= View: other layers' opacity  (NO visualization type! (yet))
+		+ View::Set...: stores member
+		+ Set param in shader at each use of the shader (i.e. at each layer rendering)
+			+ Based on mPrimaryLayer
+				+ Do setter and call setter from Controller, prior to visualization update
+		+ Controller must refresh (just) rendering (not whole ModelController visualization!)
+		- Fix (initial) sync of opacity between UI and controller
+			- TODOHERE: Where is storage?
+			- Then see how to pass primary layer
+		- StructuralLayer: no white BG? Then need BG @ View
 
 - At selection of new primary layer (in Controller): select first tool
 

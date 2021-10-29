@@ -47,8 +47,9 @@ std::string ProgramTypeToStr(ProgramType program)
 
 ProgramParameterType StrToProgramParameterType(std::string const & str)
 {
-
-    if (str == "OrthoMatrix")
+    if (str == "Opacity")
+        return ProgramParameterType::Opacity;
+    else if (str == "OrthoMatrix")
         return ProgramParameterType::OrthoMatrix;
     else if (str == "PixelStep")
         return ProgramParameterType::PixelStep;
@@ -64,6 +65,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
 {
     switch (programParameter)
     {
+        case ProgramParameterType::Opacity:
+            return "Opacity";
         case ProgramParameterType::OrthoMatrix:
             return "OrthoMatrix";
         case ProgramParameterType::PixelStep:

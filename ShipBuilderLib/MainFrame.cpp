@@ -453,7 +453,6 @@ MainFrame::MainFrame(
             mWorkCanvas->GetSize().GetWidth(),
             mWorkCanvas->GetSize().GetHeight()),
         mWorkCanvas->GetContentScaleFactor(),
-        false, // Grid enabled
         [this]()
         {
             mWorkCanvas->SwapBuffers();
@@ -1213,8 +1212,14 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                     wxEVT_SLIDER,
                     [this](wxCommandEvent & /*event*/)
                     {
-                        // TODO
-                        LogMessage("Other layers opacity changed: ", mOtherLayersOpacitySlider->GetValue());
+                        float const opacity =
+                            static_cast<float>(mOtherLayersOpacitySlider->GetValue() - MinLayerTransparency)
+                            / static_cast<float>(MaxLayerTransparency - MinLayerTransparency);
+
+                        LogMessage("TODOTEST: ", opacity);
+
+                        assert(mController);
+                        mController->SetOtherLayersOpacity(opacity);
                     });
 
                 hSizer->Add(

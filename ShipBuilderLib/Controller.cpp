@@ -76,8 +76,9 @@ Controller::Controller(
     // We assume we start with at least a structural layer
     assert(mModelController->GetModel().HasLayer(LayerType::Structural));
 
-    // Tell view new workspace size
+    // Tell view new workspace size and settings
     mView.SetShipSize(mModelController->GetModel().GetShipSize());
+    mView.SetPrimaryLayer(mPrimaryLayer);
 
     // Set ideal zoom
     mView.SetZoom(mView.CalculateIdealZoom());
@@ -422,8 +423,20 @@ void Controller::SelectPrimaryLayer(LayerType primaryLayer)
 
         // TODO: *update* layers visualization at controller
         // TODO: *upload* "                                "
-        // TODO: view refresh
+
+        // Tell view
+        mView.SetPrimaryLayer(mPrimaryLayer);
+
+        // Refresh view
+        mUserInterface.RefreshView();
     }
+}
+
+void Controller::SetOtherLayersOpacity(float opacity)
+{
+    mView.SetOtherLayersOpacity(opacity);
+
+    mUserInterface.RefreshView();
 }
 
 std::optional<ToolType> Controller::GetCurrentTool() const

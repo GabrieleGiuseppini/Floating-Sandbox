@@ -29,7 +29,11 @@ in vec2 vertexTextureCoordinates;
 // The texture
 uniform sampler2D paramTextureUnit1;
 
+// Params
+uniform float paramOpacity;
+
 void main()
 {
-    gl_FragColor = texture2D(paramTextureUnit1, vertexTextureCoordinates);
+    vec4 sample = texture2D(paramTextureUnit1, vertexTextureCoordinates);
+    gl_FragColor = vec4(sample.xyz, sample.w * paramOpacity);
 } 

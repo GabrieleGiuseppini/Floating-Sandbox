@@ -39,7 +39,6 @@ public:
         ShipSpaceSize initialShipSpaceSize,
         DisplayLogicalSize initialDisplaySize,
         int logicalToPhysicalPixelFactor,
-        bool isGridEnabled,
         std::function<void()> swapRenderBuffersFunction,
         ResourceLocator const & resourceLocator);
 
@@ -111,6 +110,16 @@ public:
 public:
 
     void EnableVisualGrid(bool doEnable);
+
+    void SetPrimaryLayer(LayerType value)
+    {
+        mPrimaryLayer = value;
+    }
+
+    void SetOtherLayersOpacity(float value)
+    {
+        mOtherLayersOpacity = value;
+    }
 
     // Sticky, always drawn
     void UploadBackgroundTexture(RgbaImageData && texture);
@@ -261,6 +270,13 @@ private:
     GameOpenGLVAO mGridVAO;
     GameOpenGLVBO mGridVBO;
     bool mIsGridEnabled;
+
+    //
+    // Settings
+    //
+
+    LayerType mPrimaryLayer;
+    float mOtherLayersOpacity;
 };
 
 }

@@ -32,7 +32,8 @@ std::string ProgramTypeToStr(ProgramType program);
 
 enum class ProgramParameterType : uint8_t
 {
-    OrthoMatrix = 0,
+    Opacity = 0,
+    OrthoMatrix,
     PixelStep,
 
     // Texture units

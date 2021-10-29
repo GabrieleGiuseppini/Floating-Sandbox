@@ -94,6 +94,8 @@ public:
     LayerType GetPrimaryLayer() const;
     void SelectPrimaryLayer(LayerType primaryLayer);
 
+    void SetOtherLayersOpacity(float opacity);
+
     std::optional<ToolType> GetCurrentTool() const;
     void SetCurrentTool(std::optional<ToolType> tool);
 

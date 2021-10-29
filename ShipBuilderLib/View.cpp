@@ -15,7 +15,6 @@ View::View(
     ShipSpaceSize initialShipSpaceSize,
     DisplayLogicalSize initialDisplaySize,
     int logicalToPhysicalPixelFactor,
-    bool isGridEnabled,
     std::function<void()> swapRenderBuffersFunction,
     ResourceLocator const & resourceLocator)
     : mViewModel(
@@ -28,7 +27,10 @@ View::View(
     , mHasBackgroundTexture(false)
     , mHasStructuralTexture(false)
     , mHasElectricalTexture(false)
-    , mIsGridEnabled(isGridEnabled)
+    , mIsGridEnabled(false)
+    //////////////////////////////////
+    , mPrimaryLayer(LayerType::Structural)
+    , mOtherLayersOpacity(1.0f)
 {
     //
     // Initialize global OpenGL settings
@@ -540,6 +542,10 @@ void View::Render()
         // Activate program
         mShaderManager->ActivateProgram<ProgramType::Texture>();
 
+        // Set opacity
+        mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::Opacity>(
+            mPrimaryLayer == LayerType::Structural ? 1.0f : mOtherLayersOpacity);
+
         // Draw
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         CheckOpenGLError();
@@ -557,6 +563,10 @@ void View::Render()
 
         // Activate program
         mShaderManager->ActivateProgram<ProgramType::Texture>();
+
+        // Set opacity
+        mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::Opacity>(
+            mPrimaryLayer == LayerType::Electrical ? 1.0f : mOtherLayersOpacity);
 
         // Draw
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
