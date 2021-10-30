@@ -1350,6 +1350,24 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
+            // TODO: Line - at 1, 0
+
+            // Flood
+            {
+                auto button = makeToolButton(
+                    ToolType::StructuralFlood,
+                    structuralToolbarPanel,
+                    "flood_tool_icon",
+                    _("Fill an area with structure particles"));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(1, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
             structuralToolbarSizer->Add(
                 toolsSizer,
                 0,
@@ -1474,6 +1492,24 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 toolsSizer->Add(
                     button,
                     wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // TODO: line - at 1, 0
+
+            // Eraser
+            {
+                auto button = makeToolButton(
+                    ToolType::ElectricalFlood,
+                    electricalToolbarPanel,
+                    "flood_tool_icon",
+                    _("Fill an area with electrical particles"));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(1, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);

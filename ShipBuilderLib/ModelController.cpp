@@ -169,6 +169,14 @@ void ModelController::StructuralRegionFill(
     UpdateStructuralLayerVisualization(region);
 }
 
+std::optional<ShipSpaceRect> ModelController::StructuralRegionFlood(
+    ShipSpaceCoordinates const & start,
+    StructuralMaterial const * material)
+{
+    // TODOHERE
+    return std::nullopt;
+}
+
 void ModelController::RestoreStructuralLayer(
     StructuralLayerData && sourceLayerRegion,
     ShipSpaceRect const & sourceRegion,
@@ -329,6 +337,14 @@ void ModelController::ElectricalRegionFill(
     //
 
     UpdateElectricalLayerVisualization(region);
+}
+
+std::optional<ShipSpaceRect> ModelController::ElectricalRegionFlood(
+    ShipSpaceCoordinates const & start,
+    ElectricalMaterial const * material)
+{
+    // TODOHERE
+    return std::nullopt;
 }
 
 void ModelController::RestoreElectricalLayer(

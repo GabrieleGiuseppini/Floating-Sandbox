@@ -121,11 +121,15 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ See TODOTEST log for opacity values
 		- StructuralLayer: no white BG? Then need BG @ View
 			- Shader: need to take pixel step parameter
+
+- Flood tool
+	- DoEdit also does EndEngagement
 		
 
 + See broken Undo
 - Yellow at materials
 - At selection of new primary layer (in Controller): select first tool
+	- Or remember tool per-layer
 
 - Eraser square?
 	+ See paint: has it
@@ -242,7 +246,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 - Other tools:
 	- Line tool
-	- Flood tool
 
 
 - Undo stack visualization: underneath toolbar?

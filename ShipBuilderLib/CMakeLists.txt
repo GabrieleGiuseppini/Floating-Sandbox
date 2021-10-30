@@ -37,6 +37,8 @@ set (SHIPBUILDER_LIB_SOURCES
 )
 
 set (TOOLS_SOURCES
+	Tools/FloodTool.cpp
+	Tools/FloodTool.h
 	Tools/PencilTool.cpp
 	Tools/PencilTool.h
 	Tools/Tool.cpp

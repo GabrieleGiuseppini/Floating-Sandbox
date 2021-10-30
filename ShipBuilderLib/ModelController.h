@@ -74,6 +74,10 @@ public:
         ShipSpaceRect const & region,
         StructuralMaterial const * material);
 
+    std::optional<ShipSpaceRect> StructuralRegionFlood(
+        ShipSpaceCoordinates const & start,
+        StructuralMaterial const * material);
+
     void RestoreStructuralLayer(
         StructuralLayerData && sourceLayerRegion,
         ShipSpaceRect const & sourceRegion,
@@ -98,6 +102,10 @@ public:
 
     void ElectricalRegionFill(
         ShipSpaceRect const & region,
+        ElectricalMaterial const * material);
+
+    std::optional<ShipSpaceRect> ElectricalRegionFlood(
+        ShipSpaceCoordinates const & start,
         ElectricalMaterial const * material);
 
     void RestoreElectricalLayer(

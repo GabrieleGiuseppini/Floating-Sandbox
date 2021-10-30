@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "Controller.h"
 
+#include "Tools/FloodTool.h"
 #include "Tools/PencilTool.h"
 
 #include <cassert>
@@ -673,11 +674,20 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
 {
     switch (toolType)
     {
-        // TODOHERE: other tool types
-
         case ToolType::ElectricalEraser:
         {
             return std::make_unique<ElectricalEraserTool>(
+                *mModelController,
+                mUndoStack,
+                mWorkbenchState,
+                mUserInterface,
+                mView,
+                mResourceLocator);
+        }
+
+        case ToolType::ElectricalFlood:
+        {
+            return std::make_unique<ElectricalFloodTool>(
                 *mModelController,
                 mUndoStack,
                 mWorkbenchState,
@@ -700,6 +710,17 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::StructuralEraser:
         {
             return std::make_unique<StructuralEraserTool>(
+                *mModelController,
+                mUndoStack,
+                mWorkbenchState,
+                mUserInterface,
+                mView,
+                mResourceLocator);
+        }
+
+        case ToolType::StructuralFlood:
+        {
+            return std::make_unique<StructuralFloodTool>(
                 *mModelController,
                 mUndoStack,
                 mWorkbenchState,
