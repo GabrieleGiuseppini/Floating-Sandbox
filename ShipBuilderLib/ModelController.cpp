@@ -627,8 +627,6 @@ void ModelController::WriteElectricalParticle(
 
     // Store
     electricalLayerBuffer[coords] = ElectricalElement(material, instanceIndex);
-
-    LogMessage("TODOTEST: WriteElectricalParticle: InstanceId=", instanceIndex, " ElectricalParticleCount=", mElectricalParticleCount);
 }
 
 void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & region)
