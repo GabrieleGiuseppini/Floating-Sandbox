@@ -111,7 +111,7 @@ private:
         // in ship files being un-deserializable!
 
         FSVersion = MAKE_TAG('F', 'S', 'V', '1'),
-        ShipSize = MAKE_TAG('S', 'I', 'X', '1'),
+        ShipSize = MAKE_TAG('S', 'S', 'Z', '1'),
         HasTextureLayer = MAKE_TAG('H', 'T', 'X', '1'),
         HasElectricalLayer = MAKE_TAG('H', 'E', 'L', '1'),
 
@@ -309,11 +309,13 @@ private:
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_VariousSizes_Uniform_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_MidSize_Heterogeneous_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_Nulls_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_UnrecognizedMaterial_SameVersion_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_UnrecognizedMaterial_LaterVersion_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_MidSize_NonInstanced_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_MidSize_Instanced_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_Nulls_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_ElectricalPanel_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_UnrecognizedMaterial_SameVersion_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_UnrecognizedMaterial_LaterVersion_Test;

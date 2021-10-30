@@ -339,6 +339,70 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, MidSize_Heterogene
         buffer);
 }
 
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, Nulls)
+{
+    // Linearize materials
+    std::vector<StructuralMaterial const *> materials;
+    std::transform(
+        TestMaterialMap.cbegin(),
+        TestMaterialMap.cend(),
+        std::back_inserter(materials),
+        [](auto const & entry)
+        {
+            return &(entry.second);
+        });
+
+    // Populate structural layer
+    StructuralLayerData sourceStructuralLayer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceStructuralLayer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        sourceStructuralLayer.Buffer.Data[i].Material = (i % 2 == 0) ? nullptr : materials[i % materials.size()];
+    }
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayer, buffer);
+
+    //
+    // Verify RLE
+    //
+
+    size_t idx = sizeof(ShipDefinitionFormatDeSerializer::SectionHeader); // Skip Buffer header
+
+    for (size_t i = 0; i < sourceStructuralLayer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        // Count
+        var_uint16_t count;
+        idx += buffer.ReadAt(idx, count);
+        EXPECT_EQ(count.value(), 1);
+
+        // Value
+        MaterialColorKey colorKey;
+        idx += buffer.ReadAt(idx, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
+        if (i % 2 == 0)
+        {
+            EXPECT_EQ(colorKey, EmptyMaterialColorKey);
+        }
+        else
+        {
+            EXPECT_EQ(colorKey, materials[i % materials.size()]->ColorKey);
+        }
+    }
+
+    idx += sizeof(ShipDefinitionFormatDeSerializer::SectionHeader); // Skip Tail
+
+    // Buffer is done
+    EXPECT_EQ(idx, buffer.GetSize());
+
+    //
+    // Verify may be read
+    //
+
+    VerifyDeserializedStructuralLayer(
+        sourceStructuralLayer,
+        buffer);
+}
+
 TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMaterial_SameVersion)
 {
     StructuralMaterial unrecognizedMaterial = StructuralMaterial(
@@ -607,6 +671,71 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, MidSize_Instanced)
         sourceElectricalLayer,
         buffer);
 }
+
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, Nulls)
+{
+    // Linearize materials
+    std::vector<ElectricalMaterial const *> materials;
+    std::transform(
+        TestMaterialMap.cbegin(),
+        TestMaterialMap.cend(),
+        std::back_inserter(materials),
+        [](auto const & entry)
+        {
+            return &(entry.second);
+        });
+
+    // Populate electrical layer with non-instanced materials
+    ElectricalLayerData sourceElectricalLayer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        sourceElectricalLayer.Buffer.Data[i] = ElectricalElement((i % 2 == 0) ? nullptr : materials[i % 100], NoneElectricalElementInstanceIndex);
+    }
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayer, buffer);
+
+    //
+    // Verify RLE
+    //
+
+    size_t idx = sizeof(ShipDefinitionFormatDeSerializer::SectionHeader); // Skip Buffer header
+
+    for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        // Count
+        var_uint16_t count;
+        idx += buffer.ReadAt(idx, count);
+        EXPECT_EQ(count.value(), 1);
+
+        // RGB key
+        MaterialColorKey colorKey;
+        idx += buffer.ReadAt(idx, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
+        if (i % 2 == 0)
+        {
+            EXPECT_EQ(colorKey, EmptyMaterialColorKey);
+        }
+        else
+        {
+            EXPECT_EQ(colorKey, materials[i % 100]->ColorKey);
+        }
+    }
+
+    idx += sizeof(ShipDefinitionFormatDeSerializer::SectionHeader); // Skip Tail
+
+    // Buffer is done
+    EXPECT_EQ(idx, buffer.GetSize());
+
+    //
+    // Verify may be read
+    //
+
+    VerifyDeserializedElectricalLayer(
+        sourceElectricalLayer,
+        buffer);
+}
+
 
 TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, ElectricalPanel)
 {

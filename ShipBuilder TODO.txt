@@ -94,14 +94,13 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Refactor StructuralRegionReplace in the same way (w/WriteStructuralParticle, mending/replace, etc.)
 		+ StructuralFill also takes material* instead of element
 		+ InitializeLayer & its calls
-
-	- Require structure behind fill? - Yes, later at validations, write from Moleskine in own section
-
-	- Tests:
-		- Can load electrical and has panel
-		- PencilTool
-		- PencilTool + Undo
-		- Make sure loading a ship w/legacy electricals makes up an electrical layer, and saving it saves the electricals
+	+ Tests:
+		+ Can load electrical in game, and has panel
+		+ PencilTool
+			+ Instance ID assignment
+		+ PencilTool + Undo
+			+ Instance ID assignment
+		+ Make sure loading a ship w/legacy electricals makes up an electrical layer, and saving it saves the electricals
 	- Try: do not make line if instanced electrical element
 	= View: other layers' opacity  (NO visualization type! (yet))
 		+ View::Set...: stores member
@@ -109,10 +108,13 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Based on mPrimaryLayer
 				+ Do setter and call setter from Controller, prior to visualization update
 		+ Controller must refresh (just) rendering (not whole ModelController visualization!)
+		- See TODOTEST log for opacity float value
 		- Fix (initial) sync of opacity between UI and controller
 			- TODOHERE: Where is storage?
 			- Then see how to pass primary layer
 		- StructuralLayer: no white BG? Then need BG @ View
+
+- Require structure behind fill? - Yes, later at validations, write from Moleskine in own section
 
 - At selection of new primary layer (in Controller): select first tool
 

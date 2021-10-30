@@ -893,7 +893,8 @@ size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayerBuffer(
         rleBuffer.Append(reinterpret_cast<unsigned char const *>(&colorKey), sizeof(MaterialColorKey));
 
         // Serialize instance index - only if instanced
-        if (electricalElement.Material->IsInstanced)
+        if (electricalElement.Material != nullptr
+            && electricalElement.Material->IsInstanced)
         {
             static_assert(sizeof(ElectricalElementInstanceIndex) <= sizeof(std::uint16_t));
             rleBuffer.Append<var_uint16_t>(var_uint16_t(electricalElement.InstanceIndex));
@@ -1608,7 +1609,8 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
 
                     // Deserialize instanceID - only if instanced
                     ElectricalElementInstanceIndex instanceId;
-                    if (material->IsInstanced)
+                    if (material != nullptr
+                        && material->IsInstanced)
                     {
                         var_uint16_t instanceIdTmp;
                         bufferReadOffset += buffer.ReadAt(readOffset + bufferReadOffset, instanceIdTmp);
