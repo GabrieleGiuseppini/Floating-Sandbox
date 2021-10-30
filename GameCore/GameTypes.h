@@ -508,6 +508,22 @@ struct _IntegralRect
             && origin.y + size.height <= container.origin.y + container.size.height;
     }
 
+    void UnionWith(_IntegralCoordinates<TIntegralTag> const & other)
+    {
+        auto const newOrigin = _IntegralCoordinates<TIntegralTag>(
+            std::min(origin.x, other.x),
+            std::min(origin.y, other.y));
+
+        auto const newSize = _IntegralSize<TIntegralTag>(
+            std::max(origin.x + size.width, other.x + 1) - newOrigin.x,
+            std::max(origin.y + size.height, other.y + 1) - newOrigin.y);
+
+        assert(newSize.width >= 0 && newSize.height >= 0);
+
+        origin = newOrigin;
+        size = newSize;
+    }
+
     void UnionWith(_IntegralRect<TIntegralTag> const & other)
     {
         auto const newOrigin = _IntegralCoordinates<TIntegralTag>(

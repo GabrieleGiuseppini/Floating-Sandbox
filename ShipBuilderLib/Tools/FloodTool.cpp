@@ -59,7 +59,7 @@ FloodTool<TLayerType>::FloodTool(
         workbenchState,
         userInterface,
         view)
-    , mCursorImage(WxHelpers::LoadCursorImage("flood_tool_cursor", 21, 31, resourceLocator))
+    , mCursorImage(WxHelpers::LoadCursorImage("flood_tool_cursor", 12, 29, resourceLocator))
 {
     SetCursor(mCursorImage);
 }

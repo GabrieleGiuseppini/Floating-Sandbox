@@ -35,13 +35,33 @@ TEST_P(IntegralRect_IsContainedInRect, IntegralRect_IsContainedInRect)
     EXPECT_EQ(result, std::get<2>(GetParam()));
 }
 
-class IntegralRect_Union : public testing::TestWithParam<std::tuple<IntegralRect, IntegralRect, IntegralRect>>
+class IntegralRect_UnionWithCoords : public testing::TestWithParam<std::tuple<IntegralRect, IntegralCoordinates, IntegralRect>>
 {
 };
 
 INSTANTIATE_TEST_SUITE_P(
     IntegralSystemTests,
-    IntegralRect_Union,
+    IntegralRect_UnionWithCoords,
+    ::testing::Values(
+        std::make_tuple<IntegralRect, IntegralCoordinates, IntegralRect>({ {3, 4}, {4, 4} }, {3, 4}, { {3, 4}, {4, 4} }),
+        std::make_tuple<IntegralRect, IntegralCoordinates, IntegralRect>({ {3, 4}, {4, 4} }, {2, 3}, { {2, 3}, {5, 5} }),
+        std::make_tuple<IntegralRect, IntegralCoordinates, IntegralRect>({ {3, 4}, {4, 4} }, {7, 8}, { {3, 4}, {5, 5} })
+    ));
+
+TEST_P(IntegralRect_UnionWithCoords, IntegralRect_UnionWithCoords)
+{
+    auto rect1 = std::get<0>(GetParam());
+    rect1.UnionWith(std::get<1>(GetParam()));
+    EXPECT_EQ(rect1, std::get<2>(GetParam()));
+}
+
+class IntegralRect_UnionWithRect : public testing::TestWithParam<std::tuple<IntegralRect, IntegralRect, IntegralRect>>
+{
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    IntegralSystemTests,
+    IntegralRect_UnionWithRect,
     ::testing::Values(
         std::make_tuple<IntegralRect, IntegralRect, IntegralRect>({ {3, 4}, {4, 4} }, { {3, 4}, {4, 4} }, { {3, 4}, {4, 4} }),
         std::make_tuple<IntegralRect, IntegralRect, IntegralRect>({ {3, 4}, {4, 4} }, { {4, 5}, {1, 1} }, { {3, 4}, {4, 4} }),
@@ -51,7 +71,7 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple<IntegralRect, IntegralRect, IntegralRect>({ {3, 4}, {4, 4} }, { {2, 3}, {8, 8} }, { {2, 3}, {8, 8} })
     ));
 
-TEST_P(IntegralRect_Union, IntegralRect_Union)
+TEST_P(IntegralRect_UnionWithRect, IntegralRect_UnionWithRect)
 {
     auto rect1 = std::get<0>(GetParam());
     rect1.UnionWith(std::get<1>(GetParam()));

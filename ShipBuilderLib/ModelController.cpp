@@ -6,6 +6,7 @@
 #include "ModelController.h"
 
 #include <cassert>
+#include <queue>
 
 namespace ShipBuilder {
 
@@ -173,8 +174,71 @@ std::optional<ShipSpaceRect> ModelController::StructuralRegionFlood(
     ShipSpaceCoordinates const & start,
     StructuralMaterial const * material)
 {
-    // TODOHERE
-    return std::nullopt;
+    auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
+
+    StructuralMaterial const * const materialToFlood = structuralLayerBuffer[start].Material;
+
+    if (material == materialToFlood)
+    {
+        // Nop
+        return std::nullopt;
+    }
+
+    //
+    // Init visit from this point
+    //
+
+    ShipSpaceRect affectedRect(start);
+
+    std::queue<ShipSpaceCoordinates> pointsToPropagateFrom;
+    pointsToPropagateFrom.push(start);
+
+    //
+    // Propagate from this point
+    //
+
+    ShipSpaceSize const shipSize = mModel.GetShipSize();
+
+    while (!pointsToPropagateFrom.empty())
+    {
+        // Pop point that we have to propagate from
+        auto const currentPoint = pointsToPropagateFrom.front();
+        pointsToPropagateFrom.pop();
+
+        // Visit point
+        WriteStructuralParticle(currentPoint, material);
+        affectedRect.UnionWith(currentPoint);
+
+        // Push neighbors
+
+        ShipSpaceCoordinates neighborCoords = { currentPoint.x - 1, currentPoint.y };
+        if (neighborCoords.IsInSize(shipSize) && structuralLayerBuffer[neighborCoords].Material == materialToFlood)
+        {
+            pointsToPropagateFrom.push(neighborCoords);
+        }
+
+        neighborCoords = { currentPoint.x + 1, currentPoint.y };
+        if (neighborCoords.IsInSize(shipSize) && structuralLayerBuffer[neighborCoords].Material == materialToFlood)
+        {
+            pointsToPropagateFrom.push(neighborCoords);
+        }
+
+        neighborCoords = { currentPoint.x, currentPoint.y - 1};
+        if (neighborCoords.IsInSize(shipSize) && structuralLayerBuffer[neighborCoords].Material == materialToFlood)
+        {
+            pointsToPropagateFrom.push(neighborCoords);
+        }
+
+        neighborCoords = { currentPoint.x, currentPoint.y + 1};
+        if (neighborCoords.IsInSize(shipSize) && structuralLayerBuffer[neighborCoords].Material == materialToFlood)
+        {
+            pointsToPropagateFrom.push(neighborCoords);
+        }
+    }
+
+    LogMessage("TODOTEST: Flooded; rect=", affectedRect.ToString());
+
+    return affectedRect;
 }
 
 void ModelController::RestoreStructuralLayer(
