@@ -206,6 +206,10 @@ private:
 
     void DeviateFocus();
 
+    float OtherLayersOpacitySliderToOpacity(int sliderValue);
+
+    int OtherLayersOpacityToSlider(float opacityValue);
+
     //
     // UI Consistency
     //

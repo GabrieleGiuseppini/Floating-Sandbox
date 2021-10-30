@@ -27,10 +27,10 @@ View::View(
     , mHasBackgroundTexture(false)
     , mHasStructuralTexture(false)
     , mHasElectricalTexture(false)
+    , mOtherLayersOpacity(0.75f)
     , mIsGridEnabled(false)
     //////////////////////////////////
     , mPrimaryLayer(LayerType::Structural)
-    , mOtherLayersOpacity(1.0f)
 {
     //
     // Initialize global OpenGL settings

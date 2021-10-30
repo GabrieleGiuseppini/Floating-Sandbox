@@ -116,6 +116,11 @@ public:
         mPrimaryLayer = value;
     }
 
+    float GetOtherLayersOpacity() const
+    {
+        return mOtherLayersOpacity;
+    }
+
     void SetOtherLayersOpacity(float value)
     {
         mOtherLayersOpacity = value;
@@ -266,17 +271,19 @@ private:
     GameOpenGLTexture mElectricalTextureOpenGLHandle;
     bool mHasElectricalTexture;
 
+    // Layers opacity
+    float mOtherLayersOpacity;
+
     // Grid
     GameOpenGLVAO mGridVAO;
     GameOpenGLVBO mGridVBO;
     bool mIsGridEnabled;
 
     //
-    // Settings
+    // Settings from outside
     //
 
     LayerType mPrimaryLayer;
-    float mOtherLayersOpacity;
 };
 
 }

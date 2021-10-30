@@ -45,9 +45,7 @@ int constexpr ButtonMargin = 4;
 
 ImageSize constexpr MaterialSwathSize(80, 100);
 
-int const MinLayerTransparency = 0;
-int constexpr MaxLayerTransparency = 100;
-
+int constexpr MaxLayerTransparency = 128;
 
 MainFrame::MainFrame(
     wxApp * mainApp,
@@ -462,6 +460,11 @@ MainFrame::MainFrame(
     mView->UploadBackgroundTexture(
         ImageFileTools::LoadImageRgba(
             mResourceLocator.GetBitmapFilePath("shipbuilder_background")));
+
+    // Sync UI with view parameters
+
+    mOtherLayersOpacitySlider->SetValue(
+        OtherLayersOpacityToSlider(mView->GetOtherLayersOpacity()));
 }
 
 void MainFrame::OpenForNewShip()
@@ -1205,20 +1208,15 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
             // Other layers opacity slider
             {
-                mOtherLayersOpacitySlider = new wxSlider(panel, wxID_ANY, (MinLayerTransparency + MaxLayerTransparency) / 2, MinLayerTransparency, MaxLayerTransparency,
+                mOtherLayersOpacitySlider = new wxSlider(panel, wxID_ANY, 0, 0, MaxLayerTransparency,
                     wxDefaultPosition, wxDefaultSize, wxSL_VERTICAL | wxSL_INVERSE);
 
                 mOtherLayersOpacitySlider->Bind(
                     wxEVT_SLIDER,
                     [this](wxCommandEvent & /*event*/)
                     {
-                        float const opacity =
-                            static_cast<float>(mOtherLayersOpacitySlider->GetValue() - MinLayerTransparency)
-                            / static_cast<float>(MaxLayerTransparency - MinLayerTransparency);
-
-                        LogMessage("TODOTEST: ", opacity);
-
                         assert(mController);
+                        float const opacity = OtherLayersOpacitySliderToOpacity(mOtherLayersOpacitySlider->GetValue());
                         mController->SetOtherLayersOpacity(opacity);
                     });
 
@@ -2483,6 +2481,23 @@ void MainFrame::DeviateFocus()
     // Set focus on primary layer buttn
     uint32_t const iPrimaryLayer = static_cast<uint32_t>(mController->GetPrimaryLayer());
     mLayerSelectButtons[iPrimaryLayer]->SetFocus();
+}
+
+float MainFrame::OtherLayersOpacitySliderToOpacity(int sliderValue)
+{
+    float const opacity =
+        static_cast<float>(sliderValue)
+        / static_cast<float>(MaxLayerTransparency);
+
+    return opacity;
+}
+
+int MainFrame::OtherLayersOpacityToSlider(float opacityValue)
+{
+    int const sliderValue = static_cast<int>(
+        opacityValue * static_cast<float>(MaxLayerTransparency));
+
+    return sliderValue;
 }
 
 void MainFrame::ReconciliateUI()

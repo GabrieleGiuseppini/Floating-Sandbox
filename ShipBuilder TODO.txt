@@ -101,21 +101,30 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ PencilTool + Undo
 			+ Instance ID assignment
 		+ Make sure loading a ship w/legacy electricals makes up an electrical layer, and saving it saves the electricals
-	- Try: do not make line if instanced electrical element
+	+ Try: do not make line if instanced electrical element
 	= View: other layers' opacity  (NO visualization type! (yet))
 		+ View::Set...: stores member
 		+ Set param in shader at each use of the shader (i.e. at each layer rendering)
 			+ Based on mPrimaryLayer
 				+ Do setter and call setter from Controller, prior to visualization update
 		+ Controller must refresh (just) rendering (not whole ModelController visualization!)
-		- See TODOTEST log for opacity float value
-		- Fix (initial) sync of opacity between UI and controller
-			- TODOHERE: Where is storage?
-			- Then see how to pass primary layer
+		+ Primary layer dynamics:
+			+ Storage @ Controller				
+			+ Controller::cctor sets it in view
+			+ Controller::ChangePrimaryLayer: also set in view
+		+ OtherLayersOpacity dynamics:
+			+ Storage at view
+				+ View has it among uploaded
+			+ MainFrame: @ view creation: set value on slider, via OtherLayersOpacitySliderToOpacity
+			+ MainFrame: @slider change: set value on Controller, via OtherLayersOpacityToSlider
+				+ Controller::SetOtherLayersOpacity: sets also in view
+			+ See TODOTEST log for opacity values
 		- StructuralLayer: no white BG? Then need BG @ View
+			- Shader: need to take pixel step parameter
+		
 
-- Require structure behind fill? - Yes, later at validations, write from Moleskine in own section
-
++ See broken Undo
+- Yellow at materials
 - At selection of new primary layer (in Controller): select first tool
 
 - Eraser square?
@@ -125,7 +134,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 = UnderConstructionDialog
 	- Do at remaining layer buttons
 
-- Mattia makes ship
+= Mattia makes ship
+	+ YouTube
+	- GameJolt post
 
 - Tests:
 	- Ships with unicode chars in metadata, show well in dialog
@@ -451,6 +462,38 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Texture, when present, has own on top of the others
 		- Matte
 		- With structural mesh
+
+- Validations:
+	! Overview:
+		! Validations may either be run by user, or run automatically before saving
+		! Errors prevent ship from being saved
+		! Some validations also run continuously
+	- Impl:
+		- Controller keeps track of whether or not model has ever been dirty since the last validation has run
+			- mIsModelDirtyWrtValidation, set to F @ cctor, set to T @ each model dirty
+		- MainFrame checks it @ Save/SaveAs and, if dirty, calls Controller::ValidateModel() -> ModelValidationResults
+			- Controller then clears mIsModelDirtyWrtValidation
+		- User can push button as well; thread 4 UI progress
+			- MainFrame calls Controller::ValidateModel from thread (@ both button and save's) for UI progress
+		- ModelValidationResults:
+			- Errors: vector<ModelValidationIssue>
+			- Warnings: vector<ModelValidationIssue>
+		- ModelValidationIssue:
+			- Type
+			- AffectedLocii: vector<ShipSpaceCoords>
+		- 2 issue contributors:
+			- ModelController::ValidateModel() -> ModelValidationResults
+				- Clear mValidationResults
+				- Run all validations
+			- Running analyses
+				- Use ModelController's analysis members (counters, etc.) to detect an issue type appearing or disappearing
+				  as the user edits
+				- Looks in mValResults to check/update already-existing issue
+				- Notification to IUserInterface: via Controller/Tool, but only when a change occurs (TODOHERE)
+		- UI:
+			- Validate button
+				- Enabled iff model dirty wrt validation
+			- Drop-down to highlight issue-specific points
 
 - Ubuntu:
 	- Test User Ships folder

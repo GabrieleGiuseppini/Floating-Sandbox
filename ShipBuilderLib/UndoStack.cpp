@@ -35,9 +35,9 @@ void UndoStack::Push(std::unique_ptr<UndoAction> && undoAction)
     // Trim stack if too big
     while (mStack.size() > MaxEntries || mTotalCost > MaxCost)
     {
-        assert(mTotalCost >= mStack.back()->GetCost());
-        mTotalCost -= mStack.back()->GetCost();
-        mStack.pop_back();
+        assert(mTotalCost >= mStack.front()->GetCost());
+        mTotalCost -= mStack.front()->GetCost();
+        mStack.pop_front();
     }
 }
 
