@@ -298,7 +298,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": "#EEEEEE",
+        "color_key": ["#EEEEEE", "#ff8940", "#fff454", "#cfb891", "#58cc56", "#3bf2ff", "#2617ff", "#dc14ff", "#ff8214", "#525252"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1000000.0,
         "is_hull": false,
@@ -313,7 +313,6 @@
 		"sub_category": "Aluminium Cheap",
 		"sub_category_ordinal": 0
 	},
-        "render_color": "#EEEEEE",
         "sound_type": "Metal",
         "specific_heat": 897.0,
         "stiffness": 1.0,
@@ -581,7 +580,7 @@
     },
 
     {
-        "color_key": "#C0C0C0",
+        "color_key": ["#C0C0C0", "#e03636", "#e7eb81", "#c49300", "#30cf00", "#81f8fc", "#2130ff", "#c61bfa", "#f78543", "#383432"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1000000.0,
         "is_hull": true,
@@ -596,7 +595,6 @@
 		"sub_category": "Aluminium Sheet Hull",
 		"sub_category_ordinal": 0
 	},
-        "render_color": "#C0C0C0",
         "sound_type": "Metal",
         "specific_heat": 897.0,
         "stiffness": 0.5,
@@ -609,7 +607,7 @@
         "buoyancy_volume_fill": 0.0
     },
     {
-        "color_key": "#D0D0D0",
+        "color_key": ["#D0D0D0", "#ff5340", "#f5f752", "#ffa200", "#76ff61", "#94fff4", "#2469ff", "#bd35fc", "#ff8a24", "#525150"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1000000.0,
         "is_hull": false,
@@ -624,7 +622,6 @@
 		"sub_category": "Aluminium Sheet",
 		"sub_category_ordinal": 0
 	},
-        "render_color": "#D0D0D0",
         "sound_type": "Metal",
         "specific_heat": 897.0,
         "stiffness": 0.5,
