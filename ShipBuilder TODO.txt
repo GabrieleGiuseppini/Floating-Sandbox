@@ -122,12 +122,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- StructuralLayer: no white BG? Then need BG @ View
 			- Shader: need to take pixel step parameter
 
-= Flood tool
-	+ Tool
-		+ Not for instanced
-			+ UserInterface::OnError
-	= ModelController::Flood
-		- Remember visited
++ Flood tool
 		
 
 + See broken Undo

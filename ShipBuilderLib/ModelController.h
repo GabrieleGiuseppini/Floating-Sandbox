@@ -75,7 +75,7 @@ public:
         ShipSpaceRect const & region,
         StructuralMaterial const * material);
 
-    std::optional<ShipSpaceRect> StructuralRegionFlood(
+    std::optional<ShipSpaceRect> StructuralFlood(
         ShipSpaceCoordinates const & start,
         StructuralMaterial const * material);
 
@@ -105,7 +105,7 @@ public:
         ShipSpaceRect const & region,
         ElectricalMaterial const * material);
 
-    std::optional<ShipSpaceRect> ElectricalRegionFlood(
+    std::optional<ShipSpaceRect> ElectricalFlood(
         ShipSpaceCoordinates const & start,
         ElectricalMaterial const * material);
 
@@ -158,7 +158,7 @@ private:
         ElectricalMaterial const * material);
 
     template<LayerType TLayer>
-    std::optional<ShipSpaceRect> RegionFlood(
+    std::optional<ShipSpaceRect> Flood(
         ShipSpaceCoordinates const & start,
         typename LayerTypeTraits<TLayer>::material_type const * material,
         typename LayerTypeTraits<TLayer>::layer_data_type const & layer);

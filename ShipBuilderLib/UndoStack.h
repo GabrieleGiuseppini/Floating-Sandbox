@@ -115,9 +115,7 @@ public:
 
 private:
 
-    // TODOTEST
-    //static size_t constexpr MaxEntries = 20;
-    static size_t constexpr MaxEntries = 3;
+    static size_t constexpr MaxEntries = 20;
     static size_t constexpr MaxCost = (1000 * 1000) * 20;
 
     std::deque<std::unique_ptr<UndoAction>> mStack;

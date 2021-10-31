@@ -106,7 +106,7 @@ void FloodTool<TLayer>::DoEdit(
     std::optional<ShipSpaceRect> affectedRegion;
     if constexpr (TLayer == LayerType::Structural)
     {
-        affectedRegion = mModelController.StructuralRegionFlood(
+        affectedRegion = mModelController.StructuralFlood(
             mouseCoordinates,
             floodMaterial);
     }
@@ -121,7 +121,7 @@ void FloodTool<TLayer>::DoEdit(
         }
         else
         {
-            affectedRegion = mModelController.ElectricalRegionFlood(
+            affectedRegion = mModelController.ElectricalFlood(
                 mouseCoordinates,
                 floodMaterial);
         }
@@ -136,7 +136,7 @@ void FloodTool<TLayer>::DoEdit(
         auto undoAction = std::make_unique<LayerRegionUndoAction<typename LayerTypeTraits<TLayer>::layer_data_type>>(
             _("Flood Tool"),
             std::move(layerDirtyStateClone),
-            std::move(*layerClone),
+            std::move(*clippedLayerClone),
             affectedRegion->origin);
 
         PushUndoAction(std::move(undoAction));

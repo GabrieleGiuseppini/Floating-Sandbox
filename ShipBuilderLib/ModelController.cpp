@@ -170,14 +170,33 @@ void ModelController::StructuralRegionFill(
     UpdateStructuralLayerVisualization(region);
 }
 
-std::optional<ShipSpaceRect> ModelController::StructuralRegionFlood(
+std::optional<ShipSpaceRect> ModelController::StructuralFlood(
     ShipSpaceCoordinates const & start,
     StructuralMaterial const * material)
 {
-    return RegionFlood<LayerType::Structural>(
+    assert(mModel.HasLayer(LayerType::Structural));
+
+    assert(!mIsStructuralLayerInEphemeralVisualization);
+
+    //
+    // Update model
+    //
+
+    std::optional<ShipSpaceRect> affectedRect = Flood<LayerType::Structural>(
         start,
         material,
         mModel.GetStructuralLayer());
+
+    if (affectedRect.has_value())
+    {
+        //
+        // Update visualization
+        //
+
+        UpdateStructuralLayerVisualization(*affectedRect);
+    }
+
+    return affectedRect;
 }
 
 void ModelController::RestoreStructuralLayer(
@@ -342,14 +361,33 @@ void ModelController::ElectricalRegionFill(
     UpdateElectricalLayerVisualization(region);
 }
 
-std::optional<ShipSpaceRect> ModelController::ElectricalRegionFlood(
+std::optional<ShipSpaceRect> ModelController::ElectricalFlood(
     ShipSpaceCoordinates const & start,
     ElectricalMaterial const * material)
 {
-    return RegionFlood<LayerType::Electrical>(
+    assert(mModel.HasLayer(LayerType::Electrical));
+
+    assert(!mIsElectricalLayerInEphemeralVisualization);
+
+    //
+    // Update model
+    //
+
+    std::optional<ShipSpaceRect> affectedRect = Flood<LayerType::Electrical>(
         start,
         material,
         mModel.GetElectricalLayer());
+
+    if (affectedRect.has_value())
+    {
+        //
+        // Update visualization
+        //
+
+        UpdateElectricalLayerVisualization(*affectedRect);
+    }
+
+    return affectedRect;
 }
 
 void ModelController::RestoreElectricalLayer(
@@ -434,26 +472,6 @@ void ModelController::RestoreElectricalLayerRegionForEphemeralVisualization(
         sourceLayerRegion.Buffer,
         sourceRegion,
         targetOrigin);
-
-    /* TODOOLD
-    // The source region is entirely in the source buffer
-    assert(sourceRegion.IsContainedInRect({ {0, 0}, sourceLayerRegion.Buffer.Size }));
-
-    // The target origin plus the region size are within this buffer
-    assert(ShipSpaceRect(targetOrigin, sourceRegion.size).IsContainedInRect({ {0, 0}, mModel.GetElectricalLayer().Buffer.Size }));
-
-    auto & sourceElectricalLayerBufferRegion = sourceLayerRegion.Buffer;
-    auto & targetElectricalLayerBuffer = mModel.GetElectricalLayer().Buffer;
-
-    for (int y = 0; y < sourceRegion.size.height; ++y)
-    {
-        for (int x = 0; x < sourceRegion.size.width; ++x)
-        {
-            targetElectricalLayerBuffer[{targetOrigin.x + x, targetOrigin.y + y }]
-                = sourceElectricalLayerBufferRegion[{sourceRegion.origin.x + x, sourceRegion.origin.y + y}];
-        }
-    }
-    */
 
     //
     // Update visualization
@@ -651,12 +669,13 @@ void ModelController::WriteParticle(
 }
 
 template<LayerType TLayer>
-std::optional<ShipSpaceRect> ModelController::RegionFlood(ShipSpaceCoordinates const & start,
+std::optional<ShipSpaceRect> ModelController::Flood(ShipSpaceCoordinates const & start,
     typename LayerTypeTraits<TLayer>::material_type const * material,
     typename LayerTypeTraits<TLayer>::layer_data_type const & layer)
 {
-    auto const * const materialToFlood = layer.Buffer[start].Material;
-    if (material == materialToFlood)
+    // Pick material to flood
+    auto const * const startMaterial = layer.Buffer[start].Material;
+    if (material == startMaterial)
     {
         // Nop
         return std::nullopt;
@@ -666,21 +685,27 @@ std::optional<ShipSpaceRect> ModelController::RegionFlood(ShipSpaceCoordinates c
     // Init visit from this point
     //
 
+    WriteParticle(start, material);
     ShipSpaceRect affectedRect(start);
 
     std::queue<ShipSpaceCoordinates> pointsToPropagateFrom;
     pointsToPropagateFrom.push(start);
 
     //
-    // Propagate from this point
+    // Propagate
     //
 
     ShipSpaceSize const shipSize = mModel.GetShipSize();
 
     auto const checkPropagateToNeighbor = [&](ShipSpaceCoordinates neighborCoords)
     {
-        if (neighborCoords.IsInSize(shipSize) && layer.Buffer[neighborCoords].Material == materialToFlood)
+        if (neighborCoords.IsInSize(shipSize) && layer.Buffer[neighborCoords].Material == startMaterial)
         {
+            // Visit point
+            WriteParticle(neighborCoords, material);
+            affectedRect.UnionWith(neighborCoords);
+
+            // Propagate from point
             pointsToPropagateFrom.push(neighborCoords);
         }
     };
@@ -690,10 +715,6 @@ std::optional<ShipSpaceRect> ModelController::RegionFlood(ShipSpaceCoordinates c
         // Pop point that we have to propagate from
         auto const currentPoint = pointsToPropagateFrom.front();
         pointsToPropagateFrom.pop();
-
-        // Visit point
-        WriteParticle(currentPoint, material);
-        affectedRect.UnionWith(currentPoint);
 
         // Push neighbors
         checkPropagateToNeighbor({ currentPoint.x - 1, currentPoint.y });
@@ -705,7 +726,6 @@ std::optional<ShipSpaceRect> ModelController::RegionFlood(ShipSpaceCoordinates c
     LogMessage("TODOTEST: Flooded; rect=", affectedRect.ToString());
 
     return affectedRect;
-
 }
 
 void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & region)
