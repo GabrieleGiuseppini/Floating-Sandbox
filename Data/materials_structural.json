@@ -761,7 +761,7 @@
     },
 
     {
-        "color_key": "#D80E02",
+        "color_key": ["#72797f", "#D80E02", "#b8b809", "#5c4000", "#77d93f", "#6ef0eb", "#2432ff", "#bd00fc", "#ffa724", "#141516"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1643.15,
         "is_hull": false,
@@ -770,13 +770,12 @@
             "nominal_mass": 7480
         },
         "melting_temperature": 1089.15,
-        "name": "Steel Red Cheap",
+        "name": "Steel Cheap",
 	"palette_coordinates": {
 		"category": "Metals",
 		"sub_category": "Steel Cheap",
 		"sub_category_ordinal": 0
 	},
-        "render_color": "#D80E02",
         "sound_type": "Metal",
         "specific_heat": 490.0,
         "stiffness": 1.0,
