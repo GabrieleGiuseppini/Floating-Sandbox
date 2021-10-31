@@ -1,7 +1,7 @@
 {
   "materials": [
     {
-        "color_key": ["#404050", "#840E00", "#806200", "#467B00", "#006A76", "#1B3261", "#860080", "#A84F00", "#111111"],
+        "color_key": ["#404050", "#840E00", "#DBCF4D", "#806200", "#467B00", "#006A76", "#1B3261", "#860080", "#A84F00", "#111111"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1783.15,
         "is_hull": true,
@@ -28,7 +28,7 @@
         "buoyancy_volume_fill": 0.0
     },
     {
-        "color_key": ["#303040", "#740200", "#705200", "#0BB02C", "#2798E3", "#030A8A", "#AD1DAB", "#AD5E1D", "#101112"],
+        "color_key": ["#303040", "#740200", "#FAEC57", "#705200", "#0BB02C", "#2798E3", "#030A8A", "#AD1DAB", "#AD5E1D", "#101112"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1783.15,
         "is_hull": false,
@@ -55,7 +55,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": ["#808090", "#9E0F00", "#997200", "#569200", "#00818C", "#203E74", "#9F009C", "#C85800", "#222222"],
+        "color_key": ["#808090", "#9E0F00", "#CFC344", "#997200", "#569200", "#00818C", "#203E74", "#9F009C", "#C85800", "#222222"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1783.15,
         "is_hull": false,
@@ -82,7 +82,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": ["#A0A0A0", "#A71000", "#A27A00", "#5A9B00", "#008A95", "#22437B", "#A900A7", "#D45B00", "#333333"],
+        "color_key": ["#A0A0A0", "#A71000", "#D9CE30", "#A27A00", "#5A9B00", "#008A95", "#22437B", "#A900A7", "#D45B00", "#333333"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1643.15,
         "is_hull": true,
@@ -109,7 +109,7 @@
         "buoyancy_volume_fill": 0.0
     },
     {
-        "color_key": ["#909090", "#950000", "#926A00", "#15BF5C", "#1597BF", "#020E57", "#5F0161", "#A6682B", "#121212"],
+        "color_key": ["#909090", "#950000", "#C9BC2C", "#926A00", "#15BF5C", "#1597BF", "#020E57", "#5F0161", "#A6682B", "#121212"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1643.15,
         "is_hull": false,
@@ -136,7 +136,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": ["#D8D8D8", "#D80E00", "#D29800", "#7BC800", "#00B6BF", "#2D58A0", "#D100D6", "#F26500", "#444444", "#262626"],
+        "color_key": ["#D8D8D8", "#D80E00", "#EDDE34", "#D29800", "#7BC800", "#00B6BF", "#2D58A0", "#D100D6", "#F26500", "#444444", "#262626"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1643.15,
         "is_hull": false,
@@ -163,7 +163,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": ["#565663", "#8F1F00", "#8B7A00", "#3C8400", "#00657E", "#1A2C66", "#93007B", "#BA7100", "#555555"],
+        "color_key": ["#565663", "#8F1F00", "#D4C520", "#8B7A00", "#3C8400", "#00657E", "#1A2C66", "#93007B", "#BA7100", "#555555"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1473.15,
         "is_hull": true,
@@ -190,7 +190,7 @@
         "buoyancy_volume_fill": 0.0
     },
     {
-        "color_key": ["#787896", "#BE1400", "#B88D00", "#66B100", "#009BA9", "#26498C", "#BF00BA", "#EF6B00", "#666666"],
+        "color_key": ["#787896", "#BE1400", "#F5E325", "#B88D00", "#66B100", "#009BA9", "#26498C", "#BF00BA", "#EF6B00", "#666666"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1473.15,
         "is_hull": false,
@@ -217,7 +217,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": ["#E0E0E0", "#A42E10", "#A29A10", "#76B210", "#10A29A", "#204060", "#972ea3", "#d97a1c", "#757575"],
+        "color_key": ["#E0E0E0", "#A42E10", "#DECC10", "#A29A10", "#76B210", "#10A29A", "#204060", "#972ea3", "#d97a1c", "#757575"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1000000.0,
         "is_hull": true,
@@ -244,7 +244,7 @@
         "buoyancy_volume_fill": 0.0
     },
     {
-        "color_key": "#C8C8C8",
+        "color_key": ["#C8C8C8", "#A12A08", "#DACA08", "#A09817", "#71B008", "#08A093", "#1B3E5A", "#922AA1", "#D47818", "#717171"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1000000.0,
         "is_hull": false,
@@ -259,7 +259,6 @@
 		"sub_category": "Structural Aluminium",
 		"sub_category_ordinal": 0
 	},
-        "render_color": "#C8C8C8",
         "sound_type": "Metal",
         "specific_heat": 897.0,
         "stiffness": 1.0,
@@ -272,7 +271,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": ["#EFEFEF", "#B22212", "#B2A012", "#88B810", "#10B2A0", "#305878", "#8A1988", "#C96D12", "#989898"],
+        "color_key": ["#EFEFEF", "#B22212", "#FFEA12", "#B2A012", "#88B810", "#10B2A0", "#305878", "#8A1988", "#C96D12", "#989898"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1000000.0,
         "is_hull": false,
@@ -791,7 +790,7 @@
     },
 
     {
-        "color_key": "#1F1F1F",
+        "color_key": ["#1F1F1F", "#f52c36", "#e6da3c", "#4a2e31", "#0b4728", "#379299", "#0f0187", "#54076e", "#bf4204", "#211f1e"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1783.15,
         "is_hull": false,
@@ -806,7 +805,6 @@
 		"sub_category": "Iron Cheap",
 		"sub_category_ordinal": 0
 	},
-        "render_color": "#1F1F1F",
         "sound_type": "Metal",
         "specific_heat": 449.0,
         "stiffness": 1.0,
@@ -880,7 +878,7 @@
     },
     
     {
-        "color_key": "#A21000",
+        "color_key": ["#7d7d7d", "#A21000", "#d9c73d", "#6b635a", "#039118", "#3dd4ca", "#1c0396", "#460569", "#f79a0f", "#0d0903"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1643.15,
         "is_hull": true,
@@ -889,13 +887,12 @@
             "nominal_mass": 6500
         },
         "melting_temperature": 1089.15,
-        "name": "Double-Bottom Steel Red",
+        "name": "Double-Bottom Steel",
 	"palette_coordinates": {
 		"category": "Metals",
 		"sub_category": "Double-Bottom Steel",
 		"sub_category_ordinal": 0
 	},
-        "render_color": "#A21000",
         "sound_type": "Metal",
         "specific_heat": 490.0,
         "stiffness": 1.0,
@@ -908,7 +905,7 @@
         "buoyancy_volume_fill": 0.0
     },
     {
-        "color_key": "#842005",
+        "color_key": ["#797877", "#842005", "#cccf3c", "#755331", "#06731d", "#1bc4c4", "#02099e", "#500a6e", "#c97916", "#30302f"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1473.15,
         "is_hull": true,
@@ -917,13 +914,12 @@
             "nominal_mass": 5000
         },
         "melting_temperature": 1941.15,
-        "name": "Double-Bottom Titanium Red",
+        "name": "Double-Bottom Titanium",
 	"palette_coordinates": {
 		"category": "Metals",
 		"sub_category": "Double-Bottom Titanium",
 		"sub_category_ordinal": 0
 	},
-        "render_color": "#842005",
         "sound_type": "Metal",
         "specific_heat": 523.0,
         "stiffness": 1.0,
@@ -936,7 +932,7 @@
         "buoyancy_volume_fill": 0.0
     },
     {
-        "color_key": "#7E0C00",
+        "color_key": ["#090B0E", "#7E0C00", "#ADA010", "#422d13", "#0f4519", "#5084ab", "#04385e", "#5f1075", "#ff945e", "#1c0b02"],
         "combustion_type": "Combustion",
         "ignition_temperature": 1783.15,
         "is_hull": true,
@@ -945,13 +941,12 @@
             "nominal_mass": 7500
         },
         "melting_temperature": 1588.15,
-        "name": "Double-Bottom Iron Red",
+        "name": "Double-Bottom Iron",
 	"palette_coordinates": {
 		"category": "Metals",
 		"sub_category": "Double-Bottom Iron",
 		"sub_category_ordinal": 0
 	},
-        "render_color": "#7E0C00",
         "sound_type": "Metal",
         "specific_heat": 449.0,
         "stiffness": 1.0,
@@ -964,7 +959,7 @@
         "buoyancy_volume_fill": 0.0
     },
     {
-        "color_key": "#9B3012",
+        "color_key": ["#0A0C0F", "#9B3012", "#a0a62b", "#753c13", "#15520b", "#17a8ad", "#180ea1", "#6318a1", "#ad6632", "#140024"],
         "combustion_type": "Combustion",
         "ignition_temperature": 453.0,
         "is_hull": true,
@@ -973,13 +968,12 @@
             "nominal_mass": 1600
         },
         "melting_temperature": 1000000.0,
-        "name": "Double-Bottom Wood Red",
+        "name": "Double-Bottom Wood",
 	"palette_coordinates": {
 		"category": "Wood",
 		"sub_category": "Double-Bottom Wood",
 		"sub_category_ordinal": 0
 	},
-        "render_color": "#9B3012",
         "sound_type": "Wood",
         "specific_heat": 300.0,
         "stiffness": 1.0,

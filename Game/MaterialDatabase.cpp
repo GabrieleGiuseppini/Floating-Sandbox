@@ -125,7 +125,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
             // Make sure there are no dupes
             if (structuralMaterialMap.count(colorKey) != 0)
             {
-                throw GameException("Structural material \"" + material.Name + "\" has a duplicate color key");
+                throw GameException("Color key \"" + Utils::RgbColor2Hex(colorKey) + "\" of structural material \"" + material.Name + "\" already belongs to another material");
             }
 
             // Store
