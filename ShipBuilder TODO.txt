@@ -1,131 +1,6 @@
 https://gamejolt.com/x/permalink/comment/11730705
 
-+ Default ship name (remove TODO)
-	+ Use date & time
-	+ Helper to make filename (in Utils)
-	+ Use it when opening SaveAs
 
-+ Eraser cursor
-
-= Electrical layer:
-	+ Load and Save at DeSerializer
-		+ Review MaterialDatabase's electrical material maps: make one map?
-			+ Test:
-				+ Load png ship with legacy electrical materials
-				+ Load .shp ship with instanced and non-instanced materials
-	+ Full electrical layer support, like structural
-		+ Model
-		+ ModelController
-		+ Controller
-		+ Undo
-		+ PencilTool
-		+ MainFrame
-			+ Hook load->Model
-			+ Hook Model->save
-			+ LayerPanel
-		+ View
-			+ Electrical texture parallel
-	+ PencilTool: 		
-		+ Fix instance index given to fill: strategy for instance ID assignment: fully assigned by ModelController
-			+ All primitives invoke internal WriteElectricalParticle(.)
-				+ Carefully compare before & after to retain instance ids, create new ones, or reclaim old ones			
-					! Strategy to ensure only consecutive IDs, OR only "initial" ones (even if scattered): use ElectricalElementInstanceIndexFactory, member of ModelController
-					+ Keep instance IDs in-sync:
-						+ ModelController cctor(def):
-							+ Visit electrical layer and register existing instance indices w/factory
-								+ Do in helper method, which also takes care of Factory::Reset()
-									+ "InitializeElectricalLayer()", sets and does the elec analysis initialization below
-							! Metadata::ElectricalPanelMetadata is already consistent
-						+ New:
-							+ Factory::Reset()
-						+ Set (Load): 
-							+ Visit electrical layer and register existing instance indices w/factory
-								+ Do in helper method, which also takes care of Factory::Reset()
-						+ Remove:
-							+ Factory::Reset()
-						+ ElectricalRegionFill						
-				+ Also keeps count of electrical particles (for later analysis)
-					+ Count initialized - via InitializeElectricalAnalysis() - at cctor,New,Set,Remove
-						+ InitializeElectricalAnalysis():
-							+ count = 0
-							+ if buffer != nullptr: count
-					+ Keep count updated
-				! Technically, also does running analysis
-				! Also takes care of electrical panel: new/removed/updated-type components								
-	+ Re-do:
-		! Spec:
-			! Temp visualization (Fill and Mend) should not update analyses, nor EPM, nor instance IDs
-			! Actual committed action (e.g. fill) should update analyses, EPM, and instance IDs
-			! Undo: should replace EPM as well, and re-initialize analyses
-		+ Impl:
-			+ ElectricalLayer contains ElectricalPanelMetadata
-				+ "LayerBuffer" -> "Layer" (source file name and type names)
-				+ Take map element and map using from GameTypes
-				+ Remove EPM from ShipMetadata
-				+ LegacyDeser: json is parsed in two phases
-				+ De/Ser:
-					+ ElectricalLayer has sub-tags (Buffer and ElectricalPanelMetadata)
-						+ Unit tests
-					+ String tag values?
-						+ 'S', 'T', 'C', '1' => S << 24 + T << 16 + C << 8 + '1'
-				+ ModelController:
-					+ cctor(def): make sure EPM is stored
-					+ New: make sure EPM is zerod
-					+ Set: make sure new EPM is stored
-					+ Remove: make sure EPM is nuked
-			+ UndoEntry of electrical must also contain whole ElectricalPanelMetadata
-				+ It's Layer + Origin
-				+ Should also fly with Structural
-			+ Fill and Mend/Replace are split in two:
-				+ FillElectricalLayerRegionForTempVisualization and RestoreElectricalLayerRegionForTempVisualization: 
-					+ Just populate layer buffer; do not update analyses, nor EPM, nor instance IDs
-					+ NOTE: "ForTempVisualization" -> ForEphemeralVisualization
-					+ Maintain boolean for asserting at Fill and at RestoreElectricalLayerRegionForTempVisualization
-				+ Fill:
-					+ Populates layer buffer, and updates analyses, EPM, and instance IDs
-						+ Via WriteElectricalParticle(.)
-				+ RestoreElectricalLayer: for undo only
-					+ Takes also EPM (simply by Layer, arg together with Origin)
-					+ Blits layer region
-					+ Re-initializes layer (analyses, and instance IDs - EPM already reset)
-					+ Replaces EPM in own layer (by move)
-					+ Args are by move
-				+ Replace(.) goes
-	+ Refactor StructuralRegionReplace in the same way (w/WriteStructuralParticle, mending/replace, etc.)
-		+ StructuralFill also takes material* instead of element
-		+ InitializeLayer & its calls
-	+ Tests:
-		+ Can load electrical in game, and has panel
-		+ PencilTool
-			+ Instance ID assignment
-		+ PencilTool + Undo
-			+ Instance ID assignment
-		+ Make sure loading a ship w/legacy electricals makes up an electrical layer, and saving it saves the electricals
-	+ Try: do not make line if instanced electrical element
-	= View: other layers' opacity  (NO visualization type! (yet))
-		+ View::Set...: stores member
-		+ Set param in shader at each use of the shader (i.e. at each layer rendering)
-			+ Based on mPrimaryLayer
-				+ Do setter and call setter from Controller, prior to visualization update
-		+ Controller must refresh (just) rendering (not whole ModelController visualization!)
-		+ Primary layer dynamics:
-			+ Storage @ Controller				
-			+ Controller::cctor sets it in view
-			+ Controller::ChangePrimaryLayer: also set in view
-		+ OtherLayersOpacity dynamics:
-			+ Storage at view
-				+ View has it among uploaded
-			+ MainFrame: @ view creation: set value on slider, via OtherLayersOpacitySliderToOpacity
-			+ MainFrame: @slider change: set value on Controller, via OtherLayersOpacityToSlider
-				+ Controller::SetOtherLayersOpacity: sets also in view
-			+ See TODOTEST log for opacity values
-		- StructuralLayer: no white BG? Then need BG @ View
-			- Shader: need to take pixel step parameter
-
-+ Flood tool
-		
-
-+ See broken Undo
 - Yellow at materials
 - At selection of new primary layer (in Controller): select first tool
 	- Or remember tool per-layer
@@ -378,15 +253,16 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Settings: Size
 		+ Eraser (S, E)
 			+ Settings: Size
-		- Flood
-		- Selection
-			- Implements selection interaction and rendering of visual feedback *during the interaction only*
-			- Takes SelectionManager ref in its cctor, and populates it upon confirmation of selection made
+		+ Flood (S, E)
 		- Sample
 		- Line
 			- ESC to stop 
 		- Rectangle
 			- Settings: FillWithFore|FillWithBack|NoFill; Size
+			- ESC to stop
+		- Selection
+			- Implements selection interaction and rendering of visual feedback *during the interaction only*
+			- Takes SelectionManager ref in its cctor, and populates it upon confirmation of selection made
 		- Ellipses
 		- Translate (aka move)
 	- SelectionManager pseudo-tool:
@@ -854,6 +730,130 @@ DONE
 			+ Anchor
 	+ Structural Eraser tool:
 		+ Reuse pencil tool, with extra template arg
+
++ Default ship name (remove TODO)
+	+ Use date & time
+	+ Helper to make filename (in Utils)
+	+ Use it when opening SaveAs
+
++ Eraser cursor
+
++ Electrical layer:
+	+ Load and Save at DeSerializer
+		+ Review MaterialDatabase's electrical material maps: make one map?
+			+ Test:
+				+ Load png ship with legacy electrical materials
+				+ Load .shp ship with instanced and non-instanced materials
+	+ Full electrical layer support, like structural
+		+ Model
+		+ ModelController
+		+ Controller
+		+ Undo
+		+ PencilTool
+		+ MainFrame
+			+ Hook load->Model
+			+ Hook Model->save
+			+ LayerPanel
+		+ View
+			+ Electrical texture parallel
+	+ PencilTool: 		
+		+ Fix instance index given to fill: strategy for instance ID assignment: fully assigned by ModelController
+			+ All primitives invoke internal WriteElectricalParticle(.)
+				+ Carefully compare before & after to retain instance ids, create new ones, or reclaim old ones			
+					! Strategy to ensure only consecutive IDs, OR only "initial" ones (even if scattered): use ElectricalElementInstanceIndexFactory, member of ModelController
+					+ Keep instance IDs in-sync:
+						+ ModelController cctor(def):
+							+ Visit electrical layer and register existing instance indices w/factory
+								+ Do in helper method, which also takes care of Factory::Reset()
+									+ "InitializeElectricalLayer()", sets and does the elec analysis initialization below
+							! Metadata::ElectricalPanelMetadata is already consistent
+						+ New:
+							+ Factory::Reset()
+						+ Set (Load): 
+							+ Visit electrical layer and register existing instance indices w/factory
+								+ Do in helper method, which also takes care of Factory::Reset()
+						+ Remove:
+							+ Factory::Reset()
+						+ ElectricalRegionFill						
+				+ Also keeps count of electrical particles (for later analysis)
+					+ Count initialized - via InitializeElectricalAnalysis() - at cctor,New,Set,Remove
+						+ InitializeElectricalAnalysis():
+							+ count = 0
+							+ if buffer != nullptr: count
+					+ Keep count updated
+				! Technically, also does running analysis
+				! Also takes care of electrical panel: new/removed/updated-type components								
+	+ Re-do:
+		! Spec:
+			! Temp visualization (Fill and Mend) should not update analyses, nor EPM, nor instance IDs
+			! Actual committed action (e.g. fill) should update analyses, EPM, and instance IDs
+			! Undo: should replace EPM as well, and re-initialize analyses
+		+ Impl:
+			+ ElectricalLayer contains ElectricalPanelMetadata
+				+ "LayerBuffer" -> "Layer" (source file name and type names)
+				+ Take map element and map using from GameTypes
+				+ Remove EPM from ShipMetadata
+				+ LegacyDeser: json is parsed in two phases
+				+ De/Ser:
+					+ ElectricalLayer has sub-tags (Buffer and ElectricalPanelMetadata)
+						+ Unit tests
+					+ String tag values?
+						+ 'S', 'T', 'C', '1' => S << 24 + T << 16 + C << 8 + '1'
+				+ ModelController:
+					+ cctor(def): make sure EPM is stored
+					+ New: make sure EPM is zerod
+					+ Set: make sure new EPM is stored
+					+ Remove: make sure EPM is nuked
+			+ UndoEntry of electrical must also contain whole ElectricalPanelMetadata
+				+ It's Layer + Origin
+				+ Should also fly with Structural
+			+ Fill and Mend/Replace are split in two:
+				+ FillElectricalLayerRegionForTempVisualization and RestoreElectricalLayerRegionForTempVisualization: 
+					+ Just populate layer buffer; do not update analyses, nor EPM, nor instance IDs
+					+ NOTE: "ForTempVisualization" -> ForEphemeralVisualization
+					+ Maintain boolean for asserting at Fill and at RestoreElectricalLayerRegionForTempVisualization
+				+ Fill:
+					+ Populates layer buffer, and updates analyses, EPM, and instance IDs
+						+ Via WriteElectricalParticle(.)
+				+ RestoreElectricalLayer: for undo only
+					+ Takes also EPM (simply by Layer, arg together with Origin)
+					+ Blits layer region
+					+ Re-initializes layer (analyses, and instance IDs - EPM already reset)
+					+ Replaces EPM in own layer (by move)
+					+ Args are by move
+				+ Replace(.) goes
+	+ Refactor StructuralRegionReplace in the same way (w/WriteStructuralParticle, mending/replace, etc.)
+		+ StructuralFill also takes material* instead of element
+		+ InitializeLayer & its calls
+	+ Tests:
+		+ Can load electrical in game, and has panel
+		+ PencilTool
+			+ Instance ID assignment
+		+ PencilTool + Undo
+			+ Instance ID assignment
+		+ Make sure loading a ship w/legacy electricals makes up an electrical layer, and saving it saves the electricals
+	+ Try: do not make line if instanced electrical element
+	+ View: other layers' opacity  (NO visualization type! (yet))
+		+ View::Set...: stores member
+		+ Set param in shader at each use of the shader (i.e. at each layer rendering)
+			+ Based on mPrimaryLayer
+				+ Do setter and call setter from Controller, prior to visualization update
+		+ Controller must refresh (just) rendering (not whole ModelController visualization!)
+		+ Primary layer dynamics:
+			+ Storage @ Controller				
+			+ Controller::cctor sets it in view
+			+ Controller::ChangePrimaryLayer: also set in view
+		+ OtherLayersOpacity dynamics:
+			+ Storage at view
+				+ View has it among uploaded
+			+ MainFrame: @ view creation: set value on slider, via OtherLayersOpacitySliderToOpacity
+			+ MainFrame: @slider change: set value on Controller, via OtherLayersOpacityToSlider
+				+ Controller::SetOtherLayersOpacity: sets also in view
+			+ See TODOTEST log for opacity values
+		+ StructuralLayer: no white BG? Then need BG @ View
+			+ Shader: need to take pixel step parameter
+
++ Flood tool
 
 ----------------------
 

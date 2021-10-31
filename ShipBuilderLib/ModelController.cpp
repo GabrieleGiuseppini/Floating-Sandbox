@@ -743,9 +743,9 @@ void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & r
 
     // Update visualization
 
-    // TODO: check current visualization settings and decide how to visualize
+    // CODEWORK: check current visualization settings and decide how to visualize
 
-    rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 255); // Fully opaque
+    rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 0); // Fully transparent
 
     auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
     RgbaImageData & structuralRenderColorTexture = *mStructuralLayerVisualizationTexture;

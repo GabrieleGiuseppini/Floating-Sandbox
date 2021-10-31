@@ -18,7 +18,7 @@ namespace ShipBuilder {
 
 enum class ProgramType
 {
-    CanvasBorder = 0,
+    Canvas = 0,
     Grid,
     Texture,
     TextureNdc,
@@ -34,6 +34,7 @@ enum class ProgramParameterType : uint8_t
 {
     Opacity = 0,
     OrthoMatrix,
+    PixelSize,
     PixelStep,
 
     // Texture units
@@ -53,7 +54,7 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter);
  */
 enum class VertexAttributeType : GLuint
 {
-    CanvasBorder = 0,
+    Canvas = 0,
     Grid,
     Texture,
     TextureNdc

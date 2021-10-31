@@ -15,8 +15,8 @@ namespace ShipBuilder {
 ProgramType ShaderFilenameToProgramType(std::string const & str)
 {
     std::string lstr = Utils::ToLower(str);
-    if (lstr == "canvas_border")
-        return ProgramType::CanvasBorder;
+    if (lstr == "canvas")
+        return ProgramType::Canvas;
     else if (lstr == "grid")
         return ProgramType::Grid;
     else if (lstr == "texture")
@@ -31,8 +31,8 @@ std::string ProgramTypeToStr(ProgramType program)
 {
     switch (program)
     {
-        case ProgramType::CanvasBorder:
-            return "CanvasBorder";
+        case ProgramType::Canvas:
+            return "Canvas";
         case ProgramType::Grid:
             return "Grid";
         case ProgramType::Texture:
@@ -51,6 +51,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::Opacity;
     else if (str == "OrthoMatrix")
         return ProgramParameterType::OrthoMatrix;
+    else if (str == "PixelSize")
+        return ProgramParameterType::PixelSize;
     else if (str == "PixelStep")
         return ProgramParameterType::PixelStep;
     else if (str == "BackgroundTextureUnit")
@@ -69,6 +71,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
             return "Opacity";
         case ProgramParameterType::OrthoMatrix:
             return "OrthoMatrix";
+        case ProgramParameterType::PixelSize:
+            return "PixelSize";
         case ProgramParameterType::PixelStep:
             return "PixelStep";
         case ProgramParameterType::BackgroundTextureUnit:
@@ -83,8 +87,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str)
 {
-    if (Utils::CaseInsensitiveEquals(str, "CanvasBorder"))
-        return VertexAttributeType::CanvasBorder;
+    if (Utils::CaseInsensitiveEquals(str, "Canvas"))
+        return VertexAttributeType::Canvas;
     else if (Utils::CaseInsensitiveEquals(str, "Grid"))
         return VertexAttributeType::Grid;
     else if (Utils::CaseInsensitiveEquals(str, "Texture"))

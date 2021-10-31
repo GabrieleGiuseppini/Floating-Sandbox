@@ -270,7 +270,7 @@ private:
 
     // Constants
     static int constexpr MaxZoom = 6;
-    static int constexpr MinZoom = -3;
+    static int constexpr MinZoom = -2;
     static int constexpr MarginDisplayShipSize = 1;
 
     // Primary inputs

@@ -107,7 +107,7 @@ View::View(
     }
 
     //
-    // Initialize canvas border VAO
+    // Initialize canvas VAO
     //
 
     {
@@ -115,18 +115,18 @@ View::View(
 
         // Create VAO
         glGenVertexArrays(1, &tmpGLuint);
-        mCanvasBorderVAO = tmpGLuint;
-        glBindVertexArray(*mCanvasBorderVAO);
+        mCanvasVAO = tmpGLuint;
+        glBindVertexArray(*mCanvasVAO);
         CheckOpenGLError();
 
         // Create VBO
         glGenBuffers(1, &tmpGLuint);
-        mCanvasBorderVBO = tmpGLuint;
+        mCanvasVBO = tmpGLuint;
 
         // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mCanvasBorderVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::CanvasBorder));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::CanvasBorder), 4, GL_FLOAT, GL_FALSE, sizeof(CanvasBorderVertex), (void *)0);
+        glBindBuffer(GL_ARRAY_BUFFER, *mCanvasVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Canvas));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Canvas), 4, GL_FLOAT, GL_FALSE, sizeof(CanvasVertex), (void *)0);
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -516,16 +516,16 @@ void View::Render()
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
-    // Canvas border
+    // Canvas
     {
         // Bind VAO
-        glBindVertexArray(*mCanvasBorderVAO);
+        glBindVertexArray(*mCanvasVAO);
 
         // Activate program
-        mShaderManager->ActivateProgram<ProgramType::CanvasBorder>();
+        mShaderManager->ActivateProgram<ProgramType::Canvas>();
 
         // Draw
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 10);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         CheckOpenGLError();
     }
 
@@ -599,10 +599,10 @@ void View::Render()
 void View::OnViewModelUpdated()
 {
     //
-    // Canvas border
+    // Canvas
     //
 
-    UpdateCanvasBorder();
+    UpdateCanvas();
 
     //
     // Grid
@@ -616,8 +616,8 @@ void View::OnViewModelUpdated()
 
     auto const orthoMatrix = mViewModel.GetOrthoMatrix();
 
-    mShaderManager->ActivateProgram<ProgramType::CanvasBorder>();
-    mShaderManager->SetProgramParameter<ProgramType::CanvasBorder, ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramType::Canvas>();
+    mShaderManager->SetProgramParameter<ProgramType::Canvas, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::Grid>();
@@ -629,11 +629,66 @@ void View::OnViewModelUpdated()
         orthoMatrix);
 }
 
-void View::UpdateCanvasBorder()
+void View::UpdateCanvas()
 {
     //
-    // Calculate vertex attributes
+    // Upload vertices
     //
+
+    // Calculate space size of 1 pixel
+    float const borderSize = mViewModel.GetShipSpaceForOnePhysicalDisplayPixel();
+
+    // Ship space size
+    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
+    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
+
+    std::array<CanvasVertex, 4> vertexBuffer;
+
+    // Left, Top
+    vertexBuffer[0] = CanvasVertex(
+        vec2f(-borderSize, shipHeight + borderSize),
+        vec2f(0.0f, 0.0f));
+
+    // Left, Bottom
+    vertexBuffer[1] = CanvasVertex(
+        vec2f(-borderSize, -borderSize),
+        vec2f(0.0f, 1.0f));
+
+    // Right, Top
+    vertexBuffer[2] = CanvasVertex(
+        vec2f(shipWidth + borderSize, shipHeight + borderSize),
+        vec2f(1.0f, 0.0f));
+
+    // Right, Bottom
+    vertexBuffer[3] = CanvasVertex(
+        vec2f(shipWidth + borderSize, -borderSize),
+        vec2f(1.0f, 1.0f));
+
+    // Upload vertices
+    glBindBuffer(GL_ARRAY_BUFFER, *mCanvasVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(CanvasVertex), vertexBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //
+    // Set pixel size parameter - normalized size (i.e. in the 0->1 space) of 1 pixel (w, h separately)
+    //
+
+    DisplayPhysicalSize const canvasPhysSize = mViewModel.ShipSpaceSizeToPhysicalDisplaySize({
+        static_cast<int>(shipWidth + 2.0f * borderSize),
+        static_cast<int>(shipHeight + 2.0f * borderSize) });
+
+    vec2f const pixelSize = vec2f(
+        1.0f / canvasPhysSize.width,
+        1.0f / canvasPhysSize.height);
+
+    mShaderManager->ActivateProgram<ProgramType::Canvas>();
+    mShaderManager->SetProgramParameter<ProgramType::Canvas, ProgramParameterType::PixelSize>(pixelSize.x, pixelSize.y);
+
+
+    // TODOOLD
+    /*
+
     // 0|8                   2
     //    1|9              3
     //
@@ -642,15 +697,6 @@ void View::UpdateCanvasBorder()
     //    7                5
     //  6                   4
     //
-
-    // Calculate space size of 1 pixel
-    float const borderWidth = mViewModel.GetShipSpaceForOnePhysicalDisplayPixel();
-
-    // Ship space size
-    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
-    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
-
-    std::array<CanvasBorderVertex, 10> vertexBuffer;
 
     // Top H line
 
@@ -715,6 +761,7 @@ void View::UpdateCanvasBorder()
     glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(CanvasBorderVertex), vertexBuffer.data(), GL_STATIC_DRAW);
     CheckOpenGLError();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    */
 }
 
 void View::UpdateGrid()
