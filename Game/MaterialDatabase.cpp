@@ -176,7 +176,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
             && entry.first.r == uniqueStructuralMaterials[RopeUniqueMaterialIndex].first.r
             && (entry.first.g & 0xF0) == (uniqueStructuralMaterials[RopeUniqueMaterialIndex].first.g & 0xF0))
         {
-            throw GameException("Structural material \"" + entry.second.Name + "\" has a color key that is reserved for ropes and rope endpoints");
+            throw GameException("Structural material \"" + entry.second.Name + "\" has a color key (\"" + Utils::RgbColor2Hex(entry.first) + "\") which is reserved for ropes and rope endpoints");
         }
     }
 

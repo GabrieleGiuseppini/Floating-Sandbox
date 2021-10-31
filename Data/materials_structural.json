@@ -381,7 +381,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": ["#D2D2D2", "#DD4523", "#FFE680", "#054C00", "#0C20D1", "#FF8000", "#060606"],
+        "color_key": ["#D2D2D2", "#DD4523", "#FFE680", "#7d5333", "#054C00", "#1d6f82", "#0C20D1", "#530a7d", "#FF8000", "#060606"],
         "combustion_type": "Combustion",
         "ignition_temperature": 393.15,
         "is_hull": false,
@@ -437,7 +437,7 @@
         "wind_receptivity": 0.2
     },
     {
-        "color_key": "#1A1A1A",
+        "color_key": ["#1A1A1A", "#540000", "#918f00", "#692a00", "#004215", "#003b3b", "#0c005c", "#3c0059", "#c74900"],
         "combustion_type": "Combustion",
         "ignition_temperature": 973.15,
         "is_hull": true,
@@ -452,7 +452,6 @@
 		"sub_category": "Carbon Hull",
 		"sub_category_ordinal": 0
 	},
-        "render_color": "#1A1A1A",
         "sound_type": "Wood",
         "specific_heat": 717.0,
         "stiffness": 1.0,
@@ -464,7 +463,7 @@
         "buoyancy_volume_fill": 0.0
     },
     {
-        "color_key": "#232323",
+        "color_key": ["#232323", "#d4262c", "#d6cf00", "#ad8a66", "#50d14b", "#49d1cf", "#3732d1", "#9d12c7", "#e3721b"],
         "combustion_type": "Combustion",
         "ignition_temperature": 973.15,
         "is_hull": false,
@@ -479,7 +478,6 @@
 		"sub_category": "Carbon",
 		"sub_category_ordinal": 0
 	},
-        "render_color": "#232323",
         "sound_type": "Wood",
         "specific_heat": 717.0,
         "stiffness": 1.0,
@@ -639,7 +637,7 @@
         "buoyancy_volume_fill": 1.0
     },
     {
-        "color_key": "#A88848",
+        "color_key": ["#5e5d5e", "#6e2820", "#e5e81c", "#A88848", "#0cc21e", "#16a4ba", "#010596", "#760094", "#944000", "#1c1612"],
         "combustion_type": "Combustion",
         "ignition_temperature": 491.15,
         "is_hull": true,
@@ -654,7 +652,6 @@
 		"sub_category": "Cardboard Hull",
 		"sub_category_ordinal": 0
 	},
-        "render_color": "#A88848",
 	"rust_receptivity": 10.0,
         "sound_type": "Wood",
         "specific_heat": 1336.0,
@@ -668,7 +665,7 @@
         "buoyancy_volume_fill": 0.0
     },
     {
-        "color_key": "#C1A46A",
+        "color_key": ["#878686", "#e02f2f", "#e6e20e", "#C1A46A", "#19e60e", "#0ee2e6", "#1b13f0", "#772f94", "#d66b1a", "#423b36"],
         "combustion_type": "Combustion",
         "ignition_temperature": 491.15,
         "is_hull": false,
@@ -683,7 +680,6 @@
 		"sub_category": "Cardboard",
 		"sub_category_ordinal": 0
 	},
-        "render_color": "#C1A46A",
 	"rust_receptivity": 10.0,
         "sound_type": "Wood",
         "specific_heat": 1336.0,
