@@ -114,9 +114,17 @@ void FloodTool<TLayer>::DoEdit(
     {
         static_assert(TLayer == LayerType::Electrical);
 
-        affectedRegion = mModelController.ElectricalRegionFlood(
-            mouseCoordinates,
-            floodMaterial);
+        if (floodMaterial->IsInstanced)
+        {
+            // Do not flood using instanced materials, that would make instance IDs explode
+            mUserInterface.OnError(_("The flood tool cannot be used with instanced electrical materials."));
+        }
+        else
+        {
+            affectedRegion = mModelController.ElectricalRegionFlood(
+                mouseCoordinates,
+                floodMaterial);
+        }
     }
 
     if (affectedRegion.has_value())

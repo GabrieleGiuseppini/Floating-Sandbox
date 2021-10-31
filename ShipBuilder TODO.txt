@@ -123,9 +123,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Shader: need to take pixel step parameter
 
 = Flood tool
-	= Tool
-		- Not for instanced
-			- UserInterface::OnError
+	+ Tool
+		+ Not for instanced
+			+ UserInterface::OnError
 	= ModelController::Flood
 		- Remember visited
 		

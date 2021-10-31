@@ -587,6 +587,11 @@ void MainFrame::OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coo
     mStatusBar->SetToolCoordinates(coordinates);
 }
 
+void MainFrame::OnError(wxString const & errorMessage) const
+{
+    wxMessageBox(errorMessage, _("Error"), wxICON_ERROR);
+}
+
 ShipSpaceCoordinates MainFrame::GetMouseCoordinates() const
 {
     wxMouseState const mouseState = wxGetMouseState();
@@ -1907,17 +1912,17 @@ void MainFrame::OnWorkCanvasLeftDown(wxMouseEvent & /*event*/)
         mWorkCanvas->SetFocus();
     }
 
-    if (mController)
-    {
-        mController->OnLeftMouseDown();
-    }
-
     // Hang on to the mouse for as long as the button is pressed
     if (!mIsMouseCapturedByWorkCanvas)
     {
         LogMessage("TODOTEST: Captured");
         mWorkCanvas->CaptureMouse();
         mIsMouseCapturedByWorkCanvas = true;
+    }
+
+    if (mController)
+    {
+        mController->OnLeftMouseDown();
     }
 }
 
@@ -1940,11 +1945,6 @@ void MainFrame::OnWorkCanvasLeftUp(wxMouseEvent & /*event*/)
 
 void MainFrame::OnWorkCanvasRightDown(wxMouseEvent & /*event*/)
 {
-    if (mController)
-    {
-        mController->OnRightMouseDown();
-    }
-
     // Hang on to the mouse for as long as the button is pressed
     if (!mIsMouseCapturedByWorkCanvas)
     {
@@ -1952,6 +1952,11 @@ void MainFrame::OnWorkCanvasRightDown(wxMouseEvent & /*event*/)
 
         mWorkCanvas->CaptureMouse();
         mIsMouseCapturedByWorkCanvas = true;
+    }
+
+    if (mController)
+    {
+        mController->OnRightMouseDown();
     }
 }
 

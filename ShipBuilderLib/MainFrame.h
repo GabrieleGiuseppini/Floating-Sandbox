@@ -98,6 +98,8 @@ public:
 
     void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates) override;
 
+    void OnError(wxString const & errorMessage) const override;
+
     ShipSpaceCoordinates GetMouseCoordinates() const override;
 
     std::optional<ShipSpaceCoordinates> GetMouseCoordinatesIfInWorkCanvas() const override;
@@ -315,7 +317,7 @@ private:
     // UI state
     //
 
-    bool mIsMouseCapturedByWorkCanvas;
+    bool mutable mIsMouseCapturedByWorkCanvas;
 
     //
     // State

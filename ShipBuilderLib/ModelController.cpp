@@ -159,7 +159,7 @@ void ModelController::StructuralRegionFill(
     {
         for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
         {
-            WriteStructuralParticle(ShipSpaceCoordinates(x, y), material);
+            WriteParticle(ShipSpaceCoordinates(x, y), material);
         }
     }
 
@@ -174,71 +174,10 @@ std::optional<ShipSpaceRect> ModelController::StructuralRegionFlood(
     ShipSpaceCoordinates const & start,
     StructuralMaterial const * material)
 {
-    auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
-
-    StructuralMaterial const * const materialToFlood = structuralLayerBuffer[start].Material;
-
-    if (material == materialToFlood)
-    {
-        // Nop
-        return std::nullopt;
-    }
-
-    //
-    // Init visit from this point
-    //
-
-    ShipSpaceRect affectedRect(start);
-
-    std::queue<ShipSpaceCoordinates> pointsToPropagateFrom;
-    pointsToPropagateFrom.push(start);
-
-    //
-    // Propagate from this point
-    //
-
-    ShipSpaceSize const shipSize = mModel.GetShipSize();
-
-    while (!pointsToPropagateFrom.empty())
-    {
-        // Pop point that we have to propagate from
-        auto const currentPoint = pointsToPropagateFrom.front();
-        pointsToPropagateFrom.pop();
-
-        // Visit point
-        WriteStructuralParticle(currentPoint, material);
-        affectedRect.UnionWith(currentPoint);
-
-        // Push neighbors
-
-        ShipSpaceCoordinates neighborCoords = { currentPoint.x - 1, currentPoint.y };
-        if (neighborCoords.IsInSize(shipSize) && structuralLayerBuffer[neighborCoords].Material == materialToFlood)
-        {
-            pointsToPropagateFrom.push(neighborCoords);
-        }
-
-        neighborCoords = { currentPoint.x + 1, currentPoint.y };
-        if (neighborCoords.IsInSize(shipSize) && structuralLayerBuffer[neighborCoords].Material == materialToFlood)
-        {
-            pointsToPropagateFrom.push(neighborCoords);
-        }
-
-        neighborCoords = { currentPoint.x, currentPoint.y - 1};
-        if (neighborCoords.IsInSize(shipSize) && structuralLayerBuffer[neighborCoords].Material == materialToFlood)
-        {
-            pointsToPropagateFrom.push(neighborCoords);
-        }
-
-        neighborCoords = { currentPoint.x, currentPoint.y + 1};
-        if (neighborCoords.IsInSize(shipSize) && structuralLayerBuffer[neighborCoords].Material == materialToFlood)
-        {
-            pointsToPropagateFrom.push(neighborCoords);
-        }
-    }
-
-    LogMessage("TODOTEST: Flooded; rect=", affectedRect.ToString());
-
-    return affectedRect;
+    return RegionFlood<LayerType::Structural>(
+        start,
+        material,
+        mModel.GetStructuralLayer());
 }
 
 void ModelController::RestoreStructuralLayer(
@@ -392,7 +331,7 @@ void ModelController::ElectricalRegionFill(
     {
         for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
         {
-            WriteElectricalParticle(ShipSpaceCoordinates(x, y), material);
+            WriteParticle(ShipSpaceCoordinates(x, y), material);
         }
     }
 
@@ -407,8 +346,10 @@ std::optional<ShipSpaceRect> ModelController::ElectricalRegionFlood(
     ShipSpaceCoordinates const & start,
     ElectricalMaterial const * material)
 {
-    // TODOHERE
-    return std::nullopt;
+    return RegionFlood<LayerType::Electrical>(
+        start,
+        material,
+        mModel.GetElectricalLayer());
 }
 
 void ModelController::RestoreElectricalLayer(
@@ -617,7 +558,7 @@ void ModelController::InitializeElectricalLayer()
     }
 }
 
-void ModelController::WriteStructuralParticle(
+void ModelController::WriteParticle(
     ShipSpaceCoordinates const & coords,
     StructuralMaterial const * material)
 {
@@ -630,7 +571,7 @@ void ModelController::WriteStructuralParticle(
     structuralLayerBuffer[coords] = StructuralElement(material);
 }
 
-void ModelController::WriteElectricalParticle(
+void ModelController::WriteParticle(
     ShipSpaceCoordinates const & coords,
     ElectricalMaterial const * material)
 {
@@ -707,6 +648,64 @@ void ModelController::WriteElectricalParticle(
 
     // Store
     electricalLayerBuffer[coords] = ElectricalElement(material, instanceIndex);
+}
+
+template<LayerType TLayer>
+std::optional<ShipSpaceRect> ModelController::RegionFlood(ShipSpaceCoordinates const & start,
+    typename LayerTypeTraits<TLayer>::material_type const * material,
+    typename LayerTypeTraits<TLayer>::layer_data_type const & layer)
+{
+    auto const * const materialToFlood = layer.Buffer[start].Material;
+    if (material == materialToFlood)
+    {
+        // Nop
+        return std::nullopt;
+    }
+
+    //
+    // Init visit from this point
+    //
+
+    ShipSpaceRect affectedRect(start);
+
+    std::queue<ShipSpaceCoordinates> pointsToPropagateFrom;
+    pointsToPropagateFrom.push(start);
+
+    //
+    // Propagate from this point
+    //
+
+    ShipSpaceSize const shipSize = mModel.GetShipSize();
+
+    auto const checkPropagateToNeighbor = [&](ShipSpaceCoordinates neighborCoords)
+    {
+        if (neighborCoords.IsInSize(shipSize) && layer.Buffer[neighborCoords].Material == materialToFlood)
+        {
+            pointsToPropagateFrom.push(neighborCoords);
+        }
+    };
+
+    while (!pointsToPropagateFrom.empty())
+    {
+        // Pop point that we have to propagate from
+        auto const currentPoint = pointsToPropagateFrom.front();
+        pointsToPropagateFrom.pop();
+
+        // Visit point
+        WriteParticle(currentPoint, material);
+        affectedRect.UnionWith(currentPoint);
+
+        // Push neighbors
+        checkPropagateToNeighbor({ currentPoint.x - 1, currentPoint.y });
+        checkPropagateToNeighbor({ currentPoint.x + 1, currentPoint.y });
+        checkPropagateToNeighbor({ currentPoint.x, currentPoint.y - 1 });
+        checkPropagateToNeighbor({ currentPoint.x, currentPoint.y + 1 });
+    }
+
+    LogMessage("TODOTEST: Flooded; rect=", affectedRect.ToString());
+
+    return affectedRect;
+
 }
 
 void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & region)

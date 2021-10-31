@@ -10,6 +10,7 @@
 #include "UndoStack.h"
 
 #include <wx/image.h>
+#include <wx/string.h>
 
 #include <optional>
 
@@ -55,6 +56,8 @@ public:
     virtual void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates) = 0;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    virtual void OnError(wxString const & errorMessage) const = 0;
 
     virtual ShipSpaceCoordinates GetMouseCoordinates() const = 0;
 

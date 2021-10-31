@@ -10,6 +10,7 @@
 #include "ShipBuilderTypes.h"
 #include "View.h"
 
+#include <Game/Layers.h>
 #include <Game/Materials.h>
 #include <Game/ShipDefinition.h>
 
@@ -148,13 +149,19 @@ private:
 
     void InitializeElectricalLayer();
 
-    inline void WriteStructuralParticle(
+    inline void WriteParticle(
         ShipSpaceCoordinates const & coords,
         StructuralMaterial const * material);
 
-    inline void WriteElectricalParticle(
+    inline void WriteParticle(
         ShipSpaceCoordinates const & coords,
         ElectricalMaterial const * material);
+
+    template<LayerType TLayer>
+    std::optional<ShipSpaceRect> RegionFlood(
+        ShipSpaceCoordinates const & start,
+        typename LayerTypeTraits<TLayer>::material_type const * material,
+        typename LayerTypeTraits<TLayer>::layer_data_type const & layer);
 
     void UpdateStructuralLayerVisualization(ShipSpaceRect const & region);
 
