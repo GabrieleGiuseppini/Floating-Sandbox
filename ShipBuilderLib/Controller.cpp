@@ -73,6 +73,7 @@ Controller::Controller(
     , mPrimaryLayer(LayerType::Structural)
     , mCurrentToolType(ToolType::StructuralPencil)
     , mCurrentTool()
+    , mLastToolPerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, std::nullopt, std::nullopt})
 {
     // We assume we start with at least a structural layer
     assert(mModelController->GetModel().HasLayer(LayerType::Structural));
@@ -415,12 +416,10 @@ void Controller::SelectPrimaryLayer(LayerType primaryLayer)
     {
         mPrimaryLayer = primaryLayer;
 
-        // Reset current tool to none
-        // TODO: might actually want to select the "primary tool" for the layer
-        // (i.e. probably the pencil, in all cases)
-        SetCurrentTool(std::nullopt);
-
         mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
+
+        // Select the last tool we have used for this layer
+        SetCurrentTool(mLastToolPerLayer[static_cast<int>(mPrimaryLayer)]);
 
         // TODO: *update* layers visualization at controller
         // TODO: *upload* "                                "
@@ -461,6 +460,9 @@ void Controller::SetCurrentTool(std::optional<ToolType> tool)
         // Relinquish cursor
         mUserInterface.ResetToolCursor();
     }
+
+    // Remember new tool as the last tool of this primary layer
+    mLastToolPerLayer[static_cast<int>(mPrimaryLayer)] = tool;
 
     // Notify UI
     mUserInterface.OnCurrentToolChanged(mCurrentToolType);

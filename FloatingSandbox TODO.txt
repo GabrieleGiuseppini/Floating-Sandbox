@@ -320,6 +320,12 @@ Render:
 
 		- Preferences flag for starting full-screen
 
+		- Bubbles issue
+			- Add temp code to calc total internal water, and see if it's true that it keeps increasing
+			- Do same of "other internal pressure"
+
+		- Flames: see if can have softer rotation
+
 		- See windows timer/50fps thing
 			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html
 			+ @ 50fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms

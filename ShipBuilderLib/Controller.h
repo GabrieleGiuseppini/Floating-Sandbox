@@ -155,6 +155,9 @@ private:
 
     std::optional<ToolType> mCurrentToolType;
     std::unique_ptr<Tool> mCurrentTool;
+
+    // The last tool that was used for each primary layer
+    std::array<std::optional<ToolType>, LayerCount> mLastToolPerLayer;
 };
 
 }

@@ -951,13 +951,14 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                             newButton = new BitmapButton(
                                 panel,
                                 mResourceLocator.GetBitmapFilePath("new_layer_button"),
-                                [this, layer, &sureQuestion]()
+                                [this, layer, sureQuestion]()
                                 {
                                     switch (layer)
                                     {
                                         case LayerType::Electrical:
                                         {
-                                            if (mController->GetModelController().GetModel().GetIsDirty(LayerType::Electrical))
+                                            if (mController->GetModelController().GetModel().HasLayer(LayerType::Electrical)
+                                                && mController->GetModelController().GetModel().GetIsDirty(LayerType::Electrical))
                                             {
                                                 if (!AskUserIfSure(sureQuestion))
                                                 {
@@ -973,7 +974,8 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
                                         case LayerType::Ropes:
                                         {
-                                            if (mController->GetModelController().GetModel().GetIsDirty(LayerType::Ropes))
+                                            if (mController->GetModelController().GetModel().HasLayer(LayerType::Ropes)
+                                                && mController->GetModelController().GetModel().GetIsDirty(LayerType::Ropes))
                                             {
                                                 if (!AskUserIfSure(sureQuestion))
                                                 {
@@ -989,7 +991,8 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
                                         case LayerType::Structural:
                                         {
-                                            if (mController->GetModelController().GetModel().GetIsDirty(LayerType::Structural))
+                                            if (mController->GetModelController().GetModel().HasLayer(LayerType::Structural)
+                                                && mController->GetModelController().GetModel().GetIsDirty(LayerType::Structural))
                                             {
                                                 if (!AskUserIfSure(sureQuestion))
                                                 {
@@ -1074,12 +1077,14 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                             deleteButton = new BitmapButton(
                                 panel,
                                 mResourceLocator.GetBitmapFilePath("delete_layer_button"),
-                                [this, layer, &sureQuestion]()
+                                [this, layer, sureQuestion]()
                                 {
                                     switch (layer)
                                     {
                                         case LayerType::Electrical:
                                         {
+                                            assert(mController->GetModelController().GetModel().HasLayer(LayerType::Electrical));
+
                                             if (mController->GetModelController().GetModel().GetIsDirty(LayerType::Electrical))
                                             {
                                                 if (!AskUserIfSure(sureQuestion))
@@ -1096,6 +1101,8 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
                                         case LayerType::Ropes:
                                         {
+                                            assert(mController->GetModelController().GetModel().HasLayer(LayerType::Ropes));
+
                                             if (mController->GetModelController().GetModel().GetIsDirty(LayerType::Ropes))
                                             {
                                                 if (!AskUserIfSure(sureQuestion))
@@ -1118,6 +1125,8 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
                                         case LayerType::Texture:
                                         {
+                                            assert(mController->GetModelController().GetModel().HasLayer(LayerType::Texture));
+
                                             if (mController->GetModelController().GetModel().GetIsDirty(LayerType::Texture))
                                             {
                                                 if (!AskUserIfSure(sureQuestion))
