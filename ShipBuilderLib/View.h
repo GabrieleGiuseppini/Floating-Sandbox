@@ -162,6 +162,14 @@ public:
         return mHasElectricalTexture;
     }
 
+    //
+    // Overlays (all sticky)
+    //
+
+    void UploadEraserSquareOverlay(ShipSpaceRect const & rect);
+
+    void RemoveEraserSquareOverlay();
+
 public:
 
     void Render();
@@ -172,6 +180,7 @@ private:
 
     void UpdateCanvas();
     void UpdateGrid();
+    void UpdateEraserSquareOverlay();
 
 private:
 
@@ -245,6 +254,21 @@ private:
         {}
     };
 
+    struct EraserSquareOverlayVertex
+    {
+        vec2f positionShip; // Ship space
+        vec2f positionNorm; //  0->1
+
+        EraserSquareOverlayVertex() = default;
+
+        EraserSquareOverlayVertex(
+            vec2f _positionShip,
+            vec2f _positionNorm)
+            : positionShip(_positionShip)
+            , positionNorm(_positionNorm)
+        {}
+    };
+
 #pragma pack(pop)
 
     //
@@ -280,6 +304,12 @@ private:
     GameOpenGLVAO mGridVAO;
     GameOpenGLVBO mGridVBO;
     bool mIsGridEnabled;
+
+    // EraserSquareOverlay
+    GameOpenGLVAO mEraserSquareOverlayVAO;
+    GameOpenGLVBO mEraserSquareOverlayVBO;
+    ShipSpaceRect mEraserSquareOverlayRect;
+    bool mHasEraserSquareOverlay;
 
     //
     // Settings from outside

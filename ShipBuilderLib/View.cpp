@@ -29,6 +29,8 @@ View::View(
     , mHasElectricalTexture(false)
     , mOtherLayersOpacity(0.75f)
     , mIsGridEnabled(false)
+    , mEraserSquareOverlayRect({0, 0}, {1, 1})
+    , mHasEraserSquareOverlay(false)
     //////////////////////////////////
     , mPrimaryLayer(LayerType::Structural)
 {
@@ -249,6 +251,32 @@ View::View(
         glBindBuffer(GL_ARRAY_BUFFER, *mGridVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Grid));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Grid), 4, GL_FLOAT, GL_FALSE, sizeof(GridVertex), (void *)0);
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+    //
+    // Initialize eraser square overlay VAO
+    //
+
+    {
+        GLuint tmpGLuint;
+
+        // Create VAO
+        glGenVertexArrays(1, &tmpGLuint);
+        mEraserSquareOverlayVAO = tmpGLuint;
+        glBindVertexArray(*mEraserSquareOverlayVAO);
+        CheckOpenGLError();
+
+        // Create VBO
+        glGenBuffers(1, &tmpGLuint);
+        mEraserSquareOverlayVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mEraserSquareOverlayVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::EraserSquareOverlay));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::EraserSquareOverlay), 4, GL_FLOAT, GL_FALSE, sizeof(EraserSquareOverlayVertex), (void *)0);
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -483,6 +511,22 @@ void View::RemoveElectricalLayerVisualizationTexture()
     mHasElectricalTexture = false;
 }
 
+void View::UploadEraserSquareOverlay(ShipSpaceRect const & rect)
+{
+    // Store rect
+    mEraserSquareOverlayRect = rect;
+
+    // Update overlay
+    UpdateEraserSquareOverlay();
+
+    mHasEraserSquareOverlay = true;
+}
+
+void View::RemoveEraserSquareOverlay()
+{
+    mHasEraserSquareOverlay = false;
+}
+
 void View::Render()
 {
     //
@@ -587,6 +631,20 @@ void View::Render()
         CheckOpenGLError();
     }
 
+    // Eraser square overlay
+    if (mHasEraserSquareOverlay)
+    {
+        // Bind VAO
+        glBindVertexArray(*mEraserSquareOverlayVAO);
+
+        // Activate program
+        mShaderManager->ActivateProgram<ProgramType::EraserSquareOverlay>();
+
+        // Draw
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        CheckOpenGLError();
+    }
+
     // Unbind VAOs
     glBindVertexArray(0);
 
@@ -598,17 +656,11 @@ void View::Render()
 
 void View::OnViewModelUpdated()
 {
-    //
-    // Canvas
-    //
-
     UpdateCanvas();
 
-    //
-    // Grid
-    //
-
     UpdateGrid();
+
+    UpdateEraserSquareOverlay();
 
     //
     // Ortho matrix
@@ -618,6 +670,10 @@ void View::OnViewModelUpdated()
 
     mShaderManager->ActivateProgram<ProgramType::Canvas>();
     mShaderManager->SetProgramParameter<ProgramType::Canvas, ProgramParameterType::OrthoMatrix>(
+        orthoMatrix);
+
+    mShaderManager->ActivateProgram<ProgramType::EraserSquareOverlay>();
+    mShaderManager->SetProgramParameter<ProgramType::EraserSquareOverlay, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::Grid>();
@@ -684,84 +740,6 @@ void View::UpdateCanvas()
 
     mShaderManager->ActivateProgram<ProgramType::Canvas>();
     mShaderManager->SetProgramParameter<ProgramType::Canvas, ProgramParameterType::PixelSize>(pixelSize.x, pixelSize.y);
-
-
-    // TODOOLD
-    /*
-
-    // 0|8                   2
-    //    1|9              3
-    //
-    //
-    //
-    //    7                5
-    //  6                   4
-    //
-
-    // Top H line
-
-    // Left, top
-    vertexBuffer[0] = CanvasBorderVertex(
-        -borderWidth,
-        shipHeight + borderWidth);
-
-    // Left, bottom
-    vertexBuffer[1] = CanvasBorderVertex(
-        0.0,
-        shipHeight);
-
-    // Right, top
-    vertexBuffer[2] = CanvasBorderVertex(
-        shipWidth + borderWidth,
-        shipHeight + borderWidth);
-
-    // Right, bottom
-    vertexBuffer[3] = CanvasBorderVertex(
-        shipWidth,
-        shipHeight);
-
-    // Right V line
-
-    // Right, bottom
-    vertexBuffer[4] = CanvasBorderVertex(
-        shipWidth + borderWidth,
-        -borderWidth);
-
-    // Left, bottom
-    vertexBuffer[5] = CanvasBorderVertex(
-        shipWidth,
-        0.0f);
-
-    // Bottom H line
-
-    // Left, bottom
-    vertexBuffer[6] = CanvasBorderVertex(
-        -borderWidth,
-        -borderWidth);
-
-    // Right, top
-    vertexBuffer[7] = CanvasBorderVertex(
-        0.0f,
-        0.0f);
-
-    // Left V line
-
-    // Left, top
-    vertexBuffer[8] = CanvasBorderVertex(
-        -borderWidth,
-        shipHeight + borderWidth);
-
-    // Right, bottom
-    vertexBuffer[9] = CanvasBorderVertex(
-        0.0f,
-        shipHeight);
-
-    // Upload vertices
-    glBindBuffer(GL_ARRAY_BUFFER, *mCanvasBorderVBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(CanvasBorderVertex), vertexBuffer.data(), GL_STATIC_DRAW);
-    CheckOpenGLError();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    */
 }
 
 void View::UpdateGrid()
@@ -817,6 +795,62 @@ void View::UpdateGrid()
     mShaderManager->ActivateProgram<ProgramType::Grid>();
     mShaderManager->SetProgramParameter<ProgramType::Grid, ProgramParameterType::PixelStep>(
         pixelStepSize);
+}
+
+void View::UpdateEraserSquareOverlay()
+{
+    //
+    // Upload vertices
+    //
+
+    std::array<EraserSquareOverlayVertex, 4> vertexBuffer;
+
+    // Left, Top
+    vertexBuffer[0] = EraserSquareOverlayVertex(
+        vec2f(
+            static_cast<float>(mEraserSquareOverlayRect.origin.x),
+            static_cast<float>(mEraserSquareOverlayRect.origin.y + mEraserSquareOverlayRect.size.height)),
+        vec2f(0.0f, 0.0f));
+
+    // Left, Bottom
+    vertexBuffer[1] = EraserSquareOverlayVertex(
+        vec2f(
+            static_cast<float>(mEraserSquareOverlayRect.origin.x),
+            static_cast<float>(mEraserSquareOverlayRect.origin.y)),
+        vec2f(0.0f, 1.0f));
+
+    // Right, Top
+    vertexBuffer[2] = EraserSquareOverlayVertex(
+        vec2f(
+            static_cast<float>(mEraserSquareOverlayRect.origin.x + mEraserSquareOverlayRect.size.width),
+            static_cast<float>(mEraserSquareOverlayRect.origin.y + mEraserSquareOverlayRect.size.height)),
+        vec2f(1.0f, 0.0f));
+
+    // Right, Bottom
+    vertexBuffer[3] = EraserSquareOverlayVertex(
+        vec2f(
+            static_cast<float>(mEraserSquareOverlayRect.origin.x + mEraserSquareOverlayRect.size.width),
+            static_cast<float>(mEraserSquareOverlayRect.origin.y)),
+        vec2f(1.0f, 1.0f));
+
+    // Upload vertices
+    glBindBuffer(GL_ARRAY_BUFFER, *mEraserSquareOverlayVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(EraserSquareOverlayVertex), vertexBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //
+    // Set pixel size parameter - normalized size (i.e. in the 0->1 space) of 1 pixel (w, h separately)
+    //
+
+    DisplayPhysicalSize const squarePhysSize = mViewModel.ShipSpaceSizeToPhysicalDisplaySize(mEraserSquareOverlayRect.size);
+
+    vec2f const pixelSize = vec2f(
+        1.0f / squarePhysSize.width,
+        1.0f / squarePhysSize.height);
+
+    mShaderManager->ActivateProgram<ProgramType::EraserSquareOverlay>();
+    mShaderManager->SetProgramParameter<ProgramType::EraserSquareOverlay, ProgramParameterType::PixelSize>(pixelSize.x, pixelSize.y);
 }
 
 }
