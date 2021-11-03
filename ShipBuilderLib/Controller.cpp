@@ -73,7 +73,7 @@ Controller::Controller(
     , mPrimaryLayer(LayerType::Structural)
     , mCurrentToolType(ToolType::StructuralPencil)
     , mCurrentTool()
-    , mLastToolPerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, std::nullopt, std::nullopt})
+    , mLastToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, std::nullopt, std::nullopt})
 {
     // We assume we start with at least a structural layer
     assert(mModelController->GetModel().HasLayer(LayerType::Structural));
@@ -112,7 +112,10 @@ void Controller::NewStructuralLayer()
     mUserInterface.OnLayerPresenceChanged();
 
     // Switch primary layer to this one
-    SelectPrimaryLayer(LayerType::Structural);
+    if (mPrimaryLayer != LayerType::Structural)
+    {
+        InternalSelectPrimaryLayer(LayerType::Structural);
+    }
 
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Structural);
@@ -133,6 +136,13 @@ void Controller::SetStructuralLayer(/*TODO*/)
 
     // Update layer
     mModelController->SetStructuralLayer(/*TODO*/);
+    mUserInterface.OnLayerPresenceChanged();
+
+    // Switch primary layer to this one
+    if (mPrimaryLayer != LayerType::Structural)
+    {
+        InternalSelectPrimaryLayer(LayerType::Structural);
+    }
 
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Structural);
@@ -176,7 +186,10 @@ void Controller::NewElectricalLayer()
     mUserInterface.OnLayerPresenceChanged();
 
     // Switch primary layer to this one
-    SelectPrimaryLayer(LayerType::Electrical);
+    if (mPrimaryLayer != LayerType::Electrical)
+    {
+        InternalSelectPrimaryLayer(LayerType::Electrical);
+    }
 
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Electrical);
@@ -197,6 +210,13 @@ void Controller::SetElectricalLayer(/*TODO*/)
 
     // Update layer
     mModelController->SetElectricalLayer(/*TODO*/);
+    mUserInterface.OnLayerPresenceChanged();
+
+    // Switch primary layer to this one
+    if (mPrimaryLayer != LayerType::Electrical)
+    {
+        InternalSelectPrimaryLayer(LayerType::Electrical);
+    }
 
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Electrical);
@@ -222,7 +242,7 @@ void Controller::RemoveElectricalLayer()
     // Switch primary layer to structural if it was this one
     if (mPrimaryLayer == LayerType::Electrical)
     {
-        SelectPrimaryLayer(LayerType::Structural);
+        InternalSelectPrimaryLayer(LayerType::Structural);
     }
 
     // Update dirtyness
@@ -267,7 +287,10 @@ void Controller::NewRopesLayer()
     mUserInterface.OnLayerPresenceChanged();
 
     // Switch primary layer to this one
-    SelectPrimaryLayer(LayerType::Ropes);
+    if (mPrimaryLayer != LayerType::Ropes)
+    {
+        InternalSelectPrimaryLayer(LayerType::Ropes);
+    }
 
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Ropes);
@@ -288,6 +311,13 @@ void Controller::SetRopesLayer(/*TODO*/)
 
     // Update layer
     mModelController->SetRopesLayer(/*TODO*/);
+    mUserInterface.OnLayerPresenceChanged();
+
+    // Switch primary layer to this one
+    if (mPrimaryLayer != LayerType::Ropes)
+    {
+        InternalSelectPrimaryLayer(LayerType::Ropes);
+    }
 
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Ropes);
@@ -313,7 +343,7 @@ void Controller::RemoveRopesLayer()
     // Switch primary layer to structural if it was this one
     if (mPrimaryLayer == LayerType::Ropes)
     {
-        SelectPrimaryLayer(LayerType::Structural);
+        InternalSelectPrimaryLayer(LayerType::Structural);
     }
 
     // Update dirtyness
@@ -344,6 +374,12 @@ void Controller::SetTextureLayer(/*TODO*/)
     mModelController->SetTextureLayer(/*TODO*/);
     mUserInterface.OnLayerPresenceChanged();
 
+    // Switch primary layer to this one
+    if (mPrimaryLayer != LayerType::Texture)
+    {
+        InternalSelectPrimaryLayer(LayerType::Texture);
+    }
+
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Texture);
     mUserInterface.OnModelDirtyChanged();
@@ -368,7 +404,7 @@ void Controller::RemoveTextureLayer()
     // Switch primary layer to structural if it was this one
     if (mPrimaryLayer == LayerType::Texture)
     {
-        SelectPrimaryLayer(LayerType::Structural);
+        InternalSelectPrimaryLayer(LayerType::Structural);
     }
 
     // Update dirtyness
@@ -414,18 +450,11 @@ void Controller::SelectPrimaryLayer(LayerType primaryLayer)
 {
     if (primaryLayer != mPrimaryLayer)
     {
-        mPrimaryLayer = primaryLayer;
+        StopTool();
 
-        mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
+        InternalSelectPrimaryLayer(primaryLayer);
 
-        // Select the last tool we have used for this layer
-        SetCurrentTool(mLastToolPerLayer[static_cast<int>(mPrimaryLayer)]);
-
-        // TODO: *update* layers visualization at controller
-        // TODO: *upload* "                                "
-
-        // Tell view
-        mView.SetPrimaryLayer(mPrimaryLayer);
+        StartTool();
 
         // Refresh view
         mUserInterface.RefreshView();
@@ -446,26 +475,21 @@ std::optional<ToolType> Controller::GetCurrentTool() const
 
 void Controller::SetCurrentTool(std::optional<ToolType> tool)
 {
-    // Nuke current tool
-    mCurrentToolType.reset();
-    mCurrentTool.reset();
-
-    if (tool.has_value())
+    if (tool != mCurrentToolType)
     {
-        mCurrentToolType = tool;
-        mCurrentTool = MakeTool(*mCurrentToolType);
-    }
-    else
-    {
-        // Relinquish cursor
-        mUserInterface.ResetToolCursor();
-    }
+        // Nuke current tool
+        mCurrentToolType.reset();
+        mCurrentTool.reset();
 
-    // Remember new tool as the last tool of this primary layer
-    mLastToolPerLayer[static_cast<int>(mPrimaryLayer)] = tool;
+        InternalSetCurrentTool(tool);
 
-    // Notify UI
-    mUserInterface.OnCurrentToolChanged(mCurrentToolType);
+        // Make new tool
+        assert(mCurrentToolType == tool);
+        if (mCurrentToolType.has_value())
+        {
+            mCurrentTool = MakeTool(*mCurrentToolType);
+        }
+    }
 }
 
 bool Controller::CanUndo() const
@@ -659,6 +683,59 @@ void Controller::OnMouseCaptureLost()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void Controller::InternalSelectPrimaryLayer(LayerType primaryLayer)
+{
+    //
+    // No tool destroy/create
+    // No visualization changes
+    //
+
+    assert(!mCurrentTool);
+    assert(mPrimaryLayer != primaryLayer);
+
+    // Store new primary layer
+    mPrimaryLayer = primaryLayer;
+
+    // Select the last tool we have used for this new layer
+    // Note: stores new tool for new primary layer
+    InternalSetCurrentTool(mLastToolTypePerLayer[static_cast<int>(primaryLayer)]);
+
+    // Notify
+    mUserInterface.OnPrimaryLayerChanged(primaryLayer);
+
+    // TODO: *update* layers visualization at controller
+    // TODO: *upload* "                                "
+
+    // Tell view
+    mView.SetPrimaryLayer(primaryLayer);
+}
+
+void Controller::InternalSetCurrentTool(std::optional<ToolType> toolType)
+{
+    //
+    // No tool destroy/create
+    // No visualization changes
+    //
+
+    assert(!mCurrentTool);
+    assert(mCurrentToolType != toolType);
+
+    // Set current tool
+    mCurrentToolType = toolType;
+
+    if (!toolType.has_value())
+    {
+        // Relinquish cursor
+        mUserInterface.ResetToolCursor();
+    }
+
+    // Remember new tool as the last tool of this primary layer
+    mLastToolTypePerLayer[static_cast<int>(mPrimaryLayer)] = toolType;
+
+    // Notify UI
+    mUserInterface.OnCurrentToolChanged(mCurrentToolType);
+}
+
 void Controller::StopTool()
 {
     mCurrentTool.reset();
@@ -666,6 +743,8 @@ void Controller::StopTool()
 
 void Controller::StartTool()
 {
+    assert(!mCurrentTool);
+
     if (mCurrentToolType.has_value())
     {
         mCurrentTool = MakeTool(*mCurrentToolType);

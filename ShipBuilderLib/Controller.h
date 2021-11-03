@@ -129,6 +129,10 @@ private:
         IUserInterface & userInterface,
         ResourceLocator const & resourceLocator);
 
+    void InternalSelectPrimaryLayer(LayerType primaryLayer);
+
+    void InternalSetCurrentTool(std::optional<ToolType> toolType);
+
     void StopTool();
 
     void StartTool();
@@ -157,7 +161,7 @@ private:
     std::unique_ptr<Tool> mCurrentTool;
 
     // The last tool that was used for each primary layer
-    std::array<std::optional<ToolType>, LayerCount> mLastToolPerLayer;
+    std::array<std::optional<ToolType>, LayerCount> mLastToolTypePerLayer;
 };
 
 }

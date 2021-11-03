@@ -307,6 +307,7 @@ void ModelController::NewElectricalLayer()
 
 void ModelController::SetElectricalLayer(/*TODO*/)
 {
+    // TODO: allow when layer does not exist (so Controller::SetXXXLayer() can be used to create)
     assert(mModel.HasLayer(LayerType::Electrical));
 
     mModel.SetElectricalLayer(/*TODO*/);
@@ -496,6 +497,7 @@ void ModelController::NewRopesLayer()
 
 void ModelController::SetRopesLayer(/*TODO*/)
 {
+    // TODO: allow when layer does not exist (so Controller::SetXXXLayer() can be used to create)
     assert(mModel.HasLayer(LayerType::Ropes));
 
     mModel.SetRopesLayer();
@@ -525,9 +527,11 @@ void ModelController::NewTextureLayer()
 
 void ModelController::SetTextureLayer(/*TODO*/)
 {
+    // TODO: allow when layer does not exist (so Controller::SetXXXLayer() can be used to create)
+
     assert(mModel.HasLayer(LayerType::Texture));
 
-    mModel.SetTextureLayer();
+    mModel.SetTextureLayer(/*TODO*/);
 
     UpdateTextureLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
 }
