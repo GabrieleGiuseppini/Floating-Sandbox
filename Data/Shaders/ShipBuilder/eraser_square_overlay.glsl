@@ -42,8 +42,5 @@ void main()
         
     float borderDepth = min(borderDepthX + borderDepthY, 1.);
 
-    gl_FragColor = mix(
-        vec4(1., 1., 1., 1.),       // BG color
-        vec4(.05, .05, .05, .9),    // Border color      
-        borderDepth);
+    gl_FragColor = vec4(.05, .05, .05, borderDepth);
 } 
