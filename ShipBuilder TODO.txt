@@ -15,12 +15,11 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ New code creates tool (via SetTool invoked to set last tool for layer) while tool is "suspended", @ NewLayer & RemoveLayer, when we set PrimaryLayer
 		+ SetTool, SetPrimaryLayer, NewLayer, RemoveLayer: they all call InternalSetTool & InternalSetPrimaryLayer
 
-- Each time we StartTool() (e.g. ad AddLayer, etc.) we end up refreshing modelcontroller's visualization and OpenGL visualization, twice
-
 + Eraser square?
 	+ See paint: has it
 	+ View: EraserSquareOverlay
-	- OpenGL effects?
+
+- Each time we StartTool() (e.g. ad AddLayer, etc.) we end up refreshing modelcontroller's visualization and OpenGL visualization, twice
 
 = UnderConstructionDialog
 	- Do at remaining layer buttons
