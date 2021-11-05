@@ -19,13 +19,19 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ See paint: has it
 	+ View: EraserSquareOverlay
 
-- Each time we StartTool() (e.g. ad AddLayer, etc.) we end up refreshing modelcontroller's visualization and OpenGL visualization, twice
+= EraserSquareOverlay -> RectOverlay
+	= Rename
+	- Try it also with normal pencil
+
+- Each time we StartTool() (e.g. at AddLayer, etc.) we end up refreshing modelcontroller's visualization and OpenGL visualization, twice
 
 = UnderConstructionDialog
 	- Do at remaining layer buttons
 
 - Tests:
 	- Ships with unicode chars in metadata, show well in dialog
+
+- ModelValidations - so that electrical layer is safe
 
 - Finalize design of Ropes layer
 

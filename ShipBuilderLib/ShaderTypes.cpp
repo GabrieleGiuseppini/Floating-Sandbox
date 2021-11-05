@@ -17,10 +17,10 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
     std::string lstr = Utils::ToLower(str);
     if (lstr == "canvas")
         return ProgramType::Canvas;
-    else if (lstr == "eraser_square_overlay")
-        return ProgramType::EraserSquareOverlay;
     else if (lstr == "grid")
         return ProgramType::Grid;
+    else if (lstr == "rect_overlay")
+        return ProgramType::RectOverlay;
     else if (lstr == "texture")
         return ProgramType::Texture;
     else if (lstr == "texture_ndc")
@@ -35,10 +35,10 @@ std::string ProgramTypeToStr(ProgramType program)
     {
         case ProgramType::Canvas:
             return "Canvas";
-        case ProgramType::EraserSquareOverlay:
-            return "EraserSquareOverlay";
         case ProgramType::Grid:
             return "Grid";
+        case ProgramType::RectOverlay:
+            return "RectOverlay";
         case ProgramType::Texture:
             return "Texture";
         case ProgramType::TextureNdc:
@@ -93,10 +93,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
 {
     if (Utils::CaseInsensitiveEquals(str, "Canvas"))
         return VertexAttributeType::Canvas;
-    else if (Utils::CaseInsensitiveEquals(str, "EraserSquareOverlay"))
-        return VertexAttributeType::EraserSquareOverlay;
     else if (Utils::CaseInsensitiveEquals(str, "Grid"))
         return VertexAttributeType::Grid;
+    else if (Utils::CaseInsensitiveEquals(str, "RectOverlay"))
+        return VertexAttributeType::RectOverlay;
     else if (Utils::CaseInsensitiveEquals(str, "Texture"))
         return VertexAttributeType::Texture;
     else if (Utils::CaseInsensitiveEquals(str, "TextureNdc"))

@@ -421,7 +421,7 @@ void PencilTool<TLayer, IsEraser>::DoTempVisualization(ShipSpaceRect const & aff
 
         if constexpr (IsEraser)
         {
-            mView.UploadEraserSquareOverlay(affectedRect);
+            mView.UploadRectOverlay(affectedRect);
         }
     }
     else
@@ -434,7 +434,7 @@ void PencilTool<TLayer, IsEraser>::DoTempVisualization(ShipSpaceRect const & aff
 
         if constexpr (IsEraser)
         {
-            mView.UploadEraserSquareOverlay(affectedRect);
+            mView.UploadRectOverlay(affectedRect);
         }
     }
 
@@ -457,7 +457,7 @@ void PencilTool<TLayer, IsEraser>::MendTempVisualization()
 
         if constexpr (IsEraser)
         {
-            mView.RemoveEraserSquareOverlay();
+            mView.RemoveRectOverlay();
         }
     }
     else
@@ -471,7 +471,7 @@ void PencilTool<TLayer, IsEraser>::MendTempVisualization()
 
         if constexpr (IsEraser)
         {
-            mView.RemoveEraserSquareOverlay();
+            mView.RemoveRectOverlay();
         }
     }
 

@@ -166,9 +166,9 @@ public:
     // Overlays (all sticky)
     //
 
-    void UploadEraserSquareOverlay(ShipSpaceRect const & rect);
+    void UploadRectOverlay(ShipSpaceRect const & rect);
 
-    void RemoveEraserSquareOverlay();
+    void RemoveRectOverlay();
 
 public:
 
@@ -180,7 +180,7 @@ private:
 
     void UpdateCanvas();
     void UpdateGrid();
-    void UpdateEraserSquareOverlay();
+    void UpdateRectOverlay();
 
 private:
 
@@ -254,14 +254,14 @@ private:
         {}
     };
 
-    struct EraserSquareOverlayVertex
+    struct RectOverlayVertex
     {
         vec2f positionShip; // Ship space
         vec2f positionNorm; //  0->1
 
-        EraserSquareOverlayVertex() = default;
+        RectOverlayVertex() = default;
 
-        EraserSquareOverlayVertex(
+        RectOverlayVertex(
             vec2f _positionShip,
             vec2f _positionNorm)
             : positionShip(_positionShip)
@@ -305,11 +305,11 @@ private:
     GameOpenGLVBO mGridVBO;
     bool mIsGridEnabled;
 
-    // EraserSquareOverlay
-    GameOpenGLVAO mEraserSquareOverlayVAO;
-    GameOpenGLVBO mEraserSquareOverlayVBO;
-    ShipSpaceRect mEraserSquareOverlayRect;
-    bool mHasEraserSquareOverlay;
+    // RectOverlay
+    GameOpenGLVAO mRectOverlayVAO;
+    GameOpenGLVBO mRectOverlayVBO;
+    ShipSpaceRect mRectOverlayRect;
+    bool mHasRectOverlay;
 
     //
     // Settings from outside

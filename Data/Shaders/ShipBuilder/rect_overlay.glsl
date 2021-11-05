@@ -4,7 +4,7 @@
 #define out varying
 
 // Inputs
-in vec4 inEraserSquareOverlay; // Vertex position (ship space), Normalized coords (0->1)
+in vec4 inRectOverlay; // Vertex position (ship space), Normalized coords (0->1)
 
 // Outputs
 out vec2 normalizedCoords;
@@ -14,8 +14,8 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    normalizedCoords = inEraserSquareOverlay.zw;
-    gl_Position = paramOrthoMatrix * vec4(inEraserSquareOverlay.xy, 0.0, 1.0);
+    normalizedCoords = inRectOverlay.zw;
+    gl_Position = paramOrthoMatrix * vec4(inRectOverlay.xy, 0.0, 1.0);
 }
 
 ###FRAGMENT-120
