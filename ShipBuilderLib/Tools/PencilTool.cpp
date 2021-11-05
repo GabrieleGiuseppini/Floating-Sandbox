@@ -418,11 +418,6 @@ void PencilTool<TLayer, IsEraser>::DoTempVisualization(ShipSpaceRect const & aff
         mModelController.StructuralRegionFillForEphemeralVisualization(
             affectedRect,
             fillMaterial);
-
-        if constexpr (IsEraser)
-        {
-            mView.UploadRectOverlay(affectedRect);
-        }
     }
     else
     {
@@ -431,12 +426,9 @@ void PencilTool<TLayer, IsEraser>::DoTempVisualization(ShipSpaceRect const & aff
         mModelController.ElectricalRegionFillForEphemeralVisualization(
             affectedRect,
             fillMaterial);
-
-        if constexpr (IsEraser)
-        {
-            mView.UploadRectOverlay(affectedRect);
-        }
     }
+
+    mView.UploadRectOverlay(affectedRect);
 
     mTempVisualizationDirtyShipRegion = affectedRect;
 }
@@ -454,11 +446,6 @@ void PencilTool<TLayer, IsEraser>::MendTempVisualization()
             *mOriginalLayerClone,
             *mTempVisualizationDirtyShipRegion,
             mTempVisualizationDirtyShipRegion->origin);
-
-        if constexpr (IsEraser)
-        {
-            mView.RemoveRectOverlay();
-        }
     }
     else
     {
@@ -468,12 +455,9 @@ void PencilTool<TLayer, IsEraser>::MendTempVisualization()
             *mOriginalLayerClone,
             *mTempVisualizationDirtyShipRegion,
             mTempVisualizationDirtyShipRegion->origin);
-
-        if constexpr (IsEraser)
-        {
-            mView.RemoveRectOverlay();
-        }
     }
+
+    mView.RemoveRectOverlay();
 
     mTempVisualizationDirtyShipRegion.reset();
 }

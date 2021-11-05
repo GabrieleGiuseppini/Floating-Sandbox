@@ -524,6 +524,8 @@ void View::UploadRectOverlay(ShipSpaceRect const & rect)
 
 void View::RemoveRectOverlay()
 {
+    assert(mHasRectOverlay);
+
     mHasRectOverlay = false;
 }
 
