@@ -277,6 +277,26 @@ void Controller::RestoreLayerRegion(
     mUserInterface.RefreshView();
 }
 
+void Controller::TrimElectricalParticlesWithoutSubstratum()
+{
+    // Remove tool
+    StopTool();
+
+    // Trim
+    mModelController->TrimElectricalParticlesWithoutSubstratum();
+
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Electrical);
+    mUserInterface.OnModelDirtyChanged();
+
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
+
+    // Restart tool
+    StartTool();
+}
+
 void Controller::NewRopesLayer()
 {
     // Remove tool

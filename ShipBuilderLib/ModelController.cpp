@@ -78,6 +78,45 @@ ShipDefinition ModelController::MakeShipDefinition() const
         std::nullopt); // TODOHERE
 }
 
+ModelValidationResults ModelController::ValidateModel() const
+{
+    std::vector<ModelValidationIssue> issues;
+
+    //
+    // Electrical substratum
+    //
+
+    if (mModel.HasLayer(LayerType::Electrical))
+    {
+        StructuralLayerData const & structuralLayer = mModel.GetStructuralLayer();
+        ElectricalLayerData const & electricalLayer = mModel.GetElectricalLayer();
+
+        assert(structuralLayer.Buffer.Size == electricalLayer.Buffer.Size);
+
+        size_t electricalParticlesWithNoStructuralSubstratumCount = 0;
+
+        for (int y = 0; y < structuralLayer.Buffer.Size.height; ++y)
+        {
+            for (int x = 0; x < structuralLayer.Buffer.Size.width; ++x)
+            {
+                auto const coords = ShipSpaceCoordinates(x, y);
+                if (electricalLayer.Buffer[coords].Material != nullptr
+                    && structuralLayer.Buffer[coords].Material == nullptr)
+                {
+                    ++electricalParticlesWithNoStructuralSubstratumCount;
+                }
+            }
+        }
+
+        if (electricalParticlesWithNoStructuralSubstratumCount > 0)
+        {
+            issues.emplace_back(ModelValidationIssue::Type::MissingElectricalSubstrate, true);
+        }
+    }
+
+    return ModelValidationResults(std::move(issues));
+}
+
 void ModelController::UploadVisualization()
 {
     //
@@ -333,6 +372,43 @@ void ModelController::RemoveElectricalLayer()
     mDirtyElectricalLayerVisualizationRegion.reset();
 
     mIsElectricalLayerInEphemeralVisualization = false;
+}
+
+void ModelController::TrimElectricalParticlesWithoutSubstratum()
+{
+    assert(mModel.HasLayer(LayerType::Electrical));
+
+    assert(!mIsElectricalLayerInEphemeralVisualization);
+
+    //
+    // Update model
+    //
+
+    StructuralLayerData const & structuralLayer = mModel.GetStructuralLayer();
+    ElectricalLayerData const & electricalLayer = mModel.GetElectricalLayer();
+
+    assert(structuralLayer.Buffer.Size == electricalLayer.Buffer.Size);
+
+    ElectricalMaterial const * nullMaterial = nullptr;
+
+    for (int y = 0; y < structuralLayer.Buffer.Size.height; ++y)
+    {
+        for (int x = 0; x < structuralLayer.Buffer.Size.width; ++x)
+        {
+            auto const coords = ShipSpaceCoordinates(x, y);
+            if (electricalLayer.Buffer[coords].Material != nullptr
+                && structuralLayer.Buffer[coords].Material == nullptr)
+            {
+                WriteParticle(coords, nullMaterial);
+            }
+        }
+    }
+
+    //
+    // Update visualization
+    //
+
+    UpdateElectricalLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
 }
 
 void ModelController::ElectricalRegionFill(

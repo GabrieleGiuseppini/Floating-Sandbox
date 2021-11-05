@@ -16,6 +16,7 @@ set (SHIPBUILDER_LIB_SOURCES
 	Model.h
 	ModelController.cpp
 	ModelController.h
+	ModelValidationResults.h
 	SelectionManager.cpp	
 	SelectionManager.h
 	ShaderTypes.cpp

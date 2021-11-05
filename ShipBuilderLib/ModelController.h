@@ -7,6 +7,7 @@
 
 #include "ElectricalElementInstanceIndexFactory.h"
 #include "Model.h"
+#include "ModelValidationResults.h"
 #include "ShipBuilderTypes.h"
 #include "View.h"
 
@@ -62,6 +63,8 @@ public:
         mModel.ClearIsDirty();
     }
 
+    ModelValidationResults ValidateModel() const;
+
     void UploadVisualization();
 
     //
@@ -100,6 +103,8 @@ public:
     void NewElectricalLayer();
     void SetElectricalLayer(/*TODO*/);
     void RemoveElectricalLayer();
+
+    void TrimElectricalParticlesWithoutSubstratum();
 
     void ElectricalRegionFill(
         ShipSpaceRect const & region,

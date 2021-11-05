@@ -63,6 +63,12 @@ public:
 
     void ClearModelDirty();
 
+    ModelValidationResults ValidateModel() const
+    {
+        assert(mModelController);
+        return mModelController->ValidateModel();
+    }
+
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
     void RestoreLayerRegion(
@@ -75,6 +81,7 @@ public:
     void RestoreLayerRegion(
         ElectricalLayerData && layerRegion,
         ShipSpaceCoordinates const & origin);
+    void TrimElectricalParticlesWithoutSubstratum();
 
     void NewRopesLayer();
     void SetRopesLayer(/*TODO*/);

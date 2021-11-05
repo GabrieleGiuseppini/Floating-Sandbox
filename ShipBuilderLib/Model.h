@@ -173,10 +173,22 @@ public:
         mDirtyState.RecalculateGlobalIsDirty();
     }
 
+    StructuralLayerData const & GetStructuralLayer() const
+    {
+        assert(mStructuralLayer);
+        return *mStructuralLayer;
+    }
+
     StructuralLayerData & GetStructuralLayer()
     {
         assert(mStructuralLayer);
         return *mStructuralLayer;
+    }
+
+    ElectricalLayerData const & GetElectricalLayer() const
+    {
+        assert(mElectricalLayer);
+        return *mElectricalLayer;
     }
 
     ElectricalLayerData & GetElectricalLayer()

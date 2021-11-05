@@ -23,8 +23,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Rename
 	+ Try it also with normal pencil
 
-- Each time we StartTool() (e.g. at AddLayer, etc.) we end up refreshing modelcontroller's visualization and OpenGL visualization, twice
-
 = UnderConstructionDialog
 	- Do at remaining layer buttons
 
@@ -88,6 +86,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Undo
 
 - Send for testing
+
+- Each time we StartTool() (e.g. at AddLayer, etc.) we end up refreshing modelcontroller's visualization and OpenGL visualization, twice
 
 = Metadata edit workflow:
 	+ ShipPropertiesEditDialog
@@ -361,16 +361,18 @@ https://gamejolt.com/x/permalink/comment/11730705
 		! Some validations also run continuously
 	- Impl:
 		- Controller keeps track of whether or not model has ever been dirty since the last validation has run
-			- mIsModelDirtyWrtValidation, set to F @ cctor, set to T @ each model dirty
+			- mIsModelDirtyWrtValidation, set to F @ cctor, set to T @ each model dirty, set to F @ ValidateModel()
+			- IUserInterface notification
+				- Sets validation button enabled accordingly
 		- MainFrame checks it @ Save/SaveAs and, if dirty, calls Controller::ValidateModel() -> ModelValidationResults
 			- Controller then clears mIsModelDirtyWrtValidation
 		- User can push button as well; thread 4 UI progress
 			- MainFrame calls Controller::ValidateModel from thread (@ both button and save's) for UI progress
-		- ModelValidationResults:
+		+ ModelValidationResults:
 			- Errors: vector<ModelValidationIssue>
 			- Warnings: vector<ModelValidationIssue>
-		- ModelValidationIssue:
-			- Type
+		= ModelValidationIssue:
+			+ Type
 			- AffectedLocii: vector<ShipSpaceCoords>
 		- 2 issue contributors:
 			- ModelController::ValidateModel() -> ModelValidationResults
