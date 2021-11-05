@@ -792,6 +792,20 @@ wxPanel * MainFrame::CreateShipSettingsPanel(wxWindow * parent)
 
             sizer->Add(button, 0, wxALL, ButtonMargin);
         }
+
+        // Validate button
+        {
+            auto button = new BitmapButton(
+                panel,
+                mResourceLocator.GetIconFilePath("validate_ship_button"),
+                [this]()
+                {
+                    ValidateShip();
+                },
+                _("Check the ship for issues"));
+
+            sizer->Add(button, 0, wxALL, ButtonMargin);
+        }
     }
 
     panel->SetSizerAndFit(sizer);
@@ -2361,6 +2375,16 @@ void MainFrame::OpenShipProperties()
         // TODOTEST: take from model
         std::nullopt,
         mController->GetModelController().GetModel().HasLayer(LayerType::Texture));
+}
+
+void MainFrame::ValidateShip()
+{
+    if (!mModelValidationDialog)
+    {
+        mModelValidationDialog = std::make_unique<ModelValidationDialog>(this, mResourceLocator);
+    }
+
+    mModelValidationDialog->ShowModal(*mController);
 }
 
 void MainFrame::OpenMaterialPalette(

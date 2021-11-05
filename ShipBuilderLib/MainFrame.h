@@ -8,6 +8,7 @@
 #include "Controller.h"
 #include "IUserInterface.h"
 #include "MaterialPalette.h"
+#include "ModelValidationDialog.h"
 #include "ShipCanvasResizeDialog.h"
 #include "ShipPropertiesEditDialog.h"
 #include "StatusBar.h"
@@ -185,6 +186,8 @@ private:
 
     void OpenShipProperties();
 
+    void ValidateShip();
+
     void OpenMaterialPalette(
         wxMouseEvent const & event,
         MaterialLayerType layer,
@@ -312,6 +315,7 @@ private:
     std::unique_ptr<LoggingDialog> mLoggingDialog;
     std::unique_ptr<ShipCanvasResizeDialog> mShipCanvasResizeDialog;
     std::unique_ptr<ShipPropertiesEditDialog> mShipPropertiesEditDialog;
+    std::unique_ptr<ModelValidationDialog> mModelValidationDialog;
 
     //
     // UI state

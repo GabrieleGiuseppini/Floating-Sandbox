@@ -1,9 +1,9 @@
 /***************************************************************************************
  * Original Author:     Gabriele Giuseppini
- * Created:             2021-10-23
+ * Created:             2021-11-06
  * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
-#include "ShipCanvasResizeDialog.h"
+#include "ModelValidationDialog.h"
 
 #include <UILib/WxHelpers.h>
 
@@ -13,7 +13,7 @@
 
 namespace ShipBuilder {
 
-ShipCanvasResizeDialog::ShipCanvasResizeDialog(
+ModelValidationDialog::ModelValidationDialog(
     wxWindow * parent,
     ResourceLocator const & resourceLocator)
     : mResourceLocator(resourceLocator)
@@ -21,7 +21,7 @@ ShipCanvasResizeDialog::ShipCanvasResizeDialog(
     Create(
         parent,
         wxID_ANY,
-        _("Resize Ship"),
+        _("Ship Issues"),
         wxDefaultPosition,
         wxSize(400, 200),
         wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED);
@@ -45,16 +45,16 @@ ShipCanvasResizeDialog::ShipCanvasResizeDialog(
         buttonsSizer->AddSpacer(20);
 
         {
-            mOkButton = new wxButton(this, wxID_ANY, _("OK"));
-            mOkButton->Bind(wxEVT_BUTTON, &ShipCanvasResizeDialog::OnOkButton, this);
-            buttonsSizer->Add(mOkButton, 0);
+            auto button = new wxButton(this, wxID_ANY, _("OK"));
+            button->Bind(wxEVT_BUTTON, &ModelValidationDialog::OnOkButton, this);
+            buttonsSizer->Add(button, 0);
         }
 
         buttonsSizer->AddSpacer(20);
 
         {
             auto button = new wxButton(this, wxID_ANY, _("Cancel"));
-            button->Bind(wxEVT_BUTTON, &ShipCanvasResizeDialog::OnCancelButton, this);
+            button->Bind(wxEVT_BUTTON, &ModelValidationDialog::OnCancelButton, this);
             buttonsSizer->Add(button, 0);
         }
 
@@ -74,52 +74,32 @@ ShipCanvasResizeDialog::ShipCanvasResizeDialog(
     Centre(wxCENTER_ON_SCREEN | wxBOTH);
 }
 
-void ShipCanvasResizeDialog::ShowModal(
+void ModelValidationDialog::ShowModal(
     Controller & controller)
 {
     mSessionData.emplace(controller);
 
-    InitializeUI();
+    //
+    // Cleanup previous open
+    //
+
+    // TODO: destroy panel
+
+    // TODO
+    auto const validationResults = mSessionData->BuilderController.ValidateModel();
+
 
     wxDialog::ShowModal();
 }
 
-void ShipCanvasResizeDialog::OnOkButton(wxCommandEvent & /*event*/)
+void ModelValidationDialog::OnOkButton(wxCommandEvent & /*event*/)
 {
-    // TODO: inspect dirty flags and communicate parts to Controller
-    // mShipNameTextCtrl->IsModified()
-
-    mSessionData.reset();
     EndModal(0);
 }
 
-void ShipCanvasResizeDialog::OnCancelButton(wxCommandEvent & /*event*/)
+void ModelValidationDialog::OnCancelButton(wxCommandEvent & /*event*/)
 {
-    mSessionData.reset();
     EndModal(-1);
-}
-
-void ShipCanvasResizeDialog::InitializeUI()
-{
-    assert(mSessionData);
-
-    // TODO
-
-    //
-    // Buttons
-    //
-
-    mOkButton->Enable(false);
-}
-
-void ShipCanvasResizeDialog::OnDirty()
-{
-    // We assume at least one of the controls is dirty
-
-    if (!mOkButton->IsEnabled())
-    {
-        mOkButton->Enable(true);
-    }
 }
 
 }

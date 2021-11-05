@@ -67,6 +67,16 @@ public:
             }) != mIssues.cend();
     }
 
+    bool IsEmpty() const
+    {
+        return mIssues.empty();
+    }
+
+    auto const & GetIssues() const
+    {
+        return mIssues;
+    }
+
 private:
 
     std::vector<ModelValidationIssue> const mIssues;

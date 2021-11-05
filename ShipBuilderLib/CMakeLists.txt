@@ -16,6 +16,8 @@ set (SHIPBUILDER_LIB_SOURCES
 	Model.h
 	ModelController.cpp
 	ModelController.h
+	ModelValidationDialog.cpp
+	ModelValidationDialog.h
 	ModelValidationResults.h
 	SelectionManager.cpp	
 	SelectionManager.h

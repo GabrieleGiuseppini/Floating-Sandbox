@@ -87,7 +87,7 @@ ShipPropertiesEditDialog::ShipPropertiesEditDialog(
         buttonsSizer->AddSpacer(20);
 
         {
-            mOkButton = new wxButton(this, wxID_ANY, _("Ok"));
+            mOkButton = new wxButton(this, wxID_ANY, _("OK"));
             mOkButton->Bind(wxEVT_BUTTON, &ShipPropertiesEditDialog::OnOkButton, this);
             buttonsSizer->Add(mOkButton, 0);
         }
