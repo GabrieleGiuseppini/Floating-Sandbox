@@ -82,7 +82,7 @@ ModelValidationDialog::ModelValidationDialog(
     //
 
     {
-        mResultsPanel = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
+        mResultsPanel = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL | wxBORDER_SUNKEN);
         mResultsPanel->SetScrollRate(0, 1);
 
         mResultsPanelVSizer = new wxBoxSizer(wxVERTICAL);

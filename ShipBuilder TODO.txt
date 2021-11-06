@@ -360,19 +360,17 @@ https://gamejolt.com/x/permalink/comment/11730705
 		! Errors prevent ship from being saved
 		! Some validations also run continuously
 	- Impl:
-		= Object model:
+		+ Object model:
 			+ ModelValidationResults:
-				- Errors: vector<ModelValidationIssue>
-				- Warnings: vector<ModelValidationIssue>
-			= ModelValidationIssue:
+				+ vector<ModelValidationIssue>
+				+ Errors, Warnings, Successes
+			+ ModelValidationIssue:
 				+ Type
-				- AffectedLocii: vector<ShipSpaceCoords>
-		- Dialog:
+		= Dialog:
 			- Populate results
 				+ ForShipSave: all errors first, then warnings - no success					
 				+ ForValidation: as they come
 					+ Use sizer->Insert()
-				- Use grid sizer (ipv mResultsPanelVSizer) to ensure all sections have same width
 				- Handle issues as specific
 					- ElectricSubstratum: button for trimming
 				- Message before errors and message before warnings - in ForSave mode
@@ -389,6 +387,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- TooManyLights
 
 		- TODOOLD
+		- ModelValidationIssue:
+			- Type
+			- AffectedLocii: vector<ShipSpaceCoords>
 		- Controller keeps track of whether or not model has ever been dirty since the last validation has run
 			- mIsModelDirtyWrtValidation, set to F @ cctor, set to T @ each model dirty, set to F @ ValidateModel()
 			- IUserInterface notification
