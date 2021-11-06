@@ -371,8 +371,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ ForShipSave: all errors first, then warnings - no success					
 				+ ForValidation: as they come
 					+ Use sizer->Insert()
-				- Message of issue must be different when success, or title + message
-					- And no Fix button
+				+ Message of issue must be different when success, or title + message
+					+ And no Fix button
 				- Handle issues as specific
 					- ElectricSubstratum: button for trimming
 						= Store undo at Controller::Trim

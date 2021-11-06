@@ -393,7 +393,16 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
                                 auto label = new wxStaticText(contentWindow, wxID_ANY, wxEmptyString,
                                     wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
 
-                                wxString labelText = _("One or more particles in the electrical layer have no particles in the structural layer behind them. Particles in the electrical layer must always be on top of existing particles in the structural layer.");
+                                wxString labelText;
+                                if (issue.GetSeverity() == ModelValidationIssue::SeverityType::Error)
+                                {
+                                    labelText = _("One or more particles in the electrical layer have no particles in the structural layer beneath them. Particles in the electrical layer must always be on top of existing particles in the structural layer.");
+                                }
+                                else
+                                {
+                                    labelText = _("All particles in the electrical layer have a particle in the structural layer beneath them. Particles in the electrical layer must always be on top of existing particles in the structural layer.");
+                                }
+
                                 label->SetLabel(labelText);
 
                                 label->Bind(
@@ -416,6 +425,7 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
                             vSizer->AddSpacer(10);
 
                             // Button
+                            if (issue.GetSeverity() == ModelValidationIssue::SeverityType::Error)
                             {
                                 auto button = new wxButton(contentWindow, wxID_ANY, _("Fix This Issue"));
                                 button->SetToolTip(_("Fix this issue by removing the offending electrical particles."));
