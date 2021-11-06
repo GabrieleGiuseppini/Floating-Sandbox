@@ -305,14 +305,14 @@ MainFrame::MainFrame(
         {
             mSaveShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship") + wxS("\tCtrl+S"), _("Save the current ship"), wxITEM_NORMAL);
             fileMenu->Append(mSaveShipMenuItem);
-            Connect(mSaveShipMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveShip);
+            Connect(mSaveShipMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveShipMenuItem);
         }
 
         if (!IsStandAlone())
         {
             mSaveAndGoBackMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship and Return to Game"), _("Save the current ship and return to the simulator"), wxITEM_NORMAL);
             fileMenu->Append(mSaveAndGoBackMenuItem);
-            Connect(mSaveAndGoBackMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveAndGoBack);
+            Connect(mSaveAndGoBackMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveAndGoBackMenuItem);
         }
         else
         {
@@ -322,7 +322,7 @@ MainFrame::MainFrame(
         {
             wxMenuItem * saveShipAsMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship As"), _("Save the current ship to a different file"), wxITEM_NORMAL);
             fileMenu->Append(saveShipAsMenuItem);
-            Connect(saveShipAsMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveShipAs);
+            Connect(saveShipAsMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveShipAsMenuItem);
         }
 
         if (!IsStandAlone())
@@ -699,7 +699,7 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
                 mResourceLocator.GetIconFilePath("save_ship_button"),
                 [this]()
                 {
-                    SaveShip();
+                    OnSaveShip();
                 },
                 _("Save the current ship"));
 
@@ -715,7 +715,7 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
                 mResourceLocator.GetIconFilePath("save_ship_as_button"),
                 [this]()
                 {
-                    SaveShipAs();
+                    OnSaveShipAs();
                 },
                 _("Save the current ship to a different file"));
 
@@ -730,7 +730,7 @@ wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
                 mResourceLocator.GetIconFilePath("save_and_return_to_game_button"),
                 [this]()
                 {
-                    SaveAndSwitchBackToGame();
+                    OnSaveAndGoBack();
                 },
                 _("Save the current ship and return to the simulator"));
 
@@ -2054,19 +2054,43 @@ void MainFrame::OnLoadShip(wxCommandEvent & /*event*/)
     LoadShip();
 }
 
-void MainFrame::OnSaveShip(wxCommandEvent & /*event*/)
+void MainFrame::OnSaveShipMenuItem(wxCommandEvent & /*event*/)
 {
-    SaveShip();
+    OnSaveShip();
 }
 
-void MainFrame::OnSaveShipAs(wxCommandEvent & /*event*/)
+void MainFrame::OnSaveShip()
 {
-    SaveShipAs();
+    if (PreSaveShipCheck())
+    {
+        SaveShip();
+    }
 }
 
-void MainFrame::OnSaveAndGoBack(wxCommandEvent & /*event*/)
+void MainFrame::OnSaveShipAsMenuItem(wxCommandEvent & /*event*/)
 {
-    SaveAndSwitchBackToGame();
+    OnSaveShipAs();
+}
+
+void MainFrame::OnSaveShipAs()
+{
+    if (PreSaveShipCheck())
+    {
+        SaveShipAs();
+    }
+}
+
+void MainFrame::OnSaveAndGoBackMenuItem(wxCommandEvent & /*event*/)
+{
+    OnSaveAndGoBack();
+}
+
+void MainFrame::OnSaveAndGoBack()
+{
+    if (PreSaveShipCheck())
+    {
+        SaveAndSwitchBackToGame();
+    }
 }
 
 void MainFrame::OnQuitAndGoBack(wxCommandEvent & /*event*/)
@@ -2262,6 +2286,35 @@ void MainFrame::LoadShip()
     }
 }
 
+bool MainFrame::PreSaveShipCheck()
+{
+    assert(mController);
+
+    // TODOHERE: integrate with Controller's "dirty wrt validation" mechanism
+
+    // Validate ship
+    auto validationResults = mController->ValidateModel();
+
+    if (validationResults.HasErrorsOrWarnings())
+    {
+        // Display validation dialog
+
+        if (!mModelValidationDialog)
+        {
+            mModelValidationDialog = std::make_unique<ModelValidationDialog>(this, mResourceLocator);
+        }
+
+        return mModelValidationDialog->ShowModalForSaveShipValidation(
+            *mController,
+            std::move(validationResults));
+    }
+    else
+    {
+        // All ok
+        return true;
+    }
+}
+
 bool MainFrame::SaveShip()
 {
     if (!mCurrentShipFilePath.has_value())
@@ -2384,7 +2437,7 @@ void MainFrame::ValidateShip()
         mModelValidationDialog = std::make_unique<ModelValidationDialog>(this, mResourceLocator);
     }
 
-    mModelValidationDialog->ShowModalForSaveShipValidation(*mController);
+    mModelValidationDialog->ShowModalForStandAloneValidation(*mController);
 }
 
 void MainFrame::OpenMaterialPalette(

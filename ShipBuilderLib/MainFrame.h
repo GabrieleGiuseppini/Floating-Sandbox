@@ -143,9 +143,12 @@ private:
 
     void OnNewShip(wxCommandEvent & event);
     void OnLoadShip(wxCommandEvent & event);
-    void OnSaveShip(wxCommandEvent & event);
-    void OnSaveShipAs(wxCommandEvent & event);
-    void OnSaveAndGoBack(wxCommandEvent & event);
+    void OnSaveShipMenuItem(wxCommandEvent & event);
+    void OnSaveShip();
+    void OnSaveShipAsMenuItem(wxCommandEvent & event);
+    void OnSaveShipAs();
+    void OnSaveAndGoBackMenuItem(wxCommandEvent & event);
+    void OnSaveAndGoBack();
     void OnQuitAndGoBack(wxCommandEvent & event);
     void OnQuit(wxCommandEvent & event);
     void OnClose(wxCloseEvent & event);
@@ -171,6 +174,8 @@ private:
     void NewShip();
 
     void LoadShip();
+
+    bool PreSaveShipCheck();
 
     bool SaveShip();
 

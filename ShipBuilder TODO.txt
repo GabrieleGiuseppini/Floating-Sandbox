@@ -373,6 +373,11 @@ https://gamejolt.com/x/permalink/comment/11730705
 				- ForSaveAs: only non-success displayed
 		- Nail down model dirty wrt validation
 			- Need helper @ Controller through which all "model.setdirty" goes?
+		= Dialog open for ship save:
+			= Calc validation before opening dialog, and check it; only open dialog if errors or warnings
+			= Dialog::OpenForSave must then take validation results there, and skip initial validation
+			- TODO: order of errors/warnings/success
+			- If save: OK is only enabled if no errors in validation results
 
 		- TODOOLD
 		- Controller keeps track of whether or not model has ever been dirty since the last validation has run

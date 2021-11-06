@@ -87,10 +87,14 @@ ModelValidationResults ModelController::ValidateModel() const
     //
 
     // TODOHERE: use own GetStructureAABB() -> Rect
+    // TODOTEST
+    issues.emplace_back(ModelValidationIssue::CheckClassType::EmptyStructuralLayer, ModelValidationIssue::SeverityType::Success);
 
     //
     // Electrical substratum
     //
+
+    ModelValidationIssue::SeverityType electricalSubstratumOutcome;
 
     if (mModel.HasLayer(LayerType::Electrical))
     {
@@ -116,16 +120,33 @@ ModelValidationResults ModelController::ValidateModel() const
 
         if (electricalParticlesWithNoStructuralSubstratumCount > 0)
         {
-            issues.emplace_back(ModelValidationIssue::CheckClassType::MissingElectricalSubstrate, ModelValidationIssue::SeverityType::Error);
+            electricalSubstratumOutcome = ModelValidationIssue::SeverityType::Error;
+        }
+        else
+        {
+            electricalSubstratumOutcome = ModelValidationIssue::SeverityType::Success;
         }
     }
+    else
+    {
+        electricalSubstratumOutcome = ModelValidationIssue::SeverityType::Success;
+    }
+
+    issues.emplace_back(ModelValidationIssue::CheckClassType::MissingElectricalSubstrate, electricalSubstratumOutcome);
 
     // TODOTEST
-    std::this_thread::sleep_for(std::chrono::seconds(2));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     //
     // Ship size
     //
+
+    // TODOTEST
+    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Warning);
+    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Warning);
+    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Warning);
+    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Warning);
+    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Warning);
 
     return ModelValidationResults(std::move(issues));
 }

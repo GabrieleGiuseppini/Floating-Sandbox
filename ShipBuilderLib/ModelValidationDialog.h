@@ -31,7 +31,10 @@ public:
         ResourceLocator const & resourceLocator);
 
     void ShowModalForStandAloneValidation(Controller & controller);
-    void ShowModalForSaveShipValidation(Controller & controller);
+
+    bool ShowModalForSaveShipValidation(
+        Controller & controller,
+        ModelValidationResults && modelValidationResults);
 
 private:
 

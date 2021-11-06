@@ -24,10 +24,10 @@ ModelValidationDialog::ModelValidationDialog(
         wxID_ANY,
         _("Ship Issues"),
         wxDefaultPosition,
-        wxSize(400, 400),
-        wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED);
+        wxSize(600, 600),
+        wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxRESIZE_BORDER);
 
-    SetMinSize(wxSize(400, 400));
+    SetMinSize(wxSize(400, 600));
 
     SetBackgroundColour(GetDefaultAttributes().colBg);
 
@@ -83,6 +83,7 @@ ModelValidationDialog::ModelValidationDialog(
 
     {
         mResultsPanel = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
+        mResultsPanel->SetScrollRate(0, 1);
 
         mResultsPanelVSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -142,13 +143,23 @@ void ModelValidationDialog::ShowModalForStandAloneValidation(Controller & contro
     wxDialog::ShowModal();
 }
 
-void ModelValidationDialog::ShowModalForSaveShipValidation(Controller & controller)
+bool ModelValidationDialog::ShowModalForSaveShipValidation(
+    Controller & controller,
+    ModelValidationResults && modelValidationResults)
 {
     mSessionData.emplace(controller, false);
+    mValidationResults.emplace(std::move(modelValidationResults));
 
-    StartValidation();
+    ShowResults(*mValidationResults);
 
-    wxDialog::ShowModal();
+    if (wxDialog::ShowModal() == 0)
+    {
+        return true; // May save
+    }
+    else
+    {
+        return false;
+    }
 }
 
 void ModelValidationDialog::OnOkButton(wxCommandEvent & /*event*/)
@@ -215,40 +226,114 @@ void ModelValidationDialog::OnValidationTimer(wxTimerEvent & /*event*/)
 
 void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
 {
+    assert(mSessionData);
+    assert(mValidationResults);
+
     //
     // Populate results panel
     //
 
     mResultsPanelVSizer->Clear(true);
 
-    if (results.IsEmpty())
+    if (mSessionData->IsForSave
+        && !mValidationResults->HasErrorsOrWarnings())
     {
-        // Success
+        //
+        // Single "success" panel
+        //
 
-        mResultsPanelVSizer->AddStretchSpacer(1);
+        wxStaticBoxSizer * successBoxHSizer = new wxStaticBoxSizer(wxHORIZONTAL, mResultsPanel, _("Success"));
 
-        auto bmp = new wxStaticBitmap(mResultsPanel, wxID_ANY, WxHelpers::LoadBitmap("success_medium", mResourceLocator));
+        // Icon
+        {
+            auto bmp = new wxStaticBitmap(mResultsPanel, wxID_ANY, WxHelpers::LoadBitmap("success_medium", mResourceLocator));
+
+            successBoxHSizer->Add(
+                bmp,
+                0, // Retain H size
+                wxLEFT | wxRIGHT, // Retain V size
+                10);
+        }
+
+        // Label
+        {
+            auto label = new wxStaticText(mResultsPanel, wxID_ANY, _("Congratulations! The ship has no issues and it may be saved."),
+                wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+
+            successBoxHSizer->Add(
+                label,
+                1, // Expand H
+                wxLEFT | wxRIGHT, // Retain V size
+                10);
+        }
+
         mResultsPanelVSizer->Add(
-            bmp,
-            0,
-            wxALIGN_CENTER_HORIZONTAL,
+            successBoxHSizer,
+            0, // Retain V size
+            wxEXPAND, // Occupy all available H space
             0);
-
-        mResultsPanelVSizer->AddStretchSpacer(1);
     }
     else
     {
-        // TODO: one section per issue? If so, create all sections at cctor?
+        //
+        // Individual panels for each check
+        //
+
         for (ModelValidationIssue const & issue : results.GetIssues())
         {
-            wxStaticBoxSizer * issueBoxSizer = new wxStaticBoxSizer(wxHORIZONTAL, mResultsPanel, wxEmptyString);
-            // TODOHERE
+            wxStaticBoxSizer * issueBoxHSizer = new wxStaticBoxSizer(wxHORIZONTAL, mResultsPanel, wxEmptyString);
+
+            // Icon
+            {
+                wxBitmap iconBitmap;
+                switch (issue.GetSeverity())
+                {
+                    case ModelValidationIssue::SeverityType::Error:
+                    {
+                        iconBitmap = WxHelpers::LoadBitmap("error_medium", mResourceLocator);
+                        break;
+                    }
+
+                    case ModelValidationIssue::SeverityType::Success:
+                    {
+                        iconBitmap = WxHelpers::LoadBitmap("success_medium", mResourceLocator);
+                        break;
+                    }
+
+                    case ModelValidationIssue::SeverityType::Warning:
+                    {
+                        iconBitmap = WxHelpers::LoadBitmap("warning_medium", mResourceLocator);
+                        break;
+                    }
+                }
+
+                auto staticBitmap = new wxStaticBitmap(mResultsPanel, wxID_ANY, iconBitmap);
+
+                issueBoxHSizer->Add(
+                    staticBitmap,
+                    0, // Retain H size
+                    wxLEFT | wxRIGHT, // Retain V size
+                    10);
+            }
+
+            // Label
+            {
+                // TODOHERE
+                auto label = new wxStaticText(mResultsPanel, wxID_ANY, _("TODOTEST"),
+                    wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+
+                issueBoxHSizer->Add(
+                    label,
+                    1, // Expand H
+                    wxLEFT | wxRIGHT, // Retain V size
+                    10);
+            }
 
             mResultsPanelVSizer->Add(
-                issueBoxSizer,
-                1,
-                wxEXPAND,
-                0);
+                issueBoxHSizer,
+                0, // Retain V size
+                wxEXPAND | wxLEFT | wxRIGHT, // Occupy all available H space
+                10);
         }
     }
 
@@ -282,6 +367,8 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
 
         mButtonsPanelVSizer->AddSpacer(20);
     }
+
+
 
     //
     // Toggle results panel
