@@ -421,17 +421,19 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
                                 button->SetToolTip(_("Fix this issue by removing the offending electrical particles."));
                                 button->Bind(
                                     wxEVT_BUTTON,
-                                    [](wxCommandEvent & /*event*/)
+                                    [this](wxCommandEvent & /*event*/)
                                     {
-                                        // TODOHERE
+                                        // Fix
+                                        mSessionData->BuilderController.TrimElectricalParticlesWithoutSubstratum();
+
+                                        // Re-run validation
+                                        StartValidation();
                                     });
 
                                 vSizer->Add(
                                     button,
                                     0,  // Retain own height
-                                    // TODOTEST
-                                    //wxALIGN_CENTER_HORIZONTAL,
-                                    wxALIGN_LEFT | wxBOTTOM,
+                                    wxALIGN_LEFT | wxBOTTOM, // Do not expand H
                                     4);
                             }
 
@@ -507,6 +509,7 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
         {
             auto button = new wxButton(mButtonsPanel, wxID_ANY, _("OK"));
             button->Bind(wxEVT_BUTTON, &ModelValidationDialog::OnOkButton, this);
+            button->Enable(!mSessionData->IsForSave || !mValidationResults->HasErrors());
             hSizer->Add(button, 0);
         }
 

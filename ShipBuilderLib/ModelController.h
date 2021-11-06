@@ -104,7 +104,7 @@ public:
     void SetElectricalLayer(/*TODO*/);
     void RemoveElectricalLayer();
 
-    void TrimElectricalParticlesWithoutSubstratum();
+    std::optional<ShipSpaceRect> TrimElectricalParticlesWithoutSubstratum();
 
     void ElectricalRegionFill(
         ShipSpaceRect const & region,

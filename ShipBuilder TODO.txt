@@ -371,10 +371,14 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ ForShipSave: all errors first, then warnings - no success					
 				+ ForValidation: as they come
 					+ Use sizer->Insert()
+				- Message of issue must be different when success, or title + message
+					- And no Fix button
 				- Handle issues as specific
 					- ElectricSubstratum: button for trimming
+						= Store undo at Controller::Trim
+							+ ModelController::Trim must return region
 				+ Message before errors and message before warnings - in ForSave mode
-
+		- See if can have gauge also @ save
 		- Nail down model dirty wrt validation
 			- Need helper @ Controller through which all "model.setdirty" goes?
 		= Dialog open for ship save:

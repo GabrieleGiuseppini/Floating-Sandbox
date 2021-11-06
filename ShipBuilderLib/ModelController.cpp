@@ -404,7 +404,7 @@ void ModelController::RemoveElectricalLayer()
     mIsElectricalLayerInEphemeralVisualization = false;
 }
 
-void ModelController::TrimElectricalParticlesWithoutSubstratum()
+std::optional<ShipSpaceRect> ModelController::TrimElectricalParticlesWithoutSubstratum()
 {
     assert(mModel.HasLayer(LayerType::Electrical));
 
@@ -413,6 +413,8 @@ void ModelController::TrimElectricalParticlesWithoutSubstratum()
     //
     // Update model
     //
+
+    std::optional<ShipSpaceRect> affectedRect;
 
     StructuralLayerData const & structuralLayer = mModel.GetStructuralLayer();
     ElectricalLayerData const & electricalLayer = mModel.GetElectricalLayer();
@@ -430,6 +432,15 @@ void ModelController::TrimElectricalParticlesWithoutSubstratum()
                 && structuralLayer.Buffer[coords].Material == nullptr)
             {
                 WriteParticle(coords, nullMaterial);
+
+                if (!affectedRect.has_value())
+                {
+                    affectedRect = ShipSpaceRect(coords);
+                }
+                else
+                {
+                    affectedRect->UnionWith(coords);
+                }
             }
         }
     }
@@ -438,7 +449,12 @@ void ModelController::TrimElectricalParticlesWithoutSubstratum()
     // Update visualization
     //
 
-    UpdateElectricalLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
+    if (affectedRect.has_value())
+    {
+        UpdateElectricalLayerVisualization(*affectedRect);
+    }
+
+    return affectedRect;
 }
 
 void ModelController::ElectricalRegionFill(

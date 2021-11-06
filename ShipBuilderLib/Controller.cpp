@@ -283,7 +283,33 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
     StopTool();
 
     // Trim
-    mModelController->TrimElectricalParticlesWithoutSubstratum();
+    {
+        // Save state
+        auto originalDirtyStateClone = mModelController->GetModel().GetDirtyState();
+        auto originalLayerClone = mModelController->GetModel().CloneElectricalLayer();
+
+        // Trim
+        auto const affectedRect = mModelController->TrimElectricalParticlesWithoutSubstratum();
+
+        // Create undo action, if needed
+        if (affectedRect)
+        {
+            //
+           // Create undo action
+           //
+
+            auto clippedRegionClone = originalLayerClone->Clone(*affectedRect);
+
+            auto undoAction = std::make_unique<LayerRegionUndoAction<ElectricalLayerData>>(
+                _("Trim Electrical"),
+                originalDirtyStateClone,
+                std::move(*clippedRegionClone),
+                affectedRect->origin);
+
+            mUndoStack.Push(std::move(undoAction));
+            mUserInterface.OnUndoStackStateChanged();
+        }
+    }
 
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Electrical);
