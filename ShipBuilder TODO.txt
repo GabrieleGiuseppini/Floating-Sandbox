@@ -27,7 +27,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Do at remaining layer buttons
 
 - Tests:
-	- Ships with unicode chars in metadata, show well in dialog
+	- Ships with unicode chars in metadata, show well in dialog: Désirée
 
 - ModelValidations - so that electrical layer is safe
 
@@ -360,6 +360,21 @@ https://gamejolt.com/x/permalink/comment/11730705
 		! Errors prevent ship from being saved
 		! Some validations also run continuously
 	- Impl:
+		= Object model:
+			+ ModelValidationResults:
+				- Errors: vector<ModelValidationIssue>
+				- Warnings: vector<ModelValidationIssue>
+			= ModelValidationIssue:
+				+ Type
+				- AffectedLocii: vector<ShipSpaceCoords>
+		- Dialog:
+			- Populate results
+				- ForStandAloneValidation: all issues displayed
+				- ForSaveAs: only non-success displayed
+		- Nail down model dirty wrt validation
+			- Need helper @ Controller through which all "model.setdirty" goes?
+
+		- TODOOLD
 		- Controller keeps track of whether or not model has ever been dirty since the last validation has run
 			- mIsModelDirtyWrtValidation, set to F @ cctor, set to T @ each model dirty, set to F @ ValidateModel()
 			- IUserInterface notification
@@ -368,12 +383,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Controller then clears mIsModelDirtyWrtValidation
 		- User can push button as well; thread 4 UI progress
 			- MainFrame calls Controller::ValidateModel from thread (@ both button and save's) for UI progress
-		+ ModelValidationResults:
-			- Errors: vector<ModelValidationIssue>
-			- Warnings: vector<ModelValidationIssue>
-		= ModelValidationIssue:
-			+ Type
-			- AffectedLocii: vector<ShipSpaceCoords>
 		- 2 issue contributors:
 			- ModelController::ValidateModel() -> ModelValidationResults
 				- Clear mValidationResults

@@ -27,6 +27,8 @@ ModelValidationDialog::ModelValidationDialog(
         wxSize(400, 400),
         wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED);
 
+    SetMinSize(wxSize(400, 400));
+
     SetBackgroundColour(GetDefaultAttributes().colBg);
 
     mMainVSizer = new wxBoxSizer(wxVERTICAL);
@@ -70,8 +72,8 @@ ModelValidationDialog::ModelValidationDialog(
 
         mMainVSizer->Add(
             mValidationPanel,
-            0,
-            wxEXPAND,
+            1,          // Expand vertically
+            wxEXPAND,   // Expand horizontally
             0);
     }
 
@@ -90,8 +92,8 @@ ModelValidationDialog::ModelValidationDialog(
 
         mMainVSizer->Add(
             mResultsPanel,
-            0,
-            wxEXPAND,
+            1,          // Expand vertically
+            wxEXPAND,   // Expand horizontally
             0);
     }
 
@@ -102,32 +104,16 @@ ModelValidationDialog::ModelValidationDialog(
     {
         mButtonsPanel = new wxPanel(this);
 
-        wxBoxSizer * buttonsHSizer = new wxBoxSizer(wxHORIZONTAL);
+        mButtonsPanelVSizer = new wxBoxSizer(wxVERTICAL);
 
-        buttonsHSizer->AddSpacer(20);
+        // No buttons now
 
-        {
-            auto button = new wxButton(mButtonsPanel, wxID_ANY, _("OK"));
-            button->Bind(wxEVT_BUTTON, &ModelValidationDialog::OnOkButton, this);
-            buttonsHSizer->Add(button, 0);
-        }
-
-        buttonsHSizer->AddSpacer(20);
-
-        {
-            auto button = new wxButton(mButtonsPanel, wxID_ANY, _("Cancel"));
-            button->Bind(wxEVT_BUTTON, &ModelValidationDialog::OnCancelButton, this);
-            buttonsHSizer->Add(button, 0);
-        }
-
-        buttonsHSizer->AddSpacer(20);
-
-        mButtonsPanel->SetSizer(buttonsHSizer);
+        mButtonsPanel->SetSizer(mButtonsPanelVSizer);
 
         mMainVSizer->Add(
             mButtonsPanel,
-            0,
-            wxALIGN_CENTER_HORIZONTAL,
+            0,                           // Retain own vertical size
+            wxALIGN_CENTER_HORIZONTAL,   // Do not expand panel horizontally
             0);
     }
 
@@ -147,10 +133,18 @@ ModelValidationDialog::ModelValidationDialog(
     Connect(mValidationTimer->GetId(), wxEVT_TIMER, (wxObjectEventFunction)&ModelValidationDialog::OnValidationTimer);
 }
 
-void ModelValidationDialog::ShowModal(
-    Controller & controller)
+void ModelValidationDialog::ShowModalForStandAloneValidation(Controller & controller)
 {
-    mController = &controller;
+    mSessionData.emplace(controller, false);
+
+    StartValidation();
+
+    wxDialog::ShowModal();
+}
+
+void ModelValidationDialog::ShowModalForSaveShipValidation(Controller & controller)
+{
+    mSessionData.emplace(controller, false);
 
     StartValidation();
 
@@ -190,8 +184,12 @@ void ModelValidationDialog::ValidationThreadLoop()
     // Runs on separate thread
     //
 
-    assert(mController);
-    mValidationResults.emplace(mController->ValidateModel());
+    // Get validation
+    assert(mSessionData.has_value());
+    auto validationResults = mSessionData->BuilderController.ValidateModel();
+
+    // Store - signaling that we're done
+    mValidationResults.emplace(validationResults);
 }
 
 void ModelValidationDialog::OnValidationTimer(wxTimerEvent & /*event*/)
@@ -217,15 +215,12 @@ void ModelValidationDialog::OnValidationTimer(wxTimerEvent & /*event*/)
 
 void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
 {
-    // Toggle results panel
-    mMainVSizer->Hide(mValidationPanel);
-    mMainVSizer->Show(mResultsPanel);
-    mMainVSizer->Show(mButtonsPanel);
-
-    // Cleanup results panel
-    mResultsPanelVSizer->Clear();
-
+    //
     // Populate results panel
+    //
+
+    mResultsPanelVSizer->Clear(true);
+
     if (results.IsEmpty())
     {
         // Success
@@ -256,6 +251,45 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
                 0);
         }
     }
+
+    //
+    // Populate buttons panel
+    //
+
+    mButtonsPanelVSizer->Clear(true);
+
+    {
+        mButtonsPanelVSizer->AddSpacer(20);
+
+        auto hSizer = new wxBoxSizer(wxHORIZONTAL);
+
+        {
+            auto button = new wxButton(mButtonsPanel, wxID_ANY, _("OK"));
+            button->Bind(wxEVT_BUTTON, &ModelValidationDialog::OnOkButton, this);
+            hSizer->Add(button, 0);
+        }
+
+        if (mSessionData->IsForSave)
+        {
+            hSizer->AddSpacer(20);
+
+            auto button = new wxButton(mButtonsPanel, wxID_ANY, _("Cancel"));
+            button->Bind(wxEVT_BUTTON, &ModelValidationDialog::OnCancelButton, this);
+            hSizer->Add(button, 0);
+        }
+
+        mButtonsPanelVSizer->Add(hSizer);
+
+        mButtonsPanelVSizer->AddSpacer(20);
+    }
+
+    //
+    // Toggle results panel
+    //
+
+    mMainVSizer->Hide(mValidationPanel);
+    mMainVSizer->Show(mResultsPanel);
+    mMainVSizer->Show(mButtonsPanel);
 
     Layout();
 }

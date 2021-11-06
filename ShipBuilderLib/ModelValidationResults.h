@@ -14,32 +14,41 @@ class ModelValidationIssue final
 {
 public:
 
-    enum class Type
+    enum class CheckClassType
     {
-        MissingElectricalSubstrate
+        EmptyStructuralLayer,
+        MissingElectricalSubstrate,
+        ShipSizeTooBig
+    };
+
+    enum class SeverityType
+    {
+        Error,
+        Success,
+        Warning
     };
 
     ModelValidationIssue(
-        Type type,
-        bool isError)
-        : mType(type)
-        , mIsError(isError)
+        CheckClassType checkClass,
+        SeverityType severity)
+        : mCheckClass(checkClass)
+        , mSeverity(severity)
     {}
 
-    Type GetType() const
+    CheckClassType GetCheckClass() const
     {
-        return mType;
+        return mCheckClass;
     }
 
-    bool IsError() const
+    SeverityType GetSeverity() const
     {
-        return mIsError;
+        return mSeverity;
     }
 
 private:
 
-    Type mType;
-    bool mIsError;
+    CheckClassType mCheckClass;
+    SeverityType mSeverity;
 };
 
 class ModelValidationResults final
@@ -48,23 +57,44 @@ public:
 
     ModelValidationResults()
         : mIssues()
+        , mHasErrors(false)
+        , mHasWarnings(false)
     {
     }
 
     ModelValidationResults(std::vector<ModelValidationIssue> && issues)
         : mIssues(std::move(issues))
     {
-    }
-
-    bool HasErrors() const
-    {
-        return std::find_if(
+        mHasErrors = std::find_if(
             mIssues.cbegin(),
             mIssues.cend(),
             [](ModelValidationIssue const & issue)
             {
-                return issue.IsError();
+                return issue.GetSeverity() == ModelValidationIssue::SeverityType::Error;
             }) != mIssues.cend();
+
+        mHasWarnings = std::find_if(
+            mIssues.cbegin(),
+            mIssues.cend(),
+            [](ModelValidationIssue const & issue)
+            {
+                return issue.GetSeverity() == ModelValidationIssue::SeverityType::Warning;
+            }) != mIssues.cend();
+    }
+
+    bool HasErrors() const
+    {
+        return mHasErrors;
+    }
+
+    bool HasWarnings() const
+    {
+        return mHasWarnings;
+    }
+
+    bool HasErrorsOrWarnings() const
+    {
+        return mHasErrors || mHasWarnings;
     }
 
     bool IsEmpty() const
@@ -80,5 +110,8 @@ public:
 private:
 
     std::vector<ModelValidationIssue> mIssues;
+
+    bool mHasErrors;
+    bool mHasWarnings;
 };
 }

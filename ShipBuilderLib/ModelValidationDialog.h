@@ -30,7 +30,8 @@ public:
         wxWindow * parent,
         ResourceLocator const & resourceLocator);
 
-    void ShowModal(Controller & controller);
+    void ShowModalForStandAloneValidation(Controller & controller);
+    void ShowModalForSaveShipValidation(Controller & controller);
 
 private:
 
@@ -46,7 +47,6 @@ private:
 private:
 
     ResourceLocator const & mResourceLocator;
-    Controller * mController;
 
     wxSizer * mMainVSizer;
 
@@ -60,11 +60,27 @@ private:
 
     // Buttons panel
     wxPanel * mButtonsPanel;
+    wxSizer * mButtonsPanelVSizer;
 
     // Validation thread
     std::unique_ptr<wxTimer> mValidationTimer;
     std::thread mValidationThread;
     std::optional<ModelValidationResults> mValidationResults;
+
+    struct SessionData
+    {
+        Controller & BuilderController;
+        bool const IsForSave;
+
+        SessionData(
+            Controller & builderController,
+            bool isForSave)
+            : BuilderController(builderController)
+            , IsForSave(isForSave)
+        {}
+    };
+
+    std::optional<SessionData> mSessionData;
 };
 
 }

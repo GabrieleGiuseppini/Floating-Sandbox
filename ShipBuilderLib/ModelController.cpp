@@ -83,6 +83,12 @@ ModelValidationResults ModelController::ValidateModel() const
     std::vector<ModelValidationIssue> issues;
 
     //
+    // Empty structural layer
+    //
+
+    // TODOHERE: use own GetStructureAABB() -> Rect
+
+    //
     // Electrical substratum
     //
 
@@ -110,12 +116,16 @@ ModelValidationResults ModelController::ValidateModel() const
 
         if (electricalParticlesWithNoStructuralSubstratumCount > 0)
         {
-            issues.emplace_back(ModelValidationIssue::Type::MissingElectricalSubstrate, true);
+            issues.emplace_back(ModelValidationIssue::CheckClassType::MissingElectricalSubstrate, ModelValidationIssue::SeverityType::Error);
         }
     }
 
     // TODOTEST
     std::this_thread::sleep_for(std::chrono::seconds(2));
+
+    //
+    // Ship size
+    //
 
     return ModelValidationResults(std::move(issues));
 }

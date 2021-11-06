@@ -2384,7 +2384,7 @@ void MainFrame::ValidateShip()
         mModelValidationDialog = std::make_unique<ModelValidationDialog>(this, mResourceLocator);
     }
 
-    mModelValidationDialog->ShowModal(*mController);
+    mModelValidationDialog->ShowModalForSaveShipValidation(*mController);
 }
 
 void MainFrame::OpenMaterialPalette(
