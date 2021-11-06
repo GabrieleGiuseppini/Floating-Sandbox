@@ -114,6 +114,9 @@ ModelValidationResults ModelController::ValidateModel() const
         }
     }
 
+    // TODOTEST
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+
     return ModelValidationResults(std::move(issues));
 }
 

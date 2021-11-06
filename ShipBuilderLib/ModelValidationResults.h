@@ -38,7 +38,7 @@ public:
 
 private:
 
-    Type const mType;
+    Type mType;
     bool mIsError;
 };
 
@@ -79,6 +79,6 @@ public:
 
 private:
 
-    std::vector<ModelValidationIssue> const mIssues;
+    std::vector<ModelValidationIssue> mIssues;
 };
 }

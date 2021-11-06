@@ -10,9 +10,15 @@
 #include <Game/ResourceLocator.h>
 
 #include <wx/dialog.h>
+#include <wx/gauge.h>
 #include <wx/panel.h>
+#include <wx/scrolwin.h>
+#include <wx/sizer.h>
+#include <wx/timer.h>
 
+#include <memory>
 #include <optional>
+#include <thread>
 
 namespace ShipBuilder {
 
@@ -31,20 +37,34 @@ private:
     void OnOkButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
 
+
+    void StartValidation();
+    void ValidationThreadLoop();
+    void OnValidationTimer(wxTimerEvent & event);
+    void ShowResults(ModelValidationResults const & results);
+
 private:
 
     ResourceLocator const & mResourceLocator;
+    Controller * mController;
 
-    struct SessionData
-    {
-        Controller & BuilderController;
+    wxSizer * mMainVSizer;
 
-        explicit SessionData(Controller & controller)
-            : BuilderController(controller)
-        {}
-    };
+    // Validation panel
+    wxPanel * mValidationPanel;
+    wxGauge * mValidationWaitGauge;
 
-    std::optional<SessionData const> mSessionData;
+    // Results panel
+    wxScrolledWindow * mResultsPanel;
+    wxSizer * mResultsPanelVSizer;
+
+    // Buttons panel
+    wxPanel * mButtonsPanel;
+
+    // Validation thread
+    std::unique_ptr<wxTimer> mValidationTimer;
+    std::thread mValidationThread;
+    std::optional<ModelValidationResults> mValidationResults;
 };
 
 }

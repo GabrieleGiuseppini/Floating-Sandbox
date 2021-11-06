@@ -175,9 +175,9 @@ void ShipPreviewWindow::SetDirectory(std::filesystem::path const & directoryPath
                 mThreadToPanelScanInterruptAckEvent.wait(
                     lock,
                     [this]()
-                {
-                    return mThreadToPanelScanInterruptAck;
-                });
+                    {
+                        return mThreadToPanelScanInterruptAck;
+                    });
 
                 lock.unlock();
             }
