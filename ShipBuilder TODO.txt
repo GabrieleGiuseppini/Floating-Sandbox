@@ -372,8 +372,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ ForShipSave: all errors first, then warnings - no success					
 				+ ForValidation: as they come
 					+ Use sizer->Insert()
+				- Use grid sizer (ipv mResultsPanelVSizer) to ensure all sections have same width
 				- Handle issues as specific
 					- ElectricSubstratum: button for trimming
+				- Message before errors and message before warnings - in ForSave mode
 
 		- Nail down model dirty wrt validation
 			- Need helper @ Controller through which all "model.setdirty" goes?

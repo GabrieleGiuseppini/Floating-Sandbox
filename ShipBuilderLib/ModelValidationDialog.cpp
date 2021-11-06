@@ -27,7 +27,7 @@ ModelValidationDialog::ModelValidationDialog(
         wxSize(600, 600),
         wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxRESIZE_BORDER);
 
-    SetMinSize(wxSize(400, 600));
+    SetMinSize(wxSize(480, 600));
 
     SetBackgroundColour(GetDefaultAttributes().colBg);
 
@@ -313,7 +313,7 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
                         }
                     }
 
-                    auto staticBitmap = new wxStaticBitmap(mResultsPanel, wxID_ANY, iconBitmap);
+                    auto staticBitmap = new wxStaticBitmap(issueBoxHSizer->GetStaticBox(), wxID_ANY, iconBitmap);
 
                     issueBoxHSizer->Add(
                         staticBitmap,
@@ -322,16 +322,96 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
                         10);
                 }
 
-                // Label
+                // Content
                 {
-                    // TODOHERE
-                    auto label = new wxStaticText(mResultsPanel, wxID_ANY, _("TODOTEST"),
-                        wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+                    wxWindow * contentWindow = nullptr;
+                    switch (issue.GetCheckClass())
+                    {
+                        case ModelValidationIssue::CheckClassType::EmptyStructuralLayer:
+                        {
+                            // TODOHERE
+                            contentWindow = new wxStaticText(issueBoxHSizer->GetStaticBox(), wxID_ANY, _("TODOTEST"),
+                                wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+
+                            break;
+                        }
+
+                        case ModelValidationIssue::CheckClassType::MissingElectricalSubstrate:
+                        {
+                            contentWindow = new wxPanel(issueBoxHSizer->GetStaticBox());
+
+                            auto vSizer = new wxBoxSizer(wxVERTICAL);
+
+                            vSizer->AddStretchSpacer();
+
+                            // Label
+                            {
+                                auto label = new wxStaticText(contentWindow, wxID_ANY, wxEmptyString,
+                                    wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+
+                                wxString labelText = _("One or more particles in the electrical layer have no particles in the structural layer behind them. Particles in the electrical layer must always be on top of existing particles in the structural layer.");
+                                label->SetLabel(labelText);
+
+                                label->Bind(
+                                    wxEVT_SIZE,
+                                    [label, contentWindow, labelText](wxSizeEvent & event)
+                                    {
+                                        label->SetLabel(labelText);
+                                        label->Wrap(contentWindow->GetClientSize().GetWidth() - 10);
+
+                                        event.Skip();
+                                    });
+
+                                vSizer->Add(
+                                    label,
+                                    0,  // Retain own height
+                                    wxEXPAND, // Use all H space
+                                    0);
+                            }
+
+                            vSizer->AddSpacer(10);
+
+                            // Button
+                            {
+                                auto button = new wxButton(contentWindow, wxID_ANY, _("Fix This Issue"));
+                                button->SetToolTip(_("Fix this issue by removing the offending electrical particles."));
+                                button->Bind(
+                                    wxEVT_BUTTON,
+                                    [](wxCommandEvent & /*event*/)
+                                    {
+                                        // TODOHERE
+                                    });
+
+                                vSizer->Add(
+                                    button,
+                                    0,  // Retain own height
+                                    wxALIGN_CENTER_HORIZONTAL,
+                                    0);
+                            }
+
+                            vSizer->AddStretchSpacer();
+
+                            contentWindow->SetSizer(vSizer);
+
+                            break;
+                        }
+
+                        case ModelValidationIssue::CheckClassType::ShipSizeTooBig:
+                        {
+                            // TODOHERE
+                            contentWindow = new wxStaticText(issueBoxHSizer->GetStaticBox(), wxID_ANY, _("TODOTEST"),
+                                wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+
+                            break;
+                        }
+                    }
+
+                    assert(contentWindow != nullptr);
 
                     issueBoxHSizer->Add(
-                        label,
-                        1, // Expand H
-                        wxLEFT | wxRIGHT, // Retain V size
+                        contentWindow,
+                        1, // Use remaining H space
+                        wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL, // Retain V size
                         10);
                 }
 
@@ -361,7 +441,7 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
                     insertIndex,
                     issueBoxHSizer,
                     0, // Retain V size
-                    wxEXPAND | wxLEFT | wxRIGHT, // Occupy all available H space
+                    wxEXPAND | wxLEFT | wxRIGHT, // Occupy all available H space (to get uniform width)
                     10);
             }
         }
