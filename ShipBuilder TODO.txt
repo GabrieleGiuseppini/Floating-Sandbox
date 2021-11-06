@@ -373,7 +373,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Use sizer->Insert()
 				- Handle issues as specific
 					- ElectricSubstratum: button for trimming
-				- Message before errors and message before warnings - in ForSave mode
+				+ Message before errors and message before warnings - in ForSave mode
 
 		- Nail down model dirty wrt validation
 			- Need helper @ Controller through which all "model.setdirty" goes?
@@ -381,6 +381,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			= Calc validation before opening dialog, and check it; only open dialog if errors or warnings
 			= Dialog::OpenForSave must then take validation results there, and skip initial validation
 			- If save: OK is only enabled if no errors in validation results
+			- Skip save if user hits Cancel
 		- Do validations:
 			- ShipSizeTooBig
 			- Empty structural

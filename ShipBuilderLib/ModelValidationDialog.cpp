@@ -24,7 +24,7 @@ ModelValidationDialog::ModelValidationDialog(
         wxID_ANY,
         _("Ship Issues"),
         wxDefaultPosition,
-        wxSize(600, 600),
+        wxSize(680, 600),
         wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxRESIZE_BORDER);
 
     SetMinSize(wxSize(480, 600));
@@ -113,8 +113,8 @@ ModelValidationDialog::ModelValidationDialog(
 
         mMainVSizer->Add(
             mButtonsPanel,
-            0,                           // Retain own vertical size
-            wxALIGN_CENTER_HORIZONTAL,   // Do not expand panel horizontally
+            0,          // Retain own vertical size
+            wxEXPAND,   // Expand panel horizontally
             0);
     }
 
@@ -282,6 +282,50 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
         size_t errorInsertIndex = 0;
         size_t warningInsertIndex = 0;
 
+        // If in Save mode, display titles
+        if (mSessionData->IsForSave)
+        {
+            if (results.HasErrors())
+            {
+                auto label = new wxStaticText(mResultsPanel, wxID_ANY, _("The ship may not be saved unless the following error(s) are resolved:"),
+                    wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+
+                wxFont font = mResultsPanel->GetFont();
+                font.SetPointSize(font.GetPointSize() + 2);
+                label->SetFont(font);
+
+                mResultsPanelVSizer->Insert(
+                    errorInsertIndex,
+                    label,
+                    0, // Retain V size
+                    wxEXPAND | wxTOP | wxLEFT | wxRIGHT, // Occupy all available H space (to get uniform width)
+                    10);
+
+                ++errorInsertIndex;
+                ++warningInsertIndex;
+            }
+
+            if (results.HasWarnings())
+            {
+                auto label = new wxStaticText(mResultsPanel, wxID_ANY, _("Resolving the following warning(s) would improve the gaming experience with this ship:"),
+                    wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+
+                wxFont font = mResultsPanel->GetFont();
+                font.SetPointSize(font.GetPointSize() + 2);
+                label->SetFont(font);
+
+                mResultsPanelVSizer->Insert(
+                    warningInsertIndex,
+                    label,
+                    0, // Retain V size
+                    wxEXPAND | wxTOP | wxLEFT | wxRIGHT, // Occupy all available H space (to get uniform width)
+                    10);
+
+                ++warningInsertIndex;
+            }
+        }
+
+        // Render all issues now
         for (ModelValidationIssue const & issue : results.GetIssues())
         {
             if (!mSessionData->IsForSave
@@ -385,8 +429,10 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
                                 vSizer->Add(
                                     button,
                                     0,  // Retain own height
-                                    wxALIGN_CENTER_HORIZONTAL,
-                                    0);
+                                    // TODOTEST
+                                    //wxALIGN_CENTER_HORIZONTAL,
+                                    wxALIGN_LEFT | wxBOTTOM,
+                                    4);
                             }
 
                             vSizer->AddStretchSpacer();
@@ -473,12 +519,12 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
             hSizer->Add(button, 0);
         }
 
-        mButtonsPanelVSizer->Add(hSizer);
+        hSizer->AddSpacer(20);
+
+        mButtonsPanelVSizer->Add(hSizer, 0, wxALIGN_RIGHT, 0);
 
         mButtonsPanelVSizer->AddSpacer(20);
     }
-
-
 
     //
     // Toggle results panel
