@@ -94,8 +94,6 @@ ModelValidationResults ModelController::ValidateModel() const
     // Electrical substratum
     //
 
-    ModelValidationIssue::SeverityType electricalSubstratumOutcome;
-
     if (mModel.HasLayer(LayerType::Electrical))
     {
         StructuralLayerData const & structuralLayer = mModel.GetStructuralLayer();
@@ -118,6 +116,7 @@ ModelValidationResults ModelController::ValidateModel() const
             }
         }
 
+        ModelValidationIssue::SeverityType electricalSubstratumOutcome;
         if (electricalParticlesWithNoStructuralSubstratumCount > 0)
         {
             electricalSubstratumOutcome = ModelValidationIssue::SeverityType::Error;
@@ -126,13 +125,9 @@ ModelValidationResults ModelController::ValidateModel() const
         {
             electricalSubstratumOutcome = ModelValidationIssue::SeverityType::Success;
         }
-    }
-    else
-    {
-        electricalSubstratumOutcome = ModelValidationIssue::SeverityType::Success;
-    }
 
-    issues.emplace_back(ModelValidationIssue::CheckClassType::MissingElectricalSubstrate, electricalSubstratumOutcome);
+        issues.emplace_back(ModelValidationIssue::CheckClassType::MissingElectricalSubstrate, electricalSubstratumOutcome);
+    }
 
     // TODOTEST
     std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -143,10 +138,11 @@ ModelValidationResults ModelController::ValidateModel() const
 
     // TODOTEST
     issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Warning);
+    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Error);
+    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Success);
     issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Warning);
-    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Warning);
-    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Warning);
-    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Warning);
+    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Success);
+    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Error);
 
     return ModelValidationResults(std::move(issues));
 }

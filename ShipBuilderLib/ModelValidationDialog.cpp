@@ -147,7 +147,7 @@ bool ModelValidationDialog::ShowModalForSaveShipValidation(
     Controller & controller,
     ModelValidationResults && modelValidationResults)
 {
-    mSessionData.emplace(controller, false);
+    mSessionData.emplace(controller, true);
     mValidationResults.emplace(std::move(modelValidationResults));
 
     ShowResults(*mValidationResults);
@@ -279,61 +279,91 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
         // Individual panels for each check
         //
 
+        size_t errorInsertIndex = 0;
+        size_t warningInsertIndex = 0;
+
         for (ModelValidationIssue const & issue : results.GetIssues())
         {
-            wxStaticBoxSizer * issueBoxHSizer = new wxStaticBoxSizer(wxHORIZONTAL, mResultsPanel, wxEmptyString);
-
-            // Icon
+            if (!mSessionData->IsForSave
+                || issue.GetSeverity() != ModelValidationIssue::SeverityType::Success)
             {
-                wxBitmap iconBitmap;
-                switch (issue.GetSeverity())
+                wxStaticBoxSizer * issueBoxHSizer = new wxStaticBoxSizer(wxHORIZONTAL, mResultsPanel, wxEmptyString);
+
+                // Icon
                 {
-                    case ModelValidationIssue::SeverityType::Error:
+                    wxBitmap iconBitmap;
+                    switch (issue.GetSeverity())
                     {
-                        iconBitmap = WxHelpers::LoadBitmap("error_medium", mResourceLocator);
-                        break;
+                        case ModelValidationIssue::SeverityType::Error:
+                        {
+                            iconBitmap = WxHelpers::LoadBitmap("error_medium", mResourceLocator);
+                            break;
+                        }
+
+                        case ModelValidationIssue::SeverityType::Success:
+                        {
+                            iconBitmap = WxHelpers::LoadBitmap("success_medium", mResourceLocator);
+                            break;
+                        }
+
+                        case ModelValidationIssue::SeverityType::Warning:
+                        {
+                            iconBitmap = WxHelpers::LoadBitmap("warning_medium", mResourceLocator);
+                            break;
+                        }
                     }
 
-                    case ModelValidationIssue::SeverityType::Success:
-                    {
-                        iconBitmap = WxHelpers::LoadBitmap("success_medium", mResourceLocator);
-                        break;
-                    }
+                    auto staticBitmap = new wxStaticBitmap(mResultsPanel, wxID_ANY, iconBitmap);
 
-                    case ModelValidationIssue::SeverityType::Warning:
-                    {
-                        iconBitmap = WxHelpers::LoadBitmap("warning_medium", mResourceLocator);
-                        break;
-                    }
+                    issueBoxHSizer->Add(
+                        staticBitmap,
+                        0, // Retain H size
+                        wxLEFT | wxRIGHT, // Retain V size
+                        10);
                 }
 
-                auto staticBitmap = new wxStaticBitmap(mResultsPanel, wxID_ANY, iconBitmap);
+                // Label
+                {
+                    // TODOHERE
+                    auto label = new wxStaticText(mResultsPanel, wxID_ANY, _("TODOTEST"),
+                        wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
 
-                issueBoxHSizer->Add(
-                    staticBitmap,
-                    0, // Retain H size
-                    wxLEFT | wxRIGHT, // Retain V size
+                    issueBoxHSizer->Add(
+                        label,
+                        1, // Expand H
+                        wxLEFT | wxRIGHT, // Retain V size
+                        10);
+                }
+
+                // Calculate insert index
+                size_t insertIndex;
+                if (mSessionData->IsForSave)
+                {
+                    if (issue.GetSeverity() == ModelValidationIssue::SeverityType::Error)
+                    {
+                        insertIndex = errorInsertIndex;
+                        ++errorInsertIndex;
+                        ++warningInsertIndex;
+                    }
+                    else
+                    {
+                        assert(issue.GetSeverity() == ModelValidationIssue::SeverityType::Warning);
+                        insertIndex = warningInsertIndex;
+                        ++warningInsertIndex;
+                    }
+                }
+                else
+                {
+                    insertIndex = mResultsPanelVSizer->GetItemCount();
+                }
+
+                mResultsPanelVSizer->Insert(
+                    insertIndex,
+                    issueBoxHSizer,
+                    0, // Retain V size
+                    wxEXPAND | wxLEFT | wxRIGHT, // Occupy all available H space
                     10);
             }
-
-            // Label
-            {
-                // TODOHERE
-                auto label = new wxStaticText(mResultsPanel, wxID_ANY, _("TODOTEST"),
-                    wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
-
-                issueBoxHSizer->Add(
-                    label,
-                    1, // Expand H
-                    wxLEFT | wxRIGHT, // Retain V size
-                    10);
-            }
-
-            mResultsPanelVSizer->Add(
-                issueBoxHSizer,
-                0, // Retain V size
-                wxEXPAND | wxLEFT | wxRIGHT, // Occupy all available H space
-                10);
         }
     }
 
