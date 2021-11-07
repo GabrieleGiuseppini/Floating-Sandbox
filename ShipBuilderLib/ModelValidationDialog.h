@@ -39,10 +39,9 @@ private:
     void OnOkButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
 
-
-    void StartValidation();
-    void ValidationThreadLoop();
+    void PrepareUIForValidationRun();
     void OnValidationTimer(wxTimerEvent & event);
+    void ValidationThreadLoop();
     void ShowResults(ModelValidationResults const & results);
 
 private:

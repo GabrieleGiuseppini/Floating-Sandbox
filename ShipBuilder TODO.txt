@@ -415,7 +415,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ this->Fit()
 			+ ShowResults:
 				+ Not fit
-			- Fix first StartValidation @ ShowModal's: should be called after ShowModal has caused LeaveWindow on WorkCanvas
+			+ Fix first StartValidation @ ShowModal's: should be called after ShowModal has caused LeaveWindow on WorkCanvas
 			- Test
 				- Workflow 1: validation
 				- Workflow 2: save

@@ -45,7 +45,7 @@ ModelValidationDialog::ModelValidationDialog(
 
         validationPanelVSizer->AddStretchSpacer(1);
 
-        validationPanelVSizer->AddSpacer(20);
+        validationPanelVSizer->AddSpacer(10);
 
         // Label
         {
@@ -143,12 +143,14 @@ void ModelValidationDialog::ShowModalForStandAloneValidation(Controller & contro
 {
     mSessionData.emplace(controller, false);
 
-    StartValidation();
-
+    PrepareUIForValidationRun();
     this->SetMinSize(wxSize(-1, -1));
     this->Fit();
     Layout();
     CentreOnParent(wxBOTH);
+
+    // Start validation timer
+    mValidationTimer->Start(200);
 
     wxDialog::ShowModal();
 }
@@ -157,12 +159,15 @@ bool ModelValidationDialog::ShowModalForSaveShipValidation(Controller & controll
 {
     mSessionData.emplace(controller, true);
 
-    StartValidation();
-
+    PrepareUIForValidationRun();
     this->SetMinSize(wxSize(-1, -1));
     this->Fit();
     Layout();
     CentreOnParent(wxBOTH);
+
+    // Start validation timer
+    assert(!mValidationThread.joinable());
+    mValidationTimer->Start(200);
 
     if (wxDialog::ShowModal() == 0)
     {
@@ -184,46 +189,34 @@ void ModelValidationDialog::OnCancelButton(wxCommandEvent & /*event*/)
     EndModal(-1);
 }
 
-void ModelValidationDialog::StartValidation()
+void ModelValidationDialog::PrepareUIForValidationRun()
 {
     // Toggle validation panel
     mMainVSizer->Show(mValidationPanel);
     mMainVSizer->Hide(mResultsPanel);
     mMainVSizer->Hide(mButtonsPanel);
-
-    // Start validation
-    mValidationResults.reset();
-    assert(!mValidationThread.joinable());
-    mValidationThread = std::thread(&ModelValidationDialog::ValidationThreadLoop, this);
-
-    // Start validation timer
-    mValidationTimer->Start(200);
-}
-
-void ModelValidationDialog::ValidationThreadLoop()
-{
-    //
-    // Runs on separate thread
-    //
-
-    // Get validation
-    assert(mSessionData.has_value());
-    auto validationResults = mSessionData->BuilderController.ValidateModel();
-
-    // Store - signaling that we're done
-    mValidationResults.emplace(validationResults);
 }
 
 void ModelValidationDialog::OnValidationTimer(wxTimerEvent & /*event*/)
 {
+    // Check whether we've started the validation thread
+    if (!mValidationThread.joinable())
+    {
+        // Start validation on separate thread
+        mValidationResults.reset();
+        assert(!mValidationThread.joinable());
+        mValidationThread = std::thread(&ModelValidationDialog::ValidationThreadLoop, this);
+    }
+
     // Check if done
     if (mValidationResults.has_value())
     {
-        // Wait until thread is done
-        mValidationThread.join();
-
         // Stop timer
         mValidationTimer->Stop();
+
+        // Wait until thread is done
+        mValidationThread.join();
+        assert(!mValidationThread.joinable());
 
         // Check whether we need to show validation results
         assert(mSessionData);
@@ -242,12 +235,26 @@ void ModelValidationDialog::OnValidationTimer(wxTimerEvent & /*event*/)
             // Show results
             ShowResults(*mValidationResults);
         }
+
+        return;
     }
-    else
-    {
-        // Pulse gauge
-        mValidationWaitGauge->Pulse();
-    }
+
+    // Pulse gauge
+    mValidationWaitGauge->Pulse();
+}
+
+void ModelValidationDialog::ValidationThreadLoop()
+{
+    //
+    // Runs on separate thread
+    //
+
+    // Get validation
+    assert(mSessionData.has_value());
+    auto validationResults = mSessionData->BuilderController.ValidateModel();
+
+    // Store - signaling that we're done
+    mValidationResults.emplace(validationResults);
 }
 
 void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
@@ -335,7 +342,7 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
 
             if (results.HasWarnings())
             {
-                auto label = new wxStaticText(mResultsPanel, wxID_ANY, _("Resolving the following warning(s) would improve the gaming experience with this ship:"),
+                auto label = new wxStaticText(mResultsPanel, wxID_ANY, _("Resolving the following warning(s) would improve this ship:"),
                     wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
 
                 wxFont font = mResultsPanel->GetFont();
@@ -455,8 +462,8 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
                             // Button
                             if (issue.GetSeverity() == ModelValidationIssue::SeverityType::Error)
                             {
-                                auto button = new wxButton(contentWindow, wxID_ANY, _("Fix This Issue"));
-                                button->SetToolTip(_("Fix this issue by removing the offending electrical particles."));
+                                auto button = new wxButton(contentWindow, wxID_ANY, _("Fix This Error"));
+                                button->SetToolTip(_("Fix this error by removing the offending electrical particles."));
                                 button->Bind(
                                     wxEVT_BUTTON,
                                     [this](wxCommandEvent & /*event*/)
@@ -464,10 +471,13 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
                                         // Fix
                                         mSessionData->BuilderController.TrimElectricalParticlesWithoutSubstratum();
 
-                                        // Re-run validation
-                                        StartValidation();
-
+                                        // Prepare for validation
+                                        PrepareUIForValidationRun();
                                         Layout();
+
+                                        // Start validation timer
+                                        assert(!mValidationThread.joinable());
+                                        mValidationTimer->Start(200);
                                     });
 
                                 vSizer->Add(
