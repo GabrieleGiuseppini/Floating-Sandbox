@@ -9,6 +9,7 @@
 
 #include <wx/statbmp.h>
 #include <wx/stattext.h>
+#include <wx/wupdlock.h>
 
 #include <cassert>
 
@@ -254,7 +255,7 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
     assert(mSessionData);
     assert(mValidationResults);
 
-    Freeze();
+    wxWindowUpdateLocker scopedUpdateFreezer(this);
 
     //
     // Populate results panel
@@ -586,8 +587,6 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
     this->SetSize(MinDialogSizeForValidationResults);
     Layout();
     CentreOnParent(wxBOTH);
-
-    Thaw();
 }
 
 }
