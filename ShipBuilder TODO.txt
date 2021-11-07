@@ -373,16 +373,16 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Use sizer->Insert()
 				+ Message of issue must be different when success, or title + message
 					+ And no Fix button
-				- Handle issues as specific
-					- ElectricSubstratum: button for trimming
+				= Handle issues as specific
+					= ElectricSubstratum: button for trimming
+						- Fix OpenGL-on-separate-thread issue
 						= Store undo at Controller::Trim
 							+ ModelController::Trim must return region
+					- Other issue types
 				+ Message before errors and message before warnings - in ForSave mode		
 		- See if can have gauge also @ save
 			- SessionData::IsInValidationWorkflow
 		- ToolGuard
-		- Nail down model dirty wrt validation
-			- Need helper @ Controller through which all "model.setdirty" goes?
 		= Dialog open for ship save:
 			= Calc validation before opening dialog, and check it; only open dialog if errors or warnings
 			= Dialog::OpenForSave must then take validation results there, and skip initial validation
@@ -399,6 +399,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- AffectedLocii: vector<ShipSpaceCoords>
 		- Controller keeps track of whether or not model has ever been dirty since the last validation has run
 			- mIsModelDirtyWrtValidation, set to F @ cctor, set to T @ each model dirty, set to F @ ValidateModel()
+				- Need helper @ Controller through which all "model.setdirty" goes?
 			- IUserInterface notification
 				- Sets validation button enabled accordingly
 		- MainFrame checks it @ Save/SaveAs and, if dirty, calls Controller::ValidateModel() -> ModelValidationResults
