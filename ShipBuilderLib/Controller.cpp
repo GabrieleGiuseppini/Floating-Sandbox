@@ -96,10 +96,38 @@ Controller::Controller(
     mCurrentTool = MakeTool(*mCurrentToolType);
 }
 
+ShipDefinition Controller::MakeShipDefinition()
+{
+    // Remove tool
+    StopTool();
+
+    assert(mModelController);
+    auto shipDefinition = mModelController->MakeShipDefinition();
+
+    // Restart tool
+    StartTool();
+
+    return shipDefinition;
+}
+
 void Controller::ClearModelDirty()
 {
     mModelController->ClearIsDirty();
     mUserInterface.OnModelDirtyChanged();
+}
+
+ModelValidationResults Controller::ValidateModel()
+{
+    // Remove tool
+    StopTool();
+
+    assert(mModelController);
+    auto validationResults = mModelController->ValidateModel();
+
+    // Restart tool
+    StartTool();
+
+    return validationResults;
 }
 
 void Controller::NewStructuralLayer()

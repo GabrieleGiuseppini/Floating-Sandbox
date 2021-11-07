@@ -56,18 +56,53 @@ public:
         IUserInterface & userInterface,
         ResourceLocator const & resourceLocator);
 
-    ModelController const & GetModelController() const
+    ShipDefinition MakeShipDefinition();
+
+    ShipSpaceSize const & GetShipSize() const
     {
-        return *mModelController;
+        assert(mModelController);
+        return mModelController->GetModel().GetShipSize();
+    }
+
+    ShipMetadata const & GetShipMetadata() const
+    {
+        assert(mModelController);
+        return mModelController->GetModel().GetShipMetadata();
+    }
+
+    ShipPhysicsData const & GetShipPhysicsData() const
+    {
+        assert(mModelController);
+        return mModelController->GetModel().GetShipPhysicsData();
+    }
+
+    bool HasModelLayer(LayerType layer) const
+    {
+        assert(mModelController);
+        return mModelController->GetModel().HasLayer(layer);
+    }
+
+    bool HasModelExtraLayers() const
+    {
+        assert(mModelController);
+        return mModelController->GetModel().HasExtraLayers();
+    }
+
+    bool IsModelDirty() const
+    {
+        assert(mModelController);
+        return mModelController->GetModel().GetIsDirty();
+    }
+
+    bool IsModelDirty(LayerType layer) const
+    {
+        assert(mModelController);
+        return mModelController->GetModel().GetIsDirty(layer);
     }
 
     void ClearModelDirty();
 
-    ModelValidationResults ValidateModel() const
-    {
-        assert(mModelController);
-        return mModelController->ValidateModel();
-    }
+    ModelValidationResults ValidateModel();
 
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);

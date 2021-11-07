@@ -367,7 +367,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ ModelValidationIssue:
 				+ Type
 		= Dialog:
-			- Populate results
+			= Populate results
 				+ ForShipSave: all errors first, then warnings - no success					
 				+ ForValidation: as they come
 					+ Use sizer->Insert()
@@ -377,8 +377,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 					- ElectricSubstratum: button for trimming
 						= Store undo at Controller::Trim
 							+ ModelController::Trim must return region
-				+ Message before errors and message before warnings - in ForSave mode
+				+ Message before errors and message before warnings - in ForSave mode		
 		- See if can have gauge also @ save
+			- SessionData::IsInValidationWorkflow
+		- ToolGuard
 		- Nail down model dirty wrt validation
 			- Need helper @ Controller through which all "model.setdirty" goes?
 		= Dialog open for ship save:

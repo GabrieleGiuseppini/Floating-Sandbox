@@ -576,7 +576,7 @@ void MainFrame::OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coo
         if (mController)
         {
             // Flip coordinates: we show zero at top, just to be consistent with drawing software
-            coordinates->FlipY(mController->GetModelController().GetModel().GetShipSize().height);
+            coordinates->FlipY(mController->GetShipSize().height);
         }
         else
         {
@@ -971,8 +971,8 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                     {
                                         case LayerType::Electrical:
                                         {
-                                            if (mController->GetModelController().GetModel().HasLayer(LayerType::Electrical)
-                                                && mController->GetModelController().GetModel().GetIsDirty(LayerType::Electrical))
+                                            if (mController->HasModelLayer(LayerType::Electrical)
+                                                && mController->IsModelDirty(LayerType::Electrical))
                                             {
                                                 if (!AskUserIfSure(sureQuestion))
                                                 {
@@ -988,8 +988,8 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
                                         case LayerType::Ropes:
                                         {
-                                            if (mController->GetModelController().GetModel().HasLayer(LayerType::Ropes)
-                                                && mController->GetModelController().GetModel().GetIsDirty(LayerType::Ropes))
+                                            if (mController->HasModelLayer(LayerType::Ropes)
+                                                && mController->IsModelDirty(LayerType::Ropes))
                                             {
                                                 if (!AskUserIfSure(sureQuestion))
                                                 {
@@ -1005,8 +1005,8 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
                                         case LayerType::Structural:
                                         {
-                                            if (mController->GetModelController().GetModel().HasLayer(LayerType::Structural)
-                                                && mController->GetModelController().GetModel().GetIsDirty(LayerType::Structural))
+                                            if (mController->HasModelLayer(LayerType::Structural)
+                                                && mController->IsModelDirty(LayerType::Structural))
                                             {
                                                 if (!AskUserIfSure(sureQuestion))
                                                 {
@@ -1097,9 +1097,9 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                     {
                                         case LayerType::Electrical:
                                         {
-                                            assert(mController->GetModelController().GetModel().HasLayer(LayerType::Electrical));
+                                            assert(mController->HasModelLayer(LayerType::Electrical));
 
-                                            if (mController->GetModelController().GetModel().GetIsDirty(LayerType::Electrical))
+                                            if (mController->IsModelDirty(LayerType::Electrical))
                                             {
                                                 if (!AskUserIfSure(sureQuestion))
                                                 {
@@ -1115,9 +1115,9 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
                                         case LayerType::Ropes:
                                         {
-                                            assert(mController->GetModelController().GetModel().HasLayer(LayerType::Ropes));
+                                            assert(mController->HasModelLayer(LayerType::Ropes));
 
-                                            if (mController->GetModelController().GetModel().GetIsDirty(LayerType::Ropes))
+                                            if (mController->IsModelDirty(LayerType::Ropes))
                                             {
                                                 if (!AskUserIfSure(sureQuestion))
                                                 {
@@ -1139,9 +1139,9 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
                                         case LayerType::Texture:
                                         {
-                                            assert(mController->GetModelController().GetModel().HasLayer(LayerType::Texture));
+                                            assert(mController->HasModelLayer(LayerType::Texture));
 
-                                            if (mController->GetModelController().GetModel().GetIsDirty(LayerType::Texture))
+                                            if (mController->IsModelDirty(LayerType::Texture))
                                             {
                                                 if (!AskUserIfSure(sureQuestion))
                                                 {
@@ -2106,7 +2106,7 @@ void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 
 void MainFrame::OnClose(wxCloseEvent & event)
 {
-    if (event.CanVeto() && mController->GetModelController().GetModel().GetIsDirty())
+    if (event.CanVeto() && mController->IsModelDirty())
     {
         // Ask user if they really want
         int result = AskUserIfSave(_("Do you want to save your changes before continuing?"));
@@ -2222,7 +2222,7 @@ void MainFrame::Open()
 
 void MainFrame::NewShip()
 {
-    if (mController->GetModelController().GetModel().GetIsDirty())
+    if (mController->IsModelDirty())
     {
         // Ask user if they really want
         int result = AskUserIfSave(_("Do you want to save your changes before continuing?"));
@@ -2247,7 +2247,7 @@ void MainFrame::NewShip()
 
 void MainFrame::LoadShip()
 {
-    if (mController->GetModelController().GetModel().GetIsDirty())
+    if (mController->IsModelDirty())
     {
         // Ask user if they really want
         int result = AskUserIfSave(_("Do you want to save your changes before continuing?"));
@@ -2338,7 +2338,7 @@ bool MainFrame::SaveShipAs()
     }
 
     auto const res = mShipSaveDialog->ShowModal(
-        mController->GetModelController().GetModel().GetShipMetadata().ShipName,
+        mController->GetShipMetadata().ShipName,
         ShipSaveDialog::GoalType::FullShip);
 
     if (res == wxID_OK)
@@ -2368,7 +2368,7 @@ void MainFrame::SaveAndSwitchBackToGame()
 
 void MainFrame::QuitAndSwitchBackToGame()
 {
-    if (mController->GetModelController().GetModel().GetIsDirty())
+    if (mController->IsModelDirty())
     {
         // Ask user if they really want
         int result = AskUserIfSave(_("Do you want to save your changes before continuing?"));
@@ -2423,11 +2423,11 @@ void MainFrame::OpenShipProperties()
 
     mShipPropertiesEditDialog->ShowModal(
         *mController,
-        mController->GetModelController().GetModel().GetShipMetadata(),
-        mController->GetModelController().GetModel().GetShipPhysicsData(),
+        mController->GetShipMetadata(),
+        mController->GetShipPhysicsData(),
         // TODOTEST: take from model
         std::nullopt,
-        mController->GetModelController().GetModel().HasLayer(LayerType::Texture));
+        mController->HasModelLayer(LayerType::Texture));
 }
 
 void MainFrame::ValidateShip()
@@ -2553,7 +2553,7 @@ void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)
     assert(mController);
 
     // Get ship definition
-    auto shipDefinition = mController->GetModelController().MakeShipDefinition();
+    auto shipDefinition = mController->MakeShipDefinition();
 
     assert(ShipDeSerializer::IsShipDefinitionFile(shipFilePath));
 
@@ -2631,9 +2631,9 @@ void MainFrame::ReconciliateUI()
 {
     assert(mController);
     ReconciliateUIWithViewModel();
-    ReconciliateUIWithShipMetadata(mController->GetModelController().GetModel().GetShipMetadata());
+    ReconciliateUIWithShipMetadata(mController->GetShipMetadata());
     ReconciliateUIWithLayerPresence();
-    ReconciliateUIWithShipSize(mController->GetModelController().GetModel().GetShipSize());
+    ReconciliateUIWithShipSize(mController->GetShipSize());
     ReconciliateUIWithPrimaryLayerSelection(mController->GetPrimaryLayer());
     ReconciliateUIWithModelDirtiness();
     ReconciliateUIWithWorkbenchState();
@@ -2653,7 +2653,7 @@ void MainFrame::ReconciliateUIWithViewModel()
 
 void MainFrame::ReconciliateUIWithShipMetadata(ShipMetadata const & shipMetadata)
 {
-    SetFrameTitle(shipMetadata.ShipName, mController->GetModelController().GetModel().GetIsDirty());
+    SetFrameTitle(shipMetadata.ShipName, mController->IsModelDirty());
 }
 
 void MainFrame::ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize)
@@ -2669,8 +2669,6 @@ void MainFrame::ReconciliateUIWithLayerPresence()
 {
     assert(mController);
 
-    Model const & model = mController->GetModelController().GetModel();
-
     //
     // Rules
     //
@@ -2682,7 +2680,7 @@ void MainFrame::ReconciliateUIWithLayerPresence()
 
     for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
     {
-        bool const hasLayer = model.HasLayer(static_cast<LayerType>(iLayer));
+        bool const hasLayer = mController->HasModelLayer(static_cast<LayerType>(iLayer));
 
         mLayerSelectButtons[iLayer]->Enable(hasLayer);
 
@@ -2699,7 +2697,7 @@ void MainFrame::ReconciliateUIWithLayerPresence()
         }
     }
 
-    mOtherLayersOpacitySlider->Enable(model.HasExtraLayers());
+    mOtherLayersOpacitySlider->Enable(mController->HasModelExtraLayers());
 
     mLayerSelectButtons[static_cast<size_t>(mController->GetPrimaryLayer())]->SetFocus(); // Prevent other random buttons for getting focus
 }
@@ -2710,7 +2708,7 @@ void MainFrame::ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer)
 
     // Toggle <select buttons, tool panels> <-> primary layer
     bool hasToggledToolPanel = false;
-    assert(mController->GetModelController().GetModel().HasLayer(primaryLayer));
+    assert(mController->HasModelLayer(primaryLayer));
     uint32_t const iPrimaryLayer = static_cast<uint32_t>(primaryLayer);
     for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
     {
@@ -2742,7 +2740,7 @@ void MainFrame::ReconciliateUIWithModelDirtiness()
 {
     assert(mController);
 
-    bool const isDirty = mController->GetModelController().GetModel().GetIsDirty();
+    bool const isDirty = mController->IsModelDirty();
 
     if (mSaveShipMenuItem->IsEnabled() != isDirty)
     {
@@ -2760,7 +2758,7 @@ void MainFrame::ReconciliateUIWithModelDirtiness()
         mSaveShipButton->Enable(isDirty);
     }
 
-    SetFrameTitle(mController->GetModelController().GetModel().GetShipMetadata().ShipName, isDirty);
+    SetFrameTitle(mController->GetShipMetadata().ShipName, isDirty);
 }
 
 void MainFrame::ReconciliateUIWithWorkbenchState()
