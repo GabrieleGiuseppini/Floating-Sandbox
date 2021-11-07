@@ -14,6 +14,8 @@
 
 namespace ShipBuilder {
 
+static wxSize const MinDialogSizeForValidationResults = wxSize(680, 600);
+
 ModelValidationDialog::ModelValidationDialog(
     wxWindow * parent,
     ResourceLocator const & resourceLocator)
@@ -24,10 +26,8 @@ ModelValidationDialog::ModelValidationDialog(
         wxID_ANY,
         _("Ship Issues"),
         wxDefaultPosition,
-        wxSize(680, 600),
+        wxDefaultSize,
         wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxRESIZE_BORDER);
-
-    SetMinSize(wxSize(480, 600));
 
     SetBackgroundColour(GetDefaultAttributes().colBg);
 
@@ -43,6 +43,8 @@ ModelValidationDialog::ModelValidationDialog(
         auto validationPanelVSizer = new wxBoxSizer(wxVERTICAL);
 
         validationPanelVSizer->AddStretchSpacer(1);
+
+        validationPanelVSizer->AddSpacer(20);
 
         // Label
         {
@@ -62,9 +64,11 @@ ModelValidationDialog::ModelValidationDialog(
             validationPanelVSizer->Add(
                 mValidationWaitGauge,
                 0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
+                wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
+                20);
         }
+
+        validationPanelVSizer->AddSpacer(20);
 
         validationPanelVSizer->AddStretchSpacer(1);
 
@@ -124,7 +128,7 @@ ModelValidationDialog::ModelValidationDialog(
 
     SetSizer(mMainVSizer);
 
-    Centre(wxCENTER_ON_SCREEN | wxBOTH);
+    CentreOnParent(wxBOTH);
 
     //
     // Timer
@@ -140,17 +144,24 @@ void ModelValidationDialog::ShowModalForStandAloneValidation(Controller & contro
 
     StartValidation();
 
+    this->SetMinSize(wxSize(-1, -1));
+    this->Fit();
+    Layout();
+    CentreOnParent(wxBOTH);
+
     wxDialog::ShowModal();
 }
 
-bool ModelValidationDialog::ShowModalForSaveShipValidation(
-    Controller & controller,
-    ModelValidationResults && modelValidationResults)
+bool ModelValidationDialog::ShowModalForSaveShipValidation(Controller & controller)
 {
     mSessionData.emplace(controller, true);
-    mValidationResults.emplace(std::move(modelValidationResults));
 
-    ShowResults(*mValidationResults);
+    StartValidation();
+
+    this->SetMinSize(wxSize(-1, -1));
+    this->Fit();
+    Layout();
+    CentreOnParent(wxBOTH);
 
     if (wxDialog::ShowModal() == 0)
     {
@@ -178,7 +189,6 @@ void ModelValidationDialog::StartValidation()
     mMainVSizer->Show(mValidationPanel);
     mMainVSizer->Hide(mResultsPanel);
     mMainVSizer->Hide(mButtonsPanel);
-    Layout();
 
     // Start validation
     mValidationResults.reset();
@@ -214,8 +224,23 @@ void ModelValidationDialog::OnValidationTimer(wxTimerEvent & /*event*/)
         // Stop timer
         mValidationTimer->Stop();
 
-        // Show results
-        ShowResults(*mValidationResults);
+        // Check whether we need to show validation results
+        assert(mSessionData);
+        if (mSessionData->IsForSave
+            && !mValidationResults->HasErrorsOrWarnings()
+            && !mSessionData->IsInValidationWorkflow)
+        {
+            // Nothing more to do
+            EndModal(0);
+        }
+        else
+        {
+            // Being workflow, won't shrink anymore
+            mSessionData->IsInValidationWorkflow = true;
+
+            // Show results
+            ShowResults(*mValidationResults);
+        }
     }
     else
     {
@@ -228,6 +253,8 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
 {
     assert(mSessionData);
     assert(mValidationResults);
+
+    Freeze();
 
     //
     // Populate results panel
@@ -438,6 +465,8 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
 
                                         // Re-run validation
                                         StartValidation();
+
+                                        Layout();
                                     });
 
                                 vSizer->Add(
@@ -503,6 +532,8 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
                     10);
             }
         }
+
+        mResultsPanelVSizer->AddSpacer(10);
     }
 
     //
@@ -547,7 +578,16 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
     mMainVSizer->Show(mResultsPanel);
     mMainVSizer->Show(mButtonsPanel);
 
+    //
+    // Show
+    //
+
+    this->SetMinSize(MinDialogSizeForValidationResults);
+    this->SetSize(MinDialogSizeForValidationResults);
     Layout();
+    CentreOnParent(wxBOTH);
+
+    Thaw();
 }
 
 }

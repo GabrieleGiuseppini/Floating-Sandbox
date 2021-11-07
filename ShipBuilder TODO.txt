@@ -375,7 +375,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Use sizer->Insert()
 				+ Message of issue must be different when success, or title + message
 					+ And no Fix button
-				= Handle issues as specific
+				+ Handle issues as specific
 					+ ElectricSubstratum: button for trimming
 						+ Fix OpenGL-on-separate-thread issue
 							+ Split Controller::Validate w/SuspendTool/ResumeTool
@@ -388,12 +388,37 @@ https://gamejolt.com/x/permalink/comment/11730705
 							+ Do ToolGuard RIAA - should remember whether it really suspended or not, and resume at destructor only if it did suspend
 								+ And at ValidateModel: should now be able to safely simply suspend/resume
 								+ And at RestoreLayerRegion
-						= Store undo at Controller::Trim
+						+ Store undo at Controller::Trim
 							+ ModelController::Trim must return region
 					- Visualize other issue types
 				+ Message before errors and message before warnings - in ForSave mode		
-		- See if can have gauge also @ save
-			- SessionData::IsInValidationWorkflow
+		= See if can have gauge also @ save
+			+ SessionData::IsInValidationWorkflow
+				+ Init: false
+			+ @timer end:
+				+ If IsForSave && all success && !IsInValidationWorkflow:
+					+ EndModal(OK)
+				+ Else:
+					+ IsInValidationWorkflow = true
+					+ ShowResults
+			+ UI:
+				+ cctor: no sizes
+				+ ShowModalForStandAloneValidation:
+					+ this->SetMinSize(-1, -1)
+					+ this->Fit()
+				+ ShowModalForShipSave:
+					+ Caller doesn't calc nor passes validation
+					+ this->SetMinSize(-1, -1)
+					+ this->Fit()
+				+ ShowResults:
+					+ this->SetMinSize(...size...)
+					+ this->Fit()
+			- ShowResults:
+				- Not fit
+			- Test
+				- Workflow 1: validation
+				- Workflow 2: save
+					- Finish first dialog open for ship save
 		= Dialog open for ship save:
 			= Calc validation before opening dialog, and check it; only open dialog if errors or warnings
 			= Dialog::OpenForSave must then take validation results there, and skip initial validation

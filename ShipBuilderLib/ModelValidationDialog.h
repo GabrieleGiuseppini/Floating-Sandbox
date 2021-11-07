@@ -32,9 +32,7 @@ public:
 
     void ShowModalForStandAloneValidation(Controller & controller);
 
-    bool ShowModalForSaveShipValidation(
-        Controller & controller,
-        ModelValidationResults && modelValidationResults);
+    bool ShowModalForSaveShipValidation(Controller & controller);
 
 private:
 
@@ -74,12 +72,14 @@ private:
     {
         Controller & BuilderController;
         bool const IsForSave;
+        bool IsInValidationWorkflow;
 
         SessionData(
             Controller & builderController,
             bool isForSave)
             : BuilderController(builderController)
             , IsForSave(isForSave)
+            , IsInValidationWorkflow(false)
         {}
     };
 

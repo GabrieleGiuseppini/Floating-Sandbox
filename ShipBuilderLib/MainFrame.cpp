@@ -2315,28 +2315,14 @@ bool MainFrame::PreSaveShipCheck()
 {
     assert(mController);
 
-    // TODOHERE: integrate with Controller's "dirty wrt validation" mechanism
+    // Validate ship in dialog, and allow user to continue or cancel the save
 
-    // Validate ship
-    auto validationResults = mController->ValidateModel();
-    if (validationResults.HasErrorsOrWarnings())
+    if (!mModelValidationDialog)
     {
-        // Display validation dialog and allow user to continue or cancel the save
-
-        if (!mModelValidationDialog)
-        {
-            mModelValidationDialog = std::make_unique<ModelValidationDialog>(this, mResourceLocator);
-        }
-
-        return mModelValidationDialog->ShowModalForSaveShipValidation(
-            *mController,
-            std::move(validationResults));
+        mModelValidationDialog = std::make_unique<ModelValidationDialog>(this, mResourceLocator);
     }
-    else
-    {
-        // All ok, go ahead with save
-        return true;
-    }
+
+    return mModelValidationDialog->ShowModalForSaveShipValidation(*mController);
 }
 
 bool MainFrame::SaveShip()
