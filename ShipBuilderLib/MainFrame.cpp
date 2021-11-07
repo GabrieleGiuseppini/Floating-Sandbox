@@ -63,6 +63,7 @@ MainFrame::MainFrame(
     , mWorkCanvasHScrollBar(nullptr)
     , mWorkCanvasVScrollBar(nullptr)
     // State
+    , mIsMouseInWorkCanvas(false)
     , mIsMouseCapturedByWorkCanvas(false)
     , mWorkbenchState(materialDatabase)
 {
@@ -1926,7 +1927,7 @@ void MainFrame::OnWorkCanvasResize(wxSizeEvent & event)
     event.Skip();
 }
 
-void MainFrame::OnWorkCanvasLeftDown(wxMouseEvent & /*event*/)
+void MainFrame::OnWorkCanvasLeftDown(wxMouseEvent & event)
 {
     // First of all, set focus on the canvas if it has lost it - we want
     // it to receive all mouse events
@@ -1938,6 +1939,16 @@ void MainFrame::OnWorkCanvasLeftDown(wxMouseEvent & /*event*/)
     // Hang on to the mouse for as long as the button is pressed
     if (!mIsMouseCapturedByWorkCanvas)
     {
+        if (!mIsMouseInWorkCanvas)
+        {
+            // When clicking into the canvas while the mouse was out, wxWidgets sends first a LeftDown
+            // followed by an EnterWindow; when this happens, the EnterWindow sees that the mouse is
+            // captured and does not act on it.
+            // We thus synthesize an EnterWindow here
+            OnWorkCanvasMouseEnteredWindow(event);
+            mIsMouseInWorkCanvas = false; // Allow next EnterWindow to think it's the first
+        }
+
         LogMessage("TODOTEST: Captured");
         mWorkCanvas->CaptureMouse();
         mIsMouseCapturedByWorkCanvas = true;
@@ -2030,6 +2041,9 @@ void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & /*event*/)
 {
     LogMessage("TODOTEST: LeftWindow (captured=", mIsMouseCapturedByWorkCanvas, ")");
 
+    assert(mIsMouseInWorkCanvas);
+    mIsMouseInWorkCanvas = false;
+
     if (!mIsMouseCapturedByWorkCanvas)
     {
         if (mController)
@@ -2042,6 +2056,17 @@ void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & /*event*/)
 void MainFrame::OnWorkCanvasMouseEnteredWindow(wxMouseEvent & /*event*/)
 {
     LogMessage("TODOTEST: EnteredWindow (captured=", mIsMouseCapturedByWorkCanvas, ")");
+
+    assert(!mIsMouseInWorkCanvas);
+    mIsMouseInWorkCanvas = true;
+
+    if (!mIsMouseCapturedByWorkCanvas)
+    {
+        if (mController)
+        {
+            mController->OnUncapturedMouseIn();
+        }
+    }
 }
 
 void MainFrame::OnNewShip(wxCommandEvent & /*event*/)
@@ -2294,10 +2319,9 @@ bool MainFrame::PreSaveShipCheck()
 
     // Validate ship
     auto validationResults = mController->ValidateModel();
-
     if (validationResults.HasErrorsOrWarnings())
     {
-        // Display validation dialog
+        // Display validation dialog and allow user to continue or cancel the save
 
         if (!mModelValidationDialog)
         {
@@ -2310,7 +2334,7 @@ bool MainFrame::PreSaveShipCheck()
     }
     else
     {
-        // All ok
+        // All ok, go ahead with save
         return true;
     }
 }

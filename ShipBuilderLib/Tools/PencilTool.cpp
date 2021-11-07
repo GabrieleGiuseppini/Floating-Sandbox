@@ -258,22 +258,6 @@ void PencilTool<TLayer, IsEraser>::OnRightMouseUp()
     // already has the edit (as permanent)
 }
 
-template<LayerType TLayer, bool IsEraser>
-void PencilTool<TLayer, IsEraser>::OnUncapturedMouseOut()
-{
-    // Mend our temporary visualization, if any
-    if (mTempVisualizationDirtyShipRegion)
-    {
-        MendTempVisualization();
-
-        assert(!mTempVisualizationDirtyShipRegion);
-
-        // Visualize
-        mModelController.UploadVisualization();
-        mUserInterface.RefreshView();
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////////
 
 template<LayerType TLayer, bool IsEraser>

@@ -67,6 +67,15 @@ public:
 
     void UploadVisualization();
 
+#ifdef _DEBUG
+    bool IsInEphemeralVisualization() const
+    {
+        return mIsStructuralLayerInEphemeralVisualization
+            || mIsElectricalLayerInEphemeralVisualization;
+        // TODO: other layers
+    }
+#endif
+
     //
     // Structural
     //

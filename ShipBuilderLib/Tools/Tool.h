@@ -52,7 +52,6 @@ public:
     virtual void OnRightMouseUp() = 0;
     virtual void OnShiftKeyDown() = 0;
     virtual void OnShiftKeyUp() = 0;
-    virtual void OnUncapturedMouseOut() = 0;
 
 protected:
 

@@ -326,6 +326,7 @@ private:
     // UI state
     //
 
+    bool mutable mIsMouseInWorkCanvas;
     bool mutable mIsMouseCapturedByWorkCanvas;
 
     //

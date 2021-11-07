@@ -91,23 +91,16 @@ Controller::Controller(
 
     // Upload layers visualization
     mModelController->UploadVisualization();
-
-    // Create tool (might upload dirty visualization already)
-    mCurrentTool = MakeTool(*mCurrentToolType);
 }
 
 ShipDefinition Controller::MakeShipDefinition()
 {
-    // Remove tool
-    StopTool();
+    auto const scopedToolResumeState = SuspendTool();
 
     assert(mModelController);
-    auto shipDefinition = mModelController->MakeShipDefinition();
+    assert(!mModelController->IsInEphemeralVisualization());
 
-    // Restart tool
-    StartTool();
-
-    return shipDefinition;
+    return mModelController->MakeShipDefinition();
 }
 
 void Controller::ClearModelDirty()
@@ -118,22 +111,17 @@ void Controller::ClearModelDirty()
 
 ModelValidationResults Controller::ValidateModel()
 {
-    // Remove tool
-    StopTool();
+    auto const scopedToolResumeState = SuspendTool();
 
     assert(mModelController);
-    auto validationResults = mModelController->ValidateModel();
+    assert(!mModelController->IsInEphemeralVisualization());
 
-    // Restart tool
-    StartTool();
-
-    return validationResults;
+    return mModelController->ValidateModel();
 }
 
 void Controller::NewStructuralLayer()
 {
-    // Remove tool
-    StopTool();
+    auto const scopedToolResumeState = SuspendTool();
 
     // Make new layer
     mModelController->NewStructuralLayer();
@@ -152,15 +140,11 @@ void Controller::NewStructuralLayer()
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
-
-    // Restart tool
-    StartTool();
 }
 
 void Controller::SetStructuralLayer(/*TODO*/)
 {
-    // Remove tool
-    StopTool();
+    auto const scopedToolResumeState = SuspendTool();
 
     // Update layer
     mModelController->SetStructuralLayer(/*TODO*/);
@@ -179,16 +163,13 @@ void Controller::SetStructuralLayer(/*TODO*/)
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
-
-    // Restart tool
-    StartTool();
 }
 
 void Controller::RestoreLayerRegion(
     StructuralLayerData && layerRegion,
     ShipSpaceCoordinates const & origin)
 {
-    // Note: this is invoked from undo's double-dispatch, that's why it doesn't worry about tool
+    auto const scopedToolResumeState = SuspendTool();
 
     mModelController->RestoreStructuralLayer(
         std::move(layerRegion),
@@ -206,8 +187,7 @@ void Controller::RestoreLayerRegion(
 
 void Controller::NewElectricalLayer()
 {
-    // Remove tool
-    StopTool();
+    auto const scopedToolResumeState = SuspendTool();
 
     // Make new layer
     mModelController->NewElectricalLayer();
@@ -226,15 +206,11 @@ void Controller::NewElectricalLayer()
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
-
-    // Restart tool
-    StartTool();
 }
 
 void Controller::SetElectricalLayer(/*TODO*/)
 {
-    // Remove tool
-    StopTool();
+    auto const scopedToolResumeState = SuspendTool();
 
     // Update layer
     mModelController->SetElectricalLayer(/*TODO*/);
@@ -253,15 +229,11 @@ void Controller::SetElectricalLayer(/*TODO*/)
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
-
-    // Restart tool
-    StartTool();
 }
 
 void Controller::RemoveElectricalLayer()
 {
-    // Remove tool
-    StopTool();
+    auto const scopedToolResumeState = SuspendTool();
 
     // Remove layer
     mModelController->RemoveElectricalLayer();
@@ -280,16 +252,13 @@ void Controller::RemoveElectricalLayer()
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
-
-    // Restart tool
-    StartTool();
 }
 
 void Controller::RestoreLayerRegion(
     ElectricalLayerData && layerRegion,
     ShipSpaceCoordinates const & origin)
 {
-    // Note: this is invoked from undo's double-dispatch, that's why it doesn't worry about tool
+    auto const scopedToolResumeState = SuspendTool();
 
     mModelController->RestoreElectricalLayer(
         std::move(layerRegion),
@@ -307,8 +276,7 @@ void Controller::RestoreLayerRegion(
 
 void Controller::TrimElectricalParticlesWithoutSubstratum()
 {
-    // Remove tool
-    StopTool();
+    auto const scopedToolResumeState = SuspendTool();
 
     // Trim
     {
@@ -346,15 +314,11 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
-
-    // Restart tool
-    StartTool();
 }
 
 void Controller::NewRopesLayer()
 {
-    // Remove tool
-    StopTool();
+    auto const scopedToolResumeState = SuspendTool();
 
     // Make new layer
     mModelController->NewRopesLayer();
@@ -373,15 +337,11 @@ void Controller::NewRopesLayer()
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
-
-    // Restart tool
-    StartTool();
 }
 
 void Controller::SetRopesLayer(/*TODO*/)
 {
-    // Remove tool
-    StopTool();
+    auto const scopedToolResumeState = SuspendTool();
 
     // Update layer
     mModelController->SetRopesLayer(/*TODO*/);
@@ -400,15 +360,11 @@ void Controller::SetRopesLayer(/*TODO*/)
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
-
-    // Restart tool
-    StartTool();
 }
 
 void Controller::RemoveRopesLayer()
 {
-    // Remove tool
-    StopTool();
+    auto const scopedToolResumeState = SuspendTool();
 
     // Remove layer
     mModelController->RemoveRopesLayer();
@@ -427,9 +383,6 @@ void Controller::RemoveRopesLayer()
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
-
-    // Restart tool
-    StartTool();
 }
 
 void Controller::RestoreLayerRegion(
@@ -441,8 +394,7 @@ void Controller::RestoreLayerRegion(
 
 void Controller::SetTextureLayer(/*TODO*/)
 {
-    // Remove tool
-    StopTool();
+    auto const scopedToolResumeState = SuspendTool();
 
     // Update layer
     mModelController->SetTextureLayer(/*TODO*/);
@@ -461,15 +413,11 @@ void Controller::SetTextureLayer(/*TODO*/)
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
-
-    // Restart tool
-    StartTool();
 }
 
 void Controller::RemoveTextureLayer()
 {
-    // Remove tool
-    StopTool();
+    auto const scopedToolResumeState = SuspendTool();
 
     // Remove layer
     mModelController->RemoveTextureLayer();
@@ -488,9 +436,6 @@ void Controller::RemoveTextureLayer()
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
-
-    // Restart tool
-    StartTool();
 }
 
 void Controller::RestoreLayerRegion(
@@ -524,11 +469,11 @@ void Controller::SelectPrimaryLayer(LayerType primaryLayer)
 {
     if (primaryLayer != mPrimaryLayer)
     {
-        StopTool();
+        {
+            auto const scopedToolResumeState = SuspendTool();
 
-        InternalSelectPrimaryLayer(primaryLayer);
-
-        StartTool();
+            InternalSelectPrimaryLayer(primaryLayer);
+        }
 
         // Refresh view
         mUserInterface.RefreshView();
@@ -551,15 +496,18 @@ void Controller::SetCurrentTool(std::optional<ToolType> tool)
 {
     if (tool != mCurrentToolType)
     {
+        bool const hadTool = (mCurrentTool != nullptr);
+
         // Nuke current tool
         mCurrentToolType.reset();
         mCurrentTool.reset();
 
         InternalSetCurrentTool(tool);
 
-        // Make new tool
+        // Make new tool - unless we are suspended
         assert(mCurrentToolType == tool);
-        if (mCurrentToolType.has_value())
+        if (mCurrentToolType.has_value()
+            && hadTool)
         {
             mCurrentTool = MakeTool(*mCurrentToolType);
         }
@@ -575,8 +523,7 @@ void Controller::Undo()
 {
     assert(CanUndo());
 
-    // Remove tool
-    StopTool();
+    auto const scopedToolResumeState = SuspendTool();
 
     // Apply action
     auto undoAction = mUndoStack.Pop();
@@ -588,9 +535,6 @@ void Controller::Undo()
 
     // Update undo state
     mUserInterface.OnUndoStackStateChanged();
-
-    // Restart tool
-    StartTool();
 }
 
 void Controller::AddZoom(int deltaZoom)
@@ -616,8 +560,7 @@ void Controller::SetCamera(int camX, int camY)
     mView.SetCameraShipSpacePosition(ShipSpaceCoordinates(camX, camY));
 
     // Tell tool about the new mouse (ship space) position, but only
-    // if the mouse is in the canvas // TODOHERE, and if the scrollbars (possible
-    // origins of this call) have not captured the mouse
+    // if the mouse is in the canvas
     auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates
         && mCurrentTool)
@@ -736,13 +679,14 @@ void Controller::OnShiftKeyUp()
     }
 }
 
+void Controller::OnUncapturedMouseIn()
+{
+    InternalResumeTool();
+}
+
 void Controller::OnUncapturedMouseOut()
 {
-    // Forward to tool
-    if (mCurrentTool)
-    {
-        mCurrentTool->OnUncapturedMouseOut();
-    }
+    InternalSuspendTool();
 
     // Tell UI
     mUserInterface.OnToolCoordinatesChanged(std::nullopt);
@@ -751,8 +695,7 @@ void Controller::OnUncapturedMouseOut()
 void Controller::OnMouseCaptureLost()
 {
     // Reset tool
-    StopTool();
-    StartTool();
+    InternalResetTool();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -810,12 +753,24 @@ void Controller::InternalSetCurrentTool(std::optional<ToolType> toolType)
     mUserInterface.OnCurrentToolChanged(mCurrentToolType);
 }
 
-void Controller::StopTool()
+Controller::ScopedToolResumeState Controller::SuspendTool()
 {
-    mCurrentTool.reset();
+    return ScopedToolResumeState(
+        *this,
+        InternalSuspendTool());
 }
 
-void Controller::StartTool()
+bool Controller::InternalSuspendTool()
+{
+    bool const doResume = (mCurrentTool != nullptr);
+
+    mCurrentTool.reset();
+    // Leave mCurrentToolType as-is
+
+    return doResume;
+}
+
+void Controller::InternalResumeTool()
 {
     assert(!mCurrentTool);
 
@@ -823,6 +778,12 @@ void Controller::StartTool()
     {
         mCurrentTool = MakeTool(*mCurrentToolType);
     }
+}
+
+void Controller::InternalResetTool()
+{
+    InternalSuspendTool();
+    InternalResumeTool();
 }
 
 std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)

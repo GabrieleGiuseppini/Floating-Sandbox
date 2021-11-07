@@ -31,6 +31,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 - ModelValidations - so that electrical layer is safe
 
+
+
 - Finalize design of Ropes layer
 
 - Complete Load/Save/Model
@@ -374,15 +376,24 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Message of issue must be different when success, or title + message
 					+ And no Fix button
 				= Handle issues as specific
-					= ElectricSubstratum: button for trimming
-						- Fix OpenGL-on-separate-thread issue
+					+ ElectricSubstratum: button for trimming
+						+ Fix OpenGL-on-separate-thread issue
+							+ Split Controller::Validate w/SuspendTool/ResumeTool
+								+ assert from Validate that it's not in eph viz
+								+ Also at MakeDefinition
+							+ Suspend/Resume called from main thread in validation dialog
+						+ Fix issue with temp viz drawing at ResumeTool()
+							+ Should Controller suspend tool automatically at LeftWindow and resume at EnterWindow?
+								+ Both only if !captured
+							+ Do ToolGuard RIAA - should remember whether it really suspended or not, and resume at destructor only if it did suspend
+								+ And at ValidateModel: should now be able to safely simply suspend/resume
+								+ And at RestoreLayerRegion
 						= Store undo at Controller::Trim
 							+ ModelController::Trim must return region
-					- Other issue types
+					- Visualize other issue types
 				+ Message before errors and message before warnings - in ForSave mode		
 		- See if can have gauge also @ save
 			- SessionData::IsInValidationWorkflow
-		- ToolGuard
 		= Dialog open for ship save:
 			= Calc validation before opening dialog, and check it; only open dialog if errors or warnings
 			= Dialog::OpenForSave must then take validation results there, and skip initial validation
@@ -449,6 +460,83 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- TO-SPEC:
 		- What to do with background music when switching back and forth?
 
+- Ephemeral visualization rearch:
+	- Current structure:
+		- Tool::ctor, Tool::EndEngagement: Take orig clone
+		- @ Do:
+			
+			- DoFillForTempVisualization
+				- Layer + Render buffer, ONLY
+			- DoFillForTempVisualization
+			- DoFillForTempVisualization ...
+
+			- UploadVisualization
+			- RefreshView
+		- @ Mend, @ End:
+			- RestoreStructuralLayerRegionForEphemeralVisualization(orig clone)			
+
+			- UploadVisualization
+			- RefreshView
+		! Total cost:
+			- Tool create: 1 alloc + 1 full copy
+			- Tool move: 1 region blit + 1 region fill + 1 full upload
+			- Tool end: 1 region blit + 1 full upload
+	- Proposed structure 1: token (aka "session")
+		- Spec:
+			- High-level:
+				- The "real" model is never changed during temp visualization
+				- The token/session wraps ModelController, providing the latter with own buffers when doing ops on temp viz
+					- ModelController operations that happen on both model and temp viz model are implemented generically so they accept external buffers as well
+						- Outsourced data:
+							- Layer itself
+							- Layer viz + its Dirty region == struct LayerVisualization { uq_ptr<RgbaImageData>, opt<Rect> }
+			- Tool::ctor, Tool::EndEngagement: 
+				- ModelController::InitiateTempVisualization() -> TempVisualizationToken
+					- TempVisualizationToken::cctor: take orig clone
+					- Tool stores token
+			- @ Do:
+				- TempVisualizationToken::DoFillForTempVisualization
+					- Forwarded to ModelController
+				- TempVisualizationToken::DoFillForTempVisualization
+				- TempVisualizationToken::DoFillForTempVisualization ...
+
+				- TempVisualiationToken::Render
+					- UploadVisualization
+					- RefreshView
+			- @ Mend:
+				- TempVisualizationToken::UndoTempVisualization
+					- RestoreStructuralLayerRegionForEphemeralVisualization(orig clone)			
+
+					- UploadVisualization
+					- RefreshView
+			- @ End (dctor):
+				- Same as @Mend
+			! Total cost:
+				- Tool create: 1 alloc + 1 full copy
+				- Tool move: 1 region blit + 1 region fill + 1 full upload
+				- Tool end: 1 full upload
+		- Details:
+			- ModelLayerEphemeralVisualizationSession<TLayer>
+				+ Not copyable, yes moveable
+				- Members:
+					- References to arch members:
+						- ModelController &
+					- TLayer mOriginalLayerClone
+					- LayerVisualization mWorkVisualization
+					- Session:
+						- DirtyRegion == std::opt<Rect>
+				- cctor(ModelController &):
+					+ Take original layer clone
+					+ Initialize session
+						+ DirtyRegion=nullopt
+				- Fill(rect, material)
+					- 
+				- Mend()
+					-
+				- ~dctor():
+					- 
+		- TODOs:
+			+ Clone rearch
 
 --------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------

@@ -159,8 +159,41 @@ public:
     void OnRightMouseUp();
     void OnShiftKeyDown();
     void OnShiftKeyUp();
+    void OnUncapturedMouseIn();
     void OnUncapturedMouseOut();
     void OnMouseCaptureLost();
+
+private:
+
+    //
+    // Tool resume state, RAII
+    //
+
+    struct [[nodiscard]] ScopedToolResumeState
+    {
+        ScopedToolResumeState(
+            Controller & controller,
+            bool doResumeTool)
+            : mController(controller)
+            , mDoResumeTool(doResumeTool)
+        {
+            LogMessage("ScopedToolResumeState::cctor(doResume=", doResumeTool, ")");
+        }
+
+        ~ScopedToolResumeState()
+        {
+            LogMessage("ScopedToolResumeState::dctor(doResume=", mDoResumeTool, ")");
+
+            if (mDoResumeTool)
+            {
+                mController.InternalResumeTool();
+            }
+        }
+
+    private:
+        Controller & mController;
+        bool const mDoResumeTool;
+    };
 
 private:
 
@@ -175,9 +208,10 @@ private:
 
     void InternalSetCurrentTool(std::optional<ToolType> toolType);
 
-    void StopTool();
-
-    void StartTool();
+    ScopedToolResumeState SuspendTool();
+    bool InternalSuspendTool();
+    void InternalResumeTool();
+    void InternalResetTool();
 
     std::unique_ptr<Tool> MakeTool(ToolType toolType);
 
