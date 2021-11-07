@@ -58,12 +58,6 @@ void Model::SetStructuralLayer(/*TODO*/)
     // TODO
 }
 
-std::unique_ptr<StructuralLayerData> Model::CloneStructuralLayer() const
-{
-    assert(mStructuralLayer);
-    return mStructuralLayer->Clone();
-}
-
 void Model::NewElectricalLayer()
 {
     // Reset layer
@@ -86,12 +80,6 @@ void Model::RemoveElectricalLayer()
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = false;
-}
-
-std::unique_ptr<ElectricalLayerData> Model::CloneElectricalLayer() const
-{
-    assert(mElectricalLayer);
-    return mElectricalLayer->Clone();
 }
 
 void Model::NewRopesLayer()
@@ -135,12 +123,6 @@ void Model::RemoveTextureLayer()
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Texture)] = false;
-}
-
-std::unique_ptr<TextureLayerData> Model::CloneTextureLayer() const
-{
-    assert(mTextureLayer);
-    return mTextureLayer->Clone();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

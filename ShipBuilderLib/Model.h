@@ -70,24 +70,43 @@ public:
 
     explicit Model(ShipDefinition && shipDefinition);
 
+    template<LayerType TLayer>
+    typename LayerTypeTraits<TLayer>::layer_data_type CloneLayer() const
+    {
+        if constexpr (TLayer == LayerType::Structural)
+        {
+            assert(mStructuralLayer);
+            return mStructuralLayer->Clone();
+        }
+        else if constexpr (TLayer == LayerType::Electrical)
+        {
+            assert(mElectricalLayer);
+            return mElectricalLayer->Clone();
+        }
+        // TODO: ropes
+        else
+        {
+            static_assert(TLayer == LayerType::Texture);
+
+            assert(mTextureLayer);
+            return mTextureLayer->Clone();
+        }
+    }
+
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
-    std::unique_ptr<StructuralLayerData> CloneStructuralLayer() const;
 
     void NewElectricalLayer();
     void SetElectricalLayer(/*TODO*/);
     void RemoveElectricalLayer();
-    std::unique_ptr<ElectricalLayerData> CloneElectricalLayer() const;
 
     void NewRopesLayer();
     void SetRopesLayer(/*TODO*/);
     void RemoveRopesLayer();
-    // TODO: clone()
 
     void NewTextureLayer();
     void SetTextureLayer(/*TODO*/);
     void RemoveTextureLayer();
-    std::unique_ptr<TextureLayerData> CloneTextureLayer() const;
 
     ShipSpaceSize const & GetShipSize() const
     {

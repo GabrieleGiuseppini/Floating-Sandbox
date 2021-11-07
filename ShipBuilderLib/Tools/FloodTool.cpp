@@ -89,17 +89,7 @@ void FloodTool<TLayer>::DoEdit(
 {
     // Take clone of current layer
     auto layerDirtyStateClone = mModelController.GetModel().GetDirtyState();
-    std::unique_ptr<typename LayerTypeTraits<TLayer>::layer_data_type> layerClone;
-    if constexpr (TLayer == LayerType::Structural)
-    {
-        layerClone = mModelController.GetModel().CloneStructuralLayer();
-    }
-    else
-    {
-        static_assert(TLayer == LayerType::Electrical);
-
-        layerClone = mModelController.GetModel().CloneElectricalLayer();
-    }
+    auto layerClone = mModelController.GetModel().CloneLayer<TLayer>();
 
     // Do edit
     LayerMaterialType const * const floodMaterial = GetFloodMaterial(isRightButton ? MaterialPlaneType::Background : MaterialPlaneType::Foreground);
@@ -131,12 +121,13 @@ void FloodTool<TLayer>::DoEdit(
     {
         // Create undo action
 
-        auto clippedLayerClone = layerClone->Clone(*affectedRegion);
+        // FUTUREWORK: instead of cloning here, might have a Layer method to "trim" its buffer in-place
+        auto clippedLayerClone = layerClone.Clone(*affectedRegion);
 
         auto undoAction = std::make_unique<LayerRegionUndoAction<typename LayerTypeTraits<TLayer>::layer_data_type>>(
             _("Flood Tool"),
             std::move(layerDirtyStateClone),
-            std::move(*clippedLayerClone),
+            std::move(clippedLayerClone),
             affectedRegion->origin);
 
         PushUndoAction(std::move(undoAction));

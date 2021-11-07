@@ -65,13 +65,13 @@ ShipDefinition ModelController::MakeShipDefinition() const
 {
     return ShipDefinition(
         mModel.GetShipSize(),
-        std::move(*mModel.CloneStructuralLayer()),
+        mModel.CloneLayer<LayerType::Structural>(),
         mModel.HasLayer(LayerType::Electrical)
-            ? mModel.CloneElectricalLayer()
+            ? std::make_unique<ElectricalLayerData>(mModel.CloneLayer<LayerType::Electrical>())
             : nullptr,
         nullptr, // TODOHERE
         mModel.HasLayer(LayerType::Texture)
-            ? mModel.CloneTextureLayer()
+            ? std::make_unique<TextureLayerData>(mModel.CloneLayer<LayerType::Texture>())
             : nullptr,
         mModel.GetShipMetadata(),
         mModel.GetShipPhysicsData(),

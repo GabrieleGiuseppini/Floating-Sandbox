@@ -59,16 +59,14 @@ struct StructuralLayerData
         : Buffer(shipSize, fillElement)
     {}
 
-    std::unique_ptr<StructuralLayerData> Clone() const
+    StructuralLayerData Clone() const
     {
-        return std::make_unique<StructuralLayerData>(
-            Buffer.Clone());
+        return StructuralLayerData(Buffer.Clone());
     }
 
-    std::unique_ptr<StructuralLayerData> Clone(ShipSpaceRect const & region) const
+    StructuralLayerData Clone(ShipSpaceRect const & region) const
     {
-        return std::make_unique<StructuralLayerData>(
-            Buffer.CloneRegion(region));
+        return StructuralLayerData(Buffer.CloneRegion(region));
     }
 };
 
@@ -146,20 +144,20 @@ struct ElectricalLayerData
         , Panel()
     {}
 
-    std::unique_ptr<ElectricalLayerData> Clone() const
+    ElectricalLayerData Clone() const
     {
         ElectricalPanelMetadata panelClone = Panel;
 
-        return std::make_unique<ElectricalLayerData>(
+        return ElectricalLayerData(
             Buffer.Clone(),
             std::move(panelClone));
     }
 
-    std::unique_ptr<ElectricalLayerData> Clone(ShipSpaceRect const & region) const
+    ElectricalLayerData Clone(ShipSpaceRect const & region) const
     {
         ElectricalPanelMetadata panelClone = Panel;
 
-        return std::make_unique<ElectricalLayerData>(
+        return ElectricalLayerData(
             Buffer.CloneRegion(region),
             std::move(panelClone));
     }
@@ -210,10 +208,9 @@ struct RopesLayerData
         : Buffer(std::move(buffer))
     {}
 
-    std::unique_ptr<RopesLayerData> Clone() const
+    RopesLayerData Clone() const
     {
-        return std::make_unique<RopesLayerData>(
-            Buffer.Clone());
+        return RopesLayerData(Buffer.Clone());
     }
 };
 
@@ -235,10 +232,9 @@ struct TextureLayerData
         : Buffer(std::move(buffer))
     {}
 
-    std::unique_ptr<TextureLayerData> Clone() const
+    TextureLayerData Clone() const
     {
-        return std::make_unique<TextureLayerData>(
-            Buffer.Clone());
+        return TextureLayerData(Buffer.Clone());
     }
 };
 

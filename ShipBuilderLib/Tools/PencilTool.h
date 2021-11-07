@@ -55,8 +55,6 @@ private:
 
 private:
 
-    void TakeOriginalLayerClone();
-
     void StartEngagement(StrongTypedBool<struct IsRightMouseButton> isRightButton);
 
     void DoEdit(ShipSpaceCoordinates const & mouseCoordinates);
@@ -76,7 +74,7 @@ private:
 private:
 
     // Original layer
-    std::unique_ptr<typename LayerTypeTraits<TLayer>::layer_data_type> mOriginalLayerClone;
+    typename LayerTypeTraits<TLayer>::layer_data_type mOriginalLayerClone;
 
     // Ship region dirtied so far with temporary visualization
     std::optional<ShipSpaceRect> mTempVisualizationDirtyShipRegion;

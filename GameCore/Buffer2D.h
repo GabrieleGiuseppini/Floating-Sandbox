@@ -21,7 +21,7 @@ public:
 
 public:
 
-    size_type const Size;
+    size_type Size;
     std::unique_ptr<TElement[]> Data;
 
     explicit Buffer2D(size_type size)
@@ -96,6 +96,8 @@ public:
         Size = other.Size;
         Data = std::move(other.Data);
         mLinearSize = other.mLinearSize;
+
+        return *this;
     }
 
     size_t GetByteSize() const
@@ -172,5 +174,5 @@ public:
 
 private:
 
-    size_t const mLinearSize;
+    size_t mLinearSize;
 };

@@ -95,7 +95,7 @@ PencilTool<TLayerType, IsEraser>::PencilTool(
         workbenchState,
         userInterface,
         view)
-    , mOriginalLayerClone()
+    , mOriginalLayerClone(modelController.GetModel().CloneLayer<TLayerType>())
     , mTempVisualizationDirtyShipRegion()
     , mEngagementData()
     , mCursorImage()
@@ -110,9 +110,6 @@ PencilTool<TLayerType, IsEraser>::PencilTool(
     }
 
     SetCursor(mCursorImage);
-
-    // Take original layer clone
-    TakeOriginalLayerClone();
 
     // Check if we need to immediately do a visualization
     auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
@@ -280,21 +277,6 @@ void PencilTool<TLayer, IsEraser>::OnUncapturedMouseOut()
 //////////////////////////////////////////////////////////////////////////////
 
 template<LayerType TLayer, bool IsEraser>
-void PencilTool<TLayer, IsEraser>::TakeOriginalLayerClone()
-{
-    if constexpr (TLayer == LayerType::Structural)
-    {
-        mOriginalLayerClone = mModelController.GetModel().CloneStructuralLayer();
-    }
-    else
-    {
-        static_assert(TLayer == LayerType::Electrical);
-
-        mOriginalLayerClone = mModelController.GetModel().CloneElectricalLayer();
-    }
-}
-
-template<LayerType TLayer, bool IsEraser>
 void PencilTool<TLayer, IsEraser>::StartEngagement(StrongTypedBool<struct IsRightMouseButton> isRightButton)
 {
     assert(!mEngagementData);
@@ -381,12 +363,12 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
         // Create undo action
         //
 
-        auto clippedRegionClone = mOriginalLayerClone->Clone(*mEngagementData->EditRegion);
+        auto clippedRegionClone = mOriginalLayerClone.Clone(*mEngagementData->EditRegion);
 
         auto undoAction = std::make_unique<LayerRegionUndoAction<typename LayerTypeTraits<TLayer>::layer_data_type>>(
             IsEraser ? _("Eraser Tool") : _("Pencil Tool"),
             mEngagementData->OriginalDirtyState,
-            std::move(*clippedRegionClone),
+            std::move(clippedRegionClone),
             mEngagementData->EditRegion->origin);
 
         PushUndoAction(std::move(undoAction));
@@ -402,7 +384,8 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
     // Restart temp visualization
     //
 
-    TakeOriginalLayerClone();
+    // Re-take original layer clone
+    mOriginalLayerClone = mModelController.GetModel().CloneLayer<TLayer>();
 
     assert(!mTempVisualizationDirtyShipRegion);
 }
@@ -438,12 +421,10 @@ void PencilTool<TLayer, IsEraser>::MendTempVisualization()
 {
     assert(mTempVisualizationDirtyShipRegion);
 
-    assert(mOriginalLayerClone);
-
     if constexpr (TLayer == LayerType::Structural)
     {
         mModelController.RestoreStructuralLayerRegionForEphemeralVisualization(
-            *mOriginalLayerClone,
+            mOriginalLayerClone,
             *mTempVisualizationDirtyShipRegion,
             mTempVisualizationDirtyShipRegion->origin);
     }
@@ -452,7 +433,7 @@ void PencilTool<TLayer, IsEraser>::MendTempVisualization()
         static_assert(TLayer == LayerType::Electrical);
 
         mModelController.RestoreElectricalLayerRegionForEphemeralVisualization(
-            *mOriginalLayerClone,
+            mOriginalLayerClone,
             *mTempVisualizationDirtyShipRegion,
             mTempVisualizationDirtyShipRegion->origin);
     }
