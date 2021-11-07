@@ -1949,7 +1949,7 @@ void MainFrame::OnWorkCanvasLeftDown(wxMouseEvent & event)
             mIsMouseInWorkCanvas = false; // Allow next EnterWindow to think it's the first
         }
 
-        LogMessage("TODOTEST: Captured");
+        LogMessage("Mouse captured");
         mWorkCanvas->CaptureMouse();
         mIsMouseCapturedByWorkCanvas = true;
     }
@@ -1968,7 +1968,7 @@ void MainFrame::OnWorkCanvasLeftUp(wxMouseEvent & /*event*/)
         mWorkCanvas->ReleaseMouse();
         mIsMouseCapturedByWorkCanvas = false;
 
-        LogMessage("TODOTEST: Released");
+        LogMessage("Mouse released");
     }
 
     if (mController)
@@ -1982,7 +1982,7 @@ void MainFrame::OnWorkCanvasRightDown(wxMouseEvent & /*event*/)
     // Hang on to the mouse for as long as the button is pressed
     if (!mIsMouseCapturedByWorkCanvas)
     {
-        LogMessage("TODOTEST: Captured");
+        LogMessage("Mouse captured");
 
         mWorkCanvas->CaptureMouse();
         mIsMouseCapturedByWorkCanvas = true;
@@ -2002,7 +2002,7 @@ void MainFrame::OnWorkCanvasRightUp(wxMouseEvent & /*event*/)
         mWorkCanvas->ReleaseMouse();
         mIsMouseCapturedByWorkCanvas = false;
 
-        LogMessage("TODOTEST: Released");
+        LogMessage("Mouse released");
     }
 
     if (mController)
@@ -2029,7 +2029,7 @@ void MainFrame::OnWorkCanvasMouseWheel(wxMouseEvent & event)
 
 void MainFrame::OnWorkCanvasCaptureMouseLost(wxMouseCaptureLostEvent & /*event*/)
 {
-    LogMessage("TODOTEST: CaptureMouseLost");
+    LogMessage("CaptureMouseLost");
 
     if (mController)
     {
@@ -2039,7 +2039,7 @@ void MainFrame::OnWorkCanvasCaptureMouseLost(wxMouseCaptureLostEvent & /*event*/
 
 void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & /*event*/)
 {
-    LogMessage("TODOTEST: LeftWindow (captured=", mIsMouseCapturedByWorkCanvas, ")");
+    LogMessage("LeftWindow (isCaptured=", mIsMouseCapturedByWorkCanvas, ")");
 
     assert(mIsMouseInWorkCanvas);
     mIsMouseInWorkCanvas = false;
@@ -2055,7 +2055,7 @@ void MainFrame::OnWorkCanvasMouseLeftWindow(wxMouseEvent & /*event*/)
 
 void MainFrame::OnWorkCanvasMouseEnteredWindow(wxMouseEvent & /*event*/)
 {
-    LogMessage("TODOTEST: EnteredWindow (captured=", mIsMouseCapturedByWorkCanvas, ")");
+    LogMessage("EnteredWindow (isCaptured=", mIsMouseCapturedByWorkCanvas, ")");
 
     assert(!mIsMouseInWorkCanvas);
     mIsMouseInWorkCanvas = true;
