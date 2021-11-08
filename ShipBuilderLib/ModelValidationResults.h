@@ -17,8 +17,9 @@ public:
     enum class CheckClassType
     {
         EmptyStructuralLayer,
+        StructureTooLarge,
         MissingElectricalSubstrate,
-        ShipSizeTooBig
+        TooManyLights
     };
 
     enum class SeverityType

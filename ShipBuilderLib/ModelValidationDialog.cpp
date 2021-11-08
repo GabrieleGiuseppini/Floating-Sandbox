@@ -15,7 +15,9 @@
 
 namespace ShipBuilder {
 
-static wxSize const MinDialogSizeForValidationResults = wxSize(680, 600);
+wxSize const MinDialogSizeForValidationResults = wxSize(680, 600);
+
+int constexpr ValidationTimerPeriodMsec = 250;
 
 ModelValidationDialog::ModelValidationDialog(
     wxWindow * parent,
@@ -28,7 +30,7 @@ ModelValidationDialog::ModelValidationDialog(
         _("Ship Issues"),
         wxDefaultPosition,
         wxDefaultSize,
-        wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxRESIZE_BORDER);
+        wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED);
 
     SetBackgroundColour(GetDefaultAttributes().colBg);
 
@@ -150,7 +152,7 @@ void ModelValidationDialog::ShowModalForStandAloneValidation(Controller & contro
     CentreOnParent(wxBOTH);
 
     // Start validation timer
-    mValidationTimer->Start(200);
+    mValidationTimer->Start(ValidationTimerPeriodMsec);
 
     wxDialog::ShowModal();
 }
@@ -167,7 +169,7 @@ bool ModelValidationDialog::ShowModalForSaveShipValidation(Controller & controll
 
     // Start validation timer
     assert(!mValidationThread.joinable());
-    mValidationTimer->Start(200);
+    mValidationTimer->Start(ValidationTimerPeriodMsec);
 
     if (wxDialog::ShowModal() == 0)
     {
@@ -403,108 +405,144 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
 
                 // Content
                 {
-                    wxWindow * contentWindow = nullptr;
+                    wxWindow * contentWindow = new wxPanel(issueBoxHSizer->GetStaticBox());
+
+                    auto vSizer = new wxBoxSizer(wxVERTICAL);
+
+                    vSizer->AddStretchSpacer();
+
+                    //
+                    // Get issue content
+                    //
+
+                    wxString labelText;
+                    std::function<void()> fixAction;
+                    wxString fixActionTooltip;
+
                     switch (issue.GetCheckClass())
                     {
                         case ModelValidationIssue::CheckClassType::EmptyStructuralLayer:
                         {
-                            // TODOHERE
-                            contentWindow = new wxStaticText(issueBoxHSizer->GetStaticBox(), wxID_ANY, _("TODOTEST"),
-                                wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+                            if (issue.GetSeverity() != ModelValidationIssue::SeverityType::Success)
+                            {
+                                labelText = _("The structural layer is empty. Place at least one particle in it.");
+                            }
+                            else
+                            {
+                                labelText = _("The structural layer contains at least one particle.");
+                            }
+
+                            break;
+                        }
+
+                        case ModelValidationIssue::CheckClassType::StructureTooLarge:
+                        {
+                            if (issue.GetSeverity() != ModelValidationIssue::SeverityType::Success)
+                            {
+                                labelText = _("The structural layer contains too many particles, possibly causing the simulation to lag on low-end computers. It is advisable to reduce the number of structural particles.");
+                            }
+                            else
+                            {
+                                labelText = _("The structural layer does not contain too many particles.");
+                            }
 
                             break;
                         }
 
                         case ModelValidationIssue::CheckClassType::MissingElectricalSubstrate:
                         {
-                            contentWindow = new wxPanel(issueBoxHSizer->GetStaticBox());
-
-                            auto vSizer = new wxBoxSizer(wxVERTICAL);
-
-                            vSizer->AddStretchSpacer();
-
-                            // Label
-                            {
-                                auto label = new wxStaticText(contentWindow, wxID_ANY, wxEmptyString,
-                                    wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-
-                                wxString labelText;
-                                if (issue.GetSeverity() == ModelValidationIssue::SeverityType::Error)
-                                {
-                                    labelText = _("One or more particles in the electrical layer have no particles in the structural layer beneath them. Particles in the electrical layer must always be on top of existing particles in the structural layer.");
-                                }
-                                else
-                                {
-                                    labelText = _("All particles in the electrical layer have a particle in the structural layer beneath them. Particles in the electrical layer must always be on top of existing particles in the structural layer.");
-                                }
-
-                                label->SetLabel(labelText);
-
-                                label->Bind(
-                                    wxEVT_SIZE,
-                                    [label, contentWindow, labelText](wxSizeEvent & event)
-                                    {
-                                        label->SetLabel(labelText);
-                                        label->Wrap(contentWindow->GetClientSize().GetWidth() - 10);
-
-                                        event.Skip();
-                                    });
-
-                                vSizer->Add(
-                                    label,
-                                    0,  // Retain own height
-                                    wxEXPAND, // Use all H space
-                                    0);
-                            }
-
-                            vSizer->AddSpacer(10);
-
-                            // Button
                             if (issue.GetSeverity() == ModelValidationIssue::SeverityType::Error)
                             {
-                                auto button = new wxButton(contentWindow, wxID_ANY, _("Fix This Error"));
-                                button->SetToolTip(_("Fix this error by removing the offending electrical particles."));
-                                button->Bind(
-                                    wxEVT_BUTTON,
-                                    [this](wxCommandEvent & /*event*/)
-                                    {
-                                        // Fix
-                                        mSessionData->BuilderController.TrimElectricalParticlesWithoutSubstratum();
-
-                                        // Prepare for validation
-                                        PrepareUIForValidationRun();
-                                        Layout();
-
-                                        // Start validation timer
-                                        assert(!mValidationThread.joinable());
-                                        mValidationTimer->Start(200);
-                                    });
-
-                                vSizer->Add(
-                                    button,
-                                    0,  // Retain own height
-                                    wxALIGN_LEFT | wxBOTTOM, // Do not expand H
-                                    4);
+                                labelText = _("One or more particles in the electrical layer have no particles in the structural layer beneath them. Particles in the electrical layer must always be above particles in the structural layer.");
+                            }
+                            else
+                            {
+                                labelText = _("All particles in the electrical layer have a particle in the structural layer beneath them. Particles in the electrical layer must always be above particles in the structural layer.");
                             }
 
-                            vSizer->AddStretchSpacer();
+                            if (issue.GetSeverity() == ModelValidationIssue::SeverityType::Error)
+                            {
+                                fixAction = [this]()
+                                {
+                                    mSessionData->BuilderController.TrimElectricalParticlesWithoutSubstratum();
+                                };
 
-                            contentWindow->SetSizer(vSizer);
+                                fixActionTooltip = _("Fix this error by removing the offending electrical particles.");
+                            }
 
                             break;
                         }
 
-                        case ModelValidationIssue::CheckClassType::ShipSizeTooBig:
+                        case ModelValidationIssue::CheckClassType::TooManyLights:
                         {
-                            // TODOHERE
-                            contentWindow = new wxStaticText(issueBoxHSizer->GetStaticBox(), wxID_ANY, _("TODOTEST"),
-                                wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+                            if (issue.GetSeverity() != ModelValidationIssue::SeverityType::Success)
+                            {
+                                labelText = _("The electrical layer contains too many light-emitting particles, possibly causing the simulation to lag on low-end computers. It is advisable to reduce the number of light-emitting electrical particles.");
+                            }
+                            else
+                            {
+                                labelText = _("The electrical layer does not contain too many light-emitting particles.");
+                            }
 
                             break;
                         }
                     }
 
-                    assert(contentWindow != nullptr);
+                    // Label
+                    {
+                        auto label = new wxStaticText(contentWindow, wxID_ANY, labelText,
+                            wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+
+                        label->Bind(
+                            wxEVT_SIZE,
+                            [label, contentWindow, labelText](wxSizeEvent & event)
+                            {
+                                label->SetLabel(labelText);
+                                label->Wrap(contentWindow->GetClientSize().GetWidth() - 10);
+
+                                event.Skip();
+                            });
+
+                        vSizer->Add(
+                            label,
+                            0,  // Retain own height
+                            wxEXPAND, // Use all H space
+                            0);
+                    }
+
+                    // Button
+                    if (fixAction)
+                    {
+                        vSizer->AddSpacer(10);
+
+                        auto button = new wxButton(contentWindow, wxID_ANY, _("Fix This Error"));
+                        button->SetToolTip(fixActionTooltip);
+                        button->Bind(
+                            wxEVT_BUTTON,
+                            [this, fixAction](wxCommandEvent & /*event*/)
+                            {
+                                // Fix
+                                fixAction();
+
+                                // Prepare for validation
+                                PrepareUIForValidationRun();
+                                Layout();
+
+                                // Start validation timer
+                                assert(!mValidationThread.joinable());
+                                mValidationTimer->Start(ValidationTimerPeriodMsec);
+                            });
+
+                        vSizer->Add(
+                            button,
+                            0,  // Retain own height
+                            wxALIGN_LEFT | wxBOTTOM, // Do not expand H
+                            4);
+                    }
+
+                    vSizer->AddStretchSpacer();
+
+                    contentWindow->SetSizer(vSizer);
 
                     issueBoxHSizer->Add(
                         contentWindow,
@@ -558,20 +596,25 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
 
         auto hSizer = new wxBoxSizer(wxHORIZONTAL);
 
+        if (!mSessionData->IsForSave)
         {
-            auto button = new wxButton(mButtonsPanel, wxID_ANY, _("OK"));
-            button->Bind(wxEVT_BUTTON, &ModelValidationDialog::OnOkButton, this);
-            button->Enable(!mSessionData->IsForSave || !mValidationResults->HasErrors());
-            hSizer->Add(button, 0);
+            auto okButton = new wxButton(mButtonsPanel, wxID_ANY, _("OK"));
+            okButton->Bind(wxEVT_BUTTON, &ModelValidationDialog::OnOkButton, this);
+            okButton->Enable(!mSessionData->IsForSave || !mValidationResults->HasErrors());
+            hSizer->Add(okButton, 0);
         }
-
-        if (mSessionData->IsForSave)
+        else
         {
+            auto okButton = new wxButton(mButtonsPanel, wxID_ANY, _("Save"));
+            okButton->Bind(wxEVT_BUTTON, &ModelValidationDialog::OnOkButton, this);
+            okButton->Enable(!mValidationResults->HasErrors());
+            hSizer->Add(okButton, 0);
+
             hSizer->AddSpacer(20);
 
-            auto button = new wxButton(mButtonsPanel, wxID_ANY, _("Cancel"));
-            button->Bind(wxEVT_BUTTON, &ModelValidationDialog::OnCancelButton, this);
-            hSizer->Add(button, 0);
+            auto cancelButton = new wxButton(mButtonsPanel, wxID_ANY, _("Cancel"));
+            cancelButton->Bind(wxEVT_BUTTON, &ModelValidationDialog::OnCancelButton, this);
+            hSizer->Add(cancelButton, 0);
         }
 
         hSizer->AddSpacer(20);

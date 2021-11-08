@@ -83,66 +83,96 @@ ModelValidationResults ModelController::ValidateModel() const
     std::vector<ModelValidationIssue> issues;
 
     //
+    // Visit structural layer
+    //
+
+    assert(mModel.HasLayer(LayerType::Structural));
+
+    StructuralLayerData const & structuralLayer = mModel.GetStructuralLayer();
+
+    size_t structuralParticlesCount = 0;
+
+    for (int y = 0; y < structuralLayer.Buffer.Size.height; ++y)
+    {
+        for (int x = 0; x < structuralLayer.Buffer.Size.width; ++x)
+        {
+            if (structuralLayer.Buffer[{x, y}].Material != nullptr)
+            {
+                ++structuralParticlesCount;
+            }
+        }
+    }
+
+    //
     // Empty structural layer
     //
 
-    // TODOHERE: use own GetStructureAABB() -> Rect
-    // TODOTEST
-    issues.emplace_back(ModelValidationIssue::CheckClassType::EmptyStructuralLayer, ModelValidationIssue::SeverityType::Success);
+    issues.emplace_back(
+        ModelValidationIssue::CheckClassType::EmptyStructuralLayer,
+        (structuralParticlesCount == 0) ? ModelValidationIssue::SeverityType::Error : ModelValidationIssue::SeverityType::Success);
 
-    //
-    // Electrical substratum
-    //
+    if (structuralParticlesCount != 0)
+    {
+        //
+        // Structure too large
+        //
+
+        size_t constexpr MaxStructuralParticles = 100000;
+
+        issues.emplace_back(
+            ModelValidationIssue::CheckClassType::StructureTooLarge,
+            (structuralParticlesCount > MaxStructuralParticles) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
+    }
 
     if (mModel.HasLayer(LayerType::Electrical))
     {
-        StructuralLayerData const & structuralLayer = mModel.GetStructuralLayer();
+        //
+        // Visit electrical layer
+        //
+
         ElectricalLayerData const & electricalLayer = mModel.GetElectricalLayer();
 
-        assert(structuralLayer.Buffer.Size == electricalLayer.Buffer.Size);
-
         size_t electricalParticlesWithNoStructuralSubstratumCount = 0;
+        size_t lightEmittingParticlesCount = 0;
 
+        assert(structuralLayer.Buffer.Size == electricalLayer.Buffer.Size);
         for (int y = 0; y < structuralLayer.Buffer.Size.height; ++y)
         {
             for (int x = 0; x < structuralLayer.Buffer.Size.width; ++x)
             {
                 auto const coords = ShipSpaceCoordinates(x, y);
-                if (electricalLayer.Buffer[coords].Material != nullptr
+                auto const electricalMaterial = electricalLayer.Buffer[coords].Material;
+                if (electricalMaterial != nullptr
                     && structuralLayer.Buffer[coords].Material == nullptr)
                 {
                     ++electricalParticlesWithNoStructuralSubstratumCount;
+
+                    if (electricalMaterial->Luminiscence != 0.0f)
+                    {
+                        ++lightEmittingParticlesCount;
+                    }
                 }
             }
         }
 
-        ModelValidationIssue::SeverityType electricalSubstratumOutcome;
-        if (electricalParticlesWithNoStructuralSubstratumCount > 0)
-        {
-            electricalSubstratumOutcome = ModelValidationIssue::SeverityType::Error;
-        }
-        else
-        {
-            electricalSubstratumOutcome = ModelValidationIssue::SeverityType::Success;
-        }
+        //
+        // Electrical substratum
+        //
 
-        issues.emplace_back(ModelValidationIssue::CheckClassType::MissingElectricalSubstrate, electricalSubstratumOutcome);
+        issues.emplace_back(
+            ModelValidationIssue::CheckClassType::MissingElectricalSubstrate,
+            (electricalParticlesWithNoStructuralSubstratumCount > 0) ? ModelValidationIssue::SeverityType::Error : ModelValidationIssue::SeverityType::Success);
+
+        //
+        // Too many lights
+        //
+
+        size_t constexpr MaxLightEmittingParticles = 5000;
+
+        issues.emplace_back(
+            ModelValidationIssue::CheckClassType::TooManyLights,
+            (lightEmittingParticlesCount > MaxLightEmittingParticles) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
     }
-
-    // TODOTEST
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-
-    //
-    // Ship size
-    //
-
-    // TODOTEST
-    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Warning);
-    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Error);
-    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Success);
-    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Warning);
-    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Success);
-    issues.emplace_back(ModelValidationIssue::CheckClassType::ShipSizeTooBig, ModelValidationIssue::SeverityType::Error);
 
     return ModelValidationResults(std::move(issues));
 }
@@ -848,8 +878,6 @@ std::optional<ShipSpaceRect> ModelController::Flood(ShipSpaceCoordinates const &
         checkPropagateToNeighbor({ currentPoint.x, currentPoint.y - 1 });
         checkPropagateToNeighbor({ currentPoint.x, currentPoint.y + 1 });
     }
-
-    LogMessage("TODOTEST: Flooded; rect=", affectedRect.ToString());
 
     return affectedRect;
 }
