@@ -84,6 +84,16 @@ public:
         mStructuralEraserToolSize = value;
     }
 
+    bool GetStructuralFloodToolIsContiguous() const
+    {
+        return mStructuralFloodToolIsContiguous;
+    }
+
+    void SetStructuralFloodToolIsContiguous(bool value)
+    {
+        mStructuralFloodToolIsContiguous = value;
+    }
+
 private:
 
     StructuralMaterial const * mStructuralForegroundMaterial;
@@ -93,6 +103,7 @@ private:
 
     std::uint32_t mStructuralPencilToolSize;
     std::uint32_t mStructuralEraserToolSize;
+    bool mStructuralFloodToolIsContiguous;
 };
 
 }

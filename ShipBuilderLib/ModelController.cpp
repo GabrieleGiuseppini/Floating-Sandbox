@@ -271,7 +271,8 @@ void ModelController::StructuralRegionFill(
 
 std::optional<ShipSpaceRect> ModelController::StructuralFlood(
     ShipSpaceCoordinates const & start,
-    StructuralMaterial const * material)
+    StructuralMaterial const * material,
+    bool doContiguousOnly)
 {
     assert(mModel.HasLayer(LayerType::Structural));
 
@@ -284,6 +285,7 @@ std::optional<ShipSpaceRect> ModelController::StructuralFlood(
     std::optional<ShipSpaceRect> affectedRect = Flood<LayerType::Structural>(
         start,
         material,
+        doContiguousOnly,
         mModel.GetStructuralLayer());
 
     if (affectedRect.has_value())
@@ -805,8 +807,10 @@ void ModelController::WriteParticle(
 }
 
 template<LayerType TLayer>
-std::optional<ShipSpaceRect> ModelController::Flood(ShipSpaceCoordinates const & start,
+std::optional<ShipSpaceRect> ModelController::Flood(
+    ShipSpaceCoordinates const & start,
     typename LayerTypeTraits<TLayer>::material_type const * material,
+    bool doContiguousOnly,
     typename LayerTypeTraits<TLayer>::layer_data_type const & layer)
 {
     // Pick material to flood
@@ -817,49 +821,90 @@ std::optional<ShipSpaceRect> ModelController::Flood(ShipSpaceCoordinates const &
         return std::nullopt;
     }
 
-    //
-    // Init visit from this point
-    //
-
-    WriteParticle(start, material);
-    ShipSpaceRect affectedRect(start);
-
-    std::queue<ShipSpaceCoordinates> pointsToPropagateFrom;
-    pointsToPropagateFrom.push(start);
-
-    //
-    // Propagate
-    //
-
     ShipSpaceSize const shipSize = mModel.GetShipSize();
 
-    auto const checkPropagateToNeighbor = [&](ShipSpaceCoordinates neighborCoords)
+    if (doContiguousOnly)
     {
-        if (neighborCoords.IsInSize(shipSize) && layer.Buffer[neighborCoords].Material == startMaterial)
+        //
+        // Flood from point
+        //
+
+        //
+        // Init visit from this point
+        //
+
+        WriteParticle(start, material);
+        ShipSpaceRect affectedRect(start);
+
+        std::queue<ShipSpaceCoordinates> pointsToPropagateFrom;
+        pointsToPropagateFrom.push(start);
+
+        //
+        // Propagate
+        //
+
+        auto const checkPropagateToNeighbor = [&](ShipSpaceCoordinates neighborCoords)
         {
-            // Visit point
-            WriteParticle(neighborCoords, material);
-            affectedRect.UnionWith(neighborCoords);
+            if (neighborCoords.IsInSize(shipSize) && layer.Buffer[neighborCoords].Material == startMaterial)
+            {
+                // Visit point
+                WriteParticle(neighborCoords, material);
+                affectedRect.UnionWith(neighborCoords);
 
-            // Propagate from point
-            pointsToPropagateFrom.push(neighborCoords);
+                // Propagate from point
+                pointsToPropagateFrom.push(neighborCoords);
+            }
+        };
+
+        while (!pointsToPropagateFrom.empty())
+        {
+            // Pop point that we have to propagate from
+            auto const currentPoint = pointsToPropagateFrom.front();
+            pointsToPropagateFrom.pop();
+
+            // Push neighbors
+            checkPropagateToNeighbor({ currentPoint.x - 1, currentPoint.y });
+            checkPropagateToNeighbor({ currentPoint.x + 1, currentPoint.y });
+            checkPropagateToNeighbor({ currentPoint.x, currentPoint.y - 1 });
+            checkPropagateToNeighbor({ currentPoint.x, currentPoint.y + 1 });
         }
-    };
 
-    while (!pointsToPropagateFrom.empty())
+        return affectedRect;
+    }
+    else
     {
-        // Pop point that we have to propagate from
-        auto const currentPoint = pointsToPropagateFrom.front();
-        pointsToPropagateFrom.pop();
+        //
+        // Replace material
+        //
 
-        // Push neighbors
-        checkPropagateToNeighbor({ currentPoint.x - 1, currentPoint.y });
-        checkPropagateToNeighbor({ currentPoint.x + 1, currentPoint.y });
-        checkPropagateToNeighbor({ currentPoint.x, currentPoint.y - 1 });
-        checkPropagateToNeighbor({ currentPoint.x, currentPoint.y + 1 });
+        std::optional<ShipSpaceRect> affectedRect;
+
+        for (int y = 0; y < shipSize.height; ++y)
+        {
+            for (int x = 0; x < shipSize.width; ++x)
+            {
+                ShipSpaceCoordinates const coords(x, y);
+
+                if (layer.Buffer[coords].Material == startMaterial)
+                {
+                    WriteParticle(coords, material);
+
+                    if (!affectedRect.has_value())
+                    {
+                        affectedRect = ShipSpaceRect(coords);
+                    }
+                    else
+                    {
+                        affectedRect->UnionWith(coords);
+                    }
+                }
+            }
+        }
+
+        return affectedRect;
     }
 
-    return affectedRect;
+
 }
 
 void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & region)

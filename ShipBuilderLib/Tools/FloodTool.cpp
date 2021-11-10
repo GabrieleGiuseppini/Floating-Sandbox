@@ -79,7 +79,8 @@ void FloodTool<TLayer>::DoEdit(
     static_assert(TLayer == LayerType::Structural);
     std::optional<ShipSpaceRect> affectedRegion = mModelController.StructuralFlood(
         mouseCoordinates,
-        floodMaterial);
+        floodMaterial,
+        mWorkbenchState.GetStructuralFloodToolIsContiguous());
 
     if (affectedRegion.has_value())
     {

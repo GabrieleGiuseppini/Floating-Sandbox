@@ -874,6 +874,46 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
                 ToolType::StructuralEraser,
                 tsPanel);
         }
+
+        // Structural flood
+        {
+            wxPanel * tsPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+            wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
+
+            {
+                wxCheckBox * chkBox = new wxCheckBox(tsPanel, wxID_ANY, _("Contiguous"));
+
+                chkBox->SetToolTip(_("Flood only particles touching each other. When not checked, the flood tool effectively replaces a material with another."));
+
+                chkBox->SetValue(mWorkbenchState.GetStructuralFloodToolIsContiguous());
+
+                chkBox->Bind(
+                    wxEVT_CHECKBOX,
+                    [this](wxCommandEvent & event)
+                    {
+                        mWorkbenchState.SetStructuralFloodToolIsContiguous(event.IsChecked());
+                    });
+
+                sizer->Add(
+                    chkBox,
+                    0,
+                    wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
+                    4);
+            }
+
+            tsPanel->SetSizerAndFit(sizer);
+
+            mToolSettingsPanelsSizer->Add(
+                tsPanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+
+            mToolSettingsPanels.emplace_back(
+                ToolType::StructuralFlood,
+                tsPanel);
+        }
     }
 
     mToolSettingsPanelsSizer->AddStretchSpacer(1);
@@ -1525,8 +1565,6 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0,
                     0);
             }
-
-            // TODO: line
 
             electricalToolbarSizer->Add(
                 toolsSizer,

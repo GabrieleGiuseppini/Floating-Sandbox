@@ -32,14 +32,15 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Simply remove specialization
 	+ Also remove ModelController::Flood specialization
 
-- Flood: settings: adjacent
++ Flood: settings: adjacent
 
 = UnderConstructionDialog
 	- Do at remaining layer buttons
 
-
 - Tests:
 	- Ships with unicode chars in metadata, show well in dialog: Désirée
+
+- Send for testing
 
 - Finalize design of Ropes layer
 	- Material strategies:
@@ -101,8 +102,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Make internal helper templated on LayerType, with all code
 		- Additions:
 			- Undo
-
-- Send for testing
 
 - Each time we StartTool() (e.g. at AddLayer, etc.) we end up refreshing modelcontroller's visualization and OpenGL visualization, twice
 

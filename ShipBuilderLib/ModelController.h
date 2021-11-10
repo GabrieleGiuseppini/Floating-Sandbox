@@ -89,7 +89,8 @@ public:
 
     std::optional<ShipSpaceRect> StructuralFlood(
         ShipSpaceCoordinates const & start,
-        StructuralMaterial const * material);
+        StructuralMaterial const * material,
+        bool doContiguousOnly);
 
     void RestoreStructuralLayer(
         StructuralLayerData && sourceLayerRegion,
@@ -173,6 +174,7 @@ private:
     std::optional<ShipSpaceRect> Flood(
         ShipSpaceCoordinates const & start,
         typename LayerTypeTraits<TLayer>::material_type const * material,
+        bool doContiguousOnly,
         typename LayerTypeTraits<TLayer>::layer_data_type const & layer);
 
     void UpdateStructuralLayerVisualization(ShipSpaceRect const & region);
