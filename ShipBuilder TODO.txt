@@ -34,11 +34,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 + Flood: settings: adjacent
 
-= UnderConstructionDialog
-	- Do at remaining layer buttons
-
-- Tests:
-	- Ships with unicode chars in metadata, show well in dialog: Désirée
++ UnderConstructionDialog
+	+ Do at remaining layer buttons
 
 - Send for testing
 
@@ -142,6 +139,11 @@ https://gamejolt.com/x/permalink/comment/11730705
 					- Set optionals to nullopt if trimmer field is empty
 				- Call Controller::ReplaceMetadata(&&), etc.
 					- Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
+	- Tests:
+		- Ships with unicode chars in metadata, show well in dialog: Désirée Москва
+			- Load ship
+			- New ship
+
 
 - Resize workflow:
 	+ Button - in Ship Settings panel, slightly separated from the File buttons

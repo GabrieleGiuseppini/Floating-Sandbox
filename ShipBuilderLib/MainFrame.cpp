@@ -1029,17 +1029,21 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
                                         case LayerType::Ropes:
                                         {
-                                            if (mController->HasModelLayer(LayerType::Ropes)
-                                                && mController->IsModelDirty(LayerType::Ropes))
-                                            {
-                                                if (!AskUserIfSure(sureQuestion))
-                                                {
-                                                    // Changed their mind
-                                                    return;
-                                                }
-                                            }
+                                            // TODO
+                                            UnderConstructionDialog::Show(this, mResourceLocator);
 
-                                            mController->NewRopesLayer();
+                                            ////// FUTUREWORK: following code is good, just not yet implemented downstream
+                                            ////if (mController->HasModelLayer(LayerType::Ropes)
+                                            ////    && mController->IsModelDirty(LayerType::Ropes))
+                                            ////{
+                                            ////    if (!AskUserIfSure(sureQuestion))
+                                            ////    {
+                                            ////        // Changed their mind
+                                            ////        return;
+                                            ////    }
+                                            ////}
+
+                                            ////mController->NewRopesLayer();
 
                                             break;
                                         }

@@ -318,6 +318,14 @@ Render:
 			+ Ubuntu
 		+ Fix slice tool + SHIFT (no locking at all)
 
+		- Sam: DevIL finding static jpeg
+		= Test Titanic sinking to floor and see what really happens
+		- See rogue waves
+		- TimCan bug with LastModified
+
+		- TimCan pack
+
+
 		- Preferences flag for starting full-screen
 
 		- Bubbles issue
