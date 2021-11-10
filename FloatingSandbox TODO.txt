@@ -320,16 +320,20 @@ Render:
 
 		- Sam: DevIL finding static jpeg
 		= Test Titanic sinking to floor and see what really happens
-		- See rogue waves
+		+ See rogue waves
 
 		- TimCan pack
+		- Raynair updates
+
+		- Ropes
+			- Chain sound
 
 
 		- Preferences flag for starting full-screen
 
 		- Bubbles issue
 			- Add temp code to calc total internal water, and see if it's true that it keeps increasing
-			- Do same of "other internal pressure"
+			- Do same for "other internal pressure"
 
 		- Flames: see if can have softer rotation
 
