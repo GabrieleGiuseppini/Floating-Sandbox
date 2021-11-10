@@ -37,7 +37,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 + UnderConstructionDialog
 	+ Do at remaining layer buttons
 
-- Send for testing
++ Send for testing
 
 - Finalize design of Ropes layer
 	- Material strategies:

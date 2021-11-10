@@ -5,16 +5,40 @@
  ***************************************************************************************/
 #include "Colors.h"
 
+#include "GameException.h"
+
 #include <iomanip>
 #include <sstream>
 
 rgbColor rgbColor::fromString(std::string const & str)
 {
     unsigned int components[3];
-    for (int i = 0; i < 3; ++i)
+    int iStart = 0;
+    for (int c = 0; c < 3; ++c)
     {
-        std::stringstream ss(str.substr(i * 2, 2));
-        ss >> std::hex >> std::setfill('0') >> std::setw(2) >> components[i];
+        // Skip spaces
+        while (iStart < str.length() && str[iStart] == ' ')
+        {
+            ++iStart;
+        }
+
+        if (iStart >= str.length())
+        {
+            throw GameException("RGB color string \"" + str + "\" is invalid");
+        }
+
+        // Find next 3rd char, space, or eos
+        int iEnd = iStart + 1;
+        if (iEnd < str.length()
+            && str[iEnd] != ' ')
+        {
+            ++iEnd;
+        }
+
+        std::stringstream ss(str.substr(iStart, iEnd - iStart));
+        ss >> std::hex >> std::setfill('0') >> std::setw(2) >> components[c];
+
+        iStart = iEnd;
     }
 
     return rgbColor(
@@ -37,17 +61,40 @@ std::string rgbColor::toString() const
 
 rgbaColor rgbaColor::fromString(std::string const & str)
 {
-    std::stringstream ss(str);
-    ss << std::hex << std::setfill('0') << std::setw(2);
+    unsigned int components[4];
+    int iStart = 0;
+    for (int c = 0; c < 4; ++c)
+    {
+        // Skip spaces
+        while (iStart < str.length() && str[iStart] == ' ')
+        {
+            ++iStart;
+        }
 
-    unsigned int r, g, b, a;
-    ss >> r >> g >> b >> a;
+        if (iStart >= str.length())
+        {
+            throw GameException("RGBA color string \"" + str + "\" is invalid");
+        }
+
+        // Find next 3rd char, space, or eos
+        int iEnd = iStart + 1;
+        if (iEnd < str.length()
+            && str[iEnd] != ' ')
+        {
+            ++iEnd;
+        }
+
+        std::stringstream ss(str.substr(iStart, iEnd - iStart));
+        ss >> std::hex >> std::setfill('0') >> std::setw(2) >> components[c];
+
+        iStart = iEnd;
+    }
 
     return rgbaColor(
-        static_cast<rgbaColor::data_type>(r),
-        static_cast<rgbaColor::data_type>(g),
-        static_cast<rgbaColor::data_type>(b),
-        static_cast<rgbaColor::data_type>(a));
+        static_cast<rgbColor::data_type>(components[0]),
+        static_cast<rgbColor::data_type>(components[1]),
+        static_cast<rgbColor::data_type>(components[2]),
+        static_cast<rgbColor::data_type>(components[3]));
 }
 
 std::string rgbaColor::toString() const
