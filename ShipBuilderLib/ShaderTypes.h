@@ -56,10 +56,15 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter);
 enum class VertexAttributeType : GLuint
 {
     Canvas = 0,
-    Grid,
-    RectOverlay,
-    Texture,
-    TextureNdc
+
+    Grid = 0,
+
+    RectOverlay1 = 0,
+    RectOverlay2 = 1,
+
+    Texture = 0,
+
+    TextureNdc = 0
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);

@@ -105,6 +105,8 @@ public:
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetOrigin);
 
+    bool HasStructuralParticleAt(ShipSpaceCoordinates const & coords);
+
     //
     // Electrical
     //

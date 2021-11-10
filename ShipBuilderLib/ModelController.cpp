@@ -389,6 +389,15 @@ void ModelController::RestoreStructuralLayerRegionForEphemeralVisualization(
     mIsStructuralLayerInEphemeralVisualization = false;
 }
 
+bool ModelController::HasStructuralParticleAt(ShipSpaceCoordinates const & coords)
+{
+    assert(mModel.HasLayer(LayerType::Structural));
+
+    assert(!mIsStructuralLayerInEphemeralVisualization);
+
+    return mModel.GetStructuralLayer().Buffer[coords].Material != nullptr;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Electrical
 ////////////////////////////////////////////////////////////////////////////////////////////////////

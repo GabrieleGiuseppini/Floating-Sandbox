@@ -29,7 +29,8 @@ View::View(
     , mHasElectricalTexture(false)
     , mOtherLayersOpacity(0.75f)
     , mIsGridEnabled(false)
-    , mRectOverlayRect({0, 0}, {1, 1})
+    , mRectOverlayRect({0, 0}, {1, 1}) // Will be overwritten
+    , mRectOverlayColor(vec3f::zero()) // Will be overwritten
     , mHasRectOverlay(false)
     //////////////////////////////////
     , mPrimaryLayer(LayerType::Structural)
@@ -275,8 +276,11 @@ View::View(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mRectOverlayVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::RectOverlay));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::RectOverlay), 4, GL_FLOAT, GL_FALSE, sizeof(RectOverlayVertex), (void *)0);
+        static_assert(sizeof(RectOverlayVertex) == (4 + 3) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::RectOverlay1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::RectOverlay1), 4, GL_FLOAT, GL_FALSE, sizeof(RectOverlayVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::RectOverlay2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::RectOverlay2), 3, GL_FLOAT, GL_FALSE, sizeof(RectOverlayVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -511,10 +515,28 @@ void View::RemoveElectricalLayerVisualizationTexture()
     mHasElectricalTexture = false;
 }
 
-void View::UploadRectOverlay(ShipSpaceRect const & rect)
+void View::UploadRectOverlay(
+    ShipSpaceRect const & rect,
+    OverlayMode mode)
 {
     // Store rect
     mRectOverlayRect = rect;
+
+    // Store color
+    switch (mode)
+    {
+        case OverlayMode::Default:
+        {
+            mRectOverlayColor = vec3f(0.05f, 0.05f, 0.05f);
+            break;
+        }
+
+        case OverlayMode::Error:
+        {
+            mRectOverlayColor = vec3f(1.0f, 0.0f, 0.0f);
+            break;
+        }
+    }
 
     // Update overlay
     UpdateRectOverlay();
@@ -812,28 +834,32 @@ void View::UpdateRectOverlay()
         vec2f(
             static_cast<float>(mRectOverlayRect.origin.x),
             static_cast<float>(mRectOverlayRect.origin.y + mRectOverlayRect.size.height)),
-        vec2f(0.0f, 0.0f));
+        vec2f(0.0f, 0.0f),
+        mRectOverlayColor);
 
     // Left, Bottom
     vertexBuffer[1] = RectOverlayVertex(
         vec2f(
             static_cast<float>(mRectOverlayRect.origin.x),
             static_cast<float>(mRectOverlayRect.origin.y)),
-        vec2f(0.0f, 1.0f));
+        vec2f(0.0f, 1.0f),
+        mRectOverlayColor);
 
     // Right, Top
     vertexBuffer[2] = RectOverlayVertex(
         vec2f(
             static_cast<float>(mRectOverlayRect.origin.x + mRectOverlayRect.size.width),
             static_cast<float>(mRectOverlayRect.origin.y + mRectOverlayRect.size.height)),
-        vec2f(1.0f, 0.0f));
+        vec2f(1.0f, 0.0f),
+        mRectOverlayColor);
 
     // Right, Bottom
     vertexBuffer[3] = RectOverlayVertex(
         vec2f(
             static_cast<float>(mRectOverlayRect.origin.x + mRectOverlayRect.size.width),
             static_cast<float>(mRectOverlayRect.origin.y)),
-        vec2f(1.0f, 1.0f));
+        vec2f(1.0f, 1.0f),
+        mRectOverlayColor);
 
     // Upload vertices
     glBindBuffer(GL_ARRAY_BUFFER, *mRectOverlayVBO);

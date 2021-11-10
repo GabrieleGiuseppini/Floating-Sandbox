@@ -291,8 +291,12 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
             auto const applicableRect = CalculateApplicableRect(pos);
             if (applicableRect)
             {
+                bool isAllowed;
+
                 if constexpr (TLayer == LayerType::Structural)
                 {
+                    isAllowed = true;
+
                     mModelController.StructuralRegionFill(
                         *applicableRect,
                         fillMaterial);
@@ -301,24 +305,31 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
                 {
                     static_assert(TLayer == LayerType::Electrical);
 
-                    mModelController.ElectricalRegionFill(
-                        *applicableRect,
-                        fillMaterial);
+                    assert(applicableRect->size == ShipSpaceSize(1, 1));
+                    isAllowed = mModelController.HasStructuralParticleAt(applicableRect->origin);
+
+                    if (isAllowed)
+                    {
+                        mModelController.ElectricalRegionFill(
+                            *applicableRect,
+                            fillMaterial);
+                    }
                 }
 
-                auto const old = mEngagementData->EditRegion;
-
-                // Update edit region
-                if (!mEngagementData->EditRegion)
+                if (isAllowed)
                 {
-                    mEngagementData->EditRegion = *applicableRect;
-                }
-                else
-                {
-                    mEngagementData->EditRegion->UnionWith(*applicableRect);
-                }
+                    // Update edit region
+                    if (!mEngagementData->EditRegion)
+                    {
+                        mEngagementData->EditRegion = *applicableRect;
+                    }
+                    else
+                    {
+                        mEngagementData->EditRegion->UnionWith(*applicableRect);
+                    }
 
-                hasEdited = true;
+                    hasEdited = true;
+                }
             }
         });
 
@@ -380,6 +391,8 @@ void PencilTool<TLayer, IsEraser>::DoTempVisualization(ShipSpaceRect const & aff
     // No buttons, hence choosing foreground plane
     LayerMaterialType const * fillMaterial = GetFillMaterial(MaterialPlaneType::Foreground);
 
+    View::OverlayMode overlayMode = View::OverlayMode::Default;
+
     if constexpr (TLayer == LayerType::Structural)
     {
         mModelController.StructuralRegionFillForEphemeralVisualization(
@@ -390,12 +403,20 @@ void PencilTool<TLayer, IsEraser>::DoTempVisualization(ShipSpaceRect const & aff
     {
         static_assert(TLayer == LayerType::Electrical);
 
+        assert(affectedRect.size == ShipSpaceSize(1, 1));
+        if (!mModelController.HasStructuralParticleAt(affectedRect.origin))
+        {
+            overlayMode = View::OverlayMode::Error;
+        }
+
         mModelController.ElectricalRegionFillForEphemeralVisualization(
             affectedRect,
             fillMaterial);
     }
 
-    mView.UploadRectOverlay(affectedRect);
+    mView.UploadRectOverlay(
+        affectedRect,
+        overlayMode);
 
     mTempVisualizationDirtyShipRegion = affectedRect;
 }

@@ -166,7 +166,15 @@ public:
     // Overlays (all sticky)
     //
 
-    void UploadRectOverlay(ShipSpaceRect const & rect);
+    enum class OverlayMode
+    {
+        Default,
+        Error
+    };
+
+    void UploadRectOverlay(
+        ShipSpaceRect const & rect,
+        OverlayMode mode);
 
     void RemoveRectOverlay();
 
@@ -258,14 +266,17 @@ private:
     {
         vec2f positionShip; // Ship space
         vec2f positionNorm; //  0->1
+        vec3f overlayColor;
 
         RectOverlayVertex() = default;
 
         RectOverlayVertex(
             vec2f _positionShip,
-            vec2f _positionNorm)
+            vec2f _positionNorm,
+            vec3f _overlayColor)
             : positionShip(_positionShip)
             , positionNorm(_positionNorm)
+            , overlayColor(_overlayColor)
         {}
     };
 
@@ -309,6 +320,7 @@ private:
     GameOpenGLVAO mRectOverlayVAO;
     GameOpenGLVBO mRectOverlayVBO;
     ShipSpaceRect mRectOverlayRect;
+    vec3f mRectOverlayColor;
     bool mHasRectOverlay;
 
     //
