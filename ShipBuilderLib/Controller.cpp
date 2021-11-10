@@ -801,17 +801,6 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mResourceLocator);
         }
 
-        case ToolType::ElectricalFlood:
-        {
-            return std::make_unique<ElectricalFloodTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                mView,
-                mResourceLocator);
-        }
-
         case ToolType::ElectricalPencil:
         {
             return std::make_unique<ElectricalPencilTool>(

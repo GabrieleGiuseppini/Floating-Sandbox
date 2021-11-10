@@ -523,35 +523,6 @@ void ModelController::ElectricalRegionFill(
     UpdateElectricalLayerVisualization(region);
 }
 
-std::optional<ShipSpaceRect> ModelController::ElectricalFlood(
-    ShipSpaceCoordinates const & start,
-    ElectricalMaterial const * material)
-{
-    assert(mModel.HasLayer(LayerType::Electrical));
-
-    assert(!mIsElectricalLayerInEphemeralVisualization);
-
-    //
-    // Update model
-    //
-
-    std::optional<ShipSpaceRect> affectedRect = Flood<LayerType::Electrical>(
-        start,
-        material,
-        mModel.GetElectricalLayer());
-
-    if (affectedRect.has_value())
-    {
-        //
-        // Update visualization
-        //
-
-        UpdateElectricalLayerVisualization(*affectedRect);
-    }
-
-    return affectedRect;
-}
-
 void ModelController::RestoreElectricalLayer(
     ElectricalLayerData && sourceLayerRegion,
     ShipSpaceRect const & sourceRegion,

@@ -28,8 +28,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Shader
 	+ Do action: no fill when on empty
 
-- No flood for electrical layer
-	- Simplify Flood tool: "StructuralFlood", not templated
++ No flood for electrical layer
+	+ Simply remove specialization
+	+ Also remove ModelController::Flood specialization
+
 - Flood: settings: adjacent
 
 = UnderConstructionDialog

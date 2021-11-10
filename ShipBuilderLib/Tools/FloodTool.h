@@ -78,17 +78,4 @@ public:
         ResourceLocator const & resourceLocator);
 };
 
-class ElectricalFloodTool : public FloodTool<LayerType::Electrical>
-{
-public:
-
-    ElectricalFloodTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState const & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
-        ResourceLocator const & resourceLocator);
-};
-
 }

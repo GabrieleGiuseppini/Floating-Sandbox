@@ -26,23 +26,6 @@ StructuralFloodTool::StructuralFloodTool(
         resourceLocator)
 {}
 
-ElectricalFloodTool::ElectricalFloodTool(
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
-    ResourceLocator const & resourceLocator)
-    : FloodTool(
-        ToolType::ElectricalFlood,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view,
-        resourceLocator)
-{}
-
 template<LayerType TLayerType>
 FloodTool<TLayerType>::FloodTool(
     ToolType toolType,
@@ -93,29 +76,10 @@ void FloodTool<TLayer>::DoEdit(
 
     // Do edit
     LayerMaterialType const * const floodMaterial = GetFloodMaterial(isRightButton ? MaterialPlaneType::Background : MaterialPlaneType::Foreground);
-    std::optional<ShipSpaceRect> affectedRegion;
-    if constexpr (TLayer == LayerType::Structural)
-    {
-        affectedRegion = mModelController.StructuralFlood(
-            mouseCoordinates,
-            floodMaterial);
-    }
-    else
-    {
-        static_assert(TLayer == LayerType::Electrical);
-
-        if (floodMaterial->IsInstanced)
-        {
-            // Do not flood using instanced materials, that would make instance IDs explode
-            mUserInterface.OnError(_("The flood tool cannot be used with instanced electrical materials."));
-        }
-        else
-        {
-            affectedRegion = mModelController.ElectricalFlood(
-                mouseCoordinates,
-                floodMaterial);
-        }
-    }
+    static_assert(TLayer == LayerType::Structural);
+    std::optional<ShipSpaceRect> affectedRegion = mModelController.StructuralFlood(
+        mouseCoordinates,
+        floodMaterial);
 
     if (affectedRegion.has_value())
     {
@@ -144,20 +108,11 @@ void FloodTool<TLayer>::DoEdit(
 template<LayerType TLayer>
 typename FloodTool<TLayer>::LayerMaterialType const * FloodTool<TLayer>::GetFloodMaterial(MaterialPlaneType plane) const
 {
-    if constexpr (TLayer == LayerType::Structural)
-    {
-        return plane == MaterialPlaneType::Foreground
-            ? mWorkbenchState.GetStructuralForegroundMaterial()
-            : mWorkbenchState.GetStructuralBackgroundMaterial();
-    }
-    else
-    {
-        static_assert(TLayer == LayerType::Electrical);
+    static_assert(TLayer == LayerType::Structural);
 
-        return plane == MaterialPlaneType::Foreground
-            ? mWorkbenchState.GetElectricalForegroundMaterial()
-            : mWorkbenchState.GetElectricalBackgroundMaterial();
-    }
+    return plane == MaterialPlaneType::Foreground
+        ? mWorkbenchState.GetStructuralForegroundMaterial()
+        : mWorkbenchState.GetStructuralBackgroundMaterial();
 }
 
 }

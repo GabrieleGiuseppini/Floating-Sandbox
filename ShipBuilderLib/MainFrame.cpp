@@ -1526,23 +1526,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            // TODO: line - at 1, 0
-
-            // Eraser
-            {
-                auto button = makeToolButton(
-                    ToolType::ElectricalFlood,
-                    electricalToolbarPanel,
-                    "flood_tool_icon",
-                    _("Fill an area with electrical particles"));
-
-                toolsSizer->Add(
-                    button,
-                    wxGBPosition(1, 1),
-                    wxGBSpan(1, 1),
-                    0,
-                    0);
-            }
+            // TODO: line
 
             electricalToolbarSizer->Add(
                 toolsSizer,

@@ -121,10 +121,6 @@ public:
         ShipSpaceRect const & region,
         ElectricalMaterial const * material);
 
-    std::optional<ShipSpaceRect> ElectricalFlood(
-        ShipSpaceCoordinates const & start,
-        ElectricalMaterial const * material);
-
     void RestoreElectricalLayer(
         ElectricalLayerData && sourceLayerRegion,
         ShipSpaceRect const & sourceRegion,
