@@ -29,6 +29,9 @@ View::View(
     , mHasElectricalTexture(false)
     , mOtherLayersOpacity(0.75f)
     , mIsGridEnabled(false)
+    , mCircleOverlayCenter(0, 0) // Will be overwritten
+    , mCircleOverlayColor(vec3f::zero()) // Will be overwritten
+    , mHasCircleOverlay(false)
     , mRectOverlayRect({0, 0}, {1, 1}) // Will be overwritten
     , mRectOverlayColor(vec3f::zero()) // Will be overwritten
     , mHasRectOverlay(false)
@@ -252,6 +255,35 @@ View::View(
         glBindBuffer(GL_ARRAY_BUFFER, *mGridVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Grid));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Grid), 4, GL_FLOAT, GL_FALSE, sizeof(GridVertex), (void *)0);
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+    //
+    // Initialize circle overlay VAO
+    //
+
+    {
+        GLuint tmpGLuint;
+
+        // Create VAO
+        glGenVertexArrays(1, &tmpGLuint);
+        mCircleOverlayVAO = tmpGLuint;
+        glBindVertexArray(*mCircleOverlayVAO);
+        CheckOpenGLError();
+
+        // Create VBO
+        glGenBuffers(1, &tmpGLuint);
+        mCircleOverlayVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mCircleOverlayVBO);
+        static_assert(sizeof(RectOverlayVertex) == (4 + 3) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::CircleOverlay1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::CircleOverlay1), 4, GL_FLOAT, GL_FALSE, sizeof(CircleOverlayVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::CircleOverlay2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::CircleOverlay2), 3, GL_FLOAT, GL_FALSE, sizeof(CircleOverlayVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -515,6 +547,30 @@ void View::RemoveElectricalLayerVisualizationTexture()
     mHasElectricalTexture = false;
 }
 
+void View::UploadCircleOverlay(
+    ShipSpaceCoordinates const & center,
+    OverlayMode mode)
+{
+    // Store center
+    mCircleOverlayCenter = center;
+
+    // Store color
+    mCircleOverlayColor = GetOverlayColor(mode);
+
+    // Update overlay
+    UpdateCircleOverlay();
+
+    mHasCircleOverlay = true;
+}
+
+void View::RemoveCircleOverlay()
+{
+    assert(mHasCircleOverlay);
+
+    mHasCircleOverlay = false;
+}
+
+
 void View::UploadRectOverlay(
     ShipSpaceRect const & rect,
     OverlayMode mode)
@@ -523,20 +579,7 @@ void View::UploadRectOverlay(
     mRectOverlayRect = rect;
 
     // Store color
-    switch (mode)
-    {
-        case OverlayMode::Default:
-        {
-            mRectOverlayColor = vec3f(0.05f, 0.05f, 0.05f);
-            break;
-        }
-
-        case OverlayMode::Error:
-        {
-            mRectOverlayColor = vec3f(1.0f, 0.0f, 0.0f);
-            break;
-        }
-    }
+    mRectOverlayColor = GetOverlayColor(mode);
 
     // Update overlay
     UpdateRectOverlay();
@@ -655,6 +698,20 @@ void View::Render()
         CheckOpenGLError();
     }
 
+    // Circle overlay
+    if (mHasCircleOverlay)
+    {
+        // Bind VAO
+        glBindVertexArray(*mCircleOverlayVAO);
+
+        // Activate program
+        mShaderManager->ActivateProgram<ProgramType::CircleOverlay>();
+
+        // Draw
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        CheckOpenGLError();
+    }
+
     // Rect overlay
     if (mHasRectOverlay)
     {
@@ -684,6 +741,8 @@ void View::OnViewModelUpdated()
 
     UpdateGrid();
 
+    UpdateCircleOverlay();
+
     UpdateRectOverlay();
 
     //
@@ -694,6 +753,10 @@ void View::OnViewModelUpdated()
 
     mShaderManager->ActivateProgram<ProgramType::Canvas>();
     mShaderManager->SetProgramParameter<ProgramType::Canvas, ProgramParameterType::OrthoMatrix>(
+        orthoMatrix);
+
+    mShaderManager->ActivateProgram<ProgramType::CircleOverlay>();
+    mShaderManager->SetProgramParameter<ProgramType::CircleOverlay, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::RectOverlay>();
@@ -821,6 +884,66 @@ void View::UpdateGrid()
         pixelStepSize);
 }
 
+void View::UpdateCircleOverlay()
+{
+    //
+    // Upload vertices
+    //
+
+    std::array<CircleOverlayVertex, 4> vertexBuffer;
+
+    // Left, Top
+    vertexBuffer[0] = CircleOverlayVertex(
+        vec2f(
+            static_cast<float>(mCircleOverlayCenter.x),
+            static_cast<float>(mCircleOverlayCenter.y + 1.0f)),
+        vec2f(0.0f, 0.0f),
+        mCircleOverlayColor);
+
+    // Left, Bottom
+    vertexBuffer[1] = CircleOverlayVertex(
+        vec2f(
+            static_cast<float>(mCircleOverlayCenter.x),
+            static_cast<float>(mCircleOverlayCenter.y)),
+        vec2f(0.0f, 1.0f),
+        mCircleOverlayColor);
+
+    // Right, Top
+    vertexBuffer[2] = CircleOverlayVertex(
+        vec2f(
+            static_cast<float>(mCircleOverlayCenter.x + 1.0f),
+            static_cast<float>(mCircleOverlayCenter.y + 1.0f)),
+        vec2f(1.0f, 0.0f),
+        mCircleOverlayColor);
+
+    // Right, Bottom
+    vertexBuffer[3] = CircleOverlayVertex(
+        vec2f(
+            static_cast<float>(mCircleOverlayCenter.x + 1.0f),
+            static_cast<float>(mCircleOverlayCenter.y)),
+        vec2f(1.0f, 1.0f),
+        mCircleOverlayColor);
+
+    // Upload vertices
+    glBindBuffer(GL_ARRAY_BUFFER, *mCircleOverlayVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(CircleOverlayVertex), vertexBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //
+    // Set pixel size parameter - normalized size (i.e. in the 0->1 space) of 1 pixel (w, h separately)
+    //
+
+    DisplayPhysicalSize const squarePhysSize = mViewModel.ShipSpaceSizeToPhysicalDisplaySize({ 1, 1 });
+
+    vec2f const pixelSize = vec2f(
+        1.0f / squarePhysSize.width,
+        1.0f / squarePhysSize.height);
+
+    mShaderManager->ActivateProgram<ProgramType::CircleOverlay>();
+    mShaderManager->SetProgramParameter<ProgramType::CircleOverlay, ProgramParameterType::PixelSize>(pixelSize.x, pixelSize.y);
+}
+
 void View::UpdateRectOverlay()
 {
     //
@@ -879,6 +1002,25 @@ void View::UpdateRectOverlay()
 
     mShaderManager->ActivateProgram<ProgramType::RectOverlay>();
     mShaderManager->SetProgramParameter<ProgramType::RectOverlay, ProgramParameterType::PixelSize>(pixelSize.x, pixelSize.y);
+}
+
+vec3f View::GetOverlayColor(OverlayMode mode) const
+{
+    switch (mode)
+    {
+        case OverlayMode::Default:
+        {
+            return vec3f(0.05f, 0.05f, 0.05f);
+        }
+
+        case OverlayMode::Error:
+        {
+            return vec3f(1.0f, 0.0f, 0.0f);
+        }
+    }
+
+    assert(false);
+    return vec3f::zero();
 }
 
 }

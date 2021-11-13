@@ -7,6 +7,8 @@
 
 #include <GameCore/GameGeometry.h>
 
+#include <UILib/WxHelpers.h>
+
 #include <type_traits>
 
 namespace ShipBuilder {
@@ -98,18 +100,18 @@ PencilTool<TLayerType, IsEraser>::PencilTool(
     , mOriginalLayerClone(modelController.GetModel().CloneLayer<TLayerType>())
     , mTempVisualizationDirtyShipRegion()
     , mEngagementData()
-    , mCursorImage()
 {
+    wxImage cursorImage;
     if constexpr (IsEraser)
     {
-        mCursorImage = WxHelpers::LoadCursorImage("eraser_cursor", 8, 27, resourceLocator);
+        cursorImage = WxHelpers::LoadCursorImage("eraser_cursor", 8, 27, resourceLocator);
     }
     else
     {
-        mCursorImage = WxHelpers::LoadCursorImage("pencil_cursor", 2, 22, resourceLocator);
+        cursorImage = WxHelpers::LoadCursorImage("pencil_cursor", 2, 22, resourceLocator);
     }
 
-    SetCursor(mCursorImage);
+    SetCursor(cursorImage);
 
     // Check if we need to immediately do a visualization
     auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();

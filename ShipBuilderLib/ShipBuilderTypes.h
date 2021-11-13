@@ -22,11 +22,12 @@ enum class ToolType : std::uint32_t
     StructuralFlood,
     ElectricalPencil,
     ElectricalEraser,
+    RopePencil,
 
-    _Last = ElectricalEraser
+    _Last = RopePencil
 };
 
-size_t constexpr LayerCount = static_cast<size_t>(LayerType::Ropes) + 1;
+size_t constexpr LayerCount = static_cast<size_t>(LayerType::Texture) + 1;
 
 enum class MaterialPlaneType
 {

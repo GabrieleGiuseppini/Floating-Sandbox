@@ -1671,13 +1671,12 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         {
             wxGridBagSizer * toolsSizer = new wxGridBagSizer(3, 3);
 
-            /* TODOHERE
-            // Rope
+            // RopePencil
             {
                 auto button = makeToolButton(
-                    ToolType::RopesHarness,
+                    ToolType::RopePencil,
                     ropesToolbarPanel,
-                    "pencil_icon", // // TODOHERE
+                    "pencil_icon",
                     _("Draw a rope between two endpoints"));
 
                 toolsSizer->Add(
@@ -1688,10 +1687,11 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
+            /* TODOHERE: ready
             // Eraser
             {
                 auto button = makeToolButton(
-                    ToolType::RopesEraser,
+                    ToolType::RopeEraser,
                     ropesToolbarPanel,
                     "eraser_icon",
                     _("Erase rope endpoints"));

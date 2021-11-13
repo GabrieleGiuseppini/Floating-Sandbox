@@ -666,6 +666,20 @@ void ModelController::RemoveRopesLayer()
     mIsRopesLayerInEphemeralVisualization = false;
 }
 
+bool ModelController::IsRopeEndpointAllowedAt(ShipSpaceCoordinates const & coords) const
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    return std::find_if(
+        mModel.GetRopesLayer().Buffer.cbegin(),
+        mModel.GetRopesLayer().Buffer.cend(),
+        [&coords](RopeElement const & e)
+        {
+            return coords == e.StartCoords
+                || coords == e.EndCoords;
+        }) == mModel.GetRopesLayer().Buffer.cend();
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Texture
 ////////////////////////////////////////////////////////////////////////////////////////////////////

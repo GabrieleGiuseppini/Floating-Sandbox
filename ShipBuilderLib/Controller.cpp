@@ -7,6 +7,7 @@
 
 #include "Tools/FloodTool.h"
 #include "Tools/PencilTool.h"
+#include "Tools/RopePencilTool.h"
 
 #include <cassert>
 
@@ -73,7 +74,7 @@ Controller::Controller(
     , mPrimaryLayer(LayerType::Structural)
     , mCurrentToolType(ToolType::StructuralPencil)
     , mCurrentTool()
-    , mLastToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, std::nullopt, std::nullopt})
+    , mLastToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, ToolType::RopePencil, std::nullopt})
 {
     // We assume we start with at least a structural layer
     assert(mModelController->GetModel().HasLayer(LayerType::Structural));
@@ -837,6 +838,17 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::StructuralPencil:
         {
             return std::make_unique<StructuralPencilTool>(
+                *mModelController,
+                mUndoStack,
+                mWorkbenchState,
+                mUserInterface,
+                mView,
+                mResourceLocator);
+        }
+
+        case ToolType::RopePencil:
+        {
+            return std::make_unique<RopePencilTool>(
                 *mModelController,
                 mUndoStack,
                 mWorkbenchState,

@@ -144,6 +144,8 @@ public:
     void SetRopesLayer(/*TODO*/);
     void RemoveRopesLayer();
 
+    bool IsRopeEndpointAllowedAt(ShipSpaceCoordinates const & coords) const;
+
     //
     // Texture
     //

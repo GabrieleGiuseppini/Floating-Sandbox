@@ -172,6 +172,12 @@ public:
         Error
     };
 
+    void UploadCircleOverlay(
+        ShipSpaceCoordinates const & center,
+        OverlayMode mode);
+
+    void RemoveCircleOverlay();
+
     void UploadRectOverlay(
         ShipSpaceRect const & rect,
         OverlayMode mode);
@@ -188,7 +194,10 @@ private:
 
     void UpdateCanvas();
     void UpdateGrid();
+    void UpdateCircleOverlay();
     void UpdateRectOverlay();
+
+    vec3f GetOverlayColor(OverlayMode mode) const;
 
 private:
 
@@ -262,6 +271,24 @@ private:
         {}
     };
 
+    struct CircleOverlayVertex
+    {
+        vec2f positionShip; // Ship space
+        vec2f positionNorm; //  0->1
+        vec3f overlayColor;
+
+        CircleOverlayVertex() = default;
+
+        CircleOverlayVertex(
+            vec2f _positionShip,
+            vec2f _positionNorm,
+            vec3f _overlayColor)
+            : positionShip(_positionShip)
+            , positionNorm(_positionNorm)
+            , overlayColor(_overlayColor)
+        {}
+    };
+
     struct RectOverlayVertex
     {
         vec2f positionShip; // Ship space
@@ -315,6 +342,13 @@ private:
     GameOpenGLVAO mGridVAO;
     GameOpenGLVBO mGridVBO;
     bool mIsGridEnabled;
+
+    // CircleOverlay
+    GameOpenGLVAO mCircleOverlayVAO;
+    GameOpenGLVBO mCircleOverlayVBO;
+    ShipSpaceCoordinates mCircleOverlayCenter;
+    vec3f mCircleOverlayColor;
+    bool mHasCircleOverlay;
 
     // RectOverlay
     GameOpenGLVAO mRectOverlayVAO;

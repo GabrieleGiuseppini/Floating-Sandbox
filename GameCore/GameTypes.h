@@ -604,9 +604,9 @@ static MaterialColorKey constexpr EmptyMaterialColorKey = MaterialColorKey(255, 
 enum class LayerType : std::uint32_t
 {
     Structural = 0,
-    Electrical,
-    Texture,
-    Ropes
+    Electrical = 1,
+    Ropes = 2,
+    Texture = 3
 };
 
 /*

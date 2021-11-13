@@ -12,8 +12,6 @@
 #include <Game/Materials.h>
 #include <Game/ResourceLocator.h>
 
-#include <UILib/WxHelpers.h>
-
 #include <GameCore/GameTypes.h>
 #include <GameCore/StrongTypeDef.h>
 
@@ -104,8 +102,6 @@ private:
 
     // Engagement data - when set, it means we're engaged
     std::optional<EngagementData> mEngagementData;
-
-    wxImage mCursorImage;
 };
 
 class StructuralPencilTool : public PencilTool<LayerType::Structural, false>
