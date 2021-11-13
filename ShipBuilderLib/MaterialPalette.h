@@ -9,6 +9,7 @@
 
 #include <GameCore/GameTypes.h>
 
+#include <Game/Layers.h>
 #include <Game/Materials.h>
 #include <Game/MaterialDatabase.h>
 #include <Game/ResourceLocator.h>
@@ -28,12 +29,14 @@
 namespace ShipBuilder {
 
 /*
- * Event fired when a structural|electrical material has been selected.
+ * Event fired when a structural|electrical|ropes material has been selected.
  */
-template<typename TMaterial>
+template<LayerType TLayer>
 class _fsMaterialSelectedEvent : public wxEvent
 {
 public:
+
+    using TMaterial = typename LayerTypeTraits<TLayer>::material_type;
 
     _fsMaterialSelectedEvent(
         wxEventType eventType,
@@ -76,16 +79,21 @@ private:
     MaterialPlaneType const mMaterialPlane;
 };
 
-using fsStructuralMaterialSelectedEvent = _fsMaterialSelectedEvent<StructuralMaterial>;
-using fsElectricalMaterialSelectedEvent = _fsMaterialSelectedEvent<ElectricalMaterial>;
+using fsStructuralMaterialSelectedEvent = _fsMaterialSelectedEvent<LayerType::Structural>;
+using fsElectricalMaterialSelectedEvent = _fsMaterialSelectedEvent<LayerType::Electrical>;
+using fsRopesMaterialSelectedEvent = _fsMaterialSelectedEvent<LayerType::Ropes>;
 
 wxDECLARE_EVENT(fsEVT_STRUCTURAL_MATERIAL_SELECTED, fsStructuralMaterialSelectedEvent);
 wxDECLARE_EVENT(fsEVT_ELECTRICAL_MATERIAL_SELECTED, fsElectricalMaterialSelectedEvent);
+wxDECLARE_EVENT(fsEVT_ROPES_MATERIAL_SELECTED, fsRopesMaterialSelectedEvent);
 
-template<typename TMaterial>
+template<LayerType TLayer>
 class MaterialPalette : public wxPopupTransientWindow
 {
 public:
+
+    using TMaterial = typename LayerTypeTraits<TLayer>::material_type;
+    //static constexpr MaterialLayerType TMaterialLayer = LayerTypeTraits<TLayer>::material_type::MaterialLayer;
 
     MaterialPalette(
         wxWindow * parent,

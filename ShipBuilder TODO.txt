@@ -53,8 +53,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Legacy Deserialization
 		+ ShipFactory
 		+ Test
-		- SB::MaterialsPalette:
-			- Templated on layer - Material comes from TypeTraits
+		= SB::MaterialsPalette:
+			+ Templated on layer - Material comes from TypeTraits
 		- LayerPanel for Rope
 		- Test
 		+ WorkbenchState

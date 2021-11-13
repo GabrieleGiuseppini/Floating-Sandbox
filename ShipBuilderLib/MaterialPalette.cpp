@@ -20,12 +20,13 @@ namespace ShipBuilder {
 
 wxDEFINE_EVENT(fsEVT_STRUCTURAL_MATERIAL_SELECTED, fsStructuralMaterialSelectedEvent);
 wxDEFINE_EVENT(fsEVT_ELECTRICAL_MATERIAL_SELECTED, fsElectricalMaterialSelectedEvent);
+wxDEFINE_EVENT(fsEVT_ROPES_MATERIAL_SELECTED, fsRopesMaterialSelectedEvent);
 
 ImageSize constexpr CategoryButtonSize(80, 60);
 ImageSize constexpr PaletteButtonSize(80, 60);
 
-template<typename TMaterial>
-MaterialPalette<TMaterial>::MaterialPalette(
+template<LayerType TLayer>
+MaterialPalette<TLayer>::MaterialPalette(
     wxWindow * parent,
     MaterialDatabase::Palette<TMaterial> const & materialPalette,
     ShipTexturizer const & shipTexturizer,
@@ -205,7 +206,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
 
             {
                 hSizer->AddStretchSpacer(1);
-                if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
+                if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
                 {
                     mStructuralMaterialPropertyGrids = CreateStructuralMaterialPropertyGrids(this);
                     hSizer->Add(mStructuralMaterialPropertyGrids[0], 0, wxEXPAND, 0);
@@ -213,7 +214,7 @@ MaterialPalette<TMaterial>::MaterialPalette(
                 }
                 else
                 {
-                    assert(TMaterial::Layer == MaterialLayerType::Electrical);
+                    assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
 
                     mElectricalMaterialPropertyGrids = CreateElectricalMaterialPropertyGrids(this);
                     hSizer->Add(mElectricalMaterialPropertyGrids[0], 0, wxEXPAND, 0);
@@ -240,8 +241,8 @@ MaterialPalette<TMaterial>::MaterialPalette(
     SetSizerAndFit(mRootHSizer);
 }
 
-template<typename TMaterial>
-void MaterialPalette<TMaterial>::Open(
+template<LayerType TLayer>
+void MaterialPalette<TLayer>::Open(
     wxRect const & referenceArea,
     MaterialPlaneType planeType,
     TMaterial const * initialMaterial)
@@ -270,8 +271,8 @@ void MaterialPalette<TMaterial>::Open(
     Popup();
 }
 
-template<typename TMaterial>
-void MaterialPalette<TMaterial>::Close()
+template<LayerType TLayer>
+void MaterialPalette<TLayer>::Close()
 {
     Dismiss();
 }
@@ -308,8 +309,8 @@ private:
     bool mIsLayoutLocked;
 };
 
-template<typename TMaterial>
-wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
+template<LayerType TLayer>
+wxPanel * MaterialPalette<TLayer>::CreateCategoryPanel(
     wxWindow * parent,
     typename MaterialDatabase::Palette<TMaterial>::Category const & materialCategory,
     ShipTexturizer const & shipTexturizer)
@@ -328,7 +329,7 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
     // Create panel
     MaterialCategoryPanel * categoryPanel = new MaterialCategoryPanel(parent);
 
-    int constexpr RowsPerSubcategory = (TMaterial::Layer == MaterialLayerType::Structural ? 3 : 2);
+    int constexpr RowsPerSubcategory = (TMaterial::MaterialLayer == MaterialLayerType::Structural ? 3 : 2);
 
     wxSizer * sizer = new wxBoxSizer(wxHORIZONTAL); // Just to add a margin
 
@@ -407,7 +408,7 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
                 }
 
                 // Data
-                if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
+                if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
                 {
                     std::stringstream ss;
 
@@ -442,8 +443,8 @@ wxPanel * MaterialPalette<TMaterial>::CreateCategoryPanel(
     return categoryPanel;
 }
 
-template<typename TMaterial>
-wxToggleButton * MaterialPalette<TMaterial>::CreateMaterialButton(
+template<LayerType TLayer>
+wxToggleButton * MaterialPalette<TLayer>::CreateMaterialButton(
     wxWindow * parent,
     ImageSize const & size,
     TMaterial const & material,
@@ -451,7 +452,7 @@ wxToggleButton * MaterialPalette<TMaterial>::CreateMaterialButton(
 {
     wxToggleButton * categoryButton = new wxToggleButton(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
 
-    if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
+    if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
     {
         categoryButton->SetBitmap(
             WxHelpers::MakeBitmap(
@@ -462,7 +463,7 @@ wxToggleButton * MaterialPalette<TMaterial>::CreateMaterialButton(
     }
     else
     {
-        static_assert(TMaterial::Layer == MaterialLayerType::Electrical);
+        static_assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
 
         categoryButton->SetBitmap(
             WxHelpers::MakeMatteBitmap(
@@ -546,8 +547,8 @@ wxPGProperty * AddStringProperty(
 
 }
 
-template<typename TMaterial>
-std::array<wxPropertyGrid *, 2> MaterialPalette<TMaterial>::CreateStructuralMaterialPropertyGrids(wxWindow * parent)
+template<LayerType TLayer>
+std::array<wxPropertyGrid *, 2> MaterialPalette<TLayer>::CreateStructuralMaterialPropertyGrids(wxWindow * parent)
 {
     std::array<wxPropertyGrid *, 2> pgs;
 
@@ -575,8 +576,8 @@ std::array<wxPropertyGrid *, 2> MaterialPalette<TMaterial>::CreateStructuralMate
     return pgs;
 }
 
-template<typename TMaterial>
-std::array<wxPropertyGrid *, 2> MaterialPalette<TMaterial>::CreateElectricalMaterialPropertyGrids(wxWindow * parent)
+template<LayerType TLayer>
+std::array<wxPropertyGrid *, 2> MaterialPalette<TLayer>::CreateElectricalMaterialPropertyGrids(wxWindow * parent)
 {
     std::array<wxPropertyGrid *, 2> pgs;
 
@@ -597,10 +598,10 @@ std::array<wxPropertyGrid *, 2> MaterialPalette<TMaterial>::CreateElectricalMate
     return pgs;
 }
 
-template<typename TMaterial>
-void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * material)
+template<LayerType TLayer>
+void MaterialPalette<TLayer>::PopulateMaterialProperties(TMaterial const * material)
 {
-    if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
+    if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
     {
         mStructuralMaterialPropertyGrids[0]->Freeze();
         mStructuralMaterialPropertyGrids[1]->Freeze();
@@ -651,7 +652,7 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
     }
     else
     {
-        assert(TMaterial::Layer == MaterialLayerType::Electrical);
+        assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
 
         mElectricalMaterialPropertyGrids[0]->Freeze();
         mElectricalMaterialPropertyGrids[1]->Freeze();
@@ -866,8 +867,8 @@ void MaterialPalette<TMaterial>::PopulateMaterialProperties(TMaterial const * ma
     }
 }
 
-template<typename TMaterial>
-void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
+template<LayerType TLayer>
+void MaterialPalette<TLayer>::SetMaterialSelected(TMaterial const * material)
 {
     wxWindowUpdateLocker locker(this);
 
@@ -961,13 +962,13 @@ void MaterialPalette<TMaterial>::SetMaterialSelected(TMaterial const * material)
     }
 }
 
-template<typename TMaterial>
-void MaterialPalette<TMaterial>::OnMaterialClicked(TMaterial const * material)
+template<LayerType TLayer>
+void MaterialPalette<TLayer>::OnMaterialClicked(TMaterial const * material)
 {
     assert(mCurrentPlane.has_value());
 
     // Fire event
-    if constexpr (TMaterial::Layer == MaterialLayerType::Structural)
+    if constexpr (TLayer == LayerType::Structural)
     {
         auto event = fsStructuralMaterialSelectedEvent(
             fsEVT_STRUCTURAL_MATERIAL_SELECTED,
@@ -977,12 +978,22 @@ void MaterialPalette<TMaterial>::OnMaterialClicked(TMaterial const * material)
 
         ProcessWindowEvent(event);
     }
-    else
+    else if constexpr (TLayer == LayerType::Electrical)
     {
-        assert(TMaterial::Layer == MaterialLayerType::Electrical);
-
         auto event = fsElectricalMaterialSelectedEvent(
             fsEVT_ELECTRICAL_MATERIAL_SELECTED,
+            this->GetId(),
+            material,
+            *mCurrentPlane);
+
+        ProcessWindowEvent(event);
+    }
+    else
+    {
+        assert(TLayer == LayerType::Ropes);
+
+        auto event = fsRopesMaterialSelectedEvent(
+            fsEVT_ROPES_MATERIAL_SELECTED,
             this->GetId(),
             material,
             *mCurrentPlane);
@@ -998,7 +1009,8 @@ void MaterialPalette<TMaterial>::OnMaterialClicked(TMaterial const * material)
 // Explicit specializations for all material layers
 //
 
-template class MaterialPalette<StructuralMaterial>;
-template class MaterialPalette<ElectricalMaterial>;
+template class MaterialPalette<LayerType::Structural>;
+template class MaterialPalette<LayerType::Electrical>;
+template class MaterialPalette<LayerType::Ropes>;
 
 }

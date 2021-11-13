@@ -161,6 +161,7 @@ private:
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent & event);
     void OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent & event);
     void OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent & event);
+    void OnRopeMaterialSelected(fsRopesMaterialSelectedEvent & event);
 
 private:
 
@@ -195,7 +196,7 @@ private:
 
     void OpenMaterialPalette(
         wxMouseEvent const & event,
-        MaterialLayerType layer,
+        LayerType layer,
         MaterialPlaneType plane);
 
     bool AskUserIfSure(wxString caption);
@@ -298,6 +299,8 @@ private:
     wxStaticBitmap * mStructuralBackgroundMaterialSelector;
     wxStaticBitmap * mElectricalForegroundMaterialSelector;
     wxStaticBitmap * mElectricalBackgroundMaterialSelector;
+    wxStaticBitmap * mRopesForegroundMaterialSelector;
+    wxStaticBitmap * mRopesBackgroundMaterialSelector;
     wxBitmap mNullMaterialBitmap;
 
     // Work panel
@@ -307,8 +310,9 @@ private:
     wxScrollBar * mWorkCanvasVScrollBar;
 
     // Misc UI elements
-    std::unique_ptr<MaterialPalette<StructuralMaterial>> mStructuralMaterialPalette;
-    std::unique_ptr<MaterialPalette<ElectricalMaterial>> mElectricalMaterialPalette;
+    std::unique_ptr<MaterialPalette<LayerType::Structural>> mStructuralMaterialPalette;
+    std::unique_ptr<MaterialPalette<LayerType::Electrical>> mElectricalMaterialPalette;
+    std::unique_ptr<MaterialPalette<LayerType::Ropes>> mRopesMaterialPalette;
     StatusBar * mStatusBar;
 
     //

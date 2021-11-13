@@ -26,7 +26,7 @@ struct StructuralMaterial
 {
 public:
 
-    static MaterialLayerType constexpr Layer = MaterialLayerType::Structural;
+    static MaterialLayerType constexpr MaterialLayer = MaterialLayerType::Structural;
 
     enum class MaterialCombustionType
     {
@@ -233,7 +233,7 @@ struct ElectricalMaterial
 {
 public:
 
-    static MaterialLayerType constexpr Layer = MaterialLayerType::Electrical;
+    static MaterialLayerType constexpr MaterialLayer = MaterialLayerType::Electrical;
 
     enum class ElectricalElementType
     {

@@ -420,7 +420,7 @@ MainFrame::MainFrame(
     // Setup material palettes
     //
 
-    mStructuralMaterialPalette = std::make_unique<MaterialPalette<StructuralMaterial>>(
+    mStructuralMaterialPalette = std::make_unique<MaterialPalette<LayerType::Structural>>(
         this,
         mMaterialDatabase.GetStructuralMaterialPalette(),
         mShipTexturizer,
@@ -428,13 +428,21 @@ MainFrame::MainFrame(
 
     mStructuralMaterialPalette->Bind(fsEVT_STRUCTURAL_MATERIAL_SELECTED, &MainFrame::OnStructuralMaterialSelected, this);
 
-    mElectricalMaterialPalette = std::make_unique<MaterialPalette<ElectricalMaterial>>(
+    mElectricalMaterialPalette = std::make_unique<MaterialPalette<LayerType::Electrical>>(
         this,
         mMaterialDatabase.GetElectricalMaterialPalette(),
         mShipTexturizer,
         mResourceLocator);
 
     mElectricalMaterialPalette->Bind(fsEVT_ELECTRICAL_MATERIAL_SELECTED, &MainFrame::OnElectricalMaterialSelected, this);
+
+    mRopesMaterialPalette = std::make_unique<MaterialPalette<LayerType::Ropes>>(
+        this,
+        mMaterialDatabase.GetRopeMaterialPalette(),
+        mShipTexturizer,
+        mResourceLocator);
+
+    mRopesMaterialPalette->Bind(fsEVT_ROPES_MATERIAL_SELECTED, &MainFrame::OnRopeMaterialSelected, this);
 
     //
     // Create view
@@ -1469,7 +1477,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     wxEVT_LEFT_DOWN,
                     [this](wxMouseEvent & event)
                     {
-                        OpenMaterialPalette(event, MaterialLayerType::Structural, MaterialPlaneType::Foreground);
+                        OpenMaterialPalette(event, LayerType::Structural, MaterialPlaneType::Foreground);
                     });
 
                 paletteSizer->Add(
@@ -1495,7 +1503,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     wxEVT_LEFT_DOWN,
                     [this](wxMouseEvent & event)
                     {
-                        OpenMaterialPalette(event, MaterialLayerType::Structural, MaterialPlaneType::Background);
+                        OpenMaterialPalette(event, LayerType::Structural, MaterialPlaneType::Background);
                     });
 
                 paletteSizer->Add(
@@ -1598,7 +1606,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     wxEVT_LEFT_DOWN,
                     [this](wxMouseEvent & event)
                     {
-                        OpenMaterialPalette(event, MaterialLayerType::Electrical, MaterialPlaneType::Foreground);
+                        OpenMaterialPalette(event, LayerType::Electrical, MaterialPlaneType::Foreground);
                     });
 
                 paletteSizer->Add(
@@ -1624,7 +1632,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     wxEVT_LEFT_DOWN,
                     [this](wxMouseEvent & event)
                     {
-                        OpenMaterialPalette(event, MaterialLayerType::Electrical, MaterialPlaneType::Background);
+                        OpenMaterialPalette(event, LayerType::Electrical, MaterialPlaneType::Background);
                     });
 
                 paletteSizer->Add(
@@ -1703,6 +1711,70 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
             ropesToolbarSizer->Add(
                 toolsSizer,
+                0,
+                wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        ropesToolbarSizer->AddSpacer(15);
+
+        // Swaths
+
+        {
+            wxBoxSizer * paletteSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Foreground
+            {
+                mRopesForegroundMaterialSelector = new wxStaticBitmap(
+                    ropesToolbarPanel,
+                    wxID_ANY,
+                    WxHelpers::MakeEmptyBitmap(),
+                    wxDefaultPosition,
+                    wxSize(MaterialSwathSize.width, MaterialSwathSize.height),
+                    wxBORDER_SUNKEN);
+
+                mRopesForegroundMaterialSelector->Bind(
+                    wxEVT_LEFT_DOWN,
+                    [this](wxMouseEvent & event)
+                    {
+                        OpenMaterialPalette(event, LayerType::Ropes, MaterialPlaneType::Foreground);
+                    });
+
+                paletteSizer->Add(
+                    mRopesForegroundMaterialSelector,
+                    0,
+                    0,
+                    0);
+            }
+
+            paletteSizer->AddSpacer(8);
+
+            // Background
+            {
+                mRopesBackgroundMaterialSelector = new wxStaticBitmap(
+                    ropesToolbarPanel,
+                    wxID_ANY,
+                    WxHelpers::MakeEmptyBitmap(),
+                    wxDefaultPosition,
+                    wxSize(MaterialSwathSize.width, MaterialSwathSize.height),
+                    wxBORDER_SUNKEN);
+
+                mRopesBackgroundMaterialSelector->Bind(
+                    wxEVT_LEFT_DOWN,
+                    [this](wxMouseEvent & event)
+                    {
+                        OpenMaterialPalette(event, LayerType::Structural, MaterialPlaneType::Background);
+                    });
+
+                paletteSizer->Add(
+                    mRopesBackgroundMaterialSelector,
+                    0,
+                    0,
+                    0);
+            }
+
+            ropesToolbarSizer->Add(
+                paletteSizer,
                 0,
                 wxALIGN_CENTER_HORIZONTAL,
                 0);
@@ -2260,6 +2332,21 @@ void MainFrame::OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent &
     ReconciliateUIWithWorkbenchState();
 }
 
+void MainFrame::OnRopeMaterialSelected(fsRopesMaterialSelectedEvent & event)
+{
+    if (event.GetMaterialPlane() == MaterialPlaneType::Foreground)
+    {
+        mWorkbenchState.SetRopesForegroundMaterial(event.GetMaterial());
+    }
+    else
+    {
+        assert(event.GetMaterialPlane() == MaterialPlaneType::Background);
+        mWorkbenchState.SetRopesBackgroundMaterial(event.GetMaterial());
+    }
+
+    ReconciliateUIWithWorkbenchState();
+}
+
 void MainFrame::Open()
 {
     assert(mController);
@@ -2478,7 +2565,7 @@ void MainFrame::ValidateShip()
 
 void MainFrame::OpenMaterialPalette(
     wxMouseEvent const & event,
-    MaterialLayerType layer,
+    LayerType layer,
     MaterialPlaneType plane)
 {
     wxWindow * referenceWindow = dynamic_cast<wxWindow *>(event.GetEventObject());
@@ -2487,7 +2574,7 @@ void MainFrame::OpenMaterialPalette(
 
     auto const referenceRect = mWorkCanvas->GetScreenRect();
 
-    if (layer == MaterialLayerType::Structural)
+    if (layer == LayerType::Structural)
     {
         mStructuralMaterialPalette->Open(
             referenceRect,
@@ -2496,16 +2583,25 @@ void MainFrame::OpenMaterialPalette(
             ? mWorkbenchState.GetStructuralForegroundMaterial()
             : mWorkbenchState.GetStructuralBackgroundMaterial());
     }
-    else
+    else if (layer == LayerType::Electrical)
     {
-        assert(layer == MaterialLayerType::Electrical);
-
         mElectricalMaterialPalette->Open(
             referenceRect,
             plane,
             plane == MaterialPlaneType::Foreground
             ? mWorkbenchState.GetElectricalForegroundMaterial()
             : mWorkbenchState.GetElectricalBackgroundMaterial());
+    }
+    else
+    {
+        assert(layer == LayerType::Ropes);
+
+        mRopesMaterialPalette->Open(
+            referenceRect,
+            plane,
+            plane == MaterialPlaneType::Foreground
+            ? mWorkbenchState.GetRopesForegroundMaterial()
+            : mWorkbenchState.GetRopesBackgroundMaterial());
     }
 }
 
@@ -2805,72 +2901,114 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
     {
         static std::string const ClearMaterialName = "Clear";
 
-        auto const * foreStructuralMaterial = mWorkbenchState.GetStructuralForegroundMaterial();
-        if (foreStructuralMaterial != nullptr)
         {
-            wxBitmap foreStructuralBitmap = WxHelpers::MakeBitmap(
-                mShipTexturizer.MakeTextureSample(
-                    std::nullopt, // Use shared settings
-                    MaterialSwathSize,
-                    *foreStructuralMaterial));
+            auto const * foreStructuralMaterial = mWorkbenchState.GetStructuralForegroundMaterial();
+            if (foreStructuralMaterial != nullptr)
+            {
+                wxBitmap foreStructuralBitmap = WxHelpers::MakeBitmap(
+                    mShipTexturizer.MakeTextureSample(
+                        std::nullopt, // Use shared settings
+                        MaterialSwathSize,
+                        *foreStructuralMaterial));
 
-            mStructuralForegroundMaterialSelector->SetBitmap(foreStructuralBitmap);
-            mStructuralForegroundMaterialSelector->SetToolTip(foreStructuralMaterial->Name);
-        }
-        else
-        {
-            mStructuralForegroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
-            mStructuralForegroundMaterialSelector->SetToolTip(ClearMaterialName);
-        }
+                mStructuralForegroundMaterialSelector->SetBitmap(foreStructuralBitmap);
+                mStructuralForegroundMaterialSelector->SetToolTip(foreStructuralMaterial->Name);
+            }
+            else
+            {
+                mStructuralForegroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
+                mStructuralForegroundMaterialSelector->SetToolTip(ClearMaterialName);
+            }
 
-        auto const * backStructuralMaterial = mWorkbenchState.GetStructuralBackgroundMaterial();
-        if (backStructuralMaterial != nullptr)
-        {
-            wxBitmap backStructuralBitmap = WxHelpers::MakeBitmap(
-                mShipTexturizer.MakeTextureSample(
-                    std::nullopt, // Use shared settings
-                    MaterialSwathSize,
-                    *backStructuralMaterial));
+            auto const * backStructuralMaterial = mWorkbenchState.GetStructuralBackgroundMaterial();
+            if (backStructuralMaterial != nullptr)
+            {
+                wxBitmap backStructuralBitmap = WxHelpers::MakeBitmap(
+                    mShipTexturizer.MakeTextureSample(
+                        std::nullopt, // Use shared settings
+                        MaterialSwathSize,
+                        *backStructuralMaterial));
 
-            mStructuralBackgroundMaterialSelector->SetBitmap(backStructuralBitmap);
-            mStructuralBackgroundMaterialSelector->SetToolTip(backStructuralMaterial->Name);
-        }
-        else
-        {
-            mStructuralBackgroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
-            mStructuralBackgroundMaterialSelector->SetToolTip(ClearMaterialName);
-        }
-
-        auto const * foreElectricalMaterial = mWorkbenchState.GetElectricalForegroundMaterial();
-        if (foreElectricalMaterial != nullptr)
-        {
-            wxBitmap foreElectricalBitmap = WxHelpers::MakeMatteBitmap(
-                rgbaColor(foreElectricalMaterial->RenderColor, 255),
-                MaterialSwathSize);
-
-            mElectricalForegroundMaterialSelector->SetBitmap(foreElectricalBitmap);
-            mElectricalForegroundMaterialSelector->SetToolTip(foreElectricalMaterial->Name);
-        }
-        else
-        {
-            mElectricalForegroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
-            mElectricalForegroundMaterialSelector->SetToolTip(ClearMaterialName);
+                mStructuralBackgroundMaterialSelector->SetBitmap(backStructuralBitmap);
+                mStructuralBackgroundMaterialSelector->SetToolTip(backStructuralMaterial->Name);
+            }
+            else
+            {
+                mStructuralBackgroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
+                mStructuralBackgroundMaterialSelector->SetToolTip(ClearMaterialName);
+            }
         }
 
-        auto const * backElectricalMaterial = mWorkbenchState.GetElectricalBackgroundMaterial();
-        if (backElectricalMaterial != nullptr)
         {
-            wxBitmap backElectricalBitmap = WxHelpers::MakeMatteBitmap(
-                rgbaColor(backElectricalMaterial->RenderColor, 255),
-                MaterialSwathSize);
+            auto const * foreElectricalMaterial = mWorkbenchState.GetElectricalForegroundMaterial();
+            if (foreElectricalMaterial != nullptr)
+            {
+                wxBitmap foreElectricalBitmap = WxHelpers::MakeMatteBitmap(
+                    rgbaColor(foreElectricalMaterial->RenderColor, 255),
+                    MaterialSwathSize);
 
-            mElectricalBackgroundMaterialSelector->SetBitmap(backElectricalBitmap);
-            mElectricalBackgroundMaterialSelector->SetToolTip(backElectricalMaterial->Name);
+                mElectricalForegroundMaterialSelector->SetBitmap(foreElectricalBitmap);
+                mElectricalForegroundMaterialSelector->SetToolTip(foreElectricalMaterial->Name);
+            }
+            else
+            {
+                mElectricalForegroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
+                mElectricalForegroundMaterialSelector->SetToolTip(ClearMaterialName);
+            }
+
+            auto const * backElectricalMaterial = mWorkbenchState.GetElectricalBackgroundMaterial();
+            if (backElectricalMaterial != nullptr)
+            {
+                wxBitmap backElectricalBitmap = WxHelpers::MakeMatteBitmap(
+                    rgbaColor(backElectricalMaterial->RenderColor, 255),
+                    MaterialSwathSize);
+
+                mElectricalBackgroundMaterialSelector->SetBitmap(backElectricalBitmap);
+                mElectricalBackgroundMaterialSelector->SetToolTip(backElectricalMaterial->Name);
+            }
+            else
+            {
+                mElectricalBackgroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
+                mElectricalBackgroundMaterialSelector->SetToolTip(ClearMaterialName);
+            }
         }
-        else
+
         {
-            mElectricalBackgroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
-            mElectricalBackgroundMaterialSelector->SetToolTip(ClearMaterialName);
+            auto const * foreRopesMaterial = mWorkbenchState.GetRopesForegroundMaterial();
+            if (foreRopesMaterial != nullptr)
+            {
+                wxBitmap foreRopesBitmap = WxHelpers::MakeBitmap(
+                    mShipTexturizer.MakeTextureSample(
+                        std::nullopt, // Use shared settings
+                        MaterialSwathSize,
+                        *foreRopesMaterial));
+
+                mRopesForegroundMaterialSelector->SetBitmap(foreRopesBitmap);
+                mRopesForegroundMaterialSelector->SetToolTip(foreRopesMaterial->Name);
+            }
+            else
+            {
+                mRopesForegroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
+                mRopesForegroundMaterialSelector->SetToolTip(ClearMaterialName);
+            }
+
+            auto const * backRopesMaterial = mWorkbenchState.GetRopesBackgroundMaterial();
+            if (backRopesMaterial != nullptr)
+            {
+                wxBitmap backRopesBitmap = WxHelpers::MakeBitmap(
+                    mShipTexturizer.MakeTextureSample(
+                        std::nullopt, // Use shared settings
+                        MaterialSwathSize,
+                        *backRopesMaterial));
+
+                mRopesBackgroundMaterialSelector->SetBitmap(backRopesBitmap);
+                mRopesBackgroundMaterialSelector->SetToolTip(backRopesMaterial->Name);
+            }
+            else
+            {
+                mRopesBackgroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
+                mRopesBackgroundMaterialSelector->SetToolTip(ClearMaterialName);
+            }
         }
     }
 
