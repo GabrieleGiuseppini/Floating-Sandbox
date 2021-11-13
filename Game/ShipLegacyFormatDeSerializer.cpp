@@ -378,28 +378,32 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
         structuralLayerImage.Size.height);
 
     // Create layers in any case - even though we might not need some
+
     StructuralLayerData structuralLayer(shipSize);
     bool hasStructuralElements = false;
+
     ElectricalLayerData electricalLayer(shipSize, std::move(electricalPanel));
     bool hasElectricalElements = false;
-    RopesLayerData ropesLayer(shipSize);
+
+    RopesLayerData ropesLayer;
     bool hasRopeElements = false;
+
     std::unique_ptr<TextureLayerData> textureLayer = textureLayerImage.has_value()
         ? std::make_unique<TextureLayerData>(std::move(*textureLayerImage))
         : nullptr;
 
-    // Table remembering rope endpoints
-    std::map<MaterialColorKey, RopeId> ropeIdsByColorKey;
-
-    // Assignment of rope IDs
-    RopeId nextRopeId = 0;
+    // Table remembering rope endpoints - three values:
+    // - Entry not in map: haven't seen color key
+    // - Entry in map: have seen first endpoint, corods is value
+    // - Entry in map without value: have seen second endpoint
+    std::map<MaterialColorKey, std::optional<ShipSpaceCoordinates>> ropeFirstEndpointCoordsByColorKey;
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // 1. Process structural layer, eventually creating electrical and rope elements from legacy
     //    specifications
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ropeIdsByColorKey.clear();
+    ropeFirstEndpointCoordsByColorKey.clear();
 
     // Visit all columns
     for (int x = 0; x < shipSize.width; ++x)
@@ -446,20 +450,29 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
                     && !materialDatabase.IsUniqueStructuralMaterialColorKey(StructuralMaterial::MaterialUniqueType::Rope, colorKey))
                 {
                     // Check if it's the first or the second endpoint for the rope
-                    RopeId ropeId;
-                    auto searchIt = ropeIdsByColorKey.find(colorKey);
-                    if (searchIt == ropeIdsByColorKey.end())
+                    auto searchIt = ropeFirstEndpointCoordsByColorKey.find(colorKey);
+                    if (searchIt == ropeFirstEndpointCoordsByColorKey.end())
                     {
                         // First time we see the rope color key
-                        ropeId = nextRopeId++;
-                        ropeIdsByColorKey[colorKey] = ropeId;
+                        ropeFirstEndpointCoordsByColorKey[colorKey] = coords;
                     }
-                    else if (searchIt->second != NoneRopeId)
+                    else if (searchIt->second.has_value())
                     {
                         // Second time we see the rope color key
-                        ropeId = searchIt->second;
+
+                        // Store rope element
+                        rgbaColor const ropeColor = rgbaColor(colorKey, 255);
+                        ropesLayer.Buffer.emplace_back(
+                            *(searchIt->second),
+                            coords,
+                            structuralMaterial,
+                            ropeColor);
+
+                        // Remember we have seen at least one rope element
+                        hasRopeElements = true;
+
                         // Mark as "complete"
-                        searchIt->second = NoneRopeId;
+                        searchIt->second.reset();
                     }
                     else
                     {
@@ -468,13 +481,6 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
                             "More than two rope endpoints for rope color \"" + colorKey.toString() + "\", detected at "
                             + imageCoords.FlipY(shipSize.height).ToString());
                     }
-
-                    // Store rope element
-                    rgbaColor const ropeColor = rgbaColor(colorKey, 255);
-                    ropesLayer.Buffer[coords] = RopeElement(structuralMaterial, ropeId, ropeColor);
-
-                    // Remember we have seen at least one rope element
-                    hasRopeElements = true;
                 }
 
                 // Remember we have seen at least one structural element
@@ -486,14 +492,14 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
     // Make sure all rope endpoints are matched
     {
         auto const unmatchedSrchIt = std::find_if(
-            ropeIdsByColorKey.cbegin(),
-            ropeIdsByColorKey.cend(),
+            ropeFirstEndpointCoordsByColorKey.cbegin(),
+            ropeFirstEndpointCoordsByColorKey.cend(),
             [](auto const & entry)
             {
-                return entry.second != NoneRopeId;
+                return entry.second.has_value();
             });
 
-        if (unmatchedSrchIt != ropeIdsByColorKey.cend())
+        if (unmatchedSrchIt != ropeFirstEndpointCoordsByColorKey.cend())
         {
             throw GameException("Rope endpoint with color key \"" + unmatchedSrchIt->first.toString() + "\" is unmatched");
         }
@@ -513,7 +519,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
 
         StructuralMaterial const & standardRopeMaterial = materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope);
 
-        ropeIdsByColorKey.clear();
+        ropeFirstEndpointCoordsByColorKey.clear();
 
         // Visit all columns
         for (int x = 0; x < shipSize.width; ++x)
@@ -535,26 +541,41 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
                     rgbaColor const ropeColor = rgbaColor(colorKey, 255);
 
                     // Make sure we don't have a rope already with an endpoint here
-                    if (ropesLayer.Buffer[coords].Material != nullptr)
+                    if (std::find_if(
+                            ropesLayer.Buffer.cbegin(),
+                            ropesLayer.Buffer.cend(),
+                            [&coords](RopeElement const & e)
+                            {
+                                return e.StartCoords == coords
+                                    || e.EndCoords == coords;
+                            }) != ropesLayer.Buffer.cend())
                     {
                         throw GameException("There is already a rope endpoint at " + imageCoords.FlipY(shipSize.height).ToString());
                     }
 
                     // Check if it's the first or the second endpoint for the rope
-                    RopeId ropeId;
-                    auto searchIt = ropeIdsByColorKey.find(colorKey);
-                    if (searchIt == ropeIdsByColorKey.end())
+                    auto searchIt = ropeFirstEndpointCoordsByColorKey.find(colorKey);
+                    if (searchIt == ropeFirstEndpointCoordsByColorKey.end())
                     {
                         // First time we see the rope color key
-                        ropeId = nextRopeId++;
-                        ropeIdsByColorKey[colorKey] = ropeId;
+                        ropeFirstEndpointCoordsByColorKey[colorKey] = coords;
                     }
-                    else if (searchIt->second != NoneRopeId)
+                    else if (searchIt->second.has_value())
                     {
                         // Second time we see the rope color key
-                        ropeId = searchIt->second;
+
+                        // Store rope element
+                        ropesLayer.Buffer.emplace_back(
+                            *(searchIt->second),
+                            coords,
+                            &standardRopeMaterial,
+                            ropeColor);
+
+                        // Remember we have seen at least one rope element
+                        hasRopeElements = true;
+
                         // Mark as "complete"
-                        searchIt->second = NoneRopeId;
+                        searchIt->second.reset();
                     }
                     else
                     {
@@ -563,15 +584,6 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
                             "More than two rope endpoints for rope color \"" + colorKey.toString() + "\", detected at "
                             + imageCoords.FlipY(shipSize.height).ToString());
                     }
-
-                    // Store rope element
-                    ropesLayer.Buffer[coords] = RopeElement(
-                        &standardRopeMaterial,
-                        ropeId,
-                        ropeColor);
-
-                    // Remember we have seen at least one rope element
-                    hasRopeElements = true;
                 }
             }
         }
@@ -579,14 +591,14 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
         // Make sure all rope endpoints are matched
         {
             auto const unmatchedSrchIt = std::find_if(
-                ropeIdsByColorKey.cbegin(),
-                ropeIdsByColorKey.cend(),
+                ropeFirstEndpointCoordsByColorKey.cbegin(),
+                ropeFirstEndpointCoordsByColorKey.cend(),
                 [](auto const & entry)
                 {
-                    return entry.second != NoneRopeId;
+                    return entry.second.has_value();
                 });
 
-            if (unmatchedSrchIt != ropeIdsByColorKey.cend())
+            if (unmatchedSrchIt != ropeFirstEndpointCoordsByColorKey.cend())
             {
                 throw GameException("Rope endpoint with color key \"" + unmatchedSrchIt->first.toString() + "\" is unmatched");
             }
@@ -636,7 +648,14 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
 
                     // Make sure we have a structural point here, or a rope endpoint
                     if (structuralLayer.Buffer[coords].Material == nullptr
-                        && ropesLayer.Buffer[coords].Material == nullptr)
+                        && std::find_if(
+                                ropesLayer.Buffer.cbegin(),
+                                ropesLayer.Buffer.cend(),
+                                [&coords](RopeElement const & e)
+                                {
+                                    return e.StartCoords == coords
+                                        || e.EndCoords == coords;
+                                }) == ropesLayer.Buffer.cend())
                     {
                         throw GameException(
                             "The electrical layer image specifies an electrical material at "

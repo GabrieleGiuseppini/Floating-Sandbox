@@ -81,47 +81,6 @@ private:
 
     using PointPairToIndexMap = std::unordered_map<PointPair, ElementIndex, PointPair::Hasher>;
 
-    struct RopeSegment
-    {
-        ElementIndex PointAIndex1;
-        ElementIndex PointBIndex1;
-        StructuralMaterial const * PointAMaterial;
-        StructuralMaterial const * PointBMaterial;
-        rgbaColor PointARenderColor;
-        rgbaColor PointBRenderColor;
-
-        RopeSegment()
-            : PointAIndex1(NoneElementIndex)
-            , PointBIndex1(NoneElementIndex)
-            , PointAMaterial(nullptr)
-            , PointBMaterial(nullptr)
-            , PointARenderColor()
-            , PointBRenderColor()
-        {
-        }
-
-        void SetEndpoint(
-            ElementIndex pointIndex1,
-            StructuralMaterial const * material,
-            rgbaColor const & renderColor)
-        {
-            if (NoneElementIndex == PointAIndex1)
-            {
-                PointAIndex1 = pointIndex1;
-                PointAMaterial = material;
-                PointARenderColor = renderColor;
-            }
-            else
-            {
-                assert(NoneElementIndex == PointBIndex1);
-
-                PointBIndex1 = pointIndex1;
-                PointBMaterial = material;
-                PointBRenderColor = renderColor;
-            }
-        }
-    };
-
     static inline bool IsConnectedToNonRopePoints(
         ElementIndex pointIndex,
         std::vector<ShipFactoryPoint> const & pointInfos1,
@@ -153,13 +112,10 @@ private:
             static_cast<float>(y) / static_cast<float>(shipSize.height) + deadCenterOffsetY);
     }
 
-    static std::vector<RopeSegment> ExtractRopeSegments(
-        ShipDefinition const & shipDefinition,
-        ShipFactoryPointIndexMatrix const & pointIndexMatrix);
-
     static void AppendRopes(
-        std::vector<RopeSegment> const & ropeSegments,
+        std::vector<RopeElement> const & ropeElements,
         ShipSpaceSize const & shipSize,
+        ShipFactoryPointIndexMatrix const & pointIndexMatrix,
         std::vector<ShipFactoryPoint> & pointInfos1,
         std::vector<ShipFactorySpring> & springInfos1,
         PointPairToIndexMap & pointPairToSpringIndex1Map);

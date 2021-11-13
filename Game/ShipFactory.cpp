@@ -89,24 +89,36 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
             bool isStructuralMaterialLeaking = (structuralMaterial != nullptr) ? structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope) : false;
 
             // Check if there's a rope endpoint here
-            if (shipDefinition.RopesLayer && shipDefinition.RopesLayer->Buffer[coords].Material != nullptr)
+            if (shipDefinition.RopesLayer)
             {
-                //
-                // There is a rope endpoint here
-                //
+                auto const ropeSearchIt = std::find_if(
+                    shipDefinition.RopesLayer->Buffer.cbegin(),
+                    shipDefinition.RopesLayer->Buffer.cend(),
+                    [&coords](RopeElement const & e)
+                    {
+                        return e.StartCoords == coords || e.EndCoords == coords;
+                    });
 
-                if (structuralMaterial == nullptr)
+                if (ropeSearchIt != shipDefinition.RopesLayer->Buffer.cend())
                 {
-                    // Make a structural element for this endpoint
-                    structuralMaterial = &materialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Rope);
-                    isStructuralMaterialLeaking = true; // Ropes leak by default
+                    //
+                    // There is a rope endpoint here
+                    //
+
+                    if (structuralMaterial == nullptr)
+                    {
+                        // Make a structural element for this endpoint
+                        structuralMaterial = ropeSearchIt->Material;
+                        assert(structuralMaterial != nullptr);
+                        isStructuralMaterialLeaking = true; // Ropes leak by default
+                    }
+
+                    // Change endpoint's color to match the rope's - or else the spring will look bad
+                    structuralMaterialRenderColor = ropeSearchIt->RenderColor;
+
+                    // Make it a rope point so that the first spring segment is a rope spring
+                    isStructuralMaterialRope = true;
                 }
-
-                // Change endpoint's color to match the rope's - or else the spring will look bad
-                structuralMaterialRenderColor = shipDefinition.RopesLayer->Buffer[coords].RenderColor;
-
-                // Make it a rope point so that the first spring segment is a rope spring
-                isStructuralMaterialRope = true;
             }
 
             // Check if there's a structural element here
@@ -168,15 +180,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     }
 
     //
-    // Process the rope layer and extract vector of rope endpoints
-    //
-
-    std::vector<RopeSegment> const ropeSegments = ExtractRopeSegments(
-        shipDefinition,
-        pointIndexMatrix);
-
-    //
-    // Process all identified rope endpoints and:
+    // Process the rope endpoints and:
     // - Fill-in points between the endpoints, creating additional ShipFactoryPoint's for them
     // - Fill-in springs between each pair of points in the rope, creating ShipFactorySpring's for them
     //      - And populating the point pair -> spring index 1 map
@@ -186,12 +190,16 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
     PointPairToIndexMap pointPairToSpringIndex1Map;
 
-    AppendRopes(
-        ropeSegments,
-        shipDefinition.Size,
-        pointInfos1,
-        springInfos1,
-        pointPairToSpringIndex1Map);
+    if (shipDefinition.RopesLayer)
+    {
+        AppendRopes(
+            shipDefinition.RopesLayer->Buffer,
+            shipDefinition.Size,
+            pointIndexMatrix,
+            pointInfos1,
+            springInfos1,
+            pointPairToSpringIndex1Map);
+    }
 
     //
     // Visit point matrix and:
@@ -417,56 +425,10 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 // Building helpers
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::vector<ShipFactory::RopeSegment> ShipFactory::ExtractRopeSegments(
-    ShipDefinition const & shipDefinition,
-    ShipFactoryPointIndexMatrix const & pointIndexMatrix)
-{
-    std::map<RopeId, RopeSegment> ropeIdsToRopeSegmentMap;
-
-    if (shipDefinition.RopesLayer)
-    {
-        for (int x = 0; x < shipDefinition.Size.width; ++x)
-        {
-            for (int y = 0; y < shipDefinition.Size.height; ++y)
-            {
-                auto const coords = ShipSpaceCoordinates(x, y);
-                RopeElement const & ropeElement = shipDefinition.RopesLayer->Buffer[coords];
-                if (ropeElement.Material != nullptr)
-                {
-                    //
-                    // It's a rope endpoint
-                    //
-
-                    // Get point index
-                    assert(pointIndexMatrix[vec2i(x + 1, y + 1)].has_value());
-                    ElementIndex const pointIndex = *pointIndexMatrix[vec2i(x + 1, y + 1)];
-
-                    // Store in RopeSegments
-                    assert(ropeElement.Id != NoneRopeId);
-                    RopeSegment & ropeSegment = ropeIdsToRopeSegmentMap[ropeElement.Id];
-                    ropeSegment.SetEndpoint(pointIndex, ropeElement.Material, ropeElement.RenderColor);
-                }
-            }
-        }
-    }
-
-    std::vector<RopeSegment> ropeSegments;
-
-    std::transform(
-        ropeIdsToRopeSegmentMap.cbegin(),
-        ropeIdsToRopeSegmentMap.cend(),
-        std::back_inserter(ropeSegments),
-        [](auto const & mapEntry)
-        {
-            return mapEntry.second;
-        });
-
-    return ropeSegments;
-}
-
 void ShipFactory::AppendRopes(
-    std::vector<RopeSegment> const & ropeSegments,
+    std::vector<RopeElement> const & ropeElements,
     ShipSpaceSize const & shipSize,
+    ShipFactoryPointIndexMatrix const & pointIndexMatrix,
     std::vector<ShipFactoryPoint> & pointInfos1,
     std::vector<ShipFactorySpring> & springInfos1,
     PointPairToIndexMap & pointPairToSpringIndex1Map)
@@ -476,18 +438,21 @@ void ShipFactory::AppendRopes(
     // - Fill-in springs between each pair of points in the rope, creating ShipFactorySpring's for them
     //
 
-    // Visit all RopeSegment's
-    for (auto const & ropeSegment : ropeSegments)
+    // Visit all RopeElement's
+    for (auto const & ropeElement : ropeElements)
     {
-        assert(NoneElementIndex != ropeSegment.PointAIndex1);
-        assert(NoneElementIndex != ropeSegment.PointBIndex1);
+        assert(pointIndexMatrix[vec2i(ropeElement.StartCoords.x + 1, ropeElement.StartCoords.y + 1)].has_value());
+        ElementIndex const pointAIndex1 = *pointIndexMatrix[vec2i(ropeElement.StartCoords.x + 1, ropeElement.StartCoords.y + 1)];
+
+        assert(pointIndexMatrix[vec2i(ropeElement.EndCoords.x + 1, ropeElement.EndCoords.y + 1)].has_value());
+        ElementIndex const pointBIndex1 = *pointIndexMatrix[vec2i(ropeElement.EndCoords.x + 1, ropeElement.EndCoords.y + 1)];
 
         // No need to lay a rope if the points are adjacent - as there will be a rope anyway
-        if (pointInfos1[ropeSegment.PointAIndex1].DefinitionCoordinates.has_value()
-            && pointInfos1[ropeSegment.PointBIndex1].DefinitionCoordinates.has_value())
+        if (pointInfos1[pointAIndex1].DefinitionCoordinates.has_value()
+            && pointInfos1[pointBIndex1].DefinitionCoordinates.has_value())
         {
-            if (abs(pointInfos1[ropeSegment.PointAIndex1].DefinitionCoordinates->x - pointInfos1[ropeSegment.PointBIndex1].DefinitionCoordinates->x) <= 1
-                && abs(pointInfos1[ropeSegment.PointAIndex1].DefinitionCoordinates->y - pointInfos1[ropeSegment.PointBIndex1].DefinitionCoordinates->y) <= 1)
+            if (abs(pointInfos1[pointAIndex1].DefinitionCoordinates->x - pointInfos1[pointBIndex1].DefinitionCoordinates->x) <= 1
+                && abs(pointInfos1[pointAIndex1].DefinitionCoordinates->y - pointInfos1[pointBIndex1].DefinitionCoordinates->y) <= 1)
             {
                 // No need to lay a rope
                 continue;
@@ -495,13 +460,13 @@ void ShipFactory::AppendRopes(
         }
 
         // Get endpoint (world) positions
-        vec2f const startPos = pointInfos1[ropeSegment.PointAIndex1].Position;
-        vec2f const endPos = pointInfos1[ropeSegment.PointBIndex1].Position;
+        vec2f const startPos = pointInfos1[pointAIndex1].Position;
+        vec2f const endPos = pointInfos1[pointBIndex1].Position;
 
-        // Get endpoint electrical materials
+        // Get endpoint electrical materials - if any
 
         ElectricalMaterial const * startElectricalMaterial = nullptr;
-        if (auto const pointAElectricalMaterial = pointInfos1[ropeSegment.PointAIndex1].ElectricalMtl;
+        if (auto const pointAElectricalMaterial = pointInfos1[pointAIndex1].ElectricalMtl;
             nullptr != pointAElectricalMaterial
             && (pointAElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Cable
                 || pointAElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Generator
@@ -510,7 +475,7 @@ void ShipFactory::AppendRopes(
             startElectricalMaterial = pointAElectricalMaterial;
 
         ElectricalMaterial const * endElectricalMaterial = nullptr;
-        if (auto const pointBElectricalMaterial = pointInfos1[ropeSegment.PointBIndex1].ElectricalMtl;
+        if (auto const pointBElectricalMaterial = pointInfos1[pointBIndex1].ElectricalMtl;
             nullptr != pointBElectricalMaterial
             && (pointBElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Cable
                 || pointBElectricalMaterial->ElectricalType == ElectricalMaterial::ElectricalElementType::Generator
@@ -591,7 +556,7 @@ void ShipFactory::AppendRopes(
         float curN = startN;
         float const halfW = fabs(endW - curW) / 2.0f;
 
-        auto curStartPointIndex1 = ropeSegment.PointAIndex1;
+        auto curStartPointIndex1 = pointAIndex1;
         while (true)
         {
             curW += stepW;
@@ -632,16 +597,16 @@ void ShipFactory::AppendRopes(
             (void)isInserted;
 
             // Add ShipFactoryPoint
-            StructuralMaterial const & ropeMaterial = isFirstHalf ? *(ropeSegment.PointAMaterial) : *(ropeSegment.PointBMaterial);
+            assert(ropeElement.Material != nullptr);
             pointInfos1.emplace_back(
                 std::nullopt,
                 newPosition,
                 MakeTextureCoordinates(newPosition.x, newPosition.y, shipSize),
-                isFirstHalf ? ropeSegment.PointARenderColor : ropeSegment.PointBRenderColor,
-                ropeMaterial,
+                ropeElement.RenderColor,
+                *ropeElement.Material,
                 true, // IsRope
                 true, // Ropes leak by default
-                ropeMaterial.Strength,
+                ropeElement.Material->Strength,
                 0.0f); // Water
 
             // Set electrical material
@@ -662,19 +627,19 @@ void ShipFactory::AppendRopes(
         springInfos1.emplace_back(
             curStartPointIndex1,
             factoryDirectionEnd,
-            ropeSegment.PointBIndex1,
+            pointBIndex1,
             factoryDirectionStart);
 
         // Add spring to point pair map
         auto const [_, isInserted] = pointPairToSpringIndex1Map.try_emplace(
-            { curStartPointIndex1, ropeSegment.PointBIndex1 },
+            { curStartPointIndex1, pointBIndex1 },
             lastSpringIndex1);
         assert(isInserted);
         (void)isInserted;
 
         // Connect points to spring
         pointInfos1[curStartPointIndex1].AddConnectedSpring1(lastSpringIndex1);
-        pointInfos1[ropeSegment.PointBIndex1].AddConnectedSpring1(lastSpringIndex1);
+        pointInfos1[pointBIndex1].AddConnectedSpring1(lastSpringIndex1);
     }
 }
 

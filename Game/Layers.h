@@ -14,6 +14,7 @@
 #include <cassert>
 #include <map>
 #include <memory>
+#include <vector>
 
 template <LayerType TLayer>
 struct LayerTypeTraits
@@ -176,47 +177,53 @@ struct LayerTypeTraits<LayerType::Electrical>
 
 struct RopeElement
 {
+    ShipSpaceCoordinates StartCoords;
+    ShipSpaceCoordinates EndCoords;
     StructuralMaterial const * Material;
-    RopeId Id;
     rgbaColor RenderColor;
 
     RopeElement()
-        : Material(nullptr)
-        , Id(NoneRopeId)
+        : StartCoords(0, 0)
+        , EndCoords(0, 0)
+        , Material(nullptr)
         , RenderColor()
     {}
 
     RopeElement(
+        ShipSpaceCoordinates const & startCoords,
+        ShipSpaceCoordinates const & endCoords,
         StructuralMaterial const * material,
-        RopeId id,
         rgbaColor const & renderColor)
-        : Material(material)
-        , Id(id)
+        : StartCoords(startCoords)
+        , EndCoords(endCoords)
+        , Material(material)
         , RenderColor(renderColor)
     {}
 };
 
 struct RopesLayerData
 {
-    Buffer2D<RopeElement, struct ShipSpaceTag> Buffer;
+    std::vector<RopeElement> Buffer;
 
-    explicit RopesLayerData(ShipSpaceSize shipSize)
-        : Buffer(shipSize)
+    RopesLayerData()
+        : Buffer()
     {}
 
-    explicit RopesLayerData(Buffer2D<RopeElement, struct ShipSpaceTag> && buffer)
+    explicit RopesLayerData(std::vector<RopeElement> && buffer)
         : Buffer(std::move(buffer))
     {}
 
     RopesLayerData Clone() const
     {
-        return RopesLayerData(Buffer.Clone());
+        std::vector<RopeElement> bufferClone = Buffer;
+        return RopesLayerData(std::move(bufferClone));
     }
 };
 
 template <>
 struct LayerTypeTraits<LayerType::Ropes>
 {
+    using material_type = StructuralMaterial;
     using layer_data_type = RopesLayerData;
 };
 

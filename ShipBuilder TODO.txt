@@ -49,13 +49,14 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Structural DB: separate palette tree
 			+ Script
 			+ MaterialsDB			
-		- Layers
-		- Legacy Deserialization & ShipFactory
-		- Test
+		+ Layers
+		+ Legacy Deserialization
+		+ ShipFactory
+		+ Test
 		- SB::MaterialsPalette:
 			- Templated on layer - Material comes from TypeTraits
-			- Make LayerPanel for Rope
-		- LayerPanel
+		- LayerPanel for Rope
+		- Test
 		+ WorkbenchState
 		- DeSerialization
 			- Unit tests

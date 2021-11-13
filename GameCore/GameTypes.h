@@ -70,14 +70,6 @@ using ElectricalElementInstanceIndex = std::uint16_t;
 static constexpr ElectricalElementInstanceIndex NoneElectricalElementInstanceIndex = std::numeric_limits<ElectricalElementInstanceIndex>::max();
 
 /*
- * IDs of pairs of rope endpoints.
- *
- * Comparable and ordered. Start from 0.
- */
-using RopeId = std::uint32_t;
-static constexpr RopeId NoneRopeId = std::numeric_limits<RopeId>::max();
-
-/*
  * Frontier identifiers.
  *
  * Comparable and ordered. Start from 0.
