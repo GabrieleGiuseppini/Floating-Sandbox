@@ -64,6 +64,26 @@ public:
         mElectricalBackgroundMaterial = material;
     }
 
+    StructuralMaterial const * GetRopesForegroundMaterial() const
+    {
+        return mRopesForegroundMaterial;
+    }
+
+    void SetRopesForegroundMaterial(StructuralMaterial const * material)
+    {
+        mRopesForegroundMaterial = material;
+    }
+
+    StructuralMaterial const * GetRopesBackgroundMaterial() const
+    {
+        return mRopesBackgroundMaterial;
+    }
+
+    void SetRopesBackgroundMaterial(StructuralMaterial const * material)
+    {
+        mRopesBackgroundMaterial = material;
+    }
+
     std::uint32_t GetStructuralPencilToolSize() const
     {
         return mStructuralPencilToolSize;
@@ -100,6 +120,8 @@ private:
     StructuralMaterial const * mStructuralBackgroundMaterial;
     ElectricalMaterial const * mElectricalForegroundMaterial;
     ElectricalMaterial const * mElectricalBackgroundMaterial;
+    StructuralMaterial const * mRopesForegroundMaterial;
+    StructuralMaterial const * mRopesBackgroundMaterial;
 
     std::uint32_t mStructuralPencilToolSize;
     std::uint32_t mStructuralEraserToolSize;

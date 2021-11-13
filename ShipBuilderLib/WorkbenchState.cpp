@@ -29,6 +29,15 @@ WorkbenchState::WorkbenchState(MaterialDatabase const & materialDatabase)
     // Default electrical background material: none
     mElectricalBackgroundMaterial = nullptr;
 
+    // Default ropes foreground material: first ropes material
+    assert(!materialDatabase.GetRopeMaterialPalette().Categories.empty()
+        && !materialDatabase.GetRopeMaterialPalette().Categories[0].SubCategories.empty()
+        && !materialDatabase.GetRopeMaterialPalette().Categories[0].SubCategories[0].Materials.empty());
+    mRopesForegroundMaterial = &(materialDatabase.GetRopeMaterialPalette().Categories[0].SubCategories[0].Materials[0].get());
+
+    // Default ropes background material: none
+    mRopesBackgroundMaterial = nullptr;
+
     //
     // Default tool settings
     //
