@@ -162,6 +162,8 @@ private:
 
     void InitializeElectricalLayer();
 
+    void InitializeRopesLayer();
+
     inline void WriteParticle(
         ShipSpaceCoordinates const & coords,
         StructuralMaterial const * material);
@@ -181,7 +183,7 @@ private:
 
     void UpdateElectricalLayerVisualization(ShipSpaceRect const & region);
 
-    void UpdateRopesLayerVisualization(ShipSpaceRect const & region);
+    void UpdateRopesLayerVisualization();
 
     void UpdateTextureLayerVisualization(ShipSpaceRect const & region);
 
@@ -217,6 +219,7 @@ private:
 
     bool mIsStructuralLayerInEphemeralVisualization;
     bool mIsElectricalLayerInEphemeralVisualization;
+    bool mIsRopesLayerInEphemeralVisualization;
 };
 
 }

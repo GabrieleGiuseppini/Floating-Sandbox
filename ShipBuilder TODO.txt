@@ -53,14 +53,20 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Legacy Deserialization
 		+ ShipFactory
 		+ Test
-		= SB::MaterialsPalette:
+		+ SB::MaterialsPalette:
 			+ Templated on layer - Material comes from TypeTraits
-		- LayerPanel for Rope
-		- Test
+		+ LayerPanel for Rope
+		+ New Ropes Layer workflow
+		+ Test
 		+ WorkbenchState
 		- DeSerialization
 			- Unit tests
+		- ModelController::Visualization
+		- Pencil Tool
+		- Eraser Tool
 
+	- Model validation
+		- Structural behind ropes
 
 	- New materials:
 		= Chains

@@ -45,6 +45,7 @@ ModelController::ModelController(
     /////
     , mIsStructuralLayerInEphemeralVisualization(false)
     , mIsElectricalLayerInEphemeralVisualization(false)
+    , mIsRopesLayerInEphemeralVisualization(false)
 {
     // Model is not dirty now
     assert(!mModel.GetIsDirty());
@@ -52,12 +53,13 @@ ModelController::ModelController(
     // Initialize layers
     InitializeStructuralLayer();
     InitializeElectricalLayer();
+    InitializeRopesLayer();
 
     // Prepare all visualizations
     ShipSpaceRect const wholeShipSpace = ShipSpaceRect({ 0, 0 }, mModel.GetShipSize());
     UpdateStructuralLayerVisualization(wholeShipSpace);
     UpdateElectricalLayerVisualization(wholeShipSpace);
-    UpdateRopesLayerVisualization(wholeShipSpace);
+    UpdateRopesLayerVisualization();
     UpdateTextureLayerVisualization(wholeShipSpace);
 }
 
@@ -69,7 +71,9 @@ ShipDefinition ModelController::MakeShipDefinition() const
         mModel.HasLayer(LayerType::Electrical)
             ? std::make_unique<ElectricalLayerData>(mModel.CloneLayer<LayerType::Electrical>())
             : nullptr,
-        nullptr, // TODOHERE
+        mModel.HasLayer(LayerType::Ropes)
+            ? std::make_unique<RopesLayerData>(mModel.CloneLayer<LayerType::Ropes>())
+            : nullptr,
         mModel.HasLayer(LayerType::Texture)
             ? std::make_unique<TextureLayerData>(mModel.CloneLayer<LayerType::Texture>())
             : nullptr,
@@ -626,7 +630,11 @@ void ModelController::NewRopesLayer()
 {
     mModel.NewRopesLayer();
 
-    UpdateRopesLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
+    InitializeRopesLayer();
+
+    UpdateRopesLayerVisualization();
+
+    mIsRopesLayerInEphemeralVisualization = false;
 }
 
 void ModelController::SetRopesLayer(/*TODO*/)
@@ -634,9 +642,13 @@ void ModelController::SetRopesLayer(/*TODO*/)
     // TODO: allow when layer does not exist (so Controller::SetXXXLayer() can be used to create)
     assert(mModel.HasLayer(LayerType::Ropes));
 
-    mModel.SetRopesLayer();
+    mModel.SetRopesLayer(/*TODO*/);
 
-    UpdateRopesLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
+    InitializeRopesLayer();
+
+    UpdateRopesLayerVisualization();
+
+    mIsRopesLayerInEphemeralVisualization = false;
 }
 
 void ModelController::RemoveRopesLayer()
@@ -645,7 +657,13 @@ void ModelController::RemoveRopesLayer()
 
     mModel.RemoveRopesLayer();
 
+    assert(!mModel.HasLayer(LayerType::Ropes));
+
+    InitializeRopesLayer();
+
     // TODO: remove visualization members
+
+    mIsRopesLayerInEphemeralVisualization = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -683,7 +701,7 @@ void ModelController::RemoveTextureLayer()
 
 void ModelController::InitializeStructuralLayer()
 {
-    // FUTUREWORK
+    // FUTUREWORK - reset analysis
 }
 
 void ModelController::InitializeElectricalLayer()
@@ -712,6 +730,11 @@ void ModelController::InitializeElectricalLayer()
             }
         }
     }
+}
+
+void ModelController::InitializeRopesLayer()
+{
+    // Nop
 }
 
 void ModelController::WriteParticle(
@@ -1002,7 +1025,7 @@ void ModelController::UpdateElectricalLayerVisualization(ShipSpaceRect const & r
     }
 }
 
-void ModelController::UpdateRopesLayerVisualization(ShipSpaceRect const & region)
+void ModelController::UpdateRopesLayerVisualization()
 {
     if (!mModel.HasLayer(LayerType::Ropes))
     {

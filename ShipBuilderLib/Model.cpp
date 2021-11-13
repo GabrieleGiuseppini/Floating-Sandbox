@@ -84,7 +84,8 @@ void Model::RemoveElectricalLayer()
 
 void Model::NewRopesLayer()
 {
-    // TODO
+    // Reset layer
+    mRopesLayer = MakeNewEmptyRopesLayer();
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Ropes)] = true;
@@ -139,6 +140,11 @@ std::unique_ptr<ElectricalLayerData> Model::MakeNewEmptyElectricalLayer(ShipSpac
     return std::make_unique<ElectricalLayerData>(
         shipSize,
         ElectricalElement(nullptr, NoneElectricalElementInstanceIndex)); // No material
+}
+
+std::unique_ptr<RopesLayerData> Model::MakeNewEmptyRopesLayer()
+{
+    return std::make_unique<RopesLayerData>();
 }
 
 }

@@ -31,12 +31,10 @@ namespace ShipBuilder {
 /*
  * Event fired when a structural|electrical|ropes material has been selected.
  */
-template<LayerType TLayer>
+template<typename TMaterial>
 class _fsMaterialSelectedEvent : public wxEvent
 {
 public:
-
-    using TMaterial = typename LayerTypeTraits<TLayer>::material_type;
 
     _fsMaterialSelectedEvent(
         wxEventType eventType,
@@ -79,13 +77,11 @@ private:
     MaterialPlaneType const mMaterialPlane;
 };
 
-using fsStructuralMaterialSelectedEvent = _fsMaterialSelectedEvent<LayerType::Structural>;
-using fsElectricalMaterialSelectedEvent = _fsMaterialSelectedEvent<LayerType::Electrical>;
-using fsRopesMaterialSelectedEvent = _fsMaterialSelectedEvent<LayerType::Ropes>;
+using fsStructuralMaterialSelectedEvent = _fsMaterialSelectedEvent<StructuralMaterial>;
+using fsElectricalMaterialSelectedEvent = _fsMaterialSelectedEvent<ElectricalMaterial>;
 
 wxDECLARE_EVENT(fsEVT_STRUCTURAL_MATERIAL_SELECTED, fsStructuralMaterialSelectedEvent);
 wxDECLARE_EVENT(fsEVT_ELECTRICAL_MATERIAL_SELECTED, fsElectricalMaterialSelectedEvent);
-wxDECLARE_EVENT(fsEVT_ROPES_MATERIAL_SELECTED, fsRopesMaterialSelectedEvent);
 
 template<LayerType TLayer>
 class MaterialPalette : public wxPopupTransientWindow
@@ -93,7 +89,6 @@ class MaterialPalette : public wxPopupTransientWindow
 public:
 
     using TMaterial = typename LayerTypeTraits<TLayer>::material_type;
-    //static constexpr MaterialLayerType TMaterialLayer = LayerTypeTraits<TLayer>::material_type::MaterialLayer;
 
     MaterialPalette(
         wxWindow * parent,

@@ -442,7 +442,7 @@ MainFrame::MainFrame(
         mShipTexturizer,
         mResourceLocator);
 
-    mRopesMaterialPalette->Bind(fsEVT_ROPES_MATERIAL_SELECTED, &MainFrame::OnRopeMaterialSelected, this);
+    mRopesMaterialPalette->Bind(fsEVT_STRUCTURAL_MATERIAL_SELECTED, &MainFrame::OnRopeMaterialSelected, this);
 
     //
     // Create view
@@ -1037,21 +1037,17 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
                                         case LayerType::Ropes:
                                         {
-                                            // TODO
-                                            UnderConstructionDialog::Show(this, mResourceLocator);
+                                            if (mController->HasModelLayer(LayerType::Ropes)
+                                                && mController->IsModelDirty(LayerType::Ropes))
+                                            {
+                                                if (!AskUserIfSure(sureQuestion))
+                                                {
+                                                    // Changed their mind
+                                                    return;
+                                                }
+                                            }
 
-                                            ////// FUTUREWORK: following code is good, just not yet implemented downstream
-                                            ////if (mController->HasModelLayer(LayerType::Ropes)
-                                            ////    && mController->IsModelDirty(LayerType::Ropes))
-                                            ////{
-                                            ////    if (!AskUserIfSure(sureQuestion))
-                                            ////    {
-                                            ////        // Changed their mind
-                                            ////        return;
-                                            ////    }
-                                            ////}
-
-                                            ////mController->NewRopesLayer();
+                                            mController->NewRopesLayer();
 
                                             break;
                                         }
@@ -1763,7 +1759,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     wxEVT_LEFT_DOWN,
                     [this](wxMouseEvent & event)
                     {
-                        OpenMaterialPalette(event, LayerType::Structural, MaterialPlaneType::Background);
+                        OpenMaterialPalette(event, LayerType::Ropes, MaterialPlaneType::Background);
                     });
 
                 paletteSizer->Add(
@@ -2332,7 +2328,7 @@ void MainFrame::OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent &
     ReconciliateUIWithWorkbenchState();
 }
 
-void MainFrame::OnRopeMaterialSelected(fsRopesMaterialSelectedEvent & event)
+void MainFrame::OnRopeMaterialSelected(fsStructuralMaterialSelectedEvent & event)
 {
     if (event.GetMaterialPlane() == MaterialPlaneType::Foreground)
     {

@@ -161,7 +161,7 @@ private:
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent & event);
     void OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent & event);
     void OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent & event);
-    void OnRopeMaterialSelected(fsRopesMaterialSelectedEvent & event);
+    void OnRopeMaterialSelected(fsStructuralMaterialSelectedEvent & event);
 
 private:
 

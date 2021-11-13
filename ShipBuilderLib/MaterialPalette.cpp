@@ -20,7 +20,6 @@ namespace ShipBuilder {
 
 wxDEFINE_EVENT(fsEVT_STRUCTURAL_MATERIAL_SELECTED, fsStructuralMaterialSelectedEvent);
 wxDEFINE_EVENT(fsEVT_ELECTRICAL_MATERIAL_SELECTED, fsElectricalMaterialSelectedEvent);
-wxDEFINE_EVENT(fsEVT_ROPES_MATERIAL_SELECTED, fsRopesMaterialSelectedEvent);
 
 ImageSize constexpr CategoryButtonSize(80, 60);
 ImageSize constexpr PaletteButtonSize(80, 60);
@@ -968,7 +967,7 @@ void MaterialPalette<TLayer>::OnMaterialClicked(TMaterial const * material)
     assert(mCurrentPlane.has_value());
 
     // Fire event
-    if constexpr (TLayer == LayerType::Structural)
+    if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
     {
         auto event = fsStructuralMaterialSelectedEvent(
             fsEVT_STRUCTURAL_MATERIAL_SELECTED,
@@ -978,22 +977,12 @@ void MaterialPalette<TLayer>::OnMaterialClicked(TMaterial const * material)
 
         ProcessWindowEvent(event);
     }
-    else if constexpr (TLayer == LayerType::Electrical)
-    {
-        auto event = fsElectricalMaterialSelectedEvent(
-            fsEVT_ELECTRICAL_MATERIAL_SELECTED,
-            this->GetId(),
-            material,
-            *mCurrentPlane);
-
-        ProcessWindowEvent(event);
-    }
     else
     {
-        assert(TLayer == LayerType::Ropes);
+        assert(TMaterial::MaterialLayer == MaterialLayerType::Electrical);
 
-        auto event = fsRopesMaterialSelectedEvent(
-            fsEVT_ROPES_MATERIAL_SELECTED,
+        auto event = fsElectricalMaterialSelectedEvent(
+            fsEVT_ELECTRICAL_MATERIAL_SELECTED,
             this->GetId(),
             material,
             *mCurrentPlane);

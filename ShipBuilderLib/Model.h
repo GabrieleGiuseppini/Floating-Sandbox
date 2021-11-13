@@ -83,7 +83,11 @@ public:
             assert(mElectricalLayer);
             return mElectricalLayer->Clone();
         }
-        // TODO: ropes
+        else if constexpr (TLayer == LayerType::Ropes)
+        {
+            assert(mRopesLayer);
+            return mRopesLayer->Clone();
+        }
         else
         {
             static_assert(TLayer == LayerType::Texture);
@@ -216,6 +220,18 @@ public:
         return *mElectricalLayer;
     }
 
+    RopesLayerData const & GetRopesLayer() const
+    {
+        assert(mRopesLayer);
+        return *mRopesLayer;
+    }
+
+    RopesLayerData & GetRopesLayer()
+    {
+        assert(mRopesLayer);
+        return *mRopesLayer;
+    }
+
     TextureLayerData const & GetTextureLayer() const
     {
         assert(mTextureLayer);
@@ -227,6 +243,8 @@ private:
     static std::unique_ptr<StructuralLayerData> MakeNewEmptyStructuralLayer(ShipSpaceSize const & shipSize);
 
     static std::unique_ptr<ElectricalLayerData> MakeNewEmptyElectricalLayer(ShipSpaceSize const & shipSize);
+
+    static std::unique_ptr<RopesLayerData> MakeNewEmptyRopesLayer();
 
 private:
 
@@ -242,6 +260,8 @@ private:
     std::unique_ptr<StructuralLayerData> mStructuralLayer;
 
     std::unique_ptr<ElectricalLayerData> mElectricalLayer;
+
+    std::unique_ptr<RopesLayerData> mRopesLayer;
 
     std::unique_ptr<TextureLayerData> mTextureLayer;
 
