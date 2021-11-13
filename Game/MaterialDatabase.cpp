@@ -32,9 +32,15 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     float largestMass = 0.0f;
     float largestStrength = 0.0f;
 
-    // Parse palette structure
+    // Parse structural palette
     Palette<StructuralMaterial> structuralMaterialPalette = Palette<StructuralMaterial>::Parse(
-        Utils::GetMandatoryJsonArray(structuralMaterialsRootObj, "palette_categories"));
+        Utils::GetMandatoryJsonObject(structuralMaterialsRootObj, "palettes"),
+        "structural_palette");
+
+    // Parse ropes palette
+    Palette<StructuralMaterial> ropeMaterialPalette = Palette<StructuralMaterial>::Parse(
+        Utils::GetMandatoryJsonObject(structuralMaterialsRootObj, "palettes"),
+        "ropes_palette");
 
     // Parse materials
     picojson::array const & structuralMaterialsRootArray = Utils::GetMandatoryJsonArray(structuralMaterialsRootObj, "materials");
@@ -134,10 +140,21 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
                     colorKey,
                     material));
 
-            // Add to palette
+            // Add to palettes
             if (material.PaletteCoordinates.has_value())
             {
-                structuralMaterialPalette.InsertMaterial(storedEntry.first->second, *material.PaletteCoordinates);
+                if (structuralMaterialPalette.HasCategory(material.PaletteCoordinates->Category))
+                {
+                    structuralMaterialPalette.InsertMaterial(storedEntry.first->second, *material.PaletteCoordinates);
+                }
+                else if (ropeMaterialPalette.HasCategory(material.PaletteCoordinates->Category))
+                {
+                    ropeMaterialPalette.InsertMaterial(storedEntry.first->second, *material.PaletteCoordinates);
+                }
+                else
+                {
+                    throw GameException("Category \"" + material.PaletteCoordinates->Category + "\" of structural material \"" + material.Name + "\" may not be found in any palette");
+                }
             }
 
             // Check if it's a unique material, and if so, check for dupes and store it
@@ -180,8 +197,9 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         }
     }
 
-    // Make sure the palette is fully-populated
+    // Make sure the palettes are fully-populated
     structuralMaterialPalette.CheckComplete();
+    ropeMaterialPalette.CheckComplete();
 
     //
     // Electrical materials
@@ -202,7 +220,8 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
 
     // Parse palette structure
     Palette<ElectricalMaterial> electricalMaterialPalette = Palette<ElectricalMaterial>::Parse(
-        Utils::GetMandatoryJsonArray(electricalMaterialsRootObj, "palette_categories"));
+        Utils::GetMandatoryJsonObject(electricalMaterialsRootObj, "palettes"),
+        "electrical_palette");
 
     // Parse materials
     picojson::array const & electricalMaterialsRootArray = Utils::GetMandatoryJsonArray(electricalMaterialsRootObj, "materials");
@@ -261,7 +280,14 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         // Add to palette
         if (material.PaletteCoordinates.has_value())
         {
-            electricalMaterialPalette.InsertMaterial(storedEntry.first->second, *material.PaletteCoordinates);
+            if (electricalMaterialPalette.HasCategory(material.PaletteCoordinates->Category))
+            {
+                electricalMaterialPalette.InsertMaterial(storedEntry.first->second, *material.PaletteCoordinates);
+            }
+            else
+            {
+                throw GameException("Category \"" + material.PaletteCoordinates->Category + "\" of electrical material \"" + material.Name + "\" may not be found in any palette");
+            }
         }
 
         if (material.IsInstanced)
@@ -297,6 +323,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     return MaterialDatabase(
         std::move(structuralMaterialMap),
         std::move(structuralMaterialPalette),
+        std::move(ropeMaterialPalette),
         std::move(electricalMaterialsMap),
         std::move(instancedElectricalMaterialsMap),
         std::move(electricalMaterialPalette),
@@ -308,8 +335,12 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
 ///////////////////////////////////////////////////////////////////////
 
 template<typename TMaterial>
-MaterialDatabase::Palette<TMaterial> MaterialDatabase::Palette<TMaterial>::Parse(picojson::array const & paletteCategoriesJson)
+MaterialDatabase::Palette<TMaterial> MaterialDatabase::Palette<TMaterial>::Parse(
+    picojson::object const & palettesRoot,
+    std::string const & paletteName)
 {
+    picojson::array const & paletteCategoriesJson = Utils::GetMandatoryJsonMember<picojson::array>(palettesRoot, paletteName);
+
     Palette<TMaterial> palette;
 
     for (auto const & categoryJson : paletteCategoriesJson)
@@ -329,6 +360,20 @@ MaterialDatabase::Palette<TMaterial> MaterialDatabase::Palette<TMaterial>::Parse
 }
 
 template<typename TMaterial>
+bool MaterialDatabase::Palette<TMaterial>::HasCategory(std::string const & categoryName)
+{
+    auto const categoryIt = std::find_if(
+        Categories.cbegin(),
+        Categories.cend(),
+        [&categoryName](Category const & c)
+        {
+            return c.Name == categoryName;
+        });
+
+    return categoryIt != Categories.cend();
+}
+
+template<typename TMaterial>
 void MaterialDatabase::Palette<TMaterial>::InsertMaterial(
     TMaterial const & material,
     MaterialPaletteCoordinatesType const & paletteCoordinates)
@@ -345,10 +390,7 @@ void MaterialDatabase::Palette<TMaterial>::InsertMaterial(
             return c.Name == paletteCoordinates.Category;
         });
 
-    if (categoryIt == Categories.end())
-    {
-        throw GameException("Category \"" + paletteCoordinates.Category + "\" of material \"" + material.Name + "\" is not a valid category");
-    }
+    assert(categoryIt != Categories.end());
 
     Category & category = *categoryIt;
 

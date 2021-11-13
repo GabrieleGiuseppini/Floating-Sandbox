@@ -40,12 +40,13 @@ StructuralMaterial StructuralMaterial::Create(
 
         float const stiffness = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "stiffness", 1.0);
 
+        // Assign unique type - arbitrarily to first of series of colors
         std::optional<MaterialUniqueType> uniqueType;
-        if (name == "Air")
+        if (name == "Air" && ordinal == 0)
             uniqueType = MaterialUniqueType::Air;
-        else if (name == "Rope")
+        else if (name == "Rope" && ordinal == 0)
             uniqueType = MaterialUniqueType::Rope;
-        else if (name == "Water")
+        else if (name == "Water" && ordinal == 0)
             uniqueType = MaterialUniqueType::Water;
 
         std::optional<std::string> const materialSoundStr = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "sound_type");

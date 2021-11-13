@@ -54,7 +54,11 @@ public:
 
         std::vector<Category> Categories;
 
-        static Palette Parse(picojson::array const & paletteCategoriesJson);
+        static Palette Parse(
+            picojson::object const & palettesRoot,
+            std::string const & paletteName);
+
+        bool HasCategory(std::string const & categoryName);
 
         void InsertMaterial(TMaterial const & material, MaterialPaletteCoordinatesType const & paletteCoordinates);
 
@@ -113,6 +117,11 @@ public:
     Palette<StructuralMaterial> const & GetStructuralMaterialPalette() const
     {
         return mStructuralMaterialPalette;
+    }
+
+    Palette<StructuralMaterial> const & GetRopeMaterialPalette() const
+    {
+        return mRopeMaterialPalette;
     }
 
     // ------------------------
@@ -213,6 +222,7 @@ private:
     MaterialDatabase(
         MaterialMap<StructuralMaterial> structuralMaterialMap,
         Palette<StructuralMaterial> structuralMaterialPalette,
+        Palette<StructuralMaterial> ropeMaterialPalette,
         MaterialMap<ElectricalMaterial> electricalMaterialMap,
         std::map<MaterialColorKey, ElectricalMaterial const *, InstancedColorKeyComparer> instancedElectricalMaterialMap,
         Palette<ElectricalMaterial> electricalMaterialPalette,
@@ -221,6 +231,7 @@ private:
         float largestStrength)
         : mStructuralMaterialMap(std::move(structuralMaterialMap))
         , mStructuralMaterialPalette(std::move(structuralMaterialPalette))
+        , mRopeMaterialPalette(std::move(ropeMaterialPalette))
         , mElectricalMaterialMap(std::move(electricalMaterialMap))
         , mInstancedElectricalMaterialMap(std::move(instancedElectricalMaterialMap))
         , mElectricalMaterialPalette(std::move(electricalMaterialPalette))
@@ -235,6 +246,7 @@ private:
     // Structural
     MaterialMap<StructuralMaterial> mStructuralMaterialMap;
     Palette<StructuralMaterial> mStructuralMaterialPalette;
+    Palette<StructuralMaterial> mRopeMaterialPalette;
 
     // Electrical
     MaterialMap<ElectricalMaterial> mElectricalMaterialMap;

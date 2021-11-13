@@ -35,8 +35,8 @@ def get_subcategory(category_name, sub_category_name, root_obj) -> List[SubCateg
 
 def main():
     
-    if len(sys.argv) != 3 or (sys.argv[2] != "s" and sys.argv[2] != "e"):
-        print("Usage: generate_materials_template.py <path_to_materials_json> s|e")
+    if len(sys.argv) != 3 or (sys.argv[2] != "s" and sys.argv[2] != "e" and sys.argv[2] != "r"):
+        print("Usage: generate_materials_template.py <path_to_materials_json> s|e|r")
         sys.exit(-1)
 
     json_content = ""
@@ -54,7 +54,13 @@ def main():
     #
 
     palette: List[SubCategory] = []
-    for category_obj in root_obj["palette_categories"]:
+    if sys.argv[2] == "s":
+        palette_root = root_obj["palettes"]["structural_palette"]
+    elif sys.argv[2] == "r":
+        palette_root = root_obj["palettes"]["ropes_palette"]
+    else:
+        palette_root = root_obj["palettes"]["electrical_palette"]
+    for category_obj in palette_root:
         category_name = category_obj["category"]
         for sub_category_name in category_obj["sub_categories"]:
             sub_category = get_subcategory(category_name, sub_category_name, root_obj)

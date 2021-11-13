@@ -408,34 +408,6 @@
     },
     
     {
-        "color_key": "#000000",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 393.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 180
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Rope",
-	"palette_coordinates": {
-		"category": "Rope",
-		"sub_category": "Rope",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#000000",
-        "sound_type": "Cable",
-        "specific_heat": 1400.0,
-        "stiffness": 1.84,
-        "strength": 0.075,
-        "thermal_conductivity": 0.04,
-        "water_diffusion_speed": 0.015,
-        "water_intake": 0.05,
-        "water_retention": 0.5,
-        "buoyancy_volume_fill": 0.3,
-        "wind_receptivity": 0.2
-    },
-    {
         "color_key": ["#1A1A1A", "#540000", "#918f00", "#692a00", "#004215", "#003b3b", "#0c005c", "#3c0059", "#c74900"],
         "combustion_type": "Combustion",
         "ignition_temperature": 973.15,
@@ -1699,135 +1671,203 @@
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 1.0
+    },
+
+    {
+        "color_key": ["#000000", "#de4635", "#c7c05a", "#260200", "#025e03", "#74c9d6", "#050180", "#6d0191", "#ed8728"],
+        "combustion_type": "Combustion",
+        "ignition_temperature": 393.15,
+        "is_hull": false,
+        "mass": {
+            "density": 0.0935,
+            "nominal_mass": 180
+        },
+        "melting_temperature": 1000000.0,
+        "name": "Rope",
+	"palette_coordinates": {
+		"category": "Ropes",
+		"sub_category": "Ropes",
+		"sub_category_ordinal": 0
+	},
+        "sound_type": "Cable",
+        "specific_heat": 1400.0,
+        "stiffness": 1.84,
+        "strength": 0.075,
+        "thermal_conductivity": 0.04,
+        "water_diffusion_speed": 0.015,
+        "water_intake": 0.05,
+        "water_retention": 0.5,
+        "buoyancy_volume_fill": 0.3,
+        "wind_receptivity": 0.2
+    },
+
+    {
+	
+        "color_key": ["#3b3a39", "#540a06", "#5c5939", "#241616", "#145228", "#2e676e", "#0d055c", "#541853", "#944b13"],
+        "combustion_type": "Combustion",
+	"ignition_temperature": 1000000.0,
+        "is_hull": true,
+        "mass": {
+            "density": 0.00935,
+            "nominal_mass": 7850
+        },
+        "melting_temperature": 1588.15,
+        "name": "Iron Chain",
+	"palette_coordinates": {
+		"category": "Chains",
+		"sub_category": "Iron Chains",
+		"sub_category_ordinal": 0
+	},
+        "sound_type": "Metal",
+        "specific_heat": 449.0,
+        "stiffness": 1.0,
+        "strength": 0.051,
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
+        "water_diffusion_speed": 0.5,
+        "water_retention": 0.05,
+        "buoyancy_volume_fill": 0.0
     }
+
   ],
 
-  "palette_categories": [
-    {
-	"category": "Metals",
-        "sub_categories": [
-	  "Iron",
-	  "Iron Hull",
-	  "Double-Bottom Iron",
-	  "Structural Iron",
-	  "Iron Cheap",
-	  "Steel",
-	  "Steel Hull",
-	  "Stainless Steel",
-	  "Stainless Steel Hull",
-	  "Double-Bottom Steel",
-	  "Structural Steel",
-	  "Steel Cheap",
-	  "Titanium",
-	  "Titanium Hull",
-	  "Double-Bottom Titanium",
-	  "Aluminium",
-	  "Aluminium Hull",
-	  "Structural Aluminium",
-	  "Aluminium Sheet",
-	  "Aluminium Sheet Hull",
-	  "Aluminium Cheap",
-	  "Nails"
-	]
-    },
+  "palettes": {
+	"structural_palette": [
+	    {
+		"category": "Metals",
+		"sub_categories": [
+		  "Iron",
+		  "Iron Hull",
+		  "Double-Bottom Iron",
+		  "Structural Iron",
+		  "Iron Cheap",
+		  "Steel",
+		  "Steel Hull",
+		  "Stainless Steel",
+		  "Stainless Steel Hull",
+		  "Double-Bottom Steel",
+		  "Structural Steel",
+		  "Steel Cheap",
+		  "Titanium",
+		  "Titanium Hull",
+		  "Double-Bottom Titanium",
+		  "Aluminium",
+		  "Aluminium Hull",
+		  "Structural Aluminium",
+		  "Aluminium Sheet",
+		  "Aluminium Sheet Hull",
+		  "Aluminium Cheap",
+		  "Nails"
+		]
+	    },
 
-    {
-	"category": "Wood",
-        "sub_categories": [
-	  "Wood",
-	  "Wood Hull",
-	  "Double-Bottom Wood"
-	]
-    },
+	    {
+		"category": "Wood",
+		"sub_categories": [
+		  "Wood",
+		  "Wood Hull",
+		  "Double-Bottom Wood"
+		]
+	    },
 
-    {
-	"category": "Plastic",
-        "sub_categories": [
-	  "Fiberglass",
-	  "Fiberglass Hull",
-	  "LEGO (ABS)",
-	  "LEGO Hull (ABS)",
-	  "Mylar",
-	  "Mylar Hull",
-	  "Styrofoam",
-	  "Styrofoam Hull"
-	]
-    },
+	    {
+		"category": "Plastic",
+		"sub_categories": [
+		  "Fiberglass",
+		  "Fiberglass Hull",
+		  "LEGO (ABS)",
+		  "LEGO Hull (ABS)",
+		  "Mylar",
+		  "Mylar Hull",
+		  "Styrofoam",
+		  "Styrofoam Hull"
+		]
+	    },
 
-    {
-	"category": "Rubber",
-        "sub_categories": [
-	  "Rubber Soft",
-	  "Rubber Hard",
-	  "Rubber Hull Soft",
-	  "Rubber Hull Hard"
-	]
-    },
+	    {
+		"category": "Rubber",
+		"sub_categories": [
+		  "Rubber Soft",
+		  "Rubber Hard",
+		  "Rubber Hull Soft",
+		  "Rubber Hull Hard"
+		]
+	    },
 
-    {
-	"category": "Glass",
-        "sub_categories": [
-	  "Glass",
-	  "Glass Hull"
-	]
-    },
+	    {
+		"category": "Glass",
+		"sub_categories": [
+		  "Glass",
+		  "Glass Hull"
+		]
+	    },
 
-    {
-	"category": "Carbon",
-        "sub_categories": [
-	  "Carbon",
-	  "Carbon Hull"
-	]
-    },
+	    {
+		"category": "Carbon",
+		"sub_categories": [
+		  "Carbon",
+		  "Carbon Hull"
+		]
+	    },
 
-    {
-	"category": "Concrete",
-        "sub_categories": [
-	  "Concrete",
-	  "Concrete Hull"
-	]
-    },
+	    {
+		"category": "Concrete",
+		"sub_categories": [
+		  "Concrete",
+		  "Concrete Hull"
+		]
+	    },
 
-    {
-	"category": "Cloth",
-        "sub_categories": [
-	  "Cloth"
-	]
-    },
+	    {
+		"category": "Cloth",
+		"sub_categories": [
+		  "Cloth"
+		]
+	    },
 
-    {
-	"category": "Cardboard and Paper",
-        "sub_categories": [
-	  "Cardboard",
-	  "Cardboard Hull",
-	  "Paper",
-	  "Paper Hull"
-	]
-    },
+	    {
+		"category": "Cardboard and Paper",
+		"sub_categories": [
+		  "Cardboard",
+		  "Cardboard Hull",
+		  "Paper",
+		  "Paper Hull"
+		]
+	    },
 
-    {
-	"category": "Rope",
-        "sub_categories": [
-	  "Rope"
-	]
-    },
+	    {
+		"category": "Elements",
+		"sub_categories": [
+		  "Air",
+		  "Hydrogen",
+		  "Water"
+		]
+	    },
 
-    {
-	"category": "Elements",
-        "sub_categories": [
-	  "Air",
-	  "Hydrogen",
-	  "Water"
-	]
-    },
+	    {
+		"category": "Other Materials",
+		"sub_categories": [
+		  "Diesel",
+		  "Gunpowder Light",
+		  "Gunpowder Strong"
+		]
+	    }	 
+	],
 
-    {
-	"category": "Other Materials",
-        "sub_categories": [
-	  "Diesel",
-	  "Gunpowder Light",
-	  "Gunpowder Strong"
+	"ropes_palette": [
+	    {
+		"category": "Ropes",
+		"sub_categories": [
+		  "Ropes"
+		]
+	    },
+
+	    {
+		"category": "Chains",
+		"sub_categories": [
+		  "Iron Chains"
+		]
+	    }
 	]
-    }
-  ]
+  }
 }

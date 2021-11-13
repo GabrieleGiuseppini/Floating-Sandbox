@@ -1029,63 +1029,65 @@
     }
   ],
 
-  "palette_categories": [
-    {
-	"category": "Generators",
-        "sub_categories": [
-	  "Generators"
+  "palettes": {
+	"electrical_palette": [
+	    {
+		"category": "Generators",
+		"sub_categories": [
+		  "Generators"
+		]
+	    },
+	    {
+		"category": "Cables",
+		"sub_categories": [
+		  "Cables"
+		]
+	    },
+	    {
+		"category": "Switches",
+		"sub_categories": [
+		  "Interactive Switches",
+		  "Push Switches",
+		  "Water Switches"
+		]
+	    },
+	    {
+		"category": "Lamps",
+		"sub_categories": [
+		  "Lamps",
+		  "Self-Powered Lamps",
+		  "Portholes",
+		  "Self-Powered Portholes"
+		]
+	    },
+	    {
+		"category": "Engines",
+		"sub_categories": [
+		  "Outboard Engines",
+		  "Diesel Engines",
+		  "Steam Engines",
+		  "Engine Controllers"
+		]
+	    },
+	    {
+		"category": "Sounds",
+		"sub_categories": [
+		  "Horns",
+		  "Bells",
+		  "Klaxons",
+		  "Nuclear Alarms"
+		]
+	    },
+	    {
+		"category": "Other Elements",
+		"sub_categories": [
+		  "Heating Elements",
+		  "Smoke Emitters",
+		  "Power Monitors",
+		  "Water Pumps",
+		  "Watertight Doors"
+		]
+	    }	 
 	]
-    },
-    {
-	"category": "Cables",
-        "sub_categories": [
-	  "Cables"
-	]
-    },
-    {
-	"category": "Switches",
-        "sub_categories": [
-	  "Interactive Switches",
-	  "Push Switches",
-	  "Water Switches"
-	]
-    },
-    {
-	"category": "Lamps",
-        "sub_categories": [
-	  "Lamps",
-	  "Self-Powered Lamps",
-	  "Portholes",
-	  "Self-Powered Portholes"
-	]
-    },
-    {
-	"category": "Engines",
-        "sub_categories": [
-	  "Outboard Engines",
-	  "Diesel Engines",
-	  "Steam Engines",
-	  "Engine Controllers"
-	]
-    },
-    {
-	"category": "Sounds",
-        "sub_categories": [
-	  "Horns",
-	  "Bells",
-	  "Klaxons",
-	  "Nuclear Alarms"
-	]
-    },
-    {
-	"category": "Other Elements",
-        "sub_categories": [
-	  "Heating Elements",
-	  "Smoke Emitters",
-	  "Power Monitors",
-	  "Water Pumps",
-	  "Watertight Doors"
-	]
-    }
-  ]
+   }
 }

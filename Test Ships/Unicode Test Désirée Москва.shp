@@ -1,0 +1,8 @@
+{
+	"structure_image":"unicode_test_structural.png.dat",
+	"auto_texturization": { "mode": "material_textures" },
+	"ship_name":"Unicode Test Désirée Москва Balls",
+	"created_by":"Désirée Москва",
+	"year_built":"2013",
+	"description":"These three balls are made out of:<br/> <ol><li>Iron</li><li>Stiff Titanium</li><li>Wood</li></ol>"
+}

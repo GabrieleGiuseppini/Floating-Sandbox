@@ -325,10 +325,6 @@ Render:
 		- TimCan pack
 		- Raynair updates
 
-		- Ropes
-			- Chain sound
-
-
 		- Preferences flag for starting full-screen
 
 		- Bubbles issue

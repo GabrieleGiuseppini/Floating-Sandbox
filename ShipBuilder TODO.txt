@@ -39,13 +39,31 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 + Send for testing
 
-- Finalize design of Ropes layer
-	- Material strategies:
-		- Option 1: in Structural DB, separate palette tree
-			- Does NOT require current "ropes" to be marked as "legacy"
+= Finalize design of Ropes layer
+	= Material strategies:
+		= Option 1: in Structural DB, separate palette tree - does NOT require current "ropes" to be marked as "legacy"
+			+ Script
+			+ MaterialsDB
+			- SB::MaterialsPalette
 	- Element = start, end, StructuralMaterial *, renderColor
 	- Legacy: StructuralMaterial=Ropes, RenderColor=color
 	- ShipBuilder: StructuralMaterial=from ropes palette, RenderColor=from material
+
+	- New materials:
+		= Chains
+			- Test properties
+		- "~Elastic"
+		- More metal chains
+
+	- New sounds:
+		- "Chain":
+			- Material palette
+			- SoundController
+			- Make sound
+		- "~Elastic":
+			- Material palette
+			- SoundController
+			- Make sound
 
 
 - Complete Load/Save/Model
