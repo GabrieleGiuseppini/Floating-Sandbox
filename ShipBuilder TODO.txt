@@ -93,9 +93,20 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ No temp visualization when mouse outside of coords - or simply, when mouse coords are not applicable
 		+ Test
 		- "Move endpoint" mode
-			- When button down (engagement check) is over existing endpoint, then start point is other
-				- EngagementData also takes opt<size_t> endpoint index
-				- ModelController has "UpdateRope(size_t)" next to "Append"
+			! Spec: when button down (engagement check) is over existing endpoint, then start point is other
+			- Impl:
+				- Overlay:
+					- If outside ship rect: RED
+					- Else if engaged:
+						- TODO
+					- Else (!engaged):
+						- TODO
+				- StartEngagement:
+					- If outside ship rect: NO
+					- Else TODOHERE
+				- EndEngagement: do action:
+					- If outside ship rect: NO
+					- Else TODOHERE
 			- Test		
 		+ DeSerialization
 			+ Unit tests
@@ -103,8 +114,14 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- New materials:
 		= Chains
 			- Test properties
+				- For noise: consider adding new StructuralMaterial property: strain_threshold_fraction, default = 0.5
+					- Material
+					- Springs::UpdateForStrains:
+						- Springs::mBreakingElongationBuffer: it's buffer of two-float struct, BreakingElongation and StrainThresholdFraction
+					- Set at Chains
+			+ Rustyness
 		- "~Elastic"
-		- More metal chains
+		- More chains of other metal types
 
 	- New sounds:
 		= "Chain":

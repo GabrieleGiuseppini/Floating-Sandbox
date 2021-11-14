@@ -1689,6 +1689,7 @@
 		"sub_category": "Ropes",
 		"sub_category_ordinal": 0
 	},
+	"rust_receptivity": 1.0,
         "sound_type": "Cable",
         "specific_heat": 1400.0,
         "stiffness": 1.84,
@@ -1718,10 +1719,11 @@
 		"sub_category": "Iron Chains",
 		"sub_category_ordinal": 0
 	},
+	"rust_receptivity": 1.0,
         "sound_type": "Chain",
         "specific_heat": 449.0,
-        "stiffness": 1.0,
-        "strength": 0.051,
+        "stiffness": 1.85,
+        "strength": 0.075,
         "thermal_conductivity": 79.5,
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5,
