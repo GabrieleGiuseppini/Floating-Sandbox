@@ -47,6 +47,9 @@ View::View(
     glEnable(GL_LINE_SMOOTH);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 
+    // Set line width
+    glLineWidth(2.0f);
+
     // Enable blending for alpha transparency
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1102,11 +1105,8 @@ void View::RenderRopes()
     // Activate program
     mShaderManager->ActivateProgram<ProgramType::Rope>();
 
-    // TODOTEST
-    glLineWidth(2.0f * 1.0f);
-
     // Draw
-    glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mRopeCount));
+    glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mRopeCount * 2));
     CheckOpenGLError();
 }
 

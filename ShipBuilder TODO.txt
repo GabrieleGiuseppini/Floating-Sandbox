@@ -85,7 +85,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Line OpenGL settings
 			+ Upload straight away, no storage
 			+ Render: before or after depending on primary layer
-			- Line width			
+			+ Line width
+			- @Vertex-make-and-upload: Offset vertex to center of {1,1} ShipSpace rect
 		- Test
 		- "Move endpoint" mode
 			- When button down (engagement check) is over existing endpoint, then start point is other
