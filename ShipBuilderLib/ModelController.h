@@ -71,7 +71,8 @@ public:
     bool IsInEphemeralVisualization() const
     {
         return mIsStructuralLayerInEphemeralVisualization
-            || mIsElectricalLayerInEphemeralVisualization;
+            || mIsElectricalLayerInEphemeralVisualization
+            || mIsRopesLayerInEphemeralVisualization;
         // TODO: other layers
     }
 #endif
