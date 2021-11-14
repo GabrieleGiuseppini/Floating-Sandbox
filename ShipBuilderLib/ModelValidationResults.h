@@ -18,7 +18,7 @@ public:
     {
         EmptyStructuralLayer,
         StructureTooLarge,
-        MissingElectricalSubstrate,
+        MissingElectricalSubstratum,
         TooManyLights
     };
 

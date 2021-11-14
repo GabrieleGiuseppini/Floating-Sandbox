@@ -449,7 +449,7 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
                             break;
                         }
 
-                        case ModelValidationIssue::CheckClassType::MissingElectricalSubstrate:
+                        case ModelValidationIssue::CheckClassType::MissingElectricalSubstratum:
                         {
                             if (issue.GetSeverity() == ModelValidationIssue::SeverityType::Error)
                             {

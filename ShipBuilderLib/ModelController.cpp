@@ -114,7 +114,7 @@ ModelValidationResults ModelController::ValidateModel() const
     }
 
     //
-    // Empty structural layer
+    // Check: empty structural layer
     //
 
     issues.emplace_back(
@@ -124,7 +124,7 @@ ModelValidationResults ModelController::ValidateModel() const
     if (structuralParticlesCount != 0)
     {
         //
-        // Structure too large
+        // Check: structure too large
         //
 
         size_t constexpr MaxStructuralParticles = 100000;
@@ -166,15 +166,15 @@ ModelValidationResults ModelController::ValidateModel() const
         }
 
         //
-        // Electrical substratum
+        // Check: electrical substratum
         //
 
         issues.emplace_back(
-            ModelValidationIssue::CheckClassType::MissingElectricalSubstrate,
+            ModelValidationIssue::CheckClassType::MissingElectricalSubstratum,
             (electricalParticlesWithNoStructuralSubstratumCount > 0) ? ModelValidationIssue::SeverityType::Error : ModelValidationIssue::SeverityType::Success);
 
         //
-        // Too many lights
+        // Check: too many lights
         //
 
         size_t constexpr MaxLightEmittingParticles = 5000;
