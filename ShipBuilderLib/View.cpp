@@ -845,12 +845,16 @@ void View::OnViewModelUpdated()
     mShaderManager->SetProgramParameter<ProgramType::CircleOverlay, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 
+    mShaderManager->ActivateProgram<ProgramType::Grid>();
+    mShaderManager->SetProgramParameter<ProgramType::Grid, ProgramParameterType::OrthoMatrix>(
+        orthoMatrix);
+
     mShaderManager->ActivateProgram<ProgramType::RectOverlay>();
     mShaderManager->SetProgramParameter<ProgramType::RectOverlay, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 
-    mShaderManager->ActivateProgram<ProgramType::Grid>();
-    mShaderManager->SetProgramParameter<ProgramType::Grid, ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramType::Rope>();
+    mShaderManager->SetProgramParameter<ProgramType::Rope, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::Texture>();
@@ -1099,7 +1103,7 @@ void View::RenderRopes()
     mShaderManager->ActivateProgram<ProgramType::Rope>();
 
     // TODOTEST
-    glLineWidth(0.1f * 2.0f * 1.0f);
+    glLineWidth(2.0f * 1.0f);
 
     // Draw
     glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mRopeCount));
