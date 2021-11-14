@@ -99,8 +99,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Test		
 		+ DeSerialization
 			+ Unit tests
-		- Model validation
-			- Structural behind ropes
 		- Eraser Tool
 	- New materials:
 		= Chains

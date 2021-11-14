@@ -1706,7 +1706,7 @@
         "color_key": ["#3b3a39", "#540a06", "#5c5939", "#241616", "#145228", "#2e676e", "#0d055c", "#541853", "#944b13"],
         "combustion_type": "Combustion",
 	"ignition_temperature": 1000000.0,
-        "is_hull": true,
+        "is_hull": false,
         "mass": {
             "density": 0.00935,
             "nominal_mass": 7850
