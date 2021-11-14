@@ -112,7 +112,27 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Test		
 		+ DeSerialization
 			+ Unit tests
-		- Eraser Tool
+		- Eraser Tool:
+			! R button does the same as the L button (same as in structural/electrical)
+			- cctor:
+				- If coords in rect: DrawOverlay
+			- dctor:
+				- If in temp viz: MendTempViz
+				- If in overlay: HideOverlay
+			- MouseMove:
+				- If in temp viz: MendTempViz
+				- If coords in rect: DrawOverlay
+				- TODOHERE
+			- XXXUp:
+				- TODO
+			- XXXDown:
+				- TODO
+			- DrawOverlay:
+				- Just draw, always black
+		+ Opacity
+			+ Shader: add param
+		+ Test pencil: L and R buttons
+		- Do we ever use Clear material from palette?
 	- New materials:
 		= Chains
 			- Test properties
@@ -120,9 +140,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 					- Material
 					- Springs::UpdateForStrains:
 						- Springs::mBreakingElongationBuffer: it's buffer of two-float struct, BreakingElongation and StrainThresholdFraction
-					- Set at Chains
+					- Set at Chains material
 			+ Rustyness
-		- "~Elastic"
+		- "~Elastic" ("Rubber Ropes"?)
 		- More chains of other metal types
 
 	- New sounds:
@@ -240,7 +260,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 - Other tools:
 	- Line tool
-
 
 - Undo stack visualization: underneath toolbar?
 			

@@ -26,7 +26,10 @@ void main()
 // Inputs from previous shader
 in vec4 ropeColor;
 
+// Params
+uniform float paramOpacity;
+
 void main()
 {
-    gl_FragColor = ropeColor;
+    gl_FragColor = vec4(ropeColor.xyz, ropeColor.w * paramOpacity);
 } 

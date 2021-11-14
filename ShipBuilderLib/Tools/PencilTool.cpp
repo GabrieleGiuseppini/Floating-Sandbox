@@ -406,7 +406,8 @@ void PencilTool<TLayer, IsEraser>::DoTempVisualization(ShipSpaceRect const & aff
         static_assert(TLayer == LayerType::Electrical);
 
         assert(affectedRect.size == ShipSpaceSize(1, 1));
-        if (!mModelController.IsElectricalParticleAllowedAt(affectedRect.origin))
+        if (!IsEraser
+            && !mModelController.IsElectricalParticleAllowedAt(affectedRect.origin))
         {
             overlayMode = View::OverlayMode::Error;
         }

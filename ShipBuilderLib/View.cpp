@@ -1105,6 +1105,10 @@ void View::RenderRopes()
     // Activate program
     mShaderManager->ActivateProgram<ProgramType::Rope>();
 
+    // Set opacity
+    mShaderManager->SetProgramParameter<ProgramType::Rope, ProgramParameterType::Opacity>(
+        mPrimaryLayer == LayerType::Ropes ? 1.0f : mOtherLayersOpacity);
+
     // Draw
     glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mRopeCount * 2));
     CheckOpenGLError();
