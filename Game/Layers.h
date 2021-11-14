@@ -199,6 +199,14 @@ struct RopeElement
         , Material(material)
         , RenderColor(renderColor)
     {}
+
+    bool operator==(RopeElement const & other) const
+    {
+        return StartCoords == other.StartCoords
+            && EndCoords == other.EndCoords
+            && Material == other.Material
+            && RenderColor == other.RenderColor;
+    }
 };
 
 struct RopesLayerData

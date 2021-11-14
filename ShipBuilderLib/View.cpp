@@ -48,7 +48,7 @@ View::View(
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 
     // Set line width
-    glLineWidth(2.0f);
+    glLineWidth(2.5f);
 
     // Enable blending for alpha transparency
     glEnable(GL_BLEND);

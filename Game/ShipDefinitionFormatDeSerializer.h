@@ -168,6 +168,16 @@ private:
         Tail = 0xffffffff
     };
 
+    enum class RopesLayerTagType : std::uint32_t
+    {
+        // Numeric values are serialized in ship files, changing them will result
+        // in ship files being un-deserializable!
+
+        Buffer = MAKE_TAG('B', 'U', 'F', '1'),
+
+        Tail = 0xffffffff
+    };
+
 private:
 
     // Write
@@ -239,6 +249,14 @@ private:
         ElectricalPanelMetadata const & electricalPanel,
         DeSerializationBuffer<BigEndianess> & buffer);
 
+    static size_t AppendRopesLayer(
+        RopesLayerData const & ropesLayer,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    static size_t AppendRopesLayerBuffer(
+        std::vector<RopeElement> const & ropesLayerBuffer,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
     static size_t AppendPngPreview(
         StructuralLayerData const & structuralLayer,
         DeSerializationBuffer<BigEndianess> & buffer);
@@ -297,6 +315,12 @@ private:
         MaterialDatabase::MaterialMap<ElectricalMaterial> const & materialMap,
         std::unique_ptr<ElectricalLayerData> & electricalLayer);
 
+    static void ReadRopesLayer(
+        DeSerializationBuffer<BigEndianess> const & buffer,
+        ShipAttributes const & shipAttributes,
+        MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
+        std::unique_ptr<RopesLayerData> & ropesLayer);
+
 private:
 
     friend class ShipDefinitionFormatDeSerializerTests_FileHeader_Test;
@@ -319,4 +343,8 @@ private:
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_ElectricalPanel_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_UnrecognizedMaterial_SameVersion_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_UnrecognizedMaterial_LaterVersion_Test;
+    friend class ShipDefinitionFormatDeSerializer_RopesLayerTests;
+    friend class ShipDefinitionFormatDeSerializer_RopesLayerTests_TwoElements_Test;
+    friend class ShipDefinitionFormatDeSerializer_RopesLayerTests_UnrecognizedMaterial_SameVersion_Test;
+    friend class ShipDefinitionFormatDeSerializer_RopesLayerTests_UnrecognizedMaterial_LaterVersion_Test;
 };

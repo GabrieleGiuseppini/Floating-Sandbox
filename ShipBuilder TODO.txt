@@ -96,14 +96,12 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- When button down (engagement check) is over existing endpoint, then start point is other
 				- EngagementData also takes opt<size_t> endpoint index
 				- ModelController has "UpdateRope(size_t)" next to "Append"
-			- Test
-		- Eraser Tool
-		- DeSerialization
-			- Unit tests
-
+			- Test		
+		+ DeSerialization
+			+ Unit tests
 		- Model validation
 			- Structural behind ropes
-
+		- Eraser Tool
 	- New materials:
 		= Chains
 			- Test properties

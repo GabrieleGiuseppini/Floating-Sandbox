@@ -736,7 +736,6 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, Nulls)
         buffer);
 }
 
-
 TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, ElectricalPanel)
 {
     // Linearize materials
@@ -877,6 +876,180 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMateri
             shipAttributes,
             TestMaterialMap,
             targetElectricalLayer);
+
+        FAIL();
+    }
+    catch (UserGameException const & exc)
+    {
+        EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFoundLaterVersion);
+        ASSERT_FALSE(exc.Parameters.empty());
+        EXPECT_EQ(exc.Parameters[0], "2999.4");
+    }
+}
+
+class ShipDefinitionFormatDeSerializer_RopesLayerTests : public testing::Test
+{
+protected:
+
+    void SetUp()
+    {
+        for (std::uint8_t i = 0; i < 250; ++i)
+        {
+            MaterialColorKey colorKey(
+                i + 2,
+                i + 1,
+                i);
+
+            TestMaterialMap.try_emplace(
+                colorKey,
+                StructuralMaterial(
+                    colorKey,
+                    "Material " + std::to_string(i),
+                    colorKey));
+        }
+    }
+
+    void VerifyDeserializedRopesLayer(
+        RopesLayerData const & sourceRopesLayer,
+        DeSerializationBuffer<BigEndianess> & buffer)
+    {
+        std::unique_ptr<RopesLayerData> targetRopesLayer;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(1, 16, { 242, 242 }, false, false);
+        ShipDefinitionFormatDeSerializer::ReadRopesLayer(
+            buffer,
+            shipAttributes,
+            TestMaterialMap,
+            targetRopesLayer);
+
+        ASSERT_EQ(targetRopesLayer->Buffer.size(), sourceRopesLayer.Buffer.size());
+        for (size_t i = 0; i < sourceRopesLayer.Buffer.size(); ++i)
+        {
+            EXPECT_EQ(targetRopesLayer->Buffer[i], sourceRopesLayer.Buffer[i]);
+        }
+    }
+
+    std::map<MaterialColorKey, StructuralMaterial> TestMaterialMap;
+};
+
+TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, TwoElements)
+{
+    // Linearize materials
+    std::vector<StructuralMaterial const *> materials;
+    std::transform(
+        TestMaterialMap.cbegin(),
+        TestMaterialMap.cend(),
+        std::back_inserter(materials),
+        [](auto const & entry)
+        {
+            return &(entry.second);
+        });
+
+    // Populate ropes layer
+    RopesLayerData sourceRopesLayer;
+    sourceRopesLayer.Buffer.emplace_back(
+        ShipSpaceCoordinates(0, 1),
+        ShipSpaceCoordinates(90, 91),
+        materials[0],
+        rgbaColor(0x02, 0x11, 0x90, 0xfe));
+    sourceRopesLayer.Buffer.emplace_back(
+        ShipSpaceCoordinates(200, 201),
+        ShipSpaceCoordinates(100010, 100011),
+        materials[1],
+        rgbaColor(0xff, 0xff, 0xff, 0xff));
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendRopesLayer(sourceRopesLayer, buffer);
+
+    //
+    // Verify may be read
+    //
+
+    VerifyDeserializedRopesLayer(
+        sourceRopesLayer,
+        buffer);
+}
+
+TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_SameVersion)
+{
+    StructuralMaterial unrecognizedMaterial = StructuralMaterial(
+        rgbColor(0x12, 0x34, 0x56),
+        "Unrecognized Material",
+        rgbColor(0x12, 0x34, 0x56));
+
+    // Populate ropes layer
+    RopesLayerData sourceRopesLayer;
+    sourceRopesLayer.Buffer.emplace_back(
+        ShipSpaceCoordinates(0, 1),
+        ShipSpaceCoordinates(90, 91),
+        &unrecognizedMaterial,
+        rgbaColor(0x02, 0x11, 0x90, 0xfe));
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendRopesLayer(sourceRopesLayer, buffer);
+
+    //
+    // Verify exception
+    //
+
+    try
+    {
+        std::unique_ptr<RopesLayerData> targetRopesLayer;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
+            Version::CurrentVersion().GetMajor(),
+            Version::CurrentVersion().GetMinor(),
+            { 1, 1 }, false, false);
+        ShipDefinitionFormatDeSerializer::ReadRopesLayer(
+            buffer,
+            shipAttributes,
+            TestMaterialMap,
+            targetRopesLayer);
+
+        FAIL();
+    }
+    catch (UserGameException const & exc)
+    {
+        EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFoundSameVersion);
+        EXPECT_TRUE(exc.Parameters.empty());
+    }
+}
+
+TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_LaterVersion)
+{
+    StructuralMaterial unrecognizedMaterial = StructuralMaterial(
+        rgbColor(0x12, 0x34, 0x56),
+        "Unrecognized Material",
+        rgbColor(0x12, 0x34, 0x56));
+
+    // Populate ropes layer
+    RopesLayerData sourceRopesLayer;
+    sourceRopesLayer.Buffer.emplace_back(
+        ShipSpaceCoordinates(0, 1),
+        ShipSpaceCoordinates(90, 91),
+        &unrecognizedMaterial,
+        rgbaColor(0x02, 0x11, 0x90, 0xfe));
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendRopesLayer(sourceRopesLayer, buffer);
+
+    //
+    // Verify exception
+    //
+
+    try
+    {
+        std::unique_ptr<RopesLayerData> targetRopesLayer;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
+            2999,
+            4,
+            { 1, 1 }, false, false);
+        ShipDefinitionFormatDeSerializer::ReadRopesLayer(
+            buffer,
+            shipAttributes,
+            TestMaterialMap,
+            targetRopesLayer);
 
         FAIL();
     }

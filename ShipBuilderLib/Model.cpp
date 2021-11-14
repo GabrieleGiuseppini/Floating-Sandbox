@@ -16,8 +16,8 @@ Model::Model(
     , mShipMetadata(shipName)
     , mShipPhysicsData()
     , mStructuralLayer(MakeNewEmptyStructuralLayer(mShipSize))
-    , mElectricalLayer()
-    // TODO: ropes layer
+    , mElectricalLayer() // None
+    , mRopesLayer() // None
     , mTextureLayer() // None
     , mDirtyState()
 {
@@ -32,7 +32,7 @@ Model::Model(ShipDefinition && shipDefinition)
     , mShipPhysicsData(shipDefinition.PhysicsData)
     , mStructuralLayer(new StructuralLayerData(std::move(shipDefinition.StructuralLayer)))
     , mElectricalLayer(std::move(shipDefinition.ElectricalLayer))
-    // TODO: other layers
+    , mRopesLayer(std::move(shipDefinition.RopesLayer))
     , mTextureLayer(std::move(shipDefinition.TextureLayer))
     , mDirtyState()
 {
@@ -40,7 +40,7 @@ Model::Model(ShipDefinition && shipDefinition)
     mLayerPresenceMap.fill(false);
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
     mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = (mElectricalLayer != nullptr);
-    // TODO: other layers
+    mLayerPresenceMap[static_cast<size_t>(LayerType::Ropes)] = (mRopesLayer != nullptr);
     mLayerPresenceMap[static_cast<size_t>(LayerType::Texture)] = (mTextureLayer != nullptr);
 }
 
@@ -98,7 +98,8 @@ void Model::SetRopesLayer(/*TODO*/)
 
 void Model::RemoveRopesLayer()
 {
-    // TODO
+    // Remove layer
+    mRopesLayer.reset();
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Ropes)] = false;
