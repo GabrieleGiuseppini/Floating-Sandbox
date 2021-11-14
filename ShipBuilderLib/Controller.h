@@ -121,9 +121,7 @@ public:
     void NewRopesLayer();
     void SetRopesLayer(/*TODO*/);
     void RemoveRopesLayer();
-    void RestoreLayerRegion(
-        RopesLayerData const & layerRegion,
-        ShipSpaceCoordinates const & origin);
+    void RestoreLayer(RopesLayerData && layer);
 
     void SetTextureLayer(/*TODO*/);
     void RemoveTextureLayer();

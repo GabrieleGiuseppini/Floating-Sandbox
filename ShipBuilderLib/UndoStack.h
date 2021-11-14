@@ -95,6 +95,30 @@ private:
     ShipSpaceCoordinates mOrigin;
 };
 
+template<typename TLayer>
+class WholeLayerUndoAction final : public UndoAction
+{
+public:
+
+    WholeLayerUndoAction(
+        wxString const & title,
+        Model::DirtyState const & originalDirtyState,
+        TLayer && layer,
+        size_t cost)
+        : UndoAction(
+            title,
+            cost,
+            originalDirtyState)
+        , mLayer(std::move(layer))
+    {}
+
+    void ApplyAndConsume(Controller & controller) override;
+
+private:
+
+    TLayer mLayer;
+};
+
 class UndoStack
 {
 public:

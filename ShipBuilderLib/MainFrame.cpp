@@ -2063,6 +2063,15 @@ void MainFrame::OnWorkCanvasLeftUp(wxMouseEvent & /*event*/)
         mIsMouseCapturedByWorkCanvas = false;
 
         LogMessage("Mouse released");
+
+        if (!mIsMouseInWorkCanvas)
+        {
+            // Simulate a window left
+            if (mController)
+            {
+                mController->OnUncapturedMouseOut();
+            }
+        }
     }
 
     if (mController)
@@ -2097,6 +2106,15 @@ void MainFrame::OnWorkCanvasRightUp(wxMouseEvent & /*event*/)
         mIsMouseCapturedByWorkCanvas = false;
 
         LogMessage("Mouse released");
+
+        if (!mIsMouseInWorkCanvas)
+        {
+            // Simulate a window left
+            if (mController)
+            {
+                mController->OnUncapturedMouseOut();
+            }
+        }
     }
 
     if (mController)

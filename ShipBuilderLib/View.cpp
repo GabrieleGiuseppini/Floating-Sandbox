@@ -593,14 +593,14 @@ void View::UploadRopesLayerVisualization(std::vector<RopeElement> const & ropeEl
     {
         vertexBuffer.emplace_back(
             vec2f(
-                static_cast<float>(e.StartCoords.x),
-                static_cast<float>(e.StartCoords.y)),
+                static_cast<float>(e.StartCoords.x) + 0.5f,
+                static_cast<float>(e.StartCoords.y) + 0.5f),
             e.RenderColor.toVec4f());
 
         vertexBuffer.emplace_back(
             vec2f(
-                static_cast<float>(e.EndCoords.x),
-                static_cast<float>(e.EndCoords.y)),
+                static_cast<float>(e.EndCoords.x) + 0.5f,
+                static_cast<float>(e.EndCoords.y) + 0.5f),
             e.RenderColor.toVec4f());
     }
 

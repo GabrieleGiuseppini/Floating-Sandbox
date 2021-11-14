@@ -386,11 +386,20 @@ void Controller::RemoveRopesLayer()
     mUserInterface.RefreshView();
 }
 
-void Controller::RestoreLayerRegion(
-    RopesLayerData const & layerRegion,
-    ShipSpaceCoordinates const & origin)
+void Controller::RestoreLayer(RopesLayerData && layer)
 {
-    // TODOHERE: copy from structural
+    auto const scopedToolResumeState = SuspendTool();
+
+    mModelController->RestorRopesLayer(std::move(layer));
+
+    // Update dirtyness
+    mModelController->SetLayerDirty(LayerType::Ropes);
+    mUserInterface.OnModelDirtyChanged();
+
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
+
 }
 
 void Controller::SetTextureLayer(/*TODO*/)

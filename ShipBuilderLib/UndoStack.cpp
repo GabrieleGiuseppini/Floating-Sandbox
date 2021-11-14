@@ -17,12 +17,22 @@ void LayerRegionUndoAction<TLayer>::ApplyAndConsume(Controller & controller)
     controller.RestoreLayerRegion(std::move(mLayerRegion), mOrigin);
 }
 
+template<typename TLayer>
+void WholeLayerUndoAction<TLayer>::ApplyAndConsume(Controller & controller)
+{
+    controller.RestoreLayer(std::move(mLayer));
+}
+
 //
 // Explicit specializations
 //
 
 template class LayerRegionUndoAction<StructuralLayerData>;
 template class LayerRegionUndoAction<ElectricalLayerData>;
+
+template class WholeLayerUndoAction<RopesLayerData>;
+
+/////////////////////////////////////////////////////////////////////////////////////
 
 void UndoStack::Push(std::unique_ptr<UndoAction> && undoAction)
 {

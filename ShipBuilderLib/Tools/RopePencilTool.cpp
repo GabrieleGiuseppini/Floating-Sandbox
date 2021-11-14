@@ -77,6 +77,8 @@ void RopePencilTool::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates)
         assert(!mHasTempVisualization);
     }
 
+    auto const positionApplicability = GetPositionApplicability(mouseCoordinates);
+
     // Do ephemeral visualization
     if (mEngagementData.has_value())
     {
@@ -84,7 +86,6 @@ void RopePencilTool::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates)
     }
 
     // Do overlay
-    auto const positionApplicability = GetPositionApplicability(mouseCoordinates);
     if (positionApplicability.has_value())
     {
         DrawOverlay(mouseCoordinates, *positionApplicability);
@@ -237,12 +238,15 @@ void RopePencilTool::DoTempVisualization(ShipSpaceCoordinates const & coords)
 
     assert(mEngagementData.has_value());
 
-    mModelController.AddRopeForEphemeralVisualization(
-        mEngagementData->StartCoords,
-        coords,
-        GetMaterial(mEngagementData->Plane));
+    if (mModelController.IsRopeEndpointAllowedAt(coords))
+    {
+        mModelController.AddRopeForEphemeralVisualization(
+            mEngagementData->StartCoords,
+            coords,
+            GetMaterial(mEngagementData->Plane));
 
-    mHasTempVisualization = true;
+        mHasTempVisualization = true;
+    }
 }
 
 void RopePencilTool::MendTempVisualization()
@@ -274,14 +278,15 @@ void RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coord
 
         // Create undo action
         {
-            // TODOHERE
-            ////auto undoAction = std::make_unique<LayerRegionUndoAction<typename LayerTypeTraits<TLayer>::layer_data_type>>(
-            ////    IsEraser ? _("Eraser Tool") : _("Pencil Tool"),
-            ////    mEngagementData->OriginalDirtyState,
-            ////    std::move(clippedRegionClone),
-            ////    mEngagementData->EditRegion->origin);
+            size_t const cost = mEngagementData->OriginalLayerClone.Buffer.size() * sizeof(RopeElement);
 
-            ////PushUndoAction(std::move(undoAction));
+            auto undoAction = std::make_unique<WholeLayerUndoAction<RopesLayerData>>(
+                _("Ropes Tool"),
+                mEngagementData->OriginalDirtyState,
+                std::move(mEngagementData->OriginalLayerClone),
+                cost);
+
+            PushUndoAction(std::move(undoAction));
         }
     }
 

@@ -59,7 +59,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ New Ropes Layer workflow
 		+ Test
 		+ WorkbenchState		
-		= Pencil Tool
+		+ Pencil Tool
 			+ View::CircleOverlay
 				+ Shader
 			+ Tool visualizations:
@@ -73,25 +73,30 @@ https://gamejolt.com/x/permalink/comment/11730705
 						+ Down x 2: engage if OK (if Model::IsRopeEndpointAllowed)
 						+ Up x 2: disengage if engaged
 						+ MouseMove: if engaged
-			= DoEdit
-			= CommitAndStopEngagement
-				- Undo
-			= ModelController::TempVisualization
-		= ModelController::Visualization
+			+ DoEdit
+			+ CommitAndStopEngagement
+				+ Undo
+			+ ModelController::TempVisualization
+		+ ModelController::Visualization
 		+ ModelController::RestoreRopesForEphViz takes whole orig layer
 		+ No check for end engagement
 		+ IsApplicable: also ship rect
-		= View::RopesLayer
+		+ View::RopesLayer
 			+ Line OpenGL settings
 			+ Upload straight away, no storage
 			+ Render: before or after depending on primary layer
 			+ Line width
-			- @Vertex-make-and-upload: Offset vertex to center of {1,1} ShipSpace rect
-		- Test
+			+ @Vertex-make-and-upload: Offset vertex to center of {1,1} ShipSpace rect
+		+ Mouse released outside of window - while mouse is captured - does not nuke tool
+			+ Note: this is a problem with the other tools as well
+			+ Fix @ MainFrame::OnWorkCanvasXXXUp
+		+ No temp visualization when mouse outside of coords - or simply, when mouse coords are not applicable
+		+ Test
 		- "Move endpoint" mode
 			- When button down (engagement check) is over existing endpoint, then start point is other
 				- EngagementData also takes opt<size_t> endpoint index
 				- ModelController has "UpdateRope(size_t)" next to "Append"
+			- Test
 		- Eraser Tool
 		- DeSerialization
 			- Unit tests
