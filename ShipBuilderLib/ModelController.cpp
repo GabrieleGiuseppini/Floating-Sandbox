@@ -43,6 +43,12 @@ ModelController::ModelController(
     , mElectricalElementInstanceIndexFactory()
     , mElectricalParticleCount(0)
     /////
+    , mStructuralLayerVisualizationTexture()
+    , mDirtyStructuralLayerVisualizationRegion()
+    , mElectricalLayerVisualizationTexture()
+    , mDirtyElectricalLayerVisualizationRegion()
+    , mIsRopesLayerVisualizationDirty(false)
+    /////
     , mIsStructuralLayerInEphemeralVisualization(false)
     , mIsElectricalLayerInEphemeralVisualization(false)
     , mIsRopesLayerInEphemeralVisualization(false)
@@ -212,6 +218,23 @@ void ModelController::UploadVisualization()
         if (mView.HasElectricalLayerVisualizationTexture())
         {
             mView.RemoveElectricalLayerVisualizationTexture();
+        }
+    }
+
+    if (mModel.HasLayer(LayerType::Ropes))
+    {
+        if (mIsRopesLayerVisualizationDirty)
+        {
+            mView.UploadRopesLayerVisualization(mModel.GetRopesLayer().Buffer);
+
+            mIsRopesLayerVisualizationDirty = false;
+        }
+    }
+    else
+    {
+        if (mView.HasRopesLayerVisualization())
+        {
+            mView.RemoveRopesLayerVisualization();
         }
     }
 
@@ -395,15 +418,6 @@ void ModelController::RestoreStructuralLayerRegionForEphemeralVisualization(
     mIsStructuralLayerInEphemeralVisualization = false;
 }
 
-bool ModelController::HasStructuralParticleAt(ShipSpaceCoordinates const & coords)
-{
-    assert(mModel.HasLayer(LayerType::Structural));
-
-    assert(!mIsStructuralLayerInEphemeralVisualization);
-
-    return mModel.GetStructuralLayer().Buffer[coords].Material != nullptr;
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Electrical
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -443,10 +457,20 @@ void ModelController::RemoveElectricalLayer()
 
     InitializeElectricalLayer();
 
+    // Remove visualization members
     mElectricalLayerVisualizationTexture.reset();
     mDirtyElectricalLayerVisualizationRegion.reset();
 
     mIsElectricalLayerInEphemeralVisualization = false;
+}
+
+bool ModelController::IsElectricalParticleAllowedAt(ShipSpaceCoordinates const & coords) const
+{
+    assert(mModel.HasLayer(LayerType::Structural));
+
+    assert(!mIsStructuralLayerInEphemeralVisualization);
+
+    return mModel.GetStructuralLayer().Buffer[coords].Material != nullptr;
 }
 
 std::optional<ShipSpaceRect> ModelController::TrimElectricalParticlesWithoutSubstratum()
@@ -661,7 +685,8 @@ void ModelController::RemoveRopesLayer()
 
     InitializeRopesLayer();
 
-    // TODO: remove visualization members
+    // Remove visualization members
+    mIsRopesLayerVisualizationDirty = false;
 
     mIsRopesLayerInEphemeralVisualization = false;
 }
@@ -678,6 +703,106 @@ bool ModelController::IsRopeEndpointAllowedAt(ShipSpaceCoordinates const & coord
             return coords == e.StartCoords
                 || coords == e.EndCoords;
         }) == mModel.GetRopesLayer().Buffer.cend();
+}
+
+void ModelController::AddRope(
+    ShipSpaceCoordinates const & startCoords,
+    ShipSpaceCoordinates const & endCoords,
+    StructuralMaterial const * material)
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    assert(!mIsRopesLayerInEphemeralVisualization);
+
+    //
+    // Update model
+    //
+
+    AppendRope(
+        startCoords,
+        endCoords,
+        material);
+
+    //
+    // Update visualization
+    //
+
+    UpdateRopesLayerVisualization();
+}
+
+void ModelController::RestorRopesLayer(RopesLayerData && sourceLayer)
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    assert(!mIsElectricalLayerInEphemeralVisualization);
+
+    //
+    // Restore model
+    //
+
+    mModel.GetRopesLayer().Buffer = sourceLayer.Buffer;
+
+    //
+    // Re-initialize layer (analyses, etc.)
+    //
+
+    InitializeRopesLayer();
+
+    //
+    // Update visualization
+    //
+
+    UpdateRopesLayerVisualization();
+}
+
+void ModelController::AddRopeForEphemeralVisualization(
+    ShipSpaceCoordinates const & startCoords,
+    ShipSpaceCoordinates const & endCoords,
+    StructuralMaterial const * material)
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    assert(!mIsRopesLayerInEphemeralVisualization);
+
+    //
+    // Update model with just material - no analyses
+    //
+
+    AppendRope(
+        startCoords,
+        endCoords,
+        material);
+
+    //
+    // Update visualization
+    //
+
+    UpdateRopesLayerVisualization();
+
+    // Remember we are in temp visualization now
+    mIsRopesLayerInEphemeralVisualization = true;
+}
+
+void ModelController::RestoreRopesLayerForEphemeralVisualization()
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    assert(mIsRopesLayerInEphemeralVisualization);
+
+    //
+    // Restore model, and nothing else
+    //
+
+    mModel.GetRopesLayer().Buffer.pop_back();
+
+    //
+    // Update visualization
+    //
+
+    UpdateRopesLayerVisualization();
+
+    // Remember we are not anymore in temp visualization
+    mIsRopesLayerInEphemeralVisualization = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -841,6 +966,20 @@ void ModelController::WriteParticle(
 
     // Store
     electricalLayerBuffer[coords] = ElectricalElement(material, instanceIndex);
+}
+
+void ModelController::AppendRope(
+    ShipSpaceCoordinates const & startCoords,
+    ShipSpaceCoordinates const & endCoords,
+    StructuralMaterial const * material)
+{
+    assert(material != nullptr);
+
+    mModel.GetRopesLayer().Buffer.emplace_back(
+        startCoords,
+        endCoords,
+        material,
+        rgbaColor(material->RenderColor, 255));
 }
 
 template<LayerType TLayer>
@@ -1046,7 +1185,7 @@ void ModelController::UpdateRopesLayerVisualization()
         return;
     }
 
-    // TODO
+    mIsRopesLayerVisualizationDirty = true;
 }
 
 void ModelController::UpdateTextureLayerVisualization(ShipSpaceRect const & region)

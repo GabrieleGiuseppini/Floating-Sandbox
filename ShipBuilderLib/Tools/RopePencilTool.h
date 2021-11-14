@@ -13,7 +13,6 @@
 #include <Game/ResourceLocator.h>
 
 #include <GameCore/GameTypes.h>
-#include <GameCore/StrongTypeDef.h>
 
 #include <memory>
 #include <optional>
@@ -46,11 +45,13 @@ private:
 
     void CheckEngagement(
         ShipSpaceCoordinates const & coords,
-        StrongTypedBool<struct IsRightMouseButton> isRightButton);
+        MaterialPlaneType materialPlane);
 
-    void DoEdit(ShipSpaceCoordinates const & coords);
+    void DoTempVisualization(ShipSpaceCoordinates const & coords);
 
-    void CommmitAndStopEngagement();
+    void MendTempVisualization();
+
+    void CommmitAndStopEngagement(ShipSpaceCoordinates const & coords);
 
     void DrawOverlay(
         ShipSpaceCoordinates const & coords,
@@ -60,7 +61,12 @@ private:
 
     std::optional<bool> GetPositionApplicability(ShipSpaceCoordinates const & coords) const;
 
+    inline StructuralMaterial const * GetMaterial(MaterialPlaneType plane) const;
+
 private:
+
+    // True when we have temp visualization
+    bool mHasTempVisualization;
 
     // True when we have uploaded an overlay
     bool mHasOverlay;
@@ -76,13 +82,18 @@ private:
         // Line start
         ShipSpaceCoordinates StartCoords;
 
+        // Plane of the engagement
+        MaterialPlaneType const Plane;
+
         EngagementData(
             RopesLayerData && originalLayerClone,
             Model::DirtyState const & dirtyState,
-            ShipSpaceCoordinates const & startCoords)
+            ShipSpaceCoordinates const & startCoords,
+            MaterialPlaneType plane)
             : OriginalLayerClone(std::move(originalLayerClone))
             , OriginalDirtyState(dirtyState)
             , StartCoords(startCoords)
+            , Plane(plane)
         {}
     };
 

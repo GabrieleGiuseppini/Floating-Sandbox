@@ -60,30 +60,32 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Test
 		+ WorkbenchState		
 		= Pencil Tool
-			= View::CircleOverlay
-				- Shader
-			- Tool visualizations:
-				- TODOHERE:
-				- Superimposed states:
-					- Overlay, at:
-						- cctor
-						- dctor
-						- MouseMove
-						- NOT at down/up X 2
-					- Engagement (i.e. line), at:
-						- Down x 2: engage if OK (if Model::IsRopeEndpointAllowed)
-						- Up x 2: disengage if engaged
-						- MouseMove: if engaged
-			- Undo
-			- ModelController::TempVisualization
-				- When in mTempViz, the last element of the buffer is temporary, and allowed to clash (coord-wise) with others
-		- ModelController::Visualization
+			+ View::CircleOverlay
+				+ Shader
+			+ Tool visualizations:
+				+ Superimposed states:
+					+ Overlay, at:
+						+ cctor
+						+ dctor
+						+ MouseMove
+						+ NOT at down/up X 2
+					+ Engagement (i.e. line), at:
+						+ Down x 2: engage if OK (if Model::IsRopeEndpointAllowed)
+						+ Up x 2: disengage if engaged
+						+ MouseMove: if engaged
+			= DoEdit
+			= CommitAndStopEngagement
+				- Undo
+			= ModelController::TempVisualization
+		= ModelController::Visualization
+		- View::RopesLayer
+			- TODO: what to store, if any?
 		- Eraser Tool
 		- DeSerialization
 			- Unit tests
 
-	- Model validation
-		- Structural behind ropes
+		- Model validation
+			- Structural behind ropes
 
 	- New materials:
 		= Chains

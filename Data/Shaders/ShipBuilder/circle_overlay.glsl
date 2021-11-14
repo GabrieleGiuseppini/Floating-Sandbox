@@ -38,8 +38,11 @@ void main()
 
     float d = length(normalizedCoords - vec2(0.5));
 
-    // TODO: bi-dimensional pixel size
-    float borderDepth = step(0.5 - paramPixelSize.x * SafetyMultiplier, d);
+    // Codework: do we need to use bi-dimensional pixel size?
+    float smoothWidth = paramPixelSize.x * 1.5;
+    float borderDepth = 
+        smoothstep(0.5 - paramPixelSize.x * SafetyMultiplier - 2.0 * smoothWidth, 0.5 - paramPixelSize.x * SafetyMultiplier - smoothWidth, d)
+        - smoothstep(0.5 - paramPixelSize.x * SafetyMultiplier - smoothWidth, 0.5, d);
 
     gl_FragColor = vec4(circleBorderColor.xyz, borderDepth);
 } 

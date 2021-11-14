@@ -9,6 +9,7 @@
 #include "ShipBuilderTypes.h"
 #include "ViewModel.h"
 
+#include <Game/Layers.h>
 #include <Game/ResourceLocator.h>
 
 #include <GameCore/Colors.h>
@@ -160,6 +161,19 @@ public:
     bool HasElectricalLayerVisualizationTexture() const
     {
         return mHasElectricalTexture;
+    }
+
+    //
+    // Ropes (all sticky)
+    //
+
+    void UploadRopesLayerVisualization(std::vector<RopeElement> const & ropeElements);
+
+    void RemoveRopesLayerVisualization();
+
+    bool HasRopesLayerVisualization() const
+    {
+        return mHasRopesVisualization;
     }
 
     //
@@ -334,6 +348,10 @@ private:
     GameOpenGLVBO mElectricalTextureVBO;
     GameOpenGLTexture mElectricalTextureOpenGLHandle;
     bool mHasElectricalTexture;
+
+    // Ropes visualization
+    // TODOHERE
+    bool mHasRopesVisualization;
 
     // Layers opacity
     float mOtherLayersOpacity;

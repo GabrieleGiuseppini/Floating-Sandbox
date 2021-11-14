@@ -27,6 +27,7 @@ View::View(
     , mHasBackgroundTexture(false)
     , mHasStructuralTexture(false)
     , mHasElectricalTexture(false)
+    , mHasRopesVisualization(false)
     , mOtherLayersOpacity(0.75f)
     , mIsGridEnabled(false)
     , mCircleOverlayCenter(0, 0) // Will be overwritten
@@ -545,6 +546,16 @@ void View::UpdateElectricalLayerVisualizationTexture(
 void View::RemoveElectricalLayerVisualizationTexture()
 {
     mHasElectricalTexture = false;
+}
+
+void View::UploadRopesLayerVisualization(std::vector<RopeElement> const & ropeElements)
+{
+    // TODOHERE
+}
+
+void View::RemoveRopesLayerVisualization()
+{
+    // TODOHERE
 }
 
 void View::UploadCircleOverlay(

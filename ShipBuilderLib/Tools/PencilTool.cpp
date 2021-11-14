@@ -308,7 +308,7 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
                     static_assert(TLayer == LayerType::Electrical);
 
                     assert(applicableRect->size == ShipSpaceSize(1, 1));
-                    isAllowed = mModelController.HasStructuralParticleAt(applicableRect->origin);
+                    isAllowed = mModelController.IsElectricalParticleAllowedAt(applicableRect->origin);
 
                     if (isAllowed)
                     {
@@ -406,7 +406,7 @@ void PencilTool<TLayer, IsEraser>::DoTempVisualization(ShipSpaceRect const & aff
         static_assert(TLayer == LayerType::Electrical);
 
         assert(affectedRect.size == ShipSpaceSize(1, 1));
-        if (!mModelController.HasStructuralParticleAt(affectedRect.origin))
+        if (!mModelController.IsElectricalParticleAllowedAt(affectedRect.origin))
         {
             overlayMode = View::OverlayMode::Error;
         }
@@ -502,17 +502,32 @@ typename PencilTool<TLayer, IsEraser>::LayerMaterialType const * PencilTool<TLay
     {
         if constexpr (TLayer == LayerType::Structural)
         {
-            return plane == MaterialPlaneType::Foreground
-                ? mWorkbenchState.GetStructuralForegroundMaterial()
-                : mWorkbenchState.GetStructuralBackgroundMaterial();
+            if (plane == MaterialPlaneType::Foreground)
+            {
+                return mWorkbenchState.GetStructuralForegroundMaterial();
+            }
+            else
+            {
+                assert(plane == MaterialPlaneType::Background);
+
+                return mWorkbenchState.GetStructuralBackgroundMaterial();
+            }
+
         }
         else
         {
             static_assert(TLayer == LayerType::Electrical);
 
-            return plane == MaterialPlaneType::Foreground
-                ? mWorkbenchState.GetElectricalForegroundMaterial()
-                : mWorkbenchState.GetElectricalBackgroundMaterial();
+            if (plane == MaterialPlaneType::Foreground)
+            {
+                return mWorkbenchState.GetElectricalForegroundMaterial();
+            }
+            else
+            {
+                assert(plane == MaterialPlaneType::Background);
+
+                return mWorkbenchState.GetElectricalBackgroundMaterial();
+            }
         }
     }
     else

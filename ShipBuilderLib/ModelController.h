@@ -106,8 +106,6 @@ public:
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetOrigin);
 
-    bool HasStructuralParticleAt(ShipSpaceCoordinates const & coords);
-
     //
     // Electrical
     //
@@ -115,6 +113,8 @@ public:
     void NewElectricalLayer();
     void SetElectricalLayer(/*TODO*/);
     void RemoveElectricalLayer();
+
+    bool IsElectricalParticleAllowedAt(ShipSpaceCoordinates const & coords) const;
 
     std::optional<ShipSpaceRect> TrimElectricalParticlesWithoutSubstratum();
 
@@ -146,6 +146,20 @@ public:
 
     bool IsRopeEndpointAllowedAt(ShipSpaceCoordinates const & coords) const;
 
+    void AddRope(
+        ShipSpaceCoordinates const & startCoords,
+        ShipSpaceCoordinates const & endCoords,
+        StructuralMaterial const * material);
+
+    void RestorRopesLayer(RopesLayerData && sourceLayer);
+
+    void AddRopeForEphemeralVisualization(
+        ShipSpaceCoordinates const & startCoords,
+        ShipSpaceCoordinates const & endCoords,
+        StructuralMaterial const * material);
+
+    void RestoreRopesLayerForEphemeralVisualization();
+
     //
     // Texture
     //
@@ -173,6 +187,11 @@ private:
     inline void WriteParticle(
         ShipSpaceCoordinates const & coords,
         ElectricalMaterial const * material);
+
+    inline void AppendRope(
+        ShipSpaceCoordinates const & startCoords,
+        ShipSpaceCoordinates const & endCoords,
+        StructuralMaterial const * material);
 
     template<LayerType TLayer>
     std::optional<ShipSpaceRect> Flood(
@@ -212,6 +231,8 @@ private:
 
     std::unique_ptr<RgbaImageData> mElectricalLayerVisualizationTexture;
     std::optional<ImageRect> mDirtyElectricalLayerVisualizationRegion;
+
+    bool mIsRopesLayerVisualizationDirty;
 
     // TODO: other layers
 
