@@ -110,6 +110,7 @@ MaterialPalette<TLayer>::MaterialPalette(
             }
 
             // "Clear" category
+            if constexpr (TLayer != LayerType::Ropes)
             {
                 static std::string const ClearMaterialName = "Clear";
 
@@ -895,6 +896,7 @@ void MaterialPalette<TLayer>::SetMaterialSelected(TMaterial const * material)
     else
     {
         // Use "Clear" category
+        assert(TLayer != LayerType::Ropes);
         iCategorySelected = mMaterialPalette.Categories.size();
     }
 

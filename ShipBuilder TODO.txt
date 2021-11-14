@@ -112,6 +112,11 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Test		
 		+ DeSerialization
 			+ Unit tests
+		+ Opacity
+			+ Shader: add param
+		+ Test pencil: L and R buttons
+		+ Remove Clear material from Ropes palette
+			+ Remove checks from pencil, as matrial can never be clear
 		- Eraser Tool:
 			! R button does the same as the L button (same as in structural/electrical)
 			- cctor:
@@ -129,10 +134,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 				- TODO
 			- DrawOverlay:
 				- Just draw, always black
-		+ Opacity
-			+ Shader: add param
-		+ Test pencil: L and R buttons
-		- Do we ever use Clear material from palette?
 	- New materials:
 		= Chains
 			- Test properties

@@ -217,20 +217,12 @@ void RopePencilTool::CheckEngagement(
         // OK to engage
         //
 
-        // Check if we're gonna move an existing rope
-        auto const existingRopeElementIndex = mModelController.GetRopeElementIndexAt(coords);
-
-        // Do not engage for new rope when we have the Clear material
-        if (existingRopeElementIndex.has_value()
-            || GetMaterial(materialPlane) != nullptr)
-        {
-            mEngagementData.emplace(
-                mModelController.GetModel().CloneLayer<LayerType::Ropes>(),
-                mModelController.GetModel().GetDirtyState(),
-                coords,
-                existingRopeElementIndex,
-                materialPlane);
-        }
+        mEngagementData.emplace(
+            mModelController.GetModel().CloneLayer<LayerType::Ropes>(),
+            mModelController.GetModel().GetDirtyState(),
+            coords,
+            mModelController.GetRopeElementIndexAt(coords),
+            materialPlane);
     }
 }
 
