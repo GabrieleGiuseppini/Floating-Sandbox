@@ -23,6 +23,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::Grid;
     else if (lstr == "rect_overlay")
         return ProgramType::RectOverlay;
+    else if (lstr == "rope")
+        return ProgramType::Rope;
     else if (lstr == "texture")
         return ProgramType::Texture;
     else if (lstr == "texture_ndc")
@@ -43,6 +45,8 @@ std::string ProgramTypeToStr(ProgramType program)
             return "Grid";
         case ProgramType::RectOverlay:
             return "RectOverlay";
+        case ProgramType::Rope:
+            return "Rope";
         case ProgramType::Texture:
             return "Texture";
         case ProgramType::TextureNdc:
@@ -107,6 +111,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::RectOverlay1;
     else if (Utils::CaseInsensitiveEquals(str, "RectOverlay2"))
         return VertexAttributeType::RectOverlay2;
+    else if (Utils::CaseInsensitiveEquals(str, "Rope1"))
+        return VertexAttributeType::Rope1;
+    else if (Utils::CaseInsensitiveEquals(str, "Rope2"))
+        return VertexAttributeType::Rope2;
     else if (Utils::CaseInsensitiveEquals(str, "Texture"))
         return VertexAttributeType::Texture;
     else if (Utils::CaseInsensitiveEquals(str, "TextureNdc"))

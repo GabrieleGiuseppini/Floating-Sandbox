@@ -78,8 +78,19 @@ https://gamejolt.com/x/permalink/comment/11730705
 				- Undo
 			= ModelController::TempVisualization
 		= ModelController::Visualization
-		- View::RopesLayer
-			- TODO: what to store, if any?
+		+ ModelController::RestoreRopesForEphViz takes whole orig layer
+		+ No check for end engagement
+		+ IsApplicable: also ship rect
+		= View::RopesLayer
+			+ Line OpenGL settings
+			+ Upload straight away, no storage
+			+ Render: before or after depending on primary layer
+			- Line width			
+		- Test
+		- "Move endpoint" mode
+			- When button down (engagement check) is over existing endpoint, then start point is other
+				- EngagementData also takes opt<size_t> endpoint index
+				- ModelController has "UpdateRope(size_t)" next to "Append"
 		- Eraser Tool
 		- DeSerialization
 			- Unit tests

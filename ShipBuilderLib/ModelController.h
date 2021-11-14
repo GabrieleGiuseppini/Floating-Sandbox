@@ -158,7 +158,7 @@ public:
         ShipSpaceCoordinates const & endCoords,
         StructuralMaterial const * material);
 
-    void RestoreRopesLayerForEphemeralVisualization();
+    void RestoreRopesLayerForEphemeralVisualization(RopesLayerData const & sourceLayer);
 
     //
     // Texture

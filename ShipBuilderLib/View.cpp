@@ -27,7 +27,7 @@ View::View(
     , mHasBackgroundTexture(false)
     , mHasStructuralTexture(false)
     , mHasElectricalTexture(false)
-    , mHasRopesVisualization(false)
+    , mRopeCount(false)
     , mOtherLayersOpacity(0.75f)
     , mIsGridEnabled(false)
     , mCircleOverlayCenter(0, 0) // Will be overwritten
@@ -226,6 +226,35 @@ View::View(
         glBindBuffer(GL_ARRAY_BUFFER, *mElectricalTextureVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+    //
+    // Initialize Ropes VAO
+    //
+
+    {
+        GLuint tmpGLuint;
+
+        // Create VAO
+        glGenVertexArrays(1, &tmpGLuint);
+        mRopesVAO = tmpGLuint;
+        glBindVertexArray(*mRopesVAO);
+        CheckOpenGLError();
+
+        // Create VBO
+        glGenBuffers(1, &tmpGLuint);
+        mRopesVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mRopesVBO);
+        static_assert(sizeof(RopeVertex) == (2 + 4) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Rope1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Rope1), 2, GL_FLOAT, GL_FALSE, sizeof(RopeVertex), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Rope2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Rope2), 4, GL_FLOAT, GL_FALSE, sizeof(RopeVertex), (void *)(2 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -550,12 +579,47 @@ void View::RemoveElectricalLayerVisualizationTexture()
 
 void View::UploadRopesLayerVisualization(std::vector<RopeElement> const & ropeElements)
 {
-    // TODOHERE
+    //
+    // Create vertices
+    //
+
+    std::vector<RopeVertex> vertexBuffer;
+    vertexBuffer.reserve(ropeElements.size());
+
+    for (auto const & e : ropeElements)
+    {
+        vertexBuffer.emplace_back(
+            vec2f(
+                static_cast<float>(e.StartCoords.x),
+                static_cast<float>(e.StartCoords.y)),
+            e.RenderColor.toVec4f());
+
+        vertexBuffer.emplace_back(
+            vec2f(
+                static_cast<float>(e.EndCoords.x),
+                static_cast<float>(e.EndCoords.y)),
+            e.RenderColor.toVec4f());
+    }
+
+    //
+    // Upload vertices
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mRopesVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(RopeVertex), vertexBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //
+    // Remember we have ropes
+    //
+
+    mRopeCount = ropeElements.size();
 }
 
 void View::RemoveRopesLayerVisualization()
 {
-    // TODOHERE
+    mRopeCount = 0;
 }
 
 void View::UploadCircleOverlay(
@@ -580,7 +644,6 @@ void View::RemoveCircleOverlay()
 
     mHasCircleOverlay = false;
 }
-
 
 void View::UploadRectOverlay(
     ShipSpaceRect const & rect,
@@ -651,6 +714,12 @@ void View::Render()
         CheckOpenGLError();
     }
 
+    // Ropes, unless they're primary layer
+    if (mRopeCount > 0 && mPrimaryLayer != LayerType::Ropes)
+    {
+        RenderRopes();
+    }
+
     // Structural texture
     if (mHasStructuralTexture)
     {
@@ -693,6 +762,12 @@ void View::Render()
         // Draw
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         CheckOpenGLError();
+    }
+
+    // Ropes, but only when they're primary layer
+    if (mRopeCount > 0 && mPrimaryLayer == LayerType::Ropes)
+    {
+        RenderRopes();
     }
 
     // Grid
@@ -1013,6 +1088,22 @@ void View::UpdateRectOverlay()
 
     mShaderManager->ActivateProgram<ProgramType::RectOverlay>();
     mShaderManager->SetProgramParameter<ProgramType::RectOverlay, ProgramParameterType::PixelSize>(pixelSize.x, pixelSize.y);
+}
+
+void View::RenderRopes()
+{
+    // Bind VAO
+    glBindVertexArray(*mRopesVAO);
+
+    // Activate program
+    mShaderManager->ActivateProgram<ProgramType::Rope>();
+
+    // TODOTEST
+    glLineWidth(0.1f * 2.0f * 1.0f);
+
+    // Draw
+    glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mRopeCount));
+    CheckOpenGLError();
 }
 
 vec3f View::GetOverlayColor(OverlayMode mode) const

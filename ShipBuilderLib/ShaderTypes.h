@@ -22,6 +22,7 @@ enum class ProgramType
     CircleOverlay,
     Grid,
     RectOverlay,
+    Rope,
     Texture,
     TextureNdc,
 
@@ -65,6 +66,9 @@ enum class VertexAttributeType : GLuint
 
     RectOverlay1 = 0,
     RectOverlay2 = 1,
+
+    Rope1 = 0,
+    Rope2 = 1,
 
     Texture = 0,
 

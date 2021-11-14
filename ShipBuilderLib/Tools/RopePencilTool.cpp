@@ -141,22 +141,13 @@ void RopePencilTool::OnLeftMouseUp()
     ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
 
     // Check if should stop engagement
-    if (mEngagementData.has_value()
-        && mModelController.IsRopeEndpointAllowedAt(mouseCoordinates))
+    if (mEngagementData.has_value())
     {
         CommmitAndStopEngagement(mouseCoordinates);
+    }
 
-        // No ephemeral visualization
-        assert(!mEngagementData.has_value());
-    }
-    else
-    {
-        // Do ephemeral visualization
-        if (mEngagementData.has_value())
-        {
-            DoTempVisualization(mouseCoordinates);
-        }
-    }
+    // No ephemeral visualization
+    assert(!mEngagementData.has_value());
 
     // Leave overlay
 
@@ -207,22 +198,13 @@ void RopePencilTool::OnRightMouseUp()
     ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
 
     // Check if should stop engagement
-    if (mEngagementData.has_value()
-        && mModelController.IsRopeEndpointAllowedAt(mouseCoordinates))
+    if (mEngagementData.has_value())
     {
         CommmitAndStopEngagement(mouseCoordinates);
+    }
 
-        // No ephemeral visualization
-        assert(!mEngagementData.has_value());
-    }
-    else
-    {
-        // Do ephemeral visualization
-        if (mEngagementData.has_value())
-        {
-            DoTempVisualization(mouseCoordinates);
-        }
-    }
+    // No ephemeral visualization
+    assert(!mEngagementData.has_value());
 
     // Leave overlay
 
@@ -267,7 +249,9 @@ void RopePencilTool::MendTempVisualization()
 {
     assert(mHasTempVisualization);
 
-    mModelController.RestoreRopesLayerForEphemeralVisualization();
+    assert(mEngagementData.has_value());
+
+    mModelController.RestoreRopesLayerForEphemeralVisualization(mEngagementData->OriginalLayerClone);
 
     mHasTempVisualization = false;
 }
@@ -278,24 +262,27 @@ void RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coord
 
     assert(!mHasTempVisualization);
 
-    // Commit action
+    if (mModelController.IsRopeEndpointAllowedAt(coords))
     {
-        mModelController.AddRope(
-            mEngagementData->StartCoords,
-            coords,
-            GetMaterial(mEngagementData->Plane));
-    }
+        // Commit action
+        {
+            mModelController.AddRope(
+                mEngagementData->StartCoords,
+                coords,
+                GetMaterial(mEngagementData->Plane));
+        }
 
-    // Create undo action
-    {
-        // TODOHERE
-        ////auto undoAction = std::make_unique<LayerRegionUndoAction<typename LayerTypeTraits<TLayer>::layer_data_type>>(
-        ////    IsEraser ? _("Eraser Tool") : _("Pencil Tool"),
-        ////    mEngagementData->OriginalDirtyState,
-        ////    std::move(clippedRegionClone),
-        ////    mEngagementData->EditRegion->origin);
+        // Create undo action
+        {
+            // TODOHERE
+            ////auto undoAction = std::make_unique<LayerRegionUndoAction<typename LayerTypeTraits<TLayer>::layer_data_type>>(
+            ////    IsEraser ? _("Eraser Tool") : _("Pencil Tool"),
+            ////    mEngagementData->OriginalDirtyState,
+            ////    std::move(clippedRegionClone),
+            ////    mEngagementData->EditRegion->origin);
 
-        ////PushUndoAction(std::move(undoAction));
+            ////PushUndoAction(std::move(undoAction));
+        }
     }
 
     //

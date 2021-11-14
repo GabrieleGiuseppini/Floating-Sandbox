@@ -695,7 +695,9 @@ bool ModelController::IsRopeEndpointAllowedAt(ShipSpaceCoordinates const & coord
 {
     assert(mModel.HasLayer(LayerType::Ropes));
 
-    return std::find_if(
+    return
+        coords.IsInSize(mModel.GetShipSize())
+        && std::find_if(
         mModel.GetRopesLayer().Buffer.cbegin(),
         mModel.GetRopesLayer().Buffer.cend(),
         [&coords](RopeElement const & e)
@@ -740,7 +742,7 @@ void ModelController::RestorRopesLayer(RopesLayerData && sourceLayer)
     // Restore model
     //
 
-    mModel.GetRopesLayer().Buffer = sourceLayer.Buffer;
+    mModel.GetRopesLayer().Buffer = std::move(sourceLayer.Buffer);
 
     //
     // Re-initialize layer (analyses, etc.)
@@ -783,7 +785,7 @@ void ModelController::AddRopeForEphemeralVisualization(
     mIsRopesLayerInEphemeralVisualization = true;
 }
 
-void ModelController::RestoreRopesLayerForEphemeralVisualization()
+void ModelController::RestoreRopesLayerForEphemeralVisualization(RopesLayerData const & sourceLayer)
 {
     assert(mModel.HasLayer(LayerType::Ropes));
 
@@ -793,7 +795,7 @@ void ModelController::RestoreRopesLayerForEphemeralVisualization()
     // Restore model, and nothing else
     //
 
-    mModel.GetRopesLayer().Buffer.pop_back();
+    mModel.GetRopesLayer().Buffer = sourceLayer.Buffer;
 
     //
     // Update visualization

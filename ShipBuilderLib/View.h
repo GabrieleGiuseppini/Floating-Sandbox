@@ -173,7 +173,7 @@ public:
 
     bool HasRopesLayerVisualization() const
     {
-        return mHasRopesVisualization;
+        return mRopeCount > 0;
     }
 
     //
@@ -210,6 +210,8 @@ private:
     void UpdateGrid();
     void UpdateCircleOverlay();
     void UpdateRectOverlay();
+
+    void RenderRopes();
 
     vec3f GetOverlayColor(OverlayMode mode) const;
 
@@ -285,6 +287,21 @@ private:
         {}
     };
 
+    struct RopeVertex
+    {
+        vec2f positionShip; // Ship space
+        vec4f color;
+
+        RopeVertex() = default;
+
+        RopeVertex(
+            vec2f const & _positionShip,
+            vec4f _color)
+            : positionShip(_positionShip)
+            , color(_color)
+        {}
+    };
+
     struct CircleOverlayVertex
     {
         vec2f positionShip; // Ship space
@@ -350,8 +367,9 @@ private:
     bool mHasElectricalTexture;
 
     // Ropes visualization
-    // TODOHERE
-    bool mHasRopesVisualization;
+    GameOpenGLVAO mRopesVAO;
+    GameOpenGLVBO mRopesVBO;
+    size_t mRopeCount;
 
     // Layers opacity
     float mOtherLayersOpacity;
