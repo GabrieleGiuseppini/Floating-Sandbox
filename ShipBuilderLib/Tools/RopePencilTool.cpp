@@ -37,13 +37,9 @@ RopePencilTool::RopePencilTool(
     auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
-        auto const positionApplicability = GetPositionApplicability(*mouseCoordinates);
-        if (positionApplicability.has_value())
-        {
-            DrawOverlay(*mouseCoordinates, *positionApplicability);
+        DrawOverlay(*mouseCoordinates);
 
-            mUserInterface.RefreshView();
-        }
+        mUserInterface.RefreshView();
     }
 }
 
@@ -77,22 +73,13 @@ void RopePencilTool::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates)
         assert(!mHasTempVisualization);
     }
 
-    auto const positionApplicability = GetPositionApplicability(mouseCoordinates);
+    // Do overlay
+    DrawOverlay(mouseCoordinates);
 
     // Do ephemeral visualization
     if (mEngagementData.has_value())
     {
         DoTempVisualization(mouseCoordinates);
-    }
-
-    // Do overlay
-    if (positionApplicability.has_value())
-    {
-        DrawOverlay(mouseCoordinates, *positionApplicability);
-    }
-    else if (mHasOverlay)
-    {
-        HideOverlay();
     }
 
     mModelController.UploadVisualization();
@@ -221,14 +208,29 @@ void RopePencilTool::CheckEngagement(
 {
     assert(!mEngagementData.has_value());
 
-    if (mModelController.IsRopeEndpointAllowedAt(coords)
-        && GetMaterial(materialPlane) != nullptr) // Do not engage with Clear material
+    //  - If outside ship rect : No engagement
+    //  - Else: always OK to engage - either for new rope or for moving
+
+    if (coords.IsInSize(mModelController.GetModel().GetShipSize()))
     {
-        mEngagementData.emplace(
-            mModelController.GetModel().CloneLayer<LayerType::Ropes>(),
-            mModelController.GetModel().GetDirtyState(),
-            coords,
-            materialPlane);
+        //
+        // OK to engage
+        //
+
+        // Check if we're gonna move an existing rope
+        auto const existingRopeElementIndex = mModelController.GetRopeElementIndexAt(coords);
+
+        // Do not engage for new rope when we have the Clear material
+        if (existingRopeElementIndex.has_value()
+            || GetMaterial(materialPlane) != nullptr)
+        {
+            mEngagementData.emplace(
+                mModelController.GetModel().CloneLayer<LayerType::Ropes>(),
+                mModelController.GetModel().GetDirtyState(),
+                coords,
+                existingRopeElementIndex,
+                materialPlane);
+        }
     }
 }
 
@@ -238,12 +240,29 @@ void RopePencilTool::DoTempVisualization(ShipSpaceCoordinates const & coords)
 
     assert(mEngagementData.has_value());
 
-    if (mModelController.IsRopeEndpointAllowedAt(coords))
+    //
+    // Check conditions for doing action:
+    //  - If outside ship rect : NO
+    //  - Else: may release only if there's no other rope endpoint at that position
+    // 
+
+    if (coords.IsInSize(mModelController.GetModel().GetShipSize())
+        && !mModelController.GetRopeElementIndexAt(coords).has_value())
     {
-        mModelController.AddRopeForEphemeralVisualization(
-            mEngagementData->StartCoords,
-            coords,
-            GetMaterial(mEngagementData->Plane));
+        if (!mEngagementData->ExistingRopeElementIndex.has_value())
+        {
+            mModelController.AddRopeForEphemeralVisualization(
+                mEngagementData->StartCoords,
+                coords,
+                GetMaterial(mEngagementData->Plane));
+        }
+        else
+        {
+            mModelController.MoveRopeEndpointForEphemeralVisualization(
+                *mEngagementData->ExistingRopeElementIndex,
+                mEngagementData->StartCoords,
+                coords);
+        }
 
         mHasTempVisualization = true;
     }
@@ -266,14 +285,35 @@ void RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coord
 
     assert(!mHasTempVisualization);
 
-    if (mModelController.IsRopeEndpointAllowedAt(coords))
+    //
+    // Check conditions for doing action:
+    //  - If outside ship rect : NO
+    //  - Else: may release only if there's no other rope endpoint at that position
+    // 
+
+    if (coords.IsInSize(mModelController.GetModel().GetShipSize())
+        && !mModelController.GetRopeElementIndexAt(coords).has_value())
     {
+        //
+        // May release here
+        //
+
         // Commit action
         {
-            mModelController.AddRope(
-                mEngagementData->StartCoords,
-                coords,
-                GetMaterial(mEngagementData->Plane));
+            if (!mEngagementData->ExistingRopeElementIndex.has_value())
+            {
+                mModelController.AddRope(
+                    mEngagementData->StartCoords,
+                    coords,
+                    GetMaterial(mEngagementData->Plane));
+            }
+            else
+            {
+                mModelController.MoveRopeEndpoint(
+                    *mEngagementData->ExistingRopeElementIndex,
+                    mEngagementData->StartCoords,
+                    coords);
+            }
         }
 
         // Create undo action
@@ -297,15 +337,50 @@ void RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coord
     mEngagementData.reset();
 }
 
-void RopePencilTool::DrawOverlay(
-    ShipSpaceCoordinates const & coords,
-    bool isApplicablePosition)
+void RopePencilTool::DrawOverlay(ShipSpaceCoordinates const & coords)
 {
-    mView.UploadCircleOverlay(
-        coords,
-        isApplicablePosition ? View::OverlayMode::Default : View::OverlayMode::Error);
+    //  - If outside ship rect : No overlay
+    //  - Else if engaged : check if OK to release
+    //      - May release only if there's no other rope endpoint at that position
+    //  - Else(!engaged) : check if OK to engage
+    //      - Always
+    
+    if (!coords.IsInSize(mModelController.GetModel().GetShipSize()))
+    {
+        if (mHasOverlay)
+        {
+            HideOverlay();
+        }
+    }
+    else
+    {
+        View::OverlayMode overlayMode;
+        if (mEngagementData.has_value())
+        {
+            // May release only if there's no other rope endpoint at that position
+            auto const existingRopeElementIndex = mModelController.GetRopeElementIndexAt(coords);
+            if (!existingRopeElementIndex.has_value()
+                || existingRopeElementIndex == mEngagementData->ExistingRopeElementIndex)
+            {
+                overlayMode = View::OverlayMode::Default;
+            }
+            else
+            {
+                // Can't release here
+                overlayMode = View::OverlayMode::Error;
+            }
+        }
+        else
+        {
+            overlayMode = View::OverlayMode::Default;
+        }
 
-    mHasOverlay = true;
+        mView.UploadCircleOverlay(
+            coords,
+            overlayMode);
+
+        mHasOverlay = true;
+    }
 }
 
 void RopePencilTool::HideOverlay()
@@ -313,16 +388,6 @@ void RopePencilTool::HideOverlay()
     mView.RemoveCircleOverlay();
 
     mHasOverlay = false;
-}
-
-std::optional<bool> RopePencilTool::GetPositionApplicability(ShipSpaceCoordinates const & coords) const
-{
-    if (!coords.IsInSize(mModelController.GetModel().GetShipSize()))
-    {
-        return std::nullopt;
-    }
-
-    return mModelController.IsRopeEndpointAllowedAt(coords);
 }
 
 inline StructuralMaterial const * RopePencilTool::GetMaterial(MaterialPlaneType plane) const

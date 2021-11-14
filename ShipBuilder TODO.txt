@@ -92,22 +92,24 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Fix @ MainFrame::OnWorkCanvasXXXUp
 		+ No temp visualization when mouse outside of coords - or simply, when mouse coords are not applicable
 		+ Test
-		- "Move endpoint" mode
+		+ "Move endpoint" mode
 			! Spec: when button down (engagement check) is over existing endpoint, then start point is other
-			- Impl:
-				- Overlay:
+			+ Impl:
+				+ Overlay:
 					- If outside ship rect: RED
-					- Else if engaged:
-						- TODO
-					- Else (!engaged):
-						- TODO
-				- StartEngagement:
+					- Else if engaged: check if OK to release 
+						- May release only if there's no other rope endpoint at that position
+					- Else (!engaged): check if OK to engage
+						- Always
+				+ StartEngagement:
 					- If outside ship rect: NO
-					- Else TODOHERE
-				- EndEngagement: do action:
+					- Else: check if OK to engage
+						- Always
+				+ EndEngagement: do action:
 					- If outside ship rect: NO
-					- Else TODOHERE
-			- Test		
+					- Else: check if OK to release
+						- May release only if there's no other rope endpoint at that position
+			+ Test		
 		+ DeSerialization
 			+ Unit tests
 		- Eraser Tool

@@ -144,19 +144,29 @@ public:
     void SetRopesLayer(/*TODO*/);
     void RemoveRopesLayer();
 
-    bool IsRopeEndpointAllowedAt(ShipSpaceCoordinates const & coords) const;
+    std::optional<size_t> GetRopeElementIndexAt(ShipSpaceCoordinates const & coords) const;
 
     void AddRope(
         ShipSpaceCoordinates const & startCoords,
         ShipSpaceCoordinates const & endCoords,
         StructuralMaterial const * material);
 
-    void RestorRopesLayer(RopesLayerData && sourceLayer);
+    void MoveRopeEndpoint(
+        size_t ropeElementIndex,
+        ShipSpaceCoordinates const & oldCoords,
+        ShipSpaceCoordinates const & newCoords);
+
+    void RestoreRopesLayer(RopesLayerData && sourceLayer);
 
     void AddRopeForEphemeralVisualization(
         ShipSpaceCoordinates const & startCoords,
         ShipSpaceCoordinates const & endCoords,
         StructuralMaterial const * material);
+
+    void MoveRopeEndpointForEphemeralVisualization(
+        size_t ropeElementIndex,
+        ShipSpaceCoordinates const & oldCoords,
+        ShipSpaceCoordinates const & newCoords);
 
     void RestoreRopesLayerForEphemeralVisualization(RopesLayerData const & sourceLayer);
 
@@ -192,6 +202,11 @@ private:
         ShipSpaceCoordinates const & startCoords,
         ShipSpaceCoordinates const & endCoords,
         StructuralMaterial const * material);
+
+    void MoveRopeEndpoint(
+        RopeElement & ropeElement,
+        ShipSpaceCoordinates const & oldCoords,
+        ShipSpaceCoordinates const & newCoords);
 
     template<LayerType TLayer>
     std::optional<ShipSpaceRect> Flood(

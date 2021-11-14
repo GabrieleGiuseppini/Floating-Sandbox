@@ -321,6 +321,7 @@ Render:
 		- Sam: DevIL finding static jpeg
 		= Test Titanic sinking to floor and see what really happens
 			- ImpactWithOceanFloor: do we do anything that causes more breakage with high velocity, by any chance?
+				- Check changes to mPoints.SetPosition since a version ago
 		+ See rogue waves
 
 		- TimCan pack

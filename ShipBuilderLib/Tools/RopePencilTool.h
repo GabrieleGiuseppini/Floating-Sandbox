@@ -53,13 +53,9 @@ private:
 
     void CommmitAndStopEngagement(ShipSpaceCoordinates const & coords);
 
-    void DrawOverlay(
-        ShipSpaceCoordinates const & coords,
-        bool isApplicablePosition);
+    void DrawOverlay(ShipSpaceCoordinates const & coords);
 
     void HideOverlay();
-
-    std::optional<bool> GetPositionApplicability(ShipSpaceCoordinates const & coords) const;
 
     inline StructuralMaterial const * GetMaterial(MaterialPlaneType plane) const;
 
@@ -79,8 +75,11 @@ private:
         // Original dirty state
         Model::DirtyState OriginalDirtyState;
 
-        // Line start
+        // Rope start position
         ShipSpaceCoordinates StartCoords;
+
+        // Rope element index (if moving a rope endpoint), nullopt otherwise (if creating a rope)
+        std::optional<size_t> ExistingRopeElementIndex;
 
         // Plane of the engagement
         MaterialPlaneType const Plane;
@@ -89,10 +88,12 @@ private:
             RopesLayerData && originalLayerClone,
             Model::DirtyState const & dirtyState,
             ShipSpaceCoordinates const & startCoords,
+            std::optional<size_t> const & existingRopeElementIndex,
             MaterialPlaneType plane)
             : OriginalLayerClone(std::move(originalLayerClone))
             , OriginalDirtyState(dirtyState)
             , StartCoords(startCoords)
+            , ExistingRopeElementIndex(existingRopeElementIndex)
             , Plane(plane)
         {}
     };

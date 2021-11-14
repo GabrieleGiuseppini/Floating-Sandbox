@@ -390,7 +390,7 @@ void Controller::RestoreLayer(RopesLayerData && layer)
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestorRopesLayer(std::move(layer));
+    mModelController->RestoreRopesLayer(std::move(layer));
 
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Ropes);

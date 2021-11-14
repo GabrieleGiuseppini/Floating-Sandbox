@@ -691,20 +691,29 @@ void ModelController::RemoveRopesLayer()
     mIsRopesLayerInEphemeralVisualization = false;
 }
 
-bool ModelController::IsRopeEndpointAllowedAt(ShipSpaceCoordinates const & coords) const
+std::optional<size_t> ModelController::GetRopeElementIndexAt(ShipSpaceCoordinates const & coords) const
 {
     assert(mModel.HasLayer(LayerType::Ropes));
 
-    return
-        coords.IsInSize(mModel.GetShipSize())
-        && std::find_if(
+    assert(!mIsRopesLayerInEphemeralVisualization);
+
+    auto const searchIt = std::find_if(
         mModel.GetRopesLayer().Buffer.cbegin(),
         mModel.GetRopesLayer().Buffer.cend(),
         [&coords](RopeElement const & e)
         {
             return coords == e.StartCoords
                 || coords == e.EndCoords;
-        }) == mModel.GetRopesLayer().Buffer.cend();
+        });
+
+    if (searchIt != mModel.GetRopesLayer().Buffer.cend())
+    {
+        return std::distance(mModel.GetRopesLayer().Buffer.cbegin(), searchIt);
+    }
+    else
+    {
+        return std::nullopt;
+    }
 }
 
 void ModelController::AddRope(
@@ -732,7 +741,34 @@ void ModelController::AddRope(
     UpdateRopesLayerVisualization();
 }
 
-void ModelController::RestorRopesLayer(RopesLayerData && sourceLayer)
+void ModelController::MoveRopeEndpoint(
+    size_t ropeElementIndex,
+    ShipSpaceCoordinates const & oldCoords,
+    ShipSpaceCoordinates const & newCoords)
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    assert(!mIsRopesLayerInEphemeralVisualization);
+
+    //
+    // Update model
+    //
+
+    assert(ropeElementIndex < mModel.GetRopesLayer().Buffer.size());
+
+    MoveRopeEndpoint(
+        mModel.GetRopesLayer().Buffer[ropeElementIndex],
+        oldCoords,
+        newCoords);
+
+    //
+    // Update visualization
+    //
+
+    UpdateRopesLayerVisualization();
+}
+
+void ModelController::RestoreRopesLayer(RopesLayerData && sourceLayer)
 {
     assert(mModel.HasLayer(LayerType::Ropes));
 
@@ -774,6 +810,36 @@ void ModelController::AddRopeForEphemeralVisualization(
         startCoords,
         endCoords,
         material);
+
+    //
+    // Update visualization
+    //
+
+    UpdateRopesLayerVisualization();
+
+    // Remember we are in temp visualization now
+    mIsRopesLayerInEphemeralVisualization = true;
+}
+
+void ModelController::ModelController::MoveRopeEndpointForEphemeralVisualization(
+    size_t ropeElementIndex,
+    ShipSpaceCoordinates const & oldCoords,
+    ShipSpaceCoordinates const & newCoords)
+{
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    assert(!mIsRopesLayerInEphemeralVisualization);
+
+    //
+    // Update model with jsut movement - no analyses
+    //
+
+    assert(ropeElementIndex < mModel.GetRopesLayer().Buffer.size());
+
+    MoveRopeEndpoint(
+        mModel.GetRopesLayer().Buffer[ropeElementIndex],
+        oldCoords,
+        newCoords);
 
     //
     // Update visualization
@@ -982,6 +1048,22 @@ void ModelController::AppendRope(
         endCoords,
         material,
         rgbaColor(material->RenderColor, 255));
+}
+
+void ModelController::MoveRopeEndpoint(
+    RopeElement & ropeElement,
+    ShipSpaceCoordinates const & oldCoords,
+    ShipSpaceCoordinates const & newCoords)
+{
+    if (ropeElement.StartCoords == oldCoords)
+    {
+        ropeElement.StartCoords = newCoords;
+    }
+    else
+    {
+        assert(ropeElement.EndCoords == oldCoords);
+        ropeElement.EndCoords = newCoords;
+    }
 }
 
 template<LayerType TLayer>
