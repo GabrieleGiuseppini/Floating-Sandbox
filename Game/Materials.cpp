@@ -139,6 +139,8 @@ StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType
         return MaterialSoundType::AirBubble;
     else if (Utils::CaseInsensitiveEquals(str, "Cable"))
         return MaterialSoundType::Cable;
+    else if (Utils::CaseInsensitiveEquals(str, "Chain"))
+        return MaterialSoundType::Chain;
     else if (Utils::CaseInsensitiveEquals(str, "Cloth"))
         return MaterialSoundType::Cloth;
     else if (Utils::CaseInsensitiveEquals(str, "Gas"))

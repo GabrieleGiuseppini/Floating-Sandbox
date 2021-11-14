@@ -47,6 +47,7 @@ public:
     {
         AirBubble,
         Cable,
+        Chain,
         Cloth,
         Gas,
         Glass,

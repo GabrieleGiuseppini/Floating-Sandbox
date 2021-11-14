@@ -107,14 +107,15 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- More metal chains
 
 	- New sounds:
-		- "Chain":
-			- Material palette
-			- SoundController
-			- Make sound
+		= "Chain":
+			+ Material palette
+			+ SoundController
+			= Make sounds
+				- Underwater
 		- "~Elastic":
 			- Material palette
 			- SoundController
-			- Make sound
+			- Make sounds
 
 
 - Complete Load/Save/Model

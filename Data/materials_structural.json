@@ -1718,7 +1718,7 @@
 		"sub_category": "Iron Chains",
 		"sub_category_ordinal": 0
 	},
-        "sound_type": "Metal",
+        "sound_type": "Chain",
         "specific_heat": 449.0,
         "stiffness": 1.0,
         "strength": 0.051,
