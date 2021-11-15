@@ -155,15 +155,16 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 - Complete Load/Save/Model
 	- Finalize storage of all other ship definition members in Model
+		- AutoTexturizationSettings
 	- Load/Save each of:
-		- Electrical layer
-			- Pure buffer			
-		- Ropes layer
-			- Pure buffer
-		- Texture layer
-			- Using DevIL lump, see https://github.com/DentonW/DevIL/blob/master/DevIL/src-IL/src/il_io.cpp#L2490
+		+ Electrical layer
+		+ Ropes layer
+		+ Texture layer
+			+ Using DevIL lump, see https://github.com/DentonW/DevIL/blob/master/DevIL/src-IL/src/il_io.cpp#L2490
 		+ PhysicsData
 		- AutoTexturizationSettings
+
+- Workflow of password (*)
 
 - Import/Export:
 	- Structural:
@@ -456,7 +457,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Hash algo at ShipDeSerializer via static helper method
 		- Workflows
 			- Save: ShipDeSerializer::CalculatePasswordHash(password): +salt => hash (new GameType) => in metadata
-			- ShipBuilder::Open and Game::EditInShipBuilder: After load, ShipDeSerializer::CalculatePasswordHash(password) => check with metadata
+			- ShipBuilder::Open and Game::EditInShipBuilder and various layers' Import: After load, if ShipMetadata has password:
+				- Ask password
+				- ShipDeSerializer::CalculatePasswordHash(password) => check with metadata
+				- TODO: own dialog, and ideally includes good part of workflow
 	- Also includes sounds
 		- Extract from other "TODO" .txt file
 
