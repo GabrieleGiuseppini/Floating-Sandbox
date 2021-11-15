@@ -44,6 +44,8 @@ set (TOOLS_SOURCES
 	Tools/FloodTool.h
 	Tools/PencilTool.cpp
 	Tools/PencilTool.h
+	Tools/RopeEraserTool.cpp
+	Tools/RopeEraserTool.h
 	Tools/RopePencilTool.cpp
 	Tools/RopePencilTool.h
 	Tools/Tool.cpp

@@ -117,23 +117,13 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Test pencil: L and R buttons
 		+ Remove Clear material from Ropes palette
 			+ Remove checks from pencil, as matrial can never be clear
-		- Eraser Tool:
+		= Eraser Tool:
 			! R button does the same as the L button (same as in structural/electrical)
-			- cctor:
-				- If coords in rect: DrawOverlay
-			- dctor:
-				- If in temp viz: MendTempViz
-				- If in overlay: HideOverlay
-			- MouseMove:
-				- If in temp viz: MendTempViz
-				- If coords in rect: DrawOverlay
-				- TODOHERE
-			- XXXUp:
-				- TODO
-			- XXXDown:
-				- TODO
-			- DrawOverlay:
-				- Just draw, always black
+			! No engagement - at L down we do the same as with temp viz
+				! And we don't even ask ModelController, always EraseRopeAt(ForEphViz)
+			- Rethink: possibilities:
+				- No eph viz (w/deleted rope)
+				- Overlay gives feedback (red when won't delete anything)
 	- New materials:
 		= Chains
 			- Test properties

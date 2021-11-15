@@ -5,8 +5,6 @@
 ***************************************************************************************/
 #include "RopePencilTool.h"
 
-#include <GameCore/GameGeometry.h>
-
 #include <UILib/WxHelpers.h>
 
 #include <type_traits>

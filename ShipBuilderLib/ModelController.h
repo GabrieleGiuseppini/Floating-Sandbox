@@ -157,6 +157,8 @@ public:
         ShipSpaceCoordinates const & oldCoords,
         ShipSpaceCoordinates const & newCoords);
 
+    bool EraseRopeAt(ShipSpaceCoordinates const & coords);
+
     void RestoreRopesLayer(RopesLayerData && sourceLayer);
 
     void AddRopeForEphemeralVisualization(
@@ -168,6 +170,8 @@ public:
         size_t ropeElementIndex,
         ShipSpaceCoordinates const & oldCoords,
         ShipSpaceCoordinates const & newCoords);
+
+    bool EraseRopeAtForEphemeralVisualization(ShipSpaceCoordinates const & coords);
 
     void RestoreRopesLayerForEphemeralVisualization(RopesLayerData const & sourceLayer);
 

@@ -1687,7 +1687,6 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            /* TODOHERE: ready
             // Eraser
             {
                 auto button = makeToolButton(
@@ -1703,7 +1702,6 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0,
                     0);
             }
-            */
 
             ropesToolbarSizer->Add(
                 toolsSizer,

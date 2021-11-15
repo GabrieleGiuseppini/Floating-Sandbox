@@ -7,6 +7,7 @@
 
 #include "Tools/FloodTool.h"
 #include "Tools/PencilTool.h"
+#include "Tools/RopeEraserTool.h"
 #include "Tools/RopePencilTool.h"
 
 #include <cassert>
@@ -858,6 +859,17 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::RopePencil:
         {
             return std::make_unique<RopePencilTool>(
+                *mModelController,
+                mUndoStack,
+                mWorkbenchState,
+                mUserInterface,
+                mView,
+                mResourceLocator);
+        }
+
+        case ToolType::RopeEraser:
+        {
+            return std::make_unique<RopeEraserTool>(
                 *mModelController,
                 mUndoStack,
                 mWorkbenchState,
