@@ -22,7 +22,7 @@ std::unique_ptr<Controller> Controller::CreateNew(
     ResourceLocator const & resourceLocator)
 {
     auto modelController = ModelController::CreateNew(
-        ShipSpaceSize(400, 200), // TODO: from preferences
+        ShipSpaceSize(200, 100), // TODO: from preferences
         shipName,
         view);
 
