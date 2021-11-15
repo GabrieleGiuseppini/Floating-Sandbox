@@ -26,16 +26,16 @@ RopeEraserTool::RopeEraserTool(
         userInterface,
         view)
     , mOriginalLayerClone(modelController.GetModel().CloneLayer<LayerType::Ropes>())
-    , mHasEphemeralVisualization(false)
+    , mHasOverlay(false)
     , mEngagementData()
 {
     SetCursor(WxHelpers::LoadCursorImage("eraser_cursor", 8, 27, resourceLocator));
 
-    // Check if we need to do a eph viz right away
+    // Check if we draw the overlay right away
     auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
-        DoEphemeralVisualization(*mouseCoordinates);
+        DrawOverlay(*mouseCoordinates);
 
         mModelController.UploadVisualization();
         mUserInterface.RefreshView();
@@ -44,12 +44,10 @@ RopeEraserTool::RopeEraserTool(
 
 RopeEraserTool::~RopeEraserTool()
 {
-    // Mend our ephemeral visualization, if any
-    if (mHasEphemeralVisualization)
+    // Remove our overlay, if any
+    if (mHasOverlay)
     {
-        MendEphemeralVisualization();
-
-        assert(!mHasEphemeralVisualization);
+        HideOverlay();
 
         mModelController.UploadVisualization();
         mUserInterface.RefreshView();
@@ -58,14 +56,6 @@ RopeEraserTool::~RopeEraserTool()
 
 void RopeEraserTool::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates)
 {
-    // Mend our ephemeral visualization, if any
-    if (mHasEphemeralVisualization)
-    {
-        MendEphemeralVisualization();
-
-        assert(!mHasEphemeralVisualization);
-    }
-
     if (mEngagementData.has_value())
     {
         // Do action
@@ -75,8 +65,8 @@ void RopeEraserTool::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates)
     }
     else
     {
-        // Do eph viz
-        DoEphemeralVisualization(mouseCoordinates);
+        // Draw overlay
+        DrawOverlay(mouseCoordinates);
     }
 
     mModelController.UploadVisualization();
@@ -85,55 +75,34 @@ void RopeEraserTool::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates)
 
 void RopeEraserTool::OnLeftMouseDown()
 {
-    // Mend our ephemeral visualization, if any
-    if (mHasEphemeralVisualization)
-    {
-        MendEphemeralVisualization();
-
-        assert(!mHasEphemeralVisualization);
-    }
-
-    // Engage
-    StartEngagement();
-
-    // Do action
-    DoAction(mUserInterface.GetMouseCoordinates());
-
-    // No need to do eph viz when engaged
-
-    mModelController.UploadVisualization();
-    mUserInterface.RefreshView();
+    OnMouseDown();
 }
 
 void RopeEraserTool::OnLeftMouseUp()
 {
-    // Mend our ephemeral visualization, if any
-    if (mHasEphemeralVisualization)
-    {
-        MendEphemeralVisualization();
-
-        assert(!mHasEphemeralVisualization);
-    }
-
-    // Disengage
-    StopEngagement();
-
-    // Do eph viz
-    assert(!mEngagementData.has_value());
-    DoEphemeralVisualization(mUserInterface.GetMouseCoordinates());
-
-    mModelController.UploadVisualization();
-    mUserInterface.RefreshView();
+    OnMouseUp();
 }
 
 void RopeEraserTool::OnRightMouseDown()
 {
-    // Mend our ephemeral visualization, if any
-    if (mHasEphemeralVisualization)
-    {
-        MendEphemeralVisualization();
+    OnMouseDown();
+}
 
-        assert(!mHasEphemeralVisualization);
+void RopeEraserTool::OnRightMouseUp()
+{
+    OnMouseUp();
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+void RopeEraserTool::OnMouseDown()
+{
+    // Stop overlay, if any
+    if (mHasOverlay)
+    {
+        HideOverlay();
+
+        assert(!mHasOverlay);
     }
 
     // Engage
@@ -148,60 +117,29 @@ void RopeEraserTool::OnRightMouseDown()
     mUserInterface.RefreshView();
 }
 
-void RopeEraserTool::OnRightMouseUp()
+void RopeEraserTool::OnMouseUp()
 {
-    // Mend our ephemeral visualization, if any
-    if (mHasEphemeralVisualization)
+    // Check if should stop engagement
+    if (mEngagementData.has_value())
     {
-        MendEphemeralVisualization();
+        assert(!mHasOverlay);
 
-        assert(!mHasEphemeralVisualization);
+        // Disengage
+        StopEngagement();
+
+        // Restart overlay
+        DrawOverlay(mUserInterface.GetMouseCoordinates());
+
+        assert(mHasOverlay);
+
+        mModelController.UploadVisualization();
+        mUserInterface.RefreshView();
     }
-
-    // Disengage
-    StopEngagement();
-
-    // Do eph viz
-    assert(!mEngagementData.has_value());
-    DoEphemeralVisualization(mUserInterface.GetMouseCoordinates());
-
-    mModelController.UploadVisualization();
-    mUserInterface.RefreshView();
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-void RopeEraserTool::DoEphemeralVisualization(ShipSpaceCoordinates const & coords)
-{
-    assert(!mHasEphemeralVisualization);
-
-    assert(!mEngagementData.has_value());
-
-    mModelController.EraseRopeAtForEphemeralVisualization(coords);
-
-    mView.UploadCircleOverlay(
-        coords,
-        View::OverlayMode::Default);
-
-    mHasEphemeralVisualization = true;
-}
-
-void RopeEraserTool::MendEphemeralVisualization()
-{
-    assert(mHasEphemeralVisualization);
-
-    assert(!mEngagementData.has_value());
-
-    mModelController.RestoreRopesLayerForEphemeralVisualization(mOriginalLayerClone);
-
-    mView.RemoveCircleOverlay();
-
-    mHasEphemeralVisualization = false;
 }
 
 void RopeEraserTool::StartEngagement()
 {
-    assert(!mHasEphemeralVisualization);
+    assert(!mHasOverlay);
 
     assert(!mEngagementData.has_value());
 
@@ -210,7 +148,7 @@ void RopeEraserTool::StartEngagement()
 
 void RopeEraserTool::DoAction(ShipSpaceCoordinates const & coords)
 {
-    assert(!mHasEphemeralVisualization);
+    assert(!mHasOverlay);
 
     assert(mEngagementData.has_value());
 
@@ -223,7 +161,7 @@ void RopeEraserTool::DoAction(ShipSpaceCoordinates const & coords)
 
 void RopeEraserTool::StopEngagement()
 {
-    assert(!mHasEphemeralVisualization);
+    assert(!mHasOverlay);
 
     assert(mEngagementData.has_value());
 
@@ -249,6 +187,26 @@ void RopeEraserTool::StopEngagement()
 
     // Stop engagement
     mEngagementData.reset();
+}
+
+void RopeEraserTool::DrawOverlay(ShipSpaceCoordinates const & coords)
+{
+    mView.UploadCircleOverlay(
+        coords,
+        mModelController.GetRopeElementIndexAt(coords).has_value()
+        ? View::OverlayMode::Default
+        : View::OverlayMode::Error);
+
+    mHasOverlay = true;
+}
+
+void RopeEraserTool::HideOverlay()
+{
+    assert(mHasOverlay);
+
+    mView.RemoveCircleOverlay();
+
+    mHasOverlay = false;
 }
 
 }

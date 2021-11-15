@@ -886,47 +886,6 @@ void ModelController::ModelController::MoveRopeEndpointForEphemeralVisualization
     mIsRopesLayerInEphemeralVisualization = true;
 }
 
-bool ModelController::EraseRopeAtForEphemeralVisualization(ShipSpaceCoordinates const & coords)
-{
-    assert(mModel.HasLayer(LayerType::Ropes));
-
-    assert(!mIsRopesLayerInEphemeralVisualization);
-
-    //
-    // Update model and nothing else
-    //
-
-    auto const srchIt = std::find_if(
-        mModel.GetRopesLayer().Buffer.cbegin(),
-        mModel.GetRopesLayer().Buffer.cend(),
-        [&coords](auto const & e)
-        {
-            return e.StartCoords == coords
-                || e.EndCoords == coords;
-        });
-
-    if (srchIt != mModel.GetRopesLayer().Buffer.cend())
-    {
-        // Remove
-        mModel.GetRopesLayer().Buffer.erase(srchIt);
-
-        // Update visualization
-        UpdateRopesLayerVisualization();
-
-        // Remember we are in temp visualization now
-        mIsRopesLayerInEphemeralVisualization = true;
-
-        return true;
-    }
-    else
-    {
-        // Remember we are in temp visualization now
-        mIsRopesLayerInEphemeralVisualization = true;
-
-        return false;
-    }
-}
-
 void ModelController::RestoreRopesLayerForEphemeralVisualization(RopesLayerData const & sourceLayer)
 {
     assert(mModel.HasLayer(LayerType::Ropes));

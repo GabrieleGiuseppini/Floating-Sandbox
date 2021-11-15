@@ -42,9 +42,9 @@ public:
 
 private:
 
-    void DoEphemeralVisualization(ShipSpaceCoordinates const & coords);
+    void OnMouseDown();
 
-    void MendEphemeralVisualization();
+    void OnMouseUp();
 
     void StartEngagement();
 
@@ -52,13 +52,17 @@ private:
 
     void StopEngagement();
 
+    void DrawOverlay(ShipSpaceCoordinates const & coords);
+
+    void HideOverlay();
+
 private:
 
     // Original layer
     RopesLayerData mOriginalLayerClone;
 
-    // True when we have ephemeral visualization
-    bool mHasEphemeralVisualization;
+    // When set, we have an overlay
+    bool mHasOverlay;
 
     struct EngagementData
     {

@@ -39,13 +39,13 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 + Send for testing
 
-= Finalize design of Ropes layer
++ Finalize design of Ropes layer
 	! Spec:
 		! Material Strategy: in Structural DB, separate palette tree - does NOT require current "ropes" to be marked as "legacy"
 		! Element = start, end, StructuralMaterial *, renderColor
 		! Legacy: StructuralMaterial=Ropes, RenderColor=color
 		! ShipBuilder: StructuralMaterial=from ropes palette, RenderColor=from material
-	= Impl:
+	+ Impl:
 		+ Structural DB: separate palette tree
 			+ Script
 			+ MaterialsDB			
@@ -117,13 +117,16 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Test pencil: L and R buttons
 		+ Remove Clear material from Ropes palette
 			+ Remove checks from pencil, as matrial can never be clear
-		= Eraser Tool:
+		+ Eraser Tool:
 			! R button does the same as the L button (same as in structural/electrical)
 			! No engagement - at L down we do the same as with temp viz
 				! And we don't even ask ModelController, always EraseRopeAt(ForEphViz)
-			- Rethink: possibilities:
-				- No eph viz (w/deleted rope)
-				- Overlay gives feedback (red when won't delete anything)
+			+ Rethink: possibilities:
+				+ No eph viz (w/deleted rope)
+				+ Overlay gives feedback (red when won't delete anything)
+				+ If we go for it:
+					+ Remove ...ForEphViz method from ModelController
+					+ Remove mHasEphemeralVisualization - et al
 	- New materials:
 		= Chains
 			- Test properties

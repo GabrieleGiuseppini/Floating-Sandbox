@@ -171,8 +171,6 @@ public:
         ShipSpaceCoordinates const & oldCoords,
         ShipSpaceCoordinates const & newCoords);
 
-    bool EraseRopeAtForEphemeralVisualization(ShipSpaceCoordinates const & coords);
-
     void RestoreRopesLayerForEphemeralVisualization(RopesLayerData const & sourceLayer);
 
     //
