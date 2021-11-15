@@ -128,14 +128,16 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Remove ...ForEphViz method from ModelController
 					+ Remove mHasEphemeralVisualization - et al
 	- New materials:
-		= Chains
-			- Test properties
-				- For noise: consider adding new StructuralMaterial property: strain_threshold_fraction, default = 0.5
-					- Material
-					- Springs::UpdateForStrains:
-						- Springs::mBreakingElongationBuffer: it's buffer of two-float struct, BreakingElongation and StrainThresholdFraction
-					- Set at Chains material
+		= Chains			
+			= For noise: consider adding new StructuralMaterial property: strain_threshold_fraction, default = 0.5
+				+ Material
+				+ Springs::UpdateForStrains:
+					+ Springs::mBreakingElongationBuffer: it's buffer of two-float struct, BreakingElongation and StrainThresholdFraction
+				+ Set at Chains material
+				+ Test Chains
+				- Test others
 			+ Rustyness
+			- Verify properties look'n'feel (tension)
 		- "~Elastic" ("Rubber Ropes"?)
 		- More chains of other metal types
 

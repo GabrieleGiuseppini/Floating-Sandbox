@@ -37,8 +37,8 @@ StructuralMaterial StructuralMaterial::Create(
         float const nominalMass = Utils::GetMandatoryJsonMember<float>(massJson, "nominal_mass");
         float const density = Utils::GetMandatoryJsonMember<float>(massJson, "density");
         float const buoyancyVolumeFill = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "buoyancy_volume_fill");
-
         float const stiffness = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "stiffness", 1.0);
+        float const strainThresholdFraction = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "strain_threshold_fraction", 0.5f);
 
         // Assign unique type - arbitrarily to first of series of colors
         std::optional<MaterialUniqueType> uniqueType;
@@ -104,6 +104,7 @@ StructuralMaterial StructuralMaterial::Create(
             density,
             buoyancyVolumeFill,
             stiffness,
+            strainThresholdFraction,
             uniqueType,
             materialSound,
             materialTextureName,

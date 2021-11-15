@@ -32,9 +32,10 @@ void Springs::Add(
     assert(coveringTrianglesCount >= superTriangles.size()); // Covering triangles count includes super triangles
     mCoveringTrianglesCountBuffer.emplace_back(coveringTrianglesCount);
 
-    // Breaking elongation recalculated later
-    mBreakingElongationBuffer.emplace_back(0.0f);
-
+    mStrainStateBuffer.emplace_back(
+        0.0f, // Breaking elongation recalculated later
+        (points.GetStructuralMaterial(pointAIndex).StrainThresholdFraction + points.GetStructuralMaterial(pointBIndex).StrainThresholdFraction) / 2.0f,
+        false);
     mFactoryRestLengthBuffer.emplace_back((points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length());
     mRestLengthBuffer.emplace_back((points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length());
 
@@ -81,8 +82,6 @@ void Springs::Add(
         (points.GetStructuralMaterial(pointAIndex).ThermalConductivity + points.GetStructuralMaterial(pointBIndex).ThermalConductivity)
         / 2.0f;
     mMaterialThermalConductivityBuffer.emplace_back(thermalConductivity);
-
-    mIsStressedBuffer.emplace_back(false);
 
     // Calculate parameters for this spring
     UpdateForDecayAndTemperatureAndGameParameters(
@@ -260,7 +259,7 @@ void Springs::UploadStressedSpringElements(
     {
         if (!mIsDeletedBuffer[i])
         {
-            if (mIsStressedBuffer[i])
+            if (mStrainStateBuffer[i].IsStressed)
             {
                 shipRenderContext.UploadElementStressedSpring(
                     GetEndpointAIndex(i),
@@ -274,7 +273,6 @@ void Springs::UpdateForStrains(
     GameParameters const & gameParameters,
     Points & points)
 {
-    float constexpr StrainHighWatermark = 0.5f; // Greater than this multiplier to be stressed
     float constexpr StrainLowWatermark = 0.08f; // Less than this multiplier to become non-stressed
 
     OceanSurface const & oceanSurface = mParentWorld.GetOceanSurface();
@@ -285,11 +283,13 @@ void Springs::UpdateForStrains(
         // Avoid breaking deleted springs
         if (!mIsDeletedBuffer[s])
         {
+            auto & strainState = mStrainStateBuffer[s];
+
             // Calculate strain length
             float const strain = fabs(GetLength(s, points) - mRestLengthBuffer[s]);
 
             // Check against breaking elongation
-            float const breakingElongation = mBreakingElongationBuffer[s];
+            float const breakingElongation = strainState.BreakingElongation;
             if (strain > breakingElongation)
             {
                 // It's broken!
@@ -302,7 +302,7 @@ void Springs::UpdateForStrains(
                     gameParameters,
                     points);
             }
-            else if (mIsStressedBuffer[s])
+            else if (strainState.IsStressed)
             {
                 // Stressed spring...
                 // ...see if should un-stress it
@@ -310,7 +310,7 @@ void Springs::UpdateForStrains(
                 if (strain < StrainLowWatermark * breakingElongation)
                 {
                     // It's not stressed anymore
-                    mIsStressedBuffer[s] = false;
+                    strainState.IsStressed = false;
                 }
             }
             else
@@ -318,10 +318,10 @@ void Springs::UpdateForStrains(
                 // Not stressed spring
                 // ...see if should stress it
 
-                if (strain > StrainHighWatermark * breakingElongation)
+                if (strain > strainState.StrainThresholdFraction * breakingElongation)
                 {
                     // It's stressed!
-                    mIsStressedBuffer[s] = true;
+                    strainState.IsStressed = true;
 
                     // Notify stress
                     mGameEventHandler->OnStress(
@@ -525,7 +525,7 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
                 mFactoryRestLengthBuffer[springIndex] * 2.0f));
     }
 
-    mBreakingElongationBuffer[springIndex] =
+    mStrainStateBuffer[springIndex].BreakingElongation =
         GetMaterialStrength(springIndex)
         * strengthAdjustment
         * 0.839501f // Magic number: from 1.14, after #iterations increased from 24 to 30

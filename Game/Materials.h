@@ -69,6 +69,7 @@ public:
     float Density;
     float BuoyancyVolumeFill;
     float Stiffness;
+    float StrainThresholdFraction;
 
     std::optional<MaterialUniqueType> UniqueType;
 
@@ -143,6 +144,7 @@ public:
         float density,
         float buoyancyVolumeFill,
         float stiffness,
+        float strainThresholdFraction,
         std::optional<MaterialUniqueType> uniqueType,
         std::optional<MaterialSoundType> materialSound,
         std::optional<std::string> materialTextureName,
@@ -174,6 +176,7 @@ public:
         , Density(density)
         , BuoyancyVolumeFill(buoyancyVolumeFill)
         , Stiffness(stiffness)
+        , StrainThresholdFraction(strainThresholdFraction)
         , UniqueType(uniqueType)
         , MaterialSound(materialSound)
         , MaterialTextureName(materialTextureName)
@@ -208,6 +211,7 @@ public:
         , Density(1.0f)
         , BuoyancyVolumeFill(1.0f)
         , Stiffness(1.0f)
+        , StrainThresholdFraction(0.5f)
         , UniqueType(std::nullopt)
         , MaterialSound(std::nullopt)
         , MaterialTextureName(std::nullopt)

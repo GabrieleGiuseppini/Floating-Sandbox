@@ -1723,6 +1723,7 @@
         "sound_type": "Chain",
         "specific_heat": 449.0,
         "stiffness": 1.85,
+	"strain_threshold_fraction": 0.1,
         "strength": 0.075,
         "thermal_conductivity": 79.5,
 	"thermal_expansion_coefficient": 0.0000106,

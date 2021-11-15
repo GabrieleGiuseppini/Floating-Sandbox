@@ -116,6 +116,22 @@ private:
         {}
     };
 
+    struct StrainState
+    {
+        float BreakingElongation; // Max length delta (compressed or stretched) after which the spring break
+        float StrainThresholdFraction; // Fraction of BreakingElongation after which the spring becomes strained
+        bool IsStressed; // When true, the spring is stressed - used to apply hi/lo watermark to stress state
+
+        StrainState(
+            float breakingElongation,
+            float strainThresholdFraction,
+            float isStressed)
+            : BreakingElongation(breakingElongation)
+            , StrainThresholdFraction(strainThresholdFraction)
+            , IsStressed(isStressed)
+        {}
+    };
+
 public:
 
     Springs(
@@ -138,7 +154,7 @@ public:
         // Covering triangles
         , mCoveringTrianglesCountBuffer(mBufferElementCount, mElementCount, 0)
         // Physical
-        , mBreakingElongationBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mStrainStateBuffer(mBufferElementCount, mElementCount, StrainState(0.0f, 0.0f, false))
         , mFactoryRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mDynamicsCoefficientsBuffer(mBufferElementCount, mElementCount, DynamicsCoefficients(0.0f, 0.0f))
@@ -149,8 +165,6 @@ public:
         , mWaterPermeabilityBuffer(mBufferElementCount, mElementCount, 0.0f)
         // Heat
         , mMaterialThermalConductivityBuffer(mBufferElementCount, mElementCount, 0.0f)
-        // Stress
-        , mIsStressedBuffer(mBufferElementCount, mElementCount, false)
         //////////////////////////////////
         // Container
         //////////////////////////////////
@@ -677,7 +691,7 @@ private:
     // Physical
     //
 
-    Buffer<float> mBreakingElongationBuffer;
+    Buffer<StrainState> mStrainStateBuffer;
     Buffer<float> mFactoryRestLengthBuffer;
     Buffer<float> mRestLengthBuffer;
     Buffer<DynamicsCoefficients> mDynamicsCoefficientsBuffer;
@@ -700,13 +714,6 @@ private:
     //
 
     Buffer<float> mMaterialThermalConductivityBuffer;
-
-    //
-    // Stress
-    //
-
-    // State variable that tracks when we enter and exit the stressed state
-    Buffer<bool> mIsStressedBuffer;
 
     //////////////////////////////////////////////////////////
     // Container
