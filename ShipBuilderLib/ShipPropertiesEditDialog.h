@@ -50,6 +50,8 @@ private:
 
     void OnDirty();
 
+    void OnPassword();
+
 private:
 
     ResourceLocator const & mResourceLocator;

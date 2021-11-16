@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "ShipPropertiesEditDialog.h"
 
+#include "NewPasswordDialog.h"
+
 #include <UILib/WxHelpers.h>
 
 #include <wx/gbsizer.h> // TODO
@@ -271,6 +273,62 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
 
     // TODO
 
+    vSizer->AddSpacer(VerticalSeparatorSize);
+
+    // Password
+    {
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Password Lock"), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            vSizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+        }
+
+        {
+            wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
+
+            {
+                auto dummyPasswordTextCtrl = new wxTextCtrl(
+                    panel,
+                    wxID_ANY,
+                    wxEmptyString,
+                    wxDefaultPosition,
+                    wxSize(100, -1),
+                    wxTE_READONLY | wxTE_PASSWORD);
+
+                // TODO: populate with "XXXX"
+
+                hSizer->Add(dummyPasswordTextCtrl, 0, wxALIGN_CENTER_VERTICAL, 0);
+            }
+
+            {
+                auto button = new wxButton(panel, wxID_ANY, "...", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+
+                button->Bind(
+                    wxEVT_BUTTON,
+                    [this](wxCommandEvent & /*event*/)
+                    {
+                        OnPassword();
+                    });
+
+                hSizer->Add(button, 0, wxALIGN_CENTER_VERTICAL, 0);
+            }
+
+            vSizer->Add(hSizer, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 0);
+        }
+
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Type a password to protect edits to this ship"), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            label->SetFont(explanationFont);
+
+            vSizer->Add(label, 0, wxALL | wxEXPAND, 0);
+        }
+    }
+
+    // TODO
+
     panel->SetSizer(vSizer);
 }
 
@@ -373,6 +431,16 @@ void ShipPropertiesEditDialog::OnDirty()
     {
         mOkButton->Enable(true);
     }
+}
+
+void ShipPropertiesEditDialog::OnPassword()
+{
+    NewPasswordDialog dialog(this, mResourceLocator);
+    dialog.ShowModal();
+
+    // TODOHERE
+
+    // tODO: populate text ctrl
 }
 
 }

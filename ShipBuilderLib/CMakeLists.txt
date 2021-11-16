@@ -19,6 +19,8 @@ set (SHIPBUILDER_LIB_SOURCES
 	ModelValidationDialog.cpp
 	ModelValidationDialog.h
 	ModelValidationResults.h
+	NewPasswordDialog.cpp
+	NewPasswordDialog.h
 	SelectionManager.cpp	
 	SelectionManager.h
 	ShaderTypes.cpp
