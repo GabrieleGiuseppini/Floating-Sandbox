@@ -11,6 +11,7 @@
 
 #include <Game/ShipDefinitionFormatDeSerializer.h>
 
+#include <GameCore/Utils.h>
 #include <GameCore/Version.h>
 
 #include <wx/gbsizer.h>
@@ -95,7 +96,6 @@ ShipPropertiesEditDialog::ShipPropertiesEditDialog(
 
     dialogVSizer->AddSpacer(20);
 
-
     // Buttons
     {
         wxBoxSizer * buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -146,7 +146,7 @@ void ShipPropertiesEditDialog::ShowModal(
         shipAutoTexturizationSettings,
         hasTexture);
 
-    InitializeUI();
+    ReconciliateUI();
 
     wxDialog::ShowModal();
 }
@@ -241,7 +241,45 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
         }
     }
 
-    // TODO: Art Credits
+    vSizer->AddSpacer(VerticalSeparatorSize);
+
+    // Art Credits    
+    {
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Art Credits"), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            vSizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+        }
+
+        {            
+            mArtCreditsTextCtrl = new wxTextCtrl(
+                panel,
+                wxID_ANY,
+                wxEmptyString,
+                wxDefaultPosition,
+                wxSize(150, -1),
+                wxTE_CENTRE);
+
+            mArtCreditsTextCtrl->Bind(
+                wxEVT_TEXT,
+                [this](wxCommandEvent & /*event*/)
+                {
+                    OnDirty();
+                });
+
+            vSizer->Add(mArtCreditsTextCtrl, 0, wxALL | wxEXPAND, 0);
+        }
+
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Author(s) of the texture - if different than the ship author, e.g. \"Neurodancer (Shipbucket.com)\""), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            label->SetFont(explanationFont);
+
+            vSizer->Add(label, 0, wxALL | wxEXPAND, 0);
+        }
+    }
 
     vSizer->AddSpacer(VerticalSeparatorSize);
 
@@ -282,8 +320,6 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
             vSizer->Add(label, 0, wxALL | wxEXPAND, 0);
         }
     }
-
-    // TODO
 
     // Finalize
     auto marginSizer = new wxBoxSizer(wxVERTICAL);
@@ -464,16 +500,41 @@ void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
     LogMessage("TODOTEST: ShipPropertiesEditDialog::OnOkButton: IsMetadataDirty=", IsMetadataDirty());
     if (IsMetadataDirty())
     {
-        // TODO
+        //
+        // Populate new
+        //
+
+        auto const shipName = MakeString(mShipNameTextCtrl->GetValue());
+        assert(shipName.has_value() && shipName->length() > 0);
+
+        ShipMetadata metadata(
+            *shipName,
+            MakeString(mShipAuthorTextCtrl->GetValue()),
+            MakeString(mArtCreditsTextCtrl->GetValue()),
+            MakeString(mYearBuiltTextCtrl->GetValue()),
+            std::nullopt, // TODO: description
+            mSessionData->Metadata.DoHideElectricalsInPreview,
+            mSessionData->Metadata.DoHideHDInPreview,
+            mPasswordHash);
+
+        mSessionData->BuilderController.SetShipMetadata(std::move(metadata));
     }
 
     if (IsPhysicsDataDirty())
     {
+        //
+        // Populate new
+        //
+
         // TODO
     }
 
     if (IsAutoTexturizationSettingsDirty())
     {
+        //
+        // Populate new
+        //
+
         // TODO
     }
 
@@ -496,13 +557,14 @@ void ShipPropertiesEditDialog::OnDirty()
 {
     // We assume at least one of the controls is dirty
 
-    if (!mOkButton->IsEnabled())
+    auto doEnable = MakeString(mShipNameTextCtrl->GetValue()).has_value();
+    if (mOkButton->IsEnabled() != doEnable)
     {
-        mOkButton->Enable(true);
+        mOkButton->Enable(doEnable);
     }
 }
 
-void ShipPropertiesEditDialog::InitializeUI()
+void ShipPropertiesEditDialog::ReconciliateUI()
 {
     assert(mSessionData);
 
@@ -514,11 +576,18 @@ void ShipPropertiesEditDialog::InitializeUI()
 
     mShipAuthorTextCtrl->ChangeValue(mSessionData->Metadata.Author.value_or(""));
 
-    // TODO
+    if (mSessionData->HasTexture)
+    {
+        mArtCreditsTextCtrl->ChangeValue(mSessionData->Metadata.ArtCredits.value_or(""));
+        mArtCreditsTextCtrl->Enable(true);
+    }
+    else
+    {
+        mArtCreditsTextCtrl->ChangeValue(wxEmptyString);
+        mArtCreditsTextCtrl->Enable(false);
+    }
 
     mYearBuiltTextCtrl->ChangeValue(mSessionData->Metadata.YearBuilt.value_or(""));
-
-    // TODO
 
     //
     // Physics
@@ -563,6 +632,7 @@ bool ShipPropertiesEditDialog::IsMetadataDirty() const
     // TODO: others
     return mShipNameTextCtrl->IsModified()
         || mShipAuthorTextCtrl->IsModified()
+        || mArtCreditsTextCtrl->IsModified()
         || mYearBuiltTextCtrl->IsModified()
         || mIsPasswordHashModified;
 }
@@ -579,6 +649,13 @@ bool ShipPropertiesEditDialog::IsAutoTexturizationSettingsDirty() const
     return false;
 }
 
-
+std::optional<std::string> ShipPropertiesEditDialog::MakeString(wxString const & value)
+{
+    std::string trimmedValue = Utils::Trim(value.ToStdString());
+    if (trimmedValue.empty())
+        return std::nullopt;
+    else
+        return trimmedValue;
+}
 
 }

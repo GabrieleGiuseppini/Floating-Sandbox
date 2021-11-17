@@ -70,6 +70,8 @@ public:
         return mModelController->GetModel().GetShipMetadata();
     }
 
+    void SetShipMetadata(ShipMetadata && shipMetadata);
+
     ShipPhysicsData const & GetShipPhysicsData() const
     {
         assert(mModelController);

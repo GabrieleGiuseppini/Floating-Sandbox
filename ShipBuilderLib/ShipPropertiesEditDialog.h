@@ -55,12 +55,14 @@ private:
 
     void OnDirty();
 
-    void InitializeUI();
+    void ReconciliateUI();
     void ReconciliateUIWithPassword();
 
     bool IsMetadataDirty() const;
     bool IsPhysicsDataDirty() const;
     bool IsAutoTexturizationSettingsDirty() const;
+
+    std::optional<std::string> MakeString(wxString const & value);
 
 private:
 
@@ -73,6 +75,8 @@ private:
     wxTextCtrl * mShipNameTextCtrl;
 
     wxTextCtrl * mShipAuthorTextCtrl;
+
+    wxTextCtrl * mArtCreditsTextCtrl;
 
     wxTextCtrl * mYearBuiltTextCtrl;
 

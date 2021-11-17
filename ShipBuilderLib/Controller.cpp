@@ -105,6 +105,15 @@ ShipDefinition Controller::MakeShipDefinition()
     return mModelController->MakeShipDefinition();
 }
 
+void Controller::SetShipMetadata(ShipMetadata && shipMetadata)
+{
+    assert(mModelController);
+    mModelController->SetShipMetadata(std::move(shipMetadata));
+
+    mUserInterface.OnModelDirtyChanged();
+    mUserInterface.OnShipMetadataChanged(mModelController->GetShipMetadata());
+}
+
 void Controller::ClearModelDirty()
 {
     mModelController->ClearIsDirty();

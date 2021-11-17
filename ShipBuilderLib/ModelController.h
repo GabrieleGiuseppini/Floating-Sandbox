@@ -40,7 +40,6 @@ public:
         ShipDefinition && shipDefinition,
         View & view);
 
-
     Model const & GetModel() const
     {
         return mModel;
@@ -76,6 +75,16 @@ public:
         // TODO: other layers
     }
 #endif
+
+    ShipMetadata const & GetShipMetadata() const
+    {
+        return mModel.GetShipMetadata();
+    }
+
+    void SetShipMetadata(ShipMetadata && shipMetadata)
+    {
+        mModel.SetShipMetadata(std::move(shipMetadata));
+    }
 
     //
     // Structural

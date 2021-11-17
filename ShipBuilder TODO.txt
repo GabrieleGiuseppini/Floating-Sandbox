@@ -210,13 +210,12 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 = Metadata edit workflow:
 	+ ShipPropertiesEditDialog
-	= Dialog::Open takes Controller &, Metadata const &, PhysicsProperties const &, etc.
+	+ Dialog::Open takes Controller &, Metadata const &, PhysicsProperties const &, etc.
 		+ Pass bool HasTexture (to enable ArtCredits)
 		+ opt<struct> mSessionData
-		- Populates all controls
-		- Flags each control as being not dirty
-			- Verify that after PopulateUI all controls are clean (not marked as dirty)
-	- Editing a field flags it as being dirty
+		+ Populates all controls
+		+ Flags each control as being not dirty
+	+ Editing a field flags it as being dirty
 	= Ship name
 		- TODO: nail down ship name change & file name change - VERIFY BELOW
 			- MainFrame: compare output of MakeFilename() on new ship name with current filename, and if different && there is a current which exists as a file:
@@ -228,11 +227,11 @@ https://gamejolt.com/x/permalink/comment/11730705
 						- If has a current: clear current (and Save will become SaveAs)
 						- If has no current: Save is already set to become SaveAs, we're OK
 	+ Author(s)
-	- Art Credits
+	= Art Credits
 		! Spec: we allow ModelController to carry stale credits when texture is removed - OR NOT: replace won't signal layer removal
-		- Enabled and populated only iff HasTexture
-		- ModelController: do not bake ArtCredits in final ShipDefinition if there is no texture layer
-		- At OK: populated only if HasTexture (though should be empty by then)
+		+ Enabled and populated only iff HasTexture
+		- ModelController: remove ArtCredits when texture is removed
+		+ Test
 	+ Year Built
 	+ Edit Password
 		+ Make new tab
@@ -247,13 +246,19 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Populate UI at startup
 		- Give to ModelController at OK
 	- At OK:
-		- For each of Metadata, PhysicsProperties, etc:
+		= For each of Metadata, PhysicsProperties, etc:
 			- Check if any of this area's controls are dirty; if so:
 				- Construct new Metadata, PhysicsProperties, etc.
 					- Set optionals to nullopt if trimmed field is empty
 				- Call Controller::ReplaceMetadata(&&), etc.
 					- Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
 	- Tests:
+		- Verify that after PopulateUI all controls are clean (not marked as dirty)
+		+ New ship:
+			+ Populate one x {...}
+			+ Close
+			+ Reopen - verify it's there
+			+ Save - verify it's there @ load
 		- Ships with unicode chars in metadata, show well in dialog: Désirée Москва
 			- Load ship
 			- New ship

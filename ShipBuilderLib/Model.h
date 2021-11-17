@@ -70,48 +70,6 @@ public:
 
     explicit Model(ShipDefinition && shipDefinition);
 
-    template<LayerType TLayer>
-    typename LayerTypeTraits<TLayer>::layer_data_type CloneLayer() const
-    {
-        if constexpr (TLayer == LayerType::Structural)
-        {
-            assert(mStructuralLayer);
-            return mStructuralLayer->Clone();
-        }
-        else if constexpr (TLayer == LayerType::Electrical)
-        {
-            assert(mElectricalLayer);
-            return mElectricalLayer->Clone();
-        }
-        else if constexpr (TLayer == LayerType::Ropes)
-        {
-            assert(mRopesLayer);
-            return mRopesLayer->Clone();
-        }
-        else
-        {
-            static_assert(TLayer == LayerType::Texture);
-
-            assert(mTextureLayer);
-            return mTextureLayer->Clone();
-        }
-    }
-
-    void NewStructuralLayer();
-    void SetStructuralLayer(/*TODO*/);
-
-    void NewElectricalLayer();
-    void SetElectricalLayer(/*TODO*/);
-    void RemoveElectricalLayer();
-
-    void NewRopesLayer();
-    void SetRopesLayer(/*TODO*/);
-    void RemoveRopesLayer();
-
-    void NewTextureLayer();
-    void SetTextureLayer(/*TODO*/);
-    void RemoveTextureLayer();
-
     ShipSpaceSize const & GetShipSize() const
     {
         return mShipSize;
@@ -122,9 +80,9 @@ public:
         return mShipMetadata;
     }
 
-    void SetShipMetadata(ShipMetadata const & shipMetadata)
+    void SetShipMetadata(ShipMetadata && shipMetadata)
     {
-        mShipMetadata = shipMetadata;
+        mShipMetadata = std::move(shipMetadata);
 
         mDirtyState.IsMetadataDirty = true;
         mDirtyState.GlobalIsDirty = true;
@@ -135,9 +93,9 @@ public:
         return mShipPhysicsData;
     }
 
-    void SetShipPhysicsData(ShipPhysicsData const & shipPhysicsData)
+    void SetShipPhysicsData(ShipPhysicsData && shipPhysicsData)
     {
-        mShipPhysicsData = shipPhysicsData;
+        mShipPhysicsData = std::move(shipPhysicsData);
 
         mDirtyState.IsPhysicsDataDirty = true;
         mDirtyState.GlobalIsDirty = true;
@@ -195,6 +153,34 @@ public:
         mDirtyState.IsLayerDirtyMap[static_cast<size_t>(layer)] = false;
         mDirtyState.RecalculateGlobalIsDirty();
     }
+    
+    template<LayerType TLayer>
+    typename LayerTypeTraits<TLayer>::layer_data_type CloneLayer() const
+    {
+        if constexpr (TLayer == LayerType::Structural)
+        {
+            assert(mStructuralLayer);
+            return mStructuralLayer->Clone();
+        }
+        else if constexpr (TLayer == LayerType::Electrical)
+        {
+            assert(mElectricalLayer);
+            return mElectricalLayer->Clone();
+        }
+        else if constexpr (TLayer == LayerType::Ropes)
+        {
+            assert(mRopesLayer);
+            return mRopesLayer->Clone();
+        }
+        else
+        {
+            static_assert(TLayer == LayerType::Texture);
+
+            assert(mTextureLayer);
+            return mTextureLayer->Clone();
+        }
+    }
+
 
     StructuralLayerData const & GetStructuralLayer() const
     {
@@ -208,6 +194,9 @@ public:
         return *mStructuralLayer;
     }
 
+    void NewStructuralLayer();
+    void SetStructuralLayer(/*TODO*/);
+
     ElectricalLayerData const & GetElectricalLayer() const
     {
         assert(mElectricalLayer);
@@ -219,6 +208,10 @@ public:
         assert(mElectricalLayer);
         return *mElectricalLayer;
     }
+
+    void NewElectricalLayer();
+    void SetElectricalLayer(/*TODO*/);
+    void RemoveElectricalLayer();
 
     RopesLayerData const & GetRopesLayer() const
     {
@@ -232,11 +225,19 @@ public:
         return *mRopesLayer;
     }
 
+    void NewRopesLayer();
+    void SetRopesLayer(/*TODO*/);
+    void RemoveRopesLayer();
+
     TextureLayerData const & GetTextureLayer() const
     {
         assert(mTextureLayer);
         return *mTextureLayer;
     }
+
+    void NewTextureLayer();
+    void SetTextureLayer(/*TODO*/);
+    void RemoveTextureLayer();
 
 private:
 
