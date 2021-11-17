@@ -4,6 +4,8 @@
 #
 
 set (SHIPBUILDER_LIB_SOURCES
+	AskPasswordDialog.cpp
+	AskPasswordDialog.h
 	Controller.cpp
 	Controller.h
 	ElectricalElementInstanceIndexFactory.h

@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
+#include "AskPasswordDialog.h"
+
 #include <GameCore/Log.h>
 #include <GameCore/UserGameException.h>
 #include <GameCore/Utils.h>

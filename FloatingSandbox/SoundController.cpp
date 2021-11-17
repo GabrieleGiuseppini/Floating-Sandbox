@@ -2594,8 +2594,6 @@ void SoundController::ChooseAndPlayOneShotMultipleChoiceSound(
         sound.LastPlayedSoundIndex = chosenIndex;
     }
 
-    LogMessage("TODOHERE: ", chosenIndex);
-
     PlayOneShotSound(
         soundType,
         material,

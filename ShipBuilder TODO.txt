@@ -142,11 +142,11 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- More chains of other metal types
 
 	- New sounds:
-		= "Chain":
+		+ "Chain":
 			+ Material palette
 			+ SoundController
-			= Make sounds
-				- Underwater
+			+ Make sounds
+				+ Underwater
 		- "~Elastic":
 			- Material palette
 			- SoundController
@@ -168,7 +168,22 @@ https://gamejolt.com/x/permalink/comment/11730705
 				- w/PropertiesDialog
 				- Load .shp -> Save .shp2 -> Load .shp2 in FS
 
-= Workflow of password (* x 2)
+= Workflow of password
+	+ Hash algo at ShipDeSerializer via static helper method
+	= Workflows
+		+ Save: ShipDeSerializer::CalculatePasswordHash(password): +salt => hash (new GameType) => in metadata
+		- ShipBuilder::Open and Game::EditInShipBuilder and various layers' Import: after load, if ShipMetadata has password:
+			- Ask password
+			- ShipDeSerializer::CalculatePasswordHash(password) => check with metadata
+			- All in own dialog, in static bool CheckPasswordProtectedEdit(shipDefinition) which includes workflow
+			- Do at:
+				- ShipBuilder::Open
+				- TODO: where to catch ShipBuilder starting w/ship?
+	- Test:
+		- Save ship w/password
+		- 1. Load it in FS & Open ship builder
+		- 2. Load it in builder
+
 
 - Import/Export:
 	- Structural:
@@ -249,6 +264,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Give to ModelController at OK
 	- Auto-Texturization Settings
 		- Populate tab
+			- TODO: decide how to handle Remove vs Setting values
 		- Populate UI at startup
 		- Give to ModelController at OK
 	- At OK:
@@ -471,16 +487,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ See https://github.com/voidah/archive/blob/master/archive.h
 	+ FS version
 		+ Only used for warnings in case materials not found and cur version > file version
-	- "File lock" which disallows editing
+	+ "File lock" which disallows editing
 		! Password from user; salted -> Hash in Metadata
 		! Verify hash matches when editing
-		- Hash algo at ShipDeSerializer via static helper method
-		- Workflows
-			- Save: ShipDeSerializer::CalculatePasswordHash(password): +salt => hash (new GameType) => in metadata
-			- ShipBuilder::Open and Game::EditInShipBuilder and various layers' Import: After load, if ShipMetadata has password:
-				- Ask password
-				- ShipDeSerializer::CalculatePasswordHash(password) => check with metadata
-				- All in own dialog, in static bool CheckPasswordProtectedEdit(shipDefinition) which includes workflow
 	- Also includes sounds
 		- Extract from other "TODO" .txt file
 
