@@ -44,6 +44,7 @@ private:
     void PopulateDescriptionPanel(wxPanel * panel);
     void PopulatePhysicsDataPanel(wxPanel * panel);
     void PopulateAutoTexturizationPanel(wxPanel * panel);
+    void PopulatePasswordProtectionPanel(wxPanel * panel);
 
     void OnOkButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
