@@ -10,6 +10,7 @@
 #include "ShipPreviewData.h"
 
 #include <GameCore/DeSerializationBuffer.h>
+#include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/Version.h>
 
@@ -19,6 +20,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <string>
 
 #define MAKE_TAG(ch1, ch2, ch3, ch4) \
     std::uint32_t( ((ch1 & 0xff) << 24) | ((ch2 & 0xff) << 16) | ((ch3 & 0xff) << 8) | (ch4 & 0xff) )
@@ -43,6 +45,8 @@ public:
     static void Save(
         ShipDefinition const & shipDefinition,
         std::filesystem::path const & shipFilePath);
+
+    static PasswordHash CalculatePasswordHash(std::string const & password);
 
 private:
 

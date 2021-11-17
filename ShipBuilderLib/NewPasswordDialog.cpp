@@ -5,14 +5,13 @@
  ***************************************************************************************/
 #include "NewPasswordDialog.h"
 
-#include <GameCore/Log.h>
-
-#include <UILib/WxHelpers.h>
-
-#include <wx/statbmp.h>
+#include <wx/button.h>
+#include <wx/gbsizer.h>
+#include <wx/sizer.h>
 #include <wx/stattext.h>
 
 #include <cassert>
+#include <cctype>
 
 namespace ShipBuilder {
 
@@ -39,17 +38,16 @@ NewPasswordDialog::NewPasswordDialog(
     {
         int constexpr PasswordFieldWidth = 180;
 
+        wxGridBagSizer * gSizer = new wxGridBagSizer(10, 5);
+
         // Password 1
         {
-            wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
-
             // Label
             {
                 auto label = new wxStaticText(this, wxID_ANY, _("Type your password:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
-                hSizer->Add(label, 1, wxALIGN_CENTER_VERTICAL, 0);
-            }
 
-            hSizer->AddSpacer(5);
+                gSizer->Add(label, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL);
+            }
 
             // Text Ctrl
             {
@@ -61,25 +59,25 @@ NewPasswordDialog::NewPasswordDialog(
                         OnPasswordKey();
                     });
 
-                hSizer->Add(mPassword1TextCtrl, 0, wxALIGN_CENTER_VERTICAL, 0);
+                gSizer->Add(mPassword1TextCtrl, wxGBPosition(0, 1), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL);
             }
 
-            dialogVSizer->Add(hSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, 10);
-        }
+            // Password strength
+            {
+                mPasswordStrengthPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(60, mPassword1TextCtrl->GetSize().GetHeight()), wxBORDER_SUNKEN);
 
-        dialogVSizer->AddSpacer(10);
+                gSizer->Add(mPasswordStrengthPanel, wxGBPosition(0, 2), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL);
+            }
+        }
 
         // Password 2
         {
-            wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
-
             // Label
             {
                 auto label = new wxStaticText(this, wxID_ANY, _("Re-type your password:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
-                hSizer->Add(label, 1, wxALIGN_CENTER_VERTICAL, 0);
-            }
 
-            hSizer->AddSpacer(5);
+                gSizer->Add(label, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL);
+            }
 
             // Text Ctrl
             {
@@ -91,11 +89,11 @@ NewPasswordDialog::NewPasswordDialog(
                         OnPasswordKey();
                     });
 
-                hSizer->Add(mPassword2TextCtrl, 0, wxALIGN_CENTER_VERTICAL, 0);
-            }
-
-            dialogVSizer->Add(hSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, 10);
+                gSizer->Add(mPassword2TextCtrl, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL);
+            }            
         }
+
+        dialogVSizer->Add(gSizer, 0, wxLEFT | wxRIGHT, 10);
     }
 
     dialogVSizer->AddSpacer(20);
@@ -132,25 +130,76 @@ NewPasswordDialog::NewPasswordDialog(
     SetSizerAndFit(dialogVSizer);
 
     Centre(wxCENTER_ON_SCREEN | wxBOTH);
+
+    mPasswordStrengthPanel->MoveAfterInTabOrder(mPassword2TextCtrl);
 }
 
 int NewPasswordDialog::ShowModal()
 {
-    // TODO: clear fields
-    mOkButton->Enable(false);
+    mPassword1TextCtrl->Clear();
+    mPassword2TextCtrl->Clear();
+    OnPasswordKey();
 
     auto const result = wxDialog::ShowModal();
-
-    // TODOTEST
-    LogMessage("Result: ", result);
-
-    // TODO: if OK, populate password
+    if (result == wxID_OK)
+    {
+        // Store password
+        mPassword = mPassword1TextCtrl->GetValue().ToStdString();
+    }
+    else
+    {
+        mPassword = "";
+    }
+    
     return result;
 }
 
 void NewPasswordDialog::OnPasswordKey()
 {
-    if (mPassword1TextCtrl->GetValue() == mPassword2TextCtrl->GetValue())
+    auto const passwordValue = mPassword1TextCtrl->GetValue();
+
+    // Calculate password strength
+
+    int passwordStrength;
+    if (passwordValue.Length() < 5)
+    {
+        passwordStrength = 0;
+    }
+    else
+    {
+        passwordStrength = 1;
+
+        bool hasDigits = false;
+        bool hasPunct = false;
+        for (int c = 0; c < passwordValue.Length(); ++c)
+        {
+            if (std::isdigit(passwordValue[c]))
+                hasDigits = true;
+
+            if (std::ispunct(passwordValue[c]))
+                hasPunct = true;
+        }
+
+        if (hasDigits)
+            ++passwordStrength;
+
+        if (hasPunct)
+            ++passwordStrength;
+    }
+
+    // Set value of strength meter
+
+    if (passwordStrength == 0)
+        mPasswordStrengthPanel->SetBackgroundColour(wxColor(181, 46, 5));
+    else if (passwordStrength == 1)
+        mPasswordStrengthPanel->SetBackgroundColour(wxColor(196, 184, 6));
+    else
+        mPasswordStrengthPanel->SetBackgroundColour(wxColor(5, 140, 0));
+    mPasswordStrengthPanel->Refresh();
+
+    // Set second field color
+
+    if (passwordValue == mPassword2TextCtrl->GetValue())
     {
         mPassword2TextCtrl->SetForegroundColour(wxNullColour);
     }
@@ -161,16 +210,13 @@ void NewPasswordDialog::OnPasswordKey()
 
     mPassword2TextCtrl->Refresh();
 
+    // Enable OK button
+
     bool const mayClose =
-        IsPasswordGood(mPassword1TextCtrl->GetValue().ToStdString())
-        && mPassword1TextCtrl->GetValue() == mPassword2TextCtrl->GetValue();
+        passwordStrength > 0
+        && passwordValue == mPassword2TextCtrl->GetValue();
 
     mOkButton->Enable(mayClose);
-}
-
-bool NewPasswordDialog::IsPasswordGood(std::string const & password)
-{
-    return password.length() >= 3;
 }
 
 }

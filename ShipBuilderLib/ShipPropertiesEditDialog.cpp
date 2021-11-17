@@ -7,9 +7,10 @@
 
 #include "NewPasswordDialog.h"
 
+#include <Game/ShipDefinitionFormatDeSerializer.h>
+
 #include <UILib/WxHelpers.h>
 
-#include <wx/gbsizer.h> // TODO
 #include <wx/notebook.h>
 #include <wx/sizer.h>
 #include <wx/statbmp.h>
@@ -288,7 +289,7 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
             wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
 
             {
-                auto dummyPasswordTextCtrl = new wxTextCtrl(
+                mDummyPasswordTextCtrl = new wxTextCtrl(
                     panel,
                     wxID_ANY,
                     wxEmptyString,
@@ -296,9 +297,7 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
                     wxSize(100, -1),
                     wxTE_READONLY | wxTE_PASSWORD);
 
-                // TODO: populate with "XXXX"
-
-                hSizer->Add(dummyPasswordTextCtrl, 0, wxALIGN_CENTER_VERTICAL, 0);
+                hSizer->Add(mDummyPasswordTextCtrl, 0, wxALIGN_CENTER_VERTICAL, 0);
             }
 
             {
@@ -308,7 +307,7 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
                     wxEVT_BUTTON,
                     [this](wxCommandEvent & /*event*/)
                     {
-                        OnPassword();
+                        OnChangePassword();
                     });
 
                 hSizer->Add(button, 0, wxALIGN_CENTER_VERTICAL, 0);
@@ -373,10 +372,32 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
 
 void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
 {
-    // TODO: inspect dirty flags and communicate parts to Controller
-    // mShipNameTextCtrl->IsModified()
+    //
+    // Inspect dirty flags and communicate parts to Controller
+    //
+
+    LogMessage("TODOTEST: ShipPropertiesEditDialog::OnOkButton: IsMetadataDirty=", IsMetadataDirty());
+    if (IsMetadataDirty())
+    {
+        // TODO
+    }
+
+    if (IsPhysicsDataDirty())
+    {
+        // TODO
+    }
+
+    if (IsAutoTexturizationSettingsDirty())
+    {
+        // TODO
+    }
+
+    //
+    // Close dialog
+    //
 
     mSessionData.reset();
+
     EndModal(0);
 }
 
@@ -404,6 +425,12 @@ void ShipPropertiesEditDialog::InitializeUI()
 
     // TODO
 
+    SetDummyPassword(mSessionData->Metadata.Password.has_value());
+    mPasswordHash = mSessionData->Metadata.Password;
+    mIsPasswordHashModified = false;
+
+    // TODO
+
     //
     // Physics
     //
@@ -423,6 +450,18 @@ void ShipPropertiesEditDialog::InitializeUI()
     mOkButton->Enable(false);
 }
 
+void ShipPropertiesEditDialog::SetDummyPassword(bool hasPassword)
+{
+    if (hasPassword)
+    {
+        mDummyPasswordTextCtrl->SetValue("XXXXXXXXXX");
+    }
+    else
+    {
+        mDummyPasswordTextCtrl->SetValue("");
+    }
+}
+
 void ShipPropertiesEditDialog::OnDirty()
 {
     // We assume at least one of the controls is dirty
@@ -433,14 +472,46 @@ void ShipPropertiesEditDialog::OnDirty()
     }
 }
 
-void ShipPropertiesEditDialog::OnPassword()
+void ShipPropertiesEditDialog::OnChangePassword()
 {
+    // Ask password
     NewPasswordDialog dialog(this, mResourceLocator);
-    dialog.ShowModal();
-
-    // TODOHERE
-
-    // tODO: populate text ctrl
+    auto const result = dialog.ShowModal();
+    if (result == wxID_OK)
+    {
+        // Changed
+        SetDummyPassword(true);
+        mPasswordHash = ShipDefinitionFormatDeSerializer::CalculatePasswordHash(dialog.GetPassword());
+        mIsPasswordHashModified = true;
+        OnDirty();
+    }
+    else
+    {
+        // Unchanged
+    }
 }
+
+bool ShipPropertiesEditDialog::IsMetadataDirty() const
+{
+    // TODO: others
+    return mShipNameTextCtrl->IsModified()
+        || mShipAuthorTextCtrl->IsModified()
+        || mYearBuiltTextCtrl->IsModified()
+        || mIsPasswordHashModified;
+}
+
+bool ShipPropertiesEditDialog::IsPhysicsDataDirty() const
+{
+    // TODO
+    return false;
+}
+
+bool ShipPropertiesEditDialog::IsAutoTexturizationSettingsDirty() const
+{
+    // TODO
+    return false;
+}
+
+
 
 }

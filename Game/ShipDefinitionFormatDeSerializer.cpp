@@ -442,6 +442,11 @@ void ShipDefinitionFormatDeSerializer::Save(
     outputFile.close();
 }
 
+PasswordHash ShipDefinitionFormatDeSerializer::CalculatePasswordHash(std::string const & password)
+{
+    return static_cast<PasswordHash>(std::hash<std::string>{}(password + "fs_salt_0$%"));
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Write
@@ -1753,7 +1758,7 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
                 elecPanelReadOffset += buffer.ReadAt<std::uint16_t>(elecPanelReadOffset, entryCount);
 
                 // Entries
-                for (int i = 0; i < entryCount; ++i)
+                for (std::uint16_t i = 0; i < entryCount; ++i)
                 {
                     std::uint32_t instanceIndex;
                     elecPanelReadOffset += buffer.ReadAt<std::uint32_t>(elecPanelReadOffset, instanceIndex);
@@ -1852,7 +1857,7 @@ void ShipDefinitionFormatDeSerializer::ReadRopesLayer(
                 bufferReadOffset += buffer.ReadAt<std::uint32_t>(bufferReadOffset, entryCount);
 
                 // Entries
-                for (int i = 0; i < entryCount; ++i)
+                for (std::uint32_t i = 0; i < entryCount; ++i)
                 {
                     // Start coords
                     int32_t startX;

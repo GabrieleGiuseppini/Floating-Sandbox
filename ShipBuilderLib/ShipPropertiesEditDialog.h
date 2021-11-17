@@ -12,6 +12,8 @@
 #include <Game/ShipPhysicsData.h>
 #include <Game/ShipAutoTexturizationSettings.h>
 
+#include <GameCore/GameTypes.h>
+
 #include <wx/button.h>
 #include <wx/dialog.h>
 #include <wx/panel.h>
@@ -48,17 +50,37 @@ private:
 
     void InitializeUI();
 
+    void SetDummyPassword(bool hasPassword);
+
     void OnDirty();
 
-    void OnPassword();
+    void OnChangePassword();
+
+    bool IsMetadataDirty() const;
+    bool IsPhysicsDataDirty() const;
+    bool IsAutoTexturizationSettingsDirty() const;
 
 private:
 
     ResourceLocator const & mResourceLocator;
 
+    //
+    // Fields
+    //
+
     wxTextCtrl * mShipNameTextCtrl;
+
     wxTextCtrl * mShipAuthorTextCtrl;
+
     wxTextCtrl * mYearBuiltTextCtrl;
+
+    wxTextCtrl * mDummyPasswordTextCtrl;
+    std::optional<PasswordHash> mPasswordHash;
+    bool mIsPasswordHashModified;
+
+    //
+    // UI
+    //
 
     wxButton * mOkButton;
 

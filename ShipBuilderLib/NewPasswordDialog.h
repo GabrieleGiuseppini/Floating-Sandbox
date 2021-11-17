@@ -8,9 +8,9 @@
 #include <Game/ResourceLocator.h>
 
 #include <wx/dialog.h>
+#include <wx/panel.h>
 #include <wx/textctrl.h>
 
-#include <optional>
 #include <string>
 
 namespace ShipBuilder {
@@ -25,11 +25,14 @@ public:
 
     int ShowModal() override;
 
+    std::string const & GetPassword() const
+    {
+        return mPassword;
+    }
+
 private:
 
     void OnPasswordKey();
-
-    bool IsPasswordGood(std::string const & password);
 
 private:
 
@@ -37,7 +40,10 @@ private:
 
     wxTextCtrl * mPassword1TextCtrl;
     wxTextCtrl * mPassword2TextCtrl;
+    wxPanel * mPasswordStrengthPanel;
     wxButton * mOkButton;
+
+    std::string mPassword;
 };
 
 }
