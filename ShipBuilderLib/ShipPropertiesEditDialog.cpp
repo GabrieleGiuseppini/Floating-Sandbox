@@ -11,7 +11,6 @@
 
 #include <Game/ShipDefinitionFormatDeSerializer.h>
 
-#include <GameCore/Utils.h>
 #include <GameCore/Version.h>
 
 #include <wx/gbsizer.h>
@@ -175,13 +174,21 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
                 wxEmptyString,
                 wxDefaultPosition,
                 wxSize(350, -1),
-                wxTE_CENTRE);
+                wxTE_CENTRE | wxTE_PROCESS_ENTER);
 
             mShipNameTextCtrl->Bind(
                 wxEVT_TEXT,
-                [this](wxCommandEvent & /*event*/)
+                [this](wxCommandEvent & event)
                 {
                     OnDirty();
+                    event.Skip();
+                });
+
+            mShipNameTextCtrl->Bind(
+                wxEVT_TEXT_ENTER,
+                [this](wxCommandEvent &)
+                {
+                    mShipNameTextCtrl->Navigate();
                 });
 
             auto font = panel->GetFont();
@@ -219,13 +226,21 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
                 wxEmptyString,
                 wxDefaultPosition,
                 wxSize(150, -1),
-                wxTE_CENTRE);
+                wxTE_CENTRE | wxTE_PROCESS_ENTER);
 
             mShipAuthorTextCtrl->Bind(
                 wxEVT_TEXT,
-                [this](wxCommandEvent & /*event*/)
+                [this](wxCommandEvent & event)
                 {
                     OnDirty();
+                    event.Skip();
+                });
+
+            mShipAuthorTextCtrl->Bind(
+                wxEVT_TEXT_ENTER,
+                [this](wxCommandEvent &)
+                {
+                    mShipAuthorTextCtrl->Navigate();
                 });
 
             vSizer->Add(mShipAuthorTextCtrl, 0, wxALL | wxEXPAND, 0);
@@ -259,13 +274,21 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
                 wxEmptyString,
                 wxDefaultPosition,
                 wxSize(150, -1),
-                wxTE_CENTRE);
+                wxTE_CENTRE | wxTE_PROCESS_ENTER);
 
             mArtCreditsTextCtrl->Bind(
                 wxEVT_TEXT,
-                [this](wxCommandEvent & /*event*/)
+                [this](wxCommandEvent & event)
                 {
                     OnDirty();
+                    event.Skip();
+                });
+
+            mArtCreditsTextCtrl->Bind(
+                wxEVT_TEXT_ENTER,
+                [this](wxCommandEvent &)
+                {
+                mArtCreditsTextCtrl->Navigate();
                 });
 
             vSizer->Add(mArtCreditsTextCtrl, 0, wxALL | wxEXPAND, 0);
@@ -299,13 +322,21 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
                 wxEmptyString,
                 wxDefaultPosition,
                 wxSize(100, -1),
-                wxTE_CENTRE);
+                wxTE_CENTRE | wxTE_PROCESS_ENTER);
 
             mYearBuiltTextCtrl->Bind(
                 wxEVT_TEXT,
-                [this](wxCommandEvent & /*event*/)
+                [this](wxCommandEvent & event)
                 {
                     OnDirty();
+                    event.Skip();
+                });
+
+            mYearBuiltTextCtrl->Bind(
+                wxEVT_TEXT_ENTER,
+                [this](wxCommandEvent &)
+                {
+                    mYearBuiltTextCtrl->Navigate();
                 });
 
             vSizer->Add(mYearBuiltTextCtrl, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 0);
@@ -649,9 +680,9 @@ bool ShipPropertiesEditDialog::IsAutoTexturizationSettingsDirty() const
     return false;
 }
 
-std::optional<std::string> ShipPropertiesEditDialog::MakeString(wxString const & value)
+std::optional<std::string> ShipPropertiesEditDialog::MakeString(wxString && value)
 {
-    std::string trimmedValue = Utils::Trim(value.ToStdString());
+    std::string trimmedValue = value.Trim().ToStdString();
     if (trimmedValue.empty())
         return std::nullopt;
     else

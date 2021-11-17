@@ -207,7 +207,7 @@ private:
 
     void DoNewShip();
 
-    void DoLoadShip(std::filesystem::path const & shipFilePath);
+    bool DoLoadShip(std::filesystem::path const & shipFilePath);
 
     void DoSaveShip(std::filesystem::path const & shipFilePath);
 

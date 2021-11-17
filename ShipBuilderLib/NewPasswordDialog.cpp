@@ -63,12 +63,21 @@ NewPasswordDialog::NewPasswordDialog(
 
             // Text Ctrl
             {
-                mPassword1TextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(PasswordFieldWidth, -1), wxTE_PASSWORD);
+                mPassword1TextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(PasswordFieldWidth, -1), wxTE_PASSWORD | wxTE_PROCESS_ENTER);
+
                 mPassword1TextCtrl->Bind(
                     wxEVT_TEXT,
-                    [this](wxCommandEvent &)
+                    [this](wxCommandEvent & event)
                     {
                         OnPasswordKey();
+                        event.Skip();
+                    });
+
+                mPassword1TextCtrl->Bind(
+                    wxEVT_TEXT_ENTER,
+                    [this](wxCommandEvent &)
+                    {
+                        mPassword1TextCtrl->Navigate();
                     });
 
                 gSizer->Add(mPassword1TextCtrl, wxGBPosition(0, 1), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL);
@@ -95,12 +104,24 @@ NewPasswordDialog::NewPasswordDialog(
 
             // Text Ctrl
             {
-                mPassword2TextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(PasswordFieldWidth, -1), wxTE_PASSWORD);
+                mPassword2TextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(PasswordFieldWidth, -1), wxTE_PASSWORD | wxTE_PROCESS_ENTER);
+
                 mPassword2TextCtrl->Bind(
                     wxEVT_TEXT,
-                    [this](wxCommandEvent &)
+                    [this](wxCommandEvent & event)
                     {
                         OnPasswordKey();
+                        event.Skip();
+                    });
+
+                mPassword2TextCtrl->Bind(
+                    wxEVT_TEXT_ENTER,
+                    [this](wxCommandEvent &)
+                    {
+                        if (mOkButton->IsEnabled())
+                        {
+                            EndModal(wxID_OK);
+                        }
                     });
 
                 gSizer->Add(mPassword2TextCtrl, wxGBPosition(3, 1), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL);
@@ -227,7 +248,7 @@ void NewPasswordDialog::OnPasswordKey()
     // Enable OK button
 
     bool const mayClose =
-        passwordStrength > 0
+        passwordStrength > 0 // Allow weak passwords
         && passwordValue == mPassword2TextCtrl->GetValue();
 
     mOkButton->Enable(mayClose);

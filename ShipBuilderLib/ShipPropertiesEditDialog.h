@@ -64,7 +64,7 @@ private:
     bool IsPhysicsDataDirty() const;
     bool IsAutoTexturizationSettingsDirty() const;
 
-    std::optional<std::string> MakeString(wxString const & value);
+    std::optional<std::string> MakeString(wxString && value);
 
 private:
 

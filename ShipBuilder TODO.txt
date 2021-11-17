@@ -172,17 +172,23 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Hash algo at ShipDeSerializer via static helper method
 	= Workflows
 		+ Save: ShipDeSerializer::CalculatePasswordHash(password): +salt => hash (new GameType) => in metadata
-		- ShipBuilder::Open and Game::EditInShipBuilder and various layers' Import: after load, if ShipMetadata has password:
-			- Ask password
-			- ShipDeSerializer::CalculatePasswordHash(password) => check with metadata
-			- All in own dialog, in static bool CheckPasswordProtectedEdit(shipDefinition) which includes workflow
-			- Do at:
-				- ShipBuilder::Open
-				- TODO: where to catch ShipBuilder starting w/ship?
+		= ShipBuilder::Open and Game::EditInShipBuilder and various layers' Import: after load, if ShipMetadata has password:
+			= Ask password
+				- Workflow for wrong password
+				- Icon for protected
+			+ ShipDeSerializer::CalculatePasswordHash(password) => check with metadata
+			+ All in own dialog, in static bool CheckPasswordProtectedEdit(shipDefinition) which includes workflow
+			+ Do at:
+				+ ShipBuilder::OpenForShip
+				+ Menu/Button LoadShip
 	- Test:
 		- Save ship w/password
 		- 1. Load it in FS & Open ship builder
+			- Password OK
+			- Passworn not OK => NewShip
 		- 2. Load it in builder
+			- Password OK
+			- Passwotn not OK => no change
 
 
 - Import/Export:

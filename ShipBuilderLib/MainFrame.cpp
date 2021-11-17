@@ -490,7 +490,12 @@ void MainFrame::OpenForNewShip()
 void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
 {
     // Load ship
-    DoLoadShip(shipFilePath);
+    if (!DoLoadShip(shipFilePath))
+    {
+        // No luck loading ship...
+        // ...just create new ship
+        DoNewShip();
+    }
 
     // Open ourselves
     Open();
@@ -2434,7 +2439,7 @@ void MainFrame::LoadShip()
     {
         // Load ship
         auto const shipFilePath = mShipLoadDialog->GetChosenShipFilepath();
-        DoLoadShip(shipFilePath);
+        DoLoadShip(shipFilePath); // Ignore eventual failure
     }
 }
 
@@ -2656,33 +2661,40 @@ void MainFrame::DoNewShip()
     ReconciliateUI();
 }
 
-void MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
+bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
 {
     try
     {
         // Load ship
         ShipDefinition shipDefinition = ShipDeSerializer::LoadShip(shipFilePath, mMaterialDatabase);
 
-        // Initialize controller with ship
-        mController = Controller::CreateForShip(
-            std::move(shipDefinition),
-            *mView,
-            mWorkbenchState,
-            *this,
-            mResourceLocator);
-
-        // Remember file path - but only if it's a definition file in the "official" format, not a legacy one
-        if (ShipDeSerializer::IsShipDefinitionFile(shipFilePath))
+        // Check password
+        if (AskPasswordDialog::CheckPasswordProtectedEdit(shipDefinition, this, mResourceLocator))
         {
-            mCurrentShipFilePath = shipFilePath;
-        }
-        else
-        {
-            mCurrentShipFilePath.reset();
-        }
+            // Initialize controller with ship
+            mController = Controller::CreateForShip(
+                std::move(shipDefinition),
+                *mView,
+                mWorkbenchState,
+                *this,
+                mResourceLocator);
 
-        // Reconciliate UI
-        ReconciliateUI();
+            // Remember file path - but only if it's a definition file in the "official" format, not a legacy one
+            if (ShipDeSerializer::IsShipDefinitionFile(shipFilePath))
+            {
+                mCurrentShipFilePath = shipFilePath;
+            }
+            else
+            {
+                mCurrentShipFilePath.reset();
+            }
+
+            // Reconciliate UI
+            ReconciliateUI();
+
+            // Success
+            return true;
+        }
     }
     catch (UserGameException const & exc)
     {
@@ -2692,6 +2704,9 @@ void MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
     {
         ShowError(exc.what());
     }
+
+    // No luck
+    return false;
 }
 
 void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)

@@ -8,9 +8,11 @@
 #include <Game/ResourceLocator.h>
 #include <Game/ShipDefinition.h>
 
-#include <wx/dialog.h>
+#include <GameCore/GameTypes.h>
 
-#include <string>
+#include <wx/button.h>
+#include <wx/dialog.h>
+#include <wx/textctrl.h>
 
 namespace ShipBuilder {
 
@@ -27,9 +29,18 @@ private:
 
     AskPasswordDialog(
         wxWindow * parent,
+        PasswordHash const & passwordHash,
         ResourceLocator const & resourceLocator);
 
+    void OnPasswordKey();
+    void OnOkButton();
+
 private:
+
+    PasswordHash const mPasswordHash;
+
+    wxTextCtrl * mPasswordTextCtrl;
+    wxButton * mOkButton;
 };
 
 }
