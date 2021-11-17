@@ -30,6 +30,10 @@ NewPasswordDialog::NewPasswordDialog(
 
     SetBackgroundColour(GetDefaultAttributes().colBg);
 
+    auto explanationFont = GetFont();
+    explanationFont.SetPointSize(explanationFont.GetPointSize() - 2);
+    explanationFont.SetStyle(wxFontStyle::wxFONTSTYLE_ITALIC);
+
     wxBoxSizer * dialogVSizer = new wxBoxSizer(wxVERTICAL);
 
     dialogVSizer->AddSpacer(20);
@@ -38,15 +42,23 @@ NewPasswordDialog::NewPasswordDialog(
     {
         int constexpr PasswordFieldWidth = 180;
 
-        wxGridBagSizer * gSizer = new wxGridBagSizer(10, 5);
+        wxGridBagSizer * gSizer = new wxGridBagSizer(0, 5);
 
         // Password 1
         {
-            // Label
+            // Label 1
             {
-                auto label = new wxStaticText(this, wxID_ANY, _("Type your password:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
+                auto label = new wxStaticText(this, wxID_ANY, _("Type your new password:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
 
-                gSizer->Add(label, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL);
+                gSizer->Add(label, wxGBPosition(0, 0), wxGBSpan(1, 1), wxEXPAND | wxALIGN_CENTER_VERTICAL);
+            }
+
+            // Label 2
+            {
+                auto label = new wxStaticText(this, wxID_ANY, _("(Min 5 characters, at least one digit or punctuation character)"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+                label->SetFont(explanationFont);
+
+                gSizer->Add(label, wxGBPosition(1, 0), wxGBSpan(1, 3), wxEXPAND);
             }
 
             // Text Ctrl
@@ -70,13 +82,15 @@ NewPasswordDialog::NewPasswordDialog(
             }
         }
 
+        gSizer->Add(-1, 10, wxGBPosition(2, 0), wxGBSpan(1, 3));
+
         // Password 2
         {
             // Label
             {
-                auto label = new wxStaticText(this, wxID_ANY, _("Re-type your password:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
+                auto label = new wxStaticText(this, wxID_ANY, _("Confirm password:"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
 
-                gSizer->Add(label, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL);
+                gSizer->Add(label, wxGBPosition(3, 0), wxGBSpan(1, 1), wxEXPAND | wxALIGN_CENTER_VERTICAL);
             }
 
             // Text Ctrl
@@ -89,7 +103,7 @@ NewPasswordDialog::NewPasswordDialog(
                         OnPasswordKey();
                     });
 
-                gSizer->Add(mPassword2TextCtrl, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL);
+                gSizer->Add(mPassword2TextCtrl, wxGBPosition(3, 1), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL);
             }            
         }
 

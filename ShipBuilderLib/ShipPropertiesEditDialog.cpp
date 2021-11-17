@@ -24,7 +24,7 @@
 
 namespace ShipBuilder {
 
-int const PanelInternalMargin = 10;
+int const PanelInternalMargin = 20;
 int const VerticalSeparatorSize = 20;
 
 ShipPropertiesEditDialog::ShipPropertiesEditDialog(
@@ -366,7 +366,7 @@ void ShipPropertiesEditDialog::PopulatePasswordProtectionPanel(wxPanel * panel)
     }
 
     {
-        auto label = new wxStaticText(panel, wxID_ANY, _("With a password you can prevent unauthorized people from making changes to this ship."), wxDefaultPosition, wxDefaultSize,
+        auto label = new wxStaticText(panel, wxID_ANY, _("Set a password to prevent unauthorized people from making changes to this ship."), wxDefaultPosition, wxDefaultSize,
             wxALIGN_LEFT);
 
         label->SetFont(explanationFont);
@@ -398,7 +398,7 @@ void ShipPropertiesEditDialog::PopulatePasswordProtectionPanel(wxPanel * panel)
     }
 
     {
-        auto label = new wxStaticText(panel, wxID_ANY, _("Without a password anyone is allowed to make changes to this ship."), wxDefaultPosition, wxDefaultSize,
+        auto label = new wxStaticText(panel, wxID_ANY, _("Clear the password to allow everyone to make changes to this ship."), wxDefaultPosition, wxDefaultSize,
             wxALIGN_LEFT);
 
         label->SetFont(explanationFont);
@@ -440,7 +440,7 @@ void ShipPropertiesEditDialog::OnSetPassword()
 
 void ShipPropertiesEditDialog::OnClearPassword()
 {
-    auto const result = wxMessageBox(_("Are you sure you want to remove password protection for this ship, allowing everyone to edit it?"), ApplicationName, 
+    auto const result = wxMessageBox(_("Are you sure you want to remove password protection for this ship, allowing everyone to make changes to it?"), ApplicationName, 
         wxICON_EXCLAMATION | wxYES_NO | wxCENTRE);
 
     if (result == wxYES)

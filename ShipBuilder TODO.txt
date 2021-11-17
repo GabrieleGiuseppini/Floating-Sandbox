@@ -234,9 +234,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- ModelController: do not bake ArtCredits in final ShipDefinition if there is no texture layer
 		- At OK: populated only if HasTexture (though should be empty by then)
 	+ Year Built
-	= Edit Password
-		- Make new tab
-		- TODOHERE: Add way to clear password when it's originally set (or when changed their mind)
+	+ Edit Password
+		+ Make new tab
 	- Description
 		- Separate tab
 	- PhysicsData
