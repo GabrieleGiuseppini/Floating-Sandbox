@@ -71,21 +71,7 @@ ModelController::ModelController(
 
 ShipDefinition ModelController::MakeShipDefinition() const
 {
-    return ShipDefinition(
-        mModel.GetShipSize(),
-        mModel.CloneLayer<LayerType::Structural>(),
-        mModel.HasLayer(LayerType::Electrical)
-            ? std::make_unique<ElectricalLayerData>(mModel.CloneLayer<LayerType::Electrical>())
-            : nullptr,
-        mModel.HasLayer(LayerType::Ropes)
-            ? std::make_unique<RopesLayerData>(mModel.CloneLayer<LayerType::Ropes>())
-            : nullptr,
-        mModel.HasLayer(LayerType::Texture)
-            ? std::make_unique<TextureLayerData>(mModel.CloneLayer<LayerType::Texture>())
-            : nullptr,
-        mModel.GetShipMetadata(),
-        mModel.GetShipPhysicsData(),
-        std::nullopt); // TODOHERE
+    return mModel.MakeShipDefinition();
 }
 
 ModelValidationResults ModelController::ValidateModel() const
@@ -937,6 +923,9 @@ void ModelController::RemoveTextureLayer()
     mModel.RemoveTextureLayer();
 
     // TODO: remove visualization members
+
+    // Remove art credits from metadata
+    mModel.GetShipMetadata().ArtCredits.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1198,8 +1187,6 @@ std::optional<ShipSpaceRect> ModelController::Flood(
 
         return affectedRect;
     }
-
-
 }
 
 void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & region)

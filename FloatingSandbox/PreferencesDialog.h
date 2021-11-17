@@ -7,12 +7,13 @@
 
 #include "UIPreferencesManager.h"
 
-#include <UILib/SliderControl.h>
 #include <UILib/LocalizationManager.h>
+#include <UILib/SliderControl.h>
 
 #include <wx/combobox.h>
 #include <wx/filepicker.h>
 #include <wx/listbox.h>
+#include <wx/radiobut.h>
 #include <wx/spinctrl.h>
 #include <wx/wx.h>
 

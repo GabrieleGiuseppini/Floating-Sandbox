@@ -22,9 +22,9 @@ struct ShipDefinition
     std::unique_ptr<RopesLayerData> RopesLayer;
     std::unique_ptr<TextureLayerData> TextureLayer;
 
-    std::optional<ShipAutoTexturizationSettings> const AutoTexturizationSettings;
     ShipMetadata Metadata;
     ShipPhysicsData PhysicsData;
+    std::optional<ShipAutoTexturizationSettings> const AutoTexturizationSettings;
 
     ShipDefinition(
         ShipSpaceSize const & size,
@@ -40,8 +40,8 @@ struct ShipDefinition
         , ElectricalLayer(std::move(electricalLayer))
         , RopesLayer(std::move(ropesLayer))
         , TextureLayer(std::move(textureLayer))
-        , AutoTexturizationSettings(autoTexturizationSettings)
         , Metadata(metadata)
         , PhysicsData(physicsData)
+        , AutoTexturizationSettings(autoTexturizationSettings)
     {}
 };

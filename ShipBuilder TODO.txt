@@ -39,7 +39,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 + Send for testing
 
-+ Finalize design of Ropes layer
+= Finalize design of Ropes layer
 	! Spec:
 		! Material Strategy: in Structural DB, separate palette tree - does NOT require current "ropes" to be marked as "legacy"
 		! Element = start, end, StructuralMaterial *, renderColor
@@ -155,14 +155,18 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 - Complete Load/Save/Model
 	- Finalize storage of all other ship definition members in Model
-		- AutoTexturizationSettings
-	- Load/Save each of:
+		= AutoTexturizationSettings
+			- Test w/PropertiesDialog
+	- ShipDeSerializer: Load/Save each of:
 		+ Electrical layer
 		+ Ropes layer
 		+ Texture layer
 			+ Using DevIL lump, see https://github.com/DentonW/DevIL/blob/master/DevIL/src-IL/src/il_io.cpp#L2490
 		+ PhysicsData
 		- AutoTexturizationSettings
+			- Test
+				- w/PropertiesDialog
+				- Load .shp -> Save .shp2 -> Load .shp2 in FS
 
 = Workflow of password (* x 2)
 
@@ -205,6 +209,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Make internal helper templated on LayerType, with all code
 		- Additions:
 			- Undo
+				- Note: texture layer removal should also store metadata
 
 - Each time we StartTool() (e.g. at AddLayer, etc.) we end up refreshing modelcontroller's visualization and OpenGL visualization, twice
 
@@ -227,10 +232,11 @@ https://gamejolt.com/x/permalink/comment/11730705
 						- If has a current: clear current (and Save will become SaveAs)
 						- If has no current: Save is already set to become SaveAs, we're OK
 	+ Author(s)
-	= Art Credits
+	+ Art Credits
 		! Spec: we allow ModelController to carry stale credits when texture is removed - OR NOT: replace won't signal layer removal
 		+ Enabled and populated only iff HasTexture
-		- ModelController: remove ArtCredits when texture is removed
+		+ ModelController: remove ArtCredits when texture is removed
+			+ Test
 		+ Test
 	+ Year Built
 	+ Edit Password
@@ -253,6 +259,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 				- Call Controller::ReplaceMetadata(&&), etc.
 					- Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
 	- Tests:
+		- Load & save ship w/auto-texturization settings
 		- Verify that after PopulateUI all controls are clean (not marked as dirty)
 		+ New ship:
 			+ Populate one x {...}
@@ -518,7 +525,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- How to share state changes? 
 			- FullScreenManager class, shared_ptr in both
 			- Looked at at each Game<->ShipBuilder switch by receiver
-	- Windows installer (or ShipBuilder::MainFrame cctor): on Windows, register shell icon handler for .shp2 files
+	- Windows installer (or ShipBuilder::MainFrame cctor): on Windows, register shell icon handler for .shp2 files, and icon
 	- TO-SPEC:
 		- What to do with background music when switching back and forth?
 

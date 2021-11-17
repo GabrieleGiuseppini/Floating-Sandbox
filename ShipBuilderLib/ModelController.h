@@ -40,12 +40,12 @@ public:
         ShipDefinition && shipDefinition,
         View & view);
 
+    ShipDefinition MakeShipDefinition() const;
+
     Model const & GetModel() const
     {
         return mModel;
     }
-
-    ShipDefinition MakeShipDefinition() const;
 
     void SetLayerDirty(LayerType layer)
     {
@@ -84,6 +84,26 @@ public:
     void SetShipMetadata(ShipMetadata && shipMetadata)
     {
         mModel.SetShipMetadata(std::move(shipMetadata));
+    }
+
+    ShipPhysicsData const & GetShipPhysicsData() const
+    {
+        return mModel.GetShipPhysicsData();
+    }
+
+    void SetShipPhysicsData(ShipPhysicsData && shipPhysicsData)
+    {
+        mModel.SetShipPhysicsData(std::move(shipPhysicsData));
+    }
+
+    std::optional<ShipAutoTexturizationSettings> const & GetShipAutoTexturizationSettings() const
+    {
+        return mModel.GetShipAutoTexturizationSettings();
+    }
+
+    void SetShipAutoTexturizationSettings(std::optional<ShipAutoTexturizationSettings> && shipAutoTexturizationSettings)
+    {
+        mModel.SetShipAutoTexturizationSettings(std::move(shipAutoTexturizationSettings));
     }
 
     //

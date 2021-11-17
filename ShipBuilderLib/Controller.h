@@ -78,6 +78,16 @@ public:
         return mModelController->GetModel().GetShipPhysicsData();
     }
 
+    void SetShipPhysicsData(ShipPhysicsData && shipPhysicsData);
+
+    std::optional<ShipAutoTexturizationSettings> const & GetShipAutoTexturizationSettings() const
+    {
+        assert(mModelController);
+        return mModelController->GetModel().GetShipAutoTexturizationSettings();
+    }
+
+    void SetShipAutoTexturizationSettings(std::optional<ShipAutoTexturizationSettings> && shipAutoTexturizationSettings);
+
     bool HasModelLayer(LayerType layer) const
     {
         assert(mModelController);

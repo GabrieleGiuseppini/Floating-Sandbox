@@ -15,6 +15,7 @@ Model::Model(
     : mShipSize(shipSize)
     , mShipMetadata(shipName)
     , mShipPhysicsData()
+    , mShipAutoTexturizationSettings()
     , mStructuralLayer(MakeNewEmptyStructuralLayer(mShipSize))
     , mElectricalLayer() // None
     , mRopesLayer() // None
@@ -30,6 +31,7 @@ Model::Model(ShipDefinition && shipDefinition)
     : mShipSize(shipDefinition.Size)
     , mShipMetadata(shipDefinition.Metadata)
     , mShipPhysicsData(shipDefinition.PhysicsData)
+    , mShipAutoTexturizationSettings(shipDefinition.AutoTexturizationSettings)
     , mStructuralLayer(new StructuralLayerData(std::move(shipDefinition.StructuralLayer)))
     , mElectricalLayer(std::move(shipDefinition.ElectricalLayer))
     , mRopesLayer(std::move(shipDefinition.RopesLayer))
@@ -42,6 +44,25 @@ Model::Model(ShipDefinition && shipDefinition)
     mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = (mElectricalLayer != nullptr);
     mLayerPresenceMap[static_cast<size_t>(LayerType::Ropes)] = (mRopesLayer != nullptr);
     mLayerPresenceMap[static_cast<size_t>(LayerType::Texture)] = (mTextureLayer != nullptr);
+}
+
+ShipDefinition Model::MakeShipDefinition() const
+{
+    return ShipDefinition(
+        GetShipSize(),
+        CloneLayer<LayerType::Structural>(),
+        HasLayer(LayerType::Electrical)
+            ? std::make_unique<ElectricalLayerData>(CloneLayer<LayerType::Electrical>())
+            : nullptr,
+        HasLayer(LayerType::Ropes)
+            ? std::make_unique<RopesLayerData>(CloneLayer<LayerType::Ropes>())
+            : nullptr,
+        HasLayer(LayerType::Texture)
+            ? std::make_unique<TextureLayerData>(CloneLayer<LayerType::Texture>())
+            : nullptr,
+        GetShipMetadata(),
+        GetShipPhysicsData(),
+        GetShipAutoTexturizationSettings());
 }
 
 void Model::NewStructuralLayer()

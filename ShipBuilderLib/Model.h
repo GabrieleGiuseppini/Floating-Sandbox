@@ -15,6 +15,7 @@
 #include <array>
 #include <cassert>
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace ShipBuilder {
@@ -37,6 +38,7 @@ public:
         std::array<bool, LayerCount> IsLayerDirtyMap;
         bool IsMetadataDirty;
         bool IsPhysicsDataDirty;
+        bool IsAutoTexturizationSettingsDirty;
 
         bool GlobalIsDirty;
 
@@ -44,6 +46,7 @@ public:
             : IsLayerDirtyMap()
             , IsMetadataDirty(false)
             , IsPhysicsDataDirty(false)
+            , IsAutoTexturizationSettingsDirty(false)
             , GlobalIsDirty(false)
         {
             IsLayerDirtyMap.fill(false);
@@ -59,6 +62,11 @@ public:
                 true) != IsLayerDirtyMap.cend()
                 ? true
                 : false;
+
+            GlobalIsDirty |=
+                IsMetadataDirty
+                | IsPhysicsDataDirty
+                | IsAutoTexturizationSettingsDirty;
         }
     };
 
@@ -70,12 +78,19 @@ public:
 
     explicit Model(ShipDefinition && shipDefinition);
 
+    ShipDefinition MakeShipDefinition() const;
+
     ShipSpaceSize const & GetShipSize() const
     {
         return mShipSize;
     }
 
     ShipMetadata const & GetShipMetadata() const
+    {
+        return mShipMetadata;
+    }
+
+    ShipMetadata & GetShipMetadata()
     {
         return mShipMetadata;
     }
@@ -98,6 +113,19 @@ public:
         mShipPhysicsData = std::move(shipPhysicsData);
 
         mDirtyState.IsPhysicsDataDirty = true;
+        mDirtyState.GlobalIsDirty = true;
+    }
+
+    std::optional<ShipAutoTexturizationSettings> const & GetShipAutoTexturizationSettings() const
+    {
+        return mShipAutoTexturizationSettings;
+    }
+
+    void SetShipAutoTexturizationSettings(std::optional<ShipAutoTexturizationSettings> && shipAutoTexturizationSettings)
+    {
+        mShipAutoTexturizationSettings = std::move(shipAutoTexturizationSettings);
+
+        mDirtyState.IsAutoTexturizationSettingsDirty = true;
         mDirtyState.GlobalIsDirty = true;
     }
 
@@ -253,6 +281,7 @@ private:
 
     ShipMetadata mShipMetadata;
     ShipPhysicsData mShipPhysicsData;
+    std::optional<ShipAutoTexturizationSettings> mShipAutoTexturizationSettings;
 
     //
     // Layers

@@ -8,6 +8,7 @@
 #include "Controller.h"
 
 #include <UILib/BitmapToggleButton.h>
+#include <UILib/SliderControl.h>
 
 #include <Game/ResourceLocator.h>
 #include <Game/ShipMetadata.h>
@@ -19,6 +20,7 @@
 #include <wx/button.h>
 #include <wx/dialog.h>
 #include <wx/panel.h>
+#include <wx/radiobut.h>
 #include <wx/textctrl.h>
 
 #include <optional>
@@ -73,12 +75,14 @@ private:
     //
 
     wxTextCtrl * mShipNameTextCtrl;
-
     wxTextCtrl * mShipAuthorTextCtrl;
-
     wxTextCtrl * mArtCreditsTextCtrl;
-
     wxTextCtrl * mYearBuiltTextCtrl;
+
+    wxRadioButton * mFlatStructureAutoTexturizationModeRadioButton;
+    wxRadioButton * mMaterialTexturesAutoTexturizationModeRadioButton;
+    SliderControl<float> * mMaterialTextureMagnificationSlider;
+    SliderControl<float> * mMaterialTextureTransparencySlider;
 
     std::optional<PasswordHash> mPasswordHash;
     bool mIsPasswordHashModified;

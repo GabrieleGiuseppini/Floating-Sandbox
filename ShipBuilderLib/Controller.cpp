@@ -114,6 +114,22 @@ void Controller::SetShipMetadata(ShipMetadata && shipMetadata)
     mUserInterface.OnShipMetadataChanged(mModelController->GetShipMetadata());
 }
 
+void Controller::SetShipPhysicsData(ShipPhysicsData && shipPhysicsData)
+{
+    assert(mModelController);
+    mModelController->SetShipPhysicsData(std::move(shipPhysicsData));
+
+    mUserInterface.OnModelDirtyChanged();
+}
+
+void Controller::SetShipAutoTexturizationSettings(std::optional<ShipAutoTexturizationSettings> && shipAutoTexturizationSettings)
+{
+    assert(mModelController);
+    mModelController->SetShipAutoTexturizationSettings(std::move(shipAutoTexturizationSettings));
+
+    mUserInterface.OnModelDirtyChanged();
+}
+
 void Controller::ClearModelDirty()
 {
     mModelController->ClearIsDirty();
