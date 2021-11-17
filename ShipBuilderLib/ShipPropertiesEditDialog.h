@@ -7,6 +7,8 @@
 
 #include "Controller.h"
 
+#include <UILib/BitmapToggleButton.h>
+
 #include <Game/ResourceLocator.h>
 #include <Game/ShipMetadata.h>
 #include <Game/ShipPhysicsData.h>
@@ -46,16 +48,15 @@ private:
     void PopulateAutoTexturizationPanel(wxPanel * panel);
     void PopulatePasswordProtectionPanel(wxPanel * panel);
 
+    void OnSetPassword();
+    void OnClearPassword();
     void OnOkButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
 
-    void InitializeUI();
-
-    void SetDummyPassword(bool hasPassword);
-
     void OnDirty();
 
-    void OnChangePassword();
+    void InitializeUI();
+    void ReconciliateUIWithPassword();
 
     bool IsMetadataDirty() const;
     bool IsPhysicsDataDirty() const;
@@ -66,7 +67,7 @@ private:
     ResourceLocator const & mResourceLocator;
 
     //
-    // Fields
+    // Fields/storage
     //
 
     wxTextCtrl * mShipNameTextCtrl;
@@ -75,7 +76,6 @@ private:
 
     wxTextCtrl * mYearBuiltTextCtrl;
 
-    wxTextCtrl * mDummyPasswordTextCtrl;
     std::optional<PasswordHash> mPasswordHash;
     bool mIsPasswordHashModified;
 
@@ -83,6 +83,8 @@ private:
     // UI
     //
 
+    BitmapToggleButton * mPasswordOnButton;
+    BitmapToggleButton * mPasswordOffButton;
     wxButton * mOkButton;
 
     struct SessionData

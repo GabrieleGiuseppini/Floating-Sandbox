@@ -7,10 +7,14 @@
 
 #include "NewPasswordDialog.h"
 
-#include <Game/ShipDefinitionFormatDeSerializer.h>
-
 #include <UILib/WxHelpers.h>
 
+#include <Game/ShipDefinitionFormatDeSerializer.h>
+
+#include <GameCore/Version.h>
+
+#include <wx/gbsizer.h>
+#include <wx/msgdlg.h>
 #include <wx/notebook.h>
 #include <wx/sizer.h>
 #include <wx/statbmp.h>
@@ -281,12 +285,10 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
 
     // TODO
 
-    //vSizer->AddSpacer(VerticalSeparatorSize);
-
     // Finalize
-    auto maringSizer = new wxBoxSizer(wxVERTICAL);
-    maringSizer->Add(vSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, PanelInternalMargin);
-    panel->SetSizer(maringSizer);
+    auto marginSizer = new wxBoxSizer(wxVERTICAL);
+    marginSizer->Add(vSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, PanelInternalMargin);
+    panel->SetSizer(marginSizer);
 }
 
 void ShipPropertiesEditDialog::PopulateDescriptionPanel(wxPanel * panel)
@@ -300,9 +302,9 @@ void ShipPropertiesEditDialog::PopulateDescriptionPanel(wxPanel * panel)
     }
 
     // Finalize
-    auto maringSizer = new wxBoxSizer(wxVERTICAL);
-    maringSizer->Add(vSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, PanelInternalMargin);
-    panel->SetSizer(maringSizer);
+    auto marginSizer = new wxBoxSizer(wxVERTICAL);
+    marginSizer->Add(vSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, PanelInternalMargin);
+    panel->SetSizer(marginSizer);
 }
 
 void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
@@ -316,9 +318,9 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
     }
 
     // Finalize
-    auto maringSizer = new wxBoxSizer(wxVERTICAL);
-    maringSizer->Add(vSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, PanelInternalMargin);
-    panel->SetSizer(maringSizer);
+    auto marginSizer = new wxBoxSizer(wxVERTICAL);
+    marginSizer->Add(vSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, PanelInternalMargin);
+    panel->SetSizer(marginSizer);
 }
 
 void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
@@ -332,70 +334,125 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
     }
 
     // Finalize
-    auto maringSizer = new wxBoxSizer(wxVERTICAL);
-    maringSizer->Add(vSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, PanelInternalMargin);
-    panel->SetSizer(maringSizer);
+    auto marginSizer = new wxBoxSizer(wxVERTICAL);
+    marginSizer->Add(vSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, PanelInternalMargin);
+    panel->SetSizer(marginSizer);
 }
 
 void ShipPropertiesEditDialog::PopulatePasswordProtectionPanel(wxPanel * panel)
 {
-    wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
-
     auto explanationFont = panel->GetFont();
     explanationFont.SetPointSize(explanationFont.GetPointSize() - 2);
     explanationFont.SetStyle(wxFontStyle::wxFONTSTYLE_ITALIC);
 
-    {
-        auto label = new wxStaticText(panel, wxID_ANY, _("Password Lock"), wxDefaultPosition, wxDefaultSize,
-            wxALIGN_CENTER);
-
-        vSizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL, 0);
-    }
+    wxGridBagSizer * gSizer = new wxGridBagSizer(10, 5);
 
     {
-        wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
-
-        {
-            mDummyPasswordTextCtrl = new wxTextCtrl(
-                panel,
-                wxID_ANY,
-                wxEmptyString,
-                wxDefaultPosition,
-                wxSize(100, -1),
-                wxTE_READONLY | wxTE_PASSWORD);
-
-            hSizer->Add(mDummyPasswordTextCtrl, 0, wxALIGN_CENTER_VERTICAL, 0);
-        }
-
-        {
-            auto button = new wxButton(panel, wxID_ANY, "...", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-
-            button->Bind(
-                wxEVT_BUTTON,
-                [this](wxCommandEvent & /*event*/)
+        mPasswordOnButton = new BitmapToggleButton(
+            panel,
+            mResourceLocator.GetBitmapFilePath("protected_medium"),
+            [this]()
             {
-                OnChangePassword();
-            });
+                OnSetPassword();
+            },
+            _("Set a password to protect edits to this ship."));
 
-            hSizer->Add(button, 0, wxALIGN_CENTER_VERTICAL, 0);
-        }
-
-        vSizer->Add(hSizer, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+        gSizer->Add(
+            mPasswordOnButton,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 1),
+            0,
+            0);
     }
 
     {
-        auto label = new wxStaticText(panel, wxID_ANY, _("Type a password to protect edits to this ship"), wxDefaultPosition, wxDefaultSize,
-            wxALIGN_CENTER);
+        auto label = new wxStaticText(panel, wxID_ANY, _("With a password you can prevent unauthorized people from making changes to this ship."), wxDefaultPosition, wxDefaultSize,
+            wxALIGN_LEFT);
 
         label->SetFont(explanationFont);
 
-        vSizer->Add(label, 0, wxEXPAND, 0);
+        gSizer->Add(
+            label,
+            wxGBPosition(0, 1),
+            wxGBSpan(1, 1),
+            0,
+            0);
+    }
+
+    {
+        mPasswordOffButton = new BitmapToggleButton(
+            panel,
+            mResourceLocator.GetBitmapFilePath("unprotected_medium"),
+            [this]()
+            {
+                OnClearPassword();
+            },
+            _("Remove the password lock."));
+
+        gSizer->Add(
+            mPasswordOffButton,
+            wxGBPosition(1, 0),
+            wxGBSpan(1, 1),
+            0,
+            0);
+    }
+
+    {
+        auto label = new wxStaticText(panel, wxID_ANY, _("Without a password anyone is allowed to make changes to this ship."), wxDefaultPosition, wxDefaultSize,
+            wxALIGN_LEFT);
+
+        label->SetFont(explanationFont);
+
+        gSizer->Add(
+            label,
+            wxGBPosition(1, 1),
+            wxGBSpan(1, 1),
+            0,
+            0);
     }
 
     // Finalize
-    auto maringSizer = new wxBoxSizer(wxVERTICAL);
-    maringSizer->Add(vSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, PanelInternalMargin);
-    panel->SetSizer(maringSizer);
+    auto marginSizer = new wxBoxSizer(wxVERTICAL);
+    marginSizer->Add(gSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, PanelInternalMargin);
+    panel->SetSizer(marginSizer);
+}
+
+void ShipPropertiesEditDialog::OnSetPassword()
+{
+    // Ask password
+    NewPasswordDialog dialog(this, mResourceLocator);
+    auto const result = dialog.ShowModal();
+    if (result == wxID_OK)
+    {
+        // Changed
+
+        mPasswordHash = ShipDefinitionFormatDeSerializer::CalculatePasswordHash(dialog.GetPassword());
+        mIsPasswordHashModified = true;
+        OnDirty();
+
+        ReconciliateUIWithPassword();
+    }
+    else
+    {
+        // Unchanged
+    }
+}
+
+void ShipPropertiesEditDialog::OnClearPassword()
+{
+    auto const result = wxMessageBox(_("Are you sure you want to remove password protection for this ship, allowing everyone to edit it?"), ApplicationName, 
+        wxICON_EXCLAMATION | wxYES_NO | wxCENTRE);
+
+    if (result == wxYES)
+    {
+        // Changed
+
+        mPasswordHash.reset();
+        mIsPasswordHashModified = true;
+        OnDirty();
+
+        ReconciliateUIWithPassword();
+    }
 }
 
 void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
@@ -435,6 +492,16 @@ void ShipPropertiesEditDialog::OnCancelButton(wxCommandEvent & /*event*/)
     EndModal(-1);
 }
 
+void ShipPropertiesEditDialog::OnDirty()
+{
+    // We assume at least one of the controls is dirty
+
+    if (!mOkButton->IsEnabled())
+    {
+        mOkButton->Enable(true);
+    }
+}
+
 void ShipPropertiesEditDialog::InitializeUI()
 {
     assert(mSessionData);
@@ -453,12 +520,6 @@ void ShipPropertiesEditDialog::InitializeUI()
 
     // TODO
 
-    SetDummyPassword(mSessionData->Metadata.Password.has_value());
-    mPasswordHash = mSessionData->Metadata.Password;
-    mIsPasswordHashModified = false;
-
-    // TODO
-
     //
     // Physics
     //
@@ -472,51 +533,29 @@ void ShipPropertiesEditDialog::InitializeUI()
     // TODO
 
     //
+    // Password protection
+    //
+
+    mPasswordHash = mSessionData->Metadata.Password;
+    mIsPasswordHashModified = false;
+    ReconciliateUIWithPassword();
+
+    //
     // Buttons
     //
 
     mOkButton->Enable(false);
 }
 
-void ShipPropertiesEditDialog::SetDummyPassword(bool hasPassword)
+void ShipPropertiesEditDialog::ReconciliateUIWithPassword()
 {
-    if (hasPassword)
-    {
-        mDummyPasswordTextCtrl->SetValue("XXXXXXXXXX");
-    }
-    else
-    {
-        mDummyPasswordTextCtrl->SetValue("");
-    }
-}
+    bool const hasPassword = mPasswordHash.has_value();
 
-void ShipPropertiesEditDialog::OnDirty()
-{
-    // We assume at least one of the controls is dirty
+    mPasswordOnButton->Enable(!hasPassword);
+    mPasswordOnButton->SetValue(hasPassword);
 
-    if (!mOkButton->IsEnabled())
-    {
-        mOkButton->Enable(true);
-    }
-}
-
-void ShipPropertiesEditDialog::OnChangePassword()
-{
-    // Ask password
-    NewPasswordDialog dialog(this, mResourceLocator);
-    auto const result = dialog.ShowModal();
-    if (result == wxID_OK)
-    {
-        // Changed
-        SetDummyPassword(true);
-        mPasswordHash = ShipDefinitionFormatDeSerializer::CalculatePasswordHash(dialog.GetPassword());
-        mIsPasswordHashModified = true;
-        OnDirty();
-    }
-    else
-    {
-        // Unchanged
-    }
+    mPasswordOffButton->Enable(hasPassword);
+    mPasswordOffButton->SetValue(!hasPassword);
 }
 
 bool ShipPropertiesEditDialog::IsMetadataDirty() const
