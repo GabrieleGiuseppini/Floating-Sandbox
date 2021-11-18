@@ -14,6 +14,7 @@
 #include <wx/button.h>
 #include <wx/dialog.h>
 #include <wx/statbmp.h>
+#include <wx/stattext.h>
 #include <wx/textctrl.h>
 #include <wx/timer.h>
 
@@ -54,6 +55,22 @@ private:
     wxButton * mOkButton;
 
     std::unique_ptr<wxTimer> mTimer;
+
+    class WaitDialog : public wxDialog
+    {
+    public:
+
+        WaitDialog(wxWindow * parent);
+
+    private:
+
+        void SetLabel();
+
+        int mCounter;
+
+        wxStaticText * mLabel;
+        std::unique_ptr<wxTimer> mTimer;
+    };
 };
 
 }

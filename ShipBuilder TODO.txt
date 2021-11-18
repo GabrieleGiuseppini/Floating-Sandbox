@@ -176,10 +176,11 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Save: ShipDeSerializer::CalculatePasswordHash(password): +salt => hash (new GameType) => in metadata
 		= ShipBuilder::Open and Game::EditInShipBuilder and various layers' Import: after load, if ShipMetadata has password:
 			= Ask password
-				- Workflow for wrong password
-					- Dialog w/timer, EndModel @ 3rd round
-					- "Invalid password"
-					- "Retry in {}..." (iff ! last time)
+				= Workflow for wrong password
+					+ Dialog w/timer, EndModel @ 3rd round
+					= "Invalid password"
+					= "Retry in {}..." (iff ! last time)
+					- Max 3 times
 			+ ShipDeSerializer::CalculatePasswordHash(password) => check with metadata
 			+ All in own dialog, in static bool CheckPasswordProtectedEdit(shipDefinition) which includes workflow
 			+ Do at:

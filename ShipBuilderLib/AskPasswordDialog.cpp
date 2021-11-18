@@ -10,7 +10,6 @@
 #include <UILib/WxHelpers.h>
 
 #include <wx/sizer.h>
-#include <wx/stattext.h>
 
 #include <cassert>
 
@@ -194,8 +193,80 @@ void AskPasswordDialog::OnOkButton()
         // Wrong password
         //
 
-        // TODOHERE
+        // Wait some time
+        WaitDialog waitDialog(this);
+        waitDialog.ShowModal();
+
+        // Clear password
+        mPasswordTextCtrl->Clear();
     }
+}
+
+AskPasswordDialog::WaitDialog::WaitDialog(wxWindow * parent)
+    : wxDialog(
+        parent,
+        wxID_ANY,
+        _("Invalid Password"),
+        wxDefaultPosition,
+        wxDefaultSize,
+        wxSTAY_ON_TOP)
+    , mCounter(3)
+{
+    wxBoxSizer * dialogVSizer = new wxBoxSizer(wxVERTICAL);
+
+    // Label 1
+    {
+        auto label = new wxStaticText(this, wxID_ANY, _("Invalid password!"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+
+        dialogVSizer->Add(label, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 20);
+    }
+
+    dialogVSizer->AddSpacer(10);
+
+    // Label 2
+    {
+        mLabel = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+
+        dialogVSizer->Add(mLabel, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 20);
+    }
+
+    //
+    // Finalize dialog
+    //
+
+    SetLabel();
+
+    SetSizerAndFit(dialogVSizer);
+
+    Centre(wxCENTER_ON_SCREEN | wxBOTH);
+
+    //
+    // Start timer
+    //
+
+    mTimer = std::make_unique<wxTimer>();
+    mTimer->Bind(
+        wxEVT_TIMER,
+        [this](wxTimerEvent &)
+        {
+            --mCounter;
+            if (mCounter > 0)
+            {
+                SetLabel();
+            }
+            else
+            {
+                EndModal(0);
+            }
+        });
+
+    mTimer->Start(1000);
+}
+
+void AskPasswordDialog::WaitDialog::SetLabel()
+{
+    mLabel->SetLabel(wxString::Format(_("Retry in %d..."), mCounter));
+    Layout();
 }
 
 }
