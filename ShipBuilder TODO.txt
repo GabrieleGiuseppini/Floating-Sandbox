@@ -39,6 +39,32 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 + Send for testing
 
+= Workflow of password
+	+ Hash algo at ShipDeSerializer via static helper method
+	+ Workflows
+		+ Save: ShipDeSerializer::CalculatePasswordHash(password): +salt => hash (new GameType) => in metadata
+		+ ShipBuilder::Open and Game::EditInShipBuilder and various layers' Import: after load, if ShipMetadata has password:
+			+ Ask password
+				+ Workflow for wrong password
+					+ Dialog w/timer, EndModel @ 3rd round
+					+ "Invalid password"
+					+ "Retry in {}..." (iff ! last time)
+					+ Max 3 times
+			+ ShipDeSerializer::CalculatePasswordHash(password) => check with metadata
+			+ All in own dialog, in static bool CheckPasswordProtectedEdit(shipDefinition) which includes workflow
+			+ Do at:
+				+ ShipBuilder::OpenForShip
+				+ Menu/Button LoadShip
+	- Test:
+		- Save ship w/password
+		- 1. Load it in FS & Open ship builder
+			- Password OK
+			- Passworn not OK => NewShip
+		- 2. Load it in builder
+			- Password OK
+			- Password not OK => no change
+
+
 = Finalize design of Ropes layer
 	! Spec:
 		! Material Strategy: in Structural DB, separate palette tree - does NOT require current "ropes" to be marked as "legacy"
@@ -135,7 +161,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Springs::mBreakingElongationBuffer: it's buffer of two-float struct, BreakingElongation and StrainThresholdFraction
 				+ Set at Chains material
 				+ Test Chains
-				- Test others
+				- Test other materials for no changes to strain threshold
 			+ Rustyness
 			- Verify properties look'n'feel (tension)
 		- "~Elastic" ("Rubber Ropes"?)
@@ -169,31 +195,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Test
 				- w/PropertiesDialog
 				- Load .shp -> Save .shp2 -> Load .shp2 in FS
-
-= Workflow of password
-	+ Hash algo at ShipDeSerializer via static helper method
-	= Workflows
-		+ Save: ShipDeSerializer::CalculatePasswordHash(password): +salt => hash (new GameType) => in metadata
-		= ShipBuilder::Open and Game::EditInShipBuilder and various layers' Import: after load, if ShipMetadata has password:
-			= Ask password
-				= Workflow for wrong password
-					+ Dialog w/timer, EndModel @ 3rd round
-					= "Invalid password"
-					= "Retry in {}..." (iff ! last time)
-					- Max 3 times
-			+ ShipDeSerializer::CalculatePasswordHash(password) => check with metadata
-			+ All in own dialog, in static bool CheckPasswordProtectedEdit(shipDefinition) which includes workflow
-			+ Do at:
-				+ ShipBuilder::OpenForShip
-				+ Menu/Button LoadShip
-	- Test:
-		- Save ship w/password
-		- 1. Load it in FS & Open ship builder
-			- Password OK
-			- Passworn not OK => NewShip
-		- 2. Load it in builder
-			- Password OK
-			- Passwotn not OK => no change
 
 
 - Import/Export:

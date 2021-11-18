@@ -48,6 +48,8 @@ private:
 
     PasswordHash const mPasswordHash;
 
+    int mWrongAttemptCounter;
+
     wxStaticBitmap * mIconBitmap;
     wxBitmap const mLockedBitmap;
     wxBitmap const mUnlockedBitmap;
@@ -60,11 +62,15 @@ private:
     {
     public:
 
-        WaitDialog(wxWindow * parent);
+        WaitDialog(
+            wxWindow * parent,
+            bool isForFinal);
 
     private:
 
-        void SetLabel();
+        void SetLabel(bool isForFinal);
+
+    private:
 
         int mCounter;
 

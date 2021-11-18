@@ -43,6 +43,7 @@ AskPasswordDialog::AskPasswordDialog(
     PasswordHash const & passwordHash,
     ResourceLocator const & resourceLocator)
     : mPasswordHash(passwordHash)
+    , mWrongAttemptCounter(0)
     , mLockedBitmap(WxHelpers::LoadBitmap("protected_medium", resourceLocator))
     , mUnlockedBitmap(WxHelpers::LoadBitmap("unprotected_with_check_medium", resourceLocator))
 {
@@ -194,16 +195,36 @@ void AskPasswordDialog::OnOkButton()
         // Wrong password
         //
 
-        // Wait some time
-        WaitDialog waitDialog(this);
-        waitDialog.ShowModal();
+        // Increment wrong attempt counter
+        ++mWrongAttemptCounter;
+        if (mWrongAttemptCounter <= 2)
+        {
+            // Wait some time
+            WaitDialog waitDialog(this, false);
+            waitDialog.ShowModal();
 
-        // Clear password
-        mPasswordTextCtrl->Clear();
+            // Clear password
+            mPasswordTextCtrl->Clear();
+
+            // Retry
+        }
+        else
+        {
+            // Enough
+
+            // Notify
+            WaitDialog waitDialog(this, true);
+            waitDialog.ShowModal();
+
+            // Close
+            EndModal(wxID_CANCEL);
+        }
     }
 }
 
-AskPasswordDialog::WaitDialog::WaitDialog(wxWindow * parent)
+AskPasswordDialog::WaitDialog::WaitDialog(
+        wxWindow * parent,
+        bool isForFinal)
     : wxDialog(
         parent,
         wxID_ANY,
@@ -235,7 +256,7 @@ AskPasswordDialog::WaitDialog::WaitDialog(wxWindow * parent)
     // Finalize dialog
     //
 
-    SetLabel();
+    SetLabel(isForFinal);
 
     SetSizerAndFit(dialogVSizer);
 
@@ -246,27 +267,52 @@ AskPasswordDialog::WaitDialog::WaitDialog(wxWindow * parent)
     //
 
     mTimer = std::make_unique<wxTimer>();
-    mTimer->Bind(
-        wxEVT_TIMER,
-        [this](wxTimerEvent &)
-        {
-            --mCounter;
-            if (mCounter > 0)
+
+    if (!isForFinal)
+    {
+        mTimer->Bind(
+            wxEVT_TIMER,
+            [this](wxTimerEvent &)
             {
-                SetLabel();
-            }
-            else
+                --mCounter;
+                if (mCounter > 0)
+                {
+                    SetLabel(false);
+                }
+                else
+                {
+                    EndModal(0);
+                }
+            });
+
+        mTimer->Start(1000, false);
+    }
+    else
+    {
+         mTimer->Bind(
+            wxEVT_TIMER,
+            [this](wxTimerEvent &)
             {
                 EndModal(0);
-            }
-        });
+            });
 
-    mTimer->Start(1000);
+         mTimer->Start(2500, true);
+    }
+
+    
 }
 
-void AskPasswordDialog::WaitDialog::SetLabel()
+void AskPasswordDialog::WaitDialog::SetLabel(bool isForFinal)
 {
-    mLabel->SetLabel(wxString::Format(_("Retry in %d..."), mCounter));
+    if (!isForFinal)
+    {
+        mLabel->SetLabel(wxString::Format(_("Retry in %d..."), mCounter));
+    }
+    else
+    {
+        mLabel->SetLabel(_("Too many attempts, aborting."));
+    }
+
     Layout();
 }
 
