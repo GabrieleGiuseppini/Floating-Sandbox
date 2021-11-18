@@ -10,9 +10,14 @@
 
 #include <GameCore/GameTypes.h>
 
+#include <wx/bitmap.h>
 #include <wx/button.h>
 #include <wx/dialog.h>
+#include <wx/statbmp.h>
 #include <wx/textctrl.h>
+#include <wx/timer.h>
+
+#include <memory>
 
 namespace ShipBuilder {
 
@@ -35,12 +40,20 @@ private:
     void OnPasswordKey();
     void OnOkButton();
 
+    void OnSuccessTimer();
+    void OnFailureTimer();
+
 private:
 
     PasswordHash const mPasswordHash;
 
+    wxStaticBitmap * mIconBitmap;
+    wxBitmap const mLockedBitmap;
+    wxBitmap const mUnlockedBitmap;
     wxTextCtrl * mPasswordTextCtrl;
     wxButton * mOkButton;
+
+    std::unique_ptr<wxTimer> mTimer;
 };
 
 }

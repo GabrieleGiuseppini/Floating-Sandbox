@@ -7,7 +7,8 @@
 
 #include <Game/ShipDefinitionFormatDeSerializer.h>
 
-#include <wx/button.h>
+#include <UILib/WxHelpers.h>
+
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 
@@ -43,6 +44,8 @@ AskPasswordDialog::AskPasswordDialog(
     PasswordHash const & passwordHash,
     ResourceLocator const & resourceLocator)
     : mPasswordHash(passwordHash)
+    , mLockedBitmap(WxHelpers::LoadBitmap("protected_medium", resourceLocator))
+    , mUnlockedBitmap(WxHelpers::LoadBitmap("unprotected_medium", resourceLocator))
 {
     Create(
         parent,
@@ -56,38 +59,58 @@ AskPasswordDialog::AskPasswordDialog(
 
     wxBoxSizer * dialogVSizer = new wxBoxSizer(wxVERTICAL);
 
-    // Label
     {
-        auto label = new wxStaticText(this, wxID_ANY, _("The ship is password-protected, please provide the password to continue:"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+        wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        dialogVSizer->Add(label, 0, wxEXPAND);
-    }
+        // Icon
+        {
+            mIconBitmap = new wxStaticBitmap(this, wxID_ANY, mLockedBitmap);
 
-    dialogVSizer->AddSpacer(5);
+            hSizer->Add(mIconBitmap, 0, wxRIGHT, 20);
+        }
 
-    // Password field
-    {
-        int constexpr PasswordFieldWidth = 180;
+        // Label + Password
+        {
+            wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
-        mPasswordTextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(PasswordFieldWidth, -1), wxTE_PASSWORD | wxTE_PROCESS_ENTER);
-
-        mPasswordTextCtrl->Bind(
-            wxEVT_TEXT,
-            [this](wxCommandEvent & event)
+            // Label
             {
-                OnPasswordKey();
-                event.Skip();
-            });
+                auto label = new wxStaticText(this, wxID_ANY, _("The ship is password-protected, please provide the password to continue:"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
 
-        mPasswordTextCtrl->Bind(
-            wxEVT_TEXT_ENTER,
-            [this](wxCommandEvent &)
+                vSizer->Add(label, 0, wxEXPAND);
+            }
+
+            vSizer->AddSpacer(5);
+
+            // Password field
             {
-                // Simulate OK
-                OnOkButton();
-            });
+                int constexpr PasswordFieldWidth = 180;
 
-        dialogVSizer->Add(mPasswordTextCtrl, 0, wxALIGN_CENTER_HORIZONTAL);
+                mPasswordTextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(PasswordFieldWidth, -1), wxTE_PASSWORD | wxTE_PROCESS_ENTER);
+
+                mPasswordTextCtrl->Bind(
+                    wxEVT_TEXT,
+                    [this](wxCommandEvent & event)
+                    {
+                        OnPasswordKey();
+                        event.Skip();
+                    });
+
+                mPasswordTextCtrl->Bind(
+                    wxEVT_TEXT_ENTER,
+                    [this](wxCommandEvent &)
+                    {
+                        // Simulate OK
+                        OnOkButton();
+                    });
+
+                vSizer->Add(mPasswordTextCtrl, 0, wxALIGN_CENTER_HORIZONTAL);
+            }
+
+            hSizer->Add(vSizer, 0, wxALIGN_CENTER_VERTICAL);
+        }
+
+        dialogVSizer->Add(hSizer);
     }
 
     dialogVSizer->AddSpacer(20);
@@ -148,11 +171,31 @@ void AskPasswordDialog::OnOkButton()
     std::string const passwordValue = mPasswordTextCtrl->GetValue().Trim().ToStdString();
     if (ShipDefinitionFormatDeSerializer::CalculatePasswordHash(passwordValue) == mPasswordHash)
     {
-        // Success!
-        EndModal(wxID_OK);
-    }
+        //
+        // Correct password
+        //
 
-    // TODOHERE
+        // Change icon
+        mIconBitmap->SetBitmap(mUnlockedBitmap);
+
+        // Delayed endmodal
+        mTimer = std::make_unique<wxTimer>();
+        mTimer->Bind(
+            wxEVT_TIMER,
+            [this](wxTimerEvent &)
+            {
+                EndModal(wxID_OK);
+            });
+        mTimer->Start(500, true);
+    }
+    else
+    {
+        //
+        // Wrong password
+        //
+
+        // TODOHERE
+    }
 }
 
 }

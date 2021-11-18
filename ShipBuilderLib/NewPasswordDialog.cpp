@@ -5,7 +5,6 @@
  ***************************************************************************************/
 #include "NewPasswordDialog.h"
 
-#include <wx/button.h>
 #include <wx/gbsizer.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>

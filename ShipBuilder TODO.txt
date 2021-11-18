@@ -152,6 +152,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- SoundController
 			- Make sounds
 
+- Should New Ship start clean?
+	- Can't be saved anyway
 
 - Complete Load/Save/Model
 	- Finalize storage of all other ship definition members in Model
@@ -175,7 +177,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 		= ShipBuilder::Open and Game::EditInShipBuilder and various layers' Import: after load, if ShipMetadata has password:
 			= Ask password
 				- Workflow for wrong password
-				- Icon for protected
+					- Dialog w/timer, EndModel @ 3rd round
+					- "Invalid password"
+					- "Retry in {}..." (iff ! last time)
 			+ ShipDeSerializer::CalculatePasswordHash(password) => check with metadata
 			+ All in own dialog, in static bool CheckPasswordProtectedEdit(shipDefinition) which includes workflow
 			+ Do at:

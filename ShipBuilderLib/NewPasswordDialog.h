@@ -7,6 +7,7 @@
 
 #include <Game/ResourceLocator.h>
 
+#include <wx/button.h>
 #include <wx/dialog.h>
 #include <wx/panel.h>
 #include <wx/textctrl.h>

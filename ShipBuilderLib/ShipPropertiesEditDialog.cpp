@@ -19,6 +19,7 @@
 #include <wx/sizer.h>
 #include <wx/statbmp.h>
 #include <wx/stattext.h>
+#include <wx/utils.h> 
 
 #include <cassert>
 
@@ -605,7 +606,7 @@ void ShipPropertiesEditDialog::ReconciliateUI()
 
     mShipNameTextCtrl->ChangeValue(mSessionData->Metadata.ShipName);
 
-    mShipAuthorTextCtrl->ChangeValue(mSessionData->Metadata.Author.value_or(""));
+    mShipAuthorTextCtrl->ChangeValue(mSessionData->Metadata.Author.value_or(wxGetUserName().ToStdString()));
 
     if (mSessionData->HasTexture)
     {
