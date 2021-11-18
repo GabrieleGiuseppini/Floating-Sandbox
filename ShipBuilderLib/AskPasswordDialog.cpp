@@ -44,7 +44,7 @@ AskPasswordDialog::AskPasswordDialog(
     ResourceLocator const & resourceLocator)
     : mPasswordHash(passwordHash)
     , mLockedBitmap(WxHelpers::LoadBitmap("protected_medium", resourceLocator))
-    , mUnlockedBitmap(WxHelpers::LoadBitmap("unprotected_medium", resourceLocator))
+    , mUnlockedBitmap(WxHelpers::LoadBitmap("unprotected_with_check_medium", resourceLocator))
 {
     Create(
         parent,
@@ -185,6 +185,7 @@ void AskPasswordDialog::OnOkButton()
             {
                 EndModal(wxID_OK);
             });
+
         mTimer->Start(500, true);
     }
     else
