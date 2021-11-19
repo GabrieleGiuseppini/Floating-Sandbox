@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "ShipOffsetVisualizationControl.h"
 
+#include <UILib/WxHelpers.h>
+
 #include <wx/dcclient.h>
 
 #include <cassert>
@@ -37,8 +39,16 @@ ShipOffsetVisualizationControl::ShipOffsetVisualizationControl(
     mSeaBrush = wxBrush(wxColor(77, 172, 255), wxBRUSHSTYLE_SOLID);
     mSeaPen = wxPen(mSeaBrush.GetColour(), 1, wxPENSTYLE_SOLID);
     mGuidesPen = wxPen(wxColor(0, 0, 0), 1, wxPENSTYLE_SOLID);
+}
 
-    // Force initial redraw
+void ShipOffsetVisualizationControl::Initialize(
+    RgbaImageData const & shipVisualization,
+    int offsetX,
+    int offsetY)
+{
+    mShipVisualization = WxHelpers::MakeImage(shipVisualization);
+    mOffsetX = offsetX;
+    mOffsetY = offsetY;
     OnChange();
 }
 
@@ -63,6 +73,9 @@ void ShipOffsetVisualizationControl::OnPaint(wxPaintEvent & /*event*/)
 void ShipOffsetVisualizationControl::OnChange()
 {
     // TODO: recalc if needed
+    // image.Rescale(size.width, size.height, wxIMAGE_QUALITY_HIGH);
+    mShipBitmap = wxBitmap(mShipVisualization, wxBITMAP_SCREEN_DEPTH);
+    mShipOrigin = wxPoint(0, 0);
 
     Refresh(false);
 }
@@ -90,7 +103,10 @@ void ShipOffsetVisualizationControl::Render(wxDC & dc)
     // Draw ship
     //
 
-    // TODO
+    dc.DrawBitmap(
+        mShipBitmap,
+        mShipOrigin,
+        true);
 
     //
     // Draw guides

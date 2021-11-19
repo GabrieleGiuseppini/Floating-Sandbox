@@ -5,7 +5,10 @@
  ***************************************************************************************/
 #pragma once
 
+#include <GameCore/ImageData.h>
+
 #include <wx/dc.h>
+#include <wx/image.h>
 #include <wx/panel.h>
 
 namespace ShipBuilder {
@@ -21,6 +24,11 @@ public:
         float initialOffsetX,
         float initialOffsetY);
 
+    void Initialize(
+        RgbaImageData const & shipVisualization,
+        int offsetX,
+        int offsetY);
+    
     void SetOffsetX(float offsetX);
     void SetOffsetY(float offsetY);
 
@@ -36,9 +44,15 @@ private:
     int mOffsetX;
     int mOffsetY;
 
+    wxImage mShipVisualization;
+    
     wxBrush mSeaBrush;
     wxPen mSeaPen;
     wxPen mGuidesPen;
+
+    // Calculated members
+    wxPoint mShipOrigin;
+    wxBitmap mShipBitmap;
 };
 
 }

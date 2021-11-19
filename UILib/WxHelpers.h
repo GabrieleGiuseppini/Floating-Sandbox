@@ -51,4 +51,6 @@ namespace WxHelpers
     wxImage RetintCursorImage(
         wxImage const & src,
         rgbColor newTint);
+
+    wxImage MakeImage(RgbaImageData const & imageData);
 };

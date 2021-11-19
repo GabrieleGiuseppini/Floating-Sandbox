@@ -220,3 +220,32 @@ wxImage WxHelpers::RetintCursorImage(
 
     return dst;
 }
+
+wxImage WxHelpers::MakeImage(RgbaImageData const & imageData)
+{
+    size_t const linearSize = imageData.Size.GetLinearSize();
+
+    unsigned char * const dstDataPtr = reinterpret_cast<unsigned char *>(std::malloc(linearSize * 3));
+    assert(nullptr != dstDataPtr);
+    rgbColor * dstData = reinterpret_cast<rgbColor *>(dstDataPtr);
+
+    unsigned char * const dstAlphaPtr = reinterpret_cast<unsigned char *>(std::malloc(linearSize * 1));
+    assert(nullptr != dstAlphaPtr);
+    rgbColor::data_type * dstAlpha = reinterpret_cast<rgbColor::data_type *>(dstAlphaPtr);
+    
+    for (int y = imageData.Size.height - 1; y >= 0; --y)
+    {
+        for (int x = 0; x < imageData.Size.width; ++x)
+        {
+            rgbaColor const srcSample = imageData[{x, y}];
+
+            *(dstData++) = srcSample.toRgbColor();
+            *(dstAlpha++) = srcSample.a;
+        }
+    }
+
+    wxImage dst = wxImage(imageData.Size.width, imageData.Size.height, dstDataPtr, false);
+    dst.SetAlpha(dstAlphaPtr, false);
+
+    return dst;
+}

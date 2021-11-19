@@ -634,8 +634,10 @@ void ShipPropertiesEditDialog::ReconciliateUI()
     //
 
     // TODO: sliders etc.
-    mShipOffsetVisualizationControl->SetOffsetX(mSessionData->PhysicsData.Offset.x);
-    mShipOffsetVisualizationControl->SetOffsetY(mSessionData->PhysicsData.Offset.y);
+    mShipOffsetVisualizationControl->Initialize(
+        mSessionData->ShipVisualization,
+        mSessionData->PhysicsData.Offset.x,
+        mSessionData->PhysicsData.Offset.y);
 
     //
     // Auto-Texturization
