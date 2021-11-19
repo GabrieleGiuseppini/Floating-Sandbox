@@ -212,6 +212,11 @@ void Controller::RestoreLayerRegion(
     mUserInterface.RefreshView();
 }
 
+RgbaImageData const & Controller::GetStructuralLayerVisualization() const
+{
+    return mModelController->GetStructuralLayerVisualization();
+}
+
 void Controller::NewElectricalLayer()
 {
     auto const scopedToolResumeState = SuspendTool();

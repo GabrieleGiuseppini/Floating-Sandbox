@@ -209,7 +209,6 @@ public:
         }
     }
 
-
     StructuralLayerData const & GetStructuralLayer() const
     {
         assert(mStructuralLayer);

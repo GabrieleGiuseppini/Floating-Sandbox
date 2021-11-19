@@ -136,6 +136,8 @@ public:
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetOrigin);
 
+    RgbaImageData const & GetStructuralLayerVisualization() const;
+
     //
     // Electrical
     //

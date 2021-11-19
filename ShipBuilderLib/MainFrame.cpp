@@ -2569,6 +2569,7 @@ void MainFrame::OpenShipProperties()
         mController->GetShipPhysicsData(),
         // TODOTEST: take from model
         std::nullopt,
+        mController->GetStructuralLayerVisualization(),
         mController->HasModelLayer(LayerType::Texture));
 }
 

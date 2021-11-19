@@ -404,6 +404,16 @@ void ModelController::RestoreStructuralLayerRegionForEphemeralVisualization(
     mIsStructuralLayerInEphemeralVisualization = false;
 }
 
+RgbaImageData const & ModelController::GetStructuralLayerVisualization() const
+{
+    assert(mModel.HasLayer(LayerType::Structural));
+
+    assert(!mIsStructuralLayerInEphemeralVisualization);
+
+    assert(mStructuralLayerVisualizationTexture);
+    return *mStructuralLayerVisualizationTexture;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Electrical
 ////////////////////////////////////////////////////////////////////////////////////////////////////

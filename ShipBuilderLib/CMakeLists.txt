@@ -30,6 +30,8 @@ set (SHIPBUILDER_LIB_SOURCES
 	ShipBuilderTypes.h
 	ShipCanvasResizeDialog.cpp
 	ShipCanvasResizeDialog.h
+	ShipOffsetVisualizationControl.cpp
+	ShipOffsetVisualizationControl.h
 	ShipPropertiesEditDialog.cpp
 	ShipPropertiesEditDialog.h
 	StatusBar.cpp

@@ -121,6 +121,7 @@ public:
     void RestoreLayerRegion(
         StructuralLayerData && layerRegion,
         ShipSpaceCoordinates const & origin);
+    RgbaImageData const & GetStructuralLayerVisualization() const;
 
     void NewElectricalLayer();
     void SetElectricalLayer(/*TODO*/);

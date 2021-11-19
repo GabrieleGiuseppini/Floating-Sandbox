@@ -137,6 +137,7 @@ void ShipPropertiesEditDialog::ShowModal(
     ShipMetadata const & shipMetadata,
     ShipPhysicsData const & shipPhysicsData,
     std::optional<ShipAutoTexturizationSettings> const & shipAutoTexturizationSettings,
+    RgbaImageData const & shipVisualization,
     bool hasTexture)
 {
     mSessionData.emplace(
@@ -144,6 +145,7 @@ void ShipPropertiesEditDialog::ShowModal(
         shipMetadata,
         shipPhysicsData,
         shipAutoTexturizationSettings,
+        shipVisualization,
         hasTexture);
 
     ReconciliateUI();
@@ -379,10 +381,16 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
 {
     wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
-    // TODO
+    // TODOHERE
     {
-        auto temp = new wxStaticBitmap(panel, wxID_ANY, WxHelpers::LoadBitmap("under_construction_large", mResourceLocator));
-        vSizer->Add(temp, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+        mShipOffsetVisualizationControl = new ShipOffsetVisualizationControl(
+            panel,
+            200,
+            250,
+            0.0f,
+            0.0f);
+
+        vSizer->Add(mShipOffsetVisualizationControl, 0, wxALIGN_CENTER_HORIZONTAL, 0);
     }
 
     // Finalize
@@ -625,7 +633,9 @@ void ShipPropertiesEditDialog::ReconciliateUI()
     // Physics
     //
 
-    // TODO
+    // TODO: sliders etc.
+    mShipOffsetVisualizationControl->SetOffsetX(mSessionData->PhysicsData.Offset.x);
+    mShipOffsetVisualizationControl->SetOffsetY(mSessionData->PhysicsData.Offset.y);
 
     //
     // Auto-Texturization

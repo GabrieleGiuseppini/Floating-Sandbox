@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Controller.h"
+#include "ShipOffsetVisualizationControl.h"
 
 #include <UILib/BitmapToggleButton.h>
 #include <UILib/SliderControl.h>
@@ -40,6 +41,7 @@ public:
         ShipMetadata const & shipMetadata,
         ShipPhysicsData const & shipPhysicsData,
         std::optional<ShipAutoTexturizationSettings> const & shipAutoTexturizationSettings,
+        RgbaImageData const & shipVisualization,
         bool hasTexture);
 
 private:
@@ -91,8 +93,11 @@ private:
     // UI
     //
 
+    ShipOffsetVisualizationControl * mShipOffsetVisualizationControl;
+
     BitmapToggleButton * mPasswordOnButton;
     BitmapToggleButton * mPasswordOffButton;
+
     wxButton * mOkButton;
 
     struct SessionData
@@ -101,6 +106,7 @@ private:
         ShipMetadata const & Metadata;
         ShipPhysicsData const & PhysicsData;
         std::optional<ShipAutoTexturizationSettings> const & AutoTexturizationSettings;
+        RgbaImageData const & ShipVisualization;
         bool HasTexture;
 
         SessionData(
@@ -108,11 +114,13 @@ private:
             ShipMetadata const & shipMetadata,
             ShipPhysicsData const & shipPhysicsData,
             std::optional<ShipAutoTexturizationSettings> const & shipAutoTexturizationSettings,
+            RgbaImageData const & shipVisualization,
             bool hasTexture)
             : BuilderController(controller)
             , Metadata(shipMetadata)
             , PhysicsData(shipPhysicsData)
             , AutoTexturizationSettings(shipAutoTexturizationSettings)
+            , ShipVisualization(shipVisualization)
             , HasTexture(hasTexture)
         {}
     };
