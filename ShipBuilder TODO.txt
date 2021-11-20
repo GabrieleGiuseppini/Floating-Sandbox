@@ -273,11 +273,13 @@ https://gamejolt.com/x/permalink/comment/11730705
 	= PhysicsData
 		= Populate tab
 			= ShipOffsetVisualizationControl
-				- Zoom calculation:
-					- TODOHERE
-				- Sliders' range
+				= Zoom calculation:
+					- Integral/ShipSpace - coords to/from world
+				- Sliders' curve
 		= Populate UI at startup
 		- Give to ModelController at OK
+		- See this tab's size and Metadata tab size
+			- Try viz control less tall
 	- Auto-Texturization Settings
 		- Populate tab
 			- TODO: decide how to handle Remove vs Setting values
