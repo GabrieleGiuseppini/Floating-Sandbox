@@ -476,11 +476,19 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
             vSizer->Add(label, 0, wxALL | wxEXPAND, 0);
         }
 
-        vSizer->AddSpacer(15);
+        vSizer->AddSpacer(10);
 
         // Viz control and sliders
         {
-            auto * gSizer = new wxFlexGridSizer(2, 2, 0, 0);
+            int constexpr SliderWidth = 20;
+
+            auto * gSizer = new wxFlexGridSizer(2, 3, 0, 0);
+
+            // Row 1
+
+            {
+                gSizer->AddSpacer(SliderWidth);
+            }
 
             {
                 mShipOffsetVisualizationControl = new ShipOffsetVisualizationControl(
@@ -502,7 +510,7 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
                     static_cast<int>(GameParameters::HalfMaxWorldHeight),
                     wxDefaultPosition,
                     wxDefaultSize,
-                    wxSL_VERTICAL);
+                    wxSL_VERTICAL | wxSL_INVERSE);
 
                 mOffsetYSlider->Bind(
                     wxEVT_SLIDER,
@@ -520,6 +528,12 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
                     });
 
                 gSizer->Add(mOffsetYSlider, 0, wxEXPAND, 0);
+            }
+
+            // Row 2
+
+            {
+                gSizer->AddSpacer(SliderWidth);
             }
 
             {
@@ -552,7 +566,7 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
             }
 
             {
-                gSizer->AddStretchSpacer(0);
+                gSizer->AddSpacer(SliderWidth);
             }
 
             vSizer->Add(gSizer, 0, wxALIGN_CENTER_HORIZONTAL, 0);

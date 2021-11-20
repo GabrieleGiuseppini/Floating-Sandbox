@@ -270,14 +270,13 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Make new tab
 	- Description
 		- Separate tab
-	- PhysicsData
-		- Populate tab
+	= PhysicsData
+		= Populate tab
 			= ShipOffsetVisualizationControl
-				- Viz and BoundingBox asked by dialog from Controller
-					+ @ Controller: SuspendTool
-				- zoom calculation:
+				- Zoom calculation:
 					- TODOHERE
-		- Populate UI at startup
+				- Sliders' range
+		= Populate UI at startup
 		- Give to ModelController at OK
 	- Auto-Texturization Settings
 		- Populate tab
@@ -303,6 +302,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Load ship
 			- New ship
 
+- Edit menu:
+	- Flip Horizontal
+	- Flip Vertical
+		- Undo: new "lambda-only" undo entry, GenericUndoEntry
 
 - Resize workflow:
 	+ Button - in Ship Settings panel, slightly separated from the File buttons
