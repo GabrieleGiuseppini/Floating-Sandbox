@@ -43,8 +43,8 @@ ShipOffsetVisualizationControl::ShipOffsetVisualizationControl(
 
 void ShipOffsetVisualizationControl::Initialize(
     RgbaImageData const & shipVisualization,
-    int offsetX,
-    int offsetY)
+    float offsetX,
+    float offsetY)
 {
     mShipVisualization = WxHelpers::MakeImage(shipVisualization);
     mOffsetX = offsetX;
@@ -78,76 +78,42 @@ void ShipOffsetVisualizationControl::OnChange()
     //
 
     int constexpr Margin = 5;
-
-    std::optional<float> bestShipSpaceMultiplier;
-
     float const niceWorldX = static_cast<float>(GetSize().GetWidth() - Margin - Margin) / 2.0f;
     float const niceWorldY = static_cast<float>(GetSize().GetHeight() - Margin - Margin) / 2.0f;
 
-    // Check multiplier to bring ship's left world X at "nice place"
-    float const leftShipWorldX = -static_cast<float>(mShipVisualization.GetWidth()) / 2.0f + mOffsetX;
-    if (leftShipWorldX < 0.0f)
-    {
-        float const multiplier = -niceWorldX / leftShipWorldX;
-        bestShipSpaceMultiplier = multiplier;
-    }
+    // TODO: CODEWORK: ship->world
+    float const shipWorldWidth = static_cast<float>(mShipVisualization.GetWidth());
+    float const shipWorldHeight = static_cast<float>(mShipVisualization.GetHeight());
 
-    // Check multiplier to bring ship's right world X at "nice place"
-    float const rightShipWorldX = static_cast<float>(mShipVisualization.GetWidth()) / 2.0f + mOffsetX;
-    if (rightShipWorldX > 0.0f)
-    {
-        float const multiplier = niceWorldX / rightShipWorldX;
-        if (!bestShipSpaceMultiplier.has_value())
-            bestShipSpaceMultiplier = multiplier;
-        else
-            bestShipSpaceMultiplier = std::min(*bestShipSpaceMultiplier, multiplier);
-    }
+    float const furthestShipX = std::max(
+        std::abs(mOffsetX - shipWorldWidth / 2.0f),     // L
+        std::abs(mOffsetX + shipWorldWidth / 2.0f));    // R
 
-    // Check multiplier to bring ship's top world Y at "nice place"
-    float const topShipWorldY = static_cast<float>(mShipVisualization.GetHeight()) + mOffsetY;
-    if (topShipWorldY > 0.0f)
-    {
-        float const multiplier = niceWorldY / topShipWorldY;
-        if (!bestShipSpaceMultiplier.has_value())
-            bestShipSpaceMultiplier = multiplier;
-        else
-            bestShipSpaceMultiplier = std::min(*bestShipSpaceMultiplier, multiplier);
-    }
+    float const furthestShipY = std::max(
+        std::abs(mOffsetY + shipWorldHeight),   // Top
+        std::abs(mOffsetY));                    // Bottom
 
-    // Check multiplier to bring ship's bottom world Y at "nice place"
-    float const bottomShipWorldY = 0.0f + mOffsetY;
-    if (bottomShipWorldY < 0.0f)
-    {
-        float const multiplier = -niceWorldY / bottomShipWorldY;
-        if (!bestShipSpaceMultiplier.has_value())
-            bestShipSpaceMultiplier = multiplier;
-        else
-            bestShipSpaceMultiplier = std::min(*bestShipSpaceMultiplier, multiplier);
-    }
+    // Calculate multiplier to bring ship's furthest point (L, R, T, or B) at "nice place"
+    float const bestShipSpaceMultiplier = std::min(
+        niceWorldX / furthestShipX,
+        niceWorldY / furthestShipY);
 
-    if (bestShipSpaceMultiplier.has_value())
-    {
-        //
-        // Create rescaled ship
-        //
+    //
+    // Create rescaled ship
+    //
 
-        float const rescaledWidth = static_cast<float>(mShipVisualization.GetWidth()) * (*bestShipSpaceMultiplier);
-        float const rescaledHeight = static_cast<float>(mShipVisualization.GetHeight()) * (*bestShipSpaceMultiplier);
-        wxImage rescaledShip = mShipVisualization.Scale(
-            static_cast<int>(rescaledWidth),
-            static_cast<int>(rescaledHeight),
-            wxIMAGE_QUALITY_HIGH);
+    // TODOHERE: broken
+    float const rescaledWidth = static_cast<float>(mShipVisualization.GetWidth()) * bestShipSpaceMultiplier;
+    float const rescaledHeight = static_cast<float>(mShipVisualization.GetHeight()) * bestShipSpaceMultiplier;
+    wxImage rescaledShip = mShipVisualization.Scale(
+        static_cast<int>(rescaledWidth),
+        static_cast<int>(rescaledHeight),
+        wxIMAGE_QUALITY_HIGH);
 
-        mResizedShipBitmap = wxBitmap(rescaledShip, wxBITMAP_SCREEN_DEPTH);
-        mResizedShipOrigin = wxPoint(
-            static_cast<int>(static_cast<float>(GetSize().GetWidth()) / 2.0f - (rescaledWidth / 2.0f + mOffsetX)),
-            static_cast<int>(static_cast<float>(GetSize().GetHeight()) / 2.0f - (rescaledHeight + mOffsetY))); // Note: this is the top of the bitmap, which then is drawn extending *DOWN*
-    }
-    else
-    {
-        mResizedShipBitmap = wxBitmap();
-        mResizedShipOrigin = wxPoint(0, 0);
-    }
+    mResizedShipBitmap = wxBitmap(rescaledShip, wxBITMAP_SCREEN_DEPTH);
+    mResizedShipOrigin = wxPoint(
+        static_cast<int>(static_cast<float>(GetSize().GetWidth()) / 2.0f - (rescaledWidth / 2.0f + mOffsetX)),
+        static_cast<int>(static_cast<float>(GetSize().GetHeight()) / 2.0f - (rescaledHeight + mOffsetY))); // Note: this is the top of the bitmap, which then is drawn extending *DOWN*
 
     Refresh(false);
 }

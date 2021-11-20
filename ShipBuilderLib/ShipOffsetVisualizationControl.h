@@ -26,8 +26,8 @@ public:
 
     void Initialize(
         RgbaImageData const & shipVisualization,
-        int offsetX,
-        int offsetY);
+        float offsetX,
+        float offsetY);
     
     void SetOffsetX(float offsetX);
     void SetOffsetY(float offsetY);
@@ -41,8 +41,8 @@ private:
 
 private:
 
-    int mOffsetX;
-    int mOffsetY;
+    float mOffsetX;
+    float mOffsetY;
 
     wxImage mShipVisualization;
     
