@@ -9,6 +9,7 @@
 
 #include <GameCore/Utils.h>
 
+#include <wx/sizer.h>
 #include <wx/spinbutt.h>
 #include <wx/textctrl.h>
 
@@ -33,7 +34,7 @@ public:
         , mMaxValue(maxValue)
         , mOnValueChanged(std::move(onValueChanged))
     {
-        wxBoxSizer* hSizer = new wxBoxSizer(wxHORIZONTAL);
+        wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
 
         // Text control
         {
@@ -82,6 +83,17 @@ public:
         }
 
         this->SetSizerAndFit(hSizer);
+    }
+
+    bool IsModified() const
+    {
+        return mTextCtrl->IsModified();
+    }
+
+    void SetValue(float value)
+    {
+        mSpinButton->SetValue(value);
+        mTextCtrl->SetValue(ValueToString(value));
     }
 
 private:

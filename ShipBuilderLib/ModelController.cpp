@@ -74,6 +74,54 @@ ShipDefinition ModelController::MakeShipDefinition() const
     return mModel.MakeShipDefinition();
 }
 
+std::optional<ShipSpaceRect> ModelController::CalculateBoundingBox() const
+{
+    std::optional<ShipSpaceRect> boundingBox;
+
+    //
+    // Structural layer
+    //
+
+    assert(mModel.HasLayer(LayerType::Structural));
+
+    StructuralLayerData const & structuralLayer = mModel.GetStructuralLayer();
+
+    for (int y = 0; y < structuralLayer.Buffer.Size.height; ++y)
+    {
+        for (int x = 0; x < structuralLayer.Buffer.Size.width; ++x)
+        {
+            ShipSpaceCoordinates coords(x, y);
+
+            if (structuralLayer.Buffer[{x, y}].Material != nullptr)
+            {
+                if (!boundingBox.has_value())
+                    boundingBox = ShipSpaceRect(coords);
+                else
+                    boundingBox->UnionWith(coords);
+            }
+        }
+    }
+
+    //
+    // Ropes layer
+    //
+
+    if (mModel.HasLayer(LayerType::Ropes))
+    {
+        for (auto const & e : mModel.GetRopesLayer().Buffer)
+        {
+            if (!boundingBox.has_value())
+                boundingBox = ShipSpaceRect(e.StartCoords);
+            else
+                boundingBox->UnionWith(e.StartCoords);
+
+            boundingBox->UnionWith(e.EndCoords);
+        }
+    }
+
+    return boundingBox;
+}
+
 ModelValidationResults ModelController::ValidateModel() const
 {
     std::vector<ModelValidationIssue> issues;

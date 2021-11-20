@@ -9,6 +9,7 @@
 #include "ShipOffsetVisualizationControl.h"
 
 #include <UILib/BitmapToggleButton.h>
+#include <UILib/EditSpinBox.h>
 #include <UILib/SliderControl.h>
 
 #include <Game/ResourceLocator.h>
@@ -22,6 +23,7 @@
 #include <wx/dialog.h>
 #include <wx/panel.h>
 #include <wx/radiobut.h>
+#include <wx/slider.h>
 #include <wx/textctrl.h>
 
 #include <optional>
@@ -81,6 +83,10 @@ private:
     wxTextCtrl * mArtCreditsTextCtrl;
     wxTextCtrl * mYearBuiltTextCtrl;
 
+    EditSpinBox<float> * mOffsetXEditSpinBox;
+    EditSpinBox<float> * mOffsetYEditSpinBox;
+    EditSpinBox<float> * mInternalPressureEditSpinBox;
+
     wxRadioButton * mFlatStructureAutoTexturizationModeRadioButton;
     wxRadioButton * mMaterialTexturesAutoTexturizationModeRadioButton;
     SliderControl<float> * mMaterialTextureMagnificationSlider;
@@ -90,10 +96,12 @@ private:
     bool mIsPasswordHashModified;
 
     //
-    // UI
+    // Misc UI
     //
 
     ShipOffsetVisualizationControl * mShipOffsetVisualizationControl;
+    wxSlider * mOffsetXSlider;
+    wxSlider * mOffsetYSlider;
 
     BitmapToggleButton * mPasswordOnButton;
     BitmapToggleButton * mPasswordOffButton;

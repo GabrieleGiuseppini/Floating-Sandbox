@@ -114,6 +114,8 @@ public:
 
     void ClearModelDirty();
 
+    std::optional<ShipSpaceRect> CalculateBoundingBox() const;
+
     ModelValidationResults ValidateModel();
 
     void NewStructuralLayer();
@@ -121,7 +123,7 @@ public:
     void RestoreLayerRegion(
         StructuralLayerData && layerRegion,
         ShipSpaceCoordinates const & origin);
-    RgbaImageData const & GetStructuralLayerVisualization() const;
+    RgbaImageData const & GetStructuralLayerVisualization();
 
     void NewElectricalLayer();
     void SetElectricalLayer(/*TODO*/);
@@ -183,7 +185,7 @@ private:
     struct [[nodiscard]] ScopedToolResumeState
     {
         ScopedToolResumeState(
-            Controller & controller,
+            Controller const & controller,
             bool doResumeTool)
             : mController(controller)
             , mDoResumeTool(doResumeTool)
@@ -197,12 +199,12 @@ private:
 
             if (mDoResumeTool)
             {
-                mController.InternalResumeTool();
+                (const_cast<Controller &>(mController)).InternalResumeTool();
             }
         }
 
     private:
-        Controller & mController;
+        Controller const & mController;
         bool const mDoResumeTool;
     };
 
@@ -219,7 +221,7 @@ private:
 
     void InternalSetCurrentTool(std::optional<ToolType> toolType);
 
-    ScopedToolResumeState SuspendTool();
+    ScopedToolResumeState SuspendTool() const;
     bool InternalSuspendTool();
     void InternalResumeTool();
     void InternalResetTool();

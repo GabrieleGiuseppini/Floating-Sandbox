@@ -146,6 +146,13 @@ ModelValidationResults Controller::ValidateModel()
     return mModelController->ValidateModel();
 }
 
+std::optional<ShipSpaceRect> Controller::CalculateBoundingBox() const
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    return mModelController->CalculateBoundingBox();
+}
+
 void Controller::NewStructuralLayer()
 {
     auto const scopedToolResumeState = SuspendTool();
@@ -212,8 +219,10 @@ void Controller::RestoreLayerRegion(
     mUserInterface.RefreshView();
 }
 
-RgbaImageData const & Controller::GetStructuralLayerVisualization() const
+RgbaImageData const & Controller::GetStructuralLayerVisualization()
 {
+    auto const scopedToolResumeState = SuspendTool();
+
     return mModelController->GetStructuralLayerVisualization();
 }
 
@@ -794,11 +803,11 @@ void Controller::InternalSetCurrentTool(std::optional<ToolType> toolType)
     mUserInterface.OnCurrentToolChanged(mCurrentToolType);
 }
 
-Controller::ScopedToolResumeState Controller::SuspendTool()
+Controller::ScopedToolResumeState Controller::SuspendTool() const
 {
     return ScopedToolResumeState(
         *this,
-        InternalSuspendTool());
+        (const_cast<Controller *>(this))->InternalSuspendTool());
 }
 
 bool Controller::InternalSuspendTool()

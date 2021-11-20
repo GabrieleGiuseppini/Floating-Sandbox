@@ -272,6 +272,11 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Separate tab
 	- PhysicsData
 		- Populate tab
+			= ShipOffsetVisualizationControl
+				- Viz and BoundingBox asked by dialog from Controller
+					+ @ Controller: SuspendTool
+				- zoom calculation:
+					- TODOHERE
 		- Populate UI at startup
 		- Give to ModelController at OK
 	- Auto-Texturization Settings

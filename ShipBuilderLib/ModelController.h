@@ -47,6 +47,8 @@ public:
         return mModel;
     }
 
+    std::optional<ShipSpaceRect> CalculateBoundingBox() const;
+
     void SetLayerDirty(LayerType layer)
     {
         mModel.SetIsDirty(layer);

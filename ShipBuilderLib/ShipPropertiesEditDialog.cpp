@@ -27,6 +27,7 @@ namespace ShipBuilder {
 
 int const PanelInternalMargin = 20;
 int const VerticalSeparatorSize = 20;
+int const NumericEditBoxWidth = 100;
 
 ShipPropertiesEditDialog::ShipPropertiesEditDialog(
     wxWindow * parent,
@@ -381,16 +382,186 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
 {
     wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
-    // TODOHERE
-    {
-        mShipOffsetVisualizationControl = new ShipOffsetVisualizationControl(
-            panel,
-            200,
-            250,
-            0.0f,
-            0.0f);
+    auto explanationFont = panel->GetFont();
+    explanationFont.SetPointSize(explanationFont.GetPointSize() - 2);
+    explanationFont.SetStyle(wxFontStyle::wxFONTSTYLE_ITALIC);
 
-        vSizer->Add(mShipOffsetVisualizationControl, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+    // Offset
+    {
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Offset"), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            vSizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+        }
+
+        {
+            wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
+
+            {
+                auto label = new wxStaticText(panel, wxID_ANY, "X:", wxDefaultPosition, wxDefaultSize,
+                    wxALIGN_RIGHT);
+
+                hSizer->Add(label, 0, wxALIGN_CENTER_VERTICAL, 0);
+            }
+
+            hSizer->AddSpacer(3);
+
+            {
+                mOffsetXEditSpinBox = new EditSpinBox<float>(
+                    panel,
+                    NumericEditBoxWidth,
+                    0.0f, // TODOHERE: world
+                    10000.0f, // TODOHERE: world
+                    0.0f,
+                    wxEmptyString,
+                    [this](float value)
+                    {
+                        // Tell slider
+                        // TODO
+
+                        // Tell viz control
+                        mShipOffsetVisualizationControl->SetOffsetX(value);
+
+                        OnDirty();
+                    });
+
+                hSizer->Add(mOffsetXEditSpinBox, 0, wxALIGN_CENTER_VERTICAL, 0);
+            }
+
+            hSizer->AddSpacer(10);
+
+            {
+                auto label = new wxStaticText(panel, wxID_ANY, "Y:", wxDefaultPosition, wxDefaultSize,
+                    wxALIGN_RIGHT);
+
+                hSizer->Add(label, 0, wxALIGN_CENTER_VERTICAL, 0);
+            }
+
+            hSizer->AddSpacer(3);
+
+            {
+                mOffsetYEditSpinBox = new EditSpinBox<float>(
+                    panel,
+                    NumericEditBoxWidth,
+                    0.0f, // TODOHERE: world
+                    10000.0f, // TODOHERE: world
+                    0.0f,
+                    wxEmptyString,
+                    [this](float value)
+                    {
+                        // Tell slider
+                        // TODO
+
+                        // Tell viz control
+                        mShipOffsetVisualizationControl->SetOffsetY(value);
+
+                        OnDirty();
+                    });
+
+                hSizer->Add(mOffsetYEditSpinBox, 0, wxALIGN_CENTER_VERTICAL, 0);
+            }
+
+            vSizer->Add(hSizer, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+        }
+
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Horizontal and vertical offset of the ship, in meters"), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            label->SetFont(explanationFont);
+
+            vSizer->Add(label, 0, wxALL | wxEXPAND, 0);
+        }
+
+        vSizer->AddSpacer(15);
+
+        // Viz control and sliders
+        {
+            auto * gSizer = new wxFlexGridSizer(2, 2, 0, 0);
+
+            {
+                mShipOffsetVisualizationControl = new ShipOffsetVisualizationControl(
+                    panel,
+                    200,
+                    250,
+                    0.0f,
+                    0.0f);
+
+                gSizer->Add(mShipOffsetVisualizationControl, 0, 0, 0);
+            }
+
+            {
+                mOffsetYSlider = new wxSlider(
+                    panel,
+                    wxID_ANY,
+                    0, // TODO
+                    0, // TODO
+                    1000, // TODO
+                    wxDefaultPosition,
+                    wxDefaultSize,
+                    wxSL_VERTICAL);
+
+                gSizer->Add(mOffsetYSlider, 0, wxEXPAND, 0);
+            }
+
+            {
+                mOffsetXSlider = new wxSlider(
+                    panel,
+                    wxID_ANY,
+                    0, // TODO
+                    0, // TODO
+                    1000, // TODO
+                    wxDefaultPosition,
+                    wxDefaultSize,
+                    wxSL_HORIZONTAL);
+
+                gSizer->Add(mOffsetXSlider, 0, wxEXPAND, 0);
+            }
+
+            {
+                gSizer->AddStretchSpacer(0);
+            }
+
+            vSizer->Add(gSizer, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+        }
+    }
+
+    vSizer->AddSpacer(VerticalSeparatorSize);
+
+    // Internal pressure
+    {
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Internal Pressure"), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            vSizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+        }
+
+        {
+            mInternalPressureEditSpinBox = new EditSpinBox<float>(
+                panel,
+                NumericEditBoxWidth,
+                0.0f,
+                10000.0f,
+                0.0f,
+                wxEmptyString,
+                [this](float)
+                {
+                    OnDirty();
+                });
+
+            vSizer->Add(mInternalPressureEditSpinBox, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 0);
+        }
+
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Internal pressure, in atmospheres, that the ship is initially spawned with"), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            label->SetFont(explanationFont);
+
+            vSizer->Add(label, 0, wxALL | wxEXPAND, 0);
+        }
     }
 
     // Finalize
@@ -633,11 +804,16 @@ void ShipPropertiesEditDialog::ReconciliateUI()
     // Physics
     //
 
-    // TODO: sliders etc.
+    mOffsetXEditSpinBox->SetValue(mSessionData->PhysicsData.Offset.x);
+    mOffsetYEditSpinBox->SetValue(mSessionData->PhysicsData.Offset.y);
+    // TODO: sliders
     mShipOffsetVisualizationControl->Initialize(
         mSessionData->ShipVisualization,
         mSessionData->PhysicsData.Offset.x,
         mSessionData->PhysicsData.Offset.y);
+
+
+    mInternalPressureEditSpinBox->SetValue(mSessionData->PhysicsData.InternalPressure);
 
     //
     // Auto-Texturization
@@ -683,8 +859,9 @@ bool ShipPropertiesEditDialog::IsMetadataDirty() const
 
 bool ShipPropertiesEditDialog::IsPhysicsDataDirty() const
 {
-    // TODO
-    return false;
+    return mOffsetXEditSpinBox->IsModified()
+        || mOffsetYEditSpinBox->IsModified()
+        || mInternalPressureEditSpinBox->IsModified();
 }
 
 bool ShipPropertiesEditDialog::IsAutoTexturizationSettingsDirty() const
