@@ -493,7 +493,7 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
             {
                 mShipOffsetVisualizationControl = new ShipOffsetVisualizationControl(
                     panel,
-                    200,
+                    350,
                     250,
                     0.0f,
                     0.0f);
@@ -506,8 +506,8 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
                     panel,
                     wxID_ANY,
                     0, // Temporary
-                    static_cast<int>(-GameParameters::HalfMaxWorldHeight),
-                    static_cast<int>(GameParameters::HalfMaxWorldHeight),
+                    -200,
+                    200,
                     wxDefaultPosition,
                     wxDefaultSize,
                     wxSL_VERTICAL | wxSL_INVERSE);
@@ -541,8 +541,8 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
                     panel,
                     wxID_ANY,
                     0, // Temporary
-                    static_cast<int>(-GameParameters::HalfMaxWorldWidth),
-                    static_cast<int>(GameParameters::HalfMaxWorldWidth),
+                    -200,
+                    200,
                     wxDefaultPosition,
                     wxDefaultSize,
                     wxSL_HORIZONTAL);
@@ -601,7 +601,7 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
         }
 
         {
-            auto label = new wxStaticText(panel, wxID_ANY, _("Internal pressure, in atmospheres, that the ship is initially spawned with"), wxDefaultPosition, wxDefaultSize,
+            auto label = new wxStaticText(panel, wxID_ANY, _("Internal pressure that the ship is initially spawned with, in atmospheres"), wxDefaultPosition, wxDefaultSize,
                 wxALIGN_CENTER);
 
             label->SetFont(explanationFont);
