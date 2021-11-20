@@ -7,6 +7,8 @@
 
 #include "NewPasswordDialog.h"
 
+#include <Game/GameParameters.h>
+
 #include <UILib/WxHelpers.h>
 
 #include <Game/ShipDefinitionFormatDeSerializer.h>
@@ -411,17 +413,17 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
                 mOffsetXEditSpinBox = new EditSpinBox<float>(
                     panel,
                     NumericEditBoxWidth,
-                    0.0f, // TODOHERE: world
-                    10000.0f, // TODOHERE: world
-                    0.0f,
+                    -GameParameters::HalfMaxWorldWidth,
+                    GameParameters::HalfMaxWorldWidth,
+                    0.0f, // Temporary
                     wxEmptyString,
                     [this](float value)
                     {
-                        // Tell slider
-                        // TODO
-
                         // Tell viz control
                         mShipOffsetVisualizationControl->SetOffsetX(value);
+
+                        // Tell slider
+                        mOffsetXSlider->SetValue(static_cast<int>(value));
 
                         OnDirty();
                     });
@@ -444,17 +446,17 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
                 mOffsetYEditSpinBox = new EditSpinBox<float>(
                     panel,
                     NumericEditBoxWidth,
-                    0.0f, // TODOHERE: world
-                    10000.0f, // TODOHERE: world
-                    0.0f,
+                    -GameParameters::HalfMaxWorldHeight,
+                    GameParameters::HalfMaxWorldHeight,
+                    0.0f, // Temporary
                     wxEmptyString,
                     [this](float value)
                     {
-                        // Tell slider
-                        // TODO
-
                         // Tell viz control
                         mShipOffsetVisualizationControl->SetOffsetY(value);
+
+                        // Tell slider
+                        mOffsetYSlider->SetValue(static_cast<int>(value));
 
                         OnDirty();
                     });
@@ -495,12 +497,27 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
                 mOffsetYSlider = new wxSlider(
                     panel,
                     wxID_ANY,
-                    0, // TODO
-                    0, // TODO
-                    1000, // TODO
+                    0, // Temporary
+                    static_cast<int>(-GameParameters::HalfMaxWorldHeight),
+                    static_cast<int>(GameParameters::HalfMaxWorldHeight),
                     wxDefaultPosition,
                     wxDefaultSize,
                     wxSL_VERTICAL);
+
+                mOffsetYSlider->Bind(
+                    wxEVT_SLIDER,
+                    [this](wxEvent &)
+                    {
+                        float const value = static_cast<float>(mOffsetYSlider->GetValue());
+
+                        // Tell viz control
+                        mShipOffsetVisualizationControl->SetOffsetY(value);
+
+                        // Tell edit box
+                        mOffsetYEditSpinBox->SetValue(value);
+
+                        OnDirty();
+                    });
 
                 gSizer->Add(mOffsetYSlider, 0, wxEXPAND, 0);
             }
@@ -509,12 +526,27 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
                 mOffsetXSlider = new wxSlider(
                     panel,
                     wxID_ANY,
-                    0, // TODO
-                    0, // TODO
-                    1000, // TODO
+                    0, // Temporary
+                    static_cast<int>(-GameParameters::HalfMaxWorldWidth),
+                    static_cast<int>(GameParameters::HalfMaxWorldWidth),
                     wxDefaultPosition,
                     wxDefaultSize,
                     wxSL_HORIZONTAL);
+
+                mOffsetXSlider->Bind(
+                    wxEVT_SLIDER,
+                    [this](wxEvent &)
+                    {
+                        float const value = static_cast<float>(mOffsetXSlider->GetValue());
+
+                        // Tell viz control
+                        mShipOffsetVisualizationControl->SetOffsetX(value);
+
+                        // Tell edit box
+                        mOffsetXEditSpinBox->SetValue(value);
+
+                        OnDirty();
+                    });
 
                 gSizer->Add(mOffsetXSlider, 0, wxEXPAND, 0);
             }
@@ -806,12 +838,14 @@ void ShipPropertiesEditDialog::ReconciliateUI()
 
     mOffsetXEditSpinBox->SetValue(mSessionData->PhysicsData.Offset.x);
     mOffsetYEditSpinBox->SetValue(mSessionData->PhysicsData.Offset.y);
-    // TODO: sliders
+    
     mShipOffsetVisualizationControl->Initialize(
         mSessionData->ShipVisualization,
         mSessionData->PhysicsData.Offset.x,
         mSessionData->PhysicsData.Offset.y);
 
+    mOffsetXSlider->SetValue(static_cast<int>(mSessionData->PhysicsData.Offset.x));
+    mOffsetYSlider->SetValue(static_cast<int>(mSessionData->PhysicsData.Offset.y));
 
     mInternalPressureEditSpinBox->SetValue(mSessionData->PhysicsData.InternalPressure);
 
