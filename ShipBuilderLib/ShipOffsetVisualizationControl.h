@@ -50,9 +50,9 @@ private:
     wxPen mSeaPen;
     wxPen mGuidesPen;
 
-    // Calculated members
-    wxPoint mShipOrigin;
-    wxBitmap mShipBitmap;
+    // Calculated members    
+    wxBitmap mResizedShipBitmap;
+    wxPoint mResizedShipOrigin;
 };
 
 }
