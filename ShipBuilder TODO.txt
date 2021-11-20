@@ -39,7 +39,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 + Send for testing
 
-= Workflow of password
+= Password Workflow
 	+ Hash algo at ShipDeSerializer via static helper method
 	+ Workflows
 		+ Save: ShipDeSerializer::CalculatePasswordHash(password): +salt => hash (new GameType) => in metadata
@@ -55,14 +55,15 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Do at:
 				+ ShipBuilder::OpenForShip
 				+ Menu/Button LoadShip
-	- Test:
-		- Save ship w/password
-		- 1. Load it in FS & Open ship builder
-			- Password OK
-			- Passworn not OK => NewShip
-		- 2. Load it in builder
-			- Password OK
-			- Password not OK => no change
+	= Test:
+		+ Save ship w/password
+		= 1. Load it in FS & Open ship builder
+			+ Password OK
+			+ Password not OK => NewShip
+			- Frame is not yet open when password is asked
+		+ 2. Load it in builder
+			+ Password OK
+			+ Password not OK => no change
 
 
 = Finalize design of Ropes layer
@@ -154,18 +155,19 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Remove ...ForEphViz method from ModelController
 					+ Remove mHasEphemeralVisualization - et al
 	- New materials:
-		= Chains			
-			= For noise: consider adding new StructuralMaterial property: strain_threshold_fraction, default = 0.5
+		+ Chains			
+			+ For noise: consider adding new StructuralMaterial property: strain_threshold_fraction, default = 0.5
 				+ Material
 				+ Springs::UpdateForStrains:
 					+ Springs::mBreakingElongationBuffer: it's buffer of two-float struct, BreakingElongation and StrainThresholdFraction
 				+ Set at Chains material
 				+ Test Chains
-				- Test other materials for no changes to strain threshold
+				+ Test other materials for no changes to strain threshold
 			+ Rustyness
-			- Verify properties look'n'feel (tension)
-		- "~Elastic" ("Rubber Ropes"?)
+			+ Verify properties look'n'feel (tension)
+		- "~Elastic" ("Rubber Ropes"?)	
 		- More chains of other metal types
+		- Also - Weak and Hard variants?
 
 	- New sounds:
 		+ "Chain":
@@ -181,6 +183,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 - Should New Ship start clean?
 	- Can't be saved anyway
 
+- Grid: highlight vertical center guide
+
 - Complete Load/Save/Model
 	- Finalize storage of all other ship definition members in Model
 		= AutoTexturizationSettings
@@ -195,7 +199,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Test
 				- w/PropertiesDialog
 				- Load .shp -> Save .shp2 -> Load .shp2 in FS
-
 
 - Import/Export:
 	- Structural:

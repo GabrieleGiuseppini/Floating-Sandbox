@@ -104,12 +104,15 @@ void ShipOffsetVisualizationControl::OnChange()
     
     float const rescaledWidth = static_cast<float>(mShipVisualization.GetWidth()) * bestShipSpaceMultiplier;
     float const rescaledHeight = static_cast<float>(mShipVisualization.GetHeight()) * bestShipSpaceMultiplier;
-    wxImage rescaledShip = mShipVisualization.Scale(
-        std::max(static_cast<int>(rescaledWidth), 1),
-        std::max(static_cast<int>(rescaledHeight), 1),
-        wxIMAGE_QUALITY_HIGH);
-    mResizedShipBitmap = wxBitmap(rescaledShip, wxBITMAP_SCREEN_DEPTH);
 
+    mResizedShipBitmap = wxBitmap(
+        mShipVisualization.Scale(
+            std::max(static_cast<int>(rescaledWidth), 1),
+            std::max(static_cast<int>(rescaledHeight), 1),
+            wxIMAGE_QUALITY_HIGH),
+        wxBITMAP_SCREEN_DEPTH);
+
+    // TODO: CODEWORK: world->ship
     mResizedShipOrigin = wxPoint(
         static_cast<int>(static_cast<float>(GetSize().GetWidth()) / 2.0f - rescaledWidth / 2.0f + mOffsetX * bestShipSpaceMultiplier),
         static_cast<int>(static_cast<float>(GetSize().GetHeight()) / 2.0f - rescaledHeight - mOffsetY * bestShipSpaceMultiplier)); // Note: this is the top of the bitmap, which then is drawn extending *DOWN*
