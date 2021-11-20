@@ -270,16 +270,19 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Make new tab
 	- Description
 		- Separate tab
+		- Populate at startup
+		- Check for dirty @ OK
+		- Give to ModelController at OK
 	= PhysicsData
 		= Populate tab
 			= ShipOffsetVisualizationControl
 				= Zoom calculation:
 					- Integral/ShipSpace - coords to/from world
-				- Sliders' curve
-		= Populate UI at startup
-		- Give to ModelController at OK
-		- See this tab's size and Metadata tab size
-			- Try viz control less tall
+		+ Populate UI at startup
+		+ Give to ModelController at OK
+			+ Verify becomes dirty
+			+ Verify all 3 saved
+		+ See why pressure is not 1.0 at startup
 	- Auto-Texturization Settings
 		- Populate tab
 			- TODO: decide how to handle Remove vs Setting values
@@ -291,7 +294,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 				- Construct new Metadata, PhysicsProperties, etc.
 					- Set optionals to nullopt if trimmed field is empty
 				- Call Controller::ReplaceMetadata(&&), etc.
-					- Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
+					+ Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
 	- Tests:
 		- Load & save ship w/auto-texturization settings
 		- Verify that after PopulateUI all controls are clean (not marked as dirty)

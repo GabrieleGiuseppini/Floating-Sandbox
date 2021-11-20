@@ -32,6 +32,8 @@ public:
         : wxPanel(parent, wxID_ANY)
         , mMinValue(minValue)
         , mMaxValue(maxValue)
+        , mValue(currentValue)
+        , mIsModified(false)
         , mOnValueChanged(std::move(onValueChanged))
     {
         wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -52,9 +54,6 @@ public:
                 *mTextCtrlValidator);
 
             mTextCtrl->SetValue(ValueToString(currentValue));
-
-            // TODOTEST
-            //mTextCtrl->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
             mTextCtrl->Bind(wxEVT_KILL_FOCUS, &EditSpinBox::OnKillFocus, this);
             mTextCtrl->Bind(wxEVT_TEXT_ENTER, &EditSpinBox::OnTextEnter, this);
@@ -87,13 +86,30 @@ public:
 
     bool IsModified() const
     {
-        return mTextCtrl->IsModified();
+        return mIsModified;
     }
 
+    TValue GetValue() const
+    {
+        return mValue;
+    }
+
+    // Clears modified flag
     void SetValue(float value)
     {
-        mSpinButton->SetValue(value);
-        mTextCtrl->SetValue(ValueToString(value));
+        mValue = value;
+        mIsModified = false;
+
+        mSpinButton->SetValue(mValue);
+        mTextCtrl->SetValue(ValueToString(mValue));
+    }
+
+    // Marks as modified
+    void ChangeValue(float value)
+    {
+        SetValue(value);
+
+        mIsModified = true;
     }
 
 private:
@@ -126,6 +142,10 @@ private:
             value = std::max(value, mMinValue);
             value = std::min(value, mMaxValue);
 
+            // Store value
+            mValue = value;
+            mIsModified = true;
+
             // Set text ctrl back to value
             mTextCtrl->SetValue(ValueToString(value));
 
@@ -139,18 +159,22 @@ private:
 
     void OnSpinButton(wxSpinEvent & event)
     {
-        auto const value = event.GetValue();
+        mValue = static_cast<TValue>(event.GetValue());
+        mIsModified = true;
 
-        mTextCtrl->SetValue(ValueToString(value));
+        mTextCtrl->SetValue(ValueToString(mValue));
 
         // Notify value
-        mOnValueChanged(value);
+        mOnValueChanged(mValue);
     }
 
 private:
 
     TValue const mMinValue;
     TValue const mMaxValue;
+
+    TValue mValue;
+    bool mIsModified;
 
     wxTextCtrl * mTextCtrl;
     std::unique_ptr<wxValidator> mTextCtrlValidator;

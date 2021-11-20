@@ -783,7 +783,13 @@ void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
         // Populate new
         //
 
-        // TODO
+        ShipPhysicsData physicsData(
+            vec2f(
+                mOffsetXEditSpinBox->GetValue(),
+                mOffsetYEditSpinBox->GetValue()),
+            mInternalPressureEditSpinBox->GetValue());
+
+        mSessionData->BuilderController.SetShipPhysicsData(std::move(physicsData));
     }
 
     if (IsAutoTexturizationSettingsDirty())
