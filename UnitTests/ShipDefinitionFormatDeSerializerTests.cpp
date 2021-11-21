@@ -92,6 +92,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Full)
     sourceMd.Author = "Gabriele Giuseppini";
     sourceMd.Description = "Supercaligragilisticexpiralidocius";
     sourceMd.Password = 0x1122334455667788;
+    sourceMd.Scale = ShipSpaceToWorldSpaceCoordsRatio(4.0f, 100.5f);
     sourceMd.ShipName = "Best ship";
     sourceMd.YearBuilt = "2020-2021";
     sourceMd.DoHideElectricalsInPreview = true;
@@ -107,6 +108,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Full)
     EXPECT_EQ(sourceMd.Author, targetMd.Author);
     EXPECT_EQ(sourceMd.Description, targetMd.Description);
     EXPECT_EQ(sourceMd.Password, targetMd.Password);
+    EXPECT_EQ(sourceMd.Scale, targetMd.Scale);
     EXPECT_EQ(sourceMd.ShipName, targetMd.ShipName);
     EXPECT_EQ(sourceMd.YearBuilt, targetMd.YearBuilt);
     EXPECT_EQ(sourceMd.DoHideElectricalsInPreview, targetMd.DoHideElectricalsInPreview);

@@ -286,14 +286,21 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Populate at startup
 		- Check for dirty @ OK
 		- Give to ModelController at OK
-	= PhysicsData
-		= Populate tab
-			= ShipOffsetVisualizationControl
-				= Zoom calculation:
-					- Integral/ShipSpace - coords to/from world
-						- _IntegralCoords: ToFractionalCoords(_CoordsRatio)
-						- _CoordsRatio: templated on both integral types
-							- typedef for ShipSpaceToWorldSpace
+	+ PhysicsData
+		+ Populate tab
+			+ ShipOffsetVisualizationControl
+				+ Zoom calculation:
+					+ Integral/ShipSpace - coords to/from world
+					+ Add CoordsRatio to ShipMetadata
+						+ Legacy loading: 1:1
+						+ New Format loading:
+							+ defaults to 1:1
+							+ Load it
+							+ Save it
+							+ Test
+					+ Use it @ ShipOffsetVisualizationControl
+						+ Test it w/4:1
+					+ Use it @ ShipFactory
 		+ Populate UI at startup
 		+ Give to ModelController at OK
 			+ Verify becomes dirty

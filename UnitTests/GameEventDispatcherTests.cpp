@@ -28,7 +28,8 @@ StructuralMaterial MakeStructuralMaterial(std::string name)
         1.0f,
         1.0f,
         1.0f,
-        std::nullopt,
+        0.5f, // StrainThresholdFraction
+        std::nullopt, // Unique type
         std::nullopt, // Sound
         "TestMaterial",
         // Water

@@ -770,6 +770,7 @@ void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
             MakeString(mArtCreditsTextCtrl->GetValue()),
             MakeString(mYearBuiltTextCtrl->GetValue()),
             std::nullopt, // TODO: description
+            mSessionData->Metadata.Scale, // CODEWORK: not editable in this version
             mSessionData->Metadata.DoHideElectricalsInPreview,
             mSessionData->Metadata.DoHideHDInPreview,
             mPasswordHash);
@@ -861,6 +862,7 @@ void ShipPropertiesEditDialog::ReconciliateUI()
     
     mShipOffsetVisualizationControl->Initialize(
         mSessionData->ShipVisualization,
+        mSessionData->Metadata.Scale,
         mSessionData->PhysicsData.Offset.x,
         mSessionData->PhysicsData.Offset.y);
 

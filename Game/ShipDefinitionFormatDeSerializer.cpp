@@ -642,6 +642,19 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadata(
             buffer);
     }
 
+    {
+        buffer.Append(static_cast<std::uint32_t>(MetadataTagType::Scale));
+        size_t const valueSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+
+        size_t valueSize = buffer.Append(metadata.Scale.inputUnits);
+        valueSize += buffer.Append(metadata.Scale.outputUnits);
+
+        buffer.WriteAt(static_cast<std::uint32_t>(valueSize), valueSizeIndex);
+
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+        sectionBodySize += sizeof(SectionHeader) + valueSize;
+    }
+
     if (metadata.Password.has_value())
     {
         sectionBodySize += AppendMetadataEntry(
@@ -1451,6 +1464,19 @@ ShipMetadata ShipDefinitionFormatDeSerializer::ReadMetadata(DeSerializationBuffe
                 std::string tmpStr;
                 buffer.ReadAt<std::string>(offset, tmpStr);
                 metadata.Description = tmpStr;
+
+                break;
+            }
+
+            case static_cast<uint32_t>(MetadataTagType::Scale) :
+            {
+                float inputUnits;
+                size_t readOffset = buffer.ReadAt<float>(offset, inputUnits);
+
+                float outputUnits;
+                buffer.ReadAt<float>(offset + readOffset, outputUnits);
+                
+                metadata.Scale = ShipSpaceToWorldSpaceCoordsRatio(inputUnits, outputUnits);
 
                 break;
             }

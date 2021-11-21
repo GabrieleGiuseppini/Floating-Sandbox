@@ -61,6 +61,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     //
 
     float const halfShipWidth = static_cast<float>(shipDefinition.Size.width) / 2.0f;
+    float const shipSpaceToWorldSpaceFactor = shipDefinition.Metadata.Scale.outputUnits / shipDefinition.Metadata.Scale.inputUnits;
 
     // ShipFactoryPoint's
     std::vector<ShipFactoryPoint> pointInfos1;
@@ -143,11 +144,15 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
                 pointIndexMatrix[{x + 1, y + 1}] = static_cast<ElementIndex>(pointIndex);
 
-                pointInfos1.emplace_back(
-                    coords,
+                vec2f const worldCoords =
                     vec2f(
                         static_cast<float>(x) - halfShipWidth,
-                        static_cast<float>(y)) + shipDefinition.PhysicsData.Offset,
+                        static_cast<float>(y)) * shipSpaceToWorldSpaceFactor
+                    + shipDefinition.PhysicsData.Offset;
+
+                pointInfos1.emplace_back(
+                    coords,
+                    worldCoords,
                     MakeTextureCoordinates(x, y, shipDefinition.Size),
                     structuralMaterialRenderColor,
                     *structuralMaterial,

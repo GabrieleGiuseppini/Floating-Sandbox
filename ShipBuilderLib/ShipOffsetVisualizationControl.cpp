@@ -19,7 +19,8 @@ ShipOffsetVisualizationControl::ShipOffsetVisualizationControl(
     int height,
     float initialOffsetX,
     float initialOffsetY)
-    : mOffsetX(initialOffsetX)
+    : mShipSpaceToWorldSpaceCoordsRatio(1.0f, 1.0f)
+    , mOffsetX(initialOffsetX)
     , mOffsetY(initialOffsetY)
 {
     Create(
@@ -43,10 +44,12 @@ ShipOffsetVisualizationControl::ShipOffsetVisualizationControl(
 
 void ShipOffsetVisualizationControl::Initialize(
     RgbaImageData const & shipVisualization,
+    ShipSpaceToWorldSpaceCoordsRatio const & shipSpaceToWorldSpaceCoordsRatio,
     float offsetX,
     float offsetY)
 {
     mShipVisualization = WxHelpers::MakeImage(shipVisualization);
+    mShipSpaceToWorldSpaceCoordsRatio = shipSpaceToWorldSpaceCoordsRatio;
     mOffsetX = offsetX;
     mOffsetY = offsetY;
     OnChange();
@@ -81,16 +84,16 @@ void ShipOffsetVisualizationControl::OnChange()
     float const niceWorldX = static_cast<float>(GetSize().GetWidth() - Margin - Margin) / 2.0f;
     float const niceWorldY = static_cast<float>(GetSize().GetHeight() - Margin - Margin) / 2.0f;
 
-    // TODO: CODEWORK: ship->world
-    float const shipWorldWidth = static_cast<float>(mShipVisualization.GetWidth());
-    float const shipWorldHeight = static_cast<float>(mShipVisualization.GetHeight());
+    vec2f const shipWorldSize = 
+        ShipSpaceSize(mShipVisualization.GetWidth(), mShipVisualization.GetHeight())
+        .ToFractionalCoords(mShipSpaceToWorldSpaceCoordsRatio);
 
     float const furthestShipX = std::max(
-        std::abs(mOffsetX - shipWorldWidth / 2.0f),     // L
-        std::abs(mOffsetX + shipWorldWidth / 2.0f));    // R
+        std::abs(mOffsetX - shipWorldSize.x / 2.0f),     // L
+        std::abs(mOffsetX + shipWorldSize.x / 2.0f));    // R
 
     float const furthestShipY = std::max(
-        std::abs(mOffsetY + shipWorldHeight),   // Top
+        std::abs(mOffsetY + shipWorldSize.y),   // Top
         std::abs(mOffsetY));                    // Bottom
 
     // Calculate multiplier to bring ship's furthest point (L, R, T, or B) at "nice place"
@@ -102,8 +105,8 @@ void ShipOffsetVisualizationControl::OnChange()
     // Create rescaled ship
     //
     
-    float const rescaledWidth = static_cast<float>(mShipVisualization.GetWidth()) * bestShipSpaceMultiplier;
-    float const rescaledHeight = static_cast<float>(mShipVisualization.GetHeight()) * bestShipSpaceMultiplier;
+    float const rescaledWidth = shipWorldSize.x * bestShipSpaceMultiplier;
+    float const rescaledHeight = shipWorldSize.y * bestShipSpaceMultiplier;
 
     mResizedShipBitmap = wxBitmap(
         mShipVisualization.Scale(
@@ -112,7 +115,6 @@ void ShipOffsetVisualizationControl::OnChange()
             wxIMAGE_QUALITY_HIGH),
         wxBITMAP_SCREEN_DEPTH);
 
-    // TODO: CODEWORK: world->ship
     mResizedShipOrigin = wxPoint(
         static_cast<int>(static_cast<float>(GetSize().GetWidth()) / 2.0f - rescaledWidth / 2.0f + mOffsetX * bestShipSpaceMultiplier),
         static_cast<int>(static_cast<float>(GetSize().GetHeight()) / 2.0f - rescaledHeight - mOffsetY * bestShipSpaceMultiplier)); // Note: this is the top of the bitmap, which then is drawn extending *DOWN*

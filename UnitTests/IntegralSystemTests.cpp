@@ -127,3 +127,25 @@ TEST_P(IntegralRect_MakeIntersectionWith_Empty, IntegralRect_MakeIntersectionWit
 
     EXPECT_FALSE(result);
 }
+
+// TODO
+
+class CoordsRatio : public testing::TestWithParam<std::tuple<ShipSpaceCoordinates, ShipSpaceToWorldSpaceCoordsRatio, vec2f>>
+{
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    IntegralSystemTests,
+    CoordsRatio,
+    ::testing::Values(
+        std::make_tuple<ShipSpaceCoordinates, ShipSpaceToWorldSpaceCoordsRatio, vec2f>({ 1, 7 }, { 1.0f, 2.0f }, { 2.0f, 14.0f }),
+        std::make_tuple<ShipSpaceCoordinates, ShipSpaceToWorldSpaceCoordsRatio, vec2f>({ 1, 7 }, { 2.0f, 1.0f }, { 0.5f, 3.5f }),
+        std::make_tuple<ShipSpaceCoordinates, ShipSpaceToWorldSpaceCoordsRatio, vec2f>({ 4, 6 }, { 2.0f, 3.0f }, { 6.0f, 9.0f })
+    ));
+
+TEST_P(CoordsRatio, CoordsRatio)
+{
+    auto const result = std::get<0>(GetParam()).ToFractionalCoords(std::get<1>(GetParam()));
+
+    EXPECT_EQ(result, std::get<2>(GetParam()));
+}

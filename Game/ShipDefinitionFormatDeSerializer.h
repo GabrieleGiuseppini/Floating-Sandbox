@@ -132,6 +132,7 @@ private:
         ArtCredits = MAKE_TAG('A', 'C', 'R', '1'),
         YearBuilt = MAKE_TAG('Y', 'R', 'B', '1'),
         Description = MAKE_TAG('D', 'E', 'S', '1'),
+        Scale = MAKE_TAG('S', 'C', 'L', '1'),
         Password = MAKE_TAG('P', 'P', 'P', '1'),
         DoHideElectricalsInPreview = MAKE_TAG('H', 'E', 'P', '1'),
         DoHideHDInPreview = MAKE_TAG('H', 'H', 'P', '1'),

@@ -361,6 +361,16 @@ struct _IntegralSize
             static_cast<float>(height));
     }
 
+    template<typename TCoordsRatio>
+    vec2f ToFractionalCoords(TCoordsRatio const & coordsRatio) const
+    {
+        assert(coordsRatio.inputUnits != 0.0f);
+
+        return vec2f(
+            static_cast<float>(width) / coordsRatio.inputUnits * coordsRatio.outputUnits,
+            static_cast<float>(height) / coordsRatio.inputUnits * coordsRatio.outputUnits);
+    }
+
     std::string ToString() const
     {
         std::stringstream ss;
@@ -370,6 +380,13 @@ struct _IntegralSize
 };
 
 #pragma pack(pop)
+
+template<typename TTag>
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _IntegralSize<TTag> const & is)
+{
+    os << is.ToString();
+    return os;
+}
 
 using IntegralRectSize = _IntegralSize<struct IntegralTag>;
 using ImageSize = _IntegralSize<struct ImageTag>;
@@ -452,6 +469,16 @@ struct _IntegralCoordinates
             static_cast<float>(y));
     }
 
+    template<typename TCoordsRatio>
+    vec2f ToFractionalCoords(TCoordsRatio const & coordsRatio) const
+    {
+        assert(coordsRatio.inputUnits != 0.0f);
+
+        return vec2f(
+            static_cast<float>(x) / coordsRatio.inputUnits * coordsRatio.outputUnits,
+            static_cast<float>(y) / coordsRatio.inputUnits * coordsRatio.outputUnits);
+    }
+
     std::string ToString() const
     {
         std::stringstream ss;
@@ -461,6 +488,13 @@ struct _IntegralCoordinates
 };
 
 #pragma pack(pop)
+
+template<typename TTag>
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _IntegralCoordinates<TTag> const & p)
+{
+    os << p.ToString();
+    return os;
+}
 
 using IntegralCoordinates = _IntegralCoordinates<struct IntegralTag>; // Generic integer
 using ImageCoordinates = _IntegralCoordinates<struct ImageTag>; // Image
@@ -566,19 +600,27 @@ using IntegralRect = _IntegralRect<struct IntegralTag>;
 using ImageRect = _IntegralRect<struct ImageTag>;
 using ShipSpaceRect = _IntegralRect<struct ShipSpaceTag>;
 
-template<typename TTag>
-inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _IntegralCoordinates<TTag> const & p)
+template<typename TIntegralTag>
+struct _IntegralCoordsRatio
 {
-    os << p.ToString();
-    return os;
-}
+    float inputUnits; // i.e. how many integral units
+    float outputUnits; // i.e. how many float units
 
-template<typename TTag>
-inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _IntegralSize<TTag> const & is)
-{
-    os << is.ToString();
-    return os;
-}
+    constexpr _IntegralCoordsRatio(
+        float _inputUnits,
+        float _outputUnits)
+        : inputUnits(_inputUnits)
+        , outputUnits(_outputUnits)
+    {}
+
+    inline bool operator==(_IntegralCoordsRatio<TIntegralTag> const & other) const
+    {
+        return inputUnits == other.inputUnits
+            && outputUnits == other.outputUnits;
+    }
+};
+
+using ShipSpaceToWorldSpaceCoordsRatio = _IntegralCoordsRatio<struct ShipSpaceTag>;
 
 /*
  * Octants, i.e. the direction of a spring connecting two neighbors.

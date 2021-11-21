@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
 
 #include <wx/dc.h>
@@ -26,6 +27,7 @@ public:
 
     void Initialize(
         RgbaImageData const & shipVisualization,
+        ShipSpaceToWorldSpaceCoordsRatio const & shipSpaceToWorldSpaceCoordsRatio,
         float offsetX,
         float offsetY);
     
@@ -41,10 +43,10 @@ private:
 
 private:
 
+    wxImage mShipVisualization;
+    ShipSpaceToWorldSpaceCoordsRatio mShipSpaceToWorldSpaceCoordsRatio;
     float mOffsetX;
     float mOffsetY;
-
-    wxImage mShipVisualization;
     
     wxBrush mSeaBrush;
     wxPen mSeaPen;

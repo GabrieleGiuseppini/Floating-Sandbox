@@ -28,6 +28,8 @@ public:
 
     std::optional<std::string> Description;
 
+    ShipSpaceToWorldSpaceCoordsRatio Scale;
+
     bool DoHideElectricalsInPreview;
     bool DoHideHDInPreview;
 
@@ -39,6 +41,7 @@ public:
         , ArtCredits()
         , YearBuilt()
         , Description()
+        , Scale(1.0f, 1.0f) // Default is 1:1
         , DoHideElectricalsInPreview(false)
         , DoHideHDInPreview(false)
         , Password()
@@ -51,6 +54,7 @@ public:
         std::optional<std::string> artCredits,
         std::optional<std::string> yearBuilt,
         std::optional<std::string> description,
+        ShipSpaceToWorldSpaceCoordsRatio scale,
         bool doHideElectricalsInPreview,
         bool doHideHDInPreview,
         std::optional<PasswordHash> password)
@@ -59,6 +63,7 @@ public:
         , ArtCredits(std::move(artCredits))
         , YearBuilt(std::move(yearBuilt))
         , Description(std::move(description))
+        , Scale(scale)
         , DoHideElectricalsInPreview(doHideElectricalsInPreview)
         , DoHideHDInPreview(doHideHDInPreview)
         , Password(password)
