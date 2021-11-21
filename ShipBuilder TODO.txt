@@ -281,11 +281,11 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Year Built
 	+ Edit Password
 		+ Make new tab
-	- Description
-		- Separate tab
-		- Populate at startup
-		- Check for dirty @ OK
-		- Give to ModelController at OK
+	+ Description
+		+ Separate tab
+		+ Populate at startup
+		+ Check for dirty @ OK
+		+ Give to ModelController at OK
 	+ PhysicsData
 		+ Populate tab
 			+ ShipOffsetVisualizationControl
@@ -322,6 +322,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Tests:
 		- Load & save ship w/auto-texturization settings
 		- Verify that after PopulateUI all controls are clean (not marked as dirty)
+			- Use that logging to verify that when physics data only is dirty, metadata is not
 		+ New ship:
 			+ Populate one x {...}
 			+ Close

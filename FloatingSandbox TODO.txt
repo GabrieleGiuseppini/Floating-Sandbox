@@ -1285,6 +1285,10 @@ Render:
 			- Could be couple with ship+settings file, to also provide custom terrain
 
 	- Different scale for ships
+		+ Metadata now has Scale member to convert ShipSpace into WorldSpace
+		- Use at:
+			= ShipFactory
+			- ShipLoad Preview Window, when displaying size
 
 	- Time slowing down, both automatically (at explosions, at big events, etc.) and by user
 

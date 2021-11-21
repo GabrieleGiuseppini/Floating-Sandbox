@@ -368,10 +368,46 @@ void ShipPropertiesEditDialog::PopulateDescriptionPanel(wxPanel * panel)
 {
     wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
-    // TODO
+    auto explanationFont = panel->GetFont();
+    explanationFont.SetPointSize(explanationFont.GetPointSize() - 2);
+    explanationFont.SetStyle(wxFontStyle::wxFONTSTYLE_ITALIC);
+
     {
-        auto temp = new wxStaticBitmap(panel, wxID_ANY, WxHelpers::LoadBitmap("under_construction_large", mResourceLocator));
-        vSizer->Add(temp, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Description"), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            vSizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+        }
+
+        {
+            mDescriptionTextCtrl = new wxTextCtrl(
+                panel,
+                wxID_ANY,
+                wxEmptyString,
+                wxDefaultPosition,
+                wxSize(200, 300),
+                wxTE_MULTILINE);
+
+            mDescriptionTextCtrl->Bind(
+                wxEVT_TEXT,
+                [this](wxCommandEvent & event)
+                {
+                    OnDirty();
+                    event.Skip();
+                });
+
+            vSizer->Add(mDescriptionTextCtrl, 0, wxALL | wxEXPAND, 0);
+        }
+
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Description of the ship, as long or short as you want, or empty to leave the ship without a description"), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            label->SetFont(explanationFont);
+
+            vSizer->Add(label, 0, wxALL | wxEXPAND, 0);
+        }
     }
 
     // Finalize
@@ -769,7 +805,7 @@ void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
             MakeString(mShipAuthorTextCtrl->GetValue()),
             MakeString(mArtCreditsTextCtrl->GetValue()),
             MakeString(mYearBuiltTextCtrl->GetValue()),
-            std::nullopt, // TODO: description
+            MakeString(mDescriptionTextCtrl->GetValue()),
             mSessionData->Metadata.Scale, // CODEWORK: not editable in this version
             mSessionData->Metadata.DoHideElectricalsInPreview,
             mSessionData->Metadata.DoHideHDInPreview,
@@ -854,6 +890,12 @@ void ShipPropertiesEditDialog::ReconciliateUI()
     mYearBuiltTextCtrl->ChangeValue(mSessionData->Metadata.YearBuilt.value_or(""));
 
     //
+    // Description
+    //
+
+    mDescriptionTextCtrl->ChangeValue(mSessionData->Metadata.Description.value_or(""));
+
+    //
     // Physics
     //
 
@@ -905,11 +947,11 @@ void ShipPropertiesEditDialog::ReconciliateUIWithPassword()
 
 bool ShipPropertiesEditDialog::IsMetadataDirty() const
 {
-    // TODO: others
     return mShipNameTextCtrl->IsModified()
         || mShipAuthorTextCtrl->IsModified()
         || mArtCreditsTextCtrl->IsModified()
         || mYearBuiltTextCtrl->IsModified()
+        || mDescriptionTextCtrl->IsModified()
         || mIsPasswordHashModified;
 }
 

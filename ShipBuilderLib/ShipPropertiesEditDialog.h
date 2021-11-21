@@ -83,6 +83,8 @@ private:
     wxTextCtrl * mArtCreditsTextCtrl;
     wxTextCtrl * mYearBuiltTextCtrl;
 
+    wxTextCtrl * mDescriptionTextCtrl;
+
     EditSpinBox<float> * mOffsetXEditSpinBox;
     EditSpinBox<float> * mOffsetYEditSpinBox;
     EditSpinBox<float> * mInternalPressureEditSpinBox;
