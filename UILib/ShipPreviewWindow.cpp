@@ -181,6 +181,10 @@ void ShipPreviewWindow::SetDirectory(std::filesystem::path const & directoryPath
 
                 lock.unlock();
             }
+
+            // Clear message queue
+            // Note: no need to lock as we know the thread is not touching it
+            mThreadToPanelMessageQueue.clear();
         }
 
         //
