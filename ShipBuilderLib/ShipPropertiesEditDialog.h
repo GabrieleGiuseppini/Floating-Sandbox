@@ -89,10 +89,15 @@ private:
     EditSpinBox<float> * mOffsetYEditSpinBox;
     EditSpinBox<float> * mInternalPressureEditSpinBox;
 
+    // TODOHERE
+    wxRadioButton * mNoAutoTexturizationSettingsRadioButton;
+    wxRadioButton * mYesAutoTexturizationSettingsRadioButton;
+    wxPanel * mAutoTexturizationSettingsPanel;
     wxRadioButton * mFlatStructureAutoTexturizationModeRadioButton;
     wxRadioButton * mMaterialTexturesAutoTexturizationModeRadioButton;
     SliderControl<float> * mMaterialTextureMagnificationSlider;
     SliderControl<float> * mMaterialTextureTransparencySlider;
+    bool mIsAutoTexturizationSettingsDirty;
 
     std::optional<PasswordHash> mPasswordHash;
     bool mIsPasswordHashModified;

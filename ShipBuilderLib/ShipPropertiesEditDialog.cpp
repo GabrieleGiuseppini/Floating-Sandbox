@@ -7,12 +7,13 @@
 
 #include "NewPasswordDialog.h"
 
-#include <Game/GameParameters.h>
-
 #include <UILib/WxHelpers.h>
 
+#include <Game/GameParameters.h>
 #include <Game/ShipDefinitionFormatDeSerializer.h>
 
+#include <GameCore/ExponentialSliderCore.h>
+#include <GameCore/LinearSliderCore.h>
 #include <GameCore/Version.h>
 
 #include <wx/gbsizer.h>
@@ -656,10 +657,153 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
 {
     wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
-    // TODO
+    auto explanationFont = panel->GetFont();
+    explanationFont.SetPointSize(explanationFont.GetPointSize() - 2);
+    explanationFont.SetStyle(wxFontStyle::wxFONTSTYLE_ITALIC);
+
+    // Radio button NO
     {
-        auto temp = new wxStaticBitmap(panel, wxID_ANY, WxHelpers::LoadBitmap("under_construction_large", mResourceLocator));
-        vSizer->Add(temp, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+        mNoAutoTexturizationSettingsRadioButton = new wxRadioButton(panel, wxID_ANY,
+            _("Use the global auto-texturization settings of the simulator."), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+
+        mNoAutoTexturizationSettingsRadioButton->Bind(
+            wxEVT_RADIOBUTTON, 
+            [this, vSizer](wxCommandEvent &)
+            {
+                mAutoTexturizationSettingsPanel->Enable(false);
+                mIsAutoTexturizationSettingsDirty = true;
+            });
+
+        vSizer->Add(mNoAutoTexturizationSettingsRadioButton, 0, wxALIGN_LEFT, 0);
+    }
+
+    vSizer->AddSpacer(VerticalSeparatorSize);
+
+    // Radio button YES
+    {
+        mYesAutoTexturizationSettingsRadioButton = new wxRadioButton(panel, wxID_ANY,
+            _("Use ship-specific auto-texturization settings."), wxDefaultPosition, wxDefaultSize);
+
+        mYesAutoTexturizationSettingsRadioButton->Bind(
+            wxEVT_RADIOBUTTON,
+            [this](wxCommandEvent &)
+            {
+                mAutoTexturizationSettingsPanel->Enable(true);
+                mIsAutoTexturizationSettingsDirty = true;
+            });
+
+        vSizer->Add(mYesAutoTexturizationSettingsRadioButton, 0, wxALIGN_LEFT, 0);
+    }
+
+    vSizer->AddSpacer(VerticalSeparatorSize);
+
+    // Settings panel
+    {
+        mAutoTexturizationSettingsPanel = new wxPanel(panel);
+
+        wxGridBagSizer * gSizer = new wxGridBagSizer(0, 0);
+
+        // Texturization Mode
+        {
+            wxStaticBoxSizer * texturizationModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, mAutoTexturizationSettingsPanel, _("Mode"));
+
+            {
+                wxGridBagSizer * texturizationModeSizer = new wxGridBagSizer(5, 3);
+
+                {
+                    mFlatStructureAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBoxSizer->GetStaticBox(), wxID_ANY,
+                        _("Flat Structure"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+                    mFlatStructureAutoTexturizationModeRadioButton->SetToolTip(_("When a ship does not have a high-definition image, generates one using the materials' matte colors. Changes to this setting will only be visible after the next ship is loaded."));
+                    mFlatStructureAutoTexturizationModeRadioButton->Bind(
+                        wxEVT_RADIOBUTTON,
+                        [this](wxCommandEvent &)
+                        {
+                            // TODOHERE
+                        });
+
+                    texturizationModeSizer->Add(mFlatStructureAutoTexturizationModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                }
+
+                {
+                    mMaterialTexturesAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBoxSizer->GetStaticBox(), wxID_ANY,
+                        _("Material Textures"), wxDefaultPosition, wxDefaultSize);
+                    mMaterialTexturesAutoTexturizationModeRadioButton->SetToolTip(_("When a ship does not have a high-definition image, generates one using material-specific textures. Changes to this setting will only be visible after the next ship is loaded."));
+                    mMaterialTexturesAutoTexturizationModeRadioButton->Bind(
+                        wxEVT_RADIOBUTTON,
+                        [this](wxCommandEvent &)
+                        {
+                            // TODOHERE
+                        });
+
+                    texturizationModeSizer->Add(mMaterialTexturesAutoTexturizationModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                }
+
+                texturizationModeBoxSizer->Add(texturizationModeSizer, 0, 0, 0);
+            }
+
+            gSizer->Add(
+                texturizationModeBoxSizer,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALL,
+                0);
+        }
+
+        int constexpr SliderWidth = 84;
+        int constexpr SliderHeight = 140;
+
+        // Material Texture Magnification
+        {
+            mMaterialTextureMagnificationSlider = new SliderControl<float>(
+                mAutoTexturizationSettingsPanel,
+                SliderWidth,
+                SliderHeight,
+                _("Texture Magnification"),
+                _("Changes the level of detail of materials' textures. Changes to this setting will only be visible after the next ship is loaded."),
+                [this](float value)
+                {
+                    // TODOHERE
+                },
+                std::make_unique<ExponentialSliderCore>(
+                    0.1f,
+                    1.0f,
+                    2.0f));
+
+            gSizer->Add(
+                mMaterialTextureMagnificationSlider,
+                wxGBPosition(0, 1),
+                wxGBSpan(2, 1),
+                wxEXPAND | wxALL,
+                0);
+        }
+
+        // Material Texture Transparency
+        {
+            mMaterialTextureTransparencySlider = new SliderControl<float>(
+                mAutoTexturizationSettingsPanel,
+                SliderWidth,
+                SliderHeight,
+                _("Texture Transparency"),
+                _("Changes the transparency of materials' textures. Changes to this setting will only be visible after the next ship is loaded."),
+                [this](float value)
+                {
+                    // TODOHERE
+                },
+                std::make_unique<LinearSliderCore>(
+                    0.0f,
+                    1.0f));
+
+            gSizer->Add(
+                mMaterialTextureTransparencySlider,
+                wxGBPosition(0, 2),
+                wxGBSpan(2, 1),
+                wxEXPAND | wxALL,
+                0);
+        }
+
+        mAutoTexturizationSettingsPanel->SetSizerAndFit(gSizer);
+
+        vSizer->Add(mAutoTexturizationSettingsPanel, 0, 0, 0);
     }
 
     // Finalize
@@ -916,7 +1060,22 @@ void ShipPropertiesEditDialog::ReconciliateUI()
     // Auto-Texturization
     //
 
-    // TODO
+    if (mSessionData->AutoTexturizationSettings.has_value())
+    {
+        mNoAutoTexturizationSettingsRadioButton->SetValue(false);
+        mYesAutoTexturizationSettingsRadioButton->SetValue(true);
+        mAutoTexturizationSettingsPanel->Enable(true);
+        // TODO: populate fields from settings
+    }
+    else
+    {
+        mNoAutoTexturizationSettingsRadioButton->SetValue(true);
+        mYesAutoTexturizationSettingsRadioButton->SetValue(false);
+        mAutoTexturizationSettingsPanel->Enable(false);
+        // TODO: populate fields w/defaults
+    }
+
+    mIsAutoTexturizationSettingsDirty = false;
 
     //
     // Password protection
@@ -963,8 +1122,7 @@ bool ShipPropertiesEditDialog::IsPhysicsDataDirty() const
 
 bool ShipPropertiesEditDialog::IsAutoTexturizationSettingsDirty() const
 {
-    // TODO
-    return false;
+    return mIsAutoTexturizationSettingsDirty;
 }
 
 std::optional<std::string> ShipPropertiesEditDialog::MakeString(wxString && value)

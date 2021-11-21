@@ -308,7 +308,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ See why pressure is not 1.0 at startup
 	- Auto-Texturization Settings
 		- Populate tab
-			- TODO: decide how to handle Remove vs Setting values
+			- Radio button to handle Remove vs Setting values
+			- Whole tab disabled or even hidden <=> has texture
 		- Populate UI at startup
 		- Give to ModelController at OK
 	- At OK:
