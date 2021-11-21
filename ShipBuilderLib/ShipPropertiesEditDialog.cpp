@@ -701,14 +701,14 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
     {
         mAutoTexturizationSettingsPanel = new wxPanel(panel);
 
-        wxGridBagSizer * gSizer = new wxGridBagSizer(0, 0);
+        wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
 
         // Texturization Mode
         {
             wxStaticBoxSizer * texturizationModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, mAutoTexturizationSettingsPanel, _("Mode"));
 
             {
-                wxGridBagSizer * texturizationModeSizer = new wxGridBagSizer(5, 3);
+                wxSizer * texturizationModeVSizer = new wxBoxSizer(wxVERTICAL);
 
                 {
                     mFlatStructureAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBoxSizer->GetStaticBox(), wxID_ANY,
@@ -721,8 +721,14 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                             // TODOHERE
                         });
 
-                    texturizationModeSizer->Add(mFlatStructureAutoTexturizationModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                    texturizationModeVSizer->Add(
+                        mFlatStructureAutoTexturizationModeRadioButton,
+                        0,
+                        0,
+                        0);
                 }
+
+                texturizationModeVSizer->AddSpacer(10);
 
                 {
                     mMaterialTexturesAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBoxSizer->GetStaticBox(), wxID_ANY,
@@ -735,17 +741,20 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                             // TODOHERE
                         });
 
-                    texturizationModeSizer->Add(mMaterialTexturesAutoTexturizationModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxALIGN_CENTER_VERTICAL, 0);
+                    texturizationModeVSizer->Add(
+                        mMaterialTexturesAutoTexturizationModeRadioButton,
+                        0,
+                        0,
+                        0);
                 }
 
-                texturizationModeBoxSizer->Add(texturizationModeSizer, 0, 0, 0);
+                texturizationModeBoxSizer->Add(texturizationModeVSizer, 0, wxALL, 10);
             }
 
-            gSizer->Add(
+            hSizer->Add(
                 texturizationModeBoxSizer,
-                wxGBPosition(0, 0),
-                wxGBSpan(1, 1),
-                wxALL,
+                0,
+                0,
                 0);
         }
 
@@ -769,13 +778,14 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                     1.0f,
                     2.0f));
 
-            gSizer->Add(
+            hSizer->Add(
                 mMaterialTextureMagnificationSlider,
-                wxGBPosition(0, 1),
-                wxGBSpan(2, 1),
-                wxEXPAND | wxALL,
+                0,
+                0,
                 0);
         }
+
+        hSizer->AddSpacer(10);
 
         // Material Texture Transparency
         {
@@ -793,15 +803,14 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                     0.0f,
                     1.0f));
 
-            gSizer->Add(
+            hSizer->Add(
                 mMaterialTextureTransparencySlider,
-                wxGBPosition(0, 2),
-                wxGBSpan(2, 1),
-                wxEXPAND | wxALL,
+                0,
+                0,
                 0);
         }
 
-        mAutoTexturizationSettingsPanel->SetSizerAndFit(gSizer);
+        mAutoTexturizationSettingsPanel->SetSizerAndFit(hSizer);
 
         vSizer->Add(mAutoTexturizationSettingsPanel, 0, 0, 0);
     }
