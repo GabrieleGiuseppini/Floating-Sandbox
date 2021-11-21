@@ -39,7 +39,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 + Send for testing
 
-= Password Workflow
++ Password Workflow
 	+ Hash algo at ShipDeSerializer via static helper method
 	+ Workflows
 		+ Save: ShipDeSerializer::CalculatePasswordHash(password): +salt => hash (new GameType) => in metadata
@@ -55,12 +55,21 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Do at:
 				+ ShipBuilder::OpenForShip
 				+ Menu/Button LoadShip
-	= Test:
+	+ Test:
 		+ Save ship w/password
-		= 1. Load it in FS & Open ship builder
+		+ 1. Load it in FS & Open ship builder
 			+ Password OK
 			+ Password not OK => NewShip
-			- Frame is not yet open when password is asked
+			+ Frame is not yet open when password is asked
+				+ Fix
+				+ Test:
+					+ From FS:
+						+ Edit PW ship => ok pwd
+						+ Edit PW ship => no pwd
+						+ Edit non-PW ship
+						+ Create new ship
+					+ From builder:
+						+ Create new ship
 		+ 2. Load it in builder
 			+ Password OK
 			+ Password not OK => no change
@@ -220,6 +229,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- .png
 				- Ad-hoc code using ImageFileTools
 			- .shp, .shp2 (load whole and throw away)
+			- After import, also replace art credits
 		- Export to .png (though quite useless at this moment)
 			- Ad-hoc code using ImageFileTools
 	- Notes:
@@ -281,6 +291,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 			= ShipOffsetVisualizationControl
 				= Zoom calculation:
 					- Integral/ShipSpace - coords to/from world
+						- _IntegralCoords: ToFractionalCoords(_CoordsRatio)
+						- _CoordsRatio: templated on both integral types
+							- typedef for ShipSpaceToWorldSpace
 		+ Populate UI at startup
 		+ Give to ModelController at OK
 			+ Verify becomes dirty
@@ -298,6 +311,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 					- Set optionals to nullopt if trimmed field is empty
 				- Call Controller::ReplaceMetadata(&&), etc.
 					+ Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
+			- Make Undo entry
 	- Tests:
 		- Load & save ship w/auto-texturization settings
 		- Verify that after PopulateUI all controls are clean (not marked as dirty)

@@ -644,7 +644,7 @@ void Controller::ResetView()
 
 void Controller::OnWorkCanvasResized(DisplayLogicalSize const & newSize)
 {
-    mView.SetDisplayLogicalSize(newSize);
+    // Note: we don't tell view, as MainFrame is responsible for that
 
     // Tell tool about the new mouse (ship space) position, but only
     // if the mouse is in the canvas
@@ -655,6 +655,7 @@ void Controller::OnWorkCanvasResized(DisplayLogicalSize const & newSize)
         mCurrentTool->OnMouseMove(*mouseCoordinates);
     }
 
+    // Tell UI
     mUserInterface.OnViewModelChanged();
 }
 

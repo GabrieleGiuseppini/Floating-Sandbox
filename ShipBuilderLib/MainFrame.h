@@ -170,6 +170,8 @@ private:
         return !mReturnToGameFunctor;
     }
 
+    void OnOpenForLoadShipIdleEvent(wxIdleEvent & event);
+
     void Open();
 
     void NewShip();
@@ -210,6 +212,8 @@ private:
     bool DoLoadShip(std::filesystem::path const & shipFilePath);
 
     void DoSaveShip(std::filesystem::path const & shipFilePath);
+
+    DisplayLogicalSize GetWorkCanvasSize() const;
 
     void RecalculateWorkCanvasPanning();
 
@@ -338,6 +342,8 @@ private:
     //
 
     WorkbenchState mWorkbenchState;
+
+    std::filesystem::path mOpenForLoadShipFilePath;
     std::optional<std::filesystem::path> mCurrentShipFilePath;
     std::vector<std::filesystem::path> mShipLoadDirectories;
 };

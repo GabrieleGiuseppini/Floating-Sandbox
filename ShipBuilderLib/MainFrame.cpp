@@ -489,13 +489,9 @@ void MainFrame::OpenForNewShip()
 
 void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
 {
-    // Load ship
-    if (!DoLoadShip(shipFilePath))
-    {
-        // No luck loading ship...
-        // ...just create new ship
-        DoNewShip();
-    }
+    // Register idle event for delayed load
+    mOpenForLoadShipFilePath = shipFilePath;
+    Bind(wxEVT_IDLE, (wxObjectEventFunction)&MainFrame::OnOpenForLoadShipIdleEvent, this);
 
     // Open ourselves
     Open();
@@ -860,6 +856,8 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
                 wxALIGN_CENTER_VERTICAL,
                 0);
 
+            mToolSettingsPanelsSizer->Hide(tsPanel);
+
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralPencil,
                 tsPanel);
@@ -884,6 +882,8 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
                 0,
                 wxALIGN_CENTER_VERTICAL,
                 0);
+
+            mToolSettingsPanelsSizer->Hide(tsPanel);
 
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralEraser,
@@ -925,6 +925,8 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
                 wxALIGN_CENTER_VERTICAL,
                 0);
 
+            mToolSettingsPanelsSizer->Hide(tsPanel);
+
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralFlood,
                 tsPanel);
@@ -933,7 +935,7 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
 
     mToolSettingsPanelsSizer->AddStretchSpacer(1);
 
-    panel->SetSizerAndFit(mToolSettingsPanelsSizer);
+    panel->SetSizer(mToolSettingsPanelsSizer);
 
     return panel;
 }
@@ -1531,6 +1533,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             wxALIGN_CENTER_HORIZONTAL,
             0);
 
+        mToolbarPanelsSizer->Hide(structuralToolbarPanel);
+
         // Store toolbar panel
         mToolbarPanels[static_cast<size_t>(LayerType::Structural)] = structuralToolbarPanel;
     }
@@ -1659,6 +1663,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             0,
             wxALIGN_CENTER_HORIZONTAL,
             0);
+
+        mToolbarPanelsSizer->Hide(electricalToolbarPanel);
 
         // Store toolbar panel
         mToolbarPanels[static_cast<size_t>(LayerType::Electrical)] = electricalToolbarPanel;
@@ -1789,6 +1795,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             wxALIGN_CENTER_HORIZONTAL,
             0);
 
+        mToolbarPanelsSizer->Hide(ropesToolbarPanel);
+
         // Store toolbar panel
         mToolbarPanels[static_cast<size_t>(LayerType::Ropes)] = ropesToolbarPanel;
     }
@@ -1827,11 +1835,13 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             wxALIGN_CENTER_HORIZONTAL,
             0);
 
+        mToolbarPanelsSizer->Hide(textureToolbarPanel);
+
         // Store toolbar panel
         mToolbarPanels[static_cast<size_t>(LayerType::Texture)] = textureToolbarPanel;
     }
 
-    panel->SetSizerAndFit(mToolbarPanelsSizer);
+    panel->SetSizer(mToolbarPanelsSizer);
 
     return panel;
 }
@@ -2014,12 +2024,18 @@ void MainFrame::OnWorkCanvasResize(wxSizeEvent & event)
 {
     LogMessage("OnWorkCanvasResize: ", event.GetSize().GetX(), "x", event.GetSize().GetY());
 
+    auto const workCanvasSize = GetWorkCanvasSize();
+
+    // We take care of notifying the view ourselves, as we might have a view
+    // but not controller
+    if (mView)
+    {
+        mView->SetDisplayLogicalSize(workCanvasSize);
+    }
+
     if (mController)
     {
-        mController->OnWorkCanvasResized(
-            DisplayLogicalSize(
-                event.GetSize().GetX(),
-                event.GetSize().GetY()));
+        mController->OnWorkCanvasResized(workCanvasSize);
     }
 
     // Allow resizing to occur, this is a hook
@@ -2366,10 +2382,26 @@ void MainFrame::OnRopeMaterialSelected(fsStructuralMaterialSelectedEvent & event
     ReconciliateUIWithWorkbenchState();
 }
 
+//////////////////////////////////////////////////////////////////
+
+void MainFrame::OnOpenForLoadShipIdleEvent(wxIdleEvent & /*event*/)
+{
+    // Unbind idle event handler
+    bool result = Unbind(wxEVT_IDLE, (wxObjectEventFunction)&MainFrame::OnOpenForLoadShipIdleEvent, this);
+    assert(result);
+    (void)result;
+    
+    // Load ship
+    if (!DoLoadShip(mOpenForLoadShipFilePath))
+    {
+        // No luck loading ship...
+        // ...just create new ship
+        DoNewShip();
+    }
+}
+
 void MainFrame::Open()
 {
-    assert(mController);
-
     // Show us
     Show(true);
 
@@ -2731,6 +2763,13 @@ void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)
     mController->ClearModelDirty();
 }
 
+DisplayLogicalSize MainFrame::GetWorkCanvasSize() const
+{
+    return DisplayLogicalSize(
+        mWorkCanvas->GetSize().GetWidth(),
+        mWorkCanvas->GetSize().GetHeight());
+}
+
 void MainFrame::RecalculateWorkCanvasPanning()
 {
     assert(mView);
@@ -2801,6 +2840,8 @@ void MainFrame::ReconciliateUI()
     ReconciliateUIWithWorkbenchState();
     ReconciliateUIWithSelectedTool(mController->GetCurrentTool());
     ReconciliateUIWithUndoStackState();
+
+    mMainPanel->Layout();
 
     assert(mWorkCanvas);
     mWorkCanvas->Refresh();
