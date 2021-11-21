@@ -319,10 +319,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 				- Call Controller::ReplaceMetadata(&&), etc.
 					+ Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
 			- Make Undo entry
+				- Try: GenericUndo, with lambda that just takes Controller
 	- Tests:
 		- Load & save ship w/auto-texturization settings
-		- Verify that after PopulateUI all controls are clean (not marked as dirty)
-			- Use that logging to verify that when physics data only is dirty, metadata is not
 		+ New ship:
 			+ Populate one x {...}
 			+ Close

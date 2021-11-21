@@ -267,7 +267,7 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
     // Art Credits    
     {
         {
-            auto label = new wxStaticText(panel, wxID_ANY, _("Art Credits"), wxDefaultPosition, wxDefaultSize,
+            auto label = new wxStaticText(panel, wxID_ANY, _("Texture Credits"), wxDefaultPosition, wxDefaultSize,
                 wxALIGN_CENTER);
 
             vSizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL, 0);
@@ -790,7 +790,6 @@ void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
     // Inspect dirty flags and communicate parts to Controller
     //
 
-    LogMessage("TODOTEST: ShipPropertiesEditDialog::OnOkButton: IsMetadataDirty=", IsMetadataDirty());
     if (IsMetadataDirty())
     {
         //
