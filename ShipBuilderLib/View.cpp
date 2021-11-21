@@ -1030,8 +1030,8 @@ void View::UpdateCircleOverlay()
     DisplayPhysicalSize const squarePhysSize = mViewModel.ShipSpaceSizeToPhysicalDisplaySize({ 1, 1 });
 
     vec2f const pixelSize = vec2f(
-        1.0f / squarePhysSize.width,
-        1.0f / squarePhysSize.height);
+        1.0f / std::max(squarePhysSize.width, 1),
+        1.0f / std::max(squarePhysSize.height, 1));
 
     mShaderManager->ActivateProgram<ProgramType::CircleOverlay>();
     mShaderManager->SetProgramParameter<ProgramType::CircleOverlay, ProgramParameterType::PixelSize>(pixelSize.x, pixelSize.y);
@@ -1090,8 +1090,8 @@ void View::UpdateRectOverlay()
     DisplayPhysicalSize const squarePhysSize = mViewModel.ShipSpaceSizeToPhysicalDisplaySize(mRectOverlayRect.size);
 
     vec2f const pixelSize = vec2f(
-        1.0f / squarePhysSize.width,
-        1.0f / squarePhysSize.height);
+        1.0f / std::max(squarePhysSize.width, 1),
+        1.0f / std::max(squarePhysSize.height, 1));
 
     mShaderManager->ActivateProgram<ProgramType::RectOverlay>();
     mShaderManager->SetProgramParameter<ProgramType::RectOverlay, ProgramParameterType::PixelSize>(pixelSize.x, pixelSize.y);
