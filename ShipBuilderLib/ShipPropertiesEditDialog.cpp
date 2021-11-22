@@ -661,38 +661,81 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
     explanationFont.SetPointSize(explanationFont.GetPointSize() - 2);
     explanationFont.SetStyle(wxFontStyle::wxFONTSTYLE_ITALIC);
 
-    // Radio button NO
+    // Main radio
     {
-        mNoAutoTexturizationSettingsRadioButton = new wxRadioButton(panel, wxID_ANY,
-            _("Use the global auto-texturization settings of the simulator."), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+        wxGridBagSizer * gSizer = new wxGridBagSizer(10, 5);
 
-        mNoAutoTexturizationSettingsRadioButton->Bind(
-            wxEVT_RADIOBUTTON, 
-            [this, vSizer](wxCommandEvent &)
-            {
-                mAutoTexturizationSettingsPanel->Enable(false);
-                mIsAutoTexturizationSettingsDirty = true;
-            });
+        {
+            mAutoTexturizationSettingsOffButton = new BitmapToggleButton(
+                panel,
+                mResourceLocator.GetBitmapFilePath("x_medium"),
+                [this]()
+                {
+                    mAutoTexturizationSettingsOnButton->SetValue(false);
+                    mAutoTexturizationSettingsPanel->Enable(false);
 
-        vSizer->Add(mNoAutoTexturizationSettingsRadioButton, 0, wxALIGN_LEFT, 0);
-    }
+                    mIsAutoTexturizationSettingsDirty = true;
+                },
+                _("Use the global auto-texturization settings."));
 
-    vSizer->AddSpacer(VerticalSeparatorSize);
+            gSizer->Add(
+                mAutoTexturizationSettingsOffButton,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                0,
+                0);
+        }
 
-    // Radio button YES
-    {
-        mYesAutoTexturizationSettingsRadioButton = new wxRadioButton(panel, wxID_ANY,
-            _("Use ship-specific auto-texturization settings."), wxDefaultPosition, wxDefaultSize);
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Use the global auto-texturization settings of the simulator."), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_LEFT);
 
-        mYesAutoTexturizationSettingsRadioButton->Bind(
-            wxEVT_RADIOBUTTON,
-            [this](wxCommandEvent &)
-            {
-                mAutoTexturizationSettingsPanel->Enable(true);
-                mIsAutoTexturizationSettingsDirty = true;
-            });
+            label->SetFont(explanationFont);
 
-        vSizer->Add(mYesAutoTexturizationSettingsRadioButton, 0, wxALIGN_LEFT, 0);
+            gSizer->Add(
+                label,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                0,
+                0);
+        }
+
+        {
+            mAutoTexturizationSettingsOnButton = new BitmapToggleButton(
+                panel,
+                mResourceLocator.GetBitmapFilePath("ship_file_medium"),
+                [this]()
+                {
+                    mAutoTexturizationSettingsOffButton->SetValue(false);
+                    mAutoTexturizationSettingsPanel->Enable(true);
+
+                    mIsAutoTexturizationSettingsDirty = true;
+                },
+                _("Set auto-texturization settings."));
+
+            gSizer->Add(
+                mAutoTexturizationSettingsOnButton,
+                wxGBPosition(1, 0),
+                wxGBSpan(1, 1),
+                0,
+                0);
+        }
+
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Set ship-specific auto-texturization settings."), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_LEFT);
+
+            label->SetFont(explanationFont);
+
+            gSizer->Add(
+                label,
+                wxGBPosition(1, 1),
+                wxGBSpan(1, 1),
+                0,
+                0);
+        }
+
+        vSizer->Add(gSizer, 0, wxALIGN_CENTER_HORIZONTAL, 0);
     }
 
     vSizer->AddSpacer(VerticalSeparatorSize);
@@ -701,116 +744,149 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
     {
         mAutoTexturizationSettingsPanel = new wxPanel(panel);
 
-        wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
+        wxSizer * settingsPanelVSizer = new wxBoxSizer(wxVERTICAL);
 
         // Texturization Mode
         {
             wxStaticBoxSizer * texturizationModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, mAutoTexturizationSettingsPanel, _("Mode"));
 
             {
-                wxSizer * texturizationModeVSizer = new wxBoxSizer(wxVERTICAL);
+                wxGridBagSizer * gSizer = new wxGridBagSizer(10, 5);
 
                 {
-                    mFlatStructureAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBoxSizer->GetStaticBox(), wxID_ANY,
-                        _("Flat Structure"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-                    mFlatStructureAutoTexturizationModeRadioButton->SetToolTip(_("When a ship does not have a high-definition image, generates one using the materials' matte colors. Changes to this setting will only be visible after the next ship is loaded."));
-                    mFlatStructureAutoTexturizationModeRadioButton->Bind(
-                        wxEVT_RADIOBUTTON,
-                        [this](wxCommandEvent &)
+                    mFlatStructureAutoTexturizationModeButton = new BitmapToggleButton(
+                        texturizationModeBoxSizer->GetStaticBox(),
+                        mResourceLocator.GetBitmapFilePath("auto_texturization_particle"),
+                        [this]()
                         {
-                            // TODOHERE
-                        });
+                            mMaterialTexturesAutoTexturizationModeButton->SetValue(false);
 
-                    texturizationModeVSizer->Add(
-                        mFlatStructureAutoTexturizationModeRadioButton,
-                        0,
+                            mMaterialTextureMagnificationSlider->Enable(false);
+                            mMaterialTextureTransparencySlider->Enable(false);
+                            
+                            mIsAutoTexturizationSettingsDirty = true;
+                        },
+                        _("Flat Structure mode."));
+
+                    gSizer->Add(
+                        mFlatStructureAutoTexturizationModeButton,
+                        wxGBPosition(0, 0),
+                        wxGBSpan(1, 1),
                         0,
                         0);
                 }
 
-                texturizationModeVSizer->AddSpacer(10);
-
                 {
-                    mMaterialTexturesAutoTexturizationModeRadioButton = new wxRadioButton(texturizationModeBoxSizer->GetStaticBox(), wxID_ANY,
-                        _("Material Textures"), wxDefaultPosition, wxDefaultSize);
-                    mMaterialTexturesAutoTexturizationModeRadioButton->SetToolTip(_("When a ship does not have a high-definition image, generates one using material-specific textures. Changes to this setting will only be visible after the next ship is loaded."));
-                    mMaterialTexturesAutoTexturizationModeRadioButton->Bind(
-                        wxEVT_RADIOBUTTON,
-                        [this](wxCommandEvent &)
-                        {
-                            // TODOHERE
-                        });
+                    auto label = new wxStaticText(texturizationModeBoxSizer->GetStaticBox(), wxID_ANY, _("Flat Structure mode: generates a texture using the particles' matte colors."), 
+                        wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
 
-                    texturizationModeVSizer->Add(
-                        mMaterialTexturesAutoTexturizationModeRadioButton,
-                        0,
+                    label->SetFont(explanationFont);
+
+                    gSizer->Add(
+                        label,
+                        wxGBPosition(0, 1),
+                        wxGBSpan(1, 1),
                         0,
                         0);
                 }
 
-                texturizationModeBoxSizer->Add(texturizationModeVSizer, 0, wxALL, 10);
+                {
+                    mMaterialTexturesAutoTexturizationModeButton = new BitmapToggleButton(
+                        texturizationModeBoxSizer->GetStaticBox(),
+                        mResourceLocator.GetBitmapFilePath("auto_texturization_material"),
+                        [this]()
+                        {
+                            mFlatStructureAutoTexturizationModeButton->SetValue(false);
+
+                            mMaterialTextureMagnificationSlider->Enable(true);
+                            mMaterialTextureTransparencySlider->Enable(true);
+
+                            mIsAutoTexturizationSettingsDirty = true;
+                        },
+                        _("Material Textures mode."));
+
+                    gSizer->Add(
+                        mMaterialTexturesAutoTexturizationModeButton,
+                        wxGBPosition(1, 0),
+                        wxGBSpan(1, 1),
+                        0,
+                        0);
+                }
+
+                {
+                    auto label = new wxStaticText(texturizationModeBoxSizer->GetStaticBox(), wxID_ANY, _("Material Textures mode: generates a texture using material-specific textures."), 
+                        wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+
+                    label->SetFont(explanationFont);
+
+                    gSizer->Add(
+                        label,
+                        wxGBPosition(1, 1),
+                        wxGBSpan(1, 1),
+                        0,
+                        0);
+                }
+
+                texturizationModeBoxSizer->Add(gSizer, 0, wxALL, 10);
             }
 
-            hSizer->Add(
+            settingsPanelVSizer->Add(
                 texturizationModeBoxSizer,
                 0,
                 0,
                 0);
         }
 
-        int constexpr SliderWidth = 84;
-        int constexpr SliderHeight = 140;
-
         // Material Texture Magnification
         {
             mMaterialTextureMagnificationSlider = new SliderControl<float>(
                 mAutoTexturizationSettingsPanel,
-                SliderWidth,
-                SliderHeight,
+                SliderControl<float>::DirectionType::Horizontal,
+                -1,
+                -1,
                 _("Texture Magnification"),
                 _("Changes the level of detail of materials' textures. Changes to this setting will only be visible after the next ship is loaded."),
-                [this](float value)
+                [this](float)
                 {
-                    // TODOHERE
+                    mIsAutoTexturizationSettingsDirty = true;
                 },
                 std::make_unique<ExponentialSliderCore>(
                     0.1f,
                     1.0f,
                     2.0f));
 
-            hSizer->Add(
+            settingsPanelVSizer->Add(
                 mMaterialTextureMagnificationSlider,
                 0,
-                0,
+                wxEXPAND, // Expand horizontally
                 0);
         }
-
-        hSizer->AddSpacer(10);
 
         // Material Texture Transparency
         {
             mMaterialTextureTransparencySlider = new SliderControl<float>(
                 mAutoTexturizationSettingsPanel,
-                SliderWidth,
-                SliderHeight,
+                SliderControl<float>::DirectionType::Horizontal,
+                -1,
+                -1,
                 _("Texture Transparency"),
                 _("Changes the transparency of materials' textures. Changes to this setting will only be visible after the next ship is loaded."),
-                [this](float value)
+                [this](float)
                 {
-                    // TODOHERE
+                    mIsAutoTexturizationSettingsDirty = true;
                 },
                 std::make_unique<LinearSliderCore>(
                     0.0f,
                     1.0f));
 
-            hSizer->Add(
+            settingsPanelVSizer->Add(
                 mMaterialTextureTransparencySlider,
                 0,
-                0,
+                wxEXPAND, // Expand horizontally
                 0);
         }
 
-        mAutoTexturizationSettingsPanel->SetSizerAndFit(hSizer);
+        mAutoTexturizationSettingsPanel->SetSizerAndFit(settingsPanelVSizer);
 
         vSizer->Add(mAutoTexturizationSettingsPanel, 0, 0, 0);
     }
@@ -1071,18 +1147,47 @@ void ShipPropertiesEditDialog::ReconciliateUI()
 
     if (mSessionData->AutoTexturizationSettings.has_value())
     {
-        mNoAutoTexturizationSettingsRadioButton->SetValue(false);
-        mYesAutoTexturizationSettingsRadioButton->SetValue(true);
+        mAutoTexturizationSettingsOffButton->SetValue(false);
+        mAutoTexturizationSettingsOnButton->SetValue(true);
         mAutoTexturizationSettingsPanel->Enable(true);
-        // TODO: populate fields from settings
     }
     else
     {
-        mNoAutoTexturizationSettingsRadioButton->SetValue(true);
-        mYesAutoTexturizationSettingsRadioButton->SetValue(false);
+        mAutoTexturizationSettingsOffButton->SetValue(true);
+        mAutoTexturizationSettingsOnButton->SetValue(false);
         mAutoTexturizationSettingsPanel->Enable(false);
-        // TODO: populate fields w/defaults
     }
+
+    // Get settings from ship or, if not set, get defaults
+    ShipAutoTexturizationSettings const settings = mSessionData->AutoTexturizationSettings.value_or(ShipAutoTexturizationSettings());
+
+    switch (settings.Mode)
+    {
+        case ShipAutoTexturizationModeType::FlatStructure:
+        {
+            mFlatStructureAutoTexturizationModeButton->SetValue(true);
+            mMaterialTexturesAutoTexturizationModeButton->SetValue(false);
+
+            mMaterialTextureMagnificationSlider->Enable(false);
+            mMaterialTextureTransparencySlider->Enable(false);
+            
+            break;
+        }
+
+        case ShipAutoTexturizationModeType::MaterialTextures:
+        {
+            mFlatStructureAutoTexturizationModeButton->SetValue(false);
+            mMaterialTexturesAutoTexturizationModeButton->SetValue(true);
+
+            mMaterialTextureMagnificationSlider->Enable(true);
+            mMaterialTextureTransparencySlider->Enable(true);
+
+            break;
+        }
+    }
+
+    mMaterialTextureMagnificationSlider->SetValue(settings.MaterialTextureMagnification);
+    mMaterialTextureTransparencySlider->SetValue(settings.MaterialTextureTransparency);
 
     mIsAutoTexturizationSettingsDirty = false;
 

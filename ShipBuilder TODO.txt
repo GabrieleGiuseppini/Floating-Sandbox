@@ -306,11 +306,19 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Verify becomes dirty
 			+ Verify all 3 saved
 		+ See why pressure is not 1.0 at startup
-	- Auto-Texturization Settings
-		- Populate tab
-			- Radio button to handle Remove vs Setting values
+	= Auto-Texturization Settings
+		= Populate tab
+			+ Radio button to handle Remove vs Setting values
 			- Whole tab disabled <=> has texture
-		- Populate UI at startup
+			= Consider using explanations
+				= Use icons, like password
+				= Auto-texturization mode "radios"
+				= Horizontal sliders, explanation below
+					+ SliderControl needs to take own HORIZONTAL vs VERTICAL enum
+						+ SettingsDialog
+		= Populate UI at startup
+			+ Move default AutoTexturizationSettings to default cctor of AutoTexturizationSettings
+				+ Out of ShipTexturizer
 		- Give to ModelController at OK
 	- At OK:
 		= For each of Metadata, PhysicsProperties, etc:
@@ -320,7 +328,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 				- Call Controller::ReplaceMetadata(&&), etc.
 					+ Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
 			- Make Undo entry
-				- Try: GenericUndo, with lambda that just takes Controller
+				- Try: GenericUndo, with lambda that just takes Controller and captures things
 	- Tests:
 		- Load & save ship w/auto-texturization settings
 		+ New ship:
@@ -336,6 +344,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Flip Horizontal
 	- Flip Vertical
 		- Undo: new "lambda-only" undo entry, GenericUndoEntry
+
+- Texture visualization (see visualization modes *)
+
+- Auto-texturization visualization (see visualization modes *)
 
 - Resize workflow:
 	+ Button - in Ship Settings panel, slightly separated from the File buttons
@@ -481,7 +493,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Implements selection interaction and rendering of visual feedback *during the interaction only*
 			- Takes SelectionManager ref in its cctor, and populates it upon confirmation of selection made
 		- Ellipses
-		- Translate (aka move)
+		- Traslate (aka move)
 	- SelectionManager pseudo-tool:
 		- Maintains current selection
 		- Not really a tool but a pseudo-tool
@@ -495,6 +507,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- TODO: who should be responsible for the interactions during Paste? See Photoshop and Paint
 				- A different, unselectable tool?
 		- Talks with IUserInterface to enable/disable menus
+	- Other edit operations, not via tools - via menu (and buttons?)
+		- Auto-trim (on bounding box)
 
 - RenderContext:
 	- Single-threaded
@@ -543,8 +557,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Also includes sounds
 		- Extract from other "TODO" .txt file
 
-- Visualization modes:
-	- Each layer has a visualization mode (TODO: confirm with below)
+- Visualization modes: (*)
+	- Each layer has a visualization mode
+	- Selectors are in new set of panels - with visibility dependent on primary layer - in LayersVisualization panel
+		- On top of grid view button
 	- There's always a structural visualization mode, which depends on texture as well
 		- Choices:
 			- Particle
@@ -554,10 +570,12 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Particle
 			- Circuit (long-term)
 	- Ropes, when present, has own on top of the others
-		- Lines
+		- Choices:
+			- Lines
 	- Texture, when present, has own on top of the others
-		- Matte
-		- With structural mesh
+		- Choices:
+			- Matte
+			- Matte with structural mesh
 
 - Ubuntu:
 	- Test User Ships folder

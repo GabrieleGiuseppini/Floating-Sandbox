@@ -41,8 +41,15 @@ class SliderControl : public wxPanel
 {
 public:
 
+    enum class DirectionType
+    {
+        Horizontal,
+        Vertical
+    };
+
     SliderControl(
         wxWindow * parent,
+        DirectionType direction,
         int width,
         int height,
         wxString const & label,
@@ -51,6 +58,7 @@ public:
         std::unique_ptr<ISliderCore<TValue>> sliderCore)
         : SliderControl(
             parent,
+            direction,
             width,
             height,
             label,
@@ -63,6 +71,7 @@ public:
 
     SliderControl(
         wxWindow * parent,
+        DirectionType direction,
         int width,
         int height,
         wxString const & label,
@@ -101,21 +110,23 @@ public:
                 mSliderCore->GetNumberOfTicks(),
                 wxDefaultPosition,
                 wxSize(-1, height),
-                wxSL_VERTICAL | wxSL_LEFT | wxSL_INVERSE | wxSL_AUTOTICKS,
+                (direction == DirectionType::Vertical ? (wxSL_VERTICAL | wxSL_LEFT | wxSL_INVERSE) : (wxSL_HORIZONTAL)) | wxSL_AUTOTICKS,
                 wxDefaultValidator);
 
             mSlider->SetTickFreq(4);
 
-            // Removed as it was getting in the way when moving the slider
-            //
-            //if (!toolTipLabel.empty())
-            //    mSlider->SetToolTip(toolTipLabel);
-            //
-
             mSlider->Bind(wxEVT_SLIDER, (wxObjectEventFunction)&SliderControl::OnSliderScroll, this);
 
-            // Make the slider expand vertically
-            vSizer->Add(mSlider, 1, wxALIGN_CENTER_HORIZONTAL);
+            if (direction == DirectionType::Vertical)
+            {
+                // Make the slider expand vertically
+                vSizer->Add(mSlider, 1, wxALIGN_CENTER_HORIZONTAL);
+            }
+            else
+            {
+                // Use required vertical height, expand horizontally
+                vSizer->Add(mSlider, 0, wxEXPAND);
+            }
         }
 
 

@@ -789,6 +789,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
             {
                 mMaterialTextureMagnificationSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Texture Magnification"),
@@ -816,6 +817,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
             {
                 mMaterialTextureTransparencySlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Texture Transparency"),
@@ -863,6 +865,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
             {
                 mStrengthRandomizationDensityAdjustmentSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Density Adjust"),
@@ -890,6 +893,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
             {
                 mStrengthRandomizationExtentSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Extent"),
@@ -1066,6 +1070,7 @@ void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
                 {
                     mBackgroundMusicVolumeSlider = new SliderControl<float>(
                         panel,
+                        SliderControl<float>::DirectionType::Vertical,
                         SliderWidth,
                         SliderHeight,
                         _("Background Music Volume"),
@@ -1091,6 +1096,7 @@ void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
                 {
                     mSinkingMusicVolumeSlider = new SliderControl<float>(
                         panel,
+                        SliderControl<float>::DirectionType::Vertical,
                         SliderWidth,
                         SliderHeight,
                         _("Farewell Music Volume"),

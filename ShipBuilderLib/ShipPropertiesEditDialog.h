@@ -89,12 +89,10 @@ private:
     EditSpinBox<float> * mOffsetYEditSpinBox;
     EditSpinBox<float> * mInternalPressureEditSpinBox;
 
-    // TODOHERE
-    wxRadioButton * mNoAutoTexturizationSettingsRadioButton;
-    wxRadioButton * mYesAutoTexturizationSettingsRadioButton;
-    wxPanel * mAutoTexturizationSettingsPanel;
-    wxRadioButton * mFlatStructureAutoTexturizationModeRadioButton;
-    wxRadioButton * mMaterialTexturesAutoTexturizationModeRadioButton;
+    BitmapToggleButton * mAutoTexturizationSettingsOffButton;
+    BitmapToggleButton * mAutoTexturizationSettingsOnButton;
+    BitmapToggleButton * mFlatStructureAutoTexturizationModeButton;
+    BitmapToggleButton * mMaterialTexturesAutoTexturizationModeButton;
     SliderControl<float> * mMaterialTextureMagnificationSlider;
     SliderControl<float> * mMaterialTextureTransparencySlider;
     bool mIsAutoTexturizationSettingsDirty;
@@ -109,6 +107,8 @@ private:
     ShipOffsetVisualizationControl * mShipOffsetVisualizationControl;
     wxSlider * mOffsetXSlider;
     wxSlider * mOffsetYSlider;
+
+    wxPanel * mAutoTexturizationSettingsPanel;
 
     BitmapToggleButton * mPasswordOnButton;
     BitmapToggleButton * mPasswordOffButton;

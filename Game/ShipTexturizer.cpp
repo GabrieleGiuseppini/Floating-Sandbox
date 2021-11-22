@@ -33,11 +33,7 @@ namespace /*anonymous*/ {
 ShipTexturizer::ShipTexturizer(
     MaterialDatabase const & materialDatabase,
     ResourceLocator const & resourceLocator)
-    // Here is where default settings live
-    : mSharedSettings(
-        ShipAutoTexturizationModeType::MaterialTextures,
-        1.0f, // MaterialTextureMagnification
-        0.0f) // MaterialTextureTransparency
+    : mSharedSettings() // Default settings
     , mDoForceSharedSettingsOntoShipSettings(false)
     , mMaterialTextureNameToTextureFilePathMap(
         MakeMaterialTextureNameToTextureFilePathMap(materialDatabase, resourceLocator))
