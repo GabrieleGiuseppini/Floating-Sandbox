@@ -108,6 +108,7 @@ private:
     wxSlider * mOffsetXSlider;
     wxSlider * mOffsetYSlider;
 
+    wxPanel * mAutoTexturizationPanel;
     wxPanel * mAutoTexturizationSettingsPanel;
 
     BitmapToggleButton * mPasswordOnButton;

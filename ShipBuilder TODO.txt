@@ -307,9 +307,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Verify all 3 saved
 		+ See why pressure is not 1.0 at startup
 	= Auto-Texturization Settings
-		= Populate tab
+		+ Populate tab
 			+ Radio button to handle Remove vs Setting values
-			- Whole tab disabled <=> has texture
+			+ Whole tab disabled <=> has texture
 			+ Consider using explanations
 				+ Use icons, like password
 				+ Auto-texturization mode "radios"
@@ -318,7 +318,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 						+ SettingsDialog
 					+ Explanation below
 				+ Add some V spacing around sliders
-		= Populate UI at startup
+		+ Populate UI at startup
 			+ Move default AutoTexturizationSettings to default cctor of AutoTexturizationSettings
 				+ Out of ShipTexturizer
 		- Give to ModelController at OK

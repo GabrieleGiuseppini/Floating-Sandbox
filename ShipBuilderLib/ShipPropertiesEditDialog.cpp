@@ -81,11 +81,11 @@ ShipPropertiesEditDialog::ShipPropertiesEditDialog(
     }
 
     {
-        auto panel = new wxPanel(notebook);
+        mAutoTexturizationPanel = new wxPanel(notebook);
 
-        PopulateAutoTexturizationPanel(panel);
+        PopulateAutoTexturizationPanel(mAutoTexturizationPanel);
 
-        notebook->AddPage(panel, _("Auto-Texturization"));
+        notebook->AddPage(mAutoTexturizationPanel, _("Auto-Texturization"));
     }
 
     {
@@ -1166,6 +1166,8 @@ void ShipPropertiesEditDialog::ReconciliateUI()
     //
     // Auto-Texturization
     //
+
+    mAutoTexturizationPanel->Enable(!mSessionData->HasTexture);
 
     if (mSessionData->AutoTexturizationSettings.has_value())
     {
