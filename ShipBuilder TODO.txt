@@ -310,12 +310,14 @@ https://gamejolt.com/x/permalink/comment/11730705
 		= Populate tab
 			+ Radio button to handle Remove vs Setting values
 			- Whole tab disabled <=> has texture
-			= Consider using explanations
-				= Use icons, like password
-				= Auto-texturization mode "radios"
-				= Horizontal sliders, explanation below
+			+ Consider using explanations
+				+ Use icons, like password
+				+ Auto-texturization mode "radios"
+				+ Horizontal sliders, explanation below
 					+ SliderControl needs to take own HORIZONTAL vs VERTICAL enum
 						+ SettingsDialog
+					+ Explanation below
+				+ Add some V spacing around sliders
 		= Populate UI at startup
 			+ Move default AutoTexturizationSettings to default cctor of AutoTexturizationSettings
 				+ Out of ShipTexturizer
@@ -561,21 +563,50 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Each layer has a visualization mode
 	- Selectors are in new set of panels - with visibility dependent on primary layer - in LayersVisualization panel
 		- On top of grid view button
-	- There's always a structural visualization mode, which depends on texture as well
-		- Choices:
+	- Modes: (each an enum in ShipBuilderTypes)
+		- Structural layer:
 			- Particle
-			- Auto-Texturization (only if no texture layer exists)
-	- Then, electrical, when present, has own on top of the others
-		- Choices:
+			- Auto-Texturization
+			- Texture (only if texture layer exists)
+		- Electrical:
 			- Particle
 			- Circuit (long-term)
-	- Ropes, when present, has own on top of the others
-		- Choices:
+		- Ropes:
 			- Lines
-	- Texture, when present, has own on top of the others
-		- Choices:
+		- Texture:
 			- Matte
-			- Matte with structural mesh
+	- Dynamics:
+		- Controller::SetXXXVisualizationMode
+			- Set mXXXVisualizationMode
+			- Call ModelController::SetXXXVisualizationMode
+			- IUserInterface->OnXXXVizModeChanged()
+		- Controller::NewXXLayer:
+			- ...new XXX layer...
+			- Set mXXXVisualizationMode to its default
+			- Call ModelController::SetXXXVisualizationMode
+			- IUserInterface->OnXXXVizModeChanged()
+		- Controller::SetXXLayer:
+			- ...set XXX layer... - will invoke ModelController::SetXXXLayer
+		- Controller::RemoveXXLayer:
+			- ...remove XXX layer...
+			- Set mXXXVisualizationMode to nullopt
+			- Call ModelController::SetXXXVisualizationMode
+			- IUserInterface->OnXXXVizModeChanged()
+
+		- ModelController::SetXXXVisualizationMode(opt)
+			- assert new != old
+			- If !new:
+				- Free texture
+				- Clear DirtyXXXVizRegion
+				- View::RemoveTexture (assert had it) // This moves here from UploadVisualization()
+			- Else if new != old:
+				- (Re)alloc texture // This moves here from UploadVisualization()
+				- UpdateXXXVisualization(whole region) => will update dirty region
+		- ModelController::SetXXXLayer:
+			- ...set XXX layer...
+			- Note: only works like this if new size == old size, hence no realloc; see if it's also the assumption here
+			- UpdateXXXVisualization(whole region)
+		- ModelController::UploadVisualization:
 
 - Ubuntu:
 	- Test User Ships folder

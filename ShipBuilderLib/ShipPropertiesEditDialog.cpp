@@ -413,7 +413,7 @@ void ShipPropertiesEditDialog::PopulateDescriptionPanel(wxPanel * panel)
 
     // Finalize
     auto marginSizer = new wxBoxSizer(wxVERTICAL);
-    marginSizer->Add(vSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, PanelInternalMargin);
+    marginSizer->Add(vSizer, 0, wxEXPAND | wxALL, PanelInternalMargin);
     panel->SetSizer(marginSizer);
 }
 
@@ -530,7 +530,7 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
             {
                 mShipOffsetVisualizationControl = new ShipOffsetVisualizationControl(
                     panel,
-                    350,
+                    400,
                     250,
                     0.0f,
                     0.0f);
@@ -833,9 +833,11 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
             settingsPanelVSizer->Add(
                 texturizationModeBoxSizer,
                 0,
-                0,
+                wxEXPAND,
                 0);
         }
+
+        settingsPanelVSizer->AddSpacer(VerticalSeparatorSize);
 
         // Material Texture Magnification
         {
@@ -845,7 +847,7 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                 -1,
                 -1,
                 _("Texture Magnification"),
-                _("Changes the level of detail of materials' textures. Changes to this setting will only be visible after the next ship is loaded."),
+                _("Changes the level of detail of materials' textures."),
                 [this](float)
                 {
                     mIsAutoTexturizationSettingsDirty = true;
@@ -862,6 +864,17 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                 0);
         }
 
+        {
+            auto label = new wxStaticText(mAutoTexturizationSettingsPanel, wxID_ANY, _("The level of detail of materials' textures"), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            label->SetFont(explanationFont);
+
+            settingsPanelVSizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+        }
+
+        settingsPanelVSizer->AddSpacer(VerticalSeparatorSize);
+
         // Material Texture Transparency
         {
             mMaterialTextureTransparencySlider = new SliderControl<float>(
@@ -870,7 +883,7 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                 -1,
                 -1,
                 _("Texture Transparency"),
-                _("Changes the transparency of materials' textures. Changes to this setting will only be visible after the next ship is loaded."),
+                _("Changes the transparency of materials' textures."),
                 [this](float)
                 {
                     mIsAutoTexturizationSettingsDirty = true;
@@ -886,14 +899,23 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                 0);
         }
 
+        {
+            auto label = new wxStaticText(mAutoTexturizationSettingsPanel, wxID_ANY, _("The transparency of materials' textures"), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            label->SetFont(explanationFont);
+
+            settingsPanelVSizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+        }
+
         mAutoTexturizationSettingsPanel->SetSizerAndFit(settingsPanelVSizer);
 
-        vSizer->Add(mAutoTexturizationSettingsPanel, 0, 0, 0);
+        vSizer->Add(mAutoTexturizationSettingsPanel, 0, wxEXPAND, 0);
     }
 
     // Finalize
     auto marginSizer = new wxBoxSizer(wxVERTICAL);
-    marginSizer->Add(vSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, PanelInternalMargin);
+    marginSizer->Add(vSizer, 0, wxEXPAND | wxALL, PanelInternalMargin);
     panel->SetSizer(marginSizer);
 }
 
@@ -971,7 +993,7 @@ void ShipPropertiesEditDialog::PopulatePasswordProtectionPanel(wxPanel * panel)
 
     // Finalize
     auto marginSizer = new wxBoxSizer(wxVERTICAL);
-    marginSizer->Add(gSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, PanelInternalMargin);
+    marginSizer->Add(gSizer, 0, wxEXPAND | wxALL, PanelInternalMargin);
     panel->SetSizer(marginSizer);
 }
 
