@@ -675,6 +675,8 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                     mAutoTexturizationSettingsPanel->Enable(false);
 
                     mIsAutoTexturizationSettingsDirty = true;
+
+                    OnDirty();
                 },
                 _("Use the global auto-texturization settings."));
 
@@ -710,6 +712,8 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                     mAutoTexturizationSettingsPanel->Enable(true);
 
                     mIsAutoTexturizationSettingsDirty = true;
+
+                    OnDirty();
                 },
                 _("Set auto-texturization settings."));
 
@@ -765,6 +769,8 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                             mMaterialTextureTransparencySlider->Enable(false);
                             
                             mIsAutoTexturizationSettingsDirty = true;
+
+                            OnDirty();
                         },
                         _("Flat Structure mode."));
 
@@ -802,6 +808,8 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                             mMaterialTextureTransparencySlider->Enable(true);
 
                             mIsAutoTexturizationSettingsDirty = true;
+
+                            OnDirty();
                         },
                         _("Material Textures mode."));
 
@@ -851,6 +859,8 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                 [this](float)
                 {
                     mIsAutoTexturizationSettingsDirty = true;
+
+                    OnDirty();
                 },
                 std::make_unique<ExponentialSliderCore>(
                     0.1f,
@@ -887,6 +897,8 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                 [this](float)
                 {
                     mIsAutoTexturizationSettingsDirty = true;
+
+                    OnDirty();
                 },
                 std::make_unique<LinearSliderCore>(
                     0.0f,
@@ -1085,7 +1097,20 @@ void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
         // Populate new
         //
 
-        // TODO
+        std::optional<ShipAutoTexturizationSettings> shipAutoTexturizationSettings;
+        if (mAutoTexturizationSettingsOnButton->GetValue())
+        {
+            ShipAutoTexturizationModeType const mode = mFlatStructureAutoTexturizationModeButton->GetValue()
+                ? ShipAutoTexturizationModeType::FlatStructure
+                : ShipAutoTexturizationModeType::MaterialTextures;
+
+            shipAutoTexturizationSettings = ShipAutoTexturizationSettings(
+                mode,
+                mMaterialTextureMagnificationSlider->GetValue(),
+                mMaterialTextureTransparencySlider->GetValue());
+        }
+
+        mSessionData->BuilderController.SetShipAutoTexturizationSettings(std::move(shipAutoTexturizationSettings));
     }
 
     //

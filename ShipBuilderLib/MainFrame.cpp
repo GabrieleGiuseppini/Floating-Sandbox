@@ -2599,8 +2599,7 @@ void MainFrame::OpenShipProperties()
         *mController,
         mController->GetShipMetadata(),
         mController->GetShipPhysicsData(),
-        // TODOTEST: take from model
-        std::nullopt,
+        mController->GetShipAutoTexturizationSettings(),
         mController->GetStructuralLayerVisualization(),
         mController->HasModelLayer(LayerType::Texture));
 }

@@ -306,7 +306,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Verify becomes dirty
 			+ Verify all 3 saved
 		+ See why pressure is not 1.0 at startup
-	= Auto-Texturization Settings
+	+ Auto-Texturization Settings
 		+ Populate tab
 			+ Radio button to handle Remove vs Setting values
 			+ Whole tab disabled <=> has texture
@@ -321,15 +321,15 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Populate UI at startup
 			+ Move default AutoTexturizationSettings to default cctor of AutoTexturizationSettings
 				+ Out of ShipTexturizer
-		- Give to ModelController at OK
+		+ Give to ModelController at OK
 	- At OK:
 		= For each of Metadata, PhysicsProperties, etc:
-			- Check if any of this area's controls are dirty; if so:
-				- Construct new Metadata, PhysicsProperties, etc.
-					- Set optionals to nullopt if trimmed field is empty
-				- Call Controller::ReplaceMetadata(&&), etc.
+			+ Check if any of this area's controls are dirty; if so:
+				+ Construct new Metadata, PhysicsProperties, etc.
+					+ Set optionals to nullopt if trimmed field is empty
+				+ Call Controller::ReplaceMetadata(&&), etc.
 					+ Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
-			- Make Undo entry
+			- Make Undo entry @ Controller
 				- Try: GenericUndo, with lambda that just takes Controller and captures things
 	- Tests:
 		- Load & save ship w/auto-texturization settings
