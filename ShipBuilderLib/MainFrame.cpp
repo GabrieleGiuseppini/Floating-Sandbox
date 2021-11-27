@@ -19,6 +19,7 @@
 
 #include <UILib/BitmapButton.h>
 #include <UILib/BitmapToggleButton.h>
+#include <UILib/HighlightableTextButton.h>
 #include <UILib/EditSpinBox.h>
 #include <UILib/UnderConstructionDialog.h>
 #include <UILib/WxHelpers.h>
@@ -3180,14 +3181,8 @@ void MainFrame::ReconciliateUIWithUndoStackState()
     // Populate
     for (size_t stackItemIndex = 0; stackItemIndex < mController->GetUndoStackSize(); ++stackItemIndex)
     {
-        auto button = new wxButton(mUndoStackPanel, wxID_ANY, mController->GetUndoTitleAt(stackItemIndex));
-        button->SetCanFocus(false);
-
-        if (stackItemIndex == mController->GetUndoStackSize() - 1)
-        {
-            button->SetForegroundColour(*wxWHITE);
-            button->SetBackgroundColour(wxColor(0, 120, 215));
-        }
+        auto button = new HighlightableTextButton(mUndoStackPanel, mController->GetUndoTitleAt(stackItemIndex));
+        button->SetHighlighted(stackItemIndex == mController->GetUndoStackSize() - 1);
 
         button->Bind(
             wxEVT_BUTTON,

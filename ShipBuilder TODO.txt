@@ -74,6 +74,12 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Password OK
 			+ Password not OK => no change
 
++ Undo stack visualization
+	+ UndoPanel underneath toolbar
+	+ Controller exposes GetUndoStack() const
+		+ And UndoStack exposes index-based enumerator 
+	+ MainFrame can tell Controller to rewind undo to a given stack entry, by index
+	+ HighlightableTextButton
 
 = Finalize design of Ropes layer
 	! Spec:
@@ -322,17 +328,17 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Move default AutoTexturizationSettings to default cctor of AutoTexturizationSettings
 				+ Out of ShipTexturizer
 		+ Give to ModelController at OK
-	- At OK:
+	= At OK:
 		= For each of Metadata, PhysicsProperties, etc:
 			+ Check if any of this area's controls are dirty; if so:
 				+ Construct new Metadata, PhysicsProperties, etc.
 					+ Set optionals to nullopt if trimmed field is empty
 				+ Call Controller::ReplaceMetadata(&&), etc.
 					+ Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
-			= Make Undo entry @ Controller
+			+ Make Undo entry @ Controller
 				+ Try: GenericUndo, with lambda that just takes Controller and captures things
 				+ For undo entry: need one single Controller method for all pieces, with opt args (e.g. opt<opt>)
-				- Test
+				+ Test
 			- IUserInterface callback: change it to ShipNameChanged
 				- Call it also at undo
 				- Do workflow for rename here
@@ -351,7 +357,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 - Edit menu:
 	- Flip Horizontal
 	- Flip Vertical
-		- Undo: new "lambda-only" undo entry, GenericUndoEntry
+		- Undo: all layers
 
 - Texture visualization (see visualization modes *)
 
@@ -363,14 +369,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 - Other tools:
 	- Line tool
-
-= Undo stack visualization
-	+ UndoPanel underneath toolbar
-	+ Controller exposes GetUndoStack() const
-		+ And UndoStack exposes index-based enumerator 
-	+ MainFrame can tell Controller to rewind undo to a given stack entry, by index
-	- HighlatableTextButton
-		- When focused: set colors
 			
 - App icons (whole "Resources" folder)
 

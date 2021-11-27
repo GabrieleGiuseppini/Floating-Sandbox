@@ -11,6 +11,7 @@ set  (UI_LIB_SOURCES
 	EditSpinBox.h
 	ElectricalElementControl.cpp
 	ElectricalElementControl.h
+	HighlightableTextButton.h
 	LayoutHelper.h
 	LocalizationManager.cpp
 	LocalizationManager.h
