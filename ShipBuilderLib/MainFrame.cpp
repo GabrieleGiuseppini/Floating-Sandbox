@@ -3181,6 +3181,13 @@ void MainFrame::ReconciliateUIWithUndoStackState()
     for (size_t stackItemIndex = 0; stackItemIndex < mController->GetUndoStackSize(); ++stackItemIndex)
     {
         auto button = new wxButton(mUndoStackPanel, wxID_ANY, mController->GetUndoTitleAt(stackItemIndex));
+        button->SetCanFocus(false);
+
+        if (stackItemIndex == mController->GetUndoStackSize() - 1)
+        {
+            button->SetForegroundColour(*wxWHITE);
+            button->SetBackgroundColour(wxColor(0, 120, 215));
+        }
 
         button->Bind(
             wxEVT_BUTTON,

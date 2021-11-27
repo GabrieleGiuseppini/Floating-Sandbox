@@ -369,7 +369,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Controller exposes GetUndoStack() const
 		+ And UndoStack exposes index-based enumerator 
 	+ MainFrame can tell Controller to rewind undo to a given stack entry, by index
-	- Satisfied with scroll bars?
+	- HighlatableTextButton
+		- When focused: set colors
 			
 - App icons (whole "Resources" folder)
 
