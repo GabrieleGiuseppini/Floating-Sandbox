@@ -279,12 +279,14 @@ void RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coord
 
     //
     // Check conditions for doing action:
+    //  - If same coords as startL NO
     //  - If outside ship rect : NO
     //  - Else: may release only if there's no other rope endpoint at that position
     // 
 
     if (coords.IsInSize(mModelController.GetModel().GetShipSize())
-        && !mModelController.GetRopeElementIndexAt(coords).has_value())
+        && !mModelController.GetRopeElementIndexAt(coords).has_value()
+        && coords != mEngagementData->StartCoords)
     {
         //
         // May release here
