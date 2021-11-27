@@ -7,7 +7,7 @@
 
 #include "Controller.h"
 
-#include <GameCore/Log.h>
+#include <cassert>
 
 namespace ShipBuilder {
 
@@ -26,6 +26,16 @@ void UndoStack::PopAndApply(Controller & controller)
     // Execute action
     undoAction->ApplyAndConsume(controller);
     controller.RestoreDirtyState(std::move(undoAction->OriginalDirtyState));
+}
+
+void UndoStack::RewindAndApply(
+    size_t startIndex,
+    Controller & controller)
+{
+    while (startIndex < mStack.size() - 1)
+    {
+        PopAndApply(controller);
+    }
 }
 
 }

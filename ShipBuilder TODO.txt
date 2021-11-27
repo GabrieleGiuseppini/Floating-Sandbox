@@ -364,12 +364,12 @@ https://gamejolt.com/x/permalink/comment/11730705
 - Other tools:
 	- Line tool
 
-- Undo stack visualization
-	- UndoPanel underneath toolbar
-		- TODO: who is scrollable?
-	- Controller exposes GetUndoStack() const
-		- And UndoStack exposes index-based enumerator 
-	- MainFrame can tell Controller to rewind undo to a given stack entry, by index
+= Undo stack visualization
+	+ UndoPanel underneath toolbar
+	+ Controller exposes GetUndoStack() const
+		+ And UndoStack exposes index-based enumerator 
+	+ MainFrame can tell Controller to rewind undo to a given stack entry, by index
+	- Satisfied with scroll bars?
 			
 - App icons (whole "Resources" folder)
 

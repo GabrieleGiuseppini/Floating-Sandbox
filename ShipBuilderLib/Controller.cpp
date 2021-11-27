@@ -647,7 +647,15 @@ void Controller::UndoLast()
 
 void Controller::UndoUntil(size_t index)
 {
-    LogMessage("TODOHERE: UndoUntil: ", index);
+    assert(CanUndo());
+
+    auto const scopedToolResumeState = SuspendTool();
+
+    // Apply actions
+    mUndoStack.RewindAndApply(index, *this);
+
+    // Update undo state
+    mUserInterface.OnUndoStackStateChanged();
 }
 
 void Controller::AddZoom(int deltaZoom)

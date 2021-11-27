@@ -74,6 +74,10 @@ public:
 
     void PopAndApply(Controller & controller);
 
+    void RewindAndApply(
+        size_t startIndex, // Last index remaining after rewind
+        Controller & controller);
+
 private:
 
     struct UndoAction
