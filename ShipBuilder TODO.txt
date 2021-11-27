@@ -331,7 +331,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
 			- Trim before storing
 			- Make Undo entry @ Controller
-				= Try: GenericUndo, with lambda that just takes Controller and captures things
+				+ Try: GenericUndo, with lambda that just takes Controller and captures things
 			- IUserInterface callback: change it to ShipNameChanged
 				- Call it also at undo
 				- Do workflow for rename here

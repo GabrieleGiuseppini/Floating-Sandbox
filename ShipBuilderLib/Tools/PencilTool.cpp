@@ -364,21 +364,14 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
 
         auto clippedLayerClone = mOriginalLayerClone.Clone(*mEngagementData->EditRegion);
 
-        // TODOHERE
-        size_t const undoCost = clippedLayerClone.Buffer.GetByteSize();
-
-        auto undoFunction = [clippedLayerClone = std::move(clippedLayerClone), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
-        {
-            controller.RestoreLayerRegion(std::move(clippedLayerClone), origin);
-        };
-
-        auto undoAction = std::make_unique<UndoActionLambda<decltype(undoFunction)>>(
+        PushUndoAction(
             IsEraser ? _("Eraser Tool") : _("Pencil Tool"),
-            undoCost,
+            clippedLayerClone.Buffer.GetByteSize(),
             mEngagementData->OriginalDirtyState,
-            std::move(undoFunction));
-
-        PushUndoAction(std::move(undoAction));
+            [clippedLayerClone = std::move(clippedLayerClone), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
+            {
+                controller.RestoreLayerRegion(std::move(clippedLayerClone), origin);
+            });
     }
 
     //

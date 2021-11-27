@@ -91,21 +91,14 @@ void FloodTool<TLayer>::DoEdit(
         // FUTUREWORK: instead of cloning here, might have a Layer method to "trim" its buffer in-place
         auto clippedLayerClone = layerClone.Clone(*affectedRegion);
 
-        // TODOHERE
-        size_t const undoCost = clippedLayerClone.Buffer.GetByteSize();
-
-        auto undoFunction = [clippedLayerClone = std::move(clippedLayerClone), origin = affectedRegion->origin](Controller & controller) mutable
-        {
-            controller.RestoreLayerRegion(std::move(clippedLayerClone), origin);
-        };
-
-        auto undoAction = std::make_unique<UndoActionLambda<decltype(undoFunction)>>(
+        PushUndoAction(
             _("Flood Tool"),
-            undoCost,
+            clippedLayerClone.Buffer.GetByteSize(),
             layerDirtyStateClone,
-            std::move(undoFunction));
-
-        PushUndoAction(std::move(undoAction));
+            [clippedLayerClone = std::move(clippedLayerClone), origin = affectedRegion->origin](Controller & controller) mutable
+            {
+                controller.RestoreLayerRegion(std::move(clippedLayerClone), origin);
+            });
 
         // Mark layer as dirty
         SetLayerDirty(TLayer);

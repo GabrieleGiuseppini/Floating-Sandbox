@@ -136,6 +136,13 @@ void Controller::ClearModelDirty()
     mUserInterface.OnModelDirtyChanged();
 }
 
+void Controller::RestoreDirtyState(Model::DirtyState && dirtyState)
+{
+    // Restore dirtyness
+    mModelController->RestoreDirtyState(dirtyState);
+    mUserInterface.OnModelDirtyChanged();
+}
+
 ModelValidationResults Controller::ValidateModel()
 {
     auto const scopedToolResumeState = SuspendTool();
@@ -337,20 +344,15 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
 
             ElectricalLayerData clippedRegionClone = originalLayerClone.Clone(*affectedRect);
 
-            size_t const undoCost = clippedRegionClone.Buffer.GetByteSize();
-
-            auto undoFunction = [clippedRegionClone = std::move(clippedRegionClone), origin = affectedRect->origin](Controller & controller) mutable
-            {
-                controller.RestoreLayerRegion(std::move(clippedRegionClone), origin);
-            };
-
-            auto undoAction = std::make_unique<UndoActionLambda<decltype(undoFunction)>>(
+            mUndoStack.Push(
                 _("Trim Electrical"),
-                undoCost,
+                clippedRegionClone.Buffer.GetByteSize(),
                 originalDirtyStateClone,
-                std::move(undoFunction));
-
-            mUndoStack.Push(std::move(undoAction));
+                [clippedRegionClone = std::move(clippedRegionClone), origin = affectedRect->origin](Controller & controller) mutable
+                {
+                    controller.RestoreLayerRegion(std::move(clippedRegionClone), origin);
+                });
+            
             mUserInterface.OnUndoStackStateChanged();
         }
     }
@@ -583,12 +585,7 @@ void Controller::Undo()
     auto const scopedToolResumeState = SuspendTool();
 
     // Apply action
-    auto undoAction = mUndoStack.Pop();
-    undoAction->ApplyAndConsume(*this);
-
-    // Restore dirtyness
-    mModelController->RestoreDirtyState(undoAction->GetOriginalDirtyState());
-    mUserInterface.OnModelDirtyChanged();
+    mUndoStack.PopAndApply(*this);
 
     // Update undo state
     mUserInterface.OnUndoStackStateChanged();

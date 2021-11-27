@@ -20,74 +20,6 @@ namespace ShipBuilder {
 // Forward declarations
 class Controller;
 
-class UndoAction
-{
-public:
-
-    virtual ~UndoAction() = default;
-
-    wxString const & GetTitle() const
-    {
-        return mTitle;
-    }
-
-    size_t GetCost() const
-    {
-        return mCost;
-    }
-
-    Model::DirtyState const & GetOriginalDirtyState() const
-    {
-        return mOriginalDirtyState;
-    }
-
-    virtual void ApplyAndConsume(Controller & controller) = 0;
-
-protected:
-
-    UndoAction(
-        wxString const & title,
-        size_t cost,
-        Model::DirtyState const & originalDirtyState)
-        : mTitle(title)
-        , mCost(cost)
-        , mOriginalDirtyState(originalDirtyState)
-    {}
-
-private:
-
-    wxString const mTitle;
-    size_t const mCost;
-    Model::DirtyState const mOriginalDirtyState; // The model's dirty state that was in effect when the edit action being undode was applied
-};
-
-template<typename F>
-class UndoActionLambda final : public UndoAction
-{
-public:
-
-    UndoActionLambda(
-        wxString const & title,
-        size_t cost,        
-        Model::DirtyState const & originalDirtyState,
-        F && undoAction)
-        : UndoAction(
-            title,
-            cost,
-            originalDirtyState)
-        , mUndoAction(std::move(undoAction))
-    {}
-
-    void ApplyAndConsume(Controller & controller) override
-    {
-        mUndoAction(controller);
-    }
-
-private:
-
-    F mUndoAction;
-};
-
 class UndoStack
 {
 public:
@@ -102,9 +34,82 @@ public:
         return mStack.empty();
     }
 
-    void Push(std::unique_ptr<UndoAction> && undoAction);
+    template<typename F>
+    void Push(
+        wxString const & title,
+        size_t cost,
+        Model::DirtyState const & originalDirtyState,
+        F && undoFunction)
+    {
+        auto undoAction = std::make_unique<UndoActionLambda<F>>(
+            title,
+            cost,
+            originalDirtyState,
+            std::move(undoFunction));
+        
+        // Update total cost
+        mTotalCost += cost;
 
-    std::unique_ptr<UndoAction> Pop();
+        // Push undo action
+        mStack.push_back(std::move(undoAction));
+
+        // Trim stack if too big
+        while (mStack.size() > MaxEntries || mTotalCost > MaxCost)
+        {
+            assert(mTotalCost >= mStack.front()->Cost);
+            mTotalCost -= mStack.front()->Cost;
+            mStack.pop_front();
+        }
+    }
+
+    void PopAndApply(Controller & controller);
+
+private:
+
+    struct UndoAction
+    {
+        wxString Title;
+        size_t Cost;
+        Model::DirtyState OriginalDirtyState; // The model's dirty state that was in effect when the edit action being undode was applied
+
+        virtual ~UndoAction() = default;
+
+        virtual void ApplyAndConsume(Controller & controller) = 0;
+
+    protected:
+
+        UndoAction(
+            wxString const & title,
+            size_t cost,
+            Model::DirtyState const & originalDirtyState)
+            : Title(title)
+            , Cost(cost)
+            , OriginalDirtyState(originalDirtyState)
+        {}
+    };
+
+    template<typename F>
+    struct UndoActionLambda final : public UndoAction
+    {
+        F UndoFunction;
+
+        UndoActionLambda(
+            wxString const & title,
+            size_t cost,
+            Model::DirtyState const & originalDirtyState,
+            F && undoFunction)
+            : UndoAction(
+                title,
+                cost,
+                originalDirtyState)
+            , UndoFunction(std::move(undoFunction))
+        {}
+
+        void ApplyAndConsume(Controller & controller) override
+        {
+            UndoFunction(controller);
+        }
+    };
 
 private:
 

@@ -310,27 +310,14 @@ void RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coord
 
         // Create undo action
         {
-            // TODOHERE
-            size_t const undoCost = mEngagementData->OriginalLayerClone.Buffer.size() * sizeof(RopeElement);
-
-            auto undoFunction = [originalLayerClone = std::move(mEngagementData->OriginalLayerClone)](Controller & controller) mutable
-            {
-                controller.RestoreLayer(std::move(originalLayerClone));
-            };
-
-            auto undoAction = std::make_unique<UndoActionLambda<decltype(undoFunction)>>(
+            PushUndoAction(
                 _("Ropes Tool"),
-                undoCost,
+                mEngagementData->OriginalLayerClone.Buffer.size() * sizeof(RopeElement),
                 mEngagementData->OriginalDirtyState,
-                std::move(undoFunction));
-
-            ////auto undoAction = std::make_unique<WholeLayerUndoAction<RopesLayerData>>(
-            ////    _("Ropes Tool"),
-            ////    mEngagementData->OriginalDirtyState,
-            ////    std::move(mEngagementData->OriginalLayerClone),
-            ////    cost);
-
-            PushUndoAction(std::move(undoAction));
+                [originalLayerClone = std::move(mEngagementData->OriginalLayerClone)](Controller & controller) mutable
+                {
+                    controller.RestoreLayer(std::move(originalLayerClone));
+                });
         }
     }
 

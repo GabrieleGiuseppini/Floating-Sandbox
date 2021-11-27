@@ -114,6 +114,8 @@ public:
 
     void ClearModelDirty();
 
+    void RestoreDirtyState(Model::DirtyState && dirtyState);
+
     std::optional<ShipSpaceRect> CalculateBoundingBox() const;
 
     ModelValidationResults ValidateModel();
@@ -155,7 +157,7 @@ public:
     void SetCurrentTool(std::optional<ToolType> tool);
 
     bool CanUndo() const;
-    void Undo();
+    void Undo();    
 
     void AddZoom(int deltaZoom);
     void SetCamera(int camX, int camY);

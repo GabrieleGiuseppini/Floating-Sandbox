@@ -86,9 +86,10 @@ protected:
         mUserInterface.OnModelDirtyChanged();
     }
 
-    void PushUndoAction(std::unique_ptr<UndoAction> && undoAction)
+    template<typename ... TArgs>
+    void PushUndoAction(TArgs&& ... args)
     {
-        mUndoStack.Push(std::move(undoAction));
+        mUndoStack.Push(std::forward<TArgs>(args)...);
         mUserInterface.OnUndoStackStateChanged();
     }
 

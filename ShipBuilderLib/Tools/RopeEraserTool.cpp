@@ -173,29 +173,14 @@ void RopeEraserTool::StopEngagement()
         // Create undo action
         //
 
-        // TODOHERE
-        size_t const undoCost = mOriginalLayerClone.Buffer.size() * sizeof(RopeElement);
-
-        auto undoFunction = [originalLayerClone = std::move(mOriginalLayerClone)](Controller & controller) mutable
-        {
-            controller.RestoreLayer(std::move(originalLayerClone));
-        };
-
-        auto undoAction = std::make_unique<UndoActionLambda<decltype(undoFunction)>>(
+        PushUndoAction(
             _("Ropes Eraser"),
-            undoCost,
+            mOriginalLayerClone.Buffer.size() * sizeof(RopeElement),
             mEngagementData->OriginalDirtyState,
-            std::move(undoFunction));
-
-        ////size_t const cost = mOriginalLayerClone.Buffer.size() * sizeof(RopeElement);
-
-        ////auto undoAction = std::make_unique<WholeLayerUndoAction<RopesLayerData>>(
-        ////    _("Ropes Eraser"),
-        ////    mEngagementData->OriginalDirtyState,
-        ////    std::move(mOriginalLayerClone),
-        ////    cost);
-
-        PushUndoAction(std::move(undoAction));
+            [originalLayerClone = std::move(mOriginalLayerClone)](Controller & controller) mutable
+            {
+                controller.RestoreLayer(std::move(originalLayerClone));
+            });
 
         // Take new orig clone
         mOriginalLayerClone = mModelController.GetModel().CloneLayer<LayerType::Ropes>();
