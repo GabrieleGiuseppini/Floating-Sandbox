@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "RopeEraserTool.h"
 
+#include "Controller.h"
+
 #include <UILib/WxHelpers.h>
 
 #include <type_traits>
@@ -171,13 +173,27 @@ void RopeEraserTool::StopEngagement()
         // Create undo action
         //
 
-        size_t const cost = mOriginalLayerClone.Buffer.size() * sizeof(RopeElement);
+        // TODOHERE
+        size_t const undoCost = mOriginalLayerClone.Buffer.size() * sizeof(RopeElement);
 
-        auto undoAction = std::make_unique<WholeLayerUndoAction<RopesLayerData>>(
+        auto undoFunction = [originalLayerClone = std::move(mOriginalLayerClone)](Controller & controller) mutable
+        {
+            controller.RestoreLayer(std::move(originalLayerClone));
+        };
+
+        auto undoAction = std::make_unique<UndoActionLambda<decltype(undoFunction)>>(
             _("Ropes Eraser"),
+            undoCost,
             mEngagementData->OriginalDirtyState,
-            std::move(mOriginalLayerClone),
-            cost);
+            std::move(undoFunction));
+
+        ////size_t const cost = mOriginalLayerClone.Buffer.size() * sizeof(RopeElement);
+
+        ////auto undoAction = std::make_unique<WholeLayerUndoAction<RopesLayerData>>(
+        ////    _("Ropes Eraser"),
+        ////    mEngagementData->OriginalDirtyState,
+        ////    std::move(mOriginalLayerClone),
+        ////    cost);
 
         PushUndoAction(std::move(undoAction));
 

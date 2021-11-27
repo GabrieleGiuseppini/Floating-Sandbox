@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "FloodTool.h"
 
+#include "Controller.h"
+
 #include <type_traits>
 
 namespace ShipBuilder {
@@ -89,11 +91,19 @@ void FloodTool<TLayer>::DoEdit(
         // FUTUREWORK: instead of cloning here, might have a Layer method to "trim" its buffer in-place
         auto clippedLayerClone = layerClone.Clone(*affectedRegion);
 
-        auto undoAction = std::make_unique<LayerRegionUndoAction<typename LayerTypeTraits<TLayer>::layer_data_type>>(
+        // TODOHERE
+        size_t const undoCost = clippedLayerClone.Buffer.GetByteSize();
+
+        auto undoFunction = [clippedLayerClone = std::move(clippedLayerClone), origin = affectedRegion->origin](Controller & controller) mutable
+        {
+            controller.RestoreLayerRegion(std::move(clippedLayerClone), origin);
+        };
+
+        auto undoAction = std::make_unique<UndoActionLambda<decltype(undoFunction)>>(
             _("Flood Tool"),
-            std::move(layerDirtyStateClone),
-            std::move(clippedLayerClone),
-            affectedRegion->origin);
+            undoCost,
+            layerDirtyStateClone,
+            std::move(undoFunction));
 
         PushUndoAction(std::move(undoAction));
 

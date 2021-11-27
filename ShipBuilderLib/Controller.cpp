@@ -332,16 +332,23 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
         if (affectedRect)
         {
             //
-           // Create undo action
-           //
+            // Create undo action
+            //
 
-            auto clippedRegionClone = originalLayerClone.Clone(*affectedRect);
+            ElectricalLayerData clippedRegionClone = originalLayerClone.Clone(*affectedRect);
 
-            auto undoAction = std::make_unique<LayerRegionUndoAction<ElectricalLayerData>>(
+            size_t const undoCost = clippedRegionClone.Buffer.GetByteSize();
+
+            auto undoFunction = [clippedRegionClone = std::move(clippedRegionClone), origin = affectedRect->origin](Controller & controller) mutable
+            {
+                controller.RestoreLayerRegion(std::move(clippedRegionClone), origin);
+            };
+
+            auto undoAction = std::make_unique<UndoActionLambda<decltype(undoFunction)>>(
                 _("Trim Electrical"),
+                undoCost,
                 originalDirtyStateClone,
-                std::move(clippedRegionClone),
-                affectedRect->origin);
+                std::move(undoFunction));
 
             mUndoStack.Push(std::move(undoAction));
             mUserInterface.OnUndoStackStateChanged();

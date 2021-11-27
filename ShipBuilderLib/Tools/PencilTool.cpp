@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "PencilTool.h"
 
+#include "Controller.h"
+
 #include <GameCore/GameGeometry.h>
 
 #include <UILib/WxHelpers.h>
@@ -360,13 +362,21 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
         // Create undo action
         //
 
-        auto clippedRegionClone = mOriginalLayerClone.Clone(*mEngagementData->EditRegion);
+        auto clippedLayerClone = mOriginalLayerClone.Clone(*mEngagementData->EditRegion);
 
-        auto undoAction = std::make_unique<LayerRegionUndoAction<typename LayerTypeTraits<TLayer>::layer_data_type>>(
+        // TODOHERE
+        size_t const undoCost = clippedLayerClone.Buffer.GetByteSize();
+
+        auto undoFunction = [clippedLayerClone = std::move(clippedLayerClone), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
+        {
+            controller.RestoreLayerRegion(std::move(clippedLayerClone), origin);
+        };
+
+        auto undoAction = std::make_unique<UndoActionLambda<decltype(undoFunction)>>(
             IsEraser ? _("Eraser Tool") : _("Pencil Tool"),
+            undoCost,
             mEngagementData->OriginalDirtyState,
-            std::move(clippedRegionClone),
-            mEngagementData->EditRegion->origin);
+            std::move(undoFunction));
 
         PushUndoAction(std::move(undoAction));
     }

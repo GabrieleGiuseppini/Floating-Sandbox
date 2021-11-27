@@ -14,20 +14,12 @@
 
 #include <deque>
 #include <memory>
-#include <string>
 
 namespace ShipBuilder {
 
 // Forward declarations
 class Controller;
 
-/*
- * Base class of the hierarchy of undo actions.
- *
- * Some examples of specializations include:
- * - Material region replace
- * - Resize
- */
 class UndoAction
 {
 public:
@@ -69,54 +61,31 @@ private:
     Model::DirtyState const mOriginalDirtyState; // The model's dirty state that was in effect when the edit action being undode was applied
 };
 
-template<typename TLayer>
-class LayerRegionUndoAction final : public UndoAction
+template<typename F>
+class UndoActionLambda final : public UndoAction
 {
 public:
 
-    LayerRegionUndoAction(
+    UndoActionLambda(
         wxString const & title,
+        size_t cost,        
         Model::DirtyState const & originalDirtyState,
-        TLayer && layerRegion,
-        ShipSpaceCoordinates const & origin)
-        : UndoAction(
-            title,
-            layerRegion.Buffer.GetByteSize(),
-            originalDirtyState)
-        , mLayerRegion(std::move(layerRegion))
-        , mOrigin(origin)
-    {}
-
-    void ApplyAndConsume(Controller & controller) override;
-
-private:
-
-    TLayer mLayerRegion;
-    ShipSpaceCoordinates mOrigin;
-};
-
-template<typename TLayer>
-class WholeLayerUndoAction final : public UndoAction
-{
-public:
-
-    WholeLayerUndoAction(
-        wxString const & title,
-        Model::DirtyState const & originalDirtyState,
-        TLayer && layer,
-        size_t cost)
+        F && undoAction)
         : UndoAction(
             title,
             cost,
             originalDirtyState)
-        , mLayer(std::move(layer))
+        , mUndoAction(std::move(undoAction))
     {}
 
-    void ApplyAndConsume(Controller & controller) override;
+    void ApplyAndConsume(Controller & controller) override
+    {
+        mUndoAction(controller);
+    }
 
 private:
 
-    TLayer mLayer;
+    F mUndoAction;
 };
 
 class UndoStack
