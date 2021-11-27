@@ -836,8 +836,10 @@ void Controller::InternalSetShipProperties(
 
         mModelController->SetShipMetadata(std::move(*metadata));
 
-        // TODO: replace with OnShipNameChanged, and only invoke if name is different
-        mUserInterface.OnShipMetadataChanged(mModelController->GetShipMetadata());
+        if (hasShipNameChanged)
+        {
+            mUserInterface.OnShipNameChanged(mModelController->GetShipMetadata().ShipName);
+        }
     }
 
     if (physicsData.has_value())

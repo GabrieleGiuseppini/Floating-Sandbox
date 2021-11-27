@@ -339,10 +339,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Try: GenericUndo, with lambda that just takes Controller and captures things
 				+ For undo entry: need one single Controller method for all pieces, with opt args (e.g. opt<opt>)
 				+ Test
-			- IUserInterface callback: change it to ShipNameChanged
-				- Call it also at undo
+			= IUserInterface callback: change it to ShipNameChanged
+				+ Call it also at undo
 				- Do workflow for rename here
-	- RopePencilTool: no action if start coords == end coords
 	- Tests:
 		- Load & save ship w/auto-texturization settings
 		+ New ship:

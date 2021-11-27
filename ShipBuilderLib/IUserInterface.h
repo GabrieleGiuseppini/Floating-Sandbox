@@ -28,8 +28,8 @@ public:
     // Notifies of a change in the view model geometry
     virtual void OnViewModelChanged() = 0;
 
-    // Notifies of a change in the ship metadata
-    virtual void OnShipMetadataChanged(ShipMetadata const & shipMetadata) = 0;
+    // Notifies of a change in the name of the ship
+    virtual void OnShipNameChanged(std::string const & newName) = 0;
 
     // Notifies of a change in the size of the model
     virtual void OnShipSizeChanged(ShipSpaceSize const & shipSpaceSize) = 0;

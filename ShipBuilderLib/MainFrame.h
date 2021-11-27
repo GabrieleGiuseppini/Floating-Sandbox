@@ -82,7 +82,7 @@ public:
 
     void OnViewModelChanged() override;
 
-    void OnShipMetadataChanged(ShipMetadata const & shipMetadata) override;
+    void OnShipNameChanged(std::string const & newName) override;
 
     void OnShipSizeChanged(ShipSpaceSize const & shipSize) override;
 
@@ -235,7 +235,7 @@ private:
 
     void ReconciliateUIWithViewModel();
 
-    void ReconciliateUIWithShipMetadata(ShipMetadata const & shipMetadata);
+    void ReconciliateUIWithShipName(std::string const & shipName);
 
     void ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize);
 

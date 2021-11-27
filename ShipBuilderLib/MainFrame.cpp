@@ -541,11 +541,21 @@ void MainFrame::OnViewModelChanged()
     }
 }
 
-void MainFrame::OnShipMetadataChanged(ShipMetadata const & shipMetadata)
+void MainFrame::OnShipNameChanged(std::string const & newName)
 {
     if (mController)
     {
-        ReconciliateUIWithShipMetadata(shipMetadata);
+        //
+        // Ship filename workflow
+        //
+
+        // TODOHERE
+
+        //
+        // Reconciliate UI
+        //
+
+        ReconciliateUIWithShipName(newName);
     }
 }
 
@@ -2875,7 +2885,7 @@ void MainFrame::ReconciliateUI()
 {
     assert(mController);
     ReconciliateUIWithViewModel();
-    ReconciliateUIWithShipMetadata(mController->GetShipMetadata());
+    ReconciliateUIWithShipName(mController->GetShipMetadata().ShipName);
     ReconciliateUIWithLayerPresence();
     ReconciliateUIWithShipSize(mController->GetShipSize());
     ReconciliateUIWithPrimaryLayerSelection(mController->GetPrimaryLayer());
@@ -2897,9 +2907,9 @@ void MainFrame::ReconciliateUIWithViewModel()
     // TODO: set zoom in StatusBar
 }
 
-void MainFrame::ReconciliateUIWithShipMetadata(ShipMetadata const & shipMetadata)
+void MainFrame::ReconciliateUIWithShipName(std::string const & shipName)
 {
-    SetFrameTitle(shipMetadata.ShipName, mController->IsModelDirty());
+    SetFrameTitle(shipName, mController->IsModelDirty());
 }
 
 void MainFrame::ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize)
