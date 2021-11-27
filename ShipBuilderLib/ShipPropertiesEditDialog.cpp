@@ -1053,6 +1053,10 @@ void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
     // Inspect dirty flags and communicate parts to Controller
     //
 
+    std::optional<ShipMetadata> metadata;
+    std::optional<ShipPhysicsData> physicsData;
+    std::optional<std::optional<ShipAutoTexturizationSettings>> autoTexturizationSettings;
+
     if (IsMetadataDirty())
     {
         //
@@ -1062,7 +1066,7 @@ void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
         auto const shipName = MakeString(mShipNameTextCtrl->GetValue());
         assert(shipName.has_value() && shipName->length() > 0);
 
-        ShipMetadata metadata(
+        metadata = ShipMetadata(
             *shipName,
             MakeString(mShipAuthorTextCtrl->GetValue()),
             MakeString(mArtCreditsTextCtrl->GetValue()),
@@ -1072,8 +1076,6 @@ void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
             mSessionData->Metadata.DoHideElectricalsInPreview,
             mSessionData->Metadata.DoHideHDInPreview,
             mPasswordHash);
-
-        mSessionData->BuilderController.SetShipMetadata(std::move(metadata));
     }
 
     if (IsPhysicsDataDirty())
@@ -1082,13 +1084,11 @@ void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
         // Populate new
         //
 
-        ShipPhysicsData physicsData(
+        physicsData = ShipPhysicsData(
             vec2f(
                 mOffsetXEditSpinBox->GetValue(),
                 mOffsetYEditSpinBox->GetValue()),
             mInternalPressureEditSpinBox->GetValue());
-
-        mSessionData->BuilderController.SetShipPhysicsData(std::move(physicsData));
     }
 
     if (IsAutoTexturizationSettingsDirty())
@@ -1097,20 +1097,30 @@ void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
         // Populate new
         //
 
-        std::optional<ShipAutoTexturizationSettings> shipAutoTexturizationSettings;
+        std::optional<ShipAutoTexturizationSettings> actualSettings;
         if (mAutoTexturizationSettingsOnButton->GetValue())
         {
             ShipAutoTexturizationModeType const mode = mFlatStructureAutoTexturizationModeButton->GetValue()
                 ? ShipAutoTexturizationModeType::FlatStructure
                 : ShipAutoTexturizationModeType::MaterialTextures;
 
-            shipAutoTexturizationSettings = ShipAutoTexturizationSettings(
+            actualSettings = ShipAutoTexturizationSettings(
                 mode,
                 mMaterialTextureMagnificationSlider->GetValue(),
                 mMaterialTextureTransparencySlider->GetValue());
         }
 
-        mSessionData->BuilderController.SetShipAutoTexturizationSettings(std::move(shipAutoTexturizationSettings));
+        autoTexturizationSettings = actualSettings;
+    }
+
+    if (metadata.has_value()
+        || physicsData.has_value()
+        || autoTexturizationSettings.has_value())
+    {
+        mSessionData->BuilderController.SetShipProperties(
+            std::move(metadata),
+            std::move(physicsData),
+            std::move(autoTexturizationSettings));
     }
 
     //

@@ -31,6 +31,7 @@
 #include <wx/statline.h>
 #include <wx/tglbtn.h>
 #include <wx/utils.h>
+#include <wx/wupdlock.h>
 
 #ifdef _MSC_VER
  // Nothing to do here - we use RC files
@@ -229,10 +230,32 @@ MainFrame::MainFrame(
                     0);
             }
 
+            // Separator
+            {
+                wxStaticLine * line = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
+
+                row1Col0VSizer->Add(
+                    line,
+                    0,
+                    wxTOP | wxBOTTOM | wxEXPAND,
+                    2);
+            }
+
+            // Undo panel
+            {
+                wxPanel * undoPanel = CreateUndoPanel(mMainPanel);
+
+                row1Col0VSizer->Add(
+                    undoPanel,
+                    1, // Expand vertically
+                    wxLEFT | wxRIGHT | wxEXPAND, // Expand horizontally
+                    4);
+            }
+
             row1HSizer->Add(
                 row1Col0VSizer,
                 0,
-                0,
+                wxEXPAND,
                 0);
         }
 
@@ -1846,6 +1869,26 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
     return panel;
 }
 
+wxPanel * MainFrame::CreateUndoPanel(wxWindow * parent)
+{
+    mUndoStackPanel = new wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
+    mUndoStackPanel->SetScrollRate(0, 5);
+
+    {
+        auto font = mUndoStackPanel->GetFont();
+        font.SetPointSize(font.GetPointSize() - 2);
+        mUndoStackPanel->SetFont(font);
+    }
+
+    auto vSizer = new wxBoxSizer(wxVERTICAL);
+
+    // Empty for now
+
+    mUndoStackPanel->SetSizerAndFit(vSizer);
+
+    return mUndoStackPanel;
+}
+
 wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
@@ -2306,7 +2349,7 @@ void MainFrame::OnShipProperties(wxCommandEvent & /*event*/)
 
 void MainFrame::OnUndo(wxCommandEvent & /*event*/)
 {
-    mController->Undo();
+    mController->UndoLast();
 }
 
 void MainFrame::OnZoomIn(wxCommandEvent & /*event*/)
@@ -3115,11 +3158,49 @@ void MainFrame::ReconciliateUIWithUndoStackState()
 {
     assert(mController);
 
+    //
+    // Menu item
+    //
+
     bool const canUndo = mController->CanUndo();
     if (mUndoMenuItem->IsEnabled() != canUndo)
     {
         mUndoMenuItem->Enable(canUndo);
     }
+
+    //
+    // Undo stack
+    //
+
+    wxWindowUpdateLocker scopedUpdateFreezer(mUndoStackPanel);
+
+    // Clear
+    mUndoStackPanel->GetSizer()->Clear(true);
+
+    // Populate
+    for (size_t stackItemIndex = 0; stackItemIndex < mController->GetUndoStackSize(); ++stackItemIndex)
+    {
+        auto button = new wxButton(mUndoStackPanel, wxID_ANY, mController->GetUndoTitleAt(stackItemIndex));
+
+        button->Bind(
+            wxEVT_BUTTON,
+            [this, stackItemIndex](wxCommandEvent &)
+            {
+                mController->UndoUntil(stackItemIndex);
+            });
+
+        mUndoStackPanel->GetSizer()->Add(
+            button,
+            0,
+            wxLEFT | wxRIGHT | wxEXPAND,
+            4);
+    }
+
+    mUndoStackPanel->FitInside();
+    mUndoStackPanel->Layout();
+
+    // Scroll to bottom
+    mUndoStackPanel->Scroll(wxDefaultCoord, mUndoStackPanel->GetScrollRange(wxVERTICAL));
 }
 
 }

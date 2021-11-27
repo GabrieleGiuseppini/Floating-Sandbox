@@ -35,6 +35,7 @@
 #include <wx/menu.h>
 #include <wx/panel.h>
 #include <wx/scrolbar.h>
+#include <wx/scrolwin.h>
 #include <wx/slider.h>
 #include <wx/statbmp.h>
 
@@ -118,6 +119,7 @@ private:
     wxPanel * CreateToolSettingsPanel(wxWindow * parent);
     wxPanel * CreateLayersPanel(wxWindow * parent);
     wxPanel * CreateToolbarPanel(wxWindow * parent);
+    wxPanel * CreateUndoPanel(wxWindow * parent);
     wxPanel * CreateWorkPanel(wxWindow * parent);
 
     wxPanel * CreateToolSettingsToolSizePanel(
@@ -306,6 +308,9 @@ private:
     wxStaticBitmap * mRopesForegroundMaterialSelector;
     wxStaticBitmap * mRopesBackgroundMaterialSelector;
     wxBitmap mNullMaterialBitmap;
+
+    // Undo stack panel
+    wxScrolledWindow * mUndoStackPanel;
 
     // Work panel
     std::unique_ptr<wxGLCanvas> mWorkCanvas;

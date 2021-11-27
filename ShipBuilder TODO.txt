@@ -329,9 +329,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Set optionals to nullopt if trimmed field is empty
 				+ Call Controller::ReplaceMetadata(&&), etc.
 					+ Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
-			- Trim before storing
-			- Make Undo entry @ Controller
+			= Make Undo entry @ Controller
 				+ Try: GenericUndo, with lambda that just takes Controller and captures things
+				+ For undo entry: need one single Controller method for all pieces, with opt args (e.g. opt<opt>)
+				- Test
 			- IUserInterface callback: change it to ShipNameChanged
 				- Call it also at undo
 				- Do workflow for rename here
@@ -363,7 +364,12 @@ https://gamejolt.com/x/permalink/comment/11730705
 - Other tools:
 	- Line tool
 
-- Undo stack visualization: underneath toolbar?
+- Undo stack visualization
+	- UndoPanel underneath toolbar
+		- TODO: who is scrollable?
+	- Controller exposes GetUndoStack() const
+		- And UndoStack exposes index-based enumerator 
+	- MainFrame can tell Controller to rewind undo to a given stack entry, by index
 			
 - App icons (whole "Resources" folder)
 

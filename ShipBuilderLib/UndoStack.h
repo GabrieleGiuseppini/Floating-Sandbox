@@ -34,6 +34,16 @@ public:
         return mStack.empty();
     }
 
+    size_t GetSize() const
+    {
+        return mStack.size();
+    }
+
+    wxString const & GetTitleAt(size_t index) const
+    {
+        return mStack.at(index)->Title;
+    }
+
     template<typename F>
     void Push(
         wxString const & title,

@@ -105,28 +105,72 @@ ShipDefinition Controller::MakeShipDefinition()
     return mModelController->MakeShipDefinition();
 }
 
-void Controller::SetShipMetadata(ShipMetadata && shipMetadata)
+void Controller::SetShipProperties(
+    std::optional<ShipMetadata> && metadata,
+    std::optional<ShipPhysicsData> && physicsData,
+    std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings)
 {
     assert(mModelController);
-    mModelController->SetShipMetadata(std::move(shipMetadata));
 
+    // Assuming at least one of the three was changed
+    assert(metadata.has_value() || physicsData.has_value() || autoTexturizationSettings.has_value());
+
+    //
+    // Prepare undo entry
+    //
+
+    auto f = 
+        [oldMetadata = mModelController->GetShipMetadata()
+        , oldPhysicsData = mModelController->GetShipPhysicsData()
+        , oldAutoTexturizationSettings = mModelController->GetShipAutoTexturizationSettings()]
+        (Controller & controller) mutable
+        {
+            controller.RestoreShipProperties(
+                std::move(oldMetadata),
+                std::move(oldPhysicsData),
+                std::move(oldAutoTexturizationSettings));
+        };
+
+    auto originalDirtyState = mModelController->GetModel().GetDirtyState();
+
+    //
+    // Set new properties
+    //
+
+    InternalSetShipProperties(
+        std::move(metadata),
+        std::move(physicsData),
+        std::move(autoTexturizationSettings));
+
+    // At least one of the three was changed
     mUserInterface.OnModelDirtyChanged();
-    mUserInterface.OnShipMetadataChanged(mModelController->GetShipMetadata());
+
+    //
+    // Store undo action
+    //
+
+    mUndoStack.Push(
+        _("Properties"),
+        256, // Arbitrary cost
+        originalDirtyState,
+        std::move(f));
+
+    mUserInterface.OnUndoStackStateChanged();
 }
 
-void Controller::SetShipPhysicsData(ShipPhysicsData && shipPhysicsData)
+void Controller::RestoreShipProperties(
+    std::optional<ShipMetadata> && metadata,
+    std::optional<ShipPhysicsData> && physicsData,
+    std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings)
 {
     assert(mModelController);
-    mModelController->SetShipPhysicsData(std::move(shipPhysicsData));
 
-    mUserInterface.OnModelDirtyChanged();
-}
+    InternalSetShipProperties(
+        std::move(metadata),
+        std::move(physicsData),
+        std::move(autoTexturizationSettings));
 
-void Controller::SetShipAutoTexturizationSettings(std::optional<ShipAutoTexturizationSettings> && shipAutoTexturizationSettings)
-{
-    assert(mModelController);
-    mModelController->SetShipAutoTexturizationSettings(std::move(shipAutoTexturizationSettings));
-
+    // At least one of the three was changed
     mUserInterface.OnModelDirtyChanged();
 }
 
@@ -578,7 +622,17 @@ bool Controller::CanUndo() const
     return !mUndoStack.IsEmpty();
 }
 
-void Controller::Undo()
+size_t Controller::GetUndoStackSize() const
+{
+    return mUndoStack.GetSize();
+}
+
+wxString const & Controller::GetUndoTitleAt(size_t index) const
+{
+    return mUndoStack.GetTitleAt(index);
+}
+
+void Controller::UndoLast()
 {
     assert(CanUndo());
 
@@ -589,6 +643,11 @@ void Controller::Undo()
 
     // Update undo state
     mUserInterface.OnUndoStackStateChanged();
+}
+
+void Controller::UndoUntil(size_t index)
+{
+    LogMessage("TODOHERE: UndoUntil: ", index);
 }
 
 void Controller::AddZoom(int deltaZoom)
@@ -754,6 +813,35 @@ void Controller::OnMouseCaptureLost()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void Controller::InternalSetShipProperties(
+    std::optional<ShipMetadata> && metadata,
+    std::optional<ShipPhysicsData> && physicsData,
+    std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings)
+{
+    assert(mModelController);
+
+    if (metadata.has_value())
+    {
+        bool const hasShipNameChanged =
+            mModelController->GetShipMetadata().ShipName != metadata->ShipName;
+
+        mModelController->SetShipMetadata(std::move(*metadata));
+
+        // TODO: replace with OnShipNameChanged, and only invoke if name is different
+        mUserInterface.OnShipMetadataChanged(mModelController->GetShipMetadata());
+    }
+
+    if (physicsData.has_value())
+    {
+        mModelController->SetShipPhysicsData(std::move(*physicsData));
+    }
+
+    if (autoTexturizationSettings.has_value())
+    {
+        mModelController->SetShipAutoTexturizationSettings(std::move(*autoTexturizationSettings));
+    }
+}
 
 void Controller::InternalSelectPrimaryLayer(LayerType primaryLayer)
 {

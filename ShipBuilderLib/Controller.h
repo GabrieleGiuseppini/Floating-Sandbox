@@ -70,15 +70,11 @@ public:
         return mModelController->GetModel().GetShipMetadata();
     }
 
-    void SetShipMetadata(ShipMetadata && shipMetadata);
-
     ShipPhysicsData const & GetShipPhysicsData() const
     {
         assert(mModelController);
         return mModelController->GetModel().GetShipPhysicsData();
     }
-
-    void SetShipPhysicsData(ShipPhysicsData && shipPhysicsData);
 
     std::optional<ShipAutoTexturizationSettings> const & GetShipAutoTexturizationSettings() const
     {
@@ -86,7 +82,15 @@ public:
         return mModelController->GetModel().GetShipAutoTexturizationSettings();
     }
 
-    void SetShipAutoTexturizationSettings(std::optional<ShipAutoTexturizationSettings> && shipAutoTexturizationSettings);
+    void SetShipProperties(
+        std::optional<ShipMetadata> && metadata,
+        std::optional<ShipPhysicsData> && physicsData,
+        std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
+
+    void RestoreShipProperties(
+        std::optional<ShipMetadata> && metadata,
+        std::optional<ShipPhysicsData> && physicsData,
+        std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
 
     bool HasModelLayer(LayerType layer) const
     {
@@ -157,7 +161,10 @@ public:
     void SetCurrentTool(std::optional<ToolType> tool);
 
     bool CanUndo() const;
-    void Undo();    
+    size_t GetUndoStackSize() const;
+    wxString const & GetUndoTitleAt(size_t index) const;
+    void UndoLast();
+    void UndoUntil(size_t index);
 
     void AddZoom(int deltaZoom);
     void SetCamera(int camX, int camY);
@@ -218,6 +225,11 @@ private:
         WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         ResourceLocator const & resourceLocator);
+
+    void InternalSetShipProperties(
+        std::optional<ShipMetadata> && metadata,
+        std::optional<ShipPhysicsData> && physicsData,
+        std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
 
     void InternalSelectPrimaryLayer(LayerType primaryLayer);
 
