@@ -68,8 +68,10 @@ void main()
     // Vertical guide
     //
 
-    float verticalGuideDepth = step(abs(vertexPixelSpaceCoords.x - vertexPixelSpaceMidX), .51);
+    float verticalGuideDepth = 
+        step(0.0, vertexPixelSpaceCoords.x - vertexPixelSpaceMidX)
+        - step(1.1, vertexPixelSpaceCoords.x - vertexPixelSpaceMidX);
                     
     gl_FragColor = vec4(.7, .7, .7, 
-        mainGridDepth * min(subGridDepth + verticalGuideDepth, 1.));
+        min(mainGridDepth * subGridDepth + verticalGuideDepth, 1.));
 } 

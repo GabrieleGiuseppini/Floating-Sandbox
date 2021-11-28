@@ -190,6 +190,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ New ship
 			+ Load .shp ship
 
++ Grid: highlight vertical center guide
+	+ Test with odd ship width
+
 = Finalize design of Ropes layer
 	! Spec:
 		! Material Strategy: in Structural DB, separate palette tree - does NOT require current "ropes" to be marked as "legacy"
@@ -303,8 +306,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Material palette
 			- SoundController
 			- Make sounds
-
-- Grid: highlight vertical center guide
 
 - Import/Export:
 	- Structural:
