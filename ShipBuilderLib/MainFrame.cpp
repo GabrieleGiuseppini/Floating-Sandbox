@@ -2108,7 +2108,7 @@ void MainFrame::OnWorkCanvasResize(wxSizeEvent & event)
     auto const workCanvasSize = GetWorkCanvasSize();
 
     // We take care of notifying the view ourselves, as we might have a view
-    // but not controller
+    // but not a controller
     if (mView)
     {
         mView->SetDisplayLogicalSize(workCanvasSize);

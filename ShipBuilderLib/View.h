@@ -79,6 +79,8 @@ public:
     void SetShipSize(ShipSpaceSize const & size)
     {
         mViewModel.SetShipSize(size);
+
+        OnViewModelUpdated();
     }
 
     void SetDisplayLogicalSize(DisplayLogicalSize const & logicalSize)

@@ -556,11 +556,11 @@ void Controller::ResizeShip(ShipSpaceSize const & newSize)
     // TODO: update dirtyness (of all present layers)
 
     // Notify view of new size
-    // Note: might cause a view model change that would not be
-    // notified via OnViewModelChanged
-    // TODO: view atm does NOT update grid, while it should - may be this should indeed cause a OnViewModelChanged
     mView.SetShipSize(newSize);
+    mUserInterface.OnViewModelChanged();
+    mUserInterface.RefreshView();
 
+    // Notify UI of new ship size
     mUserInterface.OnShipSizeChanged(newSize);
 }
 
