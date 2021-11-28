@@ -151,8 +151,26 @@ TEST(ShipDefinitionFormatDeSerializerTests, PhysicsData)
 
     ShipPhysicsData const targetPd = ShipDefinitionFormatDeSerializer::ReadPhysicsData(buffer);
 
-    EXPECT_EQ(targetPd.Offset, targetPd.Offset);
-    EXPECT_EQ(targetPd.InternalPressure, targetPd.InternalPressure);
+    EXPECT_EQ(sourcePd.Offset, targetPd.Offset);
+    EXPECT_EQ(sourcePd.InternalPressure, targetPd.InternalPressure);
+}
+
+TEST(ShipDefinitionFormatDeSerializerTests, AutoTexturizationSettings)
+{
+    DeSerializationBuffer<BigEndianess> buffer(256);
+
+    // Write
+
+    ShipAutoTexturizationSettings sourceAts(ShipAutoTexturizationModeType::MaterialTextures, 0.5f, 0.75f);
+    ShipDefinitionFormatDeSerializer::AppendAutoTexturizationSettings(sourceAts, buffer);
+
+    // Read
+
+    ShipAutoTexturizationSettings const targetAts = ShipDefinitionFormatDeSerializer::ReadAutoTexturizationSettings(buffer);
+
+    EXPECT_EQ(sourceAts.Mode, targetAts.Mode);
+    EXPECT_EQ(sourceAts.MaterialTextureMagnification, targetAts.MaterialTextureMagnification);
+    EXPECT_EQ(sourceAts.MaterialTextureTransparency, targetAts.MaterialTextureTransparency);
 }
 
 class ShipDefinitionFormatDeSerializer_StructuralLayerTests : public testing::Test

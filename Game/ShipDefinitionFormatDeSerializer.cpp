@@ -39,6 +39,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
     std::optional<ShipAttributes> shipAttributes;
     std::optional<ShipMetadata> shipMetadata;
     ShipPhysicsData shipPhysicsData;
+    std::optional<ShipAutoTexturizationSettings> shipAutoTexturizationSettings;
     std::unique_ptr<StructuralLayerData> structuralLayer;
     std::unique_ptr<ElectricalLayerData> electricalLayer;
     std::unique_ptr<RopesLayerData> ropesLayer;
@@ -71,6 +72,14 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                 {
                     ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
                     shipPhysicsData = ReadPhysicsData(buffer);
+
+                    break;
+                }
+
+                case static_cast<uint32_t>(MainSectionTagType::AutoTexturizationSettings) :
+                {
+                    ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
+                    shipAutoTexturizationSettings = ReadAutoTexturizationSettings(buffer);
 
                     break;
                 }
@@ -140,8 +149,6 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     break;
                 }
 
-                // TODOHERE: other sections
-
                 case static_cast<uint32_t>(MainSectionTagType::Tail) :
                 {
                     hasSeenTail = true;
@@ -182,7 +189,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
         std::move(textureLayer),
         *shipMetadata,
         shipPhysicsData,
-        std::nullopt); // TODO
+        shipAutoTexturizationSettings);
 }
 
 ShipPreviewData ShipDefinitionFormatDeSerializer::LoadPreviewData(std::filesystem::path const & shipFilePath)
@@ -412,8 +419,6 @@ void ShipDefinitionFormatDeSerializer::Save(
             buffer);
     }
 
-    // TODOHERE: other sections
-
     //
     // Write physics data
     //
@@ -423,6 +428,19 @@ void ShipDefinitionFormatDeSerializer::Save(
         static_cast<std::uint32_t>(MainSectionTagType::PhysicsData),
         [&]() { return AppendPhysicsData(shipDefinition.PhysicsData, buffer); },
         buffer);
+
+    //
+    // Write auto-texturization settings
+    //
+
+    if (shipDefinition.AutoTexturizationSettings.has_value())
+    {
+        AppendSection(
+            outputFile,
+            static_cast<std::uint32_t>(MainSectionTagType::AutoTexturizationSettings),
+            [&]() { return AppendAutoTexturizationSettings(*shipDefinition.AutoTexturizationSettings, buffer); },
+            buffer);
+    }
 
     //
     // Write tail
@@ -742,6 +760,58 @@ size_t ShipDefinitionFormatDeSerializer::AppendPhysicsData(
 template<typename T>
 size_t ShipDefinitionFormatDeSerializer::AppendPhysicsDataEntry(
     ShipDefinitionFormatDeSerializer::PhysicsDataTagType tag,
+    T const & value,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    buffer.Append(static_cast<std::uint32_t>(tag));
+    size_t const valueSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
+    size_t const valueSize = buffer.Append(value);
+    buffer.WriteAt(static_cast<std::uint32_t>(valueSize), valueSizeIndex);
+
+    static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+    return sizeof(SectionHeader) + valueSize;
+}
+
+size_t ShipDefinitionFormatDeSerializer::AppendAutoTexturizationSettings(
+    ShipAutoTexturizationSettings const & autoTexturizationSettings,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    size_t sectionBodySize = 0;
+
+    {
+        sectionBodySize += AppendAutoTexturizationSettingsEntry(
+            AutoTexturizationSettingsTagType::Mode,
+            static_cast<std::uint32_t>(autoTexturizationSettings.Mode),
+            buffer);
+    }
+
+    {
+        sectionBodySize += AppendAutoTexturizationSettingsEntry(
+            AutoTexturizationSettingsTagType::MaterialTextureMagnification,
+            autoTexturizationSettings.MaterialTextureMagnification,
+            buffer);
+    }
+
+    {
+        sectionBodySize += AppendAutoTexturizationSettingsEntry(
+            AutoTexturizationSettingsTagType::MaterialTextureTransparency,
+            autoTexturizationSettings.MaterialTextureTransparency,
+            buffer);
+    }
+
+    // Tail
+    {
+        sectionBodySize += buffer.Append(static_cast<std::uint32_t>(AutoTexturizationSettingsTagType::Tail));
+        sectionBodySize += buffer.Append(static_cast<std::uint32_t>(0));
+        static_assert(sizeof(SectionHeader) == sizeof(std::uint32_t) + sizeof(std::uint32_t));
+    }
+
+    return sectionBodySize;
+}
+
+template<typename T>
+size_t ShipDefinitionFormatDeSerializer::AppendAutoTexturizationSettingsEntry(
+    ShipDefinitionFormatDeSerializer::AutoTexturizationSettingsTagType tag,
     T const & value,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
@@ -1577,7 +1647,7 @@ ShipPhysicsData ShipDefinitionFormatDeSerializer::ReadPhysicsData(DeSerializatio
                 break;
             }
 
-            case static_cast<uint32_t>(MetadataTagType::Tail) :
+            case static_cast<uint32_t>(PhysicsDataTagType::Tail) :
             {
                 // We're done
                 break;
@@ -1601,6 +1671,68 @@ ShipPhysicsData ShipDefinitionFormatDeSerializer::ReadPhysicsData(DeSerializatio
     }
 
     return physicsData;
+}
+
+ShipAutoTexturizationSettings ShipDefinitionFormatDeSerializer::ReadAutoTexturizationSettings(DeSerializationBuffer<BigEndianess> const & buffer)
+{
+    ShipAutoTexturizationSettings autoTexturizationSettings;
+
+    // Read all tags
+    for (size_t offset = 0;;)
+    {
+        SectionHeader const sectionHeader = ReadSectionHeader(buffer, offset);
+        offset += sizeof(SectionHeader);
+
+        switch (sectionHeader.Tag)
+        {
+            case static_cast<uint32_t>(AutoTexturizationSettingsTagType::Mode) :
+            {
+                std::uint32_t modeValue;
+                buffer.ReadAt<std::uint32_t>(offset, modeValue);
+
+                autoTexturizationSettings.Mode = static_cast<ShipAutoTexturizationModeType>(modeValue);
+
+                break;
+            }
+
+            case static_cast<uint32_t>(AutoTexturizationSettingsTagType::MaterialTextureMagnification) :
+            {
+                buffer.ReadAt<float>(offset, autoTexturizationSettings.MaterialTextureMagnification);
+
+                break;
+            }
+
+            case static_cast<uint32_t>(AutoTexturizationSettingsTagType::MaterialTextureTransparency) :
+            {
+                buffer.ReadAt<float>(offset, autoTexturizationSettings.MaterialTextureTransparency);
+
+                break;
+            }
+
+            case static_cast<uint32_t>(AutoTexturizationSettingsTagType::Tail) :
+            {
+                // We're done
+                break;
+            }
+
+            default:
+            {
+                // Unrecognized tag
+                LogMessage("WARNING: Unrecognized auto-texturization settings tag ", sectionHeader.Tag);
+                break;
+            }
+        }
+
+        if (sectionHeader.Tag == static_cast<uint32_t>(AutoTexturizationSettingsTagType::Tail))
+        {
+            // We're done
+            break;
+        }
+
+        offset += sectionHeader.SectionBodySize;
+    }
+
+    return autoTexturizationSettings;
 }
 
 void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(

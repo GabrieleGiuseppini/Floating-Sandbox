@@ -81,6 +81,115 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ MainFrame can tell Controller to rewind undo to a given stack entry, by index
 	+ HighlightableTextButton
 
++ Complete Load/Save/Model
+	+ Finalize storage of all other ship definition members in Model
+		+ AutoTexturizationSettings
+			+ Test w/PropertiesDialog
+	+ ShipDeSerializer: Load/Save each of:
+		+ Electrical layer
+		+ Ropes layer
+		+ Texture layer
+			+ Using DevIL lump, see https://github.com/DentonW/DevIL/blob/master/DevIL/src-IL/src/il_io.cpp#L2490
+		+ PhysicsData
+		+ AutoTexturizationSettings
+			+ Test
+				+ w/PropertiesDialog
+				+ Load .shp -> Save .shp2 -> Load .shp2 in FS
+
++ Metadata edit workflow:
+	+ ShipPropertiesEditDialog
+	+ Dialog::Open takes Controller &, Metadata const &, PhysicsProperties const &, etc.
+		+ Pass bool HasTexture (to enable ArtCredits)
+		+ opt<struct> mSessionData
+		+ Populates all controls
+		+ Flags each control as being not dirty
+	+ Editing a field flags it as being dirty
+	+ Ship name
+	+ Author(s)
+	+ Art Credits
+		! Spec: we allow ModelController to carry stale credits when texture is removed - OR NOT: replace won't signal layer removal
+		+ Enabled and populated only iff HasTexture
+		+ ModelController: remove ArtCredits when texture is removed
+			+ Test
+		+ Test
+	+ Year Built
+	+ Edit Password
+		+ Make new tab
+	+ Description
+		+ Separate tab
+		+ Populate at startup
+		+ Check for dirty @ OK
+		+ Give to ModelController at OK
+	+ PhysicsData
+		+ Populate tab
+			+ ShipOffsetVisualizationControl
+				+ Zoom calculation:
+					+ Integral/ShipSpace - coords to/from world
+					+ Add CoordsRatio to ShipMetadata
+						+ Legacy loading: 1:1
+						+ New Format loading:
+							+ defaults to 1:1
+							+ Load it
+							+ Save it
+							+ Test
+					+ Use it @ ShipOffsetVisualizationControl
+						+ Test it w/4:1
+					+ Use it @ ShipFactory
+		+ Populate UI at startup
+		+ Give to ModelController at OK
+			+ Verify becomes dirty
+			+ Verify all 3 saved
+		+ See why pressure is not 1.0 at startup
+	+ Auto-Texturization Settings
+		+ Populate tab
+			+ Radio button to handle Remove vs Setting values
+			+ Whole tab disabled <=> has texture
+			+ Consider using explanations
+				+ Use icons, like password
+				+ Auto-texturization mode "radios"
+				+ Horizontal sliders, explanation below
+					+ SliderControl needs to take own HORIZONTAL vs VERTICAL enum
+						+ SettingsDialog
+					+ Explanation below
+				+ Add some V spacing around sliders
+		+ Populate UI at startup
+			+ Move default AutoTexturizationSettings to default cctor of AutoTexturizationSettings
+				+ Out of ShipTexturizer
+		+ Give to ModelController at OK
+	+ At OK:
+		+ For each of Metadata, PhysicsProperties, etc:
+			+ Check if any of this area's controls are dirty; if so:
+				+ Construct new Metadata, PhysicsProperties, etc.
+					+ Set optionals to nullopt if trimmed field is empty
+				+ Call Controller::ReplaceMetadata(&&), etc.
+					+ Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
+			+ Make Undo entry @ Controller
+				+ Try: GenericUndo, with lambda that just takes Controller and captures things
+				+ For undo entry: need one single Controller method for all pieces, with opt args (e.g. opt<opt>)
+				+ Test
+			+ IUserInterface callback: change it to ShipNameChanged
+				+ Call it also at undo
+				+ Do workflow for rename here:
+					+ MainFrame: compare output of MakeFilename() on new ship name with current filename, and if different && there is a current which exists as a file:
+						+ Ask rename
+							+ If yes:
+								+ Rename file (filesystem)
+								+ Change current
+							+ If no:
+								+ If has a current: clear current (and Save will become SaveAs)
+								! If has no current: Save is already set to become SaveAs, we're OK
+	+ Tests:
+		+ Load & save ship w/auto-texturization settings
+		+ New ship:
+			+ Populate one x {...}
+			+ Close
+			+ Reopen - verify it's there
+			+ Save - verify it's there @ load
+		+ Ships with unicode chars in metadata, show well in dialog: Désirée Москва
+			+ Load ship
+			+ New ship
+			+ Load .shp ship
+
 = Finalize design of Ropes layer
 	! Spec:
 		! Material Strategy: in Structural DB, separate palette tree - does NOT require current "ropes" to be marked as "legacy"
@@ -200,21 +309,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 - Grid: highlight vertical center guide
 
-- Complete Load/Save/Model
-	- Finalize storage of all other ship definition members in Model
-		= AutoTexturizationSettings
-			- Test w/PropertiesDialog
-	- ShipDeSerializer: Load/Save each of:
-		+ Electrical layer
-		+ Ropes layer
-		+ Texture layer
-			+ Using DevIL lump, see https://github.com/DentonW/DevIL/blob/master/DevIL/src-IL/src/il_io.cpp#L2490
-		+ PhysicsData
-		- AutoTexturizationSettings
-			- Test
-				- w/PropertiesDialog
-				- Load .shp -> Save .shp2 -> Load .shp2 in FS
-
 - Import/Export:
 	- Structural:
 		- Import from:
@@ -256,101 +350,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Additions:
 			- Undo
 				- Note: texture layer removal should also store metadata
-
-- Each time we StartTool() (e.g. at AddLayer, etc.) we end up refreshing modelcontroller's visualization and OpenGL visualization, twice
-
-= Metadata edit workflow:
-	+ ShipPropertiesEditDialog
-	+ Dialog::Open takes Controller &, Metadata const &, PhysicsProperties const &, etc.
-		+ Pass bool HasTexture (to enable ArtCredits)
-		+ opt<struct> mSessionData
-		+ Populates all controls
-		+ Flags each control as being not dirty
-	+ Editing a field flags it as being dirty
-	+ Ship name
-	+ Author(s)
-	+ Art Credits
-		! Spec: we allow ModelController to carry stale credits when texture is removed - OR NOT: replace won't signal layer removal
-		+ Enabled and populated only iff HasTexture
-		+ ModelController: remove ArtCredits when texture is removed
-			+ Test
-		+ Test
-	+ Year Built
-	+ Edit Password
-		+ Make new tab
-	+ Description
-		+ Separate tab
-		+ Populate at startup
-		+ Check for dirty @ OK
-		+ Give to ModelController at OK
-	+ PhysicsData
-		+ Populate tab
-			+ ShipOffsetVisualizationControl
-				+ Zoom calculation:
-					+ Integral/ShipSpace - coords to/from world
-					+ Add CoordsRatio to ShipMetadata
-						+ Legacy loading: 1:1
-						+ New Format loading:
-							+ defaults to 1:1
-							+ Load it
-							+ Save it
-							+ Test
-					+ Use it @ ShipOffsetVisualizationControl
-						+ Test it w/4:1
-					+ Use it @ ShipFactory
-		+ Populate UI at startup
-		+ Give to ModelController at OK
-			+ Verify becomes dirty
-			+ Verify all 3 saved
-		+ See why pressure is not 1.0 at startup
-	+ Auto-Texturization Settings
-		+ Populate tab
-			+ Radio button to handle Remove vs Setting values
-			+ Whole tab disabled <=> has texture
-			+ Consider using explanations
-				+ Use icons, like password
-				+ Auto-texturization mode "radios"
-				+ Horizontal sliders, explanation below
-					+ SliderControl needs to take own HORIZONTAL vs VERTICAL enum
-						+ SettingsDialog
-					+ Explanation below
-				+ Add some V spacing around sliders
-		+ Populate UI at startup
-			+ Move default AutoTexturizationSettings to default cctor of AutoTexturizationSettings
-				+ Out of ShipTexturizer
-		+ Give to ModelController at OK
-	+ At OK:
-		+ For each of Metadata, PhysicsProperties, etc:
-			+ Check if any of this area's controls are dirty; if so:
-				+ Construct new Metadata, PhysicsProperties, etc.
-					+ Set optionals to nullopt if trimmed field is empty
-				+ Call Controller::ReplaceMetadata(&&), etc.
-					+ Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
-			+ Make Undo entry @ Controller
-				+ Try: GenericUndo, with lambda that just takes Controller and captures things
-				+ For undo entry: need one single Controller method for all pieces, with opt args (e.g. opt<opt>)
-				+ Test
-			+ IUserInterface callback: change it to ShipNameChanged
-				+ Call it also at undo
-				+ Do workflow for rename here:
-					+ MainFrame: compare output of MakeFilename() on new ship name with current filename, and if different && there is a current which exists as a file:
-						+ Ask rename
-							+ If yes:
-								+ Rename file (filesystem)
-								+ Change current
-							+ If no:
-								+ If has a current: clear current (and Save will become SaveAs)
-								! If has no current: Save is already set to become SaveAs, we're OK
-	- Tests:
-		- Load & save ship w/auto-texturization settings
-		+ New ship:
-			+ Populate one x {...}
-			+ Close
-			+ Reopen - verify it's there
-			+ Save - verify it's there @ load
-		- Ships with unicode chars in metadata, show well in dialog: Désirée Москва
-			- Load ship
-			- New ship
 
 - Edit menu:
 	- Flip Horizontal
@@ -642,6 +641,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- FullScreenManager class, shared_ptr in both
 			- Looked at at each Game<->ShipBuilder switch by receiver
 	- Windows installer (or ShipBuilder::MainFrame cctor): on Windows, register shell icon handler for .shp2 files, and icon
+		- Or done at app startup, #ifdef Windows
+	- Each time we StartTool() (e.g. at AddLayer, etc.) we end up refreshing modelcontroller's visualization and OpenGL visualization, twice
 	- TO-SPEC:
 		- What to do with background music when switching back and forth?
 

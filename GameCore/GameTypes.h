@@ -803,8 +803,10 @@ template <> struct is_flag<ToolApplicationLocus> : std::true_type {};
 
 /*
  * The different auto-texturization modes for ships that don't have a texture layer.
+ *
+ * Note: enum value are serialized in ship files, do not change.
  */
-enum class ShipAutoTexturizationModeType
+enum class ShipAutoTexturizationModeType : std::uint32_t
 {
     FlatStructure = 1,      // Builds texture using structural materials' RenderColor
     MaterialTextures = 2    // Builds texture using materials' "Bump Maps"

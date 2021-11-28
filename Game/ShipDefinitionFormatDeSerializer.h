@@ -152,6 +152,18 @@ private:
         Tail = 0xffffffff
     };
 
+    enum class AutoTexturizationSettingsTagType : std::uint32_t
+    {
+        // Numeric values are serialized in ship files, changing them will result
+        // in ship files being un-deserializable!
+
+        Mode = MAKE_TAG('M', 'D', 'E', '1'),
+        MaterialTextureMagnification = MAKE_TAG('M', 'T', 'M', '1'),
+        MaterialTextureTransparency = MAKE_TAG('M', 'T', 'T', '1'),
+
+        Tail = 0xffffffff
+    };
+
     enum class StructuralLayerTagType : std::uint32_t
     {
         // Numeric values are serialized in ship files, changing them will result
@@ -234,6 +246,16 @@ private:
         T const & value,
         DeSerializationBuffer<BigEndianess> & buffer);
 
+    static size_t AppendAutoTexturizationSettings(
+        ShipAutoTexturizationSettings const & autoTexturizationSettings,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
+    template<typename T>
+    static size_t AppendAutoTexturizationSettingsEntry(
+        ShipDefinitionFormatDeSerializer::AutoTexturizationSettingsTagType tag,
+        T const & value,
+        DeSerializationBuffer<BigEndianess> & buffer);
+
     static size_t AppendStructuralLayer(
         StructuralLayerData const & structuralLayer,
         DeSerializationBuffer<BigEndianess> & buffer);
@@ -308,6 +330,8 @@ private:
 
     static ShipPhysicsData ReadPhysicsData(DeSerializationBuffer<BigEndianess> const & buffer);
 
+    static ShipAutoTexturizationSettings ReadAutoTexturizationSettings(DeSerializationBuffer<BigEndianess> const & buffer);
+
     static void ReadStructuralLayer(
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
@@ -335,6 +359,7 @@ private:
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_Full_Test;
     friend class ShipDefinitionFormatDeSerializerTests_Metadata_Minimal_Test;
     friend class ShipDefinitionFormatDeSerializerTests_PhysicsData_Test;
+    friend class ShipDefinitionFormatDeSerializerTests_AutoTexturizationSettings_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_VariousSizes_Uniform_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_MidSize_Heterogeneous_Test;
