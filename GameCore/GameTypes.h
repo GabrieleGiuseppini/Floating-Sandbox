@@ -629,6 +629,17 @@ using ShipSpaceToWorldSpaceCoordsRatio = _IntegralCoordsRatio<struct ShipSpaceTa
  */
 using Octant = std::int32_t;
 
+/*
+ * Generic directions.
+ */
+enum class DirectionType
+{
+    Horizontal = 1,
+    Vertical = 2
+};
+
+template <> struct is_flag<DirectionType> : std::true_type {};
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Game
 ////////////////////////////////////////////////////////////////////////////////////////////////

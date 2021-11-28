@@ -548,12 +548,32 @@ void Controller::RestoreLayerRegion(
     // TODOHERE: copy from structural
 }
 
+void Controller::Flip(DirectionType direction)
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    // Prepare undo
+    // TODO
+
+    // Flip
+    mModelController->Flip(direction);
+
+    // Update dirtyness
+    mModelController->SetAllLayersDirty();
+    mUserInterface.OnModelDirtyChanged();
+
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
+}
+
 void Controller::ResizeShip(ShipSpaceSize const & newSize)
 {
     // TODO: reset tool
     // TODO: tell ModelController
     // TODO: update layers visualization
     // TODO: update dirtyness (of all present layers)
+    // TODO: undo
 
     // Notify view of new size
     mView.SetShipSize(newSize);

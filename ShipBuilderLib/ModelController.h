@@ -54,6 +54,11 @@ public:
         mModel.SetIsDirty(layer);
     }
 
+    void SetAllLayersDirty()
+    {
+        mModel.SetAllLayersDirty();
+    }
+
     void RestoreDirtyState(Model::DirtyState const & dirtyState)
     {
         mModel.SetDirtyState(dirtyState);
@@ -107,6 +112,8 @@ public:
     {
         mModel.SetShipAutoTexturizationSettings(std::move(shipAutoTexturizationSettings));
     }
+
+    void Flip(DirectionType direction);
 
     //
     // Structural

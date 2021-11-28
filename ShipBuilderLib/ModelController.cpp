@@ -275,6 +275,13 @@ void ModelController::UploadVisualization()
     // TODOHERE: other layers
 }
 
+void ModelController::Flip(DirectionType direction)
+{
+    // TODOHERE: flip all present layers, including their visualizations (via UpdateXXXViz()), and make sure the whole rect of viz is marked as dirty
+        // TODO: use Buffer.Flip, and see if can add a Flip also to Ropes "buffer"
+            // TODO: Ropes layer's Buffer becomes a class, so it can have methods
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Structural
 ////////////////////////////////////////////////////////////////////////////////////////////////////

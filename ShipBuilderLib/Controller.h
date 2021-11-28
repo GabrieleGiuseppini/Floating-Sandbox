@@ -150,6 +150,8 @@ public:
         TextureLayerData const & layerRegion,
         ShipSpaceCoordinates const & origin);
 
+    void Flip(DirectionType direction);
+
     void ResizeShip(ShipSpaceSize const & newSize);
 
     LayerType GetPrimaryLayer() const;

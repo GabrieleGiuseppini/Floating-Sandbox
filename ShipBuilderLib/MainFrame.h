@@ -154,9 +154,11 @@ private:
     void OnQuitAndGoBack(wxCommandEvent & event);
     void OnQuit(wxCommandEvent & event);
     void OnClose(wxCloseEvent & event);
-    void OnShipCanvasResize(wxCommandEvent & event);
-    void OnShipProperties(wxCommandEvent & event);
-    void OnUndo(wxCommandEvent & event);
+    void OnEditUndoMenuItem(wxCommandEvent & event);
+    void OnEditFlipHorizontallyMenuItem(wxCommandEvent & event);
+    void OnEditFlipVerticallyMenuItem(wxCommandEvent & event);
+    void OnEditResizeShipMenuItem(wxCommandEvent & event);
+    void OnEditShipPropertiesMenuItem(wxCommandEvent & event);
     void OnZoomIn(wxCommandEvent & event);
     void OnZoomOut(wxCommandEvent & event);
     void OnResetView(wxCommandEvent & event);

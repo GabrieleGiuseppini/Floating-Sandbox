@@ -171,6 +171,12 @@ public:
         mDirtyState.GlobalIsDirty = true;
     }
 
+    void SetAllLayersDirty()
+    {
+        mDirtyState.IsLayerDirtyMap.fill(true);
+        mDirtyState.GlobalIsDirty = true;
+    }
+
     void ClearIsDirty()
     {
         mDirtyState = DirtyState();

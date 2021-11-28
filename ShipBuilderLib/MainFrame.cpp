@@ -374,23 +374,35 @@ MainFrame::MainFrame(
         wxMenu * editMenu = new wxMenu();
 
         {
-            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Resize Ship") + wxS("\tCtrl+R"), _("Resize the ship"), wxITEM_NORMAL);
-            editMenu->Append(menuItem);
-            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShipCanvasResize);
-        }
-
-        {
-            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Ship Properties") + wxS("\tCtrl+P"), _("Edit the ship properties"), wxITEM_NORMAL);
-            editMenu->Append(menuItem);
-            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShipProperties);
+            mUndoMenuItem = new wxMenuItem(editMenu, wxID_ANY, _("Undo") + wxS("\tCtrl+Z"), _("Undo the last edit operation"), wxITEM_NORMAL);
+            editMenu->Append(mUndoMenuItem);
+            Connect(mUndoMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditUndoMenuItem);
         }
 
         editMenu->Append(new wxMenuItem(editMenu, wxID_SEPARATOR));
 
         {
-            mUndoMenuItem = new wxMenuItem(editMenu, wxID_ANY, _("Undo") + wxS("\tCtrl+Z"), _("Undo the last edit operation"), wxITEM_NORMAL);
-            editMenu->Append(mUndoMenuItem);
-            Connect(mUndoMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnUndo);
+            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Flip Ship Horizontally"), _("Flip the ship horizontally"), wxITEM_NORMAL);
+            editMenu->Append(menuItem);
+            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditFlipHorizontallyMenuItem);
+        }
+
+        {
+            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Flip Ship Vertically"), _("Flip the ship vertically"), wxITEM_NORMAL);
+            editMenu->Append(menuItem);
+            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditFlipVerticallyMenuItem);
+        }
+
+        {
+            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Resize Ship") + wxS("\tCtrl+R"), _("Resize the ship"), wxITEM_NORMAL);
+            editMenu->Append(menuItem);
+            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditResizeShipMenuItem);
+        }
+
+        {
+            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Ship Properties") + wxS("\tCtrl+P"), _("Edit the ship properties"), wxITEM_NORMAL);
+            editMenu->Append(menuItem);
+            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditShipPropertiesMenuItem);
         }
 
         mainMenuBar->Append(editMenu, _("&Edit"));
@@ -2375,19 +2387,29 @@ void MainFrame::OnClose(wxCloseEvent & event)
     event.Skip();
 }
 
-void MainFrame::OnShipCanvasResize(wxCommandEvent & /*event*/)
+void MainFrame::OnEditUndoMenuItem(wxCommandEvent & /*event*/)
+{
+    mController->UndoLast();
+}
+
+void MainFrame::OnEditFlipHorizontallyMenuItem(wxCommandEvent & /*event*/)
+{
+    mController->Flip(DirectionType::Horizontal);
+}
+
+void MainFrame::OnEditFlipVerticallyMenuItem(wxCommandEvent & /*event*/)
+{
+    mController->Flip(DirectionType::Vertical);
+}
+
+void MainFrame::OnEditResizeShipMenuItem(wxCommandEvent & /*event*/)
 {
     OpenShipCanvasResize();
 }
 
-void MainFrame::OnShipProperties(wxCommandEvent & /*event*/)
+void MainFrame::OnEditShipPropertiesMenuItem(wxCommandEvent & /*event*/)
 {
     OpenShipProperties();
-}
-
-void MainFrame::OnUndo(wxCommandEvent & /*event*/)
-{
-    mController->UndoLast();
 }
 
 void MainFrame::OnZoomIn(wxCommandEvent & /*event*/)

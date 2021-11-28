@@ -349,10 +349,13 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Undo
 				- Note: texture layer removal should also store metadata
 
-- Edit menu:
-	- Flip Horizontal
-	- Flip Vertical
-		- Undo: all layers
+- Edit menu: Flip Horizontal, Vertical
+	- Buffer2D::Flip(...)
+		- Unit tests
+	- Ropes layer's buffer becomes a class, so it also has Flip()
+		- TODOHERE: where do we put source code?
+		- Unit tests
+	- Undo: all layers
 
 - Texture visualization (see visualization modes *)
 
