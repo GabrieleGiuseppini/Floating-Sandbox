@@ -205,7 +205,9 @@ private:
 
     bool AskUserIfSure(wxString caption);
 
-    int AskUserIfSave(wxString caption);
+    int AskUserIfSave();
+
+    bool AskUserIfRename(std::string const & newFilename);
 
     void ShowError(wxString const & message);
 

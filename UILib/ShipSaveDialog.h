@@ -27,7 +27,7 @@ public:
 	ShipSaveDialog(wxWindow * parent);
 
 	int ShowModal(
-		std::string const & shipName,
+		std::string const & shipFilename,
 		GoalType goal);
 
 	std::filesystem::path GetChosenShipFilepath() const

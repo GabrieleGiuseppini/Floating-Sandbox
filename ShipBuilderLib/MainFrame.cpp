@@ -548,8 +548,35 @@ void MainFrame::OnShipNameChanged(std::string const & newName)
         //
         // Ship filename workflow
         //
+        // - If we have a current ship file path,
+        // - And the file exists,
+        // - And its filename is different than the filename that comes from the new ship name,
+        // - And this new filename does not exist:
+        // 
+        // - Ask user if wants to rename file
+        //
 
-        // TODOHERE
+        std::string const newShipFilename = Utils::MakeFilenameSafeString(newName) + ShipDeSerializer::GetShipDefinitionFileExtension();
+
+        if (mCurrentShipFilePath.has_value()
+            && std::filesystem::exists(*mCurrentShipFilePath)
+            && newShipFilename != mCurrentShipFilePath->filename().string())
+        {
+            std::filesystem::path const newFilepath = mCurrentShipFilePath->parent_path() / newShipFilename;
+            if (!std::filesystem::exists(newFilepath)
+                && AskUserIfRename(newShipFilename))
+            {
+                // Rename
+                std::filesystem::rename(*mCurrentShipFilePath, newFilepath);
+                mCurrentShipFilePath = newFilepath;
+            }
+            else
+            {
+                // Doesn't want to rename, hence at this moment the ship has no backing file anymore...
+                // ...clear filename, so that Save will become SaveAs
+                mCurrentShipFilePath.reset();
+            }
+        }
 
         //
         // Reconciliate UI
@@ -2321,7 +2348,7 @@ void MainFrame::OnClose(wxCloseEvent & event)
     if (event.CanVeto() && mController->IsModelDirty())
     {
         // Ask user if they really want
-        int result = AskUserIfSave(_("Do you want to save your changes before continuing?"));
+        int result = AskUserIfSave();
         if (result == wxYES)
         {
             if (!SaveShip())
@@ -2468,7 +2495,7 @@ void MainFrame::NewShip()
     if (mController->IsModelDirty())
     {
         // Ask user if they really want
-        int result = AskUserIfSave(_("Do you want to save your changes before continuing?"));
+        int result = AskUserIfSave();
         if (result == wxYES)
         {
             if (!SaveShip())
@@ -2493,7 +2520,7 @@ void MainFrame::LoadShip()
     if (mController->IsModelDirty())
     {
         // Ask user if they really want
-        int result = AskUserIfSave(_("Do you want to save your changes before continuing?"));
+        int result = AskUserIfSave();
         if (result == wxYES)
         {
             if (!SaveShip())
@@ -2566,7 +2593,7 @@ bool MainFrame::SaveShipAs()
     }
 
     auto const res = mShipSaveDialog->ShowModal(
-        mController->GetShipMetadata().ShipName,
+        Utils::MakeFilenameSafeString(mController->GetShipMetadata().ShipName),
         ShipSaveDialog::GoalType::FullShip);
 
     if (res == wxID_OK)
@@ -2599,7 +2626,7 @@ void MainFrame::QuitAndSwitchBackToGame()
     if (mController->IsModelDirty())
     {
         // Ask user if they really want
-        int result = AskUserIfSave(_("Do you want to save your changes before continuing?"));
+        int result = AskUserIfSave();
         if (result == wxYES)
         {
             if (!SaveShip())
@@ -2716,10 +2743,18 @@ bool MainFrame::AskUserIfSure(wxString caption)
     return (result == wxOK);
 }
 
-int MainFrame::AskUserIfSave(wxString caption)
+int MainFrame::AskUserIfSave()
 {
-    int result = wxMessageBox(caption, ApplicationName, wxICON_EXCLAMATION | wxYES_NO | wxCANCEL | wxCENTRE);
+    int result = wxMessageBox(_("Do you want to save your changes before continuing?"), ApplicationName, 
+        wxICON_EXCLAMATION | wxYES_NO | wxCANCEL | wxCENTRE);
     return result;
+}
+
+bool MainFrame::AskUserIfRename(std::string const & newFilename)
+{
+    wxString const caption = wxString::Format(_("Do you also want to rename the ship file to \"%s\"?"), newFilename);
+    int result = wxMessageBox(caption, ApplicationName, wxICON_EXCLAMATION | wxYES_NO | wxCENTRE);
+    return (result == wxYES);
 }
 
 void MainFrame::ShowError(wxString const & message)

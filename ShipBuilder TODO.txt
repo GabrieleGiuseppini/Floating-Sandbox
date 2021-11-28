@@ -267,16 +267,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Populates all controls
 		+ Flags each control as being not dirty
 	+ Editing a field flags it as being dirty
-	= Ship name
-		- TODO: nail down ship name change & file name change - VERIFY BELOW
-			- MainFrame: compare output of MakeFilename() on new ship name with current filename, and if different && there is a current which exists as a file:
-				- Ask rename
-					- If yes:
-						- Rename file (filesystem)
-						- Change current
-					- If no:
-						- If has a current: clear current (and Save will become SaveAs)
-						- If has no current: Save is already set to become SaveAs, we're OK
+	+ Ship name
 	+ Author(s)
 	+ Art Credits
 		! Spec: we allow ModelController to carry stale credits when texture is removed - OR NOT: replace won't signal layer removal
@@ -328,8 +319,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Move default AutoTexturizationSettings to default cctor of AutoTexturizationSettings
 				+ Out of ShipTexturizer
 		+ Give to ModelController at OK
-	= At OK:
-		= For each of Metadata, PhysicsProperties, etc:
+	+ At OK:
+		+ For each of Metadata, PhysicsProperties, etc:
 			+ Check if any of this area's controls are dirty; if so:
 				+ Construct new Metadata, PhysicsProperties, etc.
 					+ Set optionals to nullopt if trimmed field is empty
@@ -339,9 +330,17 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Try: GenericUndo, with lambda that just takes Controller and captures things
 				+ For undo entry: need one single Controller method for all pieces, with opt args (e.g. opt<opt>)
 				+ Test
-			= IUserInterface callback: change it to ShipNameChanged
+			+ IUserInterface callback: change it to ShipNameChanged
 				+ Call it also at undo
-				- Do workflow for rename here
+				+ Do workflow for rename here:
+					+ MainFrame: compare output of MakeFilename() on new ship name with current filename, and if different && there is a current which exists as a file:
+						+ Ask rename
+							+ If yes:
+								+ Rename file (filesystem)
+								+ Change current
+							+ If no:
+								+ If has a current: clear current (and Save will become SaveAs)
+								! If has no current: Save is already set to become SaveAs, we're OK
 	- Tests:
 		- Load & save ship w/auto-texturization settings
 		+ New ship:

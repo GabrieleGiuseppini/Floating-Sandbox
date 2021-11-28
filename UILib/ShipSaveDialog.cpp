@@ -9,8 +9,6 @@
 
 #include <Game/ShipDeSerializer.h>
 
-#include <GameCore/Utils.h>
-
 namespace ShipBuilder {
 
 ShipSaveDialog::ShipSaveDialog(wxWindow * parent)
@@ -27,10 +25,10 @@ ShipSaveDialog::ShipSaveDialog(wxWindow * parent)
 }
 
 int ShipSaveDialog::ShowModal(
-	std::string const & shipName,
+	std::string const & shipFilename,
 	GoalType goal)
 {
-	SetFilename(Utils::MakeFilenameSafeString(shipName));
+	SetFilename(shipFilename);
 
 	switch (goal)
 	{
