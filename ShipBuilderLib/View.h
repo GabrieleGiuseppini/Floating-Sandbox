@@ -231,14 +231,17 @@ private:
     {
         vec2f positionShip; // Ship space
         vec2f positionPixel; // Pixel space
+        float midXPixel; // Pixel space
 
         GridVertex() = default;
 
         GridVertex(
             vec2f const & _positionShip,
-            vec2f _positionPixel)
+            vec2f _positionPixel,
+            float _midXPixel)
             : positionShip(_positionShip)
             , positionPixel(_positionPixel)
+            , midXPixel(_midXPixel)
         {}
     };
 

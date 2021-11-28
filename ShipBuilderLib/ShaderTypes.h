@@ -62,7 +62,8 @@ enum class VertexAttributeType : GLuint
     CircleOverlay1 = 0,
     CircleOverlay2 = 1,
 
-    Grid = 0,
+    Grid1 = 0,
+    Grid2 = 1,
 
     RectOverlay1 = 0,
     RectOverlay2 = 1,

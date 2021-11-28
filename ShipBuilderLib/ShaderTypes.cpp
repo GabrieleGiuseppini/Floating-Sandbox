@@ -105,8 +105,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::CircleOverlay1;
     else if (Utils::CaseInsensitiveEquals(str, "CircleOverlay2"))
         return VertexAttributeType::CircleOverlay2;
-    else if (Utils::CaseInsensitiveEquals(str, "Grid"))
-        return VertexAttributeType::Grid;
+    else if (Utils::CaseInsensitiveEquals(str, "Grid1"))
+        return VertexAttributeType::Grid1;
+    else if (Utils::CaseInsensitiveEquals(str, "Grid2"))
+        return VertexAttributeType::Grid2;
     else if (Utils::CaseInsensitiveEquals(str, "RectOverlay1"))
         return VertexAttributeType::RectOverlay1;
     else if (Utils::CaseInsensitiveEquals(str, "RectOverlay2"))

@@ -304,9 +304,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- SoundController
 			- Make sounds
 
-- Should New Ship start clean?
-	- Can't be saved anyway
-
 - Grid: highlight vertical center guide
 
 - Import/Export:

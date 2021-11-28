@@ -286,8 +286,11 @@ View::View(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mGridVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Grid));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Grid), 4, GL_FLOAT, GL_FALSE, sizeof(GridVertex), (void *)0);
+        static_assert(sizeof(GridVertex) == (2 + 2 + 1) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Grid1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Grid1), 4, GL_FLOAT, GL_FALSE, sizeof(GridVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Grid2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Grid2), 1, GL_FLOAT, GL_FALSE, sizeof(GridVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -934,6 +937,7 @@ void View::UpdateGrid()
     DisplayPhysicalSize const shipPixelSize = mViewModel.ShipSpaceSizeToPhysicalDisplaySize(mViewModel.GetShipSize());
     float const pixelWidth = static_cast<float>(shipPixelSize.width);
     float const pixelHeight = static_cast<float>(shipPixelSize.height);
+    float const pixelMidX = pixelWidth / 2.0f;
 
     std::array<GridVertex, 4> vertexBuffer;
 
@@ -943,22 +947,26 @@ void View::UpdateGrid()
     // Bottom-left
     vertexBuffer[0] = GridVertex(
         vec2f(0.0f, 0.0f),
-        vec2f(0.0f, pixelHeight));
+        vec2f(0.0f, pixelHeight),
+        pixelMidX);
 
     // Top-left
     vertexBuffer[1] = GridVertex(
         vec2f(0.0f, shipHeight),
-        vec2f(0.0f, 0.0f));
+        vec2f(0.0f, 0.0f),
+        pixelMidX);
 
     // Bottom-right
     vertexBuffer[2] = GridVertex(
         vec2f(shipWidth, 0.0f),
-        vec2f(pixelWidth, pixelHeight));
+        vec2f(pixelWidth, pixelHeight),
+        pixelMidX);
 
     // Top-right
     vertexBuffer[3] = GridVertex(
         vec2f(shipWidth, shipHeight),
-        vec2f(pixelWidth, 0.0f));
+        vec2f(pixelWidth, 0.0f),
+        pixelMidX);
 
     // Upload vertices
     glBindBuffer(GL_ARRAY_BUFFER, *mGridVBO);

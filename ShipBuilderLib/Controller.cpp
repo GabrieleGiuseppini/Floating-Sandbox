@@ -558,6 +558,7 @@ void Controller::ResizeShip(ShipSpaceSize const & newSize)
     // Notify view of new size
     // Note: might cause a view model change that would not be
     // notified via OnViewModelChanged
+    // TODO: view atm does NOT update grid, while it should - may be this should indeed cause a OnViewModelChanged
     mView.SetShipSize(newSize);
 
     mUserInterface.OnShipSizeChanged(newSize);

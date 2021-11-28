@@ -4,18 +4,21 @@
 #define out varying
 
 // Inputs
-in vec4 inGrid; // Vertex position (ship space), vertex position (physical display pixel space)
+in vec4 inGrid1; // Vertex position (ship space), vertex position (physical display pixel space)
+in float inGrid2; // Mid X in vertex position space above (physical display pixel space)
 
 // Outputs
 out vec2 vertexPixelSpaceCoords;
+out float vertexPixelSpaceMidX;
 
 // Params
 uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexPixelSpaceCoords = inGrid.zw;
-    gl_Position = paramOrthoMatrix * vec4(inGrid.xy, 0.0, 1.0);
+    vertexPixelSpaceCoords = inGrid1.zw;
+    vertexPixelSpaceMidX = inGrid2;
+    gl_Position = paramOrthoMatrix * vec4(inGrid1.xy, 0.0, 1.0);
 }
 
 ###FRAGMENT-120
@@ -24,6 +27,7 @@ void main()
 
 // Inputs from previous shader
 in vec2 vertexPixelSpaceCoords;
+in float vertexPixelSpaceMidX;
 
 // Parameters
 uniform float paramPixelStep; // # of pixels
@@ -59,6 +63,13 @@ void main()
     float subGridDepth = 
         step(subGridTolerance, subGridUnary.x)
         * step(subGridTolerance, subGridUnary.y);
+
+    //
+    // Vertical guide
+    //
+
+    float verticalGuideDepth = step(abs(vertexPixelSpaceCoords.x - vertexPixelSpaceMidX), .51);
                     
-    gl_FragColor = vec4(.7, .7, .7, mainGridDepth * subGridDepth);
+    gl_FragColor = vec4(.7, .7, .7, 
+        mainGridDepth * min(subGridDepth + verticalGuideDepth, 1.));
 } 
