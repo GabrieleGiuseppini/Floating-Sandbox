@@ -552,11 +552,14 @@ void Controller::Flip(DirectionType direction)
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    // Prepare undo
+    // Get dirty state
     // TODO
 
     // Flip
     mModelController->Flip(direction);
+
+    // Create undo
+    // TODO
 
     // Update dirtyness
     mModelController->SetAllLayersDirty();

@@ -62,7 +62,7 @@ ModelController::ModelController(
     InitializeRopesLayer();
 
     // Prepare all visualizations
-    ShipSpaceRect const wholeShipSpace = ShipSpaceRect({ 0, 0 }, mModel.GetShipSize());
+    ShipSpaceRect const wholeShipSpace = GetWholeShipRect();
     UpdateStructuralLayerVisualization(wholeShipSpace);
     UpdateElectricalLayerVisualization(wholeShipSpace);
     UpdateRopesLayerVisualization();
@@ -277,9 +277,38 @@ void ModelController::UploadVisualization()
 
 void ModelController::Flip(DirectionType direction)
 {
-    // TODOHERE: flip all present layers, including their visualizations (via UpdateXXXViz()), and make sure the whole rect of viz is marked as dirty
-        // TODO: use Buffer.Flip, and see if can add a Flip also to Ropes "buffer"
-            // TODO: Ropes layer's Buffer becomes a class, so it can have methods
+    // Structural layer
+    {
+        assert(mModel.HasLayer(LayerType::Structural));
+
+        assert(!mIsStructuralLayerInEphemeralVisualization);
+
+        mModel.GetStructuralLayer().Buffer.Flip(direction);
+
+        UpdateStructuralLayerVisualization(GetWholeShipRect());
+    }
+
+    // Electrical layer
+    if (mModel.HasLayer(LayerType::Electrical))
+    {
+        assert(!mIsElectricalLayerInEphemeralVisualization);
+
+        // TODOHERE
+    }
+
+    // Ropes layer
+    if (mModel.HasLayer(LayerType::Ropes))
+    {
+        assert(!mIsRopesLayerInEphemeralVisualization);
+
+        // TODOHERE
+    }
+
+    // Texture layer
+    if (mModel.HasLayer(LayerType::Texture))
+    {
+        // TODOHERE
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -292,7 +321,7 @@ void ModelController::NewStructuralLayer()
 
     InitializeStructuralLayer();
 
-    UpdateStructuralLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
+    UpdateStructuralLayerVisualization(GetWholeShipRect());
 
     mIsStructuralLayerInEphemeralVisualization = false;
 }
@@ -305,7 +334,7 @@ void ModelController::SetStructuralLayer(/*TODO*/)
 
     InitializeStructuralLayer();
 
-    UpdateStructuralLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
+    UpdateStructuralLayerVisualization(GetWholeShipRect());
 
     mIsStructuralLayerInEphemeralVisualization = false;
 }
@@ -479,7 +508,7 @@ void ModelController::NewElectricalLayer()
 
     InitializeElectricalLayer();
 
-    UpdateElectricalLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
+    UpdateElectricalLayerVisualization(GetWholeShipRect());
 
     mIsElectricalLayerInEphemeralVisualization = false;
 }
@@ -493,7 +522,7 @@ void ModelController::SetElectricalLayer(/*TODO*/)
 
     InitializeElectricalLayer();
 
-    UpdateElectricalLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
+    UpdateElectricalLayerVisualization(GetWholeShipRect());
 
     mIsElectricalLayerInEphemeralVisualization = false;
 }
@@ -805,7 +834,7 @@ void ModelController::MoveRopeEndpoint(
     // Update model
     //
 
-    assert(ropeElementIndex < mModel.GetRopesLayer().Buffer.size());
+    assert(ropeElementIndex < mModel.GetRopesLayer().Buffer.GetSize());
 
     MoveRopeEndpoint(
         mModel.GetRopesLayer().Buffer[ropeElementIndex],
@@ -841,7 +870,7 @@ bool ModelController::EraseRopeAt(ShipSpaceCoordinates const & coords)
     if (srchIt != mModel.GetRopesLayer().Buffer.cend())
     {
         // Remove
-        mModel.GetRopesLayer().Buffer.erase(srchIt);
+        mModel.GetRopesLayer().Buffer.Erase(srchIt);
 
         // Update visualization
         UpdateRopesLayerVisualization();
@@ -920,7 +949,7 @@ void ModelController::ModelController::MoveRopeEndpointForEphemeralVisualization
     // Update model with jsut movement - no analyses
     //
 
-    assert(ropeElementIndex < mModel.GetRopesLayer().Buffer.size());
+    assert(ropeElementIndex < mModel.GetRopesLayer().Buffer.GetSize());
 
     MoveRopeEndpoint(
         mModel.GetRopesLayer().Buffer[ropeElementIndex],
@@ -967,7 +996,7 @@ void ModelController::NewTextureLayer()
 {
     mModel.NewTextureLayer();
 
-    UpdateTextureLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
+    UpdateTextureLayerVisualization(GetWholeShipRect());
 }
 
 void ModelController::SetTextureLayer(/*TODO*/)
@@ -978,7 +1007,7 @@ void ModelController::SetTextureLayer(/*TODO*/)
 
     mModel.SetTextureLayer(/*TODO*/);
 
-    UpdateTextureLayerVisualization({ ShipSpaceCoordinates(0, 0), mModel.GetShipSize() });
+    UpdateTextureLayerVisualization(GetWholeShipRect());
 }
 
 void ModelController::RemoveTextureLayer()
@@ -1132,7 +1161,7 @@ void ModelController::AppendRope(
 {
     assert(material != nullptr);
 
-    mModel.GetRopesLayer().Buffer.emplace_back(
+    mModel.GetRopesLayer().Buffer.EmplaceBack(
         startCoords,
         endCoords,
         material,

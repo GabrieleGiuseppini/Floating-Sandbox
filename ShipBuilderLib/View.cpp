@@ -583,16 +583,16 @@ void View::RemoveElectricalLayerVisualizationTexture()
     mHasElectricalTexture = false;
 }
 
-void View::UploadRopesLayerVisualization(std::vector<RopeElement> const & ropeElements)
+void View::UploadRopesLayerVisualization(RopeBuffer const & ropeBuffer)
 {
     //
     // Create vertices
     //
 
     std::vector<RopeVertex> vertexBuffer;
-    vertexBuffer.reserve(ropeElements.size());
+    vertexBuffer.reserve(ropeBuffer.GetSize());
 
-    for (auto const & e : ropeElements)
+    for (auto const & e : ropeBuffer)
     {
         vertexBuffer.emplace_back(
             vec2f(
@@ -620,7 +620,7 @@ void View::UploadRopesLayerVisualization(std::vector<RopeElement> const & ropeEl
     // Remember we have ropes
     //
 
-    mRopeCount = ropeElements.size();
+    mRopeCount = ropeBuffer.GetSize();
 }
 
 void View::RemoveRopesLayerVisualization()

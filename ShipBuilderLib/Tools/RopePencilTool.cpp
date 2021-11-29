@@ -314,7 +314,7 @@ void RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coord
         {
             PushUndoAction(
                 _("Ropes Tool"),
-                mEngagementData->OriginalLayerClone.Buffer.size() * sizeof(RopeElement),
+                mEngagementData->OriginalLayerClone.Buffer.GetSize() * sizeof(RopeElement),
                 mEngagementData->OriginalDirtyState,
                 [originalLayerClone = std::move(mEngagementData->OriginalLayerClone)](Controller & controller) mutable
                 {

@@ -113,7 +113,7 @@ private:
     }
 
     static void AppendRopes(
-        std::vector<RopeElement> const & ropeElements,
+        RopeBuffer const & ropeBuffer,
         ShipSpaceSize const & shipSize,
         ShipFactoryPointIndexMatrix const & pointIndexMatrix,
         std::vector<ShipFactoryPoint> & pointInfos1,

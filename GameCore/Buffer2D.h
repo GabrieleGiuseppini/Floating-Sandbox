@@ -172,7 +172,46 @@ public:
         }
     }
 
+    void Flip(DirectionType direction)
+    {
+        if (direction == DirectionType::Horizontal)
+        {
+            Flip<true, false>();
+        }
+        else if (direction == DirectionType::Vertical)
+        {
+            Flip<false, true>();
+        }
+        else if (direction == (DirectionType::Vertical | DirectionType::Horizontal))
+        {
+            Flip<true, true>();
+        }
+    }
+
 private:
+
+    template<bool H, bool V>
+    void Flip()
+    {
+        int const xMax = (H && !V) ? Size.width / 2 : Size.width;
+        int const yMax = V ? Size.height / 2 : Size.height;
+
+        for (int y = 0; y < yMax; ++y)
+        {
+            for (int x = 0; x < xMax; ++x)
+            {
+                auto const srcCoords = coordinates_type(x, y);
+
+                auto dstCoords = srcCoords;
+                if constexpr (H)
+                    dstCoords = dstCoords.FlipX(Size.width);
+                if constexpr (V)
+                    dstCoords = dstCoords.FlipY(Size.height);
+
+                std::swap(this->operator[](srcCoords), this->operator[](dstCoords));
+            }
+        }
+    }
 
     size_t mLinearSize;
 };

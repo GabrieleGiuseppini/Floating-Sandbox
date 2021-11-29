@@ -26,6 +26,8 @@ namespace ShipBuilder {
 
 /*
  * This class implements operations on the model.
+ *
+ * The ModelController does not maintain the model's dirtyness; that is managed by the Controller.
  */
 class ModelController
 {
@@ -265,6 +267,11 @@ private:
     void UpdateRopesLayerVisualization();
 
     void UpdateTextureLayerVisualization(ShipSpaceRect const & region);
+
+    inline ShipSpaceRect GetWholeShipRect() const
+    {
+        return { ShipSpaceCoordinates(0, 0), mModel.GetShipSize() };
+    }
 
 private:
 

@@ -220,3 +220,82 @@ TEST(Buffer2DTests, BlitFromRegion_PortionOfSource_ToOffset)
         }
     }
 }
+
+TEST(Buffer2DTests, Flip_Horizontal)
+{
+    Buffer2D<int, struct IntegralTag> buffer(8, 8);
+
+    int iVal = 100;
+    for (int y = 0; y < buffer.Size.height; ++y)
+    {
+        for (int x = 0; x < buffer.Size.width; ++x)
+        {
+            buffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    buffer.Flip(DirectionType::Horizontal);
+    
+    iVal = 100;
+    for (int y = 0; y < buffer.Size.height; ++y)
+    {
+        for (int x = buffer.Size.width - 1; x >= 0; --x)
+        {
+            EXPECT_EQ(buffer[IntegralCoordinates(x, y)], iVal);
+            ++iVal;
+        }
+    }
+}
+
+
+TEST(Buffer2DTests, Flip_Vertical)
+{
+    Buffer2D<int, struct IntegralTag> buffer(8, 8);
+
+    int iVal = 100;
+    for (int y = 0; y < buffer.Size.height; ++y)
+    {
+        for (int x = 0; x < buffer.Size.width; ++x)
+        {
+            buffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    buffer.Flip(DirectionType::Vertical);
+
+    iVal = 100;
+    for (int y = buffer.Size.height - 1; y >= 0; --y)
+    {
+        for (int x = 0; x < buffer.Size.width; ++x)
+        {
+            EXPECT_EQ(buffer[IntegralCoordinates(x, y)], iVal);
+            ++iVal;
+        }
+    }
+}
+
+TEST(Buffer2DTests, Flip_HorizontalAndVertical)
+{
+    Buffer2D<int, struct IntegralTag> buffer(8, 8);
+
+    int iVal = 100;
+    for (int y = 0; y < buffer.Size.height; ++y)
+    {
+        for (int x = 0; x < buffer.Size.width; ++x)
+        {
+            buffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    buffer.Flip(DirectionType::Horizontal | DirectionType::Vertical);
+
+    iVal = 100;
+    for (int y = buffer.Size.height - 1; y >= 0; --y)
+    {
+        for (int x = buffer.Size.width - 1; x >= 0; --x)
+        {
+            EXPECT_EQ(buffer[IntegralCoordinates(x, y)], iVal);
+            ++iVal;
+        }
+    }
+}

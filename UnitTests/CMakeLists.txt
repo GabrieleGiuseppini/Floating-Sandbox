@@ -40,6 +40,7 @@ set (UNIT_TEST_SOURCES
 	MemoryStreamsTests.cpp
 	ParameterSmootherTests.cpp
 	PrecalculatedFunctionTests.cpp
+	RopeBufferTests.cpp
 	SettingsTests.cpp
 	ShaderManagerTests.cpp
 	ShipDefinitionFormatDeSerializerTests.cpp

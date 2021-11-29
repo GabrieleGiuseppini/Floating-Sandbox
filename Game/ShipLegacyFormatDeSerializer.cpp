@@ -463,7 +463,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
 
                         // Store rope element
                         rgbaColor const ropeColor = rgbaColor(colorKey, 255);
-                        ropesLayer.Buffer.emplace_back(
+                        ropesLayer.Buffer.EmplaceBack(
                             *(searchIt->second),
                             coords,
                             structuralMaterial,
@@ -566,7 +566,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
                         // Second time we see the rope color key
 
                         // Store rope element
-                        ropesLayer.Buffer.emplace_back(
+                        ropesLayer.Buffer.EmplaceBack(
                             *(searchIt->second),
                             coords,
                             &standardRopeMaterial,

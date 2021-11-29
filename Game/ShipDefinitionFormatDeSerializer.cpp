@@ -1109,13 +1109,13 @@ size_t ShipDefinitionFormatDeSerializer::AppendRopesLayer(
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendRopesLayerBuffer(
-    std::vector<RopeElement> const & ropesLayerBuffer,
+    RopeBuffer const & ropesLayerBuffer,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
     size_t subSectionBodySize = 0;
 
     // Number of entries
-    std::uint32_t count = static_cast<std::uint32_t>(ropesLayerBuffer.size());
+    std::uint32_t count = static_cast<std::uint32_t>(ropesLayerBuffer.GetSize());
     subSectionBodySize += buffer.Append(count);
 
     // Entries
@@ -2044,7 +2044,7 @@ void ShipDefinitionFormatDeSerializer::ReadRopesLayer(
                     rgbaColor renderColor;
                     bufferReadOffset += buffer.ReadAt(bufferReadOffset, reinterpret_cast<unsigned char *>(&renderColor), sizeof(renderColor));
 
-                    ropesLayer->Buffer.emplace_back(
+                    ropesLayer->Buffer.EmplaceBack(
                         ShipSpaceCoordinates(startX, startY),
                         ShipSpaceCoordinates(endX, endY),
                         &(materialIt->second),

@@ -431,7 +431,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ShipFactory::AppendRopes(
-    std::vector<RopeElement> const & ropeElements,
+    RopeBuffer const & ropeBuffer,
     ShipSpaceSize const & shipSize,
     ShipFactoryPointIndexMatrix const & pointIndexMatrix,
     std::vector<ShipFactoryPoint> & pointInfos1,
@@ -444,7 +444,7 @@ void ShipFactory::AppendRopes(
     //
 
     // Visit all RopeElement's
-    for (auto const & ropeElement : ropeElements)
+    for (auto const & ropeElement : ropeBuffer)
     {
         assert(pointIndexMatrix[vec2i(ropeElement.StartCoords.x + 1, ropeElement.StartCoords.y + 1)].has_value());
         ElementIndex const pointAIndex1 = *pointIndexMatrix[vec2i(ropeElement.StartCoords.x + 1, ropeElement.StartCoords.y + 1)];

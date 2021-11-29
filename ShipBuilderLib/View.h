@@ -169,7 +169,7 @@ public:
     // Ropes (all sticky)
     //
 
-    void UploadRopesLayerVisualization(std::vector<RopeElement> const & ropeElements);
+    void UploadRopesLayerVisualization(RopeBuffer const & ropeBuffer);
 
     void RemoveRopesLayerVisualization();
 

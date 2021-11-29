@@ -941,8 +941,8 @@ protected:
             TestMaterialMap,
             targetRopesLayer);
 
-        ASSERT_EQ(targetRopesLayer->Buffer.size(), sourceRopesLayer.Buffer.size());
-        for (size_t i = 0; i < sourceRopesLayer.Buffer.size(); ++i)
+        ASSERT_EQ(targetRopesLayer->Buffer.GetSize(), sourceRopesLayer.Buffer.GetSize());
+        for (size_t i = 0; i < sourceRopesLayer.Buffer.GetSize(); ++i)
         {
             EXPECT_EQ(targetRopesLayer->Buffer[i], sourceRopesLayer.Buffer[i]);
         }
@@ -966,12 +966,12 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, TwoElements)
 
     // Populate ropes layer
     RopesLayerData sourceRopesLayer;
-    sourceRopesLayer.Buffer.emplace_back(
+    sourceRopesLayer.Buffer.EmplaceBack(
         ShipSpaceCoordinates(0, 1),
         ShipSpaceCoordinates(90, 91),
         materials[0],
         rgbaColor(0x02, 0x11, 0x90, 0xfe));
-    sourceRopesLayer.Buffer.emplace_back(
+    sourceRopesLayer.Buffer.EmplaceBack(
         ShipSpaceCoordinates(200, 201),
         ShipSpaceCoordinates(100010, 100011),
         materials[1],
@@ -999,7 +999,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_Sa
 
     // Populate ropes layer
     RopesLayerData sourceRopesLayer;
-    sourceRopesLayer.Buffer.emplace_back(
+    sourceRopesLayer.Buffer.EmplaceBack(
         ShipSpaceCoordinates(0, 1),
         ShipSpaceCoordinates(90, 91),
         &unrecognizedMaterial,
@@ -1044,7 +1044,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_La
 
     // Populate ropes layer
     RopesLayerData sourceRopesLayer;
-    sourceRopesLayer.Buffer.emplace_back(
+    sourceRopesLayer.Buffer.EmplaceBack(
         ShipSpaceCoordinates(0, 1),
         ShipSpaceCoordinates(90, 91),
         &unrecognizedMaterial,

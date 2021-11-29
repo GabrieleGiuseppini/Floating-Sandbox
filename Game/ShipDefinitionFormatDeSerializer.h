@@ -281,7 +281,7 @@ private:
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static size_t AppendRopesLayerBuffer(
-        std::vector<RopeElement> const & ropesLayerBuffer,
+        RopeBuffer const & ropesLayerBuffer,
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static size_t AppendPngPreview(

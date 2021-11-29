@@ -456,6 +456,12 @@ struct _IntegralCoordinates
         return x >= 0 && x < size.width && y >= 0 && y < size.height;
     }
 
+    _IntegralCoordinates<TIntegralTag> FlipX(integral_type width) const
+    {
+        assert(width > x);
+        return _IntegralCoordinates<TIntegralTag>(width - 1 - x, y);
+    }
+
     _IntegralCoordinates<TIntegralTag> FlipY(integral_type height) const
     {
         assert(height > y);

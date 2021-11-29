@@ -21,6 +21,7 @@ set  (GAME_SOURCES
 	IGameEventHandlers.h
 	ImageFileTools.cpp
 	ImageFileTools.h
+	LayerElements.h
 	Layers.h
 	Materials.cpp
 	Materials.h
@@ -34,6 +35,7 @@ set  (GAME_SOURCES
 	RenderDeviceProperties.h
 	ResourceLocator.cpp
 	ResourceLocator.h
+	RopeBuffer.h
 	ShipAutoTexturizationSettings.cpp
 	ShipAutoTexturizationSettings.h
 	ShipDefinitionFormatDeSerializer.cpp
