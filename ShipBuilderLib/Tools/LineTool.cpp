@@ -252,21 +252,18 @@ void LineTool<TLayer>::StartEngagement(
         plane);
 }
 
-/* TODO: nuke
 template<LayerType TLayer>
-void LineTool<TLayer>::DoEdit(ShipSpaceCoordinates const & mouseCoordinates)
+void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinates)
 {
     assert(mEngagementData);
+    assert(!mTempVisualizationDirtyShipRegion);
 
-    int const pencilSize = GetPencilSize();
-    LayerMaterialType const * const fillMaterial = GetFillMaterial(mEngagementData->Plane);
+    LayerMaterialType const * fillMaterial = GetFillMaterial(mEngagementData->Plane);
 
-    bool hasEdited = false;
+    std::optional<ShipSpaceRect> editRect;
 
     GenerateLinePath(
-        (TLayer == LayerType::Structural) && mEngagementData->PreviousEngagementPosition.has_value()
-            ? *mEngagementData->PreviousEngagementPosition
-            : mouseCoordinates,
+        mEngagementData->StartCoords,
         mouseCoordinates,
         [&](ShipSpaceCoordinates const & pos)
         {
@@ -274,12 +271,8 @@ void LineTool<TLayer>::DoEdit(ShipSpaceCoordinates const & mouseCoordinates)
             auto const applicableRect = CalculateApplicableRect(pos);
             if (applicableRect)
             {
-                bool isAllowed;
-
                 if constexpr (TLayer == LayerType::Structural)
                 {
-                    isAllowed = true;
-
                     mModelController.StructuralRegionFill(
                         *applicableRect,
                         fillMaterial);
@@ -289,9 +282,7 @@ void LineTool<TLayer>::DoEdit(ShipSpaceCoordinates const & mouseCoordinates)
                     static_assert(TLayer == LayerType::Electrical);
 
                     assert(applicableRect->size == ShipSpaceSize(1, 1));
-                    isAllowed = mModelController.IsElectricalParticleAllowedAt(applicableRect->origin);
-
-                    if (isAllowed)
+                    if (mModelController.IsElectricalParticleAllowedAt(applicableRect->origin))
                     {
                         mModelController.ElectricalRegionFill(
                             *applicableRect,
@@ -299,81 +290,64 @@ void LineTool<TLayer>::DoEdit(ShipSpaceCoordinates const & mouseCoordinates)
                     }
                 }
 
-                if (isAllowed)
+                if (!editRect)
                 {
-                    // Update edit region
-                    if (!mEngagementData->EditRegion)
-                    {
-                        mEngagementData->EditRegion = *applicableRect;
-                    }
-                    else
-                    {
-                        mEngagementData->EditRegion->UnionWith(*applicableRect);
-                    }
-
-                    hasEdited = true;
+                    editRect = *applicableRect;
+                }
+                else
+                {
+                    editRect->UnionWith(*applicableRect);
                 }
             }
         });
 
-    if (hasEdited)
+    if (editRect)
     {
+        //
         // Mark layer as dirty
+        //
+
         SetLayerDirty(TLayer);
-    }
 
-    // Refresh model visualization
-    mModelController.UploadVisualization();
-    mUserInterface.RefreshView();
-
-    // Update previous engagement
-    mEngagementData->PreviousEngagementPosition = mouseCoordinates;
-}
-*/
-
-template<LayerType TLayer>
-void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinates)
-{
-    assert(mEngagementData);
-
-    /* TODOHERE
-    if (mEngagementData->EditRegion)
-    {
         //
         // Create undo action
         //
 
-        auto clippedLayerClone = mOriginalLayerClone.Clone(*mEngagementData->EditRegion);
+        auto clippedLayerClone = mOriginalLayerClone.Clone(*editRect);
 
         PushUndoAction(
             _("Line Tool"),
             clippedLayerClone.Buffer.GetByteSize(),
             mEngagementData->OriginalDirtyState,
-            [clippedLayerClone = std::move(clippedLayerClone), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
+            [clippedLayerClone = std::move(clippedLayerClone), origin = editRect->origin](Controller & controller) mutable
             {
                 controller.RestoreLayerRegionForUndo(std::move(clippedLayerClone), origin);
             });
     }
-    */
 
     //
     // Reset engagement
     //
 
     mEngagementData.reset();
+
+    //
+    // Re-take original layer clone
+    //
+
+    mOriginalLayerClone = mModelController.GetModel().CloneLayer<TLayer>();
 }
 
 template<LayerType TLayer>
 void LineTool<TLayer>::DoTempVisualization(ShipSpaceCoordinates const & mouseCoordinates)
 {
-    // No mouse button information, hence choosing foreground plane arbitrarily
-    LayerMaterialType const * fillMaterial = GetFillMaterial(MaterialPlaneType::Foreground);
-
     if (mEngagementData)
     {
         //
         // Temp viz with line
         //
+
+        LayerMaterialType const * fillMaterial = GetFillMaterial(mEngagementData->Plane);
 
         std::optional<ShipSpaceRect> tempVisualizationRect;
 
@@ -423,6 +397,9 @@ void LineTool<TLayer>::DoTempVisualization(ShipSpaceCoordinates const & mouseCoo
         //
         // Temp viz with block fill + overlay 
         //
+
+        // No mouse button information, hence choosing foreground plane arbitrarily
+        LayerMaterialType const * fillMaterial = GetFillMaterial(MaterialPlaneType::Foreground);
 
         std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(mouseCoordinates);
 

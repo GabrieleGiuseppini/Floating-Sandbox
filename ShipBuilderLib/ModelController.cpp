@@ -434,8 +434,6 @@ void ModelController::StructuralRegionFillForEphemeralVisualization(
 {
     assert(mModel.HasLayer(LayerType::Structural));
 
-    assert(!mIsStructuralLayerInEphemeralVisualization);
-
     //
     // Update model with just material - no analyses
     //
@@ -671,8 +669,6 @@ void ModelController::ElectricalRegionFillForEphemeralVisualization(
     ElectricalMaterial const * material)
 {
     assert(mModel.HasLayer(LayerType::Electrical));
-
-    assert(!mIsElectricalLayerInEphemeralVisualization);
 
     //
     // Update model just with material - no instance ID, no analyses, no panel
@@ -915,8 +911,6 @@ void ModelController::AddRopeForEphemeralVisualization(
 {
     assert(mModel.HasLayer(LayerType::Ropes));
 
-    assert(!mIsRopesLayerInEphemeralVisualization);
-
     //
     // Update model with just material - no analyses
     //
@@ -942,8 +936,6 @@ void ModelController::ModelController::MoveRopeEndpointForEphemeralVisualization
     ShipSpaceCoordinates const & newCoords)
 {
     assert(mModel.HasLayer(LayerType::Ropes));
-
-    assert(!mIsRopesLayerInEphemeralVisualization);
 
     //
     // Update model with jsut movement - no analyses
