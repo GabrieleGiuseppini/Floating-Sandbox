@@ -384,10 +384,13 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 - Resize workflow:
 	+ Button - in Ship Settings panel, slightly separated from the File buttons
-	- Click -> Dialog for Canvas Centering/Clipping -> Controller -> ...TODO...
+	- Click -> Dialog for Canvas Centering/Clipping (i.e. "Anchor choice") -> Controller -> ...TODO...
 
-- Other tools:
-	- Line tool
+= Line tool:
+	+ Settings: size
+	= Structural
+	- Electrical
+		- See if need different algo for line tracing, to ensure pixels touch each other on the side
 			
 - App icons (whole "Resources" folder)
 

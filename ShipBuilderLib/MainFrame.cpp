@@ -906,8 +906,6 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
 
     mToolSettingsPanelsSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    mToolSettingsPanelsSizer->AddSpacer(20);
-
     {
         // Structural pencil
         {
@@ -960,6 +958,33 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
 
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralEraser,
+                tsPanel);
+        }
+
+        // Structural line
+        {
+            wxPanel * tsPanel = CreateToolSettingsToolSizePanel(
+                panel,
+                _("Line size:"),
+                _("The size of the line tool."),
+                1,
+                MaxPencilSize,
+                mWorkbenchState.GetStructuralLineToolSize(),
+                [this](std::uint32_t value)
+                {
+                    mWorkbenchState.SetStructuralLineToolSize(value);
+                });
+
+            mToolSettingsPanelsSizer->Add(
+                tsPanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+
+            mToolSettingsPanelsSizer->Hide(tsPanel);
+
+            mToolSettingsPanels.emplace_back(
+                ToolType::StructuralLine,
                 tsPanel);
         }
 
@@ -1509,7 +1534,21 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            // TODO: Line - at 1, 0
+            // Line
+            {
+                auto button = makeToolButton(
+                    ToolType::StructuralLine,
+                    structuralToolbarPanel,
+                    "line_icon",
+                    _("Draw particles in lines"));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
 
             // Flood
             {
@@ -1653,6 +1692,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 toolsSizer->Add(
                     button,
                     wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Line
+            {
+                auto button = makeToolButton(
+                    ToolType::ElectricalLine,
+                    electricalToolbarPanel,
+                    "line_icon",
+                    _("Draw electrical elements in lines"));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -2081,6 +2136,7 @@ wxPanel * MainFrame::CreateToolSettingsToolSizePanel(
             4);
     }
 
+    // Edit spin box
     {
         EditSpinBox<std::uint32_t> * editSpinBox = new EditSpinBox<std::uint32_t>(
             panel,

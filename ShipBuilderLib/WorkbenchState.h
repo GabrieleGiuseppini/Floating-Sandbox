@@ -104,6 +104,16 @@ public:
         mStructuralEraserToolSize = value;
     }
 
+    std::uint32_t GetStructuralLineToolSize() const
+    {
+        return mStructuralLineToolSize;
+    }
+
+    void SetStructuralLineToolSize(std::uint32_t value)
+    {
+        mStructuralLineToolSize = value;
+    }
+
     bool GetStructuralFloodToolIsContiguous() const
     {
         return mStructuralFloodToolIsContiguous;
@@ -125,6 +135,7 @@ private:
 
     std::uint32_t mStructuralPencilToolSize;
     std::uint32_t mStructuralEraserToolSize;
+    std::uint32_t mStructuralLineToolSize;
     bool mStructuralFloodToolIsContiguous;
 };
 

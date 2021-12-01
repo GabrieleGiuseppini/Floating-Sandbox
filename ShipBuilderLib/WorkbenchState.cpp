@@ -47,6 +47,7 @@ WorkbenchState::WorkbenchState(MaterialDatabase const & materialDatabase)
 
     mStructuralPencilToolSize = 1;
     mStructuralEraserToolSize = 4;
+    mStructuralLineToolSize = 1;
 }
 
 }

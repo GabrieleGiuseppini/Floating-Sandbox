@@ -6,6 +6,7 @@
 #include "Controller.h"
 
 #include "Tools/FloodTool.h"
+#include "Tools/LineTool.h"
 #include "Tools/PencilTool.h"
 #include "Tools/RopeEraserTool.h"
 #include "Tools/RopePencilTool.h"
@@ -961,6 +962,17 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mResourceLocator);
         }
 
+        case ToolType::ElectricalLine:
+        {
+            return std::make_unique<ElectricalLineTool>(
+                *mModelController,
+                mUndoStack,
+                mWorkbenchState,
+                mUserInterface,
+                mView,
+                mResourceLocator);
+        }
+
         case ToolType::ElectricalPencil:
         {
             return std::make_unique<ElectricalPencilTool>(
@@ -986,6 +998,17 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::StructuralFlood:
         {
             return std::make_unique<StructuralFloodTool>(
+                *mModelController,
+                mUndoStack,
+                mWorkbenchState,
+                mUserInterface,
+                mView,
+                mResourceLocator);
+        }
+
+        case ToolType::StructuralLine:
+        {
+            return std::make_unique<StructuralLineTool>(
                 *mModelController,
                 mUndoStack,
                 mWorkbenchState,

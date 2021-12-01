@@ -48,6 +48,8 @@ set (SHIPBUILDER_LIB_SOURCES
 set (TOOLS_SOURCES
 	Tools/FloodTool.cpp
 	Tools/FloodTool.h
+	Tools/LineTool.cpp
+	Tools/LineTool.h
 	Tools/PencilTool.cpp
 	Tools/PencilTool.h
 	Tools/RopeEraserTool.cpp

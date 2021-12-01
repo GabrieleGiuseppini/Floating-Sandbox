@@ -82,7 +82,7 @@ private:
         std::optional<size_t> ExistingRopeElementIndex;
 
         // Plane of the engagement
-        MaterialPlaneType const Plane;
+        MaterialPlaneType Plane;
 
         EngagementData(
             RopesLayerData && originalLayerClone,

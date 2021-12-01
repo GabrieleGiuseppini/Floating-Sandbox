@@ -19,9 +19,11 @@ enum class ToolType : std::uint32_t
 {
     StructuralPencil,
     StructuralEraser,
+    StructuralLine,
     StructuralFlood,
     ElectricalPencil,
     ElectricalEraser,
+    ElectricalLine,
     RopePencil,
     RopeEraser,
 

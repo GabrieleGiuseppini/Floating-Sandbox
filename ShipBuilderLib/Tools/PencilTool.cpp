@@ -83,8 +83,8 @@ ElectricalEraserTool::ElectricalEraserTool(
         resourceLocator)
 {}
 
-template<LayerType TLayerType, bool IsEraser>
-PencilTool<TLayerType, IsEraser>::PencilTool(
+template<LayerType TLayer, bool IsEraser>
+PencilTool<TLayer, IsEraser>::PencilTool(
     ToolType toolType,
     ModelController & modelController,
     UndoStack & undoStack,
@@ -99,7 +99,7 @@ PencilTool<TLayerType, IsEraser>::PencilTool(
         workbenchState,
         userInterface,
         view)
-    , mOriginalLayerClone(modelController.GetModel().CloneLayer<TLayerType>())
+    , mOriginalLayerClone(modelController.GetModel().CloneLayer<TLayer>())
     , mTempVisualizationDirtyShipRegion()
     , mEngagementData()
 {
@@ -393,7 +393,7 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
 template<LayerType TLayer, bool IsEraser>
 void PencilTool<TLayer, IsEraser>::DoTempVisualization(ShipSpaceRect const & affectedRect)
 {
-    // No buttons, hence choosing foreground plane
+    // No mouse button information, hence choosing foreground plane arbitrarily
     LayerMaterialType const * fillMaterial = GetFillMaterial(MaterialPlaneType::Foreground);
 
     View::OverlayMode overlayMode = View::OverlayMode::Default;
