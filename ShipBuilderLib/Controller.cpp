@@ -250,7 +250,7 @@ void Controller::SetStructuralLayer(/*TODO*/)
     mUserInterface.RefreshView();
 }
 
-void Controller::RestoreLayerRegion(
+void Controller::RestoreLayerRegionForUndo(
     StructuralLayerData && layerRegion,
     ShipSpaceCoordinates const & origin)
 {
@@ -261,9 +261,7 @@ void Controller::RestoreLayerRegion(
         { {0, 0}, layerRegion.Buffer.Size},
         origin);
 
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Structural);
-    mUserInterface.OnModelDirtyChanged();
+    // No need to update dirtyness, this is for undo
 
     // Refresh model visualization
     mModelController->UploadVisualization();
@@ -346,7 +344,7 @@ void Controller::RemoveElectricalLayer()
     mUserInterface.RefreshView();
 }
 
-void Controller::RestoreLayerRegion(
+void Controller::RestoreLayerRegionForUndo(
     ElectricalLayerData && layerRegion,
     ShipSpaceCoordinates const & origin)
 {
@@ -357,9 +355,7 @@ void Controller::RestoreLayerRegion(
         { {0, 0}, layerRegion.Buffer.Size },
         origin);
 
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Electrical);
-    mUserInterface.OnModelDirtyChanged();
+    // No need to update dirtyness, this is for undo
 
     // Refresh model visualization
     mModelController->UploadVisualization();
@@ -394,7 +390,7 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
                 originalDirtyStateClone,
                 [clippedRegionClone = std::move(clippedRegionClone), origin = affectedRect->origin](Controller & controller) mutable
                 {
-                    controller.RestoreLayerRegion(std::move(clippedRegionClone), origin);
+                    controller.RestoreLayerRegionForUndo(std::move(clippedRegionClone), origin);
                 });
             
             mUserInterface.OnUndoStackStateChanged();
@@ -479,15 +475,13 @@ void Controller::RemoveRopesLayer()
     mUserInterface.RefreshView();
 }
 
-void Controller::RestoreLayer(RopesLayerData && layer)
+void Controller::RestoreLayerForUndo(RopesLayerData && layer)
 {
     auto const scopedToolResumeState = SuspendTool();
 
     mModelController->RestoreRopesLayer(std::move(layer));
 
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Ropes);
-    mUserInterface.OnModelDirtyChanged();
+    // No need to update dirtyness, this is for undo
 
     // Refresh model visualization
     mModelController->UploadVisualization();
@@ -541,33 +535,21 @@ void Controller::RemoveTextureLayer()
     mUserInterface.RefreshView();
 }
 
-void Controller::RestoreLayerRegion(
+void Controller::RestoreLayerRegionForUndo(
     TextureLayerData const & layerRegion,
     ShipSpaceCoordinates const & origin)
 {
-    // TODOHERE: copy from structural
+    // TODOHERE: copy from others
 }
 
 void Controller::Flip(DirectionType direction)
 {
-    auto const scopedToolResumeState = SuspendTool();
+    Flip<false>(direction);
+}
 
-    // Get dirty state
-    // TODO
-
-    // Flip
-    mModelController->Flip(direction);
-
-    // Create undo
-    // TODO
-
-    // Update dirtyness
-    mModelController->SetAllLayersDirty();
-    mUserInterface.OnModelDirtyChanged();
-
-    // Refresh model visualization
-    mModelController->UploadVisualization();
-    mUserInterface.RefreshView();
+void Controller::FlipForUndo(DirectionType direction)
+{
+    Flip<true>(direction);
 }
 
 void Controller::ResizeShip(ShipSpaceSize const & newSize)
@@ -897,8 +879,9 @@ void Controller::InternalSelectPrimaryLayer(LayerType primaryLayer)
     // Notify
     mUserInterface.OnPrimaryLayerChanged(primaryLayer);
 
-    // TODO: *update* layers visualization at controller
-    // TODO: *upload* "                                "
+    // TODO: change the layer visualization type, given that it depends on which primary layer is selected - though I can't remember if we want the layer viz selection function
+    // to be calcd by Controller or by ModelController
+    // TODO: based on the above, will also want to *upload* (and *refresh*) viz, given that the layer visualization type has changed
 
     // Tell view
     mView.SetPrimaryLayer(primaryLayer);
@@ -1047,6 +1030,55 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
 
     assert(false);
     return nullptr;
+}
+
+template<bool IsForUndo>
+void Controller::Flip(DirectionType direction)
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    if constexpr (!IsForUndo)
+    {
+        // Get dirty state
+        Model::DirtyState const originalDirtyState = mModelController->GetModel().GetDirtyState();
+
+        // Calculate undo title
+        wxString undoTitle;
+        if (direction == DirectionType::Horizontal)
+            undoTitle = _("Flip H");
+        else if (direction == DirectionType::Vertical)
+            undoTitle = _("Flip V");
+        else if (direction == (DirectionType::Horizontal | DirectionType::Vertical))
+            undoTitle = _("Flip H+V");
+        else
+            assert(false);
+
+        // Create undo
+        mUndoStack.Push(
+            undoTitle,
+            1, // Arbitrary
+            originalDirtyState,
+            [direction](Controller & controller) mutable
+            {
+                controller.FlipForUndo(direction);
+            });
+        mUserInterface.OnUndoStackStateChanged();
+    }
+
+    // Flip
+    mModelController->Flip(direction);
+
+    if constexpr (!IsForUndo)
+    {
+        // Update dirtyness
+        mModelController->SetAllLayersDirty();
+        mUserInterface.OnModelDirtyChanged();
+    }
+
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
+
 }
 
 void Controller::RefreshToolCoordinatesDisplay()

@@ -24,7 +24,11 @@ void UndoStack::PopAndApply(Controller & controller)
     mTotalCost -= undoAction->Cost;
 
     // Execute action
+    // Note: will make model dirty, temporarily
     undoAction->ApplyAndConsume(controller);
+
+    // Restore dirty state
+    // Note: undoes previous model dirti-zation
     controller.RestoreDirtyState(std::move(undoAction->OriginalDirtyState));
 }
 

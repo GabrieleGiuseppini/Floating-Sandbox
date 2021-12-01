@@ -193,6 +193,24 @@ https://gamejolt.com/x/permalink/comment/11730705
 + Grid: highlight vertical center guide
 	+ Test with odd ship width
 
++ Edit menu: Flip Horizontal, Vertical
+	+ Buffer2D::Flip(...)
+		+ Unit tests
+	+ Ropes layer's buffer becomes a class, so it also has Flip()
+		+ Unit tests
+		+ Redo:
+			+ LayerElements.h contains all layers' elements
+			+ RopeLayerBuffer.h is the buffer
+			+ Layers.h becomes smaller
+	+ Undo: flip again
+		+ New Undo form:
+			+ Controller::RestoreLayer/Region: "...ForUndo"
+				+ Don't set model dirtyness
+			+ Controller::Flip + Controller::FlipForUndo
+				+ Templated helper
+					+ In undo mode: don't set model dirtyness, and don't push undo entry
+		! Always do UploadVisualization+RefreshView however, as UndoStack can't do that (not all undo's must refresh viz)
+
 = Finalize design of Ropes layer
 	! Spec:
 		! Material Strategy: in Structural DB, separate palette tree - does NOT require current "ropes" to be marked as "legacy"
@@ -349,18 +367,18 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Undo
 				- Note: texture layer removal should also store metadata
 
-= Edit menu: Flip Horizontal, Vertical
-	+ Buffer2D::Flip(...)
-		+ Unit tests
-	+ Ropes layer's buffer becomes a class, so it also has Flip()
-		+ Unit tests
-		+ Redo:
-			+ LayerElements.h contains all layers' elements
-			+ RopeLayerBuffer.h is the buffer
-			+ Layers.h becomes smaller
-	- Undo: flip again
+- Electrical panel rearc:
+	! Not member of electrical layer, but new part of definition in its own right
+	! ModelController manages it based on the union of all electrical layers
+	- ShipDefinition
+	- Legacy deserializer
+	- New de/serializer
+		- Own main section
+		- Unit tests
+	- Model & ModelController
+		- Includes undo
 
-- Texture visualization (see visualization modes *)
+- Texture visualization (including visualization modes *)
 
 - Auto-texturization visualization (see visualization modes *)
 

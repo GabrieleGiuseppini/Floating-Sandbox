@@ -128,7 +128,7 @@ MainFrame::MainFrame(
                 vLine,
                 0,
                 wxEXPAND | wxLEFT | wxRIGHT,
-                2 * ButtonMargin);
+                4 * ButtonMargin);
         }
 
         // Ship settings panel
@@ -150,7 +150,7 @@ MainFrame::MainFrame(
                 vLine,
                 0,
                 wxEXPAND | wxLEFT | wxRIGHT,
-                2 * ButtonMargin);
+                4 * ButtonMargin);
         }
 
         // Tool settings panel

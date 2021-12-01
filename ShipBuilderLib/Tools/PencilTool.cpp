@@ -370,7 +370,7 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
             mEngagementData->OriginalDirtyState,
             [clippedLayerClone = std::move(clippedLayerClone), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
             {
-                controller.RestoreLayerRegion(std::move(clippedLayerClone), origin);
+                controller.RestoreLayerRegionForUndo(std::move(clippedLayerClone), origin);
             });
     }
 

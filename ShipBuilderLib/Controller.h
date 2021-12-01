@@ -126,7 +126,7 @@ public:
 
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
-    void RestoreLayerRegion(
+    void RestoreLayerRegionForUndo(
         StructuralLayerData && layerRegion,
         ShipSpaceCoordinates const & origin);
     RgbaImageData const & GetStructuralLayerVisualization();
@@ -134,7 +134,7 @@ public:
     void NewElectricalLayer();
     void SetElectricalLayer(/*TODO*/);
     void RemoveElectricalLayer();
-    void RestoreLayerRegion(
+    void RestoreLayerRegionForUndo(
         ElectricalLayerData && layerRegion,
         ShipSpaceCoordinates const & origin);
     void TrimElectricalParticlesWithoutSubstratum();
@@ -142,15 +142,16 @@ public:
     void NewRopesLayer();
     void SetRopesLayer(/*TODO*/);
     void RemoveRopesLayer();
-    void RestoreLayer(RopesLayerData && layer);
+    void RestoreLayerForUndo(RopesLayerData && layer);
 
     void SetTextureLayer(/*TODO*/);
     void RemoveTextureLayer();
-    void RestoreLayerRegion(
+    void RestoreLayerRegionForUndo(
         TextureLayerData const & layerRegion,
         ShipSpaceCoordinates const & origin);
 
     void Flip(DirectionType direction);
+    void FlipForUndo(DirectionType direction);
 
     void ResizeShip(ShipSpaceSize const & newSize);
 
@@ -243,6 +244,9 @@ private:
     void InternalResetTool();
 
     std::unique_ptr<Tool> MakeTool(ToolType toolType);
+
+    template<bool IsForUndo>
+    void Flip(DirectionType direction);
 
     void RefreshToolCoordinatesDisplay();
 
