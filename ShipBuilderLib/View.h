@@ -200,6 +200,13 @@ public:
 
     void RemoveRectOverlay();
 
+    void UploadDashedLineOverlay(
+        ShipSpaceCoordinates const & start,
+        ShipSpaceCoordinates const & end,
+        OverlayMode mode);
+
+    void RemoveDashedLineOverlay();
+
 public:
 
     void Render();
@@ -212,6 +219,7 @@ private:
     void UpdateGrid();
     void UpdateCircleOverlay();
     void UpdateRectOverlay();
+    void UpdateDashedLineOverlay();
 
     void RenderRopes();
 
@@ -343,6 +351,24 @@ private:
         {}
     };
 
+    struct DashedLineOverlayVertex
+    {
+        vec2f positionShip; // Ship space
+        float pixelCoord; //  PixelSpace
+        vec3f overlayColor;
+
+        DashedLineOverlayVertex() = default;
+
+        DashedLineOverlayVertex(
+            vec2f _positionShip,
+            float _pixelCoord,
+            vec3f _overlayColor)
+            : positionShip(_positionShip)
+            , pixelCoord(_pixelCoord)
+            , overlayColor(_overlayColor)
+        {}
+    };
+
 #pragma pack(pop)
 
     //
@@ -397,6 +423,12 @@ private:
     ShipSpaceRect mRectOverlayRect;
     vec3f mRectOverlayColor;
     bool mHasRectOverlay;
+
+    // DashedLineOverlay
+    GameOpenGLVAO mDashedLineOverlayVAO;
+    GameOpenGLVBO mDashedLineOverlayVBO;
+    std::vector<std::pair<ShipSpaceCoordinates, ShipSpaceCoordinates>> mDashedLineOverlaySet;
+    vec3f mDashedLineOverlayColor;
 
     //
     // Settings from outside

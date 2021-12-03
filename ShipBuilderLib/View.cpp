@@ -36,6 +36,7 @@ View::View(
     , mRectOverlayRect({0, 0}, {1, 1}) // Will be overwritten
     , mRectOverlayColor(vec3f::zero()) // Will be overwritten
     , mHasRectOverlay(false)
+    , mDashedLineOverlayColor(vec3f::zero()) // Will be overwritten
     //////////////////////////////////
     , mPrimaryLayer(LayerType::Structural)
 {
@@ -46,9 +47,6 @@ View::View(
     // Set anti-aliasing for lines
     glEnable(GL_LINE_SMOOTH);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-
-    // Set line width
-    glLineWidth(2.5f);
 
     // Enable blending for alpha transparency
     glEnable(GL_BLEND);
@@ -315,7 +313,7 @@ View::View(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mCircleOverlayVBO);
-        static_assert(sizeof(RectOverlayVertex) == (4 + 3) * sizeof(float));
+        static_assert(sizeof(CircleOverlayVertex) == (4 + 3) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::CircleOverlay1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::CircleOverlay1), 4, GL_FLOAT, GL_FALSE, sizeof(CircleOverlayVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::CircleOverlay2));
@@ -349,6 +347,35 @@ View::View(
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::RectOverlay1), 4, GL_FLOAT, GL_FALSE, sizeof(RectOverlayVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::RectOverlay2));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::RectOverlay2), 3, GL_FLOAT, GL_FALSE, sizeof(RectOverlayVertex), (void *)(4 * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+    //
+    // Initialize dashed line overlay VAO
+    //
+
+    {
+        GLuint tmpGLuint;
+
+        // Create VAO
+        glGenVertexArrays(1, &tmpGLuint);
+        mDashedLineOverlayVAO = tmpGLuint;
+        glBindVertexArray(*mDashedLineOverlayVAO);
+        CheckOpenGLError();
+
+        // Create VBO
+        glGenBuffers(1, &tmpGLuint);
+        mDashedLineOverlayVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mDashedLineOverlayVBO);
+        static_assert(sizeof(DashedLineOverlayVertex) == (3 + 3) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay1), 3, GL_FLOAT, GL_FALSE, sizeof(DashedLineOverlayVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay2), 3, GL_FLOAT, GL_FALSE, sizeof(DashedLineOverlayVertex), (void *)(3 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -638,10 +665,10 @@ void View::UploadCircleOverlay(
     // Store color
     mCircleOverlayColor = GetOverlayColor(mode);
 
+    mHasCircleOverlay = true;
+
     // Update overlay
     UpdateCircleOverlay();
-
-    mHasCircleOverlay = true;
 }
 
 void View::RemoveCircleOverlay()
@@ -661,10 +688,10 @@ void View::UploadRectOverlay(
     // Store color
     mRectOverlayColor = GetOverlayColor(mode);
 
+    mHasRectOverlay = true;
+
     // Update overlay
     UpdateRectOverlay();
-
-    mHasRectOverlay = true;
 }
 
 void View::RemoveRectOverlay()
@@ -672,6 +699,29 @@ void View::RemoveRectOverlay()
     assert(mHasRectOverlay);
 
     mHasRectOverlay = false;
+}
+
+void View::UploadDashedLineOverlay(
+    ShipSpaceCoordinates const & start,
+    ShipSpaceCoordinates const & end,
+    OverlayMode mode)
+{
+    // Store line
+    mDashedLineOverlaySet.clear();
+    mDashedLineOverlaySet.emplace_back(start, end);
+
+    // Store color
+    mDashedLineOverlayColor = GetOverlayColor(mode);
+
+    // Update overlay
+    UpdateDashedLineOverlay();
+}
+
+void View::RemoveDashedLineOverlay()
+{
+    assert(!mDashedLineOverlaySet.empty());
+
+    mDashedLineOverlaySet.clear();
 }
 
 void View::Render()
@@ -818,6 +868,23 @@ void View::Render()
         CheckOpenGLError();
     }
 
+    // Dashed line overlay
+    if (!mDashedLineOverlaySet.empty())
+    {
+        // Bind VAO
+        glBindVertexArray(*mDashedLineOverlayVAO);
+
+        // Activate program
+        mShaderManager->ActivateProgram<ProgramType::DashedLineOverlay>();
+
+        // Set line width
+        glLineWidth(1.5f);
+
+        // Draw
+        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mDashedLineOverlaySet.size() * 2));
+        CheckOpenGLError();
+    }
+
     // Unbind VAOs
     glBindVertexArray(0);
 
@@ -833,9 +900,20 @@ void View::OnViewModelUpdated()
 
     UpdateGrid();
 
-    UpdateCircleOverlay();
+    if (mHasCircleOverlay)
+    {
+        UpdateCircleOverlay();
+    }
 
-    UpdateRectOverlay();
+    if (mHasRectOverlay)
+    {
+        UpdateRectOverlay();
+    }
+
+    if (!mDashedLineOverlaySet.empty())
+    {
+        UpdateDashedLineOverlay();
+    }
 
     //
     // Ortho matrix
@@ -849,6 +927,10 @@ void View::OnViewModelUpdated()
 
     mShaderManager->ActivateProgram<ProgramType::CircleOverlay>();
     mShaderManager->SetProgramParameter<ProgramType::CircleOverlay, ProgramParameterType::OrthoMatrix>(
+        orthoMatrix);
+
+    mShaderManager->ActivateProgram<ProgramType::DashedLineOverlay>();
+    mShaderManager->SetProgramParameter<ProgramType::DashedLineOverlay, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::Grid>();
@@ -987,6 +1069,8 @@ void View::UpdateGrid()
 
 void View::UpdateCircleOverlay()
 {
+    assert(mHasCircleOverlay);
+
     //
     // Upload vertices
     //
@@ -1047,6 +1131,8 @@ void View::UpdateCircleOverlay()
 
 void View::UpdateRectOverlay()
 {
+    assert(mHasRectOverlay);
+
     //
     // Upload vertices
     //
@@ -1105,6 +1191,52 @@ void View::UpdateRectOverlay()
     mShaderManager->SetProgramParameter<ProgramType::RectOverlay, ProgramParameterType::PixelSize>(pixelSize.x, pixelSize.y);
 }
 
+void View::UpdateDashedLineOverlay()
+{
+    assert(!mDashedLineOverlaySet.empty());
+
+    //
+    // Upload vertices
+    //
+
+    std::vector<DashedLineOverlayVertex> vertexBuffer;
+
+    for (auto const & p : mDashedLineOverlaySet)
+    {
+        //
+        // Calculate length, in pixels
+        //
+
+        ShipSpaceSize const shipRect(std::abs(p.first.x - p.second.x), std::abs(p.first.y - p.second.y));
+        DisplayPhysicalSize physRec = mViewModel.ShipSpaceSizeToPhysicalDisplaySize(shipRect);
+        float pixelLength = physRec.ToFloat().length();
+
+        // Normalize length so it's a multiple of the period
+        float constexpr DashPeriod = 8.0f; // 4 + 4
+        pixelLength += std::fmod(pixelLength, DashPeriod);
+
+        //
+        // Populate vertices
+        //
+
+        vertexBuffer.emplace_back(
+            p.first.ToFloat() + vec2f(0.5f, 0.5f),
+            0.0f,
+            mDashedLineOverlayColor);
+
+        vertexBuffer.emplace_back(
+            p.second.ToFloat() + vec2f(0.5f, 0.5f),
+            pixelLength,
+            mDashedLineOverlayColor);
+    }
+
+    // Upload vertices
+    glBindBuffer(GL_ARRAY_BUFFER, *mDashedLineOverlayVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(DashedLineOverlayVertex), vertexBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 void View::RenderRopes()
 {
     // Bind VAO
@@ -1116,6 +1248,9 @@ void View::RenderRopes()
     // Set opacity
     mShaderManager->SetProgramParameter<ProgramType::Rope, ProgramParameterType::Opacity>(
         mPrimaryLayer == LayerType::Ropes ? 1.0f : mOtherLayersOpacity);
+
+    // Set line width
+    glLineWidth(2.5f);
 
     // Draw
     glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mRopeCount * 2));

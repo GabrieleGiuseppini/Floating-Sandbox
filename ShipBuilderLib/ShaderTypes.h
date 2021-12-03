@@ -20,6 +20,7 @@ enum class ProgramType
 {
     Canvas = 0,
     CircleOverlay,
+    DashedLineOverlay,
     Grid,
     RectOverlay,
     Rope,
@@ -61,6 +62,9 @@ enum class VertexAttributeType : GLuint
 
     CircleOverlay1 = 0,
     CircleOverlay2 = 1,
+
+    DashedLineOverlay1 = 0,
+    DashedLineOverlay2 = 1,
 
     Grid1 = 0,
     Grid2 = 1,

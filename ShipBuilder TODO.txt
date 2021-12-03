@@ -390,7 +390,20 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Settings: size
 	+ Structural
 	- Electrical
-		- See if need different algo for line tracing, to ensure pixels touch each other on the side
+		- Do different algo for line tracing, to ensure pixels touch each other on the side
+		- Do not write on empty structural pixels
+			- Both at eph and non eph
+			- Verify engagement & subsequent drawing work fine (engage yes but no draw)
+				- Verify also at ElectricalPencil
+			= Need (dashed) line overlay then
+				- smoothstep between dashes
+					- Or different color
+				- Are we ok with allowing dashed line outside of canvas?
+					- If not, options:
+						- glScissor
+	- Refactor line drawing call in LineTool as it's repeated twice
+		- Make helper
+	- Shift lock
 			
 - App icons (whole "Resources" folder)
 

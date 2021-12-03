@@ -344,12 +344,14 @@ void LineTool<TLayer>::DoTempVisualization(ShipSpaceCoordinates const & mouseCoo
     if (mEngagementData)
     {
         //
-        // Temp viz with line
+        // Temp viz with line + dashed line overlay
         //
 
         LayerMaterialType const * fillMaterial = GetFillMaterial(mEngagementData->Plane);
 
         std::optional<ShipSpaceRect> tempVisualizationRect;
+
+        View::OverlayMode overlayMode = View::OverlayMode::Default;
 
         GenerateLinePath(
             mEngagementData->StartCoords,
@@ -377,6 +379,10 @@ void LineTool<TLayer>::DoTempVisualization(ShipSpaceCoordinates const & mouseCoo
                                 *applicableRect,
                                 fillMaterial);
                         }
+                        else
+                        {
+                            overlayMode = View::OverlayMode::Error;
+                        }
                     }
 
                     if (!tempVisualizationRect)
@@ -390,12 +396,17 @@ void LineTool<TLayer>::DoTempVisualization(ShipSpaceCoordinates const & mouseCoo
                 }
             });
 
+        mView.UploadDashedLineOverlay(
+            mEngagementData->StartCoords,
+            mouseCoordinates,
+            overlayMode);
+
         mTempVisualizationDirtyShipRegion = tempVisualizationRect;
     }
     else
     {
         //
-        // Temp viz with block fill + overlay 
+        // Temp viz with block fill + rect overlay 
         //
 
         // No mouse button information, hence choosing foreground plane arbitrarily
@@ -459,7 +470,11 @@ void LineTool<TLayer>::MendTempVisualization()
             mTempVisualizationDirtyShipRegion->origin);
     }
 
-    if (!mEngagementData)
+    if (mEngagementData.has_value())
+    {
+        mView.RemoveDashedLineOverlay();
+    }
+    else
     {
         mView.RemoveRectOverlay();
     }

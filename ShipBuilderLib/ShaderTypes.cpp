@@ -19,6 +19,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::Canvas;
     else if (lstr == "circle_overlay")
         return ProgramType::CircleOverlay;
+    else if (lstr == "dashed_line_overlay")
+        return ProgramType::DashedLineOverlay;
     else if (lstr == "grid")
         return ProgramType::Grid;
     else if (lstr == "rect_overlay")
@@ -40,6 +42,8 @@ std::string ProgramTypeToStr(ProgramType program)
         case ProgramType::Canvas:
             return "Canvas";
         case ProgramType::CircleOverlay:
+            return "CircleOverlay";
+        case ProgramType::DashedLineOverlay:
             return "CircleOverlay";
         case ProgramType::Grid:
             return "Grid";
@@ -105,6 +109,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::CircleOverlay1;
     else if (Utils::CaseInsensitiveEquals(str, "CircleOverlay2"))
         return VertexAttributeType::CircleOverlay2;
+    else if (Utils::CaseInsensitiveEquals(str, "DashedLineOverlay1"))
+        return VertexAttributeType::DashedLineOverlay1;
+    else if (Utils::CaseInsensitiveEquals(str, "DashedLineOverlay2"))
+        return VertexAttributeType::DashedLineOverlay2;
     else if (Utils::CaseInsensitiveEquals(str, "Grid1"))
         return VertexAttributeType::Grid1;
     else if (Utils::CaseInsensitiveEquals(str, "Grid2"))
