@@ -66,17 +66,17 @@ LineTool<TLayer>::LineTool(
         userInterface,
         view)
     , mOriginalLayerClone(modelController.GetModel().CloneLayer<TLayer>())
-    , mTempVisualizationDirtyShipRegion()
+    , mEphemeralVisualization()
     , mEngagementData()
 {
     wxImage cursorImage = WxHelpers::LoadCursorImage("crosshair_cursor", 15, 15, resourceLocator);
     SetCursor(cursorImage);
 
-    // Check if we need to immediately do a temp visualization
+    // Check if we need to immediately do an ephemeral visualization
     auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
-        DoTempVisualization(*mouseCoordinates);
+        DoEphemeralVisualization(*mouseCoordinates);
 
         // Visualize
         mModelController.UploadVisualization();
@@ -87,12 +87,10 @@ LineTool<TLayer>::LineTool(
 template<LayerType TLayer>
 LineTool<TLayer>::~LineTool()
 {
-    // Mend our temporary visualization, if any
-    if (mTempVisualizationDirtyShipRegion)
+    // Mend our ephemeral visualization, if any
+    if (mEphemeralVisualization.has_value())
     {
-        MendTempVisualization();
-
-        assert(!mTempVisualizationDirtyShipRegion);
+        mEphemeralVisualization.reset();
 
         // Visualize
         mModelController.UploadVisualization();
@@ -105,16 +103,11 @@ void LineTool<TLayer>::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates
 {
     // Assuming L/R button transitions already communicated
 
-    // Restore temp visualization
-    if (mTempVisualizationDirtyShipRegion)
-    {
-        MendTempVisualization();
+    // Restore ephemeral visualization (if any)
+    mEphemeralVisualization.reset();
 
-        assert(!mTempVisualizationDirtyShipRegion);
-    }
-
-    // Do temp visualization
-    DoTempVisualization(mouseCoordinates);
+    // Do ephemeral visualization
+    DoEphemeralVisualization(mouseCoordinates);
 
     // Visualize
     mModelController.UploadVisualization();
@@ -124,13 +117,8 @@ void LineTool<TLayer>::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates
 template<LayerType TLayer>
 void LineTool<TLayer>::OnLeftMouseDown()
 {
-    // Restore temp visualization
-    if (mTempVisualizationDirtyShipRegion)
-    {
-        MendTempVisualization();
-
-        assert(!mTempVisualizationDirtyShipRegion);
-    }
+    // Restore ephemeral visualization (if any)
+    mEphemeralVisualization.reset();
 
     ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
 
@@ -142,8 +130,8 @@ void LineTool<TLayer>::OnLeftMouseDown()
         assert(mEngagementData);
     }
 
-    // Do temp visualization
-    DoTempVisualization(mUserInterface.GetMouseCoordinates());
+    // Do ephemeral visualization
+    DoEphemeralVisualization(mUserInterface.GetMouseCoordinates());
 
     // Visualize
     mModelController.UploadVisualization();
@@ -153,13 +141,9 @@ void LineTool<TLayer>::OnLeftMouseDown()
 template<LayerType TLayer>
 void LineTool<TLayer>::OnLeftMouseUp()
 {
-    // Restore temp visualization
-    if (mTempVisualizationDirtyShipRegion)
-    {
-        MendTempVisualization();
+    // Restore ephemeral visualization (if any)
+    mEphemeralVisualization.reset();
 
-        assert(!mTempVisualizationDirtyShipRegion);
-    }
 
     ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
 
@@ -171,8 +155,8 @@ void LineTool<TLayer>::OnLeftMouseUp()
         assert(!mEngagementData);
     }
 
-    // Do temp visualization
-    DoTempVisualization(mouseCoordinates);
+    // Do ephemeral visualization
+    DoEphemeralVisualization(mouseCoordinates);
 
     // Visualize
     mModelController.UploadVisualization();
@@ -182,13 +166,9 @@ void LineTool<TLayer>::OnLeftMouseUp()
 template<LayerType TLayer>
 void LineTool<TLayer>::OnRightMouseDown()
 {
-    // Restore temp visualization
-    if (mTempVisualizationDirtyShipRegion)
-    {
-        MendTempVisualization();
+    // Restore ephemeral visualization (if any)
+    mEphemeralVisualization.reset();
 
-        assert(!mTempVisualizationDirtyShipRegion);
-    }
 
     ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
 
@@ -200,8 +180,8 @@ void LineTool<TLayer>::OnRightMouseDown()
         assert(mEngagementData);
     }
 
-    // Do temp visualization
-    DoTempVisualization(mUserInterface.GetMouseCoordinates());
+    // Do ephemeral visualization
+    DoEphemeralVisualization(mUserInterface.GetMouseCoordinates());
 
     // Visualize
     mModelController.UploadVisualization();
@@ -211,13 +191,9 @@ void LineTool<TLayer>::OnRightMouseDown()
 template<LayerType TLayer>
 void LineTool<TLayer>::OnRightMouseUp()
 {
-    // Restore temp visualization
-    if (mTempVisualizationDirtyShipRegion)
-    {
-        MendTempVisualization();
+    // Restore ephemeral visualization (if any)
+    mEphemeralVisualization.reset();
 
-        assert(!mTempVisualizationDirtyShipRegion);
-    }
 
     ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
 
@@ -229,8 +205,8 @@ void LineTool<TLayer>::OnRightMouseUp()
         assert(!mEngagementData);
     }
 
-    // Do temp visualization
-    DoTempVisualization(mouseCoordinates);
+    // Do ephemeral visualization
+    DoEphemeralVisualization(mouseCoordinates);
 
     // Visualize
     mModelController.UploadVisualization();
@@ -256,7 +232,11 @@ template<LayerType TLayer>
 void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinates)
 {
     assert(mEngagementData);
-    assert(!mTempVisualizationDirtyShipRegion);
+    assert(!mEphemeralVisualization.has_value());
+
+    //
+    // Do edit
+    //
 
     LayerMaterialType const * fillMaterial = GetFillMaterial(mEngagementData->Plane);
 
@@ -339,7 +319,7 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
 }
 
 template<LayerType TLayer>
-void LineTool<TLayer>::DoTempVisualization(ShipSpaceCoordinates const & mouseCoordinates)
+void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mouseCoordinates)
 {
     if (mEngagementData)
     {
@@ -349,7 +329,7 @@ void LineTool<TLayer>::DoTempVisualization(ShipSpaceCoordinates const & mouseCoo
 
         LayerMaterialType const * fillMaterial = GetFillMaterial(mEngagementData->Plane);
 
-        std::optional<ShipSpaceRect> tempVisualizationRect;
+        std::optional<ShipSpaceRect> ephemeralVisualizationRect;
 
         View::OverlayMode overlayMode = View::OverlayMode::Default;
 
@@ -385,13 +365,13 @@ void LineTool<TLayer>::DoTempVisualization(ShipSpaceCoordinates const & mouseCoo
                         }
                     }
 
-                    if (!tempVisualizationRect)
+                    if (!ephemeralVisualizationRect)
                     {
-                        tempVisualizationRect = *applicableRect;
+                        ephemeralVisualizationRect = *applicableRect;
                     }
                     else
                     {
-                        tempVisualizationRect->UnionWith(*applicableRect);
+                        ephemeralVisualizationRect->UnionWith(*applicableRect);
                     }
                 }
             });
@@ -401,7 +381,32 @@ void LineTool<TLayer>::DoTempVisualization(ShipSpaceCoordinates const & mouseCoo
             mouseCoordinates,
             overlayMode);
 
-        mTempVisualizationDirtyShipRegion = tempVisualizationRect;
+        if (ephemeralVisualizationRect.has_value())
+        {
+            // Schedule cleanup
+            mEphemeralVisualization.emplace(
+                [this, ephemeralVisualizationRect]()
+                {
+                    if constexpr (TLayer == LayerType::Structural)
+                    {
+                        mModelController.RestoreStructuralLayerRegionForEphemeralVisualization(
+                            mOriginalLayerClone,
+                            *ephemeralVisualizationRect,
+                            ephemeralVisualizationRect->origin);
+                    }
+                    else
+                    {
+                        static_assert(TLayer == LayerType::Electrical);
+
+                        mModelController.RestoreElectricalLayerRegionForEphemeralVisualization(
+                            mOriginalLayerClone,
+                            *ephemeralVisualizationRect,
+                            ephemeralVisualizationRect->origin);
+                    }
+
+                    mView.RemoveDashedLineOverlay();
+                });
+        }
     }
     else
     {
@@ -443,43 +448,31 @@ void LineTool<TLayer>::DoTempVisualization(ShipSpaceCoordinates const & mouseCoo
                 *affectedRect,
                 overlayMode);
 
-            mTempVisualizationDirtyShipRegion = affectedRect;
+            // Schedule cleanup
+            mEphemeralVisualization.emplace(
+                [this, affectedRect]()
+                {
+                    if constexpr (TLayer == LayerType::Structural)
+                    {
+                        mModelController.RestoreStructuralLayerRegionForEphemeralVisualization(
+                            mOriginalLayerClone,
+                            *affectedRect,
+                            affectedRect->origin);
+                    }
+                    else
+                    {
+                        static_assert(TLayer == LayerType::Electrical);
+
+                        mModelController.RestoreElectricalLayerRegionForEphemeralVisualization(
+                            mOriginalLayerClone,
+                            *affectedRect,
+                            affectedRect->origin);
+                    }
+
+                    mView.RemoveRectOverlay();
+                });
         }
     }
-}
-
-template<LayerType TLayer>
-void LineTool<TLayer>::MendTempVisualization()
-{
-    assert(mTempVisualizationDirtyShipRegion);
-
-    if constexpr (TLayer == LayerType::Structural)
-    {
-        mModelController.RestoreStructuralLayerRegionForEphemeralVisualization(
-            mOriginalLayerClone,
-            *mTempVisualizationDirtyShipRegion,
-            mTempVisualizationDirtyShipRegion->origin);
-    }
-    else
-    {
-        static_assert(TLayer == LayerType::Electrical);
-
-        mModelController.RestoreElectricalLayerRegionForEphemeralVisualization(
-            mOriginalLayerClone,
-            *mTempVisualizationDirtyShipRegion,
-            mTempVisualizationDirtyShipRegion->origin);
-    }
-
-    if (mEngagementData.has_value())
-    {
-        mView.RemoveDashedLineOverlay();
-    }
-    else
-    {
-        mView.RemoveRectOverlay();
-    }
-
-    mTempVisualizationDirtyShipRegion.reset();
 }
 
 template<LayerType TLayer>

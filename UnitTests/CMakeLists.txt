@@ -28,6 +28,7 @@ set (UNIT_TEST_SOURCES
 	ElectricalElementInstanceIndexFactoryTests.cpp
 	EndianTests.cpp
 	EnumFlagsTests.cpp
+	FinalizerTests.cpp
 	FixedSizeVectorTests.cpp
 	FloatingPointTests.cpp
 	GameEventDispatcherTests.cpp

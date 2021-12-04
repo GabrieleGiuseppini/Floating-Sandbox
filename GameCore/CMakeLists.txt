@@ -25,6 +25,7 @@ set  (SOURCES
 	ExponentialSliderCore.cpp
 	ExponentialSliderCore.h
 	FileSystem.h
+	Finalizer.h
 	FixedSizeVector.h
 	FixedTickSliderCore.cpp
 	FixedTickSliderCore.h

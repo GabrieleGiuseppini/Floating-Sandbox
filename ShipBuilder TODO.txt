@@ -389,17 +389,17 @@ https://gamejolt.com/x/permalink/comment/11730705
 = Line tool:
 	+ Settings: size
 	+ Structural
-	- Electrical
-		- RAII Mend
+	= Electrical
+		+ RAII Mend
 		- Do different algo for line tracing, to ensure pixels touch each other on the side
 		- Do not write on empty structural pixels
 			- Both at eph and non eph
 			- Verify engagement & subsequent drawing work fine (engage yes but no draw)
 				- Verify also at ElectricalPencil
-			+ Need (dashed) line overlay then
-				+ smoothstep and color between dashes
-				+ Scissor dashed line
-				+ Nail down pixel length/multiple
+		+ Dashed line overlay
+			+ smoothstep and color between dashes
+			+ Scissor dashed line
+			+ Nail down pixel length/multiple
 	- Refactor line drawing call in LineTool as it's repeated twice
 		- Make helper
 	- Shift lock

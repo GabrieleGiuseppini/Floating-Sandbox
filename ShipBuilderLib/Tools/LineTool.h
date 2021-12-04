@@ -12,6 +12,7 @@
 #include <Game/Materials.h>
 #include <Game/ResourceLocator.h>
 
+#include <GameCore/Finalizer.h>
 #include <GameCore/GameTypes.h>
 
 #include <memory>
@@ -55,14 +56,9 @@ private:
         ShipSpaceCoordinates const & mouseCoordinates,
         MaterialPlaneType plane);
 
-    // TODO: nuke
-    void DoEdit(ShipSpaceCoordinates const & mouseCoordinates);
-
     void EndEngagement(ShipSpaceCoordinates const & mouseCoordinates);
 
-    void DoTempVisualization(ShipSpaceCoordinates const & mouseCoordinates);
-
-    void MendTempVisualization();
+    void DoEphemeralVisualization(ShipSpaceCoordinates const & mouseCoordinates);
 
     std::optional<ShipSpaceRect> CalculateApplicableRect(ShipSpaceCoordinates const & coords) const;
 
@@ -72,11 +68,11 @@ private:
 
 private:
 
-    // Original layer
+    // Original layer - taken at cctor and replaced after each edit operation
     typename LayerTypeTraits<TLayer>::layer_data_type mOriginalLayerClone;
 
-    // Ship region dirtied so far with temporary visualization
-    std::optional<ShipSpaceRect> mTempVisualizationDirtyShipRegion;
+    // Ephemeral visualization
+    std::optional<Finalizer> mEphemeralVisualization;
 
     struct EngagementData
     {
