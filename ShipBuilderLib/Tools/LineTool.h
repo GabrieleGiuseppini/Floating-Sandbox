@@ -14,6 +14,7 @@
 
 #include <GameCore/Finalizer.h>
 #include <GameCore/GameTypes.h>
+#include <GameCore/StrongTypeDef.h>
 
 #include <memory>
 #include <optional>
@@ -59,6 +60,11 @@ private:
     void EndEngagement(ShipSpaceCoordinates const & mouseCoordinates);
 
     void DoEphemeralVisualization(ShipSpaceCoordinates const & mouseCoordinates);
+
+    template<bool TIsForEphemeralVisualization>
+    std::pair<std::optional<ShipSpaceRect>, StrongTypedBool<struct HasEdited>> TryFill(
+        ShipSpaceCoordinates const & pos,
+        LayerMaterialType const * fillMaterial);
 
     std::optional<ShipSpaceRect> CalculateApplicableRect(ShipSpaceCoordinates const & coords) const;
 

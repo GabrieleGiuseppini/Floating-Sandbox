@@ -239,60 +239,29 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
 
     LayerMaterialType const * fillMaterial = GetFillMaterial(mEngagementData->Plane);
 
-    std::optional<ShipSpaceRect> editRect;
+    std::optional<ShipSpaceRect> resultantEffectiveRect;
 
     GenerateLinePath(
         mEngagementData->StartCoords,
         mouseCoordinates,
         [&](ShipSpaceCoordinates const & pos)
         {
-            // Calc applicable rect intersecting pencil with workspace size
-            auto const applicableRect = CalculateApplicableRect(pos);
-            if (applicableRect)
-            {
-                bool hasEdited;
-                if constexpr (TLayer == LayerType::Structural)
-                {
-                    mModelController.StructuralRegionFill(
-                        *applicableRect,
-                        fillMaterial);
+            auto const [effectiveRect, hasEdited] = TryFill<false>(pos, fillMaterial);
 
-                    hasEdited = true;
+            if (effectiveRect && hasEdited)
+            {
+                if (!resultantEffectiveRect)
+                {
+                    resultantEffectiveRect = *effectiveRect;
                 }
                 else
                 {
-                    static_assert(TLayer == LayerType::Electrical);
-
-                    assert(applicableRect->size == ShipSpaceSize(1, 1));
-                    if (mModelController.IsElectricalParticleAllowedAt(applicableRect->origin))
-                    {
-                        mModelController.ElectricalRegionFill(
-                            *applicableRect,
-                            fillMaterial);
-
-                        hasEdited = true;
-                    }
-                    else
-                    {
-                        hasEdited = false;
-                    }
-                }
-
-                if (hasEdited)
-                {
-                    if (!editRect)
-                    {
-                        editRect = *applicableRect;
-                    }
-                    else
-                    {
-                        editRect->UnionWith(*applicableRect);
-                    }
+                    resultantEffectiveRect->UnionWith(*effectiveRect);
                 }
             }
         });
 
-    if (editRect)
+    if (resultantEffectiveRect.has_value())
     {
         //
         // Mark layer as dirty
@@ -304,13 +273,13 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
         // Create undo action
         //
 
-        auto clippedLayerClone = mOriginalLayerClone.Clone(*editRect);
+        auto clippedLayerClone = mOriginalLayerClone.Clone(*resultantEffectiveRect);
 
         PushUndoAction(
             TLayer == LayerType::Structural ? _("Line Structural") : _("Line Electrical"),
             clippedLayerClone.Buffer.GetByteSize(),
             mEngagementData->OriginalDirtyState,
-            [clippedLayerClone = std::move(clippedLayerClone), origin = editRect->origin](Controller & controller) mutable
+            [clippedLayerClone = std::move(clippedLayerClone), origin = resultantEffectiveRect->origin](Controller & controller) mutable
             {
                 controller.RestoreLayerRegionForUndo(std::move(clippedLayerClone), origin);
             });
@@ -340,59 +309,32 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
 
         LayerMaterialType const * fillMaterial = GetFillMaterial(mEngagementData->Plane);
 
-        std::optional<ShipSpaceRect> ephemeralVisualizationRect;
-
-        View::OverlayMode overlayMode = View::OverlayMode::Default;
+        std::optional<ShipSpaceRect> resultantEffectiveRect;
+        View::OverlayMode resultantOverlayMode = View::OverlayMode::Default;
 
         GenerateLinePath(
             mEngagementData->StartCoords,
             mouseCoordinates,
             [&](ShipSpaceCoordinates const & pos)
             {
-                // Calc applicable rect intersecting pencil with workspace size
-                auto const applicableRect = CalculateApplicableRect(pos);
-                if (applicableRect)
-                {
-                    bool hasEdited;
-                    if constexpr (TLayer == LayerType::Structural)
-                    {
-                        mModelController.StructuralRegionFillForEphemeralVisualization(
-                            *applicableRect,
-                            fillMaterial);
+                auto const [effectiveRect, hasEdited] = TryFill<true>(pos, fillMaterial);
 
-                        hasEdited = true;
+                if (effectiveRect)
+                {
+                    if (hasEdited)
+                    {
+                        if (!resultantEffectiveRect)
+                        {
+                            resultantEffectiveRect = *effectiveRect;
+                        }
+                        else
+                        {
+                            resultantEffectiveRect->UnionWith(*effectiveRect);
+                        }
                     }
                     else
                     {
-                        static_assert(TLayer == LayerType::Electrical);
-
-                        assert(applicableRect->size == ShipSpaceSize(1, 1));
-                        if (mModelController.IsElectricalParticleAllowedAt(applicableRect->origin))
-                        {
-                            mModelController.ElectricalRegionFillForEphemeralVisualization(
-                                *applicableRect,
-                                fillMaterial);
-
-                            hasEdited = true;
-                        }
-                        else
-                        {
-                            overlayMode = View::OverlayMode::Error;
-
-                            hasEdited = false;
-                        }
-                    }
-
-                    if (hasEdited)
-                    {
-                        if (!ephemeralVisualizationRect)
-                        {
-                            ephemeralVisualizationRect = *applicableRect;
-                        }
-                        else
-                        {
-                            ephemeralVisualizationRect->UnionWith(*applicableRect);
-                        }
+                        resultantOverlayMode = View::OverlayMode::Error;
                     }
                 }
             });
@@ -400,20 +342,20 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
         mView.UploadDashedLineOverlay(
             mEngagementData->StartCoords,
             mouseCoordinates,
-            overlayMode);
+            resultantOverlayMode);
 
         // Schedule cleanup
         mEphemeralVisualization.emplace(
-            [this, ephemeralVisualizationRect]()
+            [this, resultantEffectiveRect]()
             {
-                if (ephemeralVisualizationRect.has_value())
+                if (resultantEffectiveRect.has_value())
                 {
                     if constexpr (TLayer == LayerType::Structural)
                     {
                         mModelController.RestoreStructuralLayerRegionForEphemeralVisualization(
                             mOriginalLayerClone,
-                            *ephemeralVisualizationRect,
-                            ephemeralVisualizationRect->origin);
+                            *resultantEffectiveRect,
+                            resultantEffectiveRect->origin);
                     }
                     else
                     {
@@ -421,8 +363,8 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
 
                         mModelController.RestoreElectricalLayerRegionForEphemeralVisualization(
                             mOriginalLayerClone,
-                            *ephemeralVisualizationRect,
-                            ephemeralVisualizationRect->origin);
+                            *resultantEffectiveRect,
+                            resultantEffectiveRect->origin);
                     }
                 }
 
@@ -438,49 +380,17 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
         // No mouse button information, hence choosing foreground plane arbitrarily
         LayerMaterialType const * fillMaterial = GetFillMaterial(MaterialPlaneType::Foreground);
 
-        std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(mouseCoordinates);
+        auto const [effectiveRect, hasEdited] = TryFill<true>(mouseCoordinates, fillMaterial);
 
-        if (affectedRect.has_value())
+        if (effectiveRect.has_value())
         {
-            View::OverlayMode overlayMode = View::OverlayMode::Default;
-
-            bool hasEdited;
-            if constexpr (TLayer == LayerType::Structural)
-            {
-                mModelController.StructuralRegionFillForEphemeralVisualization(
-                    *affectedRect,
-                    fillMaterial);
-
-                hasEdited = true;
-            }
-            else
-            {
-                static_assert(TLayer == LayerType::Electrical);
-
-                assert(affectedRect->size == ShipSpaceSize(1, 1));
-                if (mModelController.IsElectricalParticleAllowedAt(affectedRect->origin))
-                {
-                    mModelController.ElectricalRegionFillForEphemeralVisualization(
-                        *affectedRect,
-                        fillMaterial);
-
-                    hasEdited = true;
-                }
-                else
-                {
-                    overlayMode = View::OverlayMode::Error;
-
-                    hasEdited = false;
-                }
-            }
-
             mView.UploadRectOverlay(
-                *affectedRect,
-                overlayMode);
+                *effectiveRect,
+                hasEdited ? View::OverlayMode::Default : View::OverlayMode::Error);
 
             // Schedule cleanup
             mEphemeralVisualization.emplace(
-                [this, affectedRect, hasEdited]()
+                [this, effectiveRect = effectiveRect, hasEdited = hasEdited]()
                 {
                     if (hasEdited)
                     {
@@ -488,8 +398,8 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                         {
                             mModelController.RestoreStructuralLayerRegionForEphemeralVisualization(
                                 mOriginalLayerClone,
-                                *affectedRect,
-                                affectedRect->origin);
+                                *effectiveRect,
+                                effectiveRect->origin);
                         }
                         else
                         {
@@ -497,15 +407,71 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
 
                             mModelController.RestoreElectricalLayerRegionForEphemeralVisualization(
                                 mOriginalLayerClone,
-                                *affectedRect,
-                                affectedRect->origin);
+                                *effectiveRect,
+                                effectiveRect->origin);
                         }
                     }
 
                     mView.RemoveRectOverlay();
                 });
+
         }
     }
+}
+
+template<LayerType TLayer>
+template<bool TIsForEphemeralVisualization>
+std::pair<std::optional<ShipSpaceRect>, StrongTypedBool<struct HasEdited>> LineTool<TLayer>::TryFill(
+    ShipSpaceCoordinates const & pos,
+    LayerMaterialType const * fillMaterial)
+{
+    std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(pos);
+    if (affectedRect.has_value())
+    {
+        if constexpr (TLayer == LayerType::Structural)
+        {
+            if constexpr (TIsForEphemeralVisualization)
+            {
+                mModelController.StructuralRegionFillForEphemeralVisualization(
+                    *affectedRect,
+                    fillMaterial);
+            }
+            else
+            {
+                mModelController.StructuralRegionFill(
+                    *affectedRect,
+                    fillMaterial);
+            }
+
+            return std::make_pair(affectedRect, StrongTypedTrue<HasEdited>);
+        }
+        else
+        {
+            static_assert(TLayer == LayerType::Electrical);
+
+            assert(affectedRect->size == ShipSpaceSize(1, 1));
+            if (mModelController.IsElectricalParticleAllowedAt(affectedRect->origin))
+            {
+                if constexpr (TIsForEphemeralVisualization)
+                {
+                    mModelController.ElectricalRegionFillForEphemeralVisualization(
+                        *affectedRect,
+                        fillMaterial);
+                }
+                else
+                {
+                    mModelController.ElectricalRegionFill(
+                        *affectedRect,
+                        fillMaterial);
+                }
+
+                return std::make_pair(affectedRect, StrongTypedTrue<HasEdited>);
+            }
+        }
+    }
+
+    // Haven't filled
+    return std::make_pair(affectedRect, StrongTypedFalse<HasEdited>);
 }
 
 template<LayerType TLayer>
