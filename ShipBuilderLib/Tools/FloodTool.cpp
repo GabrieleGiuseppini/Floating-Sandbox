@@ -92,7 +92,7 @@ void FloodTool<TLayer>::DoEdit(
         auto clippedLayerClone = layerClone.Clone(*affectedRegion);
 
         PushUndoAction(
-            _("Flood Tool"),
+            TLayer == LayerType::Structural ? _("Flood Structural") : _("Flood Electrical"),
             clippedLayerClone.Buffer.GetByteSize(),
             layerDirtyStateClone,
             [clippedLayerClone = std::move(clippedLayerClone), origin = affectedRegion->origin](Controller & controller) mutable

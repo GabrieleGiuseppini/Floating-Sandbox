@@ -365,7 +365,9 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
         auto clippedLayerClone = mOriginalLayerClone.Clone(*mEngagementData->EditRegion);
 
         PushUndoAction(
-            IsEraser ? _("Eraser Tool") : _("Pencil Tool"),
+            IsEraser 
+            ? (TLayer == LayerType::Structural ? _("Eraser Structural") : _("Eraser Electrical"))
+            : (TLayer == LayerType::Structural ? _("Pencil Structural") : _("Pencil Electrical")),
             clippedLayerClone.Buffer.GetByteSize(),
             mEngagementData->OriginalDirtyState,
             [clippedLayerClone = std::move(clippedLayerClone), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable

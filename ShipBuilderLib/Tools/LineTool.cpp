@@ -144,7 +144,6 @@ void LineTool<TLayer>::OnLeftMouseUp()
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
 
-
     ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
 
     // Disengage, eventually
@@ -251,11 +250,14 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
             auto const applicableRect = CalculateApplicableRect(pos);
             if (applicableRect)
             {
+                bool hasEdited;
                 if constexpr (TLayer == LayerType::Structural)
                 {
                     mModelController.StructuralRegionFill(
                         *applicableRect,
                         fillMaterial);
+
+                    hasEdited = true;
                 }
                 else
                 {
@@ -267,16 +269,25 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
                         mModelController.ElectricalRegionFill(
                             *applicableRect,
                             fillMaterial);
+
+                        hasEdited = true;
+                    }
+                    else
+                    {
+                        hasEdited = false;
                     }
                 }
 
-                if (!editRect)
+                if (hasEdited)
                 {
-                    editRect = *applicableRect;
-                }
-                else
-                {
-                    editRect->UnionWith(*applicableRect);
+                    if (!editRect)
+                    {
+                        editRect = *applicableRect;
+                    }
+                    else
+                    {
+                        editRect->UnionWith(*applicableRect);
+                    }
                 }
             }
         });
@@ -296,7 +307,7 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
         auto clippedLayerClone = mOriginalLayerClone.Clone(*editRect);
 
         PushUndoAction(
-            _("Line Tool"),
+            TLayer == LayerType::Structural ? _("Line Structural") : _("Line Electrical"),
             clippedLayerClone.Buffer.GetByteSize(),
             mEngagementData->OriginalDirtyState,
             [clippedLayerClone = std::move(clippedLayerClone), origin = editRect->origin](Controller & controller) mutable
@@ -342,11 +353,14 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                 auto const applicableRect = CalculateApplicableRect(pos);
                 if (applicableRect)
                 {
+                    bool hasEdited;
                     if constexpr (TLayer == LayerType::Structural)
                     {
                         mModelController.StructuralRegionFillForEphemeralVisualization(
                             *applicableRect,
                             fillMaterial);
+
+                        hasEdited = true;
                     }
                     else
                     {
@@ -358,20 +372,27 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                             mModelController.ElectricalRegionFillForEphemeralVisualization(
                                 *applicableRect,
                                 fillMaterial);
+
+                            hasEdited = true;
                         }
                         else
                         {
                             overlayMode = View::OverlayMode::Error;
+
+                            hasEdited = false;
                         }
                     }
 
-                    if (!ephemeralVisualizationRect)
+                    if (hasEdited)
                     {
-                        ephemeralVisualizationRect = *applicableRect;
-                    }
-                    else
-                    {
-                        ephemeralVisualizationRect->UnionWith(*applicableRect);
+                        if (!ephemeralVisualizationRect)
+                        {
+                            ephemeralVisualizationRect = *applicableRect;
+                        }
+                        else
+                        {
+                            ephemeralVisualizationRect->UnionWith(*applicableRect);
+                        }
                     }
                 }
             });
@@ -381,11 +402,11 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
             mouseCoordinates,
             overlayMode);
 
-        if (ephemeralVisualizationRect.has_value())
-        {
-            // Schedule cleanup
-            mEphemeralVisualization.emplace(
-                [this, ephemeralVisualizationRect]()
+        // Schedule cleanup
+        mEphemeralVisualization.emplace(
+            [this, ephemeralVisualizationRect]()
+            {
+                if (ephemeralVisualizationRect.has_value())
                 {
                     if constexpr (TLayer == LayerType::Structural)
                     {
@@ -403,10 +424,10 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                             *ephemeralVisualizationRect,
                             ephemeralVisualizationRect->origin);
                     }
+                }
 
-                    mView.RemoveDashedLineOverlay();
-                });
-        }
+                mView.RemoveDashedLineOverlay();
+            });
     }
     else
     {
@@ -423,25 +444,34 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
         {
             View::OverlayMode overlayMode = View::OverlayMode::Default;
 
+            bool hasEdited;
             if constexpr (TLayer == LayerType::Structural)
             {
                 mModelController.StructuralRegionFillForEphemeralVisualization(
                     *affectedRect,
                     fillMaterial);
+
+                hasEdited = true;
             }
             else
             {
                 static_assert(TLayer == LayerType::Electrical);
 
                 assert(affectedRect->size == ShipSpaceSize(1, 1));
-                if (!mModelController.IsElectricalParticleAllowedAt(affectedRect->origin))
+                if (mModelController.IsElectricalParticleAllowedAt(affectedRect->origin))
+                {
+                    mModelController.ElectricalRegionFillForEphemeralVisualization(
+                        *affectedRect,
+                        fillMaterial);
+
+                    hasEdited = true;
+                }
+                else
                 {
                     overlayMode = View::OverlayMode::Error;
-                }
 
-                mModelController.ElectricalRegionFillForEphemeralVisualization(
-                    *affectedRect,
-                    fillMaterial);
+                    hasEdited = false;
+                }
             }
 
             mView.UploadRectOverlay(
@@ -450,23 +480,26 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
 
             // Schedule cleanup
             mEphemeralVisualization.emplace(
-                [this, affectedRect]()
+                [this, affectedRect, hasEdited]()
                 {
-                    if constexpr (TLayer == LayerType::Structural)
+                    if (hasEdited)
                     {
-                        mModelController.RestoreStructuralLayerRegionForEphemeralVisualization(
-                            mOriginalLayerClone,
-                            *affectedRect,
-                            affectedRect->origin);
-                    }
-                    else
-                    {
-                        static_assert(TLayer == LayerType::Electrical);
+                        if constexpr (TLayer == LayerType::Structural)
+                        {
+                            mModelController.RestoreStructuralLayerRegionForEphemeralVisualization(
+                                mOriginalLayerClone,
+                                *affectedRect,
+                                affectedRect->origin);
+                        }
+                        else
+                        {
+                            static_assert(TLayer == LayerType::Electrical);
 
-                        mModelController.RestoreElectricalLayerRegionForEphemeralVisualization(
-                            mOriginalLayerClone,
-                            *affectedRect,
-                            affectedRect->origin);
+                            mModelController.RestoreElectricalLayerRegionForEphemeralVisualization(
+                                mOriginalLayerClone,
+                                *affectedRect,
+                                affectedRect->origin);
+                        }
                     }
 
                     mView.RemoveRectOverlay();

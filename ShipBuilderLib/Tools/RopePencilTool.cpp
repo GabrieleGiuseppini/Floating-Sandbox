@@ -313,7 +313,7 @@ void RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coord
         // Create undo action
         {
             PushUndoAction(
-                _("Ropes Tool"),
+                _("Pencil Ropes"),
                 mEngagementData->OriginalLayerClone.Buffer.GetSize() * sizeof(RopeElement),
                 mEngagementData->OriginalDirtyState,
                 [originalLayerClone = std::move(mEngagementData->OriginalLayerClone)](Controller & controller) mutable

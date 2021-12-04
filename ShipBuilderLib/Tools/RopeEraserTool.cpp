@@ -174,7 +174,7 @@ void RopeEraserTool::StopEngagement()
         //
 
         PushUndoAction(
-            _("Ropes Eraser"),
+            _("Eraser Ropes"),
             mOriginalLayerClone.Buffer.GetSize() * sizeof(RopeElement),
             mEngagementData->OriginalDirtyState,
             [originalLayerClone = std::move(mOriginalLayerClone)](Controller & controller) mutable
