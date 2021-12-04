@@ -38,7 +38,7 @@ void main()
         - smoothstep(DashLength - 1.0, DashLength, inDash);
     
     gl_FragColor = mix(
-        vec4(.7, .7, .7, 1.),
+        vec4(.7, .7, .7, .5),
         vec4(lineColor, 1.),
         lineDepth);
 } 

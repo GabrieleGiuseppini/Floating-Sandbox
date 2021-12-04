@@ -1239,10 +1239,9 @@ void View::UpdateDashedLineOverlay()
         float pixelLength = physRec.ToFloat().length();
 
         // Normalize length so it's a multiple of the period + 1/2 period
-        // TODOHERE
         float constexpr DashPeriod = 8.0f; // 4 + 4
-        float const leftover = std::fmod(pixelLength, DashPeriod);
-        pixelLength += DashPeriod / 2.0f + (leftover != 0.0f ? (DashPeriod - leftover) : 0.0f);
+        float const leftover = std::fmod(pixelLength + DashPeriod / 2.0f, DashPeriod);
+        pixelLength += (DashPeriod - leftover);
 
         //
         // Populate vertices
