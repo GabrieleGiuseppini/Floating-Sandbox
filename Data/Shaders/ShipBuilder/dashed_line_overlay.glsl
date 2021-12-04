@@ -32,10 +32,10 @@ in vec3 lineColor;
 void main()
 {
     #define DashLength 4.0
-    float inDash = mod(pixelCoord, 2.0 * DashLength);
+    float inDash = mod(pixelCoord + 1., 2.0 * DashLength); // Shift by one, so smoothstep's are centered at DashLength's
     float lineDepth = 
-        smoothstep(0.0, 1.0, inDash)
-        - smoothstep(DashLength - 1.0, DashLength, inDash);
+        smoothstep(0.0, 2.0, inDash)
+        - smoothstep(DashLength, DashLength + 2.0, inDash);
     
     gl_FragColor = mix(
         vec4(.7, .7, .7, .5),

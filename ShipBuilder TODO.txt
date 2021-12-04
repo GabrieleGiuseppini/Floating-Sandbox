@@ -396,11 +396,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Both at eph and non eph
 			- Verify engagement & subsequent drawing work fine (engage yes but no draw)
 				- Verify also at ElectricalPencil
-			= Need (dashed) line overlay then
+			+ Need (dashed) line overlay then
 				+ smoothstep and color between dashes
 				+ Scissor dashed line
 				+ Nail down pixel length/multiple
-				- Better smoothstep
 	- Refactor line drawing call in LineTool as it's repeated twice
 		- Make helper
 	- Shift lock
