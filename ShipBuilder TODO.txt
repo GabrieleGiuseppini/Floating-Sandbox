@@ -396,11 +396,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Verify engagement & subsequent drawing work fine (engage yes but no draw)
 				- Verify also at ElectricalPencil
 			= Need (dashed) line overlay then
-				- smoothstep between dashes
-					- Or different color
-				- Are we ok with allowing dashed line outside of canvas?
-					- If not, options:
-						- glScissor
+				+ smoothstep and color between dashes
+				+ Scissor dashed line
+				- Nail down pixel length/multiple
 	- Refactor line drawing call in LineTool as it's repeated twice
 		- Make helper
 	- Shift lock

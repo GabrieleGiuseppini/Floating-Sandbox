@@ -56,6 +56,9 @@ View::View(
     // Disable depth test
     glDisable(GL_DEPTH_TEST);
 
+    // Disable scissor test
+    glDisable(GL_SCISSOR_TEST);
+
     //
     // Load shader manager
     //
@@ -730,8 +733,14 @@ void View::Render()
     // Initialize
     //
 
-    // Set viewport and scissor
+    // Set viewport
     glViewport(0, 0, mViewModel.GetDisplayPhysicalSize().width, mViewModel.GetDisplayPhysicalSize().height);
+
+    //
+    // Following is with scissor test disabled
+    //
+
+    glDisable(GL_SCISSOR_TEST);
 
     // Background texture
     if (mHasBackgroundTexture)
@@ -868,6 +877,12 @@ void View::Render()
         CheckOpenGLError();
     }
 
+    //
+    // Following is with scissor test enabled
+    //
+
+    glEnable(GL_SCISSOR_TEST);
+
     // Dashed line overlay
     if (!mDashedLineOverlaySet.empty())
     {
@@ -948,6 +963,18 @@ void View::OnViewModelUpdated()
     mShaderManager->ActivateProgram<ProgramType::Texture>();
     mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
+
+    //
+    // Scissor test
+    //
+
+    auto const physicalCanvasRect = mViewModel.GetPhysicalVisibleShipRegion();
+    glScissor(
+        physicalCanvasRect.origin.x, 
+        mViewModel.GetDisplayPhysicalSize().height - 1 - (physicalCanvasRect.origin.y + physicalCanvasRect.size.height), // Origin is bottom
+        physicalCanvasRect.size.width, 
+        physicalCanvasRect.size.height);
+    CheckOpenGLError();
 }
 
 void View::UpdateCanvas()
@@ -1211,9 +1238,11 @@ void View::UpdateDashedLineOverlay()
         DisplayPhysicalSize physRec = mViewModel.ShipSpaceSizeToPhysicalDisplaySize(shipRect);
         float pixelLength = physRec.ToFloat().length();
 
-        // Normalize length so it's a multiple of the period
+        // Normalize length so it's a multiple of the period + 1/2 period
+        // TODOHERE
         float constexpr DashPeriod = 8.0f; // 4 + 4
-        pixelLength += std::fmod(pixelLength, DashPeriod);
+        float const leftover = std::fmod(pixelLength, DashPeriod);
+        pixelLength += DashPeriod / 2.0f + (leftover != 0.0f ? (DashPeriod - leftover) : 0.0f);
 
         //
         // Populate vertices

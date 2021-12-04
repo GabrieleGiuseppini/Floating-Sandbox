@@ -514,6 +514,11 @@ struct _IntegralRect
     _IntegralCoordinates<TIntegralTag> origin;
     _IntegralSize<TIntegralTag> size;
 
+    constexpr _IntegralRect()
+        : origin(0,0 )
+        , size(0, 0)
+    {}
+
     constexpr _IntegralRect(
         _IntegralCoordinates<TIntegralTag> const & _origin,
         _IntegralSize<TIntegralTag> const & _size)
@@ -524,6 +529,11 @@ struct _IntegralRect
     constexpr _IntegralRect(_IntegralCoordinates<TIntegralTag> const & _origin)
         : origin(_origin)
         , size(1, 1)
+    {}
+
+    constexpr _IntegralRect(_IntegralSize<TIntegralTag> const & _size)
+        : origin(0, 0)
+        , size(_size)
     {}
 
     inline bool operator==(_IntegralRect<TIntegralTag> const & other) const
@@ -605,6 +615,7 @@ struct _IntegralRect
 using IntegralRect = _IntegralRect<struct IntegralTag>;
 using ImageRect = _IntegralRect<struct ImageTag>;
 using ShipSpaceRect = _IntegralRect<struct ShipSpaceTag>;
+using DisplayPhysicalRect = _IntegralRect<struct DisplayPhysicalTag>; // Y=0 at top
 
 template<typename TIntegralTag>
 struct _IntegralCoordsRatio

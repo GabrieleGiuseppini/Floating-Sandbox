@@ -100,9 +100,14 @@ public:
         return mViewModel.GetCameraThumbSize();
     }
 
-    ShipSpaceSize GetVisibleShipSpaceSize() const
+    ShipSpaceSize GetDisplayShipSpaceSize() const
     {
-        return mViewModel.GetVisibleShipSpaceSize();
+        return mViewModel.GetDisplayShipSpaceSize();
+    }
+
+    DisplayPhysicalRect GetPhysicalVisibleShipRegion() const
+    {
+        return mViewModel.GetPhysicalVisibleShipRegion();
     }
 
     ShipSpaceCoordinates ScreenToShipSpace(DisplayLogicalCoordinates const & displayCoordinates) const

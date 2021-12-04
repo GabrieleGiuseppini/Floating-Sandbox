@@ -152,8 +152,6 @@ public:
 
     ShipSpaceSize GetCameraRange() const
     {
-        ShipSpaceSize const visibleShipSpaceSize = GetVisibleShipSpaceSize();
-
         return ShipSpaceSize(
             mShipSize.width + MarginDisplayShipSize * 2,
             mShipSize.height + MarginDisplayShipSize * 2);
@@ -161,18 +159,23 @@ public:
 
     ShipSpaceSize GetCameraThumbSize() const
     {
-        ShipSpaceSize const visibleShipSpaceSize = GetVisibleShipSpaceSize();
+        ShipSpaceSize const displayShipSpaceSize = GetDisplayShipSpaceSize();
 
         return ShipSpaceSize(
-            std::min(mShipSize.width + MarginDisplayShipSize * 2, visibleShipSpaceSize.width),
-            std::min(mShipSize.height + MarginDisplayShipSize * 2, visibleShipSpaceSize.height));
+            std::min(mShipSize.width + MarginDisplayShipSize * 2, displayShipSpaceSize.width),
+            std::min(mShipSize.height + MarginDisplayShipSize * 2, displayShipSpaceSize.height));
     }
 
-    ShipSpaceSize GetVisibleShipSpaceSize() const
+    ShipSpaceSize GetDisplayShipSpaceSize() const
     {
         return ShipSpaceSize(
             DisplayPhysicalToShipSpace(mDisplayPhysicalSize.width),
             DisplayPhysicalToShipSpace(mDisplayPhysicalSize.height));
+    }
+
+    DisplayPhysicalRect GetPhysicalVisibleShipRegion() const
+    {
+        return mShipDisplayPhysicalRect;
     }
 
     //
@@ -191,11 +194,18 @@ public:
         return mDisplayPhysicalToShipSpaceFactor;
     }
 
+    DisplayPhysicalCoordinates ShipSpaceToPhysicalDisplaySpace(ShipSpaceCoordinates const & coords)
+    {
+        return DisplayPhysicalCoordinates(
+            static_cast<int>(ShipSpaceToDisplayPhysical(static_cast<float>(coords.x - mCam.x + MarginDisplayShipSize))),
+            static_cast<int>(ShipSpaceToDisplayPhysical(static_cast<float>(mShipSize.height - 1 - coords.y + MarginDisplayShipSize - mCam.y))));
+    }
+
     DisplayPhysicalSize ShipSpaceSizeToPhysicalDisplaySize(ShipSpaceSize const & size)
     {
         return DisplayPhysicalSize(
-            static_cast<int>(ShipSpaceToDisplayLogical(static_cast<float>(size.width)) * mLogicalToPhysicalPixelFactor),
-            static_cast<int>(ShipSpaceToDisplayLogical(static_cast<float>(size.height)) * mLogicalToPhysicalPixelFactor));
+            static_cast<int>(ShipSpaceToDisplayPhysical(static_cast<float>(size.width))),
+            static_cast<int>(ShipSpaceToDisplayPhysical(static_cast<float>(size.height))));
     }
 
     ProjectionMatrix const & GetOrthoMatrix() const
@@ -207,7 +217,7 @@ private:
 
     void RecalculateAttributes()
     {
-        // Display physicial => Ship factor
+        // Display physical => Ship factor
         mDisplayPhysicalToShipSpaceFactor = CalculateDisplayPhysicalToShipSpaceFactor(mZoom);
 
         // Recalculate pan limits
@@ -248,6 +258,12 @@ private:
         mOrthoMatrix[1][1] = 2.0f / sDspH;
         mOrthoMatrix[3][0] = -2.0f * (static_cast<float>(mCam.x) - MarginDisplayShipSize) / sDspW - 1.0f;
         mOrthoMatrix[3][1] = 1.0f - 2.0f * static_cast<float>(mShipSize.height - mCam.y + MarginDisplayShipSize) / sDspH;
+
+        // Phyisical display rect of visible ship space (canvas)
+        mShipDisplayPhysicalRect = 
+            DisplayPhysicalRect(ShipSpaceToPhysicalDisplaySpace({ 0, mShipSize.height - 1 }), ShipSpaceSizeToPhysicalDisplaySize(mShipSize))
+            .MakeIntersectionWith(DisplayPhysicalRect(mDisplayPhysicalSize))
+            .value_or(DisplayPhysicalRect({ 0, 0 }, { 0, 0 }));
     }
 
     static float CalculateDisplayPhysicalToShipSpaceFactor(int zoom)
@@ -261,7 +277,7 @@ private:
     }
 
     template<typename TValue>
-    float ShipSpaceToDisplayLogical(TValue size) const
+    float ShipSpaceToDisplayPhysical(TValue size) const
     {
         return static_cast<float>(size) / mDisplayPhysicalToShipSpaceFactor;
     }
@@ -285,6 +301,7 @@ private:
     float mDisplayPhysicalToShipSpaceFactor; // # ship pixels for 1 display pixel
     ShipSpaceSize mCamLimits;
     ProjectionMatrix mOrthoMatrix;
+    DisplayPhysicalRect mShipDisplayPhysicalRect; // Rect of really visible ship space, in physical coords
 };
 
 }

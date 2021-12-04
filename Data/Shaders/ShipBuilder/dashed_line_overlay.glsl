@@ -32,7 +32,13 @@ in vec3 lineColor;
 void main()
 {
     #define DashLength 4.0
-    float lineDepth = step(mod(pixelCoord, 2.0 * DashLength), DashLength);
+    float inDash = mod(pixelCoord, 2.0 * DashLength);
+    float lineDepth = 
+        smoothstep(0.0, 1.0, inDash)
+        - smoothstep(DashLength - 1.0, DashLength, inDash);
     
-    gl_FragColor = vec4(lineColor, lineDepth);
+    gl_FragColor = mix(
+        vec4(.7, .7, .7, 1.),
+        vec4(lineColor, 1.),
+        lineDepth);
 } 
