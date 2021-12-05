@@ -21,6 +21,7 @@ namespace ShipBuilder {
 wxDEFINE_EVENT(fsEVT_STRUCTURAL_MATERIAL_SELECTED, fsStructuralMaterialSelectedEvent);
 wxDEFINE_EVENT(fsEVT_ELECTRICAL_MATERIAL_SELECTED, fsElectricalMaterialSelectedEvent);
 
+int constexpr MinCategoryPanelsContainerHeight = 400; // Min height of the scrollable panel that contains the swaths; without a min height, a palette that only has a few categories would be too short
 ImageSize constexpr CategoryButtonSize(80, 60);
 ImageSize constexpr PaletteButtonSize(80, 60);
 
@@ -432,7 +433,7 @@ wxPanel * MaterialPalette<TLayer>::CreateCategoryPanel(
         }
 
         sizer->Add(gridSizer, 0, wxALL, 4);
-    }
+    }    
 
     categoryPanel->SetSizerAndFit(sizer);
 
@@ -941,7 +942,7 @@ void MaterialPalette<TLayer>::SetMaterialSelected(TMaterial const * material)
     if (selectedCategoryPanel != nullptr)
     {
         auto const visiblePanelWidth = selectedCategoryPanel->GetSize().x;
-        mCategoryPanelsContainer->SetMinSize(wxSize(visiblePanelWidth, -1));
+        mCategoryPanelsContainer->SetMinSize(wxSize(visiblePanelWidth, MinCategoryPanelsContainerHeight));
     }
 
     // Resize whole popup now that category panel has changed its size
@@ -954,7 +955,7 @@ void MaterialPalette<TLayer>::SetMaterialSelected(TMaterial const * material)
         if (selectedCategoryPanel != nullptr)
         {
             auto const scrollbarWidth = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X, mCategoryPanelsContainer);
-            mCategoryPanelsContainer->SetMinSize(wxSize(selectedCategoryPanel->GetSize().x + scrollbarWidth, -1));
+            mCategoryPanelsContainer->SetMinSize(wxSize(selectedCategoryPanel->GetSize().x + scrollbarWidth, MinCategoryPanelsContainerHeight));
         }
 
         // Resize whole popup now that category panel has changed its size

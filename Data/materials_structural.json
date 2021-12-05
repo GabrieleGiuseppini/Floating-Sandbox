@@ -1724,10 +1724,40 @@
         "specific_heat": 449.0,
         "stiffness": 1.85,
 	"strain_threshold_fraction": 0.1,
-        "strength": 0.075,
+        "strength": 0.09,
         "thermal_conductivity": 79.5,
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5,
+        "water_retention": 0.05,
+        "buoyancy_volume_fill": 0.0
+    },
+
+    {
+	
+        "color_key": ["#c4c5c6", "#ff6854", "#d9b500", "#9cff5e", "#8ff2ed", "#402fd6", "#b92ed1", "#ff9a2e", "#3b3c3d"],
+        "combustion_type": "Combustion",
+	"ignition_temperature": 1000000.0,
+        "is_hull": false,
+        "mass": {
+            "density": 0.00935,
+            "nominal_mass": 2710
+        },
+        "melting_temperature": 933.45,
+        "name": "Aluminium Chain",
+	"palette_coordinates": {
+		"category": "Chains",
+		"sub_category": "Aluminium Chains",
+		"sub_category_ordinal": 0
+	},
+	"rust_receptivity": 1.0,
+        "sound_type": "Chain",
+        "specific_heat": 897.0,
+        "stiffness": 1.85,
+	"strain_threshold_fraction": 0.1,
+        "strength": 0.09,
+        "thermal_conductivity": 205.0,
+	"thermal_expansion_coefficient": 0.000022,
+        "water_diffusion_speed": 0.0,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 0.0
     },
@@ -1898,7 +1928,8 @@
 	    {
 		"category": "Chains",
 		"sub_categories": [
-		  "Iron Chains"
+		  "Iron Chains",
+		  "Aluminium Chains"
 		]
 	    },
 
