@@ -909,7 +909,7 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
     {
         // Structural pencil
         {
-            wxPanel * tsPanel = CreateToolSettingsToolSizePanel(
+            auto [tsPanel, sizer] = CreateToolSettingsToolSizePanel(
                 panel,
                 _("Pencil size:"),
                 _("The size of the pencil tool."),
@@ -920,6 +920,8 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
                 {
                     mWorkbenchState.SetStructuralPencilToolSize(value);
                 });
+
+            tsPanel->SetSizerAndFit(sizer);
 
             mToolSettingsPanelsSizer->Add(
                 tsPanel,
@@ -936,7 +938,7 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
 
         // Structural eraser
         {
-            wxPanel * tsPanel = CreateToolSettingsToolSizePanel(
+            auto [tsPanel, sizer] = CreateToolSettingsToolSizePanel(
                 panel,
                 _("Eraser size:"),
                 _("The size of the eraser tool."),
@@ -947,6 +949,8 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
                 {
                     mWorkbenchState.SetStructuralEraserToolSize(value);
                 });
+
+            tsPanel->SetSizerAndFit(sizer);
 
             mToolSettingsPanelsSizer->Add(
                 tsPanel,
@@ -963,7 +967,7 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
 
         // Structural line
         {
-            wxPanel * tsPanel = CreateToolSettingsToolSizePanel(
+            auto [tsPanel, sizer] = CreateToolSettingsToolSizePanel(
                 panel,
                 _("Line size:"),
                 _("The size of the line tool."),
@@ -974,6 +978,30 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
                 {
                     mWorkbenchState.SetStructuralLineToolSize(value);
                 });
+
+            // Contiguity
+            {
+                wxCheckBox * chkBox = new wxCheckBox(tsPanel, wxID_ANY, _T("Hull mode"));
+
+                chkBox->SetToolTip(_("When enabled, draw lines with pixel edges touching each other"));
+
+                chkBox->SetValue(mWorkbenchState.GetStructuralLineToolIsHullMode());
+
+                chkBox->Bind(
+                    wxEVT_CHECKBOX,
+                    [this](wxCommandEvent & event)
+                    {
+                        mWorkbenchState.SetStructuralLineToolIsHullMode(event.IsChecked());
+                    });
+
+                sizer->Add(
+                    chkBox,
+                    0,
+                    wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
+                    4);
+            }
+
+            tsPanel->SetSizerAndFit(sizer);
 
             mToolSettingsPanelsSizer->Add(
                 tsPanel,
@@ -995,7 +1023,7 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
             wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
 
             {
-                wxCheckBox * chkBox = new wxCheckBox(tsPanel, wxID_ANY, _("Contiguous"));
+                wxCheckBox * chkBox = new wxCheckBox(tsPanel, wxID_ANY, _("Contiguous only"));
 
                 chkBox->SetToolTip(_("Flood only particles touching each other. When not checked, the flood tool effectively replaces a material with another."));
 
@@ -2112,7 +2140,7 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
     return panel;
 }
 
-wxPanel * MainFrame::CreateToolSettingsToolSizePanel(
+std::tuple<wxPanel *, wxSizer *> MainFrame::CreateToolSettingsToolSizePanel(
     wxWindow * parent,
     wxString const & label,
     wxString const & tooltip,
@@ -2154,9 +2182,7 @@ wxPanel * MainFrame::CreateToolSettingsToolSizePanel(
             4);
     }
 
-    panel->SetSizerAndFit(sizer);
-
-    return panel;
+    return std::tuple(panel, sizer);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3249,7 +3275,10 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
         }
     }
 
-    // TODO: Populate settings in ToolSettings toolbar
+    // Note: at this moment we're not populating settings in ToolSettings toolbar, as all controls
+    // are initialized with the settings' current values, and the only source of change for the
+    // values are the controls themselves. If that changes, this would be the place to reconciliate
+    // the workbench state with the controls.
 }
 
 void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)

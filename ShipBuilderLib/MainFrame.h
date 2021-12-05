@@ -122,7 +122,7 @@ private:
     wxPanel * CreateUndoPanel(wxWindow * parent);
     wxPanel * CreateWorkPanel(wxWindow * parent);
 
-    wxPanel * CreateToolSettingsToolSizePanel(
+    std::tuple<wxPanel *, wxSizer *> CreateToolSettingsToolSizePanel(
         wxWindow * parent,
         wxString const & label,
         wxString const & tooltip,

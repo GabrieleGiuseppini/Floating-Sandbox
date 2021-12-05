@@ -52,8 +52,6 @@ private:
 
     using LayerMaterialType = typename LayerTypeTraits<TLayer>::material_type;
 
-    static IntegralLineType constexpr LineType = (TLayer == LayerType::Electrical) ? IntegralLineType::WithAdjacentSteps : IntegralLineType::Minimal;
-
 private:
 
     void StartEngagement(
@@ -63,6 +61,9 @@ private:
     void EndEngagement(ShipSpaceCoordinates const & mouseCoordinates);
 
     void DoEphemeralVisualization(ShipSpaceCoordinates const & mouseCoordinates);
+
+    template<typename ... TArgs>
+    void DoLine(TArgs && ... args);
 
     template<bool TIsForEphemeralVisualization>
     std::pair<std::optional<ShipSpaceRect>, StrongTypedBool<struct HasEdited>> TryFill(

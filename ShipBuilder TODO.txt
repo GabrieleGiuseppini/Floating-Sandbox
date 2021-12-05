@@ -389,12 +389,11 @@ https://gamejolt.com/x/permalink/comment/11730705
 = Line tool:
 	+ Settings: size
 	+ Structural
-	= Electrical
+	+ Electrical
 		+ RAII Mend
-		= Do different algo for line tracing, to ensure pixels touch each other on the side
+		+ Do different algo for line tracing, to ensure pixels touch each other on the side
 			+ Both at eph and non eph
-			- Not really needed - make "HUll" flag to turn or or off for structural, unused in Electrical
-		- Make electric eraser overlay consistent with pencil
+			+ Not really needed - make "HUll" flag to turn or or off for structural, unused in Electrical
 		+ Do not write on empty structural pixels
 			+ Both at eph and non eph
 			+ Verify engagement & subsequent drawing work fine (engage yes but no draw)

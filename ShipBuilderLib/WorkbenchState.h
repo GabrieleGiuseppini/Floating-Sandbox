@@ -114,6 +114,16 @@ public:
         mStructuralLineToolSize = value;
     }
 
+    bool GetStructuralLineToolIsHullMode() const
+    {
+        return mStructuralLineToolIsHullMode;
+    }
+
+    void SetStructuralLineToolIsHullMode(bool value)
+    {
+        mStructuralLineToolIsHullMode = value;
+    }
+
     bool GetStructuralFloodToolIsContiguous() const
     {
         return mStructuralFloodToolIsContiguous;
@@ -136,6 +146,7 @@ private:
     std::uint32_t mStructuralPencilToolSize;
     std::uint32_t mStructuralEraserToolSize;
     std::uint32_t mStructuralLineToolSize;
+    bool mStructuralLineToolIsHullMode;
     bool mStructuralFloodToolIsContiguous;
 };
 

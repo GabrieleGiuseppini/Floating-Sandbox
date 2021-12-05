@@ -239,7 +239,7 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
 
     std::optional<ShipSpaceRect> resultantEffectiveRect;
 
-    GenerateIntegralLinePath<LineType>(
+    DoLine(
         mEngagementData->StartCoords,
         mouseCoordinates,
         [&](ShipSpaceCoordinates const & pos)
@@ -310,7 +310,7 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
         std::optional<ShipSpaceRect> resultantEffectiveRect;
         View::OverlayMode resultantOverlayMode = View::OverlayMode::Default;
 
-        GenerateIntegralLinePath<LineType>(
+        DoLine(
             mEngagementData->StartCoords,
             mouseCoordinates,
             [&](ShipSpaceCoordinates const & pos)
@@ -414,6 +414,20 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                 });
 
         }
+    }
+}
+
+template<LayerType TLayer>
+template<typename ... TArgs>
+void LineTool<TLayer>::DoLine(TArgs && ... args)
+{
+    if (TLayer == LayerType::Structural && mWorkbenchState.GetStructuralLineToolIsHullMode())
+    {
+        GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(std::forward<TArgs>(args)...);
+    }
+    else
+    {
+        GenerateIntegralLinePath<IntegralLineType::Minimal>(std::forward<TArgs>(args)...);
     }
 }
 
