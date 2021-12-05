@@ -142,6 +142,8 @@ private:
     void OnWorkCanvasCaptureMouseLost(wxMouseCaptureLostEvent & event);
     void OnWorkCanvasMouseLeftWindow(wxMouseEvent & event);
     void OnWorkCanvasMouseEnteredWindow(wxMouseEvent & event);
+    void OnWorkCanvasKeyDown(wxKeyEvent & event);
+    void OnWorkCanvasKeyUp(wxKeyEvent & event);
 
     void OnNewShip(wxCommandEvent & event);
     void OnLoadShip(wxCommandEvent & event);

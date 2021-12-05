@@ -2055,6 +2055,9 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
         mWorkCanvas->Connect(wxEVT_MOUSE_CAPTURE_LOST, (wxObjectEventFunction)&MainFrame::OnWorkCanvasCaptureMouseLost, 0, this);
         mWorkCanvas->Connect(wxEVT_LEAVE_WINDOW, (wxObjectEventFunction)&MainFrame::OnWorkCanvasMouseLeftWindow, 0, this);
         mWorkCanvas->Connect(wxEVT_ENTER_WINDOW, (wxObjectEventFunction)&MainFrame::OnWorkCanvasMouseEnteredWindow, 0, this);
+        mWorkCanvas->Connect(wxEVT_KEY_DOWN, (wxObjectEventFunction)&MainFrame::OnWorkCanvasKeyDown, 0, this);
+        mWorkCanvas->Connect(wxEVT_KEY_UP, (wxObjectEventFunction)&MainFrame::OnWorkCanvasKeyUp, 0, this);
+
 
         sizer->Add(
             mWorkCanvas.get(),
@@ -2373,6 +2376,28 @@ void MainFrame::OnWorkCanvasMouseEnteredWindow(wxMouseEvent & /*event*/)
         if (mController)
         {
             mController->OnUncapturedMouseIn();
+        }
+    }
+}
+
+void MainFrame::OnWorkCanvasKeyDown(wxKeyEvent & event)
+{
+    if (mController)
+    {
+        if (event.GetKeyCode() == WXK_SHIFT)
+        {
+            mController->OnShiftKeyDown();
+        }
+    }
+}
+
+void MainFrame::OnWorkCanvasKeyUp(wxKeyEvent & event)
+{
+    if (mController)
+    {
+        if (event.GetKeyCode() == WXK_SHIFT)
+        {
+            mController->OnShiftKeyUp();
         }
     }
 }

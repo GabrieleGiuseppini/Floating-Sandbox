@@ -66,6 +66,7 @@ LineTool<TLayer>::LineTool(
     , mOriginalLayerClone(modelController.GetModel().CloneLayer<TLayer>())
     , mEphemeralVisualization()
     , mEngagementData()
+    , mIsShiftDown(false)
 {
     wxImage cursorImage = WxHelpers::LoadCursorImage("crosshair_cursor", 15, 15, resourceLocator);
     SetCursor(cursorImage);
@@ -204,6 +205,38 @@ void LineTool<TLayer>::OnRightMouseUp()
 
     // Do ephemeral visualization
     DoEphemeralVisualization(mouseCoordinates);
+
+    // Visualize
+    mModelController.UploadVisualization();
+    mUserInterface.RefreshView();
+}
+
+template<LayerType TLayer>
+void LineTool<TLayer>::OnShiftKeyDown()
+{
+    // Restore ephemeral visualization (if any)
+    mEphemeralVisualization.reset();
+
+    mIsShiftDown = true;
+
+    // Do ephemeral visualization
+    DoEphemeralVisualization(mUserInterface.GetMouseCoordinates());
+
+    // Visualize
+    mModelController.UploadVisualization();
+    mUserInterface.RefreshView();
+}
+
+template<LayerType TLayer>
+void LineTool<TLayer>::OnShiftKeyUp()
+{
+    // Restore ephemeral visualization (if any)
+    mEphemeralVisualization.reset();
+
+    mIsShiftDown = false;
+
+    // Do ephemeral visualization
+    DoEphemeralVisualization(mUserInterface.GetMouseCoordinates());
 
     // Visualize
     mModelController.UploadVisualization();
@@ -418,16 +451,35 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
 }
 
 template<LayerType TLayer>
-template<typename ... TArgs>
-void LineTool<TLayer>::DoLine(TArgs && ... args)
+template<typename TVisitor>
+void LineTool<TLayer>::DoLine(
+    ShipSpaceCoordinates const & startPoint,
+    ShipSpaceCoordinates const & endPoint,
+    TVisitor && visitor)
 {
+    ShipSpaceCoordinates actualEndPoint = endPoint;
+    if (mIsShiftDown)
+    {
+        // Constrain to either horizontally or vertically
+        if (std::abs(endPoint.x - startPoint.x) > std::abs(endPoint.y - startPoint.y))
+        {
+            // X is larger
+            actualEndPoint.y = startPoint.y;
+        }
+        else
+        {
+            // Y is larger
+            actualEndPoint.x = startPoint.x;
+        }
+    }
+
     if (TLayer == LayerType::Structural && mWorkbenchState.GetStructuralLineToolIsHullMode())
     {
-        GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(std::forward<TArgs>(args)...);
+        GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(startPoint, actualEndPoint, std::forward<TVisitor>(visitor));
     }
     else
     {
-        GenerateIntegralLinePath<IntegralLineType::Minimal>(std::forward<TArgs>(args)...);
+        GenerateIntegralLinePath<IntegralLineType::Minimal>(startPoint, actualEndPoint, std::forward<TVisitor>(visitor));
     }
 }
 

@@ -34,8 +34,8 @@ public:
     void OnLeftMouseUp() override;
     void OnRightMouseDown() override;
     void OnRightMouseUp() override;
-    void OnShiftKeyDown() override {}
-    void OnShiftKeyUp() override {}
+    void OnShiftKeyDown() override;
+    void OnShiftKeyUp() override;
 
 protected:
 
@@ -62,8 +62,11 @@ private:
 
     void DoEphemeralVisualization(ShipSpaceCoordinates const & mouseCoordinates);
 
-    template<typename ... TArgs>
-    void DoLine(TArgs && ... args);
+    template<typename TVisitor>
+    void DoLine(
+        ShipSpaceCoordinates const & startPoint,
+        ShipSpaceCoordinates const & endPoint,
+        TVisitor && visitor);
 
     template<bool TIsForEphemeralVisualization>
     std::pair<std::optional<ShipSpaceRect>, StrongTypedBool<struct HasEdited>> TryFill(
@@ -107,6 +110,9 @@ private:
 
     // Engagement data - when set, it means we're engaged
     std::optional<EngagementData> mEngagementData;
+
+    // Whether SHIFT is currently down or not
+    bool mIsShiftDown;
 };
 
 class StructuralLineTool : public LineTool<LayerType::Structural>
