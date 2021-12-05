@@ -284,7 +284,7 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
 
     bool hasEdited = false;
 
-    GenerateLinePath(
+    GenerateIntegralLinePath<IntegralLineType::Minimal>(
         (TLayer == LayerType::Structural) && mEngagementData->PreviousEngagementPosition.has_value()
             ? *mEngagementData->PreviousEngagementPosition
             : mouseCoordinates,

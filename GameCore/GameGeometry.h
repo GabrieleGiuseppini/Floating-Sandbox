@@ -107,8 +107,15 @@ inline bool IsPointInTriangle(
  * Calculates a line path between (and including) the specified endpoints, going
  * through integral coordinates.
  */
-template<typename _TIntegralTag, typename TVisitor>
-inline void GenerateLinePath(
+
+enum class IntegralLineType
+{
+    Minimal,
+    WithAdjacentSteps
+};
+
+template<IntegralLineType TType, typename _TIntegralTag, typename TVisitor>
+inline void GenerateIntegralLinePath(
     _IntegralCoordinates<_TIntegralTag> const & startPoint,
     _IntegralCoordinates<_TIntegralTag> const & endPoint,
     TVisitor const & visitor)
@@ -162,16 +169,8 @@ inline void GenerateLinePath(
     float curW = startW;
     float curN = startN;
 
-    //
-    // Visit all other points
-    //
-
-    while (true)
+    auto const makePosition = [&]() ->_IntegralCoordinates<_TIntegralTag>
     {
-        curW += stepW;
-        curN += slope * stepW;
-
-        // Create position
         vec2f newPosition;
         if (widestIsX)
         {
@@ -182,11 +181,41 @@ inline void GenerateLinePath(
             newPosition = vec2f(curN, curW);
         }
 
-        // Visit position
-        visitor(
-            _IntegralCoordinates<_TIntegralTag>(
-                static_cast<_IntegralCoordinates<_TIntegralTag>::integral_type>(std::round(newPosition.x)),
-                static_cast<_IntegralCoordinates<_TIntegralTag>::integral_type>(std::round(newPosition.y))));
+        return _IntegralCoordinates<_TIntegralTag>(
+            static_cast<_IntegralCoordinates<_TIntegralTag>::integral_type>(std::round(newPosition.x)),
+            static_cast<_IntegralCoordinates<_TIntegralTag>::integral_type>(std::round(newPosition.y)));
+    };
+
+    //
+    // Visit all other points
+    //
+
+    _IntegralCoordinates<_TIntegralTag> oldPosition = startPoint;
+
+    while (true)
+    {
+        curW += stepW;
+
+        if constexpr (TType == IntegralLineType::WithAdjacentSteps)
+        {
+            auto const newPosition = makePosition();
+            if (newPosition != oldPosition)
+            {
+                visitor(newPosition);
+
+                oldPosition = newPosition;
+            }
+        }
+
+        curN += slope * stepW;
+
+        auto const newPosition = makePosition();
+        if (newPosition != oldPosition)
+        {
+            visitor(newPosition);
+
+            oldPosition = newPosition;
+        }
 
         // Check if done
         if (fabs(endW - curW) <= 0.5f)

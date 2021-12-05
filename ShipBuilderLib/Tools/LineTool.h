@@ -13,6 +13,7 @@
 #include <Game/ResourceLocator.h>
 
 #include <GameCore/Finalizer.h>
+#include <GameCore/GameGeometry.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/StrongTypeDef.h>
 
@@ -50,6 +51,8 @@ protected:
 private:
 
     using LayerMaterialType = typename LayerTypeTraits<TLayer>::material_type;
+
+    static IntegralLineType constexpr LineType = (TLayer == LayerType::Electrical) ? IntegralLineType::WithAdjacentSteps : IntegralLineType::Minimal;
 
 private:
 

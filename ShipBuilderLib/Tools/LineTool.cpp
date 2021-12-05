@@ -7,8 +7,6 @@
 
 #include "Controller.h"
 
-#include <GameCore/GameGeometry.h>
-
 #include <UILib/WxHelpers.h>
 
 #include <type_traits>
@@ -241,7 +239,7 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
 
     std::optional<ShipSpaceRect> resultantEffectiveRect;
 
-    GenerateLinePath(
+    GenerateIntegralLinePath<LineType>(
         mEngagementData->StartCoords,
         mouseCoordinates,
         [&](ShipSpaceCoordinates const & pos)
@@ -312,7 +310,7 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
         std::optional<ShipSpaceRect> resultantEffectiveRect;
         View::OverlayMode resultantOverlayMode = View::OverlayMode::Default;
 
-        GenerateLinePath(
+        GenerateIntegralLinePath<LineType>(
             mEngagementData->StartCoords,
             mouseCoordinates,
             [&](ShipSpaceCoordinates const & pos)

@@ -123,11 +123,13 @@ TEST_P(IsPointInTriangleTest, PositiveAndNegativeTests)
     EXPECT_EQ(result, std::get<4>(GetParam()));
 }
 
-TEST(GeometryTests, GenerateLinePath_Distance0)
+///////////////////////////////////////////////////////
+
+TEST(GeometryTests, GenerateLinePath_Minimal_Distance0)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateLinePath(
+    GenerateIntegralLinePath<IntegralLineType::Minimal>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(3, 5),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -139,11 +141,11 @@ TEST(GeometryTests, GenerateLinePath_Distance0)
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
 }
 
-TEST(GeometryTests, GenerateLinePath_Distance1)
+TEST(GeometryTests, GenerateLinePath_Minimal_Distance1)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateLinePath(
+    GenerateIntegralLinePath<IntegralLineType::Minimal>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(4, 6),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -156,11 +158,11 @@ TEST(GeometryTests, GenerateLinePath_Distance1)
     EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(4, 6));
 }
 
-TEST(GeometryTests, GenerateLinePath_Distance2_Diagonal)
+TEST(GeometryTests, GenerateLinePath_Minimal_Distance2_Diagonal)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateLinePath(
+    GenerateIntegralLinePath<IntegralLineType::Minimal>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(5, 7),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -174,11 +176,11 @@ TEST(GeometryTests, GenerateLinePath_Distance2_Diagonal)
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(5, 7));
 }
 
-TEST(GeometryTests, GenerateLinePath_Distance2_VerticalDown)
+TEST(GeometryTests, GenerateLinePath_Minimal_Distance2_VerticalDown)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateLinePath(
+    GenerateIntegralLinePath<IntegralLineType::Minimal>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(3, 7),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -192,11 +194,11 @@ TEST(GeometryTests, GenerateLinePath_Distance2_VerticalDown)
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(3, 7));
 }
 
-TEST(GeometryTests, GenerateLinePath_Distance2_VerticalUp)
+TEST(GeometryTests, GenerateLinePath_Minimal_Distance2_VerticalUp)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateLinePath(
+    GenerateIntegralLinePath<IntegralLineType::Minimal>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(3, 3),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -210,11 +212,11 @@ TEST(GeometryTests, GenerateLinePath_Distance2_VerticalUp)
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(3, 3));
 }
 
-TEST(GeometryTests, GenerateLinePath_Distance2_HorizontalLeft)
+TEST(GeometryTests, GenerateLinePath_Minimal_Distance2_HorizontalLeft)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateLinePath(
+    GenerateIntegralLinePath<IntegralLineType::Minimal>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(1, 5),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -228,11 +230,175 @@ TEST(GeometryTests, GenerateLinePath_Distance2_HorizontalLeft)
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(1, 5));
 }
 
-TEST(GeometryTests, GenerateLinePath_Distance2_HorizontalRight)
+TEST(GeometryTests, GenerateLinePath_Minimal_Distance2_HorizontalRight)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateLinePath(
+    GenerateIntegralLinePath<IntegralLineType::Minimal>(
+        IntegralCoordinates(3, 5),
+        IntegralCoordinates(5, 5),
+        [&generatedCoordinates](IntegralCoordinates const & pt)
+        {
+            generatedCoordinates.push_back(pt);
+        });
+
+    ASSERT_EQ(generatedCoordinates.size(), 3);
+    EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
+    EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(4, 5));
+    EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(5, 5));
+}
+
+TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance0)
+{
+    std::vector<IntegralCoordinates> generatedCoordinates;
+
+    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+        IntegralCoordinates(3, 5),
+        IntegralCoordinates(3, 5),
+        [&generatedCoordinates](IntegralCoordinates const & pt)
+        {
+            generatedCoordinates.push_back(pt);
+        });
+
+    ASSERT_EQ(generatedCoordinates.size(), 1);
+    EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
+}
+
+TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance1)
+{
+    std::vector<IntegralCoordinates> generatedCoordinates;
+
+    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+        IntegralCoordinates(3, 5),
+        IntegralCoordinates(4, 6),
+        [&generatedCoordinates](IntegralCoordinates const & pt)
+        {
+            generatedCoordinates.push_back(pt);
+        });
+
+    ASSERT_EQ(generatedCoordinates.size(), 3);
+    EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
+    EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(3, 6));
+    EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(4, 6));
+}
+
+TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_Diagonal_Equal)
+{
+    std::vector<IntegralCoordinates> generatedCoordinates;
+
+    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+        IntegralCoordinates(3, 5),
+        IntegralCoordinates(5, 7),
+        [&generatedCoordinates](IntegralCoordinates const & pt)
+        {
+            generatedCoordinates.push_back(pt);
+        });
+
+    ASSERT_EQ(generatedCoordinates.size(), 5);
+    EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
+    EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(3, 6));
+    EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(4, 6));
+    EXPECT_EQ(generatedCoordinates[3], IntegralCoordinates(4, 7));
+    EXPECT_EQ(generatedCoordinates[4], IntegralCoordinates(5, 7));
+}
+
+TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_Diagonal_MoreX)
+{
+    std::vector<IntegralCoordinates> generatedCoordinates;
+
+    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+        IntegralCoordinates(3, 5),
+        IntegralCoordinates(5, 6),
+        [&generatedCoordinates](IntegralCoordinates const & pt)
+        {
+            generatedCoordinates.push_back(pt);
+        });
+
+    ASSERT_EQ(generatedCoordinates.size(), 4);
+    EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
+    EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(4, 5));
+    EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(4, 6));
+    EXPECT_EQ(generatedCoordinates[3], IntegralCoordinates(5, 6));
+}
+
+TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_Diagonal_MoreY)
+{
+    std::vector<IntegralCoordinates> generatedCoordinates;
+
+    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+        IntegralCoordinates(3, 5),
+        IntegralCoordinates(4, 7),
+        [&generatedCoordinates](IntegralCoordinates const & pt)
+        {
+            generatedCoordinates.push_back(pt);
+        });
+
+    ASSERT_EQ(generatedCoordinates.size(), 4);
+    EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
+    EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(3, 6));
+    EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(4, 6));
+    EXPECT_EQ(generatedCoordinates[3], IntegralCoordinates(4, 7));
+}
+
+TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_VerticalDown)
+{
+    std::vector<IntegralCoordinates> generatedCoordinates;
+
+    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+        IntegralCoordinates(3, 5),
+        IntegralCoordinates(3, 7),
+        [&generatedCoordinates](IntegralCoordinates const & pt)
+        {
+            generatedCoordinates.push_back(pt);
+        });
+
+    ASSERT_EQ(generatedCoordinates.size(), 3);
+    EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
+    EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(3, 6));
+    EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(3, 7));
+}
+
+TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_VerticalUp)
+{
+    std::vector<IntegralCoordinates> generatedCoordinates;
+
+    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+        IntegralCoordinates(3, 5),
+        IntegralCoordinates(3, 3),
+        [&generatedCoordinates](IntegralCoordinates const & pt)
+        {
+            generatedCoordinates.push_back(pt);
+        });
+
+    ASSERT_EQ(generatedCoordinates.size(), 3);
+    EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
+    EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(3, 4));
+    EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(3, 3));
+}
+
+TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_HorizontalLeft)
+{
+    std::vector<IntegralCoordinates> generatedCoordinates;
+
+    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+        IntegralCoordinates(3, 5),
+        IntegralCoordinates(1, 5),
+        [&generatedCoordinates](IntegralCoordinates const & pt)
+        {
+            generatedCoordinates.push_back(pt);
+        });
+
+    ASSERT_EQ(generatedCoordinates.size(), 3);
+    EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
+    EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(2, 5));
+    EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(1, 5));
+}
+
+TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_HorizontalRight)
+{
+    std::vector<IntegralCoordinates> generatedCoordinates;
+
+    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(5, 5),
         [&generatedCoordinates](IntegralCoordinates const & pt)
