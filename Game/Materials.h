@@ -55,6 +55,7 @@ public:
         Metal,
         Plastic,
         Rubber,
+        RubberBand,
         Wood,
     };
 

@@ -310,6 +310,9 @@ void RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coord
             }
         }
 
+        // Mark layer as dirty
+        SetLayerDirty(LayerType::Ropes);
+
         // Create undo action
         {
             PushUndoAction(

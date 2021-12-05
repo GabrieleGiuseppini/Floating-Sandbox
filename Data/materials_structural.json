@@ -1730,8 +1730,38 @@
         "water_diffusion_speed": 0.5,
         "water_retention": 0.05,
         "buoyancy_volume_fill": 0.0
-    }
+    },
 
+    {
+	
+        "color_key": ["#babbbc", "#ba1509", "#9e9913", "#38e625", "#4fc2c0", "#0e0999", "#5c0061", "#e3a86d", "#54504c"],
+	"combustion_type": "Combustion",
+        "ignition_temperature": 553.15,
+        "is_hull": false,
+        "mass": {
+            "density": 0.0935,
+            "nominal_mass": 1522
+        },
+        "melting_temperature": 1000000.0,
+        "name": "Rubber Band",
+	"palette_coordinates": {
+		"category": "Rubber Bands",
+		"sub_category": "Rubber Bands",
+		"sub_category_ordinal": 0
+	},
+        "rust_receptivity": 0,
+        "sound_type": "RubberBand",
+        "specific_heat": 1250.0,
+        "stiffness": 0.05,
+	"strain_threshold_fraction": 0.3,
+        "strength": 4.5,
+	"texture_name": "rubber_1",
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00008,
+        "water_diffusion_speed": 0.0,
+        "water_retention": 0.05,
+        "buoyancy_volume_fill": 0.0
+    }
   ],
 
   "palettes": {
@@ -1869,6 +1899,13 @@
 		"category": "Chains",
 		"sub_categories": [
 		  "Iron Chains"
+		]
+	    },
+
+	    {
+		"category": "Rubber Bands",
+		"sub_categories": [
+		  "Rubber Bands"
 		]
 	    }
 	]

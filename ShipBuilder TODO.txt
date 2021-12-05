@@ -320,7 +320,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ If we go for it:
 					+ Remove ...ForEphViz method from ModelController
 					+ Remove mHasEphemeralVisualization - et al
-	- New materials:
+	+ New materials:
 		+ Chains			
 			+ For noise: consider adding new StructuralMaterial property: strain_threshold_fraction, default = 0.5
 				+ Material
@@ -331,20 +331,16 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Test other materials for no changes to strain threshold
 			+ Rustyness
 			+ Verify properties look'n'feel (tension)
-		- "~Elastic" ("Rubber Ropes"?)	
-		- More chains of other metal types
-		- Also - Weak and Hard variants?
-
-	- New sounds:
-		+ "Chain":
-			+ Material palette
-			+ SoundController
-			+ Make sounds
-				+ Underwater
-		- "~Elastic":
-			- Material palette
-			- SoundController
-			- Make sounds
+		+ "Rubber Band"
+			+ Sounds:
+				+ Stress
+				+ Break
+				+ Underwater (above X 2)
+				+ Destroy (copy from break, above- and under-water)				
+			+ Create material
+				+ See water intake
+		- Weak and Hard variants for all ropes elements
+			- In same category, but different sub-category (like Hull and non-Hull)
 
 - Import/Export:
 	- Structural:
@@ -387,6 +383,12 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Additions:
 			- Undo
 				- Note: texture layer removal should also store metadata
+
+- ShipPropertiesEditDialog: ship prefix normalizer
+	- Make text file out of https://en.wikipedia.org/wiki/Ship_prefix, with just list of prefixes
+	- Usage:
+		- Choose: at OK button, or at focus leaving from edit box
+	- Algo: TODOHERE
 
 - Texture visualization (including visualization modes *)
 

@@ -156,6 +156,8 @@ StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType
         return MaterialSoundType::Plastic;
     else if (Utils::CaseInsensitiveEquals(str, "Rubber"))
         return MaterialSoundType::Rubber;
+    else if (Utils::CaseInsensitiveEquals(str, "RubberBand"))
+        return MaterialSoundType::RubberBand;
     else if (Utils::CaseInsensitiveEquals(str, "Wood"))
         return MaterialSoundType::Wood;
     else

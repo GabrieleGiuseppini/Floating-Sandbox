@@ -32,10 +32,17 @@ void Springs::Add(
     assert(coveringTrianglesCount >= superTriangles.size()); // Covering triangles count includes super triangles
     mCoveringTrianglesCountBuffer.emplace_back(coveringTrianglesCount);
 
+    // Strain threshold is average, and randomized - +/-
+    float constexpr RandomWidth = 0.7; // 70%: 35% less or 35% more
+    float const averageStrainThreshold = (points.GetStructuralMaterial(pointAIndex).StrainThresholdFraction + points.GetStructuralMaterial(pointBIndex).StrainThresholdFraction) / 2.0f;
+    float const strainThreshold = averageStrainThreshold
+        * (1.0f - RandomWidth / 2.0f + RandomWidth * points.GetRandomNormalizedUniformPersonalitySeed(pointAIndex));
+
     mStrainStateBuffer.emplace_back(
         0.0f, // Breaking elongation recalculated later
-        (points.GetStructuralMaterial(pointAIndex).StrainThresholdFraction + points.GetStructuralMaterial(pointBIndex).StrainThresholdFraction) / 2.0f,
+        strainThreshold,
         false);
+
     mFactoryRestLengthBuffer.emplace_back((points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length());
     mRestLengthBuffer.emplace_back((points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length());
 
