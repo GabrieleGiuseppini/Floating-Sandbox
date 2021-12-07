@@ -135,7 +135,10 @@ void ShipPreviewWindow::SetDirectory(std::filesystem::path const & directoryPath
 {
     LogMessage("ShipPreviewWindow::SetDirectory(", directoryPath.string(), ")");
 
-    // Build set of files
+    //
+    // Build set of files from directory
+    //
+
     auto directoryFiles = EnumerateShipFiles(directoryPath);
 
     // Check if we're moving to a new directory, or if not, if there's
@@ -988,7 +991,7 @@ void ShipPreviewWindow::RunPreviewThread()
 
             try
             {
-                ScanDirectory(std::move(message->GetDirectorySnapshot()));
+                ScanDirectorySnapshot(std::move(message->GetDirectorySnapshot()));
             }
             catch (std::exception const & ex)
             {
@@ -1024,9 +1027,9 @@ void ShipPreviewWindow::RunPreviewThread()
     LogMessage("PreviewThread::Exit");
 }
 
-void ShipPreviewWindow::ScanDirectory(DirectorySnapshot && directorySnapshot)
+void ShipPreviewWindow::ScanDirectorySnapshot(DirectorySnapshot && directorySnapshot)
 {
-    LogMessage("PreviewThread::ScanDirectory(", directorySnapshot.DirectoryPath.string(), "): processing...");
+    LogMessage("PreviewThread::ScanDirectorySnapshot(", directorySnapshot.DirectoryPath.string(), "): processing...");
 
     auto previewDirectoryManager = ShipPreviewDirectoryManager::Create(directorySnapshot.DirectoryPath);
 
@@ -1040,7 +1043,7 @@ void ShipPreviewWindow::ScanDirectory(DirectorySnapshot && directorySnapshot)
         // Check whether we have been interrupted
         if (!!mPanelToThreadMessage)
         {
-            LogMessage("PreviewThread::ScanDirectory(): interrupted, exiting");
+            LogMessage("PreviewThread::ScanDirectorySnapshot(): interrupted, exiting");
 
             // Commit - with a partial visit
             previewDirectoryManager->Commit(false);
@@ -1065,7 +1068,7 @@ void ShipPreviewWindow::ScanDirectory(DirectorySnapshot && directorySnapshot)
         }
         catch (std::exception const & ex)
         {
-            LogMessage("PreviewThread::ScanDirectory(): encountered error (", std::string(ex.what()), "), notifying...");
+            LogMessage("PreviewThread::ScanDirectorySnapshot(): encountered error (", std::string(ex.what()), "), notifying...");
 
             // Notify
             QueueThreadToPanelMessage(
@@ -1073,7 +1076,7 @@ void ShipPreviewWindow::ScanDirectory(DirectorySnapshot && directorySnapshot)
                     iShip,
                     "Cannot load preview"));
 
-            LogMessage("PreviewThread::ScanDirectory(): ...error notified.");
+            LogMessage("PreviewThread::ScanDirectorySnapshot(): ...error notified.");
 
             // Keep going
         }
@@ -1094,7 +1097,7 @@ void ShipPreviewWindow::ScanDirectory(DirectorySnapshot && directorySnapshot)
 
     previewDirectoryManager->Commit(true);
 
-    LogMessage("PreviewThread::ScanDirectory(): ...preview completed.");
+    LogMessage("PreviewThread::ScanDirectorySnapshot(): ...preview completed.");
 }
 
 void ShipPreviewWindow::QueueThreadToPanelMessage(std::unique_ptr<ThreadToPanelMessage> message)

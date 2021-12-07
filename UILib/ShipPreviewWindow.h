@@ -342,7 +342,7 @@ private:
     std::thread mPreviewThread;
 
     void RunPreviewThread();
-    void ScanDirectory(DirectorySnapshot && directorySnapshot);
+    void ScanDirectorySnapshot(DirectorySnapshot && directorySnapshot);
 
     //
     // Panel-to-Thread communication
