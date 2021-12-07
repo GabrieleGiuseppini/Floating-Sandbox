@@ -320,7 +320,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ If we go for it:
 					+ Remove ...ForEphViz method from ModelController
 					+ Remove mHasEphemeralVisualization - et al
-	+ New materials:
+	= New materials:
 		+ Chains			
 			+ For noise: consider adding new StructuralMaterial property: strain_threshold_fraction, default = 0.5
 				+ Material
@@ -340,8 +340,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Create material
 				+ See water intake
 		+ Aluminium Chain
-		- <normal> and Strong variants for all ropes elements
-			- In same category, but different sub-category (like Hull and non-Hull); only strength (and possibly stiffness) changes
+		- "Strong" variants for all rope sub-categories
+			- In same category, but different sub-category (e.g. "Iron Chains" and "Iron Chains Strong" - see where we've put "Hull"); only strength (and possibly stiffness) changes
 
 - Import/Export:
 	- Structural:
@@ -353,16 +353,24 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Electrical:
 		- Import:
 			- .shp, .shp2 (load whole and throw away)
+				- Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
+			- Show error if no layer exists in definition
 		+ No export (can save .shp2 and import from there)
 	- Ropes:
 		- Import:
 			- .shp, .shp2 (load whole and throw away)
+				- Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
+			- Show error if no layer exists in definition
 		+ No export (can save .shp2 and import from there)
 	- Texture:
-		- Import:
+		- Import: two separate import buttons, or a selector opens to ask "From Image" vs "From Ship"
 			- .png
-				- Ad-hoc code using ImageFileTools
+				- New ImageLoadDialog
+					- See jpg support in DevIL
+				- Load file: TODO: WAS: Ad-hoc code using ImageFileTools
 			- .shp, .shp2 (load whole and throw away)
+				- Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
+				- Show error if no layer exists in definition
 			- After import, also replace art credits
 		- Export to .png (though quite useless at this moment)
 			- Ad-hoc code using ImageFileTools
@@ -525,16 +533,17 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Settings: Size
 		+ Flood (S, E)
 		- Sample
-		- Line
-			- ESC to stop 
+		+ Line
 		- Rectangle
 			- Settings: FillWithFore|FillWithBack|NoFill; Size
-			- ESC to stop
 		- Selection
 			- Implements selection interaction and rendering of visual feedback *during the interaction only*
 			- Takes SelectionManager ref in its cctor, and populates it upon confirmation of selection made
 		- Ellipses
 		- Traslate (aka move)
+		- Magic Eraser (for texture layer only)
+			- Tolerance (0-100): % of distance(this color, start color)/max_distance
+			- Anti-aliasing (bool): when on, alpha = distance(this color, start color)/tolerance_distance
 	- SelectionManager pseudo-tool:
 		- Maintains current selection
 		- Not really a tool but a pseudo-tool
@@ -586,6 +595,13 @@ https://gamejolt.com/x/permalink/comment/11730705
 	= cctor: (MaterialsDB, SB::PreferencesManager)
 		+ FW and BG materials: always "defaults" from MaterialsDB
 		- other settings: loaded from SB::PreferencesManager
+
+- Validations:
+	- Move validations to own class - ModelValidator
+	- Electrical connectivity validation
+		- Start visit from all sources
+		- Assume all switches, etc. are conductive
+		- Make sure all sinks have been reached
 
 = Ship file format:
 	+ Fixed endianness
