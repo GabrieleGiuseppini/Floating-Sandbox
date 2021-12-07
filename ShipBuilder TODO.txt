@@ -1,348 +1,5 @@
 https://gamejolt.com/x/permalink/comment/11730705
 
-+ Mattia makes ship
-	+ YouTube
-	+ GameJolt post
-
-+ At selection of new primary layer (in Controller): select first tool
-	+ Or remember tool per-layer
-		+ Have array for all layer types (int) storing tool type
-		+ Controller::SetTool:
-			+ Store this tool as last tool of primary layer
-		+ Controller::SetPrimaryLayer:
-			+ After switching UI: set last tool for new primary layer
-	+ Fix:
-		+ New code creates tool (via SetTool invoked to set last tool for layer) while tool is "suspended", @ NewLayer & RemoveLayer, when we set PrimaryLayer
-		+ SetTool, SetPrimaryLayer, NewLayer, RemoveLayer: they all call InternalSetTool & InternalSetPrimaryLayer
-
-+ Eraser square?
-	+ See paint: has it
-	+ View: EraserSquareOverlay
-
-+ EraserSquareOverlay -> RectOverlay
-	+ Rename
-	+ Try it also with normal pencil
-
-+ Pencil electrical: not on empty structural
-	+ Eph viz: red rect overlay when on empty
-		+ Shader
-	+ Do action: no fill when on empty
-
-+ No flood for electrical layer
-	+ Simply remove specialization
-	+ Also remove ModelController::Flood specialization
-
-+ Flood: settings: adjacent
-
-+ UnderConstructionDialog
-	+ Do at remaining layer buttons
-
-+ Send for testing
-
-+ Password Workflow
-	+ Hash algo at ShipDeSerializer via static helper method
-	+ Workflows
-		+ Save: ShipDeSerializer::CalculatePasswordHash(password): +salt => hash (new GameType) => in metadata
-		+ ShipBuilder::Open and Game::EditInShipBuilder and various layers' Import: after load, if ShipMetadata has password:
-			+ Ask password
-				+ Workflow for wrong password
-					+ Dialog w/timer, EndModel @ 3rd round
-					+ "Invalid password"
-					+ "Retry in {}..." (iff ! last time)
-					+ Max 3 times
-			+ ShipDeSerializer::CalculatePasswordHash(password) => check with metadata
-			+ All in own dialog, in static bool CheckPasswordProtectedEdit(shipDefinition) which includes workflow
-			+ Do at:
-				+ ShipBuilder::OpenForShip
-				+ Menu/Button LoadShip
-	+ Test:
-		+ Save ship w/password
-		+ 1. Load it in FS & Open ship builder
-			+ Password OK
-			+ Password not OK => NewShip
-			+ Frame is not yet open when password is asked
-				+ Fix
-				+ Test:
-					+ From FS:
-						+ Edit PW ship => ok pwd
-						+ Edit PW ship => no pwd
-						+ Edit non-PW ship
-						+ Create new ship
-					+ From builder:
-						+ Create new ship
-		+ 2. Load it in builder
-			+ Password OK
-			+ Password not OK => no change
-
-+ Undo stack visualization
-	+ UndoPanel underneath toolbar
-	+ Controller exposes GetUndoStack() const
-		+ And UndoStack exposes index-based enumerator 
-	+ MainFrame can tell Controller to rewind undo to a given stack entry, by index
-	+ HighlightableTextButton
-
-+ Complete Load/Save/Model
-	+ Finalize storage of all other ship definition members in Model
-		+ AutoTexturizationSettings
-			+ Test w/PropertiesDialog
-	+ ShipDeSerializer: Load/Save each of:
-		+ Electrical layer
-		+ Ropes layer
-		+ Texture layer
-			+ Using DevIL lump, see https://github.com/DentonW/DevIL/blob/master/DevIL/src-IL/src/il_io.cpp#L2490
-		+ PhysicsData
-		+ AutoTexturizationSettings
-			+ Test
-				+ w/PropertiesDialog
-				+ Load .shp -> Save .shp2 -> Load .shp2 in FS
-
-+ Metadata edit workflow:
-	+ ShipPropertiesEditDialog
-	+ Dialog::Open takes Controller &, Metadata const &, PhysicsProperties const &, etc.
-		+ Pass bool HasTexture (to enable ArtCredits)
-		+ opt<struct> mSessionData
-		+ Populates all controls
-		+ Flags each control as being not dirty
-	+ Editing a field flags it as being dirty
-	+ Ship name
-	+ Author(s)
-	+ Art Credits
-		! Spec: we allow ModelController to carry stale credits when texture is removed - OR NOT: replace won't signal layer removal
-		+ Enabled and populated only iff HasTexture
-		+ ModelController: remove ArtCredits when texture is removed
-			+ Test
-		+ Test
-	+ Year Built
-	+ Edit Password
-		+ Make new tab
-	+ Description
-		+ Separate tab
-		+ Populate at startup
-		+ Check for dirty @ OK
-		+ Give to ModelController at OK
-	+ PhysicsData
-		+ Populate tab
-			+ ShipOffsetVisualizationControl
-				+ Zoom calculation:
-					+ Integral/ShipSpace - coords to/from world
-					+ Add CoordsRatio to ShipMetadata
-						+ Legacy loading: 1:1
-						+ New Format loading:
-							+ defaults to 1:1
-							+ Load it
-							+ Save it
-							+ Test
-					+ Use it @ ShipOffsetVisualizationControl
-						+ Test it w/4:1
-					+ Use it @ ShipFactory
-		+ Populate UI at startup
-		+ Give to ModelController at OK
-			+ Verify becomes dirty
-			+ Verify all 3 saved
-		+ See why pressure is not 1.0 at startup
-	+ Auto-Texturization Settings
-		+ Populate tab
-			+ Radio button to handle Remove vs Setting values
-			+ Whole tab disabled <=> has texture
-			+ Consider using explanations
-				+ Use icons, like password
-				+ Auto-texturization mode "radios"
-				+ Horizontal sliders, explanation below
-					+ SliderControl needs to take own HORIZONTAL vs VERTICAL enum
-						+ SettingsDialog
-					+ Explanation below
-				+ Add some V spacing around sliders
-		+ Populate UI at startup
-			+ Move default AutoTexturizationSettings to default cctor of AutoTexturizationSettings
-				+ Out of ShipTexturizer
-		+ Give to ModelController at OK
-	+ At OK:
-		+ For each of Metadata, PhysicsProperties, etc:
-			+ Check if any of this area's controls are dirty; if so:
-				+ Construct new Metadata, PhysicsProperties, etc.
-					+ Set optionals to nullopt if trimmed field is empty
-				+ Call Controller::ReplaceMetadata(&&), etc.
-					+ Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
-			+ Make Undo entry @ Controller
-				+ Try: GenericUndo, with lambda that just takes Controller and captures things
-				+ For undo entry: need one single Controller method for all pieces, with opt args (e.g. opt<opt>)
-				+ Test
-			+ IUserInterface callback: change it to ShipNameChanged
-				+ Call it also at undo
-				+ Do workflow for rename here:
-					+ MainFrame: compare output of MakeFilename() on new ship name with current filename, and if different && there is a current which exists as a file:
-						+ Ask rename
-							+ If yes:
-								+ Rename file (filesystem)
-								+ Change current
-							+ If no:
-								+ If has a current: clear current (and Save will become SaveAs)
-								! If has no current: Save is already set to become SaveAs, we're OK
-	+ Tests:
-		+ Load & save ship w/auto-texturization settings
-		+ New ship:
-			+ Populate one x {...}
-			+ Close
-			+ Reopen - verify it's there
-			+ Save - verify it's there @ load
-		+ Ships with unicode chars in metadata, show well in dialog: Désirée Москва
-			+ Load ship
-			+ New ship
-			+ Load .shp ship
-
-+ Grid: highlight vertical center guide
-	+ Test with odd ship width
-
-+ Edit menu: Flip Horizontal, Vertical
-	+ Buffer2D::Flip(...)
-		+ Unit tests
-	+ Ropes layer's buffer becomes a class, so it also has Flip()
-		+ Unit tests
-		+ Redo:
-			+ LayerElements.h contains all layers' elements
-			+ RopeLayerBuffer.h is the buffer
-			+ Layers.h becomes smaller
-	+ Undo: flip again
-		+ New Undo form:
-			+ Controller::RestoreLayer/Region: "...ForUndo"
-				+ Don't set model dirtyness
-			+ Controller::Flip + Controller::FlipForUndo
-				+ Templated helper
-					+ In undo mode: don't set model dirtyness, and don't push undo entry
-		! Always do UploadVisualization+RefreshView however, as UndoStack can't do that (not all undo's must refresh viz)
-
-+ Line tool:
-	+ Settings: size
-	+ Structural
-	+ Electrical
-		+ RAII Mend
-		+ Do different algo for line tracing, to ensure pixels touch each other on the side
-			+ Both at eph and non eph
-			+ Not really needed - make "HUll" flag to turn or or off for structural, unused in Electrical
-		+ Do not write on empty structural pixels
-			+ Both at eph and non eph
-			+ Verify engagement & subsequent drawing work fine (engage yes but no draw)
-				+ Verify also at ElectricalPencil
-		+ Dashed line overlay
-			+ smoothstep and color between dashes
-			+ Scissor dashed line
-			+ Nail down pixel length/multiple
-	+ Refactor line drawing call in LineTool as it's repeated twice
-		+ Make helper
-		+ Use it all all places
-	+ Shift lock
-
-= Finalize design of Ropes layer
-	! Spec:
-		! Material Strategy: in Structural DB, separate palette tree - does NOT require current "ropes" to be marked as "legacy"
-		! Element = start, end, StructuralMaterial *, renderColor
-		! Legacy: StructuralMaterial=Ropes, RenderColor=color
-		! ShipBuilder: StructuralMaterial=from ropes palette, RenderColor=from material
-	+ Impl:
-		+ Structural DB: separate palette tree
-			+ Script
-			+ MaterialsDB			
-		+ Layers
-		+ Legacy Deserialization
-		+ ShipFactory
-		+ Test
-		+ SB::MaterialsPalette:
-			+ Templated on layer - Material comes from TypeTraits
-		+ LayerPanel for Rope
-		+ New Ropes Layer workflow
-		+ Test
-		+ WorkbenchState		
-		+ Pencil Tool
-			+ View::CircleOverlay
-				+ Shader
-			+ Tool visualizations:
-				+ Superimposed states:
-					+ Overlay, at:
-						+ cctor
-						+ dctor
-						+ MouseMove
-						+ NOT at down/up X 2
-					+ Engagement (i.e. line), at:
-						+ Down x 2: engage if OK (if Model::IsRopeEndpointAllowed)
-						+ Up x 2: disengage if engaged
-						+ MouseMove: if engaged
-			+ DoEdit
-			+ CommitAndStopEngagement
-				+ Undo
-			+ ModelController::TempVisualization
-		+ ModelController::Visualization
-		+ ModelController::RestoreRopesForEphViz takes whole orig layer
-		+ No check for end engagement
-		+ IsApplicable: also ship rect
-		+ View::RopesLayer
-			+ Line OpenGL settings
-			+ Upload straight away, no storage
-			+ Render: before or after depending on primary layer
-			+ Line width
-			+ @Vertex-make-and-upload: Offset vertex to center of {1,1} ShipSpace rect
-		+ Mouse released outside of window - while mouse is captured - does not nuke tool
-			+ Note: this is a problem with the other tools as well
-			+ Fix @ MainFrame::OnWorkCanvasXXXUp
-		+ No temp visualization when mouse outside of coords - or simply, when mouse coords are not applicable
-		+ Test
-		+ "Move endpoint" mode
-			! Spec: when button down (engagement check) is over existing endpoint, then start point is other
-			+ Impl:
-				+ Overlay:
-					- If outside ship rect: RED
-					- Else if engaged: check if OK to release 
-						- May release only if there's no other rope endpoint at that position
-					- Else (!engaged): check if OK to engage
-						- Always
-				+ StartEngagement:
-					- If outside ship rect: NO
-					- Else: check if OK to engage
-						- Always
-				+ EndEngagement: do action:
-					- If outside ship rect: NO
-					- Else: check if OK to release
-						- May release only if there's no other rope endpoint at that position
-			+ Test		
-		+ DeSerialization
-			+ Unit tests
-		+ Opacity
-			+ Shader: add param
-		+ Test pencil: L and R buttons
-		+ Remove Clear material from Ropes palette
-			+ Remove checks from pencil, as matrial can never be clear
-		+ Eraser Tool:
-			! R button does the same as the L button (same as in structural/electrical)
-			! No engagement - at L down we do the same as with temp viz
-				! And we don't even ask ModelController, always EraseRopeAt(ForEphViz)
-			+ Rethink: possibilities:
-				+ No eph viz (w/deleted rope)
-				+ Overlay gives feedback (red when won't delete anything)
-				+ If we go for it:
-					+ Remove ...ForEphViz method from ModelController
-					+ Remove mHasEphemeralVisualization - et al
-	= New materials:
-		+ Chains			
-			+ For noise: consider adding new StructuralMaterial property: strain_threshold_fraction, default = 0.5
-				+ Material
-				+ Springs::UpdateForStrains:
-					+ Springs::mBreakingElongationBuffer: it's buffer of two-float struct, BreakingElongation and StrainThresholdFraction
-				+ Set at Chains material
-				+ Test Chains
-				+ Test other materials for no changes to strain threshold
-			+ Rustyness
-			+ Verify properties look'n'feel (tension)
-		+ "Rubber Band"
-			+ Sounds:
-				+ Stress
-				+ Break
-				+ Underwater (above X 2)
-				+ Destroy (copy from break, above- and under-water)				
-			+ Create material
-				+ See water intake
-		+ Aluminium Chain
-		- "Strong" variants for all rope sub-categories
-			- In same category, but different sub-category (e.g. "Iron Chains" and "Iron Chains Strong" - see where we've put "Hull"); only strength (and possibly stiffness) changes
-
 - Import/Export:
 	- Structural:
 		- Import from:
@@ -376,11 +33,11 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Ad-hoc code using ImageFileTools
 	- Notes:
 		- Any import from .shp2 requires password
+		- All imports push an undo
 
 - New/Set/Remove layers:
 	- New:
 		- Make internal helper templated on LayerType, with all code
-			- RAII tool stop/restart?
 		- Additions:
 			- Undo
 	- Set:
@@ -1292,3 +949,346 @@ DONE
 				+ When there are errors
 				+ When there are no errors and there are warnings
 				+ When there are no errors and no warnings
+
++ Mattia makes ship
+	+ YouTube
+	+ GameJolt post
+
++ At selection of new primary layer (in Controller): select first tool
+	+ Or remember tool per-layer
+		+ Have array for all layer types (int) storing tool type
+		+ Controller::SetTool:
+			+ Store this tool as last tool of primary layer
+		+ Controller::SetPrimaryLayer:
+			+ After switching UI: set last tool for new primary layer
+	+ Fix:
+		+ New code creates tool (via SetTool invoked to set last tool for layer) while tool is "suspended", @ NewLayer & RemoveLayer, when we set PrimaryLayer
+		+ SetTool, SetPrimaryLayer, NewLayer, RemoveLayer: they all call InternalSetTool & InternalSetPrimaryLayer
+
++ Eraser square?
+	+ See paint: has it
+	+ View: EraserSquareOverlay
+
++ EraserSquareOverlay -> RectOverlay
+	+ Rename
+	+ Try it also with normal pencil
+
++ Pencil electrical: not on empty structural
+	+ Eph viz: red rect overlay when on empty
+		+ Shader
+	+ Do action: no fill when on empty
+
++ No flood for electrical layer
+	+ Simply remove specialization
+	+ Also remove ModelController::Flood specialization
+
++ Flood: settings: adjacent
+
++ UnderConstructionDialog
+	+ Do at remaining layer buttons
+
++ Send for testing
+
++ Password Workflow
+	+ Hash algo at ShipDeSerializer via static helper method
+	+ Workflows
+		+ Save: ShipDeSerializer::CalculatePasswordHash(password): +salt => hash (new GameType) => in metadata
+		+ ShipBuilder::Open and Game::EditInShipBuilder and various layers' Import: after load, if ShipMetadata has password:
+			+ Ask password
+				+ Workflow for wrong password
+					+ Dialog w/timer, EndModel @ 3rd round
+					+ "Invalid password"
+					+ "Retry in {}..." (iff ! last time)
+					+ Max 3 times
+			+ ShipDeSerializer::CalculatePasswordHash(password) => check with metadata
+			+ All in own dialog, in static bool CheckPasswordProtectedEdit(shipDefinition) which includes workflow
+			+ Do at:
+				+ ShipBuilder::OpenForShip
+				+ Menu/Button LoadShip
+	+ Test:
+		+ Save ship w/password
+		+ 1. Load it in FS & Open ship builder
+			+ Password OK
+			+ Password not OK => NewShip
+			+ Frame is not yet open when password is asked
+				+ Fix
+				+ Test:
+					+ From FS:
+						+ Edit PW ship => ok pwd
+						+ Edit PW ship => no pwd
+						+ Edit non-PW ship
+						+ Create new ship
+					+ From builder:
+						+ Create new ship
+		+ 2. Load it in builder
+			+ Password OK
+			+ Password not OK => no change
+
++ Undo stack visualization
+	+ UndoPanel underneath toolbar
+	+ Controller exposes GetUndoStack() const
+		+ And UndoStack exposes index-based enumerator 
+	+ MainFrame can tell Controller to rewind undo to a given stack entry, by index
+	+ HighlightableTextButton
+
++ Complete Load/Save/Model
+	+ Finalize storage of all other ship definition members in Model
+		+ AutoTexturizationSettings
+			+ Test w/PropertiesDialog
+	+ ShipDeSerializer: Load/Save each of:
+		+ Electrical layer
+		+ Ropes layer
+		+ Texture layer
+			+ Using DevIL lump, see https://github.com/DentonW/DevIL/blob/master/DevIL/src-IL/src/il_io.cpp#L2490
+		+ PhysicsData
+		+ AutoTexturizationSettings
+			+ Test
+				+ w/PropertiesDialog
+				+ Load .shp -> Save .shp2 -> Load .shp2 in FS
+
++ Metadata edit workflow:
+	+ ShipPropertiesEditDialog
+	+ Dialog::Open takes Controller &, Metadata const &, PhysicsProperties const &, etc.
+		+ Pass bool HasTexture (to enable ArtCredits)
+		+ opt<struct> mSessionData
+		+ Populates all controls
+		+ Flags each control as being not dirty
+	+ Editing a field flags it as being dirty
+	+ Ship name
+	+ Author(s)
+	+ Art Credits
+		! Spec: we allow ModelController to carry stale credits when texture is removed - OR NOT: replace won't signal layer removal
+		+ Enabled and populated only iff HasTexture
+		+ ModelController: remove ArtCredits when texture is removed
+			+ Test
+		+ Test
+	+ Year Built
+	+ Edit Password
+		+ Make new tab
+	+ Description
+		+ Separate tab
+		+ Populate at startup
+		+ Check for dirty @ OK
+		+ Give to ModelController at OK
+	+ PhysicsData
+		+ Populate tab
+			+ ShipOffsetVisualizationControl
+				+ Zoom calculation:
+					+ Integral/ShipSpace - coords to/from world
+					+ Add CoordsRatio to ShipMetadata
+						+ Legacy loading: 1:1
+						+ New Format loading:
+							+ defaults to 1:1
+							+ Load it
+							+ Save it
+							+ Test
+					+ Use it @ ShipOffsetVisualizationControl
+						+ Test it w/4:1
+					+ Use it @ ShipFactory
+		+ Populate UI at startup
+		+ Give to ModelController at OK
+			+ Verify becomes dirty
+			+ Verify all 3 saved
+		+ See why pressure is not 1.0 at startup
+	+ Auto-Texturization Settings
+		+ Populate tab
+			+ Radio button to handle Remove vs Setting values
+			+ Whole tab disabled <=> has texture
+			+ Consider using explanations
+				+ Use icons, like password
+				+ Auto-texturization mode "radios"
+				+ Horizontal sliders, explanation below
+					+ SliderControl needs to take own HORIZONTAL vs VERTICAL enum
+						+ SettingsDialog
+					+ Explanation below
+				+ Add some V spacing around sliders
+		+ Populate UI at startup
+			+ Move default AutoTexturizationSettings to default cctor of AutoTexturizationSettings
+				+ Out of ShipTexturizer
+		+ Give to ModelController at OK
+	+ At OK:
+		+ For each of Metadata, PhysicsProperties, etc:
+			+ Check if any of this area's controls are dirty; if so:
+				+ Construct new Metadata, PhysicsProperties, etc.
+					+ Set optionals to nullopt if trimmed field is empty
+				+ Call Controller::ReplaceMetadata(&&), etc.
+					+ Which in turn invokes IUserInterface callback for refreshes, which do NOT reach edit dialog though
+			+ Make Undo entry @ Controller
+				+ Try: GenericUndo, with lambda that just takes Controller and captures things
+				+ For undo entry: need one single Controller method for all pieces, with opt args (e.g. opt<opt>)
+				+ Test
+			+ IUserInterface callback: change it to ShipNameChanged
+				+ Call it also at undo
+				+ Do workflow for rename here:
+					+ MainFrame: compare output of MakeFilename() on new ship name with current filename, and if different && there is a current which exists as a file:
+						+ Ask rename
+							+ If yes:
+								+ Rename file (filesystem)
+								+ Change current
+							+ If no:
+								+ If has a current: clear current (and Save will become SaveAs)
+								! If has no current: Save is already set to become SaveAs, we're OK
+	+ Tests:
+		+ Load & save ship w/auto-texturization settings
+		+ New ship:
+			+ Populate one x {...}
+			+ Close
+			+ Reopen - verify it's there
+			+ Save - verify it's there @ load
+		+ Ships with unicode chars in metadata, show well in dialog: Désirée Москва
+			+ Load ship
+			+ New ship
+			+ Load .shp ship
+
++ Grid: highlight vertical center guide
+	+ Test with odd ship width
+
++ Edit menu: Flip Horizontal, Vertical
+	+ Buffer2D::Flip(...)
+		+ Unit tests
+	+ Ropes layer's buffer becomes a class, so it also has Flip()
+		+ Unit tests
+		+ Redo:
+			+ LayerElements.h contains all layers' elements
+			+ RopeLayerBuffer.h is the buffer
+			+ Layers.h becomes smaller
+	+ Undo: flip again
+		+ New Undo form:
+			+ Controller::RestoreLayer/Region: "...ForUndo"
+				+ Don't set model dirtyness
+			+ Controller::Flip + Controller::FlipForUndo
+				+ Templated helper
+					+ In undo mode: don't set model dirtyness, and don't push undo entry
+		! Always do UploadVisualization+RefreshView however, as UndoStack can't do that (not all undo's must refresh viz)
+
++ Line tool:
+	+ Settings: size
+	+ Structural
+	+ Electrical
+		+ RAII Mend
+		+ Do different algo for line tracing, to ensure pixels touch each other on the side
+			+ Both at eph and non eph
+			+ Not really needed - make "HUll" flag to turn or or off for structural, unused in Electrical
+		+ Do not write on empty structural pixels
+			+ Both at eph and non eph
+			+ Verify engagement & subsequent drawing work fine (engage yes but no draw)
+				+ Verify also at ElectricalPencil
+		+ Dashed line overlay
+			+ smoothstep and color between dashes
+			+ Scissor dashed line
+			+ Nail down pixel length/multiple
+	+ Refactor line drawing call in LineTool as it's repeated twice
+		+ Make helper
+		+ Use it all all places
+	+ Shift lock
+
++ Finalize design of Ropes layer
+	! Spec:
+		! Material Strategy: in Structural DB, separate palette tree - does NOT require current "ropes" to be marked as "legacy"
+		! Element = start, end, StructuralMaterial *, renderColor
+		! Legacy: StructuralMaterial=Ropes, RenderColor=color
+		! ShipBuilder: StructuralMaterial=from ropes palette, RenderColor=from material
+	+ Impl:
+		+ Structural DB: separate palette tree
+			+ Script
+			+ MaterialsDB			
+		+ Layers
+		+ Legacy Deserialization
+		+ ShipFactory
+		+ Test
+		+ SB::MaterialsPalette:
+			+ Templated on layer - Material comes from TypeTraits
+		+ LayerPanel for Rope
+		+ New Ropes Layer workflow
+		+ Test
+		+ WorkbenchState		
+		+ Pencil Tool
+			+ View::CircleOverlay
+				+ Shader
+			+ Tool visualizations:
+				+ Superimposed states:
+					+ Overlay, at:
+						+ cctor
+						+ dctor
+						+ MouseMove
+						+ NOT at down/up X 2
+					+ Engagement (i.e. line), at:
+						+ Down x 2: engage if OK (if Model::IsRopeEndpointAllowed)
+						+ Up x 2: disengage if engaged
+						+ MouseMove: if engaged
+			+ DoEdit
+			+ CommitAndStopEngagement
+				+ Undo
+			+ ModelController::TempVisualization
+		+ ModelController::Visualization
+		+ ModelController::RestoreRopesForEphViz takes whole orig layer
+		+ No check for end engagement
+		+ IsApplicable: also ship rect
+		+ View::RopesLayer
+			+ Line OpenGL settings
+			+ Upload straight away, no storage
+			+ Render: before or after depending on primary layer
+			+ Line width
+			+ @Vertex-make-and-upload: Offset vertex to center of {1,1} ShipSpace rect
+		+ Mouse released outside of window - while mouse is captured - does not nuke tool
+			+ Note: this is a problem with the other tools as well
+			+ Fix @ MainFrame::OnWorkCanvasXXXUp
+		+ No temp visualization when mouse outside of coords - or simply, when mouse coords are not applicable
+		+ Test
+		+ "Move endpoint" mode
+			! Spec: when button down (engagement check) is over existing endpoint, then start point is other
+			+ Impl:
+				+ Overlay:
+					- If outside ship rect: RED
+					- Else if engaged: check if OK to release 
+						- May release only if there's no other rope endpoint at that position
+					- Else (!engaged): check if OK to engage
+						- Always
+				+ StartEngagement:
+					- If outside ship rect: NO
+					- Else: check if OK to engage
+						- Always
+				+ EndEngagement: do action:
+					- If outside ship rect: NO
+					- Else: check if OK to release
+						- May release only if there's no other rope endpoint at that position
+			+ Test		
+		+ DeSerialization
+			+ Unit tests
+		+ Opacity
+			+ Shader: add param
+		+ Test pencil: L and R buttons
+		+ Remove Clear material from Ropes palette
+			+ Remove checks from pencil, as matrial can never be clear
+		+ Eraser Tool:
+			! R button does the same as the L button (same as in structural/electrical)
+			! No engagement - at L down we do the same as with temp viz
+				! And we don't even ask ModelController, always EraseRopeAt(ForEphViz)
+			+ Rethink: possibilities:
+				+ No eph viz (w/deleted rope)
+				+ Overlay gives feedback (red when won't delete anything)
+				+ If we go for it:
+					+ Remove ...ForEphViz method from ModelController
+					+ Remove mHasEphemeralVisualization - et al
+	+ New materials:
+		+ Chains			
+			+ For noise: consider adding new StructuralMaterial property: strain_threshold_fraction, default = 0.5
+				+ Material
+				+ Springs::UpdateForStrains:
+					+ Springs::mBreakingElongationBuffer: it's buffer of two-float struct, BreakingElongation and StrainThresholdFraction
+				+ Set at Chains material
+				+ Test Chains
+				+ Test other materials for no changes to strain threshold
+			+ Rustyness
+			+ Verify properties look'n'feel (tension)
+		+ "Rubber Band"
+			+ Sounds:
+				+ Stress
+				+ Break
+				+ Underwater (above X 2)
+				+ Destroy (copy from break, above- and under-water)				
+			+ Create material
+				+ See water intake
+		+ Aluminium Chain
+		+ "Strong" variants for all rope sub-categories
+			+ In same category, but different sub-category (e.g. "Iron Chains" and "Iron Chains Strong" - see where we've put "Hull"); only strength (and possibly stiffness) changes

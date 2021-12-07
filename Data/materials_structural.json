@@ -1703,6 +1703,35 @@
     },
 
     {
+        "color_key": ["#031924", "#b30e02", "#cfcc48", "#46c773", "#1c9e9a", "#0c035c", "#4a0148", "#f08c22", "#757779"],
+        "combustion_type": "Combustion",
+        "ignition_temperature": 393.15,
+        "is_hull": false,
+        "mass": {
+            "density": 0.0935,
+            "nominal_mass": 180
+        },
+        "melting_temperature": 1000000.0,
+        "name": "Strong Rope",
+	"palette_coordinates": {
+		"category": "Ropes",
+		"sub_category": "Strong Ropes",
+		"sub_category_ordinal": 0
+	},
+	"rust_receptivity": 1.0,
+        "sound_type": "Cable",
+        "specific_heat": 1400.0,
+        "stiffness": 1.84,
+        "strength": 0.5,
+        "thermal_conductivity": 0.04,
+        "water_diffusion_speed": 0.015,
+        "water_intake": 0.05,
+        "water_retention": 0.5,
+        "buoyancy_volume_fill": 0.3,
+        "wind_receptivity": 0.2
+    },
+
+    {
 	
         "color_key": ["#3b3a39", "#540a06", "#5c5939", "#145228", "#2e676e", "#0d055c", "#541853", "#944b13", "#241616"],
         "combustion_type": "Combustion",
@@ -1725,6 +1754,36 @@
         "stiffness": 1.85,
 	"strain_threshold_fraction": 0.1,
         "strength": 0.09,
+        "thermal_conductivity": 79.5,
+	"thermal_expansion_coefficient": 0.0000106,
+        "water_diffusion_speed": 0.5,
+        "water_retention": 0.05,
+        "buoyancy_volume_fill": 0.0
+    },
+
+    {
+	
+        "color_key": ["#0a1b04", "#5e0101", "#474627", "#446b33", "#79dbdb", "#05055e", "#5e0458", "#964e00", "#706f6e"],
+        "combustion_type": "Combustion",
+	"ignition_temperature": 1000000.0,
+        "is_hull": false,
+        "mass": {
+            "density": 0.00935,
+            "nominal_mass": 7850
+        },
+        "melting_temperature": 1588.15,
+        "name": "Strong Iron Chain",
+	"palette_coordinates": {
+		"category": "Chains",
+		"sub_category": "Strong Iron Chains",
+		"sub_category_ordinal": 0
+	},
+	"rust_receptivity": 1.0,
+        "sound_type": "Chain",
+        "specific_heat": 449.0,
+        "stiffness": 1.85,
+	"strain_threshold_fraction": 0.1,
+        "strength": 0.75,
         "thermal_conductivity": 79.5,
 	"thermal_expansion_coefficient": 0.0000106,
         "water_diffusion_speed": 0.5,
@@ -1785,6 +1844,37 @@
         "stiffness": 0.05,
 	"strain_threshold_fraction": 0.3,
         "strength": 4.5,
+	"texture_name": "rubber_1",
+        "thermal_conductivity": 0.1,
+	"thermal_expansion_coefficient": 0.00008,
+        "water_diffusion_speed": 0.0,
+        "water_retention": 0.05,
+        "buoyancy_volume_fill": 0.0
+    },
+
+    {
+	
+        "color_key": ["#3d3e31", "#781e1e", "#b8b211", "#336e03", "#72b6b8", "#0f32bf", "#92089c", "#b0730b", "#041220"],
+	"combustion_type": "Combustion",
+        "ignition_temperature": 553.15,
+        "is_hull": false,
+        "mass": {
+            "density": 0.0935,
+            "nominal_mass": 1522
+        },
+        "melting_temperature": 1000000.0,
+        "name": "Strong Rubber Band",
+	"palette_coordinates": {
+		"category": "Rubber Bands",
+		"sub_category": "Strong Rubber Bands",
+		"sub_category_ordinal": 0
+	},
+        "rust_receptivity": 0,
+        "sound_type": "RubberBand",
+        "specific_heat": 1250.0,
+        "stiffness": 0.05,
+	"strain_threshold_fraction": 0.3,
+        "strength": 7.0,
 	"texture_name": "rubber_1",
         "thermal_conductivity": 0.1,
 	"thermal_expansion_coefficient": 0.00008,
@@ -1921,7 +2011,8 @@
 	    {
 		"category": "Ropes",
 		"sub_categories": [
-		  "Ropes"
+		  "Ropes",
+		  "Strong Ropes"
 		]
 	    },
 
@@ -1929,6 +2020,7 @@
 		"category": "Chains",
 		"sub_categories": [
 		  "Iron Chains",
+		  "Strong Iron Chains",
 		  "Aluminium Chains"
 		]
 	    },
@@ -1936,7 +2028,8 @@
 	    {
 		"category": "Rubber Bands",
 		"sub_categories": [
-		  "Rubber Bands"
+		  "Rubber Bands",
+		  "Strong Rubber Bands"
 		]
 	    }
 	]
