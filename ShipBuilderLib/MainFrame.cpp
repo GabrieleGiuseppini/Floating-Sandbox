@@ -21,6 +21,7 @@
 #include <UILib/BitmapToggleButton.h>
 #include <UILib/HighlightableTextButton.h>
 #include <UILib/EditSpinBox.h>
+#include <UILib/ImageLoadDialog.h>
 #include <UILib/UnderConstructionDialog.h>
 #include <UILib/WxHelpers.h>
 
@@ -1218,10 +1219,19 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                             newButton = new BitmapButton(
                                 panel,
                                 mResourceLocator.GetBitmapFilePath("open_image_button"),
-                                [this, layer]()
+                                [this, sureQuestion]()
                                 {
-                                    // TODO
-                                    UnderConstructionDialog::Show(this, mResourceLocator);
+                                    if (mController->HasModelLayer(LayerType::Texture)
+                                        && mController->IsModelDirty(LayerType::Texture))
+                                    {
+                                        if (!AskUserIfSure(sureQuestion))
+                                        {
+                                            // Changed their mind
+                                            return;
+                                        }
+                                    }
+
+                                    ImportTextureLayerFromImage();
                                 },
                                 _("Import this layer from an image file."));
                         }
@@ -2776,6 +2786,24 @@ void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePa
     // Invoke functor to go back
     assert(mReturnToGameFunctor);
     mReturnToGameFunctor(std::move(shipFilePath));
+}
+
+void MainFrame::ImportTextureLayerFromImage()
+{
+    ImageLoadDialog dlg(this);
+    auto const ret = dlg.ShowModal();
+    if (ret == wxID_OK)
+    {
+        try
+        {
+            auto image = ImageFileTools::LoadImageRgba(dlg.GetPath().ToStdString());
+            // TODOHERE
+        }
+        catch (std::runtime_error const & exc)
+        {
+            ShowError(exc.what());
+        }
+    }
 }
 
 void MainFrame::OpenShipCanvasResize()

@@ -29,11 +29,11 @@ public:
     static RgbaImageData LoadImageRgbaAndResize(std::filesystem::path const & filepath, ImageSize const & maxSize);
     static RgbImageData LoadImageRgbAndResize(std::filesystem::path const & filepath, ImageSize const & maxSize);
 
-    static void SaveImage(
+    static void SavePngImage(
         std::filesystem::path filepath,
         RgbaImageData const & image);
 
-    static void SaveImage(
+    static void SavePngImage(
         std::filesystem::path filepath,
         RgbImageData const & image);
 
@@ -83,7 +83,7 @@ private:
         int targetOrigin,
         std::optional<ResizeInfo> resizeInfo);
 
-    static void InternalSaveImage(
+    static void InternalSavePngImage(
         ImageSize imageSize,
         void const * imageData,
         int bpp,

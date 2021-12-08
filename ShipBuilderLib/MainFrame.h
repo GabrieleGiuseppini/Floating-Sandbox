@@ -196,6 +196,8 @@ private:
 
     void SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath);
 
+    void ImportTextureLayerFromImage();
+
     void OpenShipCanvasResize();
 
     void OpenShipProperties();

@@ -130,11 +130,11 @@ RgbImageData ImageFileTools::LoadImageRgbAndResize(
         maxSize);
 }
 
-void ImageFileTools::SaveImage(
+void ImageFileTools::SavePngImage(
     std::filesystem::path filepath,
     RgbaImageData const & image)
 {
-    InternalSaveImage(
+    InternalSavePngImage(
         image.Size,
         image.Data.get(),
         4,
@@ -142,11 +142,11 @@ void ImageFileTools::SaveImage(
         filepath);
 }
 
-void ImageFileTools::SaveImage(
+void ImageFileTools::SavePngImage(
     std::filesystem::path filepath,
     RgbImageData const & image)
 {
-    InternalSaveImage(
+    InternalSavePngImage(
         image.Size,
         image.Data.get(),
         3,
@@ -205,7 +205,6 @@ size_t ImageFileTools::EncodePngImage(
 
     return static_cast<size_t>(requiredSize);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -390,7 +389,7 @@ ImageData<TColor> ImageFileTools::InternalLoadImage(
         std::move(data));
 }
 
-void ImageFileTools::InternalSaveImage(
+void ImageFileTools::InternalSavePngImage(
     ImageSize imageSize,
     void const * imageData,
     int bpp,

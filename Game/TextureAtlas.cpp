@@ -197,7 +197,7 @@ void TextureAtlas<TextureGroups>::Serialize(
     //
 
     std::filesystem::path const imageFilePath = outputDirectoryPath / MakeImageFilename(databaseName);
-    ImageFileTools::SaveImage(imageFilePath, AtlasData);
+    ImageFileTools::SavePngImage(imageFilePath, AtlasData);
 }
 
 template <typename TextureGroups>

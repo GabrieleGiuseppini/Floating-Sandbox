@@ -1581,7 +1581,7 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
 
         try
         {
-            ImageFileTools::SaveImage(
+            ImageFileTools::SavePngImage(
                 screenshotFilePath,
                 screenshotImage);
         }
