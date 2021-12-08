@@ -12,6 +12,8 @@ set  (UI_LIB_SOURCES
 	ElectricalElementControl.cpp
 	ElectricalElementControl.h
 	HighlightableTextButton.h
+	ImageLoadDialog.cpp
+	ImageLoadDialog.h
 	LayoutHelper.h
 	LocalizationManager.cpp
 	LocalizationManager.h

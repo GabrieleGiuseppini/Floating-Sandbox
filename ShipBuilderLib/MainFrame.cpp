@@ -1212,41 +1212,31 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                     }
                                 },
                                 _("Add or clean the layer."));
-
-                            layerManagerSizer->Add(
-                                newButton,
-                                wxGBPosition(iRow * 3, 1),
-                                wxGBSpan(1, 1),
-                                wxLEFT | wxRIGHT,
-                                10);
                         }
                         else
                         {
-                            newButton = nullptr;
+                            newButton = new BitmapButton(
+                                panel,
+                                mResourceLocator.GetBitmapFilePath("open_image_button"),
+                                [this, layer]()
+                                {
+                                    // TODO
+                                    UnderConstructionDialog::Show(this, mResourceLocator);
+                                },
+                                _("Import this layer from an image file."));
                         }
+
+                        layerManagerSizer->Add(
+                            newButton,
+                            wxGBPosition(iRow * 3, 1),
+                            wxGBSpan(1, 1),
+                            wxLEFT | wxRIGHT,
+                            10);
                     }
 
                     // Import
                     {
                         // TODO: also here ask user if sure when the layer is dirty
-
-                        wxString buttonTooltip;
-                        switch (layer)
-                        {
-                            case LayerType::Electrical:
-                            case LayerType::Ropes:
-                            {
-                                buttonTooltip = _("Import this layer from another ship.");
-                                break;
-                            }
-
-                            case LayerType::Structural:
-                            case LayerType::Texture:
-                            {
-                                buttonTooltip = _("Import this layer from another ship or from an image file.");
-                                break;
-                            }
-                        }
 
                         auto * importButton = new BitmapButton(
                             panel,
@@ -1256,7 +1246,7 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                 // TODO
                                 UnderConstructionDialog::Show(this, mResourceLocator);
                             },
-                            buttonTooltip);
+                            _("Import this layer from another ship."));
 
                         layerManagerSizer->Add(
                             importButton,

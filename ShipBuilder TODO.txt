@@ -22,7 +22,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Texture:
 		- Import: two separate import buttons, or a selector opens to ask "From Image" vs "From Ship"
 			- .png
-				- New ImageLoadDialog
+				= New ImageLoadDialog
 					- See jpg support in DevIL
 				- Load file: TODO: WAS: Ad-hoc code using ImageFileTools
 			- .shp, .shp2 (load whole and throw away)
