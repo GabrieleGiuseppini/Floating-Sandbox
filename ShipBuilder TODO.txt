@@ -19,16 +19,25 @@ https://gamejolt.com/x/permalink/comment/11730705
 				- Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
 			- Show error if no layer exists in definition
 		+ No export (can save .shp2 and import from there)
-	- Texture:
-		- Import: two separate import buttons, or a selector opens to ask "From Image" vs "From Ship"
-			- .png
-				= New ImageLoadDialog
-					- See jpg support in DevIL
-				- Load file: TODO: WAS: Ad-hoc code using ImageFileTools
+	= Texture:
+		= Import: two separate import buttons
+			= .png
+				+ New ImageLoadDialog
+				= Add jpg support to DevIL
+					+ http://www.ijg.org/
+					= Windows
+						= Devil 64 (R+D)
+						- Devil 32 (R+d)
+						- Test four configurations
+					- Ubuntu
+				- Load file and pass to Controller
+				- Undo
+				- Button issue: see if specifying two bitmaps works
 			- .shp, .shp2 (load whole and throw away)
 				- Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
 				- Show error if no layer exists in definition
 			- After import, also replace art credits
+				- Empty if from image, from imported ship otherwise (even if empty)
 		- Export to .png (though quite useless at this moment)
 			- Ad-hoc code using ImageFileTools
 	- Notes:

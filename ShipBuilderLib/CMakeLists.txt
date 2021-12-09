@@ -4,38 +4,22 @@
 #
 
 set (SHIPBUILDER_LIB_SOURCES
-	AskPasswordDialog.cpp
-	AskPasswordDialog.h
 	Controller.cpp
 	Controller.h
 	ElectricalElementInstanceIndexFactory.h
 	IUserInterface.h
 	MainFrame.cpp
 	MainFrame.h
-	MaterialPalette.cpp
-	MaterialPalette.h
 	Model.cpp
 	Model.h
 	ModelController.cpp
 	ModelController.h
-	ModelValidationDialog.cpp
-	ModelValidationDialog.h
 	ModelValidationResults.h
-	NewPasswordDialog.cpp
-	NewPasswordDialog.h
 	SelectionManager.cpp	
 	SelectionManager.h
 	ShaderTypes.cpp
 	ShaderTypes.h
 	ShipBuilderTypes.h
-	ShipCanvasResizeDialog.cpp
-	ShipCanvasResizeDialog.h
-	ShipOffsetVisualizationControl.cpp
-	ShipOffsetVisualizationControl.h
-	ShipPropertiesEditDialog.cpp
-	ShipPropertiesEditDialog.h
-	StatusBar.cpp
-	StatusBar.h
 	UndoStack.cpp
 	UndoStack.h
 	View.cpp
@@ -43,6 +27,27 @@ set (SHIPBUILDER_LIB_SOURCES
 	ViewModel.h
 	WorkbenchState.cpp
 	WorkbenchState.h
+)
+
+set (UI_SOURCES
+	AskPasswordDialog.cpp
+	AskPasswordDialog.h
+	MaterialPalette.cpp
+	MaterialPalette.h
+	ModelValidationDialog.cpp
+	ModelValidationDialog.h
+	NewPasswordDialog.cpp
+	NewPasswordDialog.h
+	ResizeDialog.cpp
+	ResizeDialog.h
+	ShipOffsetVisualizationControl.cpp
+	ShipOffsetVisualizationControl.h
+	ShipPropertiesEditDialog.cpp
+	ShipPropertiesEditDialog.h
+	ShipResizeVisualizationControl.cpp
+	ShipResizeVisualizationControl.h
+	StatusBar.cpp
+	StatusBar.h
 )
 
 set (TOOLS_SOURCES
@@ -62,8 +67,9 @@ set (TOOLS_SOURCES
 
 source_group(" " FILES ${SHIPBUILDER_LIB_SOURCES})
 source_group("Tools" FILES ${TOOLS_SOURCES})
+source_group("UI" FILES ${UI_SOURCES})
 
-add_library (ShipBuilderLib ${SHIPBUILDER_LIB_SOURCES} ${TOOLS_SOURCES})
+add_library (ShipBuilderLib ${SHIPBUILDER_LIB_SOURCES} ${TOOLS_SOURCES} ${UI_SOURCES})
 
 target_include_directories(ShipBuilderLib PRIVATE .)
 target_include_directories(ShipBuilderLib PRIVATE ${wxWidgets_INCLUDE_DIRS})

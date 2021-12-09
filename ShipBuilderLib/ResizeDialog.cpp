@@ -3,7 +3,7 @@
  * Created:             2021-10-23
  * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
-#include "ShipCanvasResizeDialog.h"
+#include "ResizeDialog.h"
 
 #include <UILib/WxHelpers.h>
 
@@ -13,7 +13,7 @@
 
 namespace ShipBuilder {
 
-ShipCanvasResizeDialog::ShipCanvasResizeDialog(
+ResizeDialog::ResizeDialog(
     wxWindow * parent,
     ResourceLocator const & resourceLocator)
     : mResourceLocator(resourceLocator)
@@ -45,16 +45,16 @@ ShipCanvasResizeDialog::ShipCanvasResizeDialog(
         buttonsSizer->AddSpacer(20);
 
         {
-            mOkButton = new wxButton(this, wxID_ANY, _("OK"));
-            mOkButton->Bind(wxEVT_BUTTON, &ShipCanvasResizeDialog::OnOkButton, this);
-            buttonsSizer->Add(mOkButton, 0);
+            auto button = new wxButton(this, wxID_ANY, _("OK"));
+            button->Bind(wxEVT_BUTTON, &ResizeDialog::OnOkButton, this);
+            buttonsSizer->Add(button, 0);
         }
 
         buttonsSizer->AddSpacer(20);
 
         {
             auto button = new wxButton(this, wxID_ANY, _("Cancel"));
-            button->Bind(wxEVT_BUTTON, &ShipCanvasResizeDialog::OnCancelButton, this);
+            button->Bind(wxEVT_BUTTON, &ResizeDialog::OnCancelButton, this);
             buttonsSizer->Add(button, 0);
         }
 
@@ -74,52 +74,41 @@ ShipCanvasResizeDialog::ShipCanvasResizeDialog(
     Centre(wxCENTER_ON_SCREEN | wxBOTH);
 }
 
-void ShipCanvasResizeDialog::ShowModal(
-    Controller & controller)
+int ResizeDialog::ShowModalForResize()
 {
-    mSessionData.emplace(controller);
+    mSessionData.emplace(ModeType::ForResize);
 
     InitializeUI();
 
-    wxDialog::ShowModal();
+    return wxDialog::ShowModal();
 }
 
-void ShipCanvasResizeDialog::OnOkButton(wxCommandEvent & /*event*/)
+int ResizeDialog::ShowModalForTexture()
 {
-    // TODO: inspect dirty flags and communicate parts to Controller
-    // mShipNameTextCtrl->IsModified()
+    mSessionData.emplace(ModeType::ForTexture);
 
-    mSessionData.reset();
-    EndModal(0);
+    InitializeUI();
+
+    return wxDialog::ShowModal();
 }
 
-void ShipCanvasResizeDialog::OnCancelButton(wxCommandEvent & /*event*/)
+void ResizeDialog::OnOkButton(wxCommandEvent & /*event*/)
 {
     mSessionData.reset();
-    EndModal(-1);
+    EndModal(wxID_OK);
 }
 
-void ShipCanvasResizeDialog::InitializeUI()
+void ResizeDialog::OnCancelButton(wxCommandEvent & /*event*/)
+{
+    mSessionData.reset();
+    EndModal(wxID_CANCEL);
+}
+
+void ResizeDialog::InitializeUI()
 {
     assert(mSessionData);
 
-    // TODO
-
-    //
-    // Buttons
-    //
-
-    mOkButton->Enable(false);
-}
-
-void ShipCanvasResizeDialog::OnDirty()
-{
-    // We assume at least one of the controls is dirty
-
-    if (!mOkButton->IsEnabled())
-    {
-        mOkButton->Enable(true);
-    }
+    // TODOHERE
 }
 
 }

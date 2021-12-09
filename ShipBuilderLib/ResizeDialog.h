@@ -5,48 +5,51 @@
  ***************************************************************************************/
 #pragma once
 
-#include "Controller.h"
-
 #include <Game/ResourceLocator.h>
 
 #include <wx/dialog.h>
-#include <wx/panel.h>
 
 #include <optional>
 
 namespace ShipBuilder {
 
-class ShipCanvasResizeDialog : public wxDialog
+class ResizeDialog : public wxDialog
 {
 public:
 
-    ShipCanvasResizeDialog(
+    ResizeDialog(
         wxWindow * parent,
         ResourceLocator const & resourceLocator);
 
-    void ShowModal(Controller & controller);
+    int ShowModalForResize();
+
+    int ShowModalForTexture();
 
 private:
+
+    using wxDialog::ShowModal;
 
     void OnOkButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
 
     void InitializeUI();
 
-    void OnDirty();
-
 private:
 
     ResourceLocator const & mResourceLocator;
 
-    wxButton * mOkButton;
+    enum class ModeType
+    {
+        ForResize,
+        ForTexture
+    };
 
     struct SessionData
     {
-        Controller & BuilderController;
+        ModeType Mode;
 
-        explicit SessionData(Controller & controller)
-            : BuilderController(controller)
+        explicit SessionData(ModeType mode)
+            : Mode(mode)
         {}
     };
 

@@ -9,7 +9,7 @@
 #include "IUserInterface.h"
 #include "MaterialPalette.h"
 #include "ModelValidationDialog.h"
-#include "ShipCanvasResizeDialog.h"
+#include "ResizeDialog.h"
 #include "ShipPropertiesEditDialog.h"
 #include "StatusBar.h"
 #include "View.h"
@@ -339,7 +339,7 @@ private:
     std::unique_ptr<ShipLoadDialog> mShipLoadDialog;
     std::unique_ptr<ShipSaveDialog> mShipSaveDialog;
     std::unique_ptr<LoggingDialog> mLoggingDialog;
-    std::unique_ptr<ShipCanvasResizeDialog> mShipCanvasResizeDialog;
+    std::unique_ptr<ResizeDialog> mResizeDialog;
     std::unique_ptr<ShipPropertiesEditDialog> mShipPropertiesEditDialog;
     std::unique_ptr<ModelValidationDialog> mModelValidationDialog;
 

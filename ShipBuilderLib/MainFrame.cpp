@@ -2797,7 +2797,30 @@ void MainFrame::ImportTextureLayerFromImage()
         try
         {
             auto image = ImageFileTools::LoadImageRgba(dlg.GetPath().ToStdString());
-            // TODOHERE
+
+            // Check if ratio matches the ratio of the ship
+            auto const shipSize = mController->GetShipSize();
+            if (image.Size.width * shipSize.height != image.Size.height * shipSize.width)
+            {
+                //
+                // Ask user how to resize
+                //
+
+                if (!mResizeDialog)
+                {
+                    mResizeDialog = std::make_unique<ResizeDialog>(this, mResourceLocator);
+                }
+
+                if (!mResizeDialog->ShowModalForTexture())
+                {
+                    // User aborted
+                    return;
+                }
+
+                // TODO: resize image
+            }
+
+            // TODO: set texture in controller
         }
         catch (std::runtime_error const & exc)
         {
@@ -2808,12 +2831,13 @@ void MainFrame::ImportTextureLayerFromImage()
 
 void MainFrame::OpenShipCanvasResize()
 {
-    if (!mShipCanvasResizeDialog)
+    if (!mResizeDialog)
     {
-        mShipCanvasResizeDialog = std::make_unique<ShipCanvasResizeDialog>(this, mResourceLocator);
+        mResizeDialog = std::make_unique<ResizeDialog>(this, mResourceLocator);
     }
 
-    mShipCanvasResizeDialog->ShowModal(*mController);
+    // TODOHERE
+    mResizeDialog->ShowModalForResize();
 }
 
 void MainFrame::OpenShipProperties()
