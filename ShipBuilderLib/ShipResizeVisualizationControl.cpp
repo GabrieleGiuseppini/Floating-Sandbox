@@ -88,7 +88,7 @@ void ShipResizeVisualizationControl::OnChange()
 {
     wxSize const size = GetSize();
 
-    if (size.GetWidth() == 0 || size.GetHeight() == 0
+    if (size.GetWidth() <= 2 * TargetMargin || size.GetHeight() <= 2 * TargetMargin
         || mTargetSize.width == 0 || mTargetSize.height == 0)
     {
         return;
@@ -96,7 +96,7 @@ void ShipResizeVisualizationControl::OnChange()
 
     // Calculate conversion factor for image->DC conversions
     float integralToDC;
-    if (mTargetSize.width * size.GetHeight() <= mTargetSize.height * size.GetWidth())
+    if (mTargetSize.width * (size.GetHeight() - 2 * TargetMargin) <= mTargetSize.height * (size.GetWidth() - 2 * TargetMargin))
     {
         // Use the target width as the stick
         integralToDC = static_cast<float>(size.GetWidth() - 2 * TargetMargin) / static_cast<float>(mTargetSize.width);
@@ -107,8 +107,26 @@ void ShipResizeVisualizationControl::OnChange()
         integralToDC = static_cast<float>(size.GetHeight() - 2 * TargetMargin) / static_cast<float>(mTargetSize.height);
     }
 
-    // TODOHERE
+    // Calculate size of image
+    wxSize const newImageSize = wxSize(
+        std::max(static_cast<int>(std::round(static_cast<float>(mImage.GetWidth() - 2 * TargetMargin) * integralToDC)), 1),
+        std::max(static_cast<int>(std::round(static_cast<float>(mImage.GetHeight() - 2 * TargetMargin) * integralToDC)), 1));
 
+    // Create new preview if needed
+    if (!mResizedBitmap.IsOk()
+        || mResizedBitmap.GetSize() != newImageSize)
+    {
+        mResizedBitmap = wxBitmap(
+            mImage.Scale(newImageSize.GetWidth(), newImageSize.GetHeight(), wxIMAGE_QUALITY_HIGH),
+            wxBITMAP_SCREEN_DEPTH);
+    }
+
+    // Calculate resized bitmap origin
+    mResizedBitmapOrigin = wxPoint(
+        size.GetWidth() / 2 - static_cast<int>(std::round(static_cast<float>(mImage.GetWidth() / 2 + mOffset.x) * integralToDC)),
+        size.GetHeight() / 2 - static_cast<int>(std::round(static_cast<float>(mImage.GetHeight() / 2 + mOffset.y) * integralToDC)));
+
+    // Render
     Refresh(false);
 }
 
@@ -118,14 +136,21 @@ void ShipResizeVisualizationControl::Render(wxDC & dc)
 
     wxSize const size = GetSize();
 
-    // TODOHERE
+    //
+    // Draw ship
+    //
+
+    dc.DrawBitmap(
+        mResizedBitmap,
+        mResizedBitmapOrigin,
+        true);
 
     //
     // Draw target rectangle
     //
 
     dc.SetPen(mTargetPen);
-    dc.SetBrush(wxNullBrush);
+    dc.SetBrush(*wxTRANSPARENT_BRUSH);
     dc.DrawRectangle(
         TargetMargin,
         TargetMargin,

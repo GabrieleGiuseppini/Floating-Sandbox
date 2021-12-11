@@ -7,6 +7,9 @@
 
 #include <UILib/WxHelpers.h>
 
+#include <wx/gbsizer.h>
+#include <wx/statbmp.h>
+
 #include <cassert>
 
 namespace ShipBuilder {
@@ -30,69 +33,185 @@ ResizeDialog::ResizeDialog(
 
     dialogVSizer->AddSpacer(20);
 
-    // Size boxes
+    // Top ribbon
     {
-        int constexpr TextCtrlWidth = 60;
-        int const MaxDimension = 10000;
-
         wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        // Orig size
+        // Size boxes
         {
+            int constexpr TextCtrlWidth = 60;
+            int const MaxDimension = 10000;
+
+            wxGridBagSizer * sizer = new wxGridBagSizer(5, 5);
+
+            // Old size
             {
-                mSourceWidthTextCtrl = new wxTextCtrl(
-                    this,
-                    wxID_ANY,
-                    wxEmptyString,
-                    wxDefaultPosition,
-                    wxSize(TextCtrlWidth, -1),
-                    wxTE_CENTRE);
+                // Label
+                {
+                    auto label = new wxStaticText(this, wxID_ANY, _T("Original Size"));
 
-                mSourceWidthTextCtrl->Enable(false);
+                    sizer->Add(
+                        label,
+                        wxGBPosition(0, 0),
+                        wxGBSpan(1, 2),
+                        wxALIGN_CENTER_HORIZONTAL);
+                }
 
-                hSizer->Add(mSourceWidthTextCtrl, 0, wxALIGN_CENTER_VERTICAL, 0);
+                // Width icon
+                {
+                    auto icon = new wxStaticBitmap(this, wxID_ANY, WxHelpers::LoadBitmap("width_icon_small", resourceLocator));
+
+                    sizer->Add(
+                        icon,
+                        wxGBPosition(1, 0),
+                        wxGBSpan(1, 1),
+                        wxALIGN_CENTER_VERTICAL);
+                }
+
+                // Width
+                {
+                    mSourceWidthTextCtrl = new wxTextCtrl(
+                        this,
+                        wxID_ANY,
+                        wxEmptyString,
+                        wxDefaultPosition,
+                        wxSize(TextCtrlWidth, -1),
+                        wxTE_CENTRE);
+
+                    mSourceWidthTextCtrl->Enable(false);
+
+                    sizer->Add(
+                        mSourceWidthTextCtrl,
+                        wxGBPosition(1, 1),
+                        wxGBSpan(1, 1),
+                        0);
+                }
+
+                // Height icon
+                {
+                    auto icon = new wxStaticBitmap(this, wxID_ANY, WxHelpers::LoadBitmap("height_icon_small", resourceLocator));
+
+                    sizer->Add(
+                        icon,
+                        wxGBPosition(2, 0),
+                        wxGBSpan(1, 1),
+                        wxALIGN_CENTER_VERTICAL);
+                }
+
+                // Height
+                {
+                    mSourceHeightTextCtrl = new wxTextCtrl(
+                        this,
+                        wxID_ANY,
+                        wxEmptyString,
+                        wxDefaultPosition,
+                        wxSize(TextCtrlWidth, -1),
+                        wxTE_CENTRE);
+
+                    mSourceHeightTextCtrl->Enable(false);
+
+                    sizer->Add(
+                        mSourceHeightTextCtrl,
+                        wxGBPosition(2, 1),
+                        wxGBSpan(1, 1),
+                        0);
+                }
             }
 
-            hSizer->AddSpacer(5);
-
+            // Vertical spacer
             {
-                mSourceHeightTextCtrl = new wxTextCtrl(
-                    this,
-                    wxID_ANY,
-                    wxEmptyString,
-                    wxDefaultPosition,
-                    wxSize(TextCtrlWidth, -1),
-                    wxTE_CENTRE);
-
-                mSourceHeightTextCtrl->Enable(false);
-
-                hSizer->Add(mSourceHeightTextCtrl, 0, wxALIGN_CENTER_VERTICAL, 0);
-            }
-        }
-
-        hSizer->AddSpacer(30);
-
-        // Target size
-        {
-            {
-                mTargetWidthSpinBox = new EditSpinBox<int>(
-                    this,
-                    TextCtrlWidth,
-                    1,
-                    MaxDimension,
-                    0, // Temporary
-                    wxEmptyString,
-                    [this](int value)
-                    {
-                        mShipResizeVisualizationControl->SetTargetSize(
-                            IntegralRectSize(
-                                value,
-                                mTargetHeightSpinBox->GetValue()));
-                    });
-
-                hSizer->Add(mTargetWidthSpinBox, 0, wxALIGN_CENTER_VERTICAL, 0);
+                sizer->Add(
+                    18,
+                    1, // Pointless
+                    wxGBPosition(0, 2),
+                    wxGBSpan(3, 1));
             }
 
+            // New size
+            {
+                // Label
+                {
+                    auto label = new wxStaticText(this, wxID_ANY, _T("New Size"));
+
+                    sizer->Add(
+                        label,
+                        wxGBPosition(0, 3),
+                        wxGBSpan(1, 2),
+                        wxALIGN_CENTER_HORIZONTAL);
+                }
+
+                // Width icon
+                {
+                    auto icon = new wxStaticBitmap(this, wxID_ANY, WxHelpers::LoadBitmap("width_icon_small", resourceLocator));
+
+                    sizer->Add(
+                        icon,
+                        wxGBPosition(1, 3),
+                        wxGBSpan(1, 1),
+                        wxALIGN_CENTER_VERTICAL);
+                }
+
+                // Width
+                {
+                    mTargetWidthSpinBox = new EditSpinBox<int>(
+                        this,
+                        TextCtrlWidth,
+                        1,
+                        MaxDimension,
+                        0, // Temporary
+                        wxEmptyString,
+                        [this](int value)
+                        {
+                            mShipResizeVisualizationControl->SetTargetSize(
+                                IntegralRectSize(
+                                    value,
+                                    mTargetHeightSpinBox->GetValue()));
+                        });
+
+                    sizer->Add(
+                        mTargetWidthSpinBox,
+                        wxGBPosition(1, 4),
+                        wxGBSpan(1, 1),
+                        0);
+                }
+
+                // Height icon
+                {
+                    auto icon = new wxStaticBitmap(this, wxID_ANY, WxHelpers::LoadBitmap("height_icon_small", resourceLocator));
+
+                    sizer->Add(
+                        icon,
+                        wxGBPosition(2, 3),
+                        wxGBSpan(1, 1),
+                        wxALIGN_CENTER_VERTICAL);
+                }
+
+                // Height
+                {
+                    mTargetHeightSpinBox = new EditSpinBox<int>(
+                        this,
+                        TextCtrlWidth,
+                        1,
+                        MaxDimension,
+                        0, // Temporary
+                        wxEmptyString,
+                        [this](int value)
+                        {
+                            mShipResizeVisualizationControl->SetTargetSize(
+                                IntegralRectSize(
+                                    mTargetWidthSpinBox->GetValue(),
+                                    value));
+                        });
+
+                    sizer->Add(
+                        mTargetHeightSpinBox,
+                        wxGBPosition(2, 4),
+                        wxGBSpan(1, 1),
+                        0);
+                }
+            }
+
+            // Lock button
             {
                 mTargetSizeDimensionLockButton = new BitmapToggleButton(
                     this,
@@ -102,31 +221,55 @@ ResizeDialog::ResizeDialog(
                         // TODO
                     });
 
-                hSizer->Add(
+                sizer->Add(
                     mTargetSizeDimensionLockButton,
-                    0,
-                    wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
-                    4);
+                    wxGBPosition(1, 5),
+                    wxGBSpan(2, 1),
+                    wxALIGN_CENTER_VERTICAL);
             }
 
+            hSizer->Add(
+                sizer,
+                1,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+        }
+
+        hSizer->AddSpacer(40);
+
+        // Anchor controls
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(2, 2);
+
+            for (int y = 0; y < 3; ++y)
             {
-                mTargetHeightSpinBox = new EditSpinBox<int>(
-                    this,
-                    TextCtrlWidth,
-                    1,
-                    MaxDimension,
-                    0, // Temporary
-                    wxEmptyString,
-                    [this](int value)
-                    {
-                        mShipResizeVisualizationControl->SetTargetSize(
-                            IntegralRectSize(
-                                mTargetWidthSpinBox->GetValue(),
-                                value));
-                    });
+                for (int x = 0; x < 3; ++x)
+                {
+                    auto button = new wxToggleButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(30, 30));
 
-                hSizer->Add(mTargetHeightSpinBox, 0, wxALIGN_CENTER_VERTICAL, 0);
+                    button->Bind(
+                        wxEVT_BUTTON,
+                        [this, x, y](wxCommandEvent &)
+                        {
+                            // TODOHERE
+                            // TODO: invoked need also to untoggle others
+                        });
+
+                    sizer->Add(
+                        button,
+                        wxGBPosition(y, x),
+                        wxGBSpan(1, 1),
+                        0);
+
+                    mAnchorButtons[y * 3 + x] = button;
+                }
             }
+
+            hSizer->Add(
+                sizer,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
         }
 
         dialogVSizer->Add(
@@ -270,7 +413,7 @@ void ResizeDialog::ReconciliateUI(
     mShipResizeVisualizationControl->Initialize(
         image,
         targetSize,
-        IntegralCoordinates(0, 0)); // tODO: using calc function
+        IntegralCoordinates(0, 0)); // tODO: using calc function for center
 }
 
 }

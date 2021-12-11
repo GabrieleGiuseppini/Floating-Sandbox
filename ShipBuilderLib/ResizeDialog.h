@@ -17,6 +17,8 @@
 #include <wx/dialog.h>
 #include <wx/textctrl.h>
 
+#include <array>
+
 namespace ShipBuilder {
 
 class ResizeDialog : public wxDialog
@@ -62,6 +64,7 @@ private:
     EditSpinBox<int> * mTargetWidthSpinBox;
     EditSpinBox<int> * mTargetHeightSpinBox;
     BitmapToggleButton * mTargetSizeDimensionLockButton;
+    std::array<wxToggleButton *, 9> mAnchorButtons;
     ShipResizeVisualizationControl * mShipResizeVisualizationControl;
 
     /*TODOTEST

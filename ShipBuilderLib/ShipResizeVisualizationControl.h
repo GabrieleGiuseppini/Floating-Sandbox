@@ -55,6 +55,7 @@ private:
 
     // Calculated members    
     wxBitmap mResizedBitmap;
+    wxPoint mResizedBitmapOrigin;
 };
 
 }
