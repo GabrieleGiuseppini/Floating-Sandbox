@@ -2798,9 +2798,24 @@ void MainFrame::ImportTextureLayerFromImage()
         {
             auto image = ImageFileTools::LoadImageRgba(dlg.GetPath().ToStdString());
 
-            // Check if ratio matches the ratio of the ship
-            auto const shipSize = mController->GetShipSize();
-            if (image.Size.width * shipSize.height != image.Size.height * shipSize.width)
+            if (image.Size.width == 0 || image.Size.height == 0)
+            {
+                throw GameException("The specified texture image is empty, and thus it may not be used for this ship.");
+            }
+
+            // Calculate target size == size of texture when maintaining same aspect ratio as ship's,
+            // preferring to not cut
+            ShipSpaceSize const & shipSize = mController->GetShipSize();
+            IntegralRectSize targetSize = (image.Size.width * shipSize.height >= image.Size.height * shipSize.width)
+                ? IntegralRectSize(image.Size.width, image.Size.width * shipSize.height / shipSize.width) // Keeping this width would require greater height (no clipping), and thus we want to keep this width
+                : IntegralRectSize(image.Size.height * shipSize.width / shipSize.height, image.Size.height); // Keeping this width would require smaller height (hence clipping), and thus we want to keep the height instead
+            
+            // TODOHERE
+            LogMessage("TODOTEST: TextureSize=", image.Size.ToString(), " ShipSize=", shipSize.ToString(), " => TargetSize=", targetSize.ToString());
+
+            // Check if the target size does not match the current texture size
+            if (targetSize.width != image.Size.width
+                || targetSize.height != image.Size.height)
             {
                 //
                 // Ask user how to resize
@@ -2811,7 +2826,7 @@ void MainFrame::ImportTextureLayerFromImage()
                     mResizeDialog = std::make_unique<ResizeDialog>(this, mResourceLocator);
                 }
 
-                if (!mResizeDialog->ShowModalForTexture())
+                if (!mResizeDialog->ShowModalForTexture(image, targetSize))
                 {
                     // User aborted
                     return;
@@ -2837,7 +2852,7 @@ void MainFrame::OpenShipCanvasResize()
     }
 
     // TODOHERE
-    mResizeDialog->ShowModalForResize();
+    //mResizeDialog->ShowModalForResize();
 }
 
 void MainFrame::OpenShipProperties()

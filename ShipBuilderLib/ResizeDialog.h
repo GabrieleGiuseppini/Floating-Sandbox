@@ -5,11 +5,17 @@
  ***************************************************************************************/
 #pragma once
 
+#include "ShipResizeVisualizationControl.h"
+
+#include <UILib/BitmapToggleButton.h>
+#include <UILib/EditSpinBox.h>
+
 #include <Game/ResourceLocator.h>
 
-#include <wx/dialog.h>
+#include <GameCore/GameTypes.h>
 
-#include <optional>
+#include <wx/dialog.h>
+#include <wx/textctrl.h>
 
 namespace ShipBuilder {
 
@@ -21,22 +27,15 @@ public:
         wxWindow * parent,
         ResourceLocator const & resourceLocator);
 
-    int ShowModalForResize();
+    int ShowModalForResize(
+        RgbaImageData const & image,
+        IntegralRectSize const & targetSize);
 
-    int ShowModalForTexture();
-
-private:
-
-    using wxDialog::ShowModal;
-
-    void OnOkButton(wxCommandEvent & event);
-    void OnCancelButton(wxCommandEvent & event);
-
-    void InitializeUI();
+    int ShowModalForTexture(
+        RgbaImageData const & image,
+        IntegralRectSize const & targetSize);
 
 private:
-
-    ResourceLocator const & mResourceLocator;
 
     enum class ModeType
     {
@@ -44,16 +43,47 @@ private:
         ForTexture
     };
 
+    using wxDialog::ShowModal;
+
+    void OnOkButton(wxCommandEvent & event);
+    void OnCancelButton(wxCommandEvent & event);
+
+    void ReconciliateUI(
+        RgbaImageData const & image,
+        IntegralRectSize const & targetSize,
+        ModeType mode);
+
+private:
+
+    ResourceLocator const & mResourceLocator;
+
+    wxTextCtrl * mSourceWidthTextCtrl;
+    wxTextCtrl * mSourceHeightTextCtrl;
+    EditSpinBox<int> * mTargetWidthSpinBox;
+    EditSpinBox<int> * mTargetHeightSpinBox;
+    BitmapToggleButton * mTargetSizeDimensionLockButton;
+    ShipResizeVisualizationControl * mShipResizeVisualizationControl;
+
+    /*TODOTEST
+    //
+    // Session data
+    //
+
     struct SessionData
     {
         ModeType Mode;
+        IntegralRectSize TargetSize;
 
-        explicit SessionData(ModeType mode)
+        explicit SessionData(
+            ModeType mode,
+            IntegralRectSize const & targetSize)
             : Mode(mode)
+            , TargetSize(targetSize)
         {}
     };
 
     std::optional<SessionData const> mSessionData;
+    */
 };
 
 }

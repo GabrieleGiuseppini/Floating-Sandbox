@@ -30,6 +30,8 @@ public:
         ShipSpaceToWorldSpaceCoordsRatio const & shipSpaceToWorldSpaceCoordsRatio,
         float offsetX,
         float offsetY);
+
+    void Deinitialize();
     
     void SetOffsetX(float offsetX);
     void SetOffsetY(float offsetY);

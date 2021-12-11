@@ -55,6 +55,12 @@ void ShipOffsetVisualizationControl::Initialize(
     OnChange();
 }
 
+void ShipOffsetVisualizationControl::Deinitialize()
+{
+    mShipVisualization.Destroy();
+    mResizedShipBitmap = wxBitmap();
+}
+
 void ShipOffsetVisualizationControl::SetOffsetX(float offsetX)
 {
     mOffsetX = offsetX;

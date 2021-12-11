@@ -1128,13 +1128,14 @@ void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
     //
 
     mSessionData.reset();
-
+    mShipOffsetVisualizationControl->Deinitialize();
     EndModal(0);
 }
 
 void ShipPropertiesEditDialog::OnCancelButton(wxCommandEvent & /*event*/)
 {
     mSessionData.reset();
+    mShipOffsetVisualizationControl->Deinitialize();
     EndModal(-1);
 }
 

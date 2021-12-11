@@ -21,18 +21,22 @@ public:
     ShipResizeVisualizationControl(
         wxWindow * parent,
         int width,
-        int height,
-        float initialOffsetX,
-        float initialOffsetY);
+        int height);
+
+    IntegralCoordinates const & GetOffset() const
+    {
+        return mOffset;
+    }
 
     void Initialize(
-        RgbaImageData const & shipVisualization,
-        ShipSpaceToWorldSpaceCoordsRatio const & shipSpaceToWorldSpaceCoordsRatio,
-        float offsetX,
-        float offsetY);
+        RgbaImageData const & image,
+        IntegralRectSize const & targetSize,
+        IntegralCoordinates initialOffset);
+
+    void Deinitialize();
     
-    void SetOffsetX(float offsetX);
-    void SetOffsetY(float offsetY);
+    void SetTargetSize(IntegralRectSize const & targetSize);
+    void SetOffset(IntegralCoordinates const & offset);
 
 private:
 
@@ -43,18 +47,14 @@ private:
 
 private:
 
-    wxImage mShipVisualization;
-    ShipSpaceToWorldSpaceCoordsRatio mShipSpaceToWorldSpaceCoordsRatio;
-    float mOffsetX;
-    float mOffsetY;
-    
-    wxBrush mSeaBrush;
-    wxPen mSeaPen;
-    wxPen mGuidesPen;
+    wxPen mTargetPen;
+
+    wxImage mImage;
+    IntegralRectSize mTargetSize;
+    IntegralCoordinates mOffset;
 
     // Calculated members    
-    wxBitmap mResizedShipBitmap;
-    wxPoint mResizedShipOrigin;
+    wxBitmap mResizedBitmap;
 };
 
 }
