@@ -53,7 +53,9 @@ private:
     IntegralRectSize mTargetSize;
     IntegralCoordinates mOffset;
 
-    // Calculated members    
+    // Calculated members
+    wxPoint mTargetOriginDC;
+    wxSize mTargetSizeDC;
     wxBitmap mResizedBitmap;
     wxPoint mResizedBitmapOrigin;
 };

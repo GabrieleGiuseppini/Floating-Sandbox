@@ -96,7 +96,7 @@ void ShipResizeVisualizationControl::OnChange()
 
     // Calculate conversion factor for image->DC conversions
     float integralToDC;
-    if (mTargetSize.width * (size.GetHeight() - 2 * TargetMargin) <= mTargetSize.height * (size.GetWidth() - 2 * TargetMargin))
+    if (mTargetSize.width * (size.GetHeight() - 2 * TargetMargin) >= mTargetSize.height * (size.GetWidth() - 2 * TargetMargin))
     {
         // Use the target width as the stick
         integralToDC = static_cast<float>(size.GetWidth() - 2 * TargetMargin) / static_cast<float>(mTargetSize.width);
@@ -107,10 +107,18 @@ void ShipResizeVisualizationControl::OnChange()
         integralToDC = static_cast<float>(size.GetHeight() - 2 * TargetMargin) / static_cast<float>(mTargetSize.height);
     }
 
+    // Calculate target coords in DC
+    mTargetSizeDC = wxSize(
+        static_cast<int>(std::round(static_cast<float>(mTargetSize.width) * integralToDC)),
+        static_cast<int>(std::round(static_cast<float>(mTargetSize.height) * integralToDC)));
+    mTargetOriginDC = wxPoint(
+        size.GetWidth() / 2 - mTargetSizeDC.GetWidth() / 2,
+        size.GetHeight() / 2 - mTargetSizeDC.GetHeight() / 2);
+
     // Calculate size of image
     wxSize const newImageSize = wxSize(
-        std::max(static_cast<int>(std::round(static_cast<float>(mImage.GetWidth() - 2 * TargetMargin) * integralToDC)), 1),
-        std::max(static_cast<int>(std::round(static_cast<float>(mImage.GetHeight() - 2 * TargetMargin) * integralToDC)), 1));
+        std::max(static_cast<int>(std::round(static_cast<float>(mImage.GetWidth()) * integralToDC)), 1),
+        std::max(static_cast<int>(std::round(static_cast<float>(mImage.GetHeight()) * integralToDC)), 1));
 
     // Create new preview if needed
     if (!mResizedBitmap.IsOk()
@@ -151,11 +159,7 @@ void ShipResizeVisualizationControl::Render(wxDC & dc)
 
     dc.SetPen(mTargetPen);
     dc.SetBrush(*wxTRANSPARENT_BRUSH);
-    dc.DrawRectangle(
-        TargetMargin,
-        TargetMargin,
-        size.GetWidth() - 2 * TargetMargin,
-        size.GetHeight() - 2 * TargetMargin);
+    dc.DrawRectangle(wxRect(mTargetOriginDC, mTargetSizeDC));
 }
 
 }
