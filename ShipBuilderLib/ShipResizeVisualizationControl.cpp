@@ -42,8 +42,9 @@ ShipResizeVisualizationControl::ShipResizeVisualizationControl(
 #ifdef __WXMSW__
     SetDoubleBuffered(true);
 #endif
-    SetBackgroundColour(wxColour("WHITE"));
+    SetBackgroundColour(wxColour(150, 150, 150));
     mTargetPen = wxPen(wxColor(0, 0, 0), 1, wxPENSTYLE_SOLID);
+    mTargetBrush = wxBrush(wxColor(255, 255, 255), wxBRUSHSTYLE_SOLID);
 }
 
 void ShipResizeVisualizationControl::Initialize(
@@ -130,7 +131,7 @@ void ShipResizeVisualizationControl::OnChange()
     }
 
     // Calculate resized bitmap origin
-    mResizedBitmapOrigin = wxPoint(
+    mResizedBitmapOriginDC = wxPoint(
         size.GetWidth() / 2 - static_cast<int>(std::round(static_cast<float>(mImage.GetWidth() / 2 + mOffset.x) * integralToDC)),
         size.GetHeight() / 2 - static_cast<int>(std::round(static_cast<float>(mImage.GetHeight() / 2 + mOffset.y) * integralToDC)));
 
@@ -145,16 +146,24 @@ void ShipResizeVisualizationControl::Render(wxDC & dc)
     wxSize const size = GetSize();
 
     //
+    // Draw target rectangle 1
+    //
+
+    dc.SetPen(mTargetPen);
+    dc.SetBrush(mTargetBrush);
+    dc.DrawRectangle(wxRect(mTargetOriginDC, mTargetSizeDC));
+
+    //
     // Draw ship
     //
 
     dc.DrawBitmap(
         mResizedBitmap,
-        mResizedBitmapOrigin,
+        mResizedBitmapOriginDC,
         true);
 
     //
-    // Draw target rectangle
+    // Draw target rectangle 2
     //
 
     dc.SetPen(mTargetPen);

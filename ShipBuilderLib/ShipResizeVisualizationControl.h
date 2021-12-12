@@ -48,6 +48,7 @@ private:
 private:
 
     wxPen mTargetPen;
+    wxBrush mTargetBrush;
 
     wxImage mImage;
     IntegralRectSize mTargetSize;
@@ -57,7 +58,7 @@ private:
     wxPoint mTargetOriginDC;
     wxSize mTargetSizeDC;
     wxBitmap mResizedBitmap;
-    wxPoint mResizedBitmapOrigin;
+    wxPoint mResizedBitmapOriginDC;
 };
 
 }
