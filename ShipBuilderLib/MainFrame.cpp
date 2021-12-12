@@ -2810,9 +2810,6 @@ void MainFrame::ImportTextureLayerFromImage()
                 ? IntegralRectSize(image.Size.width, image.Size.width * shipSize.height / shipSize.width) // Keeping this width would require greater height (no clipping), and thus we want to keep this width
                 : IntegralRectSize(image.Size.height * shipSize.width / shipSize.height, image.Size.height); // Keeping this width would require smaller height (hence clipping), and thus we want to keep the height instead
             
-            // TODOHERE
-            LogMessage("TODOTEST: TextureSize=", image.Size.ToString(), " ShipSize=", shipSize.ToString(), " => TargetSize=", targetSize.ToString());
-
             // Check if the target size does not match the current texture size
             if (targetSize.width != image.Size.width
                 || targetSize.height != image.Size.height)

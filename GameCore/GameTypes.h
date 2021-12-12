@@ -436,6 +436,12 @@ struct _IntegralCoordinates
             this->y + sz.height);
     }
 
+    inline void operator+=(_IntegralSize<TIntegralTag> const & sz)
+    {
+        this->x += sz.width;
+        this->y += sz.height;
+    }
+
     inline _IntegralSize<TIntegralTag> operator-(_IntegralCoordinates<TIntegralTag> const & other) const
     {
         return _IntegralSize<TIntegralTag>(

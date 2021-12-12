@@ -37,6 +37,9 @@ ShipResizeVisualizationControl::ShipResizeVisualizationControl(
         });
 
     Bind(wxEVT_PAINT, &ShipResizeVisualizationControl::OnPaint, this);
+    Bind(wxEVT_LEFT_DOWN, &ShipResizeVisualizationControl::OnMouseLeftDown, this);
+    Bind(wxEVT_LEFT_UP, &ShipResizeVisualizationControl::OnMouseLeftUp, this);
+    Bind(wxEVT_MOTION, &ShipResizeVisualizationControl::OnMouseMove, this);
 
     // Initialize rendering
 #ifdef __WXMSW__
@@ -54,6 +57,8 @@ void ShipResizeVisualizationControl::Initialize(
     mImage = WxHelpers::MakeImage(image);
     mTargetSize = targetSize;
     mOffset = { 0, 0 };
+
+    mCurrentMouseTrajectoryStartDC.reset();
     
     OnChange();
 }
@@ -140,6 +145,32 @@ void ShipResizeVisualizationControl::OnPaint(wxPaintEvent & /*event*/)
     Render(dc);
 }
 
+void ShipResizeVisualizationControl::OnMouseLeftDown(wxMouseEvent & event)
+{
+    mCurrentMouseTrajectoryStartDC.emplace(event.GetX(), event.GetY());
+}
+
+void ShipResizeVisualizationControl::OnMouseLeftUp(wxMouseEvent & /*event*/)
+{
+    mCurrentMouseTrajectoryStartDC.reset();
+}
+
+void ShipResizeVisualizationControl::OnMouseMove(wxMouseEvent & event)
+{
+    if (mCurrentMouseTrajectoryStartDC.has_value())
+    {
+        wxPoint newMouseCoords(event.GetX(), event.GetY());
+
+        mOffset += IntegralRectSize(
+            static_cast<IntegralRectSize::integral_type>(std::round(static_cast<float>(newMouseCoords.x - mCurrentMouseTrajectoryStartDC->x) / mIntegralToDC)),
+            static_cast<IntegralRectSize::integral_type>(std::round(static_cast<float>(newMouseCoords.y - mCurrentMouseTrajectoryStartDC->y) / mIntegralToDC)));
+
+        OnChange();
+
+        mCurrentMouseTrajectoryStartDC.emplace(newMouseCoords);
+    }
+}
+
 void ShipResizeVisualizationControl::OnChange()
 {
     wxSize const size = GetSize();
@@ -151,30 +182,29 @@ void ShipResizeVisualizationControl::OnChange()
     }
 
     // Calculate conversion factor for image->DC conversions
-    float integralToDC;
     if (mTargetSize.width * (size.GetHeight() - 2 * TargetMargin) >= mTargetSize.height * (size.GetWidth() - 2 * TargetMargin))
     {
         // Use the target width as the stick
-        integralToDC = static_cast<float>(size.GetWidth() - 2 * TargetMargin) / static_cast<float>(mTargetSize.width);
+        mIntegralToDC = static_cast<float>(size.GetWidth() - 2 * TargetMargin) / static_cast<float>(mTargetSize.width);
     }
     else
     {
         // Use the target height as the stick
-        integralToDC = static_cast<float>(size.GetHeight() - 2 * TargetMargin) / static_cast<float>(mTargetSize.height);
+        mIntegralToDC = static_cast<float>(size.GetHeight() - 2 * TargetMargin) / static_cast<float>(mTargetSize.height);
     }
 
     // Calculate target coords in DC
     mTargetSizeDC = wxSize(
-        static_cast<int>(std::round(static_cast<float>(mTargetSize.width) * integralToDC)),
-        static_cast<int>(std::round(static_cast<float>(mTargetSize.height) * integralToDC)));
+        static_cast<int>(std::round(static_cast<float>(mTargetSize.width) * mIntegralToDC)),
+        static_cast<int>(std::round(static_cast<float>(mTargetSize.height) * mIntegralToDC)));
     mTargetOriginDC = wxPoint(
         size.GetWidth() / 2 - mTargetSizeDC.GetWidth() / 2,
         size.GetHeight() / 2 - mTargetSizeDC.GetHeight() / 2);
 
     // Calculate size of image
     wxSize const newImageSize = wxSize(
-        std::max(static_cast<int>(std::round(static_cast<float>(mImage.GetWidth()) * integralToDC)), 1),
-        std::max(static_cast<int>(std::round(static_cast<float>(mImage.GetHeight()) * integralToDC)), 1));
+        std::max(static_cast<int>(std::round(static_cast<float>(mImage.GetWidth()) * mIntegralToDC)), 1),
+        std::max(static_cast<int>(std::round(static_cast<float>(mImage.GetHeight()) * mIntegralToDC)), 1));
 
     // Create new preview if needed
     if (!mResizedBitmap.IsOk()
@@ -187,8 +217,8 @@ void ShipResizeVisualizationControl::OnChange()
 
     // Calculate resized bitmap origin
     mResizedBitmapOriginDC = wxPoint(
-        mTargetOriginDC.x + static_cast<int>(std::round(static_cast<float>(mOffset.x) * integralToDC)),
-        mTargetOriginDC.y + static_cast<int>(std::round(static_cast<float>(mOffset.y) * integralToDC)));
+        mTargetOriginDC.x + static_cast<int>(std::round(static_cast<float>(mOffset.x) * mIntegralToDC)),
+        mTargetOriginDC.y + static_cast<int>(std::round(static_cast<float>(mOffset.y) * mIntegralToDC)));
 
     // Render
     Refresh(false);

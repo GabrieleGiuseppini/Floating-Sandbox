@@ -12,6 +12,8 @@
 #include <wx/image.h>
 #include <wx/panel.h>
 
+#include <optional>
+
 namespace ShipBuilder {
 
 class ShipResizeVisualizationControl : public wxPanel
@@ -40,6 +42,10 @@ public:
 private:
 
     void OnPaint(wxPaintEvent & event);
+    void OnMouseLeftDown(wxMouseEvent & event);
+    void OnMouseLeftUp(wxMouseEvent & event);
+    void OnMouseMove(wxMouseEvent & event);
+
     void OnChange();
 
     void Render(wxDC & dc);
@@ -49,11 +55,14 @@ private:
     wxPen mTargetPen;
     wxBrush mTargetBrush;
 
+    // State
     wxImage mImage;
     IntegralRectSize mTargetSize;
     IntegralCoordinates mOffset;
+    std::optional<wxPoint> mCurrentMouseTrajectoryStartDC;
 
     // Calculated members
+    float mIntegralToDC;
     wxPoint mTargetOriginDC;
     wxSize mTargetSizeDC;
     wxBitmap mResizedBitmap;
