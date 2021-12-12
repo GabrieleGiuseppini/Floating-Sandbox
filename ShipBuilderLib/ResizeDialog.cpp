@@ -18,6 +18,7 @@ ResizeDialog::ResizeDialog(
     wxWindow * parent,
     ResourceLocator const & resourceLocator)
     : mResourceLocator(resourceLocator)
+    , mSourceSize(0, 0)
 {
     Create(
         parent,
@@ -162,6 +163,13 @@ ResizeDialog::ResizeDialog(
                         wxEmptyString,
                         [this](int value)
                         {
+                            if (mTargetSizeDimensionLockButton->GetValue())
+                            {
+                                // Calculate height when preserving source aspect ratio
+                                int const newHeight = static_cast<int>(std::round(static_cast<float>(value * mSourceSize.height) / static_cast<float>(mSourceSize.width)));
+                                mTargetHeightSpinBox->SetValue(newHeight);
+                            }
+
                             mShipResizeVisualizationControl->SetTargetSize(
                                 IntegralRectSize(
                                     value,
@@ -197,6 +205,13 @@ ResizeDialog::ResizeDialog(
                         wxEmptyString,
                         [this](int value)
                         {
+                            if (mTargetSizeDimensionLockButton->GetValue())
+                            {
+                                // Calculate width when preserving source aspect ratio
+                                int const newWidth = static_cast<int>(std::round(static_cast<float>(value * mSourceSize.width) / static_cast<float>(mSourceSize.height)));
+                                mTargetWidthSpinBox->SetValue(newWidth);
+                            }
+
                             mShipResizeVisualizationControl->SetTargetSize(
                                 IntegralRectSize(
                                     mTargetWidthSpinBox->GetValue(),
@@ -218,7 +233,18 @@ ResizeDialog::ResizeDialog(
                     resourceLocator.GetBitmapFilePath("locked_vertical_small"),
                     [this]()
                     {
-                        // TODO
+                        if (mTargetSizeDimensionLockButton->GetValue())
+                        {
+                            // Calculate height when preserving source aspect ratio
+                            int const newHeight = static_cast<int>(std::round(static_cast<float>(mTargetWidthSpinBox->GetValue() * mSourceSize.height) / static_cast<float>(mSourceSize.width)));
+                            mTargetHeightSpinBox->SetValue(newHeight);
+
+                            // Tell viz controller
+                            mShipResizeVisualizationControl->SetTargetSize(
+                                IntegralRectSize(
+                                    mTargetWidthSpinBox->GetValue(),
+                                    newHeight));
+                        }
                     });
 
                 sizer->Add(
@@ -339,6 +365,8 @@ int ResizeDialog::ShowModalForResize(
     RgbaImageData const & image,
     IntegralRectSize const & targetSize)
 {
+    mSourceSize = IntegralRectSize(image.Size.width, image.Size.height);
+
     ReconciliateUI(image, targetSize, ModeType::ForResize);
 
     return wxDialog::ShowModal();
@@ -348,17 +376,27 @@ int ResizeDialog::ShowModalForTexture(
     RgbaImageData const & image,
     IntegralRectSize const & targetSize)
 {
+    mSourceSize = IntegralRectSize(image.Size.width, image.Size.height);
+
     ReconciliateUI(image, targetSize, ModeType::ForTexture);
 
     return wxDialog::ShowModal();
 }
 
+IntegralRectSize ResizeDialog::GetTargetSize() const
+{
+    return IntegralRectSize(
+        mTargetWidthSpinBox->GetValue(),
+        mTargetHeightSpinBox->GetValue());
+}
+
+IntegralCoordinates ResizeDialog::GetOffset() const
+{
+    return mShipResizeVisualizationControl->GetOffset();
+}
+
 void ResizeDialog::OnOkButton(wxCommandEvent & /*event*/)
 {
-    // TODO: copy result from control
-    // TODO: expose result
-    // TODO: or not, getter on dialog could call getter on control
-
     mShipResizeVisualizationControl->Deinitialize();
     EndModal(wxID_OK);
 }

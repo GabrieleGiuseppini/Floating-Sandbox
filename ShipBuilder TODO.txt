@@ -31,6 +31,17 @@ https://gamejolt.com/x/permalink/comment/11730705
 						- Test four configurations
 					- Ubuntu
 				- Load file and pass to Controller
+					= Resize workflow
+						= For texture
+							+ Dialog
+							- Resize
+								- Buffer2D
+						- For resize
+							= Dialog
+								+ Dimensions lock button
+								- When changing target size, need to honor anchor
+									- Hence need to store anchor coords, rather than just offset
+							- Resize
 				- Undo
 				- Button issue: see if specifying two bitmaps works
 			- .shp, .shp2 (load whole and throw away)

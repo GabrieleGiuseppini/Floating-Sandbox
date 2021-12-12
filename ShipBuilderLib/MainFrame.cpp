@@ -2848,8 +2848,11 @@ void MainFrame::OpenShipCanvasResize()
         mResizeDialog = std::make_unique<ResizeDialog>(this, mResourceLocator);
     }
 
-    // TODOHERE
-    //mResizeDialog->ShowModalForResize();
+    auto const & preview = mController->GetStructuralLayerVisualization();
+    if (mResizeDialog->ShowModalForResize(preview, IntegralRectSize(preview.Size.width, preview.Size.height)))
+    {
+        // tODOHERE
+    }
 }
 
 void MainFrame::OpenShipProperties()

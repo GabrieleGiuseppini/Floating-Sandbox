@@ -37,6 +37,9 @@ public:
         RgbaImageData const & image,
         IntegralRectSize const & targetSize);
 
+    IntegralRectSize GetTargetSize() const;
+    IntegralCoordinates GetOffset() const;
+
 private:
 
     enum class ModeType
@@ -70,6 +73,8 @@ private:
     BitmapToggleButton * mTargetSizeDimensionLockButton;
     std::array<wxToggleButton *, 9> mAnchorButtons;
     ShipResizeVisualizationControl * mShipResizeVisualizationControl;
+
+    IntegralRectSize mSourceSize;
 };
 
 }
