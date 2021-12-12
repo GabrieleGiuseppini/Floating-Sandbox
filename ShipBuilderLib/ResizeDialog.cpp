@@ -239,20 +239,25 @@ ResizeDialog::ResizeDialog(
 
         // Anchor controls
         {
+            int constexpr BaseButtonSize = 20;
+
             wxGridBagSizer * sizer = new wxGridBagSizer(2, 2);
 
             for (int y = 0; y < 3; ++y)
             {
                 for (int x = 0; x < 3; ++x)
                 {
-                    auto button = new wxToggleButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(30, 30));
+                    auto const buttonSize = wxSize(
+                        x == 1 ? 2 * BaseButtonSize : BaseButtonSize,
+                        y == 1 ? 2 * BaseButtonSize : BaseButtonSize);
+
+                    auto button = new wxToggleButton(this, wxID_ANY, wxEmptyString, wxDefaultPosition, buttonSize);
 
                     button->Bind(
-                        wxEVT_BUTTON,
-                        [this, x, y](wxCommandEvent &)
+                        wxEVT_TOGGLEBUTTON,
+                        [this, button, x, y](wxCommandEvent &)
                         {
-                            // TODOHERE
-                            // TODO: invoked need also to untoggle others
+                            OnAnchor(x, y);
                         });
 
                     sizer->Add(
@@ -334,9 +339,6 @@ int ResizeDialog::ShowModalForResize(
     RgbaImageData const & image,
     IntegralRectSize const & targetSize)
 {
-    // TODOTEST
-    //mSessionData.emplace(ModeType::ForResize, targetSize);
-
     ReconciliateUI(image, targetSize, ModeType::ForResize);
 
     return wxDialog::ShowModal();
@@ -346,9 +348,6 @@ int ResizeDialog::ShowModalForTexture(
     RgbaImageData const & image,
     IntegralRectSize const & targetSize)
 {
-    // TODOTEST
-    //mSessionData.emplace(ModeType::ForTexture, targetSize);
-
     ReconciliateUI(image, targetSize, ModeType::ForTexture);
 
     return wxDialog::ShowModal();
@@ -360,18 +359,35 @@ void ResizeDialog::OnOkButton(wxCommandEvent & /*event*/)
     // TODO: expose result
     // TODO: or not, getter on dialog could call getter on control
 
-    // TODOTEST
-    //mSessionData.reset();
     mShipResizeVisualizationControl->Deinitialize();
     EndModal(wxID_OK);
 }
 
 void ResizeDialog::OnCancelButton(wxCommandEvent & /*event*/)
 {
-    // TODOTEST
-    //mSessionData.reset();
     mShipResizeVisualizationControl->Deinitialize();
     EndModal(wxID_CANCEL);
+}
+
+void ResizeDialog::OnAnchor(
+    int anchorMatrixX, 
+    int anchorMatrixY)
+{
+    // Tell control
+    mShipResizeVisualizationControl->SetAnchor(anchorMatrixX, anchorMatrixY);
+
+    // Reconciliate toggle state
+    for (int y = 0; y < 3; ++y)
+    {
+        for (int x = 0; x < 3; ++x)
+        {
+            bool const isSelected = (y == anchorMatrixY && x == anchorMatrixX);
+            if (mAnchorButtons[y * 3 + x]->GetValue() != isSelected)
+            {
+                mAnchorButtons[y * 3 + x]->SetValue(isSelected);
+            }
+        }
+    }
 }
 
 void ResizeDialog::ReconciliateUI(
@@ -395,9 +411,6 @@ void ResizeDialog::ReconciliateUI(
         }
     }
 
-    // TODOTEST
-    //assert(mSessionData);
-
     // Source size
     mSourceWidthTextCtrl->SetValue(std::to_string(image.Size.width));
     mSourceHeightTextCtrl->SetValue(std::to_string(image.Size.height));
@@ -412,8 +425,10 @@ void ResizeDialog::ReconciliateUI(
     // Viz control
     mShipResizeVisualizationControl->Initialize(
         image,
-        targetSize,
-        IntegralCoordinates(0, 0)); // tODO: using calc function for center
+        targetSize);
+
+    // Set center-anchored
+    OnAnchor(1, 1);
 }
 
 }

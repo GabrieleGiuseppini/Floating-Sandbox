@@ -50,6 +50,10 @@ private:
     void OnOkButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
 
+    void OnAnchor(
+        int anchorMatrixX, 
+        int anchorMatrixY);
+
     void ReconciliateUI(
         RgbaImageData const & image,
         IntegralRectSize const & targetSize,
@@ -66,27 +70,6 @@ private:
     BitmapToggleButton * mTargetSizeDimensionLockButton;
     std::array<wxToggleButton *, 9> mAnchorButtons;
     ShipResizeVisualizationControl * mShipResizeVisualizationControl;
-
-    /*TODOTEST
-    //
-    // Session data
-    //
-
-    struct SessionData
-    {
-        ModeType Mode;
-        IntegralRectSize TargetSize;
-
-        explicit SessionData(
-            ModeType mode,
-            IntegralRectSize const & targetSize)
-            : Mode(mode)
-            , TargetSize(targetSize)
-        {}
-    };
-
-    std::optional<SessionData const> mSessionData;
-    */
 };
 
 }

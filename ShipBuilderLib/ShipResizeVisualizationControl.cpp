@@ -49,12 +49,11 @@ ShipResizeVisualizationControl::ShipResizeVisualizationControl(
 
 void ShipResizeVisualizationControl::Initialize(
     RgbaImageData const & image,
-    IntegralRectSize const & targetSize,
-    IntegralCoordinates initialOffset)
+    IntegralRectSize const & targetSize)
 {
     mImage = WxHelpers::MakeImage(image);
     mTargetSize = targetSize;
-    mOffset = initialOffset;
+    mOffset = { 0, 0 };
     
     OnChange();
 }
@@ -72,9 +71,65 @@ void ShipResizeVisualizationControl::SetTargetSize(IntegralRectSize const & targ
     OnChange();
 }
 
-void ShipResizeVisualizationControl::SetOffset(IntegralCoordinates const & offset)
+void ShipResizeVisualizationControl::SetAnchor(int anchorMatrixX, int anchorMatrixY)
 {
-    mOffset = offset;
+    // Offset is relative to top-left
+
+    int xOffset;
+    switch (anchorMatrixX)
+    {
+        case 0:
+        {
+            // Left-aligned
+            xOffset = 0;
+            break;
+        }
+
+        case 1:
+        {
+            // Center-aligned
+            xOffset = mTargetSize.width / 2 - mImage.GetSize().GetWidth() / 2;
+            break;
+        }
+
+        default:
+        {
+            assert(anchorMatrixX == 2);
+
+            // Right-aligned
+            xOffset = mTargetSize.width - mImage.GetSize().GetWidth();
+            break;
+        }
+    }
+
+    int yOffset;
+    switch (anchorMatrixY)
+    {
+        case 0:
+        {
+            // Top-aligned
+            yOffset = 0;
+            break;
+        }
+
+        case 1:
+        {
+            // Center-aligned
+            yOffset = mTargetSize.height / 2 - mImage.GetSize().GetHeight() / 2;
+            break;
+        }
+
+        default:
+        {
+            assert(anchorMatrixY == 2);
+
+            // Bottom-aligned
+            yOffset = mTargetSize.height - mImage.GetSize().GetHeight();
+            break;
+        }
+    }
+
+    mOffset = { xOffset, yOffset };
 
     OnChange();
 }
@@ -132,8 +187,8 @@ void ShipResizeVisualizationControl::OnChange()
 
     // Calculate resized bitmap origin
     mResizedBitmapOriginDC = wxPoint(
-        size.GetWidth() / 2 - static_cast<int>(std::round(static_cast<float>(mImage.GetWidth() / 2 + mOffset.x) * integralToDC)),
-        size.GetHeight() / 2 - static_cast<int>(std::round(static_cast<float>(mImage.GetHeight() / 2 + mOffset.y) * integralToDC)));
+        mTargetOriginDC.x + static_cast<int>(std::round(static_cast<float>(mOffset.x) * integralToDC)),
+        mTargetOriginDC.y + static_cast<int>(std::round(static_cast<float>(mOffset.y) * integralToDC)));
 
     // Render
     Refresh(false);

@@ -30,13 +30,12 @@ public:
 
     void Initialize(
         RgbaImageData const & image,
-        IntegralRectSize const & targetSize,
-        IntegralCoordinates initialOffset);
+        IntegralRectSize const & targetSize);
 
     void Deinitialize();
     
     void SetTargetSize(IntegralRectSize const & targetSize);
-    void SetOffset(IntegralCoordinates const & offset);
+    void SetAnchor(int anchorMatrixX, int anchorMatrixY);
 
 private:
 

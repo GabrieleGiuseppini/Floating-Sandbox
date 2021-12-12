@@ -27,7 +27,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ http://www.ijg.org/
 					= Windows
 						= Devil 64 (R+D)
-						- Devil 32 (R+d)
+						- Devil 32 (R+D)
 						- Test four configurations
 					- Ubuntu
 				- Load file and pass to Controller
