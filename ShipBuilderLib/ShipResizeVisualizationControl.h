@@ -12,6 +12,7 @@
 #include <wx/image.h>
 #include <wx/panel.h>
 
+#include <functional>
 #include <optional>
 
 namespace ShipBuilder {
@@ -23,7 +24,8 @@ public:
     ShipResizeVisualizationControl(
         wxWindow * parent,
         int width,
-        int height);
+        int height,
+        std::function<void()> onCustomOffset);
 
     IntegralCoordinates const & GetOffset() const
     {
@@ -32,12 +34,13 @@ public:
 
     void Initialize(
         RgbaImageData const & image,
-        IntegralRectSize const & targetSize);
+        IntegralRectSize const & targetSize,
+        std::optional<IntegralCoordinates> anchorCoordinates);
 
     void Deinitialize();
     
     void SetTargetSize(IntegralRectSize const & targetSize);
-    void SetAnchor(int anchorMatrixX, int anchorMatrixY);
+    void SetAnchor(std::optional<IntegralCoordinates> const & anchorCoordinates);
 
 private:
 
@@ -55,9 +58,12 @@ private:
     wxPen mTargetPen;
     wxBrush mTargetBrush;
 
+    std::function<void()> const mOnCustomOffset;
+
     // State
     wxImage mImage;
     IntegralRectSize mTargetSize;
+    std::optional<IntegralCoordinates> mAnchorCoordinates;
     IntegralCoordinates mOffset;
     std::optional<wxPoint> mCurrentMouseTrajectoryStartDC;
 

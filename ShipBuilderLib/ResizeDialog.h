@@ -53,9 +53,7 @@ private:
     void OnOkButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
 
-    void OnAnchor(
-        int anchorMatrixX, 
-        int anchorMatrixY);
+    void ReconciliateUIWithAnchorCoordinates(std::optional<IntegralCoordinates> const & anchorCoordinates);
 
     void ReconciliateUI(
         RgbaImageData const & image,

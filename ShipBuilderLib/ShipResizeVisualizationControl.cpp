@@ -18,8 +18,10 @@ int constexpr TargetMargin = 20;
 ShipResizeVisualizationControl::ShipResizeVisualizationControl(
     wxWindow * parent,
     int width,
-    int height)
-    : mTargetSize(0, 0)
+    int height,
+    std::function<void()> onCustomOffset)
+    : mOnCustomOffset(std::move(onCustomOffset))
+    , mTargetSize(0, 0)
     , mOffset(0, 0)
 {
     Create(
@@ -52,12 +54,13 @@ ShipResizeVisualizationControl::ShipResizeVisualizationControl(
 
 void ShipResizeVisualizationControl::Initialize(
     RgbaImageData const & image,
-    IntegralRectSize const & targetSize)
+    IntegralRectSize const & targetSize,
+    std::optional<IntegralCoordinates> anchorCoordinates)
 {
     mImage = WxHelpers::MakeImage(image);
     mTargetSize = targetSize;
+    mAnchorCoordinates = anchorCoordinates;
     mOffset = { 0, 0 };
-
     mCurrentMouseTrajectoryStartDC.reset();
     
     OnChange();
@@ -76,65 +79,9 @@ void ShipResizeVisualizationControl::SetTargetSize(IntegralRectSize const & targ
     OnChange();
 }
 
-void ShipResizeVisualizationControl::SetAnchor(int anchorMatrixX, int anchorMatrixY)
+void ShipResizeVisualizationControl::SetAnchor(std::optional<IntegralCoordinates> const & anchorCoordinates)
 {
-    // Offset is relative to top-left
-
-    int xOffset;
-    switch (anchorMatrixX)
-    {
-        case 0:
-        {
-            // Left-aligned
-            xOffset = 0;
-            break;
-        }
-
-        case 1:
-        {
-            // Center-aligned
-            xOffset = mTargetSize.width / 2 - mImage.GetSize().GetWidth() / 2;
-            break;
-        }
-
-        default:
-        {
-            assert(anchorMatrixX == 2);
-
-            // Right-aligned
-            xOffset = mTargetSize.width - mImage.GetSize().GetWidth();
-            break;
-        }
-    }
-
-    int yOffset;
-    switch (anchorMatrixY)
-    {
-        case 0:
-        {
-            // Top-aligned
-            yOffset = 0;
-            break;
-        }
-
-        case 1:
-        {
-            // Center-aligned
-            yOffset = mTargetSize.height / 2 - mImage.GetSize().GetHeight() / 2;
-            break;
-        }
-
-        default:
-        {
-            assert(anchorMatrixY == 2);
-
-            // Bottom-aligned
-            yOffset = mTargetSize.height - mImage.GetSize().GetHeight();
-            break;
-        }
-    }
-
-    mOffset = { xOffset, yOffset };
+    mAnchorCoordinates = anchorCoordinates;
 
     OnChange();
 }
@@ -159,6 +106,12 @@ void ShipResizeVisualizationControl::OnMouseMove(wxMouseEvent & event)
 {
     if (mCurrentMouseTrajectoryStartDC.has_value())
     {
+        // Stop using anchors
+        mAnchorCoordinates.reset();
+        mOnCustomOffset();
+
+        // Calculate new offset
+
         wxPoint newMouseCoords(event.GetX(), event.GetY());
 
         mOffset += IntegralRectSize(
@@ -167,6 +120,7 @@ void ShipResizeVisualizationControl::OnMouseMove(wxMouseEvent & event)
 
         OnChange();
 
+        // Remember coords for next move
         mCurrentMouseTrajectoryStartDC.emplace(newMouseCoords);
     }
 }
@@ -213,6 +167,66 @@ void ShipResizeVisualizationControl::OnChange()
         mResizedBitmap = wxBitmap(
             mImage.Scale(newImageSize.GetWidth(), newImageSize.GetHeight(), wxIMAGE_QUALITY_HIGH),
             wxBITMAP_SCREEN_DEPTH);
+    }
+
+    // Calculate offset - offset is relative to top-left
+    if (mAnchorCoordinates.has_value())
+    {
+        int xOffset;
+        switch (mAnchorCoordinates->x)
+        {
+            case 0:
+            {
+                // Left-aligned
+                xOffset = 0;
+                break;
+            }
+
+            case 1:
+            {
+                // Center-aligned
+                xOffset = mTargetSize.width / 2 - mImage.GetSize().GetWidth() / 2;
+                break;
+            }
+
+            default:
+            {
+                assert(mAnchorCoordinates->x == 2);
+
+                // Right-aligned
+                xOffset = mTargetSize.width - mImage.GetSize().GetWidth();
+                break;
+            }
+        }
+
+        int yOffset;
+        switch (mAnchorCoordinates->y)
+        {
+            case 0:
+            {
+                // Top-aligned
+                yOffset = 0;
+                break;
+            }
+
+            case 1:
+            {
+                // Center-aligned
+                yOffset = mTargetSize.height / 2 - mImage.GetSize().GetHeight() / 2;
+                break;
+            }
+
+            default:
+            {
+                assert(mAnchorCoordinates->y == 2);
+
+                // Bottom-aligned
+                yOffset = mTargetSize.height - mImage.GetSize().GetHeight();
+                break;
+            }
+        }
+
+        mOffset = { xOffset, yOffset };
     }
 
     // Calculate resized bitmap origin

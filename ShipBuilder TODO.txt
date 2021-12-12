@@ -34,14 +34,23 @@ https://gamejolt.com/x/permalink/comment/11730705
 					= Resize workflow
 						= For texture
 							+ Dialog
-							- Resize
+							- Resize image
 								- Buffer2D
 						- For resize
 							= Dialog
 								+ Dimensions lock button
 								- When changing target size, need to honor anchor
-									- Hence need to store anchor coords, rather than just offset
-							- Resize
+									- Hence need to store anchor coords, rather than just offset, and calc offset at each OnChange
+									- And if we store anchor coords, what do we do with mouse move?
+										- Reset anchor coords
+										- Should also communicate to dialog to reset anchor controls
+									- Impl:
+										= OnCustomOffset: invoke when mouse move
+											= Dialog reactor: toggle all buttons off (via OnAnchor)
+										+ AnchorCoords:
+											+ Calc coords at OnChange iff mAnchorCoords.HasValue()
+								- What's the problem with super zoom?
+							- Resize model
 				- Undo
 				- Button issue: see if specifying two bitmaps works
 			- .shp, .shp2 (load whole and throw away)

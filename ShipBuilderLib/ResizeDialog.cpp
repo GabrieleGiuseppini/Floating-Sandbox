@@ -247,6 +247,8 @@ ResizeDialog::ResizeDialog(
                         }
                     });
 
+                mTargetSizeDimensionLockButton->SetValue(true);
+
                 sizer->Add(
                     mTargetSizeDimensionLockButton,
                     wxGBPosition(1, 5),
@@ -273,6 +275,8 @@ ResizeDialog::ResizeDialog(
             {
                 for (int x = 0; x < 3; ++x)
                 {
+                    IntegralCoordinates anchorCoordinates(x, y);
+
                     auto const buttonSize = wxSize(
                         x == 1 ? 2 * BaseButtonSize : BaseButtonSize,
                         y == 1 ? 2 * BaseButtonSize : BaseButtonSize);
@@ -281,9 +285,13 @@ ResizeDialog::ResizeDialog(
 
                     button->Bind(
                         wxEVT_TOGGLEBUTTON,
-                        [this, button, x, y](wxCommandEvent &)
+                        [this, button, anchorCoordinates](wxCommandEvent &)
                         {
-                            OnAnchor(x, y);
+                            // Tell control
+                            mShipResizeVisualizationControl->SetAnchor(anchorCoordinates);
+
+                            // Reconciliate UI
+                            ReconciliateUIWithAnchorCoordinates(anchorCoordinates);
                         });
 
                     sizer->Add(
@@ -314,7 +322,14 @@ ResizeDialog::ResizeDialog(
 
     // Visualization
     {
-        mShipResizeVisualizationControl = new ShipResizeVisualizationControl(this, 400, 200);
+        mShipResizeVisualizationControl = new ShipResizeVisualizationControl(
+            this, 
+            400, 
+            200,
+            [this]()
+            {
+                ReconciliateUIWithAnchorCoordinates(std::nullopt);
+            });
 
         dialogVSizer->Add(
             mShipResizeVisualizationControl, 
@@ -407,19 +422,14 @@ void ResizeDialog::OnCancelButton(wxCommandEvent & /*event*/)
     EndModal(wxID_CANCEL);
 }
 
-void ResizeDialog::OnAnchor(
-    int anchorMatrixX, 
-    int anchorMatrixY)
+void ResizeDialog::ReconciliateUIWithAnchorCoordinates(std::optional<IntegralCoordinates> const & anchorCoordinates)
 {
-    // Tell control
-    mShipResizeVisualizationControl->SetAnchor(anchorMatrixX, anchorMatrixY);
-
     // Reconciliate toggle state
     for (int y = 0; y < 3; ++y)
     {
         for (int x = 0; x < 3; ++x)
         {
-            bool const isSelected = (y == anchorMatrixY && x == anchorMatrixX);
+            bool const isSelected = (anchorCoordinates.has_value() && y == anchorCoordinates->y && x == anchorCoordinates->x);
             if (mAnchorButtons[y * 3 + x]->GetValue() != isSelected)
             {
                 mAnchorButtons[y * 3 + x]->SetValue(isSelected);
@@ -460,13 +470,15 @@ void ResizeDialog::ReconciliateUI(
     mTargetHeightSpinBox->Enable(mode == ModeType::ForResize);
     mTargetSizeDimensionLockButton->Enable(mode == ModeType::ForResize);
 
+    // Anchor - centered
+    IntegralCoordinates centerAnchorCoordinates(1, 1);
+    ReconciliateUIWithAnchorCoordinates(centerAnchorCoordinates);
+
     // Viz control
     mShipResizeVisualizationControl->Initialize(
         image,
-        targetSize);
-
-    // Set center-anchored
-    OnAnchor(1, 1);
+        targetSize,
+        centerAnchorCoordinates); // Anchor - centered
 }
 
 }
