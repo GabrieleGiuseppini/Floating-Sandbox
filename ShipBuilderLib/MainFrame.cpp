@@ -2829,10 +2829,19 @@ void MainFrame::ImportTextureLayerFromImage()
                     return;
                 }
 
-                // TODO: resize image
+                //
+                // Resize
+                //
+
+                auto const originOffset = mResizeDialog->GetOffset();
+
+                image = image.Reframe(
+                    ImageCoordinates(originOffset.x, originOffset.y),
+                    ImageSize(targetSize.width, targetSize.height),
+                    rgbaColor::zero());
             }
 
-            // TODO: set texture in controller
+            mController->SetTextureLayer(std::move(image));
         }
         catch (std::runtime_error const & exc)
         {

@@ -67,6 +67,8 @@ private:
     IntegralCoordinates mOffset;
     std::optional<wxPoint> mCurrentMouseTrajectoryStartDC;
 
+    bool mIsMouseCaptured;
+
     //
     // Calculated members
     //

@@ -25,6 +25,7 @@ ShipResizeVisualizationControl::ShipResizeVisualizationControl(
     : mOnCustomOffset(std::move(onCustomOffset))
     , mTargetSize(0, 0)
     , mOffset(0, 0)
+    , mIsMouseCaptured(false)
 {
     Create(
         parent,
@@ -97,10 +98,22 @@ void ShipResizeVisualizationControl::OnPaint(wxPaintEvent & /*event*/)
 void ShipResizeVisualizationControl::OnMouseLeftDown(wxMouseEvent & event)
 {
     mCurrentMouseTrajectoryStartDC.emplace(event.GetX(), event.GetY());
+
+    if (!mIsMouseCaptured)
+    {
+        CaptureMouse();
+        mIsMouseCaptured = true;
+    }
 }
 
 void ShipResizeVisualizationControl::OnMouseLeftUp(wxMouseEvent & /*event*/)
 {
+    if (mIsMouseCaptured)
+    {
+        ReleaseMouse();
+        mIsMouseCaptured = false;
+    }
+
     mCurrentMouseTrajectoryStartDC.reset();
 }
 
@@ -277,7 +290,7 @@ void ShipResizeVisualizationControl::OnChange()
             .Scale(
                 newImageSizeDCi.x,
                 newImageSizeDCi.y,
-                wxIMAGE_QUALITY_HIGH),
+                wxIMAGE_QUALITY_NEAREST),
             wxBITMAP_SCREEN_DEPTH);
 
         mResizedBitmapOriginDC = wxPoint(newImageOriginDCi.x, newImageOriginDCi.y);

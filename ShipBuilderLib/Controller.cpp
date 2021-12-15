@@ -490,12 +490,15 @@ void Controller::RestoreLayerForUndo(RopesLayerData && layer)
 
 }
 
-void Controller::SetTextureLayer(/*TODO*/)
+void Controller::SetTextureLayer(TextureLayerData && textureLayer)
 {
     auto const scopedToolResumeState = SuspendTool();
 
+    // Prepare undo
+    // TODOHERE
+
     // Update layer
-    mModelController->SetTextureLayer(/*TODO*/);
+    mModelController->SetTextureLayer(std::move(textureLayer));
     mUserInterface.OnLayerPresenceChanged();
 
     // Switch primary layer to this one

@@ -299,3 +299,299 @@ TEST(Buffer2DTests, Flip_HorizontalAndVertical)
         }
     }
 }
+
+TEST(Buffer2DTests, Reframe_SameRect)
+{
+    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 8);
+
+    int iVal = 100;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    auto const targetBuffer = sourceBuffer.Reframe(
+        { 0, 0 },
+        sourceBuffer.Size,
+        999999);
+
+    ASSERT_EQ(targetBuffer.Size, sourceBuffer.Size);
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            auto const coords = IntegralCoordinates(x, y);
+            EXPECT_EQ(targetBuffer[coords], sourceBuffer[coords]);
+        }
+    }
+}
+
+TEST(Buffer2DTests, Reframe_SameOrigin_SmallerSize)
+{
+    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 8);
+
+    int iVal = 100;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    auto const targetBuffer = sourceBuffer.Reframe(
+        { 0, 0 },
+        { 6, 4 },
+        999999);
+
+    ASSERT_EQ(targetBuffer.Size, IntegralRectSize(6, 4));
+    for (int y = 0; y < 4; ++y)
+    {
+        for (int x = 0; x < 6; ++x)
+        {
+            auto const coords = IntegralCoordinates(x, y);
+            EXPECT_EQ(targetBuffer[coords], sourceBuffer[coords]);
+        }
+    }
+}
+
+TEST(Buffer2DTests, Reframe_SameOrigin_LargerSize)
+{
+    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 7);
+
+    int iVal = 100;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    auto const targetBuffer = sourceBuffer.Reframe(
+        { 0, 0 },
+        { 10, 12 },
+        999999);
+
+    ASSERT_EQ(targetBuffer.Size, IntegralRectSize(10, 12));
+    for (int y = 0; y < 12; ++y)
+    {
+        for (int x = 0; x < 10; ++x)
+        {
+            auto const coords = IntegralCoordinates(x, y);
+            if (x < 8 && y < 7)
+            {
+                EXPECT_EQ(targetBuffer[coords], sourceBuffer[coords]);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[coords], 999999);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, Reframe_DifferentOrigin_OutOrigin_SameSize)
+{
+    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
+
+    int iVal = 100;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    auto const targetBuffer = sourceBuffer.Reframe(
+        { -2, -1 },
+        { 6, 5 },
+        999999);
+
+    ASSERT_EQ(targetBuffer.Size, IntegralRectSize(6, 5));
+    for (int y = 0; y < 5; ++y)
+    {
+        for (int x = 0; x < 6; ++x)
+        {
+            auto const coords = IntegralCoordinates(x, y);
+            EXPECT_EQ(targetBuffer[coords], sourceBuffer[coords + IntegralRectSize(2, 1)]);
+        }
+    }
+}
+
+TEST(Buffer2DTests, Reframe_DifferentOrigin_OutOrigin_SmallerSize)
+{
+    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
+
+    int iVal = 100;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    auto const targetBuffer = sourceBuffer.Reframe(
+        { -1, -2 },
+        { 5, 4 },
+        999999);
+
+    ASSERT_EQ(targetBuffer.Size, IntegralRectSize(5, 4));
+    for (int y = 0; y < 4; ++y)
+    {
+        for (int x = 0; x < 5; ++x)
+        {
+            auto const coords = IntegralCoordinates(x, y);
+            EXPECT_EQ(targetBuffer[coords], sourceBuffer[coords + IntegralRectSize(1, 2)]);
+        }
+    }
+}
+
+TEST(Buffer2DTests, Reframe_DifferentOrigin_OutOrigin_LargerSize)
+{
+    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
+
+    int iVal = 100;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    auto const targetBuffer = sourceBuffer.Reframe(
+        { -1, -2 },
+        { 8, 6 },
+        999999);
+
+    ASSERT_EQ(targetBuffer.Size, IntegralRectSize(8, 6));
+    for (int y = 0; y < 6; ++y)
+    {
+        for (int x = 0; x < 8; ++x)
+        {
+            auto const coords = IntegralCoordinates(x, y);
+            if (x < 7 && y < 4)
+            {
+                EXPECT_EQ(targetBuffer[coords], sourceBuffer[coords + IntegralRectSize(1, 2)]);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[coords], 999999);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, Reframe_DifferentOrigin_InOrigin_SameSize)
+{
+    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
+
+    int iVal = 100;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    auto const targetBuffer = sourceBuffer.Reframe(
+        { 2, 1 },
+        { 6, 5 },
+        999999);
+
+    ASSERT_EQ(targetBuffer.Size, IntegralRectSize(6, 5));
+    for (int y = 0; y < 5; ++y)
+    {
+        for (int x = 0; x < 6; ++x)
+        {
+            auto const coords = IntegralCoordinates(x, y);
+            if (x < 2 || y < 1)
+            {
+                EXPECT_EQ(targetBuffer[coords], 999999);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[coords], sourceBuffer[coords - IntegralRectSize(2, 1)]);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, Reframe_DifferentOrigin_InOrigin_SmallerSize)
+{
+    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
+
+    int iVal = 100;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    auto const targetBuffer = sourceBuffer.Reframe(
+        { 2, 1 },
+        { 4, 3 },
+        999999);
+
+    ASSERT_EQ(targetBuffer.Size, IntegralRectSize(4, 3));
+    for (int y = 0; y < 3; ++y)
+    {
+        for (int x = 0; x < 4; ++x)
+        {
+            auto const coords = IntegralCoordinates(x, y);
+            if (x < 2 || y < 1)
+            {
+                EXPECT_EQ(targetBuffer[coords], 999999);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[coords], sourceBuffer[coords - IntegralRectSize(2, 1)]);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, Reframe_DifferentOrigin_InOrigin_LargerSize)
+{
+    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
+
+    int iVal = 100;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    auto const targetBuffer = sourceBuffer.Reframe(
+        { 2, 1 },
+        { 12, 16 },
+        999999);
+
+    ASSERT_EQ(targetBuffer.Size, IntegralRectSize(12, 16));
+    for (int y = 0; y < 16; ++y)
+    {
+        for (int x = 0; x < 12; ++x)
+        {
+            auto const coords = IntegralCoordinates(x, y);
+            if (x < 2 || y < 1 || x >= 10 || y >= 7)
+            {
+                EXPECT_EQ(targetBuffer[coords], 999999);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[coords], sourceBuffer[coords - IntegralRectSize(2, 1)]);
+            }
+        }
+    }
+}

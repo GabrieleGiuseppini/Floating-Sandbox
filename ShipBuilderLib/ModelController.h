@@ -220,7 +220,7 @@ public:
     //
 
     void NewTextureLayer();
-    void SetTextureLayer(/*TODO*/);
+    void SetTextureLayer(TextureLayerData && textureLayer);
     void RemoveTextureLayer();
 
 private:

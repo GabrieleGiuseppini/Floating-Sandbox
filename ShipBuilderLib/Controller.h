@@ -144,7 +144,7 @@ public:
     void RemoveRopesLayer();
     void RestoreLayerForUndo(RopesLayerData && layer);
 
-    void SetTextureLayer(/*TODO*/);
+    void SetTextureLayer(TextureLayerData && textureLayer);
     void RemoveTextureLayer();
     void RestoreLayerRegionForUndo(
         TextureLayerData const & layerRegion,

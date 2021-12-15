@@ -123,6 +123,7 @@ public:
     Buffer2D Clone() const
     {
         auto newData = std::make_unique<TElement[]>(mLinearSize);
+
         std::memcpy(newData.get(), Data.get(), mLinearSize * sizeof(TElement));
 
         return Buffer2D(
@@ -133,6 +134,7 @@ public:
     Buffer2D CloneRegion(_IntegralRect<TIntegralTag> const & regionRect) const
     {
         auto newData = std::make_unique<TElement[]>(regionRect.size.width * regionRect.size.height);
+
         for (int targetY = 0; targetY < regionRect.size.height; ++targetY)
         {
             int const sourceLinearIndex = (targetY + regionRect.origin.y) * Size.width + regionRect.origin.x;
@@ -170,6 +172,44 @@ public:
                 source.Data.get() + sourceLinearIndex,
                 sourceRegion.size.width * sizeof(TElement));
         }
+    }
+
+    Buffer2D Reframe(
+        _IntegralCoordinates<TIntegralTag> const & originOffset, // Position in final buffer of original {0, 0}
+        _IntegralSize<TIntegralTag> const & newSize, // Final size
+        TElement const & fillerValue) const
+    {
+        auto newData = std::make_unique<TElement[]>(newSize.width * newSize.height);
+
+        int const leftFillerWRange = originOffset.x;
+        int const rightFillerWRange = std::min(originOffset.x + Size.width, newSize.width);
+
+        int const leftFillerHRange = originOffset.y;
+        int const rightFillerHRange = std::min(originOffset.y + Size.height, newSize.height);
+
+        for (int ny = 0; ny < newSize.height; ++ny)
+        {
+            int const oldYOffset = (ny - leftFillerHRange) * Size.width;
+            int const newYOffset = ny * newSize.width;
+
+            for (int nx = 0; nx < newSize.width; ++nx)
+            {
+                _IntegralCoordinates<TIntegralTag> const coords(nx, ny);
+                if (nx < leftFillerWRange || nx >= rightFillerWRange
+                    || ny < leftFillerHRange || ny >= rightFillerHRange)
+                {
+                    newData[newYOffset + nx] = fillerValue;
+                }
+                else
+                {
+                    newData[newYOffset + nx] = Data[oldYOffset + nx - leftFillerWRange];
+                }
+            }
+        }
+
+        return Buffer2D(
+            newSize,
+            std::move(newData));
     }
 
     void Flip(DirectionType direction)
