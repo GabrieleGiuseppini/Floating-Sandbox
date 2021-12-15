@@ -70,11 +70,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Any import from .shp2 requires password
 		- All imports push an undo
 
-= ModelController::Flip: all layers
-	+ Electrical
-	+ Ropes
-	= Texture
-
 - New/Set/Remove layers:
 	- New:
 		- Make internal helper templated on LayerType, with all code

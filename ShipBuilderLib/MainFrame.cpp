@@ -2841,6 +2841,7 @@ void MainFrame::ImportTextureLayerFromImage()
                     rgbaColor::zero());
             }
 
+            // Set texture
             mController->SetTextureLayer(
                 TextureLayerData(std::move(image)),
                 std::nullopt);
