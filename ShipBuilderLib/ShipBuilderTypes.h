@@ -38,11 +38,27 @@ enum class MaterialPlaneType
     Background
 };
 
-////////////////////////////////////////////////////////////////////////////////////////////////
-// Model
-////////////////////////////////////////////////////////////////////////////////////////////////
+enum class StructuralLayerVisualizationMode
+{
+    ParticleMode,
+    AutoTexturizationMode,
+    TextureMode
+};
 
-template<typename TMaterial>
-using MaterialBuffer = Buffer2D<TMaterial const *, ShipSpaceTag>;
+enum class ElectricalLayerVisualizationMode
+{
+    ParticleMode
+    // FUTURE: CircuitMode
+};
+
+enum class RopesLayerVisualizationMode
+{
+    LinesMode
+};
+
+enum class TextureLayerVisualizationMode
+{
+    MatteMode
+};
 
 }

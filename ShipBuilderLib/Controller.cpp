@@ -1173,7 +1173,6 @@ void Controller::Flip(DirectionType direction)
     // Refresh model visualization
     mModelController->UploadVisualization();
     mUserInterface.RefreshView();
-
 }
 
 void Controller::RefreshToolCoordinatesDisplay()

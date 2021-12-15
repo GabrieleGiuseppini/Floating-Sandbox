@@ -1,5 +1,7 @@
 https://gamejolt.com/x/permalink/comment/11730705
 
+- Texture visualization (including visualization modes *)
+
 - Import/Export:
 	- Structural:
 		- Import from:
@@ -38,7 +40,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 								+ Buffer2D
 							= Controller::SetTextureLayer
 								= Undo
-							- Texture visualization (see immediately below)
+							- Texture visualization (see immediately above) for testing
 						= For resize
 							+ Dialog
 								+ Dimensions lock button
@@ -55,6 +57,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 								+ Fix the problem with super zoom
 								+ Capture mouse
 							- Controller::ResizeShip
+								- See if it makes sense to have a helper that takes action as (template) arg and does usual prefix and postfix
 								- ModelController::ResizeShip
 									- Resize model
 								- Undo
@@ -69,6 +72,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Notes:
 		- Any import from .shp2 requires password
 		- All imports push an undo
+
 
 - New/Set/Remove layers:
 	- New:
@@ -88,12 +92,14 @@ https://gamejolt.com/x/permalink/comment/11730705
 				= Note: texture layer removal should also remember metadata
 
 - ShipPropertiesEditDialog: ship prefix normalizer
-	- Make text file out of https://en.wikipedia.org/wiki/Ship_prefix, with just list of prefixes
+	+ Make text file out of https://en.wikipedia.org/wiki/Ship_prefix, with just list of prefixes
 	- Usage:
 		- Choose: at OK button, or at focus leaving from edit box
-	- Algo: TODOHERE
-
-- Texture visualization (including visualization modes *)
+	- Algo:
+		- Take user-provided, reduce to contiguous (remove ./\<space>)
+			- TODO: when to stop
+		- Take list, reduce to contiguous (remove ./\<space>)
+		- If the two match, use original from list
 
 - Auto-texturization visualization (see visualization modes *)
 
@@ -308,7 +314,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Also includes sounds
 		- Extract from other "TODO" .txt file
 
-- Visualization modes: (*)
+= Visualization modes: (*)
 	- Each layer has a visualization mode
 	- Selectors are in new set of panels - with visibility dependent on primary layer - in LayersVisualization panel
 		- On top of grid view button
