@@ -69,7 +69,7 @@ void ShipResizeVisualizationControl::Initialize(
 void ShipResizeVisualizationControl::Deinitialize()
 {
     mImage.Destroy();
-    mResizedBitmap = wxBitmap();
+    mResizedBitmapClip = wxBitmap();
 }
 
 void ShipResizeVisualizationControl::SetTargetSize(IntegralRectSize const & targetSize)
@@ -127,24 +127,24 @@ void ShipResizeVisualizationControl::OnMouseMove(wxMouseEvent & event)
 
 void ShipResizeVisualizationControl::OnChange()
 {
-    wxSize const size = GetSize();
+    wxSize const sizeDC = GetSize();
 
-    if (size.GetWidth() <= 2 * TargetMargin || size.GetHeight() <= 2 * TargetMargin
+    if (sizeDC.GetWidth() <= 2 * TargetMargin || sizeDC.GetHeight() <= 2 * TargetMargin
         || mTargetSize.width == 0 || mTargetSize.height == 0)
     {
         return;
     }
 
     // Calculate conversion factor for image->DC conversions
-    if (mTargetSize.width * (size.GetHeight() - 2 * TargetMargin) >= mTargetSize.height * (size.GetWidth() - 2 * TargetMargin))
+    if (mTargetSize.width * (sizeDC.GetHeight() - 2 * TargetMargin) >= mTargetSize.height * (sizeDC.GetWidth() - 2 * TargetMargin))
     {
         // Use the target width as the stick
-        mIntegralToDC = static_cast<float>(size.GetWidth() - 2 * TargetMargin) / static_cast<float>(mTargetSize.width);
+        mIntegralToDC = static_cast<float>(sizeDC.GetWidth() - 2 * TargetMargin) / static_cast<float>(mTargetSize.width);
     }
     else
     {
         // Use the target height as the stick
-        mIntegralToDC = static_cast<float>(size.GetHeight() - 2 * TargetMargin) / static_cast<float>(mTargetSize.height);
+        mIntegralToDC = static_cast<float>(sizeDC.GetHeight() - 2 * TargetMargin) / static_cast<float>(mTargetSize.height);
     }
 
     // Calculate target coords in DC
@@ -152,24 +152,10 @@ void ShipResizeVisualizationControl::OnChange()
         static_cast<int>(std::round(static_cast<float>(mTargetSize.width) * mIntegralToDC)),
         static_cast<int>(std::round(static_cast<float>(mTargetSize.height) * mIntegralToDC)));
     mTargetOriginDC = wxPoint(
-        size.GetWidth() / 2 - mTargetSizeDC.GetWidth() / 2,
-        size.GetHeight() / 2 - mTargetSizeDC.GetHeight() / 2);
+        sizeDC.GetWidth() / 2 - mTargetSizeDC.GetWidth() / 2,
+        sizeDC.GetHeight() / 2 - mTargetSizeDC.GetHeight() / 2);
 
-    // Calculate size of image
-    wxSize const newImageSize = wxSize(
-        std::max(static_cast<int>(std::round(static_cast<float>(mImage.GetWidth()) * mIntegralToDC)), 1),
-        std::max(static_cast<int>(std::round(static_cast<float>(mImage.GetHeight()) * mIntegralToDC)), 1));
-
-    // Create new preview if needed
-    if (!mResizedBitmap.IsOk()
-        || mResizedBitmap.GetSize() != newImageSize)
-    {
-        mResizedBitmap = wxBitmap(
-            mImage.Scale(newImageSize.GetWidth(), newImageSize.GetHeight(), wxIMAGE_QUALITY_HIGH),
-            wxBITMAP_SCREEN_DEPTH);
-    }
-
-    // Calculate offset - offset is relative to top-left
+    // Calculate anchor offset - offset is relative to top-left
     if (mAnchorCoordinates.has_value())
     {
         int xOffset;
@@ -229,10 +215,59 @@ void ShipResizeVisualizationControl::OnChange()
         mOffset = { xOffset, yOffset };
     }
 
-    // Calculate resized bitmap origin
-    mResizedBitmapOriginDC = wxPoint(
+    //
+    // Resize image
+    //
+
+    // TODO: do all calc's in float
+
+    // Calculate new (screen) size of image required to fit the scale
+    wxSize const newImageSizeDC = wxSize(
+        std::max(static_cast<int>(std::round(static_cast<float>(mImage.GetWidth()) * mIntegralToDC)), 1),
+        std::max(static_cast<int>(std::round(static_cast<float>(mImage.GetHeight()) * mIntegralToDC)), 1));
+
+    // Calculate new image (screen) origin, relative to (0, 0) of this control
+    wxPoint const newImageOriginDC = wxPoint(
         mTargetOriginDC.x + static_cast<int>(std::round(static_cast<float>(mOffset.x) * mIntegralToDC)),
         mTargetOriginDC.y + static_cast<int>(std::round(static_cast<float>(mOffset.y) * mIntegralToDC)));
+
+    // Calculate visible portion of resized image
+    wxRect const newImageRectDC = 
+        wxRect(newImageOriginDC, newImageSizeDC)
+        .Intersect(wxRect(wxPoint(0, 0), sizeDC));
+
+    if (!newImageRectDC.IsEmpty())
+    {
+        // Convert DC coordinates back into bitmap coordinates
+
+        wxSize const newImageSizeImage = wxSize(
+            static_cast<int>(std::round(static_cast<float>(newImageRectDC.GetWidth()) / mIntegralToDC)),
+            static_cast<int>(std::round(static_cast<float>(newImageRectDC.GetHeight()) / mIntegralToDC)));
+
+        wxPoint const newImageOriginImage = wxPoint(
+            static_cast<int>(std::round(static_cast<float>(std::max(-newImageOriginDC.x, 0)) / mIntegralToDC)),
+            static_cast<int>(std::round(static_cast<float>(std::max(-newImageOriginDC.y, 0)) / mIntegralToDC)));
+
+        wxRect const resizedBitmapClipRectImage = wxRect(newImageOriginImage, newImageSizeImage);
+
+        //
+        // Create new clip
+        //
+        
+        auto clippedImage = wxImage(newImageSizeImage, false);
+        clippedImage.Paste(mImage, -newImageOriginImage.x, -newImageOriginImage.y);
+        mResizedBitmapClip = wxBitmap(
+            clippedImage
+            .Scale(newImageRectDC.GetWidth(), newImageRectDC.GetHeight(), wxIMAGE_QUALITY_HIGH),
+            wxBITMAP_SCREEN_DEPTH);
+
+        mResizedBitmapOriginDC = newImageRectDC.GetPosition();
+    }
+    else
+    {
+        // No clip
+        mResizedBitmapClip = wxBitmap();
+    }
 
     // Render
     Refresh(false);
@@ -256,10 +291,13 @@ void ShipResizeVisualizationControl::Render(wxDC & dc)
     // Draw ship
     //
 
-    dc.DrawBitmap(
-        mResizedBitmap,
-        mResizedBitmapOriginDC,
-        true);
+    if (mResizedBitmapClip.IsOk())
+    {
+        dc.DrawBitmap(
+            mResizedBitmapClip,
+            mResizedBitmapOriginDC,
+            true);
+    }
 
     //
     // Draw target rectangle 2

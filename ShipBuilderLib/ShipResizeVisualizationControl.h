@@ -67,11 +67,16 @@ private:
     IntegralCoordinates mOffset;
     std::optional<wxPoint> mCurrentMouseTrajectoryStartDC;
 
+    //
     // Calculated members
+    //
+
     float mIntegralToDC;
     wxPoint mTargetOriginDC;
     wxSize mTargetSizeDC;
-    wxBitmap mResizedBitmap;
+
+    // Resized and clipped image
+    wxBitmap mResizedBitmapClip;
     wxPoint mResizedBitmapOriginDC;
 };
 

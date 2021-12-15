@@ -166,7 +166,9 @@ ResizeDialog::ResizeDialog(
                             if (mTargetSizeDimensionLockButton->GetValue())
                             {
                                 // Calculate height when preserving source aspect ratio
-                                int const newHeight = static_cast<int>(std::round(static_cast<float>(value * mSourceSize.height) / static_cast<float>(mSourceSize.width)));
+                                int const newHeight = std::max(
+                                    static_cast<int>(std::round(static_cast<float>(value * mSourceSize.height) / static_cast<float>(mSourceSize.width))),
+                                    1);
                                 mTargetHeightSpinBox->SetValue(newHeight);
                             }
 
@@ -208,7 +210,9 @@ ResizeDialog::ResizeDialog(
                             if (mTargetSizeDimensionLockButton->GetValue())
                             {
                                 // Calculate width when preserving source aspect ratio
-                                int const newWidth = static_cast<int>(std::round(static_cast<float>(value * mSourceSize.width) / static_cast<float>(mSourceSize.height)));
+                                int const newWidth = std::max(
+                                    static_cast<int>(std::round(static_cast<float>(value * mSourceSize.width) / static_cast<float>(mSourceSize.height))),
+                                    1);
                                 mTargetWidthSpinBox->SetValue(newWidth);
                             }
 
@@ -236,7 +240,9 @@ ResizeDialog::ResizeDialog(
                         if (mTargetSizeDimensionLockButton->GetValue())
                         {
                             // Calculate height when preserving source aspect ratio
-                            int const newHeight = static_cast<int>(std::round(static_cast<float>(mTargetWidthSpinBox->GetValue() * mSourceSize.height) / static_cast<float>(mSourceSize.width)));
+                            int const newHeight = std::max(
+                                static_cast<int>(std::round(static_cast<float>(mTargetWidthSpinBox->GetValue() * mSourceSize.height) / static_cast<float>(mSourceSize.width))),
+                                1);
                             mTargetHeightSpinBox->SetValue(newHeight);
 
                             // Tell viz controller
