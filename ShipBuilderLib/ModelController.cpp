@@ -397,7 +397,7 @@ std::optional<ShipSpaceRect> ModelController::StructuralFlood(
     return affectedRect;
 }
 
-void ModelController::RestoreStructuralLayer(
+void ModelController::RestoreStructuralLayerRegion(
     StructuralLayerData && sourceLayerRegion,
     ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetOrigin)
@@ -513,9 +513,6 @@ void ModelController::NewElectricalLayer()
 
 void ModelController::SetElectricalLayer(/*TODO*/)
 {
-    // TODO: allow when layer does not exist (so Controller::SetXXXLayer() can be used to create)
-    assert(mModel.HasLayer(LayerType::Electrical));
-
     mModel.SetElectricalLayer(/*TODO*/);
 
     InitializeElectricalLayer();
@@ -631,7 +628,7 @@ void ModelController::ElectricalRegionFill(
     UpdateElectricalLayerVisualization(region);
 }
 
-void ModelController::RestoreElectricalLayer(
+void ModelController::RestoreElectricalLayerRegion(
     ElectricalLayerData && sourceLayerRegion,
     ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetOrigin)
@@ -739,9 +736,6 @@ void ModelController::NewRopesLayer()
 
 void ModelController::SetRopesLayer(/*TODO*/)
 {
-    // TODO: allow when layer does not exist (so Controller::SetXXXLayer() can be used to create)
-    assert(mModel.HasLayer(LayerType::Ropes));
-
     mModel.SetRopesLayer(/*TODO*/);
 
     InitializeRopesLayer();
@@ -991,13 +985,12 @@ void ModelController::NewTextureLayer()
     UpdateTextureLayerVisualization(GetWholeShipRect());
 }
 
-void ModelController::SetTextureLayer(/*TODO*/)
+void ModelController::SetTextureLayer(
+    TextureLayerData && textureLayer,
+    std::optional<std::string> originalTextureArtCredits)
 {
-    // TODO: allow when layer does not exist (so Controller::SetXXXLayer() can be used to create)
-
-    assert(mModel.HasLayer(LayerType::Texture));
-
-    mModel.SetTextureLayer(/*TODO*/);
+    mModel.SetTextureLayer(std::move(textureLayer));
+    mModel.GetShipMetadata().ArtCredits = std::move(originalTextureArtCredits);
 
     UpdateTextureLayerVisualization(GetWholeShipRect());
 }
@@ -1012,6 +1005,28 @@ void ModelController::RemoveTextureLayer()
 
     // Remove art credits from metadata
     mModel.GetShipMetadata().ArtCredits.reset();
+}
+
+std::unique_ptr<TextureLayerData> ModelController::CloneTextureLayer() const
+{
+    return mModel.CloneTextureLayer();
+}
+
+void ModelController::RestoreTextureLayer(
+    std::unique_ptr<TextureLayerData> textureLayer,
+    std::optional<std::string> originalTextureArtCredits)
+{
+    mModel.RestoreTextureLayer(std::move(textureLayer));
+    mModel.GetShipMetadata().ArtCredits = std::move(originalTextureArtCredits);
+
+    if (mModel.HasLayer(LayerType::Texture))
+    {
+        UpdateTextureLayerVisualization(GetWholeShipRect());
+    }
+    else
+    {
+        // TODO: remove visualization members
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

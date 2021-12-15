@@ -59,28 +59,32 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- .shp, .shp2 (load whole and throw away)
 				- Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
 				- Show error if no layer exists in definition
-			- After import, also replace art credits
-				- Empty if from image, from imported ship otherwise (even if empty)
+			= After import, also replace art credits
+				= Empty if from image, from imported ship otherwise (even if empty)
 		- Export to .png (though quite useless at this moment)
 			- Ad-hoc code using ImageFileTools
 	- Notes:
 		- Any import from .shp2 requires password
 		- All imports push an undo
 
+- ModelController::Flip: all layers
+
 - New/Set/Remove layers:
 	- New:
 		- Make internal helper templated on LayerType, with all code
 		- Additions:
 			- Undo
+				- Note: texture layer clear should also remember metadata
 	- Set:
 		- Make internal helper templated on LayerType, with all code
 		- Additions:
 			- Undo
+				- Note: texture layer change should also remember metadata
 	- Remove:
 		- Make internal helper templated on LayerType, with all code
 		- Additions:
-			- Undo
-				- Note: texture layer removal should also store metadata
+			= Undo
+				= Note: texture layer removal should also remember metadata
 
 - ShipPropertiesEditDialog: ship prefix normalizer
 	- Make text file out of https://en.wikipedia.org/wiki/Ship_prefix, with just list of prefixes

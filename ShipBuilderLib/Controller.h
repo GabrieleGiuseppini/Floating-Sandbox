@@ -87,7 +87,7 @@ public:
         std::optional<ShipPhysicsData> && physicsData,
         std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
 
-    void RestoreShipProperties(
+    void RestoreShipPropertiesForUndo(
         std::optional<ShipMetadata> && metadata,
         std::optional<ShipPhysicsData> && physicsData,
         std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
@@ -144,11 +144,13 @@ public:
     void RemoveRopesLayer();
     void RestoreLayerForUndo(RopesLayerData && layer);
 
-    void SetTextureLayer(TextureLayerData && textureLayer);
+    void SetTextureLayer(
+        TextureLayerData && textureLayer,
+        std::optional<std::string> textureArtCredits);
     void RemoveTextureLayer();
-    void RestoreLayerRegionForUndo(
-        TextureLayerData const & layerRegion,
-        ShipSpaceCoordinates const & origin);
+    void RestoreTextureLayerForUndo(
+        std::unique_ptr<TextureLayerData> textureLayer,
+        std::optional<std::string> originalTextureArtCredits);
 
     void Flip(DirectionType direction);
     void FlipForUndo(DirectionType direction);

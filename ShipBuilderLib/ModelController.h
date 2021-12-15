@@ -133,7 +133,7 @@ public:
         StructuralMaterial const * material,
         bool doContiguousOnly);
 
-    void RestoreStructuralLayer(
+    void RestoreStructuralLayerRegion(
         StructuralLayerData && sourceLayerRegion,
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetOrigin);
@@ -165,7 +165,7 @@ public:
         ShipSpaceRect const & region,
         ElectricalMaterial const * material);
 
-    void RestoreElectricalLayer(
+    void RestoreElectricalLayerRegion(
         ElectricalLayerData && sourceLayerRegion,
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetOrigin);
@@ -220,8 +220,16 @@ public:
     //
 
     void NewTextureLayer();
-    void SetTextureLayer(TextureLayerData && textureLayer);
+    void SetTextureLayer(
+        TextureLayerData && textureLayer,
+        std::optional<std::string> originalTextureArtCredits);
     void RemoveTextureLayer();
+
+    std::unique_ptr<TextureLayerData> CloneTextureLayer() const;
+
+    void RestoreTextureLayer(
+        std::unique_ptr<TextureLayerData> textureLayer,
+        std::optional<std::string> originalTextureArtCredits);
 
 private:
 

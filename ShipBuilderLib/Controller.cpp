@@ -126,7 +126,7 @@ void Controller::SetShipProperties(
         , oldAutoTexturizationSettings = mModelController->GetShipAutoTexturizationSettings()]
         (Controller & controller) mutable
         {
-            controller.RestoreShipProperties(
+            controller.RestoreShipPropertiesForUndo(
                 std::move(oldMetadata),
                 std::move(oldPhysicsData),
                 std::move(oldAutoTexturizationSettings));
@@ -159,7 +159,7 @@ void Controller::SetShipProperties(
     mUserInterface.OnUndoStackStateChanged();
 }
 
-void Controller::RestoreShipProperties(
+void Controller::RestoreShipPropertiesForUndo(
     std::optional<ShipMetadata> && metadata,
     std::optional<ShipPhysicsData> && physicsData,
     std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings)
@@ -257,7 +257,7 @@ void Controller::RestoreLayerRegionForUndo(
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestoreStructuralLayer(
+    mModelController->RestoreStructuralLayerRegion(
         std::move(layerRegion),
         { {0, 0}, layerRegion.Buffer.Size},
         origin);
@@ -351,7 +351,7 @@ void Controller::RestoreLayerRegionForUndo(
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestoreElectricalLayer(
+    mModelController->RestoreElectricalLayerRegion(
         std::move(layerRegion),
         { {0, 0}, layerRegion.Buffer.Size },
         origin);
@@ -490,16 +490,40 @@ void Controller::RestoreLayerForUndo(RopesLayerData && layer)
 
 }
 
-void Controller::SetTextureLayer(TextureLayerData && textureLayer)
+void Controller::SetTextureLayer(
+    TextureLayerData && textureLayer,
+    std::optional<std::string> textureArtCredits)
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    // Prepare undo
-    // TODOHERE
-
     // Update layer
-    mModelController->SetTextureLayer(std::move(textureLayer));
-    mUserInterface.OnLayerPresenceChanged();
+    {
+        // Save state
+        auto originalDirtyStateClone = mModelController->GetModel().GetDirtyState();
+        auto originalLayerClone = mModelController->GetModel().CloneTextureLayer();
+        auto originalTextureArtCredits = mModelController->GetShipMetadata().ArtCredits;
+
+        // Update layer
+        mModelController->SetTextureLayer(std::move(textureLayer), std::move(textureArtCredits));
+        mUserInterface.OnLayerPresenceChanged();
+
+        //
+        // Create undo action
+        //
+
+        mUndoStack.Push(
+            _("Import Texture Layer"),
+            originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0,
+            originalDirtyStateClone,
+            [originalLayerClone = std::move(originalLayerClone), originalTextureArtCredits = std::move(originalTextureArtCredits)](Controller & controller) mutable
+            {
+                controller.RestoreTextureLayerForUndo(
+                    std::move(originalLayerClone), 
+                    std::move(originalTextureArtCredits));
+            });
+
+        mUserInterface.OnUndoStackStateChanged();
+    }
 
     // Switch primary layer to this one
     if (mPrimaryLayer != LayerType::Texture)
@@ -520,9 +544,34 @@ void Controller::RemoveTextureLayer()
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    // Remove layer
-    mModelController->RemoveTextureLayer();
-    mUserInterface.OnLayerPresenceChanged();
+    // Update layer
+    {
+        // Save state
+        auto originalDirtyStateClone = mModelController->GetModel().GetDirtyState();
+        auto originalLayerClone = mModelController->CloneTextureLayer();
+        auto originalTextureArtCredits = mModelController->GetShipMetadata().ArtCredits;
+
+        // Remove layer
+        mModelController->RemoveTextureLayer();
+        mUserInterface.OnLayerPresenceChanged();
+
+        //
+        // Create undo action
+        //
+
+        mUndoStack.Push(
+            _("Remove Texture Layer"),
+            originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0,
+            originalDirtyStateClone,
+            [originalLayerClone = std::move(originalLayerClone), originalTextureArtCredits = std::move(originalTextureArtCredits)](Controller & controller) mutable
+            {
+                controller.RestoreTextureLayerForUndo(
+                    std::move(originalLayerClone), 
+                    std::move(originalTextureArtCredits));
+            });
+
+        mUserInterface.OnUndoStackStateChanged();
+    }
 
     // Switch primary layer to structural if it was this one
     if (mPrimaryLayer == LayerType::Texture)
@@ -539,11 +588,23 @@ void Controller::RemoveTextureLayer()
     mUserInterface.RefreshView();
 }
 
-void Controller::RestoreLayerRegionForUndo(
-    TextureLayerData const & layerRegion,
-    ShipSpaceCoordinates const & origin)
+void Controller::RestoreTextureLayerForUndo(
+    std::unique_ptr<TextureLayerData> textureLayer,
+    std::optional<std::string> originalTextureArtCredits)
 {
-    // TODOHERE: copy from others
+    auto const scopedToolResumeState = SuspendTool();
+
+    mModelController->RestoreTextureLayer(
+        std::move(textureLayer), 
+        std::move(originalTextureArtCredits));
+
+    mUserInterface.OnLayerPresenceChanged();
+
+    // No need to update dirtyness, this is for undo
+
+    // Refresh model visualization
+    mModelController->UploadVisualization();
+    mUserInterface.RefreshView();
 }
 
 void Controller::Flip(DirectionType direction)

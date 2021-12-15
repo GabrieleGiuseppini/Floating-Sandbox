@@ -2841,7 +2841,9 @@ void MainFrame::ImportTextureLayerFromImage()
                     rgbaColor::zero());
             }
 
-            mController->SetTextureLayer(std::move(image));
+            mController->SetTextureLayer(
+                TextureLayerData(std::move(image)),
+                std::nullopt);
         }
         catch (std::runtime_error const & exc)
         {

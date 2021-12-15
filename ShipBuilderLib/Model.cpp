@@ -92,6 +92,9 @@ void Model::SetElectricalLayer(/*TODO*/)
 {
     // TODO
     // TODO: make sure also electrical panel is copied (moved) with LayerData
+
+    // Update presence map
+    mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = true;
 }
 
 void Model::RemoveElectricalLayer()
@@ -134,9 +137,13 @@ void Model::NewTextureLayer()
     mLayerPresenceMap[static_cast<size_t>(LayerType::Texture)] = true;
 }
 
-void Model::SetTextureLayer(/*TODO*/)
+void Model::SetTextureLayer(TextureLayerData && textureLayer)
 {
-    // TODO
+    // Update layer
+    mTextureLayer.reset(new TextureLayerData(std::move(textureLayer)));
+
+    // Update presence map
+    mLayerPresenceMap[static_cast<size_t>(LayerType::Texture)] = true;
 }
 
 void Model::RemoveTextureLayer()
@@ -146,6 +153,27 @@ void Model::RemoveTextureLayer()
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Texture)] = false;
+}
+
+std::unique_ptr<TextureLayerData> Model::CloneTextureLayer() const
+{
+    std::unique_ptr<TextureLayerData> clonedLayer;
+
+    if (mTextureLayer)
+    {
+        clonedLayer.reset(new TextureLayerData(mTextureLayer->Clone()));
+    }
+
+    return clonedLayer;
+}
+
+void Model::RestoreTextureLayer(std::unique_ptr<TextureLayerData> textureLayer)
+{
+    // Replace layer
+    mTextureLayer = std::move(textureLayer);
+
+    // Update presence map
+    mLayerPresenceMap[static_cast<size_t>(LayerType::Texture)] = (bool)mTextureLayer;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

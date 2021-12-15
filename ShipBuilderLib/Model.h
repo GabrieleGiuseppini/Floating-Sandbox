@@ -269,8 +269,10 @@ public:
     }
 
     void NewTextureLayer();
-    void SetTextureLayer(/*TODO*/);
+    void SetTextureLayer(TextureLayerData && textureLayer);
     void RemoveTextureLayer();
+    std::unique_ptr<TextureLayerData> CloneTextureLayer() const;
+    void RestoreTextureLayer(std::unique_ptr<TextureLayerData> textureLayer);
 
 private:
 
