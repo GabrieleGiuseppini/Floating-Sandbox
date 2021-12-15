@@ -205,6 +205,16 @@ MainFrame::MainFrame(
                 }
 
                 {
+                    wxPanel * layersVisualizationPanel = CreateLayersVisualizationPanel(mMainPanel);
+
+                    tmpVSizer->Add(
+                        layersVisualizationPanel,
+                        0,
+                        wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
+                        4);
+                }
+
+                {
                     wxStaticLine * line = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
 
                     tmpVSizer->Add(
@@ -1075,415 +1085,413 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
     rootVSizer->AddSpacer(10);
 
+    // Layer management
     {
-        // Layer management
+        wxGridBagSizer * layerManagerSizer = new wxGridBagSizer(0, 0);
+
         {
-            wxGridBagSizer * layerManagerSizer = new wxGridBagSizer(0, 0);
-
+            auto const createButtonRow = [&](LayerType layer, int iRow)
             {
-                auto const createButtonRow = [&](LayerType layer, int iRow)
+                wxString const sureQuestion = _("The current changes to the layer will be lost; are you sure you want to continue?");
+
+                size_t iLayer = static_cast<size_t>(layer);
+
+                // Selector
                 {
-                    wxString const sureQuestion = _("The current changes to the layer will be lost; are you sure you want to continue?");
-
-                    size_t iLayer = static_cast<size_t>(layer);
-
-                    // Selector
+                    std::string buttonBitmapName;
+                    wxString buttonTooltip;
+                    switch (layer)
                     {
-                        std::string buttonBitmapName;
-                        wxString buttonTooltip;
-                        switch (layer)
+                        case LayerType::Electrical:
                         {
-                            case LayerType::Electrical:
-                            {
-                                buttonBitmapName = "electrical_layer";
-                                buttonTooltip = _("Electrical layer");
-                                break;
-                            }
-
-                            case LayerType::Ropes:
-                            {
-                                buttonBitmapName = "ropes_layer";
-                                buttonTooltip = _("Ropes layer");
-                                break;
-                            }
-
-                            case LayerType::Structural:
-                            {
-                                buttonBitmapName = "structural_layer";
-                                buttonTooltip = _("Structural layer");
-                                break;
-                            }
-
-                            case LayerType::Texture:
-                            {
-                                buttonBitmapName = "texture_layer";
-                                buttonTooltip = _("Texture layer");
-                                break;
-                            }
+                            buttonBitmapName = "electrical_layer";
+                            buttonTooltip = _("Electrical layer");
+                            break;
                         }
 
-                        auto * selectorButton = new BitmapToggleButton(
+                        case LayerType::Ropes:
+                        {
+                            buttonBitmapName = "ropes_layer";
+                            buttonTooltip = _("Ropes layer");
+                            break;
+                        }
+
+                        case LayerType::Structural:
+                        {
+                            buttonBitmapName = "structural_layer";
+                            buttonTooltip = _("Structural layer");
+                            break;
+                        }
+
+                        case LayerType::Texture:
+                        {
+                            buttonBitmapName = "texture_layer";
+                            buttonTooltip = _("Texture layer");
+                            break;
+                        }
+                    }
+
+                    auto * selectorButton = new BitmapToggleButton(
+                        panel,
+                        mResourceLocator.GetBitmapFilePath(buttonBitmapName),
+                        [this, layer]()
+                        {
+                            mController->SelectPrimaryLayer(layer);
+                        },
+                        buttonTooltip);
+
+                    layerManagerSizer->Add(
+                        selectorButton,
+                        wxGBPosition(iRow * 3, 0),
+                        wxGBSpan(2, 1),
+                        wxALIGN_CENTER_VERTICAL,
+                        0);
+
+                    mLayerSelectButtons[iLayer] = selectorButton;
+                }
+
+                // New
+                {
+                    BitmapButton * newButton;
+
+                    if (layer != LayerType::Texture)
+                    {
+                        newButton = new BitmapButton(
                             panel,
-                            mResourceLocator.GetBitmapFilePath(buttonBitmapName),
-                            [this, layer]()
+                            mResourceLocator.GetBitmapFilePath("new_layer_button"),
+                            [this, layer, sureQuestion]()
                             {
-                                mController->SelectPrimaryLayer(layer);
+                                switch (layer)
+                                {
+                                    case LayerType::Electrical:
+                                    {
+                                        if (mController->HasModelLayer(LayerType::Electrical)
+                                            && mController->IsModelDirty(LayerType::Electrical))
+                                        {
+                                            if (!AskUserIfSure(sureQuestion))
+                                            {
+                                                // Changed their mind
+                                                return;
+                                            }
+                                        }
+
+                                        mController->NewElectricalLayer();
+
+                                        break;
+                                    }
+
+                                    case LayerType::Ropes:
+                                    {
+                                        if (mController->HasModelLayer(LayerType::Ropes)
+                                            && mController->IsModelDirty(LayerType::Ropes))
+                                        {
+                                            if (!AskUserIfSure(sureQuestion))
+                                            {
+                                                // Changed their mind
+                                                return;
+                                            }
+                                        }
+
+                                        mController->NewRopesLayer();
+
+                                        break;
+                                    }
+
+                                    case LayerType::Structural:
+                                    {
+                                        if (mController->HasModelLayer(LayerType::Structural)
+                                            && mController->IsModelDirty(LayerType::Structural))
+                                        {
+                                            if (!AskUserIfSure(sureQuestion))
+                                            {
+                                                // Changed their mind
+                                                return;
+                                            }
+                                        }
+
+                                        mController->NewStructuralLayer();
+
+                                        break;
+                                    }
+
+                                    case LayerType::Texture:
+                                    {
+                                        assert(false);
+                                        break;
+                                    }
+                                }
                             },
-                            buttonTooltip);
-
-                        layerManagerSizer->Add(
-                            selectorButton,
-                            wxGBPosition(iRow * 3, 0),
-                            wxGBSpan(2, 1),
-                            wxALIGN_CENTER_VERTICAL,
-                            0);
-
-                        mLayerSelectButtons[iLayer] = selectorButton;
+                            _("Add or clean the layer."));
                     }
-
-                    // New
+                    else
                     {
-                        BitmapButton * newButton;
-
-                        if (layer != LayerType::Texture)
-                        {
-                            newButton = new BitmapButton(
-                                panel,
-                                mResourceLocator.GetBitmapFilePath("new_layer_button"),
-                                [this, layer, sureQuestion]()
-                                {
-                                    switch (layer)
-                                    {
-                                        case LayerType::Electrical:
-                                        {
-                                            if (mController->HasModelLayer(LayerType::Electrical)
-                                                && mController->IsModelDirty(LayerType::Electrical))
-                                            {
-                                                if (!AskUserIfSure(sureQuestion))
-                                                {
-                                                    // Changed their mind
-                                                    return;
-                                                }
-                                            }
-
-                                            mController->NewElectricalLayer();
-
-                                            break;
-                                        }
-
-                                        case LayerType::Ropes:
-                                        {
-                                            if (mController->HasModelLayer(LayerType::Ropes)
-                                                && mController->IsModelDirty(LayerType::Ropes))
-                                            {
-                                                if (!AskUserIfSure(sureQuestion))
-                                                {
-                                                    // Changed their mind
-                                                    return;
-                                                }
-                                            }
-
-                                            mController->NewRopesLayer();
-
-                                            break;
-                                        }
-
-                                        case LayerType::Structural:
-                                        {
-                                            if (mController->HasModelLayer(LayerType::Structural)
-                                                && mController->IsModelDirty(LayerType::Structural))
-                                            {
-                                                if (!AskUserIfSure(sureQuestion))
-                                                {
-                                                    // Changed their mind
-                                                    return;
-                                                }
-                                            }
-
-                                            mController->NewStructuralLayer();
-
-                                            break;
-                                        }
-
-                                        case LayerType::Texture:
-                                        {
-                                            assert(false);
-                                            break;
-                                        }
-                                    }
-                                },
-                                _("Add or clean the layer."));
-                        }
-                        else
-                        {
-                            newButton = new BitmapButton(
-                                panel,
-                                mResourceLocator.GetBitmapFilePath("open_image_button"),
-                                [this, sureQuestion]()
-                                {
-                                    if (mController->HasModelLayer(LayerType::Texture)
-                                        && mController->IsModelDirty(LayerType::Texture))
-                                    {
-                                        if (!AskUserIfSure(sureQuestion))
-                                        {
-                                            // Changed their mind
-                                            return;
-                                        }
-                                    }
-
-                                    ImportTextureLayerFromImage();
-                                },
-                                _("Import this layer from an image file."));
-                        }
-
-                        layerManagerSizer->Add(
-                            newButton,
-                            wxGBPosition(iRow * 3, 1),
-                            wxGBSpan(1, 1),
-                            wxLEFT | wxRIGHT,
-                            10);
-                    }
-
-                    // Import
-                    {
-                        // TODO: also here ask user if sure when the layer is dirty
-
-                        auto * importButton = new BitmapButton(
+                        newButton = new BitmapButton(
                             panel,
-                            mResourceLocator.GetBitmapFilePath("open_layer_button"),
+                            mResourceLocator.GetBitmapFilePath("open_image_button"),
+                            [this, sureQuestion]()
+                            {
+                                if (mController->HasModelLayer(LayerType::Texture)
+                                    && mController->IsModelDirty(LayerType::Texture))
+                                {
+                                    if (!AskUserIfSure(sureQuestion))
+                                    {
+                                        // Changed their mind
+                                        return;
+                                    }
+                                }
+
+                                ImportTextureLayerFromImage();
+                            },
+                            _("Import this layer from an image file."));
+                    }
+
+                    layerManagerSizer->Add(
+                        newButton,
+                        wxGBPosition(iRow * 3, 1),
+                        wxGBSpan(1, 1),
+                        wxLEFT | wxRIGHT,
+                        10);
+                }
+
+                // Import
+                {
+                    // TODO: also here ask user if sure when the layer is dirty
+
+                    auto * importButton = new BitmapButton(
+                        panel,
+                        mResourceLocator.GetBitmapFilePath("open_layer_button"),
+                        [this, layer]()
+                        {
+                            // TODO
+                            UnderConstructionDialog::Show(this, mResourceLocator);
+                        },
+                        _("Import this layer from another ship."));
+
+                    layerManagerSizer->Add(
+                        importButton,
+                        wxGBPosition(iRow * 3 + 1, 1),
+                        wxGBSpan(1, 1),
+                        wxLEFT | wxRIGHT,
+                        10);
+                }
+
+                // Delete
+                {
+                    BitmapButton * deleteButton;
+
+                    if (layer != LayerType::Structural)
+                    {
+                        deleteButton = new BitmapButton(
+                            panel,
+                            mResourceLocator.GetBitmapFilePath("delete_layer_button"),
+                            [this, layer, sureQuestion]()
+                            {
+                                switch (layer)
+                                {
+                                    case LayerType::Electrical:
+                                    {
+                                        assert(mController->HasModelLayer(LayerType::Electrical));
+
+                                        if (mController->IsModelDirty(LayerType::Electrical))
+                                        {
+                                            if (!AskUserIfSure(sureQuestion))
+                                            {
+                                                // Changed their mind
+                                                return;
+                                            }
+                                        }
+
+                                        mController->RemoveElectricalLayer();
+
+                                        break;
+                                    }
+
+                                    case LayerType::Ropes:
+                                    {
+                                        assert(mController->HasModelLayer(LayerType::Ropes));
+
+                                        if (mController->IsModelDirty(LayerType::Ropes))
+                                        {
+                                            if (!AskUserIfSure(sureQuestion))
+                                            {
+                                                // Changed their mind
+                                                return;
+                                            }
+                                        }
+
+                                        mController->RemoveRopesLayer();
+
+                                        break;
+                                    }
+
+                                    case LayerType::Structural:
+                                    {
+                                        assert(false);
+                                        break;
+                                    }
+
+                                    case LayerType::Texture:
+                                    {
+                                        assert(mController->HasModelLayer(LayerType::Texture));
+
+                                        if (mController->IsModelDirty(LayerType::Texture))
+                                        {
+                                            if (!AskUserIfSure(sureQuestion))
+                                            {
+                                                // Changed their mind
+                                                return;
+                                            }
+                                        }
+
+                                        mController->RemoveTextureLayer();
+
+                                        break;
+                                    }
+                                }
+                            },
+                            _("Remove this layer."));
+
+                        layerManagerSizer->Add(
+                            deleteButton,
+                            wxGBPosition(iRow * 3, 2),
+                            wxGBSpan(1, 1),
+                            0,
+                            0);
+                    }
+                    else
+                    {
+                        deleteButton = nullptr;
+                    }
+
+                    mLayerDeleteButtons[iLayer] = deleteButton;
+                }
+
+                // Export
+                {
+                    BitmapButton * exportButton;
+
+                    if (layer == LayerType::Structural
+                        || layer == LayerType::Texture)
+                    {
+                        exportButton = new BitmapButton(
+                            panel,
+                            mResourceLocator.GetBitmapFilePath("save_layer_button"),
                             [this, layer]()
                             {
                                 // TODO
                                 UnderConstructionDialog::Show(this, mResourceLocator);
                             },
-                            _("Import this layer from another ship."));
+                            _("Export this layer to a file."));
 
                         layerManagerSizer->Add(
-                            importButton,
-                            wxGBPosition(iRow * 3 + 1, 1),
+                            exportButton,
+                            wxGBPosition(iRow * 3 + 1, 2),
                             wxGBSpan(1, 1),
-                            wxLEFT | wxRIGHT,
-                            10);
+                            0,
+                            0);
+                    }
+                    else
+                    {
+                        exportButton = nullptr;
                     }
 
-                    // Delete
-                    {
-                        BitmapButton * deleteButton;
-
-                        if (layer != LayerType::Structural)
-                        {
-                            deleteButton = new BitmapButton(
-                                panel,
-                                mResourceLocator.GetBitmapFilePath("delete_layer_button"),
-                                [this, layer, sureQuestion]()
-                                {
-                                    switch (layer)
-                                    {
-                                        case LayerType::Electrical:
-                                        {
-                                            assert(mController->HasModelLayer(LayerType::Electrical));
-
-                                            if (mController->IsModelDirty(LayerType::Electrical))
-                                            {
-                                                if (!AskUserIfSure(sureQuestion))
-                                                {
-                                                    // Changed their mind
-                                                    return;
-                                                }
-                                            }
-
-                                            mController->RemoveElectricalLayer();
-
-                                            break;
-                                        }
-
-                                        case LayerType::Ropes:
-                                        {
-                                            assert(mController->HasModelLayer(LayerType::Ropes));
-
-                                            if (mController->IsModelDirty(LayerType::Ropes))
-                                            {
-                                                if (!AskUserIfSure(sureQuestion))
-                                                {
-                                                    // Changed their mind
-                                                    return;
-                                                }
-                                            }
-
-                                            mController->RemoveRopesLayer();
-
-                                            break;
-                                        }
-
-                                        case LayerType::Structural:
-                                        {
-                                            assert(false);
-                                            break;
-                                        }
-
-                                        case LayerType::Texture:
-                                        {
-                                            assert(mController->HasModelLayer(LayerType::Texture));
-
-                                            if (mController->IsModelDirty(LayerType::Texture))
-                                            {
-                                                if (!AskUserIfSure(sureQuestion))
-                                                {
-                                                    // Changed their mind
-                                                    return;
-                                                }
-                                            }
-
-                                            mController->RemoveTextureLayer();
-
-                                            break;
-                                        }
-                                    }
-                                },
-                                _("Remove this layer."));
-
-                            layerManagerSizer->Add(
-                                deleteButton,
-                                wxGBPosition(iRow * 3, 2),
-                                wxGBSpan(1, 1),
-                                0,
-                                0);
-                        }
-                        else
-                        {
-                            deleteButton = nullptr;
-                        }
-
-                        mLayerDeleteButtons[iLayer] = deleteButton;
-                    }
-
-                    // Export
-                    {
-                        BitmapButton * exportButton;
-
-                        if (layer == LayerType::Structural
-                            || layer == LayerType::Texture)
-                        {
-                            exportButton = new BitmapButton(
-                                panel,
-                                mResourceLocator.GetBitmapFilePath("save_layer_button"),
-                                [this, layer]()
-                                {
-                                    // TODO
-                                    UnderConstructionDialog::Show(this, mResourceLocator);
-                                },
-                                _("Export this layer to a file."));
-
-                            layerManagerSizer->Add(
-                                exportButton,
-                                wxGBPosition(iRow * 3 + 1, 2),
-                                wxGBSpan(1, 1),
-                                0,
-                                0);
-                        }
-                        else
-                        {
-                            exportButton = nullptr;
-                        }
-
-                        mLayerExportButtons[iLayer] = exportButton;
-                    }
-
-                    // Spacer
-                    layerManagerSizer->Add(
-                        new wxGBSizerItem(
-                            -1,
-                            12,
-                            wxGBPosition(iRow * 3 + 2, 0),
-                            wxGBSpan(1, LayerCount)));
-                };
-
-                createButtonRow(LayerType::Structural, 0);
-
-                createButtonRow(LayerType::Electrical, 1);
-
-                createButtonRow(LayerType::Ropes, 2);
-
-                createButtonRow(LayerType::Texture, 3);
-            }
-
-            rootVSizer->Add(
-                layerManagerSizer,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        // Misc
-        {
-            wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
-
-            // Other layers opacity slider
-            {
-                mOtherLayersOpacitySlider = new wxSlider(panel, wxID_ANY, 0, 0, MaxLayerTransparency,
-                    wxDefaultPosition, wxDefaultSize, wxSL_VERTICAL | wxSL_INVERSE);
-
-                mOtherLayersOpacitySlider->Bind(
-                    wxEVT_SLIDER,
-                    [this](wxCommandEvent & /*event*/)
-                    {
-                        assert(mController);
-                        float const opacity = OtherLayersOpacitySliderToOpacity(mOtherLayersOpacitySlider->GetValue());
-                        mController->SetOtherLayersOpacity(opacity);
-                    });
-
-                hSizer->Add(
-                    mOtherLayersOpacitySlider,
-                    0, // Retain horizontal width
-                    wxEXPAND | wxALIGN_TOP, // Expand vertically
-                    0);
-            }
-
-            // View modifiers
-            {
-                wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
-
-                // View grid button
-                {
-                    auto bitmap = WxHelpers::LoadBitmap("view_grid_button", mResourceLocator);
-                    auto viewGridButton = new wxBitmapToggleButton(panel, wxID_ANY, bitmap);
-                    auto buttonSize = bitmap.GetSize();
-                    buttonSize.IncBy(4, 4);
-                    viewGridButton->SetMaxSize(buttonSize);
-                    viewGridButton->SetToolTip(_("Enable/Disable the visual guides."));
-                    viewGridButton->Bind(
-                        wxEVT_TOGGLEBUTTON,
-                        [this, viewGridButton](wxCommandEvent & event)
-                        {
-                            assert(mController);
-                            mController->EnableVisualGrid(event.IsChecked());
-
-                            DeviateFocus();
-                        });
-
-                    vSizer->Add(
-                        viewGridButton,
-                        0, // Retain vertical width
-                        wxALIGN_CENTER_HORIZONTAL, // Do not expand vertically
-                        0);
+                    mLayerExportButtons[iLayer] = exportButton;
                 }
 
-                hSizer->Add(
-                    vSizer,
-                    0, // Retain horizontal width
-                    wxEXPAND | wxALIGN_TOP, // Expand vertically
-                    0);
-            }
+                // Spacer
+                layerManagerSizer->Add(
+                    new wxGBSizerItem(
+                        -1,
+                        12,
+                        wxGBPosition(iRow * 3 + 2, 0),
+                        wxGBSpan(1, LayerCount)));
+            };
 
-            rootVSizer->Add(
-                hSizer,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
+            createButtonRow(LayerType::Structural, 0);
+
+            createButtonRow(LayerType::Electrical, 1);
+
+            createButtonRow(LayerType::Ropes, 2);
+
+            createButtonRow(LayerType::Texture, 3);
         }
+
+        rootVSizer->Add(
+            layerManagerSizer,
+            0,
+            wxALIGN_CENTER_HORIZONTAL,
+            0);
     }
 
     panel->SetSizerAndFit(rootVSizer);
+
+    return panel;
+}
+
+wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
+{
+    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+    wxBoxSizer * rootHSizer = new wxBoxSizer(wxHORIZONTAL);
+
+    // Other layers opacity slider
+    {
+        mOtherLayersOpacitySlider = new wxSlider(panel, wxID_ANY, 0, 0, MaxLayerTransparency,
+            wxDefaultPosition, wxDefaultSize, wxSL_VERTICAL | wxSL_INVERSE);
+
+        mOtherLayersOpacitySlider->Bind(
+            wxEVT_SLIDER,
+            [this](wxCommandEvent & /*event*/)
+            {
+                assert(mController);
+                float const opacity = OtherLayersOpacitySliderToOpacity(mOtherLayersOpacitySlider->GetValue());
+                mController->SetOtherLayersOpacity(opacity);
+            });
+
+        rootHSizer->Add(
+            mOtherLayersOpacitySlider,
+            0, // Retain horizontal width
+            wxEXPAND | wxALIGN_TOP, // Expand vertically
+            0);
+    }
+
+    // View modifiers
+    {
+        wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+        // View grid button
+        {
+            auto bitmap = WxHelpers::LoadBitmap("view_grid_button", mResourceLocator);
+            auto viewGridButton = new wxBitmapToggleButton(panel, wxID_ANY, bitmap);
+            auto buttonSize = bitmap.GetSize();
+            buttonSize.IncBy(4, 4);
+            viewGridButton->SetMaxSize(buttonSize);
+            viewGridButton->SetToolTip(_("Enable/Disable the visual guides."));
+            viewGridButton->Bind(
+                wxEVT_TOGGLEBUTTON,
+                [this, viewGridButton](wxCommandEvent & event)
+                {
+                    assert(mController);
+                    mController->EnableVisualGrid(event.IsChecked());
+
+                    DeviateFocus();
+                });
+
+            vSizer->Add(
+                viewGridButton,
+                0, // Retain vertical width
+                wxALIGN_CENTER_HORIZONTAL, // Do not expand vertically
+                0);
+        }
+
+        rootHSizer->Add(
+            vSizer,
+            0, // Retain horizontal width
+            wxEXPAND | wxALIGN_TOP, // Expand vertically
+            0);
+    }
+    
+    panel->SetSizerAndFit(rootHSizer);
 
     return panel;
 }

@@ -118,6 +118,7 @@ private:
     wxPanel * CreateShipSettingsPanel(wxWindow * parent);
     wxPanel * CreateToolSettingsPanel(wxWindow * parent);
     wxPanel * CreateLayersPanel(wxWindow * parent);
+    wxPanel * CreateLayersVisualizationPanel(wxWindow * parent);
     wxPanel * CreateToolbarPanel(wxWindow * parent);
     wxPanel * CreateUndoPanel(wxWindow * parent);
     wxPanel * CreateWorkPanel(wxWindow * parent);
