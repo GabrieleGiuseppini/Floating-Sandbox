@@ -38,25 +38,25 @@ enum class MaterialPlaneType
     Background
 };
 
-enum class StructuralLayerVisualizationMode
+enum class StructuralLayerVisualizationModeType
 {
     ParticleMode,
     AutoTexturizationMode,
     TextureMode
 };
 
-enum class ElectricalLayerVisualizationMode
+enum class ElectricalLayerVisualizationModeType
 {
     ParticleMode
     // FUTURE: CircuitMode
 };
 
-enum class RopesLayerVisualizationMode
+enum class RopesLayerVisualizationModeType
 {
     LinesMode
 };
 
-enum class TextureLayerVisualizationMode
+enum class TextureLayerVisualizationModeType
 {
     MatteMode
 };

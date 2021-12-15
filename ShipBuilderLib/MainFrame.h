@@ -252,6 +252,11 @@ private:
 
     void ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer);
 
+    void ReconciliateUIWithStructuralLayerVisualizationModeSelection(StructuralLayerVisualizationModeType mode);
+    void ReconciliateUIWithElectricalLayerVisualizationModeSelection(StructuralLayerVisualizationModeType mode);
+    void ReconciliateUIWithRopesLayerVisualizationModeSelection(StructuralLayerVisualizationModeType mode);
+    void ReconciliateUIWithTextureLayerVisualizationModeSelection(StructuralLayerVisualizationModeType mode);
+
     void ReconciliateUIWithModelDirtiness();
 
     void ReconciliateUIWithWorkbenchState();
@@ -304,7 +309,14 @@ private:
     std::array<BitmapToggleButton *, LayerCount> mLayerSelectButtons;
     std::array<BitmapButton *, LayerCount> mLayerExportButtons;
     std::array<BitmapButton *, LayerCount> mLayerDeleteButtons;
+
+    // Layers visualization panel
     wxSlider * mOtherLayersOpacitySlider;
+    wxSizer * mLayerVisualizationModePanelsSizer;
+    std::array<wxPanel *, LayerCount> mLayerVisualizationModePanels;
+    wxButton * mStructuralLayerParticleVisualizationModeButton;
+    wxButton * mStructuralLayerAutoTexturizationVisualizationModeButton;
+    wxButton * mStructuralLayerTextureVisualizationModeButton;
 
     // Toolbar panel
     wxSizer * mToolbarPanelsSizer;

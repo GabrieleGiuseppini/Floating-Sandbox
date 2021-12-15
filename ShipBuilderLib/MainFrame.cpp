@@ -1441,7 +1441,7 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
 
         mOtherLayersOpacitySlider->Bind(
             wxEVT_SLIDER,
-            [this](wxCommandEvent & /*event*/)
+            [this](wxCommandEvent &)
             {
                 assert(mController);
                 float const opacity = OtherLayersOpacitySliderToOpacity(mOtherLayersOpacitySlider->GetValue());
@@ -1457,7 +1457,125 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
 
     // View modifiers
     {
-        wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+        mLayerVisualizationModePanelsSizer = new wxBoxSizer(wxVERTICAL);
+
+        // Structure
+        {
+            wxPanel * structuralLayerVisualizationModesPanel = new wxPanel(panel);
+
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Particle mode
+            {
+                auto bitmap = WxHelpers::LoadBitmap("save_layer_button", mResourceLocator); // TODOHERE: Particle Viz Mode icon
+                mStructuralLayerParticleVisualizationModeButton = new wxButton(structuralLayerVisualizationModesPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+                auto buttonSize = bitmap.GetSize();
+                buttonSize.IncBy(4, 4);
+                mStructuralLayerParticleVisualizationModeButton->SetMaxSize(buttonSize);
+                mStructuralLayerParticleVisualizationModeButton->SetToolTip(_("Particle mode: view individual structural particles."));
+                mStructuralLayerParticleVisualizationModeButton->Bind(
+                    wxEVT_TOGGLEBUTTON,
+                    [this](wxCommandEvent &)
+                    {
+                        assert(mController);
+                        
+                        // TODOHERE
+                        //mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::ParticleMode);
+
+                        DeviateFocus();
+                    });
+
+                vSizer->Add(
+                    mStructuralLayerParticleVisualizationModeButton,
+                    0, // Retain V size
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            // Auto-texturization mode
+            {
+                auto bitmap = WxHelpers::LoadBitmap("save_layer_button", mResourceLocator); // TODOHERE: Same icon as auto-texturization, but smaller
+                mStructuralLayerAutoTexturizationVisualizationModeButton = new wxButton(structuralLayerVisualizationModesPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+                auto buttonSize = bitmap.GetSize();
+                buttonSize.IncBy(4, 4);
+                mStructuralLayerAutoTexturizationVisualizationModeButton->SetMaxSize(buttonSize);
+                mStructuralLayerAutoTexturizationVisualizationModeButton->SetToolTip(_("Auto-texturization mode: view ship as when it is auto-texturized."));
+                mStructuralLayerAutoTexturizationVisualizationModeButton->Bind(
+                    wxEVT_TOGGLEBUTTON,
+                    [this](wxCommandEvent &)
+                    {
+                        assert(mController);
+                        
+                        // TODOHERE
+                        //mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::AutoTexturizationMode);
+
+                        DeviateFocus();
+                    });
+
+                vSizer->Add(
+                    mStructuralLayerAutoTexturizationVisualizationModeButton,
+                    0, // Retain V size
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            // Texture mode
+            {
+                auto bitmap = WxHelpers::LoadBitmap("save_layer_button", mResourceLocator); // TODOHERE: Same icon as photo, but smaller
+                mStructuralLayerTextureVisualizationModeButton = new wxButton(structuralLayerVisualizationModesPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+                auto buttonSize = bitmap.GetSize();
+                buttonSize.IncBy(4, 4);
+                mStructuralLayerTextureVisualizationModeButton->SetMaxSize(buttonSize);
+                mStructuralLayerTextureVisualizationModeButton->SetToolTip(_("Texture mode: view ship with texture masked with the ship's structure."));
+                mStructuralLayerTextureVisualizationModeButton->Bind(
+                    wxEVT_TOGGLEBUTTON,
+                    [this](wxCommandEvent &)
+                    {
+                        assert(mController);
+                        
+                        // TODOHERE
+                        //mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::TextureMode);
+
+                        DeviateFocus();
+                    });
+
+                vSizer->Add(
+                    mStructuralLayerTextureVisualizationModeButton,
+                    0, // Retain V size
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            structuralLayerVisualizationModesPanel->SetSizerAndFit(vSizer);
+
+            mLayerVisualizationModePanelsSizer->Add(
+                structuralLayerVisualizationModesPanel,
+                1, // Expand vertically
+                wxALIGN_CENTER_HORIZONTAL,
+                0);
+
+            mLayerVisualizationModePanels[static_cast<size_t>(LayerType::Structural)] = structuralLayerVisualizationModesPanel;
+        }
+
+        // Electrical
+        {
+            // Nothing at the moment
+            mLayerVisualizationModePanels[static_cast<size_t>(LayerType::Electrical)] = nullptr;
+        }
+
+        // Ropes
+        {
+            // Nothing at the moment
+            mLayerVisualizationModePanels[static_cast<size_t>(LayerType::Ropes)] = nullptr;
+        }
+
+        // Texture
+        {
+            // Nothing at the moment
+            mLayerVisualizationModePanels[static_cast<size_t>(LayerType::Texture)] = nullptr;
+        }
+
+        mLayerVisualizationModePanelsSizer->AddStretchSpacer(1);
 
         // View grid button
         {
@@ -1469,7 +1587,7 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
             viewGridButton->SetToolTip(_("Enable/Disable the visual guides."));
             viewGridButton->Bind(
                 wxEVT_TOGGLEBUTTON,
-                [this, viewGridButton](wxCommandEvent & event)
+                [this](wxCommandEvent & event)
                 {
                     assert(mController);
                     mController->EnableVisualGrid(event.IsChecked());
@@ -1477,7 +1595,7 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
                     DeviateFocus();
                 });
 
-            vSizer->Add(
+            mLayerVisualizationModePanelsSizer->Add(
                 viewGridButton,
                 0, // Retain vertical width
                 wxALIGN_CENTER_HORIZONTAL, // Do not expand vertically
@@ -1485,7 +1603,7 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
         }
 
         rootHSizer->Add(
-            vSizer,
+            mLayerVisualizationModePanelsSizer,
             0, // Retain horizontal width
             wxEXPAND | wxALIGN_TOP, // Expand vertically
             0);
@@ -3203,13 +3321,20 @@ void MainFrame::ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer)
 {
     assert(mController);
 
-    // Toggle <select buttons, tool panels> <-> primary layer
+    //
+    // Toggle various UI elements <-> primary layer
+    //
+
     bool hasToggledToolPanel = false;
+    bool hasToggledLayerVisualizationModePanel = false;
+
     assert(mController->HasModelLayer(primaryLayer));
-    uint32_t const iPrimaryLayer = static_cast<uint32_t>(primaryLayer);
+    
     for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
     {
-        bool const isSelected = (iLayer == iPrimaryLayer);
+        bool const isSelected = (iLayer == static_cast<uint32_t>(primaryLayer));
+
+        // Layer selection buttons
         if (mLayerSelectButtons[iLayer]->GetValue() != isSelected)
         {
             mLayerSelectButtons[iLayer]->SetValue(isSelected);
@@ -3220,6 +3345,15 @@ void MainFrame::ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer)
             }
         }
 
+        // Layer visualization mode panels
+        if (mLayerVisualizationModePanels[iLayer] != nullptr 
+            && mLayerVisualizationModePanelsSizer->IsShown(mLayerVisualizationModePanels[iLayer]) != isSelected)
+        {
+            mLayerVisualizationModePanelsSizer->Show(mLayerVisualizationModePanels[iLayer], isSelected);
+            hasToggledLayerVisualizationModePanel = true;
+        }
+
+        // Toolbar panels
         if (mToolbarPanelsSizer->IsShown(mToolbarPanels[iLayer]) != isSelected)
         {
             mToolbarPanelsSizer->Show(mToolbarPanels[iLayer], isSelected);
@@ -3227,10 +3361,38 @@ void MainFrame::ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer)
         }
     }
 
+    if (hasToggledLayerVisualizationModePanel)
+    {
+        mLayerVisualizationModePanelsSizer->Layout();
+    }
+
     if (hasToggledToolPanel)
     {
         mToolbarPanelsSizer->Layout();
     }
+}
+
+void MainFrame::ReconciliateUIWithStructuralLayerVisualizationModeSelection(StructuralLayerVisualizationModeType mode)
+{
+    switch (mode)
+    {
+
+    }
+}
+
+void MainFrame::ReconciliateUIWithElectricalLayerVisualizationModeSelection(StructuralLayerVisualizationModeType /*mode*/)
+{
+    // Nop at this moment
+}
+
+void MainFrame::ReconciliateUIWithRopesLayerVisualizationModeSelection(StructuralLayerVisualizationModeType /*mode*/)
+{
+    // Nop at this moment
+}
+
+void MainFrame::ReconciliateUIWithTextureLayerVisualizationModeSelection(StructuralLayerVisualizationModeType /*mode*/)
+{
+    // Nop at this moment
 }
 
 void MainFrame::ReconciliateUIWithModelDirtiness()
