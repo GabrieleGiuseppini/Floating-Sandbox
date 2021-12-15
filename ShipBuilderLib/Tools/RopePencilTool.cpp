@@ -218,7 +218,7 @@ void RopePencilTool::CheckEngagement(
         //
 
         mEngagementData.emplace(
-            mModelController.GetModel().CloneLayer<LayerType::Ropes>(),
+            mModelController.GetModel().CloneExistingLayer<LayerType::Ropes>(),
             mModelController.GetModel().GetDirtyState(),
             coords,
             mModelController.GetRopeElementIndexAt(coords),

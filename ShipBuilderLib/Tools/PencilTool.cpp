@@ -99,7 +99,7 @@ PencilTool<TLayer, IsEraser>::PencilTool(
         workbenchState,
         userInterface,
         view)
-    , mOriginalLayerClone(modelController.GetModel().CloneLayer<TLayer>())
+    , mOriginalLayerClone(modelController.GetModel().CloneExistingLayer<TLayer>())
     , mTempVisualizationDirtyShipRegion()
     , mEngagementData()
 {
@@ -387,7 +387,7 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
     //
 
     // Re-take original layer clone
-    mOriginalLayerClone = mModelController.GetModel().CloneLayer<TLayer>();
+    mOriginalLayerClone = mModelController.GetModel().CloneExistingLayer<TLayer>();
 
     assert(!mTempVisualizationDirtyShipRegion);
 }

@@ -50,16 +50,10 @@ ShipDefinition Model::MakeShipDefinition() const
 {
     return ShipDefinition(
         GetShipSize(),
-        CloneLayer<LayerType::Structural>(),
-        HasLayer(LayerType::Electrical)
-            ? std::make_unique<ElectricalLayerData>(CloneLayer<LayerType::Electrical>())
-            : nullptr,
-        HasLayer(LayerType::Ropes)
-            ? std::make_unique<RopesLayerData>(CloneLayer<LayerType::Ropes>())
-            : nullptr,
-        HasLayer(LayerType::Texture)
-            ? std::make_unique<TextureLayerData>(CloneLayer<LayerType::Texture>())
-            : nullptr,
+        CloneExistingLayer<LayerType::Structural>(),
+        CloneElectricalLayer(),
+        CloneRopesLayer(),
+        CloneTextureLayer(),
         GetShipMetadata(),
         GetShipPhysicsData(),
         GetShipAutoTexturizationSettings());
@@ -106,6 +100,18 @@ void Model::RemoveElectricalLayer()
     mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = false;
 }
 
+std::unique_ptr<ElectricalLayerData> Model::CloneElectricalLayer() const
+{
+    std::unique_ptr<ElectricalLayerData> clonedLayer;
+
+    if (mElectricalLayer)
+    {
+        clonedLayer.reset(new ElectricalLayerData(mElectricalLayer->Clone()));
+    }
+
+    return clonedLayer;
+}
+
 void Model::NewRopesLayer()
 {
     // Reset layer
@@ -127,6 +133,18 @@ void Model::RemoveRopesLayer()
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Ropes)] = false;
+}
+
+std::unique_ptr<RopesLayerData> Model::CloneRopesLayer() const
+{
+    std::unique_ptr<RopesLayerData> clonedLayer;
+
+    if (mRopesLayer)
+    {
+        clonedLayer.reset(new RopesLayerData(mRopesLayer->Clone()));
+    }
+
+    return clonedLayer;
 }
 
 void Model::NewTextureLayer()

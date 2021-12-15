@@ -63,7 +63,7 @@ LineTool<TLayer>::LineTool(
         workbenchState,
         userInterface,
         view)
-    , mOriginalLayerClone(modelController.GetModel().CloneLayer<TLayer>())
+    , mOriginalLayerClone(modelController.GetModel().CloneExistingLayer<TLayer>())
     , mEphemeralVisualization()
     , mEngagementData()
     , mIsShiftDown(false)
@@ -326,7 +326,7 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
     // Re-take original layer clone
     //
 
-    mOriginalLayerClone = mModelController.GetModel().CloneLayer<TLayer>();
+    mOriginalLayerClone = mModelController.GetModel().CloneExistingLayer<TLayer>();
 }
 
 template<LayerType TLayer>

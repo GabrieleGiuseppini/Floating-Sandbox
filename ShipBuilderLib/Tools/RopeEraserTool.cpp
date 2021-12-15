@@ -27,7 +27,7 @@ RopeEraserTool::RopeEraserTool(
         workbenchState,
         userInterface,
         view)
-    , mOriginalLayerClone(modelController.GetModel().CloneLayer<LayerType::Ropes>())
+    , mOriginalLayerClone(modelController.GetModel().CloneExistingLayer<LayerType::Ropes>())
     , mHasOverlay(false)
     , mEngagementData()
 {
@@ -183,7 +183,7 @@ void RopeEraserTool::StopEngagement()
             });
 
         // Take new orig clone
-        mOriginalLayerClone = mModelController.GetModel().CloneLayer<LayerType::Ropes>();
+        mOriginalLayerClone = mModelController.GetModel().CloneExistingLayer<LayerType::Ropes>();
     }
 
     // Stop engagement

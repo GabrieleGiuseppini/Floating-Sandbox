@@ -209,6 +209,7 @@ void Controller::NewStructuralLayer()
 {
     auto const scopedToolResumeState = SuspendTool();
 
+    // TODO: undo, copy from texture
     // Make new layer
     mModelController->NewStructuralLayer();
     mUserInterface.OnLayerPresenceChanged();
@@ -232,6 +233,7 @@ void Controller::SetStructuralLayer(/*TODO*/)
 {
     auto const scopedToolResumeState = SuspendTool();
 
+    // TODO: undo, copy from texture
     // Update layer
     mModelController->SetStructuralLayer(/*TODO*/);
     mUserInterface.OnLayerPresenceChanged();
@@ -280,6 +282,7 @@ void Controller::NewElectricalLayer()
 {
     auto const scopedToolResumeState = SuspendTool();
 
+    // TODO: undo, copy from texture
     // Make new layer
     mModelController->NewElectricalLayer();
     mUserInterface.OnLayerPresenceChanged();
@@ -303,6 +306,7 @@ void Controller::SetElectricalLayer(/*TODO*/)
 {
     auto const scopedToolResumeState = SuspendTool();
 
+    // TODO: undo, copy from texture
     // Update layer
     mModelController->SetElectricalLayer(/*TODO*/);
     mUserInterface.OnLayerPresenceChanged();
@@ -326,6 +330,7 @@ void Controller::RemoveElectricalLayer()
 {
     auto const scopedToolResumeState = SuspendTool();
 
+    // TODO: undo, copy from texture
     // Remove layer
     mModelController->RemoveElectricalLayer();
     mUserInterface.OnLayerPresenceChanged();
@@ -371,7 +376,7 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
     {
         // Save state
         auto originalDirtyStateClone = mModelController->GetModel().GetDirtyState();
-        auto originalLayerClone = mModelController->GetModel().CloneLayer<LayerType::Electrical>();
+        auto originalLayerClone = mModelController->GetModel().CloneExistingLayer<LayerType::Electrical>();
 
         // Trim
         auto const affectedRect = mModelController->TrimElectricalParticlesWithoutSubstratum();
@@ -411,6 +416,7 @@ void Controller::NewRopesLayer()
 {
     auto const scopedToolResumeState = SuspendTool();
 
+    // TODO: undo, copy from texture
     // Make new layer
     mModelController->NewRopesLayer();
     mUserInterface.OnLayerPresenceChanged();
@@ -434,6 +440,7 @@ void Controller::SetRopesLayer(/*TODO*/)
 {
     auto const scopedToolResumeState = SuspendTool();
 
+    // TODO: undo, copy from texture
     // Update layer
     mModelController->SetRopesLayer(/*TODO*/);
     mUserInterface.OnLayerPresenceChanged();
@@ -457,6 +464,7 @@ void Controller::RemoveRopesLayer()
 {
     auto const scopedToolResumeState = SuspendTool();
 
+    // TODO: undo, copy from texture
     // Remove layer
     mModelController->RemoveRopesLayer();
     mUserInterface.OnLayerPresenceChanged();

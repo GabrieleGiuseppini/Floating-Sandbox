@@ -189,7 +189,7 @@ public:
     }
     
     template<LayerType TLayer>
-    typename LayerTypeTraits<TLayer>::layer_data_type CloneLayer() const
+    typename LayerTypeTraits<TLayer>::layer_data_type CloneExistingLayer() const
     {
         if constexpr (TLayer == LayerType::Structural)
         {
@@ -246,6 +246,8 @@ public:
     void SetElectricalLayer(/*TODO*/);
     void RemoveElectricalLayer();
 
+    std::unique_ptr<ElectricalLayerData> CloneElectricalLayer() const;
+
     RopesLayerData const & GetRopesLayer() const
     {
         assert(mRopesLayer);
@@ -262,6 +264,8 @@ public:
     void SetRopesLayer(/*TODO*/);
     void RemoveRopesLayer();
 
+    std::unique_ptr<RopesLayerData> CloneRopesLayer() const;
+
     TextureLayerData const & GetTextureLayer() const
     {
         assert(mTextureLayer);
@@ -271,6 +275,7 @@ public:
     void NewTextureLayer();
     void SetTextureLayer(TextureLayerData && textureLayer);
     void RemoveTextureLayer();
+
     std::unique_ptr<TextureLayerData> CloneTextureLayer() const;
     void RestoreTextureLayer(std::unique_ptr<TextureLayerData> textureLayer);
 
