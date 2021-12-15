@@ -7,6 +7,8 @@
 
 #include <UILib/WxHelpers.h>
 
+#include <GameCore/Vectors.h>
+
 #include <wx/dcclient.h>
 
 #include <cassert>
@@ -114,14 +116,19 @@ void ShipResizeVisualizationControl::OnMouseMove(wxMouseEvent & event)
 
         wxPoint newMouseCoords(event.GetX(), event.GetY());
 
-        mOffset += IntegralRectSize(
+        IntegralRectSize offsetOffset = IntegralRectSize(
             static_cast<IntegralRectSize::integral_type>(std::round(static_cast<float>(newMouseCoords.x - mCurrentMouseTrajectoryStartDC->x) / mIntegralToDC)),
             static_cast<IntegralRectSize::integral_type>(std::round(static_cast<float>(newMouseCoords.y - mCurrentMouseTrajectoryStartDC->y) / mIntegralToDC)));
 
-        OnChange();
+        if (offsetOffset.width != 0 || offsetOffset.height != 0)
+        {
+            mOffset += offsetOffset;
 
-        // Remember coords for next move
-        mCurrentMouseTrajectoryStartDC.emplace(newMouseCoords);
+            OnChange();
+
+            // Remember coords for next move
+            mCurrentMouseTrajectoryStartDC.emplace(newMouseCoords);
+        }
     }
 }
 
@@ -219,49 +226,56 @@ void ShipResizeVisualizationControl::OnChange()
     // Resize image
     //
 
-    // TODO: do all calc's in float
-
     // Calculate new (screen) size of image required to fit the scale
-    wxSize const newImageSizeDC = wxSize(
-        std::max(static_cast<int>(std::round(static_cast<float>(mImage.GetWidth()) * mIntegralToDC)), 1),
-        std::max(static_cast<int>(std::round(static_cast<float>(mImage.GetHeight()) * mIntegralToDC)), 1));
+    vec2f const newImageSizeDC = vec2f(
+        static_cast<float>(mImage.GetWidth()) * mIntegralToDC,
+        static_cast<float>(mImage.GetHeight()) * mIntegralToDC);
 
     // Calculate new image (screen) origin, relative to (0, 0) of this control
-    wxPoint const newImageOriginDC = wxPoint(
-        mTargetOriginDC.x + static_cast<int>(std::round(static_cast<float>(mOffset.x) * mIntegralToDC)),
-        mTargetOriginDC.y + static_cast<int>(std::round(static_cast<float>(mOffset.y) * mIntegralToDC)));
+    vec2f const newImageOriginDC = vec2f(
+        static_cast<float>(mTargetOriginDC.x) + static_cast<float>(mOffset.x) * mIntegralToDC,
+        static_cast<float>(mTargetOriginDC.y) + static_cast<float>(mOffset.y) * mIntegralToDC);
 
     // Calculate visible portion of resized image
-    wxRect const newImageRectDC = 
-        wxRect(newImageOriginDC, newImageSizeDC)
-        .Intersect(wxRect(wxPoint(0, 0), sizeDC));
+    std::optional<FloatRect> const newImageRectDC =
+        FloatRect(newImageOriginDC, newImageSizeDC)
+        .MakeIntersectionWith(
+            FloatRect(
+                vec2f(0.0f, 0.0f),
+                vec2f(static_cast<float>(sizeDC.GetWidth()), static_cast<float>(sizeDC.GetHeight()))));
 
-    if (!newImageRectDC.IsEmpty())
+    if (newImageRectDC.has_value())
     {
         // Convert DC coordinates back into bitmap coordinates
 
-        wxSize const newImageSizeImage = wxSize(
-            static_cast<int>(std::round(static_cast<float>(newImageRectDC.GetWidth()) / mIntegralToDC)),
-            static_cast<int>(std::round(static_cast<float>(newImageRectDC.GetHeight()) / mIntegralToDC)));
-
-        wxPoint const newImageOriginImage = wxPoint(
-            static_cast<int>(std::round(static_cast<float>(std::max(-newImageOriginDC.x, 0)) / mIntegralToDC)),
-            static_cast<int>(std::round(static_cast<float>(std::max(-newImageOriginDC.y, 0)) / mIntegralToDC)));
-
-        wxRect const resizedBitmapClipRectImage = wxRect(newImageOriginImage, newImageSizeImage);
+        vec2i const newImageSizeImage = (newImageRectDC->size / mIntegralToDC).to_vec2i_round();
+        vec2i const newImageOriginImage = (vec2f(
+            std::max(-newImageOriginDC.x, 0.0f),
+            std::max(-newImageOriginDC.y, 0.0f)) / mIntegralToDC).to_vec2i_round();
 
         //
         // Create new clip
         //
+
+        // TODOHERE
+        //assert(newImageOriginImage.x + newImageSizeImage.x == mImage.GetWidth());
+        //assert(newImageOriginImage.y + newImageSizeImage.y == mImage.GetHeight());
         
-        auto clippedImage = wxImage(newImageSizeImage, false);
+        auto clippedImage = wxImage(newImageSizeImage.x, newImageSizeImage.y, false);
         clippedImage.Paste(mImage, -newImageOriginImage.x, -newImageOriginImage.y);
+
+        vec2i const newImageSizeDCi = newImageRectDC->size.to_vec2i_round();
+        vec2i const newImageOriginDCi = newImageRectDC->origin.to_vec2i_round();
+
         mResizedBitmapClip = wxBitmap(
             clippedImage
-            .Scale(newImageRectDC.GetWidth(), newImageRectDC.GetHeight(), wxIMAGE_QUALITY_HIGH),
+            .Scale(
+                newImageSizeDCi.x,
+                newImageSizeDCi.y,
+                wxIMAGE_QUALITY_HIGH),
             wxBITMAP_SCREEN_DEPTH);
 
-        mResizedBitmapOriginDC = newImageRectDC.GetPosition();
+        mResizedBitmapOriginDC = wxPoint(newImageOriginDCi.x, newImageOriginDCi.y);
     }
     else
     {

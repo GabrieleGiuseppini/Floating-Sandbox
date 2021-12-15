@@ -293,6 +293,10 @@ namespace std {
 // Geometry
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+/* 
+ * Integral system
+ */
+
 #pragma pack(push, 1)
 
 template<typename TIntegralTag>
@@ -514,6 +518,8 @@ using ShipSpaceCoordinates = _IntegralCoordinates<struct ShipSpaceTag>; // Y=0 a
 using DisplayLogicalCoordinates = _IntegralCoordinates<struct DisplayLogicalTag>; // Y=0 at top
 using DisplayPhysicalCoordinates = _IntegralCoordinates<struct DisplayPhysicalTag>; // Y=0 at top
 
+#pragma pack(push)
+
 template<typename TIntegralTag>
 struct _IntegralRect
 {
@@ -618,6 +624,8 @@ struct _IntegralRect
     }
 };
 
+#pragma pack(pop)
+
 using IntegralRect = _IntegralRect<struct IntegralTag>;
 using ImageRect = _IntegralRect<struct ImageTag>;
 using ShipSpaceRect = _IntegralRect<struct ShipSpaceTag>;
@@ -644,6 +652,91 @@ struct _IntegralCoordsRatio
 };
 
 using ShipSpaceToWorldSpaceCoordsRatio = _IntegralCoordsRatio<struct ShipSpaceTag>;
+
+/*
+ * Float rectangle.
+ */
+
+#pragma pack(push)
+
+struct FloatRect
+{
+    vec2f origin;
+    vec2f size;
+
+    constexpr FloatRect()
+        : origin(vec2f::zero())
+        , size(vec2f::zero())
+    {}
+
+    constexpr FloatRect(
+        vec2f const & _origin,
+        vec2f const & _size)
+        : origin(_origin)
+        , size(_size)
+    {}
+
+    inline bool operator==(FloatRect const & other) const
+    {
+        return origin == other.origin
+            && size == other.size;
+    }
+
+    bool IsContainedInRect(FloatRect const & container) const
+    {
+        return origin.x >= container.origin.x
+            && origin.y >= container.origin.y
+            && origin.x + size.x <= container.origin.x + container.size.x
+            && origin.y + size.y <= container.origin.y + container.size.y;
+    }
+
+    void UnionWith(FloatRect const & other)
+    {
+        auto const newOrigin = vec2f(
+            std::min(origin.x, other.origin.x),
+            std::min(origin.y, other.origin.y));
+
+        auto const newSize = vec2f(
+            std::max(origin.x + size.x, other.origin.x + other.size.x) - newOrigin.x,
+            std::max(origin.y + size.y, other.origin.y + other.size.y) - newOrigin.y);
+
+        assert(newSize.x >= 0 && newSize.y >= 0);
+
+        origin = newOrigin;
+        size = newSize;
+    }
+
+    std::optional<FloatRect> MakeIntersectionWith(FloatRect const & other) const
+    {
+        auto const newOrigin = vec2f(
+            std::max(origin.x, other.origin.x),
+            std::max(origin.y, other.origin.y));
+
+        auto const newSize = vec2f(
+            std::min(size.x - (newOrigin.x - origin.x), other.size.x - (newOrigin.x - other.origin.x)),
+            std::min(size.y - (newOrigin.y - origin.y), other.size.y - (newOrigin.y - other.origin.y)));
+
+        if (newSize.x <= 0 || newSize.y <= 0)
+        {
+            return std::nullopt;
+        }
+        else
+        {
+            return FloatRect(
+                newOrigin,
+                newSize);
+        }
+    }
+
+    std::string ToString() const
+    {
+        std::stringstream ss;
+        ss << "(" << origin.x << ", " << origin.y << " -> " << size.x << " x " << size.y << ")";
+        return ss.str();
+    }
+};
+
+#pragma pack(pop)
 
 /*
  * Octants, i.e. the direction of a spring connecting two neighbors.
