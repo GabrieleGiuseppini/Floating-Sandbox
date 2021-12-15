@@ -248,18 +248,23 @@ void ShipResizeVisualizationControl::OnChange()
     {
         // Convert DC coordinates back into bitmap coordinates
 
-        vec2i const newImageSizeImage = (newImageRectDC->size / mIntegralToDC).to_vec2i_round();
+        vec2i newImageSizeImage = (newImageRectDC->size / mIntegralToDC).to_vec2i_round();
+
         vec2i const newImageOriginImage = (vec2f(
             std::max(-newImageOriginDC.x, 0.0f),
             std::max(-newImageOriginDC.y, 0.0f)) / mIntegralToDC).to_vec2i_round();
 
+        // Make sure we don't need an image larger than the original one
+        newImageSizeImage = vec2i(
+            std::min(newImageSizeImage.x, mImage.GetWidth() - newImageOriginImage.x),
+            std::min(newImageSizeImage.y, mImage.GetHeight() - newImageOriginImage.y));
+        
         //
         // Create new clip
         //
 
-        // TODOHERE
-        //assert(newImageOriginImage.x + newImageSizeImage.x == mImage.GetWidth());
-        //assert(newImageOriginImage.y + newImageSizeImage.y == mImage.GetHeight());
+        assert(newImageOriginImage.x + newImageSizeImage.x <= mImage.GetWidth());
+        assert(newImageOriginImage.y + newImageSizeImage.y <= mImage.GetHeight());
         
         auto clippedImage = wxImage(newImageSizeImage.x, newImageSizeImage.y, false);
         clippedImage.Paste(mImage, -newImageOriginImage.x, -newImageOriginImage.y);

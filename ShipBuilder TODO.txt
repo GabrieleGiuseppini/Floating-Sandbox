@@ -49,7 +49,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 											+ Dialog reactor: toggle all buttons off (via OnAnchor)
 										+ AnchorCoords:
 											+ Calc coords at OnChange iff mAnchorCoords.HasValue()
-								- Fix the problem with super zoom
+								= Fix the problem with super zoom
+								- Capture mouse
 							- Resize model
 				- Undo
 				- Text-import-from-button issue: see if specifying two bitmaps works
