@@ -293,7 +293,9 @@ void ModelController::Flip(DirectionType direction)
     {
         assert(!mIsElectricalLayerInEphemeralVisualization);
 
-        // TODOHERE
+        mModel.GetElectricalLayer().Buffer.Flip(direction);
+
+        UpdateElectricalLayerVisualization(GetWholeShipRect());
     }
 
     // Ropes layer
@@ -301,13 +303,17 @@ void ModelController::Flip(DirectionType direction)
     {
         assert(!mIsRopesLayerInEphemeralVisualization);
 
-        // TODOHERE
+        mModel.GetRopesLayer().Buffer.Flip(direction, mModel.GetShipSize());
+
+        UpdateRopesLayerVisualization();
     }
 
     // Texture layer
     if (mModel.HasLayer(LayerType::Texture))
     {
-        // TODOHERE
+        mModel.GetTextureLayer().Buffer.Flip(direction);
+
+        UpdateTextureLayerVisualization(GetWholeShipRect());
     }
 }
 

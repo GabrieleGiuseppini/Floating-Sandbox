@@ -272,6 +272,12 @@ public:
         return *mTextureLayer;
     }
 
+    TextureLayerData & GetTextureLayer()
+    {
+        assert(mTextureLayer);
+        return *mTextureLayer;
+    }
+
     void NewTextureLayer();
     void SetTextureLayer(TextureLayerData && textureLayer);
     void RemoveTextureLayer();

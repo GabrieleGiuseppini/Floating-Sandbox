@@ -37,7 +37,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 							= Resize image
 								+ Buffer2D
 							= Controller::SetTextureLayer
-								- Undo
+								= Undo
+							- Texture visualization (see immediately below)
 						= For resize
 							+ Dialog
 								+ Dimensions lock button
@@ -53,8 +54,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 											+ Calc coords at OnChange iff mAnchorCoords.HasValue()
 								+ Fix the problem with super zoom
 								+ Capture mouse
-							- Resize model
-				- Undo
+							- Controller::ResizeShip
+								- ModelController::ResizeShip
+									- Resize model
+								- Undo
 				- Texture-import-from-button issue: see if specifying two bitmaps works
 			- .shp, .shp2 (load whole and throw away)
 				- Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
@@ -67,7 +70,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Any import from .shp2 requires password
 		- All imports push an undo
 
-- ModelController::Flip: all layers
+= ModelController::Flip: all layers
+	+ Electrical
+	+ Ropes
+	= Texture
 
 - New/Set/Remove layers:
 	- New:
