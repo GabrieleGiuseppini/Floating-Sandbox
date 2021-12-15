@@ -74,6 +74,10 @@ Controller::Controller(
     , mResourceLocator(resourceLocator)
     // State
     , mPrimaryLayer(LayerType::Structural)
+    , mStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::ParticleMode)
+    , mElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType::ParticleMode)
+    , mRopesLayerVisualizationMode(RopesLayerVisualizationModeType::LinesMode)
+    , mTextureLayerVisualizationMode(TextureLayerVisualizationModeType::MatteMode)
     , mCurrentToolType(ToolType::StructuralPencil)
     , mCurrentTool()
     , mLastToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, ToolType::RopePencil, std::nullopt})
@@ -90,6 +94,10 @@ Controller::Controller(
 
     // Notify our initializations
     mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
+    mUserInterface.OnStructuralLayerVisualizationMode(mStructuralLayerVisualizationMode);
+    mUserInterface.OnElectricalLayerVisualizationMode(mElectricalLayerVisualizationMode);
+    mUserInterface.OnRopesLayerVisualizationMode(mRopesLayerVisualizationMode);
+    mUserInterface.OnTextureLayerVisualizationMode(mTextureLayerVisualizationMode);
     mUserInterface.OnCurrentToolChanged(*mCurrentToolType);
 
     // Upload layers visualization
@@ -660,6 +668,26 @@ void Controller::SelectPrimaryLayer(LayerType primaryLayer)
         // Refresh view
         mUserInterface.RefreshView();
     }
+}
+
+StructuralLayerVisualizationModeType Controller::GetStructuralLayerVisualizationMode() const
+{
+    return mStructuralLayerVisualizationMode;
+}
+
+ElectricalLayerVisualizationModeType Controller::GetElectricalLayerVisualizationMode() const
+{
+    return mElectricalLayerVisualizationMode;
+}
+
+RopesLayerVisualizationModeType Controller::GetRopesLayerVisualizationMode() const
+{
+    return mRopesLayerVisualizationMode;
+}
+
+TextureLayerVisualizationModeType Controller::GetTextureLayerVisualizationMode() const
+{
+    return mTextureLayerVisualizationMode;
 }
 
 void Controller::SetOtherLayersOpacity(float opacity)

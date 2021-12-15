@@ -90,6 +90,11 @@ public:
 
     void OnPrimaryLayerChanged(LayerType primaryLayer) override;
 
+    void OnStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode) override;
+    void OnElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode) override;
+    void OnRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode) override;
+    void OnTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode) override;
+
     void OnModelDirtyChanged() override;
 
     void OnWorkbenchStateChanged() override;
@@ -253,9 +258,9 @@ private:
     void ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer);
 
     void ReconciliateUIWithStructuralLayerVisualizationModeSelection(StructuralLayerVisualizationModeType mode);
-    void ReconciliateUIWithElectricalLayerVisualizationModeSelection(StructuralLayerVisualizationModeType mode);
-    void ReconciliateUIWithRopesLayerVisualizationModeSelection(StructuralLayerVisualizationModeType mode);
-    void ReconciliateUIWithTextureLayerVisualizationModeSelection(StructuralLayerVisualizationModeType mode);
+    void ReconciliateUIWithElectricalLayerVisualizationModeSelection(ElectricalLayerVisualizationModeType mode);
+    void ReconciliateUIWithRopesLayerVisualizationModeSelection(RopesLayerVisualizationModeType mode);
+    void ReconciliateUIWithTextureLayerVisualizationModeSelection(TextureLayerVisualizationModeType mode);
 
     void ReconciliateUIWithModelDirtiness();
 
@@ -314,9 +319,9 @@ private:
     wxSlider * mOtherLayersOpacitySlider;
     wxSizer * mLayerVisualizationModePanelsSizer;
     std::array<wxPanel *, LayerCount> mLayerVisualizationModePanels;
-    wxButton * mStructuralLayerParticleVisualizationModeButton;
-    wxButton * mStructuralLayerAutoTexturizationVisualizationModeButton;
-    wxButton * mStructuralLayerTextureVisualizationModeButton;
+    BitmapToggleButton * mStructuralLayerParticleVisualizationModeButton;
+    BitmapToggleButton * mStructuralLayerAutoTexturizationVisualizationModeButton;
+    BitmapToggleButton * mStructuralLayerTextureVisualizationModeButton;
 
     // Toolbar panel
     wxSizer * mToolbarPanelsSizer;

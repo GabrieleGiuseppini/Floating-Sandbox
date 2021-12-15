@@ -633,6 +633,39 @@ void MainFrame::OnPrimaryLayerChanged(LayerType primaryLayer)
     }
 }
 
+void MainFrame::OnStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode)
+{
+    if (mController)
+    {
+        ReconciliateUIWithStructuralLayerVisualizationModeSelection(mode);
+    }
+}
+
+void MainFrame::OnElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode)
+{
+    if (mController)
+    {
+        ReconciliateUIWithElectricalLayerVisualizationModeSelection(mode);
+    }
+}
+
+void MainFrame::OnRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode)
+{
+    if (mController)
+    {
+        ReconciliateUIWithRopesLayerVisualizationModeSelection(mode);
+    }
+}
+
+void MainFrame::OnTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode)
+{
+    if (mController)
+    {
+        ReconciliateUIWithTextureLayerVisualizationModeSelection(mode);
+    }
+}
+
+
 void MainFrame::OnModelDirtyChanged()
 {
     if (mController)
@@ -1467,15 +1500,10 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
 
             // Particle mode
             {
-                auto bitmap = WxHelpers::LoadBitmap("save_layer_button", mResourceLocator); // TODOHERE: Particle Viz Mode icon
-                mStructuralLayerParticleVisualizationModeButton = new wxButton(structuralLayerVisualizationModesPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-                auto buttonSize = bitmap.GetSize();
-                buttonSize.IncBy(4, 4);
-                mStructuralLayerParticleVisualizationModeButton->SetMaxSize(buttonSize);
-                mStructuralLayerParticleVisualizationModeButton->SetToolTip(_("Particle mode: view individual structural particles."));
-                mStructuralLayerParticleVisualizationModeButton->Bind(
-                    wxEVT_TOGGLEBUTTON,
-                    [this](wxCommandEvent &)
+                mStructuralLayerParticleVisualizationModeButton = new BitmapToggleButton(
+                    structuralLayerVisualizationModesPanel,
+                    mResourceLocator.GetBitmapFilePath("save_layer_button"), // TODOHERE: Particle Viz Mode icon
+                    [this]()
                     {
                         assert(mController);
                         
@@ -1483,7 +1511,12 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
                         //mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::ParticleMode);
 
                         DeviateFocus();
-                    });
+                    },
+                    _("Particle mode: view individual structural particles."));
+
+                auto buttonSize = mStructuralLayerParticleVisualizationModeButton->GetBitmap().GetSize();
+                buttonSize.IncBy(4, 4);
+                mStructuralLayerParticleVisualizationModeButton->SetMaxSize(buttonSize);
 
                 vSizer->Add(
                     mStructuralLayerParticleVisualizationModeButton,
@@ -1494,15 +1527,10 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
 
             // Auto-texturization mode
             {
-                auto bitmap = WxHelpers::LoadBitmap("save_layer_button", mResourceLocator); // TODOHERE: Same icon as auto-texturization, but smaller
-                mStructuralLayerAutoTexturizationVisualizationModeButton = new wxButton(structuralLayerVisualizationModesPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-                auto buttonSize = bitmap.GetSize();
-                buttonSize.IncBy(4, 4);
-                mStructuralLayerAutoTexturizationVisualizationModeButton->SetMaxSize(buttonSize);
-                mStructuralLayerAutoTexturizationVisualizationModeButton->SetToolTip(_("Auto-texturization mode: view ship as when it is auto-texturized."));
-                mStructuralLayerAutoTexturizationVisualizationModeButton->Bind(
-                    wxEVT_TOGGLEBUTTON,
-                    [this](wxCommandEvent &)
+                mStructuralLayerAutoTexturizationVisualizationModeButton = new BitmapToggleButton(
+                    structuralLayerVisualizationModesPanel,
+                    mResourceLocator.GetBitmapFilePath("save_layer_button"), // TODOHERE: Same icon as auto-texturization, but smaller
+                    [this]()
                     {
                         assert(mController);
                         
@@ -1510,7 +1538,12 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
                         //mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::AutoTexturizationMode);
 
                         DeviateFocus();
-                    });
+                    },
+                    _("Auto-texturization mode: view ship as when it is auto-texturized."));
+
+                auto buttonSize = mStructuralLayerAutoTexturizationVisualizationModeButton->GetBitmap().GetSize();
+                buttonSize.IncBy(4, 4);
+                mStructuralLayerAutoTexturizationVisualizationModeButton->SetMaxSize(buttonSize);
 
                 vSizer->Add(
                     mStructuralLayerAutoTexturizationVisualizationModeButton,
@@ -1521,15 +1554,10 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
 
             // Texture mode
             {
-                auto bitmap = WxHelpers::LoadBitmap("save_layer_button", mResourceLocator); // TODOHERE: Same icon as photo, but smaller
-                mStructuralLayerTextureVisualizationModeButton = new wxButton(structuralLayerVisualizationModesPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-                auto buttonSize = bitmap.GetSize();
-                buttonSize.IncBy(4, 4);
-                mStructuralLayerTextureVisualizationModeButton->SetMaxSize(buttonSize);
-                mStructuralLayerTextureVisualizationModeButton->SetToolTip(_("Texture mode: view ship with texture masked with the ship's structure."));
-                mStructuralLayerTextureVisualizationModeButton->Bind(
-                    wxEVT_TOGGLEBUTTON,
-                    [this](wxCommandEvent &)
+                mStructuralLayerTextureVisualizationModeButton = new BitmapToggleButton(
+                    structuralLayerVisualizationModesPanel,
+                    mResourceLocator.GetBitmapFilePath("save_layer_button"), // TODOHERE: Same icon as photo, but smaller
+                    [this]()
                     {
                         assert(mController);
                         
@@ -1537,7 +1565,8 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
                         //mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::TextureMode);
 
                         DeviateFocus();
-                    });
+                    },
+                    _("Texture mode: view ship with texture masked with the ship's structure."));
 
                 vSizer->Add(
                     mStructuralLayerTextureVisualizationModeButton,
@@ -3248,6 +3277,10 @@ void MainFrame::ReconciliateUI()
     ReconciliateUIWithLayerPresence();
     ReconciliateUIWithShipSize(mController->GetShipSize());
     ReconciliateUIWithPrimaryLayerSelection(mController->GetPrimaryLayer());
+    ReconciliateUIWithStructuralLayerVisualizationModeSelection(mController->GetStructuralLayerVisualizationMode());
+    ReconciliateUIWithElectricalLayerVisualizationModeSelection(mController->GetElectricalLayerVisualizationMode());
+    ReconciliateUIWithRopesLayerVisualizationModeSelection(mController->GetRopesLayerVisualizationMode());
+    ReconciliateUIWithTextureLayerVisualizationModeSelection(mController->GetTextureLayerVisualizationMode());
     ReconciliateUIWithModelDirtiness();
     ReconciliateUIWithWorkbenchState();
     ReconciliateUIWithSelectedTool(mController->GetCurrentTool());
@@ -3374,23 +3407,22 @@ void MainFrame::ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer)
 
 void MainFrame::ReconciliateUIWithStructuralLayerVisualizationModeSelection(StructuralLayerVisualizationModeType mode)
 {
-    switch (mode)
-    {
-
-    }
+    mStructuralLayerParticleVisualizationModeButton->SetValue(mode == StructuralLayerVisualizationModeType::ParticleMode);
+    mStructuralLayerAutoTexturizationVisualizationModeButton->SetValue(mode == StructuralLayerVisualizationModeType::AutoTexturizationMode);
+    mStructuralLayerTextureVisualizationModeButton->SetValue(mode == StructuralLayerVisualizationModeType::TextureMode);
 }
 
-void MainFrame::ReconciliateUIWithElectricalLayerVisualizationModeSelection(StructuralLayerVisualizationModeType /*mode*/)
+void MainFrame::ReconciliateUIWithElectricalLayerVisualizationModeSelection(ElectricalLayerVisualizationModeType /*mode*/)
 {
     // Nop at this moment
 }
 
-void MainFrame::ReconciliateUIWithRopesLayerVisualizationModeSelection(StructuralLayerVisualizationModeType /*mode*/)
+void MainFrame::ReconciliateUIWithRopesLayerVisualizationModeSelection(RopesLayerVisualizationModeType /*mode*/)
 {
     // Nop at this moment
 }
 
-void MainFrame::ReconciliateUIWithTextureLayerVisualizationModeSelection(StructuralLayerVisualizationModeType /*mode*/)
+void MainFrame::ReconciliateUIWithTextureLayerVisualizationModeSelection(TextureLayerVisualizationModeType /*mode*/)
 {
     // Nop at this moment
 }

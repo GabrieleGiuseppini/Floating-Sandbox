@@ -331,14 +331,19 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Texture:
 			- Matte
 	- Dynamics:
+		- TODOHERE: why opt's? to turn off rendering of that layer altogether. But then where's storage of viz modes for each layer?
+			- If we remove opt's, ModelController::SetXXXVisualizationMode below does not free/alloc - we leave that at UploadVisualization()
+		- TODOHERE: texture viz? structure has it
 		- Controller::SetXXXVisualizationMode
 			- Set mXXXVisualizationMode
 			- Call ModelController::SetXXXVisualizationMode
+			- TODO: refresh view?
 			- IUserInterface->OnXXXVizModeChanged()
 		- Controller::NewXXLayer:
 			- ...new XXX layer...
 			- Set mXXXVisualizationMode to its default
 			- Call ModelController::SetXXXVisualizationMode
+			- TODO: refresh view?
 			- IUserInterface->OnXXXVizModeChanged()
 		- Controller::SetXXLayer:
 			- ...set XXX layer... - will invoke ModelController::SetXXXLayer
@@ -346,6 +351,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- ...remove XXX layer...
 			- Set mXXXVisualizationMode to nullopt
 			- Call ModelController::SetXXXVisualizationMode
+			- TODO: refresh view?
 			- IUserInterface->OnXXXVizModeChanged()
 
 		- ModelController::SetXXXVisualizationMode(opt)
@@ -362,6 +368,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Note: only works like this if new size == old size, hence no realloc; see if it's also the assumption here
 			- UpdateXXXVisualization(whole region)
 		- ModelController::UploadVisualization:
+
+	- Misc:
+		- MainFrame: enable/disable texture mode at OnLayerPresenceChanged
+		- Controller: removal of texture layer changes structural layer viz mode (and notifies) if it's texture
 
 - Ubuntu:
 	- Test User Ships folder

@@ -160,6 +160,11 @@ public:
     LayerType GetPrimaryLayer() const;
     void SelectPrimaryLayer(LayerType primaryLayer);
 
+    StructuralLayerVisualizationModeType GetStructuralLayerVisualizationMode() const;
+    ElectricalLayerVisualizationModeType GetElectricalLayerVisualizationMode() const;
+    RopesLayerVisualizationModeType GetRopesLayerVisualizationMode() const;
+    TextureLayerVisualizationModeType GetTextureLayerVisualizationMode() const;
+
     void SetOtherLayersOpacity(float opacity);
 
     std::optional<ToolType> GetCurrentTool() const;
@@ -267,6 +272,11 @@ private:
     //
 
     LayerType mPrimaryLayer;
+
+    StructuralLayerVisualizationModeType mStructuralLayerVisualizationMode;
+    ElectricalLayerVisualizationModeType mElectricalLayerVisualizationMode;
+    RopesLayerVisualizationModeType mRopesLayerVisualizationMode;
+    TextureLayerVisualizationModeType mTextureLayerVisualizationMode;
 
     std::optional<ToolType> mCurrentToolType;
     std::unique_ptr<Tool> mCurrentTool;
