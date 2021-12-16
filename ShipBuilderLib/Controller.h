@@ -161,9 +161,13 @@ public:
     void SelectPrimaryLayer(LayerType primaryLayer);
 
     StructuralLayerVisualizationModeType GetStructuralLayerVisualizationMode() const;
+    void SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode);
     ElectricalLayerVisualizationModeType GetElectricalLayerVisualizationMode() const;
+    void SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode);
     RopesLayerVisualizationModeType GetRopesLayerVisualizationMode() const;
+    void SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode);
     TextureLayerVisualizationModeType GetTextureLayerVisualizationMode() const;
+    void SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode);
 
     void SetOtherLayersOpacity(float opacity);
 

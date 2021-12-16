@@ -94,10 +94,10 @@ Controller::Controller(
 
     // Notify our initializations
     mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
-    mUserInterface.OnStructuralLayerVisualizationMode(mStructuralLayerVisualizationMode);
-    mUserInterface.OnElectricalLayerVisualizationMode(mElectricalLayerVisualizationMode);
-    mUserInterface.OnRopesLayerVisualizationMode(mRopesLayerVisualizationMode);
-    mUserInterface.OnTextureLayerVisualizationMode(mTextureLayerVisualizationMode);
+    mUserInterface.OnStructuralLayerVisualizationModeChanged(mStructuralLayerVisualizationMode);
+    mUserInterface.OnElectricalLayerVisualizationModeChanged(mElectricalLayerVisualizationMode);
+    mUserInterface.OnRopesLayerVisualizationModeChanged(mRopesLayerVisualizationMode);
+    mUserInterface.OnTextureLayerVisualizationModeChanged(mTextureLayerVisualizationMode);
     mUserInterface.OnCurrentToolChanged(*mCurrentToolType);
 
     // Upload layers visualization
@@ -675,9 +675,26 @@ StructuralLayerVisualizationModeType Controller::GetStructuralLayerVisualization
     return mStructuralLayerVisualizationMode;
 }
 
+void Controller::SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode)
+{
+    mStructuralLayerVisualizationMode = mode;
+
+    // TODO: orchestrate calls to ModelController
+
+    mUserInterface.OnStructuralLayerVisualizationModeChanged(mode);
+
+    // Refresh view
+    mUserInterface.RefreshView();
+}
+
 ElectricalLayerVisualizationModeType Controller::GetElectricalLayerVisualizationMode() const
 {
     return mElectricalLayerVisualizationMode;
+}
+
+void Controller::SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode)
+{
+    // TODO
 }
 
 RopesLayerVisualizationModeType Controller::GetRopesLayerVisualizationMode() const
@@ -685,9 +702,19 @@ RopesLayerVisualizationModeType Controller::GetRopesLayerVisualizationMode() con
     return mRopesLayerVisualizationMode;
 }
 
+void Controller::SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode)
+{
+    // TODO
+}
+
 TextureLayerVisualizationModeType Controller::GetTextureLayerVisualizationMode() const
 {
     return mTextureLayerVisualizationMode;
+}
+
+void Controller::SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode)
+{
+    // TODO
 }
 
 void Controller::SetOtherLayersOpacity(float opacity)

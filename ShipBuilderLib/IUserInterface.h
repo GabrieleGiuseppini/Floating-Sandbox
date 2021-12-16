@@ -41,10 +41,10 @@ public:
     virtual void OnPrimaryLayerChanged(LayerType primaryLayer) = 0;
 
     // Notifies of a (possible) change in a layer's visualization mode
-    virtual void OnStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode) = 0;
-    virtual void OnElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode) = 0;
-    virtual void OnRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode) = 0;
-    virtual void OnTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode) = 0;
+    virtual void OnStructuralLayerVisualizationModeChanged(StructuralLayerVisualizationModeType mode) = 0;
+    virtual void OnElectricalLayerVisualizationModeChanged(ElectricalLayerVisualizationModeType mode) = 0;
+    virtual void OnRopesLayerVisualizationModeChanged(RopesLayerVisualizationModeType mode) = 0;
+    virtual void OnTextureLayerVisualizationModeChanged(TextureLayerVisualizationModeType mode) = 0;
 
     // Notifies of a (possible) change in the dirtiness of the model
     virtual void OnModelDirtyChanged() = 0;

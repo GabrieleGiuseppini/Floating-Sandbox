@@ -633,7 +633,7 @@ void MainFrame::OnPrimaryLayerChanged(LayerType primaryLayer)
     }
 }
 
-void MainFrame::OnStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode)
+void MainFrame::OnStructuralLayerVisualizationModeChanged(StructuralLayerVisualizationModeType mode)
 {
     if (mController)
     {
@@ -641,7 +641,7 @@ void MainFrame::OnStructuralLayerVisualizationMode(StructuralLayerVisualizationM
     }
 }
 
-void MainFrame::OnElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode)
+void MainFrame::OnElectricalLayerVisualizationModeChanged(ElectricalLayerVisualizationModeType mode)
 {
     if (mController)
     {
@@ -649,7 +649,7 @@ void MainFrame::OnElectricalLayerVisualizationMode(ElectricalLayerVisualizationM
     }
 }
 
-void MainFrame::OnRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode)
+void MainFrame::OnRopesLayerVisualizationModeChanged(RopesLayerVisualizationModeType mode)
 {
     if (mController)
     {
@@ -657,7 +657,7 @@ void MainFrame::OnRopesLayerVisualizationMode(RopesLayerVisualizationModeType mo
     }
 }
 
-void MainFrame::OnTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode)
+void MainFrame::OnTextureLayerVisualizationModeChanged(TextureLayerVisualizationModeType mode)
 {
     if (mController)
     {
@@ -1506,9 +1506,7 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
                     [this]()
                     {
                         assert(mController);
-                        
-                        // TODOHERE
-                        //mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::ParticleMode);
+                        mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::ParticleMode);
 
                         DeviateFocus();
                     },
@@ -1533,9 +1531,7 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
                     [this]()
                     {
                         assert(mController);
-                        
-                        // TODOHERE
-                        //mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::AutoTexturizationMode);
+                        mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::AutoTexturizationMode);
 
                         DeviateFocus();
                     },
@@ -1560,9 +1556,7 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
                     [this]()
                     {
                         assert(mController);
-                        
-                        // TODOHERE
-                        //mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::TextureMode);
+                        mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::TextureMode);
 
                         DeviateFocus();
                     },

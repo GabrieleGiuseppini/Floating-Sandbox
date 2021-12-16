@@ -331,27 +331,30 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Texture:
 			- Matte
 	- Dynamics:
-		- TODOHERE: why opt's? to turn off rendering of that layer altogether. But then where's storage of viz modes for each layer?
-			- If we remove opt's, ModelController::SetXXXVisualizationMode below does not free/alloc - we leave that at UploadVisualization()
-		- TODOHERE: texture viz? structure has it
-		- Controller::SetXXXVisualizationMode
-			- Set mXXXVisualizationMode
-			- Call ModelController::SetXXXVisualizationMode
-			- TODO: refresh view?
-			- IUserInterface->OnXXXVizModeChanged()
+		! Spec:
+			- ModelController APIs take opt<viz mode> so that Controller can orchestrate turning whole layer viz on or off
+				- e.g.: texture viz is only on if structure mode is particle
+				- Controller is responsible for turning on/off entire layer viz - ModelController does nothing at New and Remove
+		= Controller::SetXXXVisualizationMode
+			+ Set mXXXVisualizationMode
+			- Orchestrate calls to ModelController::SetXXXVisualizationMode
+			+ Refresh view
+			+ IUserInterface->OnXXXVizModeChanged()
+		= Hook buttons to Controller::SetXXXVisualizationMode
 		- Controller::NewXXLayer:
 			- ...new XXX layer...
-			- Set mXXXVisualizationMode to its default
 			- Call ModelController::SetXXXVisualizationMode
-			- TODO: refresh view?
+				- To turn it on
+			- Refresh view
 			- IUserInterface->OnXXXVizModeChanged()
 		- Controller::SetXXLayer:
 			- ...set XXX layer... - will invoke ModelController::SetXXXLayer
+			- Refresh view
 		- Controller::RemoveXXLayer:
 			- ...remove XXX layer...
-			- Set mXXXVisualizationMode to nullopt
-			- Call ModelController::SetXXXVisualizationMode
-			- TODO: refresh view?
+			- Call ModelController::SetXXXVisualizationMode(nullopt)
+				- To turn it off
+			- Refresh view
 			- IUserInterface->OnXXXVizModeChanged()
 
 		- ModelController::SetXXXVisualizationMode(opt)
@@ -359,18 +362,18 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- If !new:
 				- Free texture
 				- Clear DirtyXXXVizRegion
-				- View::RemoveTexture (assert had it) // This moves here from UploadVisualization()
+				- View::RemoveTexture (assert had it) // This moves here from UploadVisualization() and Remove() calls
 			- Else if new != old:
-				- (Re)alloc texture // This moves here from UploadVisualization()
+				- (Re)alloc texture // This moves here from UploadVisualization() and initializations (cctor and New() calls)
 				- UpdateXXXVisualization(whole region) => will update dirty region
 		- ModelController::SetXXXLayer:
 			- ...set XXX layer...
 			- Note: only works like this if new size == old size, hence no realloc; see if it's also the assumption here
 			- UpdateXXXVisualization(whole region)
-		- ModelController::UploadVisualization:
+		- ModelController::UploadVisualization
 
 	- Misc:
-		- MainFrame: enable/disable texture mode at OnLayerPresenceChanged
+		- MainFrame: enable/disable structural texture mode at OnLayerPresenceChanged
 		- Controller: removal of texture layer changes structural layer viz mode (and notifies) if it's texture
 
 - Ubuntu:

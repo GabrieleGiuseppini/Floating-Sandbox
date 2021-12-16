@@ -90,10 +90,10 @@ public:
 
     void OnPrimaryLayerChanged(LayerType primaryLayer) override;
 
-    void OnStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode) override;
-    void OnElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode) override;
-    void OnRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode) override;
-    void OnTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode) override;
+    void OnStructuralLayerVisualizationModeChanged(StructuralLayerVisualizationModeType mode) override;
+    void OnElectricalLayerVisualizationModeChanged(ElectricalLayerVisualizationModeType mode) override;
+    void OnRopesLayerVisualizationModeChanged(RopesLayerVisualizationModeType mode) override;
+    void OnTextureLayerVisualizationModeChanged(TextureLayerVisualizationModeType mode) override;
 
     void OnModelDirtyChanged() override;
 
