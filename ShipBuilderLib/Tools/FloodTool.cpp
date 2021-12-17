@@ -103,8 +103,8 @@ void FloodTool<TLayer>::DoEdit(
         // Mark layer as dirty
         SetLayerDirty(TLayer);
 
-        // Refresh model visualization
-        mModelController.UploadVisualization();
+        // Refresh model visualizations
+        mModelController.UploadVisualizations();
         mUserInterface.RefreshView();
     }
 }

@@ -184,6 +184,19 @@ public:
     }
 
     //
+    // Texture (all sticky)
+    //
+
+    void UploadTextureLayerVisualizationTexture(RgbaImageData const & texture);
+
+    void RemoveTextureLayerVisualizationTexture();
+
+    bool HasTextureLayerVisualizationTexture() const
+    {
+        return mHasTextureTexture;
+    }
+
+    //
     // Overlays (all sticky)
     //
 
@@ -390,13 +403,13 @@ private:
     GameOpenGLVAO mCanvasVAO;
     GameOpenGLVBO mCanvasVBO;
 
-    // Structural texture
+    // Structural visualization
     GameOpenGLVAO mStructuralTextureVAO;
     GameOpenGLVBO mStructuralTextureVBO;
     GameOpenGLTexture mStructuralTextureOpenGLHandle;
     bool mHasStructuralTexture;
 
-    // Electrical texture
+    // Electrical visualization
     GameOpenGLVAO mElectricalTextureVAO;
     GameOpenGLVBO mElectricalTextureVBO;
     GameOpenGLTexture mElectricalTextureOpenGLHandle;
@@ -406,6 +419,12 @@ private:
     GameOpenGLVAO mRopesVAO;
     GameOpenGLVBO mRopesVBO;
     size_t mRopeCount;
+
+    // Texture visualization
+    GameOpenGLVAO mTextureTextureVAO;
+    GameOpenGLVBO mTextureTextureVBO;
+    GameOpenGLTexture mTextureTextureOpenGLHandle;
+    bool mHasTextureTexture;
 
     // Layers opacity
     float mOtherLayersOpacity;

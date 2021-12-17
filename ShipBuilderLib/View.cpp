@@ -27,6 +27,7 @@ View::View(
     , mHasBackgroundTexture(false)
     , mHasStructuralTexture(false)
     , mHasElectricalTexture(false)
+    , mHasTextureTexture(false)
     , mRopeCount(false)
     , mOtherLayersOpacity(0.75f)
     , mIsGridEnabled(false)
@@ -144,7 +145,7 @@ View::View(
     }
 
     //
-    // Initialize Structural texture and VAO
+    // Initialize Structural visualization and VAO
     //
 
     {
@@ -190,7 +191,7 @@ View::View(
     }
 
     //
-    // Initialize Electrical texture and VAO
+    // Initialize Electrical visualization and VAO
     //
 
     {
@@ -236,7 +237,7 @@ View::View(
     }
 
     //
-    // Initialize Ropes VAO
+    // Initialize Ropes visualization VAO
     //
 
     {
@@ -259,6 +260,52 @@ View::View(
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Rope1), 2, GL_FLOAT, GL_FALSE, sizeof(RopeVertex), (void *)(0));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Rope2));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Rope2), 4, GL_FLOAT, GL_FALSE, sizeof(RopeVertex), (void *)(2 * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+    //
+    // Initialize Texture visualization and VAO
+    //
+
+    {
+        GLuint tmpGLuint;
+
+        //
+        // Texture
+        //
+
+        // Create texture OpenGL handle
+        glGenTextures(1, &tmpGLuint);
+        mTextureTextureOpenGLHandle = tmpGLuint;
+
+        // Configure texture
+        glBindTexture(GL_TEXTURE_2D, *mTextureTextureOpenGLHandle);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        CheckOpenGLError();
+
+        //
+        // VAO
+        //
+
+        // Create VAO
+        glGenVertexArrays(1, &tmpGLuint);
+        mTextureTextureVAO = tmpGLuint;
+        glBindVertexArray(*mTextureTextureVAO);
+        CheckOpenGLError();
+
+        // Create VBO
+        glGenBuffers(1, &tmpGLuint);
+        mTextureTextureVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mTextureTextureVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -547,6 +594,39 @@ void View::UploadElectricalLayerVisualizationTexture(RgbaImageData const & textu
     // Create vertices
     //
 
+    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
+    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
+
+    std::array<TextureVertex, 4> vertexBuffer;
+
+    // Bottom-left
+    vertexBuffer[0] = TextureVertex(
+        vec2f(0.0f, 0.0f),
+        vec2f(0.0f, 0.0f));
+
+    // Top-left
+    vertexBuffer[1] = TextureVertex(
+        vec2f(0.0f, shipHeight),
+        vec2f(0.0f, 1.0f));
+
+    // Bottom-right
+    vertexBuffer[2] = TextureVertex(
+        vec2f(shipWidth, 0.0f),
+        vec2f(1.0f, 0.0f));
+
+    // Top-right
+    vertexBuffer[3] = TextureVertex(
+        vec2f(shipWidth, shipHeight),
+        vec2f(1.0f, 1.0f));
+
+    /* TODOTEST
+
+    // TODO: if it works, make vertex creation and upload as helper (w/vbo arg)
+
+    //
+    // Create vertices
+    //
+
     float const fWidth = static_cast<float>(texture.Size.width);
     float const fHeight = static_cast<float>(texture.Size.height);
 
@@ -571,6 +651,7 @@ void View::UploadElectricalLayerVisualizationTexture(RgbaImageData const & textu
     vertexBuffer[3] = TextureVertex(
         vec2f(fWidth, fHeight),
         vec2f(1.0f, 1.0f));
+    */
 
     //
     // Upload vertices
@@ -656,6 +737,69 @@ void View::UploadRopesLayerVisualization(RopeBuffer const & ropeBuffer)
 void View::RemoveRopesLayerVisualization()
 {
     mRopeCount = 0;
+}
+
+void View::UploadTextureLayerVisualizationTexture(RgbaImageData const & texture)
+{
+    //
+    // Upload texture
+    //
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mTextureTextureOpenGLHandle);
+    CheckOpenGLError();
+
+    // Upload texture
+    GameOpenGL::UploadTexture(texture);
+
+    //
+    // Create vertices
+    //
+
+    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
+    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
+
+    std::array<TextureVertex, 4> vertexBuffer;
+
+    // Bottom-left
+    vertexBuffer[0] = TextureVertex(
+        vec2f(0.0f, 0.0f),
+        vec2f(0.0f, 0.0f));
+
+    // Top-left
+    vertexBuffer[1] = TextureVertex(
+        vec2f(0.0f, shipHeight),
+        vec2f(0.0f, 1.0f));
+
+    // Bottom-right
+    vertexBuffer[2] = TextureVertex(
+        vec2f(shipWidth, 0.0f),
+        vec2f(1.0f, 0.0f));
+
+    // Top-right
+    vertexBuffer[3] = TextureVertex(
+        vec2f(shipWidth, shipHeight),
+        vec2f(1.0f, 1.0f));
+
+    //
+    // Upload vertices
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mTextureTextureVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(TextureVertex), vertexBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //
+    // Remember we have this texture
+    //
+
+    mHasTextureTexture = true;
+}
+
+void View::RemoveTextureLayerVisualizationTexture()
+{
+    mHasTextureTexture = false;
 }
 
 void View::UploadCircleOverlay(
@@ -785,7 +929,7 @@ void View::Render()
         RenderRopes();
     }
 
-    // Structural texture
+    // Structural visualization
     if (mHasStructuralTexture)
     {
         // Set this texture in the shader's sampler
@@ -807,7 +951,7 @@ void View::Render()
         CheckOpenGLError();
     }
 
-    // Electrical texture
+    // Electrical visualization
     if (mHasElectricalTexture)
     {
         // Set this texture in the shader's sampler
@@ -834,6 +978,29 @@ void View::Render()
     {
         RenderRopes();
     }
+
+    // Texture visualization
+    if (mHasTextureTexture)
+    {
+        // Set this texture in the shader's sampler
+        mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+        glBindTexture(GL_TEXTURE_2D, *mTextureTextureOpenGLHandle);
+
+        // Bind VAO
+        glBindVertexArray(*mTextureTextureVAO);
+
+        // Activate program
+        mShaderManager->ActivateProgram<ProgramType::Texture>();
+
+        // Set opacity
+        mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::Opacity>(
+            mPrimaryLayer == LayerType::Texture ? 1.0f : mOtherLayersOpacity);
+
+        // Draw
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        CheckOpenGLError();
+    }
+
 
     // Grid
     if (mIsGridEnabled)

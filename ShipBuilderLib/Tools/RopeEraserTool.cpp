@@ -39,7 +39,7 @@ RopeEraserTool::RopeEraserTool(
     {
         DrawOverlay(*mouseCoordinates);
 
-        mModelController.UploadVisualization();
+        mModelController.UploadVisualizations();
         mUserInterface.RefreshView();
     }
 }
@@ -51,7 +51,7 @@ RopeEraserTool::~RopeEraserTool()
     {
         HideOverlay();
 
-        mModelController.UploadVisualization();
+        mModelController.UploadVisualizations();
         mUserInterface.RefreshView();
     }
 }
@@ -71,7 +71,7 @@ void RopeEraserTool::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates)
         DrawOverlay(mouseCoordinates);
     }
 
-    mModelController.UploadVisualization();
+    mModelController.UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -115,7 +115,7 @@ void RopeEraserTool::OnMouseDown()
 
     // No need to do eph viz when engaged
 
-    mModelController.UploadVisualization();
+    mModelController.UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -134,7 +134,7 @@ void RopeEraserTool::OnMouseUp()
 
         assert(mHasOverlay);
 
-        mModelController.UploadVisualization();
+        mModelController.UploadVisualizations();
         mUserInterface.RefreshView();
     }
 }

@@ -43,11 +43,16 @@ ModelController::ModelController(
     , mElectricalElementInstanceIndexFactory()
     , mElectricalParticleCount(0)
     /////
+    , mStructuralLayerVisualizationMode()
     , mStructuralLayerVisualizationTexture()
     , mDirtyStructuralLayerVisualizationRegion()
+    , mElectricalLayerVisualizationMode()
     , mElectricalLayerVisualizationTexture()
     , mDirtyElectricalLayerVisualizationRegion()
+    , mRopesLayerVisualizationMode()
     , mIsRopesLayerVisualizationDirty(false)
+    , mTextureLayerVisualizationMode()
+    , mIsTextureLayerVisualizationDirty(false)
     /////
     , mIsStructuralLayerInEphemeralVisualization(false)
     , mIsElectricalLayerInEphemeralVisualization(false)
@@ -56,17 +61,10 @@ ModelController::ModelController(
     // Model is not dirty now
     assert(!mModel.GetIsDirty());
 
-    // Initialize layers
-    InitializeStructuralLayer();
-    InitializeElectricalLayer();
-    InitializeRopesLayer();
-
-    // Prepare all visualizations
-    ShipSpaceRect const wholeShipSpace = GetWholeShipRect();
-    UpdateStructuralLayerVisualization(wholeShipSpace);
-    UpdateElectricalLayerVisualization(wholeShipSpace);
-    UpdateRopesLayerVisualization();
-    UpdateTextureLayerVisualization(wholeShipSpace);
+    // Initialize layers' analyses
+    InitializeStructuralLayerAnalysis();
+    InitializeElectricalLayerAnalysis();
+    InitializeRopesLayerAnalysis();
 }
 
 ShipDefinition ModelController::MakeShipDefinition() const
@@ -221,7 +219,7 @@ ModelValidationResults ModelController::ValidateModel() const
     return ModelValidationResults(std::move(issues));
 }
 
-void ModelController::UploadVisualization()
+void ModelController::UploadVisualizations()
 {
     //
     // Upload visualizations that are dirty, and
@@ -236,8 +234,10 @@ void ModelController::UploadVisualization()
         mDirtyStructuralLayerVisualizationRegion.reset();
     }
 
-    if (mElectricalLayerVisualizationTexture)
+    if (mElectricalLayerVisualizationMode.has_value())
     {
+        assert(mElectricalLayerVisualizationTexture);
+
         if (mDirtyElectricalLayerVisualizationRegion.has_value())
         {
             mView.UploadElectricalLayerVisualizationTexture(*mElectricalLayerVisualizationTexture);
@@ -247,6 +247,7 @@ void ModelController::UploadVisualization()
     }
     else
     {
+        assert(!mElectricalLayerVisualizationTexture);
         assert(!mDirtyElectricalLayerVisualizationRegion.has_value());
 
         if (mView.HasElectricalLayerVisualizationTexture())
@@ -255,8 +256,10 @@ void ModelController::UploadVisualization()
         }
     }
 
-    if (mModel.HasLayer(LayerType::Ropes))
+    if (mRopesLayerVisualizationMode.has_value())
     {
+        assert(mModel.HasLayer(LayerType::Ropes));
+
         if (mIsRopesLayerVisualizationDirty)
         {
             mView.UploadRopesLayerVisualization(mModel.GetRopesLayer().Buffer);
@@ -266,13 +269,34 @@ void ModelController::UploadVisualization()
     }
     else
     {
+        assert(!mIsRopesLayerVisualizationDirty);
+
         if (mView.HasRopesLayerVisualization())
         {
             mView.RemoveRopesLayerVisualization();
         }
     }
 
-    // TODOHERE: other layers
+    if (mTextureLayerVisualizationMode.has_value())
+    {
+        assert(mModel.HasLayer(LayerType::Texture));
+
+        if (mIsTextureLayerVisualizationDirty)
+        {
+            mView.UploadTextureLayerVisualizationTexture(mModel.GetTextureLayer().Buffer);
+
+            mIsTextureLayerVisualizationDirty = false;
+        }
+    }
+    else
+    {
+        assert(!mIsTextureLayerVisualizationDirty);
+
+        if (mView.HasTextureLayerVisualizationTexture())
+        {
+            mView.RemoveTextureLayerVisualizationTexture();
+        }
+    }
 }
 
 void ModelController::Flip(DirectionType direction)
@@ -313,7 +337,7 @@ void ModelController::Flip(DirectionType direction)
     {
         mModel.GetTextureLayer().Buffer.Flip(direction);
 
-        UpdateTextureLayerVisualization(GetWholeShipRect());
+        UpdateTextureLayerVisualization();
     }
 }
 
@@ -325,7 +349,7 @@ void ModelController::NewStructuralLayer()
 {
     mModel.NewStructuralLayer();
 
-    InitializeStructuralLayer();
+    InitializeStructuralLayerAnalysis();
 
     UpdateStructuralLayerVisualization(GetWholeShipRect());
 
@@ -336,9 +360,9 @@ void ModelController::SetStructuralLayer(/*TODO*/)
 {
     assert(mModel.HasLayer(LayerType::Structural));
 
-    mModel.SetStructuralLayer();
+    mModel.SetStructuralLayer(/*TODO*/);
 
-    InitializeStructuralLayer();
+    InitializeStructuralLayerAnalysis();
 
     UpdateStructuralLayerVisualization(GetWholeShipRect());
 
@@ -422,10 +446,10 @@ void ModelController::RestoreStructuralLayerRegion(
         targetOrigin);
 
     //
-    // Re-initialize layer (analyses)
+    // Re-initialize layer analysis
     //
 
-    InitializeStructuralLayer();
+    InitializeStructuralLayerAnalysis();
 
     //
     // Update visualization
@@ -492,6 +516,26 @@ void ModelController::RestoreStructuralLayerRegionForEphemeralVisualization(
     mIsStructuralLayerInEphemeralVisualization = false;
 }
 
+void ModelController::SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode)
+{
+    if (mStructuralLayerVisualizationMode.has_value() && mode == *mStructuralLayerVisualizationMode)
+    {
+        // Nop
+        return;
+    }
+
+    if (!mStructuralLayerVisualizationMode.has_value())
+    {
+        // Initialize structure visualization, once and for all
+        assert(!mStructuralLayerVisualizationTexture);
+        mStructuralLayerVisualizationTexture = std::make_unique<RgbaImageData>(mModel.GetShipSize().width, mModel.GetShipSize().height);
+    }
+
+    mStructuralLayerVisualizationMode = mode;
+
+    UpdateStructuralLayerVisualization(GetWholeShipRect());
+}
+
 RgbaImageData const & ModelController::GetStructuralLayerVisualization() const
 {
     assert(mModel.HasLayer(LayerType::Structural));
@@ -510,7 +554,7 @@ void ModelController::NewElectricalLayer()
 {
     mModel.NewElectricalLayer();
 
-    InitializeElectricalLayer();
+    InitializeElectricalLayerAnalysis();
 
     UpdateElectricalLayerVisualization(GetWholeShipRect());
 
@@ -521,7 +565,7 @@ void ModelController::SetElectricalLayer(/*TODO*/)
 {
     mModel.SetElectricalLayer(/*TODO*/);
 
-    InitializeElectricalLayer();
+    InitializeElectricalLayerAnalysis();
 
     UpdateElectricalLayerVisualization(GetWholeShipRect());
 
@@ -536,11 +580,7 @@ void ModelController::RemoveElectricalLayer()
 
     assert(!mModel.HasLayer(LayerType::Electrical));
 
-    InitializeElectricalLayer();
-
-    // Remove visualization members
-    mElectricalLayerVisualizationTexture.reset();
-    mDirtyElectricalLayerVisualizationRegion.reset();
+    InitializeElectricalLayerAnalysis();
 
     mIsElectricalLayerInEphemeralVisualization = false;
 }
@@ -655,10 +695,10 @@ void ModelController::RestoreElectricalLayerRegion(
     mModel.GetElectricalLayer().Panel = std::move(sourceLayerRegion.Panel);
 
     //
-    // Re-initialize layer (analyses and instance IDs)
+    // Re-initialize layer analysis (and instance IDs)
     //
 
-    InitializeElectricalLayer();
+    InitializeElectricalLayerAnalysis();
 
     //
     // Update visualization
@@ -725,6 +765,37 @@ void ModelController::RestoreElectricalLayerRegionForEphemeralVisualization(
     mIsElectricalLayerInEphemeralVisualization = false;
 }
 
+void ModelController::SetElectricalLayerVisualizationMode(std::optional<ElectricalLayerVisualizationModeType> mode)
+{
+    if (mode == mElectricalLayerVisualizationMode)
+    {
+        // Nop
+        return;
+    }
+
+    if (mode.has_value())
+    {
+        if (!mElectricalLayerVisualizationMode.has_value())
+        {
+            // Initialize electrical visualization
+            assert(!mElectricalLayerVisualizationTexture);
+            mElectricalLayerVisualizationTexture = std::make_unique<RgbaImageData>(mModel.GetShipSize().width, mModel.GetShipSize().height);
+        }
+
+        mElectricalLayerVisualizationMode = mode;
+
+        UpdateElectricalLayerVisualization(GetWholeShipRect());
+    }
+    else
+    {
+        // Shutdown electrical visualization
+        mElectricalLayerVisualizationMode.reset();
+        assert(mElectricalLayerVisualizationTexture);
+        mElectricalLayerVisualizationTexture.reset();
+        mDirtyElectricalLayerVisualizationRegion.reset();
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Ropes
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -733,7 +804,7 @@ void ModelController::NewRopesLayer()
 {
     mModel.NewRopesLayer();
 
-    InitializeRopesLayer();
+    InitializeRopesLayerAnalysis();
 
     UpdateRopesLayerVisualization();
 
@@ -744,7 +815,7 @@ void ModelController::SetRopesLayer(/*TODO*/)
 {
     mModel.SetRopesLayer(/*TODO*/);
 
-    InitializeRopesLayer();
+    InitializeRopesLayerAnalysis();
 
     UpdateRopesLayerVisualization();
 
@@ -759,10 +830,7 @@ void ModelController::RemoveRopesLayer()
 
     assert(!mModel.HasLayer(LayerType::Ropes));
 
-    InitializeRopesLayer();
-
-    // Remove visualization members
-    mIsRopesLayerVisualizationDirty = false;
+    InitializeRopesLayerAnalysis();
 
     mIsRopesLayerInEphemeralVisualization = false;
 }
@@ -892,10 +960,10 @@ void ModelController::RestoreRopesLayer(RopesLayerData && sourceLayer)
     mModel.GetRopesLayer().Buffer = std::move(sourceLayer.Buffer);
 
     //
-    // Re-initialize layer (analyses, etc.)
+    // Re-initialize layer analysis
     //
 
-    InitializeRopesLayer();
+    InitializeRopesLayerAnalysis();
 
     //
     // Update visualization
@@ -980,6 +1048,34 @@ void ModelController::RestoreRopesLayerForEphemeralVisualization(RopesLayerData 
     mIsRopesLayerInEphemeralVisualization = false;
 }
 
+void ModelController::SetRopesLayerVisualizationMode(std::optional<RopesLayerVisualizationModeType> mode)
+{
+    if (mode == mRopesLayerVisualizationMode)
+    {
+        // Nop
+        return;
+    }
+
+    if (mode.has_value())
+    {
+        if (!mRopesLayerVisualizationMode.has_value())
+        {
+            // Initialize ropes visualization
+            // ...nop for now
+        }
+
+        mRopesLayerVisualizationMode = mode;
+
+        UpdateRopesLayerVisualization();
+    }
+    else
+    {
+        // Shutdown ropes visualization
+        mRopesLayerVisualizationMode.reset();
+        mIsRopesLayerVisualizationDirty = false;
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Texture
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -988,7 +1084,7 @@ void ModelController::NewTextureLayer()
 {
     mModel.NewTextureLayer();
 
-    UpdateTextureLayerVisualization(GetWholeShipRect());
+    UpdateTextureLayerVisualization();
 }
 
 void ModelController::SetTextureLayer(
@@ -998,7 +1094,7 @@ void ModelController::SetTextureLayer(
     mModel.SetTextureLayer(std::move(textureLayer));
     mModel.GetShipMetadata().ArtCredits = std::move(originalTextureArtCredits);
 
-    UpdateTextureLayerVisualization(GetWholeShipRect());
+    UpdateTextureLayerVisualization();
 }
 
 void ModelController::RemoveTextureLayer()
@@ -1007,7 +1103,7 @@ void ModelController::RemoveTextureLayer()
 
     mModel.RemoveTextureLayer();
 
-    // TODO: remove visualization members
+    assert(!mModel.HasLayer(LayerType::Texture));
 
     // Remove art credits from metadata
     mModel.GetShipMetadata().ArtCredits.reset();
@@ -1025,24 +1121,45 @@ void ModelController::RestoreTextureLayer(
     mModel.RestoreTextureLayer(std::move(textureLayer));
     mModel.GetShipMetadata().ArtCredits = std::move(originalTextureArtCredits);
 
-    if (mModel.HasLayer(LayerType::Texture))
+    // Visualization will be updated by controller, as mode might change 
+}
+
+void ModelController::SetTextureLayerVisualizationMode(std::optional<TextureLayerVisualizationModeType> mode)
+{
+    if (mode == mTextureLayerVisualizationMode)
     {
-        UpdateTextureLayerVisualization(GetWholeShipRect());
+        // Nop
+        return;
+    }
+
+    if (mode.has_value())
+    {
+        if (!mTextureLayerVisualizationMode.has_value())
+        {
+            // Initialize texture visualization
+            // ...nop for now
+        }
+
+        mTextureLayerVisualizationMode = mode;
+
+        UpdateTextureLayerVisualization();
     }
     else
     {
-        // TODO: remove visualization members
+        // Shutdown texture visualization
+        mTextureLayerVisualizationMode.reset();
+        mIsTextureLayerVisualizationDirty = false;
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ModelController::InitializeStructuralLayer()
+void ModelController::InitializeStructuralLayerAnalysis()
 {
     // FUTUREWORK - reset analysis
 }
 
-void ModelController::InitializeElectricalLayer()
+void ModelController::InitializeElectricalLayerAnalysis()
 {
     // Reset factory
     mElectricalElementInstanceIndexFactory.Reset();
@@ -1070,7 +1187,7 @@ void ModelController::InitializeElectricalLayer()
     }
 }
 
-void ModelController::InitializeRopesLayer()
+void ModelController::InitializeRopesLayerAnalysis()
 {
     // Nop
 }
@@ -1298,20 +1415,20 @@ std::optional<ShipSpaceRect> ModelController::Flood(
 
 void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & region)
 {
-    assert(mModel.HasLayer(LayerType::Structural));
-
-    // Make sure we have a texture
-    if (!mStructuralLayerVisualizationTexture)
+    if (!mStructuralLayerVisualizationMode.has_value())
     {
-        mStructuralLayerVisualizationTexture = std::make_unique<RgbaImageData>(mModel.GetShipSize().width, mModel.GetShipSize().height);
+        return;
     }
 
+    assert(mModel.HasLayer(LayerType::Structural));
+
+    assert(mStructuralLayerVisualizationTexture);
     assert(mStructuralLayerVisualizationTexture->Size.width == mModel.GetShipSize().width
         && mStructuralLayerVisualizationTexture->Size.height == mModel.GetShipSize().height);
 
     // Update visualization
 
-    // CODEWORK: check current visualization settings and decide how to visualize
+    // TODO: check current visualization settings and decide how to visualize
 
     rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 0); // Fully transparent
 
@@ -1344,23 +1461,24 @@ void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & r
 
 void ModelController::UpdateElectricalLayerVisualization(ShipSpaceRect const & region)
 {
-    if (!mModel.HasLayer(LayerType::Electrical))
+    if (!mElectricalLayerVisualizationMode.has_value())
     {
         return;
     }
 
-    // Make sure we have a texture
-    if (!mElectricalLayerVisualizationTexture)
-    {
-        mElectricalLayerVisualizationTexture = std::make_unique<RgbaImageData>(mModel.GetShipSize().width, mModel.GetShipSize().height);
-    }
+    assert(mModel.HasLayer(LayerType::Electrical));
 
+    assert(mElectricalLayerVisualizationTexture);
     assert(mElectricalLayerVisualizationTexture->Size.width == mModel.GetShipSize().width
         && mElectricalLayerVisualizationTexture->Size.height == mModel.GetShipSize().height);
 
     // Update visualization
 
-    // TODO: check current visualization settings and decide how to visualize
+    //
+    // Particle mode
+    //
+
+    assert(*mElectricalLayerVisualizationMode == ElectricalLayerVisualizationModeType::ParticleMode);
 
     rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 0); // Fully transparent
 
@@ -1393,22 +1511,30 @@ void ModelController::UpdateElectricalLayerVisualization(ShipSpaceRect const & r
 
 void ModelController::UpdateRopesLayerVisualization()
 {
-    if (!mModel.HasLayer(LayerType::Ropes))
+    if (!mRopesLayerVisualizationMode.has_value())
     {
         return;
     }
+
+    assert(mModel.HasLayer(LayerType::Ropes));
+
+    assert(*mRopesLayerVisualizationMode == RopesLayerVisualizationModeType::LinesMode);
 
     mIsRopesLayerVisualizationDirty = true;
 }
 
-void ModelController::UpdateTextureLayerVisualization(ShipSpaceRect const & region)
+void ModelController::UpdateTextureLayerVisualization()
 {
-    if (!mModel.HasLayer(LayerType::Texture))
+    if (!mTextureLayerVisualizationMode.has_value())
     {
         return;
     }
 
-    // TODO
+    assert(mModel.HasLayer(LayerType::Texture));
+
+    assert(*mTextureLayerVisualizationMode == TextureLayerVisualizationModeType::MatteMode);
+
+    mIsTextureLayerVisualizationDirty = true;
 }
 
 }

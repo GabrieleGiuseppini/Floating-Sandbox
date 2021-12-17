@@ -92,6 +92,9 @@ Controller::Controller(
     // Set ideal zoom
     mView.SetZoom(mView.CalculateIdealZoom());
 
+    // Initialize layer visualizations
+    InternalUpdateVisualizationModes();
+
     // Notify our initializations
     mUserInterface.OnPrimaryLayerChanged(mPrimaryLayer);
     mUserInterface.OnStructuralLayerVisualizationModeChanged(mStructuralLayerVisualizationMode);
@@ -100,8 +103,8 @@ Controller::Controller(
     mUserInterface.OnTextureLayerVisualizationModeChanged(mTextureLayerVisualizationMode);
     mUserInterface.OnCurrentToolChanged(*mCurrentToolType);
 
-    // Upload layers visualization
-    mModelController->UploadVisualization();
+    // Upload layers' visualizations
+    mModelController->UploadVisualizations();
 }
 
 ShipDefinition Controller::MakeShipDefinition()
@@ -232,8 +235,11 @@ void Controller::NewStructuralLayer()
     mModelController->SetLayerDirty(LayerType::Structural);
     mUserInterface.OnModelDirtyChanged();
 
-    // Refresh model visualization
-    mModelController->UploadVisualization();
+    // Update layer visualization modes
+    InternalUpdateVisualizationModes();
+
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -256,8 +262,8 @@ void Controller::SetStructuralLayer(/*TODO*/)
     mModelController->SetLayerDirty(LayerType::Structural);
     mUserInterface.OnModelDirtyChanged();
 
-    // Refresh model visualization
-    mModelController->UploadVisualization();
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -275,7 +281,7 @@ void Controller::RestoreLayerRegionForUndo(
     // No need to update dirtyness, this is for undo
 
     // Refresh model visualization
-    mModelController->UploadVisualization();
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -305,8 +311,11 @@ void Controller::NewElectricalLayer()
     mModelController->SetLayerDirty(LayerType::Electrical);
     mUserInterface.OnModelDirtyChanged();
 
+    // Update layer visualization modes
+    InternalUpdateVisualizationModes();
+
     // Refresh model visualization
-    mModelController->UploadVisualization();
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -329,8 +338,8 @@ void Controller::SetElectricalLayer(/*TODO*/)
     mModelController->SetLayerDirty(LayerType::Electrical);
     mUserInterface.OnModelDirtyChanged();
 
-    // Refresh model visualization
-    mModelController->UploadVisualization();
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -353,8 +362,11 @@ void Controller::RemoveElectricalLayer()
     mModelController->SetLayerDirty(LayerType::Electrical);
     mUserInterface.OnModelDirtyChanged();
 
-    // Refresh model visualization
-    mModelController->UploadVisualization();
+    // Update layer visualization modes
+    InternalUpdateVisualizationModes();
+
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -371,8 +383,8 @@ void Controller::RestoreLayerRegionForUndo(
 
     // No need to update dirtyness, this is for undo
 
-    // Refresh model visualization
-    mModelController->UploadVisualization();
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -415,8 +427,8 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
     mModelController->SetLayerDirty(LayerType::Electrical);
     mUserInterface.OnModelDirtyChanged();
 
-    // Refresh model visualization
-    mModelController->UploadVisualization();
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -439,8 +451,11 @@ void Controller::NewRopesLayer()
     mModelController->SetLayerDirty(LayerType::Ropes);
     mUserInterface.OnModelDirtyChanged();
 
-    // Refresh model visualization
-    mModelController->UploadVisualization();
+    // Update layer visualization modes
+    InternalUpdateVisualizationModes();
+
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -463,8 +478,8 @@ void Controller::SetRopesLayer(/*TODO*/)
     mModelController->SetLayerDirty(LayerType::Ropes);
     mUserInterface.OnModelDirtyChanged();
 
-    // Refresh model visualization
-    mModelController->UploadVisualization();
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -487,8 +502,11 @@ void Controller::RemoveRopesLayer()
     mModelController->SetLayerDirty(LayerType::Ropes);
     mUserInterface.OnModelDirtyChanged();
 
-    // Refresh model visualization
-    mModelController->UploadVisualization();
+    // Update layer visualization modes
+    InternalUpdateVisualizationModes();
+
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -500,10 +518,9 @@ void Controller::RestoreLayerForUndo(RopesLayerData && layer)
 
     // No need to update dirtyness, this is for undo
 
-    // Refresh model visualization
-    mModelController->UploadVisualization();
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
-
 }
 
 void Controller::SetTextureLayer(
@@ -547,12 +564,15 @@ void Controller::SetTextureLayer(
         InternalSelectPrimaryLayer(LayerType::Texture);
     }
 
+    // Update layer visualization modes
+    InternalUpdateVisualizationModes();
+
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Texture);
     mUserInterface.OnModelDirtyChanged();
 
-    // Refresh model visualization
-    mModelController->UploadVisualization();
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -599,8 +619,11 @@ void Controller::RemoveTextureLayer()
     mModelController->SetLayerDirty(LayerType::Texture);
     mUserInterface.OnModelDirtyChanged();
 
-    // Refresh model visualization
-    mModelController->UploadVisualization();
+    // Update layer visualization modes
+    InternalUpdateVisualizationModes();
+
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -618,8 +641,11 @@ void Controller::RestoreTextureLayerForUndo(
 
     // No need to update dirtyness, this is for undo
 
-    // Refresh model visualization
-    mModelController->UploadVisualization();
+    // Update layer visualization modes
+    InternalUpdateVisualizationModes();
+
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -679,8 +705,10 @@ void Controller::SetStructuralLayerVisualizationMode(StructuralLayerVisualizatio
 {
     mStructuralLayerVisualizationMode = mode;
 
-    // TODO: orchestrate calls to ModelController
+    // Update layer visualization modes
+    InternalUpdateVisualizationModes();
 
+    // Notify
     mUserInterface.OnStructuralLayerVisualizationModeChanged(mode);
 
     // Refresh view
@@ -694,7 +722,16 @@ ElectricalLayerVisualizationModeType Controller::GetElectricalLayerVisualization
 
 void Controller::SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode)
 {
-    // TODO
+    mElectricalLayerVisualizationMode = mode;
+
+    // Update layer visualization modes
+    InternalUpdateVisualizationModes();
+
+    // Notify
+    mUserInterface.OnElectricalLayerVisualizationModeChanged(mode);
+
+    // Refresh view
+    mUserInterface.RefreshView();
 }
 
 RopesLayerVisualizationModeType Controller::GetRopesLayerVisualizationMode() const
@@ -704,7 +741,16 @@ RopesLayerVisualizationModeType Controller::GetRopesLayerVisualizationMode() con
 
 void Controller::SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode)
 {
-    // TODO
+    mRopesLayerVisualizationMode = mode;
+
+    // Update layer visualization modes
+    InternalUpdateVisualizationModes();
+
+    // Notify
+    mUserInterface.OnRopesLayerVisualizationModeChanged(mode);
+
+    // Refresh view
+    mUserInterface.RefreshView();
 }
 
 TextureLayerVisualizationModeType Controller::GetTextureLayerVisualizationMode() const
@@ -714,7 +760,16 @@ TextureLayerVisualizationModeType Controller::GetTextureLayerVisualizationMode()
 
 void Controller::SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode)
 {
-    // TODO
+    mTextureLayerVisualizationMode = mode;
+
+    // Update layer visualization modes
+    InternalUpdateVisualizationModes();
+
+    // Notify
+    mUserInterface.OnTextureLayerVisualizationModeChanged(mode);
+
+    // Refresh view
+    mUserInterface.RefreshView();
 }
 
 void Controller::SetOtherLayersOpacity(float opacity)
@@ -1007,12 +1062,54 @@ void Controller::InternalSelectPrimaryLayer(LayerType primaryLayer)
     // Notify
     mUserInterface.OnPrimaryLayerChanged(primaryLayer);
 
-    // TODO: change the layer visualization type, given that it depends on which primary layer is selected - though I can't remember if we want the layer viz selection function
-    // to be calcd by Controller or by ModelController
-    // TODO: based on the above, will also want to *upload* (and *refresh*) viz, given that the layer visualization type has changed
-
     // Tell view
     mView.SetPrimaryLayer(primaryLayer);
+}
+
+void Controller::InternalUpdateVisualizationModes()
+{
+    //
+    // Here we orchestrate the viz mode that we want for the ModelController
+    //
+
+    // Structural
+
+    assert(mModelController->GetModel().HasLayer(LayerType::Structural));
+
+    mModelController->SetStructuralLayerVisualizationMode(mStructuralLayerVisualizationMode);
+
+    // Electrical
+
+    if (mModelController->GetModel().HasLayer(LayerType::Electrical))
+    {
+        mModelController->SetElectricalLayerVisualizationMode(mElectricalLayerVisualizationMode);
+    }
+    else
+    {
+        mModelController->SetElectricalLayerVisualizationMode(std::nullopt);
+    }
+
+    // Ropes
+
+    if (mModelController->GetModel().HasLayer(LayerType::Ropes))
+    {
+        mModelController->SetRopesLayerVisualizationMode(mRopesLayerVisualizationMode);
+    }
+    else
+    {
+        mModelController->SetRopesLayerVisualizationMode(std::nullopt);
+    }
+
+    // Texture
+
+    if (mModelController->GetModel().HasLayer(LayerType::Texture))
+    {
+        mModelController->SetTextureLayerVisualizationMode(mTextureLayerVisualizationMode);
+    }
+    else
+    {
+        mModelController->SetTextureLayerVisualizationMode(std::nullopt);
+    }
 }
 
 void Controller::InternalSetCurrentTool(std::optional<ToolType> toolType)
@@ -1225,8 +1322,8 @@ void Controller::Flip(DirectionType direction)
         mUserInterface.OnModelDirtyChanged();
     }
 
-    // Refresh model visualization
-    mModelController->UploadVisualization();
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 

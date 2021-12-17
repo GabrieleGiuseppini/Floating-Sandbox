@@ -162,10 +162,13 @@ public:
 
     StructuralLayerVisualizationModeType GetStructuralLayerVisualizationMode() const;
     void SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode);
+
     ElectricalLayerVisualizationModeType GetElectricalLayerVisualizationMode() const;
     void SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode);
+
     RopesLayerVisualizationModeType GetRopesLayerVisualizationMode() const;
     void SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode);
+
     TextureLayerVisualizationModeType GetTextureLayerVisualizationMode() const;
     void SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode);
 
@@ -246,6 +249,8 @@ private:
         std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
 
     void InternalSelectPrimaryLayer(LayerType primaryLayer);
+
+    void InternalUpdateVisualizationModes();
 
     void InternalSetCurrentTool(std::optional<ToolType> toolType);
 
