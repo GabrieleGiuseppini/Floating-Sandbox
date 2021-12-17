@@ -1,6 +1,68 @@
 https://gamejolt.com/x/permalink/comment/11730705
 
-- Texture visualization (including visualization modes *)
+= Visualization modes: (*)
+	+ Each layer has a visualization mode
+	+ Selectors are in new set of panels - with visibility dependent on primary layer - in LayersVisualization panel
+		+ On top of grid view button
+	= Modes: (each an enum in ShipBuilderTypes)
+		- Structural layer:
+			- Particle
+			- Auto-Texturization
+			- Texture (only if texture layer exists)
+		- Electrical:
+			- Particle
+			- Circuit (long-term)
+		- Ropes:
+			- Lines
+		- Texture:
+			- Matte
+	+ Dynamics:
+		! Spec:
+			- ModelController APIs take opt<viz mode> so that Controller can orchestrate turning whole layer viz on or off
+				- e.g.: texture viz is only on if structure mode is particle
+				- Controller is responsible for turning on/off entire layer viz - ModelController does nothing at New and Remove
+		+ Controller::SetXXXVisualizationMode
+			+ Set mXXXVisualizationMode
+			+ Call UpdateVisualizationMode()
+			+ Refresh view
+			+ IUserInterface->OnXXXVizModeChanged()
+		+ Hook buttons to Controller::SetXXXVisualizationMode
+		+ private InternalUpdateVizModes:
+			+ Called at each change of:
+				+ Layer presence
+					+ Including cctor
+					+ Including undo restore's
+				+ Viz mode change
+			+ Orchestrate calls to ModelController::SetXXXVisualizationMode
+		+ ModelController::SetXXXVisualizationMode(opt)
+			+ if (new == old) => nop
+			+ If !new && old:
+				+ Free texture
+				+ Clear DirtyXXXVizRegion
+			+ Else if new != old:
+				+ (Re)alloc texture // This moves here from UploadVisualization() and initializations (cctor and New() calls)
+				+ UpdateXXXVisualization(whole region) => will update dirty region
+			+ Store mXXXVisualizationMode
+			+ Remove init/shutdown @ 
+				+ UpdateXXXVisualization()
+				+ RemoveLayer
+			+ UpdateXXXLayerViz:
+				+ No check for layer presence, but assert
+		+ ModelController::cctor:
+			+ No viz initialization, will be done by Controller
+		+ ModelController::SetXXXLayer:
+			+ ...set XXX layer...
+			+ Note: only works like this if new size == old size, hence no realloc; see if it's also the assumption here
+			+ UpdateXXXVisualization(whole region)
+		+ ModelController::RemoveXXXLayer:
+			+ No viz removal, will be done by Controller
+		+ ModelController::UpdateVisualization
+		+ ModelController::UploadViz
+			+ Remove from view if has it and don't need to do
+	= Misc:
+		+ MainFrame: enable/disable structural texture mode at OnLayerPresenceChanged
+		+ Check out that ElectricalTexture vertex creation TODOHERE in View.cpp
+		- new texture mode for...no texture?
 
 - Import/Export:
 	- Structural:
@@ -37,7 +99,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 						= For texture
 							+ Dialog
 							= Resize image
-								+ Buffer2D
+								= Buffer2D
+								- See broken Y
 							= Controller::SetTextureLayer
 								= Undo
 							- Texture visualization (see immediately above) for testing
@@ -101,7 +164,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Take list, reduce to contiguous (remove ./\<space>)
 		- If the two match, use original from list
 
-- Auto-texturization visualization (see visualization modes *)
+- Auto-texturization visualization
+	- ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
+- Texture visualization
+	- ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
 
 - Resize workflow:
 	+ Button - in Ship Settings panel, slightly separated from the File buttons
@@ -314,71 +380,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Also includes sounds
 		- Extract from other "TODO" .txt file
 
-= Visualization modes: (*)
-	+ Each layer has a visualization mode
-	+ Selectors are in new set of panels - with visibility dependent on primary layer - in LayersVisualization panel
-		+ On top of grid view button
-	= Modes: (each an enum in ShipBuilderTypes)
-		- Structural layer:
-			- Particle
-			- Auto-Texturization
-			- Texture (only if texture layer exists)
-		- Electrical:
-			- Particle
-			- Circuit (long-term)
-		- Ropes:
-			- Lines
-		- Texture:
-			- Matte
-	+ Dynamics:
-		! Spec:
-			- ModelController APIs take opt<viz mode> so that Controller can orchestrate turning whole layer viz on or off
-				- e.g.: texture viz is only on if structure mode is particle
-				- Controller is responsible for turning on/off entire layer viz - ModelController does nothing at New and Remove
-		+ Controller::SetXXXVisualizationMode
-			+ Set mXXXVisualizationMode
-			+ Call UpdateVisualizationMode()
-			+ Refresh view
-			+ IUserInterface->OnXXXVizModeChanged()
-		+ Hook buttons to Controller::SetXXXVisualizationMode
-		+ private InternalUpdateVizModes:
-			+ Called at each change of:
-				+ Layer presence
-					+ Including cctor
-					+ Including undo restore's
-				+ Viz mode change
-			+ Orchestrate calls to ModelController::SetXXXVisualizationMode
-		+ ModelController::SetXXXVisualizationMode(opt)
-			+ if (new == old) => nop
-			+ If !new && old:
-				+ Free texture
-				+ Clear DirtyXXXVizRegion
-			+ Else if new != old:
-				+ (Re)alloc texture // This moves here from UploadVisualization() and initializations (cctor and New() calls)
-				+ UpdateXXXVisualization(whole region) => will update dirty region
-			+ Store mXXXVisualizationMode
-			+ Remove init/shutdown @ 
-				+ UpdateXXXVisualization()
-				+ RemoveLayer
-			+ UpdateXXXLayerViz:
-				+ No check for layer presence, but assert
-		+ ModelController::cctor:
-			+ No viz initialization, will be done by Controller
-		+ ModelController::SetXXXLayer:
-			+ ...set XXX layer...
-			+ Note: only works like this if new size == old size, hence no realloc; see if it's also the assumption here
-			+ UpdateXXXVisualization(whole region)
-		+ ModelController::RemoveXXXLayer:
-			+ No viz removal, will be done by Controller
-		+ ModelController::UpdateVisualization
-		+ ModelController::UploadViz
-			+ Remove from view if has it and don't need to do
-
-	- TODO: when do we need to realloc structural texture based on viz mode change?
-		- When changing between types that require different sizes...duh
-	- Misc:
-		- MainFrame: enable/disable structural texture mode at OnLayerPresenceChanged
-		- Check out that ElectricalTexture vertex creation TODOHERE in View.cpp
 
 - Ubuntu:
 	- Test User Ships folder

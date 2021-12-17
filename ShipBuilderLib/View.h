@@ -239,6 +239,8 @@ private:
     void UpdateRectOverlay();
     void UpdateDashedLineOverlay();
 
+    void UploadTextureVertices(GameOpenGLVBO const & vbo);
+
     void RenderRopes();
 
     vec3f GetOverlayColor(OverlayMode mode) const;

@@ -335,7 +335,7 @@ MainFrame::MainFrame(
         }
 
         {
-            wxMenuItem * loadShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Load Ship") + wxS("\tCtrl+O"), _("Load a ship"), wxITEM_NORMAL);
+            wxMenuItem * loadShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Load Ship...") + wxS("\tCtrl+O"), _("Load a ship"), wxITEM_NORMAL);
             fileMenu->Append(loadShipMenuItem);
             Connect(loadShipMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnLoadShip);
         }
@@ -358,7 +358,7 @@ MainFrame::MainFrame(
         }
 
         {
-            wxMenuItem * saveShipAsMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship As"), _("Save the current ship to a different file"), wxITEM_NORMAL);
+            wxMenuItem * saveShipAsMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship As..."), _("Save the current ship to a different file"), wxITEM_NORMAL);
             fileMenu->Append(saveShipAsMenuItem);
             Connect(saveShipAsMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveShipAsMenuItem);
         }
@@ -405,13 +405,13 @@ MainFrame::MainFrame(
         }
 
         {
-            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Resize Ship") + wxS("\tCtrl+R"), _("Resize the ship"), wxITEM_NORMAL);
+            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Resize Ship...") + wxS("\tCtrl+R"), _("Resize the ship"), wxITEM_NORMAL);
             editMenu->Append(menuItem);
             Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditResizeShipMenuItem);
         }
 
         {
-            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Ship Properties") + wxS("\tCtrl+P"), _("Edit the ship properties"), wxITEM_NORMAL);
+            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Ship Properties...") + wxS("\tCtrl+P"), _("Edit the ship properties"), wxITEM_NORMAL);
             editMenu->Append(menuItem);
             Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditShipPropertiesMenuItem);
         }
@@ -1484,7 +1484,7 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
         rootHSizer->Add(
             mOtherLayersOpacitySlider,
             0, // Retain horizontal width
-            wxEXPAND | wxALIGN_TOP, // Expand vertically
+            wxEXPAND, // Expand vertically
             0);
     }
 
@@ -1492,7 +1492,9 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
     {
         mLayerVisualizationModePanelsSizer = new wxBoxSizer(wxVERTICAL);
 
-        // Structure
+        mLayerVisualizationModePanelsSizer->AddSpacer(7);
+
+        // Structure viz mode
         {
             wxPanel * structuralLayerVisualizationModesPanel = new wxPanel(panel);
 
@@ -1502,7 +1504,7 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
             {
                 mStructuralLayerParticleVisualizationModeButton = new BitmapToggleButton(
                     structuralLayerVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("save_layer_button"), // TODOHERE: Particle Viz Mode icon
+                    mResourceLocator.GetBitmapFilePath("particle_mode_icon_small"),
                     [this]()
                     {
                         assert(mController);
@@ -1512,10 +1514,6 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
                     },
                     _("Particle mode: view individual structural particles."));
 
-                auto buttonSize = mStructuralLayerParticleVisualizationModeButton->GetBitmap().GetSize();
-                buttonSize.IncBy(4, 4);
-                mStructuralLayerParticleVisualizationModeButton->SetMaxSize(buttonSize);
-
                 vSizer->Add(
                     mStructuralLayerParticleVisualizationModeButton,
                     0, // Retain V size
@@ -1523,11 +1521,13 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
                     0);
             }
 
+            vSizer->AddSpacer(5);
+
             // Auto-texturization mode
             {
                 mStructuralLayerAutoTexturizationVisualizationModeButton = new BitmapToggleButton(
                     structuralLayerVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("save_layer_button"), // TODOHERE: Same icon as auto-texturization, but smaller
+                    mResourceLocator.GetBitmapFilePath("autotexturization_mode_icon_small"),
                     [this]()
                     {
                         assert(mController);
@@ -1537,10 +1537,6 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
                     },
                     _("Auto-texturization mode: view ship as when it is auto-texturized."));
 
-                auto buttonSize = mStructuralLayerAutoTexturizationVisualizationModeButton->GetBitmap().GetSize();
-                buttonSize.IncBy(4, 4);
-                mStructuralLayerAutoTexturizationVisualizationModeButton->SetMaxSize(buttonSize);
-
                 vSizer->Add(
                     mStructuralLayerAutoTexturizationVisualizationModeButton,
                     0, // Retain V size
@@ -1548,11 +1544,13 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
                     0);
             }
 
+            vSizer->AddSpacer(5);
+
             // Texture mode
             {
                 mStructuralLayerTextureVisualizationModeButton = new BitmapToggleButton(
                     structuralLayerVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("save_layer_button"), // TODOHERE: Same icon as photo, but smaller
+                    mResourceLocator.GetBitmapFilePath("texture_mode_icon_small"),
                     [this]()
                     {
                         assert(mController);
@@ -1580,19 +1578,19 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
             mLayerVisualizationModePanels[static_cast<size_t>(LayerType::Structural)] = structuralLayerVisualizationModesPanel;
         }
 
-        // Electrical
+        // Electrical viz mode
         {
             // Nothing at the moment
             mLayerVisualizationModePanels[static_cast<size_t>(LayerType::Electrical)] = nullptr;
         }
 
-        // Ropes
+        // Ropes viz mode
         {
             // Nothing at the moment
             mLayerVisualizationModePanels[static_cast<size_t>(LayerType::Ropes)] = nullptr;
         }
 
-        // Texture
+        // Texture viz mode
         {
             // Nothing at the moment
             mLayerVisualizationModePanels[static_cast<size_t>(LayerType::Texture)] = nullptr;
@@ -1625,10 +1623,12 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
                 0);
         }
 
+        mLayerVisualizationModePanelsSizer->AddSpacer(7);
+
         rootHSizer->Add(
             mLayerVisualizationModePanelsSizer,
             0, // Retain horizontal width
-            wxEXPAND | wxALIGN_TOP, // Expand vertically
+            wxEXPAND, // Expand vertically
             0);
     }
     
@@ -3318,6 +3318,8 @@ void MainFrame::ReconciliateUIWithLayerPresence()
     // New, Load: always
     // Delete, Save: if HasLayer
     // Slider: only enabled if > 1 layers
+    // Structural layer auto-texturization viz mode: only if texture layer not present
+    // Structural layer texture viz mode: only if texture layer present
     //
 
     for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
@@ -3340,6 +3342,17 @@ void MainFrame::ReconciliateUIWithLayerPresence()
     }
 
     mOtherLayersOpacitySlider->Enable(mController->HasModelExtraLayers());
+
+    if (mController->HasModelLayer(LayerType::Texture))
+    {
+        mStructuralLayerAutoTexturizationVisualizationModeButton->Enable(false);
+        mStructuralLayerTextureVisualizationModeButton->Enable(true);
+    }
+    else
+    {
+        mStructuralLayerAutoTexturizationVisualizationModeButton->Enable(true);
+        mStructuralLayerTextureVisualizationModeButton->Enable(false);
+    }
 
     mLayerSelectButtons[static_cast<size_t>(mController->GetPrimaryLayer())]->SetFocus(); // Prevent other random buttons for getting focus
 }

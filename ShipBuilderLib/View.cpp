@@ -513,42 +513,10 @@ void View::UploadStructuralLayerVisualizationTexture(RgbaImageData const & textu
     GameOpenGL::UploadTexture(texture);
 
     //
-    // Create vertices
-    //
-
-    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
-    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
-
-    std::array<TextureVertex, 4> vertexBuffer;
-
-    // Bottom-left
-    vertexBuffer[0] = TextureVertex(
-        vec2f(0.0f, 0.0f),
-        vec2f(0.0f, 0.0f));
-
-    // Top-left
-    vertexBuffer[1] = TextureVertex(
-        vec2f(0.0f, shipHeight),
-        vec2f(0.0f, 1.0f));
-
-    // Bottom-right
-    vertexBuffer[2] = TextureVertex(
-        vec2f(shipWidth, 0.0f),
-        vec2f(1.0f, 0.0f));
-
-    // Top-right
-    vertexBuffer[3] = TextureVertex(
-        vec2f(shipWidth, shipHeight),
-        vec2f(1.0f, 1.0f));
-
-    //
     // Upload vertices
     //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mStructuralTextureVBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(TextureVertex), vertexBuffer.data(), GL_STATIC_DRAW);
-    CheckOpenGLError();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    UploadTextureVertices(mStructuralTextureVBO);
 
     //
     // Remember we have this texture
@@ -591,76 +559,10 @@ void View::UploadElectricalLayerVisualizationTexture(RgbaImageData const & textu
     GameOpenGL::UploadTexture(texture);
 
     //
-    // Create vertices
-    //
-
-    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
-    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
-
-    std::array<TextureVertex, 4> vertexBuffer;
-
-    // Bottom-left
-    vertexBuffer[0] = TextureVertex(
-        vec2f(0.0f, 0.0f),
-        vec2f(0.0f, 0.0f));
-
-    // Top-left
-    vertexBuffer[1] = TextureVertex(
-        vec2f(0.0f, shipHeight),
-        vec2f(0.0f, 1.0f));
-
-    // Bottom-right
-    vertexBuffer[2] = TextureVertex(
-        vec2f(shipWidth, 0.0f),
-        vec2f(1.0f, 0.0f));
-
-    // Top-right
-    vertexBuffer[3] = TextureVertex(
-        vec2f(shipWidth, shipHeight),
-        vec2f(1.0f, 1.0f));
-
-    /* TODOTEST
-
-    // TODO: if it works, make vertex creation and upload as helper (w/vbo arg)
-
-    //
-    // Create vertices
-    //
-
-    float const fWidth = static_cast<float>(texture.Size.width);
-    float const fHeight = static_cast<float>(texture.Size.height);
-
-    std::array<TextureVertex, 4> vertexBuffer;
-
-    // Bottom-left
-    vertexBuffer[0] = TextureVertex(
-        vec2f(0.0f, 0.0f),
-        vec2f(0.0f, 0.0f));
-
-    // Top-left
-    vertexBuffer[1] = TextureVertex(
-        vec2f(0.0f, fHeight),
-        vec2f(0.0f, 1.0f));
-
-    // Bottom-right
-    vertexBuffer[2] = TextureVertex(
-        vec2f(fWidth, 0.0f),
-        vec2f(1.0f, 0.0f));
-
-    // Top-right
-    vertexBuffer[3] = TextureVertex(
-        vec2f(fWidth, fHeight),
-        vec2f(1.0f, 1.0f));
-    */
-
-    //
     // Upload vertices
     //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mElectricalTextureVBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(TextureVertex), vertexBuffer.data(), GL_STATIC_DRAW);
-    CheckOpenGLError();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    UploadTextureVertices(mElectricalTextureVBO);
 
     //
     // Remember we have this texture
@@ -753,42 +655,10 @@ void View::UploadTextureLayerVisualizationTexture(RgbaImageData const & texture)
     GameOpenGL::UploadTexture(texture);
 
     //
-    // Create vertices
-    //
-
-    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
-    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
-
-    std::array<TextureVertex, 4> vertexBuffer;
-
-    // Bottom-left
-    vertexBuffer[0] = TextureVertex(
-        vec2f(0.0f, 0.0f),
-        vec2f(0.0f, 0.0f));
-
-    // Top-left
-    vertexBuffer[1] = TextureVertex(
-        vec2f(0.0f, shipHeight),
-        vec2f(0.0f, 1.0f));
-
-    // Bottom-right
-    vertexBuffer[2] = TextureVertex(
-        vec2f(shipWidth, 0.0f),
-        vec2f(1.0f, 0.0f));
-
-    // Top-right
-    vertexBuffer[3] = TextureVertex(
-        vec2f(shipWidth, shipHeight),
-        vec2f(1.0f, 1.0f));
-
-    //
     // Upload vertices
     //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mTextureTextureVBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(TextureVertex), vertexBuffer.data(), GL_STATIC_DRAW);
-    CheckOpenGLError();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    UploadTextureVertices(mTextureTextureVBO);
 
     //
     // Remember we have this texture
@@ -1428,6 +1298,47 @@ void View::UpdateDashedLineOverlay()
     // Upload vertices
     glBindBuffer(GL_ARRAY_BUFFER, *mDashedLineOverlayVBO);
     glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(DashedLineOverlayVertex), vertexBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void View::UploadTextureVertices(GameOpenGLVBO const & vbo)
+{
+    //
+    // Create vertices
+    //
+
+    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
+    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
+
+    std::array<TextureVertex, 4> vertexBuffer;
+
+    // Bottom-left
+    vertexBuffer[0] = TextureVertex(
+        vec2f(0.0f, 0.0f),
+        vec2f(0.0f, 0.0f));
+
+    // Top-left
+    vertexBuffer[1] = TextureVertex(
+        vec2f(0.0f, shipHeight),
+        vec2f(0.0f, 1.0f));
+
+    // Bottom-right
+    vertexBuffer[2] = TextureVertex(
+        vec2f(shipWidth, 0.0f),
+        vec2f(1.0f, 0.0f));
+
+    // Top-right
+    vertexBuffer[3] = TextureVertex(
+        vec2f(shipWidth, shipHeight),
+        vec2f(1.0f, 1.0f));
+
+    //
+    // Upload vertices
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
+    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(TextureVertex), vertexBuffer.data(), GL_STATIC_DRAW);
     CheckOpenGLError();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
