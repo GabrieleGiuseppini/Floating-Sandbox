@@ -615,6 +615,14 @@ void Controller::RemoveTextureLayer()
         InternalSelectPrimaryLayer(LayerType::Structural);
     }
 
+    // Change texture visualization mode so that next time a texture
+    // layer is present, we don't start in "no mode"
+    if (mTextureLayerVisualizationMode == TextureLayerVisualizationModeType::NoVisualizationMode)
+    {
+        mTextureLayerVisualizationMode = TextureLayerVisualizationModeType::MatteMode; // Default for newly-created layer
+        mUserInterface.OnTextureLayerVisualizationModeChanged(mTextureLayerVisualizationMode);
+    }
+
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Texture);
     mUserInterface.OnModelDirtyChanged();
@@ -711,7 +719,8 @@ void Controller::SetStructuralLayerVisualizationMode(StructuralLayerVisualizatio
     // Notify
     mUserInterface.OnStructuralLayerVisualizationModeChanged(mode);
 
-    // Refresh view
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -730,7 +739,8 @@ void Controller::SetElectricalLayerVisualizationMode(ElectricalLayerVisualizatio
     // Notify
     mUserInterface.OnElectricalLayerVisualizationModeChanged(mode);
 
-    // Refresh view
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -749,7 +759,8 @@ void Controller::SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType 
     // Notify
     mUserInterface.OnRopesLayerVisualizationModeChanged(mode);
 
-    // Refresh view
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -768,7 +779,8 @@ void Controller::SetTextureLayerVisualizationMode(TextureLayerVisualizationModeT
     // Notify
     mUserInterface.OnTextureLayerVisualizationModeChanged(mode);
 
-    // Refresh view
+    // Refresh model visualizations
+    mModelController->UploadVisualizations();
     mUserInterface.RefreshView();
 }
 
@@ -1102,7 +1114,8 @@ void Controller::InternalUpdateVisualizationModes()
 
     // Texture
 
-    if (mModelController->GetModel().HasLayer(LayerType::Texture))
+    if (mModelController->GetModel().HasLayer(LayerType::Texture)
+        && mTextureLayerVisualizationMode != TextureLayerVisualizationModeType::NoVisualizationMode)
     {
         mModelController->SetTextureLayerVisualizationMode(mTextureLayerVisualizationMode);
     }

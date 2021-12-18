@@ -58,6 +58,7 @@ enum class RopesLayerVisualizationModeType
 
 enum class TextureLayerVisualizationModeType
 {
+    NoVisualizationMode,
     MatteMode
 };
 

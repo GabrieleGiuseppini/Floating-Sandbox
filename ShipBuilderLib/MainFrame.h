@@ -322,6 +322,8 @@ private:
     BitmapToggleButton * mStructuralLayerParticleVisualizationModeButton;
     BitmapToggleButton * mStructuralLayerAutoTexturizationVisualizationModeButton;
     BitmapToggleButton * mStructuralLayerTextureVisualizationModeButton;
+    BitmapToggleButton * mTextureLayerNoVisualizationModeButton;
+    BitmapToggleButton * mTextureLayerMatteModeButton;
 
     // Toolbar panel
     wxSizer * mToolbarPanelsSizer;

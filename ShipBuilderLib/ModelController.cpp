@@ -277,7 +277,8 @@ void ModelController::UploadVisualizations()
         }
     }
 
-    if (mTextureLayerVisualizationMode.has_value())
+    if (mTextureLayerVisualizationMode.has_value()
+        && *mTextureLayerVisualizationMode != TextureLayerVisualizationModeType::NoVisualizationMode)
     {
         assert(mModel.HasLayer(LayerType::Texture));
 
@@ -1132,7 +1133,8 @@ void ModelController::SetTextureLayerVisualizationMode(std::optional<TextureLaye
         return;
     }
 
-    if (mode.has_value())
+    if (mode.has_value()
+        && *mode != TextureLayerVisualizationModeType::NoVisualizationMode)
     {
         if (!mTextureLayerVisualizationMode.has_value())
         {
@@ -1147,7 +1149,7 @@ void ModelController::SetTextureLayerVisualizationMode(std::optional<TextureLaye
     else
     {
         // Shutdown texture visualization
-        mTextureLayerVisualizationMode.reset();
+        mTextureLayerVisualizationMode = mode;
         mIsTextureLayerVisualizationDirty = false;
     }
 }
@@ -1525,7 +1527,8 @@ void ModelController::UpdateRopesLayerVisualization()
 
 void ModelController::UpdateTextureLayerVisualization()
 {
-    if (!mTextureLayerVisualizationMode.has_value())
+    if (!mTextureLayerVisualizationMode.has_value()
+        || *mTextureLayerVisualizationMode == TextureLayerVisualizationModeType::NoVisualizationMode)
     {
         return;
     }

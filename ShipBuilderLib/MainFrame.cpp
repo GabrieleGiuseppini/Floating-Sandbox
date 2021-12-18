@@ -1488,6 +1488,8 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
             0);
     }
 
+    rootHSizer->AddSpacer(15);
+
     // View modifiers
     {
         mLayerVisualizationModePanelsSizer = new wxBoxSizer(wxVERTICAL);
@@ -1550,7 +1552,7 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
             {
                 mStructuralLayerTextureVisualizationModeButton = new BitmapToggleButton(
                     structuralLayerVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("texture_mode_icon_small"),
+                    mResourceLocator.GetBitmapFilePath("structural_texture_mode_icon_small"),
                     [this]()
                     {
                         assert(mController);
@@ -1592,8 +1594,63 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
 
         // Texture viz mode
         {
-            // Nothing at the moment
-            mLayerVisualizationModePanels[static_cast<size_t>(LayerType::Texture)] = nullptr;
+            wxPanel * textureLayerVisualizationModesPanel = new wxPanel(panel);
+
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // No viz mode
+            {
+                mTextureLayerNoVisualizationModeButton = new BitmapToggleButton(
+                    textureLayerVisualizationModesPanel,
+                    mResourceLocator.GetBitmapFilePath("x_small"),
+                    [this]()
+                    {
+                        assert(mController);
+                        mController->SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType::NoVisualizationMode);
+
+                        DeviateFocus();
+                    },
+                    _("No visualization: the texture layer is not drawn."));
+
+                vSizer->Add(
+                    mTextureLayerNoVisualizationModeButton,
+                    0, // Retain V size
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            vSizer->AddSpacer(5);
+
+            // Matte mode
+            {
+                mTextureLayerMatteModeButton = new BitmapToggleButton(
+                    textureLayerVisualizationModesPanel,
+                    mResourceLocator.GetBitmapFilePath("texture_mode_icon_small"),
+                    [this]()
+                    {
+                        assert(mController);
+                        mController->SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType::MatteMode);
+
+                        DeviateFocus();
+                    },
+                    _("Matte mode: view texture as an opaque image."));
+
+                vSizer->Add(
+                    mTextureLayerMatteModeButton,
+                    0, // Retain V size
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            textureLayerVisualizationModesPanel->SetSizerAndFit(vSizer);
+
+            mLayerVisualizationModePanelsSizer->Add(
+                textureLayerVisualizationModesPanel,
+                1, // Expand vertically
+                wxALIGN_CENTER_HORIZONTAL,
+                0);
+
+            mLayerVisualizationModePanels[static_cast<size_t>(LayerType::Texture)] = textureLayerVisualizationModesPanel;
         }
 
         mLayerVisualizationModePanelsSizer->AddStretchSpacer(1);
@@ -1630,6 +1687,16 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
             0, // Retain horizontal width
             wxEXPAND, // Expand vertically
             0);
+    }
+
+    // Before we freeze this panel's size, make only its structural layer 
+    // viz mode panel visible, which is currently the tallest
+    for (size_t iLayer = 0; iLayer < LayerCount; ++iLayer)
+    {
+        if (mLayerVisualizationModePanels[iLayer] != nullptr)
+        {
+            mLayerVisualizationModePanelsSizer->Show(mLayerVisualizationModePanels[iLayer], iLayer == static_cast<size_t>(LayerType::Structural));
+        }
     }
     
     panel->SetSizerAndFit(rootHSizer);
@@ -3429,9 +3496,10 @@ void MainFrame::ReconciliateUIWithRopesLayerVisualizationModeSelection(RopesLaye
     // Nop at this moment
 }
 
-void MainFrame::ReconciliateUIWithTextureLayerVisualizationModeSelection(TextureLayerVisualizationModeType /*mode*/)
+void MainFrame::ReconciliateUIWithTextureLayerVisualizationModeSelection(TextureLayerVisualizationModeType mode)
 {
-    // Nop at this moment
+    mTextureLayerNoVisualizationModeButton->SetValue(mode == TextureLayerVisualizationModeType::NoVisualizationMode);
+    mTextureLayerMatteModeButton->SetValue(mode == TextureLayerVisualizationModeType::MatteMode);
 }
 
 void MainFrame::ReconciliateUIWithModelDirtiness()

@@ -59,10 +59,23 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ ModelController::UpdateVisualization
 		+ ModelController::UploadViz
 			+ Remove from view if has it and don't need to do
-	= Misc:
+	+ Misc:
 		+ MainFrame: enable/disable structural texture mode at OnLayerPresenceChanged
 		+ Check out that ElectricalTexture vertex creation TODOHERE in View.cpp
-		- new texture mode for...no texture?
+		+ new texture mode for...no texture
+			+ UI
+				+ Icon for structure-matte
+			+ Controller
+			+ ModelController
+			+ See UI: when texture layer is created, which one is selected
+	- Auto-texturization visualization
+		- ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
+	- Texture visualization
+		- ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
+
+- Resize workflow:
+	+ Button - in Ship Settings panel, slightly separated from the File buttons
+	- Click -> Dialog for Canvas Centering/Clipping (i.e. "Anchor choice") -> Controller -> ...TODO...
 
 - Import/Export:
 	- Structural:
@@ -154,6 +167,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 			= Undo
 				= Note: texture layer removal should also remember metadata
 
+- Texture flood tool
+	- First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
+		- TODO: conversion to ShipSpace coords is done in view; who will be responsible instead for conversions to texture (Image) space?
+
 - ShipPropertiesEditDialog: ship prefix normalizer
 	+ Make text file out of https://en.wikipedia.org/wiki/Ship_prefix, with just list of prefixes
 	- Usage:
@@ -163,15 +180,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- TODO: when to stop
 		- Take list, reduce to contiguous (remove ./\<space>)
 		- If the two match, use original from list
-
-- Auto-texturization visualization
-	- ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
-- Texture visualization
-	- ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
-
-- Resize workflow:
-	+ Button - in Ship Settings panel, slightly separated from the File buttons
-	- Click -> Dialog for Canvas Centering/Clipping (i.e. "Anchor choice") -> Controller -> ...TODO...
 			
 - App icons (whole "Resources" folder)
 
