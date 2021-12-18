@@ -385,8 +385,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     RgbaImageData textureImage = shipDefinition.TextureLayer
         ? std::move(shipDefinition.TextureLayer->Buffer) // Use provided texture
         : shipTexturizer.Texturize(
-            shipDefinition.AutoTexturizationSettings,
-            shipDefinition.StructuralLayer); // Auto-texturize
+            shipDefinition.StructuralLayer,
+            shipDefinition.AutoTexturizationSettings); // Auto-texturize
 
     //
     // We're done!

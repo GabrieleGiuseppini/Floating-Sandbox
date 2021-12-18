@@ -9,13 +9,13 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Particle
 			- Auto-Texturization
 			- Texture (only if texture layer exists)
-		- Electrical:
-			- Particle
+		+ Electrical:
+			+ Particle
 			- Circuit (long-term)
-		- Ropes:
-			- Lines
-		- Texture:
-			- Matte
+		+ Ropes:
+			+ Lines
+		+ Texture:
+			+ Matte
 	+ Dynamics:
 		! Spec:
 			- ModelController APIs take opt<viz mode> so that Controller can orchestrate turning whole layer viz on or off
@@ -72,6 +72,17 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
 	- Texture visualization
 		- ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
+
+- Texture flood tool
+	- First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
+	- Conversion to texture coords: done by View & ViewModel, exactly like conversion to ShipSpaceCoords, and invoked by texture tool(s)
+		- ViewModel also stores texture layer size (as ImageSize), next to ShipSize; set into View 
+		  by Controller (via View.SetTextureLayerSize) at each texture layer size change (OR: implicitly from UploadTexture? Would be best as we don't have to remember, but what when there's no texture uploaded yet?)
+			- Controller::CreateForShip
+			- Controller::SetTextureLayer
+			- Controller::RestoreTextureLayerForUndo
+			- Controller::ResizeShip
+			- No need to do at removal...
 
 - Resize workflow:
 	+ Button - in Ship Settings panel, slightly separated from the File buttons
@@ -155,21 +166,17 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Make internal helper templated on LayerType, with all code
 		- Additions:
 			- Undo
-				- Note: texture layer clear should also remember metadata
+				- Note: texture layer clear should also remember metadata (art credits)
 	- Set:
 		- Make internal helper templated on LayerType, with all code
 		- Additions:
 			- Undo
-				- Note: texture layer change should also remember metadata
+				- Note: texture layer change should also remember metadata (art credits)
 	- Remove:
 		- Make internal helper templated on LayerType, with all code
 		- Additions:
 			= Undo
-				= Note: texture layer removal should also remember metadata
-
-- Texture flood tool
-	- First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
-		- TODO: conversion to ShipSpace coords is done in view; who will be responsible instead for conversions to texture (Image) space?
+				= Note: texture layer removal should also remember metadata (art credits)
 
 - ShipPropertiesEditDialog: ship prefix normalizer
 	+ Make text file out of https://en.wikipedia.org/wiki/Ship_prefix, with just list of prefixes

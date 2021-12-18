@@ -28,8 +28,8 @@ public:
         ResourceLocator const & resourceLocator);
 
     RgbaImageData Texturize(
-        std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings,
-        StructuralLayerData const & structuralLayer) const;
+        StructuralLayerData const & structuralLayer,
+        std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings) const;
 
     template<typename TMaterial>
     RgbaImageData MakeTextureSample(

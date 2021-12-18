@@ -42,8 +42,8 @@ ShipTexturizer::ShipTexturizer(
 }
 
 RgbaImageData ShipTexturizer::Texturize(
-    std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings,
-    StructuralLayerData const & structuralLayer) const
+    StructuralLayerData const & structuralLayer,
+    std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings) const
 {
     auto const startTime = std::chrono::steady_clock::now();
 
