@@ -554,6 +554,11 @@ struct _IntegralRect
             && size == other.size;
     }
 
+    inline bool operator!=(_IntegralRect<TIntegralTag> const & other) const
+    {
+        return !(*this == other);
+    }
+
     bool IsContainedInRect(_IntegralRect<TIntegralTag> const & container) const
     {
         return origin.x >= container.origin.x

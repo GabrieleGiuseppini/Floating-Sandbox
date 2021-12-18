@@ -41,17 +41,8 @@ ShipTexturizer::ShipTexturizer(
 {
 }
 
-RgbaImageData ShipTexturizer::Texturize(
-    StructuralLayerData const & structuralLayer,
-    std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings) const
+ImageSize ShipTexturizer::CalculateTextureSize(ShipSpaceSize const & shipSize)
 {
-    auto const startTime = std::chrono::steady_clock::now();
-
-    ShipSpaceSize const shipSize = structuralLayer.Buffer.Size;
-
-    // Zero-out cache usage counts
-    ResetMaterialTextureCacheUseCounts();
-
     //
     // Calculate target texture size: integral multiple of structure size, but without
     // exceeding 4096 (magic number, also max texture size for low-end gfx cards),
@@ -62,19 +53,63 @@ RgbaImageData ShipTexturizer::Texturize(
     assert(maxDimension > 0);
 
     int const magnificationFactor = std::min(32, std::max(1, 4096 / maxDimension));
-    float const magnificationFactorInvF = 1.0f / static_cast<float>(magnificationFactor);
 
-    ImageSize const textureSize = ImageSize(
+    return ImageSize(
         shipSize.width * magnificationFactor,
         shipSize.height * magnificationFactor);
+}
 
-    //
-    // Prepare constants
-    //
+RgbaImageData ShipTexturizer::MakeTexture(
+    StructuralLayerData const & structuralLayer,
+    std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings) const
+{
+    auto const startTime = std::chrono::steady_clock::now();
 
+    // Zero-out cache usage counts
+    ResetMaterialTextureCacheUseCounts();
+
+    // Calculate texture size
+    ShipSpaceSize const shipSize = structuralLayer.Buffer.Size;
+    ImageSize const textureSize = CalculateTextureSize(shipSize);
+
+    // Allocate texture image
+    auto texture = RgbaImageData(textureSize);
+
+    // Nail down settings
     ShipAutoTexturizationSettings const & settings = (mDoForceSharedSettingsOntoShipSettings || !shipDefinitionSettings.has_value())
         ? mSharedSettings
         : *shipDefinitionSettings;
+
+    // Texturize
+    Texturize(
+        structuralLayer,
+        ShipSpaceRect({ 0, 0 }, shipSize), // Whole quad
+        texture,
+        settings);
+
+    LogMessage("ShipTexturizer: completed auto-texturization:",
+        " shipSize=", shipSize, " textureSize=", textureSize,
+        " time=", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startTime).count(), "us");
+
+    return texture;
+}
+
+void ShipTexturizer::Texturize(
+    StructuralLayerData const & structuralLayer,
+    ShipSpaceRect const & structuralLayerRegion,
+    RgbaImageData & targetTextureImage,
+    ShipAutoTexturizationSettings const & settings) const
+{
+    //
+    // Prepare constants
+    //
+    
+    assert((targetTextureImage.Size.width % structuralLayer.Buffer.Size.width) == 0
+        && (targetTextureImage.Size.height % structuralLayer.Buffer.Size.height) == 0);
+    int const magnificationFactor = targetTextureImage.Size.width / structuralLayer.Buffer.Size.width;
+    assert(magnificationFactor == targetTextureImage.Size.height / structuralLayer.Buffer.Size.height);
+
+    float const magnificationFactorInvF = 1.0f / static_cast<float>(magnificationFactor);
 
     float const worldToMaterialTexturePixelConversionFactor =
         MaterialTextureMagnificationToPixelConversionFactor(settings.MaterialTextureMagnification);
@@ -82,14 +117,14 @@ RgbaImageData ShipTexturizer::Texturize(
     float const materialTextureAlpha = 1.0f - settings.MaterialTextureTransparency;
 
     //
-    // Create texture
+    // Populate texture
     //
 
-    auto newImageData = std::make_unique<rgbaColor[]>(textureSize.GetLinearSize());
+    auto targetImageData = targetTextureImage.Data.get();
 
-    for (int y = 0; y < shipSize.height; ++y)
+    for (int y = structuralLayerRegion.origin.y; y < structuralLayerRegion.origin.y + structuralLayerRegion.size.height; ++y)
     {
-        for (int x = 0; x < shipSize.width; ++x)
+        for (int x = structuralLayerRegion.origin.x; x < structuralLayerRegion.origin.x + structuralLayerRegion.size.width; ++x)
         {
             ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
 
@@ -111,11 +146,11 @@ RgbaImageData ShipTexturizer::Texturize(
                 {
                     int const quadOffset =
                         x * magnificationFactor
-                        + (y * magnificationFactor + yy) * textureSize.width;
+                        + (y * magnificationFactor + yy) * targetTextureImage.Size.width;
 
                     for (int xx = 0; xx < magnificationFactor; ++xx)
                     {
-                        newImageData[quadOffset + xx] = structurePixelColor;
+                        targetImageData[quadOffset + xx] = structurePixelColor;
                     }
                 }
             }
@@ -137,12 +172,12 @@ RgbaImageData ShipTexturizer::Texturize(
                 // Fill quad with color multiply-blended with "bump map" texture
                 //
 
-                int const baseTargetQuadOffset = (x + y * textureSize.width) * magnificationFactor;
+                int const baseTargetQuadOffset = (x + y * targetTextureImage.Size.width) * magnificationFactor;
 
                 float worldY = static_cast<float>(y);
                 for (int yy = 0; yy < magnificationFactor; ++yy, worldY += magnificationFactorInvF)
                 {
-                    int const targetQuadOffset = baseTargetQuadOffset + yy * textureSize.width;
+                    int const targetQuadOffset = baseTargetQuadOffset + yy * targetTextureImage.Size.width;
 
                     float worldX = static_cast<float>(x);
                     for (int xx = 0; xx < magnificationFactor; ++xx, worldX += magnificationFactorInvF)
@@ -166,7 +201,7 @@ RgbaImageData ShipTexturizer::Texturize(
 
                         // Store resultant color, using structure's alpha channel value,
                         // and blended with transparency
-                        newImageData[targetQuadOffset + xx] = rgbaColor(
+                        targetImageData[targetQuadOffset + xx] = rgbaColor(
                             Mix(structurePixelColorF,
                                 resultantColorF,
                                 materialTextureAlpha),
@@ -176,13 +211,6 @@ RgbaImageData ShipTexturizer::Texturize(
             }
         }
     }
-
-    LogMessage("ShipTexturizer: completed auto-texturization:",
-        " materialTextureMagnification=", settings.MaterialTextureMagnification,
-        " shipSize=", shipSize, " textureSize=", textureSize, " magFactor=", magnificationFactor,
-        " time=", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startTime).count(), "us");
-
-    return RgbaImageData(textureSize, std::move(newImageData));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

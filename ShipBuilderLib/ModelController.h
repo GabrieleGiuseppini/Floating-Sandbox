@@ -14,6 +14,7 @@
 #include <Game/Layers.h>
 #include <Game/Materials.h>
 #include <Game/ShipDefinition.h>
+#include <Game/ShipTexturizer.h>
 
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
@@ -36,11 +37,11 @@ public:
     static std::unique_ptr<ModelController> CreateNew(
         ShipSpaceSize const & shipSpaceSize,
         std::string const & shipName,
-        View & view);
+        ShipTexturizer const & shipTexturizer);
 
     static std::unique_ptr<ModelController> CreateForShip(
         ShipDefinition && shipDefinition,
-        View & view);
+        ShipTexturizer const & shipTexturizer);
 
     ShipDefinition MakeShipDefinition() const;
 
@@ -73,7 +74,7 @@ public:
 
     ModelValidationResults ValidateModel() const;
 
-    void UploadVisualizations();
+    void UploadVisualizations(View & view);
 
 #ifdef _DEBUG
     bool IsInEphemeralVisualization() const
@@ -242,7 +243,7 @@ private:
 
     ModelController(
         Model && model,
-        View & view);
+        ShipTexturizer const & shipTexturizer);
 
     void InitializeStructuralLayerAnalysis();
 
@@ -290,9 +291,9 @@ private:
 
 private:
 
-    View & mView;
-
     Model mModel;
+
+    ShipTexturizer const & mShipTexturizer;
 
     //
     // Auxiliary layers' members

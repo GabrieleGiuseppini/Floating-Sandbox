@@ -3187,6 +3187,7 @@ void MainFrame::DoNewShip()
         *mView,
         mWorkbenchState,
         *this,
+        mShipTexturizer,
         mResourceLocator);
 
     // Reset current ship filename
@@ -3212,6 +3213,7 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
                 *mView,
                 mWorkbenchState,
                 *this,
+                mShipTexturizer,
                 mResourceLocator);
 
             // Remember file path - but only if it's a definition file in the "official" format, not a legacy one

@@ -20,12 +20,13 @@ std::unique_ptr<Controller> Controller::CreateNew(
     View & view,
     WorkbenchState & workbenchState,
     IUserInterface & userInterface,
+    ShipTexturizer const & shipTexturizer,
     ResourceLocator const & resourceLocator)
 {
     auto modelController = ModelController::CreateNew(
         ShipSpaceSize(200, 100), // TODO: from preferences
         shipName,
-        view);
+        shipTexturizer);
 
     std::unique_ptr<Controller> controller = std::unique_ptr<Controller>(
         new Controller(
@@ -43,11 +44,12 @@ std::unique_ptr<Controller> Controller::CreateForShip(
     View & view,
     WorkbenchState & workbenchState,
     IUserInterface & userInterface,
+    ShipTexturizer const & shipTexturizer,
     ResourceLocator const & resourceLocator)
 {
     auto modelController = ModelController::CreateForShip(
         std::move(shipDefinition),
-        view);
+        shipTexturizer);
 
     std::unique_ptr<Controller> controller = std::unique_ptr<Controller>(
         new Controller(
@@ -104,7 +106,7 @@ Controller::Controller(
     mUserInterface.OnCurrentToolChanged(*mCurrentToolType);
 
     // Upload layers' visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
 }
 
 ShipDefinition Controller::MakeShipDefinition()
@@ -239,7 +241,7 @@ void Controller::NewStructuralLayer()
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -263,7 +265,7 @@ void Controller::SetStructuralLayer(/*TODO*/)
     mUserInterface.OnModelDirtyChanged();
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -281,7 +283,7 @@ void Controller::RestoreLayerRegionForUndo(
     // No need to update dirtyness, this is for undo
 
     // Refresh model visualization
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -315,7 +317,7 @@ void Controller::NewElectricalLayer()
     InternalUpdateVisualizationModes();
 
     // Refresh model visualization
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -339,7 +341,7 @@ void Controller::SetElectricalLayer(/*TODO*/)
     mUserInterface.OnModelDirtyChanged();
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -366,7 +368,7 @@ void Controller::RemoveElectricalLayer()
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -384,7 +386,7 @@ void Controller::RestoreLayerRegionForUndo(
     // No need to update dirtyness, this is for undo
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -428,7 +430,7 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
     mUserInterface.OnModelDirtyChanged();
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -455,7 +457,7 @@ void Controller::NewRopesLayer()
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -479,7 +481,7 @@ void Controller::SetRopesLayer(/*TODO*/)
     mUserInterface.OnModelDirtyChanged();
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -506,7 +508,7 @@ void Controller::RemoveRopesLayer()
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -519,7 +521,7 @@ void Controller::RestoreLayerForUndo(RopesLayerData && layer)
     // No need to update dirtyness, this is for undo
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -564,6 +566,14 @@ void Controller::SetTextureLayer(
         InternalSelectPrimaryLayer(LayerType::Texture);
     }
 
+    // If structural layer visualization mode is the one only allowed without texture, 
+    // change it to particle
+    if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::AutoTexturizationMode)
+    {
+        mStructuralLayerVisualizationMode = StructuralLayerVisualizationModeType::ParticleMode;
+        mUserInterface.OnStructuralLayerVisualizationModeChanged(mStructuralLayerVisualizationMode);
+    }
+
     // Update layer visualization modes
     InternalUpdateVisualizationModes();
 
@@ -572,7 +582,7 @@ void Controller::SetTextureLayer(
     mUserInterface.OnModelDirtyChanged();
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -623,6 +633,14 @@ void Controller::RemoveTextureLayer()
         mUserInterface.OnTextureLayerVisualizationModeChanged(mTextureLayerVisualizationMode);
     }
 
+    // If structural layer visualization mode is the one only allowed for texture, 
+    // change it to particle
+    if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::TextureMode)
+    {
+        mStructuralLayerVisualizationMode = StructuralLayerVisualizationModeType::ParticleMode;
+        mUserInterface.OnStructuralLayerVisualizationModeChanged(mStructuralLayerVisualizationMode);
+    }
+
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Texture);
     mUserInterface.OnModelDirtyChanged();
@@ -631,7 +649,7 @@ void Controller::RemoveTextureLayer()
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -647,13 +665,34 @@ void Controller::RestoreTextureLayerForUndo(
 
     mUserInterface.OnLayerPresenceChanged();
 
+    if (!mModelController->GetModel().HasLayer(LayerType::Texture))
+    {
+        // If structural layer visualization mode is the one only allowed with texture, 
+        // change it to particle
+        if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::TextureMode)
+        {
+            mStructuralLayerVisualizationMode = StructuralLayerVisualizationModeType::ParticleMode;
+            mUserInterface.OnStructuralLayerVisualizationModeChanged(mStructuralLayerVisualizationMode);
+        }
+    }
+    else
+    {
+        // If structural layer visualization mode is the one only allowed without texture, 
+        // change it to particle
+        if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::AutoTexturizationMode)
+        {
+            mStructuralLayerVisualizationMode = StructuralLayerVisualizationModeType::ParticleMode;
+            mUserInterface.OnStructuralLayerVisualizationModeChanged(mStructuralLayerVisualizationMode);
+        }
+    }
+
     // No need to update dirtyness, this is for undo
 
     // Update layer visualization modes
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -720,7 +759,7 @@ void Controller::SetStructuralLayerVisualizationMode(StructuralLayerVisualizatio
     mUserInterface.OnStructuralLayerVisualizationModeChanged(mode);
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -740,7 +779,7 @@ void Controller::SetElectricalLayerVisualizationMode(ElectricalLayerVisualizatio
     mUserInterface.OnElectricalLayerVisualizationModeChanged(mode);
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -760,7 +799,7 @@ void Controller::SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType 
     mUserInterface.OnRopesLayerVisualizationModeChanged(mode);
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -780,7 +819,7 @@ void Controller::SetTextureLayerVisualizationMode(TextureLayerVisualizationModeT
     mUserInterface.OnTextureLayerVisualizationModeChanged(mode);
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -1336,7 +1375,7 @@ void Controller::Flip(DirectionType direction)
     }
 
     // Refresh model visualizations
-    mModelController->UploadVisualizations();
+    mModelController->UploadVisualizations(mView);
     mUserInterface.RefreshView();
 }
 

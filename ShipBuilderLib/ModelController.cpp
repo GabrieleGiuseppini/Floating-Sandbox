@@ -13,33 +13,33 @@ namespace ShipBuilder {
 std::unique_ptr<ModelController> ModelController::CreateNew(
     ShipSpaceSize const & shipSpaceSize,
     std::string const & shipName,
-    View & view)
+    ShipTexturizer const & shipTexturizer)
 {
     Model model = Model(shipSpaceSize, shipName);
 
     return std::unique_ptr<ModelController>(
         new ModelController(
             std::move(model),
-            view));
+            shipTexturizer));
 }
 
 std::unique_ptr<ModelController> ModelController::CreateForShip(
     ShipDefinition && shipDefinition,
-    View & view)
+    ShipTexturizer const & shipTexturizer)
 {
     Model model = Model(std::move(shipDefinition));
 
     return std::unique_ptr<ModelController>(
         new ModelController(
             std::move(model),
-            view));
+            shipTexturizer));
 }
 
 ModelController::ModelController(
     Model && model,
-    View & view)
-    : mView(view)
-    , mModel(std::move(model))
+    ShipTexturizer const & shipTexturizer)
+    : mModel(std::move(model))
+    , mShipTexturizer(shipTexturizer)
     , mElectricalElementInstanceIndexFactory()
     , mElectricalParticleCount(0)
     /////
@@ -219,7 +219,7 @@ ModelValidationResults ModelController::ValidateModel() const
     return ModelValidationResults(std::move(issues));
 }
 
-void ModelController::UploadVisualizations()
+void ModelController::UploadVisualizations(View & view)
 {
     //
     // Upload visualizations that are dirty, and
@@ -229,7 +229,7 @@ void ModelController::UploadVisualizations()
     if (mDirtyStructuralLayerVisualizationRegion.has_value())
     {
         assert(mStructuralLayerVisualizationTexture);
-        mView.UploadStructuralLayerVisualizationTexture(*mStructuralLayerVisualizationTexture);
+        view.UploadStructuralLayerVisualizationTexture(*mStructuralLayerVisualizationTexture);
 
         mDirtyStructuralLayerVisualizationRegion.reset();
     }
@@ -240,7 +240,7 @@ void ModelController::UploadVisualizations()
 
         if (mDirtyElectricalLayerVisualizationRegion.has_value())
         {
-            mView.UploadElectricalLayerVisualizationTexture(*mElectricalLayerVisualizationTexture);
+            view.UploadElectricalLayerVisualizationTexture(*mElectricalLayerVisualizationTexture);
 
             mDirtyElectricalLayerVisualizationRegion.reset();
         }
@@ -250,9 +250,9 @@ void ModelController::UploadVisualizations()
         assert(!mElectricalLayerVisualizationTexture);
         assert(!mDirtyElectricalLayerVisualizationRegion.has_value());
 
-        if (mView.HasElectricalLayerVisualizationTexture())
+        if (view.HasElectricalLayerVisualizationTexture())
         {
-            mView.RemoveElectricalLayerVisualizationTexture();
+            view.RemoveElectricalLayerVisualizationTexture();
         }
     }
 
@@ -262,7 +262,7 @@ void ModelController::UploadVisualizations()
 
         if (mIsRopesLayerVisualizationDirty)
         {
-            mView.UploadRopesLayerVisualization(mModel.GetRopesLayer().Buffer);
+            view.UploadRopesLayerVisualization(mModel.GetRopesLayer().Buffer);
 
             mIsRopesLayerVisualizationDirty = false;
         }
@@ -271,9 +271,9 @@ void ModelController::UploadVisualizations()
     {
         assert(!mIsRopesLayerVisualizationDirty);
 
-        if (mView.HasRopesLayerVisualization())
+        if (view.HasRopesLayerVisualization())
         {
-            mView.RemoveRopesLayerVisualization();
+            view.RemoveRopesLayerVisualization();
         }
     }
 
@@ -284,7 +284,7 @@ void ModelController::UploadVisualizations()
 
         if (mIsTextureLayerVisualizationDirty)
         {
-            mView.UploadTextureLayerVisualizationTexture(mModel.GetTextureLayer().Buffer);
+            view.UploadTextureLayerVisualizationTexture(mModel.GetTextureLayer().Buffer);
 
             mIsTextureLayerVisualizationDirty = false;
         }
@@ -293,9 +293,9 @@ void ModelController::UploadVisualizations()
     {
         assert(!mIsTextureLayerVisualizationDirty);
 
-        if (mView.HasTextureLayerVisualizationTexture())
+        if (view.HasTextureLayerVisualizationTexture())
         {
-            mView.RemoveTextureLayerVisualizationTexture();
+            view.RemoveTextureLayerVisualizationTexture();
         }
     }
 }
@@ -525,11 +525,16 @@ void ModelController::SetStructuralLayerVisualizationMode(StructuralLayerVisuali
         return;
     }
 
-    if (!mStructuralLayerVisualizationMode.has_value())
+    // Calculate size of structural visualization mode texture
+    ImageSize textureSize = (mode == StructuralLayerVisualizationModeType::ParticleMode)
+        ? ImageSize(mModel.GetShipSize().width, mModel.GetShipSize().height)
+        : ShipTexturizer::CalculateTextureSize(mModel.GetShipSize());
+
+    // Check if size is different
+    if (!mStructuralLayerVisualizationTexture
+        || mStructuralLayerVisualizationTexture->Size != textureSize)
     {
-        // Initialize structure visualization, once and for all
-        assert(!mStructuralLayerVisualizationTexture);
-        mStructuralLayerVisualizationTexture = std::make_unique<RgbaImageData>(mModel.GetShipSize().width, mModel.GetShipSize().height);
+        mStructuralLayerVisualizationTexture = std::make_unique<RgbaImageData>(textureSize);
     }
 
     mStructuralLayerVisualizationMode = mode;
@@ -1425,28 +1430,65 @@ void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & r
     assert(mModel.HasLayer(LayerType::Structural));
 
     assert(mStructuralLayerVisualizationTexture);
-    assert(mStructuralLayerVisualizationTexture->Size.width == mModel.GetShipSize().width
-        && mStructuralLayerVisualizationTexture->Size.height == mModel.GetShipSize().height);
 
     // Update visualization
 
-    // TODO: check current visualization settings and decide how to visualize
-
-    rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 0); // Fully transparent
-
-    auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
-    RgbaImageData & structuralRenderColorTexture = *mStructuralLayerVisualizationTexture;
-
-    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
+    if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::ParticleMode)
     {
-        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
-        {
-            auto const structuralMaterial = structuralLayerBuffer[{x, y}].Material;
+        //
+        // Particle mode
+        //
 
-            structuralRenderColorTexture[{x, y}] = structuralMaterial != nullptr
-                ? rgbaColor(structuralMaterial->RenderColor, 255)
-                : emptyColor;
+        assert(mStructuralLayerVisualizationTexture->Size.width == mModel.GetShipSize().width
+            && mStructuralLayerVisualizationTexture->Size.height == mModel.GetShipSize().height);
+
+        rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 0); // Fully transparent
+
+        auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
+        RgbaImageData & structuralRenderColorTexture = *mStructuralLayerVisualizationTexture;
+
+        for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
+        {
+            for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
+            {
+                auto const structuralMaterial = structuralLayerBuffer[{x, y}].Material;
+
+                structuralRenderColorTexture[{x, y}] = structuralMaterial != nullptr
+                    ? rgbaColor(structuralMaterial->RenderColor, 255)
+                    : emptyColor;
+            }
         }
+    }
+    else
+    {
+        //
+        // Auto-texturization or texture mode
+        //
+
+        ShipAutoTexturizationSettings settings;
+
+        if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::AutoTexturizationMode)
+        {
+            settings.Mode = ShipAutoTexturizationModeType::MaterialTextures;
+
+            if (mModel.GetShipAutoTexturizationSettings().has_value())
+            {
+                settings.MaterialTextureMagnification = mModel.GetShipAutoTexturizationSettings()->MaterialTextureMagnification;
+                settings.MaterialTextureTransparency = mModel.GetShipAutoTexturizationSettings()->MaterialTextureTransparency;
+            }
+        }
+        else
+        {
+            assert(mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::TextureMode);
+
+            settings.Mode = ShipAutoTexturizationModeType::FlatStructure;
+        }
+
+        mShipTexturizer.Texturize(
+            mModel.GetStructuralLayer(),
+            region,
+            *mStructuralLayerVisualizationTexture,
+            settings);
     }
 
     // Remember dirty region

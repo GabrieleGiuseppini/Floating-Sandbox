@@ -27,9 +27,17 @@ public:
         MaterialDatabase const & materialDatabase,
         ResourceLocator const & resourceLocator);
 
-    RgbaImageData Texturize(
+    static ImageSize CalculateTextureSize(ShipSpaceSize const & shipSize);
+
+    RgbaImageData MakeTexture(
         StructuralLayerData const & structuralLayer,
         std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings) const;
+
+    void Texturize(
+        StructuralLayerData const & structuralLayer,
+        ShipSpaceRect const & structuralLayerRegion,
+        RgbaImageData & targetTextureImage,
+        ShipAutoTexturizationSettings const & settings) const;
 
     template<typename TMaterial>
     RgbaImageData MakeTextureSample(

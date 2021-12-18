@@ -130,7 +130,7 @@ PencilTool<TLayer, IsEraser>::PencilTool(
             assert(mTempVisualizationDirtyShipRegion);
 
             // Visualize
-            mModelController.UploadVisualizations();
+            mModelController.UploadVisualizations(mView);
             mUserInterface.RefreshView();
         }
     }
@@ -147,7 +147,7 @@ PencilTool<TLayer, IsEraser>::~PencilTool()
         assert(!mTempVisualizationDirtyShipRegion);
 
         // Visualize
-        mModelController.UploadVisualizations();
+        mModelController.UploadVisualizations(mView);
         mUserInterface.RefreshView();
     }
 }
@@ -163,28 +163,31 @@ void PencilTool<TLayer, IsEraser>::OnMouseMove(ShipSpaceCoordinates const & mous
         // Temp visualization
         //
 
-        // Restore previous temp visualization
-        if (mTempVisualizationDirtyShipRegion)
-        {
-            MendTempVisualization();
-
-            assert(!mTempVisualizationDirtyShipRegion);
-        }
-
         // Calculate affected rect
         std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(mouseCoordinates);
 
-        // Apply (temporary) change
-        if (affectedRect)
+        if (affectedRect != mTempVisualizationDirtyShipRegion)
         {
-            DoTempVisualization(*affectedRect);
+            // Restore previous temp visualization
+            if (mTempVisualizationDirtyShipRegion)
+            {
+                MendTempVisualization();
 
-            assert(mTempVisualizationDirtyShipRegion);
+                assert(!mTempVisualizationDirtyShipRegion);
+            }
+
+            // Apply (temporary) change
+            if (affectedRect)
+            {
+                DoTempVisualization(*affectedRect);
+
+                assert(mTempVisualizationDirtyShipRegion);
+            }
+
+            // Visualize
+            mModelController.UploadVisualizations(mView);
+            mUserInterface.RefreshView();
         }
-
-        // Visualize
-        mModelController.UploadVisualizations();
-        mUserInterface.RefreshView();
     }
     else
     {
@@ -344,7 +347,7 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
     }
 
     // Refresh model visualizations
-    mModelController.UploadVisualizations();
+    mModelController.UploadVisualizations(mView);
     mUserInterface.RefreshView();
 
     // Update previous engagement

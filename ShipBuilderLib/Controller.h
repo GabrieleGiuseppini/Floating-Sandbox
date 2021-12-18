@@ -16,6 +16,7 @@
 #include <Game/Layers.h>
 #include <Game/ResourceLocator.h>
 #include <Game/ShipDefinition.h>
+#include <Game/ShipTexturizer.h>
 
 #include <memory>
 #include <optional>
@@ -47,6 +48,7 @@ public:
         View & view,
         WorkbenchState & workbenchState,
         IUserInterface & userInterface,
+        ShipTexturizer const & shipTexturizer,
         ResourceLocator const & resourceLocator);
 
     static std::unique_ptr<Controller> CreateForShip(
@@ -54,6 +56,7 @@ public:
         View & view,
         WorkbenchState & workbenchState,
         IUserInterface & userInterface,
+        ShipTexturizer const & shipTexturizer,
         ResourceLocator const & resourceLocator);
 
     ShipDefinition MakeShipDefinition();
