@@ -121,15 +121,22 @@ void ShipTexturizer::Texturize(
     //
 
     auto targetImageData = targetTextureImage.Data.get();
+    auto const & structuralBuffer = structuralLayer.Buffer;
 
-    for (int y = structuralLayerRegion.origin.y; y < structuralLayerRegion.origin.y + structuralLayerRegion.size.height; ++y)
+    int const startY = structuralLayerRegion.origin.y;
+    int const endY = structuralLayerRegion.origin.y + structuralLayerRegion.size.height;
+
+    int const startX = structuralLayerRegion.origin.x;
+    int const endX = structuralLayerRegion.origin.x + structuralLayerRegion.size.width;
+
+    for (int y = startY; y < endY; ++y)
     {
-        for (int x = structuralLayerRegion.origin.x; x < structuralLayerRegion.origin.x + structuralLayerRegion.size.width; ++x)
+        for (int x = startX; x < endX; ++x)
         {
             ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
 
             // Get structure pixel color
-            StructuralMaterial const * structuralMaterial = structuralLayer.Buffer[coords].Material;
+            StructuralMaterial const * structuralMaterial = structuralBuffer[coords].Material;
             rgbaColor const structurePixelColor = structuralMaterial != nullptr
                 ? rgbaColor(structuralMaterial->RenderColor, 255)
                 : rgbaColor::zero(); // Fully transparent

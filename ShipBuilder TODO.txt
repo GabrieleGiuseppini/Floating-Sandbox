@@ -71,9 +71,11 @@ https://gamejolt.com/x/permalink/comment/11730705
 	= Auto-texturization visualization
 		+ ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
 		+ Verify settings
+		- PencilTool: see if can reduce # of calls
 	- Texture visualization
 		+ ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
-		- ShipTexturizer: new method with whole new implementation, which takes texture from outside
+		- ShipTexturizer: new method with whole new implementation, which takes texture from outside (& no settings)
+			- But still based on same magnification
 	- See perf impact on auto-texturization from previous released version
 
 - Texture flood tool
