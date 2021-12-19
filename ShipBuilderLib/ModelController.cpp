@@ -1428,44 +1428,40 @@ void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & r
     }
 
     assert(mModel.HasLayer(LayerType::Structural));
-
     assert(mStructuralLayerVisualizationTexture);
 
     // Update visualization
 
-    if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::ParticleMode)
+    ShipSpaceRect effectiveRegion = region;
+
+    switch (*mStructuralLayerVisualizationMode)
     {
-        //
-        // Particle mode
-        //
-
-        assert(mStructuralLayerVisualizationTexture->Size.width == mModel.GetShipSize().width
-            && mStructuralLayerVisualizationTexture->Size.height == mModel.GetShipSize().height);
-
-        rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 0); // Fully transparent
-
-        auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
-        RgbaImageData & structuralRenderColorTexture = *mStructuralLayerVisualizationTexture;
-
-        for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
+        case StructuralLayerVisualizationModeType::ParticleMode:
         {
-            for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
+            assert(mStructuralLayerVisualizationTexture->Size.width == mModel.GetShipSize().width
+                && mStructuralLayerVisualizationTexture->Size.height == mModel.GetShipSize().height);
+
+            rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 0); // Fully transparent
+
+            auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
+            RgbaImageData & structuralRenderColorTexture = *mStructuralLayerVisualizationTexture;
+
+            for (int y = effectiveRegion.origin.y; y < effectiveRegion.origin.y + effectiveRegion.size.height; ++y)
             {
-                auto const structuralMaterial = structuralLayerBuffer[{x, y}].Material;
+                for (int x = effectiveRegion.origin.x; x < effectiveRegion.origin.x + effectiveRegion.size.width; ++x)
+                {
+                    auto const structuralMaterial = structuralLayerBuffer[{x, y}].Material;
 
-                structuralRenderColorTexture[{x, y}] = structuralMaterial != nullptr
-                    ? rgbaColor(structuralMaterial->RenderColor, 255)
-                    : emptyColor;
+                    structuralRenderColorTexture[{x, y}] = structuralMaterial != nullptr
+                        ? rgbaColor(structuralMaterial->RenderColor, 255)
+                        : emptyColor;
+                }
             }
-        }
-    }
-    else
-    {
-        //
-        // Auto-texturization or texture mode
-        //
 
-        if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::AutoTexturizationMode)
+            break;
+        }
+
+        case StructuralLayerVisualizationModeType::AutoTexturizationMode:
         {
             ShipAutoTexturizationSettings settings; // Pickup defaults
             settings.Mode = ShipAutoTexturizationModeType::MaterialTextures;
@@ -1478,24 +1474,41 @@ void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & r
 
             mShipTexturizer.AutoTexturizeInto(
                 mModel.GetStructuralLayer(),
-                region,
+                effectiveRegion,
                 *mStructuralLayerVisualizationTexture,
                 settings);
+
+            break;
         }
-        else
+
+        case StructuralLayerVisualizationModeType::TextureMode:
         {
-            assert(mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::TextureMode);
+            // Given that texturization looks at x+1 and y+1, we enlarge the region down and to the left
+
+            if (effectiveRegion.origin.x > 0)
+            {
+                effectiveRegion.origin.x -= 1;
+                effectiveRegion.size.width += 1;
+            }
+
+            if (effectiveRegion.origin.y > 0)
+            {
+                effectiveRegion.origin.y -= 1;
+                effectiveRegion.size.height += 1;
+            }
 
             mShipTexturizer.SampleTexturizeInto(
                 mModel.GetStructuralLayer(),
-                region,
+                effectiveRegion,
                 mModel.GetTextureLayer().Buffer,
                 *mStructuralLayerVisualizationTexture);
         }
     }
 
     // Remember dirty region
-    ImageRect const imageRegion = ImageRect({ region.origin.x, region.origin.y }, { region.size.width, region.size.height });
+    ImageRect const imageRegion = ImageRect(
+        { effectiveRegion.origin.x, effectiveRegion.origin.y }, 
+        { effectiveRegion.size.width, effectiveRegion.size.height });
     if (!mDirtyStructuralLayerVisualizationRegion.has_value())
     {
         mDirtyStructuralLayerVisualizationRegion = imageRegion;

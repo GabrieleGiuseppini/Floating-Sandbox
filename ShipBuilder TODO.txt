@@ -71,11 +71,17 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Auto-texturization visualization
 		+ ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
 		+ Verify settings
-	- Texture visualization
+	= Texture visualization
 		+ ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
-		- ShipTexturizer: new method with whole new implementation, which takes texture from outside (& no settings)
-			- But still based on same magnification
-			- Has "triangle" algorithm, based on count of points in four vertices of each square
+		= ShipTexturizer: new method with whole new implementation, which takes texture from outside (& no settings)
+			+ But still based on same magnification
+			+ Has "triangle" algorithm, based on count of points in four vertices of each square
+		+ Does structural vix for region Foo impact region outside Foo? If so, take that into account at ModelController::UpdateStrucuturalViz, enlarging dirty region (possibly among other things)
+		- Verify triangulation matches Game's
+		- See if nearest neighbor is still ok
+	- Perf improvements:
+		- Auto-texturization
+			- Do benchmarks
 	- See perf of new auto-texturization wrt previous released version
 
 - Texture flood tool
