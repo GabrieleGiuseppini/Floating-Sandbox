@@ -307,8 +307,8 @@ public:
                 // Move
                 mGameController->MoveBy(
                     mCurrentTrajectory->EngagedMovableObjectId,
-                    DisplayLogicalSize::FromFloat(newCurrentPosition - mCurrentTrajectory->CurrentPosition),
-                    DisplayLogicalSize::FromFloat(newCurrentPosition - mCurrentTrajectory->CurrentPosition));
+                    DisplayLogicalSize::FromFloatRound(newCurrentPosition - mCurrentTrajectory->CurrentPosition),
+                    DisplayLogicalSize::FromFloatRound(newCurrentPosition - mCurrentTrajectory->CurrentPosition));
             }
             else
             {
@@ -316,7 +316,7 @@ public:
                 mGameController->RotateBy(
                     mCurrentTrajectory->EngagedMovableObjectId,
                     newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y,
-                    DisplayLogicalCoordinates::FromFloat(*mCurrentTrajectory->RotationCenter),
+                    DisplayLogicalCoordinates::FromFloatRound(*mCurrentTrajectory->RotationCenter),
                     newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y);
             }
 
@@ -347,7 +347,7 @@ public:
                         mGameController->RotateBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
                             0.0f,
-                            DisplayLogicalCoordinates::FromFloat(*mCurrentTrajectory->RotationCenter),
+                            DisplayLogicalCoordinates::FromFloatRound(*mCurrentTrajectory->RotationCenter),
                             0.0f);
                     }
                 }
@@ -505,7 +505,7 @@ private:
                         mGameController->MoveBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
                             DisplayLogicalSize(0, 0),
-                            DisplayLogicalSize::FromFloat(mCurrentTrajectory->EndPosition - mCurrentTrajectory->CurrentPosition));
+                            DisplayLogicalSize::FromFloatRound(mCurrentTrajectory->EndPosition - mCurrentTrajectory->CurrentPosition));
                     }
                     else
                     {
@@ -513,7 +513,7 @@ private:
                         mGameController->RotateBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
                             0.0f,
-                            DisplayLogicalCoordinates::FromFloat(*mCurrentTrajectory->RotationCenter),
+                            DisplayLogicalCoordinates::FromFloatRound(*mCurrentTrajectory->RotationCenter),
                             mCurrentTrajectory->EndPosition.y - mCurrentTrajectory->CurrentPosition.y);
                     }
 
@@ -714,7 +714,7 @@ public:
                 // 2. Calculate convergence speed based on speed of mouse move
 
                 vec2f const mouseMovementStride = inputState.MousePosition.ToFloat() - mCurrentEngagementState->LastScreenPosition;
-                float const worldStride = mGameController->ScreenOffsetToWorldOffset(DisplayLogicalSize::FromFloat(mouseMovementStride)).length();
+                float const worldStride = mGameController->ScreenOffsetToWorldOffset(DisplayLogicalSize::FromFloatRound(mouseMovementStride)).length();
 
                 // New convergence rate:
                 // - Stride < 2.0: 0.03 (76 steps to 0.9 of target)
@@ -745,7 +745,7 @@ public:
                 // 4. Apply force towards current position
                 mGameController->Pull(
                     mCurrentEngagementState->PickedParticle,
-                    DisplayLogicalCoordinates::FromFloat(mCurrentEngagementState->CurrentScreenPosition));
+                    DisplayLogicalCoordinates::FromFloatRound(mCurrentEngagementState->CurrentScreenPosition));
             }
         }
         else
@@ -1006,7 +1006,7 @@ private:
                 sourcePosition
                 + *mCurrentLockedDirection * (inputState.MousePosition.ToFloat() - sourcePosition).dot(*mCurrentLockedDirection);
 
-            return DisplayLogicalCoordinates::FromFloat(targetPosition);
+            return DisplayLogicalCoordinates::FromFloatRound(targetPosition);
         }
         else
         {

@@ -112,6 +112,11 @@ private:
         float pixelX,
         float pixelY) const;
 
+    inline rgbaColor SampleTexture(
+        RgbaImageData const & texture,
+        float pixelX,
+        float pixelY) const;
+
 private:
 
     //

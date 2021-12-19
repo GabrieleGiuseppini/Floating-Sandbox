@@ -314,7 +314,7 @@ struct _IntegralSize
         , height(_height)
     {}
 
-    static _IntegralSize<TIntegralTag> FromFloat(vec2f const & vec)
+    static _IntegralSize<TIntegralTag> FromFloatRound(vec2f const & vec)
     {
         return _IntegralSize<TIntegralTag>(
             static_cast<integral_type>(std::round(vec.x)),
@@ -415,7 +415,7 @@ struct _IntegralCoordinates
         , y(_y)
     {}
 
-    static _IntegralCoordinates<TIntegralTag> FromFloat(vec2f const & vec)
+    static _IntegralCoordinates<TIntegralTag> FromFloatRound(vec2f const & vec)
     {
         return _IntegralCoordinates<TIntegralTag>(
             static_cast<integral_type>(std::round(vec.x)),
