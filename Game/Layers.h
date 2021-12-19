@@ -11,6 +11,7 @@
 #include <GameCore/Buffer2D.h>
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
+#include <GameCore/ImageData.h>
 
 #include <cassert>
 #include <map>
@@ -157,9 +158,9 @@ struct LayerTypeTraits<LayerType::Ropes>
 
 struct TextureLayerData
 {
-    Buffer2D<rgbaColor, struct ImageTag> Buffer;
+    ImageData<rgbaColor> Buffer;
 
-    explicit TextureLayerData(Buffer2D<rgbaColor, struct ImageTag> && buffer)
+    explicit TextureLayerData(ImageData<rgbaColor> && buffer)
         : Buffer(std::move(buffer))
     {}
 
