@@ -68,22 +68,22 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Controller
 			+ ModelController
 			+ See UI: when texture layer is created, which one is selected
-	= Auto-texturization visualization
+	+ Auto-texturization visualization
 		+ ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
 		+ Verify settings
-		- PencilTool: see if can reduce # of calls
 	- Texture visualization
 		+ ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
 		- ShipTexturizer: new method with whole new implementation, which takes texture from outside (& no settings)
 			- But still based on same magnification
-	- See perf impact on auto-texturization from previous released version
+			- Has "triangle" algorithm, based on count of points in four vertices of each square
+	- See perf of new auto-texturization wrt previous released version
 
 - Texture flood tool
 	- First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
 	- Conversion to texture coords: done by View & ViewModel, exactly like conversion to ShipSpaceCoords, and invoked by texture tool(s)
 		- ViewModel also stores texture layer size (as ImageSize), next to ShipSize; set into View 
 		  by Controller (via View.SetTextureLayerSize) at each texture layer size change (OR: implicitly from UploadTexture? Would be best as we don't have to remember to SetTextureLayerSize at multiple sites, 
-		  but what when there's no texture uploaded yet?)
+		  but what when there's no texture uploaded yet? just assert.)
 			- Controller::CreateForShip
 			- Controller::SetTextureLayer
 			- Controller::RestoreTextureLayerForUndo

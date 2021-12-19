@@ -528,7 +528,7 @@ void ModelController::SetStructuralLayerVisualizationMode(StructuralLayerVisuali
     // Calculate size of structural visualization mode texture
     ImageSize textureSize = (mode == StructuralLayerVisualizationModeType::ParticleMode)
         ? ImageSize(mModel.GetShipSize().width, mModel.GetShipSize().height)
-        : ShipTexturizer::CalculateTextureSize(mModel.GetShipSize());
+        : ShipTexturizer::CalculateHighDefinitionTextureSize(mModel.GetShipSize());
 
     // Check if size is different
     if (!mStructuralLayerVisualizationTexture

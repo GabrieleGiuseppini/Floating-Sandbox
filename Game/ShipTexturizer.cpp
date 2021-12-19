@@ -41,7 +41,7 @@ ShipTexturizer::ShipTexturizer(
 {
 }
 
-ImageSize ShipTexturizer::CalculateTextureSize(ShipSpaceSize const & shipSize)
+ImageSize ShipTexturizer::CalculateHighDefinitionTextureSize(ShipSpaceSize const & shipSize)
 {
     //
     // Calculate target texture size: integral multiple of structure size, but without
@@ -70,7 +70,7 @@ RgbaImageData ShipTexturizer::MakeTexture(
 
     // Calculate texture size
     ShipSpaceSize const shipSize = structuralLayer.Buffer.Size;
-    ImageSize const textureSize = CalculateTextureSize(shipSize);
+    ImageSize const textureSize = CalculateHighDefinitionTextureSize(shipSize);
 
     // Allocate texture image
     auto texture = RgbaImageData(textureSize);

@@ -27,7 +27,7 @@ public:
         MaterialDatabase const & materialDatabase,
         ResourceLocator const & resourceLocator);
 
-    static ImageSize CalculateTextureSize(ShipSpaceSize const & shipSize);
+    static ImageSize CalculateHighDefinitionTextureSize(ShipSpaceSize const & shipSize);
 
     RgbaImageData MakeTexture(
         StructuralLayerData const & structuralLayer,

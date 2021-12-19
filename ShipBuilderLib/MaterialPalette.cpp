@@ -455,10 +455,13 @@ wxToggleButton * MaterialPalette<TLayer>::CreateMaterialButton(
 
     if constexpr (TMaterial::MaterialLayer == MaterialLayerType::Structural)
     {
+        ShipAutoTexturizationSettings texturizationSettings;
+        texturizationSettings.MaterialTextureMagnification = 0.5f;
+
         categoryButton->SetBitmap(
             WxHelpers::MakeBitmap(
                 shipTexturizer.MakeTextureSample(
-                    std::nullopt, // Use shared settings
+                    texturizationSettings,
                     size,
                     material)));
     }
