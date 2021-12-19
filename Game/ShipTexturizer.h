@@ -29,15 +29,21 @@ public:
 
     static ImageSize CalculateHighDefinitionTextureSize(ShipSpaceSize const & shipSize);
 
-    RgbaImageData MakeTexture(
+    RgbaImageData MakeAutoTexture(
         StructuralLayerData const & structuralLayer,
-        std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings) const;
+        std::optional<ShipAutoTexturizationSettings> const & settings) const;
 
-    void Texturize(
+    void AutoTexturizeInto(
         StructuralLayerData const & structuralLayer,
         ShipSpaceRect const & structuralLayerRegion,
         RgbaImageData & targetTextureImage,
         ShipAutoTexturizationSettings const & settings) const;
+
+    void SampleTexturizeInto(
+        StructuralLayerData const & structuralLayer,
+        ShipSpaceRect const & structuralLayerRegion,
+        RgbaImageData & sourceTextureImage,
+        RgbaImageData & targetTextureImage) const;
 
     template<typename TMaterial>
     RgbaImageData MakeTextureSample(

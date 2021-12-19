@@ -59,9 +59,9 @@ ImageSize ShipTexturizer::CalculateHighDefinitionTextureSize(ShipSpaceSize const
         shipSize.height * magnificationFactor);
 }
 
-RgbaImageData ShipTexturizer::MakeTexture(
+RgbaImageData ShipTexturizer::MakeAutoTexture(
     StructuralLayerData const & structuralLayer,
-    std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings) const
+    std::optional<ShipAutoTexturizationSettings> const & settings) const
 {
     auto const startTime = std::chrono::steady_clock::now();
 
@@ -76,16 +76,16 @@ RgbaImageData ShipTexturizer::MakeTexture(
     auto texture = RgbaImageData(textureSize);
 
     // Nail down settings
-    ShipAutoTexturizationSettings const & settings = (mDoForceSharedSettingsOntoShipSettings || !shipDefinitionSettings.has_value())
+    ShipAutoTexturizationSettings const & actualSettings = (mDoForceSharedSettingsOntoShipSettings || !settings.has_value())
         ? mSharedSettings
-        : *shipDefinitionSettings;
+        : *settings;
 
     // Texturize
-    Texturize(
+    AutoTexturizeInto(
         structuralLayer,
         ShipSpaceRect({ 0, 0 }, shipSize), // Whole quad
         texture,
-        settings);
+        actualSettings);
 
     LogMessage("ShipTexturizer: completed auto-texturization:",
         " shipSize=", shipSize, " textureSize=", textureSize,
@@ -94,7 +94,7 @@ RgbaImageData ShipTexturizer::MakeTexture(
     return texture;
 }
 
-void ShipTexturizer::Texturize(
+void ShipTexturizer::AutoTexturizeInto(
     StructuralLayerData const & structuralLayer,
     ShipSpaceRect const & structuralLayerRegion,
     RgbaImageData & targetTextureImage,
@@ -218,6 +218,15 @@ void ShipTexturizer::Texturize(
             }
         }
     }
+}
+
+void ShipTexturizer::SampleTexturizeInto(
+    StructuralLayerData const & structuralLayer,
+    ShipSpaceRect const & structuralLayerRegion,
+    RgbaImageData & sourceTextureImage,
+    RgbaImageData & targetTextureImage) const
+{
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

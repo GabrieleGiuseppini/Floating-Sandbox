@@ -1465,10 +1465,9 @@ void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & r
         // Auto-texturization or texture mode
         //
 
-        ShipAutoTexturizationSettings settings;
-
         if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::AutoTexturizationMode)
         {
+            ShipAutoTexturizationSettings settings; // Pickup defaults
             settings.Mode = ShipAutoTexturizationModeType::MaterialTextures;
 
             if (mModel.GetShipAutoTexturizationSettings().has_value())
@@ -1476,19 +1475,23 @@ void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & r
                 settings.MaterialTextureMagnification = mModel.GetShipAutoTexturizationSettings()->MaterialTextureMagnification;
                 settings.MaterialTextureTransparency = mModel.GetShipAutoTexturizationSettings()->MaterialTextureTransparency;
             }
+
+            mShipTexturizer.AutoTexturizeInto(
+                mModel.GetStructuralLayer(),
+                region,
+                *mStructuralLayerVisualizationTexture,
+                settings);
         }
         else
         {
             assert(mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::TextureMode);
 
-            settings.Mode = ShipAutoTexturizationModeType::FlatStructure;
+            mShipTexturizer.SampleTexturizeInto(
+                mModel.GetStructuralLayer(),
+                region,
+                mModel.GetTextureLayer().Buffer,
+                *mStructuralLayerVisualizationTexture);
         }
-
-        mShipTexturizer.Texturize(
-            mModel.GetStructuralLayer(),
-            region,
-            *mStructuralLayerVisualizationTexture,
-            settings);
     }
 
     // Remember dirty region
