@@ -73,7 +73,7 @@ RgbaImageData ShipTexturizer::MakeAutoTexture(
     ImageSize const textureSize = CalculateHighDefinitionTextureSize(shipSize);
 
     // Allocate texture image
-    auto texture = RgbaImageData(textureSize);
+    RgbaImageData texture = RgbaImageData(textureSize);
 
     // Nail down settings
     ShipAutoTexturizationSettings const & actualSettings = (mDoForceSharedSettingsOntoShipSettings || !settings.has_value())

@@ -1,5 +1,24 @@
 https://gamejolt.com/x/permalink/comment/11730705
 
+- Texturization rearc:
+	- Spec:
+		! We keep ShipFactory::MakeTextureCoords adding 0.5 offset
+		! AutoTexturizer has two methods for creating texture
+			- Auto- and Sample-
+			- Implementation is different, but within y-x loop calls same TexturizeShipQuad, templated on sampleFunctor
+			- Shipbuilder has new "layer" row under Structural
+				- Not really a LayerType - and no button
+					- Always exists and never de-selected
+					- No export/import/new/delete buttons
+				- StructuralLayer has just particle and "none" viz modes
+				- StructuralTexture "layer" has auto, texture, and "none" viz modes
+			- ShipBuilder::View has two "texture" vizs: StructuralTexture and Texture
+				- Both add the 0.5 offset
+				- StructuralLayer viz goes back to being a small texture of size=ShipSize
+	- Undo changes
+	- Comment at ShipFactory::MakeTextureCoords
+	- ...
+
 = Visualization modes: (*)
 	+ Each layer has a visualization mode
 	+ Selectors are in new set of panels - with visibility dependent on primary layer - in LayersVisualization panel
@@ -77,11 +96,24 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ But still based on same magnification
 			+ Has "triangle" algorithm, based on count of points in four vertices of each square
 		+ Does structural vix for region Foo impact region outside Foo? If so, take that into account at ModelController::UpdateStrucuturalViz, enlarging dirty region (possibly among other things)
+		- Make sure that when checking for vertices, we're not constrained by region size but rather by whole structure size
+		- See if can make lines for those cases that only have two vertices
 		- Verify triangulation matches Game's
 		- See if nearest neighbor is still ok
+	- Think if we want auto-texturization to also produce "triangularized" image
+		+ Nail down first how it comes that auto texture "works"
+			+ Tex coords of simple test are 0.125 -> 0.875
+		= 1. See how it looks with tex coords fixed
+			AAARGH!
+			- Ships with texture
+			- Auto-texturized ships
+		- 2. Fix auto-texturization algo so it also fills corners (with triangulation algo)
+		- 3. From shipbuilder: might want auto-texturization to NOT triangulate
 	- Perf improvements:
 		- Auto-texturization
 			- Do benchmarks
+			- Do we need to store whole vec3/4f in texture? Can just R (and possibly A for future transparent material textures like Chain) suffice?
+			- Would nearest neighbor suffice?
 	- See perf of new auto-texturization wrt previous released version
 
 - Texture flood tool
