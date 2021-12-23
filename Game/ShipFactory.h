@@ -104,6 +104,18 @@ private:
         CoordType y,
         ShipSpaceSize const & shipSize)
     {
+        //
+        // Important: we offset the texture coords by half of a "ship pixel" (which is multiple texture pixels),
+        // so that the texture for a particle at ship coords (x, y) is sampled at the center of the 
+        // texture's quad for that particle.
+        //
+        // With this offset, the domain of the texture coordinates is thus:
+        //  Ship (0, 0) -> Texture (o, o)
+        //  Ship (SW-1, SH-1) -> Texture (1.0-o, 1.0-o)
+        //
+        // Where (SW, SH) are the ship dimensions, and o is the offset (which is < 1.0)
+        //
+
         float const deadCenterOffsetX = 0.5f / static_cast<float>(shipSize.width);
         float const deadCenterOffsetY = 0.5f / static_cast<float>(shipSize.height);
 

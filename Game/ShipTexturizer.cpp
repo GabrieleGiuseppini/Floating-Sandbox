@@ -189,7 +189,7 @@ void ShipTexturizer::AutoTexturizeInto(
                     float worldX = static_cast<float>(x);
                     for (int xx = 0; xx < magnificationFactor; ++xx, worldX += magnificationFactorInvF)
                     {
-                        vec3f const bumpMapSample = SampleTexture(
+                        vec3f const bumpMapSample = SampleTextureBilinear(
                             materialTexture,
                             worldX * worldToMaterialTexturePixelConversionFactor,
                             worldY * worldToMaterialTexturePixelConversionFactor);
@@ -226,6 +226,8 @@ void ShipTexturizer::SampleTexturizeInto(
     RgbaImageData & sourceTextureImage,
     RgbaImageData & targetTextureImage) const
 {
+    rgbaColor constexpr TransparentColor = rgbaColor::zero(); // Fully transparent
+
     //
     // Expectations:
     //
@@ -266,223 +268,180 @@ void ShipTexturizer::SampleTexturizeInto(
     {
         for (int x = startX; x < endX; ++x)
         {
-            //
-            // We now populate the target texture in the quad whose corners lie at these coordinates (in the target texture):
-            //
-            // 1:[x * magnificationFactor, y * magnificationFactor] ... 2:((x + 1) * magnificationFactor, y * magnificationFactor)
-            // ...
-            // ...
-            // ...
-            // 3:((x + 1) * magnificationFactor, (y + 1) * magnificationFactor) ... 4:((x + 1) * magnificationFactor, (y + 1) * magnificationFactor)
-            //
-            // We actually populate quads or triangles (with |side|==magnificationFactor), depending on the presence of the four corners. We do so by:
-            //  - Looping for all target YY's in the quad
-            //  - For each YY:
-            //      - Fill-in the XX segment between xxStart and xxEnd, and transparent outside
-            //      - Change xxStart and xxEnd depending on Y
-            //
+            ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
 
-            //
-            // Determine quad vertices
-            //
-
-            // Init with no quad
-            int xxStart = magnificationFactor, xxStartIncr = 0;
-            int xxEnd = magnificationFactor, xxEndIncr = 0;
-
-            bool const hasVertex1 = structuralBuffer[{x, y}].Material != nullptr;
-
-            ShipSpaceCoordinates const coords2 = ShipSpaceCoordinates(x + 1, y);
-            bool const hasVertex2 = coords2.IsInSize(structuralSize) && structuralBuffer[coords2].Material != nullptr;
-
-            ShipSpaceCoordinates const coords3 = ShipSpaceCoordinates(x, y + 1);
-            bool const hasVertex3 = coords3.IsInSize(structuralSize) && structuralBuffer[coords3].Material != nullptr;
-
-            ShipSpaceCoordinates const coords4 = ShipSpaceCoordinates(x + 1, y + 1);
-            bool const hasVertex4 = coords4.IsInSize(structuralSize) && structuralBuffer[coords4].Material != nullptr;
-
-            if (hasVertex1)
-            {
-                if (hasVertex2)
-                {
-                    if (hasVertex3)
-                    {
-                        if (hasVertex4)
-                        {
-                            // Whole quad
-                            xxStart = 0; xxStartIncr = 0;
-                            xxEnd = magnificationFactor; xxEndIncr = 0;
-                        }
-                        else
-                        {
-                            // 1---2
-                            // |
-                            // 3
-
-                            xxStart = 0; xxStartIncr = 0;
-                            xxEnd = magnificationFactor; xxEndIncr = -1;
-                        }
-                    }
-                    else if (hasVertex4)
-                    {
-                        // 1---2
-                        //     |
-                        //     4
-
-                        xxStart = 0; xxStartIncr = 1;
-                        xxEnd = magnificationFactor; xxEndIncr = 0;
-                    }
-                }
-                else
-                {
-                    // No vertex 2
-
-                    if (hasVertex3 && hasVertex4)
-                    {
-                        // 1
-                        // |
-                        // 3---4
-
-                        xxStart = 0; xxStartIncr = 0;
-                        xxEnd = 0; xxEndIncr = 1;
-                    }
-                }
-            }
-            else
-            {
-                // No vertex 1
-
-                if (hasVertex2 && hasVertex3 && hasVertex4)
-                {
-                    //     2
-                    //     |
-                    // 3---4
-
-                    xxStart = magnificationFactor; xxStartIncr = -1;
-                    xxEnd = magnificationFactor; xxEndIncr = 0;
-                }
-            }
-
-            //
-            // Fill-in quads
-            //
+            // Get structure pixel color
+            StructuralMaterial const * const structuralMaterial = structuralBuffer[coords].Material;
+            rgbaColor const structurePixelColor = structuralMaterial != nullptr
+                ? rgbaColor(structuralMaterial->RenderColor, 255)
+                : rgbaColor::zero(); // Fully transparent
 
             int targetQuadOffset =
                 (y * magnificationFactor) * targetTextureImage.Size.width
                 + x * magnificationFactor;
 
-            for (int yy = 0; 
-                yy < magnificationFactor; 
-                ++yy, xxStart += xxStartIncr, xxEnd += xxEndIncr, targetQuadOffset += targetTextureImage.Size.width)
+            if (structuralMaterial == nullptr)
             {
-                // Prefix - fill with empty
-                assert(0 <= xxStart && xxStart <= magnificationFactor);
-                for (int xx = 0; xx < xxStart; ++xx)
-                {
-                    targetImageData[targetQuadOffset + xx] = transparentColor;
-                }
-
-                // Body - fill with source texture
-                for (int xx = xxStart; xx < xxEnd; ++xx)
-                {
-                    rgbaColor const textureSample = SampleTexture(
-                        sourceTextureImage,
-                        targetTextureSpaceToSourceTextureSpace * (x * magnificationFactor + xx),
-                        targetTextureSpaceToSourceTextureSpace * (y * magnificationFactor + yy));
-
-                    targetImageData[targetQuadOffset + xx] = textureSample;
-                }
-
-                // Suffix - fill with empty
-                assert(0 <= xxEnd && xxEnd <= magnificationFactor);
-                for (int xx = xxEnd; xx < magnificationFactor; ++xx)
-                {
-                    targetImageData[targetQuadOffset + xx] = transparentColor;
-                }
-            }
-
-            // TODOOLD
-            /*
-            rgbaColor const structurePixelColor = structuralMaterial != nullptr
-                ? rgbaColor(structuralMaterial->RenderColor, 255)
-                : rgbaColor::zero(); // Fully transparent
-
-            if (settings.Mode == ShipAutoTexturizationModeType::FlatStructure
-                || structuralMaterial == nullptr)
-            {
-                //
-                // Flat structure
-                //
-
                 // Fill quad with color
-                for (int yy = 0; yy < magnificationFactor; ++yy)
+                for (int yy = 0; yy < magnificationFactor; ++yy, targetQuadOffset += targetTextureImage.Size.width)
                 {
-                    int const quadOffset =
-                        x * magnificationFactor
-                        + (y * magnificationFactor + yy) * targetTextureImage.Size.width;
-
                     for (int xx = 0; xx < magnificationFactor; ++xx)
                     {
-                        targetImageData[quadOffset + xx] = structurePixelColor;
+                        targetImageData[targetQuadOffset + xx] = TransparentColor;
                     }
                 }
             }
             else
             {
-                //
-                // Material textures
-                //
-
-                assert(settings.Mode == ShipAutoTexturizationModeType::MaterialTextures);
-
-                vec3f const structurePixelColorF = structurePixelColor.toVec3f();
-
-                // Get bump map texture
-                assert(structuralMaterial != nullptr);
-                Vec3fImageData const & materialTexture = GetMaterialTexture(structuralMaterial->MaterialTextureName);
-
-                //
-                // Fill quad with color multiply-blended with "bump map" texture
-                //
-
-                int const baseTargetQuadOffset = (x + y * targetTextureImage.Size.width) * magnificationFactor;
-
-                float worldY = static_cast<float>(y);
-                for (int yy = 0; yy < magnificationFactor; ++yy, worldY += magnificationFactorInvF)
+                for (int yy = 0; yy < magnificationFactor; ++yy, targetQuadOffset += targetTextureImage.Size.width)
                 {
-                    int const targetQuadOffset = baseTargetQuadOffset + yy * targetTextureImage.Size.width;
-
-                    float worldX = static_cast<float>(x);
-                    for (int xx = 0; xx < magnificationFactor; ++xx, worldX += magnificationFactorInvF)
+                    for (int xx = 0; xx < magnificationFactor; ++xx)
                     {
-                        vec3f const bumpMapSample = SampleTexture(
-                            materialTexture,
-                            worldX * worldToMaterialTexturePixelConversionFactor,
-                            worldY * worldToMaterialTexturePixelConversionFactor);
+                        rgbaColor const textureSample = SampleTextureNearest(
+                            sourceTextureImage,
+                            targetTextureSpaceToSourceTextureSpace * (x * magnificationFactor + xx),
+                            targetTextureSpaceToSourceTextureSpace * (y * magnificationFactor + yy));
 
-                        ////// Vanilla multiply blending
-                        ////vec3f const resultantColor(
-                        ////    structurePixelColorF.x * bumpMapSample.x,
-                        ////    structurePixelColorF.y * bumpMapSample.y,
-                        ////    structurePixelColorF.z * bumpMapSample.z);
-
-                        // Bi-directional multiply blending
-                        vec3f const resultantColorF(
-                            BidirMultiplyBlend(structurePixelColorF.x, bumpMapSample.x),
-                            BidirMultiplyBlend(structurePixelColorF.y, bumpMapSample.y),
-                            BidirMultiplyBlend(structurePixelColorF.z, bumpMapSample.z));
-
-                        // Store resultant color, using structure's alpha channel value,
-                        // and blended with transparency
-                        targetImageData[targetQuadOffset + xx] = rgbaColor(
-                            Mix(structurePixelColorF,
-                                resultantColorF,
-                                materialTextureAlpha),
-                            structurePixelColor.a);
+                        targetImageData[targetQuadOffset + xx] = textureSample;
                     }
                 }
             }
-            */
+
+            ////// TODOOLD: Triangulation
+            //////
+            ////// We now populate the target texture in the quad whose corners lie at these coordinates (in the target texture):
+            //////
+            ////// 1:[x * magnificationFactor, y * magnificationFactor] ... 2:((x + 1) * magnificationFactor, y * magnificationFactor)
+            ////// ...
+            ////// ...
+            ////// ...
+            ////// 3:((x + 1) * magnificationFactor, (y + 1) * magnificationFactor) ... 4:((x + 1) * magnificationFactor, (y + 1) * magnificationFactor)
+            //////
+            ////// We actually populate quads or triangles (with |side|==magnificationFactor), depending on the presence of the four corners. We do so by:
+            //////  - Looping for all target YY's in the quad
+            //////  - For each YY:
+            //////      - Fill-in the XX segment between xxStart and xxEnd, and transparent outside
+            //////      - Change xxStart and xxEnd depending on Y
+            //////
+
+            //////
+            ////// Determine quad vertices
+            //////
+
+            ////// Init with no quad
+            ////int xxStart = magnificationFactor, xxStartIncr = 0;
+            ////int xxEnd = magnificationFactor, xxEndIncr = 0;
+
+            ////bool const hasVertex1 = structuralBuffer[{x, y}].Material != nullptr;
+
+            ////ShipSpaceCoordinates const coords2 = ShipSpaceCoordinates(x + 1, y);
+            ////bool const hasVertex2 = coords2.IsInSize(structuralSize) && structuralBuffer[coords2].Material != nullptr;
+
+            ////ShipSpaceCoordinates const coords3 = ShipSpaceCoordinates(x, y + 1);
+            ////bool const hasVertex3 = coords3.IsInSize(structuralSize) && structuralBuffer[coords3].Material != nullptr;
+
+            ////ShipSpaceCoordinates const coords4 = ShipSpaceCoordinates(x + 1, y + 1);
+            ////bool const hasVertex4 = coords4.IsInSize(structuralSize) && structuralBuffer[coords4].Material != nullptr;
+
+            ////if (hasVertex1)
+            ////{
+            ////    if (hasVertex2)
+            ////    {
+            ////        if (hasVertex3)
+            ////        {
+            ////            if (hasVertex4)
+            ////            {
+            ////                // Whole quad
+            ////                xxStart = 0; xxStartIncr = 0;
+            ////                xxEnd = magnificationFactor; xxEndIncr = 0;
+            ////            }
+            ////            else
+            ////            {
+            ////                // 1---2
+            ////                // |
+            ////                // 3
+
+            ////                xxStart = 0; xxStartIncr = 0;
+            ////                xxEnd = magnificationFactor; xxEndIncr = -1;
+            ////            }
+            ////        }
+            ////        else if (hasVertex4)
+            ////        {
+            ////            // 1---2
+            ////            //     |
+            ////            //     4
+
+            ////            xxStart = 0; xxStartIncr = 1;
+            ////            xxEnd = magnificationFactor; xxEndIncr = 0;
+            ////        }
+            ////    }
+            ////    else
+            ////    {
+            ////        // No vertex 2
+
+            ////        if (hasVertex3 && hasVertex4)
+            ////        {
+            ////            // 1
+            ////            // |
+            ////            // 3---4
+
+            ////            xxStart = 0; xxStartIncr = 0;
+            ////            xxEnd = 0; xxEndIncr = 1;
+            ////        }
+            ////    }
+            ////}
+            ////else
+            ////{
+            ////    // No vertex 1
+
+            ////    if (hasVertex2 && hasVertex3 && hasVertex4)
+            ////    {
+            ////        //     2
+            ////        //     |
+            ////        // 3---4
+
+            ////        xxStart = magnificationFactor; xxStartIncr = -1;
+            ////        xxEnd = magnificationFactor; xxEndIncr = 0;
+            ////    }
+            ////}
+
+            //////
+            ////// Fill-in quads
+            //////
+
+            ////int targetQuadOffset =
+            ////    (y * magnificationFactor) * targetTextureImage.Size.width
+            ////    + x * magnificationFactor;
+
+            ////for (int yy = 0; 
+            ////    yy < magnificationFactor; 
+            ////    ++yy, xxStart += xxStartIncr, xxEnd += xxEndIncr, targetQuadOffset += targetTextureImage.Size.width)
+            ////{
+            ////    // Prefix - fill with empty
+            ////    assert(0 <= xxStart && xxStart <= magnificationFactor);
+            ////    for (int xx = 0; xx < xxStart; ++xx)
+            ////    {
+            ////        targetImageData[targetQuadOffset + xx] = transparentColor;
+            ////    }
+
+            ////    // Body - fill with source texture
+            ////    for (int xx = xxStart; xx < xxEnd; ++xx)
+            ////    {
+            ////        rgbaColor const textureSample = SampleTexture(
+            ////            sourceTextureImage,
+            ////            targetTextureSpaceToSourceTextureSpace * (x * magnificationFactor + xx),
+            ////            targetTextureSpaceToSourceTextureSpace * (y * magnificationFactor + yy));
+
+            ////        targetImageData[targetQuadOffset + xx] = textureSample;
+            ////    }
+
+            ////    // Suffix - fill with empty
+            ////    assert(0 <= xxEnd && xxEnd <= magnificationFactor);
+            ////    for (int xx = xxEnd; xx < magnificationFactor; ++xx)
+            ////    {
+            ////        targetImageData[targetQuadOffset + xx] = transparentColor;
+            ////    }
+            ////}
         }
     }
 }
@@ -585,7 +544,7 @@ RgbaImageData ShipTexturizer::MakeTextureSample(
 
         for (int x = 0; x < sampleSize.width / 2; ++x)
         {
-            vec3f const bumpMapSample = SampleTexture(
+            vec3f const bumpMapSample = SampleTextureBilinear(
                 materialTexture,
                 static_cast<float>(x) * sampleToMaterialTexturePixelConversionFactor,
                 static_cast<float>(y) * sampleToMaterialTexturePixelConversionFactor);
@@ -688,7 +647,7 @@ void ShipTexturizer::PurgeMaterialTextureCache(size_t maxSize) const
     }
 }
 
-vec3f ShipTexturizer::SampleTexture(
+vec3f ShipTexturizer::SampleTextureBilinear(
     Vec3fImageData const & texture,
     float pixelX,
     float pixelY) const
@@ -736,7 +695,7 @@ vec3f ShipTexturizer::SampleTexture(
         pixelDy);
 }
 
-rgbaColor ShipTexturizer::SampleTexture(
+rgbaColor ShipTexturizer::SampleTextureNearest(
     RgbaImageData const & texture,
     float pixelX,
     float pixelY) const
