@@ -1,23 +1,47 @@
 https://gamejolt.com/x/permalink/comment/11730705
 
-- Texturization rearc:
-	- Spec:
-		! We keep ShipFactory::MakeTextureCoords adding 0.5 offset
-		! AutoTexturizer has two methods for creating texture
-			- Auto- and Sample-
-			- Implementation is different, but within y-x loop calls same TexturizeShipQuad, templated on sampleFunctor
-			- Shipbuilder has new "layer" row under Structural
-				- Not really a LayerType - and no button
-					- Always exists and never de-selected
-					- No export/import/new/delete buttons
-				- StructuralLayer has just particle and "none" viz modes
-				- StructuralTexture "layer" has auto, texture, and "none" viz modes
-			- ShipBuilder::View has two "texture" vizs: StructuralTexture and Texture
-				- Both add the 0.5 offset
-				- StructuralLayer viz goes back to being a small texture of size=ShipSize
-	- Undo changes
+= Texturization rearc:
+	! We keep ShipFactory::MakeTextureCoords adding 0.5 offset		
+	! AutoTexturizer has two methods for creating texture
+	! ShipBuilder adds offset as well
+	+ Undo changes
+	+ Comment at ShipFactory::MakeTextureCoords
+	= AutoTexturizer has two methods for creating texture
+		+ Auto- and Sample-
+		= Implementation is different, but within y-x loop calls same TexturizeShipQuad, templated on sampleFunctor
+			= Auto
+			- Sample
+	- Shipbuilder has new "layer" row under Structural
+		- Not really a LayerType - and no button
+			- Always exists and never de-selected
+			- No export/import/new/delete buttons
+		- StructuralLayer has just particle and "none" viz modes
+		- StructuralTexture "layer" has auto, texture, and "none" viz modes
+	- ShipBuilder::View has two "texture" vizs: StructuralTexture and Texture
+		- Both add the 0.5 offset
+		- StructuralLayer viz goes back to being a small texture of size=ShipSize
+
+- Texturization rearc 2:
+	! Auto-texturizer stays as it was one step ago: auto-texturization (with no triangulation) - and sample-texturization
+	! ShipBuilder produces StructuralTexture doing its own triangulation on top of texture, and adding offset (baked into texture)
+		! View does NOT add offset
+	- Undo ShipTexturizer changes; revert to:
+		- Auto-texturization - with no triangulation
+		- Sample-texturization
+			- Comment-out triangulation
+			! We will remove triangulation shortly
 	- Comment at ShipFactory::MakeTextureCoords
-	- ...
+	- Shipbuilder UI: has new "layer" row under Structural
+		- Not really a LayerType - and no button
+			- Always exists and never de-selected
+			- No export/import/new/delete buttons
+		- StructuralLayer has just particle and "none" viz modes
+		- StructuralTexture "layer" has auto, texture, and "none" viz modes
+	- ShipBuilder::View has two "texture" vizs: StructuralTexture and Texture
+		- StructuralLayer viz goes back to being a small texture of size=ShipSize
+	- ModelController visualizations:
+		- StructuralTexture is done by doing own triangulation on top of texture, and adding offset (baked into texture)
+	- Remove triangulation from ShipTexturizer
 
 = Visualization modes: (*)
 	+ Each layer has a visualization mode
@@ -96,7 +120,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ But still based on same magnification
 			+ Has "triangle" algorithm, based on count of points in four vertices of each square
 		+ Does structural vix for region Foo impact region outside Foo? If so, take that into account at ModelController::UpdateStrucuturalViz, enlarging dirty region (possibly among other things)
-		- Make sure that when checking for vertices, we're not constrained by region size but rather by whole structure size
+		= Make sure that when checking for vertices, we're not constrained by region size but rather by whole structure size
 		- See if can make lines for those cases that only have two vertices
 		- Verify triangulation matches Game's
 		- See if nearest neighbor is still ok
